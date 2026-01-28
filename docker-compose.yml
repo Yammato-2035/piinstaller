@@ -1,0 +1,37 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pi-installer-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - pi-network
+    restart: unless-stopped
+
+  frontend:
+    image: node:18-alpine
+    container_name: pi-installer-frontend
+    working_dir: /app
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    networks:
+      - pi-network
+    restart: unless-stopped
+    depends_on:
+      - backend
+    command: sh -c "npm install && npm run dev"
+
+networks:
+  pi-network:
+    driver: bridge

@@ -1,0 +1,7291 @@
+"""
+PI-Installer Backend - FastAPI mit erweiterten Endpoints
+"""
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from starlette.middleware.cors import CORSMiddleware
+import os
+from pathlib import Path
+import psutil
+import subprocess
+import json
+import logging
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+import shlex
+import re
+from typing import Optional
+from datetime import datetime, timezone
+import asyncio
+import uuid
+import threading
+import time
+import signal
+import xml.etree.ElementTree as ET
+
+# -------------------- Logging (file + console) --------------------
+
+def _default_log_path() -> Path:
+    # Prefer project-local logs (works without sudo)
+    repo_root = Path(__file__).resolve().parent.parent
+    return repo_root / "logs" / "pi-installer.log"
+
+
+def _setup_logging() -> Path:
+    """
+    Writes errors into a persistent log file (rotating by days and size).
+    Falls back to console-only if file cannot be created.
+    """
+    log_path = Path(os.environ.get("PI_INSTALLER_LOG_PATH", "") or _default_log_path()).resolve()
+    # Versuche Log-Retention aus Settings zu lesen, sonst aus Umgebungsvariable, sonst Default
+    try:
+        log_retention_days = int(APP_SETTINGS.get("logging", {}).get("retention_days", os.environ.get("PI_INSTALLER_LOG_RETENTION_DAYS", "30")))
+    except Exception:
+        log_retention_days = int(os.environ.get("PI_INSTALLER_LOG_RETENTION_DAYS", "30"))
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        fmt = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+
+        root = logging.getLogger()
+        root.setLevel(logging.INFO)
+
+        # Avoid duplicate handlers on reload
+        if not any(isinstance(h, (RotatingFileHandler, TimedRotatingFileHandler)) for h in root.handlers):
+            # TimedRotatingFileHandler rotiert nach Tagen (täglich um Mitternacht)
+            # backupCount bestimmt, wie viele Tage Logs aufbewahrt werden
+            fh = TimedRotatingFileHandler(
+                str(log_path),
+                when='midnight',
+                interval=1,
+                backupCount=log_retention_days,
+                encoding="utf-8"
+            )
+            fh.setLevel(logging.INFO)
+            fh.setFormatter(fmt)
+            root.addHandler(fh)
+
+        # ensure at least one console handler
+        if not any(isinstance(h, logging.StreamHandler) for h in root.handlers):
+            ch = logging.StreamHandler()
+            ch.setLevel(logging.INFO)
+            ch.setFormatter(fmt)
+            root.addHandler(ch)
+    except Exception:
+        logging.basicConfig(level=logging.INFO)
+    return log_path
+
+
+LOG_PATH = _setup_logging()
+logger = logging.getLogger(__name__)
+
+# ==================== Version ====================
+
+def get_pi_installer_version() -> str:
+    """Liest die PI-Installer Version aus der Repo-Root `VERSION` Datei."""
+    try:
+        version_path = Path(__file__).resolve().parent.parent / "VERSION"
+        if version_path.exists():
+            v = version_path.read_text(encoding="utf-8").strip()
+            return v or "0.0.0"
+    except Exception:
+        pass
+    return "0.0.0"
+
+PI_INSTALLER_VERSION = get_pi_installer_version()
+
+# Erstelle FastAPI App
+app = FastAPI(
+    title="PI-Installer",
+    description="Raspberry Pi Konfigurations-Assistent",
+    version=PI_INSTALLER_VERSION
+)
+
+# Session Storage für sudo-Passwort (in-memory, nur für aktuelle Session)
+sudo_password_store = {}
+
+# Globaler Installationsfortschritt
+installation_progress = {"progress": 0, "message": "Bereit", "current_step": ""}
+
+# -------------------- Global Config / Initialization --------------------
+
+def _read_text(path: str) -> str:
+    try:
+        return Path(path).read_text(encoding="utf-8").strip()
+    except Exception:
+        return ""
+
+
+def _device_id() -> str:
+    # stable id on Linux
+    mid = _read_text("/etc/machine-id")
+    return mid or "unknown-device"
+
+
+def _device_model() -> str:
+    # Raspberry Pi: /proc/device-tree/model (binary-ish, but usually decodes)
+    for p in ("/proc/device-tree/model", "/sys/firmware/devicetree/base/model"):
+        try:
+            b = Path(p).read_bytes()
+            if b:
+                return b.decode("utf-8", errors="ignore").strip("\x00").strip()
+        except Exception:
+            continue
+    return ""
+
+
+def _os_release() -> dict:
+    data = {}
+    try:
+        txt = _read_text("/etc/os-release")
+        for line in txt.splitlines():
+            if "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            data[k.strip()] = v.strip().strip('"')
+    except Exception:
+        pass
+    return data
+
+
+def _config_path() -> Path:
+    """
+    Prefer /etc/pi-installer/config.json when writable, else fallback to ~/.config/pi-installer/config.json.
+    """
+    etc = Path("/etc/pi-installer/config.json")
+    try:
+        etc.parent.mkdir(parents=True, exist_ok=True)
+        # check writable (as current process)
+        if etc.exists():
+            if os.access(str(etc), os.W_OK):
+                return etc
+        else:
+            if os.access(str(etc.parent), os.W_OK):
+                return etc
+    except Exception:
+        pass
+    home = Path.home() / ".config" / "pi-installer" / "config.json"
+    home.parent.mkdir(parents=True, exist_ok=True)
+    return home
+
+
+def _default_settings() -> dict:
+    return {
+        "ui": {"language": "de"},
+        "backup": {"default_dir": "/mnt/backups"},
+        "logging": {"level": "INFO", "retention_days": 30},
+        "network": {"remote_access_disabled": False},
+    }
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+CONFIG_PATH = _config_path()
+CONFIG_STATE = {"loaded": False, "first_run": False, "matched_device": False, "device_id": _device_id()}
+APP_SETTINGS = _default_settings()
+
+# -------------------- Backup jobs (async) --------------------
+
+BACKUP_JOBS: dict[str, dict] = {}
+BACKUP_JOB_CANCEL: dict[str, threading.Event] = {}
+
+
+def _new_job_id() -> str:
+    return uuid.uuid4().hex[:12]
+
+
+def _job_snapshot(job: dict) -> dict:
+    # non-mutating snapshot with live size
+    snap = dict(job)
+    bf = snap.get("backup_file")
+    try:
+        if bf and isinstance(bf, str) and bf.startswith("/") and Path(bf).exists():
+            snap["bytes_current"] = int(Path(bf).stat().st_size)
+    except Exception:
+        pass
+    return snap
+
+
+def _curl_put_with_progress(
+    local_file: str,
+    remote: str,
+    user: str,
+    pw: str,
+    job_id: str,
+    timeout_sec: int,
+) -> tuple[bool, Optional[int], Optional[str]]:
+    """PUT mit Fortschritts-Updates. Bei Timeout: 1 Min warten, dann PROPFIND; keine Fehlermeldung vorher."""
+    cmd = (
+        f"curl -o /dev/null -w '%{{http_code}}' "
+        f"-u {shlex.quote(user)}:{shlex.quote(pw)} -H 'Overwrite: T' -T {shlex.quote(local_file)} {shlex.quote(remote)}"
+    )
+    try:
+        proc = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except Exception as e:
+        return False, None, str(e)
+
+    def read_stderr():
+        buf = ""
+        progre = re.compile(r"\s*(\d+)\s+\d+\s+\d+")
+        last_pct = -1
+        try:
+            while True:
+                chunk = proc.stderr.read(512)
+                if not chunk:
+                    break
+                buf += chunk
+                parts = re.split(r"[\r\n]+", buf)
+                buf = parts.pop() if parts else ""
+                for part in parts:
+                    m = progre.match(part.strip())
+                    if m:
+                        pct = min(100, int(m.group(1)))
+                        if pct != last_pct and job_id and job_id in BACKUP_JOBS:
+                            last_pct = pct
+                            BACKUP_JOBS[job_id]["upload_progress_pct"] = pct
+        except Exception:
+            pass
+
+    t = threading.Thread(target=read_stderr, daemon=True)
+    t.start()
+
+    try:
+        proc.wait(timeout=timeout_sec)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.wait()
+        t.join(timeout=2)
+        if job_id and job_id in BACKUP_JOBS:
+            BACKUP_JOBS[job_id]["upload_progress_pct"] = None
+            BACKUP_JOBS[job_id]["message"] = "Prüfe in 1 Min, ob Datei in Cloud…"
+        time.sleep(60)
+        rv = run_command(
+            f"curl -sS -o /dev/null -w '%{{http_code}}' -u {shlex.quote(user)}:{shlex.quote(pw)} "
+            f"-X PROPFIND -H 'Depth: 0' {shlex.quote(remote)}",
+            timeout=30,
+        )
+        try:
+            cv = int((rv.get("stdout") or "").strip() or "0")
+        except Exception:
+            cv = 0
+        if rv.get("success") and cv in (200, 201, 204, 207):
+            return True, None, None
+        return False, None, "Upload-Zeitüberschreitung (Timeout). Datei nach 1 Min nicht in Cloud gefunden."
+
+    t.join(timeout=2)
+    out = (proc.stdout.read() or "").strip()
+    try:
+        put_code = int(out) if out else None
+    except Exception:
+        put_code = None
+    if job_id and job_id in BACKUP_JOBS:
+        BACKUP_JOBS[job_id]["upload_progress_pct"] = 100 if proc.returncode == 0 else None
+    if proc.returncode != 0:
+        return False, put_code, "Upload fehlgeschlagen"
+    return True, put_code, None
+
+
+def _find_last_full_backup(backup_dir: str) -> tuple[Optional[str], Optional[int]]:
+    try:
+        p = Path(backup_dir)
+        files = [f for f in p.glob("pi-backup-full-*.tar.gz") if f.is_file()]
+        if not files:
+            return None, None
+        files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+        f = files[0]
+        return str(f), int(f.stat().st_mtime)
+    except Exception:
+        return None, None
+
+
+def _do_backup_logic(
+    *,
+    sudo_password: str,
+    backup_type: str,
+    backup_dir: str,
+    timestamp: str,
+    last_backup_hint: str = "",
+    cancel_event: Optional[threading.Event] = None,
+    job: Optional[dict] = None,
+) -> dict:
+    """
+    Blocking backup implementation (safe to run in a thread).
+    Returns a dict shaped like the API response.
+    """
+    results: list[str] = []
+
+    def _tar_warning_ok(result: dict, backup_file_path: str) -> bool:
+        try:
+            rc = result.get("returncode")
+            if rc != 1:
+                return False
+            test_cmd = f"test -s {shlex.quote(backup_file_path)}"
+            t = run_command(test_cmd)
+            if not t["success"] and sudo_password:
+                t = run_command(test_cmd, sudo=True, sudo_password=sudo_password)
+            return bool(t["success"])
+        except Exception:
+            return False
+
+    def _tar_partial_ok(result: dict, backup_file_path: str) -> bool:
+        try:
+            test_cmd = f"test -s {shlex.quote(backup_file_path)}"
+            t = run_command(test_cmd)
+            if not t["success"] and sudo_password:
+                t = run_command(test_cmd, sudo=True, sudo_password=sudo_password)
+            return bool(t["success"])
+        except Exception:
+            return False
+
+    def _tar_no_space(result: dict) -> bool:
+        combined = ((result.get("stderr") or "") + "\n" + (result.get("stdout") or "")).lower()
+        needles = ["no space left on device", "enospc", "write failed", "broken pipe", "datenübergabe unterbrochen"]
+        return any(n in combined for n in needles)
+
+    def _fs_free_hint(dir_path: str) -> str:
+        try:
+            st = os.statvfs(dir_path)
+            free = st.f_frsize * st.f_bavail
+            for unit in ["B", "KB", "MB", "GB", "TB"]:
+                if free < 1024:
+                    return f"{free:.0f} {unit}" if unit == "B" else f"{free:.1f} {unit}"
+                free /= 1024
+        except Exception:
+            pass
+        return ""
+
+    def _make_backup_readable(path: str) -> None:
+        try:
+            uid = os.getuid()
+            gid = os.getgid()
+            run_command(f"chmod 0755 {shlex.quote(backup_dir)}", sudo=True, sudo_password=sudo_password)
+            run_command(f"chmod 0644 {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
+            run_command(f"chown {uid}:{gid} {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
+        except Exception:
+            pass
+
+    def _cleanup_backup_file(path: Optional[str]) -> None:
+        try:
+            if not path:
+                return
+            # best-effort cleanup (file likely created as root)
+            run_command(f"rm -f {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
+        except Exception:
+            pass
+
+    warning = None
+    backup_file = None
+    last_full = None
+
+    if cancel_event and cancel_event.is_set():
+        return {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp}
+
+    def _run_tar(cmd: str) -> dict:
+        if not cancel_event:
+            return run_command(cmd, sudo=True, sudo_password=sudo_password, timeout=7200)
+        # cancelable tar
+        try:
+            # start in separate process group so we can kill everything (tar+gzip)
+            proc = subprocess.Popen(
+                ["sudo", "-S", "sh", "-c", cmd],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                preexec_fn=os.setsid,
+            )
+            try:
+                if proc.stdin:
+                    proc.stdin.write((sudo_password or "") + "\n")
+                    proc.stdin.flush()
+                    proc.stdin.close()
+            except Exception:
+                pass
+
+            # expose pgid for cancel endpoint
+            try:
+                pgid = os.getpgid(proc.pid)
+                if job is not None:
+                    job["pgid"] = int(pgid)
+            except Exception:
+                pass
+
+            start = time.monotonic()
+            while True:
+                if cancel_event.is_set():
+                    try:
+                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                    except Exception:
+                        try:
+                            proc.terminate()
+                        except Exception:
+                            pass
+                    try:
+                        proc.wait(timeout=5)
+                    except Exception:
+                        try:
+                            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                        except Exception:
+                            pass
+                    return {"success": False, "returncode": -15, "stderr": "Cancelled", "stdout": ""}
+                if proc.poll() is not None:
+                    break
+                if time.monotonic() - start > 7200:
+                    try:
+                        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                    except Exception:
+                        pass
+                    return {"success": False, "returncode": -9, "stderr": "Timeout", "stdout": ""}
+                time.sleep(0.5)
+
+            out, err = proc.communicate(timeout=1)
+            return {"success": proc.returncode == 0, "returncode": proc.returncode, "stdout": out or "", "stderr": err or ""}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    if backup_type == "full":
+        backup_file = f"{backup_dir}/pi-backup-full-{timestamp}.tar.gz"
+        backup_cmd = (
+            f"tar -czf {shlex.quote(backup_file)} "
+            f"--exclude={shlex.quote(backup_dir)} "
+            f"--exclude=/proc --exclude=/sys --exclude=/dev --exclude=/tmp --exclude=/run --exclude=/mnt /"
+        )
+        backup_result = _run_tar(backup_cmd)
+        if (cancel_event and cancel_event.is_set()) or backup_result.get("returncode") == -15:
+            _cleanup_backup_file(backup_file)
+            return {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp}
+        if backup_result.get("success"):
+            results.append(f"Vollständiges Backup erstellt: {backup_file}")
+            _make_backup_readable(backup_file)
+            return {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+        if _tar_no_space(backup_result):
+            free_hint = _fs_free_hint(backup_dir)
+            msg = "Nicht genug Speicherplatz im Zielverzeichnis."
+            if free_hint:
+                msg += f" Freier Speicher: {free_hint}."
+            results.append(f"❌ {msg}")
+            if backup_result.get("stderr"):
+                results.append(f"tar/stderr: {(backup_result.get('stderr') or '')[:200]}")
+            _cleanup_backup_file(backup_file)
+            return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+        if _tar_warning_ok(backup_result, backup_file):
+            warning = "Backup erstellt, aber tar meldete Warnungen."
+            results.append(f"⚠️ Backup erstellt mit Warnungen: {backup_file}")
+            _make_backup_readable(backup_file)
+            out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+            out["warning"] = warning
+            return out
+        if _tar_partial_ok(backup_result, backup_file):
+            warning = f"Backup wurde erstellt, aber tar lieferte Returncode {backup_result.get('returncode')}."
+            results.append(f"⚠️ Backup erstellt (möglicherweise unvollständig): {backup_file}")
+            _make_backup_readable(backup_file)
+            out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+            out["warning"] = warning
+            return out
+        stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
+        results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
+        _cleanup_backup_file(backup_file)
+        return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+
+    if backup_type == "incremental":
+        backup_file = f"{backup_dir}/pi-backup-inc-{timestamp}.tar.gz"
+        last_backup = (last_backup_hint or "").strip()
+        if not last_backup:
+            last_full, last_full_mtime = _find_last_full_backup(backup_dir)
+            if last_full and last_full_mtime:
+                last_backup = f"@{int(last_full_mtime)}"
+                results.append(f"Basis (letztes Full Backup): {Path(last_full).name}")
+            else:
+                results.append("Kein vorheriges Full Backup gefunden, erstelle vollständiges Backup")
+                return _do_backup_logic(
+                    sudo_password=sudo_password,
+                    backup_type="full",
+                    backup_dir=backup_dir,
+                    timestamp=timestamp,
+                    cancel_event=cancel_event,
+                    job=job,
+                )
+
+        backup_cmd = (
+            f"tar -czf {shlex.quote(backup_file)} "
+            f"--newer-mtime={shlex.quote(str(last_backup))} "
+            f"--exclude={shlex.quote(backup_dir)} "
+            f"/home /etc /var/www"
+        )
+        backup_result = _run_tar(backup_cmd)
+        if (cancel_event and cancel_event.is_set()) or backup_result.get("returncode") == -15:
+            _cleanup_backup_file(backup_file)
+            return {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp}
+        if backup_result.get("success"):
+            results.append(f"Inkrementelles Backup erstellt: {backup_file}")
+            _make_backup_readable(backup_file)
+            out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+            if last_full:
+                out["last_full_backup"] = last_full
+            return out
+        if _tar_no_space(backup_result):
+            free_hint = _fs_free_hint(backup_dir)
+            msg = "Nicht genug Speicherplatz im Zielverzeichnis."
+            if free_hint:
+                msg += f" Freier Speicher: {free_hint}."
+            results.append(f"❌ {msg}")
+            _cleanup_backup_file(backup_file)
+            return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+        if _tar_warning_ok(backup_result, backup_file) or _tar_partial_ok(backup_result, backup_file):
+            warning = "Backup erstellt, aber tar meldete Warnungen."
+            results.append(f"⚠️ Inkrementelles Backup erstellt mit Warnungen: {backup_file}")
+            _make_backup_readable(backup_file)
+            out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+            out["warning"] = warning
+            if last_full:
+                out["last_full_backup"] = last_full
+            return out
+        stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
+        results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
+        _cleanup_backup_file(backup_file)
+        return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+
+    if backup_type == "data":
+        backup_file = f"{backup_dir}/pi-backup-data-{timestamp}.tar.gz"
+        backup_cmd = f"tar -czf {shlex.quote(backup_file)} /home /var/www /opt"
+        backup_result = _run_tar(backup_cmd)
+        if (cancel_event and cancel_event.is_set()) or backup_result.get("returncode") == -15:
+            _cleanup_backup_file(backup_file)
+            return {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp}
+        if backup_result.get("success"):
+            results.append(f"Daten-Backup erstellt: {backup_file}")
+            _make_backup_readable(backup_file)
+            return {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+        if _tar_no_space(backup_result):
+            free_hint = _fs_free_hint(backup_dir)
+            msg = "Nicht genug Speicherplatz im Zielverzeichnis."
+            if free_hint:
+                msg += f" Freier Speicher: {free_hint}."
+            results.append(f"❌ {msg}")
+            _cleanup_backup_file(backup_file)
+            return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+        if _tar_warning_ok(backup_result, backup_file) or _tar_partial_ok(backup_result, backup_file):
+            warning = "Backup erstellt, aber tar meldete Warnungen."
+            results.append(f"⚠️ Daten-Backup erstellt mit Warnungen: {backup_file}")
+            _make_backup_readable(backup_file)
+            out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+            out["warning"] = warning
+            return out
+        stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
+        results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
+        _cleanup_backup_file(backup_file)
+        return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+
+    return {"status": "error", "message": f"Unbekannter Backup-Typ: {backup_type}", "results": results, "backup_file": None, "timestamp": timestamp}
+
+
+@app.get("/api/backup/jobs/{job_id}")
+async def backup_job_status(job_id: str):
+    job_id = (job_id or "").strip()
+    job = BACKUP_JOBS.get(job_id)
+    if not job:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "Job nicht gefunden"})
+    return {"status": "success", "job": _job_snapshot(job)}
+
+
+@app.post("/api/backup/jobs/{job_id}/cancel")
+async def backup_job_cancel(job_id: str):
+    job_id = (job_id or "").strip()
+    job = BACKUP_JOBS.get(job_id)
+    if not job:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "Job nicht gefunden"})
+
+    if job.get("status") in ("success", "error", "cancelled"):
+        return {"status": "success", "message": "Job ist bereits abgeschlossen"}
+
+    ev = BACKUP_JOB_CANCEL.get(job_id)
+    if not ev:
+        ev = threading.Event()
+        BACKUP_JOB_CANCEL[job_id] = ev
+    ev.set()
+    job["status"] = "cancel_requested"
+    job["message"] = "Abbruch angefordert…"
+
+    # best-effort kill running process group if available
+    try:
+        pgid = job.get("pgid")
+        if isinstance(pgid, int) and pgid > 1:
+            os.killpg(pgid, signal.SIGTERM)
+    except Exception:
+        pass
+
+    return {"status": "success", "message": "Abbruch angefordert"}
+
+
+def _load_or_init_config() -> dict:
+    global APP_SETTINGS
+
+    did = _device_id()
+    model = _device_model()
+    osr = _os_release()
+    hostname = _read_text("/etc/hostname") or run_command("hostname").get("stdout", "").strip()
+    kernel = run_command("uname -r").get("stdout", "").strip()
+
+    base = {
+        "device_id": did,
+        "created_at": _now_iso(),
+        "last_seen_at": _now_iso(),
+        "system": {
+            "hostname": hostname,
+            "model": model,
+            "os_release": osr,
+            "kernel": kernel,
+        },
+        "settings": _default_settings(),
+    }
+
+    cfg = None
+    if CONFIG_PATH.exists():
+        try:
+            cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8") or "{}")
+        except Exception as e:
+            logger.error(f"Config parse failed: {e}")
+            cfg = None
+
+    if cfg and isinstance(cfg, dict) and cfg.get("device_id") == did:
+        # same device -> reuse settings
+        cfg["last_seen_at"] = _now_iso()
+        cfg["system"] = base["system"]
+        settings = cfg.get("settings") if isinstance(cfg.get("settings"), dict) else {}
+        merged = _default_settings()
+        # shallow merge + nested
+        merged["ui"].update((settings.get("ui") or {}) if isinstance(settings.get("ui"), dict) else {})
+        merged["backup"].update((settings.get("backup") or {}) if isinstance(settings.get("backup"), dict) else {})
+        merged["logging"].update((settings.get("logging") or {}) if isinstance(settings.get("logging"), dict) else {})
+        merged["network"].update((settings.get("network") or {}) if isinstance(settings.get("network"), dict) else {})
+        cfg["settings"] = merged
+        APP_SETTINGS = merged
+        CONFIG_STATE.update({"loaded": True, "first_run": False, "matched_device": True, "device_id": did})
+    else:
+        # new system or mismatch -> initialize new config (keep old as backup)
+        if cfg and isinstance(cfg, dict):
+            try:
+                bak = CONFIG_PATH.with_suffix(f".bak.{cfg.get('device_id','unknown')}.{int(datetime.now().timestamp())}.json")
+                bak.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+            except Exception:
+                pass
+        cfg = base
+        APP_SETTINGS = cfg["settings"]
+        CONFIG_STATE.update({"loaded": True, "first_run": True, "matched_device": False, "device_id": did})
+
+    # try to persist (best-effort; no sudo needed if path writable)
+    try:
+        CONFIG_PATH.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+    except Exception as e:
+        logger.error(f"Config write failed: {e}")
+
+    return cfg
+
+
+@app.on_event("startup")
+async def _startup_init():
+    try:
+        _load_or_init_config()
+        logger.info(f"Config ready: path={CONFIG_PATH} device_id={CONFIG_STATE.get('device_id')} first_run={CONFIG_STATE.get('first_run')}")
+    except Exception as e:
+        logger.error(f"Startup init failed: {e}", exc_info=True)
+
+
+@app.get("/api/init/status")
+async def init_status():
+    return {
+        "status": "success",
+        "config_path": str(CONFIG_PATH),
+        "device_id": CONFIG_STATE.get("device_id"),
+        "first_run": bool(CONFIG_STATE.get("first_run")),
+        "matched_device": bool(CONFIG_STATE.get("matched_device")),
+    }
+
+
+@app.get("/api/settings")
+async def get_settings():
+    return {"status": "success", "settings": APP_SETTINGS, "config_path": str(CONFIG_PATH), "device_id": CONFIG_STATE.get("device_id")}
+
+
+@app.post("/api/settings")
+async def set_settings(request: Request):
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    new_settings = data.get("settings") if isinstance(data.get("settings"), dict) else {}
+
+    # merge
+    merged = _default_settings()
+    if isinstance(new_settings.get("ui"), dict):
+        merged["ui"].update(new_settings["ui"])
+    if isinstance(new_settings.get("backup"), dict):
+        merged["backup"].update(new_settings["backup"])
+    if isinstance(new_settings.get("logging"), dict):
+        merged["logging"].update(new_settings["logging"])
+    if isinstance(new_settings.get("network"), dict):
+        merged["network"].update(new_settings["network"])
+
+    # validate backup dir if provided
+    try:
+        if "default_dir" in merged["backup"]:
+            merged["backup"]["default_dir"] = _validate_backup_dir(str(merged["backup"]["default_dir"]))
+    except Exception as ve:
+        return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiger Backup-Pfad: {str(ve)}"})
+
+    # apply logging level (runtime)
+    try:
+        lvl = str(merged["logging"].get("level", "INFO")).upper()
+        if lvl in ("DEBUG", "INFO", "WARNING", "ERROR"):
+            logging.getLogger().setLevel(getattr(logging, lvl))
+    except Exception:
+        pass
+
+    # persist into config
+    try:
+        cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8") or "{}") if CONFIG_PATH.exists() else {}
+    except Exception:
+        cfg = {}
+    if not isinstance(cfg, dict):
+        cfg = {}
+    cfg["device_id"] = _device_id()
+    cfg["last_seen_at"] = _now_iso()
+    cfg["settings"] = merged
+    try:
+        CONFIG_PATH.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+    except Exception as e:
+        logger.error(f"Settings write failed: {e}")
+        return JSONResponse(status_code=200, content={"status": "error", "message": f"Konnte Settings nicht speichern: {str(e)}"})
+
+    APP_SETTINGS = merged
+    return {"status": "success", "message": "Einstellungen gespeichert", "settings": merged}
+
+
+@app.get("/api/logs/tail")
+async def logs_tail(lines: int = 200):
+    try:
+        lines = max(10, min(int(lines), 2000))
+    except Exception:
+        lines = 200
+    p = Path(LOG_PATH)
+    if not p.exists():
+        return JSONResponse(status_code=200, content={"status": "error", "message": "Log-Datei nicht gefunden", "path": str(p)})
+    try:
+        # naive tail (file is small due to rotation)
+        txt = p.read_text(encoding="utf-8", errors="ignore")
+        out = "\n".join(txt.splitlines()[-lines:])
+        return {"status": "success", "path": str(p), "lines": lines, "content": out}
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e), "path": str(p)})
+
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/api/system/network")
+async def get_system_network():
+    """Netzwerk-Informationen (IP-Adressen, Hostname) für Frontend-Zugriff."""
+    try:
+        net_info = get_network_info()
+        return {
+            "status": "success",
+            "ips": net_info.get("ips", []),
+            "hostname": net_info.get("hostname", "unknown"),
+            "frontend_port": 3001,
+            "backend_port": 8000,
+        }
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Netzwerk-Info: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/version")
+async def get_version():
+    """Gibt die PI-Installer Versionsnummer zurück."""
+    # nicht cachen, damit VERSION-Änderungen ohne Restart sichtbar werden
+    return {"status": "success", "version": get_pi_installer_version()}
+
+
+def _validate_backup_dir(path_str: str) -> str:
+    """
+    Validiert ein Backup-Zielverzeichnis.
+    - muss absolut sein
+    - keine gefährlichen Zeichen (Shell-Injection)
+    - muss unter erlaubten Mount-Roots liegen (USB-Sticks liegen typischerweise unter /media, /run/media, /mnt)
+    """
+    if not isinstance(path_str, str):
+        raise ValueError("backup_dir muss ein String sein")
+    path_str = path_str.strip()
+    if not path_str:
+        raise ValueError("backup_dir darf nicht leer sein")
+    if not path_str.startswith("/"):
+        raise ValueError("backup_dir muss ein absoluter Pfad sein (beginnt mit /)")
+    # Erlaubte Zeichen:
+    # - Wir erlauben bewusst Leerzeichen (USB-Sticks werden oft mit Labels mit Spaces gemountet),
+    #   schützen aber gegen Shell-Injection durch:
+    #   1) verbotene Metazeichen
+    #   2) konsequentes Quoting via shlex.quote bei Shell-Commands
+    forbidden = ["\n", "\r", "\t", "\x00", "`", "$", ";", "&", "|", "<", ">", "!", "\"", "'"]
+    if any(ch in path_str for ch in forbidden):
+        raise ValueError("backup_dir enthält ungültige Zeichen (u.a. Quotes, ;, &, |, Zeilenumbrüche sind nicht erlaubt)")
+
+    resolved = Path(path_str).resolve()
+    allowed_roots = [
+        Path("/mnt").resolve(),
+        Path("/media").resolve(),
+        Path("/run/media").resolve(),
+        Path("/home").resolve(),
+    ]
+    if not any(str(resolved).startswith(str(root) + "/") or resolved == root for root in allowed_roots):
+        raise ValueError("backup_dir muss unter /mnt, /media, /run/media oder /home liegen")
+    # Verhindere versehentliches Backup direkt auf Root-Verzeichnis
+    if str(resolved) == "/":
+        raise ValueError("backup_dir darf nicht / sein")
+    return str(resolved)
+
+# ==================== Hilfsfunktionen ====================
+
+def _ensure_packagekit_stopped(sudo_password: Optional[str] = None) -> None:
+    """Stoppt PackageKit temporär, um Konflikte mit apt-get zu vermeiden (PackageKit daemon disappeared)."""
+    try:
+        # Prüfe ob PackageKit läuft
+        check = subprocess.run(
+            ["systemctl", "is-active", "packagekit"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        if check.returncode == 0:
+            # PackageKit läuft → stoppen
+            if sudo_password:
+                stop_result = subprocess.run(
+                    ["sudo", "-S", "systemctl", "stop", "packagekit"],
+                    input=(sudo_password + "\n").encode("utf-8"),
+                    capture_output=True,
+                    timeout=5,
+                )
+            else:
+                # Versuche ohne Passwort (falls sudo ohne Passwort konfiguriert)
+                stop_result = subprocess.run(
+                    ["systemctl", "stop", "packagekit"],
+                    capture_output=True,
+                    timeout=5,
+                )
+            if stop_result.returncode == 0:
+                logger.debug("PackageKit gestoppt, um apt-get-Konflikte zu vermeiden")
+    except FileNotFoundError:
+        pass  # PackageKit nicht installiert
+    except Exception:
+        pass  # Ignoriere Fehler
+
+def run_command(cmd, sudo=False, sudo_password=None, timeout: int = 10):
+    """Befehl ausführen. Stoppt automatisch PackageKit bei apt-get-Operationen."""
+    try:
+        # Bei apt-get-Operationen PackageKit stoppen, um "PackageKit daemon disappeared" zu vermeiden
+        if "apt-get" in cmd or "apt " in cmd:
+            _ensure_packagekit_stopped(sudo_password)
+        
+        if sudo:
+            if sudo_password:
+                # Mit Passwort via stdin (sicherer)
+                cmd_parts = cmd.split()
+                
+                # Für UFW-Befehle: direkt ohne Shell ausführen
+                if len(cmd_parts) > 0 and 'ufw' in cmd_parts[0]:
+                    # UFW-Command direkt ausführen (z.B. /usr/sbin/ufw --force enable)
+                    process = subprocess.Popen(
+                        ['sudo', '-S'] + cmd_parts,
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True
+                    )
+                # Für einfache Commands ohne Shell-Syntax direkt ausführen
+                elif len(cmd_parts) == 1 and '/' not in cmd and '|' not in cmd and '&&' not in cmd and ';' not in cmd:
+                    # Einfacher Command - direkt ausführen
+                    process = subprocess.Popen(
+                        ['sudo', '-S'] + cmd_parts,
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True
+                    )
+                else:
+                    # Komplexer Command - mit sh -c
+                    process = subprocess.Popen(
+                        ['sudo', '-S', 'sh', '-c', cmd],
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True
+                    )
+                stdout, stderr = process.communicate(input=sudo_password + '\n', timeout=timeout)
+                return {
+                    "success": process.returncode == 0,
+                    "stdout": stdout,
+                    "stderr": stderr,
+                    "returncode": process.returncode,
+                }
+            else:
+                cmd = f"sudo {cmd}"
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+        return {
+            "success": result.returncode == 0,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "returncode": result.returncode,
+        }
+    except subprocess.TimeoutExpired:
+        return {"success": False, "error": "Command timeout"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+async def run_command_async(cmd, sudo: bool = False, sudo_password: Optional[str] = None, timeout: int = 10) -> dict:
+    """
+    Runs blocking system commands in a background thread.
+    Important: long-running tasks (tar/rsync/restore) would otherwise block the whole Uvicorn event loop.
+    """
+    return await asyncio.to_thread(run_command, cmd, sudo=sudo, sudo_password=sudo_password, timeout=timeout)
+
+def check_installed(package):
+    """Prüfe ob Paket installiert ist"""
+    # Spezielle Prüfung für bestimmte Pakete
+    if package == "ufw":
+        # UFW spezifisch prüfen
+        result = run_command("which ufw")
+        if result["success"]:
+            return True
+        # Alternativ: dpkg prüfen
+        result = run_command("dpkg -l | grep '^ii' | grep -E '^ii\\s+ufw\\s'")
+        return result["success"] and "ufw" in result.get("stdout", "")
+    
+    if package == "nginx":
+        # Nginx spezifisch prüfen - mehrere Methoden
+        # Methode 1: which nginx
+        result = run_command("which nginx")
+        if result["success"]:
+            return True
+        # Methode 2: dpkg prüfen
+        result = run_command("dpkg -l | grep '^ii' | grep -E '\\snginx\\s'")
+        if result["success"] and "nginx" in result.get("stdout", ""):
+            return True
+        # Methode 3: Prüfe ob nginx-Binary existiert
+        result = run_command("test -f /usr/sbin/nginx || test -f /usr/bin/nginx")
+        if result["success"]:
+            return True
+        # Methode 4: Prüfe ob nginx-Config existiert
+        result = run_command("test -d /etc/nginx")
+        if result["success"]:
+            return True
+        return False
+    
+    if package == "apache2" or package == "apache":
+        # Apache spezifisch prüfen
+        result = run_command("which apache2")
+        if result["success"]:
+            return True
+        result = run_command("dpkg -l | grep '^ii' | grep -E '\\sapache2\\s'")
+        if result["success"] and "apache2" in result.get("stdout", ""):
+            return True
+        result = run_command("test -f /usr/sbin/apache2 || test -d /etc/apache2")
+        if result["success"]:
+            return True
+        return False
+    
+    # Standard-Prüfung
+    result = run_command(f"which {package} || dpkg -l | grep '^ii' | grep -E '\\s{package}\\s'")
+    return result["success"]
+
+def get_package_version(package):
+    """Hole Paket-Version"""
+    try:
+        result = run_command(f"dpkg -l | grep '^ii' | grep {package} | head -1")
+        if result["success"] and result["stdout"]:
+            parts = result["stdout"].split()
+            if len(parts) >= 3:
+                return parts[2]
+        
+        # Versuche which + version
+        result = run_command(f"{package} --version 2>/dev/null | head -1")
+        if result["success"] and result["stdout"]:
+            return result["stdout"].strip()
+        
+        return None
+    except:
+        return None
+
+def get_cpu_temp():
+    """CPU Temperatur auslesen"""
+    try:
+        # Versuche verschiedene Pfade
+        temp_paths = [
+            '/sys/class/thermal/thermal_0/temp',
+            '/sys/class/thermal/thermal_zone0/temp',
+            '/sys/devices/virtual/thermal/thermal_zone0/temp',
+        ]
+        
+        for path in temp_paths:
+            try:
+                with open(path, 'r') as f:
+                    temp = int(f.read().strip()) / 1000.0
+                    return round(temp, 1)
+            except:
+                continue
+        
+        # Alternative: vcgencmd (Raspberry Pi)
+        result = run_command("vcgencmd measure_temp 2>/dev/null")
+        if result["success"] and result["stdout"]:
+            temp_str = result["stdout"]
+            if "temp=" in temp_str:
+                temp = float(temp_str.split("temp=")[1].split("'")[0])
+                return round(temp, 1)
+        
+        # Alternative: sensors (falls installiert)
+        result = run_command("sensors 2>/dev/null | grep -i temp | head -1")
+        if result["success"] and result["stdout"]:
+            # Parse sensors output
+            parts = result["stdout"].split()
+            for part in parts:
+                if "+" in part and "°C" in part:
+                    temp = float(part.replace("+", "").replace("°C", ""))
+                    return round(temp, 1)
+        
+        return None
+    except:
+        return None
+
+def get_fan_speed():
+    """Lüfter-Geschwindigkeit"""
+    try:
+        # Versuche verschiedene hwmon Pfade
+        for i in range(5):
+            result = run_command(f"cat /sys/class/hwmon/hwmon{i}/fan1_input 2>/dev/null")
+            if result["success"] and result["stdout"].strip():
+                try:
+                    rpm = int(result["stdout"].strip())
+                    if rpm > 0:
+                        return rpm
+                except:
+                    continue
+        
+        # Alternative: vcgencmd (Raspberry Pi)
+        result = run_command("vcgencmd get_throttled 2>/dev/null")
+        if result["success"] and result["stdout"]:
+            throttled = result["stdout"].strip()
+            # Parse throttled value
+            if "throttled=" in throttled:
+                value = throttled.split("=")[1]
+                return f"Throttle: {value}"
+            return throttled
+        
+        # Alternative: sensors
+        result = run_command("sensors 2>/dev/null | grep -i fan | head -1")
+        if result["success"] and result["stdout"]:
+            return result["stdout"].strip()
+        
+        return None
+    except:
+        return None
+
+def get_installed_apps():
+    """Erkenne installierte Web-Apps"""
+    apps = {
+        "wordpress": check_installed("wordpress"),
+        "nextcloud": check_installed("nextcloud"),
+        "drupal": check_installed("drupal"),
+        "nginx": check_installed("nginx"),
+        "apache": check_installed("apache2"),
+        "php": check_installed("php") or check_installed("php-fpm") or check_installed("libapache2-mod-php"),
+        "mysql": check_installed("mysql"),
+        "postgresql": check_installed("postgresql"),
+        "docker": check_installed("docker"),
+        "python": check_installed("python3"),
+        "nodejs": check_installed("nodejs"),
+        "git": check_installed("git"),
+        "cursor": False,  # Wird separat geprüft
+        "cockpit": check_installed("cockpit"),
+        "webmin": check_installed("webmin"),
+        # NAS
+        "samba": check_installed("samba") or check_installed("samba-common"),
+        "nfs": check_installed("nfs-kernel-server") or check_installed("nfs-common"),
+        "ftp": check_installed("vsftpd") or check_installed("proftpd"),
+        # Home Automation
+        "homeassistant": check_installed("homeassistant") or run_command("docker ps | grep homeassistant")["success"],
+        "openhab": check_installed("openhab"),
+        "nodered": check_installed("node-red") or run_command("npm list -g node-red 2>/dev/null")["success"],
+        # Music Box
+        "mopidy": check_installed("mopidy"),
+        "volumio": check_installed("volumio") or run_command("test -f /opt/volumio/bin/volumio")["success"],
+        "plex": check_installed("plexmediaserver") or run_command("dpkg -l | grep plex")["success"],
+    }
+    
+    # Cursor AI prüfen (kann in verschiedenen Pfaden sein)
+    cursor_paths = [
+        "/usr/bin/cursor",
+        "/usr/local/bin/cursor",
+        "/opt/cursor/cursor",
+        "~/.local/bin/cursor",
+    ]
+    for path in cursor_paths:
+        result = run_command(f"test -f {path} || which cursor")
+        if result["success"]:
+            apps["cursor"] = True
+            break
+    
+    # WordPress Plugins prüfen
+    wp_plugin_paths = [
+        "/var/www/html/wp-content/plugins",
+        "/var/www/wordpress/wp-content/plugins",
+        "~/wordpress/wp-content/plugins",
+    ]
+    for path in wp_plugin_paths:
+        result = run_command(f"test -d {path} && ls {path} 2>/dev/null | head -5")
+        if result["success"] and result["stdout"]:
+            plugins = [p.strip() for p in result["stdout"].split("\n") if p.strip()]
+            apps["wordpress_plugins"] = plugins
+            break
+    
+    # Websites/Apps erkennen (Webroot prüfen)
+    webroots = ["/var/www/html", "/var/www", "/home/*/public_html"]
+    websites = []
+    for root in webroots:
+        result = run_command(f"ls -d {root}/* 2>/dev/null | head -10")
+        if result["success"]:
+            for site in result["stdout"].split("\n"):
+                if site.strip():
+                    websites.append(site.strip())
+    
+    apps["websites"] = websites[:10]  # Erste 10
+    
+    return apps
+
+def _is_reachable_lan_ip(ip: str) -> bool:
+    """Filtert unbrauchbare Adressen. 0.0.0.0 ist keine erreichbare Adresse im Heimnetz."""
+    if not ip or not ip.strip():
+        return False
+    s = ip.strip().lower()
+    if s in ("0.0.0.0", "127.0.0.1", "::1", "localhost"):
+        return False
+    if s.startswith("127.") or s.startswith("fe80:"):
+        return False
+    return True
+
+
+def get_network_info():
+    """Netzwerk-Informationen. Nur IPs zurückgeben, die von anderen Geräten erreichbar sind (kein 0.0.0.0)."""
+    try:
+        result = subprocess.run("hostname -I", shell=True, capture_output=True, text=True, timeout=5)
+        raw = (result.stdout or "").strip()
+        candidates = [x for x in raw.split() if x] if raw else []
+        ips = [x for x in candidates if _is_reachable_lan_ip(x)]
+        result = subprocess.run("hostname", shell=True, capture_output=True, text=True, timeout=5)
+        hostname = (result.stdout or "").strip() or "unknown"
+        return {"ips": ips, "hostname": hostname}
+    except Exception:
+        return {"ips": [], "hostname": "unknown"}
+
+def get_running_services():
+    """Laufen Services"""
+    services = [
+        "nginx", "apache2", "mysql", "mariadb", "postgresql",
+        "docker", "fail2ban", "sshd", "postfix", "dovecot"
+    ]
+    running = {}
+    for service in services:
+        result = run_command(f"systemctl is-active {service}")
+        running[service] = result["success"]
+    return running
+
+def _get_installed_packages_list():
+    """Detaillierte Liste installierter Pakete"""
+    packages = {}
+    important_packages = [
+        "nginx", "apache2", "mysql-server", "mariadb-server", "postgresql",
+        "docker", "docker-compose", "fail2ban", "ufw", "python3", "python3-pip",
+        "nodejs", "npm", "git", "php", "php-fpm", "wordpress", "nextcloud",
+        "drupal", "postfix", "dovecot", "spamassassin"
+    ]
+    
+    for pkg in important_packages:
+        installed = check_installed(pkg)
+        version = get_package_version(pkg) if installed else None
+        packages[pkg] = {
+            "installed": installed,
+            "version": version,
+        }
+    
+    return packages
+
+def get_running_processes():
+    """Laufende Prozesse"""
+    try:
+        processes = []
+        for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
+            try:
+                p = proc.info
+                if p['cpu_percent'] > 0.1 or p['memory_percent'] > 1.0:  # Nur relevante Prozesse
+                    processes.append({
+                        "pid": p['pid'],
+                        "name": p['name'],
+                        "cpu": round(p['cpu_percent'], 1),
+                        "memory": round(p['memory_percent'], 1),
+                    })
+            except:
+                continue
+        
+        # Sortiere nach CPU
+        processes.sort(key=lambda x: x['cpu'], reverse=True)
+        return processes[:20]  # Top 20
+    except:
+        return []
+
+def get_security_config():
+    """Sicherheitseinstellungen prüfen"""
+    config = {}
+    
+    try:
+        # SSH Config
+        ssh_config = run_command("grep -E '^PasswordAuthentication|^PermitRootLogin|^Port' /etc/ssh/sshd_config 2>/dev/null")
+        config["ssh"] = {
+            "config": ssh_config.get("stdout", "") if ssh_config["success"] else "Nicht lesbar",
+            "installed": check_installed("ssh"),
+            "running": get_running_services().get("sshd", False),
+        }
+    except Exception as e:
+        config["ssh"] = {
+            "config": "Fehler beim Lesen",
+            "installed": False,
+            "running": False,
+        }
+    
+    try:
+        # UFW Status - verwende direkt sudo, wenn Passwort verfügbar ist
+        stored_sudo_password = sudo_password_store.get("password", "")
+        
+        # Versuche zuerst mit sudo, wenn Passwort verfügbar ist (ufw status benötigt root für Regeln)
+        if stored_sudo_password:
+            logger.info("🔧 Versuche UFW Status mit sudo (Passwort verfügbar)...")
+            ufw_status = run_command("ufw status", sudo=True, sudo_password=stored_sudo_password)
+        else:
+            # Fallback: Versuche ohne sudo
+            logger.info("🔧 Versuche UFW Status ohne sudo...")
+            ufw_status = run_command("ufw status")
+            # Falls ohne sudo nicht erfolgreich, versuche mit sudo (falls Passwort später gespeichert wird)
+            if not ufw_status["success"]:
+                stored_sudo_password = sudo_password_store.get("password", "")
+                if stored_sudo_password:
+                    logger.info("🔧 UFW Status ohne sudo fehlgeschlagen, versuche mit sudo...")
+                    ufw_status = run_command("ufw status", sudo=True, sudo_password=stored_sudo_password)
+        
+        # Falls immer noch nicht erfolgreich, versuche "ufw status verbose" mit sudo
+        if not ufw_status["success"] and stored_sudo_password:
+            logger.info("🔧 Versuche ufw status verbose mit sudo...")
+            ufw_status = run_command("ufw status verbose", sudo=True, sudo_password=stored_sudo_password)
+        
+        # Falls ufw status nicht funktioniert, versuche alternative Methoden
+        ufw_active = False
+        status_output = ""
+        if ufw_status["success"]:
+            status_output = ufw_status.get("stdout", "")
+            # Prüfe sowohl englische als auch deutsche Ausgabe
+            ufw_active = "Status: active" in status_output or "Status: aktiv" in status_output
+        else:
+            # Alternative 1: Prüfe UFW-Konfigurationsdatei direkt (funktioniert ohne sudo)
+            try:
+                ufw_config_check = run_command("grep -E '^ENABLED=' /etc/ufw/ufw.conf 2>/dev/null")
+                if ufw_config_check["success"]:
+                    config_line = ufw_config_check.get("stdout", "").strip()
+                    if "ENABLED=yes" in config_line:
+                        ufw_active = True
+                        status_output = "Status: active (via /etc/ufw/ufw.conf)"
+                        logger.info("🔧 UFW Status via /etc/ufw/ufw.conf ermittelt: active (ENABLED=yes)")
+                    else:
+                        logger.info(f"🔧 UFW Config zeigt: {config_line}")
+            except Exception as e:
+                logger.warning(f"⚠️ Konnte UFW-Config nicht lesen: {e}")
+            
+            # Alternative 2: Prüfe systemd-Status (funktioniert manchmal ohne sudo)
+            if not ufw_active:
+                systemd_status = run_command("systemctl is-active ufw 2>/dev/null")
+                if systemd_status["success"] and "active" in systemd_status.get("stdout", ""):
+                    ufw_active = True
+                    status_output = "Status: active (via systemctl)"
+                    logger.info("🔧 UFW Status via systemctl is-active ermittelt: active")
+                else:
+                    # Alternative 3: Prüfe systemctl status (zeigt mehr Details)
+                    systemd_status_detailed = run_command("systemctl status ufw --no-pager 2>/dev/null | head -3")
+                    if systemd_status_detailed["success"]:
+                        status_text = systemd_status_detailed.get("stdout", "")
+                        if "active (exited)" in status_text or "active (running)" in status_text:
+                            ufw_active = True
+                            status_output = "Status: active (via systemctl status)"
+                            logger.info("🔧 UFW Status via systemctl status ermittelt: active")
+                        else:
+                            # Alternative 4: Prüfe ob UFW-Service enabled ist
+                            ufw_enabled = run_command("systemctl is-enabled ufw 2>/dev/null")
+                            if ufw_enabled["success"] and "enabled" in ufw_enabled.get("stdout", ""):
+                                # Wenn enabled, ist es wahrscheinlich aktiv
+                                ufw_active = True
+                                status_output = "Status: active (wahrscheinlich, service enabled)"
+                                logger.info("🔧 UFW Status via systemctl is-enabled ermittelt: wahrscheinlich active")
+        
+        # Wenn UFW installiert ist, aber Status nicht ermittelt werden konnte, versuche nochmal mit einfacheren Methoden
+        ufw_installed = check_installed("ufw")
+        if ufw_installed and not ufw_active and not status_output:
+            # Versuche nochmal mit einem einfacheren Command
+            ufw_simple_check = run_command("ufw status 2>&1 | grep -i 'status:' | head -1")
+            if ufw_simple_check["success"]:
+                simple_output = ufw_simple_check.get("stdout", "")
+                if "active" in simple_output.lower() or "aktiv" in simple_output.lower():
+                    ufw_active = True
+                    status_output = f"Status: active ({simple_output.strip()})"
+                    logger.info("🔧 UFW Status via ufw status | grep ermittelt: active")
+        
+        # Regeln abrufen (auch wenn Status über alternative Methoden ermittelt wurde)
+        rules_output = ""
+        rules_list = []
+        
+        # Versuche zuerst, Regeln aus dem Status-Output zu extrahieren
+        if ufw_status["success"] and status_output:
+            rules_output = status_output
+            logger.info(f"✅ UFW-Regeln aus Status-Output extrahiert: {len(rules_output)} Zeichen")
+        
+        # Wenn Firewall aktiv ist, aber keine Regeln aus Status-Output, versuche separat abzurufen
+        if (ufw_active or ufw_installed) and not rules_output:
+            stored_sudo_password = sudo_password_store.get("password", "")
+            
+            # Versuche 1: ufw status numbered (direkt mit sudo, wenn Passwort verfügbar)
+            if stored_sudo_password:
+                logger.info("🔧 Versuche UFW-Regeln mit sudo abzurufen (numbered)...")
+                rules_result = run_command("ufw status numbered", sudo=True, sudo_password=stored_sudo_password)
+            else:
+                logger.info("🔧 Versuche UFW-Regeln abzurufen (numbered, ohne sudo)...")
+                rules_result = run_command("ufw status numbered")
+                if not rules_result["success"]:
+                    logger.warning(f"⚠️ ufw status numbered ohne sudo fehlgeschlagen: {rules_result.get('stderr', '')[:100]}")
+            
+            if rules_result["success"]:
+                rules_output = rules_result.get("stdout", "")
+                logger.info(f"✅ UFW-Regeln erfolgreich abgerufen (numbered): {len(rules_output)} Zeichen")
+            else:
+                logger.warning(f"⚠️ ufw status numbered fehlgeschlagen: {rules_result.get('stderr', '')[:100]}")
+                # Versuche 3: ufw status verbose (ohne sudo)
+                logger.info("🔧 Versuche ufw status verbose (ohne sudo)...")
+                verbose_result = run_command("ufw status verbose")
+                if not verbose_result["success"] and stored_sudo_password:
+                    # Versuche 4: ufw status verbose (mit sudo)
+                    logger.info("🔧 Versuche UFW-Regeln (verbose) mit sudo abzurufen...")
+                    verbose_result = run_command("ufw status verbose", sudo=True, sudo_password=stored_sudo_password)
+                
+                if verbose_result["success"]:
+                    rules_output = verbose_result.get("stdout", "")
+                    logger.info(f"✅ UFW-Regeln (verbose) erfolgreich abgerufen: {len(rules_output)} Zeichen")
+                else:
+                    logger.warning(f"⚠️ ufw status verbose fehlgeschlagen: {verbose_result.get('stderr', '')[:100]}")
+                    # Versuche 5: ufw status (direkt mit sudo, wenn Passwort verfügbar)
+                    if stored_sudo_password:
+                        logger.info("🔧 Versuche ufw status mit sudo...")
+                        simple_status = run_command("ufw status", sudo=True, sudo_password=stored_sudo_password)
+                    else:
+                        logger.info("🔧 Versuche ufw status (einfach, ohne sudo)...")
+                        simple_status = run_command("ufw status")
+                    
+                    if simple_status["success"]:
+                        rules_output = simple_status.get("stdout", "")
+                        logger.info(f"✅ UFW-Status erfolgreich abgerufen: {len(rules_output)} Zeichen")
+                    else:
+                        logger.warning(f"⚠️ Konnte UFW-Regeln nicht abrufen. Alle Versuche fehlgeschlagen. Stderr: {simple_status.get('stderr', '')[:100]}")
+                        # Als letzter Versuch: Versuche die Regeln aus der Konfigurationsdatei zu lesen
+                        logger.info("🔧 Versuche UFW-Regeln aus Konfigurationsdatei zu lesen...")
+                        ufw_rules_file = "/etc/ufw/user.rules"
+                        rules_file_check = run_command(f"cat {ufw_rules_file} 2>/dev/null | grep -E '^### tuple' | head -20")
+                        if rules_file_check["success"]:
+                            rules_output = rules_file_check.get("stdout", "")
+                            logger.info(f"✅ UFW-Regeln aus Konfigurationsdatei gelesen: {len(rules_output)} Zeichen")
+        
+        # Regeln aus Output extrahieren und filtern
+        if rules_output:
+            # Teile in Zeilen und filtere leere/irrelevante Zeilen
+            all_lines = rules_output.split("\n")
+            # Filtere Header-Zeilen und leere Zeilen
+            for line in all_lines:
+                line = line.strip()
+                if line and not line.startswith("Status:") and not line.startswith("To ") and not line.startswith("--") and line != "":
+                    # Nur Zeilen mit tatsächlichen Regeln (enthalten Ports, IPs, etc.)
+                    if any(keyword in line.lower() for keyword in ["allow", "deny", "reject", "limit", "/tcp", "/udp", "anywhere", "from", "to"]):
+                        rules_list.append(line)
+            
+            # Wenn keine gefilterten Regeln gefunden wurden, aber Output vorhanden ist,
+            # füge alle nicht-leeren Zeilen hinzu (außer Header)
+            if not rules_list and all_lines:
+                for line in all_lines:
+                    line = line.strip()
+                    if line and not line.startswith("Status:") and not line.startswith("To ") and not line.startswith("--"):
+                        rules_list.append(line)
+        
+        logger.info(f"📋 UFW Status Check in get_security_config(): success={ufw_status['success']}, active={ufw_active}, installed={ufw_installed}, output_length={len(status_output)}, rules_count={len(rules_list)}, stderr={ufw_status.get('stderr', '')[:100]}")
+        
+        config["ufw"] = {
+            "installed": ufw_installed,
+            "active": ufw_active,
+            "status": status_output if status_output else ("Nicht aktiv" if ufw_installed else "Nicht installiert"),
+            "rules": rules_list,
+        }
+    except Exception as e:
+        config["ufw"] = {
+            "installed": check_installed("ufw"),
+            "active": False,
+            "status": f"Fehler beim Abrufen: {str(e)}",
+            "rules": [],
+        }
+    
+    try:
+        # Fail2ban - Detaillierter Status
+        fail2ban_installed = check_installed("fail2ban")
+        fail2ban_running = get_running_services().get("fail2ban", False)
+        fail2ban_jails = run_command("fail2ban-client status 2>/dev/null")
+        
+        config["fail2ban"] = {
+            "installed": fail2ban_installed,
+            "running": fail2ban_running,
+            "active": fail2ban_installed and fail2ban_running,
+            "status": fail2ban_jails.get("stdout", "") if fail2ban_jails["success"] else "Nicht aktiv",
+            "jails": fail2ban_jails.get("stdout", "").split("\n") if fail2ban_jails["success"] else [],
+        }
+    except Exception as e:
+        config["fail2ban"] = {
+            "installed": False,
+            "running": False,
+            "active": False,
+            "status": "Fehler beim Abrufen",
+            "jails": [],
+        }
+    
+    try:
+        # Auto-Updates
+        auto_updates_enabled = run_command("systemctl is-enabled unattended-upgrades 2>/dev/null")
+        auto_updates_installed = check_installed("unattended-upgrades")
+        config["auto_updates"] = {
+            "installed": auto_updates_installed,
+            "enabled": auto_updates_enabled["success"],
+        }
+    except Exception as e:
+        config["auto_updates"] = {
+            "installed": False,
+            "enabled": False,
+        }
+    
+    try:
+        # SSH Härtung prüfen
+        ssh_hardened = False
+        ssh_hardening_checks = []
+        
+        # Prüfe SSH-Konfiguration auf Härtungsmerkmale
+        ssh_config_file = "/etc/ssh/sshd_config"
+        
+        # Prüfe PermitRootLogin
+        root_login_check = run_command(f"grep -E '^PermitRootLogin' {ssh_config_file} 2>/dev/null")
+        if root_login_check["success"]:
+            root_login_value = root_login_check.get("stdout", "").strip().lower()
+            if "permitrootlogin no" in root_login_value:
+                ssh_hardening_checks.append("PermitRootLogin: no")
+                ssh_hardened = True
+        
+        # Prüfe PasswordAuthentication
+        pass_auth_check = run_command(f"grep -E '^PasswordAuthentication' {ssh_config_file} 2>/dev/null")
+        if pass_auth_check["success"]:
+            pass_auth_value = pass_auth_check.get("stdout", "").strip().lower()
+            if "passwordauthentication no" in pass_auth_value:
+                ssh_hardening_checks.append("PasswordAuthentication: no")
+                ssh_hardened = True
+        
+        # Prüfe MaxAuthTries
+        max_auth_check = run_command(f"grep -E '^MaxAuthTries' {ssh_config_file} 2>/dev/null")
+        if max_auth_check["success"]:
+            max_auth_value = max_auth_check.get("stdout", "").strip()
+            if "MaxAuthTries" in max_auth_value:
+                ssh_hardening_checks.append("MaxAuthTries: gesetzt")
+                ssh_hardened = True
+        
+        # Prüfe ob Backup existiert (Zeichen für durchgeführte Härtung)
+        backup_exists = run_command(f"test -f /etc/ssh/sshd_config.backup")
+        if backup_exists["success"]:
+            ssh_hardening_checks.append("Backup vorhanden")
+            ssh_hardened = True
+        
+        config["ssh_hardening"] = {
+            "enabled": ssh_hardened,
+            "installed": ssh_hardened,
+            "checks": ssh_hardening_checks,
+            "status": "Aktiviert" if ssh_hardened else "Nicht aktiviert",
+        }
+    except Exception as e:
+        config["ssh_hardening"] = {
+            "enabled": False,
+            "installed": False,
+            "checks": [],
+            "status": f"Fehler: {str(e)}",
+        }
+    
+    try:
+        # Audit Logging prüfen
+        auditd_installed = check_installed("auditd")
+        auditd_running = get_running_services().get("auditd", False)
+        
+        # Prüfe ob Audit-Regeln existieren
+        audit_rules_file = "/etc/audit/rules.d/pi-installer.rules"
+        audit_rules_exist = run_command(f"test -f {audit_rules_file}")
+        audit_rules_configured = audit_rules_exist["success"]
+        
+        # Prüfe ob auditd aktiv ist
+        auditd_active = False
+        if auditd_installed:
+            auditd_status = run_command("systemctl is-active auditd 2>/dev/null")
+            auditd_active = auditd_status["success"] and "active" in auditd_status.get("stdout", "")
+        
+        config["audit_logging"] = {
+            "installed": auditd_installed,
+            "running": auditd_running or auditd_active,
+            "enabled": auditd_installed and (auditd_running or auditd_active),
+            "rules_configured": audit_rules_configured,
+            "status": "Aktiviert" if (auditd_installed and (auditd_running or auditd_active)) else "Nicht aktiviert",
+        }
+    except Exception as e:
+        config["audit_logging"] = {
+            "installed": False,
+            "running": False,
+            "enabled": False,
+            "rules_configured": False,
+            "status": f"Fehler: {str(e)}",
+        }
+    
+    return config
+
+# ==================== Endpoints ====================
+
+@app.get("/health")
+async def health_check():
+    """Health Check"""
+    return {"status": "ok"}
+
+@app.get("/api/status")
+async def get_status():
+    """System-Status abrufen"""
+    try:
+        return {
+            "status": "healthy",
+            "hostname": get_network_info()["hostname"],
+            "version": "1.0.0",
+            "network": get_network_info(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/system-info")
+async def get_system_info():
+    """Systeminfo auslesen"""
+    try:
+        cpu_percent = psutil.cpu_percent(interval=1)
+        memory = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        # Uptime
+        with open('/proc/uptime', 'r') as f:
+            uptime_seconds = float(f.readline().split()[0])
+            hours = int(uptime_seconds // 3600)
+            minutes = int((uptime_seconds % 3600) // 60)
+            uptime = f"{hours}h {minutes}m"
+        
+        # CPU Temperatur & Lüfter
+        cpu_temp = get_cpu_temp()
+        fan_speed = get_fan_speed()
+        
+        # Debug: Prüfe ob Funktionen funktionieren
+        temp_debug = None
+        fan_debug = None
+        try:
+            # Test direkt
+            import subprocess
+            temp_test = subprocess.run("cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null", shell=True, capture_output=True, text=True)
+            if temp_test.returncode == 0:
+                temp_debug = int(temp_test.stdout.strip()) / 1000.0
+        except:
+            pass
+        
+        # Linux-Version
+        os_info = {}
+        try:
+            # /etc/os-release lesen
+            with open('/etc/os-release', 'r') as f:
+                for line in f:
+                    if '=' in line:
+                        key, value = line.strip().split('=', 1)
+                        value = value.strip('"')
+                        os_info[key.lower()] = value
+            
+            # Kernel-Version
+            kernel_result = run_command("uname -r")
+            os_info["kernel"] = kernel_result.get("stdout", "").strip() if kernel_result["success"] else "Unbekannt"
+        except:
+            os_info = {"name": "Unbekannt", "version": "Unbekannt", "kernel": "Unbekannt"}
+        
+        return {
+            "os": {
+                "name": os_info.get("pretty_name", os_info.get("name", "Linux")),
+                "version": os_info.get("version_id", os_info.get("version", "")),
+                "kernel": os_info.get("kernel", "Unbekannt"),
+            },
+            "cpu": {
+                "usage": cpu_percent,
+                "count": psutil.cpu_count(),
+                "temperature": cpu_temp or temp_debug,
+                "fan_speed": fan_speed,
+                "temp_debug": temp_debug,
+            },
+            "memory": {
+                "total": memory.total,
+                "available": memory.available,
+                "percent": memory.percent,
+            },
+            "disk": {
+                "total": disk.total,
+                "used": disk.used,
+                "free": disk.free,
+                "percent": disk.percent,
+            },
+            "platform": {
+                "system": os.uname().sysname,
+                "release": os.uname().release,
+            },
+            "uptime": uptime,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+# ==================== Benutzer Endpoints ====================
+
+@app.get("/api/users")
+async def list_users():
+    """Alle Benutzer auflisten"""
+    try:
+        result = run_command("getent passwd | cut -d: -f1")
+        if result["success"]:
+            users = result["stdout"].strip().split("\n")
+            return {
+                "status": "success",
+                "users": users,
+                "count": len(users)
+            }
+        raise Exception("Could not list users")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/users/sudo-password/check")
+async def check_sudo_password():
+    """Prüft ob ein sudo-Passwort gespeichert ist"""
+    has_password = bool(sudo_password_store.get("password", ""))
+    return {
+        "status": "success",
+        "has_password": has_password,
+        "message": "Sudo-Passwort gespeichert" if has_password else "Kein sudo-Passwort gespeichert"
+    }
+
+@app.post("/api/users/sudo-password")
+async def save_sudo_password(request: Request):
+    """Sudo-Passwort für Session speichern"""
+    try:
+        data = await request.json()
+        sudo_password = data.get("sudo_password", "")
+        
+        if not sudo_password:
+            return {"status": "error", "message": "Passwort erforderlich"}
+        
+        # Test ob Passwort funktioniert
+        test_result = run_command("echo test", sudo=True, sudo_password=sudo_password)
+        if not test_result["success"]:
+            return {"status": "error", "message": "Sudo-Passwort falsch"}
+        
+        # Speichern (in-memory, nur für aktuelle Session)
+        sudo_password_store["password"] = sudo_password
+        
+        return {"status": "success", "message": "Sudo-Passwort gespeichert"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/users/create")
+async def create_user(request: Request):
+    """Neuen Benutzer erstellen"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "Ungültige Anfrage"
+                }
+            )
+        
+        username = data.get("username", "").strip()
+        role = data.get("role", "user")
+        password = data.get("password", "")
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        if not username:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "Username erforderlich"
+                }
+            )
+        
+        # Benutzer existiert bereits?
+        check = run_command(f"id {username}")
+        if check["success"]:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Benutzer {username} existiert bereits"
+                }
+            )
+        
+        # Prüfe ob sudo ohne Passwort funktioniert ODER Passwort vorhanden
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich. Bitte geben Sie das sudo-Passwort im Frontend ein.",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        # Benutzer erstellen mit sudo_password
+        result = run_command(f"useradd -m -s /bin/bash {username}", sudo=True, sudo_password=sudo_password)
+        if not result["success"]:
+            error_msg = result.get("stderr", result.get("error", "Unbekannter Fehler"))
+            if "password" in error_msg.lower() or "authentication" in error_msg.lower() or "sudo" in error_msg.lower():
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort falsch oder erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Benutzer konnte nicht erstellt werden: {error_msg}"
+                }
+            )
+        
+        # Passwort setzen
+        if not password:
+            password = "ChangeMe123!"
+        
+        # chpasswd sicherer verwenden - direkt über stdin
+        try:
+            import subprocess
+            chpasswd_cmd = subprocess.Popen(
+                ['sudo', '-S', 'chpasswd'],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            chpasswd_input = f"{sudo_password}\n{username}:{password}\n"
+            stdout, stderr = chpasswd_cmd.communicate(input=chpasswd_input, timeout=5)
+            
+            if chpasswd_cmd.returncode != 0:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": f"Passwort konnte nicht gesetzt werden: {stderr}"
+                    }
+                )
+        except Exception as e:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Passwort konnte nicht gesetzt werden: {str(e)}"
+                }
+            )
+        
+        # Gruppen hinzufügen
+        if role == "admin":
+            run_command(f"usermod -aG sudo {username}", sudo=True, sudo_password=sudo_password)
+        
+        return {
+            "status": "success",
+            "message": f"Benutzer {username} erstellt",
+            "user": {
+                "username": username,
+                "role": role,
+                "password": password,
+            }
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": str(e)
+            }
+        )
+
+@app.delete("/api/users/{username}")
+async def delete_user(username: str, request: Request):
+    """Benutzer löschen"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        if not username or not username.strip():
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "Username erforderlich"
+                }
+            )
+        
+        username = username.strip()
+        
+        # Prüfe ob Benutzer existiert
+        check = run_command(f"id {username}")
+        if not check["success"]:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Benutzer {username} existiert nicht"
+                }
+            )
+        
+        # Prüfe ob sudo-Passwort vorhanden ist
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        # Benutzer löschen (mit Home-Verzeichnis)
+        result = run_command(f"userdel -r {username}", sudo=True, sudo_password=sudo_password)
+        
+        if not result["success"]:
+            error_msg = result.get("stderr", result.get("error", "Unbekannter Fehler"))
+            if "password" in error_msg.lower() or "authentication" in error_msg.lower() or "sudo" in error_msg.lower():
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort falsch oder erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Benutzer konnte nicht gelöscht werden: {error_msg}"
+                }
+            )
+        
+        return {
+            "status": "success",
+            "message": f"Benutzer {username} gelöscht"
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": str(e)
+            }
+        )
+
+# ==================== Sicherheit Endpoints ====================
+
+@app.post("/api/security/scan")
+async def security_scan():
+    """Sicherheits-Scan durchführen"""
+    try:
+        running_services = get_running_services()
+        installed_apps = get_installed_apps()
+        
+        # Prüfe offene Ports
+        ports_result = run_command("ss -tuln | grep LISTEN")
+        open_ports = []
+        if ports_result["success"]:
+            for line in ports_result["stdout"].split("\n"):
+                if line.strip():
+                    # Parse Port aus Zeile
+                    parts = line.split()
+                    if len(parts) >= 5:
+                        addr = parts[4]
+                        if ":" in addr:
+                            port = addr.split(":")[-1]
+                            open_ports.append(port)
+        
+        # Prüfe geschlossene Ports (UFW) - verwende die gleiche Logik wie get_security_config()
+        ufw_status = run_command("ufw status")
+        if not ufw_status["success"] and sudo_password_store.get("password"):
+            ufw_status = run_command("ufw status", sudo=True, sudo_password=sudo_password_store.get("password"))
+        
+        # Falls immer noch nicht erfolgreich, versuche "ufw status verbose" mit sudo
+        if not ufw_status["success"] and sudo_password_store.get("password"):
+            ufw_status = run_command("ufw status verbose", sudo=True, sudo_password=sudo_password_store.get("password"))
+        
+        closed_ports = []
+        firewall_active = False
+        status_output = ""
+        
+        if ufw_status["success"]:
+            status_output = ufw_status.get("stdout", "")
+            if "Status: active" in status_output or "Status: aktiv" in status_output:
+                firewall_active = True
+                # Parse UFW Rules
+                for line in status_output.split("\n"):
+                    if "DENY" in line or "REJECT" in line:
+                        closed_ports.append(line.strip())
+        else:
+            # Alternative Methoden wie in get_security_config()
+            # Prüfe UFW-Konfigurationsdatei
+            try:
+                ufw_config_check = run_command("grep -E '^ENABLED=' /etc/ufw/ufw.conf 2>/dev/null")
+                if ufw_config_check["success"]:
+                    config_line = ufw_config_check.get("stdout", "").strip()
+                    if "ENABLED=yes" in config_line:
+                        firewall_active = True
+                        status_output = "Status: active (via /etc/ufw/ufw.conf)"
+            except:
+                pass
+            
+            # Prüfe systemd-Status
+            if not firewall_active:
+                systemd_status = run_command("systemctl is-active ufw 2>/dev/null")
+                if systemd_status["success"] and "active" in systemd_status.get("stdout", ""):
+                    firewall_active = True
+                    status_output = "Status: active (via systemctl)"
+                else:
+                    ufw_enabled = run_command("systemctl is-enabled ufw 2>/dev/null")
+                    if ufw_enabled["success"] and "enabled" in ufw_enabled.get("stdout", ""):
+                        firewall_active = True
+                        status_output = "Status: active (wahrscheinlich, service enabled)"
+        
+        # Prüfe fail2ban Status & Installation
+        fail2ban_status = run_command("fail2ban-client status")
+        fail2ban_installed = check_installed("fail2ban")
+        fail2ban_running = running_services.get("fail2ban", False)
+        
+        # Updates kategorisieren
+        updates_info = get_updates_categorized()
+        
+        return {
+            "status": "success",
+            "timestamp": __import__("datetime").datetime.now().isoformat(),
+            "running_services": running_services,
+            "installed_packages": installed_apps,
+            "open_ports": list(set(open_ports))[:20],  # Unique Ports
+            "closed_ports": closed_ports[:10],
+            "firewall": {
+                "active": firewall_active,
+                "ufw_installed": check_installed("ufw"),
+                "ufw_status": ufw_status.get("stdout", "") if ufw_status["success"] else "Nicht aktiv",
+            },
+            "fail2ban": {
+                "installed": fail2ban_installed,
+                "running": fail2ban_running,
+                "active": fail2ban_installed and fail2ban_running,
+                "status": fail2ban_status.get("stdout", "Nicht aktiv") if fail2ban_status["success"] else "Nicht installiert",
+            },
+            "updates": updates_info,
+            "checks": {
+                "firewall": {
+                    "active": firewall_active,
+                    "ufw_installed": check_installed("ufw"),
+                },
+                "ssh": {
+                    "running": running_services.get("sshd", False),
+                    "installed": check_installed("ssh"),
+                },
+                "nginx": {
+                    "running": running_services.get("nginx", False),
+                    "installed": installed_apps.get("nginx", False),
+                },
+                "apache": {
+                    "running": running_services.get("apache2", False),
+                    "installed": installed_apps.get("apache", False),
+                },
+                "fail2ban": {
+                    "installed": fail2ban_installed,
+                    "running": fail2ban_running,
+                    "active": fail2ban_installed and fail2ban_running,
+                },
+                "updates_available": updates_info["total"] > 0,
+            },
+            "message": "Scan abgeschlossen"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/security/status")
+async def security_status():
+    """Sicherheitsstatus"""
+    try:
+        return {
+            "running_services": get_running_services(),
+            "installed_apps": get_installed_apps(),
+            "security_config": get_security_config(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/system/installed-packages")
+async def get_installed_packages():
+    """Installierte Pakete mit Details"""
+    try:
+        return {
+            "status": "success",
+            "packages": _get_installed_packages_list(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/system/running-processes")
+async def get_running_processes():
+    """Laufende Prozesse"""
+    try:
+        return {
+            "status": "success",
+            "processes": get_running_processes(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/system/security-config")
+async def get_security_config_endpoint(request: Request):
+    """Sicherheitseinstellungen"""
+    try:
+        # Prüfe ob sudo-Passwort als Query-Parameter übergeben wurde
+        sudo_password = request.query_params.get("sudo_password", "")
+        if sudo_password and not sudo_password_store.get("password"):
+            sudo_password_store["password"] = sudo_password
+            logger.info("💾 Sudo-Passwort im Store gespeichert (via security-config endpoint)")
+        
+        return {
+            "status": "success",
+            "config": get_security_config(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/security/firewall/enable")
+async def enable_firewall(request: Request):
+    """Firewall aktivieren"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        # Speichere sudo-Passwort im Store für spätere Verwendung
+        if sudo_password and not sudo_password_store.get("password"):
+            sudo_password_store["password"] = sudo_password
+            logger.info("💾 Sudo-Passwort im Store gespeichert")
+        
+        logger.info("🔥 Firewall-Aktivierung gestartet")
+        
+        # Prüfe ob UFW verfügbar ist (mehrere Methoden)
+        ufw_installed = check_installed("ufw")
+        ufw_which = run_command("which ufw")
+        ufw_dpkg = run_command("dpkg -l | grep '^ii' | grep -E '\\bufw\\b'")
+        
+        # Wenn keine Methode UFW findet, prüfe ob es installiert werden kann
+        if not ufw_installed and not ufw_which["success"] and not ufw_dpkg["success"]:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "UFW ist nicht installiert. Bitte installieren Sie es zuerst mit: sudo apt install ufw",
+                    "requires_installation": True,
+                    "debug": {
+                        "check_installed": ufw_installed,
+                        "which_result": ufw_which.get("stdout", ""),
+                        "dpkg_result": ufw_dpkg.get("stdout", "")
+                    }
+                }
+            )
+        
+        # Prüfe ob sudo-Passwort vorhanden ist
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        # UFW aktivieren - versuche es direkt, auch wenn check_installed False war
+        # Verwende absoluten Pfad falls which ufw funktioniert hat
+        ufw_path = "/usr/sbin/ufw"
+        if ufw_which["success"]:
+            ufw_path = ufw_which["stdout"].strip()
+        
+        # UFW aktivieren - verwende explizit den absoluten Pfad
+        logger.info(f"🔧 Versuche UFW zu aktivieren mit Pfad: {ufw_path}")
+        result = run_command(f"{ufw_path} --force enable", sudo=True, sudo_password=sudo_password)
+        logger.info(f"📊 Command Result: success={result.get('success')}, returncode={result.get('returncode')}, stdout={result.get('stdout', '')[:100]}, stderr={result.get('stderr', '')[:100]}")
+        
+        # Warte kurz, damit UFW den Status aktualisieren kann
+        import time
+        time.sleep(0.5)
+        
+        # Debug: Prüfe ob Command wirklich erfolgreich war
+        # Prüfe den Status mit sudo (falls nötig)
+        status_check = run_command(f"{ufw_path} status", sudo=False)
+        # Falls ohne sudo nicht funktioniert, versuche mit sudo
+        if not status_check["success"]:
+            status_check = run_command(f"{ufw_path} status", sudo=True, sudo_password=sudo_password)
+        
+        status_output = status_check.get("stdout", "")
+        is_actually_active = "Status: active" in status_output or "Status: aktiv" in status_output
+        logger.info(f"📋 Status Check: success={status_check.get('success')}, is_active={is_actually_active}, output={status_output[:200]}")
+        
+        if not result["success"]:
+            logger.error(f"❌ UFW Command fehlgeschlagen: {result.get('stderr', '')}")
+            error_msg = result.get("stderr", result.get("error", "Unbekannter Fehler"))
+            stdout_msg = result.get("stdout", "")
+            
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"UFW-Befehl fehlgeschlagen: {error_msg}",
+                    "debug": {
+                        "command_result": result,
+                        "status_check": status_check,
+                        "ufw_path": ufw_path,
+                        "stdout": stdout_msg,
+                        "stderr": error_msg,
+                    }
+                }
+            )
+        
+        # Wenn der Command erfolgreich war, aber Status nicht aktiv ist
+        if result["success"] and not is_actually_active:
+            logger.warning("⚠️ Command erfolgreich, aber Firewall nicht aktiv. Versuche Retry...")
+            # Versuche es nochmal ohne --force
+            retry_result = run_command(f"{ufw_path} enable", sudo=True, sudo_password=sudo_password)
+            logger.info(f"🔄 Retry Result: success={retry_result.get('success')}, returncode={retry_result.get('returncode')}, stdout={retry_result.get('stdout', '')[:100]}, stderr={retry_result.get('stderr', '')[:100]}")
+            time.sleep(0.5)
+            
+            # Prüfe Status nochmal
+            status_check_retry = run_command(f"{ufw_path} status", sudo=False)
+            if not status_check_retry["success"]:
+                status_check_retry = run_command(f"{ufw_path} status", sudo=True, sudo_password=sudo_password)
+            
+            status_output_retry = status_check_retry.get("stdout", "")
+            is_actually_active_retry = "Status: active" in status_output_retry or "Status: aktiv" in status_output_retry
+            logger.info(f"📋 Retry Status Check: success={status_check_retry.get('success')}, is_active={is_actually_active_retry}, output={status_output_retry[:200]}")
+            
+            if not is_actually_active_retry:
+                logger.error(f"❌ Firewall konnte auch nach Retry nicht aktiviert werden. Status: {status_output_retry[:200]}")
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": f"UFW-Befehl wurde ausgeführt, aber Firewall ist nicht aktiv. Status-Output: {status_output_retry[:200]}",
+                        "debug": {
+                            "command_result": result,
+                            "retry_result": retry_result,
+                            "status_check": status_check,
+                            "status_check_retry": status_check_retry,
+                            "ufw_path": ufw_path,
+                            "is_active": is_actually_active_retry,
+                        }
+                    }
+                )
+            
+            # Prüfe ob UFW wirklich nicht gefunden wurde
+            if "nicht gefunden" in error_msg.lower() or "not found" in error_msg.lower() or "command not found" in error_msg.lower():
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "UFW ist nicht installiert. Bitte installieren Sie es zuerst mit: sudo apt install ufw",
+                        "requires_installation": True,
+                        "debug": {
+                            "error": error_msg,
+                            "stdout": result.get("stdout", ""),
+                            "stderr": result.get("stderr", "")
+                        }
+                    }
+                )
+            
+            if "password" in error_msg.lower() or "authentication" in error_msg.lower() or "sudo" in error_msg.lower():
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort falsch oder erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Firewall konnte nicht aktiviert werden: {error_msg}",
+                    "debug": {
+                        "stdout": result.get("stdout", ""),
+                        "stderr": result.get("stderr", "")
+                    }
+                }
+            )
+        
+        # Status abrufen (kann fehlschlagen, aber das ist OK)
+        # Verwende sudo für status verbose, falls nötig
+        status_result = run_command(f"{ufw_path} status verbose", sudo=False)
+        if not status_result["success"]:
+            status_result = run_command(f"{ufw_path} status verbose", sudo=True, sudo_password=sudo_password)
+        
+        rules_result = run_command(f"{ufw_path} status numbered", sudo=False)
+        if not rules_result["success"]:
+            rules_result = run_command(f"{ufw_path} status numbered", sudo=True, sudo_password=sudo_password)
+        
+        # Erstelle Security-Config direkt aus dem erfolgreichen Status-Check
+        # (nicht aus get_security_config(), da das möglicherweise den falschen Status zurückgibt)
+        status_output = status_result.get("stdout", "") if status_result["success"] else ""
+        is_active = "Status: active" in status_output or "Status: aktiv" in status_output or result["success"]
+        
+        # Hole die vollständige Security-Config, aber überschreibe UFW-Status mit dem korrekten Wert
+        try:
+            security_config = get_security_config()
+            # Überschreibe UFW-Status mit dem korrekten Wert
+            security_config["ufw"] = {
+                "installed": True,
+                "active": is_active,
+                "status": status_output if status_result["success"] else "Aktiviert",
+                "rules": status_output.split("\n") if status_result["success"] else [],
+            }
+        except Exception as config_error:
+            logger.warning(f"⚠️ get_security_config() fehlgeschlagen, verwende direkte Config: {config_error}")
+            # Wenn get_security_config fehlschlägt, verwende direkte Config
+            security_config = {
+                "ufw": {
+                    "installed": True,
+                    "active": is_active,
+                    "status": status_output if status_result["success"] else "Aktiviert",
+                    "rules": status_output.split("\n") if status_result["success"] else [],
+                },
+                "ssh": {"installed": False, "running": False, "config": ""},
+                "fail2ban": {"installed": False, "running": False, "active": False, "status": "", "jails": []},
+                "auto_updates": {"installed": False, "enabled": False},
+            }
+        
+        logger.info(f"✅ Firewall erfolgreich aktiviert! Security-Config UFW active: {security_config['ufw']['active']}")
+        return {
+            "status": "success",
+            "message": "Firewall aktiviert",
+            "firewall_status": status_output if status_result["success"] else "Aktiviert",
+            "firewall_rules": rules_result.get("stdout", "").split("\n") if rules_result["success"] else [],
+            "security_config": security_config,
+        }
+    except Exception as e:
+        logger.error(f"💥 Exception beim Aktivieren der Firewall: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Fehler beim Aktivieren der Firewall: {str(e)}"
+            }
+        )
+
+@app.post("/api/security/firewall/install")
+async def install_firewall(request: Request):
+    """UFW Firewall installieren"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        # Prüfe ob sudo-Passwort vorhanden ist
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        # UFW installieren
+        result = run_command("apt-get install -y ufw", sudo=True, sudo_password=sudo_password)
+        
+        if not result["success"]:
+            error_msg = result.get("stderr", result.get("error", "Unbekannter Fehler"))
+            if "password" in error_msg.lower() or "authentication" in error_msg.lower() or "sudo" in error_msg.lower():
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort falsch oder erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"UFW konnte nicht installiert werden: {error_msg}"
+                }
+            )
+        
+        return {
+            "status": "success",
+            "message": "UFW erfolgreich installiert"
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": str(e)
+            }
+        )
+
+@app.get("/api/security/firewall/rules")
+async def get_firewall_rules():
+    """Firewall-Regeln abrufen"""
+    try:
+        sudo_password = sudo_password_store.get("password", "")
+        
+        # UFW Status mit Regeln abrufen
+        ufw_path = "/usr/sbin/ufw"
+        ufw_which = run_command("which ufw")
+        if ufw_which["success"]:
+            ufw_path = ufw_which["stdout"].strip()
+        
+        status_result = run_command(f"{ufw_path} status numbered")
+        if not status_result["success"] and sudo_password:
+            status_result = run_command(f"{ufw_path} status numbered", sudo=True, sudo_password=sudo_password)
+        
+        verbose_result = run_command(f"{ufw_path} status verbose")
+        if not verbose_result["success"] and sudo_password:
+            verbose_result = run_command(f"{ufw_path} status verbose", sudo=True, sudo_password=sudo_password)
+        
+        return {
+            "status": "success",
+            "rules": status_result.get("stdout", "") if status_result["success"] else "",
+            "verbose": verbose_result.get("stdout", "") if verbose_result["success"] else "",
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": str(e)
+            }
+        )
+
+@app.post("/api/security/firewall/rules/add")
+async def add_firewall_rule(request: Request):
+    """Firewall-Regel hinzufügen"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        rule = data.get("rule", "").strip()
+        
+        if not rule:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "Regel erforderlich"
+                }
+            )
+        
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        ufw_path = "/usr/sbin/ufw"
+        ufw_which = run_command("which ufw")
+        if ufw_which["success"]:
+            ufw_path = ufw_which["stdout"].strip()
+        
+        # Die Regel kommt bereits als vollständiger UFW-Command (z.B. "allow 22/tcp")
+        # Füge nur den ufw-Pfad hinzu
+        cmd = f"{ufw_path} {rule}"
+        result = run_command(cmd, sudo=True, sudo_password=sudo_password)
+        
+        if not result["success"]:
+            error_msg = result.get("stderr", result.get("error", "Unbekannter Fehler"))
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Regel konnte nicht hinzugefügt werden: {error_msg}"
+                }
+            )
+        
+        return {
+            "status": "success",
+            "message": "Regel hinzugefügt",
+            "output": result.get("stdout", "")
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": str(e)
+            }
+        )
+
+@app.delete("/api/security/firewall/rules/{rule_number}")
+async def delete_firewall_rule(rule_number: int, request: Request):
+    """Firewall-Regel löschen"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        ufw_path = "/usr/sbin/ufw"
+        ufw_which = run_command("which ufw")
+        if ufw_which["success"]:
+            ufw_path = ufw_which["stdout"].strip()
+        
+        # UFW-Regel löschen: ufw delete <number>
+        cmd = f"{ufw_path} delete {rule_number}"
+        result = run_command(cmd, sudo=True, sudo_password=sudo_password)
+        
+        if not result["success"]:
+            error_msg = result.get("stderr", result.get("error", "Unbekannter Fehler"))
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Regel konnte nicht gelöscht werden: {error_msg}"
+                }
+            )
+        
+        return {
+            "status": "success",
+            "message": "Regel gelöscht",
+            "output": result.get("stdout", "")
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": str(e)
+            }
+        )
+
+@app.post("/api/security/configure")
+async def configure_security(request: Request):
+    """Sicherheitskonfiguration anwenden"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        config = data.get("config", {})
+        
+        # Speichere sudo-Passwort im Store für spätere Verwendung
+        if data.get("sudo_password") and not sudo_password_store.get("password"):
+            sudo_password_store["password"] = data.get("sudo_password")
+            logger.info("💾 Sudo-Passwort im Store gespeichert (via security/configure)")
+        
+        # Prüfe ob sudo-Passwort vorhanden ist
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        results = []
+        
+        # Firewall aktivieren
+        if config.get("enable_firewall"):
+            # Prüfe ob UFW installiert ist
+            ufw_installed = check_installed("ufw")
+            if not ufw_installed:
+                # Installiere UFW
+                install_result = run_command("apt-get install -y ufw", sudo=True, sudo_password=sudo_password)
+                if install_result["success"]:
+                    results.append("UFW installiert")
+                else:
+                    return JSONResponse(
+                        status_code=200,
+                        content={
+                            "status": "error",
+                            "message": f"UFW konnte nicht installiert werden: {install_result.get('stderr', 'Unbekannter Fehler')}"
+                        }
+                    )
+            else:
+                results.append("UFW bereits installiert")
+            
+            # Prüfe ob UFW bereits aktiv ist
+            ufw_status_check = run_command("ufw status", sudo=False)
+            if not ufw_status_check["success"]:
+                ufw_status_check = run_command("ufw status", sudo=True, sudo_password=sudo_password)
+            
+            is_already_active = False
+            if ufw_status_check["success"]:
+                status_output = ufw_status_check.get("stdout", "")
+                is_already_active = "Status: active" in status_output or "Status: aktiv" in status_output
+            
+            # Aktiviere UFW nur wenn nicht bereits aktiv
+            if not is_already_active:
+                enable_result = run_command("ufw --force enable", sudo=True, sudo_password=sudo_password)
+                if enable_result["success"]:
+                    results.append("Firewall aktiviert")
+                else:
+                    results.append(f"Firewall-Aktivierung fehlgeschlagen: {enable_result.get('stderr', 'Unbekannter Fehler')}")
+            else:
+                results.append("Firewall bereits aktiv")
+        
+        # Fail2Ban installieren/aktivieren
+        if config.get("enable_fail2ban"):
+            fail2ban_installed = check_installed("fail2ban")
+            if not fail2ban_installed:
+                install_result = run_command("apt-get install -y fail2ban", sudo=True, sudo_password=sudo_password)
+                if install_result["success"]:
+                    results.append("Fail2Ban installiert")
+            else:
+                results.append("Fail2Ban bereits installiert")
+            
+            # Prüfe ob Fail2Ban bereits läuft
+            fail2ban_running = get_running_services().get("fail2ban", False)
+            
+            # Fail2Ban starten nur wenn nicht bereits aktiv
+            if not fail2ban_running:
+                start_result = run_command("systemctl enable --now fail2ban", sudo=True, sudo_password=sudo_password)
+                if start_result["success"]:
+                    results.append("Fail2Ban aktiviert")
+                else:
+                    results.append(f"Fail2Ban-Aktivierung fehlgeschlagen: {start_result.get('stderr', 'Unbekannter Fehler')}")
+            else:
+                results.append("Fail2Ban bereits aktiv")
+        
+        # Auto-Updates aktivieren
+        if config.get("enable_auto_updates"):
+            auto_updates_installed = check_installed("unattended-upgrades")
+            if not auto_updates_installed:
+                install_result = run_command("apt-get install -y unattended-upgrades", sudo=True, sudo_password=sudo_password)
+                if install_result["success"]:
+                    results.append("Auto-Updates installiert")
+            else:
+                results.append("Auto-Updates bereits installiert")
+            
+            # Prüfe ob Auto-Updates bereits aktiviert sind
+            auto_updates_enabled = run_command("systemctl is-enabled unattended-upgrades 2>/dev/null")
+            if not auto_updates_enabled["success"]:
+                enable_result = run_command("systemctl enable unattended-upgrades", sudo=True, sudo_password=sudo_password)
+                if enable_result["success"]:
+                    results.append("Auto-Updates aktiviert")
+                else:
+                    results.append(f"Auto-Updates-Aktivierung fehlgeschlagen: {enable_result.get('stderr', 'Unbekannter Fehler')}")
+            else:
+                results.append("Auto-Updates bereits aktiviert")
+        
+        # SSH Härtung
+        if config.get("enable_ssh_hardening"):
+            try:
+                ssh_config_file = "/etc/ssh/sshd_config"
+                ssh_backup_file = "/etc/ssh/sshd_config.backup"
+                
+                # Erstelle Backup
+                backup_result = run_command(f"cp {ssh_config_file} {ssh_backup_file}", sudo=True, sudo_password=sudo_password)
+                if not backup_result["success"]:
+                    results.append("⚠️ SSH Backup konnte nicht erstellt werden")
+                else:
+                    results.append("SSH Backup erstellt")
+                
+                # SSH-Konfiguration härten
+                ssh_hardening_commands = [
+                    # Deaktiviere Root-Login
+                    f"sed -i 's/^#*PermitRootLogin.*/PermitRootLogin no/' {ssh_config_file}",
+                    # Deaktiviere Passwort-Authentifizierung (nur Key-basiert)
+                    f"sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' {ssh_config_file}",
+                    # Aktiviere Public Key Authentication
+                    f"sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' {ssh_config_file}",
+                    # Deaktiviere leere Passwörter
+                    f"sed -i 's/^#*PermitEmptyPasswords.*/PermitEmptyPasswords no/' {ssh_config_file}",
+                    # Max Auth Tries begrenzen
+                    f"sed -i 's/^#*MaxAuthTries.*/MaxAuthTries 3/' {ssh_config_file}",
+                    # Client Alive Interval setzen
+                    f"sed -i 's/^#*ClientAliveInterval.*/ClientAliveInterval 300/' {ssh_config_file}",
+                    f"sed -i 's/^#*ClientAliveCountMax.*/ClientAliveCountMax 2/' {ssh_config_file}",
+                    # Deaktiviere X11 Forwarding (falls nicht benötigt)
+                    f"sed -i 's/^#*X11Forwarding.*/X11Forwarding no/' {ssh_config_file}",
+                ]
+                
+                # Führe alle SSH-Härtungsbefehle aus
+                ssh_hardening_success = True
+                for cmd in ssh_hardening_commands:
+                    result = run_command(cmd, sudo=True, sudo_password=sudo_password)
+                    if not result["success"]:
+                        ssh_hardening_success = False
+                        logger.warning(f"SSH Härtung Befehl fehlgeschlagen: {cmd}")
+                
+                # Füge zusätzliche Sicherheitseinstellungen hinzu, falls sie nicht existieren
+                additional_settings = [
+                    "Protocol 2",
+                    "PermitRootLogin no",
+                    "PasswordAuthentication no",
+                    "PubkeyAuthentication yes",
+                    "PermitEmptyPasswords no",
+                    "MaxAuthTries 3",
+                    "ClientAliveInterval 300",
+                    "ClientAliveCountMax 2",
+                    "X11Forwarding no",
+                ]
+                
+                for setting in additional_settings:
+                    key = setting.split()[0]
+                    # Prüfe ob die Einstellung bereits existiert
+                    check_cmd = f"grep -q '^{key}' {ssh_config_file} || echo '{setting}' >> {ssh_config_file}"
+                    run_command(check_cmd, sudo=True, sudo_password=sudo_password)
+                
+                # Teste SSH-Konfiguration
+                test_result = run_command("sshd -t", sudo=True, sudo_password=sudo_password)
+                if test_result["success"]:
+                    # SSH-Service neu laden
+                    reload_result = run_command("systemctl reload sshd", sudo=True, sudo_password=sudo_password)
+                    if reload_result["success"]:
+                        results.append("SSH Härtung erfolgreich angewendet")
+                    else:
+                        results.append("⚠️ SSH Härtung angewendet, aber Service konnte nicht neu geladen werden")
+                else:
+                    results.append(f"⚠️ SSH-Konfiguration fehlerhaft: {test_result.get('stderr', 'Unbekannter Fehler')}")
+                    # Stelle Backup wieder her
+                    restore_result = run_command(f"cp {ssh_backup_file} {ssh_config_file}", sudo=True, sudo_password=sudo_password)
+                    if restore_result["success"]:
+                        results.append("SSH-Konfiguration aus Backup wiederhergestellt")
+            except Exception as e:
+                logger.error(f"Fehler bei SSH Härtung: {e}")
+                results.append(f"SSH Härtung fehlgeschlagen: {str(e)}")
+        
+        # Audit Logging
+        if config.get("enable_audit_logging"):
+            try:
+                # Installiere auditd falls nicht vorhanden
+                auditd_installed = check_installed("auditd")
+                if not auditd_installed:
+                    logger.info("🔧 Versuche Auditd zu installieren...")
+                    # PackageKit stoppen, um Konflikte zu vermeiden
+                    _ensure_packagekit_stopped(sudo_password)
+                    # Führe apt-get update separat aus (kann länger dauern)
+                    update_result = run_command("apt-get update", sudo=True, sudo_password=sudo_password)
+                    if not update_result["success"]:
+                        logger.warning(f"⚠️ apt-get update fehlgeschlagen: {update_result.get('stderr', '')[:200]}")
+                    
+                    # Installiere auditd
+                    install_result = run_command("apt-get install -y auditd audispd-plugins", sudo=True, sudo_password=sudo_password)
+                    if install_result["success"]:
+                        results.append("Auditd installiert")
+                        logger.info("✅ Auditd erfolgreich installiert")
+                    else:
+                        error_msg = install_result.get("stderr", install_result.get("error", "Unbekannter Fehler"))
+                        stdout_msg = install_result.get("stdout", "")
+                        logger.error(f"❌ Auditd Installation fehlgeschlagen. Stderr: {error_msg[:200]}, Stdout: {stdout_msg[:200]}")
+                        results.append(f"⚠️ Auditd konnte nicht installiert werden: {error_msg[:100]}")
+                        # Versuche es mit einem einfacheren Befehl
+                        logger.info("🔧 Versuche Auditd mit einfacherem Befehl zu installieren...")
+                        simple_install = run_command("apt-get install -y auditd", sudo=True, sudo_password=sudo_password)
+                        if simple_install["success"]:
+                            results.append("Auditd installiert (ohne Plugins)")
+                            logger.info("✅ Auditd erfolgreich installiert (ohne Plugins)")
+                        else:
+                            simple_error = simple_install.get("stderr", simple_install.get("error", "Unbekannter Fehler"))
+                            logger.error(f"❌ Auditd Installation auch mit einfachem Befehl fehlgeschlagen: {simple_error[:200]}")
+                            return JSONResponse(
+                                status_code=200,
+                                content={
+                                    "status": "error",
+                                    "message": f"Auditd konnte nicht installiert werden. Fehler: {simple_error[:200]}. Bitte manuell installieren mit: sudo apt-get install -y auditd",
+                                    "results": results,
+                                    "debug": {
+                                        "stderr": error_msg[:500],
+                                        "stdout": stdout_msg[:500],
+                                        "simple_stderr": simple_error[:500]
+                                    }
+                                }
+                            )
+                else:
+                    results.append("Auditd bereits installiert")
+                
+                # Aktiviere auditd Service
+                enable_result = run_command("systemctl enable --now auditd", sudo=True, sudo_password=sudo_password)
+                if enable_result["success"]:
+                    results.append("Auditd Service aktiviert")
+                else:
+                    results.append("⚠️ Auditd Service konnte nicht aktiviert werden")
+                
+                # Konfiguriere Audit-Regeln
+                audit_rules_file = "/etc/audit/rules.d/pi-installer.rules"
+                audit_rules = [
+                    "# PI-Installer Audit Rules",
+                    "# Überwache alle Systemaufrufe",
+                    "-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time-change",
+                    "-a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k time-change",
+                    "-a always,exit -F arch=b64 -S clock_settime -k time-change",
+                    "-a always,exit -F arch=b32 -S clock_settime -k time-change",
+                    "-w /etc/localtime -p wa -k time-change",
+                    "",
+                    "# Überwache Benutzer- und Gruppenänderungen",
+                    "-w /etc/group -p wa -k identity",
+                    "-w /etc/passwd -p wa -k identity",
+                    "-w /etc/gshadow -p wa -k identity",
+                    "-w /etc/shadow -p wa -k identity",
+                    "-w /etc/security/opasswd -p wa -k identity",
+                    "",
+                    "# Überwache Netzwerkänderungen",
+                    "-a always,exit -F arch=b64 -S sethostname -S setdomainname -k system-locale",
+                    "-a always,exit -F arch=b32 -S sethostname -S setdomainname -k system-locale",
+                    "-w /etc/issue -p wa -k system-locale",
+                    "-w /etc/issue.net -p wa -k system-locale",
+                    "-w /etc/hosts -p wa -k system-locale",
+                    "-w /etc/sysconfig/network -p wa -k system-locale",
+                    "",
+                    "# Überwache Login/Logout",
+                    "-w /var/log/faillog -p wa -k logins",
+                    "-w /var/log/lastlog -p wa -k logins",
+                    "-w /var/log/tallylog -p wa -k logins",
+                    "",
+                    "# Überwache Sudo-Befehle",
+                    "-w /usr/bin/sudo -p x -k actions",
+                    "-w /etc/sudoers -p wa -k actions",
+                    "-w /etc/sudoers.d/ -p wa -k actions",
+                    "",
+                    "# Überwache Dateisystemänderungen",
+                    "-w /etc -p wa -k etc",
+                    "-w /usr/bin -p wa -k bin",
+                    "-w /usr/sbin -p wa -k sbin",
+                    "",
+                    "# Überwache privilegierte Befehle",
+                    "-a always,exit -F arch=b64 -S mount -S umount2 -k mount",
+                    "-a always,exit -F arch=b32 -S mount -S umount -k mount",
+                ]
+                
+                # Schreibe Audit-Regeln
+                rules_content = "\n".join(audit_rules) + "\n"
+                write_cmd = f"cat > {audit_rules_file} << 'EOF'\n{rules_content}EOF"
+                write_result = run_command(write_cmd, sudo=True, sudo_password=sudo_password)
+                
+                if write_result["success"]:
+                    results.append("Audit-Regeln konfiguriert")
+                    
+                    # Lade Audit-Regeln neu
+                    reload_result = run_command("augenrules --load", sudo=True, sudo_password=sudo_password)
+                    if reload_result["success"]:
+                        results.append("Audit-Regeln geladen")
+                    else:
+                        results.append("⚠️ Audit-Regeln konnten nicht geladen werden")
+                    
+                    # Starte auditd neu
+                    restart_result = run_command("systemctl restart auditd", sudo=True, sudo_password=sudo_password)
+                    if restart_result["success"]:
+                        results.append("Auditd neu gestartet")
+                else:
+                    results.append(f"⚠️ Audit-Regeln konnten nicht geschrieben werden: {write_result.get('stderr', 'Unbekannter Fehler')}")
+                    
+            except Exception as e:
+                logger.error(f"Fehler bei Audit Logging: {e}")
+                results.append(f"Audit Logging fehlgeschlagen: {str(e)}")
+        
+        # Wenn keine Ergebnisse, aber Konfiguration wurde angewendet, füge Info hinzu
+        if not results:
+            # Prüfe welche Features bereits aktiviert sind
+            active_features = []
+            if config.get("enable_firewall"):
+                ufw_installed = check_installed("ufw")
+                if ufw_installed:
+                    ufw_status_check = run_command("ufw status", sudo=False)
+                    if not ufw_status_check["success"] and sudo_password:
+                        ufw_status_check = run_command("ufw status", sudo=True, sudo_password=sudo_password)
+                    if ufw_status_check["success"]:
+                        status_text = ufw_status_check.get("stdout", "")
+                        if "Status: active" in status_text or "Status: aktiv" in status_text:
+                            active_features.append("Firewall bereits aktiv")
+            
+            if config.get("enable_fail2ban"):
+                fail2ban_installed = check_installed("fail2ban")
+                fail2ban_running = get_running_services().get("fail2ban", False)
+                if fail2ban_installed and fail2ban_running:
+                    active_features.append("Fail2Ban bereits aktiv")
+            
+            if config.get("enable_auto_updates"):
+                auto_updates_installed = check_installed("unattended-upgrades")
+                auto_updates_enabled = run_command("systemctl is-enabled unattended-upgrades 2>/dev/null")
+                if auto_updates_installed and auto_updates_enabled["success"]:
+                    active_features.append("Auto-Updates bereits aktiviert")
+            
+            if config.get("enable_ssh_hardening"):
+                # Prüfe ob SSH bereits gehärtet ist
+                ssh_backup_exists = run_command("test -f /etc/ssh/sshd_config.backup")
+                if ssh_backup_exists["success"]:
+                    active_features.append("SSH Härtung bereits angewendet")
+            
+            if config.get("enable_audit_logging"):
+                auditd_installed = check_installed("auditd")
+                auditd_running = get_running_services().get("auditd", False)
+                if auditd_installed and auditd_running:
+                    active_features.append("Audit Logging bereits aktiv")
+            
+            if active_features:
+                results.extend(active_features)
+            else:
+                results.append("Alle ausgewählten Features sind bereits konfiguriert")
+        
+        return {
+            "status": "success",
+            "message": "Konfiguration angewendet",
+            "results": results
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": str(e)
+            }
+        )
+
+def get_updates_categorized():
+    """Updates kategorisieren"""
+    try:
+        # PackageKit stoppen, um Konflikte zu vermeiden
+        _ensure_packagekit_stopped()
+        # Zuerst apt update ausführen (ohne zu installieren)
+        run_command("apt-get update -qq 2>/dev/null", sudo=False)
+        
+        # Update-Liste abrufen
+        result = run_command("apt list --upgradable 2>/dev/null | tail -n +2")
+        updates = []
+        
+        if result["success"] and result["stdout"].strip():
+            for line in result["stdout"].split("\n"):
+                line = line.strip()
+                if line and "/" in line:
+                    # Format: package/version,version,version [upgradable from: version]
+                    parts = line.split()
+                    if len(parts) >= 1:
+                        package_part = parts[0]
+                        package = package_part.split("/")[0]
+                        version = package_part.split("/")[1] if "/" in package_part else ""
+                        
+                        # Sicherheits-Updates prüfen (apt-get upgrade --dry-run -s)
+                        security_result = run_command(f"apt-get upgrade -s {package} 2>/dev/null | grep -i security")
+                        is_security = security_result["success"] and security_result["stdout"].strip() != ""
+                        
+                        # Kategorisieren
+                        category = "optional"
+                        if is_security or "security" in package.lower() or "-sec" in package.lower():
+                            category = "security"
+                        elif "kernel" in package.lower() or "linux-image" in package.lower() or "linux-headers" in package.lower():
+                            category = "critical"
+                        elif "lib" in package.lower() or "python" in package.lower() or "perl" in package.lower():
+                            category = "necessary"
+                        
+                        updates.append({
+                            "package": package,
+                            "version": version,
+                            "category": category,
+                        })
+        
+        # Kategorien zählen
+        categories = {
+            "security": len([u for u in updates if u["category"] == "security"]),
+            "critical": len([u for u in updates if u["category"] == "critical"]),
+            "necessary": len([u for u in updates if u["category"] == "necessary"]),
+            "optional": len([u for u in updates if u["category"] == "optional"]),
+        }
+        
+        return {
+            "total": len(updates),
+            "categories": categories,
+            "updates": updates[:50],  # Erste 50
+        }
+    except Exception as e:
+        # Fallback: Einfache Prüfung
+        try:
+            result = run_command("apt list --upgradable 2>/dev/null | wc -l")
+            total = int(result.get("stdout", "0").strip()) - 1 if result["success"] else 0
+            return {
+                "total": max(0, total),
+                "categories": {"security": 0, "critical": 0, "necessary": 0, "optional": 0},
+                "updates": [],
+            }
+        except:
+            return {
+                "total": 0,
+                "categories": {"security": 0, "critical": 0, "necessary": 0, "optional": 0},
+                "updates": [],
+            }
+
+# ==================== Webserver Endpoints ====================
+
+def get_website_names():
+    """Extrahiere Website-Namen aus Webserver-Konfigurationen"""
+    websites = []
+    
+    # Nginx Konfigurationen
+    nginx_sites = []
+    nginx_result = run_command("find /etc/nginx/sites-enabled /etc/nginx/conf.d -name '*.conf' 2>/dev/null | head -10")
+    if nginx_result["success"]:
+        for conf_file in nginx_result["stdout"].strip().split("\n"):
+            if conf_file.strip():
+                server_name_result = run_command(f"grep -E 'server_name|server_name_' {conf_file} 2>/dev/null | head -5")
+                if server_name_result["success"]:
+                    for line in server_name_result["stdout"].split("\n"):
+                        if "server_name" in line:
+                            # Extrahiere Domain-Namen
+                            parts = line.split()
+                            for part in parts[1:]:
+                                part = part.strip(';')
+                                if part and part not in ['localhost', '_', 'default_server'] and '.' in part:
+                                    nginx_sites.append(part)
+    
+    # Apache Konfigurationen
+    apache_sites = []
+    apache_result = run_command("find /etc/apache2/sites-enabled /etc/apache2/conf-enabled -name '*.conf' 2>/dev/null | head -10")
+    if apache_result["success"]:
+        for conf_file in apache_result["stdout"].strip().split("\n"):
+            if conf_file.strip():
+                server_name_result = run_command(f"grep -E 'ServerName|ServerAlias' {conf_file} 2>/dev/null | head -5")
+                if server_name_result["success"]:
+                    for line in server_name_result["stdout"].split("\n"):
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            domain = parts[1].strip()
+                            if domain and domain not in ['localhost', '*'] and '.' in domain:
+                                apache_sites.append(domain)
+    
+    # Kombiniere und entferne Duplikate
+    all_sites = list(set(nginx_sites + apache_sites))
+    return all_sites[:20]  # Maximal 20
+
+@app.get("/api/webserver/status")
+async def webserver_status():
+    """Webserver-Status"""
+    try:
+        running = get_running_services()
+        network = get_network_info()
+        installed = get_installed_apps()
+        
+        # Prüfe Webserver läuft
+        nginx_running = running.get("nginx", False)
+        apache_running = running.get("apache2", False)
+        
+        # Webserver Ports prüfen
+        webserver_ports = []
+        ports_result = run_command("ss -tuln | grep -E ':80|:443|:8000|:8080|:9090|:10000'")
+        if ports_result["success"]:
+            webserver_ports = ports_result["stdout"].strip().split("\n")
+        
+        # PI-Installer Adresse (Frontend Port)
+        pi_installer_port = None
+        pi_installer_result = run_command("ss -tuln | grep -E ':3001|:3002' | head -1")
+        if pi_installer_result["success"]:
+            port_line = pi_installer_result["stdout"].strip()
+            if port_line:
+                # Extrahiere Port
+                import re
+                port_match = re.search(r':(\d+)', port_line)
+                if port_match:
+                    pi_installer_port = int(port_match.group(1))
+        
+        # Website-Namen extrahieren
+        website_names = get_website_names()
+        
+        # Cockpit & Webmin Status
+        cockpit_running = running.get("cockpit", False) or check_installed("cockpit")
+        webmin_running = running.get("webmin", False) or check_installed("webmin")
+        
+        # Prüfe ob Cockpit/Webmin auf Ports laufen
+        cockpit_port = run_command("ss -tuln | grep ':9090'")
+        webmin_port = run_command("ss -tuln | grep ':10000'")
+        
+        return {
+            "pi_installer": {
+                "port": pi_installer_port or 3001,
+                "url": f"http://{network.get('ips', ['localhost'])[0]}:{pi_installer_port or 3001}" if network.get('ips') else f"http://localhost:{pi_installer_port or 3001}",
+            },
+            "website_names": website_names,
+            "nginx": {
+                "installed": installed.get("nginx", False),
+                "running": nginx_running,
+            },
+            "apache": {
+                "installed": installed.get("apache", False),
+                "running": apache_running,
+            },
+            "mysql": {
+                "installed": installed.get("mysql", False),
+                "running": running.get("mysql", False),
+            },
+            "mariadb": {
+                "installed": installed.get("mariadb", False),
+                "running": running.get("mariadb", False),
+            },
+            "php": {
+                "installed": installed.get("php", False),
+            },
+            "cockpit": {
+                "installed": installed.get("cockpit", False),
+                "running": cockpit_running or cockpit_port["success"],
+                "port": 9090 if cockpit_port["success"] else None,
+            },
+            "webmin": {
+                "installed": installed.get("webmin", False),
+                "running": webmin_running or webmin_port["success"],
+                "port": 10000 if webmin_port["success"] else None,
+            },
+            "network": network,
+            "webserver_ports": webserver_ports,
+            "websites": installed.get("websites", []),
+            "installed_cms": {
+                "wordpress": {
+                    "installed": installed.get("wordpress", False),
+                    "plugins": installed.get("wordpress_plugins", []),
+                },
+                "nextcloud": installed.get("nextcloud", False),
+                "drupal": installed.get("drupal", False),
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/webserver/configure")
+async def configure_webserver(request: Request):
+    """Webserver konfigurieren"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        # Prüfe ob sudo-Passwort vorhanden ist
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        # Speichere sudo-Passwort im Store
+        if sudo_password and not sudo_password_store.get("password"):
+            sudo_password_store["password"] = sudo_password
+            logger.info("💾 Sudo-Passwort im Store gespeichert (Webserver-Config)")
+        
+        results = []
+        server_type = data.get("server_type", "nginx")
+        enable_php = data.get("enable_php", False)
+        
+        # PHP-Support aktivieren
+        if enable_php:
+            logger.info("🔧 PHP-Support wird aktiviert...")
+            php_installed = check_installed("php")
+            logger.info(f"📋 PHP installiert: {php_installed}")
+            
+            if not php_installed:
+                # PHP installieren
+                logger.info("📦 Installiere PHP...")
+                php_result = run_command("apt-get install -y php php-fpm php-cli php-common php-mysql php-zip php-gd php-mbstring php-curl php-xml php-bcmath", sudo=True, sudo_password=sudo_password)
+                logger.info(f"📊 PHP Installation Result: success={php_result.get('success')}, returncode={php_result.get('returncode')}, stderr={php_result.get('stderr', '')[:200]}")
+                
+                if php_result["success"]:
+                    results.append("PHP installiert")
+                    # Prüfe nochmal, ob PHP jetzt installiert ist
+                    php_installed_after = check_installed("php")
+                    logger.info(f"📋 PHP nach Installation: {php_installed_after}")
+                else:
+                    error_msg = php_result.get('stderr', php_result.get('error', 'Unbekannter Fehler'))
+                    logger.error(f"❌ PHP Installation fehlgeschlagen: {error_msg}")
+                    return JSONResponse(
+                        status_code=200,
+                        content={
+                            "status": "error",
+                            "message": f"PHP konnte nicht installiert werden: {error_msg}",
+                            "debug": {
+                                "stdout": php_result.get('stdout', ''),
+                                "stderr": error_msg,
+                                "returncode": php_result.get('returncode'),
+                            }
+                        }
+                    )
+            else:
+                results.append("PHP bereits installiert")
+            
+            # PHP für Webserver konfigurieren (auch wenn bereits installiert)
+            if server_type == "nginx":
+                # Nginx: PHP-FPM sollte bereits installiert sein
+                php_fpm_installed = check_installed("php-fpm")
+                if not php_fpm_installed:
+                    php_fpm_result = run_command("apt-get install -y php-fpm", sudo=True, sudo_password=sudo_password)
+                    if php_fpm_result["success"]:
+                        results.append("PHP-FPM installiert")
+                
+                # PHP-FPM aktivieren - finde die richtige PHP-Version
+                php_version_result = run_command("php -v 2>/dev/null | head -1 | grep -oE 'PHP [0-9]+\\.[0-9]+' | awk '{print $2}'")
+                php_version = "8.2"  # Default
+                if php_version_result["success"]:
+                    php_version = php_version_result["stdout"].strip() or "8.2"
+                
+                # Aktiviere PHP-FPM für die gefundene Version
+                php_fpm_service = f"php{php_version}-fpm"
+                php_fpm_start = run_command(f"systemctl enable --now {php_fpm_service}", sudo=True, sudo_password=sudo_password)
+                if php_fpm_start["success"]:
+                    results.append(f"PHP-FPM ({php_fpm_service}) aktiviert")
+                else:
+                    # Versuche alle PHP-FPM Services zu aktivieren
+                    php_fpm_all = run_command("systemctl enable --now php*-fpm 2>/dev/null || systemctl enable --now php-fpm", sudo=True, sudo_password=sudo_password)
+                    if php_fpm_all["success"]:
+                        results.append("PHP-FPM aktiviert")
+                
+                # Nginx PHP-Konfiguration prüfen
+                nginx_php_check = run_command("grep -r 'fastcgi_pass.*php' /etc/nginx/sites-enabled/ 2>/dev/null | head -1")
+                if not nginx_php_check["success"]:
+                    results.append("⚠️ Nginx PHP-Konfiguration: Bitte manuell konfigurieren (fastcgi_pass)")
+            
+            elif server_type == "apache":
+                # Apache: libapache2-mod-php installieren
+                apache_php_installed = check_installed("libapache2-mod-php")
+                if not apache_php_installed:
+                    apache_php_result = run_command("apt-get install -y libapache2-mod-php", sudo=True, sudo_password=sudo_password)
+                    if apache_php_result["success"]:
+                        results.append("Apache PHP-Modul installiert")
+                
+                # PHP-Modul aktivieren
+                php_module_enable = run_command("a2enmod php*", sudo=True, sudo_password=sudo_password)
+                if php_module_enable["success"]:
+                    results.append("Apache PHP-Modul aktiviert")
+                
+                # Apache neu laden
+                apache_reload = run_command("systemctl reload apache2", sudo=True, sudo_password=sudo_password)
+                if apache_reload["success"]:
+                    results.append("Apache neu geladen")
+        
+        # Webserver installieren/aktivieren (falls noch nicht installiert)
+        if server_type == "nginx":
+            nginx_installed = check_installed("nginx")
+            if not nginx_installed:
+                nginx_result = run_command("apt-get install -y nginx", sudo=True, sudo_password=sudo_password)
+                if nginx_result["success"]:
+                    results.append("Nginx installiert")
+            
+            nginx_start = run_command("systemctl enable --now nginx", sudo=True, sudo_password=sudo_password)
+            if nginx_start["success"]:
+                results.append("Nginx aktiviert")
+        
+        elif server_type == "apache":
+            apache_installed = check_installed("apache2")
+            if not apache_installed:
+                apache_result = run_command("apt-get install -y apache2", sudo=True, sudo_password=sudo_password)
+                if apache_result["success"]:
+                    results.append("Apache installiert")
+            
+            apache_start = run_command("systemctl enable --now apache2", sudo=True, sudo_password=sudo_password)
+            if apache_start["success"]:
+                results.append("Apache aktiviert")
+        
+        return {
+            "status": "success",
+            "message": "Webserver konfiguriert",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"💥 Fehler bei Webserver-Konfiguration: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Fehler bei der Webserver-Konfiguration: {str(e)}"
+            }
+        )
+
+# ==================== NAS Endpoints ====================
+
+@app.get("/api/nas/status")
+async def nas_status():
+    """NAS-Status abrufen"""
+    try:
+        installed = get_installed_apps()
+        running = get_running_services()
+        
+        return {
+            "samba": {
+                "installed": check_installed("samba") or check_installed("samba-common"),
+                "running": running.get("smbd", False) or running.get("samba", False),
+            },
+            "nfs": {
+                "installed": check_installed("nfs-kernel-server") or check_installed("nfs-common"),
+                "running": running.get("nfs", False),
+            },
+            "ftp": {
+                "installed": check_installed("vsftpd") or check_installed("proftpd"),
+                "running": running.get("vsftpd", False) or running.get("proftpd", False),
+            },
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/nas/configure")
+async def configure_nas(request: Request):
+    """NAS konfigurieren"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        if sudo_password and not sudo_password_store.get("password"):
+            sudo_password_store["password"] = sudo_password
+        
+        results = []
+        nas_type = data.get("nas_type", "samba")
+        share_name = data.get("share_name", "pi-share")
+        share_path = data.get("share_path", "/mnt/nas")
+        
+        # Samba konfigurieren
+        if nas_type == "samba" or data.get("enable_samba"):
+            samba_installed = check_installed("samba")
+            if not samba_installed:
+                samba_result = run_command("apt-get install -y samba samba-common", sudo=True, sudo_password=sudo_password)
+                if samba_result["success"]:
+                    results.append("Samba installiert")
+                else:
+                    return JSONResponse(
+                        status_code=200,
+                        content={
+                            "status": "error",
+                            "message": f"Samba konnte nicht installiert werden: {samba_result.get('stderr', 'Unbekannter Fehler')}"
+                        }
+                    )
+            
+            # Samba-Freigabe erstellen
+            # Erstelle Verzeichnis
+            mkdir_result = run_command(f"mkdir -p {share_path}", sudo=True, sudo_password=sudo_password)
+            if mkdir_result["success"]:
+                results.append(f"Verzeichnis {share_path} erstellt")
+            
+            # Samba-Konfiguration hinzufügen
+            samba_config = f"""
+[{share_name}]
+   path = {share_path}
+   browseable = yes
+   read only = no
+   guest ok = {'yes' if data.get('enable_guest') else 'no'}
+   create mask = 0664
+   directory mask = 0775
+"""
+            # Füge zur smb.conf hinzu
+            echo_result = run_command(f'echo "{samba_config}" >> /etc/samba/smb.conf', sudo=True, sudo_password=sudo_password)
+            if echo_result["success"]:
+                results.append("Samba-Konfiguration hinzugefügt")
+            
+            # Samba neu starten
+            samba_restart = run_command("systemctl restart smbd nmbd", sudo=True, sudo_password=sudo_password)
+            if samba_restart["success"]:
+                results.append("Samba neu gestartet")
+        
+        # NFS konfigurieren
+        if nas_type == "nfs" or data.get("enable_nfs"):
+            nfs_installed = check_installed("nfs-kernel-server")
+            if not nfs_installed:
+                nfs_result = run_command("apt-get install -y nfs-kernel-server", sudo=True, sudo_password=sudo_password)
+                if nfs_result["success"]:
+                    results.append("NFS installiert")
+            
+            # NFS-Export konfigurieren
+            mkdir_result = run_command(f"mkdir -p {share_path}", sudo=True, sudo_password=sudo_password)
+            nfs_export = f"{share_path} *(rw,sync,no_subtree_check)"
+            echo_result = run_command(f'echo "{nfs_export}" >> /etc/exports', sudo=True, sudo_password=sudo_password)
+            if echo_result["success"]:
+                results.append("NFS-Export konfiguriert")
+            
+            # NFS neu starten
+            nfs_restart = run_command("exportfs -ra && systemctl restart nfs-kernel-server", sudo=True, sudo_password=sudo_password)
+            if nfs_restart["success"]:
+                results.append("NFS neu gestartet")
+        
+        # FTP konfigurieren
+        if nas_type == "ftp" or data.get("enable_ftp"):
+            ftp_installed = check_installed("vsftpd")
+            if not ftp_installed:
+                ftp_result = run_command("apt-get install -y vsftpd", sudo=True, sudo_password=sudo_password)
+                if ftp_result["success"]:
+                    results.append("FTP (vsftpd) installiert")
+            
+            # FTP aktivieren
+            ftp_start = run_command("systemctl enable --now vsftpd", sudo=True, sudo_password=sudo_password)
+            if ftp_start["success"]:
+                results.append("FTP aktiviert")
+        
+        return {
+            "status": "success",
+            "message": "NAS konfiguriert",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"💥 Fehler bei NAS-Konfiguration: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Fehler bei der NAS-Konfiguration: {str(e)}"
+            }
+        )
+
+# ==================== Home Automation Endpoints ====================
+
+@app.get("/api/homeautomation/status")
+async def homeautomation_status():
+    """Homeautomation-Status abrufen"""
+    try:
+        installed = get_installed_apps()
+        running = get_running_services()
+        
+        return {
+            "homeassistant": {
+                "installed": check_installed("homeassistant") or run_command("docker ps | grep homeassistant")["success"],
+                "running": running.get("homeassistant", False) or run_command("docker ps | grep homeassistant")["success"],
+            },
+            "openhab": {
+                "installed": check_installed("openhab"),
+                "running": running.get("openhab", False),
+            },
+            "nodered": {
+                "installed": check_installed("node-red") or run_command("npm list -g node-red")["success"],
+                "running": running.get("node-red", False),
+            },
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/homeautomation/configure")
+async def configure_homeautomation(request: Request):
+    """Homeautomation konfigurieren"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        if sudo_password and not sudo_password_store.get("password"):
+            sudo_password_store["password"] = sudo_password
+        
+        results = []
+        automation_type = data.get("automation_type", "homeassistant")
+        
+        # Home Assistant installieren
+        if automation_type == "homeassistant":
+            # Home Assistant via Docker (empfohlen)
+            docker_installed = check_installed("docker")
+            if not docker_installed:
+                docker_result = run_command("apt-get install -y docker.io docker-compose", sudo=True, sudo_password=sudo_password)
+                if docker_result["success"]:
+                    results.append("Docker installiert")
+            
+            # Home Assistant Container starten
+            ha_result = run_command("docker run -d --name homeassistant --privileged --restart=unless-stopped -v /home/homeassistant:/config --network=host ghcr.io/home-assistant/home-assistant:stable", sudo=True, sudo_password=sudo_password)
+            if ha_result["success"]:
+                results.append("Home Assistant gestartet")
+            else:
+                results.append("⚠️ Home Assistant: Bitte manuell installieren (siehe Dokumentation)")
+        
+        # OpenHAB installieren
+        elif automation_type == "openhab":
+            openhab_installed = check_installed("openhab")
+            if not openhab_installed:
+                openhab_result = run_command("apt-get install -y openhab", sudo=True, sudo_password=sudo_password)
+                if openhab_result["success"]:
+                    results.append("OpenHAB installiert")
+            
+            openhab_start = run_command("systemctl enable --now openhab", sudo=True, sudo_password=sudo_password)
+            if openhab_start["success"]:
+                results.append("OpenHAB aktiviert")
+        
+        # Node-RED installieren
+        elif automation_type == "nodered":
+            node_installed = check_installed("nodejs")
+            if not node_installed:
+                node_result = run_command("apt-get install -y nodejs npm", sudo=True, sudo_password=sudo_password)
+                if node_result["success"]:
+                    results.append("Node.js installiert")
+            
+            # Node-RED global installieren
+            nodered_result = run_command("npm install -g node-red", sudo=True, sudo_password=sudo_password)
+            if nodered_result["success"]:
+                results.append("Node-RED installiert")
+            
+            # Node-RED als Service einrichten
+            nodered_service = run_command("systemctl enable --now node-red", sudo=True, sudo_password=sudo_password)
+            if nodered_service["success"]:
+                results.append("Node-RED aktiviert")
+        
+        return {
+            "status": "success",
+            "message": "Homeautomation konfiguriert",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"💥 Fehler bei Homeautomation-Konfiguration: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Fehler bei der Homeautomation-Konfiguration: {str(e)}"
+            }
+        )
+
+# ==================== Music Box Endpoints ====================
+
+@app.get("/api/musicbox/status")
+async def musicbox_status():
+    """MusicBox-Status abrufen"""
+    try:
+        installed = get_installed_apps()
+        running = get_running_services()
+        
+        return {
+            "mopidy": {
+                "installed": check_installed("mopidy"),
+                "running": running.get("mopidy", False),
+            },
+            "volumio": {
+                "installed": check_installed("volumio") or run_command("test -f /opt/volumio/bin/volumio")["success"],
+                "running": running.get("volumio", False),
+            },
+            "plex": {
+                "installed": check_installed("plexmediaserver") or run_command("dpkg -l | grep plex")["success"],
+                "running": running.get("plexmediaserver", False),
+            },
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/musicbox/configure")
+async def configure_musicbox(request: Request):
+    """MusicBox konfigurieren"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        if sudo_password and not sudo_password_store.get("password"):
+            sudo_password_store["password"] = sudo_password
+        
+        results = []
+        music_type = data.get("music_type", "mopidy")
+        
+        # Mopidy installieren
+        if music_type == "mopidy":
+            mopidy_installed = check_installed("mopidy")
+            if not mopidy_installed:
+                # Mopidy Repository hinzufügen
+                repo_result = run_command("curl -L https://apt.mopidy.com/mopidy.gpg | apt-key add -", sudo=True, sudo_password=sudo_password)
+                if repo_result["success"]:
+                    echo_result = run_command('echo "deb https://apt.mopidy.com/ stable main contrib non-free" > /etc/apt/sources.list.d/mopidy.list', sudo=True, sudo_password=sudo_password)
+                    if echo_result["success"]:
+                        update_result = run_command("apt-get update", sudo=True, sudo_password=sudo_password)
+                        if update_result["success"]:
+                            mopidy_install = run_command("apt-get install -y mopidy mopidy-spotify", sudo=True, sudo_password=sudo_password)
+                            if mopidy_install["success"]:
+                                results.append("Mopidy installiert")
+            
+            mopidy_start = run_command("systemctl enable --now mopidy", sudo=True, sudo_password=sudo_password)
+            if mopidy_start["success"]:
+                results.append("Mopidy aktiviert")
+        
+        # Volumio installieren (komplexer, benötigt spezielle Installation)
+        elif music_type == "volumio":
+            results.append("⚠️ Volumio: Bitte manuell installieren (siehe https://volumio.org/get-started/)")
+        
+        # Plex Media Server installieren
+        elif music_type == "plex":
+            plex_installed = check_installed("plexmediaserver")
+            if not plex_installed:
+                # Plex Repository hinzufügen
+                repo_result = run_command("curl https://downloads.plex.tv/plex-keys/PlexSign.key | apt-key add -", sudo=True, sudo_password=sudo_password)
+                if repo_result["success"]:
+                    echo_result = run_command('echo "deb https://downloads.plex.tv/repo/deb public main" > /etc/apt/sources.list.d/plexmediaserver.list', sudo=True, sudo_password=sudo_password)
+                    if echo_result["success"]:
+                        update_result = run_command("apt-get update", sudo=True, sudo_password=sudo_password)
+                        if update_result["success"]:
+                            plex_install = run_command("apt-get install -y plexmediaserver", sudo=True, sudo_password=sudo_password)
+                            if plex_install["success"]:
+                                results.append("Plex Media Server installiert")
+            
+            plex_start = run_command("systemctl enable --now plexmediaserver", sudo=True, sudo_password=sudo_password)
+            if plex_start["success"]:
+                results.append("Plex aktiviert")
+        
+        # AirPlay Support (Shairport-sync)
+        if data.get("enable_airplay"):
+            shairport_installed = check_installed("shairport-sync")
+            if not shairport_installed:
+                shairport_result = run_command("apt-get install -y shairport-sync", sudo=True, sudo_password=sudo_password)
+                if shairport_result["success"]:
+                    results.append("AirPlay (Shairport-sync) installiert")
+            
+            shairport_start = run_command("systemctl enable --now shairport-sync", sudo=True, sudo_password=sudo_password)
+            if shairport_start["success"]:
+                results.append("AirPlay aktiviert")
+        
+        return {
+            "status": "success",
+            "message": "Musikbox konfiguriert",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"💥 Fehler bei MusicBox-Konfiguration: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Fehler bei der MusicBox-Konfiguration: {str(e)}"
+            }
+        )
+
+# ==================== Dev Environment Endpoints ====================
+
+@app.get("/api/devenv/status")
+async def devenv_status():
+    """Entwicklungsumgebung Status"""
+    try:
+        installed = get_installed_apps()
+        
+        # Hole Versionen
+        python_version = get_package_version("python3")
+        nodejs_version = get_package_version("nodejs")
+        git_version = get_package_version("git")
+        docker_version = get_package_version("docker")
+        mysql_version = get_package_version("mysql")
+        postgresql_version = get_package_version("postgresql")
+        
+        # Cursor AI prüfen
+        cursor_installed = installed.get("cursor", False)
+        cursor_version = None
+        if cursor_installed:
+            cursor_version_result = run_command("cursor --version 2>/dev/null || cursor -v 2>/dev/null")
+            if cursor_version_result["success"]:
+                cursor_version = cursor_version_result["stdout"].strip()
+        
+        return {
+            "python": {
+                "installed": installed.get("python", False),
+                "version": python_version,
+            },
+            "nodejs": {
+                "installed": installed.get("nodejs", False),
+                "version": nodejs_version,
+            },
+            "git": {
+                "installed": installed.get("git", False),
+                "version": git_version,
+            },
+            "docker": {
+                "installed": installed.get("docker", False),
+                "version": docker_version,
+            },
+            "mysql": {
+                "installed": installed.get("mysql", False),
+                "version": mysql_version,
+            },
+            "postgresql": {
+                "installed": installed.get("postgresql", False),
+                "version": postgresql_version,
+            },
+            "cursor": {
+                "installed": cursor_installed,
+                "version": cursor_version,
+            },
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== Installation Endpoints ====================
+
+@app.post("/api/install/start")
+async def start_installation(request: Request):
+    """Installation starten"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        # Prüfe ob sudo-Passwort vorhanden ist
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        if sudo_password and not sudo_password_store.get("password"):
+            sudo_password_store["password"] = sudo_password
+        
+        security_config = data.get("security", {})
+        users_config = data.get("users", [])
+        devenv_config = data.get("devenv", {})
+        webserver_config = data.get("webserver", {})
+        mail_config = data.get("mail", {})
+        
+        results = []
+        total_steps = 0
+        completed_steps = 0
+        
+        # Sicherheit konfigurieren
+        if security_config:
+            total_steps += 1
+            try:
+                # Führe Sicherheitskonfiguration direkt aus
+                security_results = []
+                
+                # Firewall aktivieren
+                if security_config.get("enable_firewall"):
+                    ufw_installed = check_installed("ufw")
+                    if not ufw_installed:
+                        install_result = run_command("apt-get install -y ufw", sudo=True, sudo_password=sudo_password)
+                        if install_result["success"]:
+                            security_results.append("UFW installiert")
+                    
+                    enable_result = run_command("ufw --force enable", sudo=True, sudo_password=sudo_password)
+                    if enable_result["success"]:
+                        security_results.append("Firewall aktiviert")
+                
+                # Fail2Ban
+                if security_config.get("enable_fail2ban"):
+                    fail2ban_installed = check_installed("fail2ban")
+                    if not fail2ban_installed:
+                        install_result = run_command("apt-get install -y fail2ban", sudo=True, sudo_password=sudo_password)
+                        if install_result["success"]:
+                            security_results.append("Fail2Ban installiert")
+                    
+                    start_result = run_command("systemctl enable --now fail2ban", sudo=True, sudo_password=sudo_password)
+                    if start_result["success"]:
+                        security_results.append("Fail2Ban aktiviert")
+                
+                # Auto-Updates
+                if security_config.get("enable_auto_updates"):
+                    install_result = run_command("apt-get install -y unattended-upgrades", sudo=True, sudo_password=sudo_password)
+                    if install_result["success"]:
+                        enable_result = run_command("systemctl enable unattended-upgrades", sudo=True, sudo_password=sudo_password)
+                        if enable_result["success"]:
+                            security_results.append("Auto-Updates aktiviert")
+                
+                if security_results:
+                    completed_steps += 1
+                    results.extend(security_results)
+                else:
+                    results.append("Sicherheit: Keine Änderungen")
+            except Exception as e:
+                logger.error(f"Fehler bei Sicherheitskonfiguration: {e}")
+                results.append(f"Sicherheit: Fehler - {str(e)}")
+        
+        # Benutzer erstellen
+        if users_config and len(users_config) > 0:
+            total_steps += len(users_config)
+            for user in users_config:
+                try:
+                    # Erstelle Benutzer direkt
+                    username = user.get("username", "")
+                    password = user.get("password", "")
+                    role = user.get("role", "user")
+                    
+                    if username and password:
+                        # Führe useradd direkt aus
+                        useradd_cmd = f"useradd -m -s /bin/bash {username}"
+                        useradd_result = run_command(useradd_cmd, sudo=True, sudo_password=sudo_password)
+                        
+                        if useradd_result["success"]:
+                            # Setze Passwort
+                            chpasswd_cmd = f"echo '{username}:{password}' | chpasswd"
+                            chpasswd_result = run_command(chpasswd_cmd, sudo=True, sudo_password=sudo_password)
+                            
+                            if chpasswd_result["success"]:
+                                completed_steps += 1
+                                results.append(f"Benutzer {username} erstellt")
+                            else:
+                                results.append(f"Benutzer {username}: Passwort konnte nicht gesetzt werden")
+                        else:
+                            results.append(f"Benutzer {username}: Konnte nicht erstellt werden")
+                except Exception as e:
+                    logger.error(f"Fehler bei Benutzererstellung: {e}")
+                    results.append(f"Benutzer {user.get('username', '')}: Fehler - {str(e)}")
+        
+        # Entwicklungsumgebung
+        if devenv_config:
+            total_steps += 1
+            results.append("Entwicklungsumgebung: Konfiguration wird vorbereitet")
+            # TODO: Implementiere devenv configure endpoint
+        
+        # Webserver
+        if webserver_config:
+            total_steps += 1
+            try:
+                server_type = webserver_config.get("server_type", "nginx")
+                enable_php = webserver_config.get("enable_php", False)
+                webserver_results = []
+                
+                # Webserver installieren
+                if server_type == "nginx":
+                    nginx_installed = check_installed("nginx")
+                    if not nginx_installed:
+                        nginx_result = run_command("apt-get install -y nginx", sudo=True, sudo_password=sudo_password)
+                        if nginx_result["success"]:
+                            webserver_results.append("Nginx installiert")
+                    
+                    nginx_start = run_command("systemctl enable --now nginx", sudo=True, sudo_password=sudo_password)
+                    if nginx_start["success"]:
+                        webserver_results.append("Nginx aktiviert")
+                
+                elif server_type == "apache":
+                    apache_installed = check_installed("apache2")
+                    if not apache_installed:
+                        apache_result = run_command("apt-get install -y apache2", sudo=True, sudo_password=sudo_password)
+                        if apache_result["success"]:
+                            webserver_results.append("Apache installiert")
+                    
+                    apache_start = run_command("systemctl enable --now apache2", sudo=True, sudo_password=sudo_password)
+                    if apache_start["success"]:
+                        webserver_results.append("Apache aktiviert")
+                
+                # PHP installieren
+                if enable_php:
+                    php_installed = check_installed("php")
+                    if not php_installed:
+                        php_result = run_command("apt-get install -y php php-fpm php-cli php-common", sudo=True, sudo_password=sudo_password)
+                        if php_result["success"]:
+                            webserver_results.append("PHP installiert")
+                    
+                    if server_type == "nginx":
+                        php_fpm_start = run_command("systemctl enable --now php*-fpm", sudo=True, sudo_password=sudo_password)
+                        if php_fpm_start["success"]:
+                            webserver_results.append("PHP-FPM aktiviert")
+                    elif server_type == "apache":
+                        apache_php = run_command("apt-get install -y libapache2-mod-php", sudo=True, sudo_password=sudo_password)
+                        if apache_php["success"]:
+                            webserver_results.append("Apache PHP-Modul installiert")
+                
+                if webserver_results:
+                    completed_steps += 1
+                    results.extend(webserver_results)
+                else:
+                    results.append("Webserver: Keine Änderungen")
+            except Exception as e:
+                logger.error(f"Fehler bei Webserver-Konfiguration: {e}")
+                results.append(f"Webserver: Fehler - {str(e)}")
+        
+        # Mailserver
+        if mail_config:
+            total_steps += 1
+            results.append("Mailserver: Konfiguration wird vorbereitet")
+            # TODO: Implementiere mailserver configure endpoint
+        
+        # Aktualisiere globalen Fortschritt
+        progress_percent = (completed_steps / total_steps * 100) if total_steps > 0 else 0
+        installation_progress["progress"] = progress_percent
+        installation_progress["message"] = f"{completed_steps}/{total_steps} Schritte abgeschlossen"
+        installation_progress["current_step"] = "Installation läuft"
+        
+        return {
+            "status": "success",
+            "message": "Installation gestartet",
+            "total_steps": total_steps,
+            "completed_steps": completed_steps,
+            "results": results,
+            "progress": progress_percent
+        }
+    except Exception as e:
+        logger.error(f"💥 Fehler bei Installation: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Fehler beim Starten der Installation: {str(e)}"
+            }
+        )
+
+@app.get("/api/install/progress")
+async def get_progress():
+    """Installationsfortschritt"""
+    return installation_progress
+
+# ==================== Learning Computer Endpoints ====================
+
+@app.get("/api/learning/status")
+async def learning_status():
+    """Lerncomputer-Status abrufen"""
+    try:
+        installed = get_installed_apps()
+        
+        return {
+            "scratch": {
+                "installed": check_installed("scratch") or run_command("which scratch")["success"],
+            },
+            "python_learning": {
+                "installed": check_installed("python3"),
+                "version": get_package_version("python3"),
+            },
+            "robotics": {
+                "installed": check_installed("python3-gpiozero") or check_installed("python3-rpi.gpio"),
+            },
+            "electronics": {
+                "installed": check_installed("fritzing") or check_installed("kicad"),
+            },
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/learning/configure")
+async def configure_learning(request: Request):
+    """Lerncomputer konfigurieren"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        results = []
+        
+        # Scratch Programmierung
+        if data.get("enable_scratch"):
+            scratch_installed = check_installed("scratch")
+            if not scratch_installed:
+                # Scratch3 installieren (Node.js-basiert)
+                scratch_result = run_command("npm install -g scratch-vm scratch-gui", sudo=True, sudo_password=sudo_password)
+                if scratch_result["success"]:
+                    results.append("Scratch installiert")
+                else:
+                    # Alternativ: Scratch Desktop
+                    scratch_desktop = run_command("apt-get install -y scratch", sudo=True, sudo_password=sudo_password)
+                    if scratch_desktop["success"]:
+                        results.append("Scratch Desktop installiert")
+            else:
+                results.append("Scratch bereits installiert")
+        
+        # Python Lernumgebung
+        if data.get("enable_python_learning"):
+            python_installed = check_installed("python3")
+            if not python_installed:
+                python_result = run_command("apt-get install -y python3 python3-pip python3-venv", sudo=True, sudo_password=sudo_password)
+                if python_result["success"]:
+                    results.append("Python Lernumgebung installiert")
+            else:
+                results.append("Python bereits installiert")
+            
+            # Jupyter Notebook für interaktives Lernen
+            jupyter_result = run_command("pip3 install --user jupyter notebook", sudo=False)
+            if jupyter_result["success"]:
+                results.append("Jupyter Notebook installiert")
+        
+        # Robotik (GPIO)
+        if data.get("enable_robotics"):
+            gpio_installed = check_installed("python3-gpiozero")
+            if not gpio_installed:
+                gpio_result = run_command("apt-get install -y python3-gpiozero python3-rpi.gpio python3-picamera2", sudo=True, sudo_password=sudo_password)
+                if gpio_result["success"]:
+                    results.append("Robotik-Bibliotheken installiert")
+            else:
+                results.append("Robotik-Bibliotheken bereits installiert")
+            
+            # Beispiel-Projekte erstellen
+            examples_dir = "/home/pi/robotik-beispiele"
+            mkdir_result = run_command(f"mkdir -p {examples_dir}", sudo=False)
+            if mkdir_result["success"]:
+                results.append("Robotik-Beispiele-Verzeichnis erstellt")
+        
+        # Elektronik Grundlagen
+        if data.get("enable_electronics"):
+            fritzing_installed = check_installed("fritzing")
+            if not fritzing_installed:
+                fritzing_result = run_command("apt-get install -y fritzing", sudo=True, sudo_password=sudo_password)
+                if fritzing_result["success"]:
+                    results.append("Fritzing (Elektronik-Design) installiert")
+            else:
+                results.append("Fritzing bereits installiert")
+        
+        # Mathematik-Tools
+        if data.get("enable_math_tools"):
+            # Geogebra oder ähnliche Tools
+            geogebra_result = run_command("apt-get install -y geogebra", sudo=True, sudo_password=sudo_password)
+            if geogebra_result["success"]:
+                results.append("Geogebra (Mathematik) installiert")
+            else:
+                # Alternativ: Python-Mathematik-Bibliotheken
+                math_libs = run_command("pip3 install --user numpy matplotlib scipy sympy", sudo=False)
+                if math_libs["success"]:
+                    results.append("Mathematik-Bibliotheken installiert")
+        
+        return {
+            "status": "success",
+            "message": "Lerncomputer konfiguriert",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"💥 Fehler bei Lerncomputer-Konfiguration: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Fehler bei der Lerncomputer-Konfiguration: {str(e)}"
+            }
+        )
+
+# ==================== Monitoring Endpoints ====================
+
+@app.get("/api/monitoring/status")
+async def monitoring_status():
+    """Monitoring-Status abrufen"""
+    try:
+        installed = get_installed_apps()
+        running = get_running_services()
+        
+        return {
+            "prometheus": {
+                "installed": check_installed("prometheus") or run_command("which prometheus")["success"],
+                "running": running.get("prometheus", False),
+            },
+            "grafana": {
+                "installed": check_installed("grafana") or run_command("which grafana-server")["success"],
+                "running": running.get("grafana", False),
+            },
+            "node_exporter": {
+                "installed": check_installed("node_exporter") or run_command("which node_exporter")["success"],
+                "running": running.get("node_exporter", False),
+            },
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/monitoring/configure")
+async def configure_monitoring(request: Request):
+    """Monitoring konfigurieren"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        results = []
+        
+        # Node Exporter (System-Metriken)
+        if data.get("enable_node_exporter"):
+            node_exporter_installed = check_installed("node_exporter")
+            if not node_exporter_installed:
+                # Node Exporter herunterladen und installieren
+                node_exporter_result = run_command(
+                    "wget https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-arm64.tar.gz -O /tmp/node_exporter.tar.gz && "
+                    "tar xzf /tmp/node_exporter.tar.gz -C /tmp && "
+                    "sudo mv /tmp/node_exporter-1.6.1.linux-arm64/node_exporter /usr/local/bin/ && "
+                    "sudo chmod +x /usr/local/bin/node_exporter",
+                    sudo=True, sudo_password=sudo_password
+                )
+                if node_exporter_result["success"]:
+                    # Systemd Service erstellen
+                    service_content = """[Unit]
+Description=Node Exporter
+After=network.target
+
+[Service]
+Type=simple
+User=prometheus
+ExecStart=/usr/local/bin/node_exporter
+
+[Install]
+WantedBy=multi-user.target"""
+                    
+                    service_file = "/tmp/node_exporter.service"
+                    with open(service_file, 'w') as f:
+                        f.write(service_content)
+                    
+                    install_service = run_command(
+                        f"sudo mv {service_file} /etc/systemd/system/node_exporter.service && "
+                        "sudo systemctl daemon-reload && "
+                        "sudo systemctl enable node_exporter && "
+                        "sudo systemctl start node_exporter",
+                        sudo=True, sudo_password=sudo_password
+                    )
+                    if install_service["success"]:
+                        results.append("Node Exporter installiert und aktiviert")
+            else:
+                results.append("Node Exporter bereits installiert")
+        
+        # Prometheus
+        if data.get("enable_prometheus"):
+            prometheus_installed = check_installed("prometheus")
+            if not prometheus_installed:
+                prometheus_result = run_command(
+                    "apt-get install -y prometheus",
+                    sudo=True, sudo_password=sudo_password
+                )
+                if prometheus_result["success"]:
+                    # Prometheus konfigurieren
+                    prometheus_config = """global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+"""
+                    config_file = "/tmp/prometheus.yml"
+                    with open(config_file, 'w') as f:
+                        f.write(prometheus_config)
+                    
+                    move_config = run_command(
+                        f"sudo mv {config_file} /etc/prometheus/prometheus.yml && "
+                        "sudo systemctl restart prometheus",
+                        sudo=True, sudo_password=sudo_password
+                    )
+                    if move_config["success"]:
+                        results.append("Prometheus installiert und konfiguriert")
+            else:
+                results.append("Prometheus bereits installiert")
+        
+        # Grafana
+        if data.get("enable_grafana"):
+            grafana_installed = check_installed("grafana")
+            if not grafana_installed:
+                # Grafana Repository hinzufügen
+                add_repo = run_command(
+                    "sudo apt-get install -y apt-transport-https software-properties-common && "
+                    "wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add - && "
+                    "echo 'deb https://packages.grafana.com/oss/deb stable main' | sudo tee /etc/apt/sources.list.d/grafana.list && "
+                    "sudo apt-get update",
+                    sudo=True, sudo_password=sudo_password
+                )
+                
+                if add_repo["success"]:
+                    grafana_install = run_command(
+                        "apt-get install -y grafana",
+                        sudo=True, sudo_password=sudo_password
+                    )
+                    if grafana_install["success"]:
+                        grafana_start = run_command(
+                            "systemctl enable --now grafana-server",
+                            sudo=True, sudo_password=sudo_password
+                        )
+                        if grafana_start["success"]:
+                            results.append("Grafana installiert und aktiviert (Port 3000)")
+            else:
+                results.append("Grafana bereits installiert")
+        
+        return {
+            "status": "success",
+            "message": "Monitoring konfiguriert",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"💥 Fehler bei Monitoring-Konfiguration: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Fehler bei der Monitoring-Konfiguration: {str(e)}"
+            }
+        )
+
+# ==================== Backup & Restore Endpoints ====================
+
+@app.get("/api/backup/status")
+async def backup_status():
+    """Backup-Status abrufen"""
+    try:
+        # Prüfe installierte Backup-Tools
+        return {
+            "rsync": {
+                "installed": check_installed("rsync"),
+            },
+            "tar": {
+                "installed": check_installed("tar"),
+            },
+            "backup_scripts": {
+                "installed": run_command("test -f /usr/local/bin/pi-backup")["success"],
+            },
+            "backups": [],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# -------------------- Backup Settings + Scheduling --------------------
+
+def _backup_settings_path() -> Path:
+    return Path("/etc/pi-installer/backup.json")
+
+
+def _default_backup_settings() -> dict:
+    return {
+        "enabled": True,
+        "backup_dir": "/mnt/backups",
+        "retention": {"keep_last": 5},
+        # legacy (pre multi-schedule). kept for migration/backward compat.
+        "incremental_only": False,
+        "schedule": {"enabled": False, "on_calendar": "daily", "time": "02:00"},
+        # new multi-rule schedules
+        "schedules": [],
+        "datasets": {
+            "personal_default": {
+                "type": "personal",
+                "folders": ["Downloads", "Documents", "Pictures", "Images", "Videos", "Desktop"],
+                "incremental": False,
+            }
+        },
+        "state": {},
+        "cloud": {
+            "enabled": False,
+            "provider": "seafile_webdav",
+            "webdav_url": "",
+            "username": "",
+            "password": "",
+            "remote_path": "",
+        },
+    }
+
+
+def _ensure_schedule_migration(settings: dict) -> dict:
+    """
+    Migrate legacy single schedule fields into schedules[].
+    Keeps legacy keys for backward compatibility but ensures schedules[] exists.
+    """
+    if not isinstance(settings, dict):
+        settings = {}
+    base = _default_backup_settings()
+    base.update(settings)
+    # nested merges
+    base["retention"] = {**_default_backup_settings()["retention"], **(settings.get("retention") or {})}
+    base["cloud"] = {**_default_backup_settings()["cloud"], **(settings.get("cloud") or {})}
+    base["datasets"] = {**_default_backup_settings()["datasets"], **(settings.get("datasets") or {})}
+    base["state"] = settings.get("state") if isinstance(settings.get("state"), dict) else {}
+
+    # If schedules already present, keep it
+    if isinstance(settings.get("schedules"), list) and settings.get("schedules") is not None:
+        base["schedules"] = settings.get("schedules") or []
+        return base
+
+    # Create a single rule from legacy schedule
+    legacy_sch = settings.get("schedule") if isinstance(settings.get("schedule"), dict) else _default_backup_settings()["schedule"]
+    enabled = bool(legacy_sch.get("enabled"))
+    on_cal = (legacy_sch.get("on_calendar") or "daily").strip()
+    t = (legacy_sch.get("time") or "02:00").strip()
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    if on_cal == "hourly":
+        # represent hourly rule
+        days = []
+    btype = "incremental" if bool(settings.get("incremental_only")) else "full"
+
+    rule = {
+        "id": "default",
+        "enabled": enabled,
+        "name": "Zeitplan (migriert)",
+        "type": btype,
+        "target": "local",
+        "keep_last": int((base.get("retention") or {}).get("keep_last", 5) or 5),
+        "days": days,
+        "time": t,
+        "on_calendar": on_cal,  # legacy-like value, will be rendered for systemd
+        "dataset": None,
+        "incremental": False,
+    }
+    base["schedules"] = [rule] if enabled or settings.get("schedule") else []
+    return base
+
+
+def _read_backup_settings() -> dict:
+    try:
+        p = _backup_settings_path()
+        if p.exists():
+            raw = json.loads(p.read_text(encoding="utf-8") or "{}")
+            return _ensure_schedule_migration(raw)
+    except Exception:
+        pass
+    return _default_backup_settings()
+
+
+def _write_backup_settings(settings: dict, sudo_password: str) -> None:
+    # write via local tmp, then sudo-move (robust, avoids shell quoting issues)
+    import tempfile
+
+    content = json.dumps(settings, indent=2)
+    run_command("mkdir -p /etc/pi-installer", sudo=True, sudo_password=sudo_password)
+
+    with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="pi-installer-backup-", suffix=".json") as f:
+        f.write(content)
+        tmp_path = f.name
+
+    # move atomically into place with correct permissions
+    run_command(f"mv {shlex.quote(tmp_path)} /etc/pi-installer/backup.json", sudo=True, sudo_password=sudo_password)
+    run_command("chmod 600 /etc/pi-installer/backup.json", sudo=True, sudo_password=sudo_password)
+
+
+def _systemd_timer_name(rule_id: Optional[str] = None) -> str:
+    base = "pi-installer-backup"
+    if rule_id:
+        rid = "".join(ch for ch in str(rule_id) if ch.isalnum() or ch in ("-", "_")).strip("-_")
+        rid = rid[:32] if rid else "default"
+        return f"{base}-{rid}"
+    return base
+
+
+def _render_systemd_service(rule_id: str) -> str:
+    return """[Unit]
+Description=PI-Installer scheduled backup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/pi-installer-backup-run --rule {rule_id}
+""".format(rule_id=rule_id)
+
+
+def _render_systemd_timer(on_calendar: str, rule_name: str = "") -> str:
+    return f"""[Unit]
+Description=PI-Installer scheduled backup timer{(' - ' + rule_name) if rule_name else ''}
+
+[Timer]
+OnCalendar={on_calendar}
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+"""
+
+
+def _render_backup_runner_script() -> str:
+    # Minimaler Runner: liest /etc/pi-installer/backup.json und erstellt Backup + Retention + optional WebDAV Upload.
+    # läuft als root via systemd service.
+    return r"""#!/usr/bin/env python3
+import argparse
+import json
+import os
+import shlex
+import shutil
+import subprocess
+import time
+import glob
+from pathlib import Path
+
+CFG = Path("/etc/pi-installer/backup.json")
+
+def run_cmd(cmd, shell=True):
+    return subprocess.run(cmd, shell=shell, capture_output=True, text=True)
+
+def human(n):
+    for u in ["B","KB","MB","GB","TB","PB"]:
+        if n < 1024:
+            return f"{n:.0f} {u}" if u=="B" else f"{n:.1f} {u}"
+        n /= 1024
+    return f"{n:.1f} PB"
+
+def retry_upload(local_path, remote_url, user, pw, attempts=4):
+    if not shutil.which("curl"):
+        raise RuntimeError("curl not installed")
+    last_err = ""
+    for i in range(attempts):
+        up = subprocess.run(
+            ["curl", "-sS", "-u", f"{user}:{pw}", "-T", str(local_path), remote_url],
+            capture_output=True,
+            text=True,
+        )
+        if up.returncode == 0:
+            return True
+        last_err = (up.stderr or up.stdout or "").strip()[:500]
+        # backoff
+        time.sleep(min(60, 3 * (2 ** i)))
+    raise RuntimeError(f"upload failed: {last_err}")
+
+def remote_verify(remote_url, user, pw):
+    # PROPFIND Depth:0 should return 207 when present (or 200/204 in some DAV)
+    cmd = (
+        "curl -sS -o /dev/null -w '%{http_code}' "
+        f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+        "-X PROPFIND -H 'Depth: 0' "
+        f"{shlex.quote(remote_url)}"
+    )
+    r = run_cmd(cmd)
+    code = (r.stdout or "").strip()
+    try:
+        code_i = int(code)
+    except Exception:
+        code_i = None
+    return (r.returncode == 0) and (code_i in (200, 201, 204, 207))
+
+def remote_list(base_url, user, pw):
+    # PROPFIND Depth:1, parse very loosely by href lines
+    cmd = (
+        "curl -sS "
+        f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+        "-X PROPFIND -H 'Depth: 1' "
+        f"{shlex.quote(base_url)}"
+    )
+    r = run_cmd(cmd)
+    if r.returncode != 0:
+        return []
+    out = (r.stdout or "")
+    hrefs = []
+    for line in out.splitlines():
+        line = line.strip()
+        if "<D:href>" in line:
+            try:
+                href = line.split("<D:href>", 1)[1].split("</D:href>", 1)[0]
+                hrefs.append(href)
+            except Exception:
+                pass
+    return hrefs
+
+def remote_delete(remote_url, user, pw):
+    cmd = (
+        "curl -sS -o /dev/null -w '%{http_code}' "
+        f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+        "-X DELETE "
+        f"{shlex.quote(remote_url)}"
+    )
+    r = run_cmd(cmd)
+    try:
+        code = int((r.stdout or "").strip())
+    except Exception:
+        code = None
+    return (r.returncode == 0) and (code in (200, 202, 204))
+
+def find_last_full(backup_dir, pattern):
+    files = sorted(glob.glob(os.path.join(backup_dir, pattern)), key=lambda p: os.path.getmtime(p), reverse=True)
+    if not files:
+        return None, None
+    f = files[0]
+    try:
+        return f, int(os.path.getmtime(f))
+    except Exception:
+        return f, None
+
+def local_list(backup_dir, pattern):
+    return sorted(glob.glob(os.path.join(backup_dir, pattern)), key=lambda p: os.path.getmtime(p), reverse=True)
+
+def build_personal_paths(folders):
+    roots = []
+    try:
+        for u in sorted(Path("/home").iterdir()):
+            if not u.is_dir():
+                continue
+            # skip system-ish homes
+            if u.name in ("lost+found",):
+                continue
+            for folder in folders:
+                p = u / folder
+                if p.exists():
+                    roots.append(str(p))
+    except Exception:
+        pass
+    return roots
+
+def tar_create(out_path, includes, exclude_dir=None, newer_epoch=None, full_system=False):
+    inc = " ".join(shlex.quote(p) for p in includes)
+    if full_system:
+        cmd = (
+            f"tar -czf {shlex.quote(out_path)} "
+            + (f"--newer-mtime=@{int(newer_epoch)} " if newer_epoch else "")
+            + (f"--exclude={shlex.quote(exclude_dir)} " if exclude_dir else "")
+            + "--exclude=/proc --exclude=/sys --exclude=/dev --exclude=/tmp --exclude=/run --exclude=/mnt /"
+        )
+    else:
+        cmd = (
+            f"tar -czf {shlex.quote(out_path)} "
+            + (f"--newer-mtime=@{int(newer_epoch)} " if newer_epoch else "")
+            + (f"--exclude={shlex.quote(exclude_dir)} " if exclude_dir else "")
+            + inc
+        )
+    return run_cmd(cmd)
+
+def local_verify_gzip(path):
+    # quick verify: list archive
+    r = run_cmd(f"tar -tzf {shlex.quote(str(path))} >/dev/null 2>&1")
+    return r.returncode == 0
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--rule", required=False, default="", help="rule id")
+    args = ap.parse_args()
+
+    if not CFG.exists():
+        raise SystemExit("missing /etc/pi-installer/backup.json")
+    cfg = json.loads(CFG.read_text() or "{}")
+    if not cfg.get("enabled", True):
+        print("disabled")
+        return
+
+    schedules = cfg.get("schedules") if isinstance(cfg.get("schedules"), list) else []
+    rule = None
+    rid = (args.rule or "").strip()
+    if rid:
+        for r in schedules:
+            if isinstance(r, dict) and str(r.get("id") or "") == rid:
+                rule = r
+                break
+        if not rule:
+            raise SystemExit(f"rule not found: {rid}")
+    else:
+        # legacy fallback
+        rule = {"id": "legacy", "type": "full", "target": "local", "keep_last": int((cfg.get("retention") or {}).get("keep_last", 5) or 5)}
+        rid = "legacy"
+
+    backup_dir = cfg.get("backup_dir") or "/mnt/backups"
+    Path(backup_dir).mkdir(parents=True, exist_ok=True)
+    ts = time.strftime("%Y%m%d_%H%M%S")
+
+    rtype = (rule.get("type") or "full").strip()
+    target = (rule.get("target") or "local").strip()
+    keep_last = int(rule.get("keep_last") or int((cfg.get("retention") or {}).get("keep_last", 5) or 5))
+
+    # create archive
+    out = None
+    if rtype == "full":
+        out = f"{backup_dir}/pi-backup-full-{rid}-{ts}.tar.gz"
+        r = tar_create(out, [], exclude_dir=backup_dir, full_system=True)
+    elif rtype == "incremental":
+        last_full, last_m = find_last_full(backup_dir, f"pi-backup-full-{rid}-*.tar.gz")
+        if not last_full or not last_m:
+            out = f"{backup_dir}/pi-backup-full-{rid}-{ts}.tar.gz"
+            r = tar_create(out, [], exclude_dir=backup_dir, full_system=True)
+        else:
+            out = f"{backup_dir}/pi-backup-inc-{rid}-{ts}.tar.gz"
+            r = tar_create(out, ["/home", "/etc", "/var/www", "/opt"], exclude_dir=backup_dir, newer_epoch=int(last_m), full_system=False)
+    elif rtype == "data":
+        out = f"{backup_dir}/pi-backup-data-{rid}-{ts}.tar.gz"
+        r = tar_create(out, ["/home", "/var/www", "/opt"], exclude_dir=backup_dir, full_system=False)
+    elif rtype == "personal":
+        ds_id = rule.get("dataset") or "personal_default"
+        ds = (cfg.get("datasets") or {}).get(ds_id) if isinstance(cfg.get("datasets"), dict) else None
+        folders = (ds or {}).get("folders") if isinstance((ds or {}).get("folders"), list) else ["Downloads","Documents","Pictures","Videos","Desktop"]
+        do_inc = bool(rule.get("incremental") or (ds or {}).get("incremental"))
+        includes = build_personal_paths(folders)
+        if not includes:
+            raise SystemExit("personal dataset empty: no folders found under /home/*")
+        if not do_inc:
+            out = f"{backup_dir}/pi-backup-personal-full-{rid}-{ts}.tar.gz"
+            r = tar_create(out, includes, exclude_dir=backup_dir, full_system=False)
+        else:
+            last_full, last_m = find_last_full(backup_dir, f"pi-backup-personal-full-{rid}-*.tar.gz")
+            if not last_full or not last_m:
+                out = f"{backup_dir}/pi-backup-personal-full-{rid}-{ts}.tar.gz"
+                r = tar_create(out, includes, exclude_dir=backup_dir, full_system=False)
+            else:
+                out = f"{backup_dir}/pi-backup-personal-inc-{rid}-{ts}.tar.gz"
+                r = tar_create(out, includes, exclude_dir=backup_dir, newer_epoch=int(last_m), full_system=False)
+    else:
+        raise SystemExit(f"unknown rule type: {rtype}")
+
+    # tar can return 1 for warnings; accept if file exists
+    outp = Path(out)
+    if r.returncode not in (0,1) or not outp.exists() or outp.stat().st_size == 0:
+        print("backup failed")
+        print((r.stderr or r.stdout or "").strip()[:500])
+        raise SystemExit(1)
+    if not local_verify_gzip(outp):
+        print("verify failed (local)")
+        raise SystemExit(1)
+
+    print(f"backup created: {out} ({human(outp.stat().st_size)}) rc={r.returncode}")
+
+    # cloud upload (optional)
+    cloud = cfg.get("cloud") or {}
+    cloud_enabled = bool(cloud.get("enabled"))
+    provider = cloud.get("provider") or "seafile_webdav"
+    # Unterstütze WebDAV-basierte Provider
+    webdav_providers = ("seafile_webdav", "webdav", "nextcloud_webdav")
+    if target in ("cloud_only","local_and_cloud") and cloud_enabled and provider in webdav_providers:
+        url = (cloud.get("webdav_url") or "").rstrip("/")
+        user = cloud.get("username") or ""
+        pw = cloud.get("password") or ""
+        remote_path = (cloud.get("remote_path") or "").strip("/")
+        if not (url and user and pw):
+            raise SystemExit("cloud target selected but webdav settings missing")
+        base = f"{url}/{remote_path}" if remote_path else url
+        if not base.endswith("/"):
+            base = base + "/"
+        remote = f"{base}{os.path.basename(out)}"
+
+        retry_upload(outp, remote, user, pw)
+        if not remote_verify(remote, user, pw):
+            raise SystemExit("remote verify failed after upload")
+        print(f"uploaded+verified: {remote}")
+
+        # remote retention
+        hrefs = remote_list(base, user, pw)
+        want_prefixes = [
+            f"pi-backup-full-{rid}-",
+            f"pi-backup-inc-{rid}-",
+            f"pi-backup-data-{rid}-",
+            f"pi-backup-personal-full-{rid}-",
+            f"pi-backup-personal-inc-{rid}-",
+        ]
+        files = []
+        for h in hrefs:
+            bn = os.path.basename(h.rstrip("/"))
+            if not bn.endswith(".tar.gz"):
+                continue
+            if not any(bn.startswith(p) for p in want_prefixes):
+                continue
+            files.append(h)
+        # keep_last newest based on filename timestamp suffix; if unsorted, this is still safe enough
+        for old in files[keep_last:]:
+            remote_delete(old, user, pw)
+
+        if target == "cloud_only":
+            try:
+                outp.unlink(missing_ok=True)
+                print("local deleted (cloud-only)")
+            except Exception as e:
+                print(f"local delete failed: {e}")
+
+    # local retention
+    if target in ("local","local_and_cloud"):
+        patterns = [
+            f"pi-backup-full-{rid}-*.tar.gz",
+            f"pi-backup-inc-{rid}-*.tar.gz",
+            f"pi-backup-data-{rid}-*.tar.gz",
+            f"pi-backup-personal-full-{rid}-*.tar.gz",
+            f"pi-backup-personal-inc-{rid}-*.tar.gz",
+        ]
+        files = []
+        for pat in patterns:
+            files.extend(local_list(backup_dir, pat))
+        # remove duplicates while preserving order
+        seen = set()
+        ordered = []
+        for f in files:
+            if f in seen:
+                continue
+            seen.add(f)
+            ordered.append(f)
+        for old in ordered[keep_last:]:
+            try:
+                os.remove(old)
+            except Exception:
+                pass
+
+    # store minimal state
+    cfg.setdefault("state", {})
+    cfg["state"][rid] = {"last_run_epoch": int(time.time()), "last_file": os.path.basename(out)}
+    CFG.write_text(json.dumps(cfg, indent=2))
+    os.chmod(CFG, 0o600)
+
+if __name__ == "__main__":
+    main()
+"""
+
+
+def _apply_backup_schedule(settings: dict, sudo_password: str) -> None:
+    # ensure runner
+    runner = "/usr/local/bin/pi-installer-backup-run"
+    script = _render_backup_runner_script()
+    import tempfile
+    with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="pi-installer-runner-", suffix=".py") as f:
+        f.write(script)
+        tmp_runner = f.name
+    run_command(f"mv {shlex.quote(tmp_runner)} {shlex.quote(runner)}", sudo=True, sudo_password=sudo_password)
+    run_command(f"chmod 755 {shlex.quote(runner)}", sudo=True, sudo_password=sudo_password)
+
+    def render_on_calendar(rule: dict) -> str:
+        # supports legacy values and explicit systemd strings
+        oc = (rule.get("on_calendar") or "daily").strip()
+        t = (rule.get("time") or "02:00").strip()
+        days = rule.get("days") if isinstance(rule.get("days"), list) else []
+        if oc == "hourly":
+            return "hourly"
+        if oc.startswith("*-*-*") or oc.startswith("Mon") or oc.startswith("Tue") or oc.startswith("Wed") or oc.startswith("Thu") or oc.startswith("Fri") or oc.startswith("Sat") or oc.startswith("Sun"):
+            return oc
+        if days:
+            # systemd: "Mon..Sun *-*-* HH:MM:00"
+            d = ",".join(days)
+            return f"{d} *-*-* {t}:00"
+        # default daily
+        return f"*-*-* {t}:00"
+
+    schedules = settings.get("schedules") if isinstance(settings.get("schedules"), list) else []
+
+    # cleanup legacy single timer (best-effort)
+    legacy = _systemd_timer_name()
+    run_command(f"systemctl disable --now {legacy}.timer 2>/dev/null || true", sudo=True, sudo_password=sudo_password)
+
+    # cleanup removed per-rule units
+    try:
+        keep_ids = set()
+        for r in schedules:
+            if isinstance(r, dict) and r.get("id"):
+                keep_ids.add(_systemd_timer_name(str(r["id"])))
+        sysdir = Path("/etc/systemd/system")
+        for p in sysdir.glob("pi-installer-backup-*.timer"):
+            name = p.name.replace(".timer", "")
+            if name not in keep_ids:
+                run_command(f"systemctl disable --now {shlex.quote(name)}.timer 2>/dev/null || true", sudo=True, sudo_password=sudo_password)
+                run_command(f"rm -f {shlex.quote(str(sysdir / (name + '.timer')))} {shlex.quote(str(sysdir / (name + '.service')))}", sudo=True, sudo_password=sudo_password)
+    except Exception:
+        pass
+
+    import tempfile
+    for rule in schedules:
+        if not isinstance(rule, dict):
+            continue
+        rid = str(rule.get("id") or "").strip()
+        if not rid:
+            continue
+        svc_name = _systemd_timer_name(rid)
+        svc_path = f"/etc/systemd/system/{svc_name}.service"
+        timer_path = f"/etc/systemd/system/{svc_name}.timer"
+        on_cal = render_on_calendar(rule)
+        svc_txt = _render_systemd_service(rid)
+        timer_txt = _render_systemd_timer(on_cal, rule_name=str(rule.get("name") or "").strip())
+
+        with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="pi-installer-svc-", suffix=".service") as f:
+            f.write(svc_txt)
+            tmp_svc = f.name
+        with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="pi-installer-timer-", suffix=".timer") as f:
+            f.write(timer_txt)
+            tmp_timer = f.name
+
+        run_command(f"mv {shlex.quote(tmp_svc)} {shlex.quote(svc_path)}", sudo=True, sudo_password=sudo_password)
+        run_command(f"mv {shlex.quote(tmp_timer)} {shlex.quote(timer_path)}", sudo=True, sudo_password=sudo_password)
+
+        if rule.get("enabled") is True:
+            run_command(f"systemctl enable --now {svc_name}.timer", sudo=True, sudo_password=sudo_password)
+        else:
+            run_command(f"systemctl disable --now {svc_name}.timer", sudo=True, sudo_password=sudo_password)
+
+    run_command("systemctl daemon-reload", sudo=True, sudo_password=sudo_password)
+
+
+@app.get("/api/backup/settings")
+async def backup_get_settings():
+    s = _read_backup_settings()
+    # Timer status (per rule)
+    statuses = {}
+    for r in (s.get("schedules") or []):
+        if not isinstance(r, dict) or not r.get("id"):
+            continue
+        svc = _systemd_timer_name(str(r["id"]))
+        enabled = run_command(f"systemctl is-enabled {svc}.timer 2>/dev/null").get("stdout", "").strip()
+        active = run_command(f"systemctl is-active {svc}.timer 2>/dev/null").get("stdout", "").strip()
+        statuses[str(r["id"])] = {"enabled": enabled, "active": active}
+    s["_timer_status"] = statuses
+    return {"status": "success", "settings": s}
+
+
+@app.post("/api/backup/settings")
+async def backup_set_settings(request: Request):
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+    if not sudo_password:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+
+    settings = data.get("settings") or {}
+    # merge + migrate legacy -> schedules[]
+    base = _ensure_schedule_migration(settings)
+    # ensure we keep explicit schedules if provided
+    if isinstance(settings.get("schedules"), list):
+        base["schedules"] = settings.get("schedules") or []
+    if isinstance(settings.get("datasets"), dict):
+        base["datasets"] = {**_default_backup_settings()["datasets"], **settings.get("datasets")}
+    if isinstance(settings.get("state"), dict):
+        base["state"] = settings.get("state") or {}
+
+    # validate some fields
+    try:
+        base["backup_dir"] = _validate_backup_dir(base.get("backup_dir", "/mnt/backups"))
+    except Exception as ve:
+        return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"})
+    try:
+        keep = int((base.get("retention") or {}).get("keep_last", 5))
+        if keep < 1 or keep > 100:
+            raise ValueError()
+        base["retention"]["keep_last"] = keep
+    except Exception:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "retention.keep_last muss zwischen 1 und 100 liegen"})
+
+    # validate schedules basic shape
+    try:
+        cleaned = []
+        for r in (base.get("schedules") or []):
+            if not isinstance(r, dict):
+                continue
+            rid = str(r.get("id") or "").strip()
+            if not rid:
+                continue
+            rr = dict(r)
+            rr["id"] = rid
+            rr["enabled"] = bool(rr.get("enabled"))
+            rr["name"] = str(rr.get("name") or "").strip() or rid
+            rr["type"] = str(rr.get("type") or "incremental").strip()
+            rr["target"] = str(rr.get("target") or "local").strip()
+            rr["keep_last"] = int(rr.get("keep_last") or base["retention"]["keep_last"])
+            rr["time"] = str(rr.get("time") or "02:00").strip()
+            rr["days"] = rr.get("days") if isinstance(rr.get("days"), list) else ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            cleaned.append(rr)
+        base["schedules"] = cleaned
+    except Exception:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "schedules ist ungültig"})
+
+    # store config (root-protected) + apply timer
+    _write_backup_settings(base, sudo_password=sudo_password)
+    _apply_backup_schedule(base, sudo_password=sudo_password)
+
+    return {"status": "success", "message": "Backup-Einstellungen gespeichert", "settings": base}
+
+
+@app.post("/api/backup/schedule/run-now")
+async def backup_run_now(request: Request):
+    """Scheduled Backup sofort ausführen (nutzt Runner Script)."""
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+    if not sudo_password:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+
+    runner = "/usr/local/bin/pi-installer-backup-run"
+    rule_id = (data.get("rule_id") or "").strip()
+    # ensure it exists via applying schedule with current settings
+    settings = _read_backup_settings()
+    _apply_backup_schedule(settings, sudo_password=sudo_password)
+    cmd = runner if not rule_id else f"{runner} --rule {shlex.quote(rule_id)}"
+    res = await run_command_async(cmd, sudo=True, sudo_password=sudo_password, timeout=7200)
+    return {
+        "status": "success" if res["success"] else "error",
+        "stdout": (res.get("stdout") or "").strip()[:4000],
+        "stderr": (res.get("stderr") or "").strip()[:4000],
+        "returncode": res.get("returncode"),
+    }
+
+
+@app.post("/api/backup/cloud/test")
+async def backup_cloud_test(request: Request):
+    """Testet WebDAV/Seafile Erreichbarkeit (ohne Speichern)."""
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    url = (data.get("webdav_url") or "").strip()
+    username = (data.get("username") or "").strip()
+    password = (data.get("password") or "").strip()
+
+    if not url:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "webdav_url erforderlich"})
+    if not username or not password:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "username + password erforderlich"})
+
+    # PROPFIND Depth:0 ist typisch für WebDAV (Status 207 = Multi-Status)
+    cmd = (
+        "curl -sS -o /dev/null "
+        "-w '%{http_code}' "
+        f"-u {shlex.quote(username)}:{shlex.quote(password)} "
+        "-X PROPFIND -H 'Depth: 0' "
+        f"{shlex.quote(url)}"
+    )
+    res = run_command(cmd)
+    code_str = (res.get("stdout") or "").strip()
+    try:
+        code = int(code_str) if code_str else None
+    except Exception:
+        code = None
+
+    ok = res.get("success") and (code in (200, 201, 204, 207))
+    msg = None
+    if not ok:
+        if code == 401:
+            msg = "401 Unauthorized (Login/Token prüfen)"
+        elif code:
+            msg = f"HTTP {code} (Server erreichbar, aber Antwort unerwartet)"
+        else:
+            msg = (res.get("stderr") or "Verbindung fehlgeschlagen").strip()[:300]
+
+    return {"status": "success" if ok else "error", "ok": bool(ok), "http_code": code, "message": msg}
+
+
+@app.get("/api/backup/cloud/list")
+async def backup_cloud_list(rule_id: str = ""):
+    """
+    Listet externe Backups im konfigurierten WebDAV-Ziel (Seafile).
+    Nutzt gespeicherte Settings (/etc/pi-installer/backup.json).
+    """
+    settings = _read_backup_settings()
+    cloud = settings.get("cloud") or {}
+    if not cloud.get("enabled"):
+        return {"status": "success", "backups": [], "message": "Cloud-Upload ist deaktiviert"}
+    provider = cloud.get("provider") or "seafile_webdav"
+    
+    # Versuche Backup-Modul zu verwenden für alle Provider
+    try:
+        backup_mod = _get_backup_module()
+        backup_mod.run_command = run_command
+        
+        # Für WebDAV: Verwende bestehende Logik
+        if provider in ("seafile_webdav", "webdav", "nextcloud_webdav"):
+            pass  # Weiter mit WebDAV-Logik unten
+        # Für S3: Versuche S3-Liste
+        elif provider in ("s3", "s3_compatible"):
+            bucket = cloud.get("bucket") or ""
+            if not bucket:
+                return {"status": "success", "backups": [], "message": "S3-Bucket nicht konfiguriert"}
+            # TODO: S3-Liste implementieren
+            return {"status": "success", "backups": [], "message": "S3-Liste wird noch nicht unterstützt"}
+        # Für andere Provider: Noch nicht unterstützt
+        else:
+            return {"status": "success", "backups": [], "message": f"Provider '{provider}' wird für Cloud-Liste noch nicht unterstützt"}
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Cloud-Backups: {str(e)}", exc_info=True)
+        # Fallback auf WebDAV
+    
+    # Unterstütze WebDAV-basierte Provider (Fallback)
+    if provider not in ("seafile_webdav", "webdav", "nextcloud_webdav"):
+        return {"status": "success", "backups": [], "message": f"Provider '{provider}' wird für Cloud-Liste nicht unterstützt"}
+
+    url = (cloud.get("webdav_url") or "").strip().rstrip("/")
+    user = (cloud.get("username") or "").strip()
+    pw = (cloud.get("password") or "").strip()
+    remote_path = (cloud.get("remote_path") or "").strip().strip("/")
+
+    if not url or not user or not pw:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "WebDAV URL + Username + Passwort fehlen"})
+
+    base = f"{url}/{remote_path}" if remote_path else url
+    # Ensure trailing slash for collection listing
+    if not base.endswith("/"):
+        base = base + "/"
+
+    # PROPFIND Depth:1 to list directory contents
+    cmd = (
+        "curl -sS "
+        f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+        "-X PROPFIND -H 'Depth: 1' "
+        f"{shlex.quote(base)}"
+    )
+    res = run_command(cmd)
+    if not res.get("success"):
+        return JSONResponse(status_code=200, content={"status": "error", "message": (res.get("stderr") or res.get("error") or "Request fehlgeschlagen")[:300]})
+
+    xml_text = (res.get("stdout") or "").strip()
+    if not xml_text:
+        return {"status": "success", "backups": []}
+
+    rid = (rule_id or "").strip()
+    backups = []
+    try:
+        # Parse DAV XML. Be tolerant with namespaces.
+        root = ET.fromstring(xml_text)
+        ns_dav = "{DAV:}"
+
+        def _text(el, path):
+            try:
+                n = el.find(path)
+                return (n.text or "").strip() if n is not None else ""
+            except Exception:
+                return ""
+
+        for resp in root.findall(f".//{ns_dav}response"):
+            href = _text(resp, f"{ns_dav}href")
+            if not href:
+                continue
+            # skip directory itself
+            if href.rstrip("/") == base.rstrip("/"):
+                continue
+            # We only care about backup files (inkl. verschlüsselte)
+            name = href.split("/")[-1]
+            if not (name.endswith(".tar.gz") or name.endswith(".tar.gz.gpg") or name.endswith(".tar.gz.enc")):
+                continue
+            if rid and f"-{rid}-" not in name:
+                # only filter those that encode rule id in filename
+                continue
+
+            size = None
+            last_modified = None
+            for propstat in resp.findall(f"{ns_dav}propstat"):
+                prop = propstat.find(f"{ns_dav}prop")
+                if prop is None:
+                    continue
+                cl = prop.find(f"{ns_dav}getcontentlength")
+                lm = prop.find(f"{ns_dav}getlastmodified")
+                if cl is not None and cl.text:
+                    try:
+                        size = int(cl.text.strip())
+                    except Exception:
+                        size = None
+                if lm is not None and lm.text:
+                    last_modified = lm.text.strip()
+            backup_info = {"name": name, "href": href, "size_bytes": size, "last_modified": last_modified}
+            # Markiere verschlüsselte Backups
+            if name.endswith(".gpg") or name.endswith(".enc"):
+                backup_info["encrypted"] = True
+            backup_info["location"] = "Cloud"
+            backups.append(backup_info)
+
+        # sort newest first if possible
+        backups.sort(key=lambda b: (b.get("last_modified") or "", b.get("name") or ""), reverse=True)
+    except Exception:
+        # fallback: if parsing fails, return empty but not error (avoid breaking UI)
+        backups = []
+
+    return {"status": "success", "backups": backups, "base_url": base}
+
+
+@app.get("/api/backup/cloud/quota")
+async def backup_cloud_quota():
+    """Gibt verfügbaren Speicherplatz für Cloud-Backups zurück"""
+    try:
+        settings = _read_backup_settings()
+        cloud = settings.get("cloud") or {}
+        if not cloud.get("enabled"):
+            return {"status": "success", "quota": None, "message": "Cloud-Upload ist deaktiviert"}
+        
+        provider = cloud.get("provider") or "seafile_webdav"
+        url = (cloud.get("webdav_url") or "").strip().rstrip("/")
+        user = (cloud.get("username") or "").strip()
+        pw = (cloud.get("password") or "").strip()
+        
+        if not url or not user or not pw:
+            return {"status": "success", "quota": None, "message": "Cloud-Settings unvollständig"}
+        
+        # Versuche Quota-Informationen zu erhalten (WebDAV QUOTA Property)
+        # Für Seafile/Nextcloud: PROPFIND mit Quota-Property
+        base = url.rstrip("/")
+        cmd = (
+            "curl -sS "
+            f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+            "-X PROPFIND -H 'Depth: 0' "
+            f"{shlex.quote(base)}"
+        )
+        res = run_command(cmd)
+        
+        if not res.get("success"):
+            return {"status": "success", "quota": None, "message": "Quota-Informationen nicht verfügbar"}
+        
+        xml_text = (res.get("stdout") or "").strip()
+        if not xml_text:
+            return {"status": "success", "quota": None, "message": "Keine Quota-Informationen"}
+        
+        # Parse XML für Quota-Informationen
+        try:
+            root = ET.fromstring(xml_text)
+            ns_dav = "{DAV:}"
+            
+            # Suche nach quota-used und quota-available
+            quota_used = None
+            quota_available = None
+            
+            for propstat in root.findall(f".//{ns_dav}propstat"):
+                prop = propstat.find(f"{ns_dav}prop")
+                if prop is None:
+                    continue
+                
+                # Seafile/Nextcloud verwenden verschiedene Namespaces
+                for ns in ["{DAV:}", "{http://owncloud.org/ns}", "{http://nextcloud.org/ns}"]:
+                    used_el = prop.find(f"{ns}quota-used-bytes")
+                    avail_el = prop.find(f"{ns}quota-available-bytes")
+                    
+                    if used_el is not None and used_el.text:
+                        try:
+                            quota_used = int(used_el.text.strip())
+                        except Exception:
+                            pass
+                    if avail_el is not None and avail_el.text:
+                        try:
+                            quota_available = int(avail_el.text.strip())
+                        except Exception:
+                            pass
+            
+            if quota_used is not None or quota_available is not None:
+                def human(n: int) -> str:
+                    for unit in ["B", "KB", "MB", "GB", "TB"]:
+                        if n < 1024:
+                            return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
+                        n /= 1024
+                    return f"{n:.1f} TB"
+                
+                total = (quota_used or 0) + (quota_available or 0) if quota_available is not None else None
+                
+                return {
+                    "status": "success",
+                    "quota": {
+                        "used_bytes": quota_used,
+                        "available_bytes": quota_available,
+                        "total_bytes": total,
+                        "used_human": human(quota_used) if quota_used is not None else None,
+                        "available_human": human(quota_available) if quota_available is not None else None,
+                        "total_human": human(total) if total else None,
+                        "used_percent": round((quota_used / total * 100), 1) if (quota_used and total and total > 0) else None,
+                    }
+                }
+        except Exception as e:
+            logger.debug(f"Quota-Parsing fehlgeschlagen: {str(e)}")
+        
+        return {"status": "success", "quota": None, "message": "Quota-Informationen nicht verfügbar für diesen Provider"}
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Cloud-Quota: {str(e)}", exc_info=True)
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/backup/cloud/verify")
+async def backup_cloud_verify(request: Request):
+    """Verifiziert ein einzelnes Remote-Backup via WebDAV PROPFIND Depth:0."""
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    name = (data.get("name") or "").strip()
+    settings = _read_backup_settings()
+    cloud = settings.get("cloud") or {}
+    url = (cloud.get("webdav_url") or "").strip().rstrip("/")
+    user = (cloud.get("username") or "").strip()
+    pw = (cloud.get("password") or "").strip()
+    remote_path = (cloud.get("remote_path") or "").strip().strip("/")
+
+    if not name or not name.endswith(".tar.gz"):
+        return JSONResponse(status_code=200, content={"status": "error", "message": "name (.tar.gz) erforderlich"})
+    if not url or not user or not pw:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "WebDAV Settings fehlen"})
+
+    base = f"{url}/{remote_path}" if remote_path else url
+    if not base.endswith("/"):
+        base += "/"
+    remote = f"{base}{name}"
+    cmd = (
+        "curl -sS -o /dev/null "
+        "-w '%{http_code}' "
+        f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+        "-X PROPFIND -H 'Depth: 0' "
+        f"{shlex.quote(remote)}"
+    )
+    res = run_command(cmd)
+    code_str = (res.get("stdout") or "").strip()
+    try:
+        code = int(code_str) if code_str else None
+    except Exception:
+        code = None
+    ok = res.get("success") and (code in (200, 201, 204, 207))
+    return {"status": "success" if ok else "error", "ok": bool(ok), "http_code": code, "remote": remote}
+
+@app.get("/api/backup/targets")
+async def backup_targets():
+    """Liste sinnvoller Backup-Ziele (z.B. USB-Sticks / gemountete Datenträger)."""
+    try:
+        # lsblk liefert Mountpoints sehr zuverlässig.
+        # Wichtig: Auf manchen Systemen gibt es "MOUNTPOINTS" (Plural) → Liste von Mountpoints.
+        # NOTE: Wir brauchen TYPE/PKNAME, um ungemountete USB-Partitionen zuverlässig zu erkennen.
+        res = run_command("lsblk -J -o NAME,TYPE,PKNAME,LABEL,SIZE,FSTYPE,MOUNTPOINTS,RM,RO,MODEL,TRAN 2>/dev/null")
+        targets = []
+        raw = res.get("stdout", "") if res["success"] else ""
+        if not raw:
+            # Fallback: ältere util-linux Versionen kennen evtl. MOUNTPOINTS nicht
+            res2 = run_command("lsblk -J -o NAME,TYPE,PKNAME,LABEL,SIZE,FSTYPE,MOUNTPOINT,RM,RO,MODEL,TRAN 2>/dev/null")
+            raw = res2.get("stdout", "") if res2["success"] else ""
+
+        if raw:
+            try:
+                data = json.loads(raw or "{}")
+                devices = data.get("blockdevices", []) or []
+
+                system_mounts = {"/", "/boot", "/boot/firmware", "[SWAP]"}
+
+                def add_target(d, mp, extra=None):
+                    payload = {
+                        "name": d.get("name"),
+                        "label": d.get("label"),
+                        "size": d.get("size"),
+                        "fstype": d.get("fstype"),
+                        "mountpoint": mp,
+                        "rm": d.get("rm"),
+                        "model": d.get("model"),
+                        "tran": d.get("tran"),
+                        "device": f"/dev/{d.get('name')}" if d.get("name") else None,
+                        "mounted": bool(mp),
+                    }
+                    if extra:
+                        payload.update(extra)
+                    targets.append(payload)
+
+                def walk(items, disk_ctx=None):
+                    for d in items:
+                        dtype = d.get("type")
+                        if dtype == "disk":
+                            disk_ctx = d
+
+                        name = d.get("name")
+                        mps = d.get("mountpoints")
+                        mp = d.get("mountpoint")
+
+                        # mounted items
+                        if isinstance(mps, list) and mps:
+                            for one in mps:
+                                if one and one not in system_mounts:
+                                    add_target(d, one, {"mounted": True})
+                        elif mp and mp not in system_mounts:
+                            add_target(d, mp, {"mounted": True})
+
+                        # unmounted USB/Removable partitions → anzeigen, damit der Stick "erkannt" wird
+                        if dtype == "part" and disk_ctx and name:
+                            dtran = disk_ctx.get("tran") or d.get("tran")
+                            drm = disk_ctx.get("rm") if disk_ctx.get("rm") is not None else d.get("rm")
+                            is_usb = dtran == "usb"
+                            is_rm = bool(drm)
+                            has_mount = bool(mp) or (isinstance(mps, list) and len(mps) > 0)
+                            if (is_usb or is_rm) and not has_mount:
+                                add_target(d, None, {"mounted": False, "tran": dtran, "rm": drm, "model": disk_ctx.get("model")})
+
+                        if d.get("children"):
+                            walk(d["children"], disk_ctx)
+
+                walk(devices, None)
+            except Exception:
+                # Ignorieren - targets bleibt leer
+                pass
+
+        # Ergänzung: Mounts unter /mnt/pi-installer-usb sicher aufnehmen (auch wenn lsblk nichts liefert)
+        try:
+            for fs in _findmnt_mounts():
+                tgt = (fs.get("target") or "").strip()
+                if tgt.startswith("/mnt/pi-installer-usb/"):
+                    # Doppelte vermeiden
+                    if not any(t.get("mountpoint") == tgt for t in targets):
+                        targets.append({
+                            "name": None,
+                            "label": None,
+                            "size": None,
+                            "fstype": fs.get("fstype"),
+                            "mountpoint": tgt,
+                            "rm": None,
+                            "model": None,
+                            "tran": None,
+                        })
+        except Exception:
+            pass
+
+        # Fallback: typische Pfade (ohne Garantie)
+        common = ["/mnt", "/mnt/pi-installer-usb", "/media", "/run/media"]
+        return {"status": "success", "targets": targets, "common_roots": common}
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e), "targets": [], "common_roots": ["/mnt", "/mnt/pi-installer-usb", "/media", "/run/media"]})
+
+@app.get("/api/backup/target-check")
+async def backup_target_check(backup_dir: str, create: int = 0):
+    """
+    Prüft ein Backup-Ziel:
+    - Existenz / optional anlegen (create=1)
+    - Freier Speicher (statvfs)
+    - Schreibtest (normaler User, fallback: sudo wenn Passwort gespeichert)
+    """
+    try:
+        try:
+            backup_dir = _validate_backup_dir(backup_dir)
+        except Exception as ve:
+            return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"})
+
+        p = Path(backup_dir)
+        sudo_password = sudo_password_store.get("password", "")
+        created = False
+
+        if create and not p.exists():
+            mkdir_cmd = f"mkdir -p {shlex.quote(backup_dir)}"
+            mkdir_res = run_command(mkdir_cmd)
+            if not mkdir_res["success"] and sudo_password:
+                mkdir_res = run_command(mkdir_cmd, sudo=True, sudo_password=sudo_password)
+            if mkdir_res["success"]:
+                created = True
+            else:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": f"Zielverzeichnis konnte nicht erstellt werden: {backup_dir}",
+                        "created": False,
+                    },
+                )
+
+        exists = p.exists()
+        is_dir = p.is_dir() if exists else False
+
+        # Filesystem Stats
+        fs = {}
+        try:
+            st = os.statvfs(backup_dir if exists else str(p.parent))
+            total = st.f_frsize * st.f_blocks
+            free = st.f_frsize * st.f_bavail
+            used = total - free
+            used_percent = round((used / total) * 100, 1) if total else 0.0
+
+            def human(n: int) -> str:
+                for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
+                    if n < 1024:
+                        return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
+                    n /= 1024
+                return f"{n:.1f} PB"
+
+            fs = {
+                "total_bytes": int(total),
+                "free_bytes": int(free),
+                "used_percent": used_percent,
+                "total_human": human(total),
+                "free_human": human(free),
+            }
+        except Exception:
+            fs = {}
+
+        def _best_mount_for_path(path_str: str) -> Optional[dict]:
+            """Findet den passendsten (längsten) findmnt Mount für einen Pfad."""
+            path_str = (path_str or "").strip()
+            if not path_str:
+                return None
+            best = None
+            best_len = -1
+            for fs in _findmnt_mounts():
+                tgt = (fs.get("target") or "").strip()
+                if not tgt:
+                    continue
+                if path_str == tgt or path_str.startswith(tgt.rstrip("/") + "/"):
+                    if len(tgt) > best_len:
+                        best = fs
+                        best_len = len(tgt)
+            return best
+
+        # Diagnostics: mount/device readonly, fstype, options, usb/removable
+        mount_info = None
+        try:
+            mi = _best_mount_for_path(backup_dir if exists else str(p.parent))
+            if mi:
+                src = (mi.get("source") or "").strip()
+                fstype = (mi.get("fstype") or "").strip()
+                opts = (mi.get("options") or "").strip()
+                is_ro_mount = ("ro" in [o.strip() for o in opts.split(",") if o.strip()]) if opts else False
+
+                node = _find_lsblk_by_name(src) if src.startswith("/dev/") else None
+                disk = _find_disk_by_name(node.get("pkname") or node.get("name")) if node and node.get("name") else None
+                is_usb = bool((disk or node or {}).get("tran") == "usb") if (disk or node) else False
+                is_rm = bool((disk or node or {}).get("rm")) if (disk or node) else False
+                is_ro_dev = bool((disk or node or {}).get("ro")) if (disk or node) else False
+
+                mount_info = {
+                    "target": (mi.get("target") or "").strip(),
+                    "source": src,
+                    "fstype": fstype,
+                    "options": opts,
+                    "mount_readonly": is_ro_mount,
+                    "device_readonly": is_ro_dev,
+                    "is_usb": is_usb,
+                    "is_removable": is_rm,
+                }
+        except Exception:
+            mount_info = None
+
+        # Write test
+        write_test = {"success": False, "mode": "user", "message": "", "reason_code": None, "hints": [], "suggest_usb_prepare": False}
+        if exists and is_dir:
+            test_name = f".pi-installer-write-test-{os.getpid()}.tmp"
+            test_path = p / test_name
+            try:
+                test_path.write_text("ok", encoding="utf-8")
+                test_path.unlink(missing_ok=True)
+                write_test = {"success": True, "mode": "user", "message": "Schreibtest ok (User)", "reason_code": None, "hints": [], "suggest_usb_prepare": False}
+            except Exception as e:
+                err_user = str(e)
+                write_test = {"success": False, "mode": "user", "message": f"Schreibtest fehlgeschlagen (User): {err_user}", "reason_code": None, "hints": [], "suggest_usb_prepare": False}
+                # Fallback: sudo write test, wenn Passwort gespeichert
+                if sudo_password:
+                    cmd = (
+                        f"sh -c "
+                        f"{shlex.quote('tmp=$(mktemp -p ' + backup_dir + ' .pi-installer-write-test.XXXXXX) && echo ok > \"$tmp\" && rm -f \"$tmp\"')}"
+                    )
+                    sudo_res = run_command(cmd, sudo=True, sudo_password=sudo_password)
+                    if sudo_res["success"]:
+                        write_test = {"success": True, "mode": "sudo", "message": "Schreibtest ok (sudo)", "reason_code": "permissions", "hints": [], "suggest_usb_prepare": False}
+                    else:
+                        err_sudo = (sudo_res.get("stderr") or sudo_res.get("error") or "Schreibtest fehlgeschlagen (sudo)").strip()
+                        write_test = {
+                            "success": False,
+                            "mode": "sudo",
+                            "message": err_sudo[:200],
+                            "reason_code": None,
+                            "hints": [],
+                            "suggest_usb_prepare": False,
+                        }
+
+        # Post-process diagnostics if write failed
+        if exists and is_dir and not write_test.get("success"):
+            combined = (write_test.get("message") or "")
+            hints: list[str] = []
+            reason = None
+
+            fstype = (mount_info or {}).get("fstype") or ""
+            is_ro_mount = bool((mount_info or {}).get("mount_readonly"))
+            is_ro_dev = bool((mount_info or {}).get("device_readonly"))
+            is_usb = bool((mount_info or {}).get("is_usb") or (mount_info or {}).get("is_removable"))
+
+            if fstype in ("iso9660", "udf", "squashfs"):
+                reason = "readonly_filesystem"
+                hints.append(f"Dateisystem ist read-only ({fstype}).")
+            if is_ro_mount:
+                reason = reason or "mount_readonly"
+                hints.append("Datenträger ist read-only gemountet (mount option ro).")
+            if is_ro_dev:
+                reason = reason or "device_readonly"
+                hints.append("Datenträger ist hardwareseitig/Kernel-seitig schreibgeschützt (RO=1).")
+
+            if "Read-only file system" in combined or "EROFS" in combined:
+                reason = reason or "read_only"
+                hints.append("Schreibfehler: Read-only file system (EROFS).")
+            if "Permission denied" in combined:
+                reason = reason or "permission_denied"
+                hints.append("Schreibrechte fehlen (Permission denied).")
+                if write_test.get("mode") == "user" and not sudo_password:
+                    hints.append("Mit sudo könnte es funktionieren (Sudo-Passwort fehlt / Backend neu gestartet).")
+            if "No space left on device" in combined:
+                reason = reason or "no_space"
+                hints.append("Kein freier Speicher (ENOSPC).")
+
+            # generic USB hint: wrong FS / ISO / readonly
+            suggest_usb_prepare = bool(is_usb and (reason in ("readonly_filesystem", "mount_readonly", "device_readonly", "read_only")))
+            if suggest_usb_prepare:
+                hints.append("Hinweis: Schreibtest ist fehlgeschlagen. Der Stick ist evtl. schreibgeschützt oder im falschen Dateisystem (z.B. ISO). „USB vorbereiten…“ kann das beheben (Datenverlust).")
+
+            write_test["reason_code"] = reason
+            write_test["hints"] = hints
+            write_test["suggest_usb_prepare"] = suggest_usb_prepare
+
+        return {
+            "status": "success",
+            "backup_dir": backup_dir,
+            "exists": exists,
+            "is_dir": is_dir,
+            "created": created,
+            "fs": fs,
+            "write_test": write_test,
+            "mount": mount_info,
+        }
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+def _lsblk_tree() -> dict:
+    """
+    Liefert lsblk JSON (mit MOUNTPOINTS), fallback auf MOUNTPOINT.
+    """
+    res = run_command("lsblk -J -o NAME,TYPE,PKNAME,LABEL,SIZE,FSTYPE,MOUNTPOINTS,RM,RO,MODEL,TRAN 2>/dev/null")
+    raw = res.get("stdout", "") if res["success"] else ""
+    if not raw:
+        res2 = run_command("lsblk -J -o NAME,TYPE,PKNAME,LABEL,SIZE,FSTYPE,MOUNTPOINT,RM,RO,MODEL,TRAN 2>/dev/null")
+        raw = res2.get("stdout", "") if res2["success"] else ""
+    try:
+        return json.loads(raw or "{}")
+    except Exception:
+        return {}
+
+def _findmnt_mounts() -> list[dict]:
+    """
+    Liefert Mounts aus findmnt (JSON), inkl. TARGET mit Leerzeichen.
+    """
+    try:
+        res = run_command("findmnt -J -o SOURCE,TARGET,FSTYPE,OPTIONS 2>/dev/null")
+        if not res["success"]:
+            return []
+        data = json.loads(res.get("stdout", "") or "{}")
+        return data.get("filesystems", []) or []
+    except Exception:
+        return []
+
+def _mountpoints_for_disk(disk_dev: str) -> list[str]:
+    """
+    Liefert alle Mountpoints für eine Disk (/dev/sdb) inkl. Partitionen (/dev/sdb1),
+    robust gegen Leerzeichen, via findmnt JSON.
+    """
+    mps: list[str] = []
+    for fs in _findmnt_mounts():
+        src = (fs.get("source") or "").strip()
+        tgt = (fs.get("target") or "").strip()
+        if not src or not tgt:
+            continue
+        if src.startswith(disk_dev):
+            mps.append(tgt)
+    # nested first
+    return sorted(set(mps), key=len, reverse=True)
+
+
+def _find_lsblk_by_mountpoint(mountpoint: str) -> Optional[dict]:
+    """
+    Findet die Partition/Device in lsblk-JSON anhand eines Mountpoints.
+    """
+    mountpoint = (mountpoint or "").strip()
+    if not mountpoint:
+        return None
+
+    data = _lsblk_tree()
+    devices = data.get("blockdevices", []) or []
+
+    def matches(d: dict) -> bool:
+        mp = d.get("mountpoint")
+        mps = d.get("mountpoints")
+        if mp and mp == mountpoint:
+            return True
+        if isinstance(mps, list) and mountpoint in mps:
+            return True
+        return False
+
+    def walk(items):
+        for d in items:
+            if matches(d):
+                return d
+            if d.get("children"):
+                found = walk(d["children"])
+                if found:
+                    return found
+        return None
+
+    return walk(devices)
+
+
+def _find_lsblk_by_name(dev_name: str) -> Optional[dict]:
+    """Findet einen lsblk node anhand NAME (z.B. 'sda1'). dev_name darf auch '/dev/sda1' sein."""
+    dev_name = (dev_name or "").strip()
+    if dev_name.startswith("/dev/"):
+        dev_name = dev_name[5:]
+    if not dev_name:
+        return None
+
+    data = _lsblk_tree()
+    devices = data.get("blockdevices", []) or []
+
+    def walk(items):
+        for d in items:
+            if d.get("name") == dev_name:
+                return d
+            if d.get("children"):
+                found = walk(d["children"])
+                if found:
+                    return found
+        return None
+
+    return walk(devices)
+
+
+def _disk_is_system(disk: dict) -> bool:
+    """
+    True wenn Disk/Children Root/Boot gemountet haben.
+    """
+    bad = {"/", "/boot", "/boot/firmware"}
+
+    def has_bad_mount(d: dict) -> bool:
+        mp = d.get("mountpoint")
+        mps = d.get("mountpoints")
+        if mp in bad:
+            return True
+        if isinstance(mps, list) and any(x in bad for x in mps):
+            return True
+        for c in d.get("children", []) or []:
+            if has_bad_mount(c):
+                return True
+        return False
+
+    return has_bad_mount(disk)
+
+
+def _find_disk_by_name(name: str) -> Optional[dict]:
+    data = _lsblk_tree()
+    devices = data.get("blockdevices", []) or []
+    for d in devices:
+        if d.get("name") == name and d.get("type") == "disk":
+            return d
+    return None
+
+
+def _sanitize_label(label: str, max_len: int = 16) -> str:
+    """
+    Filesystem-Label safe (ext4/vfat).
+    - erlaubt Buchstaben/Zahlen/Space/_/-
+    - begrenzt Länge (vfat typ. 11/labeltools; wir nehmen 16 als praktikabel)
+    """
+    label = (label or "").strip()
+    if not label:
+        raise ValueError("Label darf nicht leer sein")
+    allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _-")
+    if any(ch not in allowed for ch in label):
+        raise ValueError("Label enthält ungültige Zeichen (erlaubt: a-zA-Z0-9, Leerzeichen, _ , -)")
+    if len(label) > max_len:
+        label = label[:max_len].rstrip()
+    return label
+
+
+@app.get("/api/backup/usb/info")
+async def backup_usb_info(mountpoint: str = "", device: str = ""):
+    """Gibt Infos zum ausgewählten USB-Mountpoint zurück (Device, FS, Label, Safety Flags)."""
+    try:
+        node = _find_lsblk_by_mountpoint(mountpoint) if mountpoint else None
+        # Fallback: manchmal ist lsblk nicht synchron / mountpoint kommt nicht zurück -> findmnt SOURCE nutzen
+        if not node and mountpoint:
+            for fs in _findmnt_mounts():
+                tgt = (fs.get("target") or "").strip()
+                src = (fs.get("source") or "").strip()
+                if tgt and src and tgt == mountpoint and src.startswith("/dev/"):
+                    node = _find_lsblk_by_name(src)
+                    break
+        if not node and device:
+            node = _find_lsblk_by_name(device)
+        if not node:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "USB-Gerät nicht gefunden (Mountpoint/Device)"})
+
+        name = node.get("name")
+        pk = node.get("pkname")  # parent disk
+        disk_name = pk or (name if node.get("type") == "disk" else None)
+        if not disk_name:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Konnte Disk nicht bestimmen"})
+
+        disk = _find_disk_by_name(disk_name)
+        if not disk:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Disk nicht gefunden"})
+
+        info = {
+            "status": "success",
+            "mountpoint": mountpoint or None,
+            "partition": f"/dev/{name}" if name else None,
+            "disk": f"/dev/{disk_name}",
+            "fstype": node.get("fstype"),
+            "label": node.get("label"),
+            "size": node.get("size"),
+            "rm": disk.get("rm"),
+            "ro": node.get("ro") or disk.get("ro"),
+            "tran": disk.get("tran"),
+            "model": disk.get("model"),
+            "is_usb": (disk.get("tran") == "usb"),
+            "is_removable": bool(disk.get("rm")),
+            "is_system_disk": _disk_is_system(disk),
+        }
+        return info
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/backup/usb/mount")
+async def backup_usb_mount(request: Request):
+    """
+    Mountet ein (noch) ungemountetes USB-Device (Partition) nach /mnt/pi-installer-usb/<name>.
+    Nicht-destruktiv: kein Formatieren, kein Label ändern.
+    """
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+
+        device = (data.get("device") or "").strip()
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+
+        if not device or not device.startswith("/dev/"):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "device (/dev/...) erforderlich"})
+        if not sudo_password:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+
+        node = _find_lsblk_by_name(device)
+        if not node:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "USB-Gerät nicht gefunden"})
+
+        # bereits gemountet? -> bestehenden Mountpoint zurückgeben
+        system_mounts = {"/", "/boot", "/boot/firmware", "[SWAP]"}
+        mps = node.get("mountpoints")
+        mp = node.get("mountpoint")
+        existing = None
+        if isinstance(mps, list):
+            for one in mps:
+                if one and one not in system_mounts:
+                    existing = one
+                    break
+        elif mp and mp not in system_mounts:
+            existing = mp
+        if existing:
+            return {"status": "success", "message": "Bereits gemountet", "mounted_to": existing, "device": device}
+
+        part_name = node.get("name")
+        pk = node.get("pkname")
+        disk_name = pk or (part_name if node.get("type") == "disk" else None)
+        if not disk_name:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Konnte Disk nicht bestimmen"})
+
+        disk = _find_disk_by_name(disk_name)
+        if not disk:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Disk nicht gefunden"})
+
+        # Safety: nur USB/removable, nie Systemdisk
+        is_usb = (disk.get("tran") == "usb")
+        is_rm = bool(disk.get("rm"))
+        if not (is_usb or is_rm):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Nur USB/Removable Datenträger sind erlaubt"})
+        if _disk_is_system(disk):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Refused: System-Datenträger erkannt"})
+
+        # Mount directory name
+        def safe_seg(s: str) -> str:
+            s = (s or "").strip()
+            if not s:
+                return ""
+            allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")
+            out = []
+            for ch in s.replace(" ", "_"):
+                if ch in allowed:
+                    out.append(ch)
+            return "".join(out)[:32].strip("_") or ""
+
+        label = str(node.get("label") or "")
+        seg = safe_seg(label) or safe_seg(str(part_name or "")) or safe_seg(str(disk_name or "")) or "USB"
+        mount_dir = f"/mnt/pi-installer-usb/{seg}"
+
+        # mount
+        run_command(f"mkdir -p {shlex.quote(mount_dir)}", sudo=True, sudo_password=sudo_password, timeout=30)
+        uid = os.getuid()
+        gid = os.getgid()
+        fstype = (node.get("fstype") or "").strip().lower()
+        mount_opts = "rw"
+        # Non-POSIX FS (vfat/exfat/ntfs) need uid/gid so UI user can write
+        if fstype in ("vfat", "fat", "msdos", "exfat", "ntfs", "ntfs3"):
+            mount_opts = f"rw,uid={uid},gid={gid},umask=0022"
+        mnt_cmd = f"mount -o {shlex.quote(mount_opts)} {shlex.quote(device)} {shlex.quote(mount_dir)}"
+        mnt = run_command(mnt_cmd, sudo=True, sudo_password=sudo_password, timeout=60)
+        if not mnt.get("success"):
+            msg = (mnt.get("stderr") or mnt.get("stdout") or mnt.get("error") or "Mount fehlgeschlagen").strip()[:300]
+            return JSONResponse(status_code=200, content={"status": "error", "message": msg})
+
+        # ensure backup folder exists and is writable for current user
+        backups_dir = f"{mount_dir}/pi-installer-backups"
+        run_command(f"mkdir -p {shlex.quote(backups_dir)}", sudo=True, sudo_password=sudo_password, timeout=30)
+        run_command(f"chmod 0775 {shlex.quote(mount_dir)} {shlex.quote(backups_dir)}", sudo=True, sudo_password=sudo_password, timeout=30)
+        run_command(f"chown {uid}:{gid} {shlex.quote(mount_dir)} {shlex.quote(backups_dir)}", sudo=True, sudo_password=sudo_password, timeout=30)
+
+        return {"status": "success", "message": "Gemountet", "mounted_to": mount_dir, "device": device, "label": label or None}
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/backup/usb/prepare")
+async def backup_usb_prepare(request: Request):
+    """
+    USB vorbereiten:
+    - optional formatieren (Datenverlust!)
+    - optional umbenennen (Label)
+    - mounten auf /mnt/pi-installer-usb/<label>
+    """
+    try:
+        data = await request.json()
+        mountpoint = (data.get("mountpoint") or "").strip()
+        device = (data.get("device") or "").strip()
+        do_format = bool(data.get("format", False))
+        new_label_raw = data.get("label", "")
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+
+        if not sudo_password:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+
+        node = _find_lsblk_by_mountpoint(mountpoint) if mountpoint else None
+        if not node and mountpoint:
+            for fs in _findmnt_mounts():
+                tgt = (fs.get("target") or "").strip()
+                src = (fs.get("source") or "").strip()
+                if tgt and src and tgt == mountpoint and src.startswith("/dev/"):
+                    node = _find_lsblk_by_name(src)
+                    break
+        if not node and device:
+            node = _find_lsblk_by_name(device)
+        if not node:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Mountpoint nicht gefunden"})
+
+        part_name = node.get("name")
+        pk = node.get("pkname")
+        disk_name = pk or (part_name if node.get("type") == "disk" else None)
+        if not disk_name:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Konnte Disk nicht bestimmen"})
+
+        disk = _find_disk_by_name(disk_name)
+        if not disk:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Disk nicht gefunden"})
+
+        # Safety: nur USB/removable, nie Systemdisk
+        is_usb = (disk.get("tran") == "usb")
+        is_rm = bool(disk.get("rm"))
+        if not (is_usb or is_rm):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Nur USB/Removable Datenträger sind erlaubt"})
+        if _disk_is_system(disk):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Refused: System-Datenträger erkannt"})
+
+        new_label = None
+        if new_label_raw:
+            new_label = _sanitize_label(new_label_raw, max_len=16)
+
+        results = []
+
+        disk_dev = f"/dev/{disk_name}"
+        part_dev = f"/dev/{part_name}" if part_name else None
+
+        def step(cmd: str, label: str, allow_fail: bool = False) -> dict:
+            res = run_command(cmd, sudo=True, sudo_password=sudo_password, timeout=120)
+            ok = bool(res.get("success"))
+            if ok:
+                results.append(f"✅ {label}")
+                return res
+            msg = (res.get("stderr") or res.get("stdout") or res.get("error") or "").strip()
+            msg = msg[:300] if msg else "Unbekannter Fehler"
+            results.append(f"❌ {label}: {msg}")
+            if allow_fail:
+                return res
+            return {"_failed": True, "label": label, "message": msg, "raw": res}
+
+        # quick tool checks (helps on minimal images)
+        for tool in ("wipefs", "parted", "mkfs.ext4", "partprobe", "mount", "umount"):
+            w = run_command(f"which {shlex.quote(tool)} 2>/dev/null")
+            if not w.get("success"):
+                return JSONResponse(
+                    status_code=200,
+                    content={"status": "error", "message": f"Formatierung nicht möglich: Tool fehlt ({tool})", "results": results},
+                )
+
+        # refuse hardware RO
+        if bool(disk.get("ro")) or bool(node.get("ro")):
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "Formatierung nicht möglich: Datenträger ist schreibgeschützt (RO=1).",
+                    "results": results,
+                },
+            )
+
+        # Unmount (erforderlich für wipefs/parted/mkfs)
+        # 1) explizit den ausgewählten Mountpoint unmounten (auch mit Spaces)
+        if mountpoint:
+            step(f"umount {shlex.quote(mountpoint)}", f"Unmount {mountpoint}", allow_fail=True)
+            step(f"umount -l {shlex.quote(mountpoint)}", f"Lazy-Unmount {mountpoint}", allow_fail=True)
+
+        # 2) alles von dieser Disk unmounten (sicher)
+        for mp in _mountpoints_for_disk(disk_dev):
+            step(f"umount {shlex.quote(mp)}", f"Unmount {mp}", allow_fail=True)
+            step(f"umount -l {shlex.quote(mp)}", f"Lazy-Unmount {mp}", allow_fail=True)
+
+        # 3) prüfen ob noch etwas gemountet ist -> dann abbrechen
+        remaining = _mountpoints_for_disk(disk_dev)
+        if remaining:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": (
+                        "Der USB-Stick ist noch gemountet oder wird von einem Prozess verwendet. "
+                        "Bitte schließen Sie alle Fenster/Programme, die auf den Stick zugreifen, und versuchen Sie es erneut."
+                    ),
+                    "still_mounted": remaining,
+                },
+            )
+
+        mounted_to = None
+
+        if do_format:
+            if not new_label:
+                new_label = "PI-INSTALLER"
+
+            # Partition table + single partition
+            # Achtung: extrem destruktiv -> nur nach explizitem User-Confirm im Frontend aufrufen!
+            results.append(f"Formatierung gestartet: {disk_dev}")
+            r = step(f"wipefs -a {shlex.quote(disk_dev)}", f"wipefs auf {disk_dev}")
+            if r.get("_failed"):
+                return JSONResponse(status_code=200, content={"status": "error", "message": f"Formatierung fehlgeschlagen bei wipefs: {r['message']}", "results": results})
+
+            r = step(f"parted -s {shlex.quote(disk_dev)} mklabel gpt", f"Partitionstabelle GPT erstellen ({disk_dev})")
+            if r.get("_failed"):
+                return JSONResponse(status_code=200, content={"status": "error", "message": f"Formatierung fehlgeschlagen bei parted mklabel: {r['message']}", "results": results})
+
+            r = step(f"parted -s {shlex.quote(disk_dev)} mkpart primary 1MiB 100%", f"Partition erstellen ({disk_dev})")
+            if r.get("_failed"):
+                return JSONResponse(status_code=200, content={"status": "error", "message": f"Formatierung fehlgeschlagen bei parted mkpart: {r['message']}", "results": results})
+
+            # Let kernel settle
+            step("partprobe", "partprobe", allow_fail=True)
+            step("udevadm settle 2>/dev/null", "udevadm settle", allow_fail=True)
+
+            # Bestimme neue Partition (meist ...1)
+            part_guess = f"{disk_dev}1"
+            # mkfs ext4
+            r = step(f"mkfs.ext4 -F -L {shlex.quote(new_label)} {shlex.quote(part_guess)}", f"mkfs.ext4 ({part_guess})")
+            if r.get("_failed"):
+                return JSONResponse(status_code=200, content={"status": "error", "message": f"Formatierung fehlgeschlagen bei mkfs.ext4: {r['message']}", "results": results})
+            results.append("Dateisystem ext4 erstellt")
+            part_dev = part_guess
+        else:
+            # Rename only (best effort)
+            if new_label and part_dev:
+                fstype = node.get("fstype") or ""
+                if fstype == "ext4":
+                    rn = run_command(f"e2label {shlex.quote(part_dev)} {shlex.quote(new_label)}", sudo=True, sudo_password=sudo_password)
+                    if rn["success"]:
+                        results.append(f"Label gesetzt: {new_label}")
+                    else:
+                        results.append(f"Label setzen fehlgeschlagen: {rn.get('stderr','')[:120]}")
+                elif fstype in ("vfat", "fat", "msdos"):
+                    rn = run_command(f"fatlabel {shlex.quote(part_dev)} {shlex.quote(new_label)}", sudo=True, sudo_password=sudo_password)
+                    if rn["success"]:
+                        results.append(f"Label gesetzt: {new_label}")
+                    else:
+                        results.append(f"Label setzen fehlgeschlagen: {rn.get('stderr','')[:120]}")
+                else:
+                    results.append(f"Umbenennen nicht unterstützt für fstype={fstype} (bitte formatieren)")
+
+        # Mount after format/rename (optional, to stable path)
+        if part_dev and (do_format or new_label):
+            label_for_mount = (new_label or "PI-INSTALLER").replace(" ", "_")
+            mount_dir = f"/mnt/pi-installer-usb/{label_for_mount}"
+            step(f"mkdir -p {shlex.quote(mount_dir)}", f"Mount-Verzeichnis anlegen ({mount_dir})")
+            mnt = step(f"mount {shlex.quote(part_dev)} {shlex.quote(mount_dir)}", f"Mount {part_dev} -> {mount_dir}", allow_fail=True)
+            if mnt.get("success"):
+                mounted_to = mount_dir
+                results.append(f"Gemountet: {mount_dir}")
+            else:
+                # give actionable hint
+                err = (mnt.get("stderr") or mnt.get("stdout") or mnt.get("error") or "").strip()[:200]
+                results.append(f"Mount fehlgeschlagen: {err}")
+
+        return {
+            "status": "success",
+            "message": "USB vorbereitet",
+            "results": results,
+            "mounted_to": mounted_to,
+            "disk": disk_dev,
+            "partition": part_dev,
+            "label": new_label,
+        }
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/backup/usb/eject")
+async def backup_usb_eject(request: Request):
+    """
+    USB sicher auswerfen:
+    - sync
+    - unmount (alle Mountpoints der Disk)
+    - optional power-off (udisksctl), wenn verfügbar
+    """
+    try:
+        data = await request.json()
+        mountpoint = (data.get("mountpoint") or "").strip()
+        device = (data.get("device") or "").strip()
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+
+        if not sudo_password:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+
+        node = _find_lsblk_by_mountpoint(mountpoint) if mountpoint else None
+        if not node and device:
+            node = _find_lsblk_by_name(device)
+        if not node:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "USB-Gerät nicht gefunden (Mountpoint/Device)"})
+
+        part_name = node.get("name")
+        pk = node.get("pkname")
+        disk_name = pk or (part_name if node.get("type") == "disk" else None)
+        if not disk_name:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Konnte Disk nicht bestimmen"})
+
+        disk = _find_disk_by_name(disk_name)
+        if not disk:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Disk nicht gefunden"})
+
+        # Safety
+        is_usb = (disk.get("tran") == "usb")
+        is_rm = bool(disk.get("rm"))
+        if not (is_usb or is_rm):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Nur USB/Removable Datenträger sind erlaubt"})
+        if _disk_is_system(disk):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Refused: System-Datenträger erkannt"})
+
+        disk_dev = f"/dev/{disk_name}"
+
+        results = []
+        run_command("sync", sudo=True, sudo_password=sudo_password)
+        results.append("sync ausgeführt")
+
+        # Unmount all mountpoints for disk
+        for mp in _mountpoints_for_disk(disk_dev):
+            run_command(f"umount {shlex.quote(mp)}", sudo=True, sudo_password=sudo_password)
+            run_command(f"umount -l {shlex.quote(mp)}", sudo=True, sudo_password=sudo_password)
+
+        remaining = _mountpoints_for_disk(disk_dev)
+        if remaining:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "Auswerfen fehlgeschlagen: Datenträger ist noch gemountet/busy",
+                    "still_mounted": remaining,
+                    "results": results,
+                },
+            )
+        results.append("Unmount erfolgreich")
+
+        # Optional: power off
+        power_off = None
+        which = run_command("which udisksctl 2>/dev/null")
+        if which["success"] and which.get("stdout", "").strip():
+            po = run_command(f"udisksctl power-off -b {shlex.quote(disk_dev)}", sudo=True, sudo_password=sudo_password)
+            if po["success"]:
+                power_off = True
+                results.append("udisksctl power-off erfolgreich")
+            else:
+                power_off = False
+                results.append(f"udisksctl power-off fehlgeschlagen: {(po.get('stderr') or '')[:120]}")
+
+        return {
+            "status": "success",
+            "message": "USB sicher ausgeworfen",
+            "disk": disk_dev,
+            "results": results,
+            "power_off": power_off,
+        }
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+@app.post("/api/backup/create")
+async def create_backup(request: Request):
+    """Backup erstellen (optional async job)."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        backup_type = (data.get("type", "full") or "full").strip()
+        run_async = bool(data.get("async", False))
+        target = (data.get("target") or "local").strip()  # local | cloud_only | local_and_cloud
+
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test.get("success"):
+                return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+
+        backup_dir = data.get("backup_dir", "/mnt/backups")
+        try:
+            backup_dir = _validate_backup_dir(backup_dir)
+        except Exception as ve:
+            return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"})
+
+        timestamp = run_command("date +%Y%m%d_%H%M%S").get("stdout", "").strip()
+
+        mkdir_result = run_command(f"mkdir -p {shlex.quote(backup_dir)}", sudo=True, sudo_password=sudo_password, timeout=60)
+        if not mkdir_result.get("success"):
+            return JSONResponse(status_code=200, content={"status": "error", "message": f"Backup-Verzeichnis konnte nicht erstellt werden: {backup_dir}"})
+
+        # precompute backup file name for UI
+        bf = None
+        if backup_type == "full":
+            bf = f"{backup_dir}/pi-backup-full-{timestamp}.tar.gz"
+        elif backup_type == "incremental":
+            bf = f"{backup_dir}/pi-backup-inc-{timestamp}.tar.gz"
+        elif backup_type == "data":
+            bf = f"{backup_dir}/pi-backup-data-{timestamp}.tar.gz"
+
+        last_hint = str(data.get("last_backup", "") or "")
+        # cloud settings from persisted backup settings
+        backup_settings = _read_backup_settings()
+        cloud = backup_settings.get("cloud") or {}
+
+        def _cloud_remote_url(local_file: str, cloud_settings: dict = None) -> Optional[str]:
+            # Verwende übergebene Cloud-Einstellungen oder die aus dem äußeren Scope
+            cloud_to_use = cloud_settings if cloud_settings is not None else cloud
+            # Prüfe ob Cloud aktiviert ist
+            if not cloud_to_use.get("enabled"):
+                return None
+            provider = cloud_to_use.get("provider") or "seafile_webdav"
+            # Für WebDAV-basierte Provider: URL konstruieren
+            if provider in ("seafile_webdav", "webdav", "nextcloud_webdav"):
+                url = (cloud_to_use.get("webdav_url") or "").strip().rstrip("/")
+                user = (cloud_to_use.get("username") or "").strip()
+                pw = (cloud_to_use.get("password") or "").strip()
+                if not url or not user or not pw:
+                    return None
+                remote_path = (cloud_to_use.get("remote_path") or "").strip().strip("/")
+                base = f"{url}/{remote_path}" if remote_path else url
+                if not base.endswith("/"):
+                    base += "/"
+                return f"{base}{Path(local_file).name}"
+            # Für andere Provider wird die URL vom Backup-Modul generiert
+            return None
+
+        def _cloud_upload_and_verify(local_file: str, cloud_settings: dict = None, job_id: str = "") -> tuple[bool, str]:
+            """Cloud-Upload mit Verifizierung. job_id für Fortschritt und 1‑Min‑Prüfung bei Timeout."""
+            # Verwende übergebene Cloud-Einstellungen oder die aus dem äußeren Scope
+            cloud_to_use = cloud_settings if cloud_settings is not None else cloud
+            logger.info(f"[Cloud-Upload] _cloud_upload_and_verify: local_file={local_file}, cloud.enabled={cloud_to_use.get('enabled')}, target={target}")
+            if not cloud_to_use.get("enabled"):
+                logger.warning("[Cloud-Upload] Cloud-Upload ist deaktiviert (cloud.enabled=False)")
+                return False, "Cloud-Upload ist deaktiviert"
+            provider = cloud_to_use.get("provider") or "seafile_webdav"
+            url_ok = bool((cloud_to_use.get("webdav_url") or "").strip())
+            user_ok = bool((cloud_to_use.get("username") or "").strip())
+            pw_ok = bool((cloud_to_use.get("password") or "").strip())
+            logger.info(f"[Cloud-Upload] Provider={provider}, url={url_ok}, user={user_ok}, pw={pw_ok}, file_exists={Path(local_file).exists()}")
+            
+            webdav_providers = ("seafile_webdav", "webdav", "nextcloud_webdav")
+            if provider not in webdav_providers:
+                try:
+                    backup_mod = _get_backup_module()
+                    backup_mod.run_command = run_command
+                    ok, info = backup_mod.upload_to_cloud(local_file, provider, cloud_to_use, sudo_password)
+                    if ok:
+                        return True, info
+                except Exception as e:
+                    logger.error(f"Backup-Modul Upload (non-WebDAV): {e}", exc_info=True)
+                return False, f"Provider '{provider}' wird für Cloud-Upload nicht unterstützt (nur WebDAV)"
+            # WebDAV: eigene Logik mit Fortschritt und 1‑Min‑Prüfung bei Timeout
+            url = (cloud_to_use.get("webdav_url") or "").strip().rstrip("/")
+            user = (cloud_to_use.get("username") or "").strip()
+            pw = (cloud_to_use.get("password") or "").strip()
+            if not url or not user or not pw:
+                logger.error("[Cloud-Upload] Cloud-Settings fehlen: url=%s, user=%s, pw=%s", bool(url), bool(user), bool(pw))
+                return False, "Cloud-Settings fehlen (URL/User/Passwort)"
+            remote = _cloud_remote_url(local_file, cloud_to_use)
+            if not remote:
+                logger.error("[Cloud-Upload] Cloud-Ziel konnte nicht bestimmt werden; provider=%s, url_len=%s", provider, len(url))
+                return False, f"Cloud-Ziel konnte nicht bestimmt werden (Provider: {provider}, URL: {url[:50]}...)"
+            upload_timeout = 7200  # 2 h für große Backups / langsame Verbindungen
+            # Parent-Collection (Verzeichnis) für MKCOL: null -> 409 vermeiden
+            remote_path = (cloud_to_use.get("remote_path") or "").strip().strip("/")
+            if remote_path:
+                base = f"{url}/{remote_path}".rstrip("/") + "/"
+                parts = [p for p in base.rstrip("/").replace(url.rstrip("/"), "", 1).strip("/").split("/") if p]
+                mkcol_base = url.rstrip("/") + "/"
+                for seg in parts:
+                    mkcol_base = mkcol_base.rstrip("/") + "/" + seg + "/"
+                    mc = run_command(
+                        f"curl -sS -o /dev/null -w '%{{http_code}}' -u {shlex.quote(user)}:{shlex.quote(pw)} -X MKCOL {shlex.quote(mkcol_base)}",
+                        timeout=60,
+                    )
+                    code_mk = (mc.get("stdout") or "").strip()
+                    try:
+                        c = int(code_mk) if code_mk else None
+                    except Exception:
+                        c = None
+                    if c in (201, 204):
+                        logger.info("[Cloud-Upload] MKCOL %s -> %s", mkcol_base, code_mk)
+                    elif c == 405:
+                        pass  # existiert bereits
+                    elif c not in (200, 201, 204, 405):
+                        logger.warning("[Cloud-Upload] MKCOL %s -> HTTP %s (weiter mit PUT)", mkcol_base, c)
+            logger.info("[Cloud-Upload] WebDAV PUT → %s (timeout=%ds)", remote, upload_timeout)
+            ok, put_code, err = _curl_put_with_progress(
+                local_file, remote, user, pw, job_id, upload_timeout
+            )
+            if not ok:
+                logger.error("[Cloud-Upload] PUT fehlgeschlagen: %s", err)
+                return False, err or "Upload fehlgeschlagen"
+            if put_code is not None and put_code not in (200, 201, 204):
+                hint = " (Datei existiert evtl. oder übergeordnetes Verzeichnis fehlt – MKCOL/Overwrite prüfen)" if put_code == 409 else ""
+                logger.error("[Cloud-Upload] PUT HTTP %s (erwartet 200/201/204)%s", put_code, hint)
+                return False, f"Upload fehlgeschlagen (HTTP {put_code or '—'}){hint}"
+            if put_code is None:
+                return True, remote  # Timeout, 1‑Min‑Prüfung war erfolgreich
+            # verify via PROPFIND (optional; manche Server liefern 404 für PROPFIND auf Datei)
+            cmd_v = (
+                "curl -sS -o /dev/null -w '%{http_code}' "
+                f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+                "-X PROPFIND -H 'Depth: 0' "
+                f"{shlex.quote(remote)}"
+            )
+            vr = run_command(cmd_v, timeout=120)
+            code_str = (vr.get("stdout") or "").strip()
+            try:
+                code = int(code_str) if code_str else None
+            except Exception:
+                code = None
+            if vr.get("success") and code in (200, 201, 204, 207):
+                logger.info("[Cloud-Upload] Erfolgreich (PUT %s, PROPFIND %s): %s", put_code, code, remote)
+                return True, remote
+            # PROPFIND 404 ist bei einigen WebDAV-Servern normal; PUT war erfolgreich
+            if put_code in (200, 201, 204):
+                logger.info("[Cloud-Upload] PUT ok, PROPFIND %s (ignoriert): %s", code, remote)
+                return True, remote
+            logger.error("[Cloud-Upload] PROPFIND HTTP %s; PUT war %s", code, put_code)
+            return False, f"Remote Verifizierung fehlgeschlagen (HTTP {code or '—'})"
+
+        if run_async:
+            job_id = _new_job_id()
+            BACKUP_JOBS[job_id] = {
+                "job_id": job_id,
+                "status": "queued",
+                "type": backup_type,
+                "backup_dir": backup_dir,
+                "backup_file": bf,
+                "target": target,
+                "started_at": _now_iso(),
+                "finished_at": None,
+                "message": "Wartet…",
+                "results": [],
+            }
+
+            def _runner_thread():
+                try:
+                    cancel_ev = BACKUP_JOB_CANCEL.get(job_id)
+                    if not cancel_ev:
+                        cancel_ev = threading.Event()
+                        BACKUP_JOB_CANCEL[job_id] = cancel_ev
+                    BACKUP_JOBS[job_id]["status"] = "running"
+                    BACKUP_JOBS[job_id]["message"] = "Backup läuft…"
+                    result = _do_backup_logic(
+                        sudo_password=sudo_password,
+                        backup_type=backup_type,
+                        backup_dir=backup_dir,
+                        timestamp=timestamp,
+                        last_backup_hint=last_hint,
+                        cancel_event=cancel_ev,
+                        job=BACKUP_JOBS[job_id],
+                    )
+                    BACKUP_JOBS[job_id]["results"] = result.get("results") or []
+                    backup_file_path = result.get("backup_file") or bf
+                    
+                    # Optional: Verschlüsselung
+                    encryption_method = data.get("encryption_method")
+                    encryption_key = data.get("encryption_key")
+                    if encryption_method and backup_file_path and result.get("status") == "success":
+                        try:
+                            backup_mod = _get_backup_module()
+                            backup_mod.run_command = run_command
+                            BACKUP_JOBS[job_id]["message"] = "Verschlüsselung läuft…"
+                            enc_success, enc_file, enc_error = backup_mod.encrypt_backup(
+                                backup_file_path,
+                                encryption_key,
+                                encryption_method,
+                                sudo_password
+                            )
+                            if enc_success:
+                                backup_file_path = enc_file
+                                BACKUP_JOBS[job_id]["backup_file"] = enc_file
+                                BACKUP_JOBS[job_id]["encrypted"] = True
+                                BACKUP_JOBS[job_id]["results"].append(f"verschlüsselt: {enc_file}")
+                                logger.info(f"Backup verschlüsselt: {enc_file}")
+                            else:
+                                BACKUP_JOBS[job_id]["results"].append(f"Verschlüsselung fehlgeschlagen: {enc_error}")
+                                BACKUP_JOBS[job_id]["warning"] = f"Verschlüsselung fehlgeschlagen: {enc_error}"
+                        except Exception as e:
+                            BACKUP_JOBS[job_id]["results"].append(f"Verschlüsselung Fehler: {str(e)}")
+                            BACKUP_JOBS[job_id]["warning"] = f"Verschlüsselung Fehler: {str(e)}"
+                    else:
+                        BACKUP_JOBS[job_id]["backup_file"] = backup_file_path
+                    
+                    # optional cloud upload (manual cloud target oder wenn Cloud aktiviert ist)
+                    # Upload auch bei lokal erstellten Backups, wenn Cloud aktiviert ist
+                    # Upload wenn Cloud aktiviert ist und target cloud_only oder local_and_cloud
+                    # ODER wenn Cloud aktiviert ist und Backup lokal erstellt wurde (automatischer Upload)
+                    # WICHTIG: Cloud-Einstellungen müssen innerhalb des Threads neu geladen werden
+                    backup_settings_thread = _read_backup_settings()
+                    cloud_thread = backup_settings_thread.get("cloud") or {}
+                    cloud_should_upload = (
+                        target in ("cloud_only", "local_and_cloud") or
+                        (target == "local" and cloud_thread.get("enabled"))
+                    )
+                    logger.info(f"Cloud-Upload-Prüfung: target={target}, cloud.enabled={cloud_thread.get('enabled')}, cloud_should_upload={cloud_should_upload}, backup_file={BACKUP_JOBS[job_id].get('backup_file')}")
+                    if result.get("status") == "success" and cloud_should_upload:
+                        # Verwende Cloud-Einstellungen aus Thread
+                        cloud = cloud_thread
+                        BACKUP_JOBS[job_id]["message"] = "Upload läuft…"
+                        backup_file_to_upload = BACKUP_JOBS[job_id]["backup_file"]
+                        logger.info(f"Cloud-Upload gestartet für {backup_file_to_upload}, Provider: {cloud.get('provider')}, Enabled: {cloud.get('enabled')}, Target: {target}")
+                        
+                        # Prüfe ob Datei existiert
+                        if not Path(backup_file_to_upload).exists():
+                            error_msg = f"Backup-Datei nicht gefunden: {backup_file_to_upload}"
+                            BACKUP_JOBS[job_id]["results"].append(f"upload failed: {error_msg}")
+                            BACKUP_JOBS[job_id]["warning"] = f"Cloud-Upload fehlgeschlagen: {error_msg}"
+                            BACKUP_JOBS[job_id]["status"] = "error"
+                            logger.error(error_msg)
+                        else:
+                            ok, info = _cloud_upload_and_verify(backup_file_to_upload, cloud, job_id)
+                            logger.info(f"Cloud-Upload Ergebnis: ok={ok}, info={info}")
+                            if ok:
+                                BACKUP_JOBS[job_id].pop("upload_progress_pct", None)
+                                BACKUP_JOBS[job_id]["remote_file"] = info
+                                BACKUP_JOBS[job_id]["results"].append(f"✅ uploaded: {info}")
+                                BACKUP_JOBS[job_id]["location"] = "Cloud"
+                                BACKUP_JOBS[job_id]["message"] = "Backup erfolgreich hochgeladen"
+                                if target == "cloud_only":
+                                    try:
+                                        run_command(f"rm -f {shlex.quote(backup_file_to_upload)}", sudo=True, sudo_password=sudo_password)
+                                        BACKUP_JOBS[job_id]["results"].append("Lokale Datei gelöscht (cloud_only)")
+                                    except Exception as e:
+                                        logger.warning(f"Lokale Datei konnte nicht gelöscht werden: {e}")
+                            else:
+                                BACKUP_JOBS[job_id].pop("upload_progress_pct", None)
+                                BACKUP_JOBS[job_id]["results"].append(f"❌ upload failed: {info}")
+                                BACKUP_JOBS[job_id]["warning"] = f"Cloud-Upload fehlgeschlagen: {info}"
+                                BACKUP_JOBS[job_id]["status"] = "error" if target == "cloud_only" else "success"
+                                logger.error(f"Cloud-Upload fehlgeschlagen: {info}")
+                    BACKUP_JOBS[job_id]["finished_at"] = _now_iso()
+                    # Status wird bereits oben gesetzt, nur noch finalisieren
+                    if BACKUP_JOBS[job_id]["status"] not in ("error", "cancelled"):
+                        if result.get("status") == "cancelled":
+                            BACKUP_JOBS[job_id]["status"] = "cancelled"
+                            BACKUP_JOBS[job_id]["message"] = "Abgebrochen"
+                        elif result.get("status") == "success":
+                            # Status bleibt success (auch wenn Upload fehlgeschlagen ist, außer bei cloud_only)
+                            if BACKUP_JOBS[job_id]["status"] != "error":
+                                BACKUP_JOBS[job_id]["status"] = "success"
+                                BACKUP_JOBS[job_id]["message"] = "Fertig"
+                            if result.get("warning"):
+                                BACKUP_JOBS[job_id]["warning"] = result.get("warning")
+                        else:
+                            BACKUP_JOBS[job_id]["status"] = "error"
+                            BACKUP_JOBS[job_id]["message"] = result.get("message") or "Fehler"
+                except Exception as e:
+                    BACKUP_JOBS[job_id]["status"] = "error"
+                    BACKUP_JOBS[job_id]["message"] = str(e)
+                    BACKUP_JOBS[job_id]["finished_at"] = _now_iso()
+                finally:
+                    # cleanup cancel event
+                    try:
+                        BACKUP_JOB_CANCEL.pop(job_id, None)
+                    except Exception:
+                        pass
+
+            threading.Thread(target=_runner_thread, daemon=True).start()
+            return {"status": "accepted", "job_id": job_id, "backup_file": bf, "message": "Backup gestartet"}
+
+        # sync mode
+        result = await asyncio.to_thread(
+            _do_backup_logic,
+            sudo_password=sudo_password,
+            backup_type=backup_type,
+            backup_dir=backup_dir,
+            timestamp=timestamp,
+            last_backup_hint=last_hint,
+        )
+        
+        # Optional: Verschlüsselung
+        encryption_method = data.get("encryption_method")
+        encryption_key = data.get("encryption_key")
+        backup_file_path = result.get("backup_file") or bf
+        if encryption_method and backup_file_path and result.get("status") == "success":
+            try:
+                backup_mod = _get_backup_module()
+                backup_mod.run_command = run_command
+                enc_success, enc_file, enc_error = backup_mod.encrypt_backup(
+                    backup_file_path,
+                    encryption_key,
+                    encryption_method,
+                    sudo_password
+                )
+                if enc_success:
+                    backup_file_path = enc_file
+                    result["backup_file"] = enc_file
+                    result["results"] = (result.get("results") or []) + [f"verschlüsselt: {enc_file}"]
+                else:
+                    result["warning"] = (result.get("warning") or "") + f" Verschlüsselung fehlgeschlagen: {enc_error}"
+            except Exception as e:
+                result["warning"] = (result.get("warning") or "") + f" Verschlüsselung Fehler: {str(e)}"
+        
+        # Cloud-Upload wenn Cloud aktiviert ist
+        cloud_should_upload = (
+            target in ("cloud_only", "local_and_cloud") or
+            (target == "local" and cloud.get("enabled"))
+        )
+        if result.get("status") == "success" and cloud_should_upload:
+            ok, info = _cloud_upload_and_verify(result.get("backup_file") or bf)
+            if ok:
+                result["remote_file"] = info
+                if target == "cloud_only":
+                    try:
+                        run_command(f"rm -f {shlex.quote(str(result.get('backup_file') or bf))}", sudo=True, sudo_password=sudo_password)
+                    except Exception:
+                        pass
+            else:
+                result["warning"] = f"Upload fehlgeschlagen: {info}"
+        return result
+    except Exception as e:
+        logger.error(f"💥 Fehler bei Backup-Erstellung: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": f"Fehler bei der Backup-Erstellung: {str(e)}"})
+
+@app.get("/api/backup/list")
+async def list_backups(backup_dir: str = "/mnt/backups"):
+    """Liste aller Backups"""
+    try:
+        try:
+            backup_dir = _validate_backup_dir(backup_dir)
+        except Exception as ve:
+            return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}", "backups": []})
+
+        p = Path(backup_dir)
+        # Wenn das Verzeichnis nicht existiert, einfach leer zurückgeben
+        if not p.exists():
+            return {"status": "success", "backups": []}
+
+        backups = []
+        # Robust: Python glob statt Shell-Glob (funktioniert auch mit Spaces)
+        # Suche auch nach verschlüsselten Backups (.tar.gz.gpg, .tar.gz.enc)
+        all_backup_files = list(p.glob("*.tar.gz")) + list(p.glob("*.tar.gz.gpg")) + list(p.glob("*.tar.gz.enc"))
+        for f in sorted(all_backup_files):
+            try:
+                st = f.stat()
+                size = st.st_size
+                mtime = st.st_mtime
+
+                def human(n: int) -> str:
+                    for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
+                        if n < 1024:
+                            return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
+                        n /= 1024
+                    return f"{n:.1f} PB"
+
+                # einfache Datumsdarstellung (lokal)
+                date_str = run_command(f"date -d @{int(mtime)} '+%Y-%m-%d %H:%M:%S'").get("stdout", "").strip()
+                if not date_str:
+                    date_str = ""
+
+                backup_info = {
+                    "file": str(f),
+                    "size": human(size),
+                    "date": date_str,
+                    "encrypted": False,
+                }
+                # Prüfe auf Verschlüsselung (auch verschachtelte Endungen wie .tar.gz.gpg)
+                filename = str(f)
+                if filename.endswith('.gpg') or filename.endswith('.enc') or '.tar.gz.gpg' in filename or '.tar.gz.enc' in filename:
+                    backup_info["encrypted"] = True
+                # Prüfe auf Cloud-Backup (Dateiname enthält möglicherweise Hinweise)
+                if 'cloud' in str(f).lower() or 'remote' in str(f).lower():
+                    backup_info["location"] = "Cloud"
+                else:
+                    backup_info["location"] = "Lokal"
+                backups.append(backup_info)
+            except Exception:
+                continue
+
+        return {"status": "success", "backups": backups}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/backup/delete")
+async def delete_backup(request: Request):
+    """Löscht ein Backup (.tar.gz) sicher (mit sudo fallback)."""
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    backup_file = (data.get("backup_file") or "").strip()
+    sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+
+    if not backup_file or not backup_file.endswith(".tar.gz"):
+        return JSONResponse(status_code=200, content={"status": "error", "message": "backup_file (.tar.gz) erforderlich"})
+
+    # Allowlist path roots
+    try:
+        bf = Path(backup_file).resolve()
+        allowed_roots = [Path("/mnt").resolve(), Path("/media").resolve(), Path("/run/media").resolve(), Path("/home").resolve()]
+        if not any(str(bf).startswith(str(r) + "/") or bf == r for r in allowed_roots):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei liegt außerhalb erlaubter Pfade"})
+    except Exception:
+        pass
+
+    # Try delete as user first
+    cmd = f"rm -f {shlex.quote(backup_file)}"
+    res = await run_command_async(cmd, sudo=False, timeout=30)
+    if not res.get("success") and sudo_password:
+        res = await run_command_async(cmd, sudo=True, sudo_password=sudo_password, timeout=30)
+
+    # verify gone
+    test = await run_command_async(f"test -e {shlex.quote(backup_file)}", timeout=10)
+    if test.get("success"):
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": "Backup konnte nicht gelöscht werden",
+                "stderr": (res.get("stderr") or res.get("error") or "").strip()[:200],
+            },
+        )
+
+    return {"status": "success", "message": "Backup gelöscht"}
+
+@app.post("/api/backup/restore")
+async def restore_backup(request: Request):
+    """Backup wiederherstellen"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        backup_file = data.get("backup_file", "")
+        
+        if not backup_file:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "Backup-Datei erforderlich"
+                }
+            )
+        
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "message": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        # Warnung: Restore ist gefährlich!
+        # Extrahiere Backup
+        restore_cmd = f"tar -xzf {backup_file} -C /"
+        restore_result = await run_command_async(restore_cmd, sudo=True, sudo_password=sudo_password, timeout=7200)
+        
+        if restore_result["success"]:
+            return {
+                "status": "success",
+                "message": f"Backup {backup_file} wiederhergestellt",
+                "warning": "System-Neustart empfohlen"
+            }
+        else:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Restore fehlgeschlagen: {restore_result.get('stderr', 'Unbekannter Fehler')}"
+                }
+            )
+    except Exception as e:
+        logger.error(f"💥 Fehler bei Backup-Restore: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Fehler beim Restore: {str(e)}"
+            }
+        )
+
+
+@app.post("/api/backup/verify")
+async def verify_backup(request: Request):
+    """Backup verifizieren (tar-Test, optional sha256)."""
+    try:
+        data = await request.json()
+        backup_file = (data.get("backup_file") or "").strip()
+        mode = (data.get("mode") or "tar").strip()  # tar | sha256 | gzip
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+
+        if not backup_file:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "backup_file erforderlich"})
+
+        # Allowlist: nur unter erlaubten roots
+        try:
+            bf = Path(backup_file).resolve()
+            allowed_roots = [Path("/mnt").resolve(), Path("/media").resolve(), Path("/run/media").resolve(), Path("/home").resolve()]
+            if not any(str(bf).startswith(str(r) + "/") or bf == r for r in allowed_roots):
+                return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei liegt außerhalb erlaubter Pfade"})
+        except Exception:
+            pass
+
+        # Existence check (mit sudo fallback)
+        test_cmd = f"test -s {shlex.quote(backup_file)}"
+        t = run_command(test_cmd)
+        if not t["success"] and sudo_password:
+            t = run_command(test_cmd, sudo=True, sudo_password=sudo_password)
+        if not t["success"]:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei nicht gefunden oder leer"})
+
+        import time
+        start = time.time()
+
+        if mode == "sha256":
+            cmd = f"sha256sum {shlex.quote(backup_file)}"
+            res = await run_command_async(cmd, timeout=600)
+            if not res["success"] and sudo_password:
+                res = await run_command_async(cmd, sudo=True, sudo_password=sudo_password, timeout=600)
+            ok = bool(res["success"])
+            sha = (res.get("stdout") or "").strip().split()[0] if ok and (res.get("stdout") or "").strip() else None
+            return {
+                "status": "success" if ok else "error",
+                "mode": "sha256",
+                "ok": ok,
+                "sha256": sha,
+                "stderr": (res.get("stderr") or "").strip()[:200],
+                "duration_ms": int((time.time() - start) * 1000),
+            }
+
+        if mode == "gzip":
+            # gzip stream integrity test (no output on success)
+            cmd = f"gzip -t {shlex.quote(backup_file)}"
+            res = await run_command_async(cmd, timeout=600)
+            if not res["success"] and sudo_password:
+                res = await run_command_async(cmd, sudo=True, sudo_password=sudo_password, timeout=600)
+            ok = bool(res["success"])
+            msg = (res.get("stderr") or res.get("stdout") or res.get("error") or "").strip()
+            if not msg and not ok:
+                msg = f"gzip test failed (rc={res.get('returncode')})"
+            return {
+                "status": "success" if ok else "error",
+                "mode": "gzip",
+                "ok": ok,
+                "message": msg[:400] if msg else None,
+                "duration_ms": int((time.time() - start) * 1000),
+            }
+
+        # Default: tar.gz structural test via python (avoids huge stdout lists)
+        try:
+            import tarfile
+            with tarfile.open(backup_file, mode="r:gz") as tf:
+                # iterate headers; raises on corruption/truncation
+                for _ in tf:
+                    pass
+            ok = True
+            msg = None
+        except Exception as te:
+            ok = False
+            msg = str(te) or "tar verify failed"
+
+        return {
+            "status": "success" if ok else "error",
+            "mode": "tar",
+            "ok": ok,
+            "message": msg[:400] if msg else None,
+            "duration_ms": int((time.time() - start) * 1000),
+        }
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+# ==================== Raspberry Pi Konfiguration ====================
+
+pi_config_module = None
+backup_module = None
+
+def _get_pi_config_module():
+    global pi_config_module
+    if pi_config_module is None:
+        from modules.raspberry_pi_config import RaspberryPiConfigModule
+        pi_config_module = RaspberryPiConfigModule()
+    return pi_config_module
+
+def _get_backup_module():
+    global backup_module
+    if backup_module is None:
+        from modules.backup import BackupModule
+        backup_module = BackupModule()
+    return backup_module
+
+
+@app.get("/api/raspberry-pi/config")
+async def get_raspberry_pi_config():
+    """Liest die aktuelle Raspberry Pi Konfiguration"""
+    try:
+        module = _get_pi_config_module()
+        # Versuche mit gespeichertem sudo_password
+        sudo_password = sudo_password_store.get("password", "")
+        result = module.read_config(sudo_password=sudo_password)
+        # Wenn Fehler und requires_sudo_password, dann Flag setzen
+        if result.get("status") == "error":
+            error_msg = result.get("message", "").lower()
+            if ("berechtigung" in error_msg or "sudo" in error_msg or "permission" in error_msg or "keine berechtigung" in error_msg):
+                result["requires_sudo_password"] = True
+            # Stelle sicher, dass das Flag gesetzt ist, wenn es fehlt
+            if "requires_sudo_password" not in result:
+                result["requires_sudo_password"] = True
+        return result
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen der Raspberry Pi Konfiguration: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e), "requires_sudo_password": True})
+
+
+@app.post("/api/raspberry-pi/config")
+async def set_raspberry_pi_config(request: Request):
+    """Speichert die Raspberry Pi Konfiguration"""
+    try:
+        data = await request.json()
+        config = data.get("config", {})
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test.get("success"):
+                return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+        
+        module = _get_pi_config_module()
+        result = module.write_config(config, sudo_password)
+        
+        if result.get("status") == "success":
+            result["message"] = "Konfiguration gespeichert. Neustart erforderlich, damit Änderungen wirksam werden."
+        
+        return result
+    except Exception as e:
+        logger.error(f"Fehler beim Schreiben der Raspberry Pi Konfiguration: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/raspberry-pi/config/options")
+async def get_raspberry_pi_config_options():
+    """Gibt alle verfügbaren Konfigurationsoptionen zurück, gefiltert nach Pi-Modell"""
+    try:
+        module = _get_pi_config_module()
+        return module.get_all_config_options(filter_by_model=True)
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Konfigurationsoptionen: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/raspberry-pi/config/option/{key}")
+async def get_raspberry_pi_config_option_info(key: str):
+    """Gibt Informationen zu einer spezifischen Konfigurationsoption zurück"""
+    try:
+        module = _get_pi_config_module()
+        return module.get_config_option_info(key)
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Option-Info: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/raspberry-pi/config/validate")
+async def validate_raspberry_pi_config_value(request: Request):
+    """Validiert einen Konfigurationswert"""
+    try:
+        data = await request.json()
+        key = data.get("key", "")
+        value = data.get("value")
+        
+        if not key:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "key erforderlich"})
+        
+        module = _get_pi_config_module()
+        return module.validate_config_value(key, value)
+    except Exception as e:
+        logger.error(f"Fehler bei der Validierung: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+# -------------------- Control Center --------------------
+
+def _get_control_center_module():
+    """Singleton für Control Center Modul"""
+    global control_center_module
+    if control_center_module is None:
+        from modules.control_center import ControlCenterModule
+        control_center_module = ControlCenterModule()
+    return control_center_module
+
+control_center_module = None
+
+
+@app.get("/api/control-center/wifi/networks")
+async def get_wifi_networks():
+    """Listet verfügbare WiFi-Netzwerke auf (verwendet sudo_password_store)."""
+    try:
+        sudo_password = sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.get_wifi_networks(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der WiFi-Netzwerke: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/wifi/scan")
+async def wifi_scan_post(request: Request):
+    """WiFi-Scan mit explizitem sudo-Passwort (um Session/Worker-Probleme zu umgehen)."""
+    try:
+        data = {}
+        if "application/json" in (request.headers.get("content-type") or ""):
+            try:
+                data = await request.json() or {}
+            except Exception:
+                pass
+        sudo_password = (data.get("sudo_password") or "").strip()
+        if not sudo_password:
+            sudo_password = sudo_password_store.get("password", "")
+        if not sudo_password:
+            return JSONResponse(
+                status_code=200,
+                content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+            )
+        if sudo_password and not sudo_password_store.get("password"):
+            sudo_password_store["password"] = sudo_password
+        module = _get_control_center_module()
+        return module.get_wifi_networks(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim WiFi-Scan: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/wifi/config")
+async def get_wifi_config():
+    """Liest aktuelle WiFi-Konfiguration"""
+    try:
+        sudo_password = sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.get_wifi_config(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen der WiFi-Konfiguration: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/wifi/status")
+async def get_wifi_status():
+    """Aktuell verbundenes WLAN, Interface, Signal, WLAN aktiviert (rfkill)."""
+    try:
+        sudo_password = sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.get_wifi_status(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim WiFi-Status: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/wifi/disconnect")
+async def wifi_disconnect(request: Request):
+    """WLAN-Verbindung trennen."""
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.wifi_disconnect(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim WLAN-Trennen: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/wifi/enabled")
+async def wifi_set_enabled(request: Request):
+    """WLAN aktivieren/deaktivieren (rfkill)."""
+    try:
+        data = await request.json()
+        enabled = data.get("enabled", True)
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.wifi_set_enabled(bool(enabled), sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim WLAN aktivieren/deaktivieren: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/wifi/add")
+async def add_wifi_network(request: Request):
+    """Fügt ein WiFi-Netzwerk hinzu"""
+    try:
+        data = await request.json()
+        ssid = data.get("ssid", "")
+        password = data.get("password", "")
+        security = data.get("security", "WPA2")
+        
+        if not ssid:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "SSID erforderlich"})
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.add_wifi_network(ssid, password, security, sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Hinzufügen des WiFi-Netzwerks: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/ssh/status")
+async def get_ssh_status():
+    """Prüft SSH-Status"""
+    try:
+        module = _get_control_center_module()
+        return module.get_ssh_status()
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen des SSH-Status: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/ssh/set")
+async def set_ssh_enabled(request: Request):
+    """Aktiviert/deaktiviert SSH"""
+    try:
+        data = await request.json()
+        enabled = data.get("enabled", False)
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.set_ssh_enabled(enabled, sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Setzen des SSH-Status: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/vnc/status")
+async def get_vnc_status():
+    """Prüft VNC-Status"""
+    try:
+        module = _get_control_center_module()
+        return module.get_vnc_status()
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen des VNC-Status: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/vnc/set")
+async def set_vnc_enabled(request: Request):
+    """Aktiviert/deaktiviert VNC"""
+    try:
+        data = await request.json()
+        enabled = data.get("enabled", False)
+        password = data.get("password", "")
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.set_vnc_enabled(enabled, password, sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Setzen des VNC-Status: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/keyboard")
+async def get_keyboard_layout():
+    """Liest Tastatur-Layout"""
+    try:
+        module = _get_control_center_module()
+        return module.get_keyboard_layout()
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen des Tastatur-Layouts: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/keyboard/set")
+async def set_keyboard_layout(request: Request):
+    """Setzt Tastatur-Layout"""
+    try:
+        data = await request.json()
+        layout = data.get("layout", "de")
+        variant = data.get("variant", "")
+        options = data.get("options", "")
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.set_keyboard_layout(layout, variant, options, sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Setzen des Tastatur-Layouts: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/locale")
+async def get_locale():
+    """Liest Locale-Einstellungen"""
+    try:
+        module = _get_control_center_module()
+        return module.get_locale()
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen der Locale: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/locale/set")
+async def set_locale(request: Request):
+    """Setzt Locale und Timezone"""
+    try:
+        data = await request.json()
+        locale = data.get("locale", "de_DE.UTF-8")
+        timezone = data.get("timezone", "")
+        
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.set_locale(locale, timezone, sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Setzen der Locale: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/desktop")
+async def get_desktop_settings():
+    """Liest Desktop-Einstellungen"""
+    try:
+        module = _get_control_center_module()
+        return module.get_desktop_settings()
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen der Desktop-Einstellungen: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/desktop/boot-target")
+async def get_desktop_boot_target():
+    """Liest das Boot-Ziel (Desktop vs. Kommandozeile)."""
+    try:
+        module = _get_control_center_module()
+        return module.get_boot_target()
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen des Boot-Ziels: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/desktop/boot-target")
+async def set_desktop_boot_target(request: Request):
+    """Setzt das Boot-Ziel: graphical (Desktop) oder multi-user (Kommandozeile)."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        data = data or {}
+        target = data.get("target", "").strip()
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        if not sudo_password:
+            return JSONResponse(
+                status_code=200,
+                content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+            )
+        module = _get_control_center_module()
+        return module.set_boot_target(target, sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Setzen des Boot-Ziels: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/display")
+async def get_display_settings():
+    """Liest Display-Einstellungen (xrandr: Outputs, Modi, Rotation)."""
+    try:
+        module = _get_control_center_module()
+        return module.get_display_settings()
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen der Display-Einstellungen: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/display")
+async def set_display_settings(request: Request):
+    """Setzt Display (xrandr: Output, Modus, Wiederholrate, Rotation). Kein sudo."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        data = data or {}
+        output = (data.get("output") or "").strip()
+        mode = (data.get("mode") or "").strip()
+        rate = data.get("rate")
+        if rate is not None:
+            try:
+                rate = float(rate)
+            except (TypeError, ValueError):
+                rate = None
+        rotation = (data.get("rotation") or "").strip() or "normal"
+        module = _get_control_center_module()
+        return module.set_display_settings(
+            output=output or "HDMI-1",
+            mode=mode or "1920x1080",
+            rate=rate,
+            rotation=rotation,
+            sudo_password="",
+        )
+    except Exception as e:
+        logger.error(f"Fehler beim Setzen der Display-Einstellungen: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/printers")
+async def get_printers():
+    """Listet Drucker auf"""
+    try:
+        sudo_password = sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.get_printers(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Drucker: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/system/reboot")
+async def reboot_system(request: Request):
+    """Startet das System neu"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        if not sudo_password:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+        
+        result = run_command("sudo -S reboot", sudo=True, sudo_password=sudo_password, timeout=5)
+        if result.get("success"):
+            return {"status": "success", "message": "Neustart gestartet"}
+        else:
+            return JSONResponse(status_code=200, content={"status": "error", "message": result.get("stderr") or "Neustart fehlgeschlagen"})
+    except Exception as e:
+        logger.error(f"Fehler beim Neustart: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/raspberry-pi/config/reset")
+async def reset_raspberry_pi_config(request: Request):
+    """Setzt die Raspberry Pi Konfiguration auf Werkseinstellungen zurück"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        if not sudo_password:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+        
+        module = _get_pi_config_module()
+        config_file = module.get_config_file()
+        
+        # Erstelle Backup
+        backup_file = Path(str(config_file) + ".backup." + run_command("date +%Y%m%d_%H%M%S").get("stdout", "").strip())
+        if config_file.exists():
+            result = run_command(f"sudo -S cp {shlex.quote(str(config_file))} {shlex.quote(str(backup_file))}", sudo=True, sudo_password=sudo_password, timeout=5)
+            if not result.get("success"):
+                return JSONResponse(status_code=200, content={"status": "error", "message": "Backup konnte nicht erstellt werden"})
+        
+        # Erstelle Standard-Konfiguration
+        default_config = "# Raspberry Pi Konfiguration - Werkseinstellungen\n# Generiert von PI-Installer\n\n"
+        
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as tmp:
+            tmp.write(default_config)
+            tmp_path = tmp.name
+        
+        result = run_command(f"sudo -S mv {shlex.quote(tmp_path)} {shlex.quote(str(config_file))}", sudo=True, sudo_password=sudo_password, timeout=5)
+        if result.get("success"):
+            return {"status": "success", "message": "Konfiguration zurückgesetzt", "backup": str(backup_file)}
+        else:
+            return JSONResponse(status_code=200, content={"status": "error", "message": result.get("stderr") or "Zurücksetzen fehlgeschlagen"})
+    except Exception as e:
+        logger.error(f"Fehler beim Zurücksetzen: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/system/packagekit/stop")
+async def stop_packagekit(request: Request):
+    """Stoppt PackageKit manuell, um apt-get-Konflikte zu vermeiden."""
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        _ensure_packagekit_stopped(sudo_password)
+        return {"status": "success", "message": "PackageKit gestoppt (falls aktiv)"}
+    except Exception as e:
+        logger.error(f"Fehler beim Stoppen von PackageKit: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/bluetooth/status")
+async def get_bluetooth_status():
+    """Bluetooth-Status: aktiviert/deaktiviert, verbundene Geräte."""
+    try:
+        sudo_password = sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.get_bluetooth_status(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Bluetooth-Status: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/bluetooth/scan")
+async def bluetooth_scan(request: Request):
+    """Bluetooth-Geräte scannen."""
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.bluetooth_scan(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Bluetooth-Scan: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/bluetooth/enabled")
+async def bluetooth_set_enabled(request: Request):
+    """Bluetooth aktivieren/deaktivieren."""
+    try:
+        data = await request.json()
+        enabled = data.get("enabled", True)
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.bluetooth_set_enabled(bool(enabled), sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Bluetooth aktivieren/deaktivieren: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

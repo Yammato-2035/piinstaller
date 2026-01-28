@@ -1,0 +1,122 @@
+═══════════════════════════════════════════════════════════════
+  PI-INSTALLER - SCHNELLSTART
+═══════════════════════════════════════════════════════════════
+
+✅ PYTHON 3.13 (Debian Trixie) WIRD JETZT UNTERSTÜTZT!
+
+Prüfen Sie Ihre Python-Version:
+```
+python3 --version
+```
+
+Unterstützte Versionen:
+• Python 3.13.x → PERFEKT! (Debian Trixie)
+• Python 3.12.x → GUT! (RPi OS Latest)
+• Python 3.11.x → OK (RPi OS Bullseye)
+• Python 3.10 oder älter → NICHT unterstützt
+
+═══════════════════════════════════════════════════════════════
+SCHRITT 1: Alten venv löschen
+═══════════════════════════════════════════════════════════════
+
+cd ~/Documents/PI-Installer/backend
+rm -rf venv __pycache__ *.egg-info
+
+
+═══════════════════════════════════════════════════════════════
+SCHRITT 2: Backend starten (Terminal 1)
+═══════════════════════════════════════════════════════════════
+
+cd ~/Documents/PI-Installer/backend
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+python3 app.py
+
+Warten auf: "Uvicorn running on http://0.0.0.0:8000"
+
+
+═══════════════════════════════════════════════════════════════
+SCHRITT 3: Frontend starten (Terminal 2)
+═══════════════════════════════════════════════════════════════
+
+cd ~/Documents/PI-Installer/frontend
+npm install
+npm run dev
+
+Warten auf: "Local: http://localhost:3000"
+
+
+═══════════════════════════════════════════════════════════════
+SCHRITT 4: Browser öffnen
+═══════════════════════════════════════════════════════════════
+
+http://localhost:3000
+
+🎉 Fertig! Sie sollten die GUI sehen
+
+
+═══════════════════════════════════════════════════════════════
+HÄUFIGE FEHLER
+═══════════════════════════════════════════════════════════════
+
+❌ "pydantic-core build failed"
+→ pip cache clearen und neu versuchen:
+   pip cache purge
+   pip install -r requirements.txt
+
+❌ "ModuleNotFoundError: No module named 'fastapi'"
+→ Virtual Environment nicht aktiviert
+→ Lösung: source venv/bin/activate
+
+❌ "Port 8000 already in use"
+→ Backend läuft schon
+→ Lösung: lsof -i :8000
+           kill -9 <PID>
+
+❌ "npm: command not found"
+→ Node.js nicht installiert
+→ Lösung: sudo apt install nodejs npm
+
+
+═══════════════════════════════════════════════════════════════
+DOKUMENTATION
+═══════════════════════════════════════════════════════════════
+
+Für Ihr System:
+
+DEBIAN_TRIXIE.md    - Für Debian 13 + Python 3.13
+PYTHON_SETUP.md     - Für andere Python-Versionen
+QUICKSTART.md       - Schnelle Anleitung mit Tricks
+INSTALL.md          - Detaillierte Installation
+README.md           - Projekt-Übersicht
+FIXES.md            - Was wurde behoben
+
+
+═══════════════════════════════════════════════════════════════
+ALTERNATIVE: Docker (Keine Python-Installation nötig!)
+═══════════════════════════════════════════════════════════════
+
+docker-compose up
+
+Öffnen Sie: http://localhost:3000
+
+
+═══════════════════════════════════════════════════════════════
+KURZ-VERSION: Kopieren & Einfügen
+═══════════════════════════════════════════════════════════════
+
+cd ~/Documents/PI-Installer/backend && \
+rm -rf venv && \
+python3 -m venv venv && \
+source venv/bin/activate && \
+pip install --upgrade pip && \
+pip install -r requirements.txt && \
+python3 app.py
+
+
+═══════════════════════════════════════════════════════════════
+Version: 1.0.1
+Status: ✅ Python 3.13 Support hinzugefügt!
+═══════════════════════════════════════════════════════════════
