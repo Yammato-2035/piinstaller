@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Zap, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { fetchApi } from '../api'
 
 const InstallationWizard: React.FC = () => {
   const [step, setStep] = useState(1)
@@ -41,7 +42,7 @@ const InstallationWizard: React.FC = () => {
     
     setInstalling(true)
     try {
-      const response = await fetch('/api/install/start', {
+      const response = await fetchApi('/api/install/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -72,7 +73,7 @@ const InstallationWizard: React.FC = () => {
         
         const interval = setInterval(async () => {
           // Prüfe Fortschritt vom Server
-          const progressResponse = await fetch('/api/install/progress')
+          const progressResponse = await fetchApi('/api/install/progress')
           const progressData = await progressResponse.json()
           
           if (progressData.progress) {

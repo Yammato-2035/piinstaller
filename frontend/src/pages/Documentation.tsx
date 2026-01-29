@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, Cloud, HardDrive, Settings, Cpu } from 'lucide-react'
+import { BookOpen, Cloud, HardDrive, Settings, Cpu, Monitor, HelpCircle } from 'lucide-react'
 
-type SectionId = 'backup-restore' | 'cloud' | 'control-center' | 'raspberry-pi-config' | 'einstellungen' | 'versionen'
+type SectionId = 'backup-restore' | 'cloud' | 'control-center' | 'raspberry-pi-config' | 'einstellungen' | 'desktop-app' | 'troubleshooting' | 'versionen'
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ElementType }[] = [
   { id: 'backup-restore', label: 'Backup & Restore', icon: HardDrive },
@@ -10,6 +10,8 @@ const SECTIONS: { id: SectionId; label: string; icon: React.ElementType }[] = [
   { id: 'control-center', label: 'Control Center', icon: Settings },
   { id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu },
   { id: 'einstellungen', label: 'Einstellungen', icon: Settings },
+  { id: 'desktop-app', label: 'Desktop-App (Tauri)', icon: Monitor },
+  { id: 'troubleshooting', label: 'Troubleshooting', icon: HelpCircle },
   { id: 'versionen', label: 'Versionen & Changelog', icon: BookOpen },
 ]
 
@@ -236,6 +238,110 @@ const Documentation: React.FC = () => {
             </motion.div>
           )}
 
+          {activeChapter === 'desktop-app' && (
+            <motion.div
+              key="desktop-app"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-6"
+            >
+              <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
+                <Monitor className="text-emerald-500" />
+                Desktop-App (Tauri)
+              </h2>
+              <div className="space-y-4 text-slate-300 dark:text-slate-300">
+                <p className="text-sm">
+                  Die PI-Installer-Oberfläche kann als <strong>eigenständige Desktop-Anwendung</strong> laufen –
+                  ohne Browserfenster. Dafür wird <strong>Tauri 2</strong> verwendet (WebView-basiert, ressourcenschonend).
+                </p>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Vorteile</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li>Kein separates Browser-Fenster, eigenes Anwendungsfenster</li>
+                    <li>Typischerweise schnellerer Start und geringerer Speicherbedarf als im Browser</li>
+                    <li>Gleiches React-UI wie in der Web-Version</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Voraussetzungen</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li><strong>Rust</strong> (z. B. via <code className="text-slate-400">curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh</code>)</li>
+                    <li>Node.js und <code className="text-slate-400">npm install</code> im <code className="text-slate-400">frontend</code>-Ordner</li>
+                    <li>Backend läuft (z. B. <code className="text-slate-400">./start.sh</code> oder nur Backend auf Port 8000)</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Entwicklung & Build</h3>
+                  <p className="text-sm mb-2">Im Projektroot bzw. <code className="text-slate-400">frontend</code>:</p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li><strong>Entwicklung:</strong> <code className="text-slate-400">npm run tauri:dev</code> – startet Vite auf 5173 und öffnet die Desktop-App</li>
+                    <li><strong>Produktions-Build:</strong> <code className="text-slate-400">npm run tauri:build</code> – erzeugt ausführbare Dateien im <code className="text-slate-400">src-tauri/target/release</code>-Bereich</li>
+                  </ul>
+                  <p className="text-sm mt-3">
+                    Die App spricht standardmäßig mit dem Backend unter <code className="text-slate-400">http://localhost:8000</code>.
+                    Bei Remote-Pi (Backend auf anderem Rechner) kann <code className="text-slate-400">VITE_API_BASE</code> beim Build gesetzt werden
+                    (z. B. <code className="text-slate-400">VITE_API_BASE=http://192.168.1.10:8000 npm run build</code> vor <code className="text-slate-400">tauri build</code>).
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'troubleshooting' && (
+            <motion.div
+              key="troubleshooting"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-6"
+            >
+              <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
+                <HelpCircle className="text-amber-500" />
+                Troubleshooting
+              </h2>
+              <div className="space-y-4 text-slate-300 dark:text-slate-300">
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Log-Datei</h3>
+                  <p className="text-sm mb-2">
+                    Standardpfad: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200">&lt;Projektordner&gt;/logs/pi-installer.log</code> (z. B. <code className="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200">…/PI-Installer/logs/pi-installer.log</code>).
+                    Über Umgebungsvariable <code className="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200">PI_INSTALLER_LOG_PATH</code> änderbar.
+                  </p>
+                  <p className="text-sm">
+                    In der App: <strong>Einstellungen → Logs</strong> → „Logs laden“. Der genaue Pfad wird dort angezeigt.
+                    Im Terminal: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200">tail -f …/logs/pi-installer.log</code>.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Backend neu starten</h3>
+                  <p className="text-sm mb-2">
+                    Kein Kompilieren nötig. Im Projektordner:
+                  </p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li><strong>Alles:</strong> <code className="text-slate-400">./start.sh</code> (Backend + Frontend). Vorher <code className="text-slate-400">Ctrl+C</code> zum Beenden.</li>
+                    <li><strong>Nur Backend:</strong> <code className="text-slate-400">./start-backend.sh</code>. Vorher laufenden Backend-Prozess beenden.</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Dashboard zeigt keine Daten / Sudo-Passwort speichert nicht</h3>
+                  <p className="text-sm mb-2">
+                    Beides funktioniert nur, wenn das <strong>Backend erreichbar</strong> ist (Port 8000). Typische Ursachen:
+                  </p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li>Backend läuft nicht → <code className="text-slate-400">./start.sh</code> oder <code className="text-slate-400">./start-backend.sh</code> ausführen.</li>
+                    <li>Frontend wird ohne Vite-Proxy genutzt (z. B. statische Dateien, anderer Port) → API-Anfragen gehen nicht an localhost:8000.</li>
+                    <li>Bei „Backend nicht erreichbar“-Hinweis im Dashboard: Einstellungen → Logs prüfen, Backend starten, Seite neu laden.</li>
+                  </ul>
+                  <p className="text-sm mt-2">
+                    Sudo-Passwort: „Ohne Prüfung speichern“ ist standardmäßig aktiv. Nach Speichern beim ersten Einsatz (z. B. Firewall) wird es genutzt; nur in der Session, nicht dauerhaft.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {activeChapter === 'einstellungen' && (
             <motion.div
               key="einstellungen"
@@ -296,7 +402,8 @@ const Documentation: React.FC = () => {
                     <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 mt-1 ml-4 space-y-1">
                       <li>Control Center – Desktop: Boot-Ziel (Desktop vs. Kommandozeile)</li>
                       <li>Control Center – Display: Auflösung, Bildwiederholrate, Rotation (xrandr)</li>
-                      <li>Dokumentation: Display- und Desktop-Bereiche aktualisiert</li>
+                      <li>Desktop-App (Tauri): eigenständiges Fenster ohne Browser, gleiches UI</li>
+                      <li>Dokumentation: Display-, Desktop- und Desktop-App-Bereich</li>
                     </ul>
                   </div>
                   <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">

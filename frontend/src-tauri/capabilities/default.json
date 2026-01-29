@@ -1,0 +1,9 @@
+{
+  "identifier": "main-capability",
+  "description": "Hauptfenster – WebView und Standard-Berechtigungen",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:allow-open"
+  ]
+}

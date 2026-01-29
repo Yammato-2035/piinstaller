@@ -1129,30 +1129,317 @@ class ControlCenterModule:
             return {"status": "error", "message": str(e)}
     
     def get_printers(self, sudo_password: str = "") -> Dict[str, Any]:
-        """Listet Drucker auf"""
+        """Listet Drucker auf (lpstat -p). Bei Locale 'de' z.B. 'Drucker NAME ...'; sonst 'printer NAME ...'."""
+        printers = []
         try:
             result = subprocess.run(
                 ["lpstat", "-p"],
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=10,
             )
-            
-            printers = []
-            for line in result.stdout.split('\n'):
-                if line.startswith('printer '):
-                    printer_name = line.split()[1]
-                    printers.append({
-                        "name": printer_name,
-                        "status": "unknown"
-                    })
-            
-            return {
-                "status": "success",
-                "printers": printers
-            }
+            for line in (result.stdout or "").strip().split("\n"):
+                line = line.strip()
+                if not line:
+                    continue
+                # "printer NAME ..." (en) oder "Drucker NAME ..." (de)
+                if line.lower().startswith("printer ") or line.startswith("Drucker "):
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        name = parts[1]
+                        low = line.lower()
+                        if "idle" in low or "leerlauf" in low:
+                            status = "idle"
+                        elif "printing" in low or "druckt" in low:
+                            status = "printing"
+                        elif "disabled" in low or "deaktiviert" in low:
+                            status = "disabled"
+                        else:
+                            status = "unknown"
+                        printers.append({"name": name, "status": status})
+            return {"status": "success", "printers": printers}
+        except FileNotFoundError:
+            return {"status": "error", "message": "lpstat nicht gefunden. Ist CUPS installiert? (apt install cups)"}
+        except subprocess.TimeoutExpired:
+            return {"status": "error", "message": "lpstat hat zu lange gedauert."}
         except Exception as e:
+            return {"status": "error", "message": str(e)}
+
+    def _check_sane_installed(self) -> Dict[str, Any]:
+        """Prüft ob SANE und zugehörige Programme installiert sind."""
+        out: Dict[str, Any] = {
+            "scanimage": False,
+            "scanimage_path": None,
+            "sane_find_scanner": False,
+            "sane_find_scanner_path": None,
+            "packages": {},
+        }
+        # which scanimage / sane-find-scanner
+        for cmd, key, path_key in [
+            ("scanimage", "scanimage", "scanimage_path"),
+            ("sane-find-scanner", "sane_find_scanner", "sane_find_scanner_path"),
+        ]:
+            try:
+                r = subprocess.run(
+                    ["which", cmd],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                if r.returncode == 0 and (r.stdout or "").strip():
+                    out[key] = True
+                    out[path_key] = (r.stdout or "").strip().splitlines()[0].strip()
+                else:
+                    out[path_key] = None
+            except Exception:
+                out[path_key] = None
+        # dpkg -l sane-utils sane-airscan (sane/sane-backends sind keine Debian-Pakete)
+        try:
+            r = subprocess.run(
+                ["dpkg", "-l", "sane-utils", "sane-airscan"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            for line in (r.stdout or "").splitlines():
+                if not line.startswith("ii "):
+                    continue
+                parts = line.split()
+                if len(parts) >= 2:
+                    pkg = parts[1].split(":")[0]
+                    out["packages"][pkg] = True
+            for p in ("sane-utils", "sane-airscan"):
+                if p not in out["packages"]:
+                    out["packages"][p] = False
+        except Exception:
+            out["packages"] = {"sane-utils": False, "sane-airscan": False}
+        return out
+
+    def get_scanners(self, sudo_password: str = "") -> Dict[str, Any]:
+        """Listet SANE-Scanner auf (scanimage -L). Enthält sane_check mit Installationsstatus."""
+        sane_check = self._check_sane_installed()
+        scanners = []
+        try:
+            # Netzwerk-Scanner (eSCL/airscan) können 20+ s brauchen
+            result = subprocess.run(
+                ["scanimage", "-L"],
+                capture_output=True,
+                text=True,
+                timeout=45,
+            )
+            # Zeilen wie: device `escl:https://...' is a ESCL Kyocera ECOSYS M5526cdw platen,adf scanner
+            # Bei eSCL/airscan oft "404 Page Not Found" am Zeilenanfang vor device – daher search, nicht match
+            pattern = re.compile(r"device\s+`([^']+)'\s+is\s+a\s+(.+)")
+            for line in (result.stdout or "").splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                m = pattern.search(line)
+                if m:
+                    device = m.group(1).strip()
+                    desc = m.group(2).strip()
+                    name = re.sub(r"\s+platen.*$", "", desc, flags=re.I).strip() or desc
+                    scanners.append({"name": name, "device": device})
+            return {"status": "success", "scanners": scanners, "sane_check": sane_check}
+        except FileNotFoundError:
             return {
                 "status": "error",
-                "message": str(e)
+                "message": "scanimage nicht gefunden. Installieren: apt update && apt install sane-utils (ggf. sane-airscan für Netzwerk-Scanner).",
+                "scanners": [],
+                "sane_check": sane_check,
             }
+        except subprocess.TimeoutExpired:
+            return {
+                "status": "error",
+                "message": "scanimage hat zu lange gedauert (Timeout). Netzwerk-Scanner prüfen.",
+                "scanners": [],
+                "sane_check": sane_check,
+            }
+        except Exception as e:
+            return {"status": "error", "message": str(e), "scanners": [], "sane_check": sane_check}
+
+    def _cpu_governor_paths(self) -> List[Path]:
+        """Liefert cpufreq-Pfade für alle CPUs (scaling_governor, scaling_available_governors)."""
+        base = Path("/sys/devices/system/cpu")
+        paths = []
+        for p in sorted(base.glob("cpu[0-9]*")):
+            g = p / "cpufreq" / "scaling_governor"
+            a = p / "cpufreq" / "scaling_available_governors"
+            if g.exists() and a.exists():
+                paths.append((g, a))
+        return paths
+
+    def get_performance(self, sudo_password: str = "") -> Dict[str, Any]:
+        """Liest CPU-Governor, GPU-Memory/Overclocking (config.txt) und Swap."""
+        out: Dict[str, Any] = {
+            "governor": None,
+            "governors": [],
+            "gpu_mem": None,
+            "arm_freq": None,
+            "over_voltage": None,
+            "force_turbo": None,
+            "swap_total_mb": 0,
+            "swap_used_mb": 0,
+            "swap_size_mb": None,
+            "swap_editable": False,
+        }
+        # CPU Governor
+        try:
+            paths = self._cpu_governor_paths()
+            if paths:
+                gov_path, av_path = paths[0]
+                out["governor"] = gov_path.read_text().strip()
+                out["governors"] = [s.strip() for s in av_path.read_text().split() if s.strip()]
+        except Exception:
+            pass
+        # config.txt (gpu_mem, overclocking) via Raspberry-Pi-Modul
+        try:
+            from modules.raspberry_pi_config import RaspberryPiConfigModule
+            pi = RaspberryPiConfigModule()
+            r = pi.read_config(sudo_password=sudo_password)
+            if r.get("status") == "success" and isinstance(r.get("config"), dict):
+                c = r["config"]
+                out["gpu_mem"] = c.get("gpu_mem")
+                out["arm_freq"] = c.get("arm_freq")
+                out["over_voltage"] = c.get("over_voltage")
+                out["force_turbo"] = c.get("force_turbo")
+        except Exception:
+            pass
+        # Swap: swapon + ggf. dphys-swapfile
+        try:
+            r = subprocess.run(
+                ["swapon", "--show=NAME,SIZE,USED", "--noheadings"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            total = 0
+            used = 0
+            for line in (r.stdout or "").strip().splitlines():
+                parts = line.split()
+                if len(parts) >= 3:
+                    try:
+                        total += int(parts[1])
+                        used += int(parts[2])
+                    except ValueError:
+                        pass
+            out["swap_total_mb"] = total // 1024
+            out["swap_used_mb"] = used // 1024
+        except Exception:
+            pass
+        dp = Path("/etc/dphys-swapfile")
+        if dp.exists():
+            try:
+                raw = dp.read_text()
+                for line in raw.splitlines():
+                    line = line.strip()
+                    if line.startswith("CONF_SWAPSIZE="):
+                        val = line.split("=", 1)[1].strip()
+                        try:
+                            out["swap_size_mb"] = int(val)
+                        except ValueError:
+                            out["swap_size_mb"] = None
+                        break
+                out["swap_editable"] = True
+            except Exception:
+                pass
+        return {"status": "success", **out}
+
+    def set_performance(
+        self,
+        sudo_password: str,
+        governor: Optional[str] = None,
+        gpu_mem: Optional[str] = None,
+        arm_freq: Optional[str] = None,
+        over_voltage: Optional[str] = None,
+        force_turbo: Optional[bool] = None,
+        swap_size_mb: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """Setzt Governor, config-Optionen und/oder Swap-Größe. Config/Swap erfordern Neustart."""
+        messages: List[str] = []
+        # CPU Governor (sofort wirksam)
+        if governor is not None:
+            paths = self._cpu_governor_paths()
+            if not paths:
+                return {"status": "error", "message": "cpufreq/Governor nicht verfügbar."}
+            gov_paths = [str(p[0]) for p in paths]
+            try:
+                cmd = " && ".join(f"echo {shlex.quote(governor)} > {shlex.quote(p)}" for p in gov_paths)
+                r = subprocess.run(
+                    ["sudo", "-S", "sh", "-c", cmd],
+                    input=(sudo_password + "\n").encode(),
+                    capture_output=True,
+                    timeout=10,
+                )
+                if r.returncode != 0:
+                    err = (r.stderr or r.stdout or b"").decode("utf-8", errors="ignore").strip() or "Unbekannter Fehler"
+                    return {"status": "error", "message": f"Governor setzen fehlgeschlagen: {err}"}
+                messages.append("CPU-Governor gesetzt.")
+            except Exception as e:
+                return {"status": "error", "message": f"Governor setzen fehlgeschlagen: {e}"}
+        # config.txt (gpu_mem, overclocking)
+        config_updates = {}
+        if gpu_mem is not None:
+            config_updates["gpu_mem"] = str(gpu_mem)
+        if arm_freq is not None:
+            config_updates["arm_freq"] = str(arm_freq)
+        if over_voltage is not None:
+            config_updates["over_voltage"] = str(over_voltage)
+        if force_turbo is not None:
+            config_updates["force_turbo"] = 1 if force_turbo else 0
+        if config_updates:
+            try:
+                from modules.raspberry_pi_config import RaspberryPiConfigModule
+                pi = RaspberryPiConfigModule()
+                r = pi.read_config(sudo_password=sudo_password)
+                if r.get("status") != "success" or not isinstance(r.get("config"), dict):
+                    return {"status": "error", "message": r.get("message", "config.txt lesen fehlgeschlagen.")}
+                merged = {**r["config"], **config_updates}
+                w = pi.write_config(merged, sudo_password)
+                if w.get("status") != "success":
+                    return {"status": "error", "message": w.get("message", "config.txt schreiben fehlgeschlagen.")}
+                messages.append("Konfiguration (GPU/Overclocking) gespeichert. Neustart erforderlich.")
+            except Exception as e:
+                return {"status": "error", "message": f"Config schreiben fehlgeschlagen: {e}"}
+        # Swap (dphys-swapfile)
+        if swap_size_mb is not None:
+            dp = Path("/etc/dphys-swapfile")
+            if not dp.exists():
+                return {"status": "error", "message": "dphys-swapfile nicht gefunden. Swap-Größe kann hier nicht geändert werden."}
+            try:
+                raw = dp.read_text()
+                lines = []
+                done = False
+                for line in raw.splitlines():
+                    if line.strip().startswith("CONF_SWAPSIZE="):
+                        lines.append(f"CONF_SWAPSIZE={swap_size_mb}\n")
+                        done = True
+                    else:
+                        lines.append(line.rstrip("\n") + "\n")
+                if not done:
+                    lines.append(f"CONF_SWAPSIZE={swap_size_mb}\n")
+                import tempfile
+                with tempfile.NamedTemporaryFile(mode="w", suffix=".dphys", delete=False) as f:
+                    f.write("".join(lines))
+                    tmp = Path(f.name)
+                try:
+                    subprocess.run(
+                        ["sudo", "-S", "cp", str(tmp), str(dp)],
+                        input=(sudo_password + "\n").encode(),
+                        capture_output=True,
+                        timeout=5,
+                        check=True,
+                    )
+                finally:
+                    tmp.unlink(missing_ok=True)
+                for cmd in [["dphys-swapfile", "swapoff"], ["dphys-swapfile", "setup"], ["dphys-swapfile", "swapon"]]:
+                    subprocess.run(
+                        ["sudo", "-S"] + cmd,
+                        input=(sudo_password + "\n").encode(),
+                        capture_output=True,
+                        timeout=60 if cmd[1] == "setup" else 15,
+                    )
+                messages.append("Swap-Größe angepasst.")
+            except Exception as e:
+                return {"status": "error", "message": f"Swap anpassen fehlgeschlagen: {e}"}
+        return {"status": "success", "message": " ".join(messages) if messages else "Keine Änderungen."}

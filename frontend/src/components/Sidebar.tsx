@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import { fetchApi } from '../api'
 import {
   LayoutDashboard,
   Shield,
@@ -37,7 +38,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch('/api/version')
+        const res = await fetchApi('/api/version')
         if (!res.ok) return
         const data = await res.json()
         if (!cancelled && data?.version) setVersion(String(data.version))

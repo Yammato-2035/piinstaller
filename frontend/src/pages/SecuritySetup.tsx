@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Shield, CheckCircle, AlertCircle, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { fetchApi } from '../api'
 
 const SecuritySetup: React.FC = () => {
   const [config, setConfig] = useState({
@@ -42,7 +43,7 @@ const SecuritySetup: React.FC = () => {
   const loadSecurityStatus = async () => {
     try {
       console.log('🔄 Lade Security-Status...')
-      const response = await fetch('/api/system/security-config')
+      const response = await fetchApi('/api/system/security-config')
       const data = await response.json()
       console.log('📋 Security-Config geladen:', data.config)
       console.log('🔥 UFW Status:', data.config?.ufw)
@@ -101,7 +102,7 @@ const SecuritySetup: React.FC = () => {
 
   const loadFirewallRules = async () => {
     try {
-      const response = await fetch('/api/security/firewall/rules')
+      const response = await fetchApi('/api/security/firewall/rules')
       const data = await response.json()
       if (data.status === 'success') {
         setFirewallRules(data.rules || data.verbose || '')
@@ -124,7 +125,7 @@ const SecuritySetup: React.FC = () => {
       // Erstelle UFW-Command: allow/deny/reject + Regel
       // z.B. "allow 22/tcp" oder "deny from 192.168.1.0/24"
       const ruleCommand = `${newRule.direction} ${newRule.rule.trim()}`
-      const response = await fetch('/api/security/firewall/rules/add', {
+      const response = await fetchApi('/api/security/firewall/rules/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -153,7 +154,7 @@ const SecuritySetup: React.FC = () => {
     if (!sudoPassword) return
 
     try {
-      const response = await fetch(`/api/security/firewall/rules/${ruleNumber}`, {
+      const response = await fetchApi(`/api/security/firewall/rules/${ruleNumber}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sudo_password: sudoPassword }),
@@ -173,7 +174,7 @@ const SecuritySetup: React.FC = () => {
 
   const loadInstalledPackages = async () => {
     try {
-      const response = await fetch('/api/system/installed-packages')
+      const response = await fetchApi('/api/system/installed-packages')
       const data = await response.json()
       setInstalledPackages(data.packages)
     } catch (error) {
@@ -184,7 +185,7 @@ const SecuritySetup: React.FC = () => {
   const runSecurityScan = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/security/scan', {
+      const response = await fetchApi('/api/security/scan', {
         method: 'POST',
       })
       const data = await response.json()
@@ -217,7 +218,7 @@ const SecuritySetup: React.FC = () => {
         sudo_password: sudoPassword,
       }
 
-      const response = await fetch('/api/security/configure', {
+      const response = await fetchApi('/api/security/configure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -387,7 +388,7 @@ const SecuritySetup: React.FC = () => {
                             if (sudoPassword) {
                               try {
                                 console.log('🚀 Starte Firewall-Aktivierung...')
-                                const response = await fetch('/api/security/firewall/enable', {
+                                const response = await fetchApi('/api/security/firewall/enable', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ sudo_password: sudoPassword }),
@@ -415,7 +416,7 @@ const SecuritySetup: React.FC = () => {
                                         console.log('🔄 Lade Security-Config nach Verzögerung...')
                                         await loadSecurityStatus()
                                         // Prüfe ob die geladene Config korrekt ist
-                                        const response = await fetch('/api/system/security-config')
+                                        const response = await fetchApi('/api/system/security-config')
                                         const reloadData = await response.json()
                                         console.log('📋 Neu geladene Security-Config:', reloadData.config?.ufw)
                                         // Wenn die neu geladene Config UFW als aktiv zeigt, verwende sie
@@ -489,7 +490,7 @@ const SecuritySetup: React.FC = () => {
                             const sudoPassword = prompt('Sudo-Passwort eingeben:')
                             if (sudoPassword) {
                               try {
-                                const response = await fetch('/api/security/firewall/install', {
+                                const response = await fetchApi('/api/security/firewall/install', {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ sudo_password: sudoPassword }),

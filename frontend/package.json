@@ -15,6 +15,7 @@
     "zustand": "^4.4.0"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.9.6",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.2.0",
@@ -27,9 +28,13 @@
   "scripts": {
     "dev": "vite --host",
     "dev:local": "vite",
+    "dev:tauri": "vite --port 5173 --strictPort --host",
     "prebuild": "node sync-version.js",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext ts,tsx"
+    "lint": "eslint src --ext ts,tsx",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   }
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { fetchApi } from '../api'
 import { Lock, X, AlertCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -10,6 +11,7 @@ interface SudoPasswordDialogProps {
 const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved }) => {
   const [show, setShow] = useState(false)
   const [password, setPassword] = useState('')
+  const [skipTest, setSkipTest] = useState(true)
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
 
@@ -20,7 +22,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
 
   const checkPasswordStatus = async () => {
     try {
-      const response = await fetch('/api/users/sudo-password/check')
+      const response = await fetchApi('/api/users/sudo-password/check')
       
       if (!response.ok) {
         // Backend nicht erreichbar oder Fehler - zeige Dialog trotzdem
@@ -56,24 +58,40 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
 
     setLoading(true)
     try {
-      const response = await fetch('/api/users/sudo-password', {
+      const response = await fetchApi('/api/users/sudo-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sudo_password: password }),
+        body: JSON.stringify({ sudo_password: password, skip_test: skipTest }),
       })
-      const data = await response.json()
-      
+      let data: { status?: string; message?: string; detail?: string } = {}
+      try {
+        data = await response.json()
+      } catch {
+        toast.error('Ungültige Antwort vom Backend. Läuft es auf Port 8000?')
+        return
+      }
       if (data.status === 'success') {
-        toast.success('Sudo-Passwort gespeichert')
+        sessionStorage.setItem('sudo_password_saved', 'true')
+        const checkRes = await fetchApi('/api/users/sudo-password/check')
+        try {
+          const checkData = await checkRes.json()
+          if (checkData.status === 'success' && !checkData.has_password) {
+            toast.success('Sudo-Passwort gespeichert')
+            toast('Hinweis: Backend meldet kein Passwort. Evtl. mehrere Worker?', { icon: '⚠️', duration: 5000 })
+          } else {
+            toast.success('Sudo-Passwort gespeichert')
+          }
+        } catch {
+          toast.success('Sudo-Passwort gespeichert')
+        }
         setShow(false)
         onPasswordSaved()
-        // Speichere Flag in localStorage
-        localStorage.setItem('sudo_password_saved', 'true')
       } else {
-        toast.error(data.message || 'Sudo-Passwort konnte nicht gespeichert werden')
+        const msg = data.message || data.detail || 'Sudo-Passwort konnte nicht gespeichert werden.'
+        toast.error(msg)
       }
     } catch (error) {
-      toast.error('Fehler beim Speichern des sudo-Passworts')
+      toast.error('Fehler beim Speichern – Backend erreichbar? (Port 8000)')
       console.error(error)
     } finally {
       setLoading(false)
@@ -166,6 +184,17 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                 <p className="mt-2 text-xs text-slate-400">
                   Das Passwort wird verwendet für: Firewall-Konfiguration, Benutzerverwaltung, System-Updates, etc.
                 </p>
+                <label className="mt-3 flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={skipTest}
+                    onChange={(e) => setSkipTest(e.target.checked)}
+                    className="rounded border-slate-500 bg-slate-800 text-sky-500 focus:ring-sky-500"
+                  />
+                  <span className="text-sm text-slate-400">
+                    Ohne Prüfung speichern (Standard; beim ersten Einsatz wird geprüft)
+                  </span>
+                </label>
               </div>
 
               {/* Actions */}

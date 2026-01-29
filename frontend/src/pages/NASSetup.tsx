@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { HardDrive, Server, Folder, Users } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { fetchApi } from '../api'
 
 const NASSetup: React.FC = () => {
   const [config, setConfig] = useState({
@@ -23,7 +24,7 @@ const NASSetup: React.FC = () => {
 
   const loadNasStatus = async () => {
     try {
-      const response = await fetch('/api/nas/status')
+      const response = await fetchApi('/api/nas/status')
       const data = await response.json()
       setNasStatus(data)
     } catch (error) {
@@ -46,7 +47,7 @@ const NASSetup: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/nas/configure', {
+      const response = await fetchApi('/api/nas/configure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

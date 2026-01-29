@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { BookOpen, Code, Cpu, Zap, Calculator } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
+import { fetchApi } from '../api'
 
 const LearningComputerSetup: React.FC = () => {
   const [config, setConfig] = useState({
@@ -20,7 +21,7 @@ const LearningComputerSetup: React.FC = () => {
 
   const loadStatus = async () => {
     try {
-      const response = await fetch('/api/learning/status')
+      const response = await fetchApi('/api/learning/status')
       const data = await response.json()
       setStatus(data)
     } catch (error) {
@@ -37,7 +38,7 @@ const LearningComputerSetup: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/learning/configure', {
+      const response = await fetchApi('/api/learning/configure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

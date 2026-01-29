@@ -37,11 +37,10 @@ def _setup_logging() -> Path:
     Falls back to console-only if file cannot be created.
     """
     log_path = Path(os.environ.get("PI_INSTALLER_LOG_PATH", "") or _default_log_path()).resolve()
-    # Versuche Log-Retention aus Settings zu lesen, sonst aus Umgebungsvariable, sonst Default
     try:
-        log_retention_days = int(APP_SETTINGS.get("logging", {}).get("retention_days", os.environ.get("PI_INSTALLER_LOG_RETENTION_DAYS", "30")))
-    except Exception:
         log_retention_days = int(os.environ.get("PI_INSTALLER_LOG_RETENTION_DAYS", "30"))
+    except Exception:
+        log_retention_days = 30
     try:
         log_path.parent.mkdir(parents=True, exist_ok=True)
         fmt = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -77,6 +76,7 @@ def _setup_logging() -> Path:
 
 LOG_PATH = _setup_logging()
 logger = logging.getLogger(__name__)
+logger.info("Log-Datei: %s", str(LOG_PATH))
 
 # ==================== Version ====================
 
@@ -768,6 +768,12 @@ async def set_settings(request: Request):
     return {"status": "success", "message": "Einstellungen gespeichert", "settings": merged}
 
 
+@app.get("/api/logs/path")
+async def logs_path():
+    """Log-Dateipfad (z.B. für tail -f)."""
+    return {"status": "success", "path": str(LOG_PATH), "exists": LOG_PATH.exists()}
+
+
 @app.get("/api/logs/tail")
 async def logs_tail(lines: int = 200):
     try:
@@ -776,7 +782,7 @@ async def logs_tail(lines: int = 200):
         lines = 200
     p = Path(LOG_PATH)
     if not p.exists():
-        return JSONResponse(status_code=200, content={"status": "error", "message": "Log-Datei nicht gefunden", "path": str(p)})
+        return JSONResponse(status_code=200, content={"status": "error", "message": "Log-Datei nicht gefunden. Backend neu starten (Logging ging zuvor nur auf Konsole).", "path": str(p)})
     try:
         # naive tail (file is small due to rotation)
         txt = p.read_text(encoding="utf-8", errors="ignore")
@@ -1706,24 +1712,73 @@ async def check_sudo_password():
 @app.post("/api/users/sudo-password")
 async def save_sudo_password(request: Request):
     """Sudo-Passwort für Session speichern"""
+    logger.info("save_sudo_password: Request empfangen")
     try:
-        data = await request.json()
-        sudo_password = data.get("sudo_password", "")
+        try:
+            data = await request.json()
+        except Exception:
+            logger.warning("save_sudo_password: Ungültiges JSON")
+            return JSONResponse(
+                status_code=200,
+                content={"status": "error", "message": "Ungültige Anfrage (JSON fehlt oder fehlerhaft)."},
+            )
+        data = data or {}
+        sudo_password = (data.get("sudo_password") or "").strip()
+        skip_test = bool(data.get("skip_test"))
         
         if not sudo_password:
-            return {"status": "error", "message": "Passwort erforderlich"}
+            return JSONResponse(
+                status_code=200,
+                content={"status": "error", "message": "Passwort erforderlich"},
+            )
         
-        # Test ob Passwort funktioniert
-        test_result = run_command("echo test", sudo=True, sudo_password=sudo_password)
-        if not test_result["success"]:
-            return {"status": "error", "message": "Sudo-Passwort falsch"}
+        if skip_test:
+            sudo_password_store["password"] = sudo_password
+            logger.info("save_sudo_password: Gespeichert ohne Prüfung (skip_test=True)")
+            return {"status": "success", "message": "Sudo-Passwort gespeichert"}
         
-        # Speichern (in-memory, nur für aktuelle Session)
+        # Test ob Passwort funktioniert (/usr/bin/true, kein PATH nötig)
+        test_result = run_command("/usr/bin/true", sudo=True, sudo_password=sudo_password, timeout=15)
+        ok = test_result.get("success", False)
+        if not ok:
+            err = (
+                (test_result.get("stderr") or "").strip()
+                + " "
+                + (test_result.get("stdout") or "").strip()
+                + " "
+                + (test_result.get("error") or "").strip()
+            ).strip() or "(keine Details)"
+            err_lower = err.lower()
+            if "timeout" in err_lower or "timed out" in err_lower:
+                logger.warning("save_sudo_password: Sudo-Test Timeout")
+                return JSONResponse(
+                    status_code=200,
+                    content={"status": "error", "message": "Sudo-Test hat zu lange gedauert. Bitte erneut versuchen oder „Ohne Prüfung speichern“ wählen."},
+                )
+            if "sorry" in err_lower or "incorrect" in err_lower or "failed" in err_lower or "incorrect password" in err_lower:
+                logger.info("save_sudo_password: Sudo-Test fehlgeschlagen (Passwort falsch/ungültig)")
+                return JSONResponse(
+                    status_code=200,
+                    content={"status": "error", "message": "Sudo-Passwort falsch oder ungültig."},
+                )
+            logger.warning("save_sudo_password: Sudo-Test fehlgeschlagen err=%s", err[:300])
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "Sudo-Test fehlgeschlagen. Prüfen Sie Passwort und sudo-Rechte. Alternativ „Ohne Prüfung speichern“ wählen.",
+                },
+            )
+        
         sudo_password_store["password"] = sudo_password
-        
+        logger.info("save_sudo_password: Sudo-Passwort gespeichert (Session)")
         return {"status": "success", "message": "Sudo-Passwort gespeichert"}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.exception("save_sudo_password failed")
+        return JSONResponse(
+            status_code=200,
+            content={"status": "error", "message": str(e) or "Fehler beim Speichern des sudo-Passworts."},
+        )
 
 @app.post("/api/users/create")
 async def create_user(request: Request):
@@ -7169,6 +7224,66 @@ async def get_printers():
         return module.get_printers(sudo_password)
     except Exception as e:
         logger.error(f"Fehler beim Abrufen der Drucker: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/scanners")
+async def get_scanners():
+    """Listet SANE-Scanner auf"""
+    try:
+        sudo_password = sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.get_scanners(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Scanner: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/performance")
+async def get_performance():
+    """Performance: CPU-Governor, GPU/Overclocking (config.txt), Swap."""
+    try:
+        sudo_password = sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.get_performance(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Performance-Daten: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/performance")
+async def set_performance(request: Request):
+    """Performance setzen: Governor, GPU-Mem, Overclocking, Swap-Größe."""
+    try:
+        try:
+            data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        except Exception:
+            data = {}
+        data = data or {}
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        if not sudo_password:
+            sudo_ok = run_command("sudo -n true", sudo=False)
+            if not sudo_ok.get("success"):
+                return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+        module = _get_control_center_module()
+        swap_mb = data.get("swap_size_mb")
+        if swap_mb is not None:
+            try:
+                swap_mb = int(swap_mb)
+            except (TypeError, ValueError):
+                swap_mb = None
+        result = module.set_performance(
+            sudo_password=sudo_password,
+            governor=data.get("governor"),
+            gpu_mem=data.get("gpu_mem"),
+            arm_freq=data.get("arm_freq"),
+            over_voltage=data.get("over_voltage"),
+            force_turbo=data.get("force_turbo"),
+            swap_size_mb=swap_mb,
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Fehler beim Setzen der Performance: {str(e)}", exc_info=True)
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 

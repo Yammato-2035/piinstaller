@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Cloud, Database, Download, Upload, Trash2, Clock, HardDrive, Lock, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
+import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 
 type BackupTab = 'backup' | 'settings' | 'restore'
@@ -60,7 +61,7 @@ const BackupRestore: React.FC = () => {
     let intervalId: number | null = null
     const tick = async () => {
       try {
-        const r = await fetch(`/api/backup/jobs/${encodeURIComponent(backupJob.job_id)}`)
+        const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(backupJob.job_id)}`)
         const d = await r.json()
         if (cancelled) return
         if (d.status === 'success' && d.job) {
@@ -150,7 +151,7 @@ const BackupRestore: React.FC = () => {
 
   const loadTargets = async () => {
     try {
-      const response = await fetch('/api/backup/targets')
+      const response = await fetchApi('/api/backup/targets')
       const data = await response.json()
       if (data.status === 'success') {
         setTargets(data.targets || [])
@@ -165,7 +166,7 @@ const BackupRestore: React.FC = () => {
 
   const loadBackups = async () => {
     try {
-      const response = await fetch(`/api/backup/list?backup_dir=${encodeURIComponent(backupDir)}`)
+      const response = await fetchApi(`/api/backup/list?backup_dir=${encodeURIComponent(backupDir)}`)
       const data = await response.json()
       if (data.status === 'success') {
         setBackups(data.backups || [])
@@ -177,7 +178,7 @@ const BackupRestore: React.FC = () => {
 
   const loadBackupSettings = async () => {
     try {
-      const r = await fetch('/api/backup/settings')
+      const r = await fetchApi('/api/backup/settings')
       const d = await r.json()
       if (d.status === 'success') setBackupSettings(d.settings)
     } catch {
@@ -192,7 +193,7 @@ const BackupRestore: React.FC = () => {
       async () => {
         setSettingsLoading(true)
         try {
-          const r = await fetch('/api/backup/settings', {
+          const r = await fetchApi('/api/backup/settings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ settings: backupSettings }),
@@ -215,7 +216,7 @@ const BackupRestore: React.FC = () => {
     await requireSudo(
       { title: 'Scheduled Backup jetzt ausführen', subtitle: 'Führt den Backup-Runner sofort aus.', confirmText: 'Ausführen' },
       async () => {
-        const r = await fetch('/api/backup/schedule/run-now', {
+        const r = await fetchApi('/api/backup/schedule/run-now', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(ruleId ? { rule_id: ruleId } : {}),
@@ -237,7 +238,7 @@ const BackupRestore: React.FC = () => {
   const loadCloudBackups = async () => {
     setCloudBackupsLoading(true)
     try {
-      const r = await fetch(`/api/backup/cloud/list${cloudRuleFilter ? `?rule_id=${encodeURIComponent(cloudRuleFilter)}` : ''}`)
+      const r = await fetchApi(`/api/backup/cloud/list${cloudRuleFilter ? `?rule_id=${encodeURIComponent(cloudRuleFilter)}` : ''}`)
       const d = await r.json()
       if (d.status === 'success') {
         const backups = Array.isArray(d.backups) ? d.backups : []
@@ -274,7 +275,7 @@ const BackupRestore: React.FC = () => {
     if (!name) return
     setCloudVerifying((m) => ({ ...m, [name]: true }))
     try {
-      const r = await fetch('/api/backup/cloud/verify', {
+      const r = await fetchApi('/api/backup/cloud/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
@@ -298,7 +299,7 @@ const BackupRestore: React.FC = () => {
   const checkTarget = async (dir: string) => {
     setCheckingTarget(true)
     try {
-      const res = await fetch(`/api/backup/target-check?backup_dir=${encodeURIComponent(dir)}&create=1`)
+      const res = await fetchApi(`/api/backup/target-check?backup_dir=${encodeURIComponent(dir)}&create=1`)
       const data = await res.json()
       setTargetCheck(data)
     } catch (e) {
@@ -313,7 +314,7 @@ const BackupRestore: React.FC = () => {
       const qs = mountpoint
         ? `mountpoint=${encodeURIComponent(mountpoint)}`
         : `device=${encodeURIComponent(device)}`
-      const res = await fetch(`/api/backup/usb/info?${qs}`)
+      const res = await fetchApi(`/api/backup/usb/info?${qs}`)
       const data = await res.json()
       setUsbInfo(data)
     } catch (e) {
@@ -323,7 +324,7 @@ const BackupRestore: React.FC = () => {
 
   const hasSavedSudoPassword = async () => {
     try {
-      const r = await fetch('/api/users/sudo-password/check')
+      const r = await fetchApi('/api/users/sudo-password/check')
       if (!r.ok) return false
       const d = await r.json()
       return d?.status === 'success' && !!d?.has_password
@@ -333,7 +334,7 @@ const BackupRestore: React.FC = () => {
   }
 
   const storeSudoPassword = async (sudoPassword: string) => {
-    const resp = await fetch('/api/users/sudo-password', {
+    const resp = await fetchApi('/api/users/sudo-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sudo_password: sudoPassword }),
@@ -380,7 +381,7 @@ const BackupRestore: React.FC = () => {
       async () => {
         setUsbWorking(true)
         try {
-          const res = await fetch('/api/backup/usb/prepare', {
+          const res = await fetchApi('/api/backup/usb/prepare', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -428,7 +429,7 @@ const BackupRestore: React.FC = () => {
     await requireSudo(
       { title: 'USB auswerfen', subtitle: 'Unmount + sync (optional power-off).', confirmText: 'Auswerfen' },
       async () => {
-        const res = await fetch('/api/backup/usb/eject', {
+        const res = await fetchApi('/api/backup/usb/eject', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -462,7 +463,7 @@ const BackupRestore: React.FC = () => {
       { title: 'USB mounten', subtitle: 'USB-Stick wird gemountet (nicht-destruktiv).', confirmText: 'Mounten' },
       async () => {
         try {
-          const res = await fetch('/api/backup/usb/mount', {
+          const res = await fetchApi('/api/backup/usb/mount', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ device }),
@@ -578,7 +579,7 @@ const BackupRestore: React.FC = () => {
             }
           )
           
-          const response = await fetch('/api/backup/create', {
+          const response = await fetchApi('/api/backup/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody),
@@ -600,7 +601,7 @@ const BackupRestore: React.FC = () => {
             setTimeout(() => {
               const pollJob = async () => {
                 try {
-                  const r = await fetch(`/api/backup/jobs/${encodeURIComponent(data.job_id)}`)
+                  const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(data.job_id)}`)
                   const d = await r.json()
                   if (d.status === 'success' && d.job) {
                     console.log('Polling backupJob update:', d.job) // Debug
@@ -661,7 +662,7 @@ const BackupRestore: React.FC = () => {
     if (!backupJob?.job_id) return
     if (!window.confirm('Backup wirklich abbrechen?')) return
     try {
-      const r = await fetch(`/api/backup/jobs/${encodeURIComponent(backupJob.job_id)}/cancel`, { method: 'POST' })
+      const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(backupJob.job_id)}/cancel`, { method: 'POST' })
       const d = await r.json()
       if (d.status === 'success') {
         toast.success('Abbruch angefordert…')
@@ -688,7 +689,7 @@ const BackupRestore: React.FC = () => {
       async () => {
         setLoading(true)
         try {
-          const response = await fetch('/api/backup/restore', {
+          const response = await fetchApi('/api/backup/restore', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -716,7 +717,7 @@ const BackupRestore: React.FC = () => {
       async () => {
         setVerifying((m) => ({ ...m, [backupFile]: true }))
         try {
-          const res = await fetch('/api/backup/verify', {
+          const res = await fetchApi('/api/backup/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ backup_file: backupFile, mode }),
@@ -742,7 +743,7 @@ const BackupRestore: React.FC = () => {
     await requireSudo(
       { title: 'Backup löschen', subtitle: 'Löscht die Backup-Datei (ggf. mit sudo).', confirmText: 'Löschen' },
       async () => {
-        const res = await fetch('/api/backup/delete', {
+        const res = await fetchApi('/api/backup/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ backup_file: backupFile }),
@@ -2039,7 +2040,7 @@ const BackupRestore: React.FC = () => {
                             setBackupSettings(updated)
                             // Speichere sofort
                             try {
-                              const r = await fetch('/api/backup/settings', {
+                              const r = await fetchApi('/api/backup/settings', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ settings: updated }),

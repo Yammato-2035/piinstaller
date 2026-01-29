@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Cloud, RefreshCw, CheckCircle, XCircle } from 'lucide-react'
+import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 
 type GeneralSubTab = 'init' | 'network' | 'basic'
@@ -16,6 +17,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
   const [initStatus, setInitStatus] = useState<any>(null)
   const [settings, setSettings] = useState<any>(null)
   const [logs, setLogs] = useState<string>('')
+  const [logPath, setLogPath] = useState<string | null>(null)
   const [loadingLogs, setLoadingLogs] = useState(false)
   const [saving, setSaving] = useState(false)
   const [backupSettings, setBackupSettings] = useState<any>(null)
@@ -37,9 +39,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
   const loadAll = async () => {
     try {
       const [a, b, c] = await Promise.all([
-        fetch('/api/init/status'),
-        fetch('/api/settings'),
-        fetch('/api/backup/settings'),
+        fetchApi('/api/init/status'),
+        fetchApi('/api/settings'),
+        fetchApi('/api/backup/settings'),
       ])
       const ia = await a.json()
       const sb = await b.json()
@@ -56,7 +58,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
     setLoadingNetwork(true)
     setNetworkInfo(null)
     try {
-      const r = await fetch('/api/system/network')
+      const r = await fetchApi('/api/system/network')
       const d = await r.json()
       if (d?.status === 'success') {
         setNetworkInfo({
@@ -89,7 +91,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
     }
     setLoadingQuota(true)
     try {
-      const r = await fetch('/api/backup/cloud/quota')
+      const r = await fetchApi('/api/backup/cloud/quota')
       const d = await r.json()
       if (d.status === 'success') {
         setCloudQuota(d.quota)
@@ -111,6 +113,16 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
   }, [activeTab, generalSubTab])
 
   useEffect(() => {
+    if (activeTab !== 'logs') return
+    let cancelled = false
+    fetchApi('/api/logs/path')
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled && d?.status === 'success' && d?.path) setLogPath(d.path) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [activeTab])
+
+  useEffect(() => {
     if (backupSettings?.cloud?.enabled) {
       loadCloudQuota()
     } else {
@@ -121,12 +133,19 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
   const loadLogs = async () => {
     setLoadingLogs(true)
     try {
-      const r = await fetch('/api/logs/tail?lines=250')
-      const d = await r.json()
-      if (d.status === 'success') {
-        setLogs(String(d.content || ''))
+      const [pathRes, tailRes] = await Promise.all([
+        fetchApi('/api/logs/path'),
+        fetchApi('/api/logs/tail?lines=250'),
+      ])
+      const pathData = await pathRes.json()
+      const tailData = await tailRes.json()
+      if (pathData?.status === 'success' && pathData?.path) {
+        setLogPath(pathData.path)
+      }
+      if (tailData.status === 'success') {
+        setLogs(String(tailData.content || ''))
       } else {
-        toast.error(d.message || 'Logs konnten nicht geladen werden')
+        toast.error(tailData.message || 'Logs konnten nicht geladen werden')
       }
     } catch {
       toast.error('Logs konnten nicht geladen werden (Backend nicht erreichbar)')
@@ -144,7 +163,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
     if (!s) return
     setSaving(true)
     try {
-      const r = await fetch('/api/settings', {
+      const r = await fetchApi('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ settings: s }),
@@ -173,7 +192,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
       },
       async () => {
         try {
-          const r = await fetch('/api/backup/settings', {
+          const r = await fetchApi('/api/backup/settings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ settings: backupSettings }),
@@ -202,7 +221,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
     }
     setTestingCloud(true)
     try {
-      const r = await fetch('/api/backup/cloud/test', {
+      const r = await fetchApi('/api/backup/cloud/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -227,7 +246,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
 
   const hasSavedSudoPassword = async () => {
     try {
-      const r = await fetch('/api/users/sudo-password/check')
+      const r = await fetchApi('/api/users/sudo-password/check')
       if (!r.ok) return false
       const d = await r.json()
       return d?.status === 'success' && !!d?.has_password
@@ -237,7 +256,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
   }
 
   const storeSudoPassword = async (sudoPassword: string) => {
-    const resp = await fetch('/api/users/sudo-password', {
+    const resp = await fetchApi('/api/users/sudo-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sudo_password: sudoPassword }),
@@ -278,7 +297,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
         try {
           const body: Record<string, string> = {}
           if (pwd) body.sudo_password = pwd
-          const r = await fetch('/api/system/reboot', {
+          const r = await fetchApi('/api/system/reboot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -1106,6 +1125,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
                 {loadingLogs ? '⏳ Lade…' : 'Logs laden'}
               </button>
             </div>
+            {logPath && (
+              <p className="mb-2 text-sm text-slate-400">
+                Log-Datei: <code className="bg-slate-800 px-1.5 py-0.5 rounded">{logPath}</code>
+                {' '}(<code className="text-slate-500">tail -f &#39;{logPath}&#39;</code> im Terminal)
+              </p>
+            )}
             <pre className="bg-slate-950/50 border border-slate-700 rounded-lg p-3 text-xs text-slate-200 overflow-auto max-h-96 whitespace-pre-wrap">
               {logs || '—'}
             </pre>

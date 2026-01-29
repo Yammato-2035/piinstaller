@@ -3,6 +3,7 @@ import { Activity, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
+import { fetchApi } from '../api'
 
 const MonitoringDashboard: React.FC = () => {
   const [status, setStatus] = useState<any>(null)
@@ -22,7 +23,7 @@ const MonitoringDashboard: React.FC = () => {
 
   const loadStatus = async () => {
     try {
-      const response = await fetch('/api/monitoring/status')
+      const response = await fetchApi('/api/monitoring/status')
       const data = await response.json()
       setStatus(data)
     } catch (error) {
@@ -32,7 +33,7 @@ const MonitoringDashboard: React.FC = () => {
 
   const loadMetrics = async () => {
     try {
-      const response = await fetch('/api/system-info')
+      const response = await fetchApi('/api/system-info')
       const data = await response.json()
       
       const newMetric = {
@@ -58,7 +59,7 @@ const MonitoringDashboard: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/monitoring/configure', {
+      const response = await fetchApi('/api/monitoring/configure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

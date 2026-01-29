@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Globe, Settings, Lock, Monitor } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { fetchApi } from '../api'
 
 const WebServerSetup: React.FC = () => {
   const [config, setConfig] = useState({
@@ -21,7 +22,7 @@ const WebServerSetup: React.FC = () => {
 
   const loadWebserverStatus = async () => {
     try {
-      const response = await fetch('/api/webserver/status')
+      const response = await fetchApi('/api/webserver/status')
       const data = await response.json()
       setWebserverStatus(data)
       
@@ -66,7 +67,7 @@ const WebServerSetup: React.FC = () => {
     
     setLoading(true)
     try {
-      const response = await fetch('/api/webserver/configure', {
+      const response = await fetchApi('/api/webserver/configure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

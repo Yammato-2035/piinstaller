@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Zap, Server, Home, Music, BookOpen, CheckCircle, ArrowRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
+import { fetchApi } from '../api'
 
 const PresetsSetup: React.FC = () => {
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
@@ -158,7 +159,7 @@ const PresetsSetup: React.FC = () => {
           break
       }
 
-      const response = await fetch(endpoint, {
+      const response = await fetchApi(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

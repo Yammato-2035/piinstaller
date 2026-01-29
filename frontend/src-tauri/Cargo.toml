@@ -1,0 +1,16 @@
+[package]
+name = "pi-installer"
+version = "0.1.0"
+description = "PI-Installer Desktop"
+edition = "2021"
+
+[lib]
+name = "pi_installer_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"

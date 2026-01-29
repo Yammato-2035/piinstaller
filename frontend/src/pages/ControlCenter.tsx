@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Settings, Wifi, Monitor, Printer, Keyboard, Globe, Shield, Eye, Laptop, Mouse, Layout, Palette, Link2Off, Bluetooth } from 'lucide-react'
+import { Settings, Wifi, Monitor, Printer, Scan, Keyboard, Globe, Shield, Eye, Laptop, Mouse, Layout, Palette, Link2Off, Bluetooth } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
+import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 
 type ControlCenterSection = 
@@ -14,6 +15,7 @@ type ControlCenterSection =
   | 'desktop'
   | 'display'
   | 'printer'
+  | 'scanner'
   | 'performance'
   | 'mouse'
   | 'taskbar'
@@ -82,6 +84,42 @@ const ControlCenter: React.FC = () => {
   const [displayLoading, setDisplayLoading] = useState(false)
   const [displaySaving, setDisplaySaving] = useState(false)
   
+  const [printers, setPrinters] = useState<Array<{ name: string; status: string }>>([])
+  const [printersLoading, setPrintersLoading] = useState(false)
+  const [scanners, setScanners] = useState<Array<{ name: string; device: string }>>([])
+  const [scannersLoading, setScannersLoading] = useState(false)
+  const [scannersError, setScannersError] = useState<string | null>(null)
+  const [saneCheck, setSaneCheck] = useState<{
+    scanimage: boolean
+    scanimage_path: string | null
+    sane_find_scanner: boolean
+    sane_find_scanner_path: string | null
+    packages: Record<string, boolean>
+  } | null>(null)
+  
+  const [performance, setPerformance] = useState<{
+    governor: string | null
+    governors: string[]
+    gpu_mem: string | null
+    arm_freq: string | null
+    over_voltage: string | null
+    force_turbo: boolean | null
+    swap_total_mb: number
+    swap_used_mb: number
+    swap_size_mb: number | null
+    swap_editable: boolean
+  } | null>(null)
+  const [performanceLoading, setPerformanceLoading] = useState(false)
+  const [performanceSaving, setPerformanceSaving] = useState(false)
+  const [perfForm, setPerfForm] = useState({
+    governor: '',
+    gpu_mem: '',
+    arm_freq: '',
+    over_voltage: '',
+    force_turbo: false,
+    swap_size_mb: '',
+  })
+  
   const sections: SectionConfig[] = [
     { id: 'wifi', name: 'WLAN', icon: <Wifi />, description: 'WiFi-Netzwerke verwalten' },
     { id: 'ssh', name: 'SSH', icon: <Shield />, description: 'SSH-Zugriff konfigurieren' },
@@ -91,6 +129,7 @@ const ControlCenter: React.FC = () => {
     { id: 'desktop', name: 'Desktop', icon: <Laptop />, description: 'Desktop-Einstellungen' },
     { id: 'display', name: 'Display', icon: <Monitor />, description: 'Bildschirm-Einstellungen' },
     { id: 'printer', name: 'Drucker', icon: <Printer />, description: 'Drucker verwalten' },
+    { id: 'scanner', name: 'Scanner', icon: <Scan />, description: 'Scanner verwalten' },
     { id: 'performance', name: 'Performance', icon: <Settings />, description: 'System-Performance' },
     { id: 'mouse', name: 'Maus', icon: <Mouse />, description: 'Maus-Einstellungen' },
     { id: 'taskbar', name: 'Taskleiste', icon: <Layout />, description: 'Taskleiste konfigurieren' },
@@ -131,11 +170,17 @@ const ControlCenter: React.FC = () => {
           await loadDisplaySettings()
           break
         case 'printer':
+          await loadPrinters()
+          break
+        case 'scanner':
+          await loadScanners()
+          break
         case 'performance':
+          await loadPerformance()
+          break
         case 'mouse':
         case 'taskbar':
         case 'theme':
-          // TODO: Implementieren
           break
       }
     } catch (e) {
@@ -145,7 +190,7 @@ const ControlCenter: React.FC = () => {
 
   const loadWifiConfig = async () => {
     try {
-      const r = await fetch('/api/control-center/wifi/config')
+      const r = await fetchApi('/api/control-center/wifi/config')
       const d = await r.json()
       if (d.status === 'success') {
         setWifiConfig(d.networks || [])
@@ -157,7 +202,7 @@ const ControlCenter: React.FC = () => {
 
   const loadWifiStatus = async () => {
     try {
-      const r = await fetch('/api/control-center/wifi/status')
+      const r = await fetchApi('/api/control-center/wifi/status')
       const d = await r.json()
       if (d.status === 'success') {
         setWifiStatus({
@@ -177,7 +222,7 @@ const ControlCenter: React.FC = () => {
 
   const loadBluetoothStatus = async () => {
     try {
-      const r = await fetch('/api/control-center/bluetooth/status')
+      const r = await fetchApi('/api/control-center/bluetooth/status')
       const d = await r.json()
       if (d.status === 'success') {
         setBluetoothStatus({
@@ -197,7 +242,7 @@ const ControlCenter: React.FC = () => {
     const doScan = async (sudoPassword: string) => {
       try {
         const body = sudoPassword ? { sudo_password: sudoPassword } : {}
-        const r = await fetch('/api/control-center/bluetooth/scan', {
+        const r = await fetchApi('/api/control-center/bluetooth/scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -238,7 +283,7 @@ const ControlCenter: React.FC = () => {
         try {
           const body: Record<string, unknown> = { enabled }
           if (pwd) (body as Record<string, string>).sudo_password = pwd
-          const r = await fetch('/api/control-center/bluetooth/enabled', {
+          const r = await fetchApi('/api/control-center/bluetooth/enabled', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -264,7 +309,7 @@ const ControlCenter: React.FC = () => {
     setScanningNetworks(true)
     const doScan = async (sudoPassword: string) => {
       try {
-        const r = await fetch('/api/control-center/wifi/scan', {
+        const r = await fetchApi('/api/control-center/wifi/scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sudo_password: sudoPassword }),
@@ -284,7 +329,7 @@ const ControlCenter: React.FC = () => {
     }
     if (await hasSavedSudoPassword()) {
       try {
-        const r = await fetch('/api/control-center/wifi/scan', {
+        const r = await fetchApi('/api/control-center/wifi/scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({}),
@@ -323,7 +368,7 @@ const ControlCenter: React.FC = () => {
 
   const loadSSHStatus = async () => {
     try {
-      const r = await fetch('/api/control-center/ssh/status')
+      const r = await fetchApi('/api/control-center/ssh/status')
       const d = await r.json()
       if (d.status === 'success') {
         setSshEnabled(d.enabled || false)
@@ -336,7 +381,7 @@ const ControlCenter: React.FC = () => {
 
   const loadVNCStatus = async () => {
     try {
-      const r = await fetch('/api/control-center/vnc/status')
+      const r = await fetchApi('/api/control-center/vnc/status')
       const d = await r.json()
       if (d.status === 'success') {
         setVncEnabled(d.running || false)
@@ -348,7 +393,7 @@ const ControlCenter: React.FC = () => {
 
   const loadVNCNetworkInfo = async () => {
     try {
-      const r = await fetch('/api/system/network')
+      const r = await fetchApi('/api/system/network')
       const d = await r.json()
       if (d?.status === 'success' && Array.isArray(d.ips)) {
         setVncNetworkInfo({ ips: d.ips, hostname: d.hostname })
@@ -362,7 +407,7 @@ const ControlCenter: React.FC = () => {
 
   const loadKeyboardLayout = async () => {
     try {
-      const r = await fetch('/api/control-center/keyboard')
+      const r = await fetchApi('/api/control-center/keyboard')
       const d = await r.json()
       if (d.status === 'success') {
         setKeyboardLayout(d.layout || 'de')
@@ -375,7 +420,7 @@ const ControlCenter: React.FC = () => {
 
   const loadLocale = async () => {
     try {
-      const r = await fetch('/api/control-center/locale')
+      const r = await fetchApi('/api/control-center/locale')
       const d = await r.json()
       if (d.status === 'success') {
         setLocale(d.locale || 'de_DE.UTF-8')
@@ -389,7 +434,7 @@ const ControlCenter: React.FC = () => {
   const loadDesktopBootTarget = async () => {
     setDesktopBootTargetLoading(true)
     try {
-      const r = await fetch('/api/control-center/desktop/boot-target')
+      const r = await fetchApi('/api/control-center/desktop/boot-target')
       const d = await r.json()
       if (d.status === 'success' && (d.target === 'graphical' || d.target === 'multi-user')) {
         setDesktopBootTarget(d.target)
@@ -407,7 +452,7 @@ const ControlCenter: React.FC = () => {
   const loadDisplaySettings = async () => {
     setDisplayLoading(true)
     try {
-      const r = await fetch('/api/control-center/display')
+      const r = await fetchApi('/api/control-center/display')
       const d = await r.json()
       if (d.status === 'success' && Array.isArray(d.outputs) && d.outputs.length > 0) {
         setDisplayOutputs(d.outputs)
@@ -434,6 +479,123 @@ const ControlCenter: React.FC = () => {
     }
   }
 
+  const loadPrinters = async () => {
+    setPrintersLoading(true)
+    try {
+      const r = await fetchApi('/api/control-center/printers')
+      const d = await r.json()
+      if (d.status === 'success' && Array.isArray(d.printers)) {
+        setPrinters(d.printers)
+      } else {
+        setPrinters([])
+      }
+    } catch {
+      setPrinters([])
+    } finally {
+      setPrintersLoading(false)
+    }
+  }
+
+  const loadPerformance = async () => {
+    setPerformanceLoading(true)
+    try {
+      const r = await fetchApi('/api/control-center/performance')
+      const d = await r.json()
+      if (d.status === 'success') {
+        setPerformance({
+          governor: d.governor ?? null,
+          governors: Array.isArray(d.governors) ? d.governors : [],
+          gpu_mem: d.gpu_mem ?? null,
+          arm_freq: d.arm_freq ?? null,
+          over_voltage: d.over_voltage ?? null,
+          force_turbo: d.force_turbo ?? null,
+          swap_total_mb: Number(d.swap_total_mb) || 0,
+          swap_used_mb: Number(d.swap_used_mb) || 0,
+          swap_size_mb: d.swap_size_mb != null ? Number(d.swap_size_mb) : null,
+          swap_editable: !!d.swap_editable,
+        })
+        setPerfForm({
+          governor: d.governor ?? '',
+          gpu_mem: String(d.gpu_mem ?? ''),
+          arm_freq: String(d.arm_freq ?? ''),
+          over_voltage: String(d.over_voltage ?? ''),
+          force_turbo: !!d.force_turbo,
+          swap_size_mb: d.swap_size_mb != null ? String(d.swap_size_mb) : '',
+        })
+      } else {
+        setPerformance(null)
+      }
+    } catch {
+      setPerformance(null)
+    } finally {
+      setPerformanceLoading(false)
+    }
+  }
+
+  const savePerformance = async () => {
+    await requireSudo(
+      {
+        title: 'Performance übernehmen',
+        subtitle: 'Governor, GPU-Memory, Overclocking und Swap werden angepasst. Config- und Swap-Änderungen erfordern ggf. einen Neustart.',
+        confirmText: 'Übernehmen',
+      },
+      async (pwd?: string) => {
+        setPerformanceSaving(true)
+        try {
+          const body: Record<string, unknown> = {}
+          if (perfForm.governor) body.governor = perfForm.governor
+          if (perfForm.gpu_mem !== '') body.gpu_mem = perfForm.gpu_mem
+          if (perfForm.arm_freq !== '') body.arm_freq = perfForm.arm_freq
+          if (perfForm.over_voltage !== '') body.over_voltage = perfForm.over_voltage
+          body.force_turbo = perfForm.force_turbo
+          if (performance?.swap_editable && perfForm.swap_size_mb !== '') {
+            const n = parseInt(perfForm.swap_size_mb, 10)
+            if (!isNaN(n) && n >= 0) body.swap_size_mb = n
+          }
+          if (pwd) (body as Record<string, string>).sudo_password = pwd
+          const r = await fetchApi('/api/control-center/performance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
+          const d = await r.json()
+          if (d.status === 'success') {
+            toast.success(d.message || 'Performance gespeichert.')
+            loadPerformance()
+          } else {
+            toast.error(d.message || 'Performance konnte nicht gespeichert werden.')
+          }
+        } catch {
+          toast.error('Performance konnte nicht gespeichert werden (Backend nicht erreichbar).')
+        } finally {
+          setPerformanceSaving(false)
+        }
+      }
+    )
+  }
+
+  const loadScanners = async () => {
+    setScannersLoading(true)
+    setScannersError(null)
+    try {
+      const r = await fetchApi('/api/control-center/scanners')
+      const d = await r.json()
+      if (d.sane_check) setSaneCheck(d.sane_check)
+      if (d.status === 'success' && Array.isArray(d.scanners)) {
+        setScanners(d.scanners)
+      } else {
+        setScanners([])
+        if (d.message) setScannersError(d.message)
+      }
+    } catch {
+      setScanners([])
+      setScannersError('Backend nicht erreichbar.')
+      setSaneCheck(null)
+    } finally {
+      setScannersLoading(false)
+    }
+  }
+
   const applyDisplaySettings = async () => {
     setDisplaySaving(true)
     try {
@@ -443,7 +605,7 @@ const ControlCenter: React.FC = () => {
         rotation: displayRotation,
       }
       if (typeof displayRate === 'number' && displayRate > 0) body.rate = displayRate
-      const r = await fetch('/api/control-center/display', {
+      const r = await fetchApi('/api/control-center/display', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -478,7 +640,7 @@ const ControlCenter: React.FC = () => {
         try {
           const body: Record<string, string> = { target: desktopBootTargetSelection }
           if (pwd) body.sudo_password = pwd
-          const r = await fetch('/api/control-center/desktop/boot-target', {
+          const r = await fetchApi('/api/control-center/desktop/boot-target', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -502,7 +664,7 @@ const ControlCenter: React.FC = () => {
 
   const hasSavedSudoPassword = async () => {
     try {
-      const r = await fetch('/api/users/sudo-password/check')
+      const r = await fetchApi('/api/users/sudo-password/check')
       if (!r.ok) return false
       const d = await r.json()
       return d?.status === 'success' && !!d?.has_password
@@ -512,7 +674,7 @@ const ControlCenter: React.FC = () => {
   }
 
   const storeSudoPassword = async (sudoPassword: string) => {
-    const resp = await fetch('/api/users/sudo-password', {
+    const resp = await fetchApi('/api/users/sudo-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sudo_password: sudoPassword }),
@@ -559,7 +721,7 @@ const ControlCenter: React.FC = () => {
             security: wifiSecurity,
           }
           if (pwd) body.sudo_password = pwd
-          const r = await fetch('/api/control-center/wifi/add', {
+          const r = await fetchApi('/api/control-center/wifi/add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -592,7 +754,7 @@ const ControlCenter: React.FC = () => {
         setWifiDisconnecting(true)
         try {
           const body = pwd ? { sudo_password: pwd } : {}
-          const r = await fetch('/api/control-center/wifi/disconnect', {
+          const r = await fetchApi('/api/control-center/wifi/disconnect', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -626,7 +788,7 @@ const ControlCenter: React.FC = () => {
         try {
           const body: Record<string, unknown> = { enabled }
           if (pwd) (body as Record<string, string>).sudo_password = pwd
-          const r = await fetch('/api/control-center/wifi/enabled', {
+          const r = await fetchApi('/api/control-center/wifi/enabled', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -657,7 +819,7 @@ const ControlCenter: React.FC = () => {
       },
       async () => {
         try {
-          const r = await fetch('/api/control-center/ssh/set', {
+          const r = await fetchApi('/api/control-center/ssh/set', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ enabled: !sshEnabled }),
@@ -685,7 +847,7 @@ const ControlCenter: React.FC = () => {
       },
       async () => {
         try {
-          const r = await fetch('/api/control-center/vnc/set', {
+          const r = await fetchApi('/api/control-center/vnc/set', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ enabled: !vncEnabled, password: vncPassword }),
@@ -714,7 +876,7 @@ const ControlCenter: React.FC = () => {
       },
       async () => {
         try {
-          const r = await fetch('/api/control-center/keyboard/set', {
+          const r = await fetchApi('/api/control-center/keyboard/set', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -744,7 +906,7 @@ const ControlCenter: React.FC = () => {
       },
       async () => {
         try {
-          const r = await fetch('/api/control-center/locale/set', {
+          const r = await fetchApi('/api/control-center/locale/set', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1413,34 +1575,119 @@ const ControlCenter: React.FC = () => {
           <div className="card">
             <h3 className="text-xl font-bold text-white mb-4">Drucker</h3>
             <div className="space-y-4">
-              <button
-                onClick={async () => {
-                  await requireSudo(
-                    {
-                      title: 'Drucker auflisten',
-                      subtitle: 'Für die Drucker-Verwaltung werden Administrator-Rechte benötigt.',
-                      confirmText: 'Auflisten',
-                    },
-                    async () => {
-                      try {
-                        const r = await fetch('/api/control-center/printers')
-                        const d = await r.json()
-                        if (d.status === 'success') {
-                          toast.success(`${d.printers?.length || 0} Drucker gefunden`)
-                        } else {
-                          toast.error(d.message || 'Fehler beim Abrufen')
-                        }
-                      } catch (e) {
-                        toast.error('Fehler beim Abrufen der Drucker')
-                      }
-                    }
-                  )
-                }}
-                className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg"
-              >
-                Drucker auflisten
-              </button>
-              <p className="text-slate-400">Drucker-Verwaltung wird in einer zukünftigen Version erweitert.</p>
+              <p className="text-slate-400 text-sm">Unterstützt USB- und <strong>Netzwerkdrucker</strong> (CUPS). Bei Netzwerkgeräten: gleiches Netzwerk, Gerät eingeschaltet.</p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={loadPrinters}
+                  disabled={printersLoading}
+                  className="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-lg"
+                >
+                  {printersLoading ? 'Lade…' : 'Drucker aktualisieren'}
+                </button>
+              </div>
+              {printers.length > 0 ? (
+                <ul className="divide-y divide-slate-600">
+                  {printers.map((p) => (
+                    <li key={p.name} className="py-2 flex items-center justify-between">
+                      <span className="font-medium text-white">{p.name}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        p.status === 'idle' ? 'bg-green-900/50 text-green-300' :
+                        p.status === 'printing' ? 'bg-amber-900/50 text-amber-300' :
+                        p.status === 'disabled' ? 'bg-slate-600 text-slate-400' : 'bg-slate-600 text-slate-300'
+                      }`}>
+                        {p.status === 'idle' ? 'Bereit' : p.status === 'printing' ? 'Druckt' : p.status === 'disabled' ? 'Deaktiviert' : p.status}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-slate-400">Keine Drucker gefunden. CUPS installiert? (<code className="text-slate-500">apt install cups</code>)</p>
+              )}
+            </div>
+          </div>
+        )
+      
+      case 'scanner':
+        return (
+          <div className="card">
+            <h3 className="text-xl font-bold text-white mb-4">Scanner</h3>
+            <div className="space-y-4">
+              <p className="text-slate-400 text-sm">Unterstützt USB- und <strong>Netzwerkscanner</strong> (SANE, eSCL/airscan). Bei Netzwerkgeräten: gleiches Netzwerk, Gerät eingeschaltet. Erkannte Geräte können Flachbett- und ADF-Scanner sein.</p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={loadScanners}
+                  disabled={scannersLoading}
+                  className="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-lg"
+                >
+                  {scannersLoading ? 'Lade…' : 'Scanner aktualisieren'}
+                </button>
+              </div>
+              {scannersError && (
+                <p className="text-amber-300 text-sm">{scannersError}</p>
+              )}
+              {saneCheck && (
+                <div className="rounded-lg bg-slate-800/60 border border-slate-600 p-3 space-y-2">
+                  <p className="text-sm font-medium text-slate-300">SANE &amp; Programme</p>
+                  <ul className="text-sm space-y-1">
+                    <li className="flex items-center gap-2">
+                      {saneCheck.scanimage ? (
+                        <span className="text-green-400">✓</span>
+                      ) : (
+                        <span className="text-amber-400">✗</span>
+                      )}
+                      <span className={saneCheck.scanimage ? 'text-slate-300' : 'text-amber-300'}>
+                        scanimage {saneCheck.scanimage ? `(${saneCheck.scanimage_path || ''})` : '– fehlt'}
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      {saneCheck.sane_find_scanner ? (
+                        <span className="text-green-400">✓</span>
+                      ) : (
+                        <span className="text-amber-400">✗</span>
+                      )}
+                      <span className={saneCheck.sane_find_scanner ? 'text-slate-300' : 'text-amber-300'}>
+                        sane-find-scanner {saneCheck.sane_find_scanner ? `(${saneCheck.sane_find_scanner_path || ''})` : '– fehlt'}
+                      </span>
+                    </li>
+                    {['sane-utils', 'sane-airscan'].map((pkg) => (
+                      <li key={pkg} className="flex items-center gap-2">
+                        {saneCheck.packages?.[pkg] ? (
+                          <span className="text-green-400">✓</span>
+                        ) : (
+                          <span className="text-amber-400">✗</span>
+                        )}
+                        <span className={saneCheck.packages?.[pkg] ? 'text-slate-300' : 'text-amber-300'}>
+                          {pkg} {saneCheck.packages?.[pkg] ? 'installiert' : '– fehlt'}
+                        </span>
+                        {pkg === 'sane-airscan' && (
+                          <span className="text-slate-500 text-xs">(Netzwerk/eSCL)</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  {(!saneCheck.scanimage || !saneCheck.packages?.['sane-utils']) && (
+                    <p className="text-xs text-slate-400 mt-2">
+                      Installation: <code className="bg-slate-700 px-1 rounded">sudo apt update</code> dann{' '}
+                      <code className="bg-slate-700 px-1 rounded">sudo apt install sane-utils</code>.
+                      {!saneCheck.packages?.['sane-airscan'] && (
+                        <> Für Netzwerk-Scanner ggf. <code className="bg-slate-700 px-1 rounded">sane-airscan</code>.</>
+                      )}
+                    </p>
+                  )}
+                </div>
+              )}
+              {scanners.length > 0 ? (
+                <ul className="divide-y divide-slate-600">
+                  {scanners.map((s) => (
+                    <li key={s.device} className="py-2 flex flex-col gap-0.5">
+                      <span className="font-medium text-white">{s.name}</span>
+                      <code className="text-xs text-slate-500 break-all">{s.device}</code>
+                    </li>
+                  ))}
+                </ul>
+              ) : !scannersLoading && !scannersError ? (
+                <p className="text-slate-400">Keine Scanner gefunden. SANE installiert? (<code className="text-slate-500">apt install sane-utils</code>, ggf. <code className="text-slate-500">sane-airscan</code>)</p>
+              ) : null}
             </div>
           </div>
         )
@@ -1450,12 +1697,108 @@ const ControlCenter: React.FC = () => {
           <div className="card">
             <h3 className="text-xl font-bold text-white mb-4">Performance</h3>
             <div className="space-y-4">
-              <p className="text-slate-400">Performance-Einstellungen werden in einer zukünftigen Version implementiert.</p>
-              <p className="text-sm text-slate-500">Geplante Features: CPU-Governor, GPU-Memory, Swap-Einstellungen, Overclocking</p>
+              {performanceLoading ? (
+                <p className="text-slate-400">Lade…</p>
+              ) : performance ? (
+                <>
+                  <p className="text-slate-400 text-sm">CPU-Governor (sofort wirksam), GPU-Memory, Overclocking und Swap (config.txt / dphys-swapfile). Änderungen an Config oder Swap können einen Neustart erfordern.</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-1">CPU-Governor</label>
+                      <select
+                        value={perfForm.governor}
+                        onChange={(e) => setPerfForm((f) => ({ ...f, governor: e.target.value }))}
+                        className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                        disabled={!performance.governors.length}
+                      >
+                        {!performance.governors.length && <option value="">—</option>}
+                        {performance.governors.map((g) => (
+                          <option key={g} value={g}>{g}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-1">GPU-Memory (MB)</label>
+                      <input
+                        type="text"
+                        value={perfForm.gpu_mem}
+                        onChange={(e) => setPerfForm((f) => ({ ...f, gpu_mem: e.target.value }))}
+                        placeholder="z. B. 64, 128, 256"
+                        className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-1">CPU-Frequenz (MHz)</label>
+                      <input
+                        type="text"
+                        value={perfForm.arm_freq}
+                        onChange={(e) => setPerfForm((f) => ({ ...f, arm_freq: e.target.value }))}
+                        placeholder="auto, 600–1500"
+                        className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-1">Over-Voltage (-16…8)</label>
+                      <input
+                        type="text"
+                        value={perfForm.over_voltage}
+                        onChange={(e) => setPerfForm((f) => ({ ...f, over_voltage: e.target.value }))}
+                        placeholder="0"
+                        className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="perf-force-turbo"
+                      checked={perfForm.force_turbo}
+                      onChange={(e) => setPerfForm((f) => ({ ...f, force_turbo: e.target.checked }))}
+                      className="rounded border-slate-500 bg-slate-800 text-sky-500"
+                    />
+                    <label htmlFor="perf-force-turbo" className="text-sm text-slate-300">Turbo-Modus erzwingen (max. CPU-Takt)</label>
+                  </div>
+                  {performance.swap_editable && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-1">Swap-Größe (MB, dphys-swapfile)</label>
+                      <input
+                        type="text"
+                        value={perfForm.swap_size_mb}
+                        onChange={(e) => setPerfForm((f) => ({ ...f, swap_size_mb: e.target.value }))}
+                        placeholder={performance.swap_size_mb != null ? String(performance.swap_size_mb) : '100'}
+                        className="w-full max-w-xs bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-500"
+                      />
+                      <p className="text-xs text-slate-500 mt-1">Aktuell: {performance.swap_total_mb} MB gesamt, {performance.swap_used_mb} MB belegt.</p>
+                    </div>
+                  )}
+                  {!performance.swap_editable && (performance.swap_total_mb > 0 || performance.swap_used_mb > 0) && (
+                    <p className="text-sm text-slate-500">Swap: {performance.swap_total_mb} MB gesamt, {performance.swap_used_mb} MB belegt. Größenänderung nur bei dphys-swapfile möglich.</p>
+                  )}
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    <button
+                      onClick={savePerformance}
+                      disabled={performanceSaving}
+                      className="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-lg font-medium"
+                    >
+                      {performanceSaving ? 'Speichern…' : 'Übernehmen'}
+                    </button>
+                    <button
+                      onClick={loadPerformance}
+                      disabled={performanceLoading}
+                      className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-lg"
+                    >
+                      Aktualisieren
+                    </button>
+                  </div>
+                  <p className="text-xs text-amber-200/80">Hinweis: Änderungen an GPU-Memory, Overclocking oder Swap werden in config.txt bzw. dphys-swapfile geschrieben. Neustart kann erforderlich sein.</p>
+                </>
+              ) : (
+                <p className="text-slate-400">Performance-Daten konnten nicht geladen werden.</p>
+              )}
             </div>
           </div>
         )
-      
+
       case 'mouse':
         return (
           <div className="card">

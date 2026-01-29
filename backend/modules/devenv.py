@@ -28,6 +28,11 @@ class DevEnvModule:
                 "packages": ["rustc", "cargo"],
                 "extras": ["rust-doc"]
             },
+            "tauri": {
+                "packages": [],
+                "extras": [],
+                "custom": True
+            },
         }
         
         self.databases = {
@@ -124,22 +129,16 @@ class DevEnvModule:
         """Programmiersprache installieren"""
         if language not in self.language_packages:
             return {"status": "error", "message": f"Unbekannte Sprache: {language}"}
-        
-        packages = self.language_packages[language]
-        all_packages = packages["packages"] + packages.get("extras", [])
-        
+        cfg = self.language_packages[language]
+        if cfg.get("custom") and language == "tauri":
+            return await self._install_tauri()
+        packages = cfg["packages"] + cfg.get("extras", [])
         results = []
-        for package in all_packages:
-            result = await self.utils.install_package(package)
-            results.append({"package": package, "success": result["success"]})
-        
-        all_success = all(r["success"] for r in results)
-        
-        return {
-            "status": "success" if all_success else "partial",
-            "language": language,
-            "packages": results
-        }
+        for pkg in packages:
+            r = await self.utils.install_package(pkg)
+            results.append({"package": pkg, "success": r["success"]})
+        all_ok = all(x["success"] for x in results)
+        return {"status": "success" if all_ok else "partial", "language": language, "packages": results}
     
     async def install_database(self, database: str) -> Dict[str, Any]:
         """Datenbank installieren"""
@@ -203,16 +202,37 @@ class DevEnvModule:
     
     async def _check_language(self, language: str) -> Dict[str, Any]:
         """Programmiersprache prüfen"""
-        packages = self.language_packages[language]["packages"]
+        cfg = self.language_packages.get(language)
+        if not cfg:
+            return {"installed": False}
+        if cfg.get("custom") and language == "tauri":
+            return await self._check_tauri()
+        packages = cfg["packages"]
         installed = []
-        
-        for package in packages:
-            result = await self.utils.run_command(f"which {package.replace('-', '_')} || dpkg -l | grep {package}")
-            installed.append(result["return_code"] == 0)
-        
+        for pkg in packages:
+            cmd = f"which {pkg.replace('-', '_')} 2>/dev/null || (dpkg -l 2>/dev/null | grep -q '^ii.*{pkg}')"
+            result = await self.utils.run_command(cmd)
+            installed.append(result.get("return_code", 1) == 0)
+        return {"installed": all(installed), "details": installed}
+
+    async def _check_tauri(self) -> Dict[str, Any]:
+        """Tauri CLI prüfen (npm global oder npx)."""
+        try:
+            r = await self.utils.run_command("npm list -g @tauri-apps/cli 2>/dev/null")
+            if r.get("success"):
+                return {"installed": True, "version": "(global)"}
+            r2 = await self.utils.run_command("npx --yes @tauri-apps/cli --version 2>/dev/null")
+            return {"installed": r2.get("success", False)}
+        except Exception:
+            return {"installed": False}
+
+    async def _install_tauri(self) -> Dict[str, Any]:
+        """Tauri CLI global installieren (npm). Voraussetzung: Node.js, ggf. Rust."""
+        r = await self.utils.run_command("npm install -g @tauri-apps/cli")
         return {
-            "installed": all(installed),
-            "details": installed
+            "status": "success" if r.get("success") else "partial",
+            "language": "tauri",
+            "packages": [{"package": "@tauri-apps/cli", "success": r.get("success", False)}],
         }
     
     async def _check_database(self, database: str) -> Dict[str, Any]:

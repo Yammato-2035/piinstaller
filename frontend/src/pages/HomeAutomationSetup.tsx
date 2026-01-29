@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Home, Zap, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { fetchApi } from '../api'
 
 const HomeAutomationSetup: React.FC = () => {
   const [config, setConfig] = useState({
@@ -20,7 +21,7 @@ const HomeAutomationSetup: React.FC = () => {
 
   const loadAutomationStatus = async () => {
     try {
-      const response = await fetch('/api/homeautomation/status')
+      const response = await fetchApi('/api/homeautomation/status')
       const data = await response.json()
       setAutomationStatus(data)
     } catch (error) {
@@ -43,7 +44,7 @@ const HomeAutomationSetup: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/homeautomation/configure', {
+      const response = await fetchApi('/api/homeautomation/configure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

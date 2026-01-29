@@ -20,6 +20,7 @@ import SettingsPage from './pages/SettingsPage'
 import RaspberryPiConfig from './pages/RaspberryPiConfig'
 import ControlCenter from './pages/ControlCenter'
 import Documentation from './pages/Documentation'
+import { fetchApi } from './api'
 import './App.css'
 
 type Page = 
@@ -46,6 +47,7 @@ type Theme = 'light' | 'dark' | 'system'
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
   const [systemInfo, setSystemInfo] = useState<any>(null)
+  const [backendError, setBackendError] = useState(false)
   const [sudoPasswordReady, setSudoPasswordReady] = useState(false)
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('pi-installer-theme')
@@ -65,14 +67,15 @@ function App() {
   }, [])
 
   useEffect(() => {
-    // Lade System-Info - direkt im useEffect definieren, um Hoisting-Probleme zu vermeiden
     const fetchSystemInfo = async () => {
+      setBackendError(false)
       try {
-        const response = await fetch('/api/system-info')
+        const response = await fetchApi('/api/system-info')
         const data = await response.json()
         setSystemInfo(data)
       } catch (error) {
         console.error('Fehler beim Laden der Systeminfo:', error)
+        setBackendError(true)
       }
     }
     fetchSystemInfo()
@@ -147,7 +150,7 @@ function App() {
       case 'documentation':
         return <Documentation />
       default:
-        return <Dashboard systemInfo={systemInfo} setCurrentPage={handlePageChange} />
+        return <Dashboard systemInfo={systemInfo} backendError={backendError} setCurrentPage={handlePageChange} />
     }
   }
 

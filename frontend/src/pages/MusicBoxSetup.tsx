@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Music, Radio, Headphones } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { fetchApi } from '../api'
 
 const MusicBoxSetup: React.FC = () => {
   const [config, setConfig] = useState({
@@ -21,7 +22,7 @@ const MusicBoxSetup: React.FC = () => {
 
   const loadMusicStatus = async () => {
     try {
-      const response = await fetch('/api/musicbox/status')
+      const response = await fetchApi('/api/musicbox/status')
       const data = await response.json()
       setMusicStatus(data)
     } catch (error) {
@@ -44,7 +45,7 @@ const MusicBoxSetup: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/musicbox/configure', {
+      const response = await fetchApi('/api/musicbox/configure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

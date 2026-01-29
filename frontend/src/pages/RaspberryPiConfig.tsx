@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Settings, Info, Save, RefreshCw, Power, RotateCcw } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
+import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 
 interface ConfigOption {
@@ -54,7 +55,7 @@ const RaspberryPiConfig: React.FC = () => {
   const loadConfig = async (retryAfterSudo = false) => {
     setLoading(true)
     try {
-      const r = await fetch('/api/raspberry-pi/config')
+      const r = await fetchApi('/api/raspberry-pi/config')
       const d = await r.json()
       if (d.status === 'success') {
         setConfig(d.config || {})
@@ -97,7 +98,7 @@ const RaspberryPiConfig: React.FC = () => {
 
   const loadConfigOptions = async () => {
     try {
-      const r = await fetch('/api/raspberry-pi/config/options')
+      const r = await fetchApi('/api/raspberry-pi/config/options')
       const d = await r.json()
       if (d.status === 'success') {
         setConfigOptions(d.options || {})
@@ -111,7 +112,7 @@ const RaspberryPiConfig: React.FC = () => {
 
   const showOptionInfo = async (key: string) => {
     try {
-      const r = await fetch(`/api/raspberry-pi/config/option/${encodeURIComponent(key)}`)
+      const r = await fetchApi(`/api/raspberry-pi/config/option/${encodeURIComponent(key)}`)
       const d = await r.json()
       if (d.status === 'success' && d.option) {
         setInfoOption(d.option)
@@ -139,7 +140,7 @@ const RaspberryPiConfig: React.FC = () => {
       async () => {
         setSaving(true)
         try {
-          const r = await fetch('/api/raspberry-pi/config', {
+          const r = await fetchApi('/api/raspberry-pi/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ config }),
@@ -163,7 +164,7 @@ const RaspberryPiConfig: React.FC = () => {
 
   const hasSavedSudoPassword = async () => {
     try {
-      const r = await fetch('/api/users/sudo-password/check')
+      const r = await fetchApi('/api/users/sudo-password/check')
       if (!r.ok) return false
       const d = await r.json()
       return d?.status === 'success' && !!d?.has_password
@@ -173,7 +174,7 @@ const RaspberryPiConfig: React.FC = () => {
   }
 
   const storeSudoPassword = async (sudoPassword: string) => {
-    const resp = await fetch('/api/users/sudo-password', {
+    const resp = await fetchApi('/api/users/sudo-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sudo_password: sudoPassword }),
@@ -421,7 +422,7 @@ const RaspberryPiConfig: React.FC = () => {
                     },
                     async () => {
                       try {
-                        const r = await fetch('/api/system/reboot', {
+                        const r = await fetchApi('/api/system/reboot', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ sudo_password: await getSudoPassword() }),
@@ -456,7 +457,7 @@ const RaspberryPiConfig: React.FC = () => {
                       },
                     async () => {
                       try {
-                        const r = await fetch('/api/raspberry-pi/config/reset', {
+                        const r = await fetchApi('/api/raspberry-pi/config/reset', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ sudo_password: await getSudoPassword() }),

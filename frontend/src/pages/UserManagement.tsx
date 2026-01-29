@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Users, Plus, Trash2, Lock, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { fetchApi } from '../api'
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<string[]>([])
@@ -16,10 +17,11 @@ const UserManagement: React.FC = () => {
   })
   const [requiresSudoPassword, setRequiresSudoPassword] = useState(false)
   const [sudoPasswordSaved, setSudoPasswordSaved] = useState(false)
+  const [sudoSkipTest, setSudoSkipTest] = useState(false)
 
   // Prüfe ob sudo-Passwort bereits gespeichert ist
   useEffect(() => {
-    const saved = localStorage.getItem('sudo_password_saved')
+    const saved = sessionStorage.getItem('sudo_password_saved')
     if (saved === 'true') {
       setSudoPasswordSaved(true)
     }
@@ -31,7 +33,7 @@ const UserManagement: React.FC = () => {
 
   const loadUsers = async () => {
     try {
-      const response = await fetch('/api/users')
+      const response = await fetchApi('/api/users')
       const data = await response.json()
       // Sortiere Benutzer alphabetisch
       const sortedUsers = (data.users || []).sort((a: string, b: string) => 
@@ -43,7 +45,7 @@ const UserManagement: React.FC = () => {
     }
   }
 
-  const saveSudoPassword = async () => {
+  const saveSudoPassword = async (forceSkipTest = false) => {
     if (!newUser.sudo_password) {
       toast.error('Bitte geben Sie das sudo-Passwort ein')
       return
@@ -51,23 +53,32 @@ const UserManagement: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/users/sudo-password', {
+      const response = await fetchApi('/api/users/sudo-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sudo_password: newUser.sudo_password }),
+        body: JSON.stringify({
+          sudo_password: newUser.sudo_password,
+          skip_test: forceSkipTest || sudoSkipTest,
+        }),
       })
-      const data = await response.json()
-      
+      let data: { status?: string; message?: string; detail?: string } = {}
+      try {
+        data = await response.json()
+      } catch {
+        toast.error('Ungültige Antwort vom Backend. Läuft es auf Port 8000?')
+        return
+      }
       if (data.status === 'success') {
         toast.success('Sudo-Passwort für diese Session gespeichert')
         setSudoPasswordSaved(true)
-        localStorage.setItem('sudo_password_saved', 'true')
+        sessionStorage.setItem('sudo_password_saved', 'true')
         setRequiresSudoPassword(false)
       } else {
-        toast.error(data.message || 'Sudo-Passwort konnte nicht gespeichert werden')
+        toast.error(data.message || data.detail || 'Sudo-Passwort konnte nicht gespeichert werden.')
       }
     } catch (error) {
-      toast.error('Fehler beim Speichern des sudo-Passworts')
+      toast.error('Fehler beim Speichern – Backend erreichbar? (Port 8000)')
+      console.error('saveSudoPassword:', error)
     } finally {
       setLoading(false)
     }
@@ -86,7 +97,7 @@ const UserManagement: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/users/create', {
+      const response = await fetchApi('/api/users/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newUser),
@@ -95,9 +106,9 @@ const UserManagement: React.FC = () => {
       
       if (data.status === 'success') {
         toast.success(`Benutzer ${newUser.username} erstellt`)
-        // Sudo-Passwort für Session speichern, wenn erfolgreich
+        // Sudo-Passwort für Session speichern (Passwort bereits durch Erstellung validiert)
         if (newUser.sudo_password) {
-          await saveSudoPassword()
+          await saveSudoPassword(true)
         }
         setNewUser({ username: '', email: '', role: 'user', create_ssh_key: false, password: '', sudo_password: '' })
         setRequiresSudoPassword(false)
@@ -122,7 +133,7 @@ const UserManagement: React.FC = () => {
     if (!window.confirm(`Möchten Sie ${username} wirklich löschen?`)) return
 
     // Prüfe ob sudo-Passwort gespeichert ist
-    const savedPassword = localStorage.getItem('sudo_password_saved')
+    const savedPassword = sessionStorage.getItem('sudo_password_saved')
     let sudoPassword = ''
     
     if (savedPassword !== 'true') {
@@ -145,7 +156,7 @@ const UserManagement: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await fetch(`/api/users/${username}`, {
+      const response = await fetchApi(`/api/users/${username}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sudo_password: sudoPassword }),
@@ -280,6 +291,17 @@ const UserManagement: React.FC = () => {
                         ? '✅ Passwort für diese Session gespeichert - Sie müssen es nicht erneut eingeben'
                         : 'Das Passwort wird nur für diese Session gespeichert und nicht dauerhaft gesichert.'}
                     </p>
+                    {!sudoPasswordSaved && (
+                      <label className="mt-2 flex items-center gap-2 cursor-pointer text-yellow-400/90 text-xs">
+                        <input
+                          type="checkbox"
+                          checked={sudoSkipTest}
+                          onChange={(e) => setSudoSkipTest(e.target.checked)}
+                          className="rounded border-yellow-600 bg-slate-800"
+                        />
+                        Ohne Prüfung speichern (Standard; beim ersten Einsatz wird geprüft)
+                      </label>
+                    )}
                   </div>
                 )}
 

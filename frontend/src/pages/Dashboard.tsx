@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { fetchApi } from '../api'
 import { 
   Cpu, 
   HardDrive, 
@@ -23,6 +24,7 @@ import { motion } from 'framer-motion'
 
 interface DashboardProps {
   systemInfo: any
+  backendError?: boolean
   setCurrentPage?: (page: string) => void
 }
 
@@ -63,33 +65,29 @@ const StatCard = React.memo(({ icon: Icon, label, value, unit = '', trend }: any
   )
 })
 
-const Dashboard: React.FC<DashboardProps> = ({ systemInfo, setCurrentPage }) => {
+const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurrentPage }) => {
   const [stats, setStats] = useState<any>(null)
   const [securityConfig, setSecurityConfig] = useState<any>(null)
   const [historyData, setHistoryData] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const loading = !systemInfo && !backendError
 
   useEffect(() => {
     if (systemInfo) {
       setStats(systemInfo)
-      setLoading(false)
-      // Füge Daten zur Historie hinzu
       setHistoryData(prev => {
         const newData = {
           time: new Date().toLocaleTimeString(),
           cpu: systemInfo.cpu?.usage || 0,
           memory: systemInfo.memory?.percent || 0,
         }
-        const updated = [...prev, newData].slice(-20) // Letzte 20 Datenpunkte
-        return updated
+        return [...prev, newData].slice(-20)
       })
     }
     loadSecurityConfig()
     
-    // Update alle 5 Sekunden
     const interval = setInterval(async () => {
       try {
-        const response = await fetch('/api/system-info')
+        const response = await fetchApi('/api/system-info')
         const data = await response.json()
         if (data) {
           setStats(data)
@@ -112,7 +110,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, setCurrentPage }) => 
 
   const loadSecurityConfig = async () => {
     try {
-      const response = await fetch('/api/system/security-config')
+      const response = await fetchApi('/api/system/security-config')
       const data = await response.json()
       if (data.config) {
         setSecurityConfig(data.config)
@@ -251,6 +249,28 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, setCurrentPage }) => 
         <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
         <p className="text-slate-400">Übersicht Ihres Raspberry Pi Systems</p>
       </motion.div>
+
+      {backendError && !stats && (
+        <div className="rounded-xl bg-amber-900/30 border border-amber-600/50 p-4 flex items-start gap-3">
+          <AlertCircle className="text-amber-400 shrink-0 mt-0.5" size={24} />
+          <div>
+            <h3 className="font-semibold text-amber-200">Backend nicht erreichbar</h3>
+            <p className="text-sm text-amber-200/80 mt-1">
+              Dashboard-Daten und Sudo-Passwort-Speicherung funktionieren nur, wenn das Backend läuft.
+              Backend starten: <code className="bg-slate-800 px-1 rounded">./start.sh</code> oder <code className="bg-slate-800 px-1 rounded">./start-backend.sh</code> im Projektordner.
+              Log-Datei: Einstellungen → Logs → „Logs laden“ (Pfad wird angezeigt).
+            </p>
+            {setCurrentPage && (
+              <button
+                onClick={() => setCurrentPage('settings')}
+                className="mt-3 text-sm text-sky-400 hover:text-sky-300 underline"
+              >
+                Einstellungen → Logs öffnen
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* System Stats */}
       {loading ? (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Code, Package, Database, Terminal } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { fetchApi } from '../api'
 
 const DevelopmentEnv: React.FC = () => {
   const [config, setConfig] = useState({
@@ -19,7 +20,7 @@ const DevelopmentEnv: React.FC = () => {
 
   const loadDevenvStatus = async () => {
     try {
-      const response = await fetch('/api/devenv/status')
+      const response = await fetchApi('/api/devenv/status')
       const data = await response.json()
       setDevenvStatus(data)
     } catch (error) {
@@ -32,6 +33,7 @@ const DevelopmentEnv: React.FC = () => {
     { id: 'node', label: '⚡ Node.js', desc: 'Node.js + npm/yarn', docsLink: 'https://nodejs.org/docs/' },
     { id: 'go', label: '🔹 Go', desc: 'Go Programming Language', docsLink: 'https://go.dev/doc/' },
     { id: 'rust', label: '🦀 Rust', desc: 'Rust + Cargo', docsLink: 'https://doc.rust-lang.org/' },
+    { id: 'tauri', label: '🖥️ Tauri', desc: 'Tauri 2 – Desktop-Apps (Rust/Web)', docsLink: 'https://v2.tauri.app/' },
     { id: 'c', label: '🔷 C', desc: 'C Compiler (gcc)', docsLink: 'https://gcc.gnu.org/onlinedocs/' },
     { id: 'cpp', label: '🔶 C++', desc: 'C++ Compiler (g++)', docsLink: 'https://gcc.gnu.org/onlinedocs/gcc-13.2.0/gpp/' },
     { id: 'java', label: '☕ Java', desc: 'Java JDK', docsLink: 'https://docs.oracle.com/javase/' },
@@ -74,7 +76,7 @@ const DevelopmentEnv: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/devenv/configure', {
+      const response = await fetchApi('/api/devenv/configure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
