@@ -18,6 +18,7 @@ import {
   BookOpen,
   Activity,
   Database,
+  LayoutDashboard,
 } from 'lucide-react'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { motion } from 'framer-motion'
@@ -246,7 +247,12 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <LayoutDashboard className="text-sky-400" />
+            Dashboard
+          </h1>
+        </div>
         <p className="text-slate-400">Übersicht Ihres Raspberry Pi Systems</p>
       </motion.div>
 

@@ -194,10 +194,12 @@ const WebServerSetup: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Globe className="text-purple-500" />
-          Webserver Konfiguration
-        </h1>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Globe className="text-purple-500" />
+            Webserver Konfiguration
+          </h1>
+        </div>
         <p className="text-slate-400">Installieren und konfigurieren Sie einen Webserver mit optionalem CMS</p>
       </div>
 

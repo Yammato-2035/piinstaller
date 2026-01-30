@@ -169,10 +169,12 @@ const DevelopmentEnv: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Code className="text-green-500" />
-          Entwicklungsumgebung
-        </h1>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Code className="text-green-500" />
+            Entwicklungsumgebung
+          </h1>
+        </div>
         <p className="text-slate-400">Installieren Sie Programmiersprachen, Datenbanken und Tools</p>
       </div>
 

@@ -105,6 +105,7 @@ http://localhost:3000
 - **[INSTALL.md](./INSTALL.md)** - Detaillierte Installationsanleitung
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System-Architektur & Design
 - **[FEATURES.md](./FEATURES.md)** - Alle Features & Roadmap
+- **[VERSIONING.md](./VERSIONING.md)** - Versionsschema, wann Version erhöht wird, Changelog-Führung
 - **[SUGGESTIONS.md](./SUGGESTIONS.md)** - Erweiterte Vorschläge & Best Practices
 
 ## 🎨 GUI-Highlights
@@ -236,7 +237,7 @@ MIT License - Siehe [LICENSE](./LICENSE) für Details
 
 ## 🌟 Status
 
-- **Version:** 1.0.0 ✅
+- **Version:** 1.0.1.4 (siehe [VERSION](./VERSION) und [VERSIONING.md](./VERSIONING.md))
 - **Status:** Production Ready
 - **Letztes Update:** Januar 2026
 - **Support bis:** Januar 2027

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
-import { Cloud, RefreshCw, CheckCircle, XCircle } from 'lucide-react'
+import { Cloud, RefreshCw, CheckCircle, XCircle, Settings } from 'lucide-react'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 
@@ -341,12 +341,17 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
         }}
       />
 
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
-        <h2 className="text-2xl font-bold text-white mb-4">Einstellungen</h2>
-        <div className="text-sm text-slate-300 mb-6">
-          Hier kannst du grundlegende Einstellungen verwalten und den Initialisierungsstatus prüfen.
+      <div>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Settings className="text-sky-500" />
+            Einstellungen
+          </h1>
         </div>
-        
+        <p className="text-slate-400">Hier kannst du grundlegende Einstellungen verwalten und den Initialisierungsstatus prüfen.</p>
+      </div>
+
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
         {/* Hauptmenü */}
         <div className="flex flex-wrap gap-2 border-b border-slate-700 pb-3 mb-3">
           <button

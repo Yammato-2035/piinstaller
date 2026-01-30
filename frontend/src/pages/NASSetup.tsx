@@ -73,10 +73,12 @@ const NASSetup: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <HardDrive className="text-purple-500" />
-          NAS (Network Attached Storage)
-        </h1>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <HardDrive className="text-purple-500" />
+            NAS (Network Attached Storage)
+          </h1>
+        </div>
         <p className="text-slate-400">Richten Sie einen Netzwerk-Speicher für Dateifreigabe ein</p>
       </div>
 

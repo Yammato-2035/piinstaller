@@ -64,10 +64,12 @@ const MailServerSetup: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Mail className="text-orange-500" />
-          Mailserver Konfiguration
-        </h1>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Mail className="text-orange-500" />
+            Mailserver Konfiguration
+          </h1>
+        </div>
         <p className="text-slate-400">Installieren Sie einen vollständigen E-Mail-Server (Optional)</p>
       </div>
 

@@ -271,10 +271,12 @@ const SecuritySetup: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Shield className="text-red-500" />
-          Sicherheit & Härtung
-        </h1>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Shield className="text-red-500" />
+            Sicherheit & Härtung
+          </h1>
+        </div>
         <p className="text-slate-400">Konfigurieren Sie die Sicherheitseinstellungen für Ihren Raspberry Pi</p>
       </div>
 

@@ -1867,10 +1867,12 @@ const ControlCenter: React.FC = () => {
       />
 
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Settings className="text-purple-500" />
-          Control Center
-        </h1>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Settings className="text-purple-500" />
+            Control Center
+          </h1>
+        </div>
         <p className="text-slate-400">System-Einstellungen verwalten</p>
       </div>
 

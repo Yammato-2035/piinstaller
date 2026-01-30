@@ -132,10 +132,12 @@ const InstallationWizard: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Zap className="text-yellow-500" />
-          Installationsassistent
-        </h1>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Zap className="text-yellow-400" />
+            Installationsassistent
+          </h1>
+        </div>
         <p className="text-slate-400">Konfigurieren Sie Ihren Raspberry Pi in 6 einfachen Schritten</p>
       </div>
 

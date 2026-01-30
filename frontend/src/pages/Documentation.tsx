@@ -366,6 +366,23 @@ const Documentation: React.FC = () => {
                     <li>Overclocking: Werte für arm_freq, over_voltage je nach Pi-Modell unterschiedlich.</li>
                   </ul>
                 </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Repository von GitHub aktualisieren (mit lokalen Änderungen)</h3>
+                  <p className="text-sm mb-2">
+                    Wenn du lokale, uncommittete Änderungen hast und <code className="text-slate-400">git pull</code> Konflikte meldet oder überschreiben würde:
+                  </p>
+                  <ol className="list-decimal list-inside text-sm space-y-1 ml-4">
+                    <li><code className="text-slate-400">git stash push -m "Lokale Änderungen vor pull"</code> – lokale Änderungen zwischenspeichern</li>
+                    <li><code className="text-slate-400">git pull</code> – neuesten Stand von GitHub holen</li>
+                    <li><code className="text-slate-400">git stash pop</code> – lokale Änderungen wieder anwenden</li>
+                  </ol>
+                  <p className="text-sm mt-2 mb-2">
+                    Bei <strong>Merge-Konflikt</strong> (z. B. in <code className="text-slate-400">Documentation.tsx</code>): Konfliktmarker (<code className="text-slate-400">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code className="text-slate-400">=======</code>, <code className="text-slate-400">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>) entfernen und entscheiden: Dokumentation oft mit <strong>Remote</strong>-Version (GitHub), andere Dateien mit <strong>lokaler</strong> Version (deine neueren Änderungen). Danach <code className="text-slate-400">git add &lt;Datei&gt;</code> und ggf. <code className="text-slate-400">git stash drop</code>, wenn der Stash nicht mehr gebraucht wird.
+                  </p>
+                  <p className="text-sm">
+                    Details und Workflow für mehrere Entwickler: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
+                  </p>
+                </div>
               </div>
             </motion.div>
           )}
@@ -413,7 +430,7 @@ const Documentation: React.FC = () => {
             >
               <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
                 <BookOpen className="text-sky-400" />
-                Versionsnummern-Schema
+                Versionsnummern & Changelog
               </h2>
               <div className="space-y-4 text-slate-300 dark:text-slate-300">
                 <p className="text-sm">Die Versionsnummer folgt dem Schema <strong>X.Y.Z.W</strong>.</p>
@@ -423,9 +440,21 @@ const Documentation: React.FC = () => {
                   <li><strong>Z:</strong> Bereich/Modul fertig</li>
                   <li><strong>W:</strong> Bugfixes, Ergänzungen</li>
                 </ul>
+                <p className="text-sm">
+                  Die Version wird bei <strong>jeder Änderung</strong> angepasst: Bugfix, Ergänzung, Feature-Änderung oder -Ergänzung, relevante Dokumentationsanpassung. Details stehen in <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
+                </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.0.1.4</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.0.1.5</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.5</p>
+                    <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 mt-1 ml-4 space-y-1">
+                      <li><strong>Dokumentation:</strong> Auf aktuellen Stand gebracht; alle in dieser Session durchgeführten Fehlerbehebungen und Änderungen übernommen</li>
+                      <li><strong>Repository aktualisieren:</strong> Workflow bei lokalen Änderungen (git stash, pull, stash pop) in Troubleshooting ergänzt</li>
+                      <li><strong>Merge-Konflikt:</strong> Bei Konflikt in Documentation.tsx Remote-Version übernommen; übrige Dateien lokale (neuere) Versionen beibehalten</li>
+                      <li><strong>Versionsführung:</strong> VERSIONING.md um Empfehlung „eine Version pro logischer Änderung“ ergänzt</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.4 (28./29. Januar 2026)</p>
                     <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 mt-1 ml-4 space-y-1">
                       <li><strong>Control Center – Scanner:</strong> SANE-Scanner (USB + Netzwerk/eSCL/airscan), SANE-Installationsprüfung</li>
