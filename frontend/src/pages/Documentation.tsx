@@ -182,8 +182,10 @@ const Documentation: React.FC = () => {
                       <li><strong>Lokalisierung:</strong> Sprache, Locale und Zeitzone konfigurieren</li>
                       <li><strong>Desktop:</strong> Boot-Ziel (Desktop vs. Kommandozeile) einstellen</li>
                       <li><strong>Display:</strong> Auflösung, Bildwiederholrate, Rotation (xrandr)</li>
-                      <li><strong>Drucker:</strong> Drucker verwalten (in Entwicklung)</li>
-                      <li><strong>Performance, Maus, Taskleiste, Theme:</strong> in Entwicklung</li>
+                      <li><strong>Drucker:</strong> USB- und Netzwerkdrucker (CUPS) verwalten</li>
+                      <li><strong>Scanner:</strong> USB- und Netzwerkscanner (SANE, eSCL/airscan) erkennen; SANE-Installationsstatus prüfen</li>
+                      <li><strong>Performance:</strong> CPU-Governor (sofort wirksam), GPU-Memory, Overclocking, Swap-Größe (dphys-swapfile)</li>
+                      <li><strong>Maus, Taskleiste, Theme:</strong> in Entwicklung</li>
                     </ul>
                   </div>
                 </div>
@@ -338,6 +340,32 @@ const Documentation: React.FC = () => {
                     Sudo-Passwort: „Ohne Prüfung speichern“ ist standardmäßig aktiv. Nach Speichern beim ersten Einsatz (z. B. Firewall) wird es genutzt; nur in der Session, nicht dauerhaft.
                   </p>
                 </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Scanner werden nicht erkannt</h3>
+                  <p className="text-sm mb-2">
+                    Scanner-Erkennung nutzt <strong>SANE</strong>. Bei Problemen:
+                  </p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li><strong>SANE installieren:</strong> <code className="text-slate-400">sudo apt install sane sane-utils</code></li>
+                    <li><strong>Netzwerkscanner (eSCL/airscan):</strong> <code className="text-slate-400">sudo apt install sane-airscan</code></li>
+                    <li>Gerät im gleichen Netzwerk und eingeschaltet?</li>
+                    <li>Test im Terminal: <code className="text-slate-400">scanimage -L</code> (kann bei Netzwerkscannern bis zu 45s dauern)</li>
+                  </ul>
+                  <p className="text-sm mt-2">
+                    Die App zeigt unter Control Center → Scanner den SANE-Installationsstatus an.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Performance-Einstellungen</h3>
+                  <p className="text-sm mb-2">
+                    <strong>CPU-Governor</strong> wird sofort wirksam. <strong>GPU-Memory, Overclocking</strong> und <strong>Swap-Größe</strong> erfordern einen Neustart.
+                  </p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li>Governor nicht verfügbar? → Kernel unterstützt cpufreq nicht oder läuft als VM.</li>
+                    <li>Swap-Größe nicht änderbar? → dphys-swapfile nicht installiert (<code className="text-slate-400">sudo apt install dphys-swapfile</code>).</li>
+                    <li>Overclocking: Werte für arm_freq, over_voltage je nach Pi-Modell unterschiedlich.</li>
+                  </ul>
+                </div>
               </div>
             </motion.div>
           )}
@@ -396,8 +424,23 @@ const Documentation: React.FC = () => {
                   <li><strong>W:</strong> Bugfixes, Ergänzungen</li>
                 </ul>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.0.1.3</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.0.1.4</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.4 (28./29. Januar 2026)</p>
+                    <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 mt-1 ml-4 space-y-1">
+                      <li><strong>Control Center – Scanner:</strong> SANE-Scanner (USB + Netzwerk/eSCL/airscan), SANE-Installationsprüfung</li>
+                      <li><strong>Control Center – Performance:</strong> CPU-Governor, GPU-Memory, Overclocking (arm_freq, over_voltage, force_turbo), Swap-Größe</li>
+                      <li><strong>Control Center – Drucker:</strong> Deutsche Locale-Unterstützung für lpstat</li>
+                      <li><strong>Dev-Umgebung:</strong> Rust und Tauri als Programmiersprachen hinzugefügt</li>
+                      <li><strong>Sudo-Passwort:</strong> Nur in Session gespeichert (sessionStorage), „Ohne Prüfung speichern" standardmäßig aktiv</li>
+                      <li><strong>Dashboard:</strong> Zeigt klaren Hinweis wenn Backend nicht erreichbar</li>
+                      <li><strong>Logging:</strong> Log-Pfad-API, verbessertes Logging-Setup (NameError behoben)</li>
+                      <li><strong>Dokumentation:</strong> Troubleshooting-Sektion, GitHub-Setup-Anleitungen</li>
+                      <li>Bugfix: Scanner-Timeout auf 45s erhöht (Netzwerkscanner)</li>
+                      <li>Bugfix: scanimage-Output mit 404-Prefixes korrekt geparst</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.3</p>
                     <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 mt-1 ml-4 space-y-1">
                       <li>Control Center – Desktop: Boot-Ziel (Desktop vs. Kommandozeile)</li>
