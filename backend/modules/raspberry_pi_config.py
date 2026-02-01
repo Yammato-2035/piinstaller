@@ -313,7 +313,194 @@ class RaspberryPiConfigModule:
             return self.config_file_legacy
         else:
             return self.config_file  # Default
-    
+
+    def _parse_cpuinfo_blocks(self) -> List[Dict[str, Any]]:
+        """Parst /proc/cpuinfo in Blöcke pro Prozessor; liefert Liste von CPUs."""
+        cpus: List[Dict[str, Any]] = []
+        if not Path("/proc/cpuinfo").exists():
+            return cpus
+        try:
+            with open("/proc/cpuinfo", "r") as f:
+                content = f.read()
+            block: Dict[str, str] = {}
+            for line in content.splitlines():
+                if ":" in line:
+                    k, v = line.strip().split(":", 1)
+                    k, v = k.strip(), v.strip()
+                    block[k] = v
+                else:
+                    if block:
+                        model = block.get("Model name") or block.get("Hardware") or block.get("model name") or ""
+                        proc_id = block.get("processor", str(len(cpus)))
+                        try:
+                            proc_id = int(proc_id)
+                        except ValueError:
+                            pass
+                        cpus.append({"processor_id": proc_id, "model": model or "Unbekannt"})
+                        block = {}
+            if block:
+                model = block.get("Model name") or block.get("Hardware") or block.get("model name") or ""
+                proc_id = block.get("processor", str(len(cpus)))
+                try:
+                    proc_id = int(proc_id)
+                except ValueError:
+                    pass
+                cpus.append({"processor_id": proc_id, "model": model or "Unbekannt"})
+        except Exception:
+            pass
+        return cpus
+
+    def _get_gpus_generic(self) -> List[Dict[str, Any]]:
+        """GPU-Liste per lspci (VGA/3D) für nicht-Pi-Systeme."""
+        gpus: List[Dict[str, Any]] = []
+        try:
+            r = subprocess.run(
+                ["lspci"],
+                capture_output=True,
+                text=True,
+                timeout=3,
+            )
+            if r.returncode != 0 or not r.stdout:
+                return gpus
+            for line in (r.stdout or "").strip().splitlines():
+                line = line.strip()
+                if "VGA" in line or "3D" in line or "Display" in line:
+                    name = line.split(" ", 1)[1] if " " in line else line
+                    gpus.append({"name": name.strip() or "Unbekannt", "memory_mb": None})
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+        return gpus
+
+    def get_system_info(self) -> Dict[str, Any]:
+        """CPU-, Grafik- und Systeminfos (vcgencmd, /proc/cpuinfo, lspci). Liefert cpus[] und gpus[] für Dashboard."""
+        out: Dict[str, Any] = {
+            "cpu_model": None,
+            "current_mhz": None,
+            "config_arm_freq": None,
+            "config_gpu_mem": None,
+            "gpu_info": None,
+            "recommended_mhz": None,
+            "memory_split_hint": None,
+            "over_voltage_hint": None,
+            "cpus": [],
+            "gpus": [],
+        }
+        try:
+            cpus_raw = self._parse_cpuinfo_blocks()
+            current_mhz: Optional[int] = None
+            recommended_mhz: Optional[int] = None
+            if Path("/proc/cpuinfo").exists():
+                with open("/proc/cpuinfo", "r") as f:
+                    content = f.read()
+                for line in content.splitlines():
+                    if ":" in line:
+                        k, v = line.split(":", 1)
+                        k, v = k.strip(), v.strip()
+                        if k == "Model name":
+                            out["cpu_model"] = v
+                        elif k == "Hardware" and not out["cpu_model"]:
+                            out["cpu_model"] = v
+            vcgencmd = "/usr/bin/vcgencmd"
+            if not Path(vcgencmd).exists():
+                vcgencmd = "vcgencmd"
+            try:
+                r = subprocess.run(
+                    [vcgencmd, "measure_clock", "arm"],
+                    capture_output=True,
+                    text=True,
+                    timeout=3,
+                )
+                if r.returncode == 0 and r.stdout:
+                    s = r.stdout.strip().split("=")
+                    if len(s) == 2:
+                        current_mhz = round(int(s[1]) / 1_000_000)
+                        out["current_mhz"] = current_mhz
+            except (FileNotFoundError, ValueError, subprocess.TimeoutExpired):
+                pass
+            try:
+                r = subprocess.run(
+                    [vcgencmd, "get_config", "arm_freq", "gpu_mem"],
+                    capture_output=True,
+                    text=True,
+                    timeout=3,
+                )
+                if r.returncode == 0 and r.stdout:
+                    for line in r.stdout.strip().splitlines():
+                        if "=" in line:
+                            k, v = line.strip().split("=", 1)
+                            if k == "arm_freq":
+                                try:
+                                    out["config_arm_freq"] = int(v)
+                                except ValueError:
+                                    out["config_arm_freq"] = v
+                            elif k == "gpu_mem":
+                                try:
+                                    out["config_gpu_mem"] = int(v)
+                                except ValueError:
+                                    out["config_gpu_mem"] = v
+            except (FileNotFoundError, ValueError, subprocess.TimeoutExpired):
+                pass
+            model = (out.get("cpu_model") or "").lower()
+            if "raspberry pi 5" in model or "bcm2712" in model:
+                recommended_mhz = 2400
+                out["recommended_mhz"] = recommended_mhz
+                out["gpu_info"] = "VideoCore VII (BCM2712)"
+            elif "raspberry pi 4" in model or "bcm2711" in model:
+                recommended_mhz = 1500
+                out["recommended_mhz"] = recommended_mhz
+                out["gpu_info"] = "VideoCore VI (BCM2711)"
+            elif "raspberry pi 3" in model or "bcm2837" in model:
+                recommended_mhz = 1200
+                out["recommended_mhz"] = recommended_mhz
+                out["gpu_info"] = "VideoCore IV (BCM2837)"
+            elif "raspberry pi zero" in model or "bcm2835" in model:
+                recommended_mhz = 1000
+                out["recommended_mhz"] = recommended_mhz
+                out["gpu_info"] = "VideoCore IV (BCM2835)"
+            else:
+                out["gpu_info"] = "VideoCore (Broadcom)" if out.get("gpu_info") is None else out["gpu_info"]
+                recommended_mhz = None
+            out["memory_split_hint"] = (
+                "GPU-Speicher (gpu_mem) teilt den RAM mit der CPU. Typisch 64–128 MB für Desktop; "
+                "mehr für Video/Kamera. Weniger GPU-Speicher = mehr RAM für Programme."
+            )
+            out["over_voltage_hint"] = (
+                "Spannungserhöhung (over_voltage) nur vorsichtig erhöhen (z. B. 1–2). "
+                "Höhere Werte können die Hardware beschädigen. force_turbo erlaubt oft höhere Werte; "
+                "siehe offizielle Raspberry-Pi-Dokumentation zu Overclocking."
+            )
+            cpus_list: List[Dict[str, Any]] = []
+            for i, cpu in enumerate(cpus_raw):
+                entry: Dict[str, Any] = {
+                    "processor_id": cpu.get("processor_id", i),
+                    "model": cpu.get("model") or out.get("cpu_model") or "Unbekannt",
+                    "current_mhz": current_mhz,
+                    "recommended_mhz": recommended_mhz,
+                }
+                cpus_list.append(entry)
+            if not cpus_list and out.get("cpu_model"):
+                cpus_list = [{
+                    "processor_id": 0,
+                    "model": out["cpu_model"],
+                    "current_mhz": current_mhz,
+                    "recommended_mhz": recommended_mhz,
+                }]
+            out["cpus"] = cpus_list
+            if out.get("gpu_info"):
+                out["gpus"] = [{
+                    "name": out["gpu_info"],
+                    "memory_mb": out.get("config_gpu_mem"),
+                }]
+            else:
+                out["gpus"] = self._get_gpus_generic()
+            if not out["gpus"] and out.get("config_gpu_mem") is not None:
+                out["gpus"] = [{"name": "VideoCore (Broadcom)", "memory_mb": out["config_gpu_mem"]}]
+            return {"status": "success", "system_info": out}
+        except Exception as e:
+            out["cpus"] = out.get("cpus") or []
+            out["gpus"] = out.get("gpus") or []
+            return {"status": "error", "message": str(e), "system_info": out}
+
     def read_config(self, sudo_password: str = "") -> Dict[str, Any]:
         """Liest die aktuelle Konfiguration"""
         config_file = self.get_config_file()

@@ -43,12 +43,13 @@ const DevelopmentEnv: React.FC = () => {
     { id: 'postgres', label: '🐘 PostgreSQL', desc: 'Advanced SQL Database', docsLink: 'https://www.postgresql.org/docs/', adminLink: 'http://localhost:8080/pgadmin' },
     { id: 'mysql', label: '🐬 MySQL/MariaDB', desc: 'Popular SQL Database', docsLink: 'https://mariadb.com/kb/en/documentation/', adminLink: 'http://localhost/phpmyadmin' },
     { id: 'mongodb', label: '🍃 MongoDB', desc: 'NoSQL Document Database', docsLink: 'https://www.mongodb.com/docs/', adminLink: 'http://localhost:8081' },
-    { id: 'redis', label: '💾 Redis', desc: 'In-Memory Cache & Queue', docsLink: 'https://redis.io/docs/', adminLink: 'http://localhost:8080/redis-commander' },
+    { id: 'redis', label: '💾 Redis', desc: 'In-Memory Cache & Queue', docsLink: 'https://redis.io/docs/', adminLink: 'http://localhost:8081' },
   ]
 
   const tools = [
     { id: 'docker', label: '🐳 Docker', desc: 'Container & Compose', docsLink: 'https://docs.docker.com/' },
     { id: 'git', label: '🔀 Git', desc: 'Version Control', docsLink: 'https://git-scm.com/doc' },
+    { id: 'qtqml', label: '🖼️ QT/QML', desc: 'Qt5, QML – GUI-Entwicklung (Desktop/Embedded)', docsLink: 'https://doc.qt.io/qt-5/' },
     { id: 'cursor', label: '🎯 Cursor', desc: 'AI-Powered Code Editor', docsLink: 'https://cursor.sh/docs' },
     { id: 'vscode', label: '📝 VS Code Server', desc: 'Web-Based Editor', docsLink: 'https://code.visualstudio.com/docs' },
   ]
@@ -233,12 +234,9 @@ const DevelopmentEnv: React.FC = () => {
             <div className="grid md:grid-cols-2 gap-4">
               {tools.map((tool) => {
                 let statusKey = tool.id
-                if (tool.id === 'vscode') {
-                  statusKey = 'vscode'
-                } else if (tool.id === 'cursor') {
-                  statusKey = 'cursor'
-                }
-                // Prüfe ob Cursor installiert ist
+                if (tool.id === 'vscode') statusKey = 'vscode'
+                else if (tool.id === 'cursor') statusKey = 'cursor'
+                else if (tool.id === 'qtqml') statusKey = 'qtqml'
                 const cursorStatus = tool.id === 'cursor' ? devenvStatus?.cursor : null
                 return (
                   <ItemCard
@@ -344,17 +342,17 @@ const DevelopmentEnv: React.FC = () => {
               <div className="p-3 bg-slate-800/50 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold text-white">💾 Redis Commander</p>
-                    <p className="text-sm text-slate-400">Redis Web-Interface</p>
+                    <p className="font-semibold text-white">💾 Redis Commander (optional)</p>
+                    <p className="text-sm text-slate-400">Redis Web-Interface – bei Bedarf separat installieren (z. B. <code className="text-xs bg-slate-700 px-1 rounded">npm install -g redis-commander</code>). Standard-Port 8081.</p>
                   </div>
                   <div className="flex gap-2">
                     <a
-                      href="http://localhost:8080/redis-commander"
+                      href="http://localhost:8081"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs transition-colors"
                     >
-                      🔗 Öffnen
+                      🔗 Öffnen (8081)
                     </a>
                     <a
                       href="https://github.com/joeferner/redis-commander"
@@ -436,6 +434,17 @@ const DevelopmentEnv: React.FC = () => {
             <h3 className="text-lg font-bold text-yellow-300 mb-3">⚠️ Hinweis</h3>
             <p className="text-sm text-slate-300">
               Die Installation kann 30-60 Minuten dauern, je nach ausgewählten Komponenten.
+            </p>
+          </div>
+
+          <div className="card">
+            <h3 className="text-lg font-bold text-white mb-3">Weitere Sprachen & Tools</h3>
+            <p className="text-sm text-slate-300 mb-2">
+              Weitere sinnvolle Optionen: Kotlin, Swift (für entsprechende Zielplattformen), Flutter/Dart, .NET (dotnet).
+              Fehlende Entwicklungsumgebungen können manuell installiert werden (Snap, Flatpak, direkter Download).
+            </p>
+            <p className="text-xs text-slate-400">
+              QT/QML ist für plattformübergreifende GUIs und Embedded (z. B. Raspberry Pi mit Display) geeignet.
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
 import {
   LayoutDashboard,
   Shield,
@@ -20,6 +21,8 @@ import {
   Moon,
   Sun,
   Monitor,
+  Scan,
+  Tv,
 } from 'lucide-react'
 
 type Theme = 'light' | 'dark' | 'system'
@@ -29,10 +32,26 @@ interface SidebarProps {
   setCurrentPage: (page: any) => void
   theme: Theme
   setTheme: (theme: Theme) => void
+  isRaspberryPi?: boolean
 }
 
-const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme }) => {
+const NEW_BADGE_KEY = 'pi-installer-new-'
+
+const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false }) => {
+  const { systemLabel } = usePlatform()
   const [version, setVersion] = useState<string>('…')
+  const [newBadges, setNewBadges] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    const badges: Record<string, boolean> = {}
+    const ids = ['monitoring', 'periphery-scan', 'security', 'webserver', 'nas', 'homeautomation', 'musicbox', 'devenv', 'backup']
+    ids.forEach(id => {
+      try {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem(NEW_BADGE_KEY + id)) badges[id] = true
+      } catch { /* ignore */ }
+    })
+    setNewBadges(badges)
+  }, [currentPage])
 
   useEffect(() => {
     let cancelled = false
@@ -51,30 +70,42 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     }
   }, [])
 
-  const menuItems = useMemo(() => [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'wizard', label: 'Assistent', icon: Zap },
-    { id: 'presets', label: 'Voreinstellungen', icon: Settings },
-    { id: 'settings', label: 'Einstellungen', icon: Settings },
-    { type: 'divider' },
-    { id: 'security', label: 'Sicherheit', icon: Shield },
-    { id: 'users', label: 'Benutzer', icon: Users },
-    { id: 'devenv', label: 'Dev-Umgebung', icon: Code },
-    { id: 'webserver', label: 'Webserver', icon: Globe },
-    { id: 'mailserver', label: 'Mailserver', icon: Mail },
-    { type: 'divider' },
-    { id: 'nas', label: 'NAS', icon: HardDrive },
-    { id: 'homeautomation', label: 'Hausautomatisierung', icon: Home },
-    { id: 'musicbox', label: 'Musikbox', icon: Music },
-    { id: 'learning', label: 'Lerncomputer', icon: BookOpen },
-    { type: 'divider' },
-    { id: 'monitoring', label: 'Monitoring', icon: Activity },
-    { id: 'backup', label: 'Backup & Restore', icon: Database },
-    { id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu },
-    { id: 'control-center', label: 'Control Center', icon: Settings },
-  ], [])
+  const menuItems = useMemo(() => {
+    // Logisch sortiert: Übersicht → Einrichtung → System → Dienste → Wartung → Pi (optional)
+    const items: Array<{ id?: string; type?: string; label?: string; icon?: any }> = [
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { id: 'wizard', label: 'Assistent', icon: Zap },
+      { id: 'presets', label: 'Voreinstellungen', icon: Settings },
+      { type: 'divider' },
+      { id: 'settings', label: 'Einstellungen', icon: Settings },
+      { id: 'security', label: 'Sicherheit', icon: Shield },
+      { id: 'users', label: 'Benutzer', icon: Users },
+      { type: 'divider' },
+      { id: 'devenv', label: 'Dev-Umgebung', icon: Code },
+      { id: 'webserver', label: 'Webserver', icon: Globe },
+      { id: 'mailserver', label: 'Mailserver', icon: Mail },
+      { id: 'nas', label: 'NAS', icon: HardDrive },
+      { id: 'homeautomation', label: 'Hausautomatisierung', icon: Home },
+      { id: 'musicbox', label: 'Musikbox', icon: Music },
+      { id: 'kino-streaming', label: 'Kino / Streaming', icon: Tv },
+      { id: 'learning', label: 'Lerncomputer', icon: BookOpen },
+      { type: 'divider' },
+      { id: 'monitoring', label: 'Monitoring', icon: Activity },
+      { id: 'backup', label: 'Backup & Restore', icon: Database },
+      { id: 'control-center', label: 'Control Center', icon: Settings },
+      { id: 'periphery-scan', label: 'Peripherie-Scan (Assimilation)', icon: Scan },
+    ]
+    if (isRaspberryPi) {
+      items.splice(items.length - 1, 0, { id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu })
+    }
+    return items
+  }, [isRaspberryPi])
   
   const handlePageChange = useCallback((pageId: string) => {
+    try {
+      localStorage.removeItem(NEW_BADGE_KEY + pageId)
+      setNewBadges(prev => ({ ...prev, [pageId]: false }))
+    } catch { /* ignore */ }
     setCurrentPage(pageId)
   }, [setCurrentPage])
   
@@ -91,7 +122,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             <span className="text-white font-bold text-lg">π</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">PI-Installer</h1>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{isRaspberryPi ? 'PI-Installer' : systemLabel}</h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">v{version}</p>
           </div>
         </div>
@@ -103,22 +134,30 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
           if (item.type === 'divider') {
             return <div key={`divider-${index}`} className="h-px bg-slate-300 dark:bg-slate-700 my-1" />
           }
-          
+
+          const isPiConfigDisabled = item.id === 'raspberry-pi-config' && !isRaspberryPi
           const Icon = item.icon
           const isActive = currentPage === item.id
-          
+
           return (
             <button
               key={item.id}
-              onClick={() => handlePageChange(item.id)}
+              onClick={() => !isPiConfigDisabled && handlePageChange(item.id)}
+              disabled={isPiConfigDisabled}
+              title={isPiConfigDisabled ? 'Nur auf Raspberry Pi verfügbar' : undefined}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 ${
-                isActive
-                  ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/50'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
+                isPiConfigDisabled
+                  ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
+                  : isActive
+                    ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/50'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Icon size={18} />
               <span className="font-medium text-sm">{item.label}</span>
+              {newBadges[item.id] && (
+                <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold bg-sky-500 text-white rounded animate-pulse">Neu</span>
+              )}
             </button>
           )
         })}

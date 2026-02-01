@@ -84,7 +84,7 @@ const MailServerSetup: React.FC = () => {
               onChange={(v) => setConfig({ ...config, enable_mail: v })}
             />
             <p className="text-slate-400 text-sm mt-4">
-              Ein Mailserver ermöglicht den Versand und Empfang von E-Mails von Ihrem Raspberry Pi.
+              Ein Mailserver ermöglicht den Versand und Empfang von E-Mails von Ihrem System.
             </p>
           </div>
 

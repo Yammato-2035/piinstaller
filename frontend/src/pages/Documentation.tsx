@@ -1,22 +1,56 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, Cloud, HardDrive, Settings, Cpu, Monitor, HelpCircle } from 'lucide-react'
+import {
+  BookOpen, Cloud, HardDrive, Settings, Cpu, Monitor, HelpCircle, Film,
+  LayoutDashboard, Zap, Shield, Users, Code, Globe, Mail, Home, Music, Activity, Database, Scan,
+} from 'lucide-react'
+import { usePlatform } from '../context/PlatformContext'
 
-type SectionId = 'backup-restore' | 'cloud' | 'control-center' | 'raspberry-pi-config' | 'einstellungen' | 'desktop-app' | 'troubleshooting' | 'versionen'
+type SectionId =
+  | 'dashboard' | 'wizard' | 'presets' | 'einstellungen' | 'security' | 'users'
+  | 'devenv' | 'webserver' | 'mailserver' | 'nas'   | 'homeautomation' | 'musicbox' | 'kino-streaming' | 'learning'
+  | 'monitoring' | 'backup-restore' | 'raspberry-pi-config' | 'control-center' | 'periphery-scan'
+  | 'cloud' | 'desktop-app' | 'troubleshooting' | 'versionen'
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ElementType }[] = [
-  { id: 'backup-restore', label: 'Backup & Restore', icon: HardDrive },
-  { id: 'cloud', label: 'Cloud-Einstellungen', icon: Cloud },
-  { id: 'control-center', label: 'Control Center', icon: Settings },
-  { id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'wizard', label: 'Assistent', icon: Zap },
+  { id: 'presets', label: 'Voreinstellungen', icon: Settings },
   { id: 'einstellungen', label: 'Einstellungen', icon: Settings },
+  { id: 'security', label: 'Sicherheit', icon: Shield },
+  { id: 'users', label: 'Benutzer', icon: Users },
+  { id: 'devenv', label: 'Dev-Umgebung', icon: Code },
+  { id: 'webserver', label: 'Webserver', icon: Globe },
+  { id: 'mailserver', label: 'Mailserver', icon: Mail },
+  { id: 'nas', label: 'NAS', icon: HardDrive },
+  { id: 'homeautomation', label: 'Hausautomatisierung', icon: Home },
+  { id: 'musicbox', label: 'Musikbox', icon: Music },
+  { id: 'kino-streaming', label: 'Kino / Streaming', icon: Film },
+  { id: 'learning', label: 'Lerncomputer', icon: BookOpen },
+  { id: 'monitoring', label: 'Monitoring', icon: Activity },
+  { id: 'backup-restore', label: 'Backup & Restore', icon: Database },
+  { id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu },
+  { id: 'control-center', label: 'Control Center', icon: Settings },
+  { id: 'periphery-scan', label: 'Peripherie-Scan (Assimilation)', icon: Scan },
+  { id: 'cloud', label: 'Cloud-Einstellungen', icon: Cloud },
   { id: 'desktop-app', label: 'Desktop-App (Tauri)', icon: Monitor },
   { id: 'troubleshooting', label: 'Troubleshooting', icon: HelpCircle },
   { id: 'versionen', label: 'Versionen & Changelog', icon: BookOpen },
 ]
 
+/** Platzhalter für Screenshots: Bild unter public/docs/ ablegen (z. B. screenshot-dashboard.png) und als img einbinden. */
+function ScreenshotPlaceholder({ title, hint }: { title: string; hint?: string }) {
+  return (
+    <div className="my-4 p-4 border-2 border-dashed border-slate-500 rounded-lg bg-slate-900/30">
+      <p className="text-sm font-medium text-slate-400 mb-1">📷 Screenshot: {title}</p>
+      <p className="text-xs text-slate-500">{hint || 'Bild unter public/docs/ ablegen und hier verlinken.'}</p>
+    </div>
+  )
+}
+
 const Documentation: React.FC = () => {
-  const [activeChapter, setActiveChapter] = useState<SectionId>('backup-restore')
+  const [activeChapter, setActiveChapter] = useState<SectionId>('dashboard')
+  const { systemLabel, systemLabelPossessive } = usePlatform()
 
   return (
     <motion.div
@@ -54,6 +88,330 @@ const Documentation: React.FC = () => {
       {/* Inhalt: nur aktives Kapitel */}
       <div className="flex-1 min-w-0">
         <AnimatePresence mode="wait">
+          {activeChapter === 'dashboard' && (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-6"
+            >
+              <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
+                <LayoutDashboard className="text-sky-500" />
+                Dashboard
+              </h2>
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">
+                  Das Dashboard ist die Startseite des PI-Installers und gibt einen Überblick über den Zustand deines {systemLabel}.
+                </p>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li><strong>Systeminformationen:</strong> CPU-Name, Motherboard, Betriebssystem, RAM-Typ und -Geschwindigkeit</li>
+                    <li><strong>CPU & Grafik:</strong> Auslastung pro physikalischem Kern, Temperatur, GPU-Infos; Link „Treiber beim Hersteller suchen“ (Intel/AMD)</li>
+                    <li><strong>Sensoren & Schnittstellen:</strong> Alle Temperatursensoren (thermal_zone, hwmon), Laufwerke (inkl. NVMe), Lüfter, angeschlossene Displays</li>
+                    <li><strong>Systembezogene Treiber:</strong> Alle PCI-Geräte mit Treiber-Status (geladen oder „—“)</li>
+                    <li><strong>Quick-Links:</strong> Sprung zu Assistent, Sicherheit, Musikbox, Backup, Einstellungen usw.</li>
+                  </ul>
+                </div>
+                <ScreenshotPlaceholder title="Dashboard mit Systeminfos und Karten" hint="Zeigt Karten Systeminformationen, CPU & Grafik, Sensoren." />
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
+                  <p className="text-xs opacity-95">
+                    Wenn „Backend nicht erreichbar“ erscheint: Backend mit <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code> starten und Seite neu laden. <strong>System-Update:</strong> Über „System-Update (apt update & upgrade)“ → „Im Terminal ausführen“ ein Terminal öffnen; Passwort dort eingeben. Nutze die Quick-Links, um schnell zu den häufig genutzten Bereichen zu wechseln.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'wizard' && (
+            <motion.div
+              key="wizard"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-6"
+            >
+              <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
+                <Zap className="text-amber-500" />
+                Assistent
+              </h2>
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">
+                  Der Assistent führt dich Schritt für Schritt durch die Erstinstallation bzw. Konfiguration des {systemLabel}.
+                </p>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li>Auswahl der zu installierenden Bereiche (z. B. Sicherheit, Benutzer, Webserver, NAS, Musikbox)</li>
+                    <li>Fortschrittsanzeige während der Installation</li>
+                    <li>Bei Bedarf Abfrage des Sudo-Passworts für Administrator-Aktionen</li>
+                  </ul>
+                </div>
+                <ScreenshotPlaceholder title="Assistent – Auswahl der Komponenten" />
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
+                  <p className="text-xs opacity-95">
+                    Starte den Assistenten direkt nach der ersten Einrichtung. Halte dein Sudo-Passwort bereit; bei „Sudo-Passwort erforderlich“ öffnet sich ein Dialog – dort eingeben und bestätigen.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'presets' && (
+            <motion.div
+              key="presets"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-6"
+            >
+              <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
+                <Settings className="text-purple-500" />
+                Voreinstellungen
+              </h2>
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">
+                  Voreinstellungen erlauben es, mehrere Bereiche (NAS, Webserver, Hausautomatisierung, Musikbox, Lerncomputer) in einem Schritt zu konfigurieren.
+                </p>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li>Auswahl eines Presets (z. B. „Medienserver“, „Entwicklung“) oder freie Auswahl der Module</li>
+                    <li>Ein Klick startet die Konfiguration für alle ausgewählten Bereiche</li>
+                    <li>Sudo-Passwort wird bei Bedarf abgefragt</li>
+                  </ul>
+                </div>
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
+                  <p className="text-xs opacity-95">
+                    Ideal, wenn du das System in einem Rutsch einrichten willst. Danach kannst du jeden Bereich einzeln unter der jeweiligen Menüseite nachjustieren.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'security' && (
+            <motion.div key="security" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Shield className="text-red-500" /> Sicherheit</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>Konfiguration von Firewall, Benutzer-Sicherheit und optional Sicherheits-Scans.</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li><strong>Firewall:</strong> Regeln anzeigen, hinzufügen, löschen; Firewall aktivieren/deaktivieren (sudo erforderlich)</li>
+                  <li><strong>Sicherheitskonfiguration:</strong> Anzeige und Anpassung sicherheitsrelevanter Einstellungen</li>
+                  <li><strong>Installierte Pakete / Laufende Prozesse:</strong> Übersicht für Sicherheitsbewertung</li>
+                  <li><strong>Sicherheits-Scan:</strong> Optionaler Scan (z. B. offene Ports, Dienste)</li>
+                </ul>
+                <ScreenshotPlaceholder title="Sicherheit – Firewall-Regeln" />
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
+                  <p className="text-xs">Beim ersten Aktivieren der Firewall wird das Sudo-Passwort abgefragt (Modal). „Ohne Prüfung speichern“ speichert es für die Session – danach funktionieren weitere sudo-Aktionen ohne erneute Eingabe.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'users' && (
+            <motion.div key="users" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Users className="text-sky-500" /> Benutzer</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>Benutzerkonten werden in zwei Bereiche getrennt: <strong>Systembenutzer/Dienste</strong> (UID &lt; 1000) und <strong>Benutzer (Personen)</strong> (UID ≥ 1000). Nur letztere können hier angelegt oder gelöscht werden.</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li><strong>Systembenutzer / Dienste:</strong> Nur Anzeige (z. B. root, www-data, _apt). UID &lt; 1000 – nicht löschen oder ändern.</li>
+                  <li><strong>Benutzer (Personen):</strong> Anlegen (Name, E-Mail, Rolle, Passwort, optional SSH-Schlüssel), Löschen. UID ≥ 1000.</li>
+                  <li><strong>Rollen:</strong> Administrator (sudo), Entwickler (Dev-Tools), Benutzer (normal), Gast (eingeschränkt). Weitere Rollen bei Bedarf manuell.</li>
+                </ul>
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
+                  <p className="text-xs">Vor dem Anlegen eines Benutzers Sudo-Passwort eingeben (wird bei Bedarf abgefragt). Rolle „Gast“ für eingeschränkte Zugriffe (z. B. nur Lesezugriff) nutzen.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'devenv' && (
+            <motion.div key="devenv" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Code className="text-emerald-500" /> Dev-Umgebung</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>Installation von Entwicklungsumgebungen und Sprachen (z. B. Python, Node, Rust, Tauri, C/C++, QT/QML).</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Status-Anzeige: welche Tools installiert sind</li>
+                  <li>Auswahl der zu installierenden Komponenten und Start der Installation (sudo erforderlich)</li>
+                </ul>
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
+                  <p className="text-xs">Für PI-Installer-Entwicklung: Rust und Tauri installieren, dann im frontend-Ordner <code className="bg-slate-700 px-1 rounded">npm run tauri:dev</code> ausführen.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'webserver' && (
+            <motion.div key="webserver" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Globe className="text-green-500" /> Webserver</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>Webserver (z. B. nginx, Apache) einrichten und konfigurieren.</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Status: ob Webserver installiert/läuft</li>
+                  <li>Konfiguration speichern und ggf. Installation starten (sudo)</li>
+                </ul>
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
+                  <p className="text-xs">Nach der Konfiguration prüfen: Im Browser die IP des {systemLabel} und Port 80/443 aufrufen (falls Firewall Zugriff erlaubt).</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'mailserver' && (
+            <motion.div key="mailserver" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Mail className="text-amber-500" /> Mailserver</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>E-Mail-Server konfigurieren (z. B. für lokale Mails oder Relay).</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Konfiguration eingeben und speichern</li>
+                  <li>Für Installation/Änderung am System wird sudo benötigt</li>
+                </ul>
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
+                  <p className="text-xs">Domain und MX-Einträge beim Provider prüfen, bevor du den Mailserver produktiv nutzt.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'nas' && (
+            <motion.div key="nas" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><HardDrive className="text-blue-500" /> NAS</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>Network Attached Storage einrichten – Freigaben und Speicher für das Netzwerk.</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Status: ob NAS-Dienste (z. B. Samba) installiert/laufen</li>
+                  <li>Konfiguration (Freigaben, Optionen) und Installation (sudo)</li>
+                </ul>
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
+                  <p className="text-xs">Von anderen Rechnern im Netz: \\IP-des-Pi\Freigabe (Windows) bzw. smb://IP/Freigabe (Linux/macOS) nutzen.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'homeautomation' && (
+            <motion.div key="homeautomation" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Home className="text-orange-500" /> Hausautomatisierung</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>Systeme für Hausautomatisierung einrichten (z. B. Home Assistant, openHAB, FHEM).</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Status und Konfiguration</li>
+                  <li>Installation starten (sudo); je nach System werden Pakete oder Container eingerichtet</li>
+                </ul>
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
+                  <p className="text-xs">Vor der Auswahl: Dokumentation des gewünschten Systems prüfen (Ports, Hardware wie Zigbee-Stick).</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'musicbox' && (
+            <motion.div key="musicbox" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Music className="text-purple-500" /> Musikbox</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>Music-Server einrichten: Mopidy, Volumio oder Plex Media Server. Zusätzliche Features: Internetradio, Streaming (Spotify Connect), AirPlay.</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li><strong>Music Server:</strong> Mopidy (Port 6680), Volumio (3000), Plex (32400) – einer auswählen</li>
+                  <li><strong>Zusätzliche Features:</strong> Internetradio (mopidy-internetarchive), Streaming-Dienste, AirPlay (Shairport-sync), Spotify Connect</li>
+                  <li>Installation starten – bei Bedarf erscheint das Sudo-Passwort-Modal für Paketinstallation</li>
+                </ul>
+                <h3 className="text-lg font-semibold text-white mt-4">Ausgabequelle, Mixer & Dolby</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4 text-slate-300 text-sm">
+                  <li><strong>Ausgabequelle wählen:</strong> Unter Linux steuert PulseAudio bzw. PipeWire die Wiedergabe. Ausgabegerät (Headset, Lautsprecher, HDMI) wählst du in den Systemeinstellungen (Sound) oder über <code className="bg-slate-700 px-1 rounded">pavucontrol</code> (Mixer).</li>
+                  <li><strong>Headset / Notebook-Lautsprecher:</strong> Treiber liefert ALSA/PulseAudio; nach Installation der Musikbox das gewünschte Gerät in Sound-Einstellungen oder pavucontrol als Ausgabe wählen.</li>
+                  <li><strong>Mixer:</strong> <code className="bg-slate-700 px-1 rounded">pavucontrol</code> (PulseAudio) oder <code className="bg-slate-700 px-1 rounded">qpwgraph</code> (PipeWire) für Kanäle und Lautstärke.</li>
+                  <li><strong>Dolby Atmos:</strong> Unter Linux herstellerspezifisch (z. B. Dolby Access für bestimmte Geräte); oft über externe Software oder Hardware. Für Mehrkanal/Atmos die jeweilige Herstellerdokumentation prüfen.</li>
+                </ul>
+                <ScreenshotPlaceholder title="Musikbox – Auswahl Server und Zusatzfeatures" />
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
+                  <p className="text-xs">Wenn „Sudo-Passwort erforderlich“ erscheint: Modal öffnet sich – Passwort eingeben und „Installation starten“ bestätigen. Spotify/Tidal benötigen eigenes Konto/Abo. Ausgabequelle (Headset/Lautsprecher) in den System-Sound-Einstellungen oder mit pavucontrol wählen.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'kino-streaming' && (
+            <motion.div key="kino-streaming" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Film className="text-amber-500" /> Kino / Streaming</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>Video-Streaming-Dienste (Amazon Prime, Netflix, Disney+, Sky, Paramount+, ARD/ZDF), Player starten, Video- und Soundausgabe wählen.</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li><strong>Video- & Soundausgabe:</strong> TV, Beamer, Monitor 1/2, Surround / DTS / Dolby Digital wählbar</li>
+                  <li><strong>Streaming-Dienste:</strong> Links zu Prime Video, Netflix, Disney+, Sky, Paramount+, ARD/ZDF Mediathek – im Browser öffnen</li>
+                  <li><strong>Zugangsdaten:</strong> Werden im jeweiligen Dienst bzw. in der App verwaltet; zentrale Speicherung aus Sicherheitsgründen nicht vorgesehen</li>
+                  <li><strong>Surround/Dolby:</strong> Mehrkanal-Audio über System-Sound (PulseAudio/PipeWire) und Ausgabegerät (z. B. HDMI für AV-Receiver)</li>
+                </ul>
+                <div className="card-hint">
+                  <h4 className="text-sm font-semibold text-amber-300 mb-1">Kino/Video</h4>
+                  <p className="text-xs">Bereich speziell auf Kino und Video-Streaming ausgerichtet – Dienste, Player, Ausgabeoptionen.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'learning' && (
+            <motion.div key="learning" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><BookOpen className="text-sky-500" /> Lerncomputer</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>Umgebung für Lernsoftware und Bildung (z. B. Programme für Kinder/Schule) einrichten.</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Status und Konfiguration</li>
+                  <li>Installation starten (sudo)</li>
+                </ul>
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
+                  <p className="text-xs">Nach der Installation die angebotenen Programme prüfen und ggf. kindersichere Einstellungen (Benutzer, Filter) setzen.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'monitoring' && (
+            <motion.div key="monitoring" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="rounded-xl bg-slate-800/60 border border-slate-600 p-6">
+              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Activity className="text-green-500" /> Monitoring</h2>
+              <div className="space-y-4 text-slate-300 text-sm">
+                <p>Überwachung mit Node Exporter, Prometheus und optional Grafana. Metriken und Dashboards für CPU, Speicher, Disk.</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li><strong>Auswahl:</strong> Node Exporter, Prometheus, Grafana einzeln per Checkbox auswählbar</li>
+                  <li>Installation nur der gewählten Komponenten (sudo über SudoPasswordModal)</li>
+                  <li>Live-Metriken (CPU, RAM, Disk, Temperatur) und Verlauf in der Oberfläche</li>
+                </ul>
+                <ScreenshotPlaceholder title="Monitoring – Auswahl und Metriken" />
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
+                  <p className="text-xs">Wenn das Sudo-Modal erscheint: Passwort eingeben und bestätigen. Grafana ist optional – für einfache Metriken reichen Node Exporter und Prometheus.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {activeChapter === 'backup-restore' && (
             <motion.div
               key="backup-restore"
@@ -67,46 +425,24 @@ const Documentation: React.FC = () => {
                 <HardDrive className="text-blue-500" />
                 Backup & Restore
               </h2>
-              <div className="space-y-4 text-slate-300 dark:text-slate-300">
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">Backup & Restore ermöglicht vollständige, inkrementelle oder Daten-Backups – lokal oder in die Cloud.</p>
                 <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Backup erstellen</h3>
-                  <p className="text-sm mb-2">
-                    Erstelle vollständige, inkrementelle oder Daten-Backups deines Raspberry Pi Systems.
-                    Backups können lokal gespeichert oder direkt in die Cloud hochgeladen werden.
-                  </p>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li><strong>Vollständig:</strong> Komplettes System-Backup (empfohlen für erste Sicherung)</li>
-                    <li><strong>Inkrementell:</strong> Nur Änderungen seit dem letzten Voll-Backup</li>
-                    <li><strong>Daten:</strong> Nur Benutzerdaten (/home, /var/www, /opt)</li>
+                    <li><strong>Backup erstellen:</strong> Vollständig (ganzes System), Inkrementell (nur Änderungen), Daten (z. B. /home, /var/www, /opt)</li>
+                    <li><strong>Ziel:</strong> Lokales Verzeichnis oder USB-Stick; optional Cloud-Upload (Einstellungen → Cloud konfigurieren)</li>
+                    <li><strong>Verschlüsselung:</strong> GPG (AES-256, Passphrase optional) oder OpenSSL (AES-256-CBC, Passphrase erforderlich)</li>
+                    <li><strong>Backup-Jobs:</strong> Laufende Jobs anzeigen, abbrechen; Backups auflisten, verifizieren, löschen</li>
+                    <li><strong>Wiederherstellung:</strong> Backup auswählen, Restore starten; verschlüsselte Backups werden entschlüsselt</li>
+                    <li><strong>USB:</strong> USB-Stick als Ziel auswählen, vorbereiten (formatieren), mounten/ejecten</li>
                   </ul>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Verschlüsselung</h3>
-                  <p className="text-sm mb-2">
-                    Backups können mit GPG oder OpenSSL verschlüsselt werden, um sensible Daten zu schützen.
-                  </p>
-                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li><strong>GPG:</strong> AES-256 Verschlüsselung, Passphrase optional</li>
-                    <li><strong>OpenSSL:</strong> AES-256-CBC Verschlüsselung, Passphrase erforderlich</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Cloud-Backups</h3>
-                  <p className="text-sm mb-2">
-                    Wähle den Cloud-Anbieter für Backups aus. Die Konfiguration erfolgt unter Einstellungen.
-                  </p>
-                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li>WebDAV (Seafile, Nextcloud, allgemein)</li>
-                    <li>Amazon S3 & S3-kompatibel (MinIO, etc.)</li>
-                    <li>Google Cloud Storage</li>
-                    <li>Azure Blob Storage</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Backup-Wiederherstellung</h3>
-                  <p className="text-sm">
-                    Stelle Backups wieder her, indem du ein Backup auswählst und den Restore-Prozess startest.
-                    Verschlüsselte Backups werden automatisch entschlüsselt.
+                <ScreenshotPlaceholder title="Backup & Restore – Ziel und Optionen" hint="Zeigt Auswahl Backup-Typ, Ziel, Verschlüsselung." />
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
+                  <p className="text-xs opacity-95">
+                    Erste Sicherung immer als <strong>Vollständig</strong>. Danach Inkrementell spart Platz und Zeit. Für Cloud: zuerst Einstellungen → Cloud-Backup Einstellungen ausfüllen und „Verbindung testen“.
                   </p>
                 </div>
               </div>
@@ -126,27 +462,21 @@ const Documentation: React.FC = () => {
                 <Cloud className="text-sky-500" />
                 Cloud-Einstellungen
               </h2>
-              <div className="space-y-4 text-slate-300 dark:text-slate-300">
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">Cloud-Backup wird unter Einstellungen konfiguriert. Hier die Übersicht.</p>
                 <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Cloud-Anbieter konfigurieren</h3>
-                  <p className="text-sm mb-2">
-                    Unter Einstellungen → Cloud-Backup Einstellungen kannst du deinen Cloud-Anbieter konfigurieren.
-                    Hier werden Zugangsdaten und Verbindungsparameter eingegeben.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Speicherplatz-Anzeige (Quota)</h3>
-                  <p className="text-sm mb-2">
-                    Die Quota-Anzeige zeigt dir den verfügbaren Speicherplatz in deinem Cloud-Speicher an.
-                    Sie wird automatisch aktualisiert, wenn du die Cloud-Einstellungen speicherst oder manuell aktualisierst.
-                  </p>
-                  <p className="text-sm mb-2">Die Anzeige zeigt:</p>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li>Verwendeter Speicherplatz</li>
-                    <li>Verfügbarer Speicherplatz</li>
-                    <li>Gesamter Speicherplatz</li>
-                    <li>Prozentuale Auslastung mit Farbcodierung</li>
+                    <li><strong>Cloud-Anbieter:</strong> Einstellungen → Cloud-Backup Einstellungen – Zugangsdaten und Verbindungsparameter (WebDAV, S3, Google, Azure)</li>
+                    <li><strong>Verbindung testen:</strong> Nach dem Speichern „Verbindung testen“ ausführen, um Zugriff zu prüfen</li>
+                    <li><strong>Quota:</strong> Anzeige verwendeter/verfügbarer Speicherplatz, prozentuale Auslastung (wird nach Speichern/Manuell aktualisiert)</li>
                   </ul>
+                </div>
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
+                  <p className="text-xs opacity-95">
+                    Zuerst Cloud-Einstellungen speichern und testen. Danach unter Backup & Restore beim Erstellen eines Backups „In Cloud hochladen“ wählen.
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -165,11 +495,11 @@ const Documentation: React.FC = () => {
                 <Settings className="text-purple-500" />
                 Control Center
               </h2>
-              <div className="space-y-4 text-slate-300 dark:text-slate-300">
+              <div className="space-y-4 opacity-95">
                 <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">System-Einstellungen</h3>
                   <p className="text-sm mb-3">
-                    Das Control Center bietet eine zentrale Verwaltung für alle System-Einstellungen des Raspberry Pi.
+                    Das Control Center bietet eine zentrale Verwaltung für alle System-Einstellungen des {' '}{systemLabel}.
                     Die Einstellungen sind in Bereiche unterteilt und über ein Menü erreichbar.
                   </p>
                   <div className="p-3 bg-slate-900/40 dark:bg-slate-900/40 border border-slate-700 dark:border-slate-700 rounded-lg">
@@ -189,6 +519,62 @@ const Documentation: React.FC = () => {
                     </ul>
                   </div>
                 </div>
+                <ScreenshotPlaceholder title="Control Center – Menü mit WLAN, SSH, Display usw." />
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
+                  <p className="text-xs opacity-95">
+                    WLAN: Netzwerk hinzufügen, dann bei Bedarf „Verbinden“ wählen. SSH/VNC: erst aktivieren, bei Bedarf „SSH starten“ bzw. „VNC starten“ nutzen. Display: Auflösung und Bildwiederholrate übernehmen – Änderung ist sofort sichtbar.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'periphery-scan' && (
+            <motion.div
+              key="periphery-scan"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-6"
+            >
+              <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
+                <Scan className="text-emerald-500" />
+                Peripherie-Scan (Assimilation)
+              </h2>
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">
+                  Der Peripherie-Scan erkennt Grafikkarten, Tastaturen, Mäuse, Headsets, Webcams und prüft, ob Treiber geladen sind.
+                </p>
+                <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li><strong>Assimilation starten:</strong> Scan nach GPUs (lspci -k), USB-Geräten (lsusb), Eingabegeräten (/proc/bus/input/devices)</li>
+                    <li><strong>Übersicht:</strong> Kamera(s), Tastatur („Welche:“ mit Name), Maus („Welche:“ mit Name), Grafik/Treiber (Grafikkartenname + Treiber-Status: installiert oder „Hersteller-Treiber prüfen“), Touchpad, Headset/Audio</li>
+                    <li><strong>Grafikkarte:</strong> Es werden nur echte VGA/Display/3D-Controller angezeigt (keine Shader-Einheiten); pro GPU: Name und ob Kernel-/Hersteller-Treiber geladen ist</li>
+                    <li><strong>Tastatur/Maus:</strong> Konkrete Bezeichnung (z. B. Logitech K380). Maus: Hinweis zu Belegung aller Tasten (xinput, imwheel, Hersteller-Software z. B. Logitech Options)</li>
+                    <li><strong>Touchpad & Headset:</strong> Touchpad aus Eingabegeräten, Headset/Audio aus USB; Hinweise zu Ausgabequelle (Musikbox/Einstellungen)</li>
+                    <li><strong>Gespeicherte Daten:</strong> Scan-Ergebnis bleibt beim Verlassen der Seite erhalten (localStorage). Beim erneuten Scan: Sektion „Neu bei diesem Scan“ zeigt nur neu hinzugekommene Komponenten</li>
+                    <li><strong>Hersteller:</strong> Hersteller prüfen, ob Treiber für erkannte Komponenten existieren; Herstellerlisten/Anbieter identifizieren (Corsair, ASUS, Angetube, Logitech, NVIDIA, AMD …)</li>
+                    <li><strong>Sonstige Treiber:</strong> Eigene Anzeige (PCI/Kernel-Module), getrennt von Grafik; Kameras nur bei Kameras, Maus nur bei Maus (inkl. Touchpad); Eingabegeräte einzeln mit Namen</li>
+                    <li><strong>Ergebnis:</strong> Konsole; Karten GPUs, Kamera(s), Maus/Touchpad, Eingabegeräte (einzeln), weitere USB-Geräte, Sonstige Treiber</li>
+                    <li><strong>Zum Dashboard:</strong> Button springt ins Dashboard – dort siehst du die gefundenen Komponenten in den Karten „CPU & Grafik“ und „Systembezogene Treiber“</li>
+                  </ul>
+                </div>
+                <div className="p-3 bg-sky-900/20 border border-sky-700/40 rounded-lg">
+                  <h4 className="text-sm font-semibold text-sky-300 dark:text-sky-300 mb-1">Hersteller-Treiber</h4>
+                  <p className="text-xs opacity-95">
+                    Die angezeigte Herstellerliste wird aus der erkannten Hardware (GPUs, PCI-Geräte) abgeleitet. Wenn passende Hersteller erkannt wurden, werden deren Links hervorgehoben; sonst siehst du eine Auswahl gängiger Hersteller mit Linux-Treiber-Seiten.
+                  </p>
+                </div>
+                <ScreenshotPlaceholder title="Peripherie-Scan – Konsole nach Assimilation" hint="Zeigt animierte Konsolenausgabe und Treiber-Liste." />
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
+                  <p className="text-xs opacity-95">
+                    Wenn „Endpoint nicht gefunden“ oder „Backend neu starten“ erscheint: Backend mit <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code> aus dem Projektordner starten (alter Backend-Prozess ggf. beenden). Danach erneut „Assimilation starten“. Nutze die Hersteller-Links, um offizielle Linux-Treiber zu installieren und alle Hardware-Features zu nutzen.
+                  </p>
+                </div>
               </div>
             </motion.div>
           )}
@@ -206,7 +592,7 @@ const Documentation: React.FC = () => {
                 <Cpu className="text-purple-500" />
                 Raspberry Pi Konfiguration
               </h2>
-              <div className="space-y-4 text-slate-300 dark:text-slate-300">
+              <div className="space-y-4 opacity-95">
                 <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Hardware-Einstellungen</h3>
                   <p className="text-sm mb-2">
@@ -231,10 +617,17 @@ const Documentation: React.FC = () => {
                   <p className="text-sm mt-3">Für jede Einstellung gibt es eine Info-Schaltfläche mit Erklärungen und Quellenangaben.</p>
                   <div className="mt-3 p-3 bg-blue-900/20 dark:bg-blue-900/20 border border-blue-700/40 dark:border-blue-700/40 rounded-lg">
                     <h4 className="text-sm font-semibold text-blue-300 dark:text-blue-300 mb-1">Modell-Erkennung</h4>
-                    <p className="text-xs text-slate-300 dark:text-slate-300">
+                    <p className="text-xs opacity-95">
                       Das System erkennt automatisch dein Raspberry Pi Modell und zeigt nur kompatible Einstellungen an.
                     </p>
                   </div>
+                </div>
+                <ScreenshotPlaceholder title="Raspberry Pi Config – Optionen und config.txt" />
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
+                  <p className="text-xs opacity-95">
+                    Änderungen an Overclocking oder GPU-Speicher erfordern einen Neustart. Nutze die Info-Buttons bei jeder Option für Erklärungen. Speicheraufteilung und over_voltage: Details siehe Dashboard → CPU & Grafik.
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -253,7 +646,7 @@ const Documentation: React.FC = () => {
                 <Monitor className="text-emerald-500" />
                 Desktop-App (Tauri)
               </h2>
-              <div className="space-y-4 text-slate-300 dark:text-slate-300">
+              <div className="space-y-4 opacity-95">
                 <p className="text-sm">
                   Die PI-Installer-Oberfläche kann als <strong>eigenständige Desktop-Anwendung</strong> laufen –
                   ohne Browserfenster. Dafür wird <strong>Tauri 2</strong> verwendet (WebView-basiert, ressourcenschonend).
@@ -287,6 +680,12 @@ const Documentation: React.FC = () => {
                     (z. B. <code className="text-slate-400">VITE_API_BASE=http://192.168.1.10:8000 npm run build</code> vor <code className="text-slate-400">tauri build</code>).
                   </p>
                 </div>
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
+                  <p className="text-xs opacity-95">
+                    Backend muss laufen (z. B. <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code> auf dem Pi). Dann <code className="bg-slate-700 px-1 rounded">npm run tauri:dev</code> im frontend-Ordner – die Desktop-App öffnet sich und nutzt das Backend unter localhost:8000 (bzw. die gesetzte API-Basis-URL).
+                  </p>
+                </div>
               </div>
             </motion.div>
           )}
@@ -304,7 +703,7 @@ const Documentation: React.FC = () => {
                 <HelpCircle className="text-amber-500" />
                 Troubleshooting
               </h2>
-              <div className="space-y-4 text-slate-300 dark:text-slate-300">
+              <div className="space-y-4 opacity-95">
                 <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Log-Datei</h3>
                   <p className="text-sm mb-2">
@@ -317,13 +716,15 @@ const Documentation: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Backend neu starten</h3>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Backend & Frontend starten</h3>
                   <p className="text-sm mb-2">
-                    Kein Kompilieren nötig. Im Projektordner:
+                    Im Projektordner (z. B. <code className="text-slate-400">…/piinstaller</code>):
                   </p>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li><strong>Alles:</strong> <code className="text-slate-400">./start.sh</code> (Backend + Frontend). Vorher <code className="text-slate-400">Ctrl+C</code> zum Beenden.</li>
-                    <li><strong>Nur Backend:</strong> <code className="text-slate-400">./start-backend.sh</code>. Vorher laufenden Backend-Prozess beenden.</li>
+                    <li><strong>Alles (Backend + Frontend):</strong> <code className="text-slate-400">./start.sh</code> – Backend auf Port 8000, Frontend (Vite) auf Port 3001. Beenden mit <code className="text-slate-400">Ctrl+C</code>.</li>
+                    <li><strong>Nur Backend:</strong> <code className="text-slate-400">./start-backend.sh</code>. Oder Desktop-Starter „PI-Installer Backend starten“ (wenn angelegt).</li>
+                    <li><strong>Nur Frontend (Web-Entwicklung):</strong> <code className="text-slate-400">./start-frontend.sh</code> oder <code className="text-slate-400">cd frontend && npm run dev</code> → http://localhost:3001 (Backend muss separat laufen).</li>
+                    <li><strong>Desktop-App (Tauri):</strong> <code className="text-slate-400">cd frontend && npm run tauri:dev</code> – öffnet die App-Fenster; Backend separat mit <code className="text-slate-400">./start-backend.sh</code> starten.</li>
                   </ul>
                 </div>
                 <div>
@@ -400,19 +801,26 @@ const Documentation: React.FC = () => {
                 <Settings className="text-yellow-500" />
                 Einstellungen
               </h2>
-              <div className="space-y-4 text-slate-300 dark:text-slate-300">
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">Zentrale Einstellungen für Sprache, Backup, Cloud, Logs und System.</p>
                 <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Grundlegende Einstellungen</h3>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li><strong>Sprache:</strong> Deutsch oder Englisch</li>
-                    <li><strong>Standard Backup-Ziel:</strong> Verzeichnis für lokale Backups</li>
-                    <li><strong>Logging Level:</strong> DEBUG, INFO, WARNING, ERROR</li>
+                    <li><strong>Sprache:</strong> Deutsch oder Englisch für die Oberfläche</li>
+                    <li><strong>Standard Backup-Ziel:</strong> Verzeichnis für lokale Backups (wird z. B. in Backup & Restore vorgeschlagen)</li>
+                    <li><strong>Cloud-Backup Einstellungen:</strong> Anbieter (WebDAV, S3, Google, Azure), Zugangsdaten, Verbindung testen, Quota anzeigen</li>
+                    <li><strong>Logging:</strong> Log-Level (DEBUG, INFO, WARNING, ERROR); Log-Pfad anzeigen; „Logs laden“ zeigt die letzten Zeilen im Browser</li>
+                    <li><strong>Log-Rotation:</strong> Logs nach 30 Tagen (konfigurierbar) bzw. nach Größe rotiert</li>
+                    <li><strong>Sudo-Passwort:</strong> Einmal eingeben und „Speichern“ (nur Session) – wird für Firewall, Benutzer, Installationen usw. genutzt</li>
+                    <li><strong>Frontend-Netzwerk-Zugriff:</strong> Option „Remote-Zugriff deaktivieren“ – dann nur localhost erreichbar</li>
+                    <li><strong>Neustart:</strong> System neu starten (sudo)</li>
                   </ul>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Log-Rotation</h3>
-                  <p className="text-sm">
-                    Logs werden automatisch nach 30 Tagen gelöscht (konfigurierbar). Zusätzlich Rotation nach Größe (2MB pro Tag).
+                <ScreenshotPlaceholder title="Einstellungen – Übersicht" hint="Zeigt Tabs Sprache, Backup, Cloud, Logs." />
+                <div className="card-info">
+                  <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
+                  <p className="text-xs opacity-95">
+                    Sudo-Passwort zu Beginn einmal speichern („Ohne Prüfung speichern“ ist Standard), dann funktionieren Firewall, Benutzer, Musikbox-Installation usw. ohne erneute Abfrage in derselben Sitzung. Bei Fehlern: Einstellungen → Logs laden und Backend-Log prüfen.
                   </p>
                 </div>
               </div>
@@ -432,31 +840,160 @@ const Documentation: React.FC = () => {
                 <BookOpen className="text-sky-400" />
                 Versionsnummern & Changelog
               </h2>
-              <div className="space-y-4 text-slate-300 dark:text-slate-300">
+              <div className="space-y-4 opacity-95">
                 <p className="text-sm">Die Versionsnummer folgt dem Schema <strong>X.Y.Z.W</strong>.</p>
                 <ul className="list-disc list-inside text-sm space-y-1 ml-4">
                   <li><strong>X:</strong> Gravierende Änderungen</li>
-                  <li><strong>Y:</strong> Neue Funktionen</li>
-                  <li><strong>Z:</strong> Bereich/Modul fertig</li>
-                  <li><strong>W:</strong> Bugfixes, Ergänzungen</li>
+                  <li><strong>Y:</strong> Größere Releases</li>
+                  <li><strong>Z:</strong> Neue Features (wird erhöht, wenn ein neues Feature hinzukommt; W wird auf 0 gesetzt)</li>
+                  <li><strong>W:</strong> Bugfixes, Ergänzungen (ohne neues Feature)</li>
                 </ul>
                 <p className="text-sm">
-                  Die Version wird bei <strong>jeder Änderung</strong> angepasst: Bugfix, Ergänzung, Feature-Änderung oder -Ergänzung, relevante Dokumentationsanpassung. Details stehen in <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
+                  Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.0.1.5</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.0.2.0</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.2.0 (Linux-System: Raspberry-Pi-Bereiche ausblenden, Assistent/Willkommen, Terminal-Update, Webmin, Hausautomation, Doku)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Redis Commander:</strong> Hinweis „optional“, Port 8081; Fehlermeldung „not found“ vermieden</li>
+                      <li><strong>Raspberry Pi Config:</strong> Auf Nicht-Pi komplett ausgeblendet (Menü + Redirect); Assistent: „Willkommen bei [Hostname]!“ statt „PI-Installer“</li>
+                      <li><strong>Control Center:</strong> Bereich „Performance“ nur auf Raspberry Pi sichtbar</li>
+                      <li><strong>Update im Terminal:</strong> Weitere Terminals (Kitty, Alacritty, QTerminal, Tilix, urxvt); bei Fehler kopierbarer Befehl + „Kopieren“-Button</li>
+                      <li><strong>Dashboard Schnellstart:</strong> Kontrast erhöht, Schrift Anthrazit (text-slate-700/800)</li>
+                      <li><strong>Sicherheit:</strong> Firewall „Aktiv · Installiert“ wenn UFW aktiv</li>
+                      <li><strong>Webserver:</strong> Webmin-Karte immer sichtbar; „Diese Anwendung“ statt „PI-Installer“; Hinweis Nachinstall/Webadmin</li>
+                      <li><strong>Hausautomation:</strong> Empfehlung-Karte Kontrast (dunkle Schrift); Deinstallieren-Button + API <code className="bg-slate-700 px-1 rounded">/api/homeautomation/uninstall</code></li>
+                      <li><strong>Prometheus:</strong> Bei installiertem Prometheus Beispiel „Was Prometheus kann“ (PromQL, Targets, Grafana)</li>
+                      <li><strong>Dokumentation:</strong> Quellen für Linux-System (Ubuntu, Arch, Fedora, Manpages) ergänzt</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.19 (Dashboard-Status DEV/Webserver/Musikbox, Hausautomation Suche & Empfehlung, Dev QT/QML, Menü, Systeminfo)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>TODO 11 – Dashboard:</strong> Status für Dev-Umgebung (installierte Teile, Grundbetrieb), Webserver (läuft, Webseiten erreichbar), Musikbox (Installation, Grundbetrieb); API <code className="bg-slate-700 px-1 rounded">/api/dashboard/services-status</code></li>
+                      <li><strong>TODO 12 – Hausautomation:</strong> Runder roter Button „Suche nach Elementen im Haus“; bei Suche Text „Das Haus wird assimiliert!“ / „Widerstand ist zwecklos!“; Empfehlung & Systembeschreibung (Home Assistant, OpenHAB, Node-RED) mit Kompatibilität/Anbietern; API <code className="bg-slate-700 px-1 rounded">/api/homeautomation/search</code></li>
+                      <li><strong>TODO 13 – Dev-Umgebung:</strong> Installationsoption QT/QML (Qt5, QML – GUI-Entwicklung); Hinweis „Weitere Sprachen & Tools“ (Kotlin, Swift, Flutter, .NET)</li>
+                      <li><strong>Menü:</strong> Übersichtlicher und logisch sortiert (Übersicht → Einstellungen/Sicherheit/Benutzer → Dienste → Wartung → Raspberry Pi Config)</li>
+                      <li><strong>Systeminformationen:</strong> Hauptspeicher-Größe, Grafikkarte & Grafikspeicher; CPU: Threads gesamt, Auslastung physikalische Kerne horizontal; NVIDIA-GPU mit Spezifikationen</li>
+                      <li><strong>Sonstiges:</strong> IP-Hinweistext dunkler/lesbarer; Grafana-Erkennung erweitert (Snap, systemctl list-units); GPU-Fallback für Nicht-Pi (lspci, nvidia-smi)</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.18 (Musikbox Iris, Hinweis-Karten, IP im Dashboard, Backend-Starter, Doku Frontend-Start)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Musikbox:</strong> Mopidy-Webclient Iris (Installation für User mopidy, Diagnose, manuelle Befehle); Apple Music / Amazon Music; AirPlay auf verbundenem Rechner (Pi oder Laptop); einheitliche Hinweis-/Info-/Warn-Karten</li>
+                      <li><strong>Dashboard:</strong> Karte „Netzwerk – IP-Adressen“ (Hostname + IPs, z. B. für http://&lt;IP&gt;:6680/iris)</li>
+                      <li><strong>Backend:</strong> Desktop-Starter „PI-Installer Backend starten“ (Skript + Anlegen auf Schreibtisch); Mopidy-Diagnose-Endpoint</li>
+                      <li><strong>Dokumentation:</strong> Abschnitt „Backend & Frontend starten“ (Frontend: ./start-frontend.sh, npm run dev, tauri:dev)</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.17 (Musikbox: Kontrast, Bezahldienste, Buttons; Kino/Streaming; Peripherie: Treiber aus Grafik, Übersicht)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Musikbox:</strong> Kontrast erhöht (Music-Server & Bezahldienste, Ausgabequelle/Mixer – weiße/dunkelgraue Texte); Bezahldienste-Liste (Spotify, Tidal, Deezer, Plex Pass) mit Hinweis Zugangsdaten in Programmen; Buttons zu Mopidy/Volumio/Plex/Internetradio</li>
+                      <li><strong>Kino / Streaming:</strong> Neuer Bereich – Video- und Soundausgabe (TV, Beamer, Monitor 1/2, Surround/DTS/Dolby); Streaming-Dienste (Amazon Prime, Netflix, Disney+, Sky, Paramount+, ARD/ZDF) mit Links; Zugangsdaten-Hinweis</li>
+                      <li><strong>Peripherie-Scan:</strong> Treiber aus Grafik-Karte entfernt (nur noch GPU-Name + Treiber-Status); „Sonstige Treiber“ eigene Anzeige (PCI/Kernel-Module); Hersteller prüfen Treiber für erkannte Komponenten, Herstellerlisten/Anbieter identifizieren; Kameras nur bei Kameras, Maus nur bei Maus (inkl. Touchpad); Eingabegeräte einzeln mit Namen, Hinweis Corsair/ASUS/Angetube; Übersicht übersichtlicher</li>
+                      <li><strong>Dokumentation:</strong> Kino/Streaming, Musikbox und Peripherie-Scan ergänzt</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.16 (Peripherie-Scan: GPU-Name, Tastatur/Maus/Touchpad/Headset, Lesbarkeit; Musikbox: Ausgabequelle/Mixer/Dolby)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Peripherie-Scan:</strong> Grafikkarte(n) mit vollem Namen und Treiber-Status („Treiber: xy“ oder „Hersteller-Treiber prüfen“); Backend dedupliziert GPU-Einträge (keine 34 Shader-Einheiten mehr, nur echte VGA/Display/3D-Controller)</li>
+                      <li><strong>Tastatur/Maus:</strong> Anzeige „Welche:“ mit konkreter Bezeichnung (z. B. Logitech K380); Maus-Hinweis: Belegung aller Tasten über xinput, imwheel oder Hersteller-Software (z. B. Logitech Options)</li>
+                      <li><strong>Touchpad & Headset:</strong> Eigene Zeile in der Übersicht – Touchpad aus Eingabegeräten, Headset/Audio aus USB; Hinweise zu Ausgabequelle (Musikbox/Einstellungen, PulseAudio/PipeWire), Dolby Atmos herstellerspezifisch</li>
+                      <li><strong>Lesbarkeit:</strong> „Neu bei diesem Scan“-Liste und „Temperatursensoren – Normalbereich“ in Dunkelgrau/Weiß für bessere Lesbarkeit (nicht mehr hellgrau auf hellgrün/grau)</li>
+                      <li><strong>Musikbox (Doku):</strong> Abschnitt Ausgabequelle, Mixer (pavucontrol/qpwgraph), Headset/Lautsprecher-Treiber, Dolby Atmos ergänzt</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.15 (Peripherie: Hersteller & Treiber für Linux)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Peripherie-Scan:</strong> Liste der Hersteller, bei denen Treiber für die erkannte Hardware unter Linux erhältlich sind (NVIDIA, AMD, Intel, Realtek, Broadcom, Qualcomm, Logitech, Lenovo, Dell, HP) mit Links zu Treiber-/Support-Seiten</li>
+                      <li><strong>Hinweis:</strong> Diese Treiber existieren; der Hersteller empfiehlt ggf. deren Nutzung, um alle Features der Hardware zu nutzen</li>
+                      <li>Erkannte Hersteller werden aus GPUs und PCI-Geräten abgeleitet und hervorgehoben; Doku Peripherie-Scan ergänzt</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.14 (Benutzer: System vs. Personen, Rolle Gast)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Benutzer:</strong> Zwei Bereiche – „Systembenutzer / Dienste“ (UID &lt; 1000, nur Anzeige) und „Benutzer (Personen)“ (UID ≥ 1000, anlegen/löschen)</li>
+                      <li><strong>Rollen:</strong> Rolle „Gast“ ergänzt (eingeschränkte Rechte); Administrator, Entwickler, Benutzer, Gast; weitere Rollen bei Bedarf manuell</li>
+                      <li>Backend <code className="bg-slate-700 px-1 rounded">/api/users</code> liefert <code className="bg-slate-700 px-1 rounded">system_users</code> und <code className="bg-slate-700 px-1 rounded">human_users</code> (mit UID)</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.13 (Peripherie-Scan, Musikbox Sudo, Versions-Sync)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Peripherie-Scan:</strong> Bei 404 klarer Hinweis „Backend neu starten“; Debug-Endpoint <code className="bg-slate-700 px-1 rounded">/api/debug/routes</code> zum Prüfen der registrierten Routen</li>
+                      <li><strong>Musikbox:</strong> SudoPasswordModal statt Browser-Prompt; zusätzliche Features (Internetradio, AirPlay, Spotify Connect) werden mit Sudo-Passwort installiert; <code className="bg-slate-700 px-1 rounded">requires_sudo_password</code> wird ausgewertet</li>
+                      <li><strong>Versionsführung:</strong> Einzige Quelle <code className="bg-slate-700 px-1 rounded">VERSION</code>; <code className="bg-slate-700 px-1 rounded">npm run prebuild</code> synchronisiert package.json und tauri.conf.json automatisch</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.12 (TODO 7–10, Dashboard, Peripherie, Systeminfos)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Monitoring (TODO 7):</strong> SudoPasswordModal statt Browser-Prompt; Einzelauswahl Node Exporter, Prometheus, Grafana (Checkboxen); nur ausgewählte Komponenten installieren</li>
+                      <li><strong>Musikbox (TODO 8):</strong> Optionen Internetradio (mopidy-internetarchive), Streaming; Info-Box zu Music-Servern und Bezahldiensten; Backend <code className="bg-slate-700 px-1 rounded">enable_internetradio</code>, <code className="bg-slate-700 px-1 rounded">enable_streaming</code></li>
+                      <li><strong>Systemdaten (TODO 9):</strong> <code className="bg-slate-700 px-1 rounded">/api/system-info</code> liefert alle Temperatursensoren (thermal_zone + hwmon), alle Laufwerke inkl. NVMe/Block-Geräte, Lüfter, Displays; Dashboard-Karte „Sensoren & Schnittstellen“; Motherboard (DMI), RAM-Typ/Geschwindigkeit (dmidecode), CPU-Name in Systeminformationen</li>
+                      <li><strong>Peripherie-Scan (TODO 10):</strong> Konsole mit animierter Ausgabe der gefundenen Komponenten; Button „Zum Dashboard“; <code className="bg-slate-700 px-1 rounded">lspci -k</code> für alle GPUs (inkl. zweite NVIDIA) und Treiber; Vollpfad /usr/bin/lspci, /usr/bin/lsusb; Sektion „Systembezogene Treiber“ (Kernel-Module)</li>
+                      <li><strong>Dashboard:</strong> Karte „Systeminformationen“ (CPU-Name, Motherboard, OS, RAM Typ/Geschwindigkeit); Karte „Systembezogene Treiber“ (alle PCI-Geräte mit/ohne Treiber); CPU & Grafik: Auslastung pro <strong>physikalischem Kern</strong> (aus /proc/cpuinfo core id), Fallback auf log. CPUs; Link „Treiber beim Hersteller suchen“ (Intel/AMD) bei CPU</li>
+                      <li><strong>Backend:</strong> <code className="bg-slate-700 px-1 rounded">get_per_core_usage()</code>, <code className="bg-slate-700 px-1 rounded">get_motherboard_info()</code>, <code className="bg-slate-700 px-1 rounded">get_ram_info()</code>, <code className="bg-slate-700 px-1 rounded">get_cpu_name()</code>; <code className="bg-slate-700 px-1 rounded">per_core_usage</code>, <code className="bg-slate-700 px-1 rounded">physical_cores</code>, <code className="bg-slate-700 px-1 rounded">drivers</code> in system-info</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.11 (Plattform / Linux-System)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Menü:</strong> Punkt „Raspberry Pi Config“ wird deaktiviert, wenn kein Raspberry Pi erkannt wird</li>
+                      <li><strong>Bezeichnungen:</strong> Überall wo „Raspberry Pi System“ stand, wird bei Nicht-Pi nun „Linux-System“ angezeigt, inkl. Hinweis ob Desktop oder Laptop</li>
+                      <li>Backend: <code className="bg-slate-700 px-1 rounded">/api/system-info</code> liefert <code className="bg-slate-700 px-1 rounded">is_raspberry_pi</code> und <code className="bg-slate-700 px-1 rounded">device_type</code> (desktop/laptop); Frontend: PlatformContext mit <code className="bg-slate-700 px-1 rounded">systemLabel</code> / <code className="bg-slate-700 px-1 rounded">systemLabelPossessive</code></li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.10 (Dashboard)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>CPU & Grafik im Dashboard:</strong> Karte „CPU & Grafik“ zeigt <strong>jede CPU</strong> (Modell, aktuelle/empfohlene MHz) und <strong>jede gefundene GPU</strong> (Name, Speicher)</li>
+                      <li>Daten kommen aus <code className="bg-slate-700 px-1 rounded">/api/system-info</code> (hardware.cpus, hardware.gpus); Backend parst /proc/cpuinfo (alle Prozessoren), vcgencmd (Pi) bzw. lspci (GPUs)</li>
+                      <li>Raspberry Pi Config: CPU/GPU-Details ins Dashboard verschoben; dort nur noch Hinweis auf Dashboard sowie Speicheraufteilung und Spannungserhöhung (over_voltage)</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.9 (Raspberry Pi Config)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>CPU & Grafik – Systeminfos:</strong> API <code className="bg-slate-700 px-1 rounded">/api/raspberry-pi/system-info</code> (vcgencmd, /proc/cpuinfo); Hinweise Speicheraufteilung und over_voltage</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.8 (Display)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Bildwiederholfrequenz:</strong> Geänderte Bildwiederholfrequenz wird zuverlässig übernommen (Rate immer mitsenden: gewählter Wert oder Standard des Modus)</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.7 (Control Center – Services)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>SSH starten:</strong> Button „SSH starten“, wenn SSH aktiviert aber gestoppt</li>
+                      <li><strong>VNC starten:</strong> Button „VNC starten“, wenn VNC gestoppt</li>
+                      <li>APIs <code className="bg-slate-700 px-1 rounded">/api/control-center/ssh/start</code>, <code className="bg-slate-700 px-1 rounded">/api/control-center/vnc/start</code></li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.6 (WLAN)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Verbindung zu konfigurierten Netzwerken:</strong> Bei konfigurierten WLAN-Netzwerken Button „Verbinden“ (wpa_cli select_network)</li>
+                      <li>API <code className="bg-slate-700 px-1 rounded">/api/control-center/wifi/connect</code></li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.5</p>
-                    <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 mt-1 ml-4 space-y-1">
-                      <li><strong>Dokumentation:</strong> Auf aktuellen Stand gebracht; alle in dieser Session durchgeführten Fehlerbehebungen und Änderungen übernommen</li>
-                      <li><strong>Repository aktualisieren:</strong> Workflow bei lokalen Änderungen (git stash, pull, stash pop) in Troubleshooting ergänzt</li>
-                      <li><strong>Merge-Konflikt:</strong> Bei Konflikt in Documentation.tsx Remote-Version übernommen; übrige Dateien lokale (neuere) Versionen beibehalten</li>
-                      <li><strong>Versionsführung:</strong> VERSIONING.md um Empfehlung „eine Version pro logischer Änderung“ ergänzt</li>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Dokumentation:</strong> Auf aktuellen Stand gebracht; Repository-Workflow (git stash, pull, stash pop) in Troubleshooting; Versionsführung pro Bereich in VERSIONING.md</li>
                     </ul>
                   </div>
                   <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.4 (28./29. Januar 2026)</p>
-                    <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 mt-1 ml-4 space-y-1">
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Control Center – Scanner:</strong> SANE-Scanner (USB + Netzwerk/eSCL/airscan), SANE-Installationsprüfung</li>
                       <li><strong>Control Center – Performance:</strong> CPU-Governor, GPU-Memory, Overclocking (arm_freq, over_voltage, force_turbo), Swap-Größe</li>
                       <li><strong>Control Center – Drucker:</strong> Deutsche Locale-Unterstützung für lpstat</li>
@@ -471,7 +1008,7 @@ const Documentation: React.FC = () => {
                   </div>
                   <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.3</p>
-                    <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 mt-1 ml-4 space-y-1">
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li>Control Center – Desktop: Boot-Ziel (Desktop vs. Kommandozeile)</li>
                       <li>Control Center – Display: Auflösung, Bildwiederholrate, Rotation (xrandr)</li>
                       <li>Desktop-App (Tauri): eigenständiges Fenster ohne Browser, gleiches UI</li>
@@ -480,7 +1017,7 @@ const Documentation: React.FC = () => {
                   </div>
                   <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.2</p>
-                    <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 mt-1 ml-4 space-y-1">
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li>Bugfix: Verschlüsselte Backups korrekt erkannt</li>
                       <li>Bugfix: Cloud-Upload nutzt Cloud-Einstellungen aus Thread</li>
                       <li>Verbesserung: Cloud-Upload-Logging</li>
@@ -488,7 +1025,7 @@ const Documentation: React.FC = () => {
                   </div>
                   <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.1.1</p>
-                    <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 mt-1 ml-4 space-y-1">
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li>Control Center: WLAN, SSH, VNC, Tastatur, Lokalisierung</li>
                       <li>Raspberry Pi Config: Neustart, Reset</li>
                     </ul>
@@ -499,10 +1036,18 @@ const Documentation: React.FC = () => {
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-purple-900/20 dark:bg-purple-900/20 border border-purple-700/40 dark:border-purple-700/40 rounded-lg">
-                  <h3 className="text-sm font-semibold text-purple-300 dark:text-purple-300 mb-2">Quellen</h3>
-                  <ul className="list-disc list-inside text-xs text-slate-300 dark:text-slate-300 space-y-1 ml-2">
+                  <h3 className="text-sm font-semibold text-purple-300 dark:text-purple-300 mb-2">Quellen (Raspberry Pi)</h3>
+                  <ul className="list-disc list-inside text-xs opacity-95 space-y-1 ml-2">
                     <li><a href="https://www.raspberrypi.com/documentation/computers/config_txt.html" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">Raspberry Pi config.txt</a></li>
                     <li>Device Tree Overlays, GPIO, Overclocking</li>
+                  </ul>
+                  <h3 className="text-sm font-semibold text-purple-300 dark:text-purple-300 mt-3 mb-2">Quellen (Linux-System)</h3>
+                  <ul className="list-disc list-inside text-xs opacity-95 space-y-1 ml-2">
+                    <li><a href="https://wiki.ubuntuusers.de/" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">Ubuntu Users Wiki</a></li>
+                    <li><a href="https://www.archlinux.org/docs/" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">Arch Linux Dokumentation</a></li>
+                    <li><a href="https://docs.fedoraproject.org/" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">Fedora Documentation</a></li>
+                    <li><a href="https://help.ubuntu.com/" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">Ubuntu Help</a></li>
+                    <li>systemd, UFW, apt/dpkg – Manpages (<code className="bg-slate-700 px-1 rounded">man &lt;befehl&gt;</code>)</li>
                   </ul>
                 </div>
               </div>

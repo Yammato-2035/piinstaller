@@ -19,8 +19,11 @@ import BackupRestore from './pages/BackupRestore'
 import SettingsPage from './pages/SettingsPage'
 import RaspberryPiConfig from './pages/RaspberryPiConfig'
 import ControlCenter from './pages/ControlCenter'
+import PeripheryScan from './pages/PeripheryScan'
+import KinoStreaming from './pages/KinoStreaming'
 import Documentation from './pages/Documentation'
 import { fetchApi } from './api'
+import { PlatformProvider, platformFromSystemInfo } from './context/PlatformContext'
 import './App.css'
 
 type Page = 
@@ -33,12 +36,15 @@ type Page =
   | 'nas'
   | 'homeautomation'
   | 'musicbox'
+  | 'kino-streaming'
   | 'wizard'
   | 'presets'
   | 'learning'
   | 'monitoring'
   | 'backup'
   | 'raspberry-pi-config'
+  | 'control-center'
+  | 'periphery-scan'
   | 'settings'
   | 'documentation'
 
@@ -131,6 +137,8 @@ function App() {
         return <HomeAutomationSetup />
       case 'musicbox':
         return <MusicBoxSetup />
+      case 'kino-streaming':
+        return <KinoStreaming />
       case 'wizard':
         return <InstallationWizard />
       case 'presets':
@@ -142,9 +150,11 @@ function App() {
       case 'backup':
         return <BackupRestore />
       case 'raspberry-pi-config':
-        return <RaspberryPiConfig />
+        return platform?.isRaspberryPi ? <RaspberryPiConfig /> : <Dashboard systemInfo={systemInfo} setCurrentPage={handlePageChange} />
       case 'control-center':
-        return <ControlCenter />
+        return <ControlCenter isRaspberryPi={platform?.isRaspberryPi ?? false} />
+      case 'periphery-scan':
+        return <PeripheryScan setCurrentPage={handlePageChange} />
       case 'settings':
         return <SettingsPage setCurrentPage={handlePageChange} />
       case 'documentation':
@@ -154,17 +164,21 @@ function App() {
     }
   }
 
+  const platform = useMemo(() => platformFromSystemInfo(systemInfo), [systemInfo])
+
   return (
-    <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-      <SudoPasswordDialog onPasswordSaved={handleSudoPasswordSaved} />
-      <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} />
+    <PlatformProvider value={platform}>
+      <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+        <SudoPasswordDialog onPasswordSaved={handleSudoPasswordSaved} />
+        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} />
       <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="p-8">
           {renderPage()}
         </div>
       </main>
-      <Toaster position="bottom-right" />
-    </div>
+        <Toaster position="bottom-right" />
+      </div>
+    </PlatformProvider>
   )
 }
 

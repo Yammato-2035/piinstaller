@@ -28,7 +28,11 @@ interface SectionConfig {
   description: string
 }
 
-const ControlCenter: React.FC = () => {
+interface ControlCenterProps {
+  isRaspberryPi?: boolean
+}
+
+const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) => {
   const [activeSection, setActiveSection] = useState<ControlCenterSection>('wifi')
   const [sudoModalOpen, setSudoModalOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<null | ((sudoPassword: string) => Promise<void>)>(null)
@@ -130,15 +134,19 @@ const ControlCenter: React.FC = () => {
     { id: 'display', name: 'Display', icon: <Monitor />, description: 'Bildschirm-Einstellungen' },
     { id: 'printer', name: 'Drucker', icon: <Printer />, description: 'Drucker verwalten' },
     { id: 'scanner', name: 'Scanner', icon: <Scan />, description: 'Scanner verwalten' },
-    { id: 'performance', name: 'Performance', icon: <Settings />, description: 'System-Performance' },
+    ...(isRaspberryPi ? [{ id: 'performance' as const, name: 'Performance', icon: <Settings />, description: 'System-Performance (Raspberry Pi)' }] : []),
     { id: 'mouse', name: 'Maus', icon: <Mouse />, description: 'Maus-Einstellungen' },
     { id: 'taskbar', name: 'Taskleiste', icon: <Layout />, description: 'Taskleiste konfigurieren' },
     { id: 'theme', name: 'Theme', icon: <Palette />, description: 'Erscheinungsbild' },
   ]
 
   useEffect(() => {
+    if (!isRaspberryPi && activeSection === 'performance') {
+      setActiveSection('wifi')
+      return
+    }
     loadSectionData(activeSection)
-  }, [activeSection])
+  }, [activeSection, isRaspberryPi])
 
   const loadSectionData = async (section: ControlCenterSection) => {
     try {
@@ -604,7 +612,8 @@ const ControlCenter: React.FC = () => {
         mode: displayMode || undefined,
         rotation: displayRotation,
       }
-      if (typeof displayRate === 'number' && displayRate > 0) body.rate = displayRate
+      const rateToSend = typeof displayRate === 'number' && displayRate > 0 ? displayRate : (displayRatesForMode[0] ?? undefined)
+      if (rateToSend != null) body.rate = rateToSend
       const r = await fetchApi('/api/control-center/display', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -743,6 +752,37 @@ const ControlCenter: React.FC = () => {
     )
   }
 
+  const connectWifi = async (ssid: string) => {
+    await requireSudo(
+      {
+        title: 'Mit WLAN verbinden',
+        subtitle: 'Für die Verbindung mit dem Netzwerk werden Administrator-Rechte benötigt.',
+        confirmText: 'Verbinden',
+      },
+      async (pwd?: string) => {
+        try {
+          const body: Record<string, string> = { ssid }
+          if (pwd) body.sudo_password = pwd
+          const r = await fetchApi('/api/control-center/wifi/connect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
+          const d = await r.json()
+          if (d.status === 'success') {
+            toast.success(d.message || 'Verbunden')
+            loadWifiStatus()
+            loadWifiConfig()
+          } else {
+            toast.error(d.message || 'Verbinden fehlgeschlagen')
+          }
+        } catch (e) {
+          toast.error('Fehler beim Verbinden')
+        }
+      }
+    )
+  }
+
   const disconnectWifi = async () => {
     await requireSudo(
       {
@@ -862,6 +902,58 @@ const ControlCenter: React.FC = () => {
           }
         } catch (e) {
           toast.error('Fehler beim Ändern des VNC-Status')
+        }
+      }
+    )
+  }
+
+  const startSSH = async () => {
+    await requireSudo(
+      { title: 'SSH starten', subtitle: 'Administrator-Rechte erforderlich.', confirmText: 'Starten' },
+      async (pwd?: string) => {
+        try {
+          const body: Record<string, string> = {}
+          if (pwd) body.sudo_password = pwd
+          const r = await fetchApi('/api/control-center/ssh/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
+          const d = await r.json()
+          if (d.status === 'success') {
+            toast.success(d.message || 'SSH gestartet')
+            loadSSHStatus()
+          } else {
+            toast.error(d.message || 'SSH starten fehlgeschlagen')
+          }
+        } catch (e) {
+          toast.error('SSH starten fehlgeschlagen')
+        }
+      }
+    )
+  }
+
+  const startVNC = async () => {
+    await requireSudo(
+      { title: 'VNC starten', subtitle: 'Administrator-Rechte erforderlich.', confirmText: 'Starten' },
+      async (pwd?: string) => {
+        try {
+          const body: Record<string, string> = {}
+          if (pwd) body.sudo_password = pwd
+          const r = await fetchApi('/api/control-center/vnc/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
+          const d = await r.json()
+          if (d.status === 'success') {
+            toast.success(d.message || 'VNC gestartet')
+            loadVNCStatus()
+          } else {
+            toast.error(d.message || 'VNC starten fehlgeschlagen')
+          }
+        } catch (e) {
+          toast.error('VNC starten fehlgeschlagen')
         }
       }
     )
@@ -1099,9 +1191,19 @@ const ControlCenter: React.FC = () => {
                   ) : (
                     <div className="space-y-2">
                       {wifiConfig.map((net, idx) => (
-                        <div key={idx} className="p-3 bg-slate-700/30 rounded-lg border border-slate-600">
-                          <div className="font-semibold text-white">{net.ssid}</div>
-                          <div className="text-sm text-slate-400">{net.security || 'Unbekannt'}</div>
+                        <div key={idx} className="p-3 bg-slate-700/30 rounded-lg border border-slate-600 flex items-center justify-between gap-3">
+                          <div>
+                            <div className="font-semibold text-white">{net.ssid}</div>
+                            <div className="text-sm text-slate-400">{net.security || 'Unbekannt'}</div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => connectWifi(net.ssid)}
+                            disabled={wifiStatus?.wifi_enabled === false || wifiStatus?.ssid === net.ssid}
+                            className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                          >
+                            {wifiStatus?.ssid === net.ssid ? 'Verbunden' : 'Verbinden'}
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -1217,6 +1319,17 @@ const ControlCenter: React.FC = () => {
                   <span className="text-sm text-slate-300">{sshEnabled ? 'Aktiviert' : 'Deaktiviert'}</span>
                 </label>
               </div>
+              {sshEnabled && !sshRunning && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={startSSH}
+                    className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg"
+                  >
+                    SSH starten
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )
@@ -1250,6 +1363,17 @@ const ControlCenter: React.FC = () => {
                   <span className="text-sm text-slate-300">{vncEnabled ? 'Aktiviert' : 'Deaktiviert'}</span>
                 </label>
               </div>
+              {!vncEnabled && (
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={startVNC}
+                    className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg"
+                  >
+                    VNC starten
+                  </button>
+                </div>
+              )}
               {!vncEnabled && (
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">VNC-Passwort (optional)</label>

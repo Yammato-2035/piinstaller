@@ -277,7 +277,7 @@ const SecuritySetup: React.FC = () => {
             Sicherheit & Härtung
           </h1>
         </div>
-        <p className="text-slate-400">Konfigurieren Sie die Sicherheitseinstellungen für Ihren Raspberry Pi</p>
+        <p className="text-slate-400">Konfigurieren Sie die Sicherheitseinstellungen für Ihr System</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -380,7 +380,7 @@ const SecuritySetup: React.FC = () => {
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-semibold">UFW Firewall</span>
                     {securityConfig.ufw?.active ? (
-                      <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs">✅ Aktiv</span>
+                      <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs">✅ Aktiv · Installiert</span>
                     ) : securityConfig.ufw?.installed ? (
                       <div className="flex items-center gap-2">
                         <span className="px-2 py-1 bg-red-900/50 text-white rounded text-xs">❌ Inaktiv</span>

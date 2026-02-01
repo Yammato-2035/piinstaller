@@ -824,6 +824,17 @@ async def get_version():
     return {"status": "success", "version": get_pi_installer_version()}
 
 
+@app.get("/api/debug/routes")
+async def debug_routes():
+    """Listet alle registrierten API-Pfade (z. B. zum Prüfen ob /api/peripherals/scan geladen ist)."""
+    paths = []
+    for r in app.routes:
+        path = getattr(r, "path", "")
+        if path and "/api/" in path:
+            paths.append(path)
+    return {"paths": sorted(set(paths)), "version": get_pi_installer_version()}
+
+
 def _validate_backup_dir(path_str: str) -> str:
     """
     Validiert ein Backup-Zielverzeichnis.
@@ -1011,6 +1022,29 @@ def check_installed(package):
             return True
         return False
     
+    # Grafana: which, dpkg, Binary-Pfade, systemd-Unit, Snap
+    if package == "grafana":
+        if run_command("which grafana-server 2>/dev/null")["success"]:
+            return True
+        r = run_command("dpkg -l 2>/dev/null | grep -E '^ii\\s+grafana'")
+        if r.get("success") and (r.get("stdout") or "").strip():
+            return True
+        if run_command("test -f /usr/sbin/grafana-server 2>/dev/null")["success"]:
+            return True
+        if run_command("test -f /usr/bin/grafana-server 2>/dev/null")["success"]:
+            return True
+        if run_command("test -f /usr/share/grafana/bin/grafana-server 2>/dev/null")["success"]:
+            return True
+        if run_command("systemctl list-unit-files 2>/dev/null | grep -q 'grafana-server'")["success"]:
+            return True
+        if run_command("systemctl list-units --all 2>/dev/null | grep -q grafana")["success"]:
+            return True
+        if run_command("snap list 2>/dev/null | grep -q grafana")["success"]:
+            return True
+        if run_command("test -f /snap/bin/grafana-server 2>/dev/null")["success"]:
+            return True
+        return False
+
     # Standard-Prüfung
     result = run_command(f"which {package} || dpkg -l | grep '^ii' | grep -E '\\s{package}\\s'")
     return result["success"]
@@ -1073,38 +1107,276 @@ def get_cpu_temp():
     except:
         return None
 
-def get_fan_speed():
-    """Lüfter-Geschwindigkeit"""
+def get_all_thermal_sensors():
+    """Alle Temperatursensoren (thermal_zone*)"""
+    sensors = []
     try:
-        # Versuche verschiedene hwmon Pfade
-        for i in range(5):
-            result = run_command(f"cat /sys/class/hwmon/hwmon{i}/fan1_input 2>/dev/null")
-            if result["success"] and result["stdout"].strip():
-                try:
-                    rpm = int(result["stdout"].strip())
-                    if rpm > 0:
-                        return rpm
-                except:
+        base = Path("/sys/class/thermal")
+        if not base.exists():
+            return sensors
+        for zone in sorted(base.glob("thermal_zone*")):
+            try:
+                temp_path = zone / "temp"
+                type_path = zone / "type"
+                if temp_path.exists():
+                    temp = int(temp_path.read_text().strip()) / 1000.0
+                    name = type_path.read_text().strip() if type_path.exists() else zone.name
+                    sensors.append({"name": name, "temperature": round(temp, 1), "zone": zone.name})
+            except Exception:
+                continue
+        if not sensors and run_command("which vcgencmd 2>/dev/null")["success"]:
+            vc = run_command("vcgencmd measure_temp 2>/dev/null")
+            if vc.get("success") and "temp=" in (vc.get("stdout") or ""):
+                t = float((vc["stdout"] or "").split("temp=")[1].split("'")[0])
+                sensors.append({"name": "cpu", "temperature": round(t, 1), "zone": "vcgencmd"})
+        # hwmon Temperatursensoren (Motherboard, GPU, NVMe etc.)
+        hwmon_base = Path("/sys/class/hwmon")
+        if hwmon_base.exists():
+            for hw in sorted(hwmon_base.iterdir()):
+                if not hw.is_dir() or not hw.name.startswith("hwmon"):
                     continue
-        
-        # Alternative: vcgencmd (Raspberry Pi)
-        result = run_command("vcgencmd get_throttled 2>/dev/null")
-        if result["success"] and result["stdout"]:
-            throttled = result["stdout"].strip()
-            # Parse throttled value
-            if "throttled=" in throttled:
-                value = throttled.split("=")[1]
-                return f"Throttle: {value}"
-            return throttled
-        
-        # Alternative: sensors
-        result = run_command("sensors 2>/dev/null | grep -i fan | head -1")
-        if result["success"] and result["stdout"]:
-            return result["stdout"].strip()
-        
+                try:
+                    name_path = hw / "name"
+                    hw_name = name_path.read_text().strip() if name_path.exists() else hw.name
+                    for temp_path in sorted(hw.glob("temp*_input")):
+                        try:
+                            val = int(temp_path.read_text().strip())
+                            temp_c = round(val / 1000.0, 1)
+                            label_path = hw / temp_path.name.replace("_input", "_label")
+                            label = label_path.read_text().strip() if label_path.exists() else temp_path.stem.replace("_input", "")
+                            sensors.append({"name": f"{hw_name} {label}", "temperature": temp_c, "zone": f"{hw.name}/{temp_path.name}"})
+                        except Exception:
+                            continue
+                except Exception:
+                    continue
+    except Exception:
+        pass
+    return sensors
+
+def get_all_fans():
+    """Alle Lüfter (hwmon fan*_input)"""
+    fans = []
+    try:
+        base = Path("/sys/class/hwmon")
+        if not base.exists():
+            return fans
+        for hw in sorted(base.iterdir()):
+            if not hw.is_dir() or not hw.name.startswith("hwmon"):
+                continue
+            name_path = hw / "name"
+            name = name_path.read_text().strip() if name_path.exists() else hw.name
+            for fan in sorted(hw.glob("fan*_input")):
+                try:
+                    rpm = int(fan.read_text().strip())
+                    fans.append({"name": f"{name} {fan.stem.replace('_input', '')}", "rpm": rpm})
+                except Exception:
+                    continue
+    except Exception:
+        pass
+    return fans
+
+def get_all_disks():
+    """Alle gemounteten Laufwerke + NVMe/Block-Geräte mit Nutzung bzw. Größe"""
+    disks = []
+    seen_devices = set()
+    try:
+        for part in psutil.disk_partitions(all=False):
+            try:
+                usage = psutil.disk_usage(part.mountpoint)
+                disks.append({
+                    "device": part.device,
+                    "mountpoint": part.mountpoint,
+                    "fstype": part.fstype,
+                    "total_gb": round(usage.total / (1024**3), 1),
+                    "used_gb": round(usage.used / (1024**3), 1),
+                    "percent": usage.percent,
+                    "label": part.device.rstrip("/").split("/")[-1],
+                })
+                seen_devices.add(part.device)
+            except Exception:
+                continue
+        # NVMe und weitere Block-Geräte (auch ungemountet)
+        block_base = Path("/sys/block")
+        if block_base.exists():
+            for blk in sorted(block_base.iterdir()):
+                if blk.name.startswith("loop") or blk.name.startswith("ram"):
+                    continue
+                dev = f"/dev/{blk.name}"
+                if dev in seen_devices:
+                    continue
+                try:
+                    size_path = blk / "size"
+                    if not size_path.exists():
+                        continue
+                    sectors = int(size_path.read_text().strip())
+                    size_gb = round(sectors * 512 / (1024**3), 1)
+                    if size_gb <= 0:
+                        continue
+                    # Mountpoint und Nutzung für dieses Block-Device ermitteln (z. B. nvme0n1p1)
+                    mountpoint = ""
+                    used_gb = None
+                    percent = None
+                    for p in psutil.disk_partitions(all=True):
+                        if p.device.startswith(dev) or (dev + "1" == p.device or dev + "p1" == p.device):
+                            try:
+                                u = psutil.disk_usage(p.mountpoint)
+                                mountpoint = p.mountpoint
+                                used_gb = round(u.used / (1024**3), 1)
+                                percent = u.percent
+                                break
+                            except Exception:
+                                pass
+                    disks.append({
+                        "device": dev,
+                        "mountpoint": mountpoint,
+                        "fstype": "",
+                        "total_gb": size_gb,
+                        "used_gb": used_gb,
+                        "percent": percent,
+                        "label": blk.name,
+                    })
+                    seen_devices.add(dev)
+                except Exception:
+                    continue
+    except Exception:
+        pass
+    return disks
+
+def get_all_displays():
+    """Alle erkannten Displays (xrandr)"""
+    displays = []
+    try:
+        r = run_command("xrandr --query 2>/dev/null")
+        if not r.get("success") or not r.get("stdout"):
+            return displays
+        current = None
+        for line in (r["stdout"] or "").strip().split("\n"):
+            if line.startswith(" ") and "x" in line and "+" in line:
+                parts = line.strip().split()
+                if len(parts) >= 1 and current:
+                    mode = parts[0]
+                    displays.append({"output": current, "mode": mode, "connected": "connected" in line or "*" in line})
+            else:
+                parts = line.split()
+                if len(parts) >= 2:
+                    current = parts[0]
+                    if parts[1] == "connected":
+                        displays.append({"output": current, "mode": parts[2] if len(parts) > 2 else "", "connected": True})
+        if not displays:
+            r2 = run_command("DISPLAY=:0 xrandr --query 2>/dev/null")
+            if r2.get("success") and r2.get("stdout"):
+                for line in (r2["stdout"] or "").strip().split("\n"):
+                    if " connected " in line:
+                        parts = line.split()
+                        if len(parts) >= 1:
+                            displays.append({"output": parts[0], "mode": parts[2] if len(parts) > 2 else "", "connected": True})
+    except Exception:
+        pass
+    return displays
+
+def get_fan_speed():
+    """Lüfter-Geschwindigkeit (ein Wert für Abwärtskompatibilität)"""
+    try:
+        fans = get_all_fans()
+        return fans[0]["rpm"] if fans else None
+    except Exception:
         return None
-    except:
+
+def get_motherboard_info():
+    """Motherboard/Baseboard aus DMI"""
+    info = {}
+    try:
+        for key, path in [("vendor", "board_vendor"), ("name", "board_name"), ("product", "product_name")]:
+            p = Path("/sys/class/dmi/id") / path
+            if p.exists():
+                try:
+                    info[key] = p.read_text().strip()
+                except Exception:
+                    pass
+        if not info:
+            r = run_command("dmidecode -t baseboard 2>/dev/null")
+            if r.get("success") and r.get("stdout"):
+                for line in (r["stdout"] or "").split("\n"):
+                    if "Manufacturer:" in line:
+                        info["vendor"] = line.split(":", 1)[-1].strip()
+                    elif "Product Name:" in line:
+                        info["name"] = line.split(":", 1)[-1].strip()
+    except Exception:
+        pass
+    return info
+
+def get_ram_info():
+    """RAM-Typ und Geschwindigkeit (DMI/dmidecode)"""
+    rams = []
+    try:
+        r = run_command("dmidecode -t memory 2>/dev/null")
+        if r.get("success") and r.get("stdout"):
+            block = {}
+            for line in (r["stdout"] or "").split("\n"):
+                if line.startswith("Memory Device"):
+                    if block.get("Size") and "No Module" not in (block.get("Size") or ""):
+                        rams.append(block)
+                    block = {}
+                elif ":" in line:
+                    k, v = line.split(":", 1)
+                    block[k.strip()] = v.strip()
+            if block.get("Size") and "No Module" not in (block.get("Size") or ""):
+                rams.append(block)
+        if not rams:
+            for p in Path("/sys/class/dmi/id").glob("*"):
+                if "mem" in p.name.lower():
+                    try:
+                        rams.append({"source": p.name, "value": p.read_text().strip()})
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+    return rams
+
+def get_cpu_name():
+    """CPU-Modellname aus /proc/cpuinfo"""
+    try:
+        with open("/proc/cpuinfo", "r") as f:
+            for line in f:
+                if line.strip().startswith("model name"):
+                    return line.split(":", 1)[-1].strip()
         return None
+    except Exception:
+        return None
+
+def get_per_core_usage(per_cpu_percent):
+    """Aus per-logical-CPU-Auslastung die pro physikalischem Kern (max der Threads) berechnen."""
+    if not per_cpu_percent:
+        return [], 0
+    try:
+        proc_to_core = {}
+        with open("/proc/cpuinfo", "r") as f:
+            proc_id = None
+            core_id = None
+            for line in f:
+                if line.strip().startswith("processor"):
+                    proc_id = int(line.split(":")[-1].strip())
+                elif line.strip().startswith("core id"):
+                    core_id = int(line.split(":")[-1].strip())
+                elif line.strip() == "" and proc_id is not None and core_id is not None:
+                    proc_to_core[proc_id] = core_id
+                    proc_id = core_id = None
+            if proc_id is not None and core_id is not None:
+                proc_to_core[proc_id] = core_id
+        from collections import defaultdict
+        core_to_procs = defaultdict(list)
+        for p, c in proc_to_core.items():
+            core_to_procs[c].append(p)
+        if not core_to_procs:
+            return list(per_cpu_percent), len(per_cpu_percent)
+        per_core = []
+        for c in sorted(core_to_procs.keys()):
+            procs = core_to_procs[c]
+            vals = [per_cpu_percent[i] for i in procs if i < len(per_cpu_percent)]
+            per_core.append(max(vals) if vals else 0)
+        return per_core, len(per_core)
+    except Exception:
+        return list(per_cpu_percent), len(per_cpu_percent)
 
 def get_installed_apps():
     """Erkenne installierte Web-Apps"""
@@ -1122,6 +1394,7 @@ def get_installed_apps():
         "nodejs": check_installed("nodejs"),
         "git": check_installed("git"),
         "cursor": False,  # Wird separat geprüft
+        "qtqml": check_installed("qt5-default") or check_installed("qtbase5-dev") or run_command("which qmake 2>/dev/null")["success"] or run_command("dpkg -l 2>/dev/null | grep -q 'qt5'")["success"],
         "cockpit": check_installed("cockpit"),
         "webmin": check_installed("webmin"),
         # NAS
@@ -1207,7 +1480,8 @@ def get_running_services():
     """Laufen Services"""
     services = [
         "nginx", "apache2", "mysql", "mariadb", "postgresql",
-        "docker", "fail2ban", "sshd", "postfix", "dovecot"
+        "docker", "fail2ban", "sshd", "postfix", "dovecot",
+        "mopidy", "grafana-server", "plexmediaserver",
     ]
     running = {}
     for service in services:
@@ -1604,7 +1878,9 @@ async def get_status():
 async def get_system_info():
     """Systeminfo auslesen"""
     try:
-        cpu_percent = psutil.cpu_percent(interval=1)
+        per_cpu_percent = psutil.cpu_percent(interval=1, percpu=True)
+        cpu_percent = sum(per_cpu_percent) / len(per_cpu_percent) if per_cpu_percent else 0
+        per_core_usage, physical_cores = get_per_core_usage(per_cpu_percent)
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
         
@@ -1648,7 +1924,7 @@ async def get_system_info():
         except:
             os_info = {"name": "Unbekannt", "version": "Unbekannt", "kernel": "Unbekannt"}
         
-        return {
+        resp = {
             "os": {
                 "name": os_info.get("pretty_name", os_info.get("name", "Linux")),
                 "version": os_info.get("version_id", os_info.get("version", "")),
@@ -1656,6 +1932,9 @@ async def get_system_info():
             },
             "cpu": {
                 "usage": cpu_percent,
+                "per_cpu_usage": per_cpu_percent,
+                "per_core_usage": per_core_usage,
+                "physical_cores": physical_cores,
                 "count": psutil.cpu_count(),
                 "temperature": cpu_temp or temp_debug,
                 "fan_speed": fan_speed,
@@ -1678,24 +1957,161 @@ async def get_system_info():
             },
             "uptime": uptime,
         }
+        resp["is_raspberry_pi"] = False
+        resp["device_type"] = None
+        try:
+            chassis_path = Path("/sys/class/dmi/id/chassis_type")
+            if chassis_path.exists():
+                try:
+                    ct = chassis_path.read_text().strip()
+                    if ct == "3":
+                        resp["device_type"] = "desktop"
+                    elif ct in ("8", "9", "10", "14"):
+                        resp["device_type"] = "laptop"
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        try:
+            pi_mod = _get_pi_config_module()
+            pi_info = pi_mod.get_system_info()
+            if pi_info.get("status") == "success" and pi_info.get("system_info"):
+                si = pi_info["system_info"]
+                resp["hardware"] = {
+                    "cpus": si.get("cpus") or [],
+                    "gpus": si.get("gpus") or [],
+                }
+                cpu_model = (si.get("cpu_model") or "").lower()
+                gpus = si.get("gpus") or []
+                if "raspberry" in cpu_model or "bcm27" in cpu_model:
+                    resp["is_raspberry_pi"] = True
+                elif gpus and len(gpus) > 0:
+                    if "videocore" in (gpus[0].get("name") or "").lower():
+                        resp["is_raspberry_pi"] = True
+            else:
+                resp["hardware"] = {"cpus": [], "gpus": []}
+        except Exception:
+            resp["hardware"] = {"cpus": [], "gpus": []}
+        if not resp.get("is_raspberry_pi") and not (resp.get("hardware", {}).get("gpus")):
+            resp["hardware"]["gpus"] = _get_gpus_for_system_info()
+        cpu_name = get_cpu_name()
+        if cpu_name:
+            resp["cpu_name"] = cpu_name
+        if not resp.get("hardware", {}).get("cpus") and cpu_name:
+            resp["hardware"]["cpus"] = [{"model": cpu_name, "processor_id": 0}]
+        resp["motherboard"] = get_motherboard_info()
+        resp["ram_info"] = get_ram_info()
+        # Alle Sensoren, Laufwerke, Lüfter, Displays (nach Neustart vollständig sichtbar)
+        try:
+            resp["sensors"] = get_all_thermal_sensors()
+            resp["disks"] = get_all_disks()
+            resp["fans"] = get_all_fans()
+            resp["displays"] = get_all_displays()
+        except Exception:
+            resp["sensors"] = []
+            resp["disks"] = []
+            resp["fans"] = []
+            resp["displays"] = []
+        try:
+            pci_list = _get_pci_with_drivers()
+            resp["drivers"] = [{"device": p["description"], "driver": p.get("driver") or "—"} for p in pci_list]
+        except Exception:
+            resp["drivers"] = []
+        resp["network"] = get_network_info()
+        return resp
     except Exception as e:
         return {"error": str(e)}
 
+
+@app.get("/api/dashboard/services-status")
+async def dashboard_services_status():
+    """Aggregierter Status für Dashboard: DEV, Webserver, Musikbox (Installation + Grundbetrieb)."""
+    try:
+        installed = get_installed_apps()
+        running = get_running_services()
+        # DEV: wie viele Teile installiert, Grundbetrieb (Compiler/IDE lauffähig)
+        dev_parts = ["python", "nodejs", "git", "docker", "cursor"]
+        dev_installed = sum(1 for p in dev_parts if installed.get(p, False))
+        dev_basic_ok = installed.get("python", False) or installed.get("nodejs", False)
+        # Webserver: läuft, Webseiten erreichbar (Port 80/443 offen)
+        webserver_running = running.get("nginx", False) or running.get("apache2", False)
+        ports = run_command("ss -tuln 2>/dev/null | grep -E ':80 |:443 '")
+        webserver_reachable = ports.get("success") and bool((ports.get("stdout") or "").strip())
+        # Musikbox: Installationsstand + Grundbetrieb (Mopidy läuft oder Plex/Volumio)
+        mopidy_ok = installed.get("mopidy", False) and running.get("mopidy", False)
+        musicbox_installed = installed.get("mopidy", False) or installed.get("volumio", False) or installed.get("plex", False)
+        musicbox_basic_ok = mopidy_ok or running.get("volumio", False) or running.get("plexmediaserver", False)
+        return {
+            "dev": {
+                "installed_count": dev_installed,
+                "total_parts": len(dev_parts),
+                "basic_ok": dev_basic_ok,
+            },
+            "webserver": {
+                "running": webserver_running,
+                "reachable": webserver_reachable or webserver_running,
+            },
+            "musicbox": {
+                "installed": musicbox_installed,
+                "basic_ok": musicbox_basic_ok,
+            },
+        }
+    except Exception as e:
+        return {"dev": {"installed_count": 0, "total_parts": 5, "basic_ok": False}, "webserver": {"running": False, "reachable": False}, "musicbox": {"installed": False, "basic_ok": False}, "error": str(e)}
+
+
 # ==================== Benutzer Endpoints ====================
+
+def _parse_passwd_lines(lines: list) -> tuple:
+    """Parst getent-/etc/passwd-Zeilen; gibt (system_users, human_users) zurück."""
+    system_users = []
+    human_users = []
+    for line in lines:
+        line = line.strip().strip("\r")
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(":")
+        if len(parts) < 3:
+            continue
+        name = parts[0].strip()
+        try:
+            uid = int(parts[2])
+        except (ValueError, IndexError):
+            continue
+        entry = {"name": name, "uid": uid}
+        if uid < 1000:
+            system_users.append(entry)
+        else:
+            human_users.append(entry)
+    system_users.sort(key=lambda x: x["name"].lower())
+    human_users.sort(key=lambda x: x["name"].lower())
+    return system_users, human_users
+
 
 @app.get("/api/users")
 async def list_users():
-    """Alle Benutzer auflisten"""
+    """Alle Benutzer auflisten, getrennt in Systembenutzer/Dienste (UID < 1000) und Benutzer (Personen, UID >= 1000)."""
     try:
-        result = run_command("getent passwd | cut -d: -f1")
-        if result["success"]:
-            users = result["stdout"].strip().split("\n")
-            return {
-                "status": "success",
-                "users": users,
-                "count": len(users)
-            }
-        raise Exception("Could not list users")
+        lines = []
+        result = run_command("getent passwd")
+        if result.get("success") and result.get("stdout"):
+            lines = (result["stdout"] or "").strip().replace("\r\n", "\n").split("\n")
+        if not lines:
+            # Fallback: /etc/passwd lesen (z. B. wenn getent fehlt oder in Container minimal)
+            try:
+                passwd_path = Path("/etc/passwd")
+                if passwd_path.exists():
+                    lines = passwd_path.read_text(encoding="utf-8", errors="ignore").strip().split("\n")
+            except Exception:
+                pass
+        system_users, human_users = _parse_passwd_lines(lines)
+        return {
+            "status": "success",
+            "system_users": system_users,
+            "human_users": human_users,
+            "users": [u["name"] for u in system_users] + [u["name"] for u in human_users],
+            "count": len(system_users) + len(human_users),
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1942,7 +2358,22 @@ async def delete_user(username: str, request: Request):
                     "message": f"Benutzer {username} existiert nicht"
                 }
             )
-        
+        # Systembenutzer (UID < 1000) nicht löschen
+        uid_result = run_command(f"id -u {username}")
+        if uid_result.get("success"):
+            try:
+                uid = int((uid_result.get("stdout") or "").strip())
+                if uid < 1000:
+                    return JSONResponse(
+                        status_code=200,
+                        content={
+                            "status": "error",
+                            "message": "Systembenutzer/Dienste (UID < 1000) dürfen nicht gelöscht werden."
+                        }
+                    )
+            except (ValueError, TypeError):
+                pass
+
         # Prüfe ob sudo-Passwort vorhanden ist
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
@@ -2166,6 +2597,96 @@ async def get_security_config_endpoint(request: Request):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/system/updates")
+async def get_system_updates():
+    """Verfügbare System-Updates (für Dashboard-Anzeige)"""
+    try:
+        data = get_updates_categorized()
+        return {
+            "status": "success",
+            "total": data["total"],
+            "categories": data["categories"],
+            "updates": data["updates"],
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "total": 0,
+            "categories": {"security": 0, "critical": 0, "necessary": 0, "optional": 0},
+            "updates": [],
+            "message": str(e),
+        }
+
+
+def _open_terminal_with_command(shell_cmd: str) -> tuple[bool, str]:
+    """Öffnet ein Terminal-Fenster und führt den Befehl aus. Passwort gibt der Benutzer im Terminal ein.
+    Gibt (success, message) zurück."""
+    import shutil
+    wrapped = f"{shell_cmd}; echo ''; read -p 'Drücke Enter zum Schließen'; exec bash"
+    env = os.environ.copy()
+    # Erweiterte Liste: GNOME, XFCE, KDE, MATE, LXDE, Kitty, Alacritty, QTerminal, Tilix
+    for term_cmd, term_args in [
+        ("gnome-terminal", ["--", "bash", "-c", wrapped]),
+        ("gnome-terminal.wrapper", ["--", "bash", "-c", wrapped]),
+        ("xfce4-terminal", ["-e", f"bash -c {shlex.quote(wrapped)}"]),
+        ("konsole", ["-e", "bash", "-c", wrapped]),
+        ("xterm", ["-e", f"bash -c {shlex.quote(wrapped)}"]),
+        ("mate-terminal", ["--", "bash", "-c", wrapped]),
+        ("lxterminal", ["-e", f"bash -c {shlex.quote(wrapped)}"]),
+        ("kitty", ["bash", "-c", wrapped]),
+        ("alacritty", ["-e", "bash", "-c", wrapped]),
+        ("qterminal", ["-e", f"bash -c {shlex.quote(wrapped)}"]),
+        ("tilix", ["-e", f"bash -c {shlex.quote(wrapped)}"]),
+        ("urxvt", ["-e", "bash", "-c", wrapped]),
+    ]:
+        path = shutil.which(term_cmd)
+        if path:
+            try:
+                subprocess.Popen(
+                    [path] + term_args,
+                    env=env,
+                    start_new_session=True,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                return True, f"Terminal geöffnet ({term_cmd}). Passwort im Fenster eingeben."
+            except Exception as e:
+                logger.warning(f"Terminal starten ({term_cmd}) fehlgeschlagen: {e}")
+    return False, (
+        "Kein Terminal gefunden. Bitte manuell ein Terminal öffnen und ausführen: "
+        f"{shell_cmd}"
+    )
+
+
+@app.post("/api/system/run-update-in-terminal")
+async def run_update_in_terminal():
+    """Öffnet ein Terminal-Fenster mit 'sudo apt update && sudo apt upgrade'.
+    Der Benutzer gibt das Passwort im geöffneten Terminal ein. Bei fehlendem Terminal: copyable_command für manuelles Ausführen."""
+    try:
+        cmd = "sudo apt update && sudo apt upgrade"
+        success, msg = _open_terminal_with_command(cmd)
+        if success:
+            return {"status": "success", "message": msg, "copyable_command": cmd}
+        return JSONResponse(
+            status_code=200,
+            content={"status": "error", "message": msg, "copyable_command": cmd}
+        )
+    except Exception as e:
+        logger.exception("run-update-in-terminal fehlgeschlagen")
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/system/terminal-available")
+async def check_terminal_available():
+    """Prüft, ob ein Terminal zum Öffnen verfügbar ist (für Anzeige des Buttons)."""
+    import shutil
+    for name in ["gnome-terminal", "gnome-terminal.wrapper", "xfce4-terminal", "konsole", "xterm", "mate-terminal", "lxterminal"]:
+        if shutil.which(name):
+            return {"available": True, "terminal": name}
+    return {"available": False, "terminal": None}
+
 
 @app.post("/api/security/firewall/enable")
 async def enable_firewall(request: Request):
@@ -3524,6 +4045,54 @@ async def homeautomation_status():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.post("/api/homeautomation/search")
+async def homeautomation_search():
+    """Suche nach Elementen im Haus (Geräte/Integrationen) – Platzhalter für spätere Erkennung."""
+    try:
+        # Optional: MQTT-Broker, Zigbee-Gateway, bekannte Dienste prüfen
+        found = []
+        mqtt = run_command("systemctl is-active mosquitto 2>/dev/null")["success"] or run_command("pgrep -x mosquitto")["success"]
+        if mqtt:
+            found.append({"type": "mqtt", "name": "Mosquitto (MQTT-Broker)", "running": True})
+        return {"status": "success", "found": found, "message": "Suche abgeschlossen."}
+    except Exception as e:
+        return {"status": "success", "found": [], "message": str(e)}
+
+
+@app.post("/api/homeautomation/uninstall")
+async def homeautomation_uninstall(request: Request):
+    """Hausautomations-Komponente deinstallieren (Home Assistant, OpenHAB, Node-RED)."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        component = (data.get("component") or "").strip().lower()
+        sudo_password = data.get("sudo_password") or sudo_password_store.get("password") or ""
+        if component not in ("homeassistant", "openhab", "nodered"):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Ungültige Komponente."})
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+        results = []
+        if component == "homeassistant":
+            run_command("docker stop homeassistant 2>/dev/null; docker rm homeassistant 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            results.append("Home Assistant Container gestoppt/entfernt.")
+        elif component == "openhab":
+            run_command("systemctl stop openhab 2>/dev/null; systemctl disable openhab 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            run_command("apt-get remove -y openhab 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            results.append("OpenHAB deinstalliert.")
+        elif component == "nodered":
+            run_command("systemctl stop node-red 2>/dev/null; systemctl disable node-red 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            run_command("npm uninstall -g node-red 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            results.append("Node-RED deinstalliert.")
+        return {"status": "success", "message": "Deinstallation durchgeführt.", "results": results}
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
 @app.post("/api/homeautomation/configure")
 async def configure_homeautomation(request: Request):
     """Homeautomation konfigurieren"""
@@ -3640,6 +4209,59 @@ async def musicbox_status():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.get("/api/musicbox/mopidy-diagnose")
+async def musicbox_mopidy_diagnose():
+    """Mopidy/Iris-Diagnose: warum Iris ggf. nicht lädt (ohne Sudo nur Teilinfos)."""
+    try:
+        out = {
+            "iris_import_current_user": run_command("python3 -c 'import mopidy_iris' 2>/dev/null", sudo=False)["success"],
+            "mopidy_running": get_running_services().get("mopidy", False),
+            "mopidy_installed": check_installed("mopidy"),
+            "iris_visible_to_mopidy": None,
+            "iris_config_snippet": None,
+            "mopidy_extensions_output": None,
+            "mopidy_deps": None,
+            "mopidy_log_tail": None,
+            "sudo_used": False,
+        }
+        sudo_password = sudo_password_store.get("password") or ""
+        if sudo_password:
+            out["sudo_used"] = True
+            out["iris_visible_to_mopidy"] = run_command(
+                "sudo -n -u mopidy python3 -c 'import mopidy_iris' 2>/dev/null",
+                sudo=True, sudo_password=sudo_password
+            )["success"]
+            r = run_command(
+                "grep -A5 '^\\[iris\\]' /etc/mopidy/mopidy.conf 2>/dev/null || true",
+                sudo=True, sudo_password=sudo_password
+            )
+            if r.get("stdout"):
+                out["iris_config_snippet"] = r["stdout"].strip()
+            r2 = run_command(
+                "sudo -n -u mopidy mopidy config 2>&1 | head -120",
+                sudo=True, sudo_password=sudo_password
+            )
+            if r2.get("stdout"):
+                out["mopidy_extensions_output"] = r2["stdout"].strip()
+            r2d = run_command(
+                "sudo -n -u mopidy mopidy deps 2>&1",
+                sudo=True, sudo_password=sudo_password
+            )
+            if r2d.get("stdout"):
+                out["mopidy_deps"] = r2d["stdout"].strip()
+            r3 = run_command(
+                "journalctl -u mopidy -n 50 --no-pager 2>&1",
+                sudo=True, sudo_password=sudo_password
+            )
+            if r3.get("stdout"):
+                out["mopidy_log_tail"] = r3["stdout"].strip()
+        return out
+    except Exception as e:
+        logger.exception("Mopidy-Diagnose fehlgeschlagen")
+        return {"error": str(e)}
+
+
 @app.post("/api/musicbox/configure")
 async def configure_musicbox(request: Request):
     """MusicBox konfigurieren"""
@@ -3687,6 +4309,60 @@ async def configure_musicbox(request: Request):
             mopidy_start = run_command("systemctl enable --now mopidy", sudo=True, sudo_password=sudo_password)
             if mopidy_start["success"]:
                 results.append("Mopidy aktiviert")
+            
+            # Mopidy-Webclient: Ohne Erweiterung zeigt localhost:6680 nur Platzhalter. Iris = volle Weboberfläche.
+            # Mopidy läuft als User "mopidy" – Iris muss für diesen User sichtbar sein (--user für mopidy oder system-weit).
+            webclient_installed_this_run = False
+            iris_visible_to_mopidy = run_command("sudo -n -u mopidy python3 -c 'import mopidy_iris' 2>/dev/null", sudo=True, sudo_password=sudo_password)["success"]
+            if not iris_visible_to_mopidy:
+                pip_ok = run_command("apt-get install -y python3-pip", sudo=True, sudo_password=sudo_password)["success"]
+                if pip_ok:
+                    # Zuerst system-weit versuchen (für alle Nutzer sichtbar)
+                    iris_pip = run_command("PIP_ROOT_USER_ACTION=ignore python3 -m pip install --break-system-packages Mopidy-Iris", sudo=True, sudo_password=sudo_password)
+                    if not iris_pip["success"]:
+                        iris_pip = run_command("PIP_ROOT_USER_ACTION=ignore python3 -m pip install Mopidy-Iris", sudo=True, sudo_password=sudo_password)
+                    # Prüfen, ob User "mopidy" die Erweiterung jetzt sieht (Dienst läuft als mopidy)
+                    iris_visible_to_mopidy = run_command("sudo -n -u mopidy python3 -c 'import mopidy_iris' 2>/dev/null", sudo=True, sudo_password=sudo_password)["success"]
+                    if not iris_visible_to_mopidy and iris_pip["success"]:
+                        # System-Pfad wird von mopidy nicht gelesen → als User mopidy installieren
+                        run_command("sudo -n -u mopidy PIP_ROOT_USER_ACTION=ignore python3 -m pip install --user --break-system-packages Mopidy-Iris", sudo=True, sudo_password=sudo_password)
+                        iris_visible_to_mopidy = run_command("sudo -n -u mopidy python3 -c 'import mopidy_iris' 2>/dev/null", sudo=True, sudo_password=sudo_password)["success"]
+                    if iris_visible_to_mopidy or iris_pip["success"]:
+                        results.append("Mopidy-Webclient (Iris) installiert – nach Neustart unter http://localhost:6680/iris")
+                        webclient_installed_this_run = True
+                    else:
+                        mbox = run_command("apt-get install -y mopidy-musicbox-webclient", sudo=True, sudo_password=sudo_password)
+                        if mbox["success"]:
+                            results.append("Mopidy-Webclient (MusicBox) installiert – unter http://localhost:6680")
+                            webclient_installed_this_run = True
+                        else:
+                            results.append("Hinweis: Mopidy-Webclient manuell als User mopidy: sudo -u mopidy python3 -m pip install --user --break-system-packages Mopidy-Iris, dann systemctl restart mopidy")
+                else:
+                    results.append("Hinweis: python3-pip installieren, dann: sudo -u mopidy python3 -m pip install --user --break-system-packages Mopidy-Iris, Mopidy neustarten")
+            else:
+                results.append("Mopidy-Webclient (Iris) bereits installiert – http://localhost:6680/iris")
+            
+            # [iris] in mopidy.conf ergänzen, falls vorhanden und noch nicht gesetzt
+            mopidy_conf = "/etc/mopidy/mopidy.conf"
+            conf_check = run_command(f"grep -q '^\\[iris\\]' {mopidy_conf} 2>/dev/null", sudo=True, sudo_password=sudo_password)["success"]
+            if not conf_check:
+                run_command(
+                    f"echo '' >> {mopidy_conf} && echo '[iris]' >> {mopidy_conf} && echo 'enabled = true' >> {mopidy_conf}",
+                    sudo=True, sudo_password=sudo_password
+                )
+            
+            if webclient_installed_this_run:
+                run_command("systemctl restart mopidy", sudo=True, sudo_password=sudo_password)
+            
+            # Internetradio (Mopidy-Erweiterung)
+            if data.get("enable_internetradio"):
+                ir_installed = run_command("dpkg -l mopidy-internetarchive 2>/dev/null | grep -q ^ii", sudo=False)["success"]
+                if not ir_installed:
+                    ir_result = run_command("apt-get install -y mopidy-internetarchive", sudo=True, sudo_password=sudo_password)
+                    if ir_result["success"]:
+                        results.append("Mopidy Internetradio (mopidy-internetarchive) installiert")
+                else:
+                    results.append("Mopidy Internetradio bereits installiert")
         
         # Volumio installieren (komplexer, benötigt spezielle Installation)
         elif music_type == "volumio":
@@ -3710,6 +4386,14 @@ async def configure_musicbox(request: Request):
             plex_start = run_command("systemctl enable --now plexmediaserver", sudo=True, sudo_password=sudo_password)
             if plex_start["success"]:
                 results.append("Plex aktiviert")
+        
+        # Streaming (Spotify etc. – bei Mopidy bereits über enable_spotify/mopidy-spotify abgedeckt)
+        if data.get("enable_streaming") and music_type == "mopidy" and not check_installed("mopidy-spotify"):
+            spotify_install = run_command("apt-get install -y mopidy-spotify", sudo=True, sudo_password=sudo_password)
+            if spotify_install["success"]:
+                results.append("Mopidy Spotify-Erweiterung installiert (Spotify-Abo erforderlich)")
+        if data.get("enable_streaming"):
+            results.append("Apple Music: per AirPlay von iPhone/iPad streamen (AirPlay Support aktivieren). Amazon Music: Volumio-Weboberfläche oder Browser (music.amazon.com).")
         
         # AirPlay Support (Shairport-sync)
         if data.get("enable_airplay"):
@@ -3790,6 +4474,10 @@ async def devenv_status():
             "cursor": {
                 "installed": cursor_installed,
                 "version": cursor_version,
+            },
+            "qtqml": {
+                "installed": installed.get("qtqml", False),
+                "version": get_package_version("qt5-default") or get_package_version("qtbase5-dev") or None,
             },
         }
     except Exception as e:
@@ -4152,21 +4840,23 @@ async def configure_learning(request: Request):
 async def monitoring_status():
     """Monitoring-Status abrufen"""
     try:
-        installed = get_installed_apps()
-        running = get_running_services()
-        
+        # Laufend: systemd-Dienstnamen (grafana-server, nicht grafana)
+        prometheus_running = run_command("systemctl is-active prometheus 2>/dev/null")["success"]
+        grafana_running = run_command("systemctl is-active grafana-server 2>/dev/null")["success"]
+        node_exporter_running = run_command("systemctl is-active node_exporter 2>/dev/null")["success"]
+
         return {
             "prometheus": {
-                "installed": check_installed("prometheus") or run_command("which prometheus")["success"],
-                "running": running.get("prometheus", False),
+                "installed": check_installed("prometheus") or run_command("which prometheus 2>/dev/null")["success"] or run_command("test -f /usr/bin/prometheus 2>/dev/null")["success"],
+                "running": prometheus_running,
             },
             "grafana": {
-                "installed": check_installed("grafana") or run_command("which grafana-server")["success"],
-                "running": running.get("grafana", False),
+                "installed": check_installed("grafana"),
+                "running": grafana_running,
             },
             "node_exporter": {
-                "installed": check_installed("node_exporter") or run_command("which node_exporter")["success"],
-                "running": running.get("node_exporter", False),
+                "installed": check_installed("node_exporter") or run_command("which node_exporter 2>/dev/null")["success"] or run_command("test -f /usr/local/bin/node_exporter 2>/dev/null")["success"],
+                "running": node_exporter_running,
             },
         }
     except Exception as e:
@@ -4312,6 +5002,212 @@ scrape_configs:
                 "status": "error",
                 "message": f"Fehler bei der Monitoring-Konfiguration: {str(e)}"
             }
+        )
+
+@app.post("/api/monitoring/uninstall")
+async def monitoring_uninstall(request: Request):
+    """Eine Monitoring-Komponente entfernen (Prometheus, Grafana, Node Exporter)."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        component = (data.get("component") or "").strip().lower()
+        sudo_password = data.get("sudo_password") or sudo_password_store.get("password") or ""
+        if component not in ("prometheus", "grafana", "node_exporter"):
+            return JSONResponse(
+                status_code=200,
+                content={"status": "error", "message": "Ungültige Komponente. Erlaubt: prometheus, grafana, node_exporter"}
+            )
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test["success"]:
+                return JSONResponse(
+                    status_code=200,
+                    content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True}
+                )
+        results = []
+        if component == "node_exporter":
+            run_command("sudo systemctl stop node_exporter 2>/dev/null; sudo systemctl disable node_exporter 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            run_command("sudo rm -f /etc/systemd/system/node_exporter.service 2>/dev/null; sudo systemctl daemon-reload", sudo=True, sudo_password=sudo_password)
+            run_command("sudo rm -f /usr/local/bin/node_exporter 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            results.append("Node Exporter entfernt.")
+        elif component == "prometheus":
+            run_command("sudo systemctl stop prometheus 2>/dev/null; sudo systemctl disable prometheus 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            run_command("sudo apt-get remove -y prometheus 2>/dev/null; sudo apt-get purge -y prometheus 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            results.append("Prometheus entfernt.")
+        elif component == "grafana":
+            run_command("sudo systemctl stop grafana-server 2>/dev/null; sudo systemctl disable grafana-server 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            run_command("sudo apt-get remove -y grafana 2>/dev/null; sudo apt-get purge -y grafana 2>/dev/null", sudo=True, sudo_password=sudo_password)
+            results.append("Grafana entfernt.")
+        return {"status": "success", "message": f"{component} entfernt", "results": results}
+    except Exception as e:
+        logger.error(f"Monitoring uninstall error: {e}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+# ==================== GPU/System-Info (ohne Pi) ====================
+
+def _get_gpus_for_system_info():
+    """GPU-Liste für System-Info (Nicht-Pi): Name + optional Speicher (nvidia-smi)."""
+    gpus = []
+    try:
+        pci_list = _get_pci_with_drivers()
+        seen = set()
+        for item in pci_list:
+            desc = (item.get("description") or "").strip()
+            desc_lower = desc.lower()
+            if not ("vga" in desc_lower or "3d" in desc_lower or "display" in desc_lower or
+                    ("nvidia" in desc_lower and "graphics" in desc_lower) or
+                    ("radeon" in desc_lower or "amd" in desc_lower and "graphics" in desc_lower) or
+                    ("intel" in desc_lower and "graphics" in desc_lower)):
+                continue
+            if desc in seen:
+                continue
+            seen.add(desc)
+            gpus.append({"name": desc, "memory_mb": None, "driver": item.get("driver")})
+        if not gpus:
+            r = run_command("lspci 2>/dev/null | grep -iE 'vga|3d|display|nvidia|amd|radeon|graphics'")
+            if r.get("success") and r.get("stdout"):
+                for line in (r["stdout"] or "").strip().split("\n"):
+                    if line.strip():
+                        name = line.split(" ", 1)[1] if " " in line else line.strip()
+                        gpus.append({"name": name.strip(), "memory_mb": None})
+        # NVIDIA Speicher via nvidia-smi
+        nv = run_command("nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits 2>/dev/null")
+        if nv.get("success") and nv.get("stdout"):
+            for idx, line in enumerate((nv["stdout"] or "").strip().split("\n")):
+                if not line.strip() or idx >= len(gpus):
+                    continue
+                parts = [p.strip() for p in line.split(",")]
+                if len(parts) >= 2:
+                    try:
+                        mem_mb = int(parts[1].strip().split()[0])
+                        if "nvidia" in (gpus[idx].get("name") or "").lower():
+                            gpus[idx]["memory_mb"] = mem_mb
+                        else:
+                            for g in gpus:
+                                if "nvidia" in (g.get("name") or "").lower():
+                                    g["memory_mb"] = mem_mb
+                                    break
+                    except (ValueError, IndexError):
+                        pass
+    except Exception:
+        pass
+    return gpus
+
+
+# ==================== Peripherie-Scan (Assimilation) ====================
+
+def _get_pci_with_drivers():
+    """lspci -k: PCI-Geräte mit Kernel-Treiber; gibt Liste (address, line, driver) zurück."""
+    result = run_command("/usr/bin/lspci -k 2>/dev/null")
+    if not result.get("success") or not result.get("stdout"):
+        result = run_command("lspci -k 2>/dev/null")
+    if not result.get("success") or not result.get("stdout"):
+        return []
+    lines = (result["stdout"] or "").strip().split("\n")
+    out = []
+    current_addr = ""
+    current_line = ""
+    current_driver = ""
+    for line in lines:
+        if line and not line.startswith("\t"):
+            if current_addr and current_line:
+                out.append({"address": current_addr, "description": current_line, "driver": current_driver or None})
+            parts = line.split(None, 1)
+            current_addr = parts[0] if parts else ""
+            current_line = parts[1] if len(parts) > 1 else ""
+            current_driver = ""
+        elif line.strip().startswith("Kernel driver in use:"):
+            current_driver = line.split(":", 1)[-1].strip()
+    if current_addr and current_line:
+        out.append({"address": current_addr, "description": current_line, "driver": current_driver or None})
+    return out
+
+@app.get("/api/peripherals/scan")
+async def peripherals_scan():
+    """Scan nach verwendeter Peripherie (Grafikkarten, Tastaturen, Mäuse, Headsets, Webcams) inkl. Treiber."""
+    try:
+        pci_with_driver = _get_pci_with_drivers()
+        gpus = []
+        seen_descriptions = set()
+        for item in pci_with_driver:
+            desc = (item.get("description") or "").strip()
+            desc_lower = desc.lower()
+            # Nur echte Grafik-Controller: VGA, Display-Controller, 3D; nicht jede "graphics"-Subfunktion doppelt
+            is_vga = "vga compatible" in desc_lower or "vga compatible controller" in desc_lower
+            is_display = "display controller" in desc_lower and ("intel" in desc_lower or "nvidia" in desc_lower or "amd" in desc_lower or "radeon" in desc_lower)
+            is_3d = "3d" in desc_lower and ("nvidia" in desc_lower or "amd" in desc_lower or "radeon" in desc_lower or "intel" in desc_lower)
+            is_graphics = ("nvidia" in desc_lower or "radeon" in desc_lower or "amd radeon" in desc_lower) and ("graphics" in desc_lower or "vga" in desc_lower or "display" in desc_lower)
+            is_intel_graphics = "intel" in desc_lower and "graphics" in desc_lower
+            if is_vga or is_display or is_3d or is_graphics or is_intel_graphics:
+                # Deduplizieren: gleiche Beschreibung nur einmal (z. B. mehrere PCI-Funktionen einer GPU)
+                if desc not in seen_descriptions:
+                    seen_descriptions.add(desc)
+                    gpus.append({
+                        "type": "gpu",
+                        "description": desc,
+                        "driver": item.get("driver"),
+                        "driver_hint": item.get("driver") or "Kein Treiber geladen – prüfen: lspci -k, Hersteller-Linux-Treiber",
+                    })
+        if not gpus:
+            r = run_command("/usr/bin/lspci 2>/dev/null | grep -iE 'vga|3d|display|nvidia|amd|radeon|graphics'")
+            if not r.get("success") or not r.get("stdout"):
+                r = run_command("lspci 2>/dev/null | grep -iE 'vga|3d|display|nvidia|amd|radeon|graphics'")
+            if r.get("success") and r.get("stdout"):
+                for line in (r["stdout"] or "").strip().split("\n"):
+                    if line.strip():
+                        gpus.append({"type": "gpu", "description": line.strip(), "driver": None, "driver_hint": "lspci -k für Treiber"})
+        usb = []
+        r = run_command("/usr/bin/lsusb 2>/dev/null")
+        if not r.get("success") or not r.get("stdout"):
+            r = run_command("lsusb 2>/dev/null")
+        if r.get("success") and r.get("stdout"):
+            for line in (r["stdout"] or "").strip().split("\n"):
+                if line.strip():
+                    desc = line.strip()
+                    kind = "usb"
+                    if any(x in desc.lower() for x in ["keyboard", "tastatur"]):
+                        kind = "keyboard"
+                    elif any(x in desc.lower() for x in ["mouse", "maus", "pointer"]):
+                        kind = "mouse"
+                    elif any(x in desc.lower() for x in ["webcam", "camera", "kamera", "video", "uvc", "integrated camera"]):
+                        kind = "webcam"
+                    elif any(x in desc.lower() for x in ["audio", "headset", "microphone", "sound"]):
+                        kind = "headset"
+                    usb.append({"type": kind, "description": desc})
+        input_devices = []
+        try:
+            with open("/proc/bus/input/devices", "r") as f:
+                content = f.read()
+            for block in content.split("\n\n"):
+                if not block.strip():
+                    continue
+                name = ""
+                handlers = ""
+                for line in block.split("\n"):
+                    if line.startswith("N: Name="):
+                        name = line.replace("N: Name=", "").strip().strip('"')
+                    elif line.startswith("H: Handlers="):
+                        handlers = line.replace("H: Handlers=", "").strip()
+                if name and ("kbd" in handlers or "mouse" in handlers or "event" in handlers):
+                    input_devices.append({"name": name, "handlers": handlers})
+        except Exception:
+            pass
+        drivers_list = [{"device": p["description"], "driver": p.get("driver") or "—"} for p in pci_with_driver]
+        return {
+            "status": "success",
+            "gpus": gpus,
+            "usb": usb,
+            "input_devices": input_devices,
+            "drivers": drivers_list,
+        }
+    except Exception as e:
+        err_msg = str(e).strip() if str(e) else "Unbekannter Fehler beim Peripherie-Scan"
+        logger.error(f"Peripherie-Scan Fehler: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={"status": "error", "message": err_msg, "gpus": [], "usb": [], "input_devices": [], "drivers": []}
         )
 
 # ==================== Backup & Restore Endpoints ====================
@@ -6857,6 +7753,17 @@ async def set_raspberry_pi_config(request: Request):
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
+@app.get("/api/raspberry-pi/system-info")
+async def get_raspberry_pi_system_info():
+    """CPU-, Grafik- und Systeminfos (vcgencmd, /proc/cpuinfo)"""
+    try:
+        module = _get_pi_config_module()
+        return module.get_system_info()
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Systeminfos: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
 @app.get("/api/raspberry-pi/config/options")
 async def get_raspberry_pi_config_options():
     """Gibt alle verfügbaren Konfigurationsoptionen zurück, gefiltert nach Pi-Modell"""
@@ -7020,6 +7927,22 @@ async def add_wifi_network(request: Request):
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
+@app.post("/api/control-center/wifi/connect")
+async def wifi_connect(request: Request):
+    """Verbindung zu einem konfigurierten WLAN-Netzwerk herstellen"""
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        ssid = (data.get("ssid") or "").strip()
+        if not ssid:
+            return JSONResponse(status_code=200, content={"status": "error", "message": "SSID erforderlich"})
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.wifi_connect(ssid, sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim WLAN-Verbinden: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
 @app.get("/api/control-center/ssh/status")
 async def get_ssh_status():
     """Prüft SSH-Status"""
@@ -7043,6 +7966,19 @@ async def set_ssh_enabled(request: Request):
         return module.set_ssh_enabled(enabled, sudo_password)
     except Exception as e:
         logger.error(f"Fehler beim Setzen des SSH-Status: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/ssh/start")
+async def start_ssh(request: Request):
+    """SSH-Dienst starten"""
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.start_ssh_service(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim SSH-Start: {str(e)}", exc_info=True)
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
@@ -7070,6 +8006,19 @@ async def set_vnc_enabled(request: Request):
         return module.set_vnc_enabled(enabled, password, sudo_password)
     except Exception as e:
         logger.error(f"Fehler beim Setzen des VNC-Status: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/vnc/start")
+async def start_vnc(request: Request):
+    """VNC-Dienst starten"""
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        module = _get_control_center_module()
+        return module.start_vnc_service(sudo_password)
+    except Exception as e:
+        logger.error(f"Fehler beim VNC-Start: {str(e)}", exc_info=True)
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 

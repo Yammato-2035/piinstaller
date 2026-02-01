@@ -7,45 +7,49 @@ Die Versionsnummer folgt dem Schema **X.Y.Z.W**:
 | Teil | Bedeutung | Erhöhung bei |
 |------|-----------|--------------|
 | **X** | Hauptversion | Gravierende Änderungen, inkompatible Umbrüche |
-| **Y** | Nebenversion | Neue Funktionen, größere Features |
-| **Z** | Modul/Release | Bereich oder Modul abgeschlossen |
-| **W** | Patch | Bugfixes, kleine Ergänzungen, UI-Anpassungen, Dokumentation |
+| **Y** | Nebenversion | Größere Releases, strategische Erweiterungen |
+| **Z** | Neue Features | **Wird erhöht, wenn ein neues Feature hinzukommt** (z. B. neuer Bereich wie Kino/Streaming, neue Hauptfunktion). W wird auf 0 gesetzt. |
+| **W** | Patch | Bugfixes, kleine Ergänzungen, UI-Anpassungen, Dokumentation (ohne neues Feature) |
 
 ## Wann wird die Version erhöht?
 
 Die Versionsnummer wird **bei jeder Änderung** angepasst:
 
 - **Bugfix** → W erhöhen (z. B. 1.0.1.3 → 1.0.1.4)
-- **Ergänzung** (kleine neue Option, neues Feld, neuer Hinweis) → W erhöhen
-- **Feature-Änderung** oder **Feature-Ergänzung** → Y oder Z erhöhen (je nach Umfang)
+- **Ergänzung** (kleine neue Option, neues Feld, neuer Hinweis, ohne neues Feature) → W erhöhen
+- **Neues Feature** (neuer Bereich, neue Hauptfunktion, z. B. Kino/Streaming) → **Z erhöhen, W auf 0 setzen** (z. B. 1.0.1.17 → 1.0.2.0)
 - **Dokumentations- oder Texte-Anpassung** (sofern inhaltlich relevant) → W erhöhen
 - **Reine Refactorings ohne sichtbare Änderung** → optional W erhöhen, um den Stand nachvollziehbar zu machen
 
 So bleibt jeder Stand (z. B. aus Git) einer konkreten Version zugeordnet.
 
-### Empfehlung: Eine Version pro logischer Änderung
+### Eine Version pro Bereich / pro Änderung
 
-Statt für **jede** kleine Zeilenänderung W zu erhöhen, kann man **eine Versionserhöhung pro logischer Änderung oder pro abgeschlossenem Arbeitsschritt** vornehmen (z. B. ein Bugfix, eine Doku-Ergänzung, ein kleines Feature). Mehrere zusammengehörige Anpassungen (z. B. „Dokumentation auf Stand bringen“ inkl. Changelog und Troubleshooting) können als **eine** Version (z. B. 1.0.1.5) erfasst werden. Das hält den Changelog übersichtlich und bleibt mit dem Schema X.Y.Z.W kompatibel.
+- **Pro Bereich:** Jede vorgenommene Veränderung oder Fehlerbehebung **pro Bereich** (z. B. WLAN, Control Center – SSH/VNC, Display, Raspberry Pi Config) führt zu **einer** Erhöhung von W (Patch). Mehrere Änderungen im selben Bereich können in einer Version zusammengefasst werden; Änderungen in unterschiedlichen Bereichen werden getrennt versioniert (z. B. 1.0.1.6 WLAN, 1.0.1.7 Services, 1.0.1.8 Display).
+- **Dokumentation:** Die Dokumentation (Changelog in der App, ggf. Troubleshooting, VERSIONING.md) wird **immer selbstständig** zu jeder Änderung ergänzt – inklusive neuer Changelog-Einträge und Versionsnummer.
 
 ## Wo wird die Version geführt?
 
-- **Quelle der Wahrheit:** Datei `VERSION` im Projektroot (eine Zeile, z. B. `1.0.1.4`).
+- **Quelle der Wahrheit:** Datei `VERSION` im Projektroot (eine Zeile, z. B. `1.0.1.13`).
 - **Backend:** Liest die Version aus `VERSION` (z. B. für `/api/version`).
-- **Frontend:** `frontend/package.json` → Feld `version` (wird per `npm run prebuild` aus `VERSION` synchronisiert, siehe `frontend/sync-version.js`).
-- **Tauri (Desktop-App):** `frontend/src-tauri/tauri.conf.json` → Feld `version` (bei Release manuell an `VERSION` anpassen).
+- **Frontend:** `frontend/package.json` → Feld `version` (wird automatisch aus `VERSION` synchronisiert).
+- **Tauri (Desktop-App):** `frontend/src-tauri/tauri.conf.json` → Feld `version` (wird automatisch aus `VERSION` synchronisiert).
 
-Nach einer Änderung von `VERSION`:
+**Automatische Synchronisation:** Das Skript `frontend/sync-version.js` liest `VERSION` und schreibt die Version in `package.json` und `tauri.conf.json`. Es wird bei **`npm run prebuild`** ausgeführt (z. B. vor `npm run build`). Manuell: `cd frontend && node sync-version.js`.
 
-1. `VERSION` anpassen.
-2. Im Frontend: `npm run prebuild` ausführen (oder `version` in `package.json` von Hand anpassen).
-3. Tauri: `version` in `tauri.conf.json` ggf. anpassen.
-4. Changelog in der Dokumentation (z. B. unter „Versionen & Changelog“ in der App) ergänzen.
+Nach einer Änderung (Versionsbump):
 
-## Changelog
+1. **Versionsnummer erhöhen** – entweder:
+   - **Neues Feature (Z erhöhen):** `node scripts/bump-feature.js` (erhöht Z um 1, setzt W auf 0, führt sync-version aus), oder
+   - **Patch/Bugfix (W erhöhen):** `node scripts/bump-version.js` (erhöht W um 1, führt sync-version aus), oder
+   - **Manuell:** `VERSION` anpassen (z. B. 1.0.1.17 → 1.0.2.0 bei neuem Feature, 1.0.1.17 → 1.0.1.18 bei Patch), dann im Frontend: `npm run prebuild`.
+2. **Changelog** in der App ergänzen: Dokumentation → Versionen & Changelog (in `frontend/src/pages/Documentation.tsx`).
 
-Der Changelog wird in der **Dokumentation** der Anwendung geführt (Seite „Dokumentation“ → Kapitel „Versionen & Changelog“). Dort sind pro Version die Änderungen (Bugfixes, Ergänzungen, Features) kurz beschrieben.
+## Changelog & Dokumentation
 
-Für Releases kann zusätzlich eine Datei `CHANGELOG.md` im Root gepflegt werden (optional).
+- Der Changelog wird in der **Dokumentation** der Anwendung geführt (Seite „Dokumentation“ → Kapitel „Versionen & Changelog“). Dort sind pro Version die Änderungen (Bugfixes, Ergänzungen, Features) kurz beschrieben.
+- **Regel:** Zu jeder Änderung/Fehlerbehebung wird die Dokumentation **selbstständig** ergänzt: Versionsnummer erhöhen (pro Bereich), Changelog-Eintrag anlegen, ggf. Troubleshooting oder andere Kapitel anpassen.
+- Für Releases kann zusätzlich eine Datei `CHANGELOG.md` im Root gepflegt werden (optional).
 
 ---
 
@@ -78,8 +82,7 @@ So können z. B. Volkers Änderungen (Laptop) und Gabriels Änderungen (Pi) un
 
 3. **Versionsnummer anheben** (falls für Gabriels Änderungen noch nicht geschehen)
    - `VERSION` im Projektroot anpassen (z. B. 1.0.1.4 → 1.0.1.5).
-   - `frontend/package.json` → `version` (oder `npm run prebuild` aus dem Frontend-Ordner).
-   - `frontend/src-tauri/tauri.conf.json` → `version`.
+   - Im Frontend: `npm run prebuild` ausführen (synchronisiert package.json und tauri.conf.json aus VERSION).
 
 4. **Commit und Push**
    ```bash

@@ -29,6 +29,17 @@ interface PiInfo {
   ram_gb?: number
 }
 
+interface SystemInfo {
+  cpu_model?: string | null
+  current_mhz?: number | null
+  config_arm_freq?: number | string | null
+  config_gpu_mem?: number | string | null
+  gpu_info?: string | null
+  recommended_mhz?: number | null
+  memory_split_hint?: string | null
+  over_voltage_hint?: string | null
+}
+
 interface CategoryData {
   name: string
   options: Array<[string, ConfigOption]>
@@ -39,6 +50,7 @@ const RaspberryPiConfig: React.FC = () => {
   const [configOptions, setConfigOptions] = useState<Record<string, ConfigOption>>({})
   const [configCategories, setConfigCategories] = useState<Record<string, CategoryData>>({})
   const [piInfo, setPiInfo] = useState<PiInfo | null>(null)
+  const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
@@ -50,7 +62,22 @@ const RaspberryPiConfig: React.FC = () => {
   useEffect(() => {
     loadConfig()
     loadConfigOptions()
+    loadSystemInfo()
   }, [])
+
+  const loadSystemInfo = async () => {
+    try {
+      const r = await fetchApi('/api/raspberry-pi/system-info')
+      const d = await r.json()
+      if (d.status === 'success' && d.system_info) {
+        setSystemInfo(d.system_info)
+      } else {
+        setSystemInfo(null)
+      }
+    } catch {
+      setSystemInfo(null)
+    }
+  }
 
   const loadConfig = async (retryAfterSudo = false) => {
     setLoading(true)
@@ -392,6 +419,30 @@ const RaspberryPiConfig: React.FC = () => {
           )}
         </p>
       </div>
+
+      {systemInfo && (
+        <div className="card mb-6">
+          <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+            <Info className="text-sky-500" />
+            CPU & Grafik
+          </h2>
+          <p className="text-slate-400 text-sm mb-4">
+            Die Übersicht zu <strong>jeder CPU</strong> und <strong>jeder gefundenen GPU</strong> (Modell, MHz, Speicher) findest du im <strong>Dashboard</strong>.
+          </p>
+          {systemInfo.memory_split_hint && (
+            <div className="p-3 bg-slate-800/60 border border-slate-600 rounded-lg mb-3">
+              <div className="text-slate-400 mb-1 text-sm">Speicheraufteilung (CPU/GPU)</div>
+              <div className="text-slate-300 text-xs">{systemInfo.memory_split_hint}</div>
+            </div>
+          )}
+          {systemInfo.over_voltage_hint && (
+            <div className="p-3 bg-amber-900/20 border border-amber-700/50 rounded-lg">
+              <div className="text-amber-300 mb-1 text-sm">Richtwerte Spannungserhöhung (over_voltage)</div>
+              <div className="text-slate-300 text-xs">{systemInfo.over_voltage_hint}</div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="card">
         <div className="flex items-center justify-between mb-6">

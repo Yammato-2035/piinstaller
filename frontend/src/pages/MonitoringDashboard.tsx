@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react'
-import { Activity, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react'
+import { Activity, TrendingUp, AlertCircle, CheckCircle, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { fetchApi } from '../api'
+import SudoPasswordModal from '../components/SudoPasswordModal'
 
 const MonitoringDashboard: React.FC = () => {
   const [status, setStatus] = useState<any>(null)
   const [metrics, setMetrics] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [sudoModalOpen, setSudoModalOpen] = useState(false)
+  const [uninstallComponent, setUninstallComponent] = useState<string | null>(null)
+  const [installSelection, setInstallSelection] = useState({
+    enable_node_exporter: true,
+    enable_prometheus: true,
+    enable_grafana: true,
+  })
 
   useEffect(() => {
     loadStatus()
@@ -50,28 +58,24 @@ const MonitoringDashboard: React.FC = () => {
     }
   }
 
-  const configureMonitoring = async () => {
-    const sudoPassword = prompt('Sudo-Passwort eingeben (für Installation):')
-    if (!sudoPassword) {
-      toast.error('Sudo-Passwort erforderlich')
-      return
-    }
-
+  const runConfigure = async (sudoPassword: string) => {
     setLoading(true)
     try {
       const response = await fetchApi('/api/monitoring/configure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          enable_node_exporter: true,
-          enable_prometheus: true,
-          enable_grafana: true,
+          ...installSelection,
           sudo_password: sudoPassword,
         }),
       })
       const data = await response.json()
 
       if (data.status === 'success') {
+        setSudoModalOpen(false)
+        try {
+          localStorage.setItem('pi-installer-new-monitoring', '1')
+        } catch { /* ignore */ }
         toast.success('Monitoring konfiguriert!')
         if (data.results && data.results.length > 0) {
           data.results.forEach((result: string) => {
@@ -80,13 +84,98 @@ const MonitoringDashboard: React.FC = () => {
         }
         loadStatus()
       } else {
-        toast.error(data.message || 'Fehler bei der Konfiguration')
+        if (data.requires_sudo_password) {
+          setSudoModalOpen(true)
+        } else {
+          toast.error(data.message || 'Fehler bei der Konfiguration')
+        }
       }
     } catch (error) {
       toast.error('Fehler bei der Konfiguration')
     } finally {
       setLoading(false)
     }
+  }
+
+  const configureMonitoring = async () => {
+    const atLeastOne = installSelection.enable_node_exporter || installSelection.enable_prometheus || installSelection.enable_grafana
+    if (!atLeastOne) {
+      toast.error('Bitte mindestens eine Komponente auswählen.')
+      return
+    }
+    setLoading(true)
+    try {
+      const response = await fetchApi('/api/monitoring/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(installSelection),
+      })
+      const data = await response.json()
+
+      if (data.status === 'success') {
+        try {
+          localStorage.setItem('pi-installer-new-monitoring', '1')
+        } catch { /* ignore */ }
+        toast.success('Monitoring konfiguriert!')
+        if (data.results && data.results.length > 0) {
+          data.results.forEach((result: string) => {
+            toast.success(result, { duration: 3000 })
+          })
+        }
+        loadStatus()
+      } else {
+        if (data.requires_sudo_password) {
+          setSudoModalOpen(true)
+        } else {
+          toast.error(data.message || 'Fehler bei der Konfiguration')
+        }
+      }
+    } catch (error) {
+      toast.error('Fehler bei der Konfiguration')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const onSudoConfirm = async (password: string) => {
+    if (uninstallComponent) {
+      await runUninstall(uninstallComponent, password)
+    } else {
+      await runConfigure(password)
+    }
+  }
+
+  const runUninstall = async (component: string, sudoPassword: string) => {
+    setLoading(true)
+    try {
+      const response = await fetchApi('/api/monitoring/uninstall', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ component, sudo_password: sudoPassword }),
+      })
+      const data = await response.json()
+      if (data.status === 'success') {
+        setSudoModalOpen(false)
+        setUninstallComponent(null)
+        toast.success(data.results?.[0] || `${component} entfernt`)
+        loadStatus()
+      } else {
+        if (data.requires_sudo_password) {
+          setSudoModalOpen(true)
+        } else {
+          toast.error(data.message || 'Entfernen fehlgeschlagen')
+        }
+      }
+    } catch {
+      toast.error('Entfernen fehlgeschlagen')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUninstall = (component: string) => {
+    setUninstallComponent(component)
+    setSudoModalOpen(true)
   }
 
   return (
@@ -117,13 +206,42 @@ const MonitoringDashboard: React.FC = () => {
               <AlertCircle className="text-yellow-500" size={24} />
             )}
           </div>
-          <p className="text-slate-400 text-sm">
-            {status?.prometheus?.installed ? 'Installiert' : 'Nicht installiert'}
+          <p className="text-sm flex items-center gap-2">
+            {status?.prometheus?.installed ? (
+              <>
+                <CheckCircle className="text-green-500 shrink-0" size={18} />
+                <span className="text-green-400 font-medium">Installiert</span>
+              </>
+            ) : (
+              <span className="text-slate-400">Nicht installiert</span>
+            )}
           </p>
           {status?.prometheus?.running && (
             <a href="http://localhost:9090" target="_blank" rel="noopener noreferrer" className="text-sky-400 text-sm mt-2 block hover:underline">
               → Prometheus öffnen
             </a>
+          )}
+          {status?.prometheus?.installed && (
+            <button
+              type="button"
+              onClick={() => handleUninstall('prometheus')}
+              disabled={loading}
+              className="mt-2 flex items-center gap-1.5 text-red-400 hover:text-red-300 text-sm"
+            >
+              <Trash2 size={16} /> Entfernen
+            </button>
+          )}
+          {status?.prometheus?.installed && (
+            <div className="mt-4 pt-3 border-t border-slate-600">
+              <p className="text-xs font-semibold text-slate-300 mb-2">Beispiel: Was Prometheus kann</p>
+              <ul className="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                <li>Metriken sammeln (z. B. Node Exporter auf Port 9100)</li>
+                <li>PromQL-Abfragen: <code className="bg-slate-700 px-1 rounded">node_cpu_seconds_total</code>, <code className="bg-slate-700 px-1 rounded">rate(node_network_receive_bytes_total[5m])</code></li>
+                <li>Targets prüfen unter <a href="http://localhost:9090/targets" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">localhost:9090/targets</a></li>
+                <li>Grafana als Frontend: Prometheus als Datenquelle hinzufügen (URL <code className="bg-slate-700 px-1 rounded">http://localhost:9090</code>)</li>
+              </ul>
+              <a href="https://prometheus.io/docs/prometheus/latest/querying/basics/" target="_blank" rel="noopener noreferrer" className="text-sky-400 text-xs mt-2 inline-block hover:underline">PromQL-Dokumentation</a>
+            </div>
           )}
         </motion.div>
 
@@ -141,13 +259,30 @@ const MonitoringDashboard: React.FC = () => {
               <AlertCircle className="text-yellow-500" size={24} />
             )}
           </div>
-          <p className="text-slate-400 text-sm">
-            {status?.grafana?.installed ? 'Installiert' : 'Nicht installiert'}
+          <p className="text-sm flex items-center gap-2">
+            {status?.grafana?.installed ? (
+              <>
+                <CheckCircle className="text-green-500 shrink-0" size={18} />
+                <span className="text-green-400 font-medium">Installiert</span>
+              </>
+            ) : (
+              <span className="text-slate-400">Nicht installiert</span>
+            )}
           </p>
           {status?.grafana?.running && (
             <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer" className="text-sky-400 text-sm mt-2 block hover:underline">
               → Grafana öffnen (Standard: admin/admin)
             </a>
+          )}
+          {status?.grafana?.installed && (
+            <button
+              type="button"
+              onClick={() => handleUninstall('grafana')}
+              disabled={loading}
+              className="mt-2 flex items-center gap-1.5 text-red-400 hover:text-red-300 text-sm"
+            >
+              <Trash2 size={16} /> Entfernen
+            </button>
           )}
         </motion.div>
 
@@ -165,9 +300,26 @@ const MonitoringDashboard: React.FC = () => {
               <AlertCircle className="text-yellow-500" size={24} />
             )}
           </div>
-          <p className="text-slate-400 text-sm">
-            {status?.node_exporter?.installed ? 'Installiert' : 'Nicht installiert'}
+          <p className="text-sm flex items-center gap-2">
+            {status?.node_exporter?.installed ? (
+              <>
+                <CheckCircle className="text-green-500 shrink-0" size={18} />
+                <span className="text-green-400 font-medium">Installiert</span>
+              </>
+            ) : (
+              <span className="text-slate-400">Nicht installiert</span>
+            )}
           </p>
+          {status?.node_exporter?.installed && (
+            <button
+              type="button"
+              onClick={() => handleUninstall('node_exporter')}
+              disabled={loading}
+              className="mt-2 flex items-center gap-1.5 text-red-400 hover:text-red-300 text-sm"
+            >
+              <Trash2 size={16} /> Entfernen
+            </button>
+          )}
         </motion.div>
       </div>
 
@@ -233,21 +385,64 @@ const MonitoringDashboard: React.FC = () => {
         </div>
       )}
 
-      {(!status?.prometheus?.installed || !status?.grafana?.installed) && (
+      {(!status?.prometheus?.installed || !status?.grafana?.installed || !status?.node_exporter?.installed) && (
         <div className="card bg-gradient-to-r from-green-900/30 to-blue-900/30 border-green-500/30">
           <h3 className="text-lg font-bold text-white mb-2">🚀 Monitoring einrichten</h3>
           <p className="text-slate-300 text-sm mb-4">
-            Installieren Sie Prometheus, Grafana und Node Exporter für vollständige System-Überwachung.
+            Wählen Sie die gewünschten Komponenten – mindestens eine. Für die Installation wird ggf. ein Sudo-Passwort abgefragt.
           </p>
+          <div className="space-y-3 mb-4">
+            <label className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={installSelection.enable_node_exporter}
+                onChange={(e) => setInstallSelection((s) => ({ ...s, enable_node_exporter: e.target.checked }))}
+                className="w-5 h-5 accent-sky-600"
+              />
+              <span className="text-slate-300">Node Exporter</span>
+              <span className="text-slate-500 text-sm">(System-Metriken)</span>
+            </label>
+            <label className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={installSelection.enable_prometheus}
+                onChange={(e) => setInstallSelection((s) => ({ ...s, enable_prometheus: e.target.checked }))}
+                className="w-5 h-5 accent-sky-600"
+              />
+              <span className="text-slate-300">Prometheus</span>
+              <span className="text-slate-500 text-sm">(Metriken sammeln & abfragen)</span>
+            </label>
+            <label className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={installSelection.enable_grafana}
+                onChange={(e) => setInstallSelection((s) => ({ ...s, enable_grafana: e.target.checked }))}
+                className="w-5 h-5 accent-sky-600"
+              />
+              <span className="text-slate-300">Grafana</span>
+              <span className="text-slate-500 text-sm">(Dashboards & Visualisierung)</span>
+            </label>
+          </div>
           <button
             onClick={configureMonitoring}
             disabled={loading}
             className="btn-primary"
           >
-            {loading ? '⏳ Installiere...' : 'Monitoring installieren'}
+            {loading ? '⏳ Installiere...' : 'Ausgewählte Komponenten installieren'}
           </button>
         </div>
       )}
+
+      <SudoPasswordModal
+        open={sudoModalOpen}
+        title="Sudo-Passwort erforderlich"
+        subtitle={uninstallComponent
+          ? `Zum Entfernen von ${uninstallComponent === 'node_exporter' ? 'Node Exporter' : uninstallComponent === 'grafana' ? 'Grafana' : 'Prometheus'} werden Administrator-Rechte benötigt.`
+          : 'Für die Monitoring-Installation werden Administrator-Rechte benötigt.'}
+        confirmText={uninstallComponent ? 'Komponente entfernen' : 'Installation starten'}
+        onCancel={() => { setSudoModalOpen(false); setUninstallComponent(null) }}
+        onConfirm={onSudoConfirm}
+      />
     </div>
   )
 }

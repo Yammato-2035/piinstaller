@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Cloud, RefreshCw, CheckCircle, XCircle, Settings } from 'lucide-react'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import { usePlatform } from '../context/PlatformContext'
 
 type GeneralSubTab = 'init' | 'network' | 'basic'
 
@@ -12,6 +13,7 @@ interface SettingsPageProps {
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
+  const { isRaspberryPi } = usePlatform()
   const [activeTab, setActiveTab] = useState<'general' | 'cloud' | 'logs'>('general')
   const [generalSubTab, setGeneralSubTab] = useState<GeneralSubTab>('init')
   const [initStatus, setInitStatus] = useState<any>(null)
@@ -285,11 +287,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
 
   const [rebooting, setRebooting] = useState(false)
   const triggerReboot = async () => {
-    if (!window.confirm('Möchten Sie den Raspberry Pi wirklich neu starten? Bitte speichern Sie zuvor alle Änderungen.')) return
+    if (!window.confirm('Möchten Sie das System wirklich neu starten? Bitte speichern Sie zuvor alle Änderungen.')) return
     await requireSudo(
       {
         title: 'System neu starten',
-        subtitle: 'Der Raspberry Pi wird neu gestartet. Die Anwendung ist danach kurz nicht erreichbar.',
+        subtitle: 'Das System wird neu gestartet. Die Anwendung ist danach kurz nicht erreichbar.',
         confirmText: 'Neustart',
       },
       async (pwd?: string) => {
@@ -521,19 +523,21 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
                 </button>
               </div>
               <p className="text-xs text-slate-500">
-                Wirkt erst nach Neustart (start.sh). Nur Neustart – ändert kein Boot-Ziel (Desktop/Kommandozeile). Boot-Ziel z. B. in der{' '}
-                {setCurrentPage ? (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentPage('raspberry-pi-config')}
-                    className="text-sky-400 hover:text-sky-300 hover:underline focus:outline-none focus:ring-1 focus:ring-sky-400 rounded"
-                  >
-                    Raspberry Pi Config
-                  </button>
-                ) : (
-                  <span className="text-slate-400">Raspberry Pi Config</span>
-                )}
-                {' '}oder per <code className="text-slate-400">systemctl set-default</code> einstellen.
+                Wirkt erst nach Neustart (start.sh). Nur Neustart – ändert kein Boot-Ziel (Desktop/Kommandozeile).{' '}
+                {isRaspberryPi && setCurrentPage ? (
+                  <>Boot-Ziel z. B. in der{' '}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage('raspberry-pi-config')}
+                      className="text-sky-400 hover:text-sky-300 hover:underline focus:outline-none focus:ring-1 focus:ring-sky-400 rounded"
+                    >
+                      Raspberry Pi Config
+                    </button>
+                    {' '}oder per </>
+                ) : isRaspberryPi && !setCurrentPage ? (
+                  <>Boot-Ziel z. B. in der <span className="text-slate-400">Raspberry Pi Config</span> oder per </>
+                ) : null}
+                <code className="text-slate-400">systemctl set-default</code> einstellen.
               </p>
             </div>
           )}
