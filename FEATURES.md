@@ -1,5 +1,14 @@
 # PI-Installer - Erweiterte Features & Roadmap
 
+## ✅ Implementierte Features (v1.2 – Februar 2026)
+
+### Musikbox fertig & Mixer (v1.2.0.0)
+- [x] Musikbox-Bereich abgeschlossen – Mixer-Buttons (pavucontrol/qpwgraph), Installation der Mixer-Programme per Knopfdruck
+- [x] Mixer in Musikbox und Kino/Streaming eingebaut – „Mixer öffnen (pavucontrol)“ / „Mixer öffnen (qpwgraph)“ starten die GUI-Mixer
+- [x] „Mixer-Programme installieren“ installiert pavucontrol und qpwgraph per apt (Sudo-Modal); Backend setzt DISPLAY=:0 für GUI-Start
+- [x] API: `POST /api/system/run-mixer` (app: pavucontrol | qpwgraph), `POST /api/system/install-mixer-packages` (sudo)
+- [x] Dashboard-Erweiterungen; Dokumentation & Changelog 1.2.0.0; Troubleshooting Mixer-Installation (manueller Befehl)
+
 ## ✅ Implementierte Features (v1.0)
 
 ### 1. Sicherheit & Härtung
@@ -228,6 +237,7 @@
 
 ---
 
-**Version:** Roadmap v2026-01-24  
+**Version:** 1.2.0.3 (Features v2026-02)  
 **Priorität:** Nutzer-Feedback getrieben  
-**Beitragen:** GitHub Issues & Pull Requests willkommen!
+**Beitragen:** GitHub Issues & Pull Requests willkommen!  
+**Changelog:** [CHANGELOG.md](./CHANGELOG.md)

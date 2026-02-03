@@ -368,6 +368,52 @@ class ControlCenterModule:
         except Exception as e:
             return {"status": "error", "message": f"Fehler beim Trennen: {str(e)}"}
 
+    def wifi_connect(self, ssid: str, sudo_password: str = "") -> Dict[str, Any]:
+        """Verbindung zu einem bereits konfigurierten WLAN-Netzwerk herstellen (wpa_cli select_network)."""
+        if not (ssid or "").strip():
+            return {"status": "error", "message": "SSID erforderlich"}
+        iface = self._get_wifi_interface(sudo_password)
+        _stdin = (sudo_password + "\n").encode("utf-8") if sudo_password else None
+        try:
+            # wpa_cli list_networks: Ausgabe "network id\tssid\tbssid\tflags"
+            r = subprocess.run(
+                ["wpa_cli", "-i", iface, "list_networks"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if r.returncode != 0:
+                return {"status": "error", "message": "Netzwerke konnten nicht gelesen werden"}
+            network_id = None
+            for line in (r.stdout or "").strip().split("\n"):
+                parts = line.split("\t")
+                if len(parts) >= 2 and parts[1].strip() == ssid.strip():
+                    try:
+                        network_id = int(parts[0].strip())
+                        break
+                    except ValueError:
+                        continue
+            if network_id is None:
+                return {"status": "error", "message": f"Netzwerk '{ssid}' nicht in der Konfiguration gefunden"}
+            r2 = subprocess.run(
+                ["sudo", "-S", "wpa_cli", "-i", iface, "select_network", str(network_id)],
+                input=_stdin,
+                capture_output=True,
+                timeout=5,
+            )
+            if r2.returncode != 0 and _stdin:
+                err = (r2.stderr or b"").decode("utf-8", errors="replace").strip()
+                return {"status": "error", "message": err or "Verbinden fehlgeschlagen"}
+            subprocess.run(
+                ["sudo", "-S", "wpa_cli", "-i", iface, "reconfigure"],
+                input=_stdin,
+                capture_output=True,
+                timeout=5,
+            )
+            return {"status": "success", "message": f"Verbinde mit '{ssid}'", "interface": iface}
+        except Exception as e:
+            return {"status": "error", "message": f"Fehler beim Verbinden: {str(e)}"}
+
     def wifi_set_enabled(self, enabled: bool, sudo_password: str = "") -> Dict[str, Any]:
         """WLAN global aktivieren/deaktivieren (rfkill)."""
         _stdin = (sudo_password + "\n").encode("utf-8") if sudo_password else None
@@ -610,7 +656,24 @@ class ControlCenterModule:
                 "status": "error",
                 "message": f"Fehler: {str(e)}"
             }
-    
+
+    def start_ssh_service(self, sudo_password: str = "") -> Dict[str, Any]:
+        """SSH-Dienst starten (systemctl start ssh)."""
+        _stdin = (sudo_password + "\n").encode("utf-8") if sudo_password else None
+        try:
+            r = subprocess.run(
+                ["sudo", "-S", "systemctl", "start", "ssh"],
+                input=_stdin,
+                capture_output=True,
+                timeout=10,
+            )
+            if r.returncode != 0 and _stdin:
+                err = (r.stderr or b"").decode("utf-8", errors="replace").strip()
+                return {"status": "error", "message": err or "SSH starten fehlgeschlagen"}
+            return {"status": "success", "message": "SSH gestartet"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
     def get_vnc_status(self) -> Dict[str, Any]:
         """Prüft VNC-Status"""
         try:
@@ -675,7 +738,24 @@ class ControlCenterModule:
                 "status": "error",
                 "message": f"Fehler: {str(e)}"
             }
-    
+
+    def start_vnc_service(self, sudo_password: str = "") -> Dict[str, Any]:
+        """VNC-Dienst starten (systemctl start vncserver-x11-serviced)."""
+        _stdin = (sudo_password + "\n").encode("utf-8") if sudo_password else None
+        try:
+            r = subprocess.run(
+                ["sudo", "-S", "systemctl", "start", "vncserver-x11-serviced"],
+                input=_stdin,
+                capture_output=True,
+                timeout=10,
+            )
+            if r.returncode != 0 and _stdin:
+                err = (r.stderr or b"").decode("utf-8", errors="replace").strip()
+                return {"status": "error", "message": err or "VNC starten fehlgeschlagen"}
+            return {"status": "success", "message": "VNC gestartet"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
     def get_keyboard_layout(self) -> Dict[str, Any]:
         """Liest Tastatur-Layout"""
         try:

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { Globe, Settings, Lock, Monitor } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
 
 const WebServerSetup: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     server_type: 'nginx',
     enable_ssl: true,
@@ -194,11 +196,13 @@ const WebServerSetup: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Globe className="text-purple-500" />
-          Webserver Konfiguration
-        </h1>
-        <p className="text-slate-400">Installieren und konfigurieren Sie einen Webserver mit optionalem CMS</p>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Globe className="text-purple-500" />
+            Webserver Konfiguration
+          </h1>
+        </div>
+        <p className="text-slate-400">Webserver – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-6">
@@ -260,7 +264,7 @@ const WebServerSetup: React.FC = () => {
               {webserverStatus.pi_installer && (
                 <div className="p-4 bg-slate-800/50 rounded-lg mb-4">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold">🚀 PI-Installer</span>
+                    <span className="font-semibold">🚀 Diese Anwendung</span>
                     <a
                       href={webserverStatus.pi_installer.url}
                       target="_blank"
@@ -374,39 +378,39 @@ const WebServerSetup: React.FC = () => {
                 </div>
               )}
 
-              {webserverStatus.webmin && (
-                <div className="p-4 bg-slate-800/50 rounded-lg mb-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">⚙️ Webmin</span>
-                    {webserverStatus.webmin.installed ? (
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        webserverStatus.webmin.running 
-                          ? 'bg-green-900/50 text-green-300' 
-                          : 'bg-yellow-900/50 text-yellow-300'
-                      }`}>
-                        {webserverStatus.webmin.running ? '✅ Installiert & Läuft' : '⚠️ Installiert (Stoppt)'}
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 bg-red-900/50 text-white rounded text-xs">❌ Nicht installiert</span>
-                    )}
-                  </div>
-                  {webserverStatus.webmin.port && webserverStatus.webmin.installed && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <p className="text-xs text-slate-400">Port: {webserverStatus.webmin.port}</p>
-                      {webserverStatus.network?.ips?.[0] && (
-                        <a
-                          href={`http://${webserverStatus.network.ips[0]}:${webserverStatus.webmin.port}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-2 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded text-xs transition-colors"
-                        >
-                          🔗 Öffnen
-                        </a>
-                      )}
-                    </div>
+              {/* Webmin (Webadmin) – immer anzeigen, Nachinstall/Deinstall */}
+              <div className="p-4 bg-slate-800/50 rounded-lg mb-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="font-semibold">⚙️ Webmin (Webadmin-Panel)</span>
+                  {webserverStatus?.webmin?.installed ? (
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      webserverStatus.webmin.running 
+                        ? 'bg-green-900/50 text-green-300' 
+                        : 'bg-yellow-900/50 text-yellow-300'
+                    }`}>
+                      {webserverStatus.webmin.running ? '✅ Installiert & Läuft' : '⚠️ Installiert (Stoppt)'}
+                    </span>
+                  ) : (
+                    <span className="px-2 py-1 bg-slate-600 text-slate-300 rounded text-xs">Nicht installiert</span>
                   )}
                 </div>
-              )}
+                {(webserverStatus?.webmin?.port && webserverStatus?.webmin?.installed) && (
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                    <p className="text-xs text-slate-400">Port: {webserverStatus.webmin.port}</p>
+                    {webserverStatus?.network?.ips?.[0] && (
+                      <a
+                        href={`http://${webserverStatus.network.ips[0]}:${webserverStatus.webmin.port}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded text-xs transition-colors"
+                      >
+                        🔗 Öffnen
+                      </a>
+                    )}
+                  </div>
+                )}
+                <p className="text-xs text-slate-500 mt-1">Webmin: Systemadministration per Browser (Port 10000). Über „Webadmin auswählen“ unten: Nachinstallieren oder Konfiguration anpassen.</p>
+              </div>
 
               {webserverStatus.webserver_ports && webserverStatus.webserver_ports.length > 0 && (
                 <div className="p-4 bg-slate-800/50 rounded-lg mt-4">

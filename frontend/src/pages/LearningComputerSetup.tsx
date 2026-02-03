@@ -3,8 +3,10 @@ import { BookOpen, Code, Cpu, Zap, Calculator } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
 
 const LearningComputerSetup: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     enable_scratch: false,
     enable_python_learning: true,
@@ -117,13 +119,13 @@ const LearningComputerSetup: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in page-transition">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <BookOpen className="text-orange-500" />
-          Lerncomputer für Kinder ab 14
-        </h1>
-        <p className="text-slate-400">
-          Einrichtung einer sicheren Lernumgebung mit Programmier-Tools und Tutorials
-        </p>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <BookOpen className="text-orange-500" />
+            Lerncomputer für Kinder ab 14
+          </h1>
+        </div>
+        <p className="text-slate-400">Lerncomputer – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">

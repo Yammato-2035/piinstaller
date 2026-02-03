@@ -2,8 +2,10 @@ import React, { useState } from 'react'
 import { Zap, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
 
 const InstallationWizard: React.FC = () => {
+  const { systemLabel, isRaspberryPi, pageSubtitleLabel } = usePlatform()
   const [step, setStep] = useState(1)
   const [allConfigs, setAllConfigs] = useState({
     security: {
@@ -132,11 +134,13 @@ const InstallationWizard: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Zap className="text-yellow-500" />
-          Installationsassistent
-        </h1>
-        <p className="text-slate-400">Konfigurieren Sie Ihren Raspberry Pi in 6 einfachen Schritten</p>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Zap className="text-yellow-400" />
+            Installationsassistent
+          </h1>
+        </div>
+        <p className="text-slate-400">Assistent – {pageSubtitleLabel}</p>
       </div>
 
       {/* Installation in Progress */}
@@ -165,11 +169,11 @@ const InstallationWizard: React.FC = () => {
       <div className="card min-h-96">
         {step === 1 && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">🎉 Willkommen zum PI-Installer!</h2>
+            <h2 className="text-3xl font-bold text-white">🎉 Willkommen{isRaspberryPi ? ' zum PI-Installer!' : systemLabel ? ` bei ${systemLabel}!` : '!'}</h2>
             
             <div className="space-y-4">
               <p className="text-slate-300 text-lg">
-                Dieser Assistent hilft Ihnen, Ihren Raspberry Pi von der Grundkonfiguration auf den nächsten Level zu bringen.
+                Dieser Assistent hilft Ihnen, Ihr System von der Grundkonfiguration auf den nächsten Level zu bringen.
               </p>
 
               <div className="grid md:grid-cols-2 gap-4 mt-6">

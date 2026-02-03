@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { HardDrive, Server, Folder, Users } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
 
 const NASSetup: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     nas_type: 'samba',
     enable_samba: false,
@@ -73,11 +75,13 @@ const NASSetup: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <HardDrive className="text-purple-500" />
-          NAS (Network Attached Storage)
-        </h1>
-        <p className="text-slate-400">Richten Sie einen Netzwerk-Speicher für Dateifreigabe ein</p>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <HardDrive className="text-purple-500" />
+            NAS (Network Attached Storage)
+          </h1>
+        </div>
+        <p className="text-slate-400">NAS – {pageSubtitleLabel}</p>
       </div>
 
       {/* Status */}

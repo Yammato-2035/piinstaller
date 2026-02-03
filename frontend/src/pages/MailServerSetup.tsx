@@ -2,8 +2,10 @@ import React, { useState } from 'react'
 import { Mail, AlertCircle, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
 
 const MailServerSetup: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     enable_mail: false,
     domain: '',
@@ -64,11 +66,13 @@ const MailServerSetup: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Mail className="text-orange-500" />
-          Mailserver Konfiguration
-        </h1>
-        <p className="text-slate-400">Installieren Sie einen vollständigen E-Mail-Server (Optional)</p>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Mail className="text-orange-500" />
+            Mailserver Konfiguration
+          </h1>
+        </div>
+        <p className="text-slate-400">Mailserver – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-6">
@@ -82,7 +86,7 @@ const MailServerSetup: React.FC = () => {
               onChange={(v) => setConfig({ ...config, enable_mail: v })}
             />
             <p className="text-slate-400 text-sm mt-4">
-              Ein Mailserver ermöglicht den Versand und Empfang von E-Mails von Ihrem Raspberry Pi.
+              Ein Mailserver ermöglicht den Versand und Empfang von E-Mails von Ihrem System.
             </p>
           </div>
 

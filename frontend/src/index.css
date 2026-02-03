@@ -61,3 +61,135 @@ button, a, input, select, textarea {
 .animate-slide-in {
   animation: slideInDown 0.3s ease;
 }
+
+/* Seiten-Überschriften: Outline, kräftiger Schatten, leichter 3D-Effekt */
+.page-title-category {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+/* Weiße Schrift mit schwarzem Rand + kräftiger Schatten */
+.page-title-category h1,
+.page-title-category h2 {
+  font-family: 'Segoe UI', 'Source Sans 3', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  font-weight: 700;
+  margin: 0;
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  color: #fff;
+  /* Outline: schwarzer Rand (8 Richtungen) */
+  text-shadow:
+    -1px -1px 0 #000,
+    -1px 0 0 #000,
+    -1px 1px 0 #000,
+    0 -1px 0 #000,
+    0 1px 0 #000,
+    1px -1px 0 #000,
+    1px 0 0 #000,
+    1px 1px 0 #000,
+    /* 3D-Tiefenschatten (kompakt, wenig Zerstreuung) */
+    2px 3px 0 rgba(0, 0, 0, 0.3),
+    4px 6px 8px rgba(0, 0, 0, 0.25),
+    /* Abwurfschatten: etwas heller */
+    0 6px 12px rgba(0, 0, 0, 0.35),
+    0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+html.dark .page-title-category h1,
+html.dark .page-title-category h2 {
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 #000,
+    -1px 0 0 #000,
+    -1px 1px 0 #000,
+    0 -1px 0 #000,
+    0 1px 0 #000,
+    1px -1px 0 #000,
+    1px 0 0 #000,
+    1px 1px 0 #000,
+    2px 3px 0 rgba(0, 0, 0, 0.5),
+    4px 6px 10px rgba(0, 0, 0, 0.4),
+    -1px -1px 1px rgba(255, 255, 255, 0.06),
+    0 6px 14px rgba(0, 0, 0, 0.5),
+    0 10px 24px rgba(0, 0, 0, 0.38);
+}
+
+/* ========== Einheitliche Hinweis-/Info-/Warn-Karten (hell/dunkel) ========== */
+/* Hinweis: hellorange, Text bei Light = Anthrazit, bei Dark = hell */
+.card-hint {
+  @apply rounded-xl border p-4;
+}
+html.light .card-hint {
+  background-color: #ffedd5;
+  border-color: #fdba74;
+  color: #334155;
+}
+html.light .card-hint strong {
+  color: #1e293b;
+}
+html.dark .card-hint {
+  background-color: rgba(124, 45, 18, 0.25);
+  border-color: rgba(194, 65, 12, 0.5);
+  color: #fed7aa;
+}
+html.dark .card-hint strong {
+  color: #fff7ed;
+}
+
+/* Info: grün / grün-gelb, Text lesbar in beiden Modi */
+.card-info {
+  @apply rounded-xl border p-4;
+}
+html.light .card-info {
+  background-color: #d1fae5;
+  border-color: #6ee7b7;
+  color: #064e3b;
+}
+html.light .card-info strong {
+  color: #022c22;
+}
+html.dark .card-info {
+  background-color: rgba(6, 78, 59, 0.35);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #a7f3d0;
+}
+html.dark .card-info strong {
+  color: #ecfdf5;
+}
+
+/* Warnung: rot */
+.card-warning {
+  @apply rounded-xl border p-4;
+}
+html.light .card-warning {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+html.light .card-warning strong {
+  color: #7f1d1d;
+}
+html.dark .card-warning {
+  background-color: rgba(127, 29, 29, 0.35);
+  border-color: rgba(220, 38, 38, 0.5);
+  color: #fecaca;
+}
+html.dark .card-warning strong {
+  color: #fef2f2;
+}
+
+/* Code in Hinweis-/Info-/Warn-Karten lesbar halten */
+html.light .card-hint code,
+html.light .card-info code,
+html.light .card-warning code {
+  background-color: rgba(0, 0, 0, 0.08);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+html.dark .card-hint code,
+html.dark .card-info code,
+html.dark .card-warning code {
+  background-color: rgba(0, 0, 0, 0.25);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}

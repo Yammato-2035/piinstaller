@@ -2,11 +2,21 @@ import React, { useState, useEffect } from 'react'
 import { Users, Plus, Trash2, Lock, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
+import { PageSkeleton } from '../components/Skeleton'
+
+interface UserEntry {
+  name: string
+  uid: number
+}
 
 const UserManagement: React.FC = () => {
-  const [users, setUsers] = useState<string[]>([])
+  const { pageSubtitleLabel } = usePlatform()
+  const [systemUsers, setSystemUsers] = useState<UserEntry[]>([])
+  const [humanUsers, setHumanUsers] = useState<UserEntry[]>([])
   const [showNewUserForm, setShowNewUserForm] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [usersLoading, setUsersLoading] = useState(true)
   const [newUser, setNewUser] = useState({
     username: '',
     email: '',
@@ -35,13 +45,18 @@ const UserManagement: React.FC = () => {
     try {
       const response = await fetchApi('/api/users')
       const data = await response.json()
-      // Sortiere Benutzer alphabetisch
-      const sortedUsers = (data.users || []).sort((a: string, b: string) => 
-        a.localeCompare(b, 'de', { sensitivity: 'base' })
-      )
-      setUsers(sortedUsers)
+      let sys = data.system_users || []
+      let human = data.human_users || []
+      // Fallback: alte API oder leere Aufteilung – alle in human_users anzeigen
+      if (sys.length === 0 && human.length === 0 && Array.isArray(data.users) && data.users.length > 0) {
+        human = data.users.map((name: string, i: number) => ({ name, uid: 1000 + i }))
+      }
+      setSystemUsers(sys)
+      setHumanUsers(human)
     } catch (error) {
       toast.error('Fehler beim Laden der Benutzer')
+    } finally {
+      setUsersLoading(false)
     }
   }
 
@@ -181,39 +196,77 @@ const UserManagement: React.FC = () => {
   }
 
   const getRoleColor = (role: string) => {
-    const colors: any = {
-      'admin': 'bg-red-900/50 text-red-300',
-      'developer': 'bg-blue-900/50 text-blue-300',
-      'user': 'bg-slate-700 text-slate-300',
+    const colors: Record<string, string> = {
+      admin: 'bg-red-900/50 text-red-300',
+      developer: 'bg-blue-900/50 text-blue-300',
+      user: 'bg-slate-700 text-slate-300',
+      guest: 'bg-slate-600 text-slate-400',
     }
-    return colors[role] || colors['user']
+    return colors[role] || colors.user
   }
 
   const getRoleLabel = (role: string) => {
-    const labels: any = {
-      'admin': '👑 Administrator',
-      'developer': '👨‍💻 Entwickler',
-      'user': '👤 Benutzer',
+    const labels: Record<string, string> = {
+      admin: '👑 Administrator',
+      developer: '👨‍💻 Entwickler',
+      user: '👤 Benutzer',
+      guest: '👋 Gast',
     }
     return labels[role] || role
+  }
+
+  if (usersLoading) {
+    return <PageSkeleton cards={2} hasList listRows={5} />
   }
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Users className="text-blue-500" />
-          Benutzerverwaltung
-        </h1>
-        <p className="text-slate-400">Verwalten Sie Systembenutzer und deren Rollen</p>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Users className="text-blue-500" />
+            Benutzerverwaltung
+          </h1>
+        </div>
+        <p className="text-slate-400">Benutzer – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-6">
-          {/* Users List */}
+          {/* Systembenutzer / Dienste (nur Anzeige) */}
+          <div className="card">
+            <h2 className="text-2xl font-bold text-white mb-2">Systembenutzer / Dienste</h2>
+            <p className="text-sm text-slate-400 mb-4">
+              Konten mit UID &lt; 1000 (z. B. root, www-data, _apt). Diese werden vom System genutzt – nicht löschen oder ändern.
+            </p>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {systemUsers.map((u) => (
+                <div
+                  key={u.name}
+                  className="p-3 bg-slate-700/30 rounded-lg flex items-center justify-between text-slate-400"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs text-slate-500 w-8">UID {u.uid}</span>
+                    <span className="font-medium text-slate-300">{u.name}</span>
+                  </div>
+                  <span className="text-xs text-slate-500">nur Anzeige</span>
+                </div>
+              ))}
+              {systemUsers.length === 0 && (
+                <p className="text-sm text-slate-500">Keine Systembenutzer geladen</p>
+              )}
+            </div>
+          </div>
+
+          {/* Benutzer (Personen) – anlegen, löschen */}
           <div className="card">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Systembenutzer</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Benutzer (Personen)</h2>
+                <p className="text-sm text-slate-400 mt-1">
+                  Konten mit UID ≥ 1000 – anlegen, verwalten, löschen.
+                </p>
+              </div>
               <button
                 onClick={() => setShowNewUserForm(!showNewUserForm)}
                 className="btn-primary flex items-center gap-2"
@@ -252,6 +305,7 @@ const UserManagement: React.FC = () => {
                     <option value="user">👤 Benutzer</option>
                     <option value="developer">👨‍💻 Entwickler</option>
                     <option value="admin">👑 Administrator</option>
+                    <option value="guest">👋 Gast</option>
                   </select>
 
                   <input
@@ -333,45 +387,41 @@ const UserManagement: React.FC = () => {
               </div>
             )}
 
-            {/* Users Table */}
+            {/* Human users list */}
             <div className="space-y-2">
-              {users
-                .filter(u => !['root', 'sync', 'bin', 'sys', 'daemon', 'mail', 'www-data', 'backup', 'list', 'irc', 'gnats', 'syslog', 'messagebus'].includes(u))
-                .sort((a, b) => a.localeCompare(b, 'de', { sensitivity: 'base' }))
-                .map((user) => (
+              {humanUsers.map((u) => (
                 <div
-                  key={user}
+                  key={u.name}
                   className="p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 flex items-center justify-between transition-all group"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center text-white font-bold">
-                      {user.charAt(0).toUpperCase()}
+                      {u.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-semibold text-white">{user}</p>
-                      <p className="text-xs text-slate-400">/home/{user}</p>
+                      <p className="font-semibold text-white">{u.name}</p>
+                      <p className="text-xs text-slate-400">UID {u.uid} · /home/{u.name}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-2 hover:bg-slate-600 rounded transition-all">
+                    <button className="p-2 hover:bg-slate-600 rounded transition-all" title="Einstellungen (in Entwicklung)">
                       <Settings size={18} className="text-slate-300" />
                     </button>
-                    {user !== 'root' && (
-                      <button
-                        onClick={() => deleteUser(user)}
-                        className="p-2 hover:bg-red-600/50 rounded transition-all"
-                      >
-                        <Trash2 size={18} className="text-red-400" />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => deleteUser(u.name)}
+                      className="p-2 hover:bg-red-600/50 rounded transition-all"
+                      title="Benutzer löschen"
+                    >
+                      <Trash2 size={18} className="text-red-400" />
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
 
-            {users.length === 0 && (
+            {humanUsers.length === 0 && !showNewUserForm && (
               <div className="text-center py-8 text-slate-400">
-                Keine Benutzer gefunden
+                Keine Benutzer (Personen) angelegt. „Neuer Benutzer“ zum Anlegen.
               </div>
             )}
           </div>
@@ -384,7 +434,7 @@ const UserManagement: React.FC = () => {
             <div className="space-y-3">
               <div>
                 <p className="font-semibold text-white">👑 Administrator</p>
-                <p className="text-xs text-slate-400">Volle Kontrolle, sudo Zugriff</p>
+                <p className="text-xs text-slate-400">Volle Kontrolle, sudo-Zugriff</p>
               </div>
               <div>
                 <p className="font-semibold text-white">👨‍💻 Entwickler</p>
@@ -392,9 +442,14 @@ const UserManagement: React.FC = () => {
               </div>
               <div>
                 <p className="font-semibold text-white">👤 Benutzer</p>
-                <p className="text-xs text-slate-400">Begrenzte Rechte</p>
+                <p className="text-xs text-slate-400">Normale Rechte</p>
+              </div>
+              <div>
+                <p className="font-semibold text-white">👋 Gast</p>
+                <p className="text-xs text-slate-400">Eingeschränkt (z. B. nur Lesezugriff)</p>
               </div>
             </div>
+            <p className="text-xs text-slate-500 mt-2">Weitere Rollen (z. B. Dienst-Accounts) bei Bedarf manuell anlegen.</p>
           </div>
 
           <div className="card bg-gradient-to-br from-green-900/30 to-green-900/10 border-green-500/50">

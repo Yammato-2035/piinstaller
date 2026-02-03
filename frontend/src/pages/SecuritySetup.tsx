@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { Shield, CheckCircle, AlertCircle, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
+import { PageSkeleton } from '../components/Skeleton'
 
 const SecuritySetup: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     enable_firewall: true,
     enable_fail2ban: true,
@@ -14,6 +17,7 @@ const SecuritySetup: React.FC = () => {
   })
 
   const [loading, setLoading] = useState(false)
+  const [initialConfigLoading, setInitialConfigLoading] = useState(true)
   const [scanResults, setScanResults] = useState<any>(null)
   const [securityConfig, setSecurityConfig] = useState<any>(null)
   const [installedPackages, setInstalledPackages] = useState<any>(null)
@@ -71,6 +75,7 @@ const SecuritySetup: React.FC = () => {
               active: true, // Korrigiere basierend auf Status-String
             }
           })
+          setInitialConfigLoading(false)
           return
         }
         
@@ -90,6 +95,7 @@ const SecuritySetup: React.FC = () => {
               active: true, // Behalte den aktiven Status
             }
           })
+          setInitialConfigLoading(false)
           return
         }
       }
@@ -97,6 +103,8 @@ const SecuritySetup: React.FC = () => {
       setSecurityConfig(data.config)
     } catch (error) {
       console.error('Fehler beim Laden der Security-Config:', error)
+    } finally {
+      setInitialConfigLoading(false)
     }
   }
 
@@ -268,14 +276,20 @@ const SecuritySetup: React.FC = () => {
     </label>
   )
 
+  if (initialConfigLoading) {
+    return <PageSkeleton cards={3} hasList listRows={4} />
+  }
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Shield className="text-red-500" />
-          Sicherheit & Härtung
-        </h1>
-        <p className="text-slate-400">Konfigurieren Sie die Sicherheitseinstellungen für Ihren Raspberry Pi</p>
+        <div className="page-title-category mb-2 inline-flex">
+          <h1 className="flex items-center gap-3">
+            <Shield className="text-red-500" />
+            Sicherheit & Härtung
+          </h1>
+        </div>
+        <p className="text-slate-400">Sicherheit – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -378,7 +392,7 @@ const SecuritySetup: React.FC = () => {
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-semibold">UFW Firewall</span>
                     {securityConfig.ufw?.active ? (
-                      <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs">✅ Aktiv</span>
+                      <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs">✅ Aktiv · Installiert</span>
                     ) : securityConfig.ufw?.installed ? (
                       <div className="flex items-center gap-2">
                         <span className="px-2 py-1 bg-red-900/50 text-white rounded text-xs">❌ Inaktiv</span>
