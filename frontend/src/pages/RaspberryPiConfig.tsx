@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import { usePlatform } from '../context/PlatformContext'
 
 interface ConfigOption {
   name: string
@@ -46,6 +47,7 @@ interface CategoryData {
 }
 
 const RaspberryPiConfig: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState<ConfigValue>({})
   const [configOptions, setConfigOptions] = useState<Record<string, ConfigOption>>({})
   const [configCategories, setConfigCategories] = useState<Record<string, CategoryData>>({})
@@ -411,7 +413,7 @@ const RaspberryPiConfig: React.FC = () => {
           </h1>
         </div>
         <p className="text-slate-400">
-          Konfiguriere Hardware-Einstellungen des Raspberry Pi
+          Raspberry Pi Config – {pageSubtitleLabel}
           {piInfo && piInfo.model_string && (
             <span className="ml-2 text-sky-400">
               ({piInfo.model_string} - {piInfo.ram_gb ? `${piInfo.ram_gb} GB RAM` : 'RAM unbekannt'})

@@ -131,6 +131,10 @@ http://localhost:3000
 - `POST /api/install/start` - Installation starten
 - `GET /api/install/progress` - Installationsfortschritt
 
+### Mixer (Audio)
+- `POST /api/system/run-mixer` - Grafischen Mixer starten (Body: `{"app": "pavucontrol"}` oder `{"app": "qpwgraph"}`)
+- `POST /api/system/install-mixer-packages` - pavucontrol und qpwgraph installieren (Body optional: `{"sudo_password": "..."}`)
+
 ## Production Deployment
 
 ### Mit Docker
@@ -166,6 +170,19 @@ sudo systemctl start pi-installer
 
 ## Troubleshooting
 
+### Mixer-Installation fehlgeschlagen?
+Wenn „Mixer-Programme installieren“ (pavucontrol & qpwgraph) in der App fehlschlägt:
+
+1. **Sudo-Passwort:** Beim Klick auf „Mixer-Programme installieren“ das Sudo-Passwort eingeben (Modal erscheint, falls noch nicht gespeichert).
+2. **Manuell im Terminal installieren:**
+   ```bash
+   sudo apt update
+   sudo apt install -y pavucontrol qpwgraph
+   ```
+3. **Mixer starten:** Danach in der Musikbox oder unter Kino/Streaming „Mixer öffnen (pavucontrol)“ bzw. „Mixer öffnen (qpwgraph)“ nutzen. Läuft das Backend als Dienst ohne Grafikumgebung, wird `DISPLAY=:0` gesetzt – der Mixer öffnet sich auf der ersten X-Session.
+
+4. **Installation schlägt weiterhin fehl (ab 1.2.0.1):** Die App führt nun `apt-get update` vor der Installation aus und trimmt das Sudo-Passwort. Prüfe die angezeigte Fehlermeldung (bis 600 Zeichen) und ggf. die Backend-Logdatei (`Einstellungen → Logs` oder `logs/pi-installer.log`). Bei Berechtigungsfehlern: Nutzer muss in `sudoers` sein und das Passwort korrekt eingegeben werden.
+
 ### Port bereits in Benutzung?
 ```bash
 # Port freigeben
@@ -197,5 +214,5 @@ MIT License - siehe LICENSE Datei
 
 ---
 
-**Version:** 1.0.0  
-**Letztes Update:** 2026-01-24
+**Version:** 1.2.0.3  
+**Letztes Update:** 2026-02

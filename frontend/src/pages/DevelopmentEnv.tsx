@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { Code, Package, Database, Terminal } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
 
 const DevelopmentEnv: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     languages: [] as string[],
     databases: [] as string[],
@@ -176,7 +178,7 @@ const DevelopmentEnv: React.FC = () => {
             Entwicklungsumgebung
           </h1>
         </div>
-        <p className="text-slate-400">Installieren Sie Programmiersprachen, Datenbanken und Tools</p>
+        <p className="text-slate-400">Dev-Umgebung – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-6">

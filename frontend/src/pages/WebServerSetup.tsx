@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { Globe, Settings, Lock, Monitor } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
 
 const WebServerSetup: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     server_type: 'nginx',
     enable_ssl: true,
@@ -200,7 +202,7 @@ const WebServerSetup: React.FC = () => {
             Webserver Konfiguration
           </h1>
         </div>
-        <p className="text-slate-400">Installieren und konfigurieren Sie einen Webserver mit optionalem CMS</p>
+        <p className="text-slate-400">Webserver – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-6">

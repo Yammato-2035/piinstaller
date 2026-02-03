@@ -5,11 +5,15 @@ import { motion } from 'framer-motion'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import { usePlatform } from '../context/PlatformContext'
+import { PageSkeleton } from '../components/Skeleton'
 
 const MonitoringDashboard: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [status, setStatus] = useState<any>(null)
   const [metrics, setMetrics] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
   const [sudoModalOpen, setSudoModalOpen] = useState(false)
   const [uninstallComponent, setUninstallComponent] = useState<string | null>(null)
   const [installSelection, setInstallSelection] = useState({
@@ -36,6 +40,8 @@ const MonitoringDashboard: React.FC = () => {
       setStatus(data)
     } catch (error) {
       console.error('Fehler beim Laden des Status:', error)
+    } finally {
+      setDataLoading(false)
     }
   }
 
@@ -178,6 +184,10 @@ const MonitoringDashboard: React.FC = () => {
     setSudoModalOpen(true)
   }
 
+  if (dataLoading) {
+    return <PageSkeleton cards={3} />
+  }
+
   return (
     <div className="space-y-8 animate-fade-in page-transition">
       <div>
@@ -187,9 +197,7 @@ const MonitoringDashboard: React.FC = () => {
             Monitoring Dashboard
           </h1>
         </div>
-        <p className="text-slate-400">
-          System-Überwachung mit Prometheus & Grafana
-        </p>
+        <p className="text-slate-400">Monitoring – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">

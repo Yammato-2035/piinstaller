@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { Users, Plus, Trash2, Lock, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
+import { PageSkeleton } from '../components/Skeleton'
 
 interface UserEntry {
   name: string
@@ -9,10 +11,12 @@ interface UserEntry {
 }
 
 const UserManagement: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [systemUsers, setSystemUsers] = useState<UserEntry[]>([])
   const [humanUsers, setHumanUsers] = useState<UserEntry[]>([])
   const [showNewUserForm, setShowNewUserForm] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [usersLoading, setUsersLoading] = useState(true)
   const [newUser, setNewUser] = useState({
     username: '',
     email: '',
@@ -51,6 +55,8 @@ const UserManagement: React.FC = () => {
       setHumanUsers(human)
     } catch (error) {
       toast.error('Fehler beim Laden der Benutzer')
+    } finally {
+      setUsersLoading(false)
     }
   }
 
@@ -209,6 +215,10 @@ const UserManagement: React.FC = () => {
     return labels[role] || role
   }
 
+  if (usersLoading) {
+    return <PageSkeleton cards={2} hasList listRows={5} />
+  }
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
@@ -218,7 +228,7 @@ const UserManagement: React.FC = () => {
             Benutzerverwaltung
           </h1>
         </div>
-        <p className="text-slate-400">Verwalten Sie Systembenutzer und deren Rollen</p>
+        <p className="text-slate-400">Benutzer – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-6">

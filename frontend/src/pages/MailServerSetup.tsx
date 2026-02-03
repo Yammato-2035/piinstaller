@@ -2,8 +2,10 @@ import React, { useState } from 'react'
 import { Mail, AlertCircle, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
 
 const MailServerSetup: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     enable_mail: false,
     domain: '',
@@ -70,7 +72,7 @@ const MailServerSetup: React.FC = () => {
             Mailserver Konfiguration
           </h1>
         </div>
-        <p className="text-slate-400">Installieren Sie einen vollständigen E-Mail-Server (Optional)</p>
+        <p className="text-slate-400">Mailserver – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-6">

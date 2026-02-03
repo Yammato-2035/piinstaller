@@ -3,8 +3,10 @@ import { Home, Zap, Search, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import { usePlatform } from '../context/PlatformContext'
 
 const HomeAutomationSetup: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     automation_type: 'homeassistant',
     enable_homeassistant: false,
@@ -99,7 +101,7 @@ const HomeAutomationSetup: React.FC = () => {
             Hausautomatisierung
           </h1>
         </div>
-        <p className="text-slate-400">Richten Sie ein Smart Home System ein</p>
+        <p className="text-slate-400">Hausautomatisierung – {pageSubtitleLabel}</p>
       </div>
 
       {/* Suche nach Elementen – roter Start-Button + Assimilation-Text */}

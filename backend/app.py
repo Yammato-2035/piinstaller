@@ -875,9 +875,12 @@ def _validate_backup_dir(path_str: str) -> str:
 # ==================== Hilfsfunktionen ====================
 
 def _ensure_packagekit_stopped(sudo_password: Optional[str] = None) -> None:
-    """Stoppt PackageKit temporär, um Konflikte mit apt-get zu vermeiden (PackageKit daemon disappeared)."""
+    """Stoppt PackageKit temporär, um Konflikte mit apt-get zu vermeiden (PackageKit daemon disappeared).
+    Wird nur ausgeführt, wenn ein sudo-Passwort übergeben wird – sonst würde systemctl stop einen
+    Polkit-Dialog auslösen und bei wiederholten Aufrufen (z. B. Update-Liste) zu einer Abfrage-Schleife führen."""
+    if not (sudo_password or "").strip():
+        return  # Ohne Passwort kein Stop – vermeidet Polkit-Schleife
     try:
-        # Prüfe ob PackageKit läuft
         check = subprocess.run(
             ["systemctl", "is-active", "packagekit"],
             capture_output=True,
@@ -885,21 +888,12 @@ def _ensure_packagekit_stopped(sudo_password: Optional[str] = None) -> None:
             timeout=2,
         )
         if check.returncode == 0:
-            # PackageKit läuft → stoppen
-            if sudo_password:
-                stop_result = subprocess.run(
-                    ["sudo", "-S", "systemctl", "stop", "packagekit"],
-                    input=(sudo_password + "\n").encode("utf-8"),
-                    capture_output=True,
-                    timeout=5,
-                )
-            else:
-                # Versuche ohne Passwort (falls sudo ohne Passwort konfiguriert)
-                stop_result = subprocess.run(
-                    ["systemctl", "stop", "packagekit"],
-                    capture_output=True,
-                    timeout=5,
-                )
+            stop_result = subprocess.run(
+                ["sudo", "-S", "systemctl", "stop", "packagekit"],
+                input=(sudo_password + "\n").encode("utf-8"),
+                capture_output=True,
+                timeout=5,
+            )
             if stop_result.returncode == 0:
                 logger.debug("PackageKit gestoppt, um apt-get-Konflikte zu vermeiden")
     except FileNotFoundError:
@@ -1306,7 +1300,7 @@ def get_motherboard_info():
     return info
 
 def get_ram_info():
-    """RAM-Typ und Geschwindigkeit (DMI/dmidecode)"""
+    """RAM-Typ, Geschwindigkeit und Hersteller (DMI/dmidecode). Normalisierte Felder: Type, Size, Speed, Manufacturer."""
     rams = []
     try:
         r = run_command("dmidecode -t memory 2>/dev/null")
@@ -1315,12 +1309,14 @@ def get_ram_info():
             for line in (r["stdout"] or "").split("\n"):
                 if line.startswith("Memory Device"):
                     if block.get("Size") and "No Module" not in (block.get("Size") or ""):
+                        _normalize_ram_block(block)
                         rams.append(block)
                     block = {}
                 elif ":" in line:
                     k, v = line.split(":", 1)
                     block[k.strip()] = v.strip()
             if block.get("Size") and "No Module" not in (block.get("Size") or ""):
+                _normalize_ram_block(block)
                 rams.append(block)
         if not rams:
             for p in Path("/sys/class/dmi/id").glob("*"):
@@ -1333,6 +1329,15 @@ def get_ram_info():
         pass
     return rams
 
+
+def _normalize_ram_block(block: dict) -> None:
+    """Setzt Speed aus dmidecode (Fallback: Configured Clock Speed / Maximum Speed). Type, Size, Manufacturer bleiben unverändert."""
+    if not block:
+        return
+    speed = block.get("Speed") or block.get("Configured Clock Speed") or block.get("Configured Memory Speed") or block.get("Maximum Speed")
+    if speed and str(speed).strip() and str(speed) != "Unknown":
+        block["Speed"] = speed
+
 def get_cpu_name():
     """CPU-Modellname aus /proc/cpuinfo"""
     try:
@@ -1343,6 +1348,50 @@ def get_cpu_name():
         return None
     except Exception:
         return None
+
+
+def get_cpu_summary():
+    """Ein CPU-Summary: Name, Kerne, Threads, Cache (L1–L3), Befehlssätze (flags) aus /proc/cpuinfo und lscpu."""
+    out = {"name": None, "cores": None, "threads": None, "cache": None, "flags": None}
+    try:
+        # Aus /proc/cpuinfo (erstes Prozessor-Block)
+        with open("/proc/cpuinfo", "r") as f:
+            content = f.read()
+        blocks = content.strip().split("\n\n")
+        first = blocks[0] if blocks else ""
+        for line in first.split("\n"):
+            line = line.strip()
+            if line.startswith("model name"):
+                out["name"] = line.split(":", 1)[-1].strip()
+            elif line.startswith("cpu cores"):
+                try:
+                    out["cores"] = int(line.split(":")[-1].strip())
+                except ValueError:
+                    pass
+            elif line.startswith("cache size"):
+                out["cache"] = line.split(":", 1)[-1].strip()
+            elif line.startswith("flags") or line.startswith("Features"):
+                out["flags"] = line.split(":", 1)[-1].strip()
+        # Threads = Anzahl Prozessor-Blöcke
+        out["threads"] = len([b for b in blocks if "processor" in b or "Processor" in b])
+        # lscpu für L1d/L1i/L2/L3 falls vorhanden
+        try:
+            r = run_command("lscpu 2>/dev/null")
+            if r.get("success") and r.get("stdout"):
+                for line in (r.get("stdout") or "").splitlines():
+                    if "L1d cache:" in line or "L1i cache:" in line or "L2 cache:" in line or "L3 cache:" in line:
+                        key, _, val = line.partition(":")
+                        val = val.strip()
+                        if val:
+                            out["cache"] = (out["cache"] or "") + (" · " if out["cache"] else "") + f"{key.strip()}: {val}"
+        except Exception:
+            pass
+        if out["cache"]:
+            out["cache"] = out["cache"].strip()
+        return out
+    except Exception:
+        return out
+
 
 def get_per_core_usage(per_cpu_percent):
     """Aus per-logical-CPU-Auslastung die pro physikalischem Kern (max der Threads) berechnen."""
@@ -1883,6 +1932,12 @@ async def get_system_info():
         per_core_usage, physical_cores = get_per_core_usage(per_cpu_percent)
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
+        disk_mountpoint = '/'
+        disk_partition = ''
+        for p in psutil.disk_partitions(all=False):
+            if p.mountpoint == '/':
+                disk_partition = p.device.rstrip('/').split('/')[-1] or p.device
+                break
         
         # Uptime
         with open('/proc/uptime', 'r') as f:
@@ -1936,6 +1991,7 @@ async def get_system_info():
                 "per_core_usage": per_core_usage,
                 "physical_cores": physical_cores,
                 "count": psutil.cpu_count(),
+                "thread_count": psutil.cpu_count(),
                 "temperature": cpu_temp or temp_debug,
                 "fan_speed": fan_speed,
                 "temp_debug": temp_debug,
@@ -1950,6 +2006,8 @@ async def get_system_info():
                 "used": disk.used,
                 "free": disk.free,
                 "percent": disk.percent,
+                "mountpoint": disk_mountpoint,
+                "partition": disk_partition,
             },
             "platform": {
                 "system": os.uname().sysname,
@@ -1992,15 +2050,38 @@ async def get_system_info():
                 resp["hardware"] = {"cpus": [], "gpus": []}
         except Exception:
             resp["hardware"] = {"cpus": [], "gpus": []}
-        if not resp.get("is_raspberry_pi") and not (resp.get("hardware", {}).get("gpus")):
+        # Auf Nicht-Pi immer lspci/nvidia-smi für alle GPUs (iGPU + NVIDIA/AMD), auf Pi bleibt VideoCore vom Modul
+        if not resp.get("is_raspberry_pi"):
             resp["hardware"]["gpus"] = _get_gpus_for_system_info()
         cpu_name = get_cpu_name()
         if cpu_name:
             resp["cpu_name"] = cpu_name
+        cpu_summary = get_cpu_summary()
+        cpu_summary["name"] = cpu_summary.get("name") or cpu_name
+        if resp.get("cpu", {}).get("physical_cores") is not None:
+            cpu_summary["cores"] = cpu_summary["cores"] or resp["cpu"]["physical_cores"]
+        if resp.get("cpu", {}).get("count") is not None:
+            cpu_summary["threads"] = cpu_summary["threads"] or resp["cpu"]["count"]
+        resp["cpu_summary"] = cpu_summary
+        # Ein CPU-Eintrag für Anzeige (keine Liste aller Threads)
         if not resp.get("hardware", {}).get("cpus") and cpu_name:
             resp["hardware"]["cpus"] = [{"model": cpu_name, "processor_id": 0}]
+        elif resp.get("hardware", {}).get("cpus") and len(resp["hardware"]["cpus"]) > 1:
+            first_model = (resp["hardware"]["cpus"][0].get("model") or cpu_name or "CPU")
+            resp["hardware"]["cpus"] = [{"model": first_model, "processor_id": 0}]
         resp["motherboard"] = get_motherboard_info()
         resp["ram_info"] = get_ram_info()
+        # Hersteller-Treiber-TIP: Was bieten NVIDIA/AMD/Intel-Treiber mehr als integrierte?
+        gpu_names = " ".join([(g.get("name") or g.get("display_name") or "") for g in resp.get("hardware", {}).get("gpus", [])]).lower()
+        cpu_name_lower = (resp.get("cpu_name") or "").lower()
+        tips = []
+        if "nvidia" in gpu_names:
+            tips.append("NVIDIA: Hersteller-Treiber bieten bessere Raytracing-, CUDA- und AI-Unterstützung; bei neueren GPUs oft Open-Source-Kernel + proprietäre Userspace-Komponenten.")
+        if "amd" in gpu_names or "radeon" in gpu_names:
+            tips.append("AMD: Unter Linux meist Open-Source (Mesa/amdgpu) ausreichend; Hersteller-Seite für Profi-Software und neueste Features.")
+        if "intel" in gpu_names or ("intel" in cpu_name_lower and not tips):
+            tips.append("Intel: Mesa-Treiber oft ausreichend; Hersteller für neueste Medien-/Encode-Features.")
+        resp["manufacturer_driver_tip"] = " ".join(tips) if tips else None
         # Alle Sensoren, Laufwerke, Lüfter, Displays (nach Neustart vollständig sichtbar)
         try:
             resp["sensors"] = get_all_thermal_sensors()
@@ -2014,7 +2095,16 @@ async def get_system_info():
             resp["displays"] = []
         try:
             pci_list = _get_pci_with_drivers()
-            resp["drivers"] = [{"device": p["description"], "driver": p.get("driver") or "—"} for p in pci_list]
+            def _device_display(description: str) -> str:
+                if not description:
+                    return description or ""
+                d = (description or "").lower()
+                # Nur bei Grafik-Controller kurze Handelsbezeichnung; NVIDIA-Audio nicht bereinigen
+                is_gpu = "vga" in d or "3d" in d or ("display" in d and ("nvidia" in d or "amd" in d or "intel" in d or "radeon" in d))
+                if is_gpu and not ("nvidia" in d and "audio" in d):
+                    return _clean_gpu_description(description)
+                return description
+            resp["drivers"] = [{"device": _device_display(p.get("description") or ""), "driver": p.get("driver") or "—"} for p in pci_list]
         except Exception:
             resp["drivers"] = []
         resp["network"] = get_network_info()
@@ -2686,6 +2776,122 @@ async def check_terminal_available():
         if shutil.which(name):
             return {"available": True, "terminal": name}
     return {"available": False, "terminal": None}
+
+
+ALLOWED_MIXER_APPS = ("pavucontrol", "qpwgraph")
+
+
+@app.post("/api/system/run-mixer")
+async def run_mixer(request: Request):
+    """Startet einen grafischen Mixer (pavucontrol oder qpwgraph) im Hintergrund.
+    Läuft auf dem Rechner, auf dem das Backend läuft – bei lokalem Zugriff öffnet sich das Fenster dort."""
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        app_name = (data.get("app") or "").strip().lower()
+        if app_name not in ALLOWED_MIXER_APPS:
+            return JSONResponse(
+                status_code=200,
+                content={"status": "error", "message": f"Ungültige App. Erlaubt: {', '.join(ALLOWED_MIXER_APPS)}"}
+            )
+        import shutil
+        path = shutil.which(app_name)
+        if not path:
+            return JSONResponse(
+                status_code=200,
+                content={"status": "error", "message": f"'{app_name}' nicht gefunden. Bitte installieren (z. B. apt install {app_name})."}
+            )
+        # GUI-Apps brauchen DISPLAY (Backend läuft oft ohne Grafik-Umgebung)
+        env = dict(os.environ)
+        if not env.get("DISPLAY"):
+            env["DISPLAY"] = ":0"
+        subprocess.Popen(
+            [path],
+            start_new_session=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            env=env,
+        )
+        return {"status": "success", "message": f"{app_name} gestartet"}
+    except Exception as e:
+        logger.exception("run-mixer fehlgeschlagen")
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+def _run_apt_update(sudo_password: str) -> dict:
+    """Führt apt-get update aus. Gibt dict mit success, stderr, stdout zurück."""
+    cmd = "DEBIAN_FRONTEND=noninteractive apt-get update -qq"
+    return run_command(cmd, sudo=True, sudo_password=sudo_password, timeout=120)
+
+
+def _run_apt_install_mixer(sudo_password: str) -> dict:
+    """Führt apt-get install -y pavucontrol qpwgraph aus. Gibt dict mit success, stderr, stdout zurück."""
+    cmd = (
+        "DEBIAN_FRONTEND=noninteractive apt-get install -y "
+        "-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold "
+        "pavucontrol qpwgraph"
+    )
+    return run_command(cmd, sudo=True, sudo_password=sudo_password, timeout=180)
+
+
+@app.post("/api/system/install-mixer-packages")
+async def install_mixer_packages(request: Request):
+    """Installiert pavucontrol und qpwgraph (apt-get update, dann apt-get install). Benötigt sudo."""
+    copyable = "sudo apt-get update && sudo apt-get install -y pavucontrol qpwgraph"
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        sudo_password = (data.get("sudo_password", "") or sudo_password_store.get("password", "") or "").strip()
+        if not sudo_password:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "Sudo-Passwort erforderlich.",
+                    "requires_sudo_password": True,
+                    "copyable_command": copyable,
+                }
+            )
+        # Schritt 1: apt-get update
+        result_update = _run_apt_update(sudo_password)
+        if not result_update.get("success"):
+            err = (result_update.get("stderr") or result_update.get("stdout") or result_update.get("error") or "").strip()
+            if result_update.get("error") == "Command timeout":
+                err = "Zeitüberschreitung beim Paketquellen-Update."
+            elif not err:
+                err = "apt-get update ist fehlgeschlagen (keine Ausgabe)."
+            logger.warning("install-mixer-packages apt-get update fehlgeschlagen: %s", err[:400])
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Paketquellen-Update fehlgeschlagen: {err[:500]}",
+                    "copyable_command": copyable,
+                }
+            )
+        # Schritt 2: apt-get install
+        result_install = _run_apt_install_mixer(sudo_password)
+        if result_install.get("success"):
+            return {"status": "success", "message": "pavucontrol und qpwgraph installiert"}
+        err = (result_install.get("stderr") or result_install.get("stdout") or result_install.get("error") or "").strip()
+        if result_install.get("error") == "Command timeout":
+            err = "Zeitüberschreitung bei der Installation."
+        elif not err:
+            err = "apt-get install ist fehlgeschlagen (keine Ausgabe)."
+        logger.warning("install-mixer-packages apt-get install fehlgeschlagen: %s", err[:400])
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": err[:600],
+                "copyable_command": copyable,
+            }
+        )
+    except Exception as e:
+        logger.exception("install-mixer-packages fehlgeschlagen")
+        return JSONResponse(
+            status_code=200,
+            content={"status": "error", "message": str(e)[:500], "copyable_command": copyable}
+        )
 
 
 @app.post("/api/security/firewall/enable")
@@ -3513,10 +3719,8 @@ async def configure_security(request: Request):
         )
 
 def get_updates_categorized():
-    """Updates kategorisieren"""
+    """Updates kategorisieren. Kein PackageKit-Stop hier – würde bei Aufruf ohne Passwort (Dashboard/Updates-API) Polkit-Abfrage-Schleife auslösen."""
     try:
-        # PackageKit stoppen, um Konflikte zu vermeiden
-        _ensure_packagekit_stopped()
         # Zuerst apt update ausführen (ohne zu installieren)
         run_command("apt-get update -qq 2>/dev/null", sudo=False)
         
@@ -5047,8 +5251,168 @@ async def monitoring_uninstall(request: Request):
 
 # ==================== GPU/System-Info (ohne Pi) ====================
 
+# AMD iGPU Codenamen -> Handelsbezeichnung (Ryzen 7000 etc.)
+_AMD_IGPU_CODENAMES = {
+    "raphael": "AMD Radeon 610M (integriert)",   # Ryzen 7045/7945
+    "phoenix": "AMD Radeon 760M (integriert)",   # Ryzen 7040
+    "phoenix2": "AMD Radeon 760M (integriert)",
+    "renoir": "AMD Radeon Graphics (integriert)",  # Ryzen 4000
+    "cezanne": "AMD Radeon Graphics (integriert)",  # Ryzen 5000
+    "vangogh": "AMD Radeon Graphics (integriert)",
+    "rembrandt": "AMD Radeon 680M (integriert)",
+    "stoney": "AMD Radeon R5/R7 (integriert)",
+}
+
+
+def _clean_gpu_description(desc: str) -> str:
+    """Entfernt technische Bezeichnungen (VGA compatible controller, Audio device, rev xx) und liefert kurze Handelsbezeichnung."""
+    if not (desc or "").strip():
+        return desc or ""
+    s = desc.strip()
+    low = s.lower()
+    # Audio-Geräte sind keine Grafik – leeren String zurück (wird vom Aufrufer gefiltert)
+    if "audio device" in low or (low.startswith("audio ") and "nvidia" in low):
+        return ""
+    # Führende Controller-Typen entfernen (VGA compatible controller, 3D, Display controller – Benutzer braucht sie nicht)
+    if low.startswith("vga ") or low.startswith("vga compatible") or "vga compatible controller:" in low:
+        colon = s.find(":")
+        if colon >= 0:
+            s = s[colon + 1 :].strip()
+            low = s.lower()
+        else:
+            for prefix in ("VGA compatible controller ", "VGA compatible controller: ", "vga compatible controller "):
+                if low.startswith(prefix) or prefix.lower() in low:
+                    start = low.find("vga compatible controller")
+                    end = start + len("vga compatible controller")
+                    if end < len(s) and s[end : end + 1] in (":", " "):
+                        s = s[end + 1 :].lstrip(": ").strip()
+                    low = s.lower()
+                    break
+    else:
+        for prefix in ["3d ", "display controller: ", "display controller:"]:
+            if low.startswith(prefix):
+                s = s[len(prefix):].strip()
+                low = s.lower()
+                break
+    # "(rev xx)" am Ende entfernen
+    if " (rev " in s and ")" in s:
+        idx = s.find(" (rev ")
+        if idx > 0:
+            s = s[:idx].strip()
+    # NVIDIA: Nur Inhalt der eckigen Klammer als Handelsname (z. B. [GeForce RTX 4070 Max-Q / Mobile])
+    if "nvidia" in s.lower() and "[" in s and "]" in s:
+        start = s.find("[")
+        end = s.find("]", start)
+        if start >= 0 and end > start:
+            name = s[start + 1 : end].strip()
+            if name.lower().startswith("geforce") or name.lower().startswith("quadro") or "rtx" in name.lower():
+                return "NVIDIA " + name
+            return "NVIDIA " + name
+    # AMD/ATI: Codenamen (Raphael, Phoenix) -> lesbare Bezeichnung aus Herstellerdaten
+    if "amd" in s.lower() or "ati" in s.lower():
+        s_lower = s.lower()
+        for codename, label in _AMD_IGPU_CODENAMES.items():
+            if codename in s_lower:
+                return label
+        for prefix in ["Advanced Micro Devices, Inc. [AMD/ATI] ", "AMD/ATI ", "AMD "]:
+            if s.startswith(prefix):
+                s = s[len(prefix):].strip()
+                break
+        # Letzte eckige Klammer oft Codename (z. B. [AMD/ATI] Raphael)
+        if "[" in s and "]" in s:
+            bracket = s[s.rfind("[") + 1 : s.rfind("]")].strip()
+            codename = bracket.split()[-1].lower() if bracket else ""
+            if codename in _AMD_IGPU_CODENAMES:
+                return _AMD_IGPU_CODENAMES[codename]
+            if bracket and bracket.lower() not in ("amd/ati", "amd"):
+                return "AMD " + bracket
+        if s and not s.lower().startswith("vga"):
+            return s
+    # Sicherheit: verbliebene technische Präfixe am Anfang entfernen
+    low = s.strip().lower()
+    for strip_prefix in ("vga compatible controller:", "vga compatible controller", "audio device:"):
+        if low.startswith(strip_prefix):
+            s = s[len(strip_prefix):].lstrip(" ").strip()
+            low = s.lower()
+            break
+    # Intel: Nur Grafik-Bezeichnung (UHD Graphics 770, Iris Xe etc.), ohne Chip-Code
+    if "intel" in s.lower():
+        low = s.lower()
+        for marker in ["uhd graphics", "iris xe", "iris graphics", "hd graphics", "iris plus"]:
+            i = low.find(marker)
+            if i >= 0:
+                part = s[i:].strip()
+                return "Intel " + part
+        for prefix in ["Intel Corporation ", "Intel "]:
+            if s.startswith(prefix):
+                s = s[len(prefix):].strip()
+                break
+        return "Intel " + s if s else s
+    return s.strip()
+
+
+def _shorten_gpu_display_name(name: str, gpu_type: str, memory_mb: Optional[int] = None) -> tuple:
+    """Liefert (display_name, memory_display). Handelsbezeichnung kurz, Speicher in GB (ggf. GDDR)."""
+    name = (name or "").strip()
+    n = name.lower()
+    mem_display = ""
+    if memory_mb is not None and memory_mb > 0:
+        gb = memory_mb / 1024
+        if gb >= 1:
+            mem_display = f"{int(round(gb))} GB"
+            if "nvidia" in n and ("rtx 40" in n or "rtx 30" in n or "geforce rtx" in n):
+                mem_display += " GDDR6"
+            elif "nvidia" in n:
+                mem_display += " GDDR5/GDDR6"
+        else:
+            mem_display = f"{memory_mb} MB"
+    # NVIDIA: Bereits bereinigt (z. B. "NVIDIA GeForce RTX 4070 Max-Q / Mobile") oder aus nvidia-smi – nur Prefix prüfen
+    if "nvidia" in n and ("geforce" in n or "quadro" in n or "rtx" in n):
+        if "corporation" not in n and "vga compatible" not in n and " (rev " not in n and "[" not in name:
+            return (name if name.strip().lower().startswith("nvidia") else "NVIDIA " + name.strip(), mem_display)
+        s = name.replace("NVIDIA Corporation", "").strip()
+        for skip in ["GPU", "Graphics", "NVIDIA "]:
+            if s.startswith(skip):
+                s = s[len(skip):].strip()
+        if "Laptop" in name:
+            s = s.replace(" Laptop GPU", "").replace(" Laptop", "").strip() + " Laptop"
+        elif "Mobile" in name or "Max-Q" in name:
+            s = s.replace(" Mobile", "").replace(" Max-Q", "").strip()
+            if "Max-Q" in name:
+                s += " Max-Q"
+            elif "Mobile" in name:
+                s += " Mobile"
+        if not s.startswith("NVIDIA"):
+            s = "NVIDIA " + s
+        return (s.strip() or name, mem_display)
+    # Intel: z. B. "Intel UHD Graphics 770" / "Intel Iris Xe Graphics"
+    if "intel" in n:
+        for marker in ["uhd graphics", "iris xe", "iris graphics", "hd graphics", "iris plus", "graphics"]:
+            if marker in n:
+                i = n.find(marker)
+                part = name[i:].strip() if i >= 0 else name
+                return ("Intel " + part, mem_display)
+        return (name.split("]")[-1].strip() if "]" in name else name, mem_display)
+    # AMD: integriert (Radeon 610M, 760M, Radeon Graphics) vs. diskret (RX 6800)
+    if "amd" in n or "radeon" in n or "ati" in n:
+        if "radeon graphics" in n or "vega" in n or "610m" in n or "760m" in n or ("radeon" in n and "rx " not in n and "graphics" in n):
+            short = name
+            for prefix in ["Advanced Micro Devices, Inc. [AMD/ATI]", "AMD/ATI", "AMD"]:
+                if short.startswith(prefix):
+                    short = short[len(prefix):].strip()
+            if gpu_type == "integrated" and "integriert" not in short.lower():
+                short = short + " (integriert)" if short else "AMD Radeon (integriert)"
+            return (short or name, mem_display)
+        short = name.split("[")[-1].split("]")[0].strip() if "[" in name else name
+        for prefix in ["Advanced Micro Devices, Inc. [AMD/ATI]", "AMD/ATI", "AMD"]:
+            if short.startswith(prefix):
+                short = short[len(prefix):].strip()
+        return (short or name, mem_display)
+    return (name, mem_display)
+
+
 def _get_gpus_for_system_info():
-    """GPU-Liste für System-Info (Nicht-Pi): Name + optional Speicher (nvidia-smi)."""
+    """GPU-Liste für System-Info (Nicht-Pi): Handelsbezeichnung kurz, Speicher in GB. iGPU getrennt, Audio-Geräte nie als Grafik."""
     gpus = []
     try:
         pci_list = _get_pci_with_drivers()
@@ -5056,41 +5420,65 @@ def _get_gpus_for_system_info():
         for item in pci_list:
             desc = (item.get("description") or "").strip()
             desc_lower = desc.lower()
-            if not ("vga" in desc_lower or "3d" in desc_lower or "display" in desc_lower or
-                    ("nvidia" in desc_lower and "graphics" in desc_lower) or
-                    ("radeon" in desc_lower or "amd" in desc_lower and "graphics" in desc_lower) or
-                    ("intel" in desc_lower and "graphics" in desc_lower)):
+            # Audio-Geräte sind keine Grafikkarten – immer ausblenden (NVIDIA HDMI-Audio, Audio device, etc.)
+            if "audio device" in desc_lower or "high definition audio" in desc_lower or "hdmi audio" in desc_lower or ("audio" in desc_lower and "nvidia" in desc_lower):
                 continue
-            if desc in seen:
+            # Nur echte Grafik-Controller: VGA, 3D, Display – kein reines "NVIDIA" (könnte Audio sein)
+            is_vga_3d_display = "vga" in desc_lower or "3d" in desc_lower or "display" in desc_lower
+            is_intel_graphics = "intel" in desc_lower and ("graphics" in desc_lower or "uhd" in desc_lower or "iris" in desc_lower or "vga" in desc_lower)
+            is_amd_radeon = ("radeon" in desc_lower or "amd" in desc_lower or "ati" in desc_lower) and ("graphics" in desc_lower or "vga" in desc_lower or "display" in desc_lower or "raphael" in desc_lower or "phoenix" in desc_lower)
+            is_nvidia_graphics = "nvidia" in desc_lower and (is_vga_3d_display or "geforce" in desc_lower or "quadro" in desc_lower or "rtx" in desc_lower or "gtx" in desc_lower)
+            if not (is_vga_3d_display or is_intel_graphics or is_amd_radeon or is_nvidia_graphics):
                 continue
-            seen.add(desc)
-            gpus.append({"name": desc, "memory_mb": None, "driver": item.get("driver")})
+            # Typ: integriert (Intel iGPU, AMD Codenamen Raphael/Phoenix, Radeon Graphics) vs. diskret
+            gpu_type = "discrete"
+            if is_intel_graphics:
+                gpu_type = "integrated"
+            elif is_amd_radeon and (
+                "radeon graphics" in desc_lower or "vega" in desc_lower or "610m" in desc_lower or "760m" in desc_lower
+                or ("radeon" in desc_lower and "rx " not in desc_lower)
+                or any(c in desc_lower for c in ("raphael", "phoenix", "renoir", "cezanne", "rembrandt", "vangogh", "stoney"))
+            ):
+                gpu_type = "integrated"
+            # Kurze Handelsbezeichnung (ohne "VGA compatible controller", ohne "rev xx", NVIDIA = Inhalt [...], AMD = Codenamen-Map)
+            clean_name = _clean_gpu_description(desc)
+            if not clean_name or clean_name in seen:
+                continue
+            seen.add(clean_name)
+            gpus.append({"name": clean_name, "memory_mb": None, "driver": item.get("driver"), "gpu_type": gpu_type})
         if not gpus:
-            r = run_command("lspci 2>/dev/null | grep -iE 'vga|3d|display|nvidia|amd|radeon|graphics'")
+            r = run_command("lspci 2>/dev/null | grep -iE 'vga|3d|display'")
             if r.get("success") and r.get("stdout"):
                 for line in (r["stdout"] or "").strip().split("\n"):
-                    if line.strip():
-                        name = line.split(" ", 1)[1] if " " in line else line.strip()
-                        gpus.append({"name": name.strip(), "memory_mb": None})
-        # NVIDIA Speicher via nvidia-smi
+                    line_lower = line.lower()
+                    if line.strip() and "audio" not in line_lower and "audio device" not in line_lower:
+                        raw = line.split(" ", 1)[1] if " " in line else line.strip()
+                        clean_name = _clean_gpu_description(raw)
+                        if clean_name and clean_name not in seen:
+                            seen.add(clean_name)
+                            gpus.append({"name": clean_name.strip(), "memory_mb": None, "gpu_type": "discrete"})
+        # NVIDIA: Name + Speicher aus nvidia-smi (Handelsbezeichnung, Speicher in GB)
         nv = run_command("nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits 2>/dev/null")
         if nv.get("success") and nv.get("stdout"):
+            nvidia_in_gpus = [g for g in gpus if "nvidia" in (g.get("name") or "").lower()]
             for idx, line in enumerate((nv["stdout"] or "").strip().split("\n")):
-                if not line.strip() or idx >= len(gpus):
+                if not line.strip():
                     continue
                 parts = [p.strip() for p in line.split(",")]
-                if len(parts) >= 2:
+                if len(parts) >= 2 and idx < len(nvidia_in_gpus):
                     try:
                         mem_mb = int(parts[1].strip().split()[0])
-                        if "nvidia" in (gpus[idx].get("name") or "").lower():
-                            gpus[idx]["memory_mb"] = mem_mb
-                        else:
-                            for g in gpus:
-                                if "nvidia" in (g.get("name") or "").lower():
-                                    g["memory_mb"] = mem_mb
-                                    break
+                        nvidia_in_gpus[idx]["memory_mb"] = mem_mb
+                        nvidia_in_gpus[idx]["name"] = parts[0].strip()  # nvidia-smi Name (kürzer als lspci)
                     except (ValueError, IndexError):
                         pass
+        # display_name + memory_display für jede GPU
+        for g in gpus:
+            display_name, memory_display = _shorten_gpu_display_name(
+                g.get("name"), g.get("gpu_type", "discrete"), g.get("memory_mb")
+            )
+            g["display_name"] = display_name
+            g["memory_display"] = memory_display
     except Exception:
         pass
     return gpus

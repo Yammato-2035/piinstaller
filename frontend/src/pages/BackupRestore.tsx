@@ -4,10 +4,12 @@ import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import { usePlatform } from '../context/PlatformContext'
 
 type BackupTab = 'backup' | 'settings' | 'restore'
 
 const BackupRestore: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [activeTab, setActiveTab] = useState<BackupTab>('backup')
   const [backups, setBackups] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -896,9 +898,7 @@ const BackupRestore: React.FC = () => {
             Backup & Restore
           </h1>
         </div>
-        <p className="text-slate-400">
-          Erstellen und Wiederherstellen von System-Backups
-        </p>
+        <p className="text-slate-400">Backup & Restore – {pageSubtitleLabel}</p>
       </div>
 
       {/* Tabs */}

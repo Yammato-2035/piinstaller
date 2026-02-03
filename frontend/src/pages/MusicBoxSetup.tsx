@@ -3,8 +3,10 @@ import { Music, Radio, Headphones } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import { usePlatform } from '../context/PlatformContext'
 
 const MusicBoxSetup: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     music_type: 'mopidy',
     enable_mopidy: false,
@@ -18,6 +20,9 @@ const MusicBoxSetup: React.FC = () => {
 
   const [loading, setLoading] = useState(false)
   const [sudoModalOpen, setSudoModalOpen] = useState(false)
+  const [installMixerSudoOpen, setInstallMixerSudoOpen] = useState(false)
+  const [loadingMixerInstall, setLoadingMixerInstall] = useState(false)
+  const [mixerInstallError, setMixerInstallError] = useState<{ message?: string; copyable_command?: string } | null>(null)
   const [musicStatus, setMusicStatus] = useState<any>(null)
   const [diagnoseData, setDiagnoseData] = useState<any>(null)
   const [loadingDiagnose, setLoadingDiagnose] = useState(false)
@@ -47,6 +52,35 @@ const MusicBoxSetup: React.FC = () => {
       setMusicStatus(data)
     } catch (error) {
       console.error('Fehler beim Laden des MusicBox-Status:', error)
+    }
+  }
+
+  const installMixerPackages = async (sudoPassword?: string) => {
+    setLoadingMixerInstall(true)
+    setMixerInstallError(null)
+    try {
+      const response = await fetchApi('/api/system/install-mixer-packages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sudoPassword != null ? { sudo_password: sudoPassword } : {}),
+      })
+      const data = await response.json()
+      if (data.status === 'success') {
+        setInstallMixerSudoOpen(false)
+        setMixerInstallError(null)
+        toast.success(data.message)
+      } else {
+        if (data.requires_sudo_password) setInstallMixerSudoOpen(true)
+        else {
+          toast.error(data.message || 'Installation fehlgeschlagen')
+          if (data.copyable_command) setMixerInstallError({ message: data.message, copyable_command: data.copyable_command })
+        }
+      }
+    } catch (e) {
+      toast.error('Installation fehlgeschlagen')
+      setMixerInstallError({ message: 'Installation fehlgeschlagen', copyable_command: 'sudo apt-get update && sudo apt-get install -y pavucontrol qpwgraph' })
+    } finally {
+      setLoadingMixerInstall(false)
     }
   }
 
@@ -129,7 +163,7 @@ const MusicBoxSetup: React.FC = () => {
             Musikbox
           </h1>
         </div>
-        <p className="text-slate-400">Richten Sie einen Music Server ein</p>
+        <p className="text-slate-400">Musikbox – {pageSubtitleLabel}</p>
       </div>
 
       {/* Info: Music-Server & Bezahldienste */}
@@ -179,9 +213,77 @@ sudo systemctl restart mopidy
             📡 Internetradio (Mopidy)
           </a>
         </div>
-        <p className="text-sm">
+        <p className="text-sm mb-3">
           <strong>Mixer:</strong> <code className="opacity-90 px-1 rounded">pavucontrol</code> (PulseAudio) oder <code className="opacity-90 px-1 rounded">qpwgraph</code> (PipeWire) für Kanäle und Lautstärke. <strong>Dolby Atmos:</strong> herstellerspezifisch (z. B. Dolby Access).
         </p>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const r = await fetchApi('/api/system/run-mixer', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ app: 'pavucontrol' }),
+                })
+                const d = await r.json()
+                if (d.status === 'success') toast.success(d.message)
+                else toast.error(d.message || 'Fehler')
+              } catch (e) {
+                toast.error('Mixer konnte nicht gestartet werden')
+              }
+            }}
+            className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium"
+          >
+            Mixer öffnen (pavucontrol)
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const r = await fetchApi('/api/system/run-mixer', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ app: 'qpwgraph' }),
+                })
+                const d = await r.json()
+                if (d.status === 'success') toast.success(d.message)
+                else toast.error(d.message || 'Fehler')
+              } catch (e) {
+                toast.error('Mixer konnte nicht gestartet werden')
+              }
+            }}
+            className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-sm font-medium"
+          >
+            Mixer öffnen (qpwgraph)
+          </button>
+          <button
+            type="button"
+            onClick={() => installMixerPackages()}
+            disabled={loadingMixerInstall}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+          >
+            {loadingMixerInstall ? 'Installiere…' : 'Mixer-Programme installieren (pavucontrol & qpwgraph)'}
+          </button>
+        </div>
+        {mixerInstallError?.copyable_command && (
+          <div className="mt-3 p-3 bg-slate-800/60 rounded-lg border border-amber-600/40">
+            <p className="text-amber-200 text-xs mb-2">Installation fehlgeschlagen. Manuell im Terminal ausführen:</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <code className="flex-1 min-w-0 bg-slate-800 px-2 py-1 rounded text-slate-200 font-mono text-xs break-all">{mixerInstallError.copyable_command}</code>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(mixerInstallError!.copyable_command!)
+                  toast.success('Befehl kopiert')
+                }}
+                className="px-2 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs shrink-0"
+              >
+                Kopieren
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Iris-Diagnose (warum läuft Iris nicht?) */}
@@ -405,6 +507,14 @@ sudo systemctl restart mopidy
         confirmText="Installation starten"
         onCancel={() => setSudoModalOpen(false)}
         onConfirm={runApplyConfig}
+      />
+      <SudoPasswordModal
+        open={installMixerSudoOpen}
+        title="Sudo-Passwort für Mixer-Installation"
+        subtitle="pavucontrol und qpwgraph werden per apt installiert. Dafür werden Administrator-Rechte benötigt."
+        confirmText="Installieren"
+        onCancel={() => setInstallMixerSudoOpen(false)}
+        onConfirm={(pwd) => installMixerPackages(pwd)}
       />
     </div>
   )

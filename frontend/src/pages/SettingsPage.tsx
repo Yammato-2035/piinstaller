@@ -13,7 +13,7 @@ interface SettingsPageProps {
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
-  const { isRaspberryPi } = usePlatform()
+  const { isRaspberryPi, pageSubtitleLabel } = usePlatform()
   const [activeTab, setActiveTab] = useState<'general' | 'cloud' | 'logs'>('general')
   const [generalSubTab, setGeneralSubTab] = useState<GeneralSubTab>('init')
   const [initStatus, setInitStatus] = useState<any>(null)
@@ -350,7 +350,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
             Einstellungen
           </h1>
         </div>
-        <p className="text-slate-400">Hier kannst du grundlegende Einstellungen verwalten und den Initialisierungsstatus prüfen.</p>
+        <p className="text-slate-400">Einstellungen – {pageSubtitleLabel}</p>
       </div>
 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">

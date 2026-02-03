@@ -458,7 +458,7 @@ class RaspberryPiConfigModule:
                 out["recommended_mhz"] = recommended_mhz
                 out["gpu_info"] = "VideoCore IV (BCM2835)"
             else:
-                out["gpu_info"] = "VideoCore (Broadcom)" if out.get("gpu_info") is None else out["gpu_info"]
+                # Kein Pi-Modell erkannt – gpu_info nicht setzen, damit später _get_gpus_generic() (lspci) genutzt wird (Intel/NVIDIA/AMD)
                 recommended_mhz = None
             out["memory_split_hint"] = (
                 "GPU-Speicher (gpu_mem) teilt den RAM mit der CPU. Typisch 64–128 MB für Desktop; "
@@ -493,7 +493,8 @@ class RaspberryPiConfigModule:
                 }]
             else:
                 out["gpus"] = self._get_gpus_generic()
-            if not out["gpus"] and out.get("config_gpu_mem") is not None:
+            # Nur bei echtem Pi (vcgencmd lieferte gpu_mem) VideoCore als Fallback, sonst lspci-GPUs behalten
+            if not out["gpus"] and out.get("config_gpu_mem") is not None and ("raspberry" in (out.get("cpu_model") or "").lower() or "bcm27" in (out.get("cpu_model") or "").lower()):
                 out["gpus"] = [{"name": "VideoCore (Broadcom)", "memory_mb": out["config_gpu_mem"]}]
             return {"status": "success", "system_info": out}
         except Exception as e:

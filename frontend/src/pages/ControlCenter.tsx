@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import { usePlatform } from '../context/PlatformContext'
 
 type ControlCenterSection = 
   | 'wifi'
@@ -33,6 +34,7 @@ interface ControlCenterProps {
 }
 
 const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) => {
+  const { pageSubtitleLabel } = usePlatform()
   const [activeSection, setActiveSection] = useState<ControlCenterSection>('wifi')
   const [sudoModalOpen, setSudoModalOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<null | ((sudoPassword: string) => Promise<void>)>(null)
@@ -1997,7 +1999,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
             Control Center
           </h1>
         </div>
-        <p className="text-slate-400">System-Einstellungen verwalten</p>
+        <p className="text-slate-400">Control Center – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

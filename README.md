@@ -102,9 +102,10 @@ http://localhost:3000
 
 ## 📚 Dokumentation
 
-- **[INSTALL.md](./INSTALL.md)** - Detaillierte Installationsanleitung
+- **[INSTALL.md](./INSTALL.md)** - Detaillierte Installationsanleitung (inkl. Troubleshooting Mixer)
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System-Architektur & Design
 - **[FEATURES.md](./FEATURES.md)** - Alle Features & Roadmap
+- **[CHANGELOG.md](./CHANGELOG.md)** - Versions-Changelog (1.2.0.0, 1.0.4.0, …)
 - **[VERSIONING.md](./VERSIONING.md)** - Versionsschema, wann Version erhöht wird, Changelog-Führung
 - **[SUGGESTIONS.md](./SUGGESTIONS.md)** - Erweiterte Vorschläge & Best Practices
 
@@ -237,9 +238,9 @@ MIT License - Siehe [LICENSE](./LICENSE) für Details
 
 ## 🌟 Status
 
-- **Version:** 1.0.1.4 (siehe [VERSION](./VERSION) und [VERSIONING.md](./VERSIONING.md))
+- **Version:** 1.2.0.3 (siehe [VERSION](./VERSION) und [VERSIONING.md](./VERSIONING.md))
 - **Status:** Production Ready
-- **Letztes Update:** Januar 2026
+- **Letztes Update:** Februar 2026
 - **Support bis:** Januar 2027
 
 ### Weitere Informationen

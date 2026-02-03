@@ -108,8 +108,8 @@ const Documentation: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li><strong>Systeminformationen:</strong> CPU-Name, Motherboard, Betriebssystem, RAM-Typ und -Geschwindigkeit</li>
-                    <li><strong>CPU & Grafik:</strong> Auslastung pro physikalischem Kern, Temperatur, GPU-Infos; Link „Treiber beim Hersteller suchen“ (Intel/AMD)</li>
+                    <li><strong>Systeminformationen:</strong> CPU, Hauptspeicher gesamt, Arbeitsspeicher (RAM) mit Typ (DDR4/DDR5), Kapazität und Takt; Motherboard; Grafik getrennt als Integriert (iGPU) und Grafikkarte (diskret) mit Handelsbezeichnung und Grafikspeicher (z. B. NVIDIA RTX 4070 Laptop · 8 GB GDDR6); Betriebssystem</li>
+                    <li><strong>CPU & Grafik:</strong> Auslastung pro physikalischem Kern, Temperatur; Grafik getrennt Integrierte Grafik (iGPU) und Grafikkarte (diskret) mit Kurzname und Speicher; Link „Treiber beim Hersteller suchen“ (Intel/AMD)</li>
                     <li><strong>Sensoren & Schnittstellen:</strong> Alle Temperatursensoren (thermal_zone, hwmon), Laufwerke (inkl. NVMe), Lüfter, angeschlossene Displays</li>
                     <li><strong>Systembezogene Treiber:</strong> Alle PCI-Geräte mit Treiber-Status (geladen oder „—“)</li>
                     <li><strong>Quick-Links:</strong> Sprung zu Assistent, Sicherheit, Musikbox, Backup, Einstellungen usw.</li>
@@ -716,6 +716,17 @@ const Documentation: React.FC = () => {
                   </p>
                 </div>
                 <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Mixer-Installation fehlgeschlagen</h3>
+                  <p className="text-sm mb-2">
+                    Wenn „Mixer-Programme installieren“ (pavucontrol &amp; qpwgraph) in Musikbox oder Kino/Streaming fehlschlägt:
+                  </p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                    <li><strong>Sudo-Passwort:</strong> Beim Klick auf „Mixer-Programme installieren“ das Sudo-Passwort eingeben (Modal erscheint, falls noch nicht gespeichert).</li>
+                    <li><strong>Manuell im Terminal:</strong> <code className="text-slate-400">sudo apt update</code>, danach <code className="text-slate-400">sudo apt install -y pavucontrol qpwgraph</code>.</li>
+                    <li>Danach in der App „Mixer öffnen (pavucontrol)“ bzw. „Mixer öffnen (qpwgraph)“ nutzen. Läuft das Backend ohne Grafikumgebung, setzt das Backend <code className="text-slate-400">DISPLAY=:0</code> – der Mixer öffnet sich auf der ersten X-Session.</li>
+                  </ul>
+                </div>
+                <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Backend & Frontend starten</h3>
                   <p className="text-sm mb-2">
                     Im Projektordner (z. B. <code className="text-slate-400">…/piinstaller</code>):
@@ -723,7 +734,7 @@ const Documentation: React.FC = () => {
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
                     <li><strong>Alles (Backend + Frontend):</strong> <code className="text-slate-400">./start.sh</code> – Backend auf Port 8000, Frontend (Vite) auf Port 3001. Beenden mit <code className="text-slate-400">Ctrl+C</code>.</li>
                     <li><strong>Nur Backend:</strong> <code className="text-slate-400">./start-backend.sh</code>. Oder Desktop-Starter „PI-Installer Backend starten“ (wenn angelegt).</li>
-                    <li><strong>Nur Frontend (Web-Entwicklung):</strong> <code className="text-slate-400">./start-frontend.sh</code> oder <code className="text-slate-400">cd frontend && npm run dev</code> → http://localhost:3001 (Backend muss separat laufen).</li>
+                    <li><strong>Nur Frontend (Web-Entwicklung):</strong> <code className="text-slate-400">./start-frontend.sh</code> oder nach <code className="text-slate-400">./scripts/desktop-frontend-launcher-anlegen.sh</code> drei Desktop-Starter: „PI-Installer Frontend starten“ (nur Server), „PI-Installer Frontend (App-Fenster)“ (Tauri-Fenster), „PI-Installer Frontend (Browser)“ (Vite + Standard-Browser). Oder <code className="text-slate-400">cd frontend && npm run dev</code> → http://localhost:3001 (Backend muss separat laufen).</li>
                     <li><strong>Desktop-App (Tauri):</strong> <code className="text-slate-400">cd frontend && npm run tauri:dev</code> – öffnet die App-Fenster; Backend separat mit <code className="text-slate-400">./start-backend.sh</code> starten.</li>
                   </ul>
                 </div>
@@ -852,8 +863,51 @@ const Documentation: React.FC = () => {
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.0.2.0</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.2.0.3</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.2.0.3 (Mixer-Installation robuster, manueller Befehl bei Fehler)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Mixer-Installation:</strong> Update und Install in zwei Schritten; Dpkg-Optionen für nicht-interaktiv; bei Fehler wird „Manuell im Terminal ausführen“ mit Befehl und Kopieren-Button angezeigt (Musikbox &amp; Kino/Streaming)</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.2.0.2 (Hardware ohne Systeminfo, Treiber-Hinweise unter Grafikkarte)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Dashboard – Hardware &amp; Sensoren:</strong> Bereich „Systeminformationen“ entfernt (ist bereits in der Übersicht sichtbar)</li>
+                      <li><strong>CPU &amp; Grafik:</strong> NVIDIA-/AMD-/Intel-Treiber-Hinweise nicht mehr unter der CPU, sondern unter der jeweiligen Grafikkarte (iGPU/diskret) angezeigt</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.2.0.1 (Dashboard Lesbarkeit, CPU-Anzeige, Mixer, Menü-Kontrast)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li>IP/Updates lesbar; Menü-Buttons kontrastreich; CPU nur eine Zusammenfassung (Kerne, Threads, Cache, Befehlssätze); Mixer-Installation robuster</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.2.0.0 (Musikbox fertig, Mixer, Dashboard)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Musikbox:</strong> Musikbox-Bereich abgeschlossen – Mixer-Buttons (pavucontrol/qpwgraph), Installation der Mixer-Programme per Knopfdruck (pavucontrol &amp; qpwgraph), Sudo-Modal für Mixer-Installation</li>
+                      <li><strong>Mixer:</strong> Mixer in Musikbox und Kino/Streaming eingebaut – „Mixer öffnen (pavucontrol)“ / „Mixer öffnen (qpwgraph)“ starten die GUI-Mixer; „Mixer-Programme installieren“ installiert pavucontrol und qpwgraph per apt; Backend setzt DISPLAY=:0 für GUI-Start</li>
+                      <li><strong>Dashboard:</strong> Dashboard-Erweiterungen und Quick-Links; Versionsnummer und Changelog auf 1.2.0.0 aktualisiert</li>
+                      <li><strong>Dokumentation:</strong> Changelog 1.2.0.0, Troubleshooting Mixer-Installation (manueller Befehl), API install-mixer-packages/run-mixer ergänzt</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.4.0 (Sicherheit-Anzeige, Dokumentation &amp; Version)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Sicherheit:</strong> Unter „Sicherheit“ wird im Dashboard wieder korrekt „2/5 aktiviert“ angezeigt, wenn Firewall und Fail2Ban aktiv sind (UFW-Status wird wie auf der Sicherheits-Seite aus dem Status-String abgeleitet, falls das Backend <code className="bg-slate-700 px-1 rounded">active: false</code> liefert)</li>
+                      <li><strong>Dokumentation:</strong> Changelog und Versionsnummer aktualisiert</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.3.0 (Systeminformationen: Grafik &amp; RAM übersichtlich)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Grafik:</strong> Kurze Handelsbezeichnung (z. B. NVIDIA RTX 4070 Laptop · 8 GB GDDR6); Integrierte Grafik (iGPU) und Grafikkarte (diskret) getrennt; NVIDIA-Audio nicht mehr bei Grafik; AMD Ryzen iGPU (z. B. Radeon 610M) als „Integriert“</li>
+                      <li><strong>RAM:</strong> Arbeitsspeicher mit Typ (DDR4/DDR5), Kapazität und Takt (z. B. DDR5 · 32 GB @ 4800 MT/s)</li>
+                      <li><strong>Dashboard:</strong> Systeminformationen und CPU &amp; Grafik mit klarer Trennung Integriert/Diskret</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.2.0 (Linux-System: Raspberry-Pi-Bereiche ausblenden, Assistent/Willkommen, Terminal-Update, Webmin, Hausautomation, Doku)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Redis Commander:</strong> Hinweis „optional“, Port 8081; Fehlermeldung „not found“ vermieden</li>

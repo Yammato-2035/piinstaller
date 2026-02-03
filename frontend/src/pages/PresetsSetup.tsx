@@ -3,8 +3,10 @@ import { Zap, Server, Home, Music, BookOpen, CheckCircle, ArrowRight } from 'luc
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
+import { usePlatform } from '../context/PlatformContext'
 
 const PresetsSetup: React.FC = () => {
+  const { pageSubtitleLabel } = usePlatform()
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -198,9 +200,7 @@ const PresetsSetup: React.FC = () => {
             Voreinstellungen & Profile
           </h1>
         </div>
-        <p className="text-slate-400">
-          Wählen Sie ein vorkonfiguriertes Profil für schnelle Einrichtung
-        </p>
+        <p className="text-slate-400">Voreinstellungen – {pageSubtitleLabel}</p>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -5,7 +5,7 @@ import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 
 const InstallationWizard: React.FC = () => {
-  const { systemLabel, isRaspberryPi } = usePlatform()
+  const { systemLabel, isRaspberryPi, pageSubtitleLabel } = usePlatform()
   const [step, setStep] = useState(1)
   const [allConfigs, setAllConfigs] = useState({
     security: {
@@ -140,7 +140,7 @@ const InstallationWizard: React.FC = () => {
             Installationsassistent
           </h1>
         </div>
-        <p className="text-slate-400">Konfigurieren Sie Ihr System in 6 einfachen Schritten</p>
+        <p className="text-slate-400">Assistent – {pageSubtitleLabel}</p>
       </div>
 
       {/* Installation in Progress */}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 import {
@@ -211,7 +212,24 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             <BookOpen size={14} />
             <span>Dokumentation</span>
           </button>
-          <button className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-red-600/50 hover:bg-red-600/70 text-red-100 rounded-lg transition-colors duration-150 text-xs font-medium">
+          <button
+            type="button"
+            onClick={() => {
+              const w = typeof window !== 'undefined' ? window : null
+              const tauri = w && (w as any).__TAURI__
+              if (tauri?.core?.invoke) {
+                (tauri.core.invoke as (cmd: string) => Promise<unknown>)('exit_app').catch(() => {})
+              } else {
+                w?.close()
+                setTimeout(() => {
+                  if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+                    toast('Bitte Fenster oder Tab manuell schließen (Strg+W).', { duration: 4000 })
+                  }
+                }, 200)
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-red-600/50 hover:bg-red-600/70 text-red-100 rounded-lg transition-colors duration-150 text-xs font-medium"
+          >
             <LogOut size={16} />
             <span>Beenden</span>
           </button>

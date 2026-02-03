@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { motion } from 'framer-motion'
+import { SkeletonCard as SharedSkeletonCard } from '../components/Skeleton'
 
 interface DashboardProps {
   systemInfo: any
@@ -111,8 +112,11 @@ const StatCard = React.memo(({ icon: Icon, label, value, unit = '', trend }: any
   )
 })
 
+type DashboardSection = 'overview' | 'charts' | 'hardware'
+
 const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurrentPage }) => {
-  const { systemLabel } = usePlatform()
+  const { systemLabel, pageSubtitleLabel } = usePlatform()
+  const [dashboardSection, setDashboardSection] = useState<DashboardSection>('overview')
   const [stats, setStats] = useState<any>(null)
   const [securityConfig, setSecurityConfig] = useState<any>(null)
   const [historyData, setHistoryData] = useState<any[]>([])
@@ -223,81 +227,40 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
     navigator.clipboard?.writeText(cmd).then(() => toast.success('Befehl in Zwischenablage kopiert.')).catch(() => {})
   }
 
+  const SECURITY_TOTAL = 5 // Firewall, Fail2Ban, Auto-Updates, SSH-Härtung, Audit-Logging
+
+  /** UFW als aktiv werten, wenn active: true ODER Status-String "active"/"aktiv" enthält (wie auf Sicherheits-Seite). */
+  const effectiveUfwActive = (() => {
+    if (!securityConfig?.ufw) return false
+    if (securityConfig.ufw.active) return true
+    const status = (securityConfig.ufw.status || '').toLowerCase()
+    if (!securityConfig.ufw.installed) return false
+    return status.includes('active') || status.includes('aktiv') || status.includes('enabled=yes') || status.includes('via systemctl') || status.includes('wahrscheinlich')
+  })()
+
   const getSecurityStatus = () => {
     if (!securityConfig) return 'inactive'
-    
-    // Zähle aktivierte Sicherheitsfeatures
-    let activeCount = 0
-    let totalCount = 0
-    
-    if (securityConfig.ufw) {
-      totalCount++
-      if (securityConfig.ufw.active) activeCount++
-    }
-    if (securityConfig.fail2ban) {
-      totalCount++
-      if (securityConfig.fail2ban.active) activeCount++
-    }
-    if (securityConfig.auto_updates) {
-      totalCount++
-      if (securityConfig.auto_updates.enabled) activeCount++
-    }
-    if (securityConfig.ssh_hardening) {
-      totalCount++
-      if (securityConfig.ssh_hardening.enabled) activeCount++
-    }
-    if (securityConfig.audit_logging) {
-      totalCount++
-      if (securityConfig.audit_logging.enabled) activeCount++
-    }
-    
-    // Wenn mehr als 50% aktiviert sind, zeige als "active"
-    if (totalCount > 0 && activeCount / totalCount >= 0.5) {
-      return 'active'
-    }
-    return 'inactive'
+    const activeCount =
+      (effectiveUfwActive ? 1 : 0) +
+      (securityConfig.fail2ban?.active ? 1 : 0) +
+      (securityConfig.auto_updates?.enabled ? 1 : 0) +
+      (securityConfig.ssh_hardening?.enabled ? 1 : 0) +
+      (securityConfig.audit_logging?.enabled ? 1 : 0)
+    return activeCount / SECURITY_TOTAL >= 0.5 ? 'active' : 'inactive'
   }
 
   const getSecurityStatusText = () => {
     if (!securityConfig) return 'Nicht konfiguriert'
-    
-    let activeCount = 0
-    let totalCount = 0
-    
-    if (securityConfig.ufw) {
-      totalCount++
-      if (securityConfig.ufw.active) activeCount++
-    }
-    if (securityConfig.fail2ban) {
-      totalCount++
-      if (securityConfig.fail2ban.active) activeCount++
-    }
-    if (securityConfig.auto_updates) {
-      totalCount++
-      if (securityConfig.auto_updates.enabled) activeCount++
-    }
-    if (securityConfig.ssh_hardening) {
-      totalCount++
-      if (securityConfig.ssh_hardening.enabled) activeCount++
-    }
-    if (securityConfig.audit_logging) {
-      totalCount++
-      if (securityConfig.audit_logging.enabled) activeCount++
-    }
-    
-    if (totalCount === 0) return 'Nicht konfiguriert'
-    if (activeCount === totalCount) return 'Vollständig konfiguriert'
-    return `${activeCount}/${totalCount} aktiviert`
+    const activeCount =
+      (effectiveUfwActive ? 1 : 0) +
+      (securityConfig.fail2ban?.active ? 1 : 0) +
+      (securityConfig.auto_updates?.enabled ? 1 : 0) +
+      (securityConfig.ssh_hardening?.enabled ? 1 : 0) +
+      (securityConfig.audit_logging?.enabled ? 1 : 0)
+    if (activeCount === 0) return 'Nicht konfiguriert'
+    if (activeCount === SECURITY_TOTAL) return 'Vollständig konfiguriert'
+    return `${activeCount}/${SECURITY_TOTAL} aktiviert`
   }
-
-  const SkeletonCard = () => (
-    <div className="card">
-      <div className="animate-pulse">
-        <div className="h-4 bg-slate-700 rounded w-1/2 mb-4"></div>
-        <div className="h-8 bg-slate-700 rounded w-1/3"></div>
-      </div>
-    </div>
-  )
 
   const StatusItem = ({ label, status, value, tooltip }: any) => (
     <div className="flex items-center justify-between p-4 border-b border-slate-700 last:border-0">
@@ -355,7 +318,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
             Dashboard
           </h1>
         </div>
-        <p className="text-slate-400">Übersicht – {systemLabel}</p>
+        <p className="text-slate-400">Übersicht – {pageSubtitleLabel}</p>
       </motion.div>
 
       {backendError && !stats && (
@@ -394,14 +357,14 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
                 {updatesData.total} {updatesData.total === 1 ? 'Update' : 'Updates'} verfügbar
               </h3>
               {updatesData.categories && (
-                <p className="text-sm text-slate-400 mt-0.5">
+                <p className="text-sm text-slate-200 mt-0.5">
                   {updatesData.categories.security > 0 && <span className="text-red-300">{updatesData.categories.security} Sicherheit</span>}
                   {updatesData.categories.security > 0 && (updatesData.categories.critical! > 0 || updatesData.categories.necessary! > 0 || updatesData.categories.optional! > 0) && ' · '}
                   {updatesData.categories.critical! > 0 && <span className="text-amber-300">{updatesData.categories.critical} Kritisch</span>}
                   {(updatesData.categories.critical! > 0) && (updatesData.categories.necessary! > 0 || updatesData.categories.optional! > 0) && ' · '}
-                  {updatesData.categories.necessary! > 0 && <span className="text-slate-300">{updatesData.categories.necessary} Notwendig</span>}
+                  {updatesData.categories.necessary! > 0 && <span className="text-slate-100">{updatesData.categories.necessary} Notwendig</span>}
                   {(updatesData.categories.necessary! > 0) && updatesData.categories.optional! > 0 && ' · '}
-                  {updatesData.categories.optional! > 0 && <span className="text-slate-400">{updatesData.categories.optional} Optional</span>}
+                  {updatesData.categories.optional! > 0 && <span className="text-slate-200">{updatesData.categories.optional} Optional</span>}
                 </p>
               )}
             </div>
@@ -497,13 +460,44 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
         </div>
       )}
 
+      {/* Dashboard Submenü – Bereiche ein- und ausblenden */}
+      {stats && !loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-wrap gap-2 mb-4"
+        >
+          <button
+            type="button"
+            onClick={() => setDashboardSection('overview')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${dashboardSection === 'overview' ? 'bg-sky-600 text-white' : 'bg-slate-700/70 text-slate-200 hover:text-white hover:bg-slate-600'}`}
+          >
+            Übersicht
+          </button>
+          <button
+            type="button"
+            onClick={() => setDashboardSection('charts')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${dashboardSection === 'charts' ? 'bg-sky-600 text-white' : 'bg-slate-700/70 text-slate-200 hover:text-white hover:bg-slate-600'}`}
+          >
+            Auslastung & Grafik
+          </button>
+          <button
+            type="button"
+            onClick={() => setDashboardSection('hardware')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${dashboardSection === 'hardware' ? 'bg-sky-600 text-white' : 'bg-slate-700/70 text-slate-200 hover:text-white hover:bg-slate-600'}`}
+          >
+            Hardware & Sensoren
+          </button>
+        </motion.div>
+      )}
+
       {/* System Stats */}
       {loading ? (
         <div className="grid-responsive">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
+          <SharedSkeletonCard />
+          <SharedSkeletonCard />
+          <SharedSkeletonCard />
+          <SharedSkeletonCard />
         </div>
       ) : stats && (
         <>
@@ -555,8 +549,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
             )}
           </div>
 
-          {/* IP-Adressen & Hostname – immer anzeigen wenn vorhanden */}
-          {(stats.network?.ips?.length > 0 || stats.network?.hostname) && (
+          {/* IP-Adressen & Hostname – nur in Übersicht */}
+          {(dashboardSection === 'overview') && (stats.network?.ips?.length > 0 || stats.network?.hostname) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -584,15 +578,15 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
                         </span>
                       ))}
                     </div>
-                    <p className="text-slate-700 dark:text-slate-300 text-xs mt-2 font-medium">Mit dieser IP von anderen Geräten erreichbar (z. B. <span className="font-mono">http://{stats.network.ips[0]}:6680/iris</span> für Mopidy Iris).</p>
+                    <p className="text-slate-200 text-xs mt-2 font-medium">Mit dieser IP von anderen Geräten erreichbar (z. B. <span className="font-mono text-sky-200">http://{stats.network.ips[0]}:6680/iris</span> für Mopidy Iris).</p>
                   </div>
                 )}
               </div>
             </motion.div>
           )}
 
-          {/* Systeminformationen – CPU-Name, Motherboard, OS, RAM-Typ/Geschwindigkeit */}
-          {(stats.cpu_name || (stats.motherboard && Object.keys(stats.motherboard).length > 0) || stats.os?.name || (stats.ram_info && stats.ram_info.length > 0)) && (
+          {/* Systeminformationen – nur in Übersicht (in Hardware & Sensoren nicht, da redundant) */}
+          {dashboardSection === 'overview' && (stats.cpu_name || (stats.motherboard && Object.keys(stats.motherboard).length > 0) || stats.os?.name || (stats.ram_info && stats.ram_info.length > 0) || (stats.hardware?.gpus && stats.hardware.gpus.length > 0)) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -612,8 +606,22 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
                 )}
                 {(stats.memory?.total != null) && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-400 block mb-1">Hauptspeicher</span>
+                    <span className="text-slate-400 block mb-1">Hauptspeicher gesamt</span>
                     <span className="text-white">{Math.round((stats.memory.total || 0) / 1024 / 1024 / 1024)} GB</span>
+                  </div>
+                )}
+                {stats.ram_info && stats.ram_info.length > 0 && (
+                  <div className="p-3 bg-slate-700/30 rounded-lg">
+                    <span className="text-slate-400 block mb-1">Arbeitsspeicher (RAM)</span>
+                    <ul className="text-white text-xs space-y-0.5">
+                      {stats.ram_info.slice(0, 4).map((r: any, i: number) => (
+                        <li key={i}>
+                          {[r.Type, r.Size].filter(Boolean).join(' · ')}
+                          {r.Speed ? ` @ ${r.Speed}` : ''}
+                          {r.Manufacturer && String(r.Manufacturer).trim() && String(r.Manufacturer) !== 'Unknown' ? ` · ${r.Manufacturer}` : ''}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
                 {stats.motherboard && Object.keys(stats.motherboard).length > 0 && (
@@ -624,41 +632,40 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
                     </span>
                   </div>
                 )}
-                {stats.hardware?.gpus?.length > 0 && (
-                  <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-400 block mb-1">Grafikkarte / Grafikspeicher</span>
-                    <ul className="text-white text-xs space-y-0.5">
-                      {stats.hardware.gpus.slice(0, 3).map((g: any, i: number) => (
-                        <li key={i}>
-                          {g.name || g.description || 'GPU'} {g.memory_mb != null ? ` · ${g.memory_mb} MB` : ''}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {stats.hardware?.gpus && stats.hardware.gpus.length > 0 && (() => {
+                  const integrated = stats.hardware.gpus.filter((g: any) => g.gpu_type === 'integrated')
+                  const discrete = stats.hardware.gpus.filter((g: any) => g.gpu_type !== 'integrated')
+                  const sorted = [...integrated, ...discrete]
+                  return (
+                    <div className="p-3 bg-slate-700/30 rounded-lg lg:col-span-2">
+                      <span className="text-slate-400 block mb-1">Grafik</span>
+                      <ul className="text-white text-xs space-y-1">
+                        {sorted.slice(0, 4).map((g: any, i: number) => {
+                          const label = g.gpu_type === 'integrated' ? 'Integriert' : 'Grafikkarte (diskret)'
+                          const name = g.display_name || g.name || g.description || 'GPU'
+                          const mem = g.memory_display || (g.memory_mb != null ? `${g.memory_mb} MB` : '')
+                          return (
+                            <li key={i}>
+                              <span className="text-slate-400">{label}:</span> {name}{mem ? ` · ${mem}` : ''}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </div>
+                  )
+                })()}
                 {stats.os?.name && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
                     <span className="text-slate-400 block mb-1">Betriebssystem</span>
                     <span className="text-white">{stats.os.name}</span>
                   </div>
                 )}
-                {stats.ram_info && stats.ram_info.length > 0 && (
-                  <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-400 block mb-1">RAM (Typ & Geschwindigkeit)</span>
-                    <ul className="text-white text-xs space-y-0.5">
-                      {stats.ram_info.slice(0, 4).map((r: any, i: number) => (
-                        <li key={i}>
-                          {r.Size} {r.Type || ''} {r.Speed ? `@ ${r.Speed}` : ''}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
             </motion.div>
           )}
 
-          {/* Charts Section */}
+          {/* Charts Section – nur Auslastung & Grafik */}
+          {dashboardSection === 'charts' && (
           <div className="grid md:grid-cols-2 gap-6">
             {/* CPU & Memory Chart */}
             <motion.div
@@ -716,6 +723,12 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
                 <HardDrive className="text-purple-500 status-icon active" />
                 Speicher Auslastung
               </h2>
+              {stats?.disk && (stats.disk.mountpoint || stats.disk.partition) && (
+                <p className="text-slate-400 text-sm mb-2">
+                  Partition {stats.disk.mountpoint || '/'}
+                  {stats.disk.partition ? ` (z. B. /dev/${stats.disk.partition})` : ''}
+                </p>
+              )}
               {diskData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
@@ -747,10 +760,15 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
                   Lade Daten...
                 </div>
               )}
+              <p className="text-slate-400 text-xs mt-3 border-l-2 border-purple-500/50 pl-2" title="TIP">
+                <span className="text-purple-400 font-medium">TIP:</span> Bei &gt;90 % Auslastung Performance prüfen; große Dateien auf andere Partition/HDD auslagern; Logrotate für Logs nutzen; temporäre Dateien (z. B. /tmp) regelmäßig leeren.
+              </p>
             </motion.div>
           </div>
+          )}
 
-          {/* Detailed Stats */}
+          {/* Detailed Stats – nur Übersicht (System Info + Installation Status) */}
+          {dashboardSection === 'overview' && (
           <div className="grid md:grid-cols-2 gap-6">
             {/* System Info */}
             <motion.div
@@ -779,9 +797,13 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
                 value={stats.os?.kernel || stats.platform?.release?.substring(0, 20) || "Unbekannt"}
               />
               <StatusItem
-                label="CPU Kerne"
+                label="CPU"
                 status="active"
-                value={stats.cpu?.count}
+                value={stats.cpu?.count != null
+                  ? (stats.cpu.physical_cores != null && stats.cpu.physical_cores !== stats.cpu.count
+                    ? `${stats.cpu.count} Threads (${stats.cpu.physical_cores} Kerne)`
+                    : `${stats.cpu.count} Threads`)
+                  : '—'}
               />
               <StatusItem
                 label="Speicher Gesamt"
@@ -833,9 +855,10 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
               />
             </motion.div>
           </div>
+          )}
 
-          {/* CPU & Grafik – CPUs, GPUs, Thread-Auslastung (Kerne) */}
-          {(stats.hardware?.cpus?.length > 0 || stats.hardware?.gpus?.length > 0 || stats.cpu_name || (stats.cpu?.per_core_usage?.length ?? 0) > 0 || (stats.cpu?.per_cpu_usage?.length ?? 0) > 0) && (
+          {/* CPU & Grafik – nur Auslastung & Grafik: eine CPU-Zusammenfassung, iGPU/Grafikkarte, Kerne-Auslastung (keine Thread-Liste) */}
+          {dashboardSection === 'charts' && (stats.cpu_summary?.name || stats.cpu_name || stats.hardware?.gpus?.length > 0 || (stats.cpu?.per_core_usage?.length ?? 0) > 0) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -848,52 +871,84 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
               </h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-300 mb-2">CPUs</h3>
-                  {(stats.hardware?.cpus?.length > 0 || stats.cpu_name) ? (
-                    <ul className="space-y-2">
-                      {(stats.hardware?.cpus?.length ? stats.hardware.cpus : [{ model: stats.cpu_name || 'Unbekannt' }]).map((cpu: any, idx: number) => (
-                        <li key={idx} className="p-3 bg-slate-700/30 rounded-lg border border-slate-600">
-                          <div className="font-medium text-white">
-                            {typeof cpu.processor_id === 'number' ? `Prozessor ${cpu.processor_id}` : `CPU ${idx + 1}`}: {cpu.model || 'Unbekannt'}
-                          </div>
-                          <div className="text-xs text-slate-400 mt-1 flex flex-wrap gap-3">
-                            {cpu.current_mhz != null && <span>Aktuell: {cpu.current_mhz} MHz</span>}
-                            {cpu.recommended_mhz != null && <span>Empfohlen: {cpu.recommended_mhz} MHz</span>}
-                          </div>
-                          {((cpu.model || stats.cpu_name || '').toLowerCase().includes('intel') && (
-                            <a href="https://www.intel.de/content/www/de/de/support/detect.html" target="_blank" rel="noopener noreferrer" className="text-xs text-sky-400 hover:text-sky-300 mt-1 inline-block">Treiber beim Hersteller (Intel) suchen</a>
-                          )) || ((cpu.model || stats.cpu_name || '').toLowerCase().includes('amd') && (
-                            <a href="https://www.amd.com/de/support" target="_blank" rel="noopener noreferrer" className="text-xs text-sky-400 hover:text-sky-300 mt-1 inline-block">Treiber beim Hersteller (AMD) suchen</a>
-                          ))}
-                        </li>
+                  <h3 className="text-sm font-semibold text-slate-300 mb-2">CPU</h3>
+                  {(stats.cpu_summary?.name || stats.cpu_name) ? (
+                    <div className="p-3 bg-slate-700/30 rounded-lg border border-slate-600 space-y-2">
+                      <div className="font-medium text-white">
+                        {stats.cpu_summary?.name || stats.cpu_name || 'Unbekannt'}
+                      </div>
+                      <div className="text-xs text-slate-300 flex flex-wrap gap-x-3 gap-y-0.5">
+                        {(stats.cpu_summary?.cores ?? stats.cpu?.physical_cores) != null && (
+                          <span>{stats.cpu_summary?.cores ?? stats.cpu?.physical_cores} Kerne</span>
+                        )}
+                        {(stats.cpu_summary?.threads ?? stats.cpu?.count) != null && (
+                          <span>{stats.cpu_summary?.threads ?? stats.cpu?.count} Threads</span>
+                        )}
+                      </div>
+                      {stats.cpu_summary?.cache && (
+                        <div className="text-xs text-slate-400">Cache: {stats.cpu_summary.cache}</div>
+                      )}
+                      {stats.cpu_summary?.flags && (
+                        <details className="text-xs text-slate-400">
+                          <summary className="cursor-pointer text-sky-400 hover:text-sky-300">Befehlssätze anzeigen</summary>
+                          <p className="mt-1 break-all opacity-90">{stats.cpu_summary.flags}</p>
+                        </details>
+                      )}
+                      {stats.motherboard && (stats.motherboard.vendor || stats.motherboard.name) && (
+                        <div className="text-xs text-slate-400">
+                          Chipsatz/Mainboard: {[stats.motherboard.vendor, stats.motherboard.name].filter(Boolean).join(' – ') || stats.motherboard.product || '–'}
+                        </div>
+                      )}
+                      {((stats.cpu_summary?.name || stats.cpu_name || '').toLowerCase().includes('intel') && (
+                        <a href="https://www.intel.de/content/www/de/de/support/detect.html" target="_blank" rel="noopener noreferrer" className="text-xs text-sky-400 hover:text-sky-300 inline-block">Treiber beim Hersteller (Intel) suchen</a>
+                      )) || ((stats.cpu_summary?.name || stats.cpu_name || '').toLowerCase().includes('amd') && (
+                        <a href="https://www.amd.com/de/support" target="_blank" rel="noopener noreferrer" className="text-xs text-sky-400 hover:text-sky-300 inline-block">Treiber beim Hersteller (AMD) suchen</a>
                       ))}
-                    </ul>
+                    </div>
                   ) : (
                     <p className="text-slate-500 text-sm">Keine CPU-Daten</p>
                   )}
-                  {stats.cpu?.count != null && (
-                    <p className="text-slate-400 text-xs mt-2">Threads gesamt: {stats.cpu.count}</p>
-                  )}
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-300 mb-2">GPUs (Grafikkarte & Speicher)</h3>
+                  <h3 className="text-sm font-semibold text-slate-300 mb-2">Grafik – Integriert & Grafikkarte</h3>
                   {stats.hardware?.gpus && stats.hardware.gpus.length > 0 ? (
                     <ul className="space-y-2">
-                      {stats.hardware.gpus.map((gpu: any, idx: number) => {
-                        const name = gpu.name || gpu.description || 'Unbekannt'
-                        const isNvidia = (name || '').toLowerCase().includes('nvidia')
-                        return (
-                          <li key={idx} className={`p-3 rounded-lg border ${isNvidia ? 'bg-slate-700/50 border-green-600/50' : 'bg-slate-700/30 border-slate-600'}`}>
-                            <div className="font-medium text-white">{name}</div>
-                            {gpu.memory_mb != null && (
-                              <div className="text-xs text-slate-400 mt-1">Grafikspeicher: {gpu.memory_mb} MB</div>
-                            )}
-                            {isNvidia && gpu.driver && (
-                              <div className="text-xs text-slate-400 mt-0.5">Treiber: {gpu.driver}</div>
-                            )}
-                          </li>
-                        )
-                      })}
+                      {(() => {
+                        const tip = stats.manufacturer_driver_tip || ''
+                        const nvidiaTip = tip.includes('NVIDIA:') ? (tip.split('NVIDIA:')[1] || '').split('AMD:')[0].split('Intel:')[0].trim() : null
+                        const amdTip = tip.includes('AMD:') ? (tip.split('AMD:')[1] || '').split('NVIDIA:')[0].split('Intel:')[0].trim() : null
+                        const intelTip = tip.includes('Intel:') ? (tip.split('Intel:')[1] || '').split('NVIDIA:')[0].split('AMD:')[0].trim() : null
+                        const integrated = stats.hardware.gpus.filter((g: any) => g.gpu_type === 'integrated')
+                        const discrete = stats.hardware.gpus.filter((g: any) => g.gpu_type !== 'integrated')
+                        const sorted = [...integrated, ...discrete]
+                        return sorted.map((gpu: any, idx: number) => {
+                          const name = gpu.display_name || gpu.name || gpu.description || 'Unbekannt'
+                          const nameLower = (name || '').toLowerCase()
+                          const mem = gpu.memory_display || (gpu.memory_mb != null ? `${gpu.memory_mb} MB` : null)
+                          const isNvidia = nameLower.includes('nvidia')
+                          const isAmd = nameLower.includes('amd') || nameLower.includes('radeon')
+                          const isIntel = nameLower.includes('intel')
+                          const driverTip = isNvidia && nvidiaTip ? nvidiaTip : isAmd && amdTip ? amdTip : isIntel && intelTip ? intelTip : null
+                          const label = gpu.gpu_type === 'integrated' ? 'Integrierte Grafik (iGPU)' : 'Grafikkarte (diskret)'
+                          return (
+                            <li key={idx} className={`p-3 rounded-lg border ${isNvidia ? 'bg-slate-700/50 border-green-600/50' : 'bg-slate-700/30 border-slate-600'}`}>
+                              <div className="text-xs text-slate-400 mb-0.5">{label}</div>
+                              <div className="font-medium text-white">{name}</div>
+                              {mem && (
+                                <div className="text-xs text-slate-400 mt-1">Grafikspeicher: {mem}</div>
+                              )}
+                              {isNvidia && gpu.driver && (
+                                <div className="text-xs text-slate-400 mt-0.5">Treiber: {gpu.driver}</div>
+                              )}
+                              {driverTip && (
+                                <p className="text-slate-400 text-xs border-l-2 border-sky-500/50 pl-2 mt-1.5" title="TIP">
+                                  <span className="text-sky-400 font-medium">TIP:</span> {driverTip}
+                                </p>
+                              )}
+                            </li>
+                          )
+                        })
+                      })()}
                     </ul>
                   ) : (
                     <p className="text-slate-500 text-sm">Keine GPU-Daten</p>
@@ -901,31 +956,12 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
                 </div>
                 {(stats.cpu?.per_core_usage?.length ?? 0) > 0 && (
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-300 mb-2">Auslastung physikalische Kerne ({stats.cpu.per_core_usage.length}) – horizontal</h3>
+                    <h3 className="text-sm font-semibold text-slate-300 mb-2">Auslastung physikalische Kerne ({stats.cpu.per_core_usage.length})</h3>
                     <div className="space-y-1.5">
                       {stats.cpu.per_core_usage.map((pct: number, idx: number) => (
                         <div key={idx} className="flex items-center gap-2">
-                          <span className="text-xs text-slate-500 w-5 shrink-0">K{idx + 1}</span>
+                          <span className="text-xs text-slate-400 w-5 shrink-0">K{idx + 1}</span>
                           <div className="flex-1 h-4 bg-slate-700 rounded overflow-hidden" title={`Kern ${idx + 1}: ${pct.toFixed(0)}%`}>
-                            <div
-                              className="h-full bg-sky-500 transition-all"
-                              style={{ width: `${Math.min(100, pct)}%`, minWidth: pct > 0 ? '2px' : 0 }}
-                            />
-                          </div>
-                          <span className="text-xs text-slate-400 w-8">{pct.toFixed(0)}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {(!stats.cpu?.per_core_usage || stats.cpu.per_core_usage.length === 0) && stats.cpu?.per_cpu_usage && stats.cpu.per_cpu_usage.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-300 mb-2">Threads gesamt: {stats.cpu.per_cpu_usage.length} – Auslastung (horizontal)</h3>
-                    <div className="space-y-1.5">
-                      {stats.cpu.per_cpu_usage.map((pct: number, idx: number) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <span className="text-xs text-slate-500 w-5 shrink-0">{idx + 1}</span>
-                          <div className="flex-1 h-3 bg-slate-700 rounded overflow-hidden" title={`Thread ${idx + 1}: ${pct.toFixed(0)}%`}>
                             <div
                               className="h-full bg-sky-500 transition-all"
                               style={{ width: `${Math.min(100, pct)}%`, minWidth: pct > 0 ? '2px' : 0 }}
@@ -941,8 +977,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
             </motion.div>
           )}
 
-          {/* Sensoren & Schnittstellen – alle Temperatur-, Laufwerk-, Lüfter-, Display-Daten */}
-          {(stats.sensors?.length > 0 || stats.disks?.length > 0 || stats.fans?.length > 0 || stats.displays?.length > 0) && (
+          {/* Sensoren & Schnittstellen – nur Hardware & Sensoren */}
+          {dashboardSection === 'hardware' && (stats.sensors?.length > 0 || stats.disks?.length > 0 || stats.fans?.length > 0 || stats.displays?.length > 0) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1037,8 +1073,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
             </motion.div>
           )}
 
-          {/* Systembezogene Treiber (Kernel-Module) */}
-          {stats.drivers && stats.drivers.length > 0 && (
+          {/* Systembezogene Treiber – nur Hardware & Sensoren */}
+          {dashboardSection === 'hardware' && stats.drivers && stats.drivers.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1060,7 +1096,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
             </motion.div>
           )}
 
-          {/* Module Overview */}
+          {/* Module Overview – nur Übersicht */}
+          {dashboardSection === 'overview' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1179,8 +1216,10 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
               />
             </div>
           </motion.div>
+          )}
 
-          {/* Quick Actions / Schnellstart – Kontrast: Anthrazit-Schrift */}
+          {/* Quick Actions / Schnellstart – nur Übersicht */}
+          {dashboardSection === 'overview' && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1198,6 +1237,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
               → Installation starten
             </button>
           </motion.div>
+          )}
         </>
       )}
 

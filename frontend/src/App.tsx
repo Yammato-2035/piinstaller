@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Toaster } from 'react-hot-toast'
 import Sidebar from './components/Sidebar'
 import SudoPasswordDialog from './components/SudoPasswordDialog'
@@ -172,8 +173,19 @@ function App() {
         <SudoPasswordDialog onPasswordSaved={handleSudoPasswordSaved} />
         <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} />
       <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <div className="p-8">
-          {renderPage()}
+        <div className="p-8 min-h-full">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={currentPage}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+              className="min-h-full"
+            >
+              {renderPage()}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
         <Toaster position="bottom-right" />
