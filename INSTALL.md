@@ -183,6 +183,16 @@ Wenn „Mixer-Programme installieren“ (pavucontrol & qpwgraph) in der App fehl
 
 4. **Installation schlägt weiterhin fehl (ab 1.2.0.1):** Die App führt nun `apt-get update` vor der Installation aus und trimmt das Sudo-Passwort. Prüfe die angezeigte Fehlermeldung (bis 600 Zeichen) und ggf. die Backend-Logdatei (`Einstellungen → Logs` oder `logs/pi-installer.log`). Bei Berechtigungsfehlern: Nutzer muss in `sudoers` sein und das Passwort korrekt eingegeben werden.
 
+### Raspberry Pi 5: Kein Ton über HDMI?
+Wenn am angeschlossenen Monitor kein Ton ausgegeben wird, typische Symptome: `cat /proc/asound/cards` → „no soundcards“; `amixer sget Master` → „cannot find card 0“; `ls /dev/snd/` → nur seq und timer, keine controlC0.
+
+**Ursache:** Ohne den Overlay `vc4-kms-v3d-pi5` wird die HDMI-Audio-Hardware des Pi 5 nicht initialisiert.
+
+1. **System aktualisieren:** `sudo apt update && sudo apt full-upgrade -y`, danach Neustart.
+2. **config.txt bearbeiten:** `sudo nano /boot/firmware/config.txt` – Zeile `dtoverlay=vc4-kms-v3d-pi5` hinzufügen (unter `dtparam=audio=on`). Beide Einträge müssen vorhanden sein.
+3. Speichern und `sudo reboot`.
+4. Danach HDMI-Gerät in den Sound-Einstellungen oder mit pavucontrol als Ausgabe wählen.
+
 ### Port bereits in Benutzung?
 ```bash
 # Port freigeben
@@ -214,5 +224,5 @@ MIT License - siehe LICENSE Datei
 
 ---
 
-**Version:** 1.2.0.3  
+**Version:** 1.2.0.5  
 **Letztes Update:** 2026-02

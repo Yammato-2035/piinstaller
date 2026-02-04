@@ -237,7 +237,7 @@
 
 ---
 
-**Version:** 1.2.0.3 (Features v2026-02)  
+**Version:** 1.2.0.5 (Features v2026-02)  
 **Priorität:** Nutzer-Feedback getrieben  
 **Beitragen:** GitHub Issues & Pull Requests willkommen!  
 **Changelog:** [CHANGELOG.md](./CHANGELOG.md)

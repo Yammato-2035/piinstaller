@@ -238,7 +238,7 @@ MIT License - Siehe [LICENSE](./LICENSE) für Details
 
 ## 🌟 Status
 
-- **Version:** 1.2.0.3 (siehe [VERSION](./VERSION) und [VERSIONING.md](./VERSIONING.md))
+- **Version:** 1.2.0.5 (siehe [VERSION](./VERSION) und [VERSIONING.md](./VERSIONING.md))
 - **Status:** Production Ready
 - **Letztes Update:** Februar 2026
 - **Support bis:** Januar 2027

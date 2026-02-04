@@ -727,6 +727,24 @@ const Documentation: React.FC = () => {
                   </ul>
                 </div>
                 <div>
+                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Raspberry Pi 5: Kein Ton über HDMI</h3>
+                  <p className="text-sm mb-2">
+                    Wenn auf dem <strong>Raspberry Pi 5</strong> am angeschlossenen Monitor kein Ton ausgegeben wird, zeigt sich das u. a. so: <code className="text-slate-400">cat /proc/asound/cards</code> → „no soundcards“; <code className="text-slate-400">amixer sget Master</code> → „cannot find card 0“; <code className="text-slate-400">ls /dev/snd/</code> → nur <code className="text-slate-400">seq</code> und <code className="text-slate-400">timer</code>, keine <code className="text-slate-400">controlC0</code>; <code className="text-slate-400">pw-cli list-objects Node</code> → nur „Dummy Output“, keine echte Soundkarte.
+                  </p>
+                  <p className="text-sm mb-2">
+                    <strong>Ursache:</strong> Ohne den Overlay <code className="text-slate-400">vc4-kms-v3d-pi5</code> wird die HDMI-Audio-Hardware des Pi 5 nicht initialisiert.
+                  </p>
+                  <ol className="list-decimal list-inside text-sm space-y-1 ml-4 mb-2">
+                    <li><strong>System aktualisieren:</strong> <code className="text-slate-400">sudo apt update && sudo apt full-upgrade -y</code>, danach Neustart.</li>
+                    <li><strong>config.txt bearbeiten:</strong> <code className="text-slate-400">sudo nano /boot/firmware/config.txt</code></li>
+                    <li><strong>Overlay hinzufügen:</strong> Zeile <code className="text-slate-400">dtoverlay=vc4-kms-v3d-pi5</code> ergänzen (z. B. unter <code className="text-slate-400">dtparam=audio=on</code>). <code className="text-slate-400">dtparam=audio=on</code> muss ebenfalls gesetzt sein.</li>
+                    <li>Speichern (Strg+O, Enter) und beenden (Strg+X), danach <code className="text-slate-400">sudo reboot</code>.</li>
+                  </ol>
+                  <p className="text-sm">
+                    Nach dem Neustart sollten <code className="text-slate-400">cat /proc/asound/cards</code> eine Soundkarte (z. B. bcm2835) und <code className="text-slate-400">/dev/snd/</code> die Gerätedateien zeigen. Danach das HDMI-Gerät in den Sound-Einstellungen oder mit pavucontrol als Ausgabe wählen.
+                  </p>
+                </div>
+                <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Backend & Frontend starten</h3>
                   <p className="text-sm mb-2">
                     Im Projektordner (z. B. <code className="text-slate-400">…/piinstaller</code>):
@@ -863,8 +881,22 @@ const Documentation: React.FC = () => {
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.2.0.3</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.2.0.5</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.2.0.5 (Pi 5 HDMI-Audio Troubleshooting)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Raspberry Pi 5:</strong> Troubleshooting „Kein Ton über HDMI“ erweitert – Symptome, Ursache (vc4-kms-v3d-pi5 Overlay), Schritte in Doku, INSTALL.md, PI_OPTIMIZATION.md</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.2.0.4 (Pi-Optimierung, Erkennung, CPU-Reduktion)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Pi-Erkennung:</strong> Fallback über Device-Tree – Raspberry Pi wird zuverlässig erkannt; Raspberry Pi Config erscheint im Menü</li>
+                      <li><strong>CPU-Reduktion:</strong> Light-Polling, Dashboard 30 s auf Pi; Monitoring ohne Live-Charts auf Pi; Auslastung nur im Dashboard</li>
+                      <li><strong>UI:</strong> Card-Hover ohne Bewegung; Stats-Merge behält Hardware &amp; Sensoren beim Polling</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.2.0.3 (Mixer-Installation robuster, manueller Befehl bei Fehler)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Mixer-Installation:</strong> Update und Install in zwei Schritten; Dpkg-Optionen für nicht-interaktiv; bei Fehler wird „Manuell im Terminal ausführen“ mit Befehl und Kopieren-Button angezeigt (Musikbox &amp; Kino/Streaming)</li>

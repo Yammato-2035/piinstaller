@@ -5,6 +5,29 @@ Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
 
 ---
 
+## [1.2.0.5] – 2026-02
+
+### Dokumentation
+
+- **Raspberry Pi 5: Kein Ton über HDMI** – Troubleshooting erweitert: typische Symptome (amixer „cannot find card 0“, /dev/snd/ nur seq/timer, PipeWire nur Dummy Output), Ursache (fehlender Overlay vc4-kms-v3d-pi5), konkrete Schritte. In App-Dokumentation (Troubleshooting), INSTALL.md und PI_OPTIMIZATION.md ergänzt.
+
+---
+
+## [1.2.0.4] – 2026-02
+
+### Pi-Optimierung & Erkennung
+
+- **Pi-Erkennung:** Fallback über Device-Tree (`/proc/device-tree/model`) – Raspberry Pi wird auch erkannt, wenn vcgencmd/cpuinfo fehlschlagen.
+- **Raspberry Pi Config:** Menüpunkt erscheint nun zuverlässig, sobald ein Pi erkannt wird.
+- **CPU-Auslastung reduziert:** Light-Modus für Polling (`/api/system-info?light=1`); Dashboard-Polling auf dem Pi alle 30 s; Monitoring ohne Live-Polling auf dem Pi; Auslastung nur noch im Dashboard, nicht in Submenüs.
+- **UI:** Card-Hover ohne Bewegung (nur Farbwechsel); StatCard-Icon ohne Animation; Hardware & Sensoren: Stats-Merge behält Sensoren/Laufwerke beim Polling.
+
+### Dokumentation
+
+- `PI_OPTIMIZATION.md`: Hinweise zu Pi-Erkennung, Raspberry Pi Config und abschaltbaren Services.
+
+---
+
 ## [1.2.0.3] – 2026-02
 
 ### Mixer-Installation
