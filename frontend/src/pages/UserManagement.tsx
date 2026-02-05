@@ -92,7 +92,10 @@ const UserManagement: React.FC = () => {
         toast.error(data.message || data.detail || 'Sudo-Passwort konnte nicht gespeichert werden.')
       }
     } catch (error) {
-      toast.error('Fehler beim Speichern – Backend erreichbar? (Port 8000)')
+      toast.error(
+        'Fehler beim Speichern – Backend erreichbar? Starten Sie zuerst „PI-Installer Backend starten“ (Port 8000).',
+        { duration: 6000 }
+      )
       console.error('saveSudoPassword:', error)
     } finally {
       setLoading(false)

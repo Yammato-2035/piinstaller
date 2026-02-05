@@ -1,12 +1,12 @@
 # 🐍 Python Setup Guide für Raspberry Pi
 
-## ⚠️ WICHTIG: Python Version!
+## Python-Version: 3.9–3.12 (3.12 empfohlen)
 
-PI-Installer funktioniert **nur mit Python 3.12** auf Raspberry Pi!
+PI-Installer unterstützt **Python 3.9, 3.10, 3.11 und 3.12**.
 
-❌ **Python 3.13** - Nicht unterstützt (PyO3 Fehler)
-❌ **Python 3.11 oder älter** - Zu alt
-✅ **Python 3.12** - EMPFOHLEN & GETESTET
+✅ **Python 3.12** - EMPFOHLEN & GETESTET  
+✅ **Python 3.9–3.11** - Lauffähig (Pre-Built Wheels)  
+⚠️ **Python 3.13** - Kann PyO3-Build-Fehler verursachen → 3.12 nutzen
 
 ---
 
@@ -18,22 +18,21 @@ python3 --version
 
 ### Ergebnis interpretieren:
 
-**✅ Python 3.12.x**
+**✅ Python 3.9–3.12**
 ```
-Python 3.12.1
-→ PERFEKT! Sie können direkt starten
+Python 3.11.2  oder  Python 3.12.1
+→ Sie können direkt starten (python3 -m venv venv usw.)
 ```
 
-**❌ Python 3.13.x**
+**⚠️ Python 3.13.x**
 ```
 Python 3.13.0
-→ Nicht unterstützt! Folgen Sie der Anleitung unten
+→ Falls Build-Fehler: Python 3.12 installieren (siehe unten)
 ```
 
-**❌ Python 3.11.x oder älter**
+**❌ Python 3.8 oder älter**
 ```
-Python 3.11.0
-→ Zu alt! Folgen Sie der Anleitung unten
+→ Bitte auf 3.9+ upgraden (apt install python3.9 usw.)
 ```
 
 ---

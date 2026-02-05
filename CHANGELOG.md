@@ -5,6 +5,43 @@ Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
 
 ---
 
+## [1.3.0.1] – 2026-02
+
+### Backup & Restore
+
+- **Cloud-Backups löschen:** Löschung von Cloud-Backups (WebDAV/Seafile) funktioniert; URL-Konstruktion aus PROPFIND-`href` korrigiert (`base_domain + href`); Debug-Info in Response für Fehlerfälle.
+- **USB ↔ Cloud Wechsel:** Beim Wechsel von USB zu Cloud und zurück werden die Backups des zuvor gemounteten USB-Sticks wieder geladen; `loadBackups(dirOverride)` und explizites Setzen von `backupDir` + Aufruf beim USB-Button.
+- **Kein Cloud-Upload bei USB-Ziel:** Backups mit Ziel USB-Stick werden nicht mehr zusätzlich in die Cloud hochgeladen; Backend lädt nur noch bei `target` `cloud_only` oder `local_and_cloud`, nicht bei `local`.
+
+---
+
+## [1.3.0.0] – 2026-02
+
+### Transformationsplan: „Raspberry Discovery Box“
+
+- **App Store:** Neue Seite mit 7 Apps (Home Assistant, Nextcloud, Pi-hole, Jellyfin, WordPress, VS Code Server, Node-RED); Kachel-Layout, Suche, Kategorien; Ein-Klick-Installation (API vorbereitet, Implementierung folgt).
+- **First-Run-Wizard:** Beim ersten Start: Willkommen → Optional (Netzwerk/Sicherheit/Backup) → „Was möchtest du tun?“ (Smart Home, Cloud, Medien, Entwickeln) → Empfohlene Apps → App Store.
+- **Dashboard-Redesign:** Hero „Dein Raspberry Pi läuft!“, großer Status (Alles OK / Aktion benötigt), Ressourcen-Ampel (CPU/RAM/Speicher), Schnellaktionen (Neue App installieren, Backup erstellen, System updaten).
+- **Mobile:** Hamburger-Menü auf kleinen Screens; Sidebar als Overlay; touch-freundlich; responsive Padding.
+- **Kontextsensitive Hilfe:** HelpTooltip-Komponente (?-Icon) an Dashboard und App Store.
+- **Einstellungen:** Option „Erfahrene Einstellungen anzeigen“ (versteckt; blendet Grundlegende Einstellungen und Dokumentations-Screenshots ein).
+- **Fehlerfreundliche Texte:** App-Store-Installation: „Huch, das hat nicht geklappt …“ statt technischer Fehlermeldung.
+- **Installer & Docs:** Single-Script-Installer (`create_installer.sh`), systemd-Service (`pi-installer.service`), One-Click-Dokumentation (get.pi-installer.io); Python 3.9+ in Doku und requirements.
+
+---
+
+## [1.2.0.6] – 2026-02
+
+### NAS: Duplikat-Finder (Phase 1)
+
+- **Duplikate & Aufräumen:** Neuer Bereich in der NAS-Seite – fdupes/jdupes installieren, Verzeichnis scannen, Duplikate in Backup verschieben (statt löschen).
+- **Installation:** Fallback auf jdupes, wenn fdupes nicht verfügbar; klarere Fehlermeldungen von apt.
+- **Scan:** Vorgeschlagener Pfad (Heimatverzeichnis, wenn /mnt/nas nicht existiert); Option „System-/Cache-Verzeichnisse ausschließen“ (.cache, mesa_shader, __pycache__, node_modules, .git, Trash) – Standard: an.
+- **API:** `POST /api/nas/duplicates/install`, `POST /api/nas/duplicates/scan`, `POST /api/nas/duplicates/move-to-backup`.
+- **Dokumentation:** INSTALL.md – Troubleshooting Duplikat-Finder-Installation; NAS-Dokumentation um Duplikate-Bereich ergänzt.
+
+---
+
 ## [1.2.0.5] – 2026-02
 
 ### Dokumentation

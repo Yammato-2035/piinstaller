@@ -133,6 +133,12 @@
 - [ ] Sensor Management
 - [ ] Automation Rules
 
+### NAS Erweiterungen (siehe NAS_ERWEITERUNG.md)
+- [x] Duplikat-Finder (fdupes/jdupes) – Scan, Auflistung, Backup statt Löschen (v1.2.0.6)
+- [ ] Medienserver (Jellyfin) – Video/Audio/Photos auf NAS streamen
+- [ ] Foto-Management (Immich/PhotoPrism) – optional per Docker
+- [ ] Backup-Ziel „NAS-Share“ im Backup-Modul
+
 ### Content Management
 - [ ] Ghost Blog Platform
 - [ ] Bookstack (Wiki)
@@ -237,7 +243,7 @@
 
 ---
 
-**Version:** 1.2.0.5 (Features v2026-02)  
+**Version:** 1.2.0.6 (Features v2026-02)  
 **Priorität:** Nutzer-Feedback getrieben  
 **Beitragen:** GitHub Issues & Pull Requests willkommen!  
 **Changelog:** [CHANGELOG.md](./CHANGELOG.md)

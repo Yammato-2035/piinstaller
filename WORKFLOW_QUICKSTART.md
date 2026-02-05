@@ -26,26 +26,26 @@ ls -la ~/.ssh/id_*.pub
 **Wenn Key vorhanden ist:**
 ```bash
 # Verwende vorhandenen Key (passe den Pfad an)
-ssh-copy-id -i ~/.ssh/id_ed25519.pub pi@raspberrypi.local
-# oder: ssh-copy-id -i ~/.ssh/id_rsa.pub pi@raspberrypi.local
+ssh-copy-id -i ~/.ssh/id_ed25519.pub pi@pi5-gg.local
+# oder: ssh-copy-id -i ~/.ssh/id_rsa.pub pi@pi5-gg.local
 ```
 
 **Wenn kein Key vorhanden ist:**
 ```bash
 # Neuen Key generieren
 ssh-keygen -t ed25519 -C "laptop-pi"
-ssh-copy-id pi@raspberrypi.local
+ssh-copy-id pi@pi5-gg.local
 ```
 
 **Testen:**
 ```bash
-ssh pi@raspberrypi.local
+ssh pi@pi5-gg.local
 ```
 
 **SSH-Config optimieren (`~/.ssh/config`):**
 ```
 Host pi
-    HostName raspberrypi.local
+    HostName pi5-gg.local
     User pi
     ServerAliveInterval 60
 ```
@@ -194,7 +194,7 @@ git commit -m "fix: Konflikt gelöst"
 ### SSH-Verbindung
 ```bash
 ssh -v pi                     # Verbindung testen
-ssh-copy-id pi@raspberrypi.local  # Key neu kopieren
+ssh-copy-id pi@pi5-gg.local  # Key neu kopieren
 ```
 
 ### Git-Probleme

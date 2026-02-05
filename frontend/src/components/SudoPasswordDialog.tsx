@@ -14,6 +14,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
   const [skipTest, setSkipTest] = useState(true)
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
+  const [backendReachable, setBackendReachable] = useState(true)
 
   useEffect(() => {
     // Prüfe beim Start, ob ein Passwort vorhanden ist
@@ -25,8 +26,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
       const response = await fetchApi('/api/users/sudo-password/check')
       
       if (!response.ok) {
-        // Backend nicht erreichbar oder Fehler - zeige Dialog trotzdem
-        console.warn('Backend nicht erreichbar, zeige Dialog trotzdem')
+        setBackendReachable(false)
         setShow(true)
         setChecking(false)
         return
@@ -35,15 +35,13 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
       const data = await response.json()
       
       if (data.status === 'success' && !data.has_password) {
-        // Kein Passwort vorhanden, zeige Dialog
         setShow(true)
       } else {
-        // Passwort vorhanden - Dialog nicht anzeigen
         onPasswordSaved()
       }
     } catch (error) {
       console.error('Fehler beim Prüfen des sudo-Passworts:', error)
-      // Bei Fehler trotzdem Dialog anzeigen, um sicherzustellen, dass Passwort eingegeben wird
+      setBackendReachable(false)
       setShow(true)
     } finally {
       setChecking(false)
@@ -67,7 +65,10 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
       try {
         data = await response.json()
       } catch {
-        toast.error('Ungültige Antwort vom Backend. Läuft es auf Port 8000?')
+        toast.error(
+          'Ungültige Antwort vom Backend. Bitte zuerst „PI-Installer Backend starten“ (Port 8000).',
+          { duration: 5000 }
+        )
         return
       }
       if (data.status === 'success') {
@@ -91,7 +92,10 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
         toast.error(msg)
       }
     } catch (error) {
-      toast.error('Fehler beim Speichern – Backend erreichbar? (Port 8000)')
+      toast.error(
+        'Fehler beim Speichern – Backend erreichbar? Starten Sie zuerst „PI-Installer Backend starten“ (Port 8000).',
+        { duration: 6000 }
+      )
       console.error(error)
     } finally {
       setLoading(false)
@@ -150,6 +154,21 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                   <X className="text-slate-400" size={20} />
                 </button>
               </div>
+
+              {/* Backend nicht erreichbar */}
+              {!backendReachable && (
+                <div className="mb-4 p-4 bg-red-900/30 border border-red-700/50 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="text-red-400 mt-0.5 shrink-0" size={20} />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-red-200">Backend nicht erreichbar</p>
+                      <p className="text-xs text-red-300/90 mt-1">
+                        Bitte zuerst „PI-Installer Backend starten“ (Port 8000) ausführen, dann hier erneut speichern.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Info */}
               <div className="mb-6 p-4 bg-yellow-900/20 border border-yellow-800/50 rounded-lg">

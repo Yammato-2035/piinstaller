@@ -1,0 +1,46 @@
+# PI-Installer – SD-Card-Image / Overlay-Build (Phase 1.2 Transformationsplan)
+#
+# Erstellt ein Artefakt für die PI-Installer-Installation auf Raspberry Pi OS:
+# - Tarball mit Skripten + Hinweisen für Image-Builder
+# - Vollständiges .img-Building erfordert pi-gen oder manuelles Vorgehen (siehe docs/SD_CARD_IMAGE.md)
+#
+name: Build PI-Installer Image Artifacts
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/create_installer.sh'
+      - 'pi-installer.service'
+      - 'start.sh'
+      - '.github/workflows/build-image.yml'
+
+jobs:
+  build-overlay:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create overlay tarball
+        run: |
+          mkdir -p build-overlay/pi-installer
+          cp -r scripts/create_installer.sh pi-installer.service start.sh backend frontend build-overlay/pi-installer/ 2>/dev/null || true
+          cp VERSION build-overlay/pi-installer/ 2>/dev/null || true
+          echo "PI-Installer $(cat VERSION). Über diese Dateien kann ein Image-Builder die Installation in ein Raspberry Pi OS Image einbauen." > build-overlay/README.txt
+          tar -czvf pi-installer-overlay.tar.gz -C build-overlay .
+
+      - name: Upload overlay artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pi-installer-overlay
+          path: pi-installer-overlay.tar.gz
+
+  # Optional: Hinweis-Job (echtes .img-Building siehe docs/SD_CARD_IMAGE.md)
+  hint:
+    runs-on: ubuntu-latest
+    needs: build-overlay
+    steps:
+      - run: |
+          echo "Overlay-Artefakt wurde erstellt. Für ein vollständiges bootbares .img siehe docs/SD_CARD_IMAGE.md (pi-gen oder manuelles Vorgehen)."

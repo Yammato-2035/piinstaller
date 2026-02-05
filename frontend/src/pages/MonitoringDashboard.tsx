@@ -9,7 +9,7 @@ import { usePlatform } from '../context/PlatformContext'
 import { PageSkeleton } from '../components/Skeleton'
 
 const MonitoringDashboard: React.FC = () => {
-  const { pageSubtitleLabel } = usePlatform()
+  const { pageSubtitleLabel, isRaspberryPi } = usePlatform()
   const [status, setStatus] = useState<any>(null)
   const [metrics, setMetrics] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -24,14 +24,12 @@ const MonitoringDashboard: React.FC = () => {
 
   useEffect(() => {
     loadStatus()
-    loadMetrics()
-    
-    const interval = setInterval(() => {
+    if (!isRaspberryPi) {
       loadMetrics()
-    }, 5000)
-    
-    return () => clearInterval(interval)
-  }, [])
+      const interval = setInterval(loadMetrics, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [isRaspberryPi])
 
   const loadStatus = async () => {
     try {
@@ -47,7 +45,7 @@ const MonitoringDashboard: React.FC = () => {
 
   const loadMetrics = async () => {
     try {
-      const response = await fetchApi('/api/system-info')
+      const response = await fetchApi('/api/system-info?light=1')
       const data = await response.json()
       
       const newMetric = {
@@ -331,6 +329,9 @@ const MonitoringDashboard: React.FC = () => {
         </motion.div>
       </div>
 
+      {isRaspberryPi && metrics.length === 0 && (
+        <p className="text-slate-400 text-sm mb-4">Live-Auslastung nur im Dashboard – hier werden Prometheus, Grafana und Node Exporter verwaltet.</p>
+      )}
       {metrics.length > 0 && (
         <div className="grid md:grid-cols-2 gap-6">
           <motion.div

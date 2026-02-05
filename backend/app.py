@@ -586,6 +586,17 @@ def _do_backup_logic(
     return {"status": "error", "message": f"Unbekannter Backup-Typ: {backup_type}", "results": results, "backup_file": None, "timestamp": timestamp}
 
 
+@app.get("/api/backup/jobs")
+async def backup_jobs_list():
+    """Liste aller Backup-Jobs, insbesondere laufende"""
+    running = []
+    for job_id, job in BACKUP_JOBS.items():
+        status = job.get("status", "")
+        if status in ("queued", "running", "cancel_requested") or not status:
+            running.append(_job_snapshot(job))
+    return {"status": "success", "jobs": running}
+
+
 @app.get("/api/backup/jobs/{job_id}")
 async def backup_job_status(job_id: str):
     job_id = (job_id or "").strip()
@@ -800,10 +811,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def _is_demo_mode(request: Request) -> bool:
+    """Prüft ob X-Demo-Mode Header gesetzt ist (für Screenshot-Dokumentation ohne echte Daten)."""
+    return request.headers.get("X-Demo-Mode") == "1"
+
+
+def _demo_network():
+    """Platzhalter-Netzwerkdaten für Demo/Screenshot-Modus."""
+    return {"ips": ["192.168.1.100"], "hostname": "raspberrypi"}
+
+
+def _demo_users():
+    """Platzhalter-Benutzer für Demo/Screenshot-Modus."""
+    return {
+        "system_users": [{"name": "root", "uid": 0}, {"name": "pi", "uid": 1000}],
+        "human_users": [{"name": "admin", "uid": 1001}],
+    }
+
+
 @app.get("/api/system/network")
-async def get_system_network():
+async def get_system_network(request: Request):
     """Netzwerk-Informationen (IP-Adressen, Hostname) für Frontend-Zugriff."""
     try:
+        if _is_demo_mode(request):
+            d = _demo_network()
+            return {"status": "success", "ips": d["ips"], "hostname": d["hostname"], "frontend_port": 3001, "backend_port": 8000}
         net_info = get_network_info()
         return {
             "status": "success",
@@ -822,6 +854,94 @@ async def get_version():
     """Gibt die PI-Installer Versionsnummer zurück."""
     # nicht cachen, damit VERSION-Änderungen ohne Restart sichtbar werden
     return {"status": "success", "version": get_pi_installer_version()}
+
+
+# ---------- App Store (Transformationsplan: Katalog mit 7 Apps) ----------
+APPS_CATALOG = [
+    {"id": "home-assistant", "name": "Home Assistant", "description": "Smart Home zentral steuern – Geräte, Automatisierungen, Dashboards.", "category": "Smart Home", "size": "~500 MB"},
+    {"id": "nextcloud", "name": "Nextcloud", "description": "Eigene Cloud für Dateien, Kalender, Kontakte und mehr.", "category": "Cloud", "size": "~400 MB"},
+    {"id": "pi-hole", "name": "Pi-hole", "description": "Werbung und Tracker im gesamten Netzwerk blockieren.", "category": "Tools", "size": "~200 MB"},
+    {"id": "jellyfin", "name": "Jellyfin", "description": "Medien-Server für Filme, Serien und Musik – streamen auf alle Geräte.", "category": "Media", "size": "~300 MB"},
+    {"id": "wordpress", "name": "WordPress", "description": "Website oder Blog erstellen – CMS mit Themes und Plugins.", "category": "Tools", "size": "~200 MB, benötigt MySQL/MariaDB"},
+    {"id": "code-server", "name": "VS Code Server", "description": "VS Code im Browser – Code bearbeiten von überall.", "category": "Entwicklung", "size": "~400 MB"},
+    {"id": "node-red", "name": "Node-RED", "description": "Automatisierungen und Flows visuell programmieren.", "category": "Entwicklung", "size": "~150 MB"},
+]
+
+
+@app.get("/api/apps")
+async def get_apps():
+    """Liste der verfügbaren Apps (App Store Katalog)."""
+    return {"apps": APPS_CATALOG}
+
+
+def _apps_data_dir() -> Path:
+    """Verzeichnis für Docker-App-Daten (data/apps/<app_id>)."""
+    repo_root = Path(__file__).resolve().parent.parent
+    return repo_root / "data" / "apps"
+
+
+def _app_docker_template_path(app_id: str) -> Optional[Path]:
+    """Pfad zur docker-compose.yml-Vorlage für die App (apps/<app_id>/docker-compose.yml)."""
+    repo_root = Path(__file__).resolve().parent.parent
+    p = repo_root / "apps" / app_id / "docker-compose.yml"
+    return p if p.is_file() else None
+
+
+def _app_container_running(app_id: str) -> bool:
+    """Prüft ob der Docker-Container der App läuft (Phase 2.2)."""
+    container_names = {"pi-hole": "pihole", "nextcloud": "nextcloud", "home-assistant": "homeassistant", "jellyfin": "jellyfin"}
+    name = container_names.get(app_id)
+    if not name:
+        return False
+    r = run_command(f"docker ps --format '{{{{.Names}}}}' 2>/dev/null | grep -q '^{name}$'", timeout=5)
+    return r.get("success", False)
+
+
+@app.get("/api/apps/{app_id}/status")
+async def get_app_status(app_id: str):
+    """Status einer App (installiert / nicht installiert). Phase 2.2: Docker-Container prüfen."""
+    if app_id not in {a["id"] for a in APPS_CATALOG}:
+        raise HTTPException(status_code=404, detail="App nicht gefunden")
+    installed = _app_container_running(app_id)
+    return {"installed": installed, "version": "docker" if installed else None}
+
+
+@app.post("/api/apps/{app_id}/install")
+async def install_app(request: Request, app_id: str):
+    """App installieren. Phase 2.2: Docker-basierte Installation (nur wenn Vorlage vorhanden)."""
+    if app_id not in {a["id"] for a in APPS_CATALOG}:
+        raise HTTPException(status_code=404, detail="App nicht gefunden")
+    template_path = _app_docker_template_path(app_id)
+    if not template_path:
+        return JSONResponse(
+            status_code=501,
+            content={"status": "not_implemented", "message": "Ein-Klick-Installation für diese App kommt in einer späteren Version."},
+        )
+    try:
+        body = await request.json() if (request.headers.get("content-type") or "").startswith("application/json") else {}
+    except Exception:
+        body = {}
+    if not isinstance(body, dict):
+        body = {}
+    sudo_password = (body.get("sudo_password") or "") if body else ""
+    data_dir = _apps_data_dir()
+    app_dir = data_dir / app_id
+    app_dir.mkdir(parents=True, exist_ok=True)
+    compose_dest = app_dir / "docker-compose.yml"
+    import shutil
+    shutil.copy2(template_path, compose_dest)
+    cmd = f"cd {shlex.quote(str(app_dir))} && docker compose up -d"
+    r = run_command(cmd, sudo=True, sudo_password=sudo_password or None, timeout=120)
+    if r.get("success"):
+        return {"status": "success", "installed": True, "message": "App wurde gestartet.", "version": "docker"}
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "message": r.get("stderr") or r.get("stdout") or "Docker Compose fehlgeschlagen.",
+            "installed": False,
+        },
+    )
 
 
 @app.get("/api/debug/routes")
@@ -1911,25 +2031,28 @@ async def health_check():
     return {"status": "ok"}
 
 @app.get("/api/status")
-async def get_status():
+async def get_status(request: Request):
     """System-Status abrufen"""
     try:
+        net = _demo_network() if _is_demo_mode(request) else get_network_info()
         return {
             "status": "healthy",
-            "hostname": get_network_info()["hostname"],
+            "hostname": net["hostname"],
             "version": "1.0.0",
-            "network": get_network_info(),
+            "network": net,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/system-info")
-async def get_system_info():
-    """Systeminfo auslesen"""
+async def get_system_info(request: Request, light: bool = False):
+    """Systeminfo auslesen. light=True: minimaler Satz für Polling (weniger CPU auf Pi). X-Demo-Mode: 1 ersetzt sensible Daten durch Platzhalter."""
     try:
-        per_cpu_percent = psutil.cpu_percent(interval=1, percpu=True)
+        # light-Modus: cpu_percent ohne Blockierung (interval=None) – spart ~1s Block pro Aufruf auf Pi
+        cpu_interval = None if light else 1
+        per_cpu_percent = psutil.cpu_percent(interval=cpu_interval, percpu=True)
         cpu_percent = sum(per_cpu_percent) / len(per_cpu_percent) if per_cpu_percent else 0
-        per_core_usage, physical_cores = get_per_core_usage(per_cpu_percent)
+        per_core_usage, physical_cores = (([], 0) if light else get_per_core_usage(per_cpu_percent))
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
         disk_mountpoint = '/'
@@ -1946,23 +2069,28 @@ async def get_system_info():
             minutes = int((uptime_seconds % 3600) // 60)
             uptime = f"{hours}h {minutes}m"
         
-        # CPU Temperatur & Lüfter
-        cpu_temp = get_cpu_temp()
-        fan_speed = get_fan_speed()
-        
-        # Debug: Prüfe ob Funktionen funktionieren
+        # CPU Temperatur: light nur schneller sysfs-Lese, sonst voller Weg
+        cpu_temp = None
         temp_debug = None
-        fan_debug = None
-        try:
-            # Test direkt
-            import subprocess
-            temp_test = subprocess.run("cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null", shell=True, capture_output=True, text=True)
-            if temp_test.returncode == 0:
-                temp_debug = int(temp_test.stdout.strip()) / 1000.0
-        except:
-            pass
+        if light:
+            try:
+                with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
+                    cpu_temp = round(int(f.read().strip()) / 1000.0, 1)
+            except Exception:
+                pass
+        else:
+            cpu_temp = get_cpu_temp()
+            try:
+                import subprocess
+                temp_test = subprocess.run("cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null", shell=True, capture_output=True, text=True)
+                if temp_test.returncode == 0:
+                    temp_debug = int(temp_test.stdout.strip()) / 1000.0
+            except Exception:
+                pass
+        fan_speed = None if light else get_fan_speed()
         
-        # Linux-Version
+        fan_debug = None
+        # Linux-Version (light: minimal)
         os_info = {}
         try:
             # /etc/os-release lesen
@@ -2015,6 +2143,8 @@ async def get_system_info():
             },
             "uptime": uptime,
         }
+        if light:
+            return resp
         resp["is_raspberry_pi"] = False
         resp["device_type"] = None
         try:
@@ -2050,6 +2180,17 @@ async def get_system_info():
                 resp["hardware"] = {"cpus": [], "gpus": []}
         except Exception:
             resp["hardware"] = {"cpus": [], "gpus": []}
+        # Fallback Pi-Erkennung: Device-Tree-Model prüfen (funktioniert auch wenn Pi-Modul fehlschlägt)
+        if not resp.get("is_raspberry_pi"):
+            for model_path in ("/proc/device-tree/model", "/sys/firmware/devicetree/base/model"):
+                try:
+                    if Path(model_path).exists():
+                        model = Path(model_path).read_bytes().decode("utf-8", errors="ignore").rstrip("\x00").lower()
+                        if "raspberry" in model:
+                            resp["is_raspberry_pi"] = True
+                            break
+                except Exception:
+                    pass
         # Auf Nicht-Pi immer lspci/nvidia-smi für alle GPUs (iGPU + NVIDIA/AMD), auf Pi bleibt VideoCore vom Modul
         if not resp.get("is_raspberry_pi"):
             resp["hardware"]["gpus"] = _get_gpus_for_system_info()
@@ -2107,7 +2248,9 @@ async def get_system_info():
             resp["drivers"] = [{"device": _device_display(p.get("description") or ""), "driver": p.get("driver") or "—"} for p in pci_list]
         except Exception:
             resp["drivers"] = []
-        resp["network"] = get_network_info()
+        resp["network"] = _demo_network() if _is_demo_mode(request) else get_network_info()
+        if _is_demo_mode(request):
+            resp["is_raspberry_pi"] = True  # Für Screenshots: Pi-spezifische Seiten anzeigen
         return resp
     except Exception as e:
         return {"error": str(e)}
@@ -2150,6 +2293,40 @@ async def dashboard_services_status():
         return {"dev": {"installed_count": 0, "total_parts": 5, "basic_ok": False}, "webserver": {"running": False, "reachable": False}, "musicbox": {"installed": False, "basic_ok": False}, "error": str(e)}
 
 
+@app.get("/api/system/resources")
+async def get_system_resources():
+    """Ressourcen-Management (Milestone 3): RAM, Swap, Temperatur für Pi-Optimierung und App-Store-Hinweise."""
+    try:
+        memory = psutil.virtual_memory()
+        swap = psutil.swap_memory()
+        ram_total_gb = round(memory.total / (1024 ** 3), 1)
+        ram_available_gb = round(memory.available / (1024 ** 3), 1)
+        swap_total_mb = round(swap.total / (1024 ** 2), 0)
+        swap_used_mb = round(swap.used / (1024 ** 2), 0)
+        cpu_temp = None
+        try:
+            with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+                cpu_temp = round(int(f.read().strip()) / 1000.0, 1)
+        except Exception:
+            cpu_temp = get_cpu_temp()
+        temperature_warning = cpu_temp is not None and cpu_temp >= 80
+        swap_recommended = ram_total_gb < 2
+        return {
+            "status": "success",
+            "ram_total_gb": ram_total_gb,
+            "ram_available_gb": ram_available_gb,
+            "ram_percent": memory.percent,
+            "swap_total_mb": swap_total_mb,
+            "swap_used_mb": swap_used_mb,
+            "swap_percent": round(swap.percent, 1) if swap.total else 0,
+            "temperature_c": cpu_temp,
+            "temperature_warning": temperature_warning,
+            "swap_recommended": swap_recommended,
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 # ==================== Benutzer Endpoints ====================
 
 def _parse_passwd_lines(lines: list) -> tuple:
@@ -2179,15 +2356,24 @@ def _parse_passwd_lines(lines: list) -> tuple:
 
 
 @app.get("/api/users")
-async def list_users():
+async def list_users(request: Request):
     """Alle Benutzer auflisten, getrennt in Systembenutzer/Dienste (UID < 1000) und Benutzer (Personen, UID >= 1000)."""
     try:
+        if _is_demo_mode(request):
+            d = _demo_users()
+            su, hu = d["system_users"], d["human_users"]
+            return {
+                "status": "success",
+                "system_users": su,
+                "human_users": hu,
+                "users": [u["name"] for u in su] + [u["name"] for u in hu],
+                "count": len(su) + len(hu),
+            }
         lines = []
         result = run_command("getent passwd")
         if result.get("success") and result.get("stdout"):
             lines = (result["stdout"] or "").strip().replace("\r\n", "\n").split("\n")
         if not lines:
-            # Fallback: /etc/passwd lesen (z. B. wenn getent fehlt oder in Container minimal)
             try:
                 passwd_path = Path("/etc/passwd")
                 if passwd_path.exists():
@@ -4085,7 +4271,13 @@ async def nas_status():
         installed = get_installed_apps()
         running = get_running_services()
         
+        dup_cmd = "fdupes" if run_command("which fdupes 2>/dev/null")["success"] else ("jdupes" if run_command("which jdupes 2>/dev/null")["success"] else None)
+        fdupes_installed = bool(dup_cmd)
+        # Vorgeschlagener Scan-Pfad: existierendes Verzeichnis (NAS-Pfad oder Heimatverzeichnis)
+        home = str(Path.home())
+        suggested_path = "/mnt/nas" if Path("/mnt/nas").exists() else home
         return {
+            "suggested_scan_path": suggested_path,
             "samba": {
                 "installed": check_installed("samba") or check_installed("samba-common"),
                 "running": running.get("smbd", False) or running.get("samba", False),
@@ -4098,6 +4290,7 @@ async def nas_status():
                 "installed": check_installed("vsftpd") or check_installed("proftpd"),
                 "running": running.get("vsftpd", False) or running.get("proftpd", False),
             },
+            "fdupes": {"installed": bool(fdupes_installed)},
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -4222,6 +4415,207 @@ async def configure_nas(request: Request):
                 "message": f"Fehler bei der NAS-Konfiguration: {str(e)}"
             }
         )
+
+
+def _require_sudo_for_nas(data: dict) -> tuple:
+    """Liefert (sudo_password, error_response). error_response ist None wenn ok."""
+    sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+    if not sudo_password:
+        test = run_command("sudo -n true", sudo=False)
+        if not test["success"]:
+            return "", {
+                "status": "error",
+                "message": "Sudo-Passwort erforderlich",
+                "requires_sudo_password": True,
+            }
+    if sudo_password and not sudo_password_store.get("password"):
+        sudo_password_store["password"] = sudo_password
+    return sudo_password, None
+
+
+@app.post("/api/nas/duplicates/install")
+async def nas_duplicates_install(request: Request):
+    """fdupes installieren (Duplikat-Finder)."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        sudo_password, err = _require_sudo_for_nas(data)
+        if err:
+            return JSONResponse(status_code=200, content=err)
+        # Update und Install getrennt, damit Fehlerursache klar erkennbar ist
+        r_update = run_command(
+            "apt-get update -qq 2>&1",
+            sudo=True,
+            sudo_password=sudo_password,
+            timeout=60,
+        )
+        if not r_update["success"]:
+            out = (r_update.get("stderr") or "") + (r_update.get("stdout") or "")
+            msg = (out or r_update.get("error") or "apt-get update fehlgeschlagen")[:600]
+            return JSONResponse(status_code=200, content={
+                "status": "error",
+                "message": f"apt-get update fehlgeschlagen. Ursache: {msg}",
+            })
+        r = run_command(
+            "apt-get install -y fdupes 2>&1",
+            sudo=True,
+            sudo_password=sudo_password,
+            timeout=120,
+        )
+        if not r["success"]:
+            # Fallback: jdupes (oft in Debian/Raspberry Pi OS verfügbar, gleiches Ausgabeformat)
+            r2 = run_command(
+                "apt-get install -y jdupes 2>&1",
+                sudo=True,
+                sudo_password=sudo_password,
+                timeout=120,
+            )
+            if r2["success"]:
+                return {"status": "success", "message": "jdupes installiert (Alternative zu fdupes)"}
+            out = (r.get("stderr") or "") + (r.get("stdout") or "")
+            msg = (out or r.get("error") or "Unbekannt")[:600]
+            return JSONResponse(status_code=200, content={
+                "status": "error",
+                "message": f"fdupes/jdupes konnte nicht installiert werden: {msg}",
+            })
+        return {"status": "success", "message": "fdupes installiert"}
+    except Exception as e:
+        logger.error(f"Duplikat-Install: {e}", exc_info=True)
+        return JSONResponse(status_code=200, content={
+            "status": "error",
+            "message": str(e),
+        })
+
+
+@app.post("/api/nas/duplicates/scan")
+async def nas_duplicates_scan(request: Request):
+    """Verzeichnis nach Duplikaten scannen (fdupes -r)."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        path = (data.get("path") or "/mnt/nas").strip().rstrip("/")
+        if not path or ".." in path or path.startswith("-"):
+            return JSONResponse(status_code=200, content={
+                "status": "error",
+                "message": "Ungültiger Pfad",
+            })
+        if not Path(path).exists():
+            home = str(Path.home())
+            hint = f" Zum Testen z.B. {home} oder erstelle /mnt/nas mit: sudo mkdir -p /mnt/nas"
+            return JSONResponse(status_code=200, content={
+                "status": "error",
+                "message": f"Pfad existiert nicht: {path}.{hint}",
+            })
+        dup_cmd = "fdupes" if run_command("which fdupes 2>/dev/null")["success"] else ("jdupes" if run_command("which jdupes 2>/dev/null")["success"] else None)
+        if not dup_cmd:
+            return JSONResponse(status_code=200, content={
+                "status": "error",
+                "message": "fdupes/jdupes nicht gefunden. Bitte zuerst installieren.",
+                "requires_install": True,
+            })
+        # System-/Cache-Verzeichnisse ausschließen (Standard: an) – Mesa, __pycache__, node_modules etc.
+        exclude_system = data.get("exclude_system_cache", True)
+        exclude_patterns = [".cache", "mesa_shader", "__pycache__", "node_modules", ".git/", "Trash/"]
+        cmd_extra = ""
+        if dup_cmd == "jdupes" and exclude_system:
+            cmd_extra = " " + " ".join(f'-X nostr:{p}' for p in exclude_patterns)
+        r = run_command(
+            f"{dup_cmd} -r{cmd_extra} {shlex.quote(path)} 2>/dev/null",
+            sudo=False,
+            timeout=600,
+        )
+        if not r["success"]:
+            err = (r.get("stderr") or r.get("stdout") or "Unbekannter Fehler")[:200]
+            return JSONResponse(status_code=200, content={
+                "status": "error",
+                "message": f"Scan fehlgeschlagen: {err}",
+            })
+        stdout = (r.get("stdout") or "").strip()
+        groups = []
+        for block in stdout.split("\n\n"):
+            files = [ln.strip() for ln in block.splitlines() if ln.strip()]
+            if len(files) > 1:
+                groups.append({"files": files, "count": len(files)})
+        if exclude_system and dup_cmd == "fdupes":
+            groups = [
+                g for g in groups
+                if not any(any(patt in f for patt in exclude_patterns) for f in g["files"])
+            ]
+        return {
+            "status": "success",
+            "path": path,
+            "groups": groups,
+            "total_duplicates": sum(g["count"] - 1 for g in groups),
+            "total_groups": len(groups),
+        }
+    except Exception as e:
+        logger.error(f"Duplikat-Scan: {e}", exc_info=True)
+        return JSONResponse(status_code=200, content={
+            "status": "error",
+            "message": str(e),
+        })
+
+
+@app.post("/api/nas/duplicates/move-to-backup")
+async def nas_duplicates_move_to_backup(request: Request):
+    """Duplikate in Backup-Ordner verschieben (pro Gruppe erste Datei behalten)."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        sudo_password, err = _require_sudo_for_nas(data)
+        if err:
+            return JSONResponse(status_code=200, content=err)
+        groups = data.get("groups") or []
+        backup_path = (data.get("backup_path") or "").strip().rstrip("/")
+        if not backup_path or ".." in backup_path:
+            return JSONResponse(status_code=200, content={
+                "status": "error",
+                "message": "Ungültiger Backup-Pfad",
+            })
+        moved = 0
+        errors = []
+        run_command(f"mkdir -p {shlex.quote(backup_path)}", sudo=True, sudo_password=sudo_password)
+        for group in groups:
+            files = group.get("files") or []
+            if len(files) < 2:
+                continue
+            keep = files[0]
+            for f in files[1:]:
+                if not Path(f).exists():
+                    continue
+                base = Path(f).name
+                dest = Path(backup_path) / base
+                idx = 1
+                while dest.exists():
+                    stem = Path(f).stem
+                    suffix = Path(f).suffix
+                    dest = Path(backup_path) / f"{stem}_{idx}{suffix}"
+                    idx += 1
+                cmd = f"mv {shlex.quote(f)} {shlex.quote(str(dest))}"
+                res = run_command(cmd, sudo=True, sudo_password=sudo_password)
+                if res["success"]:
+                    moved += 1
+                else:
+                    errors.append(f"{f}: {res.get('stderr', 'Fehler')[:80]}")
+        return {
+            "status": "success",
+            "message": f"{moved} Duplikate nach {backup_path} verschoben",
+            "moved": moved,
+            "errors": errors[:10],
+        }
+    except Exception as e:
+        logger.error(f"Duplikat-Move: {e}", exc_info=True)
+        return JSONResponse(status_code=200, content={
+            "status": "error",
+            "message": str(e),
+        })
+
 
 # ==================== Home Automation Endpoints ====================
 
@@ -6540,6 +6934,227 @@ async def backup_cloud_quota():
         return {"status": "error", "message": str(e)}
 
 
+@app.post("/api/backup/cloud/delete")
+async def backup_cloud_delete(request: Request):
+    """Löscht ein Cloud-Backup über WebDAV DELETE"""
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    
+    backup_file = (data.get("backup_file") or data.get("href") or "").strip()
+    if not backup_file:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "backup_file oder href erforderlich"})
+    
+    settings = _read_backup_settings()
+    cloud = settings.get("cloud") or {}
+    if not cloud.get("enabled"):
+        return JSONResponse(status_code=200, content={"status": "error", "message": "Cloud-Upload ist deaktiviert"})
+    
+    provider = cloud.get("provider") or "seafile_webdav"
+    if provider not in ("seafile_webdav", "webdav", "nextcloud_webdav"):
+        return JSONResponse(status_code=200, content={"status": "error", "message": f"Provider '{provider}' wird für Cloud-Löschung nicht unterstützt"})
+    
+    url = (cloud.get("webdav_url") or "").strip().rstrip("/")
+    user = (cloud.get("username") or "").strip()
+    pw = (cloud.get("password") or "").strip()
+    
+    if not url or not user or not pw:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "WebDAV URL + Username + Passwort fehlen"})
+    
+    # Verwende base_url aus Request, falls vorhanden (wird vom Frontend gesendet)
+    # Sonst konstruiere base aus webdav_url und remote_path
+    base_url_from_request = (data.get("base_url") or "").strip()
+    remote_path = (cloud.get("remote_path") or "").strip().strip("/")
+    
+    if base_url_from_request:
+        base = base_url_from_request
+        if not base.endswith("/"):
+            base = base + "/"
+    else:
+        base = f"{url}/{remote_path}" if remote_path else url
+        if not base.endswith("/"):
+            base = base + "/"
+    
+    # backup_file (href) kann sein:
+    # 1. Vollständige URL (https://example.com/dav/backups/file.tar.gz)
+    # 2. Relativer Pfad zur WebDAV-Root (/dav/backups/file.tar.gz) 
+    # 3. Relativer Pfad zur base (file.tar.gz)
+    #
+    # PROPFIND gibt href relativ zur angeforderten URL zurück.
+    # Wenn PROPFIND auf base (z.B. https://example.com/dav/backups/) ausgeführt wird,
+    # dann ist href entweder:
+    # - Absolut relativ zur Root: /dav/backups/file.tar.gz
+    # - Relativ zur base: file.tar.gz
+    # - Vollständige URL: https://example.com/dav/backups/file.tar.gz
+    
+    from urllib.parse import urlparse, urljoin
+    
+    if backup_file.startswith("http://") or backup_file.startswith("https://"):
+        # Vollständige URL - verwende direkt
+        remote_url = backup_file
+    elif backup_file.startswith("/"):
+        # href ist absolut relativ zur WebDAV-Root
+        # Kombiniere mit der Domain der base_url
+        parsed_base = urlparse(base.rstrip("/"))
+        base_domain = f"{parsed_base.scheme}://{parsed_base.netloc}"
+        remote_url = base_domain + backup_file
+    else:
+        # href ist relativ zur base - füge zur base hinzu
+        # urljoin behandelt relative Pfade korrekt
+        remote_url = urljoin(base, backup_file)
+    
+    # Debug-Informationen für Response (MUSS vor der Verwendung definiert werden)
+    debug_info = {
+        "webdav_url": url,
+        "remote_path": remote_path,
+        "base_from_request": base_url_from_request,
+        "base": base,
+        "backup_file": backup_file,
+        "remote_url": remote_url
+    }
+    
+    # WICHTIG: Wenn remote_url mit base beginnt, aber base bereits in href enthalten ist,
+    # könnte es zu einer doppelten Pfadstruktur kommen. Prüfe das.
+    # Beispiel: base = "https://example.com/dav/backups/", href = "/dav/backups/file.tar.gz"
+    # Dann wäre remote_url = "https://example.com/dav/backups/file.tar.gz" (korrekt)
+    # Aber wenn base = "https://example.com/dav/backups/", href = "backups/file.tar.gz"
+    # Dann wäre remote_url = "https://example.com/dav/backups/backups/file.tar.gz" (falsch!)
+    
+    # Prüfe, ob der Pfad bereits in base enthalten ist
+    parsed_remote = urlparse(remote_url)
+    parsed_base_check = urlparse(base.rstrip("/"))
+    
+    # Wenn der Pfad der remote_url bereits mit dem Pfad der base beginnt, ist es korrekt
+    # Sonst könnte es ein Problem geben
+    if parsed_remote.path.startswith(parsed_base_check.path):
+        # Pfad ist korrekt
+        pass
+    else:
+        # Möglicherweise falsche Konstruktion - versuche es mit base + Dateiname
+        filename = backup_file.split("/")[-1]
+        alt_remote_url = base.rstrip("/") + "/" + filename
+        # Verwende diese nur, wenn sie anders ist
+        if alt_remote_url != remote_url:
+            debug_info["alternative_construction"] = alt_remote_url
+    
+    # DELETE Request mit zusätzlichem Debug-Output
+    # Zuerst versuchen wir mit der konstruierten URL
+    cmd = (
+        "curl -sS -o /dev/null -w '%{http_code}' "
+        f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+        "-X DELETE "
+        f"{shlex.quote(remote_url)}"
+    )
+    res = run_command(cmd)
+    
+    if res.get("success"):
+        http_code = (res.get("stdout") or "").strip()
+        try:
+            code = int(http_code)
+            if code in (200, 202, 204):
+                return {"status": "success", "message": "Cloud-Backup gelöscht", "debug": debug_info}
+            elif code == 404:
+                # Debug-Info für 404-Fehler
+                debug_info["http_code"] = 404
+                # Datei nicht gefunden - versuche mehrere alternative URL-Konstruktionen
+                alternatives_tried = [remote_url]
+                
+                if not backup_file.startswith("http://") and not backup_file.startswith("https://"):
+                    # Versuch 1: Nur Dateiname zur base hinzufügen
+                    filename = backup_file.split("/")[-1]
+                    alt_url1 = base + filename
+                    alternatives_tried.append(alt_url1)
+                    logger.info(f"[Cloud-Delete] Versuche alternative URL 1: {alt_url1}")
+                    
+                    cmd_alt1 = (
+                        "curl -sS -o /dev/null -w '%{http_code}' "
+                        f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+                        "-X DELETE "
+                        f"{shlex.quote(alt_url1)}"
+                    )
+                    res_alt1 = run_command(cmd_alt1)
+                    if res_alt1.get("success"):
+                        http_code_alt1 = (res_alt1.get("stdout") or "").strip()
+                        try:
+                            code_alt1 = int(http_code_alt1)
+                            if code_alt1 in (200, 202, 204):
+                                debug_info["successful_alternative"] = alt_url1
+                                return {"status": "success", "message": "Cloud-Backup gelöscht", "debug": debug_info}
+                        except ValueError:
+                            pass
+                    
+                    # Versuch 2: Wenn href mit / beginnt, entferne führenden / und kombiniere mit base
+                    if backup_file.startswith("/"):
+                        # Entferne führenden Slash und kombiniere mit base
+                        path_without_leading_slash = backup_file.lstrip("/")
+                        # Entferne remote_path aus dem Pfad, falls vorhanden
+                        if remote_path:
+                            path_parts = path_without_leading_slash.split("/")
+                            remote_path_parts = remote_path.strip("/").split("/")
+                            # Prüfe, ob der Pfad mit remote_path beginnt
+                            if len(path_parts) >= len(remote_path_parts):
+                                if path_parts[:len(remote_path_parts)] == remote_path_parts:
+                                    # Entferne remote_path-Teil
+                                    path_without_leading_slash = "/".join(path_parts[len(remote_path_parts):])
+                        alt_url2 = base.rstrip("/") + "/" + path_without_leading_slash
+                        alternatives_tried.append(alt_url2)
+                        logger.info(f"[Cloud-Delete] Versuche alternative URL 2: {alt_url2}")
+                        
+                        cmd_alt2 = (
+                            "curl -sS -o /dev/null -w '%{http_code}' "
+                            f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+                            "-X DELETE "
+                            f"{shlex.quote(alt_url2)}"
+                        )
+                        res_alt2 = run_command(cmd_alt2)
+                        if res_alt2.get("success"):
+                            http_code_alt2 = (res_alt2.get("stdout") or "").strip()
+                            try:
+                                code_alt2 = int(http_code_alt2)
+                                if code_alt2 in (200, 202, 204):
+                                    debug_info["successful_alternative"] = alt_url2
+                                    return {"status": "success", "message": "Cloud-Backup gelöscht", "debug": debug_info}
+                            except ValueError:
+                                pass
+                
+                # Datei nicht gefunden - könnte bereits gelöscht sein oder falscher Pfad
+                debug_info["alternatives_tried"] = alternatives_tried[:5]
+                debug_info["http_code"] = code
+                debug_info["final_remote_url"] = remote_url[:200]
+                return JSONResponse(
+                    status_code=200, 
+                    content={
+                        "status": "error", 
+                        "message": f"Datei nicht gefunden (HTTP 404). Versuchte URLs: {', '.join(alternatives_tried[:3])}",
+                        "http_code": code,
+                        "remote_url": remote_url[:200],
+                        "backup_file": backup_file[:200],
+                        "alternatives_tried": alternatives_tried[:5],
+                        "debug": debug_info
+                    }
+                )
+            else:
+                debug_info["http_code"] = code
+                return JSONResponse(
+                    status_code=200, 
+                    content={
+                        "status": "error", 
+                        "message": f"Löschung fehlgeschlagen (HTTP {code})",
+                        "http_code": code,
+                        "remote_url": remote_url[:200],
+                        "debug": debug_info
+                    }
+                )
+        except ValueError:
+            debug_info["http_code_error"] = http_code
+            return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültige HTTP-Antwort: {http_code}", "debug": debug_info})
+    else:
+        error_msg = res.get("stderr") or res.get("error") or "Unbekannter Fehler"
+        debug_info["curl_error"] = error_msg[:200]
+        return JSONResponse(status_code=200, content={"status": "error", "message": f"Löschung fehlgeschlagen: {error_msg[:200]}", "debug": debug_info})
+
+
 @app.post("/api/backup/cloud/verify")
 async def backup_cloud_verify(request: Request):
     """Verifiziert ein einzelnes Remote-Backup via WebDAV PROPFIND Depth:0."""
@@ -7687,53 +8302,101 @@ async def create_backup(request: Request):
                     else:
                         BACKUP_JOBS[job_id]["backup_file"] = backup_file_path
                     
-                    # optional cloud upload (manual cloud target oder wenn Cloud aktiviert ist)
-                    # Upload auch bei lokal erstellten Backups, wenn Cloud aktiviert ist
-                    # Upload wenn Cloud aktiviert ist und target cloud_only oder local_and_cloud
-                    # ODER wenn Cloud aktiviert ist und Backup lokal erstellt wurde (automatischer Upload)
-                    # WICHTIG: Cloud-Einstellungen müssen innerhalb des Threads neu geladen werden
+                    # optional cloud upload nur wenn explizit gewünscht (cloud_only oder local_and_cloud)
+                    # Bei target="local" (z.B. USB-Stick) NIEMALS in die Cloud hochladen
                     backup_settings_thread = _read_backup_settings()
                     cloud_thread = backup_settings_thread.get("cloud") or {}
-                    cloud_should_upload = (
-                        target in ("cloud_only", "local_and_cloud") or
-                        (target == "local" and cloud_thread.get("enabled"))
-                    )
+                    cloud_should_upload = target in ("cloud_only", "local_and_cloud")
                     logger.info(f"Cloud-Upload-Prüfung: target={target}, cloud.enabled={cloud_thread.get('enabled')}, cloud_should_upload={cloud_should_upload}, backup_file={BACKUP_JOBS[job_id].get('backup_file')}")
                     if result.get("status") == "success" and cloud_should_upload:
                         # Verwende Cloud-Einstellungen aus Thread
                         cloud = cloud_thread
-                        BACKUP_JOBS[job_id]["message"] = "Upload läuft…"
                         backup_file_to_upload = BACKUP_JOBS[job_id]["backup_file"]
                         logger.info(f"Cloud-Upload gestartet für {backup_file_to_upload}, Provider: {cloud.get('provider')}, Enabled: {cloud.get('enabled')}, Target: {target}")
                         
+                        # Prüfe Cloud-Credentials VOR dem Upload
+                        provider = cloud.get("provider") or "seafile_webdav"
+                        webdav_providers = ("seafile_webdav", "webdav", "nextcloud_webdav")
+                        credentials_ok = False
+                        if provider in webdav_providers:
+                            url_ok = bool((cloud.get("webdav_url") or "").strip())
+                            user_ok = bool((cloud.get("username") or "").strip())
+                            pw_ok = bool((cloud.get("password") or "").strip())
+                            credentials_ok = url_ok and user_ok and pw_ok
+                        else:
+                            # Für andere Provider: Prüfe Provider-spezifische Settings
+                            if provider in ("s3", "s3_compatible"):
+                                credentials_ok = bool(cloud.get("bucket") and cloud.get("access_key_id") and cloud.get("secret_access_key"))
+                            elif provider == "google_cloud":
+                                credentials_ok = bool(cloud.get("bucket"))
+                            elif provider == "azure":
+                                credentials_ok = bool(cloud.get("account_name") and cloud.get("container") and cloud.get("account_key"))
+                            else:
+                                credentials_ok = False
+                        
+                        if not credentials_ok:
+                            error_msg = f"Cloud-Credentials fehlen für Provider '{provider}'. Backup wurde nur lokal gespeichert."
+                            BACKUP_JOBS[job_id]["results"].append(f"⚠️ Cloud-Upload übersprungen: {error_msg}")
+                            BACKUP_JOBS[job_id]["warning"] = error_msg
+                            logger.warning(f"[Cloud-Upload] {error_msg}")
+                            # Bei cloud_only ist das ein Fehler, bei local_and_cloud nur eine Warnung
+                            if target == "cloud_only":
+                                BACKUP_JOBS[job_id]["status"] = "error"
+                                BACKUP_JOBS[job_id]["message"] = "Cloud-Upload fehlgeschlagen: Credentials fehlen"
+                            else:
+                                # Backup lokal erfolgreich, Cloud-Upload fehlgeschlagen
+                                BACKUP_JOBS[job_id]["status"] = "success"
+                                BACKUP_JOBS[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload übersprungen)"
                         # Prüfe ob Datei existiert
-                        if not Path(backup_file_to_upload).exists():
+                        elif not Path(backup_file_to_upload).exists():
                             error_msg = f"Backup-Datei nicht gefunden: {backup_file_to_upload}"
                             BACKUP_JOBS[job_id]["results"].append(f"upload failed: {error_msg}")
                             BACKUP_JOBS[job_id]["warning"] = f"Cloud-Upload fehlgeschlagen: {error_msg}"
-                            BACKUP_JOBS[job_id]["status"] = "error"
+                            if target == "cloud_only":
+                                BACKUP_JOBS[job_id]["status"] = "error"
+                            else:
+                                BACKUP_JOBS[job_id]["status"] = "success"
+                                BACKUP_JOBS[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload fehlgeschlagen)"
                             logger.error(error_msg)
                         else:
-                            ok, info = _cloud_upload_and_verify(backup_file_to_upload, cloud, job_id)
-                            logger.info(f"Cloud-Upload Ergebnis: ok={ok}, info={info}")
-                            if ok:
-                                BACKUP_JOBS[job_id].pop("upload_progress_pct", None)
-                                BACKUP_JOBS[job_id]["remote_file"] = info
-                                BACKUP_JOBS[job_id]["results"].append(f"✅ uploaded: {info}")
-                                BACKUP_JOBS[job_id]["location"] = "Cloud"
-                                BACKUP_JOBS[job_id]["message"] = "Backup erfolgreich hochgeladen"
+                            BACKUP_JOBS[job_id]["message"] = "Upload läuft…"
+                            try:
+                                ok, info = _cloud_upload_and_verify(backup_file_to_upload, cloud, job_id)
+                                logger.info(f"Cloud-Upload Ergebnis: ok={ok}, info={info}")
+                                if ok:
+                                    BACKUP_JOBS[job_id].pop("upload_progress_pct", None)
+                                    BACKUP_JOBS[job_id]["remote_file"] = info
+                                    BACKUP_JOBS[job_id]["results"].append(f"✅ uploaded: {info}")
+                                    BACKUP_JOBS[job_id]["location"] = "Cloud"
+                                    BACKUP_JOBS[job_id]["message"] = "Backup erfolgreich hochgeladen"
+                                    if target == "cloud_only":
+                                        try:
+                                            run_command(f"rm -f {shlex.quote(backup_file_to_upload)}", sudo=True, sudo_password=sudo_password)
+                                            BACKUP_JOBS[job_id]["results"].append("Lokale Datei gelöscht (cloud_only)")
+                                        except Exception as e:
+                                            logger.warning(f"Lokale Datei konnte nicht gelöscht werden: {e}")
+                                else:
+                                    BACKUP_JOBS[job_id].pop("upload_progress_pct", None)
+                                    BACKUP_JOBS[job_id]["results"].append(f"❌ upload failed: {info}")
+                                    BACKUP_JOBS[job_id]["warning"] = f"Cloud-Upload fehlgeschlagen: {info}"
+                                    if target == "cloud_only":
+                                        BACKUP_JOBS[job_id]["status"] = "error"
+                                        BACKUP_JOBS[job_id]["message"] = "Cloud-Upload fehlgeschlagen"
+                                    else:
+                                        BACKUP_JOBS[job_id]["status"] = "success"
+                                        BACKUP_JOBS[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload fehlgeschlagen)"
+                                    logger.error(f"Cloud-Upload fehlgeschlagen: {info}")
+                            except Exception as e:
+                                error_msg = f"Cloud-Upload Fehler: {str(e)}"
+                                logger.error(f"[Cloud-Upload] Unerwarteter Fehler: {e}", exc_info=True)
+                                BACKUP_JOBS[job_id]["results"].append(f"❌ upload exception: {error_msg}")
+                                BACKUP_JOBS[job_id]["warning"] = error_msg
                                 if target == "cloud_only":
-                                    try:
-                                        run_command(f"rm -f {shlex.quote(backup_file_to_upload)}", sudo=True, sudo_password=sudo_password)
-                                        BACKUP_JOBS[job_id]["results"].append("Lokale Datei gelöscht (cloud_only)")
-                                    except Exception as e:
-                                        logger.warning(f"Lokale Datei konnte nicht gelöscht werden: {e}")
-                            else:
-                                BACKUP_JOBS[job_id].pop("upload_progress_pct", None)
-                                BACKUP_JOBS[job_id]["results"].append(f"❌ upload failed: {info}")
-                                BACKUP_JOBS[job_id]["warning"] = f"Cloud-Upload fehlgeschlagen: {info}"
-                                BACKUP_JOBS[job_id]["status"] = "error" if target == "cloud_only" else "success"
-                                logger.error(f"Cloud-Upload fehlgeschlagen: {info}")
+                                    BACKUP_JOBS[job_id]["status"] = "error"
+                                    BACKUP_JOBS[job_id]["message"] = "Cloud-Upload fehlgeschlagen"
+                                else:
+                                    BACKUP_JOBS[job_id]["status"] = "success"
+                                    BACKUP_JOBS[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload fehlgeschlagen)"
                     BACKUP_JOBS[job_id]["finished_at"] = _now_iso()
                     # Status wird bereits oben gesetzt, nur noch finalisieren
                     if BACKUP_JOBS[job_id]["status"] not in ("error", "cancelled"):
@@ -7797,11 +8460,8 @@ async def create_backup(request: Request):
             except Exception as e:
                 result["warning"] = (result.get("warning") or "") + f" Verschlüsselung Fehler: {str(e)}"
         
-        # Cloud-Upload wenn Cloud aktiviert ist
-        cloud_should_upload = (
-            target in ("cloud_only", "local_and_cloud") or
-            (target == "local" and cloud.get("enabled"))
-        )
+        # Cloud-Upload nur bei explizitem Cloud-Ziel; bei target="local" (z.B. USB) nie hochladen
+        cloud_should_upload = target in ("cloud_only", "local_and_cloud")
         if result.get("status") == "success" and cloud_should_upload:
             ok, info = _cloud_upload_and_verify(result.get("backup_file") or bf)
             if ok:
@@ -7878,9 +8538,100 @@ async def list_backups(backup_dir: str = "/mnt/backups"):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/api/backup/verify")
+async def verify_backup(request: Request):
+    """Verifiziert ein Backup-Archiv (prüft Integrität und zeigt Inhalt)"""
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    
+    backup_file = (data.get("backup_file") or "").strip()
+    if not backup_file:
+        return JSONResponse(status_code=200, content={"status": "error", "message": "backup_file erforderlich"})
+    
+    # Sicherheitsprüfung: Pfad-Validierung
+    try:
+        bf = Path(backup_file).resolve()
+        allowed_roots = [Path("/mnt").resolve(), Path("/media").resolve(), Path("/run/media").resolve(), Path("/home").resolve()]
+        if not any(str(bf).startswith(str(r) + "/") or bf == r for r in allowed_roots):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei liegt außerhalb erlaubter Pfade"})
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiger Pfad: {str(e)}"})
+    
+    if not Path(backup_file).exists():
+        return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei existiert nicht"})
+    
+    # Prüfe, ob verschlüsselt
+    is_encrypted = backup_file.endswith('.gpg') or backup_file.endswith('.enc') or '.tar.gz.gpg' in backup_file or '.tar.gz.enc' in backup_file
+    
+    results = {
+        "file": backup_file,
+        "exists": True,
+        "encrypted": is_encrypted,
+        "valid": False,
+        "size_bytes": 0,
+        "size_human": "",
+        "file_count": 0,
+        "sample_files": [],
+        "error": None
+    }
+    
+    try:
+        st = Path(backup_file).stat()
+        results["size_bytes"] = st.st_size
+        
+        def human(n: int) -> str:
+            for unit in ["B", "KB", "MB", "GB", "TB"]:
+                if n < 1024:
+                    return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
+                n /= 1024
+            return f"{n:.1f} TB"
+        results["size_human"] = human(st.st_size)
+    except Exception as e:
+        results["error"] = f"Fehler beim Lesen der Dateigröße: {str(e)}"
+        return {"status": "success", "results": results}
+    
+    # Wenn verschlüsselt, können wir nur die Dateigröße prüfen
+    if is_encrypted:
+        results["valid"] = results["size_bytes"] > 0
+        if results["valid"]:
+            results["error"] = None  # Kein Fehler, nur Info
+        else:
+            results["error"] = "Verschlüsselte Backup-Datei ist leer oder nicht gefunden"
+        return {"status": "success", "results": results}
+    
+    # Verifizierung: tar -tzf listet den Inhalt (prüft Integrität)
+    cmd = f"tar -tzf {shlex.quote(backup_file)} 2>&1 | head -100"
+    res = await run_command_async(cmd, timeout=60)
+    
+    if res.get("success") and res.get("stdout"):
+        results["valid"] = True
+        files = [line.strip() for line in res.get("stdout", "").split("\n") if line.strip()]
+        results["file_count"] = len(files)
+        results["sample_files"] = files[:20]  # Erste 20 Dateien als Beispiel
+        
+        # Zähle alle Dateien (kann bei großen Archiven langsam sein)
+        if results["file_count"] < 100:
+            # Kleines Archiv, zähle alle
+            cmd_count = f"tar -tzf {shlex.quote(backup_file)} 2>/dev/null | wc -l"
+            res_count = await run_command_async(cmd_count, timeout=30)
+            if res_count.get("success"):
+                try:
+                    results["file_count"] = int(res_count.get("stdout", "0").strip())
+                except Exception:
+                    pass
+    else:
+        results["valid"] = False
+        error_msg = res.get("stderr") or res.get("error") or "Unbekannter Fehler"
+        results["error"] = f"Backup-Archiv ist beschädigt oder ungültig: {error_msg[:200]}"
+    
+    return {"status": "success", "results": results}
+
+
 @app.post("/api/backup/delete")
 async def delete_backup(request: Request):
-    """Löscht ein Backup (.tar.gz) sicher (mit sudo fallback)."""
+    """Löscht ein Backup (.tar.gz, auch verschlüsselte .tar.gz.gpg/.tar.gz.enc) sicher (mit sudo fallback)."""
     try:
         data = await request.json()
     except Exception:
@@ -7889,8 +8640,9 @@ async def delete_backup(request: Request):
     backup_file = (data.get("backup_file") or "").strip()
     sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
 
-    if not backup_file or not backup_file.endswith(".tar.gz"):
-        return JSONResponse(status_code=200, content={"status": "error", "message": "backup_file (.tar.gz) erforderlich"})
+    # Erlaube auch verschlüsselte Backups (.tar.gz.gpg, .tar.gz.enc)
+    if not backup_file or not (backup_file.endswith(".tar.gz") or backup_file.endswith(".tar.gz.gpg") or backup_file.endswith(".tar.gz.enc")):
+        return JSONResponse(status_code=200, content={"status": "error", "message": "backup_file (.tar.gz, .tar.gz.gpg oder .tar.gz.enc) erforderlich"})
 
     # Allowlist path roots
     try:
@@ -7901,23 +8653,60 @@ async def delete_backup(request: Request):
     except Exception:
         pass
 
-    # Try delete as user first
+    # Prüfe ob Datei existiert
+    if not Path(backup_file).exists():
+        return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei existiert nicht"})
+
+    # Versuche zuerst ohne sudo zu löschen
     cmd = f"rm -f {shlex.quote(backup_file)}"
     res = await run_command_async(cmd, sudo=False, timeout=30)
-    if not res.get("success") and sudo_password:
-        res = await run_command_async(cmd, sudo=True, sudo_password=sudo_password, timeout=30)
+    
+    # Wenn fehlgeschlagen und sudo verfügbar, versuche mit sudo
+    if not res.get("success"):
+        if sudo_password:
+            res = await run_command_async(cmd, sudo=True, sudo_password=sudo_password, timeout=30)
+        else:
+            # Versuche es nochmal mit sudo -n (falls NOPASSWD konfiguriert)
+            res_sudo_n = await run_command_async(cmd, sudo=True, sudo_password="", timeout=30)
+            if res_sudo_n.get("success"):
+                res = res_sudo_n
 
     # verify gone
     test = await run_command_async(f"test -e {shlex.quote(backup_file)}", timeout=10)
     if test.get("success"):
+        # Datei existiert noch - sammle Fehlerdetails
+        error_parts = []
+        if res.get("stderr"):
+            stderr_text = (res.get("stderr") or "").strip()
+            if stderr_text:
+                error_parts.append(f"Fehler: {stderr_text[:300]}")
+        if res.get("error"):
+            error_text = (res.get("error") or "").strip()
+            if error_text:
+                error_parts.append(f"Details: {error_text[:300]}")
+        
+        # Prüfe Dateiberechtigungen
+        perm_check = await run_command_async(f"ls -la {shlex.quote(backup_file)} 2>&1", timeout=10)
+        if perm_check.get("success") and perm_check.get("stdout"):
+            error_parts.append(f"Berechtigungen: {perm_check.get('stdout')[:200]}")
+        
+        error_message = "Backup konnte nicht gelöscht werden."
+        if error_parts:
+            error_message += " " + " ".join(error_parts)
+        else:
+            error_message += " Möglicherweise fehlen Berechtigungen oder die Datei ist gesperrt."
+        
         return JSONResponse(
             status_code=200,
             content={
                 "status": "error",
-                "message": "Backup konnte nicht gelöscht werden",
-                "stderr": (res.get("stderr") or res.get("error") or "").strip()[:200],
+                "message": error_message,
+                "stderr": (res.get("stderr") or res.get("error") or "").strip()[:500],
             },
         )
+    
+    # Erfolgreich gelöscht
+    return {"status": "success", "message": "Backup gelöscht"}
 
     return {"status": "success", "message": "Backup gelöscht"}
 

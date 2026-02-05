@@ -24,6 +24,7 @@ import {
   Monitor,
   Scan,
   Tv,
+  Package,
 } from 'lucide-react'
 
 type Theme = 'light' | 'dark' | 'system'
@@ -34,11 +35,13 @@ interface SidebarProps {
   theme: Theme
   setTheme: (theme: Theme) => void
   isRaspberryPi?: boolean
+  mobileOpen?: boolean
+  onClose?: () => void
 }
 
 const NEW_BADGE_KEY = 'pi-installer-new-'
 
-const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false }) => {
+const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, mobileOpen = false, onClose }) => {
   const { systemLabel } = usePlatform()
   const [version, setVersion] = useState<string>('…')
   const [newBadges, setNewBadges] = useState<Record<string, boolean>>({})
@@ -75,6 +78,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     // Logisch sortiert: Übersicht → Einrichtung → System → Dienste → Wartung → Pi (optional)
     const items: Array<{ id?: string; type?: string; label?: string; icon?: any }> = [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { id: 'app-store', label: 'App Store', icon: Package },
       { id: 'wizard', label: 'Assistent', icon: Zap },
       { id: 'presets', label: 'Voreinstellungen', icon: Settings },
       { type: 'divider' },
@@ -115,10 +119,15 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
   }, [setTheme])
 
   return (
-    <div className="w-64 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 flex flex-col h-screen shadow-2xl">
-      {/* Logo */}
-      <div className="p-6 border-b border-slate-300 dark:border-slate-700">
-        <div className="flex items-center gap-3">
+    <>
+      {mobileOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" aria-hidden onClick={onClose} />}
+      <div
+        className={`w-64 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 flex flex-col h-screen shadow-2xl
+          ${mobileOpen ? 'flex fixed inset-y-0 left-0 z-40' : 'hidden'} md:flex md:relative md:inset-auto`}
+      >
+      {/* Logo + Mobile Schließen */}
+      <div className="p-6 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">π</span>
           </div>
@@ -127,6 +136,11 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             <p className="text-xs text-slate-500 dark:text-slate-400">v{version}</p>
           </div>
         </div>
+        {mobileOpen && onClose && (
+          <button type="button" onClick={onClose} className="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700" aria-label="Menü schließen">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        )}
       </div>
 
       {/* Menu */}
@@ -236,6 +250,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
         </div>
       </div>
     </div>
+    </>
   )
 }
 

@@ -2,6 +2,7 @@
  * Zentrale API-Basis-URL und fetch-Wrapper.
  * Im Browser: relative /api (Proxy oder Same-Origin).
  * In Tauri-Desktop-App: absolute URL (z. B. http://localhost:8000), da kein Same-Origin.
+ * Screenshot-Modus: X-Demo-Mode Header für Platzhalterdaten (keine IPs/Benutzernamen).
  */
 
 declare global {
@@ -11,6 +12,20 @@ declare global {
 }
 
 const TAURI_DEFAULT_API = 'http://localhost:8000';
+
+/** Wenn true, werden API-Anfragen mit X-Demo-Mode: 1 gesendet (Platzhalter für Screenshots). */
+let _screenshotMode = false;
+
+export function setScreenshotMode(enabled: boolean): void {
+  _screenshotMode = enabled;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('pi-installer-screenshot-mode-changed', { detail: { enabled } }));
+  }
+}
+
+export function isScreenshotMode(): boolean {
+  return _screenshotMode;
+}
 
 export function getApiBase(): string {
   const env = import.meta.env.VITE_API_BASE as string | undefined;
@@ -22,5 +37,7 @@ export function getApiBase(): string {
 export async function fetchApi(path: string, init?: RequestInit): Promise<Response> {
   const base = getApiBase();
   const url = base ? `${base}${path.startsWith('/') ? '' : '/'}${path}` : path;
-  return fetch(url, init);
+  const headers = new Headers(init?.headers);
+  if (_screenshotMode) headers.set('X-Demo-Mode', '1');
+  return fetch(url, { ...init, headers });
 }

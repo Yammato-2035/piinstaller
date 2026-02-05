@@ -1,0 +1,28 @@
+# Pi-hole – Docker-basierte App-Installation (Phase 2.2 Transformationsplan)
+# Nach dem ersten Start: http://<IP>:8080/admin (Passwort im Container setzen)
+version: "3"
+services:
+  pihole:
+    image: docker.io/pihole/pihole:latest
+    container_name: pihole
+    hostname: pihole
+    restart: unless-stopped
+    ports:
+      - "8080:80"   # Web-UI (statt 80, um Konflikte mit anderen Diensten zu vermeiden)
+      - "53:53/tcp"
+      - "53:53/udp"
+    environment:
+      TZ: Europe/Berlin
+      WEBPASSWORD: ""   # Leer = beim ersten Start setzen (docker exec -it pihole pihole -a -p)
+    volumes:
+      - pihole_config:/etc/pihole
+      - pihole_dnsmasq:/etc/dnsmasq.d
+    cap_add:
+      - NET_ADMIN
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+
+volumes:
+  pihole_config:
+  pihole_dnsmasq:

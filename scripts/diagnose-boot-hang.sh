@@ -2,7 +2,7 @@
 # PI-Installer: Boot-Hänger diagnostizieren
 # Auf dem Pi ausführen (z.B. nach Login per SSH oder in rescue.target):
 #   bash diagnose-boot-hang.sh
-# Oder vom Laptop: ssh pi@raspberrypi.local 'bash -s' < scripts/diagnose-boot-hang.sh
+# Oder vom Laptop: ssh pi@pi5-gg.local 'bash -s' < scripts/diagnose-boot-hang.sh
 
 OUT="${1:-/tmp/pi-boot-diagnose.txt}"
 

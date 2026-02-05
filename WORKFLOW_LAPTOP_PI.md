@@ -2,6 +2,8 @@
 
 Diese Anleitung beschreibt, wie du den **Laptop** für intensive Entwicklungsaufgaben (Cursor AI, Code-Entwicklung) nutzt und der **Raspberry Pi** Dokumentation, Versionierung und Planungsaufgaben übernimmt.
 
+**Hinweis:** Cursor kann auch **direkt auf dem Pi** laufen (z. B. auf Pi5-GG). Dann entfällt die SSH-Verbindung vom Laptop; alle Befehle und das Repository liegen lokal auf dem Pi.
+
 ---
 
 ## 🎯 Übersicht: Wer macht was?
@@ -36,18 +38,19 @@ sudo systemctl status ssh
 
 **Schritt 2: IP-Adresse oder Hostname notieren**
 
+Der Pi ist im Netzwerk **nur per WLAN** verbunden (nicht über Ethernet/eth0). Für die Verbindung nutze die WLAN-IP oder besser den Hostname per mDNS.
+
 ```bash
-# IP-Adresse herausfinden
+# IP-Adresse herausfinden (zeigt die WLAN-IP)
 hostname -I
 # Beispiel: 192.168.1.50
 
-# Oder Hostname verwenden (mDNS)
+# Oder Hostname verwenden (mDNS) – bei WLAN besonders praktisch, da die IP sich ändern kann
 hostname
-# Beispiel: raspberrypi
-# Dann: raspberrypi.local
+# Beispiel: Pi5-GG → dann: pi5-gg.local
 ```
 
-**Hinweis:** Wenn SSH bereits aktiv ist (wie bei dir), kannst du diesen Schritt überspringen und direkt mit der IP-Adresse/Hostname fortfahren.
+**Hinweis:** Wenn SSH bereits aktiv ist (wie bei dir), kannst du diesen Schritt überspringen und direkt mit der IP-Adresse/Hostname fortfahren. Bei reiner WLAN-Nutzung ist `pi5-gg.local` (Hostname Pi5-GG) oft zuverlässiger als eine feste IP.
 
 #### Auf dem Laptop:
 
@@ -70,10 +73,10 @@ ls -la ~/.ssh/id_rsa.pub
 # Verwende den vorhandenen Key - kopiere ihn auf den Pi
 ssh-copy-id -i ~/.ssh/id_ed25519.pub BENUTZER@PI_IP_ODER_HOSTNAME
 # Beispiel: ssh-copy-id -i ~/.ssh/id_ed25519.pub pi@192.168.1.50
-# oder: ssh-copy-id -i ~/.ssh/id_ed25519.pub pi@raspberrypi.local
+# oder: ssh-copy-id -i ~/.ssh/id_ed25519.pub pi@pi5-gg.local
 
 # Falls du RSA verwendest:
-# ssh-copy-id -i ~/.ssh/id_rsa.pub pi@raspberrypi.local
+# ssh-copy-id -i ~/.ssh/id_rsa.pub pi@pi5-gg.local
 ```
 
 **Schritt 2b: Wenn kein Key vorhanden ist**
@@ -88,14 +91,14 @@ ssh-keygen -t ed25519 -C "laptop-pi-workflow"
 # Öffentlichen Schlüssel auf den Pi kopieren
 ssh-copy-id BENUTZER@PI_IP_ODER_HOSTNAME
 # Beispiel: ssh-copy-id pi@192.168.1.50
-# oder: ssh-copy-id pi@raspberrypi.local
+# oder: ssh-copy-id pi@pi5-gg.local
 ```
 
 **Schritt 3: Verbindung testen**
 
 ```bash
 # Teste die Verbindung (ohne Passwort, wenn Key richtig kopiert wurde)
-ssh pi@raspberrypi.local
+ssh pi@pi5-gg.local
 # oder: ssh BENUTZER@PI_IP
 
 # Falls es nicht funktioniert, prüfe den Key-Typ:
@@ -113,7 +116,7 @@ nano ~/.ssh/config
 Füge hinzu (passe `IdentityFile` an deinen vorhandenen Key an):
 ```
 Host pi
-    HostName raspberrypi.local
+    HostName pi5-gg.local
     User pi
     IdentityFile ~/.ssh/id_ed25519    # Oder ~/.ssh/id_rsa wenn du RSA verwendest
     ServerAliveInterval 60
@@ -174,8 +177,23 @@ cd PI-Installer
 
 # Git-Config für Dokumentations-Workflow
 git config user.name "PI-Dokumentation"
-git config user.email "pi@raspberrypi.local"
+git config user.email "pi@pi5-gg.local"
 ```
+
+**Desktop-Starter anlegen (Backend, Frontend, App-Fenster, Browser):**
+
+```bash
+cd ~/Documents/PI-Installer
+bash scripts/desktop-launcher-alle-anlegen.sh
+```
+
+Danach liegen auf dem Desktop (bzw. Schreibtisch):
+- **PI-Installer Backend starten**
+- **PI-Installer Frontend starten** (nur Vite-Server)
+- **PI-Installer Frontend (App-Fenster)** (eigene Oberfläche / Tauri)
+- **PI-Installer Frontend (Browser)** (öffnet im Standard-Browser)
+
+**Wichtig:** Beim **App-Fenster** (Tauri) und **Browser** muss das **Backend zuerst laufen** („PI-Installer Backend starten“), sonst schlagen Sudo-Passwort-Speicherung und API-Aufrufe fehl („Backend erreichbar?“). Reihenfolge: zuerst Backend starten, dann Frontend.
 
 **Aufgaben auf dem Pi:**
 - ✅ Dokumentations-Updates (`*.md` Dateien)
@@ -470,7 +488,7 @@ git log --author="PI-Dokumentation" --oneline
 ### Erste Einrichtung
 
 - [ ] SSH-Status auf dem Pi prüfen (falls noch nicht aktiv: `sudo systemctl status ssh`)
-- [ ] IP-Adresse/Hostname des Pi notieren (`hostname -I` oder `raspberrypi.local`)
+- [ ] IP-Adresse/Hostname des Pi notieren (`hostname -I` oder `pi5-gg.local`)
 - [ ] SSH-Key vom Laptop auf den Pi kopieren (`ssh-copy-id`)
 - [ ] SSH-Config auf dem Laptop einrichten (`~/.ssh/config`)
 - [ ] SSH-Verbindung testen (`ssh pi`)
@@ -519,8 +537,8 @@ git push origin main
 ssh -v pi
 
 # SSH-Key neu kopieren (mit explizitem Key-Pfad)
-ssh-copy-id -i ~/.ssh/id_ed25519.pub pi@raspberrypi.local
-# oder: ssh-copy-id -i ~/.ssh/id_rsa.pub pi@raspberrypi.local
+ssh-copy-id -i ~/.ssh/id_ed25519.pub pi@pi5-gg.local
+# oder: ssh-copy-id -i ~/.ssh/id_rsa.pub pi@pi5-gg.local
 
 # SSH-Config prüfen
 cat ~/.ssh/config
@@ -541,7 +559,7 @@ cat ~/.ssh/id_ed25519.pub
 # oder: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAA... (RSA)
 
 # Teste Verbindung mit explizitem Key
-ssh -i ~/.ssh/id_ed25519 pi@raspberrypi.local
+ssh -i ~/.ssh/id_ed25519 pi@pi5-gg.local
 ```
 
 ### Problem: Mehrere SSH-Keys vorhanden
@@ -553,7 +571,7 @@ Wenn du mehrere Keys hast und einen spezifischen verwenden möchtest:
 ls -la ~/.ssh/id_*.pub
 
 # 2. Kopiere den gewünschten Key auf den Pi
-ssh-copy-id -i ~/.ssh/id_ed25519.pub pi@raspberrypi.local
+ssh-copy-id -i ~/.ssh/id_ed25519.pub pi@pi5-gg.local
 
 # 3. In SSH-Config den richtigen Key angeben
 nano ~/.ssh/config

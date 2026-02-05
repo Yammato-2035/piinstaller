@@ -34,7 +34,7 @@ Unter Raspberry Pi OS oft schon an. Prüfen mit: `sudo systemctl status ssh`.
 
 - **Benutzername** auf dem Pi (z.B. `pi` oder dein User)
 - **Hostname** oder **IP** des Pi im lokalen Netz:
-  - Hostname: `raspberrypi.local` (mDNS) oder z.B. `mypi`
+  - Hostname: `pi5-gg.local` (mDNS, Pi heißt Pi5-GG) oder z.B. `mypi`
   - IP: `192.168.1.xy` (mit `hostname -I` auf dem Pi prüfen)
 
 ### 1.3 SSH-Key (empfohlen)
@@ -51,9 +51,9 @@ ssh-keygen -t ed25519 -C "laptop-pi-dev"
 ssh-copy-id BENUTZER@HOSTNAME_ODER_IP
 ```
 
-Beispiel: `ssh-copy-id pi@raspberrypi.local` oder `ssh-copy-id pi@192.168.1.50`.
+Beispiel: `ssh-copy-id pi@pi5-gg.local` oder `ssh-copy-id pi@192.168.1.50`.
 
-Danach Login ohne Passwort: `ssh pi@raspberrypi.local`.
+Danach Login ohne Passwort: `ssh pi@pi5-gg.local`.
 
 ---
 
@@ -82,7 +82,7 @@ Eintrag für den Pi (Hostname/IP und User anpassen):
 
 ```
 Host pi
-    HostName raspberrypi.local
+    HostName pi5-gg.local
     User pi
     # Optional: längeren Timeout für langsame Verbindungen
     ConnectTimeout 120
@@ -94,7 +94,7 @@ Host pi
 
 ```
 Host pi
-    HostName raspberrypi.local
+    HostName pi5-gg.local
     User pi
     ConnectTimeout 120
     ServerAliveInterval 60
@@ -149,20 +149,20 @@ Pi-Dateisystem per SSH mounten, in Cursor den gemounteten Ordner öffnen:
 ```bash
 # z.B. mit sshfs (Installation: sshfs)
 mkdir -p ~/pi-mount
-sshfs pi@raspberrypi.local:/home/pi/Documents/PI-Installer ~/pi-mount
+sshfs pi@pi5-gg.local:/home/pi/Documents/PI-Installer ~/pi-mount
 ```
 
 In Cursor: **File → Open Folder** → `~/pi-mount`.  
 Zum Trennen: `fusermount -u ~/pi-mount`.
 
-**Hinweis:** Terminal in Cursor läuft dann lokal. Für Build/Run auf dem Pi zusätzlich z.B. `ssh pi@raspberrypi.local` in einem Terminal nutzen.
+**Hinweis:** Terminal in Cursor läuft dann lokal. Für Build/Run auf dem Pi zusätzlich z.B. `ssh pi@pi5-gg.local` in einem Terminal nutzen.
 
 ---
 
 ## 4. Kurz-Checkliste
 
 - [ ] SSH auf dem Pi aktiv, Login (Passwort oder Key) funktioniert.
-- [ ] Auf dem Laptop: `ssh pi@raspberrypi.local` (o.ä.) klappt.
+- [ ] Auf dem Laptop: `ssh pi@pi5-gg.local` (o.ä.) klappt.
 - [ ] Cursor: Extension `anysphere.remote-ssh` installiert.
 - [ ] `~/.ssh/config` mit Host `pi` (oder deinem Namen) angelegt.
 - [ ] Remote-SSH: Connect to Host → Pi auswählen → Ordner auf dem Pi öffnen.

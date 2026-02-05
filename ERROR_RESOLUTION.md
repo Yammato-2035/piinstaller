@@ -264,3 +264,59 @@ python3.12 app.py
 **Reason:** PyO3/Python 3.13 Inkompatibilität  
 **Lösung:** Python 3.12 + kompatible Versionen  
 **Status:** ✅ Funktioniert stabil
+
+---
+
+## 🔌 LAN (Ethernet/eth0) verbindet nicht – nur WLAN
+
+### Symptom
+
+Der Pi ist im Netzwerk nur per WLAN erreichbar; über Ethernet (eth0) kommt keine Verbindung zustande.
+
+### Schnelle Diagnose auf dem Pi
+
+```bash
+# Im Projektordner auf dem Pi oder vom Laptop:
+ssh pi@pi5-gg.local 'bash -s' < scripts/diagnose-lan.sh
+```
+
+Oder auf dem Pi ausführen:
+
+```bash
+bash scripts/diagnose-lan.sh
+```
+
+Die Ausgabe wird nach `/tmp/pi-lan-diagnose.txt` geschrieben und zeigt u.a.:
+
+- Ob ein Ethernet-Interface existiert (eth0, end0, …)
+- **Carrier**: 0 = Kabel nicht verbunden / kein Link, 1 = Link vorhanden
+- **operstate**: up/down
+- IP-Adresse am LAN-Interface (fehlt, wenn kein DHCP-Lease)
+- Kernel-Meldungen (Link/Carrier-Fehler)
+
+### Typische Ursachen und Maßnahmen
+
+| Ursache | Prüfung / Lösung |
+|--------|-------------------|
+| **Kabel nicht verbunden oder defekt** | Kabel an Pi und Router fest stecken; anderes Kabel testen. |
+| **Router-Port** | Anderen Port am Router/Switch testen; anderes Gerät am gleichen Port prüfen. |
+| **Carrier = 0** | Kein physischer Link – Kabel, Stecker, ggf. Router-Port tauschen. |
+| **Carrier = 1, aber keine IP** | DHCP-Problem: Router liefert keine Adresse; `dhcpcd`/`systemd-networkd` prüfen (Skript zeigt aktive Dienste). |
+| **Stromversorgung** | Schlechte Stromversorgung kann Ethernet instabil machen (5 V, min. 2.5 A für Pi 3/4). |
+| **USB-Ethernet-Adapter** | Anderen USB-Port nutzen; Treiber/`dmesg` prüfen (Skript zeigt Kernel-Meldungen). |
+
+### Manuelle Prüfung (ohne Skript)
+
+```bash
+# Interface-Status
+ip link show eth0
+
+# Carrier (0 = kein Link, 1 = Link)
+cat /sys/class/net/eth0/carrier
+
+# Detaillierter Link-Status (falls ethtool installiert)
+sudo apt install -y ethtool
+ethtool eth0
+```
+
+**Hinweis:** Wenn der Pi nur per WLAN genutzt wird, reicht `pi5-gg.local` (Hostname Pi5-GG) oder die WLAN-IP für SSH und den PI-Installer (siehe WORKFLOW_LAPTOP_PI.md).

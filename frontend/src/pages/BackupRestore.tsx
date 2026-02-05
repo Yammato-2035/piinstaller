@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Cloud, Database, Download, Upload, Trash2, Clock, HardDrive, Lock, Settings } from 'lucide-react'
+import { Cloud, Database, Download, Upload, Trash2, Clock, HardDrive, Lock, Settings, CheckSquare, Square } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
@@ -38,6 +38,7 @@ const BackupRestore: React.FC = () => {
   const [pendingAction, setPendingAction] = useState<null | ((sudoPassword: string) => Promise<void>)>(null)
   const DEFAULT_BACKUP_DIR = '/mnt/backups'
   const LAST_DIR_KEY = 'pi_installer_last_backup_dir'
+  const BACKUP_JOB_STORAGE_KEY = 'pi_installer_running_backup_job'
   const [verifying, setVerifying] = useState<Record<string, boolean>>({})
   const [backupSettings, setBackupSettings] = useState<any>(null)
   const [settingsLoading, setSettingsLoading] = useState(false)
@@ -45,9 +46,12 @@ const BackupRestore: React.FC = () => {
   const backupJobNotifiedRef = useRef<Record<string, boolean>>({})
   const [cloudBackups, setCloudBackups] = useState<any[]>([])
   const [cloudBackupsLoading, setCloudBackupsLoading] = useState(false)
+  const [cloudBaseUrl, setCloudBaseUrl] = useState<string>('')
   const [cloudRuleFilter, setCloudRuleFilter] = useState<string>('')
   const [cloudVerifying, setCloudVerifying] = useState<Record<string, boolean>>({})
   const [cloudVerified, setCloudVerified] = useState<Record<string, boolean>>({})
+  const [selectedBackups, setSelectedBackups] = useState<Set<string>>(new Set())
+  const [selectedCloudBackups, setSelectedCloudBackups] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     loadTargets()
@@ -69,6 +73,21 @@ const BackupRestore: React.FC = () => {
         if (d.status === 'success' && d.job) {
           const job = d.job
           setBackupJob(job)
+          
+          // Speichere Job-State in localStorage für globale Komponente
+          try {
+            const isRunning = job.status === 'queued' || job.status === 'running' || job.status === 'cancel_requested' || !job.status
+            if (isRunning) {
+              localStorage.setItem(BACKUP_JOB_STORAGE_KEY, JSON.stringify(job))
+            } else {
+              // Entferne nach kurzer Verzögerung
+              setTimeout(() => {
+                localStorage.removeItem(BACKUP_JOB_STORAGE_KEY)
+              }, 5000)
+            }
+          } catch {
+            // ignore
+          }
 
           const terminal = job.status === 'success' || job.status === 'error' || job.status === 'cancelled'
           if (terminal) {
@@ -143,8 +162,18 @@ const BackupRestore: React.FC = () => {
 
   useEffect(() => {
     // bei USB-Auswahl zusätzlich Device-Infos laden
-    if (backupDirMode === 'usb' && (selectedTarget || selectedDevice)) {
-      loadUsbInfo(selectedTarget, selectedDevice)
+    if (backupDirMode === 'usb') {
+      if (selectedTarget || selectedDevice) {
+        loadUsbInfo(selectedTarget, selectedDevice)
+        // Setze backupDir basierend auf ausgewähltem USB
+        if (selectedTarget) {
+          setBackupDir(`${selectedTarget}/pi-installer-backups`)
+        }
+      }
+      // Lade Backups wenn USB-Ziel gesetzt ist
+      if (selectedTarget && backupDir.startsWith(selectedTarget)) {
+        loadBackups()
+      }
     } else {
       setUsbInfo(null)
     }
@@ -166,15 +195,27 @@ const BackupRestore: React.FC = () => {
     }
   }
 
-  const loadBackups = async () => {
+  const loadBackups = async (dirOverride?: string) => {
+    const dir = dirOverride ?? backupDir
     try {
-      const response = await fetchApi(`/api/backup/list?backup_dir=${encodeURIComponent(backupDir)}`)
+      const response = await fetchApi(`/api/backup/list?backup_dir=${encodeURIComponent(dir)}`)
       const data = await response.json()
       if (data.status === 'success') {
-        setBackups(data.backups || [])
+        const newBackups = data.backups || []
+        setBackups(newBackups)
+        // Entferne Auswahl für Backups, die nicht mehr existieren
+        setSelectedBackups((prev) => {
+          const backupFiles = new Set(newBackups.map((b: any) => b.file))
+          return new Set(Array.from(prev).filter((f) => backupFiles.has(f)))
+        })
+      } else {
+        setBackups([])
+        setSelectedBackups(new Set())
       }
     } catch (error) {
       console.error('Fehler beim Laden der Backups:', error)
+      setBackups([])
+      setSelectedBackups(new Set())
     }
   }
 
@@ -244,12 +285,27 @@ const BackupRestore: React.FC = () => {
       const d = await r.json()
       if (d.status === 'success') {
         const backups = Array.isArray(d.backups) ? d.backups : []
+        // Speichere base_url für spätere Verwendung
+        if (d.base_url) {
+          setCloudBaseUrl(d.base_url)
+        }
         // Konvertiere Cloud-Backups in das gleiche Format wie lokale Backups
         const formattedBackups = backups.map((b: any) => {
           const sizeBytes = b.size_bytes || 0
           const sizeMB = sizeBytes > 0 ? (sizeBytes / 1024 / 1024).toFixed(2) + ' MB' : 'Unbekannt'
+          const href = b.href || b.name
+          // Debug: Zeige die href-Struktur in der Konsole
+          if (backups.length > 0 && backups.indexOf(b) === 0) {
+            console.log('[Cloud-Backup List] Beispiel href-Struktur:', {
+              href: b.href,
+              name: b.name,
+              base_url: d.base_url,
+              full_backup_object: b
+            })
+          }
           return {
-            file: b.href || b.name,
+            file: href,
+            href: href,  // Stelle sicher, dass href verfügbar ist
             name: b.name,
             size: sizeMB,
             date: b.last_modified || 'Unbekannt',
@@ -258,16 +314,23 @@ const BackupRestore: React.FC = () => {
           }
         })
         setCloudBackups(formattedBackups)
+        // Entferne Auswahl für Cloud-Backups, die nicht mehr existieren
+        setSelectedCloudBackups((prev) => {
+          const backupKeys = new Set(formattedBackups.map((b: any) => b.href || b.file || b.name))
+          return new Set(Array.from(prev).filter((f) => backupKeys.has(f)))
+        })
         if (backups.length === 0 && d.message) {
           toast(d.message, { duration: 4000, icon: 'ℹ️' })
         }
       } else {
         toast.error(d.message || 'Externe Backups konnten nicht geladen werden', { duration: 12000 })
         setCloudBackups([])
+        setSelectedCloudBackups(new Set())
       }
     } catch (e) {
       toast.error('Externe Backups konnten nicht geladen werden (Backend nicht erreichbar)')
       setCloudBackups([])
+      setSelectedCloudBackups(new Set())
     } finally {
       setCloudBackupsLoading(false)
     }
@@ -558,10 +621,22 @@ const BackupRestore: React.FC = () => {
       async () => {
         setLoading(true)
         try {
+          // Bestimme target: Wenn USB gewählt ist, immer nur lokal. Cloud nur wenn explizit Cloud-Ziel gewählt.
+          let targetValue: string
+          if (isCloudTarget) {
+            targetValue = 'cloud_only'
+          } else if (backupDirMode === 'usb') {
+            // USB-Ziel: niemals Cloud-Upload
+            targetValue = 'local'
+          } else {
+            // Lokales Ziel: optional Cloud-Upload wenn aktiviert
+            targetValue = backupSettings?.cloud?.enabled ? 'local_and_cloud' : 'local'
+          }
+          
           const requestBody: any = {
             type: backupType,
             backup_dir: backupDir,
-            target: isCloudTarget ? 'cloud_only' : (backupSettings?.cloud?.enabled ? 'local_and_cloud' : 'local'),
+            target: targetValue,
             async: true,
           }
           if (encryptionEnabled && encryptionMethod && encryptionKey) {
@@ -599,6 +674,14 @@ const BackupRestore: React.FC = () => {
             }
             console.log('Setting backupJob:', jobData) // Debug
             setBackupJob(jobData)
+            // Speichere sofort in localStorage für globale Komponente
+            try {
+              localStorage.setItem(BACKUP_JOB_STORAGE_KEY, JSON.stringify(jobData))
+            } catch {
+              // ignore
+            }
+            // Benachrichtige das globale Modal über einen Event
+            window.dispatchEvent(new CustomEvent('backup-job-started', { detail: jobData }))
             // Starte sofort Polling
             setTimeout(() => {
               const pollJob = async () => {
@@ -608,6 +691,19 @@ const BackupRestore: React.FC = () => {
                   if (d.status === 'success' && d.job) {
                     console.log('Polling backupJob update:', d.job) // Debug
                     setBackupJob(d.job)
+                    // Aktualisiere localStorage
+                    try {
+                      const isRunning = d.job.status === 'queued' || d.job.status === 'running' || d.job.status === 'cancel_requested' || !d.job.status
+                      if (isRunning) {
+                        localStorage.setItem(BACKUP_JOB_STORAGE_KEY, JSON.stringify(d.job))
+                      } else {
+                        setTimeout(() => {
+                          localStorage.removeItem(BACKUP_JOB_STORAGE_KEY)
+                        }, 5000)
+                      }
+                    } catch {
+                      // ignore
+                    }
                     if (d.job.status === 'success' || d.job.status === 'error' || d.job.status === 'cancelled') {
                       // Zeige Ergebnis an
                       if (d.job.status === 'success') {
@@ -714,30 +810,87 @@ const BackupRestore: React.FC = () => {
   }
 
   const verifyBackup = async (backupFile: string, mode: 'gzip' | 'tar' | 'sha256' = 'gzip') => {
-    await requireSudo(
-      { title: 'Backup verifizieren', subtitle: 'Prüft die Integrität des Backups.', confirmText: 'Verifizieren' },
-      async () => {
-        setVerifying((m) => ({ ...m, [backupFile]: true }))
-        try {
-          const res = await fetchApi('/api/backup/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ backup_file: backupFile, mode }),
-          })
-          const data = await res.json()
-          if (data.status === 'success') {
-            toast.success(`Verifiziert (${data.mode}) in ${data.duration_ms}ms`)
-            if (data.sha256) {
-              toast.success(`SHA256: ${String(data.sha256).slice(0, 16)}…`, { duration: 6000 })
-            }
+    setVerifying((m) => ({ ...m, [backupFile]: true }))
+    try {
+      const res = await fetchApi('/api/backup/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ backup_file: backupFile }),
+      })
+      const data = await res.json()
+      if (data.status === 'success' && data.results) {
+        const results = data.results
+        if (results.encrypted) {
+          // Verschlüsselte Backups: Nur Dateigröße prüfen
+          if (results.size_bytes > 0) {
+            toast.success(
+              `✅ Verschlüsseltes Backup gefunden!\n📦 Größe: ${results.size_human}\n🔒 Verschlüsselt: Ja`,
+              { duration: 8000 }
+            )
+            toast('ℹ️ Verschlüsselte Backups können nur auf Dateigröße geprüft werden. Für vollständige Verifizierung muss das Backup entschlüsselt werden.', { duration: 10000, icon: '🔒' })
           } else {
-            toast.error(`Verifizierung fehlgeschlagen: ${data.message || data.stderr || 'Unbekannt'}`, { duration: 9000 })
+            toast.error('❌ Verschlüsseltes Backup-Datei ist leer oder nicht gefunden!', { duration: 9000 })
           }
-        } finally {
-          setVerifying((m) => ({ ...m, [backupFile]: false }))
+        } else if (results.valid) {
+          toast.success(
+            `✅ Backup ist gültig!\n📦 Größe: ${results.size_human}\n📁 Dateien: ${results.file_count}`,
+            { duration: 8000 }
+          )
+          if (results.sample_files && results.sample_files.length > 0) {
+            const sample = results.sample_files.slice(0, 5).join(', ')
+            toast(`Beispiel-Dateien: ${sample}${results.file_count > 5 ? '...' : ''}`, { duration: 10000, icon: '📋' })
+          }
+        } else {
+          toast.error(`❌ Backup ist ungültig oder beschädigt!\n${results.error || 'Unbekannter Fehler'}`, { duration: 12000 })
         }
+      } else {
+        toast.error(`Verifizierung fehlgeschlagen: ${data.message || 'Unbekannter Fehler'}`, { duration: 9000 })
       }
-    )
+    } catch (error) {
+      toast.error(`Fehler beim Verifizieren: ${error instanceof Error ? error.message : 'Unbekannt'}`, { duration: 9000 })
+    } finally {
+      setVerifying((m) => ({ ...m, [backupFile]: false }))
+    }
+  }
+
+  const toggleBackupSelection = (backupFile: string) => {
+    setSelectedBackups((prev) => {
+      const next = new Set(prev)
+      if (next.has(backupFile)) {
+        next.delete(backupFile)
+      } else {
+        next.add(backupFile)
+      }
+      return next
+    })
+  }
+
+  const toggleCloudBackupSelection = (backupFile: string) => {
+    setSelectedCloudBackups((prev) => {
+      const next = new Set(prev)
+      if (next.has(backupFile)) {
+        next.delete(backupFile)
+      } else {
+        next.add(backupFile)
+      }
+      return next
+    })
+  }
+
+  const selectAllBackups = () => {
+    if (selectedBackups.size === backups.length) {
+      setSelectedBackups(new Set())
+    } else {
+      setSelectedBackups(new Set(backups.map((b) => b.file)))
+    }
+  }
+
+  const selectAllCloudBackups = () => {
+    if (selectedCloudBackups.size === cloudBackups.length) {
+      setSelectedCloudBackups(new Set())
+    } else {
+      setSelectedCloudBackups(new Set(cloudBackups.map((b: any) => b.href || b.file || b.name || `cloud-${cloudBackups.indexOf(b)}`)))
+    }
   }
 
   const deleteBackup = async (backupFile: string) => {
@@ -754,11 +907,89 @@ const BackupRestore: React.FC = () => {
         if (data.status === 'success') {
           toast.success('Backup gelöscht')
           loadBackups()
+          setSelectedBackups((prev) => {
+            const next = new Set(prev)
+            next.delete(backupFile)
+            return next
+          })
         } else {
           toast.error(data.message || data.stderr || 'Löschen fehlgeschlagen', { duration: 10000 })
         }
       }
     )
+  }
+
+  const deleteSelectedBackups = async () => {
+    if (selectedBackups.size === 0) {
+      toast.error('Keine Backups ausgewählt')
+      return
+    }
+    const count = selectedBackups.size
+    if (!window.confirm(`${count} Backup(s) wirklich löschen?`)) return
+    await requireSudo(
+      { title: 'Backups löschen', subtitle: `Löscht ${count} Backup-Datei(en) (ggf. mit sudo).`, confirmText: 'Löschen' },
+      async (sudoPassword: string) => {
+        let successCount = 0
+        let failCount = 0
+        const errors: string[] = []
+        for (const backupFile of selectedBackups) {
+          try {
+            const res = await fetchApi('/api/backup/delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                backup_file: backupFile,
+                sudo_password: sudoPassword 
+              }),
+            })
+            const data = await res.json()
+            if (data.status === 'success') {
+              successCount++
+            } else {
+              failCount++
+              const errorMsg = data.message || data.details || data.stderr || 'Unbekannter Fehler'
+              errors.push(`${backupFile.split('/').pop()}: ${errorMsg}`)
+            }
+          } catch (error) {
+            failCount++
+            errors.push(`${backupFile.split('/').pop()}: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`)
+          }
+        }
+        if (successCount > 0) {
+          toast.success(`${successCount} Backup(s) gelöscht`)
+          loadBackups()
+          setSelectedBackups(new Set())
+        }
+        if (failCount > 0) {
+          const errorDetails = errors.slice(0, 3).join('\n')
+          toast.error(`${failCount} Backup(s) konnten nicht gelöscht werden${errorDetails ? ':\n' + errorDetails : ''}`, { duration: 15000 })
+        }
+      }
+    )
+  }
+
+  const verifySelectedBackups = async () => {
+    if (selectedBackups.size === 0) {
+      toast.error('Keine Backups ausgewählt')
+      return
+    }
+    const files = Array.from(selectedBackups)
+    for (const backupFile of files) {
+      await verifyBackup(backupFile, 'gzip')
+    }
+  }
+
+  const restoreSelectedBackup = async () => {
+    if (selectedBackups.size === 0) {
+      toast.error('Keine Backups ausgewählt')
+      return
+    }
+    if (selectedBackups.size > 1) {
+      toast.error('Bitte wählen Sie nur ein Backup zum Wiederherstellen aus')
+      return
+    }
+    const backupFile = Array.from(selectedBackups)[0]
+    await restoreBackup(backupFile)
   }
 
   return (
@@ -973,6 +1204,25 @@ const BackupRestore: React.FC = () => {
         transition={{ duration: 0.2 }}
       >
       {activeTab === 'backup' && (
+      <div className="space-y-6">
+        {/* Ein-Klick-Backup Hero (Milestone 3 – Transformationsplan) */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border border-sky-600/40 bg-sky-900/20 dark:bg-sky-900/20 p-6"
+        >
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
+            <Database className="text-sky-500" />
+            Ein-Klick-Backup
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
+            Erstelle jetzt ein vollständiges Backup deines Systems – auf USB, Cloud oder lokales Verzeichnis. Deine Daten und Einstellungen werden gesichert.
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-500 mb-0">
+            Wähle unten das Ziel und den Backup-Typ (Vollbackup empfohlen), dann auf „Backup erstellen“ klicken.
+          </p>
+        </motion.div>
+
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Backup erstellen */}
@@ -1490,6 +1740,7 @@ const BackupRestore: React.FC = () => {
           </div>
         </div>
       </div>
+      </div>
       )}
 
       {activeTab === 'restore' && (
@@ -1509,84 +1760,113 @@ const BackupRestore: React.FC = () => {
 
             {/* Schnellwechsel Ziel & Filter */}
             <div className="mb-4 p-4 bg-slate-900/40 border border-slate-700 rounded-lg space-y-3">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold text-white">Schnellwechsel</div>
-                  <div className="text-xs text-slate-400 truncate">
-                    Aktuelles Ziel: <span className="text-slate-200 font-semibold">{backupDir}</span>
-                  </div>
-                </div>
-                <div className="flex gap-2 flex-wrap justify-end">
-                  <button
-                    onClick={() => {
-                      setBackupDirMode('default')
-                      setBackupDir(DEFAULT_BACKUP_DIR)
-                    }}
-                    className={`px-3 py-2 rounded-lg border text-sm transition-all ${
-                      backupDir === DEFAULT_BACKUP_DIR
-                        ? 'bg-sky-600/20 border-sky-500 text-white'
-                        : 'bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500'
-                    }`}
-                  >
-                    Standard
-                  </button>
-                  <button
-                    onClick={() => {
-                      // heuristisch: wenn wir schon im USB-Pfad sind, bleib; sonst springe zum letzten Ziel
-                      let last = ''
-                      try {
-                        last = localStorage.getItem(LAST_DIR_KEY) || ''
-                      } catch {
-                        last = ''
-                      }
-                      const candidate =
-                        backupDir.startsWith('/mnt/pi-installer-usb/')
-                          ? backupDir
-                          : (last && last !== DEFAULT_BACKUP_DIR ? last : backupDir)
-                      if (candidate && candidate.startsWith('/')) {
-                        setBackupDirMode(candidate === DEFAULT_BACKUP_DIR ? 'default' : 'custom')
-                        setBackupDir(candidate)
-                      }
-                    }}
-                    className={`px-3 py-2 rounded-lg border text-sm transition-all ${
-                      backupDir.startsWith('/mnt/pi-installer-usb/')
-                        ? 'bg-sky-600/20 border-sky-500 text-white'
-                        : 'bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500'
-                    }`}
-                  >
-                    USB / letztes Ziel
-                  </button>
-                  <button
-                    onClick={() => loadBackups()}
-                    className="px-3 py-2 rounded-lg border text-sm transition-all bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500"
-                  >
-                    Aktualisieren
-                  </button>
-                </div>
-              </div>
-              {/* Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400">Filter:</span>
-                <select
-                  value={showCloudBackups ? 'cloud' : backupDir}
-                  onChange={(e) => {
-                    if (e.target.value === 'cloud') {
-                      setShowCloudBackups(true)
+              {/* Buttons oben */}
+              <div className="flex gap-2 flex-wrap justify-start">
+                <button
+                  onClick={() => {
+                    setBackupDirMode('default')
+                    setBackupDir(DEFAULT_BACKUP_DIR)
+                    setShowCloudBackups(false)
+                    loadBackups()
+                  }}
+                  className={`px-3 py-2 rounded-lg border text-sm transition-all whitespace-nowrap ${
+                    backupDirMode === 'default' && !showCloudBackups
+                      ? 'bg-sky-600/20 border-sky-500 text-white'
+                      : 'bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500'
+                  }`}
+                >
+                  Standard
+                </button>
+                <button
+                  onClick={() => {
+                    setBackupDirMode('usb')
+                    setShowCloudBackups(false)
+                    loadTargets()
+                    // Beim Wechsel zurück zu USB: backupDir auf USB-Pfad setzen und Backups laden,
+                    // damit die Liste des zuvor gemounteten Datenträgers angezeigt wird
+                    if (selectedTarget) {
+                      const usbPath = `${selectedTarget}/pi-installer-backups`
+                      setBackupDir(usbPath)
+                      loadBackups(usbPath)
+                    }
+                  }}
+                  className={`px-3 py-2 rounded-lg border text-sm transition-all whitespace-nowrap ${
+                    backupDirMode === 'usb' && !showCloudBackups
+                      ? 'bg-sky-600/20 border-sky-500 text-white'
+                      : 'bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500'
+                  }`}
+                >
+                  USB
+                </button>
+                <button
+                  onClick={() => {
+                    setBackupDirMode('cloud')
+                    setShowCloudBackups(true)
+                    loadCloudBackups()
+                  }}
+                  className={`px-3 py-2 rounded-lg border text-sm transition-all whitespace-nowrap ${
+                    backupDirMode === 'cloud'
+                      ? 'bg-sky-600/20 border-sky-500 text-white'
+                      : 'bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500'
+                  }`}
+                >
+                  Cloud
+                </button>
+                <button
+                  onClick={() => {
+                    if (showCloudBackups) {
                       loadCloudBackups()
                     } else {
-                      setShowCloudBackups(false)
-                      setBackupDir(e.target.value)
-                      setBackupDirMode(e.target.value === DEFAULT_BACKUP_DIR ? 'default' : 'custom')
                       loadBackups()
                     }
                   }}
-                  className="flex-1 bg-slate-800/50 border border-slate-600 rounded-lg px-3 py-1.5 text-white text-sm"
+                  className="px-3 py-2 rounded-lg border text-sm transition-all bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500 whitespace-nowrap"
                 >
-                  <option value={DEFAULT_BACKUP_DIR}>Lokal: {DEFAULT_BACKUP_DIR}</option>
-                  {backupDir !== DEFAULT_BACKUP_DIR && !showCloudBackups && <option value={backupDir}>Aktuell: {backupDir}</option>}
-                  <option value="cloud">Cloud-Backups</option>
-                </select>
+                  Aktualisieren
+                </button>
               </div>
+              {/* Ziel darunter, farblich hervorgehoben */}
+              <div className="pt-2 border-t border-slate-700">
+                <div className="text-xs text-slate-400 mb-1">Ziel auswählen</div>
+                <div className="text-sm text-slate-200 font-semibold break-words bg-slate-800/50 px-3 py-2 rounded border border-slate-600">
+                  {showCloudBackups ? '☁️ Cloud-Backups' : backupDir}
+                </div>
+              </div>
+              {/* USB-Auswahl, wenn USB-Modus aktiv */}
+              {backupDirMode === 'usb' && (
+                <div className="mt-3">
+                  <label className="block text-sm text-slate-300 mb-2">USB-Datenträger / Mountpoint</label>
+                  {(targets || []).length === 0 ? (
+                    <div className="mb-3 p-3 bg-yellow-900/20 border border-yellow-700/40 rounded-lg text-yellow-100 text-sm">
+                      <div className="font-semibold mb-1">Kein Datenträger erkannt</div>
+                      <button
+                        type="button"
+                        onClick={() => loadTargets()}
+                        className="mt-3 px-3 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg border border-slate-600 transition-all text-sm"
+                      >
+                        Neu scannen
+                      </button>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedTarget || selectedDevice}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        void onUsbSelectChange(v)
+                      }}
+                      className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-sky-600"
+                    >
+                      <option value="">(Kein Datenträger erkannt)</option>
+                      {(targets || []).map((t: any, idx: number) => (
+                        <option key={idx} value={t.mountpoint || t.device || ''}>
+                          {t.mountpoint ? t.mountpoint : `${t.device} (nicht gemountet)`}
+                          {t.label ? ` (${t.label})` : ''} {t.size ? `- ${t.size}` : ''} {t.tran ? `- ${t.tran}` : ''} {t.model ? `- ${t.model}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              )}
             </div>
 
             {showCloudBackups ? (
@@ -1601,39 +1881,218 @@ const BackupRestore: React.FC = () => {
                   <p>Keine Cloud-Backups gefunden</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {cloudBackups.map((backup: any, index: number) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="p-4 bg-slate-700/30 rounded-lg border border-slate-600 flex items-center justify-between"
-                    >
-                      <div className="flex-1">
-                        <div className="font-semibold text-white mb-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span>{backup.file?.split('/').pop() || backup.name || 'Unbekannt'}</span>
-                            <span className="text-xs px-2 py-1 rounded-full bg-sky-600/25 border border-sky-400/40 text-sky-200">
-                              Cloud
-                            </span>
-                            {(backup.encrypted === true || String(backup.file || backup.name || '').endsWith('.gpg') || String(backup.file || backup.name || '').endsWith('.enc') || String(backup.file || backup.name || '').includes('.tar.gz.gpg') || String(backup.file || backup.name || '').includes('.tar.gz.enc')) && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-purple-600/30 border border-purple-400/40 text-purple-200 flex items-center gap-1">
-                                <Lock size={12} />
-                                Verschlüsselt
-                              </span>
+                <>
+                  {/* Toolbar mit Aktionen für Cloud-Backups */}
+                  {selectedCloudBackups.size > 0 && (
+                    <div className="mb-4 p-4 bg-slate-700/50 rounded-lg border border-slate-600 flex flex-wrap items-center gap-3">
+                      <span className="text-sm text-slate-300">
+                        {selectedCloudBackups.size} Cloud-Backup(s) ausgewählt
+                      </span>
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          onClick={async () => {
+                            if (selectedCloudBackups.size === 0) {
+                              toast.error('Keine Cloud-Backups ausgewählt')
+                              return
+                            }
+                            const files = Array.from(selectedCloudBackups)
+                            for (const backupFile of files) {
+                              await verifyBackup(backupFile, 'gzip')
+                            }
+                          }}
+                          className="px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg transition-all text-sm"
+                        >
+                          Verifizieren
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (selectedCloudBackups.size === 0) {
+                              toast.error('Keine Cloud-Backups ausgewählt')
+                              return
+                            }
+                            if (selectedCloudBackups.size > 1) {
+                              toast.error('Bitte wählen Sie nur ein Cloud-Backup zum Wiederherstellen aus')
+                              return
+                            }
+                            const backupFile = Array.from(selectedCloudBackups)[0]
+                            // Cloud-Backups müssen erst heruntergeladen werden
+                            toast.error('Cloud-Backup-Wiederherstellung wird noch nicht unterstützt. Bitte laden Sie das Backup manuell herunter.', { duration: 10000 })
+                          }}
+                          disabled={selectedCloudBackups.size !== 1}
+                          className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          <Upload size={16} />
+                          Wiederherstellen
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (selectedCloudBackups.size === 0) {
+                              toast.error('Keine Cloud-Backups ausgewählt')
+                              return
+                            }
+                            const count = selectedCloudBackups.size
+                            if (!window.confirm(`${count} Cloud-Backup(s) wirklich löschen?`)) return
+                            
+                            // Führe DELETE-Requests parallel aus für bessere Performance
+                            const deletePromises = Array.from(selectedCloudBackups).map(async (backupFile) => {
+                              try {
+                                // Finde das vollständige href aus cloudBackups
+                                const backup = cloudBackups.find((b: any) => (b.href || b.file || b.name) === backupFile)
+                                // Verwende href wenn verfügbar, sonst name oder file
+                                const href = backup?.href || backup?.file || backup?.name || backupFile
+                                const fileName = backup?.name || backupFile.split('/').pop() || backupFile
+                                
+                                const res = await fetchApi('/api/backup/cloud/delete', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ 
+                                    backup_file: href,
+                                    href: href,  // Auch als href senden für Kompatibilität
+                                    base_url: cloudBaseUrl  // Sende base_url mit für korrekte URL-Konstruktion
+                                  }),
+                                })
+                                const data = await res.json()
+                                
+                                // Zeige immer die vollständige Response in der Konsole
+                                console.log('[Cloud-Delete] Vollständige Response für', fileName, ':', JSON.stringify(data, null, 2))
+                                console.log('[Cloud-Delete] backup_file gesendet:', href, 'base_url gesendet:', cloudBaseUrl)
+                                
+                                // Zeige Debug-Info in der Konsole für Entwickler
+                                if (data.debug && Object.keys(data.debug).length > 0) {
+                                  console.log('[Cloud-Delete Debug]', fileName, data.debug)
+                                } else {
+                                  console.warn('[Cloud-Delete] KEINE Debug-Info in Response für', fileName)
+                                }
+                                
+                                return {
+                                  success: data.status === 'success',
+                                  fileName,
+                                  errorMsg: data.status === 'success' ? null : (data.message || 'Unbekannter Fehler'),
+                                  alternatives: data.alternatives_tried || [],
+                                  debug: data.debug || {}
+                                }
+                              } catch (error) {
+                                const backup = cloudBackups.find((b: any) => (b.file || b.name || b.href) === backupFile)
+                                const fileName = backup?.name || backupFile.split('/').pop() || backupFile
+                                return {
+                                  success: false,
+                                  fileName,
+                                  errorMsg: error instanceof Error ? error.message : 'Unbekannter Fehler',
+                                  alternatives: [],
+                                  debug: {}
+                                }
+                              }
+                            })
+                            
+                            // Warte auf alle Requests
+                            const results = await Promise.all(deletePromises)
+                            
+                            let successCount = 0
+                            let failCount = 0
+                            const errors: string[] = []
+                            
+                            for (const result of results) {
+                              if (result.success) {
+                                successCount++
+                              } else {
+                                failCount++
+                                let urlInfo = ''
+                                if (result.alternatives.length > 0) {
+                                  urlInfo = ` (URLs: ${result.alternatives.slice(0, 2).join(', ')})`
+                                } else if (result.debug.remote_url) {
+                                  urlInfo = ` (URL: ${result.debug.remote_url.substring(0, 100)})`
+                                }
+                                errors.push(`${result.fileName}: ${result.errorMsg}${urlInfo}`)
+                              }
+                            }
+                            if (successCount > 0) {
+                              toast.success(`${successCount} Cloud-Backup(s) gelöscht`)
+                              loadCloudBackups()
+                              setSelectedCloudBackups(new Set())
+                            }
+                            if (failCount > 0) {
+                              const errorDetails = errors.slice(0, 3).join('\n')
+                              toast.error(`${failCount} Cloud-Backup(s) konnten nicht gelöscht werden${errorDetails ? ':\n' + errorDetails : ''}`, { duration: 15000 })
+                            }
+                          }}
+                          className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-100 rounded-lg transition-all text-sm flex items-center gap-2"
+                        >
+                          <Trash2 size={16} />
+                          Löschen
+                        </button>
+                        <button
+                          onClick={() => setSelectedCloudBackups(new Set())}
+                          className="px-3 py-2 bg-slate-600/50 hover:bg-slate-600 text-white rounded-lg transition-all text-sm"
+                        >
+                          Auswahl aufheben
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  <div className="space-y-3">
+                    {/* "Alle auswählen" Checkbox für Cloud-Backups */}
+                    <div className="flex items-center gap-2 pb-2 border-b border-slate-700">
+                      <button
+                        onClick={selectAllCloudBackups}
+                        className="flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-colors"
+                      >
+                        {selectedCloudBackups.size === cloudBackups.length ? (
+                          <CheckSquare size={20} className="text-sky-500" />
+                        ) : (
+                          <Square size={20} className="text-slate-500" />
+                        )}
+                        <span>{selectedCloudBackups.size === cloudBackups.length ? 'Alle abwählen' : 'Alle auswählen'}</span>
+                      </button>
+                    </div>
+                    {cloudBackups.map((backup: any, index: number) => {
+                      // Verwende href als primären Key, da das die vollständige URL ist
+                      const backupKey = backup.href || backup.file || backup.name || `cloud-${index}`
+                      return (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className={`p-4 bg-slate-700/30 rounded-lg border ${
+                            selectedCloudBackups.has(backupKey)
+                              ? 'border-sky-500 bg-slate-700/50'
+                              : 'border-slate-600'
+                          } flex items-start gap-3 cursor-pointer hover:bg-slate-700/40 transition-colors`}
+                          onClick={() => toggleCloudBackupSelection(backupKey)}
+                        >
+                          <div className="mt-1 shrink-0">
+                            {selectedCloudBackups.has(backupKey) ? (
+                              <CheckSquare size={20} className="text-sky-500" />
+                            ) : (
+                              <Square size={20} className="text-slate-500" />
                             )}
                           </div>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-slate-400">
-                          {backup.size && <span>📦 {backup.size}</span>}
-                          {backup.date && <span>📅 {backup.date}</span>}
-                          <span className="text-xs">📍 Cloud</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-white mb-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="break-words">{backup.file?.split('/').pop() || backup.name || 'Unbekannt'}</span>
+                                <span className="text-xs px-2 py-1 rounded-full bg-sky-600/25 border border-sky-400/40 text-sky-200 whitespace-nowrap">
+                                  Cloud
+                                </span>
+                                {(backup.encrypted === true || String(backup.file || backup.name || '').endsWith('.gpg') || String(backup.file || backup.name || '').endsWith('.enc') || String(backup.file || backup.name || '').includes('.tar.gz.gpg') || String(backup.file || backup.name || '').includes('.tar.gz.enc')) && (
+                                  <span className="text-xs px-2 py-1 rounded-full bg-purple-600/30 border border-purple-400/40 text-purple-200 flex items-center gap-1 whitespace-nowrap">
+                                    <Lock size={12} />
+                                    Verschlüsselt
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-slate-400 flex-wrap">
+                              {backup.size && <span>📦 {backup.size}</span>}
+                              {backup.date && <span>📅 {backup.date}</span>}
+                              <span className="text-xs">📍 Cloud</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
+                </>
               )
             ) : backups.length === 0 ? (
               <div className="text-center py-8 text-slate-400">
@@ -1642,74 +2101,116 @@ const BackupRestore: React.FC = () => {
                 <p className="text-sm mt-2">Tipp: prüfen Sie das Ziel-Verzeichnis oben im Schnellwechsel</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {backups.map((backup, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="p-4 bg-slate-700/30 rounded-lg border border-slate-600 flex items-center justify-between"
-                  >
-                    <div className="flex-1">
-                      <div className="font-semibold text-white mb-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span>{backup.file.split('/').pop()}</span>
-                          {String(backup.file).includes('pi-backup-inc-') && (
-                            <span className="text-xs px-2 py-1 rounded-full bg-purple-600/30 border border-purple-400/40 text-purple-200">
-                              Inkrementell
-                            </span>
-                          )}
-                          {String(backup.file).includes('pi-backup-full-') && (
-                            <span className="text-xs px-2 py-1 rounded-full bg-sky-600/25 border border-sky-400/40 text-sky-200">
-                              Vollständig
-                            </span>
-                          )}
-                          {String(backup.file).includes('pi-backup-data-') && (
-                            <span className="text-xs px-2 py-1 rounded-full bg-emerald-600/25 border border-emerald-400/40 text-emerald-200">
-                              Daten
-                            </span>
-                          )}
-                          {(backup.encrypted === true || String(backup.file).endsWith('.gpg') || String(backup.file).endsWith('.enc') || String(backup.file).includes('.tar.gz.gpg') || String(backup.file).includes('.tar.gz.enc')) && (
-                            <span className="text-xs px-2 py-1 rounded-full bg-purple-600/30 border border-purple-400/40 text-purple-200 flex items-center gap-1">
-                              <Lock size={12} />
-                              Verschlüsselt
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-slate-400">
-                        <span>📦 {backup.size}</span>
-                        <span>📅 {backup.date}</span>
-                        {backup.location && <span className="text-xs">📍 {backup.location}</span>}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
+              <>
+                {/* Toolbar mit Aktionen */}
+                {selectedBackups.size > 0 && (
+                  <div className="mb-4 p-4 bg-slate-700/50 rounded-lg border border-slate-600 flex flex-wrap items-center gap-3">
+                    <span className="text-sm text-slate-300">
+                      {selectedBackups.size} Backup(s) ausgewählt
+                    </span>
+                    <div className="flex gap-2 flex-wrap">
                       <button
-                        onClick={() => deleteBackup(backup.file)}
-                        className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-100 rounded-lg transition-all flex items-center gap-2 text-sm"
+                        onClick={verifySelectedBackups}
+                        className="px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg transition-all text-sm"
                       >
-                        <Trash2 size={18} />
+                        Verifizieren
+                      </button>
+                      <button
+                        onClick={restoreSelectedBackup}
+                        disabled={selectedBackups.size !== 1}
+                        className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        <Upload size={16} />
+                        Wiederherstellen
+                      </button>
+                      <button
+                        onClick={deleteSelectedBackups}
+                        className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-100 rounded-lg transition-all text-sm flex items-center gap-2"
+                      >
+                        <Trash2 size={16} />
                         Löschen
                       </button>
                       <button
-                        onClick={() => verifyBackup(backup.file, 'gzip')}
-                        disabled={!!verifying[backup.file]}
-                        className="px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg transition-all text-sm disabled:opacity-50"
+                        onClick={() => setSelectedBackups(new Set())}
+                        className="px-3 py-2 bg-slate-600/50 hover:bg-slate-600 text-white rounded-lg transition-all text-sm"
                       >
-                        {verifying[backup.file] ? '⏳ Prüfe…' : 'Verifizieren'}
-                      </button>
-                      <button
-                        onClick={() => restoreBackup(backup.file)}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all flex items-center gap-2"
-                      >
-                        <Upload size={18} />
-                        Wiederherstellen
+                        Auswahl aufheben
                       </button>
                     </div>
-                  </motion.div>
-                ))}
-              </div>
+                  </div>
+                )}
+                <div className="space-y-3">
+                  {/* "Alle auswählen" Checkbox */}
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-700">
+                    <button
+                      onClick={selectAllBackups}
+                      className="flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-colors"
+                    >
+                      {selectedBackups.size === backups.length ? (
+                        <CheckSquare size={20} className="text-sky-500" />
+                      ) : (
+                        <Square size={20} className="text-slate-500" />
+                      )}
+                      <span>{selectedBackups.size === backups.length ? 'Alle abwählen' : 'Alle auswählen'}</span>
+                    </button>
+                  </div>
+                  {backups.map((backup, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`p-4 bg-slate-700/30 rounded-lg border ${
+                        selectedBackups.has(backup.file)
+                          ? 'border-sky-500 bg-slate-700/50'
+                          : 'border-slate-600'
+                      } flex items-start gap-3 cursor-pointer hover:bg-slate-700/40 transition-colors`}
+                      onClick={() => toggleBackupSelection(backup.file)}
+                    >
+                      <div className="mt-1 shrink-0">
+                        {selectedBackups.has(backup.file) ? (
+                          <CheckSquare size={20} className="text-sky-500" />
+                        ) : (
+                          <Square size={20} className="text-slate-500" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-white mb-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="break-words">{backup.file.split('/').pop()}</span>
+                            {String(backup.file).includes('pi-backup-inc-') && (
+                              <span className="text-xs px-2 py-1 rounded-full bg-purple-600/30 border border-purple-400/40 text-purple-200 whitespace-nowrap">
+                                Inkrementell
+                              </span>
+                            )}
+                            {String(backup.file).includes('pi-backup-full-') && (
+                              <span className="text-xs px-2 py-1 rounded-full bg-sky-600/25 border border-sky-400/40 text-sky-200 whitespace-nowrap">
+                                Vollständig
+                              </span>
+                            )}
+                            {String(backup.file).includes('pi-backup-data-') && (
+                              <span className="text-xs px-2 py-1 rounded-full bg-emerald-600/25 border border-emerald-400/40 text-emerald-200 whitespace-nowrap">
+                                Daten
+                              </span>
+                            )}
+                            {(backup.encrypted === true || String(backup.file).endsWith('.gpg') || String(backup.file).endsWith('.enc') || String(backup.file).includes('.tar.gz.gpg') || String(backup.file).includes('.tar.gz.enc')) && (
+                              <span className="text-xs px-2 py-1 rounded-full bg-purple-600/30 border border-purple-400/40 text-purple-200 flex items-center gap-1 whitespace-nowrap">
+                                <Lock size={12} />
+                                Verschlüsselt
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-slate-400 flex-wrap">
+                          <span>📦 {backup.size}</span>
+                          <span>📅 {backup.date}</span>
+                          {backup.location && <span className="text-xs">📍 {backup.location}</span>}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </>
             )}
           </motion.div>
         </div>

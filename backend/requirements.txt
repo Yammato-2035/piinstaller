@@ -1,5 +1,5 @@
-# Minimale Requirements für Docker - Nur stabile Pre-Built Wheels
-# Keine Rust-Dependencies!
+# PI-Installer Backend – Python 3.9+ (3.12 empfohlen)
+# Nur stabile Pre-Built Wheels, keine Rust-Dependencies.
 
 # Web Framework
 starlette>=0.27

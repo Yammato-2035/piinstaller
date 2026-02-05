@@ -1,28 +1,27 @@
 # ⚡ PI-Installer - Schnellstart & Fehlerbehebung
 
-## ⚠️ WICHTIG: Python 3.12 wird benötigt!
-
-**NICHT Python 3.13!** (PyO3 Fehler)
+## Python: 3.9 oder neuer (3.12 empfohlen)
 
 Prüfen Sie zuerst:
 ```bash
-python3.12 --version  # Sollte Python 3.12.x anzeigen
+python3 --version   # Sollte 3.9, 3.10, 3.11 oder 3.12 sein
 ```
 
-Falls nicht verfügbar, lesen Sie **PYTHON_SETUP.md**
+Falls Sie **Python 3.12** haben, können Sie explizit `python3.12` nutzen. Ansonsten reicht `python3` (3.9+).  
+Bei Problemen: **PYTHON_SETUP.md**
 
 ---
 
 ## 🚀 Sofort Starten (3 Befehle)
 
-### Terminal 1: Backend (mit Python 3.12!)
+### Terminal 1: Backend
 ```bash
 cd ~/Documents/PI-Installer/backend
-python3.12 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
-python3.12 app.py
+python3 app.py
 ```
 
 **✅ Erfolgreich wenn Sie sehen:**
@@ -39,12 +38,12 @@ npm run dev
 
 **✅ Erfolgreich wenn Sie sehen:**
 ```
-Local:   http://localhost:3000
+Local:   http://localhost:3001
 ```
 
 ### Browser: GUI öffnen
 ```
-http://localhost:3000
+http://localhost:3001
 ```
 
 ---
@@ -53,33 +52,31 @@ http://localhost:3000
 
 ### ❌ Fehler: `pydantic-core build failed` oder `PyO3` Fehler
 
-**Ursache:** Sie verwenden Python 3.13 (nicht unterstützt!)
+**Ursache:** Oft Python 3.13 oder sehr alte Version.
 
 **Lösung:**
 
-#### Option 1: Python 3.12 verwenden (empfohlen)
+#### Option 1: Python 3.9–3.12 verwenden (empfohlen)
 
 ```bash
-# Prüfen ob Python 3.12 verfügbar ist
-python3.12 --version
+# Prüfen welche Version Sie haben
+python3 --version
 
-# Falls ja, damit arbeiten:
+# Falls 3.9–3.12: venv neu erstellen
 cd ~/Documents/PI-Installer/backend
 rm -rf venv
-python3.12 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
-python3.12 app.py
+python3 app.py
 ```
 
-#### Option 2: Python 3.12 installieren
-
-Falls nicht installiert, lesen Sie **PYTHON_SETUP.md**
+#### Option 2: Python 3.12 installieren (wenn nur 3.13 vorhanden)
 
 ```bash
 sudo apt install -y python3.12 python3.12-venv python3.12-dev
-# Dann Option 1 wiederholen
+# Dann: python3.12 -m venv venv usw. (siehe PYTHON_SETUP.md)
 ```
 
 ---
@@ -338,6 +335,8 @@ INFO:     Uvicorn running on http://0.0.0.0:8000
 - Seite lädt mit Logo "π" 
 - Sidebar sichtbar
 - Dashboard zeigt System-Info
+
+![Dashboard](docs/screenshots/screenshot-dashboard.png)
 
 ---
 

@@ -2,6 +2,8 @@
 
 Ein umfassendes, **benutzerfreundliches System** zur automatisierten Konfiguration und Härtung eines Raspberry Pi mit moderner Web-GUI. Von der Grundkonfiguration direkt zum produktiven System!
 
+**Neu ab 1.3.0.0 (Transformationsplan „Raspberry Discovery Box“):** App Store mit 7 Apps, Erste-Schritte-Assistent, Dashboard „Dein Pi läuft!“, Mobile-Navigation (Hamburger-Menü), kontextsensitive Hilfe und One-Click-Installer.
+
 ## 🎯 Kernfeatures
 
 ### 1. **Sicherheit & Härtung** 🔒
@@ -59,15 +61,36 @@ Ein umfassendes, **benutzerfreundliches System** zur automatisierten Konfigurati
 - 32GB+ Storage
 - Internetzugang
 
-## 🚀 Schnellstart (3 Schritte)
+## 🚀 Schnellstart
 
-### ⚠️ WICHTIG: Python 3.12 erforderlich!
+### One-Click Installation (empfohlen)
+
+Ein Befehl – Installation inkl. Python/Node-Prüfung, Backend/Frontend-Setup und systemd-Service:
 
 ```bash
-python3.12 --version  # Sollte Python 3.12.x anzeigen
+curl -sSL https://raw.githubusercontent.com/IHR-USERNAME/PI-Installer/main/scripts/create_installer.sh | bash
 ```
 
-Nicht Python 3.13! (Siehe **PYTHON_SETUP.md** falls nicht verfügbar)
+**Hinweis:** Ersetzen Sie `IHR-USERNAME` durch Ihren GitHub-Benutzernamen bzw. den Repository-Besitzer.  
+Wenn die Domain **get.pi-installer.io** eingerichtet ist, lautet der Befehl:
+
+```bash
+curl -sSL https://get.pi-installer.io | bash
+```
+
+Am Ende erscheint die Adresse zum Öffnen (z. B. `http://<IP>:3001` oder `http://pi-installer.local:3001`). Der Dienst startet automatisch und nach jedem Neustart.
+
+---
+
+### Manueller Schnellstart (3 Schritte)
+
+### Python: 3.9 oder neuer (3.12 empfohlen)
+
+```bash
+python3 --version  # Sollte 3.9–3.12 sein
+```
+
+Siehe **PYTHON_SETUP.md** bei Problemen oder für Python 3.13.
 
 ### 1️⃣ Repository klonen & Backend starten
 ```bash
@@ -75,8 +98,8 @@ cd ~
 git clone https://github.com/yourusername/PI-Installer.git
 cd PI-Installer/backend
 
-# Python 3.12 Virtual Environment
-python3.12 -m venv venv
+# Virtuelle Umgebung (Python 3.9+)
+python3 -m venv venv
 source venv/bin/activate
 
 # Dependencies installieren
@@ -84,7 +107,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 # Server starten (Port 8000)
-python3.12 app.py
+python3 app.py
 ```
 
 ### 2️⃣ Frontend starten (neues Terminal)
@@ -97,7 +120,7 @@ npm run dev
 
 ### 3️⃣ Browser öffnen
 ```
-http://localhost:3000
+http://localhost:3001
 ```
 
 ## 📚 Dokumentation
@@ -110,6 +133,16 @@ http://localhost:3000
 - **[SUGGESTIONS.md](./SUGGESTIONS.md)** - Erweiterte Vorschläge & Best Practices
 
 ## 🎨 GUI-Highlights
+
+### Screenshots
+
+| Dashboard | Assistent | Sicherheit |
+|:---:|:---:|:---:|
+| ![Dashboard](docs/screenshots/screenshot-dashboard.png) | ![Assistent](docs/screenshots/screenshot-wizard.png) | ![Sicherheit](docs/screenshots/screenshot-security.png) |
+
+| NAS | Control Center | Einstellungen |
+|:---:|:---:|:---:|
+| ![NAS](docs/screenshots/screenshot-nas.png) | ![Control Center](docs/screenshots/screenshot-control-center.png) | ![Einstellungen](docs/screenshots/screenshot-settings.png) |
 
 ### Moderne, responsive Web-Oberfläche
 - **Dark Mode** mit Sky-Blue Accents
@@ -238,7 +271,7 @@ MIT License - Siehe [LICENSE](./LICENSE) für Details
 
 ## 🌟 Status
 
-- **Version:** 1.2.0.5 (siehe [VERSION](./VERSION) und [VERSIONING.md](./VERSIONING.md))
+- **Version:** 1.3.0.1 (siehe [VERSION](./VERSION) und [VERSIONING.md](./VERSIONING.md))
 - **Status:** Production Ready
 - **Letztes Update:** Februar 2026
 - **Support bis:** Januar 2027

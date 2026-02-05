@@ -23,6 +23,9 @@ import ControlCenter from './pages/ControlCenter'
 import PeripheryScan from './pages/PeripheryScan'
 import KinoStreaming from './pages/KinoStreaming'
 import Documentation from './pages/Documentation'
+import AppStore from './pages/AppStore'
+import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
+import RunningBackupModal from './components/RunningBackupModal'
 import { fetchApi } from './api'
 import { PlatformProvider, platformFromSystemInfo } from './context/PlatformContext'
 import './App.css'
@@ -48,6 +51,7 @@ type Page =
   | 'periphery-scan'
   | 'settings'
   | 'documentation'
+  | 'app-store'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -60,6 +64,14 @@ function App() {
     const saved = localStorage.getItem('pi-installer-theme')
     return (saved as Theme) || 'system'
   })
+  const [firstRunDone, setFirstRunDone] = useState(() => {
+    try {
+      return localStorage.getItem(FIRST_RUN_DONE_KEY) === '1'
+    } catch {
+      return true
+    }
+  })
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleSudoPasswordSaved = useCallback(() => {
     setSudoPasswordReady(true)
@@ -67,6 +79,7 @@ function App() {
   
   const handlePageChange = useCallback((page: Page) => {
     setCurrentPage(page)
+    setMobileMenuOpen(false)
   }, [])
   
   const handleThemeChange = useCallback((newTheme: Theme) => {
@@ -74,19 +87,32 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const fetchSystemInfo = async () => {
-      setBackendError(false)
-      try {
-        const response = await fetchApi('/api/system-info')
-        const data = await response.json()
-        setSystemInfo(data)
-      } catch (error) {
-        console.error('Fehler beim Laden der Systeminfo:', error)
-        setBackendError(true)
-      }
+    if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+      document.documentElement.setAttribute('data-tauri', 'true')
     }
-    fetchSystemInfo()
   }, [])
+
+  const fetchSystemInfo = useCallback(async () => {
+    setBackendError(false)
+    try {
+      const response = await fetchApi('/api/system-info')
+      const data = await response.json()
+      setSystemInfo(data)
+    } catch (error) {
+      console.error('Fehler beim Laden der Systeminfo:', error)
+      setBackendError(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchSystemInfo()
+  }, [fetchSystemInfo])
+
+  useEffect(() => {
+    const handler = () => fetchSystemInfo()
+    window.addEventListener('pi-installer-screenshot-mode-changed', handler)
+    return () => window.removeEventListener('pi-installer-screenshot-mode-changed', handler)
+  }, [fetchSystemInfo])
 
   useEffect(() => {
     // Theme anwenden
@@ -160,6 +186,8 @@ function App() {
         return <SettingsPage setCurrentPage={handlePageChange} />
       case 'documentation':
         return <Documentation />
+      case 'app-store':
+        return <AppStore />
       default:
         return <Dashboard systemInfo={systemInfo} backendError={backendError} setCurrentPage={handlePageChange} />
     }
@@ -170,10 +198,29 @@ function App() {
   return (
     <PlatformProvider value={platform}>
       <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+        {!firstRunDone && (
+          <FirstRunWizard
+            onComplete={() => setFirstRunDone(true)}
+            setCurrentPage={handlePageChange}
+          />
+        )}
         <SudoPasswordDialog onPasswordSaved={handleSudoPasswordSaved} />
-        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} />
+        <RunningBackupModal />
+        {/* Mobile: Hamburger-Leiste */}
+        <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-slate-200 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700"
+            aria-label="Menü öffnen"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+          <span className="font-semibold text-slate-800 dark:text-white">PI-Installer</span>
+        </header>
+        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
       <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <div className="p-8 min-h-full">
+        <div className="p-4 sm:p-8 min-h-full">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={currentPage}

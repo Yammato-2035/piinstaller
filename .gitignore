@@ -39,5 +39,12 @@ logs/
 .DS_Store
 Thumbs.db
 
+# Generierte Dokumentation (Skript: scripts/create-documentation-pdf.sh)
+docs/PI-Installer-Dokumentation.pdf
+docs/PI-Installer-Dokumentation.md
+
+# Docker-App-Daten (Phase 2.2; data/apps/<app_id>)
+data/
+
 # Sonstiges
 *.bak

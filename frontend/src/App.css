@@ -51,7 +51,6 @@
   border-color: rgba(14, 165, 233, 0.3);
   background: rgba(30, 41, 59, 0.8);
   box-shadow: 0 12px 40px 0 rgba(14, 165, 233, 0.15);
-  transform: translateY(-2px);
 }
 
 /* Button Styles */
@@ -154,6 +153,27 @@
   }
 }
 
+/* Tauri-Leichtgewichtsmodus: CPU-sparend (backdrop-blur und Animationen deaktiviert) */
+[data-tauri="true"] .card,
+[data-tauri="true"] .glass,
+[data-tauri="true"] [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-tauri="true"] .card {
+  background: rgba(30, 41, 59, 0.92);
+}
+
+[data-tauri="true"] .gradient-animate {
+  animation: none;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+[data-tauri="true"] .status-icon.active {
+  animation: none;
+}
+
 /* Button Hover Effects */
 .btn-primary {
   position: relative;
@@ -176,4 +196,31 @@
 .btn-primary:hover::before {
   width: 300px;
   height: 300px;
+}
+
+/* Select & Option Styles - Bessere Lesbarkeit */
+select {
+  background-color: rgb(30, 41, 59) !important; /* slate-800 */
+  color: rgb(255, 255, 255) !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+select option {
+  background-color: rgb(30, 41, 59) !important; /* slate-800 */
+  color: rgb(255, 255, 255) !important;
+  padding: 0.5rem;
+}
+
+/* Für bessere Lesbarkeit im Dropdown */
+select:focus option:checked {
+  background-color: rgb(14, 165, 233) !important; /* sky-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Fallback für Browser, die Option-Styling nicht unterstützen */
+select option {
+  background: rgb(30, 41, 59) !important;
+  color: rgb(255, 255, 255) !important;
 }

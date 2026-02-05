@@ -4,18 +4,29 @@ import { motion } from 'framer-motion'
 import { Cloud, RefreshCw, CheckCircle, XCircle, Settings } from 'lucide-react'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import ScreenshotDocCard from '../components/ScreenshotDocCard'
 import { usePlatform } from '../context/PlatformContext'
 
-type GeneralSubTab = 'init' | 'network' | 'basic'
+type GeneralSubTab = 'init' | 'network' | 'basic' | 'screenshots'
 
 interface SettingsPageProps {
   setCurrentPage?: (page: string) => void
 }
 
+const ADVANCED_SETTINGS_KEY = 'pi-installer-advanced-settings'
+
 const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
   const { isRaspberryPi, pageSubtitleLabel } = usePlatform()
   const [activeTab, setActiveTab] = useState<'general' | 'cloud' | 'logs'>('general')
   const [generalSubTab, setGeneralSubTab] = useState<GeneralSubTab>('init')
+  const [advancedSettings, setAdvancedSettings] = useState(() => {
+    try { return localStorage.getItem(ADVANCED_SETTINGS_KEY) === '1' } catch { return false }
+  })
+  useEffect(() => {
+    if (!advancedSettings && (generalSubTab === 'basic' || generalSubTab === 'screenshots')) {
+      setGeneralSubTab('init')
+    }
+  }, [advancedSettings])
   const [initStatus, setInitStatus] = useState<any>(null)
   const [settings, setSettings] = useState<any>(null)
   const [logs, setLogs] = useState<string>('')
@@ -434,17 +445,46 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
             >
               Frontend-Netzwerk-Zugriff
             </button>
-            <button
-              onClick={() => setGeneralSubTab('basic')}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                generalSubTab === 'basic'
-                  ? 'bg-sky-600 text-white'
-                  : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
-              }`}
-            >
-              Grundlegende Einstellungen
-            </button>
+            {(advancedSettings) && (
+              <>
+                <button
+                  onClick={() => setGeneralSubTab('basic')}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                    generalSubTab === 'basic'
+                      ? 'bg-sky-600 text-white'
+                      : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
+                  }`}
+                >
+                  Grundlegende Einstellungen
+                </button>
+                <button
+                  onClick={() => setGeneralSubTab('screenshots')}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                    generalSubTab === 'screenshots'
+                      ? 'bg-sky-600 text-white'
+                      : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
+                  }`}
+                >
+                  Dokumentations-Screenshots
+                </button>
+              </>
+            )}
           </div>
+        )}
+        {activeTab === 'general' && (
+          <label className="flex items-center gap-2 mb-3 text-sm text-slate-400 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={advancedSettings}
+              onChange={(e) => {
+                const v = e.target.checked
+                setAdvancedSettings(v)
+                try { localStorage.setItem(ADVANCED_SETTINGS_KEY, v ? '1' : '0') } catch { /* ignore */ }
+              }}
+              className="rounded border-slate-600 bg-slate-700 text-sky-500 focus:ring-sky-500"
+            />
+            Erfahrene Einstellungen anzeigen
+          </label>
         )}
       </motion.div>
 
@@ -702,6 +742,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
             </div>
           )}
         </motion.div>
+            )}
+
+            {generalSubTab === 'screenshots' && (
+              <ScreenshotDocCard setCurrentPage={setCurrentPage} />
             )}
           </div>
         )}

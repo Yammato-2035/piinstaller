@@ -23,10 +23,13 @@ import {
   Thermometer,
   Wind,
   Monitor,
+  Package,
+  HelpCircle,
 } from 'lucide-react'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { motion } from 'framer-motion'
 import { SkeletonCard as SharedSkeletonCard } from '../components/Skeleton'
+import HelpTooltip from '../components/HelpTooltip'
 
 interface DashboardProps {
   systemInfo: any
@@ -100,13 +103,9 @@ const StatCard = React.memo(({ icon: Icon, label, value, unit = '', trend }: any
             )}
           </div>
         </div>
-        <motion.div
-          animate={{ rotate: [0, 5, -5, 0] }}
-          transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-          className="p-3 bg-sky-600/20 rounded-lg backdrop-blur-sm"
-        >
+        <div className="p-3 bg-sky-600/20 rounded-lg backdrop-blur-sm">
           <Icon className="text-sky-500" size={32} />
-        </motion.div>
+        </div>
       </div>
     </motion.div>
   )
@@ -152,12 +151,22 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
     loadSecurityConfig()
     loadUpdates()
     loadServicesStatus()
+    const pollInterval = systemInfo?.is_raspberry_pi ? 30000 : 5000
     const interval = setInterval(async () => {
       try {
-        const response = await fetchApi('/api/system-info')
+        const response = await fetchApi('/api/system-info?light=1')
         const data = await response.json()
         if (data) {
-          setStats(data)
+          setStats(prev => {
+            if (!prev) return data
+            return {
+              ...prev,
+              cpu: { ...prev.cpu, ...data.cpu, usage: data.cpu?.usage, temperature: data.cpu?.temperature ?? prev.cpu?.temperature },
+              memory: data.memory ?? prev.memory,
+              disk: data.disk ?? prev.disk,
+              uptime: data.uptime ?? prev.uptime,
+            }
+          })
           setHistoryData(prev => {
             const newData = {
               time: new Date().toLocaleTimeString(),
@@ -170,7 +179,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
       } catch (error) {
         console.error('Fehler beim Aktualisieren:', error)
       }
-    }, 5000)
+    }, pollInterval)
     
     return () => clearInterval(interval)
   }, [systemInfo])
@@ -299,6 +308,15 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
     { name: 'Frei', value: 100 - (stats.disk?.percent || 0), color: '#10b981' },
   ] : []
 
+  const needsAction = !!(updatesData && updatesData.total > 0) || getSecurityStatus() === 'inactive'
+  const statusLabel = backendError ? 'Backend nicht erreichbar' : needsAction ? 'Aktion benötigt' : 'Alles OK'
+  const statusColor = backendError ? 'red' : needsAction ? 'yellow' : 'green'
+
+  const cpuPercent = stats?.cpu?.usage ?? 0
+  const memPercent = stats?.memory?.percent ?? 0
+  const diskPercent = stats?.disk?.percent ?? 0
+  const resourceLevel = (p: number) => (p >= 90 ? 'red' : p >= 70 ? 'yellow' : 'green')
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -306,6 +324,91 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
       transition={{ duration: 0.3 }}
       className="space-y-8 page-transition"
     >
+      {/* Hero: Dein Raspberry Pi läuft! (Transformationsplan 5.2) */}
+      {!backendError && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border border-slate-600 dark:border-slate-600 bg-gradient-to-br from-slate-800/80 to-slate-900/80 dark:from-slate-800/80 dark:to-slate-900/80 p-6 sm:p-8"
+        >
+          <h2 className="text-2xl sm:text-3xl font-bold text-white dark:text-white mb-2">
+            Dein {systemInfo?.is_raspberry_pi ? 'Raspberry Pi' : 'System'} läuft!
+          </h2>
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            <div
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold ${
+                statusColor === 'green'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                  : statusColor === 'yellow'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    : 'bg-red-500/20 text-red-300 border border-red-500/40'
+              }`}
+            >
+              {statusColor === 'green' && <CheckCircle className="w-5 h-5" />}
+              {statusColor === 'yellow' && <AlertCircle className="w-5 h-5" />}
+              {statusColor === 'red' && <AlertCircle className="w-5 h-5" />}
+              {statusLabel}
+            </div>
+            <div className="flex items-center gap-3 text-sm text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <span className={`w-2.5 h-2.5 rounded-full ${resourceLevel(cpuPercent) === 'green' ? 'bg-emerald-500' : resourceLevel(cpuPercent) === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`} />
+                CPU {Math.round(cpuPercent)}%
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className={`w-2.5 h-2.5 rounded-full ${resourceLevel(memPercent) === 'green' ? 'bg-emerald-500' : resourceLevel(memPercent) === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`} />
+                RAM {Math.round(memPercent)}%
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className={`w-2.5 h-2.5 rounded-full ${resourceLevel(diskPercent) === 'green' ? 'bg-emerald-500' : resourceLevel(diskPercent) === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`} />
+                Speicher {Math.round(diskPercent)}%
+              </span>
+            </div>
+          </div>
+          {/* Ressourcen-Management (Milestone 3): Temperatur- und Swap-Hinweise */}
+          {(stats?.cpu?.temperature != null && stats.cpu.temperature >= 80) && (
+            <p className="text-amber-300 text-sm mb-2">
+              ⚠️ Temperatur hoch ({stats.cpu.temperature}°C) – Kühlung prüfen. Siehe Dokumentation → Ressourcen-Management.
+            </p>
+          )}
+          {(stats?.memory?.total != null && stats.memory.total < 2 * 1024 * 1024 * 1024) && (
+            <p className="text-sky-300 text-sm mb-2">
+              ℹ️ Weniger als 2 GB RAM – Swap wird empfohlen. Siehe Einstellungen oder PI_OPTIMIZATION.md.
+            </p>
+          )}
+          <div className="flex flex-wrap gap-3">
+            {setCurrentPage && (
+              <>
+                <span className="inline-flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage('app-store')}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-sm"
+                  >
+                    <Package className="w-4 h-4" /> Neue App installieren
+                  </button>
+                  <HelpTooltip text="Im App Store findest du Home Assistant, Nextcloud, Pi-hole und weitere Apps – mit einem Klick installieren." size={14} className="text-slate-400" />
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage('backup')}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-600 hover:bg-slate-500 text-white rounded-xl font-medium text-sm"
+                >
+                  <Database className="w-4 h-4" /> Backup erstellen
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={runUpdateInTerminal}
+              disabled={updateTerminalLoading}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-medium text-sm disabled:opacity-50"
+            >
+              <Zap className="w-4 h-4" /> System updaten
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

@@ -1,0 +1,26 @@
+# PI-Installer systemd Service
+# Wird von scripts/create_installer.sh installiert (INSTALL_DIR und USER werden ersetzt).
+# Manuell:  sudo cp pi-installer.service /etc/systemd/system/
+#           sudo sed -i "s|{{INSTALL_DIR}}|/home/pi/PI-Installer|g" /etc/systemd/system/pi-installer.service
+#           sudo sed -i "s|{{USER}}|pi|g" /etc/systemd/system/pi-installer.service
+#           sudo systemctl daemon-reload && sudo systemctl enable --now pi-installer
+
+[Unit]
+Description=PI-Installer (Backend + Frontend)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{USER}}
+WorkingDirectory={{INSTALL_DIR}}
+ExecStart={{INSTALL_DIR}}/start.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment=PI_INSTALLER_DEV=0
+
+[Install]
+WantedBy=multi-user.target
