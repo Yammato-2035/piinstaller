@@ -1,12 +1,12 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "PI-Installer",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "identifier": "de.pi-installer.app",
   "build": {
     "beforeDevCommand": "npm run dev:tauri",
     "devUrl": "http://localhost:5173",
-    "beforeBuildCommand": "VITE_API_BASE=http://localhost:8000 npm run build",
+    "beforeBuildCommand": "VITE_API_BASE=http://127.0.0.1:8000 npm run build",
     "frontendDist": "../dist"
   },
   "app": {

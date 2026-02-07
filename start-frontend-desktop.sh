@@ -1,9 +1,10 @@
 #!/bin/bash
 # PI-Installer Frontend starten (für Desktop-Starter)
-# Aufruf: $0 [ --window | --browser ]
-#   --window  = Vite + Tauri-App-Fenster (Port 5173)
-#   --browser = Vite (Port 3001) + Standard-Browser öffnen
-#   ohne Arg  = nur Vite starten (Port 3001)
+# Aufruf: $0 [ --window | --tauri | --browser ]
+#   --window, --tauri = Vite + Tauri-App-Fenster (Port 5173)
+#   --browser        = Vite (Port 3001) + Standard-Browser öffnen
+#   ohne Arg         = nur Vite starten (Port 3001)
+# Siehe: docs/START_APPS.md
 
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 FRONTEND_DIR="$PROJECT_ROOT/frontend"

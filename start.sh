@@ -1,5 +1,7 @@
 #!/bin/bash
-# PI-Installer - Startet Backend und Frontend
+# PI-Installer - Startet Backend und Frontend (Browser-Modus)
+# Für Tauri-App: start-backend.sh + start-frontend-desktop.sh --window
+# Siehe: docs/START_APPS.md
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 

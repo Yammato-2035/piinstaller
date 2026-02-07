@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookOpen, Cloud, HardDrive, Settings, Cpu, Monitor, HelpCircle, Film,
   LayoutDashboard, Zap, Shield, Users, Code, Globe, Mail, Home, Music, Activity, Database, Scan,
+  Package, LayoutGrid,
 } from 'lucide-react'
 import { usePlatform } from '../context/PlatformContext'
 
@@ -10,7 +11,7 @@ type SectionId =
   | 'dashboard' | 'wizard' | 'presets' | 'einstellungen' | 'security' | 'users'
   | 'devenv' | 'webserver' | 'mailserver' | 'nas'   | 'homeautomation' | 'musicbox' | 'kino-streaming' | 'learning'
   | 'monitoring' | 'backup-restore' | 'raspberry-pi-config' | 'control-center' | 'periphery-scan'
-  | 'cloud' | 'desktop-app' | 'troubleshooting' | 'versionen'
+  | 'cloud' | 'desktop-app' | 'freenove-case' | 'dualdisplay' | 'troubleshooting' | 'versionen'
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ElementType }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -34,7 +35,9 @@ const SECTIONS: { id: SectionId; label: string; icon: React.ElementType }[] = [
   { id: 'periphery-scan', label: 'Peripherie-Scan (Assimilation)', icon: Scan },
   { id: 'cloud', label: 'Cloud-Einstellungen', icon: Cloud },
   { id: 'desktop-app', label: 'Desktop-App (Tauri)', icon: Monitor },
-  { id: 'troubleshooting', label: 'Troubleshooting', icon: HelpCircle },
+  { id: 'freenove-case', label: 'Freenove Pro – 4,3″ Touchscreen im Gehäuse', icon: Package },
+  { id: 'dualdisplay', label: 'Dualdisplay DSI0 + HDMI1 – Zwei Monitore gleichzeitig', icon: LayoutGrid },
+  { id: 'troubleshooting', label: 'FAQ – Häufige Fragen & Lösungen', icon: HelpCircle },
   { id: 'versionen', label: 'Versionen & Changelog', icon: BookOpen },
 ]
 
@@ -469,6 +472,14 @@ const Documentation: React.FC = () => {
                   <li>Status und Konfiguration</li>
                   <li>Installation starten (sudo)</li>
                 </ul>
+                <div className="p-3 bg-sky-900/30 border border-sky-600/50 rounded-lg">
+                  <h4 className="text-sm font-semibold text-sky-300 mb-1">Touchscreen am DSI0-Port nutzen</h4>
+                  <p className="text-xs text-slate-300 mb-2">Displays wie das Freenove 4,3″ TFT werden am DSI-Port (intern) angeschlossen. Touch-Eingabe funktioniert unter Wayland automatisch mit libinput.</p>
+                  <ul className="list-disc list-inside text-xs space-y-1 ml-4">
+                    <li><strong>Rotation:</strong> <code className="bg-slate-700 px-1 rounded">scripts/freenove-dsi-rotate-portrait.sh</code> dreht nur das DSI-Display (Wayland)</li>
+                    <li><strong>Test:</strong> <code className="bg-slate-700 px-1 rounded">libinput debug-events</code> zeigt Touch-Events</li>
+                  </ul>
+                </div>
                 <div className="card-info">
                   <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
                   <p className="text-xs">Nach der Installation die angebotenen Programme prüfen und ggf. kindersichere Einstellungen (Benutzer, Filter) setzen.</p>
@@ -521,6 +532,7 @@ const Documentation: React.FC = () => {
                     <li><strong>Backup-Jobs:</strong> Laufende Jobs anzeigen, abbrechen; Backups auflisten, verifizieren, löschen</li>
                     <li><strong>Wiederherstellung:</strong> Backup auswählen, Restore starten; verschlüsselte Backups werden entschlüsselt</li>
                     <li><strong>USB:</strong> USB-Stick als Ziel auswählen, vorbereiten (formatieren), mounten/ejecten</li>
+                    <li><strong>Laufwerk klonen:</strong> System von SD-Karte auf NVMe/USB-SSD klonen (Hybrid-Boot: Boot auf SD, Root auf NVMe). NVMe, USB- und SATA-Laufwerke werden automatisch erkannt. Bei Problemen siehe FAQ.</li>
                   </ul>
                 </div>
                 <ScreenshotImg src="/docs/screenshots/screenshot-backup.png" alt="Backup & Restore" title="Backup & Restore – Ziel und Optionen" hint="Zeigt Auswahl Backup-Typ, Ziel, Verschlüsselung." />
@@ -779,6 +791,77 @@ const Documentation: React.FC = () => {
             </motion.div>
           )}
 
+          {activeChapter === 'freenove-case' && (
+            <motion.div
+              key="freenove-case"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-6"
+            >
+              <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
+                <Package className="text-emerald-500" />
+                Freenove Pro – 4,3″ Touchscreen im Gehäuse
+              </h2>
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">Das <strong>Freenove Computer Case Kit Pro</strong> für Raspberry Pi 5 bietet ein 4,3″ TFT-Touchscreen-Display am DSI-Port sowie SSD-Slots und eine Erweiterungsplatine.</p>
+                <h3 className="text-lg font-semibold text-white">Zusammenbau – Erfahrungen &amp; Hinweise</h3>
+                <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                  <li><strong>Abstandshalter:</strong> Nicht zu fest anziehen – Gewinde kann abbrechen, dann bleibt alles dunkel</li>
+                  <li><strong>Flachbandkabel (FPC):</strong> Kontaktseite vs. Isolationsseite (schwarz). Pi 5 PCIe: Kontakte zum aktiven Cooler. Audio-Video-Board PCIe IN: Kontakte nach unten. Bei verdrehtem Kabel bleibt alles dunkel → NVMe-Board ausbauen, FPC korrekt einstecken</li>
+                  <li><strong>2-/3-/4-adrige Kabel:</strong> Glatte Rückseite, ausgewölbte Kontakte vorne. Wenn ein 4-adriges nicht passt – das andere probieren</li>
+                </ul>
+                <h3 className="text-lg font-semibold text-white">Software &amp; Tips &amp; Tricks</h3>
+                <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                  <li><strong>Freenove-Software:</strong> Installation von GitHub, mögliche Probleme → siehe <strong>FAQ</strong></li>
+                  <li><strong>Python vs. python3:</strong> Reparatur-Skript <code className="bg-slate-700 px-1 rounded">scripts/fix-freenove-computer-case.sh</code></li>
+                  <li><strong>Display-Rotation:</strong> <code className="bg-slate-700 px-1 rounded">scripts/freenove-set-display-rotate.sh</code> oder <code className="bg-slate-700 px-1 rounded">scripts/freenove-dsi-rotate-portrait.sh</code> (Wayland)</li>
+                  <li><strong>I2C:</strong> Benutzer in Gruppe <code className="bg-slate-700 px-1 rounded">i2c</code> aufnehmen, App ohne sudo starten</li>
+                </ul>
+                <div className="p-3 bg-sky-900/30 border border-sky-600/50 rounded-lg">
+                  <p className="text-sm font-semibold text-sky-300 mb-1">Boot: SD + NVMe oder nur NVMe</p>
+                  <p className="text-xs text-slate-300">Hybrid (Boot von SD, Root von NVMe): siehe <code className="bg-slate-700 px-1 rounded">docs/PATHS_NVME.md</code>. Boot nur von NVMe – noch zu ergänzen.</p>
+                </div>
+                <p className="text-sm">Ausführliche Doku: <code className="bg-slate-700 px-1 rounded">docs/FREENOVE_COMPUTER_CASE.md</code> · Skripte in <code className="bg-slate-700 px-1 rounded">scripts/</code></p>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'dualdisplay' && (
+            <motion.div
+              key="dualdisplay"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-6"
+            >
+              <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
+                <LayoutGrid className="text-blue-400" />
+                Dualdisplay DSI0 + HDMI1 – Zwei Monitore gleichzeitig
+              </h2>
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">Gleichzeitige Ausgabe auf <strong>DSI</strong> (internes Display, z. B. Freenove 4,3″) und <strong>HDMI</strong> (externer Monitor). Voraussetzung: Wayland (Pix/Wayfire), Raspberry Pi 5.</p>
+                <h3 className="text-lg font-semibold text-white">Erkannte Probleme</h3>
+                <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                  <li><strong>HDMI bleibt aus:</strong> Wayfire priorisiert oft nur DSI; HDMI per <code className="bg-slate-700 px-1 rounded">wlr-randr --output HDMI-A-2 --on</code> nach Session-Start einschalten</li>
+                  <li><strong>display_rotate betrifft alle:</strong> Unter Wayland dreht config.txt alle Ausgaben; nur DSI drehen: <code className="bg-slate-700 px-1 rounded">scripts/freenove-dsi-rotate-portrait.sh</code></li>
+                </ul>
+                <h3 className="text-lg font-semibold text-white">Tips & Tricks</h3>
+                <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                  <li>Skript <code className="bg-slate-700 px-1 rounded">scripts/setup-pi5-dual-display-dsi-hdmi0.sh</code> (mit sudo) konfiguriert config.txt, cmdline.txt und Wayfire automatisch</li>
+                  <li>HDMI1 (Port 2) oft stabiler als HDMI0 bei DSI+HDMI</li>
+                </ul>
+                <div className="p-3 bg-amber-900/20 border border-amber-700/40 rounded-lg">
+                  <p className="text-sm font-semibold text-amber-300 mb-1">Zusammenbau-Probleme?</p>
+                  <p className="text-xs text-slate-300">Gab es beim Anschluss von DSI und HDMI Probleme? Schreib uns, welche Fehler auftraten – wir ergänzen die Troubleshooting-FAQ.</p>
+                </div>
+                <p className="text-sm">Details: <code className="bg-slate-700 px-1 rounded">scripts/fix-gabriel-dual-display-wayland.sh</code>, <code className="bg-slate-700 px-1 rounded">docs/FREENOVE_COMPUTER_CASE.md</code></p>
+              </div>
+            </motion.div>
+          )}
+
           {activeChapter === 'troubleshooting' && (
             <motion.div
               key="troubleshooting"
@@ -790,119 +873,194 @@ const Documentation: React.FC = () => {
             >
               <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
                 <HelpCircle className="text-amber-500" />
-                Troubleshooting
+                FAQ – Häufige Fragen &amp; Lösungen
               </h2>
               <div className="space-y-4 opacity-95">
-                <p className="text-sm">Typische Probleme und deren Lösungen. Logs findest du unter Einstellungen → Logs.</p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-settings.png" alt="Einstellungen – Logs" title="Einstellungen – Logs laden" />
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Log-Datei</h3>
-                  <p className="text-sm mb-2">
-                    Standardpfad: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200">&lt;Projektordner&gt;/logs/pi-installer.log</code> (z. B. <code className="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200">…/PI-Installer/logs/pi-installer.log</code>).
-                    Über Umgebungsvariable <code className="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200">PI_INSTALLER_LOG_PATH</code> änderbar.
-                  </p>
-                  <p className="text-sm">
-                    In der App: <strong>Einstellungen → Logs</strong> → „Logs laden“. Der genaue Pfad wird dort angezeigt.
-                    Im Terminal: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200">tail -f …/logs/pi-installer.log</code>.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Mixer-Installation fehlgeschlagen</h3>
-                  <p className="text-sm mb-2">
-                    Wenn „Mixer-Programme installieren“ (pavucontrol &amp; qpwgraph) in Musikbox oder Kino/Streaming fehlschlägt:
-                  </p>
-                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li><strong>Sudo-Passwort:</strong> Beim Klick auf „Mixer-Programme installieren“ das Sudo-Passwort eingeben (Modal erscheint, falls noch nicht gespeichert).</li>
-                    <li><strong>Manuell im Terminal:</strong> <code className="text-slate-400">sudo apt update</code>, danach <code className="text-slate-400">sudo apt install -y pavucontrol qpwgraph</code>.</li>
-                    <li>Danach in der App „Mixer öffnen (pavucontrol)“ bzw. „Mixer öffnen (qpwgraph)“ nutzen. Läuft das Backend ohne Grafikumgebung, setzt das Backend <code className="text-slate-400">DISPLAY=:0</code> – der Mixer öffnet sich auf der ersten X-Session.</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Raspberry Pi 5: Kein Ton über HDMI</h3>
-                  <p className="text-sm mb-2">
-                    Wenn auf dem <strong>Raspberry Pi 5</strong> am angeschlossenen Monitor kein Ton ausgegeben wird, zeigt sich das u. a. so: <code className="text-slate-400">cat /proc/asound/cards</code> → „no soundcards“; <code className="text-slate-400">amixer sget Master</code> → „cannot find card 0“; <code className="text-slate-400">ls /dev/snd/</code> → nur <code className="text-slate-400">seq</code> und <code className="text-slate-400">timer</code>, keine <code className="text-slate-400">controlC0</code>; <code className="text-slate-400">pw-cli list-objects Node</code> → nur „Dummy Output“, keine echte Soundkarte.
-                  </p>
-                  <p className="text-sm mb-2">
-                    <strong>Ursache:</strong> Ohne den Overlay <code className="text-slate-400">vc4-kms-v3d-pi5</code> wird die HDMI-Audio-Hardware des Pi 5 nicht initialisiert.
-                  </p>
-                  <ol className="list-decimal list-inside text-sm space-y-1 ml-4 mb-2">
-                    <li><strong>System aktualisieren:</strong> <code className="text-slate-400">sudo apt update && sudo apt full-upgrade -y</code>, danach Neustart.</li>
-                    <li><strong>config.txt bearbeiten:</strong> <code className="text-slate-400">sudo nano /boot/firmware/config.txt</code></li>
-                    <li><strong>Overlay hinzufügen:</strong> Zeile <code className="text-slate-400">dtoverlay=vc4-kms-v3d-pi5</code> ergänzen (z. B. unter <code className="text-slate-400">dtparam=audio=on</code>). <code className="text-slate-400">dtparam=audio=on</code> muss ebenfalls gesetzt sein.</li>
-                    <li>Speichern (Strg+O, Enter) und beenden (Strg+X), danach <code className="text-slate-400">sudo reboot</code>.</li>
-                  </ol>
-                  <p className="text-sm">
-                    Nach dem Neustart sollten <code className="text-slate-400">cat /proc/asound/cards</code> eine Soundkarte (z. B. bcm2835) und <code className="text-slate-400">/dev/snd/</code> die Gerätedateien zeigen. Danach das HDMI-Gerät in den Sound-Einstellungen oder mit pavucontrol als Ausgabe wählen.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Backend & Frontend starten</h3>
-                  <p className="text-sm mb-2">
-                    Im Projektordner (z. B. <code className="text-slate-400">…/piinstaller</code>):
-                  </p>
-                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li><strong>Alles (Backend + Frontend):</strong> <code className="text-slate-400">./start.sh</code> – Backend auf Port 8000, Frontend (Vite) auf Port 3001. Beenden mit <code className="text-slate-400">Ctrl+C</code>.</li>
-                    <li><strong>Nur Backend:</strong> <code className="text-slate-400">./start-backend.sh</code>. Oder Desktop-Starter „PI-Installer Backend starten“ (wenn angelegt).</li>
-                    <li><strong>Nur Frontend (Web-Entwicklung):</strong> <code className="text-slate-400">./start-frontend.sh</code> oder nach <code className="text-slate-400">./scripts/desktop-frontend-launcher-anlegen.sh</code> drei Desktop-Starter: „PI-Installer Frontend starten“ (nur Server), „PI-Installer Frontend (App-Fenster)“ (Tauri-Fenster), „PI-Installer Frontend (Browser)“ (Vite + Standard-Browser). Oder <code className="text-slate-400">cd frontend && npm run dev</code> → http://localhost:3001 (Backend muss separat laufen).</li>
-                    <li><strong>Desktop-App (Tauri):</strong> <code className="text-slate-400">cd frontend && npm run tauri:dev</code> – öffnet die App-Fenster; Backend separat mit <code className="text-slate-400">./start-backend.sh</code> starten.</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Dashboard zeigt keine Daten / Sudo-Passwort speichert nicht</h3>
-                  <p className="text-sm mb-2">
-                    Beides funktioniert nur, wenn das <strong>Backend erreichbar</strong> ist (Port 8000). Typische Ursachen:
-                  </p>
-                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li>Backend läuft nicht → <code className="text-slate-400">./start.sh</code> oder <code className="text-slate-400">./start-backend.sh</code> ausführen.</li>
-                    <li>Frontend wird ohne Vite-Proxy genutzt (z. B. statische Dateien, anderer Port) → API-Anfragen gehen nicht an localhost:8000.</li>
-                    <li>Bei „Backend nicht erreichbar“-Hinweis im Dashboard: Einstellungen → Logs prüfen, Backend starten, Seite neu laden.</li>
-                  </ul>
-                  <p className="text-sm mt-2">
-                    Sudo-Passwort: „Ohne Prüfung speichern“ ist standardmäßig aktiv. Nach Speichern beim ersten Einsatz (z. B. Firewall) wird es genutzt; nur in der Session, nicht dauerhaft.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Scanner werden nicht erkannt</h3>
-                  <p className="text-sm mb-2">
-                    Scanner-Erkennung nutzt <strong>SANE</strong>. Bei Problemen:
-                  </p>
-                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li><strong>SANE installieren:</strong> <code className="text-slate-400">sudo apt install sane sane-utils</code></li>
-                    <li><strong>Netzwerkscanner (eSCL/airscan):</strong> <code className="text-slate-400">sudo apt install sane-airscan</code></li>
-                    <li>Gerät im gleichen Netzwerk und eingeschaltet?</li>
-                    <li>Test im Terminal: <code className="text-slate-400">scanimage -L</code> (kann bei Netzwerkscannern bis zu 45s dauern)</li>
-                  </ul>
-                  <p className="text-sm mt-2">
-                    Die App zeigt unter Control Center → Scanner den SANE-Installationsstatus an.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Performance-Einstellungen</h3>
-                  <p className="text-sm mb-2">
-                    <strong>CPU-Governor</strong> wird sofort wirksam. <strong>GPU-Memory, Overclocking</strong> und <strong>Swap-Größe</strong> erfordern einen Neustart.
-                  </p>
-                  <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                    <li>Governor nicht verfügbar? → Kernel unterstützt cpufreq nicht oder läuft als VM.</li>
-                    <li>Swap-Größe nicht änderbar? → dphys-swapfile nicht installiert (<code className="text-slate-400">sudo apt install dphys-swapfile</code>).</li>
-                    <li>Overclocking: Werte für arm_freq, over_voltage je nach Pi-Modell unterschiedlich.</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Repository von GitHub aktualisieren (mit lokalen Änderungen)</h3>
-                  <p className="text-sm mb-2">
-                    Wenn du lokale, uncommittete Änderungen hast und <code className="text-slate-400">git pull</code> Konflikte meldet oder überschreiben würde:
-                  </p>
-                  <ol className="list-decimal list-inside text-sm space-y-1 ml-4">
-                    <li><code className="text-slate-400">git stash push -m "Lokale Änderungen vor pull"</code> – lokale Änderungen zwischenspeichern</li>
-                    <li><code className="text-slate-400">git pull</code> – neuesten Stand von GitHub holen</li>
-                    <li><code className="text-slate-400">git stash pop</code> – lokale Änderungen wieder anwenden</li>
-                  </ol>
-                  <p className="text-sm mt-2 mb-2">
-                    Bei <strong>Merge-Konflikt</strong> (z. B. in <code className="text-slate-400">Documentation.tsx</code>): Konfliktmarker (<code className="text-slate-400">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code className="text-slate-400">=======</code>, <code className="text-slate-400">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>) entfernen und entscheiden: Dokumentation oft mit <strong>Remote</strong>-Version (GitHub), andere Dateien mit <strong>lokaler</strong> Version (deine neueren Änderungen). Danach <code className="text-slate-400">git add &lt;Datei&gt;</code> und ggf. <code className="text-slate-400">git stash drop</code>, wenn der Stash nicht mehr gebraucht wird.
-                  </p>
-                  <p className="text-sm">
-                    Details und Workflow für mehrere Entwickler: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
-                  </p>
+                <p className="text-sm">Aus den Troubleshooting-Seiten zusammengestellte FAQ. Jeder Eintrag: Fehlername, Beschreibung, Lösungen. Logs: Einstellungen → Logs.</p>
+                <div className="space-y-3">
+                  {/* FAQ: Mixer */}
+                  <div className="rounded-lg border border-amber-600/50 bg-amber-950/30 overflow-hidden">
+                    <div className="px-4 py-2 bg-amber-900/40 border-b border-amber-600/50">
+                      <h4 className="font-semibold text-amber-200">Mixer-Installation fehlgeschlagen</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> „Mixer-Programme installieren“ (pavucontrol &amp; qpwgraph) in Musikbox/Kino schlägt fehl.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Sudo-Passwort eingeben (Modal erscheint)</li>
+                          <li>Manuell: <code className="bg-slate-700 px-1 rounded">sudo apt update && sudo apt install -y pavucontrol qpwgraph</code></li>
+                          <li>Backend setzt <code className="bg-slate-700 px-1 rounded">DISPLAY=:0</code> für GUI-Start</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Pi 5 HDMI Audio */}
+                  <div className="rounded-lg border border-amber-600/50 bg-amber-950/30 overflow-hidden">
+                    <div className="px-4 py-2 bg-amber-900/40 border-b border-amber-600/50">
+                      <h4 className="font-semibold text-amber-200">Raspberry Pi 5: Kein Ton über HDMI</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> <code className="bg-slate-700 px-1 rounded">cat /proc/asound/cards</code> → „no soundcards“; PipeWire nur „Dummy Output“.</p>
+                      <p className="text-slate-300 mb-2"><strong>Ursache:</strong> Fehlender Overlay <code className="bg-slate-700 px-1 rounded">vc4-kms-v3d-pi5</code>.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ol className="list-decimal list-inside text-slate-300 space-y-1">
+                          <li><code className="bg-slate-700 px-1 rounded">sudo apt update && sudo apt full-upgrade -y</code>, Neustart</li>
+                          <li>In <code className="bg-slate-700 px-1 rounded">/boot/firmware/config.txt</code> Zeile <code className="bg-slate-700 px-1 rounded">dtoverlay=vc4-kms-v3d-pi5</code> ergänzen</li>
+                          <li><code className="bg-slate-700 px-1 rounded">dtparam=audio=on</code> muss gesetzt sein</li>
+                          <li><code className="bg-slate-700 px-1 rounded">sudo reboot</code></li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Backend/Frontend */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">Backend &amp; Frontend starten</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Wie starte ich PI-Installer korrekt?</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Alles: <code className="bg-slate-700 px-1 rounded">./start.sh</code></li>
+                          <li>Nur Backend: <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
+                          <li>Frontend: <code className="bg-slate-700 px-1 rounded">./start-frontend.sh</code> oder <code className="bg-slate-700 px-1 rounded">cd frontend && npm run dev</code></li>
+                          <li>Desktop-App: <code className="bg-slate-700 px-1 rounded">cd frontend && npm run tauri:dev</code> (Backend separat)</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Dashboard/Backend */}
+                  <div className="rounded-lg border border-amber-600/50 bg-amber-950/30 overflow-hidden">
+                    <div className="px-4 py-2 bg-amber-900/40 border-b border-amber-600/50">
+                      <h4 className="font-semibold text-amber-200">Dashboard zeigt keine Daten / Sudo speichert nicht</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Beides benötigt erreichbares Backend (Port 8000).</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Backend starten: <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
+                          <li>Bei Vite-Proxy: API-Anfragen gehen an localhost:8000</li>
+                          <li>Sudo: „Ohne Prüfung speichern“ – nur Session, nicht dauerhaft</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Scanner */}
+                  <div className="rounded-lg border border-amber-600/50 bg-amber-950/30 overflow-hidden">
+                    <div className="px-4 py-2 bg-amber-900/40 border-b border-amber-600/50">
+                      <h4 className="font-semibold text-amber-200">Scanner werden nicht erkannt</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> SANE findet keine Geräte.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li><code className="bg-slate-700 px-1 rounded">sudo apt install sane sane-utils</code></li>
+                          <li>Netzwerk: <code className="bg-slate-700 px-1 rounded">sudo apt install sane-airscan</code></li>
+                          <li>Test: <code className="bg-slate-700 px-1 rounded">scanimage -L</code> (Netzwerk bis 45s)</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: NVMe/Klonen */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">NVMe nach Klonen – Boot/Pfade</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Nach Clone auf NVMe: Root auf NVMe, Boot bleibt auf SD. Pfade siehe <code className="bg-slate-700 px-1 rounded">docs/PATHS_NVME.md</code>.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li><code className="bg-slate-700 px-1 rounded">lsblk</code> prüfen – Root sollte /dev/nvme0n1p1 sein</li>
+                          <li>Bei Problemen: cmdline.txt zurücksetzen (Root wieder auf SD)</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Freenove-Software Installation */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">Freenove-Software – Installation von GitHub</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Freenove Case Kit Pro – Software aus GitHub klonen und starten. App startet nicht oder crasht.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li><code className="bg-slate-700 px-1 rounded">git clone https://github.com/Freenove/Freenove_Computer_Case_Kit_Pro_for_Raspberry_Pi.git</code></li>
+                          <li><code className="bg-slate-700 px-1 rounded">scripts/fix-freenove-computer-case.sh</code> – python3, Pfade, keine sudo</li>
+                          <li><code className="bg-slate-700 px-1 rounded">sudo apt install python3-pyqt5 python3-smbus</code></li>
+                          <li>Benutzer in Gruppe <code className="bg-slate-700 px-1 rounded">i2c</code> → Doku: <code className="bg-slate-700 px-1 rounded">docs/FREENOVE_COMPUTER_CASE.md</code></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Dualdisplay/Freenove */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">Dualdisplay / Freenove – HDMI bleibt aus, Display falsch</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Wayfire nutzt oft nur DSI; HDMI oder Rotation falsch.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>HDMI: <code className="bg-slate-700 px-1 rounded">scripts/setup-pi5-dual-display-dsi-hdmi0.sh</code></li>
+                          <li>DSI-Rotation (nur DSI): <code className="bg-slate-700 px-1 rounded">scripts/freenove-dsi-rotate-portrait.sh</code></li>
+                          <li>Freenove-Software: <code className="bg-slate-700 px-1 rounded">scripts/fix-freenove-computer-case.sh</code></li>
+                          <li>Doku: <code className="bg-slate-700 px-1 rounded">docs/FREENOVE_COMPUTER_CASE.md</code></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: AnyDesk Wayland */}
+                  <div className="rounded-lg border border-amber-600/50 bg-amber-950/30 overflow-hidden">
+                    <div className="px-4 py-2 bg-amber-900/40 border-b border-amber-600/50">
+                      <h4 className="font-semibold text-amber-200">AnyDesk stürzt ab (Wayland)</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> AnyDesk crasht beim Start unter Wayland.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>AnyDesk-Autostart deaktivieren, nur manuell starten</li>
+                          <li>Eingehende Verbindungen: Xorg-Session beim Login wählen</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Repository/Git */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">Repository aktualisieren (lokale Änderungen)</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> git pull überschreibt lokale Änderungen oder Konflikte.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ol className="list-decimal list-inside text-slate-300 space-y-1">
+                          <li><code className="bg-slate-700 px-1 rounded">git stash push -m "Lokale Änderungen"</code></li>
+                          <li><code className="bg-slate-700 px-1 rounded">git pull</code></li>
+                          <li><code className="bg-slate-700 px-1 rounded">git stash pop</code></li>
+                          <li>Bei Merge-Konflikt: Markierungen lösen, Dokumentation oft Remote nehmen</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Logs */}
+                  <div className="rounded-lg border border-slate-600/50 bg-slate-900/30 overflow-hidden">
+                    <div className="px-4 py-2 bg-slate-800/60 border-b border-slate-600/50">
+                      <h4 className="font-semibold text-slate-200">Log-Datei</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300"><code className="bg-slate-700 px-1 rounded">…/logs/pi-installer.log</code> · Einstellungen → Logs laden · <code className="bg-slate-700 px-1 rounded">PI_INSTALLER_LOG_PATH</code></p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -973,8 +1131,17 @@ const Documentation: React.FC = () => {
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.0.0</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.1.0</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.1.0 (Laufwerk klonen, NVMe, Freenove/Dualdisplay, FAQ)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Backup & Restore:</strong> Laufwerk klonen – System von SD auf NVMe/USB klonen (Hybrid-Boot); NVMe-Erkennung</li>
+                      <li><strong>Dokumentation:</strong> Freenove Pro (4,3″ Touchscreen), Dualdisplay DSI0+HDMI1, Lernbereich Touchscreen DSI0</li>
+                      <li><strong>FAQ:</strong> Vollständige FAQ aus Troubleshooting – Fehlername, Beschreibung, Lösungen; funktionales Design</li>
+                      <li>Festgestellte Probleme siehe FAQ – Lösungswege dort dokumentiert</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.0.0 (Transformationsplan: Raspberry Discovery Box)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>App Store:</strong> 7 Apps (Home Assistant, Nextcloud, Pi-hole, Jellyfin, WordPress, VS Code Server, Node-RED); Kachel-Layout, Suche, Kategorien</li>

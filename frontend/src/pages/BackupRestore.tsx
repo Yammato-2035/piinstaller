@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Cloud, Database, Download, Upload, Trash2, Clock, HardDrive, Lock, Settings, CheckSquare, Square } from 'lucide-react'
+import { Cloud, Database, Download, Upload, Trash2, Clock, HardDrive, Lock, Settings, CheckSquare, Square, Copy } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import { usePlatform } from '../context/PlatformContext'
 
-type BackupTab = 'backup' | 'settings' | 'restore'
+type BackupTab = 'backup' | 'settings' | 'restore' | 'clone'
 
 const BackupRestore: React.FC = () => {
   const { pageSubtitleLabel } = usePlatform()
@@ -35,7 +35,7 @@ const BackupRestore: React.FC = () => {
   const [sudoModalTitle, setSudoModalTitle] = useState('Sudo-Passwort erforderlich')
   const [sudoModalSubtitle, setSudoModalSubtitle] = useState('Für diese Aktion werden Administrator-Rechte benötigt.')
   const [sudoModalConfirmText, setSudoModalConfirmText] = useState('Bestätigen')
-  const [pendingAction, setPendingAction] = useState<null | ((sudoPassword: string) => Promise<void>)>(null)
+  const [pendingAction, setPendingAction] = useState<null | ((sudoPassword: string, skipTest?: boolean) => Promise<void>)>(null)
   const DEFAULT_BACKUP_DIR = '/mnt/backups'
   const LAST_DIR_KEY = 'pi_installer_last_backup_dir'
   const BACKUP_JOB_STORAGE_KEY = 'pi_installer_running_backup_job'
@@ -52,6 +52,10 @@ const BackupRestore: React.FC = () => {
   const [cloudVerified, setCloudVerified] = useState<Record<string, boolean>>({})
   const [selectedBackups, setSelectedBackups] = useState<Set<string>>(new Set())
   const [selectedCloudBackups, setSelectedCloudBackups] = useState<Set<string>>(new Set())
+  const [cloneDiskInfo, setCloneDiskInfo] = useState<any>(null)
+  const [cloneTargetDevice, setCloneTargetDevice] = useState<string>('')
+  const [cloneJob, setCloneJob] = useState<any>(null)
+  const cloneJobNotifiedRef = useRef<Record<string, boolean>>({})
 
   useEffect(() => {
     loadTargets()
@@ -60,6 +64,87 @@ const BackupRestore: React.FC = () => {
   useEffect(() => {
     loadBackupSettings()
   }, [])
+
+  useEffect(() => {
+    if (activeTab === 'clone') {
+      loadCloneDiskInfo()
+    }
+  }, [activeTab])
+
+  const loadCloneDiskInfo = async (withSudoPassword?: string, forceRefresh = false) => {
+    try {
+      const opts: RequestInit = {}
+      if (withSudoPassword) {
+        opts.method = 'POST'
+        opts.headers = { 'Content-Type': 'application/json' }
+        opts.body = JSON.stringify({ sudo_password: withSudoPassword })
+      }
+      const url = `/api/backup/clone/disk-info${forceRefresh ? '?refresh=1' : ''}`
+      const r = await fetchApi(url, opts)
+      const d = await r.json()
+      if (d.status === 'success') {
+        setCloneDiskInfo({ source: d.source, boot: d.boot, targets: d.targets || [] })
+        if (d.targets?.length && !cloneTargetDevice) {
+          setCloneTargetDevice(d.targets[0]?.device || '')
+        }
+      } else {
+        setCloneDiskInfo({ source: {}, boot: {}, targets: [] })
+      }
+    } catch {
+      setCloneDiskInfo({ source: {}, boot: {}, targets: [] })
+    }
+  }
+
+  const loadCloneDiskInfoWithSudo = async () => {
+    await requireSudo(
+      { title: 'Ziellaufwerke laden', subtitle: 'Sudo ermöglicht Erkennung ungemounteter NVMe/USB-Laufwerke. Passwort wird für Klon gespeichert.', confirmText: 'Laden' },
+      async (pwd?: string) => {
+        if (pwd) await storeSudoPassword(pwd, true)
+        await loadCloneDiskInfo(pwd, true)
+        toast.success('Ziellaufwerke aktualisiert')
+      }
+    )
+  }
+
+  useEffect(() => {
+    if (!cloneJob?.job_id) return
+    let cancelled = false
+    let intervalId: number | null = null
+    const tick = async () => {
+      try {
+        const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(cloneJob.job_id)}`)
+        const d = await r.json()
+        if (cancelled) return
+        if (d.status === 'success' && d.job) {
+          const job = d.job
+          setCloneJob(job)
+          const terminal = job.status === 'success' || job.status === 'error' || job.status === 'cancelled'
+          if (terminal && !cloneJobNotifiedRef.current[job.job_id]) {
+            cloneJobNotifiedRef.current[job.job_id] = true
+            if (job.status === 'success') {
+              toast.success('Klon erfolgreich – Bitte neu starten (sudo reboot)')
+              loadCloneDiskInfo()
+            } else if (job.status === 'cancelled') {
+              toast('Klon abgebrochen', { duration: 6000 })
+            } else {
+              toast.error(job.message || 'Klon fehlgeschlagen', { duration: 10000 })
+            }
+            if (intervalId) window.clearInterval(intervalId)
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    tick()
+    intervalId = window.setInterval(() => {
+      if (!cancelled) tick()
+    }, 5000)
+    return () => {
+      cancelled = true
+      if (intervalId) window.clearInterval(intervalId)
+    }
+  }, [cloneJob?.job_id])
 
   useEffect(() => {
     if (!backupJob?.job_id) return
@@ -398,19 +483,31 @@ const BackupRestore: React.FC = () => {
     }
   }
 
-  const storeSudoPassword = async (sudoPassword: string) => {
-    const resp = await fetchApi('/api/users/sudo-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sudo_password: sudoPassword }),
-    })
-    const data = await resp.json()
-    if (data.status !== 'success') {
-      throw new Error(data.message || 'Sudo-Passwort konnte nicht gespeichert werden')
+  const storeSudoPassword = async (sudoPassword: string, skipTest = false) => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 25000) // 25s Timeout
+    try {
+      const resp = await fetchApi('/api/users/sudo-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sudo_password: sudoPassword, skip_test: skipTest }),
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
+      const data = await resp.json()
+      if (data.status !== 'success') {
+        throw new Error(data.message || 'Sudo-Passwort konnte nicht gespeichert werden')
+      }
+    } catch (e: any) {
+      clearTimeout(timeoutId)
+      if (e?.name === 'AbortError') {
+        throw new Error('Zeitüberschreitung. Backend nicht erreichbar oder sudo-Prüfung hängt. Probieren Sie „Ohne Prüfung speichern“.')
+      }
+      throw e
     }
   }
 
-  const requireSudo = async (opts: { title: string; subtitle?: string; confirmText?: string }, action: () => Promise<void>) => {
+  const requireSudo = async (opts: { title: string; subtitle?: string; confirmText?: string }, action: (pwd?: string) => Promise<void>) => {
     // wenn Backend schon ein Passwort in der Session hat, direkt ausführen
     if (await hasSavedSudoPassword()) {
       await action()
@@ -420,9 +517,9 @@ const BackupRestore: React.FC = () => {
     setSudoModalTitle(opts.title)
     setSudoModalSubtitle(opts.subtitle || 'Für diese Aktion werden Administrator-Rechte benötigt.')
     setSudoModalConfirmText(opts.confirmText || 'Bestätigen')
-    setPendingAction(() => async (pwd: string) => {
-      await storeSudoPassword(pwd)
-      await action()
+    setPendingAction(() => async (pwd: string, skipTest?: boolean) => {
+      await storeSudoPassword(pwd, skipTest ?? false)
+      await action(pwd)
     })
     setSudoModalOpen(true)
   }
@@ -551,6 +648,46 @@ const BackupRestore: React.FC = () => {
           }
         } catch {
           toast.error('Mount fehlgeschlagen (Backend nicht erreichbar)')
+        }
+      }
+    )
+  }
+
+  const startClone = async () => {
+    if (!cloneTargetDevice) {
+      toast.error('Bitte ein Ziellaufwerk auswählen')
+      return
+    }
+    if (!window.confirm(
+      `Möchten Sie das System auf ${cloneTargetDevice} klonen?\n\n` +
+      'Alle Daten auf dem Ziellaufwerk werden überschrieben. Der Boot bleibt auf der SD-Karte, das Root-Dateisystem wird vom Ziellaufwerk geladen (Hybrid-Boot).\n\nNach dem Klonen bitte neu starten (sudo reboot).'
+    )) return
+
+    await requireSudo(
+      { title: 'System klonen', subtitle: 'Klon benötigt sudo (mount, rsync).', confirmText: 'Klon starten' },
+      async () => {
+        try {
+          const r = await fetchApi('/api/backup/clone', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target_device: cloneTargetDevice }),
+          })
+          const d = await r.json()
+          if (d.status === 'accepted') {
+            toast.success('Klon gestartet…')
+            setCloneJob({
+              job_id: d.job_id,
+              status: 'queued',
+              message: 'Klon läuft…',
+              target_device: cloneTargetDevice,
+            })
+          } else {
+            toast.error(d.message || 'Klon konnte nicht gestartet werden')
+            setCloneJob(null)
+          }
+        } catch (e) {
+          toast.error('Backend nicht erreichbar')
+          setCloneJob(null)
         }
       }
     )
@@ -1003,10 +1140,10 @@ const BackupRestore: React.FC = () => {
           setSudoModalOpen(false)
           setPendingAction(null)
         }}
-        onConfirm={async (pwd) => {
+        onConfirm={async (pwd, skipTest) => {
           try {
             if (!pendingAction) return
-            await pendingAction(pwd)
+            await pendingAction(pwd, skipTest)
             toast.success('Sudo-Passwort gespeichert (Session)')
             setSudoModalOpen(false)
             setPendingAction(null)
@@ -1184,6 +1321,25 @@ const BackupRestore: React.FC = () => {
             <HardDrive size={18} />
             Vorhandene Backups
             {activeTab === 'restore' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
+                initial={false}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('clone')}
+            className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
+              activeTab === 'clone'
+                ? 'text-sky-400'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Copy size={18} />
+            Laufwerk klonen
+            {activeTab === 'clone' && (
               <motion.div
                 layoutId="activeTab"
                 className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
@@ -2224,6 +2380,189 @@ const BackupRestore: React.FC = () => {
               <li>• Regelmäßige Backups sind wichtig!</li>
             </ul>
           </div>
+        </div>
+      </div>
+      )}
+
+      {activeTab === 'clone' && (
+      <div className="space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border border-emerald-600/40 bg-emerald-900/20 dark:bg-emerald-900/20 p-6"
+        >
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
+            <Copy className="text-emerald-500" />
+            System auf Ziellaufwerk klonen
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
+            Klont das laufende Root-Dateisystem von der SD-Karte auf ein Ziellaufwerk (z.B. NVMe, USB-SSD). Nach dem Klonen bleibt der Boot auf der SD-Karte, das Root-Dateisystem wird vom Ziellaufwerk geladen (Hybrid-Boot). Bitte danach neu starten (sudo reboot).
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-500 mb-0">
+            Nur ext4-Partitionen werden als Ziel angezeigt. Alle Daten auf dem Ziellaufwerk werden überschrieben.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card"
+        >
+          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+            <Copy className="text-emerald-500" />
+            Laufwerk klonen
+          </h2>
+
+          {/* Klon-Job Anzeige */}
+          {cloneJob && cloneJob.job_id && cloneJob.job_id !== 'pending' &&
+           (cloneJob.status === 'queued' || cloneJob.status === 'running' || cloneJob.status === 'cancel_requested' || !cloneJob.status) && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 bg-emerald-900/20 border border-emerald-700/40 rounded-lg text-emerald-100 mb-6"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                      className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full"
+                    />
+                    <div className="font-semibold">
+                      {cloneJob.status === 'cancel_requested' ? '⏳ Abbruch läuft…' : '⏳ Klon läuft…'}
+                    </div>
+                    {cloneJob.status !== 'cancel_requested' && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await fetchApi(`/api/backup/jobs/${encodeURIComponent(cloneJob.job_id)}/cancel`, { method: 'POST' })
+                            toast('Abbruch angefordert')
+                          } catch {
+                            toast.error('Abbruch fehlgeschlagen')
+                          }
+                        }}
+                        className="ml-auto px-3 py-1 text-xs bg-red-900/50 hover:bg-red-800/50 rounded-lg text-red-200"
+                      >
+                        Abbrechen
+                      </button>
+                    )}
+                  </div>
+                  <div className="text-xs text-emerald-100/80 mt-1">{cloneJob.message}</div>
+                  {cloneJob.results && cloneJob.results.length > 0 && (
+                    <div className="mt-2 text-xs font-mono text-emerald-200/90 max-h-32 overflow-y-auto space-y-1">
+                      {cloneJob.results.slice(-5).map((r: string, i: number) => (
+                        <div key={i}>{r}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {cloneJob && (cloneJob.status === 'success' || cloneJob.status === 'error' || cloneJob.status === 'cancelled') && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`p-4 rounded-lg mb-6 ${
+                cloneJob.status === 'success'
+                  ? 'bg-emerald-900/20 border border-emerald-700/40 text-emerald-100'
+                  : cloneJob.status === 'cancelled'
+                    ? 'bg-yellow-900/20 border border-yellow-700/40 text-yellow-100'
+                    : 'bg-red-900/20 border border-red-700/40 text-red-100'
+              }`}
+            >
+              <div className="font-semibold mb-2">
+                {cloneJob.status === 'success' ? '✅ Klon erfolgreich' : cloneJob.status === 'cancelled' ? '⚠️ Klon abgebrochen' : '❌ Klon fehlgeschlagen'}
+              </div>
+              <div className="text-sm">{cloneJob.message}</div>
+              {cloneJob.results && cloneJob.results.length > 0 && (
+                <div className="mt-2 text-xs font-mono max-h-40 overflow-y-auto space-y-1 opacity-90">
+                  {cloneJob.results.map((r: string, i: number) => (
+                    <div key={i}>{r}</div>
+                  ))}
+                </div>
+              )}
+              <button
+                onClick={() => setCloneJob(null)}
+                className="mt-3 px-3 py-2 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-sm"
+              >
+                Schließen
+              </button>
+            </motion.div>
+          )}
+
+          <div className="space-y-4">
+            {/* Quelle */}
+            {cloneDiskInfo?.source?.device && (
+              <div>
+                <div className="text-xs text-slate-400 mb-1">Quelle (aktuelles Root)</div>
+                <div className="p-3 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 font-mono">
+                  {cloneDiskInfo.source.device} {cloneDiskInfo.source.size && `(${cloneDiskInfo.source.size})`}
+                  {cloneDiskInfo.source.model && (
+                    <div className="text-xs text-slate-500 mt-1">{cloneDiskInfo.source.model}</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Ziel */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-slate-400">Ziellaufwerk</span>
+                <button
+                  type="button"
+                  onClick={() => loadCloneDiskInfo(undefined, true)}
+                  className="text-xs text-sky-400 hover:text-sky-300"
+                >
+                  Aktualisieren
+                </button>
+              </div>
+              <select
+                value={cloneTargetDevice}
+                onChange={(e) => setCloneTargetDevice(e.target.value)}
+                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                disabled={!cloneDiskInfo?.targets?.length}
+              >
+                <option value="">-- Ziellaufwerk wählen --</option>
+                {(cloneDiskInfo?.targets || []).map((t: any) => (
+                  <option key={t.device} value={t.device}>
+                    {t.device} – {t.size || '?'} {t.model ? `(${t.model})` : ''} {t.tran === 'nvme' ? 'NVMe' : t.tran === 'usb' ? 'USB' : ''}
+                  </option>
+                ))}
+              </select>
+              {(!cloneDiskInfo?.targets || cloneDiskInfo.targets.length === 0) && (
+                <div className="mt-2 space-y-2">
+                  <div className="text-xs text-slate-500">Keine ext4-Ziellaufwerke gefunden (NVMe, USB-SSD).</div>
+                  <button
+                    onClick={loadCloneDiskInfoWithSudo}
+                    className="text-sm px-3 py-2 bg-sky-600/30 hover:bg-sky-600/50 border border-sky-500/50 rounded-lg text-sky-200"
+                  >
+                    Mit Sudo laden (für ungemountete Laufwerke)
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={startClone}
+              disabled={!cloneTargetDevice || (cloneJob && cloneJob.job_id && cloneJob.job_id !== 'pending' && ['queued', 'running'].includes(cloneJob.status))}
+              className="btn-primary w-full"
+            >
+              {(cloneJob?.status === 'queued' || cloneJob?.status === 'running') ? '⏳ Klon läuft…' : '📋 System klonen'}
+            </button>
+          </div>
+        </motion.div>
+
+        <div className="card bg-gradient-to-br from-yellow-900/30 to-yellow-900/10 border-yellow-500/50">
+          <h3 className="text-lg font-bold text-yellow-300 mb-3">⚠️ Hinweise</h3>
+          <ul className="space-y-2 text-sm text-slate-300">
+            <li>• Boot bleibt auf der SD-Karte (Kernel wird von dort geladen)</li>
+            <li>• Root-Dateisystem wird vom Ziellaufwerk geladen (Hybrid-Boot)</li>
+            <li>• Nach dem Klonen: <code className="px-1 py-0.5 bg-slate-800 rounded">sudo reboot</code></li>
+            <li>• SD-Karte nicht entfernen – sie enthält weiterhin den Boot-Bereich</li>
+          </ul>
         </div>
       </div>
       )}

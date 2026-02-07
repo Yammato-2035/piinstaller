@@ -180,7 +180,7 @@ git config user.name "PI-Dokumentation"
 git config user.email "pi@pi5-gg.local"
 ```
 
-**Desktop-Starter anlegen (Backend, Frontend, App-Fenster, Browser):**
+**Desktop-Starter anlegen (Backend, Frontend, Tauri-App, Browser):**
 
 ```bash
 cd ~/Documents/PI-Installer
@@ -190,8 +190,10 @@ bash scripts/desktop-launcher-alle-anlegen.sh
 Danach liegen auf dem Desktop (bzw. Schreibtisch):
 - **PI-Installer Backend starten**
 - **PI-Installer Frontend starten** (nur Vite-Server)
-- **PI-Installer Frontend (App-Fenster)** (eigene Oberfläche / Tauri)
+- **PI-Installer Frontend (App-Fenster)** (Tauri – eigenes Fenster)
 - **PI-Installer Frontend (Browser)** (öffnet im Standard-Browser)
+
+Vollständige Übersicht: [docs/START_APPS.md](docs/START_APPS.md)
 
 **Wichtig:** Beim **App-Fenster** (Tauri) und **Browser** muss das **Backend zuerst laufen** („PI-Installer Backend starten“), sonst schlagen Sudo-Passwort-Speicherung und API-Aufrufe fehl („Backend erreichbar?“). Reihenfolge: zuerst Backend starten, dann Frontend.
 

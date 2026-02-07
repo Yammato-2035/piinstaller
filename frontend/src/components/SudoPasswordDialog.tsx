@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fetchApi } from '../api'
 import { Lock, X, AlertCircle } from 'lucide-react'
@@ -15,38 +15,65 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
   const [backendReachable, setBackendReachable] = useState(true)
+  const mountedRef = useRef(true)
 
   useEffect(() => {
-    // Prüfe beim Start, ob ein Passwort vorhanden ist
-    checkPasswordStatus()
-  }, [])
+    mountedRef.current = true
+    const maxRetries = 3
 
-  const checkPasswordStatus = async () => {
-    try {
-      const response = await fetchApi('/api/users/sudo-password/check')
-      
-      if (!response.ok) {
-        setBackendReachable(false)
-        setShow(true)
-        setChecking(false)
-        return
+    const run = async () => {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 15000)
+        try {
+          const response = await fetchApi('/api/users/sudo-password/check', {
+            signal: controller.signal,
+          })
+          clearTimeout(timeoutId)
+          if (!mountedRef.current) return
+
+          if (!response.ok) {
+            if (attempt === maxRetries) {
+              setBackendReachable(false)
+              setShow(true)
+            }
+            continue
+          }
+
+          const data = await response.json()
+          if (!mountedRef.current) return
+
+          if (data.status === 'success' && !data.has_password) {
+            setShow(true)
+          } else {
+            onPasswordSaved()
+          }
+          if (mountedRef.current) setChecking(false)
+          return
+        } catch (error) {
+          clearTimeout(timeoutId)
+          if (!mountedRef.current) return
+          if (attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, 1500))
+            continue
+          }
+          if (error instanceof Error && error.name === 'AbortError') {
+            setBackendReachable(false)
+          } else {
+            console.error('Fehler beim Prüfen des sudo-Passworts:', error)
+            setBackendReachable(false)
+          }
+          setShow(true)
+        }
+        if (attempt === maxRetries && mountedRef.current) setChecking(false)
       }
-      
-      const data = await response.json()
-      
-      if (data.status === 'success' && !data.has_password) {
-        setShow(true)
-      } else {
-        onPasswordSaved()
-      }
-    } catch (error) {
-      console.error('Fehler beim Prüfen des sudo-Passworts:', error)
-      setBackendReachable(false)
-      setShow(true)
-    } finally {
-      setChecking(false)
     }
-  }
+
+    run()
+    return () => {
+      mountedRef.current = false
+    }
+  }, [onPasswordSaved])
 
   const handleSave = async () => {
     if (!password.trim()) {
@@ -183,19 +210,22 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
               </div>
 
               {/* Input */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+              <form
+                className="mb-6"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  if (!loading && password.trim()) handleSave()
+                }}
+              >
+                <label htmlFor="sudo-password" className="block text-sm font-medium text-slate-300 mb-2">
                   Sudo-Passwort
                 </label>
                 <input
+                  id="sudo-password"
                   type="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !loading) {
-                      handleSave()
-                    }
-                  }}
                   placeholder="Ihr sudo-Passwort eingeben"
                   className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                   autoFocus
@@ -214,7 +244,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                     Ohne Prüfung speichern (Standard; beim ersten Einsatz wird geprüft)
                   </span>
                 </label>
-              </div>
+              </form>
 
               {/* Actions */}
               <div className="flex gap-3">

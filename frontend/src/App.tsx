@@ -94,13 +94,24 @@ function App() {
 
   const fetchSystemInfo = useCallback(async () => {
     setBackendError(false)
-    try {
-      const response = await fetchApi('/api/system-info')
-      const data = await response.json()
-      setSystemInfo(data)
-    } catch (error) {
-      console.error('Fehler beim Laden der Systeminfo:', error)
-      setBackendError(true)
+    const maxRetries = 3
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 15000)
+        const response = await fetchApi('/api/system-info', { signal: controller.signal })
+        clearTimeout(timeoutId)
+        const data = await response.json()
+        setSystemInfo(data)
+        return
+      } catch (error) {
+        if (attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, 1500))
+          continue
+        }
+        console.error('Fehler beim Laden der Systeminfo:', error)
+        setBackendError(true)
+      }
     }
   }, [])
 

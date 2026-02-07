@@ -23,9 +23,13 @@ echo ""
 # Frontend-Starter (alle drei: Server, App-Fenster, Browser)
 bash "$SCRIPT_DIR/desktop-frontend-launcher-anlegen.sh"
 
+# PI-Installer (Kombi: Backend + Auswahl Tauri/Browser/Frontend)
+bash "$SCRIPT_DIR/desktop-pi-installer-launcher-anlegen.sh"
+
 echo ""
 echo "==============================================="
 echo "✅ Fertig. Auf dem Desktop liegen jetzt:"
+echo "   • PI-Installer                        (Backend + Auswahl Tauri/Browser/Vite)"
 echo "   • PI-Installer Backend starten"
 echo "   • PI-Installer Frontend starten       (nur Vite-Server)"
 echo "   • PI-Installer Frontend (App-Fenster) (eigene Oberfläche)"

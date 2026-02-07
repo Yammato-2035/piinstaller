@@ -1,5 +1,7 @@
 #!/bin/bash
 # PI-Installer Frontend Startskript
+# Nur Vite-Server (Port 3001). Für Tauri/Browser: start-frontend-desktop.sh
+# Siehe: docs/START_APPS.md
 
 cd "$(dirname "$0")/frontend"
 

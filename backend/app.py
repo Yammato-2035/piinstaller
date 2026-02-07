@@ -829,6 +829,35 @@ def _demo_users():
     }
 
 
+@app.get("/api/system/paths")
+async def get_system_paths():
+    """Prüft kritische Pfade (NVMe-Boot, Konfiguration). Hilft bei Pfad-Problemen nach Laufwerkswechsel."""
+    paths = {
+        "config_etc": "/etc/pi-installer/config.json",
+        "config_etc_exists": Path("/etc/pi-installer/config.json").exists(),
+        "config_home": str(Path.home() / ".config" / "pi-installer" / "config.json"),
+        "backup_json": "/etc/pi-installer/backup.json",
+        "boot_firmware": "/boot/firmware",
+        "boot_firmware_config": "/boot/firmware/config.txt",
+        "boot_firmware_cmdline": "/boot/firmware/cmdline.txt",
+        "boot_firmware_exists": Path("/boot/firmware").exists(),
+        "mnt_backups": "/mnt/backups",
+        "mnt_backups_exists": Path("/mnt/backups").exists(),
+        "root_mount": _root_mount_device(),
+    }
+    return {"status": "success", "paths": paths}
+
+
+def _root_mount_device() -> Optional[str]:
+    """Ermittelt das Device für die Root-Partition (z.B. /dev/nvme0n1p1 oder /dev/mmcblk0p2)."""
+    for fs in _findmnt_mounts():
+        tgt = (fs.get("target") or "").strip()
+        src = (fs.get("source") or "").strip()
+        if tgt == "/" and src.startswith("/dev/"):
+            return src
+    return None
+
+
 @app.get("/api/system/network")
 async def get_system_network(request: Request):
     """Netzwerk-Informationen (IP-Adressen, Hostname) für Frontend-Zugriff."""
@@ -7641,6 +7670,357 @@ def _sanitize_label(label: str, max_len: int = 16) -> str:
     if len(label) > max_len:
         label = label[:max_len].rstrip()
     return label
+
+
+# -------------------- Clone (SD -> Ziellaufwerk) --------------------
+
+CLONE_MOUNT = "/mnt/pi-installer-clone"
+
+
+# Cache für disk-info (reduziert Last bei wiederholten Aufrufen)
+_clone_disk_info_cache: dict = {}
+_clone_disk_info_cache_ts: float = 0
+CLONE_DISK_INFO_CACHE_SEC = 15
+
+
+def _clone_disk_info(sudo_password: Optional[str] = None) -> dict:
+    """Ermittelt Quell- (Root) und Ziel-Laufwerke für Clone. Gecacht für 15s."""
+    global _clone_disk_info_cache_ts
+    import time as _time
+    now = _time.time()
+    cache_key = "with_sudo" if (sudo_password or "").strip() else "no_sudo"
+    if _clone_disk_info_cache.get(cache_key) and (now - _clone_disk_info_cache_ts) < CLONE_DISK_INFO_CACHE_SEC:
+        return _clone_disk_info_cache[cache_key]
+
+    source = {}
+    boot_info = {}
+    targets = []
+    system_mounts = {"/", "/boot", "/boot/firmware"}
+    _sudo = (sudo_password or "").strip()
+
+    # Nur je 1x findmnt und lsblk (Performance)
+    mounts = _findmnt_mounts()
+    data = _lsblk_tree()
+    devices = data.get("blockdevices", []) or []
+
+    def find_node_by_name(name: str, items=None) -> Optional[dict]:
+        for d in (items or devices):
+            if d.get("name") == name:
+                return d
+            if d.get("children"):
+                n = find_node_by_name(name, d["children"])
+                if n:
+                    return n
+        return None
+
+    def find_disk_for_part(part: dict) -> Optional[dict]:
+        pk = part.get("pkname") or (part.get("name", "").rstrip("0123456789") if part.get("name") else None)
+        if pk:
+            return find_node_by_name(pk)
+        return None
+
+    # Root-Mount
+    for fs in mounts:
+        tgt = (fs.get("target") or "").strip()
+        src = (fs.get("source") or "").strip()
+        if tgt == "/" and src.startswith("/dev/"):
+            name = src.replace("/dev/", "")
+            node = find_node_by_name(name)
+            disk = find_disk_for_part(node) if node else None
+            if node:
+                source = {
+                    "device": src,
+                    "mountpoint": "/",
+                    "size": node.get("size"),
+                    "fstype": node.get("fstype") or fs.get("fstype"),
+                    "name": node.get("name"),
+                    "model": disk.get("model") if disk else None,
+                }
+            break
+
+    # Boot-Partition
+    for fs in mounts:
+        tgt = (fs.get("target") or "").strip()
+        src = (fs.get("source") or "").strip()
+        if tgt in ("/boot", "/boot/firmware") and src.startswith("/dev/"):
+            boot_info = {"mountpoint": tgt, "device": src}
+            break
+    if not boot_info and Path("/boot/firmware").exists():
+        boot_info = {"mountpoint": "/boot/firmware", "device": None}
+
+    def _get_fstype(dev_path: str) -> str:
+        if not dev_path or not dev_path.startswith("/dev/"):
+            return ""
+        r = run_command(f"blkid -o value -s TYPE {shlex.quote(dev_path)} 2>/dev/null", timeout=2)
+        if r.get("success") and r.get("stdout"):
+            return (r.get("stdout") or "").strip().lower()
+        if _sudo:
+            r = run_command(f"blkid -o value -s TYPE {shlex.quote(dev_path)} 2>/dev/null", sudo=True, sudo_password=_sudo, timeout=2)
+            if r.get("success") and r.get("stdout"):
+                return (r.get("stdout") or "").strip().lower()
+        return ""
+
+    def walk_for_targets(items, disk_ctx=None):
+        for d in items:
+            if d.get("type") == "disk":
+                disk_ctx = d
+            dtype = d.get("type")
+            name = d.get("name")
+            fstype_raw = (d.get("fstype") or "").strip()
+            fstype = fstype_raw.lower() if fstype_raw else ""
+            mp = d.get("mountpoint")
+            mps = d.get("mountpoints")
+            mps_list = mps if isinstance(mps, list) else ([mp] if mp else [])
+            is_system = any(m in system_mounts for m in mps_list if m)
+
+            if dtype == "part" and name and not is_system:
+                dev_path = f"/dev/{name}"
+                if dev_path == source.get("device"):
+                    continue
+                if not fstype:
+                    fstype = _get_fstype(dev_path)
+                if fstype != "ext4":
+                    continue
+                disk = disk_ctx or find_disk_for_part(d)
+                targets.append({
+                    "device": dev_path,
+                    "name": name,
+                    "size": d.get("size"),
+                    "fstype": fstype,
+                    "mounted": bool(mp or (mps_list and mps_list[0])),
+                    "mountpoint": mp or (mps_list[0] if mps_list else None),
+                    "model": disk.get("model") if disk else None,
+                    "tran": disk.get("tran") if disk else d.get("tran"),
+                })
+            if d.get("children"):
+                walk_for_targets(d["children"], disk_ctx)
+
+    walk_for_targets(devices)
+    result = {"source": source, "boot": boot_info, "targets": targets}
+    _clone_disk_info_cache[cache_key] = result
+    _clone_disk_info_cache_ts = now
+    return result
+
+
+@app.api_route("/api/backup/clone/disk-info", methods=["GET", "POST"])
+async def clone_disk_info(request: Request, refresh: int = 0):
+    """Quell- und Ziel-Laufwerke für System-Clone auflisten. POST mit sudo_password nutzt dieses für blkid. refresh=1 umgeht Cache."""
+    try:
+        global _clone_disk_info_cache_ts
+        if refresh:
+            _clone_disk_info_cache_ts = 0  # Cache invalidieren
+        sudo_password = sudo_password_store.get("password", "") or ""
+        if request.method == "POST":
+            try:
+                body = await request.json()
+                pw = (body.get("sudo_password") or "").strip()
+                if pw:
+                    sudo_password = pw
+                    if not sudo_password_store.get("password"):
+                        sudo_password_store["password"] = pw
+            except Exception:
+                pass
+        info = _clone_disk_info(sudo_password=sudo_password)
+        return {"status": "success", **info}
+    except Exception as e:
+        logger.exception("clone disk-info failed")
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e), "source": {}, "boot": {}, "targets": []})
+
+
+def _do_clone_logic(
+    target_device: str,
+    sudo_password: str,
+    job: dict,
+    cancel_event: Optional[threading.Event] = None,
+) -> dict:
+    """Führt den Klon-Vorgang aus (rsync + fstab/cmdline.txt)."""
+    results = []
+    mountpoint = CLONE_MOUNT
+
+    def _add(msg: str):
+        results.append(msg)
+        if job:
+            job["results"] = list(results)
+            job["message"] = msg
+
+    try:
+        info = _clone_disk_info()
+        source = info.get("source") or {}
+        boot_info = info.get("boot") or {}
+        boot_mount = (boot_info.get("mountpoint") or "/boot/firmware").strip()
+        boot_device = boot_info.get("device")
+
+        if not source.get("device"):
+            return {"status": "error", "message": "Quell-Laufwerk (/) nicht gefunden", "results": results}
+
+        target_device = (target_device or "").strip()
+        if not target_device or not target_device.startswith("/dev/"):
+            return {"status": "error", "message": "Ungültiges Ziellaufwerk", "results": results}
+
+        # Prüfen ob Ziel in targets
+        targets = info.get("targets") or []
+        tgt_match = next((t for t in targets if t.get("device") == target_device), None)
+        if not tgt_match:
+            return {"status": "error", "message": f"Ziellaufwerk {target_device} ist kein gültiger ext4-Zielkandidat", "results": results}
+
+        _add("Klon wird gestartet: " + target_device)
+
+        # Ziel unmounten falls woanders gemountet
+        mp = tgt_match.get("mountpoint")
+        if mp:
+            r = run_command(f"umount {shlex.quote(mp)} 2>/dev/null", sudo=True, sudo_password=sudo_password, timeout=30)
+            if r.get("success"):
+                _add(f"Ziel von {mp} ausgehängt")
+            else:
+                return {"status": "error", "message": f"Ziel ist unter {mp} gemountet und konnte nicht ausgehängt werden. Bitte manuell unmounten.", "results": results}
+
+        # Mount-Punkt anlegen (sudo – /mnt/ benötigt Root-Rechte)
+        r = run_command(f"mkdir -p {shlex.quote(mountpoint)}", sudo=True, sudo_password=sudo_password, timeout=10)
+        if not r.get("success"):
+            return {"status": "error", "message": f"Mount-Punkt {mountpoint} konnte nicht erstellt werden: {(r.get('stderr') or r.get('stdout') or '')[:150]}", "results": results}
+
+        # Mount Ziel
+        r = run_command(f"mount {shlex.quote(target_device)} {shlex.quote(mountpoint)}", sudo=True, sudo_password=sudo_password, timeout=30)
+        if not r.get("success"):
+            return {"status": "error", "message": f"Ziel konnte nicht gemountet werden: {(r.get('stderr') or r.get('stdout') or '')[:200]}", "results": results}
+        _add("Ziel gemountet")
+
+        # rsync
+        excludes = [
+            "/boot", "/boot/firmware",
+            "/proc", "/sys", "/dev", "/tmp", "/run", "/mnt", "/lost+found",
+            mountpoint.rstrip("/"),
+        ]
+        excl_args = " ".join(f"--exclude={shlex.quote(x)}" for x in excludes)
+        rsync_cmd = (
+            f"rsync -axHAWXS --numeric-ids --info=progress2 {excl_args} / {shlex.quote(mountpoint)}/"
+        )
+        _add("Rsync läuft (kann einige Minuten dauern)…")
+        r = run_command(rsync_cmd, sudo=True, sudo_password=sudo_password, timeout=7200)
+        if cancel_event and cancel_event.is_set():
+            run_command(f"umount {shlex.quote(mountpoint)} 2>/dev/null", sudo=True, sudo_password=sudo_password, timeout=30)
+            return {"status": "cancelled", "message": "Abgebrochen", "results": results}
+        if not r.get("success"):
+            run_command(f"umount {shlex.quote(mountpoint)} 2>/dev/null", sudo=True, sudo_password=sudo_password, timeout=30)
+            return {"status": "error", "message": f"Rsync fehlgeschlagen: {(r.get('stderr') or r.get('stdout') or '')[:300]}", "results": results}
+        _add("Rsync abgeschlossen")
+
+        # fstab auf Ziel anpassen
+        fstab_path = Path(mountpoint) / "etc" / "fstab"
+        if fstab_path.exists():
+            try:
+                content = fstab_path.read_text(encoding="utf-8")
+                lines = content.splitlines()
+                new_lines = []
+                for line in lines:
+                    s = line.strip()
+                    if not s or s.startswith("#"):
+                        new_lines.append(line)
+                        continue
+                    parts = s.split()
+                    if len(parts) >= 2 and parts[1] == "/":
+                        # Root-Zeile ersetzen
+                        new_lines.append(f"{target_device}  /  ext4  defaults,noatime  0  1")
+                    else:
+                        new_lines.append(line)
+                fstab_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+                _add("fstab angepasst")
+            except Exception as e:
+                _add(f"Warnung: fstab konnte nicht angepasst werden: {e}")
+
+        # cmdline.txt anpassen
+        cmdline_path = Path(boot_mount) / "cmdline.txt"
+        if cmdline_path.exists():
+            try:
+                content = cmdline_path.read_text(encoding="utf-8")
+                new_content = re.sub(r"root=[^\s]+", f"root={target_device}", content)
+                if new_content != content:
+                    cmdline_path.write_text(new_content, encoding="utf-8")
+                    _add("cmdline.txt angepasst (root=" + target_device + ")")
+                else:
+                    _add("cmdline.txt bereits korrekt oder unverändert")
+            except Exception as e:
+                _add(f"Warnung: cmdline.txt konnte nicht angepasst werden: {e}")
+        else:
+            _add("cmdline.txt nicht gefunden unter " + boot_mount)
+
+        # Unmount
+        run_command(f"umount {shlex.quote(mountpoint)} 2>/dev/null", sudo=True, sudo_password=sudo_password, timeout=30)
+        _add("Ziel ausgehängt – Klon fertig. Bitte neu starten (sudo reboot), damit von " + target_device + " gebootet wird.")
+
+        return {"status": "success", "message": "Klon erfolgreich", "results": results}
+    except Exception as e:
+        logger.exception("clone failed")
+        try:
+            run_command(f"umount {shlex.quote(mountpoint)} 2>/dev/null", sudo=True, sudo_password=sudo_password, timeout=30)
+        except Exception:
+            pass
+        return {"status": "error", "message": str(e), "results": results}
+
+
+@app.post("/api/backup/clone")
+async def clone_disk(request: Request):
+    """System von SD-Karte auf Ziellaufwerk klonen (async Job)."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+
+        sudo_password = (data.get("sudo_password") or "").strip() or sudo_password_store.get("password", "")
+        target_device = (data.get("target_device") or "").strip()
+
+        if not target_device or not target_device.startswith("/dev/"):
+            return JSONResponse(status_code=200, content={"status": "error", "message": "target_device (/dev/...) erforderlich"})
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test.get("success"):
+                return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+
+        job_id = _new_job_id()
+        BACKUP_JOBS[job_id] = {
+            "job_id": job_id,
+            "status": "queued",
+            "type": "clone",
+            "target_device": target_device,
+            "started_at": _now_iso(),
+            "finished_at": None,
+            "message": "Wartet…",
+            "results": [],
+        }
+
+        def _runner():
+            try:
+                ev = BACKUP_JOB_CANCEL.get(job_id)
+                if not ev:
+                    ev = threading.Event()
+                    BACKUP_JOB_CANCEL[job_id] = ev
+                BACKUP_JOBS[job_id]["status"] = "running"
+                BACKUP_JOBS[job_id]["message"] = "Klon läuft…"
+                result = _do_clone_logic(target_device, sudo_password, BACKUP_JOBS[job_id], cancel_event=ev)
+                BACKUP_JOBS[job_id]["results"] = result.get("results") or []
+                BACKUP_JOBS[job_id]["finished_at"] = _now_iso()
+                BACKUP_JOBS[job_id]["status"] = result.get("status", "error")
+                BACKUP_JOBS[job_id]["message"] = result.get("message", "Fertig")
+            except Exception as e:
+                logger.exception("clone job failed")
+                BACKUP_JOBS[job_id]["status"] = "error"
+                BACKUP_JOBS[job_id]["message"] = str(e)
+                BACKUP_JOBS[job_id]["finished_at"] = _now_iso()
+            finally:
+                BACKUP_JOB_CANCEL.pop(job_id, None)
+
+        t = threading.Thread(target=_runner, daemon=True)
+        t.start()
+
+        return JSONResponse(status_code=200, content={
+            "status": "accepted",
+            "job_id": job_id,
+            "message": "Klon-Job gestartet",
+        })
+    except Exception as e:
+        logger.exception("clone endpoint failed")
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
 @app.get("/api/backup/usb/info")

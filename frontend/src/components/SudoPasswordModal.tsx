@@ -7,8 +7,10 @@ interface SudoPasswordModalProps {
   title?: string
   subtitle?: string
   confirmText?: string
+  /** Option „Ohne Prüfung speichern“ anzeigen (bei hängender sudo-Prüfung nutzbar) */
+  showSkipTest?: boolean
   onCancel: () => void
-  onConfirm: (password: string) => Promise<void> | void
+  onConfirm: (password: string, skipTest?: boolean) => Promise<void> | void
 }
 
 const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
@@ -16,16 +18,19 @@ const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
   title = 'Sudo-Passwort erforderlich',
   subtitle = 'Für diese Aktion werden Administrator-Rechte benötigt.',
   confirmText = 'Bestätigen',
+  showSkipTest = true,
   onCancel,
   onConfirm,
 }) => {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [skipTest, setSkipTest] = useState(false)
 
   useEffect(() => {
     if (!open) {
       setPassword('')
       setLoading(false)
+      setSkipTest(false)
     }
   }, [open])
 
@@ -33,7 +38,7 @@ const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
     if (!password.trim()) return
     setLoading(true)
     try {
-      await onConfirm(password)
+      await onConfirm(password, skipTest)
     } finally {
       setLoading(false)
     }
@@ -95,6 +100,20 @@ const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
               <p className="mt-2 text-xs text-slate-400">
                 Die Eingabe ist verdeckt und wird nur für diese Session gespeichert.
               </p>
+
+              {showSkipTest && (
+                <label className="mt-3 flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={skipTest}
+                    onChange={(e) => setSkipTest(e.target.checked)}
+                    className="rounded border-slate-600 bg-slate-800 text-sky-500 focus:ring-sky-500"
+                  />
+                  <span className="text-sm text-slate-400">
+                    Ohne Prüfung speichern (falls die App hängt)
+                  </span>
+                </label>
+              )}
 
               <div className="mt-5 flex gap-3">
                 <button

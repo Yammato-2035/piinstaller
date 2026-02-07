@@ -21,6 +21,9 @@ secrets/
 # Node / Frontend
 frontend/node_modules/
 frontend/dist/
+
+# Rust / Tauri
+frontend/src-tauri/target/
 *.tsbuildinfo
 
 # Logs (können sensible Pfade/Fehler enthalten)
@@ -48,3 +51,4 @@ data/
 
 # Sonstiges
 *.bak
+Freenove_Computer_Case_Kit_Pro_for_Raspberry_Pi/

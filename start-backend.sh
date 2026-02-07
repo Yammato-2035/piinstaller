@@ -1,5 +1,7 @@
 #!/bin/bash
 # PI-Installer Backend Startskript
+# Startet Backend auf http://localhost:8000
+# Siehe: docs/START_APPS.md
 
 cd "$(dirname "$0")/backend"
 

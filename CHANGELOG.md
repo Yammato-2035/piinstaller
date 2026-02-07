@@ -5,6 +5,22 @@ Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
 
 ---
 
+## [1.3.1.0] – 2026-02
+
+### Backup & Restore – Laufwerk klonen & NVMe
+
+- **Laufwerk klonen:** Neue Funktion in Backup & Restore – System von SD-Karte auf NVMe/USB-SSD klonen (Hybrid-Boot: Kernel von SD, Root von NVMe). rsync-basiert, fstab und cmdline.txt werden automatisch angepasst.
+- **NVMe-Erkennung:** Ziel-Laufwerke (NVMe, USB, SATA) werden über disk-info API erkannt und im Clone-Tab angezeigt. Modell, Größe und Mount-Status sichtbar.
+- **Festgestellte Probleme:** Siehe Dokumentation → FAQ für bekannte Einschränkungen und Lösungswege (z. B. NVMe-Pfade nach Clone, Dualdisplay-Konfiguration, Freenove-Case-Anpassungen).
+
+### Dokumentation
+
+- **Neue Bereiche:** „Freenove Pro – 4,3″ Touchscreen im Gehäuse“ und „Dualdisplay DSI0 + HDMI1 – Zwei Monitore gleichzeitig“ mit Tips & Tricks.
+- **Lernbereich:** Themenblock „Touchscreen am DSI0 Port“ ergänzt.
+- **FAQ:** Aus Troubleshooting eine vollständige FAQ mit Fehlername, Beschreibung und Lösungen; funktionales Design mit logischer Farbgebung.
+
+---
+
 ## [1.3.0.1] – 2026-02
 
 ### Backup & Restore

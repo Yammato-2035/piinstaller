@@ -1,38 +1,39 @@
 # PI-Installer - Startanleitung
 
+> **Vollständige Übersicht:** [docs/START_APPS.md](docs/START_APPS.md) – Backend, Tauri-App, Browser
+
 ## 🚀 Schnellstart
 
-### Option 1: Beide Services zusammen starten
+### Option 1: Beide Services zusammen (Browser)
 ```bash
 ./start.sh
 ```
+Backend + Frontend, dann **http://localhost:3001** im Browser öffnen.
 
-### Option 2: Getrennt starten
-
-#### Backend starten (Terminal 1):
+### Option 2: Backend + Tauri-App (eigenes Fenster)
 ```bash
-cd backend
-source venv/bin/activate
-python3 app.py
+./start-backend.sh          # Terminal 1
+./start-frontend-desktop.sh --window   # Terminal 2
 ```
 
-#### Frontend starten (Terminal 2):
+### Option 3: Backend + Browser (mit Auto-Öffnen)
 ```bash
-cd frontend
-npm run dev
+./start-backend.sh          # Terminal 1
+./start-frontend-desktop.sh --browser  # Terminal 2 – öffnet Browser automatisch
 ```
 
-### Option 3: Mit Startskripten
+### Option 4: Mit Startskripten (getrennt)
 
 #### Backend:
 ```bash
 ./start-backend.sh
 ```
 
-#### Frontend:
+#### Frontend (nur Vite-Server):
 ```bash
 ./start-frontend.sh
 ```
+Browser manuell: http://localhost:3001
 
 ---
 
@@ -68,32 +69,31 @@ npm run dev
 
 4. **Backend starten:**
    ```bash
-   python3 app.py
+   python3 -m uvicorn app:app --host 0.0.0.0 --port 8000
    ```
+   Oder einfacher: `./start-backend.sh` (im Projektroot)
 
    Backend läuft dann auf: **http://localhost:8000**
    API Dokumentation: **http://localhost:8000/docs**
 
 ---
 
-### Frontend (Port 3001)
+### Frontend – drei Varianten
 
-1. **In das Frontend-Verzeichnis wechseln:**
-   ```bash
-   cd frontend
-   ```
+| Variante | Befehl | Port |
+|----------|--------|------|
+| Browser | `./start-frontend-desktop.sh --browser` | 3001 |
+| Tauri-App (eigenes Fenster) | `./start-frontend-desktop.sh --window` | 5173 |
+| Nur Server | `./start-frontend.sh` oder `npm run dev` | 3001 |
 
-2. **Dependencies installieren (falls nötig):**
-   ```bash
-   npm install
-   ```
-
-3. **Frontend starten:**
-   ```bash
-   npm run dev
-   ```
-
-   Frontend läuft dann auf: **http://localhost:3001**
+**Im Frontend-Verzeichnis:**
+```bash
+cd frontend
+npm install
+npm run dev          # Browser: http://localhost:3001
+# oder
+npm run tauri:dev    # Tauri-App (eigenes Fenster)
+```
 
 ---
 
@@ -136,6 +136,16 @@ npm install
 **Problem:** `Error: getaddrinfo ENOTFOUND backend`
 - Stelle sicher, dass Backend auf Port 8000 läuft
 - Prüfe `vite.config.ts` - Proxy sollte auf `http://localhost:8000` zeigen
+
+---
+
+## 🖥️ Desktop-Starter
+
+Alle Starter auf einmal anlegen (Backend, Frontend, Tauri-App, Browser):
+```bash
+bash scripts/desktop-launcher-alle-anlegen.sh
+```
+Siehe [docs/START_APPS.md](docs/START_APPS.md) für Details.
 
 ---
 
