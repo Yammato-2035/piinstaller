@@ -858,6 +858,69 @@ def _root_mount_device() -> Optional[str]:
     return None
 
 
+def _detect_freenove_case() -> dict:
+    """Erkennt Freenove Computer Case Kit Pro (DSI-Display, I2C-Expansion-Board, Audio).
+    Expansion-Board: I2C Adresse 0x21 (REG_BRAND 0xfd). DSI: /sys/class/drm oder wlr-randr."""
+    result = {
+        "detected": False,
+        "expansion_board": False,
+        "dsi_display": False,
+        "audio_available": False,
+        "hint": "",
+    }
+    try:
+        # 1. I2C Expansion-Board (Freenove 0x21) – Pi 5: Bus 0,1,6,7 typisch
+        for bus in (1, 0, 6, 7, 2, 3, 4, 5):
+            r = run_command(f"i2cget -y {bus} 0x21 0xfd 2>/dev/null", timeout=2)
+            if r.get("success") and r.get("stdout", "").strip():
+                result["expansion_board"] = True
+                break
+        if not result["expansion_board"]:
+            # Sysfs-Fallback: /sys/bus/i2c/devices/*/name oder Adresse 0x21
+            try:
+                for dev in Path("/sys/bus/i2c/devices").iterdir():
+                    if dev.name.endswith("-0021"):
+                        result["expansion_board"] = True
+                        break
+            except Exception:
+                pass
+        # 2. DSI-Display (4,3" TFT) – zuerst sysfs (funktioniert ohne Wayland)
+        try:
+            for p in Path("/sys/class/drm").iterdir():
+                if "DSI" in p.name:
+                    status_file = p / "status"
+                    if status_file.exists():
+                        try:
+                            if status_file.read_text().strip() == "connected":
+                                result["dsi_display"] = True
+                                break
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+        if not result["dsi_display"]:
+            r = run_command("wlr-randr 2>/dev/null | grep -i dsi || true", timeout=2)
+            if r.get("success") and r.get("stdout", "").strip():
+                result["dsi_display"] = True
+        # 3. Audio (Lautsprecher)
+        r = run_command("cat /proc/asound/cards 2>/dev/null | grep -E '^[[:space:]]*[0-9]' || true", timeout=2)
+        result["audio_available"] = bool(r.get("success") and r.get("stdout", "").strip())
+        # Freenove erkannt wenn DSI ODER Expansion-Board
+        result["detected"] = result["dsi_display"] or result["expansion_board"]
+        if result["detected"]:
+            result["hint"] = "TFT-Modi im App Store nutzbar. Lautsprecher: System-Sound → Ausgabegerät wählen."
+    except Exception as e:
+        result["hint"] = str(e)
+    return result
+
+
+@app.get("/api/system/freenove-detection")
+async def get_freenove_detection():
+    """Erkennt Freenove Computer Case Kit Pro – für TFT-Bereich im App Store."""
+    data = _detect_freenove_case()
+    return {"status": "success", **data}
+
+
 @app.get("/api/system/network")
 async def get_system_network(request: Request):
     """Netzwerk-Informationen (IP-Adressen, Hostname) für Frontend-Zugriff."""
@@ -2077,8 +2140,8 @@ async def get_status(request: Request):
 async def get_system_info(request: Request, light: bool = False):
     """Systeminfo auslesen. light=True: minimaler Satz für Polling (weniger CPU auf Pi). X-Demo-Mode: 1 ersetzt sensible Daten durch Platzhalter."""
     try:
-        # light-Modus: cpu_percent ohne Blockierung (interval=None) – spart ~1s Block pro Aufruf auf Pi
-        cpu_interval = None if light else 1
+        # light-Modus: kurzes interval (0.2s) für aktuelle Werte, ohne 1s zu blockieren. Sonst: 1s.
+        cpu_interval = 0.2 if light else 1
         per_cpu_percent = psutil.cpu_percent(interval=cpu_interval, percpu=True)
         cpu_percent = sum(per_cpu_percent) / len(per_cpu_percent) if per_cpu_percent else 0
         per_core_usage, physical_cores = (([], 0) if light else get_per_core_usage(per_cpu_percent))
@@ -2326,6 +2389,7 @@ async def dashboard_services_status():
 async def get_system_resources():
     """Ressourcen-Management (Milestone 3): RAM, Swap, Temperatur für Pi-Optimierung und App-Store-Hinweise."""
     try:
+        cpu_percent = psutil.cpu_percent(interval=0.2)
         memory = psutil.virtual_memory()
         swap = psutil.swap_memory()
         ram_total_gb = round(memory.total / (1024 ** 3), 1)
@@ -2342,6 +2406,7 @@ async def get_system_resources():
         swap_recommended = ram_total_gb < 2
         return {
             "status": "success",
+            "cpu": cpu_percent,
             "ram_total_gb": ram_total_gb,
             "ram_available_gb": ram_available_gb,
             "ram_percent": memory.percent,
@@ -2928,7 +2993,7 @@ def _open_terminal_with_command(shell_cmd: str) -> tuple[bool, str]:
     """Öffnet ein Terminal-Fenster und führt den Befehl aus. Passwort gibt der Benutzer im Terminal ein.
     Gibt (success, message) zurück."""
     import shutil
-    wrapped = f"{shell_cmd}; echo ''; read -p 'Drücke Enter zum Schließen'; exec bash"
+    wrapped = f"{shell_cmd}; echo ''; read -p 'Drücke Enter zum Schließen' dummy; exit 0"
     env = os.environ.copy()
     # Erweiterte Liste: GNOME, XFCE, KDE, MATE, LXDE, Kitty, Alacritty, QTerminal, Tilix
     for term_cmd, term_args in [

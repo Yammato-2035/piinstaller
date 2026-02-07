@@ -24,6 +24,7 @@ import PeripheryScan from './pages/PeripheryScan'
 import KinoStreaming from './pages/KinoStreaming'
 import Documentation from './pages/Documentation'
 import AppStore from './pages/AppStore'
+import TFTPage from './pages/TFTPage'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
 import { fetchApi } from './api'
@@ -52,12 +53,14 @@ type Page =
   | 'settings'
   | 'documentation'
   | 'app-store'
+  | 'tft'
 
 type Theme = 'light' | 'dark' | 'system'
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
   const [systemInfo, setSystemInfo] = useState<any>(null)
+  const [freenoveDetected, setFreenoveDetected] = useState(false)
   const [backendError, setBackendError] = useState(false)
   const [sudoPasswordReady, setSudoPasswordReady] = useState(false)
   const [theme, setTheme] = useState<Theme>(() => {
@@ -115,9 +118,24 @@ function App() {
     }
   }, [])
 
+  const fetchFreenoveDetection = useCallback(async () => {
+    try {
+      const res = await fetchApi('/api/system/freenove-detection')
+      if (!res.ok) return
+      const data = await res.json()
+      setFreenoveDetected(data?.detected === true)
+    } catch {
+      setFreenoveDetected(false)
+    }
+  }, [])
+
   useEffect(() => {
     fetchSystemInfo()
   }, [fetchSystemInfo])
+
+  useEffect(() => {
+    fetchFreenoveDetection()
+  }, [fetchFreenoveDetection])
 
   useEffect(() => {
     const handler = () => fetchSystemInfo()
@@ -198,7 +216,9 @@ function App() {
       case 'documentation':
         return <Documentation />
       case 'app-store':
-        return <AppStore />
+        return <AppStore freenoveDetected={freenoveDetected} setCurrentPage={handlePageChange} />
+      case 'tft':
+        return <TFTPage />
       default:
         return <Dashboard systemInfo={systemInfo} backendError={backendError} setCurrentPage={handlePageChange} />
     }
@@ -229,7 +249,7 @@ function App() {
           </button>
           <span className="font-semibold text-slate-800 dark:text-white">PI-Installer</span>
         </header>
-        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
       <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="p-4 sm:p-8 min-h-full">
           <AnimatePresence mode="wait" initial={false}>

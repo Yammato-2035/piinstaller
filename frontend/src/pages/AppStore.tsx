@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Package, Download, Settings, Search } from 'lucide-react'
+import { Package, Download, Settings, Search, Monitor } from 'lucide-react'
 import HelpTooltip from '../components/HelpTooltip'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
@@ -20,13 +20,18 @@ interface AppStatus {
 
 const CATEGORIES = ['Alle', 'Smart Home', 'Media', 'Cloud', 'Tools', 'Entwicklung']
 
+interface AppStoreProps {
+  freenoveDetected?: boolean
+  setCurrentPage?: (page: string) => void
+}
+
 const APPS_MOCK: AppItem[] = [
   { id: 'home-assistant', name: 'Home Assistant', description: 'Smart Home zentral steuern – Geräte, Automatisierungen, Dashboards.', category: 'Smart Home', size: '~500 MB' },
   { id: 'nextcloud', name: 'Nextcloud', description: 'Eigene Cloud für Dateien, Kalender, Kontakte und mehr.', category: 'Cloud', size: '~400 MB' },
   { id: 'pi-hole', name: 'Pi-hole', description: 'Werbung und Tracker im gesamten Netzwerk blockieren.', category: 'Tools', size: '~200 MB' },
 ]
 
-const AppStore: React.FC = () => {
+const AppStore: React.FC<AppStoreProps> = ({ freenoveDetected = false, setCurrentPage }) => {
   const [apps, setApps] = useState<AppItem[]>(APPS_MOCK)
   const [statuses, setStatuses] = useState<Record<string, AppStatus>>({})
   const [category, setCategory] = useState('Alle')
@@ -125,6 +130,29 @@ const AppStore: React.FC = () => {
           <HelpTooltip text="Wähle eine App und klicke auf „Installieren“. Die Ein-Klick-Installation wird in einer späteren Version aktiviert." />
         </p>
       </div>
+
+      {freenoveDetected && (
+        <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/20 p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+              <Monitor className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-lg text-slate-800 dark:text-slate-100">Freenove 4,3″ TFT Display</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+                Gehäuse-Display erkannt. Dashboard, Radio, Wecker und mehr – direkt auf dem Touchscreen.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCurrentPage?.('tft')}
+              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+            >
+              TFT Display öffnen
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">

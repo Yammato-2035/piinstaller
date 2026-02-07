@@ -41,7 +41,7 @@ interface SidebarProps {
 
 const NEW_BADGE_KEY = 'pi-installer-new-'
 
-const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, mobileOpen = false, onClose }) => {
+const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, freenoveDetected = false, mobileOpen = false, onClose }) => {
   const { systemLabel } = usePlatform()
   const [version, setVersion] = useState<string>('…')
   const [newBadges, setNewBadges] = useState<Record<string, boolean>>({})
@@ -104,7 +104,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
       items.splice(items.length - 1, 0, { id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu })
     }
     return items
-  }, [isRaspberryPi])
+  }, [isRaspberryPi, freenoveDetected])
   
   const handlePageChange = useCallback((pageId: string) => {
     try {
