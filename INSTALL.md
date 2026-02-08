@@ -288,5 +288,5 @@ MIT License - siehe LICENSE Datei
 
 ---
 
-**Version:** 1.2.0.6  
+**Version:** 1.3.1.0  
 **Letztes Update:** 2026-02

@@ -28,6 +28,7 @@ export function isScreenshotMode(): boolean {
   return _screenshotMode;
 }
 
+/** API-Basis-URL (leer = gleiche Origin, für Proxy). */
 export function getApiBase(): string {
   const env = import.meta.env.VITE_API_BASE as string | undefined;
   if (env && typeof env === 'string') return env.replace(/\/$/, '');

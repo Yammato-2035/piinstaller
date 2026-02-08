@@ -1,0 +1,5 @@
+# PI-Installer DSI Radio – Standalone PyQt6-App (Freenove 4,3" DSI)
+# Kein Frontend/Backend nötig; Fenstertitel „PI-Installer DSI Radio“ für Wayfire → DSI-1 (TFT)
+
+PyQt6>=6.4
+requests>=2.28

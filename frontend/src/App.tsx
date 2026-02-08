@@ -25,6 +25,7 @@ import KinoStreaming from './pages/KinoStreaming'
 import Documentation from './pages/Documentation'
 import AppStore from './pages/AppStore'
 import TFTPage from './pages/TFTPage'
+import RadioPlayer from './components/RadioPlayer'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
 import { fetchApi } from './api'
@@ -57,7 +58,11 @@ type Page =
 
 type Theme = 'light' | 'dark' | 'system'
 
+const isDsiRadioView = () =>
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'dsi-radio'
+
 function App() {
+  const dsiRadioView = isDsiRadioView()
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
   const [systemInfo, setSystemInfo] = useState<any>(null)
   const [freenoveDetected, setFreenoveDetected] = useState(false)
@@ -94,6 +99,12 @@ function App() {
       document.documentElement.setAttribute('data-tauri', 'true')
     }
   }, [])
+
+  useEffect(() => {
+    if (dsiRadioView) {
+      document.title = 'PI-Installer DSI Radio'
+    }
+  }, [dsiRadioView])
 
   const fetchSystemInfo = useCallback(async () => {
     setBackendError(false)
@@ -225,6 +236,14 @@ function App() {
   }
 
   const platform = useMemo(() => platformFromSystemInfo(systemInfo), [systemInfo])
+
+  if (dsiRadioView) {
+    return (
+      <div className="fixed inset-0 bg-slate-900 text-white overflow-auto flex flex-col items-center justify-center p-4">
+        <RadioPlayer compact dsi />
+      </div>
+    )
+  }
 
   return (
     <PlatformProvider value={platform}>

@@ -2,7 +2,7 @@
 PI-Installer Backend - FastAPI mit erweiterten Endpoints
 """
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 import os
@@ -914,11 +914,287 @@ def _detect_freenove_case() -> dict:
     return result
 
 
+# ---------- Radio (Internetradio, Stream-Metadaten, Logo-Proxy) ----------
+def _parse_icy_metadata_from_stream(url: str) -> dict:
+    """Liest ersten ICY-Metadaten-Block aus dem Stream (StreamTitle). Fallback wenn status-json fehlt."""
+    try:
+        import urllib.request
+        req = urllib.request.Request(url, headers={"User-Agent": "PI-Installer/1.0", "Icy-MetaData": "1"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            meta_int = resp.headers.get("icy-metaint")
+            if not meta_int:
+                return {}
+            meta_int = int(meta_int)
+            # Ersten Audio-Block lesen
+            resp.read(meta_int)
+            # Länge des Metadaten-Blocks (1 Byte)
+            raw = resp.read(1)
+            if not raw:
+                return {}
+            block_len = ord(raw) * 16
+            if block_len <= 0:
+                return {}
+            meta_raw = resp.read(block_len).decode("utf-8", errors="ignore").strip("\x00")
+            # StreamTitle='...';
+            for part in meta_raw.split(";"):
+                part = part.strip()
+                if part.lower().startswith("streamtitle="):
+                    val = part.split("=", 1)[1].strip("'\"")
+                    if val:
+                        artist, song = "", val
+                        if " - " in val:
+                            parts = val.split(" - ", 1)
+                            artist, song = parts[0].strip(), parts[1].strip() if len(parts) > 1 else val
+                        return {"title": val, "artist": artist, "song": song}
+        return {}
+    except Exception as e:
+        logger.debug(f"ICY metadata: {e}")
+        return {}
+
+
+def _fetch_icecast_metadata(url: str) -> dict:
+    """Holt Metadaten aus Icecast status-json.xsl; Fallback: ICY-Metadaten aus Stream."""
+    result = {}
+    try:
+        import urllib.parse
+        import urllib.request
+        base = url.rstrip("/").rsplit("/", 1)[0] + "/"
+        # Manche Server: status-json.xsl, andere: status-json oder an anderem Pfad
+        for path in ("status-json.xsl", "status-json", "status.json"):
+            meta_url = urllib.parse.urljoin(base, path)
+            try:
+                req = urllib.request.Request(meta_url, headers={"User-Agent": "PI-Installer/1.0 (Radio metadata)"})
+                with urllib.request.urlopen(req, timeout=6) as resp:
+                    data = json.loads(resp.read().decode())
+                sources = data.get("icestats", {}).get("source") or []
+                if isinstance(sources, dict):
+                    sources = [sources]
+                for s in sources:
+                    title = s.get("title") or s.get("yp_currently_playing")
+                    if title:
+                        title = str(title).strip()
+                        artist, song = "", title
+                        if " - " in title:
+                            parts = title.split(" - ", 1)
+                            artist, song = parts[0].strip(), parts[1].strip() if len(parts) > 1 else ""
+                        bitrate = s.get("bitrate") or s.get("audio_bitrate")
+                        server = s.get("server_name") or s.get("server_description") or ""
+                        result = {
+                            "title": title,
+                            "artist": artist,
+                            "song": song,
+                            "bitrate": bitrate,
+                            "server_name": server,
+                            "show": server,
+                        }
+                        break
+                if result:
+                    break
+            except Exception:
+                continue
+    except Exception as e:
+        logger.debug("Radio metadata Icecast: %s", e)
+    if not result.get("title"):
+        icy = _parse_icy_metadata_from_stream(url)
+        if icy:
+            result.update(icy)
+    if not result.get("title"):
+        result["title"] = "Live"
+        result.setdefault("show", "")
+    return result
+
+
+@app.get("/api/radio/stream-metadata")
+async def get_radio_stream_metadata(url: str):
+    """Holt Metadaten aus Icecast status-json.xsl: title, Interpret, Qualität, Sendung."""
+    try:
+        data = await asyncio.to_thread(_fetch_icecast_metadata, url)
+        return {"status": "success", **data}
+    except Exception as e:
+        logger.warning("Radio stream-metadata failed for %s: %s", url[:80], e)
+        return {"status": "success", "title": "Live", "show": "", "artist": "", "song": ""}
+
+
+def _fetch_logo(url: str) -> tuple[bytes, str] | None:
+    """Lädt Logo von URL (CORS-Proxy). Sync für to_thread. Folgt Redirects."""
+    try:
+        import urllib.request
+        import urllib.error
+        # Wikimedia/Wikipedia verlangen beschreibenden User-Agent (kein generischer Browser-String)
+        # vgl. https://meta.wikimedia.org/wiki/User-Agent_policy
+        if "wikipedia.org" in url or "wikimedia.org" in url:
+            ua = "PI-Installer/1.0 (Radio logo proxy; +https://github.com)"
+        else:
+            ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        headers = {
+            "User-Agent": ua,
+            "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+        }
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            body = resp.read()
+            ct = (resp.headers.get("Content-Type") or "image/png").split(";")[0].strip().lower()
+            if not ct or ct == "application/octet-stream":
+                if url.rstrip("/").endswith(".ico"):
+                    ct = "image/x-icon"
+                elif "svg" in url.lower():
+                    ct = "image/svg+xml"
+                else:
+                    ct = "image/png"
+            return (body, ct)
+    except urllib.error.HTTPError as e:
+        logger.debug("Radio logo HTTP %s: %s %s", e.code, url[:80], e.reason)
+        return None
+    except Exception as e:
+        logger.debug("Radio logo %s: %s", url[:80], e)
+        return None
+
+
+@app.get("/api/radio/logo")
+async def get_radio_logo(url: str):
+    """Proxy für Sender-Logos (umgeht CORS)."""
+    from fastapi.responses import Response
+    result = await asyncio.to_thread(_fetch_logo, url)
+    if result:
+        body, ct = result
+        return Response(content=body, media_type=ct)
+    return Response(status_code=404)
+
+
+@app.get("/api/radio/stream")
+async def get_radio_stream(url: str):
+    """Proxy für Radio-Stream (Same-Origin → bessere Autoplay-Unterstützung)."""
+    from fastapi.responses import StreamingResponse
+    import urllib.request
+
+    def gen():
+        req = urllib.request.Request(url, headers={"User-Agent": "PI-Installer/1.0", "Icy-MetaData": "1"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            while True:
+                chunk = resp.read(65536)
+                if not chunk:
+                    break
+                yield chunk
+
+    return StreamingResponse(gen(), media_type="audio/mpeg")
+
+
+RADIO_BROWSER_API = "https://de1.api.radio-browser.info"
+
+
+@app.get("/api/radio/stations/search")
+async def get_radio_stations_search(
+    country: str = "Germany",
+    name: Optional[str] = None,
+    limit: int = 200,
+):
+    """Sucht Sender über Radio-Browser-API (Deutschland, optional name). Nur MP3, lastcheckok=1."""
+    try:
+        import urllib.parse
+        params = ["country=" + urllib.parse.quote(country)]
+        if name and name.strip():
+            params.append("name=" + urllib.parse.quote(name.strip()))
+        params.append("limit=" + str(min(limit, 500)))
+        url = f"{RADIO_BROWSER_API}/json/stations/search?{'&'.join(params)}"
+        req = urllib.request.Request(url, headers={"User-Agent": "PI-Installer/1.0"})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode())
+        # Nur MP3 und als erreichbar markiert
+        out = []
+        for s in data:
+            if s.get("codec") != "MP3" or not s.get("lastcheckok"):
+                continue
+            url_resolved = (s.get("url_resolved") or s.get("url") or "").strip()
+            if not url_resolved or url_resolved.startswith("m3u"):
+                continue
+            out.append({
+                "name": (s.get("name") or "").strip(),
+                "url": url_resolved,
+                "favicon": (s.get("favicon") or "").strip() or None,
+                "homepage": (s.get("homepage") or "").strip() or None,
+                "country": s.get("country") or "",
+                "state": s.get("state") or "",
+                "tags": s.get("tags") or "",
+                "bitrate": s.get("bitrate"),
+            })
+        if out:
+            return {"status": "success", "stations": out[:limit]}
+        # Fallback: Senderliste nie leer (z. B. API liefert leer)
+        fallback = [
+            {"name": "1Live", "url": "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", "favicon": "https://www1.wdr.de/radio/1live/resources/img/favicon/apple-touch-icon.png", "state": "NRW", "tags": "Pop"},
+            {"name": "WDR 2", "url": "https://wdr-wdr2-rheinruhr.icecastssl.wdr.de/wdr/wdr2/rheinruhr/mp3/128/stream.mp3", "favicon": None, "state": "NRW", "tags": "Pop"},
+            {"name": "NDR 2", "url": "https://icecast.ndr.de/ndr/ndr2/niedersachsen/mp3/128/stream.mp3", "favicon": "https://www.ndr.de/apple-touch-icon-120x120.png", "state": "Nord", "tags": "Pop"},
+            {"name": "Deutschlandfunk", "url": "https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3", "favicon": None, "state": "Bundesweit", "tags": "Info"},
+        ]
+        return {"status": "success", "stations": fallback[:limit]}
+    except Exception as e:
+        logger.exception("Radio-Browser-API: %s", e)
+        fallback = [
+            {"name": "1Live", "url": "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", "favicon": None, "state": "NRW", "tags": "Pop"},
+            {"name": "WDR 2", "url": "https://wdr-wdr2-rheinruhr.icecastssl.wdr.de/wdr/wdr2/rheinruhr/mp3/128/stream.mp3", "favicon": None, "state": "NRW", "tags": "Pop"},
+        ]
+        return {"status": "success", "stations": fallback}
+
+
+def _dsi_radio_theme_path() -> str:
+    import os
+    config_dir = os.path.join(os.path.expanduser("~"), ".config", "pi-installer-dsi-radio")
+    return os.path.join(config_dir, "theme.txt")
+
+
+@app.get("/api/radio/dsi-theme")
+async def get_radio_dsi_theme():
+    """Design der DSI-Radio-App (Klavierlack, Classic, Hell). Wird von PI-Installer gelesen/gesetzt."""
+    try:
+        path = _dsi_radio_theme_path()
+        if os.path.isfile(path):
+            with open(path, "r", encoding="utf-8") as f:
+                name = (f.read() or "").strip()
+                if name in ("Klavierlack", "Classic", "Hell"):
+                    return {"status": "success", "theme": name}
+    except Exception as e:
+        logger.debug("DSI theme read: %s", e)
+    return {"status": "success", "theme": "Klavierlack"}
+
+
+@app.post("/api/radio/dsi-theme")
+async def set_radio_dsi_theme(theme: str = Body(..., embed=True)):
+    """Design der DSI-Radio-App setzen (Klavierlack, Classic, Hell)."""
+    try:
+        if theme not in ("Klavierlack", "Classic", "Hell"):
+            theme = "Klavierlack"
+        path = _dsi_radio_theme_path()
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(theme)
+        return {"status": "success", "theme": theme}
+    except Exception as e:
+        logger.exception("DSI theme write: %s", e)
+        return {"status": "error", "message": str(e)}
+
+
 @app.get("/api/system/freenove-detection")
 async def get_freenove_detection():
     """Erkennt Freenove Computer Case Kit Pro – für TFT-Bereich im App Store."""
     data = _detect_freenove_case()
     return {"status": "success", **data}
+
+
+def _detect_frontend_port():
+    """Erkennt Frontend-Port: 5173 (Tauri/Vite-Dev) bevorzugt, sonst 3001/3002."""
+    try:
+        r = run_command("ss -tuln 2>/dev/null | grep -E ':5173|:3001|:3002'")
+        if r.get("success") and r.get("stdout"):
+            out = r["stdout"]
+            if ":5173" in out:
+                return 5173
+            if ":3001" in out:
+                return 3001
+            if ":3002" in out:
+                return 3002
+    except Exception:
+        pass
+    return 3001
 
 
 @app.get("/api/system/network")
@@ -929,11 +1205,12 @@ async def get_system_network(request: Request):
             d = _demo_network()
             return {"status": "success", "ips": d["ips"], "hostname": d["hostname"], "frontend_port": 3001, "backend_port": 8000}
         net_info = get_network_info()
+        frontend_port = _detect_frontend_port()
         return {
             "status": "success",
             "ips": net_info.get("ips", []),
             "hostname": net_info.get("hostname", "unknown"),
-            "frontend_port": 3001,
+            "frontend_port": frontend_port,
             "backend_port": 8000,
         }
     except Exception as e:
@@ -3084,6 +3361,9 @@ async def run_mixer(request: Request):
         env = dict(os.environ)
         if not env.get("DISPLAY"):
             env["DISPLAY"] = ":0"
+        # GTK-A11y-Warnung unterdrücken (org.a11y.Bus nicht vorhanden)
+        if app_name == "pavucontrol":
+            env["GTK_A11Y"] = "none"
         subprocess.Popen(
             [path],
             start_new_session=True,
@@ -4128,17 +4408,8 @@ async def webserver_status():
         if ports_result["success"]:
             webserver_ports = ports_result["stdout"].strip().split("\n")
         
-        # PI-Installer Adresse (Frontend Port)
-        pi_installer_port = None
-        pi_installer_result = run_command("ss -tuln | grep -E ':3001|:3002' | head -1")
-        if pi_installer_result["success"]:
-            port_line = pi_installer_result["stdout"].strip()
-            if port_line:
-                # Extrahiere Port
-                import re
-                port_match = re.search(r':(\d+)', port_line)
-                if port_match:
-                    pi_installer_port = int(port_match.group(1))
+        # PI-Installer Adresse (Frontend Port: 5173 Tauri/Vite-Dev, sonst 3001/3002)
+        pi_installer_port = _detect_frontend_port()
         
         # Website-Namen extrahieren
         website_names = get_website_names()

@@ -13,11 +13,17 @@ Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
 - **NVMe-Erkennung:** Ziel-Laufwerke (NVMe, USB, SATA) werden über disk-info API erkannt und im Clone-Tab angezeigt. Modell, Größe und Mount-Status sichtbar.
 - **Festgestellte Probleme:** Siehe Dokumentation → FAQ für bekannte Einschränkungen und Lösungswege (z. B. NVMe-Pfade nach Clone, Dualdisplay-Konfiguration, Freenove-Case-Anpassungen).
 
+### DSI-Radio (Freenove TFT – native PyQt6-App)
+
+- **Lautstärke:** Regler steuert den aktiven Kanal (PulseAudio: `pactl set-sink-volume @DEFAULT_SINK@`; Fallback: ALSA amixer Master/PCM). Regler rechts neben Senderbuttons, oberhalb des Seitenumschalters (1/2 ▶), silber umrandet.
+- **Radioanzeige:** Logo links (96×96), rechts schwarzer Klavierlack-Rahmen mit leuchtend grüner Anzeige und schwarzer Schrift; Schließen-Button (✕) in der Anzeige; Uhr mit Datum, kompakt.
+- **D/A-Umschalter:** Langgestrecktes rotes O mit rundem schwarzem Schieber, D (Digital/LED) und A (Analog); analoge VU-Anzeige mit Skala 0–100 %, rechts roter Bereich, Zeiger begrenzt durch Lautstärke.
+
 ### Dokumentation
 
 - **Neue Bereiche:** „Freenove Pro – 4,3″ Touchscreen im Gehäuse“ und „Dualdisplay DSI0 + HDMI1 – Zwei Monitore gleichzeitig“ mit Tips & Tricks.
 - **Lernbereich:** Themenblock „Touchscreen am DSI0 Port“ ergänzt.
-- **FAQ:** Aus Troubleshooting eine vollständige FAQ mit Fehlername, Beschreibung und Lösungen; funktionales Design mit logischer Farbgebung.
+- **FAQ:** Aus Troubleshooting eine vollständige FAQ mit Fehlername, Beschreibung und Lösungen; funktionales Design mit logischer Farbgebung; FAQ-Eintrag „DSI-Radio: Lautstärke funktioniert nicht“ ergänzt.
 
 ---
 

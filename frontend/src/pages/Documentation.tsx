@@ -1000,6 +1000,24 @@ const Documentation: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                  {/* FAQ: DSI-Radio Lautstärke */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">DSI-Radio (Freenove): Lautstärkeregler funktioniert nicht</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Der Lautstärkeschieber in der nativen DSI-Radio-App ändert die Lautstärke nicht.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Ausgabegerät prüfen: Einstellungen → Sound → Ausgabegerät auf Gehäuse-Lautsprecher (Freenove) stellen</li>
+                          <li>Mit PulseAudio: <code className="bg-slate-700 px-1 rounded">pactl set-sink-volume @DEFAULT_SINK@ 80%</code> testen</li>
+                          <li>Ohne PulseAudio (ALSA): <code className="bg-slate-700 px-1 rounded">amixer set Master 80%</code> bzw. <code className="bg-slate-700 px-1 rounded">amixer -c 0 set PCM 80%</code></li>
+                          <li>Doku: <code className="bg-slate-700 px-1 rounded">docs/FREENOVE_TFT_DISPLAY.md</code></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                   {/* FAQ: Dualdisplay/Freenove */}
                   <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
                     <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">

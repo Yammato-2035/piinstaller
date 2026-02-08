@@ -38,6 +38,14 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_screenshots::init())
         .invoke_handler(tauri::generate_handler![exit_app, get_screenshots_output_dir, copy_screenshot_to])
+        .setup(|app| {
+            if let Some(win) = app.get_webview_window("main") {
+                let _ = win.set_size(tauri::LogicalSize::new(1280.0, 800.0));
+                let _ = win.show();
+                let _ = win.set_focus();
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
