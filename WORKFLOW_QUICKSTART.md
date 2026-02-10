@@ -55,14 +55,14 @@ Host pi
 **Auf dem Laptop:**
 ```bash
 cd ~/Documents
-git clone git@github.com:DEIN-USERNAME/PI-Installer.git PI-Installer-Laptop
+git clone git@github.com:Yammato-2035/piinstaller.git PI-Installer-Laptop
 cd PI-Installer-Laptop
 ```
 
 **Auf dem Pi:**
 ```bash
 cd ~/Documents
-git clone git@github.com:DEIN-USERNAME/PI-Installer.git PI-Installer
+git clone git@github.com:Yammato-2035/piinstaller.git PI-Installer
 cd PI-Installer
 ```
 

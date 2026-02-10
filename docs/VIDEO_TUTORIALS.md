@@ -46,6 +46,8 @@ Struktur und Platzhalter für Video-Anleitungen zum PI-Installer.
 - Wie ändere ich das Passwort?
 - Wo ist die Dokumentation?
 
+**Dual Display (X11):** DSI + HDMI – Spiegelung, Position, Desktop auf HDMI (stabil ohne Umschalten) → Siehe [DSI_HDMI_SPIEGELUNG_X11.md](DSI_HDMI_SPIEGELUNG_X11.md) und FAQ in der App (Dokumentation → FAQ).
+
 (Diese Liste kann in der App unter „Dokumentation“ oder „FAQ“ verlinkt werden.)
 
 ## Technische Hinweise für Video-Erstellung

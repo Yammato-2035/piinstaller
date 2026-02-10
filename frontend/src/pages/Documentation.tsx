@@ -1134,8 +1134,8 @@ const Documentation: React.FC = () => {
                       <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
                         <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
                         <ul className="list-disc list-inside text-slate-300 space-y-1">
-                          <li><strong>Systemweite Installation (empfohlen für Produktion):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/IHR-USERNAME/PI-Installer/main/scripts/install-system.sh | sudo bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">/opt/pi-installer/</code>, globale Befehle verfügbar</li>
-                          <li><strong>Benutzer-Installation (für Entwicklung/Test):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/IHR-USERNAME/PI-Installer/main/scripts/create_installer.sh | bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">$HOME/PI-Installer/</code>, keine Root-Rechte nötig</li>
+                          <li><strong>Systemweite Installation (empfohlen für Produktion):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/install-system.sh | sudo bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">/opt/pi-installer/</code>, globale Befehle verfügbar</li>
+                          <li><strong>Benutzer-Installation (für Entwicklung/Test):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/create_installer.sh | bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">$HOME/PI-Installer/</code>, keine Root-Rechte nötig</li>
                           <li>Siehe <code className="bg-slate-700 px-1 rounded">docs/SYSTEM_INSTALLATION.md</code> für Details</li>
                         </ul>
                       </div>

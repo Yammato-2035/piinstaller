@@ -39,3 +39,20 @@ Dann läuft der Desktop unter X11 und AnyDesk kann eingehende Verbindungen anzei
 | Eingehende AnyDesk-Verbindungen nutzen | Beim Login Xorg-Session wählen (nicht Wayland) |
 
 Quellen: [AnyDesk Linux/Raspberry Pi](https://support.anydesk.com/anydesk-for-linux-raspberry-pi), [Flathub AnyDesk Issue #72](https://github.com/flathub/com.anydesk.Anydesk/issues/72).
+
+---
+
+## Zwei AnyDesk-Icons / Flackern (X11)
+
+Unter X11 können **zwei AnyDesk-Icons** in der Taskleiste erscheinen oder flackern – meist weil zwei AnyDesk-Instanzen laufen (z. B. Autostart und manueller Start).
+
+**Prüfen, ob AnyDesk doppelt gestartet wird:**
+
+- `./scripts/fix-anydesk-double-icon.sh --check` – zeigt die Anzahl laufender AnyDesk-Prozesse, Autostart-Einträge (`~/.config/autostart`, `/etc/xdg/autostart`) und ggf. Systemd-User-Services. Mehr als ein Prozess oder mehrere Autostart-Dateien können zwei Icons / Flackern verursachen.
+
+**Lösung:**
+
+1. **Eine Instanz beenden:** `./scripts/fix-anydesk-double-icon.sh` – beendet alle AnyDesk-Prozesse und startet genau eine Instanz neu. Danach sollte nur noch ein Icon sichtbar sein.
+2. **Falls das Flackern bleibt:** AnyDesk deinstallieren: `sudo ./scripts/fix-anydesk-double-icon.sh --uninstall`
+
+**Hinweis:** Die Meldung `(anydesk): Gdk-CRITICAL **: gdk_window_thaw_toplevel_updates: assertion 'window->update_and_descendants_freeze_count > 0' failed` ist eine bekannte AnyDesk/GTK-Warnung (Ungleichgewicht zwischen Freeze/Thaw-Aufrufen). Sie erscheint oft beim Start oder Neustart von AnyDesk und ist in der Regel **harmlos** – AnyDesk funktioniert weiter. Sie kann ignoriert werden; ein Fix liegt bei AnyDesk/GTK.

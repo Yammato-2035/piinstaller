@@ -152,7 +152,7 @@ Jetzt kannst du einfach `ssh pi` verwenden.
 ```bash
 # Repository auf dem Laptop klonen
 cd ~/Documents
-git clone git@github.com:DEIN-USERNAME/PI-Installer.git PI-Installer-Laptop
+git clone git@github.com:Yammato-2035/piinstaller.git PI-Installer-Laptop
 cd PI-Installer-Laptop
 
 # Entwicklungsumgebung einrichten
@@ -172,7 +172,7 @@ cd ../backend && python3.12 -m venv venv && source venv/bin/activate && pip inst
 ```bash
 # Repository auf dem Pi klonen (oder bereits vorhanden)
 cd ~/Documents
-git clone git@github.com:DEIN-USERNAME/PI-Installer.git PI-Installer
+git clone git@github.com:Yammato-2035/piinstaller.git PI-Installer
 cd PI-Installer
 
 # Git-Config für Dokumentations-Workflow

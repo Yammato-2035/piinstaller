@@ -34,10 +34,10 @@ sudo ./scripts/install-system.sh
 ### Option 2: Direkt von GitHub
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/IHR-USERNAME/PI-Installer/main/scripts/install-system.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/install-system.sh | sudo bash
 ```
 
-**Hinweis:** Ersetzen Sie `IHR-USERNAME` durch den tatsächlichen GitHub-Benutzernamen.
+**Hinweis:** Das offizielle Repository ist `Yammato-2035/piinstaller`. Bei einem Fork passen Sie die URL entsprechend an.
 
 ## Was wird installiert?
 

@@ -5,7 +5,7 @@
 #
 # Verwendung:
 #   sudo ./scripts/install-system.sh
-#   Oder aus dem Repository: curl -sSL https://raw.githubusercontent.com/.../install-system.sh | sudo bash
+#   Oder aus dem Repository: curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/install-system.sh | sudo bash
 
 set -e
 
@@ -238,7 +238,7 @@ SERVICE_FILE="$SYSTEMD_DIR/pi-installer.service"
 cat > "$SERVICE_FILE" << SERVICEEOF
 [Unit]
 Description=PI-Installer (Backend + Frontend)
-Documentation=https://github.com/pi-installer/PI-Installer
+Documentation=https://github.com/Yammato-2035/piinstaller
 After=network-online.target
 Wants=network-online.target
 

@@ -935,16 +935,22 @@ def _parse_icy_metadata_from_stream(url: str) -> dict:
             if block_len <= 0:
                 return {}
             meta_raw = resp.read(block_len).decode("utf-8", errors="ignore").strip("\x00")
-            # StreamTitle='...';
+            # StreamTitle='...'; oder StreamTitle="...";
             for part in meta_raw.split(";"):
                 part = part.strip()
                 if part.lower().startswith("streamtitle="):
+                    # Entferne StreamTitle= und Anführungszeichen
                     val = part.split("=", 1)[1].strip("'\"")
+                    # Entferne mögliche zusätzliche Anführungszeichen
+                    val = val.strip("'\"")
                     if val:
                         artist, song = "", val
-                        if " - " in val:
-                            parts = val.split(" - ", 1)
-                            artist, song = parts[0].strip(), parts[1].strip() if len(parts) > 1 else val
+                        # Trenne Artist und Song bei " - " oder " – " (verschiedene Bindestriche)
+                        if " - " in val or " – " in val:
+                            sep = " - " if " - " in val else " – "
+                            parts = val.split(sep, 1)
+                            artist = parts[0].strip() if len(parts) > 0 else ""
+                            song = parts[1].strip() if len(parts) > 1 else val
                         return {"title": val, "artist": artist, "song": song}
         return {}
     except Exception as e:
@@ -1004,11 +1010,36 @@ def _fetch_icecast_metadata(url: str) -> dict:
     return result
 
 
+# Einfaches Caching für Metadaten (5 Sekunden TTL)
+_metadata_cache: dict[str, tuple[float, dict]] = {}
+
+
 @app.get("/api/radio/stream-metadata")
 async def get_radio_stream_metadata(url: str):
-    """Holt Metadaten aus Icecast status-json.xsl: title, Interpret, Qualität, Sendung."""
+    """Holt Metadaten aus Icecast status-json.xsl: title, Interpret, Qualität, Sendung.
+    Cached Ergebnisse für 5 Sekunden, um wiederholte Anfragen zu reduzieren."""
+    import time
     try:
+        # Prüfe Cache
+        cache_key = url
+        now = time.time()
+        if cache_key in _metadata_cache:
+            cached_time, cached_data = _metadata_cache[cache_key]
+            if now - cached_time < 5.0:  # 5 Sekunden Cache-TTL
+                return {"status": "success", **cached_data}
+        
+        # Cache miss oder abgelaufen - neue Daten holen
         data = await asyncio.to_thread(_fetch_icecast_metadata, url)
+        
+        # In Cache speichern
+        _metadata_cache[cache_key] = (now, data)
+        
+        # Alte Cache-Einträge entfernen (älter als 60 Sekunden)
+        _metadata_cache.clear() if len(_metadata_cache) > 100 else None
+        for key in list(_metadata_cache.keys()):
+            if now - _metadata_cache[key][0] > 60:
+                del _metadata_cache[key]
+        
         return {"status": "success", **data}
     except Exception as e:
         logger.warning("Radio stream-metadata failed for %s: %s", url[:80], e)

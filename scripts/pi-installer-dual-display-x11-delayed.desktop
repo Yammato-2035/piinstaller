@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=PI-Installer Dual Display (verzögert)
+Comment=Wendet HDMI+DSI-Konfiguration ~15s nach Login an (DSI Portrait, HDMI 0x0)
+Exec=/home/gabrielglienke/Documents/PI-Installer/scripts/apply-dual-display-x11-delayed.sh
+Hidden=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true

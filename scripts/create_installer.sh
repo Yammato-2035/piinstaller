@@ -35,7 +35,7 @@ else
 fi
 
 # Standard-Repo beim Aufruf per "curl | bash" (ersetzen Sie OWNER durch Ihren GitHub-Benutzernamen)
-DEFAULT_REPO_URL="${PI_INSTALLER_DEFAULT_REPO:-https://github.com/pi-installer/PI-Installer.git}"
+DEFAULT_REPO_URL="${PI_INSTALLER_DEFAULT_REPO:-https://github.com/Yammato-2035/piinstaller.git}"
 REPO_URL="${PI_INSTALLER_REPO:-$DEFAULT_REPO_URL}"
 TOTAL_STEPS=6
 STEP=0
@@ -102,7 +102,7 @@ if [ $FROM_REPO -eq 1 ]; then
 else
   if [ -z "$REPO_URL" ]; then
     err "Nicht im PI-Installer-Repository und keine Repo-URL gesetzt."
-    err "So nutzen: PI_INSTALLER_REPO=https://github.com/IHR-USER/PI-Installer.git $0"
+    err "So nutzen: PI_INSTALLER_REPO=https://github.com/Yammato-2035/piinstaller.git $0"
     err "Oder Skript aus dem geklonten Ordner ausführen: ./scripts/create_installer.sh"
     exit 1
   fi

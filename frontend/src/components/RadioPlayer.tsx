@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Play, Pause, Volume2, Monitor, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Play, Pause, Volume2, Monitor, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { fetchApi, getApiBase } from '../api'
+import html2canvas from 'html2canvas'
+import toast from 'react-hot-toast'
 
 const FAVORITES_PER_PAGE = 9
 const COLS = 3
@@ -247,9 +249,9 @@ interface RadioPlayerProps {
 const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false, showDsiButton = false }) => {
   const previewMode = compact && !dsi
   const textClass = (dsi || previewMode) ? 'text-white' : 'text-slate-800 dark:text-slate-100'
-  const mutedClass = (dsi || previewMode) ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'
+  const mutedClass = (dsi || previewMode) ? 'text-slate-200' : 'text-slate-500 dark:text-slate-400'
   const cardClass = (dsi || previewMode)
-    ? 'bg-gradient-to-b from-slate-900 to-slate-800 border border-slate-600 shadow-inner'
+    ? 'bg-gradient-to-b from-slate-900 to-slate-800 border-2 border-slate-500 shadow-inner'
     : 'bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700'
   const [station, setStation] = useState<RadioStation>(RADIO_STATIONS[0])
   const [playing, setPlaying] = useState(false)
@@ -269,6 +271,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const levelLoopRef = useRef<number | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const audio = new Audio()
@@ -383,7 +386,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
     }
     if (playing) {
       fetchMeta()
-      const t = setInterval(fetchMeta, 12000)
+      const t = setInterval(fetchMeta, 15000) // 15 Sekunden (reduziert Last auf Backend)
       return () => {
         cancelled = true
         clearInterval(t)
@@ -474,21 +477,84 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
     return `${String(base).replace(/\/$/, '')}/?view=dsi-radio`
   })()
 
+  /** Screenshot-Funktion: Erfasst die Radio-App und kopiert sie in den Zwischenspeicher */
+  const takeScreenshot = async () => {
+    if (!containerRef.current) return
+    
+    try {
+      const canvas = await html2canvas(containerRef.current, {
+        backgroundColor: null,
+        scale: 1,
+        logging: false,
+        useCORS: true,
+      })
+      
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          toast.error('Fehler beim Erstellen des Screenshots')
+          return
+        }
+        
+        const item = new ClipboardItem({ 'image/png': blob })
+        navigator.clipboard.write([item]).then(() => {
+          toast.success('Screenshot wurde in den Zwischenspeicher kopiert')
+        }).catch((err) => {
+          console.error('Fehler beim Kopieren in den Zwischenspeicher:', err)
+          toast.error('Fehler beim Kopieren in den Zwischenspeicher')
+        })
+      }, 'image/png')
+    } catch (error) {
+      console.error('Fehler beim Erstellen des Screenshots:', error)
+      toast.error('Fehler beim Erstellen des Screenshots')
+    }
+  }
+
+  /** F10 Tastenkürzel für Screenshot */
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'F10') {
+        event.preventDefault()
+        takeScreenshot()
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   return (
-    <div className={compact ? 'space-y-4' : 'space-y-6'}>
+    <div ref={containerRef} className={compact ? 'space-y-4' : 'space-y-6'}>
       <p className={`text-sm ${mutedClass}`}>
         Sound über System-Ausgabegerät (Standard: Gehäuse-Lautsprecher).
       </p>
 
       {/* DSI-Vorschau / Anzeige: Logo + Sender + LED-Meter + Now Playing */}
       <div
-        className={`rounded-2xl border overflow-hidden ${cardClass} ${
-          compact ? 'p-4 sm:p-5 min-h-[260px]' : 'p-8 min-h-[280px]'
+        className={`rounded-2xl border overflow-hidden ${cardClass} relative ${
+          compact ? 'p-4 sm:p-5' : 'p-6'
         }`}
-        style={compact ? { minWidth: 320 } : {}}
+        style={compact ? { minWidth: 320, maxHeight: '220px' } : { maxHeight: '240px' }}
       >
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
-          <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl flex items-center justify-center shrink-0 overflow-hidden p-0.5 ${(dsi || previewMode) ? 'bg-slate-700 ring-1 ring-slate-600' : 'bg-white dark:bg-slate-700 shadow-lg'}`}>
+        {/* X-Button oben rechts zum Beenden (nur im DSI-Modus) */}
+        {dsi && (
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.location.href = window.location.pathname
+              }
+            }}
+            className="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-lg bg-red-600 hover:bg-red-700 text-white shadow-lg transition-colors"
+            title="Radio beenden"
+          >
+            <X className="w-5 h-5" strokeWidth={2.5} />
+          </button>
+        )}
+        
+        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pr-8">
+          <div className={`w-16 h-16 sm:w-18 sm:h-18 rounded-xl flex items-center justify-center shrink-0 overflow-hidden p-0.5 ${(dsi || previewMode) ? 'bg-slate-700 ring-2 ring-slate-500' : 'bg-white dark:bg-slate-700 shadow-lg'}`}>
             {getLogoSrc() ? (
               <img
                 src={getLogoSrc()!}
@@ -498,14 +564,14 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
               />
             ) : (
               <div className="w-full h-full rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <span className="text-xl sm:text-2xl font-bold text-white">
+                <span className="text-lg sm:text-xl font-bold text-white">
                   {station.name.slice(0, 2).toUpperCase()}
                 </span>
               </div>
             )}
           </div>
           <div className="flex-1 text-center sm:text-left min-w-0 space-y-0.5">
-            <h3 className={`text-lg sm:text-xl font-bold ${textClass}`}>
+            <h3 className={`text-xl sm:text-2xl font-bold ${textClass}`}>
               {station.name}
             </h3>
             {(station.region || station.genre) && (
@@ -519,7 +585,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
               </p>
             )}
             {metadata?.title && (
-              <p className="text-sm text-emerald-400 font-medium truncate" title={metadata.title}>
+              <p className={`text-base font-medium truncate ${(dsi || previewMode) ? 'text-emerald-300' : 'text-emerald-600 dark:text-emerald-400'}`} title={metadata.title}>
                 Jetzt: {metadata.artist && metadata.song ? `${metadata.artist} – ${metadata.song}` : metadata.title}
               </p>
             )}
@@ -527,7 +593,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
               <p className={`text-xs ${mutedClass}`}>{metadata.bitrate} kbps</p>
             )}
             {!metadata?.title && (
-              <p className={`text-sm ${mutedClass}`}>
+              <p className={`text-base ${mutedClass}`}>
                 {playing ? 'Stream läuft…' : 'Pause'}
               </p>
             )}
@@ -587,10 +653,10 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
                     key={s.id}
                     type="button"
                     onClick={() => handleStationChange(s)}
-                    className={`min-h-[4rem] sm:min-h-[4.25rem] px-2 py-2.5 rounded-lg text-[12px] sm:text-[13px] font-medium transition-colors flex flex-col items-center justify-center gap-0.5 leading-tight overflow-hidden box-border w-full aspect-[1.1] max-w-[140px] mx-auto ${
+                    className={`min-h-[4rem] sm:min-h-[4.25rem] px-2 py-2.5 rounded-lg text-[12px] sm:text-[13px] font-medium transition-colors flex flex-col items-center justify-center gap-0.5 leading-tight overflow-hidden ${
                       station.id === s.id
-                        ? 'bg-emerald-600 text-white ring-1 ring-emerald-500'
-                        : 'bg-slate-700 text-slate-200 hover:bg-slate-600 border border-slate-600'
+                        ? 'bg-emerald-600 text-white ring-2 ring-emerald-400'
+                        : 'bg-slate-700 text-slate-200 hover:bg-slate-600 border-2 border-slate-500'
                     }`}
                     title={s.name}
                   >
@@ -624,9 +690,9 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
                 onClick={() => handleStationChange(s)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   station.id === s.id
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-emerald-600 text-white ring-2 ring-emerald-400'
                     : dsi
-                      ? 'bg-slate-700 text-slate-200 hover:bg-slate-600'
+                      ? 'bg-slate-700 text-slate-200 hover:bg-slate-600 border-2 border-slate-500'
                       : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                 }`}
               >

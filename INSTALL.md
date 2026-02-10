@@ -13,10 +13,10 @@
 ### One-Click Installation (empfohlen)
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/IHR-USERNAME/PI-Installer/main/scripts/create_installer.sh | bash
+curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/create_installer.sh | bash
 ```
 
-Ersetzen Sie `IHR-USERNAME` durch den GitHub-Repository-Besitzer. Alternativ (wenn eingerichtet): `curl -sSL https://get.pi-installer.io | bash`
+Das offizielle Repository ist `Yammato-2035/piinstaller`. Bei einem Fork passen Sie die URL entsprechend an. Alternativ (wenn eingerichtet): `curl -sSL https://get.pi-installer.io | bash`
 
 Das Skript prüft Python/Node, klont das Repo (falls nötig), richtet Backend und Frontend ein und aktiviert den systemd-Service. Am Ende wird die Zugangs-URL angezeigt (z. B. `http://<IP>:3001`).
 
@@ -28,7 +28,7 @@ Das Skript prüft Python/Node, klont das Repo (falls nötig), richtet Backend un
 
 ```bash
 cd ~
-git clone <repository-url>
+git clone https://github.com/Yammato-2035/piinstaller.git PI-Installer
 cd PI-Installer
 ```
 

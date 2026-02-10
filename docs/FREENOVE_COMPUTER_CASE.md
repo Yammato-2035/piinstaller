@@ -195,7 +195,7 @@ Die Anpassungen (python3, kein sudo, XDG_RUNTIME_DIR, Portrait/Landscape-Label, 
 PI-Installer klonen – darin liegt der angepasste Freenove-Ordner sowie die Skripte und die Doku:
 
 ```bash
-git clone https://github.com/DEIN_ORG/PI-Installer.git
+git clone https://github.com/Yammato-2035/piinstaller.git PI-Installer
 cd PI-Installer
 # Freenove-Code: Freenove_Computer_Case_Kit_Pro_for_Raspberry_Pi/
 # Skripte: scripts/fix-freenove-computer-case.sh, scripts/freenove-set-display-rotate.sh

@@ -3,7 +3,7 @@
 # Bietet Auswahl zwischen systemweiter und Benutzer-Installation
 #
 # Verwendung:
-#   curl -sSL https://raw.githubusercontent.com/IHR-USERNAME/PI-Installer/main/scripts/install.sh | bash
+#   curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/install.sh | bash
 #   Oder: ./scripts/install.sh
 
 set -e
@@ -68,11 +68,13 @@ if [ "$FROM_REPO" -eq 1 ]; then
   esac
 else
   # Nicht im Repository: von GitHub laden
-  DEFAULT_REPO="${PI_INSTALLER_REPO:-https://github.com/pi-installer/PI-Installer.git}"
-  REPO_OWNER=$(echo "$DEFAULT_REPO" | sed -n 's|.*github.com/\([^/]*\)/.*|\1|p')
+  DEFAULT_REPO="${PI_INSTALLER_REPO:-https://github.com/Yammato-2035/piinstaller.git}"
+  REPO_OWNER=$(echo "$DEFAULT_REPO" | sed -n 's|.*github.com/\([^/]*\)/\([^/]*\)\.git.*|\1|p')
+  REPO_NAME=$(echo "$DEFAULT_REPO" | sed -n 's|.*github.com/\([^/]*\)/\([^/]*\)\.git.*|\2|p')
   
-  if [ -z "$REPO_OWNER" ]; then
-    REPO_OWNER="IHR-USERNAME"
+  if [ -z "$REPO_OWNER" ] || [ -z "$REPO_NAME" ]; then
+    REPO_OWNER="Yammato-2035"
+    REPO_NAME="piinstaller"
   fi
   
   read -p "Ihre Wahl (1-3): " choice
@@ -81,12 +83,12 @@ else
     1)
       echo ""
       echo -e "${CYAN}Lade Installations-Skript von GitHub...${NC}"
-      curl -sSL "https://raw.githubusercontent.com/$REPO_OWNER/PI-Installer/main/scripts/install-system.sh" | sudo bash
+      curl -sSL "https://raw.githubusercontent.com/$REPO_OWNER/$REPO_NAME/main/scripts/install-system.sh" | sudo bash
       ;;
     2)
       echo ""
       echo -e "${CYAN}Lade Installations-Skript von GitHub...${NC}"
-      curl -sSL "https://raw.githubusercontent.com/$REPO_OWNER/PI-Installer/main/scripts/create_installer.sh" | bash
+      curl -sSL "https://raw.githubusercontent.com/$REPO_OWNER/$REPO_NAME/main/scripts/create_installer.sh" | bash
       ;;
     3)
       echo "Installation abgebrochen."

@@ -21,11 +21,11 @@ Dieses Overlay kann in ein bestehendes Raspberry Pi OS (Lite) Image eingebunden 
 2. **Ersten Boot vorbereiten:** Vor dem ersten Start die SD-Karte mounten und z. B. eine leere Datei `ssh` im Boot-Partition anlegen (für SSH-Zugang).
 3. **Nach dem ersten Boot:** Per SSH verbinden und den **One-Click-Installer** ausführen:
    ```bash
-   curl -sSL https://raw.githubusercontent.com/IHR-USER/PI-Installer/main/scripts/create_installer.sh | bash
+   curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/create_installer.sh | bash
    ```
    oder mit Repo-URL:
    ```bash
-   PI_INSTALLER_REPO=https://github.com/IHR-USER/PI-Installer.git bash -c "$(curl -sSL https://raw.githubusercontent.com/IHR-USER/PI-Installer/main/scripts/create_installer.sh)"
+   PI_INSTALLER_REPO=https://github.com/Yammato-2035/piinstaller.git bash -c "$(curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/create_installer.sh)"
    ```
 4. Danach: Browser öffnen mit der angezeigten URL (z. B. `http://<IP>:3001`).
 

@@ -69,10 +69,10 @@ Ein umfassendes, **benutzerfreundliches System** zur automatisierten Konfigurati
 Ein Befehl – Installation inkl. Python/Node-Prüfung, Backend/Frontend-Setup und systemd-Service:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/IHR-USERNAME/PI-Installer/main/scripts/create_installer.sh | bash
+curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/create_installer.sh | bash
 ```
 
-**Hinweis:** Ersetzen Sie `IHR-USERNAME` durch Ihren GitHub-Benutzernamen bzw. den Repository-Besitzer.  
+**Hinweis:** Das offizielle Repository ist `Yammato-2035/piinstaller`. Bei einem Fork passen Sie die URL entsprechend an.  
 Wenn die Domain **get.pi-installer.io** eingerichtet ist, lautet der Befehl:
 
 ```bash
@@ -96,7 +96,7 @@ Siehe **PYTHON_SETUP.md** bei Problemen oder für Python 3.13.
 ### 1️⃣ Repository klonen & Backend starten
 ```bash
 cd ~
-git clone https://github.com/yourusername/PI-Installer.git
+git clone https://github.com/Yammato-2035/piinstaller.git PI-Installer
 cd PI-Installer/backend
 
 # Virtuelle Umgebung (Python 3.9+)
