@@ -5,6 +5,57 @@ Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
 
 ---
 
+## [1.3.4.0] – 2026-02
+
+### Systemweite Installation gemäß Linux FHS
+
+- **Neue Installationsmethode:** Systemweite Installation nach `/opt/pi-installer/` gemäß Linux Filesystem Hierarchy Standard (FHS)
+- **Installations-Skripte:**
+  - `scripts/install-system.sh` – Systemweite Installation nach `/opt/pi-installer/`
+  - `scripts/update-system.sh` – Update-Skript für bestehende Installationen
+  - `scripts/install.sh` – Wrapper mit interaktiver Auswahl zwischen beiden Methoden
+- **Installationsverzeichnisse:**
+  - Programm: `/opt/pi-installer/`
+  - Konfiguration: `/etc/pi-installer/`
+  - Logs: `/var/log/pi-installer/`
+  - Symlinks: `/usr/local/bin/` (globale Befehle wie `pi-installer`, `pi-installer-backend`)
+- **Umgebungsvariablen:** Automatisch in `/etc/profile.d/pi-installer.sh` gesetzt
+- **systemd Service:** Verbesserte Sicherheitseinstellungen (NoNewPrivileges, PrivateTmp, ProtectSystem)
+- **Dokumentation:** Neue Dokumentation `docs/SYSTEM_INSTALLATION.md` mit vollständiger Anleitung
+- **GitHub-Integration:** Alle Installations-Skripte direkt von GitHub verfügbar über Raw-URLs
+
+### Dual Display X11 – Frühe Konfiguration
+
+- **LightDM Integration:** Verwendet `session-setup-script` für frühe Display-Konfiguration nach Login
+- **Position korrekt:** DSI-1 wird zuerst gesetzt (links unten 0x1440), dann HDMI-1-2 (rechts oben 480x0)
+- **Keine mehrfachen Umschaltungen:** Atomare Konfiguration in einem xrandr-Befehl
+- **Alte Skripte deaktiviert:** Automatische Deaktivierung von `enable-hdmi.sh` und verzögerten Autostart-Skripten
+- **Skript:** `scripts/fix-gabriel-dual-display-x11-early.sh` für optimierte frühe Konfiguration
+
+---
+
+## [1.3.3.0] – 2026-02
+
+### Dual Display X11 – stabil ohne ständiges Umschalten
+
+- **Stand:** DSI + HDMI unter X11 läuft jetzt richtig; Position (DSI links unten, HDMI rechts oben), Desktop/Hintergrund auf HDMI (Primary), keine ständige Umschaltung mehr.
+- **Maßnahmen:** Atomarer xrandr-Befehl (beide Ausgaben in einem Aufruf); .xprofile setzt Layout nach 8 s und startet ~10 s nach Login PCManFM-Desktop neu (Trigger: Desktop → Primary/HDMI); delayed-Script wendet Layout nach 8 s und 16 s an; optional `fix-desktop-on-hdmi-x11.sh` zum manuellen Neustart des Desktops.
+- **Dokumentation:** [docs/DSI_HDMI_SPIEGELUNG_X11.md](docs/DSI_HDMI_SPIEGELUNG_X11.md) – Spiegelung, Position, Desktop auf HDMI, Trigger, Beschleunigung (~10 s), FAQ-Verweise.
+- **FAQ:** Eintrag „Dual Display X11 (DSI + HDMI) – Desktop auf HDMI, stabil“ ergänzt; bestehender Eintrag zur DSI-Spiegelung beibehalten.
+
+---
+
+## [1.3.2.0] – 2026-02
+
+### Dual Display X11 – DSI-Spiegelung auf HDMI
+
+- **Problem:** Der komplette DSI-1-Desktop wurde oben links auf HDMI-1-2 gespiegelt (nicht nur ein Fenster). Ursache: Pi-KMS/DRM-Treiber legt die HDMI-Scanout-Region nicht korrekt ab Offset (480,0).
+- **Maßnahmen in Scripts:** Explizite Framebuffer-Größe `xrandr --fb 3920x2240`; Konfiguration **HDMI vor DSI** (HDMI 480x0, dann DSI 0x1440). Angepasst: `fix-gabriel-dual-display-x11.sh`, `.xprofile`, `.screenlayout`, `apply-dual-display-x11-delayed.sh`, `fix-dsi-position-x11.sh`.
+- **Dokumentation:** [docs/DSI_HDMI_SPIEGELUNG_X11.md](docs/DSI_HDMI_SPIEGELUNG_X11.md) – Problem, umgesetzte Maßnahmen, optionale config.txt-Workarounds, manuelle Tests.
+- **FAQ:** Neuer Eintrag „DSI-Desktop oben links auf HDMI gespiegelt (X11)“ in der App-Dokumentation (Dokumentation → FAQ) und Verweis in docs/VIDEO_TUTORIALS.md.
+
+---
+
 ## [1.3.1.0] – 2026-02
 
 ### Backup & Restore – Laufwerk klonen & NVMe

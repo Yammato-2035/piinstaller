@@ -1036,6 +1036,42 @@ const Documentation: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                  {/* FAQ: DSI-Spiegelung auf HDMI (X11) */}
+                  <div className="rounded-lg border border-amber-600/50 bg-amber-950/30 overflow-hidden">
+                    <div className="px-4 py-2 bg-amber-900/40 border-b border-amber-600/50">
+                      <h4 className="font-semibold text-amber-200">DSI-Desktop oben links auf HDMI gespiegelt (X11)</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Der komplette DSI-1-Desktop erscheint oben links auf dem HDMI-Bildschirm (gespiegelt). Nur unter X11 mit DSI + HDMI.</p>
+                      <p className="text-slate-300 mb-2"><strong>Ursache:</strong> Pi-KMS/DRM-Treiber legt die HDMI-Scanout-Region nicht korrekt ab Offset (480,0).</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Dual-Display-Setup erneut anwenden: <code className="bg-slate-700 px-1 rounded">sudo scripts/fix-gabriel-dual-display-x11.sh</code> (setzt --fb 3920x2240, atomarer Befehl)</li>
+                          <li>Schneller Fix: <code className="bg-slate-700 px-1 rounded">scripts/fix-dsi-position-x11.sh</code></li>
+                          <li>Doku: <code className="bg-slate-700 px-1 rounded">docs/DSI_HDMI_SPIEGELUNG_X11.md</code></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Dual Display X11 – Desktop auf HDMI, stabil */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">Dual Display X11 (DSI + HDMI) – Desktop auf HDMI, stabil</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Unter X11 mit DSI (links unten) und HDMI (rechts oben) sollen Desktop-Icons, Hintergrund und Ordner auf HDMI (Primary) erscheinen, ohne ständiges Umschalten.</p>
+                      <p className="text-slate-300 mb-2"><strong>Lösung (ab 1.3.3.0):</strong> .xprofile setzt nach 8 s das Layout und startet ~10 s nach Login PCManFM-Desktop neu (Trigger: Desktop → Primary/HDMI). Das delayed-Script wendet das Layout nach 8 s und 16 s erneut an.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Tipps:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Einmalig: <code className="bg-slate-700 px-1 rounded">sudo scripts/fix-gabriel-dual-display-x11.sh</code> (schreibt .xprofile und Autostart neu)</li>
+                          <li>Falls Desktop wieder auf DSI erscheint: <code className="bg-slate-700 px-1 rounded">scripts/fix-desktop-on-hdmi-x11.sh</code> (PCManFM-Desktop neu starten)</li>
+                          <li>Doku: <code className="bg-slate-700 px-1 rounded">docs/DSI_HDMI_SPIEGELUNG_X11.md</code></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                   {/* FAQ: AnyDesk Wayland */}
                   <div className="rounded-lg border border-amber-600/50 bg-amber-950/30 overflow-hidden">
                     <div className="px-4 py-2 bg-amber-900/40 border-b border-amber-600/50">
@@ -1048,6 +1084,24 @@ const Documentation: React.FC = () => {
                         <ul className="list-disc list-inside text-slate-300 space-y-1">
                           <li>AnyDesk-Autostart deaktivieren, nur manuell starten</li>
                           <li>Eingehende Verbindungen: Xorg-Session beim Login wählen</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: AnyDesk zwei Icons / Flackern */}
+                  <div className="rounded-lg border border-amber-600/50 bg-amber-950/30 overflow-hidden">
+                    <div className="px-4 py-2 bg-amber-900/40 border-b border-amber-600/50">
+                      <h4 className="font-semibold text-amber-200">AnyDesk zwei Icons / Flackern in der Taskleiste</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Zwei AnyDesk-Icons in der Taskleiste oder Flackern – oft durch zwei laufende AnyDesk-Instanzen (z. B. Autostart + manueller Start).</p>
+                      <p className="text-slate-300 mb-2 text-xs"><strong>Hinweis:</strong> Die Meldung <code className="bg-slate-700 px-1 rounded">Gdk-CRITICAL gdk_window_thaw_toplevel_updates: assertion … failed</code> ist eine bekannte AnyDesk/GTK-Warnung und in der Regel harmlos – AnyDesk funktioniert weiter.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li><strong>Prüfen, ob doppelt gestartet:</strong> <code className="bg-slate-700 px-1 rounded">./scripts/fix-anydesk-double-icon.sh --check</code> – zeigt laufende AnyDesk-Prozesse und Autostart-Einträge.</li>
+                          <li><strong>Eine Instanz beenden:</strong> <code className="bg-slate-700 px-1 rounded">./scripts/fix-anydesk-double-icon.sh</code> – beendet alle AnyDesk-Prozesse und startet genau eine Instanz neu (nur ein Icon).</li>
+                          <li><strong>Falls das nicht hilft:</strong> AnyDesk deinstallieren: <code className="bg-slate-700 px-1 rounded">sudo ./scripts/fix-anydesk-double-icon.sh --uninstall</code></li>
                         </ul>
                       </div>
                     </div>
@@ -1067,6 +1121,41 @@ const Documentation: React.FC = () => {
                           <li><code className="bg-slate-700 px-1 rounded">git stash pop</code></li>
                           <li>Bei Merge-Konflikt: Markierungen lösen, Dokumentation oft Remote nehmen</li>
                         </ol>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Installation */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">Welche Installationsmethode soll ich wählen?</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Es gibt zwei Installationsoptionen – welche ist die richtige?</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li><strong>Systemweite Installation (empfohlen für Produktion):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/IHR-USERNAME/PI-Installer/main/scripts/install-system.sh | sudo bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">/opt/pi-installer/</code>, globale Befehle verfügbar</li>
+                          <li><strong>Benutzer-Installation (für Entwicklung/Test):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/IHR-USERNAME/PI-Installer/main/scripts/create_installer.sh | bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">$HOME/PI-Installer/</code>, keine Root-Rechte nötig</li>
+                          <li>Siehe <code className="bg-slate-700 px-1 rounded">docs/SYSTEM_INSTALLATION.md</code> für Details</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Dual Display X11 frühe Konfiguration */}
+                  <div className="rounded-lg border border-amber-600/50 bg-amber-950/30 overflow-hidden">
+                    <div className="px-4 py-2 bg-amber-900/40 border-b border-amber-600/50">
+                      <h4 className="font-semibold text-amber-200">Dual Display X11: Bildschirme schalten mehrfach um / Position falsch</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> DSI-1 und HDMI-1-2 schalten mehrfach um, Position wird nicht korrekt übernommen (DSI sollte links unten sein).</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li><strong>Frühe Konfiguration verwenden:</strong> <code className="bg-slate-700 px-1 rounded">sudo ./scripts/fix-gabriel-dual-display-x11-early.sh</code> – verwendet LightDM session-setup-script für frühe, einmalige Konfiguration</li>
+                          <li><strong>Position korrekt:</strong> DSI-1 wird zuerst gesetzt (links unten 0x1440), dann HDMI-1-2 (rechts oben 480x0)</li>
+                          <li><strong>Alte Skripte deaktivieren:</strong> Das Skript deaktiviert automatisch alte enable-hdmi.sh und verzögerte Autostart-Skripte</li>
+                          <li>Nach Neustart sollte die Konfiguration sofort korrekt sein ohne mehrfache Umschaltungen</li>
+                        </ul>
                       </div>
                     </div>
                   </div>
@@ -1149,8 +1238,22 @@ const Documentation: React.FC = () => {
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.1.0</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.3.0</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.3.0 (Dual Display X11 stabil, Doku, FAQ)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Dual Display X11:</strong> Läuft stabil ohne ständiges Umschalten – Position (DSI links unten, HDMI rechts oben), Desktop/Hintergrund auf HDMI; .xprofile ~10 s + delayed-Script 8 s/16 s</li>
+                      <li><strong>Dokumentation:</strong> docs/DSI_HDMI_SPIEGELUNG_X11.md – Spiegelung, Position, Desktop auf HDMI, Trigger; FAQ ergänzt</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.2.0 (DSI-Spiegelung X11, Doku, FAQ)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Dual Display X11:</strong> DSI-Spiegelung auf HDMI behoben – xrandr --fb 3920x2240; docs/DSI_HDMI_SPIEGELUNG_X11.md</li>
+                      <li><strong>FAQ:</strong> Neuer Eintrag „DSI-Desktop oben links auf HDMI gespiegelt (X11)“</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.1.0 (Laufwerk klonen, NVMe, Freenove/Dualdisplay, FAQ)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Backup & Restore:</strong> Laufwerk klonen – System von SD auf NVMe/USB klonen (Hybrid-Boot); NVMe-Erkennung</li>
