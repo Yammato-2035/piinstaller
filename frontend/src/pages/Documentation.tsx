@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookOpen, Cloud, HardDrive, Settings, Cpu, Monitor, HelpCircle, Film,
   LayoutDashboard, Zap, Shield, Users, Code, Globe, Mail, Home, Music, Activity, Database, Scan,
-  Package, LayoutGrid,
+  Package, LayoutGrid, Radio, Image,
 } from 'lucide-react'
 import { usePlatform } from '../context/PlatformContext'
 
@@ -11,7 +11,7 @@ type SectionId =
   | 'dashboard' | 'wizard' | 'presets' | 'einstellungen' | 'security' | 'users'
   | 'devenv' | 'webserver' | 'mailserver' | 'nas'   | 'homeautomation' | 'musicbox' | 'kino-streaming' | 'learning'
   | 'monitoring' | 'backup-restore' | 'raspberry-pi-config' | 'control-center' | 'periphery-scan'
-  | 'cloud' | 'desktop-app' | 'freenove-case' | 'dualdisplay' | 'troubleshooting' | 'versionen'
+  | 'cloud' | 'desktop-app' | 'freenove-case' | 'dualdisplay' | 'radio-app' | 'picture-frame-app' | 'troubleshooting' | 'versionen'
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ElementType }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -37,6 +37,8 @@ const SECTIONS: { id: SectionId; label: string; icon: React.ElementType }[] = [
   { id: 'desktop-app', label: 'Desktop-App (Tauri)', icon: Monitor },
   { id: 'freenove-case', label: 'Freenove Pro – 4,3″ Touchscreen im Gehäuse', icon: Package },
   { id: 'dualdisplay', label: 'Dualdisplay DSI0 + HDMI1 – Zwei Monitore gleichzeitig', icon: LayoutGrid },
+  { id: 'radio-app', label: 'Radio-App (DSI Radio)', icon: Radio },
+  { id: 'picture-frame-app', label: 'Bilderrahmen', icon: Image },
   { id: 'troubleshooting', label: 'FAQ – Häufige Fragen & Lösungen', icon: HelpCircle },
   { id: 'versionen', label: 'Versionen & Changelog', icon: BookOpen },
 ]
@@ -823,6 +825,10 @@ const Documentation: React.FC = () => {
                   <p className="text-sm font-semibold text-sky-300 mb-1">Boot: SD + NVMe oder nur NVMe</p>
                   <p className="text-xs text-slate-300">Hybrid (Boot von SD, Root von NVMe): siehe <code className="bg-slate-700 px-1 rounded">docs/PATHS_NVME.md</code>. Boot nur von NVMe – noch zu ergänzen.</p>
                 </div>
+                <div className="p-3 bg-amber-900/20 border border-amber-700/40 rounded-lg">
+                  <p className="text-sm font-semibold text-amber-300 mb-1">DSI-Radio: Anzeige und Ton</p>
+                  <p className="text-xs text-slate-300">Läuft das DSI-Radio auf <strong>HDMI-1-2 / HDMI-A-2</strong>, geht der Sound über HDMI (Monitor). Startest du es auf <strong>DSI-1</strong> (Gehäuse-Display), läuft der Ton über die Gehäuselautsprecher – und nur dann ist in der Mixer-Anzeige der richtige interne HDMI-Sink sichtbar.</p>
+                </div>
                 <p className="text-sm">Ausführliche Doku: <code className="bg-slate-700 px-1 rounded">docs/FREENOVE_COMPUTER_CASE.md</code> · Skripte in <code className="bg-slate-700 px-1 rounded">scripts/</code></p>
               </div>
             </motion.div>
@@ -858,6 +864,78 @@ const Documentation: React.FC = () => {
                   <p className="text-xs text-slate-300">Gab es beim Anschluss von DSI und HDMI Probleme? Schreib uns, welche Fehler auftraten – wir ergänzen die Troubleshooting-FAQ.</p>
                 </div>
                 <p className="text-sm">Details: <code className="bg-slate-700 px-1 rounded">scripts/fix-gabriel-dual-display-wayland.sh</code>, <code className="bg-slate-700 px-1 rounded">docs/FREENOVE_COMPUTER_CASE.md</code></p>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'radio-app' && (
+            <motion.div
+              key="radio-app"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-6"
+            >
+              <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
+                <Radio className="text-emerald-500" />
+                Radio-App (DSI Radio)
+              </h2>
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">Eigener Bereich für die <strong>PI-Installer DSI Radio</strong>-Standalone-App: Internetradio auf dem Freenove 4,3″ DSI-Display mit Favoriten, Senderliste und Klavierlack-Design.</p>
+                <h3 className="text-lg font-semibold text-white">Versionen</h3>
+                <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                  <li><strong>1.x:</strong> Wiedergabe über VLC, mpv oder mpg123 (externe Player)</li>
+                  <li><strong>2.0:</strong> GStreamer-Wiedergabe (playbin), weniger Ressourcen, Metadaten aus dem Stream</li>
+                </ul>
+                <h3 className="text-lg font-semibold text-white">Voraussetzungen</h3>
+                <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                  <li>Python 3.9+, PyQt6</li>
+                  <li>GStreamer 1.0: <code className="bg-slate-700 px-1 rounded">python3-gi</code>, <code className="bg-slate-700 px-1 rounded">gstreamer1.0-plugins-good</code>, <code className="bg-slate-700 px-1 rounded">gstreamer1.0-pulseaudio</code></li>
+                  <li>Optional: PI-Installer-Backend für Metadaten und Radio-Browser-API</li>
+                </ul>
+                <h3 className="text-lg font-semibold text-white">Start</h3>
+                <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                  <li>Skript: <code className="bg-slate-700 px-1 rounded">./scripts/start-dsi-radio.sh</code></li>
+                  <li>Direkt: <code className="bg-slate-700 px-1 rounded">python3 apps/dsi_radio/dsi_radio.py</code></li>
+                  <li>Wayfire: Fenstertitel „PI-Installer DSI Radio“ → Fensterregel für DSI-1</li>
+                </ul>
+                <h3 className="text-lg font-semibold text-white">Konfiguration</h3>
+                <p className="text-sm">Verzeichnis: <code className="bg-slate-700 px-1 rounded">~/.config/pi-installer-dsi-radio/</code> (Favoriten, Theme, Logs).</p>
+                <p className="text-sm">Ausführliche Doku: <code className="bg-slate-700 px-1 rounded">docs/DSI_RADIO_APP.md</code></p>
+              </div>
+            </motion.div>
+          )}
+
+          {activeChapter === 'picture-frame-app' && (
+            <motion.div
+              key="picture-frame-app"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-6"
+            >
+              <h2 className="text-2xl font-bold text-white dark:text-white mb-4 flex items-center gap-2">
+                <Image className="text-amber-500" />
+                Bilderrahmen
+              </h2>
+              <div className="space-y-4 opacity-95">
+                <p className="text-sm">Standalone-App für das <strong>Picture</strong>-Verzeichnis: Bilder-Slideshow mit Datumsanzeige, themenbezogenem Text und animierten Symbolen (Weihnachten, Ostern, Geburtstag, Valentinstag, Hochzeitstag).</p>
+                <h3 className="text-lg font-semibold text-white">Funktionen</h3>
+                <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                  <li>Verzeichnisauswahl: <code className="bg-slate-700 px-1 rounded">~/Pictures</code> oder Unterordner</li>
+                  <li>Datums- und optionale Uhrzeitanzeige</li>
+                  <li>Einstellungen: Thema, eigener Text, Wechselintervall, Symbolgröße</li>
+                  <li>Symbole fliegen durchs Bild oder fallen wie Regen (themenabhängig)</li>
+                  <li>Vollbild: F11</li>
+                </ul>
+                <h3 className="text-lg font-semibold text-white">Start</h3>
+                <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                  <li>Skript: <code className="bg-slate-700 px-1 rounded">./scripts/start-picture-frame.sh</code></li>
+                  <li>Musterbilder anlegen: <code className="bg-slate-700 px-1 rounded">./scripts/setup-picture-frame-samples.sh</code></li>
+                </ul>
+                <p className="text-sm">Konfiguration: <code className="bg-slate-700 px-1 rounded">~/.config/pi-installer-picture-frame/</code>. Ausführlich: <code className="bg-slate-700 px-1 rounded">docs/PICTURE_FRAME_APP.md</code></p>
               </div>
             </motion.div>
           )}
@@ -1014,6 +1092,59 @@ const Documentation: React.FC = () => {
                           <li>Mit PulseAudio: <code className="bg-slate-700 px-1 rounded">pactl set-sink-volume @DEFAULT_SINK@ 80%</code> testen</li>
                           <li>Ohne PulseAudio (ALSA): <code className="bg-slate-700 px-1 rounded">amixer set Master 80%</code> bzw. <code className="bg-slate-700 px-1 rounded">amixer -c 0 set PCM 80%</code></li>
                           <li>Doku: <code className="bg-slate-700 px-1 rounded">docs/FREENOVE_TFT_DISPLAY.md</code></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: DSI-Radio – Sound HDMI vs. Gehäuselautsprecher / Mixer */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">DSI-Radio: Sound über HDMI vs. Gehäuselautsprecher / Mixer-Anzeige</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Je nachdem, auf welchem Display das DSI-Radio läuft, wechselt die Tonausgabe.</p>
+                      <div className="rounded bg-sky-950/30 border border-sky-700/40 p-3 mt-2">
+                        <p className="font-semibold text-sky-300 mb-1">Verhalten:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li><strong>DSI-Radio auf HDMI-1-2 / HDMI-A-2:</strong> Der Sound läuft über HDMI (Monitor).</li>
+                          <li><strong>DSI-Radio auf DSI-1 (Gehäuse-Display):</strong> Der Sound läuft über die Gehäuselautsprecher – und nur dann erscheint in der Mixer-Anzeige (pavucontrol/qpwgraph) der richtige interne HDMI-Sink für die Gehäuselautsprecher.</li>
+                        </ul>
+                      </div>
+                      <p className="text-slate-400 text-xs mt-2">Doku: <code className="bg-slate-700 px-1 rounded">docs/FREENOVE_TFT_DISPLAY.md</code></p>
+                    </div>
+                  </div>
+                  {/* FAQ: Radio SAW – Kein Titel/Interpret */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">Radio SAW / SAW Musikwelt: Kein Titel oder Interpret angezeigt</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Bei allen Radio-SAW-Sendern (Hauptprogramm, 70er, 80er, Party, Rockland usw.) erscheinen keine Titel- oder Interpret-Infos, nur „Live“.</p>
+                      <p className="text-slate-300 mb-2"><strong>Ursache:</strong> Die Stream-URLs leiten auf streamABC (vmg.streamabc.net) weiter. Dessen Server liefert keine ICY-Metadaten (kein <code className="bg-slate-700 px-1 rounded">icy-metaint</code>), daher kann die App keine Titel-Daten aus dem Stream lesen.</p>
+                      <div className="rounded bg-sky-950/30 border border-sky-700/40 p-3 mt-2">
+                        <p className="font-semibold text-sky-300 mb-1">Verhalten der App:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Es wird „Live“ bzw. der Sendername angezeigt.</li>
+                          <li>Hinweis: „Titel/Interpret für diesen Sender derzeit nicht verfügbar.“ – das ist korrekt und kein Fehler.</li>
+                        </ul>
+                      </div>
+                      <p className="text-slate-400 text-xs mt-2">Doku: <code className="bg-slate-700 px-1 rounded">docs/RADIO_SAW_MUSIKWELT_METADATA.md</code></p>
+                    </div>
+                  </div>
+                  {/* FAQ: Radio-App Metadaten aus System */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">Radio-App: Titel/Interpret werden nicht angezeigt, aber der Lautstärkeregler zeigt sie</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Der System-Lautstärkeregler zeigt Titel und Interpret an, aber die Radio-App zeigt sie nicht.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösung:</p>
+                        <p className="text-slate-300 mb-2">Ab Version 1.3.4.1 liest die Radio-App Metadaten auch direkt aus PulseAudio/PipeWire (dieselbe Quelle wie der Lautstärkeregler). Die App sollte jetzt automatisch Titel/Interpret anzeigen, auch wenn Backend/GStreamer keine Metadaten liefern.</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Die App nutzt einen Fallback: Wenn keine Metadaten von Backend/GStreamer kommen, werden sie aus dem Sound-System gelesen</li>
+                          <li>"Es läuft:" bleibt immer sichtbar (auch ohne Sendungsname)</li>
+                          <li>Sendungsnamen wie "Die Show" oder "1LIVE Liebesalarm" werden automatisch erkannt und erscheinen hinter "Es läuft:", nicht als Titel/Interpret</li>
                         </ul>
                       </div>
                     </div>
@@ -1238,8 +1369,21 @@ const Documentation: React.FC = () => {
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.3.0</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.4.1</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.4.1 (Radio-App Metadaten-Verbesserungen)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Radio-App:</strong> System-Metadaten aus PulseAudio/PipeWire (wie Lautstärkeregler); "Es läuft:" immer sichtbar; Logo/Sendername beim Wiederherstellen; Show-Metadaten-Erkennung; Interpret-Textgröße angepasst</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.4.0 (Systemweite Installation, Dual Display X11 frühe Konfiguration)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Installation:</strong> Systemweite Installation nach /opt/pi-installer/ gemäß Linux FHS; install-system.sh, update-system.sh; docs/SYSTEM_INSTALLATION.md</li>
+                      <li><strong>Dual Display X11:</strong> LightDM session-setup-script für frühe Konfiguration; Position korrekt (DSI links unten, HDMI rechts oben); keine mehrfachen Umschaltungen</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.3.0 (Dual Display X11 stabil, Doku, FAQ)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Dual Display X11:</strong> Läuft stabil ohne ständiges Umschalten – Position (DSI links unten, HDMI rechts oben), Desktop/Hintergrund auf HDMI; .xprofile ~10 s + delayed-Script 8 s/16 s</li>

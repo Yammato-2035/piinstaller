@@ -5,6 +5,18 @@ Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
 
 ---
 
+## [1.3.4.1] – 2026-02
+
+### Radio-App (DSI Radio) – Metadaten-Verbesserungen
+
+- **System-Metadaten aus PulseAudio/PipeWire:** Die App liest jetzt Titel/Interpret direkt aus dem Lautstärkeregler-System (PulseAudio/PipeWire) – dieselbe Quelle wie der System-OSD. Fallback wenn Backend/GStreamer keine Metadaten liefern.
+- **"Es läuft:" immer sichtbar:** Die Zeile "Es läuft:" bleibt immer sichtbar, auch wenn kein Sendungsname vorliegt (zeigt dann nur "Es läuft:" ohne Text dahinter).
+- **Logo und Sendername beim Wiederherstellen:** Beim App-Start wird der zuletzt angehörte Sender korrekt wiederhergestellt – Logo und Sendername werden sofort aktualisiert.
+- **Show-Metadaten-Erkennung:** Sendungsnamen wie "Die Show" oder "1LIVE Liebesalarm" werden automatisch als Show-Metadaten erkannt und erscheinen hinter "Es läuft:", nicht mehr als Titel/Interpret.
+- **Interpret-Textgröße:** Interpret-Label hat jetzt die gleiche Schriftgröße wie der Titel (14 statt 13), bleibt aber nicht fett dargestellt.
+
+---
+
 ## [1.3.4.0] – 2026-02
 
 ### Systemweite Installation gemäß Linux FHS

@@ -1,6 +1,6 @@
 {
   "name": "pi-installer-frontend",
-  "version": "1.3.3.0",
+  "version": "1.3.4.1",
   "description": "Web GUI for Raspberry Pi Installer",
   "private": true,
   "dependencies": {
