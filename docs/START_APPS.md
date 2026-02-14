@@ -8,8 +8,8 @@
 
 | Ziel | Befehl / Starter | Hinweis |
 |------|------------------|---------|
-| **PI-Installer (empfohlen)** | `./start-pi-installer.sh` oder Desktop-Starter | Startet Backend, wartet auf Ready, dann Auswahl: Tauri / Browser / Vite |
-| **Backend** | `./start-backend.sh` oder Desktop-Starter | Port 8000, erforderlich für Frontend |
+| **PI-Installer (empfohlen)** | `./start-pi-installer.sh` oder Desktop-Starter | Wartet auf Backend (Service), dann Auswahl: Tauri / Browser / Vite |
+| **Backend** | läuft als Service (`pi-installer.service`) | Port 8000, erforderlich für Frontend |
 | **Frontend (Browser)** | `./start-frontend-desktop.sh --browser` | Vite Port 3001 + Standard-Browser öffnen |
 | **Frontend (Tauri-App)** | `./start-frontend-desktop.sh --window` | Eigenes Fenster, Port 5173 (Dev) |
 | **Frontend (nur Server)** | `./start-frontend.sh` | Nur Vite, kein Fenster/Browser |
@@ -19,28 +19,29 @@
 
 ## 0. PI-Installer (Kombi-Starter, empfohlen)
 
-**Ein Starter für alles:** Backend wird zuerst gestartet (falls nicht läuft), dann wartet das Skript auf Backend-Ready (`/api/version`), danach erscheint ein Dialog zur Auswahl.
+**Ein Starter für alles:** Das Skript wartet auf das Backend (läuft als Service), danach erscheint ein Dialog zur Auswahl.
 
 ### Terminal
 ```bash
 ./start-pi-installer.sh
 ```
-- Startet Backend im Hintergrund (falls nicht läuft)
-- Wartet bis Backend antwortet (max. 60 s)
+- Wartet bis Backend antwortet (max. 60 s; Backend läuft als `pi-installer.service`)
 - Dialog (zenity/kdialog) oder Terminal-Auswahl: **Tauri** / **Browser** / **Nur Frontend**
 - Tauri: mit `GDK_BACKEND=x11` (stabiles Rendering unter Wayland auf Pi)
 
 ### Desktop-Starter (mit Icon)
+Alle Starter liegen im Ordner **Desktop/PI-Installer/**.
+
+Einzelnen Starter anlegen:
 ```bash
 bash scripts/desktop-pi-installer-launcher-anlegen.sh
 ```
-Danach: Doppelklick auf **„PI-Installer“** – startet Backend, wartet auf Ready, dann Auswahl.
 
-Oder alle Starter anlegen:
+Alle Starter anlegen (PI-Installer, Frontend-Varianten, DSI Radio, Bilderrahmen):
 ```bash
 bash scripts/desktop-launcher-alle-anlegen.sh
 ```
-Legt u. a. „PI-Installer“ (Kombi), „PI-Installer Backend starten“ und die drei Frontend-Starter an.
+Danach: Doppelklick auf **„PI-Installer“** im Ordner **PI-Installer** – wartet auf Backend, dann Auswahl.
 
 ### Auswahl ohne Dialog
 ```bash
@@ -51,22 +52,14 @@ PI_INSTALLER_MODE=frontend ./start-pi-installer.sh
 
 ---
 
-## 1. Backend starten
+## 1. Backend (Service oder manuell)
 
-**Erforderlich** – Frontend (Tauri oder Browser) benötigt das Backend.
+**Erforderlich** – Frontend (Tauri oder Browser) und DSI-Radio (Sendersuche, Logos, Metadaten) benötigen das Backend.
 
-### Terminal
-```bash
-./start-backend.sh
-```
-- Startet Backend auf **http://localhost:8000**
-- API-Dokumentation: http://localhost:8000/docs
-
-### Desktop-Starter
-```bash
-bash scripts/desktop-launcher-alle-anlegen.sh
-```
-Danach: Doppelklick auf **„PI-Installer Backend starten“**
+- **Port:** http://localhost:8000  
+- **API-Dokumentation:** http://localhost:8000/docs  
+- **Als Service (z. B. auf dem Zielrechner):** `sudo systemctl status pi-installer.service`  
+- **Manuell im Terminal (z. B. auf dem Linux-Laptop):** Im Projektroot `./start-backend.sh` – Backend läuft dann im Vordergrund bis Strg+C.
 
 ---
 
@@ -75,7 +68,7 @@ Danach: Doppelklick auf **„PI-Installer Backend starten“**
 Desktop-Anwendung mit eigenem Fenster – keine Browser-Leiste.
 
 ### Voraussetzung
-- **Backend muss laufen** (zuerst `./start-backend.sh` oder Desktop-Starter)
+- **Backend muss laufen** (in der Regel als Service `pi-installer.service`)
 - Rust/Tauri-Toolchain (bei erstem Aufruf: `cargo` wird genutzt)
 
 ### Terminal
@@ -95,7 +88,7 @@ npm run tauri:dev
 
 ### Desktop-Starter
 Nach `bash scripts/desktop-launcher-alle-anlegen.sh`:  
-Doppelklick auf **„PI-Installer Frontend (App-Fenster)“**
+Im Ordner **Desktop/PI-Installer/** Doppelklick auf **„PI-Installer Frontend (App-Fenster)“**
 
 ---
 
@@ -128,29 +121,31 @@ Web-Oberfläche im Standard-Browser.
 
 ### Desktop-Starter
 Nach `bash scripts/desktop-launcher-alle-anlegen.sh`:  
-Doppelklick auf **„PI-Installer Frontend (Browser)“**
+Im Ordner **Desktop/PI-Installer/** Doppelklick auf **„PI-Installer Frontend (Browser)“**
 
 ---
 
 ## 4. Alle Desktop-Starter anlegen
 
 ```bash
-cd ~/Documents/PI-Installer
+cd /pfad/zum/piinstaller
 bash scripts/desktop-launcher-alle-anlegen.sh
 ```
 
-Es werden angelegt:
-- **PI-Installer Backend starten**
+Es wird der Ordner **Desktop/PI-Installer/** angelegt mit:
+- **PI-Installer** – Kombi (wartet auf Backend-Service, dann Auswahl)
 - **PI-Installer Frontend starten** (nur Vite-Server)
 - **PI-Installer Frontend (App-Fenster)** – Tauri
 - **PI-Installer Frontend (Browser)** – Vite + Browser
+- **DSI Radio** – PyQt-Radio-App (Freenove-TFT/DSI)
+- **Bilderrahmen** – Fotos im Loop (TFT-Seite)
 
 ---
 
 ## Reihenfolge
 
-1. Zuerst **Backend** starten
-2. Danach **Frontend** (Tauri oder Browser)
+1. **Backend** läuft als Service (`pi-installer.service`)
+2. **Frontend** starten (Tauri oder Browser) per Desktop-Starter oder Terminal
 
 Ohne laufendes Backend schlagen Sudo-Passwort-Speicherung und API-Aufrufe fehl.
 

@@ -47,3 +47,6 @@ RADIO_STATIONS = [
     {"id": "rbb888", "name": "rbb 88.8", "stream_url": "http://rbb-888-live.cast.addradio.de/rbb/888/live/mp3/128/stream.mp3", "logo_url": "https://www.rbb88-8.de/apple-touch-icon.png", "region": "Berlin", "genre": "Info"},
     {"id": "energy", "name": "Energy", "stream_url": "https://stream.energy.de/energy.mp3", "logo_url": "https://www.energy.de/favicon.ico", "region": "Bundesweit", "genre": "Charts"},
 ]
+
+# Name → Logo-URL für Sender ohne logo_url (z. B. aus Favoriten/API)
+STATION_LOGO_FALLBACKS = {s["name"]: s.get("logo_url", "") for s in RADIO_STATIONS if s.get("logo_url")}

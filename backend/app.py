@@ -1014,6 +1014,70 @@ def _fetch_icecast_metadata(url: str) -> dict:
 _metadata_cache: dict[str, tuple[float, dict]] = {}
 
 
+# ---------- Sender-Logo-Datenbank (intern → extern → Wikipedia) ----------
+def _radio_logo_db_path() -> Path:
+    """Pfad zur SQLite-DB für gecachte Sender-Logos."""
+    repo_root = Path(__file__).resolve().parent.parent
+    return repo_root / "data" / "radio_logos.db"
+
+
+def _radio_logo_db_init() -> None:
+    """DB und Tabelle anlegen, falls nicht vorhanden."""
+    path = _radio_logo_db_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    import sqlite3
+    with sqlite3.connect(str(path)) as conn:
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS logos ("
+            "key TEXT PRIMARY KEY, data BLOB NOT NULL, content_type TEXT, source_url TEXT, updated_at REAL)"
+        )
+        conn.commit()
+
+
+def _radio_logo_get(key: str) -> tuple[bytes, str, str] | None:
+    """Logo aus DB lesen. Returns (data, content_type, source_url) oder None."""
+    import sqlite3
+    path = _radio_logo_db_path()
+    if not path.exists():
+        return None
+    try:
+        with sqlite3.connect(str(path)) as conn:
+            row = conn.execute(
+                "SELECT data, content_type, source_url FROM logos WHERE key = ?", (key,)
+            ).fetchone()
+        if row:
+            return (row[0], row[1] or "image/png", row[2] or "")
+    except Exception as e:
+        logger.debug("Radio logo DB get %s: %s", key[:60], e)
+    return None
+
+
+def _radio_logo_put(key: str, data: bytes, content_type: str, source_url: str) -> None:
+    """Logo in DB speichern (bei erfolgreichem Abruf)."""
+    import sqlite3
+    _radio_logo_db_init()
+    path = _radio_logo_db_path()
+    try:
+        with sqlite3.connect(str(path)) as conn:
+            conn.execute(
+                "INSERT OR REPLACE INTO logos (key, data, content_type, source_url, updated_at) VALUES (?, ?, ?, ?, ?)",
+                (key, data, content_type, source_url, time.time()),
+            )
+            conn.commit()
+    except Exception as e:
+        logger.debug("Radio logo DB put %s: %s", key[:60], e)
+
+
+def _normalize_logo_key(s: str) -> str:
+    """Key für DB: einheitlich, keine extrem langen URLs als Key."""
+    if not s or not isinstance(s, str):
+        return ""
+    t = s.strip()
+    if len(t) > 500:
+        t = t[:500]
+    return t
+
+
 @app.get("/api/radio/stream-metadata")
 async def get_radio_stream_metadata(url: str):
     """Holt Metadaten aus Icecast status-json.xsl: title, Interpret, Qualität, Sendung.
@@ -1044,6 +1108,54 @@ async def get_radio_stream_metadata(url: str):
     except Exception as e:
         logger.warning("Radio stream-metadata failed for %s: %s", url[:80], e)
         return {"status": "success", "title": "Live", "show": "", "artist": "", "song": ""}
+
+
+def _wikipedia_logo_url(station_name: str) -> str | None:
+    """Sucht zu einem Sendernamen ein Logo über die Wikipedia-API (de, dann en).
+    Gibt die Bild-URL (512px) zurück oder None."""
+    import urllib.request
+    import urllib.error
+    import urllib.parse
+    name = (station_name or "").strip()
+    if not name:
+        return None
+    ua = "PI-Installer/1.0 (Radio logo; +https://github.com)"
+    for lang in ("de", "en"):
+        try:
+            # Suche: list=search
+            search_url = (
+                f"https://{lang}.wikipedia.org/w/api.php"
+                f"?action=query&list=search&srsearch={urllib.parse.quote(name)}&format=json&srlimit=1"
+            )
+            req = urllib.request.Request(search_url, headers={"User-Agent": ua})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                data = json.loads(resp.read().decode())
+            pages = (data.get("query") or {}).get("search") or []
+            if not pages:
+                continue
+            title = (pages[0].get("title") or "").strip()
+            if not title:
+                continue
+            # Pageimages für diese Seite
+            img_url = (
+                f"https://{lang}.wikipedia.org/w/api.php"
+                f"?action=query&titles={urllib.parse.quote(title)}&prop=pageimages&format=json&pithumbsize=512"
+            )
+            req2 = urllib.request.Request(img_url, headers={"User-Agent": ua})
+            with urllib.request.urlopen(req2, timeout=8) as resp2:
+                data2 = json.loads(resp2.read().decode())
+            query = data2.get("query") or {}
+            page_dict = query.get("pages") or {}
+            for pid, pinfo in page_dict.items():
+                thumb = (pinfo.get("thumbnail") or {}).get("source")
+                if thumb:
+                    return thumb
+                orig = (pinfo.get("original") or {}).get("source")
+                if orig:
+                    return orig
+        except Exception as e:
+            logger.debug("Wikipedia logo %s (%s): %s", name[:40], lang, e)
+    return None
 
 
 def _fetch_logo(url: str) -> tuple[bytes, str] | None:
@@ -1081,13 +1193,87 @@ def _fetch_logo(url: str) -> tuple[bytes, str] | None:
         return None
 
 
+def _get_radio_logo_sync(url: str, name: Optional[str] = None) -> tuple[bytes, str, Optional[str]] | None:
+    """
+    Reihenfolge: 1) DB unter url, 2) DB unter name, 3) Abruf url, 4) Wikipedia(name).
+    Returns (body, content_type, source_url_for_refresh) oder None.
+    """
+    url = (url or "").strip()
+    name = (name or "").strip()
+    key_url = "url:" + _normalize_logo_key(url) if url else None
+    key_name = "name:" + _normalize_logo_key(name) if name else None
+
+    # 1) Intern: DB nach URL
+    if key_url:
+        row = _radio_logo_get(key_url)
+        if row:
+            return (row[0], row[1], row[2])
+
+    # 2) Intern: DB nach Sendername
+    if key_name:
+        row = _radio_logo_get(key_name)
+        if row:
+            return (row[0], row[1], row[2])
+
+    # 3) Extern: URL abrufen
+    if url:
+        result = _fetch_logo(url)
+        if result:
+            body, ct = result
+            _radio_logo_put(key_url, body, ct, url)
+            if key_name:
+                _radio_logo_put(key_name, body, ct, url)
+            return (body, ct, url)
+
+    # 4) Wikipedia-Fallback (nur wenn Name angegeben)
+    if name:
+        wiki_url = _wikipedia_logo_url(name)
+        if wiki_url:
+            result = _fetch_logo(wiki_url)
+            if result:
+                body, ct = result
+                if key_name:
+                    _radio_logo_put(key_name, body, ct, wiki_url)
+                if key_url:
+                    _radio_logo_put(key_url, body, ct, wiki_url)
+                return (body, ct, wiki_url)
+
+    return None
+
+
+_logo_refresh_tasks: set = set()
+
+
+def _logo_background_refresh(source_url: str) -> None:
+    """Im Hintergrund URL erneut abrufen und DB aktualisieren (frisches Logo)."""
+    if not source_url:
+        return
+    try:
+        result = _fetch_logo(source_url)
+        if result:
+            body, ct = result
+            key = "url:" + _normalize_logo_key(source_url)
+            _radio_logo_put(key, body, ct, source_url)
+            logger.debug("Radio logo refreshed: %s", source_url[:60])
+    except Exception as e:
+        logger.debug("Radio logo refresh failed %s: %s", source_url[:50], e)
+
+
 @app.get("/api/radio/logo")
-async def get_radio_logo(url: str):
-    """Proxy für Sender-Logos (umgeht CORS)."""
+async def get_radio_logo(url: Optional[str] = None, name: Optional[str] = None):
+    """
+    Proxy für Sender-Logos (umgeht CORS).
+    Reihenfolge: intern (DB) → extern (url) → Wikipedia (bei name).
+    url= und/oder name=; bei nur name wird nur DB + Wikipedia genutzt.
+    """
     from fastapi.responses import Response
-    result = await asyncio.to_thread(_fetch_logo, url)
+    result = await asyncio.to_thread(_get_radio_logo_sync, url, name)
     if result:
-        body, ct = result
+        body, ct, source_url = result
+        if source_url:
+            task = asyncio.create_task(asyncio.to_thread(_logo_background_refresh, source_url))
+            _logo_refresh_tasks.add(task)
+            task.add_done_callback(_logo_refresh_tasks.discard)
         return Response(content=body, media_type=ct)
     return Response(status_code=404)
 
@@ -1204,6 +1390,123 @@ async def set_radio_dsi_theme(theme: str = Body(..., embed=True)):
         return {"status": "error", "message": str(e)}
 
 
+def _dsi_radio_config_dir() -> Path:
+    return Path(os.path.expanduser("~")) / ".config" / "pi-installer-dsi-radio"
+
+
+def _dsi_radio_favorites_path() -> Path:
+    return _dsi_radio_config_dir() / "favorites.json"
+
+
+def _dsi_radio_display_path() -> Path:
+    return _dsi_radio_config_dir() / "display.json"
+
+
+def _dsi_radio_icons_path() -> Path:
+    return _dsi_radio_config_dir() / "icons.json"
+
+
+@app.get("/api/radio/dsi-config/favorites")
+async def get_dsi_config_favorites():
+    """Favoriten-Senderliste der DSI-Radio-App (Verwaltung im PI-Installer)."""
+    try:
+        path = _dsi_radio_favorites_path()
+        if path.is_file():
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    return {"status": "success", "favorites": data}
+        return {"status": "success", "favorites": []}
+    except Exception as e:
+        logger.debug("DSI favorites read: %s", e)
+        return {"status": "success", "favorites": []}
+
+
+@app.put("/api/radio/dsi-config/favorites")
+async def put_dsi_config_favorites(body: dict = Body(...)):
+    """Favoriten-Senderliste speichern (Liste von Stationen mit id, name, stream_url, logo_url, region, genre)."""
+    try:
+        favorites = body.get("favorites")
+        if not isinstance(favorites, list):
+            return JSONResponse(status_code=400, content={"status": "error", "message": "favorites muss eine Liste sein."})
+        path = _dsi_radio_favorites_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(favorites[:20], f, ensure_ascii=False, indent=2)
+        return {"status": "success", "favorites": favorites[:20]}
+    except Exception as e:
+        logger.exception("DSI favorites write: %s", e)
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/radio/dsi-config/display")
+async def get_dsi_config_display():
+    """Anzeige-Optionen: Uhr, VU-Meter (LED/Analog)."""
+    try:
+        path = _dsi_radio_display_path()
+        if path.is_file():
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return {"status": "success", "show_clock": data.get("show_clock", True), "vu_mode": data.get("vu_mode", "led")}
+        return {"status": "success", "show_clock": True, "vu_mode": "led"}
+    except Exception:
+        return {"status": "success", "show_clock": True, "vu_mode": "led"}
+
+
+@app.put("/api/radio/dsi-config/display")
+async def put_dsi_config_display(body: dict = Body(...)):
+    """Anzeige-Optionen speichern (show_clock: bool, vu_mode: 'led'|'analog')."""
+    try:
+        show_clock = body.get("show_clock", True)
+        vu_mode = body.get("vu_mode", "led")
+        if vu_mode not in ("led", "analog"):
+            vu_mode = "led"
+        path = _dsi_radio_display_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({"show_clock": bool(show_clock), "vu_mode": vu_mode}, f, indent=2)
+        return {"status": "success", "show_clock": show_clock, "vu_mode": vu_mode}
+    except Exception as e:
+        logger.exception("DSI display config write: %s", e)
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/radio/dsi-config/icons")
+async def get_dsi_config_icons():
+    """Icon-Einstellungen: Logo-Quelle, Größe."""
+    try:
+        path = _dsi_radio_icons_path()
+        if path.is_file():
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return {"status": "success", "logo_source": data.get("logo_source", "url"), "logo_size": data.get("logo_size", "medium")}
+        return {"status": "success", "logo_source": "url", "logo_size": "medium"}
+    except Exception:
+        return {"status": "success", "logo_source": "url", "logo_size": "medium"}
+
+
+@app.put("/api/radio/dsi-config/icons")
+async def put_dsi_config_icons(body: dict = Body(...)):
+    """Icon-Einstellungen speichern (logo_source: 'url'|'local', logo_size: 'small'|'medium'|'large')."""
+    try:
+        logo_source = body.get("logo_source", "url")
+        logo_size = body.get("logo_size", "medium")
+        if logo_source not in ("url", "local"):
+            logo_source = "url"
+        if logo_size not in ("small", "medium", "large"):
+            logo_size = "medium"
+        path = _dsi_radio_icons_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({"logo_source": logo_source, "logo_size": logo_size}, f, indent=2)
+        return {"status": "success", "logo_source": logo_source, "logo_size": logo_size}
+    except Exception as e:
+        logger.exception("DSI icons config write: %s", e)
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+
 @app.get("/api/system/freenove-detection")
 async def get_freenove_detection():
     """Erkennt Freenove Computer Case Kit Pro – für TFT-Bereich im App Store."""
@@ -1262,6 +1565,7 @@ APPS_CATALOG = [
     {"id": "nextcloud", "name": "Nextcloud", "description": "Eigene Cloud für Dateien, Kalender, Kontakte und mehr.", "category": "Cloud", "size": "~400 MB"},
     {"id": "pi-hole", "name": "Pi-hole", "description": "Werbung und Tracker im gesamten Netzwerk blockieren.", "category": "Tools", "size": "~200 MB"},
     {"id": "jellyfin", "name": "Jellyfin", "description": "Medien-Server für Filme, Serien und Musik – streamen auf alle Geräte.", "category": "Media", "size": "~300 MB"},
+    {"id": "dsi-radio-setup", "name": "PI-Installer Radio – Setup", "description": "Installationsroutine für PI-Installer Radio (Internetradio auf Freenove-TFT). Installiert GStreamer, Python-Bindings (gi) und Codecs; danach Radio im Menü oder über Desktop-Starter starten.", "category": "Media", "size": "~50 MB"},
     {"id": "wordpress", "name": "WordPress", "description": "Website oder Blog erstellen – CMS mit Themes und Plugins.", "category": "Tools", "size": "~200 MB, benötigt MySQL/MariaDB"},
     {"id": "code-server", "name": "VS Code Server", "description": "VS Code im Browser – Code bearbeiten von überall.", "category": "Entwicklung", "size": "~400 MB"},
     {"id": "node-red", "name": "Node-RED", "description": "Automatisierungen und Flows visuell programmieren.", "category": "Entwicklung", "size": "~150 MB"},
@@ -1288,7 +1592,11 @@ def _app_docker_template_path(app_id: str) -> Optional[Path]:
 
 
 def _app_container_running(app_id: str) -> bool:
-    """Prüft ob der Docker-Container der App läuft (Phase 2.2)."""
+    """Prüft ob der Docker-Container der App läuft bzw. (bei dsi-radio-setup) ob Setup ausgeführt wurde."""
+    if app_id == "dsi-radio-setup":
+        repo_root = Path(__file__).resolve().parent.parent
+        marker = repo_root / "data" / "apps" / "dsi-radio-setup" / ".setup-done"
+        return marker.is_file()
     container_names = {"pi-hole": "pihole", "nextcloud": "nextcloud", "home-assistant": "homeassistant", "jellyfin": "jellyfin"}
     name = container_names.get(app_id)
     if not name:
@@ -1306,11 +1614,38 @@ async def get_app_status(app_id: str):
     return {"installed": installed, "version": "docker" if installed else None}
 
 
+def _app_dsi_radio_setup_script() -> Optional[Path]:
+    """Pfad zum DSI-Radio-Setup-Skript (scripts/install-dsi-radio-setup.sh)."""
+    repo_root = Path(__file__).resolve().parent.parent
+    p = repo_root / "scripts" / "install-dsi-radio-setup.sh"
+    return p if p.is_file() else None
+
+
 @app.post("/api/apps/{app_id}/install")
 async def install_app(request: Request, app_id: str):
-    """App installieren. Phase 2.2: Docker-basierte Installation (nur wenn Vorlage vorhanden)."""
+    """App installieren. Phase 2.2: Docker oder Setup-Skript (z. B. DSI-Radio Setup)."""
     if app_id not in {a["id"] for a in APPS_CATALOG}:
         raise HTTPException(status_code=404, detail="App nicht gefunden")
+
+    # DSI-Radio Setup: Skript ausführen (Programme/Codecs – aktuell Platzhalter)
+    if app_id == "dsi-radio-setup":
+        script_path = _app_dsi_radio_setup_script()
+        if not script_path:
+            return JSONResponse(status_code=501, content={"status": "error", "message": "Setup-Skript nicht gefunden.", "installed": False})
+        try:
+            body = await request.json() if (request.headers.get("content-type") or "").startswith("application/json") else {}
+        except Exception:
+            body = {}
+        sudo_password = (body.get("sudo_password") or "") if isinstance(body, dict) else ""
+        cmd = f"{shlex.quote(str(script_path))}"
+        r = run_command(cmd, sudo=False, timeout=30)
+        if r.get("success"):
+            data_dir = _apps_data_dir()
+            (data_dir / "dsi-radio-setup").mkdir(parents=True, exist_ok=True)
+            (data_dir / "dsi-radio-setup" / ".setup-done").touch()
+            return {"status": "success", "installed": True, "message": "DSI-Radio Setup ausgeführt. Die Installation der Pakete (VLC/GStreamer/Codecs) wird in einer späteren Version ergänzt.", "version": "setup"}
+        return JSONResponse(status_code=500, content={"status": "error", "message": r.get("stderr") or r.get("stdout") or "Setup fehlgeschlagen.", "installed": False})
+
     template_path = _app_docker_template_path(app_id)
     if not template_path:
         return JSONResponse(

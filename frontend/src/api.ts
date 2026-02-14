@@ -14,6 +14,9 @@ declare global {
 
 const TAURI_DEFAULT_API = 'http://127.0.0.1:8000';
 
+/** LocalStorage-Key für optionale Backend-URL (z. B. wenn Backend auf anderem Rechner läuft). */
+export const API_BASE_STORAGE_KEY = 'pi-installer-api-base';
+
 /** Wenn true, werden API-Anfragen mit X-Demo-Mode: 1 gesendet (Platzhalter für Screenshots). */
 let _screenshotMode = false;
 
@@ -30,10 +33,15 @@ export function isScreenshotMode(): boolean {
 
 /** API-Basis-URL (leer = gleiche Origin, für Proxy). */
 export function getApiBase(): string {
+  try {
+    const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(API_BASE_STORAGE_KEY) : null;
+    if (stored && typeof stored === 'string' && stored.trim()) return stored.trim().replace(/\/$/, '');
+  } catch {
+    // ignore
+  }
   const env = import.meta.env.VITE_API_BASE as string | undefined;
   if (env && typeof env === 'string') return env.replace(/\/$/, '');
   // Tauri Dev: Seite von Vite (localhost:5173) – relative /api nutzen, Vite-Proxy leitet weiter.
-  // Verhindert CORS-Probleme im WebKit-WebView auf Pi/Wayland.
   if (typeof window !== 'undefined' && window.__TAURI__ && import.meta.env.DEV) return '';
   if (typeof window !== 'undefined' && window.__TAURI__) return TAURI_DEFAULT_API;
   return '';

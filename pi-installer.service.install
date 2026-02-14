@@ -1,0 +1,27 @@
+# PI-Installer systemd Service (angepasst für dieses System)
+# Installieren:  1. INSTALL_DIR und User/Group unten anpassen
+#                2. sudo cp pi-installer.service.install /etc/systemd/system/pi-installer.service
+#                3. sudo systemctl daemon-reload && sudo systemctl enable --now pi-installer
+#
+# INSTALL_DIR = Projektordner (z. B. /home/volker/piinstaller oder /opt/pi-installer).
+# Kein Pfad mit Leerzeichen (z. B. nicht „Software aus PI holen“) – kann zu Problemen führen.
+
+[Unit]
+Description=PI-Installer (Backend + Frontend)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=volker
+Group=volker
+WorkingDirectory=/tmp
+ExecStart=/bin/bash -c 'cd "/home/volker/piinstaller" && exec ./start.sh'
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment=PI_INSTALLER_DEV=0
+
+[Install]
+WantedBy=multi-user.target

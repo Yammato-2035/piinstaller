@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Home, Cloud, Tv, Code, ChevronRight, CheckCircle, Package, Wifi, Shield, Database } from 'lucide-react'
+import { usePlatform } from '../context/PlatformContext'
 
 export const FIRST_RUN_DONE_KEY = 'pi-installer-first-run-done'
 
@@ -46,6 +47,7 @@ interface FirstRunWizardProps {
 }
 
 const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentPage }) => {
+  const { wizardWelcomeHeadline } = usePlatform()
   const [step, setStep] = useState(1)
   const [selected, setSelected] = useState<string[]>([])
 
@@ -83,7 +85,7 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                 className="text-center"
               >
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                  Lass uns deinen Pi einrichten!
+                  {wizardWelcomeHeadline}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-400 mb-8">
                   In wenigen Schritten zeigen wir dir, was möglich ist und welche Apps zu dir passen.

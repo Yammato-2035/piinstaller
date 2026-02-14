@@ -25,6 +25,7 @@ import {
   Scan,
   Tv,
   Package,
+  Radio,
 } from 'lucide-react'
 
 type Theme = 'light' | 'dark' | 'system'
@@ -42,7 +43,7 @@ interface SidebarProps {
 const NEW_BADGE_KEY = 'pi-installer-new-'
 
 const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, freenoveDetected = false, mobileOpen = false, onClose }) => {
-  const { systemLabel } = usePlatform()
+  const { appTitle } = usePlatform()
   const [version, setVersion] = useState<string>('…')
   const [newBadges, setNewBadges] = useState<Record<string, boolean>>({})
 
@@ -79,6 +80,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     const items: Array<{ id?: string; type?: string; label?: string; icon?: any }> = [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { id: 'app-store', label: 'App Store', icon: Package },
+      ...(freenoveDetected ? [{ id: 'dsi-radio-settings', label: 'DSI-Radio Einstellungen', icon: Radio }] : []),
       { id: 'wizard', label: 'Assistent', icon: Zap },
       { id: 'presets', label: 'Voreinstellungen', icon: Settings },
       { type: 'divider' },
@@ -132,7 +134,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             <span className="text-white font-bold text-lg">π</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{isRaspberryPi ? 'PI-Installer' : systemLabel}</h1>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{appTitle}</h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">v{version}</p>
           </div>
         </div>

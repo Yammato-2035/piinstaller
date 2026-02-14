@@ -5,6 +5,23 @@ Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
 
 ---
 
+## [1.3.4.2] – 2026-02
+
+### DSI Radio (v2.1.0) – NDR-Ton, Backend, Doku
+
+- **NDR 1 / NDR 2 – Ton funktioniert:** Die App bevorzugt jetzt getestete Stream-URLs aus `stations.py` (icecast.ndr.de). Wenn NDR 1 oder NDR 2 aus der Sendersuche stammen, werden die oft fehlerhaften addradio.de-URLs durch die funktionierenden icecast-URLs ersetzt. Siehe FAQ: „NDR 1 / NDR 2: Kein Ton“.
+- **Audio-Ausgabe auf dem Laptop:** Der explizite Pulse-Sink wird nur noch auf dem Freenove-Gerät gesetzt. Auf dem Linux-Rechner nutzt GStreamer das System-Standard-Ausgabegerät – kein erzwungener Sink mehr, Ton läuft über das gewählte Gerät.
+- **Backend-Start (PEP 668):** `start-backend.sh` und `start.sh` verwenden durchgängig die Venv im Backend-Verzeichnis (`venv/bin/python3`, `venv/bin/pip`). Kein „externally-managed-environment“-Fehler mehr bei System-Python 3.12+.
+- **DSI Radio – Anweisungen:** Fehlermeldungen und README nennen jetzt „im Terminal auf dem Linux-Rechner“, Beispielpfad `/home/volker/piinstaller`, Aufruf mit `sudo bash …` bei „Befehl nicht gefunden“. Backend-Hinweis für Logos/Sendersuche ergänzt.
+- **FAQ:** Neuer Eintrag „NDR 1 / NDR 2: Kein Ton“ (Stream-URL-Preferenz aus stations.py).
+
+### Dokumentation
+
+- **apps/dsi_radio/README.md:** Linux-Terminal-Anweisungen, Backend für Logos/Sendersuche, „Befehl nicht gefunden“ mit `sudo bash` und Zeilenumbrüche.
+- **docs/START_APPS.md:** Backend manuell im Terminal starten (z. B. Laptop); DSI-Radio-Bedarf am Backend erwähnt.
+
+---
+
 ## [1.3.4.1] – 2026-02
 
 ### Radio-App (DSI Radio) – Metadaten-Verbesserungen

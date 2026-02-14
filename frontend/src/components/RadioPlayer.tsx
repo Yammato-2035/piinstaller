@@ -461,14 +461,17 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
   }
 
   const getLogoSrc = () => {
-    if (!station.logoUrl || logoError) return null
     const base = getApiBase()
     const prefix =
       base ||
       (typeof window !== 'undefined' && window.location?.origin && window.location.origin !== 'null'
         ? window.location.origin
         : 'http://127.0.0.1:8000')
-    return `${prefix.replace(/\/$/, '')}/api/radio/logo?url=${encodeURIComponent(station.logoUrl)}`
+    const params = new URLSearchParams()
+    if (station.logoUrl && !logoError) params.set('url', station.logoUrl)
+    if (station.name) params.set('name', station.name)
+    if (params.toString() === '') return null
+    return `${prefix.replace(/\/$/, '')}/api/radio/logo?${params.toString()}`
   }
 
   const dsiRadioUrl = (() => {

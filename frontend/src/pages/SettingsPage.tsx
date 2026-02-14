@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Cloud, RefreshCw, CheckCircle, XCircle, Settings } from 'lucide-react'
-import { fetchApi } from '../api'
+import { fetchApi, getApiBase, API_BASE_STORAGE_KEY } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import ScreenshotDocCard from '../components/ScreenshotDocCard'
 import { usePlatform } from '../context/PlatformContext'
@@ -48,6 +48,29 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
     backend_port?: number
   } | null>(null)
   const [loadingNetwork, setLoadingNetwork] = useState(false)
+  const [apiBaseUrl, setApiBaseUrl] = useState(() => {
+    try {
+      const b = getApiBase()
+      return b || ''
+    } catch {
+      return ''
+    }
+  })
+
+  const saveApiBaseUrl = (value: string) => {
+    const v = value.trim()
+    try {
+      if (v) localStorage.setItem(API_BASE_STORAGE_KEY, v)
+      else localStorage.removeItem(API_BASE_STORAGE_KEY)
+      setApiBaseUrl(v)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('pi-installer-api-base-changed'))
+      }
+      toast.success(v ? 'Backend-URL gespeichert' : 'Backend-URL zurückgesetzt (Auto)')
+    } catch {
+      toast.error('Konnte nicht gespeichert werden')
+    }
+  }
 
   const loadAll = async () => {
     try {
@@ -499,6 +522,38 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
         {activeTab === 'general' && (
           <div className="min-h-[280px]">
             {generalSubTab === 'init' && (
+        <>
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
+          <h3 className="text-lg font-bold text-white mb-3">Backend-Verbindung</h3>
+          <p className="text-sm text-slate-400 mb-3">
+            Wenn die App das Backend nicht erkennt (rote Anzeige), läuft das Backend ggf. auf einem anderen Rechner. Hier die Backend-URL eintragen (z. B. <code className="text-sky-300">http://192.168.1.10:8000</code>). Leer = automatisch (localhost:8000).
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="url"
+              value={apiBaseUrl}
+              onChange={(e) => setApiBaseUrl(e.target.value)}
+              placeholder="http://127.0.0.1:8000"
+              className="flex-1 min-w-[200px] px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
+            />
+            <button
+              type="button"
+              onClick={() => saveApiBaseUrl(apiBaseUrl)}
+              className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-medium text-sm"
+            >
+              Übernehmen
+            </button>
+            {apiBaseUrl && (
+              <button
+                type="button"
+                onClick={() => saveApiBaseUrl('')}
+                className="px-3 py-2 text-slate-400 hover:text-white text-sm"
+              >
+                Zurücksetzen
+              </button>
+            )}
+          </div>
+        </motion.div>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
           <h3 className="text-lg font-bold text-white mb-3">Initialisierung</h3>
           {!initStatus ? (
@@ -529,6 +584,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
             </div>
           )}
         </motion.div>
+        </>
             )}
 
             {generalSubTab === 'network' && (

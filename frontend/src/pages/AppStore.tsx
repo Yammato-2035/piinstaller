@@ -208,7 +208,7 @@ const AppStore: React.FC<AppStoreProps> = ({ freenoveDetected = false, setCurren
                 {isInstalled ? (
                   <button
                     type="button"
-                    onClick={() => toast('Einstellungen öffnen – Coming soon', { icon: '⚙️' })}
+                    onClick={() => app.id === 'dsi-radio-setup' ? setCurrentPage?.('dsi-radio-settings') : toast('Einstellungen öffnen – Coming soon', { icon: '⚙️' })}
                     className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-300 dark:hover:bg-slate-600"
                   >
                     <Settings className="w-4 h-4" /> Einstellungen

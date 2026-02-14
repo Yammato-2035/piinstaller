@@ -1,10 +1,11 @@
 #!/bin/bash
-# PI-Installer – Internetradio auf dem DSI-Display (Freenove 4,3")
-# Bevorzugt die native PyQt6-App (kein Frontend nötig, Fenster landet per Wayfire auf DSI).
-# Fallback: Browser mit Web-Ansicht (Backend + Frontend müssen laufen).
+# PI-Installer – DSI-Radio als eigenständige PyQt6-App (Freenove 4,3" DSI)
+# Das Radio läuft als eigene PyQt-App; kein Frontend/Browser nötig.
+# Fallback nur wenn PyQt6 fehlt: Browser mit Web-Ansicht (Backend + Frontend nötig).
 #
 # Verwendung:
 #   ./scripts/start-dsi-radio.sh
+#   oder direkt die native App: ./scripts/start-dsi-radio-native.sh
 #
 # Wayfire-Regel: Fenster mit Titel „PI-Installer DSI“ → DSI-1 (TFT; siehe docs/FREENOVE_TFT_DISPLAY.md)
 

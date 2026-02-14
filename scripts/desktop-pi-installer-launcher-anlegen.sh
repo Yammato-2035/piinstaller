@@ -29,14 +29,16 @@ echo "========================================"
 echo ""
 
 for DESKTOP in "${DESKTOPS[@]}"; do
-  DESKTOP_FILE="$DESKTOP/PI-Installer.desktop"
+  LAUNCHER_DIR="$DESKTOP/PI-Installer"
+  mkdir -p "$LAUNCHER_DIR"
+  DESKTOP_FILE="$LAUNCHER_DIR/PI-Installer.desktop"
   cat > "$DESKTOP_FILE" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=PI-Installer
-Comment=Startet Backend, dann Auswahl: Tauri / Browser / Vite-Server
-Exec="$START_SCRIPT"
+Comment=Auswahl: Tauri / Browser / Vite-Server (Backend läuft als Service)
+Exec=$START_SCRIPT
 Path=$PROJECT_ROOT
 Icon=$ICON
 Terminal=true
@@ -49,7 +51,7 @@ done
 
 echo ""
 echo "Doppelklick auf „PI-Installer“ startet:"
-echo "  1. Backend (falls nicht läuft)"
-echo "  2. Wartet auf Backend-Ready"
+echo "  1. Prüft Backend (Port 8000, läuft als Service)"
+echo "  2. Wartet ggf. auf Backend-Ready"
 echo "  3. Dialog zur Auswahl: App-Fenster (Tauri) / Browser / Nur Vite-Server"
 echo ""

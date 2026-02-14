@@ -5,8 +5,8 @@ Version 2.0: GStreamer-Wiedergabe (statt VLC/mpv). 20 Favoriten, Radio-Browser-A
 Wayfire: Fenstertitel „PI-Installer DSI Radio“ → start_on_output DSI-1 (TFT).
 """
 
-# Radio-App-Version (2.0 = GStreamer-Umstellung)
-RADIO_APP_VERSION = "2.0.0"
+# Radio-App-Version (2.1 = NDR-Stream-Preferenz, Ausgabe nur auf Freenove erzwungen)
+RADIO_APP_VERSION = "2.1.0"
 
 import os
 import sys
@@ -56,11 +56,17 @@ FAVORITES_MAX = 20
 # Konfigurationsverzeichnis: absolut, damit es immer korrekt ist
 _CONFIG_BASE = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
 CONFIG_DIR = os.path.join(_CONFIG_BASE, "pi-installer-dsi-radio")
+# Projektroot (Linux): für Anzeige von Installationspfaden in Fehlermeldungen
+_DSI_RADIO_DIR = os.path.dirname(os.path.abspath(__file__))
+_REPO_ROOT = os.path.abspath(os.path.join(_DSI_RADIO_DIR, "..", ".."))
+_INSTALL_SCRIPT = os.path.join(_REPO_ROOT, "scripts", "install-dsi-radio-setup.sh")
 # Stelle sicher, dass Verzeichnis existiert
 os.makedirs(CONFIG_DIR, exist_ok=True)
 FAVORITES_FILE = os.path.join(CONFIG_DIR, "favorites.json")
 LAST_STATION_FILE = os.path.join(CONFIG_DIR, "last_station.json")
 THEME_FILE = os.path.join(CONFIG_DIR, "theme.txt")
+DISPLAY_CONFIG_FILE = os.path.join(CONFIG_DIR, "display.json")
+ICONS_CONFIG_FILE = os.path.join(CONFIG_DIR, "icons.json")
 FAVORITES_PER_PAGE = 9
 
 try:
@@ -562,6 +568,63 @@ def save_theme(name: str) -> None:
         pass
 
 
+def load_display_config() -> dict:
+    """Anzeige-Optionen aus display.json (PI-Installer Einstellungen)."""
+    out = {"show_clock": True, "vu_mode": "led"}
+    try:
+        if os.path.isfile(DISPLAY_CONFIG_FILE):
+            with open(DISPLAY_CONFIG_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    out["show_clock"] = data.get("show_clock", True)
+                    out["vu_mode"] = data.get("vu_mode", "led") if data.get("vu_mode") in ("led", "analog") else "led"
+    except Exception:
+        pass
+    return out
+
+
+def load_icons_config() -> dict:
+    """Icon-Optionen aus icons.json (PI-Installer Einstellungen)."""
+    out = {"logo_source": "url", "logo_size": "medium"}
+    try:
+        if os.path.isfile(ICONS_CONFIG_FILE):
+            with open(ICONS_CONFIG_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    out["logo_source"] = data.get("logo_source", "url") if data.get("logo_source") in ("url", "local") else "url"
+                    out["logo_size"] = data.get("logo_size", "medium") if data.get("logo_size") in ("small", "medium", "large") else "medium"
+    except Exception:
+        pass
+    return out
+
+
+def _prefer_stations_py_stream_url(current_station: dict, url: str) -> str:
+    """Bevorzugt getestete Stream-URLs aus stations.py (z. B. NDR über icecast.ndr.de statt addradio.de)."""
+    if not url or not current_station:
+        return url
+    cur_name = (current_station.get("name") or "").strip()
+    cur_id = (current_station.get("id") or "").strip()
+    try:
+        for s in RADIO_STATIONS:
+            alt = (s.get("stream_url") or s.get("url") or "").strip()
+            if not alt:
+                continue
+            sid = (s.get("id") or "").strip()
+            sname = (s.get("name") or "").strip()
+            if cur_id and sid and cur_id == sid:
+                return alt
+            if cur_name == sname:
+                return alt
+            # NDR 1 / NDR 2: API liefert oft andere Namen („NDR 1 Niedersachsen“) oder addradio-URLs
+            if cur_name and sname and "NDR 1" in cur_name and "NDR 1" in sname:
+                return alt
+            if cur_name and sname and "NDR 2" in cur_name and "NDR 2" in sname:
+                return alt
+    except Exception:
+        pass
+    return url
+
+
 def _button_label(name: str, max_chars: int = 12) -> str:
     """Kurzer Button-Text: umbrechen oder Kürzel (touch-tauglich)."""
     if not name:
@@ -700,18 +763,23 @@ def _fetch_icy_metadata_direct(url: str) -> dict:
     return {}
 
 
-def _fetch_logo(url: str) -> Optional[bytes]:
+def _fetch_logo(url: str, name: Optional[str] = None) -> Optional[bytes]:
+    """Logo laden: zuerst Backend (DB → extern → Wikipedia), sonst Direktabruf."""
+    params: List[str] = []
+    if (url or "").strip():
+        params.append("url=" + urllib.request.quote(url.strip(), safe=""))
+    if (name or "").strip():
+        params.append("name=" + urllib.request.quote(name.strip(), safe=""))
+    if params:
+        try:
+            proxy_url = f"{BACKEND_BASE}/api/radio/logo?{'&'.join(params)}"
+            req = urllib.request.Request(proxy_url, headers={"User-Agent": "PI-Installer-DSI-Radio/1.0"})
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return resp.read()
+        except Exception:
+            pass
     if not url:
         return None
-    # Zuerst Backend-Proxy versuchen (Wikimedia-User-Agent, CORS-frei)
-    try:
-        proxy_url = f"{BACKEND_BASE}/api/radio/logo?url={urllib.request.quote(url, safe='')}"
-        req = urllib.request.Request(proxy_url, headers={"User-Agent": "PI-Installer-DSI-Radio/1.0"})
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            return resp.read()
-    except Exception:
-        pass
-    # Fallback: Direkt laden mit Wikimedia-konformem User-Agent
     try:
         ua = "PI-Installer/1.0 (Radio logo; +https://github.com)" if ("wikipedia.org" in url or "wikimedia.org" in url) else "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
         req = urllib.request.Request(url, headers={"User-Agent": ua, "Accept": "image/webp,image/apng,image/*,*/*;q=0.8"})
@@ -1108,6 +1176,13 @@ class DsiRadioWindow(QMainWindow):
         self._rebuild_station_buttons()
         # Nochmals nach kurzer Verzögerung, damit die 20 Favoriten-Buttons sicher angezeigt werden
         QTimer.singleShot(300, self._rebuild_station_buttons)
+        # Anzeige-Optionen aus PI-Installer (display.json)
+        disp = load_display_config()
+        if hasattr(self, "_clock_label"):
+            self._clock_label.setVisible(disp.get("show_clock", True))
+        if hasattr(self, "_vu_mode_slider"):
+            self._vu_mode_slider.setValue(1 if disp.get("vu_mode") == "analog" else 0)
+            self._on_vu_slider(self._vu_mode_slider.value())
         # Hintergrund: Streams prüfen, Senderliste aktualisieren (einmal pro Start)
         threading.Thread(target=self._background_station_update, daemon=True).start()
 
@@ -1286,11 +1361,13 @@ class DsiRadioWindow(QMainWindow):
         black_frame_layout.setContentsMargins(3, 3, 3, 3)
         black_frame_layout.setSpacing(0)
         
-        # Weißes Display mit Logo links, Text rechts (Portrait 480x800: mehr Höhe für DSI-1)
+        # Weißes Display mit Logo links, Text rechts – feste Höhe für stabile Anzeige
         green_display = QFrame()
         green_display.setStyleSheet("background: #ffffff; border: none; border-radius: 0px; padding: 4px;")
-        green_display.setMinimumHeight(140)
-        green_display.setMaximumHeight(360 if portrait else 220)
+        display_height = 280 if portrait else 200
+        green_display.setFixedHeight(display_height)
+        self._radio_display_frame = green_display
+        self._radio_display_logo_width = 85 if portrait else 97
         green_display_layout = QVBoxLayout(green_display)
         green_display_layout.setContentsMargins(4, 4, 4, 4)
         green_display_layout.setSpacing(0)
@@ -1373,6 +1450,14 @@ class DsiRadioWindow(QMainWindow):
         text_container.addStretch()
         content_row.addLayout(text_container, 1)
         
+        # Basis-Schriftgrößen für spätere Skalierung bei wenig Platz (siehe _update_radio_display_fonts)
+        self._radio_display_font_sizes = {
+            "station": 22,
+            "genre": 14,
+            "show": 12,
+            "title": 14,
+            "artist": 14,
+        }
         green_display_layout.addLayout(content_row, 1)
         black_frame_layout.addWidget(green_display, 0)
         
@@ -1693,6 +1778,7 @@ class DsiRadioWindow(QMainWindow):
         self._show_label.setText("")
         self._quality_label.setText("")
         self._metadata = {}
+        QTimer.singleShot(0, self._update_radio_display_fonts)
         # Zuerst Stream starten (schneller Wechsel), Logo danach asynchron laden
         self._start_stream()
         QTimer.singleShot(0, self._update_logo)
@@ -1704,11 +1790,20 @@ class DsiRadioWindow(QMainWindow):
         url = (station.get("logo_url") or "").strip()
         if not url:
             url = STATION_LOGO_FALLBACKS.get(name) or ""
+        if not url:
+            # Fallback: Sender anhand Namen in RADIO_STATIONS suchen (z. B. aus Favoriten ohne logo_url)
+            try:
+                for s in RADIO_STATIONS:
+                    if (s.get("name") or "").strip() == name and (s.get("logo_url") or "").strip():
+                        url = (s.get("logo_url") or "").strip()
+                        break
+            except Exception:
+                pass
         self._logo_label.setPixmap(QPixmap())
         self._logo_label.setText(name[:2] if name else "…")
-        if not url:
+        if not url and not name:
             return
-        data = _fetch_logo(url)
+        data = _fetch_logo(url, name)
         if not data:
             return
         pix = QPixmap()
@@ -1747,20 +1842,23 @@ class DsiRadioWindow(QMainWindow):
             gst_player.init()
             if not gst_player.is_available():
                 self._title_label.setText("GStreamer nicht verfügbar")
-                self._artist_label.setText("sudo apt install python3-gi gir1.2-gstreamer-1.0 gstreamer1.0-plugins-good gstreamer1.0-pulseaudio")
+                install_cmd = _INSTALL_SCRIPT if os.path.isfile(_INSTALL_SCRIPT) else "./scripts/install-dsi-radio-setup.sh"
+                self._artist_label.setText("Terminal: sudo bash " + install_cmd)
                 err = gst_player.get_availability_error() or "Unbekannt"
-                self._show_label.setText(f"Grund: {err}. Nach Installation: App neu starten.")
+                self._show_label.setText(f"Grund: {err}. Danach App neu starten.")
                 return
             self._gst_player = gst_player.GstPlayer()
 
         self._stop_stream()
 
         url = (self._current_station.get("stream_url") or self._current_station.get("url") or "").strip()
+        url = _prefer_stations_py_stream_url(self._current_station, url)
         if not url:
             return
 
         audio_sink = _find_audio_sink()
         has_pulseaudio = _pactl_path() is not None
+        force_sink_for_gstreamer = False  # Nur auf Freenove: expliziten Sink an GStreamer übergeben
 
         if not audio_sink:
             self._title_label.setText("Kein Audio-Ausgang gefunden!")
@@ -1802,13 +1900,29 @@ class DsiRadioWindow(QMainWindow):
                             [pactl, "set-default-sink", audio_sink],
                             capture_output=True, text=True, timeout=2, env=_pactl_env()
                         )
+                    if is_freenove:
+                        force_sink_for_gstreamer = True  # Gehäuse-Lautsprecher explizit an Playbin übergeben
                 except Exception:
                     pass
 
         try:
             def on_gst_error(err_str: str):
-                QTimer.singleShot(0, lambda: self._title_label.setText("Streamfehler"))
-                QTimer.singleShot(0, lambda: setattr(self, "_playing", False))
+                err_lower = (err_str or "").lower()
+                # Hinweis bei vermutlich fehlendem AAC/Codec-Decoder (z. B. NDR 1)
+                hint_artist = ""
+                hint_show = ""
+                if any(x in err_lower for x in ("aac", "decode", "no element", "could not decode", "avdec")):
+                    cmd = _INSTALL_SCRIPT if os.path.isfile(_INSTALL_SCRIPT) else "./scripts/install-dsi-radio-setup.sh"
+                    hint_artist = "AAC/Codec: gstreamer1.0-libav installieren"
+                    hint_show = "Terminal: sudo bash " + cmd
+                def _apply():
+                    self._title_label.setText("Streamfehler")
+                    if hint_artist:
+                        self._artist_label.setText(hint_artist)
+                    if hint_show:
+                        self._show_label.setText(hint_show)
+                    self._playing = False
+                QTimer.singleShot(0, _apply)
 
             def on_gst_tag(meta: dict):
                 # GStreamer-Tags (ICY/Stream): title, artist, organization, stream-title usw.
@@ -1848,7 +1962,8 @@ class DsiRadioWindow(QMainWindow):
                     self._apply_metadata(applied, force_show=True)
 
             self._gst_player.set_callbacks(on_error=on_gst_error, on_tag=on_gst_tag)
-            self._gst_player.set_uri(url)
+            # Auf dem Laptop: kein Sink übergeben → GStreamer nutzt Standard-Ausgabe. Nur auf Freenove Sink erzwingen.
+            self._gst_player.set_uri(url, pulse_sink_name=audio_sink if (has_pulseaudio and force_sink_for_gstreamer) else None)
             self._gst_player.play()
 
             self._playing = True
@@ -2186,6 +2301,8 @@ class DsiRadioWindow(QMainWindow):
             self._quality_label.setText("")
             if self._playing:
                 self._set_led_strip(2, 80)
+        # Schriftgrößen an verfügbaren Platz anpassen (z. B. bei langen Titeln)
+        QTimer.singleShot(0, self._update_radio_display_fonts)
 
     def _on_vu_slider(self, value: int):
         """Schiebeschalter: 0 = LED (Digital), 1 = Analog."""
@@ -2237,15 +2354,26 @@ class DsiRadioWindow(QMainWindow):
             self._vu_analog_widgets[channel].set_value(value)
 
     def _update_vu(self):
-        """Simulierte Aussteuerung L/R (7 LEDs); Senderstärke aus Bitrate."""
+        """VU L/R aus GStreamer-Level-Pegeln; Senderstärke (Kanal 2) aus Bitrate."""
         if not self._playing:
             return
+        peaks = None
+        if self._gst_player and getattr(self._gst_player, "get_peak_levels", None):
+            try:
+                peaks = self._gst_player.get_peak_levels()
+            except Exception:
+                pass
+        if peaks is not None and len(peaks) >= 2:
+            self._vu_val_0 = max(0, min(100, int(peaks[0])))
+            self._vu_val_1 = max(0, min(100, int(peaks[1])))
+        else:
+            # Fallback: leichte Simulation, falls Level-Element nicht liefert
+            for ch in (0, 1):
+                w = getattr(self, f"_vu_val_{ch}", 50)
+                w = min(100, max(0, w + random.randint(-8, 12)))
+                setattr(self, f"_vu_val_{ch}", w)
         for ch in (0, 1):
-            # Wert aus Bar lesen oder neu berechnen (wir speichern nicht in Bar, nutzen Zufall)
-            w = getattr(self, f"_vu_val_{ch}", 50)
-            w = min(100, max(0, w + random.randint(-8, 12)))
-            setattr(self, f"_vu_val_{ch}", w)
-            self._set_led_strip(ch, w)
+            self._set_led_strip(ch, getattr(self, f"_vu_val_{ch}", 0))
 
     def _poll_metadata(self):
         url = (self._current_station.get("stream_url") or self._current_station.get("url") or "").strip()
@@ -2455,16 +2583,49 @@ class DsiRadioWindow(QMainWindow):
             # PulseAudio nicht verfügbar oder Fehler - ignorieren
             pass
     
+    def _update_radio_display_fonts(self):
+        """Passt die Schriftgrößen der Senderanzeige an die verfügbare Breite an (kleiner bei wenig Platz)."""
+        if not getattr(self, "_radio_display_frame", None) or not self._radio_display_frame.isVisible():
+            return
+        w = self._radio_display_frame.width()
+        logo = getattr(self, "_radio_display_logo_width", 90)
+        margins = 16
+        available = max(80, w - logo - margins)
+        sizes = getattr(self, "_radio_display_font_sizes", {})
+        min_pt = 9
+        labels = [
+            (self._station_label, sizes.get("station", 22), True),
+            (self._genre_label, sizes.get("genre", 14), False),
+            (self._show_label, sizes.get("show", 12), False),
+            (self._title_label, sizes.get("title", 14), True),
+            (self._artist_label, sizes.get("artist", 14), False),
+        ]
+        for label, base_pt, bold in labels:
+            if label is None:
+                continue
+            text = (label.text() or "W").strip() or "W"
+            pt = base_pt
+            while pt >= min_pt:
+                font = QFont("Sans", pt, QFont.Weight.Bold if bold else QFont.Weight.Normal)
+                fm = QFontMetrics(font)
+                if fm.horizontalAdvance(text) <= available:
+                    break
+                pt -= 1
+            font = QFont("Sans", pt, QFont.Weight.Bold if bold else QFont.Weight.Normal)
+            label.setFont(font)
+
     def resizeEvent(self, event):
-        """Bei Größenänderung X-Button neu positionieren."""
+        """Bei Größenänderung X-Button neu positionieren und Schriftgrößen anpassen."""
         super().resizeEvent(event)
         self._position_close_button()
+        QTimer.singleShot(0, self._update_radio_display_fonts)
     
     def showEvent(self, event):
         """Fenstertitel früh setzen, damit Wayfire-Regel (DSI-1/TFT) greift."""
         self.setWindowTitle(WINDOW_TITLE)
         super().showEvent(event)
         QTimer.singleShot(0, self._position_close_button)
+        QTimer.singleShot(100, self._update_radio_display_fonts)
         self._setup_screenshot_shortcut()
         QTimer.singleShot(0, self._move_to_dsi_display)
         # Uhr- und Backend-Timer erst 500 ms nach show starten (QBasicTimer nur im Objekt-Thread)

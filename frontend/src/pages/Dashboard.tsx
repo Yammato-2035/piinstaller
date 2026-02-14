@@ -432,6 +432,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
             <p className="text-sm mt-1 opacity-95">
               Dashboard-Daten und Sudo-Passwort-Speicherung funktionieren nur, wenn das Backend läuft.
               Backend starten: <code className="opacity-90 px-1 rounded">./start.sh</code> oder <code className="opacity-90 px-1 rounded">./start-backend.sh</code> im Projektordner.
+              Läuft das Backend auf einem anderen Rechner (z. B. Pi): Einstellungen → Allgemein → „Backend-API-URL“ eintragen (z. B. <code className="opacity-90 px-1 rounded">http://&lt;Pi-IP&gt;:8000</code>).
               Log-Datei: Einstellungen → Logs → „Logs laden“ (Pfad wird angezeigt).
             </p>
             {setCurrentPage && (

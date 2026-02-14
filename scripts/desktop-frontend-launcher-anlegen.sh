@@ -18,15 +18,18 @@ DESKTOPS=()
 [ ${#DESKTOPS[@]} -eq 0 ]   && DESKTOPS+=("$HOME")
 
 for DESKTOP in "${DESKTOPS[@]}"; do
+  LAUNCHER_DIR="$DESKTOP/PI-Installer"
+  mkdir -p "$LAUNCHER_DIR"
+
   # 1) Nur Server (wie bisher)
-  DESKTOP_FILE="$DESKTOP/PI-Installer-Frontend-starten.desktop"
+  DESKTOP_FILE="$LAUNCHER_DIR/PI-Installer-Frontend-starten.desktop"
   cat > "$DESKTOP_FILE" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=PI-Installer Frontend starten
 Comment=Nur Vite-Server (Port 3001), Fenster/Browser manuell öffnen
-Exec="$START_SCRIPT"
+Exec=$START_SCRIPT
 Path=$PROJECT_ROOT
 Icon=utilities-terminal
 Terminal=true
@@ -36,14 +39,14 @@ EOF
   echo "✅ $DESKTOP_FILE"
 
   # 2) App-Fenster (Tauri)
-  DESKTOP_FILE="$DESKTOP/PI-Installer-Frontend-App-Fenster.desktop"
+  DESKTOP_FILE="$LAUNCHER_DIR/PI-Installer-Frontend-App-Fenster.desktop"
   cat > "$DESKTOP_FILE" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=PI-Installer Frontend (App-Fenster)
 Comment=Frontend im eigenen Fenster starten (Tauri)
-Exec="$START_SCRIPT" --window
+Exec=$START_SCRIPT --window
 Path=$PROJECT_ROOT
 Icon=utilities-terminal
 Terminal=true
@@ -53,14 +56,14 @@ EOF
   echo "✅ $DESKTOP_FILE"
 
   # 3) Browser
-  DESKTOP_FILE="$DESKTOP/PI-Installer-Frontend-Browser.desktop"
+  DESKTOP_FILE="$LAUNCHER_DIR/PI-Installer-Frontend-Browser.desktop"
   cat > "$DESKTOP_FILE" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=PI-Installer Frontend (Browser)
 Comment=Frontend starten und im Standard-Browser öffnen
-Exec="$START_SCRIPT" --browser
+Exec=$START_SCRIPT --browser
 Path=$PROJECT_ROOT
 Icon=utilities-terminal
 Terminal=true

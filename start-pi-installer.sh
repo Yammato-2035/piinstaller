@@ -21,7 +21,7 @@ wait_for_backend() {
   return 1
 }
 
-# --- 1. Backend prüfen / starten ---
+# --- 1. Backend prüfen, ggf. starten ---
 echo "🚀 PI-Installer starten"
 echo "========================"
 echo ""
@@ -29,26 +29,35 @@ echo ""
 if curl -sS --max-time 2 "$BACKEND_URL/api/version" >/dev/null 2>&1; then
   echo "✅ Backend läuft bereits auf :8000"
 else
-  echo "📡 Starte Backend..."
-  cd "$PROJECT_ROOT/backend" || exit 1
-  if [ ! -d "venv" ]; then
-    python3 -m venv venv
-  fi
-  source venv/bin/activate
-  if ! python3 -c "import fastapi" 2>/dev/null; then
-    pip install -r requirements.txt --only-binary :all: 2>/dev/null || pip install -r requirements.txt
-  fi
-  python3 -m uvicorn app:app --host 0.0.0.0 --port 8000 &
-  BACKEND_PID=$!
-  echo -n "   Warte auf Backend-Ready"
-  if ! wait_for_backend; then
+  echo "📡 Backend antwortet nicht – starte Backend..."
+  if [ -x "$PROJECT_ROOT/start-backend.sh" ]; then
+    nohup "$PROJECT_ROOT/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
+    BACKEND_LAUNCH_PID=$!
+    disown $BACKEND_LAUNCH_PID 2>/dev/null || true
+    echo -n "   Warte auf Backend "
+    if wait_for_backend; then
+      echo ""
+      echo "✅ Backend gestartet"
+    else
+      echo ""
+      echo "❌ Backend antwortet nicht (Timeout nach ${MAX_WAIT}s)."
+      kill $BACKEND_LAUNCH_PID 2>/dev/null
+      echo "   Alternativ: sudo systemctl start pi-installer.service"
+      exit 1
+    fi
+  else
+    echo "   Warte auf Backend (z. B. Service auf Port 8000)..."
+    echo -n "   "
+    if ! wait_for_backend; then
+      echo ""
+      echo "❌ Backend antwortet nicht (Timeout nach ${MAX_WAIT}s)."
+      echo "   Bitte starten: $PROJECT_ROOT/start-backend.sh"
+      echo "   Oder Service: sudo systemctl start pi-installer.service"
+      exit 1
+    fi
     echo ""
-    echo "❌ Backend konnte nicht gestartet werden (Timeout nach ${MAX_WAIT}s)."
-    kill $BACKEND_PID 2>/dev/null
-    exit 1
+    echo "✅ Backend bereit"
   fi
-  echo ""
-  echo "✅ Backend bereit"
 fi
 echo ""
 

@@ -5,7 +5,7 @@ import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 
 const InstallationWizard: React.FC = () => {
-  const { systemLabel, isRaspberryPi, pageSubtitleLabel } = usePlatform()
+  const { systemLabel, isRaspberryPi, pageSubtitleLabel, wizardWelcomeHeadline } = usePlatform()
   const [step, setStep] = useState(1)
   const [allConfigs, setAllConfigs] = useState({
     security: {
@@ -169,8 +169,9 @@ const InstallationWizard: React.FC = () => {
       <div className="card min-h-96">
         {step === 1 && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">🎉 Willkommen{isRaspberryPi ? ' zum PI-Installer!' : systemLabel ? ` bei ${systemLabel}!` : '!'}</h2>
-            
+            <h2 className="text-3xl font-bold text-white">
+              {isRaspberryPi ? '🎉 Willkommen zum PI-Installer!' : `🎉 ${wizardWelcomeHeadline}`}
+            </h2>
             <div className="space-y-4">
               <p className="text-slate-300 text-lg">
                 Dieser Assistent hilft Ihnen, Ihr System von der Grundkonfiguration auf den nächsten Level zu bringen.

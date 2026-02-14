@@ -25,6 +25,7 @@ import KinoStreaming from './pages/KinoStreaming'
 import Documentation from './pages/Documentation'
 import AppStore from './pages/AppStore'
 import TFTPage from './pages/TFTPage'
+import DsiRadioSettings from './pages/DsiRadioSettings'
 import RadioPlayer from './components/RadioPlayer'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
@@ -55,15 +56,24 @@ type Page =
   | 'documentation'
   | 'app-store'
   | 'tft'
+  | 'dsi-radio-settings'
 
 type Theme = 'light' | 'dark' | 'system'
 
 const isDsiRadioView = () =>
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'dsi-radio'
 
+function getInitialPage(): Page {
+  if (typeof window === 'undefined') return 'dashboard'
+  const p = new URLSearchParams(window.location.search).get('page')
+  if (p === 'tft') return 'tft'
+  if (p && ['dashboard', 'security', 'users', 'devenv', 'webserver', 'mailserver', 'nas', 'homeautomation', 'musicbox', 'kino-streaming', 'wizard', 'presets', 'learning', 'monitoring', 'backup', 'raspberry-pi-config', 'control-center', 'periphery-scan', 'settings', 'documentation', 'app-store', 'dsi-radio-settings'].includes(p)) return p as Page
+  return 'dashboard'
+}
+
 function App() {
   const dsiRadioView = isDsiRadioView()
-  const [currentPage, setCurrentPage] = useState<Page>('dashboard')
+  const [currentPage, setCurrentPage] = useState<Page>(getInitialPage)
   const [systemInfo, setSystemInfo] = useState<any>(null)
   const [freenoveDetected, setFreenoveDetected] = useState(false)
   const [backendError, setBackendError] = useState(false)
@@ -105,6 +115,14 @@ function App() {
       document.title = 'PI-Installer DSI Radio'
     }
   }, [dsiRadioView])
+
+  const platform = useMemo(() => platformFromSystemInfo(systemInfo), [systemInfo])
+
+  useEffect(() => {
+    if (!dsiRadioView && platform.appTitle) {
+      document.title = platform.appTitle
+    }
+  }, [dsiRadioView, platform.appTitle])
 
   const fetchSystemInfo = useCallback(async () => {
     setBackendError(false)
@@ -152,6 +170,12 @@ function App() {
     const handler = () => fetchSystemInfo()
     window.addEventListener('pi-installer-screenshot-mode-changed', handler)
     return () => window.removeEventListener('pi-installer-screenshot-mode-changed', handler)
+  }, [fetchSystemInfo])
+
+  useEffect(() => {
+    const handler = () => fetchSystemInfo()
+    window.addEventListener('pi-installer-api-base-changed', handler)
+    return () => window.removeEventListener('pi-installer-api-base-changed', handler)
   }, [fetchSystemInfo])
 
   useEffect(() => {
@@ -230,12 +254,12 @@ function App() {
         return <AppStore freenoveDetected={freenoveDetected} setCurrentPage={handlePageChange} />
       case 'tft':
         return <TFTPage />
+      case 'dsi-radio-settings':
+        return <DsiRadioSettings setCurrentPage={handlePageChange} />
       default:
         return <Dashboard systemInfo={systemInfo} backendError={backendError} setCurrentPage={handlePageChange} />
     }
   }
-
-  const platform = useMemo(() => platformFromSystemInfo(systemInfo), [systemInfo])
 
   if (dsiRadioView) {
     return (
@@ -266,7 +290,7 @@ function App() {
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
-          <span className="font-semibold text-slate-800 dark:text-white">PI-Installer</span>
+          <span className="font-semibold text-slate-800 dark:text-white">{platform.appTitle}</span>
         </header>
         <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
       <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">

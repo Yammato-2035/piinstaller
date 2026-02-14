@@ -1113,6 +1113,20 @@ const Documentation: React.FC = () => {
                       <p className="text-slate-400 text-xs mt-2">Doku: <code className="bg-slate-700 px-1 rounded">docs/FREENOVE_TFT_DISPLAY.md</code></p>
                     </div>
                   </div>
+                  {/* FAQ: NDR 1 / NDR 2 – Kein Ton */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">NDR 1 / NDR 2: Kein Ton (1Live spielt dagegen)</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Bei NDR 1 oder NDR 2 kommt kein Ton, bei anderen Sendern (z. B. 1Live) schon.</p>
+                      <p className="text-slate-300 mb-2"><strong>Ursache:</strong> Die Sendersuche/API liefert oft Stream-URLs von addradio.de, die bei manchen Setups nicht zuverlässig abspielen. Die getesteten icecast.ndr.de-URLs funktionieren.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösung (ab Version 1.3.4.2 / DSI Radio v2.1):</p>
+                        <p className="text-slate-300 mb-2">Die App bevorzugt automatisch die Stream-URLs aus der Senderliste (stations.py). NDR 1 und NDR 2 werden dann über icecast.ndr.de abgespielt – Ton und Metadaten sollten funktionieren. Einfach DSI Radio neu starten und NDR 1 bzw. NDR 2 erneut wählen.</p>
+                      </div>
+                    </div>
+                  </div>
                   {/* FAQ: Radio SAW – Kein Titel/Interpret */}
                   <div className="rounded-lg border border-sky-600/50 bg-sky-950/20 overflow-hidden">
                     <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
@@ -1369,8 +1383,16 @@ const Documentation: React.FC = () => {
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.4.1</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.4.2</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.4.2 (DSI Radio NDR-Ton, Backend-Venv, Doku)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>DSI Radio v2.1:</strong> NDR 1/NDR 2 – getestete Stream-URLs (icecast.ndr.de) werden bevorzugt, Ton funktioniert; Audio-Ausgabe nur auf Freenove erzwungen, auf dem Laptop Standardgerät</li>
+                      <li><strong>Backend:</strong> start-backend.sh und start.sh nutzen durchgängig Venv (kein „externally-managed-environment“ mehr)</li>
+                      <li><strong>Doku/FAQ:</strong> Linux-Terminal-Anweisungen, „NDR 1 / NDR 2: Kein Ton“ in FAQ</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.4.1 (Radio-App Metadaten-Verbesserungen)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Radio-App:</strong> System-Metadaten aus PulseAudio/PipeWire (wie Lautstärkeregler); "Es läuft:" immer sichtbar; Logo/Sendername beim Wiederherstellen; Show-Metadaten-Erkennung; Interpret-Textgröße angepasst</li>

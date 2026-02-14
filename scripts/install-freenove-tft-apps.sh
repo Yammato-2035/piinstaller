@@ -69,7 +69,7 @@ else
 fi
 
 # --- 3. Pakete installieren ---
-echo -e "${CYAN}[3] Pakete installieren (i2c-tools, chromium)${NC}"
+echo -e "${CYAN}[3] Pakete installieren (i2c-tools, chromium, GStreamer für DSI Radio)${NC}"
 apt-get update -qq
 apt-get install -y i2c-tools
 if ! command -v chromium >/dev/null 2>&1 && ! command -v chromium-browser >/dev/null 2>&1; then
@@ -77,6 +77,15 @@ if ! command -v chromium >/dev/null 2>&1 && ! command -v chromium-browser >/dev/
 else
   echo -e "    ${GREEN}Chromium bereits installiert${NC}"
 fi
+# GStreamer + Python-Bindings (gi) für DSI-Radio (MP3 + AAC z. B. NDR 1, WDR 2)
+apt-get install -y --no-install-recommends \
+  python3-gi \
+  gir1.2-gstreamer-1.0 \
+  gstreamer1.0-plugins-good \
+  gstreamer1.0-plugins-bad \
+  gstreamer1.0-pulseaudio \
+  gstreamer1.0-libav \
+  || echo -e "    ${YELLOW}GStreamer-Pakete teilweise fehlgeschlagen – DSI Radio: sudo $REPO_ROOT/scripts/install-dsi-radio-setup.sh${NC}"
 
 # --- 4. Wayfire-Fensterregel für DSI ---
 echo -e "${CYAN}[4] Wayfire-Fensterregel (DSI-Platzierung)${NC}"
@@ -103,19 +112,20 @@ fi
 chown "$REAL_USER:$(id -gn "$REAL_USER")" "$WF_INI" 2>/dev/null || true
 echo -e "    ${GREEN}wayfire.ini: $WF_INI${NC}"
 
-# --- 5. Desktop-Verknüpfung DSI Radio ---
+# --- 5. Desktop-Verknüpfung DSI Radio (in Ordner PI-Installer) ---
 echo -e "${CYAN}[5] Desktop-Verknüpfung 'DSI Radio'${NC}"
 DESKTOP_DIR="$HOME_DIR/Desktop"
-DESKTOP_FILE="$DESKTOP_DIR/pi-installer-dsi-radio.desktop"
-mkdir -p "$DESKTOP_DIR"
+LAUNCHER_DIR="$DESKTOP_DIR/PI-Installer"
+mkdir -p "$LAUNCHER_DIR"
+DESKTOP_FILE="$LAUNCHER_DIR/DSI-Radio.desktop"
 cat > "$DESKTOP_FILE" << DESKTOP
 [Desktop Entry]
 Type=Application
-Name=DSI Radio (PI-Installer)
-Comment=Internetradio auf dem Gehäuse-Display
+Name=DSI Radio
+Comment=Eigenständige PyQt6-Radio-App – Internetradio (Freenove-TFT/DSI)
 Exec=$REPO_ROOT/scripts/start-dsi-radio.sh
-Icon=applications-multimedia
 Path=$REPO_ROOT
+Icon=applications-multimedia
 Terminal=false
 Categories=Audio;Music;
 DESKTOP
@@ -129,20 +139,22 @@ cp "$DESKTOP_FILE" "$APP_DIR/pi-installer-dsi-radio.desktop" 2>/dev/null && chow
   echo -e "    ${GREEN}Anwendungsmenü: $APP_DIR/pi-installer-dsi-radio.desktop${NC}" || true
 
 # --- 6. DSI-Radio: native PyQt6-App (empfohlen, kein Frontend nötig) ---
-echo -e "${CYAN}[6] DSI-Radio native App (PyQt6)${NC}"
+echo -e "${CYAN}[6] DSI-Radio native App (PyQt6 + GStreamer)${NC}"
 DSI_RADIO_DIR="$REPO_ROOT/apps/dsi_radio"
 DSI_VENV="$DSI_RADIO_DIR/.venv"
 if [ -f "$DSI_RADIO_DIR/dsi_radio.py" ] && [ -f "$DSI_RADIO_DIR/requirements.txt" ]; then
   if [ ! -d "$DSI_VENV" ] || [ ! -f "$DSI_VENV/bin/python" ]; then
-    sudo -u "$REAL_USER" python3 -m venv "$DSI_VENV" 2>/dev/null || true
+    # Mit --system-site-packages, damit python3-gi/GStreamer (aus Schritt 3) in der Venv sichtbar ist
+    sudo -u "$REAL_USER" python3 -m venv --system-site-packages "$DSI_VENV" 2>/dev/null || true
   fi
   if [ -f "$DSI_VENV/bin/pip" ]; then
     sudo -u "$REAL_USER" "$DSI_VENV/bin/pip" install -q -r "$DSI_RADIO_DIR/requirements.txt" 2>/dev/null && \
       echo -e "    ${GREEN}PyQt6 DSI-Radio installiert (apps/dsi_radio/.venv)${NC}" || \
       echo -e "    ${YELLOW}PyQt6 manuell: cd $DSI_RADIO_DIR && pip install -r requirements.txt${NC}"
   else
-    echo -e "    ${YELLOW}Venv fehlgeschlagen. Manuell: cd $DSI_RADIO_DIR && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt${NC}"
+    echo -e "    ${YELLOW}Venv fehlgeschlagen. Manuell: cd $DSI_RADIO_DIR && python3 -m venv --system-site-packages .venv && .venv/bin/pip install -r requirements.txt${NC}"
   fi
+  echo -e "    ${GREEN}Bei 'No module named gi': sudo $REPO_ROOT/scripts/install-dsi-radio-setup.sh${NC}"
 else
   echo -e "    ${YELLOW}apps/dsi_radio nicht gefunden, Browser-Fallback wird genutzt${NC}"
 fi
@@ -165,5 +177,5 @@ echo "  3. DSI Radio: Doppelklick auf Desktop-Icon oder ./scripts/start-dsi-radi
 echo "     (Bevorzugt native PyQt6-App; Fallback: Browser, wenn Frontend läuft.)"
 echo ""
 echo "Fenster mit 'PI-Installer DSI' im Titel werden automatisch auf DSI-1 (TFT) angezeigt."
-echo "Audio-Player für Streams: cvlc, mpv oder mpg123 (z. B. sudo apt install vlc  oder  sudo apt install mpv)."
+echo "DSI Radio nutzt GStreamer. Falls 'No module named gi': sudo ./scripts/install-dsi-radio-setup.sh"
 echo ""

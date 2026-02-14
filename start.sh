@@ -22,18 +22,19 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
-# Starte Backend im Hintergrund (oder nutze bestehendes)
+# Starte Backend im Hintergrund (oder nutze bestehendes) – immer Venv, nie System-Python (PEP 668)
 echo "📡 Starte Backend..."
-cd "$SCRIPT_DIR/backend"
-if [ ! -d "venv" ]; then
+BACKEND_DIR="$SCRIPT_DIR/backend"
+cd "$BACKEND_DIR"
+if [ ! -d "venv" ] || [ ! -f "venv/bin/python3" ]; then
     python3 -m venv venv
 fi
-source venv/bin/activate
-if ! python3 -c "import fastapi" 2>/dev/null; then
-    echo "📦 Installiere Backend-Dependencies..."
-    pip install -r requirements.txt --only-binary :all: 2>/dev/null || pip install -r requirements.txt
+PYTHON="$BACKEND_DIR/venv/bin/python3"
+PIP="$BACKEND_DIR/venv/bin/pip"
+if ! "$PYTHON" -c "import fastapi" 2>/dev/null; then
+    echo "📦 Installiere Backend-Dependencies (in Venv)..."
+    "$PIP" install -r requirements.txt --only-binary :all: 2>/dev/null || "$PIP" install -r requirements.txt
 fi
-# Optional: Dev reload nur wenn PI_INSTALLER_DEV=1
 RELOAD_ARGS=""
 if [ "$PI_INSTALLER_DEV" = "1" ]; then
     RELOAD_ARGS="--reload --timeout-keep-alive 1"
@@ -42,7 +43,7 @@ fi
 # Remote-Zugriff: aus Einstellungen lesen (Checkbox "Remote Zugriff deaktivieren")
 REMOTE_DISABLED=1
 if [ -f "$SCRIPT_DIR/scripts/read_remote_access_disabled.py" ]; then
-    python3 "$SCRIPT_DIR/scripts/read_remote_access_disabled.py" 2>/dev/null && REMOTE_DISABLED=0
+    "$PYTHON" "$SCRIPT_DIR/scripts/read_remote_access_disabled.py" 2>/dev/null && REMOTE_DISABLED=0
 fi
 if [ "$REMOTE_DISABLED" = "0" ]; then
     BIND_HOST="127.0.0.1"
@@ -64,7 +65,7 @@ if sudo lsof -nP -iTCP:8000 -sTCP:LISTEN >/dev/null 2>&1; then
         exit 1
     fi
 else
-    python3 -m uvicorn app:app --host "$BIND_HOST" --port 8000 $RELOAD_ARGS &
+    "$PYTHON" -m uvicorn app:app --host "$BIND_HOST" --port 8000 $RELOAD_ARGS &
     BACKEND_PID=$!
 fi
 
