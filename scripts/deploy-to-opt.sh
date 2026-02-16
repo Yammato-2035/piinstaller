@@ -74,9 +74,7 @@ rsync -a --exclude='.git' \
       --exclude='dist' \
       --exclude='target' \
       "$SOURCE_DIR/" "$INSTALL_DIR/"
-chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$INSTALL_DIR"
-chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$CONFIG_DIR"
-chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$LOG_DIR"
+# Berechtigungen erst am Ende setzen, damit root alle Build-Schritte (venv, npm, tauri) ausführen kann
 find "$INSTALL_DIR" -type f -name "*.sh" -exec chmod +x {} \;
 ok "Dateien kopiert"
 
@@ -101,22 +99,47 @@ if [ ! -d "venv" ]; then
 fi
 export PIP_CACHE_DIR="$INSTALL_DIR/.pip-cache"
 mkdir -p "$PIP_CACHE_DIR"
-chown "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$PIP_CACHE_DIR"
 ./venv/bin/pip install --upgrade pip -q 2>/dev/null || true
 ./venv/bin/pip install -r requirements.txt -q 2>&1 | grep -v "already satisfied" || true
-chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$INSTALL_DIR/backend"
 ok "Backend-Dependencies installiert"
 
-# Frontend
+# Frontend (als root, damit dist/ und target/ erstellt werden können)
 if command -v npm >/dev/null 2>&1; then
   info "Frontend Dependencies..."
   cd "$INSTALL_DIR/frontend"
   npm install --silent 2>&1 | grep -v "npm WARN" || true
-  chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$INSTALL_DIR/frontend"
   ok "Frontend-Dependencies installiert"
+  # Tauri-Build: Cargo/Rust liegen oft im Benutzer-Kontext; mit sudo ist $HOME=/root und cargo fehlt.
+  # Daher Build als der User ausführen, der sudo aufgerufen hat (der hat meist Rust).
+  BUILD_USER="${SUDO_USER:-}"
+  if [ -n "$BUILD_USER" ] && su - "$BUILD_USER" -c "command -v cargo" >/dev/null 2>&1; then
+    info "Tauri-App bauen als User $BUILD_USER (kann einige Minuten dauern)..."
+    chown -R "$BUILD_USER:$BUILD_USER" "$INSTALL_DIR/frontend"
+    if su - "$BUILD_USER" -c "cd $INSTALL_DIR/frontend && export GDK_BACKEND=x11 && npm run tauri:build" 2>&1; then
+      ok "Tauri-Binary erstellt (App-Fenster verfügbar)"
+    else
+      warn "Tauri-Build fehlgeschlagen. App-Fenster: Browser-Option oder manuell bauen (ohne sudo im Repo: npm run tauri:build, dann target/ nach /opt kopieren)."
+    fi
+    # Frontend wieder root, finaler chown kommt unten
+    chown -R root:root "$INSTALL_DIR/frontend"
+  elif command -v cargo >/dev/null 2>&1; then
+    info "Tauri-App bauen (kann einige Minuten dauern)..."
+    if ( export GDK_BACKEND=x11; npm run tauri:build 2>&1 ); then
+      ok "Tauri-Binary erstellt (App-Fenster verfügbar)"
+    else
+      warn "Tauri-Build fehlgeschlagen. App-Fenster unter /opt: Browser-Option nutzen oder später mit Ihrem User bauen."
+    fi
+  else
+    warn "Rust/Cargo nicht installiert (oder nur für einen anderen User). Tauri: Browser wählen oder als User mit Rust ausführen: sudo -u IhrUser ./scripts/deploy-to-opt.sh"
+  fi
 else
   warn "npm nicht gefunden. Frontend später: cd $INSTALL_DIR/frontend && npm install"
 fi
+
+# Jetzt alles an Service-User übergeben (nach allen Build-Schritten)
+chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$INSTALL_DIR"
+chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$CONFIG_DIR"
+chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$LOG_DIR"
 
 # systemd Service (falls noch nicht vorhanden oder anpassen)
 SERVICE_FILE="$SYSTEMD_DIR/pi-installer.service"
@@ -183,6 +206,13 @@ else
   systemctl enable pi-installer.service 2>/dev/null || true
   systemctl start pi-installer.service
   ok "Service gestartet"
+fi
+
+# Startmenü-Einträge (Anwendungen)
+if [ -f "$INSTALL_DIR/scripts/install-desktop-entries.sh" ]; then
+  info "Startmenü-Einträge anlegen..."
+  bash "$INSTALL_DIR/scripts/install-desktop-entries.sh" "$INSTALL_DIR"
+  ok "PI-Installer erscheint im Startmenü"
 fi
 
 echo ""

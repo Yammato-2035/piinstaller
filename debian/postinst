@@ -1,0 +1,83 @@
+#!/bin/sh
+set -e
+
+INSTALL_DIR="/opt/pi-installer"
+CONFIG_DIR="/etc/pi-installer"
+LOG_DIR="/var/log/pi-installer"
+SERVICE_USER="pi-installer"
+
+case "$1" in
+  configure)
+    # Service-User anlegen
+    if ! getent passwd "$SERVICE_USER" >/dev/null 2>&1; then
+      adduser --system --no-create-home --disabled-login --gecos "PI-Installer Service" "$SERVICE_USER" || \
+      useradd --system --no-create-home --comment "PI-Installer Service" "$SERVICE_USER" 2>/dev/null || true
+    fi
+
+    # Konfiguration anlegen, falls nicht vorhanden
+    if [ ! -f "$CONFIG_DIR/config.yaml" ]; then
+      cat > "$CONFIG_DIR/config.yaml" << 'EOF'
+install_dir: /opt/pi-installer
+config_dir: /etc/pi-installer
+log_dir: /var/log/pi-installer
+backend:
+  host: 0.0.0.0
+  port: 8000
+frontend:
+  port: 3001
+EOF
+    fi
+
+    # Berechtigungen
+    chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR" "$CONFIG_DIR" "$LOG_DIR"
+    chmod 755 "$INSTALL_DIR" "$CONFIG_DIR" "$LOG_DIR"
+
+    # Backend: Virtual Environment und Dependencies
+    if [ -d "$INSTALL_DIR/backend" ] && [ ! -d "$INSTALL_DIR/backend/venv" ]; then
+      PYTHON=""
+      for py in python3.12 python3.11 python3.10 python3.9 python3; do
+        if command -v "$py" >/dev/null 2>&1; then
+          if "$py" -c "import sys; exit(0 if sys.version_info >= (3, 9) else 1)" 2>/dev/null; then
+            PYTHON="$py"
+            break
+          fi
+        fi
+      done
+      if [ -n "$PYTHON" ]; then
+        mkdir -p "$INSTALL_DIR/.pip-cache"
+        chown "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR/.pip-cache"
+        su -s /bin/bash "$SERVICE_USER" -c "cd $INSTALL_DIR/backend && $PYTHON -m venv venv && export PIP_CACHE_DIR=$INSTALL_DIR/.pip-cache && ./venv/bin/pip install -q -r requirements.txt"
+        chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR/backend"
+      fi
+    fi
+
+    # Frontend: npm install
+    if [ -d "$INSTALL_DIR/frontend" ] && [ ! -d "$INSTALL_DIR/frontend/node_modules" ]; then
+      if command -v npm >/dev/null 2>&1; then
+        su -s /bin/bash "$SERVICE_USER" -c "cd $INSTALL_DIR/frontend && npm install --silent"
+        chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR/frontend"
+      fi
+    fi
+
+    # systemd
+    systemctl daemon-reload
+    systemctl enable pi-installer.service 2>/dev/null || true
+    systemctl start pi-installer.service 2>/dev/null || true
+
+    # Desktop-Datenbank
+    if command -v update-desktop-database >/dev/null 2>&1; then
+      update-desktop-database -q /usr/share/applications 2>/dev/null || true
+    fi
+
+    echo "PI-Installer wurde installiert. Startmenü: PI-Installer / PI-Installer (im Browser)."
+    echo "Service: systemctl status pi-installer"
+    ;;
+  abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+  *)
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

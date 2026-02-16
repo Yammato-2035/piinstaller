@@ -1,0 +1,8 @@
+pi-installer (1.3.4.2-1) unstable; urgency=medium
+
+  * Debian-Paket: Installation nach /opt/pi-installer, systemd-Service,
+    Startmenü-Einträge, Service-User pi-installer.
+  * Updates künftig über apt möglich (Repository hinzufügen oder .deb
+    von GitHub Releases installieren).
+
+ -- PI-Installer Team <https://github.com/Yammato-2035/piinstaller>  Mon, 17 Feb 2025 12:00:00 +0100

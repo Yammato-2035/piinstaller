@@ -1,0 +1,38 @@
+#!/usr/bin/make -f
+# PI-Installer Debian package build
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	# Programmdateien nach /opt/pi-installer (ohne Entwicklung/ Build-Artefakte)
+	install -d debian/pi-installer/opt/pi-installer
+	rsync -a --exclude='.git' \
+	      --exclude='node_modules' \
+	      --exclude='venv' \
+	      --exclude='__pycache__' \
+	      --exclude='*.pyc' \
+	      --exclude='.env' \
+	      --exclude='dist' \
+	      --exclude='target' \
+	      --exclude='debian' \
+	      . debian/pi-installer/opt/pi-installer/
+	# Verzeichnisse für Konfiguration und Logs (Inhalt in postinst)
+	install -d debian/pi-installer/etc/pi-installer
+	install -d debian/pi-installer/var/log/pi-installer
+	# systemd-Service
+	install -d debian/pi-installer/etc/systemd/system
+	install -m 644 debian/pi-installer.service debian/pi-installer/etc/systemd/system/pi-installer.service
+	# Umgebungsvariablen für alle Nutzer
+	install -d debian/pi-installer/etc/profile.d
+	install -m 644 debian/pi-installer.sh debian/pi-installer/etc/profile.d/pi-installer.sh
+	# Startmenü-Einträge
+	install -d debian/pi-installer/usr/share/applications
+	install -m 644 debian/pi-installer.desktop debian/pi-installer/usr/share/applications/pi-installer.desktop
+	install -m 644 debian/pi-installer-browser.desktop debian/pi-installer/usr/share/applications/pi-installer-browser.desktop
+	# Skripte ausführbar machen
+	find debian/pi-installer/opt/pi-installer -type f -name '*.sh' -exec chmod 755 {} \;
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf debian/pi-installer

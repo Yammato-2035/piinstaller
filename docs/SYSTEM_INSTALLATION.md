@@ -118,11 +118,34 @@ Ohne diese Regel zeigt die App nach Klick auf „Jetzt installieren“ den auszu
    - Service-Datei: `/etc/systemd/system/pi-installer.service`
    - Optional: Automatischer Start beim Booten
 
+7. **Startmenü / Anwendungen**
+   - Einträge in `/usr/share/applications/`: **PI-Installer** und **PI-Installer (im Browser)** erscheinen im Anwendungsmenü aller Benutzer.
+
 ## Verwendung
+
+### Startmenü
+
+Nach der Installation erscheinen im **Anwendungsmenü** (Startmenü) aller Benutzer:
+
+- **PI-Installer** – startet das Startskript (Backend prüfen, dann Auswahl Tauri/Browser/Frontend)
+- **PI-Installer (im Browser)** – öffnet das Frontend im Standard-Browser (Backend muss laufen)
+
+Falls die Einträge fehlen (z. B. bei älteren Installationen), einmal ausführen – **aus dem Repo** (damit das Skript existiert):
+
+```bash
+# Ersetzen Sie /pfad/zum/piinstaller durch Ihr Projektverzeichnis (z. B. /home/volker/piinstaller)
+sudo /pfad/zum/piinstaller/scripts/install-desktop-entries.sh /opt/pi-installer
+```
+
+Wenn das Skript bereits unter /opt liegt (nach neuer Installation oder Deploy):
+
+```bash
+sudo /opt/pi-installer/scripts/install-desktop-entries.sh
+```
 
 ### Befehle
 
-Nach der Installation können Sie PI-Installer von überall starten:
+Nach der Installation können Sie PI-Installer zusätzlich von der Kommandozeile starten:
 
 ```bash
 # Hauptbefehl (startet Backend + Frontend)

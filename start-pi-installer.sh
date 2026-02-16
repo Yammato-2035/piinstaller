@@ -114,8 +114,20 @@ case "$MODE" in
     echo "   (GDK_BACKEND=x11 für stabiles Rendering unter Wayland)"
     echo ""
     kill_port 5173
+    TAURI_BINARY="$PROJECT_ROOT/frontend/src-tauri/target/release/pi-installer"
+    if [ -x "$TAURI_BINARY" ]; then
+      # Installation unter /opt: gebaute Binary nutzen (kein Rust/Cargo nötig)
+      exec env GDK_BACKEND=x11 "$TAURI_BINARY"
+    fi
+    # Entwicklungsmodus (benötigt Rust/Cargo)
     cd "$PROJECT_ROOT/frontend" || exit 1
     [ ! -d "node_modules" ] && npm install
+    if ! command -v cargo >/dev/null 2>&1; then
+      echo "❌ Tauri (App-Fenster): Rust/Cargo nicht installiert und keine gebaute Binary."
+      echo "   Unter /opt: Einmal bauen (auf Rechner mit Rust): cd frontend && npm run tauri:build"
+      echo "   Dann target/release/ nach /opt kopieren. Oder Option 2 (Browser) wählen."
+      exit 1
+    fi
     exec env GDK_BACKEND=x11 npm run tauri:dev
     ;;
   browser)

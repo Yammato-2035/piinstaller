@@ -50,6 +50,12 @@ docs/PI-Installer-Dokumentation.md
 # Docker-App-Daten (Phase 2.2; data/apps/<app_id>)
 data/
 
+# Debian-Paket (Build-Artefakte, .deb ggf. im Repo-Root)
+debian/pi-installer/
+*.deb
+*.buildinfo
+*.changes
+
 # Sonstiges
 *.bak
 Freenove_Computer_Case_Kit_Pro_for_Raspberry_Pi/

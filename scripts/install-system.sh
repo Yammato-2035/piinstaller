@@ -191,6 +191,17 @@ if command -v npm >/dev/null 2>&1; then
   cd "$INSTALL_DIR/frontend"
   npm install --silent 2>&1 | grep -v "npm WARN" || true
   ok "Frontend-Dependencies installiert"
+  if command -v cargo >/dev/null 2>&1; then
+    info "Tauri-App bauen (App-Fenster für Startmenü)..."
+    if ( cd "$INSTALL_DIR/frontend" && npm run tauri:build 2>&1 ); then
+      chown -R "$CURRENT_USER:$CURRENT_USER" "$INSTALL_DIR/frontend"
+      ok "Tauri-Binary erstellt"
+    else
+      warn "Tauri-Build fehlgeschlagen. App-Fenster: später bauen oder Browser-Option nutzen."
+    fi
+  else
+    warn "Rust nicht installiert. Für App-Fenster: Browser wählen oder Rust installieren, dann in frontend: npm run tauri:build"
+  fi
 else
   warn "npm nicht verfügbar. Frontend kann später mit 'cd $INSTALL_DIR/frontend && npm install' installiert werden."
 fi
@@ -319,6 +330,15 @@ else
   info "Service nicht aktiviert. Starten mit: sudo systemctl start pi-installer"
 fi
 
+# --- Schritt 10: Startmenü-Einträge (Anwendungen) ---
+info "Startmenü-Einträge anlegen..."
+if [ -f "$INSTALL_DIR/scripts/install-desktop-entries.sh" ]; then
+  bash "$INSTALL_DIR/scripts/install-desktop-entries.sh" "$INSTALL_DIR"
+  ok "PI-Installer erscheint im Startmenü unter Anwendungen"
+else
+  warn "install-desktop-entries.sh nicht gefunden. Startmenü-Einträge später: sudo $INSTALL_DIR/scripts/install-desktop-entries.sh"
+fi
+
 # --- Zusammenfassung ---
 echo ""
 echo -e "${GREEN}============================================${NC}"
@@ -329,6 +349,9 @@ echo -e "${CYAN}Installationsverzeichnisse:${NC}"
 echo -e "  Programm:     ${INSTALL_DIR}"
 echo -e "  Konfiguration: ${CONFIG_DIR}"
 echo -e "  Logs:          ${LOG_DIR}"
+echo ""
+echo -e "${CYAN}Startmenü:${NC}"
+echo -e "  Unter ${GREEN}Anwendungen${NC} / Startmenü: ${GREEN}PI-Installer${NC} und ${GREEN}PI-Installer (im Browser)${NC}"
 echo ""
 echo -e "${CYAN}Verfügbare Befehle:${NC}"
 echo -e "  ${GREEN}pi-installer${NC}              - Startet PI-Installer (Backend + Frontend)"

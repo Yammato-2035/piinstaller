@@ -1,0 +1,29 @@
+[Unit]
+Description=PI-Installer (Backend + Frontend)
+Documentation=https://github.com/Yammato-2035/piinstaller
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi-installer
+Group=pi-installer
+WorkingDirectory=/opt/pi-installer
+ExecStart=/opt/pi-installer/start.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment="PI_INSTALLER_DIR=/opt/pi-installer"
+Environment="PI_INSTALLER_CONFIG_DIR=/etc/pi-installer"
+Environment="PI_INSTALLER_LOG_DIR=/var/log/pi-installer"
+Environment="PI_INSTALLER_DEV=0"
+Environment="PIP_CACHE_DIR=/opt/pi-installer/.pip-cache"
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/pi-installer /etc/pi-installer /var/log/pi-installer
+
+[Install]
+WantedBy=multi-user.target
