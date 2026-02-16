@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Settings, Wifi, Monitor, Printer, Scan, Keyboard, Globe, Shield, Eye, Laptop, Mouse, Layout, Palette, Link2Off, Bluetooth, Fan } from 'lucide-react'
+import { Settings, Wifi, Monitor, Printer, Scan, Keyboard, Globe, Shield, Eye, Laptop, Mouse, Layout, Palette, Link2Off, Bluetooth, Fan, Headphones, Lightbulb } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
@@ -19,6 +19,7 @@ type ControlCenterSection =
   | 'scanner'
   | 'performance'
   | 'asus-rog-fan'
+  | 'corsair-rgb'
   | 'mouse'
   | 'taskbar'
   | 'theme'
@@ -151,7 +152,8 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
     { id: 'printer', name: 'Drucker', icon: <Printer />, description: 'Drucker verwalten' },
     { id: 'scanner', name: 'Scanner', icon: <Scan />, description: 'Scanner verwalten' },
     ...(isRaspberryPi ? [{ id: 'performance' as const, name: 'Performance', icon: <Settings />, description: 'System-Performance (Raspberry Pi)' }] : []),
-    ...(asusRogDetected ? [{ id: 'asus-rog-fan' as const, name: 'ASUS ROG Lüfter', icon: <Fan />, description: 'Lüftersteuerung (ASUS ROG)' }] : []),
+    ...(!isRaspberryPi ? [{ id: 'asus-rog-fan' as const, name: 'ASUS ROG Lüfter', icon: <Fan />, description: 'Lüftersteuerung (ASUS ROG)' }] : []),
+    { id: 'corsair-rgb' as const, name: 'Corsair & RGB', icon: <Headphones />, description: 'K100, Scimitar, Kopfhörer, RGB' },
     { id: 'mouse', name: 'Maus', icon: <Mouse />, description: 'Maus-Einstellungen' },
     { id: 'taskbar', name: 'Taskleiste', icon: <Layout />, description: 'Taskleiste konfigurieren' },
     { id: 'theme', name: 'Theme', icon: <Palette />, description: 'Erscheinungsbild' },
@@ -167,10 +169,6 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
       setActiveSection('wifi')
       return
     }
-    if (!asusRogDetected && activeSection === 'asus-rog-fan') {
-      setActiveSection('wifi')
-      return
-    }
     loadSectionData(activeSection)
   }, [activeSection, isRaspberryPi, asusRogDetected])
 
@@ -178,12 +176,11 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
     try {
       const r = await fetchApi('/api/system/asus-rog/detection')
       const d = await r.json()
-      if (d.is_asus_rog) {
-        setAsusRogDetected(true)
-        setAsusRogCtlAvailable(!!(d.asusctl_available && d.can_control_fans))
-      }
+      setAsusRogDetected(!!d.is_asus_rog)
+      setAsusRogCtlAvailable(!!(d.asusctl_available && d.can_control_fans))
     } catch (e) {
-      // Ignore - kein ASUS ROG System
+      setAsusRogDetected(false)
+      setAsusRogCtlAvailable(false)
     }
   }
 
@@ -226,7 +223,10 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
           await loadPerformance()
           break
         case 'asus-rog-fan':
+          await checkAsusRogDetection()
           await loadAsusRogFanData()
+          break
+        case 'corsair-rgb':
           break
         case 'mouse':
         case 'taskbar':
@@ -1928,6 +1928,9 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
           <div className="space-y-6">
             <div className="card">
               <h3 className="text-xl font-bold text-white mb-4">ASUS ROG Lüftersteuerung</h3>
+              {!asusRogDetected && (
+                <p className="text-slate-400 mb-4">Kein ASUS ROG System erkannt. Wenn Sie ein ASUS ROG Notebook haben, kann asusctl trotzdem installiert werden (siehe unten).</p>
+              )}
               {asusRogLoading ? (
                 <p className="text-slate-400">Lade Lüfter-Informationen…</p>
               ) : !asusRogCtlAvailable ? (
@@ -2046,6 +2049,57 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )
+
+      case 'corsair-rgb':
+        return (
+          <div className="space-y-6">
+            <div className="card">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Headphones className="text-amber-400" />
+                Corsair &amp; RGB – K100, Scimitar, Kopfhörer
+              </h3>
+              <p className="text-slate-300 mb-4">
+                Corsair bietet keine offiziellen Linux-Treiber. Unter Linux können Sie <strong>ckb-next</strong> (Tastatur/Maus, RGB, Makros) und <strong>OpenRGB</strong> (RGB-Steuerung) nutzen.
+              </p>
+
+              <div className="grid gap-4 sm:grid-cols-1">
+                <div className="p-4 bg-slate-700/30 rounded-lg border border-slate-600">
+                  <h4 className="font-semibold text-white mb-2 flex items-center gap-2"><Keyboard size={18} /> Corsair K100 (Wireless)</h4>
+                  <p className="text-sm text-slate-300 mb-2">
+                    Die K100 (kabelgebunden) wird von <strong>ckb-next</strong> unterstützt. Die <strong>K100 AIR (Slipstream Wireless)</strong> wird von ckb-next derzeit nicht voll unterstützt (nur Receiver-Erkennung). Für RGB an kabelgebundener K100: ckb-next oder OpenRGB installieren.
+                  </p>
+                  <a href="https://github.com/ckb-next/ckb-next" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline text-sm">ckb-next auf GitHub</a>
+                </div>
+
+                <div className="p-4 bg-slate-700/30 rounded-lg border border-slate-600">
+                  <h4 className="font-semibold text-white mb-2 flex items-center gap-2"><Headphones size={18} /> Corsair Wireless-Kopfhörer</h4>
+                  <p className="text-sm text-slate-300 mb-2">
+                    Viele Corsair-Headsets (z.&nbsp;B. Void) funktionieren unter Linux per USB oder Bluetooth. Ab <strong>Kernel 6.13+</strong> gibt es einen Kernel-Treiber für das Corsair Void Headset. Für ältere Kernel: USB-Modus probieren oder Bluetooth koppeln.
+                  </p>
+                  <p className="text-xs text-slate-400">Kein separates Control-Center für Kopfhörer unter Linux nötig – Lautstärke über Systemeinstellungen.</p>
+                </div>
+
+                <div className="p-4 bg-slate-700/30 rounded-lg border border-slate-600">
+                  <h4 className="font-semibold text-white mb-2 flex items-center gap-2"><Lightbulb size={18} /> RGB-Steuerung (K100 &amp; Scimitar)</h4>
+                  <p className="text-sm text-slate-300 mb-2">
+                    <strong>ckb-next</strong>: RGB und Makros für viele Corsair-Tastaturen und -Mäuse (inkl. Scimitar). Daemon starten: <code className="bg-slate-800 px-1 rounded text-slate-200">ckb-next-daemon</code>. <strong>OpenRGB</strong>: Alternative für reine RGB-Steuerung (K100/Scimitar je nach Version; K100 teils mit Erkennungsproblemen).
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <a href="https://github.com/ckb-next/ckb-next" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded text-sm">ckb-next</a>
+                    <a href="https://openrgb.org/" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm">OpenRGB</a>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-2">Installation: Debian/Ubuntu <code className="bg-slate-800 px-1 rounded">apt install ckb-next</code> bzw. OpenRGB von openrgb.org oder Flathub.</p>
+                </div>
+              </div>
+
+              <div className="p-4 bg-amber-600/10 border border-amber-500/30 rounded-lg mt-4">
+                <p className="text-sm text-slate-300">
+                  <strong className="text-amber-200">Hinweis:</strong> Nach Installation von ckb-next den Daemon starten (z.&nbsp;B. <code className="bg-slate-800 px-1 rounded">systemctl --user start ckb-next-daemon</code> oder Dienst aktivieren). Experimentelle Geräte: <code className="bg-slate-800 px-1 rounded text-xs">ckb-next-daemon --enable-experimental</code>.
+                </p>
+              </div>
             </div>
           </div>
         )
