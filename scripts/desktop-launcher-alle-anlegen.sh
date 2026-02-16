@@ -5,6 +5,7 @@
 #   • Frontend (App-Fenster) – eigene Oberfläche (Tauri)
 #   • Frontend (Browser) – im Standard-Browser öffnen
 #   • DSI Radio
+#   • Sabrina Tuner (QML)
 #   • Bilderrahmen
 #
 # Aufruf: bash scripts/desktop-launcher-alle-anlegen.sh
@@ -31,6 +32,10 @@ echo ""
 bash "$SCRIPT_DIR/desktop-dsi-radio-launcher-anlegen.sh"
 echo ""
 
+# Sabrina Tuner (QML)
+bash "$SCRIPT_DIR/desktop-sabrina-tuner-qml-launcher-anlegen.sh"
+echo ""
+
 # Bilderrahmen
 bash "$SCRIPT_DIR/desktop-bilderrahmen-launcher-anlegen.sh"
 
@@ -42,4 +47,5 @@ echo "   • PI-Installer Frontend starten       (nur Vite-Server)"
 echo "   • PI-Installer Frontend (App-Fenster)  (eigene Oberfläche)"
 echo "   • PI-Installer Frontend (Browser)      (im Browser öffnen)"
 echo "   • DSI Radio                           (eigenständige PyQt-App, DSI/TFT)"
+echo "   • Sabrina Tuner (QML)                 (QML-Prototyp, Internetradio)"
 echo "   • Bilderrahmen                        (Fotos im Loop, TFT-Seite)"

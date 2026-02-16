@@ -70,6 +70,35 @@ class GstPlayer:
             self._playbin = _Gst.ElementFactory.make("playbin3", "player")
         if not self._playbin:
             raise RuntimeError("GStreamer playbin/playbin3 nicht verfügbar")
+        # Browser-User-Agent: viele Sender (rndfnk, streamonkey, addradio) liefern nur bei gängigem UA Ton/Redirect.
+        # Icy-MetaData + iradio-mode für ICY-Metadaten (playbin liefert TAG trotzdem oft nicht → Fallback in QML).
+        _USER_AGENT = (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        )
+        def _on_source_setup(_playbin, source):
+            if not source or not hasattr(source, "set_property"):
+                return
+            try:
+                source.set_property("user-agent", _USER_AGENT)
+            except Exception:
+                pass
+            try:
+                if source.get_factory() and source.get_factory().get_name() == "souphttpsrc":
+                    source.set_property("iradio-mode", True)
+                    try:
+                        # Manche Server senden ICY nur, wenn Client Icy-MetaData: 1 mitschickt
+                        st = _Gst.Structure.from_string("extra-headers, Icy-MetaData=(string)1")
+                        if st:
+                            source.set_property("extra-request-headers", st)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+        try:
+            self._playbin.connect("source-setup", _on_source_setup)
+        except Exception:
+            pass
         self._playbin.set_property("uri", url)
         self._playbin.set_property("volume", 1.0)
         # Level-Element für echte VU-Pegel (L/R) als Audio-Filter
@@ -99,7 +128,17 @@ class GstPlayer:
     def stop(self) -> None:
         if self._playbin is None:
             return
-        self._playbin.set_state(_Gst.State.NULL)
+        # PAUSED → NULL, kurze Timeouts für schnellen Senderwechsel
+        try:
+            self._playbin.set_state(_Gst.State.PAUSED)
+            self._playbin.get_state(200 * 10**6)  # max. 0,2 s
+        except Exception:
+            pass
+        try:
+            self._playbin.set_state(_Gst.State.NULL)
+            self._playbin.get_state(800 * 10**6)  # max. 0,8 s
+        except Exception:
+            pass
         self._playbin = None
         self._bus = None
         self._level = None
@@ -112,7 +151,8 @@ class GstPlayer:
             self._playbin.set_property("volume", max(0.0, min(2.0, linear)))
 
     def _parse_level_message(self, msg: Any) -> None:
-        """Level-Element-Nachricht auswerten und Peak L/R speichern."""
+        """Level-Element-Nachricht auswerten und Peak L/R speichern.
+        peak kann GValueArray oder GValueList sein (je nach GStreamer-Version) – Typ vor get_size prüfen."""
         if not msg or self._level is None or msg.src != self._level:
             return
         struct = msg.get_structure()
@@ -120,15 +160,24 @@ class GstPlayer:
             return
         try:
             peak_val = struct.get_value("peak")
-            n = _Gst.ValueList.get_size(peak_val)
+            if peak_val is None:
+                return
+            get_size, get_value = None, None
+            if hasattr(_Gst, "value_holds_array") and _Gst.value_holds_array(peak_val):
+                get_size, get_value = _Gst.ValueArray.get_size, _Gst.ValueArray.get_value
+            elif hasattr(_Gst, "value_holds_list") and _Gst.value_holds_list(peak_val):
+                get_size, get_value = _Gst.ValueList.get_size, _Gst.ValueList.get_value
+            if get_size is None or get_value is None:
+                return
+            n = get_size(peak_val)
             if n >= 1:
-                v0 = _Gst.ValueList.get_value(peak_val, 0)
+                v0 = get_value(peak_val, 0)
                 self._peak_l = v0.get_double() if hasattr(v0, "get_double") else float(v0)
             if n >= 2:
-                v1 = _Gst.ValueList.get_value(peak_val, 1)
+                v1 = get_value(peak_val, 1)
                 self._peak_r = v1.get_double() if hasattr(v1, "get_double") else float(v1)
             else:
-                self._peak_r = self._peak_l  # Mono: gleicher Pegel für R
+                self._peak_r = self._peak_l  # Mono
         except Exception:
             pass
 
@@ -137,6 +186,15 @@ class GstPlayer:
         if self._level is None:
             return None
         return (_db_to_linear_0_100(self._peak_l), _db_to_linear_0_100(self._peak_r))
+
+    def get_peak_levels_db(self) -> Optional[tuple]:
+        """Letzte Peak-Pegel L/R in dBFS (-80 … 0). Für analoges VU-Meter mit Ballistik.
+        GStreamer level-Element liefert Peak (nicht RMS); VU-Charakteristik durch Ballistik in VuMeterBridge."""
+        if self._level is None:
+            return None
+        l_db = max(-80.0, min(0.0, float(self._peak_l)))
+        r_db = max(-80.0, min(0.0, float(self._peak_r)))
+        return (l_db, r_db)
 
     def poll_bus(self) -> bool:
         """Bus-Nachrichten verarbeiten. Von Haupt-Thread (z. B. QTimer) aufrufen.
@@ -172,40 +230,66 @@ class GstPlayer:
                             if v is None:
                                 meta[tag] = ""
                                 return
+                            # String extrahieren: TYPE_STRING, oder get_string wenn vorhanden (MP3/ICY/AAC)
+                            val = None
                             if _GObject is not None and v.type == _GObject.TYPE_STRING:
                                 val = v.get_string()
-                                meta[tag] = (val or "").strip()
-                            else:
-                                # Nicht-String (z. B. erstes Feld einer Structure) als String versuchen
+                            if val is None and hasattr(v, "get_string"):
                                 try:
-                                    s = str(v)
-                                    if s and s != str(type(v)):
-                                        meta[tag] = s.strip()
-                                    else:
-                                        meta[tag] = ""
+                                    val = v.get_string()
                                 except Exception:
+                                    pass
+                            if val is not None and (val or "").strip():
+                                meta[tag] = (val or "").strip()
+                                return
+                            # Fallback: als String konvertieren (z. B. andere GValue-Typen)
+                            try:
+                                s = str(v)
+                                if s and s != str(type(v)) and "<" not in s:
+                                    meta[tag] = s.strip()
+                                else:
                                     meta[tag] = ""
+                            except Exception:
+                                meta[tag] = ""
                         except Exception:
                             meta[tag] = ""
 
                     taglist.foreach(_add_tag)
                     # Normalisierung: ICY/Stream liefern oft stream-title statt title (z. B. Radio SAW/streamABC)
                     if meta:
-                        if not (meta.get("title") or "").strip():
-                            for key in ("stream-title", "streamtitle", "icy-title"):
-                                val = (meta.get(key) or "").strip()
+                        def _s(x: str) -> str:
+                            return (x or "").strip()
+                        meta_lower = {k.lower(): v for k, v in meta.items() if k}
+                        if not _s(meta.get("title")):
+                            for key in ("stream-title", "streamtitle", "icy-title", "stream_title", "icy_name"):
+                                val = _s(meta_lower.get(key) or meta.get(key))
                                 if val:
                                     meta["title"] = val
                                     break
-                        if not (meta.get("title") or "").strip():
-                            # Fallback: beliebiger Tag mit "Artist - Titel"-Format (wie Lautstärkeregler bei SAW)
+                        if not _s(meta.get("title")):
                             for key, val in meta.items():
-                                v = (val or "").strip()
+                                v = _s(str(val) if val is not None else "")
                                 if v and (" - " in v or " – " in v or "\u2013" in v):
                                     meta["title"] = v
                                     break
-                        if (meta.get("organization") or "").strip() and not (meta.get("show") or "").strip():
-                            meta["show"] = (meta.get("organization") or "").strip()
+                        if _s(meta.get("organization")) and not _s(meta.get("show")):
+                            meta["show"] = meta.get("organization", "").strip()
+                        # Artist: aus Tag oder aus "Interpret - Titel" zerlegen (wie PipeWire/OSD)
+                        if not _s(meta.get("artist")):
+                            for key in ("artist", "album-artist", "album_artist"):
+                                val = _s(meta.get(key))
+                                if val:
+                                    meta["artist"] = val
+                                    break
+                        title_val = _s(meta.get("title"))
+                        artist_val = _s(meta.get("artist"))
+                        if title_val and not artist_val and (" - " in title_val or " – " in title_val or "\u2013" in title_val):
+                            for sep in (" – ", " \u2013 ", " - "):
+                                if sep in title_val:
+                                    parts = title_val.split(sep, 1)
+                                    meta["artist"] = (parts[0].strip() or "") if len(parts) > 0 else ""
+                                    meta["title"] = (parts[1].strip() or title_val) if len(parts) > 1 else title_val
+                                    break
                     if meta:
                         self._set_pulse_stream_properties(meta)
                         self._on_tag(meta)

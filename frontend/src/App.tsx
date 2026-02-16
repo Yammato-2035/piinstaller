@@ -24,6 +24,7 @@ import PeripheryScan from './pages/PeripheryScan'
 import KinoStreaming from './pages/KinoStreaming'
 import Documentation from './pages/Documentation'
 import AppStore from './pages/AppStore'
+import PiInstallerUpdate from './pages/PiInstallerUpdate'
 import TFTPage from './pages/TFTPage'
 import DsiRadioSettings from './pages/DsiRadioSettings'
 import RadioPlayer from './components/RadioPlayer'
@@ -55,6 +56,7 @@ type Page =
   | 'settings'
   | 'documentation'
   | 'app-store'
+  | 'pi-installer-update'
   | 'tft'
   | 'dsi-radio-settings'
 
@@ -67,7 +69,7 @@ function getInitialPage(): Page {
   if (typeof window === 'undefined') return 'dashboard'
   const p = new URLSearchParams(window.location.search).get('page')
   if (p === 'tft') return 'tft'
-  if (p && ['dashboard', 'security', 'users', 'devenv', 'webserver', 'mailserver', 'nas', 'homeautomation', 'musicbox', 'kino-streaming', 'wizard', 'presets', 'learning', 'monitoring', 'backup', 'raspberry-pi-config', 'control-center', 'periphery-scan', 'settings', 'documentation', 'app-store', 'dsi-radio-settings'].includes(p)) return p as Page
+  if (p && ['dashboard', 'security', 'users', 'devenv', 'webserver', 'mailserver', 'nas', 'homeautomation', 'musicbox', 'kino-streaming', 'wizard', 'presets', 'learning', 'monitoring', 'backup', 'raspberry-pi-config', 'control-center', 'periphery-scan', 'settings', 'documentation', 'app-store', 'pi-installer-update', 'dsi-radio-settings'].includes(p)) return p as Page
   return 'dashboard'
 }
 
@@ -112,7 +114,7 @@ function App() {
 
   useEffect(() => {
     if (dsiRadioView) {
-      document.title = 'PI-Installer DSI Radio'
+      document.title = 'Sabrina Tuner'
     }
   }, [dsiRadioView])
 
@@ -252,6 +254,8 @@ function App() {
         return <Documentation />
       case 'app-store':
         return <AppStore freenoveDetected={freenoveDetected} setCurrentPage={handlePageChange} />
+      case 'pi-installer-update':
+        return <PiInstallerUpdate />
       case 'tft':
         return <TFTPage />
       case 'dsi-radio-settings':
@@ -263,8 +267,24 @@ function App() {
 
   if (dsiRadioView) {
     return (
-      <div className="fixed inset-0 bg-slate-900 text-white overflow-auto flex flex-col items-center justify-center p-4">
-        <RadioPlayer compact dsi />
+      <div className="fixed inset-0 bg-slate-800 text-white overflow-auto flex flex-col items-center justify-center p-4">
+        <div className="rounded-2xl border-2 border-[#c0c0c0] shadow-2xl overflow-hidden bg-slate-900 flex flex-col max-w-lg w-full" style={{ boxShadow: '0 0 0 1px #c0c0c0, 0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+          {/* Fenstertitelbereich (4px schmaler: py-2 statt py-3) */}
+          <header className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-[#c0c0c0]/50 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full border-2 border-[#c0c0c0] flex items-center justify-center shrink-0" title={backendError ? 'Backend nicht erreichbar' : 'Backend OK'}>
+                <div className={`w-1.5 h-1.5 rounded-full ${backendError ? 'bg-red-500' : 'bg-emerald-500'}`} />
+              </div>
+              <div>
+                <h1 className="text-base font-bold text-white leading-tight">Sabrina Tuner</h1>
+                <p className="text-[10px] text-slate-400 leading-tight">VU-Meter + Titel/Interpret</p>
+              </div>
+            </div>
+          </header>
+          <div className="p-4 overflow-auto">
+            <RadioPlayer compact dsi backendError={backendError} />
+          </div>
+        </div>
       </div>
     )
   }

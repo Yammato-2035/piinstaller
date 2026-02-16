@@ -39,6 +39,55 @@ curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/script
 
 **Hinweis:** Das offizielle Repository ist `Yammato-2035/piinstaller`. Bei einem Fork passen Sie die URL entsprechend an.
 
+### Dedizierter Service-User (empfohlen für Produktion)
+
+Die App unter einem **eigenen System-User** zu betreiben, ist sicherer (Least Privilege) und üblich für Dienste:
+
+- Kein Zugriff auf Home-Verzeichnisse oder andere User-Daten
+- Bei Kompromittierung ist der Schaden begrenzt
+- Klare Trennung: Dienst ≠ Ihr Login
+
+```bash
+PI_INSTALLER_USE_SERVICE_USER=1 sudo ./scripts/install-system.sh
+```
+
+Das Skript legt dabei den User `pi-installer` an (falls noch nicht vorhanden): system-User ohne Login-Shell, ohne Home. Der Service und alle zugehörigen Dateien laufen unter diesem User.
+
+### Service unter bestimmtem Benutzer (z. B. volker)
+
+Wenn der Service unter Ihrem normalen Benutzer laufen soll (z. B. `volker`):
+
+```bash
+PI_INSTALLER_USER=volker sudo ./scripts/install-system.sh
+```
+
+Ohne diese Variablen wird der Benutzer verwendet, der `sudo` ausführt (`SUDO_USER`).
+
+### Update aus der App (Deploy nach /opt)
+
+Wenn Sie aus einem **Entwicklungsverzeichnis** (z. B. `/home/volker/piinstaller`) arbeiten, können Sie die aktuelle Version direkt aus dem PI-Installer heraus nach `/opt/pi-installer` installieren bzw. aktualisieren:
+
+1. Im Menü **PI-Installer Update** öffnen.
+2. Dort werden Quelle (aktuelles Repo) und Installation unter `/opt` angezeigt.
+3. **„Jetzt nach /opt installieren“** bzw. **„Jetzt aktualisieren“** klicken.
+
+Das Deploy-Skript `scripts/deploy-to-opt.sh` kopiert die Dateien nach `/opt`, legt den Service-User `pi-installer` an (falls nötig), setzt die Berechtigungen und startet den systemd-Service neu.
+
+**Sudo ohne Passwort (optional):** Wenn der Klick „Jetzt installieren“ ohne weitere Eingabe funktionieren soll, können Sie dem Benutzer, unter dem das Backend läuft, erlauben, nur dieses Skript mit sudo auszuführen:
+
+```bash
+# Ersetzen Sie /home/volker/piinstaller durch Ihr Entwicklungsverzeichnis und volker durch Ihren Benutzer.
+sudo visudo -f /etc/sudoers.d/pi-installer-deploy
+```
+
+Inhalt (eine Zeile):
+
+```
+volker ALL=(ALL) NOPASSWD: /home/volker/piinstaller/scripts/deploy-to-opt.sh *
+```
+
+Ohne diese Regel zeigt die App nach Klick auf „Jetzt installieren“ den auszuführenden Befehl an; Sie können ihn im Terminal ausführen.
+
 ## Was wird installiert?
 
 1. **System-Abhängigkeiten**
@@ -242,20 +291,36 @@ source /etc/profile.d/pi-installer.sh
 # Oder neu anmelden
 ```
 
-### Backend startet nicht
+### Backend startet nicht (obwohl Service installiert ist)
 
-```bash
-# Prüfe Python-Version
-python3 --version
+1. **Service-Status und Logs prüfen** (häufigste Ursachen stehen in den Logs):
+   ```bash
+   sudo systemctl status pi-installer
+   sudo journalctl -u pi-installer -n 80 --no-pager
+   ```
 
-# Prüfe venv
-ls -la /opt/pi-installer/backend/venv
+2. **Typische Ursachen:**
+   - **Venv/Pip:** Beim ersten Start erstellt der Service die Venv unter `/opt/pi-installer/backend/venv`. Mit `ProtectHome=read-only` darf Pip nicht in `~/.cache` schreiben. Falls die Venv fehlt oder defekt ist, als Service-Benutzer einmal manuell anlegen (bei dediziertem Service-User: `pi-installer`, sonst der gewählte User, z. B. `volker`):
+     ```bash
+     sudo -u pi-installer bash -c 'cd /opt/pi-installer/backend && python3 -m venv venv && ./venv/bin/pip install -r requirements.txt'
+     ```
+     Danach: `sudo systemctl restart pi-installer`
+   - **Falscher Installationspfad:** Prüfen, ob die Service-Datei den richtigen Pfad hat: `grep -E "WorkingDirectory|ExecStart" /etc/systemd/system/pi-installer.service` (sollte z. B. `/opt/pi-installer` und `…/start.sh` zeigen).
+   - **Port 8000 belegt:** `ss -tlnp | grep 8000` oder `lsof -iTCP:8000 -sTCP:LISTEN`. Ein anderer Prozess muss ggf. beendet werden.
 
-# Manuell testen
-cd /opt/pi-installer/backend
-source venv/bin/activate
-python3 -m uvicorn app:app --host 0.0.0.0 --port 8000
-```
+3. **Backend manuell testen** (ohne Service):
+   ```bash
+   # Python-Version
+   python3 --version
+
+   # Venv prüfen
+   ls -la /opt/pi-installer/backend/venv
+
+   # Manuell starten (als gleicher User wie der Service)
+   cd /opt/pi-installer/backend
+   ./venv/bin/python3 -m uvicorn app:app --host 0.0.0.0 --port 8000
+   ```
+   Wenn das manuell funktioniert, der Service aber nicht, liegen die Ursachen meist bei systemd (Pfade, Rechte, ProtectHome/ReadWritePaths).
 
 ### Frontend startet nicht
 

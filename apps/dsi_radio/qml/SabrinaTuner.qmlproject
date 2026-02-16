@@ -1,0 +1,14 @@
+import QmlProject 1.3
+
+Project {
+    mainFile: "main.qml"
+    projectRootPath: "."
+
+    // QML-Import-Pfade: System-Qt (QtQuick + Untermodule Controls, Layouts, Window), dann PyQt6-Venv
+    // Zwei System-Pfade, damit Qt Creator 13 auch QtQuick.Controls/Layouts/Window auflöst
+    importPaths: [
+        "/usr/lib/x86_64-linux-gnu/qt6/qml",
+        "/usr/lib/x86_64-linux-gnu/qt6/qml/QtQuick",
+        "../.venv/lib/python3.12/site-packages/PyQt6/Qt6/qml"
+    ]
+}

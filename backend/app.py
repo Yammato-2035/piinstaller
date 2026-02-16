@@ -915,12 +915,12 @@ def _detect_freenove_case() -> dict:
 
 
 # ---------- Radio (Internetradio, Stream-Metadaten, Logo-Proxy) ----------
-def _parse_icy_metadata_from_stream(url: str) -> dict:
+def _parse_icy_metadata_from_stream(url: str, user_agent: str = "PI-Installer/1.0") -> dict:
     """Liest ersten ICY-Metadaten-Block aus dem Stream (StreamTitle). Fallback wenn status-json fehlt."""
     try:
         import urllib.request
-        req = urllib.request.Request(url, headers={"User-Agent": "PI-Installer/1.0", "Icy-MetaData": "1"})
-        with urllib.request.urlopen(req, timeout=8) as resp:
+        req = urllib.request.Request(url, headers={"User-Agent": user_agent, "Icy-MetaData": "1"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
             meta_int = resp.headers.get("icy-metaint")
             if not meta_int:
                 return {}
@@ -1004,6 +1004,13 @@ def _fetch_icecast_metadata(url: str) -> dict:
         icy = _parse_icy_metadata_from_stream(url)
         if icy:
             result.update(icy)
+    # NDR/ARD-Streams liefern ICY oft nur bei Player-User-Agent
+    if not result.get("title") and "ndr" in url.lower():
+        for ua in ("VLC/3.0.18 LibVLC/3.0.18", "iTunes/12.0 (Windows; N)", "Winamp 5.0"):
+            icy = _parse_icy_metadata_from_stream(url, user_agent=ua)
+            if icy and icy.get("title"):
+                result.update(icy)
+                break
     if not result.get("title"):
         result["title"] = "Live"
         result.setdefault("show", "")
@@ -1158,6 +1165,49 @@ def _wikipedia_logo_url(station_name: str) -> str | None:
     return None
 
 
+def _image_dimensions(body: bytes, content_type: str) -> tuple[int, int] | None:
+    """Bildabmessungen aus Rohdaten (PNG/JPEG/GIF). Nur für Speicher-Entscheidung >= 256x256."""
+    if not body or len(body) < 24:
+        return None
+    ct = (content_type or "").split(";")[0].strip().lower()
+    try:
+        if "png" in ct or body[:8] == b"\x89PNG\r\n\x1a\n":
+            if len(body) >= 24 and body[12:16] == b"IHDR":
+                w = int.from_bytes(body[16:20], "big")
+                h = int.from_bytes(body[20:24], "big")
+                return (w, h)
+        if "jpeg" in ct or "jpg" in ct or body[:2] == b"\xff\xd8":
+            i = 2
+            while i < len(body) - 9:
+                if body[i] != 0xFF:
+                    i += 1
+                    continue
+                if body[i + 1] in (0xC0, 0xC1, 0xC2):
+                    h = int.from_bytes(body[i + 5 : i + 7], "big")
+                    w = int.from_bytes(body[i + 7 : i + 9], "big")
+                    return (w, h)
+                seg_len = int.from_bytes(body[i + 2 : i + 4], "big")
+                i += 2 + seg_len
+            return None
+        if "gif" in ct or body[:6] in (b"GIF87a", b"GIF89a"):
+            if len(body) >= 10:
+                w = int.from_bytes(body[6:8], "little")
+                h = int.from_bytes(body[8:10], "little")
+                return (w, h)
+    except Exception:
+        pass
+    return None
+
+
+def _logo_meets_min_size(body: bytes, content_type: str, min_px: int = 256) -> bool:
+    """True wenn Bild mindestens min_px x min_px Pixel hat (nur dann lokal speichern)."""
+    dim = _image_dimensions(body, content_type)
+    if not dim:
+        return False
+    w, h = dim
+    return w >= min_px and h >= min_px
+
+
 def _fetch_logo(url: str) -> tuple[bytes, str] | None:
     """Lädt Logo von URL (CORS-Proxy). Sync für to_thread. Folgt Redirects."""
     try:
@@ -1193,6 +1243,32 @@ def _fetch_logo(url: str) -> tuple[bytes, str] | None:
         return None
 
 
+def _radio_browser_favicon_by_name(name: str, country: str = "Germany") -> Optional[str]:
+    """Fehlende Logos: Radio-Browser-API nach Sendername + Land abfragen, erste Favicon-URL zurückgeben."""
+    name = (name or "").strip()
+    if not name:
+        return None
+    try:
+        import urllib.request
+        import urllib.parse
+        params = [
+            "name=" + urllib.parse.quote(name),
+            "country=" + urllib.parse.quote(country or "Germany"),
+            "limit=5",
+        ]
+        url_req = f"https://de1.api.radio-browser.info/json/stations/search?{'&'.join(params)}"
+        req = urllib.request.Request(url_req, headers={"User-Agent": "PI-Installer/1.0"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode())
+        for s in data:
+            fav = (s.get("favicon") or "").strip()
+            if fav and fav.startswith("http"):
+                return fav
+    except Exception as e:
+        logger.debug("Radio-Browser Favicon by name %s: %s", name[:40], e)
+    return None
+
+
 def _get_radio_logo_sync(url: str, name: Optional[str] = None) -> tuple[bytes, str, Optional[str]] | None:
     """
     Reihenfolge: 1) DB unter url, 2) DB unter name, 3) Abruf url, 4) Wikipedia(name).
@@ -1215,14 +1291,15 @@ def _get_radio_logo_sync(url: str, name: Optional[str] = None) -> tuple[bytes, s
         if row:
             return (row[0], row[1], row[2])
 
-    # 3) Extern: URL abrufen
+    # 3) Extern: URL abrufen (nur bei mind. 256x256 lokal speichern)
     if url:
         result = _fetch_logo(url)
         if result:
             body, ct = result
-            _radio_logo_put(key_url, body, ct, url)
-            if key_name:
-                _radio_logo_put(key_name, body, ct, url)
+            if _logo_meets_min_size(body, ct):
+                _radio_logo_put(key_url, body, ct, url)
+                if key_name:
+                    _radio_logo_put(key_name, body, ct, url)
             return (body, ct, url)
 
     # 4) Wikipedia-Fallback (nur wenn Name angegeben)
@@ -1232,11 +1309,26 @@ def _get_radio_logo_sync(url: str, name: Optional[str] = None) -> tuple[bytes, s
             result = _fetch_logo(wiki_url)
             if result:
                 body, ct = result
-                if key_name:
-                    _radio_logo_put(key_name, body, ct, wiki_url)
-                if key_url:
-                    _radio_logo_put(key_url, body, ct, wiki_url)
+                if _logo_meets_min_size(body, ct):
+                    if key_name:
+                        _radio_logo_put(key_name, body, ct, wiki_url)
+                    if key_url:
+                        _radio_logo_put(key_url, body, ct, wiki_url)
                 return (body, ct, wiki_url)
+
+    # 5) Fehlende Logos deutscher Sender: Radio-Browser-API nach Name (country=Germany) suchen
+    if name:
+        _radio_browser_logo_url = _radio_browser_favicon_by_name(name, "Germany")
+        if _radio_browser_logo_url:
+            result = _fetch_logo(_radio_browser_logo_url)
+            if result:
+                body, ct = result
+                if _logo_meets_min_size(body, ct):
+                    if key_name:
+                        _radio_logo_put(key_name, body, ct, _radio_browser_logo_url)
+                    if key_url:
+                        _radio_logo_put(key_url, body, ct, _radio_browser_logo_url)
+                return (body, ct, _radio_browser_logo_url)
 
     return None
 
@@ -1245,16 +1337,17 @@ _logo_refresh_tasks: set = set()
 
 
 def _logo_background_refresh(source_url: str) -> None:
-    """Im Hintergrund URL erneut abrufen und DB aktualisieren (frisches Logo)."""
+    """Im Hintergrund URL erneut abrufen und DB aktualisieren (nur wenn mind. 256x256)."""
     if not source_url:
         return
     try:
         result = _fetch_logo(source_url)
         if result:
             body, ct = result
-            key = "url:" + _normalize_logo_key(source_url)
-            _radio_logo_put(key, body, ct, source_url)
-            logger.debug("Radio logo refreshed: %s", source_url[:60])
+            if _logo_meets_min_size(body, ct):
+                key = "url:" + _normalize_logo_key(source_url)
+                _radio_logo_put(key, body, ct, source_url)
+                logger.debug("Radio logo refreshed: %s", source_url[:60])
     except Exception as e:
         logger.debug("Radio logo refresh failed %s: %s", source_url[:50], e)
 
@@ -1303,20 +1396,32 @@ RADIO_BROWSER_API = "https://de1.api.radio-browser.info"
 async def get_radio_stations_search(
     country: str = "Germany",
     name: Optional[str] = None,
+    tag: Optional[str] = None,
     limit: int = 200,
 ):
-    """Sucht Sender über Radio-Browser-API (Deutschland, optional name). Nur MP3, lastcheckok=1."""
+    """Sucht Sender über Radio-Browser-API (Land, optional name, optional tag/Musikrichtung). Nur MP3, lastcheckok=1."""
     try:
         import urllib.parse
         params = ["country=" + urllib.parse.quote(country)]
         if name and name.strip():
             params.append("name=" + urllib.parse.quote(name.strip()))
+        if tag and tag.strip():
+            params.append("tag=" + urllib.parse.quote(tag.strip()))
         params.append("limit=" + str(min(limit, 500)))
         url = f"{RADIO_BROWSER_API}/json/stations/search?{'&'.join(params)}"
         req = urllib.request.Request(url, headers={"User-Agent": "PI-Installer/1.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode())
-        # Nur MP3 und als erreichbar markiert
+        # Nur MP3 und als erreichbar markiert; Sendernamen normalisieren (Unterstriche, " by rautemusic" etc.)
+        def _normalize_station_name(n: str) -> str:
+            if not n or not isinstance(n, str):
+                return ""
+            t = n.strip().strip("_")
+            for suffix in (" by rautemusic", " by Rautemusic", " by RAUTEMUSIC"):
+                if t.endswith(suffix):
+                    t = t[:-len(suffix)].strip()
+            return t or n.strip()
+
         out = []
         for s in data:
             if s.get("codec") != "MP3" or not s.get("lastcheckok"):
@@ -1324,8 +1429,9 @@ async def get_radio_stations_search(
             url_resolved = (s.get("url_resolved") or s.get("url") or "").strip()
             if not url_resolved or url_resolved.startswith("m3u"):
                 continue
+            raw_name = (s.get("name") or "").strip()
             out.append({
-                "name": (s.get("name") or "").strip(),
+                "name": _normalize_station_name(raw_name) or raw_name,
                 "url": url_resolved,
                 "favicon": (s.get("favicon") or "").strip() or None,
                 "homepage": (s.get("homepage") or "").strip() or None,
@@ -1557,6 +1663,118 @@ async def get_version():
     """Gibt die PI-Installer Versionsnummer zurück."""
     # nicht cachen, damit VERSION-Änderungen ohne Restart sichtbar werden
     return {"status": "success", "version": get_pi_installer_version()}
+
+
+# ---------- Self-Update: Auf /opt installieren / aktualisieren ----------
+OPT_INSTALL_DIR = Path("/opt/pi-installer")
+
+
+def _read_version_from_path(root: Path) -> Optional[str]:
+    """Liest VERSION aus einem Repo-Root-Verzeichnis."""
+    try:
+        vf = root / "VERSION"
+        if vf.exists():
+            return vf.read_text(encoding="utf-8").strip() or None
+    except Exception:
+        pass
+    return None
+
+
+@app.get("/api/self-update/status")
+async def self_update_status():
+    """
+    Status für 'Auf /opt installieren': Quelle (laufendes Repo) vs. Installation in /opt.
+    Wenn die App aus einem Entwicklungsverzeichnis läuft (z. B. /home/volker/piinstaller),
+    kann hier ein Update verfügbar sein (neue Version noch nicht in /opt).
+    """
+    repo_root = Path(__file__).resolve().parent.parent
+    source_version = get_pi_installer_version()
+    source_path = str(repo_root)
+    installed_version = _read_version_from_path(OPT_INSTALL_DIR) if OPT_INSTALL_DIR.exists() else None
+    installed_path = str(OPT_INSTALL_DIR) if OPT_INSTALL_DIR.exists() else None
+
+    # Update verfügbar: Quelle != /opt und (noch nicht installiert oder andere Version)
+    is_source_opt = repo_root.resolve() == OPT_INSTALL_DIR.resolve()
+    update_available = not is_source_opt and (
+        installed_version is None or installed_version != source_version
+    )
+
+    deploy_script = repo_root / "scripts" / "deploy-to-opt.sh"
+    can_run_deploy = deploy_script.is_file()
+
+    return {
+        "status": "success",
+        "source_path": source_path,
+        "source_version": source_version,
+        "installed_path": installed_path,
+        "installed_version": installed_version,
+        "update_available": update_available,
+        "is_running_from_opt": is_source_opt,
+        "can_run_deploy": can_run_deploy,
+        "deploy_script": str(deploy_script),
+    }
+
+
+@app.post("/api/self-update/install")
+async def self_update_install(request: Request):
+    """
+    Führt deploy-to-opt.sh aus (mit sudo). Wenn sudo ohne Passwort nicht möglich ist,
+    wird command_to_run zurückgegeben, damit der Nutzer den Befehl im Terminal ausführen kann.
+    """
+    repo_root = Path(__file__).resolve().parent.parent
+    deploy_script = repo_root / "scripts" / "deploy-to-opt.sh"
+    if not deploy_script.is_file():
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "message": "Deploy-Skript nicht gefunden.", "command_to_run": None},
+        )
+
+    cmd = ["sudo", "-n", str(deploy_script), str(repo_root)]
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=300,
+            cwd=str(repo_root),
+        )
+        stdout = (result.stdout or "").strip()
+        stderr = (result.stderr or "").strip()
+        if result.returncode == 0:
+            return {
+                "status": "success",
+                "message": "Installation/Update nach /opt abgeschlossen.",
+                "stdout": stdout,
+                "stderr": stderr,
+            }
+        # sudo -n schlägt fehl wenn Passwort nötig
+        manual_cmd = f"sudo {deploy_script} {repo_root}"
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": "Deploy konnte nicht automatisch ausgeführt werden (z. B. sudo-Passwort nötig).",
+                "command_to_run": manual_cmd,
+                "stdout": stdout,
+                "stderr": stderr,
+            },
+        )
+    except subprocess.TimeoutExpired:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": "Deploy hat zu lange gedauert (Timeout).", "command_to_run": None},
+        )
+    except Exception as e:
+        logger.exception("self-update install")
+        manual_cmd = f"sudo {deploy_script} {repo_root}"
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "error",
+                "message": str(e),
+                "command_to_run": manual_cmd,
+            },
+        )
 
 
 # ---------- App Store (Transformationsplan: Katalog mit 7 Apps) ----------

@@ -163,6 +163,7 @@ export interface RadioStation {
   name: string
   streamUrl: string
   logoUrl?: string
+  homepage?: string
   region?: string
   genre?: string
 }
@@ -176,19 +177,22 @@ const WIKI = {
   ndr: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/NDR_Logo.svg/512px-NDR_Logo.svg.png',
   bayern3: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Bayern3_Logo.svg/512px-Bayern3_Logo.svg.png',
   bayern1: 'https://api.ardmediathek.de/image-service/images/urn:ard:image:b366004f6196d70c?w=512',
-  dlf: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Deutschlandfunk_logo.svg/512px-Deutschlandfunk_logo.svg.png',
+  dlf: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Deutschlandfunk_Logo_2017.svg/512px-Deutschlandfunk_Logo_2017.svg.png',
   mdrjump: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/MDR_Jump_Logo.svg/512px-MDR_Jump_Logo.svg.png',
+  mdraktuell: 'https://upload.wikimedia.org/wikipedia/commons/c/c3/Logo_mdr_AKTUELL_2016.png',
   hr3: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/HR3_Logo.svg/512px-HR3_Logo.svg.png',
   swr3: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/SWR3_Logo.svg/512px-SWR3_Logo.svg.png',
   radiosaw: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Radio_SAW_Logo_2018.svg/512px-Radio_SAW_Logo_2018.svg.png',
   antennebayern: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Antenne_Bayern_Logo.svg/512px-Antenne_Bayern_Logo.svg.png',
-  '104.6rtl': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/104.6_RTL_Logo.svg/512px-104.6_RTL_Logo.svg.png',
+  '104.6rtl': 'https://www.104.6rtl.com/favicon.ico',
   radioeins: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Radio_Eins_Logo.svg/512px-Radio_Eins_Logo.svg.png',
   wdrcosmo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/WDR_Cosmo_Logo.svg/512px-WDR_Cosmo_Logo.svg.png',
   br2: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Bayern_2_Logo.svg/512px-Bayern_2_Logo.svg.png',
   swr1bw: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/SWR1_Logo.svg/512px-SWR1_Logo.svg.png',
   swr4: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/SWR4_Logo.svg/512px-SWR4_Logo.svg.png',
   hr1: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/HR1_Logo.svg/512px-HR1_Logo.svg.png',
+  rbb888: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Rbb_Logo_2017.08.svg/512px-Rbb_Logo_2017.08.svg.png',
+  radiobob: 'https://www.radiobob.de/favicon.ico',
 }
 /** Senderliste inkl. SAW Musikwelt + weitere Sender; Logos über Backend-Proxy (Wikipedia 512px). */
 export const RADIO_STATIONS: RadioStation[] = [
@@ -203,7 +207,7 @@ export const RADIO_STATIONS: RadioStation[] = [
   { id: 'dlf', name: 'Deutschlandfunk', streamUrl: 'https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3', logoUrl: WIKI.dlf, region: 'Bundesweit', genre: 'Info' },
   { id: 'dlfkultur', name: 'DLF Kultur', streamUrl: 'https://st02.sslstream.dlf.de/dlf/02/128/mp3/stream.mp3', logoUrl: WIKI.dlf, region: 'Bundesweit', genre: 'Kultur' },
   { id: 'mdrjump', name: 'MDR Jump', streamUrl: 'http://mdr-284320-0.cast.mdr.de/mdr/284320/0/mp3/high/stream.mp3', logoUrl: WIKI.mdrjump, region: 'Mitte', genre: 'Pop' },
-  { id: 'mdraktuell', name: 'MDR Aktuell', streamUrl: 'http://mdr-284350-0.cast.mdr.de/mdr/284350/0/mp3/high/stream.mp3', logoUrl: 'https://www.mdr.de/apple-touch-icon.png', region: 'Mitte', genre: 'Nachrichten' },
+  { id: 'mdraktuell', name: 'MDR Aktuell', streamUrl: 'http://mdr-284350-0.cast.mdr.de/mdr/284350/0/mp3/high/stream.mp3', logoUrl: WIKI.mdraktuell, region: 'Mitte', genre: 'Nachrichten' },
   { id: 'hr3', name: 'HR3', streamUrl: 'http://hr-hr3-live.cast.addradio.de/hr/hr3/live/mp3/128/stream.mp3', logoUrl: WIKI.hr3, region: 'Hessen', genre: 'Pop' },
   { id: 'swr3', name: 'SWR3', streamUrl: 'https://liveradio.swr.de/sw282p3/swr3/play.mp3', logoUrl: WIKI.swr3, region: 'Südwest', genre: 'Pop' },
   { id: 'radiosaw', name: 'Radio SAW', streamUrl: 'https://stream.radiosaw.de/saw/mp3-128/', logoUrl: WIKI.radiosaw, region: 'Sachsen-Anhalt', genre: 'Schlager' },
@@ -215,19 +219,19 @@ export const RADIO_STATIONS: RadioStation[] = [
   { id: 'sawparty', name: 'SAW Party', streamUrl: 'https://stream.radiosaw.de/saw-party/mp3-192/', logoUrl: WIKI.radiosaw, region: 'Sachsen-Anhalt', genre: 'Party' },
   { id: 'sawschlagerparty', name: 'SAW Schlagerparty', streamUrl: 'https://stream.radiosaw.de/saw-schlagerparty/mp3-192/', logoUrl: WIKI.radiosaw, region: 'Sachsen-Anhalt', genre: 'Schlager' },
   { id: 'antennebayern', name: 'Antenne Bayern', streamUrl: 'https://antennebayern.cast.addradio.de/antennebayern/live/mp3/128/stream.mp3', logoUrl: WIKI.antennebayern, region: 'Bayern', genre: 'Pop' },
-  { id: '104.6rtl', name: '104.6 RTL', streamUrl: 'https://stream.104.6rtl.com/rtl', logoUrl: WIKI['104.6rtl'], region: 'Berlin', genre: 'Top 40' },
-  { id: 'radioeins', name: 'radioeins', streamUrl: 'http://rbb-radioeins-live.cast.addradio.de/rbb/radioeins/live/mp3/128/stream.mp3', logoUrl: WIKI.radioeins, region: 'Berlin/Brandenburg', genre: 'Rock' },
+  { id: '104.6rtl', name: '104.6 RTL', streamUrl: 'https://stream.104.6rtl.com/rtl', logoUrl: WIKI['104.6rtl'], homepage: 'https://www.104.6rtl.com/', region: 'Berlin', genre: 'Top 40' },
+  { id: 'radioeins', name: 'radioeins', streamUrl: 'https://dispatcher.rndfnk.com/rbb/radioeins/live/mp3/mid', logoUrl: WIKI.radioeins, region: 'Berlin/Brandenburg', genre: 'Rock' },
   { id: 'bremenzwei', name: 'Bremen Zwei', streamUrl: 'https://icecast.radiobremen.de/rb/bremenzwei/live/mp3/128/stream.mp3', logoUrl: 'https://www.bremenzwei.de/static/img/favicons/apple-touch-icon-180.png', region: 'Bremen', genre: 'Kultur' },
   { id: 'rockantenne', name: 'Rock Antenne', streamUrl: 'https://stream.rockantenne.de/rockantenne/stream/mp3', logoUrl: 'https://www.rockantenne.de/logos/station-rock-antenne/apple-touch-icon.png', region: 'Bayern', genre: 'Rock' },
-  { id: 'radiobob', name: 'Radio Bob', streamUrl: 'https://streams.radiobob.de/bob-national/mp3-192/', logoUrl: 'https://www.radiobob.de/favicon.ico', region: 'Bundesweit', genre: 'Rock' },
+  { id: 'radiobob', name: 'Radio Bob', streamUrl: 'https://streams.radiobob.de/bob-national/mp3-192/', logoUrl: WIKI.radiobob, region: 'Bundesweit', genre: 'Rock' },
   { id: 'wdrcosmo', name: 'WDR Cosmo', streamUrl: 'https://wdr-wdrcosmo-live.icecastssl.wdr.de/wdr/wdrcosmo/live/mp3/128/stream.mp3', logoUrl: WIKI.wdrcosmo, region: 'NRW', genre: 'World' },
   { id: 'ndrkultur', name: 'NDR Kultur', streamUrl: 'https://icecast.ndr.de/ndr/ndrkultur/live/mp3/128/stream.mp3', logoUrl: WIKI.ndr, region: 'Nord', genre: 'Kultur' },
   { id: 'br2', name: 'BR-Klassik', streamUrl: 'https://dispatcher.rndfnk.com/br/br2/live/mp3/mid', logoUrl: WIKI.br2, region: 'Bayern', genre: 'Klassik' },
   { id: 'swr1bw', name: 'SWR1 BW', streamUrl: 'https://liveradio.swr.de/sw282p3/swr1bw/play.mp3', logoUrl: WIKI.swr1bw, region: 'Südwest', genre: 'Schlager' },
   { id: 'swr4', name: 'SWR4', streamUrl: 'https://liveradio.swr.de/sw282p3/swr4bw/play.mp3', logoUrl: WIKI.swr4, region: 'Südwest', genre: 'Schlager' },
   { id: 'hr1', name: 'HR1', streamUrl: 'http://hr-hr1-live.cast.addradio.de/hr/hr1/live/mp3/128/stream.mp3', logoUrl: WIKI.hr1, region: 'Hessen', genre: 'Schlager' },
-  { id: 'rbb888', name: 'rbb 88.8', streamUrl: 'http://rbb-888-live.cast.addradio.de/rbb/888/live/mp3/128/stream.mp3', logoUrl: 'https://www.rbb88-8.de/apple-touch-icon.png', region: 'Berlin', genre: 'Info' },
-  { id: 'energy', name: 'Energy', streamUrl: 'https://stream.energy.de/energy.mp3', logoUrl: 'https://www.energy.de/favicon.ico', region: 'Bundesweit', genre: 'Charts' },
+  { id: 'rbb888', name: 'rbb 88.8', streamUrl: 'http://dispatcher.rndfnk.com/rbb/rbb888/live/mp3/mid', logoUrl: WIKI.rbb888, region: 'Berlin', genre: 'Info' },
+  { id: 'energy', name: 'Energy', streamUrl: 'https://edge62.streamonkey.net/energy-digital/stream/mp3', logoUrl: 'https://www.energy.de/favicon.ico', region: 'Bundesweit', genre: 'Charts' },
 ]
 
 interface StreamMetadata {
@@ -239,14 +243,17 @@ interface StreamMetadata {
   show?: string
 }
 
+const SILVER_BORDER = 'border-[#c0c0c0]'
+
 interface RadioPlayerProps {
   compact?: boolean
   dsi?: boolean
   /** Zeige Button "Auf DSI anzeigen" (nur wenn nicht schon DSI-View) */
   showDsiButton?: boolean
+  backendError?: boolean
 }
 
-const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false, showDsiButton = false }) => {
+const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false, showDsiButton = false, backendError }) => {
   const previewMode = compact && !dsi
   const textClass = (dsi || previewMode) ? 'text-white' : 'text-slate-800 dark:text-slate-100'
   const mutedClass = (dsi || previewMode) ? 'text-slate-200' : 'text-slate-500 dark:text-slate-400'
@@ -540,7 +547,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
         }`}
         style={compact ? { minWidth: 320, maxHeight: '220px' } : { maxHeight: '240px' }}
       >
-        {/* X-Button oben rechts zum Beenden (nur im DSI-Modus) */}
+        {/* Ausschalten-Button oben rechts (nur im DSI-Modus), silberner Rahmen */}
         {dsi && (
           <button
             type="button"
@@ -549,7 +556,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
                 window.location.href = window.location.pathname
               }
             }}
-            className="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-lg bg-red-600 hover:bg-red-700 text-white shadow-lg transition-colors"
+            className={`absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-lg bg-red-600 hover:bg-red-700 text-white shadow-lg transition-colors border-2 ${SILVER_BORDER}`}
             title="Radio beenden"
           >
             <X className="w-5 h-5" strokeWidth={2.5} />
@@ -603,36 +610,38 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
           </div>
         </div>
 
-        {/* Aussteuerung: wahlweise LED (7 vertikal: 5 grün, 2 rot) oder analoges Rundinstrument */}
+        {/* Aussteuerung: LED-Pegelanzeige mit silbernem Rahmen und abgerundeten Ecken */}
         {(previewMode || dsi) && (
-          <div className="mt-4 flex items-end gap-3 flex-wrap">
-            <div className="flex gap-1">
-              {(['L', 'R', 'Signal'] as const).map((label) => {
-                const value = label === 'L' ? vuL : label === 'R' ? vuR : vuSignal
-                return (
-                  <div key={label} className="flex flex-col items-center gap-0.5">
-                    <span className="text-[10px] text-slate-400">{label}</span>
-                    {vuMode === 'analog' ? (
-                      label === 'Signal' ? (
-                        <AnalogGaugeSignal value={value} size={44} />
+          <div className={`mt-4 rounded-xl border-2 ${SILVER_BORDER} p-3 bg-slate-800/50`}>
+            <div className="flex items-end gap-3 flex-wrap">
+              <div className="flex gap-1">
+                {(['L', 'R', 'Signal'] as const).map((label) => {
+                  const value = label === 'L' ? vuL : label === 'R' ? vuR : vuSignal
+                  return (
+                    <div key={label} className="flex flex-col items-center gap-0.5">
+                      <span className="text-[10px] text-slate-400">{label}</span>
+                      {vuMode === 'analog' ? (
+                        label === 'Signal' ? (
+                          <AnalogGaugeSignal value={value} size={44} />
+                        ) : (
+                          <AnalogGaugeVu value={value} size={44} />
+                        )
                       ) : (
-                        <AnalogGaugeVu value={value} size={44} />
-                      )
-                    ) : (
-                      <LedStrip value={value} />
-                    )}
-                  </div>
-                )
-              })}
+                        <LedStrip value={value} />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={() => setVuMode((m) => (m === 'led' ? 'analog' : 'led'))}
+                className="text-[10px] text-slate-400 hover:text-slate-300 px-1"
+                title={vuMode === 'led' ? 'Analog anzeigen' : 'LED anzeigen'}
+              >
+                {vuMode === 'led' ? 'Analog' : 'LED'}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setVuMode((m) => (m === 'led' ? 'analog' : 'led'))}
-              className="text-[10px] text-slate-400 hover:text-slate-300 px-1"
-              title={vuMode === 'led' ? 'Analog anzeigen' : 'LED anzeigen'}
-            >
-              {vuMode === 'led' ? 'Analog' : 'LED'}
-            </button>
           </div>
         )}
       </div>

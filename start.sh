@@ -54,14 +54,19 @@ else
     FRONTEND_DEV="dev"
 fi
 
-# Wenn Port 8000 schon belegt ist, prüfe ob Backend antwortet; sonst abbrechen.
-if sudo lsof -nP -iTCP:8000 -sTCP:LISTEN >/dev/null 2>&1; then
+# Port-Check ohne sudo (wichtig wenn start.sh als systemd-Service-User läuft)
+_port_in_use() {
+    command -v ss >/dev/null 2>&1 && ss -tlnp 2>/dev/null | grep -q ':8000 ' && return 0
+    lsof -nP -iTCP:8000 -sTCP:LISTEN >/dev/null 2>&1 && return 0
+    return 1
+}
+if _port_in_use; then
     if curl -sS --max-time 2 http://127.0.0.1:8000/api/version >/dev/null 2>&1; then
         echo "ℹ️  Backend läuft bereits auf :8000 – starte kein zweites."
         BACKEND_PID=""
     else
         echo "❌ Port 8000 ist belegt, aber Backend antwortet nicht."
-        echo "   Bitte alten Prozess beenden: sudo lsof -nP -iTCP:8000 -sTCP:LISTEN"
+        echo "   Prüfen: ss -tlnp | grep 8000  oder  lsof -iTCP:8000 -sTCP:LISTEN"
         exit 1
     fi
 else

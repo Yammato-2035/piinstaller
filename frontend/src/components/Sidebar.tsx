@@ -26,6 +26,7 @@ import {
   Tv,
   Package,
   Radio,
+  Upload,
 } from 'lucide-react'
 
 type Theme = 'light' | 'dark' | 'system'
@@ -99,6 +100,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
       { type: 'divider' },
       { id: 'monitoring', label: 'Monitoring', icon: Activity },
       { id: 'backup', label: 'Backup & Restore', icon: Database },
+      { id: 'pi-installer-update', label: 'PI-Installer Update', icon: Upload },
       { id: 'control-center', label: 'Control Center', icon: Settings },
       { id: 'periphery-scan', label: 'Peripherie-Scan (Assimilation)', icon: Scan },
     ]

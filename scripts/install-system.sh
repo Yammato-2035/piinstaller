@@ -44,8 +44,29 @@ if [ ! -f "$REPO_ROOT/start.sh" ] || [ ! -d "$REPO_ROOT/backend" ] || [ ! -d "$R
   exit 1
 fi
 
-# Aktueller Benutzer (für Dateiberechtigungen)
-CURRENT_USER="${SUDO_USER:-$USER}"
+# Service-User:
+# - PI_INSTALLER_USE_SERVICE_USER=1  → dedizierten System-User "pi-installer" anlegen und nutzen (empfohlen für Produktion)
+# - PI_INSTALLER_USER=volker         → festen User setzen (z. B. dein Login)
+# - sonst                             → wer sudo ausführt (SUDO_USER)
+SERVICE_USER_NAME="pi-installer"
+if [ "${PI_INSTALLER_USE_SERVICE_USER:-0}" = "1" ]; then
+  if ! getent passwd "$SERVICE_USER_NAME" >/dev/null 2>&1; then
+    info "Lege dedizierten Service-User an: $SERVICE_USER_NAME"
+    useradd --system --no-create-home --comment "PI-Installer Service" "$SERVICE_USER_NAME"
+    ok "User $SERVICE_USER_NAME erstellt"
+  else
+    ok "Service-User $SERVICE_USER_NAME existiert bereits"
+  fi
+  CURRENT_USER="$SERVICE_USER_NAME"
+elif [ -n "${PI_INSTALLER_USER:-}" ]; then
+  CURRENT_USER="$PI_INSTALLER_USER"
+  if ! getent passwd "$CURRENT_USER" >/dev/null 2>&1; then
+    err "User $CURRENT_USER existiert nicht. Bitte anlegen oder PI_INSTALLER_USER weglassen."
+    exit 1
+  fi
+else
+  CURRENT_USER="${SUDO_USER:-$USER}"
+fi
 CURRENT_HOME=$(getent passwd "$CURRENT_USER" | cut -d: -f6)
 
 echo -e "${CYAN}============================================${NC}"
@@ -58,7 +79,9 @@ echo -e "  Konfiguration: ${CONFIG_DIR}"
 echo -e "  Logs:          ${LOG_DIR}"
 echo -e "  Binaries:      ${BIN_DIR}"
 echo ""
-echo -e "${CYAN}Benutzer:${NC} ${CURRENT_USER}"
+echo -e "${CYAN}Service-Benutzer:${NC} ${CURRENT_USER}"
+[ "${PI_INSTALLER_USE_SERVICE_USER:-0}" = "1" ] && echo -e "  (dedizierter System-User, kein Login)"
+[ -n "${PI_INSTALLER_USER:-}" ] && [ "${PI_INSTALLER_USE_SERVICE_USER:-0}" != "1" ] && echo -e "  (gesetzt via PI_INSTALLER_USER)"
 echo ""
 
 # --- Schritt 1: System-Abhängigkeiten installieren ---
@@ -256,6 +279,7 @@ Environment="PI_INSTALLER_DIR=${INSTALL_DIR}"
 Environment="PI_INSTALLER_CONFIG_DIR=${CONFIG_DIR}"
 Environment="PI_INSTALLER_LOG_DIR=${LOG_DIR}"
 Environment="PI_INSTALLER_DEV=0"
+Environment="PIP_CACHE_DIR=${INSTALL_DIR}/.pip-cache"
 
 # Sicherheit
 NoNewPrivileges=true

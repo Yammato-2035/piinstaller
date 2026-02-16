@@ -2,7 +2,7 @@
 """
 PI-Installer DSI Radio – Standalone PyQt6-App für Freenove 4,3" DSI.
 Version 2.0: GStreamer-Wiedergabe (statt VLC/mpv). 20 Favoriten, Radio-Browser-API, Klavierlack-Design.
-Wayfire: Fenstertitel „PI-Installer DSI Radio“ → start_on_output DSI-1 (TFT).
+Wayfire: Fenstertitel „Sabrina Tuner“ → start_on_output DSI-1 (TFT).
 """
 
 # Radio-App-Version (2.1 = NDR-Stream-Preferenz, Ausgabe nur auf Freenove erzwungen)
@@ -15,6 +15,7 @@ import random
 import subprocess
 import threading
 import urllib.request
+from collections import deque
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
@@ -37,10 +38,17 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QGridLayout,
     QSlider,
+    QSizeGrip,
 )
-from PyQt6.QtCore import Qt, QTimer, QByteArray, QRectF, QBuffer, QIODevice, QMimeData, QMetaObject, Q_ARG, QThread, pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QPixmap, QFont, QFontMetrics, QPainter, QPainterPath, QPen, QBrush, QColor, QImage, QShortcut, QKeySequence
-from math import pi, cos, sin
+from PyQt6.QtCore import Qt, QTimer, QByteArray, QRectF, QBuffer, QIODevice, QMimeData, QMetaObject, Q_ARG, QThread, pyqtSignal, pyqtSlot, QSize
+from PyQt6.QtGui import QPixmap, QFont, QFontMetrics, QPainter, QPainterPath, QPen, QBrush, QColor, QImage, QShortcut, QKeySequence, QIcon
+from math import pi, cos, sin, log, exp
+
+try:
+    import numpy as np
+    _NUMPY_AVAILABLE = True
+except ImportError:
+    _NUMPY_AVAILABLE = False
 
 # GStreamer-Player (Version 2.0)
 try:
@@ -51,8 +59,7 @@ except ImportError:
 BACKEND_BASE = os.environ.get("PI_INSTALLER_BACKEND", "http://127.0.0.1:8000")
 METADATA_INTERVAL_MS = 15000  # 15 Sekunden (reduziert Last auf Backend)
 CLOCK_INTERVAL_MS = 1000
-WINDOW_TITLE = "PI-Installer DSI Radio"
-FAVORITES_MAX = 20
+WINDOW_TITLE = "Sabrina Tuner"
 # Konfigurationsverzeichnis: absolut, damit es immer korrekt ist
 _CONFIG_BASE = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
 CONFIG_DIR = os.path.join(_CONFIG_BASE, "pi-installer-dsi-radio")
@@ -67,15 +74,54 @@ LAST_STATION_FILE = os.path.join(CONFIG_DIR, "last_station.json")
 THEME_FILE = os.path.join(CONFIG_DIR, "theme.txt")
 DISPLAY_CONFIG_FILE = os.path.join(CONFIG_DIR, "display.json")
 ICONS_CONFIG_FILE = os.path.join(CONFIG_DIR, "icons.json")
-FAVORITES_PER_PAGE = 9
+RADIO_STATIONS_CACHE_FILE = os.path.join(CONFIG_DIR, "radio_stations_cache.json")
+# Sender-Buttons fließen in den freien Raum (Spalten aus Breite), max 16 pro Seite
+FAVORITES_PER_PAGE = 16
+FAVORITES_PER_PAGE_DESKTOP = 16
+FAVORITES_MAX = 64
+# Button 80px + Abstand 6px für Berechnung der Spalten
+STATION_BTN_WIDTH, STATION_BTN_SPACING = 80, 6
 
 try:
     from stations import RADIO_STATIONS, STATION_LOGO_FALLBACKS
+    # Zusatz-Fallbacks für Namen aus API/Favoriten (DLF, DFL, BR24)
+    _dlf_url = next((s.get("logo_url", "") for s in RADIO_STATIONS if (s.get("name") or "").strip() == "Deutschlandfunk"), "")
+    if _dlf_url:
+        STATION_LOGO_FALLBACKS["DLF"] = _dlf_url
+        STATION_LOGO_FALLBACKS["DFL"] = _dlf_url
+    # BR24 eigenständiger Sender (Nachrichten), nicht BR-Klassik
+    _br24_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Bayern_2_Logo.svg/512px-Bayern_2_Logo.svg.png"
+    STATION_LOGO_FALLBACKS["BR24"] = _br24_url
+    _hr1_url = next((s.get("logo_url", "") for s in RADIO_STATIONS if (s.get("name") or "").strip() == "HR1"), "")
+    if _hr1_url:
+        STATION_LOGO_FALLBACKS["HR 1"] = _hr1_url
+    _rbb_url = next((s.get("logo_url", "") for s in RADIO_STATIONS if (s.get("name") or "").strip() == "rbb 88.8"), "")
+    if _rbb_url:
+        STATION_LOGO_FALLBACKS["rbb 88,8"] = _rbb_url
+    _mdr_url = next((s.get("logo_url", "") for s in RADIO_STATIONS if (s.get("name") or "").strip() == "MDR Aktuell"), "")
+    if _mdr_url:
+        STATION_LOGO_FALLBACKS["MDR Aktuell"] = _mdr_url
+    # API-/Favoriten-Varianten (Komma, Langname)
+    for s in RADIO_STATIONS:
+        logo_url = (s.get("logo_url") or "").strip()
+        if not logo_url:
+            continue
+        name = (s.get("name") or "").strip()
+        if name == "104.6 RTL":
+            STATION_LOGO_FALLBACKS["104,6 RTL"] = logo_url
+        if name == "DLF Kultur":
+            STATION_LOGO_FALLBACKS["Deutschlandfunk Kultur"] = logo_url
+        if name == "R.SA":
+            STATION_LOGO_FALLBACKS["R.SA"] = logo_url
+        if name == "Radio Bob":
+            STATION_LOGO_FALLBACKS["Radio Bob"] = logo_url
 except ImportError:
     RADIO_STATIONS = [
         {"id": "einslive", "name": "1Live", "stream_url": "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", "logo_url": "", "region": "NRW", "genre": "Pop"},
         {"id": "wdr2", "name": "WDR 2", "stream_url": "https://wdr-wdr2-rheinruhr.icecastssl.wdr.de/wdr/wdr2/rheinruhr/mp3/128/stream.mp3", "logo_url": "", "region": "NRW", "genre": "Pop"},
         {"id": "dlf", "name": "Deutschlandfunk", "stream_url": "https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3", "logo_url": "", "region": "Bundesweit", "genre": "Info"},
+        {"id": "rsa", "name": "R.SA", "stream_url": "http://streams.rsa-sachsen.de/rsa-live/mp3-192/rsamediaplayer", "logo_url": "", "region": "Sachsen", "genre": "Pop"},
+        {"id": "radiosaw", "name": "Radio SAW", "stream_url": "https://stream.radiosaw.de/saw/mp3-192/radio-browser/", "logo_url": "", "region": "Sachsen-Anhalt", "genre": "Pop"},
     ]
     STATION_LOGO_FALLBACKS = {}
 
@@ -494,16 +540,56 @@ def _find_audio_sink() -> Optional[str]:
     return None
 
 
+def _normalize_favorite_url(url: str) -> str:
+    """URL für Favoriten-Vergleich normalisieren (trailing slash, Leerzeichen)."""
+    u = (url or "").strip().rstrip("/")
+    return u
+
+
+def _deduplicate_favorites_by_url(stations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Entfernt doppelte Sender (gleiche stream_url), z. B. NDR 1 unter verschiedenen Namen."""
+    seen_urls = set()
+    out = []
+    for s in stations:
+        url = (s.get("stream_url") or s.get("url") or "").strip()
+        if url and url not in seen_urls:
+            seen_urls.add(url)
+            out.append(s)
+    return out
+
+
+def _deduplicate_favorites_ndr(stations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Behält pro NDR 1 bzw. NDR 2 nur einen Eintrag (ersten), Doppelte wie „NDR 1 Niedersachsen“ und „NDR 1 Welle Nord“ entfernt."""
+    out = []
+    seen_ndr1 = False
+    seen_ndr2 = False
+    for s in stations:
+        name = (s.get("name") or "").strip()
+        if "NDR 1" in name:
+            if seen_ndr1:
+                continue
+            seen_ndr1 = True
+        elif "NDR 2" in name:
+            if seen_ndr2:
+                continue
+            seen_ndr2 = True
+        out.append(s)
+    return out
+
+
 def load_favorites() -> List[Dict[str, Any]]:
     try:
         if os.path.isfile(FAVORITES_FILE):
             with open(FAVORITES_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, list) and len(data) > 0:
-                    return data[:FAVORITES_MAX]
+                    dedup = _deduplicate_favorites_by_url(data[:FAVORITES_MAX])
+                    dedup = _deduplicate_favorites_ndr(dedup)
+                    return dedup
     except Exception:
         pass
-    return [{"id": s["id"], "name": s["name"], "stream_url": s["stream_url"], "logo_url": s.get("logo_url", ""), "region": s.get("region", ""), "genre": s.get("genre", "")} for s in RADIO_STATIONS[:FAVORITES_MAX]]
+    default = [{"id": s["id"], "name": s["name"], "stream_url": s["stream_url"], "logo_url": s.get("logo_url", ""), "region": s.get("region", ""), "genre": s.get("genre", "")} for s in RADIO_STATIONS[:FAVORITES_MAX]]
+    return _deduplicate_favorites_ndr(_deduplicate_favorites_by_url(default))
 
 
 def save_favorites(stations: List[Dict[str, Any]]) -> None:
@@ -570,7 +656,7 @@ def save_theme(name: str) -> None:
 
 def load_display_config() -> dict:
     """Anzeige-Optionen aus display.json (PI-Installer Einstellungen)."""
-    out = {"show_clock": True, "vu_mode": "led"}
+    out = {"show_clock": True, "vu_mode": "led", "display_max_width": 600, "display_font_scale": 0.85}
     try:
         if os.path.isfile(DISPLAY_CONFIG_FILE):
             with open(DISPLAY_CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -578,6 +664,11 @@ def load_display_config() -> dict:
                 if isinstance(data, dict):
                     out["show_clock"] = data.get("show_clock", True)
                     out["vu_mode"] = data.get("vu_mode", "led") if data.get("vu_mode") in ("led", "analog") else "led"
+                    if "display_max_width" in data and isinstance(data["display_max_width"], (int, float)):
+                        out["display_max_width"] = max(320, min(1200, int(data["display_max_width"])))
+                    if "display_font_scale" in data and isinstance(data["display_font_scale"], (int, float)):
+                        s = float(data["display_font_scale"])
+                        out["display_font_scale"] = max(0.5, min(1.5, s))
     except Exception:
         pass
     return out
@@ -619,6 +710,15 @@ def _prefer_stations_py_stream_url(current_station: dict, url: str) -> str:
             if cur_name and sname and "NDR 1" in cur_name and "NDR 1" in sname:
                 return alt
             if cur_name and sname and "NDR 2" in cur_name and "NDR 2" in sname:
+                return alt
+            # HR1 / HR 1 (API-Schreibweise)
+            if sname == "HR1" and ("HR1" in cur_name or "HR 1" in cur_name.replace(" ", "").upper() or cur_name.strip().upper() == "HR 1"):
+                return alt
+            # rbb 88.8 / 88,8
+            if sname == "rbb 88.8" and ("88.8" in cur_name or "88,8" in cur_name or "rbb" in cur_name.lower()):
+                return alt
+            # Energy
+            if sname == "Energy" and cur_name.strip().lower() == "energy":
                 return alt
     except Exception:
         pass
@@ -720,8 +820,9 @@ def _fetch_icy_metadata_direct(url: str) -> dict:
         return {"title": val, "artist": artist, "song": song}
 
     try:
+        timeout = 10 if ("ndr" in url.lower() or "rsa-sachsen" in url.lower() or "radiosaw" in url.lower()) else 5
         req = urllib.request.Request(url, headers={"User-Agent": "PI-Installer-DSI-Radio/1.0", "Icy-MetaData": "1"})
-        with urllib.request.urlopen(req, timeout=5) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             meta_int = resp.headers.get("icy-metaint")
             if not meta_int:
                 return {}
@@ -789,17 +890,93 @@ def _fetch_logo(url: str, name: Optional[str] = None) -> Optional[bytes]:
         return None
 
 
+# Radio-Browser-API direkt (Fallback wenn Backend nicht erreichbar)
+RADIO_BROWSER_API_MIRRORS = [
+    "https://de1.api.radio-browser.info",
+    "https://nl1.api.radio-browser.info",
+    "https://at1.api.radio-browser.info",
+]
+
+
+def _fetch_stations_from_radio_browser_direct(name: str = "", limit: int = 200) -> List[Dict[str, Any]]:
+    """Ruft radio-browser.info API direkt auf (ohne Backend). Liefert normierte Senderliste."""
+    params = ["country=Germany", "limit=" + str(min(limit, 500))]
+    if name.strip():
+        params.append("name=" + urllib.request.quote(name.strip()))
+    for base in RADIO_BROWSER_API_MIRRORS:
+        try:
+            url = f"{base}/json/stations/search?{'&'.join(params)}"
+            req = urllib.request.Request(url, headers={"User-Agent": "DSI-Radio/1.0 (radio-browser.info)"})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read().decode())
+            if not isinstance(data, list):
+                continue
+            out = []
+            for s in data:
+                if not isinstance(s, dict):
+                    continue
+                if s.get("codec") != "MP3" or not s.get("lastcheckok"):
+                    continue
+                url_resolved = (s.get("url_resolved") or s.get("url") or "").strip()
+                if not url_resolved or url_resolved.startswith("m3u"):
+                    continue
+                out.append({
+                    "name": (s.get("name") or "").strip(),
+                    "url": url_resolved,
+                    "favicon": (s.get("favicon") or "").strip() or None,
+                    "state": s.get("state") or "",
+                    "tags": s.get("tags") or "",
+                })
+            return out[:limit]
+        except Exception:
+            continue
+    return []
+
+
 def _fetch_stations_search(name: str = "") -> List[Dict[str, Any]]:
-    """Holt Sender vom Backend (radio-browser). Bei Fehler/Leer: [] – Aufrufer zeigt dann RADIO_STATIONS."""
+    """Holt Sender: zuerst Backend (proxy zu radio-browser), bei Fehler direkt radio-browser.info, dann Cache."""
+    # 1) Backend (gleicher Parameter wie Backend: country=Germany)
     try:
-        url = f"{BACKEND_BASE}/api/radio/stations/search?countrycode=DE&limit=200"
+        url = f"{BACKEND_BASE}/api/radio/stations/search?country=Germany&limit=200"
         if name.strip():
             url += "&name=" + urllib.request.quote(name.strip())
         req = urllib.request.Request(url, headers={"User-Agent": "PI-Installer-DSI-Radio/1.0"})
         with urllib.request.urlopen(req, timeout=12) as resp:
             data = json.load(resp)
+            stations = []
             if isinstance(data, dict) and "stations" in data:
-                return data["stations"] if isinstance(data["stations"], list) else []
+                stations = data["stations"] if isinstance(data["stations"], list) else []
+            elif isinstance(data, list):
+                stations = data
+            if stations:
+                try:
+                    with open(RADIO_STATIONS_CACHE_FILE, "w", encoding="utf-8") as f:
+                        json.dump({"stations": stations, "query": name.strip()}, f, ensure_ascii=False)
+                except Exception:
+                    pass
+                return stations
+    except Exception:
+        pass
+    # 2) Direkt radio-browser.info
+    direct = _fetch_stations_from_radio_browser_direct(name, 200)
+    if direct:
+        try:
+            with open(RADIO_STATIONS_CACHE_FILE, "w", encoding="utf-8") as f:
+                json.dump({"stations": direct, "query": name.strip()}, f, ensure_ascii=False)
+        except Exception:
+            pass
+        return direct
+    # 3) Gecachte Liste
+    try:
+        if os.path.isfile(RADIO_STATIONS_CACHE_FILE):
+            with open(RADIO_STATIONS_CACHE_FILE, "r", encoding="utf-8") as f:
+                cached = json.load(f)
+            stations = cached.get("stations") if isinstance(cached, dict) else []
+            if isinstance(stations, list) and stations:
+                if name.strip():
+                    q = name.strip().lower()
+                    stations = [s for s in stations if isinstance(s, dict) and (q in ((s.get("name") or "").lower()))]
+                return stations
     except Exception:
         pass
     return []
@@ -930,6 +1107,156 @@ class AnalogGaugeWidget(QWidget):
         painter.end()
 
 
+def _fft_to_log_bands(magnitudes: "np.ndarray", num_bands: int) -> List[float]:
+    """Mappt FFT-Magnituden (linear) auf logarithmisch verteilte Bänder (realistisch wie bei Kurzwellen/Spektrum)."""
+    n = len(magnitudes)
+    if n < 2 or num_bands < 1:
+        return [0.0] * num_bands
+    out = []
+    for i in range(num_bands):
+        start = int(n ** (i / num_bands))
+        end = min(n, int(n ** ((i + 1) / num_bands)) + 1)
+        if start >= end:
+            start = max(0, end - 1)
+        band_max = float(np.max(magnitudes[start:end]))
+        out.append(band_max)
+    if out:
+        peak = max(out) or 1.0
+        return [min(100.0, 100.0 * (v / peak) ** 0.6) for v in out]
+    return [0.0] * num_bands
+
+
+class SpectrumBandWidget(QWidget):
+    """Frequenzbandanzeige: unten Grün, darüber Gelb, oben Rot; mit Peak Hold."""
+
+    def __init__(self, parent=None, num_bands: int = 8):
+        super().__init__(parent)
+        self._bands = [0.0] * num_bands
+        self._peak_hold = [0.0] * num_bands
+        self._num_bands = num_bands
+        self._peak_hold_decay = 0.99
+        self.setMinimumSize(120, 48)
+        self.setStyleSheet("background: #0a0a0a; border: none;")
+
+    def set_bands(self, values: List[float]):
+        self._bands = list(values)[: self._num_bands]
+        if len(self._bands) < self._num_bands:
+            self._bands.extend([0.0] * (self._num_bands - len(self._bands)))
+        for i, v in enumerate(self._bands):
+            if i < len(self._peak_hold):
+                self._peak_hold[i] = max(self._peak_hold[i] * self._peak_hold_decay, v)
+        self.update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        w, h = self.width(), self.height()
+        if w < 4 or h < 4:
+            return
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        margin = 2
+        bar_w = max(2, (w - margin * 2 - (self._num_bands - 1) * 2) // self._num_bands)
+        gap = 2
+        x = margin
+        draw_h = h - margin * 2
+        for i, val in enumerate(self._bands):
+            pct = max(0.0, min(1.0, val / 100.0))
+            bar_h = int(draw_h * pct)
+            if bar_h > 0:
+                y_bottom = h - margin
+                y_top = y_bottom - bar_h
+                green_h = int(draw_h * min(pct, 0.65))
+                yellow_h = int(draw_h * max(0, min(pct, 0.85) - 0.65))
+                red_h = int(draw_h * max(0, pct - 0.85))
+                if green_h > 0:
+                    painter.fillRect(int(x), y_bottom - green_h, bar_w, green_h, QColor("#22c55e"))
+                if yellow_h > 0:
+                    painter.fillRect(int(x), y_bottom - green_h - yellow_h, bar_w, yellow_h, QColor("#eab308"))
+                if red_h > 0:
+                    painter.fillRect(int(x), y_bottom - green_h - yellow_h - red_h, bar_w, red_h, QColor("#dc2626"))
+            ph = max(0.0, min(1.0, (self._peak_hold[i] if i < len(self._peak_hold) else 0) / 100.0))
+            if ph > 0.02:
+                peak_y = h - margin - int(draw_h * ph)
+                painter.setPen(QPen(QColor("#94a3b8"), 1))
+                painter.drawLine(int(x), peak_y, int(x + bar_w), peak_y)
+            x += bar_w + gap
+        painter.end()
+
+
+class WaveformWidget(QWidget):
+    """Wellenform-Anzeige (Oszilloskop-Stil, realistisch): Mittellinie = 0, geglättete Kurve."""
+
+    def __init__(self, parent=None, max_points: int = 80):
+        super().__init__(parent)
+        self._points: deque = deque(maxlen=max_points)
+        self.setMinimumSize(120, 40)
+        self.setStyleSheet("background: #0a0a0a; border: none;")
+
+    def append(self, value: float):
+        self._points.append(max(0, min(100, value)))
+        self.update()
+
+    def _smooth(self, pts: List[float], window: int = 3) -> List[float]:
+        if len(pts) < window:
+            return pts
+        out = []
+        for i in range(len(pts)):
+            start = max(0, i - window // 2)
+            end = min(len(pts), i + window // 2 + 1)
+            out.append(sum(pts[start:end]) / (end - start))
+        return out
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        w, h = self.width(), self.height()
+        if w < 4 or h < 4 or len(self._points) < 2:
+            return
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        margin = 4
+        draw_w = w - margin * 2
+        draw_h = h - margin * 2
+        # Null unten: y_bottom = margin + draw_h, Amplitude 0..100 → Höhe nach oben
+        y_bottom = margin + draw_h
+        # Oszilloskop-Gitter: Zeit- und Amplituden-Raster (Null-Linie unten)
+        grid_color = QColor("#1e293b")
+        painter.setPen(QPen(grid_color, 1))
+        for i in range(1, 5):
+            x = margin + (i * draw_w / 5)
+            painter.drawLine(int(x), margin, int(x), margin + draw_h)
+        for i in range(1, 4):
+            y = margin + (i * draw_h / 4)
+            painter.drawLine(margin, int(y), margin + draw_w, int(y))
+        painter.drawRect(margin, margin, int(draw_w), int(draw_h))
+        pts = list(self._points)
+        pts = self._smooth(pts, 3)
+        n = len(pts)
+        path = QPainterPath()
+        fill_path = QPainterPath()
+        fill_path.moveTo(margin, y_bottom)
+        for i, val in enumerate(pts):
+            x = margin + (i / max(1, n - 1)) * draw_w
+            # val 0..100: 0 = unten (y_bottom), 100 = oben (margin)
+            pct = max(0.0, min(1.0, val / 100.0))
+            y = y_bottom - pct * draw_h
+            y = max(margin, min(y_bottom, y))
+            if i == 0:
+                path.moveTo(x, y)
+                fill_path.lineTo(x, y)
+            else:
+                path.lineTo(x, y)
+                fill_path.lineTo(x, y)
+        fill_path.lineTo(margin + draw_w, y_bottom)
+        fill_path.closeSubpath()
+        painter.fillPath(fill_path, QColor(34, 197, 94, 35))
+        painter.setPen(QPen(QColor("#22c55e"), 1.5))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(path)
+        painter.setPen(QPen(QColor("#475569"), 1))
+        painter.drawLine(int(margin), int(y_bottom), int(margin + draw_w), int(y_bottom))
+        painter.end()
+
+
 class StationListDialog(QDialog):
     """Senderliste aus radio-browser.info: nur Sendername (keine URL), Checkbox = Favorit an/ab."""
 
@@ -940,7 +1267,7 @@ class StationListDialog(QDialog):
         self.setStyleSheet(THEMES.get(theme_name, STYLE_KLAVIERLACK))
         self._current_favorites = list(current_favorites)
         self._add_station = None
-        self._favorite_urls = {f.get("stream_url") or f.get("url") or "" for f in self._current_favorites}
+        self._rebuild_favorite_urls_set()
         layout = QVBoxLayout(self)
         self._search = QLineEdit()
         self._search.setPlaceholderText("Sender suchen (z. B. 1Live, NDR, SAW…)")
@@ -953,14 +1280,83 @@ class StationListDialog(QDialog):
         layout.addWidget(search_btn)
         self._list = QListWidget()
         self._list.setMinimumHeight(280)
+        self._list.setIconSize(QSize(28, 28))
         self._list.itemChanged.connect(self._on_item_check_changed)
         layout.addWidget(self._list)
-        layout.addWidget(QLabel("☑ = Favorit (max 20). Keine URL-Anzeige."))
+        layout.addWidget(QLabel("☑ = Favorit (max. 64). Keine URL-Anzeige."))
         close_btn = QPushButton("Schließen")
         close_btn.setMinimumHeight(48)
         close_btn.clicked.connect(self.accept)
         layout.addWidget(close_btn)
+        # Sofort Minimal-Liste anzeigen, damit nie eine leere Liste erscheint
+        self._fill_list_immediate()
         self._do_search()
+
+    def _rebuild_favorite_urls_set(self):
+        """Baut _favorite_urls aus Favoriten-URLs plus kanonische RADIO_STATIONS-URLs (für Haken bei Senderliste aus stations.py)."""
+        urls = set()
+        for f in self._current_favorites:
+            u = _normalize_favorite_url(f.get("stream_url") or f.get("url") or "")
+            if u:
+                urls.add(u)
+            name = (f.get("name") or "").strip()
+            if name:
+                for s in RADIO_STATIONS:
+                    if (s.get("name") or "").strip() == name:
+                        alt = _normalize_favorite_url(s.get("stream_url") or s.get("url") or "")
+                        if alt:
+                            urls.add(alt)
+                        break
+        self._favorite_urls = urls
+
+    def _fill_list_immediate(self):
+        """Zeigt sofort eine Senderliste (RADIO_STATIONS oder Minimal), damit nie nur 5 erscheinen."""
+        list_flags = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable
+        minimal = [
+            {"name": "1Live", "url": "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", "favicon": "", "state": "NRW", "tags": "Pop"},
+            {"name": "WDR 2", "url": "https://wdr-wdr2-rheinruhr.icecastssl.wdr.de/wdr/wdr2/rheinruhr/mp3/128/stream.mp3", "favicon": "", "state": "NRW", "tags": "Pop"},
+            {"name": "Deutschlandfunk", "url": "https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3", "favicon": "", "state": "Bundesweit", "tags": "Info"},
+            {"name": "R.SA", "url": "http://streams.rsa-sachsen.de/rsa-live/mp3-192/rsamediaplayer", "favicon": "", "state": "Sachsen", "tags": "Pop"},
+            {"name": "Radio SAW", "url": "https://stream.radiosaw.de/saw/mp3-192/radio-browser/", "favicon": "", "state": "Sachsen-Anhalt", "tags": "Pop"},
+        ]
+        # Wenn RADIO_STATIONS viele Einträge hat (z. B. aus stations.py), diese anzeigen
+        raw = list(RADIO_STATIONS)[:50] if RADIO_STATIONS else minimal
+        if len(raw) < 10:
+            raw = minimal
+        sources = []
+        for s in raw:
+            if not isinstance(s, dict):
+                continue
+            url = (s.get("url") or s.get("stream_url") or "").strip()
+            sources.append({
+                "name": (s.get("name") or "?").strip(),
+                "url": url,
+                "favicon": (s.get("favicon") or s.get("logo_url") or "").strip(),
+                "state": (s.get("state") or s.get("region") or "").strip(),
+                "tags": (s.get("tags") or s.get("genre") or "").strip(),
+            })
+        if not sources:
+            sources = minimal
+        try:
+            self._list.itemChanged.disconnect(self._on_item_check_changed)
+        except Exception:
+            pass
+        self._list.clear()
+        for s in sources:
+            if not isinstance(s, dict):
+                continue
+            name = (s.get("name") or "?").strip()
+            url = (s.get("url") or s.get("stream_url") or "").strip()
+            st = {"name": name, "url": url, "favicon": s.get("favicon") or s.get("logo_url") or "", "state": s.get("state") or s.get("region") or "", "tags": s.get("tags") or s.get("genre") or ""}
+            item = QListWidgetItem(name)
+            item.setData(Qt.ItemDataRole.UserRole, st)
+            item.setFlags(list_flags)
+            item.setCheckState(Qt.CheckState.Checked if _normalize_favorite_url(url) in self._favorite_urls else Qt.CheckState.Unchecked)
+            self._list.addItem(item)
+        try:
+            self._list.itemChanged.connect(self._on_item_check_changed)
+        except Exception:
+            pass
 
     def _station_to_fav(self, s: dict) -> dict:
         url = (s.get("url") or s.get("stream_url") or "").strip()
@@ -983,9 +1379,9 @@ class StationListDialog(QDialog):
         if not url:
             return
         checked = item.checkState() == Qt.CheckState.Checked
-        self._favorite_urls = {f.get("stream_url") or f.get("url") or "" for f in self._current_favorites}
+        self._rebuild_favorite_urls_set()
         if checked:
-            if url in self._favorite_urls:
+            if _normalize_favorite_url(url) in self._favorite_urls:
                 return
             if len(self._current_favorites) >= FAVORITES_MAX:
                 QMessageBox.information(self, "Favoriten", f"Maximal {FAVORITES_MAX} Sender.")
@@ -995,7 +1391,8 @@ class StationListDialog(QDialog):
             self._current_favorites.append(fav)
             self._add_station = fav
         else:
-            self._current_favorites = [f for f in self._current_favorites if (f.get("stream_url") or f.get("url") or "").strip() != url]
+            norm = _normalize_favorite_url(url)
+            self._current_favorites = [f for f in self._current_favorites if _normalize_favorite_url(f.get("stream_url") or f.get("url") or "") != norm]
         save_favorites(self._current_favorites)
         if self.parent():
             self.parent()._reload_favorites()
@@ -1023,6 +1420,8 @@ class StationListDialog(QDialog):
                     {"name": "1Live", "url": "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", "favicon": "", "state": "NRW", "tags": "Pop"},
                     {"name": "WDR 2", "url": "https://wdr-wdr2-rheinruhr.icecastssl.wdr.de/wdr/wdr2/rheinruhr/mp3/128/stream.mp3", "favicon": "", "state": "NRW", "tags": "Pop"},
                     {"name": "Deutschlandfunk", "url": "https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3", "favicon": "", "state": "Bundesweit", "tags": "Info"},
+                    {"name": "R.SA", "url": "http://streams.rsa-sachsen.de/rsa-live/mp3-192/rsamediaplayer", "favicon": "", "state": "Sachsen", "tags": "Pop"},
+                    {"name": "Radio SAW", "url": "https://stream.radiosaw.de/saw/mp3-192/radio-browser/", "favicon": "", "state": "Sachsen-Anhalt", "tags": "Pop"},
                 ]
 
                 def add_minimal():
@@ -1030,7 +1429,7 @@ class StationListDialog(QDialog):
                         item = QListWidgetItem(s["name"])
                         item.setData(Qt.ItemDataRole.UserRole, s)
                         item.setFlags(list_flags)
-                        item.setCheckState(Qt.CheckState.Checked if (s.get("url") or "") in self._favorite_urls else Qt.CheckState.Unchecked)
+                        item.setCheckState(Qt.CheckState.Checked if _normalize_favorite_url(s.get("url") or "") in self._favorite_urls else Qt.CheckState.Unchecked)
                         self._list.addItem(item)
 
                 try:
@@ -1038,7 +1437,7 @@ class StationListDialog(QDialog):
                 except Exception:
                     pass
                 self._list.clear()
-                self._favorite_urls = {f.get("stream_url") or f.get("url") or "" for f in self._current_favorites}
+                self._rebuild_favorite_urls_set()
 
                 def matches(s: dict, q: str) -> bool:
                     if not q:
@@ -1055,6 +1454,8 @@ class StationListDialog(QDialog):
                         {"name": "1Live", "stream_url": "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", "logo_url": "", "region": "NRW", "genre": "Pop"},
                         {"name": "WDR 2", "stream_url": "https://wdr-wdr2-rheinruhr.icecastssl.wdr.de/wdr/wdr2/rheinruhr/mp3/128/stream.mp3", "logo_url": "", "region": "NRW", "genre": "Pop"},
                         {"name": "Deutschlandfunk", "stream_url": "https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3", "logo_url": "", "region": "Bundesweit", "genre": "Info"},
+                        {"name": "R.SA", "stream_url": "http://streams.rsa-sachsen.de/rsa-live/mp3-192/rsamediaplayer", "logo_url": "", "region": "Sachsen", "genre": "Pop"},
+                        {"name": "Radio SAW", "stream_url": "https://stream.radiosaw.de/saw/mp3-192/radio-browser/", "logo_url": "", "region": "Sachsen-Anhalt", "genre": "Pop"},
                     ]
                 q = search_name_copy.strip().lower()
 
@@ -1067,7 +1468,7 @@ class StationListDialog(QDialog):
                             item = QListWidgetItem(display_name)
                             item.setData(Qt.ItemDataRole.UserRole, st)
                             item.setFlags(list_flags)
-                            item.setCheckState(Qt.CheckState.Checked if (st.get("url") or "") in self._favorite_urls else Qt.CheckState.Unchecked)
+                            item.setCheckState(Qt.CheckState.Checked if _normalize_favorite_url(st.get("url") or "") in self._favorite_urls else Qt.CheckState.Unchecked)
                             self._list.addItem(item)
                     else:
                         to_show = [s for s in stations_copy if isinstance(s, dict) and matches(s, q)] if q else stations_copy
@@ -1079,23 +1480,114 @@ class StationListDialog(QDialog):
                             item = QListWidgetItem(station_name)
                             item.setData(Qt.ItemDataRole.UserRole, s)
                             item.setFlags(list_flags)
-                            item.setCheckState(Qt.CheckState.Checked if url in self._favorite_urls else Qt.CheckState.Unchecked)
+                            item.setCheckState(Qt.CheckState.Checked if _normalize_favorite_url(url) in self._favorite_urls else Qt.CheckState.Unchecked)
                             self._list.addItem(item)
                 except Exception:
                     pass
                 if self._list.count() == 0:
                     add_minimal()
 
+                # Sortierung: Favoriten zuerst (alphabetisch), dann Rest (alphabetisch)
+                self._sort_list_favorites_first()
                 try:
                     self._list.itemChanged.connect(self._on_item_check_changed)
                 except Exception:
                     pass
+                # Icons (Favicons) asynchron nachladen
+                QTimer.singleShot(100, self._load_station_icons)
 
             QTimer.singleShot(0, apply)
         threading.Thread(target=do, daemon=True).start()
 
+    def _sort_list_favorites_first(self):
+        """Liste so sortieren: zuerst Favoriten (alphabetisch), dann Rest (alphabetisch)."""
+        try:
+            self._list.itemChanged.disconnect(self._on_item_check_changed)
+        except Exception:
+            pass
+        items_data = []
+        for row in range(self._list.count()):
+            it = self._list.item(row)
+            if it is None:
+                continue
+            name = (it.text() or "").strip()
+            checked = it.checkState() == Qt.CheckState.Checked
+            data = it.data(Qt.ItemDataRole.UserRole)
+            items_data.append((0 if checked else 1, name.lower(), name, data, checked))
+        items_data.sort(key=lambda x: (x[0], x[1]))
+        self._list.clear()
+        list_flags = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable
+        for _order, _key, name, data, checked in items_data:
+            item = QListWidgetItem(name)
+            item.setData(Qt.ItemDataRole.UserRole, data)
+            item.setFlags(list_flags)
+            item.setCheckState(Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
+            self._list.addItem(item)
+        try:
+            self._list.itemChanged.connect(self._on_item_check_changed)
+        except Exception:
+            pass
+
+    def _set_icon_for_row(self, row: int, data: bytes):
+        """Hauptthread: Icon für eine Zeile setzen (von Favicon-Daten)."""
+        if row < 0 or row >= self._list.count():
+            return
+        item = self._list.item(row)
+        if not item:
+            return
+        pix = QPixmap()
+        if pix.loadFromData(data) and not pix.isNull():
+            item.setIcon(QIcon(pix.scaled(28, 28, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)))
+
+    def _load_station_icons(self):
+        """Favicons für alle Sender in der Liste asynchron laden (Worker-Thread, UI-Updates im Hauptthread)."""
+        for row in range(self._list.count()):
+            item = self._list.item(row)
+            if not item:
+                continue
+            s = item.data(Qt.ItemDataRole.UserRole)
+            if not s or not isinstance(s, dict):
+                continue
+            favicon = (s.get("favicon") or s.get("logo_url") or "").strip()
+            if not favicon:
+                continue
+            r = row
+
+            def fetch_and_set(url: str, row_index: int):
+                try:
+                    req = urllib.request.Request(url, headers={"User-Agent": "DSI-Radio/1.0"})
+                    with urllib.request.urlopen(req, timeout=3) as resp:
+                        data = resp.read()
+                    if data:
+                        QTimer.singleShot(0, lambda: self._set_icon_for_row(row_index, data))
+                except Exception:
+                    pass
+            threading.Thread(target=fetch_and_set, args=(favicon, r), daemon=True).start()
+
     def get_added_station(self):
         return getattr(self, "_add_station", None)
+
+
+class DraggableTitleBar(QFrame):
+    """Titelleiste zum Verschieben des Frameless-Fensters per Maus."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._drag_start = None
+
+    def mousePressEvent(self, e):
+        if e.button() == Qt.MouseButton.LeftButton:
+            self._drag_start = e.globalPosition().toPoint()
+
+    def mouseMoveEvent(self, e):
+        if self._drag_start is not None:
+            win = self.window()
+            if win:
+                win.move(win.pos() + e.globalPosition().toPoint() - self._drag_start)
+                self._drag_start = e.globalPosition().toPoint()
+
+    def mouseReleaseEvent(self, e):
+        if e.button() == Qt.MouseButton.LeftButton:
+            self._drag_start = None
 
 
 class DsiRadioWindow(QMainWindow):
@@ -1113,8 +1605,9 @@ class DsiRadioWindow(QMainWindow):
         self._startStreamTimersRequested.connect(self.startStreamTimersSlot)
         self._backendStatusChanged.connect(self._set_backend_led)
         self._metadataApplyRequested.connect(self._apply_pending_metadata_slot)
-        self.setWindowTitle(f"{WINDOW_TITLE} v{RADIO_APP_VERSION}")
+        self.setWindowTitle(WINDOW_TITLE)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._gst_player = gst_player.GstPlayer() if gst_player.is_available() else None
         self._gst_bus_timer = QTimer(self)
         self._gst_bus_timer.timeout.connect(self._gst_poll_bus)
@@ -1145,46 +1638,44 @@ class DsiRadioWindow(QMainWindow):
         # Backend-Status prüfen (LED grün/rot), alle 5 s – Start aus showEvent (zentraler Slot)
         self._backend_check_timer = QTimer(self)
         self._backend_check_timer.timeout.connect(self._check_backend_for_led)
-        QTimer.singleShot(500, self._check_backend_for_led)  # Erste Prüfung kurz nach Start
+        QTimer.singleShot(1500, self._check_backend_for_led)  # Erste Prüfung verzögert, damit Fenster schneller erscheint
         # Player, Favorites und Theme nach UI-Build laden (nicht-blockierend)
         QTimer.singleShot(0, self._load_data_async)
 
     def _load_data_async(self):
-        """Lädt Favorites und Theme asynchron nach UI-Build. Ab v2.0: GStreamer, kein externer Player."""
+        """Lädt Favorites und Theme nach UI-Build; schwere Schritte verzögert, damit Fenster schnell erscheint."""
         self._favorites = load_favorites()
         self._theme = load_theme()
-        # Beim Start: letzten gespielten Sender wiederherstellen, falls noch in Favoriten
         last = load_last_station()
         last_url = (last or {}).get("stream_url") or (last or {}).get("url") or ""
         if last_url and self._favorites:
             for f in self._favorites:
                 if ((f.get("stream_url") or f.get("url") or "").strip() == last_url.strip()):
                     self._current_station = f
-                    # UI sofort aktualisieren, damit Logo und Sendername vom zuletzt angehörten Sender erscheinen
                     if hasattr(self, "_station_label"):
                         self._station_label.setText(f.get("name", "—"))
                     if hasattr(self, "_show_label"):
                         self._show_label.setText("Es läuft:")
-                    self._update_senderinfo()
-                    self._update_logo()
                     break
         if self._favorites and not self._current_station:
             self._current_station = self._favorites[0]
-            self._update_senderinfo()
-            self._update_logo()
-        # Sender-Buttons (Favoriten) neu aufbauen, nachdem Favoriten geladen wurden
+            if hasattr(self, "_station_label"):
+                self._station_label.setText(self._current_station.get("name", "—"))
+        # Schwere Schritte (Buttons, Logo, Display-Config) nach kurzer Verzögerung → Fenster erscheint zuerst
+        QTimer.singleShot(5, self._deferred_after_load)
+
+    def _deferred_after_load(self):
+        """Nach Start: Sender-Buttons, Logo, Anzeige-Optionen (fenster war schon sichtbar)."""
+        self._update_senderinfo()
+        self._update_logo()
         self._rebuild_station_buttons()
-        # Nochmals nach kurzer Verzögerung, damit die 20 Favoriten-Buttons sicher angezeigt werden
-        QTimer.singleShot(300, self._rebuild_station_buttons)
-        # Anzeige-Optionen aus PI-Installer (display.json)
         disp = load_display_config()
         if hasattr(self, "_clock_label"):
             self._clock_label.setVisible(disp.get("show_clock", True))
         if hasattr(self, "_vu_mode_slider"):
             self._vu_mode_slider.setValue(1 if disp.get("vu_mode") == "analog" else 0)
             self._on_vu_slider(self._vu_mode_slider.value())
-        # Hintergrund: Streams prüfen, Senderliste aktualisieren (einmal pro Start)
-        threading.Thread(target=self._background_station_update, daemon=True).start()
+        QTimer.singleShot(2000, lambda: threading.Thread(target=self._background_station_update, daemon=True).start())
 
     def _reload_favorites(self):
         self._favorites = load_favorites()
@@ -1248,7 +1739,7 @@ class DsiRadioWindow(QMainWindow):
         self._backend_ok = ok
         color = "#16a34a" if ok else "#dc2626"  # grün / rot
         self._backend_led.setStyleSheet(
-            f"QLabel#backendLed {{ background-color: {color}; border-radius: 7px; border: 1px solid #0f172a; }}"
+            f"QLabel#backendLed {{ background-color: {color}; border-radius: 7px; border: 1px solid #c0c0c0; }}"
         )
 
     def _check_stream_reachable(self, url: str, timeout: float = 3.0) -> bool:
@@ -1294,52 +1785,106 @@ class DsiRadioWindow(QMainWindow):
         self._apply_theme(self._theme)
         # Portrait Standard (DSI 480×800); bei Start ohne Skript trotzdem Portrait
         portrait = os.environ.get("PI_INSTALLER_DSI_PORTRAIT", "1").lower() in ("1", "true", "yes")
+        screen = QApplication.primaryScreen()
+        is_desktop = bool(screen and screen.availableGeometry().width() >= 800 and screen.availableGeometry().height() >= 640)
+        disp_cfg = load_display_config()
+        display_max_width = disp_cfg.get("display_max_width", 600)
+        display_font_scale = disp_cfg.get("display_font_scale", 0.85)
+        self._is_desktop = is_desktop
         central = QWidget()
+        central.setStyleSheet("""
+            background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 #1e293b, stop:0.3 #0f172a, stop:0.7 #1e293b, stop:1 #334155);
+            border: 1px solid #475569;
+            border-radius: 16px;
+        """)
+        central.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        central.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setCentralWidget(central)
         main_v = QVBoxLayout(central)
-        main_v.setContentsMargins(4, 0, 4, 8)
+        main_v.setContentsMargins(8, 8, 8, 10)
         main_v.setSpacing(6)
 
-        # Obere Leiste: Datum/Uhrzeit links, Rot/Grün-Sensor-Button (Aus/An) rechts
-        top_bar = QFrame()
-        top_bar.setStyleSheet("background: #1e293b; border: none; border-radius: 0; padding: 4px 6px;")
-        top_bar.setFixedHeight(40)
+        # Titelleiste: App-Name größer, Untertitel darunter kleiner; ziehbar → Fenster verschieben
+        top_bar = DraggableTitleBar()
+        top_bar.setStyleSheet("background: #0a0a0a; border: none; padding: 2px 6px;")
+        top_bar.setFixedHeight(48)
         top_bar_layout = QHBoxLayout(top_bar)
-        top_bar_layout.setContentsMargins(8, 4, 6, 4)
+        top_bar_layout.setContentsMargins(8, 2, 6, 2)
         top_bar_layout.setSpacing(8)
-        clock_font = QFont("Sans", 14, QFont.Weight.Bold)
+        title_block = QWidget()
+        title_block.setStyleSheet("background: transparent; border: none;")
+        title_block_layout = QVBoxLayout(title_block)
+        title_block_layout.setContentsMargins(0, 6, 0, 0)
+        title_block_layout.setSpacing(2)
+        title_row = QHBoxLayout()
+        title_row.setContentsMargins(0, 0, 0, 0)
+        title_row.setSpacing(4)
+        self._title_label_bar = QLabel("Sabrina Tuner")
+        self._title_label_bar.setFont(QFont("Sans", 14, QFont.Weight.Bold))
+        self._title_label_bar.setStyleSheet("color: #e2e8f0; border: none; background: transparent;")
+        self._title_label_bar.setMinimumHeight(20)
+        title_row.addWidget(self._title_label_bar)
+        self._valentine_heart = QLabel("❤")
+        self._valentine_heart.setStyleSheet("color: #dc2626; font-size: 22px; border: none; background: transparent;")
+        self._valentine_heart.setVisible(datetime.now().month == 2 and datetime.now().day == 14)
+        title_row.addWidget(self._valentine_heart, 0, Qt.AlignmentFlag.AlignVCenter)
+        title_block_layout.addLayout(title_row)
+        self._subtitle_label_bar = QLabel("VU-Meter + Titel/Interpret")
+        self._subtitle_label_bar.setFont(QFont("Sans", 9))
+        self._subtitle_label_bar.setStyleSheet("color: #94a3b8; border: none; background: transparent;")
+        self._subtitle_label_bar.setMinimumHeight(14)
+        title_block_layout.addWidget(self._subtitle_label_bar)
+        top_bar_layout.addWidget(title_block, 0, Qt.AlignmentFlag.AlignVCenter)
+        top_bar_layout.addStretch(1)
+        clock_font = QFont("Sans", 12, QFont.Weight.Bold)
         self._clock_label = QLabel()
         self._clock_label.setFont(clock_font)
         self._clock_label.setStyleSheet("color: #94a3b8; border: none;")
-        self._clock_label.setMinimumWidth(180)
+        self._clock_label.setMinimumWidth(120)
+        self._clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._clock_label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
         top_bar_layout.addWidget(self._clock_label, 0, Qt.AlignmentFlag.AlignVCenter)
         top_bar_layout.addStretch(1)
-        # Runde LED: Grün = Backend läuft, Rot = Backend nicht erreichbar (Senderliste/Metadaten)
+        # Backend-LED mit silbernem Kreis
         self._backend_led = QLabel()
         self._backend_led.setObjectName("backendLed")
         self._backend_led.setFixedSize(14, 14)
         self._backend_led.setToolTip("Backend-Status: Grün = erreichbar, Rot = nicht erreichbar")
         self._backend_led.setStyleSheet(
-            "QLabel#backendLed { background-color: #dc2626; border-radius: 7px; border: 1px solid #0f172a; }"
+            "QLabel#backendLed { background-color: #dc2626; border-radius: 7px; border: 1px solid #c0c0c0; }"
         )
         top_bar_layout.addWidget(self._backend_led, 0, Qt.AlignmentFlag.AlignVCenter)
-        # Rot/Grüner Sensor-Button: Grün = An, Klick = Radio beenden (kompakt für DSI-Bereich)
-        self._close_btn = QPushButton("Aus")
-        self._close_btn.setMinimumSize(32, 14)
-        self._close_btn.setMaximumSize(40, 18)
-        self._close_btn.setToolTip("Radio beenden")
+        # Minimize-Button (Größe wie Backend-LED: 14×14)
+        self._min_btn = QPushButton("−")
+        self._min_btn.setFixedSize(14, 14)
+        self._min_btn.setToolTip("Minimieren")
+        self._min_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._min_btn.setStyleSheet("QPushButton { background: #334155; color: #e2e8f0; border: 1px solid #475569; border-radius: 3px; font-size: 10px; font-weight: bold; padding: 0; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px; } QPushButton:hover { background: #475569; }")
+        self._min_btn.clicked.connect(self.showMinimized)
+        top_bar_layout.addWidget(self._min_btn, 0, Qt.AlignmentFlag.AlignVCenter)
+        # Maximize-Button (Größe wie Backend-LED: 14×14)
+        self._max_btn = QPushButton("□")
+        self._max_btn.setFixedSize(14, 14)
+        self._max_btn.setToolTip("Vergrößern / Wiederherstellen")
+        self._max_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._max_btn.setStyleSheet("QPushButton { background: #334155; color: #e2e8f0; border: 1px solid #475569; border-radius: 3px; font-size: 9px; padding: 0; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px; } QPushButton:hover { background: #475569; }")
+        self._max_btn.clicked.connect(self._toggle_maximized)
+        top_bar_layout.addWidget(self._max_btn, 0, Qt.AlignmentFlag.AlignVCenter)
+        # Ausschalter: deutlich kleiner, runder Metall-Button mit Power-Symbol
+        self._close_btn = QPushButton("⏻")
+        self._close_btn.setFixedSize(20, 20)
+        self._close_btn.setToolTip("Radio beenden (Ausschalter)")
         self._close_btn.clicked.connect(self.close)
         self._close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._close_btn.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 #dc2626, stop:0.5 #dc2626, stop:0.5 #16a34a, stop:1 #16a34a);
-                color: white; font-weight: bold; font-size: 11px;
-                border: 1px solid #0f172a; border-radius: 3px;
-                padding: 0 3px;
-                min-height: 16px;
+                background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #e2e8f0, stop:0.5 #64748b, stop:1 #475569);
+                color: #1e293b; font-weight: bold; font-size: 10px;
+                border: 1px solid #94a3b8; border-radius: 10px;
+                min-width: 20px; max-width: 20px; min-height: 20px; max-height: 20px;
             }
-            QPushButton:hover { border-color: #fbbf24; }
+            QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #f1f5f9, stop:0.5 #cbd5e1, stop:1 #94a3b8); }
+            QPushButton:pressed { background: #64748b; }
         """)
         top_bar_layout.addWidget(self._close_btn, 0, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
         main_v.addWidget(top_bar)
@@ -1349,40 +1894,53 @@ class DsiRadioWindow(QMainWindow):
         card.setObjectName("display")
         card.setStyleSheet("background: transparent; border: none;")
         
-        # Schwarzer Rahmen, schlank – mehr Platz für Anzeige
+        # Display-Container ohne Rahmen (Rahmen um Anzeigeinstrumente entfernt)
         black_frame = QFrame()
-        black_frame.setStyleSheet("""
-            background: #0c0c0c;
-            border: 2px solid #000000;
-            border-radius: 4px;
-            padding: 0;
-        """)
+        black_frame.setStyleSheet("background: transparent; border: none; padding: 0;")
         black_frame_layout = QVBoxLayout(black_frame)
-        black_frame_layout.setContentsMargins(3, 3, 3, 3)
+        black_frame_layout.setContentsMargins(0, 0, 0, 0)
         black_frame_layout.setSpacing(0)
         
-        # Weißes Display mit Logo links, Text rechts – feste Höhe für stabile Anzeige
+        # Weißes Display (max. Breite aus Einstellungen, Standard 600 px)
         green_display = QFrame()
-        green_display.setStyleSheet("background: #ffffff; border: none; border-radius: 0px; padding: 4px;")
-        display_height = 280 if portrait else 200
+        green_display.setStyleSheet("""
+            background: #ffffff;
+            border: 1px solid #94a3b8;
+            border-radius: 8px;
+            padding: 4px;
+        """)
+        # Desktop: Display maximal 480 px Höhe, 640 px Breite; DSI/Portrait unverändert
+        display_height = 480 if is_desktop else (292 + 200 + 80)
         green_display.setFixedHeight(display_height)
+        green_display.setMaximumHeight(480)
+        if is_desktop:
+            green_display.setMaximumWidth(640)
         self._radio_display_frame = green_display
-        self._radio_display_logo_width = 85 if portrait else 97
+        logo_base = 120 if portrait else 130  # Größeres Logo (z. B. Energy gut lesbar)
+        self._radio_display_logo_width = logo_base
         green_display_layout = QVBoxLayout(green_display)
-        green_display_layout.setContentsMargins(4, 4, 4, 4)
+        green_display_layout.setContentsMargins(3, 0, 3, 3)
         green_display_layout.setSpacing(0)
+        # Test: Breite/Höhe oben rechts im Display
+        self._display_size_label = QLabel()
+        self._display_size_label.setStyleSheet("color: #64748b; font-size: 9px; border: none; background: transparent;")
+        self._display_size_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        display_top_row = QHBoxLayout()
+        display_top_row.setContentsMargins(0, 0, 0, 2)
+        display_top_row.addStretch(1)
+        display_top_row.addWidget(self._display_size_label, 0)
+        green_display_layout.addLayout(display_top_row, 0)
         
         # Hauptbereich: Logo links, Text rechts (geringer Abstand zwischen Logo und Sendername/Titel)
         content_row = QHBoxLayout()
         content_row.setContentsMargins(0, 0, 0, 0)
         content_row.setSpacing(2)
         
-        # Logo-Bereich: nochmals 5 px verkleinert, damit links/rechts nicht abgeschnitten
+        # Logo-Bereich: 10 % größer
         logo_container = QVBoxLayout()
         logo_container.setSpacing(2)
         self._logo_label = QLabel()
-        # Logobereich: Portrait 85×85, Landscape 97×97
-        logo_max = 85 if portrait else 97
+        logo_max = self._radio_display_logo_width  # 94 (Portrait) bzw. 107 (Landscape)
         self._logo_label.setFixedSize(logo_max, logo_max)
         self._logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._logo_label.setStyleSheet("background-color: transparent; border: none; color: #0f172a; font-size: 20px;")
@@ -1394,7 +1952,8 @@ class DsiRadioWindow(QMainWindow):
         self._quality_label.setFont(QFont("Sans", 11))
         self._quality_label.setStyleSheet("color: #0f172a; border: none;")
         self._quality_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._quality_label.setMaximumHeight(18)
+        self._quality_label.setMinimumHeight(18)
+        self._quality_label.setMaximumHeight(24)
         logo_container.addWidget(self._quality_label)
         logo_container.addStretch()
         content_row.addLayout(logo_container, 0)
@@ -1404,115 +1963,170 @@ class DsiRadioWindow(QMainWindow):
         text_container.setSpacing(3)
         text_container.setContentsMargins(0, 0, 0, 0)
         
+        self._display_font_scale = display_font_scale
         self._station_label = QLabel(self._current_station.get("name", "—"))
-        self._station_label.setFont(QFont("Sans", 22, QFont.Weight.Bold))
+        base_station = max(10, int(22 * display_font_scale))
+        self._station_label.setFont(QFont("Sans", base_station, QFont.Weight.Bold))
         self._station_label.setStyleSheet("color: #0f172a; border: none;")
-        self._station_label.setMinimumHeight(32)
+        self._station_label.setMinimumHeight(34)
         self._station_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
         text_container.addWidget(self._station_label)
         
         # Musikrichtung / Bereich (z. B. Sachsen-Anhalt, 70er)
         self._genre_label = QLabel(self._current_station.get("genre", ""))
-        self._genre_label.setFont(QFont("Sans", 14))
+        self._genre_label.setFont(QFont("Sans", max(9, int(14 * display_font_scale))))
         self._genre_label.setStyleSheet("color: #0f172a; border: none;")
         text_container.addWidget(self._genre_label)
         
-        # Laufende Sendung / Moderator („Es läuft:“ – darf zweizeilig sein)
+        # Laufende Sendung / Moderator („Es läuft:“ + Inhalt – nicht abschneiden)
         self._show_label = QLabel("")
-        self._show_label.setFont(QFont("Sans", 12))
+        self._show_label.setFont(QFont("Sans", max(9, int(12 * display_font_scale))))
         self._show_label.setStyleSheet("color: #0f172a; border: none;")
         self._show_label.setWordWrap(True)
-        self._show_label.setMinimumHeight(36)
-        self._show_label.setMaximumHeight(80)
-        self._show_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        self._show_label.setMinimumHeight(38)
+        self._show_label.setMaximumHeight(150)
+        self._show_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         text_container.addWidget(self._show_label)
         
         # Titel (Liedtitel oder „Interpret – Titel“)
         self._title_label = QLabel("")
-        self._title_label.setFont(QFont("Sans", 14, QFont.Weight.Bold))
+        self._title_label.setFont(QFont("Sans", max(10, int(14 * display_font_scale)), QFont.Weight.Bold))
         self._title_label.setStyleSheet("color: #0f172a; border: none;")
         self._title_label.setWordWrap(True)
-        self._title_label.setMinimumHeight(26)
-        self._title_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        self._title_label.setMinimumHeight(28)
+        self._title_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         self._title_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         text_container.addWidget(self._title_label)
         
         # Interpret
         self._artist_label = QLabel("")
-        self._artist_label.setFont(QFont("Sans", 14))  # Gleiche Größe wie Titel, aber nicht fett
+        self._artist_label.setFont(QFont("Sans", max(10, int(14 * display_font_scale))))
         self._artist_label.setStyleSheet("color: #0f172a; border: none;")
         self._artist_label.setWordWrap(True)
-        self._artist_label.setMinimumHeight(26)  # Gleiche Höhe wie Titel
-        self._artist_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        self._artist_label.setMinimumHeight(28)
+        self._artist_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         self._artist_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         text_container.addWidget(self._artist_label)
         
         text_container.addStretch()
         content_row.addLayout(text_container, 1)
         
-        # Basis-Schriftgrößen für spätere Skalierung bei wenig Platz (siehe _update_radio_display_fonts)
+        # Basis-Schriftgrößen (mit Einstellung display_font_scale aus display.json)
         self._radio_display_font_sizes = {
-            "station": 22,
-            "genre": 14,
-            "show": 12,
-            "title": 14,
-            "artist": 14,
+            "station": max(10, int(22 * display_font_scale)),
+            "genre": max(9, int(14 * display_font_scale)),
+            "show": max(9, int(12 * display_font_scale)),
+            "title": max(10, int(14 * display_font_scale)),
+            "artist": max(10, int(14 * display_font_scale)),
         }
         green_display_layout.addLayout(content_row, 1)
         black_frame_layout.addWidget(green_display, 0)
+        if is_desktop:
+            black_frame.setMaximumHeight(480)
         
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(0, 0, 0, 0)
         card_layout.setSpacing(0)
         card_layout.addWidget(black_frame)
-        main_v.addWidget(card)
-        
+        card.setMaximumWidth(display_max_width)
+        if is_desktop:
+            card.setMaximumHeight(480)
+            display_section = QWidget()
+            display_section.setStyleSheet("background: transparent; border: none;")
+            ds_layout = QVBoxLayout(display_section)
+            ds_layout.setContentsMargins(0, 0, 0, 0)
+            ds_layout.setSpacing(6)
+            top_row = QWidget()
+            top_row.setStyleSheet("background: transparent; border: none;")
+            self._display_top_row_layout = QHBoxLayout(top_row)
+            self._display_top_row_layout.setContentsMargins(0, 0, 0, 0)
+            self._display_top_row_layout.setSpacing(8)
+            # Reihenfolge: Display links, LED-Anzeige rechts daneben
+            self._display_top_row_layout.addWidget(card, 1)
+            ds_layout.addWidget(top_row)
+
         # Restliche UI-Elemente in horizontalem Layout
         main_h = QHBoxLayout()
         main_h.setSpacing(8)
         left = QWidget()
+        left.setStyleSheet("background: transparent; border: none;")
+        left.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout = QVBoxLayout(left)
         layout.setSpacing(12 if portrait else 8)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        # VU L/R + Signal: LED oder Analog; Schiebeschalter (Digital/Analog) am rechten Rand
+        # VU L/R + Signal: kein Rahmen; Desktop: Höhe neben Display ausnutzen (größere LED-Strips)
         self._vu_mode = "led"
         self._vu_leds: List[List[QFrame]] = []
         self._vu_analog_widgets: List[AnalogGaugeWidget] = []
+        vu_frame = QFrame()
+        vu_frame.setStyleSheet("background: #0a0a0a; border: none; padding: 2px;")
+        if is_desktop:
+            vu_frame.setMinimumHeight(display_height)
+            vu_frame.setMinimumWidth(90)
+        vu_frame_layout = QHBoxLayout(vu_frame)
+        # Oben 3–5 px Abstand; LED-Labels oben am Rand, 5 px darunter die Strips (max. Display-Höhe)
+        margin_top = 4
+        label_to_strip_gap = 5
+        vu_frame_layout.setContentsMargins(2, margin_top, 2, 2)
+        vu_frame_layout.setSpacing(16 if portrait else 8)
         vu_row = QHBoxLayout()
         vu_row.setSpacing(16 if portrait else 8)
-        vu_row.setContentsMargins(0, 6 if portrait else 0, 0, 6 if portrait else 0)
+        vu_row.setContentsMargins(0, 0, 0, 0)
+        vu_row.addSpacing(5)
         led_container = QWidget()
-        led_layout = QHBoxLayout(led_container)
-        led_layout.setContentsMargins(0, 0, 0, 0)
-        led_layout.setSpacing(0)
-        for ch, lab in enumerate(["L", "R", "Signal"]):
-            if ch == 1:
-                led_layout.addSpacing(24)
-            elif ch == 2:
-                led_layout.addSpacing(48)
-            col = QVBoxLayout()
+        led_main = QVBoxLayout(led_container)
+        led_main.setContentsMargins(0, 0, 0, 0)
+        led_main.setSpacing(0)
+        strip_height = (display_height - margin_top - 14 - label_to_strip_gap - 4) if is_desktop else 100  # Labels ~14px, 5px Abstand, 4px unten
+        strip_height = max(80, strip_height)
+        _vu_label_style = "color: #facc15; font-size: 10px; font-weight: bold; border: none; background: transparent;"
+        # Zeile 1: L, R, Signal oben am Rand (Abstände wie bei Strips für Ausrichtung)
+        labels_row = QHBoxLayout()
+        labels_row.setContentsMargins(0, 0, 0, 0)
+        labels_row.setSpacing(0)
+        sp = 24 if is_desktop else 12
+        for i, lab in enumerate(["L", "R", "Signal"]):
+            if i == 1:
+                labels_row.addSpacing(sp)
+            elif i == 2:
+                labels_row.addSpacing(sp * 2)
             lbl = QLabel(lab)
-            lbl.setStyleSheet("color: #94a3b8; font-size: 10px;")
-            col.addWidget(lbl)
+            lbl.setStyleSheet(_vu_label_style)
+            lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            labels_row.addWidget(lbl, 0, Qt.AlignmentFlag.AlignCenter)
+        labels_row.addStretch(1)
+        led_main.addLayout(labels_row)
+        led_main.addSpacing(label_to_strip_gap)
+        # Zeile 2: LED-Aussteuerung / Signalstärke (5 px unter den Labels)
+        strips_row = QHBoxLayout()
+        strips_row.setContentsMargins(0, 0, 0, 0)
+        strips_row.setSpacing(0)
+        for ch in range(3):
+            if ch == 1:
+                strips_row.addSpacing(sp)
+            elif ch == 2:
+                strips_row.addSpacing(sp * 2)
             strip = QWidget()
-            strip.setFixedWidth(16)
-            strip.setFixedHeight(100)
+            strip.setFixedWidth(20 if is_desktop else 16)
+            strip.setFixedHeight(strip_height)
             strip_layout = QVBoxLayout(strip)
             strip_layout.setContentsMargins(0, 0, 0, 0)
             strip_layout.setSpacing(1)
             frames = []
+            seg_h = (strip_height - 9) // 10
+            seg_h = max(6, min(seg_h, 28))
             for _ in range(10):
                 f = QFrame()
-                f.setFixedHeight(8)
-                f.setStyleSheet("background-color: #1e293b; border-radius: 1px;")
+                f.setFixedHeight(seg_h)
+                f.setStyleSheet("background-color: #252525; border: none; border-radius: 1px;")
                 frames.append(f)
             for idx in (9, 8, 7, 6, 5, 4, 3, 2, 1, 0):
                 strip_layout.addWidget(frames[idx])
             self._vu_leds.append(frames)
-            col.addWidget(strip)
-            led_layout.addLayout(col)
-        led_layout.addStretch(1)
+            strips_row.addWidget(strip)
+        strips_row.addStretch(1)
+        led_main.addLayout(strips_row)
         vu_row.addWidget(led_container, 0)
         analog_container = QWidget()
         analog_layout = QHBoxLayout(analog_container)
@@ -1526,8 +2140,9 @@ class DsiRadioWindow(QMainWindow):
                 analog_layout.addSpacing(56 if portrait else 48)
             col = QVBoxLayout()
             lbl = QLabel(lab)
-            lbl.setStyleSheet("color: #94a3b8; font-size: 10px;")
-            col.addWidget(lbl)
+            lbl.setStyleSheet(_vu_label_style)
+            lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            col.addWidget(lbl, 0, Qt.AlignmentFlag.AlignHCenter)
             gauge = AnalogGaugeWidget(self, signal_mode=(ch == 2), size=gauge_sz)
             self._vu_analog_widgets.append(gauge)
             col.addWidget(gauge)
@@ -1538,14 +2153,16 @@ class DsiRadioWindow(QMainWindow):
         self._vu_led_container = led_container
         self._vu_analog_container = analog_container
         vu_row.addStretch(1)
-        # D/A-Schiebeschalter: schöner gestylt
+        # D/A-Schiebeschalter: kein Rahmen, D/A-Labels leuchtend gelb
         vu_switch = QWidget()
+        vu_switch.setStyleSheet("background: transparent; border: none;")
         vu_switch_layout = QVBoxLayout(vu_switch)
         vu_switch_layout.setContentsMargins(0, 0, 0, 0)
         da_row = QHBoxLayout()
         da_row.setSpacing(4)
+        da_lbl_style = "color: #facc15; font-size: 12px; font-weight: bold; background: transparent; border: none;"
         d_lbl = QLabel("D")
-        d_lbl.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: bold; background: transparent;")
+        d_lbl.setStyleSheet(da_lbl_style)
         d_lbl.setFixedWidth(16)
         d_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         da_row.addWidget(d_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
@@ -1559,97 +2176,159 @@ class DsiRadioWindow(QMainWindow):
         self._vu_mode_slider.valueChanged.connect(self._on_vu_slider)
         self._vu_mode_slider.setStyleSheet("""
             QSlider::groove:horizontal {
-                background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 #475569, stop:1 #64748b);
-                height: 18px;
-                border-radius: 9px;
-                border: 1px solid #334155;
+                background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #1e293b, stop:0.5 #334155, stop:1 #1e293b);
+                height: 14px;
+                border-radius: 7px;
+                border: 1px solid #0f172a;
             }
             QSlider::handle:horizontal {
-                background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #f1f5f9, stop:1 #cbd5e1);
-                width: 20px;
-                height: 20px;
-                margin: -1px 0;
-                border-radius: 10px;
-                border: 1px solid #64748b;
+                background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #e2e8f0, stop:0.3 #94a3b8, stop:0.5 #64748b, stop:0.7 #94a3b8, stop:1 #475569);
+                width: 18px;
+                height: 18px;
+                margin: -2px 0;
+                border-radius: 9px;
+                border: 1px solid #94a3b8;
             }
-            QSlider::sub-page:horizontal { 
-                background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 #0d9488, stop:1 #14b8a6); 
-                border-radius: 9px; 
+            QSlider::handle:horizontal:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #f1f5f9, stop:0.5 #cbd5e1, stop:1 #94a3b8); }
+            QSlider::sub-page:horizontal {
+                background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #1e293b, stop:1 #334155);
+                border-radius: 7px;
             }
-            QSlider::add-page:horizontal { 
-                background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 #475569, stop:1 #64748b); 
-                border-radius: 9px; 
+            QSlider::add-page:horizontal {
+                background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #1e293b, stop:1 #334155);
+                border-radius: 7px;
             }
         """)
         da_row.addWidget(self._vu_mode_slider, 0, Qt.AlignmentFlag.AlignCenter)
         a_lbl = QLabel("A")
-        a_lbl.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: bold; background: transparent;")
+        a_lbl.setStyleSheet(da_lbl_style)
         a_lbl.setFixedWidth(16)
         a_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         da_row.addWidget(a_lbl, 0, Qt.AlignmentFlag.AlignVCenter)
         vu_switch_layout.addLayout(da_row)
         vu_row.addWidget(vu_switch, 0, Qt.AlignmentFlag.AlignBottom)
-        layout.addLayout(vu_row)
+        vu_frame_layout.addLayout(vu_row)
+        if is_desktop:
+            self._display_top_row_layout.addWidget(vu_frame, 0)
+            bottom_row = QWidget()
+            bottom_row.setStyleSheet("background: transparent; border: none;")
+            bottom_row_layout = QHBoxLayout(bottom_row)
+            bottom_row_layout.setContentsMargins(0, 0, 0, 0)
+            bottom_row_layout.setSpacing(6)
+            self._spectrum_widget = SpectrumBandWidget(self, num_bands=24)
+            self._spectrum_widget.setMinimumHeight(94)
+            self._spectrum_widget.setToolTip("Frequenzbandanzeige (klassisch)")
+            self._waveform_widget = WaveformWidget(self, max_points=80)
+            self._waveform_widget.setMinimumHeight(94)
+            self._waveform_widget.setToolTip("Wellenform (Oszilloskop-Stil)")
+            bottom_row_layout.addWidget(self._spectrum_widget, 1)
+            bottom_row_layout.addWidget(self._waveform_widget, 1)
+            ds_layout.addWidget(bottom_row)
+            main_v.addWidget(display_section)
+            self._spectrum_bands = [0.0] * 24
+            self._fft_buffer: deque = deque(maxlen=128)
+        else:
+            self._spectrum_widget = None
+            self._waveform_widget = None
+            self._spectrum_bands = [0.0] * 24
+            self._fft_buffer = deque(maxlen=1)
+        if not is_desktop:
+            main_v.addWidget(card)
+            layout.addWidget(vu_frame)
 
-        # Sender-Buttons + rechts: Lautstärke oberhalb, Umschalter (1/2 ▶) darunter
+        # Sender-Buttons + rechts: Lautstärkeregler und Umschaltbutton als getrennte Komponenten
         self._btn_container = QWidget()
+        self._btn_container.setStyleSheet("background: transparent; border: none;")
+        self._btn_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self._btn_layout = QGridLayout(self._btn_container)
-        self._btn_layout.setSpacing(8)
+        self._btn_layout.setSpacing(6)
         self._btn_layout.setContentsMargins(0, 0, 0, 0)
         self._station_buttons: List[QPushButton] = []
         self._page_btn: Optional[QPushButton] = None
         page_row = QHBoxLayout()
         page_row.addWidget(self._btn_container, 1)
-        right_column = QWidget()
-        right_layout = QVBoxLayout(right_column)
-        right_layout.setContentsMargins(0, 0, 0, 0)
-        right_layout.setSpacing(8)
-        vol_column = QFrame()
-        vol_column.setStyleSheet("background: #1e293b; border: 2px solid #c0c0c0; border-radius: 8px; padding: 6px;")
-        vol_column.setFixedWidth(44)
-        vol_column.setMinimumHeight(180)
+        # Seitenumschaltbutton 50 % größer, rechts neben die Senderbuttons
+        page_btn_wrapper = QWidget()
+        page_btn_wrapper.setStyleSheet("background: transparent; border: none;")
+        page_btn_layout = QVBoxLayout(page_btn_wrapper)
+        page_btn_layout.setContentsMargins(4, 0, 4, 0)
+        page_btn_layout.setSpacing(0)
+        self._page_btn = QPushButton(">")
+        self._page_btn.setObjectName("pageSwitchBtn")
+        self._page_btn.setFixedHeight(15)
+        self._page_btn.setFixedWidth(12)
+        self._page_btn.setToolTip("Seite wechseln")
+        self._page_btn.setStyleSheet(
+            "QPushButton#pageSwitchBtn { color: #fde047; font-size: 14px; font-weight: bold; background: #334155; border: 1px solid #64748b; border-radius: 1px; min-width: 12px; min-height: 15px; padding: 1px; line-height: 1; } "
+            "QPushButton#pageSwitchBtn:hover { color: #fef08a; background: #475569; border-color: #94a3b8; } "
+        )
+        self._page_btn.clicked.connect(self._toggle_favorites_page)
+        page_btn_layout.addWidget(self._page_btn, 0, Qt.AlignmentFlag.AlignCenter)
+        page_row.addWidget(page_btn_wrapper, 0, Qt.AlignmentFlag.AlignBottom)
+        page_row.addStretch(1)
+        # Trennlinie, dann Lautstärkeregler weiter rechts
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.VLine)
+        sep.setStyleSheet("background: #475569; max-width: 1px; border: none;")
+        sep.setFixedWidth(1)
+        page_row.addWidget(sep, 0, Qt.AlignmentFlag.AlignVCenter)
+        vol_column = QWidget()
+        vol_column.setStyleSheet("background: transparent; border: none; padding: 0;")
+        vol_column.setFixedWidth(56)
+        vol_column.setMinimumHeight(320)
         vol_layout = QVBoxLayout(vol_column)
-        vol_layout.setContentsMargins(4, 6, 4, 6)
-        vol_layout.setSpacing(4)
-        vol_lbl = QLabel("Lautstärke")
-        vol_lbl.setStyleSheet("color: #94a3b8; font-size: 10px;")
+        vol_layout.setContentsMargins(0, 0, 0, 0)
+        vol_layout.setSpacing(5)  # 5 px unter dem Lautstärkesymbol
+        vol_lbl = QLabel("▶")
+        vol_lbl.setStyleSheet("color: #facc15; font-size: 14px; font-weight: bold; border: none;")
         vol_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         vol_layout.addWidget(vol_lbl, 0, Qt.AlignmentFlag.AlignCenter)
         self._volume_slider = QSlider(Qt.Orientation.Vertical)
         self._volume_slider.setMinimum(0)
         self._volume_slider.setMaximum(100)
         self._volume_slider.setValue(100)
+        self._volume_slider.setMinimumHeight(220)
         self._volume_slider.valueChanged.connect(self._on_volume_changed)
         self._volume_slider.setStyleSheet("""
-            QSlider::groove:vertical { background: #475569; width: 12px; border-radius: 6px; margin: 0 2px; }
-            QSlider::handle:vertical { background: #0f172a; height: 24px; width: 24px; margin: 0 -6px; border-radius: 12px; }
-            QSlider::sub-page:vertical { background: #64748b; border-radius: 6px; }
-            QSlider::add-page:vertical { background: #475569; border-radius: 6px; }
+            QSlider::groove:vertical {
+                background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 #1e293b, stop:0.5 #334155, stop:1 #1e293b);
+                width: 14px; border-radius: 7px; margin: 0 4px;
+                border: 1px solid #0f172a;
+                min-height: 220px;
+            }
+            QSlider::handle:vertical {
+                background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #e2e8f0, stop:0.3 #94a3b8, stop:0.5 #64748b, stop:0.7 #94a3b8, stop:1 #475569);
+                height: 24px; width: 24px; margin: 0 -5px;
+                border-radius: 12px;
+                border: 1px solid #94a3b8;
+            }
+            QSlider::handle:vertical:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #f1f5f9, stop:0.5 #cbd5e1, stop:1 #94a3b8); }
+            QSlider::sub-page:vertical { background: #475569; border-radius: 7px; border: none; }
+            QSlider::add-page:vertical { background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 #1e293b, stop:1 #334155); border-radius: 7px; border: none; }
         """)
         vol_layout.addWidget(self._volume_slider, 1, Qt.AlignmentFlag.AlignCenter)
-        right_layout.addWidget(vol_column, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        self._page_btn = QPushButton("1/2 ▶")
-        self._page_btn.setFixedHeight(36)
-        self._page_btn.setFixedWidth(56)
-        self._page_btn.setToolTip("Seite wechseln")
-        self._page_btn.clicked.connect(self._toggle_favorites_page)
-        right_layout.addWidget(self._page_btn, 0, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
-        page_row.addWidget(right_column, 0, Qt.AlignmentFlag.AlignBottom)
+        page_row.addWidget(vol_column, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignBottom)
         layout.addLayout(page_row)
         self._rebuild_station_buttons()
 
-        # Senderliste (Abspielen/Pause entfernt – Sender startet beim Klick, Platz 1 beim ersten Start)
-        row = QHBoxLayout()
-        list_btn = QPushButton("📻 Senderliste")
-        list_btn.setMinimumHeight(48)
-        list_btn.setObjectName("play")
-        list_btn.clicked.connect(self._open_station_list)
-        row.addWidget(list_btn)
-        layout.addLayout(row)
+        # Senderliste-Button: 22 px Höhe (4 px mehr als zuvor), ohne Rahmen
+        self._list_btn = QPushButton("📻 Senderliste")
+        self._list_btn.setToolTip("Senderliste öffnen")
+        self._list_btn.setFixedHeight(22)
+        self._list_btn.setMinimumWidth(120)
+        self._list_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._list_btn.setObjectName("listBtn")
+        self._list_btn.setStyleSheet(
+            "QPushButton#listBtn { background-color: #334155; color: #e2e8f0; border: 1px solid #64748b; border-radius: 4px; padding: 0 8px; font-size: 11px; min-height: 22px; max-height: 22px; } "
+            "QPushButton#listBtn:hover { background-color: #475569; border-color: #94a3b8; } "
+        )
+        self._list_btn.clicked.connect(self._open_station_list)
+        layout.addWidget(self._list_btn)
 
         hint = QLabel("Kein Ton? Einstellungen → Sound → Ausgabegerät: Gehäuse-Lautsprecher.")
-        hint.setStyleSheet("color: #64748b; font-size: 9px;")
-        hint.setMaximumHeight(20)
+        hint.setStyleSheet("color: #64748b; font-size: 8px; border: none; background: transparent;")
+        hint.setFixedHeight(20)
+        hint.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         layout.addWidget(hint)
         
         # Audio-Ausgabegerät beim Start prüfen (reduzierte Verzögerung)
@@ -1657,17 +2336,38 @@ class DsiRadioWindow(QMainWindow):
 
         main_h.addWidget(left, 1)
         main_v.addLayout(main_h)
+        # Größen-Griff zum Vergrößern/Verkleinern des Fensters
+        grip_row = QHBoxLayout()
+        grip_row.setContentsMargins(0, 0, 0, 0)
+        grip_row.addStretch(1)
+        size_grip = QSizeGrip(self)
+        size_grip.setStyleSheet("QSizeGrip { background: #334155; border: 1px solid #475569; border-radius: 4px; width: 16px; height: 16px; }")
+        size_grip.setToolTip("Fenster vergrößern/verkleinern")
+        size_grip.setFixedSize(16, 16)
+        grip_row.addWidget(size_grip, 0, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight)
+        main_v.addLayout(grip_row)
 
         portrait = os.environ.get("PI_INSTALLER_DSI_PORTRAIT", "1").lower() in ("1", "true", "yes")
-        if portrait:
+        # Desktop-Erkennung: großer Bildschirm (≥800×640) → Desktop-Größe, sonst DSI/Portrait
+        screen = QApplication.primaryScreen()
+        is_desktop = False
+        if screen:
+            geom = screen.availableGeometry()
+            if geom.width() >= 800 and geom.height() >= 640:
+                is_desktop = True
+        if is_desktop:
+            self.setMinimumSize(800, 640)
+            self.resize(800, 640)
+        elif portrait:
             self.setMinimumSize(480, 800)
-            self.setFixedSize(480, 800)  # DSI-1 voll ausnutzen
+            self.resize(480, 800)
         else:
             self.setMinimumSize(380, 320)
             self.resize(800, 480)
         self._update_logo()
         self._update_senderinfo()
         self._update_clock()
+        self.setStyleSheet(self.styleSheet() + "\nQMainWindow { background-color: #0a0a0a; }")
         # Uhr- und Backend-Timer werden in showEvent per _startMainTimersSlot gestartet (500 ms Verzögerung)
 
     def _apply_theme(self, name: str):
@@ -1675,10 +2375,11 @@ class DsiRadioWindow(QMainWindow):
         self.setStyleSheet(THEMES.get(name, STYLE_KLAVIERLACK))
 
     def _toggle_favorites_page(self):
+        per_page = FAVORITES_PER_PAGE_DESKTOP if getattr(self, "_is_desktop", False) else FAVORITES_PER_PAGE
         total = len(self._favorites)
-        if total <= FAVORITES_PER_PAGE:
+        if total <= per_page:
             return
-        pages = (total + FAVORITES_PER_PAGE - 1) // FAVORITES_PER_PAGE
+        pages = (total + per_page - 1) // per_page
         self._favorites_page = (self._favorites_page + 1) % pages
         self._rebuild_station_buttons()
 
@@ -1686,11 +2387,29 @@ class DsiRadioWindow(QMainWindow):
         for b in self._station_buttons:
             b.deleteLater()
         self._station_buttons.clear()
+        per_page = FAVORITES_PER_PAGE_DESKTOP if getattr(self, "_is_desktop", False) else FAVORITES_PER_PAGE
+        # Spalten aus verfügbarer Breite: Buttons fließen in den freien Raum
+        w = self._btn_container.width()
+        cell = STATION_BTN_WIDTH + STATION_BTN_SPACING
+        cols = max(1, min(16, w // cell)) if w > 0 else (4 if getattr(self, "_is_desktop", False) else 3)
+        self._last_btn_cols = cols
         unavailable = getattr(self, "_unavailable_stream_urls", set())
+        # Duplikate (URL + NDR 1/NDR 2 nur je einmal) entfernen
+        unique_fav = _deduplicate_favorites_ndr(_deduplicate_favorites_by_url(self._favorites))
+        if len(unique_fav) < len(self._favorites):
+            self._favorites = unique_fav
+            save_favorites(self._favorites)
         sorted_fav = sorted(self._favorites, key=lambda s: (s.get("name") or "").lower())
-        start = self._favorites_page * FAVORITES_PER_PAGE
-        page_fav = sorted_fav[start : start + FAVORITES_PER_PAGE]
-        cols = 3
+        pages = (len(sorted_fav) + per_page - 1) // per_page if sorted_fav else 1
+        if self._favorites_page >= pages:
+            self._favorites_page = max(0, pages - 1)
+        start = self._favorites_page * per_page
+        page_fav = sorted_fav[start : start + per_page]
+        btn_style_normal = (
+            "QPushButton { background-color: #334155; color: #e2e8f0; border: 1px solid #c0c0c0; border-radius: 6px; padding: 4px; font-size: 11px; } "
+            "QPushButton:hover { background-color: #475569; } "
+            "QPushButton:checked { background-color: #0d9488; color: white; border-color: #0f766e; }"
+        )
         for i, s in enumerate(page_fav):
             url = (s.get("stream_url") or s.get("url") or "").strip()
             no_stream = url in unavailable
@@ -1699,20 +2418,30 @@ class DsiRadioWindow(QMainWindow):
             b.setProperty("station_id", s.get("id"))
             b.setCheckable(True)
             b.setChecked(s.get("id") == self._current_station.get("id"))
-            b.setMinimumHeight(48)
-            b.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+            b.setFixedSize(80, 60)
+            b.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             if no_stream:
-                b.setStyleSheet("QPushButton { background-color: #dc2626; color: white; font-weight: bold; } QPushButton:checked { background-color: #b91c1c; }")
+                b.setStyleSheet("QPushButton { background-color: #dc2626; color: white; font-weight: bold; border: 1px solid #c0c0c0; border-radius: 6px; padding: 4px; font-size: 11px; } QPushButton:checked { background-color: #b91c1c; }")
                 b.setToolTip(f"{s.get('name', '?')}: Stream nicht erreichbar")
+            else:
+                b.setStyleSheet(btn_style_normal)
             b.clicked.connect(lambda checked=False, st=s: self._on_station(st))
             self._station_buttons.append(b)
             self._btn_layout.addWidget(b, i // cols, i % cols)
         if self._page_btn:
             total = len(self._favorites)
-            self._page_btn.setVisible(total > FAVORITES_PER_PAGE)
-            pages = (total + FAVORITES_PER_PAGE - 1) // FAVORITES_PER_PAGE
+            self._page_btn.setVisible(total > per_page)
+            pages = (total + per_page - 1) // per_page
             cur = self._favorites_page + 1
-            self._page_btn.setText("◀ %d/%d" % (cur, pages) if self._favorites_page > 0 else "%d/%d ▶" % (cur, pages))
+            self._page_btn.setToolTip("Seite %d/%d – klicken zum Wechseln" % (cur, pages))
+
+    def _reflow_station_buttons_if_needed(self):
+        """Prüft, ob sich die Spaltenzahl durch Containerbreite geändert hat; baut Buttons ggf. neu um."""
+        w = self._btn_container.width()
+        cell = STATION_BTN_WIDTH + STATION_BTN_SPACING
+        new_cols = max(1, min(16, w // cell)) if w > 0 else 4
+        if new_cols != getattr(self, "_last_btn_cols", 0):
+            self._rebuild_station_buttons()
 
     def _open_station_list(self):
         dlg = StationListDialog(self, self._favorites, self._theme)
@@ -1722,6 +2451,15 @@ class DsiRadioWindow(QMainWindow):
 
     def _update_clock(self):
         self._clock_label.setText(datetime.now().strftime("%d.%m.%Y  %H:%M"))
+        now = datetime.now()
+        if getattr(self, "_valentine_heart", None) is not None:
+            self._valentine_heart.setVisible(now.month == 2 and now.day == 14)
+
+    def _toggle_maximized(self):
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
 
     def _on_volume_changed(self, value: int):
         """Lautstärke des aktiven Kanals: PulseAudio/PipeWire oder ALSA setzen."""
@@ -1765,8 +2503,6 @@ class DsiRadioWindow(QMainWindow):
             self._genre_label.setText(region or genre)
 
     def _on_station(self, st: dict):
-        was_playing = self._playing
-        self._stop_stream()
         self._current_station = st
         save_last_station(st)
         for b in self._station_buttons:
@@ -1775,13 +2511,13 @@ class DsiRadioWindow(QMainWindow):
         self._update_senderinfo()
         self._title_label.setText("")
         self._artist_label.setText("")
-        self._show_label.setText("")
+        self._show_label.setText("Es läuft:")
         self._quality_label.setText("")
         self._metadata = {}
         QTimer.singleShot(0, self._update_radio_display_fonts)
-        # Zuerst Stream starten (schneller Wechsel), Logo danach asynchron laden
-        self._start_stream()
-        QTimer.singleShot(0, self._update_logo)
+        # Stopp sofort, Start und Logo im nächsten Event-Loop-Tick → UI bleibt reaktionsfähig
+        self._stop_stream()
+        QTimer.singleShot(10, lambda: (self._start_stream(), self._update_logo()))
 
     def _update_logo(self):
         """Logo anzeigen. Synchron laden (3s Timeout) für zuverlässige Anzeige und Screenshots."""
@@ -1791,12 +2527,21 @@ class DsiRadioWindow(QMainWindow):
         if not url:
             url = STATION_LOGO_FALLBACKS.get(name) or ""
         if not url:
-            # Fallback: Sender anhand Namen in RADIO_STATIONS suchen (z. B. aus Favoriten ohne logo_url)
+            # Fallback: Teilweise Namensübereinstimmung (z. B. "Deutschlandfunk" enthält "DLF", "104.6 RTL" aus API)
             try:
+                name_lower = name.lower()
                 for s in RADIO_STATIONS:
-                    if (s.get("name") or "").strip() == name and (s.get("logo_url") or "").strip():
+                    sn = (s.get("name") or "").strip()
+                    if not sn or not (s.get("logo_url") or "").strip():
+                        continue
+                    if sn == name or (name_lower in sn.lower() or sn.lower() in name_lower):
                         url = (s.get("logo_url") or "").strip()
                         break
+                if not url:
+                    for s in RADIO_STATIONS:
+                        if (s.get("name") or "").strip() == name and (s.get("logo_url") or "").strip():
+                            url = (s.get("logo_url") or "").strip()
+                            break
             except Exception:
                 pass
         self._logo_label.setPixmap(QPixmap())
@@ -1810,12 +2555,11 @@ class DsiRadioWindow(QMainWindow):
         pix.loadFromData(QByteArray(data))
         if pix.isNull():
             return
-        # Logo mit 10 % Abstand im Bereich (nicht abschneiden)
-        # Logo 85 % der Box (deutlich kleiner, wird nicht abgeschnitten)
-        box = self._logo_label.width() or 85
-        box_h = self._logo_label.height() or 85
-        max_w = max(40, int(box * 0.85))
-        max_h = max(40, int(box_h * 0.85))
+        # Logo nutzt die volle Box (größere Darstellung, z. B. Energy)
+        box = self._logo_label.width() or 120
+        box_h = self._logo_label.height() or 120
+        max_w = max(48, box)
+        max_h = max(48, box_h)
         ow, oh = pix.width(), pix.height()
         if ow > 0 and oh > 0:
             scale = min(max_w / ow, max_h / oh)
@@ -1975,7 +2719,7 @@ class DsiRadioWindow(QMainWindow):
             # Timer kurz verzögert starten (Hauptthread-Event-Loop)
             QTimer.singleShot(100, self.startStreamTimersSlot)
             self._poll_metadata()
-            QTimer.singleShot(500, self._poll_metadata)
+            QTimer.singleShot(300, self._poll_metadata)  # Früher nach Start für Titel/Interpret
 
             try:
                 with open(os.path.join(CONFIG_DIR, "audio_sink.log"), "a", encoding="utf-8") as f:
@@ -2019,7 +2763,7 @@ class DsiRadioWindow(QMainWindow):
             return
         self._metadata_timer.start(METADATA_INTERVAL_MS)
         self._metadata_check_timer.start(250)
-        self._vu_timer.start(50)
+        self._vu_timer.start(20)
         self._gst_bus_timer.start(200)
 
     def _stop_stream(self):
@@ -2179,13 +2923,25 @@ class DsiRadioWindow(QMainWindow):
         station_name = (self._current_station or {}).get("name", "Livestream")
         current_url = (self._current_station or {}).get("stream_url") or (self._current_station or {}).get("url") or ""
         is_saw = "stream.radiosaw.de" in (current_url or "")
+        is_rsa = "rsa-sachsen.de" in (current_url or "")
+        is_mdr_aktuell = "mdr.de" in (current_url or "") or "MDR Aktuell" in (station_name or "")
+        is_rbb888 = "rbb888" in (current_url or "") or "rbb 88.8" in (station_name or "") or "88.8" in (station_name or "")
         show = (meta.get("show") or meta.get("server_name") or "").strip()
         title = (meta.get("title") or "").strip()
         artist = (meta.get("artist") or "").strip()
         song = (meta.get("song") or "").strip()
         bitrate = meta.get("bitrate")
-        # Radio SAW/streamABC: keine echten Metadaten → immer Hinweis + Region anzeigen
+        # Radio SAW / R.SA: oft keine echten Titel/Interpret-Metadaten → Hinweis anzeigen
         if is_saw and not (artist or song) and (not title or title.upper() in ("LIVE", "RADIO SAW", "RADIO SAW SIMULCAST") or "simulcast" in title.lower() or "saw " in title.lower()[:20]):
+            meta = dict(meta)
+            meta["metadata_unsupported"] = True
+        if is_rsa and not (artist or song) and (not title or title.upper() in ("LIVE", "R.SA", "RSA")):
+            meta = dict(meta)
+            meta["metadata_unsupported"] = True
+        if is_mdr_aktuell and not (artist or song) and (not title or title.upper() in ("LIVE", "MDR AKTUELL", "MDR")):
+            meta = dict(meta)
+            meta["metadata_unsupported"] = True
+        if is_rbb888 and not (artist or song) and (not title or title.upper() in ("LIVE", "RBB 88.8", "RBB")):
             meta = dict(meta)
             meta["metadata_unsupported"] = True
         # Erkennung: Show-Metadaten die fälschlicherweise als Titel/Interpret kommen (z. B. "Die Show", "1LIVE Liebesalarm")
@@ -2336,7 +3092,8 @@ class DsiRadioWindow(QMainWindow):
             value = raw
         if channel >= 0 and channel < len(self._vu_leds):
             lit = min(10, int((value / 100) * 10.99))
-            off, green, yellow, red_c = "#1e293b", "#22c55e", "#eab308", "#dc2626"
+            off = "#252525"  # Restleuchten wenn keine Anzeige
+            green, yellow, red_c = "#22c55e", "#eab308", "#dc2626"
             # Signal-Säule (Kanal 2): nur grüne LEDs; L/R (0, 1): grün → gelb → rot
             signal_green_only = channel == 2
             for i, f in enumerate(self._vu_leds[channel]):
@@ -2349,7 +3106,7 @@ class DsiRadioWindow(QMainWindow):
                     c = yellow if on else off
                 else:
                     c = red_c if on else off
-                f.setStyleSheet(f"background-color: {c}; border-radius: 1px;")
+                f.setStyleSheet(f"background-color: {c}; border: none; border-radius: 1px;")
         if channel >= 0 and channel < len(self._vu_analog_widgets):
             self._vu_analog_widgets[channel].set_value(value)
 
@@ -2363,17 +3120,47 @@ class DsiRadioWindow(QMainWindow):
                 peaks = self._gst_player.get_peak_levels()
             except Exception:
                 pass
-        if peaks is not None and len(peaks) >= 2:
+        if peaks is not None and len(peaks) >= 2 and (peaks[0] > 0 or peaks[1] > 0):
             self._vu_val_0 = max(0, min(100, int(peaks[0])))
             self._vu_val_1 = max(0, min(100, int(peaks[1])))
         else:
-            # Fallback: leichte Simulation, falls Level-Element nicht liefert
             for ch in (0, 1):
                 w = getattr(self, f"_vu_val_{ch}", 50)
                 w = min(100, max(0, w + random.randint(-8, 12)))
                 setattr(self, f"_vu_val_{ch}", w)
         for ch in (0, 1):
             self._set_led_strip(ch, getattr(self, f"_vu_val_{ch}", 0))
+        level = (getattr(self, "_vu_val_0", 0) + getattr(self, "_vu_val_1", 0)) / 2.0
+        if getattr(self, "_waveform_widget", None) is not None:
+            self._waveform_widget.append(level)
+        if getattr(self, "_spectrum_widget", None) is not None:
+            n_bands = 24
+            fft_buf = getattr(self, "_fft_buffer", None)
+            if _NUMPY_AVAILABLE and fft_buf is not None and len(fft_buf) >= 128:
+                arr = np.array(list(fft_buf)[-128:], dtype=np.float64)
+                arr = arr - np.mean(arr)
+                window = np.hanning(128)
+                arr = arr * window
+                fft = np.fft.rfft(arr)
+                mag = np.abs(fft)
+                bands = _fft_to_log_bands(mag, n_bands)
+                prev = getattr(self, "_spectrum_bands", [0.0] * n_bands)
+                decay = 0.85
+                bands = [prev[i] * decay + bands[i] * (1 - decay) for i in range(n_bands)]
+                self._spectrum_bands = bands
+                self._spectrum_widget.set_bands(bands)
+            else:
+                prev = getattr(self, "_spectrum_bands", [0.0] * n_bands)
+                if len(prev) != n_bands:
+                    prev = (prev + [0.0] * n_bands)[:n_bands]
+                decay = 0.88
+                bands = [0.0] * n_bands
+                for i in range(n_bands):
+                    bands[i] = prev[i] * decay + level * (0.25 + 0.75 * (1 + sin(i * 0.8)) / 2) * (1 - decay)
+                self._spectrum_bands = bands
+                self._spectrum_widget.set_bands(bands)
+            if fft_buf is not None:
+                fft_buf.append(level)
 
     def _poll_metadata(self):
         url = (self._current_station.get("stream_url") or self._current_station.get("url") or "").strip()
@@ -2386,22 +3173,32 @@ class DsiRadioWindow(QMainWindow):
                 if not isinstance(meta_raw, dict):
                     meta_raw = {}
                 meta = {k: v for k, v in meta_raw.items() if k != "status"}
-                # Radio SAW: Sender-/Stream-Namen („Radio SAW“, „Live“, „Simulcast“) gelten nicht als echte Titel
-                is_saw_url = "stream.radiosaw.de" in url
+                # Wenn Backend keine Metadaten liefert: immer ICY direkt aus dem Stream versuchen (mehr Sender zeigen dann Titel)
+                if not (meta.get("title") or meta.get("artist") or meta.get("song")):
+                    icy = _fetch_icy_metadata_direct(url)
+                    if icy and (icy.get("title") or icy.get("artist") or icy.get("song")):
+                        meta = dict(icy)
                 title_val = (meta.get("title") or "").strip()
+                # Radio SAW / R.SA: Sender-/Stream-Namen gelten oft nicht als echte Titel
+                is_saw_url = "stream.radiosaw.de" in url
+                is_rsa_url = "rsa-sachsen.de" in url
                 saw_station_name_only = is_saw_url and (
                     not title_val or title_val.upper() in ("LIVE", "RADIO SAW", "RADIO SAW SIMULCAST")
                     or "simulcast" in title_val.lower() or title_val.lower().startswith(("radio saw", "saw "))
                 )
-                has_real_meta = (title_val not in ("", "Live") and not saw_station_name_only) or (meta.get("artist") or meta.get("song"))
+                rsa_station_only = is_rsa_url and (not title_val or title_val.upper() in ("LIVE", "R.SA", "RSA"))
+                has_real_meta = (title_val not in ("", "Live") and not saw_station_name_only and not rsa_station_only) or (meta.get("artist") or meta.get("song"))
                 if not has_real_meta:
-                    icy = _fetch_icy_metadata_direct(url)
-                    if icy and ((icy.get("title") or icy.get("artist") or icy.get("song"))):
-                        meta = icy
                     if is_saw_url and not (meta.get("artist") or meta.get("song")) and (not (meta.get("title") or "").strip() or saw_station_name_only):
+                        meta = dict(meta)
                         meta["metadata_unsupported"] = True
                         meta["title"] = ""
                         meta["song"] = ""
+                    if is_rsa_url and not (meta.get("artist") or meta.get("song")) and (not title_val or rsa_station_only):
+                        meta = dict(meta) if isinstance(meta, dict) else {}
+                        meta["metadata_unsupported"] = True
+                        meta["title"] = meta.get("title") or ""
+                        meta["song"] = meta.get("song") or ""
                 try:
                     os.makedirs(CONFIG_DIR, exist_ok=True)
                     if os.environ.get("PI_INSTALLER_DSI_DEBUG"):
@@ -2614,11 +3411,25 @@ class DsiRadioWindow(QMainWindow):
             font = QFont("Sans", pt, QFont.Weight.Bold if bold else QFont.Weight.Normal)
             label.setFont(font)
 
+    def _update_display_size_label(self):
+        """Test: aktuelle Breite und Höhe des Radiodisplays im Display anzeigen."""
+        if getattr(self, "_display_size_label", None) and getattr(self, "_radio_display_frame", None):
+            w = self._radio_display_frame.width()
+            h = self._radio_display_frame.height()
+            self._display_size_label.setText(f"Breite: {w} px   Höhe: {h} px")
+
     def resizeEvent(self, event):
-        """Bei Größenänderung X-Button neu positionieren und Schriftgrößen anpassen."""
+        """Bei Größenänderung X-Button neu positionieren, Schriftgrößen und Sender-Button-Umbruch anpassen."""
         super().resizeEvent(event)
         self._position_close_button()
+        self._update_display_size_label()
         QTimer.singleShot(0, self._update_radio_display_fonts)
+        # Sender-Buttons umbrechen, wenn sich die Spaltenzahl durch neue Breite ändert
+        w = self._btn_container.width()
+        cell = STATION_BTN_WIDTH + STATION_BTN_SPACING
+        new_cols = max(1, min(16, w // cell)) if w > 0 else 4
+        if new_cols != getattr(self, "_last_btn_cols", 0):
+            self._rebuild_station_buttons()
     
     def showEvent(self, event):
         """Fenstertitel früh setzen, damit Wayfire-Regel (DSI-1/TFT) greift."""
@@ -2626,10 +3437,13 @@ class DsiRadioWindow(QMainWindow):
         super().showEvent(event)
         QTimer.singleShot(0, self._position_close_button)
         QTimer.singleShot(100, self._update_radio_display_fonts)
+        QTimer.singleShot(50, self._update_display_size_label)
+        # Nach Layout: Sender-Buttons ggf. mit echter Containerbreite umbrechen (falls vorher width=0)
+        QTimer.singleShot(150, self._reflow_station_buttons_if_needed)
         self._setup_screenshot_shortcut()
         QTimer.singleShot(0, self._move_to_dsi_display)
-        # Uhr- und Backend-Timer erst 500 ms nach show starten (QBasicTimer nur im Objekt-Thread)
-        QTimer.singleShot(500, self._startMainTimersSlot)
+        # Uhr- und Backend-Timer bald nach show starten (Start optimiert)
+        QTimer.singleShot(200, self._startMainTimersSlot)
         # Beim ersten Start: Sender auf Platz 1 direkt starten (keine Verzögerung)
         if not getattr(self, "_auto_start_done", False):
             def check_and_start():
