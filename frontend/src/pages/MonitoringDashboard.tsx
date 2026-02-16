@@ -491,6 +491,151 @@ const MonitoringDashboard: React.FC = () => {
         </div>
       )}
 
+      {/* Laufende Beispiele */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-white mb-4">Laufende Beispiele</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Prometheus Beispiel */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="card"
+          >
+            <h3 className="font-bold text-white mb-3">Prometheus Query-Beispiel</h3>
+            <div className="bg-slate-800 rounded-lg p-4 mb-3">
+              <code className="text-xs text-green-400 block mb-2"># CPU-Auslastung berechnen</code>
+              <code className="text-xs text-slate-300 block break-all">
+                100 - (avg by(instance) (rate(node_cpu_seconds_total{'{'}mode="idle"{'}'}[5m])) * 100)
+              </code>
+            </div>
+            <p className="text-xs text-slate-400 mb-2">Ergebnis (wenn Node Exporter läuft):</p>
+            <div className="bg-slate-800 rounded-lg p-3">
+              <code className="text-xs text-sky-400">
+                {`{instance="localhost:9100"} => 23.45`}
+              </code>
+            </div>
+            <a 
+              href="http://localhost:9090/graph?g0.expr=100%20-%20(avg%20by(instance)%20(rate(node_cpu_seconds_total%7Bmode%3D%22idle%22%7D%5B5m%5D))%20*%20100)" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sky-400 text-xs mt-2 inline-block hover:underline"
+            >
+              → In Prometheus ausführen
+            </a>
+          </motion.div>
+
+          {/* Grafana Beispiel */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="card"
+          >
+            <h3 className="font-bold text-white mb-3">Grafana Dashboard-Beispiel</h3>
+            <div className="bg-slate-800 rounded-lg p-4 mb-3">
+              <code className="text-xs text-green-400 block mb-2"># Dashboard importieren</code>
+              <code className="text-xs text-slate-300 block">
+                Dashboard ID: <span className="text-sky-400">1860</span>
+              </code>
+              <code className="text-xs text-slate-300 block mt-1">
+                Name: Node Exporter Full
+              </code>
+            </div>
+            <p className="text-xs text-slate-400 mb-2">Enthält Visualisierungen für:</p>
+            <ul className="text-xs text-slate-400 list-disc list-inside space-y-1 mb-3">
+              <li>CPU-Auslastung (alle Kerne)</li>
+              <li>RAM-Verbrauch</li>
+              <li>Disk I/O</li>
+              <li>Netzwerk-Traffic</li>
+              <li>System-Load</li>
+            </ul>
+            <a 
+              href="http://localhost:3000/dashboard/import" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sky-400 text-xs mt-2 inline-block hover:underline"
+            >
+              → Dashboard importieren
+            </a>
+          </motion.div>
+
+          {/* Node Exporter Beispiel */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="card"
+          >
+            <h3 className="font-bold text-white mb-3">Node Exporter Metriken-Beispiel</h3>
+            <div className="bg-slate-800 rounded-lg p-4 mb-3">
+              <code className="text-xs text-green-400 block mb-2"># Beispiel-Metriken (localhost:9100/metrics)</code>
+              <code className="text-xs text-slate-300 block break-all">
+                <span className="text-sky-400">node_cpu_seconds_total</span>{'{'}cpu="0",mode="user"{'}'} 1234.56
+              </code>
+              <code className="text-xs text-slate-300 block break-all mt-1">
+                <span className="text-sky-400">node_memory_MemTotal_bytes</span> 8589934592
+              </code>
+              <code className="text-xs text-slate-300 block break-all mt-1">
+                <span className="text-sky-400">node_filesystem_avail_bytes</span>{'{'}device="/dev/sda1",fstype="ext4",mountpoint="/"{'}'} 1234567890
+              </code>
+            </div>
+            <p className="text-xs text-slate-400 mb-2">Prometheus sammelt diese Metriken alle 15 Sekunden</p>
+            <a 
+              href="http://localhost:9100/metrics" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sky-400 text-xs mt-2 inline-block hover:underline"
+            >
+              → Alle Metriken anzeigen
+            </a>
+          </motion.div>
+        </div>
+
+        {/* Workflow-Beispiel */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="card mt-6"
+        >
+          <h3 className="font-bold text-white mb-4">Workflow-Beispiel: Monitoring einrichten</h3>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-sky-600 text-white flex items-center justify-center text-xs font-bold">1</div>
+              <div>
+                <p className="text-sm text-white font-medium">Node Exporter starten</p>
+                <p className="text-xs text-slate-400 mt-1">Sammelt System-Metriken auf Port 9100</p>
+                <code className="text-xs text-slate-500 block mt-1 bg-slate-800 px-2 py-1 rounded">curl http://localhost:9100/metrics</code>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-sky-600 text-white flex items-center justify-center text-xs font-bold">2</div>
+              <div>
+                <p className="text-sm text-white font-medium">Prometheus konfigurieren</p>
+                <p className="text-xs text-slate-400 mt-1">Prometheus sammelt Metriken von Node Exporter</p>
+                <code className="text-xs text-slate-500 block mt-1 bg-slate-800 px-2 py-1 rounded">scrape_configs: - job_name: 'node' static_configs: - targets: ['localhost:9100']</code>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-sky-600 text-white flex items-center justify-center text-xs font-bold">3</div>
+              <div>
+                <p className="text-sm text-white font-medium">Grafana Dashboard erstellen</p>
+                <p className="text-xs text-slate-400 mt-1">Prometheus als Datenquelle hinzufügen (http://localhost:9090)</p>
+                <p className="text-xs text-slate-400 mt-1">Dashboard "Node Exporter Full" (ID 1860) importieren</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-xs font-bold">✓</div>
+              <div>
+                <p className="text-sm text-white font-medium">Fertig: Live-Monitoring läuft</p>
+                <p className="text-xs text-slate-400 mt-1">CPU, RAM, Disk, Netzwerk werden in Echtzeit visualisiert</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
       <SudoPasswordModal
         open={sudoModalOpen}
         title="Sudo-Passwort erforderlich"
