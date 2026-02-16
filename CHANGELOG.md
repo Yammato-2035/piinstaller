@@ -5,6 +5,218 @@ Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
 
 ---
 
+## [1.3.4.6] - 2026-02-16
+
+### Added
+- Automatisches Release: Version 1.3.4.6
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [1.3.4.6] - 2026-02-16
+
+### Added
+- Automatisches Release: Version 1.3.4.6
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [[0;36m[2026-02-16 16:51:30][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:51:30][0m Aktuelle Version: 1.3.4.8
+[0;32m[2026-02-16 16:51:30] ✓[0m Version erhöht: 1.3.4.8 -> 1.3.4.9
+[0;32m[2026-02-16 16:51:30] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:51:30] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.9] - 2026-02-16
+
+### Added
+- Automatisches Release: Version [0;36m[2026-02-16 16:51:30][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:51:30][0m Aktuelle Version: 1.3.4.8
+[0;32m[2026-02-16 16:51:30] ✓[0m Version erhöht: 1.3.4.8 -> 1.3.4.9
+[0;32m[2026-02-16 16:51:30] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:51:30] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.9
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [[0;36m[2026-02-16 16:47:56][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:47:56][0m Aktuelle Version: 1.3.4.7
+[0;32m[2026-02-16 16:47:56] ✓[0m Version erhöht: 1.3.4.7 -> 1.3.4.8
+[0;32m[2026-02-16 16:47:56] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:47:56] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.8] - 2026-02-16
+
+### Added
+- Automatisches Release: Version [0;36m[2026-02-16 16:47:56][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:47:56][0m Aktuelle Version: 1.3.4.7
+[0;32m[2026-02-16 16:47:56] ✓[0m Version erhöht: 1.3.4.7 -> 1.3.4.8
+[0;32m[2026-02-16 16:47:56] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:47:56] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.8
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [[0;36m[2026-02-16 16:47:14][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:47:14][0m Aktuelle Version: 1.3.4.6
+[0;32m[2026-02-16 16:47:14] ✓[0m Version erhöht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:47:14] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:47:14] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.7] - 2026-02-16
+
+### Added
+- Automatisches Release: Version [0;36m[2026-02-16 16:47:14][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:47:14][0m Aktuelle Version: 1.3.4.6
+[0;32m[2026-02-16 16:47:14] ✓[0m Version erhöht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:47:14] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:47:14] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.7
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [[0;36m[2026-02-16 16:46:47][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:46:47][0m Aktuelle Version: 1.3.4.5
+[0;32m[2026-02-16 16:46:47] ✓[0m Version erhöht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:46:47] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:46:47] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.6] - 2026-02-16
+
+### Added
+- Automatisches Release: Version [0;36m[2026-02-16 16:46:47][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:46:47][0m Aktuelle Version: 1.3.4.5
+[0;32m[2026-02-16 16:46:47] ✓[0m Version erhöht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:46:47] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:46:47] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.6
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [[0;36m[2026-02-16 16:44:28][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:44:28][0m Aktuelle Version: 1.3.4.6
+[0;32m[2026-02-16 16:44:28] ✓[0m Version erhöht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:44:28] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:44:28] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.7] - 2026-02-16
+
+### Added
+- Automatisches Release: Version [0;36m[2026-02-16 16:44:28][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:44:28][0m Aktuelle Version: 1.3.4.6
+[0;32m[2026-02-16 16:44:28] ✓[0m Version erhöht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:44:28] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:44:28] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.7
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [[0;36m[2026-02-16 16:41:24][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:41:24][0m Aktuelle Version: 1.3.4.5
+[0;32m[2026-02-16 16:41:24] ✓[0m Version erhöht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:41:24] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:41:24] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.6] - 2026-02-16
+
+### Added
+- Automatisches Release: Version [0;36m[2026-02-16 16:41:24][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:41:24][0m Aktuelle Version: 1.3.4.5
+[0;32m[2026-02-16 16:41:24] ✓[0m Version erhöht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:41:24] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:41:24] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.6
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [[0;36m[2026-02-16 16:39:06][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:39:06][0m Aktuelle Version: 1.3.4.5
+[0;32m[2026-02-16 16:39:06] ✓[0m Version erhöht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:39:06] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:39:06] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.6] - 2026-02-16
+
+### Added
+- Automatisches Release: Version [0;36m[2026-02-16 16:39:06][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:39:06][0m Aktuelle Version: 1.3.4.5
+[0;32m[2026-02-16 16:39:06] ✓[0m Version erhöht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:39:06] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:39:06] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.6
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [[0;36m[2026-02-16 16:38:32][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:38:32][0m Aktuelle Version: 1.3.4.6
+[0;32m[2026-02-16 16:38:32] ✓[0m Version erhöht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:38:32] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:38:32] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+[sync-version] version -> 1.3.4.7
+1.3.4.7] - 2026-02-16
+
+### Added
+- Automatisches Release: Version [0;36m[2026-02-16 16:38:32][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:38:32][0m Aktuelle Version: 1.3.4.6
+[0;32m[2026-02-16 16:38:32] ✓[0m Version erhöht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:38:32] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:38:32] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+[sync-version] version -> 1.3.4.7
+1.3.4.7
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [[0;36m[2026-02-16 16:35:29][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:35:29][0m Aktuelle Version: 1.3.4.5
+[0;32m[2026-02-16 16:35:29] ✓[0m Version erhöht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:35:29] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:35:29] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.6] - 2026-02-16
+
+### Added
+- Automatisches Release: Version [0;36m[2026-02-16 16:35:29][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:35:29][0m Aktuelle Version: 1.3.4.5
+[0;32m[2026-02-16 16:35:29] ✓[0m Version erhöht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:35:29] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:35:29] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+1.3.4.6
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [[0;36m[2026-02-16 16:32:16][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:32:16][0m Aktuelle Version: 1.3.4.5
+[0;32m[2026-02-16 16:32:16] ✓[0m Version erhöht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:32:16] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:32:16] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+[sync-version] version -> 1.3.4.6
+1.3.4.6] - 2026-02-16
+
+### Added
+- Automatisches Release: Version [0;36m[2026-02-16 16:32:16][0m Schritt 1: Version erhöhen...
+[0;36m[2026-02-16 16:32:16][0m Aktuelle Version: 1.3.4.5
+[0;32m[2026-02-16 16:32:16] ✓[0m Version erhöht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:32:16] ✓[0m Tauri-Version aktualisiert: 1.3.4
+[0;32m[2026-02-16 16:32:16] ✓[0m Cargo.toml-Version aktualisiert: 1.3.4
+[sync-version] version -> 1.3.4.6
+1.3.4.6
+
+### Changed
+- Build-Prozess optimiert
+
+
 ## [1.3.4.2] – 2026-02
 
 ### DSI Radio (v2.1.0) – NDR-Ton, Backend, Doku
