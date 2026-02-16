@@ -2357,6 +2357,123 @@ def get_fan_speed():
     except Exception:
         return None
 
+def is_asus_rog_system():
+    """Prüft ob es sich um ein ASUS ROG System handelt"""
+    try:
+        product_path = Path("/sys/class/dmi/id/product_name")
+        if product_path.exists():
+            product_name = product_path.read_text().strip()
+            return any(keyword in product_name for keyword in ["ROG", "ASUS", "Republic of Gamers"])
+        return False
+    except Exception:
+        return False
+
+def is_asusctl_available():
+    """Prüft ob asusctl installiert und verfügbar ist"""
+    try:
+        result = run_command("which asusctl")
+        return result.get("success", False)
+    except Exception:
+        return False
+
+def get_asus_fan_profiles():
+    """Holt verfügbare ASUS ROG Lüfter-Profile"""
+    if not is_asusctl_available():
+        return {"available": False, "profiles": [], "error": "asusctl nicht installiert"}
+    
+    try:
+        result = run_command("asusctl profile list")
+        if not result.get("success"):
+            return {"available": True, "profiles": [], "error": "Profile konnten nicht abgerufen werden"}
+        
+        profiles = []
+        output = result.get("stdout", "")
+        for line in output.split("\n"):
+            line = line.strip()
+            if line and not line.startswith("#") and not line.startswith("*"):
+                # Erkenne Profile (Performance, Balanced, Quiet)
+                if "Performance" in line or "performance" in line.lower():
+                    profiles.append("Performance")
+                elif "Balanced" in line or "balanced" in line.lower():
+                    profiles.append("Balanced")
+                elif "Quiet" in line or "quiet" in line.lower():
+                    profiles.append("Quiet")
+        
+        # Fallback: Standard-Profile wenn nichts erkannt wurde
+        if not profiles:
+            profiles = ["Performance", "Balanced", "Quiet"]
+        
+        return {"available": True, "profiles": list(set(profiles)), "error": None}
+    except Exception as e:
+        return {"available": True, "profiles": [], "error": str(e)}
+
+def get_asus_fan_status():
+    """Holt aktuellen ASUS ROG Lüfter-Status"""
+    if not is_asusctl_available():
+        return {"available": False, "status": None, "error": "asusctl nicht installiert"}
+    
+    try:
+        # Prüfe ob asusd Service läuft
+        service_result = run_command("systemctl is-active asusd.service")
+        service_running = service_result.get("success", False)
+        
+        # Hole aktuelles Profil
+        profile_result = run_command("asusctl profile get")
+        current_profile = profile_result.get("stdout", "").strip() if profile_result.get("success") else None
+        
+        # Hole aktuelle Kurven-Status
+        curve_result = run_command("asusctl fan-curve --get-enabled")
+        curves = curve_result.get("stdout", "") if curve_result.get("success") else None
+        
+        return {
+            "available": True,
+            "service_running": service_running,
+            "current_profile": current_profile,
+            "curves": curves,
+            "error": None
+        }
+    except Exception as e:
+        return {"available": True, "status": None, "error": str(e)}
+
+def set_asus_fan_profile(profile: str, sudo_password: str = ""):
+    """Setzt ASUS ROG Lüfter-Profil (Performance, Balanced, Quiet)"""
+    if not is_asusctl_available():
+        return {"success": False, "error": "asusctl nicht installiert"}
+    
+    valid_profiles = ["Performance", "Balanced", "Quiet"]
+    profile_normalized = profile.capitalize()
+    
+    if profile_normalized not in valid_profiles:
+        return {"success": False, "error": f"Ungültiges Profil. Verfügbar: {', '.join(valid_profiles)}"}
+    
+    try:
+        # Verwende sudo_password falls vorhanden, sonst versuche ohne
+        use_sudo = bool(sudo_password)
+        
+        # Setze Profil
+        result = run_command(
+            f"asusctl profile set {profile_normalized}", 
+            timeout=10,
+            sudo=use_sudo,
+            sudo_password=sudo_password if use_sudo else ""
+        )
+        if not result.get("success"):
+            error_msg = result.get("stderr", "") or result.get("stdout", "")
+            return {"success": False, "error": f"Profil konnte nicht gesetzt werden: {error_msg}"}
+        
+        # Aktiviere Lüfter-Kurven für das Profil
+        curve_result = run_command(
+            f"asusctl fan-curve --mod-profile {profile_normalized} --enable-fan-curves true", 
+            timeout=10,
+            sudo=use_sudo,
+            sudo_password=sudo_password if use_sudo else ""
+        )
+        # Ignoriere Fehler bei Lüfter-Kurven (könnte bereits aktiv sein oder nicht unterstützt)
+        
+        return {"success": True, "profile": profile_normalized, "error": None}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 def get_motherboard_info():
     """Motherboard/Baseboard aus DMI"""
     info = {}
@@ -3226,6 +3343,83 @@ async def get_system_info(request: Request, light: bool = False):
     except Exception as e:
         return {"error": str(e)}
 
+
+@app.get("/api/system/asus-rog/fan/profiles")
+async def get_asus_fan_profiles_api():
+    """Holt verfügbare ASUS ROG Lüfter-Profile"""
+    try:
+        result = get_asus_fan_profiles()
+        return JSONResponse(status_code=200, content=result)
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Lüfter-Profile: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=500, content={"available": False, "profiles": [], "error": str(e)})
+
+@app.get("/api/system/asus-rog/fan/status")
+async def get_asus_fan_status_api():
+    """Holt aktuellen ASUS ROG Lüfter-Status"""
+    try:
+        result = get_asus_fan_status()
+        return JSONResponse(status_code=200, content=result)
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen des Lüfter-Status: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=500, content={"available": False, "status": None, "error": str(e)})
+
+@app.post("/api/system/asus-rog/fan/set-profile")
+async def set_asus_fan_profile_api(request: Request):
+    """Setzt ASUS ROG Lüfter-Profil (Performance, Balanced, Quiet)"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        profile = data.get("profile", "")
+        if not profile:
+            return JSONResponse(status_code=400, content={"success": False, "error": "Profil-Parameter fehlt"})
+        
+        # Hole sudo_password aus Request oder Store
+        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        
+        # Prüfe ob sudo benötigt wird
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test.get("success"):
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "success": False,
+                        "error": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        # Speichere sudo_password im Store falls vorhanden
+        if sudo_password and not sudo_password_store.get("password"):
+            sudo_password_store["password"] = sudo_password
+        
+        result = set_asus_fan_profile(profile, sudo_password)
+        if result.get("success"):
+            return JSONResponse(status_code=200, content=result)
+        else:
+            return JSONResponse(status_code=400, content=result)
+    except Exception as e:
+        logger.error(f"Fehler beim Setzen des Lüfter-Profils: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+
+@app.get("/api/system/asus-rog/detection")
+async def get_asus_rog_detection():
+    """Prüft ob ASUS ROG System erkannt wurde und ob asusctl verfügbar ist"""
+    try:
+        is_rog = is_asus_rog_system()
+        has_asusctl = is_asusctl_available()
+        return JSONResponse(status_code=200, content={
+            "is_asus_rog": is_rog,
+            "asusctl_available": has_asusctl,
+            "can_control_fans": is_rog and has_asusctl
+        })
+    except Exception as e:
+        logger.error(f"Fehler bei ASUS ROG Erkennung: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.get("/api/dashboard/services-status")
 async def dashboard_services_status():

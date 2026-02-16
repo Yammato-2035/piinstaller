@@ -16,7 +16,7 @@ if [ ! -d "debian" ] || [ ! -f "debian/control" ]; then
 fi
 
 # Version aus VERSION oder debian/changelog
-VERSION="1.3.4.2"
+VERSION="1.3.4.5"
 [ -f "VERSION" ] && VERSION="$(cat VERSION | tr -d '\n')"
 echo "Baue pi-installer ${VERSION}..."
 

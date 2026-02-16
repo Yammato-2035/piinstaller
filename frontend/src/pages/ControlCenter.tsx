@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Settings, Wifi, Monitor, Printer, Scan, Keyboard, Globe, Shield, Eye, Laptop, Mouse, Layout, Palette, Link2Off, Bluetooth } from 'lucide-react'
+import { Settings, Wifi, Monitor, Printer, Scan, Keyboard, Globe, Shield, Eye, Laptop, Mouse, Layout, Palette, Link2Off, Bluetooth, Fan } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
@@ -18,6 +18,7 @@ type ControlCenterSection =
   | 'printer'
   | 'scanner'
   | 'performance'
+  | 'asus-rog-fan'
   | 'mouse'
   | 'taskbar'
   | 'theme'
@@ -126,6 +127,18 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
     swap_size_mb: '',
   })
   
+  // ASUS ROG Fan Control State
+  const [asusRogDetected, setAsusRogDetected] = useState(false)
+  const [asusRogLoading, setAsusRogLoading] = useState(false)
+  const [asusRogProfiles, setAsusRogProfiles] = useState<string[]>([])
+  const [asusRogCurrentProfile, setAsusRogCurrentProfile] = useState<string | null>(null)
+  const [asusRogFanStatus, setAsusRogFanStatus] = useState<{
+    service_running?: boolean
+    current_profile?: string
+    curves?: string
+  } | null>(null)
+  const [asusRogSettingProfile, setAsusRogSettingProfile] = useState(false)
+  
   const sections: SectionConfig[] = [
     { id: 'wifi', name: 'WLAN', icon: <Wifi />, description: 'WiFi-Netzwerke verwalten' },
     { id: 'ssh', name: 'SSH', icon: <Shield />, description: 'SSH-Zugriff konfigurieren' },
@@ -137,18 +150,40 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
     { id: 'printer', name: 'Drucker', icon: <Printer />, description: 'Drucker verwalten' },
     { id: 'scanner', name: 'Scanner', icon: <Scan />, description: 'Scanner verwalten' },
     ...(isRaspberryPi ? [{ id: 'performance' as const, name: 'Performance', icon: <Settings />, description: 'System-Performance (Raspberry Pi)' }] : []),
+    ...(asusRogDetected ? [{ id: 'asus-rog-fan' as const, name: 'ASUS ROG Lüfter', icon: <Fan />, description: 'Lüftersteuerung (ASUS ROG)' }] : []),
     { id: 'mouse', name: 'Maus', icon: <Mouse />, description: 'Maus-Einstellungen' },
     { id: 'taskbar', name: 'Taskleiste', icon: <Layout />, description: 'Taskleiste konfigurieren' },
     { id: 'theme', name: 'Theme', icon: <Palette />, description: 'Erscheinungsbild' },
   ]
 
   useEffect(() => {
+    // Prüfe ASUS ROG Erkennung beim Mount
+    checkAsusRogDetection()
+  }, [])
+
+  useEffect(() => {
     if (!isRaspberryPi && activeSection === 'performance') {
       setActiveSection('wifi')
       return
     }
+    if (!asusRogDetected && activeSection === 'asus-rog-fan') {
+      setActiveSection('wifi')
+      return
+    }
     loadSectionData(activeSection)
-  }, [activeSection, isRaspberryPi])
+  }, [activeSection, isRaspberryPi, asusRogDetected])
+
+  const checkAsusRogDetection = async () => {
+    try {
+      const r = await fetchApi('/api/system/asus-rog/detection')
+      const d = await r.json()
+      if (d.is_asus_rog && d.asusctl_available && d.can_control_fans) {
+        setAsusRogDetected(true)
+      }
+    } catch (e) {
+      // Ignore - kein ASUS ROG System
+    }
+  }
 
   const loadSectionData = async (section: ControlCenterSection) => {
     try {
@@ -187,6 +222,9 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
           break
         case 'performance':
           await loadPerformance()
+          break
+        case 'asus-rog-fan':
+          await loadAsusRogFanData()
           break
         case 'mouse':
         case 'taskbar':
@@ -504,6 +542,71 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
     } finally {
       setPrintersLoading(false)
     }
+  }
+
+  const loadAsusRogFanData = async () => {
+    setAsusRogLoading(true)
+    try {
+      // Lade Profile
+      const profilesR = await fetchApi('/api/system/asus-rog/fan/profiles')
+      const profilesD = await profilesR.json()
+      if (profilesD.available && profilesD.profiles) {
+        setAsusRogProfiles(profilesD.profiles)
+      }
+      
+      // Lade Status
+      const statusR = await fetchApi('/api/system/asus-rog/fan/status')
+      const statusD = await statusR.json()
+      if (statusD.available) {
+        setAsusRogFanStatus({
+          service_running: statusD.service_running,
+          current_profile: statusD.current_profile,
+          curves: statusD.curves,
+        })
+        if (statusD.current_profile) {
+          setAsusRogCurrentProfile(statusD.current_profile.trim())
+        }
+      }
+    } catch (e) {
+      console.error('Fehler beim Laden der ASUS ROG Lüfter-Daten:', e)
+      toast.error('Fehler beim Laden der Lüfter-Informationen')
+    } finally {
+      setAsusRogLoading(false)
+    }
+  }
+
+  const setAsusRogProfile = async (profile: string) => {
+    await requireSudo(
+      {
+        title: `Lüfter-Profil auf "${profile}" setzen`,
+        subtitle: 'Für die Änderung des Lüfter-Profils werden Administrator-Rechte benötigt.',
+        confirmText: 'Profil setzen',
+      },
+      async (pwd?: string) => {
+        setAsusRogSettingProfile(true)
+        try {
+          const body: Record<string, string> = { profile }
+          if (pwd) body.sudo_password = pwd
+          const r = await fetchApi('/api/system/asus-rog/fan/set-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
+          const d = await r.json()
+          if (d.success) {
+            toast.success(`Lüfter-Profil "${profile}" wurde aktiviert`)
+            setAsusRogCurrentProfile(profile)
+            await loadAsusRogFanData()
+          } else {
+            toast.error(d.error || 'Fehler beim Setzen des Profils')
+          }
+        } catch (e) {
+          toast.error('Fehler beim Setzen des Lüfter-Profils')
+        } finally {
+          setAsusRogSettingProfile(false)
+        }
+      }
+    )
   }
 
   const loadPerformance = async () => {
@@ -1818,6 +1921,124 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
           </div>
         )
       
+      case 'asus-rog-fan':
+        return (
+          <div className="space-y-6">
+            <div className="card">
+              <h3 className="text-xl font-bold text-white mb-4">ASUS ROG Lüftersteuerung</h3>
+              {asusRogLoading ? (
+                <p className="text-slate-400">Lade Lüfter-Informationen…</p>
+              ) : (
+                <div className="space-y-6">
+                  {/* Status */}
+                  {asusRogFanStatus && (
+                    <div className="p-4 bg-slate-700/30 rounded-lg border border-slate-600">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-slate-300">Service-Status</span>
+                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                          asusRogFanStatus.service_running 
+                            ? 'bg-green-600/20 text-green-400' 
+                            : 'bg-red-600/20 text-red-400'
+                        }`}>
+                          {asusRogFanStatus.service_running ? 'Läuft' : 'Gestoppt'}
+                        </span>
+                      </div>
+                      {asusRogCurrentProfile && (
+                        <div className="mt-2">
+                          <span className="text-sm font-medium text-slate-300">Aktuelles Profil: </span>
+                          <span className="text-sm font-semibold text-sky-400">{asusRogCurrentProfile}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Profil-Auswahl */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-3">Lüfter-Profil auswählen</label>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {asusRogProfiles.map((profile) => {
+                        const isActive = asusRogCurrentProfile === profile
+                        const getProfileColor = (p: string) => {
+                          switch (p) {
+                            case 'Performance':
+                              return 'bg-red-600/20 border-red-500/50 hover:bg-red-600/30'
+                            case 'Balanced':
+                              return 'bg-blue-600/20 border-blue-500/50 hover:bg-blue-600/30'
+                            case 'Quiet':
+                              return 'bg-green-600/20 border-green-500/50 hover:bg-green-600/30'
+                            default:
+                              return 'bg-slate-700/30 border-slate-600 hover:bg-slate-700/50'
+                          }
+                        }
+                        const getProfileDescription = (p: string) => {
+                          switch (p) {
+                            case 'Performance':
+                              return 'Höchste Geschwindigkeit für maximale Kühlung'
+                            case 'Balanced':
+                              return 'Ausgewogen zwischen Leistung und Lautstärke'
+                            case 'Quiet':
+                              return 'Niedrigere Geschwindigkeit für leiseres Arbeiten'
+                            default:
+                              return ''
+                          }
+                        }
+                        return (
+                          <button
+                            key={profile}
+                            onClick={() => setAsusRogProfile(profile)}
+                            disabled={asusRogSettingProfile || isActive}
+                            className={`p-4 rounded-lg border-2 transition-all ${
+                              isActive 
+                                ? `${getProfileColor(profile)} ring-2 ring-sky-500` 
+                                : `${getProfileColor(profile)}`
+                            } ${asusRogSettingProfile ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          >
+                            <div className="text-center">
+                              <div className={`text-lg font-bold mb-1 ${
+                                isActive ? 'text-white' : 'text-slate-300'
+                              }`}>
+                                {profile}
+                              </div>
+                              <div className="text-xs text-slate-400 mt-1">
+                                {getProfileDescription(profile)}
+                              </div>
+                              {isActive && (
+                                <div className="mt-2 text-xs text-sky-400 font-semibold">
+                                  ✓ Aktiv
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Lüfter-Kurven-Status */}
+                  {asusRogFanStatus?.curves && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Lüfter-Kurven-Status</label>
+                      <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                        <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap overflow-x-auto">
+                          {asusRogFanStatus.curves}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Info */}
+                  <div className="p-4 bg-blue-600/10 border border-blue-500/30 rounded-lg">
+                    <p className="text-sm text-slate-300">
+                      <strong className="text-blue-400">Hinweis:</strong> Die Änderung des Lüfter-Profils wird sofort angewendet. 
+                      Das ausgewählte Profil bleibt aktiv bis zum Neustart oder manueller Änderung.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+
       case 'performance':
         return (
           <div className="card">
