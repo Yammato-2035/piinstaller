@@ -599,7 +599,7 @@ update_local_installation() {
       else
         log_error "Details siehe $LOG_FILE"
         handle_error "local_update" "Lokale Installation konnte nicht aktualisiert werden. Bitte manuell: sudo apt install -y /tmp/pi-installer-update.deb"
-        rm -f /tmp/pi-installer-update.deb
+        sudo rm -f /tmp/pi-installer-update.deb 2>/dev/null || true
         return 1
       fi
     fi
@@ -611,12 +611,14 @@ update_local_installation() {
     else
       log_error "apt-Ausgabe siehe $LOG_FILE"
       handle_error "local_update" "Installation des DEB-Pakets fehlgeschlagen. Bitte manuell: sudo apt install -y /tmp/pi-installer-update.deb"
-      rm -f /tmp/pi-installer-update.deb
+      sudo rm -f /tmp/pi-installer-update.deb 2>/dev/null || true
       return 1
     fi
   fi
   
-  rm -f /tmp/pi-installer-update.deb
+  # Cleanup: Datei wurde mit sudo cp erstellt → gehört root; Cleanup in Subshell,
+  # damit ein fehlgeschlagenes sudo rm den Rückgabewert der Funktion nicht verfälscht (set -e).
+  ( sudo rm -f /tmp/pi-installer-update.deb 2>/dev/null || true )
   return 0
 }
 
@@ -743,11 +745,15 @@ main() {
       step_result=1
     fi
     
-    # Schritt 6: Lokale Installation updaten
-    if [ $step_result -eq 0 ] && ! update_local_installation 2>&1; then
-      last_error_step="local_update"
-      handle_error "local_update" "Lokale Installation konnte nicht aktualisiert werden"
-      step_result=1
+    # Schritt 6: Lokale Installation updaten (Exit-Code explizit prüfen, kein !/2>&1 in Bedingung)
+    if [ $step_result -eq 0 ]; then
+      update_local_installation 2>&1
+      update_ret=$?
+      if [ "$update_ret" -ne 0 ]; then
+        last_error_step="local_update"
+        handle_error "local_update" "Lokale Installation konnte nicht aktualisiert werden"
+        step_result=1
+      fi
     fi
     
     if [ $step_result -eq 0 ]; then
