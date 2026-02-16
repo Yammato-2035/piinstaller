@@ -561,21 +561,63 @@ update_local_installation() {
   
   log "Schritt 6: Lokale Installation updaten..."
   
-  local deb_file=$(ls -t ../pi-installer_*_all.deb 2>/dev/null | head -1)
-  if [ -z "$deb_file" ]; then
-    handle_error "local_update" "Kein DEB-Paket gefunden"
-    return 1
+  # DEB-Paket suchen (dpkg-buildpackage legt es in .. ab, also $REPO_ROOT/..)
+  local deb_file=""
+  local parent_dir="$REPO_ROOT/.."
+  deb_file=$(ls -t "$parent_dir"/pi-installer_*_all.deb 2>/dev/null | head -1)
+  if [ -z "$deb_file" ] || [ ! -f "$deb_file" ]; then
+    deb_file=$(cd "$REPO_ROOT" && ls -t ../pi-installer_*_all.deb 2>/dev/null | head -1)
+  fi
+  if [ -z "$deb_file" ] || [ ! -f "$deb_file" ]; then
+    log_warn "Kein DEB-Paket gefunden – lokales Update übersprungen"
+    return 0
   fi
   
+  deb_file="$(cd "$(dirname "$deb_file")" 2>/dev/null && pwd)/$(basename "$deb_file")"
+  [ -n "$deb_file" ] && [ -f "$deb_file" ] || {
+    log_warn "DEB-Pfad ungültig – lokales Update übersprungen"
+    return 0
+  }
   log "Installiere DEB-Paket: $deb_file"
-  sudo cp "$deb_file" /tmp/pi-installer-update.deb
-  sudo apt install --only-upgrade -y /tmp/pi-installer-update.deb || {
-    handle_error "local_update" "Installation fehlgeschlagen"
+  
+  # Nach /tmp kopieren (apt kann aus manchen Verzeichnissen nicht lesen)
+  sudo cp "$deb_file" /tmp/pi-installer-update.deb 2>/dev/null || {
+    handle_error "local_update" "DEB-Datei konnte nicht nach /tmp kopiert werden"
     return 1
   }
   
-  log_success "Lokale Installation aktualisiert"
+  # Prüfen ob pi-installer bereits installiert ist
+  if dpkg -l pi-installer 2>/dev/null | grep -q '^ii'; then
+    # Upgrade: zuerst --only-upgrade, bei Fehler normale Installation
+    log "Führe apt install --only-upgrade aus..."
+    if sudo apt install --only-upgrade -y /tmp/pi-installer-update.deb >> "$LOG_FILE" 2>&1; then
+      log_success "Lokale Installation aktualisiert (Upgrade)"
+    else
+      log_warn "apt --only-upgrade fehlgeschlagen, versuche normale Installation..."
+      if sudo apt install -y /tmp/pi-installer-update.deb >> "$LOG_FILE" 2>&1; then
+        log_success "Lokale Installation durchgeführt"
+      else
+        log_error "Details siehe $LOG_FILE"
+        handle_error "local_update" "Lokale Installation konnte nicht aktualisiert werden. Bitte manuell: sudo apt install -y /tmp/pi-installer-update.deb"
+        rm -f /tmp/pi-installer-update.deb
+        return 1
+      fi
+    fi
+  else
+    # Ersteinrichtung
+    log "pi-installer war nicht installiert – führe Ersteinrichtung durch..."
+    if sudo apt install -y /tmp/pi-installer-update.deb >> "$LOG_FILE" 2>&1; then
+      log_success "Lokale Installation durchgeführt (Ersteinrichtung)"
+    else
+      log_error "apt-Ausgabe siehe $LOG_FILE"
+      handle_error "local_update" "Installation des DEB-Pakets fehlgeschlagen. Bitte manuell: sudo apt install -y /tmp/pi-installer-update.deb"
+      rm -f /tmp/pi-installer-update.deb
+      return 1
+    fi
+  fi
+  
   rm -f /tmp/pi-installer-update.deb
+  return 0
 }
 
 # Analysiere Log auf Fehler und behebe sie
