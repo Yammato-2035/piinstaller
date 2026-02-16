@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { Globe, Settings, Lock, Monitor } from 'lucide-react'
+import { Globe, Settings, Lock, Monitor, LayoutDashboard, Sliders } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 
+type WebServerTab = 'overview' | 'config'
+
 const WebServerSetup: React.FC = () => {
   const { pageSubtitleLabel } = usePlatform()
+  const [activeTab, setActiveTab] = useState<WebServerTab>('overview')
   const [config, setConfig] = useState({
     server_type: 'nginx',
     enable_ssl: true,
@@ -205,12 +209,62 @@ const WebServerSetup: React.FC = () => {
         <p className="text-slate-400">Webserver – {pageSubtitleLabel}</p>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3 space-y-8">
-          {/* Aktuelle Installationen */}
-          {webserverStatus && (
-            <div className="card bg-slate-700/50">
-              <h2 className="text-2xl font-bold text-white mb-4">Aktuelle Installationen</h2>
+      {/* Untermenü wie bei Backup & Restore */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
+        <div className="flex gap-2 border-b border-slate-700 mb-6">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
+              activeTab === 'overview' ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <LayoutDashboard size={18} />
+            Übersicht
+            {activeTab === 'overview' && (
+              <motion.div
+                layoutId="webServerActiveTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
+                initial={false}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('config')}
+            className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
+              activeTab === 'config' ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Sliders size={18} />
+            Konfiguration
+            {activeTab === 'config' && (
+              <motion.div
+                layoutId="webServerActiveTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
+                initial={false}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Tab-Inhalt */}
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.2 }}
+        className="space-y-6"
+      >
+        {activeTab === 'overview' && !webserverStatus && (
+          <div className="card bg-slate-700/50">
+            <p className="text-slate-400">Status wird geladen…</p>
+          </div>
+        )}
+        {activeTab === 'overview' && webserverStatus && (
+          <div className="card bg-slate-700/50">
+            <h2 className="text-2xl font-bold text-white mb-4">Aktuelle Installationen</h2>
               
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div className="p-4 bg-slate-800/50 rounded-lg">
@@ -422,166 +476,169 @@ const WebServerSetup: React.FC = () => {
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Server Type Selection */}
-          <div className="card">
-            <h2 className="text-2xl font-bold text-white mb-4">Webserver Typ</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              {serverTypes.map((server) => (
-                <SelectCard
-                  key={server.id}
-                  item={server}
-                  selected={config.server_type === server.id}
-                  onChange={(id: string) => setConfig({ ...config, server_type: id })}
-                  docsLink={serverDocs[server.id as keyof typeof serverDocs]}
-                />
-              ))}
-            </div>
           </div>
+        )}
 
-          {/* Security Options */}
-          <div className="card">
-            <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-              <Lock size={24} />
-              Sicherheit
-            </h2>
-            <div className="space-y-3">
-              <CheckboxItem
-                label="🔒 SSL/TLS mit Let's Encrypt"
-                checked={config.enable_ssl}
-                onChange={(v) => setConfig({ ...config, enable_ssl: v })}
-              />
-              <CheckboxItem
-                label="💻 PHP Support"
-                checked={config.enable_php}
-                onChange={(v) => setConfig({ ...config, enable_php: v })}
-                installed={webserverStatus?.php?.installed}
-              />
-              <CheckboxItem
-                label="🎛️ Webadmin Panel"
-                checked={config.install_webadmin}
-                onChange={(v) => setConfig({ ...config, install_webadmin: v })}
-              />
-            </div>
-          </div>
-
-          {/* CMS Selection */}
-          <div className="card">
-            <h2 className="text-2xl font-bold text-white mb-4">Content Management System</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              {cms_options.map((cms) => {
-                const isInstalled = cms.id && webserverStatus?.installed_cms?.[cms.id]
-                const link = isInstalled && cms.id === 'wordpress' 
-                  ? (webserverStatus?.network?.ips?.[0] ? `http://${webserverStatus.network.ips[0]}` : null)
-                  : isInstalled && cms.id === 'nextcloud'
-                  ? (webserverStatus?.network?.ips?.[0] ? `http://${webserverStatus.network.ips[0]}/nextcloud` : null)
-                  : isInstalled && cms.id === 'drupal'
-                  ? (webserverStatus?.network?.ips?.[0] ? `http://${webserverStatus.network.ips[0]}/drupal` : null)
-                  : null
-                
-                return (
-                  <SelectCard
-                    key={cms.id || 'none'}
-                    item={cms}
-                    selected={config.cms_type === cms.id}
-                    onChange={(id: string | null) => setConfig({ ...config, cms_type: id })}
-                    installed={isInstalled}
-                    link={link}
-                    docsLink={cms.docsLink}
-                  />
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Webadmin Selection */}
-          {config.install_webadmin && (
-            <div className="card">
-              <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                <Monitor size={24} />
-                Webadmin Panel
-              </h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                {webadmin_options.map((admin) => {
-                  const adminStatus = admin.id === 'cockpit' 
-                    ? webserverStatus?.cockpit 
-                    : webserverStatus?.webmin
-                  const isInstalled = adminStatus?.installed
-                  const link = isInstalled && adminStatus?.port
-                    ? (webserverStatus?.network?.ips?.[0] 
-                        ? `http://${webserverStatus.network.ips[0]}:${adminStatus.port}` 
-                        : `http://localhost:${adminStatus.port}`)
-                    : null
-                  
-                  return (
+        {activeTab === 'config' && (
+          <div className="grid lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-3 space-y-8">
+              {/* Server Type Selection */}
+              <div className="card">
+                <h2 className="text-2xl font-bold text-white mb-4">Webserver Typ</h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {serverTypes.map((server) => (
                     <SelectCard
-                      key={admin.id}
-                      item={admin}
-                      selected={config.webadmin_type === admin.id}
-                      onChange={(id: string) => setConfig({ ...config, webadmin_type: id })}
-                      installed={isInstalled}
-                      link={link}
-                      docsLink={admin.docsLink}
+                      key={server.id}
+                      item={server}
+                      selected={config.server_type === server.id}
+                      onChange={(id: string) => setConfig({ ...config, server_type: id })}
+                      docsLink={serverDocs[server.id as keyof typeof serverDocs]}
                     />
-                  )
-                })}
+                  ))}
+                </div>
+              </div>
+
+              {/* Security Options */}
+              <div className="card">
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                  <Lock size={24} />
+                  Sicherheit
+                </h2>
+                <div className="space-y-3">
+                  <CheckboxItem
+                    label="🔒 SSL/TLS mit Let's Encrypt"
+                    checked={config.enable_ssl}
+                    onChange={(v) => setConfig({ ...config, enable_ssl: v })}
+                  />
+                  <CheckboxItem
+                    label="💻 PHP Support"
+                    checked={config.enable_php}
+                    onChange={(v) => setConfig({ ...config, enable_php: v })}
+                    installed={webserverStatus?.php?.installed}
+                  />
+                  <CheckboxItem
+                    label="🎛️ Webadmin Panel"
+                    checked={config.install_webadmin}
+                    onChange={(v) => setConfig({ ...config, install_webadmin: v })}
+                  />
+                </div>
+              </div>
+
+              {/* CMS Selection */}
+              <div className="card">
+                <h2 className="text-2xl font-bold text-white mb-4">Content Management System</h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {cms_options.map((cms) => {
+                    const isInstalled = cms.id && webserverStatus?.installed_cms?.[cms.id]
+                    const link = isInstalled && cms.id === 'wordpress' 
+                      ? (webserverStatus?.network?.ips?.[0] ? `http://${webserverStatus.network.ips[0]}` : null)
+                      : isInstalled && cms.id === 'nextcloud'
+                      ? (webserverStatus?.network?.ips?.[0] ? `http://${webserverStatus.network.ips[0]}/nextcloud` : null)
+                      : isInstalled && cms.id === 'drupal'
+                      ? (webserverStatus?.network?.ips?.[0] ? `http://${webserverStatus.network.ips[0]}/drupal` : null)
+                      : null
+                    return (
+                      <SelectCard
+                        key={cms.id || 'none'}
+                        item={cms}
+                        selected={config.cms_type === cms.id}
+                        onChange={(id: string | null) => setConfig({ ...config, cms_type: id })}
+                        installed={isInstalled}
+                        link={link}
+                        docsLink={cms.docsLink}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Webadmin Selection */}
+              {config.install_webadmin && (
+                <div className="card">
+                  <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <Monitor size={24} />
+                    Webadmin Panel
+                  </h2>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {webadmin_options.map((admin) => {
+                      const adminStatus = admin.id === 'cockpit' 
+                        ? webserverStatus?.cockpit 
+                        : webserverStatus?.webmin
+                      const isInstalled = adminStatus?.installed
+                      const link = isInstalled && adminStatus?.port
+                        ? (webserverStatus?.network?.ips?.[0] 
+                            ? `http://${webserverStatus.network.ips[0]}:${adminStatus.port}` 
+                            : `http://localhost:${adminStatus.port}`)
+                        : null
+                      return (
+                        <SelectCard
+                          key={admin.id}
+                          item={admin}
+                          selected={config.webadmin_type === admin.id}
+                          onChange={(id: string) => setConfig({ ...config, webadmin_type: id })}
+                          installed={isInstalled}
+                          link={link}
+                          docsLink={admin.docsLink}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <button
+                onClick={applyConfig}
+                disabled={loading}
+                className="w-full btn-primary text-lg py-3 flex items-center justify-center gap-2"
+              >
+                {loading ? '⏳ Wird konfiguriert...' : '✓ Konfiguration anwenden'}
+              </button>
+            </div>
+
+            {/* Info Panel */}
+            <div className="space-y-4">
+              <div className="card bg-gradient-to-br from-purple-900/30 to-purple-900/10 border-purple-500/50">
+                <h3 className="text-lg font-bold text-purple-300 mb-3">🌐 Ports</h3>
+                <div className="text-sm text-slate-300 space-y-1">
+                  <p><span className="font-semibold">80</span> - HTTP</p>
+                  <p><span className="font-semibold">443</span> - HTTPS</p>
+                  <p><span className="font-semibold">9090</span> - Cockpit</p>
+                  <p><span className="font-semibold">10000</span> - Webmin</p>
+                </div>
+              </div>
+
+              <div className="card bg-gradient-to-br from-green-900/30 to-green-900/10 border-green-500/50">
+                <h3 className="text-lg font-bold text-green-300 mb-3">⚡ Performance</h3>
+                <ul className="text-sm text-slate-300 space-y-2">
+                  <li>• Nginx ist schneller</li>
+                  <li>• Apache ist flexibler</li>
+                  <li>• SSL ist wichtig</li>
+                  <li>• Let's Encrypt kostenlos</li>
+                </ul>
+              </div>
+
+              <div className="card bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-blue-500/50">
+                <h3 className="text-lg font-bold text-blue-300 mb-3">📝 Nach Installation</h3>
+                <ul className="text-sm text-slate-300 space-y-2">
+                  <li>✓ Domain konfigurieren</li>
+                  <li>✓ SSL-Zertifikat setzen</li>
+                  <li>✓ Firewall öffnen</li>
+                  <li>✓ Domain DNS zeigen</li>
+                </ul>
+              </div>
+
+              <div className="card">
+                <h3 className="text-lg font-bold text-white mb-3">🔍 URL Beispiele</h3>
+                <code className="text-xs bg-slate-800 p-2 rounded block text-slate-300">
+                  http://pi.local:8000<br/>
+                  https://example.com
+                </code>
               </div>
             </div>
-          )}
-
-          {/* Action Buttons */}
-          <button
-            onClick={applyConfig}
-            disabled={loading}
-            className="w-full btn-primary text-lg py-3 flex items-center justify-center gap-2"
-          >
-            {loading ? '⏳ Wird konfiguriert...' : '✓ Konfiguration anwenden'}
-          </button>
-        </div>
-
-        {/* Info Panel */}
-        <div className="space-y-4">
-          <div className="card bg-gradient-to-br from-purple-900/30 to-purple-900/10 border-purple-500/50">
-            <h3 className="text-lg font-bold text-purple-300 mb-3">🌐 Ports</h3>
-            <div className="text-sm text-slate-300 space-y-1">
-              <p><span className="font-semibold">80</span> - HTTP</p>
-              <p><span className="font-semibold">443</span> - HTTPS</p>
-              <p><span className="font-semibold">9090</span> - Cockpit</p>
-              <p><span className="font-semibold">10000</span> - Webmin</p>
-            </div>
           </div>
-
-          <div className="card bg-gradient-to-br from-green-900/30 to-green-900/10 border-green-500/50">
-            <h3 className="text-lg font-bold text-green-300 mb-3">⚡ Performance</h3>
-            <ul className="text-sm text-slate-300 space-y-2">
-              <li>• Nginx ist schneller</li>
-              <li>• Apache ist flexibler</li>
-              <li>• SSL ist wichtig</li>
-              <li>• Let's Encrypt kostenlos</li>
-            </ul>
-          </div>
-
-          <div className="card bg-gradient-to-br from-blue-900/30 to-blue-900/10 border-blue-500/50">
-            <h3 className="text-lg font-bold text-blue-300 mb-3">📝 Nach Installation</h3>
-            <ul className="text-sm text-slate-300 space-y-2">
-              <li>✓ Domain konfigurieren</li>
-              <li>✓ SSL-Zertifikat setzen</li>
-              <li>✓ Firewall öffnen</li>
-              <li>✓ Domain DNS zeigen</li>
-            </ul>
-          </div>
-
-          <div className="card">
-            <h3 className="text-lg font-bold text-white mb-3">🔍 URL Beispiele</h3>
-            <code className="text-xs bg-slate-800 p-2 rounded block text-slate-300">
-              http://pi.local:8000<br/>
-              https://example.com
-            </code>
-          </div>
-        </div>
-      </div>
+        )}
+      </motion.div>
     </div>
   )
 }

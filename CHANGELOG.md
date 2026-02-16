@@ -5,6 +5,42 @@ Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
 
 ---
 
+## [1.3.4.14] - 2026-02-16
+
+### Added
+- Automatisches Release: Version 1.3.4.14
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [1.3.4.13] - 2026-02-16
+
+### Added
+- Automatisches Release: Version 1.3.4.13
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [1.3.4.12] - 2026-02-16
+
+### Added
+- Automatisches Release: Version 1.3.4.12
+
+### Changed
+- Build-Prozess optimiert
+
+
+## [1.3.4.11] - 2026-02-16
+
+### Added
+- Automatisches Release: Version 1.3.4.11
+
+### Changed
+- Build-Prozess optimiert
+
+
 ## [1.3.4.10] - 2026-02-16
 
 ### Added

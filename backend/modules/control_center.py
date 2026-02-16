@@ -375,15 +375,16 @@ class ControlCenterModule:
         iface = self._get_wifi_interface(sudo_password)
         _stdin = (sudo_password + "\n").encode("utf-8") if sudo_password else None
         try:
-            # wpa_cli list_networks: Ausgabe "network id\tssid\tbssid\tflags"
-            r = subprocess.run(
-                ["wpa_cli", "-i", iface, "list_networks"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
+            # wpa_cli list_networks oft nur mit root; mit sudo ausführen falls Passwort da
+            cmd = ["wpa_cli", "-i", iface, "list_networks"]
+            kw = {"capture_output": True, "text": True, "timeout": 5}
+            if sudo_password:
+                cmd = ["sudo", "-S", "wpa_cli", "-i", iface, "list_networks"]
+                kw["input"] = sudo_password + "\n"
+            r = subprocess.run(cmd, **kw)
             if r.returncode != 0:
-                return {"status": "error", "message": "Netzwerke konnten nicht gelesen werden"}
+                err = (r.stderr or r.stdout or "").strip() or "wpa_cli list_networks fehlgeschlagen"
+                return {"status": "error", "message": f"Netzwerke konnten nicht gelesen werden ({err}). Evtl. Sudo-Passwort eingeben."}
             network_id = None
             for line in (r.stdout or "").strip().split("\n"):
                 parts = line.split("\t")

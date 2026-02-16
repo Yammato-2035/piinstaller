@@ -903,11 +903,14 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
               <StatusItem
                 label="CPU"
                 status="active"
-                value={stats.cpu?.count != null
-                  ? (stats.cpu.physical_cores != null && stats.cpu.physical_cores !== stats.cpu.count
-                    ? `${stats.cpu.count} Threads (${stats.cpu.physical_cores} Kerne)`
-                    : `${stats.cpu.count} Threads`)
-                  : '—'}
+                value={(() => {
+                  const threads = stats.cpu?.count ?? stats.cpu_summary?.threads
+                  const cores = stats.cpu_summary?.cores ?? stats.cpu?.physical_cores ?? (threads != null ? Math.max(1, Math.floor(Number(threads) / 2)) : null)
+                  if (threads == null) return '—'
+                  return (cores != null && cores > 0 && cores !== threads)
+                    ? `${threads} Threads (${cores} Kerne)`
+                    : `${threads} Threads`
+                })()}
               />
               <StatusItem
                 label="Speicher Gesamt"
@@ -982,12 +985,17 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
                         {stats.cpu_summary?.name || stats.cpu_name || 'Unbekannt'}
                       </div>
                       <div className="text-xs text-slate-300 flex flex-wrap gap-x-3 gap-y-0.5">
-                        {((stats.cpu_summary?.cores ?? stats.cpu?.physical_cores) != null && (stats.cpu_summary?.cores ?? stats.cpu?.physical_cores) > 0) && (
-                          <span>{stats.cpu_summary?.cores ?? stats.cpu?.physical_cores} Kerne</span>
-                        )}
-                        {((stats.cpu_summary?.threads ?? stats.cpu?.count) != null && (stats.cpu_summary?.threads ?? stats.cpu?.count) > 0) && (
-                          <span>{stats.cpu_summary?.threads ?? stats.cpu?.count} Threads</span>
-                        )}
+                        {(() => {
+                          const cores = stats.cpu_summary?.cores ?? stats.cpu?.physical_cores
+                          const threads = stats.cpu_summary?.threads ?? stats.cpu?.count
+                          const coresDisplay = (cores != null && cores > 0) ? cores : (threads != null && threads > 0 ? Math.max(1, Math.floor(Number(threads) / 2)) : null)
+                          return (
+                            <>
+                              {coresDisplay != null && coresDisplay > 0 && <span>{coresDisplay} Kerne</span>}
+                              {threads != null && threads > 0 && <span>{threads} Threads</span>}
+                            </>
+                          )
+                        })()}
                       </div>
                       {stats.cpu_summary?.cache && (
                         <div className="text-xs text-slate-400">Cache: {stats.cpu_summary.cache}</div>

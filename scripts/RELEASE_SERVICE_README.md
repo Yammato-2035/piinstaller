@@ -15,6 +15,12 @@ Automatisiertes Release-Script für PI-Installer, das alle Schritte von der Vers
 
 ## Verwendung
 
+Hilfe und Optionen jederzeit anzeigen:
+
+```bash
+bash scripts/release-service.sh --help
+```
+
 ### Standard (Patch-Version erhöhen)
 
 ```bash
@@ -94,7 +100,7 @@ tail -f logs/release-service.log
 - Rust/Cargo installiert (für Tauri-Build)
 - Node.js/npm installiert
 - `debhelper` und `rsync` installiert (für DEB-Build)
-- Sudo-Rechte für Installation und Update
+- Sudo-Rechte für Installation und Update (Schritt 6; mit `--skip-update` überspringbar)
 
 ## Beispiel-Ausgabe
 
@@ -135,3 +141,9 @@ tail -f logs/release-service.log
 - Prüfen Sie die Remote-Konfiguration: `git remote -v`
 - Stellen Sie sicher, dass Sie Push-Rechte haben
 - Prüfen Sie ob es Konflikte gibt: `git fetch origin main && git status`
+
+### Lokales Update schlägt fehl (Schritt 6)
+
+- Log prüfen: `tail -50 logs/release-service.log` (apt-Ausgabe wird dort geschrieben)
+- Manuell installieren: `sudo apt install -y /tmp/pi-installer-update.deb` (falls die Datei noch existiert)
+- Beim nächsten Lauf lokales Update überspringen: `bash scripts/release-service.sh --help` → Option `--skip-update`

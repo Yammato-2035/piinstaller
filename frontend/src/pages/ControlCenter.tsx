@@ -129,6 +129,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
   
   // ASUS ROG Fan Control State
   const [asusRogDetected, setAsusRogDetected] = useState(false)
+  const [asusRogCtlAvailable, setAsusRogCtlAvailable] = useState(false)
   const [asusRogLoading, setAsusRogLoading] = useState(false)
   const [asusRogProfiles, setAsusRogProfiles] = useState<string[]>([])
   const [asusRogCurrentProfile, setAsusRogCurrentProfile] = useState<string | null>(null)
@@ -177,8 +178,9 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
     try {
       const r = await fetchApi('/api/system/asus-rog/detection')
       const d = await r.json()
-      if (d.is_asus_rog && d.asusctl_available && d.can_control_fans) {
+      if (d.is_asus_rog) {
         setAsusRogDetected(true)
+        setAsusRogCtlAvailable(!!(d.asusctl_available && d.can_control_fans))
       }
     } catch (e) {
       // Ignore - kein ASUS ROG System
@@ -1928,6 +1930,15 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
               <h3 className="text-xl font-bold text-white mb-4">ASUS ROG Lüftersteuerung</h3>
               {asusRogLoading ? (
                 <p className="text-slate-400">Lade Lüfter-Informationen…</p>
+              ) : !asusRogCtlAvailable ? (
+                <div className="space-y-4">
+                  <p className="text-slate-300">Auf diesem ASUS ROG System ist <strong>asusctl</strong> nicht installiert oder der Service läuft nicht. Ohne asusctl kann die Lüftersteuerung nicht genutzt werden.</p>
+                  <div className="p-4 bg-amber-600/10 border border-amber-500/30 rounded-lg">
+                    <p className="text-sm font-medium text-amber-200 mb-2">Installation (im Projektverzeichnis):</p>
+                    <code className="block text-sm text-slate-300 bg-slate-800 px-3 py-2 rounded">sudo bash scripts/install-asusctl.sh</code>
+                  </div>
+                  <p className="text-sm text-slate-400">Weitere Infos: Dokumentation → ASUS ROG Lüftersteuerung.</p>
+                </div>
               ) : (
                 <div className="space-y-6">
                   {/* Status */}

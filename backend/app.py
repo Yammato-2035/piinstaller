@@ -2572,16 +2572,30 @@ def get_cpu_summary():
                 out["flags"] = line.split(":", 1)[-1].strip()
         # Threads = Anzahl Prozessor-Blöcke
         out["threads"] = len([b for b in blocks if "processor" in b or "Processor" in b])
-        # lscpu für L1d/L1i/L2/L3 falls vorhanden
+        # lscpu für Kerne (Core(s) per socket × Sockets) sowie L1d/L1i/L2/L3
         try:
             r = run_command("lscpu 2>/dev/null")
             if r.get("success") and r.get("stdout"):
+                cores_per_socket = None
+                sockets = None
                 for line in (r.get("stdout") or "").splitlines():
-                    if "L1d cache:" in line or "L1i cache:" in line or "L2 cache:" in line or "L3 cache:" in line:
+                    if "Core(s) per socket:" in line:
+                        try:
+                            cores_per_socket = int(line.split(":")[-1].strip())
+                        except ValueError:
+                            pass
+                    elif "Socket(s):" in line:
+                        try:
+                            sockets = int(line.split(":")[-1].strip())
+                        except ValueError:
+                            pass
+                    elif "L1d cache:" in line or "L1i cache:" in line or "L2 cache:" in line or "L3 cache:" in line:
                         key, _, val = line.partition(":")
                         val = val.strip()
                         if val:
                             out["cache"] = (out["cache"] or "") + (" · " if out["cache"] else "") + f"{key.strip()}: {val}"
+                if out.get("cores") is None and cores_per_socket is not None and sockets is not None:
+                    out["cores"] = cores_per_socket * sockets
         except Exception:
             pass
         if out["cache"]:
@@ -3137,6 +3151,12 @@ async def get_system_info(request: Request, light: bool = False):
                 physical_cores = psutil.cpu_count(logical=False) or 0
             except Exception:
                 physical_cores = 0
+        # Weitere Fallback: Bei 0 Kerne (z. B. unter Linux oft None) aus Threads schätzen
+        if physical_cores == 0 and per_cpu_percent:
+            try:
+                physical_cores = max(1, len(per_cpu_percent) // 2)
+            except Exception:
+                pass
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
         disk_mountpoint = '/'
@@ -3228,6 +3248,19 @@ async def get_system_info(request: Request, light: bool = False):
             "uptime": uptime,
         }
         if light:
+            # Light-Response: cpu_summary und cpu_name mitliefern, damit Dashboard Kerne/Threads anzeigen kann
+            _cpu_name = get_cpu_name()
+            if _cpu_name:
+                resp["cpu_name"] = _cpu_name
+            _cs = get_cpu_summary()
+            _cs["name"] = _cs.get("name") or _cpu_name
+            if resp.get("cpu", {}).get("physical_cores"):
+                _cs["cores"] = _cs.get("cores") or resp["cpu"]["physical_cores"]
+            if not _cs.get("cores") and resp.get("cpu", {}).get("count"):
+                _cs["cores"] = max(1, resp["cpu"]["count"] // 2)
+            if resp.get("cpu", {}).get("count") is not None:
+                _cs["threads"] = _cs.get("threads") or resp["cpu"]["count"]
+            resp["cpu_summary"] = _cs
             return resp
         resp["is_raspberry_pi"] = False
         resp["device_type"] = None

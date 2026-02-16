@@ -10,7 +10,7 @@
 # 6. Updated die lokale Installation
 # 7. Behebt Fehler automatisch und wiederholt bei Bedarf
 #
-# Aufruf: bash scripts/release-service.sh [--skip-update] [--feature-bump]
+# Aufruf: bash scripts/release-service.sh [--skip-update] [--feature-bump] [--help]
 
 set -euo pipefail
 
@@ -24,6 +24,22 @@ MAX_RETRIES=3
 SKIP_UPDATE=false
 FEATURE_BUMP=false
 
+# Hilfe anzeigen
+show_help() {
+  echo "Release-Service: Version erhöhen, bauen, packen, committen, pushen, lokales Update"
+  echo ""
+  echo "Verwendung: $0 [OPTIONEN]"
+  echo ""
+  echo "Optionen:"
+  echo "  --skip-update    Schritt 6 (lokales DEB-Update) überspringen"
+  echo "  --feature-bump   Feature-Version erhöhen (Z in X.Y.Z.W), W auf 0 setzen"
+  echo "  --help           Diese Hilfe anzeigen"
+  echo ""
+  echo "Log: $LOG_FILE"
+  echo "Bei Fehlern: bis zu 3 Wiederholungen mit automatischer Fehlerbehebung."
+  exit 0
+}
+
 # Parse Argumente
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -35,8 +51,11 @@ while [[ $# -gt 0 ]]; do
       FEATURE_BUMP=true
       shift
       ;;
+    --help|-h)
+      show_help
+      ;;
     *)
-      echo "Unbekanntes Argument: $1"
+      echo "Unbekanntes Argument: $1 (siehe --help)"
       exit 1
       ;;
   esac
@@ -456,15 +475,24 @@ build_tauri() {
     }
   fi
   
-  # Baue Tauri-App
+  # Baue Tauri-App (Ausgabe erfassen, bei Fehler ins Log)
   log "Baue Tauri-App (Release)..."
   export PATH="$HOME/.cargo/bin:/usr/local/bin:$PATH"
   [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
   
-  npm run tauri:build || {
-    handle_error "tauri_build" "Tauri-Build fehlgeschlagen"
+  local tauri_log="$REPO_ROOT/logs/tauri-build.log"
+  mkdir -p "$(dirname "$tauri_log")"
+  if ! npm run tauri:build >> "$tauri_log" 2>&1; then
+    {
+      echo ""
+      echo "--- Tauri-Build-Ausgabe (letzte 80 Zeilen) ---"
+      tail -80 "$tauri_log"
+      echo "--- Ende Tauri-Build-Ausgabe ---"
+    } >> "$LOG_FILE"
+    log_error "Tauri-Build-Log (vollständig): $tauri_log"
+    handle_error "tauri_build" "Tauri-Build fehlgeschlagen. Ausgabe: $tauri_log und Ende von $LOG_FILE"
     return 1
-  }
+  fi
   
   if [ -f "src-tauri/target/release/pi-installer" ]; then
     log_success "Tauri-App erfolgreich gebaut"
@@ -684,8 +712,11 @@ analyze_and_fix_log_errors() {
 
 # Hauptfunktion mit Retry-Logik
 main() {
-  # Erstelle Log-Verzeichnis
-  mkdir -p "$(dirname "$LOG_FILE")"
+  # Erstelle Log-Verzeichnis (vor allen Schritten)
+  mkdir -p "$(dirname "$LOG_FILE")" || {
+    echo "Fehler: Log-Verzeichnis konnte nicht erstellt werden: $(dirname "$LOG_FILE")" >&2
+    exit 1
+  }
   
   log "=========================================="
   log "Release-Service gestartet"
