@@ -117,18 +117,81 @@ case "$MODE" in
     TAURI_BINARY="$PROJECT_ROOT/frontend/src-tauri/target/release/pi-installer"
     if [ -x "$TAURI_BINARY" ]; then
       # Installation unter /opt: gebaute Binary nutzen (kein Rust/Cargo nötig)
-      exec env GDK_BACKEND=x11 "$TAURI_BINARY"
+      # Starte im Hintergrund und prüfe ob sie läuft
+      echo "Starte Tauri-Binary: $TAURI_BINARY"
+      # Log-Datei vorbereiten
+      touch /tmp/pi-installer-tauri.log
+      chmod 666 /tmp/pi-installer-tauri.log 2>/dev/null || true
+      env GDK_BACKEND=x11 "$TAURI_BINARY" >>/tmp/pi-installer-tauri.log 2>&1 &
+      TAURI_PID=$!
+      sleep 2
+      if kill -0 "$TAURI_PID" 2>/dev/null; then
+        # Binary läuft, warte auf Beendigung
+        wait $TAURI_PID
+        exit 0
+      else
+        # Binary beendete sich sofort (Absturz/Fehler)
+        echo "⚠️  Tauri-Binary stürzte ab oder startete nicht."
+        if [ -f /tmp/pi-installer-tauri.log ] && [ -s /tmp/pi-installer-tauri.log ]; then
+          echo "   Log (letzte 10 Zeilen):"
+          tail -10 /tmp/pi-installer-tauri.log | sed 's/^/   /'
+        else
+          echo "   (Kein Log verfügbar – Binary startete möglicherweise nicht)"
+        fi
+        echo "   Öffne im Browser..."
+        MODE="browser"
+      fi
     fi
-    # Entwicklungsmodus (benötigt Rust/Cargo)
+    # Keine Binary gefunden: Entwicklungsmodus (Cargo) oder Browser-Fallback
+    echo "ℹ️  Tauri-Binary nicht gefunden unter: $TAURI_BINARY"
     cd "$PROJECT_ROOT/frontend" || exit 1
     [ ! -d "node_modules" ] && npm install
-    if ! command -v cargo >/dev/null 2>&1; then
-      echo "❌ Tauri (App-Fenster): Rust/Cargo nicht installiert und keine gebaute Binary."
-      echo "   Unter /opt: Einmal bauen (auf Rechner mit Rust): cd frontend && npm run tauri:build"
-      echo "   Dann target/release/ nach /opt kopieren. Oder Option 2 (Browser) wählen."
+    if [ "$MODE" = "tauri" ] && command -v cargo >/dev/null 2>&1; then
+      # Entwicklungsmodus mit Cargo - nur wenn Schreibrechte vorhanden
+      if [ -w "$PROJECT_ROOT/frontend/node_modules" ] && [ -w "$PROJECT_ROOT/frontend/src-tauri" ]; then
+        echo "   Versuche Entwicklungsmodus (tauri:dev)..."
+        exec env GDK_BACKEND=x11 npm run tauri:dev
+      else
+        echo "⚠️  Keine Schreibrechte für Entwicklungsmodus (Verzeichnis gehört pi-installer)."
+        echo "   Öffne im Browser..."
+        MODE="browser"
+      fi
+    fi
+    # Fallback Browser (keine Binary, kein Cargo, oder Binary abgestürzt)
+    echo "ℹ️  App-Fenster (Tauri) nicht verfügbar – öffne im Browser..."
+    echo ""
+    kill_port 3001
+    # Prüfe ob Backend läuft (wird vom Service gestartet)
+    if ! curl -sS --max-time 2 http://127.0.0.1:8000/api/version >/dev/null 2>&1; then
+      echo "⚠️  Backend läuft nicht. Starte Backend..."
+      if [ -x "$PROJECT_ROOT/start-backend.sh" ]; then
+        nohup "$PROJECT_ROOT/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
+        sleep 3
+      fi
+    fi
+    # Frontend starten (als aktueller User, nicht als pi-installer)
+    cd "$PROJECT_ROOT/frontend" || exit 1
+    [ ! -d "node_modules" ] && npm install
+    echo "✅ Starte Frontend auf http://localhost:3001"
+    npm run dev >/tmp/pi-installer-frontend.log 2>&1 &
+    VITE_PID=$!
+    sleep 5
+    # Prüfe ob Frontend läuft
+    if kill -0 "$VITE_PID" 2>/dev/null && curl -sS --max-time 2 http://127.0.0.1:3001 >/dev/null 2>&1; then
+      echo "✅ Frontend läuft. Öffne Browser..."
+      if command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "http://localhost:3001" 2>/dev/null &
+      elif command -v sensible-browser >/dev/null 2>&1; then
+        sensible-browser "http://localhost:3001" 2>/dev/null &
+      else
+        echo "💡 Browser bitte manuell öffnen: http://localhost:3001"
+      fi
+      wait $VITE_PID
+    else
+      echo "❌ Frontend konnte nicht gestartet werden. Log: /tmp/pi-installer-frontend.log"
+      [ -f /tmp/pi-installer-frontend.log ] && tail -20 /tmp/pi-installer-frontend.log | sed 's/^/   /'
       exit 1
     fi
-    exec env GDK_BACKEND=x11 npm run tauri:dev
     ;;
   browser)
     echo "🌐 Starte PI-Installer (Browser)..."

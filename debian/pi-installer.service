@@ -7,7 +7,8 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=pi-installer
-Group=pi-installer
+# Group wird in postinst auf die tatsächliche Gruppe gesetzt (kann nogroup sein)
+Group=nogroup
 WorkingDirectory=/opt/pi-installer
 ExecStart=/opt/pi-installer/start.sh
 Restart=on-failure

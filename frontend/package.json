@@ -37,6 +37,6 @@
     "lint": "eslint src --ext ts,tsx",
     "tauri": "tauri",
     "tauri:dev": "bash -c 'export PATH=\"$HOME/.cargo/bin:$PATH\"; [ -f \"$HOME/.cargo/env\" ] && . \"$HOME/.cargo/env\"; exec tauri dev'",
-    "tauri:build": "bash -c 'export PATH=\"$HOME/.cargo/bin:/usr/local/bin:$PATH\"; [ -f \"$HOME/.cargo/env\" ] && . \"$HOME/.cargo/env\"; exec tauri build'"
+    "tauri:build": "bash -c 'export PATH=\"$HOME/.cargo/bin:/usr/local/bin:$PATH\"; [ -f \"$HOME/.cargo/env\" ] && . \"$HOME/.cargo/env\"; unset CI; exec tauri build'"
   }
 }

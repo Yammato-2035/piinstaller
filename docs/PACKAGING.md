@@ -34,15 +34,21 @@ Dabei `1.3.4.2` durch die gewünschte Version ersetzen; `-1` ist die Paketrevisi
 
 ### Einmalige Installation der .deb
 
-```bash
-sudo apt install ./pi-installer_1.3.4.2-1_all.deb
-```
-
-Oder von einer heruntergeladenen Datei (z. B. von GitHub Releases):
+**Hinweis:** Liegt die .deb in deinem Home (z. B. `~/pi-installer_*.deb`), kann apt sie nicht lesen (Benutzer `_apt` hat keinen Zugriff). Dann zuerst nach `/tmp` kopieren:
 
 ```bash
-sudo apt install ~/Downloads/pi-installer_1.3.4.2-1_all.deb
+sudo cp /pfad/zur/pi-installer_1.3.4.2-1_all.deb /tmp/
+sudo apt install /tmp/pi-installer_1.3.4.2-1_all.deb
 ```
+
+Wenn die .deb im aktuellen Verzeichnis liegt (z. B. nach dem Build im Repo-Root):
+
+```bash
+sudo cp ./pi-installer_1.3.4.2-1_all.deb /tmp/
+sudo apt install /tmp/pi-installer_1.3.4.2-1_all.deb
+```
+
+Oder von einer heruntergeladenen Datei (z. B. von GitHub Releases) – bei Dateien in `~/Downloads` ebenfalls über `/tmp` installieren.
 
 ### Update über apt
 
@@ -58,11 +64,13 @@ Ohne Repository: neue .deb von GitHub Releases herunterladen und erneut `sudo ap
 ## Was das Paket macht
 
 - Installiert alle Dateien nach **/opt/pi-installer**
+- **Bindet das Tauri Binary ein** (falls beim Build erstellt)
 - Legt den Service-Benutzer **pi-installer** an
 - Konfiguration: **/etc/pi-installer**, Logs: **/var/log/pi-installer**
 - Richtet **systemd-Service** `pi-installer.service` ein (startet beim Booten)
 - Legt **Startmenü-Einträge** an (PI-Installer, PI-Installer im Browser)
 - Beim ersten Install/Update: Backend-Venv und Frontend-`npm install` werden automatisch ausgeführt
+- Falls Tauri Binary fehlt: Versucht es während der Installation zu bauen (nur wenn `cargo` verfügbar)
 
 ## Paket für GitHub Releases bereitstellen
 

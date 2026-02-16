@@ -207,31 +207,49 @@ Das Update-Skript:
 
 ## Deinstallation
 
-Um PI-Installer zu deinstallieren:
+### Installation per .deb-Paket
+
+Saubere Deinstallation inkl. Konfiguration und Startmenü-Einträge:
 
 ```bash
-# Service stoppen und deaktivieren
-sudo systemctl stop pi-installer
-sudo systemctl disable pi-installer
+sudo apt purge pi-installer
+```
 
-# Dateien entfernen
-sudo rm -rf /opt/pi-installer
-sudo rm -rf /etc/pi-installer
-sudo rm -rf /var/log/pi-installer
+Nur Programm entfernen, Konfiguration behalten:
 
-# Symlinks entfernen
-sudo rm -f /usr/local/bin/pi-installer
-sudo rm -f /usr/local/bin/pi-installer-backend
-sudo rm -f /usr/local/bin/pi-installer-frontend
-sudo rm -f /usr/local/bin/pi-installer-start
-sudo rm -f /usr/local/bin/pi-installer-scripts
+```bash
+sudo apt remove pi-installer
+```
 
-# Service-Datei entfernen
+### Manuelle Installation (install-system.sh / deploy-to-opt.sh)
+
+Ein Skript erledigt alles inkl. Startmenü-Einträge:
+
+```bash
+# Aus dem Repo (oder von /opt/pi-installer, falls noch vorhanden)
+sudo /pfad/zum/piinstaller/scripts/uninstall-system.sh
+```
+
+Das Skript entfernt:
+
+- systemd-Service (Stopp, Deaktivierung, Löschen der Unit)
+- **Startmenü-Einträge** (`/usr/share/applications/pi-installer.desktop`, `pi-installer-browser.desktop`)
+- Symlinks in `/usr/local/bin` (pi-installer, pi-installer-backend, …)
+- Umgebungsvariablen in `/etc/profile.d/pi-installer.sh`
+- Verzeichnisse `/opt/pi-installer`, `/etc/pi-installer`, `/var/log/pi-installer`
+- Optional den Service-User `pi-installer`
+
+**Manuell (ohne Skript):**
+
+```bash
+sudo systemctl stop pi-installer && sudo systemctl disable pi-installer
 sudo rm -f /etc/systemd/system/pi-installer.service
 sudo systemctl daemon-reload
-
-# Umgebungsvariablen entfernen
+sudo rm -f /usr/share/applications/pi-installer.desktop /usr/share/applications/pi-installer-browser.desktop
+sudo rm -f /usr/local/bin/pi-installer /usr/local/bin/pi-installer-*
 sudo rm -f /etc/profile.d/pi-installer.sh
+sudo rm -rf /opt/pi-installer /etc/pi-installer /var/log/pi-installer
+# Optional: sudo deluser --system pi-installer
 ```
 
 ## Umgebungsvariablen

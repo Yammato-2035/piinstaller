@@ -2110,6 +2110,14 @@ def check_installed(package):
             return True
         if run_command("test -f /snap/bin/grafana-server 2>/dev/null")["success"]:
             return True
+        # Docker-Container (auch wenn kein Zugriff auf Socket)
+        if run_command("docker ps --format '{{.Names}}' 2>/dev/null | grep -q grafana")["success"]:
+            return True
+        if run_command("docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q grafana")["success"]:
+            return True
+        # Port 3000 prüfen (Grafana-Standard-Port)
+        if run_command("ss -tlnp 2>/dev/null | grep -q ':3000 '")["success"] or run_command("netstat -tlnp 2>/dev/null | grep -q ':3000 '")["success"]:
+            return True
         return False
 
     # Standard-Prüfung
@@ -3006,6 +3014,12 @@ async def get_system_info(request: Request, light: bool = False):
         per_cpu_percent = psutil.cpu_percent(interval=cpu_interval, percpu=True)
         cpu_percent = sum(per_cpu_percent) / len(per_cpu_percent) if per_cpu_percent else 0
         per_core_usage, physical_cores = (([], 0) if light else get_per_core_usage(per_cpu_percent))
+        # Fallback: psutil.cpu_count(logical=False) wenn physical_cores 0 ist
+        if physical_cores == 0:
+            try:
+                physical_cores = psutil.cpu_count(logical=False) or 0
+            except Exception:
+                physical_cores = 0
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
         disk_mountpoint = '/'
@@ -3152,8 +3166,12 @@ async def get_system_info(request: Request, light: bool = False):
             resp["cpu_name"] = cpu_name
         cpu_summary = get_cpu_summary()
         cpu_summary["name"] = cpu_summary.get("name") or cpu_name
-        if resp.get("cpu", {}).get("physical_cores") is not None:
+        # CPU-Kerne: Priorität: cpu_summary["cores"] > physical_cores > Fallback auf threads/2
+        if resp.get("cpu", {}).get("physical_cores") is not None and resp["cpu"]["physical_cores"] > 0:
             cpu_summary["cores"] = cpu_summary["cores"] or resp["cpu"]["physical_cores"]
+        elif not cpu_summary.get("cores") and resp.get("cpu", {}).get("count"):
+            # Fallback: Wenn keine Kerne gefunden, nimm threads/2 (typisch für Hyperthreading)
+            cpu_summary["cores"] = max(1, resp["cpu"]["count"] // 2)
         if resp.get("cpu", {}).get("count") is not None:
             cpu_summary["threads"] = cpu_summary["threads"] or resp["cpu"]["count"]
         resp["cpu_summary"] = cpu_summary
@@ -6392,17 +6410,35 @@ async def monitoring_status():
         grafana_running = run_command("systemctl is-active grafana-server 2>/dev/null")["success"]
         node_exporter_running = run_command("systemctl is-active node_exporter 2>/dev/null")["success"]
 
+        # Grafana-Erkennung: check_installed + zusätzliche Checks
+        grafana_installed = check_installed("grafana")
+        if not grafana_installed:
+            # Zusätzliche Prüfungen: Port 3000 + Verzeichnisse + systemd
+            port_3000 = run_command("ss -tlnp 2>/dev/null | grep -q ':3000 '")["success"] or run_command("netstat -tlnp 2>/dev/null | grep -q ':3000 '")["success"]
+            grafana_dirs = run_command("test -d /usr/share/grafana 2>/dev/null || test -d /etc/grafana 2>/dev/null")["success"]
+            grafana_systemd = run_command("systemctl list-unit-files 2>/dev/null | grep -q 'grafana-server'")["success"] or run_command("systemctl list-units --all 2>/dev/null | grep -q grafana")["success"]
+            grafana_installed = port_3000 or grafana_dirs or grafana_systemd
+
+        # Node Exporter Erkennung: check_installed + zusätzliche Checks
+        node_exporter_installed = check_installed("node_exporter") or run_command("which node_exporter 2>/dev/null")["success"] or run_command("test -f /usr/local/bin/node_exporter 2>/dev/null")["success"]
+        if not node_exporter_installed:
+            # Zusätzliche Prüfungen: Port 9100 (Node Exporter Standard-Port) + systemd + weitere Pfade
+            port_9100 = run_command("ss -tlnp 2>/dev/null | grep -q ':9100 '")["success"] or run_command("netstat -tlnp 2>/dev/null | grep -q ':9100 '")["success"]
+            systemd_service = run_command("systemctl list-unit-files 2>/dev/null | grep -q 'node_exporter'")["success"] or run_command("systemctl list-units --all 2>/dev/null | grep -q node_exporter")["success"]
+            node_exporter_bin = run_command("test -f /usr/bin/node_exporter 2>/dev/null || test -f /opt/node_exporter/node_exporter 2>/dev/null")["success"]
+            node_exporter_installed = port_9100 or systemd_service or node_exporter_bin
+
         return {
             "prometheus": {
                 "installed": check_installed("prometheus") or run_command("which prometheus 2>/dev/null")["success"] or run_command("test -f /usr/bin/prometheus 2>/dev/null")["success"],
                 "running": prometheus_running,
             },
             "grafana": {
-                "installed": check_installed("grafana"),
-                "running": grafana_running,
+                "installed": grafana_installed,
+                "running": grafana_running or (run_command("ss -tlnp 2>/dev/null | grep -q ':3000 '")["success"] and grafana_installed),
             },
             "node_exporter": {
-                "installed": check_installed("node_exporter") or run_command("which node_exporter 2>/dev/null")["success"] or run_command("test -f /usr/local/bin/node_exporter 2>/dev/null")["success"],
+                "installed": node_exporter_installed,
                 "running": node_exporter_running,
             },
         }

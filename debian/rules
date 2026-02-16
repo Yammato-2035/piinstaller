@@ -14,9 +14,23 @@ override_dh_auto_install:
 	      --exclude='*.pyc' \
 	      --exclude='.env' \
 	      --exclude='dist' \
-	      --exclude='target' \
+	      --exclude='target/debug' \
+	      --exclude='target/.rustc_info.json' \
+	      --exclude='target/.cargo-lock' \
+	      --exclude='target/**/*.rlib' \
+	      --exclude='target/**/*.d' \
+	      --exclude='target/**/*.o' \
+	      --exclude='target/**/*.a' \
 	      --exclude='debian' \
 	      . debian/pi-installer/opt/pi-installer/
+	# Tauri Binary explizit einbinden, falls vorhanden (wird beim Build erstellt)
+	if [ -f frontend/src-tauri/target/release/pi-installer ]; then \
+		install -d debian/pi-installer/opt/pi-installer/frontend/src-tauri/target/release; \
+		install -m 755 frontend/src-tauri/target/release/pi-installer debian/pi-installer/opt/pi-installer/frontend/src-tauri/target/release/pi-installer; \
+		echo "✅ Tauri Binary in Paket eingebunden"; \
+	else \
+		echo "⚠️  Tauri Binary nicht gefunden - Paket wird ohne Tauri Binary gebaut"; \
+	fi
 	# Verzeichnisse für Konfiguration und Logs (Inhalt in postinst)
 	install -d debian/pi-installer/etc/pi-installer
 	install -d debian/pi-installer/var/log/pi-installer

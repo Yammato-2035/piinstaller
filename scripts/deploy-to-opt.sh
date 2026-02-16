@@ -49,14 +49,22 @@ echo -e "  Ziel:    ${INSTALL_DIR}"
 echo -e "  User:    ${SERVICE_USER_NAME}"
 echo ""
 
-# Service-User anlegen
+# Service-User und Gruppe anlegen
 if ! getent passwd "$SERVICE_USER_NAME" >/dev/null 2>&1; then
   info "Lege Service-User an: $SERVICE_USER_NAME"
-  useradd --system --no-create-home --comment "PI-Installer Service" "$SERVICE_USER_NAME"
+  # Gruppe mit gleichem Namen anlegen, falls nicht vorhanden
+  if ! getent group "$SERVICE_USER_NAME" >/dev/null 2>&1; then
+    groupadd --system "$SERVICE_USER_NAME" 2>/dev/null || true
+  fi
+  useradd --system --no-create-home --comment "PI-Installer Service" --gid "$SERVICE_USER_NAME" "$SERVICE_USER_NAME" 2>/dev/null || \
+  useradd --system --no-create-home --comment "PI-Installer Service" "$SERVICE_USER_NAME" 2>/dev/null || true
   ok "User $SERVICE_USER_NAME erstellt"
 else
   ok "Service-User $SERVICE_USER_NAME existiert bereits"
 fi
+
+# Tatsächliche Gruppe ermitteln (könnte nogroup sein)
+SERVICE_GROUP=$(id -gn "$SERVICE_USER_NAME" 2>/dev/null || echo "$SERVICE_USER_NAME")
 
 # Verzeichnisse
 mkdir -p "$INSTALL_DIR"
@@ -154,7 +162,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=$SERVICE_USER_NAME
-Group=$SERVICE_USER_NAME
+Group=$SERVICE_GROUP
 WorkingDirectory=$INSTALL_DIR
 ExecStart=$INSTALL_DIR/start.sh
 Restart=on-failure

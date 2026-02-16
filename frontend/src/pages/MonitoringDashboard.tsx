@@ -36,6 +36,10 @@ const MonitoringDashboard: React.FC = () => {
       const response = await fetchApi('/api/monitoring/status')
       const data = await response.json()
       setStatus(data)
+      // Debug: Status in Konsole ausgeben
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Monitoring Status:', data)
+      }
     } catch (error) {
       console.error('Fehler beim Laden des Status:', error)
     } finally {
@@ -202,12 +206,16 @@ const MonitoringDashboard: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card"
+          className="card break-words"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-white">Prometheus</h3>
-            {status?.prometheus?.running ? (
-              <CheckCircle className="text-green-500 status-icon active" size={24} />
+            {status?.prometheus?.installed ? (
+              status?.prometheus?.running ? (
+                <CheckCircle className="text-green-500 status-icon active" size={24} />
+              ) : (
+                <CheckCircle className="text-green-500" size={24} />
+              )
             ) : (
               <AlertCircle className="text-yellow-500" size={24} />
             )}
@@ -217,6 +225,7 @@ const MonitoringDashboard: React.FC = () => {
               <>
                 <CheckCircle className="text-green-500 shrink-0" size={18} />
                 <span className="text-green-400 font-medium">Installiert</span>
+                {status?.prometheus?.running && <span className="text-green-400 text-xs">(läuft)</span>}
               </>
             ) : (
               <span className="text-slate-400">Nicht installiert</span>
@@ -238,13 +247,14 @@ const MonitoringDashboard: React.FC = () => {
             </button>
           )}
           {status?.prometheus?.installed && (
-            <div className="mt-4 pt-3 border-t border-slate-600">
+            <div className="mt-4 pt-3 border-t border-slate-600" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', maxWidth: '100%' }}>
               <p className="text-xs font-semibold text-slate-300 mb-2">Beispiel: Was Prometheus kann</p>
-              <ul className="text-xs text-slate-400 space-y-1 list-disc list-inside">
-                <li>Metriken sammeln (z. B. Node Exporter auf Port 9100)</li>
-                <li>PromQL-Abfragen: <code className="bg-slate-700 px-1 rounded">node_cpu_seconds_total</code>, <code className="bg-slate-700 px-1 rounded">rate(node_network_receive_bytes_total[5m])</code></li>
-                <li>Targets prüfen unter <a href="http://localhost:9090/targets" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">localhost:9090/targets</a></li>
-                <li>Grafana als Frontend: Prometheus als Datenquelle hinzufügen (URL <code className="bg-slate-700 px-1 rounded">http://localhost:9090</code>)</li>
+              <ul className="text-xs text-slate-400 space-y-1 list-disc list-inside" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', maxWidth: '100%' }}>
+                <li style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>Metriken sammeln (z. B. Node Exporter auf Port 9100)</li>
+                <li style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>PromQL-Abfragen: <code className="bg-slate-700 px-1 rounded break-all">node_cpu_seconds_total</code>, <code className="bg-slate-700 px-1 rounded break-all">rate(node_network_receive_bytes_total[5m])</code></li>
+                <li style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>Targets prüfen unter <a href="http://localhost:9090/targets" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline break-all">localhost:9090/targets</a></li>
+                <li style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>Grafana als Frontend: Prometheus als Datenquelle hinzufügen (URL <code className="bg-slate-700 px-1 rounded break-all">http://localhost:9090</code>)</li>
+                <li style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>Beispiel-Abfragen: CPU-Auslastung <code className="bg-slate-700 px-1 rounded break-all">{'100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)'}</code>, Speicher <code className="bg-slate-700 px-1 rounded break-all">node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes</code></li>
               </ul>
               <a href="https://prometheus.io/docs/prometheus/latest/querying/basics/" target="_blank" rel="noopener noreferrer" className="text-sky-400 text-xs mt-2 inline-block hover:underline">PromQL-Dokumentation</a>
             </div>
@@ -255,12 +265,16 @@ const MonitoringDashboard: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card"
+          className="card break-words"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-white">Grafana</h3>
-            {status?.grafana?.running ? (
-              <CheckCircle className="text-green-500 status-icon active" size={24} />
+            {status?.grafana?.installed ? (
+              status?.grafana?.running ? (
+                <CheckCircle className="text-green-500 status-icon active" size={24} />
+              ) : (
+                <CheckCircle className="text-green-500" size={24} />
+              )
             ) : (
               <AlertCircle className="text-yellow-500" size={24} />
             )}
@@ -270,6 +284,7 @@ const MonitoringDashboard: React.FC = () => {
               <>
                 <CheckCircle className="text-green-500 shrink-0" size={18} />
                 <span className="text-green-400 font-medium">Installiert</span>
+                {status?.grafana?.running && <span className="text-green-400 text-xs">(läuft)</span>}
               </>
             ) : (
               <span className="text-slate-400">Nicht installiert</span>
@@ -290,18 +305,34 @@ const MonitoringDashboard: React.FC = () => {
               <Trash2 size={16} /> Entfernen
             </button>
           )}
+          {status?.grafana?.installed && (
+            <div className="mt-4 pt-3 border-t border-slate-600">
+              <p className="text-xs font-semibold text-slate-300 mb-2">Was Grafana kann</p>
+              <ul className="text-xs text-slate-400 space-y-1 list-disc list-inside break-words">
+                <li>Dashboards erstellen: CPU, RAM, Disk, Netzwerk, Temperatur visualisieren</li>
+                <li>Prometheus als Datenquelle: In Grafana → Configuration → Data Sources → Prometheus (URL: <code className="bg-slate-700 px-1 rounded break-all">http://localhost:9090</code>)</li>
+                <li>Vorgefertigte Dashboards: z. B. "Node Exporter Full" (ID 1860) importieren</li>
+                <li>Alerts konfigurieren: Warnungen bei hoher CPU, niedrigem Speicher, etc.</li>
+                <li>Grafiken exportieren: PNG/PDF für Reports</li>
+              </ul>
+            </div>
+          )}
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card"
+          className="card break-words"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-white">Node Exporter</h3>
-            {status?.node_exporter?.running ? (
-              <CheckCircle className="text-green-500 status-icon active" size={24} />
+            {status?.node_exporter?.installed ? (
+              status?.node_exporter?.running ? (
+                <CheckCircle className="text-green-500 status-icon active" size={24} />
+              ) : (
+                <CheckCircle className="text-green-500" size={24} />
+              )
             ) : (
               <AlertCircle className="text-yellow-500" size={24} />
             )}
@@ -311,11 +342,17 @@ const MonitoringDashboard: React.FC = () => {
               <>
                 <CheckCircle className="text-green-500 shrink-0" size={18} />
                 <span className="text-green-400 font-medium">Installiert</span>
+                {status?.node_exporter?.running && <span className="text-green-400 text-xs">(läuft)</span>}
               </>
             ) : (
               <span className="text-slate-400">Nicht installiert</span>
             )}
           </p>
+          {status?.node_exporter?.running && (
+            <a href="http://localhost:9100/metrics" target="_blank" rel="noopener noreferrer" className="text-sky-400 text-sm mt-2 block hover:underline">
+              → Metriken anzeigen (Port 9100)
+            </a>
+          )}
           {status?.node_exporter?.installed && (
             <button
               type="button"
@@ -325,6 +362,18 @@ const MonitoringDashboard: React.FC = () => {
             >
               <Trash2 size={16} /> Entfernen
             </button>
+          )}
+          {status?.node_exporter?.installed && (
+            <div className="mt-4 pt-3 border-t border-slate-600">
+              <p className="text-xs font-semibold text-slate-300 mb-2">Was Node Exporter kann</p>
+              <ul className="text-xs text-slate-400 space-y-1 list-disc list-inside break-words">
+                <li>System-Metriken sammeln: CPU, RAM, Disk, Netzwerk, Temperatur, Boot-Zeit</li>
+                <li>Metriken unter <a href="http://localhost:9100/metrics" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline break-all">localhost:9100/metrics</a> abrufbar</li>
+                <li>Prometheus sammelt diese Metriken automatisch (wenn konfiguriert)</li>
+                <li>Beispiel-Metriken: <code className="bg-slate-700 px-1 rounded break-all">node_cpu_seconds_total</code> (CPU-Zeit), <code className="bg-slate-700 px-1 rounded break-all">node_memory_MemTotal_bytes</code> (RAM), <code className="bg-slate-700 px-1 rounded break-all">node_filesystem_avail_bytes</code> (freier Speicher)</li>
+                <li>Grafana-Dashboards nutzen diese Metriken für Visualisierungen</li>
+              </ul>
+            </div>
           )}
         </motion.div>
       </div>

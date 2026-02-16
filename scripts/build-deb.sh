@@ -20,6 +20,30 @@ VERSION="1.3.4.2"
 [ -f "VERSION" ] && VERSION="$(cat VERSION | tr -d '\n')"
 echo "Baue pi-installer ${VERSION}..."
 
+# Tauri Binary bauen, falls nicht vorhanden
+TAURI_BINARY="frontend/src-tauri/target/release/pi-installer"
+if [ ! -f "$TAURI_BINARY" ]; then
+  echo ""
+  echo "⚠️  Tauri Binary nicht gefunden. Baue es jetzt..."
+  if command -v cargo >/dev/null 2>&1; then
+    cd frontend
+    export PATH="$HOME/.cargo/bin:/usr/local/bin:$PATH"
+    [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+    if npm run tauri:build; then
+      echo "✅ Tauri Binary erfolgreich erstellt."
+      cd ..
+    else
+      echo "❌ Tauri Build fehlgeschlagen. Paket wird ohne Tauri Binary gebaut."
+      cd ..
+    fi
+  else
+    echo "⚠️  Cargo nicht gefunden. Paket wird ohne Tauri Binary gebaut."
+    echo "   Für Tauri Binary: Rust installieren (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh)"
+  fi
+else
+  echo "✅ Tauri Binary gefunden: $TAURI_BINARY"
+fi
+
 # Hinweis: Version in debian/changelog ggf. anpassen (erste Zeile: pi-installer (VERSION-1)).
 
 dpkg-buildpackage -us -uc -b -tc
