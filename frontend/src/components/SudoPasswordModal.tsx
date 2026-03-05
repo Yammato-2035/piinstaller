@@ -24,13 +24,13 @@ const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
 }) => {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [skipTest, setSkipTest] = useState(false)
+  const [skipTest, setSkipTest] = useState(true)
 
   useEffect(() => {
     if (!open) {
       setPassword('')
       setLoading(false)
-      setSkipTest(false)
+      setSkipTest(true)
     }
   }, [open])
 

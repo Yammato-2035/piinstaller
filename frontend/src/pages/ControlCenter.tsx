@@ -91,6 +91,20 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
   const [displayRotation, setDisplayRotation] = useState<'normal' | 'left' | 'right' | 'inverted'>('normal')
   const [displayLoading, setDisplayLoading] = useState(false)
   const [displaySaving, setDisplaySaving] = useState(false)
+  const [displayTelemetryDetected, setDisplayTelemetryDetected] = useState(false)
+  const [displayTelemetryTargets, setDisplayTelemetryTargets] = useState<Array<{ id: string; name: string; type: string }>>([])
+  const [displayTelemetryTarget, setDisplayTelemetryTarget] = useState('auto')
+  const [displayTelemetryEnabled, setDisplayTelemetryEnabled] = useState(false)
+  const [displayTelemetryAutostart, setDisplayTelemetryAutostart] = useState(true)
+  const [displayTelemetryMetrics, setDisplayTelemetryMetrics] = useState({
+    temperature: { enabled: true, duration_seconds: 5 },
+    utilization: { enabled: true, duration_seconds: 5 },
+    memory_usage: { enabled: true, duration_seconds: 5 },
+    ip_address: { enabled: true, duration_seconds: 5 },
+  })
+  const [displayTelemetryLoading, setDisplayTelemetryLoading] = useState(false)
+  const [displayTelemetrySaving, setDisplayTelemetrySaving] = useState(false)
+  const [displayTelemetryRunner, setDisplayTelemetryRunner] = useState<{ running: boolean; pid?: number | null; log_file?: string } | null>(null)
   
   const [printers, setPrinters] = useState<Array<{ name: string; status: string }>>([])
   const [printersLoading, setPrintersLoading] = useState(false)
@@ -212,6 +226,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
           break
         case 'display':
           await loadDisplaySettings()
+          await loadDisplayTelemetrySettings()
           break
         case 'printer':
           await loadPrinters()
@@ -740,6 +755,106 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
     }
   }
 
+  const loadDisplayTelemetrySettings = async () => {
+    setDisplayTelemetryLoading(true)
+    try {
+      const r = await fetchApi('/api/control-center/display/telemetry')
+      const d = await r.json()
+      if (d.status === 'success') {
+        setDisplayTelemetryDetected(d.detected === true)
+        setDisplayTelemetryTargets(Array.isArray(d.targets) ? d.targets : [])
+        const settings = d.settings || {}
+        const metrics = settings.metrics || {}
+        setDisplayTelemetryTarget(typeof settings.target === 'string' ? settings.target : 'auto')
+        setDisplayTelemetryEnabled(settings.enabled === true)
+        setDisplayTelemetryAutostart(settings.autostart !== false)
+        setDisplayTelemetryMetrics({
+          temperature: typeof metrics.temperature === 'object'
+            ? {
+                enabled: metrics.temperature?.enabled !== false,
+                duration_seconds: Number(metrics.temperature?.duration_seconds) > 0 ? Number(metrics.temperature?.duration_seconds) : 5,
+              }
+            : { enabled: metrics.temperature !== false, duration_seconds: 5 },
+          utilization: typeof metrics.utilization === 'object'
+            ? {
+                enabled: metrics.utilization?.enabled !== false,
+                duration_seconds: Number(metrics.utilization?.duration_seconds) > 0 ? Number(metrics.utilization?.duration_seconds) : 5,
+              }
+            : { enabled: metrics.utilization !== false, duration_seconds: 5 },
+          memory_usage: typeof metrics.memory_usage === 'object'
+            ? {
+                enabled: metrics.memory_usage?.enabled !== false,
+                duration_seconds: Number(metrics.memory_usage?.duration_seconds) > 0 ? Number(metrics.memory_usage?.duration_seconds) : 5,
+              }
+            : { enabled: metrics.memory_usage !== false, duration_seconds: 5 },
+          ip_address: typeof metrics.ip_address === 'object'
+            ? {
+                enabled: metrics.ip_address?.enabled !== false,
+                duration_seconds: Number(metrics.ip_address?.duration_seconds) > 0 ? Number(metrics.ip_address?.duration_seconds) : 5,
+              }
+            : { enabled: metrics.ip_address !== false, duration_seconds: 5 },
+        })
+        setDisplayTelemetryRunner(d.runner || null)
+      } else {
+        setDisplayTelemetryDetected(false)
+        setDisplayTelemetryTargets([])
+      }
+    } catch {
+      setDisplayTelemetryDetected(false)
+      setDisplayTelemetryTargets([])
+    } finally {
+      setDisplayTelemetryLoading(false)
+    }
+  }
+
+  const saveDisplayTelemetrySettings = async () => {
+    setDisplayTelemetrySaving(true)
+    try {
+      const r = await fetchApi('/api/control-center/display/telemetry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target: displayTelemetryTarget,
+          enabled: displayTelemetryEnabled,
+          autostart: displayTelemetryAutostart,
+          metrics: displayTelemetryMetrics,
+        }),
+      })
+      const d = await r.json()
+      if (d.status === 'success') {
+        toast.success(d.message || 'Anzeigeauswahl gespeichert.')
+        setDisplayTelemetryRunner(d.runner || null)
+        loadDisplayTelemetrySettings()
+      } else {
+        toast.error(d.message || 'Anzeigeauswahl konnte nicht gespeichert werden.')
+      }
+    } catch {
+      toast.error('Anzeigeauswahl konnte nicht gespeichert werden (Backend nicht erreichbar).')
+    } finally {
+      setDisplayTelemetrySaving(false)
+    }
+  }
+
+  const runDisplayTelemetryAction = async (action: 'start' | 'stop' | 'restart') => {
+    try {
+      const r = await fetchApi('/api/control-center/display/telemetry/runner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      const d = await r.json()
+      if (d.status === 'success') {
+        toast.success(d.message || 'Aktion ausgeführt.')
+        setDisplayTelemetryRunner(d.runner || null)
+        loadDisplayTelemetrySettings()
+      } else {
+        toast.error(d.message || 'Aktion fehlgeschlagen.')
+      }
+    } catch {
+      toast.error('Aktion fehlgeschlagen (Backend nicht erreichbar).')
+    }
+  }
+
   const displaySelectedOutputData = displayOutputs.find((o) => o.name === displaySelectedOutput)
   const displayModes = displaySelectedOutputData?.modes ?? []
   const displayRatesForMode = displayModes.find((m) => m.mode === displayMode)?.rates ?? []
@@ -793,7 +908,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
     const resp = await fetchApi('/api/users/sudo-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sudo_password: sudoPassword }),
+      body: JSON.stringify({ sudo_password: sudoPassword, skip_test: true }),
     })
     const data = await resp.json()
     if (data.status !== 'success') {
@@ -1694,109 +1809,266 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
       
       case 'display':
         return (
-          <div className="card">
-            <h3 className="text-xl font-bold text-white mb-4">Display-Einstellungen</h3>
-            <div className="space-y-4">
-              <p className="text-sm text-slate-400">
-                Auflösung, Bildwiederholrate und Rotation des angeschlossenen Bildschirms (xrandr). Kein Neustart nötig.
-              </p>
-              {displayFallback && (
-                <div className="p-3 bg-amber-900/20 border border-amber-700/50 rounded-lg">
-                  <p className="text-sm text-amber-200">
-                    <strong>Standardwerte:</strong> xrandr war nicht erreichbar (z. B. Backend ohne X-Session oder DISPLAY nicht gesetzt).
-                    Es werden Fallback-Werte angezeigt. Übernehmen kann trotzdem versucht werden, sofern X auf dem Pi läuft.
-                  </p>
-                </div>
-              )}
-              {displayLoading ? (
-                <p className="text-sm text-slate-500">Lade…</p>
-              ) : displayOutputs.length === 0 ? (
-                <p className="text-sm text-slate-500">
-                  Kein Display gefunden. Läuft eine grafische Oberfläche (X11)? xrandr muss verfügbar sein.
+          <div className="space-y-6">
+            <div className="card">
+              <h3 className="text-xl font-bold text-white mb-4">Display-Einstellungen</h3>
+              <div className="space-y-4">
+                <p className="text-sm text-slate-400">
+                  Auflösung, Bildwiederholrate und Rotation des angeschlossenen Bildschirms (xrandr). Kein Neustart nötig.
                 </p>
-              ) : (
-                <>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Ausgabe</label>
-                      <select
-                        value={displaySelectedOutput}
-                        onChange={(e) => {
-                          const name = e.target.value
-                          setDisplaySelectedOutput(name)
-                          const o = displayOutputs.find((x) => x.name === name)
-                          if (o) {
-                            setDisplayMode(o.resolution || '')
-                            setDisplayRate(typeof o.refresh_rate === 'number' ? o.refresh_rate : '')
-                            const rot = (o.rotation || 'normal').toLowerCase()
-                            setDisplayRotation((rot === 'left' || rot === 'right' || rot === 'inverted' ? rot : 'normal') as 'normal' | 'left' | 'right' | 'inverted')
-                          }
-                        }}
-                        className="w-full bg-slate-800/60 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                      >
-                        {displayOutputs.map((o) => (
-                          <option key={o.name} value={o.name}>
-                            {o.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Auflösung</label>
-                      <select
-                        value={displayMode}
-                        onChange={(e) => {
-                          setDisplayMode(e.target.value)
-                          const m = displayModes.find((x) => x.mode === e.target.value)
-                          if (m?.rates?.length) setDisplayRate(m.rates[0])
-                        }}
-                        className="w-full bg-slate-800/60 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                      >
-                        {displayModes.map((m) => (
-                          <option key={m.mode} value={m.mode}>
-                            {m.mode}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Bildwiederholrate (Hz)</label>
-                      <select
-                        value={displayRate}
-                        onChange={(e) => setDisplayRate(e.target.value === '' ? '' : Number(e.target.value))}
-                        className="w-full bg-slate-800/60 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                      >
-                        {displayRatesForMode.map((r) => (
-                          <option key={r} value={r}>
-                            {r} Hz
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Rotation</label>
-                      <select
-                        value={displayRotation}
-                        onChange={(e) => setDisplayRotation(e.target.value as 'normal' | 'left' | 'right' | 'inverted')}
-                        className="w-full bg-slate-800/60 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                      >
-                        <option value="normal">Normal</option>
-                        <option value="left">90° links</option>
-                        <option value="right">90° rechts</option>
-                        <option value="inverted">180°</option>
-                      </select>
-                    </div>
+                {displayFallback && (
+                  <div className="p-3 bg-amber-900/20 border border-amber-700/50 rounded-lg">
+                    <p className="text-sm text-amber-200">
+                      <strong>Standardwerte:</strong> xrandr war nicht erreichbar (z. B. Backend ohne X-Session oder DISPLAY nicht gesetzt).
+                      Es werden Fallback-Werte angezeigt. Übernehmen kann trotzdem versucht werden, sofern X auf dem Pi läuft.
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={applyDisplaySettings}
-                    disabled={displaySaving || !displayMode}
-                    className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {displaySaving ? 'Übernehme…' : 'Übernehmen'}
-                  </button>
-                </>
-              )}
+                )}
+                {displayLoading ? (
+                  <p className="text-sm text-slate-500">Lade…</p>
+                ) : displayOutputs.length === 0 ? (
+                  <p className="text-sm text-slate-500">
+                    Kein Display gefunden. Läuft eine grafische Oberfläche (X11)? xrandr muss verfügbar sein.
+                  </p>
+                ) : (
+                  <>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">Ausgabe</label>
+                        <select
+                          value={displaySelectedOutput}
+                          onChange={(e) => {
+                            const name = e.target.value
+                            setDisplaySelectedOutput(name)
+                            const o = displayOutputs.find((x) => x.name === name)
+                            if (o) {
+                              setDisplayMode(o.resolution || '')
+                              setDisplayRate(typeof o.refresh_rate === 'number' ? o.refresh_rate : '')
+                              const rot = (o.rotation || 'normal').toLowerCase()
+                              setDisplayRotation((rot === 'left' || rot === 'right' || rot === 'inverted' ? rot : 'normal') as 'normal' | 'left' | 'right' | 'inverted')
+                            }
+                          }}
+                          className="w-full bg-slate-800/60 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                        >
+                          {displayOutputs.map((o) => (
+                            <option key={o.name} value={o.name}>
+                              {o.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">Auflösung</label>
+                        <select
+                          value={displayMode}
+                          onChange={(e) => {
+                            setDisplayMode(e.target.value)
+                            const m = displayModes.find((x) => x.mode === e.target.value)
+                            if (m?.rates?.length) setDisplayRate(m.rates[0])
+                          }}
+                          className="w-full bg-slate-800/60 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                        >
+                          {displayModes.map((m) => (
+                            <option key={m.mode} value={m.mode}>
+                              {m.mode}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">Bildwiederholrate (Hz)</label>
+                        <select
+                          value={displayRate}
+                          onChange={(e) => setDisplayRate(e.target.value === '' ? '' : Number(e.target.value))}
+                          className="w-full bg-slate-800/60 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                        >
+                          {displayRatesForMode.map((r) => (
+                            <option key={r} value={r}>
+                              {r} Hz
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">Rotation</label>
+                        <select
+                          value={displayRotation}
+                          onChange={(e) => setDisplayRotation(e.target.value as 'normal' | 'left' | 'right' | 'inverted')}
+                          className="w-full bg-slate-800/60 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                        >
+                          <option value="normal">Normal</option>
+                          <option value="left">90° links</option>
+                          <option value="right">90° rechts</option>
+                          <option value="inverted">180°</option>
+                        </select>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={applyDisplaySettings}
+                      disabled={displaySaving || !displayMode}
+                      className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {displaySaving ? 'Übernehme…' : 'Übernehmen'}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="card">
+              <h3 className="text-xl font-bold text-white mb-4">Anzeigen für OLED/Displays</h3>
+              <div className="space-y-4">
+                <p className="text-sm text-slate-400">
+                  Wähle, welche Werte auf dem erkannten OLED-Display oder einem anderen erkannten Display angezeigt werden.
+                </p>
+                {displayTelemetryLoading ? (
+                  <p className="text-sm text-slate-500">Lade…</p>
+                ) : !displayTelemetryDetected ? (
+                  <div className="p-3 bg-amber-900/20 border border-amber-700/50 rounded-lg">
+                    <p className="text-sm text-amber-200">
+                      Kein passendes Ziel erkannt. Der Bereich wird aktiv, sobald ein OLED (I2C 0x3C) oder ein anderes Display erkannt wird.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <label className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={displayTelemetryEnabled}
+                        onChange={(e) => setDisplayTelemetryEnabled(e.target.checked)}
+                        className="w-5 h-5 accent-sky-500"
+                      />
+                      <span className="text-white">OLED-Anzeige aktivieren</span>
+                    </label>
+                    <label className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={displayTelemetryAutostart}
+                        onChange={(e) => setDisplayTelemetryAutostart(e.target.checked)}
+                        className="w-5 h-5 accent-sky-500"
+                      />
+                      <span className="text-white">Beim Systemstart automatisch starten (wenn Backend als Service läuft)</span>
+                    </label>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-1">Anzeigeziel</label>
+                      <select
+                        value={displayTelemetryTarget}
+                        onChange={(e) => setDisplayTelemetryTarget(e.target.value)}
+                        className="w-full max-w-md bg-slate-800/60 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      >
+                        <option value="auto">Automatisch</option>
+                        {displayTelemetryTargets.map((target) => (
+                          <option key={target.id} value={target.id}>
+                            {target.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={displayTelemetryMetrics.temperature.enabled}
+                          onChange={(e) => setDisplayTelemetryMetrics((prev) => ({ ...prev, temperature: { ...prev.temperature, enabled: e.target.checked } }))}
+                          className="w-5 h-5 accent-sky-500"
+                        />
+                        <span className="text-white">Temperatur</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={120}
+                          value={displayTelemetryMetrics.temperature.duration_seconds}
+                          onChange={(e) => setDisplayTelemetryMetrics((prev) => ({ ...prev, temperature: { ...prev.temperature, duration_seconds: Math.max(1, Math.min(120, Number(e.target.value) || 5)) } }))}
+                          className="ml-auto w-20 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white text-sm"
+                        />
+                      </label>
+                      <label className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={displayTelemetryMetrics.utilization.enabled}
+                          onChange={(e) => setDisplayTelemetryMetrics((prev) => ({ ...prev, utilization: { ...prev.utilization, enabled: e.target.checked } }))}
+                          className="w-5 h-5 accent-sky-500"
+                        />
+                        <span className="text-white">Auslastung</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={120}
+                          value={displayTelemetryMetrics.utilization.duration_seconds}
+                          onChange={(e) => setDisplayTelemetryMetrics((prev) => ({ ...prev, utilization: { ...prev.utilization, duration_seconds: Math.max(1, Math.min(120, Number(e.target.value) || 5)) } }))}
+                          className="ml-auto w-20 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white text-sm"
+                        />
+                      </label>
+                      <label className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={displayTelemetryMetrics.memory_usage.enabled}
+                          onChange={(e) => setDisplayTelemetryMetrics((prev) => ({ ...prev, memory_usage: { ...prev.memory_usage, enabled: e.target.checked } }))}
+                          className="w-5 h-5 accent-sky-500"
+                        />
+                        <span className="text-white">Speicherbelegung</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={120}
+                          value={displayTelemetryMetrics.memory_usage.duration_seconds}
+                          onChange={(e) => setDisplayTelemetryMetrics((prev) => ({ ...prev, memory_usage: { ...prev.memory_usage, duration_seconds: Math.max(1, Math.min(120, Number(e.target.value) || 5)) } }))}
+                          className="ml-auto w-20 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white text-sm"
+                        />
+                      </label>
+                      <label className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg border border-slate-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={displayTelemetryMetrics.ip_address.enabled}
+                          onChange={(e) => setDisplayTelemetryMetrics((prev) => ({ ...prev, ip_address: { ...prev.ip_address, enabled: e.target.checked } }))}
+                          className="w-5 h-5 accent-sky-500"
+                        />
+                        <span className="text-white">IP-Adresse</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={120}
+                          value={displayTelemetryMetrics.ip_address.duration_seconds}
+                          onChange={(e) => setDisplayTelemetryMetrics((prev) => ({ ...prev, ip_address: { ...prev.ip_address, duration_seconds: Math.max(1, Math.min(120, Number(e.target.value) || 5)) } }))}
+                          className="ml-auto w-20 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white text-sm"
+                        />
+                      </label>
+                    </div>
+                    <p className="text-xs text-slate-400">Rechts kann die Dauer pro Anzeige in Sekunden eingestellt werden.</p>
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className={`px-2 py-1 rounded ${displayTelemetryRunner?.running ? 'bg-green-900/40 text-green-300' : 'bg-slate-700 text-slate-300'}`}>
+                        {displayTelemetryRunner?.running ? 'OLED läuft' : 'OLED gestoppt'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => runDisplayTelemetryAction('restart')}
+                        className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs"
+                      >
+                        Neu starten
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => runDisplayTelemetryAction(displayTelemetryRunner?.running ? 'stop' : 'start')}
+                        className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs"
+                      >
+                        {displayTelemetryRunner?.running ? 'Stoppen' : 'Starten'}
+                      </button>
+                    </div>
+                    {displayTelemetryRunner?.log_file && (
+                      <p className="text-xs text-slate-500">Log: <code>{displayTelemetryRunner.log_file}</code></p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={saveDisplayTelemetrySettings}
+                      disabled={displayTelemetrySaving}
+                      className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {displayTelemetrySaving ? 'Speichere…' : 'Auswahl speichern'}
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )

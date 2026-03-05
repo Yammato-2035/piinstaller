@@ -27,7 +27,7 @@ const UserManagement: React.FC = () => {
   })
   const [requiresSudoPassword, setRequiresSudoPassword] = useState(false)
   const [sudoPasswordSaved, setSudoPasswordSaved] = useState(false)
-  const [sudoSkipTest, setSudoSkipTest] = useState(false)
+  const [sudoSkipTest, setSudoSkipTest] = useState(true)
 
   // Prüfe ob sudo-Passwort bereits gespeichert ist
   useEffect(() => {
@@ -92,8 +92,11 @@ const UserManagement: React.FC = () => {
         toast.error(data.message || data.detail || 'Sudo-Passwort konnte nicht gespeichert werden.')
       }
     } catch (error) {
+      const isTimeout = error instanceof Error && error.name === 'AbortError'
       toast.error(
-        'Fehler beim Speichern – Backend erreichbar? Starten Sie zuerst „PI-Installer Backend starten“ (Port 8000).',
+        isTimeout
+          ? 'Speichern hat zu lange gedauert (Timeout). Backend ist eventuell ausgelastet – bitte erneut versuchen.'
+          : 'Fehler beim Speichern – Backend erreichbar? Starten Sie zuerst „PI-Installer Backend starten“ (Port 8000).',
         { duration: 6000 }
       )
       console.error('saveSudoPassword:', error)

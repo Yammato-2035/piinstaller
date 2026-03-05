@@ -10,14 +10,19 @@ Der PI-Installer erkennt das Freenove-Gehäuse automatisch:
 
 Wenn DSI oder Expansion-Board erkannt wird, erscheint im **App Store** der TFT-Bereich sowie der Menüpunkt **TFT Display** in der Sidebar.
 
-## Lautsprecher
+## Lautsprecher / Media-Board
 
-Die Gehäuse-Lautsprecher werden über die normalen System-Audio-Einstellungen genutzt:
+Im **Freenove-Repository** gibt es **keine** eigene Initialisierung oder API für die Gehäuselautsprecher. Das Audio-Video-Board nutzt die **normale System-Ausgabe** (PulseAudio/PipeWire). Ton auf den Gehäuselautsprechern erreichst du so:
 
-- **Einstellungen → Sound** oder `pavucontrol` (Warnung „Unable to acquire accessibility bus“ unterdrücken: `GTK_A11Y=none pavucontrol`)
-- **Ausgabegerät** auf die Freenove-Audio-Ausgabe stellen
+- **Einstellungen → Sound** → Ausgabegerät auf **„Gehäuse-Lautsprecher“**, **„Headphones“** oder die Freenove-Audio-Ausgabe stellen (falls als eigenes Gerät sichtbar).
+- Falls nur HDMI-Geräte erscheinen: Gehäuse-Lautsprecher/3,5-mm sind oft an eines dieser Geräte angebunden – das passende Ausgabegerät wählen.
+- `pactl set-default-sink <Sink-Name>` oder `pavucontrol` (Warnung: `GTK_A11Y=none pavucontrol`).
 
-Für Internetradio, Wecker usw. wird dann automatisch über die Gehäuse-Lautsprecher ausgegeben.
+Die DSI-Radio-App verwendet den **aktuellen Standard-Sink**. Welche Sinks es gibt, zeigt z. B. `pactl list short sinks`.
+
+**Anzeige vs. Ton:** Auf welchem Display das DSI-Radio läuft, entscheidet über die Tonausgabe: Läuft die App auf **HDMI-1-2 / HDMI-A-2** (externer Monitor), geht der Sound über HDMI (Monitor). Startest du das DSI-Radio auf **DSI-1** (Gehäuse-Display), läuft der Ton über die **Gehäuselautsprecher** – und nur dann erscheint in der Mixer-Anzeige (pavucontrol/qpwgraph) der richtige interne HDMI-Sink für die Gehäuselautsprecher.
+
+**Details, OLED und Sensoren:** Siehe **docs/FREENOVE_AUDIO_OLED_SENSORS.md** (Auswertung des Freenove-Repos: Audio, OLED 0,96″, Temperatur/Lüfter abfragen).
 
 ## TFT-Modi
 

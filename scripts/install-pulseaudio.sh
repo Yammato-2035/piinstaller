@@ -27,17 +27,25 @@ if command -v pulseaudio >/dev/null 2>&1; then
   exit 0
 fi
 
-echo -e "${CYAN}[1] PulseAudio-Tools installieren${NC}"
+echo -e "${CYAN}[1] PulseAudio/PipeWire-Tools installieren${NC}"
 apt-get update -qq
 
 # Prüfe ob PipeWire-Pulse läuft (moderne Alternative zu PulseAudio)
-if systemctl --user is-active pipewire-pulse >/dev/null 2>&1; then
+if systemctl --user is-active pipewire-pulse >/dev/null 2>&1 || command -v pipewire-pulse >/dev/null 2>&1; then
   echo -e "${GREEN}✓${NC} PipeWire-Pulse läuft bereits"
   # Installiere nur die Tools (pactl, etc.)
   apt-get install -y pulseaudio-utils pavucontrol
+  echo -e "${GREEN}✓${NC} pulseaudio-utils und pavucontrol installiert"
 else
   # Vollständige PulseAudio-Installation
   apt-get install -y pulseaudio pulseaudio-utils pavucontrol
+  echo -e "${GREEN}✓${NC} PulseAudio vollständig installiert"
+fi
+
+# Prüfe ob ALSA-Tools installiert sind (für aplay -l)
+if ! command -v aplay >/dev/null 2>&1; then
+  echo -e "${CYAN}Installiere ALSA-Tools (aplay)...${NC}"
+  apt-get install -y alsa-utils
 fi
 
 echo ""

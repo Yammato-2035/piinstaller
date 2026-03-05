@@ -128,7 +128,7 @@ if [ ! -d "venv" ]; then
 fi
 # shellcheck source=/dev/null
 source venv/bin/activate
-if ! python3 -c "import fastapi" 2>/dev/null; then
+if ! python3 -c "import fastapi, psutil, PIL, luma.oled" 2>/dev/null; then
   info "Installiere Python-Abhängigkeiten..."
   pip install -q --upgrade pip
   pip install -r requirements.txt --only-binary :all: 2>/dev/null || pip install -r requirements.txt
@@ -180,6 +180,26 @@ if [ -f "$SERVICE_FILE" ]; then
   fi
 else
   warn "Service-Vorlage nicht gefunden: $SERVICE_FILE – Start bitte manuell mit: $INSTALL_DIR/start.sh"
+fi
+
+# Backend als eigener Service (optional, für DSI Radio / nur API)
+BACKEND_SERVICE_FILE="$INSTALL_DIR/pi-installer-backend.service"
+if [ -f "$BACKEND_SERVICE_FILE" ]; then
+  if [ -w "$SYSTEMD_DIR" ] || sudo -n true 2>/dev/null; then
+    TMP_BS="$(mktemp)"
+    sed -e "s|{{INSTALL_DIR}}|$INSTALL_DIR|g" -e "s|{{USER}}|$CURRENT_USER|g" "$BACKEND_SERVICE_FILE" > "$TMP_BS"
+    sudo cp "$TMP_BS" "$SYSTEMD_DIR/pi-installer-backend.service"
+    rm -f "$TMP_BS"
+    sudo systemctl daemon-reload
+    sudo systemctl enable pi-installer-backend 2>/dev/null || true
+    sudo systemctl start pi-installer-backend 2>/dev/null || true
+    ok "Backend-Service aktiviert und gestartet: pi-installer-backend (Port 8000)."
+  else
+    warn "Backend-Service manuell einrichten:"
+    echo "  sudo cp $BACKEND_SERVICE_FILE $SYSTEMD_DIR/"
+    echo "  sudo sed -i 's|{{INSTALL_DIR}}|$INSTALL_DIR|g;s|{{USER}}|$CURRENT_USER|g' $SYSTEMD_DIR/pi-installer-backend.service"
+    echo "  sudo systemctl daemon-reload && sudo systemctl enable --now pi-installer-backend"
+  fi
 fi
 
 # ---------- Abschluss ----------

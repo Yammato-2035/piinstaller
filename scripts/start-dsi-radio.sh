@@ -7,9 +7,15 @@
 #   ./scripts/start-dsi-radio.sh
 #   oder direkt die native App: ./scripts/start-dsi-radio-native.sh
 #
+# Wichtig: Nicht als root starten (kein sudo). VLC weigert sich als root.
 # Wayfire-Regel: Fenster mit Titel „PI-Installer DSI“ → DSI-1 (TFT; siehe docs/FREENOVE_TFT_DISPLAY.md)
 
 set -e
+
+if [ "$(id -u)" = "0" ] && [ -z "${SUDO_USER:-}" ]; then
+  echo "DSI Radio bitte nicht als root starten (kein sudo). Beispiel: ./scripts/start-dsi-radio.sh" >&2
+  exit 1
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -38,6 +44,10 @@ DESKTOP
   fi
   # Wayfire-Regeln sicherstellen (stumm), damit Fenster auf DSI-1 erscheint
   [ -x "$SCRIPT_DIR/ensure-dsi-window-rule.sh" ] && "$SCRIPT_DIR/ensure-dsi-window-rule.sh" >/dev/null 2>&1 || true
+  # Bevorzugt System-Python, wenn PyQt6 und GStreamer (gi) vorhanden (DSI Radio v2.0)
+  if python3 -c "import PyQt6" 2>/dev/null && python3 -c "import gi; gi.require_version('Gst', '1.0'); from gi.repository import Gst" 2>/dev/null; then
+    exec python3 "$REPO_ROOT/apps/dsi_radio/dsi_radio.py" "$@"
+  fi
   if [ -d "$REPO_ROOT/apps/dsi_radio/.venv" ] && [ -f "$REPO_ROOT/apps/dsi_radio/.venv/bin/python" ]; then
     exec "$REPO_ROOT/apps/dsi_radio/.venv/bin/python" "$REPO_ROOT/apps/dsi_radio/dsi_radio.py" "$@"
   fi

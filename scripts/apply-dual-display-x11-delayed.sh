@@ -10,7 +10,7 @@ export XAUTHORITY="${XAUTHORITY:-${HOME:-/home/gabrielglienke}/.Xauthority}"
 
 apply_layout() {
   # HDMI-1-1 ausschalten (kein Bildschirm angeschlossen)
-  xrandr --output HDMI-1-1 --off 2>/dev/null || true
+# # # # # # # #   xrandr --output HDMI-1-1 --off 2>/dev/null || true  # DEAKTIVIERT: Für Freenove Mediaboard Audio benötigt  # DEAKTIVIERT: Für Freenove Mediaboard Audio benötigt  # DEAKTIVIERT: Für Freenove Mediaboard Audio benötigt  # DEAKTIVIERT: Für Freenove Mediaboard Audio benötigt  # DEAKTIVIERT: Für Freenove Mediaboard Audio benötigt  # DEAKTIVIERT: Für Freenove Mediaboard Audio benötigt  # DEAKTIVIERT: Für Freenove Mediaboard Audio benötigt  # DEAKTIVIERT: Für Freenove Mediaboard Audio benötigt
   
   # Beide Ausgaben in einem atomaren Befehl setzen (verhindert Position-Überschreibung)
   # HDMI-1-2 bei 480x0 (rechts vom DSI), DSI-1 bei 0x1440 (links unten)

@@ -32,13 +32,22 @@ else
 fi
 echo ""
 
-# 2. PulseAudio prüfen
-echo -e "${CYAN}[2] PulseAudio${NC}"
+# 2. PulseAudio/PipeWire prüfen
+echo -e "${CYAN}[2] PulseAudio/PipeWire (pactl)${NC}"
+PACTL=""
 if command -v pactl >/dev/null 2>&1; then
-    echo -e "  ${GREEN}✓${NC} pactl gefunden"
+    PACTL="pactl"
+    echo -e "  ${GREEN}✓${NC} pactl im PATH: $(which pactl)"
+elif [ -x /usr/bin/pactl ]; then
+    PACTL="/usr/bin/pactl"
+    echo -e "  ${GREEN}✓${NC} pactl: /usr/bin/pactl (nicht im PATH)"
+else
+    echo -e "  ${RED}✗${NC} pactl weder im PATH noch /usr/bin/pactl"
+fi
+if [ -n "$PACTL" ]; then
     echo ""
     echo -e "  Verfügbare Audio-Sinks:"
-    pactl list short sinks 2>/dev/null | while read -r line; do
+    PATH="/usr/bin:/bin:$PATH" $PACTL list short sinks 2>/dev/null | while read -r line; do
         if [ -n "$line" ]; then
             sink_id=$(echo "$line" | awk '{print $1}')
             sink_name=$(echo "$line" | awk '{print $2}')
@@ -53,7 +62,7 @@ if command -v pactl >/dev/null 2>&1; then
         fi
     done
     echo ""
-    DEFAULT_SINK=$(pactl get-default-sink 2>/dev/null || echo "")
+    DEFAULT_SINK=$(PATH="/usr/bin:/bin:$PATH" $PACTL get-default-sink 2>/dev/null || echo "")
     if [ -n "$DEFAULT_SINK" ]; then
         echo -e "  Standard-Sink: ${DEFAULT_SINK}"
         if echo "$DEFAULT_SINK" | grep -qi "hdmi"; then
@@ -86,8 +95,8 @@ else
 fi
 echo ""
 
-# 4. Konfigurationsverzeichnis prüfen
-echo -e "${CYAN}[4] Konfigurationsverzeichnis${NC}"
+# 4. Konfigurationsverzeichnis und Metadaten-Logs
+echo -e "${CYAN}[4] Konfigurationsverzeichnis & Metadaten${NC}"
 CONFIG_DIR="$HOME/.config/pi-installer-dsi-radio"
 if [ -d "$CONFIG_DIR" ]; then
     echo -e "  ${GREEN}✓${NC} Verzeichnis existiert: $CONFIG_DIR"
@@ -96,6 +105,21 @@ if [ -d "$CONFIG_DIR" ]; then
     ls -lh "$CONFIG_DIR" 2>/dev/null | tail -n +2 | while read -r line; do
         echo "    $line"
     done || echo "    (keine Dateien)"
+    if [ -f "$CONFIG_DIR/metadata_poll.log" ]; then
+        echo ""
+        echo -e "  Letzte Metadaten-Abrufe (metadata_poll.log):"
+        tail -5 "$CONFIG_DIR/metadata_poll.log" 2>/dev/null | sed 's/^/    /'
+    fi
+    if [ -f "$CONFIG_DIR/metadata_applied.json" ]; then
+        echo ""
+        echo -e "  Letzte angewendete Metadaten (metadata_applied.json):"
+        head -15 "$CONFIG_DIR/metadata_applied.json" 2>/dev/null | sed 's/^/    /'
+    fi
+    if [ -f "$CONFIG_DIR/audio_sink_error.log" ]; then
+        echo ""
+        echo -e "  ${YELLOW}Audio-Sink-Fehler (audio_sink_error.log):${NC}"
+        tail -3 "$CONFIG_DIR/audio_sink_error.log" 2>/dev/null | sed 's/^/    /'
+    fi
 else
     echo -e "  ${YELLOW}⚠${NC} Verzeichnis existiert nicht (wird beim ersten Start erstellt)"
     mkdir -p "$CONFIG_DIR" 2>/dev/null && echo -e "  ${GREEN}✓${NC} Verzeichnis erstellt"

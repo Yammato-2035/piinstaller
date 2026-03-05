@@ -19,11 +19,21 @@ Das **Flachbandkabel** zwischen Pi 5 und Freenove Audio-Video-Board darf nicht v
 ### Boot: SD + NVMe oder nur NVMe
 
 - **Hybrid (aktuell):** Boot von SD, Root von NVMe – siehe `docs/PATHS_NVME.md` und `docs/CLONE_ARCHITECTURE.md`.
-- **Nur NVMe:** Muss noch ergänzt werden.
+- **Nur NVMe:** Vollboot von der NVMe (ohne SD-Karte) – siehe `docs/NVME_FULL_BOOT.md`.
 
 ### Freenove-Software installieren
 
 Installation von GitHub und mögliche Probleme: siehe **FAQ** in der App-Dokumentation.
+
+### OLED-Anzeigen im PI-Installer auswählen
+
+Im PI-Installer kann für das angeschlossene OLED-Display ausgewählt werden, welche Werte angezeigt werden.
+Typische Anzeigen sind zum Beispiel:
+
+- Temperatur
+- Auslastung
+- Speicherbelegung
+- IP-Adresse
 
 ---
 
@@ -268,4 +278,7 @@ Fehlermeldungen (z. B. „No module named 'PyQt5'“ oder „No module named '
 | Display steht „falsch“ (Case aufrecht) | **Wayland (DSI+HDMI):** Skript `freenove-dsi-rotate-portrait.sh` (90° nach links, nur DSI). **Global:** `display_rotate` in config.txt oder `freenove-set-display-rotate.sh`, dann Neustart. |
 | Fenster füllt Bildschirm nicht | In der App unter Settings: „Portrait ↔ Landscape“ nutzen |
 
-Repository: https://github.com/Freenove/Freenove_Computer_Case_Kit_Pro_for_Raspberry_Pi
+- **Repository:** https://github.com/Freenove/Freenove_Computer_Case_Kit_Pro_for_Raspberry_Pi
+- **Audio, OLED, Sensoren (Lautsprecher, Temperatur, Lüfter):** Siehe **docs/FREENOVE_AUDIO_OLED_SENSORS.md** – Auswertung des Freenove-Codes (keine Lautsprecher-API; OLED mit luma.oled; Sensoren über I2C-Erweiterungsplatine 0x21).
+- **LEDs im Rhythmus der Musik:** Siehe **docs/FREENOVE_LED_MUSIC.md** – Audio erfassen, Pegel auswerten, LEDs per I2C ansteuern; Beispielskript `scripts/led-music-reactive.py`.
+- **Audio-Konfiguration:** Automatische Konfiguration mit `./scripts/configure-freenove-audio.sh` oder Diagnose mit `./scripts/diagnose-freenove-audio.sh`

@@ -161,11 +161,33 @@ fi
 chmod +x "$REPO_ROOT/scripts/start-dsi-radio.sh" 2>/dev/null || true
 chmod +x "$REPO_ROOT/scripts/start-dsi-radio-native.sh" 2>/dev/null || true
 
-# --- 7. Audio-Hinweis ---
-echo ""
-echo -e "${CYAN}[7] Audio (Gehäuse-Lautsprecher)${NC}"
-echo -e "    Standard-Ausgabe in Einstellungen → Sound setzen."
-echo -e "    Oder: pavucontrol → Ausgabegerät wählen."
+# --- 7. Audio-Konfiguration (PipeWire/PulseAudio) ---
+echo -e "${CYAN}[7] Audio-Konfiguration (PipeWire/PulseAudio)${NC}"
+# Prüfe ob PipeWire/PulseAudio installiert ist
+if command -v pactl >/dev/null 2>&1 || [ -x /usr/bin/pactl ]; then
+  echo -e "    ${GREEN}✓${NC} pactl gefunden"
+  # Prüfe ob pulseaudio-utils installiert ist (für pactl)
+  if ! dpkg -l | grep -q "^ii.*pulseaudio-utils"; then
+    echo -e "    ${CYAN}Installiere pulseaudio-utils...${NC}"
+    apt-get install -y pulseaudio-utils 2>/dev/null || true
+  fi
+else
+  echo -e "    ${YELLOW}Installiere PulseAudio-Tools...${NC}"
+  apt-get install -y pulseaudio-utils 2>/dev/null || true
+fi
+
+# Prüfe ob pavucontrol installiert ist (GUI für Audio-Auswahl)
+if ! command -v pavucontrol >/dev/null 2>&1; then
+  echo -e "    ${CYAN}Installiere pavucontrol (Audio-GUI)...${NC}"
+  apt-get install -y pavucontrol 2>/dev/null || true
+fi
+
+# Hinweis zur Audio-Konfiguration
+echo -e "    ${CYAN}Audio-Ausgabe konfigurieren:${NC}"
+echo -e "    - HDMI-1-1/HDMI0 (107c701400, vc4hdmi0) = Gehäuselautsprecher ohne Monitor"
+echo -e "    - HDMI-1-2/HDMI1 (107c706400, vc4hdmi1) = Monitor mit Audio"
+echo -e "    - Standard-Ausgabe in Einstellungen → Sound setzen"
+echo -e "    - Oder: pavucontrol → Ausgabegerät wählen"
 echo ""
 
 echo -e "${GREEN}=== Installation abgeschlossen ===${NC}"

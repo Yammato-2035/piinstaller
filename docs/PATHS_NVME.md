@@ -16,6 +16,10 @@ Nach dem Klonen auf NVMe gilt:
 
 Boot bleibt auf der SD-Karte, Root liegt auf der NVMe.
 
+### Nur NVMe (Vollboot)
+
+Wenn der Pi **vollständig von der NVMe** starten soll (ohne SD-Karte), siehe **`docs/NVME_FULL_BOOT.md`**. Dort: SD auf NVMe überspielen (inkl. Boot-Partition), Partitionierung, EEPROM Boot-Reihenfolge und Speicher-Optimierung für den 8 GB Pi. Bei **NVMe hinter Freenove-Switch (ASM1184e)** siehe **`docs/NVME_BOOT_FREENOVE_SWITCH.md`** (EEPROM, Boot-Debug per UART, SD-Backup).
+
 ---
 
 ## 2. Kritische Pfade

@@ -24,12 +24,17 @@ fi
 # DSI im Portrait: Fenster 480×800 (transform 90)
 export PI_INSTALLER_DSI_PORTRAIT="${PI_INSTALLER_DSI_PORTRAIT:-1}"
 
-# Virtuelle Umgebung nutzen oder erstellen
+# Bevorzugt System-Python, wenn PyQt6 und GStreamer (gi) vorhanden (DSI Radio v2.0)
+if python3 -c "import PyQt6" 2>/dev/null && python3 -c "import gi; gi.require_version('Gst', '1.0'); from gi.repository import Gst" 2>/dev/null; then
+  exec python3 "$APP_DIR/dsi_radio.py" "$@"
+fi
+
+# Virtuelle Umgebung nutzen (venv sieht systemseitige GStreamer-Pakete nicht)
 if [ -d "$VENV" ] && [ -f "$VENV/bin/python" ]; then
   exec "$VENV/bin/python" "$APP_DIR/dsi_radio.py" "$@"
 fi
 
-# System-Python + PyQt6
+# System-Python nur mit PyQt6 (GStreamer fehlt → App zeigt Installationshinweis)
 if python3 -c "import PyQt6" 2>/dev/null; then
   exec python3 "$APP_DIR/dsi_radio.py" "$@"
 fi

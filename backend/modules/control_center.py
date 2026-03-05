@@ -23,6 +23,9 @@ class ControlCenterModule:
         self.locale_conf_file = Path("/etc/default/locale")
         self.desktop_config_dir = Path("/home/pi/.config")
         self.printers_config_file = Path("/etc/cups/printers.conf")
+        self.display_telemetry_config_file = Path.home() / ".config" / "pi-installer" / "display-telemetry.json"
+        self.display_telemetry_pid_file = Path.home() / ".config" / "pi-installer" / "display-telemetry.pid"
+        self.display_telemetry_log_file = Path.home() / ".config" / "pi-installer" / "display-telemetry.log"
 
     def _get_wifi_interface(self, sudo_password: str = "") -> str:
         """Ermittelt die WiFi-Schnittstelle (wlan0, wlan1, …). Pi prüft zuerst selbst."""
@@ -1208,6 +1211,348 @@ class ControlCenterModule:
             return {"status": "error", "message": "xrandr nicht gefunden. Läuft eine grafische Oberfläche (X/Wayland)?"}
         except Exception as e:
             return {"status": "error", "message": str(e)}
+
+    def _detect_display_targets(self) -> List[Dict[str, str]]:
+        """Ermittelt verfügbare Anzeigeziele (xrandr-Outputs + OLED via I2C 0x3C)."""
+        targets: List[Dict[str, str]] = []
+
+        # 1) Klassische Displays über xrandr
+        env = self._display_env()
+        try:
+            r = subprocess.run(
+                ["xrandr", "-q"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                env=env,
+            )
+            if r.returncode == 0 and (r.stdout or "").strip():
+                outputs = self._parse_xrandr(r.stdout)
+                for out in outputs:
+                    name = (out.get("name") or "").strip()
+                    if not name:
+                        continue
+                    targets.append({
+                        "id": f"display:{name}",
+                        "name": name,
+                        "type": "display",
+                    })
+        except Exception:
+            pass
+
+        # 2) OLED über I2C-Adresse 0x3C (typisch SSD1306)
+        oled_found = False
+        try:
+            oled_nodes = list(Path("/sys/bus/i2c/devices").glob("*-003c"))
+            if oled_nodes:
+                oled_found = True
+        except Exception:
+            pass
+
+        # Fallback: Bei manchen Setups wird 0x3c nicht als gebundenes /sys-Device angezeigt.
+        # Dann mit i2cdetect direkt auf Bus 1 prüfen.
+        if not oled_found:
+            try:
+                r = subprocess.run(
+                    ["i2cdetect", "-y", "1"],
+                    capture_output=True,
+                    text=True,
+                    timeout=8,
+                )
+                out = (r.stdout or "").lower()
+                if r.returncode == 0 and (" 3c" in out or " 3d" in out):
+                    oled_found = True
+            except Exception:
+                pass
+
+        if oled_found:
+            targets.append({
+                "id": "oled:i2c-0x3c",
+                "name": "OLED (I2C 0x3C)",
+                "type": "oled",
+            })
+
+        return targets
+
+    def _default_display_telemetry_settings(self) -> Dict[str, Any]:
+        return {
+            "target": "auto",
+            "enabled": False,
+            "autostart": True,
+            "metrics": {
+                "temperature": {"enabled": True, "duration_seconds": 5},
+                "utilization": {"enabled": True, "duration_seconds": 5},
+                "memory_usage": {"enabled": True, "duration_seconds": 5},
+                "ip_address": {"enabled": True, "duration_seconds": 5},
+            },
+        }
+
+    def _normalize_metric_setting(self, raw_metric: Any, default_enabled: bool = True, default_duration: int = 5) -> Dict[str, Any]:
+        if isinstance(raw_metric, dict):
+            enabled = bool(raw_metric.get("enabled", default_enabled))
+            try:
+                duration = int(raw_metric.get("duration_seconds", default_duration))
+            except Exception:
+                duration = default_duration
+        else:
+            enabled = bool(raw_metric) if raw_metric is not None else default_enabled
+            duration = default_duration
+        duration = max(1, min(120, duration))
+        return {"enabled": enabled, "duration_seconds": duration}
+
+    def _load_display_telemetry_settings(self) -> Dict[str, Any]:
+        settings = self._default_display_telemetry_settings()
+        try:
+            if not self.display_telemetry_config_file.exists():
+                return settings
+            raw = json.loads(self.display_telemetry_config_file.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                return settings
+            metrics = raw.get("metrics")
+            settings["target"] = str(raw.get("target") or "auto")
+            settings["enabled"] = bool(raw.get("enabled", settings["enabled"]))
+            settings["autostart"] = bool(raw.get("autostart", settings["autostart"]))
+            if isinstance(metrics, dict):
+                for key, default in settings["metrics"].items():
+                    if key in metrics:
+                        settings["metrics"][key] = self._normalize_metric_setting(
+                            metrics.get(key),
+                            default_enabled=bool(default.get("enabled", True)),
+                            default_duration=int(default.get("duration_seconds", 5)),
+                        )
+            return settings
+        except Exception:
+            return settings
+
+    def _save_display_telemetry_settings(self, settings: Dict[str, Any]) -> None:
+        self.display_telemetry_config_file.parent.mkdir(parents=True, exist_ok=True)
+        self.display_telemetry_config_file.write_text(
+            json.dumps(settings, indent=2),
+            encoding="utf-8",
+        )
+
+    def _display_telemetry_runner_path(self) -> Path:
+        return Path(__file__).resolve().parent.parent / "oled_display_runner.py"
+
+    def _read_runner_pid(self) -> Optional[int]:
+        try:
+            if not self.display_telemetry_pid_file.exists():
+                return None
+            return int(self.display_telemetry_pid_file.read_text(encoding="utf-8").strip())
+        except Exception:
+            return None
+
+    def _find_runner_pids(self) -> List[int]:
+        try:
+            cfg = str(self.display_telemetry_config_file)
+            cmd = ["pgrep", "-f", f"oled_display_runner.py --config {cfg}"]
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+            if r.returncode != 0:
+                return []
+            out: List[int] = []
+            for line in (r.stdout or "").splitlines():
+                line = line.strip()
+                if line.isdigit():
+                    out.append(int(line))
+            return sorted(set(out))
+        except Exception:
+            return []
+
+    def _is_pid_running(self, pid: Optional[int]) -> bool:
+        if not pid:
+            return False
+        try:
+            os.kill(pid, 0)
+            return True
+        except Exception:
+            return False
+
+    def _runner_status(self) -> Dict[str, Any]:
+        pid = self._read_runner_pid()
+        running = self._is_pid_running(pid)
+        running_pids = self._find_runner_pids()
+        if running_pids and (not pid or pid not in running_pids):
+            pid = running_pids[0]
+            running = True
+            try:
+                self.display_telemetry_pid_file.parent.mkdir(parents=True, exist_ok=True)
+                self.display_telemetry_pid_file.write_text(str(pid), encoding="utf-8")
+            except Exception:
+                pass
+        if pid and not running:
+            try:
+                self.display_telemetry_pid_file.unlink(missing_ok=True)
+            except Exception:
+                pass
+            pid = None
+        return {
+            "running": running,
+            "pid": pid,
+            "pids": running_pids,
+            "log_file": str(self.display_telemetry_log_file),
+        }
+
+    def start_display_telemetry_runner(self) -> Dict[str, Any]:
+        existing = self._find_runner_pids()
+        if existing:
+            pid = existing[0]
+            try:
+                self.display_telemetry_pid_file.parent.mkdir(parents=True, exist_ok=True)
+                self.display_telemetry_pid_file.write_text(str(pid), encoding="utf-8")
+            except Exception:
+                pass
+            return {"status": "success", "message": "OLED-Anzeige läuft bereits.", "runner": self._runner_status()}
+
+        status = self._runner_status()
+        if status["running"]:
+            return {"status": "success", "message": "OLED-Anzeige läuft bereits.", "runner": status}
+
+        runner = self._display_telemetry_runner_path()
+        if not runner.exists():
+            return {"status": "error", "message": f"OLED-Runner fehlt: {runner}"}
+
+        self.display_telemetry_log_file.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            log_fh = open(self.display_telemetry_log_file, "a", encoding="utf-8")
+            def _spawn() -> subprocess.Popen:
+                return subprocess.Popen(
+                    ["python3", str(runner), "--config", str(self.display_telemetry_config_file)],
+                    stdout=log_fh,
+                    stderr=log_fh,
+                    start_new_session=True,
+                )
+
+            proc = _spawn()
+            try:
+                proc.wait(timeout=0.4)
+                # optionaler Retry: fehlende Abhängigkeiten automatisch installieren
+                try:
+                    subprocess.run(
+                        ["python3", "-m", "pip", "install", "luma.oled", "Pillow"],
+                        capture_output=True,
+                        text=True,
+                        timeout=180,
+                    )
+                except Exception:
+                    pass
+                proc = _spawn()
+                try:
+                    proc.wait(timeout=0.4)
+                    return {
+                        "status": "error",
+                        "message": "OLED-Anzeige konnte nicht gestartet werden. Prüfe Log-Datei und OLED-Abhängigkeiten (luma.oled/Pillow).",
+                        "runner": self._runner_status(),
+                    }
+                except subprocess.TimeoutExpired:
+                    pass
+            except subprocess.TimeoutExpired:
+                pass
+            self.display_telemetry_pid_file.write_text(str(proc.pid), encoding="utf-8")
+            return {
+                "status": "success",
+                "message": "OLED-Anzeige gestartet.",
+                "runner": self._runner_status(),
+            }
+        except Exception as e:
+            return {"status": "error", "message": f"OLED-Anzeige konnte nicht gestartet werden: {e}"}
+
+    def stop_display_telemetry_runner(self) -> Dict[str, Any]:
+        pids = self._find_runner_pids()
+        pid_from_file = self._read_runner_pid()
+        if pid_from_file and pid_from_file not in pids:
+            pids.append(pid_from_file)
+        pids = sorted(set(pids))
+        if not pids:
+            return {"status": "success", "message": "OLED-Anzeige war nicht aktiv.", "runner": self._runner_status()}
+        for pid in pids:
+            try:
+                os.kill(pid, 15)
+            except ProcessLookupError:
+                pass
+            except Exception as e:
+                return {"status": "error", "message": f"Stop fehlgeschlagen: {e}"}
+        try:
+            self.display_telemetry_pid_file.unlink(missing_ok=True)
+        except Exception:
+            pass
+        return {"status": "success", "message": "OLED-Anzeige gestoppt.", "runner": self._runner_status()}
+
+    def ensure_display_telemetry_autostart(self) -> Dict[str, Any]:
+        settings = self._load_display_telemetry_settings()
+        if not settings.get("enabled", False):
+            return {"status": "success", "message": "OLED-Anzeige deaktiviert.", "runner": self._runner_status()}
+        if not settings.get("autostart", True):
+            return {"status": "success", "message": "OLED-Autostart deaktiviert.", "runner": self._runner_status()}
+        return self.start_display_telemetry_runner()
+
+    def get_display_telemetry_settings(self) -> Dict[str, Any]:
+        """Liest Anzeigeauswahl für OLED/Displays inkl. Erkennung verfügbarer Ziele."""
+        targets = self._detect_display_targets()
+        settings = self._load_display_telemetry_settings()
+        target_ids = {t["id"] for t in targets}
+        selected_target = settings.get("target", "auto")
+        if selected_target != "auto" and selected_target not in target_ids:
+            settings["target"] = "auto"
+        return {
+            "status": "success",
+            "detected": len(targets) > 0,
+            "targets": targets,
+            "settings": settings,
+            "runner": self._runner_status(),
+        }
+
+    def set_display_telemetry_settings(
+        self,
+        target: str,
+        metrics: Optional[Dict[str, Any]] = None,
+        enabled: Optional[bool] = None,
+        autostart: Optional[bool] = None,
+    ) -> Dict[str, Any]:
+        """Speichert Anzeigeauswahl (Metriken + Ziel) für erkannte Displays/OLED."""
+        targets = self._detect_display_targets()
+        target_ids = {t["id"] for t in targets}
+        safe_target = (target or "auto").strip() or "auto"
+        if safe_target != "auto" and safe_target not in target_ids:
+            return {"status": "error", "message": "Ungültiges Anzeigeziel."}
+
+        settings = self._load_display_telemetry_settings()
+        settings["target"] = safe_target
+        if enabled is not None:
+            settings["enabled"] = bool(enabled)
+        if autostart is not None:
+            settings["autostart"] = bool(autostart)
+        if isinstance(metrics, dict):
+            for key, default in settings["metrics"].items():
+                if key in metrics:
+                    settings["metrics"][key] = self._normalize_metric_setting(
+                        metrics.get(key),
+                        default_enabled=bool(default.get("enabled", True)),
+                        default_duration=int(default.get("duration_seconds", 5)),
+                    )
+
+        self._save_display_telemetry_settings(settings)
+        runner_result: Dict[str, Any]
+        if settings.get("enabled", False):
+            runner_result = self.start_display_telemetry_runner()
+            if runner_result.get("status") != "success":
+                return {
+                    "status": "error",
+                    "message": runner_result.get("message", "OLED-Anzeige konnte nicht gestartet werden."),
+                    "detected": len(targets) > 0,
+                    "targets": targets,
+                    "settings": settings,
+                    "runner": runner_result.get("runner", self._runner_status()),
+                }
+        else:
+            runner_result = self.stop_display_telemetry_runner()
+        return {
+            "status": "success",
+            "message": "Anzeigeauswahl gespeichert.",
+            "detected": len(targets) > 0,
+            "targets": targets,
+            "settings": settings,
+            "runner": runner_result.get("runner", self._runner_status()),
+        }
     
     def get_printers(self, sudo_password: str = "") -> Dict[str, Any]:
         """Listet Drucker auf (lpstat -p). Bei Locale 'de' z.B. 'Drucker NAME ...'; sonst 'printer NAME ...'."""

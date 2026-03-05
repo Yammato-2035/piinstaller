@@ -13,6 +13,7 @@ declare global {
 }
 
 const TAURI_DEFAULT_API = 'http://127.0.0.1:8000';
+const DEFAULT_API_TIMEOUT_MS = 12000;
 
 /** LocalStorage-Key für optionale Backend-URL (z. B. wenn Backend auf anderem Rechner läuft). */
 export const API_BASE_STORAGE_KEY = 'pi-installer-api-base';
@@ -52,5 +53,15 @@ export async function fetchApi(path: string, init?: RequestInit): Promise<Respon
   const url = base ? `${base}${path.startsWith('/') ? '' : '/'}${path}` : path;
   const headers = new Headers(init?.headers);
   if (_screenshotMode) headers.set('X-Demo-Mode', '1');
-  return fetch(url, { ...init, headers });
+  if (init?.signal) {
+    return fetch(url, { ...init, headers });
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_API_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, headers, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }

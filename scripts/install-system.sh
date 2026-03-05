@@ -99,8 +99,12 @@ if command -v apt-get >/dev/null 2>&1; then
     curl \
     wget \
     build-essential \
+    python3-gi \
+    gir1.2-gstreamer-1.0 \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-pulseaudio \
     >/dev/null 2>&1 || true
-  ok "System-Pakete installiert"
+  ok "System-Pakete installiert (inkl. GStreamer für DSI Radio v2.0)"
 else
   warn "apt-get nicht gefunden. Bitte Python 3.9+, Node.js und npm manuell installieren."
 fi

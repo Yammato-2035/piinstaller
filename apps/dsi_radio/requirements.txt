@@ -1,5 +1,8 @@
-# PI-Installer DSI Radio – Standalone PyQt6-App (Freenove 4,3" DSI)
-# Kein Frontend/Backend nötig; Fenstertitel „PI-Installer DSI Radio“ für Wayfire → DSI-1 (TFT)
+# PI-Installer DSI Radio v2.0 – Standalone PyQt6-App (Freenove 4,3" DSI)
+# Wiedergabe: GStreamer (playbin). Kein VLC/mpv nötig.
+# System-Pakete (Debian/Raspberry Pi OS): python3-gi, gir1.2-gstreamer-1.0,
+#   gstreamer1.0-plugins-good, gstreamer1.0-pulseaudio
 
 PyQt6>=6.4
 requests>=2.28
+PyGObject>=3.42

@@ -5,6 +5,29 @@ import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import { usePlatform } from '../context/PlatformContext'
 
+type DiscoveredAutomationDevice = {
+  name: string
+  kind: string
+  group: string
+  function: string
+  ip: string
+  hostname?: string
+  ports?: number[]
+  source?: string[]
+  hint?: string
+}
+
+type DiscoveryResult = {
+  found: DiscoveredAutomationDevice[]
+  groups: Record<string, DiscoveredAutomationDevice[]>
+  stats?: {
+    total_found?: number
+    scanned_candidates?: number
+    neighbor_candidates?: number
+    fritzbox_ip?: string | null
+  }
+}
+
 const HomeAutomationSetup: React.FC = () => {
   const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
@@ -18,6 +41,7 @@ const HomeAutomationSetup: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [searching, setSearching] = useState(false)
   const [assimilated, setAssimilated] = useState(false)
+  const [discoveryResult, setDiscoveryResult] = useState<DiscoveryResult | null>(null)
   const [automationStatus, setAutomationStatus] = useState<any>(null)
   const [uninstallComponent, setUninstallComponent] = useState<string | null>(null)
   const [sudoModalOpen, setSudoModalOpen] = useState(false)
@@ -45,9 +69,15 @@ const HomeAutomationSetup: React.FC = () => {
   const startSearch = async () => {
     setSearching(true)
     setAssimilated(false)
+    setDiscoveryResult(null)
     try {
       const response = await fetchApi('/api/homeautomation/search', { method: 'POST' })
       const data = await response.json().catch(() => ({}))
+      setDiscoveryResult({
+        found: data.found || [],
+        groups: data.groups || {},
+        stats: data.stats || {},
+      })
       setAssimilated(true)
       if (data.found != null) {
         toast.success(`Suche abgeschlossen. Gefunden: ${data.found.length || 0} Elemente.`)
@@ -130,6 +160,54 @@ const HomeAutomationSetup: React.FC = () => {
           <p className="mt-4 text-green-400 font-semibold">Haus assimiliert!</p>
         )}
       </div>
+
+      {discoveryResult && (
+        <div className="card bg-slate-800/60 border border-slate-600">
+          <h2 className="text-xl font-bold text-slate-100 mb-2">Gefundene Geräte & Dienste</h2>
+          <p className="text-sm text-slate-400 mb-4">
+            {discoveryResult.stats?.total_found ?? discoveryResult.found.length} Einträge erkannt
+            {discoveryResult.stats?.fritzbox_ip ? ` · Fritzbox/Gateway: ${discoveryResult.stats.fritzbox_ip}` : ''}
+          </p>
+
+          {Object.keys(discoveryResult.groups).length === 0 ? (
+            <p className="text-slate-400 text-sm">Keine Geräte gefunden. Tipp: Geräte einschalten und Suche erneut starten.</p>
+          ) : (
+            <div className="space-y-4">
+              {Object.entries(discoveryResult.groups).map(([group, devices]) => (
+                <div key={group} className="rounded-lg border border-slate-700 bg-slate-900/40">
+                  <div className="px-4 py-2 border-b border-slate-700 flex items-center justify-between">
+                    <span className="text-slate-200 font-semibold">{group}</span>
+                    <span className="text-xs text-slate-400">{devices.length} Einträge</span>
+                  </div>
+                  <div className="p-3 space-y-2">
+                    {devices.map((device, index) => (
+                      <div key={`${device.kind}-${device.ip || index}`} className="rounded-md bg-slate-800/60 p-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-slate-100 font-medium">{device.name}</span>
+                          {device.ip && <span className="text-xs px-2 py-0.5 rounded bg-slate-700 text-slate-200">{device.ip}</span>}
+                          {device.ports && device.ports.length > 0 && (
+                            <span className="text-xs px-2 py-0.5 rounded bg-sky-900/40 text-sky-300">
+                              Ports: {device.ports.join(', ')}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Funktion: {device.function}
+                          {device.hostname ? ` · Hostname: ${device.hostname}` : ''}
+                        </p>
+                        {device.source && device.source.length > 0 && (
+                          <p className="text-xs text-slate-500 mt-1">Quelle: {device.source.join(', ')}</p>
+                        )}
+                        {device.hint && <p className="text-xs text-amber-300 mt-1">{device.hint}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Empfehlung & Systembeschreibung – Kontrast: dunkle Schrift auf neutralem Hintergrund */}
       <div className="card bg-slate-800/60 border border-slate-600">
