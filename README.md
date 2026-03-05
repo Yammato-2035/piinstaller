@@ -250,6 +250,91 @@ Wir freuen uns über Beiträge! Bitte:
 4. Branch pushen (`git push origin feature/AmazingFeature`)
 5. Pull Request öffnen
 
+## 🔧 Debugging & Support-Bundle
+
+Schlanke Observability-Infrastruktur (kein UI): JSON-Lines-Debug-Logs mit **run_id** und **request_id**, Scopes, Redaction, optional Support-Bundle. Bei deaktiviertem Debug wird nur noch **ERROR** geloggt.
+
+### Konfiguration
+
+Layering: **backend/debug/defaults.yaml** → **/etc/pi-installer/debug.config.yaml** (optional) → ENV (PIINSTALLER_DEBUG_ENABLED, PIINSTALLER_DEBUG_LEVEL, PIINSTALLER_DEBUG_PATH).
+
+**Beispiel System-Config `/etc/pi-installer/debug.config.yaml`:**
+
+```yaml
+global:
+  enabled: true
+  level: INFO
+  sink:
+    file:
+      path: ""   # leer = /var/log/piinstaller/ oder ~/.cache/piinstaller/logs/
+  rotate:
+    max_files: 5
+    max_size_mb: 10
+  privacy:
+    sanitize: true
+    redact_patterns: ["password\\s*[=:]\\s*\\S+", "token\\s*[=:]\\s*\\S+"]
+  export:
+    enabled: true
+    include_system_snapshot: true
+    include_recent_logs: true
+    max_log_lines: 5000
+scopes:
+  modules:
+    storage_nvme:
+      enabled: true
+      level: INFO
+      steps:
+        detect: { enabled: true, level: INFO }
+        apply_boot_config: { enabled: true, level: INFO }
+    network:
+      enabled: true
+      level: INFO
+```
+
+### Log-Format (JSON Lines)
+
+Eine Zeile = ein JSON-Objekt. Felder: `ts` (ISO8601, Europe/Berlin), `level`, `run_id`, `request_id` (nullable), `app`, `scope`, `event`, `context`, `metrics`, `data`. Event-Typen: `RUN_START`, `RUN_END`, `STEP_START`, `STEP_END`, `DECISION`, `APPLY_ATTEMPT`, `APPLY_NOOP`, `APPLY_SUCCESS`, `APPLY_FAILED`, `ERROR`.
+
+**Beispiel Log-Event:**
+
+```json
+{"ts":"2025-03-05T15:22:01.123+01:00","level":"INFO","run_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","request_id":"b2c3d4e5-f6a7-8901-bcde-f23456789012","app":{"name":"piinstaller","version":"1.3.7.4","build":""},"scope":{"module_id":"storage_nvme","step_id":"apply_boot_config"},"event":{"type":"APPLY_NOOP","name":"write_config"},"context":{},"metrics":{},"data":{"keys_count":12,"reason":"config_unchanged"}}
+```
+
+### Support-Bundle erstellen
+
+Zip mit Debug-Logs (redigiert), System-Logs (/var/log/pi-installer, begrenzt), System-Snapshot (ohne Secrets), effektiver Config und Manifest:
+
+```bash
+./scripts/support-bundle.sh
+# oder aus backend:
+cd backend && python3 -m debug.cli support-bundle [output_dir]
+```
+
+**Ausgabe:** `output_dir/piinstaller-support-<timestamp>-<run_id>.zip` mit u. a. `system_snapshot.json`, `debug.config.effective.yaml`, `logs/debug_recent.jsonl`, `logs/system_pi_installer.txt`, `manifest.json` (bundle_version, created_at, run_id, redaction_enabled).
+
+### Integration in Module
+
+```python
+from debug import get_logger
+
+log = get_logger("mein_modul", "mein_step")
+log.step_start("name", data={...})
+# ... Arbeit ...
+log.step_end("name", duration_ms=123, data={...})
+log.decision("name", data={...})
+log.apply_noop("name", data={...})   # wenn bereits korrekt (idempotent)
+log.apply_success("name", data={...})
+log.apply_failed("name", error="...", data={...})
+log.error("msg", error_code="E001", data={...})
+```
+
+### Lokal starten & Logs finden
+
+- **Backend starten:** `./start-backend.sh` bzw. `cd backend && uvicorn app:app --host 0.0.0.0 --port 8000`
+- **Debug-Logs:** Primär `/var/log/piinstaller/piinstaller.debug.jsonl`, Fallback `~/.cache/piinstaller/logs/piinstaller.debug.jsonl`
+- **System-Logs (App):** `/var/log/pi-installer/` (bei System-Installation)
+
 ## 📞 Support & Kontakt
 
 - **GitHub Issues** - Bug Reports & Feature Requests

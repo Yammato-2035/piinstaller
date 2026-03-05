@@ -1,0 +1,51 @@
+# PI-Installer Debug Config – Schema v1
+# Pfad: PI_INSTALLER_DEBUG_CONFIG oder /etc/pi-installer/debug.config.yaml oder backend/debug/debug.config.yaml
+
+global:
+  enabled: true
+  level: INFO
+  sink:
+    file:
+      path: ""   # leer = /var/log/piinstaller/ oder ~/.cache/piinstaller/logs/
+  rotate:
+    max_files: 5
+    max_size_mb: 10
+  retention:
+    max_age_days: 30
+  privacy:
+    sanitize: true
+    redact_patterns:
+      - "password\\s*[=:]\\s*\\S+"
+      - "passwd\\s*[=:]\\s*\\S+"
+      - "secret\\s*[=:]\\s*\\S+"
+      - "api[_-]?key\\s*[=:]\\s*\\S+"
+      - "token\\s*[=:]\\s*\\S+"
+  export:
+    enabled: true
+    include_system_snapshot: true
+    include_recent_logs: true
+    max_log_lines: 5000
+    output_dir: ""
+
+scopes:
+  modules:
+    storage_nvme:
+      enabled: true
+      level: INFO
+      steps:
+        detect:
+          enabled: true
+          level: INFO
+        apply_boot_config:
+          enabled: true
+          level: INFO
+    network:
+      enabled: true
+      level: INFO
+      steps:
+        detect:
+          enabled: true
+          level: INFO
+        status:
+          enabled: true
+          level: INFO

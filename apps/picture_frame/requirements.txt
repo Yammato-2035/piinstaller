@@ -1,0 +1,5 @@
+# PI-Installer Bilderrahmen – Standalone PyQt6-App
+# Zeigt Bilder aus ~/Pictures mit Themen-Texten und animierten Symbolen.
+# Für SVG-Symbole (rechtefreie Icons) wird QtSvg benötigt (meist in PyQt6 enthalten).
+
+PyQt6>=6.4

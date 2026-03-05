@@ -1250,18 +1250,32 @@ class ControlCenterModule:
             pass
 
         # Fallback: Bei manchen Setups wird 0x3c nicht als gebundenes /sys-Device angezeigt.
-        # Dann mit i2cdetect direkt auf Bus 1 prüfen.
+        # Dann verfügbare I2C-Busse aus /dev/i2c-* direkt prüfen (nicht nur Bus 1).
         if not oled_found:
             try:
-                r = subprocess.run(
-                    ["i2cdetect", "-y", "1"],
-                    capture_output=True,
-                    text=True,
-                    timeout=8,
-                )
-                out = (r.stdout or "").lower()
-                if r.returncode == 0 and (" 3c" in out or " 3d" in out):
-                    oled_found = True
+                buses: List[str] = []
+                for dev in Path("/dev").glob("i2c-*"):
+                    name = dev.name
+                    if "-" not in name:
+                        continue
+                    idx = name.split("-")[-1]
+                    if idx.isdigit():
+                        buses.append(idx)
+                if not buses:
+                    buses = ["1"]
+                # Bus 1 bevorzugen, falls vorhanden
+                buses = sorted(set(buses), key=lambda x: (x != "1", int(x)))
+                for bus in buses:
+                    r = subprocess.run(
+                        ["i2cdetect", "-r", "-y", bus],
+                        capture_output=True,
+                        text=True,
+                        timeout=8,
+                    )
+                    out = (r.stdout or "").lower()
+                    if r.returncode == 0 and (" 3c" in out or " 3d" in out):
+                        oled_found = True
+                        break
             except Exception:
                 pass
 

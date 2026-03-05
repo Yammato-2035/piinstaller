@@ -1,4 +1,6 @@
 use std::path::PathBuf;
+use std::thread;
+use std::time::Duration;
 
 use tauri::Manager;
 
@@ -39,11 +41,26 @@ pub fn run() {
         .plugin(tauri_plugin_screenshots::init())
         .invoke_handler(tauri::generate_handler![exit_app, get_screenshots_output_dir, copy_screenshot_to])
         .setup(|app| {
-            if let Some(win) = app.get_webview_window("main") {
-                let _ = win.set_size(tauri::LogicalSize::new(1280.0, 800.0));
-                let _ = win.show();
-                let _ = win.set_focus();
-            }
+            let handle = app.handle().clone();
+            thread::spawn(move || {
+                // Kurz warten, damit der erste WebView-Frame gerendert wird, bevor das Fenster sichtbar wird.
+                // Behebt unter Linux (Wayland/X11) das „Grafik in Linien zerteilte“-Problem beim Start.
+                thread::sleep(Duration::from_millis(280));
+                let app_handle = handle.clone();
+                let _ = handle.run_on_main_thread(move || {
+                    if let Some(win) = app_handle.get_webview_window("main") {
+                        let _ = win.set_size(tauri::LogicalSize::new(1280.0, 800.0));
+                        let _ = win.show();
+                        let _ = win.set_focus();
+                        // Repaint erzwingen (hilft bei Compositor-Bugs: Bild richtet sich erst beim Bewegen aus).
+                        let win2 = win.clone();
+                        let _ = win.run_on_main_thread(move || {
+                            let _ = win2.set_size(tauri::LogicalSize::new(1281.0, 800.0));
+                            let _ = win2.set_size(tauri::LogicalSize::new(1280.0, 800.0));
+                        });
+                    }
+                });
+            });
             Ok(())
         })
         .run(tauri::generate_context!())

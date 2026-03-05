@@ -1,0 +1,24 @@
+# PI-Installer Backend (nur API auf :8000)
+# Für DSI Radio, API-Zugriff etc. Unabhängig vom Frontend.
+# Installieren: siehe scripts/install-backend-service.sh oder create_installer.sh
+# Nach Backend-Update: sudo systemctl restart pi-installer-backend
+
+[Unit]
+Description=PI-Installer Backend (API)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{USER}}
+WorkingDirectory={{INSTALL_DIR}}
+ExecStart={{INSTALL_DIR}}/start-backend.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+Environment=PI_INSTALLER_DEV=0
+
+[Install]
+WantedBy=multi-user.target

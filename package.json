@@ -1,0 +1,14 @@
+{
+  "name": "pi-installer",
+  "version": "1.3.7",
+  "private": true,
+  "description": "Raspberry Pi Installer – Backend, Frontend (Tauri), Skripte",
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "tauri": "npm run tauri --prefix frontend --",
+    "tauri:dev": "npm run tauri:dev --prefix frontend",
+    "tauri:build": "npm run tauri:build --prefix frontend",
+    "lint": "npm run lint --prefix frontend"
+  }
+}

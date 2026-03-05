@@ -1084,10 +1084,13 @@ def main():
     except (ValueError, OSError):
         pass
     engine = QQmlApplicationEngine()
+    qml_dir = os.path.join(_DSI_RADIO_DIR, "qml")
+    engine.setBaseUrl(QUrl.fromLocalFile(qml_dir))
+    icon_path = os.path.join(qml_dir, "sabrina-tuner-icon.png")
+    engine.rootContext().setContextProperty("sabrinaTunerIconPath", "file://" + icon_path)
     bridge = RadioBridge()
     engine.rootContext().setContextProperty("radio", bridge)
     engine.rootContext().setContextProperty("vuBridge", bridge._vu_bridge)
-    qml_dir = os.path.join(_DSI_RADIO_DIR, "qml")
     qml_file = os.path.join(qml_dir, "main.qml")
     if not os.path.isfile(qml_file):
         print("Fehler: main.qml nicht gefunden:", qml_file, file=sys.stderr)

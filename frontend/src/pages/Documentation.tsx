@@ -158,7 +158,7 @@ const Documentation: React.FC = () => {
                     <li>Öffne den PI-Installer im Browser (http://localhost:3001) oder als Desktop-App</li>
                     <li>Das Dashboard zeigt sofort Systeminfos, CPU, RAM und Sensoren</li>
                     <li>Nutze die Quick-Links für schnellen Sprung zu Assistent, Sicherheit, Backup</li>
-                    <li>Bei „Backend nicht erreichbar“: Backend starten mit <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
+                    <li>Bei „Backend nicht erreichbar“: Backend automatisch starten mit <code className="bg-slate-700 px-1 rounded">./scripts/install-backend-service.sh</code> (richtet systemd-Service ein) oder einmalig <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
                   </ol>
                 </div>
                 <ScreenshotImg src="/docs/screenshots/screenshot-dashboard.png" alt="Dashboard" title="Dashboard mit Systeminfos und Karten" hint="Zeigt Karten Systeminformationen, CPU & Grafik, Sensoren." />
@@ -178,7 +178,7 @@ const Documentation: React.FC = () => {
                 <div className="card-info">
                   <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
                   <p className="text-xs opacity-95">
-                    Wenn „Backend nicht erreichbar“ erscheint: Backend mit <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code> starten und Seite neu laden. <strong>System-Update:</strong> Über „System-Update (apt update & upgrade)“ → „Im Terminal ausführen“ ein Terminal öffnen; Passwort dort eingeben. Nutze die Quick-Links, um schnell zu den häufig genutzten Bereichen zu wechseln.
+                    Wenn „Backend nicht erreichbar“ erscheint: Backend als Service einrichten mit <code className="bg-slate-700 px-1 rounded">./scripts/install-backend-service.sh</code> oder mit <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code> starten, dann Seite neu laden. <strong>System-Update:</strong> Über „System-Update (apt update & upgrade)“ → „Im Terminal ausführen“ ein Terminal öffnen; Passwort dort eingeben. Nutze die Quick-Links, um schnell zu den häufig genutzten Bereichen zu wechseln.
                   </p>
                 </div>
               </div>
@@ -1020,7 +1020,7 @@ const Documentation: React.FC = () => {
                       <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
                         <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
                         <ul className="list-disc list-inside text-slate-300 space-y-1">
-                          <li>Backend starten: <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
+                          <li>Backend starten: <code className="bg-slate-700 px-1 rounded">./scripts/install-backend-service.sh</code> (Service beim Boot) oder <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
                           <li>Bei Vite-Proxy: API-Anfragen gehen an localhost:8000</li>
                           <li>Sudo: „Ohne Prüfung speichern“ – nur Session, nicht dauerhaft</li>
                         </ul>
@@ -1383,8 +1383,20 @@ const Documentation: React.FC = () => {
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.4.15</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.7.6</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.7.6 (OLED-I2C-Erkennung präzisiert)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Control Center:</strong> OLED-Erkennung nutzt nun `i2cdetect -r`, um falsche Treffer auf ungeeigneten I2C-Bussen zu vermeiden</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.7.5 (OLED-Anzeige wieder funktionsfähig)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Backend:</strong> OLED-Telemetrie-API und Runner-Aktionen wieder aktiviert; Autostart beim Backend-Start wiederhergestellt</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.4.2 (DSI Radio NDR-Ton, Backend-Venv, Doku)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>DSI Radio v2.1:</strong> NDR 1/NDR 2 – getestete Stream-URLs (icecast.ndr.de) werden bevorzugt, Ton funktioniert; Audio-Ausgabe nur auf Freenove erzwungen, auf dem Laptop Standardgerät</li>

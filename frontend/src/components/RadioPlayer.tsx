@@ -519,21 +519,6 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
     }
   }
 
-  /** F10 Tastenkürzel für Screenshot */
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'F10') {
-        event.preventDefault()
-        takeScreenshot()
-      }
-    }
-    
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [])
-
   return (
     <div ref={containerRef} className={compact ? 'space-y-4' : 'space-y-6'}>
       <p className={`text-sm ${mutedClass}`}>

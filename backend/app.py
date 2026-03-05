@@ -23,6 +23,19 @@ import time
 import signal
 import xml.etree.ElementTree as ET
 
+# Debug/Observability (RUN_START/RUN_END, run_id, request_id Middleware)
+try:
+    from debug.logger import init_debug, run_start, run_end, set_run_id, get_logger, get_request_id, bind_request_id, reset_request_id
+except ImportError:
+    run_start = lambda **_: None
+    run_end = lambda **_: None
+    set_run_id = lambda x=None: str(uuid.uuid4()) if x is None else x
+    get_logger = lambda m, s=None: type("NoopLogger", (), {"step_start": lambda *a, **k: None, "step_end": lambda *a, **k: None, "decision": lambda *a, **k: None, "apply_attempt": lambda *a, **k: None, "apply_noop": lambda *a, **k: None, "apply_success": lambda *a, **k: None, "apply_failed": lambda *a, **k: None, "error": lambda *a, **k: None})()
+    init_debug = lambda rid=None: str(uuid.uuid4())
+    get_request_id = lambda: None
+    bind_request_id = lambda rid=None: None
+    reset_request_id = lambda t: None
+
 # -------------------- Logging (file + console) --------------------
 
 def _default_log_path() -> Path:
@@ -99,6 +112,24 @@ app = FastAPI(
     description="Raspberry Pi Konfigurations-Assistent",
     version=PI_INSTALLER_VERSION
 )
+
+
+# Debug: request_id pro Request (ContextVar), X-Request-ID im Response-Header
+@app.middleware("http")
+async def debug_request_id_middleware(request, call_next):
+    token = bind_request_id()
+    try:
+        response = await call_next(request)
+        try:
+            rid = get_request_id()
+            if rid and hasattr(response, "headers"):
+                response.headers["X-Request-ID"] = str(rid)
+        except Exception:
+            pass
+        return response
+    finally:
+        reset_request_id(token)
+
 
 # Session Storage für sudo-Passwort (in-memory, nur für aktuelle Session)
 sudo_password_store = {}
@@ -703,10 +734,30 @@ def _load_or_init_config() -> dict:
 @app.on_event("startup")
 async def _startup_init():
     try:
+        init_debug()
+        run_start()
+        get_logger("backend", "startup").step_start("Backend startup")
         _load_or_init_config()
         logger.info(f"Config ready: path={CONFIG_PATH} device_id={CONFIG_STATE.get('device_id')} first_run={CONFIG_STATE.get('first_run')}")
+        try:
+            module = _get_control_center_module()
+            result = module.ensure_display_telemetry_autostart()
+            if result.get("status") == "success":
+                logger.info(f"OLED-Autostart: {result.get('message', 'ok')}")
+            else:
+                logger.warning(f"OLED-Autostart fehlgeschlagen: {result.get('message', 'unbekannt')}")
+        except Exception as e:
+            logger.warning(f"OLED-Autostart konnte nicht initialisiert werden: {e}")
     except Exception as e:
         logger.error(f"Startup init failed: {e}", exc_info=True)
+
+
+@app.on_event("shutdown")
+async def _shutdown():
+    try:
+        run_end()
+    except Exception:
+        pass
 
 
 @app.get("/api/init/status")
@@ -1640,11 +1691,15 @@ def _detect_frontend_port():
 @app.get("/api/system/network")
 async def get_system_network(request: Request):
     """Netzwerk-Informationen (IP-Adressen, Hostname) für Frontend-Zugriff."""
+    log = get_logger("network", "status")
+    log.step_start("system_network")
     try:
         if _is_demo_mode(request):
             d = _demo_network()
+            log.step_end("system_network", data={"demo": True})
             return {"status": "success", "ips": d["ips"], "hostname": d["hostname"], "frontend_port": 3001, "backend_port": 8000}
         net_info = get_network_info()
+        log.step_end("system_network", data={"hostname": net_info.get("hostname"), "ip_count": len(net_info.get("ips", []))})
         frontend_port = _detect_frontend_port()
         return {
             "status": "success",
@@ -1654,6 +1709,8 @@ async def get_system_network(request: Request):
             "backend_port": 8000,
         }
     except Exception as e:
+        log.step_end("system_network", data={"error": str(e)})
+        log.error(str(e), data={"step": "system_network"})
         logger.error(f"Fehler beim Abrufen der Netzwerk-Info: {str(e)}", exc_info=True)
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
@@ -2726,6 +2783,9 @@ def _is_reachable_lan_ip(ip: str) -> bool:
 
 def get_network_info():
     """Netzwerk-Informationen. Nur IPs zurückgeben, die von anderen Geräten erreichbar sind (kein 0.0.0.0)."""
+    log = get_logger("network", "detect")
+    log.step_start("get_network_info")
+    t0 = time.perf_counter()
     try:
         result = subprocess.run("hostname -I", shell=True, capture_output=True, text=True, timeout=5)
         raw = (result.stdout or "").strip()
@@ -2733,8 +2793,11 @@ def get_network_info():
         ips = [x for x in candidates if _is_reachable_lan_ip(x)]
         result = subprocess.run("hostname", shell=True, capture_output=True, text=True, timeout=5)
         hostname = (result.stdout or "").strip() or "unknown"
-        return {"ips": ips, "hostname": hostname}
-    except Exception:
+        out = {"ips": ips, "hostname": hostname}
+        log.step_end("get_network_info", duration_ms=(time.perf_counter() - t0) * 1000, data={"hostname": hostname, "ip_count": len(ips)})
+        return out
+    except Exception as e:
+        log.step_end("get_network_info", duration_ms=(time.perf_counter() - t0) * 1000, data={"error": str(e)})
         return {"ips": [], "hostname": "unknown"}
 
 def get_running_services():
@@ -10468,27 +10531,67 @@ async def get_raspberry_pi_config():
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e), "requires_sudo_password": True})
 
 
+def _normalize_config_for_compare(c: dict) -> dict:
+    """Normalisiert config für Vergleich (keine doppelten Einträge; idempotent)."""
+    out = {}
+    for k, v in sorted((c or {}).items()):
+        if v is True:
+            out[k] = "on"
+        elif v is False:
+            out[k] = "off"
+        elif v is None or v == "":
+            continue
+        else:
+            out[k] = str(v).strip()
+    return out
+
+
 @app.post("/api/raspberry-pi/config")
 async def set_raspberry_pi_config(request: Request):
-    """Speichert die Raspberry Pi Konfiguration"""
+    """Speichert die Raspberry Pi Konfiguration (idempotent: bei gleicher Config APPLY_NOOP)."""
+    log = get_logger("storage_nvme", "apply_boot_config")
+    log.step_start("write_config")
     try:
         data = await request.json()
         config = data.get("config", {})
         sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
-        
+
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
             if not sudo_test.get("success"):
+                log.step_end("write_config", data={"error": "sudo_required"})
                 return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
-        
+
         module = _get_pi_config_module()
+        current = module.read_config(sudo_password=sudo_password)
+        if current.get("status") != "success":
+            log.decision("skip_write", data={"reason": "read_failed"})
+            log.step_end("write_config", data={"error": "read_failed"})
+            return JSONResponse(status_code=200, content=current)
+
+        current_norm = _normalize_config_for_compare(current.get("config", {}))
+        desired_norm = _normalize_config_for_compare(config)
+        if current_norm == desired_norm:
+            log.decision("no_change", data={"reason": "config_unchanged"})
+            log.apply_noop("write_config", data={"keys_count": len(desired_norm)})
+            log.step_end("write_config", data={"noop": True})
+            return {"status": "success", "message": "Konfiguration unverändert (bereits korrekt).", "config": config}
+
+        log.decision("apply", data={"reason": "config_differs"})
+        log.apply_attempt("write_config", data={"keys_count": len(desired_norm)})
         result = module.write_config(config, sudo_password)
-        
+
         if result.get("status") == "success":
+            log.apply_success("write_config", data={"keys_count": len(desired_norm)})
             result["message"] = "Konfiguration gespeichert. Neustart erforderlich, damit Änderungen wirksam werden."
-        
+        else:
+            log.apply_failed("write_config", result.get("message", "Unbekannter Fehler"), data={})
+
+        log.step_end("write_config", data={"status": result.get("status")})
         return result
     except Exception as e:
+        log.apply_failed("write_config", str(e), data={})
+        log.step_end("write_config", data={"error": str(e)})
         logger.error(f"Fehler beim Schreiben der Raspberry Pi Konfiguration: {str(e)}", exc_info=True)
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
@@ -10901,6 +11004,69 @@ async def set_display_settings(request: Request):
         )
     except Exception as e:
         logger.error(f"Fehler beim Setzen der Display-Einstellungen: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/control-center/display/telemetry")
+async def get_display_telemetry_settings():
+    """Liest OLED/Display-Telemetrieeinstellungen inkl. Runner-Status."""
+    try:
+        module = _get_control_center_module()
+        return module.get_display_telemetry_settings()
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen der OLED-Telemetrie: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/display/telemetry")
+async def set_display_telemetry_settings(request: Request):
+    """Speichert OLED/Display-Telemetrieeinstellungen."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        data = data or {}
+        target = str(data.get("target") or "auto")
+        metrics = data.get("metrics") if isinstance(data.get("metrics"), dict) else None
+        enabled = data.get("enabled")
+        autostart = data.get("autostart")
+        if enabled is not None:
+            enabled = bool(enabled)
+        if autostart is not None:
+            autostart = bool(autostart)
+        module = _get_control_center_module()
+        return module.set_display_telemetry_settings(
+            target=target,
+            metrics=metrics,
+            enabled=enabled,
+            autostart=autostart,
+        )
+    except Exception as e:
+        logger.error(f"Fehler beim Speichern der OLED-Telemetrie: {str(e)}", exc_info=True)
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+
+
+@app.post("/api/control-center/display/telemetry/runner")
+async def set_display_telemetry_runner(request: Request):
+    """Startet/stoppt/neustartet den OLED-Runner."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        action = str((data or {}).get("action") or "restart").strip().lower()
+        module = _get_control_center_module()
+        if action == "start":
+            return module.start_display_telemetry_runner()
+        if action == "stop":
+            return module.stop_display_telemetry_runner()
+        if action == "restart":
+            module.stop_display_telemetry_runner()
+            return module.start_display_telemetry_runner()
+        return {"status": "error", "message": "Ungültige Aktion. Erlaubt: start, stop, restart."}
+    except Exception as e:
+        logger.error(f"Fehler beim Steuern des OLED-Runners: {str(e)}", exc_info=True)
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 

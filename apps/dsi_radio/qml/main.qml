@@ -41,13 +41,33 @@ Window {
         anchors.fill: parent
         anchors.margins: 16
 
-        // ---- Titelleiste: App-Icon + Titel + Untertitel links; Datum, Backend-LED, Fenster-Buttons rechts ----
+        // ---- Titelleiste: App-Icon + Titel + Untertitel links; Datum, Backend-LED, Fenster-Buttons rechts; per Drag verschiebbar ----
         Item {
             id: titelBar
             x: 0
             y: 0
             width: content.width
             height: 62
+            // Fenster per Titelleiste verschieben (ganze Titelleiste als Drag-Bereich)
+            property point dragLast: Qt.point(0, 0)
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton
+                onPressed: function(mouse) {
+                    if (typeof root.startSystemMove === "function") {
+                        root.startSystemMove()
+                    } else {
+                        titelBar.dragLast = Qt.point(mouse.x, mouse.y)
+                    }
+                }
+                onPositionChanged: function(mouse) {
+                    if (pressed && typeof root.startSystemMove !== "function") {
+                        root.x += mouse.x - titelBar.dragLast.x
+                        root.y += mouse.y - titelBar.dragLast.y
+                        titelBar.dragLast = Qt.point(mouse.x, mouse.y)
+                    }
+                }
+            }
             // App-Icon (Sabrina Tuner), dann Titel und Untertitel
             Image {
                 id: appIcon
@@ -55,10 +75,10 @@ Window {
                 y: 2
                 width: 58
                 height: 58
-                source: "sabrina-tuner-icon.png"
+                source: (typeof sabrinaTunerIconPath !== "undefined" && sabrinaTunerIconPath) ? sabrinaTunerIconPath : "sabrina-tuner-icon.png"
                 fillMode: Image.PreserveAspectFit
                 mipmap: true
-                onStatusChanged: if (status === Image.Error) source = ""
+                onStatusChanged: if (status === Image.Error && source !== "sabrina-tuner-icon.png") source = "sabrina-tuner-icon.png"
             }
             Text {
                 x: appIcon.width + 10
@@ -337,8 +357,11 @@ Window {
                 y: 0
                 rows: buttonArea.gridRows
                 columns: buttonArea.gridColumns
+                flow: Grid.LeftToRight
                 rowSpacing: 6
                 columnSpacing: 6
+                width: buttonArea.gridColumns * buttonArea.btnW + (buttonArea.gridColumns - 1) * 6
+                height: buttonArea.gridRows * 36 + (buttonArea.gridRows - 1) * 6
                 Repeater {
                     model: buttonArea.countOnPage
                     Button {

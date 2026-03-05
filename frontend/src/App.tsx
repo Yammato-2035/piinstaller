@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Toaster } from 'react-hot-toast'
+import { Toaster, toast } from 'react-hot-toast'
 import Sidebar from './components/Sidebar'
 import SudoPasswordDialog from './components/SudoPasswordDialog'
 import Dashboard from './pages/Dashboard'
@@ -179,6 +179,37 @@ function App() {
     window.addEventListener('pi-installer-api-base-changed', handler)
     return () => window.removeEventListener('pi-installer-api-base-changed', handler)
   }, [fetchSystemInfo])
+
+  // F10: Screenshot vom App-Fenster (nur in Tauri-Desktop-App)
+  useEffect(() => {
+    const isTauri = typeof window !== 'undefined' && !!(window as any).__TAURI__
+    if (!isTauri) return
+
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      if (event.key !== 'F10') return
+      event.preventDefault()
+      try {
+        const { getScreenshotableWindows, getWindowScreenshot } = await import('tauri-plugin-screenshots-api')
+        const windows = await getScreenshotableWindows()
+        const main = windows.find((w: { title?: string }) =>
+          (w.title || '').includes('PI-Installer') || (w.title || '').includes('Sabrina Tuner') || (w.title || '').includes('Raspberry')
+        )
+        const windowId = main?.id ?? windows[0]?.id
+        if (windowId == null) {
+          toast.error('Kein Fenster für Screenshot gefunden')
+          return
+        }
+        const path = await getWindowScreenshot(windowId)
+        toast.success(`Screenshot gespeichert:\n${path}`, { duration: 5000 })
+      } catch (e: any) {
+        console.error('F10 Screenshot:', e)
+        toast.error(e?.message || 'Screenshot fehlgeschlagen')
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   useEffect(() => {
     // Theme anwenden

@@ -431,7 +431,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
             <h3 className="font-semibold">Backend nicht erreichbar</h3>
             <p className="text-sm mt-1 opacity-95">
               Dashboard-Daten und Sudo-Passwort-Speicherung funktionieren nur, wenn das Backend läuft.
-              Backend starten: <code className="opacity-90 px-1 rounded">./start.sh</code> oder <code className="opacity-90 px-1 rounded">./start-backend.sh</code> im Projektordner.
+              <strong> Backend automatisch beim Boot starten:</strong> Im Projektordner <code className="opacity-90 px-1 rounded">./scripts/install-backend-service.sh</code> ausführen (richtet den systemd-Service <code className="opacity-90 px-1 rounded">pi-installer-backend</code> ein).
+              Einmalig starten: <code className="opacity-90 px-1 rounded">./start-backend.sh</code> oder <code className="opacity-90 px-1 rounded">sudo systemctl start pi-installer-backend</code> (falls Service bereits installiert).
               Läuft das Backend auf einem anderen Rechner (z. B. Pi): Einstellungen → Allgemein → „Backend-API-URL“ eintragen (z. B. <code className="opacity-90 px-1 rounded">http://&lt;Pi-IP&gt;:8000</code>).
               Log-Datei: Einstellungen → Logs → „Logs laden“ (Pfad wird angezeigt).
             </p>

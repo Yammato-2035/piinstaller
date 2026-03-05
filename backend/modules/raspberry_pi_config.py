@@ -2,6 +2,7 @@
 Raspberry Pi Konfigurationsmodul
 """
 
+import time
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 import subprocess
@@ -9,6 +10,11 @@ import shlex
 import json
 import re
 import psutil
+
+try:
+    from debug.logger import get_logger
+except ImportError:
+    get_logger = lambda m, s=None: type("_Noop", (), {"step_start": lambda *a, **k: None, "step_end": lambda *a, **k: None})()
 
 
 class RaspberryPiConfigModule:
@@ -504,15 +510,19 @@ class RaspberryPiConfigModule:
 
     def read_config(self, sudo_password: str = "") -> Dict[str, Any]:
         """Liest die aktuelle Konfiguration"""
+        log = get_logger("storage_nvme", "detect")
+        log.step_start("read_config")
+        t0 = time.perf_counter()
         config_file = self.get_config_file()
-        
+
         if not config_file.exists():
+            log.step_end("read_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"error": "config_file_not_found", "path": str(config_file)})
             return {
                 "status": "error",
                 "message": f"config.txt nicht gefunden: {config_file}",
                 "config": {}
             }
-        
+
         try:
             config = {}
             # Versuche mit sudo zu lesen, falls normale Berechtigung fehlt
@@ -536,6 +546,7 @@ class RaspberryPiConfigModule:
                         if process.returncode == 0:
                             content = stdout
                         else:
+                            log.step_end("read_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"error": "sudo_failed"})
                             return {
                                 "status": "error",
                                 "message": f"Konnte config.txt nicht lesen (sudo): {stderr[:200] if stderr else 'Unbekannter Fehler'}",
@@ -553,6 +564,7 @@ class RaspberryPiConfigModule:
                         if result.returncode == 0:
                             content = result.stdout
                         else:
+                            log.step_end("read_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"error": "sudo_failed"})
                             return {
                                 "status": "error",
                                 "message": f"Konnte config.txt nicht lesen (sudo ohne Passwort fehlgeschlagen): {result.stderr[:200] if result.stderr else 'Unbekannter Fehler'}",
@@ -560,14 +572,16 @@ class RaspberryPiConfigModule:
                                 "requires_sudo_password": True
                             }
                 except Exception as e:
+                    log.step_end("read_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"error": str(e)})
                     return {
                         "status": "error",
                         "message": f"Fehler beim Lesen der config.txt: {str(e)}",
                         "config": {},
                         "requires_sudo_password": not sudo_password
                     }
-            
+
             if content is None:
+                log.step_end("read_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"error": "no_content"})
                 return {
                     "status": "error",
                     "message": "Konnte config.txt nicht lesen (keine Berechtigung)",
@@ -597,18 +611,20 @@ class RaspberryPiConfigModule:
                     
                     config[key] = value
             
+            log.step_end("read_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"file": str(config_file), "keys_count": len(config)})
             return {
                 "status": "success",
                 "config": config,
                 "file": str(config_file)
             }
         except Exception as e:
+            log.step_end("read_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"error": str(e)})
             return {
                 "status": "error",
                 "message": f"Fehler beim Lesen der Konfiguration: {str(e)}",
                 "config": {}
             }
-    
+
     def write_config(self, config: Dict[str, Any], sudo_password: str = "") -> Dict[str, Any]:
         """Schreibt die Konfiguration"""
         config_file = self.get_config_file()
