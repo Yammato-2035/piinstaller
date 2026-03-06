@@ -132,6 +132,9 @@ http://localhost:3001
 - **[CHANGELOG.md](./CHANGELOG.md)** - Versions-Changelog (1.2.0.0, 1.0.4.0, …)
 - **[VERSIONING.md](./VERSIONING.md)** - Versionsschema, wann Version erhöht wird, Changelog-Führung
 - **[SUGGESTIONS.md](./SUGGESTIONS.md)** - Erweiterte Vorschläge & Best Practices
+- **[README_remote_architecture.md](./README_remote_architecture.md)** - Architektur & Integrationsplan Smartphone-Companion (Phase 1, Control Plane)
+- **[docs/REMOTE_COMPANION.md](./docs/REMOTE_COMPANION.md)** - Remote Companion: Übersicht, API, Rollen, Events (Phase 1)
+- **[docs/REMOTE_COMPANION_DEV.md](./docs/REMOTE_COMPANION_DEV.md)** - Entwicklerleitfaden: neues Modul registrieren, Widgets, Aktionen
 
 ## 🎨 GUI-Highlights
 

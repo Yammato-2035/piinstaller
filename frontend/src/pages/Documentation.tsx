@@ -1383,8 +1383,14 @@ const Documentation: React.FC = () => {
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.7.6</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.8.0</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.8.0 (Remote Companion – Dokumentation)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Dokumentation:</strong> docs/REMOTE_COMPANION.md (Übersicht, API, Rollen, Events); docs/REMOTE_COMPANION_DEV.md (Entwicklerleitfaden: Modul registrieren, Widgets, Aktionen); Phase-2-Ausblick konzeptionell</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.7.6 (OLED-I2C-Erkennung präzisiert)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Control Center:</strong> OLED-Erkennung nutzt nun `i2cdetect -r`, um falsche Treffer auf ungeeigneten I2C-Bussen zu vermeiden</li>

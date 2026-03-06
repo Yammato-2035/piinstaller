@@ -23,6 +23,14 @@ import time
 import signal
 import xml.etree.ElementTree as ET
 
+# Remote-Companion: Settings + DB (Phase 1)
+try:
+    from core.settings import get_remote_defaults
+    from storage.db import init_remote_db
+except ImportError:
+    get_remote_defaults = None
+    init_remote_db = None
+
 # Debug/Observability (RUN_START/RUN_END, run_id, request_id Middleware)
 try:
     from debug.logger import init_debug, run_start, run_end, set_run_id, get_logger, get_request_id, bind_request_id, reset_request_id
@@ -200,12 +208,24 @@ def _config_path() -> Path:
 
 
 def _default_settings() -> dict:
-    return {
+    out = {
         "ui": {"language": "de"},
         "backup": {"default_dir": "/mnt/backups"},
         "logging": {"level": "INFO", "retention_days": 30},
         "network": {"remote_access_disabled": False},
     }
+    if get_remote_defaults is not None:
+        out["remote"] = get_remote_defaults()
+    else:
+        out["remote"] = {
+            "REMOTE_FEATURE_ENABLED": False,
+            "REMOTE_PAIRING_TTL_SECONDS": 300,
+            "REMOTE_SESSION_TTL_SECONDS": 86400,
+            "REMOTE_PUBLIC_HOST": "",
+            "REMOTE_BASE_URL": "",
+            "REMOTE_DEVICE_NAME": "",
+        }
+    return out
 
 
 def _now_iso() -> str:
@@ -707,6 +727,8 @@ def _load_or_init_config() -> dict:
         merged["backup"].update((settings.get("backup") or {}) if isinstance(settings.get("backup"), dict) else {})
         merged["logging"].update((settings.get("logging") or {}) if isinstance(settings.get("logging"), dict) else {})
         merged["network"].update((settings.get("network") or {}) if isinstance(settings.get("network"), dict) else {})
+        if isinstance(merged.get("remote"), dict) and isinstance(settings.get("remote"), dict):
+            merged["remote"].update(settings.get("remote") or {})
         cfg["settings"] = merged
         APP_SETTINGS = merged
         CONFIG_STATE.update({"loaded": True, "first_run": False, "matched_device": True, "device_id": did})
@@ -743,6 +765,16 @@ async def _startup_init():
         run_start()
         get_logger("backend", "startup").step_start("Backend startup")
         _load_or_init_config()
+        try:
+            app.state.app_settings = APP_SETTINGS
+            app.state.device_id = _device_id()
+        except Exception:
+            pass
+        if init_remote_db is not None:
+            try:
+                init_remote_db(CONFIG_PATH.parent)
+            except Exception as e:
+                logger.warning("Remote-DB init failed (remote feature may be disabled): %s", e)
         logger.info(f"Config ready: path={CONFIG_PATH} device_id={CONFIG_STATE.get('device_id')} first_run={CONFIG_STATE.get('first_run')}")
         try:
             module = _get_control_center_module()
@@ -802,6 +834,8 @@ async def set_settings(request: Request):
         merged["logging"].update(new_settings["logging"])
     if isinstance(new_settings.get("network"), dict):
         merged["network"].update(new_settings["network"])
+    if isinstance(new_settings.get("remote"), dict) and isinstance(merged.get("remote"), dict):
+        merged["remote"].update(new_settings["remote"])
 
     # validate backup dir if provided
     try:
@@ -869,6 +903,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Remote-Companion: Pairing, Sessions, Device, Module, Actions (AP3–AP5)
+try:
+    from api.routes.pairing import router as pairing_router
+    from api.routes.sessions import router as sessions_router
+    from api.routes.devices import router as devices_router
+    from api.routes.modules import router as modules_router
+    from api.routes.actions import router as actions_router
+    from api.routes.ws import router as ws_router
+    app.include_router(pairing_router)
+    app.include_router(sessions_router)
+    app.include_router(devices_router)
+    app.include_router(modules_router)
+    app.include_router(actions_router)
+    app.include_router(ws_router)
+except ImportError:
+    pass
 
 def _is_demo_mode(request: Request) -> bool:
     """Prüft ob X-Demo-Mode Header gesetzt ist (für Screenshot-Dokumentation ohne echte Daten)."""

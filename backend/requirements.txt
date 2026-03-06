@@ -10,6 +10,7 @@ uvicorn[standard]>=0.24
 
 # Request handling
 python-multipart>=0.0.6
+httpx>=0.25,<0.28  # für FastAPI TestClient (Integrationstests; 0.28+ bricht sync ASGI)
 
 # Environment & Config
 python-dotenv>=1.0

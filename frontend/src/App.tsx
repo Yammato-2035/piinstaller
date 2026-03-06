@@ -28,6 +28,7 @@ import PiInstallerUpdate from './pages/PiInstallerUpdate'
 import TFTPage from './pages/TFTPage'
 import DsiRadioSettings from './pages/DsiRadioSettings'
 import RadioPlayer from './components/RadioPlayer'
+import RemoteView from './features/remote/RemoteView'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
 import { fetchApi, getApiBase, setApiBase } from './api'
@@ -59,6 +60,7 @@ type Page =
   | 'pi-installer-update'
   | 'tft'
   | 'dsi-radio-settings'
+  | 'remote'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -69,7 +71,7 @@ function getInitialPage(): Page {
   if (typeof window === 'undefined') return 'dashboard'
   const p = new URLSearchParams(window.location.search).get('page')
   if (p === 'tft') return 'tft'
-  if (p && ['dashboard', 'security', 'users', 'devenv', 'webserver', 'mailserver', 'nas', 'homeautomation', 'musicbox', 'kino-streaming', 'wizard', 'presets', 'learning', 'monitoring', 'backup', 'raspberry-pi-config', 'control-center', 'periphery-scan', 'settings', 'documentation', 'app-store', 'pi-installer-update', 'dsi-radio-settings'].includes(p)) return p as Page
+  if (p && ['dashboard', 'security', 'users', 'devenv', 'webserver', 'mailserver', 'nas', 'homeautomation', 'musicbox', 'kino-streaming', 'wizard', 'presets', 'learning', 'monitoring', 'backup', 'raspberry-pi-config', 'control-center', 'periphery-scan', 'settings', 'documentation', 'app-store', 'pi-installer-update', 'dsi-radio-settings', 'remote'].includes(p)) return p as Page
   return 'dashboard'
 }
 
@@ -337,6 +339,8 @@ function App() {
         return <TFTPage />
       case 'dsi-radio-settings':
         return <DsiRadioSettings setCurrentPage={handlePageChange} />
+      case 'remote':
+        return <RemoteView setCurrentPage={handlePageChange} />
       default:
         return (
           <Dashboard

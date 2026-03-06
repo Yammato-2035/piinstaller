@@ -27,6 +27,7 @@ import {
   Package,
   Radio,
   Upload,
+  Smartphone,
 } from 'lucide-react'
 
 type Theme = 'light' | 'dark' | 'system'
@@ -80,6 +81,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     // Logisch sortiert: Übersicht → Einrichtung → System → Dienste → Wartung → Pi (optional)
     const items: Array<{ id?: string; type?: string; label?: string; icon?: any }> = [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { id: 'remote', label: 'Remote Companion', icon: Smartphone },
       { id: 'app-store', label: 'App Store', icon: Package },
       ...(freenoveDetected ? [{ id: 'dsi-radio-settings', label: 'DSI-Radio Einstellungen', icon: Radio }] : []),
       { id: 'wizard', label: 'Assistent', icon: Zap },

@@ -5,6 +5,17 @@ Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
 
 ---
 
+## [1.3.8.0] - 2026-03-06
+
+### Added
+- **Remote Companion (Phase 1) – Dokumentation:** Übersicht und Architektur in `docs/REMOTE_COMPANION.md` (API, Rollen, Events, Datenmodell, Phase-2-Ausblick). Entwicklerleitfaden in `docs/REMOTE_COMPANION_DEV.md` (Modul registrieren, Widgets, Aktionen, Eventbus). Verweise in README und In-App-Dokumentation.
+- Phase-2-Vorbereitung konzeptionell beschrieben: Sync-Status, Ordner-Profile, CalDAV/CardDAV-Healthcheck als spätere Integrationspunkte (ohne Implementierung).
+
+### Changed
+- Versionsnummer auf 1.3.8.0 angehoben (neues Feature: Remote-Companion-Dokumentation).
+
+---
+
 ## [1.3.7.6] - 2026-03-05
 
 ### Fixed
