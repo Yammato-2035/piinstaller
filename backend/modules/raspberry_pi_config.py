@@ -14,7 +14,12 @@ import psutil
 try:
     from debug.logger import get_logger
 except ImportError:
-    get_logger = lambda m, s=None: type("_Noop", (), {"step_start": lambda *a, **k: None, "step_end": lambda *a, **k: None})()
+    def _noop(*a, **k): pass
+    _NoopLogger = type("_NoopLogger", (), {
+        "step_start": _noop, "step_end": _noop, "decision": _noop,
+        "apply_attempt": _noop, "apply_noop": _noop, "apply_success": _noop, "apply_failed": _noop, "error": _noop,
+    })
+    get_logger = lambda m, s=None: _NoopLogger()
 
 
 class RaspberryPiConfigModule:
@@ -530,12 +535,25 @@ class RaspberryPiConfigModule:
             out["gpus"] = out.get("gpus") or []
             return {"status": "error", "message": str(e), "system_info": out}
 
+    def _config_file_hash(self, path: Path, content: Optional[str] = None) -> str:
+        """SHA256-Hash einer Config-Datei (nur für Logging, keine Secrets im Inhalt)."""
+        import hashlib
+        try:
+            if content is not None:
+                return hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
+            if path.exists():
+                return hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+        except Exception:
+            pass
+        return ""
+
     def read_config(self, sudo_password: str = "") -> Dict[str, Any]:
         """Liest die aktuelle Konfiguration"""
         log = get_logger("storage_nvme", "detect")
         log.step_start("read_config")
         t0 = time.perf_counter()
         config_file = self.get_config_file()
+        log.decision("config_file_chosen", data={"path": str(config_file), "reason": "get_config_file"})
 
         if not config_file.exists():
             log.step_end("read_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"error": "config_file_not_found", "path": str(config_file)})
@@ -633,6 +651,7 @@ class RaspberryPiConfigModule:
                     
                     config[key] = value
             
+            log.apply_noop("read_config", data={"reason": "read_only", "keys_count": len(config)})
             log.step_end("read_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"file": str(config_file), "keys_count": len(config)})
             return {
                 "status": "success",
@@ -648,16 +667,59 @@ class RaspberryPiConfigModule:
             }
 
     def write_config(self, config: Dict[str, Any], sudo_password: str = "") -> Dict[str, Any]:
-        """Schreibt die Konfiguration"""
+        """Schreibt die Konfiguration (Boot-Config). Idempotent: bei gleichem Inhalt APPLY_NOOP."""
+        log = get_logger("storage_nvme", "apply_boot_config")
+        log.step_start("write_config")
+        t0 = time.perf_counter()
         config_file = self.get_config_file()
         def _stdin() -> Optional[bytes]:
             return (sudo_password + "\n").encode("utf-8") if sudo_password else None
         use_sudo_s = bool(sudo_password)
         _cmd = ["sudo", "-S", "cp"] if use_sudo_s else ["sudo", "cp"]
         _cmd_mv = ["sudo", "-S", "mv"] if use_sudo_s else ["sudo", "mv"]
-        
+
         try:
-            # Backup erstellen
+            current_content: Optional[str] = None
+            try:
+                if config_file.exists():
+                    current_content = config_file.read_text(encoding="utf-8")
+            except (PermissionError, IOError):
+                if sudo_password:
+                    r = subprocess.run(
+                        ["sudo", "-S", "cat", str(config_file)],
+                        input=(sudo_password + "\n").encode(),
+                        capture_output=True,
+                        text=True,
+                        timeout=5,
+                    )
+                    if r.returncode == 0:
+                        current_content = r.stdout or ""
+            before_hash = self._config_file_hash(config_file, current_content) if current_content else ""
+
+            lines = []
+            lines.append("# Raspberry Pi Konfiguration - Generiert von PI-Installer\n")
+            lines.append("# Änderungen an dieser Datei erfordern einen Neustart\n\n")
+            for key, value in sorted(config.items()):
+                if value is True:
+                    lines.append(f"{key}=on\n")
+                elif value is False:
+                    lines.append(f"{key}=off\n")
+                elif value is None or value == "":
+                    continue
+                else:
+                    lines.append(f"{key}={value}\n")
+            desired_content = "".join(lines)
+            after_hash = self._config_file_hash(config_file, desired_content)
+
+            if before_hash and after_hash and before_hash == after_hash:
+                log.decision("skip_write", data={"reason": "content_unchanged", "hash": before_hash})
+                log.apply_noop("write_config", data={"reason": "already_correct"})
+                log.step_end("write_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"file": str(config_file)})
+                return {"status": "success", "message": "Konfiguration unverändert", "file": str(config_file)}
+
+            log.decision("write_needed", data={"reason": "content_differs_or_new", "before_hash": before_hash, "after_hash": after_hash})
+            log.apply_attempt("write_config", before_hash=before_hash, after_hash=after_hash, data={"file": str(config_file)})
+
             backup_file = config_file.with_suffix('.txt.backup')
             if config_file.exists():
                 subprocess.run(
@@ -667,29 +729,12 @@ class RaspberryPiConfigModule:
                     capture_output=True,
                     timeout=10,
                 )
-            
-            # Neue Konfiguration schreiben
-            lines = []
-            lines.append("# Raspberry Pi Konfiguration - Generiert von PI-Installer\n")
-            lines.append("# Änderungen an dieser Datei erfordern einen Neustart\n\n")
-            
-            for key, value in sorted(config.items()):
-                if value is True:
-                    lines.append(f"{key}=on\n")
-                elif value is False:
-                    lines.append(f"{key}=off\n")
-                elif value is None or value == "":
-                    continue  # Überspringe leere Werte
-                else:
-                    lines.append(f"{key}={value}\n")
-            
-            # Temporäre Datei schreiben
+
             import tempfile
             with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as tmp:
                 tmp.writelines(lines)
                 tmp_path = tmp.name
-            
-            # Mit sudo verschieben
+
             subprocess.run(
                 _cmd_mv + [tmp_path, str(config_file)],
                 check=True,
@@ -697,7 +742,9 @@ class RaspberryPiConfigModule:
                 capture_output=True,
                 timeout=10,
             )
-            
+
+            log.apply_success("write_config", data={"file": str(config_file), "backup": str(backup_file)})
+            log.step_end("write_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"file": str(config_file)})
             return {
                 "status": "success",
                 "message": "Konfiguration gespeichert",
@@ -705,9 +752,12 @@ class RaspberryPiConfigModule:
                 "backup": str(backup_file)
             }
         except Exception as e:
+            err_msg = str(e)
+            log.apply_failed("write_config", err_msg, data={"file": str(config_file)})
+            log.step_end("write_config", duration_ms=(time.perf_counter() - t0) * 1000, data={"error": err_msg})
             return {
                 "status": "error",
-                "message": f"Fehler beim Schreiben der Konfiguration: {str(e)}"
+                "message": f"Fehler beim Schreiben der Konfiguration: {err_msg}"
             }
     
     def get_config_option_info(self, key: str) -> Dict[str, Any]:

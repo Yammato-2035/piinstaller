@@ -89,14 +89,15 @@ class RotatingFileSink:
 
 
 def get_sink() -> Optional[RotatingFileSink]:
-    """Erstellt Sink aus debug.config (global.sink.file, rotate). Liefert Sink auch bei enabled=False, damit ERROR geloggt werden kann."""
+    """Erstellt Sink aus debug.config (global.sink.file, rotate). Bei leerem path wird resolve_debug_log_path(None) genutzt (Fallback ~/.cache/...)."""
+    from .paths import resolve_debug_log_path
     cfg = load_debug_config()
     global_ = cfg.get("global") or {}
     sink_cfg = global_.get("sink") or {}
     file_cfg = sink_cfg.get("file") or {}
-    path = file_cfg.get("path") or ""
+    path = (file_cfg.get("path") or "").strip()
     if not path:
-        return None
+        path = resolve_debug_log_path(None)
     rotate = global_.get("rotate") or {}
     return RotatingFileSink(
         path=path,

@@ -731,9 +731,14 @@ def _load_or_init_config() -> dict:
     return cfg
 
 
+_debug_startup_time: Optional[float] = None
+
+
 @app.on_event("startup")
 async def _startup_init():
+    global _debug_startup_time
     try:
+        _debug_startup_time = time.perf_counter()
         init_debug()
         run_start()
         get_logger("backend", "startup").step_start("Backend startup")
@@ -755,7 +760,10 @@ async def _startup_init():
 @app.on_event("shutdown")
 async def _shutdown():
     try:
-        run_end()
+        duration_ms = None
+        if _debug_startup_time is not None:
+            duration_ms = (time.perf_counter() - _debug_startup_time) * 1000
+        run_end(data={"duration_ms": duration_ms} if duration_ms is not None else None)
     except Exception:
         pass
 
@@ -2818,6 +2826,7 @@ def get_network_info():
     log.step_start("get_network_info")
     t0 = time.perf_counter()
     try:
+        log.decision("source_filter", data={"source": "hostname -I", "filter": "reachable_lan_only", "exclude": "0.0.0.0,127.x,fe80"})
         result = subprocess.run("hostname -I", shell=True, capture_output=True, text=True, timeout=5)
         raw = (result.stdout or "").strip()
         candidates = [x for x in raw.split() if x] if raw else []
@@ -2825,6 +2834,7 @@ def get_network_info():
         result = subprocess.run("hostname", shell=True, capture_output=True, text=True, timeout=5)
         hostname = (result.stdout or "").strip() or "unknown"
         out = {"ips": ips, "hostname": hostname}
+        log.apply_noop("get_network_info", data={"reason": "read_only_discovery"})
         log.step_end("get_network_info", duration_ms=(time.perf_counter() - t0) * 1000, data={"hostname": hostname, "ip_count": len(ips)})
         return out
     except Exception as e:

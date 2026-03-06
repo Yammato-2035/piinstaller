@@ -2,6 +2,73 @@
 
 Kurzüberblick für Nutzung im Backend.
 
+## Debug aktivieren
+
+- **System-Config (empfohlen):** `/etc/pi-installer/debug.config.yaml` anlegen (siehe `config_schema.md`).  
+  Beispiel: `global.enabled: true`, `global.level: INFO`, `global.sink.file.path: ""` (Auto: /var/log/piinstaller oder Fallback ~/.cache/piinstaller/logs).
+- **ENV:** `PIINSTALLER_DEBUG_ENABLED=1`, `PIINSTALLER_DEBUG_LEVEL=DEBUG`, `PIINSTALLER_DEBUG_PATH=/pfad/zur/datei.jsonl` (optional).
+
+## Wo liegen die Logs?
+
+- **Bevorzugt:** `/var/log/piinstaller/piinstaller.debug.jsonl` (falls Verzeichnis schreibbar, z.B. als root).
+- **Fallback:** `~/.cache/piinstaller/logs/piinstaller.debug.jsonl` (wenn /var/log/piinstaller nicht beschreibbar).
+
+Rotation nach Größe (config `global.rotate`); rotierte Dateien: `piinstaller.debug.1.jsonl`, `.2.jsonl`, …
+
+## Support-Bundle erstellen
+
+```bash
+cd backend && python3 -m debug.cli support-bundle
+# Optional: --out-dir /tmp --max-log-lines 2000
+# Optional: --no-include-system-logs / --no-include-debug-logs / --no-include-snapshot
+```
+
+Oder aus dem Repo-Root:
+
+```bash
+./scripts/support-bundle.sh
+./scripts/support-bundle.sh /tmp
+```
+
+Bundle-Name: `piinstaller-support-<YYYYMMDD-HHMMSS>-<run_id>.zip`.  
+Inhalt (alles redigiert): Debug-Logs, System-Logs (/var/log/pi-installer, begrenzt), `system_snapshot.json`, `debug.config.effective.yaml`, `manifest.json`.
+
+## Module/Steps freischalten (Scopes)
+
+In `/etc/pi-installer/debug.config.yaml` (oder defaults):
+
+```yaml
+scopes:
+  modules:
+    storage_nvme:
+      enabled: true
+      level: DEBUG
+      steps:
+        detect:
+          level: DEBUG
+        apply_boot_config:
+          level: INFO
+    network:
+      enabled: true
+      level: DEBUG
+      steps:
+        detect:
+          level: DEBUG
+```
+
+Beispiel: Nur `storage_nvme.detect` auf DEBUG:
+
+```yaml
+scopes:
+  modules:
+    storage_nvme:
+      enabled: true
+      level: INFO
+      steps:
+        detect:
+          level: DEBUG
+```
+
 ## Config
 
 - **Defaults:** `backend/debug/defaults.yaml` (Schema v1)
@@ -53,12 +120,14 @@ Effective Config: `defaults` → `system` → ENV (siehe `config_schema.md`).
 
 ## Selftest & Tests
 
+Tests schreiben **nicht** nach /var/log; nutzen temp dirs und ggf. `PIINSTALLER_DEBUG_PATH`.
+
 ```bash
 cd backend && python -m debug._selftest
 ```
-Nutzt nur temp dir (PIINSTALLER_DEBUG_PATH); prüft INFO-Event, Redaction, Rotation.
+Prüft INFO-Event, Redaction, Rotation (nur temp dir).
 
 ```bash
-cd backend && python -m unittest tests.test_debug_logger tests.test_debug -v
+cd backend && python -m unittest tests.test_debug tests.test_debug_instrumentation tests.test_debug_logger -v
 ```
-Unit-Tests: should_log, redaction, rotate, request_id, Config-Merge, Support-Bundle.
+Unit-Tests: Config-Merge, should_log, Redaction, Rotation, Support-Bundle, instrumentierte Module (storage_nvme, network, apply_boot_config).

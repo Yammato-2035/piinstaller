@@ -18,7 +18,7 @@ except ImportError:
 
 from .config import load_debug_config, get_effective_config_cached
 from .logger import get_run_id, set_run_id, _app_info
-from .redaction import get_redact_patterns, redact_recursive
+from .redaction import get_redact_patterns, redact_recursive, redact_string
 from .sink import get_sink
 
 BUNDLE_VERSION = "1"
@@ -106,13 +106,35 @@ def collect_system_snapshot() -> Dict[str, Any]:
                 out["storage"].append({"name": p.name})
         except Exception:
             pass
-    # Boot config: only existence/paths, no content
+    # Boot config: path, exists, hash (no raw content)
+    import hashlib
     for name, p in [
         ("boot_firmware_config", Path("/boot/firmware/config.txt")),
         ("boot_config_legacy", Path("/boot/config.txt")),
         ("cmdline", Path("/boot/firmware/cmdline.txt")),
     ]:
-        out["boot_config_checks"][name] = {"path": str(p), "exists": p.exists()}
+        entry: Dict[str, Any] = {"path": str(p), "exists": p.exists()}
+        if p.exists():
+            try:
+                b = p.read_bytes()
+                entry["content_hash"] = hashlib.sha256(b).hexdigest()[:16]
+            except Exception:
+                pass
+        out["boot_config_checks"][name] = entry
+    try:
+        fstab = Path("/etc/fstab")
+        if fstab.exists():
+            out["fstab_hash"] = hashlib.sha256(fstab.read_bytes()).hexdigest()[:16]
+    except Exception:
+        pass
+    try:
+        osr = Path("/etc/os-release")
+        if osr.exists():
+            out["os_release"] = _read(osr).splitlines()[:30]
+    except Exception:
+        pass
+    out["uname_a"] = _run(["uname", "-a"])
+    out["python_version"] = platform.python_version()
     # Network interfaces (name only, no keys)
     try:
         for p in Path("/sys/class/net").iterdir():
@@ -122,6 +144,14 @@ def collect_system_snapshot() -> Dict[str, Any]:
     except Exception:
         pass
     return out
+
+
+def _redact_text_line_by_line(text: str, patterns: List[Any]) -> str:
+    """Redaktion zeilenweise (spart RAM bei großen Logs)."""
+    if not text or not patterns:
+        return text
+    compiled = compile_patterns(patterns) if patterns and isinstance(patterns[0], str) else patterns
+    return "\n".join(redact_string(line, compiled) for line in text.splitlines())
 
 
 def _collect_system_logs(max_lines: int = MAX_SYSTEM_LOG_LINES, max_files: int = MAX_SYSTEM_LOG_FILES) -> str:
@@ -151,6 +181,10 @@ def _collect_system_logs(max_lines: int = MAX_SYSTEM_LOG_LINES, max_files: int =
 def create_support_bundle(
     output_dir: Optional[Path] = None,
     run_id_override: Optional[str] = None,
+    max_log_lines: Optional[int] = None,
+    include_system_logs: Optional[bool] = None,
+    include_debug_logs: Optional[bool] = None,
+    include_snapshot: Optional[bool] = None,
 ) -> Path:
     """
     Erzeugt output_dir/piinstaller-support-<timestamp>-<run_id>.zip mit:
@@ -167,11 +201,12 @@ def create_support_bundle(
     out_dir.mkdir(parents=True, exist_ok=True)
     rid = run_id_override or get_run_id() or set_run_id()
     ts = datetime.now(timezone.utc).astimezone().strftime("%Y%m%d-%H%M%S")
-    zip_name = f"piinstaller-support-{ts}-{rid[:8]}.zip"
+    zip_name = f"piinstaller-support-{ts}-{rid[:8] if len(rid) >= 8 else rid}.zip"
     zip_path = out_dir / zip_name
-    max_log_lines = int(export_cfg.get("max_log_lines", 5000))
-    include_snapshot = export_cfg.get("include_system_snapshot", True)
-    include_logs = export_cfg.get("include_recent_logs", True)
+    max_log_lines = int(max_log_lines if max_log_lines is not None else export_cfg.get("max_log_lines", 5000))
+    include_snapshot = include_snapshot if include_snapshot is not None else export_cfg.get("include_system_snapshot", True)
+    include_logs = include_debug_logs if include_debug_logs is not None else export_cfg.get("include_recent_logs", True)
+    include_syslogs = include_system_logs if include_system_logs is not None else True
     patterns = get_redact_patterns()
     created_at = datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
 
@@ -182,6 +217,12 @@ def create_support_bundle(
             "timestamp": ts,
             "run_id": rid,
             "redaction_enabled": bool(patterns),
+            "config_summary": {
+                "max_log_lines": max_log_lines,
+                "include_snapshot": include_snapshot,
+                "include_debug_logs": include_logs,
+                "include_system_logs": include_syslogs,
+            },
             "files": [],
         }
 
@@ -227,12 +268,13 @@ def create_support_bundle(
                     zf.writestr("logs/debug_recent.jsonl", "\n".join(tail))
                     manifest["files"].append("logs/debug_recent.jsonl")
 
-        system_log_content = _collect_system_logs(max_lines=MAX_SYSTEM_LOG_LINES, max_files=MAX_SYSTEM_LOG_FILES)
-        if system_log_content and patterns:
-            system_log_content = redact_recursive({"raw": system_log_content}, patterns).get("raw", system_log_content)
-        if system_log_content:
-            zf.writestr("logs/system_pi_installer.txt", system_log_content)
-            manifest["files"].append("logs/system_pi_installer.txt")
+        if include_syslogs:
+            system_log_content = _collect_system_logs(max_lines=MAX_SYSTEM_LOG_LINES, max_files=MAX_SYSTEM_LOG_FILES)
+            if system_log_content and patterns:
+                system_log_content = _redact_text_line_by_line(system_log_content, patterns)
+            if system_log_content:
+                zf.writestr("logs/system_pi_installer.txt", system_log_content)
+                manifest["files"].append("logs/system_pi_installer.txt")
 
         manifest["files"].append("manifest.json")
         zf.writestr("manifest.json", json.dumps(manifest, indent=2))
