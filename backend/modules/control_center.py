@@ -1212,8 +1212,31 @@ class ControlCenterModule:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    def _detect_display_targets(self) -> List[Dict[str, str]]:
-        """Ermittelt verfügbare Anzeigeziele (xrandr-Outputs + OLED via I2C 0x3C)."""
+    def _run_i2cdetect_bus(self, bus: str, sudo_password: str = "") -> bool:
+        """Führt i2cdetect -r -y <bus> aus (optional mit sudo). Returns True wenn 0x3C oder 0x3D gefunden."""
+        try:
+            if sudo_password:
+                proc = subprocess.run(
+                    ["sudo", "-S", "i2cdetect", "-r", "-y", bus],
+                    input=(sudo_password + "\n").encode("utf-8"),
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+            else:
+                proc = subprocess.run(
+                    ["i2cdetect", "-r", "-y", bus],
+                    capture_output=True,
+                    text=True,
+                    timeout=8,
+                )
+            out = (proc.stdout or "").lower()
+            return proc.returncode == 0 and (" 3c" in out or " 3d" in out)
+        except Exception:
+            return False
+
+    def _detect_display_targets(self, sudo_password: str = "") -> List[Dict[str, str]]:
+        """Ermittelt verfügbare Anzeigeziele (xrandr-Outputs + OLED via I2C 0x3C). Mit sudo_password wird I2C-Erkennung ggf. mit sudo wiederholt (falls Benutzer keine I2C-Gruppe hat)."""
         targets: List[Dict[str, str]] = []
 
         # 1) Klassische Displays über xrandr
@@ -1249,8 +1272,7 @@ class ControlCenterModule:
         except Exception:
             pass
 
-        # Fallback: Bei manchen Setups wird 0x3c nicht als gebundenes /sys-Device angezeigt.
-        # Dann verfügbare I2C-Busse aus /dev/i2c-* direkt prüfen (nicht nur Bus 1).
+        # Fallback: I2C-Busse mit i2cdetect prüfen (ohne sudo)
         if not oled_found:
             try:
                 buses: List[str] = []
@@ -1263,17 +1285,30 @@ class ControlCenterModule:
                         buses.append(idx)
                 if not buses:
                     buses = ["1"]
-                # Bus 1 bevorzugen, falls vorhanden
                 buses = sorted(set(buses), key=lambda x: (x != "1", int(x)))
                 for bus in buses:
-                    r = subprocess.run(
-                        ["i2cdetect", "-r", "-y", bus],
-                        capture_output=True,
-                        text=True,
-                        timeout=8,
-                    )
-                    out = (r.stdout or "").lower()
-                    if r.returncode == 0 and (" 3c" in out or " 3d" in out):
+                    if self._run_i2cdetect_bus(bus, sudo_password=""):
+                        oled_found = True
+                        break
+            except Exception:
+                pass
+
+        # Mit sudo erneut versuchen, wenn ohne sudo nichts gefunden und Passwort vorhanden (z. B. Backend als Service ohne I2C-Gruppe)
+        if not oled_found and (sudo_password or "").strip():
+            try:
+                buses: List[str] = []
+                for dev in Path("/dev").glob("i2c-*"):
+                    name = dev.name
+                    if "-" not in name:
+                        continue
+                    idx = name.split("-")[-1]
+                    if idx.isdigit():
+                        buses.append(idx)
+                if not buses:
+                    buses = ["1"]
+                buses = sorted(set(buses), key=lambda x: (x != "1", int(x)))
+                for bus in buses:
+                    if self._run_i2cdetect_bus(bus, sudo_password=sudo_password):
                         oled_found = True
                         break
             except Exception:
@@ -1499,9 +1534,9 @@ class ControlCenterModule:
             return {"status": "success", "message": "OLED-Autostart deaktiviert.", "runner": self._runner_status()}
         return self.start_display_telemetry_runner()
 
-    def get_display_telemetry_settings(self) -> Dict[str, Any]:
-        """Liest Anzeigeauswahl für OLED/Displays inkl. Erkennung verfügbarer Ziele."""
-        targets = self._detect_display_targets()
+    def get_display_telemetry_settings(self, sudo_password: str = "") -> Dict[str, Any]:
+        """Liest Anzeigeauswahl für OLED/Displays inkl. Erkennung verfügbarer Ziele. sudo_password ermöglicht I2C-Erkennung mit sudo (z. B. wenn Backend ohne I2C-Gruppe läuft)."""
+        targets = self._detect_display_targets(sudo_password=sudo_password)
         settings = self._load_display_telemetry_settings()
         target_ids = {t["id"] for t in targets}
         selected_target = settings.get("target", "auto")
@@ -1521,9 +1556,10 @@ class ControlCenterModule:
         metrics: Optional[Dict[str, Any]] = None,
         enabled: Optional[bool] = None,
         autostart: Optional[bool] = None,
+        sudo_password: str = "",
     ) -> Dict[str, Any]:
         """Speichert Anzeigeauswahl (Metriken + Ziel) für erkannte Displays/OLED."""
-        targets = self._detect_display_targets()
+        targets = self._detect_display_targets(sudo_password=sudo_password)
         target_ids = {t["id"] for t in targets}
         safe_target = (target or "auto").strip() or "auto"
         if safe_target != "auto" and safe_target not in target_ids:

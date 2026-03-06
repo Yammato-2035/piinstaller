@@ -2594,12 +2594,35 @@ def _normalize_ram_block(block: dict) -> None:
         block["Speed"] = speed
 
 def get_cpu_name():
-    """CPU-Modellname aus /proc/cpuinfo"""
+    """CPU- oder Board-Modellname aus /proc/cpuinfo oder Device-Tree (für Raspberry Pi 5/ARM64)."""
     try:
         with open("/proc/cpuinfo", "r") as f:
             for line in f:
-                if line.strip().startswith("model name"):
+                s = line.strip()
+                if s.startswith("model name"):
                     return line.split(":", 1)[-1].strip()
+                if s.startswith("Model name"):
+                    return line.split(":", 1)[-1].strip()
+                if s.startswith("Hardware"):
+                    return line.split(":", 1)[-1].strip()
+                if s.startswith("Model") and ":" in line:
+                    # "Model" (Board, z. B. "Raspberry Pi 5 Model B Rev 1.0") – nur wenn noch nichts gefunden
+                    val = line.split(":", 1)[-1].strip()
+                    if val and ("Raspberry" in val or "BCM" in val):
+                        return val
+                if s.startswith("Processor"):
+                    val = line.split(":", 1)[-1].strip()
+                    if val and "aarch64" in val.lower():
+                        return val
+        # Fallback: Device-Tree (Raspberry Pi Board-Name)
+        for path in ("/proc/device-tree/model", "/sys/firmware/devicetree/base/model"):
+            try:
+                if Path(path).exists():
+                    raw = Path(path).read_bytes().decode("utf-8", errors="ignore").rstrip("\x00").strip()
+                    if raw:
+                        return raw
+            except Exception:
+                pass
         return None
     except Exception:
         return None
@@ -2616,7 +2639,15 @@ def get_cpu_summary():
         first = blocks[0] if blocks else ""
         for line in first.split("\n"):
             line = line.strip()
-            if line.startswith("model name"):
+            if line.startswith("model name") or line.startswith("Model name"):
+                out["name"] = line.split(":", 1)[-1].strip()
+            elif line.startswith("Hardware") and not out["name"]:
+                out["name"] = line.split(":", 1)[-1].strip()
+            elif line.startswith("Model") and ":" in line and not out["name"]:
+                val = line.split(":", 1)[-1].strip()
+                if val and ("Raspberry" in val or "BCM" in val):
+                    out["name"] = val
+            elif line.startswith("Processor") and not out["name"]:
                 out["name"] = line.split(":", 1)[-1].strip()
             elif line.startswith("cpu cores"):
                 try:
@@ -11009,10 +11040,11 @@ async def set_display_settings(request: Request):
 
 @app.get("/api/control-center/display/telemetry")
 async def get_display_telemetry_settings():
-    """Liest OLED/Display-Telemetrieeinstellungen inkl. Runner-Status."""
+    """Liest OLED/Display-Telemetrieeinstellungen inkl. Runner-Status. Nutzt ggf. Sudo-Passwort für I2C-OLED-Erkennung."""
     try:
+        sudo_password = sudo_password_store.get("password", "")
         module = _get_control_center_module()
-        return module.get_display_telemetry_settings()
+        return module.get_display_telemetry_settings(sudo_password=sudo_password)
     except Exception as e:
         logger.error(f"Fehler beim Lesen der OLED-Telemetrie: {str(e)}", exc_info=True)
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
@@ -11035,12 +11067,14 @@ async def set_display_telemetry_settings(request: Request):
             enabled = bool(enabled)
         if autostart is not None:
             autostart = bool(autostart)
+        sudo_password = (data.get("sudo_password") or "").strip() or sudo_password_store.get("password", "")
         module = _get_control_center_module()
         return module.set_display_telemetry_settings(
             target=target,
             metrics=metrics,
             enabled=enabled,
             autostart=autostart,
+            sudo_password=sudo_password,
         )
     except Exception as e:
         logger.error(f"Fehler beim Speichern der OLED-Telemetrie: {str(e)}", exc_info=True)

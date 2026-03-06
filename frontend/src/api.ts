@@ -32,7 +32,7 @@ export function isScreenshotMode(): boolean {
   return _screenshotMode;
 }
 
-/** API-Basis-URL (leer = gleiche Origin, für Proxy). */
+/** API-Basis-URL (leer = gleiche Origin, für Proxy). Gespeicherte URL hat Vorrang vor Build-Zeit-VITE_API_BASE. */
 export function getApiBase(): string {
   try {
     const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(API_BASE_STORAGE_KEY) : null;
@@ -46,6 +46,20 @@ export function getApiBase(): string {
   if (typeof window !== 'undefined' && window.__TAURI__ && import.meta.env.DEV) return '';
   if (typeof window !== 'undefined' && window.__TAURI__) return TAURI_DEFAULT_API;
   return '';
+}
+
+/** Setzt die Backend-URL (z. B. nach erfolgreichem Fallback-Test) und löst API-Base-Change aus. */
+export function setApiBase(url: string): void {
+  try {
+    const v = url.trim().replace(/\/$/, '');
+    if (v) localStorage.setItem(API_BASE_STORAGE_KEY, v);
+    else localStorage.removeItem(API_BASE_STORAGE_KEY);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('pi-installer-api-base-changed'));
+    }
+  } catch {
+    // ignore
+  }
 }
 
 export async function fetchApi(path: string, init?: RequestInit): Promise<Response> {

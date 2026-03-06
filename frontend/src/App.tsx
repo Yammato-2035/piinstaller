@@ -30,7 +30,7 @@ import DsiRadioSettings from './pages/DsiRadioSettings'
 import RadioPlayer from './components/RadioPlayer'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
-import { fetchApi } from './api'
+import { fetchApi, getApiBase, setApiBase } from './api'
 import { PlatformProvider, platformFromSystemInfo } from './context/PlatformContext'
 import './App.css'
 
@@ -79,6 +79,7 @@ function App() {
   const [systemInfo, setSystemInfo] = useState<any>(null)
   const [freenoveDetected, setFreenoveDetected] = useState(false)
   const [backendError, setBackendError] = useState(false)
+  const [backendErrorReason, setBackendErrorReason] = useState<'timeout' | 'connection' | 'other' | null>(null)
   const [sudoPasswordReady, setSudoPasswordReady] = useState(false)
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('pi-installer-theme')
@@ -128,23 +129,50 @@ function App() {
 
   const fetchSystemInfo = useCallback(async () => {
     setBackendError(false)
+    setBackendErrorReason(null)
+    const base = getApiBase() || 'http://127.0.0.1:8000'
+    const timeoutMs = 15000
     const maxRetries = 3
+
+    const tryFetch = async (apiBase: string): Promise<Response> => {
+      const url = `${apiBase.replace(/\/$/, '')}/api/system-info`
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+      const res = await fetch(url, { signal: controller.signal })
+      clearTimeout(timeoutId)
+      return res
+    }
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 15000)
-        const response = await fetchApi('/api/system-info', { signal: controller.signal })
-        clearTimeout(timeoutId)
+        const response = await tryFetch(base)
         const data = await response.json()
         setSystemInfo(data)
         return
       } catch (error) {
+        const isAbort = error instanceof Error && error.name === 'AbortError'
+        const reason: 'timeout' | 'connection' | 'other' = isAbort ? 'timeout' : 'connection'
         if (attempt < maxRetries) {
           await new Promise((r) => setTimeout(r, 1500))
           continue
         }
         console.error('Fehler beim Laden der Systeminfo:', error)
+        setBackendErrorReason(reason)
         setBackendError(true)
+        // Fallback: Wenn Standard-URL 127.0.0.1 war, einmal localhost probieren (IPv6/Resolver-Probleme)
+        if (base === 'http://127.0.0.1:8000') {
+          try {
+            const res = await tryFetch('http://localhost:8000')
+            const data = await res.json()
+            setApiBase('http://localhost:8000')
+            setSystemInfo(data)
+            setBackendError(false)
+            setBackendErrorReason(null)
+            return
+          } catch {
+            // Fallback fehlgeschlagen, Fehlerzustand bleibt
+          }
+        }
       }
     }
   }, [])
@@ -244,7 +272,15 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard systemInfo={systemInfo} setCurrentPage={handlePageChange} />
+        return (
+          <Dashboard
+            systemInfo={systemInfo}
+            backendError={backendError}
+            backendErrorReason={backendErrorReason}
+            onRetryBackend={fetchSystemInfo}
+            setCurrentPage={handlePageChange}
+          />
+        )
       case 'security':
         return <SecuritySetup />
       case 'users':
@@ -274,7 +310,17 @@ function App() {
       case 'backup':
         return <BackupRestore />
       case 'raspberry-pi-config':
-        return platform?.isRaspberryPi ? <RaspberryPiConfig /> : <Dashboard systemInfo={systemInfo} setCurrentPage={handlePageChange} />
+        return platform?.isRaspberryPi ? (
+          <RaspberryPiConfig />
+        ) : (
+          <Dashboard
+            systemInfo={systemInfo}
+            backendError={backendError}
+            backendErrorReason={backendErrorReason}
+            onRetryBackend={fetchSystemInfo}
+            setCurrentPage={handlePageChange}
+          />
+        )
       case 'control-center':
         return <ControlCenter isRaspberryPi={platform?.isRaspberryPi ?? false} />
       case 'periphery-scan':
@@ -292,7 +338,15 @@ function App() {
       case 'dsi-radio-settings':
         return <DsiRadioSettings setCurrentPage={handlePageChange} />
       default:
-        return <Dashboard systemInfo={systemInfo} backendError={backendError} setCurrentPage={handlePageChange} />
+        return (
+          <Dashboard
+            systemInfo={systemInfo}
+            backendError={backendError}
+            backendErrorReason={backendErrorReason}
+            onRetryBackend={fetchSystemInfo}
+            setCurrentPage={handlePageChange}
+          />
+        )
     }
   }
 

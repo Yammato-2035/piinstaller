@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { fetchApi } from '../api'
+import { fetchApi, getApiBase } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 import { 
   Cpu, 
@@ -34,6 +34,8 @@ import HelpTooltip from '../components/HelpTooltip'
 interface DashboardProps {
   systemInfo: any
   backendError?: boolean
+  backendErrorReason?: 'timeout' | 'connection' | 'other' | null
+  onRetryBackend?: () => void
   setCurrentPage?: (page: string) => void
 }
 
@@ -113,7 +115,7 @@ const StatCard = React.memo(({ icon: Icon, label, value, unit = '', trend }: any
 
 type DashboardSection = 'overview' | 'charts' | 'hardware'
 
-const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurrentPage }) => {
+const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backendErrorReason, onRetryBackend, setCurrentPage }) => {
   const { systemLabel, pageSubtitleLabel } = usePlatform()
   const [dashboardSection, setDashboardSection] = useState<DashboardSection>('overview')
   const [stats, setStats] = useState<any>(null)
@@ -158,14 +160,16 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
         const data = await response.json()
         if (data) {
           setStats(prev => {
-            if (!prev) return data
-            return {
+            const next = !prev ? data : {
               ...prev,
               cpu: { ...prev.cpu, ...data.cpu, usage: data.cpu?.usage, temperature: data.cpu?.temperature ?? prev.cpu?.temperature },
               memory: data.memory ?? prev.memory,
               disk: data.disk ?? prev.disk,
               uptime: data.uptime ?? prev.uptime,
+              cpu_name: data.cpu_name ?? prev.cpu_name,
+              cpu_summary: data.cpu_summary ?? prev.cpu_summary,
             }
+            return next
           })
           setHistoryData(prev => {
             const newData = {
@@ -427,23 +431,52 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, setCurr
       {backendError && !stats && (
         <div className="card-warning flex items-start gap-3">
           <AlertCircle className="shrink-0 mt-0.5 opacity-90" size={24} />
-          <div>
+          <div className="min-w-0 flex-1">
             <h3 className="font-semibold">Backend nicht erreichbar</h3>
             <p className="text-sm mt-1 opacity-95">
-              Dashboard-Daten und Sudo-Passwort-Speicherung funktionieren nur, wenn das Backend läuft.
-              <strong> Backend automatisch beim Boot starten:</strong> Im Projektordner <code className="opacity-90 px-1 rounded">./scripts/install-backend-service.sh</code> ausführen (richtet den systemd-Service <code className="opacity-90 px-1 rounded">pi-installer-backend</code> ein).
-              Einmalig starten: <code className="opacity-90 px-1 rounded">./start-backend.sh</code> oder <code className="opacity-90 px-1 rounded">sudo systemctl start pi-installer-backend</code> (falls Service bereits installiert).
-              Läuft das Backend auf einem anderen Rechner (z. B. Pi): Einstellungen → Allgemein → „Backend-API-URL“ eintragen (z. B. <code className="opacity-90 px-1 rounded">http://&lt;Pi-IP&gt;:8000</code>).
-              Log-Datei: Einstellungen → Logs → „Logs laden“ (Pfad wird angezeigt).
+              {backendErrorReason === 'timeout' && 'Das Backend antwortet nicht rechtzeitig (Timeout). Starten Sie es ggf. neu oder prüfen Sie die URL.'}
+              {backendErrorReason === 'connection' && 'Verbindung zum Backend fehlgeschlagen (z. B. Backend läuft nicht oder falsche Adresse).'}
+              {(!backendErrorReason || backendErrorReason === 'other') && 'CPU-, RAM- und Speicheranzeige sowie Sudo-Passwort funktionieren nur, wenn das Backend erreichbar ist.'}
             </p>
-            {setCurrentPage && (
-              <button
-                onClick={() => setCurrentPage('settings')}
-                className="mt-3 text-sm underline hover:opacity-90"
-              >
-                Einstellungen → Logs öffnen
-              </button>
-            )}
+            <p className="text-sm mt-2 opacity-90">
+              <strong>Genutzte API-URL:</strong>{' '}
+              <code className="bg-black/20 px-1.5 py-0.5 rounded text-sky-200 break-all">
+                {getApiBase() || 'http://127.0.0.1:8000 (Standard)'}
+              </code>
+            </p>
+            <p className="text-sm mt-2 opacity-95">
+              Backend starten: <code className="opacity-90 px-1 rounded">./start-backend.sh</code> oder <code className="opacity-90 px-1 rounded">sudo systemctl start pi-installer-backend</code>.
+              Bei anderem Rechner: Einstellungen → Allgemein → Backend-API-URL eintragen (z. B. <code className="opacity-90 px-1 rounded">http://&lt;IP&gt;:8000</code>).
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {onRetryBackend && (
+                <button
+                  type="button"
+                  onClick={onRetryBackend}
+                  className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium"
+                >
+                  Verbindung jetzt prüfen
+                </button>
+              )}
+              {setCurrentPage && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage('settings')}
+                    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-sm font-medium"
+                  >
+                    Einstellungen → Backend-URL anpassen
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage('settings')}
+                    className="text-sm underline hover:opacity-90"
+                  >
+                    Einstellungen → Logs
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

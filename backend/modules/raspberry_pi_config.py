@@ -336,7 +336,10 @@ class RaspberryPiConfigModule:
                     block[k] = v
                 else:
                     if block:
-                        model = block.get("Model name") or block.get("Hardware") or block.get("model name") or ""
+                        model = (
+                            block.get("Model name") or block.get("model name")
+                            or block.get("Hardware") or block.get("Model") or block.get("Processor") or ""
+                        )
                         proc_id = block.get("processor", str(len(cpus)))
                         try:
                             proc_id = int(proc_id)
@@ -345,7 +348,10 @@ class RaspberryPiConfigModule:
                         cpus.append({"processor_id": proc_id, "model": model or "Unbekannt"})
                         block = {}
             if block:
-                model = block.get("Model name") or block.get("Hardware") or block.get("model name") or ""
+                model = (
+                    block.get("Model name") or block.get("model name")
+                    or block.get("Hardware") or block.get("Model") or block.get("Processor") or ""
+                )
                 proc_id = block.get("processor", str(len(cpus)))
                 try:
                     proc_id = int(proc_id)
@@ -404,8 +410,24 @@ class RaspberryPiConfigModule:
                         k, v = k.strip(), v.strip()
                         if k == "Model name":
                             out["cpu_model"] = v
+                        elif k == "model name" and not out["cpu_model"]:
+                            out["cpu_model"] = v
                         elif k == "Hardware" and not out["cpu_model"]:
                             out["cpu_model"] = v
+                        elif k == "Model" and v and ("Raspberry" in v or "BCM" in v) and not out["cpu_model"]:
+                            out["cpu_model"] = v
+                        elif k == "Processor" and v and not out["cpu_model"]:
+                            out["cpu_model"] = v
+                if not out["cpu_model"]:
+                    for path in ("/proc/device-tree/model", "/sys/firmware/devicetree/base/model"):
+                        try:
+                            if Path(path).exists():
+                                raw = Path(path).read_bytes().decode("utf-8", errors="ignore").rstrip("\x00").strip()
+                                if raw:
+                                    out["cpu_model"] = raw
+                                    break
+                        except Exception:
+                            pass
             vcgencmd = "/usr/bin/vcgencmd"
             if not Path(vcgencmd).exists():
                 vcgencmd = "vcgencmd"

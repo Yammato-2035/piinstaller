@@ -6,7 +6,8 @@ global:
   level: INFO
   sink:
     file:
-      path: /var/log/piinstaller/piinstaller.debug.jsonl
+      # Leer = Auto: /var/log/piinstaller/ wenn schreibbar (z. B. als root), sonst ~/.cache/piinstaller/logs/
+      path: ""
   rotate:
     max_files: 10
     max_size_mb: 5
