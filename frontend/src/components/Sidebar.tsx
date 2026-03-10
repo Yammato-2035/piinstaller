@@ -79,7 +79,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     type Item = { id?: string; type?: string; label?: string; icon?: any; appIcon?: string; modes?: UIMode[] }
     const items: Item[] = [
       { id: 'dashboard', label: 'Dashboard', appIcon: 'dashboard', modes: ['basic'] },
-      { id: 'remote', label: 'Remote Companion', icon: Smartphone, modes: ['advanced'] },
+      { id: 'remote', label: 'Linux Companion', icon: Smartphone, modes: ['advanced'] },
       { id: 'app-store', label: 'App Store', appIcon: 'app-store', modes: ['basic'] },
       ...(freenoveDetected ? [{ id: 'dsi-radio-settings', label: 'DSI-Radio Einstellungen', icon: Radio, modes: ['basic', 'advanced'] as UIMode[] }] : []),
       { id: 'wizard', label: 'Assistent', appIcon: 'wizard', modes: ['basic'] },

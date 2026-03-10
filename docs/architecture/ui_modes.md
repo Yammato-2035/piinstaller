@@ -34,7 +34,7 @@ _Informationsarchitektur: Einsteiger, Experten, Diagnose_
 
 | Funktion | Seite | Zielgruppe | Technische Beschreibung |
 |----------|-------|------------|-------------------------|
-| Remote Companion | remote | Experten | Fernzugriff, Pairing, Geräte |
+| Linux Companion | remote | Experten | Fernzugriff, Pairing (QR), Geräte |
 | Dev-Umgebung | devenv | Entwickler | Entwicklungsumgebung (aktuell nicht verfügbar) |
 | Webserver | webserver | Admins | Webserver-Konfiguration |
 | Mailserver | mailserver | Admins | Mail-Konfiguration (aktuell nicht verfügbar) |
@@ -95,7 +95,7 @@ _Informationsarchitektur: Einsteiger, Experten, Diagnose_
 | Page-ID | Screen | Kategorie | Begründung |
 |---------|--------|-----------|------------|
 | dashboard | Dashboard | Grundlagen | Übersicht, Einstieg |
-| remote | Remote Companion | Erweitert | Fernzugriff, technisch |
+| remote | Linux Companion | Erweitert | Fernzugriff, QR-Pairing |
 | app-store | App Store | Grundlagen | App-Installation, häufig |
 | dsi-radio-settings | DSI-Radio Einstellungen | Grundlagen + Erweitert | Freenove-spezifisch |
 | wizard | Assistent | Grundlagen | Geführte Installation |

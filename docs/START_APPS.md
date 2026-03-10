@@ -100,6 +100,7 @@ Desktop-Anwendung mit eigenem Fenster – keine Browser-Leiste.
 cd frontend
 npm run tauri:dev
 ```
+Startet automatisch das Backend im Hintergrund, falls es noch nicht läuft (via `beforeDevCommand`).
 
 ### Desktop-Starter
 Nach `bash scripts/desktop-launcher-alle-anlegen.sh`:  
@@ -201,3 +202,19 @@ VITE_PROXY_TARGET=http://192.168.1.XX:8000 npm run dev
 ### 4. Firewall
 - Port 8000 (Backend) und 3001 (Frontend) müssen erreichbar sein.
 - Bei Remote-Zugriff: Einstellungen → Frontend-Netzwerk-Zugriff prüfen.
+
+---
+
+## Fehlerbehebung: Tauri-App startet, Backend wird nicht erkannt
+
+**Symptom:** Tauri-Fenster öffnet sich, aber „Server nicht erreichbar“ oder Sudo-Dialog bleibt hängen.
+
+### 1. Entwicklung (npm run tauri:dev)
+- Ab v1.3.8 startet `npm run tauri:dev` das Backend automatisch, falls es nicht läuft.
+- Prüfen: `curl http://127.0.0.1:8000/api/version` – bei Fehler Backend manuell starten: `./start-backend.sh` (im Projektroot).
+
+### 2. Gebaute App (Binary, .deb, AppImage)
+- Die Tauri-Binary startet **kein** Backend – sie verbindet sich nur mit `http://127.0.0.1:8000`.
+- **Lösung:** Backend zuerst starten oder **start-pi-installer.sh** nutzen (startet Backend + App).
+- Desktop-Einträge von `install-desktop-entries.sh` nutzen bereits `start-pi-installer.sh` – Backend wird mitgestartet.
+- Bei Installation nur der Tauri-.deb-Datei: Backend separat starten (`./start-backend.sh` oder Service).

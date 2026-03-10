@@ -4,7 +4,7 @@
   "version": "1.3.8",
   "identifier": "de.pi-installer.app",
   "build": {
-    "beforeDevCommand": "npm run dev:tauri",
+    "beforeDevCommand": "npm run dev:tauri-with-backend",
     "devUrl": "http://localhost:5173",
     "beforeBuildCommand": "VITE_API_BASE=http://127.0.0.1:8000 npm run build",
     "frontendDist": "../dist"

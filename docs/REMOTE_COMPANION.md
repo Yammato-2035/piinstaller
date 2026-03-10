@@ -1,6 +1,6 @@
-# Remote Companion – Übersicht & Architektur
+# Linux Companion – Übersicht & Architektur
 
-Das **modulare Smartphone-Companion-System** ermöglicht die Steuerung des PI-Installers und angeschlossener Apps (z. B. DSI-Radio/Sabrina Tuner) über eine PWA auf dem Smartphone im gleichen WLAN. **Phase 1** umfasst ausschließlich die **Control Plane**: Pairing, Session, Rollen, Modul-Registry, REST-API und WebSocket-Eventbus. Dateisync, CalDAV/CardDAV und Cloud-Sync sind nicht Teil von Phase 1.
+Das **modulare Smartphone-Companion-System** (Linux Companion) ermöglicht die Steuerung des PI-Installers und angeschlossener Apps (z. B. DSI-Radio/Sabrina Tuner) über eine PWA auf dem Smartphone im gleichen WLAN. Läuft auf **Raspberry Pi** und **Linux-Desktops**. **Phase 1** umfasst ausschließlich die **Control Plane**: Pairing (mit QR-Code auf allen Plattformen), Session, Rollen, Modul-Registry, REST-API und WebSocket-Eventbus. Dateisync, CalDAV/CardDAV und Cloud-Sync sind nicht Teil von Phase 1.
 
 - **Entwicklerleitfaden** (neues Modul anlegen, Widgets, Aktionen, Events): siehe [REMOTE_COMPANION_DEV.md](./REMOTE_COMPANION_DEV.md).
 
@@ -9,8 +9,8 @@ Das **modulare Smartphone-Companion-System** ermöglicht die Steuerung des PI-In
 ## 1. Ablauf aus Nutzersicht
 
 1. **Backend** auf dem Pi läuft; Remote-Feature ist in den Einstellungen aktiviert.
-2. **Pairing:** Am Pi (oder im Desktop-Frontend) wird ein neues Pairing erstellt; ein **QR-Code** oder eine Token-URL wird angezeigt.
-3. **Smartphone:** Nutzer öffnet die PWA (z. B. `http://<pi-ip>:3001` – Frontend-Port – mit Seite „Remote Companion“ oder eine dedizierte Companion-URL), scannt den QR bzw. gibt den Token ein und löst das Pairing ein (**Claim**). API-Backend läuft auf Port 8000.
+2. **Pairing:** Am Linux-Gerät (Pi, Desktop) wird ein neues Pairing erstellt; ein **QR-Code** wird angezeigt (auch auf Linux-Desktop, nicht nur Pi).
+3. **Smartphone:** Nutzer öffnet die PWA (z. B. `http://<host-ip>:3001` – Frontend-Port – mit Seite „Linux Companion“), scannt den QR-Code bzw. gibt den Token ein und löst das Pairing ein (**Claim**). API-Backend läuft auf Port 8000.
 4. **Session:** Nach erfolgreichem Claim erhält die PWA ein **Session-Token** (wird z. B. im localStorage gespeichert). Alle weiteren API-Aufrufe und der WebSocket nutzen dieses Token.
 5. **Dashboard:** Die PWA zeigt Geräte-Info und die Liste der **Module** (z. B. Sabrina Tuner, PI-Installer). Pro Modul können **Status** abgefragt und **Aktionen** ausgeführt werden (je nach Rolle).
 6. **Live-Updates:** Optional verbindet sich die PWA per **WebSocket** (`/api/ws?session=TOKEN`) und erhält Events (z. B. Lautstärke geändert, Now Playing, Job-Fortschritt).
@@ -36,7 +36,7 @@ Das **modulare Smartphone-Companion-System** ermöglicht die Steuerung des PI-In
 ### 2.2 Frontend (PWA)
 
 - **Ort:** `frontend/src/features/remote/` – API-Client, Store (Zustand), Seiten (Pair, Dashboard, Modul-Detail), Komponenten (StatusCard, VolumeSlider, …).
-- **Navigation:** Im Haupt-Frontend existiert die Seite `remote` (Menüpunkt „Remote Companion“); ohne Session wird die **Pair-Seite**, mit Session **Dashboard** oder **Modul-Detail** angezeigt.
+- **Navigation:** Im Haupt-Frontend existiert die Seite `remote` (Menüpunkt „Linux Companion“); ohne Session wird die **Pair-Seite** (mit QR-Code-Anzeige auf allen Plattformen), mit Session **Dashboard** oder **Modul-Detail** angezeigt.
 - **Session:** Token wird im localStorage unter `pi-installer-remote-session` gespeichert; REST-Requests nutzen `Authorization: Bearer <token>`; WebSocket: `?session=<token>`.
 
 ---
