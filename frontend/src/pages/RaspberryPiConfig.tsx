@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Settings, Info, Save, RefreshCw, Power, RotateCcw } from 'lucide-react'
+import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
@@ -408,7 +409,7 @@ const RaspberryPiConfig: React.FC = () => {
       <div>
         <div className="page-title-category mb-2 inline-flex">
           <h1 className="flex items-center gap-3">
-            <Settings className="text-purple-500" />
+            <AppIcon name="raspberrypi" category="devices" size={32} />
             Raspberry Pi Konfiguration
           </h1>
         </div>

@@ -10,7 +10,7 @@ Das **modulare Smartphone-Companion-System** ermöglicht die Steuerung des PI-In
 
 1. **Backend** auf dem Pi läuft; Remote-Feature ist in den Einstellungen aktiviert.
 2. **Pairing:** Am Pi (oder im Desktop-Frontend) wird ein neues Pairing erstellt; ein **QR-Code** oder eine Token-URL wird angezeigt.
-3. **Smartphone:** Nutzer öffnet die PWA (z. B. `http://<pi-ip>:8000` mit Seite „Remote Companion“ oder eine dedizierte Companion-URL), scannt den QR bzw. gibt den Token ein und löst das Pairing ein (**Claim**).
+3. **Smartphone:** Nutzer öffnet die PWA (z. B. `http://<pi-ip>:3001` – Frontend-Port – mit Seite „Remote Companion“ oder eine dedizierte Companion-URL), scannt den QR bzw. gibt den Token ein und löst das Pairing ein (**Claim**). API-Backend läuft auf Port 8000.
 4. **Session:** Nach erfolgreichem Claim erhält die PWA ein **Session-Token** (wird z. B. im localStorage gespeichert). Alle weiteren API-Aufrufe und der WebSocket nutzen dieses Token.
 5. **Dashboard:** Die PWA zeigt Geräte-Info und die Liste der **Module** (z. B. Sabrina Tuner, PI-Installer). Pro Modul können **Status** abgefragt und **Aktionen** ausgeführt werden (je nach Rolle).
 6. **Live-Updates:** Optional verbindet sich die PWA per **WebSocket** (`/api/ws?session=TOKEN`) und erhält Events (z. B. Lautstärke geändert, Now Playing, Job-Fortschritt).

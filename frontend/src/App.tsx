@@ -33,8 +33,10 @@ import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
 import { fetchApi, getApiBase, setApiBase } from './api'
 import { PlatformProvider, platformFromSystemInfo } from './context/PlatformContext'
+import { UIModeProvider } from './context/UIModeContext'
 import './App.css'
 
+/* REGRESSION-RISK: Neue Menüeinträge/Pages nur mit existierendem Ziel; Grundlagen vs. Erweitert sauber trennen. */
 type Page = 
   | 'dashboard' 
   | 'security' 
@@ -361,7 +363,7 @@ function App() {
           {/* Fenstertitelbereich (4px schmaler: py-2 statt py-3) */}
           <header className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-[#c0c0c0]/50 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full border-2 border-[#c0c0c0] flex items-center justify-center shrink-0" title={backendError ? 'Backend nicht erreichbar' : 'Backend OK'}>
+              <div className="w-3 h-3 rounded-full border-2 border-[#c0c0c0] flex items-center justify-center shrink-0" title={backendError ? 'Server nicht erreichbar' : 'Server bereit'}>
                 <div className={`w-1.5 h-1.5 rounded-full ${backendError ? 'bg-red-500' : 'bg-emerald-500'}`} />
               </div>
               <div>
@@ -379,6 +381,7 @@ function App() {
   }
 
   return (
+    <UIModeProvider>
     <PlatformProvider value={platform}>
       <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
         {!firstRunDone && (
@@ -421,6 +424,7 @@ function App() {
         <Toaster position="bottom-right" />
       </div>
     </PlatformProvider>
+    </UIModeProvider>
   )
 }
 

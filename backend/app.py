@@ -189,6 +189,7 @@ def _os_release() -> dict:
 def _config_path() -> Path:
     """
     Prefer /etc/pi-installer/config.json when writable, else fallback to ~/.config/pi-installer/config.json.
+    REGRESSION-RISK: doppelte Konfiguration – Runtime liest ausschließlich config.json; nicht auf config.yaml wechseln.
     """
     etc = Path("/etc/pi-installer/config.json")
     try:
@@ -10490,96 +10491,8 @@ async def restore_backup(request: Request):
             }
         )
 
-
-@app.post("/api/backup/verify")
-async def verify_backup(request: Request):
-    """Backup verifizieren (tar-Test, optional sha256)."""
-    try:
-        data = await request.json()
-        backup_file = (data.get("backup_file") or "").strip()
-        mode = (data.get("mode") or "tar").strip()  # tar | sha256 | gzip
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
-
-        if not backup_file:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "backup_file erforderlich"})
-
-        # Allowlist: nur unter erlaubten roots
-        try:
-            bf = Path(backup_file).resolve()
-            allowed_roots = [Path("/mnt").resolve(), Path("/media").resolve(), Path("/run/media").resolve(), Path("/home").resolve()]
-            if not any(str(bf).startswith(str(r) + "/") or bf == r for r in allowed_roots):
-                return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei liegt außerhalb erlaubter Pfade"})
-        except Exception:
-            pass
-
-        # Existence check (mit sudo fallback)
-        test_cmd = f"test -s {shlex.quote(backup_file)}"
-        t = run_command(test_cmd)
-        if not t["success"] and sudo_password:
-            t = run_command(test_cmd, sudo=True, sudo_password=sudo_password)
-        if not t["success"]:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei nicht gefunden oder leer"})
-
-        import time
-        start = time.time()
-
-        if mode == "sha256":
-            cmd = f"sha256sum {shlex.quote(backup_file)}"
-            res = await run_command_async(cmd, timeout=600)
-            if not res["success"] and sudo_password:
-                res = await run_command_async(cmd, sudo=True, sudo_password=sudo_password, timeout=600)
-            ok = bool(res["success"])
-            sha = (res.get("stdout") or "").strip().split()[0] if ok and (res.get("stdout") or "").strip() else None
-            return {
-                "status": "success" if ok else "error",
-                "mode": "sha256",
-                "ok": ok,
-                "sha256": sha,
-                "stderr": (res.get("stderr") or "").strip()[:200],
-                "duration_ms": int((time.time() - start) * 1000),
-            }
-
-        if mode == "gzip":
-            # gzip stream integrity test (no output on success)
-            cmd = f"gzip -t {shlex.quote(backup_file)}"
-            res = await run_command_async(cmd, timeout=600)
-            if not res["success"] and sudo_password:
-                res = await run_command_async(cmd, sudo=True, sudo_password=sudo_password, timeout=600)
-            ok = bool(res["success"])
-            msg = (res.get("stderr") or res.get("stdout") or res.get("error") or "").strip()
-            if not msg and not ok:
-                msg = f"gzip test failed (rc={res.get('returncode')})"
-            return {
-                "status": "success" if ok else "error",
-                "mode": "gzip",
-                "ok": ok,
-                "message": msg[:400] if msg else None,
-                "duration_ms": int((time.time() - start) * 1000),
-            }
-
-        # Default: tar.gz structural test via python (avoids huge stdout lists)
-        try:
-            import tarfile
-            with tarfile.open(backup_file, mode="r:gz") as tf:
-                # iterate headers; raises on corruption/truncation
-                for _ in tf:
-                    pass
-            ok = True
-            msg = None
-        except Exception as te:
-            ok = False
-            msg = str(te) or "tar verify failed"
-
-        return {
-            "status": "success" if ok else "error",
-            "mode": "tar",
-            "ok": ok,
-            "message": msg[:400] if msg else None,
-            "duration_ms": int((time.time() - start) * 1000),
-        }
-    except Exception as e:
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
+# AUDIT-FIXED (A-02): Doppelte Definition entfernt. Die erste verify_backup (weiter oben)
+# ist der Hauptpfad; sie liefert das von der Frontend-BackupRestore erwartete Format (results).
 
 # ==================== Raspberry Pi Konfiguration ====================
 

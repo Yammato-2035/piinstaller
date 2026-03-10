@@ -81,7 +81,7 @@
 }
 
 .badge-success {
-  @apply bg-green-900 text-green-200;
+  @apply bg-emerald-900 text-emerald-200;
 }
 
 .badge-warning {

@@ -187,19 +187,19 @@ SERVICEEOF
   ok "Service-Datei geschrieben"
 fi
 
+# AUDIT-FIX (A-03): Runtime liest config.json; erzeuge config.json statt config.yaml.
 # Konfiguration (nur anlegen wenn nicht vorhanden)
-if [ ! -f "$CONFIG_DIR/config.yaml" ]; then
-  cat > "$CONFIG_DIR/config.yaml" << 'CONFIGEOF'
-install_dir: /opt/pi-installer
-config_dir: /etc/pi-installer
-log_dir: /var/log/pi-installer
-backend:
-  host: 0.0.0.0
-  port: 8000
-frontend:
-  port: 3001
+if [ ! -f "$CONFIG_DIR/config.json" ]; then
+  cat > "$CONFIG_DIR/config.json" << 'CONFIGEOF'
+{
+  "install_dir": "/opt/pi-installer",
+  "config_dir": "/etc/pi-installer",
+  "log_dir": "/var/log/pi-installer",
+  "backend": {"host": "0.0.0.0", "port": 8000},
+  "frontend": {"port": 3001}
+}
 CONFIGEOF
-  chown "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$CONFIG_DIR/config.yaml"
+  chown "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$CONFIG_DIR/config.json"
   ok "Konfiguration erstellt"
 fi
 

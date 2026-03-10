@@ -80,7 +80,7 @@ const UserManagement: React.FC = () => {
       try {
         data = await response.json()
       } catch {
-        toast.error('Ungültige Antwort vom Backend. Läuft es auf Port 8000?')
+        toast.error('Der Server hat nicht wie erwartet geantwortet. Läuft er auf Port 8000?')
         return
       }
       if (data.status === 'success') {
@@ -95,8 +95,8 @@ const UserManagement: React.FC = () => {
       const isTimeout = error instanceof Error && error.name === 'AbortError'
       toast.error(
         isTimeout
-          ? 'Speichern hat zu lange gedauert (Timeout). Backend ist eventuell ausgelastet – bitte erneut versuchen.'
-          : 'Fehler beim Speichern – Backend erreichbar? Starten Sie zuerst „PI-Installer Backend starten“ (Port 8000).',
+          ? 'Speichern hat zu lange gedauert. Der Server ist möglicherweise ausgelastet – bitte erneut versuchen.'
+          : 'Speichern fehlgeschlagen. Bitte starten Sie den Server (./start-backend.sh) und versuchen Sie es erneut.',
         { duration: 6000 }
       )
       console.error('saveSudoPassword:', error)

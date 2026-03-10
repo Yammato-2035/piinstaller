@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { fetchApi, getApiBase } from '../api'
 import { usePlatform } from '../context/PlatformContext'
+import AppIcon from '../components/AppIcon'
 import { 
   Cpu, 
   HardDrive, 
   Zap, 
   Clock,
-  CheckCircle,
-  AlertCircle,
   Shield,
   Users,
   Code,
@@ -19,7 +18,6 @@ import {
   BookOpen,
   Activity,
   Database,
-  LayoutDashboard,
   Thermometer,
   Wind,
   Monitor,
@@ -280,9 +278,9 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       <div className="flex items-center gap-3">
         <div className="relative group">
           {status === 'active' ? (
-            <CheckCircle className="text-green-500" size={20} />
+            <AppIcon name="ok" category="status" size={20} statusColor="ok" />
           ) : (
-            <AlertCircle className="text-yellow-500" size={20} />
+            <AppIcon name="warning" category="status" size={20} statusColor="warning" />
           )}
           {tooltip && (
             <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-2 -translate-y-full opacity-0 group-hover:opacity-100 transition-opacity z-20">
@@ -297,7 +295,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       </div>
       <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
         status === 'active' 
-          ? 'bg-green-900 text-green-200' 
+          ? 'bg-emerald-900 text-emerald-200' 
           : 'bg-yellow-900 text-yellow-200'
       }`}>
         {value}
@@ -313,7 +311,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
   ] : []
 
   const needsAction = !!(updatesData && updatesData.total > 0) || getSecurityStatus() === 'inactive'
-  const statusLabel = backendError ? 'Backend nicht erreichbar' : needsAction ? 'Aktion benötigt' : 'Alles OK'
+  const statusLabel = backendError ? 'Verbindung zum Server fehlgeschlagen' : needsAction ? 'Aktion benötigt' : 'Alles OK'
   const statusColor = backendError ? 'red' : needsAction ? 'yellow' : 'green'
 
   const cpuPercent = stats?.cpu?.usage ?? 0
@@ -348,9 +346,9 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                     : 'bg-red-500/20 text-red-300 border border-red-500/40'
               }`}
             >
-              {statusColor === 'green' && <CheckCircle className="w-5 h-5" />}
-              {statusColor === 'yellow' && <AlertCircle className="w-5 h-5" />}
-              {statusColor === 'red' && <AlertCircle className="w-5 h-5" />}
+              {statusColor === 'green' && <AppIcon name="ok" category="status" size={20} statusColor="ok" />}
+              {statusColor === 'yellow' && <AppIcon name="warning" category="status" size={20} statusColor="warning" />}
+              {statusColor === 'red' && <AppIcon name="error" category="status" size={20} statusColor="error" />}
               {statusLabel}
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-400">
@@ -421,7 +419,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       >
         <div className="page-title-category mb-2 inline-flex">
           <h1 className="flex items-center gap-3">
-            <LayoutDashboard className="text-sky-400" />
+            <AppIcon name="dashboard" category="navigation" size={32} />
             Dashboard
           </h1>
         </div>
@@ -430,13 +428,13 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
 
       {backendError && !stats && (
         <div className="card-warning flex items-start gap-3">
-          <AlertCircle className="shrink-0 mt-0.5 opacity-90" size={24} />
+          <AppIcon name="error" category="status" size={24} statusColor="error" className="shrink-0 mt-0.5 opacity-90" />
           <div className="min-w-0 flex-1">
-            <h3 className="font-semibold">Backend nicht erreichbar</h3>
+            <h3 className="font-semibold">Verbindung zum Server fehlgeschlagen</h3>
             <p className="text-sm mt-1 opacity-95">
-              {backendErrorReason === 'timeout' && 'Das Backend antwortet nicht rechtzeitig (Timeout). Starten Sie es ggf. neu oder prüfen Sie die URL.'}
-              {backendErrorReason === 'connection' && 'Verbindung zum Backend fehlgeschlagen (z. B. Backend läuft nicht oder falsche Adresse).'}
-              {(!backendErrorReason || backendErrorReason === 'other') && 'CPU-, RAM- und Speicheranzeige sowie Sudo-Passwort funktionieren nur, wenn das Backend erreichbar ist.'}
+              {backendErrorReason === 'timeout' && 'Der Server antwortet nicht rechtzeitig. Bitte starten Sie ihn neu oder prüfen Sie die Adresse.'}
+              {backendErrorReason === 'connection' && 'Die Verbindung zum Server konnte nicht hergestellt werden. Der Server läuft möglicherweise nicht oder die Adresse ist falsch.'}
+              {(!backendErrorReason || backendErrorReason === 'other') && 'Übersicht, System-Updates und viele Einstellungen funktionieren nur, wenn der Server erreichbar ist.'}
             </p>
             <p className="text-sm mt-2 opacity-90">
               <strong>Genutzte API-URL:</strong>{' '}
@@ -445,8 +443,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
               </code>
             </p>
             <p className="text-sm mt-2 opacity-95">
-              Backend starten: <code className="opacity-90 px-1 rounded">./start-backend.sh</code> oder <code className="opacity-90 px-1 rounded">sudo systemctl start pi-installer-backend</code>.
-              Bei anderem Rechner: Einstellungen → Allgemein → Backend-API-URL eintragen (z. B. <code className="opacity-90 px-1 rounded">http://&lt;IP&gt;:8000</code>).
+              <strong>Lösung:</strong> Im Projektordner <code className="opacity-90 px-1 rounded">./start-backend.sh</code> ausführen. Oder als Dienst: <code className="opacity-90 px-1 rounded">sudo systemctl start pi-installer-backend</code>.
+              Läuft der Server auf einem anderen Rechner: Einstellungen → Allgemein → Backend-API-URL eintragen (z. B. <code className="opacity-90 px-1 rounded">http://&lt;IP&gt;:8000</code>).
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {onRetryBackend && (
@@ -961,7 +959,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
               className="card"
             >
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <CheckCircle className={`text-green-500 status-icon ${getSecurityStatus() === 'active' ? 'active' : ''}`} />
+                <AppIcon name="complete" category="status" size={24} statusColor={getSecurityStatus() === 'active' ? 'ok' : 'muted'} />
                 Installation Status
               </h2>
               <StatusItem

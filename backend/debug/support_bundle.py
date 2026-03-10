@@ -150,6 +150,9 @@ def _redact_text_line_by_line(text: str, patterns: List[Any]) -> str:
     """Redaktion zeilenweise (spart RAM bei großen Logs)."""
     if not text or not patterns:
         return text
+    # AUDIT-DEBUG: moeglicher Laufzeitpfad fuer Support-Bundle/Redaction; `compile_patterns`
+    # ist in diesem Modul nicht sichtbar importiert und sollte vor spaeteren Bereinigungen
+    # gegen echte Laufzeitfaelle geprueft werden.
     compiled = compile_patterns(patterns) if patterns and isinstance(patterns[0], str) else patterns
     return "\n".join(redact_string(line, compiled) for line in text.splitlines())
 

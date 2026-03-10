@@ -5,27 +5,15 @@ Actions: play_preset, set_volume, mute_toggle, set_eq.
 Publiziert: tuner.now_playing, tuner.volume_changed (und ggf. module.state.changed).
 """
 
-import asyncio
 import logging
 from typing import Any, List
 
-from core.eventbus import get_eventbus
+from core.eventbus import publish_fire_and_forget
 from models.module import ModuleDescriptor
 from models.widget import WidgetDescriptor
 from models.action import ActionDescriptor
 
 logger = logging.getLogger(__name__)
-
-
-def _publish(topic: str, payload: dict[str, Any]) -> None:
-    """Fire-and-forget Eventbus-Publish (async aus sync Kontext)."""
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            eb = get_eventbus()
-            loop.create_task(eb.publish(topic, payload))
-    except Exception as e:
-        logger.debug("Eventbus publish %s: %s", topic, e)
 
 
 class SabrinaTunerService:
@@ -67,8 +55,8 @@ class SabrinaTunerService:
             preset_id = (payload or {}).get("preset_id") or ""
             self._state["station"] = preset_id or self._state.get("station")
             self._state["now_playing"] = {"preset": preset_id, "title": preset_id or "Live"}
-            _publish("tuner.now_playing", {"station": self._state["station"], "now_playing": self._state["now_playing"]})
-            _publish("module.state.changed", {"module_id": "sabrina-tuner", "state": self.get_state()})
+            publish_fire_and_forget("tuner.now_playing", {"station": self._state["station"], "now_playing": self._state["now_playing"]})
+            publish_fire_and_forget("module.state.changed", {"module_id": "sabrina-tuner", "state": self.get_state()})
             return {"success": True, "message": "Preset gewechselt", "data": {"preset_id": preset_id}}
         if action_id == "set_volume":
             try:
@@ -77,19 +65,19 @@ class SabrinaTunerService:
             except (TypeError, ValueError):
                 v = self._state["volume"]
             self._state["volume"] = v
-            _publish("tuner.volume_changed", {"volume": v, "muted": self._state["muted"]})
-            _publish("module.state.changed", {"module_id": "sabrina-tuner", "state": self.get_state()})
+            publish_fire_and_forget("tuner.volume_changed", {"volume": v, "muted": self._state["muted"]})
+            publish_fire_and_forget("module.state.changed", {"module_id": "sabrina-tuner", "state": self.get_state()})
             return {"success": True, "message": f"Lautstärke {v}", "data": {"volume": v}}
         if action_id == "mute_toggle":
             self._state["muted"] = not self._state.get("muted", False)
-            _publish("tuner.volume_changed", {"volume": self._state["volume"], "muted": self._state["muted"]})
-            _publish("module.state.changed", {"module_id": "sabrina-tuner", "state": self.get_state()})
+            publish_fire_and_forget("tuner.volume_changed", {"volume": self._state["volume"], "muted": self._state["muted"]})
+            publish_fire_and_forget("module.state.changed", {"module_id": "sabrina-tuner", "state": self.get_state()})
             return {"success": True, "message": "Stumm" if self._state["muted"] else "An", "data": {"muted": self._state["muted"]}}
         if action_id == "set_eq":
             eq = (payload or {}).get("eq")
             if isinstance(eq, dict):
                 self._state["eq"] = dict(eq)
-            _publish("module.state.changed", {"module_id": "sabrina-tuner", "state": self.get_state()})
+            publish_fire_and_forget("module.state.changed", {"module_id": "sabrina-tuner", "state": self.get_state()})
             return {"success": True, "message": "EQ aktualisiert", "data": {"eq": self._state["eq"]}}
         return {"success": False, "message": f"Unbekannte Aktion: {action_id}"}
 

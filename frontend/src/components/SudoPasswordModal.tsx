@@ -1,3 +1,7 @@
+/**
+ * Setup-seitige Sudo-Abfrage (AUDIT-FIXED B-05): Hauptpfad für Setup-Seiten.
+ * Siehe docs/development/SUDO_COMPONENTS.md für Nutzungsübersicht.
+ */
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, X } from 'lucide-react'
@@ -16,7 +20,7 @@ interface SudoPasswordModalProps {
 const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
   open,
   title = 'Sudo-Passwort erforderlich',
-  subtitle = 'Für diese Aktion werden Administrator-Rechte benötigt.',
+  subtitle = 'Wird für Installationen und Sicherheitseinstellungen benötigt.',
   confirmText = 'Bestätigen',
   showSkipTest = true,
   onCancel,

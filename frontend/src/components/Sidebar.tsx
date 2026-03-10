@@ -2,8 +2,9 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
+import { useUIMode, type UIMode } from '../context/UIModeContext'
+import AppIcon from './AppIcon'
 import {
-  LayoutDashboard,
   Shield,
   Users,
   Code,
@@ -12,19 +13,14 @@ import {
   HardDrive,
   Home,
   Music,
-  Zap,
   LogOut,
   Settings,
   BookOpen,
-  Activity,
-  Database,
   Cpu,
   Moon,
   Sun,
   Monitor,
-  Scan,
   Tv,
-  Package,
   Radio,
   Upload,
   Smartphone,
@@ -38,6 +34,7 @@ interface SidebarProps {
   theme: Theme
   setTheme: (theme: Theme) => void
   isRaspberryPi?: boolean
+  freenoveDetected?: boolean
   mobileOpen?: boolean
   onClose?: () => void
 }
@@ -46,6 +43,7 @@ const NEW_BADGE_KEY = 'pi-installer-new-'
 
 const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, freenoveDetected = false, mobileOpen = false, onClose }) => {
   const { appTitle } = usePlatform()
+  const { mode, setMode } = useUIMode()
   const [version, setVersion] = useState<string>('…')
   const [newBadges, setNewBadges] = useState<Record<string, boolean>>({})
 
@@ -78,39 +76,46 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
   }, [])
 
   const menuItems = useMemo(() => {
-    // Logisch sortiert: Übersicht → Einrichtung → System → Dienste → Wartung → Pi (optional)
-    const items: Array<{ id?: string; type?: string; label?: string; icon?: any }> = [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { id: 'remote', label: 'Remote Companion', icon: Smartphone },
-      { id: 'app-store', label: 'App Store', icon: Package },
-      ...(freenoveDetected ? [{ id: 'dsi-radio-settings', label: 'DSI-Radio Einstellungen', icon: Radio }] : []),
-      { id: 'wizard', label: 'Assistent', icon: Zap },
-      { id: 'presets', label: 'Voreinstellungen', icon: Settings },
+    type Item = { id?: string; type?: string; label?: string; icon?: any; appIcon?: string; modes?: UIMode[] }
+    const items: Item[] = [
+      { id: 'dashboard', label: 'Dashboard', appIcon: 'dashboard', modes: ['basic'] },
+      { id: 'remote', label: 'Remote Companion', icon: Smartphone, modes: ['advanced'] },
+      { id: 'app-store', label: 'App Store', appIcon: 'app-store', modes: ['basic'] },
+      ...(freenoveDetected ? [{ id: 'dsi-radio-settings', label: 'DSI-Radio Einstellungen', icon: Radio, modes: ['basic', 'advanced'] as UIMode[] }] : []),
+      { id: 'wizard', label: 'Assistent', appIcon: 'wizard', modes: ['basic'] },
+      { id: 'presets', label: 'Voreinstellungen', icon: Settings, modes: ['basic'] },
       { type: 'divider' },
-      { id: 'settings', label: 'Einstellungen', icon: Settings },
-      { id: 'security', label: 'Sicherheit', icon: Shield },
-      { id: 'users', label: 'Benutzer', icon: Users },
+      { id: 'settings', label: 'Einstellungen', appIcon: 'settings', modes: ['basic', 'diagnose'] },
+      { id: 'security', label: 'Sicherheit', icon: Shield, modes: ['basic'] },
+      { id: 'users', label: 'Benutzer', icon: Users, modes: ['basic'] },
       { type: 'divider' },
-      { id: 'devenv', label: 'Dev-Umgebung', icon: Code },
-      { id: 'webserver', label: 'Webserver', icon: Globe },
-      { id: 'mailserver', label: 'Mailserver', icon: Mail },
-      { id: 'nas', label: 'NAS', icon: HardDrive },
-      { id: 'homeautomation', label: 'Hausautomatisierung', icon: Home },
-      { id: 'musicbox', label: 'Musikbox', icon: Music },
-      { id: 'kino-streaming', label: 'Kino / Streaming', icon: Tv },
-      { id: 'learning', label: 'Lerncomputer', icon: BookOpen },
+      { id: 'devenv', label: 'Dev-Umgebung', icon: Code, modes: ['advanced'] },
+      { id: 'webserver', label: 'Webserver', icon: Globe, modes: ['advanced'] },
+      { id: 'mailserver', label: 'Mailserver', icon: Mail, modes: ['advanced'] },
+      { id: 'nas', label: 'NAS', icon: HardDrive, modes: ['advanced'] },
+      { id: 'homeautomation', label: 'Hausautomatisierung', icon: Home, modes: ['advanced'] },
+      { id: 'musicbox', label: 'Musikbox', icon: Music, modes: ['advanced'] },
+      { id: 'kino-streaming', label: 'Kino / Streaming', icon: Tv, modes: ['advanced'] },
+      { id: 'learning', label: 'Lerncomputer', icon: BookOpen, modes: ['advanced'] },
       { type: 'divider' },
-      { id: 'monitoring', label: 'Monitoring', icon: Activity },
-      { id: 'backup', label: 'Backup & Restore', icon: Database },
-      { id: 'pi-installer-update', label: 'PI-Installer Update', icon: Upload },
-      { id: 'control-center', label: 'Control Center', icon: Settings },
-      { id: 'periphery-scan', label: 'Peripherie-Scan (Assimilation)', icon: Scan },
+      { id: 'monitoring', label: 'Monitoring', appIcon: 'monitoring', modes: ['advanced', 'diagnose'] },
+      { id: 'backup', label: 'Backup & Restore', appIcon: 'backup', modes: ['basic'] },
+      { id: 'pi-installer-update', label: 'PI-Installer Update', icon: Upload, modes: ['basic'] },
+      { id: 'control-center', label: 'Control Center', appIcon: 'control-center', modes: ['advanced'] },
+      { id: 'periphery-scan', label: 'Peripherie-Scan', appIcon: 'periphery-scan', modes: ['advanced', 'diagnose'] },
     ]
     if (isRaspberryPi) {
-      items.splice(items.length - 1, 0, { id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu })
+      items.splice(items.length - 1, 0, { id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu, modes: ['advanced'] })
     }
     return items
   }, [isRaspberryPi, freenoveDetected])
+
+  const filteredItems = useMemo(() => {
+    return menuItems.filter((item) => {
+      if (item.type === 'divider') return true
+      return item.modes?.includes(mode)
+    })
+  }, [menuItems, mode])
   
   const handlePageChange = useCallback((pageId: string) => {
     try {
@@ -132,7 +137,8 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
           ${mobileOpen ? 'flex fixed inset-y-0 left-0 z-40' : 'hidden'} md:flex md:relative md:inset-auto`}
       >
       {/* Logo + Mobile Schließen */}
-      <div className="p-6 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between gap-2">
+      <div className="p-4 border-b border-slate-300 dark:border-slate-700">
+        <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">π</span>
@@ -147,17 +153,41 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         )}
+        </div>
+        {/* Phase 5: Grundlagen / Erweitert / Diagnose */}
+        <div className="flex gap-0.5 p-0.5 bg-slate-300/50 dark:bg-slate-800/50 rounded-lg" role="tablist" aria-label="Ansichtsmodus">
+          {([
+            { id: 'basic' as const, label: 'Grundlagen', title: 'Häufig genutzte Funktionen für Einsteiger', appIcon: 'dashboard' as const },
+            { id: 'advanced' as const, label: 'Erweitert', title: 'Technische Einstellungen für erfahrene Nutzer', appIcon: 'advanced' as const },
+            { id: 'diagnose' as const, label: 'Diagnose', title: 'Diagnosewerkzeuge zur Fehlersuche', appIcon: 'diagnose' as const },
+          ]).map(({ id, label, title, appIcon }) => (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={mode === id}
+              title={title}
+              onClick={() => setMode(id)}
+              className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs font-medium transition-colors duration-150 ${
+                mode === id ? 'bg-sky-600 text-white shadow' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              <AppIcon name={appIcon} category="navigation" size={16} />
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Menu */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {menuItems.map((item, index) => {
+        {filteredItems.map((item, index) => {
           if (item.type === 'divider') {
             return <div key={`divider-${index}`} className="h-px bg-slate-300 dark:bg-slate-700 my-1" />
           }
 
           const isPiConfigDisabled = item.id === 'raspberry-pi-config' && !isRaspberryPi
           const Icon = item.icon
+          const appIconName = item.appIcon
           const isActive = currentPage === item.id
 
           return (
@@ -174,7 +204,11 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <Icon size={18} />
+              {appIconName ? (
+                <AppIcon name={appIconName} category="navigation" size={24} className={isActive ? 'opacity-90' : ''} />
+              ) : (
+                Icon && <Icon size={18} />
+              )}
               <span className="font-medium text-sm">{item.label}</span>
               {newBadges[item.id] && (
                 <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold bg-sky-500 text-white rounded animate-pulse">Neu</span>
@@ -188,7 +222,10 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
       <div className="p-3 border-t border-slate-300 dark:border-slate-700 space-y-2">
         <div className="text-xs px-2">
           <p className="font-semibold mb-1.5 text-slate-600 dark:text-slate-300">System Status</p>
-          <p className="text-green-600 dark:text-green-400 font-semibold">🟢 Bereit</p>
+          <p className="text-green-600 dark:text-green-400 font-semibold flex items-center gap-1.5">
+            <AppIcon name="ok" category="status" size={16} statusColor="ok" />
+            Bereit
+          </p>
           <div className="mt-2.5 pt-2.5 border-t border-slate-300 dark:border-slate-700 space-y-2">
             <p className="text-slate-500 dark:text-slate-400 text-xs mb-2">© 01.2026 by Volker Glienke</p>
             {/* Theme Toggle */}
@@ -229,7 +266,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             onClick={() => handlePageChange('documentation')}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-sky-600/60 hover:bg-sky-600/80 text-sky-100 rounded-lg transition-colors duration-150 text-xs font-medium"
           >
-            <BookOpen size={14} />
+            <AppIcon name="documentation" category="navigation" size={24} />
             <span>Dokumentation</span>
           </button>
           <button

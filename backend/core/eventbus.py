@@ -89,6 +89,20 @@ class ConnectionManager:
 _manager: Optional[ConnectionManager] = None
 
 
+def publish_fire_and_forget(topic: str, payload: Any = None) -> None:
+    """
+    Fire-and-forget Eventbus-Publish (async aus sync Kontext).
+    AUDIT-FIX (D-003): Zentraler Helper, Dublette in pi_installer_service/sabrina_tuner_service entfernt.
+    """
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            eb = get_eventbus()
+            loop.create_task(eb.publish(topic, payload or {}))
+    except Exception as e:
+        logger.debug("Eventbus publish %s: %s", topic, e)
+
+
 def get_eventbus() -> ConnectionManager:
     """Liefert den globalen ConnectionManager (Eventbus)."""
     global _manager

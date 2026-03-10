@@ -13,7 +13,7 @@ SERVER_PORT=8000
 DEBUG=true
 
 # CORS
-CORS_ORIGINS=http://localhost:3000,http://localhost:8000
+CORS_ORIGINS=http://localhost:3001,http://localhost:8000
 
 # Security
 SECRET_KEY=your-secret-key-here-change-in-production
@@ -52,7 +52,7 @@ EOF
 
 ```python
 # Mehrere Origins (komma-getrennt)
-CORS_ORIGINS=http://localhost:3000,http://example.com
+CORS_ORIGINS=http://localhost:3001,http://example.com
 ```
 
 ### Security
@@ -319,7 +319,7 @@ print('DEBUG:', os.getenv('DEBUG'))
 
 **Lösung:**
 ```
-CORS_ORIGINS=http://localhost:3000
+CORS_ORIGINS=http://localhost:3001
 ```
 
 ### ❌ Permission Denied
@@ -360,7 +360,7 @@ COMMAND_TIMEOUT=600    # 10 Minuten
 SERVER_HOST=0.0.0.0
 SERVER_PORT=8000
 DEBUG=true
-CORS_ORIGINS=http://localhost:3000
+CORS_ORIGINS=http://localhost:3001
 SYSTEM_USER=pi
 LOG_LEVEL=INFO
 ```

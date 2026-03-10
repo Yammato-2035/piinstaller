@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Settings, Wifi, Monitor, Printer, Scan, Keyboard, Globe, Shield, Eye, Laptop, Mouse, Layout, Palette, Link2Off, Bluetooth, Fan, Headphones, Lightbulb } from 'lucide-react'
+import { Settings, Printer, Scan, Keyboard, Globe, Shield, Eye, Laptop, Mouse, Layout, Palette, Link2Off, Bluetooth, Fan, Headphones, Lightbulb, Wifi } from 'lucide-react'
+import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
@@ -27,7 +28,8 @@ type ControlCenterSection =
 interface SectionConfig {
   id: ControlCenterSection
   name: string
-  icon: React.ReactNode
+  icon?: React.ReactNode
+  appIcon?: { name: string; category: 'devices' | 'navigation' }
   description: string
 }
 
@@ -35,9 +37,15 @@ interface ControlCenterProps {
   isRaspberryPi?: boolean
 }
 
+const ADVANCED_SECTIONS: ControlCenterSection[] = ['performance', 'asus-rog-fan', 'corsair-rgb']
+const ADVANCED_CC_KEY = 'pi-installer-control-center-advanced'
+
 const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) => {
   const { pageSubtitleLabel } = usePlatform()
   const [activeSection, setActiveSection] = useState<ControlCenterSection>('wifi')
+  const [showAdvancedSections, setShowAdvancedSections] = useState(() => {
+    try { return localStorage.getItem(ADVANCED_CC_KEY) === '1' } catch { return false }
+  })
   const [sudoModalOpen, setSudoModalOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<null | ((sudoPassword: string) => Promise<void>)>(null)
   
@@ -156,13 +164,13 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
   const [asusRogSettingProfile, setAsusRogSettingProfile] = useState(false)
   
   const sections: SectionConfig[] = [
-    { id: 'wifi', name: 'WLAN', icon: <Wifi />, description: 'WiFi-Netzwerke verwalten' },
+    { id: 'wifi', name: 'WLAN', appIcon: { name: 'wifi', category: 'devices' }, description: 'WiFi-Netzwerke verwalten' },
     { id: 'ssh', name: 'SSH', icon: <Shield />, description: 'SSH-Zugriff konfigurieren' },
     { id: 'vnc', name: 'VNC', icon: <Eye />, description: 'VNC Remote-Desktop' },
     { id: 'keyboard', name: 'Tastatur', icon: <Keyboard />, description: 'Tastatur-Layout' },
     { id: 'locale', name: 'Lokalisierung', icon: <Globe />, description: 'Sprache & Zeitzone' },
     { id: 'desktop', name: 'Desktop', icon: <Laptop />, description: 'Desktop-Einstellungen' },
-    { id: 'display', name: 'Display', icon: <Monitor />, description: 'Bildschirm-Einstellungen' },
+    { id: 'display', name: 'Display', appIcon: { name: 'display', category: 'devices' }, description: 'Bildschirm-Einstellungen' },
     { id: 'printer', name: 'Drucker', icon: <Printer />, description: 'Drucker verwalten' },
     { id: 'scanner', name: 'Scanner', icon: <Scan />, description: 'Scanner verwalten' },
     ...(isRaspberryPi ? [{ id: 'performance' as const, name: 'Performance', icon: <Settings />, description: 'System-Performance (Raspberry Pi)' }] : []),
@@ -172,6 +180,16 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
     { id: 'taskbar', name: 'Taskleiste', icon: <Layout />, description: 'Taskleiste konfigurieren' },
     { id: 'theme', name: 'Theme', icon: <Palette />, description: 'Erscheinungsbild' },
   ]
+
+  const visibleSections = showAdvancedSections
+    ? sections
+    : sections.filter((s) => !ADVANCED_SECTIONS.includes(s.id))
+
+  useEffect(() => {
+    if (!showAdvancedSections && ADVANCED_SECTIONS.includes(activeSection)) {
+      setActiveSection('wifi')
+    }
+  }, [showAdvancedSections])
 
   useEffect(() => {
     // Prüfe ASUS ROG Erkennung beim Mount
@@ -696,7 +714,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
             toast.error(d.message || 'Performance konnte nicht gespeichert werden.')
           }
         } catch {
-          toast.error('Performance konnte nicht gespeichert werden (Backend nicht erreichbar).')
+          toast.error('Performance konnte nicht gespeichert werden. Server nicht erreichbar.')
         } finally {
           setPerformanceSaving(false)
         }
@@ -719,7 +737,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
       }
     } catch {
       setScanners([])
-      setScannersError('Backend nicht erreichbar.')
+      setScannersError('Server nicht erreichbar.')
       setSaneCheck(null)
     } finally {
       setScannersLoading(false)
@@ -749,7 +767,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
         toast.error(d.message || 'Display-Einstellungen konnten nicht übernommen werden.')
       }
     } catch (e) {
-      toast.error('Display-Einstellungen konnten nicht übernommen werden (Backend nicht erreichbar).')
+      toast.error('Display-Einstellungen konnten nicht übernommen werden. Server nicht erreichbar.')
     } finally {
       setDisplaySaving(false)
     }
@@ -829,7 +847,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
         toast.error(d.message || 'Anzeigeauswahl konnte nicht gespeichert werden.')
       }
     } catch {
-      toast.error('Anzeigeauswahl konnte nicht gespeichert werden (Backend nicht erreichbar).')
+      toast.error('Anzeigeauswahl konnte nicht gespeichert werden. Server nicht erreichbar.')
     } finally {
       setDisplayTelemetrySaving(false)
     }
@@ -851,7 +869,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
         toast.error(d.message || 'Aktion fehlgeschlagen.')
       }
     } catch {
-      toast.error('Aktion fehlgeschlagen (Backend nicht erreichbar).')
+      toast.error('Aktion fehlgeschlagen. Server nicht erreichbar.')
     }
   }
 
@@ -885,7 +903,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
             toast.error(d.message || 'Boot-Ziel konnte nicht gespeichert werden.')
           }
         } catch (e) {
-          toast.error('Boot-Ziel konnte nicht gespeichert werden (Backend nicht erreichbar).')
+          toast.error('Boot-Ziel konnte nicht gespeichert werden. Server nicht erreichbar.')
         } finally {
           setDesktopBootTargetSaving(false)
         }
@@ -1814,13 +1832,12 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
               <h3 className="text-xl font-bold text-white mb-4">Display-Einstellungen</h3>
               <div className="space-y-4">
                 <p className="text-sm text-slate-400">
-                  Auflösung, Bildwiederholrate und Rotation des angeschlossenen Bildschirms (xrandr). Kein Neustart nötig.
+                  Bildschirm-Konfiguration (nur bei laufender Grafikumgebung). Auflösung, Bildwiederholrate und Rotation des angeschlossenen Bildschirms. Kein Neustart nötig.
                 </p>
                 {displayFallback && (
                   <div className="p-3 bg-amber-900/20 border border-amber-700/50 rounded-lg">
                     <p className="text-sm text-amber-200">
-                      <strong>Standardwerte:</strong> xrandr war nicht erreichbar (z. B. Backend ohne X-Session oder DISPLAY nicht gesetzt).
-                      Es werden Fallback-Werte angezeigt. Übernehmen kann trotzdem versucht werden, sofern X auf dem Pi läuft.
+                      <strong>Standardwerte:</strong> Die Bildschirm-Konfiguration ist nur bei laufender Grafikumgebung verfügbar. Aktuell werden Standardwerte angezeigt. Übernehmen kann trotzdem versucht werden, sofern die Grafikumgebung auf dem Gerät läuft.
                     </p>
                   </div>
                 )}
@@ -2380,6 +2397,7 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
         return (
           <div className="card">
             <h3 className="text-xl font-bold text-white mb-4">Performance</h3>
+            <p className="text-amber-200/90 text-sm mb-4 rounded-lg bg-amber-900/30 px-3 py-2 border border-amber-700/40">Nur für erfahrene Nutzer. Änderungen können Neustart erfordern.</p>
             <div className="space-y-4">
               {performanceLoading ? (
                 <p className="text-slate-400">Lade…</p>
@@ -2565,8 +2583,23 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
         <div className="lg:col-span-1">
           <div className="card">
             <h2 className="text-lg font-bold text-white mb-4">Bereiche</h2>
+            {sections.some((s) => ADVANCED_SECTIONS.includes(s.id)) && (
+              <label className="flex items-center gap-2 mb-3 p-2 rounded bg-slate-700/30 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showAdvancedSections}
+                  onChange={(e) => {
+                    const v = e.target.checked
+                    setShowAdvancedSections(v)
+                    try { localStorage.setItem(ADVANCED_CC_KEY, v ? '1' : '0') } catch { /* ignore */ }
+                  }}
+                  className="rounded border-slate-500"
+                />
+                <span className="text-sm text-slate-400">Erweiterte Optionen (Performance, Lüfter, RGB)</span>
+              </label>
+            )}
             <div className="space-y-2">
-              {sections.map((section) => (
+              {visibleSections.map((section) => (
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
@@ -2577,7 +2610,13 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="text-sky-400">{section.icon}</div>
+                    <div className="text-sky-400 flex items-center">
+                      {section.appIcon ? (
+                        <AppIcon name={section.appIcon.name} category={section.appIcon.category} size={32} />
+                      ) : (
+                        section.icon
+                      )}
+                    </div>
                     <div>
                       <div className="font-semibold">{section.name}</div>
                       <div className="text-xs opacity-75">{section.description}</div>

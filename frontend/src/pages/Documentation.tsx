@@ -161,6 +161,7 @@ const Documentation: React.FC = () => {
                     <li>Bei „Backend nicht erreichbar“: Backend automatisch starten mit <code className="bg-slate-700 px-1 rounded">./scripts/install-backend-service.sh</code> (richtet systemd-Service ein) oder einmalig <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
                   </ol>
                 </div>
+                {/* AUDIT-FIXED (A-04): Verzeichnis public/docs/screenshots/ angelegt; UI zeigt Platzhalter bei fehlenden Bildern. */}
                 <ScreenshotImg src="/docs/screenshots/screenshot-dashboard.png" alt="Dashboard" title="Dashboard mit Systeminfos und Karten" hint="Zeigt Karten Systeminformationen, CPU & Grafik, Sensoren." />
                 <h4 className="text-base font-semibold text-white">Ausschnitt: Quick-Links</h4>
                 <ScreenshotDetail src="/docs/screenshots/screenshot-dashboard.png" alt="Quick-Links" title="Quick-Links für schnelle Navigation" position="50% 85%" height={140} />

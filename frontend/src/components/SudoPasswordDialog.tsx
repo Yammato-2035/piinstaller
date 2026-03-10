@@ -1,3 +1,7 @@
+/**
+ * App-weite Sudo-Passwortverwaltung (AUDIT-FIXED B-05): verwendet in App.tsx.
+ * Siehe docs/development/SUDO_COMPONENTS.md für Nutzungsübersicht.
+ */
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fetchApi } from '../api'
@@ -120,7 +124,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
       }
     } catch (error) {
       toast.error(
-        'Fehler beim Speichern – Backend erreichbar? Starten Sie zuerst „PI-Installer Backend starten“ (Port 8000).',
+        'Speichern fehlgeschlagen. Bitte starten Sie den Server (./start-backend.sh) und versuchen Sie es erneut.',
         { duration: 6000 }
       )
       console.error(error)
@@ -171,7 +175,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white">Sudo-Passwort erforderlich</h2>
-                    <p className="text-sm text-slate-400">Für Systemoperationen benötigt</p>
+                    <p className="text-sm text-slate-400">Wird für Installationen und Sicherheitseinstellungen benötigt.</p>
                   </div>
                 </div>
                 <button
@@ -188,9 +192,9 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                   <div className="flex items-start gap-3">
                     <AlertCircle className="text-red-400 mt-0.5 shrink-0" size={20} />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-red-200">Backend nicht erreichbar</p>
+                      <p className="text-sm font-medium text-red-200">Der Server antwortet nicht</p>
                       <p className="text-xs text-red-300/90 mt-1">
-                        Bitte zuerst „PI-Installer Backend starten“ (Port 8000) ausführen, dann hier erneut speichern.
+                        Bitte starten Sie zuerst den Server (z.B. <code className="bg-red-900/40 px-1 rounded">./start-backend.sh</code> im Projektordner), dann hier erneut speichern.
                       </p>
                     </div>
                   </div>

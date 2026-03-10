@@ -5,27 +5,15 @@ Actions: start_job, cancel_job, fetch_logs.
 Publiziert: job.progress, log.line, module.state.changed.
 """
 
-import asyncio
 import logging
 from typing import Any, List
 
-from core.eventbus import get_eventbus
+from core.eventbus import publish_fire_and_forget
 from models.module import ModuleDescriptor
 from models.widget import WidgetDescriptor
 from models.action import ActionDescriptor
 
 logger = logging.getLogger(__name__)
-
-
-def _publish(topic: str, payload: dict[str, Any]) -> None:
-    """Fire-and-forget Eventbus-Publish (async aus sync Kontext)."""
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            eb = get_eventbus()
-            loop.create_task(eb.publish(topic, payload))
-    except Exception as e:
-        logger.debug("Eventbus publish %s: %s", topic, e)
 
 
 class PiInstallerService:
@@ -69,7 +57,7 @@ class PiInstallerService:
         self._state["last_logs"].append(line)
         if len(self._state["last_logs"]) > 200:
             self._state["last_logs"] = self._state["last_logs"][-100:]
-        _publish("log.line", {"line": line, "module_id": "pi-installer"})
+        publish_fire_and_forget("log.line", {"line": line, "module_id": "pi-installer"})
 
     def perform_action(self, action_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         if action_id == "start_job":
@@ -80,8 +68,8 @@ class PiInstallerService:
             self._state["stage"] = "Gestartet"
             self._state["error"] = None
             self._append_log("[Remote] Job gestartet (Stub)")
-            _publish("job.progress", {"progress": 0, "stage": self._state["stage"], "job_status": "running"})
-            _publish("module.state.changed", {"module_id": "pi-installer", "state": self.get_state()})
+            publish_fire_and_forget("job.progress", {"progress": 0, "stage": self._state["stage"], "job_status": "running"})
+            publish_fire_and_forget("module.state.changed", {"module_id": "pi-installer", "state": self.get_state()})
             return {"success": True, "message": "Job gestartet (Stub)", "data": {"job_status": "running"}}
         if action_id == "cancel_job":
             if self._state["job_status"] != "running":
@@ -89,8 +77,8 @@ class PiInstallerService:
             self._state["job_status"] = "cancelled"
             self._state["stage"] = "Abgebrochen"
             self._append_log("[Remote] Job abgebrochen (Stub)")
-            _publish("job.progress", {"progress": self._state["progress"], "stage": self._state["stage"], "job_status": "cancelled"})
-            _publish("module.state.changed", {"module_id": "pi-installer", "state": self.get_state()})
+            publish_fire_and_forget("job.progress", {"progress": self._state["progress"], "stage": self._state["stage"], "job_status": "cancelled"})
+            publish_fire_and_forget("module.state.changed", {"module_id": "pi-installer", "state": self.get_state()})
             return {"success": True, "message": "Job abgebrochen", "data": {"job_status": "cancelled"}}
         if action_id == "fetch_logs":
             logs = list(self._state["last_logs"][-50:])

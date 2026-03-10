@@ -1,5 +1,6 @@
 """
 Debug-Config: Layering defaults -> system -> ENV. Schema v1.
+REGRESSION-RISK: nur zentrales Debugsystem verwenden; ENV: PIINSTALLER_DEBUG_* (nicht PI_INSTALLER_DEBUG_CONFIG).
 """
 
 from pathlib import Path

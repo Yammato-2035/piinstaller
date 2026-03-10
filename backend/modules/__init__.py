@@ -1,5 +1,8 @@
 """
 PI-Installer Backend Modules
+
+STRUCTURE-SIMPLIFIED: Nutzungsstatus in backend/modules/README.md.
+Aktiv: raspberry_pi_config, backup, control_center. Nicht von app.py genutzt: security, webserver, mail, devenv.
 """
 
 from .security import SecurityModule

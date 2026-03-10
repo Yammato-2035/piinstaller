@@ -79,14 +79,9 @@ const DevelopmentEnv: React.FC = () => {
 
     setLoading(true)
     try {
-      const response = await fetchApi('/api/devenv/configure', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
-      })
-      const data = await response.json()
-      toast.success('Entwicklungsumgebung wird installiert...')
-      console.log(data)
+      // AUDIT-FIX (A-01): Endpunkt /api/devenv/configure ist im Backend nicht implementiert.
+      // Bis zur Implementierung: Aktion deaktiviert, Nutzer erhält klare Meldung.
+      toast.error('Diese Funktion ist derzeit nicht verfügbar. Der Backend-Endpunkt wird noch implementiert.')
     } catch (error) {
       toast.error('Fehler bei der Installation')
     } finally {

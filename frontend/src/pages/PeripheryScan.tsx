@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
-import { Scan, Cpu, Usb, Keyboard, Mouse, Camera, Headphones, ExternalLink, Video, X } from 'lucide-react'
+import { Scan, Cpu, Keyboard, Mouse, Camera, Headphones, ExternalLink, Video, X } from 'lucide-react'
+import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fetchApi } from '../api'
@@ -314,7 +315,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
       <div>
         <div className="page-title-category mb-2 inline-flex">
           <h1 className="flex items-center gap-3">
-            <Scan className="text-emerald-500" />
+            <AppIcon name="diagnose" category="navigation" size={32} />
             Peripherie-Scan (Assimilation)
           </h1>
         </div>
@@ -333,7 +334,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
             onClick={startAssimilation}
             className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
           >
-            <Scan size={20} />
+            <AppIcon name="search" category="process" size={24} />
             Assimilation starten
           </button>
         </motion.div>
@@ -378,7 +379,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
           <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-600">
             <span className="w-3 h-3 rounded-full bg-red-500/80" />
             <span className="w-3 h-3 rounded-full bg-amber-500/80" />
-            <span className="w-3 h-3 rounded-full bg-green-500/80" />
+            <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
             <span className="text-slate-400 ml-2">Assimilation – Konsole</span>
           </div>
           <div className="min-h-[120px] max-h-64 overflow-y-auto">
@@ -388,7 +389,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
               const isUsb = line.startsWith('  [USB]')
               const isInput = line.startsWith('  [Eingabe]')
               const isDriver = line.startsWith('  [Treiber]')
-              const cls = isCmd ? 'text-emerald-400' : isGpu ? 'text-sky-300' : isUsb ? 'text-amber-300' : isInput ? 'text-purple-300' : isDriver ? 'text-green-300' : 'text-slate-300'
+              const cls = isCmd ? 'text-emerald-400' : isGpu ? 'text-sky-300' : isUsb ? 'text-amber-300' : isInput ? 'text-purple-300' : isDriver ? 'text-emerald-300' : 'text-slate-300'
               return (
                 <motion.div
                   key={i}
@@ -429,7 +430,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
                   const h = COMPONENT_HINTS.camera
                   return (
                     <>
-                      <p className={n > 0 ? 'text-green-400 text-sm font-medium' : 'text-slate-500 text-sm'}>
+                      <p className={n > 0 ? 'text-emerald-400 text-sm font-medium' : 'text-slate-500 text-sm'}>
                         {n > 0 ? `Ja – ${n} erkannt` : 'Nein'}
                       </p>
                       {n > 0 && (
@@ -457,7 +458,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
                   const h = COMPONENT_HINTS.keyboard
                   return (
                     <>
-                      <p className={ok ? 'text-green-400 text-sm font-medium' : 'text-slate-500 text-sm'}>
+                      <p className={ok ? 'text-emerald-400 text-sm font-medium' : 'text-slate-500 text-sm'}>
                         {ok ? `Ja – ${keyboards.length}` : 'Nein'}
                       </p>
                       {ok && (
@@ -486,7 +487,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
                   const h = COMPONENT_HINTS.mouse
                   return (
                     <>
-                      <p className={ok ? 'text-green-400 text-sm font-medium' : 'text-slate-500 text-sm'}>
+                      <p className={ok ? 'text-emerald-400 text-sm font-medium' : 'text-slate-500 text-sm'}>
                         {ok ? 'Ja' : 'Nein'}
                       </p>
                       {hasUsb && (
@@ -513,7 +514,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
                 </div>
                 {result.input_devices.length > 0 ? (
                   <>
-                    <p className="text-green-400 text-sm font-medium">Ja – {result.input_devices.length}</p>
+                    <p className="text-emerald-400 text-sm font-medium">Ja – {result.input_devices.length}</p>
                     <ul className="mt-1 text-xs text-slate-400 space-y-0.5 max-h-16 overflow-y-auto">
                       {result.input_devices.slice(0, 5).map((d: { name: string }, i: number) => (
                         <li key={i} className="truncate" title={d.name}>{d.name}</li>
@@ -532,13 +533,13 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
                 </div>
                 {result.gpus.length > 0 ? (
                   <>
-                    <p className="text-green-400 text-sm font-medium">Ja – {result.gpus.length} Grafikkarte(n)</p>
+                    <p className="text-emerald-400 text-sm font-medium">Ja – {result.gpus.length} Grafikkarte(n)</p>
                     <ul className="mt-2 space-y-1 text-xs">
                       {result.gpus.map((g: { description: string; driver?: string; driver_hint?: string }, i: number) => (
                         <li key={i} className="text-slate-300">
                           <span className="font-medium text-white">{g.description}</span>
                           {g.driver ? (
-                            <span className="text-green-400 ml-1"> – Treiber: {g.driver} (Kernel/Hersteller)</span>
+                            <span className="text-emerald-400 ml-1"> – Treiber: {g.driver} (Kernel/Hersteller)</span>
                           ) : (
                             <span className="text-amber-400 ml-1"> – Hersteller-Treiber prüfen (lspci -k, Hersteller-Linux-Treiber)</span>
                           )}
@@ -567,7 +568,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
                       const h = COMPONENT_HINTS.touchpad
                       return (
                         <>
-                          <p className={ok ? 'text-green-400 text-xs font-medium' : 'text-slate-500 text-xs'}>{ok ? `Ja – ${touchpads.length}` : 'Nein'}</p>
+                          <p className={ok ? 'text-emerald-400 text-xs font-medium' : 'text-slate-500 text-xs'}>{ok ? `Ja – ${touchpads.length}` : 'Nein'}</p>
                           {ok && <p className="text-xs text-slate-400 mt-0.5">{touchpads.map((t: { name: string }) => t.name).join(', ')}</p>}
                           <p className="text-xs text-slate-500 mt-1"><span className="text-slate-400">Hinweis:</span> {h.what} {h.normal}</p>
                         </>
@@ -585,7 +586,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
                       const h = COMPONENT_HINTS.headset
                       return (
                         <>
-                          <p className={ok ? 'text-green-400 text-xs font-medium' : 'text-slate-500 text-xs'}>{ok ? `Ja – ${headsets.length}` : 'Nein'}</p>
+                          <p className={ok ? 'text-emerald-400 text-xs font-medium' : 'text-slate-500 text-xs'}>{ok ? `Ja – ${headsets.length}` : 'Nein'}</p>
                           {ok && <p className="text-xs text-slate-400 mt-0.5">Welche: {headsets.map((u: { description: string }) => u.description).join(', ')}</p>}
                           <p className="text-xs text-slate-500 mt-1"><span className="text-slate-400">Hinweis:</span> Ausgabequelle unter Musikbox/Einstellungen (PulseAudio/PipeWire). {h.normal}</p>
                         </>
@@ -719,7 +720,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
                   <li key={i} className="p-3 bg-slate-700/30 rounded-lg border border-slate-600">
                     <span className="text-white">{g.description}</span>
                     {g.driver && g.driver !== '—' && (
-                      <p className="text-xs text-green-400 mt-1">Treiber: {g.driver}</p>
+                      <p className="text-xs text-emerald-400 mt-1">Treiber: {g.driver}</p>
                     )}
                     {(!g.driver || g.driver === '—') && g.driver_hint && (
                       <p className="text-xs text-slate-500 mt-1">{g.driver_hint}</p>
@@ -852,7 +853,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
                 {result.drivers.map((d, i) => (
                   <li key={i} className="p-3 bg-slate-700/30 rounded-lg border border-slate-600 flex justify-between items-center">
                     <span className="text-slate-300 text-sm truncate mr-2">{d.device}</span>
-                    <span className={`text-sm font-medium shrink-0 ${d.driver === '—' ? 'text-slate-500' : 'text-green-400'}`}>{d.driver}</span>
+                    <span className={`text-sm font-medium shrink-0 ${d.driver === '—' ? 'text-slate-500' : 'text-emerald-400'}`}>{d.driver}</span>
                   </li>
                 ))}
               </ul>

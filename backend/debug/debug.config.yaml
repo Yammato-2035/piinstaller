@@ -1,5 +1,6 @@
 # PI-Installer Debug Config – Schema v1
-# Pfad: PI_INSTALLER_DEBUG_CONFIG oder /etc/pi-installer/debug.config.yaml oder backend/debug/debug.config.yaml
+# AUDIT-FIXED (B-01): Loader nutzt defaults.yaml -> /etc/pi-installer/debug.config.yaml -> ENV PIINSTALLER_DEBUG_*.
+# ENV: PIINSTALLER_DEBUG_ENABLED, PIINSTALLER_DEBUG_LEVEL, PIINSTALLER_DEBUG_PATH (nicht PI_INSTALLER_DEBUG_CONFIG).
 
 global:
   enabled: true

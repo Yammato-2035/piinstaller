@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Zap, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
+import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
@@ -26,12 +27,12 @@ const InstallationWizard: React.FC = () => {
   const [installProgress, setInstallProgress] = useState(0)
 
   const steps = [
-    { number: 1, title: 'Willkommen', icon: '👋' },
-    { number: 2, title: 'Sicherheit', icon: '🔒' },
-    { number: 3, title: 'Benutzer', icon: '👥' },
-    { number: 4, title: 'Entwicklung', icon: '💻' },
-    { number: 5, title: 'Webserver', icon: '🌐' },
-    { number: 6, title: 'Zusammenfassung', icon: '✓' },
+    { number: 1, title: 'Willkommen', processIcon: 'connect' as const },
+    { number: 2, title: 'Sicherheit', processIcon: 'prepare' as const },
+    { number: 3, title: 'Benutzer', processIcon: 'prepare' as const },
+    { number: 4, title: 'Entwicklung', processIcon: 'prepare' as const },
+    { number: 5, title: 'Webserver', processIcon: 'prepare' as const },
+    { number: 6, title: 'Zusammenfassung', processIcon: 'complete' as const },
   ]
 
   const startInstallation = async () => {
@@ -116,7 +117,7 @@ const InstallationWizard: React.FC = () => {
           key={s.number}
           onClick={() => setStep(s.number)}
           disabled={s.number > step && !installing}
-          className={`flex-1 py-4 rounded-lg text-center font-semibold transition-all ${
+          className={`flex-1 py-4 rounded-lg text-center font-semibold transition-all flex flex-col items-center gap-1 ${
             step === s.number
               ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/50'
               : step > s.number
@@ -124,7 +125,7 @@ const InstallationWizard: React.FC = () => {
               : 'bg-slate-700/30 text-slate-400 cursor-not-allowed'
           }`}
         >
-          <div className="text-2xl mb-1">{s.icon}</div>
+          <AppIcon name={s.processIcon} category="process" size={48} className="mb-0.5" />
           <div className="text-sm">{s.title}</div>
         </button>
       ))}
@@ -136,7 +137,7 @@ const InstallationWizard: React.FC = () => {
       <div>
         <div className="page-title-category mb-2 inline-flex">
           <h1 className="flex items-center gap-3">
-            <Zap className="text-yellow-400" />
+            <AppIcon name="installation" category="navigation" size={32} />
             Installationsassistent
           </h1>
         </div>
@@ -147,7 +148,7 @@ const InstallationWizard: React.FC = () => {
       {installing && (
         <div className="card bg-gradient-to-br from-green-900/30 to-green-900/10 border-green-500/50">
           <h3 className="text-xl font-bold text-green-300 mb-4 flex items-center gap-2">
-            <CheckCircle size={24} />
+            <AppIcon name="running" category="status" size={24} statusColor="ok" />
             Installation läuft
           </h3>
           <div className="space-y-4">

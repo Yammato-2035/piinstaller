@@ -273,21 +273,18 @@ source /etc/profile.d/pi-installer.sh
 
 ## Konfiguration
 
-Die Konfigurationsdatei befindet sich in `/etc/pi-installer/config.yaml`.
+Die Konfigurationsdatei befindet sich in `/etc/pi-installer/config.json`. (AUDIT-FIX A-03: Runtime liest ausschließlich JSON.)
 
 Standard-Konfiguration:
 
-```yaml
-install_dir: /opt/pi-installer
-config_dir: /etc/pi-installer
-log_dir: /var/log/pi-installer
-
-backend:
-  host: 0.0.0.0
-  port: 8000
-
-frontend:
-  port: 3001
+```json
+{
+  "install_dir": "/opt/pi-installer",
+  "config_dir": "/etc/pi-installer",
+  "log_dir": "/var/log/pi-installer",
+  "backend": {"host": "0.0.0.0", "port": 8000},
+  "frontend": {"port": 3001}
+}
 ```
 
 ## Logs

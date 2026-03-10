@@ -113,7 +113,7 @@ python3 app.py
 
 ---
 
-### ❌ Fehler: `Port 8000 / 3000 already in use`
+### ❌ Fehler: `Port 8000 / 3001 already in use`
 
 **Lösung:**
 ```bash
@@ -121,8 +121,8 @@ python3 app.py
 lsof -i :8000
 kill -9 <PID>
 
-# Port 3000 freigeben
-lsof -i :3000
+# Port 3001 freigeben (Vite/Frontend)
+lsof -i :3001
 kill -9 <PID>
 ```
 
@@ -225,12 +225,12 @@ npm install
 
 # Development Server starten
 npm run dev
-# Warten auf: "Local: http://localhost:3000"
+# Warten auf: "Local: http://localhost:3001"
 ```
 
 ### Schritt 5: Browser öffnen
 ```
-http://localhost:3000
+http://localhost:3001
 ```
 
 ---
@@ -327,7 +327,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8000
 ```
   VITE v5.0.0  ready in 234 ms
 
-  ➜  Local:   http://localhost:3000/
+  ➜  Local:   http://localhost:3001/
   ➜  press h to show help
 ```
 

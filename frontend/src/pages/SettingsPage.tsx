@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Cloud, RefreshCw, CheckCircle, XCircle, Settings } from 'lucide-react'
+import AppIcon from '../components/AppIcon'
 import { fetchApi, getApiBase, API_BASE_STORAGE_KEY } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import ScreenshotDocCard from '../components/ScreenshotDocCard'
@@ -113,7 +114,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
     } catch (e) {
       setNetworkInfo({
         status: 'error',
-        message: 'Backend nicht erreichbar.',
+        message: 'Server nicht erreichbar.',
       })
     } finally {
       setLoadingNetwork(false)
@@ -184,7 +185,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
         toast.error(tailData.message || 'Logs konnten nicht geladen werden')
       }
     } catch {
-      toast.error('Logs konnten nicht geladen werden (Backend nicht erreichbar)')
+      toast.error('Logs konnten nicht geladen werden. Server nicht erreichbar.')
     } finally {
       setLoadingLogs(false)
     }
@@ -212,7 +213,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
         toast.error(d.message || 'Speichern fehlgeschlagen')
       }
     } catch {
-      toast.error('Speichern fehlgeschlagen (Backend nicht erreichbar)')
+      toast.error('Speichern fehlgeschlagen. Server nicht erreichbar – bitte Backend starten und erneut versuchen.')
     } finally {
       setSaving(false)
     }
@@ -274,7 +275,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
         toast.error(d.message || `Cloud-Test fehlgeschlagen (HTTP ${d.http_code ?? '—'})`, { duration: 12000 })
       }
     } catch {
-      toast.error('Cloud-Test fehlgeschlagen (Backend nicht erreichbar)')
+      toast.error('Cloud-Test fehlgeschlagen. Server nicht erreichbar.')
     } finally {
       setTestingCloud(false)
     }
@@ -345,7 +346,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
             toast.error(d.message || 'Neustart fehlgeschlagen')
           }
         } catch {
-          toast.error('Neustart fehlgeschlagen (Backend nicht erreichbar)')
+          toast.error('Neustart fehlgeschlagen. Server nicht erreichbar.')
         } finally {
           setRebooting(false)
         }
@@ -380,7 +381,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
       <div>
         <div className="page-title-category mb-2 inline-flex">
           <h1 className="flex items-center gap-3">
-            <Settings className="text-sky-500" />
+            <AppIcon name="settings" category="navigation" size={32} />
             Einstellungen
           </h1>
         </div>
@@ -428,12 +429,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
           </button>
           <button
             onClick={() => setActiveTab('logs')}
-            className={`px-4 py-2 font-medium transition-all relative ${
+            className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
               activeTab === 'logs'
                 ? 'text-sky-400'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
+            <AppIcon name="logs" category="diagnostic" size={18} />
             Logs
             {activeTab === 'logs' && (
               <motion.div
@@ -456,7 +458,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
                   : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
             >
-              Initialisierung
+              Ersteinrichtung
             </button>
             <button
               onClick={() => setGeneralSubTab('network')}
@@ -524,9 +526,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
             {generalSubTab === 'init' && (
         <>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
-          <h3 className="text-lg font-bold text-white mb-3">Backend-Verbindung</h3>
+          <h3 className="text-lg font-bold text-white mb-3">Verbindung zum Server</h3>
           <p className="text-sm text-slate-400 mb-3">
-            Wenn die App das Backend nicht erkennt (rote Anzeige), läuft das Backend ggf. auf einem anderen Rechner. Hier die Backend-URL eintragen (z. B. <code className="text-sky-300">http://192.168.1.10:8000</code>). Leer = automatisch (localhost:8000).
+            Wenn die rote Anzeige „Server nicht erreichbar“ erscheint, läuft der Server möglicherweise auf einem anderen Rechner. Hier die Adresse eintragen (z. B. <code className="text-sky-300">http://192.168.1.10:8000</code>). Leer lassen = automatisch (localhost:8000).
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <input
@@ -555,7 +557,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
           </div>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
-          <h3 className="text-lg font-bold text-white mb-3">Initialisierung</h3>
+          <h3 className="text-lg font-bold text-white mb-3">Ersteinrichtung</h3>
           {!initStatus ? (
             <div className="text-sm text-slate-400">Lade…</div>
           ) : (

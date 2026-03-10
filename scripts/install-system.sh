@@ -213,24 +213,19 @@ fi
 # --- Schritt 6: Konfiguration erstellen ---
 info "[6/8] Konfiguration einrichten..."
 
-# Erstelle Standard-Konfiguration
-if [ ! -f "$CONFIG_DIR/config.yaml" ]; then
-  cat > "$CONFIG_DIR/config.yaml" << 'CONFIGEOF'
-# PI-Installer Konfiguration
-# Wird automatisch beim Start geladen
-
-install_dir: /opt/pi-installer
-config_dir: /etc/pi-installer
-log_dir: /var/log/pi-installer
-
-backend:
-  host: 0.0.0.0
-  port: 8000
-
-frontend:
-  port: 3001
+# REGRESSION-RISK: systemnahe Konfiguration – Runtime liest ausschließlich config.json; hier nicht auf config.yaml zurückwechseln.
+# AUDIT-FIX (A-03): Installer erzeugt config.json. Erstelle Standard-Konfiguration
+if [ ! -f "$CONFIG_DIR/config.json" ]; then
+  cat > "$CONFIG_DIR/config.json" << 'CONFIGEOF'
+{
+  "install_dir": "/opt/pi-installer",
+  "config_dir": "/etc/pi-installer",
+  "log_dir": "/var/log/pi-installer",
+  "backend": {"host": "0.0.0.0", "port": 8000},
+  "frontend": {"port": 3001}
+}
 CONFIGEOF
-  chown "$CURRENT_USER:$CURRENT_USER" "$CONFIG_DIR/config.yaml"
+  chown "$CURRENT_USER:$CURRENT_USER" "$CONFIG_DIR/config.json"
   ok "Konfigurationsdatei erstellt"
 else
   ok "Konfigurationsdatei existiert bereits"

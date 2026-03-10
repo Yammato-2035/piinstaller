@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Cloud, Database, Download, Upload, Trash2, Clock, HardDrive, Lock, Settings, CheckSquare, Square, Copy } from 'lucide-react'
+import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
@@ -1558,7 +1559,10 @@ const BackupRestore: React.FC = () => {
                         : 'bg-slate-700/30 border-slate-600 hover:border-slate-500'
                     }`}
                   >
-                    <div className="font-bold text-white mb-1">USB / Datenträger</div>
+                    <div className="font-bold text-white mb-1 flex items-center gap-2">
+                      <AppIcon name="usb" category="devices" size={24} />
+                      USB / Datenträger
+                    </div>
                     <div className="text-xs text-slate-400">Mountpoint auswählen</div>
                   </button>
 
