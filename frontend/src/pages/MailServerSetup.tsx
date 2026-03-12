@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { Mail, AlertCircle, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import RiskWarningCard from '../components/RiskWarningCard'
+import { getPageRisk } from '../config/riskLevels'
 import { usePlatform } from '../context/PlatformContext'
 
 const MailServerSetup: React.FC = () => {
@@ -69,6 +71,13 @@ const MailServerSetup: React.FC = () => {
         </div>
         <p className="text-slate-400">Mailserver – {pageSubtitleLabel}</p>
       </div>
+
+      {(() => {
+        const risk = getPageRisk('mailserver')
+        return risk?.warningText ? (
+          <RiskWarningCard level={risk.level}>{risk.warningText}</RiskWarningCard>
+        ) : null
+      })()}
 
       <div className="grid lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-6">

@@ -97,7 +97,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
         data = await response.json()
       } catch {
         toast.error(
-          'Ungültige Antwort vom Backend. Bitte zuerst „PI-Installer Backend starten“ (Port 8000).',
+          'Ungültige Antwort vom Server. Bitte zuerst „PI-Installer Backend starten“ (Port 8000).',
           { duration: 5000 }
         )
         return
@@ -109,7 +109,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
           const checkData = await checkRes.json()
           if (checkData.status === 'success' && !checkData.has_password) {
             toast.success('Sudo-Passwort gespeichert')
-            toast('Hinweis: Backend meldet kein Passwort. Evtl. mehrere Worker?', { icon: '⚠️', duration: 5000 })
+            toast('Hinweis: Server meldet kein Passwort. Evtl. mehrere Worker?', { icon: '⚠️', duration: 5000 })
           } else {
             toast.success('Sudo-Passwort gespeichert')
           }

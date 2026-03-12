@@ -18,7 +18,7 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-if [ ! -f "$INSTALL_DIR/start-pi-installer.sh" ]; then
+if [ ! -f "$INSTALL_DIR/scripts/start-pi-installer.sh" ]; then
   echo "Installationsverzeichnis nicht gefunden oder unvollständig: $INSTALL_DIR" >&2
   exit 1
 fi
@@ -37,7 +37,7 @@ Version=1.0
 Type=Application
 Name=PI-Installer
 Comment=Konfigurations-Assistent für Raspberry Pi – Backend als Service, dann Auswahl (Tauri/Browser/Frontend)
-Exec=$INSTALL_DIR/start-pi-installer.sh
+Exec=$INSTALL_DIR/scripts/start-pi-installer.sh
 Path=$INSTALL_DIR
 Icon=$ICON
 Terminal=true

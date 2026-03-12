@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { fetchApi, getApiBase } from '../api'
 import { usePlatform } from '../context/PlatformContext'
+import { useUIMode } from '../context/UIModeContext'
 import AppIcon from '../components/AppIcon'
 import { 
   Cpu, 
@@ -35,6 +36,7 @@ interface DashboardProps {
   backendErrorReason?: 'timeout' | 'connection' | 'other' | null
   onRetryBackend?: () => void
   setCurrentPage?: (page: string) => void
+  experienceLevel?: 'beginner' | 'advanced' | 'developer'
 }
 
 /** Tooltip-Text für Sensoren: was es ist, wo es sitzt, Normalwert lt. Hersteller/typisch. */
@@ -113,8 +115,9 @@ const StatCard = React.memo(({ icon: Icon, label, value, unit = '', trend }: any
 
 type DashboardSection = 'overview' | 'charts' | 'hardware'
 
-const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backendErrorReason, onRetryBackend, setCurrentPage }) => {
+const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backendErrorReason, onRetryBackend, setCurrentPage, experienceLevel }) => {
   const { systemLabel, pageSubtitleLabel } = usePlatform()
+  const { mode } = useUIMode()
   const [dashboardSection, setDashboardSection] = useState<DashboardSection>('overview')
   const [stats, setStats] = useState<any>(null)
   const [securityConfig, setSecurityConfig] = useState<any>(null)
@@ -125,6 +128,15 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
   const [updateTerminalError, setUpdateTerminalError] = useState<{ message?: string; copyable_command?: string } | null>(null)
   const [servicesStatus, setServicesStatus] = useState<{ dev?: { installed_count: number; total_parts: number; basic_ok: boolean }; webserver?: { running: boolean; reachable: boolean }; musicbox?: { installed: boolean; basic_ok: boolean } } | null>(null)
   const loading = !systemInfo && !backendError
+
+  const isBeginnerMode = mode === 'basic'
+  const isBeginnerExperience = experienceLevel === 'beginner'
+  const isBeginnerView = isBeginnerMode && isBeginnerExperience
+
+  const handleTaskNavigate = (page: string) => {
+    if (!setCurrentPage) return
+    setCurrentPage(page)
+  }
 
   const loadServicesStatus = async () => {
     try {
@@ -326,6 +338,78 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       transition={{ duration: 0.3 }}
       className="space-y-8 page-transition"
     >
+      {/* Beginner-First Task Cards (Beginner-View: Aufgaben statt Modul-Liste im Fokus) */}
+      {isBeginnerView && setCurrentPage && !backendError && (
+        <section className="grid gap-4 md:grid-cols-3">
+          <button
+            type="button"
+            onClick={() => handleTaskNavigate('wizard')}
+            className="flex items-start gap-3 p-4 rounded-2xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/40 transition-colors text-left"
+          >
+            <AppIcon name="installation" category="navigation" size={32} className="mt-1" />
+            <div>
+              <p className="text-sm font-semibold text-sky-100">System einrichten</p>
+              <p className="text-xs text-slate-200/80">Geführter Assistent für Grundkonfiguration, Sicherheit und Benutzer.</p>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTaskNavigate('app-store')}
+            className="flex items-start gap-3 p-4 rounded-2xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/40 transition-colors text-left"
+          >
+            <AppIcon name="app-store" category="navigation" size={32} className="mt-1" />
+            <div>
+              <p className="text-sm font-semibold text-emerald-100">Apps installieren</p>
+              <p className="text-xs text-slate-200/80">Fertige Pakete für Media-Server, NAS, Smart Home und mehr.</p>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTaskNavigate('backup')}
+            className="flex items-start gap-3 p-4 rounded-2xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 transition-colors text-left"
+          >
+            <AppIcon name="backup" category="navigation" size={32} className="mt-1" />
+            <div>
+              <p className="text-sm font-semibold text-indigo-100">Backup erstellen</p>
+              <p className="text-xs text-slate-200/80">System sichern oder wiederherstellen, bevor du Neues ausprobierst.</p>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTaskNavigate('monitoring')}
+            className="flex items-start gap-3 p-4 rounded-2xl bg-amber-600/15 hover:bg-amber-600/25 border border-amber-500/40 transition-colors text-left"
+          >
+            <AppIcon name="monitoring" category="navigation" size={32} className="mt-1" />
+            <div>
+              <p className="text-sm font-semibold text-amber-100">Systemzustand prüfen</p>
+              <p className="text-xs text-slate-200/80">CPU, Speicher, Temperatur und Dienste im Blick behalten.</p>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTaskNavigate('learning')}
+            className="flex items-start gap-3 p-4 rounded-2xl bg-teal-600/15 hover:bg-teal-600/25 border border-teal-500/40 transition-colors text-left"
+          >
+            <AppIcon name="documentation" category="navigation" size={32} className="mt-1" />
+            <div>
+              <p className="text-sm font-semibold text-teal-100">Lernen & entdecken</p>
+              <p className="text-xs text-slate-200/80">Beispiele und Ideen, was du mit deinem System machen kannst.</p>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTaskNavigate('control-center')}
+            className="flex items-start gap-3 p-4 rounded-2xl bg-slate-700/40 hover:bg-slate-700/60 border border-slate-500/60 transition-colors text-left"
+          >
+            <AppIcon name="advanced" category="navigation" size={32} className="mt-1" />
+            <div>
+              <p className="text-sm font-semibold text-slate-50">Erweiterte Funktionen</p>
+              <p className="text-xs text-slate-200/80">Netzwerk, Dienste und Entwickler-Werkzeuge für Fortgeschrittene.</p>
+            </div>
+          </button>
+        </section>
+      )}
+
       {/* Hero: Dein Raspberry Pi läuft! (Transformationsplan 5.2) */}
       {!backendError && (
         <motion.div
@@ -444,7 +528,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             </p>
             <p className="text-sm mt-2 opacity-95">
               <strong>Lösung:</strong> Im Projektordner <code className="opacity-90 px-1 rounded">./start-backend.sh</code> ausführen. Oder als Dienst: <code className="opacity-90 px-1 rounded">sudo systemctl start pi-installer-backend</code>.
-              Läuft der Server auf einem anderen Rechner: Einstellungen → Allgemein → Backend-API-URL eintragen (z. B. <code className="opacity-90 px-1 rounded">http://&lt;IP&gt;:8000</code>).
+              Läuft der Server auf einem anderen Rechner: Einstellungen → Allgemein → Server-URL eintragen (z. B. <code className="opacity-90 px-1 rounded">http://&lt;IP&gt;:8000</code>).
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {onRetryBackend && (
@@ -463,7 +547,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                     onClick={() => setCurrentPage('settings')}
                     className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-sm font-medium"
                   >
-                    Einstellungen → Backend-URL anpassen
+                    Einstellungen → Server-URL anpassen
                   </button>
                   <button
                     type="button"
@@ -596,7 +680,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
         </div>
       )}
 
-      {/* Dashboard Submenü – Bereiche ein- und ausblenden */}
+      {/* Dashboard Submenü – Bereiche ein- und ausblenden (für alle Modi sichtbar) */}
       {stats && !loading && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -1240,8 +1324,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             </motion.div>
           )}
 
-          {/* Module Overview – nur Übersicht */}
-          {dashboardSection === 'overview' && (
+          {/* Module Overview – für Fortgeschrittene/Entwickler, nicht im Beginner-View */}
+          {dashboardSection === 'overview' && !isBeginnerView && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

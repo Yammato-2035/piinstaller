@@ -2,6 +2,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import pkg from './package.json'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -11,6 +12,9 @@ const isTauriEnv = !!process.env.TAURI_ENV_PLATFORM
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version || '0.0.0'),
+  },
   resolve: {
     alias: isTauriEnv ? {} : { 'tauri-plugin-screenshots-api': path.resolve(__dirname, 'src/lib/tauri-screenshots-stub.ts') },
   },

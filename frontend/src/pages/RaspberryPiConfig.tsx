@@ -5,6 +5,8 @@ import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import RiskWarningCard from '../components/RiskWarningCard'
+import { getPageRisk } from '../config/riskLevels'
 import { usePlatform } from '../context/PlatformContext'
 
 interface ConfigOption {
@@ -422,6 +424,13 @@ const RaspberryPiConfig: React.FC = () => {
           )}
         </p>
       </div>
+
+      {(() => {
+        const risk = getPageRisk('raspberry-pi-config')
+        return risk?.warningText ? (
+          <RiskWarningCard level={risk.level}>{risk.warningText}</RiskWarningCard>
+        ) : null
+      })()}
 
       {systemInfo && (
         <div className="card mb-6">

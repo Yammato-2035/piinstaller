@@ -1,23 +1,25 @@
 #!/usr/bin/env node
 /**
- * Synchronisiert die Versionsnummer aus VERSION (Projektroot) nach:
+ * Synchronisiert die Versionsnummer aus config/version.json (Projektroot) nach:
  * - frontend/package.json
  * - frontend/src-tauri/tauri.conf.json
  * - frontend/src-tauri/Cargo.toml (nur major.minor.patch, Cargo/Tauri verlangt Semver)
- * Wird bei „npm run prebuild“ ausgeführt. Einzige Quelle: VERSION.
+ * Wird bei „npm run prebuild“ ausgeführt. Einzige Quelle: config/version.json.
  */
 const fs = require('fs');
 const path = require('path');
 const rootDir = path.join(__dirname, '..');
-const vPath = path.join(rootDir, 'VERSION');
+const vPath = path.join(rootDir, 'config', 'version.json');
 const pkgPath = path.join(__dirname, 'package.json');
 const tauriPath = path.join(__dirname, 'src-tauri', 'tauri.conf.json');
 const cargoPath = path.join(__dirname, 'src-tauri', 'Cargo.toml');
 let v;
 try {
-  v = fs.readFileSync(vPath, 'utf8').trim() || '0.0.0';
+  const raw = fs.readFileSync(vPath, 'utf8');
+  const data = JSON.parse(raw);
+  v = String(data.version || '').trim() || '0.0.0';
 } catch (e) {
-  console.warn('[sync-version] VERSION nicht lesbar:', e.message);
+  console.warn('[sync-version] config/version.json nicht lesbar:', e.message);
   process.exit(0);
 }
 // Für Cargo.toml: nur major.minor.patch (Tauri/Cargo verlangt gültiges Semver)

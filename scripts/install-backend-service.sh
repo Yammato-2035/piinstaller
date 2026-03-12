@@ -12,11 +12,11 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-if [ -f "$REPO_ROOT/start-backend.sh" ] && [ -d "$REPO_ROOT/backend" ]; then
+if [ -f "$REPO_ROOT/scripts/start-backend.sh" ] && [ -d "$REPO_ROOT/backend" ]; then
   INSTALL_DIR="${PI_INSTALLER_DIR:-$REPO_ROOT}"
 else
   INSTALL_DIR="${PI_INSTALLER_DIR:-}"
-  if [ -z "$INSTALL_DIR" ] || [ ! -f "$INSTALL_DIR/start-backend.sh" ]; then
+  if [ -z "$INSTALL_DIR" ] || [ ! -f "$INSTALL_DIR/scripts/start-backend.sh" ]; then
     echo "Fehler: Bitte Skript aus dem PI-Installer-Projektordner aufrufen oder PI_INSTALLER_DIR setzen." >&2
     exit 1
   fi

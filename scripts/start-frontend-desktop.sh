@@ -6,7 +6,8 @@
 #   ohne Arg         = nur Vite starten (Port 3001)
 # Siehe: docs/START_APPS.md
 
-PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 FRONTEND_DIR="$PROJECT_ROOT/frontend"
 MODE="${1:-}"
 BACKEND_URL="http://127.0.0.1:8000"
@@ -33,7 +34,7 @@ ensure_backend_running() {
   fi
 
   echo "📡 Backend nicht erreichbar auf :8000 – starte Backend im Hintergrund..."
-  "$PROJECT_ROOT/start-backend.sh" >/tmp/pi-installer-backend.log 2>&1 &
+  "$PROJECT_ROOT/scripts/start-backend.sh" >/tmp/pi-installer-backend.log 2>&1 &
   echo -n "   Warte auf Backend-Ready"
   if ! wait_for_backend; then
     echo ""
@@ -109,6 +110,6 @@ case "$MODE" in
     ensure_backend_running || exit 1
     kill_port 3001
     echo ""
-    exec "$PROJECT_ROOT/start-frontend.sh"
+    exec "$PROJECT_ROOT/scripts/start-frontend.sh"
     ;;
 esac

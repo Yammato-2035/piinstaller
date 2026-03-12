@@ -368,6 +368,12 @@ const RunningBackupModal: React.FC = () => {
                 </div>
               )}
 
+              {backupJob.status === 'cancel_requested' && (
+                <div className="p-3 bg-amber-900/20 border border-amber-700/40 rounded-lg text-amber-200 text-sm">
+                  Backup wird abgebrochen… Bitte warten.
+                </div>
+              )}
+
               {backupJob.message && (
                 <div className="text-xs text-slate-300">
                   <span className="font-semibold">Meldung:</span> {backupJob.message}

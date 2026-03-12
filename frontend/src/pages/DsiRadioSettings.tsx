@@ -71,9 +71,9 @@ const DsiRadioSettings: React.FC<{ setCurrentPage?: (page: string) => void }> = 
       })
       if (res.ok) {
         toast.success('Theme gespeichert.')
-      } else toast.error('Theme speichern fehlgeschlagen.')
+      } else toast.error('Einstellungen konnten nicht gespeichert werden. Bitte Verbindung prüfen.')
     } catch {
-      toast.error('Theme speichern fehlgeschlagen.')
+      toast.error('Einstellungen konnten nicht gespeichert werden. Bitte Verbindung prüfen.')
     } finally {
       setSaving(false)
     }
@@ -89,9 +89,9 @@ const DsiRadioSettings: React.FC<{ setCurrentPage?: (page: string) => void }> = 
       })
       if (res.ok) {
         toast.success('Anzeige-Einstellungen gespeichert.')
-      } else toast.error('Speichern fehlgeschlagen.')
+      } else toast.error('Einstellungen konnten nicht gespeichert werden. Bitte Verbindung prüfen.')
     } catch {
-      toast.error('Speichern fehlgeschlagen.')
+      toast.error('Einstellungen konnten nicht gespeichert werden. Bitte Verbindung prüfen.')
     } finally {
       setSaving(false)
     }
@@ -107,9 +107,9 @@ const DsiRadioSettings: React.FC<{ setCurrentPage?: (page: string) => void }> = 
       })
       if (res.ok) {
         toast.success('Icon-Einstellungen gespeichert.')
-      } else toast.error('Speichern fehlgeschlagen.')
+      } else toast.error('Einstellungen konnten nicht gespeichert werden. Bitte Verbindung prüfen.')
     } catch {
-      toast.error('Speichern fehlgeschlagen.')
+      toast.error('Einstellungen konnten nicht gespeichert werden. Bitte Verbindung prüfen.')
     } finally {
       setSaving(false)
     }
@@ -125,9 +125,9 @@ const DsiRadioSettings: React.FC<{ setCurrentPage?: (page: string) => void }> = 
       })
       if (res.ok) {
         toast.success('Senderliste gespeichert.')
-      } else toast.error('Senderliste speichern fehlgeschlagen.')
+      } else toast.error('Einstellungen konnten nicht gespeichert werden. Bitte Verbindung prüfen.')
     } catch {
-      toast.error('Senderliste speichern fehlgeschlagen.')
+      toast.error('Einstellungen konnten nicht gespeichert werden. Bitte Verbindung prüfen.')
     } finally {
       setSaving(false)
     }

@@ -1,10 +1,10 @@
 /**
  * Pairing-Seite: Token aus QR eingeben und Claim; oder (am Gerät/Linux) Create und QR-Code anzeigen.
- * Mobile-first. QR-Code-Rendering auf allen Plattformen (Pi, Linux-Desktop).
+ * Mobile-first. QR-Code per PNG-Data-URL (qrcode) – zuverlässig in Tauri-WebView auf Linux.
  */
 
-import React, { useState } from 'react'
-import { QRCodeSVG } from 'qrcode.react'
+import React, { useState, useEffect } from 'react'
+import QRCode from 'qrcode'
 import toast from 'react-hot-toast'
 import { useRemoteStore } from '../store/remoteStore'
 import * as remoteClient from '../api/remoteClient'
@@ -13,7 +13,19 @@ export default function PairPage() {
   const [pairToken, setPairToken] = useState('')
   const [loading, setLoading] = useState(false)
   const [createPayload, setCreatePayload] = useState<remoteClient.PairingCreateResponse | null>(null)
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const setSessionToken = useRemoteStore((s) => s.setSessionToken)
+
+  useEffect(() => {
+    if (!createPayload?.payload) {
+      setQrDataUrl(null)
+      return
+    }
+    const text = JSON.stringify(createPayload.payload)
+    QRCode.toDataURL(text, { width: 200, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(null))
+  }, [createPayload])
 
   const handleClaim = async () => {
     const token = pairToken.trim()
@@ -95,12 +107,11 @@ export default function PairPage() {
         {createPayload != null && (
           <div className="mt-4 flex flex-col items-center gap-3">
             <div className="p-3 rounded-lg bg-white dark:bg-slate-900 inline-flex">
-              <QRCodeSVG
-                value={JSON.stringify(createPayload.payload)}
-                size={200}
-                level="M"
-                includeMargin={true}
-              />
+              {qrDataUrl ? (
+                <img src={qrDataUrl} alt="QR-Code zum Scannen" width={200} height={200} />
+              ) : (
+                <div className="w-[200px] h-[200px] flex items-center justify-center text-slate-500 text-sm">QR wird erzeugt…</div>
+              )}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               QR-Code mit dem Smartphone scannen oder Token manuell eingeben:

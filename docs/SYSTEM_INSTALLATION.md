@@ -14,6 +14,13 @@ Nach der Installation werden folgende Verzeichnisse verwendet:
 | `/usr/local/bin/` | Symlinks | Befehle wie `pi-installer`, `pi-installer-backend` |
 | `/etc/systemd/system/` | Service | systemd Service-Datei |
 
+### Repo vs. Installationsverzeichnis
+
+- **Entwicklungsverzeichnis (Repo):** z. B. `/home/volker/piinstaller` – Quelle, Git, Builds
+- **Installationsverzeichnis:** z. B. `/opt/pi-installer` – installierte Laufzeit
+
+Der systemd-Service setzt `PI_INSTALLER_DIR` auf das Installationsverzeichnis. Das Backend nutzt diese Variable für die Version (`VERSION`) und weitere Pfade. Dadurch bleibt die laufende Installation klar vom Repo getrennt – auch wenn parallel aus dem Repo entwickelt wird.
+
 ## Voraussetzungen
 
 - Raspberry Pi OS oder Debian-basiertes System

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Loader2 } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
@@ -148,6 +148,7 @@ const InstallationWizard: React.FC = () => {
       {installing && (
         <div className="card bg-gradient-to-br from-green-900/30 to-green-900/10 border-green-500/50">
           <h3 className="text-xl font-bold text-green-300 mb-4 flex items-center gap-2">
+            <Loader2 className="w-6 h-6 text-green-400 animate-spin shrink-0" aria-hidden />
             <AppIcon name="running" category="status" size={24} statusColor="ok" />
             Installation läuft
           </h3>

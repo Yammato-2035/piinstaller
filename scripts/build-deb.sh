@@ -15,9 +15,17 @@ if [ ! -d "debian" ] || [ ! -f "debian/control" ]; then
   exit 1
 fi
 
-# Version aus VERSION oder debian/changelog
+# Version aus config/version.json oder historischer VERSION-Datei
 VERSION="1.3.4.5"
-[ -f "VERSION" ] && VERSION="$(cat VERSION | tr -d '\n')"
+if [ -f "config/version.json" ]; then
+  if command -v jq >/dev/null 2>&1; then
+    VERSION="$(jq -r '.version // empty' config/version.json 2>/dev/null)" || true
+  else
+    VERSION="$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' config/version.json 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')" || true
+  fi
+fi
+[ -z "$VERSION" ] && [ -f "VERSION" ] && VERSION="$(cat VERSION | tr -d '\n')"
+[ -z "$VERSION" ] && VERSION="1.3.4.5"
 echo "Baue pi-installer ${VERSION}..."
 
 # Tauri Binary bauen, falls nicht vorhanden

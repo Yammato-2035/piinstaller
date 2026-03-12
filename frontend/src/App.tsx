@@ -97,6 +97,7 @@ function App() {
     }
   })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [experienceLevel, setExperienceLevel] = useState<'beginner' | 'advanced' | 'developer'>('beginner')
 
   const handleSudoPasswordSaved = useCallback(() => {
     setSudoPasswordReady(true)
@@ -201,6 +202,25 @@ function App() {
   }, [fetchFreenoveDetection])
 
   useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetchApi('/api/user-profile')
+        if (!res.ok || cancelled) return
+        const data = await res.json()
+        if (!cancelled && data?.profile?.experience_level) {
+          const level = String(data.profile.experience_level).toLowerCase()
+          if (level === 'advanced' || level === 'developer') setExperienceLevel(level)
+          else setExperienceLevel('beginner')
+        }
+      } catch {
+        // Default bleibt beginner
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
     const handler = () => fetchSystemInfo()
     window.addEventListener('pi-installer-screenshot-mode-changed', handler)
     return () => window.removeEventListener('pi-installer-screenshot-mode-changed', handler)
@@ -283,6 +303,7 @@ function App() {
             backendErrorReason={backendErrorReason}
             onRetryBackend={fetchSystemInfo}
             setCurrentPage={handlePageChange}
+            experienceLevel={experienceLevel}
           />
         )
       case 'security':
@@ -323,6 +344,7 @@ function App() {
             backendErrorReason={backendErrorReason}
             onRetryBackend={fetchSystemInfo}
             setCurrentPage={handlePageChange}
+            experienceLevel={experienceLevel}
           />
         )
       case 'control-center':
@@ -330,7 +352,7 @@ function App() {
       case 'periphery-scan':
         return <PeripheryScan setCurrentPage={handlePageChange} />
       case 'settings':
-        return <SettingsPage setCurrentPage={handlePageChange} />
+        return <SettingsPage setCurrentPage={handlePageChange} onExperienceLevelChange={setExperienceLevel} />
       case 'documentation':
         return <Documentation />
       case 'app-store':
@@ -351,6 +373,7 @@ function App() {
             backendErrorReason={backendErrorReason}
             onRetryBackend={fetchSystemInfo}
             setCurrentPage={handlePageChange}
+            experienceLevel={experienceLevel}
           />
         )
     }
@@ -386,8 +409,12 @@ function App() {
       <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
         {!firstRunDone && (
           <FirstRunWizard
-            onComplete={() => setFirstRunDone(true)}
+            onComplete={(level) => {
+              setFirstRunDone(true)
+              if (level) setExperienceLevel(level)
+            }}
             setCurrentPage={handlePageChange}
+            systemInfo={systemInfo}
           />
         )}
         <SudoPasswordDialog onPasswordSaved={handleSudoPasswordSaved} />
@@ -404,7 +431,7 @@ function App() {
           </button>
           <span className="font-semibold text-slate-800 dark:text-white">{platform.appTitle}</span>
         </header>
-        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} experienceLevel={experienceLevel} />
       <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="p-4 sm:p-8 min-h-full">
           <AnimatePresence mode="wait" initial={false}>

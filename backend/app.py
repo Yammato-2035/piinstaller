@@ -22,6 +22,7 @@ import threading
 import time
 import signal
 import xml.etree.ElementTree as ET
+from pydantic import BaseModel
 
 # Remote-Companion: Settings + DB (Phase 1)
 try:
@@ -102,9 +103,35 @@ logger.info("Log-Datei: %s", str(LOG_PATH))
 # ==================== Version ====================
 
 def get_pi_installer_version() -> str:
-    """Liest die PI-Installer Version aus der Repo-Root `VERSION` Datei."""
+    """Liest die PI-Installer Version aus `config/version.json`.
+    Bevorzugt PI_INSTALLER_DIR (Installationsverzeichnis, z.B. /opt/pi-installer).
+    Fällt bei Bedarf auf die historische VERSION-Datei zurück (anti-regressiv).
+    """
     try:
-        version_path = Path(__file__).resolve().parent.parent / "VERSION"
+        # Basisverzeichnis: Installationsverzeichnis hat Vorrang (systemd setzt PI_INSTALLER_DIR)
+        install_dir = os.environ.get("PI_INSTALLER_DIR")
+        if install_dir:
+            base = Path(install_dir).resolve()
+        else:
+            # Repo-Root bei Entwicklung: backend/.. = Projektroot
+            base = Path(__file__).resolve().parent.parent
+
+        # 1. Versuch: config/version.json
+        version_json = base / "config" / "version.json"
+        if version_json.exists():
+            try:
+                import json  # lokal, um Importkreise zu vermeiden
+
+                data = json.loads(version_json.read_text(encoding="utf-8"))
+                v = str(data.get("version") or "").strip()
+                if v:
+                    return v
+            except Exception:
+                # stiller Fallback auf VERSION
+                pass
+
+        # 2. Fallback: historische VERSION-Datei (Kompatibilität für alte Installationen/Skripte)
+        version_path = base / "VERSION"
         if version_path.exists():
             v = version_path.read_text(encoding="utf-8").strip()
             return v or "0.0.0"
@@ -236,6 +263,23 @@ def _now_iso() -> str:
 CONFIG_PATH = _config_path()
 CONFIG_STATE = {"loaded": False, "first_run": False, "matched_device": False, "device_id": _device_id()}
 APP_SETTINGS = _default_settings()
+
+
+def _user_profile_path() -> Path:
+    """
+    Pfad für das Benutzerprofil (Erfahrungslevel, Präferenzen).
+    Liegt neben der Hauptkonfiguration, z. B. /etc/pi-installer/user_profile.json.
+    """
+    try:
+        return CONFIG_PATH.parent / "user_profile.json"
+    except Exception:
+        # Fallback: Home-Config
+        return Path.home() / ".config" / "pi-installer" / "user_profile.json"
+
+
+class UserProfile(BaseModel):
+    experience_level: str  # "beginner" | "advanced" | "developer"
+    updated_at: str
 
 # -------------------- Backup jobs (async) --------------------
 
@@ -3746,6 +3790,47 @@ async def list_users(request: Request):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/user-profile")
+async def get_user_profile():
+    """
+    Gibt das Benutzerprofil zurück (Erfahrungslevel etc.).
+    Liegt neben der Hauptkonfiguration, z. B. /etc/pi-installer/user_profile.json.
+    """
+    path = _user_profile_path()
+    try:
+        if path.exists():
+            data = json.loads(path.read_text(encoding="utf-8") or "{}")
+            level = str(data.get("experience_level") or "beginner").lower()
+            if level not in ("beginner", "advanced", "developer"):
+                level = "beginner"
+            updated_at = str(data.get("updated_at") or _now_iso())
+            return {"status": "success", "profile": UserProfile(experience_level=level, updated_at=updated_at).dict()}
+    except Exception as e:
+        logger.error("Fehler beim Lesen von user_profile.json: %s", e, exc_info=True)
+    default = UserProfile(experience_level="beginner", updated_at=_now_iso())
+    return {"status": "success", "profile": default.dict()}
+
+
+@app.put("/api/user-profile")
+async def update_user_profile(payload: dict = Body(...)):
+    """
+    Speichert das Benutzerprofil. Nur einfache, idempotente Einstellungen:
+    - experience_level: "beginner" | "advanced" | "developer"
+    """
+    level_raw = str((payload or {}).get("experience_level") or "").lower()
+    if level_raw not in ("beginner", "advanced", "developer"):
+        raise HTTPException(status_code=400, detail="experience_level muss 'beginner', 'advanced' oder 'developer' sein.")
+    profile = UserProfile(experience_level=level_raw, updated_at=_now_iso())
+    path = _user_profile_path()
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(profile.dict(), indent=2), encoding="utf-8")
+    except Exception as e:
+        logger.error("Fehler beim Schreiben von user_profile.json: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Profil konnte nicht gespeichert werden.")
+    return {"status": "success", "profile": profile.dict()}
 
 @app.get("/api/users/sudo-password/check")
 async def check_sudo_password():

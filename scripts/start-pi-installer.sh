@@ -3,7 +3,8 @@
 # Für Desktop-Starter: Backend im Hintergrund, dann gewählte Ausgabemöglichkeit
 # Siehe: docs/START_APPS.md
 
-PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BACKEND_URL="http://127.0.0.1:8000"
 MAX_WAIT=60
 POLL_INTERVAL=2
@@ -30,8 +31,8 @@ if curl -sS --max-time 2 "$BACKEND_URL/api/version" >/dev/null 2>&1; then
   echo "✅ Backend läuft bereits auf :8000"
 else
   echo "📡 Backend antwortet nicht – starte Backend..."
-  if [ -x "$PROJECT_ROOT/start-backend.sh" ]; then
-    nohup "$PROJECT_ROOT/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
+  if [ -x "$PROJECT_ROOT/scripts/start-backend.sh" ]; then
+    nohup "$PROJECT_ROOT/scripts/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
     BACKEND_LAUNCH_PID=$!
     disown $BACKEND_LAUNCH_PID 2>/dev/null || true
     echo -n "   Warte auf Backend "
@@ -51,7 +52,7 @@ else
     if ! wait_for_backend; then
       echo ""
       echo "❌ Backend antwortet nicht (Timeout nach ${MAX_WAIT}s)."
-      echo "   Bitte starten: $PROJECT_ROOT/start-backend.sh"
+      echo "   Bitte starten: $PROJECT_ROOT/scripts/start-backend.sh"
       echo "   Oder Service: sudo systemctl start pi-installer.service"
       exit 1
     fi
@@ -164,8 +165,8 @@ case "$MODE" in
     # Prüfe ob Backend läuft (wird vom Service gestartet)
     if ! curl -sS --max-time 2 http://127.0.0.1:8000/api/version >/dev/null 2>&1; then
       echo "⚠️  Backend läuft nicht. Starte Backend..."
-      if [ -x "$PROJECT_ROOT/start-backend.sh" ]; then
-        nohup "$PROJECT_ROOT/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
+      if [ -x "$PROJECT_ROOT/scripts/start-backend.sh" ]; then
+        nohup "$PROJECT_ROOT/scripts/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
         sleep 3
       fi
     fi
@@ -214,6 +215,6 @@ case "$MODE" in
   frontend|*)
     echo "🎨 Starte PI-Installer (nur Vite-Server)..."
     echo ""
-    exec "$PROJECT_ROOT/start-frontend.sh"
+    exec "$PROJECT_ROOT/scripts/start-frontend.sh"
     ;;
 esac

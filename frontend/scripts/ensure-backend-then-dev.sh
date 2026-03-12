@@ -28,20 +28,20 @@ if curl -sS --max-time 2 "$BACKEND_URL/api/version" >/dev/null 2>&1; then
   : # Backend läuft
 else
   echo "[Tauri-Dev] Backend nicht erreichbar – starte Backend..."
-  if [ -x "$PROJECT_ROOT/start-backend.sh" ]; then
-    nohup "$PROJECT_ROOT/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
+  if [ -x "$PROJECT_ROOT/scripts/start-backend.sh" ]; then
+    nohup "$PROJECT_ROOT/scripts/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
     disown 2>/dev/null || true
     echo -n "[Tauri-Dev] Warte auf Backend "
     if ! wait_for_backend; then
       echo ""
-      echo "[Tauri-Dev] Backend konnte nicht gestartet werden. Starte manuell: $PROJECT_ROOT/start-backend.sh"
+      echo "[Tauri-Dev] Backend konnte nicht gestartet werden. Starte manuell: $PROJECT_ROOT/scripts/start-backend.sh"
       echo "[Tauri-Dev] Vite startet trotzdem (API-Calls schlagen fehl)."
     else
       echo ""
       echo "[Tauri-Dev] Backend bereit."
     fi
   else
-    echo "[Tauri-Dev] start-backend.sh nicht gefunden. Backend manuell starten."
+    echo "[Tauri-Dev] scripts/start-backend.sh nicht gefunden. Backend manuell starten."
   fi
 fi
 

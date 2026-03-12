@@ -10,15 +10,21 @@ import { usePlatform } from '../context/PlatformContext'
 
 type GeneralSubTab = 'init' | 'network' | 'basic' | 'screenshots'
 
+export type ExperienceLevel = 'beginner' | 'advanced' | 'developer'
+
 interface SettingsPageProps {
   setCurrentPage?: (page: string) => void
+  /** Wird aufgerufen, nachdem das Erfahrungslevel gespeichert wurde – aktualisiert Sidebar sofort. */
+  onExperienceLevelChange?: (level: ExperienceLevel) => void
 }
 
 const ADVANCED_SETTINGS_KEY = 'pi-installer-advanced-settings'
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
+const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienceLevelChange }) => {
   const { isRaspberryPi, pageSubtitleLabel } = usePlatform()
   const [activeTab, setActiveTab] = useState<'general' | 'cloud' | 'logs'>('general')
+  const [experienceLevel, setExperienceLevelState] = useState<ExperienceLevel>('beginner')
+  const [experienceLevelSaving, setExperienceLevelSaving] = useState(false)
   const [generalSubTab, setGeneralSubTab] = useState<GeneralSubTab>('init')
   const [advancedSettings, setAdvancedSettings] = useState(() => {
     try { return localStorage.getItem(ADVANCED_SETTINGS_KEY) === '1' } catch { return false }
@@ -67,7 +73,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('pi-installer-api-base-changed'))
       }
-      toast.success(v ? 'Backend-URL gespeichert' : 'Backend-URL zurückgesetzt (Auto)')
+      toast.success(v ? 'Server-URL gespeichert' : 'Server-URL zurückgesetzt (Auto)')
     } catch {
       toast.error('Konnte nicht gespeichert werden')
     }
@@ -75,19 +81,49 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
 
   const loadAll = async () => {
     try {
-      const [a, b, c] = await Promise.all([
+      const [a, b, c, profileRes] = await Promise.all([
         fetchApi('/api/init/status'),
         fetchApi('/api/settings'),
         fetchApi('/api/backup/settings'),
+        fetchApi('/api/user-profile'),
       ])
       const ia = await a.json()
       const sb = await b.json()
       const bc = await c.json()
+      const profileData = await profileRes.json()
       if (ia?.status === 'success') setInitStatus(ia)
       if (sb?.status === 'success') setSettings(sb.settings)
       if (bc?.status === 'success') setBackupSettings(bc.settings)
+      if (profileData?.status === 'success' && profileData?.profile?.experience_level) {
+        const level = String(profileData.profile.experience_level).toLowerCase()
+        if (level === 'advanced' || level === 'developer') setExperienceLevelState(level as ExperienceLevel)
+        else setExperienceLevelState('beginner')
+      }
     } catch {
       // ignore
+    }
+  }
+
+  const setExperienceLevel = async (level: ExperienceLevel) => {
+    setExperienceLevelSaving(true)
+    try {
+      const r = await fetchApi('/api/user-profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ experience_level: level }),
+      })
+      const d = await r.json()
+      if (d?.status === 'success') {
+        setExperienceLevelState(level)
+        onExperienceLevelChange?.(level)
+        toast.success(level === 'beginner' ? 'Erfahrungslevel: Einsteiger' : level === 'advanced' ? 'Erfahrungslevel: Fortgeschritten' : 'Erfahrungslevel: Entwickler')
+      } else {
+        toast.error(d?.message || 'Speichern fehlgeschlagen')
+      }
+    } catch {
+      toast.error('Speichern fehlgeschlagen. Server nicht erreichbar.')
+    } finally {
+      setExperienceLevelSaving(false)
     }
   }
 
@@ -213,7 +249,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
         toast.error(d.message || 'Speichern fehlgeschlagen')
       }
     } catch {
-      toast.error('Speichern fehlgeschlagen. Server nicht erreichbar – bitte Backend starten und erneut versuchen.')
+      toast.error('Speichern fehlgeschlagen. Server nicht erreichbar – bitte Server starten und erneut versuchen.')
     } finally {
       setSaving(false)
     }
@@ -526,6 +562,29 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
             {generalSubTab === 'init' && (
         <>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
+          <h3 className="text-lg font-bold text-white mb-2">Erfahrungslevel</h3>
+          <p className="text-sm text-slate-400 mb-3">
+            Bestimmt, wie viele Menüpunkte in der Sidebar angezeigt werden. Einsteiger sehen nur die wichtigsten; Fortgeschrittene und Entwickler erhalten zusätzliche Einträge.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {(['beginner', 'advanced', 'developer'] as const).map((level) => (
+              <button
+                key={level}
+                type="button"
+                disabled={experienceLevelSaving}
+                onClick={() => setExperienceLevel(level)}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                  experienceLevel === level
+                    ? 'bg-sky-600 text-white'
+                    : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {level === 'beginner' ? 'Einsteiger' : level === 'advanced' ? 'Fortgeschritten' : 'Entwickler'}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
           <h3 className="text-lg font-bold text-white mb-3">Verbindung zum Server</h3>
           <p className="text-sm text-slate-400 mb-3">
             Wenn die rote Anzeige „Server nicht erreichbar“ erscheint, läuft der Server möglicherweise auf einem anderen Rechner. Hier die Adresse eintragen (z. B. <code className="text-sky-300">http://192.168.1.10:8000</code>). Leer lassen = automatisch (localhost:8000).
@@ -551,7 +610,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
                 onClick={() => saveApiBaseUrl('')}
                 className="px-3 py-2 text-slate-400 hover:text-white text-sm"
               >
-                Zurücksetzen
+                Auf Standard zurücksetzen
               </button>
             )}
           </div>
@@ -690,7 +749,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage }) => {
                   </div>
                 )}
                 <div className="mt-3 text-xs text-slate-500">
-                  <div>Backend API: Port {networkInfo?.backend_port ?? 8000}</div>
+                  <div>Server API: Port {networkInfo?.backend_port ?? 8000}</div>
                   <div className="mt-1">
                     Auf anderen Geräten im Heimnetz die angezeigte Adresse (z. B. http://192.168.1.x:3001) im Browser öffnen.
                     <span className="block mt-1 text-amber-400/90">Nicht 0.0.0.0 verwenden – das ist keine erreichbare Adresse.</span>

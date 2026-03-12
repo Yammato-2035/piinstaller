@@ -334,7 +334,7 @@ log.error("msg", error_code="E001", data={...})
 
 ### Lokal starten & Logs finden
 
-- **Backend starten:** `./start-backend.sh` bzw. `cd backend && uvicorn app:app --host 0.0.0.0 --port 8000`
+- **Backend starten:** `./scripts/start-backend.sh` bzw. `cd backend && uvicorn app:app --host 0.0.0.0 --port 8000`
 - **Debug-Logs:** Primär `/var/log/piinstaller/piinstaller.debug.jsonl`, Fallback `~/.cache/piinstaller/logs/piinstaller.debug.jsonl`
 - **System-Logs (App):** `/var/log/pi-installer/` (bei System-Installation)
 - **Vollständige Debug-Doku** (Aktivierung, Scopes, Support-Bundle-Optionen): [backend/debug/README.md](backend/debug/README.md)

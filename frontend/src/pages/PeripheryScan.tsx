@@ -253,7 +253,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
       try {
         data = await response.json()
       } catch {
-        toast.error('Ungültige Antwort vom Backend')
+        toast.error('Ungültige Antwort vom Server')
         clearInterval(interval)
         setProgress(100)
         setTimeout(() => setScanning(false), 400)
@@ -262,10 +262,10 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
       clearInterval(interval)
       setProgress(100)
       if (response.status === 404) {
-        const hint = 'Endpoint /api/peripherals/scan nicht gefunden. Backend im Projektordner neu starten (./start-backend.sh). Prüfen: GET /api/debug/routes listet registrierte Routen.'
+        const hint = 'Endpoint /api/peripherals/scan nicht gefunden. Server im Projektordner neu starten (./start-backend.sh). Prüfen: GET /api/debug/routes listet registrierte Routen.'
         setConsoleLines([`> Fehler: ${data.detail || 'Not found'}. ${hint}`])
         setConsoleVisible(1)
-        toast.error('Backend neu starten (siehe Hinweis)')
+        toast.error('Server neu starten (siehe Hinweis)')
         setTimeout(() => setScanning(false), 400)
         return
       }
@@ -302,9 +302,9 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
     } catch (error) {
       clearInterval(interval)
       setProgress(100)
-      setConsoleLines(['> Fehler: Backend nicht erreichbar.'])
+      setConsoleLines(['> Fehler: Server nicht erreichbar.'])
       setConsoleVisible(1)
-      toast.error('Scan fehlgeschlagen – Backend erreichbar?')
+      toast.error('Scan fehlgeschlagen – Server erreichbar?')
     } finally {
       setTimeout(() => setScanning(false), 400)
     }

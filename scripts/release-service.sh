@@ -117,17 +117,21 @@ fix_error() {
   
   case "$step" in
     "version_bump")
-      log "Version-Bump-Fehler: Prüfe VERSION-Datei..."
-      if [ ! -f "$REPO_ROOT/VERSION" ]; then
+      log "Version-Bump-Fehler: Prüfe config/version.json..."
+      if [ ! -f "$REPO_ROOT/config/version.json" ]; then
+        mkdir -p "$REPO_ROOT/config"
         local last_version=$(git log -1 --pretty=format:"%s" | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1 || echo "1.3.4.5")
-        echo "$last_version" > "$REPO_ROOT/VERSION"
-        log_success "VERSION-Datei neu erstellt mit: $last_version"
+        printf '{"version":"%s","codename":"Auto Recovery","release_date":"%s"}\n' "$last_version" "$(date +%F)" > "$REPO_ROOT/config/version.json"
+        log_success "config/version.json neu erstellt mit: $last_version"
       fi
-      # Prüfe Versionsformat
-      local version=$(cat "$REPO_ROOT/VERSION" | tr -d '\n')
+      local version=$(jq -r '.version // empty' "$REPO_ROOT/config/version.json" 2>/dev/null || cat "$REPO_ROOT/VERSION" 2>/dev/null | tr -d '\n')
       if ! echo "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
-        log "Korrigiere Versionsformat..."
-        echo "1.3.4.5" > "$REPO_ROOT/VERSION"
+        log "Korrigiere Versionsformat in config/version.json..."
+        if command -v jq >/dev/null 2>&1; then
+          jq '.version = "1.3.4.5"' "$REPO_ROOT/config/version.json" > "$REPO_ROOT/config/version.json.tmp" && mv "$REPO_ROOT/config/version.json.tmp" "$REPO_ROOT/config/version.json"
+        else
+          echo '{"version":"1.3.4.5","codename":"","release_date":""}' > "$REPO_ROOT/config/version.json"
+        fi
         log_success "Versionsformat korrigiert"
       fi
       ;;
@@ -219,11 +223,11 @@ fix_error() {
       log "Bereinige alte Build-Artefakte..."
       rm -rf debian/pi-installer debian/*.debhelper debian/files ../pi-installer_*.deb ../pi-installer_*.changes ../pi-installer_*.buildinfo 2>/dev/null || true
       
-      # Prüfe ob VERSION und changelog synchron sind
-      local version=$(cat "$REPO_ROOT/VERSION" | tr -d '\n')
+      # Prüfe ob Version und changelog synchron sind
+      local version=$(jq -r '.version // empty' "$REPO_ROOT/config/version.json" 2>/dev/null || cat "$REPO_ROOT/VERSION" 2>/dev/null | tr -d '\n')
       local changelog_version=$(head -1 "$REPO_ROOT/debian/changelog" | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1 || echo "")
       if [ -n "$changelog_version" ] && [ "$changelog_version" != "$version" ]; then
-        log "Synchronisiere changelog mit VERSION..."
+        log "Synchronisiere changelog mit config/version.json..."
         # Changelog wird in update_documentation aktualisiert
       fi
       ;;
@@ -297,16 +301,36 @@ fix_error() {
   log "Fehlerbehebung abgeschlossen"
 }
 
+# Liest aktuelle Version aus config/version.json (Fallback: VERSION)
+read_current_version() {
+  if [ -f "$REPO_ROOT/config/version.json" ] && command -v jq >/dev/null 2>&1; then
+    jq -r '.version // empty' "$REPO_ROOT/config/version.json" 2>/dev/null || cat "$REPO_ROOT/VERSION" 2>/dev/null | tr -d '\n'
+  else
+    [ -f "$REPO_ROOT/VERSION" ] && cat "$REPO_ROOT/VERSION" | tr -d '\n' || echo "0.0.0.0"
+  fi
+}
+
+# Schreibt Version in config/version.json (erhält codename/release_date falls vorhanden)
+write_version_json() {
+  local new_version="$1"
+  mkdir -p "$REPO_ROOT/config"
+  if [ -f "$REPO_ROOT/config/version.json" ] && command -v jq >/dev/null 2>&1; then
+    jq --arg v "$new_version" '.version = $v' "$REPO_ROOT/config/version.json" > "$REPO_ROOT/config/version.json.tmp" && mv "$REPO_ROOT/config/version.json.tmp" "$REPO_ROOT/config/version.json"
+  else
+    printf '{"version":"%s","codename":"","release_date":"%s"}\n' "$new_version" "$(date +%F)" > "$REPO_ROOT/config/version.json"
+  fi
+}
+
 # Schritt 1: Version erhöhen
 bump_version() {
   log "Schritt 1: Version erhöhen..." >&2
   
-  if [ ! -f "$REPO_ROOT/VERSION" ]; then
-    handle_error "version_bump" "VERSION-Datei nicht gefunden" >&2
+  if [ ! -f "$REPO_ROOT/config/version.json" ] && [ ! -f "$REPO_ROOT/VERSION" ]; then
+    handle_error "version_bump" "config/version.json und VERSION nicht gefunden" >&2
     return 1
   fi
   
-  local current_version=$(cat "$REPO_ROOT/VERSION" | tr -d '\n')
+  local current_version=$(read_current_version)
   log "Aktuelle Version: $current_version" >&2
   
   local parts=($(echo "$current_version" | tr '.' ' '))
@@ -325,6 +349,8 @@ bump_version() {
   fi
   
   local new_version="${parts[0]}.${parts[1]}.${parts[2]}.${parts[3]}"
+  write_version_json "$new_version"
+  # VERSION-Datei für Abwärtskompatibilität mitschreiben
   echo "$new_version" > "$REPO_ROOT/VERSION"
   log_success "Version erhöht: $current_version -> $new_version" >&2
   
@@ -342,7 +368,7 @@ bump_version() {
     log_success "Cargo.toml-Version aktualisiert: $tauri_version" >&2
   fi
   
-  # Synchronisiere Frontend-Version
+  # Synchronisiere Frontend-Version (package.json etc.)
   if [ -f "$REPO_ROOT/frontend/sync-version.js" ]; then
     cd "$REPO_ROOT/frontend"
     node sync-version.js >/dev/null 2>&1 || {

@@ -18,7 +18,7 @@ if systemctl list-unit-files --type=service 2>/dev/null | grep -q '^pi-installer
   fi
 else
   echo "ℹ️  Service pi-installer-backend nicht installiert."
-  echo "   Backend manuell starten: $REPO_ROOT/start-backend.sh"
+  echo "   Backend manuell starten: $REPO_ROOT/scripts/start-backend.sh"
   echo "   Oder Service einrichten: ./scripts/create_installer.sh"
   exit 0
 fi

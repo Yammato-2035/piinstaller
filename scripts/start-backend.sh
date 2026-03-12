@@ -3,7 +3,9 @@
 # Startet Backend auf http://localhost:8000 (nutzt immer die Venv im backend/, nie System-Python)
 # Siehe: docs/START_APPS.md
 
-BACKEND_DIR="$(cd "$(dirname "$0")/backend" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+BACKEND_DIR="$REPO_ROOT/backend"
 cd "$BACKEND_DIR"
 
 echo "🚀 Starte PI-Installer Backend..."

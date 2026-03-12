@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import toast from 'react-hot-toast'
-import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 import { useUIMode, type UIMode } from '../context/UIModeContext'
 import AppIcon from './AppIcon'
+import RiskLevelBadge from './RiskLevelBadge'
+import { getPageRisk } from '../config/riskLevels'
 import {
   Shield,
   Users,
@@ -28,6 +29,8 @@ import {
 
 type Theme = 'light' | 'dark' | 'system'
 
+export type ExperienceLevel = 'beginner' | 'advanced' | 'developer'
+
 interface SidebarProps {
   currentPage: string
   setCurrentPage: (page: any) => void
@@ -37,14 +40,21 @@ interface SidebarProps {
   freenoveDetected?: boolean
   mobileOpen?: boolean
   onClose?: () => void
+  /** Aus First-Run-Wizard / API: steuert vereinfachte Sidebar für Einsteiger (Phase 5). */
+  experienceLevel?: ExperienceLevel
 }
 
 const NEW_BADGE_KEY = 'pi-installer-new-'
 
-const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, freenoveDetected = false, mobileOpen = false, onClose }) => {
+/** Phase 5: Für Einsteiger diese Einträge – klare Aufgaben + Einstellungen (u. a. Erfahrungslevel ändern). */
+const BEGINNER_MENU_IDS = ['dashboard', 'wizard', 'app-store', 'backup', 'monitoring', 'documentation', 'settings'] as const
+
+const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, freenoveDetected = false, mobileOpen = false, onClose, experienceLevel = 'beginner' }) => {
   const { appTitle } = usePlatform()
   const { mode, setMode } = useUIMode()
-  const [version, setVersion] = useState<string>('…')
+  const isBeginnerSidebar = experienceLevel === 'beginner'
+  // Build-Zeit-Version (package.json) – zeigt die Version der laufenden App/Frontend
+  const [version] = useState<string>(typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '…')
   const [newBadges, setNewBadges] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
@@ -58,64 +68,55 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     setNewBadges(badges)
   }, [currentPage])
 
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const res = await fetchApi('/api/version')
-        if (!res.ok) return
-        const data = await res.json()
-        if (!cancelled && data?.version) setVersion(String(data.version))
-      } catch {
-        // ignore
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
   const menuItems = useMemo(() => {
-    type Item = { id?: string; type?: string; label?: string; icon?: any; appIcon?: string; modes?: UIMode[] }
+    type Item = { id?: string; type?: string; label?: string; icon?: any; appIcon?: string; modes?: UIMode[]; developerOnly?: boolean }
     const items: Item[] = [
-      { id: 'dashboard', label: 'Dashboard', appIcon: 'dashboard', modes: ['basic'] },
+      { id: 'dashboard', label: 'Start', appIcon: 'dashboard', modes: ['basic'] },
+      { id: 'wizard', label: 'Setup-Assistent', appIcon: 'wizard', modes: ['basic'] },
+      { id: 'app-store', label: 'Apps', appIcon: 'app-store', modes: ['basic'] },
+      { id: 'backup', label: 'Backup', appIcon: 'backup', modes: ['basic'] },
+      { id: 'monitoring', label: 'Systemstatus', appIcon: 'monitoring', modes: ['basic', 'advanced', 'diagnose'] },
+      { id: 'documentation', label: 'Hilfe', appIcon: 'documentation', modes: ['basic'] },
+      { type: 'divider' },
       { id: 'remote', label: 'Linux Companion', icon: Smartphone, modes: ['advanced'] },
-      { id: 'app-store', label: 'App Store', appIcon: 'app-store', modes: ['basic'] },
       ...(freenoveDetected ? [{ id: 'dsi-radio-settings', label: 'DSI-Radio Einstellungen', icon: Radio, modes: ['basic', 'advanced'] as UIMode[] }] : []),
-      { id: 'wizard', label: 'Assistent', appIcon: 'wizard', modes: ['basic'] },
-      { id: 'presets', label: 'Voreinstellungen', icon: Settings, modes: ['basic'] },
+      { id: 'presets', label: 'Voreinstellungen', icon: Settings, modes: ['advanced'] },
       { type: 'divider' },
-      { id: 'settings', label: 'Einstellungen', appIcon: 'settings', modes: ['basic', 'diagnose'] },
-      { id: 'security', label: 'Sicherheit', icon: Shield, modes: ['basic'] },
-      { id: 'users', label: 'Benutzer', icon: Users, modes: ['basic'] },
+      { id: 'settings', label: 'Einstellungen', appIcon: 'settings', modes: ['advanced', 'diagnose'] },
+      { id: 'security', label: 'Sicherheit', icon: Shield, modes: ['advanced'] },
+      { id: 'users', label: 'Benutzer', icon: Users, modes: ['advanced'] },
       { type: 'divider' },
-      { id: 'devenv', label: 'Dev-Umgebung', icon: Code, modes: ['advanced'] },
+      { id: 'control-center', label: 'Control Center', appIcon: 'control-center', modes: ['advanced'] },
+      { id: 'periphery-scan', label: 'Peripherie-Scan', appIcon: 'periphery-scan', modes: ['advanced', 'diagnose'] },
       { id: 'webserver', label: 'Webserver', icon: Globe, modes: ['advanced'] },
-      { id: 'mailserver', label: 'Mailserver', icon: Mail, modes: ['advanced'] },
       { id: 'nas', label: 'NAS', icon: HardDrive, modes: ['advanced'] },
       { id: 'homeautomation', label: 'Hausautomatisierung', icon: Home, modes: ['advanced'] },
       { id: 'musicbox', label: 'Musikbox', icon: Music, modes: ['advanced'] },
       { id: 'kino-streaming', label: 'Kino / Streaming', icon: Tv, modes: ['advanced'] },
       { id: 'learning', label: 'Lerncomputer', icon: BookOpen, modes: ['advanced'] },
-      { type: 'divider' },
-      { id: 'monitoring', label: 'Monitoring', appIcon: 'monitoring', modes: ['advanced', 'diagnose'] },
-      { id: 'backup', label: 'Backup & Restore', appIcon: 'backup', modes: ['basic'] },
-      { id: 'pi-installer-update', label: 'PI-Installer Update', icon: Upload, modes: ['basic'] },
-      { id: 'control-center', label: 'Control Center', appIcon: 'control-center', modes: ['advanced'] },
-      { id: 'periphery-scan', label: 'Peripherie-Scan', appIcon: 'periphery-scan', modes: ['advanced', 'diagnose'] },
+      { id: 'pi-installer-update', label: 'PI-Installer Update', icon: Upload, modes: ['advanced'] },
+      { id: 'devenv', label: 'Dev-Umgebung', icon: Code, modes: ['advanced'], developerOnly: true },
+      { id: 'mailserver', label: 'Mailserver', icon: Mail, modes: ['advanced'], developerOnly: true },
     ]
     if (isRaspberryPi) {
-      items.splice(items.length - 1, 0, { id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu, modes: ['advanced'] })
+      items.push({ id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu, modes: ['advanced'] })
     }
     return items
   }, [isRaspberryPi, freenoveDetected])
 
   const filteredItems = useMemo(() => {
+    if (isBeginnerSidebar) {
+      return menuItems.filter((item) => {
+        if (item.type === 'divider') return false
+        return item.id && BEGINNER_MENU_IDS.includes(item.id as typeof BEGINNER_MENU_IDS[number])
+      })
+    }
     return menuItems.filter((item) => {
       if (item.type === 'divider') return true
+      if (item.developerOnly && experienceLevel !== 'developer') return false
       return item.modes?.includes(mode)
     })
-  }, [menuItems, mode])
+  }, [menuItems, mode, isBeginnerSidebar, experienceLevel])
   
   const handlePageChange = useCallback((pageId: string) => {
     try {
@@ -154,28 +155,30 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
           </button>
         )}
         </div>
-        {/* Phase 5: Grundlagen / Erweitert / Diagnose */}
-        <div className="flex gap-0.5 p-0.5 bg-slate-300/50 dark:bg-slate-800/50 rounded-lg" role="tablist" aria-label="Ansichtsmodus">
-          {([
-            { id: 'basic' as const, label: 'Grundlagen', title: 'Häufig genutzte Funktionen für Einsteiger', appIcon: 'dashboard' as const },
-            { id: 'advanced' as const, label: 'Erweitert', title: 'Technische Einstellungen für erfahrene Nutzer', appIcon: 'advanced' as const },
-            { id: 'diagnose' as const, label: 'Diagnose', title: 'Diagnosewerkzeuge zur Fehlersuche', appIcon: 'diagnose' as const },
-          ]).map(({ id, label, title, appIcon }) => (
-            <button
-              key={id}
-              role="tab"
-              aria-selected={mode === id}
-              title={title}
-              onClick={() => setMode(id)}
-              className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs font-medium transition-colors duration-150 ${
-                mode === id ? 'bg-sky-600 text-white shadow' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-              }`}
-            >
-              <AppIcon name={appIcon} category="navigation" size={16} />
-              {label}
-            </button>
-          ))}
-        </div>
+        {/* Phase 5: Tabs nur für Fortgeschrittene/Entwickler – Einsteiger sehen nur die 6 Hauptpunkte. */}
+        {!isBeginnerSidebar && (
+          <div className="flex gap-0.5 p-0.5 bg-slate-300/50 dark:bg-slate-800/50 rounded-lg" role="tablist" aria-label="Ansichtsmodus">
+            {([
+              { id: 'basic' as const, label: 'Grundlagen', title: 'Häufig genutzte Funktionen für Einsteiger', appIcon: 'dashboard' as const },
+              { id: 'advanced' as const, label: 'Erweitert', title: 'Technische Einstellungen für erfahrene Nutzer', appIcon: 'advanced' as const },
+              { id: 'diagnose' as const, label: 'Diagnose', title: 'Diagnosewerkzeuge zur Fehlersuche', appIcon: 'diagnose' as const },
+            ]).map(({ id, label, title, appIcon }) => (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={mode === id}
+                title={title}
+                onClick={() => setMode(id)}
+                className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs font-medium transition-colors duration-150 ${
+                  mode === id ? 'bg-sky-600 text-white shadow' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                }`}
+              >
+                <AppIcon name={appIcon} category="navigation" size={16} />
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Menu */}
@@ -189,6 +192,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
           const Icon = item.icon
           const appIconName = item.appIcon
           const isActive = currentPage === item.id
+          const pageRisk = getPageRisk(item.id)
 
           return (
             <button
@@ -209,9 +213,12 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
               ) : (
                 Icon && <Icon size={18} />
               )}
-              <span className="font-medium text-sm">{item.label}</span>
+              <span className="font-medium text-sm flex-1 truncate">{item.label}</span>
+              {pageRisk && (
+                <RiskLevelBadge level={pageRisk.level} showLabel={false} title={pageRisk.label} className={isActive ? 'border-white/50' : ''} />
+              )}
               {newBadges[item.id] && (
-                <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold bg-sky-500 text-white rounded animate-pulse">Neu</span>
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-sky-500 text-white rounded animate-pulse">Neu</span>
               )}
             </button>
           )

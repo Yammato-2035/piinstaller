@@ -45,16 +45,41 @@ _file_lock = threading.Lock()
 
 
 def _app_info() -> Dict[str, Any]:
-    """app.name = pi-installer-backend, version/build best-effort."""
+    """app.name = pi-installer-backend, version/build best-effort.
+
+    Quelle für die Version ist konsistent `config/version.json` (falls vorhanden),
+    mit Fallback auf die historische VERSION-Datei im Projekt-/Installationsroot.
+    """
     version = "0.0.0"
     build = None
     try:
         root = Path(__file__).resolve().parent.parent.parent
-        vf = root / "VERSION"
-        if vf.exists():
-            version = vf.read_text(encoding="utf-8").strip() or version
+        base = root
+
+        # 1. Versuch: config/version.json neben dem Projektroot
+        try:
+            version_json = base / "config" / "version.json"
+            if version_json.exists():
+                import json
+
+                data = json.loads(version_json.read_text(encoding="utf-8"))
+                v = str(data.get("version") or "").strip()
+                if v:
+                    version = v
+        except Exception:
+            # stiller Fallback auf VERSION
+            pass
+
+        # 2. Fallback: historische VERSION-Datei
+        if version == "0.0.0":
+            vf = base / "VERSION"
+            if vf.exists():
+                version = vf.read_text(encoding="utf-8").strip() or version
+
+        # Git-Build-Hash (optional)
         try:
             import subprocess
+
             r = subprocess.run(
                 ["git", "rev-parse", "--short", "HEAD"],
                 cwd=root,

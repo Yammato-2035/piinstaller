@@ -235,9 +235,9 @@ fi
 info "[7/8] Symlinks erstellen..."
 
 # Haupt-Symlinks
-ln -sf "$INSTALL_DIR/start-pi-installer.sh" "$BIN_DIR/pi-installer"
-ln -sf "$INSTALL_DIR/start-backend.sh" "$BIN_DIR/pi-installer-backend"
-ln -sf "$INSTALL_DIR/start-frontend.sh" "$BIN_DIR/pi-installer-frontend"
+ln -sf "$INSTALL_DIR/scripts/start-pi-installer.sh" "$BIN_DIR/pi-installer"
+ln -sf "$INSTALL_DIR/scripts/start-backend.sh" "$BIN_DIR/pi-installer-backend"
+ln -sf "$INSTALL_DIR/scripts/start-frontend.sh" "$BIN_DIR/pi-installer-frontend"
 ln -sf "$INSTALL_DIR/start.sh" "$BIN_DIR/pi-installer-start"
 
 # Script-Symlinks

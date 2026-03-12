@@ -414,7 +414,7 @@ const BackupRestore: React.FC = () => {
         setSelectedCloudBackups(new Set())
       }
     } catch (e) {
-      toast.error('Externe Backups konnten nicht geladen werden (Backend nicht erreichbar)')
+      toast.error('Externe Backups konnten nicht geladen werden (Server nicht erreichbar)')
       setCloudBackups([])
       setSelectedCloudBackups(new Set())
     } finally {
@@ -441,7 +441,7 @@ const BackupRestore: React.FC = () => {
       }
     } catch {
       setCloudVerified((m) => ({ ...m, [name]: false }))
-      toast.error('Remote Verifizierung fehlgeschlagen (Backend nicht erreichbar)')
+      toast.error('Remote Verifizierung fehlgeschlagen (Server nicht erreichbar)')
     } finally {
       setCloudVerifying((m) => ({ ...m, [name]: false }))
     }
@@ -454,7 +454,7 @@ const BackupRestore: React.FC = () => {
       const data = await res.json()
       setTargetCheck(data)
     } catch (e) {
-      setTargetCheck({ status: 'error', message: 'Backend nicht erreichbar' })
+      setTargetCheck({ status: 'error', message: 'Server nicht erreichbar' })
     } finally {
       setCheckingTarget(false)
     }
@@ -502,7 +502,7 @@ const BackupRestore: React.FC = () => {
     } catch (e: any) {
       clearTimeout(timeoutId)
       if (e?.name === 'AbortError') {
-        throw new Error('Zeitüberschreitung. Backend nicht erreichbar oder sudo-Prüfung hängt. Probieren Sie „Ohne Prüfung speichern“.')
+        throw new Error('Die Aktion hat zu lange gedauert. Server prüfen oder „Ohne Prüfung speichern“ probieren.')
       }
       throw e
     }
@@ -648,7 +648,7 @@ const BackupRestore: React.FC = () => {
             toast.error(data.message || 'Mount fehlgeschlagen', { duration: 12000 })
           }
         } catch {
-          toast.error('Mount fehlgeschlagen (Backend nicht erreichbar)')
+          toast.error('Mount fehlgeschlagen (Server nicht erreichbar)')
         }
       }
     )
@@ -687,7 +687,7 @@ const BackupRestore: React.FC = () => {
             setCloneJob(null)
           }
         } catch (e) {
-          toast.error('Backend nicht erreichbar')
+          toast.error('Server nicht erreichbar')
           setCloneJob(null)
         }
       }
@@ -907,7 +907,7 @@ const BackupRestore: React.FC = () => {
         toast.error(d.message || 'Abbruch fehlgeschlagen')
       }
     } catch {
-      toast.error('Abbruch fehlgeschlagen (Backend nicht erreichbar)')
+      toast.error('Abbruch fehlgeschlagen (Server nicht erreichbar)')
     }
   }
 
@@ -1270,6 +1270,44 @@ const BackupRestore: React.FC = () => {
         <p className="text-slate-400">Backup & Restore – {pageSubtitleLabel}</p>
       </div>
 
+      {/* Beginner-First Auswahl: Was möchtest du tun? */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid gap-4 md:grid-cols-2"
+      >
+        <button
+          type="button"
+          onClick={() => setActiveTab('backup')}
+          className="card flex items-start gap-3 hover:border-sky-500/60 hover:bg-sky-900/10 transition-colors"
+        >
+          <div className="mt-1">
+            <Download className="text-emerald-400" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-slate-100">Backup erstellen</p>
+            <p className="text-xs text-slate-400 mt-1">
+              Sicherung deines Systems oder deiner Daten anlegen – auf USB-Stick, lokale Festplatte oder in der Cloud.
+            </p>
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('restore')}
+          className="card flex items-start gap-3 hover:border-sky-500/60 hover:bg-sky-900/10 transition-colors"
+        >
+          <div className="mt-1">
+            <Upload className="text-sky-400" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-slate-100">Backup wiederherstellen</p>
+            <p className="text-xs text-slate-400 mt-1">
+              Vorhandenes Backup auswählen und dein System Schritt für Schritt zurücksetzen. Mit klaren Warnhinweisen.
+            </p>
+          </div>
+        </button>
+      </motion.div>
+
       {/* Tabs */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
         <div className="flex gap-2 border-b border-slate-700 mb-6">
@@ -1362,6 +1400,10 @@ const BackupRestore: React.FC = () => {
       >
       {activeTab === 'backup' && (
       <div className="space-y-6">
+        <p className="text-slate-400 text-sm">
+          Kurzer Ablauf: <span className="font-semibold text-slate-200">1.</span> Ziel wählen, <span className="font-semibold text-slate-200">2.</span> Backup-Typ wählen,
+          <span className="font-semibold text-slate-200"> 3.</span> optional verschlüsseln und Backup starten.
+        </p>
         {/* Ein-Klick-Backup Hero (Milestone 3 – Transformationsplan) */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -1515,7 +1557,9 @@ const BackupRestore: React.FC = () => {
                   </div>
                 </motion.div>
               )}
+              {/* Schritt 1: Ziel wählen */}
               <div>
+                <h3 className="text-sm font-semibold text-sky-300 mb-1">Schritt 1: Ziel für das Backup wählen</h3>
                 <label className="block text-white font-semibold mb-2">Ziel (Backup-Speicherort)</label>
                 <div className="grid md:grid-cols-4 gap-3">
                   <button
@@ -1787,7 +1831,9 @@ const BackupRestore: React.FC = () => {
                 </div>
               </div>
 
+              {/* Schritt 2: Backup-Typ wählen */}
               <div>
+                <h3 className="text-sm font-semibold text-sky-300 mb-1">Schritt 2: Art des Backups festlegen</h3>
                 <label className="block text-white font-semibold mb-2">Backup-Typ</label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
@@ -1830,8 +1876,9 @@ const BackupRestore: React.FC = () => {
                 </div>
               </div>
 
-              {/* Verschlüsselung */}
+              {/* Schritt 3: Optional verschlüsseln & starten */}
               <div className="p-4 bg-slate-900/40 border border-slate-700 rounded-lg">
+                <h3 className="text-sm font-semibold text-sky-300 mb-2">Schritt 3: Optional verschlüsseln</h3>
                 <label className="flex items-center gap-3 mb-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -1904,6 +1951,12 @@ const BackupRestore: React.FC = () => {
       )}
 
       {activeTab === 'restore' && (
+      <div className="space-y-4">
+        <p className="text-slate-400 text-sm">
+          Kurzer Ablauf: <span className="font-semibold text-slate-200">1.</span> Ziel & Medium wählen,
+          <span className="font-semibold text-slate-200"> 2.</span> Backup in der Liste auswählen,
+          <span className="font-semibold text-slate-200"> 3.</span> optional verifizieren und dann wiederherstellen.
+        </p>
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Backup-Liste */}
@@ -1913,13 +1966,17 @@ const BackupRestore: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="card"
           >
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
               <HardDrive className="text-blue-500" />
               Verfügbare Backups
             </h2>
+            <p className="text-xs text-slate-400 mb-4">
+              Starte mit Schritt 1 unten: Ziel auswählen. Danach in der Liste ein Backup markieren und auf „Wiederherstellen“ klicken.
+            </p>
 
-            {/* Schnellwechsel Ziel & Filter */}
+            {/* Schritt 1: Ziel & Medium wählen */}
             <div className="mb-4 p-4 bg-slate-900/40 border border-slate-700 rounded-lg space-y-3">
+              <h3 className="text-sm font-semibold text-sky-300 mb-1">Schritt 1: Ziel & Medium wählen</h3>
               {/* Buttons oben */}
               <div className="flex gap-2 flex-wrap justify-start">
                 <button
@@ -2029,6 +2086,7 @@ const BackupRestore: React.FC = () => {
               )}
             </div>
 
+            {/* Schritt 2: Backup auswählen & Aktionen */}
             {showCloudBackups ? (
               cloudBackupsLoading ? (
                 <div className="text-center py-8 text-slate-400">
@@ -2386,6 +2444,7 @@ const BackupRestore: React.FC = () => {
           </div>
         </div>
       </div>
+      </div>
       )}
 
       {activeTab === 'clone' && (
@@ -2431,10 +2490,14 @@ const BackupRestore: React.FC = () => {
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                      className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full"
+                      className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full shrink-0"
                     />
                     <div className="font-semibold">
-                      {cloneJob.status === 'cancel_requested' ? '⏳ Abbruch läuft…' : '⏳ Klon läuft…'}
+                      {cloneJob.status === 'cancel_requested'
+                        ? '⏳ Abbruch läuft…'
+                        : typeof (cloneJob as any).progress_pct === 'number'
+                          ? `⏳ Klon läuft… ${(cloneJob as any).progress_pct}%`
+                          : '⏳ Klon läuft…'}
                     </div>
                     {cloneJob.status !== 'cancel_requested' && (
                       <button
@@ -2452,7 +2515,9 @@ const BackupRestore: React.FC = () => {
                       </button>
                     )}
                   </div>
-                  <div className="text-xs text-emerald-100/80 mt-1">{cloneJob.message}</div>
+                  <div className="text-xs text-emerald-100/80 mt-1">
+                    {cloneJob.status === 'cancel_requested' ? 'Klon wird abgebrochen – Bitte warten.' : (cloneJob.message || 'Bitte warten.')}
+                  </div>
                   {cloneJob.results && cloneJob.results.length > 0 && (
                     <div className="mt-2 text-xs font-mono text-emerald-200/90 max-h-32 overflow-y-auto space-y-1">
                       {cloneJob.results.slice(-5).map((r: string, i: number) => (
@@ -2572,6 +2637,8 @@ const BackupRestore: React.FC = () => {
       )}
 
       {activeTab === 'settings' && (
+      <div className="space-y-4">
+        <p className="text-slate-400 text-sm">Backup-Ziel, Zeitpläne und erweiterte Optionen.</p>
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <motion.div
@@ -2997,6 +3064,7 @@ const BackupRestore: React.FC = () => {
             </ul>
           </div>
         </div>
+      </div>
       </div>
       )}
       </motion.div>

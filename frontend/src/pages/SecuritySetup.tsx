@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { Shield, CheckCircle, AlertCircle, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import RiskWarningCard from '../components/RiskWarningCard'
+import { getPageRisk } from '../config/riskLevels'
 import { usePlatform } from '../context/PlatformContext'
 import { PageSkeleton } from '../components/Skeleton'
 
@@ -292,6 +294,13 @@ const SecuritySetup: React.FC = () => {
         <p className="text-slate-400">Sicherheit – {pageSubtitleLabel}</p>
       </div>
 
+      {(() => {
+        const risk = getPageRisk('security')
+        return risk?.warningText ? (
+          <RiskWarningCard level={risk.level}>{risk.warningText}</RiskWarningCard>
+        ) : null
+      })()}
+
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Configuration Panel */}
         <div className="lg:col-span-2 space-y-6">
@@ -355,7 +364,7 @@ const SecuritySetup: React.FC = () => {
                 disabled={loading}
                 className="btn-primary flex-1"
               >
-                {loading ? '⏳ Wird angewendet...' : '✓ Anwenden'}
+                {loading ? '⏳ Sicherheitseinstellungen werden übernommen…' : 'Sicherheitseinstellungen übernehmen'}
               </button>
             </div>
           </div>
