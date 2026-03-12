@@ -395,6 +395,6 @@ Der systemd Service verwendet folgende Sicherheitseinstellungen:
 ## Weitere Informationen
 
 - [Haupt-README](../README.md)
-- [Schnellstart-Anleitung](../QUICKSTART.md)
-- [Installationsanleitung](../INSTALL.md)
+- [Schnellstart-Anleitung](./user/QUICKSTART.md)
+- [Installationsanleitung](./user/INSTALL.md)
 - [Startoptionen](START_APPS.md)

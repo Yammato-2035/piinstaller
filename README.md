@@ -126,15 +126,15 @@ http://localhost:3001
 
 ## 📚 Dokumentation
 
-- **[INSTALL.md](./INSTALL.md)** - Detaillierte Installationsanleitung (inkl. Troubleshooting Mixer)
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System-Architektur & Design
-- **[FEATURES.md](./FEATURES.md)** - Alle Features & Roadmap
+- **[INSTALL.md](./docs/user/INSTALL.md)** - Detaillierte Installationsanleitung (inkl. Troubleshooting Mixer)
+- **[ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md)** - System-Architektur & Design
+- **[FEATURES.md](./docs/architecture/FEATURES.md)** - Alle Features & Roadmap
 - **[CHANGELOG.md](./CHANGELOG.md)** - Versions-Changelog (1.2.0.0, 1.0.4.0, …)
-- **[VERSIONING.md](./VERSIONING.md)** - Versionsschema, wann Version erhöht wird, Changelog-Führung
-- **[SUGGESTIONS.md](./SUGGESTIONS.md)** - Erweiterte Vorschläge & Best Practices
-- **[README_remote_architecture.md](./README_remote_architecture.md)** - Architektur & Integrationsplan Smartphone-Companion (Phase 1, Control Plane)
-- **[docs/REMOTE_COMPANION.md](./docs/REMOTE_COMPANION.md)** - Remote Companion: Übersicht, API, Rollen, Events (Phase 1)
-- **[docs/REMOTE_COMPANION_DEV.md](./docs/REMOTE_COMPANION_DEV.md)** - Entwicklerleitfaden: neues Modul registrieren, Widgets, Aktionen
+- **[VERSIONING.md](./docs/developer/VERSIONING.md)** - Versionsschema, wann Version erhöht wird, Changelog-Führung
+- **[SUGGESTIONS.md](./docs/architecture/SUGGESTIONS.md)** - Erweiterte Vorschläge & Best Practices
+- **[README_remote_architecture.md](./docs/developer/README_remote_architecture.md)** - Architektur & Integrationsplan Smartphone-Companion (Phase 1, Control Plane)
+- **[REMOTE_COMPANION.md](./docs/REMOTE_COMPANION.md)** - Remote Companion: Übersicht, API, Rollen, Events (Phase 1)
+- **[REMOTE_COMPANION_DEV.md](./docs/REMOTE_COMPANION_DEV.md)** - Entwicklerleitfaden: neues Modul registrieren, Widgets, Aktionen
 
 ## 🎨 GUI-Highlights
 
@@ -161,7 +161,7 @@ http://localhost:3001
 3. **Modul-Pages** - Detaillierte Konfiguration
 4. **Status-Übersicht** - Echtzeit-Monitoring
 
-## 🏗️ Projektstruktur
+## 🏗️ Projektstruktur (vereinfacht)
 
 ```
 PI-Installer/
@@ -169,18 +169,13 @@ PI-Installer/
 │   ├── app.py              # Haupt-Anwendung
 │   ├── modules/            # Feature-Module
 │   └── requirements.txt     # Dependencies
-├── frontend/               # React Web-GUI
-│   ├── src/
-│   │   ├── components/     # Reusable UI Components
-│   │   ├── pages/          # Page Components
-│   │   └── App.tsx         # Main Component
+├── frontend/               # React Web-GUI (optional Tauri-Desktop)
+│   ├── src/                # Komponenten & Seiten
 │   └── package.json        # Dependencies
-├── Dockerfile              # Container-Definition
-├── docker-compose.yml      # Multi-Container Setup
-├── INSTALL.md             # Installationsanleitung
-├── ARCHITECTURE.md        # Technische Dokumentation
-├── FEATURES.md            # Feature-Liste & Roadmap
-└── SUGGESTIONS.md         # Erweiterte Vorschläge
+├── docs/                   # Architektur-, Benutzer- und Entwicklerdokumentation
+├── scripts/                # Installations- und Startskripte
+├── config/                 # z. B. version.json
+└── VERSION                 # Projektversion (siehe docs/developer/VERSIONING.md)
 ```
 
 ## 🔧 API-Übersicht
