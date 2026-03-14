@@ -30,20 +30,20 @@ So bleibt jeder Stand (z. B. aus Git) einer konkreten Version zugeordnet.
 
 ## Wo wird die Version geführt?
 
-- **Quelle der Wahrheit:** Datei `VERSION` im Projektroot (eine Zeile, z. B. `1.0.1.13`).
-- **Backend:** Liest die Version aus `VERSION` (z. B. für `/api/version`).
-- **Frontend:** `frontend/package.json` → Feld `version` (wird automatisch aus `VERSION` synchronisiert).
-- **Tauri (Desktop-App):** `frontend/src-tauri/tauri.conf.json` → Feld `version` (wird automatisch aus `VERSION` synchronisiert).
+- **Einzige Quelle der Wahrheit:** `config/version.json` im Projektroot (Feld `version`, z. B. `"1.3.8.0"`). Nur diese Datei anpassen – alle anderen werden daraus abgeleitet.
+- **Backend:** Liest die Version aus `config/version.json` (Fallback: `VERSION`) für z. B. `/api/version`.
+- **Frontend:** `frontend/package.json` → Feld `version` (wird von `sync-version.js` aus `config/version.json` geschrieben).
+- **Tauri (Desktop-App):** `frontend/src-tauri/tauri.conf.json` und `Cargo.toml` (wird von `sync-version.js` geschrieben; nur X.Y.Z für Semver).
+- **VERSION:** Wird von `sync-version.js` aus `config/version.json` mitgeschrieben (für Skripte und Abwärtskompatibilität).
 
-**Automatische Synchronisation:** Das Skript `frontend/sync-version.js` liest `VERSION` und schreibt die Version in `package.json` und `tauri.conf.json`. Es wird bei **`npm run prebuild`** ausgeführt (z. B. vor `npm run build`). Manuell: `cd frontend && node sync-version.js`.
+**Synchronisation:** Das Skript `frontend/sync-version.js` liest **nur** `config/version.json` und schreibt die Version nach `package.json`, `tauri.conf.json`, `Cargo.toml` und `VERSION`. Es wird bei **`npm run prebuild`** ausgeführt (z. B. vor `npm run build`). Manuell: `cd frontend && node sync-version.js`.
 
-Nach einer Änderung (Versionsbump):
+**Nach einer Änderung (Versionsbump):**
 
-1. **Versionsnummer erhöhen** – entweder:
-   - **Neues Feature (Z erhöhen):** `node scripts/bump-feature.js` (erhöht Z um 1, setzt W auf 0, führt sync-version aus), oder
-   - **Patch/Bugfix (W erhöhen):** `node scripts/bump-version.js` (erhöht W um 1, führt sync-version aus), oder
-   - **Manuell:** `VERSION` anpassen (z. B. 1.0.1.17 → 1.0.2.0 bei neuem Feature, 1.0.1.17 → 1.0.1.18 bei Patch), dann im Frontend: `npm run prebuild`.
-2. **Changelog** in der App ergänzen: Dokumentation → Versionen & Changelog (in `frontend/src/pages/Documentation.tsx`).
+1. **Nur** in `config/version.json` das Feld `version` anpassen (z. B. `"1.3.8.0"` → `"1.3.9.0"`).
+2. Synchronisation ausführen: `cd frontend && node sync-version.js` oder `npm run prebuild` – damit stehen Frontend, Tauri und `VERSION` auf dem gleichen Stand.
+3. Optional: `scripts/release-service.sh` nutzen (liest/schreibt `config/version.json`, schreibt auch `VERSION` und ruft sync-version auf).
+4. **Changelog** in der App ergänzen: Dokumentation → Versionen & Changelog (in `frontend/src/pages/Documentation.tsx`).
 
 ## Changelog & Dokumentation
 

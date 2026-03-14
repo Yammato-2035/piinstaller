@@ -25,6 +25,8 @@ PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
 ReadWritePaths=/opt/pi-installer /etc/pi-installer /var/log/pi-installer
+MemoryMax=512M
+LimitNOFILE=4096
 
 [Install]
 WantedBy=multi-user.target

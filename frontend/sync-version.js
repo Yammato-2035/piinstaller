@@ -4,6 +4,7 @@
  * - frontend/package.json
  * - frontend/src-tauri/tauri.conf.json
  * - frontend/src-tauri/Cargo.toml (nur major.minor.patch, Cargo/Tauri verlangt Semver)
+ * - VERSION (Projektroot, für Skripte/Abwärtskompatibilität)
  * Wird bei „npm run prebuild“ ausgeführt. Einzige Quelle: config/version.json.
  */
 const fs = require('fs');
@@ -59,6 +60,17 @@ try {
   }
 } catch (e) {
   console.warn('[sync-version] Cargo.toml:', e.message);
+}
+// VERSION-Datei im Projektroot für Skripte/Abwärtskompatibilität mitschreiben
+const versionTxtPath = path.join(rootDir, 'VERSION');
+try {
+  const current = fs.existsSync(versionTxtPath) ? fs.readFileSync(versionTxtPath, 'utf8').trim() : '';
+  if (current !== v) {
+    fs.writeFileSync(versionTxtPath, v + '\n');
+    changed = true;
+  }
+} catch (e) {
+  console.warn('[sync-version] VERSION:', e.message);
 }
 if (changed) {
   console.log('[sync-version] version ->', v);

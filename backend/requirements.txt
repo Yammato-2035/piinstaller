@@ -23,6 +23,7 @@ aiofiles>=23
 click>=8.0
 psutil>=5.9
 cryptography>=43
+slowapi>=0.1.9
 
 # OLED output (Freenove SSD1306)
 luma.oled>=3.13

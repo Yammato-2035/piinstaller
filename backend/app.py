@@ -166,8 +166,20 @@ async def debug_request_id_middleware(request, call_next):
         reset_request_id(token)
 
 
-# Session Storage für sudo-Passwort (in-memory, nur für aktuelle Session)
-sudo_password_store = {}
+# Session Storage für sudo-Passwort (verschlüsselt, TTL 30 Min)
+class _EmptySudoStore:
+    def get_password(self): return None
+    def has_password(self): return False
+    def store_password(self, p, ttl_seconds=None): pass
+    def clear(self): pass
+
+
+try:
+    from core.sudo_store import EncryptedSudoStore
+    sudo_store = EncryptedSudoStore()
+except Exception as e:
+    logging.getLogger(__name__).warning("EncryptedSudoStore nicht verfügbar (%s), Fallback auf leeren Store.", e)
+    sudo_store = _EmptySudoStore()
 
 # Globaler Installationsfortschritt
 installation_progress = {"progress": 0, "message": "Bereit", "current_step": ""}
@@ -837,6 +849,10 @@ async def _startup_init():
 @app.on_event("shutdown")
 async def _shutdown():
     try:
+        sudo_store.clear()
+    except Exception:
+        pass
+    try:
         duration_ms = None
         if _debug_startup_time is not None:
             duration_ms = (time.perf_counter() - _debug_startup_time) * 1000
@@ -940,14 +956,70 @@ async def logs_tail(lines: int = 200):
     except Exception as e:
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e), "path": str(p)})
 
-# CORS Middleware
+def _get_cors_origins() -> list[str]:
+    """Erlaubte CORS-Origins: Standard localhost/LAN; PI_INSTALLER_CORS_ORIGINS kann ergänzen (kommasepariert)."""
+    default = [
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        "http://pi-installer.local:3001",
+    ]
+    extra = os.environ.get("PI_INSTALLER_CORS_ORIGINS", "").strip()
+    if not extra:
+        return default
+    return default + [o.strip() for o in extra.split(",") if o.strip()]
+
+
+class SecurityHeadersMiddleware:
+    """Setzt Security-Header auf alle Antworten (HSTS, X-Frame-Options, etc.)."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+
+        async def send_with_headers(message):
+            if message.get("type") == "http.response.start":
+                headers = list(message.get("headers", []))
+                headers.append((b"x-content-type-options", b"nosniff"))
+                headers.append((b"x-frame-options", b"DENY"))
+                headers.append((b"referrer-policy", b"strict-origin-when-cross-origin"))
+                message = {**message, "headers": headers}
+            await send(message)
+
+        await self.app(scope, receive, send_with_headers)
+
+
+# Security-Header zuerst (äußerste Middleware)
+app.add_middleware(SecurityHeadersMiddleware)
+# CORS: nur konfigurierte Origins (LAN-Zugriff über PI_INSTALLER_CORS_ORIGINS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate-Limiting (slowapi) für sensible Endpoints
+try:
+    from slowapi import Limiter
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    limiter = Limiter(key_func=get_remote_address)
+    app.state.limiter = limiter
+    @app.exception_handler(RateLimitExceeded)
+    async def _rate_limit_exceeded(request: Request, exc: RateLimitExceeded):
+        return JSONResponse(status_code=429, content={"status": "error", "message": "Zu viele Anfragen. Bitte später erneut versuchen."})
+except ImportError:
+    limiter = None
+
+def _limit_sudo():
+    """Decorator für Rate-Limit auf sudo-Passwort-Endpoint (10/Min), nur wenn slowapi verfügbar."""
+    if limiter is not None:
+        return limiter.limit("10/minute")
+    return lambda f: f
 
 # Remote-Companion: Pairing, Sessions, Device, Module, Actions (AP3–AP5)
 try:
@@ -2141,7 +2213,8 @@ def run_command(cmd, sudo=False, sudo_password=None, timeout: int = 10):
         # Bei apt-get-Operationen PackageKit stoppen, um "PackageKit daemon disappeared" zu vermeiden
         if "apt-get" in cmd or "apt " in cmd:
             _ensure_packagekit_stopped(sudo_password)
-        
+        if sudo and not sudo_password:
+            sudo_password = sudo_store.get_password()
         if sudo:
             if sudo_password:
                 # Mit Passwort via stdin (sicherer)
@@ -3014,7 +3087,7 @@ def get_security_config():
     
     try:
         # UFW Status - verwende direkt sudo, wenn Passwort verfügbar ist
-        stored_sudo_password = sudo_password_store.get("password", "")
+        stored_sudo_password = (sudo_store.get_password() or "")
         
         # Versuche zuerst mit sudo, wenn Passwort verfügbar ist (ufw status benötigt root für Regeln)
         if stored_sudo_password:
@@ -3026,7 +3099,7 @@ def get_security_config():
             ufw_status = run_command("ufw status")
             # Falls ohne sudo nicht erfolgreich, versuche mit sudo (falls Passwort später gespeichert wird)
             if not ufw_status["success"]:
-                stored_sudo_password = sudo_password_store.get("password", "")
+                stored_sudo_password = (sudo_store.get_password() or "")
                 if stored_sudo_password:
                     logger.info("🔧 UFW Status ohne sudo fehlgeschlagen, versuche mit sudo...")
                     ufw_status = run_command("ufw status", sudo=True, sudo_password=stored_sudo_password)
@@ -3106,7 +3179,7 @@ def get_security_config():
         
         # Wenn Firewall aktiv ist, aber keine Regeln aus Status-Output, versuche separat abzurufen
         if (ufw_active or ufw_installed) and not rules_output:
-            stored_sudo_password = sudo_password_store.get("password", "")
+            stored_sudo_password = (sudo_store.get_password() or "")
             
             # Versuche 1: ufw status numbered (direkt mit sudo, wenn Passwort verfügbar)
             if stored_sudo_password:
@@ -3611,7 +3684,7 @@ async def set_asus_fan_profile_api(request: Request):
             return JSONResponse(status_code=400, content={"success": False, "error": "Profil-Parameter fehlt"})
         
         # Hole sudo_password aus Request oder Store
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         # Prüfe ob sudo benötigt wird
         if not sudo_password:
@@ -3627,8 +3700,8 @@ async def set_asus_fan_profile_api(request: Request):
                 )
         
         # Speichere sudo_password im Store falls vorhanden
-        if sudo_password and not sudo_password_store.get("password"):
-            sudo_password_store["password"] = sudo_password
+        if sudo_password and not sudo_store.has_password():
+            sudo_store.store_password(sudo_password)
         
         result = set_asus_fan_profile(profile, sudo_password)
         if result.get("success"):
@@ -3835,7 +3908,7 @@ async def update_user_profile(payload: dict = Body(...)):
 @app.get("/api/users/sudo-password/check")
 async def check_sudo_password():
     """Prüft ob ein sudo-Passwort gespeichert ist"""
-    has_password = bool(sudo_password_store.get("password", ""))
+    has_password = sudo_store.has_password()
     return {
         "status": "success",
         "has_password": has_password,
@@ -3843,8 +3916,9 @@ async def check_sudo_password():
     }
 
 @app.post("/api/users/sudo-password")
+@_limit_sudo()
 async def save_sudo_password(request: Request):
-    """Sudo-Passwort für Session speichern"""
+    """Sudo-Passwort für Session speichern (Rate-Limit: 10/Min)."""
     logger.info("save_sudo_password: Request empfangen")
     try:
         try:
@@ -3866,7 +3940,7 @@ async def save_sudo_password(request: Request):
             )
         
         if skip_test:
-            sudo_password_store["password"] = sudo_password
+            sudo_store.store_password(sudo_password)
             logger.info("save_sudo_password: Gespeichert ohne Prüfung (skip_test=True)")
             return {"status": "success", "message": "Sudo-Passwort gespeichert"}
         
@@ -3903,7 +3977,7 @@ async def save_sudo_password(request: Request):
                 },
             )
         
-        sudo_password_store["password"] = sudo_password
+        sudo_store.store_password(sudo_password)
         logger.info("save_sudo_password: Sudo-Passwort gespeichert (Session)")
         return {"status": "success", "message": "Sudo-Passwort gespeichert"}
     except Exception as e:
@@ -3931,7 +4005,7 @@ async def create_user(request: Request):
         username = data.get("username", "").strip()
         role = data.get("role", "user")
         password = data.get("password", "")
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         if not username:
             return JSONResponse(
@@ -4052,7 +4126,7 @@ async def delete_user(username: str, request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         if not username or not username.strip():
             return JSONResponse(
@@ -4164,12 +4238,12 @@ async def security_scan():
         
         # Prüfe geschlossene Ports (UFW) - verwende die gleiche Logik wie get_security_config()
         ufw_status = run_command("ufw status")
-        if not ufw_status["success"] and sudo_password_store.get("password"):
-            ufw_status = run_command("ufw status", sudo=True, sudo_password=sudo_password_store.get("password"))
+        if not ufw_status["success"] and sudo_store.get_password():
+            ufw_status = run_command("ufw status", sudo=True, sudo_password=sudo_store.get_password())
         
         # Falls immer noch nicht erfolgreich, versuche "ufw status verbose" mit sudo
-        if not ufw_status["success"] and sudo_password_store.get("password"):
-            ufw_status = run_command("ufw status verbose", sudo=True, sudo_password=sudo_password_store.get("password"))
+        if not ufw_status["success"] and sudo_store.get_password():
+            ufw_status = run_command("ufw status verbose", sudo=True, sudo_password=sudo_store.get_password())
         
         closed_ports = []
         firewall_active = False
@@ -4304,8 +4378,8 @@ async def get_security_config_endpoint(request: Request):
     try:
         # Prüfe ob sudo-Passwort als Query-Parameter übergeben wurde
         sudo_password = request.query_params.get("sudo_password", "")
-        if sudo_password and not sudo_password_store.get("password"):
-            sudo_password_store["password"] = sudo_password
+        if sudo_password and not sudo_store.has_password():
+            sudo_store.store_password(sudo_password)
             logger.info("💾 Sudo-Passwort im Store gespeichert (via security-config endpoint)")
         
         return {
@@ -4470,7 +4544,7 @@ async def install_mixer_packages(request: Request):
     copyable = "sudo apt-get update && sudo apt-get install -y pavucontrol qpwgraph"
     try:
         data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        sudo_password = (data.get("sudo_password", "") or sudo_password_store.get("password", "") or "").strip()
+        sudo_password = (data.get("sudo_password", "") or (sudo_store.get_password() or "") or "").strip()
         if not sudo_password:
             return JSONResponse(
                 status_code=200,
@@ -4533,11 +4607,11 @@ async def enable_firewall(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         # Speichere sudo-Passwort im Store für spätere Verwendung
-        if sudo_password and not sudo_password_store.get("password"):
-            sudo_password_store["password"] = sudo_password
+        if sudo_password and not sudo_store.has_password():
+            sudo_store.store_password(sudo_password)
             logger.info("💾 Sudo-Passwort im Store gespeichert")
         
         logger.info("🔥 Firewall-Aktivierung gestartet")
@@ -4761,7 +4835,7 @@ async def install_firewall(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         # Prüfe ob sudo-Passwort vorhanden ist
         if not sudo_password:
@@ -4815,7 +4889,7 @@ async def install_firewall(request: Request):
 async def get_firewall_rules():
     """Firewall-Regeln abrufen"""
     try:
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         
         # UFW Status mit Regeln abrufen
         ufw_path = "/usr/sbin/ufw"
@@ -4854,7 +4928,7 @@ async def add_firewall_rule(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         rule = data.get("rule", "").strip()
         
         if not rule:
@@ -4921,7 +4995,7 @@ async def delete_firewall_rule(rule_number: int, request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
@@ -4977,12 +5051,12 @@ async def configure_security(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         config = data.get("config", {})
         
         # Speichere sudo-Passwort im Store für spätere Verwendung
-        if data.get("sudo_password") and not sudo_password_store.get("password"):
-            sudo_password_store["password"] = data.get("sudo_password")
+        if data.get("sudo_password") and not sudo_store.has_password():
+            sudo_store.store_password(data.get("sudo_password") or "")
             logger.info("💾 Sudo-Passwort im Store gespeichert (via security/configure)")
         
         # Prüfe ob sudo-Passwort vorhanden ist
@@ -5551,7 +5625,7 @@ async def configure_webserver(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         # Prüfe ob sudo-Passwort vorhanden ist
         if not sudo_password:
@@ -5567,8 +5641,8 @@ async def configure_webserver(request: Request):
                 )
         
         # Speichere sudo-Passwort im Store
-        if sudo_password and not sudo_password_store.get("password"):
-            sudo_password_store["password"] = sudo_password
+        if sudo_password and not sudo_store.has_password():
+            sudo_store.store_password(sudo_password)
             logger.info("💾 Sudo-Passwort im Store gespeichert (Webserver-Config)")
         
         results = []
@@ -5739,7 +5813,7 @@ async def configure_nas(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
@@ -5753,8 +5827,8 @@ async def configure_nas(request: Request):
                     }
                 )
         
-        if sudo_password and not sudo_password_store.get("password"):
-            sudo_password_store["password"] = sudo_password
+        if sudo_password and not sudo_store.has_password():
+            sudo_store.store_password(sudo_password)
         
         results = []
         nas_type = data.get("nas_type", "samba")
@@ -5854,7 +5928,7 @@ async def configure_nas(request: Request):
 
 def _require_sudo_for_nas(data: dict) -> tuple:
     """Liefert (sudo_password, error_response). error_response ist None wenn ok."""
-    sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+    sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
     if not sudo_password:
         test = run_command("sudo -n true", sudo=False)
         if not test["success"]:
@@ -5863,8 +5937,8 @@ def _require_sudo_for_nas(data: dict) -> tuple:
                 "message": "Sudo-Passwort erforderlich",
                 "requires_sudo_password": True,
             }
-    if sudo_password and not sudo_password_store.get("password"):
-        sudo_password_store["password"] = sudo_password
+    if sudo_password and not sudo_store.get_password():
+        sudo_store.store_password(sudo_password)
     return sudo_password, None
 
 
@@ -6102,7 +6176,7 @@ async def homeautomation_uninstall(request: Request):
         except Exception:
             data = {}
         component = (data.get("component") or "").strip().lower()
-        sudo_password = data.get("sudo_password") or sudo_password_store.get("password") or ""
+        sudo_password = data.get("sudo_password") or sudo_store.get_password() or ""
         if component not in ("homeassistant", "openhab", "nodered"):
             return JSONResponse(status_code=200, content={"status": "error", "message": "Ungültige Komponente."})
         if not sudo_password:
@@ -6135,7 +6209,7 @@ async def configure_homeautomation(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
@@ -6149,8 +6223,8 @@ async def configure_homeautomation(request: Request):
                     }
                 )
         
-        if sudo_password and not sudo_password_store.get("password"):
-            sudo_password_store["password"] = sudo_password
+        if sudo_password and not sudo_store.has_password():
+            sudo_store.store_password(sudo_password)
         
         results = []
         automation_type = data.get("automation_type", "homeassistant")
@@ -6258,7 +6332,7 @@ async def musicbox_mopidy_diagnose():
             "mopidy_log_tail": None,
             "sudo_used": False,
         }
-        sudo_password = sudo_password_store.get("password") or ""
+        sudo_password = sudo_store.get_password() or ""
         if sudo_password:
             out["sudo_used"] = True
             out["iris_visible_to_mopidy"] = run_command(
@@ -6304,7 +6378,7 @@ async def configure_musicbox(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
@@ -6318,8 +6392,8 @@ async def configure_musicbox(request: Request):
                     }
                 )
         
-        if sudo_password and not sudo_password_store.get("password"):
-            sudo_password_store["password"] = sudo_password
+        if sudo_password and not sudo_store.has_password():
+            sudo_store.store_password(sudo_password)
         
         results = []
         music_type = data.get("music_type", "mopidy")
@@ -6527,7 +6601,7 @@ async def start_installation(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         # Prüfe ob sudo-Passwort vorhanden ist
         if not sudo_password:
@@ -6542,8 +6616,8 @@ async def start_installation(request: Request):
                     }
                 )
         
-        if sudo_password and not sudo_password_store.get("password"):
-            sudo_password_store["password"] = sudo_password
+        if sudo_password and not sudo_store.has_password():
+            sudo_store.store_password(sudo_password)
         
         security_config = data.get("security", {})
         users_config = data.get("users", [])
@@ -6767,7 +6841,7 @@ async def configure_learning(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
@@ -6922,7 +6996,7 @@ async def configure_monitoring(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
@@ -7064,7 +7138,7 @@ async def monitoring_uninstall(request: Request):
         except Exception:
             data = {}
         component = (data.get("component") or "").strip().lower()
-        sudo_password = data.get("sudo_password") or sudo_password_store.get("password") or ""
+        sudo_password = data.get("sudo_password") or sudo_store.get_password() or ""
         if component not in ("prometheus", "grafana", "node_exporter"):
             return JSONResponse(
                 status_code=200,
@@ -8035,7 +8109,7 @@ async def backup_set_settings(request: Request):
     except Exception:
         data = {}
 
-    sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+    sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
     if not sudo_password:
         return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
 
@@ -8101,7 +8175,7 @@ async def backup_run_now(request: Request):
     except Exception:
         data = {}
 
-    sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+    sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
     if not sudo_password:
         return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
 
@@ -8765,7 +8839,7 @@ async def backup_target_check(backup_dir: str, create: int = 0):
             return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"})
 
         p = Path(backup_dir)
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         created = False
 
         if create and not p.exists():
@@ -9233,15 +9307,15 @@ async def clone_disk_info(request: Request, refresh: int = 0):
         global _clone_disk_info_cache_ts
         if refresh:
             _clone_disk_info_cache_ts = 0  # Cache invalidieren
-        sudo_password = sudo_password_store.get("password", "") or ""
+        sudo_password = (sudo_store.get_password() or "") or ""
         if request.method == "POST":
             try:
                 body = await request.json()
                 pw = (body.get("sudo_password") or "").strip()
                 if pw:
                     sudo_password = pw
-                    if not sudo_password_store.get("password"):
-                        sudo_password_store["password"] = pw
+                    if not sudo_store.get_password():
+                        sudo_store.store_password(pw)
             except Exception:
                 pass
         info = _clone_disk_info(sudo_password=sudo_password)
@@ -9391,7 +9465,7 @@ async def clone_disk(request: Request):
         except Exception:
             data = {}
 
-        sudo_password = (data.get("sudo_password") or "").strip() or sudo_password_store.get("password", "")
+        sudo_password = (data.get("sudo_password") or "").strip() or (sudo_store.get_password() or "")
         target_device = (data.get("target_device") or "").strip()
 
         if not target_device or not target_device.startswith("/dev/"):
@@ -9509,7 +9583,7 @@ async def backup_usb_mount(request: Request):
             data = {}
 
         device = (data.get("device") or "").strip()
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
 
         if not device or not device.startswith("/dev/"):
             return JSONResponse(status_code=200, content={"status": "error", "message": "device (/dev/...) erforderlich"})
@@ -9609,7 +9683,7 @@ async def backup_usb_prepare(request: Request):
         device = (data.get("device") or "").strip()
         do_format = bool(data.get("format", False))
         new_label_raw = data.get("label", "")
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
 
         if not sudo_password:
             return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
@@ -9804,7 +9878,7 @@ async def backup_usb_eject(request: Request):
         data = await request.json()
         mountpoint = (data.get("mountpoint") or "").strip()
         device = (data.get("device") or "").strip()
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
 
         if not sudo_password:
             return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
@@ -9888,7 +9962,7 @@ async def create_backup(request: Request):
         except Exception:
             data = {}
 
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         backup_type = (data.get("type", "full") or "full").strip()
         run_async = bool(data.get("async", False))
         target = (data.get("target") or "local").strip()  # local | cloud_only | local_and_cloud
@@ -10442,7 +10516,7 @@ async def delete_backup(request: Request):
         data = {}
 
     backup_file = (data.get("backup_file") or "").strip()
-    sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+    sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
 
     # Erlaube auch verschlüsselte Backups (.tar.gz.gpg, .tar.gz.enc)
     if not backup_file or not (backup_file.endswith(".tar.gz") or backup_file.endswith(".tar.gz.gpg") or backup_file.endswith(".tar.gz.enc")):
@@ -10523,7 +10597,7 @@ async def restore_backup(request: Request):
         except:
             data = {}
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         backup_file = data.get("backup_file", "")
         
         if not backup_file:
@@ -10605,7 +10679,7 @@ async def get_raspberry_pi_config():
     try:
         module = _get_pi_config_module()
         # Versuche mit gespeichertem sudo_password
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         result = module.read_config(sudo_password=sudo_password)
         # Wenn Fehler und requires_sudo_password, dann Flag setzen
         if result.get("status") == "error":
@@ -10644,7 +10718,7 @@ async def set_raspberry_pi_config(request: Request):
     try:
         data = await request.json()
         config = data.get("config", {})
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
 
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
@@ -10752,9 +10826,9 @@ control_center_module = None
 
 @app.get("/api/control-center/wifi/networks")
 async def get_wifi_networks():
-    """Listet verfügbare WiFi-Netzwerke auf (verwendet sudo_password_store)."""
+    """Listet verfügbare WiFi-Netzwerke auf (verwendet sudo_store)."""
     try:
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.get_wifi_networks(sudo_password)
     except Exception as e:
@@ -10774,14 +10848,14 @@ async def wifi_scan_post(request: Request):
                 pass
         sudo_password = (data.get("sudo_password") or "").strip()
         if not sudo_password:
-            sudo_password = sudo_password_store.get("password", "")
+            sudo_password = (sudo_store.get_password() or "")
         if not sudo_password:
             return JSONResponse(
                 status_code=200,
                 content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
             )
-        if sudo_password and not sudo_password_store.get("password"):
-            sudo_password_store["password"] = sudo_password
+        if sudo_password and not sudo_store.has_password():
+            sudo_store.store_password(sudo_password)
         module = _get_control_center_module()
         return module.get_wifi_networks(sudo_password)
     except Exception as e:
@@ -10793,7 +10867,7 @@ async def wifi_scan_post(request: Request):
 async def get_wifi_config():
     """Liest aktuelle WiFi-Konfiguration"""
     try:
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.get_wifi_config(sudo_password)
     except Exception as e:
@@ -10805,7 +10879,7 @@ async def get_wifi_config():
 async def get_wifi_status():
     """Aktuell verbundenes WLAN, Interface, Signal, WLAN aktiviert (rfkill)."""
     try:
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.get_wifi_status(sudo_password)
     except Exception as e:
@@ -10818,7 +10892,7 @@ async def wifi_disconnect(request: Request):
     """WLAN-Verbindung trennen."""
     try:
         data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.wifi_disconnect(sudo_password)
     except Exception as e:
@@ -10832,7 +10906,7 @@ async def wifi_set_enabled(request: Request):
     try:
         data = await request.json()
         enabled = data.get("enabled", True)
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.wifi_set_enabled(bool(enabled), sudo_password)
     except Exception as e:
@@ -10852,7 +10926,7 @@ async def add_wifi_network(request: Request):
         if not ssid:
             return JSONResponse(status_code=200, content={"status": "error", "message": "SSID erforderlich"})
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.add_wifi_network(ssid, password, security, sudo_password)
     except Exception as e:
@@ -10868,7 +10942,7 @@ async def wifi_connect(request: Request):
         ssid = (data.get("ssid") or "").strip()
         if not ssid:
             return JSONResponse(status_code=200, content={"status": "error", "message": "SSID erforderlich"})
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.wifi_connect(ssid, sudo_password)
     except Exception as e:
@@ -10894,7 +10968,7 @@ async def set_ssh_enabled(request: Request):
         data = await request.json()
         enabled = data.get("enabled", False)
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.set_ssh_enabled(enabled, sudo_password)
     except Exception as e:
@@ -10907,7 +10981,7 @@ async def start_ssh(request: Request):
     """SSH-Dienst starten"""
     try:
         data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.start_ssh_service(sudo_password)
     except Exception as e:
@@ -10934,7 +11008,7 @@ async def set_vnc_enabled(request: Request):
         enabled = data.get("enabled", False)
         password = data.get("password", "")
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.set_vnc_enabled(enabled, password, sudo_password)
     except Exception as e:
@@ -10947,7 +11021,7 @@ async def start_vnc(request: Request):
     """VNC-Dienst starten"""
     try:
         data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.start_vnc_service(sudo_password)
     except Exception as e:
@@ -10975,7 +11049,7 @@ async def set_keyboard_layout(request: Request):
         variant = data.get("variant", "")
         options = data.get("options", "")
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.set_keyboard_layout(layout, variant, options, sudo_password)
     except Exception as e:
@@ -11002,7 +11076,7 @@ async def set_locale(request: Request):
         locale = data.get("locale", "de_DE.UTF-8")
         timezone = data.get("timezone", "")
         
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.set_locale(locale, timezone, sudo_password)
     except Exception as e:
@@ -11042,7 +11116,7 @@ async def set_desktop_boot_target(request: Request):
             data = {}
         data = data or {}
         target = data.get("target", "").strip()
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         if not sudo_password:
             return JSONResponse(
                 status_code=200,
@@ -11101,7 +11175,7 @@ async def set_display_settings(request: Request):
 async def get_display_telemetry_settings():
     """Liest OLED/Display-Telemetrieeinstellungen inkl. Runner-Status. Nutzt ggf. Sudo-Passwort für I2C-OLED-Erkennung."""
     try:
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.get_display_telemetry_settings(sudo_password=sudo_password)
     except Exception as e:
@@ -11126,7 +11200,7 @@ async def set_display_telemetry_settings(request: Request):
             enabled = bool(enabled)
         if autostart is not None:
             autostart = bool(autostart)
-        sudo_password = (data.get("sudo_password") or "").strip() or sudo_password_store.get("password", "")
+        sudo_password = (data.get("sudo_password") or "").strip() or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.set_display_telemetry_settings(
             target=target,
@@ -11167,7 +11241,7 @@ async def set_display_telemetry_runner(request: Request):
 async def get_printers():
     """Listet Drucker auf"""
     try:
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.get_printers(sudo_password)
     except Exception as e:
@@ -11179,7 +11253,7 @@ async def get_printers():
 async def get_scanners():
     """Listet SANE-Scanner auf"""
     try:
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.get_scanners(sudo_password)
     except Exception as e:
@@ -11191,7 +11265,7 @@ async def get_scanners():
 async def get_performance():
     """Performance: CPU-Governor, GPU/Overclocking (config.txt), Swap."""
     try:
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.get_performance(sudo_password)
     except Exception as e:
@@ -11208,7 +11282,7 @@ async def set_performance(request: Request):
         except Exception:
             data = {}
         data = data or {}
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         if not sudo_password:
             sudo_ok = run_command("sudo -n true", sudo=False)
             if not sudo_ok.get("success"):
@@ -11243,7 +11317,7 @@ async def reboot_system(request: Request):
             data = await request.json()
         except:
             data = {}
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         if not sudo_password:
             return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
         
@@ -11265,7 +11339,7 @@ async def reset_raspberry_pi_config(request: Request):
             data = await request.json()
         except:
             data = {}
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         if not sudo_password:
             return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
         
@@ -11302,7 +11376,7 @@ async def stop_packagekit(request: Request):
     """Stoppt PackageKit manuell, um apt-get-Konflikte zu vermeiden."""
     try:
         data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         _ensure_packagekit_stopped(sudo_password)
         return {"status": "success", "message": "PackageKit gestoppt (falls aktiv)"}
     except Exception as e:
@@ -11314,7 +11388,7 @@ async def stop_packagekit(request: Request):
 async def get_bluetooth_status():
     """Bluetooth-Status: aktiviert/deaktiviert, verbundene Geräte."""
     try:
-        sudo_password = sudo_password_store.get("password", "")
+        sudo_password = (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.get_bluetooth_status(sudo_password)
     except Exception as e:
@@ -11327,7 +11401,7 @@ async def bluetooth_scan(request: Request):
     """Bluetooth-Geräte scannen."""
     try:
         data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.bluetooth_scan(sudo_password)
     except Exception as e:
@@ -11341,7 +11415,7 @@ async def bluetooth_set_enabled(request: Request):
     try:
         data = await request.json()
         enabled = data.get("enabled", True)
-        sudo_password = data.get("sudo_password", "") or sudo_password_store.get("password", "")
+        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         module = _get_control_center_module()
         return module.bluetooth_set_enabled(bool(enabled), sudo_password)
     except Exception as e:

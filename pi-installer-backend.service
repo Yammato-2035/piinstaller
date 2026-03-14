@@ -19,6 +19,12 @@ RestartSec=5
 StandardOutput=journal
 StandardError=journal
 Environment=PI_INSTALLER_DEV=0
+# Härtung: keine Schreibrechte auf System; kein ProtectHome (INSTALL_DIR kann unter /home liegen)
+ProtectSystem=strict
+PrivateTmp=yes
+NoNewPrivileges=yes
+MemoryMax=512M
+LimitNOFILE=4096
 
 [Install]
 WantedBy=multi-user.target

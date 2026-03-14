@@ -126,6 +126,8 @@ http://localhost:3001
 
 ## 📚 Dokumentation
 
+- **[SECURITY.md](./SECURITY.md)** - Sicherheitshinweise, Netzwerk (LAN/Internet), VPN-Empfehlung, CORS
+- **[NETWORK_ACCESS.md](./docs/user/NETWORK_ACCESS.md)** - Zugriff im LAN, über VPN, aus dem Internet (nur für erfahrene Nutzer)
 - **[INSTALL.md](./docs/user/INSTALL.md)** - Detaillierte Installationsanleitung (inkl. Troubleshooting Mixer)
 - **[ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md)** - System-Architektur & Design
 - **[FEATURES.md](./docs/architecture/FEATURES.md)** - Alle Features & Roadmap
@@ -174,8 +176,8 @@ PI-Installer/
 │   └── package.json        # Dependencies
 ├── docs/                   # Architektur-, Benutzer- und Entwicklerdokumentation
 ├── scripts/                # Installations- und Startskripte
-├── config/                 # z. B. version.json
-└── VERSION                 # Projektversion (siehe docs/developer/VERSIONING.md)
+├── config/version.json     # Einzige Versionsquelle (X.Y.Z.W); sync-version.js schreibt daraus VERSION, package.json, Tauri
+└── VERSION                 # Wird aus config/version.json geschrieben (Abwärtskompatibilität)
 ```
 
 ## 🔧 API-Übersicht
@@ -356,7 +358,7 @@ MIT License - Siehe [LICENSE](./LICENSE) für Details
 
 ## 🌟 Status
 
-- **Version:** 1.3.0.1 (siehe [VERSION](./VERSION) und [VERSIONING.md](./VERSIONING.md))
+- **Version:** siehe [config/version.json](./config/version.json) (eine Quelle; [VERSIONING.md](./docs/developer/VERSIONING.md))
 - **Status:** Production Ready
 - **Letztes Update:** Februar 2026
 - **Support bis:** Januar 2027
