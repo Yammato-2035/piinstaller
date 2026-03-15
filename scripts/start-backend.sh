@@ -8,6 +8,13 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BACKEND_DIR="$REPO_ROOT/backend"
 cd "$BACKEND_DIR"
 
+# Optionale .env aus Repo-Root (z. B. APP_EDITION=repo für Entwicklung)
+if [ -f "$REPO_ROOT/.env" ]; then
+  set -a
+  . "$REPO_ROOT/.env"
+  set +a
+fi
+
 echo "🚀 Starte PI-Installer Backend..."
 echo "📁 Arbeitsverzeichnis: $BACKEND_DIR"
 
@@ -50,11 +57,19 @@ if command -v ss >/dev/null 2>&1; then
 fi
 
 # Backend starten – immer mit Venv-Python, genau ein Worker (wichtig für Sudo-Passwort-Speicherung)
-echo "✅ Starte Backend auf http://localhost:$PORT"
-echo "📝 API Docs: http://localhost:$PORT/docs"
+# Standard: nur localhost (127.0.0.1). LAN-Zugriff nur wenn ALLOW_REMOTE_ACCESS=true gesetzt.
+BIND_HOST="${ALLOW_REMOTE_ACCESS:-false}"
+if [ "$BIND_HOST" = "true" ] || [ "$BIND_HOST" = "1" ]; then
+  BIND_HOST="0.0.0.0"
+  echo "✅ Starte Backend auf http://0.0.0.0:$PORT (LAN-Zugriff aktiv)"
+else
+  BIND_HOST="127.0.0.1"
+  echo "✅ Starte Backend auf http://127.0.0.1:$PORT (nur localhost)"
+fi
+echo "📝 API Docs: http://127.0.0.1:$PORT/docs"
 echo ""
 RELOAD_ARGS=""
 if [ "$PI_INSTALLER_DEV" = "1" ]; then
   RELOAD_ARGS="--reload --timeout-keep-alive 1"
 fi
-exec "$PYTHON" -m uvicorn app:app --host 0.0.0.0 --port "$PORT" --workers 1 $RELOAD_ARGS
+exec "$PYTHON" -m uvicorn app:app --host "$BIND_HOST" --port "$PORT" --workers 1 $RELOAD_ARGS

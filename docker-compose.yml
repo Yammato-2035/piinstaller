@@ -4,8 +4,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: pi-installer-backend
-    ports:
-      - "8000:8000"
+    # Backend intentionally not exposed to external network for security.
+    # Only frontend (same network) can reach backend. Use "ports: - 8000:8000" for host access.
+    expose:
+      - "8000"
     volumes:
       - ./backend:/app
     environment:
@@ -24,6 +26,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
+      # Browser (host) reaches backend; if backend only has "expose", add ports: - "8000:8000" for host access
       - VITE_API_URL=http://localhost:8000
     networks:
       - pi-network

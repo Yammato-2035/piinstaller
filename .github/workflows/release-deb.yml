@@ -1,0 +1,56 @@
+# Baut .deb bei Release und hängt es an den GitHub-Release an (inkl. SHA256-Hashes).
+# Auslösung: Release auf GitHub erstellen (Tag z.B. v1.3.8.2). Das .deb und SHA256SUMS werden angehängt.
+name: Release .deb
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Version aus Tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          V="${TAG#v}"
+          echo "version=$V" >> $GITHUB_OUTPUT
+          echo "Version: $V"
+
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y debhelper rsync
+
+      - name: Sync debian/changelog version
+        run: |
+          V="${{ steps.version.outputs.version }}"
+          [ -z "$V" ] && exit 1
+          { echo "pi-installer ($V-1) unstable; urgency=medium"; echo ""; echo "  * Release $V"; echo ""; echo " -- PI-Installer Team <https://github.com/Yammato-2035/piinstaller>  $(date -R)"; echo ""; cat debian/changelog; } > debian/changelog.tmp && mv debian/changelog.tmp debian/changelog
+
+      - name: Build .deb
+        run: |
+          dpkg-buildpackage -us -uc -b -tc
+          DEB=$(ls -t ../pi-installer_*_all.deb 2>/dev/null | head -1)
+          echo "deb_path=$DEB" >> $GITHUB_OUTPUT
+          cp "$DEB" .
+
+      - name: Generate SHA256SUMS
+        run: |
+          DEB=$(ls -t pi-installer_*_all.deb 2>/dev/null | head -1)
+          sha256sum "$DEB" > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            pi-installer_*_all.deb
+            SHA256SUMS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

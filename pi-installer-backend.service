@@ -19,12 +19,25 @@ RestartSec=5
 StandardOutput=journal
 StandardError=journal
 Environment=PI_INSTALLER_DEV=0
-# Härtung: keine Schreibrechte auf System; kein ProtectHome (INSTALL_DIR kann unter /home liegen)
+# Härtung (bestehende Optionen beibehalten + erweitert)
 ProtectSystem=strict
+ProtectHome=yes
 PrivateTmp=yes
+PrivateDevices=yes
 NoNewPrivileges=yes
 MemoryMax=512M
 LimitNOFILE=4096
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelLogs=yes
+LockPersonality=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+ReadWritePaths={{INSTALL_DIR}} /var/lib/pi-installer /tmp
 
 [Install]
 WantedBy=multi-user.target

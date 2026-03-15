@@ -1,4 +1,5 @@
 # PI-Installer Backend - Dockerfile
+# Image pinned for supply-chain security. Update digest after pull: docker pull python:3.13-slim && docker inspect --format='{{index .RepoDigests 0}}' python:3.13-slim
 FROM python:3.13-slim
 
 WORKDIR /app

@@ -1,7 +1,22 @@
 # Changelog
 
-Alle wichtigen ï¿½nderungen am PI-Installer werden hier dokumentiert.  
-Details und Versionsschema: [VERSIONING.md](./VERSIONING.md).
+Alle wichtigen Änderungen am PI-Installer werden hier dokumentiert.  
+Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERSIONING.md).
+
+---
+
+## [1.3.8.1] - 2026-03-12
+
+### Added
+- **Sicherheit:** CORS auf konfigurierbare Origins beschränkt (Standard: localhost; LAN über `PI_INSTALLER_CORS_ORIGINS`).
+- **Sicherheit:** Sudo-Passwort nur noch verschlüsselt (Fernet) im Speicher, TTL 30 Min; Key in Installationsverzeichnis oder `~/.config/pi-installer/`.
+- **Sicherheit:** Rate-Limiting auf `/api/users/sudo-password` (10/Min); Security-Header (X-Content-Type-Options, X-Frame-Options, Referrer-Policy).
+- **Sicherheit:** Systemd-Services gehärtet (ProtectSystem=strict, PrivateTmp, NoNewPrivileges, MemoryMax, LimitNOFILE).
+- **Doku:** SECURITY.md (Netzwerk LAN/Internet, VPN-Empfehlung, Firewall); docs/user/NETWORK_ACCESS.md.
+- **Version:** Einzige Quelle `config/version.json`; sync-version.js schreibt auch VERSION, package.json, Tauri.
+
+### Changed
+- Versionsnummer auf 1.3.8.1 angehoben (Patch: Security & Repo-Optimierungen).
 
 ---
 

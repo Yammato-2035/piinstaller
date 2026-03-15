@@ -24,6 +24,20 @@ import signal
 import xml.etree.ElementTree as ET
 from pydantic import BaseModel
 
+# Update-Center: Kompatibilitäts-Gate für DEB-Build
+try:
+    from update_center import (
+        run_compatibility_checks,
+        append_history,
+        get_history as get_update_center_history,
+        get_repo_root as get_update_center_repo_root,
+    )
+except ImportError:
+    run_compatibility_checks = None
+    append_history = None
+    get_update_center_history = None
+    get_update_center_repo_root = None
+
 # Remote-Companion: Settings + DB (Phase 1)
 try:
     from core.settings import get_remote_defaults
@@ -277,6 +291,19 @@ CONFIG_STATE = {"loaded": False, "first_run": False, "matched_device": False, "d
 APP_SETTINGS = _default_settings()
 
 
+def get_app_edition() -> str:
+    """
+    Zentrale Modusdefinition: repo | release.
+    REPO = Entwickler-Build mit Update-Center, DEB-Build, Kompatibilitätsprüfung.
+    RELEASE = Endnutzer-Build ohne Experten-/Developer-Funktionen.
+    Einzige Quelle: Umgebungsvariable APP_EDITION (Default: release).
+    """
+    raw = (os.environ.get("APP_EDITION") or "").strip().lower()
+    if raw in ("repo", "release"):
+        return raw
+    return "release"
+
+
 def _user_profile_path() -> Path:
     """
     Pfad für das Benutzerprofil (Erfahrungslevel, Präferenzen).
@@ -324,14 +351,13 @@ def _curl_put_with_progress(
     timeout_sec: int,
 ) -> tuple[bool, Optional[int], Optional[str]]:
     """PUT mit Fortschritts-Updates. Bei Timeout: 1 Min warten, dann PROPFIND; keine Fehlermeldung vorher."""
-    cmd = (
-        f"curl -o /dev/null -w '%{{http_code}}' "
-        f"-u {shlex.quote(user)}:{shlex.quote(pw)} -H 'Overwrite: T' -T {shlex.quote(local_file)} {shlex.quote(remote)}"
-    )
     try:
         proc = subprocess.Popen(
-            cmd,
-            shell=True,
+            [
+                "curl", "-o", "/dev/null", "-w", "%{http_code}",
+                "-u", f"{user}:{pw}", "-H", "Overwrite: T",
+                "-T", local_file, remote,
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -869,6 +895,7 @@ async def init_status():
         "device_id": CONFIG_STATE.get("device_id"),
         "first_run": bool(CONFIG_STATE.get("first_run")),
         "matched_device": bool(CONFIG_STATE.get("matched_device")),
+        "app_edition": get_app_edition(),
     }
 
 
@@ -969,8 +996,44 @@ def _get_cors_origins() -> list[str]:
     return default + [o.strip() for o in extra.split(",") if o.strip()]
 
 
+def _get_allowed_hosts() -> list[str]:
+    """Erlaubte Host-Header. Bei ALLOW_REMOTE_ACCESS=true können weitere Hosts über PI_INSTALLER_ALLOWED_HOSTS ergänzt werden."""
+    default = ["localhost", "127.0.0.1", "pi-installer.local"]
+    if os.environ.get("ALLOW_REMOTE_ACCESS", "").strip().lower() in ("true", "1", "yes"):
+        extra = os.environ.get("PI_INSTALLER_ALLOWED_HOSTS", "").strip()
+        if extra:
+            return default + [h.strip() for h in extra.split(",") if h.strip()]
+    return default
+
+
+class TrustedHostMiddleware:
+    """Lehnt Anfragen mit unbekanntem Host-Header ab (Host-Header-Spoofing)."""
+
+    def __init__(self, app, allowed_hosts: list[str]):
+        self.app = app
+        self.allowed = set(h.lower().split(":")[0] for h in allowed_hosts)
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        host = None
+        for name, value in scope.get("headers", []):
+            if name == b"host":
+                host = value.decode("utf-8", errors="replace").split(":")[0].strip().lower()
+                break
+        if host and host not in self.allowed:
+            await send({
+                "type": "http.response.start",
+                "status": 400,
+                "headers": [(b"content-type", b"text/plain; charset=utf-8")],
+            })
+            await send({"type": "http.response.body", "body": b"Invalid Host header"})
+            return
+        await self.app(scope, receive, send)
+
+
 class SecurityHeadersMiddleware:
-    """Setzt Security-Header auf alle Antworten (HSTS, X-Frame-Options, etc.)."""
+    """Setzt Security-Header auf alle Antworten (CSP, HSTS nur bei HTTPS, Permissions-Policy, etc.)."""
 
     def __init__(self, app):
         self.app = app
@@ -978,6 +1041,7 @@ class SecurityHeadersMiddleware:
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
+        scheme = scope.get("scheme", "http")
 
         async def send_with_headers(message):
             if message.get("type") == "http.response.start":
@@ -985,13 +1049,18 @@ class SecurityHeadersMiddleware:
                 headers.append((b"x-content-type-options", b"nosniff"))
                 headers.append((b"x-frame-options", b"DENY"))
                 headers.append((b"referrer-policy", b"strict-origin-when-cross-origin"))
+                headers.append((b"content-security-policy", b"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'"))
+                headers.append((b"permissions-policy", b"geolocation=(), microphone=(), camera=()"))
+                if scheme == "https":
+                    headers.append((b"strict-transport-security", b"max-age=31536000; includeSubDomains; preload"))
                 message = {**message, "headers": headers}
             await send(message)
 
         await self.app(scope, receive, send_with_headers)
 
 
-# Security-Header zuerst (äußerste Middleware)
+# TrustedHost zuerst (äußerste Middleware), dann Security-Header
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=_get_allowed_hosts())
 app.add_middleware(SecurityHeadersMiddleware)
 # CORS: nur konfigurierte Origins (LAN-Zugriff über PI_INSTALLER_CORS_ORIGINS)
 app.add_middleware(
@@ -2010,6 +2079,149 @@ async def self_update_install(request: Request):
         )
 
 
+# ---------- Update-Center (REPO-only: Experten/Developer, Kompatibilitäts-Gate, DEB-Build) ----------
+# Diese Endpunkte werden nur bei APP_EDITION=repo registriert. In RELEASE sind sie nicht vorhanden.
+
+if get_app_edition() == "repo":
+
+    @app.get("/api/update-center/status")
+    async def update_center_status():
+        """[repo-only] Gesamtstatus: Self-Update-Status + letzter Kompatibilitäts-/Build-Status."""
+        if get_update_center_repo_root is None:
+            return JSONResponse(status_code=503, content={"status": "error", "message": "Update-Center nicht verfügbar."})
+        repo_root = get_update_center_repo_root()
+        source_version = get_pi_installer_version()
+        OPT = Path("/opt/pi-installer")
+        installed_version = None
+        if OPT.exists():
+            vf = OPT / "config" / "version.json"
+            if vf.exists():
+                try:
+                    data = json.loads(vf.read_text(encoding="utf-8"))
+                    installed_version = data.get("version")
+                except Exception:
+                    pass
+        last_check = None
+        last_build = None
+        if get_update_center_history:
+            for e in get_update_center_history():
+                if e.get("type") == "check" and last_check is None:
+                    last_check = e
+                if e.get("type") == "build" and last_build is None:
+                    last_build = e
+                if last_check and last_build:
+                    break
+        return {
+            "status": "success",
+            "source_version": source_version,
+            "installed_version": installed_version,
+            "repo_root": str(repo_root),
+            "last_compatibility_check": last_check,
+            "last_build": last_build,
+        }
+
+    @app.post("/api/update-center/check-compatibility")
+    async def update_center_check_compatibility():
+        """[repo-only] Führt Kompatibilitätsprüfung aus (kein Build). Speichert Ergebnis in History."""
+        if run_compatibility_checks is None or append_history is None:
+            return JSONResponse(status_code=503, content={"status": "error", "message": "Update-Center nicht verfügbar."})
+        result = run_compatibility_checks()
+        entry = {
+            "type": "check",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "ready_for_deb_release": result.get("ready_for_deb_release", False),
+            "checks_passed": result.get("checks_passed", False),
+            "blockers": result.get("blockers", []),
+            "warnings": result.get("warnings", []),
+        }
+        append_history(entry)
+        return {"status": "success", **result}
+
+    @app.get("/api/update-center/release-readiness")
+    async def update_center_release_readiness():
+        """[repo-only] Aggregierter Freigabestatus."""
+        if run_compatibility_checks is None:
+            return JSONResponse(status_code=503, content={"status": "error", "message": "Update-Center nicht verfügbar."})
+        result = run_compatibility_checks()
+        return {
+            "status": "success",
+            "ready_for_deb_release": result.get("ready_for_deb_release", False),
+            "blockers": result.get("blockers", []),
+            "warnings": result.get("warnings", []),
+            "checks_passed": result.get("checks_passed", False),
+        }
+
+    @app.post("/api/update-center/build-deb")
+    async def update_center_build_deb():
+        """[repo-only] Baut DEB nur wenn keine roten Blocker (ready_for_deb_release)."""
+        if run_compatibility_checks is None or get_update_center_repo_root is None or append_history is None:
+            return JSONResponse(status_code=503, content={"status": "error", "message": "Update-Center nicht verfügbar."})
+        result = run_compatibility_checks()
+        if not result.get("ready_for_deb_release", False):
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "status": "error",
+                    "message": "DEB-Build gesperrt: Kompatibilitätsprüfung nicht bestanden. Bitte zuerst Kompatibilität prüfen und Blocker beheben.",
+                    "blockers": result.get("blockers", []),
+                    "ready_for_deb_release": False,
+                },
+            )
+        repo_root = get_update_center_repo_root()
+        build_script = repo_root / "scripts" / "build-deb.sh"
+        if not build_script.is_file():
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "message": "scripts/build-deb.sh nicht gefunden.", "ready_for_deb_release": False},
+            )
+        try:
+            proc = subprocess.run(
+                [str(build_script)],
+                cwd=str(repo_root),
+                capture_output=True,
+                text=True,
+                timeout=600,
+            )
+            stdout = (proc.stdout or "").strip()
+            stderr = (proc.stderr or "").strip()
+            entry = {
+                "type": "build",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "success": proc.returncode == 0,
+                "returncode": proc.returncode,
+            }
+            append_history(entry)
+            if proc.returncode != 0:
+                return JSONResponse(
+                    status_code=500,
+                    content={
+                        "status": "error",
+                        "message": "DEB-Build fehlgeschlagen.",
+                        "stdout": stdout,
+                        "stderr": stderr,
+                        "returncode": proc.returncode,
+                    },
+                )
+            return {
+                "status": "success",
+                "message": "DEB-Build abgeschlossen.",
+                "stdout": stdout,
+                "stderr": stderr,
+            }
+        except subprocess.TimeoutExpired:
+            return JSONResponse(status_code=500, content={"status": "error", "message": "DEB-Build Timeout (10 Min)."})
+        except Exception as e:
+            logger.exception("update-center build-deb")
+            return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+    @app.get("/api/update-center/history")
+    async def update_center_history():
+        """[repo-only] Letzte Prüf-/Build-Läufe."""
+        if get_update_center_history is None:
+            return JSONResponse(status_code=503, content={"status": "error", "message": "Update-Center nicht verfügbar."})
+        return {"status": "success", "entries": get_update_center_history()}
+
+
 # ---------- App Store (Transformationsplan: Katalog mit 7 Apps) ----------
 APPS_CATALOG = [
     {"id": "home-assistant", "name": "Home Assistant", "description": "Smart Home zentral steuern – Geräte, Automatisierungen, Dashboards.", "category": "Smart Home", "size": "~500 MB"},
@@ -2257,6 +2469,7 @@ def run_command(cmd, sudo=False, sudo_password=None, timeout: int = 10):
                     "returncode": process.returncode,
                 }
             else:
+                # SECURITY NOTE: shell invocation retained; cmd may contain shell syntax (&&, |, etc.)
                 cmd = f"sudo {cmd}"
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
         return {
@@ -2996,11 +3209,11 @@ def get_network_info():
     t0 = time.perf_counter()
     try:
         log.decision("source_filter", data={"source": "hostname -I", "filter": "reachable_lan_only", "exclude": "0.0.0.0,127.x,fe80"})
-        result = subprocess.run("hostname -I", shell=True, capture_output=True, text=True, timeout=5)
+        result = subprocess.run(["hostname", "-I"], capture_output=True, text=True, timeout=5)
         raw = (result.stdout or "").strip()
         candidates = [x for x in raw.split() if x] if raw else []
         ips = [x for x in candidates if _is_reachable_lan_ip(x)]
-        result = subprocess.run("hostname", shell=True, capture_output=True, text=True, timeout=5)
+        result = subprocess.run(["hostname"], capture_output=True, text=True, timeout=5)
         hostname = (result.stdout or "").strip() or "unknown"
         out = {"ips": ips, "hostname": hostname}
         log.apply_noop("get_network_info", data={"reason": "read_only_discovery"})
@@ -3458,10 +3671,9 @@ async def get_system_info(request: Request, light: bool = False):
         else:
             cpu_temp = get_cpu_temp()
             try:
-                import subprocess
-                temp_test = subprocess.run("cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null", shell=True, capture_output=True, text=True)
-                if temp_test.returncode == 0:
-                    temp_debug = int(temp_test.stdout.strip()) / 1000.0
+                temp_path = Path("/sys/class/thermal/thermal_zone0/temp")
+                if temp_path.exists():
+                    temp_debug = int(temp_path.read_text().strip()) / 1000.0
             except Exception:
                 pass
         fan_speed = None if light else get_fan_speed()
@@ -3534,6 +3746,7 @@ async def get_system_info(request: Request, light: bool = False):
             if resp.get("cpu", {}).get("count") is not None:
                 _cs["threads"] = _cs.get("threads") or resp["cpu"]["count"]
             resp["cpu_summary"] = _cs
+            resp["app_edition"] = get_app_edition()
             return resp
         resp["is_raspberry_pi"] = False
         resp["device_type"] = None
@@ -3645,6 +3858,7 @@ async def get_system_info(request: Request, light: bool = False):
         resp["network"] = _demo_network() if _is_demo_mode(request) else get_network_info()
         if _is_demo_mode(request):
             resp["is_raspberry_pi"] = True  # Für Screenshots: Pi-spezifische Seiten anzeigen
+        resp["app_edition"] = get_app_edition()
         return resp
     except Exception as e:
         return {"error": str(e)}
@@ -7701,6 +7915,7 @@ from pathlib import Path
 CFG = Path("/etc/pi-installer/backup.json")
 
 def run_cmd(cmd, shell=True):
+    # SECURITY NOTE: shell=True retained; callers may pass composite commands. Prefer list + shell=False where possible.
     return subprocess.run(cmd, shell=shell, capture_output=True, text=True)
 
 def human(n):

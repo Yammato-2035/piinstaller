@@ -1,16 +1,16 @@
 # PI-Installer Backend – Python 3.9+ (3.12 empfohlen)
-# Nur stabile Pre-Built Wheels, keine Rust-Dependencies.
+# Supply-chain: Version ranges limit drift. For reproducible builds use pip freeze or requirements-lock.txt.
 
 # Web Framework
-starlette>=0.27
-fastapi>=0.100
+starlette>=0.27,<0.28
+fastapi>=0.100,<0.101
 
 # ASGI Server
-uvicorn[standard]>=0.24
+uvicorn[standard]>=0.24,<0.25
 
 # Request handling
 python-multipart>=0.0.6
-httpx>=0.25,<0.28  # für FastAPI TestClient (Integrationstests; 0.28+ bricht sync ASGI)
+httpx>=0.25,<0.28  # FastAPI TestClient (0.28+ bricht sync ASGI)
 
 # Environment & Config
 python-dotenv>=1.0

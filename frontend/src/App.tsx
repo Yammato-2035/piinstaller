@@ -98,6 +98,8 @@ function App() {
   })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [experienceLevel, setExperienceLevel] = useState<'beginner' | 'advanced' | 'developer'>('beginner')
+  /** app_edition aus Backend (api/system-info): 'repo' = Expertenmodul sichtbar, 'release' = nur Benutzerfunktionen */
+  const appEdition = systemInfo?.app_edition === 'repo' ? 'repo' : 'release'
 
   const handleSudoPasswordSaved = useCallback(() => {
     setSudoPasswordReady(true)
@@ -200,6 +202,13 @@ function App() {
   useEffect(() => {
     fetchFreenoveDetection()
   }, [fetchFreenoveDetection])
+
+  // RELEASE: Experten-Seite pi-installer-update nicht routbar – auf Dashboard umleiten
+  useEffect(() => {
+    if (appEdition === 'release' && currentPage === 'pi-installer-update') {
+      setCurrentPage('dashboard')
+    }
+  }, [appEdition, currentPage, setCurrentPage])
 
   useEffect(() => {
     let cancelled = false
@@ -358,7 +367,16 @@ function App() {
       case 'app-store':
         return <AppStore freenoveDetected={freenoveDetected} setCurrentPage={handlePageChange} />
       case 'pi-installer-update':
-        return <PiInstallerUpdate />
+        return appEdition === 'repo' ? <PiInstallerUpdate /> : (
+          <Dashboard
+            systemInfo={systemInfo}
+            backendError={backendError}
+            backendErrorReason={backendErrorReason}
+            onRetryBackend={fetchSystemInfo}
+            setCurrentPage={handlePageChange}
+            experienceLevel={experienceLevel}
+          />
+        )
       case 'tft':
         return <TFTPage />
       case 'dsi-radio-settings':
@@ -431,7 +449,7 @@ function App() {
           </button>
           <span className="font-semibold text-slate-800 dark:text-white">{platform.appTitle}</span>
         </header>
-        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} experienceLevel={experienceLevel} />
+        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} experienceLevel={experienceLevel} appEdition={appEdition} />
       <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="p-4 sm:p-8 min-h-full">
           <AnimatePresence mode="wait" initial={false}>

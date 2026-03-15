@@ -1,6 +1,10 @@
 # PI-Installer - Raspberry Pi Konfigurations-Assistent 🥧
 
+[![CI](https://github.com/Yammato-2035/piinstaller/actions/workflows/ci.yml/badge.svg)](https://github.com/Yammato-2035/piinstaller/actions/workflows/ci.yml)
+
 Ein umfassendes, **benutzerfreundliches System** zur automatisierten Konfiguration und Härtung eines Raspberry Pi mit moderner Web-GUI. Von der Grundkonfiguration direkt zum produktiven System!
+
+**Neueste Version / Download:** [Releases](https://github.com/Yammato-2035/piinstaller/releases) · [CHANGELOG](CHANGELOG.md)
 
 **Neu ab 1.3.4.0:** Systemweite Installation gemäß Linux FHS (`/opt/pi-installer/`), globale Befehle verfügbar, frühe Dual Display X11-Konfiguration ohne mehrfache Umschaltungen.
 **Neu ab 1.3.1.0:** App Store mit 7 Apps, Erste-Schritte-Assistent, Dashboard „Dein Pi läuft!", Mobile-Navigation (Hamburger-Menü), kontextsensitive Hilfe, One-Click-Installer, Laufwerk klonen (Backup & Restore), DSI-Radio (Freenove TFT) mit Lautstärke- und Anzeige-Steuerung.
@@ -62,28 +66,101 @@ Ein umfassendes, **benutzerfreundliches System** zur automatisierten Konfigurati
 - 32GB+ Storage
 - Internetzugang
 
-## 🚀 Schnellstart
+## 🚀 Installation: Zwei Wege
 
-### One-Click Installation (empfohlen)
+**Hinweis:** Mind. 4 GB RAM, 32 GB SD-Karte empfohlen. Vor größeren Updates: Backup machen.
 
-Ein Befehl – Installation inkl. Python/Node-Prüfung, Backend/Frontend-Setup und systemd-Service:
+### Weg 1: Sicher & Manuell (empfohlen für Anfänger)
+
+Klarer Ablauf mit Prüfmöglichkeit – ideal auf jungfräulichem Raspberry Pi:
+
+1. **Raspberry Pi vorbereiten**
+   - [Raspberry Pi Imager](https://www.raspberrypi.com/software/) herunterladen.
+   - Raspberry Pi OS (64-bit, Lite oder mit Desktop) wählen, SD-Karte schreiben.
+   - Vor dem Schreiben: Einstellungen (Zahnrad) → SSH aktivieren, Benutzer/Passwort setzen.
+   - SD-Karte einlegen, Pi starten, ins Netzwerk einstecken.
+
+2. **Per SSH einloggen**
+   ```bash
+   ssh pi@raspberrypi.local
+   ```
+   (Ersetze `pi` durch deinen Benutzer, falls anders gesetzt.)
+
+3. **Repository klonen und Installer prüfen**
+   ```bash
+   git clone https://github.com/Yammato-2035/piinstaller.git ~/piinstaller
+   cd ~/piinstaller
+   less scripts/create_installer.sh
+   ```
+   Optional: Code durchlesen, dann Installation starten.
+
+4. **Installation starten**
+   ```bash
+   bash scripts/create_installer.sh
+   ```
+
+5. **Im Browser öffnen**
+   - Auf einem Gerät im gleichen Netz: `http://raspberrypi.local:3001` (oder die angezeigte IP, z. B. `http://192.168.1.5:3001`).
+
+---
+
+### Weg 2: One-Click mit Verifikation
+
+Schnell, mit Prüfung des Installer-Skripts per Hash:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/create_installer.sh -o installer.sh
+sha256sum installer.sh
+```
+
+Vergleiche die Ausgabe von `sha256sum` mit dem für die jeweilige Version angegebenen Hash (siehe [GitHub Releases](https://github.com/Yammato-2035/piinstaller/releases) oder CHANGELOG). Danach:
+
+```bash
+bash installer.sh
+```
+
+**Ohne Verifikation (weniger sicher):**
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/create_installer.sh | bash
 ```
 
-**Hinweis:** Das offizielle Repository ist `Yammato-2035/piinstaller`. Bei einem Fork passen Sie die URL entsprechend an.  
-Wenn die Domain **get.pi-installer.io** eingerichtet ist, lautet der Befehl:
-
-```bash
-curl -sSL https://get.pi-installer.io | bash
-```
-
-Am Ende erscheint die Adresse zum Öffnen (z. B. `http://<IP>:3001` oder `http://pi-installer.local:3001`). Der Dienst startet automatisch und nach jedem Neustart.
+Das offizielle Repository ist `Yammato-2035/piinstaller`. Am Ende erscheint die Adresse zum Öffnen (z. B. `http://<IP>:3001`).
 
 ---
 
-### Manueller Schnellstart (3 Schritte)
+### Weg 3: .deb-Paket von GitHub (mit Hash-Prüfung)
+
+Ab Version 1.3.8.2 werden bei jedem [GitHub Release](https://github.com/Yammato-2035/piinstaller/releases) ein **.deb-Paket** und eine **SHA256SUMS**-Datei bereitgestellt. Installation inkl. Verifikation:
+
+```bash
+# Beispiel – Release-Tag und Dateiname an gewünschte Version anpassen (z. B. v1.3.8.2)
+RELEASE="v1.3.8.2"
+V="1.3.8.2"
+BASE="https://github.com/Yammato-2035/piinstaller/releases/download"
+wget "$BASE/$RELEASE/pi-installer_${V}-1_all.deb" "$BASE/$RELEASE/SHA256SUMS"
+sha256sum -c SHA256SUMS
+sudo apt install ./pi-installer_${V}-1_all.deb
+```
+
+Details und manuelles Bauen des .deb: [docs/developer/BUILD_DEB.md](docs/developer/BUILD_DEB.md).
+
+---
+
+### Docker (zum Testen auf dem PC)
+
+Mit installiertem Docker kannst du Backend und Frontend lokal starten (z. B. unter Linux/macOS):
+
+```bash
+git clone https://github.com/Yammato-2035/piinstaller.git && cd piinstaller
+docker compose up --build
+```
+
+Danach: **http://localhost:3001** (Frontend), API unter http://localhost:8000. Geeignet zum Testen, nicht als Ersatz für die Installation auf dem Raspberry Pi.
+
+---
+
+### Manueller Schnellstart (Entwicklung: 3 Schritte)
 
 ### Python: 3.9 oder neuer (3.12 empfohlen)
 
@@ -127,6 +204,7 @@ http://localhost:3001
 ## 📚 Dokumentation
 
 - **[SECURITY.md](./SECURITY.md)** - Sicherheitshinweise, Netzwerk (LAN/Internet), VPN-Empfehlung, CORS
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Beitragen (Fork, Branch, PR, Code-Style)
 - **[NETWORK_ACCESS.md](./docs/user/NETWORK_ACCESS.md)** - Zugriff im LAN, über VPN, aus dem Internet (nur für erfahrene Nutzer)
 - **[INSTALL.md](./docs/user/INSTALL.md)** - Detaillierte Installationsanleitung (inkl. Troubleshooting Mixer)
 - **[ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md)** - System-Architektur & Design

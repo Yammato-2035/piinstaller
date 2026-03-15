@@ -42,6 +42,8 @@ interface SidebarProps {
   onClose?: () => void
   /** Aus First-Run-Wizard / API: steuert vereinfachte Sidebar für Einsteiger (Phase 5). */
   experienceLevel?: ExperienceLevel
+  /** app_edition vom Backend: nur bei 'repo' wird PI-Installer Update (Expertenmodul) angezeigt */
+  appEdition?: 'repo' | 'release'
 }
 
 const NEW_BADGE_KEY = 'pi-installer-new-'
@@ -49,7 +51,7 @@ const NEW_BADGE_KEY = 'pi-installer-new-'
 /** Phase 5: Für Einsteiger diese Einträge – klare Aufgaben + Einstellungen (u. a. Erfahrungslevel ändern). */
 const BEGINNER_MENU_IDS = ['dashboard', 'wizard', 'app-store', 'backup', 'monitoring', 'documentation', 'settings'] as const
 
-const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, freenoveDetected = false, mobileOpen = false, onClose, experienceLevel = 'beginner' }) => {
+const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, freenoveDetected = false, mobileOpen = false, onClose, experienceLevel = 'beginner', appEdition = 'release' }) => {
   const { appTitle } = usePlatform()
   const { mode, setMode } = useUIMode()
   const isBeginnerSidebar = experienceLevel === 'beginner'
@@ -94,7 +96,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
       { id: 'musicbox', label: 'Musikbox', icon: Music, modes: ['advanced'] },
       { id: 'kino-streaming', label: 'Kino / Streaming', icon: Tv, modes: ['advanced'] },
       { id: 'learning', label: 'Lerncomputer', icon: BookOpen, modes: ['advanced'] },
-      { id: 'pi-installer-update', label: 'PI-Installer Update', icon: Upload, modes: ['advanced'] },
+      ...(appEdition === 'repo' ? [{ id: 'pi-installer-update', label: 'PI-Installer Update', icon: Upload, modes: ['advanced'] as UIMode[] }] : []),
       { id: 'devenv', label: 'Dev-Umgebung', icon: Code, modes: ['advanced'], developerOnly: true },
       { id: 'mailserver', label: 'Mailserver', icon: Mail, modes: ['advanced'], developerOnly: true },
     ]
@@ -102,7 +104,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
       items.push({ id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu, modes: ['advanced'] })
     }
     return items
-  }, [isRaspberryPi, freenoveDetected])
+  }, [isRaspberryPi, freenoveDetected, appEdition])
 
   const filteredItems = useMemo(() => {
     if (isBeginnerSidebar) {
