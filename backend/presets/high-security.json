@@ -1,0 +1,23 @@
+{
+  "id": "high-security",
+  "name": "Hohe Sicherheit",
+  "category": "security",
+  "description": "Hohe Sicherheit: Fail2Ban, UFW und restriktive Netzwerk-Defaults.",
+  "modules": {
+    "fail2ban": true,
+    "ufw": true,
+    "audit_logging": true
+  },
+  "settings": {
+    "network": {
+      "ssh_keys_only": true,
+      "firewall_rules": "drop-all-except-nginx-ssh",
+      "rate_limiting": "all_endpoints"
+    },
+    "ssl": {
+      "auto_renew": true,
+      "interval": "60_days"
+    }
+  }
+}
+

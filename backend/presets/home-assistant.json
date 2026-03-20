@@ -1,0 +1,23 @@
+{
+  "id": "home-assistant",
+  "name": "Home Assistant Server",
+  "category": "usecase",
+  "description": "Optimiert für Home Assistant: Docker-basiertes Setup mit empfohlenen Netzwerk- und Sicherheits-Einstellungen.",
+  "modules": {
+    "docker": true,
+    "nextcloud": false,
+    "mailserver": false
+  },
+  "settings": {
+    "network": {
+      "remote_access_disabled": true,
+      "firewall": "enabled",
+      "ports": [8123]
+    },
+    "user": {
+      "roles": ["admin", "home-assistant-user"]
+    },
+    "headless_mode": true
+  }
+}
+

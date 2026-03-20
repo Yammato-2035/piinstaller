@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Zap, Server, Home, Music, BookOpen, CheckCircle, ArrowRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
@@ -9,6 +9,23 @@ const PresetsSetup: React.FC = () => {
   const { pageSubtitleLabel } = usePlatform()
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [availablePresets, setAvailablePresets] = useState<{ id: string; name: string; description: string }[]>([])
+  const [selectedConfigPreset, setSelectedConfigPreset] = useState<string>('')
+
+  useEffect(() => {
+    const loadPresets = async () => {
+      try {
+        const response = await fetchApi('/api/presets/list')
+        const data = await response.json()
+        if (data.status === 'success' && Array.isArray(data.items)) {
+          setAvailablePresets(data.items)
+        }
+      } catch (e) {
+        console.error('Fehler beim Laden der Presets', e)
+      }
+    }
+    loadPresets()
+  }, [])
 
   const presets = [
     {
@@ -123,6 +140,32 @@ const PresetsSetup: React.FC = () => {
     },
   ]
 
+  const applyConfigPreset = async () => {
+    if (!selectedConfigPreset) {
+      toast.error('Bitte ein Konfigurations-Preset auswählen.')
+      return
+    }
+    setLoading(true)
+    try {
+      const response = await fetchApi('/api/presets/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preset: selectedConfigPreset }),
+      })
+      const data = await response.json()
+      if (data.status === 'success') {
+        toast.success(`Konfigurations-Preset "${selectedConfigPreset}" wurde angewendet.`)
+      } else {
+        toast.error(data.message || 'Fehler beim Anwenden des Konfigurations-Presets')
+      }
+    } catch (e) {
+      console.error(e)
+      toast.error('Fehler beim Anwenden des Konfigurations-Presets')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const applyPreset = async (preset: typeof presets[0]) => {
     const sudoPassword = prompt('Sudo-Passwort eingeben (für Installation):')
     if (!sudoPassword) {
@@ -201,6 +244,47 @@ const PresetsSetup: React.FC = () => {
           </h1>
         </div>
         <p className="text-slate-400">Voreinstellungen – {pageSubtitleLabel}</p>
+      </div>
+
+      {/* Globale Konfigurations-Presets (config.json) */}
+      <div className="card bg-slate-900/60 border border-slate-700/60 mb-4">
+        <h2 className="text-lg font-semibold text-white mb-2">Schnellstart-Presets für die Gesamt-Konfiguration</h2>
+        <p className="text-slate-300 text-sm mb-3">
+          Wähle ein Profil, um die globale Konfiguration (z. B. Home Assistant, NAS, High Security) mit sinnvollen
+          Standardwerten vorzufüllen. Du kannst die Einstellungen später in den Modulen weiter anpassen.
+        </p>
+        <div className="flex flex-col md:flex-row gap-3 items-start md:items-end">
+          <div className="flex-1">
+            <select
+              className="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm"
+              value={selectedConfigPreset}
+              onChange={(e) => setSelectedConfigPreset(e.target.value)}
+            >
+              <option value="">Kein Preset ausgewählt</option>
+              {availablePresets.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            {selectedConfigPreset && (
+              <p className="text-slate-400 text-xs mt-2">
+                {
+                  availablePresets.find((p) => p.id === selectedConfigPreset)
+                    ?.description
+                }
+              </p>
+            )}
+          </div>
+          <button
+            onClick={applyConfigPreset}
+            disabled={loading || !selectedConfigPreset}
+            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 text-white font-semibold text-sm flex items-center gap-2"
+          >
+            {loading ? 'Wende Preset an…' : 'Konfigurations-Preset anwenden'}
+            <ArrowRight size={16} />
+          </button>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

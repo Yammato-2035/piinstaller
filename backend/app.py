@@ -162,6 +162,14 @@ app = FastAPI(
     version=PI_INSTALLER_VERSION
 )
 
+# Presets (Voreinstellungen) – optional, damit das Backend auch ohne Preset-Modul lauffähig bleibt
+try:
+    from presets import list_presets as _list_presets_impl, load_preset as _load_preset_impl, merge_preset as _merge_preset_impl
+except Exception:
+    _list_presets_impl = None
+    _load_preset_impl = None
+    _merge_preset_impl = None
+
 
 # Debug: request_id pro Request (ContextVar), X-Request-ID im Response-Header
 @app.middleware("http")
@@ -958,6 +966,72 @@ async def set_settings(request: Request):
 
     APP_SETTINGS = merged
     return {"status": "success", "message": "Einstellungen gespeichert", "settings": merged}
+
+
+@app.get("/api/presets/list")
+async def api_list_presets():
+    """
+    Liefert eine Liste verfügbarer Konfigurations-Presets (Voreinstellungen).
+    """
+    if _list_presets_impl is None:
+        return {"status": "error", "message": "Presets-Modul nicht verfügbar."}
+    try:
+        items = _list_presets_impl()
+    except Exception as e:
+        logger.error("Fehler beim Laden der Presets: %s", e)
+        return {"status": "error", "message": f"Fehler beim Laden der Presets: {str(e)}"}
+    return {"status": "success", "items": items}
+
+
+class ApplyPresetRequest(BaseModel):
+    preset: str
+
+
+@app.post("/api/presets/apply")
+async def api_apply_preset(body: ApplyPresetRequest):
+    """
+    Wendet ein Preset auf die globale Konfiguration an (config.json).
+    """
+    if _load_preset_impl is None or _merge_preset_impl is None:
+        raise HTTPException(status_code=400, detail="Presets-Modul nicht verfügbar.")
+
+    try:
+        preset = _load_preset_impl(body.preset)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error("Fehler beim Laden des Presets '%s': %s", body.preset, e)
+        raise HTTPException(status_code=500, detail="Preset konnte nicht geladen werden.")
+
+    # Ausgangskonfiguration laden (oder initialisieren, falls fehlend)
+    try:
+        if CONFIG_PATH.exists():
+            cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8") or "{}")
+        else:
+            cfg = _load_or_init_config()
+    except Exception as e:
+        logger.error("Fehler beim Laden der Konfiguration vor Preset-Anwendung: %s", e)
+        cfg = {}
+
+    if not isinstance(cfg, dict):
+        cfg = {}
+
+    # Preset auf gesamte Config anwenden (inkl. "settings", "modules", etc.)
+    merged_cfg = _merge_preset_impl(cfg, preset)
+
+    # Laufzeit-Settings-Cache aktualisieren, falls "settings" im Preset enthalten sind
+    settings = merged_cfg.get("settings")
+    if isinstance(settings, dict):
+        global APP_SETTINGS
+        APP_SETTINGS = settings
+
+    try:
+        CONFIG_PATH.write_text(json.dumps(merged_cfg, indent=2), encoding="utf-8")
+    except Exception as e:
+        logger.error("Fehler beim Speichern der Konfiguration nach Preset-Anwendung: %s", e)
+        raise HTTPException(status_code=500, detail="Preset wurde angewendet, aber die Konfiguration konnte nicht gespeichert werden.")
+
+    return {"status": "success", "message": f"Preset '{body.preset}' angewendet.", "config_path": str(CONFIG_PATH)}
 
 
 @app.get("/api/logs/path")

@@ -1,0 +1,23 @@
+{
+  "id": "nas",
+  "name": "NAS / Fileserver",
+  "category": "usecase",
+  "description": "NAS-Setup: Storage-Sharing mit Samba/NFS und automatischen Backups.",
+  "modules": {
+    "samba": true,
+    "nfs": true,
+    "backups": true
+  },
+  "settings": {
+    "backup": {
+      "schedule": "daily",
+      "target": "/home/pi/nas-backups/",
+      "method": "rsync"
+    },
+    "storage": {
+      "filesystem": "ext4",
+      "optimize_sd": true
+    }
+  }
+}
+
