@@ -1,30 +1,33 @@
-# Startseite Setuphelfer — Zielstruktur (Umsetzung)
+# Startseite Setuphelfer — Struktur (Stand 2026-03-20, v3)
 
-Stand: 2026-03-20  
-Quelle: `website/setuphelfer-theme/snippets/index.html`
+Quelle: `website/setuphelfer-theme/snippets/index.html`, Wrapper `home-page` in `front-page.php`.
 
-## Reihenfolge (1–10)
+## Reihenfolge (verbindlich)
 
-| # | Block | HTML-Anker | Inhalt |
-|---|--------|------------|--------|
-| 1 | Hero | — | Claim, kurze Lead-Zeile, Badges, CTA Download + Geführter Einstieg, Szene + ein Dashboard-Screenshot |
-| 2 | Nutzen / Problem | `#nutzen` | 3 Karten (Problem & Nutzen) |
-| 3 | Funktionsübersicht | `#funktionen` | 8 kompakte Feature-Karten |
-| 4 | Screenshots + Live | `#screenshots` | 2 Zeilen Produkt-Screenshots, darunter Live-Status (`#setuphelfer-live-status` für JS) |
-| 5 | Zielgruppen | `#zielgruppen` | 3 Level-Karten |
-| 6 | Tutorials & Hilfe | `#hilfe` | 2 Spalten (Tutorials / Fehlerhilfe) mit bestehenden Illustrationen |
-| 7 | Projekte | `#projekte` | 6 Projekt-Karten |
-| 8 | Community | `#community` | ein Notice-Block + CTA |
-| 9 | Download / CTA | `#download` | `cta-strip` + Sekundärlinks |
-| 10 | Footer | — | `footer.php` (nicht im Snippet) |
+1. **Hero** — `home-hero` / `hero--home`: Textspalte + **Produkt-Szene** (`hero-laptop`): Laptop-Rahmen (CSS), darin **echter** Dashboard-Screenshot per `<object data="assets/screenshots/screenshot-dashboard.png">` mit **markiertem Slot** als Fallback, falls die PNG fehlt. Kein Illustrations-Hintergrund, kein kleines Overlay-Thumbnail.
+2. **So funktioniert SetupHelfer** — `#ablauf`: **4 nummerierte Schritte** (`ol.home-steps`).
+3. **Screenshots** — `#screenshots` / `section--product`: genau **drei** gleich grosse Haupt-Screenshots (`product-shots-trio`), nebeneinander ab Desktop, untereinander mobil: **Dashboard** (`screenshot-dashboard.png`), **Diagnose** (`screenshot-monitoring.png`), **Projekte & Setup** (`screenshot-wizard.png`). App-Fenster-Rahmen `shot-frame--product`, Fallback-Text „Screenshot fehlt – muss aus Tauri erzeugt werden“ pro `<object>`.
+4. **Problem & Nutzen** — `#nutzen` / `section--band`.
+5. **Funktionsübersicht** — `#funktionen`.
+6. **Zielgruppen** — `#zielgruppen` / `section--band`.
+7. **Tutorials & Hilfe** — `#hilfe`.
+8. **Projekte** — `#projekte` / `section--band`.
+9. **Community** — `#community`.
+10. **Download** — `#download` / `section--download` (ohne Hinweistext zu Live-Systemstatus).
 
-## Entfernt / zusammengelegt
+**11. Footer** — `footer.php` (nach dem Snippet).
 
-- „Visuelle Teaser-Bausteine“ (redundant zu Funktion + Hilfe)
-- Doppelte Download-/Community-Notices am Ende (zu einem Download-CTA + einer Community-Sektion)
-- Separater Sicherheits-`tux-tip`-Block (Link unter Download)
-- Hero: keine zweite Screenshot-Zeile mehr (wanderte in Sektion 4)
+## Live-Systemstatus
+
+- Kein Block `#setuphelfer-live-status` im Snippet.
+- Kein Erwähnungstext auf der Startseite.
+- Skript `live-status.js` wird auf der **Front Page** per `setuphelfer_dequeue_front_page_scripts` nicht geladen (andere Seiten unverändert).
+
+## Abstand zwischen Sektionen
+
+- Global: `.section + .section` hatte zu wenig `padding-top` (10px).
+- Startseite: `.home-page .section + .section { padding-top: 48px }` setzt ausreichend Abstand.
 
 ## Assets
 
-Alle referenzierten Pfade zeigen auf vorhandene Theme-Dateien (`assets/hero`, `assets/screenshots`, `assets/icons`, `assets/illustrations`). Keine unbenannten Platzhalter-Slots.
+Referenzierte Pfade zeigen auf bestehende Theme-Dateien.
