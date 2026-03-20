@@ -20,9 +20,15 @@ Statuswerte:
 
 | Dateiname | Referenzierter Pfad | Tatsächlicher Dateistatus | Verwendet in Komponente |
 |---|---|---|---|
-| `hero-setup-scene.svg` | `assets/hero/hero-setup-scene.svg` | vorhanden | `index.html` |
+| `hero-setup-scene.svg` | `assets/hero/hero-setup-scene.svg` | vorhanden (GPIO-Detail, A11y-Metadaten) | `index.html` |
 | `hero-pi-laptop.svg` | `assets/hero/hero-pi-laptop.svg` | vorhanden | `guided-start.html` |
-| `hero-scene-overlay.svg` | `assets/visual-system/hero-scene-overlay.svg` | vorhanden | `index.html`, `documentation.html` |
+| `hero-scene-overlay.svg` | `assets/visual-system/hero-scene-overlay.svg` | vorhanden | optional / `asset-slots.json` — Live-Site nutzt echte Screenshots statt Platzhalter-Slots |
+
+## Screenshot-Container (Vector, optional)
+
+| Dateiname | Referenzierter Pfad | Tatsächlicher Dateistatus | Verwendet in Komponente |
+|---|---|---|---|
+| `screenshot-container-desktop.svg` | `assets/visual-system/screenshot-container-desktop.svg` | vorhanden | `asset-slots.json` (`screenshot_chrome.desktop_window`); optional für Druck/Präsentation — Standard-Website: HTML `.shot-frame` |
 
 ## Feature-Illustrationen
 
@@ -50,6 +56,8 @@ Statuswerte:
 | `icon-docs-guide.svg` | `assets/icons/icon-docs-guide.svg` | vorhanden | `community.html` |
 | `icon-docker.svg` | `assets/icons/icon-docker.svg` | vorhanden | `tutorials.html`, `documentation.html` |
 | `icon-mailserver.svg` | `assets/icons/icon-mailserver.svg` | vorhanden | `documentation.html` |
+| `icon-expert.svg` | `assets/icons/icon-expert.svg` | vorhanden | `index.html` (Lernpfad Experte) |
+| `icon-download.svg` | `assets/icons/icon-download.svg` | vorhanden (256×256, konsistent mit Beginner/Advanced) | `asset-slots.json` |
 | `ui-warning.svg` | `assets/ui/ui-warning.svg` | vorhanden | `index.html`, `troubleshooting.html`, `issue-*.html` |
 | `ui-search.svg` | `assets/ui/ui-search.svg` | vorhanden | `troubleshooting.html` |
 | `ui-info.svg` | `assets/ui/ui-info.svg` | vorhanden | `troubleshooting.html` |
@@ -63,11 +71,11 @@ Hinweis (Stand nach Sanierung): In Snippets `assets/screenshots/<datei>.png` (Th
 | `screenshot-dashboard.png` | `assets/screenshots/screenshot-dashboard.png` | vorhanden (Theme) | `index.html`, `download.html`, `documentation.html`, `tutorial-first-setup.html`, `tutorial-linux-basics.html`, `tutorial-network-basics.html` |
 | `screenshot-wizard.png` | `assets/screenshots/screenshot-wizard.png` | vorhanden (Theme) | `index.html`, `tutorial-first-setup.html` |
 | `screenshot-settings.png` | `assets/screenshots/screenshot-settings.png` | vorhanden (Theme) | `index.html`, `tutorial-first-setup.html`, `tutorial-linux-basics.html` |
-| `screenshot-presets.png` | `assets/screenshots/screenshot-presets.png` | vorhanden (Theme) | `index.html`, `download.html` |
+| `screenshot-presets.png` | `assets/screenshots/screenshot-presets.png` | vorhanden (Theme) | `index.html`, `download.html`, `documentation.html` |
 | `screenshot-security.png` | `assets/screenshots/screenshot-security.png` | vorhanden (Theme) | `index.html`, `download.html` |
 | `screenshot-users.png` | `assets/screenshots/screenshot-users.png` | vorhanden (Theme) | `download.html`, `tutorial-linux-basics.html` |
 | `screenshot-backup.png` | `assets/screenshots/screenshot-backup.png` | vorhanden (Theme) | `download.html`, `tutorial-backup-basics.html` |
-| `screenshot-documentation.png` | `assets/screenshots/screenshot-documentation.png` | vorhanden (Theme) | `download.html`, `documentation.html`, `tutorial-backup-basics.html` |
+| `screenshot-documentation.png` | `assets/screenshots/screenshot-documentation.png` | vorhanden (Theme) | `index.html`, `download.html`, `documentation.html`, `tutorial-backup-basics.html` |
 | `screenshot-control-center.png` | `assets/screenshots/screenshot-control-center.png` | vorhanden (Theme) | `tutorial-backup-basics.html` |
 | `screenshot-monitoring.png` | `assets/screenshots/screenshot-monitoring.png` | vorhanden (Theme) | `tutorial-network-basics.html` |
 | `screenshot-webserver.png` | `assets/screenshots/screenshot-webserver.png` | vorhanden (Theme) | `tutorial-network-basics.html`, `tutorial-docker-basics.html` |
