@@ -110,6 +110,8 @@ Neustart nach Backend-Update: `./scripts/restart-backend-service.sh` oder `sudo 
 - **Als Service (falls bereits installiert):** `sudo systemctl start pi-installer-backend`  
 - **Im Terminal (z. B. Entwicklung):** Im Projektroot `./scripts/start-backend.sh` – Backend läuft im Vordergrund bis Strg+C.
 
+**Venv nach Updates:** Nach `git pull` sollte die Python-Venv zu `backend/requirements.txt` passen (Sicherheit + kompatible FastAPI/Starlette-Versionen). `./scripts/start-backend.sh` synchronisiert die Abhängigkeiten **automatisch**, wenn sich `requirements.txt` geändert hat; manuell: im Ordner `backend` aktivieren und `pip install -r requirements.txt` (siehe **docs/user/QUICKSTART.md** und **PYTHON_SETUP.md**).
+
 ---
 
 ## 2. Frontend mit Tauri-App (eigenes Fenster)

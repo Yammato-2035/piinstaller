@@ -12,6 +12,25 @@ Bei Problemen: **PYTHON_SETUP.md**
 
 ---
 
+## Nach `git pull`: Venv aktualisieren (wichtig)
+
+**Warum:** `backend/requirements.txt` legt u. a. **FastAPI**, **Starlette** und Sicherheits-Fixes fest. Eine alte Venv kann **inkompatible** Paketkombinationen enthalten (z. B. Middleware-Fehler) oder veraltete Versionen. Das betrifft **Tests, CI und den laufenden SetupHelfer** gleichermaßen.
+
+**Empfohlen** (im Repo, nach jedem Pull mit Backend-Änderungen):
+
+```bash
+cd backend
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+**Alternativ** (ohne manuelles `pip`): Beim nächsten Start legt `./scripts/start-backend.sh` die Venv an bzw. synchronisiert sie **automatisch**, sobald sich `requirements.txt` geändert hat (Hash-Vergleich). Überspringen nur bei Bedarf: `PI_INSTALLER_SKIP_VENV_SYNC=1 ./scripts/start-backend.sh`.
+
+Details: **PYTHON_SETUP.md** (Abschnitt Venv synchron halten).
+
+---
+
 ## 🚀 Sofort Starten (3 Befehle)
 
 ### Terminal 1: Backend

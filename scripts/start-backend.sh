@@ -1,7 +1,9 @@
 #!/bin/bash
 # PI-Installer Backend Startskript
 # Startet Backend auf http://localhost:8000 (nutzt immer die Venv im backend/, nie System-Python)
-# Siehe: docs/START_APPS.md
+# Siehe: docs/START_APPS.md, docs/user/QUICKSTART.md (Venv nach git pull)
+# Venv-Sync: Wenn sich backend/requirements.txt ändert, wird pip install -r … automatisch ausgeführt
+# (Stamp: venv/.pi-installer-req.sha256). Überspringen: PI_INSTALLER_SKIP_VENV_SYNC=1
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -26,11 +28,35 @@ fi
 
 PYTHON="$BACKEND_DIR/venv/bin/python3"
 PIP="$BACKEND_DIR/venv/bin/pip"
+# Hash der requirements.txt – bei Änderung (z. B. nach git pull) Venv synchronisieren
+VENV_REQ_STAMP="$BACKEND_DIR/venv/.pi-installer-req.sha256"
 
-# Dependencies in der Venv installieren (niemals system-weit – PEP 668)
+_req_hash() {
+    "$PYTHON" -c "import hashlib;print(hashlib.sha256(open('requirements.txt','rb').read()).hexdigest())" 2>/dev/null
+}
+
+# Dependencies in der Venv installieren (niemals system-weit – PEP 668).
+# Wichtig: Nach Updates von FastAPI/Starlette muss die Venv zu requirements.txt passen (CI/Security).
+# Mit PI_INSTALLER_SKIP_VENV_SYNC=1 nur den manuellen Pfad (pip install -r …) nutzen.
+REQ_HASH=""
+if [ -f "requirements.txt" ]; then
+    REQ_HASH="$(_req_hash)"
+fi
+NEED_INSTALL=0
 if ! "$PYTHON" -c "import fastapi" 2>/dev/null; then
-    echo "📦 Installiere Dependencies (in Venv)..."
+    NEED_INSTALL=1
+elif [ -z "${PI_INSTALLER_SKIP_VENV_SYNC:-}" ] && [ -n "$REQ_HASH" ]; then
+    if [ ! -f "$VENV_REQ_STAMP" ] || [ "$(cat "$VENV_REQ_STAMP" 2>/dev/null)" != "$REQ_HASH" ]; then
+        NEED_INSTALL=1
+    fi
+fi
+if [ "$NEED_INSTALL" = "1" ]; then
+    echo "📦 Installiere/aktualisiere Dependencies in der Venv (requirements.txt)…"
+    "$PIP" install --upgrade pip
     "$PIP" install -r requirements.txt --only-binary :all: 2>/dev/null || "$PIP" install -r requirements.txt
+    if [ -n "$REQ_HASH" ]; then
+        echo "$REQ_HASH" > "$VENV_REQ_STAMP"
+    fi
 fi
 
 # Port: Standard 8000, überschreibbar mit PI_INSTALLER_BACKEND_PORT (z. B. wenn 8000 belegt)

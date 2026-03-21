@@ -350,6 +350,7 @@ source /etc/profile.d/pi-installer.sh
      sudo -u pi-installer bash -c 'cd /opt/pi-installer/backend && python3 -m venv venv && ./venv/bin/pip install -r requirements.txt'
      ```
      Danach: `sudo systemctl restart pi-installer`
+   - **Nach Repo-/DEB-Updates:** `requirements.txt` kann neue Mindestversionen (Sicherheit, FastAPI/Starlette) festlegen. Die Venv **aktualisieren**: `sudo -u pi-installer bash -c 'cd /opt/pi-installer/backend && ./venv/bin/pip install --upgrade pip && ./venv/bin/pip install -r requirements.txt'` und Service neu starten. Siehe auch `docs/user/QUICKSTART.md` (Abschnitt „Nach git pull“).
    - **Falscher Installationspfad:** Prüfen, ob die Service-Datei den richtigen Pfad hat: `grep -E "WorkingDirectory|ExecStart" /etc/systemd/system/pi-installer.service` (sollte z. B. `/opt/pi-installer` und `…/start.sh` zeigen).
    - **Port 8000 belegt:** `ss -tlnp | grep 8000` oder `lsof -iTCP:8000 -sTCP:LISTEN`. Ein anderer Prozess muss ggf. beendet werden.
 

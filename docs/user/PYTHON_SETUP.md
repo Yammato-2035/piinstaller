@@ -228,6 +228,27 @@ python3.12 app.py
 
 ---
 
+## Venv mit `requirements.txt` synchron halten (wichtig)
+
+**Warum das nötig ist:** Die Datei `backend/requirements.txt` wird mit dem Repository gepflegt (u. a. **FastAPI**, **Starlette**, Sicherheits-Updates). Eine **veraltete** virtuelle Umgebung kann:
+
+- Paketversionen enthalten, die **nicht zueinander passen** (Laufzeitfehler, z. B. bei Middleware),
+- **bekannte Schwachstellen** aus älteren Releases mit sich führen,
+- vom Verhalten in **CI** und auf anderen Rechnern abweichen.
+
+**Nach jedem `git pull`**, sobald sich `requirements.txt` oder der Backend-Code relevant ändert, die Venv aktualisieren:
+
+```bash
+cd ~/Documents/PI-Installer/backend   # Pfad anpassen
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+**Ohne manuelles `pip`:** `./scripts/start-backend.sh` prüft beim Start, ob sich `requirements.txt` gegenüber der letzten Installation geändert hat, und führt bei Bedarf `pip install -r requirements.txt` aus. Zum Überspringen (nur Debugging): `PI_INSTALLER_SKIP_VENV_SYNC=1`.
+
+---
+
 ## 📊 Kompatibilität Matrix
 
 | Python | Status | Empfehlung |
