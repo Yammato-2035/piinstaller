@@ -15,6 +15,7 @@ from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 import shlex
 import re
 from typing import Optional
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 import asyncio
 import uuid
@@ -155,11 +156,61 @@ def get_pi_installer_version() -> str:
 
 PI_INSTALLER_VERSION = get_pi_installer_version()
 
+# Startup/Shutdown (Lifespan statt @app.on_event — FastAPI 0.128+)
+_debug_startup_time: Optional[float] = None
+
+
+@asynccontextmanager
+async def _app_lifespan(app: FastAPI):
+    global _debug_startup_time
+    try:
+        _debug_startup_time = time.perf_counter()
+        init_debug()
+        run_start()
+        get_logger("backend", "startup").step_start("Backend startup")
+        _load_or_init_config()
+        try:
+            app.state.app_settings = APP_SETTINGS
+            app.state.device_id = _device_id()
+        except Exception:
+            pass
+        if init_remote_db is not None:
+            try:
+                init_remote_db(CONFIG_PATH.parent)
+            except Exception as e:
+                logger.warning("Remote-DB init failed (remote feature may be disabled): %s", e)
+        logger.info(f"Config ready: path={CONFIG_PATH} device_id={CONFIG_STATE.get('device_id')} first_run={CONFIG_STATE.get('first_run')}")
+        try:
+            module = _get_control_center_module()
+            result = module.ensure_display_telemetry_autostart()
+            if result.get("status") == "success":
+                logger.info(f"OLED-Autostart: {result.get('message', 'ok')}")
+            else:
+                logger.warning(f"OLED-Autostart fehlgeschlagen: {result.get('message', 'unbekannt')}")
+        except Exception as e:
+            logger.warning(f"OLED-Autostart konnte nicht initialisiert werden: {e}")
+    except Exception as e:
+        logger.error(f"Startup init failed: {e}", exc_info=True)
+    yield
+    try:
+        sudo_store.clear()
+    except Exception:
+        pass
+    try:
+        duration_ms = None
+        if _debug_startup_time is not None:
+            duration_ms = (time.perf_counter() - _debug_startup_time) * 1000
+        run_end(data={"duration_ms": duration_ms} if duration_ms is not None else None)
+    except Exception:
+        pass
+
+
 # Erstelle FastAPI App
 app = FastAPI(
     title="SetupHelfer",
     description="Konfigurations-Assistent für Raspberry Pi und Linux",
-    version=PI_INSTALLER_VERSION
+    version=PI_INSTALLER_VERSION,
+    lifespan=_app_lifespan,
 )
 
 # Presets (Voreinstellungen) – optional, damit das Backend auch ohne Preset-Modul lauffähig bleibt
@@ -842,57 +893,6 @@ def _load_or_init_config() -> dict:
         logger.error(f"Config write failed: {e}")
 
     return cfg
-
-
-_debug_startup_time: Optional[float] = None
-
-
-@app.on_event("startup")
-async def _startup_init():
-    global _debug_startup_time
-    try:
-        _debug_startup_time = time.perf_counter()
-        init_debug()
-        run_start()
-        get_logger("backend", "startup").step_start("Backend startup")
-        _load_or_init_config()
-        try:
-            app.state.app_settings = APP_SETTINGS
-            app.state.device_id = _device_id()
-        except Exception:
-            pass
-        if init_remote_db is not None:
-            try:
-                init_remote_db(CONFIG_PATH.parent)
-            except Exception as e:
-                logger.warning("Remote-DB init failed (remote feature may be disabled): %s", e)
-        logger.info(f"Config ready: path={CONFIG_PATH} device_id={CONFIG_STATE.get('device_id')} first_run={CONFIG_STATE.get('first_run')}")
-        try:
-            module = _get_control_center_module()
-            result = module.ensure_display_telemetry_autostart()
-            if result.get("status") == "success":
-                logger.info(f"OLED-Autostart: {result.get('message', 'ok')}")
-            else:
-                logger.warning(f"OLED-Autostart fehlgeschlagen: {result.get('message', 'unbekannt')}")
-        except Exception as e:
-            logger.warning(f"OLED-Autostart konnte nicht initialisiert werden: {e}")
-    except Exception as e:
-        logger.error(f"Startup init failed: {e}", exc_info=True)
-
-
-@app.on_event("shutdown")
-async def _shutdown():
-    try:
-        sudo_store.clear()
-    except Exception:
-        pass
-    try:
-        duration_ms = None
-        if _debug_startup_time is not None:
-            duration_ms = (time.perf_counter() - _debug_startup_time) * 1000
-        run_end(data={"duration_ms": duration_ms} if duration_ms is not None else None)
-    except Exception:
-        pass
 
 
 @app.get("/api/init/status")
