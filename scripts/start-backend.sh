@@ -75,24 +75,41 @@ fi
 # Port: Standard 8000, überschreibbar mit PI_INSTALLER_BACKEND_PORT (z. B. wenn 8000 belegt)
 PORT="${PI_INSTALLER_BACKEND_PORT:-8000}"
 
-# Prüfen ob Port belegt ist
-if command -v ss >/dev/null 2>&1; then
-  if ss -tuln 2>/dev/null | grep -q ":$PORT "; then
-    echo "⚠️  Port $PORT ist bereits belegt."
-    if command -v lsof >/dev/null 2>&1; then
-      echo "   Prozess(e) auf Port $PORT:"
-      lsof -i ":$PORT" 2>/dev/null | sed 's/^/   /'
-    else
-      echo "   Anzeigen mit: ss -tulnp | grep $PORT  oder  sudo lsof -i :$PORT"
+# Nur TCP-LISTEN prüfen (Browser/WebKit mit ESTABLISHED → :8000 sind Clients, blockieren den Port nicht)
+_tcp_port_listen_busy() {
+  local p="$1"
+  if command -v ss >/dev/null 2>&1; then
+    if ss -tln 2>/dev/null | grep -qE ":${p}([[:space:]]|$)"; then
+      return 0
     fi
-    echo ""
-    echo "   Optionen:"
-    echo "   - Vorhandenen Backend-Prozess beenden (z. B. kill \$(lsof -t -i:$PORT))"
-    echo "   - Oder anderen Port nutzen: PI_INSTALLER_BACKEND_PORT=8001 ./start-backend.sh"
-    echo "   - In der App dann unter Einstellungen → Backend-API-URL: http://127.0.0.1:8001 eintragen."
-    echo ""
-    exit 1
   fi
+  if command -v lsof >/dev/null 2>&1; then
+    if lsof -iTCP:"$p" -sTCP:LISTEN >/dev/null 2>&1; then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+if _tcp_port_listen_busy "$PORT"; then
+  echo "⚠️  Port $PORT wird bereits für TCP (LISTEN) verwendet – meist läuft schon ein Backend (uvicorn) oder ein anderer Dienst."
+  echo "   Hinweis: lsof -i :$PORT zeigt oft auch Browser-Verbindungen (ESTABLISHED); entscheidend ist nur LISTEN."
+  echo ""
+  if command -v ss >/dev/null 2>&1; then
+    echo "   ss (Listener):"
+    ss -tlnp 2>/dev/null | grep -E ":${PORT}([[:space:]]|$)" | sed 's/^/   /' || true
+  fi
+  if command -v lsof >/dev/null 2>&1; then
+    echo "   lsof nur LISTEN:"
+    lsof -iTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | sed 's/^/   /' || true
+  fi
+  echo ""
+  echo "   Optionen:"
+  echo "   - Listener beenden, z. B.: kill \$(lsof -t -iTCP:$PORT -sTCP:LISTEN)  (PID prüfen!)"
+  echo "   - Oder anderen Port: PI_INSTALLER_BACKEND_PORT=8001 $REPO_ROOT/scripts/start-backend.sh"
+  echo "   - In der App ggf. Backend-URL auf http://127.0.0.1:8001 setzen."
+  echo ""
+  exit 1
 fi
 
 # Backend starten – immer mit Venv-Python, genau ein Worker (wichtig für Sudo-Passwort-Speicherung)
