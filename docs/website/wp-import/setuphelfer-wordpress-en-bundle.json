@@ -1,0 +1,37 @@
+{
+  "description": "Referenz für englische Bezeichnungen (SetupHelfer). Keine Übersetzung von URLs, Code oder API-Pfaden.",
+  "version": 1,
+  "preferred_page_slugs": {
+    "about": "ueber-setuphelfer",
+    "aliases_supported_in_theme": ["ueber", "about"]
+  },
+  "navigation_labels_en": {
+    "Start": "Home",
+    "Geführter Einstieg": "Guided start",
+    "Gefuehrter Einstieg": "Guided start",
+    "Projekte": "Projects",
+    "Tutorials": "Tutorials",
+    "Fehlerhilfe": "Troubleshooting",
+    "Community": "Community",
+    "Download": "Download",
+    "Dokumentation": "Documentation",
+    "Über SetupHelfer": "About SetupHelfer",
+    "Kontakt": "Contact",
+    "Changelog": "Changelog",
+    "Sicherheit": "Security",
+    "Cookie-Richtlinie": "Cookie policy",
+    "Datenschutz": "Privacy",
+    "Impressum": "Legal notice"
+  },
+  "doc_entry_titles_en": {
+    "installation": "Installation",
+    "backup": "Backup",
+    "docker": "Docker",
+    "mailserver": "Mail server",
+    "diagnose": "Diagnostics"
+  },
+  "locale_notes": {
+    "website": "Query ?lang=en oder Cookie setuphelfer_lang=en",
+    "snippets": "Theme: snippets/en/<name>.html"
+  }
+}

@@ -1,0 +1,23 @@
+category,slug_or_key,text_de,text_en,notes
+page_slug,ueber-setuphelfer,Über SetupHelfer,About SetupHelfer,Bevorzugter Slug; Aliasse ueber/about im Theme
+page_slug,dokumentation,Dokumentation,Documentation,Kann mit CPT-Archiv kollidieren — Archiv nutzt gleichen Pfad
+nav_title,,Start,Home,Fallback-Menü / Filter
+nav_title,,Geführter Einstieg,Guided start,
+nav_title,,Projekte,Projects,
+nav_title,,Tutorials,Tutorials,
+nav_title,,Fehlerhilfe,Troubleshooting,
+nav_title,,Community,Community,
+nav_title,,Download,Download,
+nav_title,,Dokumentation,Documentation,
+nav_title,,Über SetupHelfer,About SetupHelfer,
+nav_title,,Kontakt,Contact,
+nav_title,,Changelog,Changelog,
+nav_title,,Sicherheit,Security,
+nav_title,,Cookie-Richtlinie,Cookie policy,
+nav_title,,Datenschutz,Privacy,
+nav_title,,Impressum,Legal notice,
+doc_cpt,installation,Installation,Installation,title_en im Theme
+doc_cpt,backup,Backup,Backup,
+doc_cpt,docker,Docker,Docker,
+doc_cpt,mailserver,Mailserver,Mail server,
+doc_cpt,diagnose,Diagnose,Diagnostics,

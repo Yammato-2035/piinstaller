@@ -14,7 +14,7 @@ fn exit_app() {
 async fn get_screenshots_output_dir(app: tauri::AppHandle) -> Result<String, String> {
     let doc = app.path().document_dir()
         .map_err(|e: tauri::Error| e.to_string())?;
-    let dir = doc.join("PI-Installer").join("docs").join("screenshots");
+    let dir = doc.join("SetupHelfer").join("docs").join("screenshots");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     Ok(dir.to_string_lossy().to_string())
 }

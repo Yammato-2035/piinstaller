@@ -20,7 +20,7 @@
 | Footer: Markenhinweis (lang) | ✓ | ✓ | `[x]` |
 | Consent-Banner | ✓ | ✓ | `[x]` |
 | `html lang`-Attribut | ✓ | ✓ | `[x]` |
-| SEO `pre_get_document_title` bei `lang=en` | — | — | `[ ]` (optional: englische Seitentitel) |
+| SEO `pre_get_document_title` / Meta-Description bei `lang=en` | — | ✓ | `[x]` (Kernseiten + Dokumentation) |
 
 ---
 
@@ -37,7 +37,7 @@ Vorhandene Snippets (ohne `en/` = bei EN meist **deutscher Fallback**).
 | `sicherheit.html` | ✓ | — | `[ ]` |
 | `download.html` | ✓ | — | `[ ]` |
 | `community.html` | ✓ | — | `[ ]` |
-| `documentation.html` | ✓ | — | `[ ]` |
+| `documentation.html` | ✓ | `en/documentation.html` | `[x]` |
 | `projects.html` | ✓ | — | `[ ]` |
 | `tutorials.html` | ✓ | — | `[ ]` |
 | `troubleshooting.html` | ✓ | — | `[ ]` |
@@ -45,10 +45,10 @@ Vorhandene Snippets (ohne `en/` = bei EN meist **deutscher Fallback**).
 | `cookie-policy.html` | ✓ | — | `[ ]` |
 | `tutorial-*.html` (11 Dateien) | ✓ | — | `[ ]` |
 | `project-*.html` (7 Dateien) | ✓ | — | `[ ]` |
-| `doc-*.html` (9 Dateien) | ✓ | — | `[ ]` |
+| `doc-*.html` (Hauptkapitel in `setuphelfer_docs()`) | ✓ | `en/doc-*.html` (5 Dateien) | `[x]` |
 | `issue-*.html` (6 Dateien) | ✓ | — | `[ ]` |
 
-**Gesamt Snippets:** 47 Dateien · **mit EN-Version:** 2 · **offen:** 45
+**Gesamt Snippets:** 47 Dateien · **mit EN-Version:** 4+ (u. a. index, about, documentation, doc-*) · **offen:** siehe Tabelle
 
 ---
 

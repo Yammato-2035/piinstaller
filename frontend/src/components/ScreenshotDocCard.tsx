@@ -3,29 +3,30 @@ import { motion } from 'framer-motion'
 import { Camera } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { setScreenshotMode } from '../api'
+import i18n, { LOCALE_STORAGE_KEY, setAppLocale } from '../i18n'
 
-/** Seiten, die für Dokumentations-Screenshots erfasst werden (in dieser Reihenfolge). */
+/** Pages captured for documentation screenshots (order matches UI language: English). */
 const SCREENSHOT_PAGES: { id: string; label: string }[] = [
   { id: 'dashboard', label: 'Dashboard' },
-  { id: 'wizard', label: 'Assistent' },
-  { id: 'presets', label: 'Voreinstellungen' },
-  { id: 'security', label: 'Sicherheit' },
-  { id: 'users', label: 'Benutzer' },
-  { id: 'devenv', label: 'Dev-Umgebung' },
-  { id: 'webserver', label: 'Webserver' },
-  { id: 'mailserver', label: 'Mailserver' },
+  { id: 'wizard', label: 'Wizard' },
+  { id: 'presets', label: 'Presets' },
+  { id: 'security', label: 'Security' },
+  { id: 'users', label: 'Users' },
+  { id: 'devenv', label: 'Dev environment' },
+  { id: 'webserver', label: 'Web server' },
+  { id: 'mailserver', label: 'Mail server' },
   { id: 'nas', label: 'NAS' },
-  { id: 'homeautomation', label: 'Hausautomatisierung' },
-  { id: 'musicbox', label: 'Musikbox' },
-  { id: 'kino-streaming', label: 'Kino / Streaming' },
-  { id: 'learning', label: 'Lerncomputer' },
+  { id: 'homeautomation', label: 'Home automation' },
+  { id: 'musicbox', label: 'Music box' },
+  { id: 'kino-streaming', label: 'Cinema / streaming' },
+  { id: 'learning', label: 'Learning PC' },
   { id: 'monitoring', label: 'Monitoring' },
-  { id: 'backup', label: 'Backup & Restore' },
+  { id: 'backup', label: 'Backup & restore' },
   { id: 'control-center', label: 'Control Center' },
-  { id: 'periphery-scan', label: 'Peripherie-Scan' },
-  { id: 'raspberry-pi-config', label: 'Raspberry Pi Config' },
-  { id: 'settings', label: 'Einstellungen' },
-  { id: 'documentation', label: 'Dokumentation' },
+  { id: 'periphery-scan', label: 'Periphery scan' },
+  { id: 'raspberry-pi-config', label: 'Raspberry Pi config' },
+  { id: 'settings', label: 'Settings' },
+  { id: 'documentation', label: 'Documentation' },
 ]
 
 interface ScreenshotDocCardProps {
@@ -50,11 +51,19 @@ export default function ScreenshotDocCard({ setCurrentPage }: ScreenshotDocCardP
     setRunning(true)
     setScreenshotMode(true)
 
+    const prevLng =
+      (typeof localStorage !== 'undefined' && (localStorage.getItem(LOCALE_STORAGE_KEY) as 'de' | 'en' | null)) ||
+      (i18n.language === 'en' ? 'en' : 'de')
+    setAppLocale('en')
+    await new Promise((r) => setTimeout(r, 650))
+
     try {
       const outputDir = await invoke<string>('get_screenshots_output_dir')
       const windows = await getScreenshotableWindows()
       const ourWindow = windows.find((w: { title?: string }) =>
-        (w.title || '').includes('PI-Installer') || (w.title || '').includes('Raspberry')
+        (w.title || '').includes('SetupHelfer') ||
+        (w.title || '').includes('PI-Installer') ||
+        (w.title || '').includes('Raspberry')
       )
       const windowId = ourWindow?.id ?? windows[0]?.id
 
@@ -88,6 +97,7 @@ export default function ScreenshotDocCard({ setCurrentPage }: ScreenshotDocCardP
       toast.error(e?.message || 'Screenshot-Lauf fehlgeschlagen')
       console.error(e)
     } finally {
+      setAppLocale(prevLng === 'en' || prevLng === 'de' ? prevLng : 'de')
       setScreenshotMode(false)
       setRunning(false)
       setProgress('')
@@ -124,7 +134,7 @@ export default function ScreenshotDocCard({ setCurrentPage }: ScreenshotDocCardP
             {running ? 'Erstelle Screenshots…' : 'Screenshots erstellen'}
           </button>
           <p className="text-xs text-slate-500 mt-3">
-            Speicherort: Dokumente/PI-Installer/docs/screenshots/
+            Speicherort: Dokumente/SetupHelfer/docs/screenshots/ — die App wird für die Aufnahme kurz auf Englisch umgestellt.
           </p>
         </>
       )}
