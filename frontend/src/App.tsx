@@ -38,16 +38,25 @@ import i18n from './i18n'
 import './App.css'
 
 function AppDocumentTitle({ dsiRadioView }: { dsiRadioView: boolean }) {
-  const { appTitle } = usePlatform()
+  const { brandTitle, identitySubtitle } = usePlatform()
   useEffect(() => {
-    if (!dsiRadioView && appTitle) document.title = appTitle
-  }, [dsiRadioView, appTitle])
+    if (!dsiRadioView && brandTitle) {
+      document.title = identitySubtitle ? `${brandTitle} · ${identitySubtitle}` : brandTitle
+    }
+  }, [dsiRadioView, brandTitle, identitySubtitle])
   return null
 }
 
 function MobileAppTitle() {
-  const { appTitle } = usePlatform()
-  return <span className="font-semibold text-slate-800 dark:text-white">{appTitle}</span>
+  const { brandTitle, identitySubtitle } = usePlatform()
+  return (
+    <div className="flex flex-col min-w-0 text-left">
+      <span className="font-semibold text-slate-800 dark:text-white truncate">{brandTitle}</span>
+      {identitySubtitle ? (
+        <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{identitySubtitle}</span>
+      ) : null}
+    </div>
+  )
 }
 
 /* REGRESSION-RISK: Neue Menüeinträge/Pages nur mit existierendem Ziel; Grundlagen vs. Erweitert sauber trennen. */

@@ -97,7 +97,7 @@ function buildMenuItems(
 
 const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, freenoveDetected = false, mobileOpen = false, onClose, experienceLevel = 'beginner', appEdition = 'release' }) => {
   const { t } = useTranslation()
-  const { appTitle } = usePlatform()
+  const { brandTitle, identitySubtitle } = usePlatform()
   const { mode, setMode } = useUIMode()
   const isBeginnerSidebar = experienceLevel === 'beginner'
   // Build-Zeit-Version (package.json) – zeigt die Version der laufenden App/Frontend
@@ -167,7 +167,12 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             <span className="text-white font-bold text-lg">π</span>
           </div>
           <div className="min-w-0">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white truncate">{appTitle}</h1>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white truncate">{brandTitle}</h1>
+            {identitySubtitle ? (
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate" title={identitySubtitle}>
+                {identitySubtitle}
+              </p>
+            ) : null}
             <div
               className="mt-1.5 mb-1"
               role="group"

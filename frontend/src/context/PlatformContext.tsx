@@ -12,8 +12,10 @@ export interface PlatformInfo {
   pageSubtitleLabel: string
   /** Wizard-Willkommen */
   wizardWelcomeHeadline: string
-  /** Fenster-/App-Titel */
-  appTitle: string
+  /** Produktname (immer SetupHelfer) */
+  brandTitle: string
+  /** Zweite Zeile: Hostname oder Gerät (Raspberry Pi, Linux …) */
+  identitySubtitle: string | null
 }
 
 export interface PlatformRaw {
@@ -29,7 +31,8 @@ const defaultPlatform: PlatformInfo = {
   systemLabelPossessive: '',
   pageSubtitleLabel: '',
   wizardWelcomeHeadline: '',
-  appTitle: '',
+  brandTitle: '',
+  identitySubtitle: null,
 }
 
 const PlatformContext = createContext<PlatformInfo>(defaultPlatform)
@@ -75,11 +78,12 @@ export function buildPlatformInfo(raw: PlatformRaw, t: (k: string, o?: Record<st
     : hostname && hostname !== 'unknown'
       ? t('platform.welcome.withHostname', { host: hostname })
       : t('platform.welcome.linuxGeneric')
-  const appTitle = isRaspberryPi
-    ? t('platform.appTitle.setuphelfer')
+  const brandTitle = t('platform.appTitle.setuphelfer')
+  const identitySubtitle = isRaspberryPi
+    ? systemLabel
     : hostname && hostname !== 'unknown'
       ? hostname
-      : t('platform.appTitle.configureSystem')
+      : systemLabel
   return {
     isRaspberryPi,
     deviceType: deviceType ?? null,
@@ -87,7 +91,8 @@ export function buildPlatformInfo(raw: PlatformRaw, t: (k: string, o?: Record<st
     systemLabelPossessive,
     pageSubtitleLabel,
     wizardWelcomeHeadline,
-    appTitle,
+    brandTitle,
+    identitySubtitle,
   }
 }
 
