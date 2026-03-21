@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
+import i18n, { setAppLocale } from '../i18n'
 import { usePlatform } from '../context/PlatformContext'
 import { useUIMode, type UIMode } from '../context/UIModeContext'
 import AppIcon from './AppIcon'
@@ -102,6 +103,15 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
   // Build-Zeit-Version (package.json) – zeigt die Version der laufenden App/Frontend
   const [version] = useState<string>(typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '…')
   const [newBadges, setNewBadges] = useState<Record<string, boolean>>({})
+  const [uiLang, setUiLang] = useState<'de' | 'en'>(() => (i18n.language?.startsWith('en') ? 'en' : 'de'))
+
+  useEffect(() => {
+    const onLang = (lng: string) => setUiLang(lng.startsWith('en') ? 'en' : 'de')
+    i18n.on('languageChanged', onLang)
+    return () => {
+      i18n.off('languageChanged', onLang)
+    }
+  }, [])
 
   useEffect(() => {
     const badges: Record<string, boolean> = {}
@@ -156,8 +166,48 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
           <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">π</span>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{appTitle}</h1>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white truncate">{appTitle}</h1>
+            <div
+              className="mt-1.5 mb-1"
+              role="group"
+              aria-label={t('sidebar.language.aria')}
+            >
+              <div className="inline-flex rounded-lg border border-slate-300 dark:border-slate-600 overflow-hidden shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setAppLocale('de')}
+                  aria-pressed={uiLang === 'de'}
+                  title={t('settings.language.de')}
+                  className={`flex items-center justify-center gap-1 px-2.5 py-1 text-sm leading-none transition-colors ${
+                    uiLang === 'de'
+                      ? 'bg-sky-600 text-white'
+                      : 'bg-slate-100 dark:bg-slate-700/80 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600'
+                  }`}
+                >
+                  <span className="text-base" aria-hidden>
+                    🇩🇪
+                  </span>
+                  <span className="text-[11px] font-semibold">{t('sidebar.language.deShort')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAppLocale('en')}
+                  aria-pressed={uiLang === 'en'}
+                  title={t('settings.language.en')}
+                  className={`flex items-center justify-center gap-1 px-2.5 py-1 text-sm leading-none border-l border-slate-300 dark:border-slate-600 transition-colors ${
+                    uiLang === 'en'
+                      ? 'bg-sky-600 text-white'
+                      : 'bg-slate-100 dark:bg-slate-700/80 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600'
+                  }`}
+                >
+                  <span className="text-base" aria-hidden>
+                    🇬🇧
+                  </span>
+                  <span className="text-[11px] font-semibold">{t('sidebar.language.enShort')}</span>
+                </button>
+              </div>
+            </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">v{version}</p>
           </div>
         </div>
