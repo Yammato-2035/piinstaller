@@ -44,6 +44,11 @@ jobs:
         continue-on-error: true
 
       - name: Pytest
-        run: pytest tests/ -v --tb=short -x
         env:
           PI_INSTALLER_DEV: "1"
+          # Org-/Runner-Default kann PYTHONWARNINGS=error setzen — für Tests zurücksetzen
+          PYTHONWARNINGS: "default"
+        run: |
+          set -e
+          test -f pytest.ini
+          python -m pytest tests/ -v --tb=short -x
