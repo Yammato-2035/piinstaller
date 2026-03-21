@@ -1071,8 +1071,9 @@ def _get_cors_origins() -> list[str]:
 
 
 def _get_allowed_hosts() -> list[str]:
-    """Erlaubte Host-Header. Bei ALLOW_REMOTE_ACCESS=true können weitere Hosts über PI_INSTALLER_ALLOWED_HOSTS ergänzt werden."""
-    default = ["localhost", "127.0.0.1", "pi-installer.local"]
+    """Erlaubte Host-Header. Bei ALLOW_REMOTE_ACCESS=true können weitere Hosts über PI_INSTALLER_ALLOWED_HOSTS ergänzt werden.
+    „testserver“: Starlette/FastAPI TestClient (httpx) sendet Host: testserver — sonst schlagen pytest-Integrationstests mit 400 fehl."""
+    default = ["localhost", "127.0.0.1", "pi-installer.local", "testserver"]
     if os.environ.get("ALLOW_REMOTE_ACCESS", "").strip().lower() in ("true", "1", "yes"):
         extra = os.environ.get("PI_INSTALLER_ALLOWED_HOSTS", "").strip()
         if extra:
