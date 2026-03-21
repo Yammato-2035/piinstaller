@@ -3,6 +3,7 @@
  * Siehe docs/development/SUDO_COMPONENTS.md für Nutzungsübersicht.
  */
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, X } from 'lucide-react'
 
@@ -19,13 +20,17 @@ interface SudoPasswordModalProps {
 
 const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
   open,
-  title = 'Sudo-Passwort erforderlich',
-  subtitle = 'Wird für Installationen und Sicherheitseinstellungen benötigt.',
-  confirmText = 'Bestätigen',
+  title: titleProp,
+  subtitle: subtitleProp,
+  confirmText: confirmTextProp,
   showSkipTest = true,
   onCancel,
   onConfirm,
 }) => {
+  const { t } = useTranslation()
+  const title = titleProp ?? t('sudo.modal.title')
+  const subtitle = subtitleProp ?? t('sudo.modal.subtitle')
+  const confirmText = confirmTextProp ?? t('sudo.modal.confirm')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [skipTest, setSkipTest] = useState(true)
@@ -87,9 +92,7 @@ const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
                 </button>
               </div>
 
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Sudo-Passwort
-              </label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">{t('sudo.modal.passwordLabel')}</label>
               <input
                 type="password"
                 value={password}
@@ -101,9 +104,7 @@ const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
                 placeholder="••••••••"
                 autoFocus
               />
-              <p className="mt-2 text-xs text-slate-400">
-                Die Eingabe ist verdeckt und wird nur für diese Session gespeichert.
-              </p>
+              <p className="mt-2 text-xs text-slate-400">{t('sudo.modal.sessionHint')}</p>
 
               {showSkipTest && (
                 <label className="mt-3 flex items-center gap-2 cursor-pointer">
@@ -113,9 +114,7 @@ const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
                     onChange={(e) => setSkipTest(e.target.checked)}
                     className="rounded border-slate-600 bg-slate-800 text-sky-500 focus:ring-sky-500"
                   />
-                  <span className="text-sm text-slate-400">
-                    Ohne Prüfung speichern (falls die App hängt)
-                  </span>
+                  <span className="text-sm text-slate-400">{t('sudo.modal.skipTestLabel')}</span>
                 </label>
               )}
 
@@ -125,7 +124,7 @@ const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
                   className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                   disabled={loading}
                 >
-                  Abbrechen
+                  {t('sudo.modal.cancel')}
                 </button>
                 <button
                   onClick={submit}
@@ -135,7 +134,7 @@ const SudoPasswordModal: React.FC<SudoPasswordModalProps> = ({
                   {loading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Prüfe…
+                      {t('sudo.modal.checking')}
                     </>
                   ) : (
                     confirmText

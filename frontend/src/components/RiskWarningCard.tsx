@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { AlertTriangle } from 'lucide-react'
 import type { RiskLevel } from '../config/riskLevels'
 import RiskLevelBadge from './RiskLevelBadge'
@@ -18,8 +19,10 @@ const CARD_STYLES: Record<RiskLevel, { border: string; bg: string; icon: string 
 }
 
 const RiskWarningCard: React.FC<RiskWarningCardProps> = ({ level, title, children, className = '' }) => {
+  const { t } = useTranslation()
   const s = CARD_STYLES[level]
-  const defaultTitle = level === 'red' ? 'Vorsicht: Gefährliche Operationen' : level === 'yellow' ? 'Hinweis: Systemänderungen' : 'Hinweis'
+  const defaultTitle =
+    level === 'red' ? t('risk.cardTitle.danger') : level === 'yellow' ? t('risk.cardTitle.systemChange') : t('risk.cardTitle.note')
 
   return (
     <div

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { HelpCircle } from 'lucide-react'
 
 interface HelpTooltipProps {
@@ -9,6 +10,7 @@ interface HelpTooltipProps {
 
 /** Kontextsensitive Hilfe: "?" Icon mit Tooltip (Transformationsplan 3.2). */
 const HelpTooltip: React.FC<HelpTooltipProps> = ({ text, className = '', size = 16 }) => {
+  const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
   return (
     <span className="relative inline-flex">
@@ -19,7 +21,7 @@ const HelpTooltip: React.FC<HelpTooltipProps> = ({ text, className = '', size = 
         onMouseEnter={() => setVisible(true)}
         onMouseLeave={() => setVisible(false)}
         className={`text-slate-400 hover:text-sky-500 focus:text-sky-500 focus:outline-none rounded-full p-0.5 ${className}`}
-        aria-label="Hilfe"
+        aria-label={t('helpTooltip.ariaLabel')}
       >
         <HelpCircle size={size} />
       </button>

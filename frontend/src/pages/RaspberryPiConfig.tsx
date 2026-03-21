@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Settings, Info, Save, RefreshCw, Power, RotateCcw } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
@@ -50,6 +51,7 @@ interface CategoryData {
 }
 
 const RaspberryPiConfig: React.FC = () => {
+  const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState<ConfigValue>({})
   const [configOptions, setConfigOptions] = useState<Record<string, ConfigOption>>({})
@@ -426,7 +428,7 @@ const RaspberryPiConfig: React.FC = () => {
       </div>
 
       {(() => {
-        const risk = getPageRisk('raspberry-pi-config')
+        const risk = getPageRisk('raspberry-pi-config', t)
         return risk?.warningText ? (
           <RiskWarningCard level={risk.level}>{risk.warningText}</RiskWarningCard>
         ) : null

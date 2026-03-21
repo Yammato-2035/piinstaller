@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -20,6 +21,7 @@ interface BackupJob {
 }
 
 const RunningBackupModal: React.FC = () => {
+  const { t } = useTranslation()
   const [backupJob, setBackupJob] = useState<BackupJob | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const backupJobNotifiedRef = useRef<Record<string, boolean>>({})
@@ -241,12 +243,12 @@ const RunningBackupModal: React.FC = () => {
             if (!backupJobNotifiedRef.current[job.job_id]) {
               backupJobNotifiedRef.current[job.job_id] = true
               if (job.status === 'success') {
-                toast.success('Backup fertig')
+                toast.success(t('runningBackup.toast.done'))
                 if (job.warning) toast(String(job.warning), { icon: '⚠️', duration: 6000 })
               } else if (job.status === 'cancelled') {
-                toast('Backup abgebrochen', { duration: 6000 })
+                toast(t('runningBackup.toast.cancelled'), { duration: 6000 })
               } else {
-                toast.error(job.message || 'Backup fehlgeschlagen', { duration: 10000 })
+                toast.error(job.message || t('runningBackup.toast.failed'), { duration: 10000 })
               }
             }
             // Stoppe Polling
@@ -283,17 +285,17 @@ const RunningBackupModal: React.FC = () => {
 
   const cancelBackup = async () => {
     if (!backupJob?.job_id) return
-    if (!window.confirm('Backup wirklich abbrechen?')) return
+    if (!window.confirm(t('runningBackup.confirmCancel'))) return
     
     try {
       const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(backupJob.job_id)}/cancel`, { method: 'POST' })
       const d = await r.json()
       if (d.status === 'success') {
-        toast.success('Abbruch angefordert…')
+        toast.success(t('runningBackup.toast.cancelRequested'))
         setBackupJob((j) => (j ? { ...j, status: 'cancel_requested' } : j))
       }
     } catch {
-      toast.error('Fehler beim Abbrechen')
+      toast.error(t('runningBackup.toast.cancelError'))
     }
   }
 
@@ -331,19 +333,19 @@ const RunningBackupModal: React.FC = () => {
                 {backupJob.status === 'error' && <AlertCircle className="w-5 h-5 text-red-500" />}
                 {isRunning && <Loader2 className="w-5 h-5 text-sky-500 animate-spin" />}
                 <span className="text-sm sm:text-base">
-                  {backupJob.status === 'cancel_requested' ? '⏳ Abbruch läuft…' : 
-                   backupJob.message?.includes('Prüfe') ? '☁️ Prüfe Cloud…' : 
-                   backupJob.message?.includes('Upload') ? '☁️ Upload läuft…' : 
-                   backupJob.status === 'success' ? '✅ Backup fertig' :
-                   backupJob.status === 'error' ? '❌ Backup fehlgeschlagen' :
-                   '⏳ Backup läuft…'}
+                  {backupJob.status === 'cancel_requested' ? t('runningBackup.title.cancelPending')
+                    : /Prüfe|Check/i.test(backupJob.message || '') ? t('runningBackup.title.checkCloud')
+                    : /Upload/i.test(backupJob.message || '') ? t('runningBackup.title.uploading')
+                    : backupJob.status === 'success' ? t('runningBackup.title.done')
+                    : backupJob.status === 'error' ? t('runningBackup.title.error')
+                    : t('runningBackup.title.running')}
                 </span>
               </h2>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-slate-400 hover:text-white transition-colors ml-2"
                 disabled={isRunning}
-                title={isRunning ? 'Backup läuft - kann nicht geschlossen werden' : 'Schließen'}
+                title={isRunning ? t('runningBackup.closeBlocked') : t('runningBackup.close')}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -352,46 +354,46 @@ const RunningBackupModal: React.FC = () => {
             <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
               {backupJob.backup_file && (
                 <div className="text-xs text-slate-300">
-                  <span className="font-semibold">Datei:</span> <span className="break-words">{String(backupJob.backup_file).split('/').pop()}</span>
+                  <span className="font-semibold">{t('runningBackup.label.file')}</span> <span className="break-words">{String(backupJob.backup_file).split('/').pop()}</span>
                 </div>
               )}
               
               {backupJob.status && (
                 <div className="text-xs text-slate-300">
-                  <span className="font-semibold">Status:</span> <span className="font-semibold">{backupJob.status}</span>
+                  <span className="font-semibold">{t('runningBackup.label.status')}</span> <span className="font-semibold">{backupJob.status}</span>
                 </div>
               )}
 
               {typeof backupJob.bytes_current === 'number' && (
                 <div className="text-xs text-slate-300">
-                  <span className="font-semibold">Größe:</span> {(backupJob.bytes_current / 1024 / 1024).toFixed(1)} MB
+                  <span className="font-semibold">{t('runningBackup.label.size')}</span> {(backupJob.bytes_current / 1024 / 1024).toFixed(1)} MB
                 </div>
               )}
 
               {backupJob.status === 'cancel_requested' && (
                 <div className="p-3 bg-amber-900/20 border border-amber-700/40 rounded-lg text-amber-200 text-sm">
-                  Backup wird abgebrochen… Bitte warten.
+                  {t('runningBackup.cancelPending')}
                 </div>
               )}
 
               {backupJob.message && (
                 <div className="text-xs text-slate-300">
-                  <span className="font-semibold">Meldung:</span> {backupJob.message}
+                  <span className="font-semibold">{t('runningBackup.label.message')}</span> {backupJob.message}
                 </div>
               )}
 
-              {backupJob.message?.includes('Verschlüsselung') && (
+              {/Verschlüsselung|Encryption/i.test(backupJob.message || '') && (
                 <div className="p-2 bg-blue-900/20 border border-blue-700/40 rounded-lg text-blue-200 text-xs">
-                  🔒 Verschlüsselung läuft…
+                  {t('runningBackup.encryptionRunning')}
                 </div>
               )}
 
-              {(backupJob.message?.includes('Upload') || backupJob.message?.includes('Prüfe') || 
-                backupJob.results?.some((r: string) => String(r).includes('upload'))) && 
+              {(/Upload/i.test(backupJob.message || '') || /Prüfe|Check/i.test(backupJob.message || '') ||
+                backupJob.results?.some((r: string) => String(r).toLowerCase().includes('upload'))) &&
                !backupJob.remote_file && (
                 <div className="space-y-2">
                   <div className="text-xs text-slate-300">
-                    {backupJob.message?.includes('Prüfe') ? 'Prüfe in 1 Min, ob Datei in Cloud…' : 'Upload zu Cloud läuft…'}
+                    {/Prüfe|Check/i.test(backupJob.message || '') ? t('runningBackup.checkCloudHint') : t('runningBackup.uploadRunning')}
                     {typeof backupJob.upload_progress_pct === 'number' && (
                       <span className="ml-2 font-semibold">{backupJob.upload_progress_pct} %</span>
                     )}
@@ -411,7 +413,7 @@ const RunningBackupModal: React.FC = () => {
 
               {backupJob.remote_file && (
                 <div className="p-2 bg-green-900/20 border border-green-700/40 rounded-lg text-green-200 text-xs">
-                  ✅ Upload erfolgreich: {String(backupJob.remote_file).split('/').pop()}
+                  {t('runningBackup.uploadOk', { file: String(backupJob.remote_file).split('/').pop() || '' })}
                 </div>
               )}
 
@@ -427,7 +429,7 @@ const RunningBackupModal: React.FC = () => {
                     onClick={cancelBackup}
                     className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-xs"
                   >
-                    Abbrechen
+                    {t('runningBackup.cancel')}
                   </button>
                 </div>
               )}

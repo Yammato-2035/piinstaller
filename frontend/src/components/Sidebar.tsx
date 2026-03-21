@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { usePlatform } from '../context/PlatformContext'
 import { useUIMode, type UIMode } from '../context/UIModeContext'
 import AppIcon from './AppIcon'
 import RiskLevelBadge from './RiskLevelBadge'
 import { getPageRisk } from '../config/riskLevels'
+import type { TFunction } from 'i18next'
 import {
   Shield,
   Users,
@@ -51,7 +53,49 @@ const NEW_BADGE_KEY = 'pi-installer-new-'
 /** Phase 5: Für Einsteiger diese Einträge – klare Aufgaben + Einstellungen (u. a. Erfahrungslevel ändern). */
 const BEGINNER_MENU_IDS = ['dashboard', 'wizard', 'app-store', 'backup', 'monitoring', 'documentation', 'settings'] as const
 
+function buildMenuItems(
+  t: TFunction,
+  isRaspberryPi: boolean,
+  freenoveDetected: boolean,
+  appEdition: 'repo' | 'release'
+) {
+  type Item = { id?: string; type?: string; labelKey?: string; icon?: any; appIcon?: string; modes?: UIMode[]; developerOnly?: boolean }
+  const items: Item[] = [
+    { id: 'dashboard', labelKey: 'sidebar.menu.dashboard', appIcon: 'dashboard', modes: ['basic'] },
+    { id: 'wizard', labelKey: 'sidebar.menu.wizard', appIcon: 'wizard', modes: ['basic'] },
+    { id: 'app-store', labelKey: 'sidebar.menu.appStore', appIcon: 'app-store', modes: ['basic'] },
+    { id: 'backup', labelKey: 'sidebar.menu.backup', appIcon: 'backup', modes: ['basic'] },
+    { id: 'monitoring', labelKey: 'sidebar.menu.monitoring', appIcon: 'monitoring', modes: ['basic', 'advanced', 'diagnose'] },
+    { id: 'documentation', labelKey: 'sidebar.menu.documentation', appIcon: 'documentation', modes: ['basic'] },
+    { type: 'divider' },
+    { id: 'remote', labelKey: 'sidebar.menu.remote', icon: Smartphone, modes: ['advanced'] },
+    ...(freenoveDetected ? [{ id: 'dsi-radio-settings', labelKey: 'sidebar.menu.dsiRadio', icon: Radio, modes: ['basic', 'advanced'] as UIMode[] }] : []),
+    { id: 'presets', labelKey: 'sidebar.menu.presets', icon: Settings, modes: ['advanced'] },
+    { type: 'divider' },
+    { id: 'settings', labelKey: 'sidebar.menu.settings', appIcon: 'settings', modes: ['advanced', 'diagnose'] },
+    { id: 'security', labelKey: 'sidebar.menu.security', icon: Shield, modes: ['advanced'] },
+    { id: 'users', labelKey: 'sidebar.menu.users', icon: Users, modes: ['advanced'] },
+    { type: 'divider' },
+    { id: 'control-center', labelKey: 'sidebar.menu.controlCenter', appIcon: 'control-center', modes: ['advanced'] },
+    { id: 'periphery-scan', labelKey: 'sidebar.menu.peripheryScan', appIcon: 'periphery-scan', modes: ['advanced', 'diagnose'] },
+    { id: 'webserver', labelKey: 'sidebar.menu.webserver', icon: Globe, modes: ['advanced'] },
+    { id: 'nas', labelKey: 'sidebar.menu.nas', icon: HardDrive, modes: ['advanced'] },
+    { id: 'homeautomation', labelKey: 'sidebar.menu.homeAutomation', icon: Home, modes: ['advanced'] },
+    { id: 'musicbox', labelKey: 'sidebar.menu.musicbox', icon: Music, modes: ['advanced'] },
+    { id: 'kino-streaming', labelKey: 'sidebar.menu.kinoStreaming', icon: Tv, modes: ['advanced'] },
+    { id: 'learning', labelKey: 'sidebar.menu.learning', icon: BookOpen, modes: ['advanced'] },
+    ...(appEdition === 'repo' ? [{ id: 'pi-installer-update', labelKey: 'sidebar.menu.setuphelferUpdate', icon: Upload, modes: ['advanced'] as UIMode[] }] : []),
+    { id: 'devenv', labelKey: 'sidebar.menu.devenv', icon: Code, modes: ['advanced'], developerOnly: true },
+    { id: 'mailserver', labelKey: 'sidebar.menu.mailserver', icon: Mail, modes: ['advanced'], developerOnly: true },
+  ]
+  if (isRaspberryPi) {
+    items.push({ id: 'raspberry-pi-config', labelKey: 'sidebar.menu.raspberryPiConfig', icon: Cpu, modes: ['advanced'] })
+  }
+  return items
+}
+
 const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, theme, setTheme, isRaspberryPi = false, freenoveDetected = false, mobileOpen = false, onClose, experienceLevel = 'beginner', appEdition = 'release' }) => {
+  const { t } = useTranslation()
   const { appTitle } = usePlatform()
   const { mode, setMode } = useUIMode()
   const isBeginnerSidebar = experienceLevel === 'beginner'
@@ -70,41 +114,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     setNewBadges(badges)
   }, [currentPage])
 
-  const menuItems = useMemo(() => {
-    type Item = { id?: string; type?: string; label?: string; icon?: any; appIcon?: string; modes?: UIMode[]; developerOnly?: boolean }
-    const items: Item[] = [
-      { id: 'dashboard', label: 'Start', appIcon: 'dashboard', modes: ['basic'] },
-      { id: 'wizard', label: 'Setup-Assistent', appIcon: 'wizard', modes: ['basic'] },
-      { id: 'app-store', label: 'Apps', appIcon: 'app-store', modes: ['basic'] },
-      { id: 'backup', label: 'Backup', appIcon: 'backup', modes: ['basic'] },
-      { id: 'monitoring', label: 'Systemstatus', appIcon: 'monitoring', modes: ['basic', 'advanced', 'diagnose'] },
-      { id: 'documentation', label: 'Hilfe', appIcon: 'documentation', modes: ['basic'] },
-      { type: 'divider' },
-      { id: 'remote', label: 'Linux Companion', icon: Smartphone, modes: ['advanced'] },
-      ...(freenoveDetected ? [{ id: 'dsi-radio-settings', label: 'DSI-Radio Einstellungen', icon: Radio, modes: ['basic', 'advanced'] as UIMode[] }] : []),
-      { id: 'presets', label: 'Voreinstellungen', icon: Settings, modes: ['advanced'] },
-      { type: 'divider' },
-      { id: 'settings', label: 'Einstellungen', appIcon: 'settings', modes: ['advanced', 'diagnose'] },
-      { id: 'security', label: 'Sicherheit', icon: Shield, modes: ['advanced'] },
-      { id: 'users', label: 'Benutzer', icon: Users, modes: ['advanced'] },
-      { type: 'divider' },
-      { id: 'control-center', label: 'Control Center', appIcon: 'control-center', modes: ['advanced'] },
-      { id: 'periphery-scan', label: 'Peripherie-Scan', appIcon: 'periphery-scan', modes: ['advanced', 'diagnose'] },
-      { id: 'webserver', label: 'Webserver', icon: Globe, modes: ['advanced'] },
-      { id: 'nas', label: 'NAS', icon: HardDrive, modes: ['advanced'] },
-      { id: 'homeautomation', label: 'Hausautomatisierung', icon: Home, modes: ['advanced'] },
-      { id: 'musicbox', label: 'Musikbox', icon: Music, modes: ['advanced'] },
-      { id: 'kino-streaming', label: 'Kino / Streaming', icon: Tv, modes: ['advanced'] },
-      { id: 'learning', label: 'Lerncomputer', icon: BookOpen, modes: ['advanced'] },
-      ...(appEdition === 'repo' ? [{ id: 'pi-installer-update', label: 'PI-Installer Update', icon: Upload, modes: ['advanced'] as UIMode[] }] : []),
-      { id: 'devenv', label: 'Dev-Umgebung', icon: Code, modes: ['advanced'], developerOnly: true },
-      { id: 'mailserver', label: 'Mailserver', icon: Mail, modes: ['advanced'], developerOnly: true },
-    ]
-    if (isRaspberryPi) {
-      items.push({ id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu, modes: ['advanced'] })
-    }
-    return items
-  }, [isRaspberryPi, freenoveDetected, appEdition])
+  const menuItems = useMemo(() => buildMenuItems(t, isRaspberryPi, freenoveDetected, appEdition), [t, isRaspberryPi, freenoveDetected, appEdition])
 
   const filteredItems = useMemo(() => {
     if (isBeginnerSidebar) {
@@ -152,18 +162,18 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
           </div>
         </div>
         {mobileOpen && onClose && (
-          <button type="button" onClick={onClose} className="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700" aria-label="Menü schließen">
+          <button type="button" onClick={onClose} className="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700" aria-label={t('sidebar.closeMenu')}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         )}
         </div>
         {/* Phase 5: Tabs nur für Fortgeschrittene/Entwickler – Einsteiger sehen nur die 6 Hauptpunkte. */}
         {!isBeginnerSidebar && (
-          <div className="flex gap-0.5 p-0.5 bg-slate-300/50 dark:bg-slate-800/50 rounded-lg" role="tablist" aria-label="Ansichtsmodus">
+          <div className="flex gap-0.5 p-0.5 bg-slate-300/50 dark:bg-slate-800/50 rounded-lg" role="tablist" aria-label={t('sidebar.modeTabs.aria')}>
             {([
-              { id: 'basic' as const, label: 'Grundlagen', title: 'Häufig genutzte Funktionen für Einsteiger', appIcon: 'dashboard' as const },
-              { id: 'advanced' as const, label: 'Erweitert', title: 'Technische Einstellungen für erfahrene Nutzer', appIcon: 'advanced' as const },
-              { id: 'diagnose' as const, label: 'Diagnose', title: 'Diagnosewerkzeuge zur Fehlersuche', appIcon: 'diagnose' as const },
+              { id: 'basic' as const, label: t('sidebar.modeTabs.basic'), title: t('sidebar.modeTabs.basicTitle'), appIcon: 'dashboard' as const },
+              { id: 'advanced' as const, label: t('sidebar.modeTabs.advanced'), title: t('sidebar.modeTabs.advancedTitle'), appIcon: 'advanced' as const },
+              { id: 'diagnose' as const, label: t('sidebar.modeTabs.diagnose'), title: t('sidebar.modeTabs.diagnoseTitle'), appIcon: 'diagnose' as const },
             ]).map(({ id, label, title, appIcon }) => (
               <button
                 key={id}
@@ -194,14 +204,14 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
           const Icon = item.icon
           const appIconName = item.appIcon
           const isActive = currentPage === item.id
-          const pageRisk = getPageRisk(item.id)
+          const pageRisk = getPageRisk(item.id, t)
 
           return (
             <button
               key={item.id}
               onClick={() => !isPiConfigDisabled && handlePageChange(item.id)}
               disabled={isPiConfigDisabled}
-              title={isPiConfigDisabled ? 'Nur auf Raspberry Pi verfügbar' : undefined}
+              title={isPiConfigDisabled ? t('sidebar.raspberryOnly') : undefined}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 ${
                 isPiConfigDisabled
                   ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
@@ -215,12 +225,12 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
               ) : (
                 Icon && <Icon size={18} />
               )}
-              <span className="font-medium text-sm flex-1 truncate">{item.label}</span>
+              <span className="font-medium text-sm flex-1 truncate">{item.labelKey ? t(item.labelKey) : ''}</span>
               {pageRisk && (
                 <RiskLevelBadge level={pageRisk.level} showLabel={false} title={pageRisk.label} className={isActive ? 'border-white/50' : ''} />
               )}
               {newBadges[item.id] && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-sky-500 text-white rounded animate-pulse">Neu</span>
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-sky-500 text-white rounded animate-pulse">{t('sidebar.newBadge')}</span>
               )}
             </button>
           )
@@ -230,13 +240,13 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
       {/* Footer */}
       <div className="p-3 border-t border-slate-300 dark:border-slate-700 space-y-2">
         <div className="text-xs px-2">
-          <p className="font-semibold mb-1.5 text-slate-600 dark:text-slate-300">System Status</p>
+          <p className="font-semibold mb-1.5 text-slate-600 dark:text-slate-300">{t('sidebar.systemStatus')}</p>
           <p className="text-green-600 dark:text-green-400 font-semibold flex items-center gap-1.5">
             <AppIcon name="ok" category="status" size={16} statusColor="ok" />
-            Bereit
+            {t('sidebar.ready')}
           </p>
           <div className="mt-2.5 pt-2.5 border-t border-slate-300 dark:border-slate-700 space-y-2">
-            <p className="text-slate-500 dark:text-slate-400 text-xs mb-2">© 01.2026 by Volker Glienke</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs mb-2">{t('sidebar.copyright')}</p>
             {/* Theme Toggle */}
             <div className="flex gap-1 p-1 bg-slate-300/50 dark:bg-slate-800/50 rounded-lg">
               <button
@@ -244,7 +254,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
                 className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs transition-colors duration-150 ${
                   theme === 'light' ? 'bg-sky-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                 }`}
-                title="Hell"
+                title={t('sidebar.theme.light')}
               >
                 <Sun size={14} />
               </button>
@@ -253,7 +263,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
                 className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs transition-colors duration-150 ${
                   theme === 'dark' ? 'bg-sky-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                 }`}
-                title="Dunkel"
+                title={t('sidebar.theme.dark')}
               >
                 <Moon size={14} />
               </button>
@@ -262,7 +272,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
                 className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs transition-colors duration-150 ${
                   theme === 'system' ? 'bg-sky-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                 }`}
-                title="System"
+                title={t('sidebar.theme.system')}
               >
                 <Monitor size={14} />
               </button>
@@ -276,7 +286,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-sky-600/60 hover:bg-sky-600/80 text-sky-100 rounded-lg transition-colors duration-150 text-xs font-medium"
           >
             <AppIcon name="documentation" category="navigation" size={24} />
-            <span>Dokumentation</span>
+            <span>{t('sidebar.footerDocs')}</span>
           </button>
           <button
             type="button"
@@ -289,7 +299,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
                 w?.close()
                 setTimeout(() => {
                   if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-                    toast('Bitte Fenster oder Tab manuell schließen (Strg+W).', { duration: 4000 })
+                    toast(t('sidebar.closeWindowHint'), { duration: 4000 })
                   }
                 }, 200)
               }
@@ -297,7 +307,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-red-600/50 hover:bg-red-600/70 text-red-100 rounded-lg transition-colors duration-150 text-xs font-medium"
           >
             <LogOut size={16} />
-            <span>Beenden</span>
+            <span>{t('sidebar.quit')}</span>
           </button>
         </div>
       </div>

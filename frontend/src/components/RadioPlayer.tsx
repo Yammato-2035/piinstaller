@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Play, Pause, Volume2, Monitor, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { fetchApi, getApiBase } from '../api'
 import html2canvas from 'html2canvas'
@@ -254,6 +255,7 @@ interface RadioPlayerProps {
 }
 
 const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false, showDsiButton = false, backendError }) => {
+  const { t } = useTranslation()
   const previewMode = compact && !dsi
   const textClass = (dsi || previewMode) ? 'text-white' : 'text-slate-800 dark:text-slate-100'
   const mutedClass = (dsi || previewMode) ? 'text-slate-200' : 'text-slate-500 dark:text-slate-400'
@@ -286,7 +288,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
       if (!audio.src) return
       if (playAttemptRef.current !== null && playAttemptRef.current === switchIdRef.current) {
         setPlaying(false)
-        setError('Stream konnte nicht abgespielt werden (z. B. Proxy/CORS oder Codec).')
+        setError(t('radioPlayer.streamPlaybackError'))
       }
     })
     audioRef.current = audio
@@ -297,7 +299,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
         audioRef.current = null
       }
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     stationIdRef.current = station.id
@@ -393,10 +395,10 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
     }
     if (playing) {
       fetchMeta()
-      const t = setInterval(fetchMeta, 15000) // 15 Sekunden (reduziert Last auf Backend)
+      const metaInterval = setInterval(fetchMeta, 15000) // 15 Sekunden (reduziert Last auf Backend)
       return () => {
         cancelled = true
-        clearInterval(t)
+        clearInterval(metaInterval)
       }
     } else {
       setMetadata(null)
@@ -442,7 +444,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
       startLevelLoop(audioRef.current!)
     } catch (e) {
       if (mySwitch === switchIdRef.current) {
-        setError('Stream fehlgeschlagen. Prüfen: Backend läuft, Audio-Ausgabe in Einstellungen → Sound.')
+        setError(t('radioPlayer.error.streamFailed'))
         setPlaying(false)
       }
     } finally {
@@ -501,29 +503,27 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
       
       canvas.toBlob((blob) => {
         if (!blob) {
-          toast.error('Fehler beim Erstellen des Screenshots')
+          toast.error(t('radioPlayer.screenshot.createError'))
           return
         }
         
         const item = new ClipboardItem({ 'image/png': blob })
         navigator.clipboard.write([item]).then(() => {
-          toast.success('Screenshot wurde in den Zwischenspeicher kopiert')
+          toast.success(t('radioPlayer.screenshot.copySuccess'))
         }).catch((err) => {
           console.error('Fehler beim Kopieren in den Zwischenspeicher:', err)
-          toast.error('Fehler beim Kopieren in den Zwischenspeicher')
+          toast.error(t('radioPlayer.screenshot.copyError'))
         })
       }, 'image/png')
     } catch (error) {
       console.error('Fehler beim Erstellen des Screenshots:', error)
-      toast.error('Fehler beim Erstellen des Screenshots')
+      toast.error(t('radioPlayer.screenshot.createError'))
     }
   }
 
   return (
     <div ref={containerRef} className={compact ? 'space-y-4' : 'space-y-6'}>
-      <p className={`text-sm ${mutedClass}`}>
-        Sound über System-Ausgabegerät (Standard: Gehäuse-Lautsprecher).
-      </p>
+      <p className={`text-sm ${mutedClass}`}>{t('radioPlayer.soundHint')}</p>
 
       {/* DSI-Vorschau / Anzeige: Logo + Sender + LED-Meter + Now Playing */}
       <div
@@ -542,7 +542,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
               }
             }}
             className={`absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-lg bg-red-600 hover:bg-red-700 text-white shadow-lg transition-colors border-2 ${SILVER_BORDER}`}
-            title="Radio beenden"
+            title={t('radioPlayer.endRadio')}
           >
             <X className="w-5 h-5" strokeWidth={2.5} />
           </button>
@@ -576,12 +576,12 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
             )}
             {(metadata?.show ?? metadata?.server_name) && (
               <p className={`text-xs ${mutedClass} truncate`} title={metadata.show ?? metadata.server_name}>
-                Sendung: {(metadata.show ?? metadata.server_name ?? '').slice(0, 50)}{(metadata.show ?? metadata.server_name ?? '').length > 50 ? '…' : ''}
+                {t('radioPlayer.showLabel')} {(metadata.show ?? metadata.server_name ?? '').slice(0, 50)}{(metadata.show ?? metadata.server_name ?? '').length > 50 ? '…' : ''}
               </p>
             )}
             {metadata?.title && (
               <p className={`text-base font-medium truncate ${(dsi || previewMode) ? 'text-emerald-300' : 'text-emerald-600 dark:text-emerald-400'}`} title={metadata.title}>
-                Jetzt: {metadata.artist && metadata.song ? `${metadata.artist} – ${metadata.song}` : metadata.title}
+                {t('radioPlayer.nowPlaying')} {metadata.artist && metadata.song ? `${metadata.artist} – ${metadata.song}` : metadata.title}
               </p>
             )}
             {metadata?.bitrate && (
@@ -589,7 +589,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
             )}
             {!metadata?.title && (
               <p className={`text-base ${mutedClass}`}>
-                {playing ? 'Stream läuft…' : 'Pause'}
+                {playing ? t('radioPlayer.playing') : t('radioPlayer.paused')}
               </p>
             )}
           </div>
@@ -622,7 +622,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
                 type="button"
                 onClick={() => setVuMode((m) => (m === 'led' ? 'analog' : 'led'))}
                 className="text-[10px] text-slate-400 hover:text-slate-300 px-1"
-                title={vuMode === 'led' ? 'Analog anzeigen' : 'LED anzeigen'}
+                title={vuMode === 'led' ? t('radioPlayer.vuAnalog') : t('radioPlayer.vuLed')}
               >
                 {vuMode === 'led' ? 'Analog' : 'LED'}
               </button>
@@ -669,7 +669,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
                   type="button"
                   onClick={() => setFavoritesPage((p) => (p + 1) % Math.ceil(RADIO_STATIONS.length / FAVORITES_PER_PAGE))}
                   className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-slate-600 hover:bg-slate-500 text-slate-200"
-                  title="Seite wechseln"
+                  title={t('radioPlayer.pageFlip')}
                 >
                   {favoritesPage > 0 && <ChevronLeft className="w-3.5 h-3.5 shrink-0" />}
                   <span>{favoritesPage + 1}/{Math.ceil(RADIO_STATIONS.length / FAVORITES_PER_PAGE)}</span>
@@ -709,7 +709,7 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
           className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-medium"
         >
           {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-          {loading ? 'Starte…' : playing ? 'Pause' : 'Abspielen'}
+          {loading ? t('radioPlayer.starting') : playing ? t('radioPlayer.pause') : t('radioPlayer.play')}
         </button>
         {playing && (
           <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-sm">
@@ -724,10 +724,12 @@ const RadioPlayer: React.FC<RadioPlayerProps> = ({ compact = false, dsi = false,
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-600 hover:bg-slate-500 text-white text-sm font-medium"
             >
-              <Monitor className="w-4 h-4" /> Auf DSI anzeigen
+              <Monitor className="w-4 h-4" /> {t('radioPlayer.showOnDsi')}
             </a>
             <span className="text-xs text-slate-500 dark:text-slate-400">
-              Tipp: Wenn die Seite nicht lädt oder das Fenster auf HDMI erscheint, auf dem Pi die native App nutzen: Desktop-Icon „DSI Radio“ oder <code className="bg-slate-200 dark:bg-slate-700 px-1 rounded">./scripts/start-dsi-radio.sh</code> (PyQt6, kein Frontend nötig).
+              {t('radioPlayer.nativeAppHintBefore')}
+              <code className="bg-slate-200 dark:bg-slate-700 px-1 rounded">./scripts/start-dsi-radio.sh</code>
+              {t('radioPlayer.nativeAppHintAfter')}
             </span>
           </span>
         )}

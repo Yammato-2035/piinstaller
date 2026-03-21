@@ -3,6 +3,8 @@
  * GREEN = sichere Operationen, YELLOW = Systemänderungen, RED = gefährliche Operationen.
  */
 
+import type { TFunction } from 'i18next'
+
 export type RiskLevel = 'green' | 'yellow' | 'red'
 
 export interface PageRiskInfo {
@@ -12,69 +14,76 @@ export interface PageRiskInfo {
   warningText?: string
 }
 
-const RISK_MAP: Record<string, PageRiskInfo> = {
-  dashboard: { level: 'green', label: 'Sicher' },
-  wizard: { level: 'green', label: 'Sicher' },
-  'app-store': { level: 'green', label: 'Sicher' },
-  backup: { level: 'green', label: 'Sicher' },
-  monitoring: { level: 'green', label: 'Sicher' },
-  documentation: { level: 'green', label: 'Sicher' },
-  settings: { level: 'green', label: 'Sicher' },
-  users: { level: 'green', label: 'Sicher' },
-  learning: { level: 'green', label: 'Sicher' },
-  'pi-installer-update': { level: 'green', label: 'Sicher' },
-  'dsi-radio-settings': { level: 'green', label: 'Sicher' },
+type RiskEntry = { level: RiskLevel; warningKey?: string }
+
+const RISK_MAP: Record<string, RiskEntry> = {
+  dashboard: { level: 'green' },
+  wizard: { level: 'green' },
+  'app-store': { level: 'green' },
+  backup: { level: 'green' },
+  monitoring: { level: 'green' },
+  documentation: { level: 'green' },
+  settings: { level: 'green' },
+  users: { level: 'green' },
+  learning: { level: 'green' },
+  'pi-installer-update': { level: 'green' },
+  'dsi-radio-settings': { level: 'green' },
 
   security: {
     level: 'yellow',
-    label: 'Systemänderung',
-    warningText: 'Firewall, SSH und automatische Updates verändern die Systemkonfiguration. Änderungen sind in der Regel rückgängig zu machen.',
+    warningKey: 'risk.warning.security',
   },
   'control-center': {
     level: 'yellow',
-    label: 'Systemänderung',
-    warningText: 'Hier werden Netzwerk-, Display- und Geräteeinstellungen geändert. Bitte nur anpassen, wenn du die Auswirkungen kennst.',
+    warningKey: 'risk.warning.controlCenter',
   },
-  'periphery-scan': { level: 'yellow', label: 'Systemänderung' },
+  'periphery-scan': { level: 'yellow' },
   webserver: {
     level: 'yellow',
-    label: 'Systemänderung',
-    warningText: 'Installation und Konfiguration von Webservern (Nginx/Apache) verändern Dienste und Ports.',
+    warningKey: 'risk.warning.webserver',
   },
   nas: {
     level: 'yellow',
-    label: 'Systemänderung',
-    warningText: 'NAS-Einrichtung kann Speicher und Dienste auf dem System anpassen.',
+    warningKey: 'risk.warning.nas',
   },
-  homeautomation: { level: 'yellow', label: 'Systemänderung' },
-  musicbox: { level: 'yellow', label: 'Systemänderung' },
-  'kino-streaming': { level: 'yellow', label: 'Systemänderung' },
-  presets: { level: 'yellow', label: 'Systemänderung' },
-  remote: { level: 'yellow', label: 'Systemänderung' },
+  homeautomation: { level: 'yellow' },
+  musicbox: { level: 'yellow' },
+  'kino-streaming': { level: 'yellow' },
+  presets: { level: 'yellow' },
+  remote: { level: 'yellow' },
   devenv: {
     level: 'yellow',
-    label: 'Systemänderung',
-    warningText: 'Entwicklungsumgebung installiert zusätzliche Software und kann Systempfade betreffen.',
+    warningKey: 'risk.warning.devenv',
   },
 
   'raspberry-pi-config': {
     level: 'red',
-    label: 'Gefahr',
-    warningText: 'Änderungen an der Raspberry-Pi-Konfiguration (config.txt, Overclocking, Boot-Optionen) können das System beschädigen oder unbootbar machen. Nur mit Erfahrung nutzen.',
+    warningKey: 'risk.warning.raspberryPiConfig',
   },
   mailserver: {
     level: 'red',
-    label: 'Gefahr',
-    warningText: 'Ein Mailserver im Internet erfordert DNS, SPF, DKIM und sichere Konfiguration. Fehler können zu offenen Relays oder Blocklisten führen. Nur für erfahrene Nutzer.',
+    warningKey: 'risk.warning.mailserver',
   },
 }
 
-export function getPageRisk(pageId: string | undefined): PageRiskInfo | null {
+function labelKeyForLevel(level: RiskLevel): string {
+  if (level === 'green') return 'risk.label.safe'
+  if (level === 'yellow') return 'risk.label.systemChange'
+  return 'risk.label.danger'
+}
+
+export function getPageRisk(pageId: string | undefined, t: TFunction): PageRiskInfo | null {
   if (!pageId) return null
-  return RISK_MAP[pageId] ?? null
+  const raw = RISK_MAP[pageId]
+  if (!raw) return null
+  return {
+    level: raw.level,
+    label: t(labelKeyForLevel(raw.level)),
+    warningText: raw.warningKey ? String(t(raw.warningKey)) : undefined,
+  }
 }
 
 export function getRiskLevel(pageId: string | undefined): RiskLevel | null {
-  const info = getPageRisk(pageId)
-  return info?.level ?? null
+  const raw = pageId ? RISK_MAP[pageId] : null
+  return raw?.level ?? null
 }

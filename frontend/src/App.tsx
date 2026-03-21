@@ -32,9 +32,23 @@ import RemoteView from './features/remote/RemoteView'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
 import { fetchApi, getApiBase, setApiBase } from './api'
-import { PlatformProvider, platformFromSystemInfo } from './context/PlatformContext'
+import { PlatformProvider, platformRawFromSystemInfo, usePlatform } from './context/PlatformContext'
 import { UIModeProvider } from './context/UIModeContext'
+import i18n from './i18n'
 import './App.css'
+
+function AppDocumentTitle({ dsiRadioView }: { dsiRadioView: boolean }) {
+  const { appTitle } = usePlatform()
+  useEffect(() => {
+    if (!dsiRadioView && appTitle) document.title = appTitle
+  }, [dsiRadioView, appTitle])
+  return null
+}
+
+function MobileAppTitle() {
+  const { appTitle } = usePlatform()
+  return <span className="font-semibold text-slate-800 dark:text-white">{appTitle}</span>
+}
 
 /* REGRESSION-RISK: Neue Menüeinträge/Pages nur mit existierendem Ziel; Grundlagen vs. Erweitert sauber trennen. */
 type Page = 
@@ -126,13 +140,7 @@ function App() {
     }
   }, [dsiRadioView])
 
-  const platform = useMemo(() => platformFromSystemInfo(systemInfo), [systemInfo])
-
-  useEffect(() => {
-    if (!dsiRadioView && platform.appTitle) {
-      document.title = platform.appTitle
-    }
-  }, [dsiRadioView, platform.appTitle])
+  const platformRaw = useMemo(() => platformRawFromSystemInfo(systemInfo), [systemInfo])
 
   const fetchSystemInfo = useCallback(async () => {
     setBackendError(false)
@@ -163,7 +171,7 @@ function App() {
           await new Promise((r) => setTimeout(r, 1500))
           continue
         }
-        console.error('Fehler beim Laden der Systeminfo:', error)
+        console.error(i18n.t('app.errors.systemInfoLoad'), error)
         setBackendErrorReason(reason)
         setBackendError(true)
         // Fallback: Wenn Standard-URL 127.0.0.1 war, einmal localhost probieren (IPv6/Resolver-Probleme)
@@ -253,18 +261,18 @@ function App() {
         const { getScreenshotableWindows, getWindowScreenshot } = await import('tauri-plugin-screenshots-api')
         const windows = await getScreenshotableWindows()
         const main = windows.find((w: { title?: string }) =>
-          (w.title || '').includes('PI-Installer') || (w.title || '').includes('Sabrina Tuner') || (w.title || '').includes('Raspberry')
+          (w.title || '').includes('SetupHelfer') || (w.title || '').includes('Sabrina Tuner') || (w.title || '').includes('Raspberry')
         )
         const windowId = main?.id ?? windows[0]?.id
         if (windowId == null) {
-          toast.error('Kein Fenster für Screenshot gefunden')
+          toast.error(i18n.t('app.screenshot.noWindow'))
           return
         }
         const path = await getWindowScreenshot(windowId)
-        toast.success(`Screenshot gespeichert:\n${path}`, { duration: 5000 })
+        toast.success(i18n.t('app.screenshot.saved', { path }), { duration: 5000 })
       } catch (e: any) {
         console.error('F10 Screenshot:', e)
-        toast.error(e?.message || 'Screenshot fehlgeschlagen')
+        toast.error(e?.message || i18n.t('app.screenshot.failed'))
       }
     }
 
@@ -344,7 +352,7 @@ function App() {
       case 'backup':
         return <BackupRestore />
       case 'raspberry-pi-config':
-        return platform?.isRaspberryPi ? (
+        return platformRaw.isRaspberryPi ? (
           <RaspberryPiConfig />
         ) : (
           <Dashboard
@@ -357,7 +365,7 @@ function App() {
           />
         )
       case 'control-center':
-        return <ControlCenter isRaspberryPi={platform?.isRaspberryPi ?? false} />
+        return <ControlCenter isRaspberryPi={platformRaw.isRaspberryPi} />
       case 'periphery-scan':
         return <PeripheryScan setCurrentPage={handlePageChange} />
       case 'settings':
@@ -423,7 +431,8 @@ function App() {
 
   return (
     <UIModeProvider>
-    <PlatformProvider value={platform}>
+    <PlatformProvider systemInfo={systemInfo}>
+      <AppDocumentTitle dsiRadioView={dsiRadioView} />
       <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
         {!firstRunDone && (
           <FirstRunWizard
@@ -443,13 +452,13 @@ function App() {
             type="button"
             onClick={() => setMobileMenuOpen(true)}
             className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700"
-            aria-label="Menü öffnen"
+            aria-label={i18n.t('app.mobile.openMenu')}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
-          <span className="font-semibold text-slate-800 dark:text-white">{platform.appTitle}</span>
+          <MobileAppTitle />
         </header>
-        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platform.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} experienceLevel={experienceLevel} appEdition={appEdition} />
+        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platformRaw.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} experienceLevel={experienceLevel} appEdition={appEdition} />
       <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="p-4 sm:p-8 min-h-full">
           <AnimatePresence mode="wait" initial={false}>

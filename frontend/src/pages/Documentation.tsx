@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookOpen, Cloud, HardDrive, Settings, Cpu, Monitor, HelpCircle, Film,
@@ -6,6 +7,7 @@ import {
   Package, LayoutGrid, Radio, Image,
 } from 'lucide-react'
 import { usePlatform } from '../context/PlatformContext'
+import i18n from '../i18n'
 
 type SectionId =
   | 'dashboard' | 'wizard' | 'presets' | 'einstellungen' | 'security' | 'users'
@@ -13,34 +15,34 @@ type SectionId =
   | 'monitoring' | 'backup-restore' | 'raspberry-pi-config' | 'control-center' | 'periphery-scan'
   | 'cloud' | 'desktop-app' | 'freenove-case' | 'dualdisplay' | 'radio-app' | 'picture-frame-app' | 'troubleshooting' | 'versionen'
 
-const SECTIONS: { id: SectionId; label: string; icon: React.ElementType }[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'wizard', label: 'Assistent', icon: Zap },
-  { id: 'presets', label: 'Voreinstellungen', icon: Settings },
-  { id: 'einstellungen', label: 'Einstellungen', icon: Settings },
-  { id: 'security', label: 'Sicherheit', icon: Shield },
-  { id: 'users', label: 'Benutzer', icon: Users },
-  { id: 'devenv', label: 'Dev-Umgebung', icon: Code },
-  { id: 'webserver', label: 'Webserver', icon: Globe },
-  { id: 'mailserver', label: 'Mailserver', icon: Mail },
-  { id: 'nas', label: 'NAS', icon: HardDrive },
-  { id: 'homeautomation', label: 'Hausautomatisierung', icon: Home },
-  { id: 'musicbox', label: 'Musikbox', icon: Music },
-  { id: 'kino-streaming', label: 'Kino / Streaming', icon: Film },
-  { id: 'learning', label: 'Lerncomputer', icon: BookOpen },
-  { id: 'monitoring', label: 'Monitoring', icon: Activity },
-  { id: 'backup-restore', label: 'Backup & Restore', icon: Database },
-  { id: 'raspberry-pi-config', label: 'Raspberry Pi Config', icon: Cpu },
-  { id: 'control-center', label: 'Control Center', icon: Settings },
-  { id: 'periphery-scan', label: 'Peripherie-Scan (Assimilation)', icon: Scan },
-  { id: 'cloud', label: 'Cloud-Einstellungen', icon: Cloud },
-  { id: 'desktop-app', label: 'Desktop-App (Tauri)', icon: Monitor },
-  { id: 'freenove-case', label: 'Freenove Pro – 4,3″ Touchscreen im Gehäuse', icon: Package },
-  { id: 'dualdisplay', label: 'Dualdisplay DSI0 + HDMI1 – Zwei Monitore gleichzeitig', icon: LayoutGrid },
-  { id: 'radio-app', label: 'Radio-App (DSI Radio)', icon: Radio },
-  { id: 'picture-frame-app', label: 'Bilderrahmen', icon: Image },
-  { id: 'troubleshooting', label: 'FAQ – Häufige Fragen & Lösungen', icon: HelpCircle },
-  { id: 'versionen', label: 'Versionen & Changelog', icon: BookOpen },
+const DOC_SECTION_ICONS: { id: SectionId; icon: React.ElementType }[] = [
+  { id: 'dashboard', icon: LayoutDashboard },
+  { id: 'wizard', icon: Zap },
+  { id: 'presets', icon: Settings },
+  { id: 'einstellungen', icon: Settings },
+  { id: 'security', icon: Shield },
+  { id: 'users', icon: Users },
+  { id: 'devenv', icon: Code },
+  { id: 'webserver', icon: Globe },
+  { id: 'mailserver', icon: Mail },
+  { id: 'nas', icon: HardDrive },
+  { id: 'homeautomation', icon: Home },
+  { id: 'musicbox', icon: Music },
+  { id: 'kino-streaming', icon: Film },
+  { id: 'learning', icon: BookOpen },
+  { id: 'monitoring', icon: Activity },
+  { id: 'backup-restore', icon: Database },
+  { id: 'raspberry-pi-config', icon: Cpu },
+  { id: 'control-center', icon: Settings },
+  { id: 'periphery-scan', icon: Scan },
+  { id: 'cloud', icon: Cloud },
+  { id: 'desktop-app', icon: Monitor },
+  { id: 'freenove-case', icon: Package },
+  { id: 'dualdisplay', icon: LayoutGrid },
+  { id: 'radio-app', icon: Radio },
+  { id: 'picture-frame-app', icon: Image },
+  { id: 'troubleshooting', icon: HelpCircle },
+  { id: 'versionen', icon: BookOpen },
 ]
 
 /** Screenshot-Bild oder Platzhalter. src optional – ohne src nur Platzhalter. */
@@ -50,8 +52,10 @@ function ScreenshotImg({ src, alt, title, hint }: { src?: string; alt: string; t
   if (usePlaceholder) {
     return (
       <div className="my-4 p-4 border-2 border-dashed border-slate-500 rounded-lg bg-slate-900/30">
-        <p className="text-sm font-medium text-slate-400 mb-1">📷 Screenshot: {title || alt}</p>
-        <p className="text-xs text-slate-500">{hint || 'Bild nicht geladen.'}</p>
+        <p className="text-sm font-medium text-slate-400 mb-1">
+          {i18n.t('documentation.screenshot.placeholder', { title: title || alt })}
+        </p>
+        <p className="text-xs text-slate-500">{hint || i18n.t('documentation.screenshot.notLoaded')}</p>
       </div>
     )
   }
@@ -91,8 +95,17 @@ function ScreenshotDetail({ src, alt, title, position = '50% 50%', height = 220 
 }
 
 const Documentation: React.FC = () => {
+  const { t } = useTranslation()
   const [activeChapter, setActiveChapter] = useState<SectionId>('dashboard')
   const { systemLabel, systemLabelPossessive } = usePlatform()
+  const sections = useMemo(
+    () =>
+      DOC_SECTION_ICONS.map((s) => ({
+        ...s,
+        label: t(`documentation.nav.${s.id}`),
+      })),
+    [t]
+  )
 
   return (
     <motion.div
@@ -103,13 +116,13 @@ const Documentation: React.FC = () => {
       {/* Menü links */}
       <aside
         className="w-full sm:w-56 flex-shrink-0 sm:sticky sm:top-8 sm:self-start rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-4"
-        aria-label="Kapitel"
+        aria-label={t('documentation.aria.chapters')}
       >
         <h2 className="text-sm font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">
-          Dokumentation
+          {t('documentation.sidebar.heading')}
         </h2>
         <nav className="flex flex-col gap-1">
-          {SECTIONS.map(({ id, label, icon: Icon }) => (
+          {sections.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               type="button"
@@ -131,7 +144,7 @@ const Documentation: React.FC = () => {
       <div className="flex-1 min-w-0">
         <div className="mb-4 p-3 bg-sky-900/20 border border-sky-700/40 rounded-lg">
           <p className="text-sm text-slate-300">
-            <strong className="text-sky-300">PI-Installer Handbuch</strong> – Nutze die Kapitel links für Anleitungen, Screenshots und Schritt-für-Schritt-Anweisungen zu jedem Bereich.
+            <strong className="text-sky-300">{t('documentation.intro.handbook')}</strong> – {t('documentation.intro.lead')}
           </p>
         </div>
         <AnimatePresence mode="wait">
@@ -150,12 +163,12 @@ const Documentation: React.FC = () => {
               </h2>
               <div className="space-y-4 opacity-95">
                 <p className="text-sm">
-                  Das Dashboard ist die Startseite des PI-Installers und gibt einen Überblick über den Zustand deines {systemLabel}.
+                  Das Dashboard ist die Startseite von SetupHelfer und gibt einen Überblick über den Zustand deines {systemLabel}.
                 </p>
                 <div className="p-3 bg-slate-900/40 border border-slate-600 rounded-lg">
                   <h4 className="text-sm font-semibold text-sky-300 mb-1">📖 Handbuch: Erste Schritte</h4>
                   <ol className="list-decimal list-inside text-xs space-y-1 text-slate-300">
-                    <li>Öffne den PI-Installer im Browser (http://localhost:3001) oder als Desktop-App</li>
+                    <li>Öffne SetupHelfer im Browser (http://localhost:3001) oder als Desktop-App</li>
                     <li>Das Dashboard zeigt sofort Systeminfos, CPU, RAM und Sensoren</li>
                     <li>Nutze die Quick-Links für schnellen Sprung zu Assistent, Sicherheit, Backup</li>
                     <li>Bei „Backend nicht erreichbar“: Backend automatisch starten mit <code className="bg-slate-700 px-1 rounded">./scripts/install-backend-service.sh</code> (richtet systemd-Service ein) oder einmalig <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
@@ -329,7 +342,7 @@ const Documentation: React.FC = () => {
                 <ScreenshotDetail src="/docs/screenshots/screenshot-devenv.png" alt="Dev-Komponenten" title="Checkboxen für Python, Node, Rust, Tauri usw." position="50% 40%" height={160} />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
-                  <p className="text-xs">Für PI-Installer-Entwicklung: Rust und Tauri installieren, dann im frontend-Ordner <code className="bg-slate-700 px-1 rounded">npm run tauri:dev</code> ausführen.</p>
+                  <p className="text-xs">Für SetupHelfer-Entwicklung: Rust und Tauri installieren, dann im frontend-Ordner <code className="bg-slate-700 px-1 rounded">npm run tauri:dev</code> ausführen.</p>
                 </div>
               </div>
             </motion.div>
@@ -751,10 +764,10 @@ const Documentation: React.FC = () => {
               </h2>
               <div className="space-y-4 opacity-95">
                 <p className="text-sm">
-                  Die PI-Installer-Oberfläche kann als <strong>eigenständige Desktop-Anwendung</strong> laufen –
+                  Die SetupHelfer-Oberfläche kann als <strong>eigenständige Desktop-Anwendung</strong> laufen –
                   ohne Browserfenster. Dafür wird <strong>Tauri 2</strong> verwendet (WebView-basiert, ressourcenschonend).
                 </p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-documentation.png" alt="Desktop-App" title="PI-Installer als Desktop-Anwendung (Tauri)" />
+                <ScreenshotImg src="/docs/screenshots/screenshot-documentation.png" alt="Desktop-App" title="SetupHelfer als Desktop-Anwendung (Tauri)" />
                 <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Vorteile</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
@@ -883,7 +896,7 @@ const Documentation: React.FC = () => {
                 Radio-App (DSI Radio)
               </h2>
               <div className="space-y-4 opacity-95">
-                <p className="text-sm">Eigener Bereich für die <strong>PI-Installer DSI Radio</strong>-Standalone-App: Internetradio auf dem Freenove 4,3″ DSI-Display mit Favoriten, Senderliste und Klavierlack-Design.</p>
+                <p className="text-sm">Eigener Bereich für die <strong>SetupHelfer DSI Radio</strong>-Standalone-App: Internetradio auf dem Freenove 4,3″ DSI-Display mit Favoriten, Senderliste und Klavierlack-Design.</p>
                 <h3 className="text-lg font-semibold text-white">Versionen</h3>
                 <ul className="list-disc list-inside text-sm space-y-1 ml-4">
                   <li><strong>1.x:</strong> Wiedergabe über VLC, mpv oder mpg123 (externe Player)</li>
@@ -893,13 +906,13 @@ const Documentation: React.FC = () => {
                 <ul className="list-disc list-inside text-sm space-y-1 ml-4">
                   <li>Python 3.9+, PyQt6</li>
                   <li>GStreamer 1.0: <code className="bg-slate-700 px-1 rounded">python3-gi</code>, <code className="bg-slate-700 px-1 rounded">gstreamer1.0-plugins-good</code>, <code className="bg-slate-700 px-1 rounded">gstreamer1.0-pulseaudio</code></li>
-                  <li>Optional: PI-Installer-Backend für Metadaten und Radio-Browser-API</li>
+                  <li>Optional: SetupHelfer-Backend für Metadaten und Radio-Browser-API</li>
                 </ul>
                 <h3 className="text-lg font-semibold text-white">Start</h3>
                 <ul className="list-disc list-inside text-sm space-y-1 ml-4">
                   <li>Skript: <code className="bg-slate-700 px-1 rounded">./scripts/start-dsi-radio.sh</code></li>
                   <li>Direkt: <code className="bg-slate-700 px-1 rounded">python3 apps/dsi_radio/dsi_radio.py</code></li>
-                  <li>Wayfire: Fenstertitel „PI-Installer DSI Radio“ → Fensterregel für DSI-1</li>
+                  <li>Wayfire: Fenstertitel „SetupHelfer DSI Radio“ → Fensterregel für DSI-1</li>
                 </ul>
                 <h3 className="text-lg font-semibold text-white">Konfiguration</h3>
                 <p className="text-sm">Verzeichnis: <code className="bg-slate-700 px-1 rounded">~/.config/pi-installer-dsi-radio/</code> (Favoriten, Theme, Logs).</p>
@@ -999,7 +1012,7 @@ const Documentation: React.FC = () => {
                       <h4 className="font-semibold text-sky-200">Backend &amp; Frontend starten</h4>
                     </div>
                     <div className="p-4 text-sm">
-                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Wie starte ich PI-Installer korrekt?</p>
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Wie starte ich SetupHelfer korrekt?</p>
                       <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
                         <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
                         <ul className="list-disc list-inside text-slate-300 space-y-1">
@@ -1281,7 +1294,7 @@ const Documentation: React.FC = () => {
                         <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
                         <ul className="list-disc list-inside text-slate-300 space-y-1">
                           <li><strong>Systemweite Installation (empfohlen für Produktion):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/install-system.sh | sudo bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">/opt/pi-installer/</code>, globale Befehle verfügbar</li>
-                          <li><strong>Benutzer-Installation (für Entwicklung/Test):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/create_installer.sh | bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">$HOME/PI-Installer/</code>, keine Root-Rechte nötig</li>
+                          <li><strong>Benutzer-Installation (für Entwicklung/Test):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/create_installer.sh | bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">$HOME/SetupHelfer/</code>, keine Root-Rechte nötig</li>
                           <li>Siehe <code className="bg-slate-700 px-1 rounded">docs/SYSTEM_INSTALLATION.md</code> für Details</li>
                         </ul>
                       </div>
@@ -1525,12 +1538,12 @@ const Documentation: React.FC = () => {
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.0.2.0 (Linux-System: Raspberry-Pi-Bereiche ausblenden, Assistent/Willkommen, Terminal-Update, Webmin, Hausautomation, Doku)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Redis Commander:</strong> Hinweis „optional“, Port 8081; Fehlermeldung „not found“ vermieden</li>
-                      <li><strong>Raspberry Pi Config:</strong> Auf Nicht-Pi komplett ausgeblendet (Menü + Redirect); Assistent: „Willkommen bei [Hostname]!“ statt „PI-Installer“</li>
+                      <li><strong>Raspberry Pi Config:</strong> Auf Nicht-Pi komplett ausgeblendet (Menü + Redirect); Assistent: „Willkommen bei [Hostname]!“ statt „SetupHelfer“</li>
                       <li><strong>Control Center:</strong> Bereich „Performance“ nur auf Raspberry Pi sichtbar</li>
                       <li><strong>Update im Terminal:</strong> Weitere Terminals (Kitty, Alacritty, QTerminal, Tilix, urxvt); bei Fehler kopierbarer Befehl + „Kopieren“-Button</li>
                       <li><strong>Dashboard Schnellstart:</strong> Kontrast erhöht, Schrift Anthrazit (text-slate-700/800)</li>
                       <li><strong>Sicherheit:</strong> Firewall „Aktiv · Installiert“ wenn UFW aktiv</li>
-                      <li><strong>Webserver:</strong> Webmin-Karte immer sichtbar; „Diese Anwendung“ statt „PI-Installer“; Hinweis Nachinstall/Webadmin</li>
+                      <li><strong>Webserver:</strong> Webmin-Karte immer sichtbar; „Diese Anwendung“ statt „SetupHelfer“; Hinweis Nachinstall/Webadmin</li>
                       <li><strong>Hausautomation:</strong> Empfehlung-Karte Kontrast (dunkle Schrift); Deinstallieren-Button + API <code className="bg-slate-700 px-1 rounded">/api/homeautomation/uninstall</code></li>
                       <li><strong>Prometheus:</strong> Bei installiertem Prometheus Beispiel „Was Prometheus kann“ (PromQL, Targets, Grafana)</li>
                       <li><strong>Dokumentation:</strong> Quellen für Linux-System (Ubuntu, Arch, Fedora, Manpages) ergänzt</li>
@@ -1552,7 +1565,7 @@ const Documentation: React.FC = () => {
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Musikbox:</strong> Mopidy-Webclient Iris (Installation für User mopidy, Diagnose, manuelle Befehle); Apple Music / Amazon Music; AirPlay auf verbundenem Rechner (Pi oder Laptop); einheitliche Hinweis-/Info-/Warn-Karten</li>
                       <li><strong>Dashboard:</strong> Karte „Netzwerk – IP-Adressen“ (Hostname + IPs, z. B. für http://&lt;IP&gt;:6680/iris)</li>
-                      <li><strong>Backend:</strong> Desktop-Starter „PI-Installer Backend starten“ (Skript + Anlegen auf Schreibtisch); Mopidy-Diagnose-Endpoint</li>
+                      <li><strong>Backend:</strong> Desktop-Starter „SetupHelfer-Backend starten“ (Skript + Anlegen auf Schreibtisch); Mopidy-Diagnose-Endpoint</li>
                       <li><strong>Dokumentation:</strong> Abschnitt „Backend & Frontend starten“ (Frontend: ./start-frontend.sh, npm run dev, tauri:dev)</li>
                     </ul>
                   </div>

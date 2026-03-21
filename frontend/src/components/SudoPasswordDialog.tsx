@@ -3,6 +3,7 @@
  * Siehe docs/development/SUDO_COMPONENTS.md für Nutzungsübersicht.
  */
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fetchApi } from '../api'
 import { Lock, X, AlertCircle } from 'lucide-react'
@@ -13,6 +14,7 @@ interface SudoPasswordDialogProps {
 }
 
 const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved }) => {
+  const { t } = useTranslation()
   const [show, setShow] = useState(false)
   const [password, setPassword] = useState('')
   const [skipTest, setSkipTest] = useState(true)
@@ -64,7 +66,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
           if (error instanceof Error && error.name === 'AbortError') {
             setBackendReachable(false)
           } else {
-            console.error('Fehler beim Prüfen des sudo-Passworts:', error)
+            console.error(t('sudo.dialog.console.checkError'), error)
             setBackendReachable(false)
           }
           setShow(true)
@@ -81,7 +83,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
 
   const handleSave = async () => {
     if (!password.trim()) {
-      toast.error('Bitte geben Sie das sudo-Passwort ein')
+      toast.error(t('sudo.dialog.toast.enterPassword'))
       return
     }
 
@@ -96,10 +98,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
       try {
         data = await response.json()
       } catch {
-        toast.error(
-          'Ungültige Antwort vom Server. Bitte zuerst „PI-Installer Backend starten“ (Port 8000).',
-          { duration: 5000 }
-        )
+        toast.error(t('sudo.dialog.toast.invalidResponse'), { duration: 5000 })
         return
       }
       if (data.status === 'success') {
@@ -108,25 +107,22 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
         try {
           const checkData = await checkRes.json()
           if (checkData.status === 'success' && !checkData.has_password) {
-            toast.success('Sudo-Passwort gespeichert')
-            toast('Hinweis: Server meldet kein Passwort. Evtl. mehrere Worker?', { icon: '⚠️', duration: 5000 })
+            toast.success(t('sudo.dialog.toast.saved'))
+            toast(t('sudo.dialog.toast.serverNoPassword'), { icon: '⚠️', duration: 5000 })
           } else {
-            toast.success('Sudo-Passwort gespeichert')
+            toast.success(t('sudo.dialog.toast.saved'))
           }
         } catch {
-          toast.success('Sudo-Passwort gespeichert')
+          toast.success(t('sudo.dialog.toast.saved'))
         }
         setShow(false)
         onPasswordSaved()
       } else {
-        const msg = data.message || data.detail || 'Sudo-Passwort konnte nicht gespeichert werden.'
+        const msg = data.message || data.detail || t('sudo.dialog.toast.saveFailed')
         toast.error(msg)
       }
     } catch (error) {
-      toast.error(
-        'Speichern fehlgeschlagen. Bitte starten Sie den Server (./start-backend.sh) und versuchen Sie es erneut.',
-        { duration: 6000 }
-      )
+      toast.error(t('sudo.dialog.toast.saveFailedServer'), { duration: 6000 })
       console.error(error)
     } finally {
       setLoading(false)
@@ -134,7 +130,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
   }
 
   const handleSkip = () => {
-    toast('Sie können das sudo-Passwort später in den Benutzereinstellungen eingeben', { icon: 'ℹ️' })
+    toast(t('sudo.dialog.toast.skipHint'), { icon: 'ℹ️' })
     setShow(false)
     onPasswordSaved()
   }
@@ -174,8 +170,8 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                     <Lock className="text-sky-400" size={24} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Sudo-Passwort erforderlich</h2>
-                    <p className="text-sm text-slate-400">Wird für Installationen und Sicherheitseinstellungen benötigt.</p>
+                    <h2 className="text-xl font-bold text-white">{t('sudo.dialog.title')}</h2>
+                    <p className="text-sm text-slate-400">{t('sudo.dialog.subtitle')}</p>
                   </div>
                 </div>
                 <button
@@ -192,9 +188,11 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                   <div className="flex items-start gap-3">
                     <AlertCircle className="text-red-400 mt-0.5 shrink-0" size={20} />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-red-200">Der Server antwortet nicht</p>
+                      <p className="text-sm font-medium text-red-200">{t('sudo.dialog.serverUnreachable.title')}</p>
                       <p className="text-xs text-red-300/90 mt-1">
-                        Bitte starten Sie zuerst den Server (z.B. <code className="bg-red-900/40 px-1 rounded">./start-backend.sh</code> im Projektordner), dann hier erneut speichern.
+                        {t('sudo.dialog.serverUnreachable.before')}
+                        <code className="bg-red-900/40 px-1 rounded">./start-backend.sh</code>
+                        {t('sudo.dialog.serverUnreachable.after')}
                       </p>
                     </div>
                   </div>
@@ -206,9 +204,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                 <div className="flex items-start gap-3">
                   <AlertCircle className="text-yellow-400 mt-0.5" size={20} />
                   <div className="flex-1">
-                    <p className="text-sm text-yellow-200">
-                      Das sudo-Passwort wird nur für die aktuelle Session gespeichert und nicht dauerhaft gesichert.
-                    </p>
+                    <p className="text-sm text-yellow-200">{t('sudo.dialog.sessionHint')}</p>
                   </div>
                 </div>
               </div>
@@ -222,7 +218,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                 }}
               >
                 <label htmlFor="sudo-password" className="block text-sm font-medium text-slate-300 mb-2">
-                  Sudo-Passwort
+                  {t('sudo.dialog.passwordLabel')}
                 </label>
                 <input
                   id="sudo-password"
@@ -230,13 +226,11 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Ihr sudo-Passwort eingeben"
+                  placeholder={t('sudo.dialog.passwordPlaceholder')}
                   className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                   autoFocus
                 />
-                <p className="mt-2 text-xs text-slate-400">
-                  Das Passwort wird verwendet für: Firewall-Konfiguration, Benutzerverwaltung, System-Updates, etc.
-                </p>
+                <p className="mt-2 text-xs text-slate-400">{t('sudo.dialog.passwordHelp')}</p>
                 <label className="mt-3 flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -244,9 +238,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                     onChange={(e) => setSkipTest(e.target.checked)}
                     className="rounded border-slate-500 bg-slate-800 text-sky-500 focus:ring-sky-500"
                   />
-                  <span className="text-sm text-slate-400">
-                    Ohne Prüfung speichern (Standard; beim ersten Einsatz wird geprüft)
-                  </span>
+                  <span className="text-sm text-slate-400">{t('sudo.dialog.skipTestLabel')}</span>
                 </label>
               </form>
 
@@ -257,7 +249,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                   disabled={loading}
                   className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Später
+                  {t('sudo.dialog.later')}
                 </button>
                 <button
                   onClick={handleSave}
@@ -267,12 +259,12 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                   {loading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Speichere...
+                      {t('sudo.dialog.saving')}
                     </>
                   ) : (
                     <>
                       <Lock size={18} />
-                      Speichern
+                      {t('sudo.dialog.save')}
                     </>
                   )}
                 </button>

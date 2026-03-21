@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "PI-Installer",
+  "productName": "SetupHelfer",
   "version": "1.3.8",
   "identifier": "de.pi-installer.app",
   "build": {
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "PI-Installer",
+        "title": "SetupHelfer",
         "width": 1280,
         "height": 800,
         "minWidth": 800,
@@ -40,8 +40,8 @@
     "externalBin": [],
     "copyright": "",
     "category": "Utility",
-    "shortDescription": "Raspberry Pi Installer – Desktop-Oberfläche",
-    "longDescription": "PI-Installer als eigenständige Desktop-Anwendung. Verbindet sich mit dem Backend (Standard: http://localhost:8000).",
+    "shortDescription": "SetupHelfer – Desktop-Oberfläche für Raspberry Pi & Linux",
+    "longDescription": "SetupHelfer als eigenständige Desktop-Anwendung. Verbindet sich mit dem Backend (Standard: http://localhost:8000).",
     "linux": {
       "deb": {
         "depends": []

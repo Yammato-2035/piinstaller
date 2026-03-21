@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Shield, CheckCircle, AlertCircle, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
@@ -8,6 +9,7 @@ import { usePlatform } from '../context/PlatformContext'
 import { PageSkeleton } from '../components/Skeleton'
 
 const SecuritySetup: React.FC = () => {
+  const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     enable_firewall: true,
@@ -295,7 +297,7 @@ const SecuritySetup: React.FC = () => {
       </div>
 
       {(() => {
-        const risk = getPageRisk('security')
+        const risk = getPageRisk('security', t)
         return risk?.warningText ? (
           <RiskWarningCard level={risk.level}>{risk.warningText}</RiskWarningCard>
         ) : null

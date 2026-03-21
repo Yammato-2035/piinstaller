@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import toast from 'react-hot-toast'
 import { fetchApi, getApiBase } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 import { useUIMode } from '../context/UIModeContext'
 import AppIcon from '../components/AppIcon'
+import i18n from '../i18n'
 import { 
   Cpu, 
   HardDrive, 
@@ -23,9 +26,8 @@ import {
   Wind,
   Monitor,
   Package,
-  HelpCircle,
 } from 'lucide-react'
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { motion } from 'framer-motion'
 import { SkeletonCard as SharedSkeletonCard } from '../components/Skeleton'
 import HelpTooltip from '../components/HelpTooltip'
@@ -44,40 +46,46 @@ function getSensorTooltip(s: { name?: string; zone?: string }): string {
   const name = (s.name || '').toLowerCase()
   const zone = (s.zone || '').toLowerCase()
   if (zone === 'vcgencmd' || (name === 'cpu' && zone.includes('vcgencmd'))) {
-    return 'Was: Raspberry-Pi-SoC-Temperatur (CPU/GPU).\nWo: Onboard (vcgencmd).\nNormal: ca. 40–70°C im Betrieb, > 80°C kritisch – Kühlung prüfen.'
+    return i18n.t('dashboard.tooltip.sensor.vcgencmd')
   }
   if (name.includes('x86_pkg_temp') || name.includes('cpu package')) {
-    return 'Was: CPU-Package-Temperatur.\nWo: Onboard (thermal_zone).\nNormal: je nach Hersteller oft < 90°C unter Last.'
+    return i18n.t('dashboard.tooltip.sensor.cpuPackage')
   }
   if (name.includes('nvme')) {
-    return 'Was: NVMe-SSD-Temperatur.\nWo: M.2-Steckplatz oder PCIe.\nNormal: typisch 30–70°C, Herstellerangaben beachten.'
+    return i18n.t('dashboard.tooltip.sensor.nvme')
   }
   if (name.includes('gpu') || name.includes('radeon') || name.includes('nvidia') || name.includes('amd')) {
-    return 'Was: Grafikkarten-(GPU-)Temperatur.\nWo: PCIe oder onboard.\nNormal: unter Last oft < 85°C (Herstellerangaben beachten).'
+    return i18n.t('dashboard.tooltip.sensor.gpu')
   }
   if (name.includes('acpitz') || name.includes('igpu') || name.includes('apu')) {
-    return 'Was: APU/iGPU oder ACPI-Thermal-Zone.\nWo: Onboard.\nNormal: je nach Hersteller.'
+    return i18n.t('dashboard.tooltip.sensor.apu')
   }
   if (zone.startsWith('thermal_zone')) {
-    return `Was: Temperatursensor (${s.name || zone}).\nWo: /sys/class/thermal/${zone}.\nNormal: Herstellerangaben beachten (z. B. CPU < 90°C).`
+    return i18n.t('dashboard.tooltip.sensor.thermalZone', { name: s.name || zone, zone })
   }
-  return `Was: ${s.name || 'Temperatursensor'}.\nWo: ${s.zone || 'Onboard'}.\nNormal: Herstellerangaben beachten.`
+  return i18n.t('dashboard.tooltip.sensor.generic', {
+    name: s.name || i18n.t('dashboard.tooltip.sensor.fallbackName'),
+    zone: s.zone || i18n.t('dashboard.tooltip.sensor.fallbackZone'),
+  })
 }
 
 /** Tooltip für Laufwerke. */
 function getDiskTooltip(d: { label?: string; mountpoint?: string; device?: string }): string {
-  const where = d.mountpoint || d.device || 'Unbekannt'
-  return `Was: Speicherlaufwerk (Festplatte/SSD).\nWo: ${where}.\nNormal: Auslastung je nach Nutzung; > 90 % kann Performance beeinträchtigen.`
+  const where = d.mountpoint || d.device || i18n.t('dashboard.tooltip.disk.unknown')
+  return i18n.t('dashboard.tooltip.disk.body', { where })
 }
 
 /** Tooltip für Lüfter. */
-function getFanTooltip(f: { name?: string }): string {
-  return `Was: Lüfter (RPM = U/min).\nWo: Gehäuse/CPU-Kühler (hwmon).\nNormal: Drehzahl je nach Hersteller und Last; 0 RPM = Lüfter aus oder nicht erkannt.`
+function getFanTooltip(_f: { name?: string }): string {
+  return i18n.t('dashboard.tooltip.fan')
 }
 
 /** Tooltip für Displays. */
 function getDisplayTooltip(d: { output?: string; mode?: string }): string {
-  return `Was: Bildschirmausgabe.\nWo: ${d.output || 'Display'}.\nNormal: Verbunden und Auflösung (${d.mode || '—'}) passend.`
+  return i18n.t('dashboard.tooltip.display', {
+    output: d.output || i18n.t('dashboard.tooltip.display.fallbackOutput'),
+    mode: d.mode || i18n.t('dashboard.tooltip.display.dash'),
+  })
 }
 
 // StatCard außerhalb der Komponente definieren, um Re-Renders zu vermeiden
@@ -116,7 +124,8 @@ const StatCard = React.memo(({ icon: Icon, label, value, unit = '', trend }: any
 type DashboardSection = 'overview' | 'charts' | 'hardware'
 
 const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backendErrorReason, onRetryBackend, setCurrentPage, experienceLevel }) => {
-  const { systemLabel, pageSubtitleLabel } = usePlatform()
+  const { t } = useTranslation()
+  const { pageSubtitleLabel } = usePlatform()
   const { mode } = useUIMode()
   const [dashboardSection, setDashboardSection] = useState<DashboardSection>('overview')
   const [stats, setStats] = useState<any>(null)
@@ -233,21 +242,21 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       const response = await fetchApi('/api/system/run-update-in-terminal', { method: 'POST' })
       const data = await response.json()
       if (data.status === 'success') {
-        toast.success(data.message || 'Terminal geöffnet – Passwort dort eingeben.')
+        toast.success(data.message || t('dashboard.toast.terminalOpened'))
       } else {
         setUpdateTerminalError({ message: data.message, copyable_command: data.copyable_command })
-        toast.error(data.message || 'Terminal konnte nicht geöffnet werden.')
+        toast.error(data.message || t('dashboard.toast.terminalFailed'))
       }
     } catch (e) {
-      setUpdateTerminalError({ message: 'Fehler beim Öffnen des Terminals.', copyable_command: 'sudo apt update && sudo apt upgrade' })
-      toast.error('Fehler beim Öffnen des Terminals.')
+      setUpdateTerminalError({ message: t('dashboard.toast.terminalOpenError'), copyable_command: 'sudo apt update && sudo apt upgrade' })
+      toast.error(t('dashboard.toast.terminalOpenError'))
     } finally {
       setUpdateTerminalLoading(false)
     }
   }
   const copyUpdateCommand = () => {
     const cmd = updateTerminalError?.copyable_command || 'sudo apt update && sudo apt upgrade'
-    navigator.clipboard?.writeText(cmd).then(() => toast.success('Befehl in Zwischenablage kopiert.')).catch(() => {})
+    navigator.clipboard?.writeText(cmd).then(() => toast.success(t('dashboard.toast.commandCopied'))).catch(() => {})
   }
 
   const SECURITY_TOTAL = 5 // Firewall, Fail2Ban, Auto-Updates, SSH-Härtung, Audit-Logging
@@ -273,16 +282,16 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
   }
 
   const getSecurityStatusText = () => {
-    if (!securityConfig) return 'Nicht konfiguriert'
+    if (!securityConfig) return t('dashboard.security.notConfigured')
     const activeCount =
       (effectiveUfwActive ? 1 : 0) +
       (securityConfig.fail2ban?.active ? 1 : 0) +
       (securityConfig.auto_updates?.enabled ? 1 : 0) +
       (securityConfig.ssh_hardening?.enabled ? 1 : 0) +
       (securityConfig.audit_logging?.enabled ? 1 : 0)
-    if (activeCount === 0) return 'Nicht konfiguriert'
-    if (activeCount === SECURITY_TOTAL) return 'Vollständig konfiguriert'
-    return `${activeCount}/${SECURITY_TOTAL} aktiviert`
+    if (activeCount === 0) return t('dashboard.security.notConfigured')
+    if (activeCount === SECURITY_TOTAL) return t('dashboard.security.fullyConfigured')
+    return t('dashboard.security.partial', { count: activeCount, total: SECURITY_TOTAL })
   }
 
   const StatusItem = ({ label, status, value, tooltip }: any) => (
@@ -315,15 +324,13 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
     </div>
   )
 
-  const chartColors = ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
-  
   const diskData = stats ? [
-    { name: 'Belegt', value: stats.disk?.percent || 0, color: '#ef4444' },
-    { name: 'Frei', value: 100 - (stats.disk?.percent || 0), color: '#10b981' },
+    { name: t('dashboard.chart.disk.used'), value: stats.disk?.percent || 0, color: '#ef4444' },
+    { name: t('dashboard.chart.disk.free'), value: 100 - (stats.disk?.percent || 0), color: '#10b981' },
   ] : []
 
   const needsAction = !!(updatesData && updatesData.total > 0) || getSecurityStatus() === 'inactive'
-  const statusLabel = backendError ? 'Verbindung zum Server fehlgeschlagen' : needsAction ? 'Aktion benötigt' : 'Alles OK'
+  const statusLabel = backendError ? t('dashboard.status.backendFailed') : needsAction ? t('dashboard.status.actionNeeded') : t('dashboard.status.allOk')
   const statusColor = backendError ? 'red' : needsAction ? 'yellow' : 'green'
 
   const cpuPercent = stats?.cpu?.usage ?? 0
@@ -348,8 +355,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           >
             <AppIcon name="installation" category="navigation" size={32} className="mt-1" />
             <div>
-              <p className="text-sm font-semibold text-sky-100">System einrichten</p>
-              <p className="text-xs text-slate-200/80">Geführter Assistent für Grundkonfiguration, Sicherheit und Benutzer.</p>
+              <p className="text-sm font-semibold text-sky-100">{t('firstRun.firstStep.wizard.title')}</p>
+              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.wizard.desc')}</p>
             </div>
           </button>
           <button
@@ -359,8 +366,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           >
             <AppIcon name="app-store" category="navigation" size={32} className="mt-1" />
             <div>
-              <p className="text-sm font-semibold text-emerald-100">Apps installieren</p>
-              <p className="text-xs text-slate-200/80">Fertige Pakete für Media-Server, NAS, Smart Home und mehr.</p>
+              <p className="text-sm font-semibold text-emerald-100">{t('firstRun.firstStep.appStore.title')}</p>
+              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.appStore.desc')}</p>
             </div>
           </button>
           <button
@@ -370,8 +377,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           >
             <AppIcon name="backup" category="navigation" size={32} className="mt-1" />
             <div>
-              <p className="text-sm font-semibold text-indigo-100">Backup erstellen</p>
-              <p className="text-xs text-slate-200/80">System sichern oder wiederherstellen, bevor du Neues ausprobierst.</p>
+              <p className="text-sm font-semibold text-indigo-100">{t('firstRun.firstStep.backup.title')}</p>
+              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.backup.desc')}</p>
             </div>
           </button>
           <button
@@ -381,8 +388,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           >
             <AppIcon name="monitoring" category="navigation" size={32} className="mt-1" />
             <div>
-              <p className="text-sm font-semibold text-amber-100">Systemzustand prüfen</p>
-              <p className="text-xs text-slate-200/80">CPU, Speicher, Temperatur und Dienste im Blick behalten.</p>
+              <p className="text-sm font-semibold text-amber-100">{t('firstRun.firstStep.monitoring.title')}</p>
+              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.monitoring.desc')}</p>
             </div>
           </button>
           <button
@@ -392,8 +399,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           >
             <AppIcon name="documentation" category="navigation" size={32} className="mt-1" />
             <div>
-              <p className="text-sm font-semibold text-teal-100">Lernen & entdecken</p>
-              <p className="text-xs text-slate-200/80">Beispiele und Ideen, was du mit deinem System machen kannst.</p>
+              <p className="text-sm font-semibold text-teal-100">{t('firstRun.firstStep.learning.title')}</p>
+              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.learning.desc')}</p>
             </div>
           </button>
           <button
@@ -403,8 +410,8 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           >
             <AppIcon name="advanced" category="navigation" size={32} className="mt-1" />
             <div>
-              <p className="text-sm font-semibold text-slate-50">Erweiterte Funktionen</p>
-              <p className="text-xs text-slate-200/80">Netzwerk, Dienste und Entwickler-Werkzeuge für Fortgeschrittene.</p>
+              <p className="text-sm font-semibold text-slate-50">{t('firstRun.firstStep.controlCenter.title')}</p>
+              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.controlCenter.desc')}</p>
             </div>
           </button>
         </section>
@@ -418,7 +425,9 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           className="rounded-2xl border border-slate-600 dark:border-slate-600 bg-gradient-to-br from-slate-800/80 to-slate-900/80 dark:from-slate-800/80 dark:to-slate-900/80 p-6 sm:p-8"
         >
           <h2 className="text-2xl sm:text-3xl font-bold text-white dark:text-white mb-2">
-            Dein {systemInfo?.is_raspberry_pi ? 'Raspberry Pi' : 'System'} läuft!
+            {t('dashboard.hero.title', {
+              device: systemInfo?.is_raspberry_pi ? t('dashboard.hero.raspberryPi') : t('dashboard.hero.system'),
+            })}
           </h2>
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <div
@@ -446,19 +455,19 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
               </span>
               <span className="flex items-center gap-1.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${resourceLevel(diskPercent) === 'green' ? 'bg-emerald-500' : resourceLevel(diskPercent) === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                Speicher {Math.round(diskPercent)}%
+                {t('dashboard.resource.storage')} {Math.round(diskPercent)}%
               </span>
             </div>
           </div>
           {/* Ressourcen-Management (Milestone 3): Temperatur- und Swap-Hinweise */}
           {(stats?.cpu?.temperature != null && stats.cpu.temperature >= 80) && (
             <p className="text-amber-300 text-sm mb-2">
-              ⚠️ Temperatur hoch ({stats.cpu.temperature}°C) – Kühlung prüfen. Siehe Dokumentation → Ressourcen-Management.
+              {t('dashboard.hint.tempHigh', { temp: stats.cpu.temperature })}
             </p>
           )}
           {(stats?.memory?.total != null && stats.memory.total < 2 * 1024 * 1024 * 1024) && (
             <p className="text-sky-300 text-sm mb-2">
-              ℹ️ Weniger als 2 GB RAM – Swap wird empfohlen. Siehe Einstellungen oder PI_OPTIMIZATION.md.
+              {t('dashboard.hint.lowRam')}
             </p>
           )}
           <div className="flex flex-wrap gap-3">
@@ -470,16 +479,16 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                     onClick={() => setCurrentPage('app-store')}
                     className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-sm"
                   >
-                    <Package className="w-4 h-4" /> Neue App installieren
+                    <Package className="w-4 h-4" /> {t('dashboard.action.newApp')}
                   </button>
-                  <HelpTooltip text="Im App Store findest du Home Assistant, Nextcloud, Pi-hole und weitere Apps – mit einem Klick installieren." size={14} className="text-slate-400" />
+                  <HelpTooltip text={t('dashboard.help.appStore')} size={14} className="text-slate-400" />
                 </span>
                 <button
                   type="button"
                   onClick={() => setCurrentPage('backup')}
                   className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-600 hover:bg-slate-500 text-white rounded-xl font-medium text-sm"
                 >
-                  <Database className="w-4 h-4" /> Backup erstellen
+                  <Database className="w-4 h-4" /> {t('dashboard.action.createBackup')}
                 </button>
               </>
             )}
@@ -489,7 +498,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
               disabled={updateTerminalLoading}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-medium text-sm disabled:opacity-50"
             >
-              <Zap className="w-4 h-4" /> System updaten
+              <Zap className="w-4 h-4" /> {t('dashboard.action.systemUpdate')}
             </button>
           </div>
         </motion.div>
@@ -504,31 +513,31 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
         <div className="page-title-category mb-2 inline-flex">
           <h1 className="flex items-center gap-3">
             <AppIcon name="dashboard" category="navigation" size={32} />
-            Dashboard
+            {t('dashboard.pageTitle')}
           </h1>
         </div>
-        <p className="text-slate-400">Übersicht – {pageSubtitleLabel}</p>
+        <p className="text-slate-400">{t('dashboard.pageSubtitle', { label: pageSubtitleLabel })}</p>
       </motion.div>
 
       {backendError && !stats && (
         <div className="card-warning flex items-start gap-3">
           <AppIcon name="error" category="status" size={24} statusColor="error" className="shrink-0 mt-0.5 opacity-90" />
           <div className="min-w-0 flex-1">
-            <h3 className="font-semibold">Verbindung zum Server fehlgeschlagen</h3>
+            <h3 className="font-semibold">{t('dashboard.backendError.title')}</h3>
             <p className="text-sm mt-1 opacity-95">
-              {backendErrorReason === 'timeout' && 'Der Server antwortet nicht rechtzeitig. Bitte starten Sie ihn neu oder prüfen Sie die Adresse.'}
-              {backendErrorReason === 'connection' && 'Die Verbindung zum Server konnte nicht hergestellt werden. Der Server läuft möglicherweise nicht oder die Adresse ist falsch.'}
-              {(!backendErrorReason || backendErrorReason === 'other') && 'Übersicht, System-Updates und viele Einstellungen funktionieren nur, wenn der Server erreichbar ist.'}
+              {backendErrorReason === 'timeout' && t('dashboard.backendError.timeout')}
+              {backendErrorReason === 'connection' && t('dashboard.backendError.connection')}
+              {(!backendErrorReason || backendErrorReason === 'other') && t('dashboard.backendError.other')}
             </p>
             <p className="text-sm mt-2 opacity-90">
-              <strong>Genutzte API-URL:</strong>{' '}
+              <strong>{t('dashboard.backendError.apiUrlLabel')}</strong>{' '}
               <code className="bg-black/20 px-1.5 py-0.5 rounded text-sky-200 break-all">
-                {getApiBase() || 'http://127.0.0.1:8000 (Standard)'}
+                {getApiBase() || t('dashboard.backendError.apiUrlDefault')}
               </code>
             </p>
             <p className="text-sm mt-2 opacity-95">
-              <strong>Lösung:</strong> Im Projektordner <code className="opacity-90 px-1 rounded">./start-backend.sh</code> ausführen. Oder als Dienst: <code className="opacity-90 px-1 rounded">sudo systemctl start pi-installer-backend</code>.
-              Läuft der Server auf einem anderen Rechner: Einstellungen → Allgemein → Server-URL eintragen (z. B. <code className="opacity-90 px-1 rounded">http://&lt;IP&gt;:8000</code>).
+              <strong>{t('dashboard.backendError.solution')}</strong>{' '}
+              {t('dashboard.backendError.solutionBody')}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {onRetryBackend && (
@@ -537,7 +546,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                   onClick={onRetryBackend}
                   className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium"
                 >
-                  Verbindung jetzt prüfen
+                  {t('dashboard.backendError.retry')}
                 </button>
               )}
               {setCurrentPage && (
@@ -547,14 +556,14 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                     onClick={() => setCurrentPage('settings')}
                     className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-sm font-medium"
                   >
-                    Einstellungen → Server-URL anpassen
+                    {t('dashboard.backendError.settingsServerUrl')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setCurrentPage('settings')}
                     className="text-sm underline hover:opacity-90"
                   >
-                    Einstellungen → Logs
+                    {t('dashboard.backendError.settingsLogs')}
                   </button>
                 </>
               )}
@@ -574,17 +583,20 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             <Zap className="text-sky-400 shrink-0" size={24} />
             <div>
               <h3 className="font-semibold text-sky-200">
-                {updatesData.total} {updatesData.total === 1 ? 'Update' : 'Updates'} verfügbar
+                {t('dashboard.updates.available', {
+                  count: updatesData.total,
+                  updatesWord: updatesData.total === 1 ? t('dashboard.updates.wordOne') : t('dashboard.updates.wordMany'),
+                })}
               </h3>
               {updatesData.categories && (
                 <p className="text-sm text-slate-200 mt-0.5">
-                  {updatesData.categories.security > 0 && <span className="text-red-300">{updatesData.categories.security} Sicherheit</span>}
+                  {updatesData.categories.security > 0 && <span className="text-red-300">{updatesData.categories.security} {t('dashboard.updates.category.security')}</span>}
                   {updatesData.categories.security > 0 && (updatesData.categories.critical! > 0 || updatesData.categories.necessary! > 0 || updatesData.categories.optional! > 0) && ' · '}
-                  {updatesData.categories.critical! > 0 && <span className="text-amber-300">{updatesData.categories.critical} Kritisch</span>}
+                  {updatesData.categories.critical! > 0 && <span className="text-amber-300">{updatesData.categories.critical} {t('dashboard.updates.category.critical')}</span>}
                   {(updatesData.categories.critical! > 0) && (updatesData.categories.necessary! > 0 || updatesData.categories.optional! > 0) && ' · '}
-                  {updatesData.categories.necessary! > 0 && <span className="text-slate-100">{updatesData.categories.necessary} Notwendig</span>}
+                  {updatesData.categories.necessary! > 0 && <span className="text-slate-100">{updatesData.categories.necessary} {t('dashboard.updates.category.necessary')}</span>}
                   {(updatesData.categories.necessary! > 0) && updatesData.categories.optional! > 0 && ' · '}
-                  {updatesData.categories.optional! > 0 && <span className="text-slate-200">{updatesData.categories.optional} Optional</span>}
+                  {updatesData.categories.optional! > 0 && <span className="text-slate-200">{updatesData.categories.optional} {t('dashboard.updates.category.optional')}</span>}
                 </p>
               )}
             </div>
@@ -595,7 +607,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
               onClick={() => setUpdatesModalOpen(true)}
               className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium"
             >
-              Welche Updates?
+              {t('dashboard.updates.which')}
             </button>
             <button
               type="button"
@@ -603,7 +615,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
               disabled={updateTerminalLoading}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
             >
-              {updateTerminalLoading ? '…' : 'Update im Terminal ausführen'}
+              {updateTerminalLoading ? '…' : t('dashboard.updates.runInTerminal')}
             </button>
           </div>
         </motion.div>
@@ -618,13 +630,13 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
         >
           <div className="flex-1 min-w-0">
             <p className="text-slate-300 text-sm">
-              <strong className="text-white">System-Update (apt update &amp; upgrade):</strong> Terminal öffnen, dort Passwort eingeben.
+              <strong className="text-white">{t('dashboard.updates.aptBlock')}</strong> {t('dashboard.updates.aptHint')}
             </p>
             {updateTerminalError?.copyable_command && (
               <p className="text-slate-400 text-xs mt-2 flex items-center gap-2 flex-wrap">
-                <span>Befehl manuell ausführen:</span>
+                <span>{t('dashboard.updates.runCommandManually')}</span>
                 <code className="bg-slate-700 px-2 py-1 rounded text-slate-200 font-mono text-xs">{updateTerminalError.copyable_command}</code>
-                <button type="button" onClick={copyUpdateCommand} className="px-2 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs">Kopieren</button>
+                <button type="button" onClick={copyUpdateCommand} className="px-2 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs">{t('dashboard.updates.copy')}</button>
               </p>
             )}
           </div>
@@ -634,7 +646,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             disabled={updateTerminalLoading}
             className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-sm font-medium disabled:opacity-50 shrink-0"
           >
-            {updateTerminalLoading ? '…' : 'Im Terminal ausführen'}
+            {updateTerminalLoading ? '…' : t('dashboard.updates.runInTerminalShort')}
           </button>
         </motion.div>
       )}
@@ -644,7 +656,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setUpdatesModalOpen(false)}>
           <div className="bg-slate-800 border border-slate-600 rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="p-4 border-b border-slate-700 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white">Verfügbare Updates</h3>
+              <h3 className="text-lg font-bold text-white">{t('dashboard.updates.modalTitle')}</h3>
               <button type="button" onClick={() => setUpdatesModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
             <div className="p-4 overflow-y-auto flex-1">
@@ -658,22 +670,22 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                         u.category === 'critical' ? 'bg-amber-900/50 text-amber-300' :
                         u.category === 'necessary' ? 'bg-slate-600 text-slate-200' : 'bg-slate-700 text-slate-400'
                       }`}>
-                        {u.category === 'security' ? 'Sicherheit' : u.category === 'critical' ? 'Kritisch' : u.category === 'necessary' ? 'Notwendig' : 'Optional'}
+                        {u.category === 'security' ? t('dashboard.updates.category.security') : u.category === 'critical' ? t('dashboard.updates.category.critical') : u.category === 'necessary' ? t('dashboard.updates.category.necessary') : t('dashboard.updates.category.optional')}
                       </span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-slate-400">Keine Details geladen.</p>
+                <p className="text-slate-400">{t('dashboard.updates.noDetails')}</p>
               )}
-              <p className="text-slate-500 text-xs mt-4">Installation z. B. über Terminal: <code className="bg-slate-700 px-1 rounded">sudo apt update && sudo apt upgrade</code></p>
+              <p className="text-slate-500 text-xs mt-4">{t('dashboard.updates.installHint')} <code className="bg-slate-700 px-1 rounded">sudo apt update && sudo apt upgrade</code></p>
               <button
                 type="button"
                 onClick={runUpdateInTerminal}
                 disabled={updateTerminalLoading}
                 className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
               >
-                {updateTerminalLoading ? '…' : 'Update im Terminal ausführen'}
+                {updateTerminalLoading ? '…' : t('dashboard.updates.runInTerminal')}
               </button>
             </div>
           </div>
@@ -692,21 +704,21 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             onClick={() => setDashboardSection('overview')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${dashboardSection === 'overview' ? 'bg-sky-600 text-white' : 'bg-slate-700/70 text-slate-200 hover:text-white hover:bg-slate-600'}`}
           >
-            Übersicht
+            {t('dashboard.section.overview')}
           </button>
           <button
             type="button"
             onClick={() => setDashboardSection('charts')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${dashboardSection === 'charts' ? 'bg-sky-600 text-white' : 'bg-slate-700/70 text-slate-200 hover:text-white hover:bg-slate-600'}`}
           >
-            Auslastung & Grafik
+            {t('dashboard.section.charts')}
           </button>
           <button
             type="button"
             onClick={() => setDashboardSection('hardware')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${dashboardSection === 'hardware' ? 'bg-sky-600 text-white' : 'bg-slate-700/70 text-slate-200 hover:text-white hover:bg-slate-600'}`}
           >
-            Hardware & Sensoren
+            {t('dashboard.section.hardware')}
           </button>
         </motion.div>
       )}
@@ -725,35 +737,35 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             <StatCard
               key="cpu-usage"
               icon={Cpu}
-              label="CPU Auslastung"
+              label={t('dashboard.stat.cpuUsage')}
               value={stats.cpu?.usage?.toFixed(1) || 0}
               unit="%"
             />
             <StatCard
               key="ram-usage"
               icon={HardDrive}
-              label="RAM Auslastung"
+              label={t('dashboard.stat.ramUsage')}
               value={stats.memory?.percent?.toFixed(1) || 0}
               unit="%"
             />
             <StatCard
               key="disk-free"
               icon={Zap}
-              label="Speicher Frei"
+              label={t('dashboard.stat.diskFree')}
               value={Math.round((stats.disk?.free || 0) / 1024 / 1024 / 1024)}
               unit=" GB"
             />
             <StatCard
               key="uptime"
               icon={Clock}
-              label="System Uptime"
-              value={stats.uptime || 'N/A'}
+              label={t('dashboard.stat.uptime')}
+              value={stats.uptime || t('dashboard.stat.na')}
             />
             {stats.cpu?.temperature && (
               <StatCard
                 key="cpu-temp"
                 icon={Cpu}
-                label="CPU Temperatur"
+                label={t('dashboard.stat.cpuTemp')}
                 value={stats.cpu.temperature}
                 unit="°C"
               />
@@ -762,7 +774,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
               <StatCard
                 key="fan-speed"
                 icon={Zap}
-                label="Lüfter Geschwindigkeit"
+                label={t('dashboard.stat.fanSpeed')}
                 value={typeof stats.cpu.fan_speed === 'number' ? stats.cpu.fan_speed : stats.cpu.fan_speed}
                 unit={typeof stats.cpu.fan_speed === 'number' ? ' RPM' : ''}
               />
@@ -779,26 +791,26 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             >
               <h2 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
                 <Globe className="text-slate-400" />
-                Netzwerk – IP-Adressen
+                {t('dashboard.network.title')}
               </h2>
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 {stats.network.hostname && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-400 block mb-0.5">Hostname</span>
+                    <span className="text-slate-400 block mb-0.5">{t('dashboard.network.hostname')}</span>
                     <span className="text-white font-mono">{stats.network.hostname}</span>
                   </div>
                 )}
                 {stats.network.ips && stats.network.ips.length > 0 && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-400 block mb-1">IP-Adressen</span>
+                    <span className="text-slate-400 block mb-1">{t('dashboard.network.ips')}</span>
                     <div className="flex flex-wrap gap-2">
                       {stats.network.ips.map((ip: string, i: number) => (
-                        <span key={i} className="font-mono text-sky-300 bg-slate-800 px-2 py-1 rounded" title={`z. B. http://${ip}:6680/iris (Mopidy), http://${ip}:8000 (Backend)`}>
+                        <span key={i} className="font-mono text-sky-300 bg-slate-800 px-2 py-1 rounded" title={t('dashboard.network.ipHint', { ip })}>
                           {ip}
                         </span>
                       ))}
                     </div>
-                    <p className="text-slate-200 text-xs mt-2 font-medium">Mit dieser IP von anderen Geräten erreichbar (z. B. <span className="font-mono text-sky-200">http://{stats.network.ips[0]}:6680/iris</span> für Mopidy Iris).</p>
+                    <p className="text-slate-200 text-xs mt-2 font-medium">{t('dashboard.network.reachableFromOthers', { ip: stats.network.ips[0] })}</p>
                   </div>
                 )}
               </div>
@@ -815,24 +827,24 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             >
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <Cpu className="text-slate-400" />
-                Systeminformationen
+                {t('dashboard.sysinfo.title')}
               </h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                 {stats.cpu_name && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-400 block mb-1">CPU</span>
+                    <span className="text-slate-400 block mb-1">{t('dashboard.sysinfo.cpu')}</span>
                     <span className="text-white">{stats.cpu_name}</span>
                   </div>
                 )}
                 {(stats.memory?.total != null) && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-400 block mb-1">Hauptspeicher gesamt</span>
+                    <span className="text-slate-400 block mb-1">{t('dashboard.sysinfo.ramTotal')}</span>
                     <span className="text-white">{Math.round((stats.memory.total || 0) / 1024 / 1024 / 1024)} GB</span>
                   </div>
                 )}
                 {stats.ram_info && stats.ram_info.length > 0 && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-400 block mb-1">Arbeitsspeicher (RAM)</span>
+                    <span className="text-slate-400 block mb-1">{t('dashboard.sysinfo.ramModules')}</span>
                     <ul className="text-white text-xs space-y-0.5">
                       {stats.ram_info.slice(0, 4).map((r: any, i: number) => (
                         <li key={i}>
@@ -846,7 +858,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 )}
                 {stats.motherboard && Object.keys(stats.motherboard).length > 0 && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-400 block mb-1">Motherboard</span>
+                    <span className="text-slate-400 block mb-1">{t('dashboard.sysinfo.motherboard')}</span>
                     <span className="text-white">
                       {[stats.motherboard.vendor, stats.motherboard.name].filter(Boolean).join(' – ') || stats.motherboard.product || '–'}
                     </span>
@@ -858,11 +870,11 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                   const sorted = [...integrated, ...discrete]
                   return (
                     <div className="p-3 bg-slate-700/30 rounded-lg lg:col-span-2">
-                      <span className="text-slate-400 block mb-1">Grafik</span>
+                      <span className="text-slate-400 block mb-1">{t('dashboard.sysinfo.graphics')}</span>
                       <ul className="text-white text-xs space-y-1">
                         {sorted.slice(0, 4).map((g: any, i: number) => {
-                          const label = g.gpu_type === 'integrated' ? 'Integriert' : 'Grafikkarte (diskret)'
-                          const name = g.display_name || g.name || g.description || 'GPU'
+                          const label = g.gpu_type === 'integrated' ? t('dashboard.sysinfo.gpu.integrated') : t('dashboard.sysinfo.gpu.discrete')
+                          const name = g.display_name || g.name || g.description || t('dashboard.sysinfo.gpu.fallback')
                           const mem = g.memory_display || (g.memory_mb != null ? `${g.memory_mb} MB` : '')
                           return (
                             <li key={i}>
@@ -876,7 +888,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 })()}
                 {stats.os?.name && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-400 block mb-1">Betriebssystem</span>
+                    <span className="text-slate-400 block mb-1">{t('dashboard.sysinfo.os')}</span>
                     <span className="text-white">{stats.os.name}</span>
                   </div>
                 )}
@@ -896,7 +908,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             >
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <Cpu className="text-sky-500 status-icon active" />
-                System Auslastung
+                {t('dashboard.chart.systemLoad')}
               </h2>
               {historyData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={200}>
@@ -921,13 +933,13 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                         borderRadius: '8px',
                       }}
                     />
-                    <Area type="monotone" dataKey="cpu" stroke="#0ea5e9" fillOpacity={1} fill="url(#colorCpu)" name="CPU %" />
-                    <Area type="monotone" dataKey="memory" stroke="#10b981" fillOpacity={1} fill="url(#colorMemory)" name="RAM %" />
+                    <Area type="monotone" dataKey="cpu" stroke="#0ea5e9" fillOpacity={1} fill="url(#colorCpu)" name={t('dashboard.chart.series.cpu')} />
+                    <Area type="monotone" dataKey="memory" stroke="#10b981" fillOpacity={1} fill="url(#colorMemory)" name={t('dashboard.chart.series.ram')} />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="h-[200px] flex items-center justify-center text-slate-400">
-                  Sammle Daten...
+                  {t('dashboard.chart.collecting')}
                 </div>
               )}
             </motion.div>
@@ -941,12 +953,14 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             >
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <HardDrive className="text-purple-500 status-icon active" />
-                Speicher Auslastung
+                {t('dashboard.chart.diskUsage')}
               </h2>
               {stats?.disk && (stats.disk.mountpoint || stats.disk.partition) && (
                 <p className="text-slate-400 text-sm mb-2">
-                  Partition {stats.disk.mountpoint || '/'}
-                  {stats.disk.partition ? ` (z. B. /dev/${stats.disk.partition})` : ''}
+                  {t('dashboard.chart.partition', {
+                    mount: stats.disk.mountpoint || '/',
+                    devicePart: stats.disk.partition ? t('dashboard.chart.partitionDevice', { partition: stats.disk.partition }) : '',
+                  })}
                 </p>
               )}
               {diskData.length > 0 ? (
@@ -977,11 +991,11 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 </ResponsiveContainer>
               ) : (
                 <div className="h-[200px] flex items-center justify-center text-slate-400">
-                  Lade Daten...
+                  {t('dashboard.chart.loading')}
                 </div>
               )}
               <p className="text-slate-400 text-xs mt-3 border-l-2 border-purple-500/50 pl-2" title="TIP">
-                <span className="text-purple-400 font-medium">TIP:</span> Bei &gt;90 % Auslastung Performance prüfen; große Dateien auf andere Partition/HDD auslagern; Logrotate für Logs nutzen; temporäre Dateien (z. B. /tmp) regelmäßig leeren.
+                <span className="text-purple-400 font-medium">{t('dashboard.chart.diskTip')}</span> {t('dashboard.chart.diskTipBody')}
               </p>
             </motion.div>
           </div>
@@ -999,37 +1013,37 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             >
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <Zap className="text-yellow-500 status-icon active" />
-                System Information
+                {t('dashboard.systemInfoCard.title')}
               </h2>
               <StatusItem
-                label="Betriebssystem"
+                label={t('dashboard.systemInfo.os')}
                 status="active"
                 value={stats.os?.name || stats.platform?.system || "Linux"}
               />
               <StatusItem
-                label="OS Version"
+                label={t('dashboard.systemInfo.osVersion')}
                 status="active"
-                value={stats.os?.version || "Unbekannt"}
+                value={stats.os?.version || t('dashboard.systemInfo.unknown')}
               />
               <StatusItem
-                label="Kernel Version"
+                label={t('dashboard.systemInfo.kernel')}
                 status="active"
-                value={stats.os?.kernel || stats.platform?.release?.substring(0, 20) || "Unbekannt"}
+                value={stats.os?.kernel || stats.platform?.release?.substring(0, 20) || t('dashboard.systemInfo.unknown')}
               />
               <StatusItem
-                label="CPU"
+                label={t('dashboard.systemInfo.cpu')}
                 status="active"
                 value={(() => {
                   const threads = stats.cpu?.count ?? stats.cpu_summary?.threads
                   const cores = stats.cpu_summary?.cores ?? stats.cpu?.physical_cores ?? (threads != null ? Math.max(1, Math.floor(Number(threads) / 2)) : null)
                   if (threads == null) return '—'
                   return (cores != null && cores > 0 && cores !== threads)
-                    ? `${threads} Threads (${cores} Kerne)`
-                    : `${threads} Threads`
+                    ? t('dashboard.systemInfo.cpuThreadsCores', { threads, cores })
+                    : t('dashboard.systemInfo.cpuThreadsOnly', { threads })
                 })()}
               />
               <StatusItem
-                label="Speicher Gesamt"
+                label={t('dashboard.systemInfo.memoryTotal')}
                 status="active"
                 value={`${Math.round((stats.memory?.total || 0) / 1024 / 1024 / 1024)} GB`}
               />
@@ -1044,37 +1058,41 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             >
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <AppIcon name="complete" category="status" size={24} statusColor={getSecurityStatus() === 'active' ? 'ok' : 'muted'} />
-                Installation Status
+                {t('dashboard.installStatus.title')}
               </h2>
               <StatusItem
-                label="Sicherheit"
+                label={t('dashboard.installStatus.security')}
                 status={getSecurityStatus()}
                 value={getSecurityStatusText()}
-                tooltip={"Hier legst du die Basis-Sicherheit fest:\n- Firewall (UFW) aktivieren + Regeln prüfen\n- Fail2Ban aktivieren\n- SSH härten (z.B. Passwortlogin aus)\n- Automatische Sicherheitsupdates"}
+                tooltip={t('dashboard.installStatus.tooltip.security')}
               />
               <StatusItem
-                label="Benutzer"
+                label={t('dashboard.installStatus.users')}
                 status="inactive"
-                value="Standard"
-                tooltip={"Lege zusätzliche Benutzer an:\n- Admin vs. Standardnutzer\n- Starke Passwörter\n- Optional: SSH-Keys, Gruppen/Rechte"}
+                value={t('dashboard.installStatus.users.value')}
+                tooltip={t('dashboard.installStatus.tooltip.users')}
               />
               <StatusItem
-                label="Dev-Umgebung"
+                label={t('dashboard.installStatus.dev')}
                 status={servicesStatus?.dev?.basic_ok ? 'active' : 'inactive'}
-                value={servicesStatus?.dev != null ? `${servicesStatus.dev.installed_count}/${servicesStatus.dev.total_parts} Teile – ${servicesStatus.dev.basic_ok ? 'Grundbetrieb möglich' : 'nicht vollständig'}` : '…'}
-                tooltip={"Installiere Tools fürs Entwickeln:\n- Python/Node\n- C/C++ Compiler (gcc/g++)\n- Java (JDK)\n- Git, Docker (optional)\n- Editor/IDE (z.B. VS Code Server/Cursor)"}
+                value={servicesStatus?.dev != null ? t('dashboard.installStatus.dev.value', {
+                  installed: servicesStatus.dev.installed_count,
+                  total: servicesStatus.dev.total_parts,
+                  state: servicesStatus.dev.basic_ok ? t('dashboard.installStatus.dev.ok') : t('dashboard.installStatus.dev.incomplete'),
+                }) : t('dashboard.installStatus.ellipsis')}
+                tooltip={t('dashboard.installStatus.tooltip.dev')}
               />
               <StatusItem
-                label="Webserver"
+                label={t('dashboard.installStatus.web')}
                 status={servicesStatus?.webserver?.reachable ? 'active' : 'inactive'}
-                value={servicesStatus?.webserver != null ? (servicesStatus.webserver.reachable ? 'Läuft – Webseiten erreichbar' : servicesStatus.webserver.running ? 'Läuft' : 'Nicht installiert') : '…'}
-                tooltip={"Richte Hosting ein:\n- Nginx oder Apache\n- PHP (falls nötig)\n- Websites/Apps erkennen & zuordnen\n- Optional: CMS (WordPress/Nextcloud)\n- Admin-Panels (Cockpit/Webmin)"}
+                value={servicesStatus?.webserver != null ? (servicesStatus.webserver.reachable ? t('dashboard.installStatus.web.up') : servicesStatus.webserver.running ? t('dashboard.installStatus.web.running') : t('dashboard.installStatus.web.notInstalled')) : t('dashboard.installStatus.ellipsis')}
+                tooltip={t('dashboard.installStatus.tooltip.web')}
               />
               <StatusItem
-                label="Musikbox"
+                label={t('dashboard.installStatus.music')}
                 status={servicesStatus?.musicbox?.basic_ok ? 'active' : 'inactive'}
-                value={servicesStatus?.musicbox != null ? (servicesStatus.musicbox.basic_ok ? 'Grundbetrieb möglich' : servicesStatus.musicbox.installed ? 'Installiert, nicht gestartet' : 'Nicht installiert') : '…'}
-                tooltip={"Mopidy, Volumio oder Plex – Abspielen möglich wenn Dienst läuft."}
+                value={servicesStatus?.musicbox != null ? (servicesStatus.musicbox.basic_ok ? t('dashboard.installStatus.music.ok') : servicesStatus.musicbox.installed ? t('dashboard.installStatus.music.installedNotStarted') : t('dashboard.installStatus.music.notInstalled')) : t('dashboard.installStatus.ellipsis')}
+                tooltip={t('dashboard.installStatus.tooltip.music')}
               />
             </motion.div>
           </div>
@@ -1090,15 +1108,15 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             >
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <Cpu className="text-sky-500 status-icon active" />
-                CPU & Grafik
+                {t('dashboard.cpuGpu.title')}
               </h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-300 mb-2">CPU</h3>
+                  <h3 className="text-sm font-semibold text-slate-300 mb-2">{t('dashboard.cpuGpu.cpuHeading')}</h3>
                   {(stats.cpu_summary?.name || stats.cpu_name) ? (
                     <div className="p-3 bg-slate-700/30 rounded-lg border border-slate-600 space-y-2">
                       <div className="font-medium text-white">
-                        {stats.cpu_summary?.name || stats.cpu_name || 'Unbekannt'}
+                        {stats.cpu_summary?.name || stats.cpu_name || t('dashboard.cpuGpu.unknown')}
                       </div>
                       <div className="text-xs text-slate-300 flex flex-wrap gap-x-3 gap-y-0.5">
                         {(() => {
@@ -1107,38 +1125,38 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                           const coresDisplay = (cores != null && cores > 0) ? cores : (threads != null && threads > 0 ? Math.max(1, Math.floor(Number(threads) / 2)) : null)
                           return (
                             <>
-                              {coresDisplay != null && coresDisplay > 0 && <span>{coresDisplay} Kerne</span>}
-                              {threads != null && threads > 0 && <span>{threads} Threads</span>}
+                              {coresDisplay != null && coresDisplay > 0 && <span>{t('dashboard.cpuGpu.cores', { n: coresDisplay })}</span>}
+                              {threads != null && threads > 0 && <span>{t('dashboard.cpuGpu.threads', { n: threads })}</span>}
                             </>
                           )
                         })()}
                       </div>
                       {stats.cpu_summary?.cache && (
-                        <div className="text-xs text-slate-400">Cache: {stats.cpu_summary.cache}</div>
+                        <div className="text-xs text-slate-400">{t('dashboard.cpuGpu.cache', { v: stats.cpu_summary.cache })}</div>
                       )}
                       {stats.cpu_summary?.flags && (
                         <details className="text-xs text-slate-400">
-                          <summary className="cursor-pointer text-sky-400 hover:text-sky-300">Befehlssätze anzeigen</summary>
+                          <summary className="cursor-pointer text-sky-400 hover:text-sky-300">{t('dashboard.cpuGpu.showIsas')}</summary>
                           <p className="mt-1 break-all opacity-90">{stats.cpu_summary.flags}</p>
                         </details>
                       )}
                       {stats.motherboard && (stats.motherboard.vendor || stats.motherboard.name) && (
                         <div className="text-xs text-slate-400">
-                          Chipsatz/Mainboard: {[stats.motherboard.vendor, stats.motherboard.name].filter(Boolean).join(' – ') || stats.motherboard.product || '–'}
+                          {t('dashboard.cpuGpu.mainboard', { v: [stats.motherboard.vendor, stats.motherboard.name].filter(Boolean).join(' – ') || stats.motherboard.product || '–' })}
                         </div>
                       )}
                       {((stats.cpu_summary?.name || stats.cpu_name || '').toLowerCase().includes('intel') && (
-                        <a href="https://www.intel.de/content/www/de/de/support/detect.html" target="_blank" rel="noopener noreferrer" className="text-xs text-sky-400 hover:text-sky-300 inline-block">Treiber beim Hersteller (Intel) suchen</a>
+                        <a href="https://www.intel.de/content/www/de/de/support/detect.html" target="_blank" rel="noopener noreferrer" className="text-xs text-sky-400 hover:text-sky-300 inline-block">{t('dashboard.cpuGpu.driverIntel')}</a>
                       )) || ((stats.cpu_summary?.name || stats.cpu_name || '').toLowerCase().includes('amd') && (
-                        <a href="https://www.amd.com/de/support" target="_blank" rel="noopener noreferrer" className="text-xs text-sky-400 hover:text-sky-300 inline-block">Treiber beim Hersteller (AMD) suchen</a>
+                        <a href="https://www.amd.com/de/support" target="_blank" rel="noopener noreferrer" className="text-xs text-sky-400 hover:text-sky-300 inline-block">{t('dashboard.cpuGpu.driverAmd')}</a>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-500 text-sm">Keine CPU-Daten</p>
+                    <p className="text-slate-500 text-sm">{t('dashboard.cpuGpu.noCpuData')}</p>
                   )}
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-300 mb-2">Grafik – Integriert & Grafikkarte</h3>
+                  <h3 className="text-sm font-semibold text-slate-300 mb-2">{t('dashboard.cpuGpu.graphicsHeading')}</h3>
                   {stats.hardware?.gpus && stats.hardware.gpus.length > 0 ? (
                     <ul className="space-y-2">
                       {(() => {
@@ -1150,27 +1168,27 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                         const discrete = stats.hardware.gpus.filter((g: any) => g.gpu_type !== 'integrated')
                         const sorted = [...integrated, ...discrete]
                         return sorted.map((gpu: any, idx: number) => {
-                          const name = gpu.display_name || gpu.name || gpu.description || 'Unbekannt'
+                          const name = gpu.display_name || gpu.name || gpu.description || t('dashboard.cpuGpu.unknown')
                           const nameLower = (name || '').toLowerCase()
                           const mem = gpu.memory_display || (gpu.memory_mb != null ? `${gpu.memory_mb} MB` : null)
                           const isNvidia = nameLower.includes('nvidia')
                           const isAmd = nameLower.includes('amd') || nameLower.includes('radeon')
                           const isIntel = nameLower.includes('intel')
                           const driverTip = isNvidia && nvidiaTip ? nvidiaTip : isAmd && amdTip ? amdTip : isIntel && intelTip ? intelTip : null
-                          const label = gpu.gpu_type === 'integrated' ? 'Integrierte Grafik (iGPU)' : 'Grafikkarte (diskret)'
+                          const label = gpu.gpu_type === 'integrated' ? t('dashboard.cpuGpu.label.igpu') : t('dashboard.cpuGpu.label.discrete')
                           return (
                             <li key={idx} className={`p-3 rounded-lg border ${isNvidia ? 'bg-slate-700/50 border-green-600/50' : 'bg-slate-700/30 border-slate-600'}`}>
                               <div className="text-xs text-slate-400 mb-0.5">{label}</div>
                               <div className="font-medium text-white">{name}</div>
                               {mem && (
-                                <div className="text-xs text-slate-400 mt-1">Grafikspeicher: {mem}</div>
+                                <div className="text-xs text-slate-400 mt-1">{t('dashboard.cpuGpu.vram', { v: mem })}</div>
                               )}
                               {isNvidia && gpu.driver && (
-                                <div className="text-xs text-slate-400 mt-0.5">Treiber: {gpu.driver}</div>
+                                <div className="text-xs text-slate-400 mt-0.5">{t('dashboard.cpuGpu.driver', { v: gpu.driver })}</div>
                               )}
                               {driverTip && (
                                 <p className="text-slate-400 text-xs border-l-2 border-sky-500/50 pl-2 mt-1.5" title="TIP">
-                                  <span className="text-sky-400 font-medium">TIP:</span> {driverTip}
+                                  <span className="text-sky-400 font-medium">{t('dashboard.cpuGpu.tipPrefix')}</span> {driverTip}
                                 </p>
                               )}
                             </li>
@@ -1179,17 +1197,17 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                       })()}
                     </ul>
                   ) : (
-                    <p className="text-slate-500 text-sm">Keine GPU-Daten</p>
+                    <p className="text-slate-500 text-sm">{t('dashboard.cpuGpu.noGpuData')}</p>
                   )}
                 </div>
                 {(stats.cpu?.per_core_usage?.length ?? 0) > 0 && (
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-300 mb-2">Auslastung physikalische Kerne ({stats.cpu.per_core_usage.length})</h3>
+                    <h3 className="text-sm font-semibold text-slate-300 mb-2">{t('dashboard.cpuGpu.perCoreTitle', { n: stats.cpu.per_core_usage.length })}</h3>
                     <div className="space-y-1.5">
                       {stats.cpu.per_core_usage.map((pct: number, idx: number) => (
                         <div key={idx} className="flex items-center gap-2">
-                          <span className="text-xs text-slate-400 w-5 shrink-0">K{idx + 1}</span>
-                          <div className="flex-1 h-4 bg-slate-700 rounded overflow-hidden" title={`Kern ${idx + 1}: ${pct.toFixed(0)}%`}>
+                          <span className="text-xs text-slate-400 w-5 shrink-0">{t('dashboard.cpuGpu.coreShort', { n: idx + 1 })}</span>
+                          <div className="flex-1 h-4 bg-slate-700 rounded overflow-hidden" title={t('dashboard.cpuGpu.coreTitle', { n: idx + 1, pct: pct.toFixed(0) })}>
                             <div
                               className="h-full bg-sky-500 transition-all"
                               style={{ width: `${Math.min(100, pct)}%`, minWidth: pct > 0 ? '2px' : 0 }}
@@ -1215,13 +1233,13 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             >
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <Thermometer className="text-amber-500" />
-                Sensoren & Schnittstellen
+                {t('dashboard.sensors.title')}
               </h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.sensors && stats.sensors.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center gap-1">
-                      <Thermometer size={14} /> Temperatursensoren
+                      <Thermometer size={14} /> {t('dashboard.sensors.temp')}
                     </h3>
                     <ul className="space-y-1">
                       {stats.sensors.map((s: any, idx: number) => (
@@ -1240,7 +1258,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 {stats.disks && stats.disks.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center gap-1">
-                      <HardDrive size={14} /> Laufwerke
+                      <HardDrive size={14} /> {t('dashboard.sensors.disks')}
                     </h3>
                     <ul className="space-y-1">
                       {stats.disks.map((d: any, idx: number) => (
@@ -1251,7 +1269,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                         >
                           <span className="text-white">{d.label || d.mountpoint || d.device}</span>
                           <span className="text-slate-400 ml-2">
-                            {d.percent != null ? `${d.used_gb}/${d.total_gb} GB (${d.percent}%)` : `${d.total_gb} GB gesamt`}
+                            {d.percent != null ? `${d.used_gb}/${d.total_gb} GB (${d.percent}%)` : t('dashboard.sensors.diskTotal', { total: d.total_gb })}
                           </span>
                         </li>
                       ))}
@@ -1261,7 +1279,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 {stats.fans && stats.fans.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center gap-1">
-                      <Wind size={14} /> Lüfter
+                      <Wind size={14} /> {t('dashboard.sensors.fans')}
                     </h3>
                     <ul className="space-y-1">
                       {stats.fans.map((f: any, idx: number) => (
@@ -1280,7 +1298,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 {stats.displays && stats.displays.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold text-slate-300 mb-2 flex items-center gap-1">
-                      <Monitor size={14} /> Displays
+                      <Monitor size={14} /> {t('dashboard.sensors.displays')}
                     </h3>
                     <ul className="space-y-1">
                       {stats.displays.map((d: any, idx: number) => (
@@ -1311,7 +1329,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             >
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <Settings className="text-slate-400" />
-                Systembezogene Treiber (Kernel-Module)
+                {t('dashboard.drivers.title')}
               </h2>
               <ul className="space-y-2 max-h-48 overflow-y-auto">
                 {stats.drivers.map((d: any, idx: number) => (
@@ -1332,112 +1350,112 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             transition={{ duration: 0.4, delay: 0.5 }}
             className="card"
           >
-            <h2 className="text-xl font-bold text-white mb-6">Module Übersicht</h2>
+            <h2 className="text-xl font-bold text-white mb-6">{t('dashboard.modules.title')}</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               <ModuleCard
                 icon={Shield}
-                title="Sicherheit"
-                description="Härtung, Firewall, SSH & Updates"
-                tooltip={"Empfohlen als Erstes:\n- Firewall (UFW) aktivieren & Regeln pflegen\n- Fail2Ban gegen Login-Angriffe\n- SSH härten (Ports/Keys/Passwortlogin)\n- Automatische Sicherheitsupdates"}
+                title={t('dashboard.modules.security.title')}
+                description={t('dashboard.modules.security.desc')}
+                tooltip={t('dashboard.modules.security.tooltip')}
                 status="ready"
                 page="security"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={Users}
-                title="Benutzer"
-                description="Benutzer, Rollen, Rechte"
-                tooltip={"Mehrbenutzer-Setup:\n- Admin/Standardnutzer anlegen\n- Starke Passwörter & Gruppen\n- Optional: SSH-Keys / sudo-Rechte\n- Aufräumen: Benutzer löschen/prüfen"}
+                title={t('dashboard.modules.users.title')}
+                description={t('dashboard.modules.users.desc')}
+                tooltip={t('dashboard.modules.users.tooltip')}
                 status="ready"
                 page="users"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={Code}
-                title="Entwicklung"
-                description="Programmierumgebung & Tools"
-                tooltip={"Für Entwicklung auf dem Pi:\n- Python & Node.js\n- C/C++ (gcc/g++)\n- Java (JDK)\n- Git, Docker (optional)\n- Editoren/IDE (VS Code Server/Cursor)\n- Versionsinfos + Links zu Doku/Admin"}
+                title={t('dashboard.modules.dev.title')}
+                description={t('dashboard.modules.dev.desc')}
+                tooltip={t('dashboard.modules.dev.tooltip')}
                 status="ready"
                 page="devenv"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={Globe}
-                title="Webserver"
-                description="Webhosting, Apps & Admin-Panels"
-                tooltip={"Webhosting auf dem Pi:\n- Nginx/Apache + (optional) PHP\n- Websites/Apps erkennen & zuordnen\n- CMS (z.B. WordPress/Nextcloud)\n- Admin-Panels (Cockpit/Webmin)\n- Hardening & Zertifikate"}
+                title={t('dashboard.modules.web.title')}
+                description={t('dashboard.modules.web.desc')}
+                tooltip={t('dashboard.modules.web.tooltip')}
                 status="ready"
                 page="webserver"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={Mail}
-                title="Mailserver"
-                description="Mailversand/Empfang (optional)"
-                tooltip={"Nur wenn du wirklich Mail auf dem Pi brauchst:\n- Domain/DNS (MX/SPF/DKIM/DMARC) planen\n- TLS/Ports/Freigaben\n- Spam-/Brute-Force-Schutz\n- Externe Verbindung/Relay konfigurieren"}
+                title={t('dashboard.modules.mail.title')}
+                description={t('dashboard.modules.mail.desc')}
+                tooltip={t('dashboard.modules.mail.tooltip')}
                 status="ready"
                 page="mailserver"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={Database}
-                title="NAS"
-                description="Dateifreigaben im Netzwerk"
-                tooltip={"Pi als Netzwerkspeicher:\n- Samba (Windows/macOS)\n- NFS (Linux)\n- FTP/SFTP (extern)\n- Shares/Ordnerrechte/Optionen\n- Optional: Gastzugang & Verschlüsselung"}
+                title={t('dashboard.modules.nas.title')}
+                description={t('dashboard.modules.nas.desc')}
+                tooltip={t('dashboard.modules.nas.tooltip')}
                 status="ready"
                 page="nas"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={Home}
-                title="Hausautomation"
-                description="Smart-Home Server"
-                tooltip={"Smart Home auf dem Pi:\n- Home Assistant / OpenHAB / Node-RED\n- Ports & Autostart\n- Add-ons/Integrationen\n- Zugriff von außen (sicher!)"}
+                title={t('dashboard.modules.home.title')}
+                description={t('dashboard.modules.home.desc')}
+                tooltip={t('dashboard.modules.home.tooltip')}
                 status="ready"
                 page="homeautomation"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={Music}
-                title="Musikbox"
-                description="Audio/Streaming im Wohnzimmer"
-                tooltip={"Pi als Musik-/Media-Station:\n- Mopidy / Volumio / Plex\n- AirPlay/Spotify (optional)\n- Ports & Autostart\n- Web-UI Links & Hinweise"}
+                title={t('dashboard.modules.music.title')}
+                description={t('dashboard.modules.music.desc')}
+                tooltip={t('dashboard.modules.music.tooltip')}
                 status="ready"
                 page="musicbox"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={Settings}
-                title="Voreinstellungen"
-                description="Profile für typische Einsätze"
-                tooltip={"Schnell-Setups per Profil:\n- NAS / Webserver / Homeautomation / Musikbox / Lerncomputer\n- Installiert passende Pakete\n- Setzt sinnvolle Defaults\n- Spart Klicks & vermeidet Fehler"}
+                title={t('dashboard.modules.presets.title')}
+                description={t('dashboard.modules.presets.desc')}
+                tooltip={t('dashboard.modules.presets.tooltip')}
                 status="ready"
                 page="presets"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={BookOpen}
-                title="Lerncomputer"
-                description="Tools & Projekte für Lernen"
-                tooltip={"Für Lernen/Schule/Projekte:\n- Scratch, Python/Jupyter\n- GPIO/Robotics Libraries\n- Elektronik-Tools\n- Mathe/Science Tools + Ideen/Links"}
+                title={t('dashboard.modules.learning.title')}
+                description={t('dashboard.modules.learning.desc')}
+                tooltip={t('dashboard.modules.learning.tooltip')}
                 status="ready"
                 page="learning"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={Activity}
-                title="Monitoring"
-                description="Prometheus/Grafana Überblick"
-                tooltip={"Monitoring/Transparenz:\n- Node Exporter, Prometheus, Grafana\n- Dashboards & Health-Checks\n- Links zu UIs\n- Basis für Alerts/Logs"}
+                title={t('dashboard.modules.monitoring.title')}
+                description={t('dashboard.modules.monitoring.desc')}
+                tooltip={t('dashboard.modules.monitoring.tooltip')}
                 status="ready"
                 page="monitoring"
                 setCurrentPage={setCurrentPage}
               />
               <ModuleCard
                 icon={HardDrive}
-                title="Backup & Restore"
-                description="Sicherungen & Wiederherstellung"
-                tooltip={"Datensicherung:\n- Backups erstellen (voll/inkrementell)\n- Backups auflisten\n- Restore (mit Warnhinweisen)\n- Grundlage für „Pi neu aufsetzen ohne Datenverlust“"}
+                title={t('dashboard.modules.backup.title')}
+                description={t('dashboard.modules.backup.desc')}
+                tooltip={t('dashboard.modules.backup.tooltip')}
                 status="ready"
                 page="backup"
                 setCurrentPage={setCurrentPage}
@@ -1454,15 +1472,15 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             transition={{ duration: 0.4, delay: 0.6 }}
             className="bg-gradient-to-r from-sky-600/20 to-blue-600/20 border border-sky-500/30 rounded-lg p-6 backdrop-blur-sm"
           >
-            <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Schnellstart</h2>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">{t('dashboard.quickstart.title')}</h2>
             <p className="text-slate-700 dark:text-slate-300 mb-4 font-medium">
-              Verwenden Sie den Installationsassistenten, um Ihr System in wenigen Schritten zu konfigurieren.
+              {t('dashboard.quickstart.body')}
             </p>
             <button 
               onClick={() => setCurrentPage && setCurrentPage('wizard')}
               className="btn-primary"
             >
-              → Installation starten
+              {t('dashboard.quickstart.button')}
             </button>
           </motion.div>
           )}
@@ -1475,43 +1493,46 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           <div className="animate-spin-slow">
             <Zap className="text-sky-500" size={48} />
           </div>
-          <p className="ml-4 text-slate-300">Lade Systeminfo...</p>
+          <p className="ml-4 text-slate-300">{t('dashboard.loading')}</p>
         </div>
       )}
     </motion.div>
   )
 }
 
-const ModuleCard = ({ icon: Icon, title, description, tooltip, status, page, setCurrentPage }: any) => (
-  <motion.div
-    whileHover={{ scale: 1.02, y: -4 }}
-    whileTap={{ scale: 0.98 }}
-    onClick={() => setCurrentPage && setCurrentPage(page)}
-    className="relative isolate z-0 hover:z-40 bg-slate-700/50 hover:bg-slate-700/70 border border-slate-600 rounded-lg p-4 transition-all cursor-pointer backdrop-blur-sm"
-  >
-    <div className="flex items-start justify-between mb-3">
-      <div className="relative group">
-        <motion.div
-          animate={{ rotate: [0, 5, -5, 0] }}
-          transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
-        >
-          <Icon className="text-sky-400" size={24} />
-        </motion.div>
-        {tooltip && (
-          <div className="pointer-events-none absolute left-0 top-8 opacity-0 group-hover:opacity-100 transition-opacity z-50">
-            <div className="max-w-xs whitespace-pre-line text-xs text-slate-100 bg-slate-900/95 border border-slate-700 rounded-lg px-3 py-2 shadow-xl">
-              {tooltip}
+const ModuleCard = ({ icon: Icon, title, description, tooltip, status, page, setCurrentPage }: any) => {
+  const { t } = useTranslation()
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02, y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={() => setCurrentPage && setCurrentPage(page)}
+      className="relative isolate z-0 hover:z-40 bg-slate-700/50 hover:bg-slate-700/70 border border-slate-600 rounded-lg p-4 transition-all cursor-pointer backdrop-blur-sm"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="relative group">
+          <motion.div
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
+          >
+            <Icon className="text-sky-400" size={24} />
+          </motion.div>
+          {tooltip && (
+            <div className="pointer-events-none absolute left-0 top-8 opacity-0 group-hover:opacity-100 transition-opacity z-50">
+              <div className="max-w-xs whitespace-pre-line text-xs text-slate-100 bg-slate-900/95 border border-slate-700 rounded-lg px-3 py-2 shadow-xl">
+                {tooltip}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+        <span className="px-2 py-1 bg-green-900/50 text-green-400 text-xs rounded-full font-semibold backdrop-blur-sm">
+          {t('dashboard.moduleCard.ready')}
+        </span>
       </div>
-      <span className="px-2 py-1 bg-green-900/50 text-green-400 text-xs rounded-full font-semibold backdrop-blur-sm">
-        Bereit
-      </span>
-    </div>
-    <h3 className="font-bold text-white">{title}</h3>
-    <p className="text-sm text-slate-400">{description}</p>
-  </motion.div>
-)
+      <h3 className="font-bold text-white">{title}</h3>
+      <p className="text-sm text-slate-400">{description}</p>
+    </motion.div>
+  )
+}
 
 export default Dashboard

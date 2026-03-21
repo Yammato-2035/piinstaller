@@ -157,8 +157,8 @@ PI_INSTALLER_VERSION = get_pi_installer_version()
 
 # Erstelle FastAPI App
 app = FastAPI(
-    title="PI-Installer",
-    description="Raspberry Pi Konfigurations-Assistent",
+    title="SetupHelfer",
+    description="Konfigurations-Assistent für Raspberry Pi und Linux",
     version=PI_INSTALLER_VERSION
 )
 

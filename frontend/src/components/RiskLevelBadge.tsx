@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import type { RiskLevel } from '../config/riskLevels'
 
 interface RiskLevelBadgeProps {
@@ -9,34 +10,35 @@ interface RiskLevelBadgeProps {
   title?: string
 }
 
-const STYLES: Record<RiskLevel, { bg: string; text: string; label: string }> = {
+const STYLES: Record<RiskLevel, { bg: string; text: string; labelKey: string }> = {
   green: {
     bg: 'bg-emerald-500/20 border-emerald-500/50',
     text: 'text-emerald-400',
-    label: 'Sicher',
+    labelKey: 'risk.label.safe',
   },
   yellow: {
     bg: 'bg-amber-500/20 border-amber-500/50',
     text: 'text-amber-400',
-    label: 'Systemänderung',
+    labelKey: 'risk.label.systemChange',
   },
   red: {
     bg: 'bg-red-500/20 border-red-500/50',
     text: 'text-red-400',
-    label: 'Gefahr',
+    labelKey: 'risk.label.danger',
   },
 }
 
 const RiskLevelBadge: React.FC<RiskLevelBadgeProps> = ({ level, showLabel = false, className = '', title }) => {
+  const { t } = useTranslation()
   const s = STYLES[level]
-  const t = title ?? s.label
+  const tLabel = title ?? t(s.labelKey)
 
   if (!showLabel) {
     return (
       <span
         className={`inline-block w-2 h-2 rounded-full border ${s.bg} ${className}`}
-        title={t}
-        aria-label={t}
+        title={tLabel}
+        aria-label={tLabel}
       />
     )
   }
@@ -44,10 +46,10 @@ const RiskLevelBadge: React.FC<RiskLevelBadgeProps> = ({ level, showLabel = fals
   return (
     <span
       className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium border ${s.bg} ${s.text} ${className}`}
-      title={t}
+      title={tLabel}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
-      {s.label}
+      {t(s.labelKey)}
     </span>
   )
 }

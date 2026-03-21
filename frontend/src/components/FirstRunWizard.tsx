@@ -1,57 +1,15 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Home, Cloud, Tv, Code, ChevronRight, CheckCircle, Package, Cpu, HardDrive, Activity } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { usePlatform } from '../context/PlatformContext'
 import { fetchApi } from '../api'
 import AppIcon from './AppIcon'
 
 export const FIRST_RUN_DONE_KEY = 'pi-installer-first-run-done'
 
-const INTERESTS = [
-  { id: 'smarthome', label: 'Smart Home steuern', icon: Home },
-  { id: 'cloud', label: 'Dateien teilen (Cloud)', icon: Cloud },
-  { id: 'media', label: 'Medien streamen', icon: Tv },
-  { id: 'dev', label: 'Entwickeln lernen', icon: Code },
-] as const
-
-const RECOMMENDED_APPS: Record<string, { id: string; name: string; desc: string }[]> = {
-  smarthome: [
-    { id: 'home-assistant', name: 'Home Assistant', desc: 'Smart Home zentral steuern' },
-    { id: 'node-red', name: 'Node-RED', desc: 'Automatisierungen visuell bauen' },
-    { id: 'pi-hole', name: 'Pi-hole', desc: 'Werbung im Netz blockieren' },
-  ],
-  cloud: [
-    { id: 'nextcloud', name: 'Nextcloud', desc: 'Eigene Cloud für Dateien & Kalender' },
-    { id: 'pi-hole', name: 'Pi-hole', desc: 'Werbung im Netz blockieren' },
-    { id: 'home-assistant', name: 'Home Assistant', desc: 'Smart Home optional' },
-  ],
-  media: [
-    { id: 'jellyfin', name: 'Jellyfin', desc: 'Medien streamen (Filme, Musik)' },
-    { id: 'pi-hole', name: 'Pi-hole', desc: 'Werbung blockieren' },
-    { id: 'nextcloud', name: 'Nextcloud', desc: 'Dateien teilen' },
-  ],
-  dev: [
-    { id: 'code-server', name: 'VS Code Server', desc: 'Code im Browser bearbeiten' },
-    { id: 'node-red', name: 'Node-RED', desc: 'Flows programmieren' },
-    { id: 'home-assistant', name: 'Home Assistant', desc: 'Smart Home & Automatisierung' },
-  ],
-}
-
-const DEFAULT_RECOMMENDED = [
-  { id: 'home-assistant', name: 'Home Assistant', desc: 'Smart Home zentral steuern' },
-  { id: 'nextcloud', name: 'Nextcloud', desc: 'Eigene Cloud für Dateien' },
-  { id: 'pi-hole', name: 'Pi-hole', desc: 'Werbung im Netz blockieren' },
-]
-
 /** Phase 7: Empfohlene erste Schritte – gleiche Aufgaben wie Dashboard (Plan 6.5 Schritt 3). */
-const FIRST_STEPS_CARDS = [
-  { pageId: 'wizard' as const, title: 'System einrichten', desc: 'Geführter Assistent für Grundkonfiguration, Sicherheit und Benutzer.', icon: 'installation' as const, style: 'sky' },
-  { pageId: 'app-store' as const, title: 'Apps installieren', desc: 'Fertige Pakete für Media-Server, NAS, Smart Home und mehr.', icon: 'app-store' as const, style: 'emerald' },
-  { pageId: 'backup' as const, title: 'Backup erstellen', desc: 'System sichern oder wiederherstellen, bevor du Neues ausprobierst.', icon: 'backup' as const, style: 'indigo' },
-  { pageId: 'monitoring' as const, title: 'Systemzustand prüfen', desc: 'CPU, Speicher, Temperatur und Dienste im Blick behalten.', icon: 'monitoring' as const, style: 'amber' },
-  { pageId: 'learning' as const, title: 'Lernen & entdecken', desc: 'Beispiele und Ideen, was du mit deinem System machen kannst.', icon: 'documentation' as const, style: 'teal' },
-  { pageId: 'control-center' as const, title: 'Erweiterte Funktionen', desc: 'Netzwerk, Dienste und Entwickler-Werkzeuge für Fortgeschrittene.', icon: 'advanced' as const, style: 'slate' },
-]
+const FIRST_STEP_STYLES = ['sky', 'emerald', 'indigo', 'amber', 'teal', 'slate'] as const
 
 interface FirstRunWizardProps {
   onComplete: (experienceLevel?: 'beginner' | 'advanced' | 'developer') => void
@@ -60,11 +18,108 @@ interface FirstRunWizardProps {
 }
 
 const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentPage, systemInfo }) => {
+  const { t } = useTranslation()
   const { wizardWelcomeHeadline } = usePlatform()
   const [step, setStep] = useState(1)
   const [selected, setSelected] = useState<string[]>([])
   const [experienceLevel, setExperienceLevel] = useState<'beginner' | 'advanced' | 'developer'>('beginner')
   const [savingProfile, setSavingProfile] = useState(false)
+
+  const INTERESTS = useMemo(
+    () =>
+      [
+        { id: 'smarthome', label: t('firstRun.interest.smarthome'), icon: Home },
+        { id: 'cloud', label: t('firstRun.interest.cloud'), icon: Cloud },
+        { id: 'media', label: t('firstRun.interest.media'), icon: Tv },
+        { id: 'dev', label: t('firstRun.interest.dev'), icon: Code },
+      ] as const,
+    [t],
+  )
+
+  const RECOMMENDED_APPS = useMemo(
+    () =>
+      ({
+        smarthome: [
+          { id: 'home-assistant', name: 'Home Assistant', desc: t('firstRun.reco.smarthome.home-assistant.desc') },
+          { id: 'node-red', name: 'Node-RED', desc: t('firstRun.reco.smarthome.node-red.desc') },
+          { id: 'pi-hole', name: 'Pi-hole', desc: t('firstRun.reco.smarthome.pi-hole.desc') },
+        ],
+        cloud: [
+          { id: 'nextcloud', name: 'Nextcloud', desc: t('firstRun.reco.cloud.nextcloud.desc') },
+          { id: 'pi-hole', name: 'Pi-hole', desc: t('firstRun.reco.cloud.pi-hole.desc') },
+          { id: 'home-assistant', name: 'Home Assistant', desc: t('firstRun.reco.cloud.home-assistant.desc') },
+        ],
+        media: [
+          { id: 'jellyfin', name: 'Jellyfin', desc: t('firstRun.reco.media.jellyfin.desc') },
+          { id: 'pi-hole', name: 'Pi-hole', desc: t('firstRun.reco.media.pi-hole.desc') },
+          { id: 'nextcloud', name: 'Nextcloud', desc: t('firstRun.reco.media.nextcloud.desc') },
+        ],
+        dev: [
+          { id: 'code-server', name: 'VS Code Server', desc: t('firstRun.reco.dev.code-server.desc') },
+          { id: 'node-red', name: 'Node-RED', desc: t('firstRun.reco.dev.node-red.desc') },
+          { id: 'home-assistant', name: 'Home Assistant', desc: t('firstRun.reco.dev.home-assistant.desc') },
+        ],
+      }) as Record<string, { id: string; name: string; desc: string }[]>,
+    [t],
+  )
+
+  const DEFAULT_RECOMMENDED = useMemo(
+    () => [
+      { id: 'home-assistant', name: 'Home Assistant', desc: t('firstRun.reco.default.home-assistant.desc') },
+      { id: 'nextcloud', name: 'Nextcloud', desc: t('firstRun.reco.default.nextcloud.desc') },
+      { id: 'pi-hole', name: 'Pi-hole', desc: t('firstRun.reco.default.pi-hole.desc') },
+    ],
+    [t],
+  )
+
+  const FIRST_STEPS_CARDS = useMemo(
+    () =>
+      [
+        {
+          pageId: 'wizard' as const,
+          title: t('firstRun.firstStep.wizard.title'),
+          desc: t('firstRun.firstStep.wizard.desc'),
+          icon: 'installation' as const,
+          style: FIRST_STEP_STYLES[0],
+        },
+        {
+          pageId: 'app-store' as const,
+          title: t('firstRun.firstStep.appStore.title'),
+          desc: t('firstRun.firstStep.appStore.desc'),
+          icon: 'app-store' as const,
+          style: FIRST_STEP_STYLES[1],
+        },
+        {
+          pageId: 'backup' as const,
+          title: t('firstRun.firstStep.backup.title'),
+          desc: t('firstRun.firstStep.backup.desc'),
+          icon: 'backup' as const,
+          style: FIRST_STEP_STYLES[2],
+        },
+        {
+          pageId: 'monitoring' as const,
+          title: t('firstRun.firstStep.monitoring.title'),
+          desc: t('firstRun.firstStep.monitoring.desc'),
+          icon: 'monitoring' as const,
+          style: FIRST_STEP_STYLES[3],
+        },
+        {
+          pageId: 'learning' as const,
+          title: t('firstRun.firstStep.learning.title'),
+          desc: t('firstRun.firstStep.learning.desc'),
+          icon: 'documentation' as const,
+          style: FIRST_STEP_STYLES[4],
+        },
+        {
+          pageId: 'control-center' as const,
+          title: t('firstRun.firstStep.controlCenter.title'),
+          desc: t('firstRun.firstStep.controlCenter.desc'),
+          icon: 'advanced' as const,
+          style: FIRST_STEP_STYLES[5],
+        },
+      ] as const,
+    [t],
+  )
 
   const handleInterestToggle = useCallback((id: string) => {
     setSelected(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]))
@@ -108,6 +163,10 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
     if (setCurrentPage) setCurrentPage(pageId)
   }, [persistProfile, onComplete, experienceLevel, setCurrentPage])
 
+  const ramGb = systemInfo?.memory?.total ? `${Math.round(systemInfo.memory.total / (1024 * 1024 * 1024))} GB` : null
+  const diskGb = systemInfo?.disk?.total ? `${Math.round(systemInfo.disk.total / (1024 * 1024 * 1024))} GB` : null
+  const pending = t('firstRun.storage.pending')
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 dark:bg-slate-950/95 p-4">
       <motion.div
@@ -125,20 +184,20 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                 exit={{ opacity: 0, x: 12 }}
               >
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                  Systemcheck
+                  {t('firstRun.step1.title')}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-400 mb-4 text-sm">
-                  Wir schauen kurz, auf welcher Hardware PI-Installer läuft. So können wir bessere Empfehlungen geben.
+                  {t('firstRun.step1.intro')}
                 </p>
                 <div className="grid gap-3 mb-6">
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-slate-800/60">
                     <Cpu className="w-5 h-5 text-sky-500" />
                     <div className="flex-1">
                       <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                        {systemInfo?.is_raspberry_pi ? 'Raspberry Pi' : 'Linux-System'}
+                        {systemInfo?.is_raspberry_pi ? t('firstRun.hardware.raspberryPi') : t('firstRun.hardware.linuxSystem')}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {systemInfo?.cpu_summary?.name || systemInfo?.cpu_name || 'CPU erkannt'}
+                        {systemInfo?.cpu_summary?.name || systemInfo?.cpu_name || t('firstRun.cpu.fallback')}
                       </div>
                     </div>
                   </div>
@@ -146,11 +205,11 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                     <HardDrive className="w-5 h-5 text-emerald-500" />
                     <div className="flex-1">
                       <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                        Speicher & Laufwerk
+                        {t('firstRun.storage.title')}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        RAM: {systemInfo?.memory?.total ? `${Math.round(systemInfo.memory.total / (1024 * 1024 * 1024))} GB` : 'wird ermittelt'} ·
-                        {' '}Systemlaufwerk: {systemInfo?.disk?.total ? `${Math.round(systemInfo.disk.total / (1024 * 1024 * 1024))} GB` : 'wird ermittelt'}
+                        {t('firstRun.storage.ramPrefix')} {ramGb ?? pending} · {t('firstRun.storage.diskPrefix')}{' '}
+                        {diskGb ?? pending}
                       </div>
                     </div>
                   </div>
@@ -158,12 +217,10 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                     <Activity className="w-5 h-5 text-amber-500" />
                     <div className="flex-1">
                       <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                        Internetverbindung
+                        {t('firstRun.network.title')}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {systemInfo?.network?.online
-                          ? 'Online – Updates und App-Installationen sind möglich.'
-                          : 'Nicht sicher – falls etwas nicht lädt, prüfe bitte deine Netzwerkverbindung.'}
+                        {systemInfo?.network?.online ? t('firstRun.network.online') : t('firstRun.network.offline')}
                       </div>
                     </div>
                   </div>
@@ -173,7 +230,7 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                     onClick={() => setStep(2)}
                     className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium inline-flex items-center gap-2"
                   >
-                    Weiter <ChevronRight className="w-5 h-5" />
+                    {t('firstRun.action.continue')} <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
               </motion.div>
@@ -191,7 +248,7 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                   {wizardWelcomeHeadline}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-400 mb-4">
-                  Damit wir dir passende Inhalte anzeigen können: Wie vertraut bist du mit Linux und Raspberry Pi?
+                  {t('firstRun.step2.experienceQuestion')}
                 </p>
                 <div className="space-y-3 mb-6 text-left">
                   <button
@@ -203,9 +260,9 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                         : 'border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500'
                     }`}
                   >
-                    <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">Einsteiger</div>
+                    <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">{t('firstRun.experience.beginner.title')}</div>
                     <div className="text-xs text-slate-600 dark:text-slate-400">
-                      Klare Erklärungen, sichere Voreinstellungen, nur die wichtigsten Funktionen.
+                      {t('firstRun.experience.beginner.desc')}
                     </div>
                   </button>
                   <button
@@ -217,9 +274,9 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                         : 'border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500'
                     }`}
                   >
-                    <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">Fortgeschritten</div>
+                    <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">{t('firstRun.experience.advanced.title')}</div>
                     <div className="text-xs text-slate-600 dark:text-slate-400">
-                      Mehr Einstellungen und Tools, aber weiterhin mit Hinweisen zu Risiken.
+                      {t('firstRun.experience.advanced.desc')}
                     </div>
                   </button>
                   <button
@@ -231,9 +288,9 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                         : 'border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500'
                     }`}
                   >
-                    <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">Entwickler</div>
+                    <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">{t('firstRun.experience.developer.title')}</div>
                     <div className="text-xs text-slate-600 dark:text-slate-400">
-                      Alle Module sichtbar, inklusive Dev-Umgebung, Docker und Server-Diensten.
+                      {t('firstRun.experience.developer.desc')}
                     </div>
                   </button>
                 </div>
@@ -243,7 +300,7 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                     onClick={() => setStep(3)}
                     className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium inline-flex items-center gap-2"
                   >
-                    Weiter <ChevronRight className="w-5 h-5" />
+                    {t('firstRun.action.continue')} <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
               </motion.div>
@@ -258,10 +315,10 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                 exit={{ opacity: 0, x: 12 }}
               >
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                  Empfohlene erste Schritte
+                  {t('firstRun.step3.title')}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-400 mb-4 text-sm">
-                  Wähle, womit du starten möchtest – oder sieh dir alles auf dem Startbildschirm an.
+                  {t('firstRun.step3.intro')}
                 </p>
                 <div className="grid gap-2 mb-6 max-h-[50vh] overflow-y-auto pr-1">
                   {FIRST_STEPS_CARDS.map((card) => {
@@ -290,7 +347,7 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                   })}
                 </div>
                 <div className="flex justify-between items-center gap-4">
-                  <button onClick={() => setStep(2)} className="text-slate-600 dark:text-slate-400 hover:underline text-sm">Zurück</button>
+                  <button onClick={() => setStep(2)} className="text-slate-600 dark:text-slate-400 hover:underline text-sm">{t('firstRun.action.back')}</button>
                   <div className="flex gap-2">
                     {setCurrentPage && (
                       <button
@@ -298,7 +355,7 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                         onClick={() => handleFirstStepNavigate('dashboard')}
                         className="px-4 py-2.5 bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 text-slate-800 dark:text-slate-100 rounded-xl font-medium text-sm"
                       >
-                        Zum Start
+                        {t('firstRun.action.toHome')}
                       </button>
                     )}
                     <button
@@ -306,7 +363,7 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                       onClick={() => setStep(4)}
                       className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium inline-flex items-center gap-2 text-sm"
                     >
-                      Weiter zu App-Vorschlägen <ChevronRight className="w-5 h-5" />
+                      {t('firstRun.step3.nextToApps')} <ChevronRight className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
@@ -322,10 +379,10 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                 exit={{ opacity: 0, x: 12 }}
               >
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                  Was möchtest du tun?
+                  {t('firstRun.step4.title')}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-400 mb-6 text-sm">
-                  Wähle ein oder mehrere Ziele – wir empfehlen dir passende Apps.
+                  {t('firstRun.step4.intro')}
                 </p>
                 <div className="grid gap-3 mb-8">
                   {INTERESTS.map(({ id, label, icon: Icon }) => (
@@ -350,13 +407,13 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                     onClick={() => setStep(3)}
                     className="text-slate-600 dark:text-slate-400 hover:underline"
                   >
-                    Zurück
+                    {t('firstRun.action.back')}
                   </button>
                   <button
                     onClick={() => setStep(5)}
                     className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium inline-flex items-center gap-2"
                   >
-                    Weiter <ChevronRight className="w-5 h-5" />
+                    {t('firstRun.action.continue')} <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
               </motion.div>
@@ -371,10 +428,10 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                 exit={{ opacity: 0, x: 12 }}
               >
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                  Empfohlene Apps für dich
+                  {t('firstRun.step5.title')}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-400 mb-6 text-sm">
-                  Diese Apps kannst du im App Store mit einem Klick installieren.
+                  {t('firstRun.step5.intro')}
                 </p>
                 <div className="space-y-3 mb-8">
                   {recommended.map(app => (
@@ -395,13 +452,13 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                     onClick={() => setStep(4)}
                     className="text-slate-600 dark:text-slate-400 hover:underline"
                   >
-                    Zurück
+                    {t('firstRun.action.back')}
                   </button>
                   <button
                     onClick={handleDone}
                     className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium inline-flex items-center gap-2"
                   >
-                    App Store erkunden <ChevronRight className="w-5 h-5" />
+                    {t('firstRun.step5.exploreStore')} <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
               </motion.div>

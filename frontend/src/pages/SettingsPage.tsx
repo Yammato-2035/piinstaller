@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Cloud, RefreshCw, CheckCircle, XCircle, Settings } from 'lucide-react'
@@ -7,6 +8,7 @@ import { fetchApi, getApiBase, API_BASE_STORAGE_KEY } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import ScreenshotDocCard from '../components/ScreenshotDocCard'
 import { usePlatform } from '../context/PlatformContext'
+import { setAppLocale } from '../i18n'
 
 type GeneralSubTab = 'init' | 'network' | 'basic' | 'screenshots'
 
@@ -21,6 +23,7 @@ interface SettingsPageProps {
 const ADVANCED_SETTINGS_KEY = 'pi-installer-advanced-settings'
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienceLevelChange }) => {
+  const { t, i18n } = useTranslation()
   const { isRaspberryPi, pageSubtitleLabel } = usePlatform()
   const [activeTab, setActiveTab] = useState<'general' | 'cloud' | 'logs'>('general')
   const [experienceLevel, setExperienceLevelState] = useState<ExperienceLevel>('beginner')
@@ -73,9 +76,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('pi-installer-api-base-changed'))
       }
-      toast.success(v ? 'Server-URL gespeichert' : 'Server-URL zurückgesetzt (Auto)')
+      toast.success(v ? t('settings.toast.serverUrlSaved') : t('settings.toast.serverUrlReset'))
     } catch {
-      toast.error('Konnte nicht gespeichert werden')
+      toast.error(t('settings.toast.saveFailed'))
     }
   }
 
@@ -116,12 +119,18 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
       if (d?.status === 'success') {
         setExperienceLevelState(level)
         onExperienceLevelChange?.(level)
-        toast.success(level === 'beginner' ? 'Erfahrungslevel: Einsteiger' : level === 'advanced' ? 'Erfahrungslevel: Fortgeschritten' : 'Erfahrungslevel: Entwickler')
+        toast.success(
+          level === 'beginner'
+            ? t('settings.toast.experience.beginner')
+            : level === 'advanced'
+              ? t('settings.toast.experience.advanced')
+              : t('settings.toast.experience.developer')
+        )
       } else {
-        toast.error(d?.message || 'Speichern fehlgeschlagen')
+        toast.error(d?.message || t('settings.toast.saveFailedGeneric'))
       }
     } catch {
-      toast.error('Speichern fehlgeschlagen. Server nicht erreichbar.')
+      toast.error(t('settings.toast.serverUnreachable'))
     } finally {
       setExperienceLevelSaving(false)
     }
@@ -144,13 +153,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
       } else {
         setNetworkInfo({
           status: 'error',
-          message: d?.message ?? 'Netzwerk-Info konnte nicht geladen werden.',
+          message: d?.message ?? t('settings.network.loadError'),
         })
       }
     } catch (e) {
       setNetworkInfo({
         status: 'error',
-        message: 'Server nicht erreichbar.',
+        message: t('settings.network.serverUnreachable'),
       })
     } finally {
       setLoadingNetwork(false)
@@ -218,10 +227,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
       if (tailData.status === 'success') {
         setLogs(String(tailData.content || ''))
       } else {
-        toast.error(tailData.message || 'Logs konnten nicht geladen werden')
+        toast.error(tailData.message || t('settings.toast.logsLoadFailed'))
       }
     } catch {
-      toast.error('Logs konnten nicht geladen werden. Server nicht erreichbar.')
+      toast.error(t('settings.toast.logsLoadFailedServer'))
     } finally {
       setLoadingLogs(false)
     }
@@ -243,13 +252,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
       })
       const d = await r.json()
       if (d.status === 'success') {
-        toast.success('Einstellungen gespeichert')
+        toast.success(t('settings.toast.settingsSaved'))
         setSettings(d.settings)
       } else {
-        toast.error(d.message || 'Speichern fehlgeschlagen')
+        toast.error(d.message || t('settings.toast.saveFailedGeneric'))
       }
     } catch {
-      toast.error('Speichern fehlgeschlagen. Server nicht erreichbar – bitte Server starten und erneut versuchen.')
+      toast.error(t('settings.toast.saveFailedRemote'))
     } finally {
       setSaving(false)
     }
@@ -259,9 +268,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
     if (!backupSettings) return
     await requireSudo(
       {
-        title: 'Cloud-Einstellungen speichern',
-        subtitle: 'Speichert Cloud-Konfiguration für Backups.',
-        confirmText: 'Speichern',
+        title: t('settings.sudo.cloudSave.title'),
+        subtitle: t('settings.sudo.cloudSave.subtitle'),
+        confirmText: t('settings.sudo.cloudSave.confirm'),
       },
       async () => {
         try {
@@ -272,16 +281,16 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
           })
           const d = await r.json()
           if (d.status === 'success') {
-            toast.success('Cloud-Einstellungen gespeichert')
+            toast.success(t('settings.toast.cloudSaved'))
             setBackupSettings(d.settings)
             if (d.settings.cloud?.enabled) {
               await loadCloudQuota()
             }
           } else {
-            toast.error(d.message || 'Speichern fehlgeschlagen')
+            toast.error(d.message || t('settings.toast.saveFailedGeneric'))
           }
         } catch {
-          toast.error('Speichern fehlgeschlagen')
+          toast.error(t('settings.toast.saveFailedGeneric'))
         }
       }
     )
@@ -289,7 +298,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
 
   const testCloud = async () => {
     if (!backupSettings?.cloud?.webdav_url || !backupSettings?.cloud?.username || !backupSettings?.cloud?.password) {
-      toast.error('Bitte WebDAV URL + Username + Passwort ausfüllen')
+      toast.error(t('settings.toast.webdavFill'))
       return
     }
     setTestingCloud(true)
@@ -305,13 +314,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
       })
       const d = await r.json()
       if (d.status === 'success' && d.ok) {
-        toast.success(`Cloud-Verbindung OK (HTTP ${d.http_code})`)
+        toast.success(t('settings.toast.cloudOk', { code: d.http_code }))
         await loadCloudQuota()
       } else {
-        toast.error(d.message || `Cloud-Test fehlgeschlagen (HTTP ${d.http_code ?? '—'})`, { duration: 12000 })
+        toast.error(d.message || t('settings.toast.cloudTestFailed', { code: d.http_code ?? '—' }), { duration: 12000 })
       }
     } catch {
-      toast.error('Cloud-Test fehlgeschlagen. Server nicht erreichbar.')
+      toast.error(t('settings.toast.cloudTestFailedServer'))
     } finally {
       setTestingCloud(false)
     }
@@ -336,7 +345,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
     })
     const data = await resp.json()
     if (data.status !== 'success') {
-      throw new Error(data.message || 'Sudo-Passwort konnte nicht gespeichert werden')
+      throw new Error(data.message || t('settings.error.sudoStore'))
     }
   }
 
@@ -358,12 +367,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
 
   const [rebooting, setRebooting] = useState(false)
   const triggerReboot = async () => {
-    if (!window.confirm('Möchten Sie das System wirklich neu starten? Bitte speichern Sie zuvor alle Änderungen.')) return
+    if (!window.confirm(t('settings.confirm.reboot'))) return
     await requireSudo(
       {
-        title: 'System neu starten',
-        subtitle: 'Das System wird neu gestartet. Die Anwendung ist danach kurz nicht erreichbar.',
-        confirmText: 'Neustart',
+        title: t('settings.sudo.reboot.title'),
+        subtitle: t('settings.sudo.reboot.subtitle'),
+        confirmText: t('settings.sudo.reboot.confirm'),
       },
       async (pwd?: string) => {
         setRebooting(true)
@@ -377,12 +386,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
           })
           const d = await r.json()
           if (d.status === 'success') {
-            toast.success('Neustart gestartet…')
+            toast.success(t('settings.toast.rebootStarted'))
           } else {
-            toast.error(d.message || 'Neustart fehlgeschlagen')
+            toast.error(d.message || t('settings.toast.rebootFailed'))
           }
         } catch {
-          toast.error('Neustart fehlgeschlagen. Server nicht erreichbar.')
+          toast.error(t('settings.toast.rebootFailedServer'))
         } finally {
           setRebooting(false)
         }
@@ -394,9 +403,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
     <div className="space-y-8 animate-fade-in page-transition">
       <SudoPasswordModal
         open={sudoModalOpen}
-        title="Sudo-Passwort erforderlich"
-        subtitle="Für diese Aktion werden Administrator-Rechte benötigt."
-        confirmText="Bestätigen"
+        title={t('settings.sudoModal.title')}
+        subtitle={t('settings.sudoModal.subtitle')}
+        confirmText={t('settings.sudoModal.confirm')}
         onCancel={() => {
           setSudoModalOpen(false)
           setPendingAction(null)
@@ -405,11 +414,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
           try {
             if (!pendingAction) return
             await pendingAction(pwd)
-            toast.success('Sudo-Passwort gespeichert (Session)')
+            toast.success(t('settings.toast.sudoSavedSession'))
             setSudoModalOpen(false)
             setPendingAction(null)
           } catch (e: any) {
-            toast.error(e?.message || 'Sudo-Passwort ungültig')
+            toast.error(e?.message || t('settings.toast.sudoInvalid'))
           }
         }}
       />
@@ -418,10 +427,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
         <div className="page-title-category mb-2 inline-flex">
           <h1 className="flex items-center gap-3">
             <AppIcon name="settings" category="navigation" size={32} />
-            Einstellungen
+            {t('settings.pageTitle')}
           </h1>
         </div>
-        <p className="text-slate-400">Einstellungen – {pageSubtitleLabel}</p>
+        <p className="text-slate-400">{t('settings.pageSubtitle', { label: pageSubtitleLabel })}</p>
       </div>
 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
@@ -435,7 +444,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Allgemein
+            {t('settings.tab.general')}
             {activeTab === 'general' && (
               <motion.div
                 layoutId="activeTab"
@@ -453,7 +462,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Cloud-Backup
+            {t('settings.tab.cloudBackup')}
             {activeTab === 'cloud' && (
               <motion.div
                 layoutId="activeTab"
@@ -472,7 +481,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
             }`}
           >
             <AppIcon name="logs" category="diagnostic" size={18} />
-            Logs
+            {t('settings.tab.logs')}
             {activeTab === 'logs' && (
               <motion.div
                 layoutId="activeTab"
@@ -580,6 +589,26 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {level === 'beginner' ? 'Einsteiger' : level === 'advanced' ? 'Fortgeschritten' : 'Entwickler'}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
+          <h3 className="text-lg font-bold text-white mb-2">{t('settings.language.label')}</h3>
+          <p className="text-sm text-slate-400 mb-3">{t('settings.language.hint')}</p>
+          <div className="flex flex-wrap gap-2">
+            {(['de', 'en'] as const).map((lng) => (
+              <button
+                key={lng}
+                type="button"
+                onClick={() => setAppLocale(lng)}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                  i18n.language?.startsWith(lng)
+                    ? 'bg-sky-600 text-white'
+                    : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
+                }`}
+              >
+                {lng === 'de' ? t('settings.language.de') : t('settings.language.en')}
               </button>
             ))}
           </div>
