@@ -12,12 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy backend code
 COPY backend/ .
 
-# Install core dependencies first (without pydantic issues)
+# Abhängigkeiten wie lokal/CI (backend/requirements.txt)
 RUN pip install --upgrade pip && \
-    pip install starlette==0.27.0 && \
-    pip install fastapi==0.104.1 && \
-    pip install uvicorn[standard]==0.24.0 && \
-    pip install python-dotenv python-multipart aiofiles requests click psutil
+    pip install -r requirements.txt
 
 # Expose port
 EXPOSE 8000

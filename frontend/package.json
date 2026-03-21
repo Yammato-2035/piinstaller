@@ -4,7 +4,7 @@
   "description": "SetupHelfer — Web GUI for Raspberry Pi and Linux",
   "private": true,
   "dependencies": {
-    "axios": "^1.6.0",
+    "axios": "^1.13.6",
     "framer-motion": "^12.29.0",
     "html2canvas": "^1.4.1",
     "i18next": "^25.9.0",

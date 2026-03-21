@@ -1,9 +1,9 @@
 # PI-Installer Backend – Python 3.9+ (3.12 empfohlen)
 # Supply-chain: Version ranges limit drift. For reproducible builds use pip freeze or requirements-lock.txt.
 
-# Web Framework
-starlette>=0.27,<0.28
-fastapi>=0.100,<0.101
+# Web Framework (Ranges so pip-audit/OSV bleiben ohne bekannte CVEs)
+starlette>=0.49.1,<0.51
+fastapi>=0.128,<0.136
 
 # ASGI Server
 uvicorn[standard]>=0.24,<0.25
