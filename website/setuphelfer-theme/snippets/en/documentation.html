@@ -1,0 +1,72 @@
+<section class="masthead-mini masthead-mini--photo">
+  <div class="banner">
+    <span class="kicker">Documentation</span>
+    <h1>Look things up instead of stumbling</h1>
+    <p class="lead">The documentation ties together fundamentals, diagnostics and day‑to‑day knowledge in one consistent structure for SetupHelfer.</p>
+  </div>
+  <figure class="masthead-mini__photo" aria-hidden="true">
+    <img src="assets/images/documentation/documentation-hero-workspace.jpg" width="1600" height="1066" loading="lazy" decoding="async" alt="" />
+  </figure>
+</section>
+
+<section class="section">
+  <h2>Documentation index</h2>
+  <p class="section-intro">This index is prepared as an entry point for search and topic navigation. Additional technical pages and images can be added later without layout breaks.</p>
+  <div class="doc-index">
+    <a href="doc-installation.html">Installation</a>
+    <a href="doc-backup.html">Backup</a>
+    <a href="doc-diagnostics.html">Diagnostics</a>
+    <a href="doc-docker.html">Docker</a>
+    <a href="doc-mailserver.html">Mail server</a>
+    <a href="troubleshooting.html">Troubleshooting</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="grid-3">
+    <article class="card"><div class="icon-tile">{{LUCIDE:download}}</div><h3>Installation</h3><p>Basics for startup, local reachability and first checks.</p><p><a href="doc-installation.html">Open</a></p></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:hard-drive}}</div><h3>Backup</h3><p>Why backups should be planned early and what a minimal path looks like.</p><p><a href="doc-backup.html">Open</a></p></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:container}}</div><h3>Docker</h3><p>Context, limits and sensible prerequisites.</p><p><a href="doc-docker.html">Open</a></p></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:mail}}</div><h3>Mail server</h3><p>Why productive mail is not a beginner topic.</p><p><a href="doc-mailserver.html">Open</a></p></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:search}}</div><h3>Diagnostics</h3><p>Narrowing down issues without changing everything at once.</p><p><a href="doc-diagnostics.html">Open</a></p></article>
+  </div>
+</section>
+
+<section class="section">
+  <h2>CLI and configuration examples</h2>
+  <div class="grid-2">
+    <article class="card">
+      <h3>Check system status</h3>
+      <div class="code-example"><pre>curl http://localhost:8000/health
+curl http://localhost:8000/api/status
+curl http://localhost:8000/api/system-info?light=1</pre></div>
+    </article>
+    <article class="card">
+      <h3>Config slot for documentation</h3>
+      <div class="code-example"><pre>{
+  "settings": {
+    "mode": "beginner",
+    "network_check": true,
+    "backup_enabled": true
+  }
+}</pre></div>
+    </article>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Documentation images and screenshots</h2>
+  {{TAURI_SHOT_POLICY}}
+  <div class="screenshot-row">
+    <div class="shot">{{TAURI_SHOT:screenshot-documentation.png|Documentation view|inner}}<div class="caption">Documentation view</div></div>
+    <div class="shot">{{TAURI_SHOT:screenshot-dashboard.png|Dashboard as context|inner}}<div class="caption">Dashboard context</div></div>
+    <div class="shot">{{TAURI_SHOT:screenshot-presets.png|Presets and configuration|inner}}<div class="caption">Configuration</div></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="callout">
+    <h3>Direct help when something breaks</h3>
+    <p><a href="troubleshooting.html">Troubleshooting</a> · <a href="community.html">Community</a></p>
+  </div>
+</section>

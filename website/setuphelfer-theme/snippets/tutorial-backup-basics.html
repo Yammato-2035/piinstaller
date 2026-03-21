@@ -1,0 +1,27 @@
+<section class="masthead-mini">
+  <div class="banner">
+    <span class="kicker">Tutorial</span>
+    <h1>Backup-Grundlagen</h1>
+    <p class="lead">Ziel: Ein simples, belastbares Backup aufsetzen, das im Fehlerfall wirklich hilft.</p>
+    <div class="meta"><span class="pill pill-green">Anfaenger</span><span class="pill pill-blue">20 Minuten</span></div>
+  </div>
+  <div class="masthead-mini__art" aria-hidden="true">{{LUCIDE:hard-drive:72}}</div>
+</section>
+<section class="section">
+  <article class="card">
+    <h3>Software und Standards</h3>
+    <p class="small software-stack"><strong>Verwendet u. a.:</strong> <strong>rsync</strong>, <strong>OpenSSH</strong> (Remote-Kopien), <strong>Samba</strong> wenn das Ziel eine SMB-Freigabe ist.</p>
+    <ul class="list-clean software-ref-links">
+      <li><a href="https://rsync.samba.org/" target="_blank" rel="noopener noreferrer">rsync</a></li>
+      <li><a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></li>
+      <li><a href="https://www.samba.org/" target="_blank" rel="noopener noreferrer">Samba</a></li>
+    </ul>
+  </article>
+</section>
+<section class="section grid-2">
+  <article class="card"><h3>Voraussetzungen</h3><ul class="list-clean"><li>Externer Speicher oder NAS</li><li>Zu sichernde Ordner definiert</li><li>Regelmaessiger Zeitplan</li></ul></article>
+  <article class="card"><h3>Schritte</h3><ol class="list-clean"><li>Zu sichernde Datenbereiche festlegen</li><li>Backup-Ziel einrichten</li><li>Erste Sicherung ausfuehren</li><li>Wiederherstellungstest machen</li></ol></article>
+</section>
+<section class="section"><h2>Produktansicht (aktueller Build)</h2>{{TAURI_SHOT_POLICY}}<div class="screenshot-row"><div class="shot">{{TAURI_SHOT:screenshot-backup.png|Backup-Bereich im PI-Installer|inner}}<div class="caption">Backup</div></div><div class="shot">{{TAURI_SHOT:screenshot-control-center.png|Control Center fuer Sicherungsstatus|inner}}<div class="caption">Control Center</div></div><div class="shot">{{TAURI_SHOT:screenshot-documentation.png|Dokumentation zu Backup-Ablauf und Wiederherstellung|inner}}<div class="caption">Dokumentation</div></div></div></section>
+<section class="section grid-2"><article class="card"><h3>Hinweise</h3><ul class="list-clean"><li>Backup nicht auf demselben Datentraeger wie das Live-System</li><li>Regelmaessig pruefen, ob Sicherungen noch lesbar sind</li></ul></article><article class="card"><h3>Typische Fehler</h3><ul class="list-clean"><li>Nur manuelle Backups ohne Routine</li><li>Nie getestete Wiederherstellung</li><li>Unklare Ordnerstruktur im Backup</li></ul></article></section>
+<section class="section"><div class="callout"><h3>Weiterfuehrende Tutorials</h3><p><a href="tutorial-first-setup.html">Erste Einrichtung</a> · <a href="tutorial-network-basics.html">Netzwerk-Grundlagen</a> · <a href="doc-backup.html">Backup-Dokumentation</a></p><p><strong>Wenn etwas nicht funktioniert:</strong> <a href="troubleshooting.html">Zur Fehlerhilfe</a> · <a href="community.html">Zur Community</a></p></div></section>

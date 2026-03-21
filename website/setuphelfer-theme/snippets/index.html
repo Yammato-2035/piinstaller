@@ -1,0 +1,245 @@
+<!-- Startseite: Reihenfolge — Hero → 4 Schritte → Screenshots → Problem & Nutzen → Funktionsuebersicht → Zielgruppen → Tutorials & Hilfe → Projekte → Community → Download. Footer via footer.php. Kein Live-Systemstatus. -->
+
+<section class="home-hero hero hero--home">
+  <div class="hero--home__grid">
+    <div class="hero__copy">
+      <span class="kicker">SetupHelfer · Desktop-App</span>
+      <h1>SetupHelfer — Plattform für Raspberry Pi und Linux-Einsteiger</h1>
+      <p class="lead">Klare, strukturierte Hilfe: von der Einrichtung bis zur sinnvollen Nutzung. Desktop-App, Projekte, Tutorials, Dokumentation und Community — damit du Raspberry Pi oder Linux-Rechner nicht nur installierst, sondern gezielt nutzt.</p>
+      <div class="cta-row cta-row--hero">
+        <a class="btn btn-primary" href="guided-start.html">Gefuehrter Einstieg</a>
+        <a class="btn btn-secondary" href="download.html">Installer herunterladen</a>
+      </div>
+      <p class="small hero__path-hint">Alles auf einen Blick: <a href="#ablauf">4 Schritte direkt unter diesem Bereich</a> — danach <a href="#screenshots">echte App-Bilder</a>. Tutorials und Fehlerhilfe findest du spaeter in der Navigation.</p>
+    </div>
+    <div class="hero__visual">
+      <div class="hero-visual-stack">
+        <div class="hero-real-photo-grid" aria-label="Reale Fotos: Raspberry Pi mit Laptop-Setup und Linux-Arbeitsplatz">
+          <figure class="hero-real-figure">
+            <img class="hero-real-photo" src="assets/images/hero/hero-raspberry-pi-desk.jpg" width="1600" height="1066" loading="eager" decoding="async" alt="Foto: Raspberry Pi mit Motorola Lapdock, reale Hardware am Schreibtisch" />
+          </figure>
+          <figure class="hero-real-figure">
+            <img class="hero-real-photo" src="assets/images/hero/hero-linux-laptop.jpg" width="1600" height="1066" loading="eager" decoding="async" alt="Foto: Laptop auf einem Arbeitsplatz, typischer Desktop-Linux-Kontext" />
+          </figure>
+        </div>
+        <div class="hero-linux-tux-row">
+          <img src="assets/images/hero/linux-tux-official.png" width="104" height="120" loading="lazy" decoding="async" alt="Linux-Maskottchen Tux (offizielles Logo)" />
+          <span class="small">Linux: Tux steht symbolisch fuer Kernel und Desktop-Oekosysteme — ergaenzend zu den Fotos (keine Partnerschaft mit den Markeninhabern).</span>
+        </div>
+        <figure class="hero-composition-figure">
+          <img class="hero-composition-banner" src="assets/images/hero/hero-product-composition.png" width="1200" height="799" loading="eager" decoding="async" alt="Produktkomposition: reale Hardware mit echter SetupHelfer-Dashboard-Ansicht" />
+        </figure>
+        <p class="home-photo-credits small">Foto Raspberry Pi/Lapdock: Ben, <a href="https://commons.wikimedia.org/wiki/File:Motorola_Atrix_Lapdock_with_Raspberry_Pi.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (CC BY 2.0). Foto Laptop/Arbeitsplatz: CC0, <a href="https://commons.wikimedia.org/wiki/File:Desk-laptop-working-technology_(24299511976).jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>. Tux: <a href="https://www.kernel.org/logo.html" target="_blank" rel="noopener noreferrer">kernel.org</a> (Linux-Markenrichtlinie beachten). Komposition: Theme (Foto + App-Screenshot).</p>
+        <div class="hero-app-laptop-block">
+          <p class="small hero-app-laptop-label">Echte App-Oberfläche (Dashboard)</p>
+          <figure class="hero-product-showcase hero-product-scene hero-app-preview" aria-label="SetupHelfer-App auf einem Laptop">
+            <div class="hero-workspace">
+              <div class="hero-laptop hero-laptop--product">
+                <div class="hero-laptop__lid">
+                  <div class="hero-laptop__bezel">
+                    <div class="hero-laptop__screen-rim" aria-hidden="true"></div>
+                    <div class="hero-laptop__screen">
+                      {{TAURI_SHOT:screenshot-dashboard.png|Dashboard der SetupHelfer-App|hero}}
+                    </div>
+                  </div>
+                </div>
+                <div class="hero-laptop__hinge-strip" aria-hidden="true"></div>
+                <div class="hero-laptop__chassis" aria-hidden="true"></div>
+              </div>
+            </div>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="home-brand-notice small" role="note">Raspberry Pi, Linux und weitere genannte Produkt- und Markennamen sind Eigentum der jeweiligen Rechteinhaber. Die Nennung dient ausschließlich der Beschreibung von Kompatibilität, Einsatzmöglichkeiten und Tutorials.</p>
+</section>
+
+<section class="section section--flow home-onboarding" id="ablauf" aria-labelledby="home-onboarding-title">
+  <p class="home-onboarding__eyebrow">Hier starte ich</p>
+  <h2 id="home-onboarding-title">So geht's in vier Schritten</h2>
+  <p class="section__lead">Lesen, der Reihe nach — dann passt alles zum gefuehrten Einstieg; du siehst gleich darunter, wie die App aussieht.</p>
+  <ol class="home-steps">
+    <li class="home-step">
+      <span class="home-step__badge">1</span>
+      <h3 class="home-step__title">Installer holen</h3>
+      <p class="home-step__text">SetupHelfer auf dem Raspberry Pi oder Linux-PC installieren — Release-Paket waehlen, starten.</p>
+    </li>
+    <li class="home-step">
+      <span class="home-step__badge">2</span>
+      <h3 class="home-step__title">System im Blick</h3>
+      <p class="home-step__text">Dashboard oeffnen: CPU, RAM, Speicher und Netzwerk pruefen, bevor du etwas aenderst.</p>
+    </li>
+    <li class="home-step">
+      <span class="home-step__badge">3</span>
+      <h3 class="home-step__title">Grundlagen setzen</h3>
+      <p class="home-step__text">Updates, Backup, Presets und Sicherheit — einmal sauber, dann Projekte.</p>
+    </li>
+    <li class="home-step">
+      <span class="home-step__badge">4</span>
+      <h3 class="home-step__title">Projekt waehlen</h3>
+      <p class="home-step__text">Tutorial oder Projektseite oeffnen und mit stabiler Basis loslegen.</p>
+    </li>
+  </ol>
+  <div class="home-onboarding__actions">
+    <a class="btn btn-primary" href="guided-start.html">Jetzt gefuehrten Einstieg starten</a>
+    <p class="home-onboarding__next"><a href="#screenshots">Weiter: So sieht die App aus</a></p>
+  </div>
+</section>
+
+<section class="section section--product" id="screenshots">
+  <h2>SetupHelfer — echte Oberflaeche</h2>
+  <p class="section__lead">Anschluss an die Schritte oben: so wirkt die App im Alltag. Drei Kernansichten in gleicher Groesse — Dashboard, Diagnose, Projekte und Setup.</p>
+  {{TAURI_SHOT_POLICY}}
+  <div class="product-shots-trio">
+    <figure class="product-shots-trio__item">
+      <div class="shot-frame shot-frame--product">
+        <div class="shot-frame__bar"><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span></div>
+        <div class="shot-frame__body shot-frame__body--product">
+          {{TAURI_SHOT:screenshot-dashboard.png|Dashboard: Systemueberblick|product}}
+        </div>
+      </div>
+      <figcaption class="product-shots-trio__cap">1. Dashboard</figcaption>
+    </figure>
+    <figure class="product-shots-trio__item">
+      <div class="shot-frame shot-frame--product">
+        <div class="shot-frame__bar"><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span></div>
+        <div class="shot-frame__body shot-frame__body--product">
+          {{TAURI_SHOT:screenshot-diagnose.png|Diagnose: Monitoring und Metriken|product}}
+        </div>
+      </div>
+      <figcaption class="product-shots-trio__cap">2. Diagnose</figcaption>
+    </figure>
+    <figure class="product-shots-trio__item">
+      <div class="shot-frame shot-frame--product">
+        <div class="shot-frame__bar"><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span></div>
+        <div class="shot-frame__body shot-frame__body--product">
+          {{TAURI_SHOT:screenshot-projects.png|Projekte und Setup: Ersteinrichtungs-Assistent|product}}
+        </div>
+      </div>
+      <figcaption class="product-shots-trio__cap">3. Projekte &amp; Setup</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section section--band" id="nutzen">
+  <h2>Problem &amp; Nutzen</h2>
+  <p class="section__lead">Zu viele widerspruechliche Anleitungen? Die App fuehrt einen zusammenhaengenden Weg.</p>
+  <div class="grid-3 feature-grid">
+    <article class="card">
+      <div class="icon-tile icon-tile--lg">{{LUCIDE:list-ordered}}</div>
+      <h3>Ein roter Faden</h3>
+      <p>Ein Ablauf statt zehn offener Tabs.</p>
+    </article>
+    <article class="card">
+      <div class="icon-tile icon-tile--lg">{{LUCIDE:gauge}}</div>
+      <h3>Messbare Werte</h3>
+      <p>CPU, RAM, Speicher, Netzwerk — sichtbar statt geraten.</p>
+    </article>
+    <article class="card">
+      <div class="icon-tile icon-tile--lg">{{LUCIDE:hard-drive}}</div>
+      <h3>Basis vor Projekt</h3>
+      <p>Backup und Updates, bevor es produktiv wird.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="funktionen">
+  <h2>Funktionsuebersicht</h2>
+  <p class="section__lead">Was App und Website abdecken.</p>
+  <div class="grid-4 home-features">
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:download}}</div><h3>Installation</h3><p>Start auf Pi und Linux.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:search}}</div><h3>Diagnose</h3><p>Fehler eingrenzen.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:hard-drive}}</div><h3>Backup</h3><p>Daten sichern.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:folder-kanban}}</div><h3>Projekte</h3><p>Praxis-Setups.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:book-open}}</div><h3>Tutorials</h3><p>Schritt fuer Schritt.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:circle-alert}}</div><h3>Fehlerhilfe</h3><p>Nach Symptom.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:users}}</div><h3>Community</h3><p>Austausch.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:shield}}</div><h3>Sicherheit</h3><p>Basis absichern.</p></article>
+  </div>
+</section>
+
+<section class="section section--band" id="zielgruppen">
+  <h2>Zielgruppen</h2>
+  <p class="section__lead">Welche Tiefe passt zu dir?</p>
+  <div class="level-grid home-levels">
+    <article class="level-card">
+      <div class="level-card__icon" aria-hidden="true">{{LUCIDE:graduation-cap}}</div>
+      <h3>Einsteiger</h3>
+      <p>OS, WLAN, SSH, stabile Grundlage.</p>
+    </article>
+    <article class="level-card">
+      <div class="level-card__icon" aria-hidden="true">{{LUCIDE:trending-up}}</div>
+      <h3>Fortgeschritten</h3>
+      <p>Docker, Netzwerk, NVMe, Alltag.</p>
+    </article>
+    <article class="level-card">
+      <div class="level-card__icon" aria-hidden="true">{{LUCIDE:badge-check}}</div>
+      <h3>Experte</h3>
+      <p>Monitoring, Hardening, reproduzierbare Systeme.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="hilfe">
+  <h2>Tutorials &amp; Hilfe</h2>
+  <p class="section__lead">Lernen und Fehler eingrenzen.</p>
+  <div class="grid-2 home-help">
+    <article class="notice">
+      <div class="icon-tile icon-tile--lg">{{LUCIDE:book-open}}</div>
+      <div class="notice__body">
+        <h3>Tutorials</h3>
+        <p>Anleitungen mit Bezug zum Installer.</p>
+        <div class="button-row"><a class="btn btn-primary" href="tutorials.html">Zu den Tutorials</a></div>
+      </div>
+    </article>
+    <article class="notice">
+      <div class="icon-tile icon-tile--lg">{{LUCIDE:circle-alert}}</div>
+      <div class="notice__body">
+        <h3>Fehlerhilfe</h3>
+        <p>Symptom zuordnen, dann gezielt nachlesen.</p>
+        <div class="button-row"><a class="btn btn-secondary" href="troubleshooting.html">Zur Fehlerhilfe</a></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section section--band" id="projekte">
+  <h2>Projekte &amp; Einsatzfelder</h2>
+  <p class="section__lead">Typische Ideen mit eigener Projektseite.</p>
+  <div class="grid-3">
+    <article class="card"><h3>Medienserver</h3><p>Filme, Serien, Musik im Heimnetz.</p><p><a href="project-media-server.html">Projekt oeffnen</a></p></article>
+    <article class="card"><h3>Musikbox</h3><p>Kompakte Wiedergabe.</p><p><a href="project-music-box.html">Projekt oeffnen</a></p></article>
+    <article class="card"><h3>Backup-System</h3><p>Netzwerk-Backup.</p><p><a href="project-backup-system.html">Projekt oeffnen</a></p></article>
+    <article class="card"><h3>Bilderrahmen</h3><p>Fotos anzeigen.</p><p><a href="project-photo-frame.html">Projekt oeffnen</a></p></article>
+    <article class="card"><h3>Smart Home</h3><p>Erste Automatisierung.</p><p><a href="project-smart-home.html">Projekt oeffnen</a></p></article>
+    <article class="card"><h3>Retro Gaming</h3><p>Klassiker auf dem Pi.</p><p><a href="project-retro-gaming.html">Projekt oeffnen</a></p></article>
+  </div>
+</section>
+
+<section class="section" id="community">
+  <h2>Community</h2>
+  <div class="notice home-community">
+    <div class="icon-tile icon-tile--lg">{{LUCIDE:users}}</div>
+    <div class="notice__body">
+      <h3>Forum &amp; Austausch</h3>
+      <p>Fragen mit Kontext (System, Schritte, Fehlermeldung) bringen bessere Antworten.</p>
+      <div class="button-row"><a class="btn btn-primary" href="community.html">Zur Community</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--download" id="download">
+  <h2>Download</h2>
+  <div class="cta-strip">
+    <div>
+      <p class="label" style="margin-bottom:6px;">SetupHelfer</p>
+      <p><strong>GitHub Releases</strong> — passendes Paket fuer Pi oder Linux-PC waehlen.</p>
+    </div>
+    <div class="button-row" style="margin-top:0;">
+      <a class="btn btn-primary" href="download.html">Zum Download</a>
+      <a class="btn btn-secondary" href="changelog.html">Changelog</a>
+    </div>
+  </div>
+  <p class="small" style="margin-top:16px;"><a href="sicherheit.html">Sicherheit</a> · <a href="tutorial-pi-os-install.html">OS-Installation</a> · <a href="documentation.html">Dokumentation</a></p>
+</section>

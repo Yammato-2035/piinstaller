@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 520" role="img" aria-labelledby="ht ht2">
+  <title id="ht">Arbeitsplatz mit Linux-Desktop, Einsteiger-Assistent und Raspberry-Pi-Board</title>
+  <desc id="ht2">Abstrakte, technische Szene: UI-Karten links, Monitor und Einplatinenrechner rechts, ohne Comicstil.</desc>
+  <rect width="860" height="520" rx="28" fill="#f4f7f6"/>
+  <rect x="36" y="36" width="788" height="448" rx="22" fill="#ffffff" stroke="#d6dfdc"/>
+  <rect x="86" y="74" width="348" height="170" rx="16" fill="#f8fbfa" stroke="#d7dfdc"/>
+  <rect x="112" y="102" width="114" height="12" rx="6" fill="#2f6a68" opacity=".18"/>
+  <rect x="112" y="128" width="268" height="12" rx="6" fill="#2f6a68" opacity=".1"/>
+  <rect x="112" y="156" width="120" height="26" rx="10" fill="#4f8b70"/>
+  <rect x="244" y="156" width="116" height="26" rx="10" fill="#ebf2f0" stroke="#d3ddda"/>
+  <ellipse cx="226" cy="406" rx="146" ry="20" fill="#e7efec"/>
+  <ellipse cx="636" cy="406" rx="148" ry="20" fill="#e7efec"/>
+  <ellipse cx="210" cy="302" rx="72" ry="92" fill="#1f2d2c"/>
+  <ellipse cx="210" cy="314" rx="46" ry="66" fill="#f4f1e8"/>
+  <ellipse cx="210" cy="198" rx="40" ry="38" fill="#1f2d2c"/>
+  <ellipse cx="196" cy="196" rx="9" ry="7" fill="#f7fbfa"/>
+  <ellipse cx="224" cy="196" rx="9" ry="7" fill="#f7fbfa"/>
+  <ellipse cx="210" cy="212" rx="12" ry="7" fill="#d2b467"/>
+  <ellipse cx="172" cy="396" rx="24" ry="12" fill="#d2b467"/>
+  <ellipse cx="248" cy="396" rx="24" ry="12" fill="#d2b467"/>
+  <rect x="282" y="262" width="182" height="118" rx="12" fill="#dfe9e6" stroke="#cad6d2"/>
+  <rect x="296" y="276" width="154" height="86" rx="8" fill="#f9fbfb"/>
+  <rect x="548" y="108" width="238" height="154" rx="16" fill="#eef4f2" stroke="#d1dcda"/>
+  <rect x="566" y="126" width="202" height="112" rx="10" fill="#ffffff" stroke="#d8e1de"/>
+  <rect x="610" y="268" width="114" height="12" rx="6" fill="#d6e2de"/>
+  <rect x="560" y="288" width="190" height="128" rx="16" fill="#4f8b70" stroke="#3e7265"/>
+  <!-- GPIO-Leiste (abstrakt, technisch) -->
+  <g fill="#b8d4c8" opacity=".95">
+    <rect x="572" y="288" width="5" height="11" rx="1"/>
+    <rect x="582" y="288" width="5" height="11" rx="1"/>
+    <rect x="592" y="288" width="5" height="11" rx="1"/>
+    <rect x="602" y="288" width="5" height="11" rx="1"/>
+    <rect x="612" y="288" width="5" height="11" rx="1"/>
+    <rect x="622" y="288" width="5" height="11" rx="1"/>
+    <rect x="632" y="288" width="5" height="11" rx="1"/>
+    <rect x="642" y="288" width="5" height="11" rx="1"/>
+    <rect x="652" y="288" width="5" height="11" rx="1"/>
+    <rect x="662" y="288" width="5" height="11" rx="1"/>
+    <rect x="672" y="288" width="5" height="11" rx="1"/>
+    <rect x="682" y="288" width="5" height="11" rx="1"/>
+  </g>
+  <rect x="578" y="308" width="78" height="40" rx="8" fill="#f2f7f5"/>
+  <rect x="578" y="360" width="154" height="12" rx="6" fill="#d2e1dc"/>
+</svg>

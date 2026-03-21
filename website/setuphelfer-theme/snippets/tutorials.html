@@ -1,0 +1,82 @@
+<section class="masthead-mini masthead-mini--photo">
+  <div class="banner">
+    <span class="kicker">Tutorials</span>
+    <h1>Tutorialarchiv fuer Einsteiger bis Fortgeschrittene</h1>
+    <p class="lead">Schritt-fuer-Schritt-Tutorials fuer reale SetupHelfer-Workflows, sauber verlinkt mit Projekten, Dokumentation und Fehlerhilfe.</p>
+  </div>
+  <figure class="masthead-mini__photo" aria-hidden="true">
+    <img src="assets/images/documentation/documentation-hero-workspace.jpg" width="1600" height="1066" loading="lazy" decoding="async" alt="" />
+  </figure>
+</section>
+
+<section class="section">
+  <h2>Filter</h2>
+  <div class="grid-3 cards-compact">
+    <article class="card"><div class="icon-tile">{{LUCIDE:layers}}</div><h3>Niveau</h3><div class="tabs"><a class="tab-link" href="#anfanger">Anfaenger</a><a class="tab-link" href="#fortgeschritten">Fortgeschritten</a></div></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:layout-grid}}</div><h3>Thema</h3><div class="tabs"><a class="tab-link" href="#setup">Setup</a><a class="tab-link" href="#netzwerk">Netzwerk</a><a class="tab-link" href="#speicher">Speicher</a></div></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:clock}}</div><h3>Dauer</h3><p>15 bis 30 Minuten je Tutorial</p></article>
+  </div>
+</section>
+
+<section class="section">
+  <div class="callout">
+    <h3>Reale Software im Fokus</h3>
+    <p class="small software-stack">Die Tutorials beziehen sich auf echte Werkzeuge aus dem Linux-/Pi-Alltag: <strong>OpenSSH</strong>, <strong>rsync</strong>, <strong>apt</strong> (Debian/Ubuntu), <strong>Docker</strong>, <strong>Samba</strong> (SMB), <strong>Jellyfin</strong>/<strong>Plex</strong> — jeweils mit Kurzhinweis und Links in der jeweiligen Karte.</p>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Alle Tutorials</h2>
+  <div class="grid-3">
+    <article class="card" id="setup"><div class="icon-tile">{{LUCIDE:download}}</div><h3>Raspberry Pi OS installieren</h3><p>Image herunterladen, auf SD schreiben und starten.</p><p class="small software-stack"><strong>Verwendet u. a.:</strong> Raspberry Pi Imager, Raspberry Pi OS, optional OpenSSH fuer Headless-Zugriff.</p><p class="small software-ref-links"><a href="https://www.raspberrypi.com/software/" target="_blank" rel="noopener noreferrer">Raspberry Pi Imager</a> · <a href="https://www.raspberrypi.com/documentation/" target="_blank" rel="noopener noreferrer">Dokumentation</a> · <a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></p><p><a href="tutorial-pi-os-install.html">Tutorial oeffnen</a></p></article>
+    <article class="card" id="netzwerk"><div class="icon-tile">{{LUCIDE:wifi}}</div><h3>WLAN einrichten</h3><p>WLAN-Verbindung stabil und nachvollziehbar konfigurieren.</p><p class="small software-stack"><strong>Verwendet u. a.:</strong> NetworkManager oder wpa_supplicant (je nach OS), DHCP/DNS im Heimnetz.</p><p class="small software-ref-links"><a href="https://wiki.debian.org/WiFi" target="_blank" rel="noopener noreferrer">Debian Wiki: WiFi</a> · <a href="https://www.raspberrypi.com/documentation/computers/configuration.html#wireless-networking" target="_blank" rel="noopener noreferrer">Raspberry Pi: Wireless</a></p><p><a href="tutorial-wlan-setup.html">Tutorial oeffnen</a></p></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:terminal}}</div><h3>SSH aktivieren</h3><p>Sicheren Fernzugriff fuer Wartung und Verwaltung einrichten.</p><p class="small software-stack"><strong>Verwendet u. a.:</strong> OpenSSH (sshd, ssh), Schluessel oder Passwort-Login.</p><p class="small software-ref-links"><a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a> · <a href="https://github.com/openssh/openssh-portable" target="_blank" rel="noopener noreferrer">OpenSSH (GitHub)</a></p><p><a href="tutorial-ssh-enable.html">Tutorial oeffnen</a></p></article>
+    <article class="card" id="backup"><div class="icon-tile">{{LUCIDE:hard-drive}}</div><h3>Backup erstellen</h3><p>Datensicherung planen und praktisch umsetzen.</p><p class="small software-stack"><strong>Verwendet u. a.:</strong> rsync, OpenSSH (remote), optional Samba als Zielpfad.</p><p class="small software-ref-links"><a href="https://rsync.samba.org/" target="_blank" rel="noopener noreferrer">rsync</a> · <a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a> · <a href="https://www.samba.org/" target="_blank" rel="noopener noreferrer">Samba</a></p><p><a href="tutorial-backup-create.html">Tutorial oeffnen</a></p></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:refresh-cw}}</div><h3>Updates durchfuehren</h3><p>System sauber aktualisieren und Risiken minimieren.</p><p class="small software-stack"><strong>Verwendet u. a.:</strong> apt (apt-get), systemd (Dienste neu starten).</p><p class="small software-ref-links"><a href="https://wiki.debian.org/Apt" target="_blank" rel="noopener noreferrer">Debian Wiki: Apt</a> · <a href="https://systemd.io/" target="_blank" rel="noopener noreferrer">systemd</a></p><p><a href="tutorial-updates-run.html">Tutorial oeffnen</a></p></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:container}}</div><h3>Docker Grundlagen</h3><p>Container als technische Basis fuer Dienste verstehen.</p><p class="small software-stack"><strong>Verwendet u. a.:</strong> Docker Engine, typische Images (z. B. fuer Jellyfin, Samba-Container, eigene Dienste).</p><p class="small software-ref-links"><a href="https://docs.docker.com/engine/" target="_blank" rel="noopener noreferrer">Docker Engine</a> · <a href="https://github.com/moby/moby" target="_blank" rel="noopener noreferrer">Moby (GitHub)</a> · <a href="https://jellyfin.org/docs/general/installation/container/" target="_blank" rel="noopener noreferrer">Jellyfin in Docker</a></p><p><a href="tutorial-docker-basics.html">Tutorial oeffnen</a></p></article>
+    <article class="card" id="speicher"><div class="icon-tile">{{LUCIDE:hard-drive}}</div><h3>NVMe einrichten</h3><p>NVMe-Speicher am Pi korrekt erkennen und einbinden.</p><p class="small software-stack"><strong>Verwendet u. a.:</strong> Linux-Kernel-Treiber, lsblk/fdisk, Dateisysteme (ext4 u. a.), optional fstab.</p><p class="small software-ref-links"><a href="https://www.kernel.org/doc/html/latest/nvme/index.html" target="_blank" rel="noopener noreferrer">Kernel-Doku: NVMe</a></p><p><a href="tutorial-nvme-setup.html">Tutorial oeffnen</a></p></article>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Quickstart fuer Einsteiger</h2>
+  <div class="grid-3">
+    <article class="card"><h3>1. Installation</h3><p>Starte mit Raspberry Pi OS und Erstkonfiguration.</p><p><a href="tutorial-pi-os-install.html">Jetzt starten</a></p></article>
+    <article class="card"><h3>2. Netzwerk + Zugriff</h3><p>WLAN, SSH und Erreichbarkeit in stabiler Reihenfolge.</p><p><a href="tutorial-wlan-setup.html">Weiter zu Netzwerk</a></p></article>
+    <article class="card"><h3>3. Absicherung</h3><p>Updates und Backup vor den ersten Produktivdiensten.</p><p><a href="tutorial-backup-create.html">Weiter zu Backup</a></p></article>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Weitere vorhandene Tutorials aus dem Projekt</h2>
+  <div class="grid-3">
+    <article class="card"><div class="icon-tile">{{LUCIDE:network}}</div><h3>Netzwerk-Grundlagen</h3><p>Vertiefung zu Hostnamen, DNS und Portchecks.</p><p class="small software-stack"><strong>Verwendet u. a.:</strong> ping, ss oder netstat, systemd-resolved/getent, OpenSSH zum Testen von Erreichbarkeit.</p><p class="small software-ref-links"><a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a> · <a href="https://man7.org/linux/man-pages/man8/ss.8.html" target="_blank" rel="noopener noreferrer">ss (Manpage)</a></p><p><a href="tutorial-network-basics.html">Tutorial oeffnen</a></p></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:hard-drive}}</div><h3>Backup-Grundlagen</h3><p>Strategie, Wiederherstellung und sichere Backup-Routine.</p><p class="small software-stack"><strong>Verwendet u. a.:</strong> rsync, OpenSSH, ggf. Samba-Nutzerrechte auf Freigaben.</p><p class="small software-ref-links"><a href="https://rsync.samba.org/" target="_blank" rel="noopener noreferrer">rsync</a> · <a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></p><p><a href="tutorial-backup-basics.html">Tutorial oeffnen</a></p></article>
+    <article class="card"><div class="icon-tile">{{LUCIDE:terminal}}</div><h3>Linux-Grundlagen ohne Umwege</h3><p>Praktische Linux-Basis fuer den Alltag.</p><p class="small software-stack"><strong>Verwendet u. a.:</strong> Bash/Shell, apt, systemd, OpenSSH-Client.</p><p class="small software-ref-links"><a href="https://www.gnu.org/software/bash/" target="_blank" rel="noopener noreferrer">Bash</a> · <a href="https://wiki.debian.org/Apt" target="_blank" rel="noopener noreferrer">Apt</a> · <a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></p><p><a href="tutorial-linux-basics.html">Tutorial oeffnen</a></p></article>
+  </div>
+  <div class="callout">
+    <h3>Zusaetzliche strukturierte Anleitungen</h3>
+    <p><a href="doc-installation.html">Doku Installation</a> · <a href="doc-backup.html">Doku Backup</a> · <a href="doc-diagnostics.html">Doku Diagnose</a></p>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Technikbereich fuer Fortgeschrittene</h2>
+  <div class="grid-2">
+    <article class="card"><h3>Docker, Dienste, Portlogik</h3><p>Container nur dort einsetzen, wo Betrieb und Wiederherstellung sauber dokumentiert sind.</p><p><a href="tutorial-docker-basics.html">Docker-Bereich oeffnen</a></p></article>
+    <article class="card"><h3>Diagnose und Fehlerketten</h3><p>Bei Problemen immer zuerst Symptom, dann Dienststatus, dann Netzwerk und Speicher pruefen.</p><p><a href="troubleshooting.html">Zur Fehlerhilfe</a></p></article>
+  </div>
+</section>
+
+<section class="section">
+  <div class="cta-strip">
+    <div>
+      <h3>Empfohlene Reihenfolge</h3>
+      <p>Starte mit Einrichtung, dann Linux-Grundlagen und Backup. Erst danach Netzwerk- und Docker-Themen vertiefen.</p>
+    </div>
+    <div class="button-row">
+      <a class="btn btn-secondary" href="guided-start.html">Einstieg</a>
+      <a class="btn btn-secondary" href="download.html">Download</a>
+    </div>
+  </div>
+</section>

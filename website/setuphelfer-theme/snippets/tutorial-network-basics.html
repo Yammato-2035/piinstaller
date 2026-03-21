@@ -1,0 +1,26 @@
+<section class="masthead-mini">
+  <div class="banner">
+    <span class="kicker">Tutorial</span>
+    <h1>Netzwerk-Grundlagen</h1>
+    <p class="lead">Ziel: Erreichbarkeit systematisch pruefen und typische Netzwerkfehler schnell eingrenzen.</p>
+    <div class="meta"><span class="pill pill-yellow">Fortgeschritten</span><span class="pill pill-blue">25 Minuten</span></div>
+  </div>
+  <div class="masthead-mini__art" aria-hidden="true">{{LUCIDE:network:72}}</div>
+</section>
+<section class="section">
+  <article class="card">
+    <h3>Software und Standards</h3>
+    <p class="small software-stack"><strong>Verwendet u. a.:</strong> <code>ping</code>, <strong>ss</strong>/<code>ip</code>, DNS-Resolver (<strong>systemd-resolved</strong> oder <code>resolv.conf</code>), <strong>OpenSSH</strong> zum Testen von Fernzugriff und Ports.</p>
+    <ul class="list-clean software-ref-links">
+      <li><a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></li>
+      <li><a href="https://man7.org/linux/man-pages/man8/ss.8.html" target="_blank" rel="noopener noreferrer">ss — Manpage</a></li>
+    </ul>
+  </article>
+</section>
+<section class="section grid-2">
+  <article class="card"><h3>Voraussetzungen</h3><ul class="list-clean"><li>Lauffaehiges System im Heimnetz</li><li>Zugriff auf Router oder DHCP-Liste</li><li>Basiskenntnisse Terminal</li></ul></article>
+  <article class="card"><h3>Schritte</h3><ol class="list-clean"><li>IP, Hostname und Gateway pruefen</li><li>Namensaufloesung testen</li><li>Erreichbarkeit per Ping/Portcheck pruefen</li><li>Dienststatus und Firewall gegentesten</li></ol></article>
+</section>
+<section class="section"><h2>Produktansicht (aktueller Build)</h2>{{TAURI_SHOT_POLICY}}<div class="screenshot-row"><div class="shot">{{TAURI_SHOT:screenshot-dashboard.png|Dashboard mit Netzwerkstatus|inner}}<div class="caption">Dashboard</div></div><div class="shot">{{TAURI_SHOT:screenshot-monitoring.png|Monitoring zur Netzwerkbeobachtung|inner}}<div class="caption">Monitoring</div></div><div class="shot">{{TAURI_SHOT:screenshot-webserver.png|Webserver-Ansicht fuer Erreichbarkeitstests|inner}}<div class="caption">Webserver</div></div></div></section>
+<section class="section grid-2"><article class="card"><h3>Hinweise</h3><ul class="list-clean"><li>Nicht mehrere Netzwerkparameter gleichzeitig aendern</li><li>Jeden Schritt einzeln testen und notieren</li></ul></article><article class="card"><h3>Typische Fehler</h3><ul class="list-clean"><li>IP-Konflikte im Heimnetz</li><li>Falscher DNS-Server</li><li>Dienst aktiv, aber Port blockiert</li></ul></article></section>
+<section class="section"><div class="callout"><h3>Weiterfuehrende Tutorials</h3><p><a href="tutorial-first-setup.html">Erste Einrichtung</a> · <a href="tutorial-docker-basics.html">Docker-Grundlagen</a> · <a href="doc-diagnostics.html">Diagnose</a></p><p><strong>Wenn etwas nicht funktioniert:</strong> <a href="troubleshooting.html">Zur Fehlerhilfe</a> · <a href="community.html">Zur Community</a></p></div></section>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Abstraktes UI-Raster</title>
+  <desc id="desc">Optionale Komplementaergrafik fuer Layout-Prototypen; auf der Live-Site durch echte Screenshots ersetzt wo moeglich.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7fbff"/>
+      <stop offset="100%" stop-color="#edf4fb"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f3f8fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" rx="22" fill="url(#bg)"/>
+  <rect x="28" y="26" width="584" height="42" rx="12" fill="#dfeaf5"/>
+  <circle cx="50" cy="47" r="6" fill="#9db7d1"/>
+  <circle cx="70" cy="47" r="6" fill="#9db7d1"/>
+  <circle cx="90" cy="47" r="6" fill="#9db7d1"/>
+  <rect x="28" y="84" width="270" height="248" rx="18" fill="url(#panel)" stroke="#ccdbeb"/>
+  <rect x="314" y="84" width="298" height="114" rx="18" fill="url(#panel)" stroke="#ccdbeb"/>
+  <rect x="314" y="218" width="298" height="114" rx="18" fill="url(#panel)" stroke="#ccdbeb"/>
+  <rect x="52" y="118" width="220" height="12" rx="6" fill="#c8daec"/>
+  <rect x="52" y="142" width="180" height="10" rx="5" fill="#d8e6f4"/>
+  <rect x="52" y="166" width="160" height="10" rx="5" fill="#d8e6f4"/>
+  <rect x="52" y="202" width="120" height="82" rx="12" fill="#e8f1fb"/>
+  <rect x="190" y="202" width="82" height="82" rx="12" fill="#e8f1fb"/>
+  <rect x="338" y="112" width="132" height="10" rx="5" fill="#c8daec"/>
+  <rect x="338" y="132" width="248" height="52" rx="10" fill="#e8f1fb"/>
+  <rect x="338" y="246" width="132" height="10" rx="5" fill="#c8daec"/>
+  <rect x="338" y="266" width="248" height="52" rx="10" fill="#e8f1fb"/>
+</svg>

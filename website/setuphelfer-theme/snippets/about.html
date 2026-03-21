@@ -1,0 +1,146 @@
+<section class="masthead-mini masthead-mini--photo">
+  <div class="banner">
+    <span class="kicker">Über SetupHelfer</span>
+    <h1>Vom kleinen PI-Installer zur Plattform SetupHelfer</h1>
+    <p class="lead">Die Geschichte eines schrittweise gewachsenen Projekts: von einem fokussierten Installer für den Raspberry Pi zu einer zusammenhängenden Hilfe mit Desktop-App, Website, Tutorials und Community.</p>
+  </div>
+  <figure class="masthead-mini__photo" aria-hidden="true">
+    <img src="assets/images/about/about-raspberry-pi-workspace.jpg" width="1600" height="1066" loading="eager" decoding="async" alt="" />
+  </figure>
+</section>
+
+<section class="section">
+  <article class="card about-story">
+    <h2>Wo es begann: der PI-Installer</h2>
+    <p>Alles startete mit einem <strong>kleinen PI-Installer</strong>: ein Werkzeug mit klarem Fokus auf Installation und Grundkonfiguration auf dem Raspberry Pi. Die Idee war simpel: <strong>weniger verstreute Einzelanleitungen</strong>, dafür ein nachvollziehbarer roter Faden und eine Oberfläche, die Einsteiger nicht im Terminal allein lässt.</p>
+    <p>Schon früh war klar: Es geht nicht um „alles mit einem Klick“, sondern um <strong>Transparenz</strong> (was passiert gerade?), <strong>Diagnose</strong> (CPU, RAM, Dienste sichtbar machen) und <strong>vorsichtige Änderungen</strong> — mit Backups und Hinweisen, bevor etwas am System gedreht wird.</p>
+  </article>
+</section>
+
+<section class="section">
+  <article class="card about-story">
+    <h2>Was ich mir vorgenommen habe</h2>
+    <ul class="list-clean">
+      <li><strong>Struktur statt Chaos:</strong> Ein durchgängiger Ablauf statt zehn widersprüchlicher Tabs — von der Ersteinrichtung bis zu konkreten Projekten.</li>
+      <li><strong>Ehrliche Hilfe:</strong> Keine Marketingversprechen; stattdessen klare Schritte, typische Fehlerbilder und Verweise auf offizielle Quellen bei Software (Docker, Samba, OpenSSH, …).</li>
+      <li><strong>Sicherheit und Betrieb:</strong> Im Laufe der Zeit kamen gehärtete Dienste, bessere Speicherung sensibler Daten (z.&nbsp;B. Sudo), Rate-Limits und dokumentierte Netzwerk-Praxis hinzu — siehe Changelog (z.&nbsp;B. Version 1.3.8.1).</li>
+      <li><strong>Plattform statt Einzel-Tool:</strong> Dokumentation in der App, Website mit Tutorials, Fehlerhilfe und Community ergänzen den Installer, statt ihn zu ersetzen.</li>
+    </ul>
+  </article>
+</section>
+
+<section class="section">
+  <article class="card about-story">
+    <h2>Wie daraus SetupHelfer wurde</h2>
+    <p>Der <strong>PI-Installer</strong> wurde schrittweise erweitert: zuerst <strong>Diagnose und Monitoring</strong>, damit man den Systemzustand sieht, bevor man eingreift. Dazu kamen <strong>Projektideen</strong> mit sachlicher Software-Einordnung, eine <strong>durchsuchbare Dokumentation</strong>, <strong>Fehlerhilfe nach Symptomen</strong> und ein <strong>Community</strong>-Bereich für Fragen mit Kontext.</p>
+    <p>Technisch wuchs das Backend (u.&nbsp;a. <strong>systemweite Installation nach FHS</strong> unter <code>/opt/pi-installer/</code> mit Konfiguration unter <code>/etc/pi-installer/</code> — siehe Changelog 1.3.4.x), dazu Features wie <strong>DSI Radio</strong> (Internetradio auf Freenove-Display), <strong>Control Center</strong> (u.&nbsp;a. OLED, Display, Peripherie) und <strong>Remote-Companion</strong>-Dokumentation (Version 1.3.8.0).</p>
+    <p>Die <strong>Website und das Theme</strong> wurden mit der gleichen Linie weitergebaut: klare Startseite, echte App-Screenshots, Markenhinweise und ein „Über“-Bereich wie dieser — zuletzt u.&nbsp;a. <strong>Version 1.3.8.2</strong> mit Hero, Community-Fixes und Footer-Ergänzungen (siehe Changelog auf der Website).</p>
+    <p>Die <strong>Marke „SetupHelfer“</strong> steht für diese Plattform: Desktop-App + Inhalte + Austausch. Der alte Name PI-Installer bleibt in der Historie und in technischen Pfaden nachvollziehbar; die sichtbare Produktwelt heißt heute <strong>SetupHelfer</strong>.</p>
+  </article>
+</section>
+
+<section class="section">
+  <article class="card about-story">
+    <h2>Was SetupHelfer schon kann (Auswahl)</h2>
+    <p>Die <strong>Desktop-App</strong> (Tauri + Python-Backend) bietet u.&nbsp;a.:</p>
+    <ul class="list-clean">
+      <li><strong>Dashboard &amp; Systemstatus:</strong> CPU, RAM, Speicher, Netzwerk, Sensoren — auf dem Raspberry Pi und auf Linux-PCs.</li>
+      <li><strong>Setup-Assistent, Presets, App-Store:</strong> Pakete und Rollen für typische Aufgaben (z.&nbsp;B. Medien, NAS, Smart Home) mit Hinweisen.</li>
+      <li><strong>Backup &amp; Wiederherstellung, Sicherheit:</strong> Firewall, SSH, Updates, Benutzer — mit Risiko-Hinweisen und Assistenten.</li>
+      <li><strong>Control Center &amp; Peripherie:</strong> Netzwerk, Displays, OLED, USB, Klonen u.&nbsp;a. (je nach Hardware).</li>
+      <li><strong>Dokumentation in der App:</strong> Nachschlagewerk zu Installation, Backup, Docker, Diagnose …</li>
+      <li><strong>Erweiterungen:</strong> z.&nbsp;B. DSI-Radio-Einstellungen, Remote-Ansichten, Kino/Streaming, Musikbox, Lerncomputer — je nach Edition und Gerät.</li>
+    </ul>
+    <p class="small">Details und Versionsstände: <a href="changelog.html">Changelog</a> · <a href="download.html">Download</a> · <a href="https://github.com/VolkerGlienke/piinstaller/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a></p>
+  </article>
+</section>
+
+<section class="section">
+  <article class="card about-story">
+    <h2>Entwicklungsschritte (Überblick)</h2>
+    <ol class="list-clean">
+      <li><strong>Erster Installer:</strong> Fokus auf Installation und Grundkonfiguration auf dem Raspberry Pi.</li>
+      <li><strong>Diagnose &amp; Monitoring:</strong> Systemzustand sichtbar machen, bevor tiefer eingegriffen wird.</li>
+      <li><strong>Projekte &amp; Tutorials:</strong> Praxisnahe Setups mit klarer Einordnung von Software und Verweisen auf offizielle Quellen.</li>
+      <li><strong>Community &amp; Fehlerhilfe:</strong> Austausch zu Fehlerbildern und Hardware — ergänzend zur Dokumentation.</li>
+      <li><strong>Website &amp; Theme:</strong> Öffentliche Einträge, Downloads, Sicherheitshinweise, zweisprachige Oberfläche in Arbeit.</li>
+    </ol>
+  </article>
+</section>
+
+<section class="section">
+  <article class="card about-story">
+    <h2>Herausforderungen</h2>
+    <ul class="list-clean">
+      <li>Unterschiedliche Hardware (Pi-Modelle, Speicher, Peripherie) und wechselnde Linux-Basen.</li>
+      <li>Komplexität von Netzwerk, Rechten und Diensten — besonders für Einsteiger.</li>
+      <li>Keine „Standardlösung“ für alle Fälle: deshalb Fokus auf Diagnose, Backups und vorsichtige Änderungen.</li>
+    </ul>
+  </article>
+</section>
+
+<section class="section">
+  <article class="card about-story">
+    <h2>Ergebnis</h2>
+    <p>Statt eines isolierten Tools steht eine <strong>Plattform</strong> mit strukturiertem Einstieg, Anwendung, Dokumentation und Community. Inhalte und App beziehen sich auf reale Anwendungsfälle — ohne Marketingversprechen über „alles mit einem Klick“.</p>
+  </article>
+</section>
+
+<section class="section">
+  <h2>Einordnung aus der App</h2>
+  <p class="section__lead">Ausschnitte aus der aktuellen Oberfläche (gleiche Quelle wie auf der Startseite).</p>
+  {{TAURI_SHOT_POLICY}}
+  <div class="product-shots-trio">
+    <figure class="product-shots-trio__item">
+      <div class="shot-frame shot-frame--product">
+        <div class="shot-frame__bar"><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span></div>
+        <div class="shot-frame__body shot-frame__body--product">
+          {{TAURI_SHOT:screenshot-dashboard.png|Dashboard: Systemueberblick|product}}
+        </div>
+      </div>
+      <figcaption class="product-shots-trio__cap">Dashboard</figcaption>
+    </figure>
+    <figure class="product-shots-trio__item">
+      <div class="shot-frame shot-frame--product">
+        <div class="shot-frame__bar"><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span></div>
+        <div class="shot-frame__body shot-frame__body--product">
+          {{TAURI_SHOT:screenshot-diagnose.png|Diagnose: Monitoring|product}}
+        </div>
+      </div>
+      <figcaption class="product-shots-trio__cap">Diagnose / Monitoring</figcaption>
+    </figure>
+    <figure class="product-shots-trio__item">
+      <div class="shot-frame shot-frame--product">
+        <div class="shot-frame__bar"><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span></div>
+        <div class="shot-frame__body shot-frame__body--product">
+          {{TAURI_SHOT:screenshot-documentation.png|Dokumentation in der App|product}}
+        </div>
+      </div>
+      <figcaption class="product-shots-trio__cap">Dokumentation (in der App)</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Weiterführende Bereiche</h2>
+  <div class="grid-3">
+    <article class="card"><h3>Dokumentation</h3><p>Grundlagen und Vertiefung.</p><p><a href="documentation.html">Zur Dokumentation</a></p></article>
+    <article class="card"><h3>Tutorials</h3><p>Schritt-für-Schritt-Anleitungen.</p><p><a href="tutorials.html">Zu den Tutorials</a></p></article>
+    <article class="card"><h3>Projekte</h3><p>Praxis-Setups mit Softwarehinweisen.</p><p><a href="projects.html">Zu den Projekten</a></p></article>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Visueller Kontext</h2>
+  <div class="grid-2 about-visuals">
+    <article class="card">
+      <img src="assets/images/about/about-raspberry-pi-workspace.jpg" width="1600" height="1066" loading="lazy" decoding="async" alt="Foto: Raspberry Pi mit Lapdock, reale Hardware" class="about-visuals__img" />
+      <p class="small about-visuals__caption">Hardware am Arbeitsplatz (Bildnachweise siehe <code>assets/images/ASSET_SOURCES.md</code> im Theme).</p>
+    </article>
+    <article class="card">
+      <img src="assets/images/about/about-linux-desktop-setup.jpg" width="1600" height="1066" loading="lazy" decoding="async" alt="Foto: Laptop auf einem Schreibtisch" class="about-visuals__img" />
+      <p class="small about-visuals__caption">Linux-Desktop-Kontext: Arbeitsplatz mit Laptop.</p>
+    </article>
+  </div>
+  <p class="small about-trademark" role="note">Raspberry Pi, Linux und weitere genannte Produkt- und Markennamen sind Eigentum der jeweiligen Rechteinhaber. Die Nennung dient ausschließlich der Beschreibung von Kompatibilität, Einsatzmöglichkeiten und Tutorials.</p>
+</section>

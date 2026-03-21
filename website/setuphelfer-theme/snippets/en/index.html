@@ -1,0 +1,245 @@
+<!-- Home: same section order as German; footer via footer.php. -->
+
+<section class="home-hero hero hero--home">
+  <div class="hero--home__grid">
+    <div class="hero__copy">
+      <span class="kicker">SetupHelfer · Desktop app</span>
+      <h1>SetupHelfer — a clear start with Raspberry Pi and Linux</h1>
+      <p class="lead">Structured help from first setup to everyday use: desktop app, projects, tutorials, documentation and community — so you don’t just install your Pi or Linux PC, you use it with confidence.</p>
+      <div class="cta-row cta-row--hero">
+        <a class="btn btn-primary" href="guided-start.html">Guided start</a>
+        <a class="btn btn-secondary" href="download.html">Download</a>
+      </div>
+      <p class="small hero__path-hint">Overview: <a href="#ablauf">four steps below</a>, then <a href="#screenshots">real app screenshots</a>. Tutorials and troubleshooting are linked from the site navigation.</p>
+    </div>
+    <div class="hero__visual">
+      <div class="hero-visual-stack">
+        <div class="hero-real-photo-grid" aria-label="Photos: Raspberry Pi with laptop setup and a Linux workspace">
+          <figure class="hero-real-figure">
+            <img class="hero-real-photo" src="assets/images/hero/hero-raspberry-pi-desk.jpg" width="1600" height="1066" loading="eager" decoding="async" alt="Photo: Raspberry Pi with Motorola Lapdock on a desk" />
+          </figure>
+          <figure class="hero-real-figure">
+            <img class="hero-real-photo" src="assets/images/hero/hero-linux-laptop.jpg" width="1600" height="1066" loading="eager" decoding="async" alt="Photo: laptop on a desk, typical Linux desktop context" />
+          </figure>
+        </div>
+        <div class="hero-linux-tux-row">
+          <img src="assets/images/hero/linux-tux-official.png" width="104" height="120" loading="lazy" decoding="async" alt="Linux mascot Tux (official logo)" />
+          <span class="small">Linux: Tux symbolises the kernel and desktop ecosystems alongside the photos (no affiliation with trademark owners).</span>
+        </div>
+        <figure class="hero-composition-figure">
+          <img class="hero-composition-banner" src="assets/images/hero/hero-product-composition.png" width="1200" height="799" loading="eager" decoding="async" alt="Composition: real hardware with SetupHelfer dashboard" />
+        </figure>
+        <p class="home-photo-credits small">Raspberry Pi/Lapdock photo: Ben, <a href="https://commons.wikimedia.org/wiki/File:Motorola_Atrix_Lapdock_with_Raspberry_Pi.jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> (CC BY 2.0). Laptop/workspace: CC0, <a href="https://commons.wikimedia.org/wiki/File:Desk-laptop-working-technology_(24299511976).jpg" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>. Tux: <a href="https://www.kernel.org/logo.html" target="_blank" rel="noopener noreferrer">kernel.org</a> (follow Linux trademark guidelines). Composition: theme (photo + app screenshot).</p>
+        <div class="hero-app-laptop-block">
+          <p class="small hero-app-laptop-label">Real app UI (dashboard)</p>
+          <figure class="hero-product-showcase hero-product-scene hero-app-preview" aria-label="SetupHelfer app on a laptop">
+            <div class="hero-workspace">
+              <div class="hero-laptop hero-laptop--product">
+                <div class="hero-laptop__lid">
+                  <div class="hero-laptop__bezel">
+                    <div class="hero-laptop__screen-rim" aria-hidden="true"></div>
+                    <div class="hero-laptop__screen">
+                      {{TAURI_SHOT:screenshot-dashboard.png|SetupHelfer dashboard|hero}}
+                    </div>
+                  </div>
+                </div>
+                <div class="hero-laptop__hinge-strip" aria-hidden="true"></div>
+                <div class="hero-laptop__chassis" aria-hidden="true"></div>
+              </div>
+            </div>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="home-brand-notice small" role="note">Raspberry Pi, Linux and other product names are trademarks of their respective owners. Names are used only to describe compatibility, use cases and tutorials.</p>
+</section>
+
+<section class="section section--flow home-onboarding" id="ablauf" aria-labelledby="home-onboarding-title">
+  <p class="home-onboarding__eyebrow">Start here</p>
+  <h2 id="home-onboarding-title">Four steps</h2>
+  <p class="section__lead">Follow in order — they match the guided start; screenshots below show the real app.</p>
+  <ol class="home-steps">
+    <li class="home-step">
+      <span class="home-step__badge">1</span>
+      <h3 class="home-step__title">Get the app</h3>
+      <p class="home-step__text">Install SetupHelfer on Raspberry Pi or Linux PC — pick a release package and launch.</p>
+    </li>
+    <li class="home-step">
+      <span class="home-step__badge">2</span>
+      <h3 class="home-step__title">Know your system</h3>
+      <p class="home-step__text">Open the dashboard: check CPU, RAM, storage and network before you change anything.</p>
+    </li>
+    <li class="home-step">
+      <span class="home-step__badge">3</span>
+      <h3 class="home-step__title">Set the basics</h3>
+      <p class="home-step__text">Updates, backup, presets and security — a solid base, then projects.</p>
+    </li>
+    <li class="home-step">
+      <span class="home-step__badge">4</span>
+      <h3 class="home-step__title">Pick a project</h3>
+      <p class="home-step__text">Open a tutorial or project page and build on a stable setup.</p>
+    </li>
+  </ol>
+  <div class="home-onboarding__actions">
+    <a class="btn btn-primary" href="guided-start.html">Start guided setup</a>
+    <p class="home-onboarding__next"><a href="#screenshots">Next: what the app looks like</a></p>
+  </div>
+</section>
+
+<section class="section section--product" id="screenshots">
+  <h2>SetupHelfer — real UI</h2>
+  <p class="section__lead">Following the steps above: how the app feels day to day. Three core views — dashboard, diagnostics, projects and setup.</p>
+  {{TAURI_SHOT_POLICY}}
+  <div class="product-shots-trio">
+    <figure class="product-shots-trio__item">
+      <div class="shot-frame shot-frame--product">
+        <div class="shot-frame__bar"><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span></div>
+        <div class="shot-frame__body shot-frame__body--product">
+          {{TAURI_SHOT:screenshot-dashboard.png|Dashboard: system overview|product}}
+        </div>
+      </div>
+      <figcaption class="product-shots-trio__cap">1. Dashboard</figcaption>
+    </figure>
+    <figure class="product-shots-trio__item">
+      <div class="shot-frame shot-frame--product">
+        <div class="shot-frame__bar"><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span></div>
+        <div class="shot-frame__body shot-frame__body--product">
+          {{TAURI_SHOT:screenshot-diagnose.png|Diagnostics: monitoring and metrics|product}}
+        </div>
+      </div>
+      <figcaption class="product-shots-trio__cap">2. Diagnostics</figcaption>
+    </figure>
+    <figure class="product-shots-trio__item">
+      <div class="shot-frame shot-frame--product">
+        <div class="shot-frame__bar"><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span><span class="shot-frame__dot"></span></div>
+        <div class="shot-frame__body shot-frame__body--product">
+          {{TAURI_SHOT:screenshot-projects.png|Projects and setup wizard|product}}
+        </div>
+      </div>
+      <figcaption class="product-shots-trio__cap">3. Projects &amp; setup</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section section--band" id="nutzen">
+  <h2>Problem &amp; value</h2>
+  <p class="section__lead">Too many conflicting guides? The app keeps you on one coherent path.</p>
+  <div class="grid-3 feature-grid">
+    <article class="card">
+      <div class="icon-tile icon-tile--lg">{{LUCIDE:list-ordered}}</div>
+      <h3>One thread</h3>
+      <p>One flow instead of ten open tabs.</p>
+    </article>
+    <article class="card">
+      <div class="icon-tile icon-tile--lg">{{LUCIDE:gauge}}</div>
+      <h3>Visible metrics</h3>
+      <p>CPU, RAM, storage, network — visible, not guessed.</p>
+    </article>
+    <article class="card">
+      <div class="icon-tile icon-tile--lg">{{LUCIDE:hard-drive}}</div>
+      <h3>Basics before projects</h3>
+      <p>Backup and updates before you go live.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="funktionen">
+  <h2>Feature overview</h2>
+  <p class="section__lead">What the app and site cover.</p>
+  <div class="grid-4 home-features">
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:download}}</div><h3>Installation</h3><p>Get started on Pi and Linux.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:search}}</div><h3>Diagnostics</h3><p>Narrow down issues.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:hard-drive}}</div><h3>Backup</h3><p>Protect your data.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:folder-kanban}}</div><h3>Projects</h3><p>Real-world setups.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:book-open}}</div><h3>Tutorials</h3><p>Step by step.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:circle-alert}}</div><h3>Troubleshooting</h3><p>By symptom.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:users}}</div><h3>Community</h3><p>Discussion.</p></article>
+    <article class="card"><div class="icon-tile icon-tile--lg">{{LUCIDE:shield}}</div><h3>Security</h3><p>Harden the basics.</p></article>
+  </div>
+</section>
+
+<section class="section section--band" id="zielgruppen">
+  <h2>Who it’s for</h2>
+  <p class="section__lead">How deep do you want to go?</p>
+  <div class="level-grid home-levels">
+    <article class="level-card">
+      <div class="level-card__icon" aria-hidden="true">{{LUCIDE:graduation-cap}}</div>
+      <h3>Beginner</h3>
+      <p>OS, Wi‑Fi, SSH, solid foundation.</p>
+    </article>
+    <article class="level-card">
+      <div class="level-card__icon" aria-hidden="true">{{LUCIDE:trending-up}}</div>
+      <h3>Advanced</h3>
+      <p>Docker, networking, NVMe, daily use.</p>
+    </article>
+    <article class="level-card">
+      <div class="level-card__icon" aria-hidden="true">{{LUCIDE:badge-check}}</div>
+      <h3>Expert</h3>
+      <p>Monitoring, hardening, reproducible systems.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="hilfe">
+  <h2>Tutorials &amp; help</h2>
+  <p class="section__lead">Learn and narrow down problems.</p>
+  <div class="grid-2 home-help">
+    <article class="notice">
+      <div class="icon-tile icon-tile--lg">{{LUCIDE:book-open}}</div>
+      <div class="notice__body">
+        <h3>Tutorials</h3>
+        <p>Guides tied to the app workflow.</p>
+        <div class="button-row"><a class="btn btn-primary" href="tutorials.html">Browse tutorials</a></div>
+      </div>
+    </article>
+    <article class="notice">
+      <div class="icon-tile icon-tile--lg">{{LUCIDE:circle-alert}}</div>
+      <div class="notice__body">
+        <h3>Troubleshooting</h3>
+        <p>Map a symptom, then read the right section.</p>
+        <div class="button-row"><a class="btn btn-secondary" href="troubleshooting.html">Troubleshooting</a></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section section--band" id="projekte">
+  <h2>Projects &amp; ideas</h2>
+  <p class="section__lead">Typical builds with their own project pages.</p>
+  <div class="grid-3">
+    <article class="card"><h3>Media server</h3><p>Movies, shows, music on the LAN.</p><p><a href="project-media-server.html">Open project</a></p></article>
+    <article class="card"><h3>Music box</h3><p>Compact playback.</p><p><a href="project-music-box.html">Open project</a></p></article>
+    <article class="card"><h3>Backup system</h3><p>Network backup.</p><p><a href="project-backup-system.html">Open project</a></p></article>
+    <article class="card"><h3>Photo frame</h3><p>Show your photos.</p><p><a href="project-photo-frame.html">Open project</a></p></article>
+    <article class="card"><h3>Smart home</h3><p>First automation steps.</p><p><a href="project-smart-home.html">Open project</a></p></article>
+    <article class="card"><h3>Retro gaming</h3><p>Classics on the Pi.</p><p><a href="project-retro-gaming.html">Open project</a></p></article>
+  </div>
+</section>
+
+<section class="section" id="community">
+  <h2>Community</h2>
+  <div class="notice home-community">
+    <div class="icon-tile icon-tile--lg">{{LUCIDE:users}}</div>
+    <div class="notice__body">
+      <h3>Forum &amp; discussion</h3>
+      <p>Questions with context (system, steps, error message) get better answers.</p>
+      <div class="button-row"><a class="btn btn-primary" href="community.html">Community</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--download" id="download">
+  <h2>Download</h2>
+  <div class="cta-strip">
+    <div>
+      <p class="label" style="margin-bottom:6px;">SetupHelfer</p>
+      <p><strong>GitHub Releases</strong> — pick a package for Pi or Linux PC.</p>
+    </div>
+    <div class="button-row" style="margin-top:0;">
+      <a class="btn btn-primary" href="download.html">Download</a>
+      <a class="btn btn-secondary" href="changelog.html">Changelog</a>
+    </div>
+  </div>
+  <p class="small" style="margin-top:16px;"><a href="sicherheit.html">Security</a> · <a href="tutorial-pi-os-install.html">OS install</a> · <a href="documentation.html">Documentation</a></p>
+</section>
