@@ -20,14 +20,26 @@ fi
 echo "🚀 Starte PI-Installer Backend..."
 echo "📁 Arbeitsverzeichnis: $BACKEND_DIR"
 
-# Venv anlegen, falls nicht vorhanden
-if [ ! -d "venv" ] || [ ! -f "venv/bin/python3" ]; then
-    echo "📦 Erstelle Virtual Environment..."
-    python3 -m venv venv
-fi
-
 PYTHON="$BACKEND_DIR/venv/bin/python3"
-PIP="$BACKEND_DIR/venv/bin/pip"
+
+# Venv anlegen oder neu anlegen, wenn der Interpreter ungültig ist (typisch: Repo kopiert/verschoben —
+# venv/bin/* zeigt noch auf den alten absoluten Pfad).
+_need_new_venv=0
+if [ ! -d "venv" ] || [ ! -e "venv/bin/python3" ]; then
+    _need_new_venv=1
+elif ! "$PYTHON" -c "import sys" 2>/dev/null; then
+    _need_new_venv=1
+fi
+if [ "$_need_new_venv" = "1" ]; then
+    if [ -d "venv" ]; then
+        echo "📦 Virtuelle Umgebung ungültig (z. B. nach Verschieben/Kopieren des Projekts) – erstelle neu…"
+        rm -rf venv
+    else
+        echo "📦 Erstelle Virtual Environment…"
+    fi
+    python3 -m venv venv
+    PYTHON="$BACKEND_DIR/venv/bin/python3"
+fi
 # Hash der requirements.txt – bei Änderung (z. B. nach git pull) Venv synchronisieren
 VENV_REQ_STAMP="$BACKEND_DIR/venv/.pi-installer-req.sha256"
 
@@ -52,8 +64,9 @@ elif [ -z "${PI_INSTALLER_SKIP_VENV_SYNC:-}" ] && [ -n "$REQ_HASH" ]; then
 fi
 if [ "$NEED_INSTALL" = "1" ]; then
     echo "📦 Installiere/aktualisiere Dependencies in der Venv (requirements.txt)…"
-    "$PIP" install --upgrade pip
-    "$PIP" install -r requirements.txt --only-binary :all: 2>/dev/null || "$PIP" install -r requirements.txt
+    # python -m pip: funktioniert auch wenn venv/bin/pip einen veralteten Shebang hat
+    "$PYTHON" -m pip install --upgrade pip
+    "$PYTHON" -m pip install -r requirements.txt --only-binary :all: 2>/dev/null || "$PYTHON" -m pip install -r requirements.txt
     if [ -n "$REQ_HASH" ]; then
         echo "$REQ_HASH" > "$VENV_REQ_STAMP"
     fi

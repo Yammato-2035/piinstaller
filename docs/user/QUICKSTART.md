@@ -25,7 +25,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-**Alternativ** (ohne manuelles `pip`): Beim nächsten Start legt `./scripts/start-backend.sh` die Venv an bzw. synchronisiert sie **automatisch**, sobald sich `requirements.txt` geändert hat (Hash-Vergleich). Überspringen nur bei Bedarf: `PI_INSTALLER_SKIP_VENV_SYNC=1 ./scripts/start-backend.sh`.
+**Alternativ** (ohne manuelles `pip`): Beim nächsten Start legt `./scripts/start-backend.sh` die Venv an bzw. synchronisiert sie **automatisch**, sobald sich `requirements.txt` geändert hat (Hash-Vergleich). Wird das Projekt **verschoben oder kopiert**, erkennt das Skript eine ungültige Venv und legt sie neu an. Überspringen nur bei Bedarf: `PI_INSTALLER_SKIP_VENV_SYNC=1 ./scripts/start-backend.sh`.
 
 Details: **PYTHON_SETUP.md** (Abschnitt Venv synchron halten).
 
