@@ -1,6 +1,7 @@
 # Python
 backend/venv/
 backend/.venv/
+backend/.venv-ci/
 apps/dsi_radio/.venv/
 __pycache__/
 *.py[cod]
