@@ -48,7 +48,8 @@ class TestRemoteErrors(unittest.TestCase):
     def setUp(self):
         if storage_db is not None:
             storage_db._remote_db_path = Path(_remote_test_db)  # noqa: SLF001
-        self.client = TestClient(app)
+        # Host muss zu TrustedHostMiddleware passen (localhost statt Default testserver)
+        self.client = TestClient(app, base_url="http://localhost")
         app.state.app_settings = {"remote": {"REMOTE_FEATURE_ENABLED": True}}
         app.state.device_id = "test-device"
 
