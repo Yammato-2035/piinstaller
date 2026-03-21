@@ -1081,12 +1081,18 @@ def _get_allowed_hosts() -> list[str]:
     return default
 
 
+# Immer erlaubt: lokale Entwicklung + Starlette/FastAPI TestClient (Host: testserver bzw. localhost).
+_TRUSTED_HOST_FALLBACK = frozenset(
+    {"localhost", "127.0.0.1", "testserver", "pi-installer.local"}
+)
+
+
 class TrustedHostMiddleware:
     """Lehnt Anfragen mit unbekanntem Host-Header ab (Host-Header-Spoofing)."""
 
     def __init__(self, app, allowed_hosts: list[str]):
         self.app = app
-        self.allowed = set(h.lower().split(":")[0] for h in allowed_hosts)
+        self.allowed = set(h.lower().split(":")[0] for h in allowed_hosts) | _TRUSTED_HOST_FALLBACK
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
