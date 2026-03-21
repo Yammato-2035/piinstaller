@@ -15,6 +15,8 @@
 | Anpassung | `.container` von **1200px** auf **min(1520px, …)** verbreitert; kleine Viewports: engeres Padding. |
 | Restrisiko | Sehr breite Monitore: Inhalt nutzt max. 1520px — bewusst für Lesbarkeit; bei Bedarf weiteres Theme-Token möglich. |
 
+**Update:** Suchfunktion und Breitenanpassung umgesetzt — siehe `responsive_width_check.md` und `header.php`.
+
 ## 3. Bilder / Screenshots
 
 | Prüfung | Ergebnis |

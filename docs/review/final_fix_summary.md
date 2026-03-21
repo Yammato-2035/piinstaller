@@ -17,3 +17,8 @@
 
 - **Commit:** `9506318`
 - **Push:** `origin/main` — erfolgreich (`26acfb1..9506318`)
+
+## Git (piinstaller, Submodule + Docs)
+
+- **Commit:** `1563867`
+- **Push:** `origin/main` — erfolgreich
