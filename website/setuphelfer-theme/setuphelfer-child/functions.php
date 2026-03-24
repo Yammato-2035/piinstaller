@@ -12,7 +12,7 @@ add_action('wp_enqueue_scripts', function () {
         'setuphelfer-child-style',
         get_stylesheet_uri(),
         ['setuphelfer-style'],
-        '1.3.8.3'
+        '1.3.8.4'
     );
 }, 20);
 

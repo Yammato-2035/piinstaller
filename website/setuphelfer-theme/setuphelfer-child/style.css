@@ -3,7 +3,7 @@ Theme Name: SetupHelfer Child
 Template: setuphelfer
 Description: Child-Theme für SetupHelfer (Template-Overwrites und spätere Anpassungen).
 Author: Volker Glienke
-Version: 1.3.8.3
+Version: 1.3.8.4
 */
 
 /* ---- Visual System Override: minimalistisch-real, technisch, ruhig ---- */
@@ -33,6 +33,24 @@ body {
 .site-header {
   background: rgba(246, 250, 255, 0.94);
   border-bottom: 1px solid var(--line);
+}
+
+/* Größeres Logo (wie Parent ≥1.3.8.11): wirkt auch, wenn auf dem Server nur alte Parent-style.css liegt) */
+.site-header .brand img {
+  width: 108px;
+  height: 108px;
+  max-width: 108px;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+}
+@media (max-width: 980px) {
+  .site-header .brand img {
+    width: 96px;
+    height: 96px;
+    max-width: 96px;
+  }
 }
 
 .hero-card,
