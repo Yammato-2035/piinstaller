@@ -1,0 +1,116 @@
+<section class="masthead-mini masthead-mini--photo">
+  <div class="banner">
+    <span class="kicker">Projects</span>
+    <h1>Project archive for real Raspberry Pi and Linux setups</h1>
+    <p class="lead">Each project aligns with SetupHelfer, links to matching tutorials and is structured for beginners. Every card lists typical software such as Docker, Samba, Plex/Jellyfin, OpenSSH or rsync.</p>
+  </div>
+  <figure class="masthead-mini__photo" aria-hidden="true">
+    <img src="assets/images/hero/hero-product-composition.png" width="1200" height="799" loading="lazy" decoding="async" alt="" />
+  </figure>
+</section>
+
+<section class="section">
+  <h2>Project context (app &amp; hardware)</h2>
+  <p class="section__lead">Real app views and hardware context — not icon-only graphics.</p>
+  <div class="grid-2 project-visual-strip">
+    <figure class="card project-visual-strip__item"><img class="project-strip-img" src="assets/images/projects/project-mediaserver.jpg" loading="lazy" alt="App: streaming/media server" width="1280" height="800" /><figcaption class="small">Media server (app view)</figcaption></figure>
+    <figure class="card project-visual-strip__item"><img class="project-strip-img" src="assets/images/projects/project-nas.jpg" loading="lazy" alt="App: NAS" width="1280" height="800" /><figcaption class="small">NAS (app view)</figcaption></figure>
+    <figure class="card project-visual-strip__item"><img class="project-strip-img" src="assets/images/projects/project-smarthome.jpg" loading="lazy" alt="App: smart home" width="1280" height="800" /><figcaption class="small">Smart home (app view)</figcaption></figure>
+    <figure class="card project-visual-strip__item"><img class="project-strip-img" src="assets/images/projects/project-retro.jpg" loading="lazy" alt="App: music / retro" width="1280" height="800" /><figcaption class="small">Music / retro (app view)</figcaption></figure>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Project filters</h2>
+  <div class="grid-3 cards-compact">
+    <article class="card">
+      <div class="icon-tile">{{LUCIDE:layers}}</div>
+      <h3>Difficulty</h3>
+      <div class="tabs"><a class="tab-link" href="#anfanger">Beginner</a><a class="tab-link" href="#fortgeschritten">Advanced</a></div>
+    </article>
+    <article class="card">
+      <div class="icon-tile">{{LUCIDE:microchip}}</div>
+      <h3>Device</h3>
+      <div class="tabs"><a class="tab-link" href="#pi">Raspberry Pi</a><a class="tab-link" href="#linuxpc">Linux PC / mini PC</a></div>
+    </article>
+    <article class="card">
+      <div class="icon-tile">{{LUCIDE:target}}</div>
+      <h3>Goal</h3>
+      <div class="tabs"><a class="tab-link" href="#medien">Media</a><a class="tab-link" href="#backup">Backup</a><a class="tab-link" href="#automation">Automation</a></div>
+    </article>
+  </div>
+</section>
+
+<section class="section">
+  <h2>All projects</h2>
+  <div class="grid-3">
+    <article class="card" id="medien">
+      <div class="icon-tile">{{LUCIDE:clapperboard}}</div>
+      <h3>Raspberry Pi as media server</h3>
+      <p>Build your own server for movies, shows and music.</p>
+      <p class="small software-stack"><strong>Uses e.g.:</strong> Docker (often), Samba (SMB shares), Plex or Jellyfin, OpenSSH for remote maintenance.</p>
+      <p class="small software-ref-links"><a href="https://www.docker.com/" target="_blank" rel="noopener noreferrer">Docker</a> · <a href="https://jellyfin.org/" target="_blank" rel="noopener noreferrer">Jellyfin</a> · <a href="https://www.plex.tv/" target="_blank" rel="noopener noreferrer">Plex</a> · <a href="https://www.samba.org/" target="_blank" rel="noopener noreferrer">Samba</a> · <a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></p>
+      <div class="meta"><span class="pill pill-green" id="anfanger">Beginner</span><span class="pill pill-blue" id="pi">90 minutes</span></div>
+      <p><a href="project-media-server.html">Open project</a></p>
+    </article>
+    <article class="card" id="backup">
+      <div class="icon-tile">{{LUCIDE:hard-drive}}</div>
+      <h3>Backup system</h3>
+      <p>Automatic data backup on the network.</p>
+      <p class="small software-stack"><strong>Uses e.g.:</strong> rsync, OpenSSH (secure transfer), Samba targets on the LAN, optional Docker for jobs.</p>
+      <p class="small software-ref-links"><a href="https://rsync.samba.org/" target="_blank" rel="noopener noreferrer">rsync</a> · <a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a> · <a href="https://www.samba.org/" target="_blank" rel="noopener noreferrer">Samba</a></p>
+      <div class="meta"><span class="pill pill-green">Beginner</span><span class="pill pill-blue" id="linuxpc">75 minutes</span></div>
+      <p><a href="project-backup-system.html">Open project</a></p>
+    </article>
+    <article class="card" id="automation">
+      <div class="icon-tile">{{LUCIDE:lamp}}</div>
+      <h3>Smart home starter</h3>
+      <p>First automations with Raspberry Pi.</p>
+      <p class="small software-stack"><strong>Uses e.g.:</strong> Docker (e.g. Home Assistant container), OpenSSH, optional Samba for config/media files.</p>
+      <p class="small software-ref-links"><a href="https://www.home-assistant.io/" target="_blank" rel="noopener noreferrer">Home Assistant</a> · <a href="https://docs.docker.com/" target="_blank" rel="noopener noreferrer">Docker Docs</a> · <a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></p>
+      <div class="meta"><span class="pill pill-green">Beginner</span><span class="pill pill-blue">90 minutes</span></div>
+      <p><a href="project-smart-home.html">Open project</a></p>
+    </article>
+    <article class="card">
+      <div class="icon-tile">{{LUCIDE:music}}</div>
+      <h3>Music box</h3>
+      <p>Turn your Raspberry Pi into a simple music player.</p>
+      <p class="small software-stack"><strong>Uses e.g.:</strong> MPD or similar players, Samba/NFS for network library, OpenSSH.</p>
+      <p class="small software-ref-links"><a href="https://www.musicpd.org/" target="_blank" rel="noopener noreferrer">Music Player Daemon (MPD)</a> · <a href="https://www.samba.org/" target="_blank" rel="noopener noreferrer">Samba</a> · <a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></p>
+      <div class="meta"><span class="pill pill-green">Beginner</span><span class="pill pill-blue">60 minutes</span></div>
+      <p><a href="project-music-box.html">Open project</a></p>
+    </article>
+    <article class="card">
+      <div class="icon-tile">{{LUCIDE:image}}</div>
+      <h3>Digital photo frame</h3>
+      <p>Show photos automatically.</p>
+      <p class="small software-stack"><strong>Uses e.g.:</strong> OpenSSH (maintenance), rsync or Samba to fill the image folder.</p>
+      <p class="small software-ref-links"><a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a> · <a href="https://rsync.samba.org/" target="_blank" rel="noopener noreferrer">rsync</a> · <a href="https://www.samba.org/" target="_blank" rel="noopener noreferrer">Samba</a></p>
+      <div class="meta"><span class="pill pill-green">Beginner</span><span class="pill pill-blue">45 minutes</span></div>
+      <p><a href="project-photo-frame.html">Open project</a></p>
+    </article>
+    <article class="card">
+      <div class="icon-tile">{{LUCIDE:gamepad-2}}</div>
+      <h3>Retro gaming</h3>
+      <p>Classic consoles on the Pi.</p>
+      <p class="small software-stack"><strong>Uses e.g.:</strong> RetroPie or similar distros, OpenSSH for file transfer, optional Samba for ROM/save shares.</p>
+      <p class="small software-ref-links"><a href="https://retropie.org.uk/" target="_blank" rel="noopener noreferrer">RetroPie</a> · <a href="https://github.com/RetroPie" target="_blank" rel="noopener noreferrer">RetroPie (GitHub)</a> · <a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a> · <a href="https://www.samba.org/" target="_blank" rel="noopener noreferrer">Samba</a></p>
+      <div class="meta"><span class="pill pill-green">Beginner</span><span class="pill pill-blue">90 minutes</span></div>
+      <p><a href="project-retro-gaming.html">Open project</a></p>
+    </article>
+  </div>
+</section>
+
+<section class="section">
+  <div class="cta-strip">
+    <div>
+      <h3>Direct next step</h3>
+      <p>Picked a project? Continue with the matching learning path.</p>
+    </div>
+    <div class="button-row">
+      <a class="btn btn-secondary" href="tutorials.html">Tutorials</a>
+      <a class="btn btn-secondary" href="download.html">Download</a>
+      <a class="btn btn-secondary" href="troubleshooting.html">Troubleshooting</a>
+    </div>
+  </div>
+</section>

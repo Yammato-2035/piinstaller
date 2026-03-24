@@ -1,0 +1,145 @@
+<section class="masthead-mini masthead-mini--photo">
+  <div class="banner">
+    <span class="kicker">Download</span>
+    <h1>Download SetupHelfer and start cleanly</h1>
+    <p class="lead">Download, requirements and first steps in a calm structure for Raspberry Pi and Linux newcomers.</p>
+    <div class="button-row">
+      <a class="btn btn-primary" href="#pakete">Go to packages</a>
+      <a class="btn btn-secondary" href="tutorial-pi-os-install.html">Read first steps</a>
+    </div>
+  </div>
+  <figure class="masthead-mini__photo" aria-hidden="true">
+    <img src="assets/images/download/download-hero-product.jpg" width="1600" height="1066" loading="eager" decoding="async" alt="" />
+  </figure>
+</section>
+
+<section class="section">
+  <article class="card">
+    <h2>Version and transparency</h2>
+    <ul class="list-clean">
+      <li><strong>Version:</strong> 1.3.8.2</li>
+      <li><strong>Date:</strong> 2026-03-20</li>
+      <li><strong>Supported systems:</strong> Raspberry Pi OS, Debian/Ubuntu-based Linux</li>
+    </ul>
+    <p><a href="changelog.html">View changelog</a> · <a href="https://github.com/VolkerGlienke/piinstaller" target="_blank" rel="noopener noreferrer">GitHub repository</a></p>
+    <p class="small software-ref-links download-system-basis"><strong>Typical base system:</strong> On Raspberry Pi usually <a href="https://www.raspberrypi.com/documentation/" target="_blank" rel="noopener noreferrer">Raspberry Pi OS</a> (Debian-based); on a PC often <a href="https://www.debian.org/doc/" target="_blank" rel="noopener noreferrer">Debian</a> or <a href="https://ubuntu.com/tutorials" target="_blank" rel="noopener noreferrer">Ubuntu</a>. Package management e.g. via <code>apt</code> — see your distributor’s documentation.</p>
+  </article>
+</section>
+
+<section id="pakete" class="section grid-2">
+  <article class="card">
+    <div class="icon-tile">{{LUCIDE:microchip}}</div>
+    <h3>Raspberry Pi</h3>
+    <p>Recommended for music box, photo frame, small home servers and compact learning projects.</p>
+    <ul class="list-clean">
+      <li>Pi 4 or Pi 5 recommended</li>
+      <li>4&nbsp;GB RAM is reasonable; more is nicer</li>
+      <li>Plan external storage for larger projects</li>
+    </ul>
+    <p class="small">On GitHub Releases pick the package for your Pi (e.g. <code>.deb</code> or installer).</p>
+    <div class="button-row"><a class="btn btn-primary" href="{{RELEASES_LATEST}}" target="_blank" rel="noopener noreferrer">Releases (Raspberry Pi)</a></div>
+  </article>
+  <article class="card">
+    <div class="icon-tile">{{LUCIDE:cpu}}</div>
+    <h3>Linux PC</h3>
+    <p>Better suited for NAS, larger container setups, several services and heavier scenarios.</p>
+    <ul class="list-clean">
+      <li>Current Linux install</li>
+      <li>8&nbsp;GB RAM or more for demanding setups</li>
+      <li>More room for Docker, services and development</li>
+    </ul>
+    <p class="small">Same release page: choose the amd64/desktop artefact when several builds are listed.</p>
+    <div class="button-row"><a class="btn btn-primary" href="{{RELEASES_LATEST}}" target="_blank" rel="noopener noreferrer">Releases (Linux PC)</a></div>
+  </article>
+</section>
+
+<section class="section">
+  <h2>First steps after download</h2>
+  <div class="steps">
+    <div class="step"><strong>Start the installer</strong><br>Check local access and open the frontend cleanly.</div>
+    <div class="step"><strong>Review the system</strong><br>Assess hardware, storage, network and running services.</div>
+    <div class="step"><strong>Secure the base</strong><br>Updates, users, backup — then projects.</div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Installation paths</h2>
+  <div class="grid-2">
+    <article class="card">
+      <h3>Desktop / Linux PC</h3>
+      <p>Good for quick access to monitoring, backup and services with more performance headroom.</p>
+      <div class="code-example"><pre>./start.sh
+python3 -m backend.app
+npm run tauri:dev</pre></div>
+    </article>
+    <article class="card">
+      <h3>Raspberry Pi</h3>
+      <p>Lightweight setup focused on stability, networking and repeatable updates.</p>
+      <div class="code-example"><pre>sudo apt update && sudo apt upgrade -y
+sudo systemctl enable piinstaller-backend
+sudo systemctl start piinstaller-backend</pre></div>
+    </article>
+  </div>
+</section>
+
+<section class="section">
+  <article class="card">
+    <h2>Security notes</h2>
+    <ul class="list-clean">
+      <li>Download installer packages only from trusted sources.</li>
+      <li>After install, enable updates and backup right away.</li>
+      <li>Before production use, read the hardening documentation.</li>
+    </ul>
+  </article>
+</section>
+
+<section class="section">
+  <h2>Product view (current build)</h2>
+  {{TAURI_SHOT_POLICY}}
+  <div class="screenshot-row">
+    <div class="shot">
+      {{TAURI_SHOT:screenshot-dashboard.png|PI-Installer dashboard|inner}}
+      <div class="caption">Dashboard</div>
+    </div>
+    <div class="shot">
+      {{TAURI_SHOT:screenshot-presets.png|Presets in PI-Installer|inner}}
+      <div class="caption">Presets</div>
+    </div>
+    <div class="shot">
+      {{TAURI_SHOT:screenshot-security.png|Security section in PI-Installer|inner}}
+      <div class="caption">Security</div>
+    </div>
+  </div>
+  <div class="screenshot-row" style="margin-top:18px;">
+    <div class="shot">
+      {{TAURI_SHOT:screenshot-users.png|User management in PI-Installer|inner}}
+      <div class="caption">Users</div>
+    </div>
+    <div class="shot">
+      {{TAURI_SHOT:screenshot-backup.png|Backup section in PI-Installer|inner}}
+      <div class="caption">Backup</div>
+    </div>
+    <div class="shot">
+      {{TAURI_SHOT:screenshot-documentation.png|Documentation in PI-Installer|inner}}
+      <div class="caption">Documentation</div>
+    </div>
+  </div>
+  <p class="small">Shipped in the theme under <code>assets/screenshots/</code>; align with <code>docs/screenshots/</code> or <code>frontend/public/docs/screenshots/</code> in the dev repo.</p>
+</section>
+
+<section class="section">
+  <div class="callout">
+    <h3>If something fails</h3>
+    <p><a href="troubleshooting.html">Troubleshooting</a> · <a href="community.html">Community</a></p>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Installation FAQ</h2>
+  <div class="faq-grid">
+    <article class="faq-item"><h4>Which system is recommended?</h4><p>For beginners: Raspberry Pi 4/5 or a Linux PC on a current Debian/Ubuntu base.</p></article>
+    <article class="faq-item"><h4>Why two cards under “Packages”?</h4><p>They describe typical scenarios (Pi vs desktop/Linux PC). Downloads are on the same GitHub release page; pick the matching artefact there.</p></article>
+    <article class="faq-item"><h4>What if the connection fails?</h4><p>Check <code>health</code> first, then network/firewall path, then restart services.</p></article>
+    <article class="faq-item"><h4>Where are the next steps?</h4><p>In the tutorial area and in the documentation with linked diagnostics.</p></article>
+  </div>
+</section>
