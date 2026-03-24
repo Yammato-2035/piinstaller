@@ -4,7 +4,7 @@ Theme URI: https://setuphelfer.de
 Author: OpenAI für SetupHelfer
 Author URI: https://setuphelfer.de
 Description: Ein anfängerfreundliches WordPress-Theme für SetupHelfer, Projekte, Tutorials und Community.
-Version: 1.3.8.10
+Version: 1.3.8.11
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 8.1
@@ -71,7 +71,16 @@ img{max-width:100%;display:block}
 }
 .site-search__submit:hover{background:#dfeaf5}
 .brand{display:flex;align-items:center;gap:14px;font-weight:800;color:var(--text)}
-.brand img{width:108px;height:108px;border-radius:22px;box-shadow:var(--shadow-sm)}
+/* flex-shrink + max-width: sonst schrumpft das Logo (globales img{max-width:100%} + Flex) */
+.site-header .brand img{
+  width:108px;
+  height:108px;
+  max-width:108px;
+  flex-shrink:0;
+  object-fit:contain;
+  border-radius:22px;
+  box-shadow:var(--shadow-sm)
+}
 .brand small{display:block;color:var(--muted);font-weight:600;font-size:.8rem}
 .nav{display:flex;flex-wrap:wrap;gap:8px}
 .nav ul,.nav .menu{list-style:none;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0;padding:0}
@@ -697,7 +706,7 @@ figure.product-shots-trio__item{
 @media (max-width:980px){
   .nav{display:none}
   .topbar{padding:12px 0}
-  .brand img{width:96px;height:96px}
+  .site-header .brand img{width:96px;height:96px;max-width:96px}
   .site-search{order:3;width:100%;max-width:none;justify-content:stretch;margin-top:4px}
 }
 

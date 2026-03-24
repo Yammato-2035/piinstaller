@@ -13,7 +13,7 @@
 <header class="site-header">
   <div class="container topbar">
     <a class="brand" href="<?php echo esc_url(home_url('/')); ?>">
-      <img src="<?php echo esc_url(setuphelfer_asset('branding/setuphelfer-logo-main.svg')); ?>" alt="SetupHelfer Logo">
+      <img src="<?php echo esc_url(setuphelfer_asset('branding/setuphelfer-logo-main.svg')); ?>" width="108" height="108" alt="SetupHelfer Logo" decoding="async">
       <div>SetupHelfer<small><?php echo esc_html(setuphelfer_t('brand.tagline')); ?></small></div>
     </a>
     <div class="setuphelfer-lang" role="navigation" aria-label="<?php echo esc_attr(setuphelfer_t('lang.switch')); ?>">
