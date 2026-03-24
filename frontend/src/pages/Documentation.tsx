@@ -95,7 +95,7 @@ function ScreenshotDetail({ src, alt, title, position = '50% 50%', height = 220 
 }
 
 const Documentation: React.FC = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [activeChapter, setActiveChapter] = useState<SectionId>('dashboard')
   const { systemLabel, systemLabelPossessive } = usePlatform()
   const sections = useMemo(
@@ -147,6 +147,11 @@ const Documentation: React.FC = () => {
             <strong className="text-sky-300">{t('documentation.intro.handbook')}</strong> – {t('documentation.intro.lead')}
           </p>
         </div>
+        {i18n.language.startsWith('en') && (
+          <div className="mb-4 p-3 bg-amber-900/25 border border-amber-600/45 rounded-lg" role="note">
+            <p className="text-sm text-amber-100/95 leading-relaxed">{t('documentation.bodyLanguageNote')}</p>
+          </div>
+        )}
         <AnimatePresence mode="wait">
           {activeChapter === 'dashboard' && (
             <motion.div

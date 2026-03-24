@@ -1,0 +1,27 @@
+<section class="masthead-mini">
+  <div class="banner">
+    <span class="kicker">Tutorial</span>
+    <h1>Backup basics</h1>
+    <p class="lead">Goal: a simple, reliable backup that actually helps when things go wrong.</p>
+    <div class="meta"><span class="pill pill-green">Beginner</span><span class="pill pill-blue">20 minutes</span></div>
+  </div>
+  <div class="masthead-mini__art" aria-hidden="true">{{LUCIDE:hard-drive:72}}</div>
+</section>
+<section class="section">
+  <article class="card">
+    <h3>Software and standards</h3>
+    <p class="small software-stack"><strong>Uses e.g.:</strong> <strong>rsync</strong>, <strong>OpenSSH</strong> (remote copies), <strong>Samba</strong> when the target is an SMB share.</p>
+    <ul class="list-clean software-ref-links">
+      <li><a href="https://rsync.samba.org/" target="_blank" rel="noopener noreferrer">rsync</a></li>
+      <li><a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></li>
+      <li><a href="https://www.samba.org/" target="_blank" rel="noopener noreferrer">Samba</a></li>
+    </ul>
+  </article>
+</section>
+<section class="section grid-2">
+  <article class="card"><h3>Requirements</h3><ul class="list-clean"><li>External storage or NAS</li><li>Defined folders to back up</li><li>Regular schedule</li></ul></article>
+  <article class="card"><h3>Steps</h3><ol class="list-clean"><li>Define data areas to protect</li><li>Set up the backup target</li><li>Run the first backup</li><li>Test restore</li></ol></article>
+</section>
+<section class="section"><h2>Product view (current build)</h2>{{TAURI_SHOT_POLICY}}<div class="screenshot-row"><div class="shot">{{TAURI_SHOT:screenshot-backup.png|Backup section in PI-Installer|inner}}<div class="caption">Backup</div></div><div class="shot">{{TAURI_SHOT:screenshot-control-center.png|Control Center for backup status|inner}}<div class="caption">Control Center</div></div><div class="shot">{{TAURI_SHOT:screenshot-documentation.png|Documentation on backup and restore|inner}}<div class="caption">Documentation</div></div></div></section>
+<section class="section grid-2"><article class="card"><h3>Notes</h3><ul class="list-clean"><li>Do not store backups only on the same drive as the live system</li><li>Periodically verify backups are readable</li></ul></article><article class="card"><h3>Typical mistakes</h3><ul class="list-clean"><li>Manual-only backups with no routine</li><li>Never testing restore</li><li>Unclear folder layout in backups</li></ul></article></section>
+<section class="section"><div class="callout"><h3>More tutorials</h3><p><a href="tutorial-first-setup.html">First setup</a> · <a href="tutorial-network-basics.html">Network basics</a> · <a href="doc-backup.html">Backup documentation</a></p><p><strong>If something fails:</strong> <a href="troubleshooting.html">Troubleshooting</a> · <a href="community.html">Community</a></p></div></section>

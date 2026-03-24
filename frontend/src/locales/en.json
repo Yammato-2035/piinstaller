@@ -516,6 +516,7 @@
   "documentation.aria.chapters": "Chapters",
   "documentation.intro.handbook": "SetupHelfer handbook",
   "documentation.intro.lead": "Use the chapters on the left for guides, screenshots, and step-by-step instructions for each area.",
+  "documentation.bodyLanguageNote": "The detailed text in each chapter below is still in German. Many topics are available in English on the website (setuphelfer.de — documentation, tutorials, troubleshooting). Full in-app translation of this manual is in progress.",
   "documentation.screenshot.placeholder": "📷 Screenshot: {{title}}",
   "documentation.screenshot.notLoaded": "Image failed to load.",
   "documentation.nav.dashboard": "Dashboard",

@@ -1,0 +1,53 @@
+<section class="masthead-mini">
+  <div class="banner">
+    <span class="kicker">Tutorial</span>
+    <h1>First Raspberry Pi setup</h1>
+    <p class="lead">Goal: a stable start with working network, safe credentials and an up-to-date base.</p>
+    <div class="meta"><span class="pill pill-green">Beginner</span><span class="pill pill-blue">20–30 minutes</span></div>
+  </div>
+  <div class="masthead-mini__art" aria-hidden="true">{{LUCIDE:list-ordered:72}}</div>
+</section>
+<section class="section">
+  <article class="card">
+    <h3>Software and standards</h3>
+    <p class="small software-stack"><strong>Uses e.g.:</strong> <strong>Raspberry Pi Imager</strong> / OS image, <strong>apt</strong> for updates, <strong>OpenSSH</strong> for remote access, home network (<strong>NetworkManager</strong> or <strong>wpa_supplicant</strong>).</p>
+    <ul class="list-clean software-ref-links">
+      <li><a href="https://www.raspberrypi.com/software/" target="_blank" rel="noopener noreferrer">Raspberry Pi Imager</a></li>
+      <li><a href="https://wiki.debian.org/Apt" target="_blank" rel="noopener noreferrer">Apt</a></li>
+      <li><a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></li>
+    </ul>
+  </article>
+</section>
+<section class="section grid-2">
+  <article class="card"><h3>Requirements</h3><ul class="list-clean"><li>Raspberry Pi + power supply + SD card</li><li>Ethernet or Wi‑Fi</li><li>Monitor/keyboard or SSH access</li></ul></article>
+  <article class="card"><h3>Steps</h3><ol class="list-clean"><li>Write image and complete first boot</li><li>Set hostname and credentials</li><li>Update the system</li><li>Test network and access</li></ol></article>
+</section>
+<section class="section">
+  <h2>Product view (current build)</h2>
+  {{TAURI_SHOT_POLICY}}
+  <div class="screenshot-row">
+    <div class="shot">
+      {{TAURI_SHOT:screenshot-wizard.png|First-run wizard in the app|inner}}
+      <div class="caption">Wizard</div>
+    </div>
+    <div class="shot">
+      {{TAURI_SHOT:screenshot-dashboard.png|Dashboard after first start|inner}}
+      <div class="caption">Dashboard</div>
+    </div>
+    <div class="shot">
+      {{TAURI_SHOT:screenshot-settings.png|Basic settings after setup|inner}}
+      <div class="caption">Settings</div>
+    </div>
+  </div>
+</section>
+<section class="section grid-2">
+  <article class="card"><h3>Notes</h3><ul class="list-clean"><li>Stabilise the base before extra services</li><li>Document changes step by step</li></ul></article>
+  <article class="card"><h3>Typical mistakes</h3><ul class="list-clean"><li>Wrong power supply causes instability</li><li>No access due to wrong hostname</li><li>Skipping updates before network tests</li></ul></article>
+</section>
+<section class="section">
+  <div class="callout">
+    <h3>More tutorials</h3>
+    <p><a href="tutorial-linux-basics.html">Linux basics</a> · <a href="tutorial-backup-basics.html">Backup basics</a> · <a href="tutorial-network-basics.html">Network basics</a></p>
+    <p><strong>If something fails:</strong> <a href="troubleshooting.html">Troubleshooting</a> · <a href="community.html">Community</a></p>
+  </div>
+</section>

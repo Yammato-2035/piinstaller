@@ -1,0 +1,26 @@
+<section class="masthead-mini">
+  <div class="banner">
+    <span class="kicker">Tutorial</span>
+    <h1>Network basics</h1>
+    <p class="lead">Goal: check reachability systematically and narrow down typical network faults.</p>
+    <div class="meta"><span class="pill pill-yellow">Advanced</span><span class="pill pill-blue">25 minutes</span></div>
+  </div>
+  <div class="masthead-mini__art" aria-hidden="true">{{LUCIDE:network:72}}</div>
+</section>
+<section class="section">
+  <article class="card">
+    <h3>Software and standards</h3>
+    <p class="small software-stack"><strong>Uses e.g.:</strong> <code>ping</code>, <strong>ss</strong>/<code>ip</code>, DNS resolver (<strong>systemd-resolved</strong> or <code>resolv.conf</code>), <strong>OpenSSH</strong> to test remote access and ports.</p>
+    <ul class="list-clean software-ref-links">
+      <li><a href="https://www.openssh.com/" target="_blank" rel="noopener noreferrer">OpenSSH</a></li>
+      <li><a href="https://man7.org/linux/man-pages/man8/ss.8.html" target="_blank" rel="noopener noreferrer">ss — man page</a></li>
+    </ul>
+  </article>
+</section>
+<section class="section grid-2">
+  <article class="card"><h3>Requirements</h3><ul class="list-clean"><li>System running on the home network</li><li>Access to router or DHCP list</li><li>Basic terminal skills</li></ul></article>
+  <article class="card"><h3>Steps</h3><ol class="list-clean"><li>Check IP, hostname and gateway</li><li>Test name resolution</li><li>Check reachability with ping/port tests</li><li>Cross-check service status and firewall</li></ol></article>
+</section>
+<section class="section"><h2>Product view (current build)</h2>{{TAURI_SHOT_POLICY}}<div class="screenshot-row"><div class="shot">{{TAURI_SHOT:screenshot-dashboard.png|Dashboard with network status|inner}}<div class="caption">Dashboard</div></div><div class="shot">{{TAURI_SHOT:screenshot-monitoring.png|Monitoring for network observation|inner}}<div class="caption">Monitoring</div></div><div class="shot">{{TAURI_SHOT:screenshot-webserver.png|Web server view for reachability tests|inner}}<div class="caption">Web server</div></div></div></section>
+<section class="section grid-2"><article class="card"><h3>Notes</h3><ul class="list-clean"><li>Do not change several network parameters at once</li><li>Test and note each step separately</li></ul></article><article class="card"><h3>Typical mistakes</h3><ul class="list-clean"><li>IP conflicts on the LAN</li><li>Wrong DNS server</li><li>Service up but port blocked</li></ul></article></section>
+<section class="section"><div class="callout"><h3>More tutorials</h3><p><a href="tutorial-first-setup.html">First setup</a> · <a href="tutorial-docker-basics.html">Docker basics</a> · <a href="doc-diagnostics.html">Diagnostics</a></p><p><strong>If something fails:</strong> <a href="troubleshooting.html">Troubleshooting</a> · <a href="community.html">Community</a></p></div></section>

@@ -516,6 +516,7 @@
   "documentation.aria.chapters": "Kapitel",
   "documentation.intro.handbook": "SetupHelfer Handbuch",
   "documentation.intro.lead": "Nutze die Kapitel links für Anleitungen, Screenshots und Schritt-für-Schritt-Anweisungen zu jedem Bereich.",
+  "documentation.bodyLanguageNote": "",
   "documentation.screenshot.placeholder": "📷 Screenshot: {{title}}",
   "documentation.screenshot.notLoaded": "Bild nicht geladen.",
   "documentation.nav.dashboard": "Dashboard",
