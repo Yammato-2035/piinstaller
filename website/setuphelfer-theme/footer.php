@@ -4,7 +4,7 @@
   <div class="container footer-grid">
     <div>
       <div class="footer-brand">
-        <img src="<?php echo esc_url(setuphelfer_asset('branding/setuphelfer-logo-main.svg')); ?>" width="48" height="48" alt="" loading="lazy" decoding="async" />
+        <img src="<?php echo esc_url(setuphelfer_asset('branding/setuphelfer-logo-main.svg')); ?>" width="96" height="96" alt="" loading="lazy" decoding="async" />
         <div>
           <span class="label">SetupHelfer</span>
           <p><?php echo esc_html(setuphelfer_t('footer.tagline')); ?></p>

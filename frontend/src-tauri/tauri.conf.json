@@ -36,7 +36,10 @@
       "icons/icon.png",
       "icons/icon.ico"
     ],
-    "resources": [],
+    "resources": [
+      "../public/assets/branding/icon/app-icon-source.svg",
+      "../public/assets/branding/splash/splash-source.svg"
+    ],
     "externalBin": [],
     "copyright": "",
     "category": "Utility",

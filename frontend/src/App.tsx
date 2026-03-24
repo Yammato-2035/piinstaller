@@ -31,6 +31,7 @@ import RadioPlayer from './components/RadioPlayer'
 import RemoteView from './features/remote/RemoteView'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
+import BootSplash from './components/BootSplash'
 import { fetchApi, getApiBase, setApiBase } from './api'
 import { PlatformProvider, platformRawFromSystemInfo, usePlatform } from './context/PlatformContext'
 import { UIModeProvider } from './context/UIModeContext'
@@ -102,6 +103,7 @@ function getInitialPage(): Page {
 
 function App() {
   const dsiRadioView = isDsiRadioView()
+  const [showBootSplash, setShowBootSplash] = useState(true)
   const [currentPage, setCurrentPage] = useState<Page>(getInitialPage)
   const [systemInfo, setSystemInfo] = useState<any>(null)
   const [freenoveDetected, setFreenoveDetected] = useState(false)
@@ -148,6 +150,11 @@ function App() {
       document.title = 'Sabrina Tuner'
     }
   }, [dsiRadioView])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowBootSplash(false), 950)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   const platformRaw = useMemo(() => platformRawFromSystemInfo(systemInfo), [systemInfo])
 
@@ -442,6 +449,7 @@ function App() {
     <UIModeProvider>
     <PlatformProvider systemInfo={systemInfo}>
       <AppDocumentTitle dsiRadioView={dsiRadioView} />
+      {showBootSplash ? <BootSplash /> : null}
       <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
         {!firstRunDone && (
           <FirstRunWizard

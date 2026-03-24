@@ -163,9 +163,13 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
       <div className="p-4 border-b border-slate-300 dark:border-slate-700">
         <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">π</span>
-          </div>
+          <img
+            src="/assets/branding/logo/panda-only.svg"
+            alt="SetupHelfer Panda"
+            className="w-10 h-10 rounded-lg object-contain bg-white/70 dark:bg-slate-900/60 p-0.5"
+            loading="eager"
+            decoding="async"
+          />
           <div className="min-w-0">
             <h1 className="text-xl font-bold text-slate-900 dark:text-white truncate">{brandTitle}</h1>
             {identitySubtitle ? (

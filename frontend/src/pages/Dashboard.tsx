@@ -126,7 +126,7 @@ type DashboardSection = 'overview' | 'charts' | 'hardware'
 const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backendErrorReason, onRetryBackend, setCurrentPage, experienceLevel }) => {
   const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
-  const { mode } = useUIMode()
+  const { mode, setMode } = useUIMode()
   const [dashboardSection, setDashboardSection] = useState<DashboardSection>('overview')
   const [stats, setStats] = useState<any>(null)
   const [securityConfig, setSecurityConfig] = useState<any>(null)
@@ -345,6 +345,65 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       transition={{ duration: 0.3 }}
       className="space-y-8 page-transition"
     >
+      {/* Einstieg: klarer Startscreen mit primären Aktionen */}
+      {!backendError && (
+        <section className="rounded-2xl border border-slate-600/80 bg-slate-800/50 p-5 sm:p-6">
+          <div className="flex flex-col lg:flex-row gap-5 lg:items-start lg:justify-between">
+            <div className="flex items-start gap-4">
+              <img
+                src="/assets/branding/logo/panda-only.svg"
+                alt="SetupHelfer Panda"
+                className="w-14 h-14 rounded-xl bg-white/80 dark:bg-slate-900/60 p-1 object-contain shrink-0"
+                loading="eager"
+                decoding="async"
+              />
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Dein Einstieg für Linux und Raspberry Pi</h2>
+                <p className="text-slate-300 mt-1">System prüfen, einrichten und verstehen.</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => setCurrentPage?.('monitoring')} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">System prüfen</button>
+              <button onClick={() => setCurrentPage?.('wizard')} className="px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm">Setup starten</button>
+              <button onClick={() => setCurrentPage?.('app-store')} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Module ansehen</button>
+              <button onClick={() => setCurrentPage?.('periphery-scan')} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Fehlerdiagnose öffnen</button>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-3 mt-4">
+            <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700">
+              <p className="text-xs text-slate-400">Betriebssystem</p>
+              <p className="text-sm text-white font-medium">{stats?.os?.name || stats?.platform?.system || 'Wird geprüft'}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700">
+              <p className="text-xs text-slate-400">Plattform</p>
+              <p className="text-sm text-white font-medium">{stats?.is_raspberry_pi ? 'Raspberry Pi' : 'Linux-System'}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700">
+              <p className="text-xs text-slate-400">Netzwerk</p>
+              <p className="text-sm text-white font-medium">{stats?.network?.online || (stats?.network?.ips?.length ?? 0) > 0 ? 'Verbunden' : 'Prüfen'}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700">
+              <p className="text-xs text-slate-400">Speicher</p>
+              <p className="text-sm text-white font-medium">{stats?.memory?.total ? `${Math.round(stats.memory.total / 1024 / 1024 / 1024)} GB RAM` : 'Wird geprüft'}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700">
+              <p className="text-xs text-slate-400">Updates</p>
+              <p className="text-sm text-white font-medium">{updatesData?.total != null ? `${updatesData.total} verfügbar` : 'Wird geprüft'}</p>
+            </div>
+          </div>
+
+          <div className="mt-4 p-3 rounded-lg bg-slate-900/35 border border-slate-700">
+            <p className="text-sm text-slate-200 mb-2">Was möchtest du machen?</p>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => setMode('basic')} className={`px-3 py-1.5 rounded text-sm ${mode === 'basic' ? 'bg-sky-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>Anfänger</button>
+              <button onClick={() => setMode('advanced')} className={`px-3 py-1.5 rounded text-sm ${mode === 'advanced' ? 'bg-sky-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>Fortgeschritten</button>
+              <button onClick={() => setMode('diagnose')} className={`px-3 py-1.5 rounded text-sm ${mode === 'diagnose' ? 'bg-sky-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>Entwickler / Diagnose</button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Beginner-First Task Cards (Beginner-View: Aufgaben statt Modul-Liste im Fokus) */}
       {isBeginnerView && setCurrentPage && !backendError && (
         <section className="grid gap-4 md:grid-cols-3">

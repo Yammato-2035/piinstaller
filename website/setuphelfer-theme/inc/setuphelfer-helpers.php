@@ -1,7 +1,19 @@
 
 <?php
 function setuphelfer_asset($path = '') {
-    return trailingslashit(get_template_directory_uri()) . 'assets/' . ltrim($path, '/');
+    $relative = ltrim($path, '/');
+    $base_uri = trailingslashit(get_template_directory_uri()) . 'assets/';
+    $asset_url = $base_uri . $relative;
+    $asset_file = trailingslashit(get_template_directory()) . 'assets/' . $relative;
+
+    if (file_exists($asset_file)) {
+        $mtime = @filemtime($asset_file);
+        if ($mtime) {
+            return add_query_arg('v', (string) $mtime, $asset_url);
+        }
+    }
+
+    return $asset_url;
 }
 
 /**

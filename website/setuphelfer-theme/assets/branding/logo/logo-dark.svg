@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1025 1025" role="img" aria-labelledby="logoDarkTitle">
+  <title id="logoDarkTitle">SetupHelfer Logo Dark</title>
+  <defs>
+    <filter id="dark-contrast">
+      <feColorMatrix
+        type="matrix"
+        values="
+          1.08 0    0    0 0
+          0    1.08 0    0 0
+          0    0    1.08 0 0
+          0    0    0    1 0"
+      />
+    </filter>
+  </defs>
+  <image href="./logo-main.svg" width="1025" height="1025" preserveAspectRatio="xMidYMid meet" filter="url(#dark-contrast)" />
+</svg>

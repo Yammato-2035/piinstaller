@@ -1,13 +1,19 @@
-import React, { useState } from 'react'
-import { ChevronRight, Loader2 } from 'lucide-react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { ChevronRight, Loader2, CheckCircle2, AlertTriangle, Info } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
+import SudoPasswordModal from '../components/SudoPasswordModal'
 
 const InstallationWizard: React.FC = () => {
-  const { systemLabel, isRaspberryPi, pageSubtitleLabel, wizardWelcomeHeadline } = usePlatform()
+  const { isRaspberryPi, pageSubtitleLabel, wizardWelcomeHeadline } = usePlatform()
   const [step, setStep] = useState(1)
+  const [sudoOpen, setSudoOpen] = useState(false)
+  const [installDone, setInstallDone] = useState(false)
+  const [installResultText, setInstallResultText] = useState<string[]>([])
+  const [systemFacts, setSystemFacts] = useState<any>(null)
+  const [systemCheckLoading, setSystemCheckLoading] = useState(false)
   const [allConfigs, setAllConfigs] = useState({
     security: {
       enable_firewall: true,
@@ -25,25 +31,69 @@ const InstallationWizard: React.FC = () => {
 
   const [installing, setInstalling] = useState(false)
   const [installProgress, setInstallProgress] = useState(0)
+  const [targetProfile, setTargetProfile] = useState<'basic' | 'server' | 'media' | 'beginner' | 'advanced'>('beginner')
+  const [showDetails, setShowDetails] = useState(false)
 
   const steps = [
-    { number: 1, title: 'Willkommen', processIcon: 'connect' as const },
-    { number: 2, title: 'Sicherheit', processIcon: 'prepare' as const },
-    { number: 3, title: 'Benutzer', processIcon: 'prepare' as const },
-    { number: 4, title: 'Entwicklung', processIcon: 'prepare' as const },
-    { number: 5, title: 'Webserver', processIcon: 'prepare' as const },
-    { number: 6, title: 'Zusammenfassung', processIcon: 'complete' as const },
+    { number: 1, title: 'System erkennen', processIcon: 'search' as const },
+    { number: 2, title: 'Ziel wählen', processIcon: 'connect' as const },
+    { number: 3, title: 'Optionen prüfen', processIcon: 'prepare' as const },
+    { number: 4, title: 'Ausführen', processIcon: 'write' as const },
+    { number: 5, title: 'Ergebnis', processIcon: 'complete' as const },
   ]
 
-  const startInstallation = async () => {
-    // Prüfe ob sudo-Passwort benötigt wird
-    const sudoPassword = prompt('Sudo-Passwort eingeben (für Installation):')
-    if (!sudoPassword) {
-      toast.error('Sudo-Passwort erforderlich')
-      return
+  const prerequisites = useMemo(() => {
+    const items = [
+      { label: 'System erreichbar', ok: !!systemFacts, hint: 'Systemdaten konnten geladen werden.' },
+      { label: 'Betriebssystem erkannt', ok: !!systemFacts?.os?.name || !!systemFacts?.platform?.system, hint: systemFacts?.os?.name || systemFacts?.platform?.system || 'Unbekannt' },
+      { label: 'Netzwerk verfügbar', ok: !!systemFacts?.network?.online || (systemFacts?.network?.ips?.length ?? 0) > 0, hint: systemFacts?.network?.online ? 'Online' : 'Prüfen' },
+      { label: 'Speicher erkannt', ok: (systemFacts?.memory?.total ?? 0) > 0, hint: systemFacts?.memory?.total ? `${Math.round(systemFacts.memory.total / 1024 / 1024 / 1024)} GB RAM` : 'Keine Daten' },
+      { label: 'Datenträger erkannt', ok: (systemFacts?.disk?.total ?? 0) > 0, hint: systemFacts?.disk?.total ? `${Math.round(systemFacts.disk.total / 1024 / 1024 / 1024)} GB` : 'Keine Daten' },
+    ]
+    return items
+  }, [systemFacts])
+
+  const riskHints = useMemo(() => {
+    const hints: { level: 'info' | 'warning'; text: string }[] = []
+    if ((systemFacts?.memory?.total ?? 0) > 0 && systemFacts.memory.total < 2 * 1024 * 1024 * 1024) {
+      hints.push({ level: 'warning', text: 'Wenig RAM erkannt. Für größere Module zuerst Basiskonfiguration wählen.' })
     }
-    
+    if (!(systemFacts?.network?.online || (systemFacts?.network?.ips?.length ?? 0) > 0)) {
+      hints.push({ level: 'warning', text: 'Kein stabiles Netzwerk erkannt. Paketinstallationen können fehlschlagen.' })
+    }
+    hints.push({ level: 'info', text: 'Während der Einrichtung können Dienste neu gestartet werden.' })
+    return hints
+  }, [systemFacts])
+
+  const pollProgress = async () => {
+    let done = false
+    while (!done) {
+      try {
+        const progressResponse = await fetchApi('/api/install/progress')
+        const progressData = await progressResponse.json()
+        const next = typeof progressData?.progress === 'number' ? progressData.progress : null
+        if (next != null) {
+          setInstallProgress(Math.max(0, Math.min(100, Math.floor(next))))
+          if (next >= 100 || progressData?.status === 'completed') {
+            done = true
+          }
+        } else {
+          setInstallProgress((p) => Math.min(95, p + 4))
+        }
+      } catch {
+        setInstallProgress((p) => Math.min(95, p + 3))
+      }
+      if (!done) {
+        await new Promise((resolve) => setTimeout(resolve, 2500))
+      }
+    }
+  }
+
+  const startInstallation = async (sudoPassword: string) => {
     setInstalling(true)
+    setInstallDone(false)
+    setInstallResultText([])
+    setInstallProgress(3)
     try {
       const response = await fetchApi('/api/install/start', {
         method: 'POST',
@@ -51,64 +101,46 @@ const InstallationWizard: React.FC = () => {
         body: JSON.stringify({
           ...allConfigs,
           sudo_password: sudoPassword,
+          wizard_profile: targetProfile,
         }),
       })
       const data = await response.json()
-      
+
       if (data.status === 'success') {
-        toast.success(`Installation gestartet: ${data.completed_steps}/${data.total_steps} Schritte abgeschlossen`)
-        
-        // Zeige Ergebnisse
-        if (data.results && data.results.length > 0) {
-          console.log('Installations-Ergebnisse:', data.results)
-          data.results.forEach((result: string) => {
-            if (result.includes('Fehler')) {
-              toast.error(result)
-            } else {
-              toast.success(result, { duration: 3000 })
-            }
-          })
-        }
-        
-        // Simuliere Progress basierend auf tatsächlichen Schritten
-        let progress = (data.completed_steps / data.total_steps) * 100
-        setInstallProgress(Math.floor(progress))
-        
-        const interval = setInterval(async () => {
-          // Prüfe Fortschritt vom Server
-          const progressResponse = await fetchApi('/api/install/progress')
-          const progressData = await progressResponse.json()
-          
-          if (progressData.progress) {
-            progress = progressData.progress
-            setInstallProgress(Math.floor(progress))
-          } else {
-            progress += 5
-            if (progress > 95) progress = 95
-            setInstallProgress(Math.floor(progress))
-          }
-
-          if (progress >= 95) {
-            clearInterval(interval)
-            setInstalling(false)
-            toast.success('Installation abgeschlossen!')
-          }
-        }, 3000)
+        toast.success('Einrichtung gestartet')
+        await pollProgress()
+        setInstallProgress(100)
+        setInstallDone(true)
+        setStep(5)
+        const results: string[] = Array.isArray(data.results) ? data.results : []
+        setInstallResultText(results.length > 0 ? results : ['Einrichtung abgeschlossen.'])
+        toast.success('Einrichtung abgeschlossen')
       } else {
-        if (data.requires_sudo_password) {
-          toast.error('Sudo-Passwort erforderlich')
-        } else {
-          toast.error(data.message || 'Fehler beim Starten der Installation')
-        }
-        setInstalling(false)
+        toast.error(data.message || 'Fehler beim Starten der Einrichtung')
       }
-
-      console.log(data)
-    } catch (error) {
-      toast.error('Fehler beim Starten der Installation')
+    } catch {
+      toast.error('Fehler beim Starten der Einrichtung')
+    } finally {
       setInstalling(false)
     }
   }
+
+  const loadSystemFacts = async () => {
+    setSystemCheckLoading(true)
+    try {
+      const response = await fetchApi('/api/system-info?light=1')
+      const data = await response.json()
+      setSystemFacts(data)
+    } catch {
+      setSystemFacts(null)
+    } finally {
+      setSystemCheckLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadSystemFacts()
+  }, [])
 
   const StepIndicator = () => (
     <div className="flex gap-2 mb-8">
@@ -125,7 +157,7 @@ const InstallationWizard: React.FC = () => {
               : 'bg-slate-700/30 text-slate-400 cursor-not-allowed'
           }`}
         >
-          <AppIcon name={s.processIcon} category="process" size={48} className="mb-0.5" />
+          <AppIcon name={s.processIcon} category="process" size={32} className="mb-0.5" />
           <div className="text-sm">{s.title}</div>
         </button>
       ))}
@@ -138,10 +170,10 @@ const InstallationWizard: React.FC = () => {
         <div className="page-title-category mb-2 inline-flex">
           <h1 className="flex items-center gap-3">
             <AppIcon name="installation" category="navigation" size={32} />
-            Installationsassistent
+            Setupflow
           </h1>
         </div>
-        <p className="text-slate-400">Assistent – {pageSubtitleLabel}</p>
+        <p className="text-slate-400">Geführte Einrichtung – {pageSubtitleLabel}</p>
       </div>
 
       {/* Installation in Progress */}
@@ -150,7 +182,7 @@ const InstallationWizard: React.FC = () => {
           <h3 className="text-xl font-bold text-green-300 mb-4 flex items-center gap-2">
             <Loader2 className="w-6 h-6 text-green-400 animate-spin shrink-0" aria-hidden />
             <AppIcon name="running" category="status" size={24} statusColor="ok" />
-            Installation läuft
+            Einrichtung wird ausgeführt
           </h3>
           <div className="space-y-4">
             <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
@@ -171,175 +203,153 @@ const InstallationWizard: React.FC = () => {
       <div className="card min-h-96">
         {step === 1 && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">
-              {isRaspberryPi ? '🎉 Willkommen zum PI-Installer!' : `🎉 ${wizardWelcomeHeadline}`}
+            <h2 className="text-2xl font-bold text-white">
+              {isRaspberryPi ? 'System erkennen und prüfen' : wizardWelcomeHeadline}
             </h2>
-            <div className="space-y-4">
-              <p className="text-slate-300 text-lg">
-                Dieser Assistent hilft Ihnen, Ihr System von der Grundkonfiguration auf den nächsten Level zu bringen.
-              </p>
-
-              <div className="grid md:grid-cols-2 gap-4 mt-6">
-                <FeatureBox
-                  icon="🔒"
-                  title="Sicherheit"
-                  desc="Härtung & automatische Updates"
-                />
-                <FeatureBox
-                  icon="👥"
-                  title="Benutzerverwaltung"
-                  desc="Mehrere Benutzer mit Rollen"
-                />
-                <FeatureBox
-                  icon="💻"
-                  title="Entwicklungsumgebung"
-                  desc="IDE, Sprachen, Datenbanken"
-                />
-                <FeatureBox
-                  icon="🌐"
-                  title="Webserver"
-                  desc="Nginx/Apache + CMS"
-                />
-              </div>
+            <p className="text-slate-300">
+              Bevor die Einrichtung startet, prüfen wir die wichtigsten Systeminformationen.
+            </p>
+            <div className="grid md:grid-cols-2 gap-3">
+              {prerequisites.map((item) => (
+                <div key={item.label} className="p-3 rounded-lg border border-slate-600 bg-slate-800/40 flex items-start gap-3">
+                  {item.ok ? <CheckCircle2 className="text-emerald-400 mt-0.5" size={18} /> : <AlertTriangle className="text-amber-400 mt-0.5" size={18} />}
+                  <div>
+                    <p className="text-sm font-semibold text-white">{item.label}</p>
+                    <p className="text-xs text-slate-400">{item.hint}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <div className="bg-blue-900/20 border border-blue-600/50 rounded-lg p-4">
-              <p className="text-blue-300 text-sm">
-                ⏱️ Die Installation dauert 45-90 Minuten, je nach ausgewählten Komponenten.
-              </p>
+            <div className="flex gap-2">
+              <button onClick={loadSystemFacts} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm" disabled={systemCheckLoading}>
+                {systemCheckLoading ? 'Prüfe…' : 'System erneut prüfen'}
+              </button>
+              <button onClick={() => setShowDetails((v) => !v)} className="px-4 py-2 bg-slate-700/70 hover:bg-slate-700 text-white rounded-lg text-sm">
+                {showDetails ? 'Details ausblenden' : 'Details anzeigen'}
+              </button>
             </div>
+            {showDetails && (
+              <pre className="bg-slate-900/60 border border-slate-700 rounded-lg p-3 text-xs text-slate-300 overflow-auto max-h-60">
+                {JSON.stringify(systemFacts, null, 2)}
+              </pre>
+            )}
           </div>
         )}
 
         {step === 2 && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">🔒 Schritt 1: Sicherheit</h2>
+            <h2 className="text-2xl font-bold text-white">Ziel auswählen</h2>
             <p className="text-slate-300">
-              Wählen Sie die Sicherheitsmaßnahmen, die Sie installieren möchten:
+              Wähle ein Setup-Ziel. Du kannst später weitere Module ergänzen.
             </p>
-
-            <div className="space-y-3">
-              <CheckOption
-                label="🔥 Firewall (UFW) aktivieren"
-                checked={allConfigs.security.enable_firewall}
-                onChange={(v) => setAllConfigs({
-                  ...allConfigs,
-                  security: { ...allConfigs.security, enable_firewall: v }
-                })}
-              />
-              <CheckOption
-                label="⚔️ Fail2Ban (Brute-Force Schutz)"
-                checked={allConfigs.security.enable_fail2ban}
-                onChange={(v) => setAllConfigs({
-                  ...allConfigs,
-                  security: { ...allConfigs.security, enable_fail2ban: v }
-                })}
-              />
-              <CheckOption
-                label="🔄 Automatische Sicherheitsupdates"
-                checked={allConfigs.security.enable_auto_updates}
-                onChange={(v) => setAllConfigs({
-                  ...allConfigs,
-                  security: { ...allConfigs.security, enable_auto_updates: v }
-                })}
-              />
-              <CheckOption
-                label="🔐 SSH Härtung"
-                checked={allConfigs.security.enable_ssh_hardening}
-                onChange={(v) => setAllConfigs({
-                  ...allConfigs,
-                  security: { ...allConfigs.security, enable_ssh_hardening: v }
-                })}
-              />
-              <CheckOption
-                label="📝 Audit Logging"
-                checked={allConfigs.security.enable_audit_logging}
-                onChange={(v) => setAllConfigs({
-                  ...allConfigs,
-                  security: { ...allConfigs.security, enable_audit_logging: v }
-                })}
-              />
+            <div className="grid md:grid-cols-2 gap-3">
+              <SelectableOption label="Basis-Setup" desc="Sicherheit, Grundkonfiguration, stabile Basis." selected={targetProfile === 'basic'} onClick={() => setTargetProfile('basic')} />
+              <SelectableOption label="Server / Dienste" desc="Web-/Netzwerkdienste und Betriebsgrundlagen." selected={targetProfile === 'server'} onClick={() => setTargetProfile('server')} />
+              <SelectableOption label="Medien / Tools" desc="Medienorientierte Pakete und Hilfstools." selected={targetProfile === 'media'} onClick={() => setTargetProfile('media')} />
+              <SelectableOption label="Anfänger-Setup" desc="Geführte, vorsichtige Standardeinstellungen." selected={targetProfile === 'beginner'} onClick={() => setTargetProfile('beginner')} />
+              <SelectableOption label="Erweiterte Einrichtung" desc="Mehr Optionen und technische Konfiguration." selected={targetProfile === 'advanced'} onClick={() => setTargetProfile('advanced')} />
             </div>
           </div>
         )}
 
         {step === 3 && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">👥 Schritt 2: Benutzer</h2>
+            <h2 className="text-2xl font-bold text-white">Optionen und Hinweise</h2>
             <p className="text-slate-300">
-              Sie können später weitere Benutzer hinzufügen. Ein Administrator-Benutzer wird empfohlen.
+              Diese Optionen werden angewendet. Prüfe die Hinweise vor dem Start.
             </p>
-
-            <div className="bg-slate-700/30 p-4 rounded-lg">
-              <p className="text-slate-400 text-sm">
-                Standard Benutzer: pi (existiert bereits)
-              </p>
+            <div className="space-y-3">
+              <CheckOption
+                label="Firewall aktivieren"
+                checked={allConfigs.security.enable_firewall}
+                onChange={(v: boolean) => setAllConfigs((prev) => ({ ...prev, security: { ...prev.security, enable_firewall: v } }))}
+              />
+              <CheckOption
+                label="Fail2Ban aktivieren"
+                checked={allConfigs.security.enable_fail2ban}
+                onChange={(v: boolean) => setAllConfigs((prev) => ({ ...prev, security: { ...prev.security, enable_fail2ban: v } }))}
+              />
+              <CheckOption
+                label="Automatische Sicherheitsupdates"
+                checked={allConfigs.security.enable_auto_updates}
+                onChange={(v: boolean) => setAllConfigs((prev) => ({ ...prev, security: { ...prev.security, enable_auto_updates: v } }))}
+              />
+              <CheckOption
+                label="SSH-Härtung"
+                checked={allConfigs.security.enable_ssh_hardening}
+                onChange={(v: boolean) => setAllConfigs((prev) => ({ ...prev, security: { ...prev.security, enable_ssh_hardening: v } }))}
+              />
+              <CheckOption
+                label="Audit-Logging"
+                checked={allConfigs.security.enable_audit_logging}
+                onChange={(v: boolean) => setAllConfigs((prev) => ({ ...prev, security: { ...prev.security, enable_audit_logging: v } }))}
+              />
+            </div>
+            <div className="space-y-2">
+              {riskHints.map((hint, idx) => (
+                <div key={`${hint.level}-${idx}`} className={`rounded-lg border p-3 text-sm flex items-start gap-2 ${hint.level === 'warning' ? 'bg-amber-900/20 border-amber-600/50 text-amber-200' : 'bg-sky-900/20 border-sky-600/50 text-sky-200'}`}>
+                  {hint.level === 'warning' ? <AlertTriangle size={16} className="mt-0.5 shrink-0" /> : <Info size={16} className="mt-0.5 shrink-0" />}
+                  <span>{hint.text}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
         {step === 4 && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">💻 Schritt 3: Entwicklungsumgebung</h2>
+            <h2 className="text-2xl font-bold text-white">Ausführen</h2>
             <p className="text-slate-300">
-              Welche Programmiersprachen und Tools benötigen Sie?
+              Starte jetzt die Einrichtung. Fortschritt und Rückmeldungen werden live angezeigt.
             </p>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <SelectableOption label="🐍 Python" />
-              <SelectableOption label="⚡ Node.js" />
-              <SelectableOption label="🔹 Go" />
-              <SelectableOption label="🦀 Rust" />
-              <SelectableOption label="🐘 PostgreSQL" />
-              <SelectableOption label="🐬 MySQL" />
-              <SelectableOption label="🐳 Docker" />
-              <SelectableOption label="🔀 Git" />
+            <div className="p-4 rounded-xl border border-slate-600 bg-slate-800/40">
+              <p className="text-sm text-slate-200 mb-2">Ausgewähltes Profil: <span className="font-semibold text-white">{targetProfile}</span></p>
+              <p className="text-xs text-slate-400">Während der Einrichtung können Dienste neu gestartet werden.</p>
             </div>
+            <button
+              onClick={() => setSudoOpen(true)}
+              disabled={installing}
+              className="w-full btn-primary text-lg py-3 mt-2 flex items-center justify-center gap-2"
+            >
+              {installing ? <Loader2 className="animate-spin" size={18} /> : null}
+              Einrichtung starten
+            </button>
           </div>
         )}
 
         {step === 5 && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">🌐 Schritt 4: Webserver</h2>
+            <h2 className="text-2xl font-bold text-white">Ergebnis</h2>
             <p className="text-slate-300">
-              Konfigurieren Sie Ihren Webserver und optionales CMS.
+              {installDone ? 'Einrichtung abgeschlossen. Prüfe die Ergebnisse und starte mit den nächsten Schritten.' : 'Noch keine abgeschlossene Einrichtung vorhanden.'}
             </p>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <SelectableOption label="⚡ Nginx" selected />
-              <SelectableOption label="🪚 Apache" />
-              <SelectableOption label="🔒 SSL/TLS" selected />
-              <SelectableOption label="💻 PHP" />
-              <SelectableOption label="📰 WordPress" />
-              <SelectableOption label="☁️ Nextcloud" />
-            </div>
-          </div>
-        )}
-
-        {step === 6 && (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">✓ Zusammenfassung</h2>
-            <p className="text-slate-300 mb-6">
-              Überprüfen Sie Ihre Einstellungen und starten Sie die Installation:
-            </p>
-
             <div className="space-y-3">
-              <SummaryItem icon="🔒" title="Sicherheit" items={['Firewall', 'Fail2Ban', 'Auto-Updates', 'SSH-Härtung']} />
-              <SummaryItem icon="👥" title="Benutzer" items={['Standard Benutzer: pi']} />
-              <SummaryItem icon="💻" title="Entwicklung" items={['Python, Node.js', 'PostgreSQL']} />
-              <SummaryItem icon="🌐" title="Webserver" items={['Nginx mit SSL', 'Cockpit Panel']} />
+              {(installResultText.length > 0 ? installResultText : ['Noch keine Ergebnisdaten vorhanden.']).map((line, i) => (
+                <div key={i} className="p-3 rounded-lg bg-slate-800/50 border border-slate-600 text-sm text-slate-200">
+                  {line}
+                </div>
+              ))}
             </div>
-
-            <button
-              onClick={startInstallation}
-              disabled={installing}
-              className="w-full btn-primary text-lg py-3 mt-8 flex items-center justify-center gap-2"
-            >
-              🚀 Installation jetzt starten
-            </button>
+            <div className="grid md:grid-cols-3 gap-3">
+              <button onClick={() => toast('Zur Übersicht: Dashboard öffnen')} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Zur Übersicht</button>
+              <button onClick={() => toast('Logs findest du unter Einstellungen > Logs')} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Logs ansehen</button>
+              <button onClick={() => toast('Weitere Module über App-Store oder Sidebar öffnen')} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Weitere Module</button>
+            </div>
           </div>
         )}
       </div>
+
+      <SudoPasswordModal
+        open={sudoOpen}
+        title="Sudo-Berechtigung für Einrichtung"
+        subtitle="Für Installation und Systemkonfiguration wird ein Passwort benötigt."
+        confirmText="Einrichtung starten"
+        onCancel={() => setSudoOpen(false)}
+        onConfirm={async (password) => {
+          setSudoOpen(false)
+          await startInstallation(password)
+        }}
+      />
 
       {/* Navigation Buttons */}
       {!installing && (
@@ -349,11 +359,11 @@ const InstallationWizard: React.FC = () => {
             disabled={step === 1}
             className="btn-secondary px-8"
           >
-            ← Zurück
+            Zurück
           </button>
           <button
-            onClick={() => setStep(Math.min(6, step + 1))}
-            disabled={step === 6}
+            onClick={() => setStep(Math.min(5, step + 1))}
+            disabled={step === 5}
             className="btn-primary px-8 flex items-center gap-2"
           >
             Weiter <ChevronRight size={20} />
@@ -364,7 +374,7 @@ const InstallationWizard: React.FC = () => {
   )
 }
 
-const CheckOption = ({ label, checked, onChange }: any) => (
+const CheckOption = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) => (
   <label className="flex items-center gap-3 p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 cursor-pointer transition-all">
     <input
       type="checkbox"
@@ -376,37 +386,28 @@ const CheckOption = ({ label, checked, onChange }: any) => (
   </label>
 )
 
-const FeatureBox = ({ icon, title, desc }: any) => (
-  <div className="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-    <div className="text-3xl mb-2">{icon}</div>
-    <p className="font-bold text-white">{title}</p>
-    <p className="text-sm text-slate-400">{desc}</p>
-  </div>
-)
-
-const SelectableOption = ({ label, selected = false }: any) => (
+const SelectableOption = ({
+  label,
+  desc,
+  selected = false,
+  onClick,
+}: {
+  label: string
+  desc: string
+  selected?: boolean
+  onClick: () => void
+}) => (
   <button
-    className={`p-4 rounded-lg border-2 font-semibold transition-all ${
+    onClick={onClick}
+    className={`p-4 rounded-lg border-2 font-semibold transition-all text-left ${
       selected
         ? 'bg-sky-600/20 border-sky-500 text-white'
         : 'bg-slate-700/30 border-slate-600 text-slate-300 hover:border-slate-500'
     }`}
   >
-    {label}
+    <p>{label}</p>
+    <p className="text-xs mt-1 opacity-85">{desc}</p>
   </button>
-)
-
-const SummaryItem = ({ icon, title, items }: any) => (
-  <div className="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-    <p className="font-bold text-white mb-2 flex items-center gap-2">
-      {icon} {title}
-    </p>
-    <ul className="text-sm text-slate-300 space-y-1">
-      {items.map((item: string, i: number) => (
-        <li key={i}>✓ {item}</li>
-      ))}
-    </ul>
-  </div>
 )
 
 export default InstallationWizard

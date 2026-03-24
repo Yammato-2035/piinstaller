@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
-import { Scan, Cpu, Keyboard, Mouse, Camera, Headphones, ExternalLink, Video, X } from 'lucide-react'
+import { Scan, Cpu, Keyboard, Mouse, Camera, Headphones, ExternalLink, Video, X, AlertTriangle, CheckCircle2, Info, FileText } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -86,6 +86,14 @@ type ScanResult = {
   usb: { type: string; description: string }[]
   input_devices: { name: string; handlers: string }[]
   drivers: { device: string; driver: string }[]
+}
+
+type DiagnosticIssue = {
+  level: 'critical' | 'warning' | 'info'
+  title: string
+  meaning: string
+  action: string
+  details?: string
 }
 
 /** Liefert nur die beim letzten Scan neu hinzugekommenen Komponenten. */
@@ -214,6 +222,50 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
   /** Nur beim letzten Scan neu hinzugekommene Komponenten (bei zweitem Scan). */
   const [newSinceLastScan, setNewSinceLastScan] = useState<ScanResult | null>(null)
 
+  const diagnosticIssues = useMemo<DiagnosticIssue[]>(() => {
+    if (!result) return []
+    const issues: DiagnosticIssue[] = []
+    const hasNetworkInput = result.input_devices.length > 0
+    const hasKeyboard = result.usb.some((u) => u.type === 'keyboard')
+    const hasMouse = result.usb.some((u) => u.type === 'mouse') || result.input_devices.some((d) => d.handlers?.includes('mouse'))
+    if (!hasNetworkInput && !hasKeyboard && !hasMouse) {
+      issues.push({
+        level: 'critical',
+        title: 'Keine Eingabegeräte erkannt',
+        meaning: 'Tastatur/Maus wurden im Systemscan nicht erkannt.',
+        action: 'USB/Bluetooth-Verbindung prüfen und erneut scannen.',
+        details: 'Betroffen: /proc/bus/input/devices und USB-Erkennung.',
+      })
+    }
+    const missingDriverCount = (result.drivers || []).filter((d) => d.driver === '—').length
+    if (missingDriverCount > 0) {
+      issues.push({
+        level: 'warning',
+        title: 'Treiberzuordnung unvollständig',
+        meaning: `${missingDriverCount} PCI-Gerät(e) ohne klaren Treiber.`,
+        action: 'Herstellerseite prüfen und Kernel-/Pakettreiber vergleichen.',
+        details: 'Nutze unten den Bereich „Hersteller & Treiber für Linux“.',
+      })
+    }
+    if (!result.usb.some((u) => u.type === 'webcam')) {
+      issues.push({
+        level: 'info',
+        title: 'Keine Webcam erkannt',
+        meaning: 'Für viele Setups optional, nur relevant bei Videoeinsatz.',
+        action: 'Bei Bedarf Kamera verbinden und Scan erneut starten.',
+      })
+    }
+    if (issues.length === 0) {
+      issues.push({
+        level: 'info',
+        title: 'Keine kritischen Auffälligkeiten',
+        meaning: 'Peripherie und Treiber sehen aktuell stabil aus.',
+        action: 'Optional erneut scannen, wenn neue Geräte angeschlossen werden.',
+      })
+    }
+    return issues
+  }, [result])
+
   const animateConsole = useCallback((lines: string[]) => {
     setConsoleVisible(0)
     let i = 0
@@ -316,10 +368,10 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
         <div className="page-title-category mb-2 inline-flex">
           <h1 className="flex items-center gap-3">
             <AppIcon name="diagnose" category="navigation" size={32} />
-            Peripherie-Scan (Assimilation)
+            Fehlerdiagnose und Peripherie-Scan
           </h1>
         </div>
-        <p className="text-slate-400">Peripherie-Scan – {pageSubtitleLabel}</p>
+        <p className="text-slate-400">Systemstatus verstehen – {pageSubtitleLabel}</p>
       </div>
 
       {!scanning && !result && (
@@ -328,14 +380,14 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
           animate={{ opacity: 1, y: 0 }}
           className="card bg-gradient-to-br from-emerald-900/30 to-slate-800/60 border-emerald-600/40"
         >
-          <p className="text-lg font-semibold text-white mb-2">Beginne mit der Assimilation des Systems!</p>
-          <p className="text-slate-400 text-sm mb-6">Widerstand ist zwecklos.</p>
+          <p className="text-lg font-semibold text-white mb-2">Starte eine Diagnose des Systems</p>
+          <p className="text-slate-400 text-sm mb-6">Erkennt Peripherie, Eingabegeräte und Treiberstatus kompakt und verständlich.</p>
           <button
             onClick={startAssimilation}
             className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
           >
             <AppIcon name="search" category="process" size={24} />
-            Assimilation starten
+            Diagnose starten
           </button>
         </motion.div>
       )}
@@ -354,8 +406,8 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
             exit={{ opacity: 0 }}
             className="card bg-slate-800/80 border border-emerald-600/40"
           >
-            <p className="text-lg font-semibold text-white mb-2">Beginne mit der Assimilation des Systems!</p>
-            <p className="text-slate-400 text-sm mb-4">Widerstand ist zwecklos.</p>
+            <p className="text-lg font-semibold text-white mb-2">Diagnose wird ausgeführt</p>
+            <p className="text-slate-400 text-sm mb-4">Komponenten und Treiber werden geprüft.</p>
             <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-emerald-500 rounded-full"
@@ -380,7 +432,7 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
             <span className="w-3 h-3 rounded-full bg-red-500/80" />
             <span className="w-3 h-3 rounded-full bg-amber-500/80" />
             <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
-            <span className="text-slate-400 ml-2">Assimilation – Konsole</span>
+            <span className="text-slate-400 ml-2">Diagnose – Konsole</span>
           </div>
           <div className="min-h-[120px] max-h-64 overflow-y-auto">
             {consoleLines.slice(0, consoleVisible).map((line, i) => {
@@ -412,11 +464,39 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
+          {/* Systemstatus + Fehlerübersicht */}
+          <div className="card bg-slate-800/55 border border-slate-600">
+            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+              <AlertTriangle className="text-amber-400" size={20} />
+              Fehlerübersicht und nächste Schritte
+            </h3>
+            <div className="space-y-3">
+              {diagnosticIssues.map((issue, idx) => (
+                <details key={`${issue.title}-${idx}`} className={`rounded-lg border p-3 ${issue.level === 'critical' ? 'border-red-700/70 bg-red-900/20' : issue.level === 'warning' ? 'border-amber-700/70 bg-amber-900/20' : 'border-sky-700/70 bg-sky-900/20'}`}>
+                  <summary className="cursor-pointer flex items-center gap-2 text-sm font-semibold text-white">
+                    {issue.level === 'critical' ? <AlertTriangle size={16} className="text-red-300" /> : issue.level === 'warning' ? <AlertTriangle size={16} className="text-amber-300" /> : <Info size={16} className="text-sky-300" />}
+                    {issue.title}
+                  </summary>
+                  <div className="mt-2 text-sm text-slate-200 space-y-1">
+                    <p><span className="text-slate-400">Was bedeutet das?</span> {issue.meaning}</p>
+                    <p><span className="text-slate-400">Was kann ich jetzt tun?</span> {issue.action}</p>
+                    {issue.details ? <p className="text-xs text-slate-400">{issue.details}</p> : null}
+                  </div>
+                </details>
+              ))}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button onClick={startAssimilation} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Erneut prüfen</button>
+              <button onClick={() => setCurrentPage?.('settings')} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Logdateien anzeigen</button>
+              <button onClick={() => toast('Diagnosepaket: cd backend && python3 -m debug.cli support-bundle')} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Diagnosepaket erstellen</button>
+            </div>
+          </div>
+
           {/* Übersicht: Kamera, Tastatur, Maus – Erkannt Ja/Nein */}
           <div className="card bg-gradient-to-br from-emerald-900/20 to-slate-800/60 border-emerald-600/40">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Scan className="text-emerald-500" />
-              Übersicht – Erkannte Peripherie
+              <CheckCircle2 className="text-emerald-500" />
+              Systemstatus – erkannte Peripherie
             </h3>
             <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-600">
@@ -604,6 +684,21 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
             <ul className="text-sm text-slate-300 space-y-1.5 list-disc list-inside">
               <li><strong className="text-white">Corsair (Maus, Tastatur, Headset):</strong> Keine offiziellen Linux-Treiber. Community: <a href="https://github.com/ckb-next/ckb-next" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">ckb-next</a> für Gaming-Tastatur und -Maus (RGB, Makros); ab Kernel 6.13+ Treiber für Corsair Void Headset im Kernel.</li>
               <li><strong className="text-white">Webcams:</strong> Unter Linux reicht der UVC-Standard (Kernel-Modul <code className="bg-slate-700 px-1 rounded text-slate-200">uvcvideo</code>) – in der Regel <strong>kein Hersteller-Treiber nötig</strong>. Im Bereich Kameras kannst du den Kamerastream anzeigen.</li>
+            </ul>
+          </div>
+
+          <div className="card bg-slate-800/50 border border-slate-600">
+            <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
+              <FileText size={16} className="text-slate-300" />
+              Support und Export
+            </h3>
+            <p className="text-xs text-slate-300 mb-2">
+              Für Supportfälle sind Logs und ein Diagnosepaket hilfreich.
+            </p>
+            <ul className="text-xs text-slate-400 list-disc list-inside space-y-1">
+              <li>Logdateien in der App: Einstellungen → Logs</li>
+              <li>Backend-Routen prüfen: <code className="bg-slate-700 px-1 rounded">/api/debug/routes</code></li>
+              <li>Diagnosepaket per CLI: <code className="bg-slate-700 px-1 rounded">python -m backend.debug.cli --support-bundle</code></li>
             </ul>
           </div>
 

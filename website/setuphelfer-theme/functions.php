@@ -18,7 +18,7 @@ add_action('after_setup_theme', 'setuphelfer_setup');
 function setuphelfer_assets() {
     // Wichtig für Child-Themes: get_stylesheet_uri() würde im Child-Kontext die Child-Styles laden.
     // Wir wollen aber die Parent-Styles als Basis.
-    wp_enqueue_style('setuphelfer-style', get_template_directory_uri() . '/style.css', [], '1.3.8.8');
+    wp_enqueue_style('setuphelfer-style', get_template_directory_uri() . '/style.css', [], '1.3.8.10');
     wp_enqueue_script('setuphelfer-nav', get_template_directory_uri().'/assets/js/nav.js', [], '1.3.8.2', true);
     wp_enqueue_script('setuphelfer-consent', get_template_directory_uri().'/assets/js/consent.js', [], '1.3.8.2', true);
     wp_enqueue_script('setuphelfer-live-status', get_template_directory_uri().'/assets/js/live-status.js', [], '1.0.1', true);
