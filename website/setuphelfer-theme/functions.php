@@ -6,6 +6,7 @@ require get_template_directory() . '/inc/setuphelfer-lucide.php';
 require get_template_directory() . '/inc/setuphelfer-screenshots.php';
 require get_template_directory() . '/inc/setuphelfer-helpers.php';
 require get_template_directory() . '/inc/setuphelfer-contact.php';
+require get_template_directory() . '/inc/setuphelfer-legal-pages.php';
 
 function setuphelfer_setup() {
     add_theme_support('title-tag');
@@ -18,7 +19,7 @@ add_action('after_setup_theme', 'setuphelfer_setup');
 function setuphelfer_assets() {
     // Wichtig für Child-Themes: get_stylesheet_uri() würde im Child-Kontext die Child-Styles laden.
     // Wir wollen aber die Parent-Styles als Basis.
-    wp_enqueue_style('setuphelfer-style', get_template_directory_uri() . '/style.css', [], '1.3.8.11');
+    wp_enqueue_style('setuphelfer-style', get_template_directory_uri() . '/style.css', [], '1.3.8.12');
     wp_enqueue_script('setuphelfer-nav', get_template_directory_uri().'/assets/js/nav.js', [], '1.3.8.2', true);
     wp_enqueue_script('setuphelfer-consent', get_template_directory_uri().'/assets/js/consent.js', [], '1.3.8.2', true);
     wp_enqueue_script('setuphelfer-live-status', get_template_directory_uri().'/assets/js/live-status.js', [], '1.0.1', true);
@@ -156,60 +157,19 @@ function setuphelfer_seed_content() {
         'ueber-setuphelfer' => ['title' => 'Über SetupHelfer', 'content' => ''],
         'impressum' => [
             'title' => 'Impressum',
-            'content' => '
-                <h2>Angaben gemäß § 5 TMG</h2>
-                <p><strong>Verantwortlich für diese Website:</strong><br>
-                Volker Glienke<br>
-                Erlenstraße 25<br>
-                47574 Goch<br>
-                <strong>Kontakt:</strong> <a href="mailto:volker.glienke&#64;googlemail.com">volker.glienke&#64;googlemail.com</a></p>
-                <h3>Haftungsausschluss</h3>
-                <p>Die Nutzung der bereitgestellten Hilfen, Anleitungen und zur Verfügung gestellten Apps erfolgt auf eigene Gefahr.</p>
-                <p>Für Schäden, die aus der Nutzung oder Anwendung der Inhalte entstehen, wird keine Haftung übernommen.</p>
-            ',
+            'content' => setuphelfer_get_impressum_html(),
         ],
         'datenschutz' => [
             'title' => 'Datenschutz',
-            'content' => '
-                <h2>Datenschutz</h2>
-                <p>Diese Website wird als private, nicht kommerzielle Plattform betrieben.</p>
-                <p><strong>Verantwortlich:</strong><br>
-                Volker Glienke<br>
-                Erlenstraße 25<br>
-                47574 Goch</p>
-
-                <h3>Allgemeine Hinweise</h3>
-                <p>Beim Besuch dieser Website können durch den Betrieb von Servern technische Informationen (z.B. IP-Adresse und Zeitpunkte) in Logfiles gespeichert werden. Dies dient der Bereitstellung der Website und der Systemsicherheit.</p>
-
-                <h3>bbPress / Community</h3>
-                <p>Wenn bbPress und das Forum genutzt werden, werden Nutzungsdaten im Rahmen der Forenfunktion verarbeitet. Dazu gehören insbesondere Angaben zum Nutzerkonto (sofern registriert), Foreninhalte und technische Informationen zur Nutzung des Forums.</p>
-
-                <h3>Tracking und Einwilligung</h3>
-                <p>Optionale Analysefunktionen werden erst nach aktiver Einwilligung geladen. Ohne Zustimmung findet kein optionales Tracking statt.</p>
-                <p>Die Entscheidung kann über die Cookie-Richtlinie nachvollzogen und bei Bedarf geändert werden.</p>
-
-                <h3>Hosting und externe Dienste</h3>
-                <p>Die Website wird bei einem Hosting-Anbieter betrieben. Technische Logdaten können zur sicheren Bereitstellung verarbeitet werden.</p>
-                <p>Verweise auf GitHub dienen der Transparenz über Quellcode und Changelog.</p>
-
-                <h3>Nutzerinhalte und Moderation</h3>
-                <p>In Community-Bereichen können Nutzerinhalte veröffentlicht werden. Rechtswidrige Inhalte werden nach Kenntnis im Rahmen der Moderation geprüft und entfernt.</p>
-
-                <h3>Rechte der betroffenen Person</h3>
-                <p>Du hast das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung sowie das Recht auf Datenübertragbarkeit.</p>
-
-                <h3>Disclaimer</h3>
-                <p>Die Nutzung der bereitgestellten Hilfen, Anleitungen und zur Verfügung gestellten Apps erfolgt auf eigene Gefahr.</p>
-            ',
+            'content' => setuphelfer_get_datenschutz_html(),
         ],
     ];
 
     $page_ids = [];
     $created_any = false;
     $needs_update = false;
-    $expected_impressum_mail = 'volker.glienke&#64;googlemail.com';
-    $expected_datenschutz_marker = 'bbPress / Community';
-    $expected_datenschutz_tracking_marker = 'Tracking und Einwilligung';
+    $expected_impressum_version = 'Impressum-Textversion 2025-03';
+    $expected_datenschutz_version = 'Datenschutz-Textversion 2025-03';
 
     // Wenn das Seeden bereits durchgeführt wurde, aber einzelne Seiten fehlen (z.B. nach Code-Update),
     // erzeugen wir nur die fehlenden Seiten nach.
@@ -233,14 +193,14 @@ function setuphelfer_seed_content() {
             }
 
             if ($slug === 'impressum') {
-                if (stripos($content, $expected_impressum_mail) === false) {
+                if (stripos($content, $expected_impressum_version) === false) {
                     $needs_update = true;
                     break;
                 }
             }
 
             if ($slug === 'datenschutz') {
-                if (stripos($content, $expected_datenschutz_marker) === false || stripos($content, $expected_datenschutz_tracking_marker) === false) {
+                if (stripos($content, $expected_datenschutz_version) === false) {
                     $needs_update = true;
                     break;
                 }
@@ -263,13 +223,13 @@ function setuphelfer_seed_content() {
                         'post_content' => $page['content'],
                     ]);
                     $created_any = true;
-                } elseif ($slug === 'impressum' && stripos($content, $expected_impressum_mail) === false) {
+                } elseif ($slug === 'impressum' && stripos($content, $expected_impressum_version) === false) {
                     wp_update_post([
                         'ID' => $existing->ID,
                         'post_content' => $page['content'],
                     ]);
                     $created_any = true;
-                } elseif ($slug === 'datenschutz' && (stripos($content, $expected_datenschutz_marker) === false || stripos($content, $expected_datenschutz_tracking_marker) === false)) {
+                } elseif ($slug === 'datenschutz' && stripos($content, $expected_datenschutz_version) === false) {
                     wp_update_post([
                         'ID' => $existing->ID,
                         'post_content' => $page['content'],
@@ -753,36 +713,3 @@ function setuphelfer_cleanup_primary_menu_items($items, $args) {
     return $filtered;
 }
 add_filter('wp_nav_menu_objects', 'setuphelfer_cleanup_primary_menu_items', 10, 2);
-
-/**
- * Rechtstexte ergänzen (ohne bestehende Inhalte zu löschen) — nur wenn Marker fehlen.
- *
- * @param string $content Beitragstext.
- * @return string
- */
-function setuphelfer_append_legal_content( $content ) {
-	if ( ! is_singular( 'page' ) ) {
-		return $content;
-	}
-	global $post;
-	if ( ! $post instanceof WP_Post ) {
-		return $content;
-	}
-	$slug = $post->post_name;
-	if ( 'datenschutz' === $slug ) {
-		if ( stripos( $content, 'Verwendete Bilder' ) === false ) {
-			$content .= '<h3>Verwendete Bilder</h3><p>Verwendete Bilder stammen aus eigenen Screenshots der Anwendung oder aus lizenzfrei nutzbaren Quellen (siehe Bildnachweise auf den jeweiligen Seiten).</p>';
-		}
-		if ( stripos( $content, 'Kontaktformular' ) === false ) {
-			$content .= '<h3>Kontaktformular</h3><p>Wenn Sie das Kontaktformular nutzen, werden die von Ihnen eingegebenen Daten per E-Mail an <a href="mailto:piinstaller@setuphelfer.de">piinstaller@setuphelfer.de</a> übermittelt und dort zur Bearbeitung Ihrer Anfrage verarbeitet. Eine Weitergabe an Dritte zu Werbezwecken erfolgt nicht.</p>';
-		}
-		if ( stripos( $content, 'Markennamen' ) === false ) {
-			$content .= '<h3>Markennamen</h3><p>Die Nennung von Raspberry Pi, Linux und anderen Marken dient der Beschreibung von Kompatibilität und Nutzung; es wird keine Partnerschaft oder offizielle Zugehörigkeit behauptet.</p>';
-		}
-	}
-	if ( 'impressum' === $slug && stripos( $content, 'piinstaller@setuphelfer.de' ) === false ) {
-		$content .= '<h3>Kontakt SetupHelfer</h3><p>E-Mail für Anfragen zur Plattform: <a href="mailto:piinstaller@setuphelfer.de">piinstaller@setuphelfer.de</a></p>';
-	}
-	return $content;
-}
-add_filter( 'the_content', 'setuphelfer_append_legal_content', 20 );
