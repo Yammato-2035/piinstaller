@@ -239,6 +239,34 @@ async def debug_request_id_middleware(request, call_next):
         reset_request_id(token)
 
 
+@app.get("/api/system/status")
+async def system_status():
+    """
+    Zentrale Systemstatus-API.
+    Liefert Ampelwerte für Backup, Restore, Security, Updates.
+    """
+    try:
+        status = _compute_system_status()
+        return {
+            "status": "success",
+            "api_status": "ok",
+            "message": "",
+            "data": status,
+            **status,
+        }
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen des Systemstatus: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "api_status": "error",
+                "message": str(e),
+                "data": {},
+            },
+        )
+
+
 # Session Storage für sudo-Passwort (verschlüsselt, TTL 30 Min)
 class _EmptySudoStore:
     def get_password(self): return None
@@ -373,6 +401,56 @@ def _user_profile_path() -> Path:
     except Exception:
         # Fallback: Home-Config
         return Path.home() / ".config" / "pi-installer" / "user_profile.json"
+
+
+def _compute_system_status() -> dict:
+    """
+    Zentrale Statuslogik gemäß System State Engine.
+    Konservativ: ohne explizite Freigaben eher GELB/ROT setzen.
+    """
+    status = {
+        "backup": "red",
+        "restore": "red",
+        "security": "yellow",
+        "updates": "yellow",
+    }
+    try:
+        # Backup-Status aus Einstellungen + Dateisystem ableiten
+        backup_settings = APP_SETTINGS.get("backup") or {}
+        default_dir = backup_settings.get("default_dir") or "/mnt/backups"
+        try:
+            validated_dir = _validate_backup_dir(default_dir)
+            p = Path(validated_dir)
+            backups_exist = p.exists() and any(p.glob("*.tar.gz"))  # verschlüsselte Backups werden separat gelistet
+        except Exception:
+            backups_exist = False
+
+        if backups_exist:
+            # Es existiert mindestens ein Backup, aber ohne Real-Test-Anker nur GELB
+            status["backup"] = "yellow"
+        else:
+            status["backup"] = "red"
+
+        # Restore-Status: solange kein dokumentierter Real-Test-Flag existiert, konservativ
+        # (kann später z. B. aus backup.state["restore_tested"] kommen)
+        state = backup_settings.get("state") or {}
+        if state.get("restore_real_tested"):
+            status["restore"] = "green"
+        elif state.get("restore_preview_ok"):
+            status["restore"] = "yellow"
+        else:
+            status["restore"] = "red"
+
+        # Security-Status: aus security-config ableitbar, hier konservativ belassen
+        # (detaillierte Berechnung erfolgt in /api/system/security-config)
+        status["security"] = "yellow"
+
+        # Updates: wenn der Backend-Endpunkt /api/system/updates meldet, dass 0 Updates anstehen,
+        # könnten wir hier auf grün gehen – ohne Live-Abfrage konservativ gelb.
+        status["updates"] = "yellow"
+    except Exception as e:
+        logger.error(f"Fehler bei Systemstatus-Berechnung: {e}", exc_info=True)
+    return status
 
 
 class UserProfile(BaseModel):
@@ -2437,38 +2515,79 @@ async def debug_routes():
     return {"paths": sorted(set(paths)), "version": get_pi_installer_version()}
 
 
+BACKUP_ALLOWED_ROOTS = [
+    Path("/mnt").resolve(),
+    Path("/media").resolve(),
+    Path("/run/media").resolve(),
+    Path("/home").resolve(),
+    # Sicherer Testpfad für Real-Tests (nicht produktiv nutzen)
+    Path("/tmp/setuphelfer-test").resolve(),
+]
+
+# Kritische Systempfade, in die kein direkter Restore erfolgen darf
+CRITICAL_SYSTEM_PATHS = [
+    Path("/etc").resolve(),
+    Path("/usr").resolve(),
+    Path("/bin").resolve(),
+    Path("/sbin").resolve(),
+    Path("/lib").resolve(),
+    Path("/lib64").resolve(),
+    Path("/boot").resolve(),
+    Path("/var").resolve(),
+    Path("/dev").resolve(),
+    Path("/proc").resolve(),
+    Path("/sys").resolve(),
+    Path("/run").resolve(),
+]
+
+
+def _normalize_path(path_str: str) -> Path:
+    """
+    Pfad mit realpath normalisieren.
+    Nutzt Path.resolve(), um Symlinks und relative Segmente aufzulösen.
+    """
+    if not isinstance(path_str, str):
+        raise ValueError("Pfad muss ein String sein")
+    stripped = path_str.strip()
+    if not stripped:
+        raise ValueError("Pfad darf nicht leer sein")
+    if not stripped.startswith("/"):
+        raise ValueError("Pfad muss absolut sein (beginnt mit /)")
+    # Basisschutz gegen offensichtliche Injection-Zeichen; Shell-Aufrufe nutzen zusätzlich shlex.quote.
+    forbidden = ["\n", "\r", "\t", "\x00", "`", "$", ";", "&", "|", "<", ">", "!", "\"", "'"]
+    if any(ch in stripped for ch in forbidden):
+        raise ValueError("Pfad enthält ungültige Zeichen (u.a. Quotes, ;, &, |, Zeilenumbrüche sind nicht erlaubt)")
+    return Path(stripped).resolve()
+
+
+def _is_under_allowed_root(p: Path) -> bool:
+    for root in BACKUP_ALLOWED_ROOTS:
+        if str(p).startswith(str(root) + "/") or p == root:
+            return True
+    return False
+
+
+def _is_critical_system_path(p: Path) -> bool:
+    for root in CRITICAL_SYSTEM_PATHS:
+        if str(p) == str(root) or str(p).startswith(str(root) + "/"):
+            return True
+    return False
+
+
 def _validate_backup_dir(path_str: str) -> str:
     """
     Validiert ein Backup-Zielverzeichnis.
+    - nutzt realpath
     - muss absolut sein
     - keine gefährlichen Zeichen (Shell-Injection)
-    - muss unter erlaubten Mount-Roots liegen (USB-Sticks liegen typischerweise unter /media, /run/media, /mnt)
+    - muss unter erlaubten Mount-Roots liegen (USB-Sticks liegen typischerweise unter /media, /run/media, /mnt, /home)
+    - darf kein kritischer Systempfad sein
     """
-    if not isinstance(path_str, str):
-        raise ValueError("backup_dir muss ein String sein")
-    path_str = path_str.strip()
-    if not path_str:
-        raise ValueError("backup_dir darf nicht leer sein")
-    if not path_str.startswith("/"):
-        raise ValueError("backup_dir muss ein absoluter Pfad sein (beginnt mit /)")
-    # Erlaubte Zeichen:
-    # - Wir erlauben bewusst Leerzeichen (USB-Sticks werden oft mit Labels mit Spaces gemountet),
-    #   schützen aber gegen Shell-Injection durch:
-    #   1) verbotene Metazeichen
-    #   2) konsequentes Quoting via shlex.quote bei Shell-Commands
-    forbidden = ["\n", "\r", "\t", "\x00", "`", "$", ";", "&", "|", "<", ">", "!", "\"", "'"]
-    if any(ch in path_str for ch in forbidden):
-        raise ValueError("backup_dir enthält ungültige Zeichen (u.a. Quotes, ;, &, |, Zeilenumbrüche sind nicht erlaubt)")
-
-    resolved = Path(path_str).resolve()
-    allowed_roots = [
-        Path("/mnt").resolve(),
-        Path("/media").resolve(),
-        Path("/run/media").resolve(),
-        Path("/home").resolve(),
-    ]
-    if not any(str(resolved).startswith(str(root) + "/") or resolved == root for root in allowed_roots):
+    resolved = _normalize_path(path_str)
+    if not _is_under_allowed_root(resolved):
         raise ValueError("backup_dir muss unter /mnt, /media, /run/media oder /home liegen")
+    if _is_critical_system_path(resolved):
+        raise ValueError("backup_dir darf kein kritischer Systempfad sein")
     # Verhindere versehentliches Backup direkt auf Root-Verzeichnis
     if str(resolved) == "/":
         raise ValueError("backup_dir darf nicht / sein")
@@ -7824,7 +7943,7 @@ async def backup_status():
     """Backup-Status abrufen"""
     try:
         # Prüfe installierte Backup-Tools
-        return {
+        data = {
             "rsync": {
                 "installed": check_installed("rsync"),
             },
@@ -7836,8 +7955,24 @@ async def backup_status():
             },
             "backups": [],
         }
+        return {
+            "status": "success",
+            "api_status": "ok",
+            "message": "",
+            "data": data,
+            **data,
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Fehler beim Lesen des Backup-Status: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "api_status": "error",
+                "message": str(e),
+                "data": {},
+            },
+        )
 
 
 # -------------------- Backup Settings + Scheduling --------------------
@@ -10717,31 +10852,70 @@ async def list_backups(backup_dir: str = "/mnt/backups"):
 
 @app.post("/api/backup/verify")
 async def verify_backup(request: Request):
-    """Verifiziert ein Backup-Archiv (prüft Integrität und zeigt Inhalt)"""
+    """Verifiziert ein Backup-Archiv. Unterstützt Basis- und Tiefenprüfung (für verschlüsselte Backups)."""
     try:
         data = await request.json()
     except Exception:
         data = {}
-    
+
     backup_file = (data.get("backup_file") or "").strip()
+    mode = (data.get("mode") or "basic").strip().lower()
+    encryption_key = data.get("encryption_key") or None
+
+    if mode not in ("basic", "deep"):
+        mode = "basic"
+
     if not backup_file:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "backup_file erforderlich"})
-    
-    # Sicherheitsprüfung: Pfad-Validierung
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "api_status": "error",
+                "message": "backup_file erforderlich",
+                "data": {},
+            },
+        )
+
+    # Sicherheitsprüfung: Pfad-Validierung (realpath + Allowlist)
     try:
-        bf = Path(backup_file).resolve()
-        allowed_roots = [Path("/mnt").resolve(), Path("/media").resolve(), Path("/run/media").resolve(), Path("/home").resolve()]
-        if not any(str(bf).startswith(str(r) + "/") or bf == r for r in allowed_roots):
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei liegt außerhalb erlaubter Pfade"})
+        bf = _normalize_path(backup_file)
+        if not _is_under_allowed_root(bf):
+            logger.warning("Backup-Verify blockiert: Pfad außerhalb erlaubter Wurzeln", extra={"action": "backup_verify", "path": str(bf)})
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
+                    "data": {},
+                },
+            )
     except Exception as e:
-        return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiger Pfad: {str(e)}"})
-    
-    if not Path(backup_file).exists():
-        return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei existiert nicht"})
-    
+        logger.warning("Backup-Verify blockiert: ungültiger Pfad", extra={"action": "backup_verify", "error": str(e)})
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "api_status": "error",
+                "message": f"Ungültiger Pfad: {str(e)}",
+                "data": {},
+            },
+        )
+
+    if not bf.exists():
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "api_status": "error",
+                "message": "Backup-Datei existiert nicht",
+                "data": {},
+            },
+        )
+
     # Prüfe, ob verschlüsselt
     is_encrypted = backup_file.endswith('.gpg') or backup_file.endswith('.enc') or '.tar.gz.gpg' in backup_file or '.tar.gz.enc' in backup_file
-    
+
     results = {
         "file": backup_file,
         "exists": True,
@@ -10751,59 +10925,190 @@ async def verify_backup(request: Request):
         "size_human": "",
         "file_count": 0,
         "sample_files": [],
-        "error": None
+        "error": None,
+        "verification_mode": mode,
     }
-    
+
     try:
         st = Path(backup_file).stat()
         results["size_bytes"] = st.st_size
-        
+
         def human(n: int) -> str:
             for unit in ["B", "KB", "MB", "GB", "TB"]:
                 if n < 1024:
                     return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
                 n /= 1024
             return f"{n:.1f} TB"
+
         results["size_human"] = human(st.st_size)
     except Exception as e:
         results["error"] = f"Fehler beim Lesen der Dateigröße: {str(e)}"
-        return {"status": "success", "results": results}
-    
-    # Wenn verschlüsselt, können wir nur die Dateigröße prüfen
-    if is_encrypted:
+        # Logging gemäß Audit-Regeln – keine Credentials
+        logger.error("Backup-Verify fehlgeschlagen (Dateigröße)", extra={"action": "backup_verify", "path": backup_file, "error": str(e)})
+        return {
+            "status": "success",
+            "api_status": "error",
+            "message": "Fehler beim Lesen der Dateigröße",
+            "data": {"results": results},
+            "results": results,
+        }
+
+    # Basisprüfung für verschlüsselte Backups (ohne Schlüssel)
+    if is_encrypted and mode == "basic":
         results["valid"] = results["size_bytes"] > 0
         if results["valid"]:
-            results["error"] = None  # Kein Fehler, nur Info
+            results["error"] = "Nur Basisprüfung: Datei existiert und ist > 0 Bytes, Inhalt wurde nicht entschlüsselt."
+            api_status = "ok"
+            msg = "Backup oberflächlich geprüft (verschlüsselt, nur Größen-Check)."
         else:
             results["error"] = "Verschlüsselte Backup-Datei ist leer oder nicht gefunden"
-        return {"status": "success", "results": results}
-    
-    # Verifizierung: tar -tzf listet den Inhalt (prüft Integrität)
+            api_status = "error"
+            msg = "Verschlüsseltes Backup scheint leer oder defekt."
+
+        logger.info(
+            "Backup-Verify (basic, encrypted)",
+            extra={"action": "backup_verify", "path": backup_file, "mode": mode, "valid": bool(results["valid"])},
+        )
+        return {
+            "status": "success",
+            "api_status": api_status,
+            "message": msg,
+            "data": {"results": results},
+            "results": results,
+        }
+
+    # Tiefenprüfung für verschlüsselte Backups
+    if is_encrypted and mode == "deep":
+        try:
+            module = _get_backup_module()
+        except Exception as e:
+            results["error"] = f"Backup-Modul konnte nicht geladen werden: {str(e)}"
+            logger.error("Backup-Verify tief fehlgeschlagen (BackupModule)", extra={"action": "backup_verify", "path": backup_file, "error": str(e)})
+            return {
+                "status": "success",
+                "api_status": "error",
+                "message": "Backup-Modul konnte nicht geladen werden",
+                "data": {"results": results},
+                "results": results,
+            }
+
+        # Temporäres Verzeichnis für Entschlüsselung
+        tmp_root = Path("/tmp/pi-installer-backup-verify")
+        tmp_root.mkdir(parents=True, exist_ok=True)
+        tmp_dir = tempfile.mkdtemp(prefix="verify-", dir=str(tmp_root))
+        tmp_dir_path = Path(tmp_dir)
+        decrypted_path = tmp_dir_path / "decrypted.tar.gz"
+
+        try:
+            ok, out_file, err = module.decrypt_backup(
+                encrypted_file=backup_file,
+                encryption_key=encryption_key,
+                encryption_method="gpg" if backup_file.endswith(".gpg") or ".gpg" in backup_file else "openssl",
+                output_file=str(decrypted_path),
+                sudo_password="",
+            )
+            if not ok:
+                results["error"] = f"Entschlüsselung fehlgeschlagen: {err or 'Unbekannter Fehler'}"
+                logger.warning("Backup-Verify tief: Entschlüsselung fehlgeschlagen", extra={"action": "backup_verify", "path": backup_file})
+                return {
+                    "status": "success",
+                    "api_status": "error",
+                    "message": "Entschlüsselung des Backups fehlgeschlagen",
+                    "data": {"results": results},
+                    "results": results,
+                }
+
+            if not decrypted_path.exists():
+                results["error"] = "Entschlüsselte Datei wurde nicht erstellt"
+                logger.error("Backup-Verify tief: entschlüsselte Datei fehlt", extra={"action": "backup_verify", "path": backup_file})
+                return {
+                    "status": "success",
+                    "api_status": "error",
+                    "message": "Entschlüsselte Datei wurde nicht erstellt",
+                    "data": {"results": results},
+                    "results": results,
+                }
+
+            # Integritätsprüfung auf entschlüsselter Datei
+            cmd = f"tar -tzf {shlex.quote(str(decrypted_path))} 2>&1 | head -100"
+            res = await run_command_async(cmd, timeout=60)
+
+            if res.get("success") and res.get("stdout"):
+                results["valid"] = True
+                files = [line.strip() for line in res.get("stdout", "").split("\n") if line.strip()]
+                results["file_count"] = len(files)
+                results["sample_files"] = files[:20]
+            else:
+                results["valid"] = False
+                error_msg = res.get("stderr") or res.get("error") or "Unbekannter Fehler"
+                results["error"] = f"Backup-Archiv ist beschädigt oder ungültig: {error_msg[:200]}"
+
+            logger.info(
+                "Backup-Verify tief abgeschlossen",
+                extra={"action": "backup_verify", "path": backup_file, "mode": mode, "valid": bool(results["valid"]), "files": results.get("file_count")},
+            )
+            api_status = "ok" if results["valid"] else "error"
+            msg = "Backup erfolgreich tief geprüft" if results["valid"] else "Backup-Archiv ist beschädigt oder ungültig"
+            return {
+                "status": "success",
+                "api_status": api_status,
+                "message": msg,
+                "data": {"results": results},
+                "results": results,
+            }
+        finally:
+            # Cleanup: entschlüsselte Datei und Temp-Verzeichnis entfernen
+            try:
+                if decrypted_path.exists():
+                    decrypted_path.unlink()
+            except Exception:
+                pass
+            try:
+                # Entferne gesamtes temp-Verzeichnis
+                import shutil
+
+                if tmp_dir_path.exists():
+                    shutil.rmtree(tmp_dir_path, ignore_errors=True)
+            except Exception:
+                pass
+
+    # Unverschlüsselte Backups (oder deep ohne is_encrypted)
     cmd = f"tar -tzf {shlex.quote(backup_file)} 2>&1 | head -100"
     res = await run_command_async(cmd, timeout=60)
-    
+
     if res.get("success") and res.get("stdout"):
         results["valid"] = True
         files = [line.strip() for line in res.get("stdout", "").split("\n") if line.strip()]
         results["file_count"] = len(files)
-        results["sample_files"] = files[:20]  # Erste 20 Dateien als Beispiel
-        
+        results["sample_files"] = files[:20]
+
         # Zähle alle Dateien (kann bei großen Archiven langsam sein)
         if results["file_count"] < 100:
-            # Kleines Archiv, zähle alle
             cmd_count = f"tar -tzf {shlex.quote(backup_file)} 2>/dev/null | wc -l"
             res_count = await run_command_async(cmd_count, timeout=30)
             if res_count.get("success"):
                 try:
-                    results["file_count"] = int(res_count.get("stdout", "0").strip())
+                    results["file_count"] = int(res_count.get("stdout", '0').strip())
                 except Exception:
                     pass
     else:
         results["valid"] = False
         error_msg = res.get("stderr") or res.get("error") or "Unbekannter Fehler"
         results["error"] = f"Backup-Archiv ist beschädigt oder ungültig: {error_msg[:200]}"
-    
-    return {"status": "success", "results": results}
+
+    logger.info(
+        "Backup-Verify abgeschlossen",
+        extra={"action": "backup_verify", "path": backup_file, "mode": mode, "valid": bool(results["valid"]), "files": results.get("file_count")},
+    )
+    api_status = "ok" if results["valid"] else "error"
+    msg = "Backup erfolgreich geprüft" if results["valid"] else "Backup-Archiv ist beschädigt oder ungültig"
+    return {
+        "status": "success",
+        "api_status": api_status,
+        "message": msg,
+        "data": {"results": results},
+        "results": results,
+    }
 
 
 @app.post("/api/backup/delete")
@@ -10819,23 +11124,56 @@ async def delete_backup(request: Request):
 
     # Erlaube auch verschlüsselte Backups (.tar.gz.gpg, .tar.gz.enc)
     if not backup_file or not (backup_file.endswith(".tar.gz") or backup_file.endswith(".tar.gz.gpg") or backup_file.endswith(".tar.gz.enc")):
-        return JSONResponse(status_code=200, content={"status": "error", "message": "backup_file (.tar.gz, .tar.gz.gpg oder .tar.gz.enc) erforderlich"})
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "api_status": "error",
+                "message": "backup_file (.tar.gz, .tar.gz.gpg oder .tar.gz.enc) erforderlich",
+                "data": {},
+            },
+        )
 
-    # Allowlist path roots
+    # Allowlist + Normalisierung
     try:
-        bf = Path(backup_file).resolve()
-        allowed_roots = [Path("/mnt").resolve(), Path("/media").resolve(), Path("/run/media").resolve(), Path("/home").resolve()]
-        if not any(str(bf).startswith(str(r) + "/") or bf == r for r in allowed_roots):
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei liegt außerhalb erlaubter Pfade"})
-    except Exception:
-        pass
+        bf = _normalize_path(backup_file)
+        if not _is_under_allowed_root(bf):
+            logger.warning("Backup-Delete blockiert: Pfad außerhalb erlaubter Wurzeln", extra={"action": "backup_delete", "path": str(bf)})
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
+                    "data": {},
+                },
+            )
+    except Exception as e:
+        logger.warning("Backup-Delete blockiert: ungültiger Pfad", extra={"action": "backup_delete", "path": backup_file, "error": str(e)})
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "api_status": "error",
+                "message": f"Ungültiger Pfad: {str(e)}",
+                "data": {},
+            },
+        )
 
     # Prüfe ob Datei existiert
-    if not Path(backup_file).exists():
-        return JSONResponse(status_code=200, content={"status": "error", "message": "Backup-Datei existiert nicht"})
+    if not bf.exists():
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "api_status": "error",
+                "message": "Backup-Datei existiert nicht",
+                "data": {},
+            },
+        )
 
     # Versuche zuerst ohne sudo zu löschen
-    cmd = f"rm -f {shlex.quote(backup_file)}"
+    cmd = f"rm -f {shlex.quote(str(bf))}"
     res = await run_command_async(cmd, sudo=False, timeout=30)
     
     # Wenn fehlgeschlagen und sudo verfügbar, versuche mit sudo
@@ -10849,7 +11187,7 @@ async def delete_backup(request: Request):
                 res = res_sudo_n
 
     # verify gone
-    test = await run_command_async(f"test -e {shlex.quote(backup_file)}", timeout=10)
+    test = await run_command_async(f"test -e {shlex.quote(str(bf))}", timeout=10)
     if test.get("success"):
         # Datei existiert noch - sammle Fehlerdetails
         error_parts = []
@@ -10873,80 +11211,295 @@ async def delete_backup(request: Request):
         else:
             error_message += " Möglicherweise fehlen Berechtigungen oder die Datei ist gesperrt."
         
+        logger.error(
+            "Backup-Delete fehlgeschlagen",
+            extra={"action": "backup_delete", "path": str(bf), "error": error_message},
+        )
         return JSONResponse(
             status_code=200,
             content={
                 "status": "error",
+                "api_status": "error",
                 "message": error_message,
-                "stderr": (res.get("stderr") or res.get("error") or "").strip()[:500],
+                "data": {},
             },
         )
     
     # Erfolgreich gelöscht
-    return {"status": "success", "message": "Backup gelöscht"}
+    logger.info("Backup gelöscht", extra={"action": "backup_delete", "path": str(bf)})
+    return {
+        "status": "success",
+        "api_status": "ok",
+        "message": "Backup gelöscht",
+        "data": {},
+    }
 
-    return {"status": "success", "message": "Backup gelöscht"}
+RESTORE_PREVIEW_BASE = Path("/tmp/setuphelfer-restore-test")
+ROOT_RESTORE_ALLOWED_PREFIXES = ["/home", "/mnt/setuphelfer"]
+ROOT_RESTORE_BLOCKED_PREFIXES = ["/etc", "/usr", "/bin", "/sbin", "/lib", "/lib64", "/boot", "/dev", "/proc", "/sys", "/run", "/var"]
+
+
+def _analyze_tar_members(backup_file: str) -> dict:
+    """
+    Analysiert ein tar.gz-Archiv:
+    - zählt Dateien/Verzeichnisse
+    - sammelt problematische Einträge (Traversal, absolute Pfade, Symlinks, Hardlinks, Sonderdateien)
+    """
+    import tarfile
+
+    info = {
+        "total_files": 0,
+        "total_dirs": 0,
+        "total_other": 0,
+        "blocked_entries": [],
+        "system_like_entries": [],
+    }
+
+    def is_blocked_path(name: str) -> bool:
+        if name.startswith("../") or "/../" in name or name.startswith("/"):
+            return True
+        return False
+
+    def is_system_like(name: str) -> bool:
+        n = "/" + name.lstrip("/")
+        return any(n.startswith(p + "/") or n == p for p in ROOT_RESTORE_ALLOWED_PREFIXES + ROOT_RESTORE_BLOCKED_PREFIXES)
+
+    with tarfile.open(backup_file, "r:gz") as tf:
+        for member in tf.getmembers():
+            name = member.name or ""
+            if member.isdir():
+                info["total_dirs"] += 1
+            elif member.isfile():
+                info["total_files"] += 1
+            else:
+                info["total_other"] += 1
+
+            if is_system_like(name):
+                info["system_like_entries"].append(name)
+
+            if is_blocked_path(name) or member.issym() or member.islnk() or (member.isdev() if hasattr(member, "isdev") else False):
+                info["blocked_entries"].append(name)
+
+    return info
+
 
 @app.post("/api/backup/restore")
 async def restore_backup(request: Request):
-    """Backup wiederherstellen"""
+    """
+    Backup wiederherstellen.
+    Phase 1: Standard = Preview-Mode (sicherer Test-Restore nach /mnt/setuphelfer-restore-preview/<ts>).
+    Root-Restore bleibt vorerst gesperrt, bis Whitelist-Logik vollständig getestet ist.
+    """
     try:
         try:
             data = await request.json()
-        except:
+        except Exception:
             data = {}
-        
+
         sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        backup_file = data.get("backup_file", "")
-        
+        backup_file = (data.get("backup_file") or "").strip()
+        mode = (data.get("mode") or "preview").strip().lower()
+
+        if mode not in ("preview", "root", "dry-run"):
+            mode = "preview"
+
         if not backup_file:
             return JSONResponse(
                 status_code=200,
                 content={
                     "status": "error",
-                    "message": "Backup-Datei erforderlich"
-                }
+                    "api_status": "error",
+                    "message": "Backup-Datei erforderlich",
+                    "data": {},
+                },
             )
-        
-        if not sudo_password:
-            sudo_test = run_command("sudo -n true", sudo=False)
-            if not sudo_test["success"]:
+
+        # Pfad-Validierung wie bei verify (realpath + Allowlist)
+        try:
+            bf = _normalize_path(backup_file)
+            if not _is_under_allowed_root(bf):
+                logger.warning("Restore blockiert: Backup-Datei außerhalb erlaubter Pfade", extra={"action": "backup_restore", "path": str(bf)})
                 return JSONResponse(
                     status_code=200,
                     content={
                         "status": "error",
-                        "message": "Sudo-Passwort erforderlich",
-                        "requires_sudo_password": True
-                    }
+                        "api_status": "error",
+                        "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
+                        "data": {},
+                    },
                 )
-        
-        # Warnung: Restore ist gefährlich!
-        # Extrahiere Backup
-        restore_cmd = f"tar -xzf {backup_file} -C /"
-        restore_result = await run_command_async(restore_cmd, sudo=True, sudo_password=sudo_password, timeout=7200)
-        
-        if restore_result["success"]:
-            return {
-                "status": "success",
-                "message": f"Backup {backup_file} wiederhergestellt",
-                "warning": "System-Neustart empfohlen"
-            }
-        else:
+        except Exception as e:
+            logger.warning("Restore blockiert: ungültiger Backup-Pfad", extra={"action": "backup_restore", "path": backup_file, "error": str(e)})
             return JSONResponse(
                 status_code=200,
                 content={
                     "status": "error",
-                    "message": f"Restore fehlgeschlagen: {restore_result.get('stderr', 'Unbekannter Fehler')}"
-                }
+                    "api_status": "error",
+                    "message": f"Ungültiger Pfad: {str(e)}",
+                    "data": {},
+                },
             )
+
+        if not bf.exists():
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Backup-Datei existiert nicht",
+                    "data": {},
+                },
+            )
+
+        # Analyse des Archivs – gemeinsam für Preview/Root
+        try:
+            analysis = _analyze_tar_members(str(bf))
+        except Exception as e:
+            return JSONResponse(
+                status_code=200,
+                content={"status": "error", "message": f"Backup-Archiv konnte nicht analysiert werden: {str(e)}"},
+            )
+
+        if analysis["blocked_entries"]:
+            logger.warning(
+                "Restore blockiert: problematische Archiv-Einträge",
+                extra={
+                    "action": "backup_restore",
+                    "path": str(bf),
+                    "blocked_count": len(analysis.get("blocked_entries") or []),
+                },
+            )
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Backup-Archiv enthält problematische Einträge (Pfad-Traversal, Symlinks, Sonderdateien).",
+                    "data": {"analysis": analysis},
+                    "analysis": analysis,
+                },
+            )
+
+        # Dry-Run: nur Analyse & Pfadliste zurückgeben, keine Schreiboperation
+        if mode == "dry-run":
+            total_entries = analysis["total_files"] + analysis["total_dirs"] + analysis["total_other"]
+            logger.info(
+                "Backup-Restore Dry-Run",
+                extra={"action": "backup_restore_dry_run", "path": str(bf), "total_entries": total_entries},
+            )
+            return {
+                "status": "success",
+                "api_status": "ok",
+                "message": "Dry-Run erfolgreich – keine Änderungen geschrieben.",
+                "data": {
+                    "mode": "dry-run",
+                    "analysis": analysis,
+                    "total_entries": total_entries,
+                    "backup_file": str(bf),
+                },
+            }
+
+        # Preview-Modus: sicherer Test-Restore in eigenes Verzeichnis (Sandbox)
+        if mode == "preview":
+            if not sudo_password:
+                sudo_test = run_command("sudo -n true", sudo=False)
+                if not sudo_test["success"]:
+                    return JSONResponse(
+                        status_code=200,
+                        content={
+                            "status": "error",
+                            "message": "Sudo-Passwort erforderlich",
+                            "requires_sudo_password": True,
+                        },
+                    )
+
+            ts = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+            RESTORE_PREVIEW_BASE.mkdir(parents=True, exist_ok=True)
+            preview_dir = RESTORE_PREVIEW_BASE / ts
+            preview_dir.mkdir(parents=True, exist_ok=True)
+
+            restore_cmd = f"tar -xzf {shlex.quote(str(bf))} -C {shlex.quote(str(preview_dir))}"
+            # Sandbox liegt unter /tmp/setuphelfer-restore-test – hier ist kein sudo erforderlich
+            restore_result = await run_command_async(restore_cmd, sudo=False, sudo_password=None, timeout=7200)
+
+            if not restore_result.get("success"):
+                logger.error(
+                    "Preview-Restore fehlgeschlagen",
+                    extra={
+                        "action": "backup_restore_preview",
+                        "path": str(bf),
+                        "preview_dir": str(preview_dir),
+                        "error": (restore_result.get("stderr") or restore_result.get("error") or "")[:200],
+                    },
+                )
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "status": "error",
+                        "api_status": "error",
+                        "message": f"Preview-Restore fehlgeschlagen: {restore_result.get('stderr', 'Unbekannter Fehler')[:200]}",
+                        "data": {
+                            "preview_dir": str(preview_dir),
+                            "analysis": analysis,
+                        },
+                        "preview_dir": str(preview_dir),
+                        "analysis": analysis,
+                    },
+                )
+
+            # Metadaten für Preview-Antwort
+            total_entries = analysis["total_files"] + analysis["total_dirs"] + analysis["total_other"]
+            logger.info(
+                "Preview-Restore erfolgreich",
+                extra={
+                    "action": "backup_restore_preview",
+                    "path": str(bf),
+                    "preview_dir": str(preview_dir),
+                    "total_entries": total_entries,
+                },
+            )
+            return {
+                "status": "success",
+                "api_status": "ok",
+                "mode": "preview",
+                "message": "Test-Restore erfolgreich. System wurde nicht überschrieben.",
+                "preview_dir": str(preview_dir),
+                "analysis": analysis,
+                "total_entries": total_entries,
+                "data": {
+                    "mode": "preview",
+                    "preview_dir": str(preview_dir),
+                    "analysis": analysis,
+                    "total_entries": total_entries,
+                },
+            }
+
+        # Root-Modus: in dieser Phase weiterhin gesperrt (Feature-Gatekeeping)
+        logger.warning(
+            "Root-Restore blockiert (Gatekeeping aktiv)",
+            extra={"action": "backup_restore_root_blocked", "path": str(bf), "mode": mode},
+        )
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "api_status": "error",
+                "message": "Produktiver Root-Restore ist in dieser Phase gesperrt. Bitte nur Preview- oder Dry-Run-Modus verwenden.",
+                "mode": mode,
+                "analysis": analysis,
+                "data": {"mode": mode, "analysis": analysis},
+            },
+        )
     except Exception as e:
         logger.error(f"💥 Fehler bei Backup-Restore: {str(e)}", exc_info=True)
         return JSONResponse(
             status_code=200,
             content={
                 "status": "error",
-                "message": f"Fehler beim Restore: {str(e)}"
-            }
+                "api_status": "error",
+                "message": f"Fehler beim Restore: {str(e)}",
+                "data": {},
+            },
         )
 
 # AUDIT-FIXED (A-02): Doppelte Definition entfernt. Die erste verify_backup (weiter oben)
