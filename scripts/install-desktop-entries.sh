@@ -1,5 +1,5 @@
 #!/bin/bash
-# Legt Startmenü-Einträge (/.desktop) für den PI-Installer an, damit die App
+# Legt Startmenü-Einträge (/.desktop) für SetupHelfer an, damit die App
 # nach der Installation unter „Anwendungen“ / Startmenü erscheint.
 # Wird von install-system.sh und deploy-to-opt.sh aufgerufen.
 #
@@ -29,37 +29,38 @@ mkdir -p "$APPLICATIONS_DIR"
 ICON="$INSTALL_DIR/frontend/src-tauri/icons/icon.png"
 [ ! -f "$ICON" ] && ICON="utilities-terminal"
 
-# PI-Installer (Hauptstarter: Backend prüfen, dann Auswahl Tauri/Browser/Vite)
+# SetupHelfer (Hauptstarter: Backend prüfen, dann Auswahl Tauri/Browser/Nur Backend)
 DESKTOP_FILE="$APPLICATIONS_DIR/pi-installer.desktop"
 cat > "$DESKTOP_FILE" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=PI-Installer
-Comment=Konfigurations-Assistent für Raspberry Pi – Backend als Service, dann Auswahl (Tauri/Browser/Frontend)
+Name=SetupHelfer
+Comment=Backend prüfen, dann Auswahl: Tauri-App, Browser oder nur Backend (API)
 Exec=$INSTALL_DIR/scripts/start-pi-installer.sh
 Path=$INSTALL_DIR
 Icon=$ICON
 Terminal=true
-Categories=Development;System;Utility;
-Keywords=raspberry;pi;installer;admin;
+Categories=System;Settings;Utility;
+Keywords=setuphelfer;raspberry;pi;installer;linux;
+StartupWMClass=pi-installer
 EOF
 chmod 644 "$DESKTOP_FILE"
 
-# Optional: Direkt „Frontend im Browser öffnen“ für Nutzer, die nur die Oberfläche wollen
+# Optional: Weboberfläche direkt im Browser
 DESKTOP_FILE_BROWSER="$APPLICATIONS_DIR/pi-installer-browser.desktop"
 cat > "$DESKTOP_FILE_BROWSER" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=PI-Installer (im Browser)
-Comment=PI-Installer im Standard-Browser öffnen (Backend muss laufen)
+Name=SetupHelfer (Browser)
+Comment=Weboberfläche im Standard-Browser (Port 3001; Backend muss laufen)
 Exec=sh -c "xdg-open http://127.0.0.1:3001 2>/dev/null || sensible-browser http://127.0.0.1:3001"
 Path=$INSTALL_DIR
 Icon=$ICON
 Terminal=false
-Categories=Development;System;Utility;
-Keywords=raspberry;pi;installer;
+Categories=System;Settings;Utility;
+Keywords=setuphelfer;browser;pi;installer;
 EOF
 chmod 644 "$DESKTOP_FILE_BROWSER"
 
@@ -71,4 +72,4 @@ fi
 echo "Startmenü-Einträge angelegt:"
 echo "  $APPLICATIONS_DIR/pi-installer.desktop"
 echo "  $APPLICATIONS_DIR/pi-installer-browser.desktop"
-echo "  → PI-Installer erscheint unter Anwendungen / Startmenü."
+echo "  → SetupHelfer erscheint unter Anwendungen / Startmenü."

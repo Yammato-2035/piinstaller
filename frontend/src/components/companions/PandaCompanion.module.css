@@ -47,6 +47,30 @@
   margin-right: auto;
 }
 
+.pandaStack {
+  position: relative;
+  display: block;
+  width: 100%;
+  line-height: 0;
+}
+
+.pandaOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  display: block;
+}
+
+/* Entspricht grob dem viewBox-Zuschnitt von panda-only.svg auf dem 1025²-Logo */
+.pandaImgCropFromFullLogo {
+  object-fit: cover;
+  object-position: 51% 41%;
+}
+
 @media (min-width: 768px) {
   .pandaWrap {
     margin-left: 0;
@@ -59,6 +83,40 @@
   height: auto;
   object-fit: contain;
   display: block;
+}
+
+.assetMissing {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  border: 2px dashed #dc2626;
+  border-radius: 0.5rem;
+  background: rgba(254, 202, 202, 0.15);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #b91c1c;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.rootDark .assetMissing {
+  border-color: #f87171;
+  background: rgba(127, 29, 29, 0.25);
+  color: #fecaca;
+}
+
+.assetMissingCode {
+  font-family: ui-monospace, monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  word-break: break-all;
+  opacity: 0.95;
 }
 
 .textBlock {

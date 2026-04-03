@@ -7,6 +7,7 @@ import {
   Package, LayoutGrid, Radio, Image,
 } from 'lucide-react'
 import { usePlatform } from '../context/PlatformContext'
+import PageHeader from '../components/layout/PageHeader'
 import i18n from '../i18n'
 
 type SectionId =
@@ -73,21 +74,44 @@ function ScreenshotImg({ src, alt, title, hint }: { src?: string; alt: string; t
 }
 
 /** Ausschnitt eines Screenshots – zoomt auf einen Bereich (object-position: x% y%). */
-function ScreenshotDetail({ src, alt, title, position = '50% 50%', height = 220 }: {
-  src?: string; alt: string; title: string; position?: string; height?: number
+function ScreenshotDetail({
+  src,
+  alt,
+  title,
+  position = '50% 50%',
+  height = 220,
+  highlight,
+}: {
+  src?: string
+  alt: string
+  title: string
+  position?: string
+  height?: number
+  /** Farbig hervorgehobener Rahmen um den Ausschnitt (Arbeitsschritte). */
+  highlight?: 'sky' | 'amber' | 'emerald'
 }) {
   const [error, setError] = React.useState(false)
   if (!src || error) return null
+  const ring =
+    highlight === 'amber'
+      ? 'ring-2 ring-amber-400/95 ring-offset-2 ring-offset-slate-950 shadow-[0_0_0_1px_rgba(251,191,36,0.35)]'
+      : highlight === 'emerald'
+        ? 'ring-2 ring-emerald-400/95 ring-offset-2 ring-offset-slate-950 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]'
+        : highlight === 'sky'
+          ? 'ring-2 ring-sky-400/95 ring-offset-2 ring-offset-slate-950 shadow-[0_0_0_1px_rgba(56,189,248,0.35)]'
+          : ''
   return (
     <figure className="my-3">
-      <div className="rounded-lg border border-slate-600 overflow-hidden bg-slate-900" style={{ height }}>
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover"
-          style={{ objectPosition: position }}
-          onError={() => setError(true)}
-        />
+      <div className={`rounded-lg ${ring}`.trim()}>
+        <div className="rounded-lg border border-slate-600 overflow-hidden bg-slate-900" style={{ height }}>
+          <img
+            src={src}
+            alt={alt}
+            className="w-full h-full object-cover"
+            style={{ objectPosition: position }}
+            onError={() => setError(true)}
+          />
+        </div>
       </div>
       <figcaption className="text-xs text-slate-500 mt-1">{title}</figcaption>
     </figure>
@@ -98,6 +122,7 @@ const Documentation: React.FC = () => {
   const { t, i18n } = useTranslation()
   const [activeChapter, setActiveChapter] = useState<SectionId>('dashboard')
   const { systemLabel, systemLabelPossessive } = usePlatform()
+  const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '…'
   const sections = useMemo(
     () =>
       DOC_SECTION_ICONS.map((s) => ({
@@ -108,16 +133,23 @@ const Documentation: React.FC = () => {
   )
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="flex flex-col sm:flex-row gap-6 min-h-0"
-    >
-      {/* Menü links */}
-      <aside
-        className="w-full sm:w-56 flex-shrink-0 sm:sticky sm:top-8 sm:self-start rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-4"
-        aria-label={t('documentation.aria.chapters')}
+    <>
+      <PageHeader
+        visualStyle="tech-panel"
+        tone="docs"
+        title="Dokumentation"
+        subtitle="Hier findest du Schritt-für-Schritt-Hilfe und Referenzen für alle Bereiche."
+      />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col sm:flex-row gap-6 min-h-0"
       >
+        {/* Menü links */}
+        <aside
+          className="w-full sm:w-56 flex-shrink-0 sm:sticky sm:top-8 sm:self-start rounded-xl bg-slate-800/60 dark:bg-slate-800/60 border border-slate-600 dark:border-slate-600 p-4"
+          aria-label={t('documentation.aria.chapters')}
+        >
         <h2 className="text-sm font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">
           {t('documentation.sidebar.heading')}
         </h2>
@@ -138,13 +170,14 @@ const Documentation: React.FC = () => {
             </button>
           ))}
         </nav>
-      </aside>
+        </aside>
 
-      {/* Inhalt: nur aktives Kapitel */}
-      <div className="flex-1 min-w-0">
-        <div className="mb-4 p-3 bg-sky-900/20 border border-sky-700/40 rounded-lg">
-          <p className="text-sm text-slate-300">
-            <strong className="text-sky-300">{t('documentation.intro.handbook')}</strong> – {t('documentation.intro.lead')}
+        {/* Inhalt: nur aktives Kapitel */}
+        <div className="flex-1 min-w-0">
+        <div className="mb-4 p-3 rounded-lg border border-sky-600/35 bg-sky-100/90 text-slate-900 dark:border-sky-600/45 dark:bg-sky-950/50 dark:text-slate-100">
+          <p className="text-sm leading-relaxed">
+            <strong className="text-sky-800 dark:text-sky-200">{t('documentation.intro.handbook')}</strong>
+            <span className="text-slate-800 dark:text-slate-200"> – {t('documentation.intro.lead')}</span>
           </p>
         </div>
         {i18n.language.startsWith('en') && (
@@ -179,10 +212,26 @@ const Documentation: React.FC = () => {
                     <li>Bei „Backend nicht erreichbar“: Backend automatisch starten mit <code className="bg-slate-700 px-1 rounded">./scripts/install-backend-service.sh</code> (richtet systemd-Service ein) oder einmalig <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
                   </ol>
                 </div>
-                {/* AUDIT-FIXED (A-04): Verzeichnis public/docs/screenshots/ angelegt; UI zeigt Platzhalter bei fehlenden Bildern. */}
-                <ScreenshotImg src="/docs/screenshots/screenshot-dashboard.png" alt="Dashboard" title="Dashboard mit Systeminfos und Karten" hint="Zeigt Karten Systeminformationen, CPU & Grafik, Sensoren." />
+                <div className="p-3 bg-emerald-950/25 border border-emerald-600/40 rounded-lg">
+                  <h4 className="text-sm font-semibold text-emerald-300 mb-1">🐼 Wissensbasis: Einsteiger, Begleiter, Fortgeschrittene</h4>
+                  <ul className="list-disc list-inside text-xs space-y-1 text-slate-300">
+                    <li><strong>Erfahrungslevel:</strong> In <strong>Einstellungen</strong> zwischen Einsteiger, Fortgeschritten und Entwickler wählen – Navigation und Hinweise passen sich an (Profil wird über die API gespeichert).</li>
+                    <li><strong>Panda-Begleiter:</strong> Kontext-Hilfen u. a. auf Dashboard, Backup und App Store; Illustrationen unter <code className="bg-slate-700 px-1 rounded">frontend/src/assets/pandas/</code>.</li>
+                    <li><strong>Geführte Bereiche:</strong> Dashboard mit „Nächster sinnvoller Schritt“, App Store mit empfohlenen Apps, Backup mit drei klaren Einstiegen; Badges für „Später“ / „Fortgeschritten“ / gesperrte Bereiche.</li>
+                    <li>Ausführlich im Repo: <code className="bg-slate-700 px-1 rounded">docs/user/GUIDED_UX_AND_COMPANION.md</code></li>
+                  </ul>
+                </div>
+                {/* Screenshots: doc-*.png via npm run screenshots:docs; Platzhalter wenn Datei fehlt. */}
+                <ScreenshotImg src="/docs/screenshots/doc-dashboard.png" alt="Dashboard" title="Dashboard mit Systeminfos und Karten" hint="Zeigt Karten Systeminformationen, CPU & Grafik, Sensoren." />
                 <h4 className="text-base font-semibold text-white">Ausschnitt: Quick-Links</h4>
-                <ScreenshotDetail src="/docs/screenshots/screenshot-dashboard.png" alt="Quick-Links" title="Quick-Links für schnelle Navigation" position="50% 85%" height={140} />
+                <ScreenshotDetail
+                  src="/docs/screenshots/doc-dashboard.png"
+                  alt="Quick-Links"
+                  title="Quick-Links für schnelle Navigation"
+                  position="50% 85%"
+                  height={140}
+                  highlight="sky"
+                />
                 <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
@@ -193,7 +242,7 @@ const Documentation: React.FC = () => {
                     <li><strong>Quick-Links:</strong> Sprung zu Assistent, Sicherheit, Musikbox, Backup, Einstellungen usw.</li>
                   </ul>
                 </div>
-                <ScreenshotImg src="/docs/screenshots/screenshot-dashboard.png" alt="Dashboard" title="Dashboard mit Systeminfos und Karten" hint="Zeigt Karten Systeminformationen, CPU & Grafik, Sensoren." />
+                <ScreenshotImg src="/docs/screenshots/doc-dashboard.png" alt="Dashboard" title="Dashboard mit Systeminfos und Karten" hint="Zeigt Karten Systeminformationen, CPU & Grafik, Sensoren." />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
                   <p className="text-xs opacity-95">
@@ -230,9 +279,16 @@ const Documentation: React.FC = () => {
                     <li>Fortschrittsanzeige abwarten; danach Bereiche einzeln nachjustieren</li>
                   </ol>
                 </div>
-                <ScreenshotImg src="/docs/screenshots/screenshot-wizard.png" alt="Assistent – Auswahl der Komponenten" title="Assistent – Auswahl der Komponenten" />
+                <ScreenshotImg src="/docs/screenshots/doc-wizard.png" alt="Assistent – Auswahl der Komponenten" title="Assistent – Auswahl der Komponenten" />
                 <h4 className="text-base font-semibold text-white">Ausschnitt: Bereichsauswahl</h4>
-                <ScreenshotDetail src="/docs/screenshots/screenshot-wizard.png" alt="Assistent Checkboxen" title="Checkboxen für Sicherheit, Benutzer, Webserver usw." position="50% 35%" height={200} />
+                <ScreenshotDetail
+                  src="/docs/screenshots/doc-wizard.png"
+                  alt="Assistent Checkboxen"
+                  title="Checkboxen für Sicherheit, Benutzer, Webserver usw."
+                  position="50% 35%"
+                  height={200}
+                  highlight="emerald"
+                />
                 <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
@@ -241,7 +297,7 @@ const Documentation: React.FC = () => {
                     <li>Bei Bedarf Abfrage des Sudo-Passworts für Administrator-Aktionen</li>
                   </ul>
                 </div>
-                <ScreenshotImg src="/docs/screenshots/screenshot-wizard.png" alt="Assistent – Auswahl der Komponenten" title="Assistent – Auswahl der Komponenten" />
+                <ScreenshotImg src="/docs/screenshots/doc-wizard.png" alt="Assistent – Auswahl der Komponenten" title="Assistent – Auswahl der Komponenten" />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
                   <p className="text-xs opacity-95">
@@ -275,7 +331,7 @@ const Documentation: React.FC = () => {
                   <li>Ein Klick startet die Konfiguration für alle ausgewählten Bereiche</li>
                   <li>Sudo-Passwort wird bei Bedarf abgefragt</li>
                 </ul>
-                <ScreenshotImg src="/docs/screenshots/screenshot-presets.png" alt="Voreinstellungen" title="Voreinstellungen – Presets und Module" />
+                <ScreenshotImg src="/docs/screenshots/doc-presets.png" alt="Voreinstellungen" title="Voreinstellungen – Presets und Module" />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
                   <p className="text-xs opacity-95">
@@ -292,7 +348,7 @@ const Documentation: React.FC = () => {
               <div className="space-y-4 text-slate-300 text-sm">
                 <p>Konfiguration von Firewall, Benutzer-Sicherheit und optional Sicherheits-Scans.</p>
                 <h3 className="text-lg font-semibold text-white">Kapitel 1: Überblick</h3>
-                <ScreenshotImg src="/docs/screenshots/screenshot-security.png" alt="Sicherheit" title="Sicherheit – Firewall und Konfiguration" />
+                <ScreenshotImg src="/docs/screenshots/doc-security.png" alt="Sicherheit" title="Sicherheit – Firewall und Konfiguration" />
                 <h3 className="text-lg font-semibold text-white mt-4">Funktionen</h3>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li><strong>Firewall:</strong> Regeln anzeigen, hinzufügen, löschen; Firewall aktivieren/deaktivieren (sudo erforderlich)</li>
@@ -301,7 +357,14 @@ const Documentation: React.FC = () => {
                   <li><strong>Sicherheits-Scan:</strong> Optionaler Scan (z. B. offene Ports, Dienste)</li>
                 </ul>
                 <h4 className="text-base font-semibold text-white mt-3">Ausschnitt: Firewall-Bereich</h4>
-                <ScreenshotDetail src="/docs/screenshots/screenshot-security.png" alt="Firewall-Regeln" title="Firewall-Status und Regeln" position="50% 20%" height={180} />
+                <ScreenshotDetail
+                  src="/docs/screenshots/doc-security.png"
+                  alt="Firewall-Regeln"
+                  title="Firewall-Status und Regeln"
+                  position="50% 20%"
+                  height={180}
+                  highlight="amber"
+                />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
                   <p className="text-xs">Beim ersten Aktivieren der Firewall wird das Sudo-Passwort abgefragt (Modal). „Ohne Prüfung speichern“ speichert es für die Session – danach funktionieren weitere sudo-Aktionen ohne erneute Eingabe.</p>
@@ -315,7 +378,7 @@ const Documentation: React.FC = () => {
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Users className="text-sky-500" /> Benutzer</h2>
               <div className="space-y-4 text-slate-300 text-sm">
                 <p>Benutzerkonten werden in zwei Bereiche getrennt: <strong>Systembenutzer/Dienste</strong> (UID &lt; 1000) und <strong>Benutzer (Personen)</strong> (UID ≥ 1000). Nur letztere können hier angelegt oder gelöscht werden.</p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-users.png" alt="Benutzer" title="Benutzer – Systembenutzer und Personen" />
+                <ScreenshotImg src="/docs/screenshots/doc-users.png" alt="Benutzer" title="Benutzer – Systembenutzer und Personen" />
                 <h3 className="text-lg font-semibold text-white">Funktionen</h3>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li><strong>Systembenutzer / Dienste:</strong> Nur Anzeige (z. B. root, www-data, _apt). UID &lt; 1000 – nicht löschen oder ändern.</li>
@@ -323,7 +386,7 @@ const Documentation: React.FC = () => {
                   <li><strong>Rollen:</strong> Administrator (sudo), Entwickler (Dev-Tools), Benutzer (normal), Gast (eingeschränkt). Weitere Rollen bei Bedarf manuell.</li>
                 </ul>
                 <h4 className="text-base font-semibold text-white mt-3">Ausschnitt: Benutzer anlegen</h4>
-                <ScreenshotDetail src="/docs/screenshots/screenshot-users.png" alt="Benutzer anlegen" title="Formular zum Anlegen neuer Benutzer" position="50% 70%" height={180} />
+                <ScreenshotDetail src="/docs/screenshots/doc-users.png" alt="Benutzer anlegen" title="Formular zum Anlegen neuer Benutzer" position="50% 70%" height={180} />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
                   <p className="text-xs">Vor dem Anlegen eines Benutzers Sudo-Passwort eingeben (wird bei Bedarf abgefragt). Rolle „Gast“ für eingeschränkte Zugriffe (z. B. nur Lesezugriff) nutzen.</p>
@@ -337,14 +400,14 @@ const Documentation: React.FC = () => {
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Code className="text-emerald-500" /> Dev-Umgebung</h2>
               <div className="space-y-4 text-slate-300 text-sm">
                 <p>Installation von Entwicklungsumgebungen und Sprachen (z. B. Python, Node, Rust, Tauri, C/C++, QT/QML).</p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-devenv.png" alt="Dev-Umgebung" title="Dev-Umgebung – Sprachen und Tools" />
+                <ScreenshotImg src="/docs/screenshots/doc-devenv.png" alt="Dev-Umgebung" title="Dev-Umgebung – Sprachen und Tools" />
                 <h3 className="text-lg font-semibold text-white">Funktionen</h3>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Status-Anzeige: welche Tools installiert sind</li>
                   <li>Auswahl der zu installierenden Komponenten und Start der Installation (sudo erforderlich)</li>
                 </ul>
                 <h4 className="text-base font-semibold text-white mt-3">Ausschnitt: Auswahl der Komponenten</h4>
-                <ScreenshotDetail src="/docs/screenshots/screenshot-devenv.png" alt="Dev-Komponenten" title="Checkboxen für Python, Node, Rust, Tauri usw." position="50% 40%" height={160} />
+                <ScreenshotDetail src="/docs/screenshots/doc-devenv.png" alt="Dev-Komponenten" title="Checkboxen für Python, Node, Rust, Tauri usw." position="50% 40%" height={160} />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
                   <p className="text-xs">Für SetupHelfer-Entwicklung: Rust und Tauri installieren, dann im frontend-Ordner <code className="bg-slate-700 px-1 rounded">npm run tauri:dev</code> ausführen.</p>
@@ -358,7 +421,7 @@ const Documentation: React.FC = () => {
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Globe className="text-green-500" /> Webserver</h2>
               <div className="space-y-4 text-slate-300 text-sm">
                 <p>Webserver (z. B. nginx, Apache) einrichten und konfigurieren.</p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-webserver.png" alt="Webserver" title="Webserver – Status und Konfiguration" />
+                <ScreenshotImg src="/docs/screenshots/doc-webserver.png" alt="Webserver" title="Webserver – Status und Konfiguration" />
                 <h3 className="text-lg font-semibold text-white">Funktionen</h3>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Status: ob Webserver installiert/läuft</li>
@@ -377,7 +440,7 @@ const Documentation: React.FC = () => {
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Mail className="text-amber-500" /> Mailserver</h2>
               <div className="space-y-4 text-slate-300 text-sm">
                 <p>E-Mail-Server konfigurieren (z. B. für lokale Mails oder Relay).</p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-mailserver.png" alt="Mailserver" title="Mailserver – Konfiguration" />
+                <ScreenshotImg src="/docs/screenshots/doc-mailserver.png" alt="Mailserver" title="Mailserver – Konfiguration" />
                 <h3 className="text-lg font-semibold text-white">Funktionen</h3>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Konfiguration eingeben und speichern</li>
@@ -396,7 +459,7 @@ const Documentation: React.FC = () => {
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><HardDrive className="text-blue-500" /> NAS</h2>
               <div className="space-y-4 text-slate-300 text-sm">
                 <p>Network Attached Storage einrichten – Freigaben und Speicher für das Netzwerk.</p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-nas.png" alt="NAS" title="NAS – Freigaben und Duplikate" />
+                <ScreenshotImg src="/docs/screenshots/doc-nas.png" alt="NAS" title="NAS – Freigaben und Duplikate" />
                 <h3 className="text-lg font-semibold text-white">Funktionen</h3>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Status: ob NAS-Dienste (z. B. Samba) installiert/laufen</li>
@@ -404,7 +467,7 @@ const Documentation: React.FC = () => {
                   <li><strong>Duplikate & Aufräumen:</strong> fdupes/jdupes installieren, Verzeichnis nach Duplikaten scannen, Duplikate in einen Backup-Ordner verschieben (statt zu löschen). Option: System-/Cache-Verzeichnisse (.cache, mesa_shader, __pycache__, node_modules, .git) ausschließen.</li>
                 </ul>
                 <h4 className="text-base font-semibold text-white mt-3">Ausschnitt: Duplikate & Aufräumen</h4>
-                <ScreenshotDetail src="/docs/screenshots/screenshot-nas.png" alt="NAS Duplikate" title="Duplikat-Finder: Scan-Pfad, Backup-Ziel, Optionen" position="50% 75%" height={180} />
+                <ScreenshotDetail src="/docs/screenshots/doc-nas.png" alt="NAS Duplikate" title="Duplikat-Finder: Scan-Pfad, Backup-Ziel, Optionen" position="50% 75%" height={180} />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
                   <p className="text-xs">Von anderen Rechnern im Netz: \\IP-des-Pi\Freigabe (Windows) bzw. smb://IP/Freigabe (Linux/macOS) nutzen.</p>
@@ -418,7 +481,7 @@ const Documentation: React.FC = () => {
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Home className="text-orange-500" /> Hausautomatisierung</h2>
               <div className="space-y-4 text-slate-300 text-sm">
                 <p>Systeme für Hausautomatisierung einrichten (z. B. Home Assistant, openHAB, FHEM).</p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-homeautomation.png" alt="Hausautomatisierung" title="Hausautomatisierung – Home Assistant, openHAB, FHEM" />
+                <ScreenshotImg src="/docs/screenshots/doc-homeautomation.png" alt="Hausautomatisierung" title="Hausautomatisierung – Home Assistant, openHAB, FHEM" />
                 <h3 className="text-lg font-semibold text-white">Funktionen</h3>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Status und Konfiguration</li>
@@ -450,9 +513,9 @@ const Documentation: React.FC = () => {
                   <li><strong>Mixer:</strong> <code className="bg-slate-700 px-1 rounded">pavucontrol</code> (PulseAudio) oder <code className="bg-slate-700 px-1 rounded">qpwgraph</code> (PipeWire) für Kanäle und Lautstärke.</li>
                   <li><strong>Dolby Atmos:</strong> Unter Linux herstellerspezifisch (z. B. Dolby Access für bestimmte Geräte); oft über externe Software oder Hardware. Für Mehrkanal/Atmos die jeweilige Herstellerdokumentation prüfen.</li>
                 </ul>
-                <ScreenshotImg src="/docs/screenshots/screenshot-musicbox.png" alt="Musikbox – Auswahl Server und Zusatzfeatures" title="Musikbox – Auswahl Server und Zusatzfeatures" />
+                <ScreenshotImg src="/docs/screenshots/doc-musicbox.png" alt="Musikbox – Auswahl Server und Zusatzfeatures" title="Musikbox – Auswahl Server und Zusatzfeatures" />
                 <h4 className="text-base font-semibold text-white mt-3">Ausschnitt: Music-Server Auswahl</h4>
-                <ScreenshotDetail src="/docs/screenshots/screenshot-musicbox.png" alt="Music-Server" title="Mopidy, Volumio, Plex – einer auswählen" position="50% 25%" height={160} />
+                <ScreenshotDetail src="/docs/screenshots/doc-musicbox.png" alt="Music-Server" title="Mopidy, Volumio, Plex – einer auswählen" position="50% 25%" height={160} />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
                   <p className="text-xs">Wenn „Sudo-Passwort erforderlich“ erscheint: Modal öffnet sich – Passwort eingeben und „Installation starten“ bestätigen. Spotify/Tidal benötigen eigenes Konto/Abo. Ausgabequelle (Headset/Lautsprecher) in den System-Sound-Einstellungen oder mit pavucontrol wählen.</p>
@@ -473,7 +536,7 @@ const Documentation: React.FC = () => {
                   <li><strong>Zugangsdaten:</strong> Werden im jeweiligen Dienst bzw. in der App verwaltet; zentrale Speicherung aus Sicherheitsgründen nicht vorgesehen</li>
                   <li><strong>Surround/Dolby:</strong> Mehrkanal-Audio über System-Sound (PulseAudio/PipeWire) und Ausgabegerät (z. B. HDMI für AV-Receiver)</li>
                 </ul>
-                <ScreenshotImg src="/docs/screenshots/screenshot-kino-streaming.png" alt="Kino / Streaming" title="Kino / Streaming – Video und Soundausgabe" />
+                <ScreenshotImg src="/docs/screenshots/doc-kino-streaming.png" alt="Kino / Streaming" title="Kino / Streaming – Video und Soundausgabe" />
                 <div className="card-hint">
                   <h4 className="text-sm font-semibold text-amber-300 mb-1">Kino/Video</h4>
                   <p className="text-xs">Bereich speziell auf Kino und Video-Streaming ausgerichtet – Dienste, Player, Ausgabeoptionen.</p>
@@ -487,7 +550,7 @@ const Documentation: React.FC = () => {
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><BookOpen className="text-sky-500" /> Lerncomputer</h2>
               <div className="space-y-4 text-slate-300 text-sm">
                 <p>Umgebung für Lernsoftware und Bildung (z. B. Programme für Kinder/Schule) einrichten.</p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-learning.png" alt="Lerncomputer" title="Lerncomputer – Lernsoftware und Bildung" />
+                <ScreenshotImg src="/docs/screenshots/doc-learning.png" alt="Lerncomputer" title="Lerncomputer – Lernsoftware und Bildung" />
                 <h3 className="text-lg font-semibold text-white">Funktionen</h3>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Status und Konfiguration</li>
@@ -520,7 +583,7 @@ const Documentation: React.FC = () => {
                   <li>Installation nur der gewählten Komponenten (sudo über SudoPasswordModal)</li>
                   <li>Live-Metriken (CPU, RAM, Disk, Temperatur) und Verlauf in der Oberfläche</li>
                 </ul>
-                <ScreenshotImg src="/docs/screenshots/screenshot-monitoring.png" alt="Monitoring – Auswahl und Metriken" title="Monitoring – Auswahl und Metriken" />
+                <ScreenshotImg src="/docs/screenshots/doc-monitoring.png" alt="Monitoring – Auswahl und Metriken" title="Monitoring – Auswahl und Metriken" />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold text-emerald-300 mb-1">💡 Tipp</h4>
                   <p className="text-xs">Wenn das Sudo-Modal erscheint: Passwort eingeben und bestätigen. Grafana ist optional – für einfache Metriken reichen Node Exporter und Prometheus.</p>
@@ -556,9 +619,16 @@ const Documentation: React.FC = () => {
                     <li><strong>Laufwerk klonen:</strong> System von SD-Karte auf NVMe/USB-SSD klonen (Hybrid-Boot: Boot auf SD, Root auf NVMe). NVMe, USB- und SATA-Laufwerke werden automatisch erkannt. Bei Problemen siehe FAQ.</li>
                   </ul>
                 </div>
-                <ScreenshotImg src="/docs/screenshots/screenshot-backup.png" alt="Backup & Restore" title="Backup & Restore – Ziel und Optionen" hint="Zeigt Auswahl Backup-Typ, Ziel, Verschlüsselung." />
+                <ScreenshotImg src="/docs/screenshots/doc-backup.png" alt="Backup & Restore" title="Backup & Restore – Ziel und Optionen" hint="Zeigt Auswahl Backup-Typ, Ziel, Verschlüsselung." />
                 <h4 className="text-base font-semibold text-white mt-3">Ausschnitt: Backup-Typ und Ziel</h4>
-                <ScreenshotDetail src="/docs/screenshots/screenshot-backup.png" alt="Backup-Optionen" title="Vollständig, Inkrementell, Daten – Ziel wählen" position="50% 30%" height={180} />
+                <ScreenshotDetail
+                  src="/docs/screenshots/doc-backup.png"
+                  alt="Backup-Optionen"
+                  title="Vollständig, Inkrementell, Daten – Ziel wählen"
+                  position="50% 30%"
+                  height={180}
+                  highlight="sky"
+                />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
                   <p className="text-xs opacity-95">
@@ -584,7 +654,12 @@ const Documentation: React.FC = () => {
               </h2>
               <div className="space-y-4 opacity-95">
                 <p className="text-sm">Cloud-Backup wird unter Einstellungen konfiguriert. Hier die Übersicht.</p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-settings.png" alt="Cloud-Einstellungen" title="Einstellungen – Cloud-Tab" />
+                <ScreenshotImg
+                  src="/docs/screenshots/doc-settings-cloud.png"
+                  alt="Cloud-Einstellungen"
+                  title="Einstellungen – Tab „Cloud-Backup“"
+                  hint="Wird mit npm run screenshots:docs erzeugt (eigenes Bild, nicht der Allgemein-Tab)."
+                />
                 <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
@@ -640,7 +715,7 @@ const Documentation: React.FC = () => {
                     </ul>
                   </div>
                 </div>
-                <ScreenshotImg src="/docs/screenshots/screenshot-control-center.png" alt="Control Center" title="Control Center – Menü mit WLAN, SSH, Display usw." />
+                <ScreenshotImg src="/docs/screenshots/doc-control-center.png" alt="Control Center" title="Control Center – Menü mit WLAN, SSH, Display usw." />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
                   <p className="text-xs opacity-95">
@@ -689,7 +764,7 @@ const Documentation: React.FC = () => {
                     Die angezeigte Herstellerliste wird aus der erkannten Hardware (GPUs, PCI-Geräte) abgeleitet. Wenn passende Hersteller erkannt wurden, werden deren Links hervorgehoben; sonst siehst du eine Auswahl gängiger Hersteller mit Linux-Treiber-Seiten.
                   </p>
                 </div>
-                <ScreenshotImg src="/docs/screenshots/screenshot-periphery-scan.png" alt="Peripherie-Scan" title="Peripherie-Scan – Konsole nach Assimilation" hint="Zeigt animierte Konsolenausgabe und Treiber-Liste." />
+                <ScreenshotImg src="/docs/screenshots/doc-periphery-scan.png" alt="Peripherie-Scan" title="Peripherie-Scan – Konsole nach Assimilation" hint="Zeigt animierte Konsolenausgabe und Treiber-Liste." />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
                   <p className="text-xs opacity-95">
@@ -743,7 +818,7 @@ const Documentation: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <ScreenshotImg src="/docs/screenshots/screenshot-raspberry-pi-config.png" alt="Raspberry Pi Config" title="Raspberry Pi Config – Optionen und config.txt" />
+                <ScreenshotImg src="/docs/screenshots/doc-raspberry-pi-config.png" alt="Raspberry Pi Config" title="Raspberry Pi Config – Optionen und config.txt" />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
                   <p className="text-xs opacity-95">
@@ -772,7 +847,7 @@ const Documentation: React.FC = () => {
                   Die SetupHelfer-Oberfläche kann als <strong>eigenständige Desktop-Anwendung</strong> laufen –
                   ohne Browserfenster. Dafür wird <strong>Tauri 2</strong> verwendet (WebView-basiert, ressourcenschonend).
                 </p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-documentation.png" alt="Desktop-App" title="SetupHelfer als Desktop-Anwendung (Tauri)" />
+                <ScreenshotImg src="/docs/screenshots/doc-documentation.png" alt="Desktop-App" title="SetupHelfer als Desktop-Anwendung (Tauri)" />
                 <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Vorteile</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
@@ -973,8 +1048,60 @@ const Documentation: React.FC = () => {
                 FAQ – Häufige Fragen &amp; Lösungen
               </h2>
               <div className="space-y-4 opacity-95">
-                <p className="text-sm">Aus den Troubleshooting-Seiten zusammengestellte FAQ. Jeder Eintrag: Fehlername, Beschreibung, Lösungen. Logs: Einstellungen → Logs.</p>
+                <p className="text-sm">Aus den Troubleshooting-Seiten zusammengestellte FAQ. Jeder Eintrag: Fehlername, Beschreibung, Lösungen. Logs: Einstellungen → Logs. Zur <strong>Wissensbasis</strong> für Einsteiger und Begleiter siehe Kapitel <strong>Dashboard</strong> und <code className="bg-slate-700 px-1 rounded">docs/user/GUIDED_UX_AND_COMPANION.md</code>.</p>
                 <div className="space-y-3">
+                  {/* FAQ: Erfahrungslevel */}
+                  <div className="rounded-lg border border-emerald-600/50 bg-emerald-950/25 overflow-hidden">
+                    <div className="px-4 py-2 bg-emerald-900/40 border-b border-emerald-600/50">
+                      <h4 className="font-semibold text-emerald-200">Erfahrungslevel (Einsteiger / Fortgeschritten) – Speichern oder Anzeige</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Nach dem Wechsel des Erfahrungslevels erscheint „Speichern fehlgeschlagen“ oder die Sidebar ändert sich nicht.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Backend muss laufen (Port 8000). Fehlermeldung im Toast kann Details von der API enthalten (<code className="bg-slate-700 px-1 rounded">detail</code>).</li>
+                          <li>Das Profil wird unter <code className="bg-slate-700 px-1 rounded">user_profile.json</code> gespeichert; ohne Schreibrechte unter <code className="bg-slate-700 px-1 rounded">/etc/pi-installer/</code> nutzt das Backend automatisch <code className="bg-slate-700 px-1 rounded">~/.config/pi-installer/</code>.</li>
+                          <li>Seite neu laden, nachdem die Speicherung geklappt hat.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Panda-Begleiter */}
+                  <div className="rounded-lg border border-emerald-600/50 bg-emerald-950/25 overflow-hidden">
+                    <div className="px-4 py-2 bg-emerald-900/40 border-b border-emerald-600/50">
+                      <h4 className="font-semibold text-emerald-200">Was sind die Panda-Begleiter?</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Figuren und Textstreifen erklären den jeweiligen Bereich (z. B. Backup, App Store).</p>
+                      <div className="rounded bg-sky-950/30 border border-sky-700/40 p-3 mt-2">
+                        <p className="font-semibold text-sky-300 mb-1">Hinweise:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Im Modus <strong>Entwickler</strong> werden einige Hilfen ausgeblendet.</li>
+                          <li>Bilddateien liegen unter <code className="bg-slate-700 px-1 rounded">frontend/src/assets/pandas/</code>.</li>
+                          <li>Die Einsteigerführung ergänzt Begleiter durch klare „Nächster Schritt“-Blöcke und Badges (z. B. „Fortgeschritten“).</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Einsteigerführung finden */}
+                  <div className="rounded-lg border border-emerald-600/50 bg-emerald-950/25 overflow-hidden">
+                    <div className="px-4 py-2 bg-emerald-900/40 border-b border-emerald-600/50">
+                      <h4 className="font-semibold text-emerald-200">Wo finde ich die geführte Nutzung für Einsteiger?</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Oberfläche wirkt überladen oder ohne klare Reihenfolge.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>In <strong>Einstellungen</strong> das Erfahrungslevel <strong>Einsteiger</strong> wählen und speichern.</li>
+                          <li><strong>Dashboard</strong> öffnen: Block „Nächster sinnvoller Schritt“ und empfohlene Aktionen (Assistent, Apps, Backup).</li>
+                          <li><strong>App Store</strong> und <strong>Backup</strong> folgen einer reduzierten Darstellung für Einsteiger.</li>
+                          <li>Dokumentation im Repo: <code className="bg-slate-700 px-1 rounded">docs/user/GUIDED_UX_AND_COMPANION.md</code></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                   {/* FAQ: Mixer */}
                   <div className="rounded-lg border border-amber-600/50 bg-amber-950/30 overflow-hidden">
                     <div className="px-4 py-2 bg-amber-900/40 border-b border-amber-600/50">
@@ -1022,6 +1149,7 @@ const Documentation: React.FC = () => {
                         <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
                         <ul className="list-disc list-inside text-slate-300 space-y-1">
                           <li>Alles: <code className="bg-slate-700 px-1 rounded">./start.sh</code></li>
+                          <li>Mit Auswahl Tauri / Browser / Nur Backend: <code className="bg-slate-700 px-1 rounded">./scripts/start-pi-installer.sh</code> (bzw. <strong>SetupHelfer.desktop</strong> auf dem Schreibtisch)</li>
                           <li>Nur Backend: <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
                           <li>Frontend: <code className="bg-slate-700 px-1 rounded">./start-frontend.sh</code> oder <code className="bg-slate-700 px-1 rounded">cd frontend && npm run dev</code></li>
                           <li>Desktop-App: <code className="bg-slate-700 px-1 rounded">cd frontend && npm run tauri:dev</code> (Backend separat)</li>
@@ -1356,6 +1484,7 @@ const Documentation: React.FC = () => {
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
                     <li><strong>Sprache:</strong> Deutsch oder Englisch für die Oberfläche</li>
+                    <li><strong>Erfahrungslevel:</strong> Einsteiger (geführte Oberfläche, reduzierte Navigation), Fortgeschritten (alle Module und Modi), Entwickler (wie Fortgeschritten; weniger Panda-Hilfen)</li>
                     <li><strong>Standard Backup-Ziel:</strong> Verzeichnis für lokale Backups (wird z. B. in Backup & Restore vorgeschlagen)</li>
                     <li><strong>Cloud-Backup Einstellungen:</strong> Anbieter (WebDAV, S3, Google, Azure), Zugangsdaten, Verbindung testen, Quota anzeigen</li>
                     <li><strong>Logging:</strong> Log-Level (DEBUG, INFO, WARNING, ERROR); Log-Pfad anzeigen; „Logs laden“ zeigt die letzten Zeilen im Browser</li>
@@ -1365,7 +1494,12 @@ const Documentation: React.FC = () => {
                     <li><strong>Neustart:</strong> System neu starten (sudo)</li>
                   </ul>
                 </div>
-                <ScreenshotImg src="/docs/screenshots/screenshot-settings.png" alt="Einstellungen" title="Einstellungen – Übersicht" hint="Zeigt Tabs Sprache, Backup, Cloud, Logs." />
+                <ScreenshotImg
+                  src="/docs/screenshots/doc-settings-general.png"
+                  alt="Einstellungen"
+                  title="Einstellungen – Tab „Allgemein“"
+                  hint="Tabs Allgemein, Cloud-Backup, Logs. Cloud-Tab: siehe Kapitel Cloud."
+                />
                 <div className="card-info">
                   <h4 className="text-sm font-semibold  mb-1">💡 Tipp</h4>
                   <p className="text-xs opacity-95">
@@ -1391,7 +1525,7 @@ const Documentation: React.FC = () => {
               </h2>
               <div className="space-y-4 opacity-95">
                 <p className="text-sm">Die Versionsnummer folgt dem Schema <strong>X.Y.Z.W</strong>.</p>
-                <ScreenshotImg src="/docs/screenshots/screenshot-documentation.png" alt="Versionen & Changelog" title="Dokumentation – Versionen & Changelog" />
+                <ScreenshotImg src="/docs/screenshots/doc-documentation.png" alt="Versionen & Changelog" title="Dokumentation – Versionen & Changelog" />
                 <ul className="list-disc list-inside text-sm space-y-1 ml-4">
                   <li><strong>X:</strong> Gravierende Änderungen</li>
                   <li><strong>Y:</strong> Größere Releases</li>
@@ -1402,9 +1536,17 @@ const Documentation: React.FC = () => {
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: 1.3.8.0</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: {appVersion}</p>
                   <div className="mb-3">
-                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.8.0 (Linux Companion – Dokumentation)</p>
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.9.0 (Companion & Guided UX)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Einsteiger & Begleiter:</strong> Zentrales Modulmodell, Panda-Marker, geschärftes Dashboard, App Store und Backup</li>
+                      <li><strong>Doku:</strong> <code className="bg-slate-700 px-1 rounded">docs/user/GUIDED_UX_AND_COMPANION.md</code>, erweiterte FAQ und Handbuchtexte in der App</li>
+                      <li><strong>Profil:</strong> Erfahrungslevel speichern mit Fallback-Pfad; Desktop-Starter SetupHelfer (Tauri / Browser / Nur Backend)</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">{appVersion} (Linux Companion – Dokumentation)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Dokumentation:</strong> docs/REMOTE_COMPANION.md (Übersicht, API, Rollen, Events); docs/REMOTE_COMPANION_DEV.md (Entwicklerleitfaden: Modul registrieren, Widgets, Aktionen); Phase-2-Ausblick konzeptionell</li>
                     </ul>
@@ -1740,8 +1882,9 @@ const Documentation: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-    </motion.div>
+        </div>
+      </motion.div>
+    </>
   )
 }
 

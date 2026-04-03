@@ -399,16 +399,65 @@ def get_app_edition() -> str:
     return "release"
 
 
-def _user_profile_path() -> Path:
+def _user_profile_primary_path() -> Path:
+    """Neben config.json (kann /etc oder ~/.config sein)."""
+    return CONFIG_PATH.parent / "user_profile.json"
+
+
+def _user_profile_fallback_path() -> Path:
+    """Immer im Home-Config-Baum – beschreibbar ohne Root-Rechte."""
+    return Path.home() / ".config" / "pi-installer" / "user_profile.json"
+
+
+def _user_profile_candidate_paths() -> list[Path]:
     """
-    Pfad für das Benutzerprofil (Erfahrungslevel, Präferenzen).
-    Liegt neben der Hauptkonfiguration, z. B. /etc/pi-installer/user_profile.json.
+    Reihenfolge: primär (wie config.json), dann Home-Fallback.
+    Wenn beide identisch sind (config bereits im Home), nur ein Eintrag.
     """
+    primary = _user_profile_primary_path()
+    fallback = _user_profile_fallback_path()
     try:
-        return CONFIG_PATH.parent / "user_profile.json"
+        if primary.resolve() == fallback.resolve():
+            return [primary]
     except Exception:
-        # Fallback: Home-Config
-        return Path.home() / ".config" / "pi-installer" / "user_profile.json"
+        pass
+    return [primary, fallback]
+
+
+def _user_profile_collect_from_disk() -> list[tuple[str, float, str, Path]]:
+    """Liste (updated_at, mtime, experience_level, path) für alle lesbaren Dateien."""
+    out: list[tuple[str, float, str, Path]] = []
+    for path in _user_profile_candidate_paths():
+        if not path.exists():
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8") or "{}")
+            if not isinstance(data, dict):
+                continue
+            level = str(data.get("experience_level") or "beginner").lower()
+            if level not in ("beginner", "advanced", "developer"):
+                level = "beginner"
+            updated_at = str(data.get("updated_at") or _now_iso())
+            mtime = path.stat().st_mtime
+            out.append((updated_at, mtime, level, path))
+        except Exception:
+            continue
+    return out
+
+
+def _user_profile_write(profile: "UserProfile") -> None:
+    """Schreibt user_profile.json – versucht primär, dann Home-Fallback."""
+    text = json.dumps(profile.dict(), indent=2)
+    errors: list[str] = []
+    for path in _user_profile_candidate_paths():
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+            return
+        except Exception as e:
+            errors.append(f"{path}: {e}")
+            logger.warning("user_profile: Schreiben fehlgeschlagen %s", e)
+    raise OSError("; ".join(errors) if errors else "user_profile: kein Pfad beschreibbar")
 
 
 def _persist_app_settings_to_disk() -> None:
@@ -4329,16 +4378,13 @@ async def list_users(request: Request):
 async def get_user_profile():
     """
     Gibt das Benutzerprofil zurück (Erfahrungslevel etc.).
-    Liegt neben der Hauptkonfiguration, z. B. /etc/pi-installer/user_profile.json.
+    Liest primär neben config.json, sonst Fallback unter ~/.config/pi-installer/.
     """
-    path = _user_profile_path()
     try:
-        if path.exists():
-            data = json.loads(path.read_text(encoding="utf-8") or "{}")
-            level = str(data.get("experience_level") or "beginner").lower()
-            if level not in ("beginner", "advanced", "developer"):
-                level = "beginner"
-            updated_at = str(data.get("updated_at") or _now_iso())
+        cands = _user_profile_collect_from_disk()
+        if cands:
+            cands.sort(key=lambda x: (x[0], x[1]), reverse=True)
+            updated_at, _mtime, level, _path = cands[0]
             return {"status": "success", "profile": UserProfile(experience_level=level, updated_at=updated_at).dict()}
     except Exception as e:
         logger.error("Fehler beim Lesen von user_profile.json: %s", e, exc_info=True)
@@ -4356,10 +4402,8 @@ async def update_user_profile(payload: dict = Body(...)):
     if level_raw not in ("beginner", "advanced", "developer"):
         raise HTTPException(status_code=400, detail="experience_level muss 'beginner', 'advanced' oder 'developer' sein.")
     profile = UserProfile(experience_level=level_raw, updated_at=_now_iso())
-    path = _user_profile_path()
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(profile.dict(), indent=2), encoding="utf-8")
+        _user_profile_write(profile)
     except Exception as e:
         logger.error("Fehler beim Schreiben von user_profile.json: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Profil konnte nicht gespeichert werden.")

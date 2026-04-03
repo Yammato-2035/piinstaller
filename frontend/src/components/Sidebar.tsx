@@ -29,10 +29,12 @@ import {
   Upload,
   Smartphone,
 } from 'lucide-react'
+import BeginnerGuidanceMarker from '../beginner/BeginnerGuidanceMarker'
+import { getModuleDefinition, type ExperienceLevel } from '../beginner/moduleModel'
 
 type Theme = 'light' | 'dark' | 'system'
 
-export type ExperienceLevel = 'beginner' | 'advanced' | 'developer'
+export type { ExperienceLevel }
 
 interface SidebarProps {
   currentPage: string
@@ -148,7 +150,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     <>
       {mobileOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" aria-hidden onClick={onClose} />}
       <div
-        className={`w-64 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 flex flex-col h-screen shadow-2xl
+        className={`w-64 min-h-0 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 flex flex-col h-screen max-h-screen shadow-2xl
           ${mobileOpen ? 'flex fixed inset-y-0 left-0 z-40' : 'hidden'} md:flex md:relative md:inset-auto`}
       >
       {/* Logo-Bereich */}
@@ -217,16 +219,21 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             return <div key={`divider-${index}`} className="h-px bg-slate-300 dark:bg-slate-700 my-1" />
           }
 
-          const isPiConfigDisabled = item.id === 'raspberry-pi-config' && !isRaspberryPi
+          const pageId = item.id
+          if (!pageId) {
+            return null
+          }
+
+          const isPiConfigDisabled = pageId === 'raspberry-pi-config' && !isRaspberryPi
           const Icon = item.icon
           const appIconName = item.appIcon
-          const isActive = currentPage === item.id
-          const pageRisk = getPageRisk(item.id, t)
+          const isActive = currentPage === pageId
+          const pageRisk = getPageRisk(pageId, t)
 
           return (
             <button
-              key={item.id}
-              onClick={() => !isPiConfigDisabled && handlePageChange(item.id)}
+              key={pageId}
+              onClick={() => !isPiConfigDisabled && handlePageChange(pageId)}
               disabled={isPiConfigDisabled}
               title={isPiConfigDisabled ? t('sidebar.raspberryOnly') : undefined}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 ${
@@ -243,10 +250,16 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
                 Icon && <Icon size={18} />
               )}
               <span className="font-medium text-sm flex-1 truncate">{item.labelKey ? t(item.labelKey) : ''}</span>
+              {isBeginnerSidebar && (() => {
+                const mod = getModuleDefinition(pageId)
+                const badge = mod?.beginnerNavBadge
+                if (!badge) return null
+                return <BeginnerGuidanceMarker kind={badge} compact className="shrink-0" />
+              })()}
               {pageRisk && (
                 <RiskLevelBadge level={pageRisk.level} showLabel={false} title={pageRisk.label} className={isActive ? 'border-white/50' : ''} />
               )}
-              {newBadges[item.id] && (
+              {newBadges[pageId] && (
                 <span className="px-1.5 py-0.5 text-[10px] font-bold bg-sky-500 text-white rounded animate-pulse">{t('sidebar.newBadge')}</span>
               )}
             </button>
@@ -257,11 +270,12 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
       {/* Footer */}
       <div className="p-3 border-t border-slate-300 dark:border-slate-700 space-y-2">
         <div className="text-xs px-2">
-          <p className="font-semibold mb-1.5 text-slate-600 dark:text-slate-300">{t('sidebar.systemStatus')}</p>
+          <p className="font-semibold mb-1.5 text-slate-600 dark:text-slate-300">{t('sidebar.runtimeStatus.title')}</p>
           <p className="text-green-600 dark:text-green-400 font-semibold flex items-center gap-1.5">
             <AppIcon name="ok" category="status" size={16} statusColor="ok" />
-            {t('sidebar.ready')}
+            {t('sidebar.runtimeStatus.ok')}
           </p>
+          <p className="mt-1.5 text-[10px] leading-snug text-slate-500 dark:text-slate-400">{t('sidebar.runtimeStatus.hint')}</p>
           <div className="mt-2.5 pt-2.5 border-t border-slate-300 dark:border-slate-700 space-y-2">
             <p className="text-slate-500 dark:text-slate-400 text-xs mb-2">{t('sidebar.copyright')}</p>
             {/* Theme Toggle */}

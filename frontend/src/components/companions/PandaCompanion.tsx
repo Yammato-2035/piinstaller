@@ -1,5 +1,10 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { COMPANION_IMAGE_URL, COMPANION_NEUTRAL_URL } from "./companionAssets";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  COMPANION_ASSET_MANIFEST,
+  companionShouldUseLogoMainCrop,
+  getCompanionBaseDisplayUrl,
+  getBundledCompanionVariantUrl,
+} from "./companionAssets";
 import { TrafficLight } from "./TrafficLight";
 import { PANDA_STATUS_TEXT } from "./pandaText";
 import type { PandaModuleType, PandaSize, PandaStatus } from "./pandaTypes";
@@ -9,17 +14,15 @@ import styles from "./PandaCompanion.module.css";
 export interface PandaCompanionProps {
   type: PandaModuleType;
   status?: PandaStatus | string;
+  mood?: PandaStatus | string;
   size?: PandaSize;
   showTrafficLight?: boolean;
-  /** Ampel unten rechts oder links (kleines Accessoire). */
   trafficLightPosition?: "bottom-right" | "bottom-left";
-  /** Helle Kachel oder dunkle Einbettung (Dashboard & Co.). */
   surface?: "light" | "dark";
   title?: string;
   subtitle?: string;
   helperText?: string;
   className?: string;
-  /** false = ohne eigene Kachel (einbetten in PandaRail / Seitenrahmen). */
   frame?: boolean;
 }
 
@@ -46,6 +49,7 @@ const STATUS_COLOR_MAP_DARK: Record<PandaStatus, string> = {
 export const PandaCompanion: React.FC<PandaCompanionProps> = ({
   type,
   status = "info",
+  mood,
   size = "md",
   showTrafficLight = true,
   trafficLightPosition = "bottom-right",
@@ -57,14 +61,33 @@ export const PandaCompanion: React.FC<PandaCompanionProps> = ({
   frame = true,
 }) => {
   const resolvedStatus = normalizePandaStatus(
-    typeof status === "string" ? status : String(status),
+    String(status ?? mood ?? "info"),
   );
-  const imageSrc = COMPANION_IMAGE_URL[type] ?? COMPANION_NEUTRAL_URL;
+  const bundledUrl = getBundledCompanionVariantUrl(type);
+  const logoFallbackUrl = getCompanionBaseDisplayUrl();
+  const [displayTier, setDisplayTier] = useState<"bundle" | "logo">("bundle");
+  const tierRef = useRef(displayTier);
+  tierRef.current = displayTier;
+
+  const activeSrc =
+    displayTier === "bundle" ? bundledUrl : logoFallbackUrl ?? "";
+  const useLogoCrop =
+    displayTier === "logo" &&
+    Boolean(logoFallbackUrl) &&
+    companionShouldUseLogoMainCrop();
+
   const textBlock = PANDA_STATUS_TEXT[resolvedStatus] ?? PANDA_STATUS_TEXT.warning;
   const width = SIZE_MAP[size];
   const colors = surface === "dark" ? STATUS_COLOR_MAP_DARK : STATUS_COLOR_MAP;
 
   const [pandaHeightPx, setPandaHeightPx] = useState<number | null>(null);
+  const [hardFailed, setHardFailed] = useState(false);
+
+  useEffect(() => {
+    setDisplayTier("bundle");
+    setHardFailed(false);
+    setPandaHeightPx(null);
+  }, [type]);
 
   const onImgLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -86,12 +109,15 @@ export const PandaCompanion: React.FC<PandaCompanionProps> = ({
     return Math.max(24, h * 0.2);
   }, [pandaHeightPx, width]);
 
-  const onImgError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    const target = e.currentTarget;
-    if (target.dataset.fallback === "1") return;
-    target.dataset.fallback = "1";
-    target.src = COMPANION_NEUTRAL_URL;
-  }, []);
+  const onImgError = useCallback(() => {
+    if (tierRef.current === "bundle" && logoFallbackUrl) {
+      setDisplayTier("logo");
+      setPandaHeightPx(null);
+      return;
+    }
+    setHardFailed(true);
+    setPandaHeightPx(null);
+  }, [logoFallbackUrl]);
 
   const skin =
     surface === "dark" ? `${styles.root} ${styles.rootDark}` : styles.root;
@@ -108,17 +134,41 @@ export const PandaCompanion: React.FC<PandaCompanionProps> = ({
         className={styles.pandaWrap}
         style={{ width, minWidth: width, maxWidth: "100%" }}
       >
-        <img
-          src={imageSrc}
-          alt={`Setuphelfer Panda für den Bereich ${type}`}
-          className={styles.pandaImg}
-          loading="eager"
-          decoding="async"
-          onLoad={onImgLoad}
-          onError={onImgError}
-        />
+        {hardFailed ? (
+          <div
+            className={styles.assetMissing}
+            style={{ minHeight: Math.max(64, width * 0.85) }}
+            role="img"
+            aria-label={`Companion Asset fehlt: ${type}`}
+          >
+            <span>Companion Asset fehlt</span>
+            <span className={styles.assetMissingCode}>variant: {type}</span>
+            <span className={styles.assetMissingCode}>bundle: {bundledUrl}</span>
+            {logoFallbackUrl ? (
+              <span className={styles.assetMissingCode}>
+                logo-fallback: {COMPANION_ASSET_MANIFEST.brandingLogoMain.assetPath}
+              </span>
+            ) : null}
+            {hardFailed && activeSrc ? (
+              <span className={styles.assetMissingCode}>Ladefehler: {activeSrc}</span>
+            ) : null}
+          </div>
+        ) : (
+          <div className={styles.pandaStack}>
+            <img
+              key={`${type}-${displayTier}`}
+              src={activeSrc}
+              alt={`Setuphelfer Panda für den Bereich ${type}`}
+              className={`${styles.pandaImg} ${useLogoCrop ? styles.pandaImgCropFromFullLogo : ""}`.trim()}
+              loading="eager"
+              decoding="async"
+              onLoad={onImgLoad}
+              onError={onImgError}
+            />
+          </div>
+        )}
 
-        {showTrafficLight && (
+        {showTrafficLight && !hardFailed && (
           <div style={tlStyle}>
             <TrafficLight status={resolvedStatus} maxHeightPx={maxTrafficLightHeight} />
           </div>

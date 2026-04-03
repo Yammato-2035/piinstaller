@@ -1,57 +1,60 @@
 #!/bin/bash
-# Legt einen Desktop-Starter „PI-Installer“ auf dem Desktop ab:
-#   Startet zuerst Backend, wartet auf Ready, dann Auswahl (Tauri / Browser / Nur Frontend)
-#   Mit PI-Installer-Icon
+# Legt „SetupHelfer.desktop“ direkt auf dem Schreibtisch ab:
+#   Backend prüfen/starten, dann Auswahl: Tauri-App / Browser / Nur Backend
+#   Icon: Tauri-App-Icon (PNG) oder Logo-SVG
 #
 # Aufruf: bash scripts/desktop-pi-installer-launcher-anlegen.sh
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-START_SCRIPT="$PROJECT_ROOT/start-pi-installer.sh"
-ICON_PATH="$PROJECT_ROOT/frontend/src-tauri/icons/icon.png"
+START_SCRIPT="$PROJECT_ROOT/scripts/start-pi-installer.sh"
+ICON_PNG="$PROJECT_ROOT/frontend/src-tauri/icons/icon.png"
+ICON_SVG="$PROJECT_ROOT/frontend/public/assets/branding/logo/logo-main.svg"
 
 chmod +x "$START_SCRIPT" 2>/dev/null
-chmod +x "$PROJECT_ROOT/start-backend.sh" 2>/dev/null
-chmod +x "$PROJECT_ROOT/start-frontend-desktop.sh" 2>/dev/null
+chmod +x "$PROJECT_ROOT/scripts/start-backend.sh" 2>/dev/null
+chmod +x "$PROJECT_ROOT/scripts/start-frontend-desktop.sh" 2>/dev/null
 
-# Desktop-Ordner (englisch und/oder deutsch)
 DESKTOPS=()
 [ -d "$HOME/Desktop" ]      && DESKTOPS+=("$HOME/Desktop")
 [ -d "$HOME/Schreibtisch" ] && DESKTOPS+=("$HOME/Schreibtisch")
+if command -v xdg-user-dir >/dev/null 2>&1; then
+  XDG_DESK="$(xdg-user-dir DESKTOP 2>/dev/null)"
+  [ -n "$XDG_DESK" ] && [ -d "$XDG_DESK" ] && DESKTOPS+=("$XDG_DESK")
+fi
 [ ${#DESKTOPS[@]} -eq 0 ]   && DESKTOPS+=("$HOME")
 
-# Icon: absoluter Pfad, fallback auf system-icon
-ICON="$ICON_PATH"
+ICON="$ICON_PNG"
+[ ! -f "$ICON" ] && [ -f "$ICON_SVG" ] && ICON="$ICON_SVG"
 [ ! -f "$ICON" ] && ICON="utilities-terminal"
 
-echo "🖥️  PI-Installer Desktop-Starter anlegen"
-echo "========================================"
+echo "🖥️  SetupHelfer Desktop-Starter anlegen"
+echo "======================================="
 echo ""
 
 for DESKTOP in "${DESKTOPS[@]}"; do
-  LAUNCHER_DIR="$DESKTOP/PI-Installer"
-  mkdir -p "$LAUNCHER_DIR"
-  DESKTOP_FILE="$LAUNCHER_DIR/PI-Installer.desktop"
+  # Einmal pro physischem Pfad (Desktop/Schreibtisch können identisch sein)
+  DESKTOP_FILE="$DESKTOP/SetupHelfer.desktop"
   cat > "$DESKTOP_FILE" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=PI-Installer
-Comment=Auswahl: Tauri / Browser / Vite-Server (Backend läuft als Service)
+Name=SetupHelfer
+Comment=Auswahl: Tauri-App, Browser oder nur Backend (API)
 Exec=$START_SCRIPT
 Path=$PROJECT_ROOT
 Icon=$ICON
 Terminal=true
-Categories=Development;System;Utility;
-Keywords=raspberry;pi;installer;admin;
+Categories=System;Settings;Utility;
+Keywords=setuphelfer;raspberry;pi;linux;installer;
+StartupWMClass=pi-installer
 EOF
   chmod +x "$DESKTOP_FILE"
-  echo "✅ Desktop-Starter: $DESKTOP_FILE"
+  echo "✅ $DESKTOP_FILE"
 done
 
 echo ""
-echo "Doppelklick auf „PI-Installer“ startet:"
-echo "  1. Prüft Backend (Port 8000, läuft als Service)"
-echo "  2. Wartet ggf. auf Backend-Ready"
-echo "  3. Dialog zur Auswahl: App-Fenster (Tauri) / Browser / Nur Vite-Server"
+echo "Doppelklick auf „SetupHelfer“:"
+echo "  • Prüft/startet Backend (Port 8000)"
+echo "  • Dialog: Desktop-App (Tauri) / Browser / Nur Backend"
 echo ""

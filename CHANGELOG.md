@@ -1,17 +1,41 @@
 # Changelog
 
-Alle wichtigen Änderungen am PI-Installer werden hier dokumentiert.  
+Alle wichtigen nderungen am PI-Installer werden hier dokumentiert.  
 Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERSIONING.md).
+
+---
+
+## [1.3.9.0] - 2026-04-03
+
+### Added
+- **Geführte Nutzung (Frontend):** Zentrales Modul- und Bereichsmodell (`frontend/src/beginner/moduleModel.ts`), wiederverwendbare Marker für „Gesperrt / Später / Fortgeschritten“ (`BeginnerGuidanceMarker`).
+- **Dashboard (Einsteiger):** Hervorgehobener Block „Nächster sinnvoller Schritt“, empfohlene Aktionen, getrennte Bereiche für optional und spätere Module.
+- **App Store (Einsteiger):** Empfohlene Apps zuerst, Hinweis-Badges und sortierte Darstellung.
+- **Backup (Einsteiger):** Drei klare Einstiege (erstellen, prüfen, wiederherstellen); erweiterte Tabs unter „Weitere Optionen“.
+- **Dokumentation:** `docs/user/GUIDED_UX_AND_COMPANION.md`; Handbuchtexte und **FAQ** in der App (Erfahrungslevel, Panda-Begleiter, Einsteigerführung); Eintrag im Kapitel **Einstellungen** (Erfahrungslevel).
+- **Desktop:** `SetupHelfer.desktop` mit Logo-Icon; Starter `scripts/start-pi-installer.sh` mit Auswahl **Tauri / Browser / Nur Backend**; Debian- und Install-Skripte angepasst.
+- **Profil-API:** Schreib-Fallback für `user_profile.json` unter `~/.config/pi-installer/`, wenn `/etc/pi-installer/` nicht beschreibbar ist; Frontend wertet FastAPI-`detail` bei Fehlern aus.
+
+### Changed
+- **Version:** Kanonisch `1.3.9.0` in `config/version.json`; `sync-version.js` synchronisiert auch die Root-`package.json`.
+- **Navigation (Einsteiger):** Optional Badge „Fortgeschritten“ bei Monitoring in der Sidebar.
+
+---
+
+## [1.3.8.4] - 2026-04-03
+
+### Changed
+- Versionsnummer auf 1.3.8.4 angehoben (kanonisch `config/version.json`).
 
 ---
 
 ## [1.3.8.1] - 2026-03-12
 
 ### Added
-- **Sicherheit:** CORS auf konfigurierbare Origins beschränkt (Standard: localhost; LAN über `PI_INSTALLER_CORS_ORIGINS`).
-- **Sicherheit:** Sudo-Passwort nur noch verschlüsselt (Fernet) im Speicher, TTL 30 Min; Key in Installationsverzeichnis oder `~/.config/pi-installer/`.
+- **Sicherheit:** CORS auf konfigurierbare Origins beschrnkt (Standard: localhost; LAN ber `PI_INSTALLER_CORS_ORIGINS`).
+- **Sicherheit:** Sudo-Passwort nur noch verschlsselt (Fernet) im Speicher, TTL 30 Min; Key in Installationsverzeichnis oder `~/.config/pi-installer/`.
 - **Sicherheit:** Rate-Limiting auf `/api/users/sudo-password` (10/Min); Security-Header (X-Content-Type-Options, X-Frame-Options, Referrer-Policy).
-- **Sicherheit:** Systemd-Services gehärtet (ProtectSystem=strict, PrivateTmp, NoNewPrivileges, MemoryMax, LimitNOFILE).
+- **Sicherheit:** Systemd-Services gehrtet (ProtectSystem=strict, PrivateTmp, NoNewPrivileges, MemoryMax, LimitNOFILE).
 - **Doku:** SECURITY.md (Netzwerk LAN/Internet, VPN-Empfehlung, Firewall); docs/user/NETWORK_ACCESS.md.
 - **Version:** Einzige Quelle `config/version.json`; sync-version.js schreibt auch VERSION, package.json, Tauri.
 
@@ -23,8 +47,8 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ## [1.3.8.0] - 2026-03-06
 
 ### Added
-- **Remote Companion (Phase 1) – Dokumentation:** Übersicht und Architektur in `docs/REMOTE_COMPANION.md` (API, Rollen, Events, Datenmodell, Phase-2-Ausblick). Entwicklerleitfaden in `docs/REMOTE_COMPANION_DEV.md` (Modul registrieren, Widgets, Aktionen, Eventbus). Verweise in README und In-App-Dokumentation.
-- Phase-2-Vorbereitung konzeptionell beschrieben: Sync-Status, Ordner-Profile, CalDAV/CardDAV-Healthcheck als spätere Integrationspunkte (ohne Implementierung).
+- **Remote Companion (Phase 1)  Dokumentation:** bersicht und Architektur in `docs/REMOTE_COMPANION.md` (API, Rollen, Events, Datenmodell, Phase-2-Ausblick). Entwicklerleitfaden in `docs/REMOTE_COMPANION_DEV.md` (Modul registrieren, Widgets, Aktionen, Eventbus). Verweise in README und In-App-Dokumentation.
+- Phase-2-Vorbereitung konzeptionell beschrieben: Sync-Status, Ordner-Profile, CalDAV/CardDAV-Healthcheck als sptere Integrationspunkte (ohne Implementierung).
 
 ### Changed
 - Versionsnummer auf 1.3.8.0 angehoben (neues Feature: Remote-Companion-Dokumentation).
@@ -35,7 +59,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Fixed
 - OLED-Erkennung im Control Center auf `i2cdetect -r` umgestellt, damit keine falschen OLED-Treffer auf ungeeigneten I2C-Bussen mehr gemeldet werden.
-- Hardware-Diagnose ergï¿½nzt: Wenn `dtparam=i2c_arm=on` fehlt und `/dev/i2c-1` nicht existiert, wird klarer, warum der Runner kein OLED erreichen kann.
+- Hardware-Diagnose ergnzt: Wenn `dtparam=i2c_arm=on` fehlt und `/dev/i2c-1` nicht existiert, wird klarer, warum der Runner kein OLED erreichen kann.
 
 ---
 
@@ -51,13 +75,13 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ## [1.3.7.4] - 2026-03-05
 
 ### Added
-- Skript **backup-sd-card.sh**: Sicherheits-Backup der SD-Karte (Boot + Root), optional Ziel NVMe (`--nvme`) mit ext4 fï¿½r vollstï¿½ndiges Backup
+- Skript **backup-sd-card.sh**: Sicherheits-Backup der SD-Karte (Boot + Root), optional Ziel NVMe (`--nvme`) mit ext4 fr vollstndiges Backup
 - Doku **NVME_BOOT_FREENOVE_SWITCH.md**: Boot von NVMe hinter Freenove-PCIe-Switch, EEPROM, UART-Debug, SD-Backup-Hinweise
 - Verweise auf NVMe-Boot-Freenove in NVME_FULL_BOOT.md und PATHS_NVME.md
 
 ### Changed
-- backup-sd-card.sh: Unterstï¿½tzung fï¿½r Zielfs ext4 (volle rsync-Optionen) bzw. vfat (eingeschrï¿½nkt)
-- Sync mit GitHub: Stand origin/main (1.3.4.15) integriert, lokale ï¿½nderungen (Backup, NVMe-Docs) beibehalten
+- backup-sd-card.sh: Untersttzung fr Zielfs ext4 (volle rsync-Optionen) bzw. vfat (eingeschrnkt)
+- Sync mit GitHub: Stand origin/main (1.3.4.15) integriert, lokale nderungen (Backup, NVMe-Docs) beibehalten
 
 ---
 
@@ -160,17 +184,17 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [[0;36m[2026-02-16 16:51:30][0m Schritt 1: Version erhï¿½hen...
+## [[0;36m[2026-02-16 16:51:30][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:51:30][0m Aktuelle Version: 1.3.4.8
-[0;32m[2026-02-16 16:51:30] ?[0m Version erhï¿½ht: 1.3.4.8 -> 1.3.4.9
+[0;32m[2026-02-16 16:51:30] ?[0m Version erhht: 1.3.4.8 -> 1.3.4.9
 [0;32m[2026-02-16 16:51:30] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:51:30] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.9] - 2026-02-16
 
 ### Added
-- Automatisches Release: Version [0;36m[2026-02-16 16:51:30][0m Schritt 1: Version erhï¿½hen...
+- Automatisches Release: Version [0;36m[2026-02-16 16:51:30][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:51:30][0m Aktuelle Version: 1.3.4.8
-[0;32m[2026-02-16 16:51:30] ?[0m Version erhï¿½ht: 1.3.4.8 -> 1.3.4.9
+[0;32m[2026-02-16 16:51:30] ?[0m Version erhht: 1.3.4.8 -> 1.3.4.9
 [0;32m[2026-02-16 16:51:30] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:51:30] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.9
@@ -179,17 +203,17 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [[0;36m[2026-02-16 16:47:56][0m Schritt 1: Version erhï¿½hen...
+## [[0;36m[2026-02-16 16:47:56][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:47:56][0m Aktuelle Version: 1.3.4.7
-[0;32m[2026-02-16 16:47:56] ?[0m Version erhï¿½ht: 1.3.4.7 -> 1.3.4.8
+[0;32m[2026-02-16 16:47:56] ?[0m Version erhht: 1.3.4.7 -> 1.3.4.8
 [0;32m[2026-02-16 16:47:56] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:47:56] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.8] - 2026-02-16
 
 ### Added
-- Automatisches Release: Version [0;36m[2026-02-16 16:47:56][0m Schritt 1: Version erhï¿½hen...
+- Automatisches Release: Version [0;36m[2026-02-16 16:47:56][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:47:56][0m Aktuelle Version: 1.3.4.7
-[0;32m[2026-02-16 16:47:56] ?[0m Version erhï¿½ht: 1.3.4.7 -> 1.3.4.8
+[0;32m[2026-02-16 16:47:56] ?[0m Version erhht: 1.3.4.7 -> 1.3.4.8
 [0;32m[2026-02-16 16:47:56] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:47:56] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.8
@@ -198,17 +222,17 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [[0;36m[2026-02-16 16:47:14][0m Schritt 1: Version erhï¿½hen...
+## [[0;36m[2026-02-16 16:47:14][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:47:14][0m Aktuelle Version: 1.3.4.6
-[0;32m[2026-02-16 16:47:14] ?[0m Version erhï¿½ht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:47:14] ?[0m Version erhht: 1.3.4.6 -> 1.3.4.7
 [0;32m[2026-02-16 16:47:14] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:47:14] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.7] - 2026-02-16
 
 ### Added
-- Automatisches Release: Version [0;36m[2026-02-16 16:47:14][0m Schritt 1: Version erhï¿½hen...
+- Automatisches Release: Version [0;36m[2026-02-16 16:47:14][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:47:14][0m Aktuelle Version: 1.3.4.6
-[0;32m[2026-02-16 16:47:14] ?[0m Version erhï¿½ht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:47:14] ?[0m Version erhht: 1.3.4.6 -> 1.3.4.7
 [0;32m[2026-02-16 16:47:14] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:47:14] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.7
@@ -217,17 +241,17 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [[0;36m[2026-02-16 16:46:47][0m Schritt 1: Version erhï¿½hen...
+## [[0;36m[2026-02-16 16:46:47][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:46:47][0m Aktuelle Version: 1.3.4.5
-[0;32m[2026-02-16 16:46:47] ?[0m Version erhï¿½ht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:46:47] ?[0m Version erhht: 1.3.4.5 -> 1.3.4.6
 [0;32m[2026-02-16 16:46:47] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:46:47] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.6] - 2026-02-16
 
 ### Added
-- Automatisches Release: Version [0;36m[2026-02-16 16:46:47][0m Schritt 1: Version erhï¿½hen...
+- Automatisches Release: Version [0;36m[2026-02-16 16:46:47][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:46:47][0m Aktuelle Version: 1.3.4.5
-[0;32m[2026-02-16 16:46:47] ?[0m Version erhï¿½ht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:46:47] ?[0m Version erhht: 1.3.4.5 -> 1.3.4.6
 [0;32m[2026-02-16 16:46:47] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:46:47] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.6
@@ -236,17 +260,17 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [[0;36m[2026-02-16 16:44:28][0m Schritt 1: Version erhï¿½hen...
+## [[0;36m[2026-02-16 16:44:28][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:44:28][0m Aktuelle Version: 1.3.4.6
-[0;32m[2026-02-16 16:44:28] ?[0m Version erhï¿½ht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:44:28] ?[0m Version erhht: 1.3.4.6 -> 1.3.4.7
 [0;32m[2026-02-16 16:44:28] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:44:28] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.7] - 2026-02-16
 
 ### Added
-- Automatisches Release: Version [0;36m[2026-02-16 16:44:28][0m Schritt 1: Version erhï¿½hen...
+- Automatisches Release: Version [0;36m[2026-02-16 16:44:28][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:44:28][0m Aktuelle Version: 1.3.4.6
-[0;32m[2026-02-16 16:44:28] ?[0m Version erhï¿½ht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:44:28] ?[0m Version erhht: 1.3.4.6 -> 1.3.4.7
 [0;32m[2026-02-16 16:44:28] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:44:28] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.7
@@ -255,17 +279,17 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [[0;36m[2026-02-16 16:41:24][0m Schritt 1: Version erhï¿½hen...
+## [[0;36m[2026-02-16 16:41:24][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:41:24][0m Aktuelle Version: 1.3.4.5
-[0;32m[2026-02-16 16:41:24] ?[0m Version erhï¿½ht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:41:24] ?[0m Version erhht: 1.3.4.5 -> 1.3.4.6
 [0;32m[2026-02-16 16:41:24] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:41:24] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.6] - 2026-02-16
 
 ### Added
-- Automatisches Release: Version [0;36m[2026-02-16 16:41:24][0m Schritt 1: Version erhï¿½hen...
+- Automatisches Release: Version [0;36m[2026-02-16 16:41:24][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:41:24][0m Aktuelle Version: 1.3.4.5
-[0;32m[2026-02-16 16:41:24] ?[0m Version erhï¿½ht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:41:24] ?[0m Version erhht: 1.3.4.5 -> 1.3.4.6
 [0;32m[2026-02-16 16:41:24] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:41:24] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.6
@@ -274,17 +298,17 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [[0;36m[2026-02-16 16:39:06][0m Schritt 1: Version erhï¿½hen...
+## [[0;36m[2026-02-16 16:39:06][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:39:06][0m Aktuelle Version: 1.3.4.5
-[0;32m[2026-02-16 16:39:06] ?[0m Version erhï¿½ht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:39:06] ?[0m Version erhht: 1.3.4.5 -> 1.3.4.6
 [0;32m[2026-02-16 16:39:06] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:39:06] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.6] - 2026-02-16
 
 ### Added
-- Automatisches Release: Version [0;36m[2026-02-16 16:39:06][0m Schritt 1: Version erhï¿½hen...
+- Automatisches Release: Version [0;36m[2026-02-16 16:39:06][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:39:06][0m Aktuelle Version: 1.3.4.5
-[0;32m[2026-02-16 16:39:06] ?[0m Version erhï¿½ht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:39:06] ?[0m Version erhht: 1.3.4.5 -> 1.3.4.6
 [0;32m[2026-02-16 16:39:06] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:39:06] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.6
@@ -293,18 +317,18 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [[0;36m[2026-02-16 16:38:32][0m Schritt 1: Version erhï¿½hen...
+## [[0;36m[2026-02-16 16:38:32][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:38:32][0m Aktuelle Version: 1.3.4.6
-[0;32m[2026-02-16 16:38:32] ?[0m Version erhï¿½ht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:38:32] ?[0m Version erhht: 1.3.4.6 -> 1.3.4.7
 [0;32m[2026-02-16 16:38:32] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:38:32] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 [sync-version] version -> 1.3.4.7
 1.3.4.7] - 2026-02-16
 
 ### Added
-- Automatisches Release: Version [0;36m[2026-02-16 16:38:32][0m Schritt 1: Version erhï¿½hen...
+- Automatisches Release: Version [0;36m[2026-02-16 16:38:32][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:38:32][0m Aktuelle Version: 1.3.4.6
-[0;32m[2026-02-16 16:38:32] ?[0m Version erhï¿½ht: 1.3.4.6 -> 1.3.4.7
+[0;32m[2026-02-16 16:38:32] ?[0m Version erhht: 1.3.4.6 -> 1.3.4.7
 [0;32m[2026-02-16 16:38:32] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:38:32] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 [sync-version] version -> 1.3.4.7
@@ -314,17 +338,17 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [[0;36m[2026-02-16 16:35:29][0m Schritt 1: Version erhï¿½hen...
+## [[0;36m[2026-02-16 16:35:29][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:35:29][0m Aktuelle Version: 1.3.4.5
-[0;32m[2026-02-16 16:35:29] ?[0m Version erhï¿½ht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:35:29] ?[0m Version erhht: 1.3.4.5 -> 1.3.4.6
 [0;32m[2026-02-16 16:35:29] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:35:29] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.6] - 2026-02-16
 
 ### Added
-- Automatisches Release: Version [0;36m[2026-02-16 16:35:29][0m Schritt 1: Version erhï¿½hen...
+- Automatisches Release: Version [0;36m[2026-02-16 16:35:29][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:35:29][0m Aktuelle Version: 1.3.4.5
-[0;32m[2026-02-16 16:35:29] ?[0m Version erhï¿½ht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:35:29] ?[0m Version erhht: 1.3.4.5 -> 1.3.4.6
 [0;32m[2026-02-16 16:35:29] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:35:29] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 1.3.4.6
@@ -333,18 +357,18 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [[0;36m[2026-02-16 16:32:16][0m Schritt 1: Version erhï¿½hen...
+## [[0;36m[2026-02-16 16:32:16][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:32:16][0m Aktuelle Version: 1.3.4.5
-[0;32m[2026-02-16 16:32:16] ?[0m Version erhï¿½ht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:32:16] ?[0m Version erhht: 1.3.4.5 -> 1.3.4.6
 [0;32m[2026-02-16 16:32:16] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:32:16] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 [sync-version] version -> 1.3.4.6
 1.3.4.6] - 2026-02-16
 
 ### Added
-- Automatisches Release: Version [0;36m[2026-02-16 16:32:16][0m Schritt 1: Version erhï¿½hen...
+- Automatisches Release: Version [0;36m[2026-02-16 16:32:16][0m Schritt 1: Version erhhen...
 [0;36m[2026-02-16 16:32:16][0m Aktuelle Version: 1.3.4.5
-[0;32m[2026-02-16 16:32:16] ?[0m Version erhï¿½ht: 1.3.4.5 -> 1.3.4.6
+[0;32m[2026-02-16 16:32:16] ?[0m Version erhht: 1.3.4.5 -> 1.3.4.6
 [0;32m[2026-02-16 16:32:16] ?[0m Tauri-Version aktualisiert: 1.3.4
 [0;32m[2026-02-16 16:32:16] ?[0m Cargo.toml-Version aktualisiert: 1.3.4
 [sync-version] version -> 1.3.4.6
@@ -354,44 +378,44 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Build-Prozess optimiert
 
 
-## [1.3.4.2] ï¿½ 2026-02
+## [1.3.4.2]  2026-02
 
-### DSI Radio (v2.1.0) ï¿½ NDR-Ton, Backend, Doku
+### DSI Radio (v2.1.0)  NDR-Ton, Backend, Doku
 
-- **NDR 1 / NDR 2 ï¿½ Ton funktioniert:** Die App bevorzugt jetzt getestete Stream-URLs aus `stations.py` (icecast.ndr.de). Wenn NDR 1 oder NDR 2 aus der Sendersuche stammen, werden die oft fehlerhaften addradio.de-URLs durch die funktionierenden icecast-URLs ersetzt. Siehe FAQ: ï¿½NDR 1 / NDR 2: Kein Tonï¿½.
-- **Audio-Ausgabe auf dem Laptop:** Der explizite Pulse-Sink wird nur noch auf dem Freenove-Gerï¿½t gesetzt. Auf dem Linux-Rechner nutzt GStreamer das System-Standard-Ausgabegerï¿½t ï¿½ kein erzwungener Sink mehr, Ton lï¿½uft ï¿½ber das gewï¿½hlte Gerï¿½t.
-- **Backend-Start (PEP 668):** `start-backend.sh` und `start.sh` verwenden durchgï¿½ngig die Venv im Backend-Verzeichnis (`venv/bin/python3`, `venv/bin/pip`). Kein ï¿½externally-managed-environmentï¿½-Fehler mehr bei System-Python 3.12+.
-- **DSI Radio ï¿½ Anweisungen:** Fehlermeldungen und README nennen jetzt ï¿½im Terminal auf dem Linux-Rechnerï¿½, Beispielpfad `/home/volker/piinstaller`, Aufruf mit `sudo bash ï¿½` bei ï¿½Befehl nicht gefundenï¿½. Backend-Hinweis fï¿½r Logos/Sendersuche ergï¿½nzt.
-- **FAQ:** Neuer Eintrag ï¿½NDR 1 / NDR 2: Kein Tonï¿½ (Stream-URL-Preferenz aus stations.py).
+- **NDR 1 / NDR 2  Ton funktioniert:** Die App bevorzugt jetzt getestete Stream-URLs aus `stations.py` (icecast.ndr.de). Wenn NDR 1 oder NDR 2 aus der Sendersuche stammen, werden die oft fehlerhaften addradio.de-URLs durch die funktionierenden icecast-URLs ersetzt. Siehe FAQ: NDR 1 / NDR 2: Kein Ton.
+- **Audio-Ausgabe auf dem Laptop:** Der explizite Pulse-Sink wird nur noch auf dem Freenove-Gert gesetzt. Auf dem Linux-Rechner nutzt GStreamer das System-Standard-Ausgabegert  kein erzwungener Sink mehr, Ton luft ber das gewhlte Gert.
+- **Backend-Start (PEP 668):** `start-backend.sh` und `start.sh` verwenden durchgngig die Venv im Backend-Verzeichnis (`venv/bin/python3`, `venv/bin/pip`). Kein externally-managed-environment-Fehler mehr bei System-Python 3.12+.
+- **DSI Radio  Anweisungen:** Fehlermeldungen und README nennen jetzt im Terminal auf dem Linux-Rechner, Beispielpfad `/home/volker/piinstaller`, Aufruf mit `sudo bash ` bei Befehl nicht gefunden. Backend-Hinweis fr Logos/Sendersuche ergnzt.
+- **FAQ:** Neuer Eintrag NDR 1 / NDR 2: Kein Ton (Stream-URL-Preferenz aus stations.py).
 
 ### Dokumentation
 
-- **apps/dsi_radio/README.md:** Linux-Terminal-Anweisungen, Backend fï¿½r Logos/Sendersuche, ï¿½Befehl nicht gefundenï¿½ mit `sudo bash` und Zeilenumbrï¿½che.
-- **docs/START_APPS.md:** Backend manuell im Terminal starten (z. B. Laptop); DSI-Radio-Bedarf am Backend erwï¿½hnt.
+- **apps/dsi_radio/README.md:** Linux-Terminal-Anweisungen, Backend fr Logos/Sendersuche, Befehl nicht gefunden mit `sudo bash` und Zeilenumbrche.
+- **docs/START_APPS.md:** Backend manuell im Terminal starten (z. B. Laptop); DSI-Radio-Bedarf am Backend erwhnt.
 
 ---
 
-## [1.3.4.1] ï¿½ 2026-02
+## [1.3.4.1]  2026-02
 
-### Radio-App (DSI Radio) ï¿½ Metadaten-Verbesserungen
+### Radio-App (DSI Radio)  Metadaten-Verbesserungen
 
-- **System-Metadaten aus PulseAudio/PipeWire:** Die App liest jetzt Titel/Interpret direkt aus dem Lautstï¿½rkeregler-System (PulseAudio/PipeWire) ï¿½ dieselbe Quelle wie der System-OSD. Fallback wenn Backend/GStreamer keine Metadaten liefern.
-- **"Es lï¿½uft:" immer sichtbar:** Die Zeile "Es lï¿½uft:" bleibt immer sichtbar, auch wenn kein Sendungsname vorliegt (zeigt dann nur "Es lï¿½uft:" ohne Text dahinter).
-- **Logo und Sendername beim Wiederherstellen:** Beim App-Start wird der zuletzt angehï¿½rte Sender korrekt wiederhergestellt ï¿½ Logo und Sendername werden sofort aktualisiert.
-- **Show-Metadaten-Erkennung:** Sendungsnamen wie "Die Show" oder "1LIVE Liebesalarm" werden automatisch als Show-Metadaten erkannt und erscheinen hinter "Es lï¿½uft:", nicht mehr als Titel/Interpret.
-- **Interpret-Textgrï¿½ï¿½e:** Interpret-Label hat jetzt die gleiche Schriftgrï¿½ï¿½e wie der Titel (14 statt 13), bleibt aber nicht fett dargestellt.
+- **System-Metadaten aus PulseAudio/PipeWire:** Die App liest jetzt Titel/Interpret direkt aus dem Lautstrkeregler-System (PulseAudio/PipeWire)  dieselbe Quelle wie der System-OSD. Fallback wenn Backend/GStreamer keine Metadaten liefern.
+- **"Es luft:" immer sichtbar:** Die Zeile "Es luft:" bleibt immer sichtbar, auch wenn kein Sendungsname vorliegt (zeigt dann nur "Es luft:" ohne Text dahinter).
+- **Logo und Sendername beim Wiederherstellen:** Beim App-Start wird der zuletzt angehrte Sender korrekt wiederhergestellt  Logo und Sendername werden sofort aktualisiert.
+- **Show-Metadaten-Erkennung:** Sendungsnamen wie "Die Show" oder "1LIVE Liebesalarm" werden automatisch als Show-Metadaten erkannt und erscheinen hinter "Es luft:", nicht mehr als Titel/Interpret.
+- **Interpret-Textgre:** Interpret-Label hat jetzt die gleiche Schriftgre wie der Titel (14 statt 13), bleibt aber nicht fett dargestellt.
 
 ---
 
-## [1.3.4.0] ï¿½ 2026-02
+## [1.3.4.0]  2026-02
 
-### Systemweite Installation gemï¿½ï¿½ Linux FHS
+### Systemweite Installation gem Linux FHS
 
-- **Neue Installationsmethode:** Systemweite Installation nach `/opt/pi-installer/` gemï¿½ï¿½ Linux Filesystem Hierarchy Standard (FHS)
+- **Neue Installationsmethode:** Systemweite Installation nach `/opt/pi-installer/` gem Linux Filesystem Hierarchy Standard (FHS)
 - **Installations-Skripte:**
-  - `scripts/install-system.sh` ï¿½ Systemweite Installation nach `/opt/pi-installer/`
-  - `scripts/update-system.sh` ï¿½ Update-Skript fï¿½r bestehende Installationen
-  - `scripts/install.sh` ï¿½ Wrapper mit interaktiver Auswahl zwischen beiden Methoden
+  - `scripts/install-system.sh`  Systemweite Installation nach `/opt/pi-installer/`
+  - `scripts/update-system.sh`  Update-Skript fr bestehende Installationen
+  - `scripts/install.sh`  Wrapper mit interaktiver Auswahl zwischen beiden Methoden
 - **Installationsverzeichnisse:**
   - Programm: `/opt/pi-installer/`
   - Konfiguration: `/etc/pi-installer/`
@@ -399,116 +423,116 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
   - Symlinks: `/usr/local/bin/` (globale Befehle wie `pi-installer`, `pi-installer-backend`)
 - **Umgebungsvariablen:** Automatisch in `/etc/profile.d/pi-installer.sh` gesetzt
 - **systemd Service:** Verbesserte Sicherheitseinstellungen (NoNewPrivileges, PrivateTmp, ProtectSystem)
-- **Dokumentation:** Neue Dokumentation `docs/SYSTEM_INSTALLATION.md` mit vollstï¿½ndiger Anleitung
-- **GitHub-Integration:** Alle Installations-Skripte direkt von GitHub verfï¿½gbar ï¿½ber Raw-URLs
+- **Dokumentation:** Neue Dokumentation `docs/SYSTEM_INSTALLATION.md` mit vollstndiger Anleitung
+- **GitHub-Integration:** Alle Installations-Skripte direkt von GitHub verfgbar ber Raw-URLs
 
-### Dual Display X11 ï¿½ Frï¿½he Konfiguration
+### Dual Display X11  Frhe Konfiguration
 
-- **LightDM Integration:** Verwendet `session-setup-script` fï¿½r frï¿½he Display-Konfiguration nach Login
+- **LightDM Integration:** Verwendet `session-setup-script` fr frhe Display-Konfiguration nach Login
 - **Position korrekt:** DSI-1 wird zuerst gesetzt (links unten 0x1440), dann HDMI-1-2 (rechts oben 480x0)
 - **Keine mehrfachen Umschaltungen:** Atomare Konfiguration in einem xrandr-Befehl
-- **Alte Skripte deaktiviert:** Automatische Deaktivierung von `enable-hdmi.sh` und verzï¿½gerten Autostart-Skripten
-- **Skript:** `scripts/fix-gabriel-dual-display-x11-early.sh` fï¿½r optimierte frï¿½he Konfiguration
+- **Alte Skripte deaktiviert:** Automatische Deaktivierung von `enable-hdmi.sh` und verzgerten Autostart-Skripten
+- **Skript:** `scripts/fix-gabriel-dual-display-x11-early.sh` fr optimierte frhe Konfiguration
 
 ---
 
-## [1.3.3.0] ï¿½ 2026-02
+## [1.3.3.0]  2026-02
 
-### Dual Display X11 ï¿½ stabil ohne stï¿½ndiges Umschalten
+### Dual Display X11  stabil ohne stndiges Umschalten
 
-- **Stand:** DSI + HDMI unter X11 lï¿½uft jetzt richtig; Position (DSI links unten, HDMI rechts oben), Desktop/Hintergrund auf HDMI (Primary), keine stï¿½ndige Umschaltung mehr.
-- **Maï¿½nahmen:** Atomarer xrandr-Befehl (beide Ausgaben in einem Aufruf); .xprofile setzt Layout nach 8 s und startet ~10 s nach Login PCManFM-Desktop neu (Trigger: Desktop ? Primary/HDMI); delayed-Script wendet Layout nach 8 s und 16 s an; optional `fix-desktop-on-hdmi-x11.sh` zum manuellen Neustart des Desktops.
-- **Dokumentation:** [docs/DSI_HDMI_SPIEGELUNG_X11.md](docs/DSI_HDMI_SPIEGELUNG_X11.md) ï¿½ Spiegelung, Position, Desktop auf HDMI, Trigger, Beschleunigung (~10 s), FAQ-Verweise.
-- **FAQ:** Eintrag ï¿½Dual Display X11 (DSI + HDMI) ï¿½ Desktop auf HDMI, stabilï¿½ ergï¿½nzt; bestehender Eintrag zur DSI-Spiegelung beibehalten.
+- **Stand:** DSI + HDMI unter X11 luft jetzt richtig; Position (DSI links unten, HDMI rechts oben), Desktop/Hintergrund auf HDMI (Primary), keine stndige Umschaltung mehr.
+- **Manahmen:** Atomarer xrandr-Befehl (beide Ausgaben in einem Aufruf); .xprofile setzt Layout nach 8 s und startet ~10 s nach Login PCManFM-Desktop neu (Trigger: Desktop ? Primary/HDMI); delayed-Script wendet Layout nach 8 s und 16 s an; optional `fix-desktop-on-hdmi-x11.sh` zum manuellen Neustart des Desktops.
+- **Dokumentation:** [docs/DSI_HDMI_SPIEGELUNG_X11.md](docs/DSI_HDMI_SPIEGELUNG_X11.md)  Spiegelung, Position, Desktop auf HDMI, Trigger, Beschleunigung (~10 s), FAQ-Verweise.
+- **FAQ:** Eintrag Dual Display X11 (DSI + HDMI)  Desktop auf HDMI, stabil ergnzt; bestehender Eintrag zur DSI-Spiegelung beibehalten.
 
 ---
 
-## [1.3.2.0] ï¿½ 2026-02
+## [1.3.2.0]  2026-02
 
-### Dual Display X11 ï¿½ DSI-Spiegelung auf HDMI
+### Dual Display X11  DSI-Spiegelung auf HDMI
 
 - **Problem:** Der komplette DSI-1-Desktop wurde oben links auf HDMI-1-2 gespiegelt (nicht nur ein Fenster). Ursache: Pi-KMS/DRM-Treiber legt die HDMI-Scanout-Region nicht korrekt ab Offset (480,0).
-- **Maï¿½nahmen in Scripts:** Explizite Framebuffer-Grï¿½ï¿½e `xrandr --fb 3920x2240`; Konfiguration **HDMI vor DSI** (HDMI 480x0, dann DSI 0x1440). Angepasst: `fix-gabriel-dual-display-x11.sh`, `.xprofile`, `.screenlayout`, `apply-dual-display-x11-delayed.sh`, `fix-dsi-position-x11.sh`.
-- **Dokumentation:** [docs/DSI_HDMI_SPIEGELUNG_X11.md](docs/DSI_HDMI_SPIEGELUNG_X11.md) ï¿½ Problem, umgesetzte Maï¿½nahmen, optionale config.txt-Workarounds, manuelle Tests.
-- **FAQ:** Neuer Eintrag ï¿½DSI-Desktop oben links auf HDMI gespiegelt (X11)ï¿½ in der App-Dokumentation (Dokumentation ? FAQ) und Verweis in docs/VIDEO_TUTORIALS.md.
+- **Manahmen in Scripts:** Explizite Framebuffer-Gre `xrandr --fb 3920x2240`; Konfiguration **HDMI vor DSI** (HDMI 480x0, dann DSI 0x1440). Angepasst: `fix-gabriel-dual-display-x11.sh`, `.xprofile`, `.screenlayout`, `apply-dual-display-x11-delayed.sh`, `fix-dsi-position-x11.sh`.
+- **Dokumentation:** [docs/DSI_HDMI_SPIEGELUNG_X11.md](docs/DSI_HDMI_SPIEGELUNG_X11.md)  Problem, umgesetzte Manahmen, optionale config.txt-Workarounds, manuelle Tests.
+- **FAQ:** Neuer Eintrag DSI-Desktop oben links auf HDMI gespiegelt (X11) in der App-Dokumentation (Dokumentation ? FAQ) und Verweis in docs/VIDEO_TUTORIALS.md.
 
 ---
 
-## [1.3.1.0] ï¿½ 2026-02
+## [1.3.1.0]  2026-02
 
-### Backup & Restore ï¿½ Laufwerk klonen & NVMe
+### Backup & Restore  Laufwerk klonen & NVMe
 
-- **Laufwerk klonen:** Neue Funktion in Backup & Restore ï¿½ System von SD-Karte auf NVMe/USB-SSD klonen (Hybrid-Boot: Kernel von SD, Root von NVMe). rsync-basiert, fstab und cmdline.txt werden automatisch angepasst.
-- **NVMe-Erkennung:** Ziel-Laufwerke (NVMe, USB, SATA) werden ï¿½ber disk-info API erkannt und im Clone-Tab angezeigt. Modell, Grï¿½ï¿½e und Mount-Status sichtbar.
-- **Festgestellte Probleme:** Siehe Dokumentation ? FAQ fï¿½r bekannte Einschrï¿½nkungen und Lï¿½sungswege (z.?B. NVMe-Pfade nach Clone, Dualdisplay-Konfiguration, Freenove-Case-Anpassungen).
+- **Laufwerk klonen:** Neue Funktion in Backup & Restore  System von SD-Karte auf NVMe/USB-SSD klonen (Hybrid-Boot: Kernel von SD, Root von NVMe). rsync-basiert, fstab und cmdline.txt werden automatisch angepasst.
+- **NVMe-Erkennung:** Ziel-Laufwerke (NVMe, USB, SATA) werden ber disk-info API erkannt und im Clone-Tab angezeigt. Modell, Gre und Mount-Status sichtbar.
+- **Festgestellte Probleme:** Siehe Dokumentation ? FAQ fr bekannte Einschrnkungen und Lsungswege (z.?B. NVMe-Pfade nach Clone, Dualdisplay-Konfiguration, Freenove-Case-Anpassungen).
 
-### DSI-Radio (Freenove TFT ï¿½ native PyQt6-App)
+### DSI-Radio (Freenove TFT  native PyQt6-App)
 
-- **Lautstï¿½rke:** Regler steuert den aktiven Kanal (PulseAudio: `pactl set-sink-volume @DEFAULT_SINK@`; Fallback: ALSA amixer Master/PCM). Regler rechts neben Senderbuttons, oberhalb des Seitenumschalters (1/2 ?), silber umrandet.
-- **Radioanzeige:** Logo links (96ï¿½96), rechts schwarzer Klavierlack-Rahmen mit leuchtend grï¿½ner Anzeige und schwarzer Schrift; Schlieï¿½en-Button (?) in der Anzeige; Uhr mit Datum, kompakt.
-- **D/A-Umschalter:** Langgestrecktes rotes O mit rundem schwarzem Schieber, D (Digital/LED) und A (Analog); analoge VU-Anzeige mit Skala 0ï¿½100 %, rechts roter Bereich, Zeiger begrenzt durch Lautstï¿½rke.
+- **Lautstrke:** Regler steuert den aktiven Kanal (PulseAudio: `pactl set-sink-volume @DEFAULT_SINK@`; Fallback: ALSA amixer Master/PCM). Regler rechts neben Senderbuttons, oberhalb des Seitenumschalters (1/2 ?), silber umrandet.
+- **Radioanzeige:** Logo links (9696), rechts schwarzer Klavierlack-Rahmen mit leuchtend grner Anzeige und schwarzer Schrift; Schlieen-Button (?) in der Anzeige; Uhr mit Datum, kompakt.
+- **D/A-Umschalter:** Langgestrecktes rotes O mit rundem schwarzem Schieber, D (Digital/LED) und A (Analog); analoge VU-Anzeige mit Skala 0100 %, rechts roter Bereich, Zeiger begrenzt durch Lautstrke.
 
 ### Dokumentation
 
-- **Neue Bereiche:** ï¿½Freenove Pro ï¿½ 4,3? Touchscreen im Gehï¿½useï¿½ und ï¿½Dualdisplay DSI0 + HDMI1 ï¿½ Zwei Monitore gleichzeitigï¿½ mit Tips & Tricks.
-- **Lernbereich:** Themenblock ï¿½Touchscreen am DSI0 Portï¿½ ergï¿½nzt.
-- **FAQ:** Aus Troubleshooting eine vollstï¿½ndige FAQ mit Fehlername, Beschreibung und Lï¿½sungen; funktionales Design mit logischer Farbgebung; FAQ-Eintrag ï¿½DSI-Radio: Lautstï¿½rke funktioniert nichtï¿½ ergï¿½nzt.
+- **Neue Bereiche:** Freenove Pro  4,3? Touchscreen im Gehuse und Dualdisplay DSI0 + HDMI1  Zwei Monitore gleichzeitig mit Tips & Tricks.
+- **Lernbereich:** Themenblock Touchscreen am DSI0 Port ergnzt.
+- **FAQ:** Aus Troubleshooting eine vollstndige FAQ mit Fehlername, Beschreibung und Lsungen; funktionales Design mit logischer Farbgebung; FAQ-Eintrag DSI-Radio: Lautstrke funktioniert nicht ergnzt.
 
 ---
 
-## [1.3.0.1] ï¿½ 2026-02
+## [1.3.0.1]  2026-02
 
 ### Backup & Restore
 
-- **Cloud-Backups lï¿½schen:** Lï¿½schung von Cloud-Backups (WebDAV/Seafile) funktioniert; URL-Konstruktion aus PROPFIND-`href` korrigiert (`base_domain + href`); Debug-Info in Response fï¿½r Fehlerfï¿½lle.
-- **USB ? Cloud Wechsel:** Beim Wechsel von USB zu Cloud und zurï¿½ck werden die Backups des zuvor gemounteten USB-Sticks wieder geladen; `loadBackups(dirOverride)` und explizites Setzen von `backupDir` + Aufruf beim USB-Button.
-- **Kein Cloud-Upload bei USB-Ziel:** Backups mit Ziel USB-Stick werden nicht mehr zusï¿½tzlich in die Cloud hochgeladen; Backend lï¿½dt nur noch bei `target` `cloud_only` oder `local_and_cloud`, nicht bei `local`.
+- **Cloud-Backups lschen:** Lschung von Cloud-Backups (WebDAV/Seafile) funktioniert; URL-Konstruktion aus PROPFIND-`href` korrigiert (`base_domain + href`); Debug-Info in Response fr Fehlerflle.
+- **USB ? Cloud Wechsel:** Beim Wechsel von USB zu Cloud und zurck werden die Backups des zuvor gemounteten USB-Sticks wieder geladen; `loadBackups(dirOverride)` und explizites Setzen von `backupDir` + Aufruf beim USB-Button.
+- **Kein Cloud-Upload bei USB-Ziel:** Backups mit Ziel USB-Stick werden nicht mehr zustzlich in die Cloud hochgeladen; Backend ldt nur noch bei `target` `cloud_only` oder `local_and_cloud`, nicht bei `local`.
 
 ---
 
-## [1.3.0.0] ï¿½ 2026-02
+## [1.3.0.0]  2026-02
 
-### Transformationsplan: ï¿½Raspberry Discovery Boxï¿½
+### Transformationsplan: Raspberry Discovery Box
 
 - **App Store:** Neue Seite mit 7 Apps (Home Assistant, Nextcloud, Pi-hole, Jellyfin, WordPress, VS Code Server, Node-RED); Kachel-Layout, Suche, Kategorien; Ein-Klick-Installation (API vorbereitet, Implementierung folgt).
-- **First-Run-Wizard:** Beim ersten Start: Willkommen ? Optional (Netzwerk/Sicherheit/Backup) ? ï¿½Was mï¿½chtest du tun?ï¿½ (Smart Home, Cloud, Medien, Entwickeln) ? Empfohlene Apps ? App Store.
-- **Dashboard-Redesign:** Hero ï¿½Dein Raspberry Pi lï¿½uft!ï¿½, groï¿½er Status (Alles OK / Aktion benï¿½tigt), Ressourcen-Ampel (CPU/RAM/Speicher), Schnellaktionen (Neue App installieren, Backup erstellen, System updaten).
-- **Mobile:** Hamburger-Menï¿½ auf kleinen Screens; Sidebar als Overlay; touch-freundlich; responsive Padding.
+- **First-Run-Wizard:** Beim ersten Start: Willkommen ? Optional (Netzwerk/Sicherheit/Backup) ? Was mchtest du tun? (Smart Home, Cloud, Medien, Entwickeln) ? Empfohlene Apps ? App Store.
+- **Dashboard-Redesign:** Hero Dein Raspberry Pi luft!, groer Status (Alles OK / Aktion bentigt), Ressourcen-Ampel (CPU/RAM/Speicher), Schnellaktionen (Neue App installieren, Backup erstellen, System updaten).
+- **Mobile:** Hamburger-Men auf kleinen Screens; Sidebar als Overlay; touch-freundlich; responsive Padding.
 - **Kontextsensitive Hilfe:** HelpTooltip-Komponente (?-Icon) an Dashboard und App Store.
-- **Einstellungen:** Option ï¿½Erfahrene Einstellungen anzeigenï¿½ (versteckt; blendet Grundlegende Einstellungen und Dokumentations-Screenshots ein).
-- **Fehlerfreundliche Texte:** App-Store-Installation: ï¿½Huch, das hat nicht geklappt ï¿½ï¿½ statt technischer Fehlermeldung.
+- **Einstellungen:** Option Erfahrene Einstellungen anzeigen (versteckt; blendet Grundlegende Einstellungen und Dokumentations-Screenshots ein).
+- **Fehlerfreundliche Texte:** App-Store-Installation: Huch, das hat nicht geklappt  statt technischer Fehlermeldung.
 - **Installer & Docs:** Single-Script-Installer (`create_installer.sh`), systemd-Service (`pi-installer.service`), One-Click-Dokumentation (get.pi-installer.io); Python 3.9+ in Doku und requirements.
 
 ---
 
-## [1.2.0.6] ï¿½ 2026-02
+## [1.2.0.6]  2026-02
 
 ### NAS: Duplikat-Finder (Phase 1)
 
-- **Duplikate & Aufrï¿½umen:** Neuer Bereich in der NAS-Seite ï¿½ fdupes/jdupes installieren, Verzeichnis scannen, Duplikate in Backup verschieben (statt lï¿½schen).
-- **Installation:** Fallback auf jdupes, wenn fdupes nicht verfï¿½gbar; klarere Fehlermeldungen von apt.
-- **Scan:** Vorgeschlagener Pfad (Heimatverzeichnis, wenn /mnt/nas nicht existiert); Option ï¿½System-/Cache-Verzeichnisse ausschlieï¿½enï¿½ (.cache, mesa_shader, __pycache__, node_modules, .git, Trash) ï¿½ Standard: an.
+- **Duplikate & Aufrumen:** Neuer Bereich in der NAS-Seite  fdupes/jdupes installieren, Verzeichnis scannen, Duplikate in Backup verschieben (statt lschen).
+- **Installation:** Fallback auf jdupes, wenn fdupes nicht verfgbar; klarere Fehlermeldungen von apt.
+- **Scan:** Vorgeschlagener Pfad (Heimatverzeichnis, wenn /mnt/nas nicht existiert); Option System-/Cache-Verzeichnisse ausschlieen (.cache, mesa_shader, __pycache__, node_modules, .git, Trash)  Standard: an.
 - **API:** `POST /api/nas/duplicates/install`, `POST /api/nas/duplicates/scan`, `POST /api/nas/duplicates/move-to-backup`.
-- **Dokumentation:** INSTALL.md ï¿½ Troubleshooting Duplikat-Finder-Installation; NAS-Dokumentation um Duplikate-Bereich ergï¿½nzt.
+- **Dokumentation:** INSTALL.md  Troubleshooting Duplikat-Finder-Installation; NAS-Dokumentation um Duplikate-Bereich ergnzt.
 
 ---
 
-## [1.2.0.5] ï¿½ 2026-02
+## [1.2.0.5]  2026-02
 
 ### Dokumentation
 
-- **Raspberry Pi 5: Kein Ton ï¿½ber HDMI** ï¿½ Troubleshooting erweitert: typische Symptome (amixer ï¿½cannot find card 0ï¿½, /dev/snd/ nur seq/timer, PipeWire nur Dummy Output), Ursache (fehlender Overlay vc4-kms-v3d-pi5), konkrete Schritte. In App-Dokumentation (Troubleshooting), INSTALL.md und PI_OPTIMIZATION.md ergï¿½nzt.
+- **Raspberry Pi 5: Kein Ton ber HDMI**  Troubleshooting erweitert: typische Symptome (amixer cannot find card 0, /dev/snd/ nur seq/timer, PipeWire nur Dummy Output), Ursache (fehlender Overlay vc4-kms-v3d-pi5), konkrete Schritte. In App-Dokumentation (Troubleshooting), INSTALL.md und PI_OPTIMIZATION.md ergnzt.
 
 ---
 
-## [1.2.0.4] ï¿½ 2026-02
+## [1.2.0.4]  2026-02
 
 ### Pi-Optimierung & Erkennung
 
-- **Pi-Erkennung:** Fallback ï¿½ber Device-Tree (`/proc/device-tree/model`) ï¿½ Raspberry Pi wird auch erkannt, wenn vcgencmd/cpuinfo fehlschlagen.
-- **Raspberry Pi Config:** Menï¿½punkt erscheint nun zuverlï¿½ssig, sobald ein Pi erkannt wird.
-- **CPU-Auslastung reduziert:** Light-Modus fï¿½r Polling (`/api/system-info?light=1`); Dashboard-Polling auf dem Pi alle 30 s; Monitoring ohne Live-Polling auf dem Pi; Auslastung nur noch im Dashboard, nicht in Submenï¿½s.
-- **UI:** Card-Hover ohne Bewegung (nur Farbwechsel); StatCard-Icon ohne Animation; Hardware & Sensoren: Stats-Merge behï¿½lt Sensoren/Laufwerke beim Polling.
+- **Pi-Erkennung:** Fallback ber Device-Tree (`/proc/device-tree/model`)  Raspberry Pi wird auch erkannt, wenn vcgencmd/cpuinfo fehlschlagen.
+- **Raspberry Pi Config:** Menpunkt erscheint nun zuverlssig, sobald ein Pi erkannt wird.
+- **CPU-Auslastung reduziert:** Light-Modus fr Polling (`/api/system-info?light=1`); Dashboard-Polling auf dem Pi alle 30 s; Monitoring ohne Live-Polling auf dem Pi; Auslastung nur noch im Dashboard, nicht in Submens.
+- **UI:** Card-Hover ohne Bewegung (nur Farbwechsel); StatCard-Icon ohne Animation; Hardware & Sensoren: Stats-Merge behlt Sensoren/Laufwerke beim Polling.
 
 ### Dokumentation
 
@@ -516,57 +540,57 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.2.0.3] ï¿½ 2026-02
+## [1.2.0.3]  2026-02
 
 ### Mixer-Installation
 
-- **Backend:** Update und Install in zwei Schritten (`apt-get update`, dann `apt-get install`); Dpkg-Optionen `--force-confdef`/`--force-confold` fï¿½r nicht-interaktive Installation; bei Fehler wird `copyable_command` zurï¿½ckgegeben; Timeout-Meldung klarer.
-- **Frontend (Musikbox & Kino/Streaming):** Bei Fehler erscheint unter den Mixer-Buttons ein Hinweis ï¿½Installation fehlgeschlagen. Manuell im Terminal ausfï¿½hren:ï¿½ mit Befehl und **Kopieren**-Button.
+- **Backend:** Update und Install in zwei Schritten (`apt-get update`, dann `apt-get install`); Dpkg-Optionen `--force-confdef`/`--force-confold` fr nicht-interaktive Installation; bei Fehler wird `copyable_command` zurckgegeben; Timeout-Meldung klarer.
+- **Frontend (Musikbox & Kino/Streaming):** Bei Fehler erscheint unter den Mixer-Buttons ein Hinweis Installation fehlgeschlagen. Manuell im Terminal ausfhren: mit Befehl und **Kopieren**-Button.
 
 ---
 
-## [1.2.0.2] ï¿½ 2026-02
+## [1.2.0.2]  2026-02
 
-### Geï¿½ndert
+### Gendert
 
-- **Dashboard ï¿½ Hardware & Sensoren:** Bereich ï¿½Systeminformationenï¿½ entfernt (ist bereits in der ï¿½bersicht sichtbar).
+- **Dashboard  Hardware & Sensoren:** Bereich Systeminformationen entfernt (ist bereits in der bersicht sichtbar).
 - **CPU & Grafik:** Treiber-Hinweise (NVIDIA/AMD/Intel) werden nicht mehr unter der CPU angezeigt, sondern unter der jeweiligen Grafikkarte (iGPU bzw. diskret).
 
 ### Dokumentation
 
-- In der Anzeige (Dokumentation ? Versionen & Changelog) nur die Endversion mit Details; ï¿½ltere Updates kompakt bzw. ï¿½berspringbar.
+- In der Anzeige (Dokumentation ? Versionen & Changelog) nur die Endversion mit Details; ltere Updates kompakt bzw. berspringbar.
 
 ---
 
-## [1.2.0.1] ï¿½ 2026-02
+## [1.2.0.1]  2026-02
 
 ### Behoben
 
-- **Dashboard ï¿½ IP-Adressen:** Text unter den IPs (ï¿½Mit dieser IP von anderen Gerï¿½ten erreichbarï¿½ï¿½) war anthrazit und bei Hover unleserlich ? jetzt `text-slate-200` und Link `text-sky-200`.
-- **Dashboard ï¿½ Updates:** Zeile ï¿½X Notwendig ï¿½ Y Optionalï¿½ war zu blass ? jetzt `text-slate-200` / `text-slate-100` fï¿½r bessere Lesbarkeit.
-- **Dashboard ï¿½ Menï¿½:** Buttons ï¿½ï¿½bersichtï¿½, ï¿½Auslastung & Grafikï¿½, ï¿½Hardware & Sensorenï¿½ ï¿½ inaktive Buttons hatten fast gleiche Farbe wie Schrift ? jetzt `text-slate-200`, `bg-slate-700/70`, Hover `bg-slate-600`.
-- **CPU & Grafik:** Es wurden 32 ï¿½Prozessorenï¿½ (Threads) gelistet ? ersetzt durch **eine** CPU-Zusammenfassung: Name, Kerne, Threads, Cache (L1ï¿½L3), Befehlssï¿½tze (aufklappbar), Chipsatz/Mainboard; integrierte Grafik und Grafikkarte unverï¿½ndert; Auslastung nur noch physikalische Kerne (keine Thread-Liste).
-- **Mixer-Installation:** Installation schlug weiterhin fehl ? Sudo-Passwort wird getrimmt; `apt-get update -qq` vor install; `DEBIAN_FRONTEND=noninteractive` fï¿½r update und install; Timeout 180s; Fehlermeldung bis 600 Zeichen; Logging bei Fehler.
+- **Dashboard  IP-Adressen:** Text unter den IPs (Mit dieser IP von anderen Gerten erreichbar) war anthrazit und bei Hover unleserlich ? jetzt `text-slate-200` und Link `text-sky-200`.
+- **Dashboard  Updates:** Zeile X Notwendig  Y Optional war zu blass ? jetzt `text-slate-200` / `text-slate-100` fr bessere Lesbarkeit.
+- **Dashboard  Men:** Buttons bersicht, Auslastung & Grafik, Hardware & Sensoren  inaktive Buttons hatten fast gleiche Farbe wie Schrift ? jetzt `text-slate-200`, `bg-slate-700/70`, Hover `bg-slate-600`.
+- **CPU & Grafik:** Es wurden 32 Prozessoren (Threads) gelistet ? ersetzt durch **eine** CPU-Zusammenfassung: Name, Kerne, Threads, Cache (L1L3), Befehlsstze (aufklappbar), Chipsatz/Mainboard; integrierte Grafik und Grafikkarte unverndert; Auslastung nur noch physikalische Kerne (keine Thread-Liste).
+- **Mixer-Installation:** Installation schlug weiterhin fehl ? Sudo-Passwort wird getrimmt; `apt-get update -qq` vor install; `DEBIAN_FRONTEND=noninteractive` fr update und install; Timeout 180s; Fehlermeldung bis 600 Zeichen; Logging bei Fehler.
 
 ### Backend
 
-- `get_cpu_summary()`: Liest aus /proc/cpuinfo und lscpu Name, Kerne, Threads, Cache (L1ï¿½L3), Befehlssï¿½tze (flags).
+- `get_cpu_summary()`: Liest aus /proc/cpuinfo und lscpu Name, Kerne, Threads, Cache (L1L3), Befehlsstze (flags).
 - System-Info liefert `cpu_summary`; `hardware.cpus` wird auf einen Eintrag reduziert (keine Liste aller Threads).
 
 ---
 
-## [1.2.0.0] ï¿½ 2026-02
+## [1.2.0.0]  2026-02
 
 ### Neu
 
-- **Musikbox fertig:** Musikbox-Bereich abgeschlossen ï¿½ Mixer-Buttons (pavucontrol/qpwgraph), Installation der Mixer-Programme per Knopfdruck (pavucontrol & qpwgraph), Sudo-Modal fï¿½r Mixer-Installation.
-- **Mixer:** Mixer in Musikbox und Kino/Streaming eingebaut ï¿½ ï¿½Mixer ï¿½ffnen (pavucontrol)ï¿½ / ï¿½Mixer ï¿½ffnen (qpwgraph)ï¿½ starten die GUI-Mixer; ï¿½Mixer-Programme installierenï¿½ installiert pavucontrol und qpwgraph per apt; Backend setzt `DISPLAY=:0` fï¿½r GUI-Start; Installation mit `DEBIAN_FRONTEND=noninteractive` fï¿½r robuste apt-Installation.
+- **Musikbox fertig:** Musikbox-Bereich abgeschlossen  Mixer-Buttons (pavucontrol/qpwgraph), Installation der Mixer-Programme per Knopfdruck (pavucontrol & qpwgraph), Sudo-Modal fr Mixer-Installation.
+- **Mixer:** Mixer in Musikbox und Kino/Streaming eingebaut  Mixer ffnen (pavucontrol) / Mixer ffnen (qpwgraph) starten die GUI-Mixer; Mixer-Programme installieren installiert pavucontrol und qpwgraph per apt; Backend setzt `DISPLAY=:0` fr GUI-Start; Installation mit `DEBIAN_FRONTEND=noninteractive` fr robuste apt-Installation.
 - **Dashboard:** Erweiterungen und Quick-Links; Versionsnummer und Changelog auf 1.2.0.0 aktualisiert.
 
 ### API
 
-- `POST /api/system/run-mixer` ï¿½ Grafischen Mixer starten (Body: `{"app": "pavucontrol"}` oder `{"app": "qpwgraph"}`).
-- `POST /api/system/install-mixer-packages` ï¿½ pavucontrol und qpwgraph installieren (Body optional: `{"sudo_password": "..."}`).
+- `POST /api/system/run-mixer`  Grafischen Mixer starten (Body: `{"app": "pavucontrol"}` oder `{"app": "qpwgraph"}`).
+- `POST /api/system/install-mixer-packages`  pavucontrol und qpwgraph installieren (Body optional: `{"sudo_password": "..."}`).
 
 ### Dokumentation
 
@@ -576,11 +600,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.0.4.0] ï¿½ 2026-01
+## [1.0.4.0]  2026-01
 
 - Sicherheit-Anzeige im Dashboard (2/5 aktiviert bei Firewall + Fail2Ban).
 - Dokumentation & Changelog aktualisiert.
 
 ---
 
-ï¿½ltere Eintrï¿½ge siehe **Dokumentation** in der App (Versionen & Changelog).
+ltere Eintrge siehe **Dokumentation** in der App (Versionen & Changelog).

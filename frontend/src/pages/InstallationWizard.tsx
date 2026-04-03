@@ -6,6 +6,7 @@ import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import { PandaCompanion, PandaRail, type PandaStatus } from '../components/companions'
+import PageHeader from '../components/layout/PageHeader'
 
 const InstallationWizard: React.FC = () => {
   const { isRaspberryPi, pageSubtitleLabel, wizardWelcomeHeadline } = usePlatform()
@@ -175,15 +176,13 @@ const InstallationWizard: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div>
-        <div className="page-title-category mb-2 inline-flex">
-          <h1 className="flex items-center gap-3">
-            <AppIcon name="installation" category="navigation" size={32} />
-            Setupflow
-          </h1>
-        </div>
-        <p className="text-slate-400">Geführte Einrichtung – {pageSubtitleLabel}</p>
-      </div>
+      <PageHeader
+        visualStyle="hero-card"
+        tone="setup"
+        title="Setupflow"
+        subtitle={`Geführte Einrichtung – ${pageSubtitleLabel}`}
+        badge={<AppIcon name="installation" category="navigation" size={32} className="shrink-0" />}
+      />
 
       <PandaRail>
         <PandaCompanion

@@ -1,21 +1,63 @@
-import type { PandaType } from "./pandaTypes";
-import { mascotPublicUrl } from "../../lib/mascotPublicUrl";
+import type { PandaModuleType, PandaType } from "./pandaTypes";
+import { PANDA_MODULE_TYPES } from "./pandaTypes";
+import {
+  getCompanionBaseDisplayUrl,
+  getCompanionOverlayUrl,
+} from "./companionAssetManifest";
+import {
+  COMPANION_NEUTRAL_BUNDLED_PNG_URL,
+  COMPANION_USES_BUNDLED_VARIANT_PNG,
+  COMPANION_VARIANT_BUNDLED_PNG_URL,
+  getBundledCompanionVariantUrl,
+  getPandaHelperBundledUrl,
+} from "./companionVariantBundledPng";
 
-/**
- * Panda-Motive als PNG (statt SVG), damit WebKit/Tauri die verschachtelten Sub-Ressourcen zuverlässig rendert.
- */
-export const COMPANION_IMAGE_URL: Record<PandaType, string> = {
-  start: mascotPublicUrl("assets/mascot/companions/start.png"),
-  backup: mascotPublicUrl("assets/mascot/panda_backup.png"),
-  network: mascotPublicUrl("assets/mascot/companions/network.png"),
-  security: mascotPublicUrl("assets/mascot/panda_security.png"),
-  docker: mascotPublicUrl("assets/mascot/companions/docker.png"),
-  install: mascotPublicUrl("assets/mascot/companions/install.png"),
-  debug: mascotPublicUrl("assets/mascot/panda_diagnostics.png"),
-  cloud: mascotPublicUrl("assets/mascot/companions/cloud.png"),
-  tutorial: mascotPublicUrl("assets/mascot/companions/tutorial.png"),
-  warning: mascotPublicUrl("assets/mascot/companions/warning.png"),
-  neutral: mascotPublicUrl("assets/mascot/companions/neutral.png"),
+export {
+  COMPANION_ASSET_MANIFEST,
+  COMPANION_OVERLAY_IDS,
+  companionShouldUseLogoMainCrop,
+  getCompanionBaseDisplayUrl,
+  getCompanionOverlayUrl,
+  getCompanionPandaOnlyUrl,
+} from "./companionAssetManifest";
+
+export {
+  COMPANION_NEUTRAL_BUNDLED_PNG_URL,
+  COMPANION_USES_BUNDLED_VARIANT_PNG,
+  COMPANION_VARIANT_BUNDLED_PNG_URL,
+  getBundledCompanionVariantUrl,
+  getPandaHelperBundledUrl,
+} from "./companionVariantBundledPng";
+
+const buildCompanionImageUrlRecord = (): Record<PandaType, string> => {
+  const r = {} as Record<PandaType, string>;
+  for (const t of PANDA_MODULE_TYPES) {
+    r[t] = getBundledCompanionVariantUrl(t);
+  }
+  r.neutral = COMPANION_NEUTRAL_BUNDLED_PNG_URL;
+  return r;
 };
 
+export const COMPANION_IMAGE_URL: Record<PandaType, string> =
+  buildCompanionImageUrlRecord();
+
 export const COMPANION_NEUTRAL_URL = COMPANION_IMAGE_URL.neutral;
+
+export const COMPANION_OVERLAY_URL: Partial<Record<PandaModuleType, string>> =
+  COMPANION_USES_BUNDLED_VARIANT_PNG
+    ? ({} as Partial<Record<PandaModuleType, string>>)
+    : (Object.fromEntries(
+        PANDA_MODULE_TYPES.map((t) => {
+          const u = getCompanionOverlayUrl(t);
+          return u ? ([t, u] as const) : null;
+        }).filter(Boolean) as [PandaModuleType, string][],
+      ) as Partial<Record<PandaModuleType, string>>);
+
+export const PANDA_HELPER_IMAGE_URL = {
+  base: getPandaHelperBundledUrl("base"),
+  backup: getPandaHelperBundledUrl("backup"),
+  bluetooth: getPandaHelperBundledUrl("bluetooth"),
+  gpio: getPandaHelperBundledUrl("gpio"),
+  security: getPandaHelperBundledUrl("security"),
+  diagnostics: getPandaHelperBundledUrl("diagnostics"),
+} as const;

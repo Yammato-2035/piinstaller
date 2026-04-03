@@ -131,7 +131,8 @@ EOF
       update-desktop-database -q /usr/share/applications 2>/dev/null || true
     fi
 
-    echo "PI-Installer wurde installiert. Startmenü: PI-Installer / PI-Installer (im Browser)."
+    echo "SetupHelfer wurde installiert. Startmenü: SetupHelfer / SetupHelfer (Browser)."
+    echo "Schreibtisch-Starter anlegen (Logo-Icon): bash $INSTALL_DIR/scripts/desktop-pi-installer-launcher-anlegen.sh"
     echo "Service: systemctl status pi-installer"
     ;;
   abort-upgrade|abort-remove|abort-deconfigure)

@@ -1,6 +1,8 @@
 #!/bin/bash
-# Legt alle PI-Installer-Desktop-Starter im Ordner „PI-Installer“ auf dem Desktop ab:
-#   • PI-Installer (Kombi: Frontend-Auswahl, Backend läuft als Service)
+# Legt Desktop-Starter ab, u. a.:
+#   • SetupHelfer.desktop auf dem Schreibtisch (Tauri / Browser / Nur Backend, Logo-Icon)
+#   • Weitere Einträge im Ordner „PI-Installer“ auf dem Desktop:
+#   • PI-Installer (Kombi: Frontend-Auswahl, Backend läuft als Service) — nur falls desktop-frontend eigene Starter anlegt
 #   • Frontend starten (nur Vite-Server)
 #   • Frontend (App-Fenster) – eigene Oberfläche (Tauri)
 #   • Frontend (Browser) – im Standard-Browser öffnen
@@ -15,16 +17,17 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$PROJECT_ROOT"
 
-echo "🖥️  PI-Installer – alle Desktop-Starter anlegen"
-echo "==============================================="
-echo "   Ordner: Desktop/PI-Installer/"
+echo "🖥️  SetupHelfer / PI-Installer – Desktop-Starter anlegen"
+echo "========================================================"
+echo "   SetupHelfer.desktop → Schreibtisch (Hauptstarter)"
+echo "   Weitere Starter → Desktop/PI-Installer/ (falls vorhanden)"
 echo ""
 
 # Frontend-Starter (alle drei: Server, App-Fenster, Browser)
 bash "$SCRIPT_DIR/desktop-frontend-launcher-anlegen.sh"
 echo ""
 
-# PI-Installer (Kombi: Auswahl Tauri/Browser/Frontend; Backend als Service)
+# SetupHelfer (Kombi: Tauri/Browser/Nur Backend)
 bash "$SCRIPT_DIR/desktop-pi-installer-launcher-anlegen.sh"
 echo ""
 
@@ -41,8 +44,9 @@ bash "$SCRIPT_DIR/desktop-bilderrahmen-launcher-anlegen.sh"
 
 echo ""
 echo "==============================================="
-echo "✅ Fertig. Im Ordner Desktop/PI-Installer/ liegen:"
-echo "   • PI-Installer                        (Auswahl Tauri/Browser/Vite; Backend als Service)"
+echo "✅ Fertig."
+echo "   • Auf dem Schreibtisch: SetupHelfer.desktop (Logo, Auswahl Tauri / Browser / Nur Backend)"
+echo "   • Ordner Desktop/PI-Installer/: weitere Frontend-Starter (Vite, Tauri, Browser)"
 echo "   • PI-Installer Frontend starten       (nur Vite-Server)"
 echo "   • PI-Installer Frontend (App-Fenster)  (eigene Oberfläche)"
 echo "   • PI-Installer Frontend (Browser)      (im Browser öffnen)"

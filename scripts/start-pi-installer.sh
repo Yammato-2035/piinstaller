@@ -1,6 +1,7 @@
 #!/bin/bash
-# PI-Installer – Startet zuerst Backend, wartet auf Ready, dann Auswahl (Tauri/Browser/Frontend)
+# SetupHelfer – Startet zuerst Backend, wartet auf Ready, dann Auswahl (Tauri-App / Browser / Nur Backend)
 # Für Desktop-Starter: Backend im Hintergrund, dann gewählte Ausgabemöglichkeit
+# PI_INSTALLER_MODE=tauri|browser|backend|frontend (frontend = nur Vite, Kompatibilität)
 # Siehe: docs/START_APPS.md
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -23,8 +24,8 @@ wait_for_backend() {
 }
 
 # --- 1. Backend prüfen, ggf. starten ---
-echo "🚀 PI-Installer starten"
-echo "========================"
+echo "🚀 SetupHelfer starten"
+echo "======================="
 echo ""
 
 if curl -sS --max-time 2 "$BACKEND_URL/api/version" >/dev/null 2>&1; then
@@ -62,34 +63,37 @@ else
 fi
 echo ""
 
-# --- 2. Auswahl (Tauri, Browser, Nur Frontend) ---
+# --- 2. Auswahl (Tauri-App, Browser, Nur Backend) ---
 MODE=""
 if [ -n "$PI_INSTALLER_MODE" ]; then
   MODE="$PI_INSTALLER_MODE"
 elif command -v zenity >/dev/null 2>&1; then
   MODE=$(zenity --list --radiolist \
-    --title="PI-Installer starten" \
-    --text="Wie soll PI-Installer geöffnet werden?" \
+    --title="SetupHelfer starten" \
+    --text="Wie soll SetupHelfer geöffnet werden?" \
     --column="" --column="Option" --column="Beschreibung" \
-    TRUE "tauri" "App-Fenster (Tauri, empfohlen)" \
-    FALSE "browser" "Im Standard-Browser öffnen" \
-    FALSE "frontend" "Nur Vite-Server (Port 3001)" \
-    --width=450 --height=220 2>/dev/null)
+    TRUE "tauri" "Desktop-App (Tauri, empfohlen)" \
+    FALSE "browser" "Weboberfläche im Standard-Browser" \
+    FALSE "backend" "Nur Backend (API auf Port 8000, kein Fenster)" \
+    --width=520 --height=260 2>/dev/null)
 elif command -v kdialog >/dev/null 2>&1; then
-  MODE=$(kdialog --radiolist "PI-Installer starten" tauri "App-Fenster (Tauri)" on browser "Im Browser" off frontend "Nur Vite-Server" off 2>/dev/null)
+  MODE=$(kdialog --radiolist "SetupHelfer starten" \
+    tauri "Desktop-App (Tauri)" on \
+    browser "Im Browser" off \
+    backend "Nur Backend (API)" off 2>/dev/null)
 fi
 
 if [ -z "$MODE" ]; then
   # Fallback: Terminal-Auswahl
-  echo "Wie soll PI-Installer geöffnet werden?"
-  echo "  1) App-Fenster (Tauri)"
-  echo "  2) Browser"
-  echo "  3) Nur Vite-Server (Port 3001)"
+  echo "Wie soll SetupHelfer geöffnet werden?"
+  echo "  1) Desktop-App (Tauri)"
+  echo "  2) Browser (Weboberfläche)"
+  echo "  3) Nur Backend (API, kein Fenster)"
   echo -n "Wahl [1]: "
   read -r choice
   case "${choice:-1}" in
     2) MODE="browser" ;;
-    3) MODE="frontend" ;;
+    3) MODE="backend" ;;
     *) MODE="tauri" ;;
   esac
 fi
@@ -110,8 +114,42 @@ kill_port() {
 }
 
 case "$MODE" in
+  backend)
+    echo "🖥️  Nur Backend (SetupHelfer-API)"
+    if ! curl -sS --max-time 2 "$BACKEND_URL/api/version" >/dev/null 2>&1; then
+      echo "📡 Backend antwortet nicht – versuche Start..."
+      if [ -x "$PROJECT_ROOT/scripts/start-backend.sh" ]; then
+        nohup "$PROJECT_ROOT/scripts/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
+        _bpid=$!
+        disown "$_bpid" 2>/dev/null || true
+        echo -n "   Warte auf Backend "
+        if ! wait_for_backend; then
+          echo ""
+          echo "❌ Backend nicht erreichbar (Timeout ${MAX_WAIT}s)."
+          echo "   Service: sudo systemctl start pi-installer.service"
+          exit 1
+        fi
+        echo ""
+      else
+        echo -n "   "
+        if ! wait_for_backend; then
+          echo ""
+          echo "❌ Backend nicht erreichbar."
+          exit 1
+        fi
+        echo ""
+      fi
+    fi
+    echo "✅ Backend läuft: $BACKEND_URL"
+    if command -v zenity >/dev/null 2>&1; then
+      zenity --info --title="SetupHelfer" \
+        --text="Das SetupHelfer-Backend läuft.\n\n• API: ${BACKEND_URL}\n• Version: ${BACKEND_URL}/api/version" \
+        --width=420 2>/dev/null || true
+    fi
+    exit 0
+    ;;
   tauri)
-    echo "🎨 Starte PI-Installer (App-Fenster)..."
+    echo "🎨 Starte SetupHelfer (Tauri-App)..."
     echo "   (GDK_BACKEND=x11 für stabiles Rendering unter Wayland)"
     echo ""
     kill_port 5173
@@ -195,7 +233,7 @@ case "$MODE" in
     fi
     ;;
   browser)
-    echo "🌐 Starte PI-Installer (Browser)..."
+    echo "🌐 Starte SetupHelfer (Browser)..."
     echo ""
     kill_port 3001
     cd "$PROJECT_ROOT/frontend" || exit 1
@@ -212,9 +250,13 @@ case "$MODE" in
     fi
     wait $VITE_PID
     ;;
-  frontend|*)
-    echo "🎨 Starte PI-Installer (nur Vite-Server)..."
+  frontend)
+    echo "🎨 Starte SetupHelfer (nur Vite-Server, Kompatibilität)..."
     echo ""
     exec "$PROJECT_ROOT/scripts/start-frontend.sh"
+    ;;
+  *)
+    echo "⚠️  Unbekannte Auswahl: $MODE" >&2
+    exit 1
     ;;
 esac

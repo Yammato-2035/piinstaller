@@ -19,7 +19,7 @@ export const PandaHelperStrip: React.FC<PandaHelperStripProps> = ({
   if (experienceLevel === 'developer') return null
   return (
     <div
-      className={`flex items-start gap-3 rounded-lg border border-slate-600/60 bg-slate-800/35 px-3 py-2.5 ${className}`.trim()}
+      className={`flex items-start gap-3 rounded-lg border border-slate-400/90 bg-slate-200/95 text-slate-900 shadow-sm dark:border-slate-600/70 dark:bg-slate-800/70 dark:text-slate-100 px-3 py-2.5 ${className}`.trim()}
     >
       <PandaHelper
         experienceLevel={experienceLevel}
@@ -28,7 +28,7 @@ export const PandaHelperStrip: React.FC<PandaHelperStripProps> = ({
         iconOnly
         className="!rounded-lg shrink-0"
       />
-      <div className="text-xs sm:text-sm text-slate-400 leading-snug min-w-0 pt-0.5">{children}</div>
+      <div className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-snug min-w-0 pt-0.5">{children}</div>
     </div>
   )
 }

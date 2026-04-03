@@ -9,7 +9,7 @@
 | Ziel | Befehl / Starter | Hinweis |
 |------|------------------|---------|
 | **Alle Startoptionen (zentral)** | `./scripts/start-all.sh` | Menü: Backend, Backend+Frontend, PI-Installer, nur Frontend (Browser/Tauri/Vite) |
-| **PI-Installer (empfohlen)** | `./scripts/start-pi-installer.sh` oder Desktop-Starter | Wartet auf Backend (Service), dann Auswahl: Tauri / Browser / Vite |
+| **SetupHelfer (empfohlen)** | `./scripts/start-pi-installer.sh` oder `SetupHelfer.desktop` | Wartet auf Backend (Service), dann Auswahl: **Tauri-App / Browser / Nur Backend** |
 | **Backend** | läuft als Service (`pi-installer-backend.service`) | Port 8000, erforderlich für Frontend |
 | **Frontend (Browser)** | `./scripts/start-frontend-desktop.sh --browser` | Vite Port 3001 + Standard-Browser öffnen |
 | **Frontend (Tauri-App)** | `./scripts/start-frontend-desktop.sh --window` | Eigenes Fenster, Port 5173 (Dev) |
@@ -30,7 +30,7 @@ Ohne Argument erscheint ein **Terminal-Menü** mit allen Möglichkeiten:
 
 - **Nur Backend** (Vordergrund oder Hintergrund)
 - **Backend + Frontend** gemeinsam: Browser, Tauri-App oder nur Vite
-- **PI-Installer** (wie start-pi-installer.sh: Dialog Tauri/Browser/Vite)
+- **SetupHelfer** (wie start-pi-installer.sh: Dialog Tauri/Browser/Nur Backend)
 - **Nur Frontend**: Browser, Tauri oder nur Vite (Backend wird bei Bedarf automatisch gestartet)
 
 ### Direktaufruf (ohne Menü)
@@ -60,27 +60,29 @@ Ohne Argument erscheint ein **Terminal-Menü** mit allen Möglichkeiten:
 ./scripts/start-pi-installer.sh
 ```
 - Wartet bis Backend antwortet (max. 60 s; Backend läuft als Service `pi-installer-backend`)
-- Dialog (zenity/kdialog) oder Terminal-Auswahl: **Tauri** / **Browser** / **Nur Frontend**
+- Dialog (zenity/kdialog) oder Terminal-Auswahl: **Tauri-App** / **Browser** / **Nur Backend** (optional `PI_INSTALLER_MODE=frontend` für nur Vite)
 - Tauri: mit `GDK_BACKEND=x11` (stabiles Rendering unter Wayland auf Pi)
 
-### Desktop-Starter (mit Icon)
-Alle Starter liegen im Ordner **Desktop/PI-Installer/**.
+### Desktop-Starter (SetupHelfer-Logo als Icon)
+**Hauptstarter auf dem Schreibtisch** (`SetupHelfer.desktop`, Icon aus Tauri/Branding):
 
-Einzelnen Starter anlegen:
 ```bash
 bash scripts/desktop-pi-installer-launcher-anlegen.sh
 ```
 
-Alle Starter anlegen (PI-Installer, Frontend-Varianten, DSI Radio, Bilderrahmen):
+Weitere Starter (Frontend-Varianten, DSI Radio, …) im Ordner **Desktop/PI-Installer/**:
+
 ```bash
 bash scripts/desktop-launcher-alle-anlegen.sh
 ```
-Danach: Doppelklick auf **„PI-Installer“** im Ordner **PI-Installer** – wartet auf Backend, dann Auswahl.
+
+Doppelklick auf **SetupHelfer** → Backend prüfen, dann Auswahl **Tauri / Browser / Nur Backend**.
 
 ### Auswahl ohne Dialog
 ```bash
 PI_INSTALLER_MODE=tauri ./scripts/start-pi-installer.sh
 PI_INSTALLER_MODE=browser ./scripts/start-pi-installer.sh
+PI_INSTALLER_MODE=backend ./scripts/start-pi-installer.sh
 PI_INSTALLER_MODE=frontend ./scripts/start-pi-installer.sh
 ```
 

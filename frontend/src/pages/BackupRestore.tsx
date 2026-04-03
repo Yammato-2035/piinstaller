@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Cloud, Database, Download, Upload, Trash2, Clock, HardDrive, Lock, Settings, CheckSquare, Square, Copy } from 'lucide-react'
+import { Cloud, Database, Download, Upload, Trash2, Clock, HardDrive, Lock, Settings, CheckSquare, Square, Copy, Usb, FolderOpen, ClipboardCheck } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
@@ -8,7 +8,10 @@ import { fetchApi } from '../api'
 import { postDiagnosisInterpret } from '../api/diagnosisApi'
 import DiagnosisPanel from '../components/DiagnosisPanel'
 import { PandaCompanion, PandaRail, PandaHelperStrip, type PandaStatus } from '../components/companions'
+import PageHeader from '../components/layout/PageHeader'
 import type { ExperienceLevel } from '../components/Sidebar'
+import BeginnerGuidanceMarker from '../beginner/BeginnerGuidanceMarker'
+import { MODULE_DEFINITIONS } from '../beginner/moduleModel'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import type { DiagnosisRecord } from '../types/diagnosis'
 import { usePlatform } from '../context/PlatformContext'
@@ -22,6 +25,7 @@ interface BackupRestoreProps {
 const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginner' }) => {
   const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
+  const isBeginnerBackupUx = experienceLevel === 'beginner'
   const [activeTab, setActiveTab] = useState<BackupTab>('backup')
   const [backups, setBackups] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -1375,7 +1379,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const cloudCompanionSection = (
     <div className="space-y-2 my-3">
       <PandaHelperStrip experienceLevel={experienceLevel} variant="backup">
-        Cloud-Backups: Zugangsdaten unter <span className="text-slate-300 font-medium">Einstellungen → Cloud-Backup</span>{' '}
+        Cloud-Backups: Zugangsdaten unter <span className="text-slate-900 font-medium dark:text-slate-200">Einstellungen → Cloud-Backup</span>{' '}
         pflegen, dann die Liste aktualisieren. Ohne aktivierte Cloud-Option oder ohne Treffer bleibt die Ampel vorsichtig.
       </PandaHelperStrip>
       <PandaRail>
@@ -1572,15 +1576,27 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         </div>
       )}
 
-      <div>
-        <div className="page-title-category mb-2 inline-flex">
-          <h1 className="flex items-center gap-3">
-            <Database className="text-purple-500" />
-            Backup & Restore
-          </h1>
+      <PageHeader
+        visualStyle="hero-card"
+        tone="backup"
+        title="Backup & Restore"
+        subtitle={`Sichere dein System und stelle Daten bei Bedarf sicher wieder her – ${pageSubtitleLabel}.`}
+      />
+
+      {isBeginnerBackupUx && (
+        <div className="rounded-xl border border-sky-500/35 bg-slate-900/50 p-4 sm:p-5 space-y-2">
+          <p className="text-sm font-semibold text-slate-100">Was du hier machst</p>
+          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+            Drei Hauptwege reichen am Anfang: ein Backup anlegen, vorhandene Sicherungen prüfen, oder im Bedarf vorsichtig wiederherstellen.
+            Details zu Zielen, Cloud und Klonen findest du unter „Weitere Optionen“ – erst relevant, wenn du mit den Grundlagen vertraut bist.
+          </p>
+          {MODULE_DEFINITIONS.backup.warningText && (
+            <p className="text-xs text-amber-200/90 border border-amber-500/25 rounded-lg px-2 py-1.5 bg-amber-950/20">
+              {MODULE_DEFINITIONS.backup.warningText}
+            </p>
+          )}
         </div>
-        <p className="text-slate-400">Backup & Restore – {pageSubtitleLabel}</p>
-      </div>
+      )}
 
       <PandaHelperStrip experienceLevel={experienceLevel} variant="backup">
         Wähle ein klares Ziel: Standardordner, USB-Stick oder Cloud. Vor dem Restore unbedingt lesen, was überschrieben wird – der Backup-Begleiter unten zeigt parallel den Job-Status.
@@ -1589,7 +1605,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
       <PandaRail>
         <PandaCompanion
           type="backup"
-          size="sm"
+          size="lg"
           surface="dark"
           frame={false}
           showTrafficLight
@@ -1600,39 +1616,59 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         />
       </PandaRail>
 
-      {/* Beginner-First Auswahl: Was möchtest du tun? */}
+      {/* Hauptwahl Einsteiger: drei klare Einstiege */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid gap-4 md:grid-cols-2"
+        className={`grid gap-3 ${isBeginnerBackupUx ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}
       >
         <button
           type="button"
           onClick={() => setActiveTab('backup')}
-          className="card flex items-start gap-3 hover:border-sky-500/60 hover:bg-sky-900/10 transition-colors"
+          className="card flex items-start gap-3 hover:border-sky-500/60 hover:bg-sky-900/10 transition-colors text-left"
         >
-          <div className="mt-1">
+          <div className="mt-1 hidden md:block shrink-0">
             <Download className="text-emerald-400" />
           </div>
-          <div className="text-left">
+          <div className="text-left min-w-0">
             <p className="text-sm font-semibold text-slate-100">Backup erstellen</p>
             <p className="text-xs text-slate-400 mt-1">
-              Sicherung deines Systems oder deiner Daten anlegen – auf USB-Stick, lokale Festplatte oder in der Cloud.
+              Sicherung anlegen – USB, lokaler Ordner oder Cloud (wenn eingerichtet).
             </p>
           </div>
         </button>
+        {isBeginnerBackupUx && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('restore')}
+            className="card flex items-start gap-3 hover:border-amber-500/40 hover:bg-amber-950/15 transition-colors text-left border-amber-500/20"
+          >
+            <div className="mt-1 hidden md:block shrink-0">
+              <ClipboardCheck className="text-amber-300" />
+            </div>
+            <div className="text-left min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <p className="text-sm font-semibold text-slate-100">Backup prüfen</p>
+                <BeginnerGuidanceMarker kind="advanced" compact />
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Liste der vorhandenen Sicherungen, Prüfen und Integrität – ohne sofort etwas zurückzuspielen.
+              </p>
+            </div>
+          </button>
+        )}
         <button
           type="button"
           onClick={() => setActiveTab('restore')}
-          className="card flex items-start gap-3 hover:border-sky-500/60 hover:bg-sky-900/10 transition-colors"
+          className="card flex items-start gap-3 hover:border-sky-500/60 hover:bg-sky-900/10 transition-colors text-left"
         >
-          <div className="mt-1">
+          <div className="mt-1 hidden md:block shrink-0">
             <Upload className="text-sky-400" />
           </div>
-          <div className="text-left">
+          <div className="text-left min-w-0">
             <p className="text-sm font-semibold text-slate-100">Backup wiederherstellen</p>
             <p className="text-xs text-slate-400 mt-1">
-              Vorhandenes Backup auswählen und dein System Schritt für Schritt zurücksetzen. Mit klaren Warnhinweisen.
+              Nur wenn du bewusst zurücksetzen willst – Warnhinweise auf der nächsten Seite beachten.
             </p>
           </div>
         </button>
@@ -1640,84 +1676,152 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
       {/* Tabs */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
-        <div className="flex gap-2 border-b border-slate-700 mb-6">
-          <button
-            onClick={() => setActiveTab('backup')}
-            className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
-              activeTab === 'backup'
-                ? 'text-sky-400'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Download size={18} />
-            Backup erstellen
-            {activeTab === 'backup' && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
-                initial={false}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
-              activeTab === 'settings'
-                ? 'text-sky-400'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Settings size={18} />
-            Einstellungen
-            {activeTab === 'settings' && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
-                initial={false}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('restore')}
-            className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
-              activeTab === 'restore'
-                ? 'text-sky-400'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <HardDrive size={18} />
-            Vorhandene Backups
-            {activeTab === 'restore' && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
-                initial={false}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('clone')}
-            className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
-              activeTab === 'clone'
-                ? 'text-sky-400'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Copy size={18} />
-            Laufwerk klonen
-            {activeTab === 'clone' && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
-                initial={false}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              />
-            )}
-          </button>
-        </div>
+        {isBeginnerBackupUx ? (
+          <div className="border-b border-slate-700 mb-6 space-y-3">
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab('backup')}
+                className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
+                  activeTab === 'backup' ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Download size={18} className="hidden md:block shrink-0" aria-hidden />
+                Backup erstellen
+                {activeTab === 'backup' && (
+                  <motion.div
+                    layoutId="activeTabBeginner"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
+                    initial={false}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('restore')}
+                className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
+                  activeTab === 'restore' ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <HardDrive size={18} className="hidden md:block shrink-0" aria-hidden />
+                Prüfen &amp; wiederherstellen
+                {activeTab === 'restore' && (
+                  <motion.div
+                    layoutId="activeTabBeginner"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
+                    initial={false}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+            </div>
+            <details className="group rounded-lg border border-slate-600/60 bg-slate-900/30">
+              <summary className="cursor-pointer list-none px-3 py-2 text-xs text-slate-400 hover:text-slate-200 flex items-center justify-between [&::-webkit-details-marker]:hidden">
+                <span className="flex items-center gap-2">
+                  Weitere Optionen
+                  <BeginnerGuidanceMarker kind="advanced" compact />
+                </span>
+                <span className="text-slate-500 group-open:rotate-180 transition-transform" aria-hidden>
+                  ▼
+                </span>
+              </summary>
+              <div className="flex flex-wrap gap-2 px-3 pb-3 pt-0 border-t border-slate-700/50">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('settings')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 ${
+                    activeTab === 'settings' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'
+                  }`}
+                >
+                  <Settings size={16} aria-hidden />
+                  Einstellungen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('clone')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 ${
+                    activeTab === 'clone' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'
+                  }`}
+                >
+                  <Copy size={16} aria-hidden />
+                  Laufwerk klonen
+                </button>
+              </div>
+            </details>
+          </div>
+        ) : (
+          <div className="flex gap-2 border-b border-slate-700 mb-6 flex-wrap">
+            <button
+              onClick={() => setActiveTab('backup')}
+              className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
+                activeTab === 'backup' ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Download size={18} className="hidden md:block shrink-0" aria-hidden />
+              Backup erstellen
+              {activeTab === 'backup' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
+                  initial={false}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
+                activeTab === 'settings' ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Settings size={18} className="hidden md:block shrink-0" aria-hidden />
+              Einstellungen
+              {activeTab === 'settings' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
+                  initial={false}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('restore')}
+              className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
+                activeTab === 'restore' ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <HardDrive size={18} className="hidden md:block shrink-0" aria-hidden />
+              Vorhandene Backups
+              {activeTab === 'restore' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
+                  initial={false}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('clone')}
+              className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
+                activeTab === 'clone' ? 'text-sky-400' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Copy size={18} className="hidden md:block shrink-0" aria-hidden />
+              Laufwerk klonen
+              {activeTab === 'clone' && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
+                  initial={false}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
+            </button>
+          </div>
+        )}
       </motion.div>
 
       {/* Tab Content */}
@@ -1741,7 +1845,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           className="rounded-2xl border border-sky-600/40 bg-sky-900/20 dark:bg-sky-900/20 p-6"
         >
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-            <Database className="text-sky-500" />
+            <Database className="text-sky-500 hidden md:block shrink-0" aria-hidden />
             Ein-Klick-Backup
           </h2>
           <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
@@ -1761,7 +1865,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             className="card"
           >
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-              <Download className="text-green-500" />
+              <Download className="text-green-500 hidden md:block shrink-0" aria-hidden />
               Backup erstellen
             </h2>
 
@@ -1903,7 +2007,10 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                         : 'bg-slate-700/30 border-slate-600 hover:border-slate-500'
                     }`}
                   >
-                    <div className="font-bold text-white mb-1">Standard</div>
+                    <div className="font-bold text-white mb-1 flex items-center gap-2">
+                      <AppIcon name="nvme" category="devices" size={24} className="hidden md:inline-block shrink-0 opacity-95" alt="" />
+                      Standard
+                    </div>
                     <div className="text-xs text-slate-400">/mnt/backups</div>
                   </button>
 
@@ -1934,7 +2041,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                     }`}
                   >
                     <div className="font-bold text-white mb-1 flex items-center gap-2">
-                      <AppIcon name="usb" category="devices" size={24} />
+                      <Usb size={22} className="text-sky-300 shrink-0 hidden md:block" aria-hidden />
                       USB / Datenträger
                     </div>
                     <div className="text-xs text-slate-400">Mountpoint auswählen</div>
@@ -1954,7 +2061,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                     }`}
                   >
                     <div className="font-bold text-white mb-1 flex items-center gap-2">
-                      <Cloud size={18} className="text-sky-300" />
+                      <Cloud size={22} className="text-sky-300 shrink-0 hidden md:block" strokeWidth={2} aria-hidden />
                       Cloud
                     </div>
                     <div className="text-xs text-slate-400">WebDAV Upload (Cloud-only)</div>
@@ -1968,7 +2075,10 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                         : 'bg-slate-700/30 border-slate-600 hover:border-slate-500'
                     }`}
                   >
-                    <div className="font-bold text-white mb-1">Eigener Pfad</div>
+                    <div className="font-bold text-white mb-1 flex items-center gap-2">
+                      <FolderOpen size={22} className="text-sky-300 shrink-0 hidden md:block" aria-hidden />
+                      Eigener Pfad
+                    </div>
                     <div className="text-xs text-slate-400">z.B. /media/pi/USB</div>
                   </button>
                 </div>
@@ -2119,8 +2229,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   </div>
 
                   {!checkingTarget && targetCheck?.status === 'success' && (
-                    <div className="mt-3 grid sm:grid-cols-3 gap-3 text-sm">
-                      <div className="p-3 bg-slate-800/40 border border-slate-700 rounded-lg">
+                    <div className="mt-3 grid sm:grid-cols-3 gap-3 text-sm items-stretch">
+                      <div className="p-3 bg-slate-800/40 border border-slate-700 rounded-lg min-w-0">
                         <div className="text-xs text-slate-400 mb-1">Freier Speicher</div>
                         <div className="font-semibold text-white">
                           {targetCheck.fs?.free_human ?? '—'}
@@ -2132,26 +2242,28 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                           <div className="text-xs text-slate-400">{targetCheck.fs.used_percent}% belegt</div>
                         )}
                       </div>
-                      <div className="p-3 bg-slate-800/40 border border-slate-700 rounded-lg">
+                      <div className="p-3 bg-slate-800/40 border border-slate-700 rounded-lg min-w-0">
                         <div className="text-xs text-slate-400 mb-1">Verzeichnis</div>
                         <div className={`font-semibold ${targetCheck.exists && targetCheck.is_dir ? 'text-green-300' : 'text-yellow-300'}`}>
                           {targetCheck.exists ? (targetCheck.is_dir ? 'OK' : 'Kein Ordner') : 'Nicht vorhanden'}
                         </div>
                         {targetCheck.created && <div className="text-xs text-slate-400">Wurde erstellt</div>}
                       </div>
-                      <div className="p-3 bg-slate-800/40 border border-slate-700 rounded-lg">
-                        <div className="text-xs text-slate-400 mb-1">Schreibtest</div>
-                        <div className={`font-semibold ${targetCheck.write_test?.success ? 'text-green-300' : 'text-red-300'}`}>
+                      <div className="p-3 bg-slate-800/40 border border-slate-700 rounded-lg min-w-0 flex flex-col">
+                        <div className="text-xs text-slate-400 mb-1 shrink-0">Schreibtest</div>
+                        <div className={`font-semibold shrink-0 ${targetCheck.write_test?.success ? 'text-green-300' : 'text-red-300'}`}>
                           {targetCheck.write_test?.success ? 'OK' : 'Fehler'}
                         </div>
-                        <div className="text-xs text-slate-400">
-                          {targetCheck.write_test?.message ?? '—'}
-                        </div>
-                        {!targetCheck.write_test?.success && Array.isArray(targetCheck.write_test?.hints) && targetCheck.write_test.hints.length > 0 && (
-                          <div className="mt-2 text-xs text-yellow-200/90 whitespace-pre-line">
-                            {targetCheck.write_test.hints.join('\n')}
+                        <div className="mt-1 min-h-0 max-h-40 overflow-y-auto overflow-x-hidden rounded-md border border-slate-700/60 bg-slate-950/40 p-2">
+                          <div className="text-xs text-slate-200 break-words hyphens-auto">
+                            {targetCheck.write_test?.message ?? '—'}
                           </div>
-                        )}
+                          {!targetCheck.write_test?.success && Array.isArray(targetCheck.write_test?.hints) && targetCheck.write_test.hints.length > 0 && (
+                            <div className="mt-2 text-xs text-yellow-200/95 whitespace-pre-wrap break-words border-t border-yellow-900/40 pt-2">
+                              {targetCheck.write_test.hints.join('\n')}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -2369,7 +2481,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             className="card"
           >
             <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-              <HardDrive className="text-blue-500" />
+              <HardDrive className="text-blue-500 hidden md:block shrink-0" aria-hidden />
               Verfügbare Backups
             </h2>
             <p className="text-xs text-slate-400 mb-4">
@@ -2878,7 +2990,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           className="rounded-2xl border border-emerald-600/40 bg-emerald-900/20 dark:bg-emerald-900/20 p-6"
         >
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-            <Copy className="text-emerald-500" />
+            <Copy className="text-emerald-500 hidden md:block shrink-0" aria-hidden />
             System auf Ziellaufwerk klonen
           </h2>
           <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
@@ -2895,7 +3007,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           className="card"
         >
           <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-            <Copy className="text-emerald-500" />
+            <Copy className="text-emerald-500 hidden md:block shrink-0" aria-hidden />
             Laufwerk klonen
           </h2>
 
@@ -3070,7 +3182,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             className="card"
           >
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-              <Settings className="text-purple-500" />
+              <Settings className="text-purple-500 hidden md:block shrink-0" aria-hidden />
               Backup-Einstellungen & Zeitsteuerung
             </h2>
             <div className="space-y-4">

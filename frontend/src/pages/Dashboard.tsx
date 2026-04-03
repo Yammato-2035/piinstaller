@@ -33,6 +33,7 @@ import { motion } from 'framer-motion'
 import { SkeletonCard as SharedSkeletonCard } from '../components/Skeleton'
 import HelpTooltip from '../components/HelpTooltip'
 import DiagnosisPanel from '../components/DiagnosisPanel'
+import PageHeader from '../components/layout/PageHeader'
 import {
   LampAreaCard,
   LampDot,
@@ -42,6 +43,8 @@ import {
   type PandaStatus,
 } from '../components/companions'
 import { localBackendDiagnosis } from '../diagnosis/localBackendDiagnosis'
+import BeginnerGuidanceMarker from '../beginner/BeginnerGuidanceMarker'
+import { MODULE_DEFINITIONS } from '../beginner/moduleModel'
 
 interface DashboardProps {
   systemInfo: any
@@ -510,7 +513,6 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       lines: statusBarUI.lines,
       tone: statusBarUI.tone,
     })
-    return () => setMainStatusBar(null)
   }, [setMainStatusBar, statusBarUI])
 
   const primaryRecommendation = React.useMemo(
@@ -585,20 +587,27 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       {/* Above the fold: Titel → Ampel → Empfehlung → Erste Schritte (Statuszeile: Top-Leiste im Hauptteil) */}
       {!backendError && (
         <div className="space-y-2 sm:space-y-3 md:space-y-4">
-          <div className="flex items-start gap-2 sm:gap-3 min-w-0">
-            <AppIcon name="dashboard" category="navigation" size={26} className="shrink-0 mt-0.5 opacity-95" />
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]">
-                {t('dashboard.pageTitle')}
-              </h1>
-              <p className="text-slate-400 text-xs sm:text-sm mt-0.5 line-clamp-2 sm:line-clamp-none">
-                {t('dashboard.pageSubtitle', { label: pageSubtitleLabel })}
-              </p>
-            </div>
-          </div>
+          <PageHeader
+            className="!mb-0"
+            visualStyle="hero-card"
+            tone="dashboard"
+            title={t('dashboard.pageTitle')}
+            subtitle={t('dashboard.pageSubtitle', { label: pageSubtitleLabel })}
+            badge={<AppIcon name="dashboard" category="navigation" size={26} className="shrink-0 opacity-95" />}
+          />
 
           {!systemStatusLights && (
-            <div className="h-12 sm:h-14 rounded-lg sm:rounded-xl bg-slate-800/50 border border-slate-700/80 animate-pulse" aria-hidden />
+            <div
+              className="flex items-center gap-3 rounded-lg sm:rounded-xl border border-slate-600/80 bg-slate-800/60 px-3 py-2.5 sm:px-4 sm:py-3"
+              role="status"
+              aria-live="polite"
+            >
+              <div className="h-9 w-1 shrink-0 rounded-full bg-sky-500/80 animate-pulse" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-slate-200">{t('dashboard.systemStatus.loadingCard.title')}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">{t('dashboard.systemStatus.loadingCard.body')}</p>
+              </div>
+            </div>
           )}
 
           {systemStatusLights && worst && (
@@ -796,13 +805,15 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
               />
             </PandaRail>
             <div className="flex flex-wrap gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage?.('monitoring')}
-                  className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-[11px] sm:text-xs"
-                >
-                  {t('sidebar.menu.monitoring')}
-                </button>
+                {!isBeginnerView && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage?.('monitoring')}
+                    className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-[11px] sm:text-xs"
+                  >
+                    {t('sidebar.menu.monitoring')}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setCurrentPage?.('wizard')}
@@ -813,115 +824,196 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 <button
                   type="button"
                   onClick={() => setCurrentPage?.('app-store')}
-                  className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-[11px] sm:text-xs"
+                  className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-emerald-700/90 hover:bg-emerald-600 text-white rounded-md text-[11px] sm:text-xs"
                 >
                   {t('sidebar.menu.appStore')}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCurrentPage?.('periphery-scan')}
-                  className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-[11px] sm:text-xs"
+                  onClick={() => setCurrentPage?.('backup')}
+                  className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-indigo-700/90 hover:bg-indigo-600 text-white rounded-md text-[11px] sm:text-xs"
                 >
-                  {t('sidebar.menu.peripheryScan')}
+                  {t('sidebar.menu.backup')}
                 </button>
+                {!isBeginnerView && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage?.('periphery-scan')}
+                    className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-[11px] sm:text-xs"
+                  >
+                    {t('sidebar.menu.peripheryScan')}
+                  </button>
+                )}
             </div>
-            <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-700/60">
-              <button
-                type="button"
-                onClick={() => setMode('basic')}
-                className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[11px] sm:text-xs ${mode === 'basic' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'}`}
-              >
-                {t('sidebar.modeTabs.basic')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode('advanced')}
-                className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[11px] sm:text-xs ${mode === 'advanced' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'}`}
-              >
-                {t('sidebar.modeTabs.advanced')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode('diagnose')}
-                className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[11px] sm:text-xs ${mode === 'diagnose' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'}`}
-              >
-                {t('sidebar.modeTabs.diagnose')}
-              </button>
-            </div>
+            {!isBeginnerView && (
+              <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-700/60">
+                <button
+                  type="button"
+                  onClick={() => setMode('basic')}
+                  className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[11px] sm:text-xs ${mode === 'basic' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'}`}
+                >
+                  {t('sidebar.modeTabs.basic')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode('advanced')}
+                  className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[11px] sm:text-xs ${mode === 'advanced' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'}`}
+                >
+                  {t('sidebar.modeTabs.advanced')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode('diagnose')}
+                  className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[11px] sm:text-xs ${mode === 'diagnose' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'}`}
+                >
+                  {t('sidebar.modeTabs.diagnose')}
+                </button>
+              </div>
+            )}
           </div>
         </details>
 
       <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide pt-1">{t('dashboard.section.moreBelow')}</h2>
 
-      {/* Beginner-First Task Cards (Beginner-View: Aufgaben statt Modul-Liste im Fokus) */}
       {isBeginnerView && setCurrentPage && !backendError && (
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={() => handleTaskNavigate('wizard')}
-            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/35 transition-colors text-left"
-          >
-            <AppIcon name="installation" category="navigation" size={28} className="shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-sky-100 leading-snug">{t('firstRun.firstStep.wizard.title')}</p>
-              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.wizard.desc')}</p>
+        <section className="rounded-xl border-2 border-sky-500/55 bg-gradient-to-br from-sky-950/50 to-slate-900/80 p-4 sm:p-5 shadow-lg shadow-sky-900/20 space-y-3">
+          <p className="text-[10px] uppercase tracking-wider text-sky-300 font-bold">Nächster sinnvoller Schritt</p>
+          <p className="text-sm sm:text-base text-slate-100 leading-snug font-medium">{primaryLine}</p>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Auf diesem Dashboard siehst du den Zustand deines Systems. Ziel im Einsteiger-Modus: zuerst das geführte Setup abschließen, dann Apps und Backup – ohne dich in Experten-Menüs zu verlieren.
+          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                const pr = primaryRecommendation
+                if (pr.kind === 'restore' || pr.kind === 'backup') setCurrentPage('backup')
+                else if (pr.kind === 'security') setCurrentPage('security')
+                else if (pr.kind === 'updates') void runUpdateInTerminal()
+                else setCurrentPage('wizard')
+              }}
+              className="shrink-0 px-4 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold text-center w-full sm:w-auto"
+            >
+              {ctaLabel}
+            </button>
+            {MODULE_DEFINITIONS.dashboard.warningText && (
+              <p className="text-[11px] text-amber-200/90 border border-amber-500/30 rounded-lg px-2 py-1.5 bg-amber-950/25 flex-1 min-w-0">
+                {MODULE_DEFINITIONS.dashboard.warningText}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
+      {isBeginnerView && setCurrentPage && !backendError && (
+        <section className="space-y-4">
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Jetzt starten (empfohlen)</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+              {(['wizard', 'app-store', 'backup'] as const).map(mid => {
+                const def = MODULE_DEFINITIONS[mid]
+                const icon =
+                  mid === 'wizard' ? (
+                    <AppIcon name="installation" category="navigation" size={32} className="shrink-0 mt-0.5" />
+                  ) : mid === 'app-store' ? (
+                    <AppIcon name="app-store" category="navigation" size={32} className="shrink-0 mt-0.5" />
+                  ) : (
+                    <AppIcon name="backup" category="navigation" size={32} className="shrink-0 mt-0.5" />
+                  )
+                const tone =
+                  mid === 'wizard'
+                    ? 'bg-sky-600/20 hover:bg-sky-600/30 border-sky-500/35'
+                    : mid === 'app-store'
+                      ? 'bg-emerald-600/15 hover:bg-emerald-600/25 border-emerald-500/35'
+                      : 'bg-indigo-600/20 hover:bg-indigo-600/30 border-indigo-500/35'
+                return (
+                  <button
+                    key={mid}
+                    type="button"
+                    onClick={() => handleTaskNavigate(mid)}
+                    className={`flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl border transition-colors text-left ${tone}`}
+                  >
+                    {icon}
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-semibold text-slate-50 leading-snug">{def.title}</p>
+                      <p className="text-[11px] sm:text-xs text-slate-200/80 mt-0.5 line-clamp-3">{def.subtitle}</p>
+                      {def.warningText && (
+                        <p className="text-[10px] text-amber-200/90 mt-1.5 leading-snug">{def.warningText}</p>
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
             </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTaskNavigate('app-store')}
-            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/35 transition-colors text-left"
-          >
-            <AppIcon name="app-store" category="navigation" size={28} className="shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-emerald-100 leading-snug">{t('firstRun.firstStep.appStore.title')}</p>
-              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.appStore.desc')}</p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Optional – wenn du schon weiter bist</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={() => handleTaskNavigate('monitoring')}
+                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-amber-600/10 hover:bg-amber-600/18 border border-amber-500/25 transition-colors text-left"
+              >
+                <AppIcon name="monitoring" category="navigation" size={32} className="shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <p className="text-xs sm:text-sm font-semibold text-amber-100 leading-snug">{MODULE_DEFINITIONS.monitoring.title}</p>
+                    <BeginnerGuidanceMarker kind="advanced" compact />
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5">{MODULE_DEFINITIONS.monitoring.subtitle}</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTaskNavigate('documentation')}
+                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-slate-700/30 hover:bg-slate-700/45 border border-slate-500/35 transition-colors text-left"
+              >
+                <AppIcon name="documentation" category="navigation" size={32} className="shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-semibold text-slate-100 leading-snug">{MODULE_DEFINITIONS.documentation.title}</p>
+                  <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5">{MODULE_DEFINITIONS.documentation.subtitle}</p>
+                </div>
+              </button>
             </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTaskNavigate('backup')}
-            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/35 transition-colors text-left"
-          >
-            <AppIcon name="backup" category="navigation" size={28} className="shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-indigo-100 leading-snug">{t('firstRun.firstStep.backup.title')}</p>
-              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.backup.desc')}</p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Später oder für Fortgeschrittene</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={() => handleTaskNavigate('learning')}
+                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-teal-900/20 hover:bg-teal-900/30 border border-teal-600/25 transition-colors text-left opacity-90"
+              >
+                <AppIcon name="documentation" category="navigation" size={32} className="shrink-0 mt-0.5 opacity-80" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <p className="text-xs sm:text-sm font-semibold text-teal-100 leading-snug">{MODULE_DEFINITIONS.learning.title}</p>
+                    <BeginnerGuidanceMarker kind="later" compact />
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">{MODULE_DEFINITIONS.learning.subtitle}</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTaskNavigate('settings')}
+                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-slate-800/50 hover:bg-slate-800/70 border border-slate-600/40 transition-colors text-left"
+              >
+                <AppIcon name="advanced" category="navigation" size={32} className="shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <p className="text-xs sm:text-sm font-semibold text-slate-100 leading-snug">{MODULE_DEFINITIONS['control-center'].title}</p>
+                    <BeginnerGuidanceMarker kind="later" compact />
+                    <BeginnerGuidanceMarker kind="advanced" compact />
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+                    Erst nach Umschalten des Erfahrungslevels – über Einstellungen freischalten.
+                  </p>
+                </div>
+              </button>
             </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTaskNavigate('monitoring')}
-            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 border border-amber-500/35 transition-colors text-left"
-          >
-            <AppIcon name="monitoring" category="navigation" size={28} className="shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-amber-100 leading-snug">{t('firstRun.firstStep.monitoring.title')}</p>
-              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.monitoring.desc')}</p>
-            </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTaskNavigate('learning')}
-            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-teal-600/15 hover:bg-teal-600/25 border border-teal-500/35 transition-colors text-left"
-          >
-            <AppIcon name="documentation" category="navigation" size={28} className="shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-teal-100 leading-snug">{t('firstRun.firstStep.learning.title')}</p>
-              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.learning.desc')}</p>
-            </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTaskNavigate('control-center')}
-            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-slate-700/40 hover:bg-slate-700/60 border border-slate-500/50 transition-colors text-left"
-          >
-            <AppIcon name="advanced" category="navigation" size={28} className="shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-slate-50 leading-snug">{t('firstRun.firstStep.controlCenter.title')}</p>
-              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.controlCenter.desc')}</p>
-            </div>
-          </button>
+          </div>
         </section>
       )}
 

@@ -1,6 +1,6 @@
 {
   "name": "pi-installer-frontend",
-  "version": "1.3.8.2",
+  "version": "1.3.9.0",
   "description": "SetupHelfer — Web GUI for Raspberry Pi and Linux",
   "private": true,
   "dependencies": {
@@ -31,7 +31,8 @@
     "tauri": "tauri",
     "tauri:dev": "bash -c 'export PATH=\"$HOME/.cargo/bin:$PATH\"; [ -f \"$HOME/.cargo/env\" ] && . \"$HOME/.cargo/env\"; exec tauri dev'",
     "tauri:build": "bash -c 'export PATH=\"$HOME/.cargo/bin:/usr/local/bin:$PATH\"; [ -f \"$HOME/.cargo/env\" ] && . \"$HOME/.cargo/env\"; unset CI; exec tauri build'",
-    "screenshots:theme": "node scripts/capture-theme-screenshots.mjs"
+    "screenshots:theme": "node scripts/capture-theme-screenshots.mjs",
+    "screenshots:docs": "node scripts/capture-documentation-screenshots.mjs"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.9.6",

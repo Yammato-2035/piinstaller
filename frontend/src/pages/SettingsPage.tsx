@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
-import { Cloud, RefreshCw, CheckCircle, XCircle, Settings } from 'lucide-react'
+import { Cloud, RefreshCw, CheckCircle, XCircle } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
 import { fetchApi, getApiBase, API_BASE_STORAGE_KEY } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import ScreenshotDocCard from '../components/ScreenshotDocCard'
 import { usePlatform } from '../context/PlatformContext'
 import { setAppLocale } from '../i18n'
+import PageHeader from '../components/layout/PageHeader'
 
 type GeneralSubTab = 'init' | 'network' | 'basic' | 'screenshots'
 
@@ -115,8 +116,23 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ experience_level: level }),
       })
-      const d = await r.json()
-      if (d?.status === 'success') {
+      let d: Record<string, unknown> = {}
+      try {
+        d = (await r.json()) as Record<string, unknown>
+      } catch {
+        d = {}
+      }
+      const detailRaw = d.detail
+      const detailStr =
+        typeof detailRaw === 'string'
+          ? detailRaw
+          : Array.isArray(detailRaw)
+            ? detailRaw.map((x: { msg?: string }) => x?.msg || JSON.stringify(x)).join(' ')
+            : detailRaw != null
+              ? String(detailRaw)
+              : ''
+      const messageStr = typeof d.message === 'string' ? d.message : ''
+      if (r.ok && d.status === 'success') {
         setExperienceLevelState(level)
         onExperienceLevelChange?.(level)
         toast.success(
@@ -127,7 +143,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
               : t('settings.toast.experience.developer')
         )
       } else {
-        toast.error(d?.message || t('settings.toast.saveFailedGeneric'))
+        toast.error(detailStr || messageStr || t('settings.toast.saveFailedGeneric'))
       }
     } catch {
       toast.error(t('settings.toast.serverUnreachable'))
@@ -423,15 +439,20 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
         }}
       />
 
-      <div>
-        <div className="page-title-category mb-2 inline-flex">
-          <h1 className="flex items-center gap-3">
-            <AppIcon name="settings" category="navigation" size={32} />
-            {t('settings.pageTitle')}
-          </h1>
-        </div>
-        <p className="text-slate-400">{t('settings.pageSubtitle', { label: pageSubtitleLabel })}</p>
-      </div>
+      <PageHeader
+        visualStyle="tech-panel"
+        tone="settings"
+        title={t('settings.pageTitle')}
+        subtitle={t('settings.pageSubtitle', { label: pageSubtitleLabel })}
+        badge={
+          <AppIcon
+            name="settings"
+            category="navigation"
+            size={32}
+            className="shrink-0 brightness-0 invert opacity-95"
+          />
+        }
+      />
 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
         {/* Hauptmenü */}

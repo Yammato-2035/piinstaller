@@ -131,12 +131,12 @@ Das offizielle Repository ist `Yammato-2035/piinstaller`. Am Ende erscheint die 
 
 ### Weg 3: .deb-Paket von GitHub (mit Hash-Prüfung)
 
-Ab Version 1.3.8.2 werden bei jedem [GitHub Release](https://github.com/Yammato-2035/piinstaller/releases) ein **.deb-Paket** und eine **SHA256SUMS**-Datei bereitgestellt. Installation inkl. Verifikation:
+Ab Version 1.3.9.0 werden bei jedem [GitHub Release](https://github.com/Yammato-2035/piinstaller/releases) ein **.deb-Paket** und eine **SHA256SUMS**-Datei bereitgestellt. Installation inkl. Verifikation:
 
 ```bash
-# Beispiel – Release-Tag und Dateiname an gewünschte Version anpassen (z. B. v1.3.8.2)
-RELEASE="v1.3.8.2"
-V="1.3.8.2"
+# Beispiel – Release-Tag und Dateiname an gewünschte Version anpassen (z. B. v1.3.9.0)
+RELEASE="v1.3.9.0"
+V="1.3.9.0"
 BASE="https://github.com/Yammato-2035/piinstaller/releases/download"
 wget "$BASE/$RELEASE/pi-installer_${V}-1_all.deb" "$BASE/$RELEASE/SHA256SUMS"
 sha256sum -c SHA256SUMS
@@ -207,6 +207,7 @@ http://localhost:3001
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Beitragen (Fork, Branch, PR, Code-Style)
 - **[NETWORK_ACCESS.md](./docs/user/NETWORK_ACCESS.md)** - Zugriff im LAN, über VPN, aus dem Internet (nur für erfahrene Nutzer)
 - **[INSTALL.md](./docs/user/INSTALL.md)** - Detaillierte Installationsanleitung (inkl. Troubleshooting Mixer)
+- **[GUIDED_UX_AND_COMPANION.md](./docs/user/GUIDED_UX_AND_COMPANION.md)** - Einsteigerführung, Erfahrungslevel, Panda-Begleiter, Desktop-Starter
 - **[ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md)** - System-Architektur & Design
 - **[FEATURES.md](./docs/architecture/FEATURES.md)** - Alle Features & Roadmap
 - **[CHANGELOG.md](./CHANGELOG.md)** - Versions-Changelog (1.2.0.0, 1.0.4.0, …)

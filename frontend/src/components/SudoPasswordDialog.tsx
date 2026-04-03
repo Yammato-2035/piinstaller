@@ -1,6 +1,9 @@
 /**
  * App-weite Sudo-Passwortverwaltung (AUDIT-FIXED B-05): verwendet in App.tsx.
  * Siehe docs/development/SUDO_COMPONENTS.md für Nutzungsübersicht.
+ *
+ * Wenn der Dienst nicht erreichbar ist: weiches Nachfassen (Polling), dann automatisch
+ * wie „Später“ fortfahren + kurzer Toast – kein sperrender Langtext-Dialog.
  */
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -8,9 +11,62 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { fetchApi } from '../api'
 import { Lock, X, AlertCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { sudoSaveErrorToast } from '../lib/sudoUserMessages'
 
 interface SudoPasswordDialogProps {
   onPasswordSaved: () => void
+}
+
+const FAST_RETRIES = 3
+const FAST_RETRY_DELAY_MS = 1500
+const SOFT_POLL_INTERVAL_MS = 2500
+const SOFT_POLL_MAX = 16
+
+type CheckResult = 'need_password' | 'has_password' | 'fail'
+
+async function checkSudoPasswordOnce(parentSignal: AbortSignal): Promise<CheckResult> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 15000)
+  const onParentAbort = () => {
+    clearTimeout(timeoutId)
+    controller.abort()
+  }
+  if (parentSignal.aborted) {
+    clearTimeout(timeoutId)
+    return 'fail'
+  }
+  parentSignal.addEventListener('abort', onParentAbort)
+  try {
+    const response = await fetchApi('/api/users/sudo-password/check', {
+      signal: controller.signal,
+    })
+    clearTimeout(timeoutId)
+    parentSignal.removeEventListener('abort', onParentAbort)
+    if (!response.ok) return 'fail'
+    const data = await response.json()
+    if (data?.status !== 'success') return 'fail'
+    if (data.has_password) return 'has_password'
+    return 'need_password'
+  } catch {
+    clearTimeout(timeoutId)
+    parentSignal.removeEventListener('abort', onParentAbort)
+    return 'fail'
+  }
+}
+
+function sleep(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) {
+      reject(new DOMException('Aborted', 'AbortError'))
+      return
+    }
+    const t = window.setTimeout(resolve, ms)
+    const onAbort = () => {
+      window.clearTimeout(t)
+      reject(new DOMException('Aborted', 'AbortError'))
+    }
+    signal.addEventListener('abort', onAbort, { once: true })
+  })
 }
 
 const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved }) => {
@@ -20,66 +76,91 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
   const [skipTest, setSkipTest] = useState(true)
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
-  const [backendReachable, setBackendReachable] = useState(true)
   const mountedRef = useRef(true)
 
   useEffect(() => {
     mountedRef.current = true
-    const maxRetries = 3
+    const abort = new AbortController()
+    setChecking(true)
 
     const run = async () => {
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 15000)
-        try {
-          const response = await fetchApi('/api/users/sudo-password/check', {
-            signal: controller.signal,
-          })
-          clearTimeout(timeoutId)
-          if (!mountedRef.current) return
+      const finishHasPassword = () => {
+        if (!mountedRef.current || abort.signal.aborted) return
+        setChecking(false)
+        onPasswordSaved()
+      }
 
-          if (!response.ok) {
-            if (attempt === maxRetries) {
-              setBackendReachable(false)
-              setShow(true)
+      const finishNeedPassword = () => {
+        if (!mountedRef.current || abort.signal.aborted) return
+        setShow(true)
+        setChecking(false)
+      }
+
+      const finishOfflineGraceful = () => {
+        if (!mountedRef.current || abort.signal.aborted) return
+        toast(t('sudo.dialog.autoSkipOffline'), { icon: 'ℹ️', duration: 8000 })
+        setChecking(false)
+        onPasswordSaved()
+      }
+
+      try {
+        for (let attempt = 1; attempt <= FAST_RETRIES; attempt++) {
+          const result = await checkSudoPasswordOnce(abort.signal)
+          if (!mountedRef.current || abort.signal.aborted) return
+
+          if (result === 'has_password') {
+            finishHasPassword()
+            return
+          }
+          if (result === 'need_password') {
+            finishNeedPassword()
+            return
+          }
+
+          if (attempt < FAST_RETRIES) {
+            try {
+              await sleep(FAST_RETRY_DELAY_MS, abort.signal)
+            } catch {
+              return
             }
-            continue
           }
-
-          const data = await response.json()
-          if (!mountedRef.current) return
-
-          if (data.status === 'success' && !data.has_password) {
-            setShow(true)
-          } else {
-            onPasswordSaved()
-          }
-          if (mountedRef.current) setChecking(false)
-          return
-        } catch (error) {
-          clearTimeout(timeoutId)
-          if (!mountedRef.current) return
-          if (attempt < maxRetries) {
-            await new Promise((r) => setTimeout(r, 1500))
-            continue
-          }
-          if (error instanceof Error && error.name === 'AbortError') {
-            setBackendReachable(false)
-          } else {
-            console.error(t('sudo.dialog.console.checkError'), error)
-            setBackendReachable(false)
-          }
-          setShow(true)
         }
-        if (attempt === maxRetries && mountedRef.current) setChecking(false)
+
+        for (let i = 0; i < SOFT_POLL_MAX; i++) {
+          try {
+            await sleep(SOFT_POLL_INTERVAL_MS, abort.signal)
+          } catch {
+            return
+          }
+          if (!mountedRef.current || abort.signal.aborted) return
+
+          const result = await checkSudoPasswordOnce(abort.signal)
+          if (!mountedRef.current || abort.signal.aborted) return
+
+          if (result === 'has_password') {
+            finishHasPassword()
+            return
+          }
+          if (result === 'need_password') {
+            finishNeedPassword()
+            return
+          }
+        }
+
+        finishOfflineGraceful()
+      } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') return
+        console.error(t('sudo.dialog.console.checkError'), e)
+        finishOfflineGraceful()
       }
     }
 
-    run()
+    void run()
     return () => {
+      abort.abort()
       mountedRef.current = false
     }
-  }, [onPasswordSaved])
+  }, [onPasswordSaved, t])
 
   const handleSave = async () => {
     if (!password.trim()) {
@@ -118,12 +199,10 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
         setShow(false)
         onPasswordSaved()
       } else {
-        const msg = data.message || data.detail || t('sudo.dialog.toast.saveFailed')
-        toast.error(msg)
+        toast.error(sudoSaveErrorToast(data.message || data.detail, t), { duration: 6000 })
       }
-    } catch (error) {
+    } catch {
       toast.error(t('sudo.dialog.toast.saveFailedServer'), { duration: 6000 })
-      console.error(error)
     } finally {
       setLoading(false)
     }
@@ -135,7 +214,6 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
     onPasswordSaved()
   }
 
-  // Zeige nichts während der Prüfung
   if (checking) {
     return null
   }
@@ -144,7 +222,6 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
     <AnimatePresence>
       {show && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -152,18 +229,16 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
             onClick={handleSkip}
           />
-          
-          {/* Dialog */}
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="card bg-slate-800/95 backdrop-blur-xl border border-slate-700 max-w-md w-full shadow-2xl">
-              {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-sky-600/20 rounded-lg">
@@ -175,6 +250,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={handleSkip}
                   className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
                 >
@@ -182,24 +258,6 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                 </button>
               </div>
 
-              {/* Backend nicht erreichbar */}
-              {!backendReachable && (
-                <div className="mb-4 p-4 bg-red-900/30 border border-red-700/50 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="text-red-400 mt-0.5 shrink-0" size={20} />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-red-200">{t('sudo.dialog.serverUnreachable.title')}</p>
-                      <p className="text-xs text-red-300/90 mt-1">
-                        {t('sudo.dialog.serverUnreachable.before')}
-                        <code className="bg-red-900/40 px-1 rounded">./start-backend.sh</code>
-                        {t('sudo.dialog.serverUnreachable.after')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Info */}
               <div className="mb-6 p-4 bg-yellow-900/20 border border-yellow-800/50 rounded-lg">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="text-yellow-400 mt-0.5" size={20} />
@@ -209,12 +267,11 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                 </div>
               </div>
 
-              {/* Input */}
               <form
                 className="mb-6"
                 onSubmit={(e) => {
                   e.preventDefault()
-                  if (!loading && password.trim()) handleSave()
+                  if (!loading && password.trim()) void handleSave()
                 }}
               >
                 <label htmlFor="sudo-password" className="block text-sm font-medium text-slate-300 mb-2">
@@ -242,9 +299,9 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                 </label>
               </form>
 
-              {/* Actions */}
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={handleSkip}
                   disabled={loading}
                   className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -252,7 +309,8 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
                   {t('sudo.dialog.later')}
                 </button>
                 <button
-                  onClick={handleSave}
+                  type="button"
+                  onClick={() => void handleSave()}
                   disabled={loading || !password.trim()}
                   className="flex-1 px-4 py-3 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >

@@ -122,4 +122,11 @@
   - Abschnitt 1 definiert das fachliche und technische Verhalten (inkl. Analyse-UI und Deep-Verify).
   - Ein vollständiger Reality-Check mit produktionsnahen Backups bleibt ausdrücklich als nächster Schritt offen.
 
+## Einsteigerführung & Begleiter (ab 1.3.9.0)
+
+- **Zentrale Logik:** `frontend/src/beginner/moduleModel.ts` (ModuleId, ExperienceLevel, MODULE_DEFINITIONS, App-Store-Meta).
+- **UI-Marker:** `frontend/src/beginner/BeginnerGuidanceMarker.tsx` – konsistente Badges in Navigation, Dashboard, Listen.
+- **Panda-Bilder (Kontext):** `frontend/src/assets/pandas/*.png` (z. B. backup, cloud, install) – ergänzen zu `PandaCompanion` / Strips.
+- **Nutzerdoku:** `docs/user/GUIDED_UX_AND_COMPANION.md`; in-App **Dokumentation** → Dashboard + FAQ (Erfahrungslevel, Begleiter, Einsteigerpfad).
+
 

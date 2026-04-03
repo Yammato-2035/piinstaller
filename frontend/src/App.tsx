@@ -38,6 +38,7 @@ import { PlatformProvider, platformRawFromSystemInfo, usePlatform } from './cont
 import { MainStatusBarProvider, useMainStatusBar, useOptionalMainStatusBar } from './context/MainStatusBarContext'
 import { UIModeProvider } from './context/UIModeContext'
 import i18n, { setAppLocale } from './i18n'
+import { useTranslation } from 'react-i18next'
 import './App.css'
 
 function AppDocumentTitle({ dsiRadioView }: { dsiRadioView: boolean }) {
@@ -63,9 +64,16 @@ function MobileAppTitle() {
 }
 
 function MobileMainStatusLine() {
+  const { t } = useTranslation()
   const ctx = useOptionalMainStatusBar()
   const status = ctx?.status
-  if (!status?.lines?.length) return null
+  if (!status?.lines?.length) {
+    return (
+      <p className="text-[10px] leading-tight line-clamp-2 text-center w-full mt-1 text-slate-500 dark:text-slate-400" role="status">
+        {t('app.header.statusFallback')}
+      </p>
+    )
+  }
   const toneCls =
     status.tone === 'danger'
       ? 'text-red-700 dark:text-red-300'
@@ -122,7 +130,8 @@ function getInitialPage(): Page {
   return 'dashboard'
 }
 
-function AppTopHeader() {
+function AppTopHeader({ headerBackendOk }: { headerBackendOk: boolean | null }) {
+  const { t } = useTranslation()
   const { identitySubtitle } = usePlatform()
   const { status } = useMainStatusBar()
   const [uiLang, setUiLang] = useState<'de' | 'en'>(() => (i18n.language?.startsWith('en') ? 'en' : 'de'))
@@ -147,7 +156,7 @@ function AppTopHeader() {
           : 'text-slate-600 dark:text-slate-300'
 
   return (
-    <header className="hidden md:flex items-stretch gap-2 px-4 sm:px-6 min-h-10 py-1 border-b border-slate-300/80 dark:border-slate-700/80 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm">
+    <header className="hidden md:flex shrink-0 items-stretch gap-2 px-4 sm:px-6 min-h-10 py-1 border-b border-slate-300/80 dark:border-slate-700/80 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm">
       <div className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[28%] sm:max-w-xs shrink-0 flex items-center">
         {hostLabel}
       </div>
@@ -160,7 +169,39 @@ function AppTopHeader() {
           <p className={`text-[11px] sm:text-xs text-center leading-snug line-clamp-2 ${statusToneClass}`}>
             {status.lines.join(' · ')}
           </p>
-        ) : null}
+        ) : (
+          <p className="text-[11px] sm:text-xs text-center leading-snug line-clamp-2 text-slate-500 dark:text-slate-400">
+            {t('app.header.statusFallback')}
+          </p>
+        )}
+      </div>
+      <div
+        className="shrink-0 self-center flex items-center gap-2 pr-0.5"
+        title={
+          headerBackendOk === true
+            ? t('app.header.backendLed.ok')
+            : headerBackendOk === false
+              ? t('app.header.backendLed.error')
+              : t('app.header.backendLed.checking')
+        }
+      >
+        <span className="sr-only">
+          {headerBackendOk === true
+            ? t('app.header.backendLed.ok')
+            : headerBackendOk === false
+              ? t('app.header.backendLed.error')
+              : t('app.header.backendLed.checking')}
+        </span>
+        <span
+          className={`h-2.5 w-2.5 rounded-full shrink-0 ring-2 ring-offset-1 ring-offset-slate-50 dark:ring-offset-slate-900 ${
+            headerBackendOk === true
+              ? 'bg-emerald-500 ring-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.75)]'
+              : headerBackendOk === false
+                ? 'bg-red-500 ring-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.75)]'
+                : 'bg-slate-400 dark:bg-slate-500 ring-slate-400/30 animate-pulse'
+          }`}
+          aria-hidden
+        />
       </div>
       <div
         className="inline-flex shrink-0 self-center rounded-lg border border-slate-300 dark:border-slate-600 overflow-hidden shadow-sm text-[11px] leading-none"
@@ -216,6 +257,8 @@ function App() {
   const [backendErrorReason, setBackendErrorReason] = useState<'timeout' | 'connection' | 'other' | null>(() =>
     themeShot === 'error' ? 'connection' : null,
   )
+  /** Top-Header-LED: null = Prüfung läuft, true = Backend erreichbar, false = nicht erreichbar */
+  const [headerBackendOk, setHeaderBackendOk] = useState<boolean | null>(() => (themeShot === 'error' ? false : null))
   const [sudoPasswordReady, setSudoPasswordReady] = useState(false)
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('pi-installer-theme')
@@ -278,6 +321,7 @@ function App() {
   const platformRaw = useMemo(() => platformRawFromSystemInfo(systemInfo), [systemInfo])
 
   const fetchSystemInfo = useCallback(async () => {
+    setHeaderBackendOk(null)
     setBackendError(false)
     setBackendErrorReason(null)
     const base = getApiBase() || 'http://127.0.0.1:8000'
@@ -296,8 +340,12 @@ function App() {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await tryFetch(base)
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
         const data = await response.json()
         setSystemInfo(data)
+        setHeaderBackendOk(true)
         return
       } catch (error) {
         const isAbort = error instanceof Error && error.name === 'AbortError'
@@ -313,11 +361,15 @@ function App() {
         if (base === 'http://127.0.0.1:8000') {
           try {
             const res = await tryFetch('http://localhost:8000')
+            if (!res.ok) {
+              throw new Error(`HTTP ${res.status}`)
+            }
             const data = await res.json()
             setApiBase('http://localhost:8000')
             setSystemInfo(data)
             setBackendError(false)
             setBackendErrorReason(null)
+            setHeaderBackendOk(true)
             return
           } catch {
             // Fallback fehlgeschlagen, Fehlerzustand bleibt
@@ -325,6 +377,7 @@ function App() {
         }
       }
     }
+    setHeaderBackendOk(false)
   }, [])
 
   const fetchFreenoveDetection = useCallback(async () => {
@@ -570,7 +623,7 @@ function App() {
     <PlatformProvider systemInfo={systemInfo}>
       <AppDocumentTitle dsiRadioView={dsiRadioView} />
       {showBootSplash ? <BootSplash /> : null}
-      <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+      <div className="flex h-screen max-h-screen overflow-hidden bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
         {!firstRunDone && (
           <FirstRunWizard
             initialStep={themeShot === 'experience' ? 2 : 1}
@@ -603,9 +656,9 @@ function App() {
           <MobileMainStatusLine />
         </header>
         <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platformRaw.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} experienceLevel={experienceLevel} appEdition={appEdition} />
-      <main className="flex-1 flex flex-col bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <AppTopHeader />
-        <div className="flex-1 overflow-auto p-4 sm:p-8 min-h-full">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <AppTopHeader headerBackendOk={headerBackendOk} />
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={currentPage}
@@ -613,7 +666,7 @@ function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="min-h-full"
+              className="min-h-0"
             >
               {renderPage()}
             </motion.div>

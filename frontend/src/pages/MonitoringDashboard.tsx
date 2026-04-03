@@ -5,10 +5,17 @@ import { motion } from 'framer-motion'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import PageHeader from '../components/layout/PageHeader'
+import { PandaCompanion, PandaRail } from '../components/companions'
 import { usePlatform } from '../context/PlatformContext'
 import { PageSkeleton } from '../components/Skeleton'
+import type { ExperienceLevel } from '../components/Sidebar'
 
-const MonitoringDashboard: React.FC = () => {
+interface MonitoringDashboardProps {
+  experienceLevel?: ExperienceLevel
+}
+
+const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({ experienceLevel = 'beginner' }) => {
   const { pageSubtitleLabel, isRaspberryPi } = usePlatform()
   const [status, setStatus] = useState<any>(null)
   const [metrics, setMetrics] = useState<any[]>([])
@@ -192,15 +199,27 @@ const MonitoringDashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in page-transition">
-      <div>
-        <div className="page-title-category mb-2 inline-flex">
-          <h1 className="flex items-center gap-3">
-            <Activity className="text-green-500" />
-            Monitoring Dashboard
-          </h1>
-        </div>
-        <p className="text-slate-400">Monitoring – {pageSubtitleLabel}</p>
-      </div>
+      <PageHeader
+        visualStyle="tech-panel"
+        tone="monitoring"
+        title="Monitoring Dashboard"
+        subtitle={`Behalte Systemstatus, Auslastung und Dienste einfach im Blick – ${pageSubtitleLabel}.`}
+      />
+      {experienceLevel === 'beginner' && (
+        <PandaRail>
+          <PandaCompanion
+            type="debug"
+            size="lg"
+            surface="dark"
+            frame={false}
+            showTrafficLight
+            trafficLightPosition="bottom-right"
+            status="info"
+            title="Monitoring-Begleiter"
+            subtitle="Ich helfe dir, Last und Dienste Schritt für Schritt zu verstehen."
+          />
+        </PandaRail>
+      )}
 
       <div className="grid md:grid-cols-3 gap-6">
         <motion.div

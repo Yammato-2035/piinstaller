@@ -1,35 +1,20 @@
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import type { ExperienceLevel } from './Sidebar'
-import { mascotPublicUrl } from '../lib/mascotPublicUrl'
+import {
+  companionShouldUseLogoMainCrop,
+  getCompanionBaseDisplayUrl,
+  getPandaHelperBundledUrl,
+} from './companions/companionAssets'
 
 export type PandaVariant = 'base' | 'backup' | 'bluetooth' | 'gpio' | 'security' | 'diagnostics'
 
 interface PandaHelperProps {
-  /** Erfahrungslevel aus App-State – steuert Sichtbarkeit. */
   experienceLevel: ExperienceLevel
-  /** Kontext, in dem der Panda angezeigt wird (steuert Asset-Pfad). */
   variant?: PandaVariant
-  /** Größe der Darstellung im UI. */
   size?: 'sm' | 'md' | 'lg'
-  /** Zusätzliche CSS-Klassen für Layout/Abstand. */
   className?: string
-  /** Wenn true, wird nur das Icon ohne erklärenden Text angezeigt (für Fortgeschrittene). */
   iconOnly?: boolean
-  /** Optional: Überschreibt den Standard-Alt-Text. */
   alt?: string
-}
-
-/**
- * Panda-Motive als PNG (statt SVG), damit die Accessoires überall zuverlässig sichtbar sind.
- * (WebKit/Tauri rendert SVG-`<image href>` innerhalb von SVG-as-`<img>` teilweise nicht.)
- */
-const variantToAsset: Record<PandaVariant, string> = {
-  base: mascotPublicUrl('assets/mascot/panda_base.png'),
-  backup: mascotPublicUrl('assets/mascot/panda_backup.png'),
-  bluetooth: mascotPublicUrl('assets/mascot/panda_bluetooth.png'),
-  gpio: mascotPublicUrl('assets/mascot/panda_gpio.png'),
-  security: mascotPublicUrl('assets/mascot/panda_security.png'),
-  diagnostics: mascotPublicUrl('assets/mascot/panda_diagnostics.png'),
 }
 
 const sizeToClass: Record<NonNullable<PandaHelperProps['size']>, string> = {
@@ -46,23 +31,64 @@ export const PandaHelper: React.FC<PandaHelperProps> = ({
   iconOnly = false,
   alt,
 }) => {
-  // Expertenansicht: Panda vollständig ausgeblendet.
   if (experienceLevel === 'developer') return null
 
-  const assetSrc = variantToAsset[variant]
-  const baseClasses = `${sizeToClass[size]} rounded-xl bg-white/80 dark:bg-slate-900/60 p-1 object-contain shrink-0 shadow-sm`
+  const bundledUrl = getPandaHelperBundledUrl(variant)
+  const logoUrl = getCompanionBaseDisplayUrl()
+  const [tier, setTier] = useState<'bundle' | 'logo'>('bundle')
+
+  useEffect(() => {
+    setTier('bundle')
+  }, [variant])
+
+  const activeSrc = tier === 'bundle' ? bundledUrl : logoUrl ?? ''
+  const useLogoCrop =
+    tier === 'logo' && Boolean(logoUrl) && companionShouldUseLogoMainCrop()
+
+  const baseClasses = `${sizeToClass[size]} rounded-xl bg-white/80 dark:bg-slate-900/60 p-1 shrink-0 shadow-sm overflow-hidden ${
+    useLogoCrop ? 'object-cover object-[51%_41%]' : 'object-contain'
+  }`
   const combinedClassName = `${baseClasses} ${className}`.trim()
   const altText = alt || 'SetupHelfer Panda'
 
-  // Nur natives img – Framer-Motion in WebViews (Tauri) kann zu leeren Darstellungen führen.
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    setFailed(false)
+  }, [variant, tier, activeSrc])
+
+  const onErr = useCallback(() => {
+    if (tier === 'bundle' && logoUrl) {
+      setTier('logo')
+      return
+    }
+    setFailed(true)
+  }, [tier, logoUrl])
+
+  if (failed || (tier === 'logo' && !logoUrl)) {
+    const box = `${sizeToClass[size]} shrink-0 rounded-lg border-2 border-dashed border-red-500 bg-red-950/30 flex flex-col items-center justify-center p-1 text-[8px] font-bold text-red-200 text-center leading-tight`
+    return (
+      <div
+        className={`${box} ${className}`.trim()}
+        title="Companion Asset fehlt"
+        role="img"
+        aria-label="Companion Asset fehlt"
+      >
+        <span>!</span>
+        <span className="font-mono opacity-90">Asset fehlt</span>
+      </div>
+    )
+  }
+
   if (iconOnly) {
     return (
       <img
-        src={assetSrc}
+        key={`${variant}-${tier}`}
+        src={activeSrc}
         alt={altText}
         className={combinedClassName}
         loading="eager"
         decoding="async"
+        onError={onErr}
       />
     )
   }
@@ -70,16 +96,16 @@ export const PandaHelper: React.FC<PandaHelperProps> = ({
   return (
     <div className="flex items-start gap-4">
       <img
-        src={assetSrc}
+        key={`${variant}-${tier}`}
+        src={activeSrc}
         alt={altText}
         className={combinedClassName}
         loading="eager"
         decoding="async"
+        onError={onErr}
       />
-      {/* Textliche Erklärungen (über i18n im Aufrufer gesteuert) */}
     </div>
   )
 }
 
 export default PandaHelper
-

@@ -1,5 +1,5 @@
 # Baut .deb bei Release und hängt es an den GitHub-Release an (inkl. SHA256-Hashes).
-# Auslösung: Release auf GitHub erstellen (Tag z.B. v1.3.8.2). Das .deb und SHA256SUMS werden angehängt.
+# Auslösung: Release auf GitHub erstellen (Tag z.B. v1.3.9.0). Das .deb und SHA256SUMS werden angehängt.
 name: Release .deb
 
 on:

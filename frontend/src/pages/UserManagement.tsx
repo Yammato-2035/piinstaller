@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Users, Plus, Trash2, Lock, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import { sudoSaveErrorToast } from '../lib/sudoUserMessages'
 import { usePlatform } from '../context/PlatformContext'
 import { PageSkeleton } from '../components/Skeleton'
 
@@ -11,6 +13,7 @@ interface UserEntry {
 }
 
 const UserManagement: React.FC = () => {
+  const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
   const [systemUsers, setSystemUsers] = useState<UserEntry[]>([])
   const [humanUsers, setHumanUsers] = useState<UserEntry[]>([])
@@ -80,7 +83,7 @@ const UserManagement: React.FC = () => {
       try {
         data = await response.json()
       } catch {
-        toast.error('Der Server hat nicht wie erwartet geantwortet. Läuft er auf Port 8000?')
+        toast.error(t('sudo.dialog.toast.invalidResponse'))
         return
       }
       if (data.status === 'success') {
@@ -89,16 +92,13 @@ const UserManagement: React.FC = () => {
         sessionStorage.setItem('sudo_password_saved', 'true')
         setRequiresSudoPassword(false)
       } else {
-        toast.error(data.message || data.detail || 'Sudo-Passwort konnte nicht gespeichert werden.')
+        toast.error(sudoSaveErrorToast(data.message || data.detail, t), { duration: 6000 })
       }
     } catch (error) {
       const isTimeout = error instanceof Error && error.name === 'AbortError'
-      toast.error(
-        isTimeout
-          ? 'Speichern hat zu lange gedauert. Der Server ist möglicherweise ausgelastet – bitte erneut versuchen.'
-          : 'Speichern fehlgeschlagen. Bitte starten Sie den Server (./start-backend.sh) und versuchen Sie es erneut.',
-        { duration: 6000 }
-      )
+      toast.error(isTimeout ? t('sudo.dialog.toast.sudoTestTimeout') : t('sudo.dialog.toast.saveFailedServer'), {
+        duration: 6000,
+      })
       console.error('saveSudoPassword:', error)
     } finally {
       setLoading(false)

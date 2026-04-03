@@ -45,4 +45,29 @@ else
   fi
 fi
 
+# Vite nutzt --strictPort 5173; ein alter Vite/Tauri-Dev blockiert sonst den Start.
+free_vite_port_5173() {
+  local pids=""
+  if command -v lsof >/dev/null 2>&1; then
+    pids=$(lsof -t -iTCP:5173 -sTCP:LISTEN 2>/dev/null || true)
+  fi
+  if [ -z "$pids" ] && command -v fuser >/dev/null 2>&1; then
+    if fuser 5173/tcp >/dev/null 2>&1; then
+      echo "[Tauri-Dev] Port 5173 belegt – beende Listener (meist alter Vite-Dev-Server)..."
+      fuser -k 5173/tcp >/dev/null 2>&1 || true
+      sleep 1
+      return 0
+    fi
+    return 0
+  fi
+  if [ -n "$pids" ]; then
+    echo "[Tauri-Dev] Port 5173 belegt – beende Listener (PID: $pids)..."
+    for pid in $pids; do
+      kill "$pid" 2>/dev/null || true
+    done
+    sleep 1
+  fi
+}
+free_vite_port_5173
+
 cd "$FRONTEND_DIR" && exec npm run dev:tauri
