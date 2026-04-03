@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1025 1025" role="img" aria-labelledby="pandaDiagnosticsTitle">
+  <title id="pandaDiagnosticsTitle">SetupHelfer Panda  Diagnose</title>
+  <defs>
+    <clipPath id="pandaDiagnosticsFrame">
+      <circle cx="512.5" cy="512.5" r="420" />
+    </clipPath>
+  </defs>
+  <rect x="0" y="0" width="1025" height="1025" fill="#020617" />
+  <g clip-path="url(#pandaDiagnosticsFrame)">
+    <image href="./panda_base.svg" x="0" y="0" width="1025" height="1025" preserveAspectRatio="xMidYMid meet" />
+  </g>
+  <!-- Abstrakte Lupe für Diagnose -->
+  <g transform="translate(300 320)">
+    <circle cx="0" cy="0" r="70" fill="#0f172a" stroke="#38bdf8" stroke-width="6" />
+    <circle cx="0" cy="0" r="36" fill="none" stroke="#38bdf8" stroke-width="6" />
+    <line x1="32" y1="32" x2="70" y2="70" stroke="#38bdf8" stroke-width="6" stroke-linecap="round" />
+  </g>
+</svg>
+

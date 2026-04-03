@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Shield, CheckCircle, AlertCircle, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -7,6 +7,10 @@ import RiskWarningCard from '../components/RiskWarningCard'
 import { getPageRisk } from '../config/riskLevels'
 import { usePlatform } from '../context/PlatformContext'
 import { PageSkeleton } from '../components/Skeleton'
+import DiagnosisPanel from '../components/DiagnosisPanel'
+import { postDiagnosisInterpret } from '../api/diagnosisApi'
+import type { DiagnosisRecord } from '../types/diagnosis'
+import { PandaCompanion, PandaRail, type PandaStatus } from '../components/companions'
 
 const SecuritySetup: React.FC = () => {
   const { t } = useTranslation()
@@ -28,6 +32,7 @@ const SecuritySetup: React.FC = () => {
   const [firewallRules, setFirewallRules] = useState<string>('')
   const [showRuleEditor, setShowRuleEditor] = useState(false)
   const [newRule, setNewRule] = useState({ rule: '', direction: 'allow' })
+  const [firewallRuleDiagnosis, setFirewallRuleDiagnosis] = useState<DiagnosisRecord | null>(null)
 
   useEffect(() => {
     loadSecurityStatus()
@@ -148,14 +153,30 @@ const SecuritySetup: React.FC = () => {
       const data = await response.json()
       if (data.status === 'success') {
         toast.success('Regel hinzugefügt!')
+        setFirewallRuleDiagnosis(null)
         setNewRule({ rule: '', direction: 'allow' })
         await loadFirewallRules()
         await loadSecurityStatus()
       } else {
         toast.error(data.message || 'Fehler beim Hinzufügen der Regel')
+        const rec = await postDiagnosisInterpret({
+          area: 'firewall',
+          event_type: 'api_error',
+          api_status: 'error',
+          message: String(data.message || ''),
+          extra: { requires_sudo_password: data.requires_sudo_password === true },
+        })
+        setFirewallRuleDiagnosis(rec)
       }
     } catch (error) {
       toast.error('Fehler beim Hinzufügen der Regel')
+      const rec = await postDiagnosisInterpret({
+        area: 'firewall',
+        event_type: 'network_error',
+        api_status: 'error',
+        message: String(error instanceof Error ? error.message : 'network'),
+      })
+      setFirewallRuleDiagnosis(rec)
     }
   }
 
@@ -280,6 +301,17 @@ const SecuritySetup: React.FC = () => {
     </label>
   )
 
+  const securityCompanionStatus = useMemo((): PandaStatus => {
+    const secUpd = scanResults?.updates?.categories?.security
+    const crit = scanResults?.updates?.categories?.critical
+    if (typeof secUpd === 'number' && secUpd > 0) return 'danger'
+    if (typeof crit === 'number' && crit > 0) return 'danger'
+    if (securityConfig?.ufw?.active && securityConfig?.fail2ban?.running) return 'success'
+    if (securityConfig?.ufw?.installed && !securityConfig?.ufw?.active) return 'warning'
+    if (securityConfig?.fail2ban?.installed && !securityConfig?.fail2ban?.running) return 'warning'
+    return 'info'
+  }, [securityConfig, scanResults])
+
   if (initialConfigLoading) {
     return <PageSkeleton cards={3} hasList listRows={4} />
   }
@@ -295,6 +327,20 @@ const SecuritySetup: React.FC = () => {
         </div>
         <p className="text-slate-400">Sicherheit – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaRail>
+        <PandaCompanion
+          type="security"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={securityCompanionStatus}
+          title="Security-Begleiter"
+          subtitle="Firewall, Fail2ban und Updates – der Panda steht für diesen Bereich, die Ampel für den geschätzten Zustand."
+        />
+      </PandaRail>
 
       {(() => {
         const risk = getPageRisk('security', t)
@@ -612,6 +658,18 @@ const SecuritySetup: React.FC = () => {
                             <p className="text-xs text-slate-500 mt-1">
                               Beispiele: <code className="bg-slate-900 px-1 rounded">22/tcp</code>, <code className="bg-slate-900 px-1 rounded">80,443/tcp</code>, <code className="bg-slate-900 px-1 rounded">from 192.168.1.0/24</code>
                             </p>
+                            {firewallRuleDiagnosis && (
+                              <div className="mt-3 space-y-2">
+                                <DiagnosisPanel record={firewallRuleDiagnosis} />
+                                <button
+                                  type="button"
+                                  onClick={() => setFirewallRuleDiagnosis(null)}
+                                  className="text-xs text-slate-400 hover:text-slate-200 underline"
+                                >
+                                  {t('diagnosis.dismiss')}
+                                </button>
+                              </div>
+                            )}
                           </div>
                           
                           <div>

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { Scan, Cpu, Keyboard, Mouse, Camera, Headphones, ExternalLink, Video, X, AlertTriangle, CheckCircle2, Info, FileText } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
+import { PandaCompanion, PandaRail, type PandaStatus } from '../components/companions'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fetchApi } from '../api'
@@ -266,6 +267,13 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
     return issues
   }, [result])
 
+  const peripheryCompanionStatus = useMemo((): PandaStatus => {
+    if (!result) return 'info'
+    if (diagnosticIssues.some((i) => i.level === 'critical')) return 'danger'
+    if (diagnosticIssues.some((i) => i.level === 'warning')) return 'warning'
+    return 'success'
+  }, [result, diagnosticIssues])
+
   const animateConsole = useCallback((lines: string[]) => {
     setConsoleVisible(0)
     let i = 0
@@ -373,6 +381,20 @@ const PeripheryScan: React.FC<PeripheryScanProps> = ({ setCurrentPage }) => {
         </div>
         <p className="text-slate-400">Systemstatus verstehen – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaRail>
+        <PandaCompanion
+          type="debug"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={peripheryCompanionStatus}
+          title="Diagnose-Begleiter"
+          subtitle="Die Ampel wertet die letzte Peripherie-Auswertung aus (kritisch → rot, Hinweise → gelb, sonst grün)."
+        />
+      </PandaRail>
 
       {!scanning && !result && (
         <motion.div

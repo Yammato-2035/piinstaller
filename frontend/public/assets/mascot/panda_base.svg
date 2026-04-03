@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1025 1025" role="img" aria-labelledby="pandaBaseTitle">
+  <title id="pandaBaseTitle">SetupHelfer Panda  Basis</title>
+  <defs>
+    <clipPath id="pandaFrame">
+      <circle cx="512.5" cy="512.5" r="420" />
+    </clipPath>
+  </defs>
+  <rect x="0" y="0" width="1025" height="1025" fill="#020617" />
+  <g clip-path="url(#pandaFrame)">
+    <!-- Bestehender Panda aus dem Branding; keine neue Logo-Variante -->
+    <image href="../branding/logo/panda-only.svg" x="0" y="0" width="1025" height="1025" preserveAspectRatio="xMidYMid meet" />
+  </g>
+</svg>
+

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1025 1025" role="img" aria-labelledby="pandaBluetoothTitle">
+  <title id="pandaBluetoothTitle">SetupHelfer Panda  Bluetooth</title>
+  <defs>
+    <clipPath id="pandaBluetoothFrame">
+      <circle cx="512.5" cy="512.5" r="420" />
+    </clipPath>
+  </defs>
+  <rect x="0" y="0" width="1025" height="1025" fill="#020617" />
+  <g clip-path="url(#pandaBluetoothFrame)">
+    <image href="./panda_base.svg" x="0" y="0" width="1025" height="1025" preserveAspectRatio="xMidYMid meet" />
+  </g>
+  <!-- Bluetooth-Symbol im Stil des UI, kein Fremd-Logo -->
+  <g transform="translate(710 320)">
+    <circle cx="0" cy="0" r="70" fill="#0f172a" stroke="#38bdf8" stroke-width="6" />
+    <path d="M-18 -40 L18 0 L-18 40 L-18 -40 Z" fill="none" stroke="#38bdf8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>
+

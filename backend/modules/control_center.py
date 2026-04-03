@@ -10,6 +10,13 @@ import json
 import re
 import os
 
+# Bluetooth-Status: interne Codes für API-Responses (nicht Diagnose-Interpreter).
+BLUETOOTH_OK = "bluetooth.ok"
+BLUETOOTH_RFKILL_BLOCKED = "bluetooth.rfkill_blocked"
+BLUETOOTH_SERVICE_UNAVAILABLE = "bluetooth.service_unavailable"
+BLUETOOTH_ADAPTER_MISSING = "bluetooth.adapter_missing"
+BLUETOOTH_UNKNOWN_ERROR = "bluetooth.unknown_error"
+
 
 class ControlCenterModule:
     """Raspberry Pi Control Center Einstellungen verwalten"""
@@ -443,53 +450,112 @@ class ControlCenterModule:
             return {"status": "error", "message": f"Fehler: {str(e)}"}
 
     def get_bluetooth_status(self, sudo_password: str = "") -> Dict[str, Any]:
-        """Bluetooth-Status: aktiviert/deaktiviert, verbundene Geräte."""
+        """Bluetooth-Status: aktiviert/deaktiviert, verbundene Geräte.
+
+        Nutzt ``rfkill list bluetooth`` und ``bluetoothctl`` (show + devices Connected).
+        Fehler liefern ``status: \"error\"`` mit ``error_code`` (siehe Modul-Konstanten BLUETOOTH_*).
+        Erfolg enthält optional ``code`` (bluetooth.ok / bluetooth.rfkill_blocked).
+        """
+        def _err(message: str, code: str) -> Dict[str, Any]:
+            return {"status": "error", "message": message, "error_code": code}
+
+        def _ok(enabled: bool, devices: List[Dict[str, str]], code: str = BLUETOOTH_OK) -> Dict[str, Any]:
+            out: Dict[str, Any] = {
+                "status": "success",
+                "enabled": enabled,
+                "connected_devices": devices,
+                "code": code,
+            }
+            return out
+
+        connected_devices: List[Dict[str, str]] = []
         bt_enabled = True
-        connected_devices = []
+
+        # 1) rfkill: Hard/Soft block (ohne rfkill-Binary weiter mit bluetoothctl)
         try:
-            # Prüfe rfkill-Status
-            r = subprocess.run(
+            r_rf = subprocess.run(
                 ["rfkill", "list", "bluetooth"],
                 capture_output=True,
                 text=True,
                 timeout=5,
             )
-            txt = (r.stdout or "") + (r.stderr or "")
-            if "Soft blocked: Yes" in txt.lower() or "Hard blocked: Yes" in txt.lower():
-                bt_enabled = False
-        except Exception:
-            pass
-        if not bt_enabled:
-            return {
-                "status": "success",
-                "enabled": False,
-                "connected_devices": [],
-            }
-        # Verbundene Geräte abrufen
+        except FileNotFoundError:
+            r_rf = None
+        except subprocess.TimeoutExpired:
+            return _err("rfkill hat nicht rechtzeitig geantwortet.", BLUETOOTH_UNKNOWN_ERROR)
+        except OSError as e:
+            return _err(f"rfkill konnte nicht ausgeführt werden: {e}", BLUETOOTH_UNKNOWN_ERROR)
+
+        if r_rf is not None:
+            txt_rf = ((r_rf.stdout or "") + (r_rf.stderr or "")).lower()
+            if "soft blocked: yes" in txt_rf or "hard blocked: yes" in txt_rf:
+                return _ok(False, [], BLUETOOTH_RFKILL_BLOCKED)
+
+        # 2) Adapter / bluetoothctl verfügbar
         try:
-            r = subprocess.run(
+            r_show = subprocess.run(
+                ["bluetoothctl", "--timeout", "2", "show"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+        except FileNotFoundError:
+            return _err("bluetoothctl wurde nicht gefunden (BlueZ/CLI fehlt).", BLUETOOTH_SERVICE_UNAVAILABLE)
+        except subprocess.TimeoutExpired:
+            return _err("bluetoothctl show hat nicht rechtzeitig geantwortet.", BLUETOOTH_UNKNOWN_ERROR)
+        except OSError as e:
+            return _err(f"bluetoothctl konnte nicht gestartet werden: {e}", BLUETOOTH_UNKNOWN_ERROR)
+
+        out_show = (r_show.stdout or "") + (r_show.stderr or "")
+        if "no default controller" in out_show.lower():
+            return _err("Kein Bluetooth-Controller (Adapter) verfügbar.", BLUETOOTH_ADAPTER_MISSING)
+        if r_show.returncode != 0:
+            return _err(
+                (r_show.stderr or r_show.stdout or "bluetoothctl show fehlgeschlagen.").strip()
+                or "bluetoothctl show fehlgeschlagen.",
+                BLUETOOTH_UNKNOWN_ERROR,
+            )
+
+        # 3) Verbunden-Geräte (nur wenn nicht per rfkill aus)
+        try:
+            r_dev = subprocess.run(
                 ["bluetoothctl", "--timeout", "2", "devices", "Connected"],
                 capture_output=True,
                 text=True,
                 timeout=5,
             )
-            for line in (r.stdout or "").split("\n"):
-                line = line.strip()
-                if line.startswith("Device "):
-                    parts = line.split(maxsplit=2)
-                    if len(parts) >= 3:
-                        mac = parts[1]
-                        name = parts[2]
-                        connected_devices.append({"mac": mac, "name": name})
         except FileNotFoundError:
-            pass
-        except Exception:
-            pass
-        return {
-            "status": "success",
-            "enabled": bt_enabled,
-            "connected_devices": connected_devices,
-        }
+            return _err("bluetoothctl wurde nicht gefunden (BlueZ/CLI fehlt).", BLUETOOTH_SERVICE_UNAVAILABLE)
+        except subprocess.TimeoutExpired:
+            return _err("bluetoothctl devices Connected hat nicht rechtzeitig geantwortet.", BLUETOOTH_UNKNOWN_ERROR)
+        except OSError as e:
+            return _err(f"bluetoothctl konnte nicht gestartet werden: {e}", BLUETOOTH_UNKNOWN_ERROR)
+
+        if r_dev.returncode != 0:
+            msg = (r_dev.stderr or r_dev.stdout or "").strip() or "bluetoothctl devices Connected fehlgeschlagen."
+            return _err(msg, BLUETOOTH_UNKNOWN_ERROR)
+
+        raw = (r_dev.stdout or "")
+        for line in raw.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            if not line.startswith("Device "):
+                return _err(
+                    "Unerwartete Ausgabe von bluetoothctl devices Connected.",
+                    BLUETOOTH_UNKNOWN_ERROR,
+                )
+            parts = line.split(maxsplit=2)
+            if len(parts) < 3:
+                return _err(
+                    "Unerwartete Ausgabe von bluetoothctl devices Connected (Gerätezeile).",
+                    BLUETOOTH_UNKNOWN_ERROR,
+                )
+            mac = parts[1]
+            name = parts[2]
+            connected_devices.append({"mac": mac, "name": name})
+
+        return _ok(bt_enabled, connected_devices, BLUETOOTH_OK)
 
     def bluetooth_scan(self, sudo_password: str = "") -> Dict[str, Any]:
         """Bluetooth-Geräte scannen."""

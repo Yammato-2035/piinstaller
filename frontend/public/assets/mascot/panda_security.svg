@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1025 1025" role="img" aria-labelledby="pandaSecurityTitle">
+  <title id="pandaSecurityTitle">SetupHelfer Panda  Sicherheit</title>
+  <defs>
+    <clipPath id="pandaSecurityFrame">
+      <circle cx="512.5" cy="512.5" r="420" />
+    </clipPath>
+  </defs>
+  <rect x="0" y="0" width="1025" height="1025" fill="#020617" />
+  <g clip-path="url(#pandaSecurityFrame)">
+    <image href="./panda_base.svg" x="0" y="0" width="1025" height="1025" preserveAspectRatio="xMidYMid meet" />
+  </g>
+  <!-- Abstrakter Schild für Sicherheitsmodule -->
+  <g transform="translate(770 520)">
+    <path
+      d="M0 -80 L60 -50 L60 10 C60 50 30 80 0 92 C-30 80 -60 50 -60 10 L-60 -50 Z"
+      fill="#0f172a"
+      stroke="#22c55e"
+      stroke-width="6"
+    />
+    <path
+      d="M0 -45 C-18 -45 -32 -31 -32 -13 L-32 10 C-32 33 -18 48 0 48 C18 48 32 33 32 10 L32 -13 C32 -31 18 -45 0 -45 Z"
+      fill="none"
+      stroke="#22c55e"
+      stroke-width="5"
+    />
+  </g>
+</svg>
+

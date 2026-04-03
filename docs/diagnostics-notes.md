@@ -1,0 +1,83 @@
+- Backup / Verify – Pfad- und Archivprüfung
+  - betroffene Funktion: `/api/backup/verify`
+  - beobachtetes Fehlerbild:
+    - Meldung „Backup-Datei liegt außerhalb erlaubter Pfade“
+    - Meldung „Backup-Archiv ist beschädigt oder ungültig“
+  - technische Ursache:
+    - `backup_file` zeigt auf einen Pfad außerhalb `/mnt`, `/media`, `/run/media`, `/home` oder
+    - `tar -tzf` schlägt fehl (inkonsistentes/defektes Archiv).
+  - prüfbarer Zustand:
+    - Pfad und Dateityp des Archivs mit `ls -l` und `file` prüfen.
+    - Manuelles `tar -tzf <backup>` ohne Backend ausführen.
+  - sinnvoller Diagnosecheck:
+    - Liegt die Datei tatsächlich im erwarteten Backup-Verzeichnis?
+    - Lässt sich der Inhalt per `tar -tzf` anzeigen?
+  - sinnvolle Nutzerempfehlung:
+    - Backup-Pfad im UI korrigieren oder neues Backup anlegen und erneut prüfen.
+
+- Backup / Restore – Preview-Modus
+  - betroffene Funktion: `/api/backup/restore` (mode=`preview`)
+  - beobachtetes Fehlerbild:
+    - Meldung „Backup-Archiv enthält problematische Einträge (Pfad-Traversal, Symlinks, Sonderdateien).“
+    - Preview-Restore schlägt mit tar-Fehlern fehl.
+  - technische Ursache:
+    - Archiv enthält gefährliche Pfade (z. B. absolute Pfade, `../`) oder spezielle Dateitypen.
+  - prüfbarer Zustand:
+    - Archiv mit `tar -tzf` inspizieren und auf ungewöhnliche Pfade prüfen.
+  - sinnvoller Diagnosecheck:
+    - Prüfen, ob das Archiv aus einer vertrauenswürdigen Quelle stammt und wie es erstellt wurde.
+  - sinnvolle Nutzerempfehlung:
+    - Unsichere Archive nicht einspielen; stattdessen neues Backup mit aktueller Version von Setuphelfer erzeugen.
+
+- Backup / Restore – Analyse-Box im Restore-Tab
+  - betroffene Funktion: `/api/backup/restore` (mode=`preview`) + Frontend-Ansicht „Backup & Restore“ → Tab „Vorhandene Backups“.
+  - beobachtetes Fehlerbild:
+    - Nutzer meldet, dass nach Test-Restore keine oder widersprüchliche Analyse-Daten angezeigt werden.
+  - prüfbarer Zustand:
+    - Backend-Antwort auf `/api/backup/restore` enthält Felder:
+      - `analysis.total_files`, `analysis.total_dirs`, `analysis.total_other`
+      - `analysis.system_like_entries` (Array)
+      - `analysis.blocked_entries` (Array)
+    - Frontend-State `restorePreviewResult` enthält diese Werte und triggert die Analyse-Box.
+  - sinnvoller Diagnosecheck:
+    - Browser-Konsole prüfen, ob der Restore-Request erfolgreich war (`status: "success"`).
+    - Prüfen, ob `analysis` im JSON tatsächlich vorhanden ist.
+  - sinnvolle Nutzerempfehlung:
+    - Bei fehlender Analyse-Box: Test-Restore erneut auslösen und auf Fehlermeldungen achten.
+    - Bei geblockten Einträgen: Archiv nicht zum produktiven Restore verwenden.
+
+- Backup / Restore – Deep-Verify-Dialog
+  - betroffene Funktion: `/api/backup/verify` mit `mode="deep"`.
+  - beobachtetes Fehlerbild:
+    - Dialog für die Tiefenprüfung erscheint nicht oder schließt sich sofort.
+    - Verifikation schlägt trotz korrektem Schlüssel wiederholt fehl.
+  - technische Ursache:
+    - Fehler beim Entschlüsseln des Backups (falsches Passwort, beschädigte Datei).
+    - Timeout oder Fehler beim `tar -tzf` auf der entschlüsselten Datei.
+  - prüfbarer Zustand:
+    - Backend-Logs für `/api/backup/verify` prüfen (Entschlüsselungsfehler, tar-Fehler).
+    - Aufruf manuell nachstellen:
+      - Backup lokal entschlüsseln.
+      - `tar -tzf` auf der entschlüsselten Datei ausführen.
+  - sinnvoller Diagnosecheck:
+    - Prüfen, ob derselbe Schlüssel für Erstellung und Verifikation genutzt wurde.
+    - Dateigröße und Speicherort des verschlüsselten Backups kontrollieren.
+  - sinnvolle Nutzerempfehlung:
+    - Bei wiederholten Fehlern neues Test-Backup mit bekanntem Schlüssel anlegen und mit Deep-Verify prüfen.
+
+- Backup / Restore – Nicht getestete Szenarien (Reality-Check offen)
+  - Kontext:
+    - In Phase 1 wurden die Härtungsmechanismen implementiert, aber nur begrenzt mit Live-Daten geprüft.
+  - Noch nicht real getestete Fälle:
+    - Preview-Restore mit echten, großen Archiven (inkl. Prüfung von Performance und Verzeichnisrechten unter `/mnt/setuphelfer-restore-preview`).
+    - Deep-Verify verschlüsselter Backups mit produktionsnahen Schlüssel- und Dateigrößen.
+    - Fehlerbilder bei teilweise beschädigten Archiven (z. B. abgeschnittene tar.gz-Dateien).
+  - Empfehlung für den späteren Reality-Check:
+    - Testumgebung mit mehreren realen Backups aufbauen:
+      - mindestens ein vollständiges, ein inkrementelles und ein verschlüsseltes Backup.
+      - gezielt ein beschädigtes Archiv erzeugen (z. B. Datei bewusst kürzen).
+    - Alle zentralen Pfade durchspielen:
+      - `verify` basic/deep,
+      - `restore` preview,
+      - Auswertung der Analyse-Box im Frontend.
+

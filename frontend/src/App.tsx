@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useMemo, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Toaster, toast } from 'react-hot-toast'
 import Sidebar from './components/Sidebar'
@@ -32,10 +32,12 @@ import RemoteView from './features/remote/RemoteView'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
 import BootSplash from './components/BootSplash'
-import { fetchApi, getApiBase, setApiBase } from './api'
+import { fetchApi, getApiBase, setApiBase, setScreenshotMode } from './api'
+import { getThemeShot, isThemeScreenshotCapture } from './themeScreenshot'
 import { PlatformProvider, platformRawFromSystemInfo, usePlatform } from './context/PlatformContext'
+import { MainStatusBarProvider, useMainStatusBar, useOptionalMainStatusBar } from './context/MainStatusBarContext'
 import { UIModeProvider } from './context/UIModeContext'
-import i18n from './i18n'
+import i18n, { setAppLocale } from './i18n'
 import './App.css'
 
 function AppDocumentTitle({ dsiRadioView }: { dsiRadioView: boolean }) {
@@ -57,6 +59,25 @@ function MobileAppTitle() {
         <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{identitySubtitle}</span>
       ) : null}
     </div>
+  )
+}
+
+function MobileMainStatusLine() {
+  const ctx = useOptionalMainStatusBar()
+  const status = ctx?.status
+  if (!status?.lines?.length) return null
+  const toneCls =
+    status.tone === 'danger'
+      ? 'text-red-700 dark:text-red-300'
+      : status.tone === 'soft'
+        ? 'text-amber-800 dark:text-amber-200'
+        : status.tone === 'calm'
+          ? 'text-emerald-800 dark:text-emerald-300'
+          : 'text-slate-600 dark:text-slate-400'
+  return (
+    <p className={`text-[10px] leading-tight line-clamp-2 text-center w-full mt-1 ${toneCls}`} role="status">
+      {status.lines.join(' · ')}
+    </p>
   )
 }
 
@@ -101,20 +122,110 @@ function getInitialPage(): Page {
   return 'dashboard'
 }
 
+function AppTopHeader() {
+  const { identitySubtitle } = usePlatform()
+  const { status } = useMainStatusBar()
+  const [uiLang, setUiLang] = useState<'de' | 'en'>(() => (i18n.language?.startsWith('en') ? 'en' : 'de'))
+
+  useEffect(() => {
+    const onLang = (lng: string) => setUiLang(lng.startsWith('en') ? 'en' : 'de')
+    i18n.on('languageChanged', onLang)
+    return () => {
+      i18n.off('languageChanged', onLang)
+    }
+  }, [])
+
+  const hostLabel = identitySubtitle || ''
+
+  const statusToneClass =
+    status?.tone === 'danger'
+      ? 'text-red-700 dark:text-red-300'
+      : status?.tone === 'soft'
+        ? 'text-amber-800 dark:text-amber-200'
+        : status?.tone === 'calm'
+          ? 'text-emerald-800 dark:text-emerald-300'
+          : 'text-slate-600 dark:text-slate-300'
+
+  return (
+    <header className="hidden md:flex items-stretch gap-2 px-4 sm:px-6 min-h-10 py-1 border-b border-slate-300/80 dark:border-slate-700/80 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm">
+      <div className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[28%] sm:max-w-xs shrink-0 flex items-center">
+        {hostLabel}
+      </div>
+      <div
+        className="flex-1 min-w-0 flex flex-col items-center justify-center px-2"
+        role="status"
+        aria-live="polite"
+      >
+        {status && status.lines.length > 0 ? (
+          <p className={`text-[11px] sm:text-xs text-center leading-snug line-clamp-2 ${statusToneClass}`}>
+            {status.lines.join(' · ')}
+          </p>
+        ) : null}
+      </div>
+      <div
+        className="inline-flex shrink-0 self-center rounded-lg border border-slate-300 dark:border-slate-600 overflow-hidden shadow-sm text-[11px] leading-none"
+        role="group"
+        aria-label={i18n.t('sidebar.language.aria')}
+      >
+        <button
+          type="button"
+          onClick={() => setAppLocale('de')}
+          aria-pressed={uiLang === 'de'}
+          title={i18n.t('settings.language.de')}
+          className={`px-3 py-1 flex items-center justify-center transition-colors ${
+            uiLang === 'de'
+              ? 'bg-sky-600 text-white'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
+          }`}
+        >
+          DE
+        </button>
+        <button
+          type="button"
+          onClick={() => setAppLocale('en')}
+          aria-pressed={uiLang === 'en'}
+          title={i18n.t('settings.language.en')}
+          className={`px-3 py-1 flex items-center justify-center border-l border-slate-300 dark:border-slate-600 transition-colors ${
+            uiLang === 'en'
+              ? 'bg-sky-600 text-white'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
+          }`}
+        >
+          EN
+        </button>
+      </div>
+    </header>
+  )
+}
+
 function App() {
   const dsiRadioView = isDsiRadioView()
-  const [showBootSplash, setShowBootSplash] = useState(true)
-  const [currentPage, setCurrentPage] = useState<Page>(getInitialPage)
+  const themeShot = typeof window !== 'undefined' ? getThemeShot() : null
+  const [showBootSplash, setShowBootSplash] = useState(() => {
+    if (themeShot === 'start') return true
+    if (themeShot && themeShot !== 'start') return false
+    return true
+  })
+  const [currentPage, setCurrentPage] = useState<Page>(() => {
+    if (themeShot === 'webserver') return 'webserver'
+    return getInitialPage()
+  })
   const [systemInfo, setSystemInfo] = useState<any>(null)
   const [freenoveDetected, setFreenoveDetected] = useState(false)
-  const [backendError, setBackendError] = useState(false)
-  const [backendErrorReason, setBackendErrorReason] = useState<'timeout' | 'connection' | 'other' | null>(null)
+  const [backendError, setBackendError] = useState(() => themeShot === 'error')
+  const [backendErrorReason, setBackendErrorReason] = useState<'timeout' | 'connection' | 'other' | null>(() =>
+    themeShot === 'error' ? 'connection' : null,
+  )
   const [sudoPasswordReady, setSudoPasswordReady] = useState(false)
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('pi-installer-theme')
     return (saved as Theme) || 'system'
   })
   const [firstRunDone, setFirstRunDone] = useState(() => {
+    if (themeShot === 'experience') return false
+    if (themeShot === 'start' || themeShot === 'webserver' || themeShot === 'error' || themeShot === 'dashboard') {
+      return true
+    }
     try {
       return localStorage.getItem(FIRST_RUN_DONE_KEY) === '1'
     } catch {
@@ -151,10 +262,18 @@ function App() {
     }
   }, [dsiRadioView])
 
+  useLayoutEffect(() => {
+    const ts = getThemeShot()
+    if (ts && ts !== 'start') {
+      setScreenshotMode(true)
+    }
+  }, [])
+
   useEffect(() => {
+    if (themeShot === 'start') return
     const timer = window.setTimeout(() => setShowBootSplash(false), 950)
     return () => window.clearTimeout(timer)
-  }, [])
+  }, [themeShot])
 
   const platformRaw = useMemo(() => platformRawFromSystemInfo(systemInfo), [systemInfo])
 
@@ -220,8 +339,9 @@ function App() {
   }, [])
 
   useEffect(() => {
+    if (themeShot === 'error') return
     fetchSystemInfo()
-  }, [fetchSystemInfo])
+  }, [fetchSystemInfo, themeShot])
 
   useEffect(() => {
     fetchFreenoveDetection()
@@ -348,15 +468,15 @@ function App() {
       case 'webserver':
         return <WebServerSetup />
       case 'mailserver':
-        return <MailServerSetup />
+        return <MailServerSetup experienceLevel={experienceLevel} />
       case 'nas':
         return <NASSetup />
       case 'homeautomation':
         return <HomeAutomationSetup />
       case 'musicbox':
-        return <MusicBoxSetup />
+        return <MusicBoxSetup experienceLevel={experienceLevel} />
       case 'kino-streaming':
-        return <KinoStreaming />
+        return <KinoStreaming experienceLevel={experienceLevel} />
       case 'wizard':
         return <InstallationWizard />
       case 'presets':
@@ -366,7 +486,7 @@ function App() {
       case 'monitoring':
         return <MonitoringDashboard />
       case 'backup':
-        return <BackupRestore />
+        return <BackupRestore experienceLevel={experienceLevel} />
       case 'raspberry-pi-config':
         return platformRaw.isRaspberryPi ? (
           <RaspberryPiConfig />
@@ -453,6 +573,7 @@ function App() {
       <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
         {!firstRunDone && (
           <FirstRunWizard
+            initialStep={themeShot === 'experience' ? 2 : 1}
             onComplete={(level) => {
               setFirstRunDone(true)
               if (level) setExperienceLevel(level)
@@ -461,23 +582,30 @@ function App() {
             systemInfo={systemInfo}
           />
         )}
-        <SudoPasswordDialog onPasswordSaved={handleSudoPasswordSaved} />
+        {!isThemeScreenshotCapture() ? (
+          <SudoPasswordDialog onPasswordSaved={handleSudoPasswordSaved} />
+        ) : null}
         <RunningBackupModal />
         {/* Mobile: Hamburger-Leiste */}
-        <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-slate-200 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(true)}
-            className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700"
-            aria-label={i18n.t('app.mobile.openMenu')}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-          </button>
-          <MobileAppTitle />
+        <MainStatusBarProvider>
+        <header className="md:hidden flex flex-col gap-0 px-4 py-2 bg-slate-200 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700"
+              aria-label={i18n.t('app.mobile.openMenu')}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <MobileAppTitle />
+          </div>
+          <MobileMainStatusLine />
         </header>
         <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platformRaw.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} experienceLevel={experienceLevel} appEdition={appEdition} />
-      <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <div className="p-4 sm:p-8 min-h-full">
+      <main className="flex-1 flex flex-col bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <AppTopHeader />
+        <div className="flex-1 overflow-auto p-4 sm:p-8 min-h-full">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={currentPage}
@@ -492,6 +620,7 @@ function App() {
           </AnimatePresence>
         </div>
       </main>
+        </MainStatusBarProvider>
         <Toaster position="bottom-right" />
       </div>
     </PlatformProvider>

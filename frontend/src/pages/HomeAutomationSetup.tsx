@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Home, Zap, Search, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import { usePlatform } from '../context/PlatformContext'
+import { PandaCompanion, PandaRail, type PandaStatus } from '../components/companions'
 
 type DiscoveredAutomationDevice = {
   name: string
@@ -122,6 +123,20 @@ const HomeAutomationSetup: React.FC = () => {
     }
   }
 
+  const homeAutomationCompanionStatus = useMemo((): PandaStatus => {
+    if (searching) return 'info'
+    if (discoveryResult && (discoveryResult.found?.length ?? 0) > 0) return 'success'
+    const st = automationStatus as Record<string, { installed?: boolean; running?: boolean }> | null
+    if (!st) return 'info'
+    const keys = ['homeassistant', 'home_assistant', 'openhab', 'nodered', 'node_red'] as const
+    for (const k of keys) {
+      const svc = st[k]
+      if (svc?.running) return 'success'
+      if (svc?.installed) return 'warning'
+    }
+    return 'info'
+  }, [automationStatus, discoveryResult, searching])
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
@@ -133,6 +148,20 @@ const HomeAutomationSetup: React.FC = () => {
         </div>
         <p className="text-slate-400">Hausautomatisierung – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaRail>
+        <PandaCompanion
+          type="start"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={homeAutomationCompanionStatus}
+          title="Smart-Home-Begleiter"
+          subtitle="Suche, Installation und Status – Ampel: grün wenn Geräte gefunden oder ein Dienst läuft, gelb wenn installiert aber nicht aktiv."
+        />
+      </PandaRail>
 
       {/* Suche nach Elementen – roter Start-Button + Assimilation-Text */}
       <div className="card flex flex-col items-center py-8">

@@ -384,6 +384,10 @@ GET    /api/install/progress    - Installation progress
 
 ---
 
+**Siehe auch:** [Diagnose & Companion (Phase 1)](diagnose_companion.md) — strukturierte Fehlereinordnung und UI-Anbindung ohne Eingriff in Backup/Restore-Verträge.
+
+---
+
 **Version:** 1.0.0  
 **Architecture Pattern:** Monolithic with Modular Backend  
 **Scalability:** Horizontal Scaling Ready (Future)  

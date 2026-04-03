@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1025 1025" role="img" aria-labelledby="pandaBackupTitle">
+  <title id="pandaBackupTitle">SetupHelfer Panda  Backup</title>
+  <defs>
+    <clipPath id="pandaBackupFrame">
+      <circle cx="512.5" cy="512.5" r="420" />
+    </clipPath>
+  </defs>
+  <rect x="0" y="0" width="1025" height="1025" fill="#020617" />
+  <g clip-path="url(#pandaBackupFrame)">
+    <image href="./panda_base.svg" x="0" y="0" width="1025" height="1025" preserveAspectRatio="xMidYMid meet" />
+  </g>
+  <!-- Minimalistisches Backup-Symbol, kein neues Logo -->
+  <g transform="translate(700 720)">
+    <rect x="-90" y="-70" width="180" height="140" rx="28" fill="#0f172a" stroke="#38bdf8" stroke-width="6" />
+    <path d="M-50 0 L0 -40 L50 0" fill="none" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M0 -40 V40" fill="none" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" />
+  </g>
+</svg>
+

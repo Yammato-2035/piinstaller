@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Mail, AlertCircle, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -6,8 +6,14 @@ import { fetchApi } from '../api'
 import RiskWarningCard from '../components/RiskWarningCard'
 import { getPageRisk } from '../config/riskLevels'
 import { usePlatform } from '../context/PlatformContext'
+import type { ExperienceLevel } from '../components/Sidebar'
+import { PandaCompanion, PandaRail, PandaHelperStrip, type PandaStatus } from '../components/companions'
 
-const MailServerSetup: React.FC = () => {
+interface MailServerSetupProps {
+  experienceLevel?: ExperienceLevel
+}
+
+const MailServerSetup: React.FC<MailServerSetupProps> = ({ experienceLevel = 'beginner' }) => {
   const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
@@ -18,6 +24,11 @@ const MailServerSetup: React.FC = () => {
   })
 
   const [loading, setLoading] = useState(false)
+
+  const mailCompanionStatus = useMemo((): PandaStatus => {
+    if (loading) return 'info'
+    return 'warning'
+  }, [loading])
 
   const applyConfig = async () => {
     if (!config.domain) {
@@ -73,6 +84,23 @@ const MailServerSetup: React.FC = () => {
         </div>
         <p className="text-slate-400">{t('mailServer.pageSubtitle', { label: pageSubtitleLabel })}</p>
       </div>
+
+      <PandaHelperStrip experienceLevel={experienceLevel} variant="security">
+        Die automatische Mail-Server-Konfiguration ist hier noch nicht angebunden. Plane DNS, TLS und Spam-Schutz mit Bedacht – bis dahin bleibt die Aktion bewusst gesperrt.
+      </PandaHelperStrip>
+      <PandaRail>
+        <PandaCompanion
+          type="warning"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={mailCompanionStatus}
+          title="Mail-Begleiter"
+          subtitle="Panda weist auf Risiken hin; die Ampel bleibt vorsichtig, bis ein echter Konfigurationsweg existiert."
+        />
+      </PandaRail>
 
       {(() => {
         const risk = getPageRisk('mailserver', t)

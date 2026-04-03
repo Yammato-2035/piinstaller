@@ -1,0 +1,24 @@
+{
+  "scene_base": "assets/hero/hero-setup-scene.svg",
+  "lucide_note": "UI-Icons: nur noch Lucide unter assets/icons/lucide/ — in Snippets {{LUCIDE:name}} bzw. {{LUCIDE:name:72}}",
+  "lucide_slots": {
+    "tutorials": "book-open",
+    "troubleshooting": "circle-alert",
+    "community": "users",
+    "projects": "folder-kanban",
+    "download": "download",
+    "installation": "download",
+    "diagnose": "search",
+    "backup": "hard-drive",
+    "projekte": "folder-kanban",
+    "fehlerhilfe": "circle-alert",
+    "sicherheit": "shield",
+    "netzwerk": "network",
+    "medien": "clapperboard",
+    "dokumentation": "file-text",
+    "raspberry_pi": "microchip",
+    "linux": "cpu",
+    "systemstatus": "gauge",
+    "terminal_konfiguration": "terminal"
+  }
+}

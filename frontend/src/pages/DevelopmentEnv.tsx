@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Code, Package, Database, Terminal } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
+import { PandaCompanion, PandaRail, type PandaStatus } from '../components/companions'
 
 const DevelopmentEnv: React.FC = () => {
   const { pageSubtitleLabel } = usePlatform()
@@ -88,6 +89,18 @@ const DevelopmentEnv: React.FC = () => {
       setLoading(false)
     }
   }
+
+  const devenvCompanionStatus = useMemo((): PandaStatus => {
+    if (!devenvStatus || typeof devenvStatus !== 'object') return 'info'
+    const docker = (devenvStatus as { docker?: { installed?: boolean } }).docker
+    if (docker?.installed) return 'success'
+    const installedCount = Object.values(devenvStatus).filter(
+      (v) => v && typeof v === 'object' && (v as { installed?: boolean }).installed,
+    ).length
+    if (installedCount >= 2) return 'success'
+    if (installedCount === 1) return 'info'
+    return 'info'
+  }, [devenvStatus])
 
   const ItemCard = ({ item, checked, onChange, status }: any) => {
     const isInstalled = status?.installed || false
@@ -175,6 +188,20 @@ const DevelopmentEnv: React.FC = () => {
         </div>
         <p className="text-slate-400">Dev-Umgebung – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaRail>
+        <PandaCompanion
+          type="docker"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={devenvCompanionStatus}
+          title="Entwicklungs-Begleiter"
+          subtitle="Sprachen, Datenbanken, Tools – Motiv „Docker“ steht symbolisch für Container & Toolchain. Ampel: grün wenn Docker o. Ä. erkannt ist, sonst neutral."
+        />
+      </PandaRail>
 
       <div className="grid lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-8">

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { HardDrive, Server, Folder, Users, Search, Trash2, FileWarning } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import { PandaCompanion, PandaRail, type PandaStatus } from '../components/companions'
 
 const NASSetup: React.FC = () => {
   const { pageSubtitleLabel } = usePlatform()
@@ -174,6 +175,16 @@ const NASSetup: React.FC = () => {
     }
   }
 
+  const nasCompanionStatus = useMemo((): PandaStatus => {
+    if (!nasStatus) return 'info'
+    const any = !!(
+      nasStatus.samba?.installed ||
+      nasStatus.nfs?.installed ||
+      nasStatus.ftp?.installed
+    )
+    return any ? 'success' : 'warning'
+  }, [nasStatus])
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
@@ -185,6 +196,20 @@ const NASSetup: React.FC = () => {
         </div>
         <p className="text-slate-400">NAS – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaRail>
+        <PandaCompanion
+          type="cloud"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={nasCompanionStatus}
+          title="NAS-Begleiter"
+          subtitle="Freigaben und Speicher im Netz – Motiv „Cloud“ für geteilten Speicher. Ampel: grün wenn mindestens Samba, NFS oder FTP installiert ist."
+        />
+      </PandaRail>
 
       {/* Status */}
       {nasStatus && (

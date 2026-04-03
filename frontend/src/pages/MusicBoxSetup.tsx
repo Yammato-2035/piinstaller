@@ -1,11 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Music, Radio, Headphones } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import { usePlatform } from '../context/PlatformContext'
+import type { ExperienceLevel } from '../components/Sidebar'
+import { PandaCompanion, PandaRail, PandaHelperStrip, type PandaStatus } from '../components/companions'
 
-const MusicBoxSetup: React.FC = () => {
+interface MusicBoxSetupProps {
+  experienceLevel?: ExperienceLevel
+}
+
+const MusicBoxSetup: React.FC<MusicBoxSetupProps> = ({ experienceLevel = 'beginner' }) => {
   const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     music_type: 'mopidy',
@@ -30,6 +36,14 @@ const MusicBoxSetup: React.FC = () => {
   useEffect(() => {
     loadMusicStatus()
   }, [])
+
+  const musicCompanionStatus = useMemo((): PandaStatus => {
+    if (diagnoseData?.error) return 'warning'
+    const st = musicStatus?.[config.music_type]
+    if (st?.running) return 'success'
+    if (st?.installed) return 'warning'
+    return 'info'
+  }, [musicStatus, config.music_type, diagnoseData?.error])
 
   const loadDiagnose = async () => {
     setLoadingDiagnose(true)
@@ -165,6 +179,24 @@ const MusicBoxSetup: React.FC = () => {
         </div>
         <p className="text-slate-400">Musikbox – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaHelperStrip experienceLevel={experienceLevel} variant="base">
+        Wähle deinen Music-Server und starte bei Bedarf die Installation. Wenn Mopidy nur Text zeigt, fehlt oft Iris – „Installation starten“ erneut ausführen.
+        Status und Diagnose findest du weiter unten auf der Seite.
+      </PandaHelperStrip>
+      <PandaRail>
+        <PandaCompanion
+          type="tutorial"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={musicCompanionStatus}
+          title="Musik-Begleiter"
+          subtitle="Panda begleitet die Musik-Einrichtung; die Ampel zeigt, ob der gewählte Dienst installiert und aktiv wirkt."
+        />
+      </PandaRail>
 
       {/* Info: Music-Server & Bezahldienste */}
       <div className="card-info">

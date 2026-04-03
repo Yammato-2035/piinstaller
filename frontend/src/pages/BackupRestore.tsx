@@ -1,15 +1,26 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Cloud, Database, Download, Upload, Trash2, Clock, HardDrive, Lock, Settings, CheckSquare, Square, Copy } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
+import { postDiagnosisInterpret } from '../api/diagnosisApi'
+import DiagnosisPanel from '../components/DiagnosisPanel'
+import { PandaCompanion, PandaRail, PandaHelperStrip, type PandaStatus } from '../components/companions'
+import type { ExperienceLevel } from '../components/Sidebar'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import type { DiagnosisRecord } from '../types/diagnosis'
 import { usePlatform } from '../context/PlatformContext'
 
 type BackupTab = 'backup' | 'settings' | 'restore' | 'clone'
 
-const BackupRestore: React.FC = () => {
+interface BackupRestoreProps {
+  experienceLevel?: ExperienceLevel
+}
+
+const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginner' }) => {
+  const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
   const [activeTab, setActiveTab] = useState<BackupTab>('backup')
   const [backups, setBackups] = useState<any[]>([])
@@ -41,6 +52,7 @@ const BackupRestore: React.FC = () => {
   const LAST_DIR_KEY = 'pi_installer_last_backup_dir'
   const BACKUP_JOB_STORAGE_KEY = 'pi_installer_running_backup_job'
   const [verifying, setVerifying] = useState<Record<string, boolean>>({})
+  const [verifyDiagnosis, setVerifyDiagnosis] = useState<DiagnosisRecord | null>(null)
   const [backupSettings, setBackupSettings] = useState<any>(null)
   const [settingsLoading, setSettingsLoading] = useState(false)
   const [backupJob, setBackupJob] = useState<any>(null)
@@ -57,6 +69,15 @@ const BackupRestore: React.FC = () => {
   const [cloneTargetDevice, setCloneTargetDevice] = useState<string>('')
   const [cloneJob, setCloneJob] = useState<any>(null)
   const cloneJobNotifiedRef = useRef<Record<string, boolean>>({})
+  const [restorePreviewResult, setRestorePreviewResult] = useState<{
+    backupFile: string
+    previewDir: string
+    analysis: any
+    totalEntries: number
+  } | null>(null)
+  const [deepVerifyOpen, setDeepVerifyOpen] = useState(false)
+  const [deepVerifyFile, setDeepVerifyFile] = useState<string | null>(null)
+  const [deepVerifyKey, setDeepVerifyKey] = useState('')
 
   useEffect(() => {
     loadTargets()
@@ -146,6 +167,10 @@ const BackupRestore: React.FC = () => {
       if (intervalId) window.clearInterval(intervalId)
     }
   }, [cloneJob?.job_id])
+
+  useEffect(() => {
+    if (activeTab !== 'backup') setVerifyDiagnosis(null)
+  }, [activeTab])
 
   useEffect(() => {
     if (!backupJob?.job_id) return
@@ -912,17 +937,23 @@ const BackupRestore: React.FC = () => {
   }
 
   const restoreBackup = async (backupFile: string) => {
-    if (!window.confirm(`WARNUNG: Möchten Sie wirklich das Backup ${backupFile} wiederherstellen? Dies überschreibt alle aktuellen Daten!`)) {
-      return
-    }
-
-    if (!window.confirm('Sind Sie SICHER? Diese Aktion kann nicht rückgängig gemacht werden!')) {
+    if (
+      !window.confirm(
+        t('backup.restore.preview.confirm', {
+          file: backupFile.split('/').pop() || backupFile,
+        }),
+      )
+    ) {
       return
     }
 
     await requireSudo(
-      { title: 'Backup wiederherstellen', subtitle: 'Restore benötigt sudo. Achtung: überschreibt Dateien.', confirmText: 'Restore starten' },
-      async () => {
+      {
+        title: t('backup.restore.preview.sudoTitle'),
+        subtitle: t('backup.restore.preview.sudoSubtitle'),
+        confirmText: t('backup.restore.preview.sudoConfirm'),
+      },
+      async (sudoPassword?: string) => {
         setLoading(true)
         try {
           const response = await fetchApi('/api/backup/restore', {
@@ -930,64 +961,248 @@ const BackupRestore: React.FC = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               backup_file: backupFile,
+              mode: 'preview',
+              sudo_password: sudoPassword,
             }),
           })
           const data = await response.json()
 
           if (data.status === 'success') {
-            toast.success('Backup wiederhergestellt! System-Neustart empfohlen.')
-            if (data.warning) toast(data.warning, { icon: '⚠️' })
+            setRestorePreviewResult({
+              backupFile,
+              previewDir: String(data.preview_dir || ''),
+              analysis: data.analysis || {},
+              totalEntries: typeof data.total_entries === 'number' ? data.total_entries : 0,
+            })
+            toast.success(t('backup.restore.preview.toastSuccess'))
           } else {
-            toast.error(data.message || 'Fehler beim Wiederherstellen')
+            setRestorePreviewResult(null)
+            toast.error(data.message || t('backup.restore.preview.toastError'))
           }
         } finally {
           setLoading(false)
         }
-      }
+      },
     )
   }
 
-  const verifyBackup = async (backupFile: string, mode: 'gzip' | 'tar' | 'sha256' = 'gzip') => {
+  const applyVerifyFailureDiagnosis = React.useCallback(async (rawMessage: string, extra: Record<string, unknown> = {}) => {
+    const trimmed = String(rawMessage || '').trim()
+    if (!trimmed) {
+      setVerifyDiagnosis(null)
+      return
+    }
+    const rec = await postDiagnosisInterpret({
+      area: 'backup_restore',
+      event_type: 'verify_failed',
+      message: trimmed.slice(0, 2000),
+      extra,
+    })
+    setVerifyDiagnosis(rec)
+  }, [])
+
+  const verifyBackup = async (backupFile: string, mode: 'basic' | 'deep' = 'basic') => {
+    if (mode === 'deep') {
+      setDeepVerifyFile(backupFile)
+      setDeepVerifyKey('')
+      setDeepVerifyOpen(true)
+      return
+    }
+    setVerifyDiagnosis(null)
     setVerifying((m) => ({ ...m, [backupFile]: true }))
     try {
+      const body: any = { backup_file: backupFile, mode }
       const res = await fetchApi('/api/backup/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ backup_file: backupFile }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (data.status === 'success' && data.results) {
         const results = data.results
-        if (results.encrypted) {
-          // Verschlüsselte Backups: Nur Dateigröße prüfen
+        const verificationMode = results.verification_mode || mode
+        if (results.encrypted && verificationMode === 'basic') {
           if (results.size_bytes > 0) {
+            setVerifyDiagnosis(null)
             toast.success(
-              `✅ Verschlüsseltes Backup gefunden!\n📦 Größe: ${results.size_human}\n🔒 Verschlüsselt: Ja`,
-              { duration: 8000 }
+              t('backup.verify.basic.encryptedFound', {
+                size: results.size_human,
+              }),
+              { duration: 8000 },
             )
-            toast('ℹ️ Verschlüsselte Backups können nur auf Dateigröße geprüft werden. Für vollständige Verifizierung muss das Backup entschlüsselt werden.', { duration: 10000, icon: '🔒' })
+            toast(t('backup.verify.basic.encryptedInfo'), { duration: 10000, icon: '🔒' })
           } else {
-            toast.error('❌ Verschlüsseltes Backup-Datei ist leer oder nicht gefunden!', { duration: 9000 })
+            toast.error(t('backup.verify.basic.encryptedEmpty'), { duration: 9000 })
+            void applyVerifyFailureDiagnosis(t('backup.verify.basic.encryptedEmpty'), {
+              kind: 'encrypted_empty',
+              verify_mode: mode,
+              backup_file: backupFile,
+            })
           }
         } else if (results.valid) {
+          setVerifyDiagnosis(null)
           toast.success(
-            `✅ Backup ist gültig!\n📦 Größe: ${results.size_human}\n📁 Dateien: ${results.file_count}`,
-            { duration: 8000 }
+            t('backup.verify.valid', {
+              size: results.size_human,
+              count: results.file_count,
+            }),
+            { duration: 8000 },
           )
           if (results.sample_files && results.sample_files.length > 0) {
             const sample = results.sample_files.slice(0, 5).join(', ')
-            toast(`Beispiel-Dateien: ${sample}${results.file_count > 5 ? '...' : ''}`, { duration: 10000, icon: '📋' })
+            toast(
+              t('backup.verify.samples', {
+                files: sample,
+                more: results.file_count > 5 ? '…' : '',
+              }),
+              { duration: 10000, icon: '📋' },
+            )
           }
         } else {
-          toast.error(`❌ Backup ist ungültig oder beschädigt!\n${results.error || 'Unbekannter Fehler'}`, { duration: 12000 })
+          const errMsg = String(results.error || t('backup.verify.unknownError'))
+          toast.error(
+            t('backup.verify.invalid', {
+              error: errMsg,
+            }),
+            { duration: 12000 },
+          )
+          void applyVerifyFailureDiagnosis(errMsg, {
+            verify_mode: mode,
+            backup_file: backupFile,
+            result_invalid: true,
+          })
         }
       } else {
-        toast.error(`Verifizierung fehlgeschlagen: ${data.message || 'Unbekannter Fehler'}`, { duration: 9000 })
+        const errMsg = String(data.message || t('backup.verify.unknownError'))
+        toast.error(
+          t('backup.verify.requestFailed', {
+            error: errMsg,
+          }),
+          { duration: 9000 },
+        )
+        void applyVerifyFailureDiagnosis(errMsg, {
+          verify_mode: mode,
+          backup_file: backupFile,
+          request_failed: true,
+        })
       }
     } catch (error) {
-      toast.error(`Fehler beim Verifizieren: ${error instanceof Error ? error.message : 'Unbekannt'}`, { duration: 9000 })
+      const errMsg = String(error instanceof Error ? error.message : t('backup.verify.unknownError'))
+      toast.error(
+        t('backup.verify.exception', {
+          error: errMsg,
+        }),
+        { duration: 9000 },
+      )
+      void applyVerifyFailureDiagnosis(errMsg, {
+        verify_mode: mode,
+        backup_file: backupFile,
+        exception: true,
+      })
     } finally {
       setVerifying((m) => ({ ...m, [backupFile]: false }))
+    }
+  }
+
+  const runDeepVerify = async () => {
+    if (!deepVerifyFile || !deepVerifyKey) return
+    const backupFile = deepVerifyFile
+    setVerifyDiagnosis(null)
+    setVerifying((m) => ({ ...m, [backupFile]: true }))
+    try {
+      const body: any = { backup_file: backupFile, mode: 'deep' as const, encryption_key: deepVerifyKey }
+      const res = await fetchApi('/api/backup/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (data.status === 'success' && data.results) {
+        const results = data.results
+        const verificationMode = results.verification_mode || 'deep'
+        if (results.encrypted && verificationMode === 'basic') {
+          if (results.size_bytes > 0) {
+            setVerifyDiagnosis(null)
+            toast.success(
+              t('backup.verify.basic.encryptedFound', {
+                size: results.size_human,
+              }),
+              { duration: 8000 },
+            )
+            toast(t('backup.verify.basic.encryptedInfo'), { duration: 10000, icon: '🔒' })
+          } else {
+            toast.error(t('backup.verify.basic.encryptedEmpty'), { duration: 9000 })
+            void applyVerifyFailureDiagnosis(t('backup.verify.basic.encryptedEmpty'), {
+              kind: 'encrypted_empty',
+              verify_mode: 'deep',
+              backup_file: backupFile,
+            })
+          }
+        } else if (results.valid) {
+          setVerifyDiagnosis(null)
+          toast.success(
+            t('backup.verify.valid', {
+              size: results.size_human,
+              count: results.file_count,
+            }),
+            { duration: 8000 },
+          )
+          if (results.sample_files && results.sample_files.length > 0) {
+            const sample = results.sample_files.slice(0, 5).join(', ')
+            toast(
+              t('backup.verify.samples', {
+                files: sample,
+                more: results.file_count > 5 ? '…' : '',
+              }),
+              { duration: 10000, icon: '📋' },
+            )
+          }
+        } else {
+          const errMsg = String(results.error || t('backup.verify.unknownError'))
+          toast.error(
+            t('backup.verify.invalid', {
+              error: errMsg,
+            }),
+            { duration: 12000 },
+          )
+          void applyVerifyFailureDiagnosis(errMsg, {
+            verify_mode: 'deep',
+            backup_file: backupFile,
+            result_invalid: true,
+          })
+        }
+      } else {
+        const errMsg = String(data.message || t('backup.verify.unknownError'))
+        toast.error(
+          t('backup.verify.requestFailed', {
+            error: errMsg,
+          }),
+          { duration: 9000 },
+        )
+        void applyVerifyFailureDiagnosis(errMsg, {
+          verify_mode: 'deep',
+          backup_file: backupFile,
+          request_failed: true,
+        })
+      }
+    } catch (error) {
+      const errMsg = String(error instanceof Error ? error.message : t('backup.verify.unknownError'))
+      toast.error(
+        t('backup.verify.exception', {
+          error: errMsg,
+        }),
+        { duration: 9000 },
+      )
+      void applyVerifyFailureDiagnosis(errMsg, {
+        verify_mode: 'deep',
+        backup_file: backupFile,
+        exception: true,
+      })
+    } finally {
+      setVerifying((m) => ({ ...m, [backupFile]: false }))
+      setDeepVerifyOpen(false)
+      setDeepVerifyFile(null)
+      setDeepVerifyKey('')
     }
   }
 
@@ -1108,27 +1323,76 @@ const BackupRestore: React.FC = () => {
 
   const verifySelectedBackups = async () => {
     if (selectedBackups.size === 0) {
-      toast.error('Keine Backups ausgewählt')
+      toast.error(t('backup.selection.none'))
       return
     }
     const files = Array.from(selectedBackups)
     for (const backupFile of files) {
-      await verifyBackup(backupFile, 'gzip')
+      await verifyBackup(backupFile, 'basic')
     }
   }
 
   const restoreSelectedBackup = async () => {
     if (selectedBackups.size === 0) {
-      toast.error('Keine Backups ausgewählt')
+      toast.error(t('backup.selection.none'))
       return
     }
     if (selectedBackups.size > 1) {
-      toast.error('Bitte wählen Sie nur ein Backup zum Wiederherstellen aus')
+      toast.error(t('backup.restore.onlyOne'))
       return
     }
     const backupFile = Array.from(selectedBackups)[0]
+    if (String(backupFile).includes('pi-backup-inc-')) {
+      toast.error(t('backup.restore.incrementalNotSupported'))
+      return
+    }
     await restoreBackup(backupFile)
   }
+
+  const backupCompanionStatus = useMemo((): PandaStatus => {
+    const st = backupJob?.status
+    if (st === 'failed' || st === 'error') return 'danger'
+    if (backupJob?.warning) return 'warning'
+    if (st && ['queued', 'running', 'cancel_requested'].includes(String(st))) return 'info'
+    return 'success'
+  }, [backupJob])
+
+  const cloudCompanionStatus = useMemo((): PandaStatus => {
+    if (cloudBackupsLoading) return 'info'
+    if (showCloudBackups && cloudBackups.length > 0) return 'success'
+    if (showCloudBackups && !cloudBackupsLoading) return 'warning'
+    if (backupDirMode === 'cloud' && !backupSettings?.cloud?.enabled) return 'warning'
+    if (backupSettings?.cloud?.enabled) return 'info'
+    return 'info'
+  }, [
+    cloudBackupsLoading,
+    showCloudBackups,
+    cloudBackups.length,
+    backupDirMode,
+    backupSettings?.cloud?.enabled,
+  ])
+
+  const cloudCompanionSection = (
+    <div className="space-y-2 my-3">
+      <PandaHelperStrip experienceLevel={experienceLevel} variant="backup">
+        Cloud-Backups: Zugangsdaten unter <span className="text-slate-300 font-medium">Einstellungen → Cloud-Backup</span>{' '}
+        pflegen, dann die Liste aktualisieren. Ohne aktivierte Cloud-Option oder ohne Treffer bleibt die Ampel vorsichtig.
+      </PandaHelperStrip>
+      <PandaRail>
+        <PandaCompanion
+          type="cloud"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={cloudCompanionStatus}
+          title="Cloud-Begleiter"
+          subtitle="Panda für externe Speicherorte; die Ampel spiegelt Ladezustand, Konfiguration und ob Backups gefunden wurden."
+        />
+      </PandaRail>
+    </div>
+  )
 
   return (
     <div className="space-y-8 animate-fade-in page-transition">
@@ -1153,6 +1417,54 @@ const BackupRestore: React.FC = () => {
           }
         }}
       />
+      {/* Deep-Verify Dialog */}
+      {deepVerifyOpen && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full p-4 space-y-3">
+            <h3 className="text-sm font-semibold text-white">
+              {t('backup.verify.deep.title')}
+            </h3>
+            <p className="text-xs text-slate-300">
+              {t('backup.verify.deep.body')}
+            </p>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-200" htmlFor="deep-verify-key">
+                {t('backup.verify.deep.label')}
+              </label>
+              <input
+                id="deep-verify-key"
+                type="password"
+                className="w-full px-2 py-1 rounded bg-slate-950 border border-slate-700 text-xs text-slate-100"
+                value={deepVerifyKey}
+                onChange={(e) => setDeepVerifyKey(e.target.value)}
+                placeholder={t('backup.verify.deep.placeholder')}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                className="px-3 py-1 text-xs rounded bg-slate-800 text-slate-100 hover:bg-slate-700"
+                onClick={() => {
+                  setDeepVerifyOpen(false)
+                  setDeepVerifyFile(null)
+                  setDeepVerifyKey('')
+                }}
+              >
+                {t('backup.verify.deep.cancel')}
+              </button>
+              <button
+                type="button"
+                className="px-3 py-1 text-xs rounded bg-sky-600 text-white hover:bg-sky-500 disabled:opacity-50"
+                disabled={!deepVerifyKey}
+                onClick={() => void runDeepVerify()}
+              >
+                {t('backup.verify.deep.confirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* USB Prepare Dialog */}
       {showUsbDialog && (
         <div className="fixed inset-0 z-50">
@@ -1269,6 +1581,24 @@ const BackupRestore: React.FC = () => {
         </div>
         <p className="text-slate-400">Backup & Restore – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaHelperStrip experienceLevel={experienceLevel} variant="backup">
+        Wähle ein klares Ziel: Standardordner, USB-Stick oder Cloud. Vor dem Restore unbedingt lesen, was überschrieben wird – der Backup-Begleiter unten zeigt parallel den Job-Status.
+      </PandaHelperStrip>
+
+      <PandaRail>
+        <PandaCompanion
+          type="backup"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={backupCompanionStatus}
+          title="Backup-Begleiter"
+          subtitle="Panda steht für diesen Bereich; die Ampel zeigt, ob gerade alles ruhig ist oder ob du etwas beachten solltest."
+        />
+      </PandaRail>
 
       {/* Beginner-First Auswahl: Was möchtest du tun? */}
       <motion.div
@@ -1644,15 +1974,18 @@ const BackupRestore: React.FC = () => {
                 </div>
 
                 {backupDirMode === 'cloud' && (
-                  <div className="mt-3 p-3 bg-sky-900/20 border border-sky-700/40 rounded-lg text-sky-100 text-sm">
-                    <div className="font-semibold mb-1">Cloud-Backup</div>
-                    <div className="text-xs text-sky-100/80">
-                      Upload erfolgt über WebDAV (Backup-Einstellungen → Cloud). Die lokale Datei wird nach erfolgreichem Upload & Verifizierung gelöscht.
+                  <>
+                    <div className="mt-3 p-3 bg-sky-900/20 border border-sky-700/40 rounded-lg text-sky-100 text-sm">
+                      <div className="font-semibold mb-1">Cloud-Backup</div>
+                      <div className="text-xs text-sky-100/80">
+                        Upload erfolgt über WebDAV (Backup-Einstellungen → Cloud). Die lokale Datei wird nach erfolgreichem Upload & Verifizierung gelöscht.
+                      </div>
+                      {!backupSettings?.cloud?.enabled && (
+                        <div className="mt-2 text-xs text-yellow-200">Hinweis: Cloud-Upload ist aktuell deaktiviert. Bitte unten bei Backup-Einstellungen aktivieren.</div>
+                      )}
                     </div>
-                    {!backupSettings?.cloud?.enabled && (
-                      <div className="mt-2 text-xs text-yellow-200">Hinweis: Cloud-Upload ist aktuell deaktiviert. Bitte unten bei Backup-Einstellungen aktivieren.</div>
-                    )}
-                  </div>
+                    {cloudCompanionSection}
+                  </>
                 )}
 
                 {backupDirMode === 'usb' && (
@@ -1951,14 +2284,83 @@ const BackupRestore: React.FC = () => {
       )}
 
       {activeTab === 'restore' && (
-      <div className="space-y-4">
-        <p className="text-slate-400 text-sm">
-          Kurzer Ablauf: <span className="font-semibold text-slate-200">1.</span> Ziel & Medium wählen,
-          <span className="font-semibold text-slate-200"> 2.</span> Backup in der Liste auswählen,
-          <span className="font-semibold text-slate-200"> 3.</span> optional verifizieren und dann wiederherstellen.
-        </p>
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-4">
+          <p className="text-slate-400 text-sm">
+            Kurzer Ablauf: <span className="font-semibold text-slate-200">1.</span> Ziel & Medium wählen,
+            <span className="font-semibold text-slate-200"> 2.</span> Backup in der Liste auswählen,
+            <span className="font-semibold text-slate-200"> 3.</span> optional verifizieren und dann wiederherstellen.
+          </p>
+          {restorePreviewResult && (
+            <div className="p-4 bg-slate-900/60 border border-slate-600 rounded-lg space-y-3">
+              <h3 className="text-sm font-semibold text-sky-300">
+                {t('backup.preview.title')}
+              </h3>
+              <p className="text-xs text-slate-300">
+                {t('backup.preview.info')}
+              </p>
+              <div className="grid md:grid-cols-2 gap-3 text-xs text-slate-200">
+                <div>
+                  <div className="font-semibold">{t('backup.preview.file')}</div>
+                  <div className="break-all text-slate-100">{restorePreviewResult.backupFile}</div>
+                </div>
+                <div>
+                  <div className="font-semibold">{t('backup.preview.dir')}</div>
+                  <div className="break-all text-slate-100">{restorePreviewResult.previewDir}</div>
+                </div>
+                <div>
+                  <div className="font-semibold">{t('backup.preview.totalEntries')}</div>
+                  <div>{restorePreviewResult.totalEntries}</div>
+                </div>
+                <div>
+                  <div className="font-semibold">{t('backup.preview.counts')}</div>
+                  <div>
+                    {t('backup.preview.countsDetail', {
+                      files: restorePreviewResult.analysis?.total_files ?? 0,
+                      dirs: restorePreviewResult.analysis?.total_dirs ?? 0,
+                      other: restorePreviewResult.analysis?.total_other ?? 0,
+                    })}
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-emerald-300">
+                {t('backup.preview.safeHint')}
+              </p>
+              {Array.isArray(restorePreviewResult.analysis?.system_like_entries) &&
+                restorePreviewResult.analysis.system_like_entries.length > 0 && (
+                  <div className="p-3 bg-blue-900/40 border border-blue-600/70 rounded-lg">
+                    <div className="text-xs font-semibold text-blue-100 mb-1">
+                      {t('backup.preview.systemLike.title')}
+                    </div>
+                    <p className="text-xs text-blue-100 mb-1">
+                      {t('backup.preview.systemLike.hint')}
+                    </p>
+                    <ul className="text-[11px] text-blue-100 max-h-32 overflow-auto space-y-0.5">
+                      {restorePreviewResult.analysis.system_like_entries.slice(0, 30).map((p: string, idx: number) => (
+                        <li key={idx} className="break-all">• {p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              {Array.isArray(restorePreviewResult.analysis?.blocked_entries) &&
+                restorePreviewResult.analysis.blocked_entries.length > 0 && (
+                  <div className="p-3 bg-red-900/60 border-2 border-red-500 rounded-lg">
+                    <div className="text-xs font-semibold text-red-100 mb-1">
+                      {t('backup.preview.blocked.title')}
+                    </div>
+                    <p className="text-xs text-red-100 mb-1">
+                      {t('backup.preview.blocked.hint')}
+                    </p>
+                    <ul className="text-[11px] text-red-100 max-h-32 overflow-auto space-y-0.5">
+                      {restorePreviewResult.analysis.blocked_entries.slice(0, 30).map((p: string, idx: number) => (
+                        <li key={idx} className="break-all">• {p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+            </div>
+          )}
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
           {/* Backup-Liste */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -2086,6 +2488,8 @@ const BackupRestore: React.FC = () => {
               )}
             </div>
 
+            {showCloudBackups ? cloudCompanionSection : null}
+
             {/* Schritt 2: Backup auswählen & Aktionen */}
             {showCloudBackups ? (
               cloudBackupsLoading ? (
@@ -2115,7 +2519,7 @@ const BackupRestore: React.FC = () => {
                             }
                             const files = Array.from(selectedCloudBackups)
                             for (const backupFile of files) {
-                              await verifyBackup(backupFile, 'gzip')
+                              await verifyCloudBackup(String(backupFile))
                             }
                           }}
                           className="px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg transition-all text-sm"
@@ -2320,41 +2724,60 @@ const BackupRestore: React.FC = () => {
               </div>
             ) : (
               <>
+                {verifyDiagnosis && (
+                  <div className="mb-4 space-y-2">
+                    <DiagnosisPanel record={verifyDiagnosis} />
+                    <button
+                      type="button"
+                      onClick={() => setVerifyDiagnosis(null)}
+                      className="text-xs text-slate-400 hover:text-slate-200 underline"
+                    >
+                      {t('diagnosis.dismiss')}
+                    </button>
+                  </div>
+                )}
                 {/* Toolbar mit Aktionen */}
                 {selectedBackups.size > 0 && (
-                  <div className="mb-4 p-4 bg-slate-700/50 rounded-lg border border-slate-600 flex flex-wrap items-center gap-3">
-                    <span className="text-sm text-slate-300">
-                      {selectedBackups.size} Backup(s) ausgewählt
-                    </span>
-                    <div className="flex gap-2 flex-wrap">
-                      <button
-                        onClick={verifySelectedBackups}
-                        className="px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg transition-all text-sm"
-                      >
-                        Verifizieren
-                      </button>
-                      <button
-                        onClick={restoreSelectedBackup}
-                        disabled={selectedBackups.size !== 1}
-                        className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                      >
-                        <Upload size={16} />
-                        Wiederherstellen
-                      </button>
-                      <button
-                        onClick={deleteSelectedBackups}
-                        className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-100 rounded-lg transition-all text-sm flex items-center gap-2"
-                      >
-                        <Trash2 size={16} />
-                        Löschen
-                      </button>
-                      <button
-                        onClick={() => setSelectedBackups(new Set())}
-                        className="px-3 py-2 bg-slate-600/50 hover:bg-slate-600 text-white rounded-lg transition-all text-sm"
-                      >
-                        Auswahl aufheben
-                      </button>
+                  <div className="mb-4 p-4 bg-slate-700/50 rounded-lg border border-slate-600 flex flex-col gap-2">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-sm text-slate-300">
+                        {t('backup.selection.count', { count: selectedBackups.size })}
+                      </span>
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          onClick={verifySelectedBackups}
+                          className="px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg transition-all text-sm"
+                        >
+                          {t('backup.verify.basic.button')}
+                        </button>
+                        <button
+                          onClick={restoreSelectedBackup}
+                          disabled={selectedBackups.size !== 1}
+                          className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          <Upload size={16} />
+                          {t('backup.restore.preview.button')}
+                        </button>
+                        <button
+                          onClick={deleteSelectedBackups}
+                          className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-100 rounded-lg transition-all text-sm flex items-center gap-2"
+                        >
+                          <Trash2 size={16} />
+                          {t('backup.delete.selected')}
+                        </button>
+                        <button
+                          onClick={() => setSelectedBackups(new Set())}
+                          className="px-3 py-2 bg-slate-600/50 hover:bg-slate-600 text-white rounded-lg transition-all text-sm"
+                        >
+                          {t('backup.selection.clear')}
+                        </button>
+                      </div>
                     </div>
+                    {Array.from(selectedBackups).some((f) => String(f).includes('pi-backup-inc-')) && (
+                      <p className="text-xs text-yellow-300">
+                        {t('backup.restore.incrementalNotSupported')}
+                      </p>
+                    )}
                   </div>
                 )}
                 <div className="space-y-3">
@@ -2933,6 +3356,7 @@ const BackupRestore: React.FC = () => {
                 </div>
 
                 <div className="p-3 bg-slate-900/40 border border-slate-700 rounded-lg">
+                  {backupSettings.cloud?.enabled ? cloudCompanionSection : null}
                   <div className="font-semibold text-white mb-2">Cloud-Backups</div>
                   <div className="text-xs text-slate-400 mb-3">
                     Cloud-Konfiguration unter{' '}

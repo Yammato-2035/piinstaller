@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="title desc">
+  <title id="title">Desktop-Fenster  Rahmen fuer Produkt-Screenshots</title>
+  <desc id="desc">Neutrales Fenster-Chrome (Titelzeile, Verkehrsampel, Inhaltsflaeche). Kein Motiv  Inhalt wird per HTML/CSS oder PNG unterlegt.</desc>
+  <defs>
+    <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f6f9fd"/>
+      <stop offset="100%" stop-color="#eef4fb"/>
+    </linearGradient>
+    <filter id="sh" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#1f2c3a" flood-opacity=".09"/>
+    </filter>
+  </defs>
+  <rect x="24" y="32" width="912" height="536" rx="22" fill="#ffffff" stroke="#c9d8ea" stroke-width="2" filter="url(#sh)"/>
+  <rect x="24" y="32" width="912" height="52" rx="22" fill="url(#chrome)"/>
+  <rect x="24" y="62" width="912" height="22" fill="url(#chrome)"/>
+  <circle cx="56" cy="58" r="9" fill="#d8e4f0"/>
+  <circle cx="82" cy="58" r="9" fill="#d8e4f0"/>
+  <circle cx="108" cy="58" r="9" fill="#d8e4f0"/>
+  <rect x="200" y="50" width="320" height="16" rx="8" fill="#dce7f4" opacity=".9"/>
+  <!-- Inhaltsflaeche: hell, technisch; echte Screenshots liegen darueber -->
+  <rect x="44" y="108" width="872" height="440" rx="14" fill="#f4f8fc" stroke="#d7e2ee"/>
+</svg>

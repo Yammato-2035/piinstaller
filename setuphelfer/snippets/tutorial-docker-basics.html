@@ -1,0 +1,28 @@
+<section class="masthead-mini">
+  <div class="banner">
+    <span class="kicker">Tutorial</span>
+    <h1>Docker-Grundlagen</h1>
+    <p class="lead">Ziel: Verstehen, wann Docker hilfreich ist und wann ein klassisches Setup sinnvoller bleibt.</p>
+    <div class="meta"><span class="pill pill-yellow">Fortgeschritten</span><span class="pill pill-blue">30 Minuten</span></div>
+  </div>
+  <div class="masthead-mini__art" aria-hidden="true">{{LUCIDE:container:72}}</div>
+</section>
+<section class="section grid-2">
+  <article class="card"><h3>Voraussetzungen</h3><ul class="list-clean"><li>Stabiles Linux-Basissystem</li><li>Grundkenntnisse Netzwerk und Speicher</li><li>Backup aktiv</li></ul></article>
+  <article class="card"><h3>Schritte</h3><ol class="list-clean"><li>Docker installieren und Dienststatus pruefen</li><li>Ersten Testcontainer starten</li><li>Volumes und Ports bewusst setzen</li><li>Container-Neustart und Logs testen</li></ol></article>
+</section>
+<section class="section">
+  <article class="card">
+    <h3>Software und Standards</h3>
+    <p class="small software-stack"><strong>Verwendet u. a.:</strong> <strong>Docker Engine</strong>, offizielle oder Community-Images — typische Beispiele im Heimnetz: <strong>Jellyfin</strong>, <strong>Plex</strong> (Image/Anbieter), <strong>Samba</strong> in Containerform.</p>
+    <ul class="list-clean software-ref-links">
+      <li><a href="https://docs.docker.com/engine/" target="_blank" rel="noopener noreferrer">Docker Engine — Dokumentation</a> · <a href="https://github.com/moby/moby" target="_blank" rel="noopener noreferrer">Moby (GitHub)</a></li>
+      <li><a href="https://jellyfin.org/docs/general/installation/container/" target="_blank" rel="noopener noreferrer">Jellyfin: Installation (Container)</a> · <a href="https://github.com/jellyfin/jellyfin" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+      <li><a href="https://www.plex.tv/" target="_blank" rel="noopener noreferrer">Plex</a></li>
+      <li><a href="https://hub.docker.com/r/dperson/samba" target="_blank" rel="noopener noreferrer">Beispiel: Samba-Container (Docker Hub)</a> — je nach Setup variieren Images</li>
+    </ul>
+  </article>
+</section>
+<section class="section"><h2>Produktansicht (aktueller Build)</h2>{{TAURI_SHOT_POLICY}}<div class="screenshot-row"><div class="shot">{{TAURI_SHOT:screenshot-devenv.png|Dev-Umgebung mit Container-bezogenen Komponenten|inner}}<div class="caption">Dev-Umgebung</div></div><div class="shot">{{TAURI_SHOT:screenshot-webserver.png|Webserver-Setup fuer Docker-nahe Dienste|inner}}<div class="caption">Webserver</div></div><div class="shot">{{TAURI_SHOT:screenshot-nas.png|NAS-Bereich fuer persistente Datenpfade|inner}}<div class="caption">NAS</div></div></div></section>
+<section class="section grid-2"><article class="card"><h3>Hinweise</h3><ul class="list-clean"><li>Nicht alle Dienste sofort containerisieren</li><li>Ports und Volumes dokumentieren</li></ul></article><article class="card"><h3>Typische Fehler</h3><ul class="list-clean"><li>Container ohne persistente Datenpfade</li><li>Falsche Portbelegung</li><li>Keine Log-Auswertung bei Fehlern</li></ul></article></section>
+<section class="section"><div class="callout"><h3>Verknuepfte Inhalte</h3><p><a href="project-media-server.html">Projekt Medienserver</a> · <a href="project-smart-home.html">Projekt Smart Home Einstieg</a> · <a href="issue-system-slow.html">Fehlerhilfe System langsam</a></p><p><strong>Community:</strong> <a href="community.html">Zur Community</a></p></div></section>

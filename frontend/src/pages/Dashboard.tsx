@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { fetchApi, getApiBase } from '../api'
 import { usePlatform } from '../context/PlatformContext'
+import { useMainStatusBar } from '../context/MainStatusBarContext'
 import { useUIMode } from '../context/UIModeContext'
 import AppIcon from '../components/AppIcon'
 import i18n from '../i18n'
@@ -31,6 +32,16 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { motion } from 'framer-motion'
 import { SkeletonCard as SharedSkeletonCard } from '../components/Skeleton'
 import HelpTooltip from '../components/HelpTooltip'
+import DiagnosisPanel from '../components/DiagnosisPanel'
+import {
+  LampAreaCard,
+  LampDot,
+  PandaCompanion,
+  PandaRail,
+  type LampTriState,
+  type PandaStatus,
+} from '../components/companions'
+import { localBackendDiagnosis } from '../diagnosis/localBackendDiagnosis'
 
 interface DashboardProps {
   systemInfo: any
@@ -123,6 +134,70 @@ const StatCard = React.memo(({ icon: Icon, label, value, unit = '', trend }: any
 
 type DashboardSection = 'overview' | 'charts' | 'hardware'
 
+type TrafficLight = LampTriState
+
+interface SystemStatusLights {
+  backup: TrafficLight
+  restore: TrafficLight
+  security: TrafficLight
+  updates: TrafficLight
+}
+
+function parseTrafficLight(v: unknown): TrafficLight {
+  const s = String(v ?? '').toLowerCase()
+  if (s === 'green') return 'green'
+  if (s === 'yellow') return 'yellow'
+  return 'red'
+}
+
+function extractSystemStatusLights(data: any): SystemStatusLights | null {
+  if (!data || typeof data !== 'object') return null
+  const src =
+    data.data && typeof data.data === 'object' && typeof data.data.backup === 'string' ? data.data : data
+  if (typeof src.backup !== 'string') return null
+  return {
+    backup: parseTrafficLight(src.backup),
+    restore: parseTrafficLight(src.restore),
+    security: parseTrafficLight(src.security),
+    updates: parseTrafficLight(src.updates),
+  }
+}
+
+function worstTrafficLight(s: SystemStatusLights): TrafficLight {
+  const rank = (x: TrafficLight) => (x === 'red' ? 0 : x === 'yellow' ? 1 : 2)
+  return [s.backup, s.restore, s.security, s.updates].reduce((a, b) => (rank(a) <= rank(b) ? a : b))
+}
+
+function dashboardTrafficToPandaStatus(light: TrafficLight): PandaStatus {
+  if (light === 'red') return 'danger'
+  if (light === 'yellow') return 'warning'
+  return 'success'
+}
+
+type PrimaryRecommendation =
+  | { kind: 'restore'; level: 'red' | 'yellow' }
+  | { kind: 'backup'; level: 'red' | 'yellow' }
+  | { kind: 'security'; level: 'red' | 'yellow' }
+  | { kind: 'updates' }
+  | { kind: 'none' }
+
+/** Alle Rot-Zustände vor Gelb: z. B. Security-Rot darf nicht von Backup-Gelb verdrängt werden. Innerhalb einer Stufe: Restore → Backup → Sicherheit → Updates. */
+function pickPrimaryRecommendation(s: SystemStatusLights | null): PrimaryRecommendation {
+  if (!s) return { kind: 'none' }
+  if (s.restore === 'red') return { kind: 'restore', level: 'red' }
+  if (s.backup === 'red') return { kind: 'backup', level: 'red' }
+  if (s.security === 'red') return { kind: 'security', level: 'red' }
+  if (s.updates === 'red') return { kind: 'updates' }
+  if (s.restore === 'yellow') return { kind: 'restore', level: 'yellow' }
+  if (s.backup === 'yellow') return { kind: 'backup', level: 'yellow' }
+  if (s.security === 'yellow') return { kind: 'security', level: 'yellow' }
+  if (s.updates === 'yellow') return { kind: 'updates' }
+  return { kind: 'none' }
+}
+
+const FIRST_STEPS_STORAGE = 'setuphelfer_dashboard_firststeps_v1'
+const BEGINNER_CHECKLIST_KEY = 'setuphelfer_beginner_checklist_v1'
+
 const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backendErrorReason, onRetryBackend, setCurrentPage, experienceLevel }) => {
   const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
@@ -136,11 +211,28 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
   const [updateTerminalLoading, setUpdateTerminalLoading] = useState(false)
   const [updateTerminalError, setUpdateTerminalError] = useState<{ message?: string; copyable_command?: string } | null>(null)
   const [servicesStatus, setServicesStatus] = useState<{ dev?: { installed_count: number; total_parts: number; basic_ok: boolean }; webserver?: { running: boolean; reachable: boolean }; musicbox?: { installed: boolean; basic_ok: boolean } } | null>(null)
+  const [systemStatusLights, setSystemStatusLights] = useState<SystemStatusLights | null>(null)
+  const [firstStepsDismissed, setFirstStepsDismissed] = useState(false)
+  const [beginnerChecklist, setBeginnerChecklist] = useState<Record<string, boolean>>({})
   const loading = !systemInfo && !backendError
+
+  const companionPandaStatus = useMemo((): PandaStatus => {
+    if (backendError) return 'danger'
+    if (!systemStatusLights) return 'info'
+    return dashboardTrafficToPandaStatus(worstTrafficLight(systemStatusLights))
+  }, [backendError, systemStatusLights])
 
   const isBeginnerMode = mode === 'basic'
   const isBeginnerExperience = experienceLevel === 'beginner'
   const isBeginnerView = isBeginnerMode && isBeginnerExperience
+
+  /** Standard: offen (auch Fortgeschritten), damit der Panda sichtbar ist; nur Entwickler-Ansicht startet zu. */
+  const [pandaShortcutsOpen, setPandaShortcutsOpen] = useState(
+    () => (experienceLevel ?? 'beginner') !== 'developer',
+  )
+  useEffect(() => {
+    setPandaShortcutsOpen((experienceLevel ?? 'beginner') !== 'developer')
+  }, [experienceLevel])
 
   const handleTaskNavigate = (page: string) => {
     if (!setCurrentPage) return
@@ -233,6 +325,64 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
     } catch (error) {
       console.error('Fehler beim Laden der Updates:', error)
     }
+  }
+
+  const loadSystemStatus = React.useCallback(async () => {
+    try {
+      const response = await fetchApi('/api/system/status')
+      const data = await response.json()
+      setSystemStatusLights(extractSystemStatusLights(data))
+    } catch {
+      setSystemStatusLights(null)
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      setFirstStepsDismissed(localStorage.getItem(FIRST_STEPS_STORAGE) === '1')
+    } catch {
+      setFirstStepsDismissed(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(BEGINNER_CHECKLIST_KEY)
+      if (raw) setBeginnerChecklist(JSON.parse(raw) as Record<string, boolean>)
+    } catch {
+      setBeginnerChecklist({})
+    }
+  }, [])
+
+  useEffect(() => {
+    if (backendError) {
+      setSystemStatusLights(null)
+      return
+    }
+    loadSystemStatus()
+    const id = window.setInterval(loadSystemStatus, 30000)
+    return () => clearInterval(id)
+  }, [backendError, loadSystemStatus])
+
+  const dismissFirstSteps = () => {
+    setFirstStepsDismissed(true)
+    try {
+      localStorage.setItem(FIRST_STEPS_STORAGE, '1')
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const markBeginnerChecklist = (key: string) => {
+    setBeginnerChecklist(prev => {
+      const next = { ...prev, [key]: true }
+      try {
+        localStorage.setItem(BEGINNER_CHECKLIST_KEY, JSON.stringify(next))
+      } catch {
+        /* ignore */
+      }
+      return next
+    })
   }
 
   const runUpdateInTerminal = async () => {
@@ -329,9 +479,96 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
     { name: t('dashboard.chart.disk.free'), value: 100 - (stats.disk?.percent || 0), color: '#10b981' },
   ] : []
 
-  const needsAction = !!(updatesData && updatesData.total > 0) || getSecurityStatus() === 'inactive'
-  const statusLabel = backendError ? t('dashboard.status.backendFailed') : needsAction ? t('dashboard.status.actionNeeded') : t('dashboard.status.allOk')
-  const statusColor = backendError ? 'red' : needsAction ? 'yellow' : 'green'
+  const statusBarUI = React.useMemo(() => {
+    if (backendError) {
+      return { lines: [t('dashboard.systemStatus.bar.backend')], tone: 'danger' as const }
+    }
+    if (!systemStatusLights) {
+      return { lines: [t('dashboard.systemStatus.bar.loading')], tone: 'neutral' as const }
+    }
+    const order: (keyof SystemStatusLights)[] = ['restore', 'backup', 'security', 'updates']
+    const reds: string[] = []
+    const yellows: string[] = []
+    for (const k of order) {
+      if (systemStatusLights[k] === 'red') reds.push(t(`dashboard.systemStatus.bar.${k}.red`))
+      else if (systemStatusLights[k] === 'yellow') yellows.push(t(`dashboard.systemStatus.bar.${k}.yellow`))
+    }
+    if (reds.length > 0) {
+      return { lines: reds.slice(0, 2), tone: 'danger' as const }
+    }
+    if (yellows.length > 0) {
+      const lines = [yellows[0]]
+      if (yellows.length > 1) lines.push(t('dashboard.systemStatus.bar.moreInCards'))
+      return { lines, tone: 'soft' as const }
+    }
+    return { lines: [t('dashboard.systemStatus.bar.allOk')], tone: 'calm' as const }
+  }, [backendError, systemStatusLights, t])
+
+  const { setStatus: setMainStatusBar } = useMainStatusBar()
+  useEffect(() => {
+    setMainStatusBar({
+      lines: statusBarUI.lines,
+      tone: statusBarUI.tone,
+    })
+    return () => setMainStatusBar(null)
+  }, [setMainStatusBar, statusBarUI])
+
+  const primaryRecommendation = React.useMemo(
+    () => pickPrimaryRecommendation(systemStatusLights),
+    [systemStatusLights],
+  )
+
+  const { primaryLine, ctaLabel } = React.useMemo(() => {
+    const pr = primaryRecommendation
+    switch (pr.kind) {
+      case 'restore':
+        return {
+          primaryLine: t(`dashboard.systemStatus.primary.restore.${pr.level}`),
+          ctaLabel: t('dashboard.systemStatus.cta.restore'),
+        }
+      case 'backup':
+        return {
+          primaryLine: t(`dashboard.systemStatus.primary.backup.${pr.level}`),
+          ctaLabel: t('dashboard.systemStatus.cta.backup'),
+        }
+      case 'security':
+        return {
+          primaryLine: t(`dashboard.systemStatus.primary.security.${pr.level}`),
+          ctaLabel: t('dashboard.systemStatus.cta.security'),
+        }
+      case 'updates':
+        return {
+          primaryLine: t('dashboard.systemStatus.primary.updates'),
+          ctaLabel: t('dashboard.systemStatus.cta.updates'),
+        }
+      default:
+        return {
+          primaryLine: t('dashboard.systemStatus.primary.none'),
+          ctaLabel: t('dashboard.systemStatus.cta.wizard'),
+        }
+    }
+  }, [primaryRecommendation, t])
+
+  const worst = systemStatusLights ? worstTrafficLight(systemStatusLights) : null
+
+  const checklistKeys = ['s1', 's2', 's3', 's4']
+  const checklistDoneCount = checklistKeys.filter(k => beginnerChecklist[k]).length
+
+  const backendUnreachableDiagnosis = React.useMemo(() => {
+    if (!backendError) return null
+    const userMessage =
+      backendErrorReason === 'timeout'
+        ? t('dashboard.backendError.timeout')
+        : backendErrorReason === 'connection'
+          ? t('dashboard.backendError.connection')
+          : t('dashboard.backendError.other')
+    return localBackendDiagnosis(backendErrorReason, {
+      title: t('dashboard.backendError.title'),
+      userMessage,
+      technical: `reason=${backendErrorReason ?? 'other'}, api_base=${getApiBase() || ''}`,
+      steps: [t('diagnosis.local.step1'), t('diagnosis.local.step2'), t('diagnosis.local.step3')],
+    })
+  }, [backendError, backendErrorReason, t])
 
   const cpuPercent = stats?.cpu?.usage ?? 0
   const memPercent = stats?.memory?.percent ?? 0
@@ -343,211 +580,435 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="space-y-8 page-transition"
+      className="space-y-3 sm:space-y-4 page-transition max-w-full overflow-x-hidden"
     >
-      {/* Einstieg: klarer Startscreen mit primären Aktionen */}
+      {/* Above the fold: Titel → Ampel → Empfehlung → Erste Schritte (Statuszeile: Top-Leiste im Hauptteil) */}
       {!backendError && (
-        <section className="rounded-2xl border border-slate-600/80 bg-slate-800/50 p-5 sm:p-6">
-          <div className="flex flex-col lg:flex-row gap-5 lg:items-start lg:justify-between">
-            <div className="flex items-start gap-4">
-              <img
-                src="/assets/branding/logo/panda-only.svg"
-                alt="SetupHelfer Panda"
-                className="w-14 h-14 rounded-xl bg-white/80 dark:bg-slate-900/60 p-1 object-contain shrink-0"
-                loading="eager"
-                decoding="async"
-              />
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-white">Dein Einstieg für Linux und Raspberry Pi</h2>
-                <p className="text-slate-300 mt-1">System prüfen, einrichten und verstehen.</p>
+        <div className="space-y-2 sm:space-y-3 md:space-y-4">
+          <div className="flex items-start gap-2 sm:gap-3 min-w-0">
+            <AppIcon name="dashboard" category="navigation" size={26} className="shrink-0 mt-0.5 opacity-95" />
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]">
+                {t('dashboard.pageTitle')}
+              </h1>
+              <p className="text-slate-400 text-xs sm:text-sm mt-0.5 line-clamp-2 sm:line-clamp-none">
+                {t('dashboard.pageSubtitle', { label: pageSubtitleLabel })}
+              </p>
+            </div>
+          </div>
+
+          {!systemStatusLights && (
+            <div className="h-12 sm:h-14 rounded-lg sm:rounded-xl bg-slate-800/50 border border-slate-700/80 animate-pulse" aria-hidden />
+          )}
+
+          {systemStatusLights && worst && (
+            <>
+              <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 lg:items-stretch min-w-0">
+                <div
+                  className={`rounded-lg sm:rounded-xl border-2 px-3 py-2 sm:px-4 sm:py-3 lg:max-w-[14rem] xl:max-w-xs shrink-0 ${
+                    worst === 'green'
+                      ? 'border-emerald-500/80 bg-emerald-950/35'
+                      : worst === 'yellow'
+                        ? 'border-amber-400/50 bg-amber-950/20'
+                        : 'border-red-500/80 bg-red-950/35'
+                  }`}
+                >
+                  <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-slate-400 mb-0.5 sm:mb-1">
+                    {t('dashboard.systemStatus.global.title')}
+                  </p>
+                  <div className="flex items-start gap-2">
+                    <LampDot lamp={worst} quiet={worst === 'yellow'} />
+                    <p className="text-xs sm:text-sm font-semibold text-white leading-snug">
+                      {t(`dashboard.systemStatus.global.label.${worst}`)}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 flex-1 min-w-0">
+                  <LampAreaCard label={t('dashboard.systemStatus.area.backup')} lamp={systemStatusLights.backup} />
+                  <LampAreaCard label={t('dashboard.systemStatus.area.restore')} lamp={systemStatusLights.restore} />
+                  <LampAreaCard label={t('dashboard.systemStatus.area.security')} lamp={systemStatusLights.security} />
+                  <LampAreaCard label={t('dashboard.systemStatus.area.updates')} lamp={systemStatusLights.updates} />
+                </div>
               </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button onClick={() => setCurrentPage?.('monitoring')} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">System prüfen</button>
-              <button onClick={() => setCurrentPage?.('wizard')} className="px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm">Setup starten</button>
-              <button onClick={() => setCurrentPage?.('app-store')} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Module ansehen</button>
-              <button onClick={() => setCurrentPage?.('periphery-scan')} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">Fehlerdiagnose öffnen</button>
-            </div>
-          </div>
 
-          <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-3 mt-4">
-            <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700">
-              <p className="text-xs text-slate-400">Betriebssystem</p>
-              <p className="text-sm text-white font-medium">{stats?.os?.name || stats?.platform?.system || 'Wird geprüft'}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700">
-              <p className="text-xs text-slate-400">Plattform</p>
-              <p className="text-sm text-white font-medium">{stats?.is_raspberry_pi ? 'Raspberry Pi' : 'Linux-System'}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700">
-              <p className="text-xs text-slate-400">Netzwerk</p>
-              <p className="text-sm text-white font-medium">{stats?.network?.online || (stats?.network?.ips?.length ?? 0) > 0 ? 'Verbunden' : 'Prüfen'}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700">
-              <p className="text-xs text-slate-400">Speicher</p>
-              <p className="text-sm text-white font-medium">{stats?.memory?.total ? `${Math.round(stats.memory.total / 1024 / 1024 / 1024)} GB RAM` : 'Wird geprüft'}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-700">
-              <p className="text-xs text-slate-400">Updates</p>
-              <p className="text-sm text-white font-medium">{updatesData?.total != null ? `${updatesData.total} verfügbar` : 'Wird geprüft'}</p>
-            </div>
-          </div>
+              <div className="rounded-lg sm:rounded-xl border border-sky-500/35 bg-slate-800/70 ring-1 ring-sky-500/15 px-3 py-2.5 sm:px-4 sm:py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 min-w-0">
+                <p className="text-xs sm:text-sm text-slate-100 leading-snug flex-1 min-w-0 break-words">{primaryLine}</p>
+                {setCurrentPage ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const pr = primaryRecommendation
+                      if (pr.kind === 'restore' || pr.kind === 'backup') setCurrentPage('backup')
+                      else if (pr.kind === 'security') setCurrentPage('security')
+                      else if (pr.kind === 'updates') void runUpdateInTerminal()
+                      else setCurrentPage('wizard')
+                    }}
+                    className="shrink-0 px-4 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold w-full sm:w-auto text-center"
+                  >
+                    {ctaLabel}
+                  </button>
+                ) : primaryRecommendation.kind === 'updates' ? (
+                  <button
+                    type="button"
+                    onClick={() => void runUpdateInTerminal()}
+                    className="shrink-0 px-4 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold w-full sm:w-auto text-center"
+                  >
+                    {ctaLabel}
+                  </button>
+                ) : null}
+              </div>
+            </>
+          )}
 
-          <div className="mt-4 p-3 rounded-lg bg-slate-900/35 border border-slate-700">
-            <p className="text-sm text-slate-200 mb-2">Was möchtest du machen?</p>
-            <div className="flex flex-wrap gap-2">
-              <button onClick={() => setMode('basic')} className={`px-3 py-1.5 rounded text-sm ${mode === 'basic' ? 'bg-sky-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>Anfänger</button>
-              <button onClick={() => setMode('advanced')} className={`px-3 py-1.5 rounded text-sm ${mode === 'advanced' ? 'bg-sky-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>Fortgeschritten</button>
-              <button onClick={() => setMode('diagnose')} className={`px-3 py-1.5 rounded text-sm ${mode === 'diagnose' ? 'bg-sky-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>Entwickler / Diagnose</button>
+          {experienceLevel === 'beginner' && !firstStepsDismissed && (
+            <div className="rounded-lg border border-slate-600/90 bg-slate-900/95 dark:bg-slate-950/95 px-3 py-2.5 text-xs sm:text-sm shadow-md">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                <div>
+                  <p className="font-semibold text-slate-100">{t('dashboard.firstSteps.title')}</p>
+                  <p className="text-slate-300 text-xs mt-0.5">
+                    {t('dashboard.firstSteps.progress', { done: checklistDoneCount, total: checklistKeys.length })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={dismissFirstSteps}
+                  className="text-sky-400 hover:text-sky-200 underline text-xs shrink-0 self-start"
+                >
+                  {t('dashboard.firstSteps.dismiss')}
+                </button>
+              </div>
+              <ol className="space-y-2 text-slate-100 list-decimal list-inside marker:text-sky-500 marker:font-semibold">
+                <li className="pl-0.5">
+                  <span className="align-middle">{t('dashboard.firstSteps.step1')}</span>{' '}
+                  {!beginnerChecklist.s1 && (
+                    <button
+                      type="button"
+                      onClick={() => markBeginnerChecklist('s1')}
+                      className="text-sky-400 hover:text-sky-200 underline text-xs align-middle font-medium"
+                    >
+                      {t('dashboard.firstSteps.markDone')}
+                    </button>
+                  )}
+                  {beginnerChecklist.s1 && <span className="text-emerald-400 text-xs ml-1 font-medium">✓</span>}
+                </li>
+                <li className="pl-0.5">
+                  <span className="align-middle">{t('dashboard.firstSteps.step2')}</span>{' '}
+                  {!beginnerChecklist.s2 && (
+                    <button
+                      type="button"
+                      onClick={() => markBeginnerChecklist('s2')}
+                      className="text-sky-400 hover:text-sky-200 underline text-xs align-middle font-medium"
+                    >
+                      {t('dashboard.firstSteps.markDone')}
+                    </button>
+                  )}
+                  {beginnerChecklist.s2 && <span className="text-emerald-400 text-xs ml-1 font-medium">✓</span>}
+                </li>
+                <li className="pl-0.5">
+                  <span className="align-middle">
+                    {t('dashboard.firstSteps.step3', { wizard: t('sidebar.menu.wizard') })}
+                  </span>{' '}
+                  {!beginnerChecklist.s3 && setCurrentPage && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        markBeginnerChecklist('s3')
+                        setCurrentPage('wizard')
+                      }}
+                      className="text-sky-400 hover:text-sky-200 underline text-xs align-middle font-medium"
+                    >
+                      {t('sidebar.menu.wizard')}
+                    </button>
+                  )}
+                  {!setCurrentPage && !beginnerChecklist.s3 && (
+                    <button
+                      type="button"
+                      onClick={() => markBeginnerChecklist('s3')}
+                      className="text-sky-400 hover:text-sky-200 underline text-xs align-middle font-medium"
+                    >
+                      {t('dashboard.firstSteps.markDone')}
+                    </button>
+                  )}
+                  {beginnerChecklist.s3 && <span className="text-emerald-400 text-xs ml-1 font-medium">✓</span>}
+                </li>
+                <li className="pl-0.5">
+                  <span className="align-middle">
+                    {t('dashboard.firstSteps.step4', { apps: t('sidebar.menu.appStore') })}
+                  </span>{' '}
+                  {!beginnerChecklist.s4 && setCurrentPage && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        markBeginnerChecklist('s4')
+                        setCurrentPage('app-store')
+                      }}
+                      className="text-sky-400 hover:text-sky-200 underline text-xs align-middle font-medium"
+                    >
+                      {t('sidebar.menu.appStore')}
+                    </button>
+                  )}
+                  {!setCurrentPage && !beginnerChecklist.s4 && (
+                    <button
+                      type="button"
+                      onClick={() => markBeginnerChecklist('s4')}
+                      className="text-sky-400 hover:text-sky-200 underline text-xs align-middle font-medium"
+                    >
+                      {t('dashboard.firstSteps.markDone')}
+                    </button>
+                  )}
+                  {beginnerChecklist.s4 && <span className="text-emerald-400 text-xs ml-1 font-medium">✓</span>}
+                </li>
+              </ol>
+              <p className="text-slate-400 text-[11px] sm:text-xs mt-2 border-t border-slate-600/80 pt-2">
+                {t('dashboard.firstSteps.body')}
+              </p>
             </div>
-          </div>
-        </section>
+          )}
+        </div>
       )}
+
+      {/* Panda & Kurzaktionen: einklappbar; Einsteiger standardmäßig offen; auch bei Backend-Fehler sichtbar (Ampel = danger) */}
+      <details
+        className="group rounded-lg sm:rounded-xl border border-slate-600/60 bg-slate-800/35 open:bg-slate-800/45"
+        open={pandaShortcutsOpen}
+        onToggle={(e) => setPandaShortcutsOpen(e.currentTarget.open)}
+      >
+          <summary className="cursor-pointer list-none flex items-center justify-between gap-2 px-3 py-2 sm:px-4 text-sm text-slate-400 hover:text-slate-200 rounded-lg sm:rounded-xl [&::-webkit-details-marker]:hidden">
+            <span className="font-medium">{t('dashboard.section.shortcutsToggle')}</span>
+            <span className="text-slate-500 transition-transform group-open:rotate-180" aria-hidden>
+              ▼
+            </span>
+          </summary>
+          <div className="px-3 pb-3 sm:px-4 sm:pb-3 pt-0 border-t border-slate-700/50">
+            <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-2 pt-2">{t('dashboard.panda.compactHint')}</p>
+            <PandaRail className="mb-3">
+              <PandaCompanion
+                type="start"
+                size="sm"
+                surface="dark"
+                frame={false}
+                showTrafficLight
+                trafficLightPosition="bottom-right"
+                status={companionPandaStatus}
+                title={t('dashboard.panda.introTitle')}
+                subtitle={t('dashboard.panda.introBody')}
+                helperText={t('dashboard.panda.companionStatusHint')}
+              />
+            </PandaRail>
+            <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage?.('monitoring')}
+                  className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-[11px] sm:text-xs"
+                >
+                  {t('sidebar.menu.monitoring')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage?.('wizard')}
+                  className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-md text-[11px] sm:text-xs"
+                >
+                  {t('sidebar.menu.wizard')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage?.('app-store')}
+                  className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-[11px] sm:text-xs"
+                >
+                  {t('sidebar.menu.appStore')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage?.('periphery-scan')}
+                  className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-[11px] sm:text-xs"
+                >
+                  {t('sidebar.menu.peripheryScan')}
+                </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-700/60">
+              <button
+                type="button"
+                onClick={() => setMode('basic')}
+                className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[11px] sm:text-xs ${mode === 'basic' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'}`}
+              >
+                {t('sidebar.modeTabs.basic')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('advanced')}
+                className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[11px] sm:text-xs ${mode === 'advanced' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'}`}
+              >
+                {t('sidebar.modeTabs.advanced')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('diagnose')}
+                className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[11px] sm:text-xs ${mode === 'diagnose' ? 'bg-sky-600 text-white' : 'bg-slate-700/80 text-slate-200 hover:bg-slate-600'}`}
+              >
+                {t('sidebar.modeTabs.diagnose')}
+              </button>
+            </div>
+          </div>
+        </details>
+
+      <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide pt-1">{t('dashboard.section.moreBelow')}</h2>
 
       {/* Beginner-First Task Cards (Beginner-View: Aufgaben statt Modul-Liste im Fokus) */}
       {isBeginnerView && setCurrentPage && !backendError && (
-        <section className="grid gap-4 md:grid-cols-3">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => handleTaskNavigate('wizard')}
-            className="flex items-start gap-3 p-4 rounded-2xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/40 transition-colors text-left"
+            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/35 transition-colors text-left"
           >
-            <AppIcon name="installation" category="navigation" size={32} className="mt-1" />
-            <div>
-              <p className="text-sm font-semibold text-sky-100">{t('firstRun.firstStep.wizard.title')}</p>
-              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.wizard.desc')}</p>
+            <AppIcon name="installation" category="navigation" size={28} className="shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-semibold text-sky-100 leading-snug">{t('firstRun.firstStep.wizard.title')}</p>
+              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.wizard.desc')}</p>
             </div>
           </button>
           <button
             type="button"
             onClick={() => handleTaskNavigate('app-store')}
-            className="flex items-start gap-3 p-4 rounded-2xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/40 transition-colors text-left"
+            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/35 transition-colors text-left"
           >
-            <AppIcon name="app-store" category="navigation" size={32} className="mt-1" />
-            <div>
-              <p className="text-sm font-semibold text-emerald-100">{t('firstRun.firstStep.appStore.title')}</p>
-              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.appStore.desc')}</p>
+            <AppIcon name="app-store" category="navigation" size={28} className="shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-semibold text-emerald-100 leading-snug">{t('firstRun.firstStep.appStore.title')}</p>
+              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.appStore.desc')}</p>
             </div>
           </button>
           <button
             type="button"
             onClick={() => handleTaskNavigate('backup')}
-            className="flex items-start gap-3 p-4 rounded-2xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 transition-colors text-left"
+            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/35 transition-colors text-left"
           >
-            <AppIcon name="backup" category="navigation" size={32} className="mt-1" />
-            <div>
-              <p className="text-sm font-semibold text-indigo-100">{t('firstRun.firstStep.backup.title')}</p>
-              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.backup.desc')}</p>
+            <AppIcon name="backup" category="navigation" size={28} className="shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-semibold text-indigo-100 leading-snug">{t('firstRun.firstStep.backup.title')}</p>
+              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.backup.desc')}</p>
             </div>
           </button>
           <button
             type="button"
             onClick={() => handleTaskNavigate('monitoring')}
-            className="flex items-start gap-3 p-4 rounded-2xl bg-amber-600/15 hover:bg-amber-600/25 border border-amber-500/40 transition-colors text-left"
+            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 border border-amber-500/35 transition-colors text-left"
           >
-            <AppIcon name="monitoring" category="navigation" size={32} className="mt-1" />
-            <div>
-              <p className="text-sm font-semibold text-amber-100">{t('firstRun.firstStep.monitoring.title')}</p>
-              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.monitoring.desc')}</p>
+            <AppIcon name="monitoring" category="navigation" size={28} className="shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-semibold text-amber-100 leading-snug">{t('firstRun.firstStep.monitoring.title')}</p>
+              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.monitoring.desc')}</p>
             </div>
           </button>
           <button
             type="button"
             onClick={() => handleTaskNavigate('learning')}
-            className="flex items-start gap-3 p-4 rounded-2xl bg-teal-600/15 hover:bg-teal-600/25 border border-teal-500/40 transition-colors text-left"
+            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-teal-600/15 hover:bg-teal-600/25 border border-teal-500/35 transition-colors text-left"
           >
-            <AppIcon name="documentation" category="navigation" size={32} className="mt-1" />
-            <div>
-              <p className="text-sm font-semibold text-teal-100">{t('firstRun.firstStep.learning.title')}</p>
-              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.learning.desc')}</p>
+            <AppIcon name="documentation" category="navigation" size={28} className="shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-semibold text-teal-100 leading-snug">{t('firstRun.firstStep.learning.title')}</p>
+              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.learning.desc')}</p>
             </div>
           </button>
           <button
             type="button"
             onClick={() => handleTaskNavigate('control-center')}
-            className="flex items-start gap-3 p-4 rounded-2xl bg-slate-700/40 hover:bg-slate-700/60 border border-slate-500/60 transition-colors text-left"
+            className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-slate-700/40 hover:bg-slate-700/60 border border-slate-500/50 transition-colors text-left"
           >
-            <AppIcon name="advanced" category="navigation" size={32} className="mt-1" />
-            <div>
-              <p className="text-sm font-semibold text-slate-50">{t('firstRun.firstStep.controlCenter.title')}</p>
-              <p className="text-xs text-slate-200/80">{t('firstRun.firstStep.controlCenter.desc')}</p>
+            <AppIcon name="advanced" category="navigation" size={28} className="shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-semibold text-slate-50 leading-snug">{t('firstRun.firstStep.controlCenter.title')}</p>
+              <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5 line-clamp-2">{t('firstRun.firstStep.controlCenter.desc')}</p>
             </div>
           </button>
         </section>
       )}
 
-      {/* Hero: Dein Raspberry Pi läuft! (Transformationsplan 5.2) */}
+      {/* Gerät, Ressourcen, Update-Hinweise: einklappbar; Zähler in der Übersicht wenn Updates anstehen */}
       {!backendError && (
+        <details className="group rounded-lg sm:rounded-xl border border-slate-600/60 bg-slate-900/30 open:bg-slate-900/40">
+          <summary className="cursor-pointer list-none flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-4 text-xs sm:text-sm text-slate-400 hover:text-slate-200 rounded-lg sm:rounded-xl [&::-webkit-details-marker]:hidden">
+            <span className="font-medium text-left min-w-0 flex-1 pr-2 leading-snug">
+              {t('dashboard.section.systemDetailsToggle')}
+            </span>
+            <span className="flex flex-wrap items-center justify-end gap-1.5 shrink-0 max-w-full">
+              {updatesData != null && updatesData.total > 0 && (
+                <span className="text-[11px] sm:text-xs font-medium text-sky-200/90 bg-sky-900/50 px-2 py-0.5 rounded-full border border-sky-500/30 max-w-full text-right leading-snug">
+                  {(() => {
+                    const sec = updatesData.categories?.security ?? 0
+                    const w = updatesData.total === 1 ? t('dashboard.updates.wordOne') : t('dashboard.updates.wordMany')
+                    return sec > 0
+                      ? t('dashboard.section.updatesBadgeWithSecurity', {
+                          count: updatesData.total,
+                          securityCount: sec,
+                          updatesWord: w,
+                        })
+                      : `${updatesData.total} ${w}`
+                  })()}
+                </span>
+              )}
+              <span className="text-slate-500 transition-transform group-open:rotate-180" aria-hidden>
+                ▼
+              </span>
+            </span>
+          </summary>
+          <div className="px-3 pb-3 sm:px-4 sm:pb-4 pt-0 border-t border-slate-700/50 space-y-3 sm:space-y-4">
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-slate-600 dark:border-slate-600 bg-gradient-to-br from-slate-800/80 to-slate-900/80 dark:from-slate-800/80 dark:to-slate-900/80 p-6 sm:p-8"
+          className="rounded-xl border border-slate-600/80 bg-gradient-to-br from-slate-800/70 to-slate-900/70 px-3 py-3 sm:px-5 sm:py-4"
         >
-          <h2 className="text-2xl sm:text-3xl font-bold text-white dark:text-white mb-2">
+          <h2 className="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">
             {t('dashboard.hero.title', {
               device: systemInfo?.is_raspberry_pi ? t('dashboard.hero.raspberryPi') : t('dashboard.hero.system'),
             })}
           </h2>
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <div
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold ${
-                statusColor === 'green'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                  : statusColor === 'yellow'
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                    : 'bg-red-500/20 text-red-300 border border-red-500/40'
-              }`}
-            >
-              {statusColor === 'green' && <AppIcon name="ok" category="status" size={20} statusColor="ok" />}
-              {statusColor === 'yellow' && <AppIcon name="warning" category="status" size={20} statusColor="warning" />}
-              {statusColor === 'red' && <AppIcon name="error" category="status" size={20} statusColor="error" />}
-              {statusLabel}
-            </div>
-            <div className="flex items-center gap-3 text-sm text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${resourceLevel(cpuPercent) === 'green' ? 'bg-emerald-500' : resourceLevel(cpuPercent) === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                CPU {Math.round(cpuPercent)}%
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${resourceLevel(memPercent) === 'green' ? 'bg-emerald-500' : resourceLevel(memPercent) === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                RAM {Math.round(memPercent)}%
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${resourceLevel(diskPercent) === 'green' ? 'bg-emerald-500' : resourceLevel(diskPercent) === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                {t('dashboard.resource.storage')} {Math.round(diskPercent)}%
-              </span>
-            </div>
+          <div className="flex flex-wrap items-center gap-3 mb-3 text-xs sm:text-sm text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <span
+                className={`w-2 h-2 rounded-full ${resourceLevel(cpuPercent) === 'green' ? 'bg-emerald-500' : resourceLevel(cpuPercent) === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`}
+              />
+              CPU {Math.round(cpuPercent)}%
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span
+                className={`w-2 h-2 rounded-full ${resourceLevel(memPercent) === 'green' ? 'bg-emerald-500' : resourceLevel(memPercent) === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`}
+              />
+              RAM {Math.round(memPercent)}%
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span
+                className={`w-2 h-2 rounded-full ${resourceLevel(diskPercent) === 'green' ? 'bg-emerald-500' : resourceLevel(diskPercent) === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`}
+              />
+              {t('dashboard.resource.storage')} {Math.round(diskPercent)}%
+            </span>
           </div>
-          {/* Ressourcen-Management (Milestone 3): Temperatur- und Swap-Hinweise */}
           {(stats?.cpu?.temperature != null && stats.cpu.temperature >= 80) && (
-            <p className="text-amber-300 text-sm mb-2">
-              {t('dashboard.hint.tempHigh', { temp: stats.cpu.temperature })}
-            </p>
+            <p className="text-amber-300 text-xs sm:text-sm mb-2">{t('dashboard.hint.tempHigh', { temp: stats.cpu.temperature })}</p>
           )}
           {(stats?.memory?.total != null && stats.memory.total < 2 * 1024 * 1024 * 1024) && (
-            <p className="text-sky-300 text-sm mb-2">
-              {t('dashboard.hint.lowRam')}
-            </p>
+            <p className="text-sky-300 text-xs sm:text-sm mb-2">{t('dashboard.hint.lowRam')}</p>
           )}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {setCurrentPage && (
               <>
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => setCurrentPage('app-store')}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium text-sm"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-medium"
                   >
-                    <Package className="w-4 h-4" /> {t('dashboard.action.newApp')}
+                    <Package className="w-3.5 h-3.5" /> {t('dashboard.action.newApp')}
                   </button>
-                  <HelpTooltip text={t('dashboard.help.appStore')} size={14} className="text-slate-400" />
+                  <HelpTooltip text={t('dashboard.help.appStore')} size={12} className="text-slate-500" />
                 </span>
                 <button
                   type="button"
                   onClick={() => setCurrentPage('backup')}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-600 hover:bg-slate-500 text-white rounded-xl font-medium text-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-xs font-medium"
                 >
-                  <Database className="w-4 h-4" /> {t('dashboard.action.createBackup')}
+                  <Database className="w-3.5 h-3.5" /> {t('dashboard.action.createBackup')}
                 </button>
               </>
             )}
@@ -555,39 +1016,99 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
               type="button"
               onClick={runUpdateInTerminal}
               disabled={updateTerminalLoading}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-medium text-sm disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-medium disabled:opacity-50"
             >
-              <Zap className="w-4 h-4" /> {t('dashboard.action.systemUpdate')}
+              <Zap className="w-3.5 h-3.5" /> {t('dashboard.action.systemUpdate')}
+            </button>
+          </div>
+        </motion.div>
+
+      {/* Updates verfügbar */}
+      {updatesData && updatesData.total > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-lg sm:rounded-xl bg-sky-900/30 border border-sky-500/35 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-2 sm:gap-3"
+        >
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Zap className="text-sky-400 shrink-0 w-5 h-5 sm:w-6 sm:h-6" />
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-semibold text-sky-200">
+                {t('dashboard.updates.available', {
+                  count: updatesData.total,
+                  updatesWord: updatesData.total === 1 ? t('dashboard.updates.wordOne') : t('dashboard.updates.wordMany'),
+                })}
+              </h3>
+              {updatesData.categories && (
+                <p className="text-xs sm:text-sm text-slate-200 mt-0.5">
+                  {updatesData.categories.security > 0 && <span className="text-red-300">{updatesData.categories.security} {t('dashboard.updates.category.security')}</span>}
+                  {updatesData.categories.security > 0 && (updatesData.categories.critical! > 0 || updatesData.categories.necessary! > 0 || updatesData.categories.optional! > 0) && ' · '}
+                  {updatesData.categories.critical! > 0 && <span className="text-amber-300">{updatesData.categories.critical} {t('dashboard.updates.category.critical')}</span>}
+                  {(updatesData.categories.critical! > 0) && (updatesData.categories.necessary! > 0 || updatesData.categories.optional! > 0) && ' · '}
+                  {updatesData.categories.necessary! > 0 && <span className="text-slate-100">{updatesData.categories.necessary} {t('dashboard.updates.category.necessary')}</span>}
+                  {(updatesData.categories.necessary! > 0) && updatesData.categories.optional! > 0 && ' · '}
+                  {updatesData.categories.optional! > 0 && <span className="text-slate-200">{updatesData.categories.optional} {t('dashboard.updates.category.optional')}</span>}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setUpdatesModalOpen(true)}
+              className="px-3 py-1.5 sm:px-4 sm:py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs sm:text-sm font-medium"
+            >
+              {t('dashboard.updates.which')}
+            </button>
+            <button
+              type="button"
+              onClick={runUpdateInTerminal}
+              disabled={updateTerminalLoading}
+              className="px-3 py-1.5 sm:px-4 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50"
+            >
+              {updateTerminalLoading ? '…' : t('dashboard.updates.runInTerminal')}
             </button>
           </div>
         </motion.div>
       )}
 
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="page-title-category mb-2 inline-flex">
-          <h1 className="flex items-center gap-3">
-            <AppIcon name="dashboard" category="navigation" size={32} />
-            {t('dashboard.pageTitle')}
-          </h1>
-        </div>
-        <p className="text-slate-400">{t('dashboard.pageSubtitle', { label: pageSubtitleLabel })}</p>
-      </motion.div>
+      {/* System-Update im Terminal – immer anzeigen (auch wenn 0 Updates) */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl bg-slate-800/50 border border-slate-600 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-2 sm:gap-3"
+        >
+          <div className="flex-1 min-w-0">
+            <p className="text-slate-300 text-xs sm:text-sm">
+              <strong className="text-white">{t('dashboard.updates.aptBlock')}</strong> {t('dashboard.updates.aptHint')}
+            </p>
+            {updateTerminalError?.copyable_command && (
+              <p className="text-slate-400 text-xs mt-2 flex items-center gap-2 flex-wrap">
+                <span>{t('dashboard.updates.runCommandManually')}</span>
+                <code className="bg-slate-700 px-2 py-1 rounded text-slate-200 font-mono text-xs">{updateTerminalError.copyable_command}</code>
+                <button type="button" onClick={copyUpdateCommand} className="px-2 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs">{t('dashboard.updates.copy')}</button>
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={runUpdateInTerminal}
+            disabled={updateTerminalLoading}
+            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50 shrink-0"
+          >
+            {updateTerminalLoading ? '…' : t('dashboard.updates.runInTerminalShort')}
+          </button>
+        </motion.div>
+          </div>
+        </details>
+      )}
 
-      {backendError && !stats && (
-        <div className="card-warning flex items-start gap-3">
+      {backendError && !stats && backendUnreachableDiagnosis && (
+        <div className="space-y-3">
+          <DiagnosisPanel record={backendUnreachableDiagnosis} />
+          <div className="card-warning flex items-start gap-3">
           <AppIcon name="error" category="status" size={24} statusColor="error" className="shrink-0 mt-0.5 opacity-90" />
           <div className="min-w-0 flex-1">
-            <h3 className="font-semibold">{t('dashboard.backendError.title')}</h3>
-            <p className="text-sm mt-1 opacity-95">
-              {backendErrorReason === 'timeout' && t('dashboard.backendError.timeout')}
-              {backendErrorReason === 'connection' && t('dashboard.backendError.connection')}
-              {(!backendErrorReason || backendErrorReason === 'other') && t('dashboard.backendError.other')}
-            </p>
             <p className="text-sm mt-2 opacity-90">
               <strong>{t('dashboard.backendError.apiUrlLabel')}</strong>{' '}
               <code className="bg-black/20 px-1.5 py-0.5 rounded text-sky-200 break-all">
@@ -629,85 +1150,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             </div>
           </div>
         </div>
-      )}
-
-      {/* Updates verfügbar */}
-      {!backendError && updatesData && updatesData.total > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl bg-sky-900/30 border border-sky-500/40 p-4 flex flex-wrap items-center justify-between gap-3"
-        >
-          <div className="flex items-center gap-3">
-            <Zap className="text-sky-400 shrink-0" size={24} />
-            <div>
-              <h3 className="font-semibold text-sky-200">
-                {t('dashboard.updates.available', {
-                  count: updatesData.total,
-                  updatesWord: updatesData.total === 1 ? t('dashboard.updates.wordOne') : t('dashboard.updates.wordMany'),
-                })}
-              </h3>
-              {updatesData.categories && (
-                <p className="text-sm text-slate-200 mt-0.5">
-                  {updatesData.categories.security > 0 && <span className="text-red-300">{updatesData.categories.security} {t('dashboard.updates.category.security')}</span>}
-                  {updatesData.categories.security > 0 && (updatesData.categories.critical! > 0 || updatesData.categories.necessary! > 0 || updatesData.categories.optional! > 0) && ' · '}
-                  {updatesData.categories.critical! > 0 && <span className="text-amber-300">{updatesData.categories.critical} {t('dashboard.updates.category.critical')}</span>}
-                  {(updatesData.categories.critical! > 0) && (updatesData.categories.necessary! > 0 || updatesData.categories.optional! > 0) && ' · '}
-                  {updatesData.categories.necessary! > 0 && <span className="text-slate-100">{updatesData.categories.necessary} {t('dashboard.updates.category.necessary')}</span>}
-                  {(updatesData.categories.necessary! > 0) && updatesData.categories.optional! > 0 && ' · '}
-                  {updatesData.categories.optional! > 0 && <span className="text-slate-200">{updatesData.categories.optional} {t('dashboard.updates.category.optional')}</span>}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setUpdatesModalOpen(true)}
-              className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm font-medium"
-            >
-              {t('dashboard.updates.which')}
-            </button>
-            <button
-              type="button"
-              onClick={runUpdateInTerminal}
-              disabled={updateTerminalLoading}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
-            >
-              {updateTerminalLoading ? '…' : t('dashboard.updates.runInTerminal')}
-            </button>
-          </div>
-        </motion.div>
-      )}
-
-      {/* System-Update im Terminal – immer anzeigen (auch wenn 0 Updates) */}
-      {!backendError && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl bg-slate-800/50 border border-slate-600 p-4 flex flex-wrap items-center justify-between gap-3"
-        >
-          <div className="flex-1 min-w-0">
-            <p className="text-slate-300 text-sm">
-              <strong className="text-white">{t('dashboard.updates.aptBlock')}</strong> {t('dashboard.updates.aptHint')}
-            </p>
-            {updateTerminalError?.copyable_command && (
-              <p className="text-slate-400 text-xs mt-2 flex items-center gap-2 flex-wrap">
-                <span>{t('dashboard.updates.runCommandManually')}</span>
-                <code className="bg-slate-700 px-2 py-1 rounded text-slate-200 font-mono text-xs">{updateTerminalError.copyable_command}</code>
-                <button type="button" onClick={copyUpdateCommand} className="px-2 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs">{t('dashboard.updates.copy')}</button>
-              </p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={runUpdateInTerminal}
-            disabled={updateTerminalLoading}
-            className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-sm font-medium disabled:opacity-50 shrink-0"
-          >
-            {updateTerminalLoading ? '…' : t('dashboard.updates.runInTerminalShort')}
-          </button>
-        </motion.div>
+        </div>
       )}
 
       {/* Modal: Liste der Updates */}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="t">
+  <title id="t">Experte  Monitoring und produktive Systeme</title>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E8F1F8"/>
+      <stop offset="1" stop-color="#d7e7f2"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="64" fill="url(#g)"/>
+  <rect x="34" y="42" width="188" height="172" rx="40" fill="#4F7FAE" opacity=".94"/>
+  <ellipse cx="128" cy="214" rx="64" ry="10" fill="#cadde9" opacity=".55"/>
+  <!-- Monitor + Trend (ruhig, technisch) -->
+  <rect x="72" y="84" width="112" height="84" rx="14" fill="#ffffff" opacity=".96"/>
+  <rect x="80" y="94" width="96" height="56" rx="8" fill="#f0f6fc" stroke="#c5d6e8" stroke-width="2"/>
+  <path d="M92 132 L108 118 L124 128 L140 104 L156 120 L172 112" fill="none" stroke="#5a9a7a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="108" y="176" width="40" height="6" rx="3" fill="#ffffff" opacity=".9"/>
+  <!-- Status-LEDs -->
+  <circle cx="96" cy="102" r="4" fill="#7ab88f"/>
+  <circle cx="112" cy="102" r="4" fill="#c5d6e8"/>
+  <circle cx="128" cy="102" r="4" fill="#c5d6e8"/>
+</svg>

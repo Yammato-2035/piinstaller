@@ -9,8 +9,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // Proxy-Ziel: Standard localhost. Bei Remote-Backend z.B. VITE_PROXY_TARGET=http://192.168.1.10:8000
 const proxyTarget = process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:8000'
 const isTauriEnv = !!process.env.TAURI_ENV_PLATFORM
+/** Nur beim gebündelten Tauri-Build: relative asset-URLs; `tauri dev` bleibt bei `/` (Vite auf localhost). */
+const isTauriProductionBuild =
+  isTauriEnv && process.env.NODE_ENV === 'production'
 
 export default defineConfig({
+  base: isTauriProductionBuild ? './' : '/',
   plugins: [react()],
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version || '0.0.0'),

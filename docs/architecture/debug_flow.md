@@ -62,7 +62,13 @@ from debug.logger import init_debug, run_start, run_end, get_logger, ...
 
 ---
 
-## 6. Restunsicherheiten
+## 6. Diagnose-Companion (Phase 1)
+
+Strukturierte **Interpretation** von Fehlerkontexten für die UI: siehe [`diagnose_companion.md`](diagnose_companion.md) und `POST /api/diagnosis/interpret`. `request_id` kann im Interpret-Request mitgegeben werden, um später mit JSONL-Events zu korrelieren.
+
+---
+
+## 7. Restunsicherheiten
 
 - Frontend: Kein einheitlicher Debugkanal auf Backend-Niveau
 - SettingsPage Logs-Tab: Zeigt klassische Backend-Logs, nicht JSONL-Debug

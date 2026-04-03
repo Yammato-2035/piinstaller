@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Settings, Printer, Scan, Keyboard, Globe, Shield, Eye, Laptop, Mouse, Layout, Palette, Link2Off, Bluetooth, Fan, Headphones, Lightbulb, Wifi } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
 import toast from 'react-hot-toast'
@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import { usePlatform } from '../context/PlatformContext'
+import { PandaCompanion, PandaRail, type PandaStatus } from '../components/companions'
 
 type ControlCenterSection = 
   | 'wifi'
@@ -66,7 +67,15 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
   const [scanningNetworks, setScanningNetworks] = useState(false)
   const [wifiDisconnecting, setWifiDisconnecting] = useState(false)
   const [wifiEnabledToggling, setWifiEnabledToggling] = useState(false)
-  
+
+  const [bluetoothStatus, setBluetoothStatus] = useState<{
+    enabled: boolean
+    connected_devices: Array<{ mac: string; name: string }>
+  } | null>(null)
+  const [bluetoothDevices, setBluetoothDevices] = useState<Array<{ mac: string; name: string }>>([])
+  const [scanningBluetooth, setScanningBluetooth] = useState(false)
+  const [bluetoothEnabledToggling, setBluetoothEnabledToggling] = useState(false)
+
   // SSH State
   const [sshEnabled, setSshEnabled] = useState(false)
   const [sshRunning, setSshRunning] = useState(false)
@@ -319,6 +328,17 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
       setBluetoothStatus(null)
     }
   }
+
+  useEffect(() => {
+    void loadWifiStatus()
+  }, [])
+
+  const controlCenterCompanionStatus = useMemo((): PandaStatus => {
+    if (wifiStatus?.wifi_enabled === false) return 'warning'
+    if (wifiStatus?.connected) return 'success'
+    if (scannersError) return 'warning'
+    return 'info'
+  }, [wifiStatus, scannersError])
 
   const scanBluetoothDevices = async () => {
     setScanningBluetooth(true)
@@ -2577,6 +2597,20 @@ const ControlCenter: React.FC<ControlCenterProps> = ({ isRaspberryPi = false }) 
         </div>
         <p className="text-slate-400">Control Center – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaRail>
+        <PandaCompanion
+          type="network"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={controlCenterCompanionStatus}
+          title="Netzwerk- & System-Begleiter"
+          subtitle="WLAN, Bluetooth, SSH und mehr: Der Panda steht für diesen Bereich. Die Ampel nutzt z. B. WLAN-Status (verbunden = grün, WLAN aus = gelb)."
+        />
+      </PandaRail>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Menü */}

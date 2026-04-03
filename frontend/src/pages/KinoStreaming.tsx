@@ -1,9 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Tv, Film, ExternalLink, Volume2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import { usePlatform } from '../context/PlatformContext'
+import type { ExperienceLevel } from '../components/Sidebar'
+import { PandaCompanion, PandaRail, PandaHelperStrip, type PandaStatus } from '../components/companions'
+
+interface KinoStreamingProps {
+  experienceLevel?: ExperienceLevel
+}
 
 const STREAMING_SERVICES = [
   { id: 'amazon', name: 'Amazon Prime Video', url: 'https://www.primevideo.com', color: 'from-blue-600 to-blue-800' },
@@ -23,12 +29,18 @@ const OUTPUT_OPTIONS = [
   { id: 'surround', label: 'Surround / DTS / Dolby Digital', desc: 'Mehrkanal-Audio' },
 ]
 
-const KinoStreaming: React.FC = () => {
+const KinoStreaming: React.FC<KinoStreamingProps> = ({ experienceLevel = 'beginner' }) => {
   const { pageSubtitleLabel } = usePlatform()
   const [selectedOutput, setSelectedOutput] = useState<string>('tv')
   const [installMixerSudoOpen, setInstallMixerSudoOpen] = useState(false)
   const [loadingMixerInstall, setLoadingMixerInstall] = useState(false)
   const [mixerInstallError, setMixerInstallError] = useState<{ message?: string; copyable_command?: string } | null>(null)
+
+  const kinoCompanionStatus = useMemo((): PandaStatus => {
+    if (mixerInstallError) return 'warning'
+    if (loadingMixerInstall) return 'info'
+    return 'info'
+  }, [mixerInstallError, loadingMixerInstall])
 
   const installMixerPackages = async (sudoPassword?: string) => {
     setLoadingMixerInstall(true)
@@ -70,6 +82,23 @@ const KinoStreaming: React.FC = () => {
         </div>
         <p className="text-slate-400">Kino / Streaming – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaHelperStrip experienceLevel={experienceLevel} variant="base">
+        Streaming nutzt du im Browser oder in den Apps; für Ton und HDMI wählst du die Ausgabe im System. Mit pavucontrol oder qpwgraph kannst du Kanäle zuordnen – unten kannst du die Mixer-Pakete installieren.
+      </PandaHelperStrip>
+      <PandaRail>
+        <PandaCompanion
+          type="tutorial"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={kinoCompanionStatus}
+          title="Kino-Begleiter"
+          subtitle="Panda für Bild & Ton; die Ampel zeigt, ob z. B. die Mixer-Installation gerade läuft oder ein Fehler aufgetreten ist."
+        />
+      </PandaRail>
 
       {/* Info: Video- & Soundausgabe */}
       <div className="card-info">

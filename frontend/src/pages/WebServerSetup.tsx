@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Globe, Settings, Lock, Monitor, LayoutDashboard, Sliders } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
+import { postDiagnosisInterpret } from '../api/diagnosisApi'
+import DiagnosisPanel from '../components/DiagnosisPanel'
 import { usePlatform } from '../context/PlatformContext'
+import type { DiagnosisRecord } from '../types/diagnosis'
+import { PandaCompanion, PandaRail, type PandaStatus } from '../components/companions'
 
 type WebServerTab = 'overview' | 'config'
 
 const WebServerSetup: React.FC = () => {
+  const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
   const [activeTab, setActiveTab] = useState<WebServerTab>('overview')
   const [config, setConfig] = useState({
@@ -21,10 +27,31 @@ const WebServerSetup: React.FC = () => {
 
   const [loading, setLoading] = useState(false)
   const [webserverStatus, setWebserverStatus] = useState<any>(null)
+  const [webserverDiagnosis, setWebserverDiagnosis] = useState<DiagnosisRecord | null>(null)
+
+  const fetchWebserverConfigureDiagnosis = useCallback(async (message: string, extra: Record<string, unknown> = {}) => {
+    const trimmed = String(message || '').trim()
+    if (!trimmed) {
+      setWebserverDiagnosis(null)
+      return
+    }
+    const rec = await postDiagnosisInterpret({
+      area: 'webserver',
+      event_type: 'configure_failed',
+      message: trimmed.slice(0, 2000),
+      api_status: 'error',
+      extra,
+    })
+    setWebserverDiagnosis(rec)
+  }, [])
 
   useEffect(() => {
     loadWebserverStatus()
   }, [])
+
+  useEffect(() => {
+    if (activeTab !== 'config') setWebserverDiagnosis(null)
+  }, [activeTab])
 
   const loadWebserverStatus = async () => {
     try {
@@ -71,6 +98,7 @@ const WebServerSetup: React.FC = () => {
       return
     }
     
+    setWebserverDiagnosis(null)
     setLoading(true)
     try {
       const response = await fetchApi('/api/webserver/configure', {
@@ -84,6 +112,7 @@ const WebServerSetup: React.FC = () => {
       const data = await response.json()
       
       if (data.status === 'success') {
+        setWebserverDiagnosis(null)
         toast.success('Webserver konfiguriert!')
         if (data.results && data.results.length > 0) {
           console.log('Konfigurations-Ergebnisse:', data.results)
@@ -92,15 +121,24 @@ const WebServerSetup: React.FC = () => {
         await loadWebserverStatus()
       } else {
         if (data.requires_sudo_password) {
+          setWebserverDiagnosis(null)
           toast.error('Sudo-Passwort erforderlich')
         } else {
           toast.error(data.message || 'Fehler bei der Konfiguration')
+          void fetchWebserverConfigureDiagnosis(String(data.message || ''), {
+            server_type: config.server_type,
+            requires_sudo_password: false,
+          })
         }
       }
       console.log(data)
     } catch (error) {
       toast.error('Fehler bei der Konfiguration')
       console.error(error)
+      void fetchWebserverConfigureDiagnosis(
+        String(error instanceof Error ? error.message : ''),
+        { server_type: config.server_type, exception: true },
+      )
     } finally {
       setLoading(false)
     }
@@ -169,6 +207,16 @@ const WebServerSetup: React.FC = () => {
     )
   }
 
+  const webCompanionStatus = useMemo((): PandaStatus => {
+    if (webserverDiagnosis) return 'danger'
+    if (loading) return 'info'
+    if (!webserverStatus) return 'info'
+    const stack = config.server_type === 'nginx' ? webserverStatus.nginx : webserverStatus.apache
+    if (stack?.installed && stack?.running) return 'success'
+    if (stack?.installed && !stack?.running) return 'warning'
+    return 'info'
+  }, [webserverStatus, config.server_type, loading, webserverDiagnosis])
+
   const CheckboxItem = ({ label, checked, onChange, installed }: any) => {
     const isInstalled = installed === true
     // Für PHP: Checkbox aktivieren, auch wenn installiert (für Konfiguration)
@@ -208,6 +256,20 @@ const WebServerSetup: React.FC = () => {
         </div>
         <p className="text-slate-400">Webserver – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaRail>
+        <PandaCompanion
+          type="tutorial"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={webCompanionStatus}
+          title="Webserver-Begleiter"
+          subtitle="Nginx/Apache, SSL und CMS – der Panda steht für diesen Bereich. Die Ampel orientiert sich am gewählten Stack (läuft / installiert aber gestoppt / Hinweis)."
+        />
+      </PandaRail>
 
       {/* Untermenü wie bei Backup & Restore */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card">
@@ -583,6 +645,19 @@ const WebServerSetup: React.FC = () => {
                       )
                     })}
                   </div>
+                </div>
+              )}
+
+              {webserverDiagnosis && (
+                <div className="space-y-2">
+                  <DiagnosisPanel record={webserverDiagnosis} />
+                  <button
+                    type="button"
+                    onClick={() => setWebserverDiagnosis(null)}
+                    className="text-xs text-slate-400 hover:text-slate-200 underline"
+                  >
+                    {t('diagnosis.dismiss')}
+                  </button>
                 </div>
               )}
 

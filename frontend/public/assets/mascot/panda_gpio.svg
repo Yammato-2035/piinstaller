@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1025 1025" role="img" aria-labelledby="pandaGpioTitle">
+  <title id="pandaGpioTitle">SetupHelfer Panda  GPIO</title>
+  <defs>
+    <clipPath id="pandaGpioFrame">
+      <circle cx="512.5" cy="512.5" r="420" />
+    </clipPath>
+  </defs>
+  <rect x="0" y="0" width="1025" height="1025" fill="#020617" />
+  <g clip-path="url(#pandaGpioFrame)">
+    <image href="./panda_base.svg" x="0" y="0" width="1025" height="1025" preserveAspectRatio="xMidYMid meet" />
+  </g>
+  <!-- GPIO-Pins als abstrakte Buchsenreihe -->
+  <g transform="translate(300 780)">
+    <rect x="-140" y="-40" width="280" height="80" rx="18" fill="#020617" stroke="#38bdf8" stroke-width="6" />
+    <g fill="#38bdf8">
+      <circle cx="-100" cy="0" r="8" />
+      <circle cx="-60" cy="0" r="8" />
+      <circle cx="-20" cy="0" r="8" />
+      <circle cx="20" cy="0" r="8" />
+      <circle cx="60" cy="0" r="8" />
+      <circle cx="100" cy="0" r="8" />
+    </g>
+  </g>
+</svg>
+

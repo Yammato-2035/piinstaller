@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { usePlatform } from '../context/PlatformContext'
 import { fetchApi } from '../api'
 import AppIcon from './AppIcon'
+import { PandaCompanion } from './companions'
 
 export const FIRST_RUN_DONE_KEY = 'pi-installer-first-run-done'
 
@@ -15,12 +16,21 @@ interface FirstRunWizardProps {
   onComplete: (experienceLevel?: 'beginner' | 'advanced' | 'developer') => void
   setCurrentPage?: (page: string) => void
   systemInfo?: any
+  /** z. B. Theme-Screenshots: direkt auf Erfahrungsstufe (Schritt 2) springen */
+  initialStep?: number
 }
 
-const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentPage, systemInfo }) => {
+const FirstRunWizard: React.FC<FirstRunWizardProps> = ({
+  onComplete,
+  setCurrentPage,
+  systemInfo,
+  initialStep = 1,
+}) => {
   const { t } = useTranslation()
   const { wizardWelcomeHeadline } = usePlatform()
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(() =>
+    initialStep >= 1 && initialStep <= 4 ? initialStep : 1,
+  )
   const [selected, setSelected] = useState<string[]>([])
   const [experienceLevel, setExperienceLevel] = useState<'beginner' | 'advanced' | 'developer'>('beginner')
   const [savingProfile, setSavingProfile] = useState(false)
@@ -189,6 +199,19 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({ onComplete, setCurrentP
                 <p className="text-slate-600 dark:text-slate-400 mb-4 text-sm">
                   {t('firstRun.step1.intro')}
                 </p>
+                <div className="mb-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600">
+                  <PandaCompanion
+                    type="install"
+                    size="sm"
+                    surface="light"
+                    showTrafficLight
+                    trafficLightPosition="bottom-right"
+                    status="info"
+                    className="!shadow-none !rounded-none !border-0"
+                    title={t('firstRun.companion.installTitle')}
+                    subtitle={t('firstRun.companion.installSubtitle')}
+                  />
+                </div>
                 <div className="grid gap-3 mb-6">
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-slate-800/60">
                     <Cpu className="w-5 h-5 text-sky-500" />

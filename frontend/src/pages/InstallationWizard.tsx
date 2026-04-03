@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import { PandaCompanion, PandaRail, type PandaStatus } from '../components/companions'
 
 const InstallationWizard: React.FC = () => {
   const { isRaspberryPi, pageSubtitleLabel, wizardWelcomeHeadline } = usePlatform()
@@ -64,6 +65,14 @@ const InstallationWizard: React.FC = () => {
     hints.push({ level: 'info', text: 'Während der Einrichtung können Dienste neu gestartet werden.' })
     return hints
   }, [systemFacts])
+
+  const wizardCompanionStatus = useMemo((): PandaStatus => {
+    if (installing) return 'info'
+    if (installDone && step >= 5) return 'success'
+    if (riskHints.some((h) => h.level === 'warning')) return 'warning'
+    if (prerequisites.some((p) => !p.ok)) return 'warning'
+    return 'info'
+  }, [installing, installDone, step, riskHints, prerequisites])
 
   const pollProgress = async () => {
     let done = false
@@ -175,6 +184,20 @@ const InstallationWizard: React.FC = () => {
         </div>
         <p className="text-slate-400">Geführte Einrichtung – {pageSubtitleLabel}</p>
       </div>
+
+      <PandaRail>
+        <PandaCompanion
+          type="install"
+          size="sm"
+          surface="dark"
+          frame={false}
+          showTrafficLight
+          trafficLightPosition="bottom-right"
+          status={wizardCompanionStatus}
+          title="Installations-Begleiter"
+          subtitle="Schritt-für-Schritt-Einrichtung: Voraussetzungen prüfen, Optionen wählen, ausführen. Ampel = geschätzter Stand (Hinweise gelb, Abschluss grün)."
+        />
+      </PandaRail>
 
       {/* Installation in Progress */}
       {installing && (
