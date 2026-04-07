@@ -11,15 +11,177 @@ import { PandaCompanion, PandaRail, PandaHelperStrip, type PandaStatus } from '.
 import PageHeader from '../components/layout/PageHeader'
 import type { ExperienceLevel } from '../components/Sidebar'
 import BeginnerGuidanceMarker from '../beginner/BeginnerGuidanceMarker'
-import { MODULE_DEFINITIONS } from '../beginner/moduleModel'
+import { TrafficLightBadge } from '../components/trafficLight/TrafficLightBadge'
+import { deriveBackupSafetyTrafficLight } from '../trafficLight/trafficLightModel'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import type { DiagnosisRecord } from '../types/diagnosis'
 import { usePlatform } from '../context/PlatformContext'
+import type { TFunction } from 'i18next'
 
 type BackupTab = 'backup' | 'settings' | 'restore' | 'clone'
 
 interface BackupRestoreProps {
   experienceLevel?: ExperienceLevel
+}
+
+/** Trägt nur einen i18n-Code (kein Backend-Freitext). */
+class BackupI18nError extends Error {
+  readonly code: string
+  constructor(code: string) {
+    super(code)
+    this.name = 'BackupI18nError'
+    this.code = code
+  }
+}
+
+/** API-Vertrag Phase 2A: `backup.*` mit Punkten oder Legacy-Kurzcodes ohne Punkte. */
+function pickStructuredCode(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null
+  const o = payload as Record<string, unknown>
+  for (const k of ['message_code', 'error_code', 'code']) {
+    const v = o[k]
+    if (typeof v === 'string' && v.trim()) {
+      const raw = v.trim()
+      const withoutMsgPrefix = raw.replace(/^backup\.messages\./i, '')
+      if (/^backup\.[a-z0-9_.]+$/i.test(withoutMsgPrefix)) return withoutMsgPrefix
+      if (/^[a-z][a-z0-9_]*$/i.test(withoutMsgPrefix)) return withoutMsgPrefix
+    }
+  }
+  return null
+}
+
+/** `backup.success` → i18n-Suffix `success` (Key `backup.messages.success`). */
+function backupApiCodeToI18nSuffix(code: string): string {
+  const c = code.trim()
+  if (c.startsWith('backup.')) return c.slice('backup.'.length).replace(/\./g, '_')
+  return c.replace(/^backup\.messages\./i, '')
+}
+
+/** LEGACY_TRANSITION: Nur wenn das Backend noch kein `code` liefert (z. B. ältere Cloud-Listen). */
+function inferBackupMessageCode(rawMessage: unknown, status?: unknown, ctx?: string): string {
+  const s = String(rawMessage ?? '').trim()
+  const st = String(status ?? '').toLowerCase()
+  const lower = s.toLowerCase()
+
+  if (ctx === 'clone_terminal') {
+    if (st === 'success') return 'clone_success'
+    if (st === 'cancelled') return 'clone_cancelled'
+    if (st === 'error') return 'clone_failed'
+  }
+  if (ctx === 'clone_running') {
+    if (st === 'cancel_requested') return 'clone_cancel_pending'
+    return 'clone_running_detail'
+  }
+
+  if (!s) {
+    if (st === 'error') return 'generic_error'
+    if (st === 'success') return 'generic_success'
+    return 'unknown'
+  }
+
+  if (s.includes('Job nicht gefunden') || lower.includes('job not found')) return 'job_not_found'
+  if (s.includes('Job ist bereits abgeschlossen') || lower.includes('job already')) return 'job_already_done'
+  if (s.includes('Einstellungen gespeichert') || lower.includes('settings saved')) return 'settings_saved'
+  if (s.includes('Konnte Settings nicht speichern') || lower.includes('could not save settings')) return 'settings_save_failed'
+  if (s.includes('Ungültiger Backup-Pfad')) return 'invalid_backup_path'
+  if (s.includes('Sudo-Passwort gespeichert') || lower.includes('sudo password saved')) return 'sudo_saved'
+  if (s.includes('Sudo-Passwort falsch') || lower.includes('sudo password wrong') || lower.includes('wrong password')) return 'sudo_wrong'
+  if (s.includes('Sudo-Test hat zu lange') || lower.includes('sudo test') && lower.includes('long')) return 'sudo_test_timeout'
+  if (s.includes('Passwort erforderlich') && ctx === 'sudo') return 'sudo_password_required'
+  if (s.includes('Backup erstellt') || (lower.includes('backup') && lower.includes('created'))) return 'backup_created'
+  if (s.includes('Backup fehlgeschlagen') || (lower.includes('backup') && lower.includes('failed'))) return 'backup_failed'
+  if (s.includes('Backup abgebrochen') || (lower.includes('backup') && lower.includes('cancelled'))) return 'backup_cancelled'
+  if (s.includes('Abbruch angefordert') || lower.includes('cancellation requested')) return 'cancel_requested'
+  if (s.includes('Prüfe in 1 Min') || (lower.includes('check') && lower.includes('cloud'))) return 'cloud_check_pending'
+  if (lower.includes('upload failed') || s.includes('Upload fehlgeschlagen')) return 'upload_failed'
+  if (s.includes('Klon erfolgreich') || (lower.includes('clone') && lower.includes('success'))) return 'clone_success'
+  if (s.includes('Klon fehlgeschlagen') || (lower.includes('clone') && lower.includes('fail'))) return 'clone_failed'
+  if (s.includes('Klon abgebrochen') || (lower.includes('clone') && lower.includes('cancel'))) return 'clone_cancelled'
+  if (s.includes('Klon läuft') || (lower.includes('clone') && lower.includes('running'))) return 'clone_running_detail'
+  if (lower.includes('test restore') || s.includes('Test-Restore')) return 'restore_preview_status'
+  if (lower.includes('verify') || lower.includes('verifizierung')) return 'verify_failed_generic'
+  if (lower.includes('löschung fehlgeschlagen') || lower.includes('delete failed')) return 'delete_failed'
+  if (lower.includes('no space') || s.includes('Speicherplatz')) return 'backup_no_space'
+  if (lower.includes('unbekannter backup-typ') || lower.includes('unknown backup type')) return 'unknown_backup_type'
+
+  return 'unknown'
+}
+
+/** UI-Phase primär aus `job.code`, sonst Übergang über Statuszeile (nicht als Nutzertext). */
+function inferBackupJobUiPhase(job: {
+  code?: unknown
+  message?: unknown
+  results?: unknown[]
+} | null): 'check_cloud' | 'upload' | 'encrypt' | 'running' {
+  const jc = String(job?.code ?? '').trim()
+  if (jc === 'backup.job.encrypting') return 'encrypt'
+  if (jc === 'backup.cloud_check_pending') return 'check_cloud'
+  if (jc === 'backup.job.uploading') return 'upload'
+  if (
+    jc === 'backup.cloud_credentials_missing' ||
+    jc === 'backup.cloud_upload_skipped' ||
+    jc === 'backup.cloud_upload_file_missing'
+  ) {
+    return 'upload'
+  }
+  const m = String(job?.message ?? '').toLowerCase()
+  const results = job?.results
+  const hasUploadLine =
+    Array.isArray(results) && results.some((x) => String(x).toLowerCase().includes('upload'))
+  if (m.includes('verschlüsselung') || m.includes('encryption')) return 'encrypt'
+  if (m.includes('prüfe') || (m.includes('check') && m.includes('cloud'))) return 'check_cloud'
+  if (m.includes('upload') || hasUploadLine) return 'upload'
+  return 'running'
+}
+
+function resolveApiFeedbackCode(payload: unknown, ctx?: string): string {
+  const fromPayload = pickStructuredCode(payload)
+  if (fromPayload) return fromPayload
+  if (payload && typeof payload === 'object') {
+    const o = payload as Record<string, unknown>
+    const nestedJob = o.job
+    if (nestedJob && typeof nestedJob === 'object') {
+      const fromJob = pickStructuredCode(nestedJob)
+      if (fromJob) return fromJob
+    }
+    if (ctx === 'cloud_verify' && o.status !== 'success' && typeof o.http_code === 'number') return 'cloud_verify_http'
+  }
+  if (payload && typeof payload === 'object') {
+    const o = payload as Record<string, unknown>
+    return inferBackupMessageCode(o.message, o.status, ctx)
+  }
+  return 'unknown'
+}
+
+function backupMsgParams(payload: unknown): Record<string, string | number> {
+  const p: Record<string, string | number> = {}
+  if (!payload || typeof payload !== 'object') return p
+  const o = payload as Record<string, unknown>
+  if (typeof o.http_code === 'number') p.code = o.http_code
+  return p
+}
+
+function backupMsg(tFn: TFunction, code: string, params?: Record<string, string | number>): string {
+  const suffix = backupApiCodeToI18nSuffix(code)
+  const key = `backup.messages.${suffix}`
+  const translated = params && Object.keys(params).length ? tFn(key, { ...params } as Record<string, unknown>) : tFn(key)
+  return translated === key ? tFn('backup.messages.unknown') : translated
+}
+
+function toastFromApi(
+  toastFn: typeof toast,
+  tFn: TFunction,
+  kind: 'success' | 'error' | 'info',
+  payload: unknown,
+  ctx?: string,
+  opts?: { duration?: number; icon?: string },
+) {
+  const code = resolveApiFeedbackCode(payload, ctx)
+  const params = backupMsgParams(payload)
+  const msg = backupMsg(tFn, code, params)
+  if (kind === 'success') toastFn.success(msg, opts as Record<string, unknown>)
+  else if (kind === 'error') toastFn.error(msg, opts as Record<string, unknown>)
+  else toastFn(msg, opts as Record<string, unknown>)
 }
 
 const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginner' }) => {
@@ -43,14 +205,14 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const [checkingTarget, setCheckingTarget] = useState(false)
   const [usbInfo, setUsbInfo] = useState<any>(null)
   const [showUsbDialog, setShowUsbDialog] = useState(false)
-  const [usbLabel, setUsbLabel] = useState('PI-INSTALLER')
+  const [usbLabel, setUsbLabel] = useState('')
   const [usbDoFormat, setUsbDoFormat] = useState(false)
   const [usbConfirm, setUsbConfirm] = useState('')
   const [usbWorking, setUsbWorking] = useState(false)
   const [sudoModalOpen, setSudoModalOpen] = useState(false)
-  const [sudoModalTitle, setSudoModalTitle] = useState('Sudo-Passwort erforderlich')
-  const [sudoModalSubtitle, setSudoModalSubtitle] = useState('Für diese Aktion werden Administrator-Rechte benötigt.')
-  const [sudoModalConfirmText, setSudoModalConfirmText] = useState('Bestätigen')
+  const [sudoModalTitle, setSudoModalTitle] = useState(t('backup.i18n.sudoRequiredTitle'))
+  const [sudoModalSubtitle, setSudoModalSubtitle] = useState(t('backup.i18n.sudoRequiredSubtitle'))
+  const [sudoModalConfirmText, setSudoModalConfirmText] = useState(t('backup.i18n.confirm'))
   const [pendingAction, setPendingAction] = useState<null | ((sudoPassword: string, skipTest?: boolean) => Promise<void>)>(null)
   const DEFAULT_BACKUP_DIR = '/mnt/backups'
   const LAST_DIR_KEY = 'pi_installer_last_backup_dir'
@@ -82,6 +244,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const [deepVerifyOpen, setDeepVerifyOpen] = useState(false)
   const [deepVerifyFile, setDeepVerifyFile] = useState<string | null>(null)
   const [deepVerifyKey, setDeepVerifyKey] = useState('')
+  const [sawSudoRequiredForBackupRun, setSawSudoRequiredForBackupRun] = useState(false)
 
   useEffect(() => {
     loadTargets()
@@ -123,11 +286,11 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
   const loadCloneDiskInfoWithSudo = async () => {
     await requireSudo(
-      { title: 'Ziellaufwerke laden', subtitle: 'Sudo ermöglicht Erkennung ungemounteter NVMe/USB-Laufwerke. Passwort wird für Klon gespeichert.', confirmText: 'Laden' },
+      { title: t('backup.i18n.clone.loadTargets.title'), subtitle: t('backup.i18n.clone.loadTargets.subtitle'), confirmText: t('backup.i18n.clone.loadTargets.confirm') },
       async (pwd?: string) => {
         if (pwd) await storeSudoPassword(pwd, true)
         await loadCloneDiskInfo(pwd, true)
-        toast.success('Ziellaufwerke aktualisiert')
+        toast.success(t('backup.i18n.clone.targetsRefreshed'))
       }
     )
   }
@@ -148,12 +311,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           if (terminal && !cloneJobNotifiedRef.current[job.job_id]) {
             cloneJobNotifiedRef.current[job.job_id] = true
             if (job.status === 'success') {
-              toast.success('Klon erfolgreich – Bitte neu starten (sudo reboot)')
+              toast.success(t('backup.i18n.clone.successReboot'))
               loadCloneDiskInfo()
             } else if (job.status === 'cancelled') {
-              toast('Klon abgebrochen', { duration: 6000 })
+              toast(t('backup.i18n.clone.cancelled'), { duration: 6000 })
             } else {
-              toast.error(job.message || 'Klon fehlgeschlagen', { duration: 10000 })
+              toast.error(backupMsg(t, resolveApiFeedbackCode(job, 'clone_job')), { duration: 10000 })
             }
             if (intervalId) window.clearInterval(intervalId)
           }
@@ -209,16 +372,16 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             if (!backupJobNotifiedRef.current[job.job_id]) {
               backupJobNotifiedRef.current[job.job_id] = true
               if (job.status === 'success') {
-                toast.success('Backup fertig')
-                if (job.warning) toast(String(job.warning), { icon: '⚠️', duration: 6000 })
+                toast.success(t('runningBackup.toast.done'))
+                if (job.warning) toast(backupMsg(t, 'job_warning'), { icon: '⚠️', duration: 6000 })
                 loadBackups()
                 if (job.remote_file) {
                   void loadCloudBackups()
                 }
               } else if (job.status === 'cancelled') {
-                toast('Backup abgebrochen', { duration: 6000 })
+                toast(t('runningBackup.toast.cancelled'), { duration: 6000 })
               } else {
-                toast.error(job.message || 'Backup fehlgeschlagen', { duration: 10000 })
+                toast.error(backupMsg(t, resolveApiFeedbackCode(job, 'backup_job')), { duration: 10000 })
               }
             }
             if (intervalId) window.clearInterval(intervalId)
@@ -326,6 +489,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
       } else {
         setBackups([])
         setSelectedBackups(new Set())
+        toast.error(backupMsg(t, resolveApiFeedbackCode(data, 'backup_list')), { duration: 8000 })
       }
     } catch (error) {
       console.error('Fehler beim Laden der Backups:', error)
@@ -347,7 +511,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const saveBackupSettings = async () => {
     if (!backupSettings) return
     await requireSudo(
-      { title: 'Backup-Einstellungen speichern', subtitle: 'Speichert Einstellungen + konfiguriert den Timer.', confirmText: 'Speichern' },
+      { title: t('backup.i18n.settings.save.title'), subtitle: t('backup.i18n.settings.save.subtitle'), confirmText: t('backup.i18n.settings.save.confirm') },
       async () => {
         setSettingsLoading(true)
         try {
@@ -358,10 +522,10 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           })
           const d = await r.json()
           if (d.status === 'success') {
-            toast.success('Einstellungen gespeichert')
+            toast.success(t('backup.i18n.settings.saved'))
             setBackupSettings(d.settings)
           } else {
-            toast.error(d.message || 'Speichern fehlgeschlagen')
+            toast.error(backupMsg(t, resolveApiFeedbackCode(d, 'settings_save')))
           }
         } finally {
           setSettingsLoading(false)
@@ -372,7 +536,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
   const runScheduleRuleNow = async (ruleId?: string) => {
     await requireSudo(
-      { title: 'Scheduled Backup jetzt ausführen', subtitle: 'Führt den Backup-Runner sofort aus.', confirmText: 'Ausführen' },
+      { title: t('backup.i18n.schedule.runNow.title'), subtitle: t('backup.i18n.schedule.runNow.subtitle'), confirmText: t('backup.i18n.schedule.runNow.confirm') },
       async () => {
         const r = await fetchApi('/api/backup/schedule/run-now', {
           method: 'POST',
@@ -381,11 +545,10 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         })
         const d = await r.json()
         if (d.status === 'success') {
-          toast.success('Scheduled Backup ausgeführt')
-          if (d.stdout) toast.success(String(d.stdout).slice(0, 120), { duration: 6000 })
+          toast.success(backupMsg(t, 'schedule_ok'))
           loadBackups()
         } else {
-          toast.error(String(d.stderr || d.stdout || d.message || 'Ausführung fehlgeschlagen').slice(0, 350), { duration: 12000 })
+          toast.error(backupMsg(t, resolveApiFeedbackCode(d, 'schedule_run')), { duration: 12000 })
         }
       }
     )
@@ -407,7 +570,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         // Konvertiere Cloud-Backups in das gleiche Format wie lokale Backups
         const formattedBackups = backups.map((b: any) => {
           const sizeBytes = b.size_bytes || 0
-          const sizeMB = sizeBytes > 0 ? (sizeBytes / 1024 / 1024).toFixed(2) + ' MB' : 'Unbekannt'
+          const sizeMB = sizeBytes > 0 ? (sizeBytes / 1024 / 1024).toFixed(2) + ' MB' : t('backup.i18n.unknown')
           const href = b.href || b.name
           // Debug: Zeige die href-Struktur in der Konsole
           if (backups.length > 0 && backups.indexOf(b) === 0) {
@@ -423,9 +586,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             href: href,  // Stelle sicher, dass href verfügbar ist
             name: b.name,
             size: sizeMB,
-            date: b.last_modified || 'Unbekannt',
+            date: b.last_modified || t('backup.i18n.unknown'),
             encrypted: b.encrypted || b.name?.endsWith('.gpg') || b.name?.endsWith('.enc'),
-            location: 'Cloud',
+            location: t('backup.i18n.location.cloud'),
           }
         })
         setCloudBackups(formattedBackups)
@@ -434,16 +597,24 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           const backupKeys = new Set(formattedBackups.map((b: any) => b.href || b.file || b.name))
           return new Set(Array.from(prev).filter((f) => backupKeys.has(f)))
         })
-        if (backups.length === 0 && d.message) {
-          toast(d.message, { duration: 4000, icon: 'ℹ️' })
+        {
+          const cloudListCode = pickStructuredCode(d)
+          const sev = String((d as { severity?: unknown }).severity ?? '').toLowerCase()
+          if (
+            formattedBackups.length === 0 &&
+            cloudListCode &&
+            !(sev === 'success' && cloudListCode === 'backup.cloud_list_ok')
+          ) {
+            toast(backupMsg(t, resolveApiFeedbackCode(d, 'cloud_list')), { duration: 4000, icon: 'ℹ️' })
+          }
         }
       } else {
-        toast.error(d.message || 'Externe Backups konnten nicht geladen werden', { duration: 12000 })
+        toast.error(backupMsg(t, resolveApiFeedbackCode(d, 'cloud_list')), { duration: 12000 })
         setCloudBackups([])
         setSelectedCloudBackups(new Set())
       }
     } catch (e) {
-      toast.error('Externe Backups konnten nicht geladen werden (Server nicht erreichbar)')
+      toast.error(t('backup.i18n.cloud.loadFailedOffline'))
       setCloudBackups([])
       setSelectedCloudBackups(new Set())
     } finally {
@@ -463,14 +634,14 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
       const d = await r.json()
       if (d.status === 'success' && d.ok) {
         setCloudVerified((m) => ({ ...m, [name]: true }))
-        toast.success('Remote verifiziert')
+        toast.success(t('backup.i18n.cloud.remoteVerified'))
       } else {
         setCloudVerified((m) => ({ ...m, [name]: false }))
-        toast.error(d.message || `Remote nicht verifiziert (HTTP ${d.http_code ?? '—'})`, { duration: 12000 })
+        toast.error(backupMsg(t, resolveApiFeedbackCode(d, 'cloud_verify')), { duration: 12000 })
       }
     } catch {
       setCloudVerified((m) => ({ ...m, [name]: false }))
-      toast.error('Remote Verifizierung fehlgeschlagen (Server nicht erreichbar)')
+      toast.error(t('backup.i18n.cloud.remoteVerifyOffline'))
     } finally {
       setCloudVerifying((m) => ({ ...m, [name]: false }))
     }
@@ -482,8 +653,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
       const res = await fetchApi(`/api/backup/target-check?backup_dir=${encodeURIComponent(dir)}&create=1`)
       const data = await res.json()
       setTargetCheck(data)
-    } catch (e) {
-      setTargetCheck({ status: 'error', message: 'Server nicht erreichbar' })
+    } catch {
+      setTargetCheck({ status: 'error', message_code: 'server_unreachable' })
     } finally {
       setCheckingTarget(false)
     }
@@ -497,8 +668,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
       const res = await fetchApi(`/api/backup/usb/info?${qs}`)
       const data = await res.json()
       setUsbInfo(data)
-    } catch (e) {
-      setUsbInfo({ status: 'error', message: 'USB-Info konnte nicht geladen werden' })
+    } catch {
+      setUsbInfo({ status: 'error', message_code: 'usb_info_load_failed' })
     }
   }
 
@@ -526,12 +697,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
       clearTimeout(timeoutId)
       const data = await resp.json()
       if (data.status !== 'success') {
-        throw new Error(data.message || 'Sudo-Passwort konnte nicht gespeichert werden')
+        throw new BackupI18nError(resolveApiFeedbackCode(data, 'sudo'))
       }
     } catch (e: any) {
       clearTimeout(timeoutId)
       if (e?.name === 'AbortError') {
-        throw new Error('Die Aktion hat zu lange gedauert. Server prüfen oder „Ohne Prüfung speichern“ probieren.')
+        throw new BackupI18nError('action_timeout')
       }
       throw e
     }
@@ -545,8 +716,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
     }
 
     setSudoModalTitle(opts.title)
-    setSudoModalSubtitle(opts.subtitle || 'Für diese Aktion werden Administrator-Rechte benötigt.')
-    setSudoModalConfirmText(opts.confirmText || 'Bestätigen')
+    setSudoModalSubtitle(opts.subtitle || t('backup.i18n.sudoRequiredSubtitle'))
+    setSudoModalConfirmText(opts.confirmText || t('backup.i18n.confirm'))
     setPendingAction(() => async (pwd: string, skipTest?: boolean) => {
       await storeSudoPassword(pwd, skipTest ?? false)
       await action(pwd)
@@ -556,20 +727,20 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
   const runUsbPrepare = async () => {
     if (!selectedTarget && !selectedDevice) {
-      toast.error('Bitte zuerst einen USB-Stick auswählen')
+      toast.error(t('backup.i18n.usb.selectFirst'))
       return
     }
 
     if (usbDoFormat) {
       // harte Sicherheitsabfrage
       if (usbConfirm.trim().toUpperCase() !== 'FORMAT') {
-        toast.error('Bitte bestätigen Sie mit "FORMAT" (Datenverlust!)')
+        toast.error(t('backup.i18n.usb.confirmFormatRequired'))
         return
       }
     }
 
     await requireSudo(
-      { title: 'USB vorbereiten', subtitle: 'Formatieren/Umbenennen benötigt sudo.', confirmText: 'Weiter' },
+      { title: t('backup.i18n.usb.prepare.title'), subtitle: t('backup.i18n.usb.prepare.subtitle'), confirmText: t('backup.i18n.usb.prepare.confirm') },
       async () => {
         setUsbWorking(true)
         try {
@@ -585,9 +756,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           })
           const data = await res.json()
           if (data.status === 'success') {
-            toast.success('USB vorbereitet')
-            if (Array.isArray(data.results)) {
-              data.results.forEach((r: string) => toast.success(r, { duration: 3500 }))
+            toast.success(t('backup.i18n.usb.prepared'))
+            if (Array.isArray(data.results) && data.results.length > 0) {
+              toast.success(backupMsg(t, 'usb_operation_ok', { n: data.results.length }), { duration: 3500 })
             }
 
             await loadTargets()
@@ -597,11 +768,11 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               const newDir = `${data.mounted_to}/pi-installer-backups`
               setBackupDirMode('custom')
               setBackupDir(newDir)
-              toast.success(`Backup-Ziel gesetzt: ${newDir}`, { duration: 4000 })
+              toast.success(t('backup.i18n.targetSet', { dir: newDir }), { duration: 4000 })
             }
             setShowUsbDialog(false)
           } else {
-            toast.error(data.message || 'USB vorbereiten fehlgeschlagen')
+            toast.error(backupMsg(t, resolveApiFeedbackCode(data, 'usb_prepare')))
           }
         } finally {
           setUsbWorking(false)
@@ -612,14 +783,14 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
   const runUsbEject = async () => {
     if (!selectedTarget && !selectedDevice) {
-      toast.error('Bitte zuerst einen USB-Stick auswählen')
+      toast.error(t('backup.i18n.usb.selectFirst'))
       return
     }
 
-    if (!window.confirm('USB wirklich auswerfen? Danach können Sie den Stick gefahrlos entfernen.')) return
+    if (!window.confirm(t('backup.i18n.usb.ejectConfirm'))) return
 
     await requireSudo(
-      { title: 'USB auswerfen', subtitle: 'Unmount + sync (optional power-off).', confirmText: 'Auswerfen' },
+      { title: t('backup.i18n.usb.eject.title'), subtitle: t('backup.i18n.usb.eject.subtitle'), confirmText: t('backup.i18n.usb.eject.confirm') },
       async () => {
         const res = await fetchApi('/api/backup/usb/eject', {
           method: 'POST',
@@ -631,18 +802,18 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         })
         const data = await res.json()
         if (data.status === 'success') {
-          toast.success('USB ausgeworfen')
-          if (Array.isArray(data.results)) {
-            data.results.forEach((r: string) => toast.success(r, { duration: 3000 }))
+          toast.success(t('backup.i18n.usb.ejected'))
+          if (Array.isArray(data.results) && data.results.length > 0) {
+            toast.success(backupMsg(t, 'usb_operation_ok', { n: data.results.length }), { duration: 3000 })
           }
           await loadTargets()
           setSelectedTarget('')
           setSelectedDevice('')
           setUsbInfo(null)
         } else {
-          toast.error(data.message || 'Auswerfen fehlgeschlagen')
+          toast.error(backupMsg(t, resolveApiFeedbackCode(data, 'usb_eject')))
           if (Array.isArray(data.still_mounted) && data.still_mounted.length > 0) {
-            toast.error(`Noch gemountet: ${data.still_mounted.join(', ')}`, { duration: 8000 })
+            toast.error(t('backup.i18n.usb.stillMounted', { list: data.still_mounted.join(', ') }), { duration: 8000 })
           }
         }
       }
@@ -652,7 +823,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const mountSelectedUsb = async (device: string) => {
     if (!device) return
     await requireSudo(
-      { title: 'USB mounten', subtitle: 'USB-Stick wird gemountet (nicht-destruktiv).', confirmText: 'Mounten' },
+      { title: t('backup.i18n.usb.mount.title'), subtitle: t('backup.i18n.usb.mount.subtitle'), confirmText: t('backup.i18n.usb.mount.confirm') },
       async () => {
         try {
           const res = await fetchApi('/api/backup/usb/mount', {
@@ -669,15 +840,15 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               setBackupDir(newDir)
               setSelectedTarget(String(data.mounted_to))
               setSelectedDevice('')
-              toast.success(`Gemountet: ${data.mounted_to}`, { duration: 4000 })
+              toast.success(t('backup.i18n.usb.mountedTo', { path: data.mounted_to }), { duration: 4000 })
             } else {
-              toast.success('USB ist gemountet', { duration: 4000 })
+              toast.success(t('backup.i18n.usb.mounted'), { duration: 4000 })
             }
           } else {
-            toast.error(data.message || 'Mount fehlgeschlagen', { duration: 12000 })
+            toast.error(backupMsg(t, resolveApiFeedbackCode(data, 'usb_mount')), { duration: 12000 })
           }
         } catch {
-          toast.error('Mount fehlgeschlagen (Server nicht erreichbar)')
+          toast.error(t('backup.i18n.usb.mountFailedOffline'))
         }
       }
     )
@@ -685,16 +856,15 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
   const startClone = async () => {
     if (!cloneTargetDevice) {
-      toast.error('Bitte ein Ziellaufwerk auswählen')
+      toast.error(t('backup.i18n.clone.selectTargetFirst'))
       return
     }
     if (!window.confirm(
-      `Möchten Sie das System auf ${cloneTargetDevice} klonen?\n\n` +
-      'Alle Daten auf dem Ziellaufwerk werden überschrieben. Der Boot bleibt auf der SD-Karte, das Root-Dateisystem wird vom Ziellaufwerk geladen (Hybrid-Boot).\n\nNach dem Klonen bitte neu starten (sudo reboot).'
+      t('backup.i18n.clone.confirmBody', { target: cloneTargetDevice })
     )) return
 
     await requireSudo(
-      { title: 'System klonen', subtitle: 'Klon benötigt sudo (mount, rsync).', confirmText: 'Klon starten' },
+      { title: t('backup.i18n.clone.start.title'), subtitle: t('backup.i18n.clone.start.subtitle'), confirmText: t('backup.i18n.clone.start.confirm') },
       async () => {
         try {
           const r = await fetchApi('/api/backup/clone', {
@@ -704,19 +874,19 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           })
           const d = await r.json()
           if (d.status === 'accepted') {
-            toast.success('Klon gestartet…')
+            toast.success(t('backup.i18n.clone.started'))
             setCloneJob({
               job_id: d.job_id,
               status: 'queued',
-              message: 'Klon läuft…',
+              message: t('backup.i18n.clone.running'),
               target_device: cloneTargetDevice,
             })
           } else {
-            toast.error(d.message || 'Klon konnte nicht gestartet werden')
+            toast.error(backupMsg(t, resolveApiFeedbackCode(d, 'clone_start')))
             setCloneJob(null)
           }
         } catch (e) {
-          toast.error('Server nicht erreichbar')
+          toast.error(t('backup.i18n.serverUnreachable'))
           setCloneJob(null)
         }
       }
@@ -728,9 +898,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
       setSelectedDevice(v)
       setSelectedTarget('')
       // ask before mounting (non-destructive, but needs sudo)
-      const ok = window.confirm('Der USB-Stick ist nicht gemountet. Soll er jetzt gemountet werden?')
+      const ok = window.confirm(t('backup.i18n.usb.notMountedConfirmMount'))
       if (ok) {
-        toast('USB wird gemountet…', { duration: 2500 })
+        toast(t('backup.i18n.usb.mounting'), { duration: 2500 })
         await mountSelectedUsb(v)
       }
     } else {
@@ -744,47 +914,53 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
     const isCloudTarget = backupDirMode === 'cloud'
     if (isCloudTarget) {
       if (!backupSettings?.cloud?.enabled) {
-        toast.error('Cloud-Upload ist deaktiviert. Bitte in Einstellungen → Cloud-Backup Einstellungen aktivieren.')
+        toast.error(t('backup.i18n.cloud.uploadDisabled'))
         return
       }
       // Prüfe Provider-spezifische Settings
       const provider = backupSettings?.cloud?.provider || 'seafile_webdav'
       if (provider.includes('webdav')) {
         if (!backupSettings?.cloud?.webdav_url || !backupSettings?.cloud?.username || !backupSettings?.cloud?.password) {
-          toast.error('Cloud-Settings fehlen. Bitte in Einstellungen → Cloud-Backup Einstellungen konfigurieren.')
+          toast.error(t('backup.i18n.cloud.settingsMissing'))
           return
         }
       } else if (provider === 's3' || provider === 's3_compatible') {
         if (!backupSettings?.cloud?.bucket || !backupSettings?.cloud?.access_key_id || !backupSettings?.cloud?.secret_access_key) {
-          toast.error('S3-Settings fehlen. Bitte in Einstellungen → Cloud-Backup Einstellungen konfigurieren.')
+          toast.error(t('backup.i18n.cloud.s3SettingsMissing'))
           return
         }
       } else if (provider === 'google_cloud') {
         if (!backupSettings?.cloud?.bucket) {
-          toast.error('GCS-Settings fehlen. Bitte in Einstellungen → Cloud-Backup Einstellungen konfigurieren.')
+          toast.error(t('backup.i18n.cloud.gcsSettingsMissing'))
           return
         }
       } else if (provider === 'azure') {
         if (!backupSettings?.cloud?.account_name || !backupSettings?.cloud?.container || !backupSettings?.cloud?.account_key) {
-          toast.error('Azure-Settings fehlen. Bitte in Einstellungen → Cloud-Backup Einstellungen konfigurieren.')
+          toast.error(t('backup.i18n.cloud.azureSettingsMissing'))
           return
         }
       }
     }
 
-    const targetText = isCloudTarget ? 'Cloud (lokal wird nach erfolgreichem Upload gelöscht)' : `lokal in ${backupDir}`
+    const targetText = isCloudTarget ? t('backup.i18n.cloud.targetCloudOnly') : t('backup.i18n.cloud.targetLocalIn', { dir: backupDir })
     if (
       !window.confirm(
-        `Möchten Sie wirklich ein ${
-          backupType === 'full' ? 'vollständiges' : backupType === 'incremental' ? 'inkrementelles' : 'Daten-'
-        } Backup erstellen?\n\nZiel: ${targetText}`
+        t('backup.i18n.create.confirm', {
+          type:
+            backupType === 'full'
+              ? t('backup.i18n.type.full')
+              : backupType === 'incremental'
+                ? t('backup.i18n.type.incremental')
+                : t('backup.i18n.type.data'),
+          target: targetText,
+        })
       )
     ) {
       return
     }
 
     await requireSudo(
-      { title: 'Backup erstellen', subtitle: 'Backup benötigt sudo (tar/Dateisystemzugriff).', confirmText: 'Backup starten' },
+      { title: t('backup.i18n.create.title'), subtitle: t('backup.i18n.create.subtitle'), confirmText: t('backup.i18n.create.confirmButton') },
       async () => {
         setLoading(true)
         try {
@@ -811,12 +987,17 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             requestBody.encryption_key = encryptionKey
           }
           
-          const backupTypeText = backupType === 'full' ? 'vollständiges' : backupType === 'incremental' ? 'inkrementelles' : 'Daten-'
-          const encryptionText = encryptionEnabled ? ` (verschlüsselt mit ${encryptionMethod.toUpperCase()})` : ''
-          const targetText = isCloudTarget ? 'Cloud' : `lokal: ${backupDir}`
+          const backupTypeText =
+            backupType === 'full'
+              ? t('backup.i18n.type.full')
+              : backupType === 'incremental'
+                ? t('backup.i18n.type.incremental')
+                : t('backup.i18n.type.data')
+          const encryptionText = encryptionEnabled ? t('backup.i18n.create.encryptionPart', { method: encryptionMethod.toUpperCase() }) : ''
+          const targetText = isCloudTarget ? t('backup.i18n.location.cloud') : t('backup.i18n.create.targetLocal', { dir: backupDir })
           
           toast(
-            `Backup wird erstellt:\nTyp: ${backupTypeText} Backup${encryptionText}\nZiel: ${targetText}`,
+            t('backup.i18n.create.inProgressToast', { type: backupTypeText, encryptionPart: encryptionText, target: targetText }),
             { 
               duration: 5000,
               icon: 'ℹ️'
@@ -831,13 +1012,13 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           const data = await response.json()
 
           if (data.status === 'accepted') {
-            toast.success('Backup gestartet…')
+            toast.success(t('backup.i18n.create.started'))
             // Setze Backup-Job sofort, damit die Anzeige startet
             const jobData = {
               job_id: data.job_id || String(Date.now()),
               status: 'queued',
               backup_file: data.backup_file || '',
-              message: 'Backup wird erstellt…'
+              message: t('backup.i18n.create.running'),
             }
             console.log('Setting backupJob:', jobData) // Debug
             setBackupJob(jobData)
@@ -874,26 +1055,26 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                     if (d.job.status === 'success' || d.job.status === 'error' || d.job.status === 'cancelled') {
                       // Zeige Ergebnis an
                       if (d.job.status === 'success') {
-                        toast.success('Backup erfolgreich erstellt!')
+                        toast.success(t('backup.i18n.create.success'))
                         if (d.job.warning) {
-                          toast(d.job.warning, { icon: '⚠️', duration: 8000 })
+                          toast(backupMsg(t, 'job_warning'), { icon: '⚠️', duration: 8000 })
                         }
                         // Prüfe ob Cloud-Upload erfolgreich war
                         const hasUpload = d.job.results?.some((r: string) => r.includes('uploaded:'))
                         if (isCloudTarget && hasUpload) {
-                          toast.success('Backup erfolgreich in die Cloud hochgeladen!', { duration: 6000 })
+                          toast.success(t('backup.i18n.cloud.uploadSuccess'), { duration: 6000 })
                           loadCloudBackups() // Lade Cloud-Backups neu
                         } else if (isCloudTarget && !hasUpload) {
                           const uploadFailed = d.job.results?.some((r: string) => r.includes('upload failed'))
                           if (uploadFailed) {
-                            toast.error('Cloud-Upload fehlgeschlagen!', { duration: 8000 })
+                            toast.error(t('backup.i18n.cloud.uploadFailed'), { duration: 8000 })
                           }
                         }
                         loadBackups() // Lade lokale Backups neu
                       } else if (d.job.status === 'error') {
-                        toast.error(d.job.message || 'Backup fehlgeschlagen', { duration: 10000 })
+                        toast.error(backupMsg(t, resolveApiFeedbackCode(d.job, 'backup_job')), { duration: 10000 })
                         if (d.job.warning) {
-                          toast.error(d.job.warning, { duration: 10000 })
+                          toast.error(backupMsg(t, 'job_warning'), { duration: 10000 })
                         }
                       }
                       return // Stop polling
@@ -908,12 +1089,14 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             }, 500)
           } else if (data.status === 'success') {
             // fallback (falls async nicht unterstützt)
-            toast.success('Backup erstellt!')
+            toast.success(t('backup.i18n.create.created'))
             loadBackups()
           } else {
-            toast.error(data.message || 'Fehler beim Erstellen des Backups')
-            if (Array.isArray(data.results)) {
-              data.results.forEach((r: string) => toast.error(r, { duration: 5000 }))
+            const code = resolveApiFeedbackCode(data, 'backup_create')
+            if (code === 'backup.sudo_required') setSawSudoRequiredForBackupRun(true)
+            toast.error(backupMsg(t, code))
+            if (Array.isArray(data.results) && data.results.length > 0) {
+              toast.error(backupMsg(t, 'create_extra_results', { n: data.results.length }), { duration: 5000 })
             }
           }
         } finally {
@@ -925,18 +1108,18 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
   const cancelBackupJob = async () => {
     if (!backupJob?.job_id) return
-    if (!window.confirm('Backup wirklich abbrechen?')) return
+    if (!window.confirm(t('runningBackup.confirmCancel'))) return
     try {
       const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(backupJob.job_id)}/cancel`, { method: 'POST' })
       const d = await r.json()
       if (d.status === 'success') {
-        toast.success('Abbruch angefordert…')
+        toast.success(t('runningBackup.toast.cancelRequested'))
         setBackupJob((j: any) => (j ? { ...j, status: 'cancel_requested' } : j))
       } else {
-        toast.error(d.message || 'Abbruch fehlgeschlagen')
+        toast.error(backupMsg(t, resolveApiFeedbackCode(d, 'job_cancel')))
       }
     } catch {
-      toast.error('Abbruch fehlgeschlagen (Server nicht erreichbar)')
+      toast.error(t('backup.i18n.cancelFailedOffline'))
     }
   }
 
@@ -981,7 +1164,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             toast.success(t('backup.restore.preview.toastSuccess'))
           } else {
             setRestorePreviewResult(null)
-            toast.error(data.message || t('backup.restore.preview.toastError'))
+            toast.error(backupMsg(t, resolveApiFeedbackCode(data, 'restore_preview')))
           }
         } finally {
           setLoading(false)
@@ -990,16 +1173,16 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
     )
   }
 
-  const applyVerifyFailureDiagnosis = React.useCallback(async (rawMessage: string, extra: Record<string, unknown> = {}) => {
-    const trimmed = String(rawMessage || '').trim()
-    if (!trimmed) {
+  const applyVerifyFailureDiagnosis = React.useCallback(async (failureCode: string, extra: Record<string, unknown> = {}) => {
+    const code = String(failureCode || '').trim()
+    if (!code) {
       setVerifyDiagnosis(null)
       return
     }
     const rec = await postDiagnosisInterpret({
       area: 'backup_restore',
       event_type: 'verify_failed',
-      message: trimmed.slice(0, 2000),
+      message: `code:${code}`.slice(0, 2000),
       extra,
     })
     setVerifyDiagnosis(rec)
@@ -1022,7 +1205,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      if (data.status === 'success' && data.results) {
+      if ((data.status === 'success' || data.status === 'warning') && data.results) {
         const results = data.results
         const verificationMode = results.verification_mode || mode
         if (results.encrypted && verificationMode === 'basic') {
@@ -1037,7 +1220,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             toast(t('backup.verify.basic.encryptedInfo'), { duration: 10000, icon: '🔒' })
           } else {
             toast.error(t('backup.verify.basic.encryptedEmpty'), { duration: 9000 })
-            void applyVerifyFailureDiagnosis(t('backup.verify.basic.encryptedEmpty'), {
+            void applyVerifyFailureDiagnosis('encrypted_empty', {
               kind: 'encrypted_empty',
               verify_mode: mode,
               backup_file: backupFile,
@@ -1053,52 +1236,27 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             { duration: 8000 },
           )
           if (results.sample_files && results.sample_files.length > 0) {
-            const sample = results.sample_files.slice(0, 5).join(', ')
-            toast(
-              t('backup.verify.samples', {
-                files: sample,
-                more: results.file_count > 5 ? '…' : '',
-              }),
-              { duration: 10000, icon: '📋' },
-            )
+            toast(backupMsg(t, 'verify_samples_hidden', { count: results.sample_files.length }), { duration: 10000, icon: '📋' })
           }
         } else {
-          const errMsg = String(results.error || t('backup.verify.unknownError'))
-          toast.error(
-            t('backup.verify.invalid', {
-              error: errMsg,
-            }),
-            { duration: 12000 },
-          )
-          void applyVerifyFailureDiagnosis(errMsg, {
+          toast.error(backupMsg(t, 'verify_archive_invalid'), { duration: 12000 })
+          void applyVerifyFailureDiagnosis('verify_archive_invalid', {
             verify_mode: mode,
             backup_file: backupFile,
             result_invalid: true,
           })
         }
       } else {
-        const errMsg = String(data.message || t('backup.verify.unknownError'))
-        toast.error(
-          t('backup.verify.requestFailed', {
-            error: errMsg,
-          }),
-          { duration: 9000 },
-        )
-        void applyVerifyFailureDiagnosis(errMsg, {
+        toast.error(backupMsg(t, resolveApiFeedbackCode(data, 'verify')), { duration: 9000 })
+        void applyVerifyFailureDiagnosis('verify_request_failed', {
           verify_mode: mode,
           backup_file: backupFile,
           request_failed: true,
         })
       }
     } catch (error) {
-      const errMsg = String(error instanceof Error ? error.message : t('backup.verify.unknownError'))
-      toast.error(
-        t('backup.verify.exception', {
-          error: errMsg,
-        }),
-        { duration: 9000 },
-      )
-      void applyVerifyFailureDiagnosis(errMsg, {
+      toast.error(backupMsg(t, 'verify_client_error'), { duration: 9000 })
+      void applyVerifyFailureDiagnosis('verify_exception', {
         verify_mode: mode,
         backup_file: backupFile,
         exception: true,
@@ -1121,7 +1279,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      if (data.status === 'success' && data.results) {
+      if ((data.status === 'success' || data.status === 'warning') && data.results) {
         const results = data.results
         const verificationMode = results.verification_mode || 'deep'
         if (results.encrypted && verificationMode === 'basic') {
@@ -1136,7 +1294,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             toast(t('backup.verify.basic.encryptedInfo'), { duration: 10000, icon: '🔒' })
           } else {
             toast.error(t('backup.verify.basic.encryptedEmpty'), { duration: 9000 })
-            void applyVerifyFailureDiagnosis(t('backup.verify.basic.encryptedEmpty'), {
+            void applyVerifyFailureDiagnosis('encrypted_empty', {
               kind: 'encrypted_empty',
               verify_mode: 'deep',
               backup_file: backupFile,
@@ -1152,52 +1310,27 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             { duration: 8000 },
           )
           if (results.sample_files && results.sample_files.length > 0) {
-            const sample = results.sample_files.slice(0, 5).join(', ')
-            toast(
-              t('backup.verify.samples', {
-                files: sample,
-                more: results.file_count > 5 ? '…' : '',
-              }),
-              { duration: 10000, icon: '📋' },
-            )
+            toast(backupMsg(t, 'verify_samples_hidden', { count: results.sample_files.length }), { duration: 10000, icon: '📋' })
           }
         } else {
-          const errMsg = String(results.error || t('backup.verify.unknownError'))
-          toast.error(
-            t('backup.verify.invalid', {
-              error: errMsg,
-            }),
-            { duration: 12000 },
-          )
-          void applyVerifyFailureDiagnosis(errMsg, {
+          toast.error(backupMsg(t, 'verify_archive_invalid'), { duration: 12000 })
+          void applyVerifyFailureDiagnosis('verify_archive_invalid', {
             verify_mode: 'deep',
             backup_file: backupFile,
             result_invalid: true,
           })
         }
       } else {
-        const errMsg = String(data.message || t('backup.verify.unknownError'))
-        toast.error(
-          t('backup.verify.requestFailed', {
-            error: errMsg,
-          }),
-          { duration: 9000 },
-        )
-        void applyVerifyFailureDiagnosis(errMsg, {
+        toast.error(backupMsg(t, resolveApiFeedbackCode(data, 'verify')), { duration: 9000 })
+        void applyVerifyFailureDiagnosis('verify_request_failed', {
           verify_mode: 'deep',
           backup_file: backupFile,
           request_failed: true,
         })
       }
     } catch (error) {
-      const errMsg = String(error instanceof Error ? error.message : t('backup.verify.unknownError'))
-      toast.error(
-        t('backup.verify.exception', {
-          error: errMsg,
-        }),
-        { duration: 9000 },
-      )
-      void applyVerifyFailureDiagnosis(errMsg, {
+      toast.error(backupMsg(t, 'verify_client_error'), { duration: 9000 })
+      void applyVerifyFailureDiagnosis('verify_exception', {
         verify_mode: 'deep',
         backup_file: backupFile,
         exception: true,
@@ -1251,9 +1384,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   }
 
   const deleteBackup = async (backupFile: string) => {
-    if (!window.confirm(`Backup wirklich löschen?\n\n${backupFile}`)) return
+    if (!window.confirm(t('backup.i18n.delete.confirmSingle', { file: backupFile }))) return
     await requireSudo(
-      { title: 'Backup löschen', subtitle: 'Löscht die Backup-Datei (ggf. mit sudo).', confirmText: 'Löschen' },
+      { title: t('backup.i18n.delete.single.title'), subtitle: t('backup.i18n.delete.single.subtitle'), confirmText: t('backup.i18n.delete.single.confirm') },
       async () => {
         const res = await fetchApi('/api/backup/delete', {
           method: 'POST',
@@ -1262,7 +1395,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         })
         const data = await res.json()
         if (data.status === 'success') {
-          toast.success('Backup gelöscht')
+          toast.success(t('backup.i18n.delete.single.success'))
           loadBackups()
           setSelectedBackups((prev) => {
             const next = new Set(prev)
@@ -1270,7 +1403,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             return next
           })
         } else {
-          toast.error(data.message || data.stderr || 'Löschen fehlgeschlagen', { duration: 10000 })
+          toast.error(backupMsg(t, resolveApiFeedbackCode(data, 'backup_delete')), { duration: 10000 })
         }
       }
     )
@@ -1278,13 +1411,13 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
   const deleteSelectedBackups = async () => {
     if (selectedBackups.size === 0) {
-      toast.error('Keine Backups ausgewählt')
+      toast.error(t('backup.selection.none'))
       return
     }
     const count = selectedBackups.size
-    if (!window.confirm(`${count} Backup(s) wirklich löschen?`)) return
+    if (!window.confirm(t('backup.i18n.delete.confirmMultiple', { count }))) return
     await requireSudo(
-      { title: 'Backups löschen', subtitle: `Löscht ${count} Backup-Datei(en) (ggf. mit sudo).`, confirmText: 'Löschen' },
+      { title: t('backup.i18n.delete.multiple.title'), subtitle: t('backup.i18n.delete.multiple.subtitle', { count }), confirmText: t('backup.i18n.delete.multiple.confirm') },
       async (sudoPassword: string) => {
         let successCount = 0
         let failCount = 0
@@ -1304,22 +1437,21 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               successCount++
             } else {
               failCount++
-              const errorMsg = data.message || data.details || data.stderr || 'Unbekannter Fehler'
-              errors.push(`${backupFile.split('/').pop()}: ${errorMsg}`)
+              errors.push(String(backupFile.split('/').pop() || backupFile))
             }
-          } catch (error) {
+          } catch {
             failCount++
-            errors.push(`${backupFile.split('/').pop()}: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`)
+            errors.push(String(backupFile.split('/').pop() || backupFile))
           }
         }
         if (successCount > 0) {
-          toast.success(`${successCount} Backup(s) gelöscht`)
+          toast.success(t('backup.i18n.delete.multiple.success', { count: successCount }))
           loadBackups()
           setSelectedBackups(new Set())
         }
         if (failCount > 0) {
-          const errorDetails = errors.slice(0, 3).join('\n')
-          toast.error(`${failCount} Backup(s) konnten nicht gelöscht werden${errorDetails ? ':\n' + errorDetails : ''}`, { duration: 15000 })
+          const filesHint = errors.slice(0, 3).join(', ')
+          toast.error(backupMsg(t, 'delete_batch_partial', { failed: failCount, files: filesHint }), { duration: 15000 })
         }
       }
     )
@@ -1361,6 +1493,26 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
     return 'success'
   }, [backupJob])
 
+  const backupJobUiPhase = useMemo(
+    () => inferBackupJobUiPhase(backupJob ?? null),
+    [backupJob?.code, backupJob?.message, backupJob?.results],
+  )
+
+  const backupSafetyTraffic = useMemo(() => {
+    const anyVerifying =
+      Object.values(verifying).some(Boolean) || Object.values(cloudVerifying).some(Boolean)
+    // Phase 4: Bis ein belastbarer Nachweis "Backup-Lauf erfolgreich + Verify auf diesem Backup"
+    // aus persistierten Fakten vorliegt, ist gruene Freigabe nicht erlaubt.
+    const hasRealBackupVerification = false
+    return deriveBackupSafetyTrafficLight({
+      verifyDiagnosis,
+      anyVerifying,
+      hasRestorePreview: !!restorePreviewResult,
+      hasRealBackupVerification,
+      sawSudoRequired: sawSudoRequiredForBackupRun,
+    })
+  }, [verifyDiagnosis, verifying, cloudVerifying, restorePreviewResult, sawSudoRequiredForBackupRun])
+
   const cloudCompanionStatus = useMemo((): PandaStatus => {
     if (cloudBackupsLoading) return 'info'
     if (showCloudBackups && cloudBackups.length > 0) return 'success'
@@ -1379,8 +1531,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const cloudCompanionSection = (
     <div className="space-y-2 my-3">
       <PandaHelperStrip experienceLevel={experienceLevel} variant="backup">
-        Cloud-Backups: Zugangsdaten unter <span className="text-slate-900 font-medium dark:text-slate-200">Einstellungen → Cloud-Backup</span>{' '}
-        pflegen, dann die Liste aktualisieren. Ohne aktivierte Cloud-Option oder ohne Treffer bleibt die Ampel vorsichtig.
+        {t('backup.ui.cloudCompanion.helperPartBefore')}
+        <span className="text-slate-900 font-medium dark:text-slate-200">{t('backup.ui.cloudCompanion.settingsLink')}</span>
+        {t('backup.ui.cloudCompanion.helperPartAfter')}
       </PandaHelperStrip>
       <PandaRail>
         <PandaCompanion
@@ -1391,8 +1544,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           showTrafficLight
           trafficLightPosition="bottom-right"
           status={cloudCompanionStatus}
-          title="Cloud-Begleiter"
-          subtitle="Panda für externe Speicherorte; die Ampel spiegelt Ladezustand, Konfiguration und ob Backups gefunden wurden."
+          title={t('backup.ui.cloudCompanion.title')}
+          subtitle={t('backup.ui.cloudCompanion.subtitle')}
         />
       </PandaRail>
     </div>
@@ -1413,11 +1566,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           try {
             if (!pendingAction) return
             await pendingAction(pwd, skipTest)
-            toast.success('Sudo-Passwort gespeichert (Session)')
+            toast.success(t('backup.i18n.sudoSavedSession'))
             setSudoModalOpen(false)
             setPendingAction(null)
-          } catch (e: any) {
-            toast.error(e?.message || 'Sudo-Passwort ungültig')
+          } catch (e: unknown) {
+            const code = e instanceof BackupI18nError ? e.code : 'unknown'
+            toast.error(backupMsg(t, code === 'unknown' ? 'sudo_invalid_generic' : code))
           }
         }}
       />
@@ -1483,34 +1637,36 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             >
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">USB vorbereiten</h2>
-                  <p className="text-sm text-slate-400">
-                    Optional formatieren (löschen) und/oder umbenennen (Label).
-                  </p>
+                  <h2 className="text-2xl font-bold text-white">{t('backup.ui.usbDialog.title')}</h2>
+                  <p className="text-sm text-slate-400">{t('backup.ui.usbDialog.subtitle')}</p>
                 </div>
                 <button
                   className="px-3 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg"
                   onClick={() => !usbWorking && setShowUsbDialog(false)}
                 >
-                  Schließen
+                  {t('backup.ui.common.close')}
                 </button>
               </div>
 
               <div className="p-4 bg-yellow-900/20 border border-yellow-700/40 rounded-lg text-yellow-100 text-sm mb-4">
-                <div className="font-semibold mb-1">Warnung</div>
+                <div className="font-semibold mb-1">{t('backup.ui.usbDialog.warningTitle')}</div>
                 <div>
-                  Wenn du „Formatieren“ aktivierst, werden <span className="font-semibold">alle Daten auf dem Stick unwiderruflich gelöscht</span>.
-                  Prüfe unbedingt, dass du den richtigen Datenträger ausgewählt hast.
+                  {t('backup.ui.usbDialog.warningBody')} {t('backup.ui.usbDialog.warningExtra')}
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="p-3 bg-slate-900/40 border border-slate-700 rounded-lg text-sm text-slate-200">
-                  <div className="font-semibold text-white mb-1">Ausgewählt</div>
+                  <div className="font-semibold text-white mb-1">{t('backup.ui.usbDialog.selected')}</div>
                   <div className="text-xs text-slate-300 whitespace-pre-line">
-                    Mountpoint: {selectedTarget || '—'}
-                    {"\n"}Device: {usbInfo?.disk || '—'} • Partition: {usbInfo?.partition || '—'}
-                    {"\n"}FS: {usbInfo?.fstype || '—'} • Label: {usbInfo?.label || '—'} • Größe: {usbInfo?.size || '—'}
+                    {t('backup.ui.usbDialog.selectedDetail', {
+                      mount: selectedTarget || t('backup.ui.targetStatus.emDash'),
+                      disk: String(usbInfo?.disk ?? t('backup.ui.targetStatus.emDash')),
+                      part: String(usbInfo?.partition ?? t('backup.ui.targetStatus.emDash')),
+                      fs: String(usbInfo?.fstype ?? t('backup.ui.targetStatus.emDash')),
+                      label: String(usbInfo?.label ?? t('backup.ui.targetStatus.emDash')),
+                      size: String(usbInfo?.size ?? t('backup.ui.targetStatus.emDash')),
+                    })}
                   </div>
                 </div>
 
@@ -1522,33 +1678,29 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                     className="w-5 h-5 accent-red-500"
                   />
                   <div className="text-sm">
-                    <div className="font-semibold text-white">Stick löschen / formatieren (ext4)</div>
-                    <div className="text-xs text-slate-400">Empfohlen wenn der Stick „read-only“ ist (z.B. ISO/Boot-Stick).</div>
+                    <div className="font-semibold text-white">{t('backup.ui.usbDialog.formatToggle')}</div>
+                    <div className="text-xs text-slate-400">{t('backup.ui.usbDialog.formatHint')}</div>
                   </div>
                 </label>
 
                 <div>
-                  <label className="block text-sm font-semibold text-white mb-2">Neuer Name (Label)</label>
+                  <label className="block text-sm font-semibold text-white mb-2">{t('backup.ui.usbDialog.labelField')}</label>
                   <input
                     value={usbLabel}
                     onChange={(e) => setUsbLabel(e.target.value)}
-                    placeholder="PI-INSTALLER"
+                    placeholder={t('backup.ui.usbDialog.defaultLabel')}
                     className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-sky-600"
                   />
-                  <div className="mt-1 text-xs text-slate-400">
-                    Wird als Laufwerksname verwendet. (Erlaubt: Buchstaben/Zahlen/Leerzeichen/_/-)
-                  </div>
+                  <div className="mt-1 text-xs text-slate-400">{t('backup.ui.usbDialog.labelHelp')}</div>
                 </div>
 
                 {usbDoFormat && (
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2">
-                      Bestätigung (tippe <span className="text-red-300">FORMAT</span>)
-                    </label>
+                    <label className="block text-sm font-semibold text-white mb-2">{t('backup.ui.usbDialog.confirmLabel')}</label>
                     <input
                       value={usbConfirm}
                       onChange={(e) => setUsbConfirm(e.target.value)}
-                      placeholder="FORMAT"
+                      placeholder={t('backup.ui.usbDialog.formatPlaceholder')}
                       className="w-full bg-slate-900/50 border border-red-700/60 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-red-500"
                     />
                   </div>
@@ -1561,14 +1713,14 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   disabled={usbWorking}
                   onClick={() => setShowUsbDialog(false)}
                 >
-                  Abbrechen
+                  {t('backup.ui.common.cancel')}
                 </button>
                 <button
                   className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-lg disabled:opacity-50"
-                  disabled={usbWorking || (usbDoFormat && usbConfirm.trim().toUpperCase() !== 'FORMAT')}
+                  disabled={usbWorking || (usbDoFormat && usbConfirm.trim().toUpperCase() !== t('backup.ui.usbDialog.formatPlaceholder'))}
                   onClick={runUsbPrepare}
                 >
-                  {usbWorking ? '⏳ Bitte warten…' : usbDoFormat ? 'Formatieren & Umbenennen' : 'Umbenennen / Mounten'}
+                  {usbWorking ? t('backup.i18n.pleaseWait') : usbDoFormat ? t('backup.i18n.usb.formatAndRename') : t('backup.i18n.usb.renameOrMount')}
                 </button>
               </div>
             </div>
@@ -1579,27 +1731,35 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
       <PageHeader
         visualStyle="hero-card"
         tone="backup"
-        title="Backup & Restore"
-        subtitle={`Sichere dein System und stelle Daten bei Bedarf sicher wieder her – ${pageSubtitleLabel}.`}
+        title={t('backup.ui.pageHeader.title')}
+        subtitle={t('backup.ui.pageHeader.subtitle', { system: pageSubtitleLabel })}
       />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <TrafficLightBadge
+          state={backupSafetyTraffic.lamp}
+          label={t(`backup.ui.traffic.${backupSafetyTraffic.copyKey}.label`)}
+          detail={t(`backup.ui.traffic.${backupSafetyTraffic.copyKey}.detail`)}
+        />
+      </div>
+      <div className="text-xs text-slate-300">
+        {backupSafetyTraffic.lamp === 'red'
+          ? t('backup.ui.trafficReason.red')
+          : t('backup.ui.trafficReason.yellow')}
+      </div>
 
       {isBeginnerBackupUx && (
         <div className="rounded-xl border border-sky-500/35 bg-slate-900/50 p-4 sm:p-5 space-y-2">
-          <p className="text-sm font-semibold text-slate-100">Was du hier machst</p>
-          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-            Drei Hauptwege reichen am Anfang: ein Backup anlegen, vorhandene Sicherungen prüfen, oder im Bedarf vorsichtig wiederherstellen.
-            Details zu Zielen, Cloud und Klonen findest du unter „Weitere Optionen“ – erst relevant, wenn du mit den Grundlagen vertraut bist.
+          <p className="text-sm font-semibold text-slate-100">{t('backup.ui.beginner.introTitle')}</p>
+          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">{t('backup.ui.beginner.introBody')}</p>
+          <p className="text-xs text-amber-200/90 border border-amber-500/25 rounded-lg px-2 py-1.5 bg-amber-950/20">
+            {t('backup.ui.beginner.warningRestore')}
           </p>
-          {MODULE_DEFINITIONS.backup.warningText && (
-            <p className="text-xs text-amber-200/90 border border-amber-500/25 rounded-lg px-2 py-1.5 bg-amber-950/20">
-              {MODULE_DEFINITIONS.backup.warningText}
-            </p>
-          )}
         </div>
       )}
 
       <PandaHelperStrip experienceLevel={experienceLevel} variant="backup">
-        Wähle ein klares Ziel: Standardordner, USB-Stick oder Cloud. Vor dem Restore unbedingt lesen, was überschrieben wird – der Backup-Begleiter unten zeigt parallel den Job-Status.
+        {t('backup.ui.panda.helper')}
       </PandaHelperStrip>
 
       <PandaRail>
@@ -1611,8 +1771,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           showTrafficLight
           trafficLightPosition="bottom-right"
           status={backupCompanionStatus}
-          title="Backup-Begleiter"
-          subtitle="Panda steht für diesen Bereich; die Ampel zeigt, ob gerade alles ruhig ist oder ob du etwas beachten solltest."
+          title={t('backup.ui.panda.title')}
+          subtitle={t('backup.ui.panda.subtitle')}
         />
       </PandaRail>
 
@@ -1631,10 +1791,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             <Download className="text-emerald-400" />
           </div>
           <div className="text-left min-w-0">
-            <p className="text-sm font-semibold text-slate-100">Backup erstellen</p>
-            <p className="text-xs text-slate-400 mt-1">
-              Sicherung anlegen – USB, lokaler Ordner oder Cloud (wenn eingerichtet).
-            </p>
+            <p className="text-sm font-semibold text-slate-100">{t('backup.ui.card.createTitle')}</p>
+            <p className="text-xs text-slate-400 mt-1">{t('backup.ui.card.createDesc')}</p>
           </div>
         </button>
         {isBeginnerBackupUx && (
@@ -1648,12 +1806,10 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             </div>
             <div className="text-left min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
-                <p className="text-sm font-semibold text-slate-100">Backup prüfen</p>
+                <p className="text-sm font-semibold text-slate-100">{t('backup.ui.card.verifyTitle')}</p>
                 <BeginnerGuidanceMarker kind="advanced" compact />
               </div>
-              <p className="text-xs text-slate-400 mt-1">
-                Liste der vorhandenen Sicherungen, Prüfen und Integrität – ohne sofort etwas zurückzuspielen.
-              </p>
+              <p className="text-xs text-slate-400 mt-1">{t('backup.ui.card.verifyDesc')}</p>
             </div>
           </button>
         )}
@@ -1666,10 +1822,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             <Upload className="text-sky-400" />
           </div>
           <div className="text-left min-w-0">
-            <p className="text-sm font-semibold text-slate-100">Backup wiederherstellen</p>
-            <p className="text-xs text-slate-400 mt-1">
-              Nur wenn du bewusst zurücksetzen willst – Warnhinweise auf der nächsten Seite beachten.
-            </p>
+            <p className="text-sm font-semibold text-slate-100">{t('backup.ui.card.restoreTitle')}</p>
+            <p className="text-xs text-slate-400 mt-1">{t('backup.ui.card.restoreDesc')}</p>
           </div>
         </button>
       </motion.div>
@@ -1687,7 +1841,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                 }`}
               >
                 <Download size={18} className="hidden md:block shrink-0" aria-hidden />
-                Backup erstellen
+                {t('backup.ui.tab.create')}
                 {activeTab === 'backup' && (
                   <motion.div
                     layoutId="activeTabBeginner"
@@ -1705,7 +1859,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                 }`}
               >
                 <HardDrive size={18} className="hidden md:block shrink-0" aria-hidden />
-                Prüfen &amp; wiederherstellen
+                {t('backup.ui.tab.restoreVerify')}
                 {activeTab === 'restore' && (
                   <motion.div
                     layoutId="activeTabBeginner"
@@ -1716,17 +1870,17 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                 )}
               </button>
             </div>
-            <details className="group rounded-lg border border-slate-600/60 bg-slate-900/30">
-              <summary className="cursor-pointer list-none px-3 py-2 text-xs text-slate-400 hover:text-slate-200 flex items-center justify-between [&::-webkit-details-marker]:hidden">
+            <details className="group rounded-lg border border-slate-500/70 bg-slate-900/55">
+              <summary className="cursor-pointer list-none px-3 py-2 text-xs font-medium text-slate-100 hover:text-white hover:bg-slate-800/55 flex items-center justify-between rounded-lg [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500">
                 <span className="flex items-center gap-2">
-                  Weitere Optionen
+                  {t('backup.ui.tab.more')}
                   <BeginnerGuidanceMarker kind="advanced" compact />
                 </span>
-                <span className="text-slate-500 group-open:rotate-180 transition-transform" aria-hidden>
+                <span className="text-slate-300 shrink-0 group-open:rotate-180 transition-transform" aria-hidden>
                   ▼
                 </span>
               </summary>
-              <div className="flex flex-wrap gap-2 px-3 pb-3 pt-0 border-t border-slate-700/50">
+              <div className="flex flex-wrap gap-2 px-3 pb-3 pt-0 border-t border-slate-600/80">
                 <button
                   type="button"
                   onClick={() => setActiveTab('settings')}
@@ -1735,7 +1889,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   }`}
                 >
                   <Settings size={16} aria-hidden />
-                  Einstellungen
+                  {t('backup.ui.tab.settings')}
                 </button>
                 <button
                   type="button"
@@ -1745,7 +1899,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   }`}
                 >
                   <Copy size={16} aria-hidden />
-                  Laufwerk klonen
+                  {t('backup.ui.clone.introTitle')}
                 </button>
               </div>
             </details>
@@ -1759,7 +1913,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               }`}
             >
               <Download size={18} className="hidden md:block shrink-0" aria-hidden />
-              Backup erstellen
+              {t('backup.ui.tab.create')}
               {activeTab === 'backup' && (
                 <motion.div
                   layoutId="activeTab"
@@ -1776,7 +1930,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               }`}
             >
               <Settings size={18} className="hidden md:block shrink-0" aria-hidden />
-              Einstellungen
+              {t('backup.ui.tab.settings')}
               {activeTab === 'settings' && (
                 <motion.div
                   layoutId="activeTab"
@@ -1793,7 +1947,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               }`}
             >
               <HardDrive size={18} className="hidden md:block shrink-0" aria-hidden />
-              Vorhandene Backups
+              {t('backup.ui.tab.existingBackups')}
               {activeTab === 'restore' && (
                 <motion.div
                   layoutId="activeTab"
@@ -1810,7 +1964,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               }`}
             >
               <Copy size={18} className="hidden md:block shrink-0" aria-hidden />
-              Laufwerk klonen
+              {t('backup.ui.clone.introTitle')}
               {activeTab === 'clone' && (
                 <motion.div
                   layoutId="activeTab"
@@ -1834,10 +1988,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
       >
       {activeTab === 'backup' && (
       <div className="space-y-6">
-        <p className="text-slate-400 text-sm">
-          Kurzer Ablauf: <span className="font-semibold text-slate-200">1.</span> Ziel wählen, <span className="font-semibold text-slate-200">2.</span> Backup-Typ wählen,
-          <span className="font-semibold text-slate-200"> 3.</span> optional verschlüsseln und Backup starten.
-        </p>
+        <p className="text-slate-400 text-sm">{t('backup.ui.backupTab.flow')}</p>
         {/* Ein-Klick-Backup Hero (Milestone 3 – Transformationsplan) */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -1846,14 +1997,10 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         >
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
             <Database className="text-sky-500 hidden md:block shrink-0" aria-hidden />
-            Ein-Klick-Backup
+            {t('backup.ui.hero.oneClickTitle')}
           </h2>
-          <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
-            Erstelle jetzt ein vollständiges Backup deines Systems – auf USB, Cloud oder lokales Verzeichnis. Deine Daten und Einstellungen werden gesichert.
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-500 mb-0">
-            Wähle unten das Ziel und den Backup-Typ (Vollbackup empfohlen), dann auf „Backup erstellen“ klicken.
-          </p>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{t('backup.ui.hero.oneClickBody')}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-500 mb-0">{t('backup.ui.hero.oneClickNote')}</p>
         </motion.div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -1866,7 +2013,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           >
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
               <Download className="text-green-500 hidden md:block shrink-0" aria-hidden />
-              Backup erstellen
+              {t('backup.ui.page.createHeading')}
             </h2>
 
             <div className="space-y-4">
@@ -1891,17 +2038,24 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                           className="w-5 h-5 border-2 border-sky-400 border-t-transparent rounded-full"
                         />
                         <div className="font-semibold">
-                          {backupJob.status === 'cancel_requested' ? '⏳ Abbruch läuft…' : backupJob.message?.includes('Prüfe') ? '☁️ Prüfe Cloud…' : backupJob.message?.includes('Upload') ? '☁️ Upload läuft…' : '⏳ Backup läuft…'}
+                          {backupJob.status === 'cancel_requested'
+                            ? t('runningBackup.title.cancelPending')
+                            : backupJobUiPhase === 'check_cloud'
+                              ? t('runningBackup.title.checkCloud')
+                              : backupJobUiPhase === 'upload'
+                                ? t('runningBackup.title.uploading')
+                                : t('runningBackup.title.running')}
                         </div>
                       </div>
                       <div className="text-xs text-sky-100/80 mt-1">
-                        {backupJob.backup_file ? `Datei: ${String(backupJob.backup_file).split('/').pop()}` : backupJob.job_id ? `Job-ID: ${backupJob.job_id}` : ''}
+                        {backupJob.backup_file ? t('backup.i18n.job.fileLabel', { file: String(backupJob.backup_file).split('/').pop() }) : backupJob.job_id ? t('backup.i18n.job.idLabel', { id: backupJob.job_id }) : ''}
                       </div>
                       <div className="text-xs text-sky-100/80 mt-1">
-                        Status: <span className="font-semibold">{backupJob.status || 'queued'}</span>
-                        {typeof backupJob.bytes_current === 'number' ? ` • Größe: ${(backupJob.bytes_current / 1024 / 1024).toFixed(1)} MB` : ''}
+                        {t('runningBackup.label.status')}{' '}
+                        <span className="font-semibold">{backupJob.status || t('backup.ui.status.queued')}</span>
+                        {typeof backupJob.bytes_current === 'number' ? t('backup.i18n.job.sizeMb', { mb: (backupJob.bytes_current / 1024 / 1024).toFixed(1) }) : ''}
                       </div>
-                      {backupJob.message?.includes('Verschlüsselung') && (
+                      {backupJobUiPhase === 'encrypt' && (
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: [0.5, 1, 0.5] }}
@@ -1910,11 +2064,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                         >
                           <div className="flex items-center gap-2 text-sm">
                             <Lock className="animate-pulse" size={16} />
-                            <span>Verschlüsselung läuft…</span>
+                            <span>{t('runningBackup.encryptionRunning')}</span>
                           </div>
                         </motion.div>
                       )}
-                      {(backupJob.message?.includes('Upload') || backupJob.message?.includes('Prüfe') || backupJob.results?.some((r: string) => String(r).includes('upload'))) && !backupJob.remote_file && (
+                      {(backupJobUiPhase === 'upload' || backupJobUiPhase === 'check_cloud' || typeof backupJob.upload_progress_pct === 'number') &&
+                        !backupJob.remote_file && (
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: [0.5, 1, 0.5] }}
@@ -1924,7 +2079,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                           <div className="flex items-center gap-2 text-sm">
                             <Cloud className="animate-pulse" size={16} />
                             <span>
-                              {backupJob.message?.includes('Prüfe') ? 'Prüfe in 1 Min, ob Datei in Cloud…' : 'Upload zu Cloud läuft…'}
+                              {backupJobUiPhase === 'check_cloud' ? t('runningBackup.checkCloudHint') : t('runningBackup.uploadRunning')}
                               {typeof backupJob.upload_progress_pct === 'number' && (
                                 <span className="ml-2 font-semibold">{backupJob.upload_progress_pct} %</span>
                               )}
@@ -1950,7 +2105,11 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                         >
                           <div className="text-sm text-green-300 flex items-center gap-2">
                             <span>✓</span>
-                            <span>Upload erfolgreich: {String(backupJob.remote_file).split('/').pop()}</span>
+                            <span>
+                              {t('runningBackup.uploadOk', {
+                                file: String(backupJob.remote_file).split('/').pop() || t('backup.i18n.unknown'),
+                              })}
+                            </span>
                           </div>
                         </motion.div>
                       )}
@@ -1960,23 +2119,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                           animate={{ opacity: 1 }}
                           className="mt-2 p-2 bg-yellow-900/30 rounded border border-yellow-600/40"
                         >
-                          <div className="text-sm text-yellow-300">⚠ {String(backupJob.warning)}</div>
+                          <div className="text-sm text-yellow-300">⚠ {backupMsg(t, 'job_warning')}</div>
                         </motion.div>
                       )}
                       {Array.isArray(backupJob.results) && backupJob.results.length > 0 && (
-                        <div className="mt-2 space-y-1 text-xs">
-                          {backupJob.results.map((r: string, idx: number) => (
-                            <motion.div
-                              key={idx}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: idx * 0.1 }}
-                              className={String(r).includes('failed') ? 'text-red-300' : String(r).includes('uploaded') ? 'text-green-300' : 'text-sky-100/80'}
-                            >
-                              {String(r).includes('uploaded') && <Cloud size={12} className="inline mr-1" />}
-                              {String(r)}
-                            </motion.div>
-                          ))}
+                        <div className="mt-2 text-xs text-sky-100/80">
+                          {backupMsg(t, 'job_log_lines', { n: backupJob.results.length })}
                         </div>
                       )}
                     </div>
@@ -1985,7 +2133,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                         onClick={cancelBackupJob}
                         className="px-3 py-2 bg-red-600/25 hover:bg-red-600/35 border border-red-500/40 text-red-100 rounded-lg text-sm"
                       >
-                        Abbrechen
+                        {t('runningBackup.cancel')}
                       </button>
                     )}
                   </div>
@@ -1993,8 +2141,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               )}
               {/* Schritt 1: Ziel wählen */}
               <div>
-                <h3 className="text-sm font-semibold text-sky-300 mb-1">Schritt 1: Ziel für das Backup wählen</h3>
-                <label className="block text-white font-semibold mb-2">Ziel (Backup-Speicherort)</label>
+                <h3 className="text-sm font-semibold text-sky-300 mb-1">{t('backup.ui.step1.title')}</h3>
+                <label className="block text-white font-semibold mb-2">{t('backup.ui.step1.targetLabel')}</label>
                 <div className="grid md:grid-cols-4 gap-3">
                   <button
                     onClick={() => {
@@ -2009,16 +2157,16 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   >
                     <div className="font-bold text-white mb-1 flex items-center gap-2">
                       <AppIcon name="nvme" category="devices" size={24} className="hidden md:inline-block shrink-0 opacity-95" alt="" />
-                      Standard
+                      {t('backup.ui.target.standard')}
                     </div>
-                    <div className="text-xs text-slate-400">/mnt/backups</div>
+                    <div className="text-xs text-slate-400">{t('backup.ui.target.standardPath')}</div>
                   </button>
 
                   <button
                     onClick={() => {
                       setBackupDirMode('usb')
-                      const mounted = (targets || []).find((t: any) => t.mountpoint && String(t.mountpoint).startsWith('/'))
-                      const unmounted = (targets || []).find((t: any) => t.device && String(t.device).startsWith('/dev/'))
+                      const mounted = (targets || []).find((row: any) => row.mountpoint && String(row.mountpoint).startsWith('/'))
+                      const unmounted = (targets || []).find((row: any) => row.device && String(row.device).startsWith('/dev/'))
                       const mp = mounted?.mountpoint
                       const dev = unmounted?.device
                       if (mp) {
@@ -2042,9 +2190,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   >
                     <div className="font-bold text-white mb-1 flex items-center gap-2">
                       <Usb size={22} className="text-sky-300 shrink-0 hidden md:block" aria-hidden />
-                      USB / Datenträger
+                      {t('backup.ui.target.usb')}
                     </div>
-                    <div className="text-xs text-slate-400">Mountpoint auswählen</div>
+                    <div className="text-xs text-slate-400">{t('backup.ui.target.usbHint')}</div>
                   </button>
 
                   <button
@@ -2052,7 +2200,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       setBackupDirMode('cloud')
                       // local staging dir stays as-is; default to standard if unset
                       if (!backupDir || typeof backupDir !== 'string') setBackupDir(DEFAULT_BACKUP_DIR)
-                      toast('Cloud-Ziel gewählt: Backup wird hochgeladen und lokal gelöscht (nach Verifizierung).', { duration: 4500 })
+                      toast(t('backup.ui.cloud.toastChosen'), { duration: 4500 })
                     }}
                     className={`p-4 rounded-lg border-2 transition-all text-left ${
                       backupDirMode === 'cloud'
@@ -2062,9 +2210,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   >
                     <div className="font-bold text-white mb-1 flex items-center gap-2">
                       <Cloud size={22} className="text-sky-300 shrink-0 hidden md:block" strokeWidth={2} aria-hidden />
-                      Cloud
+                      {t('backup.ui.target.cloud')}
                     </div>
-                    <div className="text-xs text-slate-400">WebDAV Upload (Cloud-only)</div>
+                    <div className="text-xs text-slate-400">{t('backup.ui.target.cloudHint')}</div>
                   </button>
 
                   <button
@@ -2077,21 +2225,19 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   >
                     <div className="font-bold text-white mb-1 flex items-center gap-2">
                       <FolderOpen size={22} className="text-sky-300 shrink-0 hidden md:block" aria-hidden />
-                      Eigener Pfad
+                      {t('backup.ui.target.custom')}
                     </div>
-                    <div className="text-xs text-slate-400">z.B. /media/pi/USB</div>
+                    <div className="text-xs text-slate-400">{t('backup.ui.target.customHint')}</div>
                   </button>
                 </div>
 
                 {backupDirMode === 'cloud' && (
                   <>
                     <div className="mt-3 p-3 bg-sky-900/20 border border-sky-700/40 rounded-lg text-sky-100 text-sm">
-                      <div className="font-semibold mb-1">Cloud-Backup</div>
-                      <div className="text-xs text-sky-100/80">
-                        Upload erfolgt über WebDAV (Backup-Einstellungen → Cloud). Die lokale Datei wird nach erfolgreichem Upload & Verifizierung gelöscht.
-                      </div>
+                      <div className="font-semibold mb-1">{t('backup.ui.cloud.boxTitle')}</div>
+                      <div className="text-xs text-sky-100/80">{t('backup.ui.cloud.boxBody')}</div>
                       {!backupSettings?.cloud?.enabled && (
-                        <div className="mt-2 text-xs text-yellow-200">Hinweis: Cloud-Upload ist aktuell deaktiviert. Bitte unten bei Backup-Einstellungen aktivieren.</div>
+                        <div className="mt-2 text-xs text-yellow-200">{t('backup.ui.cloud.disabledHint')}</div>
                       )}
                     </div>
                     {cloudCompanionSection}
@@ -2100,20 +2246,17 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
                 {backupDirMode === 'usb' && (
                   <div className="mt-3">
-                    <label className="block text-sm text-slate-300 mb-2">Datenträger / Mountpoint</label>
+                    <label className="block text-sm text-slate-300 mb-2">{t('backup.ui.usb.driveLabel')}</label>
                     {(targets || []).length === 0 && (
                       <div className="mb-3 p-3 bg-yellow-900/20 border border-yellow-700/40 rounded-lg text-yellow-100 text-sm">
-                        <div className="font-semibold mb-1">Kein Datenträger erkannt</div>
-                        <div className="text-xs text-yellow-100/80">
-                          Aktuell meldet das System keinen USB-Stick. Falls du gerade „Auswerfen“ genutzt hast: Stick kurz abziehen und wieder anstecken,
-                          dann auf „Neu scannen“ klicken.
-                        </div>
+                        <div className="font-semibold mb-1">{t('backup.ui.usb.noDriveTitle')}</div>
+                        <div className="text-xs text-yellow-100/80">{t('backup.ui.usb.noDriveBody')}</div>
                         <button
                           type="button"
                           onClick={() => loadTargets()}
                           className="mt-3 px-3 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg border border-slate-600 transition-all text-sm"
                         >
-                          Neu scannen
+                          {t('backup.ui.usb.rescan')}
                         </button>
                       </div>
                     )}
@@ -2125,11 +2268,14 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       }}
                       className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-sky-600"
                     >
-                      <option value="">(Kein Datenträger erkannt)</option>
-                      {(targets || []).map((t: any, idx: number) => (
-                        <option key={idx} value={t.mountpoint || t.device || ''}>
-                          {t.mountpoint ? t.mountpoint : `${t.device} (nicht gemountet)`}
-                          {t.label ? ` (${t.label})` : ''} {t.size ? `- ${t.size}` : ''} {t.tran ? `- ${t.tran}` : ''} {t.model ? `- ${t.model}` : ''}
+                      <option value="">{t('backup.ui.usb.optionEmpty')}</option>
+                      {(targets || []).map((row: any, idx: number) => (
+                        <option key={idx} value={row.mountpoint || row.device || ''}>
+                          {row.mountpoint
+                            ? row.mountpoint
+                            : t('backup.ui.usb.notMountedOption', { device: row.device || '' })}
+                          {row.label ? ` (${row.label})` : ''} {row.size ? `- ${row.size}` : ''}{' '}
+                          {row.tran ? `- ${row.tran}` : ''} {row.model ? `- ${row.model}` : ''}
                         </option>
                       ))}
                     </select>
@@ -2137,19 +2283,20 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       {selectedDevice && !selectedTarget ? (
                         <span className="inline-flex items-center gap-2 flex-wrap">
                           <span>
-                            Stick ist nicht gemountet.
-                            <span className="text-slate-200 font-semibold"> USB vorbereiten…</span> (Format/Label) oder
+                            {t('backup.ui.usb.unmountedHint')}
+                            <span className="text-slate-200 font-semibold"> {t('backup.ui.usb.prepareInline')}</span>{' '}
+                            {t('backup.ui.usb.orMount')}{' '}
                           </span>
                           <button
                             type="button"
                             onClick={() => void mountSelectedUsb(selectedDevice)}
                             className="px-2 py-1 bg-slate-700/60 hover:bg-slate-700 text-white rounded-md border border-slate-600 transition-all text-xs"
                           >
-                            jetzt mounten
+                            {t('backup.ui.usb.mountNow')}
                           </button>
                         </span>
                       ) : (
-                        <>Backup wird in <span className="text-slate-200 font-semibold">{backupDir}</span> erstellt.</>
+                        <>{t('backup.ui.usb.backupInto', { dir: backupDir })}</>
                       )}
                     </p>
 
@@ -2158,15 +2305,25 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       <div className="mt-3 p-3 bg-slate-900/40 border border-slate-700 rounded-lg">
                         <div className="flex items-start justify-between gap-3">
                           <div className="text-sm text-slate-300">
-                            <div className="font-semibold text-white">USB Status</div>
+                            <div className="font-semibold text-white">{t('backup.ui.usb.statusTitle')}</div>
                             {usbInfo?.status === 'success' ? (
                               <div className="text-xs text-slate-400 mt-1 whitespace-pre-line">
-                                Device: {usbInfo.disk} • Partition: {usbInfo.partition}
-                                {"\n"}FS: {usbInfo.fstype || '—'} • Label: {usbInfo.label || '—'} • Größe: {usbInfo.size || '—'}
-                                {"\n"}USB: {usbInfo.is_usb ? 'ja' : 'nein'} • Removable: {usbInfo.is_removable ? 'ja' : 'nein'}
+                                {t('backup.ui.usb.fsLine', {
+                                  disk: String(usbInfo.disk ?? ''),
+                                  partition: String(usbInfo.partition ?? ''),
+                                  fstype: String(usbInfo.fstype || t('backup.ui.targetStatus.emDash')),
+                                  label: String(usbInfo.label || t('backup.ui.targetStatus.emDash')),
+                                  size: String(usbInfo.size || t('backup.ui.targetStatus.emDash')),
+                                  isUsb: usbInfo.is_usb ? t('backup.ui.bool.yes') : t('backup.ui.bool.no'),
+                                  removable: usbInfo.is_removable ? t('backup.ui.bool.yes') : t('backup.ui.bool.no'),
+                                })}
                               </div>
                             ) : (
-                              <div className="text-xs text-red-300 mt-1">{usbInfo?.message || 'USB-Info nicht verfügbar'}</div>
+                              <div className="text-xs text-red-300 mt-1">
+                                {usbInfo
+                                  ? backupMsg(t, pickStructuredCode(usbInfo) ?? resolveApiFeedbackCode(usbInfo, 'usb_info'))
+                                  : backupMsg(t, 'usb_info_error')}
+                              </div>
                             )}
                           </div>
                           <div className="flex flex-col gap-2">
@@ -2175,26 +2332,24 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                               onClick={() => {
                                 setUsbDoFormat(false)
                                 setUsbConfirm('')
-                                setUsbLabel('PI-INSTALLER')
+                                setUsbLabel(t('backup.ui.usbDialog.defaultLabel'))
                                 setShowUsbDialog(true)
                               }}
                               className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-200 rounded-lg border border-red-700/40 transition-all text-sm"
                             >
-                              USB vorbereiten…
+                              {t('backup.ui.usb.prepareBtn')}
                             </button>
                             <button
                               type="button"
                               onClick={runUsbEject}
                               className="px-3 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg border border-slate-600 transition-all text-sm"
                             >
-                              Auswerfen
+                              {t('backup.ui.usb.ejectBtn')}
                             </button>
                           </div>
                         </div>
                         {!checkingTarget && targetCheck?.status === 'success' && targetCheck?.write_test?.success === false && (
-                          <div className="mt-2 text-xs text-yellow-200">
-                            Hinweis: Schreibtest ist fehlgeschlagen. Der Stick ist evtl. schreibgeschützt oder im falschen Dateisystem (z.B. ISO). „USB vorbereiten…“ kann das beheben (Datenverlust).
-                          </div>
+                          <div className="mt-2 text-xs text-yellow-200">{t('backup.ui.usb.writeTestHint')}</div>
                         )}
                       </div>
                     )}
@@ -2203,16 +2358,14 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
                 {backupDirMode === 'custom' && (
                   <div className="mt-3">
-                    <label className="block text-sm text-slate-300 mb-2">Backup-Verzeichnis (absoluter Pfad)</label>
+                    <label className="block text-sm text-slate-300 mb-2">{t('backup.ui.customDir.label')}</label>
                     <input
                       value={backupDir}
                       onChange={(e) => setBackupDir(e.target.value)}
-                      placeholder="/media/…/pi-installer-backups"
+                      placeholder={t('backup.ui.customDir.placeholder')}
                       className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-sky-600"
                     />
-                    <p className="mt-2 text-xs text-slate-400">
-                      Hinweis: Erlaubte Root-Pfade sind typischerweise <span className="text-slate-200">/mnt</span>, <span className="text-slate-200">/media</span>, <span className="text-slate-200">/run/media</span> oder <span className="text-slate-200">/home</span>.
-                    </p>
+                    <p className="mt-2 text-xs text-slate-400">{t('backup.ui.customDir.hint')}</p>
                   </div>
                 )}
 
@@ -2220,49 +2373,54 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                 <div className="mt-4 p-4 bg-slate-900/40 border border-slate-700 rounded-lg">
                   <div className="flex items-center justify-between gap-4">
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-white">Ziel-Status</div>
+                      <div className="text-sm font-semibold text-white">{t('backup.ui.targetStatus.title')}</div>
                       <div className="text-xs text-slate-400 truncate">{backupDir}</div>
                     </div>
                     <div className="text-xs text-slate-300">
-                      {checkingTarget ? '⏳ Prüfe…' : ' '}
+                      {checkingTarget ? t('backup.ui.targetStatus.checking') : ' '}
                     </div>
                   </div>
 
                   {!checkingTarget && targetCheck?.status === 'success' && (
                     <div className="mt-3 grid sm:grid-cols-3 gap-3 text-sm items-stretch">
                       <div className="p-3 bg-slate-800/40 border border-slate-700 rounded-lg min-w-0">
-                        <div className="text-xs text-slate-400 mb-1">Freier Speicher</div>
+                        <div className="text-xs text-slate-400 mb-1">{t('backup.ui.targetStatus.free')}</div>
                         <div className="font-semibold text-white">
-                          {targetCheck.fs?.free_human ?? '—'}
+                          {targetCheck.fs?.free_human ?? t('backup.ui.targetStatus.emDash')}
                           <span className="text-slate-400 font-normal">
                             {targetCheck.fs?.total_human ? ` / ${targetCheck.fs.total_human}` : ''}
                           </span>
                         </div>
                         {typeof targetCheck.fs?.used_percent === 'number' && (
-                          <div className="text-xs text-slate-400">{targetCheck.fs.used_percent}% belegt</div>
+                          <div className="text-xs text-slate-400">
+                            {t('backup.ui.targetStatus.usedPct', { pct: targetCheck.fs.used_percent })}
+                          </div>
                         )}
                       </div>
                       <div className="p-3 bg-slate-800/40 border border-slate-700 rounded-lg min-w-0">
-                        <div className="text-xs text-slate-400 mb-1">Verzeichnis</div>
+                        <div className="text-xs text-slate-400 mb-1">{t('backup.ui.targetStatus.dir')}</div>
                         <div className={`font-semibold ${targetCheck.exists && targetCheck.is_dir ? 'text-green-300' : 'text-yellow-300'}`}>
-                          {targetCheck.exists ? (targetCheck.is_dir ? 'OK' : 'Kein Ordner') : 'Nicht vorhanden'}
+                          {targetCheck.exists
+                            ? targetCheck.is_dir
+                              ? t('backup.ui.targetStatus.dirOk')
+                              : t('backup.ui.targetStatus.dirNotDir')
+                            : t('backup.ui.targetStatus.dirMissing')}
                         </div>
-                        {targetCheck.created && <div className="text-xs text-slate-400">Wurde erstellt</div>}
+                        {targetCheck.created && (
+                          <div className="text-xs text-slate-400">{t('backup.ui.targetStatus.created')}</div>
+                        )}
                       </div>
                       <div className="p-3 bg-slate-800/40 border border-slate-700 rounded-lg min-w-0 flex flex-col">
-                        <div className="text-xs text-slate-400 mb-1 shrink-0">Schreibtest</div>
+                        <div className="text-xs text-slate-400 mb-1 shrink-0">{t('backup.ui.targetStatus.writeTest')}</div>
                         <div className={`font-semibold shrink-0 ${targetCheck.write_test?.success ? 'text-green-300' : 'text-red-300'}`}>
-                          {targetCheck.write_test?.success ? 'OK' : 'Fehler'}
+                          {targetCheck.write_test?.success ? t('backup.ui.okShort') : t('backup.ui.targetStatus.writeFail')}
                         </div>
                         <div className="mt-1 min-h-0 max-h-40 overflow-y-auto overflow-x-hidden rounded-md border border-slate-700/60 bg-slate-950/40 p-2">
                           <div className="text-xs text-slate-200 break-words hyphens-auto">
-                            {targetCheck.write_test?.message ?? '—'}
+                            {targetCheck.write_test?.success
+                              ? t('backup.ui.okShort')
+                              : backupMsg(t, 'write_test_failed')}
                           </div>
-                          {!targetCheck.write_test?.success && Array.isArray(targetCheck.write_test?.hints) && targetCheck.write_test.hints.length > 0 && (
-                            <div className="mt-2 text-xs text-yellow-200/95 whitespace-pre-wrap break-words border-t border-yellow-900/40 pt-2">
-                              {targetCheck.write_test.hints.join('\n')}
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -2270,7 +2428,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
                   {!checkingTarget && targetCheck?.status === 'error' && (
                     <div className="mt-3 text-sm text-red-300">
-                      {targetCheck.message || 'Ziel konnte nicht geprüft werden'}
+                      {backupMsg(t, pickStructuredCode(targetCheck) ?? resolveApiFeedbackCode(targetCheck, 'target_check'))}
                     </div>
                   )}
                 </div>
@@ -2278,42 +2436,23 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
               {/* Schritt 2: Backup-Typ wählen */}
               <div>
-                <h3 className="text-sm font-semibold text-sky-300 mb-1">Schritt 2: Art des Backups festlegen</h3>
-                <label className="block text-white font-semibold mb-2">Backup-Typ</label>
+                <h3 className="text-sm font-semibold text-sky-300 mb-1">{t('backup.ui.step2.title')}</h3>
+                <label className="block text-white font-semibold mb-2">{t('backup.ui.step2.typeLabel')}</label>
                 <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { 
-                      id: 'full', 
-                      label: 'Vollständig', 
-                      desc: 'Gesamtes System',
-                      hint: 'Komplettes System-Backup inkl. Betriebssystem, installierte Pakete und alle Dateien. Empfohlen für erste Sicherung oder nach größeren Änderungen. Größte Dateigröße, aber vollständige Wiederherstellung möglich.'
-                    },
-                    { 
-                      id: 'incremental', 
-                      label: 'Inkrementell', 
-                      desc: 'Nur Änderungen',
-                      hint: 'Nur Änderungen seit dem letzten Voll-Backup werden gesichert. Schneller und kleiner als Voll-Backup, benötigt aber das letzte Voll-Backup zur Wiederherstellung. Ideal für regelmäßige Backups.'
-                    },
-                    { 
-                      id: 'data', 
-                      label: 'Daten', 
-                      desc: 'Nur Daten',
-                      hint: 'Nur Benutzerdaten werden gesichert (/home, /var/www, /opt). Schnellste Option, aber kein Betriebssystem-Backup. Ideal wenn nur Daten gesichert werden sollen.'
-                    },
-                  ].map((type) => (
+                  {(['full', 'incremental', 'data'] as const).map((typeId) => (
                     <button
-                      key={type.id}
-                      onClick={() => setBackupType(type.id as any)}
+                      key={typeId}
+                      onClick={() => setBackupType(typeId)}
                       className={`p-4 rounded-lg border-2 transition-all relative group text-left ${
-                        backupType === type.id
+                        backupType === typeId
                           ? 'bg-sky-600/20 border-sky-500'
                           : 'bg-slate-700/30 border-slate-600 hover:border-slate-500'
                       }`}
                     >
-                      <div className="font-bold text-white mb-1">{type.label}</div>
-                      <div className="text-xs text-slate-400">{type.desc}</div>
+                      <div className="font-bold text-white mb-1">{t(`backup.ui.backupType.${typeId}.label`)}</div>
+                      <div className="text-xs text-slate-400">{t(`backup.ui.backupType.${typeId}.desc`)}</div>
                       <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 w-72">
-                        {type.hint}
+                        {t(`backup.ui.backupType.${typeId}.hint`)}
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
                       </div>
                     </button>
@@ -2323,7 +2462,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
               {/* Schritt 3: Optional verschlüsseln & starten */}
               <div className="p-4 bg-slate-900/40 border border-slate-700 rounded-lg">
-                <h3 className="text-sm font-semibold text-sky-300 mb-2">Schritt 3: Optional verschlüsseln</h3>
+                <h3 className="text-sm font-semibold text-sky-300 mb-2">{t('backup.ui.step3.title')}</h3>
                 <label className="flex items-center gap-3 mb-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -2332,38 +2471,41 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                     className="w-5 h-5 accent-purple-500"
                   />
                   <div>
-                    <div className="font-semibold text-white">Verschlüsselung aktivieren</div>
-                    <div className="text-xs text-slate-400">Backup wird verschlüsselt gespeichert</div>
+                    <div className="font-semibold text-white">{t('backup.ui.encrypt.enable')}</div>
+                    <div className="text-xs text-slate-400">{t('backup.ui.encrypt.sub')}</div>
                   </div>
                 </label>
                 {encryptionEnabled && (
                   <div className="space-y-3 mt-3">
                     <div>
-                      <div className="text-xs text-slate-400 mb-1">Verschlüsselungsmethode</div>
+                      <div className="text-xs text-slate-400 mb-1">{t('backup.ui.encrypt.method')}</div>
                       <select
                         value={encryptionMethod}
                         onChange={(e) => setEncryptionMethod(e.target.value as 'gpg' | 'openssl')}
                         className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white"
                       >
-                        <option value="gpg">GPG (AES-256)</option>
-                        <option value="openssl">OpenSSL (AES-256-CBC)</option>
+                        <option value="gpg">{t('backup.ui.encrypt.gpg')}</option>
+                        <option value="openssl">{t('backup.ui.encrypt.openssl')}</option>
                       </select>
                     </div>
                     <div>
                       <div className="text-xs text-slate-400 mb-1">
-                        Verschlüsselungsschlüssel {encryptionMethod === 'openssl' && '(erforderlich)'}
+                        {t('backup.ui.encrypt.keyLabel')}{' '}
+                        {encryptionMethod === 'openssl' ? t('backup.ui.encrypt.keyRequiredSuffix') : ''}
                       </div>
                       <input
                         type="password"
                         value={encryptionKey}
                         onChange={(e) => setEncryptionKey(e.target.value)}
-                        placeholder={encryptionMethod === 'gpg' ? 'Optional (leer = ohne Passphrase)' : 'Passwort eingeben'}
+                        placeholder={
+                          encryptionMethod === 'gpg'
+                            ? t('backup.ui.encrypt.placeholderGpg')
+                            : t('backup.ui.encrypt.placeholderSsl')
+                        }
                         className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white"
                       />
                       <div className="text-xs text-slate-500 mt-1">
-                        {encryptionMethod === 'gpg'
-                          ? 'GPG: Ohne Schlüssel wird nur komprimiert'
-                          : 'OpenSSL: Schlüssel ist erforderlich'}
+                        {encryptionMethod === 'gpg' ? t('backup.ui.encrypt.hintGpg') : t('backup.ui.encrypt.hintSsl')}
                       </div>
                     </div>
                   </div>
@@ -2375,19 +2517,19 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                 disabled={loading || (encryptionEnabled && encryptionMethod === 'openssl' && !encryptionKey)}
                 className="btn-primary w-full"
               >
-                {loading ? '⏳ Erstelle Backup...' : '💾 Backup erstellen'}
+                {loading ? t('backup.ui.create.loading') : t('backup.ui.create.button')}
               </button>
             </div>
           </motion.div>
         </div>
         <div className="space-y-4">
           <div className="card bg-gradient-to-br from-yellow-900/30 to-yellow-900/10 border-yellow-500/50">
-            <h3 className="text-lg font-bold text-yellow-300 mb-3">⚠️ Wichtige Hinweise</h3>
+            <h3 className="text-lg font-bold text-yellow-300 mb-3">{t('backup.ui.notices.title')}</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li>• Standard-Ziel ist /mnt/backups (oder ein ausgewählter Mountpoint)</li>
-              <li>• Restore überschreibt aktuelle Daten</li>
-              <li>• System-Neustart nach Restore empfohlen</li>
-              <li>• Regelmäßige Backups sind wichtig!</li>
+              <li>{t('backup.ui.notices.li1')}</li>
+              <li>{t('backup.ui.notices.li2')}</li>
+              <li>{t('backup.ui.notices.li3')}</li>
+              <li>{t('backup.ui.notices.li4')}</li>
             </ul>
           </div>
         </div>
@@ -2397,11 +2539,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
       {activeTab === 'restore' && (
         <div className="space-y-4">
-          <p className="text-slate-400 text-sm">
-            Kurzer Ablauf: <span className="font-semibold text-slate-200">1.</span> Ziel & Medium wählen,
-            <span className="font-semibold text-slate-200"> 2.</span> Backup in der Liste auswählen,
-            <span className="font-semibold text-slate-200"> 3.</span> optional verifizieren und dann wiederherstellen.
-          </p>
+          <p className="text-slate-400 text-sm">{t('backup.ui.restore.flow')}</p>
           {restorePreviewResult && (
             <div className="p-4 bg-slate-900/60 border border-slate-600 rounded-lg space-y-3">
               <h3 className="text-sm font-semibold text-sky-300">
@@ -2482,15 +2620,13 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           >
             <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
               <HardDrive className="text-blue-500 hidden md:block shrink-0" aria-hidden />
-              Verfügbare Backups
+              {t('backup.ui.restore.listTitle')}
             </h2>
-            <p className="text-xs text-slate-400 mb-4">
-              Starte mit Schritt 1 unten: Ziel auswählen. Danach in der Liste ein Backup markieren und auf „Wiederherstellen“ klicken.
-            </p>
+            <p className="text-xs text-slate-400 mb-4">{t('backup.ui.restore.listHint')}</p>
 
             {/* Schritt 1: Ziel & Medium wählen */}
             <div className="mb-4 p-4 bg-slate-900/40 border border-slate-700 rounded-lg space-y-3">
-              <h3 className="text-sm font-semibold text-sky-300 mb-1">Schritt 1: Ziel & Medium wählen</h3>
+              <h3 className="text-sm font-semibold text-sky-300 mb-1">{t('backup.ui.restore.step1')}</h3>
               {/* Buttons oben */}
               <div className="flex gap-2 flex-wrap justify-start">
                 <button
@@ -2506,7 +2642,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       : 'bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500'
                   }`}
                 >
-                  Standard
+                  {t('backup.ui.target.standard')}
                 </button>
                 <button
                   onClick={() => {
@@ -2527,7 +2663,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       : 'bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500'
                   }`}
                 >
-                  USB
+                  {t('backup.ui.target.usb').split(' ')[0]}
                 </button>
                 <button
                   onClick={() => {
@@ -2541,7 +2677,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       : 'bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500'
                   }`}
                 >
-                  Cloud
+                  {t('backup.ui.target.cloud')}
                 </button>
                 <button
                   onClick={() => {
@@ -2553,29 +2689,30 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   }}
                   className="px-3 py-2 rounded-lg border text-sm transition-all bg-slate-800/40 border-slate-700 text-slate-200 hover:border-slate-500 whitespace-nowrap"
                 >
-                  Aktualisieren
+                  {t('backup.ui.refresh')}
                 </button>
               </div>
               {/* Ziel darunter, farblich hervorgehoben */}
               <div className="pt-2 border-t border-slate-700">
-                <div className="text-xs text-slate-400 mb-1">Ziel auswählen</div>
+                <div className="text-xs text-slate-400 mb-1">{t('backup.ui.restore.pickTarget')}</div>
                 <div className="text-sm text-slate-200 font-semibold break-words bg-slate-800/50 px-3 py-2 rounded border border-slate-600">
-                  {showCloudBackups ? '☁️ Cloud-Backups' : backupDir}
+                  {showCloudBackups ? t('backup.ui.restore.cloudTargetLine') : backupDir}
                 </div>
               </div>
               {/* USB-Auswahl, wenn USB-Modus aktiv */}
               {backupDirMode === 'usb' && (
                 <div className="mt-3">
-                  <label className="block text-sm text-slate-300 mb-2">USB-Datenträger / Mountpoint</label>
+                  <label className="block text-sm text-slate-300 mb-2">{t('backup.ui.restore.usbDriveLabel')}</label>
                   {(targets || []).length === 0 ? (
                     <div className="mb-3 p-3 bg-yellow-900/20 border border-yellow-700/40 rounded-lg text-yellow-100 text-sm">
-                      <div className="font-semibold mb-1">Kein Datenträger erkannt</div>
+                      <div className="font-semibold mb-1">{t('backup.ui.usb.noDriveTitle')}</div>
+                      <div className="text-xs text-yellow-100/80">{t('backup.ui.usb.noDriveBody')}</div>
                       <button
                         type="button"
                         onClick={() => loadTargets()}
                         className="mt-3 px-3 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg border border-slate-600 transition-all text-sm"
                       >
-                        Neu scannen
+                        {t('backup.ui.usb.rescan')}
                       </button>
                     </div>
                   ) : (
@@ -2587,11 +2724,14 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       }}
                       className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-sky-600"
                     >
-                      <option value="">(Kein Datenträger erkannt)</option>
-                      {(targets || []).map((t: any, idx: number) => (
-                        <option key={idx} value={t.mountpoint || t.device || ''}>
-                          {t.mountpoint ? t.mountpoint : `${t.device} (nicht gemountet)`}
-                          {t.label ? ` (${t.label})` : ''} {t.size ? `- ${t.size}` : ''} {t.tran ? `- ${t.tran}` : ''} {t.model ? `- ${t.model}` : ''}
+                      <option value="">{t('backup.ui.usb.optionEmpty')}</option>
+                      {(targets || []).map((row: any, idx: number) => (
+                        <option key={idx} value={row.mountpoint || row.device || ''}>
+                          {row.mountpoint
+                            ? row.mountpoint
+                            : t('backup.ui.usb.notMountedOption', { device: row.device || '' })}
+                          {row.label ? ` (${row.label})` : ''} {row.size ? `- ${row.size}` : ''}{' '}
+                          {row.tran ? `- ${row.tran}` : ''} {row.model ? `- ${row.model}` : ''}
                         </option>
                       ))}
                     </select>
@@ -2607,12 +2747,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               cloudBackupsLoading ? (
                 <div className="text-center py-8 text-slate-400">
                   <Clock size={48} className="mx-auto mb-4 opacity-50 animate-spin" />
-                  <p>Lade Cloud-Backups…</p>
+                  <p>{t('backup.ui.cloud.loading')}</p>
                 </div>
               ) : cloudBackups.length === 0 ? (
                 <div className="text-center py-8 text-slate-400">
                   <Clock size={48} className="mx-auto mb-4 opacity-50" />
-                  <p>Keine Cloud-Backups gefunden</p>
+                  <p>{t('backup.ui.cloud.empty')}</p>
                 </div>
               ) : (
                 <>
@@ -2620,13 +2760,13 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   {selectedCloudBackups.size > 0 && (
                     <div className="mb-4 p-4 bg-slate-700/50 rounded-lg border border-slate-600 flex flex-wrap items-center gap-3">
                       <span className="text-sm text-slate-300">
-                        {selectedCloudBackups.size} Cloud-Backup(s) ausgewählt
+                        {t('backup.ui.cloud.selectedCount', { count: selectedCloudBackups.size })}
                       </span>
                       <div className="flex gap-2 flex-wrap">
                         <button
                           onClick={async () => {
                             if (selectedCloudBackups.size === 0) {
-                              toast.error('Keine Cloud-Backups ausgewählt')
+                              toast.error(t('backup.i18n.cloud.noneSelected'))
                               return
                             }
                             const files = Array.from(selectedCloudBackups)
@@ -2636,36 +2776,36 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                           }}
                           className="px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg transition-all text-sm"
                         >
-                          Verifizieren
+                          {t('backup.i18n.cloud.verify')}
                         </button>
                         <button
                           onClick={async () => {
                             if (selectedCloudBackups.size === 0) {
-                              toast.error('Keine Cloud-Backups ausgewählt')
+                              toast.error(t('backup.i18n.cloud.noneSelected'))
                               return
                             }
                             if (selectedCloudBackups.size > 1) {
-                              toast.error('Bitte wählen Sie nur ein Cloud-Backup zum Wiederherstellen aus')
+                              toast.error(t('backup.i18n.cloud.selectOneForRestore'))
                               return
                             }
                             const backupFile = Array.from(selectedCloudBackups)[0]
                             // Cloud-Backups müssen erst heruntergeladen werden
-                            toast.error('Cloud-Backup-Wiederherstellung wird noch nicht unterstützt. Bitte laden Sie das Backup manuell herunter.', { duration: 10000 })
+                            toast.error(t('backup.i18n.cloud.restoreUnsupported'), { duration: 10000 })
                           }}
                           disabled={selectedCloudBackups.size !== 1}
                           className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                           <Upload size={16} />
-                          Wiederherstellen
+                          {t('backup.ui.restore.restoreButton')}
                         </button>
                         <button
                           onClick={async () => {
                             if (selectedCloudBackups.size === 0) {
-                              toast.error('Keine Cloud-Backups ausgewählt')
+                              toast.error(t('backup.i18n.cloud.noneSelected'))
                               return
                             }
                             const count = selectedCloudBackups.size
-                            if (!window.confirm(`${count} Cloud-Backup(s) wirklich löschen?`)) return
+                            if (!window.confirm(t('backup.i18n.delete.confirmMultiple', { count }))) return
                             
                             // Führe DELETE-Requests parallel aus für bessere Performance
                             const deletePromises = Array.from(selectedCloudBackups).map(async (backupFile) => {
@@ -2701,19 +2841,13 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                 return {
                                   success: data.status === 'success',
                                   fileName,
-                                  errorMsg: data.status === 'success' ? null : (data.message || 'Unbekannter Fehler'),
-                                  alternatives: data.alternatives_tried || [],
-                                  debug: data.debug || {}
                                 }
-                              } catch (error) {
+                              } catch {
                                 const backup = cloudBackups.find((b: any) => (b.file || b.name || b.href) === backupFile)
                                 const fileName = backup?.name || backupFile.split('/').pop() || backupFile
                                 return {
                                   success: false,
                                   fileName,
-                                  errorMsg: error instanceof Error ? error.message : 'Unbekannter Fehler',
-                                  alternatives: [],
-                                  debug: {}
                                 }
                               }
                             })
@@ -2723,42 +2857,36 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                             
                             let successCount = 0
                             let failCount = 0
-                            const errors: string[] = []
+                            const failedNames: string[] = []
                             
                             for (const result of results) {
                               if (result.success) {
                                 successCount++
                               } else {
                                 failCount++
-                                let urlInfo = ''
-                                if (result.alternatives.length > 0) {
-                                  urlInfo = ` (URLs: ${result.alternatives.slice(0, 2).join(', ')})`
-                                } else if (result.debug.remote_url) {
-                                  urlInfo = ` (URL: ${result.debug.remote_url.substring(0, 100)})`
-                                }
-                                errors.push(`${result.fileName}: ${result.errorMsg}${urlInfo}`)
+                                failedNames.push(result.fileName)
                               }
                             }
                             if (successCount > 0) {
-                              toast.success(`${successCount} Cloud-Backup(s) gelöscht`)
+                              toast.success(backupMsg(t, 'cloud_delete_ok', { n: successCount }))
                               loadCloudBackups()
                               setSelectedCloudBackups(new Set())
                             }
                             if (failCount > 0) {
-                              const errorDetails = errors.slice(0, 3).join('\n')
-                              toast.error(`${failCount} Cloud-Backup(s) konnten nicht gelöscht werden${errorDetails ? ':\n' + errorDetails : ''}`, { duration: 15000 })
+                              const filesHint = failedNames.slice(0, 3).join(', ')
+                              toast.error(backupMsg(t, 'cloud_delete_partial', { failed: failCount, files: filesHint }), { duration: 15000 })
                             }
                           }}
                           className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-100 rounded-lg transition-all text-sm flex items-center gap-2"
                         >
                           <Trash2 size={16} />
-                          Löschen
+                          {t('backup.ui.delete')}
                         </button>
                         <button
                           onClick={() => setSelectedCloudBackups(new Set())}
                           className="px-3 py-2 bg-slate-600/50 hover:bg-slate-600 text-white rounded-lg transition-all text-sm"
                         >
-                          Auswahl aufheben
+                          {t('backup.ui.deselect')}
                         </button>
                       </div>
                     </div>
@@ -2775,7 +2903,11 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                         ) : (
                           <Square size={20} className="text-slate-500" />
                         )}
-                        <span>{selectedCloudBackups.size === cloudBackups.length ? 'Alle abwählen' : 'Alle auswählen'}</span>
+                        <span>
+                          {selectedCloudBackups.size === cloudBackups.length
+                            ? t('backup.ui.deselectAll')
+                            : t('backup.ui.selectAll')}
+                        </span>
                       </button>
                     </div>
                     {cloudBackups.map((backup: any, index: number) => {
@@ -2804,14 +2936,16 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                           <div className="flex-1 min-w-0">
                             <div className="font-semibold text-white mb-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="break-words">{backup.file?.split('/').pop() || backup.name || 'Unbekannt'}</span>
+                                <span className="break-words">
+                                  {backup.file?.split('/').pop() || backup.name || t('backup.ui.unknownFile')}
+                                </span>
                                 <span className="text-xs px-2 py-1 rounded-full bg-sky-600/25 border border-sky-400/40 text-sky-200 whitespace-nowrap">
-                                  Cloud
+                                  {t('backup.ui.cloud.badge')}
                                 </span>
                                 {(backup.encrypted === true || String(backup.file || backup.name || '').endsWith('.gpg') || String(backup.file || backup.name || '').endsWith('.enc') || String(backup.file || backup.name || '').includes('.tar.gz.gpg') || String(backup.file || backup.name || '').includes('.tar.gz.enc')) && (
                                   <span className="text-xs px-2 py-1 rounded-full bg-purple-600/30 border border-purple-400/40 text-purple-200 flex items-center gap-1 whitespace-nowrap">
                                     <Lock size={12} />
-                                    Verschlüsselt
+                                    {t('backup.ui.encrypted.badge')}
                                   </span>
                                 )}
                               </div>
@@ -2819,7 +2953,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                             <div className="flex items-center gap-4 text-sm text-slate-400 flex-wrap">
                               {backup.size && <span>📦 {backup.size}</span>}
                               {backup.date && <span>📅 {backup.date}</span>}
-                              <span className="text-xs">📍 Cloud</span>
+                              <span className="text-xs">{t('backup.ui.cloud.locationLine')}</span>
                             </div>
                           </div>
                         </motion.div>
@@ -2831,8 +2965,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             ) : backups.length === 0 ? (
               <div className="text-center py-8 text-slate-400">
                 <Clock size={48} className="mx-auto mb-4 opacity-50" />
-                <p>Keine Backups gefunden</p>
-                <p className="text-sm mt-2">Tipp: prüfen Sie das Ziel-Verzeichnis oben im Schnellwechsel</p>
+                <p>{t('backup.ui.local.empty')}</p>
+                <p className="text-sm mt-2">{t('backup.ui.local.emptyHint')}</p>
               </div>
             ) : (
               <>
@@ -2904,7 +3038,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       ) : (
                         <Square size={20} className="text-slate-500" />
                       )}
-                      <span>{selectedBackups.size === backups.length ? 'Alle abwählen' : 'Alle auswählen'}</span>
+                      <span>
+                        {selectedBackups.size === backups.length ? t('backup.ui.deselectAll') : t('backup.ui.selectAll')}
+                      </span>
                     </button>
                   </div>
                   {backups.map((backup, index) => (
@@ -2933,23 +3069,23 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                             <span className="break-words">{backup.file.split('/').pop()}</span>
                             {String(backup.file).includes('pi-backup-inc-') && (
                               <span className="text-xs px-2 py-1 rounded-full bg-purple-600/30 border border-purple-400/40 text-purple-200 whitespace-nowrap">
-                                Inkrementell
+                                {t('backup.ui.badge.incremental')}
                               </span>
                             )}
                             {String(backup.file).includes('pi-backup-full-') && (
                               <span className="text-xs px-2 py-1 rounded-full bg-sky-600/25 border border-sky-400/40 text-sky-200 whitespace-nowrap">
-                                Vollständig
+                                {t('backup.ui.badge.full')}
                               </span>
                             )}
                             {String(backup.file).includes('pi-backup-data-') && (
                               <span className="text-xs px-2 py-1 rounded-full bg-emerald-600/25 border border-emerald-400/40 text-emerald-200 whitespace-nowrap">
-                                Daten
+                                {t('backup.ui.badge.data')}
                               </span>
                             )}
                             {(backup.encrypted === true || String(backup.file).endsWith('.gpg') || String(backup.file).endsWith('.enc') || String(backup.file).includes('.tar.gz.gpg') || String(backup.file).includes('.tar.gz.enc')) && (
                               <span className="text-xs px-2 py-1 rounded-full bg-purple-600/30 border border-purple-400/40 text-purple-200 flex items-center gap-1 whitespace-nowrap">
                                 <Lock size={12} />
-                                Verschlüsselt
+                                {t('backup.ui.encrypted.badge')}
                               </span>
                             )}
                           </div>
@@ -2969,12 +3105,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         </div>
         <div className="space-y-4">
           <div className="card bg-gradient-to-br from-yellow-900/30 to-yellow-900/10 border-yellow-500/50">
-            <h3 className="text-lg font-bold text-yellow-300 mb-3">⚠️ Wichtige Hinweise</h3>
+            <h3 className="text-lg font-bold text-yellow-300 mb-3">{t('backup.ui.notices.title')}</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li>• Standard-Ziel ist /mnt/backups (oder ein ausgewählter Mountpoint)</li>
-              <li>• Restore überschreibt aktuelle Daten</li>
-              <li>• System-Neustart nach Restore empfohlen</li>
-              <li>• Regelmäßige Backups sind wichtig!</li>
+              <li>{t('backup.ui.notices.li1')}</li>
+              <li>{t('backup.ui.notices.li2')}</li>
+              <li>{t('backup.ui.notices.li3')}</li>
+              <li>{t('backup.ui.notices.li4')}</li>
             </ul>
           </div>
         </div>
@@ -2991,14 +3127,10 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         >
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
             <Copy className="text-emerald-500 hidden md:block shrink-0" aria-hidden />
-            System auf Ziellaufwerk klonen
+            {t('backup.ui.clone.heroTitle')}
           </h2>
-          <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
-            Klont das laufende Root-Dateisystem von der SD-Karte auf ein Ziellaufwerk (z.B. NVMe, USB-SSD). Nach dem Klonen bleibt der Boot auf der SD-Karte, das Root-Dateisystem wird vom Ziellaufwerk geladen (Hybrid-Boot). Bitte danach neu starten (sudo reboot).
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-500 mb-0">
-            Nur ext4-Partitionen werden als Ziel angezeigt. Alle Daten auf dem Ziellaufwerk werden überschrieben.
-          </p>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{t('backup.ui.clone.introBody')}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-500 mb-0">{t('backup.ui.clone.introNote')}</p>
         </motion.div>
 
         <motion.div
@@ -3008,7 +3140,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         >
           <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
             <Copy className="text-emerald-500 hidden md:block shrink-0" aria-hidden />
-            Laufwerk klonen
+            {t('backup.ui.clone.introTitle')}
           </h2>
 
           {/* Klon-Job Anzeige */}
@@ -3029,35 +3161,35 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                     />
                     <div className="font-semibold">
                       {cloneJob.status === 'cancel_requested'
-                        ? '⏳ Abbruch läuft…'
+                        ? t('runningBackup.title.cancelPending')
                         : typeof (cloneJob as any).progress_pct === 'number'
-                          ? `⏳ Klon läuft… ${(cloneJob as any).progress_pct}%`
-                          : '⏳ Klon läuft…'}
+                          ? t('backup.i18n.clone.runningWithProgress', { pct: (cloneJob as any).progress_pct })
+                          : t('backup.i18n.clone.running')}
                     </div>
                     {cloneJob.status !== 'cancel_requested' && (
                       <button
                         onClick={async () => {
                           try {
                             await fetchApi(`/api/backup/jobs/${encodeURIComponent(cloneJob.job_id)}/cancel`, { method: 'POST' })
-                            toast('Abbruch angefordert')
+                            toast(t('runningBackup.toast.cancelRequested'))
                           } catch {
-                            toast.error('Abbruch fehlgeschlagen')
+                            toast.error(t('backup.i18n.cancelFailed'))
                           }
                         }}
                         className="ml-auto px-3 py-1 text-xs bg-red-900/50 hover:bg-red-800/50 rounded-lg text-red-200"
                       >
-                        Abbrechen
+                        {t('runningBackup.cancel')}
                       </button>
                     )}
                   </div>
                   <div className="text-xs text-emerald-100/80 mt-1">
-                    {cloneJob.status === 'cancel_requested' ? 'Klon wird abgebrochen – Bitte warten.' : (cloneJob.message || 'Bitte warten.')}
+                    {cloneJob.status === 'cancel_requested'
+                      ? t('backup.i18n.clone.cancelPending')
+                      : backupMsg(t, resolveApiFeedbackCode(cloneJob, 'clone_running'))}
                   </div>
                   {cloneJob.results && cloneJob.results.length > 0 && (
-                    <div className="mt-2 text-xs font-mono text-emerald-200/90 max-h-32 overflow-y-auto space-y-1">
-                      {cloneJob.results.slice(-5).map((r: string, i: number) => (
-                        <div key={i}>{r}</div>
-                      ))}
+                    <div className="mt-2 text-xs text-emerald-200/90">
+                      {backupMsg(t, 'clone_log_lines', { n: cloneJob.results.length })}
                     </div>
                   )}
                 </div>
@@ -3078,21 +3210,21 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               }`}
             >
               <div className="font-semibold mb-2">
-                {cloneJob.status === 'success' ? '✅ Klon erfolgreich' : cloneJob.status === 'cancelled' ? '⚠️ Klon abgebrochen' : '❌ Klon fehlgeschlagen'}
+                {cloneJob.status === 'success' ? t('backup.i18n.clone.successLabel') : cloneJob.status === 'cancelled' ? t('backup.i18n.clone.cancelledLabel') : t('backup.i18n.clone.failedLabel')}
               </div>
-              <div className="text-sm">{cloneJob.message}</div>
+              <div className="text-sm">
+                {backupMsg(t, resolveApiFeedbackCode(cloneJob, 'clone_terminal'))}
+              </div>
               {cloneJob.results && cloneJob.results.length > 0 && (
-                <div className="mt-2 text-xs font-mono max-h-40 overflow-y-auto space-y-1 opacity-90">
-                  {cloneJob.results.map((r: string, i: number) => (
-                    <div key={i}>{r}</div>
-                  ))}
+                <div className="mt-2 text-xs opacity-90">
+                  {backupMsg(t, 'clone_log_lines', { n: cloneJob.results.length })}
                 </div>
               )}
               <button
                 onClick={() => setCloneJob(null)}
                 className="mt-3 px-3 py-2 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-sm"
               >
-                Schließen
+                {t('runningBackup.close')}
               </button>
             </motion.div>
           )}
@@ -3101,7 +3233,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             {/* Quelle */}
             {cloneDiskInfo?.source?.device && (
               <div>
-                <div className="text-xs text-slate-400 mb-1">Quelle (aktuelles Root)</div>
+                <div className="text-xs text-slate-400 mb-1">{t('backup.ui.clone.source')}</div>
                 <div className="p-3 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 font-mono">
                   {cloneDiskInfo.source.device} {cloneDiskInfo.source.size && `(${cloneDiskInfo.source.size})`}
                   {cloneDiskInfo.source.model && (
@@ -3114,13 +3246,13 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             {/* Ziel */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-slate-400">Ziellaufwerk</span>
+                <span className="text-xs text-slate-400">{t('backup.ui.clone.target')}</span>
                 <button
                   type="button"
                   onClick={() => loadCloneDiskInfo(undefined, true)}
                   className="text-xs text-sky-400 hover:text-sky-300"
                 >
-                  Aktualisieren
+                  {t('backup.ui.clone.refresh')}
                 </button>
               </div>
               <select
@@ -3129,21 +3261,26 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                 className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white"
                 disabled={!cloneDiskInfo?.targets?.length}
               >
-                <option value="">-- Ziellaufwerk wählen --</option>
-                {(cloneDiskInfo?.targets || []).map((t: any) => (
-                  <option key={t.device} value={t.device}>
-                    {t.device} – {t.size || '?'} {t.model ? `(${t.model})` : ''} {t.tran === 'nvme' ? 'NVMe' : t.tran === 'usb' ? 'USB' : ''}
+                <option value="">{t('backup.ui.clone.selectPlaceholder')}</option>
+                {(cloneDiskInfo?.targets || []).map((ct: any) => (
+                  <option key={ct.device} value={ct.device}>
+                    {ct.device} – {ct.size || '?'} {ct.model ? `(${ct.model})` : ''}{' '}
+                    {ct.tran === 'nvme'
+                      ? t('backup.ui.clone.tran.nvme')
+                      : ct.tran === 'usb'
+                        ? t('backup.ui.clone.tran.usb')
+                        : ''}
                   </option>
                 ))}
               </select>
               {(!cloneDiskInfo?.targets || cloneDiskInfo.targets.length === 0) && (
                 <div className="mt-2 space-y-2">
-                  <div className="text-xs text-slate-500">Keine ext4-Ziellaufwerke gefunden (NVMe, USB-SSD).</div>
+                  <div className="text-xs text-slate-500">{t('backup.ui.clone.noTargets')}</div>
                   <button
                     onClick={loadCloneDiskInfoWithSudo}
                     className="text-sm px-3 py-2 bg-sky-600/30 hover:bg-sky-600/50 border border-sky-500/50 rounded-lg text-sky-200"
                   >
-                    Mit Sudo laden (für ungemountete Laufwerke)
+                    {t('backup.ui.clone.loadWithSudo')}
                   </button>
                 </div>
               )}
@@ -3154,18 +3291,18 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               disabled={!cloneTargetDevice || (cloneJob && cloneJob.job_id && cloneJob.job_id !== 'pending' && ['queued', 'running'].includes(cloneJob.status))}
               className="btn-primary w-full"
             >
-              {(cloneJob?.status === 'queued' || cloneJob?.status === 'running') ? '⏳ Klon läuft…' : '📋 System klonen'}
+              {(cloneJob?.status === 'queued' || cloneJob?.status === 'running') ? t('backup.i18n.clone.running') : t('backup.i18n.clone.start.title')}
             </button>
           </div>
         </motion.div>
 
         <div className="card bg-gradient-to-br from-yellow-900/30 to-yellow-900/10 border-yellow-500/50">
-          <h3 className="text-lg font-bold text-yellow-300 mb-3">⚠️ Hinweise</h3>
+          <h3 className="text-lg font-bold text-yellow-300 mb-3">{t('backup.ui.clone.notesTitle')}</h3>
           <ul className="space-y-2 text-sm text-slate-300">
-            <li>• Boot bleibt auf der SD-Karte (Kernel wird von dort geladen)</li>
-            <li>• Root-Dateisystem wird vom Ziellaufwerk geladen (Hybrid-Boot)</li>
-            <li>• Nach dem Klonen: <code className="px-1 py-0.5 bg-slate-800 rounded">sudo reboot</code></li>
-            <li>• SD-Karte nicht entfernen – sie enthält weiterhin den Boot-Bereich</li>
+            <li>{t('backup.ui.clone.noteBoot')}</li>
+            <li>{t('backup.ui.clone.noteRoot')}</li>
+            <li>{t('backup.ui.clone.noteReboot')}</li>
+            <li>{t('backup.ui.clone.noteSd')}</li>
           </ul>
         </div>
       </div>
@@ -3173,7 +3310,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
       {activeTab === 'settings' && (
       <div className="space-y-4">
-        <p className="text-slate-400 text-sm">Backup-Ziel, Zeitpläne und erweiterte Optionen.</p>
+        <p className="text-slate-400 text-sm">{t('backup.ui.settings.lead')}</p>
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <motion.div
@@ -3183,22 +3320,22 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
           >
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
               <Settings className="text-purple-500 hidden md:block shrink-0" aria-hidden />
-              Backup-Einstellungen & Zeitsteuerung
+              {t('backup.ui.settings.title')}
             </h2>
             <div className="space-y-4">
               <div className="card bg-gradient-to-br from-sky-900/25 to-sky-900/10 border-sky-500/30">
-                <h3 className="text-lg font-bold text-sky-300 mb-3">⚙️ Backup-Einstellungen</h3>
+                <h3 className="text-lg font-bold text-sky-300 mb-3">{t('backup.ui.settings.section')}</h3>
               {!backupSettings ? (
                 <div className="text-sm text-slate-300">
                   <button className="px-3 py-2 bg-slate-700/50 hover:bg-slate-700 rounded-lg" onClick={loadBackupSettings}>
-                    Einstellungen laden
+                    {t('backup.ui.settings.loadBtn')}
                   </button>
                 </div>
               ) : (
                 <div className="space-y-4 text-sm text-slate-200">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="text-xs text-slate-400 mb-1">Standard: Backups behalten</div>
+                      <div className="text-xs text-slate-400 mb-1">{t('backup.ui.settings.retention')}</div>
                     <input
                       type="number"
                       min={1}
@@ -3209,10 +3346,10 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       }
                       className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white"
                     />
-                    <div className="mt-1 text-xs text-slate-400">Kann pro Regel überschrieben werden.</div>
+                    <div className="mt-1 text-xs text-slate-400">{t('backup.ui.settings.retentionHint')}</div>
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400 mb-1">Regeln</div>
+                    <div className="text-xs text-slate-400 mb-1">{t('backup.ui.settings.rules')}</div>
                     <button
                       type="button"
                       onClick={() =>
@@ -3223,7 +3360,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                 {
                                   id: `rule-${Date.now()}`,
                                   enabled: true,
-                                  name: 'Neue Regel',
+                                  name: t('backup.ui.settings.newRuleName'),
                                   type: 'incremental',
                                   target: 'cloud_only',
                                   keep_last: s.retention?.keep_last ?? 5,
@@ -3237,7 +3374,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                 {
                                   id: `rule-${Date.now()}`,
                                   enabled: true,
-                                  name: 'Neue Regel',
+                                  name: t('backup.ui.settings.newRuleName'),
                                   type: 'incremental',
                                   target: 'cloud_only',
                                   keep_last: s.retention?.keep_last ?? 5,
@@ -3251,13 +3388,13 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       }
                       className="w-full px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg"
                     >
-                      + Regel hinzufügen
+                      {t('backup.ui.settings.addRule')}
                     </button>
                   </div>
                 </div>
 
                 <div className="p-3 bg-slate-900/40 border border-slate-700 rounded-lg">
-                  <div className="font-semibold text-white mb-2">Zeitplan-Regeln</div>
+                  <div className="font-semibold text-white mb-2">{t('backup.ui.settings.scheduleRules')}</div>
                   {Array.isArray(backupSettings.schedules) && backupSettings.schedules.length > 0 ? (
                     <div className="space-y-3">
                       {backupSettings.schedules.map((rule: any, idx: number) => (
@@ -3285,13 +3422,13 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                     }))
                                   }
                                   className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
-                                  placeholder="Name"
+                                  placeholder={t('backup.ui.settings.ruleNamePh')}
                                 />
                               </div>
 
                               <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                  <div className="text-xs text-slate-400 mb-1">Typ</div>
+                                  <div className="text-xs text-slate-400 mb-1">{t('backup.ui.settings.ruleType')}</div>
                                   <select
                                     value={rule.type ?? 'incremental'}
                                     onChange={(e) =>
@@ -3302,14 +3439,14 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                     }
                                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
                                   >
-                                    <option value="full">Full</option>
-                                    <option value="incremental">Inkrementell</option>
-                                    <option value="data">Daten (Home/WWW/Opt)</option>
-                                    <option value="personal">Persönliche Daten (/home/*)</option>
+                                    <option value="full">{t('backup.ui.schedule.full')}</option>
+                                    <option value="incremental">{t('backup.ui.schedule.incremental')}</option>
+                                    <option value="data">{t('backup.ui.schedule.data')}</option>
+                                    <option value="personal">{t('backup.ui.schedule.personal')}</option>
                                   </select>
                                 </div>
                                 <div>
-                                  <div className="text-xs text-slate-400 mb-1">Ziel</div>
+                                  <div className="text-xs text-slate-400 mb-1">{t('backup.ui.settings.target')}</div>
                                   <select
                                     value={rule.target ?? 'cloud_only'}
                                     onChange={(e) =>
@@ -3320,15 +3457,15 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                     }
                                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
                                   >
-                                    <option value="cloud_only">Cloud (lokal löschen)</option>
-                                    <option value="local_and_cloud">Lokal + Cloud</option>
-                                    <option value="local">Nur lokal</option>
+                                    <option value="cloud_only">{t('backup.ui.schedule.target.cloud_only')}</option>
+                                    <option value="local_and_cloud">{t('backup.ui.schedule.target.local_and_cloud')}</option>
+                                    <option value="local">{t('backup.ui.schedule.target.local')}</option>
                                   </select>
                                 </div>
                                 <div>
-                                  <div className="text-xs text-slate-400 mb-1">Tage</div>
+                                  <div className="text-xs text-slate-400 mb-1">{t('backup.ui.settings.days')}</div>
                                   <div className="flex flex-wrap gap-2">
-                                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+                                    {(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const).map((d) => (
                                       <label key={d} className="text-xs text-slate-200 flex items-center gap-1">
                                         <input
                                           type="checkbox"
@@ -3348,13 +3485,13 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                             }))
                                           }}
                                         />
-                                        {d}
+                                        {t(`backup.ui.weekday.${d}`)}
                                       </label>
                                     ))}
                                   </div>
                                 </div>
                                 <div>
-                                  <div className="text-xs text-slate-400 mb-1">Uhrzeit</div>
+                                  <div className="text-xs text-slate-400 mb-1">{t('backup.ui.settings.time')}</div>
                                   <input
                                     value={rule.time ?? '02:00'}
                                     onChange={(e) =>
@@ -3368,7 +3505,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                   />
                                 </div>
                                 <div>
-                                  <div className="text-xs text-slate-400 mb-1">Behalten</div>
+                                  <div className="text-xs text-slate-400 mb-1">{t('backup.ui.settings.keep')}</div>
                                   <input
                                     type="number"
                                     min={1}
@@ -3385,7 +3522,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                 </div>
                                 {rule.type === 'personal' && (
                                   <div className="col-span-2">
-                                    <div className="text-xs text-slate-400 mb-1">Persönliche Ordner (für alle /home/*)</div>
+                                    <div className="text-xs text-slate-400 mb-1">{t('backup.ui.settings.personalFolders')}</div>
                                     <div className="flex flex-wrap gap-2">
                                       {['Downloads', 'Documents', 'Pictures', 'Images', 'Videos', 'Desktop'].map((f) => (
                                         <label key={f} className="text-xs text-slate-200 flex items-center gap-1">
@@ -3412,7 +3549,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                               }))
                                             }}
                                           />
-                                          {f}
+                                          {t(`backup.ui.stdFolder.${f}`)}
                                         </label>
                                       ))}
                                     </div>
@@ -3428,7 +3565,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                           }))
                                         }
                                       />
-                                      Inkrementell (auf Basis des letzten Personal-Full dieser Regel)
+                                      {t('backup.ui.settings.incrementalPersonal')}
                                     </label>
                                   </div>
                                 )}
@@ -3440,7 +3577,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                 onClick={() => void runScheduleRuleNow(String(rule.id))}
                                 className="px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg text-sm"
                               >
-                                Jetzt ausführen
+                                {t('backup.ui.settings.runNow')}
                               </button>
                               <button
                                 type="button"
@@ -3452,10 +3589,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                 }
                                 className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-100 rounded-lg text-sm"
                               >
-                                Entfernen
+                                {t('backup.ui.settings.removeRule')}
                               </button>
                               <div className="text-xs text-slate-400">
-                                Timer: {backupSettings._timer_status?.[rule.id]?.enabled || '—'} / {backupSettings._timer_status?.[rule.id]?.active || '—'}
+                                {t('backup.ui.settings.timerPrefix')}{' '}
+                                {backupSettings._timer_status?.[rule.id]?.enabled || t('backup.ui.targetStatus.emDash')} /{' '}
+                                {backupSettings._timer_status?.[rule.id]?.active || t('backup.ui.targetStatus.emDash')}
                               </div>
                             </div>
                           </div>
@@ -3463,21 +3602,21 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       ))}
                     </div>
                   ) : (
-                    <div className="text-sm text-slate-400">Keine Regeln vorhanden.</div>
+                    <div className="text-sm text-slate-400">{t('backup.ui.settings.noRules')}</div>
                   )}
                 </div>
 
                 <div className="p-3 bg-slate-900/40 border border-slate-700 rounded-lg">
                   {backupSettings.cloud?.enabled ? cloudCompanionSection : null}
-                  <div className="font-semibold text-white mb-2">Cloud-Backups</div>
+                  <div className="font-semibold text-white mb-2">{t('backup.ui.settings.cloudSection')}</div>
                   <div className="text-xs text-slate-400 mb-3">
-                    Cloud-Konfiguration unter{' '}
-                    <span className="text-sky-400 font-semibold">Einstellungen → Cloud-Backup Einstellungen</span>
+                    {t('backup.ui.settings.cloudIntroBefore')}{' '}
+                    <span className="text-sky-400 font-semibold">{t('backup.ui.settings.cloudIntroLink')}</span>
                   </div>
                   {backupSettings.cloud?.enabled ? (
                     <div className="space-y-2">
                       <div>
-                        <div className="text-xs text-slate-400 mb-1">Cloud-Anbieter auswählen</div>
+                        <div className="text-xs text-slate-400 mb-1">{t('backup.ui.settings.providerLabel')}</div>
                         <select
                           value={backupSettings.cloud?.provider || 'seafile_webdav'}
                           onChange={async (e) => {
@@ -3496,33 +3635,33 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                               })
                               const d = await r.json()
                               if (d.status === 'success') {
-                                toast.success('Cloud-Anbieter gespeichert')
+                                toast.success(t('backup.i18n.cloud.providerSaved'))
                                 setBackupSettings(d.settings)
                               }
                             } catch {
-                              toast.error('Fehler beim Speichern')
+                              toast.error(t('backup.i18n.settings.saveFailed'))
                             }
                           }}
                           className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"
                         >
-                          <option value="seafile_webdav">WebDAV (Seafile)</option>
-                          <option value="webdav">WebDAV (Allgemein)</option>
-                          <option value="nextcloud_webdav">WebDAV (Nextcloud)</option>
-                          <option value="s3">Amazon S3</option>
-                          <option value="s3_compatible">S3-kompatibel (MinIO, etc.)</option>
-                          <option value="google_cloud">Google Cloud Storage</option>
-                          <option value="azure">Azure Blob Storage</option>
+                          <option value="seafile_webdav">{t('backup.ui.provider.seafile_webdav')}</option>
+                          <option value="webdav">{t('backup.ui.provider.webdav')}</option>
+                          <option value="nextcloud_webdav">{t('backup.ui.provider.nextcloud_webdav')}</option>
+                          <option value="s3">{t('backup.ui.provider.s3')}</option>
+                          <option value="s3_compatible">{t('backup.ui.provider.s3_compatible')}</option>
+                          <option value="google_cloud">{t('backup.ui.provider.google_cloud')}</option>
+                          <option value="azure">{t('backup.ui.provider.azure')}</option>
                         </select>
                       </div>
                       {Array.isArray(backupSettings.schedules) && backupSettings.schedules.length > 0 && (
                         <div className="p-2 bg-slate-950/30 border border-slate-800 rounded-lg">
-                          <div className="text-xs text-slate-400 mb-1">Filter externe Backups nach Regel</div>
+                          <div className="text-xs text-slate-400 mb-1">{t('backup.ui.settings.filterCloudByRule')}</div>
                           <select
                             value={cloudRuleFilter}
                             onChange={(e) => setCloudRuleFilter(e.target.value)}
                             className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
                           >
-                            <option value="">(Alle)</option>
+                            <option value="">{t('backup.ui.settings.allRules')}</option>
                             {backupSettings.schedules.map((r: any, idx: number) => (
                               <option key={r.id || idx} value={String(r.id || '')}>
                                 {r.name ? `${r.name} (${String(r.id || '')})` : String(r.id || '')}
@@ -3536,12 +3675,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                         disabled={cloudBackupsLoading}
                         className="w-full px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg disabled:opacity-50"
                       >
-                        {cloudBackupsLoading ? '⏳ Lade externe Backups…' : 'Externe Backups anzeigen'}
+                        {cloudBackupsLoading ? t('backup.i18n.cloud.loadingExternal') : t('backup.i18n.cloud.showExternal')}
                       </button>
 
                       {cloudBackups.length > 0 && (
                         <div className="mt-2 p-2 bg-slate-950/40 border border-slate-800 rounded-lg">
-                          <div className="text-xs text-slate-400 mb-2">Externe Backups</div>
+                          <div className="text-xs text-slate-400 mb-2">{t('backup.ui.settings.externalListTitle')}</div>
                           <div className="space-y-1 max-h-44 overflow-auto">
                             {cloudBackups.map((b: any, idx: number) => (
                               <div key={idx} className="text-xs text-slate-200 flex items-center justify-between gap-2">
@@ -3554,7 +3693,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                                       disabled={!!cloudVerifying[String(b.name)]}
                                       className="px-2 py-1 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 rounded-md text-xs text-white disabled:opacity-50"
                                     >
-                                      {cloudVerifying[String(b.name)] ? '⏳' : cloudVerified[String(b.name)] === true ? '✓' : 'Verifizieren'}
+                                      {cloudVerifying[String(b.name)] ? '⏳' : cloudVerified[String(b.name)] === true ? '✓' : t('backup.i18n.cloud.verify')}
                                     </button>
                                   )}
                                   {typeof b.size_bytes === 'number' && (
@@ -3569,7 +3708,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                     </div>
                   ) : (
                     <div className="text-xs text-yellow-300">
-                      Cloud-Upload ist deaktiviert. Aktiviere es in den Einstellungen.
+                      {t('backup.i18n.cloud.uploadDisabledHint')}
                     </div>
                   )}
                 </div>
@@ -3580,7 +3719,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                     disabled={settingsLoading}
                     className="w-full px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg disabled:opacity-50"
                   >
-                    {settingsLoading ? '⏳ Übernehme…' : 'Einstellungen übernehmen'}
+                    {settingsLoading ? t('backup.i18n.settings.applying') : t('backup.i18n.settings.apply')}
                   </button>
                 </div>
               </div>
@@ -3591,12 +3730,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
         </div>
         <div className="space-y-4">
           <div className="card bg-gradient-to-br from-yellow-900/30 to-yellow-900/10 border-yellow-500/50">
-            <h3 className="text-lg font-bold text-yellow-300 mb-3">⚠️ Hinweise Backup & Zeitsteuerung</h3>
+            <h3 className="text-lg font-bold text-yellow-300 mb-3">{t('backup.ui.settings.noticesTitle')}</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-              <li>• Standard-Ziel ist /mnt/backups (oder ein ausgewählter Mountpoint)</li>
-              <li>• Restore überschreibt aktuelle Daten</li>
-              <li>• System-Neustart nach Restore empfohlen</li>
-              <li>• Regelmäßige Backups sind wichtig!</li>
+              <li>{t('backup.ui.notices.li1')}</li>
+              <li>{t('backup.ui.notices.li2')}</li>
+              <li>{t('backup.ui.notices.li3')}</li>
+              <li>{t('backup.ui.notices.li4')}</li>
             </ul>
           </div>
         </div>

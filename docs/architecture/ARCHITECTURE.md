@@ -388,6 +388,12 @@ GET    /api/install/progress    - Installation progress
 
 ---
 
+## Entwicklungsdisziplin (Prozess, i18n, Berichte)
+
+Verbindliche Vorgaben für Moduländerungen, i18n, Doku/Changelog und Berichtsformat liegen unter **[../developer/CURSOR_WORK_RULES.md](../developer/CURSOR_WORK_RULES.md)** (mit Checkliste und Berichtsvorlage im gleichen Ordner). Einstieg für Mitwirkende: **[../../CONTRIBUTING.md](../../CONTRIBUTING.md)**.
+
+---
+
 **Version:** 1.0.0  
 **Architecture Pattern:** Monolithic with Modular Backend  
 **Scalability:** Horizontal Scaling Ready (Future)  

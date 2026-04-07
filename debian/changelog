@@ -1,3 +1,21 @@
+pi-installer (1.3.9.3-1) unstable; urgency=low
+
+  * Version 1.3.9.3 – Backup & Restore: Ampel an Phase-3-Freigabelage (kein Grün ohne nachgewiesenen Backup-Lauf), i18n + Doku
+
+ -- PI-Installer Team <https://github.com/Yammato-2035/piinstaller>  Mon, 07 Apr 2026 12:00:00 +0200
+
+pi-installer (1.3.9.2-1) unstable; urgency=low
+
+  * Version 1.3.9.2 – Diagnose Lokalisierung (key_v1), Backend-Schema, exemplarische Regeln, Frontend-Kompatibilität
+
+ -- PI-Installer Team <https://github.com/Yammato-2035/piinstaller>  Thu, 03 Apr 2026 22:00:00 +0200
+
+pi-installer (1.3.9.1-1) unstable; urgency=low
+
+  * Version 1.3.9.1 – Verbindliche Entwickler-/Cursor-Regeln (docs/developer/), Checkliste, Berichtsvorlage
+
+ -- PI-Installer Team <https://github.com/Yammato-2035/piinstaller>  Thu, 03 Apr 2026 20:00:00 +0200
+
 pi-installer (1.3.9.0-1) unstable; urgency=medium
 
   * Version 1.3.9.0 – Companion & Guided UX (Einsteigerführung, Doku, FAQ, Desktop-Starter)

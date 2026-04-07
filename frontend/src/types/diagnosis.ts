@@ -22,6 +22,9 @@ export type DiagnoseType =
 
 export type DiagnosisSeverity = 'info' | 'low' | 'medium' | 'high' | 'critical'
 
+/** Backend: models.diagnosis.LocalizationModel */
+export type DiagnosisLocalizationModel = 'legacy' | 'key_v1'
+
 export interface DiagnosisRecord {
   schema_version: string
   interpreter_version: string
@@ -38,6 +41,21 @@ export interface DiagnosisRecord {
   area: string
   beginner_safe: boolean
   companion_mode: CompanionMode
+
+  /** key_v1: Frontend übersetzt über *_key; legacy: Freitext in title/user_message/suggested_actions */
+  localization_model?: DiagnosisLocalizationModel
+  diagnosis_code?: string | null
+  module?: string | null
+  event?: string | null
+  title_key?: string | null
+  user_message_key?: string | null
+  technical_summary_key?: string | null
+  suggested_action_keys?: string[] | null
+  docs_refs?: string[]
+  faq_refs?: string[]
+  kb_refs?: string[]
+  evidence?: Record<string, unknown> | null
+  question_path?: string[] | null
 }
 
 export interface DiagnosisInterpretRequest {

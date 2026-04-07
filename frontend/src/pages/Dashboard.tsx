@@ -558,19 +558,10 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
 
   const backendUnreachableDiagnosis = React.useMemo(() => {
     if (!backendError) return null
-    const userMessage =
-      backendErrorReason === 'timeout'
-        ? t('dashboard.backendError.timeout')
-        : backendErrorReason === 'connection'
-          ? t('dashboard.backendError.connection')
-          : t('dashboard.backendError.other')
     return localBackendDiagnosis(backendErrorReason, {
-      title: t('dashboard.backendError.title'),
-      userMessage,
       technical: `reason=${backendErrorReason ?? 'other'}, api_base=${getApiBase() || ''}`,
-      steps: [t('diagnosis.local.step1'), t('diagnosis.local.step2'), t('diagnosis.local.step3')],
     })
-  }, [backendError, backendErrorReason, t])
+  }, [backendError, backendErrorReason])
 
   const cpuPercent = stats?.cpu?.usage ?? 0
   const memPercent = stats?.memory?.percent ?? 0
@@ -778,18 +769,18 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
 
       {/* Panda & Kurzaktionen: einklappbar; Einsteiger standardmäßig offen; auch bei Backend-Fehler sichtbar (Ampel = danger) */}
       <details
-        className="group rounded-lg sm:rounded-xl border border-slate-600/60 bg-slate-800/35 open:bg-slate-800/45"
+        className="group rounded-lg sm:rounded-xl border border-slate-500/70 bg-slate-800/70 open:bg-slate-800/85"
         open={pandaShortcutsOpen}
         onToggle={(e) => setPandaShortcutsOpen(e.currentTarget.open)}
       >
-          <summary className="cursor-pointer list-none flex items-center justify-between gap-2 px-3 py-2 sm:px-4 text-sm text-slate-400 hover:text-slate-200 rounded-lg sm:rounded-xl [&::-webkit-details-marker]:hidden">
-            <span className="font-medium">{t('dashboard.section.shortcutsToggle')}</span>
-            <span className="text-slate-500 transition-transform group-open:rotate-180" aria-hidden>
+          <summary className="cursor-pointer list-none flex items-center justify-between gap-2 px-3 py-2 sm:px-4 text-sm font-medium text-slate-100 hover:text-white hover:bg-slate-700/55 rounded-lg sm:rounded-xl [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500">
+            <span>{t('dashboard.section.shortcutsToggle')}</span>
+            <span className="text-slate-300 group-open:text-slate-200 shrink-0 transition-transform group-open:rotate-180" aria-hidden>
               ▼
             </span>
           </summary>
-          <div className="px-3 pb-3 sm:px-4 sm:pb-3 pt-0 border-t border-slate-700/50">
-            <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-2 pt-2">{t('dashboard.panda.compactHint')}</p>
+          <div className="px-3 pb-3 sm:px-4 sm:pb-3 pt-0 border-t border-slate-600/80">
+            <p className="text-[10px] uppercase tracking-wider text-slate-300 mb-2 pt-2">{t('dashboard.panda.compactHint')}</p>
             <PandaRail className="mb-3">
               <PandaCompanion
                 type="start"
@@ -1019,14 +1010,14 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
 
       {/* Gerät, Ressourcen, Update-Hinweise: einklappbar; Zähler in der Übersicht wenn Updates anstehen */}
       {!backendError && (
-        <details className="group rounded-lg sm:rounded-xl border border-slate-600/60 bg-slate-900/30 open:bg-slate-900/40">
-          <summary className="cursor-pointer list-none flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-4 text-xs sm:text-sm text-slate-400 hover:text-slate-200 rounded-lg sm:rounded-xl [&::-webkit-details-marker]:hidden">
-            <span className="font-medium text-left min-w-0 flex-1 pr-2 leading-snug">
+        <details className="group rounded-lg sm:rounded-xl border border-slate-500/70 bg-slate-900/55 open:bg-slate-900/70">
+          <summary className="cursor-pointer list-none flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-4 text-xs sm:text-sm font-medium text-slate-100 hover:text-white hover:bg-slate-800/60 rounded-lg sm:rounded-xl [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500">
+            <span className="text-left min-w-0 flex-1 pr-2 leading-snug">
               {t('dashboard.section.systemDetailsToggle')}
             </span>
             <span className="flex flex-wrap items-center justify-end gap-1.5 shrink-0 max-w-full">
               {updatesData != null && updatesData.total > 0 && (
-                <span className="text-[11px] sm:text-xs font-medium text-sky-200/90 bg-sky-900/50 px-2 py-0.5 rounded-full border border-sky-500/30 max-w-full text-right leading-snug">
+                <span className="text-[11px] sm:text-xs font-medium text-sky-100 bg-sky-900/60 px-2 py-0.5 rounded-full border border-sky-400/40 max-w-full text-right leading-snug">
                   {(() => {
                     const sec = updatesData.categories?.security ?? 0
                     const w = updatesData.total === 1 ? t('dashboard.updates.wordOne') : t('dashboard.updates.wordMany')
@@ -1040,7 +1031,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                   })()}
                 </span>
               )}
-              <span className="text-slate-500 transition-transform group-open:rotate-180" aria-hidden>
+              <span className="text-slate-300 shrink-0 transition-transform group-open:rotate-180" aria-hidden>
                 ▼
               </span>
             </span>

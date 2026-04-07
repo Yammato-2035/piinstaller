@@ -549,3 +549,27 @@ class BackupModule:
             return False, output_file, "Entschlüsselte Datei wurde nicht erstellt"
         
         return True, output_file, None
+
+
+def with_backup_contract(
+    payload: Dict[str, Any],
+    code: str,
+    severity: str,
+    details: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Stabiler API-Vertrag (Phase 2A): code + severity + optionale details.
+    Bestehende Felder (z. B. message, results) bleiben für Abwärtskompatibilität erhalten.
+    Phase 2C: Bei severity=error ist top-level status niemals "success" (kein Widerspruch zu code/severity).
+    """
+    out = dict(payload)
+    out["code"] = code
+    sev = (severity or "error").lower()
+    out["severity"] = sev
+    if sev == "error":
+        out["status"] = "error"
+    if details:
+        merged = dict(out.get("details") or {})
+        merged.update(details)
+        out["details"] = merged
+    return out

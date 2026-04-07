@@ -13,6 +13,29 @@ const isTauriEnv = !!process.env.TAURI_ENV_PLATFORM
 const isTauriProductionBuild =
   isTauriEnv && process.env.NODE_ENV === 'production'
 
+const apiProxy = {
+  '/api': {
+    target: proxyTarget,
+    changeOrigin: true,
+    configure: (proxy) => {
+      let lastLog = 0
+      proxy.on('error', (err: NodeJS.ErrnoException, _req, res) => {
+        if (err?.code === 'ECONNREFUSED' && Date.now() - lastLog > 10000) {
+          lastLog = Date.now()
+          console.warn(
+            '[vite] Backend unter %s nicht erreichbar. Backend starten: ./start-backend.sh (im Projektroot)',
+            proxyTarget,
+          )
+        }
+        if (res && !res.headersSent) {
+          res.writeHead(502, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'Backend nicht erreichbar' }))
+        }
+      })
+    },
+  },
+}
+
 export default defineConfig({
   base: isTauriProductionBuild ? './' : '/',
   plugins: [react()],
@@ -25,24 +48,12 @@ export default defineConfig({
   server: {
     port: 3001,
     host: '0.0.0.0',
-    proxy: {
-      '/api': {
-        target: proxyTarget,
-        changeOrigin: true,
-        configure: (proxy) => {
-          let lastLog = 0
-          proxy.on('error', (err: NodeJS.ErrnoException, _req, res) => {
-            if (err?.code === 'ECONNREFUSED' && Date.now() - lastLog > 10000) {
-              lastLog = Date.now()
-              console.warn('[vite] Backend unter %s nicht erreichbar. Backend starten: ./start-backend.sh (im Projektroot)', proxyTarget)
-            }
-            if (res && !res.headersSent) {
-              res.writeHead(502, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ error: 'Backend nicht erreichbar' }))
-            }
-          })
-        },
-      },
-    },
+    proxy: { ...apiProxy },
+  },
+  /** Wichtig: `vite preview` (ohne diesen Block) leitet /api nicht weiter → 404 auf alle API-Calls. */
+  preview: {
+    port: 3001,
+    host: '0.0.0.0',
+    proxy: { ...apiProxy },
   },
 })

@@ -3,6 +3,8 @@
 **Status:** Phase 1 umgesetzt (Grundmodell + Interpreter v1 + begrenzte UI).  
 **Rahmen:** Backup & Restore bleibt Freigabe-Basis; Companion/Diagnose **ersetzt** keine Sicherheits- oder Restore-Prüfungen und **umgeht** sie nicht.
 
+**Lokalisierung / Zielschema (Phase 2):** [diagnosis_localization.md](./diagnosis_localization.md) — `localization_model`, i18n-Keys (`diagnosis.codes.…`), Übergang von Legacy-Freitexten.
+
 ---
 
 ## 1. Ist-Analyse (Repository, knapp)

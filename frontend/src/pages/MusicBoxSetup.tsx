@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Music, Radio, Headphones } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
@@ -12,6 +13,7 @@ interface MusicBoxSetupProps {
 }
 
 const MusicBoxSetup: React.FC<MusicBoxSetupProps> = ({ experienceLevel = 'beginner' }) => {
+  const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
   const [config, setConfig] = useState({
     music_type: 'mopidy',
@@ -86,13 +88,16 @@ const MusicBoxSetup: React.FC<MusicBoxSetupProps> = ({ experienceLevel = 'beginn
       } else {
         if (data.requires_sudo_password) setInstallMixerSudoOpen(true)
         else {
-          toast.error(data.message || 'Installation fehlgeschlagen')
+          toast.error(data.message || t('musicbox.toast.installFailed'))
           if (data.copyable_command) setMixerInstallError({ message: data.message, copyable_command: data.copyable_command })
         }
       }
     } catch (e) {
-      toast.error('Installation fehlgeschlagen')
-      setMixerInstallError({ message: 'Installation fehlgeschlagen', copyable_command: 'sudo apt-get update && sudo apt-get install -y pavucontrol qpwgraph' })
+      toast.error(t('musicbox.toast.installFailed'))
+      setMixerInstallError({
+        message: t('musicbox.toast.installFailed'),
+        copyable_command: 'sudo apt-get update && sudo apt-get install -y pavucontrol qpwgraph',
+      })
     } finally {
       setLoadingMixerInstall(false)
     }
@@ -119,7 +124,7 @@ const MusicBoxSetup: React.FC<MusicBoxSetupProps> = ({ experienceLevel = 'beginn
 
       if (data.status === 'success') {
         setSudoModalOpen(false)
-        toast.success('Musikbox konfiguriert!')
+        toast.success(t('musicbox.toast.configured'))
         if (data.results && data.results.length > 0) {
           data.results.forEach((result: string) => toast.success(result, { duration: 3000 }))
         }
@@ -128,11 +133,11 @@ const MusicBoxSetup: React.FC<MusicBoxSetupProps> = ({ experienceLevel = 'beginn
         if (data.requires_sudo_password) {
           setSudoModalOpen(true)
         } else {
-          toast.error(data.message || 'Fehler bei der Konfiguration')
+          toast.error(data.message || t('musicbox.toast.configError'))
         }
       }
     } catch (error) {
-      toast.error('Fehler bei der Konfiguration')
+      toast.error(t('musicbox.toast.configError'))
     } finally {
       setLoading(false)
     }
@@ -149,7 +154,7 @@ const MusicBoxSetup: React.FC<MusicBoxSetupProps> = ({ experienceLevel = 'beginn
       const data = await response.json()
 
       if (data.status === 'success') {
-        toast.success('Musikbox konfiguriert!')
+        toast.success(t('musicbox.toast.configured'))
         if (data.results && data.results.length > 0) {
           data.results.forEach((result: string) => toast.success(result, { duration: 3000 }))
         }
@@ -158,11 +163,11 @@ const MusicBoxSetup: React.FC<MusicBoxSetupProps> = ({ experienceLevel = 'beginn
         if (data.requires_sudo_password) {
           setSudoModalOpen(true)
         } else {
-          toast.error(data.message || 'Fehler bei der Konfiguration')
+          toast.error(data.message || t('musicbox.toast.configError'))
         }
       }
     } catch (error) {
-      toast.error('Fehler bei der Konfiguration')
+      toast.error(t('musicbox.toast.configError'))
     } finally {
       setLoading(false)
     }
@@ -174,15 +179,14 @@ const MusicBoxSetup: React.FC<MusicBoxSetupProps> = ({ experienceLevel = 'beginn
         <div className="page-title-category mb-2 inline-flex">
           <h1 className="flex items-center gap-3">
             <Music className="text-purple-500" />
-            Musikbox
+            {t('musicbox.page.title')}
           </h1>
         </div>
-        <p className="text-slate-400">Musikbox – {pageSubtitleLabel}</p>
+        <p className="text-slate-400">{t('musicbox.page.subtitle', { pageSubtitleLabel })}</p>
       </div>
 
       <PandaHelperStrip experienceLevel={experienceLevel} variant="base">
-        Wähle deinen Music-Server und starte bei Bedarf die Installation. Wenn Mopidy nur Text zeigt, fehlt oft Iris – „Installation starten“ erneut ausführen.
-        Status und Diagnose findest du weiter unten auf der Seite.
+        {t('musicbox.panda.strip')}
       </PandaHelperStrip>
       <PandaRail>
         <PandaCompanion
@@ -193,8 +197,8 @@ const MusicBoxSetup: React.FC<MusicBoxSetupProps> = ({ experienceLevel = 'beginn
           showTrafficLight
           trafficLightPosition="bottom-right"
           status={musicCompanionStatus}
-          title="Musik-Begleiter"
-          subtitle="Panda begleitet die Musik-Einrichtung; die Ampel zeigt, ob der gewählte Dienst installiert und aktiv wirkt."
+          title={t('musicbox.panda.companionTitle')}
+          subtitle={t('musicbox.panda.companionSubtitle')}
         />
       </PandaRail>
 
@@ -300,18 +304,18 @@ sudo systemctl restart mopidy
         </div>
         {mixerInstallError?.copyable_command && (
           <div className="mt-3 p-3 bg-slate-800/60 rounded-lg border border-amber-600/40">
-            <p className="text-amber-200 text-xs mb-2">Installation fehlgeschlagen. Manuell im Terminal ausführen:</p>
+            <p className="text-amber-200 text-xs mb-2">{t('musicbox.mixer.manualHint')}</p>
             <div className="flex flex-wrap items-center gap-2">
               <code className="flex-1 min-w-0 bg-slate-800 px-2 py-1 rounded text-slate-200 font-mono text-xs break-all">{mixerInstallError.copyable_command}</code>
               <button
                 type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(mixerInstallError!.copyable_command!)
-                  toast.success('Befehl kopiert')
+                  toast.success(t('musicbox.mixer.copied'))
                 }}
                 className="px-2 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs shrink-0"
               >
-                Kopieren
+                {t('musicbox.mixer.copy')}
               </button>
             </div>
           </div>
@@ -320,17 +324,15 @@ sudo systemctl restart mopidy
 
       {/* Iris-Diagnose (warum läuft Iris nicht?) */}
       <div className="card">
-        <h2 className="text-2xl font-bold text-white mb-2">Mopidy / Iris-Diagnose</h2>
-        <p className="text-slate-400 text-sm mb-3">
-          Wenn Iris unter http://localhost:6680/iris nicht lädt: Diagnose ausführen (einmal „Installation starten“ mit Sudo-Passwort erlaubt erweiterte Prüfungen).
-        </p>
+        <h2 className="text-2xl font-bold text-white mb-2">{t('musicbox.diagnose.title')}</h2>
+        <p className="text-slate-400 text-sm mb-3">{t('musicbox.diagnose.intro')}</p>
         <button
           type="button"
           onClick={loadDiagnose}
           disabled={loadingDiagnose}
           className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
         >
-          {loadingDiagnose ? 'Läuft…' : 'Diagnose ausführen'}
+          {loadingDiagnose ? t('musicbox.diagnose.running') : t('musicbox.diagnose.run')}
         </button>
         {diagnoseData && (
           <div className="mt-4 space-y-3 text-sm">
@@ -338,35 +340,41 @@ sudo systemctl restart mopidy
               <p className="text-red-400">{diagnoseData.error}</p>
             )}
             <div className="grid gap-2">
-              <p><span className="text-slate-500">Iris für aktuellen User importierbar:</span> {diagnoseData.iris_import_current_user ? '✓ Ja' : '✗ Nein'}</p>
+              <p>
+                <span className="text-slate-500">{t('musicbox.diagnose.irisCurrentUser')}</span>{' '}
+                {diagnoseData.iris_import_current_user ? t('musicbox.yes') : t('musicbox.no')}
+              </p>
               {diagnoseData.iris_visible_to_mopidy !== undefined && (
-                <p><span className="text-slate-500">Iris für User „mopidy“ sichtbar:</span> {diagnoseData.iris_visible_to_mopidy ? '✓ Ja' : '✗ Nein (→ Iris als User mopidy installieren)'}</p>
+                <p>
+                  <span className="text-slate-500">{t('musicbox.diagnose.irisMopidyUser')}</span>{' '}
+                  {diagnoseData.iris_visible_to_mopidy ? t('musicbox.yes') : t('musicbox.diagnose.irisMopidyNoDetail')}
+                </p>
               )}
               {!diagnoseData.sudo_used && (
-                <p className="text-amber-400">Sudo nicht gesetzt – für vollständige Diagnose einmal „Installation starten“ mit Sudo-Passwort ausführen.</p>
+                <p className="text-amber-400">{t('musicbox.diagnose.sudoHint')}</p>
               )}
             </div>
             {diagnoseData.iris_config_snippet && (
               <div>
-                <p className="text-slate-500 mb-1">Ausschnitt aus mopidy.conf [iris]:</p>
+                <p className="text-slate-500 mb-1">{t('musicbox.diagnose.configSnip')}</p>
                 <pre className="p-2 bg-slate-800 rounded text-xs overflow-x-auto whitespace-pre-wrap break-words">{diagnoseData.iris_config_snippet}</pre>
               </div>
             )}
             {diagnoseData.mopidy_deps && (
               <div>
-                <p className="text-slate-500 mb-1">Mopidy deps (Pakete/Erweiterungen):</p>
+                <p className="text-slate-500 mb-1">{t('musicbox.diagnose.deps')}</p>
                 <pre className="p-2 bg-slate-800 rounded text-xs overflow-x-auto whitespace-pre-wrap break-words max-h-40 overflow-y-auto">{diagnoseData.mopidy_deps}</pre>
               </div>
             )}
             {diagnoseData.mopidy_extensions_output && (
               <div>
-                <p className="text-slate-500 mb-1">Mopidy config (Ausschnitt):</p>
+                <p className="text-slate-500 mb-1">{t('musicbox.diagnose.extensions')}</p>
                 <pre className="p-2 bg-slate-800 rounded text-xs overflow-x-auto whitespace-pre-wrap break-words max-h-48 overflow-y-auto">{diagnoseData.mopidy_extensions_output}</pre>
               </div>
             )}
             {diagnoseData.mopidy_log_tail && (
               <div>
-                <p className="text-slate-500 mb-1">Mopidy-Log (letzte Zeilen):</p>
+                <p className="text-slate-500 mb-1">{t('musicbox.diagnose.logTail')}</p>
                 <pre className="p-2 bg-slate-800 rounded text-xs overflow-x-auto whitespace-pre-wrap break-words max-h-64 overflow-y-auto">{diagnoseData.mopidy_log_tail}</pre>
               </div>
             )}
@@ -377,7 +385,7 @@ sudo systemctl restart mopidy
       {/* Status */}
       {musicStatus && (
         <div className="card">
-          <h2 className="text-2xl font-bold text-white mb-4">Status</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">{t('musicbox.status.title')}</h2>
           <div className="grid md:grid-cols-3 gap-4">
             {musicTypes.map((type) => {
               const status = musicStatus[type.id]
@@ -386,9 +394,9 @@ sudo systemctl restart mopidy
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-slate-300 font-semibold">{type.label}</span>
                     {status?.installed ? (
-                      <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs">✓ Installiert</span>
+                      <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs">{t('musicbox.status.installed')}</span>
                     ) : (
-                      <span className="px-2 py-1 bg-red-900/50 text-white rounded text-xs">Nicht installiert</span>
+                      <span className="px-2 py-1 bg-red-900/50 text-white rounded text-xs">{t('musicbox.status.notInstalled')}</span>
                     )}
                   </div>
                   {status?.running && (
@@ -399,7 +407,7 @@ sudo systemctl restart mopidy
                         rel="noopener noreferrer"
                         className="text-sky-400 hover:text-sky-300 text-sm"
                       >
-                        🔗 Öffnen (Port {type.port})
+                        {t('musicbox.openPort', { port: type.port })}
                       </a>
                     </div>
                   )}
@@ -411,7 +419,7 @@ sudo systemctl restart mopidy
                         rel="noopener noreferrer"
                         className="text-sky-400 hover:text-sky-300 text-sm"
                       >
-                        📖 Dokumentation
+                        {t('musicbox.docs')}
                       </a>
                     </div>
                   )}
@@ -424,7 +432,7 @@ sudo systemctl restart mopidy
 
       {/* Music Type Selection */}
       <div className="card">
-        <h2 className="text-2xl font-bold text-white mb-4">Music Server auswählen</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">{t('musicbox.serverSelect.title')}</h2>
         <div className="grid md:grid-cols-3 gap-4">
           {musicTypes.map((type) => (
             <div
@@ -528,23 +536,23 @@ sudo systemctl restart mopidy
           disabled={loading}
           className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
         >
-          {loading ? 'Installieren...' : 'Installation starten'}
+          {loading ? t('musicbox.install.running') : t('musicbox.install.start')}
         </button>
       </div>
 
       <SudoPasswordModal
         open={sudoModalOpen}
-        title="Sudo-Passwort für Musikbox-Installation"
-        subtitle="Für die Installation von Mopidy, Internetradio, AirPlay usw. werden Administrator-Rechte benötigt."
-        confirmText="Installation starten"
+        title={t('musicbox.sudo.installTitle')}
+        subtitle={t('musicbox.sudo.installSubtitle')}
+        confirmText={t('musicbox.sudo.installConfirm')}
         onCancel={() => setSudoModalOpen(false)}
         onConfirm={runApplyConfig}
       />
       <SudoPasswordModal
         open={installMixerSudoOpen}
-        title="Sudo-Passwort für Mixer-Installation"
-        subtitle="pavucontrol und qpwgraph werden per apt installiert. Dafür werden Administrator-Rechte benötigt."
-        confirmText="Installieren"
+        title={t('musicbox.sudo.mixerTitle')}
+        subtitle={t('musicbox.sudo.mixerSubtitle')}
+        confirmText={t('musicbox.sudo.mixerConfirm')}
         onCancel={() => setInstallMixerSudoOpen(false)}
         onConfirm={(pwd) => installMixerPackages(pwd)}
       />

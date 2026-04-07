@@ -1,6 +1,18 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import type { DiagnosisRecord } from '../types/diagnosis'
+
+function isKeyV1(record: DiagnosisRecord): boolean {
+  return record.localization_model === 'key_v1'
+}
+
+/** i18n-Key mit Fallback auf Legacy-String, wenn Übersetzung fehlt. */
+function tOrLegacy(t: TFunction, key: string | null | undefined, legacy: string): string {
+  if (!key) return legacy
+  const v = t(key)
+  return v === key ? legacy : v
+}
 
 function borderClass(record: DiagnosisRecord): string {
   switch (record.companion_mode) {
@@ -31,6 +43,17 @@ const DiagnosisPanel: React.FC<DiagnosisPanelProps> = ({ record, className = '' 
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
+  const title = isKeyV1(record) ? tOrLegacy(t, record.title_key ?? null, record.title) : record.title
+  const userMessage = isKeyV1(record)
+    ? tOrLegacy(t, record.user_message_key ?? null, record.user_message)
+    : record.user_message
+  const suggestedList =
+    isKeyV1(record) && record.suggested_action_keys && record.suggested_action_keys.length > 0
+      ? record.suggested_action_keys.map((k, i) =>
+          tOrLegacy(t, k, record.suggested_actions[i] ?? ''),
+        )
+      : record.suggested_actions
+
   return (
     <section
       className={`rounded-lg border px-3 py-2.5 sm:px-4 sm:py-3 text-sm ${borderClass(record)} ${className}`}
@@ -43,7 +66,7 @@ const DiagnosisPanel: React.FC<DiagnosisPanelProps> = ({ record, className = '' 
             {t('diagnosis.panel.badge')}
             {record.interpreter_version.startsWith('v1-local') ? ` · ${t('diagnosis.panel.localFallback')}` : null}
           </p>
-          <h3 className="font-semibold text-white leading-snug">{record.title}</h3>
+          <h3 className="font-semibold text-white leading-snug">{title}</h3>
         </div>
         <span
           className="shrink-0 text-[10px] uppercase px-1.5 py-0.5 rounded bg-slate-900/60 text-slate-400 border border-slate-600/50"
@@ -52,13 +75,13 @@ const DiagnosisPanel: React.FC<DiagnosisPanelProps> = ({ record, className = '' 
           {record.severity}
         </span>
       </div>
-      <p className="text-slate-200/95 mt-2 text-sm leading-relaxed">{record.user_message}</p>
+      <p className="text-slate-200/95 mt-2 text-sm leading-relaxed">{userMessage}</p>
 
-      {record.suggested_actions.length > 0 && (
+      {suggestedList.length > 0 && (
         <div className="mt-3">
           <p className="text-xs font-medium text-slate-400 mb-1">{t('diagnosis.panel.suggestedSteps')}</p>
           <ul className="list-disc list-inside text-xs sm:text-sm text-slate-300 space-y-0.5">
-            {record.suggested_actions.map((a, i) => (
+            {suggestedList.map((a, i) => (
               <li key={i}>{a}</li>
             ))}
           </ul>

@@ -1,5 +1,7 @@
 # PI-Installer – Versionsschema und -führung
 
+**Prozess & Berichte (Cursor / Moduländerungen):** [CURSOR_WORK_RULES.md](./CURSOR_WORK_RULES.md) · Checkliste [MODULE_EDIT_CHECKLIST.md](./MODULE_EDIT_CHECKLIST.md).
+
 ## Versionsnummer (X.Y.Z.W)
 
 Die Versionsnummer folgt dem Schema **X.Y.Z.W**:

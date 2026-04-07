@@ -2,6 +2,18 @@
 
 Danke für dein Interesse! So kannst du mitmachen.
 
+**Produkt / Branding:** Die Anwendung heißt für Nutzer oft **SetupHelfer**; technische Pfade und Repos können **pi-installer** / `PI-Installer` nutzen – beides ist im Code und in der Doku verbreitet.
+
+## Verbindliche Arbeitsregeln (Cursor / Moduländerungen)
+
+Für **Modulbearbeitungen**, i18n-Pflicht, Nachweise zu Tests, Changelog und Version gilt:
+
+1. **[docs/developer/CURSOR_WORK_RULES.md](docs/developer/CURSOR_WORK_RULES.md)** – zentrales Regelwerk (Phase 0/1: Vorprüfung, keine unnötigen Installationen, Modulvollständigkeit).
+2. **[docs/developer/MODULE_EDIT_CHECKLIST.md](docs/developer/MODULE_EDIT_CHECKLIST.md)** – Checkliste zum Abhaken.
+3. **[docs/developer/CHANGE_REPORT_TEMPLATE.md](docs/developer/CHANGE_REPORT_TEMPLATE.md)** – Berichtsvorlage für relevante Änderungen.
+
+Details zu Version und Changelog: **[docs/developer/VERSIONING.md](docs/developer/VERSIONING.md)** · Index: **[docs/developer/README.md](docs/developer/README.md)**.
+
 ## Ablauf (Fork → Branch → PR)
 
 1. **Fork** das Repository auf GitHub (Button „Fork“).

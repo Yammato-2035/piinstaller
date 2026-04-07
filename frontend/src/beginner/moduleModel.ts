@@ -2,6 +2,9 @@
  * Zentrales Modell für Einsteiger-Führung und Bereichslogik (Frontend).
  */
 
+import type { TrafficLightState } from '../trafficLight/trafficLightModel'
+export type { TrafficLightState }
+
 export type ExperienceLevel = 'beginner' | 'advanced' | 'developer'
 
 export type ModuleId =
@@ -41,9 +44,6 @@ export type CompanionVariant =
   | 'base'
   | 'install'
   | 'debug'
-
-/** Semantische Ampel für Modul / System-Hinweis (nicht identisch mit LampTriState-Strings überall). */
-export type TrafficLightState = 'green' | 'yellow' | 'red' | 'unknown'
 
 /** Ob und wie ein Bereich für Einsteiger erreichbar ist. */
 export type AvailabilityState = 'available' | 'locked' | 'coming_later' | 'advanced_only'

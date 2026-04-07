@@ -205,6 +205,7 @@ http://localhost:3001
 
 - **[SECURITY.md](./SECURITY.md)** - Sicherheitshinweise, Netzwerk (LAN/Internet), VPN-Empfehlung, CORS
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Beitragen (Fork, Branch, PR, Code-Style)
+- **[docs/developer/CURSOR_WORK_RULES.md](./docs/developer/CURSOR_WORK_RULES.md)** - Verbindliche Arbeitsregeln (Vorprüfung, i18n, Doku/Changelog/Version, Berichtspflicht); Checkliste und Vorlage im gleichen Ordner
 - **[NETWORK_ACCESS.md](./docs/user/NETWORK_ACCESS.md)** - Zugriff im LAN, über VPN, aus dem Internet (nur für erfahrene Nutzer)
 - **[INSTALL.md](./docs/user/INSTALL.md)** - Detaillierte Installationsanleitung (inkl. Troubleshooting Mixer)
 - **[GUIDED_UX_AND_COMPANION.md](./docs/user/GUIDED_UX_AND_COMPANION.md)** - Einsteigerführung, Erfahrungslevel, Panda-Begleiter, Desktop-Starter

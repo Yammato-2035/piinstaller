@@ -1,20 +1,80 @@
 """
-Interpreter Phase 1 – regelbasiert, gekapselt.
+Interpreter – regelbasiert, gekapselt.
 
-INTERPRETER_VERSION erhöhen oder neue Datei interpret_v2.py bei größeren Änderungen.
+INTERPRETER_VERSION bei ausgabe-relevanten Änderungen erhöhen.
 Regeln: erste passende Regel gewinnt (Priorität = Reihenfolge in RULES_V1).
+
+Übergang: Firewall-Regeln noch ``localization_model=legacy`` (Freitexte);
+Webserver-Port, Backup-Verify, System-Backend und generischer Fallback nutzen ``key_v1``
+(siehe docs/architecture/diagnosis_localization.md).
 """
 
 from __future__ import annotations
 
 import re
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from models.diagnosis import DiagnosisInterpretRequest, DiagnosisRecord
 
-INTERPRETER_VERSION = "v1"
+INTERPRETER_VERSION = "v2"
 
 RuleFn = Callable[[DiagnosisInterpretRequest], Optional[DiagnosisRecord]]
+
+
+def _keyed_record(
+    *,
+    diagnosis_id: str,
+    diagnose_type: str,
+    severity: str,
+    confidence: float,
+    area: str,
+    event: str,
+    companion_mode: str,
+    technical_summary: str,
+    source_event: dict,
+    title_key: str,
+    user_message_key: str,
+    suggested_action_keys: list[str],
+    title_fallback_en: str,
+    user_message_fallback_en: str,
+    suggested_actions_fallback_en: list[str],
+    docs_refs: Optional[list[str]] = None,
+    faq_refs: Optional[list[str]] = None,
+    kb_refs: Optional[list[str]] = None,
+    evidence: Optional[dict[str, Any]] = None,
+    question_path: Optional[list[str]] = None,
+) -> DiagnosisRecord:
+    """key_v1: i18n über Frontend-Keys; Legacy-Felder = kurze EN-Fallbacks."""
+    return DiagnosisRecord(
+        schema_version="2",
+        interpreter_version=INTERPRETER_VERSION,
+        diagnosis_id=diagnosis_id,
+        diagnosis_code=diagnosis_id,
+        localization_model="key_v1",
+        module=area,
+        event=event,
+        title_key=title_key,
+        user_message_key=user_message_key,
+        technical_summary_key=None,
+        suggested_action_keys=suggested_action_keys,
+        docs_refs=list(docs_refs or []),
+        faq_refs=list(faq_refs or []),
+        kb_refs=list(kb_refs or []),
+        evidence=evidence,
+        question_path=question_path,
+        diagnose_type=diagnose_type,  # type: ignore[arg-type]
+        severity=severity,  # type: ignore[arg-type]
+        confidence=confidence,
+        title=title_fallback_en,
+        user_message=user_message_fallback_en,
+        technical_summary=technical_summary,
+        suggested_actions=list(suggested_actions_fallback_en),
+        quick_fix_available=False,
+        source_event=source_event,
+        area=area,
+        beginner_safe=True,
+        companion_mode=companion_mode,  # type: ignore[arg-type]
+    )
 
 
 def _snapshot_source(req: DiagnosisInterpretRequest) -> dict:
@@ -147,75 +207,80 @@ def _rule_system_backend_unreachable(req: DiagnosisInterpretRequest) -> Optional
     if req.event_type != "backend_unreachable":
         return None
     reason = (req.extra or {}).get("reason") or "other"
+    step_keys = [
+        "diagnosis.codes.system.shared.actions.check_network",
+        "diagnosis.codes.system.shared.actions.check_server_url",
+        "diagnosis.codes.system.shared.actions.retry_or_logs",
+    ]
     if reason == "timeout":
-        return DiagnosisRecord(
-            interpreter_version=INTERPRETER_VERSION,
+        return _keyed_record(
             diagnosis_id="system.backend_timeout",
             diagnose_type="connectivity",
             severity="high",
             confidence=0.85,
-            title="Server antwortet zu langsam",
-            user_message=(
-                "Die Verbindung zum Setuphelfer-Server hat ein Zeitlimit erreicht. "
-                "Das Gerät oder die Netzwerkverbindung ist möglicherweise überlastet oder nicht erreichbar."
-            ),
-            technical_summary=f"reason=timeout, message={req.message or ''}"[:500],
-            suggested_actions=[
-                "Netzwerk prüfen (LAN/WLAN, gleiches Subnetz).",
-                "Server-Adresse in den Einstellungen kontrollieren.",
-                "Später erneut versuchen; bei Pi: Strom und SD-Karte prüfen.",
-            ],
-            quick_fix_available=False,
-            source_event=_snapshot_source(req),
             area="system",
-            beginner_safe=True,
+            event=req.event_type,
             companion_mode="warning",
+            technical_summary=f"reason=timeout, message={req.message or ''}"[:500],
+            source_event=_snapshot_source(req),
+            title_key="diagnosis.codes.system.backend_timeout.title",
+            user_message_key="diagnosis.codes.system.backend_timeout.user_summary",
+            suggested_action_keys=step_keys,
+            title_fallback_en="Server timed out",
+            user_message_fallback_en="The connection hit a timeout; the device or network may be overloaded or unreachable.",
+            suggested_actions_fallback_en=[
+                "Check LAN/WLAN and same subnet.",
+                "Verify server URL in settings.",
+                "Retry later; on Pi check power and storage.",
+            ],
+            docs_refs=["docs/architecture/diagnose_companion.md", "docs/user/QUICKSTART.md"],
+            evidence={"reason": "timeout"},
         )
     if reason == "connection":
-        return DiagnosisRecord(
-            interpreter_version=INTERPRETER_VERSION,
+        return _keyed_record(
             diagnosis_id="system.backend_connection",
             diagnose_type="connectivity",
             severity="high",
             confidence=0.88,
-            title="Server nicht erreichbar",
-            user_message=(
-                "Es konnte keine Verbindung zum Setuphelfer-Server aufgebaut werden. "
-                "Oft liegt es an falscher URL, gestopptem Dienst oder einer Firewall dazwischen."
-            ),
-            technical_summary=f"reason=connection, message={req.message or ''}"[:500],
-            suggested_actions=[
-                "Prüfen, ob der Dienst auf dem Zielgerät läuft.",
-                "URL/Port in den Einstellungen mit der Anleitung abgleichen.",
-                "Firewall zwischen PC und Gerät kurz prüfen (nicht dauerhaft abschalten).",
-            ],
-            quick_fix_available=False,
-            source_event=_snapshot_source(req),
             area="system",
-            beginner_safe=True,
+            event=req.event_type,
             companion_mode="warning",
+            technical_summary=f"reason=connection, message={req.message or ''}"[:500],
+            source_event=_snapshot_source(req),
+            title_key="diagnosis.codes.system.backend_connection.title",
+            user_message_key="diagnosis.codes.system.backend_connection.user_summary",
+            suggested_action_keys=step_keys,
+            title_fallback_en="Server unreachable",
+            user_message_fallback_en="No TCP connection; wrong URL, stopped service, or a firewall in between.",
+            suggested_actions_fallback_en=[
+                "Check whether the service runs on the target device.",
+                "Match URL/port with the setup guide.",
+                "Briefly review firewall rules between machines (do not disable permanently).",
+            ],
+            docs_refs=["docs/architecture/diagnose_companion.md", "docs/user/QUICKSTART.md"],
+            evidence={"reason": "connection"},
         )
-    return DiagnosisRecord(
-        interpreter_version=INTERPRETER_VERSION,
+    return _keyed_record(
         diagnosis_id="system.backend_other",
         diagnose_type="connectivity",
         severity="medium",
         confidence=0.5,
-        title="Unerwarteter Verbindungsfehler",
-        user_message=(
-            "Die Verbindung zum Server ist fehlgeschlagen. "
-            "Bitte die Einstellungen und die Erreichbarkeit des Geräts prüfen."
-        ),
-        technical_summary=f"reason={reason}, message={req.message or ''}"[:500],
-        suggested_actions=[
-            "Einstellungen und Server-URL prüfen.",
-            "Seite neu laden; bei anhaltendem Fehler Logs/Support nutzen.",
-        ],
-        quick_fix_available=False,
-        source_event=_snapshot_source(req),
         area="system",
-        beginner_safe=True,
+        event=req.event_type,
         companion_mode="caution",
+        technical_summary=f"reason={reason}, message={req.message or ''}"[:500],
+        source_event=_snapshot_source(req),
+        title_key="diagnosis.codes.system.backend_other.title",
+        user_message_key="diagnosis.codes.system.backend_other.user_summary",
+        suggested_action_keys=step_keys,
+        title_fallback_en="Unexpected connection error",
+        user_message_fallback_en="Connection failed; verify settings and device reachability.",
+        suggested_actions_fallback_en=[
+            "Check settings and server URL.",
+            "Reload the page; if it persists use logs or support.",
+        ],
+        docs_refs=["docs/architecture/diagnose_companion.md"],
+        evidence={"reason": str(reason)},
     )
 
 
@@ -248,29 +313,41 @@ def _rule_webserver_port_conflict(req: DiagnosisInterpretRequest) -> Optional[Di
     )
     if not any(re.search(p, low) for p in patterns):
         return None
-    return DiagnosisRecord(
-        interpreter_version=INTERPRETER_VERSION,
+    ev: dict[str, Any] = {}
+    if req.extra.get("server_type"):
+        ev["server_type"] = req.extra.get("server_type")
+    return _keyed_record(
         diagnosis_id="webserver.port_conflict",
         diagnose_type="configuration",
         severity="high",
         confidence=0.72,
-        title="Webserver konnte nicht starten (Port)",
-        user_message=(
-            "Der Webserver konnte nicht gestartet oder nicht neu geladen werden, "
-            "weil der benötigte Netzwerk-Port sehr wahrscheinlich schon von einem anderen Programm genutzt wird. "
-            "Typisch sind die Ports 80 (HTTP) und 443 (HTTPS), wenn bereits ein anderer Webserver oder Dienst darauf lauscht."
-        ),
-        technical_summary=raw[:800],
-        suggested_actions=[
-            "Unter „Übersicht“ prüfen, ob Nginx oder Apache bereits läuft oder ob ein anderer Dienst die Ports blockiert.",
-            "Entweder den Konflikt beheben (anderen Dienst gezielt stoppen oder dessen Konfiguration anpassen) oder die Webserver-Einstellungen auf einen freien Port legen – das erfordert oft Erfahrung.",
-            "Ohne geklärten Portkonflikt nicht wiederholt „Konfiguration anwenden“ ausführen; bei Unsicherheit Logs oder Dokumentation nutzen.",
-        ],
-        quick_fix_available=False,
-        source_event=_snapshot_source(req),
         area="webserver",
-        beginner_safe=True,
+        event=req.event_type,
         companion_mode="warning",
+        technical_summary=raw[:800],
+        source_event=_snapshot_source(req),
+        title_key="diagnosis.codes.webserver.port_conflict.title",
+        user_message_key="diagnosis.codes.webserver.port_conflict.user_summary",
+        suggested_action_keys=[
+            "diagnosis.codes.webserver.port_conflict.actions.check_overview",
+            "diagnosis.codes.webserver.port_conflict.actions.resolve_binding",
+            "diagnosis.codes.webserver.port_conflict.actions.avoid_repeat_apply",
+        ],
+        title_fallback_en="Web server could not start (port)",
+        user_message_fallback_en=(
+            "The web server likely failed to bind because TCP port 80/443 (or another required port) "
+            "is already in use by another service."
+        ),
+        suggested_actions_fallback_en=[
+            "Check the overview whether nginx/apache or another service already uses the port.",
+            "Stop or reconfigure the conflicting service, or use a free port (advanced).",
+            "Do not re-run apply until the conflict is understood; check logs or docs.",
+        ],
+        docs_refs=[
+            "docs/architecture/diagnose_companion.md",
+            "docs/architecture/diagnosis_localization.md",
+        ],
+        evidence=ev or None,
     )
 
 
@@ -281,53 +358,60 @@ def _rule_backup_verify_failed(req: DiagnosisInterpretRequest) -> Optional[Diagn
         return None
     if not (req.message or "").strip():
         return None
-    return DiagnosisRecord(
-        interpreter_version=INTERPRETER_VERSION,
+    ev: dict[str, Any] = {}
+    if req.extra.get("verify_mode") is not None:
+        ev["verify_mode"] = req.extra.get("verify_mode")
+    if req.extra.get("backup_file") is not None:
+        ev["backup_file"] = req.extra.get("backup_file")
+    return _keyed_record(
         diagnosis_id="backup_restore.verify_failed_generic",
         diagnose_type="backup_restore",
         severity="high",
         confidence=0.65,
-        title="Backup-Prüfung fehlgeschlagen",
-        user_message=(
-            "Die Überprüfung des Backups ist fehlgeschlagen. "
-            "Das bedeutet nicht automatisch, dass eine Wiederherstellung möglich oder unmöglich ist – "
-            "es wurde nur diese Prüfung nicht bestanden. "
-            "Häufige Ursachen: beschädigtes oder unpassendes Archiv, falscher Pfad, fehlende Rechte "
-            "oder Sicherheitsregeln des Systems."
-        ),
-        technical_summary=(req.message or "")[:800],
-        suggested_actions=[
-            "Keine Wiederherstellung starten, bevor die Ursache geklärt ist.",
-            "Anderes Archiv wählen oder ein neues Backup erstellen und erneut prüfen.",
-            "Pfad und Dateirechte prüfen; bei Unsicherheit Logs oder Support nutzen.",
-        ],
-        quick_fix_available=False,
-        source_event=_snapshot_source(req),
         area="backup_restore",
-        beginner_safe=True,
+        event=req.event_type,
         companion_mode="warning",
+        technical_summary=(req.message or "")[:800],
+        source_event=_snapshot_source(req),
+        title_key="diagnosis.codes.backup_restore.verify_failed_generic.title",
+        user_message_key="diagnosis.codes.backup_restore.verify_failed_generic.user_summary",
+        suggested_action_keys=[
+            "diagnosis.codes.backup_restore.verify_failed_generic.actions.no_restore_until_clear",
+            "diagnosis.codes.backup_restore.verify_failed_generic.actions.retry_new_archive",
+            "diagnosis.codes.backup_restore.verify_failed_generic.actions.check_path_rights",
+        ],
+        title_fallback_en="Backup verification failed",
+        user_message_fallback_en=(
+            "Verification did not pass. That does not strictly prove restore will fail or succeed—only that this check failed."
+        ),
+        suggested_actions_fallback_en=[
+            "Do not start a restore until the cause is clear.",
+            "Pick another archive or create a new backup and verify again.",
+            "Check path and permissions; use logs or support if unsure.",
+        ],
+        docs_refs=["docs/architecture/diagnose_companion.md", "docs/backup-restore-realtest.md"],
+        evidence=ev or None,
     )
 
 
 def _fallback(req: DiagnosisInterpretRequest) -> DiagnosisRecord:
-    return DiagnosisRecord(
-        interpreter_version=INTERPRETER_VERSION,
+    return _keyed_record(
         diagnosis_id="unknown.generic",
         diagnose_type="unknown",
         severity="low",
         confidence=0.2,
-        title="Keine spezifische Diagnose",
-        user_message=(
-            "Für diese Meldung liegt keine detaillierte Einordnung vor. "
-            "Bitte technische Details prüfen oder Support kontaktieren."
-        ),
-        technical_summary=(req.message or "")[:800],
-        suggested_actions=["Technische Zusammenfassung einblenden und manuell prüfen."],
-        quick_fix_available=False,
-        source_event=_snapshot_source(req),
         area=req.area or "unknown",
-        beginner_safe=True,
+        event=req.event_type,
         companion_mode="info",
+        technical_summary=(req.message or "")[:800],
+        source_event=_snapshot_source(req),
+        title_key="diagnosis.codes.unknown.generic.title",
+        user_message_key="diagnosis.codes.unknown.generic.user_summary",
+        suggested_action_keys=["diagnosis.codes.unknown.generic.actions.expand_technical"],
+        title_fallback_en="No specific diagnosis",
+        user_message_fallback_en="No detailed classification for this message; inspect technical details or contact support.",
+        suggested_actions_fallback_en=["Expand the technical summary and review manually."],
+        docs_refs=["docs/architecture/diagnosis_localization.md"],
     )
 
 

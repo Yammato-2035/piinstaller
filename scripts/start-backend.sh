@@ -92,7 +92,13 @@ _tcp_port_listen_busy() {
 }
 
 if _tcp_port_listen_busy "$PORT"; then
-  echo "⚠️  Port $PORT wird bereits für TCP (LISTEN) verwendet – meist läuft schon ein Backend (uvicorn) oder ein anderer Dienst."
+  # Bereits unser API? Dann kein zweites uvicorn nötig (typisch: zweites Terminal / Doppelklick).
+  if command -v curl >/dev/null 2>&1 && curl -sS --max-time 2 "http://127.0.0.1:${PORT}/api/version" >/dev/null 2>&1; then
+    echo "ℹ️  Port $PORT ist belegt – unter http://127.0.0.1:${PORT} antwortet bereits ein PI-Installer-Backend (/api/version OK)."
+    echo "   Kein zweiter Start nötig. Neu starten: laufenden Prozess beenden, dann dieses Skript erneut ausführen."
+    exit 0
+  fi
+  echo "⚠️  Port $PORT wird bereits für TCP (LISTEN) verwendet – meist läuft schon ein anderer Dienst (nicht unser API unter /api/version)."
   echo "   Hinweis: lsof -i :$PORT zeigt oft auch Browser-Verbindungen (ESTABLISHED); entscheidend ist nur LISTEN."
   echo ""
   if command -v ss >/dev/null 2>&1; then
@@ -106,7 +112,7 @@ if _tcp_port_listen_busy "$PORT"; then
   echo ""
   echo "   Optionen:"
   echo "   - Listener beenden, z. B.: kill \$(lsof -t -iTCP:$PORT -sTCP:LISTEN)  (PID prüfen!)"
-  echo "   - Oder anderen Port: PI_INSTALLER_BACKEND_PORT=8001 $REPO_ROOT/scripts/start-backend.sh"
+  echo "   - Oder anderen Port: PI_INSTALLER_BACKEND_PORT=8001 $SCRIPT_DIR/start-backend.sh"
   echo "   - In der App ggf. Backend-URL auf http://127.0.0.1:8001 setzen."
   echo ""
   exit 1

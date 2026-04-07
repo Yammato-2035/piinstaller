@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import { Activity, TrendingUp, AlertCircle, CheckCircle, Trash2 } from 'lucide-react'
+import React, { useState, useEffect, useMemo } from 'react'
+import { CheckCircle, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { fetchApi } from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import PageHeader from '../components/layout/PageHeader'
@@ -10,6 +10,12 @@ import { PandaCompanion, PandaRail } from '../components/companions'
 import { usePlatform } from '../context/PlatformContext'
 import { PageSkeleton } from '../components/Skeleton'
 import type { ExperienceLevel } from '../components/Sidebar'
+import { TrafficLightBadge } from '../components/trafficLight/TrafficLightBadge'
+import {
+  TRAFFIC_LIGHT_COPY,
+  deriveMonitoringComponentLamp,
+  deriveMonitoringOverallTrafficLight,
+} from '../trafficLight/trafficLightModel'
 
 interface MonitoringDashboardProps {
   experienceLevel?: ExperienceLevel
@@ -193,6 +199,11 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({ experienceLev
     setSudoModalOpen(true)
   }
 
+  const monitoringOverall = useMemo(() => deriveMonitoringOverallTrafficLight(status), [status])
+  const promLamp = deriveMonitoringComponentLamp(!!status?.prometheus?.installed, !!status?.prometheus?.running)
+  const grafLamp = deriveMonitoringComponentLamp(!!status?.grafana?.installed, !!status?.grafana?.running)
+  const nodeLamp = deriveMonitoringComponentLamp(!!status?.node_exporter?.installed, !!status?.node_exporter?.running)
+
   if (dataLoading) {
     return <PageSkeleton cards={3} />
   }
@@ -205,6 +216,32 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({ experienceLev
         title="Monitoring Dashboard"
         subtitle={`Behalte Systemstatus, Auslastung und Dienste einfach im Blick – ${pageSubtitleLabel}.`}
       />
+      <div className="flex flex-wrap gap-2 items-center">
+        <TrafficLightBadge
+          tone="onDark"
+          state={monitoringOverall.lamp}
+          label={TRAFFIC_LIGHT_COPY.monitoring[monitoringOverall.copyKey].label}
+          detail={TRAFFIC_LIGHT_COPY.monitoring[monitoringOverall.copyKey].detail}
+        />
+        <TrafficLightBadge
+          tone="onDark"
+          state={promLamp}
+          label={TRAFFIC_LIGHT_COPY.monitoring.prometheus.label}
+          detail={TRAFFIC_LIGHT_COPY.monitoring.prometheus.detail}
+        />
+        <TrafficLightBadge
+          tone="onDark"
+          state={grafLamp}
+          label={TRAFFIC_LIGHT_COPY.monitoring.grafana.label}
+          detail={TRAFFIC_LIGHT_COPY.monitoring.grafana.detail}
+        />
+        <TrafficLightBadge
+          tone="onDark"
+          state={nodeLamp}
+          label={TRAFFIC_LIGHT_COPY.monitoring.node_exporter.label}
+          detail={TRAFFIC_LIGHT_COPY.monitoring.node_exporter.detail}
+        />
+      </div>
       {experienceLevel === 'beginner' && (
         <PandaRail>
           <PandaCompanion
@@ -227,17 +264,14 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({ experienceLev
           animate={{ opacity: 1, y: 0 }}
           className="card break-words"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
             <h3 className="font-bold text-white">Prometheus</h3>
-            {status?.prometheus?.installed ? (
-              status?.prometheus?.running ? (
-                <CheckCircle className="text-green-500 status-icon active" size={24} />
-              ) : (
-                <CheckCircle className="text-green-500" size={24} />
-              )
-            ) : (
-              <AlertCircle className="text-yellow-500" size={24} />
-            )}
+            <TrafficLightBadge
+              tone="onDark"
+              state={promLamp}
+              label={TRAFFIC_LIGHT_COPY.monitoring.prometheus.label}
+              detail={TRAFFIC_LIGHT_COPY.monitoring.prometheus.detail}
+            />
           </div>
           <p className="text-sm flex items-center gap-2">
             {status?.prometheus?.installed ? (
@@ -286,17 +320,14 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({ experienceLev
           transition={{ delay: 0.1 }}
           className="card break-words"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
             <h3 className="font-bold text-white">Grafana</h3>
-            {status?.grafana?.installed ? (
-              status?.grafana?.running ? (
-                <CheckCircle className="text-green-500 status-icon active" size={24} />
-              ) : (
-                <CheckCircle className="text-green-500" size={24} />
-              )
-            ) : (
-              <AlertCircle className="text-yellow-500" size={24} />
-            )}
+            <TrafficLightBadge
+              tone="onDark"
+              state={grafLamp}
+              label={TRAFFIC_LIGHT_COPY.monitoring.grafana.label}
+              detail={TRAFFIC_LIGHT_COPY.monitoring.grafana.detail}
+            />
           </div>
           <p className="text-sm flex items-center gap-2">
             {status?.grafana?.installed ? (
@@ -344,17 +375,14 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({ experienceLev
           transition={{ delay: 0.2 }}
           className="card break-words"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
             <h3 className="font-bold text-white">Node Exporter</h3>
-            {status?.node_exporter?.installed ? (
-              status?.node_exporter?.running ? (
-                <CheckCircle className="text-green-500 status-icon active" size={24} />
-              ) : (
-                <CheckCircle className="text-green-500" size={24} />
-              )
-            ) : (
-              <AlertCircle className="text-yellow-500" size={24} />
-            )}
+            <TrafficLightBadge
+              tone="onDark"
+              state={nodeLamp}
+              label={TRAFFIC_LIGHT_COPY.monitoring.node_exporter.label}
+              detail={TRAFFIC_LIGHT_COPY.monitoring.node_exporter.detail}
+            />
           </div>
           <p className="text-sm flex items-center gap-2">
             {status?.node_exporter?.installed ? (

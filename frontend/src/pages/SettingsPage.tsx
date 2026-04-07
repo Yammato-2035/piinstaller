@@ -4,7 +4,14 @@ import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Cloud, RefreshCw, CheckCircle, XCircle } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
-import { fetchApi, getApiBase, API_BASE_STORAGE_KEY } from '../api'
+import {
+  fetchApi,
+  getApiBase,
+  API_BASE_STORAGE_KEY,
+  normalizeApiBaseUrl,
+  saveUserProfilePayload,
+  readStoredExperienceLevel,
+} from '../api'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import ScreenshotDocCard from '../components/ScreenshotDocCard'
 import { usePlatform } from '../context/PlatformContext'
@@ -69,7 +76,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
   })
 
   const saveApiBaseUrl = (value: string) => {
-    const v = value.trim()
+    const v = normalizeApiBaseUrl(value)
     try {
       if (v) localStorage.setItem(API_BASE_STORAGE_KEY, v)
       else localStorage.removeItem(API_BASE_STORAGE_KEY)
@@ -102,20 +109,24 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
         const level = String(profileData.profile.experience_level).toLowerCase()
         if (level === 'advanced' || level === 'developer') setExperienceLevelState(level as ExperienceLevel)
         else setExperienceLevelState('beginner')
+      } else if (sb?.status === 'success' && sb?.experience_level) {
+        const level = String(sb.experience_level).toLowerCase()
+        if (level === 'advanced' || level === 'developer') setExperienceLevelState(level as ExperienceLevel)
+        else setExperienceLevelState('beginner')
+      } else {
+        const loc = readStoredExperienceLevel()
+        if (loc) setExperienceLevelState(loc)
       }
     } catch {
-      // ignore
+      const loc = readStoredExperienceLevel()
+      if (loc) setExperienceLevelState(loc)
     }
   }
 
   const setExperienceLevel = async (level: ExperienceLevel) => {
     setExperienceLevelSaving(true)
     try {
-      const r = await fetchApi('/api/user-profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ experience_level: level }),
-      })
+      const r = await saveUserProfilePayload({ experience_level: level })
       let d: Record<string, unknown> = {}
       try {
         d = (await r.json()) as Record<string, unknown>
@@ -135,12 +146,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
       if (r.ok && d.status === 'success') {
         setExperienceLevelState(level)
         onExperienceLevelChange?.(level)
-        toast.success(
+        const baseToast =
           level === 'beginner'
             ? t('settings.toast.experience.beginner')
             : level === 'advanced'
               ? t('settings.toast.experience.advanced')
               : t('settings.toast.experience.developer')
+        toast.success(
+          d._savedLocally ? `${baseToast} · ${t('settings.toast.experience.localSuffix')}` : baseToast,
+          { duration: d._savedLocally ? 4500 : 4000 }
         )
       } else {
         toast.error(detailStr || messageStr || t('settings.toast.saveFailedGeneric'))
@@ -637,7 +651,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
           <h3 className="text-lg font-bold text-white mb-3">Verbindung zum Server</h3>
           <p className="text-sm text-slate-400 mb-3">
-            Wenn die rote Anzeige „Server nicht erreichbar“ erscheint, läuft der Server möglicherweise auf einem anderen Rechner. Hier die Adresse eintragen (z. B. <code className="text-sky-300">http://192.168.1.10:8000</code>). Leer lassen = automatisch (localhost:8000).
+            Wenn die rote Anzeige „Server nicht erreichbar“ erscheint, läuft der Server möglicherweise auf einem anderen Rechner. Hier die Adresse eintragen (z. B. <code className="text-sky-300">http://192.168.1.10:8000</code>) – <strong className="text-slate-200">ohne</strong> <code className="text-sky-300">/api</code> am Ende. Leer lassen = automatisch (localhost:8000).
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <input

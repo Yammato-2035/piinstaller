@@ -1538,6 +1538,30 @@ const Documentation: React.FC = () => {
                 <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
                   <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: {appVersion}</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.9.3 (Backup Ampel – Freigabelage)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Backup & Restore:</strong> Ampel an Phase‑3‑Freigabelage ausgerichtet (kein Grün ohne nachgewiesenen Backup‑Lauf; Gelb „Kern nicht verifiziert“; Rot u. a. bei <code className="bg-slate-700 px-1 rounded">sudo_required</code> / Risiko-Signalen)</li>
+                      <li><strong>i18n:</strong> Texte für Ampel/Begründung unter <code className="bg-slate-700 px-1 rounded">backup.ui.traffic.*</code></li>
+                      <li><strong>Doku:</strong> <code className="bg-slate-700 px-1 rounded">docs/developer/BACKUP_RESTORE_PHASE3_RELEASE_ASSESSMENT.md</code> (Phase‑4‑UI‑Hinweis ergänzt)</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.9.2 (Diagnose Lokalisierung key_v1)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Backend:</strong> <code className="bg-slate-700 px-1 rounded">DiagnosisRecord</code> mit <code className="bg-slate-700 px-1 rounded">localization_model</code>, i18n-Key-Feldern; Interpreter v2 für Webserver-Port, Backup-Verify, System-Backend, Fallback <code className="bg-slate-700 px-1 rounded">unknown.generic</code></li>
+                      <li><strong>Frontend:</strong> <code className="bg-slate-700 px-1 rounded">DiagnosisPanel</code> nutzt Keys (<code className="bg-slate-700 px-1 rounded">diagnosis.codes.*</code>) mit EN-Fallback; Firewall-Diagnosen vorerst Legacy</li>
+                      <li><strong>Doku:</strong> <code className="bg-slate-700 px-1 rounded">docs/architecture/diagnosis_localization.md</code></li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.9.1 (Entwicklungsprozess & Cursor-Regeln)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Prozess:</strong> <code className="bg-slate-700 px-1 rounded">docs/developer/CURSOR_WORK_RULES.md</code> – Vorprüfung, keine unnötigen Tool-Installationen, klare Testnachweise, i18n-Pflicht pro Modul, Pflege von Doku/FAQ/Changelog/Version</li>
+                      <li><strong>Checkliste & Bericht:</strong> <code className="bg-slate-700 px-1 rounded">docs/developer/MODULE_EDIT_CHECKLIST.md</code>, <code className="bg-slate-700 px-1 rounded">CHANGE_REPORT_TEMPLATE.md</code>; Index <code className="bg-slate-700 px-1 rounded">docs/developer/README.md</code></li>
+                      <li><strong>Verweise:</strong> <code className="bg-slate-700 px-1 rounded">CONTRIBUTING.md</code> und Architektur-Doku verlinken die Vorgaben</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.9.0 (Companion & Guided UX)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Einsteiger & Begleiter:</strong> Zentrales Modulmodell, Panda-Marker, geschärftes Dashboard, App Store und Backup</li>

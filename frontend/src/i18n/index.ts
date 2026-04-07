@@ -13,9 +13,9 @@ function detectInitialLng(): string {
   } catch {
     /* ignore */
   }
-  if (typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('de')) {
-    return 'de'
-  }
+  const nav = typeof navigator !== 'undefined' ? navigator.language?.toLowerCase() ?? '' : ''
+  if (nav.startsWith('de')) return 'de'
+  if (nav.startsWith('en')) return 'en'
   return 'de'
 }
 

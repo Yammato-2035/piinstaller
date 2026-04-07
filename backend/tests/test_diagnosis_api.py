@@ -57,6 +57,8 @@ class TestDiagnosisApi(unittest.TestCase):
         self.assertEqual(r.status_code, 200, r.text)
         data = r.json()
         self.assertEqual(data["diagnosis_id"], "webserver.port_conflict")
+        self.assertEqual(data.get("schema_version"), "2")
+        self.assertEqual(data.get("localization_model"), "key_v1")
 
     def test_interpret_backup_verify_failed(self):
         r = self.client.post(
@@ -72,6 +74,8 @@ class TestDiagnosisApi(unittest.TestCase):
         data = r.json()
         self.assertEqual(data["diagnosis_id"], "backup_restore.verify_failed_generic")
         self.assertEqual(data["area"], "backup_restore")
+        self.assertEqual(data.get("localization_model"), "key_v1")
+        self.assertEqual(data.get("schema_version"), "2")
 
 
 if __name__ == "__main__":

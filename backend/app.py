@@ -25,6 +25,8 @@ import signal
 import xml.etree.ElementTree as ET
 from pydantic import BaseModel
 
+from modules.backup import with_backup_contract
+
 # Update-Center: Kompatibilitäts-Gate für DEB-Build
 try:
     from update_center import (
@@ -550,6 +552,15 @@ def _new_job_id() -> str:
     return uuid.uuid4().hex[:12]
 
 
+def _has_active_long_running_job() -> bool:
+    """True, wenn ein Backup- oder Klon-Job noch nicht im Endzustand ist (Phase 2C: ein aktiver Job)."""
+    for j in BACKUP_JOBS.values():
+        st = j.get("status")
+        if st in ("queued", "running", "cancel_requested"):
+            return True
+    return False
+
+
 def _job_snapshot(job: dict) -> dict:
     # non-mutating snapshot with live size
     snap = dict(job)
@@ -619,6 +630,8 @@ def _curl_put_with_progress(
         if job_id and job_id in BACKUP_JOBS:
             BACKUP_JOBS[job_id]["upload_progress_pct"] = None
             BACKUP_JOBS[job_id]["message"] = "Prüfe in 1 Min, ob Datei in Cloud…"
+            BACKUP_JOBS[job_id]["code"] = "backup.cloud_check_pending"
+            BACKUP_JOBS[job_id]["severity"] = "info"
         time.sleep(60)
         rv = run_command(
             f"curl -sS -o /dev/null -w '%{{http_code}}' -u {shlex.quote(user)}:{shlex.quote(pw)} "
@@ -738,8 +751,18 @@ def _do_backup_logic(
     backup_file = None
     last_full = None
 
+    def _bc(payload: dict, code: str, severity: str, details: Optional[dict] = None) -> dict:
+        return with_backup_contract(payload, code, severity, details)
+
+    def _is_backup_timeout(result: dict) -> bool:
+        return result.get("returncode") == -9 or (result.get("stderr") or "").strip() == "Timeout"
+
     if cancel_event and cancel_event.is_set():
-        return {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp}
+        return _bc(
+            {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp},
+            "backup.cancelled",
+            "info",
+        )
 
     def _run_tar(cmd: str) -> dict:
         if not cancel_event:
@@ -814,11 +837,19 @@ def _do_backup_logic(
         backup_result = _run_tar(backup_cmd)
         if (cancel_event and cancel_event.is_set()) or backup_result.get("returncode") == -15:
             _cleanup_backup_file(backup_file)
-            return {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp}
+            return _bc(
+                {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp},
+                "backup.cancelled",
+                "info",
+            )
         if backup_result.get("success"):
             results.append(f"Vollständiges Backup erstellt: {backup_file}")
             _make_backup_readable(backup_file)
-            return {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+            return _bc(
+                {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                "backup.success",
+                "success",
+            )
         if _tar_no_space(backup_result):
             free_hint = _fs_free_hint(backup_dir)
             msg = "Nicht genug Speicherplatz im Zielverzeichnis."
@@ -828,25 +859,49 @@ def _do_backup_logic(
             if backup_result.get("stderr"):
                 results.append(f"tar/stderr: {(backup_result.get('stderr') or '')[:200]}")
             _cleanup_backup_file(backup_file)
-            return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+            return _bc(
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                "backup.no_space",
+                "error",
+                {"free_hint": free_hint} if free_hint else None,
+            )
         if _tar_warning_ok(backup_result, backup_file):
             warning = "Backup erstellt, aber tar meldete Warnungen."
             results.append(f"⚠️ Backup erstellt mit Warnungen: {backup_file}")
             _make_backup_readable(backup_file)
             out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
             out["warning"] = warning
-            return out
+            return _bc(out, "backup.success", "success", {"tar_warning": True})
         if _tar_partial_ok(backup_result, backup_file):
             warning = f"Backup wurde erstellt, aber tar lieferte Returncode {backup_result.get('returncode')}."
             results.append(f"⚠️ Backup erstellt (möglicherweise unvollständig): {backup_file}")
             _make_backup_readable(backup_file)
             out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
             out["warning"] = warning
-            return out
+            return _bc(
+                out,
+                "backup.success",
+                "success",
+                {"tar_returncode": backup_result.get("returncode")},
+            )
+        if _is_backup_timeout(backup_result):
+            stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Timeout")
+            results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
+            _cleanup_backup_file(backup_file)
+            return _bc(
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                "backup.timeout",
+                "error",
+            )
         stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
         results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
         _cleanup_backup_file(backup_file)
-        return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+        return _bc(
+            {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+            "backup.failed",
+            "error",
+            {"stderr_excerpt": str(stderr)[:200]},
+        )
 
     if backup_type == "incremental":
         backup_file = f"{backup_dir}/pi-backup-inc-{timestamp}.tar.gz"
@@ -876,14 +931,18 @@ def _do_backup_logic(
         backup_result = _run_tar(backup_cmd)
         if (cancel_event and cancel_event.is_set()) or backup_result.get("returncode") == -15:
             _cleanup_backup_file(backup_file)
-            return {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp}
+            return _bc(
+                {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp},
+                "backup.cancelled",
+                "info",
+            )
         if backup_result.get("success"):
             results.append(f"Inkrementelles Backup erstellt: {backup_file}")
             _make_backup_readable(backup_file)
             out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
             if last_full:
                 out["last_full_backup"] = last_full
-            return out
+            return _bc(out, "backup.success", "success")
         if _tar_no_space(backup_result):
             free_hint = _fs_free_hint(backup_dir)
             msg = "Nicht genug Speicherplatz im Zielverzeichnis."
@@ -891,7 +950,12 @@ def _do_backup_logic(
                 msg += f" Freier Speicher: {free_hint}."
             results.append(f"❌ {msg}")
             _cleanup_backup_file(backup_file)
-            return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+            return _bc(
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                "backup.no_space",
+                "error",
+                {"free_hint": free_hint} if free_hint else None,
+            )
         if _tar_warning_ok(backup_result, backup_file) or _tar_partial_ok(backup_result, backup_file):
             warning = "Backup erstellt, aber tar meldete Warnungen."
             results.append(f"⚠️ Inkrementelles Backup erstellt mit Warnungen: {backup_file}")
@@ -900,11 +964,25 @@ def _do_backup_logic(
             out["warning"] = warning
             if last_full:
                 out["last_full_backup"] = last_full
-            return out
+            return _bc(out, "backup.success", "success", {"tar_warning": True})
+        if _is_backup_timeout(backup_result):
+            stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Timeout")
+            results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
+            _cleanup_backup_file(backup_file)
+            return _bc(
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                "backup.timeout",
+                "error",
+            )
         stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
         results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
         _cleanup_backup_file(backup_file)
-        return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+        return _bc(
+            {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+            "backup.failed",
+            "error",
+            {"stderr_excerpt": str(stderr)[:200]},
+        )
 
     if backup_type == "data":
         backup_file = f"{backup_dir}/pi-backup-data-{timestamp}.tar.gz"
@@ -912,11 +990,19 @@ def _do_backup_logic(
         backup_result = _run_tar(backup_cmd)
         if (cancel_event and cancel_event.is_set()) or backup_result.get("returncode") == -15:
             _cleanup_backup_file(backup_file)
-            return {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp}
+            return _bc(
+                {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp},
+                "backup.cancelled",
+                "info",
+            )
         if backup_result.get("success"):
             results.append(f"Daten-Backup erstellt: {backup_file}")
             _make_backup_readable(backup_file)
-            return {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+            return _bc(
+                {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                "backup.success",
+                "success",
+            )
         if _tar_no_space(backup_result):
             free_hint = _fs_free_hint(backup_dir)
             msg = "Nicht genug Speicherplatz im Zielverzeichnis."
@@ -924,20 +1010,44 @@ def _do_backup_logic(
                 msg += f" Freier Speicher: {free_hint}."
             results.append(f"❌ {msg}")
             _cleanup_backup_file(backup_file)
-            return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+            return _bc(
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                "backup.no_space",
+                "error",
+                {"free_hint": free_hint} if free_hint else None,
+            )
         if _tar_warning_ok(backup_result, backup_file) or _tar_partial_ok(backup_result, backup_file):
             warning = "Backup erstellt, aber tar meldete Warnungen."
             results.append(f"⚠️ Daten-Backup erstellt mit Warnungen: {backup_file}")
             _make_backup_readable(backup_file)
             out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
             out["warning"] = warning
-            return out
+            return _bc(out, "backup.success", "success", {"tar_warning": True})
+        if _is_backup_timeout(backup_result):
+            stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Timeout")
+            results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
+            _cleanup_backup_file(backup_file)
+            return _bc(
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                "backup.timeout",
+                "error",
+            )
         stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
         results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
         _cleanup_backup_file(backup_file)
-        return {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp}
+        return _bc(
+            {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+            "backup.failed",
+            "error",
+            {"stderr_excerpt": str(stderr)[:200]},
+        )
 
-    return {"status": "error", "message": f"Unbekannter Backup-Typ: {backup_type}", "results": results, "backup_file": None, "timestamp": timestamp}
+    return _bc(
+        {"status": "error", "message": f"Unbekannter Backup-Typ: {backup_type}", "results": results, "backup_file": None, "timestamp": timestamp},
+        "backup.unknown_type",
+        "error",
+        {"backup_type": backup_type},
+    )
 
 
 @app.get("/api/backup/jobs")
@@ -948,7 +1058,7 @@ async def backup_jobs_list():
         status = job.get("status", "")
         if status in ("queued", "running", "cancel_requested") or not status:
             running.append(_job_snapshot(job))
-    return {"status": "success", "jobs": running}
+    return with_backup_contract({"status": "success", "jobs": running}, "backup.jobs_list", "success")
 
 
 @app.get("/api/backup/jobs/{job_id}")
@@ -956,8 +1066,11 @@ async def backup_job_status(job_id: str):
     job_id = (job_id or "").strip()
     job = BACKUP_JOBS.get(job_id)
     if not job:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "Job nicht gefunden"})
-    return {"status": "success", "job": _job_snapshot(job)}
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract({"status": "error", "message": "Job nicht gefunden"}, "backup.job_not_found", "error"),
+        )
+    return with_backup_contract({"status": "success", "job": _job_snapshot(job)}, "backup.job_status", "success")
 
 
 @app.post("/api/backup/jobs/{job_id}/cancel")
@@ -965,10 +1078,17 @@ async def backup_job_cancel(job_id: str):
     job_id = (job_id or "").strip()
     job = BACKUP_JOBS.get(job_id)
     if not job:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "Job nicht gefunden"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract({"status": "error", "message": "Job nicht gefunden"}, "backup.job_not_found", "error"),
+        )
 
     if job.get("status") in ("success", "error", "cancelled"):
-        return {"status": "success", "message": "Job ist bereits abgeschlossen"}
+        return with_backup_contract(
+            {"status": "success", "message": "Job ist bereits abgeschlossen"},
+            "backup.job_already_done",
+            "info",
+        )
 
     ev = BACKUP_JOB_CANCEL.get(job_id)
     if not ev:
@@ -977,6 +1097,8 @@ async def backup_job_cancel(job_id: str):
     ev.set()
     job["status"] = "cancel_requested"
     job["message"] = "Abbruch angefordert…"
+    job["code"] = "backup.cancel_requested"
+    job["severity"] = "info"
 
     # best-effort kill running process group if available
     try:
@@ -986,7 +1108,7 @@ async def backup_job_cancel(job_id: str):
     except Exception:
         pass
 
-    return {"status": "success", "message": "Abbruch angefordert"}
+    return with_backup_contract({"status": "success", "message": "Abbruch angefordert"}, "backup.cancel_requested", "success")
 
 
 def _load_or_init_config() -> dict:
@@ -1072,7 +1194,23 @@ async def init_status():
 
 @app.get("/api/settings")
 async def get_settings():
-    return {"status": "success", "settings": APP_SETTINGS, "config_path": str(CONFIG_PATH), "device_id": CONFIG_STATE.get("device_id")}
+    exp_level = "beginner"
+    try:
+        cands = _user_profile_collect_from_disk()
+        if cands:
+            cands.sort(key=lambda x: (x[0], x[1]), reverse=True)
+            lv = str(cands[0][2] or "beginner").lower()
+            if lv in ("beginner", "advanced", "developer"):
+                exp_level = lv
+    except Exception:
+        pass
+    return {
+        "status": "success",
+        "settings": APP_SETTINGS,
+        "config_path": str(CONFIG_PATH),
+        "device_id": CONFIG_STATE.get("device_id"),
+        "experience_level": exp_level,
+    }
 
 
 @app.post("/api/settings")
@@ -1130,6 +1268,15 @@ async def set_settings(request: Request):
 
     APP_SETTINGS = merged
     return {"status": "success", "message": "Einstellungen gespeichert", "settings": merged}
+
+
+@app.post("/api/settings/user-experience")
+async def set_user_experience_via_settings(payload: dict = Body(...)):
+    """
+    Erfahrungslevel speichern (gleiche Datei wie /api/user-profile).
+    Fallback-URL falls Proxys oder alte Clients nur /api/settings/* durchlassen.
+    """
+    return _update_user_profile_body(payload)
 
 
 @app.get("/api/presets/list")
@@ -4392,8 +4539,7 @@ async def get_user_profile():
     return {"status": "success", "profile": default.dict()}
 
 
-@app.put("/api/user-profile")
-async def update_user_profile(payload: dict = Body(...)):
+def _update_user_profile_body(payload: dict) -> dict:
     """
     Speichert das Benutzerprofil. Nur einfache, idempotente Einstellungen:
     - experience_level: "beginner" | "advanced" | "developer"
@@ -4408,6 +4554,17 @@ async def update_user_profile(payload: dict = Body(...)):
         logger.error("Fehler beim Schreiben von user_profile.json: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Profil konnte nicht gespeichert werden.")
     return {"status": "success", "profile": profile.dict()}
+
+
+@app.put("/api/user-profile")
+async def update_user_profile_put(payload: dict = Body(...)):
+    return _update_user_profile_body(payload)
+
+
+@app.post("/api/user-profile")
+async def update_user_profile_post(payload: dict = Body(...)):
+    """Gleiche Semantik wie PUT – für Umgebungen, in denen PUT nicht durchgereicht wird."""
+    return _update_user_profile_body(payload)
 
 @app.get("/api/users/sudo-password/check")
 async def check_sudo_password():
@@ -8042,23 +8199,32 @@ async def backup_status():
             },
             "backups": [],
         }
-        return {
-            "status": "success",
-            "api_status": "ok",
-            "message": "",
-            "data": data,
-            **data,
-        }
+        return with_backup_contract(
+            {
+                "status": "success",
+                "api_status": "ok",
+                "message": "",
+                "data": data,
+                **data,
+            },
+            "backup.status_ok",
+            "success",
+        )
     except Exception as e:
         logger.error(f"Fehler beim Lesen des Backup-Status: {e}", exc_info=True)
         return JSONResponse(
             status_code=200,
-            content={
-                "status": "error",
-                "api_status": "error",
-                "message": str(e),
-                "data": {},
-            },
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": str(e),
+                    "data": {},
+                },
+                "backup.status_failed",
+                "error",
+                {"detail": str(e)},
+            ),
         )
 
 
@@ -8620,7 +8786,7 @@ async def backup_get_settings():
         active = run_command(f"systemctl is-active {svc}.timer 2>/dev/null").get("stdout", "").strip()
         statuses[str(r["id"])] = {"enabled": enabled, "active": active}
     s["_timer_status"] = statuses
-    return {"status": "success", "settings": s}
+    return with_backup_contract({"status": "success", "settings": s}, "backup.settings_loaded", "success")
 
 
 @app.post("/api/backup/settings")
@@ -8632,7 +8798,14 @@ async def backup_set_settings(request: Request):
 
     sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
     if not sudo_password:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                "backup.sudo_required",
+                "error",
+            ),
+        )
 
     settings = data.get("settings") or {}
     # merge + migrate legacy -> schedules[]
@@ -8649,14 +8822,29 @@ async def backup_set_settings(request: Request):
     try:
         base["backup_dir"] = _validate_backup_dir(base.get("backup_dir", "/mnt/backups"))
     except Exception as ve:
-        return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"},
+                "backup.path_invalid",
+                "error",
+                {"reason": str(ve)},
+            ),
+        )
     try:
         keep = int((base.get("retention") or {}).get("keep_last", 5))
         if keep < 1 or keep > 100:
             raise ValueError()
         base["retention"]["keep_last"] = keep
     except Exception:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "retention.keep_last muss zwischen 1 und 100 liegen"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": "retention.keep_last muss zwischen 1 und 100 liegen"},
+                "backup.settings_retention_invalid",
+                "error",
+            ),
+        )
 
     # validate schedules basic shape
     try:
@@ -8679,13 +8867,20 @@ async def backup_set_settings(request: Request):
             cleaned.append(rr)
         base["schedules"] = cleaned
     except Exception:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "schedules ist ungültig"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract({"status": "error", "message": "schedules ist ungültig"}, "backup.schedules_invalid", "error"),
+        )
 
     # store config (root-protected) + apply timer
     _write_backup_settings(base, sudo_password=sudo_password)
     _apply_backup_schedule(base, sudo_password=sudo_password)
 
-    return {"status": "success", "message": "Backup-Einstellungen gespeichert", "settings": base}
+    return with_backup_contract(
+        {"status": "success", "message": "Backup-Einstellungen gespeichert", "settings": base},
+        "backup.settings_saved",
+        "success",
+    )
 
 
 @app.post("/api/backup/schedule/run-now")
@@ -8698,7 +8893,14 @@ async def backup_run_now(request: Request):
 
     sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
     if not sudo_password:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                "backup.sudo_required",
+                "error",
+            ),
+        )
 
     runner = "/usr/local/bin/pi-installer-backup-run"
     rule_id = (data.get("rule_id") or "").strip()
@@ -8707,12 +8909,18 @@ async def backup_run_now(request: Request):
     _apply_backup_schedule(settings, sudo_password=sudo_password)
     cmd = runner if not rule_id else f"{runner} --rule {shlex.quote(rule_id)}"
     res = await run_command_async(cmd, sudo=True, sudo_password=sudo_password, timeout=7200)
-    return {
-        "status": "success" if res["success"] else "error",
+    ok_cmd = bool(res.get("success"))
+    payload = {
+        "status": "success" if ok_cmd else "error",
         "stdout": (res.get("stdout") or "").strip()[:4000],
         "stderr": (res.get("stderr") or "").strip()[:4000],
         "returncode": res.get("returncode"),
     }
+    return with_backup_contract(
+        payload,
+        "backup.schedule_run_ok" if ok_cmd else "backup.schedule_run_failed",
+        "success" if ok_cmd else "error",
+    )
 
 
 @app.post("/api/backup/cloud/test")
@@ -8728,9 +8936,19 @@ async def backup_cloud_test(request: Request):
     password = (data.get("password") or "").strip()
 
     if not url:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "webdav_url erforderlich"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract({"status": "error", "message": "webdav_url erforderlich"}, "backup.cloud_test_missing_url", "error"),
+        )
     if not username or not password:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "username + password erforderlich"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": "username + password erforderlich"},
+                "backup.cloud_test_missing_credentials",
+                "error",
+            ),
+        )
 
     # PROPFIND Depth:0 ist typisch für WebDAV (Status 207 = Multi-Status)
     cmd = (
@@ -8757,7 +8975,13 @@ async def backup_cloud_test(request: Request):
         else:
             msg = (res.get("stderr") or "Verbindung fehlgeschlagen").strip()[:300]
 
-    return {"status": "success" if ok else "error", "ok": bool(ok), "http_code": code, "message": msg}
+    payload = {"status": "success" if ok else "error", "ok": bool(ok), "http_code": code, "message": msg}
+    return with_backup_contract(
+        payload,
+        "backup.cloud_test_ok" if ok else "backup.cloud_test_failed",
+        "success" if ok else "error",
+        {"http_code": code} if code is not None else None,
+    )
 
 
 @app.get("/api/backup/cloud/list")
@@ -8769,7 +8993,11 @@ async def backup_cloud_list(rule_id: str = ""):
     settings = _read_backup_settings()
     cloud = settings.get("cloud") or {}
     if not cloud.get("enabled"):
-        return {"status": "success", "backups": [], "message": "Cloud-Upload ist deaktiviert"}
+        return with_backup_contract(
+            {"status": "success", "backups": [], "message": "Cloud-Upload ist deaktiviert"},
+            "backup.cloud_list_disabled",
+            "info",
+        )
     provider = cloud.get("provider") or "seafile_webdav"
     
     # Versuche Backup-Modul zu verwenden für alle Provider
@@ -8784,19 +9012,37 @@ async def backup_cloud_list(rule_id: str = ""):
         elif provider in ("s3", "s3_compatible"):
             bucket = cloud.get("bucket") or ""
             if not bucket:
-                return {"status": "success", "backups": [], "message": "S3-Bucket nicht konfiguriert"}
+                return with_backup_contract(
+                    {"status": "success", "backups": [], "message": "S3-Bucket nicht konfiguriert"},
+                    "backup.cloud_list_s3_unconfigured",
+                    "warning",
+                )
             # TODO: S3-Liste implementieren
-            return {"status": "success", "backups": [], "message": "S3-Liste wird noch nicht unterstützt"}
+            return with_backup_contract(
+                {"status": "success", "backups": [], "message": "S3-Liste wird noch nicht unterstützt"},
+                "backup.cloud_list_s3_unsupported",
+                "info",
+            )
         # Für andere Provider: Noch nicht unterstützt
         else:
-            return {"status": "success", "backups": [], "message": f"Provider '{provider}' wird für Cloud-Liste noch nicht unterstützt"}
+            return with_backup_contract(
+                {"status": "success", "backups": [], "message": f"Provider '{provider}' wird für Cloud-Liste noch nicht unterstützt"},
+                "backup.cloud_list_provider_unsupported",
+                "info",
+                {"provider": provider},
+            )
     except Exception as e:
         logger.error(f"Fehler beim Abrufen der Cloud-Backups: {str(e)}", exc_info=True)
         # Fallback auf WebDAV
     
     # Unterstütze WebDAV-basierte Provider (Fallback)
     if provider not in ("seafile_webdav", "webdav", "nextcloud_webdav"):
-        return {"status": "success", "backups": [], "message": f"Provider '{provider}' wird für Cloud-Liste nicht unterstützt"}
+        return with_backup_contract(
+            {"status": "success", "backups": [], "message": f"Provider '{provider}' wird für Cloud-Liste nicht unterstützt"},
+            "backup.cloud_list_provider_unsupported",
+            "info",
+            {"provider": provider},
+        )
 
     url = (cloud.get("webdav_url") or "").strip().rstrip("/")
     user = (cloud.get("username") or "").strip()
@@ -8804,7 +9050,14 @@ async def backup_cloud_list(rule_id: str = ""):
     remote_path = (cloud.get("remote_path") or "").strip().strip("/")
 
     if not url or not user or not pw:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "WebDAV URL + Username + Passwort fehlen"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": "WebDAV URL + Username + Passwort fehlen"},
+                "backup.cloud_list_credentials_missing",
+                "error",
+            ),
+        )
 
     base = f"{url}/{remote_path}" if remote_path else url
     # Ensure trailing slash for collection listing
@@ -8820,11 +9073,18 @@ async def backup_cloud_list(rule_id: str = ""):
     )
     res = run_command(cmd)
     if not res.get("success"):
-        return JSONResponse(status_code=200, content={"status": "error", "message": (res.get("stderr") or res.get("error") or "Request fehlgeschlagen")[:300]})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": (res.get("stderr") or res.get("error") or "Request fehlgeschlagen")[:300]},
+                "backup.cloud_list_request_failed",
+                "error",
+            ),
+        )
 
     xml_text = (res.get("stdout") or "").strip()
     if not xml_text:
-        return {"status": "success", "backups": []}
+        return with_backup_contract({"status": "success", "backups": []}, "backup.cloud_list_ok", "success")
 
     rid = (rule_id or "").strip()
     backups = []
@@ -8883,7 +9143,12 @@ async def backup_cloud_list(rule_id: str = ""):
         # fallback: if parsing fails, return empty but not error (avoid breaking UI)
         backups = []
 
-    return {"status": "success", "backups": backups, "base_url": base}
+    return with_backup_contract(
+        {"status": "success", "backups": backups, "base_url": base},
+        "backup.cloud_list_ok",
+        "success",
+        {"count": len(backups)},
+    )
 
 
 @app.get("/api/backup/cloud/quota")
@@ -8893,7 +9158,11 @@ async def backup_cloud_quota():
         settings = _read_backup_settings()
         cloud = settings.get("cloud") or {}
         if not cloud.get("enabled"):
-            return {"status": "success", "quota": None, "message": "Cloud-Upload ist deaktiviert"}
+            return with_backup_contract(
+                {"status": "success", "quota": None, "message": "Cloud-Upload ist deaktiviert"},
+                "backup.cloud_quota_disabled",
+                "info",
+            )
         
         provider = cloud.get("provider") or "seafile_webdav"
         url = (cloud.get("webdav_url") or "").strip().rstrip("/")
@@ -8901,7 +9170,11 @@ async def backup_cloud_quota():
         pw = (cloud.get("password") or "").strip()
         
         if not url or not user or not pw:
-            return {"status": "success", "quota": None, "message": "Cloud-Settings unvollständig"}
+            return with_backup_contract(
+                {"status": "success", "quota": None, "message": "Cloud-Settings unvollständig"},
+                "backup.cloud_quota_incomplete_settings",
+                "warning",
+            )
         
         # Versuche Quota-Informationen zu erhalten (WebDAV QUOTA Property)
         # Für Seafile/Nextcloud: PROPFIND mit Quota-Property
@@ -8915,11 +9188,19 @@ async def backup_cloud_quota():
         res = run_command(cmd)
         
         if not res.get("success"):
-            return {"status": "success", "quota": None, "message": "Quota-Informationen nicht verfügbar"}
+            return with_backup_contract(
+                {"status": "success", "quota": None, "message": "Quota-Informationen nicht verfügbar"},
+                "backup.cloud_quota_unavailable",
+                "info",
+            )
         
         xml_text = (res.get("stdout") or "").strip()
         if not xml_text:
-            return {"status": "success", "quota": None, "message": "Keine Quota-Informationen"}
+            return with_backup_contract(
+                {"status": "success", "quota": None, "message": "Keine Quota-Informationen"},
+                "backup.cloud_quota_empty_response",
+                "info",
+            )
         
         # Parse XML für Quota-Informationen
         try:
@@ -8961,25 +9242,33 @@ async def backup_cloud_quota():
                 
                 total = (quota_used or 0) + (quota_available or 0) if quota_available is not None else None
                 
-                return {
-                    "status": "success",
-                    "quota": {
-                        "used_bytes": quota_used,
-                        "available_bytes": quota_available,
-                        "total_bytes": total,
-                        "used_human": human(quota_used) if quota_used is not None else None,
-                        "available_human": human(quota_available) if quota_available is not None else None,
-                        "total_human": human(total) if total else None,
-                        "used_percent": round((quota_used / total * 100), 1) if (quota_used and total and total > 0) else None,
-                    }
-                }
+                return with_backup_contract(
+                    {
+                        "status": "success",
+                        "quota": {
+                            "used_bytes": quota_used,
+                            "available_bytes": quota_available,
+                            "total_bytes": total,
+                            "used_human": human(quota_used) if quota_used is not None else None,
+                            "available_human": human(quota_available) if quota_available is not None else None,
+                            "total_human": human(total) if total else None,
+                            "used_percent": round((quota_used / total * 100), 1) if (quota_used and total and total > 0) else None,
+                        },
+                    },
+                    "backup.cloud_quota_ok",
+                    "success",
+                )
         except Exception as e:
             logger.debug(f"Quota-Parsing fehlgeschlagen: {str(e)}")
         
-        return {"status": "success", "quota": None, "message": "Quota-Informationen nicht verfügbar für diesen Provider"}
+        return with_backup_contract(
+            {"status": "success", "quota": None, "message": "Quota-Informationen nicht verfügbar für diesen Provider"},
+            "backup.cloud_quota_provider_unsupported",
+            "info",
+        )
     except Exception as e:
         logger.error(f"Fehler beim Abrufen der Cloud-Quota: {str(e)}", exc_info=True)
-        return {"status": "error", "message": str(e)}
+        return with_backup_contract({"status": "error", "message": str(e)}, "backup.cloud_quota_failed", "error", {"detail": str(e)})
 
 
 @app.post("/api/backup/cloud/delete")
@@ -8992,23 +9281,52 @@ async def backup_cloud_delete(request: Request):
     
     backup_file = (data.get("backup_file") or data.get("href") or "").strip()
     if not backup_file:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "backup_file oder href erforderlich"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": "backup_file oder href erforderlich"},
+                "backup.cloud_delete_missing_param",
+                "error",
+            ),
+        )
     
     settings = _read_backup_settings()
     cloud = settings.get("cloud") or {}
     if not cloud.get("enabled"):
-        return JSONResponse(status_code=200, content={"status": "error", "message": "Cloud-Upload ist deaktiviert"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": "Cloud-Upload ist deaktiviert"},
+                "backup.cloud_delete_disabled",
+                "error",
+            ),
+        )
     
     provider = cloud.get("provider") or "seafile_webdav"
     if provider not in ("seafile_webdav", "webdav", "nextcloud_webdav"):
-        return JSONResponse(status_code=200, content={"status": "error", "message": f"Provider '{provider}' wird für Cloud-Löschung nicht unterstützt"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": f"Provider '{provider}' wird für Cloud-Löschung nicht unterstützt"},
+                "backup.cloud_delete_provider_unsupported",
+                "error",
+                {"provider": provider},
+            ),
+        )
     
     url = (cloud.get("webdav_url") or "").strip().rstrip("/")
     user = (cloud.get("username") or "").strip()
     pw = (cloud.get("password") or "").strip()
     
     if not url or not user or not pw:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "WebDAV URL + Username + Passwort fehlen"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": "WebDAV URL + Username + Passwort fehlen"},
+                "backup.cloud_delete_credentials_missing",
+                "error",
+            ),
+        )
     
     # Verwende base_url aus Request, falls vorhanden (wird vom Frontend gesendet)
     # Sonst konstruiere base aus webdav_url und remote_path
@@ -9101,7 +9419,11 @@ async def backup_cloud_delete(request: Request):
         try:
             code = int(http_code)
             if code in (200, 202, 204):
-                return {"status": "success", "message": "Cloud-Backup gelöscht", "debug": debug_info}
+                return with_backup_contract(
+                    {"status": "success", "message": "Cloud-Backup gelöscht", "debug": debug_info},
+                    "backup.cloud_delete_ok",
+                    "success",
+                )
             elif code == 404:
                 # Debug-Info für 404-Fehler
                 debug_info["http_code"] = 404
@@ -9128,7 +9450,11 @@ async def backup_cloud_delete(request: Request):
                             code_alt1 = int(http_code_alt1)
                             if code_alt1 in (200, 202, 204):
                                 debug_info["successful_alternative"] = alt_url1
-                                return {"status": "success", "message": "Cloud-Backup gelöscht", "debug": debug_info}
+                                return with_backup_contract(
+                                    {"status": "success", "message": "Cloud-Backup gelöscht", "debug": debug_info},
+                                    "backup.cloud_delete_ok",
+                                    "success",
+                                )
                         except ValueError:
                             pass
                     
@@ -9162,7 +9488,11 @@ async def backup_cloud_delete(request: Request):
                                 code_alt2 = int(http_code_alt2)
                                 if code_alt2 in (200, 202, 204):
                                     debug_info["successful_alternative"] = alt_url2
-                                    return {"status": "success", "message": "Cloud-Backup gelöscht", "debug": debug_info}
+                                    return with_backup_contract(
+                                        {"status": "success", "message": "Cloud-Backup gelöscht", "debug": debug_info},
+                                        "backup.cloud_delete_ok",
+                                        "success",
+                                    )
                             except ValueError:
                                 pass
                 
@@ -9171,36 +9501,60 @@ async def backup_cloud_delete(request: Request):
                 debug_info["http_code"] = code
                 debug_info["final_remote_url"] = remote_url[:200]
                 return JSONResponse(
-                    status_code=200, 
-                    content={
-                        "status": "error", 
-                        "message": f"Datei nicht gefunden (HTTP 404). Versuchte URLs: {', '.join(alternatives_tried[:3])}",
-                        "http_code": code,
-                        "remote_url": remote_url[:200],
-                        "backup_file": backup_file[:200],
-                        "alternatives_tried": alternatives_tried[:5],
-                        "debug": debug_info
-                    }
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": f"Datei nicht gefunden (HTTP 404). Versuchte URLs: {', '.join(alternatives_tried[:3])}",
+                            "http_code": code,
+                            "remote_url": remote_url[:200],
+                            "backup_file": backup_file[:200],
+                            "alternatives_tried": alternatives_tried[:5],
+                            "debug": debug_info,
+                        },
+                        "backup.cloud_delete_not_found",
+                        "error",
+                        {"http_code": code},
+                    ),
                 )
             else:
                 debug_info["http_code"] = code
                 return JSONResponse(
-                    status_code=200, 
-                    content={
-                        "status": "error", 
-                        "message": f"Löschung fehlgeschlagen (HTTP {code})",
-                        "http_code": code,
-                        "remote_url": remote_url[:200],
-                        "debug": debug_info
-                    }
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": f"Löschung fehlgeschlagen (HTTP {code})",
+                            "http_code": code,
+                            "remote_url": remote_url[:200],
+                            "debug": debug_info,
+                        },
+                        "backup.cloud_delete_http_error",
+                        "error",
+                        {"http_code": code},
+                    ),
                 )
         except ValueError:
             debug_info["http_code_error"] = http_code
-            return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültige HTTP-Antwort: {http_code}", "debug": debug_info})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": f"Ungültige HTTP-Antwort: {http_code}", "debug": debug_info},
+                    "backup.cloud_delete_invalid_response",
+                    "error",
+                ),
+            )
     else:
         error_msg = res.get("stderr") or res.get("error") or "Unbekannter Fehler"
         debug_info["curl_error"] = error_msg[:200]
-        return JSONResponse(status_code=200, content={"status": "error", "message": f"Löschung fehlgeschlagen: {error_msg[:200]}", "debug": debug_info})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": f"Löschung fehlgeschlagen: {error_msg[:200]}", "debug": debug_info},
+                "backup.cloud_delete_curl_failed",
+                "error",
+            ),
+        )
 
 
 @app.post("/api/backup/cloud/verify")
@@ -9220,9 +9574,23 @@ async def backup_cloud_verify(request: Request):
     remote_path = (cloud.get("remote_path") or "").strip().strip("/")
 
     if not name or not name.endswith(".tar.gz"):
-        return JSONResponse(status_code=200, content={"status": "error", "message": "name (.tar.gz) erforderlich"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": "name (.tar.gz) erforderlich"},
+                "backup.cloud_verify_missing_name",
+                "error",
+            ),
+        )
     if not url or not user or not pw:
-        return JSONResponse(status_code=200, content={"status": "error", "message": "WebDAV Settings fehlen"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": "WebDAV Settings fehlen"},
+                "backup.cloud_verify_settings_incomplete",
+                "error",
+            ),
+        )
 
     base = f"{url}/{remote_path}" if remote_path else url
     if not base.endswith("/"):
@@ -9242,7 +9610,13 @@ async def backup_cloud_verify(request: Request):
     except Exception:
         code = None
     ok = res.get("success") and (code in (200, 201, 204, 207))
-    return {"status": "success" if ok else "error", "ok": bool(ok), "http_code": code, "remote": remote}
+    payload = {"status": "success" if ok else "error", "ok": bool(ok), "http_code": code, "remote": remote}
+    return with_backup_contract(
+        payload,
+        "backup.cloud_verify_ok" if ok else "backup.cloud_verify_failed",
+        "success" if ok else "error",
+        {"http_code": code} if code is not None else None,
+    )
 
 @app.get("/api/backup/targets")
 async def backup_targets():
@@ -9341,9 +9715,27 @@ async def backup_targets():
 
         # Fallback: typische Pfade (ohne Garantie)
         common = ["/mnt", "/mnt/pi-installer-usb", "/media", "/run/media"]
-        return {"status": "success", "targets": targets, "common_roots": common}
+        return with_backup_contract(
+            {"status": "success", "targets": targets, "common_roots": common},
+            "backup.targets_ok",
+            "success",
+            {"count": len(targets)},
+        )
     except Exception as e:
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e), "targets": [], "common_roots": ["/mnt", "/mnt/pi-installer-usb", "/media", "/run/media"]})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "message": str(e),
+                    "targets": [],
+                    "common_roots": ["/mnt", "/mnt/pi-installer-usb", "/media", "/run/media"],
+                },
+                "backup.targets_failed",
+                "error",
+                {"detail": str(e)},
+            ),
+        )
 
 @app.get("/api/backup/target-check")
 async def backup_target_check(backup_dir: str, create: int = 0):
@@ -9357,7 +9749,15 @@ async def backup_target_check(backup_dir: str, create: int = 0):
         try:
             backup_dir = _validate_backup_dir(backup_dir)
         except Exception as ve:
-            return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"},
+                    "backup.path_invalid",
+                    "error",
+                    {"reason": str(ve)},
+                ),
+            )
 
         p = Path(backup_dir)
         sudo_password = (sudo_store.get_password() or "")
@@ -9373,11 +9773,16 @@ async def backup_target_check(backup_dir: str, create: int = 0):
             else:
                 return JSONResponse(
                     status_code=200,
-                    content={
-                        "status": "error",
-                        "message": f"Zielverzeichnis konnte nicht erstellt werden: {backup_dir}",
-                        "created": False,
-                    },
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": f"Zielverzeichnis konnte nicht erstellt werden: {backup_dir}",
+                            "created": False,
+                        },
+                        "backup.mkdir_failed",
+                        "error",
+                        {"path": backup_dir},
+                    ),
                 )
 
         exists = p.exists()
@@ -9529,18 +9934,33 @@ async def backup_target_check(backup_dir: str, create: int = 0):
             write_test["hints"] = hints
             write_test["suggest_usb_prepare"] = suggest_usb_prepare
 
-        return {
-            "status": "success",
-            "backup_dir": backup_dir,
-            "exists": exists,
-            "is_dir": is_dir,
-            "created": created,
-            "fs": fs,
-            "write_test": write_test,
-            "mount": mount_info,
-        }
+        wt_ok = bool(write_test.get("success")) if (exists and is_dir) else True
+        tc_code = "backup.target_check_ok" if wt_ok else "backup.target_not_writable"
+        tc_sev = "success" if wt_ok else "warning"
+        tc_details = None
+        if not wt_ok and isinstance(write_test.get("reason_code"), str):
+            tc_details = {"reason_code": write_test.get("reason_code")}
+
+        return with_backup_contract(
+            {
+                "status": "success",
+                "backup_dir": backup_dir,
+                "exists": exists,
+                "is_dir": is_dir,
+                "created": created,
+                "fs": fs,
+                "write_test": write_test,
+                "mount": mount_info,
+            },
+            tc_code,
+            tc_sev,
+            tc_details,
+        )
     except Exception as e:
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract({"status": "error", "message": str(e)}, "backup.target_check_failed", "error", {"detail": str(e)}),
+        )
 
 
 def _lsblk_tree() -> dict:
@@ -9840,10 +10260,18 @@ async def clone_disk_info(request: Request, refresh: int = 0):
             except Exception:
                 pass
         info = _clone_disk_info(sudo_password=sudo_password)
-        return {"status": "success", **info}
+        return with_backup_contract({"status": "success", **info}, "backup.clone_disk_info_ok", "success")
     except Exception as e:
         logger.exception("clone disk-info failed")
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e), "source": {}, "boot": {}, "targets": []})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": str(e), "source": {}, "boot": {}, "targets": []},
+                "backup.clone_disk_info_failed",
+                "error",
+                {"detail": str(e)},
+            ),
+        )
 
 
 def _do_clone_logic(
@@ -9870,17 +10298,30 @@ def _do_clone_logic(
         boot_device = boot_info.get("device")
 
         if not source.get("device"):
-            return {"status": "error", "message": "Quell-Laufwerk (/) nicht gefunden", "results": results}
+            return with_backup_contract(
+                {"status": "error", "message": "Quell-Laufwerk (/) nicht gefunden", "results": results},
+                "backup.clone_source_missing",
+                "error",
+            )
 
         target_device = (target_device or "").strip()
         if not target_device or not target_device.startswith("/dev/"):
-            return {"status": "error", "message": "Ungültiges Ziellaufwerk", "results": results}
+            return with_backup_contract(
+                {"status": "error", "message": "Ungültiges Ziellaufwerk", "results": results},
+                "backup.clone_target_invalid",
+                "error",
+            )
 
         # Prüfen ob Ziel in targets
         targets = info.get("targets") or []
         tgt_match = next((t for t in targets if t.get("device") == target_device), None)
         if not tgt_match:
-            return {"status": "error", "message": f"Ziellaufwerk {target_device} ist kein gültiger ext4-Zielkandidat", "results": results}
+            return with_backup_contract(
+                {"status": "error", "message": f"Ziellaufwerk {target_device} ist kein gültiger ext4-Zielkandidat", "results": results},
+                "backup.clone_target_not_candidate",
+                "error",
+                {"device": target_device},
+            )
 
         _add("Klon wird gestartet: " + target_device)
 
@@ -9891,17 +10332,42 @@ def _do_clone_logic(
             if r.get("success"):
                 _add(f"Ziel von {mp} ausgehängt")
             else:
-                return {"status": "error", "message": f"Ziel ist unter {mp} gemountet und konnte nicht ausgehängt werden. Bitte manuell unmounten.", "results": results}
+                return with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": f"Ziel ist unter {mp} gemountet und konnte nicht ausgehängt werden. Bitte manuell unmounten.",
+                        "results": results,
+                    },
+                    "backup.clone_target_busy",
+                    "error",
+                    {"mountpoint": mp},
+                )
 
         # Mount-Punkt anlegen (sudo – /mnt/ benötigt Root-Rechte)
         r = run_command(f"mkdir -p {shlex.quote(mountpoint)}", sudo=True, sudo_password=sudo_password, timeout=10)
         if not r.get("success"):
-            return {"status": "error", "message": f"Mount-Punkt {mountpoint} konnte nicht erstellt werden: {(r.get('stderr') or r.get('stdout') or '')[:150]}", "results": results}
+            return with_backup_contract(
+                {
+                    "status": "error",
+                    "message": f"Mount-Punkt {mountpoint} konnte nicht erstellt werden: {(r.get('stderr') or r.get('stdout') or '')[:150]}",
+                    "results": results,
+                },
+                "backup.clone_mountpoint_failed",
+                "error",
+            )
 
         # Mount Ziel
         r = run_command(f"mount {shlex.quote(target_device)} {shlex.quote(mountpoint)}", sudo=True, sudo_password=sudo_password, timeout=30)
         if not r.get("success"):
-            return {"status": "error", "message": f"Ziel konnte nicht gemountet werden: {(r.get('stderr') or r.get('stdout') or '')[:200]}", "results": results}
+            return with_backup_contract(
+                {
+                    "status": "error",
+                    "message": f"Ziel konnte nicht gemountet werden: {(r.get('stderr') or r.get('stdout') or '')[:200]}",
+                    "results": results,
+                },
+                "backup.clone_mount_failed",
+                "error",
+            )
         _add("Ziel gemountet")
 
         # rsync
@@ -9918,10 +10384,22 @@ def _do_clone_logic(
         r = run_command(rsync_cmd, sudo=True, sudo_password=sudo_password, timeout=7200)
         if cancel_event and cancel_event.is_set():
             run_command(f"umount {shlex.quote(mountpoint)} 2>/dev/null", sudo=True, sudo_password=sudo_password, timeout=30)
-            return {"status": "cancelled", "message": "Abgebrochen", "results": results}
+            return with_backup_contract(
+                {"status": "cancelled", "message": "Abgebrochen", "results": results},
+                "backup.clone_cancelled",
+                "info",
+            )
         if not r.get("success"):
             run_command(f"umount {shlex.quote(mountpoint)} 2>/dev/null", sudo=True, sudo_password=sudo_password, timeout=30)
-            return {"status": "error", "message": f"Rsync fehlgeschlagen: {(r.get('stderr') or r.get('stdout') or '')[:300]}", "results": results}
+            return with_backup_contract(
+                {
+                    "status": "error",
+                    "message": f"Rsync fehlgeschlagen: {(r.get('stderr') or r.get('stdout') or '')[:300]}",
+                    "results": results,
+                },
+                "backup.clone_rsync_failed",
+                "error",
+            )
         _add("Rsync abgeschlossen")
 
         # fstab auf Ziel anpassen
@@ -9967,14 +10445,23 @@ def _do_clone_logic(
         run_command(f"umount {shlex.quote(mountpoint)} 2>/dev/null", sudo=True, sudo_password=sudo_password, timeout=30)
         _add("Ziel ausgehängt – Klon fertig. Bitte neu starten (sudo reboot), damit von " + target_device + " gebootet wird.")
 
-        return {"status": "success", "message": "Klon erfolgreich", "results": results}
+        return with_backup_contract(
+            {"status": "success", "message": "Klon erfolgreich", "results": results},
+            "backup.clone_success",
+            "success",
+        )
     except Exception as e:
         logger.exception("clone failed")
         try:
             run_command(f"umount {shlex.quote(mountpoint)} 2>/dev/null", sudo=True, sudo_password=sudo_password, timeout=30)
         except Exception:
             pass
-        return {"status": "error", "message": str(e), "results": results}
+        return with_backup_contract(
+            {"status": "error", "message": str(e), "results": results},
+            "backup.clone_failed",
+            "error",
+            {"detail": str(e)},
+        )
 
 
 @app.post("/api/backup/clone")
@@ -9990,11 +10477,38 @@ async def clone_disk(request: Request):
         target_device = (data.get("target_device") or "").strip()
 
         if not target_device or not target_device.startswith("/dev/"):
-            return JSONResponse(status_code=200, content={"status": "error", "message": "target_device (/dev/...) erforderlich"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "target_device (/dev/...) erforderlich"},
+                    "backup.clone_missing_target",
+                    "error",
+                ),
+            )
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
             if not sudo_test.get("success"):
-                return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                        "backup.sudo_required",
+                        "error",
+                    ),
+                )
+
+        if _has_active_long_running_job():
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": "Es läuft bereits ein Backup- oder Klon-Auftrag.",
+                    },
+                    "backup.job_conflict",
+                    "error",
+                ),
+            )
 
         job_id = _new_job_id()
         BACKUP_JOBS[job_id] = {
@@ -10005,6 +10519,8 @@ async def clone_disk(request: Request):
             "started_at": _now_iso(),
             "finished_at": None,
             "message": "Wartet…",
+            "code": "backup.clone_job_queued",
+            "severity": "info",
             "results": [],
         }
 
@@ -10016,15 +10532,23 @@ async def clone_disk(request: Request):
                     BACKUP_JOB_CANCEL[job_id] = ev
                 BACKUP_JOBS[job_id]["status"] = "running"
                 BACKUP_JOBS[job_id]["message"] = "Klon läuft…"
+                BACKUP_JOBS[job_id]["code"] = "backup.clone_job_running"
+                BACKUP_JOBS[job_id]["severity"] = "info"
                 result = _do_clone_logic(target_device, sudo_password, BACKUP_JOBS[job_id], cancel_event=ev)
                 BACKUP_JOBS[job_id]["results"] = result.get("results") or []
                 BACKUP_JOBS[job_id]["finished_at"] = _now_iso()
                 BACKUP_JOBS[job_id]["status"] = result.get("status", "error")
                 BACKUP_JOBS[job_id]["message"] = result.get("message", "Fertig")
+                if isinstance(result.get("code"), str):
+                    BACKUP_JOBS[job_id]["code"] = result["code"]
+                if isinstance(result.get("severity"), str):
+                    BACKUP_JOBS[job_id]["severity"] = result["severity"]
             except Exception as e:
                 logger.exception("clone job failed")
                 BACKUP_JOBS[job_id]["status"] = "error"
                 BACKUP_JOBS[job_id]["message"] = str(e)
+                BACKUP_JOBS[job_id]["code"] = "backup.clone_failed"
+                BACKUP_JOBS[job_id]["severity"] = "error"
                 BACKUP_JOBS[job_id]["finished_at"] = _now_iso()
             finally:
                 BACKUP_JOB_CANCEL.pop(job_id, None)
@@ -10032,14 +10556,21 @@ async def clone_disk(request: Request):
         t = threading.Thread(target=_runner, daemon=True)
         t.start()
 
-        return JSONResponse(status_code=200, content={
-            "status": "accepted",
-            "job_id": job_id,
-            "message": "Klon-Job gestartet",
-        })
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "accepted", "job_id": job_id, "message": "Klon-Job gestartet"},
+                "backup.clone_started",
+                "success",
+                {"job_id": job_id},
+            ),
+        )
     except Exception as e:
         logger.exception("clone endpoint failed")
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract({"status": "error", "message": str(e)}, "backup.clone_failed", "error", {"detail": str(e)}),
+        )
 
 
 @app.get("/api/backup/usb/info")
@@ -10058,17 +10589,34 @@ async def backup_usb_info(mountpoint: str = "", device: str = ""):
         if not node and device:
             node = _find_lsblk_by_name(device)
         if not node:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "USB-Gerät nicht gefunden (Mountpoint/Device)"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "USB-Gerät nicht gefunden (Mountpoint/Device)"},
+                    "backup.usb_not_found",
+                    "error",
+                ),
+            )
 
         name = node.get("name")
         pk = node.get("pkname")  # parent disk
         disk_name = pk or (name if node.get("type") == "disk" else None)
         if not disk_name:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Konnte Disk nicht bestimmen"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Konnte Disk nicht bestimmen"},
+                    "backup.usb_disk_unknown",
+                    "error",
+                ),
+            )
 
         disk = _find_disk_by_name(disk_name)
         if not disk:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Disk nicht gefunden"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract({"status": "error", "message": "Disk nicht gefunden"}, "backup.usb_disk_not_found", "error"),
+            )
 
         info = {
             "status": "success",
@@ -10086,9 +10634,12 @@ async def backup_usb_info(mountpoint: str = "", device: str = ""):
             "is_removable": bool(disk.get("rm")),
             "is_system_disk": _disk_is_system(disk),
         }
-        return info
+        return with_backup_contract(info, "backup.usb_info_ok", "success")
     except Exception as e:
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract({"status": "error", "message": str(e)}, "backup.usb_info_failed", "error", {"detail": str(e)}),
+        )
 
 
 @app.post("/api/backup/usb/mount")
@@ -10107,13 +10658,34 @@ async def backup_usb_mount(request: Request):
         sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
 
         if not device or not device.startswith("/dev/"):
-            return JSONResponse(status_code=200, content={"status": "error", "message": "device (/dev/...) erforderlich"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "device (/dev/...) erforderlich"},
+                    "backup.usb_mount_missing_device",
+                    "error",
+                ),
+            )
         if not sudo_password:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                    "backup.sudo_required",
+                    "error",
+                ),
+            )
 
         node = _find_lsblk_by_name(device)
         if not node:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "USB-Gerät nicht gefunden"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "USB-Gerät nicht gefunden"},
+                    "backup.usb_not_found",
+                    "error",
+                ),
+            )
 
         # bereits gemountet? -> bestehenden Mountpoint zurückgeben
         system_mounts = {"/", "/boot", "/boot/firmware", "[SWAP]"}
@@ -10128,25 +10700,54 @@ async def backup_usb_mount(request: Request):
         elif mp and mp not in system_mounts:
             existing = mp
         if existing:
-            return {"status": "success", "message": "Bereits gemountet", "mounted_to": existing, "device": device}
+            return with_backup_contract(
+                {"status": "success", "message": "Bereits gemountet", "mounted_to": existing, "device": device},
+                "backup.usb_already_mounted",
+                "info",
+                {"mounted_to": existing},
+            )
 
         part_name = node.get("name")
         pk = node.get("pkname")
         disk_name = pk or (part_name if node.get("type") == "disk" else None)
         if not disk_name:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Konnte Disk nicht bestimmen"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Konnte Disk nicht bestimmen"},
+                    "backup.usb_disk_unknown",
+                    "error",
+                ),
+            )
 
         disk = _find_disk_by_name(disk_name)
         if not disk:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Disk nicht gefunden"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract({"status": "error", "message": "Disk nicht gefunden"}, "backup.usb_disk_not_found", "error"),
+            )
 
         # Safety: nur USB/removable, nie Systemdisk
         is_usb = (disk.get("tran") == "usb")
         is_rm = bool(disk.get("rm"))
         if not (is_usb or is_rm):
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Nur USB/Removable Datenträger sind erlaubt"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Nur USB/Removable Datenträger sind erlaubt"},
+                    "backup.usb_not_removable",
+                    "error",
+                ),
+            )
         if _disk_is_system(disk):
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Refused: System-Datenträger erkannt"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Refused: System-Datenträger erkannt"},
+                    "backup.usb_refused_system",
+                    "error",
+                ),
+            )
 
         # Mount directory name
         def safe_seg(s: str) -> str:
@@ -10177,7 +10778,10 @@ async def backup_usb_mount(request: Request):
         mnt = run_command(mnt_cmd, sudo=True, sudo_password=sudo_password, timeout=60)
         if not mnt.get("success"):
             msg = (mnt.get("stderr") or mnt.get("stdout") or mnt.get("error") or "Mount fehlgeschlagen").strip()[:300]
-            return JSONResponse(status_code=200, content={"status": "error", "message": msg})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract({"status": "error", "message": msg}, "backup.usb_mount_failed", "error"),
+            )
 
         # ensure backup folder exists and is writable for current user
         backups_dir = f"{mount_dir}/pi-installer-backups"
@@ -10185,9 +10789,17 @@ async def backup_usb_mount(request: Request):
         run_command(f"chmod 0775 {shlex.quote(mount_dir)} {shlex.quote(backups_dir)}", sudo=True, sudo_password=sudo_password, timeout=30)
         run_command(f"chown {uid}:{gid} {shlex.quote(mount_dir)} {shlex.quote(backups_dir)}", sudo=True, sudo_password=sudo_password, timeout=30)
 
-        return {"status": "success", "message": "Gemountet", "mounted_to": mount_dir, "device": device, "label": label or None}
+        return with_backup_contract(
+            {"status": "success", "message": "Gemountet", "mounted_to": mount_dir, "device": device, "label": label or None},
+            "backup.usb_mount_ok",
+            "success",
+            {"mounted_to": mount_dir},
+        )
     except Exception as e:
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract({"status": "error", "message": str(e)}, "backup.usb_mount_failed", "error", {"detail": str(e)}),
+        )
 
 
 @app.post("/api/backup/usb/prepare")
@@ -10207,7 +10819,14 @@ async def backup_usb_prepare(request: Request):
         sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
 
         if not sudo_password:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                    "backup.sudo_required",
+                    "error",
+                ),
+            )
 
         node = _find_lsblk_by_mountpoint(mountpoint) if mountpoint else None
         if not node and mountpoint:
@@ -10220,25 +10839,56 @@ async def backup_usb_prepare(request: Request):
         if not node and device:
             node = _find_lsblk_by_name(device)
         if not node:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Mountpoint nicht gefunden"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Mountpoint nicht gefunden"},
+                    "backup.usb_prepare_mount_not_found",
+                    "error",
+                ),
+            )
 
         part_name = node.get("name")
         pk = node.get("pkname")
         disk_name = pk or (part_name if node.get("type") == "disk" else None)
         if not disk_name:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Konnte Disk nicht bestimmen"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Konnte Disk nicht bestimmen"},
+                    "backup.usb_disk_unknown",
+                    "error",
+                ),
+            )
 
         disk = _find_disk_by_name(disk_name)
         if not disk:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Disk nicht gefunden"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract({"status": "error", "message": "Disk nicht gefunden"}, "backup.usb_disk_not_found", "error"),
+            )
 
         # Safety: nur USB/removable, nie Systemdisk
         is_usb = (disk.get("tran") == "usb")
         is_rm = bool(disk.get("rm"))
         if not (is_usb or is_rm):
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Nur USB/Removable Datenträger sind erlaubt"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Nur USB/Removable Datenträger sind erlaubt"},
+                    "backup.usb_not_removable",
+                    "error",
+                ),
+            )
         if _disk_is_system(disk):
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Refused: System-Datenträger erkannt"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Refused: System-Datenträger erkannt"},
+                    "backup.usb_refused_system",
+                    "error",
+                ),
+            )
 
         new_label = None
         if new_label_raw:
@@ -10268,18 +10918,27 @@ async def backup_usb_prepare(request: Request):
             if not w.get("success"):
                 return JSONResponse(
                     status_code=200,
-                    content={"status": "error", "message": f"Formatierung nicht möglich: Tool fehlt ({tool})", "results": results},
+                    content=with_backup_contract(
+                        {"status": "error", "message": f"Formatierung nicht möglich: Tool fehlt ({tool})", "results": results},
+                        "backup.usb_prepare_tool_missing",
+                        "error",
+                        {"tool": tool},
+                    ),
                 )
 
         # refuse hardware RO
         if bool(disk.get("ro")) or bool(node.get("ro")):
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "message": "Formatierung nicht möglich: Datenträger ist schreibgeschützt (RO=1).",
-                    "results": results,
-                },
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": "Formatierung nicht möglich: Datenträger ist schreibgeschützt (RO=1).",
+                        "results": results,
+                    },
+                    "backup.usb_readonly",
+                    "error",
+                ),
             )
 
         # Unmount (erforderlich für wipefs/parted/mkfs)
@@ -10298,14 +10957,18 @@ async def backup_usb_prepare(request: Request):
         if remaining:
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "message": (
-                        "Der USB-Stick ist noch gemountet oder wird von einem Prozess verwendet. "
-                        "Bitte schließen Sie alle Fenster/Programme, die auf den Stick zugreifen, und versuchen Sie es erneut."
-                    ),
-                    "still_mounted": remaining,
-                },
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": (
+                            "Der USB-Stick ist noch gemountet oder wird von einem Prozess verwendet. "
+                            "Bitte schließen Sie alle Fenster/Programme, die auf den Stick zugreifen, und versuchen Sie es erneut."
+                        ),
+                        "still_mounted": remaining,
+                    },
+                    "backup.usb_still_mounted",
+                    "error",
+                ),
             )
 
         mounted_to = None
@@ -10319,15 +10982,36 @@ async def backup_usb_prepare(request: Request):
             results.append(f"Formatierung gestartet: {disk_dev}")
             r = step(f"wipefs -a {shlex.quote(disk_dev)}", f"wipefs auf {disk_dev}")
             if r.get("_failed"):
-                return JSONResponse(status_code=200, content={"status": "error", "message": f"Formatierung fehlgeschlagen bei wipefs: {r['message']}", "results": results})
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": f"Formatierung fehlgeschlagen bei wipefs: {r['message']}", "results": results},
+                        "backup.usb_prepare_format_failed",
+                        "error",
+                    ),
+                )
 
             r = step(f"parted -s {shlex.quote(disk_dev)} mklabel gpt", f"Partitionstabelle GPT erstellen ({disk_dev})")
             if r.get("_failed"):
-                return JSONResponse(status_code=200, content={"status": "error", "message": f"Formatierung fehlgeschlagen bei parted mklabel: {r['message']}", "results": results})
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": f"Formatierung fehlgeschlagen bei parted mklabel: {r['message']}", "results": results},
+                        "backup.usb_prepare_format_failed",
+                        "error",
+                    ),
+                )
 
             r = step(f"parted -s {shlex.quote(disk_dev)} mkpart primary 1MiB 100%", f"Partition erstellen ({disk_dev})")
             if r.get("_failed"):
-                return JSONResponse(status_code=200, content={"status": "error", "message": f"Formatierung fehlgeschlagen bei parted mkpart: {r['message']}", "results": results})
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": f"Formatierung fehlgeschlagen bei parted mkpart: {r['message']}", "results": results},
+                        "backup.usb_prepare_format_failed",
+                        "error",
+                    ),
+                )
 
             # Let kernel settle
             step("partprobe", "partprobe", allow_fail=True)
@@ -10338,7 +11022,14 @@ async def backup_usb_prepare(request: Request):
             # mkfs ext4
             r = step(f"mkfs.ext4 -F -L {shlex.quote(new_label)} {shlex.quote(part_guess)}", f"mkfs.ext4 ({part_guess})")
             if r.get("_failed"):
-                return JSONResponse(status_code=200, content={"status": "error", "message": f"Formatierung fehlgeschlagen bei mkfs.ext4: {r['message']}", "results": results})
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": f"Formatierung fehlgeschlagen bei mkfs.ext4: {r['message']}", "results": results},
+                        "backup.usb_prepare_format_failed",
+                        "error",
+                    ),
+                )
             results.append("Dateisystem ext4 erstellt")
             part_dev = part_guess
         else:
@@ -10374,17 +11065,24 @@ async def backup_usb_prepare(request: Request):
                 err = (mnt.get("stderr") or mnt.get("stdout") or mnt.get("error") or "").strip()[:200]
                 results.append(f"Mount fehlgeschlagen: {err}")
 
-        return {
-            "status": "success",
-            "message": "USB vorbereitet",
-            "results": results,
-            "mounted_to": mounted_to,
-            "disk": disk_dev,
-            "partition": part_dev,
-            "label": new_label,
-        }
+        return with_backup_contract(
+            {
+                "status": "success",
+                "message": "USB vorbereitet",
+                "results": results,
+                "mounted_to": mounted_to,
+                "disk": disk_dev,
+                "partition": part_dev,
+                "label": new_label,
+            },
+            "backup.usb_prepare_ok",
+            "success",
+        )
     except Exception as e:
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract({"status": "error", "message": str(e)}, "backup.usb_prepare_failed", "error", {"detail": str(e)}),
+        )
 
 
 @app.post("/api/backup/usb/eject")
@@ -10402,31 +11100,69 @@ async def backup_usb_eject(request: Request):
         sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
 
         if not sudo_password:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                    "backup.sudo_required",
+                    "error",
+                ),
+            )
 
         node = _find_lsblk_by_mountpoint(mountpoint) if mountpoint else None
         if not node and device:
             node = _find_lsblk_by_name(device)
         if not node:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "USB-Gerät nicht gefunden (Mountpoint/Device)"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "USB-Gerät nicht gefunden (Mountpoint/Device)"},
+                    "backup.usb_not_found",
+                    "error",
+                ),
+            )
 
         part_name = node.get("name")
         pk = node.get("pkname")
         disk_name = pk or (part_name if node.get("type") == "disk" else None)
         if not disk_name:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Konnte Disk nicht bestimmen"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Konnte Disk nicht bestimmen"},
+                    "backup.usb_disk_unknown",
+                    "error",
+                ),
+            )
 
         disk = _find_disk_by_name(disk_name)
         if not disk:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Disk nicht gefunden"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract({"status": "error", "message": "Disk nicht gefunden"}, "backup.usb_disk_not_found", "error"),
+            )
 
         # Safety
         is_usb = (disk.get("tran") == "usb")
         is_rm = bool(disk.get("rm"))
         if not (is_usb or is_rm):
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Nur USB/Removable Datenträger sind erlaubt"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Nur USB/Removable Datenträger sind erlaubt"},
+                    "backup.usb_not_removable",
+                    "error",
+                ),
+            )
         if _disk_is_system(disk):
-            return JSONResponse(status_code=200, content={"status": "error", "message": "Refused: System-Datenträger erkannt"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Refused: System-Datenträger erkannt"},
+                    "backup.usb_refused_system",
+                    "error",
+                ),
+            )
 
         disk_dev = f"/dev/{disk_name}"
 
@@ -10443,12 +11179,16 @@ async def backup_usb_eject(request: Request):
         if remaining:
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "message": "Auswerfen fehlgeschlagen: Datenträger ist noch gemountet/busy",
-                    "still_mounted": remaining,
-                    "results": results,
-                },
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": "Auswerfen fehlgeschlagen: Datenträger ist noch gemountet/busy",
+                        "still_mounted": remaining,
+                        "results": results,
+                    },
+                    "backup.usb_eject_busy",
+                    "error",
+                ),
             )
         results.append("Unmount erfolgreich")
 
@@ -10464,15 +11204,23 @@ async def backup_usb_eject(request: Request):
                 power_off = False
                 results.append(f"udisksctl power-off fehlgeschlagen: {(po.get('stderr') or '')[:120]}")
 
-        return {
-            "status": "success",
-            "message": "USB sicher ausgeworfen",
-            "disk": disk_dev,
-            "results": results,
-            "power_off": power_off,
-        }
+        return with_backup_contract(
+            {
+                "status": "success",
+                "message": "USB sicher ausgeworfen",
+                "disk": disk_dev,
+                "results": results,
+                "power_off": power_off,
+            },
+            "backup.usb_eject_ok",
+            "success",
+            {"power_off": power_off is True},
+        )
     except Exception as e:
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract({"status": "error", "message": str(e)}, "backup.usb_eject_failed", "error", {"detail": str(e)}),
+        )
 
 @app.post("/api/backup/create")
 async def create_backup(request: Request):
@@ -10491,19 +11239,42 @@ async def create_backup(request: Request):
         if not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
             if not sudo_test.get("success"):
-                return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                        "backup.sudo_required",
+                        "error",
+                    ),
+                )
 
         backup_dir = data.get("backup_dir", "/mnt/backups")
         try:
             backup_dir = _validate_backup_dir(backup_dir)
         except Exception as ve:
-            return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"},
+                    "backup.path_invalid",
+                    "error",
+                    {"reason": str(ve)},
+                ),
+            )
 
         timestamp = run_command("date +%Y%m%d_%H%M%S").get("stdout", "").strip()
 
         mkdir_result = run_command(f"mkdir -p {shlex.quote(backup_dir)}", sudo=True, sudo_password=sudo_password, timeout=60)
         if not mkdir_result.get("success"):
-            return JSONResponse(status_code=200, content={"status": "error", "message": f"Backup-Verzeichnis konnte nicht erstellt werden: {backup_dir}"})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": f"Backup-Verzeichnis konnte nicht erstellt werden: {backup_dir}"},
+                    "backup.mkdir_failed",
+                    "error",
+                    {"path": backup_dir},
+                ),
+            )
 
         # precompute backup file name for UI
         bf = None
@@ -10638,6 +11409,18 @@ async def create_backup(request: Request):
             return False, f"Remote Verifizierung fehlgeschlagen (HTTP {code or '—'})"
 
         if run_async:
+            if _has_active_long_running_job():
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": "Es läuft bereits ein Backup- oder Klon-Auftrag.",
+                        },
+                        "backup.job_conflict",
+                        "error",
+                    ),
+                )
             job_id = _new_job_id()
             BACKUP_JOBS[job_id] = {
                 "job_id": job_id,
@@ -10649,6 +11432,8 @@ async def create_backup(request: Request):
                 "started_at": _now_iso(),
                 "finished_at": None,
                 "message": "Wartet…",
+                "code": "backup.job.queued",
+                "severity": "info",
                 "results": [],
             }
 
@@ -10660,6 +11445,8 @@ async def create_backup(request: Request):
                         BACKUP_JOB_CANCEL[job_id] = cancel_ev
                     BACKUP_JOBS[job_id]["status"] = "running"
                     BACKUP_JOBS[job_id]["message"] = "Backup läuft…"
+                    BACKUP_JOBS[job_id]["code"] = "backup.job.running"
+                    BACKUP_JOBS[job_id]["severity"] = "info"
                     result = _do_backup_logic(
                         sudo_password=sudo_password,
                         backup_type=backup_type,
@@ -10670,6 +11457,10 @@ async def create_backup(request: Request):
                         job=BACKUP_JOBS[job_id],
                     )
                     BACKUP_JOBS[job_id]["results"] = result.get("results") or []
+                    if isinstance(result.get("code"), str):
+                        BACKUP_JOBS[job_id]["code"] = result.get("code")
+                    if isinstance(result.get("severity"), str):
+                        BACKUP_JOBS[job_id]["severity"] = result.get("severity")
                     backup_file_path = result.get("backup_file") or bf
                     
                     # Optional: Verschlüsselung
@@ -10680,6 +11471,8 @@ async def create_backup(request: Request):
                             backup_mod = _get_backup_module()
                             backup_mod.run_command = run_command
                             BACKUP_JOBS[job_id]["message"] = "Verschlüsselung läuft…"
+                            BACKUP_JOBS[job_id]["code"] = "backup.job.encrypting"
+                            BACKUP_JOBS[job_id]["severity"] = "info"
                             enc_success, enc_file, enc_error = backup_mod.encrypt_backup(
                                 backup_file_path,
                                 encryption_key,
@@ -10700,6 +11493,10 @@ async def create_backup(request: Request):
                             BACKUP_JOBS[job_id]["warning"] = f"Verschlüsselung Fehler: {str(e)}"
                     else:
                         BACKUP_JOBS[job_id]["backup_file"] = backup_file_path
+
+                    if result.get("status") == "success" and BACKUP_JOBS[job_id].get("code") == "backup.job.encrypting":
+                        BACKUP_JOBS[job_id]["code"] = str(result.get("code") or "backup.success")
+                        BACKUP_JOBS[job_id]["severity"] = str(result.get("severity") or "success")
                     
                     # optional cloud upload nur wenn explizit gewünscht (cloud_only oder local_and_cloud)
                     # Bei target="local" (z.B. USB-Stick) NIEMALS in die Cloud hochladen
@@ -10742,10 +11539,14 @@ async def create_backup(request: Request):
                             if target == "cloud_only":
                                 BACKUP_JOBS[job_id]["status"] = "error"
                                 BACKUP_JOBS[job_id]["message"] = "Cloud-Upload fehlgeschlagen: Credentials fehlen"
+                                BACKUP_JOBS[job_id]["code"] = "backup.cloud_credentials_missing"
+                                BACKUP_JOBS[job_id]["severity"] = "error"
                             else:
                                 # Backup lokal erfolgreich, Cloud-Upload fehlgeschlagen
                                 BACKUP_JOBS[job_id]["status"] = "success"
                                 BACKUP_JOBS[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload übersprungen)"
+                                BACKUP_JOBS[job_id]["code"] = "backup.cloud_upload_skipped"
+                                BACKUP_JOBS[job_id]["severity"] = "warning"
                         # Prüfe ob Datei existiert
                         elif not Path(backup_file_to_upload).exists():
                             error_msg = f"Backup-Datei nicht gefunden: {backup_file_to_upload}"
@@ -10753,12 +11554,18 @@ async def create_backup(request: Request):
                             BACKUP_JOBS[job_id]["warning"] = f"Cloud-Upload fehlgeschlagen: {error_msg}"
                             if target == "cloud_only":
                                 BACKUP_JOBS[job_id]["status"] = "error"
+                                BACKUP_JOBS[job_id]["code"] = "backup.cloud_upload_file_missing"
+                                BACKUP_JOBS[job_id]["severity"] = "error"
                             else:
                                 BACKUP_JOBS[job_id]["status"] = "success"
                                 BACKUP_JOBS[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload fehlgeschlagen)"
+                                BACKUP_JOBS[job_id]["code"] = "backup.partial_success"
+                                BACKUP_JOBS[job_id]["severity"] = "warning"
                             logger.error(error_msg)
                         else:
                             BACKUP_JOBS[job_id]["message"] = "Upload läuft…"
+                            BACKUP_JOBS[job_id]["code"] = "backup.job.uploading"
+                            BACKUP_JOBS[job_id]["severity"] = "info"
                             try:
                                 ok, info = _cloud_upload_and_verify(backup_file_to_upload, cloud, job_id)
                                 logger.info(f"Cloud-Upload Ergebnis: ok={ok}, info={info}")
@@ -10768,6 +11575,8 @@ async def create_backup(request: Request):
                                     BACKUP_JOBS[job_id]["results"].append(f"✅ uploaded: {info}")
                                     BACKUP_JOBS[job_id]["location"] = "Cloud"
                                     BACKUP_JOBS[job_id]["message"] = "Backup erfolgreich hochgeladen"
+                                    BACKUP_JOBS[job_id]["code"] = "backup.cloud_upload_ok"
+                                    BACKUP_JOBS[job_id]["severity"] = "success"
                                     if target == "cloud_only":
                                         try:
                                             run_command(f"rm -f {shlex.quote(backup_file_to_upload)}", sudo=True, sudo_password=sudo_password)
@@ -10781,9 +11590,13 @@ async def create_backup(request: Request):
                                     if target == "cloud_only":
                                         BACKUP_JOBS[job_id]["status"] = "error"
                                         BACKUP_JOBS[job_id]["message"] = "Cloud-Upload fehlgeschlagen"
+                                        BACKUP_JOBS[job_id]["code"] = "backup.cloud_upload_failed"
+                                        BACKUP_JOBS[job_id]["severity"] = "error"
                                     else:
                                         BACKUP_JOBS[job_id]["status"] = "success"
                                         BACKUP_JOBS[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload fehlgeschlagen)"
+                                        BACKUP_JOBS[job_id]["code"] = "backup.partial_success"
+                                        BACKUP_JOBS[job_id]["severity"] = "warning"
                                     logger.error(f"Cloud-Upload fehlgeschlagen: {info}")
                             except Exception as e:
                                 error_msg = f"Cloud-Upload Fehler: {str(e)}"
@@ -10793,28 +11606,54 @@ async def create_backup(request: Request):
                                 if target == "cloud_only":
                                     BACKUP_JOBS[job_id]["status"] = "error"
                                     BACKUP_JOBS[job_id]["message"] = "Cloud-Upload fehlgeschlagen"
+                                    BACKUP_JOBS[job_id]["code"] = "backup.cloud_upload_failed"
+                                    BACKUP_JOBS[job_id]["severity"] = "error"
                                 else:
                                     BACKUP_JOBS[job_id]["status"] = "success"
                                     BACKUP_JOBS[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload fehlgeschlagen)"
+                                    BACKUP_JOBS[job_id]["code"] = "backup.partial_success"
+                                    BACKUP_JOBS[job_id]["severity"] = "warning"
                     BACKUP_JOBS[job_id]["finished_at"] = _now_iso()
                     # Status wird bereits oben gesetzt, nur noch finalisieren
                     if BACKUP_JOBS[job_id]["status"] not in ("error", "cancelled"):
                         if result.get("status") == "cancelled":
                             BACKUP_JOBS[job_id]["status"] = "cancelled"
                             BACKUP_JOBS[job_id]["message"] = "Abgebrochen"
+                            BACKUP_JOBS[job_id]["code"] = "backup.cancelled"
+                            BACKUP_JOBS[job_id]["severity"] = "info"
                         elif result.get("status") == "success":
                             # Status bleibt success (auch wenn Upload fehlgeschlagen ist, außer bei cloud_only)
                             if BACKUP_JOBS[job_id]["status"] != "error":
                                 BACKUP_JOBS[job_id]["status"] = "success"
                                 BACKUP_JOBS[job_id]["message"] = "Fertig"
+                                if BACKUP_JOBS[job_id].get("code") not in (
+                                    "backup.cloud_upload_ok",
+                                    "backup.cloud_upload_skipped",
+                                    "backup.cloud_upload_failed",
+                                    "backup.partial_success",
+                                    "backup.cloud_upload_file_missing",
+                                    "backup.cloud_credentials_missing",
+                                ):
+                                    BACKUP_JOBS[job_id]["code"] = "backup.success"
+                                    BACKUP_JOBS[job_id]["severity"] = (
+                                        "warning" if result.get("warning") or BACKUP_JOBS[job_id].get("warning") else "success"
+                                    )
                             if result.get("warning"):
                                 BACKUP_JOBS[job_id]["warning"] = result.get("warning")
                         else:
                             BACKUP_JOBS[job_id]["status"] = "error"
                             BACKUP_JOBS[job_id]["message"] = result.get("message") or "Fehler"
+                            if isinstance(result.get("code"), str):
+                                BACKUP_JOBS[job_id]["code"] = result.get("code")
+                                BACKUP_JOBS[job_id]["severity"] = result.get("severity") or "error"
+                            else:
+                                BACKUP_JOBS[job_id]["code"] = "backup.error"
+                                BACKUP_JOBS[job_id]["severity"] = "error"
                 except Exception as e:
                     BACKUP_JOBS[job_id]["status"] = "error"
                     BACKUP_JOBS[job_id]["message"] = str(e)
+                    BACKUP_JOBS[job_id]["code"] = "backup.error"
+                    BACKUP_JOBS[job_id]["severity"] = "error"
                     BACKUP_JOBS[job_id]["finished_at"] = _now_iso()
                 finally:
                     # cleanup cancel event
@@ -10824,7 +11663,12 @@ async def create_backup(request: Request):
                         pass
 
             threading.Thread(target=_runner_thread, daemon=True).start()
-            return {"status": "accepted", "job_id": job_id, "backup_file": bf, "message": "Backup gestartet"}
+            return with_backup_contract(
+                {"status": "accepted", "job_id": job_id, "backup_file": bf, "message": "Backup gestartet"},
+                "backup.job_started",
+                "success",
+                {"job_id": job_id},
+            )
 
         # sync mode
         result = await asyncio.to_thread(
@@ -10872,10 +11716,35 @@ async def create_backup(request: Request):
                         pass
             else:
                 result["warning"] = f"Upload fehlgeschlagen: {info}"
+                detail = {"cloud_error": str(info)[:500]}
+                if target == "cloud_only":
+                    result = with_backup_contract(result, "backup.cloud_upload_failed", "error", detail)
+                else:
+                    result = with_backup_contract(result, "backup.partial_success", "warning", detail)
+        if isinstance(result, dict) and "code" not in result:
+            sev = "success"
+            if result.get("status") == "error":
+                sev = "error"
+            elif result.get("status") == "cancelled":
+                sev = "info"
+            cd = (
+                "backup.success"
+                if result.get("status") == "success"
+                else ("backup.cancelled" if result.get("status") == "cancelled" else "backup.error")
+            )
+            result = with_backup_contract(result, cd, sev)
         return result
     except Exception as e:
         logger.error(f"💥 Fehler bei Backup-Erstellung: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": f"Fehler bei der Backup-Erstellung: {str(e)}"})
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": f"Fehler bei der Backup-Erstellung: {str(e)}"},
+                "backup.error",
+                "error",
+                {"detail": str(e)},
+            ),
+        )
 
 @app.get("/api/backup/list")
 async def list_backups(backup_dir: str = "/mnt/backups"):
@@ -10884,12 +11753,20 @@ async def list_backups(backup_dir: str = "/mnt/backups"):
         try:
             backup_dir = _validate_backup_dir(backup_dir)
         except Exception as ve:
-            return JSONResponse(status_code=200, content={"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}", "backups": []})
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}", "backups": []},
+                    "backup.path_invalid",
+                    "error",
+                    {"reason": str(ve)},
+                ),
+            )
 
         p = Path(backup_dir)
         # Wenn das Verzeichnis nicht existiert, einfach leer zurückgeben
         if not p.exists():
-            return {"status": "success", "backups": []}
+            return with_backup_contract({"status": "success", "backups": []}, "backup.list_ok", "success")
 
         backups = []
         # Robust: Python glob statt Shell-Glob (funktioniert auch mit Spaces)
@@ -10932,9 +11809,18 @@ async def list_backups(backup_dir: str = "/mnt/backups"):
             except Exception:
                 continue
 
-        return {"status": "success", "backups": backups}
+        return with_backup_contract({"status": "success", "backups": backups}, "backup.list_ok", "success")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Backup-Liste fehlgeschlagen", extra={"action": "backup_list", "error": str(e)[:300]}, exc_info=True)
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": str(e)[:500], "backups": []},
+                "backup.list_failed",
+                "error",
+                {"detail": str(e)[:300]},
+            ),
+        )
 
 
 @app.post("/api/backup/verify")
@@ -10955,12 +11841,16 @@ async def verify_backup(request: Request):
     if not backup_file:
         return JSONResponse(
             status_code=200,
-            content={
-                "status": "error",
-                "api_status": "error",
-                "message": "backup_file erforderlich",
-                "data": {},
-            },
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "backup_file erforderlich",
+                    "data": {},
+                },
+                "backup.verify_missing_file",
+                "error",
+            ),
         )
 
     # Sicherheitsprüfung: Pfad-Validierung (realpath + Allowlist)
@@ -10976,12 +11866,17 @@ async def verify_backup(request: Request):
             )
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "api_status": "error",
-                    "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
-                    "data": {"results": {"valid": False, "file": str(bf), "error": "Pfad außerhalb Allowlist"}},
-                },
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
+                        "data": {"results": {"valid": False, "file": str(bf), "error": "Pfad außerhalb Allowlist"}},
+                    },
+                    "backup.permission_denied",
+                    "error",
+                    {"file": str(bf)},
+                ),
             )
     except Exception as e:
         logger.warning("Backup-Verify blockiert: ungültiger Pfad", extra={"action": "backup_verify", "error": str(e)})
@@ -10992,12 +11887,17 @@ async def verify_backup(request: Request):
         )
         return JSONResponse(
             status_code=200,
-            content={
-                "status": "error",
-                "api_status": "error",
-                "message": f"Ungültiger Pfad: {str(e)}",
-                "data": {"results": {"valid": False, "file": backup_file, "error": str(e)[:300]}},
-            },
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": f"Ungültiger Pfad: {str(e)}",
+                    "data": {"results": {"valid": False, "file": backup_file, "error": str(e)[:300]}},
+                },
+                "backup.path_invalid",
+                "error",
+                {"reason": str(e)},
+            ),
         )
 
     if not bf.exists():
@@ -11009,12 +11909,17 @@ async def verify_backup(request: Request):
         )
         return JSONResponse(
             status_code=200,
-            content={
-                "status": "error",
-                "api_status": "error",
-                "message": "Backup-Datei existiert nicht",
-                "data": {"results": {"valid": False, "file": str(bf), "error": "Datei existiert nicht"}},
-            },
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Backup-Datei existiert nicht",
+                    "data": {"results": {"valid": False, "file": str(bf), "error": "Datei existiert nicht"}},
+                },
+                "backup.backup_not_found",
+                "error",
+                {"file": str(bf)},
+            ),
         )
 
     # Prüfe, ob verschlüsselt
@@ -11036,19 +11941,24 @@ async def verify_backup(request: Request):
             logger.warning("Backup-Verify: Archiv nicht lesbar", extra={"action": "backup_verify", "path": str(bf), "error": str(e)[:200]})
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "api_status": "error",
-                    "message": f"Backup-Archiv konnte nicht gelesen werden (beschädigt oder kein gültiges tar.gz): {str(e)[:200]}",
-                    "data": {
-                        "results": {
-                            "valid": False,
-                            "file": str(bf),
-                            "error": str(e)[:300],
-                            "verification_mode": mode,
-                        }
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": f"Backup-Archiv konnte nicht gelesen werden (beschädigt oder kein gültiges tar.gz): {str(e)[:200]}",
+                        "data": {
+                            "results": {
+                                "valid": False,
+                                "file": str(bf),
+                                "error": str(e)[:300],
+                                "verification_mode": mode,
+                            }
+                        },
                     },
-                },
+                    "backup.verify_archive_unreadable",
+                    "error",
+                    {"reason": str(e)[:200]},
+                ),
             )
         if arch_analysis.get("blocked_entries"):
             _merge_backup_realtest_state(
@@ -11063,22 +11973,26 @@ async def verify_backup(request: Request):
                 "Backup-Verify: gesperrte Archiv-Einträge",
                 extra={"action": "backup_verify", "path": str(bf), "blocked": arch_analysis.get("blocked_entries")},
             )
-            return {
-                "status": "success",
-                "api_status": "error",
-                "message": "Backup-Archiv enthält gesperrte Einträge (Traversal, absolute Pfade, Symlinks, Hardlinks oder Sonderdateien).",
-                "data": {"results": {"valid": False, "blocked_entries": arch_analysis.get("blocked_entries"), "analysis": arch_analysis}},
-                "results": {
-                    "file": str(bf),
-                    "exists": True,
-                    "encrypted": False,
-                    "valid": False,
-                    "blocked_entries": arch_analysis.get("blocked_entries"),
-                    "analysis": arch_analysis,
-                    "error": "Gesperrte Archiv-Einträge",
-                    "verification_mode": mode,
+            return with_backup_contract(
+                {
+                    "status": "success",
+                    "api_status": "error",
+                    "message": "Backup-Archiv enthält gesperrte Einträge (Traversal, absolute Pfade, Symlinks, Hardlinks oder Sonderdateien).",
+                    "data": {"results": {"valid": False, "blocked_entries": arch_analysis.get("blocked_entries"), "analysis": arch_analysis}},
+                    "results": {
+                        "file": str(bf),
+                        "exists": True,
+                        "encrypted": False,
+                        "valid": False,
+                        "blocked_entries": arch_analysis.get("blocked_entries"),
+                        "analysis": arch_analysis,
+                        "error": "Gesperrte Archiv-Einträge",
+                        "verification_mode": mode,
+                    },
                 },
-            }
+                "backup.verify_blocked_entries",
+                "error",
+            )
         plain_arch_analysis = arch_analysis
 
     results = {
@@ -11116,13 +12030,17 @@ async def verify_backup(request: Request):
             last_failure_kind="verify_stat_error",
             last_failure_message=str(e)[:300],
         )
-        return {
-            "status": "success",
-            "api_status": "error",
-            "message": "Fehler beim Lesen der Dateigröße",
-            "data": {"results": results},
-            "results": results,
-        }
+        return with_backup_contract(
+            {
+                "status": "success",
+                "api_status": "error",
+                "message": "Fehler beim Lesen der Dateigröße",
+                "data": {"results": results},
+                "results": results,
+            },
+            "backup.verify_stat_error",
+            "error",
+        )
 
     # Basisprüfung für verschlüsselte Backups (ohne Schlüssel)
     if is_encrypted and mode == "basic":
@@ -11154,13 +12072,19 @@ async def verify_backup(request: Request):
             "Backup-Verify (basic, encrypted)",
             extra={"action": "backup_verify", "path": backup_file, "mode": mode, "valid": bool(results["valid"])},
         )
-        return {
-            "status": "success",
-            "api_status": api_status,
-            "message": msg,
-            "data": {"results": results},
-            "results": results,
-        }
+        vcode = "backup.verify_shallow_encrypted_ok" if results["valid"] else "backup.verify_shallow_encrypted_fail"
+        vsev = "warning" if results["valid"] else "error"
+        return with_backup_contract(
+            {
+                "status": "warning" if results["valid"] else "error",
+                "api_status": api_status,
+                "message": msg,
+                "data": {"results": results},
+                "results": results,
+            },
+            vcode,
+            vsev,
+        )
 
     # Tiefenprüfung für verschlüsselte Backups
     if is_encrypted and mode == "deep":
@@ -11175,13 +12099,17 @@ async def verify_backup(request: Request):
                 last_failure_kind="verify_module_load",
                 last_failure_message=str(e)[:300],
             )
-            return {
-                "status": "success",
-                "api_status": "error",
-                "message": "Backup-Modul konnte nicht geladen werden",
-                "data": {"results": results},
-                "results": results,
-            }
+            return with_backup_contract(
+                {
+                    "status": "success",
+                    "api_status": "error",
+                    "message": "Backup-Modul konnte nicht geladen werden",
+                    "data": {"results": results},
+                    "results": results,
+                },
+                "backup.verify_module_load_failed",
+                "error",
+            )
 
         # Temporäres Verzeichnis für Entschlüsselung
         tmp_root = Path("/tmp/pi-installer-backup-verify")
@@ -11207,13 +12135,17 @@ async def verify_backup(request: Request):
                     last_failure_kind="verify_decrypt_fail",
                     last_failure_message=(err or "")[:300],
                 )
-                return {
-                    "status": "success",
-                    "api_status": "error",
-                    "message": "Entschlüsselung des Backups fehlgeschlagen",
-                    "data": {"results": results},
-                    "results": results,
-                }
+                return with_backup_contract(
+                    {
+                        "status": "success",
+                        "api_status": "error",
+                        "message": "Entschlüsselung des Backups fehlgeschlagen",
+                        "data": {"results": results},
+                        "results": results,
+                    },
+                    "backup.verify_decrypt_failed",
+                    "error",
+                )
 
             if not decrypted_path.exists():
                 results["error"] = "Entschlüsselte Datei wurde nicht erstellt"
@@ -11224,13 +12156,17 @@ async def verify_backup(request: Request):
                     last_failure_kind="verify_decrypt_missing",
                     last_failure_message="Entschlüsselte Datei fehlt",
                 )
-                return {
-                    "status": "success",
-                    "api_status": "error",
-                    "message": "Entschlüsselte Datei wurde nicht erstellt",
-                    "data": {"results": results},
-                    "results": results,
-                }
+                return with_backup_contract(
+                    {
+                        "status": "success",
+                        "api_status": "error",
+                        "message": "Entschlüsselte Datei wurde nicht erstellt",
+                        "data": {"results": results},
+                        "results": results,
+                    },
+                    "backup.verify_decrypt_missing",
+                    "error",
+                )
 
             # Integritätsprüfung auf entschlüsselter Datei
             cmd = f"tar -tzf {shlex.quote(str(decrypted_path))} 2>&1 | head -100"
@@ -11268,13 +12204,19 @@ async def verify_backup(request: Request):
                     last_failure_kind="verify_deep_tar_invalid",
                     last_failure_message=(results.get("error") or "")[:300],
                 )
-            return {
-                "status": "success",
-                "api_status": api_status,
-                "message": msg,
-                "data": {"results": results},
-                "results": results,
-            }
+            vcode = "backup.verify_success" if results["valid"] else "backup.verify_failed"
+            vsev = "success" if results["valid"] else "error"
+            return with_backup_contract(
+                {
+                    "status": "success",
+                    "api_status": api_status,
+                    "message": msg,
+                    "data": {"results": results},
+                    "results": results,
+                },
+                vcode,
+                vsev,
+            )
         finally:
             # Cleanup: entschlüsselte Datei und Temp-Verzeichnis entfernen
             try:
@@ -11291,8 +12233,8 @@ async def verify_backup(request: Request):
             except Exception:
                 pass
 
-    # Unverschlüsselte Backups (oder deep ohne is_encrypted)
-    cmd = f"tar -tzf {shlex.quote(backup_file)} 2>&1 | head -100"
+    # Unverschlüsselte Backups (oder deep ohne is_encrypted) — immer normalisierten Pfad (bf) verwenden
+    cmd = f"tar -tzf {shlex.quote(str(bf))} 2>&1 | head -100"
     res = await run_command_async(cmd, timeout=60)
 
     if res.get("success") and res.get("stdout"):
@@ -11310,7 +12252,7 @@ async def verify_backup(request: Request):
             results["file_count"] = len(files)
             # Zähle alle Einträge (nur wenn nicht plain .tar.gz mit Analyse)
             if results["file_count"] < 100:
-                cmd_count = f"tar -tzf {shlex.quote(backup_file)} 2>/dev/null | wc -l"
+                cmd_count = f"tar -tzf {shlex.quote(str(bf))} 2>/dev/null | wc -l"
                 res_count = await run_command_async(cmd_count, timeout=30)
                 if res_count.get("success"):
                     try:
@@ -11345,13 +12287,19 @@ async def verify_backup(request: Request):
                 last_failure_kind="verify_tar_list_fail",
                 last_failure_message=(results.get("error") or "")[:300],
             )
-    return {
-        "status": "success",
-        "api_status": api_status,
-        "message": msg,
-        "data": {"results": results},
-        "results": results,
-    }
+    vcode = "backup.verify_success" if results["valid"] else "backup.verify_failed"
+    vsev = "success" if results["valid"] else "error"
+    return with_backup_contract(
+        {
+            "status": "success",
+            "api_status": api_status,
+            "message": msg,
+            "data": {"results": results},
+            "results": results,
+        },
+        vcode,
+        vsev,
+    )
 
 
 @app.post("/api/backup/delete")
@@ -11369,12 +12317,16 @@ async def delete_backup(request: Request):
     if not backup_file or not (backup_file.endswith(".tar.gz") or backup_file.endswith(".tar.gz.gpg") or backup_file.endswith(".tar.gz.enc")):
         return JSONResponse(
             status_code=200,
-            content={
-                "status": "error",
-                "api_status": "error",
-                "message": "backup_file (.tar.gz, .tar.gz.gpg oder .tar.gz.enc) erforderlich",
-                "data": {},
-            },
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "backup_file (.tar.gz, .tar.gz.gpg oder .tar.gz.enc) erforderlich",
+                    "data": {},
+                },
+                "backup.delete_missing_param",
+                "error",
+            ),
         )
 
     # Allowlist + Normalisierung
@@ -11384,35 +12336,50 @@ async def delete_backup(request: Request):
             logger.warning("Backup-Delete blockiert: Pfad außerhalb erlaubter Wurzeln", extra={"action": "backup_delete", "path": str(bf)})
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "api_status": "error",
-                    "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
-                    "data": {},
-                },
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
+                        "data": {},
+                    },
+                    "backup.permission_denied",
+                    "error",
+                    {"file": str(bf)},
+                ),
             )
     except Exception as e:
         logger.warning("Backup-Delete blockiert: ungültiger Pfad", extra={"action": "backup_delete", "path": backup_file, "error": str(e)})
         return JSONResponse(
             status_code=200,
-            content={
-                "status": "error",
-                "api_status": "error",
-                "message": f"Ungültiger Pfad: {str(e)}",
-                "data": {},
-            },
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": f"Ungültiger Pfad: {str(e)}",
+                    "data": {},
+                },
+                "backup.path_invalid",
+                "error",
+                {"reason": str(e)},
+            ),
         )
 
     # Prüfe ob Datei existiert
     if not bf.exists():
         return JSONResponse(
             status_code=200,
-            content={
-                "status": "error",
-                "api_status": "error",
-                "message": "Backup-Datei existiert nicht",
-                "data": {},
-            },
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Backup-Datei existiert nicht",
+                    "data": {},
+                },
+                "backup.backup_not_found",
+                "error",
+                {"file": str(bf)},
+            ),
         )
 
     # Versuche zuerst ohne sudo zu löschen
@@ -11460,22 +12427,30 @@ async def delete_backup(request: Request):
         )
         return JSONResponse(
             status_code=200,
-            content={
-                "status": "error",
-                "api_status": "error",
-                "message": error_message,
-                "data": {},
-            },
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": error_message,
+                    "data": {},
+                },
+                "backup.delete_failed",
+                "error",
+            ),
         )
     
     # Erfolgreich gelöscht
     logger.info("Backup gelöscht", extra={"action": "backup_delete", "path": str(bf)})
-    return {
-        "status": "success",
-        "api_status": "ok",
-        "message": "Backup gelöscht",
-        "data": {},
-    }
+    return with_backup_contract(
+        {
+            "status": "success",
+            "api_status": "ok",
+            "message": "Backup gelöscht",
+            "data": {},
+        },
+        "backup.delete_ok",
+        "success",
+    )
 
 RESTORE_PREVIEW_BASE = Path("/tmp/setuphelfer-restore-test")
 ROOT_RESTORE_ALLOWED_PREFIXES = ["/home", "/mnt/setuphelfer"]
@@ -11587,12 +12562,16 @@ async def restore_backup(request: Request):
         if not backup_file:
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "api_status": "error",
-                    "message": "Backup-Datei erforderlich",
-                    "data": {},
-                },
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Datei erforderlich",
+                        "data": {},
+                    },
+                    "backup.restore_missing_file",
+                    "error",
+                ),
             )
 
         # Pfad-Validierung wie bei verify (realpath + Allowlist)
@@ -11606,12 +12585,17 @@ async def restore_backup(request: Request):
                 )
                 return JSONResponse(
                     status_code=200,
-                    content={
-                        "status": "error",
-                        "api_status": "error",
-                        "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
-                        "data": {"results": {"valid": False, "file": str(bf), "error": "Pfad außerhalb Allowlist"}},
-                    },
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
+                            "data": {"results": {"valid": False, "file": str(bf), "error": "Pfad außerhalb Allowlist"}},
+                        },
+                        "backup.permission_denied",
+                        "error",
+                        {"file": str(bf)},
+                    ),
                 )
         except Exception as e:
             logger.warning("Restore blockiert: ungültiger Backup-Pfad", extra={"action": "backup_restore", "path": backup_file, "error": str(e)})
@@ -11621,12 +12605,17 @@ async def restore_backup(request: Request):
             )
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "api_status": "error",
-                    "message": f"Ungültiger Pfad: {str(e)}",
-                    "data": {"results": {"valid": False, "file": backup_file, "error": str(e)[:300]}},
-                },
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": f"Ungültiger Pfad: {str(e)}",
+                        "data": {"results": {"valid": False, "file": backup_file, "error": str(e)[:300]}},
+                    },
+                    "backup.path_invalid",
+                    "error",
+                    {"reason": str(e)},
+                ),
             )
 
         if not bf.exists():
@@ -11636,12 +12625,17 @@ async def restore_backup(request: Request):
             )
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "api_status": "error",
-                    "message": "Backup-Datei existiert nicht",
-                    "data": {"results": {"valid": False, "file": str(bf), "error": "Datei existiert nicht"}},
-                },
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Datei existiert nicht",
+                        "data": {"results": {"valid": False, "file": str(bf), "error": "Datei existiert nicht"}},
+                    },
+                    "backup.backup_not_found",
+                    "error",
+                    {"file": str(bf)},
+                ),
             )
 
         # Analyse des Archivs – gemeinsam für Preview/Root
@@ -11655,12 +12649,17 @@ async def restore_backup(request: Request):
             )
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "api_status": "error",
-                    "message": f"Backup-Archiv konnte nicht analysiert werden: {str(e)}",
-                    "data": {"analysis_error": str(e)[:300]},
-                },
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": f"Backup-Archiv konnte nicht analysiert werden: {str(e)}",
+                        "data": {"analysis_error": str(e)[:300]},
+                    },
+                    "backup.restore_analyze_failed",
+                    "error",
+                    {"reason": str(e)[:300]},
+                ),
             )
 
         if analysis["blocked_entries"]:
@@ -11679,13 +12678,17 @@ async def restore_backup(request: Request):
             )
             return JSONResponse(
                 status_code=200,
-                content={
-                    "status": "error",
-                    "api_status": "error",
-                    "message": "Backup-Archiv enthält problematische Einträge (Pfad-Traversal, Symlinks, Sonderdateien).",
-                    "data": {"analysis": analysis},
-                    "analysis": analysis,
-                },
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Archiv enthält problematische Einträge (Pfad-Traversal, Symlinks, Sonderdateien).",
+                        "data": {"analysis": analysis},
+                        "analysis": analysis,
+                    },
+                    "backup.restore_blocked_entries",
+                    "error",
+                ),
             )
 
         # Dry-Run: nur Analyse & Pfadliste zurückgeben, keine Schreiboperation
@@ -11701,17 +12704,22 @@ async def restore_backup(request: Request):
                 last_failure_kind="",
                 last_failure_message="",
             )
-            return {
-                "status": "success",
-                "api_status": "ok",
-                "message": "Dry-Run erfolgreich – keine Änderungen geschrieben.",
-                "data": {
-                    "mode": "dry-run",
-                    "analysis": analysis,
-                    "total_entries": total_entries,
-                    "backup_file": str(bf),
+            return with_backup_contract(
+                {
+                    "status": "success",
+                    "api_status": "ok",
+                    "message": "Dry-Run erfolgreich – keine Änderungen geschrieben.",
+                    "data": {
+                        "mode": "dry-run",
+                        "analysis": analysis,
+                        "total_entries": total_entries,
+                        "backup_file": str(bf),
+                    },
                 },
-            }
+                "backup.restore_dry_run_ok",
+                "success",
+                {"total_entries": total_entries},
+            )
 
         # Preview-Modus: sicherer Test-Restore in eigenes Verzeichnis (Sandbox unter /tmp, kein sudo nötig)
         if mode == "preview":
@@ -11743,17 +12751,21 @@ async def restore_backup(request: Request):
                 )
                 return JSONResponse(
                     status_code=200,
-                    content={
-                        "status": "error",
-                        "api_status": "error",
-                        "message": f"Preview-Restore fehlgeschlagen: {restore_result.get('stderr', 'Unbekannter Fehler')[:200]}",
-                        "data": {
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": f"Preview-Restore fehlgeschlagen: {restore_result.get('stderr', 'Unbekannter Fehler')[:200]}",
+                            "data": {
+                                "preview_dir": str(preview_dir),
+                                "analysis": analysis,
+                            },
                             "preview_dir": str(preview_dir),
                             "analysis": analysis,
                         },
-                        "preview_dir": str(preview_dir),
-                        "analysis": analysis,
-                    },
+                        "backup.restore_failed",
+                        "error",
+                    ),
                 )
 
             # Metadaten für Preview-Antwort
@@ -11775,21 +12787,26 @@ async def restore_backup(request: Request):
                 last_failure_message="",
             )
             _cleanup_old_preview_dirs(preview_dir)
-            return {
-                "status": "success",
-                "api_status": "ok",
-                "mode": "preview",
-                "message": "Test-Restore erfolgreich. System wurde nicht überschrieben.",
-                "preview_dir": str(preview_dir),
-                "analysis": analysis,
-                "total_entries": total_entries,
-                "data": {
+            return with_backup_contract(
+                {
+                    "status": "success",
+                    "api_status": "ok",
                     "mode": "preview",
+                    "message": "Test-Restore erfolgreich. System wurde nicht überschrieben.",
                     "preview_dir": str(preview_dir),
                     "analysis": analysis,
                     "total_entries": total_entries,
+                    "data": {
+                        "mode": "preview",
+                        "preview_dir": str(preview_dir),
+                        "analysis": analysis,
+                        "total_entries": total_entries,
+                    },
                 },
-            }
+                "backup.restore_preview_ok",
+                "success",
+                {"total_entries": total_entries},
+            )
 
         # Root-Modus: in dieser Phase weiterhin gesperrt (Feature-Gatekeeping)
         logger.warning(
@@ -11798,25 +12815,34 @@ async def restore_backup(request: Request):
         )
         return JSONResponse(
             status_code=200,
-            content={
-                "status": "error",
-                "api_status": "error",
-                "message": "Produktiver Root-Restore ist in dieser Phase gesperrt. Bitte nur Preview- oder Dry-Run-Modus verwenden.",
-                "mode": mode,
-                "analysis": analysis,
-                "data": {"mode": mode, "analysis": analysis},
-            },
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Produktiver Root-Restore ist in dieser Phase gesperrt. Bitte nur Preview- oder Dry-Run-Modus verwenden.",
+                    "mode": mode,
+                    "analysis": analysis,
+                    "data": {"mode": mode, "analysis": analysis},
+                },
+                "backup.restore_root_blocked",
+                "error",
+            ),
         )
     except Exception as e:
         logger.error(f"💥 Fehler bei Backup-Restore: {str(e)}", exc_info=True)
         return JSONResponse(
             status_code=200,
-            content={
-                "status": "error",
-                "api_status": "error",
-                "message": f"Fehler beim Restore: {str(e)}",
-                "data": {},
-            },
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": f"Fehler beim Restore: {str(e)}",
+                    "data": {},
+                },
+                "backup.restore_failed",
+                "error",
+                {"detail": str(e)},
+            ),
         )
 
 # AUDIT-FIXED (A-02): Doppelte Definition entfernt. Die erste verify_backup (weiter oben)

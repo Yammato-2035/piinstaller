@@ -24,6 +24,8 @@ class TestDiagnosisInterpreterV1(unittest.TestCase):
         self.assertEqual(out.diagnosis_id, "firewall.sudo_required")
         self.assertEqual(out.companion_mode, "blocked")
         self.assertEqual(out.interpreter_version, INTERPRETER_VERSION)
+        self.assertEqual(out.localization_model, "legacy")
+        self.assertEqual(out.schema_version, "1")
 
     def test_firewall_port_hint(self):
         req = DiagnosisInterpretRequest(
@@ -34,6 +36,7 @@ class TestDiagnosisInterpreterV1(unittest.TestCase):
         )
         out = interpret_v1(req)
         self.assertEqual(out.diagnosis_id, "firewall.rule_apply_failed_port")
+        self.assertEqual(out.localization_model, "legacy")
 
     def test_firewall_generic_when_no_port_signal(self):
         req = DiagnosisInterpretRequest(
@@ -44,6 +47,7 @@ class TestDiagnosisInterpreterV1(unittest.TestCase):
         )
         out = interpret_v1(req)
         self.assertEqual(out.diagnosis_id, "firewall.rule_apply_failed_generic")
+        self.assertEqual(out.localization_model, "legacy")
 
     def test_webserver_port_conflict(self):
         req = DiagnosisInterpretRequest(
@@ -55,6 +59,10 @@ class TestDiagnosisInterpreterV1(unittest.TestCase):
         out = interpret_v1(req)
         self.assertEqual(out.diagnosis_id, "webserver.port_conflict")
         self.assertEqual(out.companion_mode, "warning")
+        self.assertEqual(out.localization_model, "key_v1")
+        self.assertEqual(out.schema_version, "2")
+        self.assertEqual(out.diagnosis_code, "webserver.port_conflict")
+        self.assertEqual(out.title_key, "diagnosis.codes.webserver.port_conflict.title")
 
     def test_webserver_configure_falls_back_without_port_hint(self):
         req = DiagnosisInterpretRequest(
@@ -74,6 +82,8 @@ class TestDiagnosisInterpreterV1(unittest.TestCase):
         out = interpret_v1(req)
         self.assertEqual(out.diagnosis_id, "system.backend_timeout")
         self.assertEqual(out.severity, "high")
+        self.assertEqual(out.localization_model, "key_v1")
+        self.assertEqual(out.title_key, "diagnosis.codes.system.backend_timeout.title")
 
     def test_backup_verify_failed(self):
         req = DiagnosisInterpretRequest(
@@ -84,6 +94,7 @@ class TestDiagnosisInterpreterV1(unittest.TestCase):
         )
         out = interpret_v1(req)
         self.assertEqual(out.diagnosis_id, "backup_restore.verify_failed_generic")
+        self.assertEqual(out.localization_model, "key_v1")
         self.assertIn("extra", out.source_event)
         self.assertEqual(out.source_event["extra"].get("verify_mode"), "basic")
 
@@ -92,6 +103,8 @@ class TestDiagnosisInterpreterV1(unittest.TestCase):
         out = interpret_v1(req)
         self.assertEqual(out.diagnosis_id, "unknown.generic")
         self.assertLessEqual(out.confidence, 0.3)
+        self.assertEqual(out.localization_model, "key_v1")
+        self.assertEqual(out.user_message_key, "diagnosis.codes.unknown.generic.user_summary")
 
 
 if __name__ == "__main__":

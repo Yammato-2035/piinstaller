@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Home, Cloud, Tv, Code, ChevronRight, CheckCircle, Package, Cpu, HardDrive, Activity } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { usePlatform } from '../context/PlatformContext'
-import { fetchApi } from '../api'
+import { saveUserProfilePayload } from '../api'
 import AppIcon from './AppIcon'
 import { PandaCompanion } from './companions'
 
@@ -142,11 +142,7 @@ const FirstRunWizard: React.FC<FirstRunWizardProps> = ({
   const persistProfile = useCallback(async () => {
     setSavingProfile(true)
     try {
-      await fetchApi('/api/user-profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ experience_level: experienceLevel }),
-      })
+      await saveUserProfilePayload({ experience_level: experienceLevel })
     } catch {
       // stiller Fehler – Wizard soll nicht blockieren
     } finally {

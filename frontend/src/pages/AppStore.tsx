@@ -6,6 +6,8 @@ import { PandaCompanion, PandaRail } from '../components/companions'
 import type { ExperienceLevel } from '../components/Sidebar'
 import BeginnerGuidanceMarker from '../beginner/BeginnerGuidanceMarker'
 import { getAppStoreBeginnerMeta, MODULE_DEFINITIONS } from '../beginner/moduleModel'
+import { TrafficLightBadge } from '../components/trafficLight/TrafficLightBadge'
+import { TRAFFIC_LIGHT_COPY, deriveAppStoreTrafficLight } from '../trafficLight/trafficLightModel'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
 
@@ -53,6 +55,11 @@ const AppStoreAppCard: React.FC<AppStoreAppCardProps> = ({
   const isInstalling = installing === app.id
   const meta = getAppStoreBeginnerMeta(app.id)
   const emphasize = isBeginner && meta.tier === 'recommended'
+  const { lamp, copyKey } = deriveAppStoreTrafficLight(
+    { tier: meta.tier, availability: meta.availability },
+    !!isInstalled
+  )
+  const appTrafficCopy = TRAFFIC_LIGHT_COPY.appStore[copyKey]
 
   return (
     <div
@@ -73,6 +80,7 @@ const AppStoreAppCard: React.FC<AppStoreAppCardProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-semibold text-lg text-slate-800 dark:text-slate-100">{app.name}</h3>
+            <TrafficLightBadge state={lamp} label={appTrafficCopy.label} detail={appTrafficCopy.detail} />
             {isBeginner && meta.tier === 'recommended' && (
               <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md bg-emerald-600 text-white">Empfohlen</span>
             )}

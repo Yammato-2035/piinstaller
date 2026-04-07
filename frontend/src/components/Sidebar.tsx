@@ -122,10 +122,17 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
 
   const filteredItems = useMemo(() => {
     if (isBeginnerSidebar) {
-      return menuItems.filter((item) => {
-        if (item.type === 'divider') return false
-        return item.id && BEGINNER_MENU_IDS.includes(item.id as typeof BEGINNER_MENU_IDS[number])
-      })
+      const beginnerRank = (id: string | undefined) => {
+        if (!id) return 999
+        const i = BEGINNER_MENU_IDS.indexOf(id as (typeof BEGINNER_MENU_IDS)[number])
+        return i >= 0 ? i : 999
+      }
+      return menuItems
+        .filter((item) => {
+          if (item.type === 'divider') return false
+          return item.id && BEGINNER_MENU_IDS.includes(item.id as (typeof BEGINNER_MENU_IDS)[number])
+        })
+        .sort((a, b) => beginnerRank(a.id) - beginnerRank(b.id))
     }
     return menuItems.filter((item) => {
       if (item.type === 'divider') return true

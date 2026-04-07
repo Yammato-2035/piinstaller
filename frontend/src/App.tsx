@@ -32,7 +32,7 @@ import RemoteView from './features/remote/RemoteView'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
 import BootSplash from './components/BootSplash'
-import { fetchApi, getApiBase, setApiBase, setScreenshotMode } from './api'
+import { fetchApi, getApiBase, setApiBase, setScreenshotMode, fetchExperienceLevelFromApi, readStoredExperienceLevel } from './api'
 import { getThemeShot, isThemeScreenshotCapture } from './themeScreenshot'
 import { PlatformProvider, platformRawFromSystemInfo, usePlatform } from './context/PlatformContext'
 import { MainStatusBarProvider, useMainStatusBar, useOptionalMainStatusBar } from './context/MainStatusBarContext'
@@ -411,16 +411,18 @@ function App() {
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetchApi('/api/user-profile')
-        if (!res.ok || cancelled) return
-        const data = await res.json()
-        if (!cancelled && data?.profile?.experience_level) {
-          const level = String(data.profile.experience_level).toLowerCase()
-          if (level === 'advanced' || level === 'developer') setExperienceLevel(level)
+        if (cancelled) return
+        const fromApi = await fetchExperienceLevelFromApi()
+        const level = fromApi || readStoredExperienceLevel()
+        if (cancelled || !level) return
+        if (level === 'advanced' || level === 'developer') setExperienceLevel(level)
+        else setExperienceLevel('beginner')
+      } catch {
+        const loc = readStoredExperienceLevel()
+        if (!cancelled && loc) {
+          if (loc === 'advanced' || loc === 'developer') setExperienceLevel(loc)
           else setExperienceLevel('beginner')
         }
-      } catch {
-        // Default bleibt beginner
       }
     })()
     return () => { cancelled = true }
@@ -623,7 +625,7 @@ function App() {
     <PlatformProvider systemInfo={systemInfo}>
       <AppDocumentTitle dsiRadioView={dsiRadioView} />
       {showBootSplash ? <BootSplash /> : null}
-      <div className="flex h-screen max-h-screen overflow-hidden bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+      <div className="flex h-screen max-h-screen flex-col overflow-hidden bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
         {!firstRunDone && (
           <FirstRunWizard
             initialStep={themeShot === 'experience' ? 2 : 1}
@@ -639,40 +641,55 @@ function App() {
           <SudoPasswordDialog onPasswordSaved={handleSudoPasswordSaved} />
         ) : null}
         <RunningBackupModal />
-        {/* Mobile: Hamburger-Leiste */}
         <MainStatusBarProvider>
-        <header className="md:hidden flex flex-col gap-0 px-4 py-2 bg-slate-200 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700"
-              aria-label={i18n.t('app.mobile.openMenu')}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-            </button>
-            <MobileAppTitle />
+          {/* Spalte auf schmalen Screens (oben Menüzeile, unten Inhalt); Zeile ab md: Sidebar | Hauptteil */}
+          <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+            <header className="flex flex-none flex-col gap-0 border-b border-slate-300 bg-slate-200 px-4 py-2 dark:border-slate-700 dark:bg-slate-800 md:hidden">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(true)}
+                  className="rounded-lg p-2 text-slate-600 hover:bg-slate-300 dark:text-slate-300 dark:hover:bg-slate-700"
+                  aria-label={i18n.t('app.mobile.openMenu')}
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+                <MobileAppTitle />
+              </div>
+              <MobileMainStatusLine />
+            </header>
+            <Sidebar
+              currentPage={currentPage}
+              setCurrentPage={handlePageChange}
+              theme={theme}
+              setTheme={handleThemeChange}
+              isRaspberryPi={platformRaw.isRaspberryPi}
+              freenoveDetected={freenoveDetected}
+              mobileOpen={mobileMenuOpen}
+              onClose={() => setMobileMenuOpen(false)}
+              experienceLevel={experienceLevel}
+              appEdition={appEdition}
+            />
+            <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+              <AppTopHeader headerBackendOk={headerBackendOk} />
+              <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={currentPage}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="min-h-0"
+                  >
+                    {renderPage()}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </main>
           </div>
-          <MobileMainStatusLine />
-        </header>
-        <Sidebar currentPage={currentPage} setCurrentPage={handlePageChange} theme={theme} setTheme={handleThemeChange} isRaspberryPi={platformRaw.isRaspberryPi} freenoveDetected={freenoveDetected} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} experienceLevel={experienceLevel} appEdition={appEdition} />
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <AppTopHeader headerBackendOk={headerBackendOk} />
-        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={currentPage}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="min-h-0"
-            >
-              {renderPage()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </main>
         </MainStatusBarProvider>
         <Toaster position="bottom-right" />
       </div>
