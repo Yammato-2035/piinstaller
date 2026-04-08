@@ -1,7 +1,7 @@
 """
 SQLite-Zugriff für Remote-Companion: Pairing, Sessions, Geräteprofile, Audit.
 Tokens werden nur gehashed gespeichert (niemals Klartext).
-DB-Pfad: optional über init_remote_db(config_dir) gesetzt, sonst ~/.config/pi-installer/remote.db.
+DB-Pfad: optional über init_remote_db(config_dir) gesetzt, sonst Zustandsverzeichnis/remote.db (siehe install_paths).
 """
 
 import hashlib
@@ -9,6 +9,8 @@ import os
 import sqlite3
 from pathlib import Path
 from typing import Optional
+
+from core.install_paths import get_state_dir
 
 # Wird von init_remote_db() gesetzt; Fallback für get_remote_db_path()
 _remote_db_path: Optional[Path] = None
@@ -25,7 +27,7 @@ def get_remote_db_path() -> Path:
     env_path = os.environ.get("PI_INSTALLER_REMOTE_DB")
     if env_path and env_path.strip():
         return Path(env_path.strip())
-    return Path.home() / ".config" / "pi-installer" / "remote.db"
+    return get_state_dir() / "remote.db"
 
 
 def init_remote_db(config_dir: Optional[Path] = None) -> None:

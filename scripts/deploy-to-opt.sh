@@ -1,7 +1,7 @@
 #!/bin/bash
-# PI-Installer – Deploy aus aktuellem Repo nach /opt/pi-installer
-# Legt Service-User pi-installer an, kopiert Dateien, richtet Venv/Frontend ein, startet Service.
-# Kann vom PI-Installer (Backend) per sudo aufgerufen werden oder manuell.
+# Setuphelfer – Deploy aus aktuellem Repo nach /opt/setuphelfer
+# Legt Service-User setuphelfer an, kopiert Dateien, richtet Venv/Frontend ein, startet setuphelfer-backend + setuphelfer.
+# Kann vom Backend (Deploy-Aktion) per sudo aufgerufen werden oder manuell.
 #
 # Verwendung:
 #   sudo ./scripts/deploy-to-opt.sh [QUELLVERZEICHNIS]
@@ -29,11 +29,12 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 DEFAULT_SOURCE="$(cd "$SCRIPT_DIR/.." && pwd)"
 SOURCE_DIR="${1:-$DEFAULT_SOURCE}"
-INSTALL_DIR="/opt/pi-installer"
-CONFIG_DIR="/etc/pi-installer"
-LOG_DIR="/var/log/pi-installer"
+INSTALL_DIR="/opt/setuphelfer"
+CONFIG_DIR="/etc/setuphelfer"
+LOG_DIR="/var/log/setuphelfer"
+STATE_DIR="/var/lib/setuphelfer"
 SYSTEMD_DIR="/etc/systemd/system"
-SERVICE_USER_NAME="pi-installer"
+SERVICE_USER_NAME="setuphelfer"
 
 if [ ! -f "$SOURCE_DIR/start.sh" ] || [ ! -d "$SOURCE_DIR/backend" ] || [ ! -d "$SOURCE_DIR/frontend" ]; then
   err "Kein gültiges PI-Installer-Repo unter: $SOURCE_DIR"
@@ -56,8 +57,8 @@ if ! getent passwd "$SERVICE_USER_NAME" >/dev/null 2>&1; then
   if ! getent group "$SERVICE_USER_NAME" >/dev/null 2>&1; then
     groupadd --system "$SERVICE_USER_NAME" 2>/dev/null || true
   fi
-  useradd --system --no-create-home --comment "PI-Installer Service" --gid "$SERVICE_USER_NAME" "$SERVICE_USER_NAME" 2>/dev/null || \
-  useradd --system --no-create-home --comment "PI-Installer Service" "$SERVICE_USER_NAME" 2>/dev/null || true
+  useradd --system --no-create-home --comment "Setuphelfer Service" --gid "$SERVICE_USER_NAME" "$SERVICE_USER_NAME" 2>/dev/null || \
+  useradd --system --no-create-home --comment "Setuphelfer Service" "$SERVICE_USER_NAME" 2>/dev/null || true
   ok "User $SERVICE_USER_NAME erstellt"
 else
   ok "Service-User $SERVICE_USER_NAME existiert bereits"
@@ -66,10 +67,11 @@ fi
 # Tatsächliche Gruppe ermitteln (könnte nogroup sein)
 SERVICE_GROUP=$(id -gn "$SERVICE_USER_NAME" 2>/dev/null || echo "$SERVICE_USER_NAME")
 
-# Verzeichnisse
+# Verzeichnisse (STATE_DIR vor chown anlegen – sonst schlägt chown fehl / Service ohne Pfad)
 mkdir -p "$INSTALL_DIR"
 mkdir -p "$CONFIG_DIR"
 mkdir -p "$LOG_DIR"
+mkdir -p "$STATE_DIR"
 
 # Dateien kopieren (wie install-system.sh)
 info "Kopiere Dateien nach ${INSTALL_DIR}..."
@@ -117,6 +119,12 @@ if command -v npm >/dev/null 2>&1; then
   cd "$INSTALL_DIR/frontend"
   npm install --silent 2>&1 | grep -v "npm WARN" || true
   ok "Frontend-Dependencies installiert"
+  info "Frontend Produktions-Build (dist/)..."
+  if npm run build 2>&1; then
+    ok "frontend/dist erzeugt (vite build)"
+  else
+    warn "vite build fehlgeschlagen – start-browser-production.sh versucht beim Start erneut."
+  fi
   # Tauri-Build: Cargo/Rust liegen oft im Benutzer-Kontext; mit sudo ist $HOME=/root und cargo fehlt.
   # Daher Build als der User ausführen, der sudo aufgerufen hat (der hat meist Rust).
   BUILD_USER="${SUDO_USER:-}"
@@ -148,53 +156,34 @@ fi
 chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$INSTALL_DIR"
 chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$CONFIG_DIR"
 chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$LOG_DIR"
+chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$STATE_DIR"
 
-# systemd Service (falls noch nicht vorhanden oder anpassen)
-SERVICE_FILE="$SYSTEMD_DIR/pi-installer.service"
-if [ ! -f "$SERVICE_FILE" ] || ! grep -q "User=$SERVICE_USER_NAME" "$SERVICE_FILE" 2>/dev/null; then
-  info "Systemd-Service einrichten..."
-  cat > "$SERVICE_FILE" << SERVICEEOF
-[Unit]
-Description=PI-Installer (Backend + Frontend)
-After=network-online.target
-Wants=network-online.target
+# Alte Units stilllegen (Migration)
+for old in pi-installer.service pi-installer-backend.service; do
+  systemctl stop "$old" 2>/dev/null || true
+  systemctl disable "$old" 2>/dev/null || true
+done
 
-[Service]
-Type=simple
-User=$SERVICE_USER_NAME
-Group=$SERVICE_GROUP
-WorkingDirectory=$INSTALL_DIR
-ExecStart=$INSTALL_DIR/start.sh
-Restart=on-failure
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-Environment="PI_INSTALLER_DIR=$INSTALL_DIR"
-Environment="PI_INSTALLER_CONFIG_DIR=$CONFIG_DIR"
-Environment="PI_INSTALLER_LOG_DIR=$LOG_DIR"
-Environment="PI_INSTALLER_DEV=0"
-Environment="PIP_CACHE_DIR=$INSTALL_DIR/.pip-cache"
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=$INSTALL_DIR $CONFIG_DIR $LOG_DIR
-
-[Install]
-WantedBy=multi-user.target
-SERVICEEOF
-  systemctl daemon-reload
-  ok "Service-Datei geschrieben"
-fi
+# systemd: Backend (Owner :8000) + Web-UI aus Repo-Vorlagen
+info "Systemd-Services aus Vorlagen schreiben (Backend + Web-UI)..."
+# Platzhalter {{PI_INSTALLER_*}} in Unit-Vorlagen = technische Ersetzung (gleiche Werte wie SETUPHELFER_*)
+SED_ENV=( -e "s|{{INSTALL_DIR}}|$INSTALL_DIR|g" -e "s|{{USER}}|$SERVICE_USER_NAME|g"
+  -e "s|{{PI_INSTALLER_CONFIG_DIR}}|$CONFIG_DIR|g" -e "s|{{PI_INSTALLER_LOG_DIR}}|$LOG_DIR|g"
+  -e "s|{{PI_INSTALLER_STATE_DIR}}|$STATE_DIR|g" )
+sed "${SED_ENV[@]}" "$INSTALL_DIR/setuphelfer-backend.service" > "$SYSTEMD_DIR/setuphelfer-backend.service"
+sed -i "s/^Group=.*/Group=$SERVICE_GROUP/" "$SYSTEMD_DIR/setuphelfer-backend.service" 2>/dev/null || true
+sed "${SED_ENV[@]}" "$INSTALL_DIR/setuphelfer.service" > "$SYSTEMD_DIR/setuphelfer.service"
+sed -i "s/^Group=.*/Group=$SERVICE_GROUP/" "$SYSTEMD_DIR/setuphelfer.service" 2>/dev/null || true
+ok "systemd: setuphelfer-backend.service + setuphelfer.service"
 
 # AUDIT-FIX (A-03): Runtime liest config.json; erzeuge config.json statt config.yaml.
 # Konfiguration (nur anlegen wenn nicht vorhanden)
 if [ ! -f "$CONFIG_DIR/config.json" ]; then
   cat > "$CONFIG_DIR/config.json" << 'CONFIGEOF'
 {
-  "install_dir": "/opt/pi-installer",
-  "config_dir": "/etc/pi-installer",
-  "log_dir": "/var/log/pi-installer",
+  "install_dir": "/opt/setuphelfer",
+  "config_dir": "/etc/setuphelfer",
+  "log_dir": "/var/log/setuphelfer",
   "backend": {"host": "0.0.0.0", "port": 8000},
   "frontend": {"port": 3001}
 }
@@ -203,26 +192,33 @@ CONFIGEOF
   ok "Konfiguration erstellt"
 fi
 
-# Service starten/neu starten
+# Services: zuerst Backend (Port 8000), dann Web-UI
 systemctl daemon-reload
-if systemctl is-active --quiet pi-installer.service 2>/dev/null; then
-  info "Starte Service neu..."
-  systemctl restart pi-installer.service
-  ok "Service neu gestartet"
+systemctl enable setuphelfer-backend.service 2>/dev/null || true
+systemctl enable setuphelfer.service 2>/dev/null || true
+if systemctl is-active --quiet setuphelfer-backend.service 2>/dev/null; then
+  info "Starte setuphelfer-backend neu..."
+  systemctl restart setuphelfer-backend.service
 else
-  info "Starte Service..."
-  systemctl enable pi-installer.service 2>/dev/null || true
-  systemctl start pi-installer.service
-  ok "Service gestartet"
+  info "Starte setuphelfer-backend..."
+  systemctl start setuphelfer-backend.service
 fi
+if systemctl is-active --quiet setuphelfer.service 2>/dev/null; then
+  info "Starte setuphelfer (Web-UI) neu..."
+  systemctl restart setuphelfer.service
+else
+  info "Starte setuphelfer (Web-UI)..."
+  systemctl start setuphelfer.service
+fi
+ok "Services gestartet (setuphelfer-backend, setuphelfer)"
 
 # Startmenü-Einträge (Anwendungen)
 if [ -f "$INSTALL_DIR/scripts/install-desktop-entries.sh" ]; then
   info "Startmenü-Einträge anlegen..."
   bash "$INSTALL_DIR/scripts/install-desktop-entries.sh" "$INSTALL_DIR"
-  ok "PI-Installer erscheint im Startmenü"
+  ok "SetupHelfer erscheint im Startmenü"
 fi
 
 echo ""
-ok "Deploy abgeschlossen. PI-Installer läuft unter $INSTALL_DIR als User $SERVICE_USER_NAME."
+ok "Deploy abgeschlossen. Setuphelfer läuft unter $INSTALL_DIR als User $SERVICE_USER_NAME."
 echo ""

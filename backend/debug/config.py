@@ -12,8 +12,10 @@ try:
 except ImportError:
     yaml = None
 
+from core.install_paths import get_config_dir
+
 _SCHEMA_VERSION = 1
-_SYSTEM_CONFIG_PATH = Path("/etc/pi-installer/debug.config.yaml")
+_LEGACY_DEBUG_CONFIG = Path("/etc/pi-installer/debug.config.yaml")
 _ALLOWED_LEVELS = frozenset({"DEBUG", "INFO", "WARN", "ERROR"})
 
 _effective_config_cache: Optional[Dict[str, Any]] = None
@@ -51,11 +53,14 @@ def load_defaults() -> Dict[str, Any]:
 
 
 def load_system_config() -> Dict[str, Any]:
-    """Lädt /etc/pi-installer/debug.config.yaml falls vorhanden. Fehlt die Datei: leeres dict."""
-    if not _SYSTEM_CONFIG_PATH.is_file():
+    """Lädt debug.config.yaml unter get_config_dir() oder Legacy-Pfad."""
+    path = get_config_dir() / "debug.config.yaml"
+    if not path.is_file() and _LEGACY_DEBUG_CONFIG.is_file():
+        path = _LEGACY_DEBUG_CONFIG
+    if not path.is_file():
         return {}
     try:
-        raw = _SYSTEM_CONFIG_PATH.read_text(encoding="utf-8")
+        raw = path.read_text(encoding="utf-8")
         if yaml:
             data = yaml.safe_load(raw)
         else:

@@ -1,6 +1,6 @@
 #!/bin/bash
-# PI-Installer – Systemweite Installation aktualisieren
-# Aktualisiert eine bestehende Installation in /opt/pi-installer/
+# Setuphelfer – Systemweite Installation aktualisieren
+# Aktualisiert eine bestehende Installation unter /opt/setuphelfer/ (Legacy: /opt/pi-installer/)
 #
 # Verwendung:
 #   sudo ./scripts/update-system.sh
@@ -24,34 +24,45 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-INSTALL_DIR="/opt/pi-installer"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CURRENT_USER="${SUDO_USER:-$USER}"
 
+INSTALL_DIR="/opt/setuphelfer"
+if [ ! -d "$INSTALL_DIR" ] && [ -d "/opt/pi-installer" ]; then
+  INSTALL_DIR="/opt/pi-installer"
+  warn "Legacy-Pfad /opt/pi-installer – bitte auf Paket setuphelfer migrieren (/opt/setuphelfer)."
+fi
+
 # Prüfe ob Installation existiert
 if [ ! -d "$INSTALL_DIR" ]; then
-  err "Keine Installation gefunden in ${INSTALL_DIR}"
+  err "Keine Installation gefunden in /opt/setuphelfer (oder Legacy /opt/pi-installer)"
   err "Bitte zuerst installieren mit: sudo ./scripts/install-system.sh"
   exit 1
 fi
 
 echo -e "${CYAN}============================================${NC}"
-echo -e "${CYAN}  PI-Installer Update${NC}"
+echo -e "${CYAN}  Setuphelfer Update${NC}"
 echo -e "${CYAN}============================================${NC}"
 echo ""
 
-# Stoppe Service falls aktiv
-if systemctl is-active --quiet pi-installer.service 2>/dev/null; then
-  info "Stoppe PI-Installer Service..."
-  systemctl stop pi-installer.service
+SERVICE_NAME="setuphelfer.service"
+LEGACY_SERVICE="pi-installer.service"
+SERVICE_WAS_RUNNING=0
+
+# Stoppe Service falls aktiv (neu, dann Legacy)
+if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
+  info "Stoppe Setuphelfer-Service ($SERVICE_NAME)..."
+  systemctl stop "$SERVICE_NAME"
   SERVICE_WAS_RUNNING=1
-else
-  SERVICE_WAS_RUNNING=0
+elif systemctl is-active --quiet "$LEGACY_SERVICE" 2>/dev/null; then
+  info "Stoppe Legacy-Service ($LEGACY_SERVICE)..."
+  systemctl stop "$LEGACY_SERVICE"
+  SERVICE_WAS_RUNNING=1
 fi
 
 # Backup erstellen
-BACKUP_DIR="/tmp/pi-installer-backup-$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="/tmp/setuphelfer-backup-$(date +%Y%m%d-%H%M%S)"
 info "Erstelle Backup nach ${BACKUP_DIR}..."
 mkdir -p "$BACKUP_DIR"
 cp -a "$INSTALL_DIR" "$BACKUP_DIR/" 2>/dev/null || true
@@ -98,19 +109,30 @@ if command -v npm >/dev/null 2>&1; then
 fi
 
 # Service neu laden
-info "Lade systemd Service neu..."
+info "Lade systemd neu..."
 systemctl daemon-reload
-ok "Service neu geladen"
+ok "systemd neu geladen"
 
 # Service wieder starten falls er vorher lief
 if [ "$SERVICE_WAS_RUNNING" -eq 1 ]; then
-  info "Starte Service wieder..."
-  systemctl start pi-installer.service
-  sleep 2
-  if systemctl is-active --quiet pi-installer.service; then
-    ok "Service gestartet"
-  else
-    warn "Service konnte nicht gestartet werden. Prüfe Logs mit: journalctl -u pi-installer -n 50"
+  if systemctl cat "$SERVICE_NAME" >/dev/null 2>&1; then
+    info "Starte $SERVICE_NAME wieder..."
+    systemctl start "$SERVICE_NAME"
+    sleep 2
+    if systemctl is-active --quiet "$SERVICE_NAME"; then
+      ok "Service gestartet ($SERVICE_NAME)"
+    else
+      warn "Service konnte nicht gestartet werden. Prüfe Logs mit: journalctl -u setuphelfer -n 50"
+    fi
+  elif systemctl cat "$LEGACY_SERVICE" >/dev/null 2>&1; then
+    info "Starte Legacy $LEGACY_SERVICE wieder..."
+    systemctl start "$LEGACY_SERVICE"
+    sleep 2
+    if systemctl is-active --quiet "$LEGACY_SERVICE"; then
+      ok "Legacy-Service gestartet"
+    else
+      warn "Legacy-Service konnte nicht starten. Prüfe: journalctl -u pi-installer -n 50"
+    fi
   fi
 fi
 

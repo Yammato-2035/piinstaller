@@ -1,10 +1,8 @@
-# PI-Installer Backend (nur API auf :8000)
-# Für DSI Radio, API-Zugriff etc. Unabhängig vom Frontend.
+# Setuphelfer Backend (nur API auf :8000)
 # Installieren: siehe scripts/install-backend-service.sh oder create_installer.sh
-# Nach Backend-Update: sudo systemctl restart pi-installer-backend
 
 [Unit]
-Description=PI-Installer Backend (API)
+Description=Setuphelfer Backend (API)
 After=network-online.target
 Wants=network-online.target
 
@@ -19,7 +17,16 @@ RestartSec=5
 StandardOutput=journal
 StandardError=journal
 Environment=PI_INSTALLER_DEV=0
-# Härtung (bestehende Optionen beibehalten + erweitert)
+Environment=APP_EDITION=release
+Environment=PIP_CACHE_DIR={{INSTALL_DIR}}/.pip-cache
+Environment="SETUPHELFER_DIR={{INSTALL_DIR}}"
+Environment="PI_INSTALLER_DIR={{INSTALL_DIR}}"
+Environment="SETUPHELFER_CONFIG_DIR={{PI_INSTALLER_CONFIG_DIR}}"
+Environment="PI_INSTALLER_CONFIG_DIR={{PI_INSTALLER_CONFIG_DIR}}"
+Environment="SETUPHELFER_LOG_DIR={{PI_INSTALLER_LOG_DIR}}"
+Environment="PI_INSTALLER_LOG_DIR={{PI_INSTALLER_LOG_DIR}}"
+Environment="SETUPHELFER_STATE_DIR={{PI_INSTALLER_STATE_DIR}}"
+Environment="PI_INSTALLER_STATE_DIR={{PI_INSTALLER_STATE_DIR}}"
 ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
@@ -37,7 +44,7 @@ CapabilityBoundingSet=
 AmbientCapabilities=
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
-ReadWritePaths={{INSTALL_DIR}} /var/lib/pi-installer /tmp
+ReadWritePaths={{INSTALL_DIR}} /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp
 
 [Install]
 WantedBy=multi-user.target

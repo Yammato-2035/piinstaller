@@ -10,6 +10,8 @@ import json
 import re
 import os
 
+from core.install_paths import get_state_dir
+
 # Bluetooth-Status: interne Codes für API-Responses (nicht Diagnose-Interpreter).
 BLUETOOTH_OK = "bluetooth.ok"
 BLUETOOTH_RFKILL_BLOCKED = "bluetooth.rfkill_blocked"
@@ -30,9 +32,10 @@ class ControlCenterModule:
         self.locale_conf_file = Path("/etc/default/locale")
         self.desktop_config_dir = Path("/home/pi/.config")
         self.printers_config_file = Path("/etc/cups/printers.conf")
-        self.display_telemetry_config_file = Path.home() / ".config" / "pi-installer" / "display-telemetry.json"
-        self.display_telemetry_pid_file = Path.home() / ".config" / "pi-installer" / "display-telemetry.pid"
-        self.display_telemetry_log_file = Path.home() / ".config" / "pi-installer" / "display-telemetry.log"
+        _st = get_state_dir()
+        self.display_telemetry_config_file = _st / "display-telemetry.json"
+        self.display_telemetry_pid_file = _st / "display-telemetry.pid"
+        self.display_telemetry_log_file = _st / "display-telemetry.log"
 
     def _get_wifi_interface(self, sudo_password: str = "") -> str:
         """Ermittelt die WiFi-Schnittstelle (wlan0, wlan1, …). Pi prüft zuerst selbst."""

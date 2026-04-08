@@ -1,11 +1,12 @@
 #!/bin/bash
-# PI-Installer – Zentrale Startfunktion: Backend und alle Frontend-Varianten
+# Setuphelfer – Zentrale Startfunktion: Backend und alle Frontend-Varianten
 # Ein Einstieg für alle Startmöglichkeiten aus dem Repo.
 # Siehe: docs/START_APPS.md
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BACKEND_URL="http://127.0.0.1:8000"
+BACKEND_LOG="/tmp/setuphelfer-backend.log"
 
 wait_for_backend() {
   local max="${1:-60}"
@@ -28,11 +29,11 @@ ensure_backend_then() {
     return $?
   fi
   echo "📡 Backend nicht erreichbar – starte Backend..."
-  nohup "$REPO_ROOT/scripts/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
+  nohup "$REPO_ROOT/scripts/start-backend.sh" >>"$BACKEND_LOG" 2>&1 &
   echo -n "   Warte auf Backend "
   if ! wait_for_backend; then
     echo ""
-    echo "❌ Backend antwortet nicht (Timeout). Log: /tmp/pi-installer-backend.log"
+    echo "❌ Backend antwortet nicht (Timeout). Log: $BACKEND_LOG"
     return 1
   fi
   echo ""
@@ -43,7 +44,7 @@ ensure_backend_then() {
 
 show_menu() {
   echo ""
-  echo "🚀 PI-Installer – Alle Startoptionen"
+  echo "🚀 Setuphelfer – Alle Startoptionen"
   echo "===================================="
   echo ""
   echo "  Backend:"
@@ -55,8 +56,8 @@ show_menu() {
   echo "    4) Backend + Frontend (Tauri-App-Fenster)"
   echo "    5) Backend + Frontend (nur Vite-Server, Port 3001)"
   echo ""
-  echo "  PI-Installer (Backend prüfen, dann Auswahl Tauri/Browser/Vite):"
-  echo "    6) PI-Installer starten (Dialog oder Auswahl)"
+  echo "  Setuphelfer (Backend prüfen, dann Auswahl Tauri/Browser/Vite):"
+  echo "    6) Setuphelfer starten (Dialog oder Auswahl)"
   echo ""
   echo "  Nur Frontend (Backend muss laufen oder wird gestartet):"
   echo "    7) Nur Frontend – Browser (Vite + Browser öffnen)"
@@ -74,7 +75,7 @@ show_menu() {
     3) run_both_browser ;;
     4) run_both_tauri ;;
     5) run_both_vite ;;
-    6) run_pi_installer ;;
+    6) run_setuphelfer ;;
     7) run_frontend_browser ;;
     8) run_frontend_tauri ;;
     9) run_frontend_vite ;;
@@ -90,8 +91,8 @@ run_backend_foreground() {
 
 run_backend_background() {
   echo "📡 Starte Backend im Hintergrund..."
-  nohup "$REPO_ROOT/scripts/start-backend.sh" >>/tmp/pi-installer-backend.log 2>&1 &
-  echo "   Log: /tmp/pi-installer-backend.log"
+  nohup "$REPO_ROOT/scripts/start-backend.sh" >>"$BACKEND_LOG" 2>&1 &
+  echo "   Log: $BACKEND_LOG"
   echo -n "   Warte auf Backend "
   if wait_for_backend; then
     echo ""
@@ -99,7 +100,7 @@ run_backend_background() {
     echo "   Beenden: kill \$(lsof -t -i:8000)"
   else
     echo ""
-    echo "❌ Timeout – prüfe /tmp/pi-installer-backend.log"
+    echo "❌ Timeout – prüfe $BACKEND_LOG"
   fi
 }
 
@@ -116,7 +117,7 @@ run_both_vite() {
   ensure_backend_then run_frontend_vite
 }
 
-run_pi_installer() {
+run_setuphelfer() {
   exec "$REPO_ROOT/scripts/start-pi-installer.sh"
 }
 
@@ -153,11 +154,11 @@ case "$MODE" in
   both-vite)
     run_both_vite
     ;;
-  menu|pi-installer)
+  menu|setuphelfer|pi-installer)
     if [ "$MODE" = "menu" ]; then
       show_menu
     else
-      run_pi_installer
+      run_setuphelfer
     fi
     ;;
   frontend-browser)
@@ -170,7 +171,7 @@ case "$MODE" in
     run_frontend_vite
     ;;
   help|--help|-h)
-    echo "PI-Installer – Zentrale Startfunktion"
+    echo "Setuphelfer – Zentrale Startfunktion"
     echo ""
     echo "Aufruf: $0 [ Option ]"
     echo ""
@@ -181,7 +182,7 @@ case "$MODE" in
     echo "  both-tauri       Backend starten/prüfen + Tauri-App"
     echo "  both-vite        Backend starten/prüfen + nur Vite (Port 3001)"
     echo "  menu             Menü im Terminal (alle Optionen)"
-    echo "  pi-installer     PI-Installer (Dialog Tauri/Browser/Vite)"
+    echo "  setuphelfer      Dialog Tauri/Browser/Vite (Alias: pi-installer)"
     echo "  frontend-browser Nur Frontend – Browser (Backend ggf. automatisch)"
     echo "  frontend-tauri   Nur Frontend – Tauri-App"
     echo "  frontend-vite    Nur Frontend – nur Vite-Server"

@@ -1,7 +1,7 @@
 """
 Logger/JSONL: init_debug, get_run_id, get_logger, should_log, write_event.
 Nutzt context.py (request_id), levels.py, paths.resolve_debug_log_path, rotate.rotate_if_needed, redaction.
-App-Name: pi-installer-backend. Niemals Exceptions nach außen.
+App-Name: setuphelfer-backend. Niemals Exceptions nach außen.
 """
 
 import json
@@ -45,7 +45,7 @@ _file_lock = threading.Lock()
 
 
 def _app_info() -> Dict[str, Any]:
-    """app.name = pi-installer-backend, version/build best-effort.
+    """app.name = setuphelfer-backend, version/build best-effort.
 
     Quelle für die Version ist konsistent `config/version.json` (falls vorhanden),
     mit Fallback auf die historische VERSION-Datei im Projekt-/Installationsroot.
@@ -93,7 +93,7 @@ def _app_info() -> Dict[str, Any]:
             pass
     except Exception:
         pass
-    return {"name": "pi-installer-backend", "version": version, "build": build}
+    return {"name": "setuphelfer-backend", "version": version, "build": build}
 
 
 def _ts_iso_local() -> str:

@@ -13,7 +13,7 @@ _Stand: März 2026 – Fokus auf Konsistenz, nicht auf Funktionsumfang._
 - `docs/` – Architektur-, User-, Developer-, Design- und Review-Dokumente.
 - `scripts/` – Installations-/Start-/Service-Skripte.
 - `config/` – z. B. `version.json`.
-- `pi-installer-backend.service` – systemd-Service-Unit.
+- `setuphelfer.service`, `setuphelfer-backend.service` – systemd-Vorlagen (Legacy: `pi-installer*.service`); siehe `docs/architecture/NAMING_AND_SERVICES.md`.
 - `VERSION` – Versionsdatei laut bestehender Doku.
 - `README.md` – Einstieg auf GitHub.
 

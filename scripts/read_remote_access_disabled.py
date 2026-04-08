@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""Liest remote_access_disabled aus PI-Installer config. Exit 0 = deaktiviert, 1 = aktiviert (Remote erlaubt)."""
+"""Liest remote_access_disabled aus Setuphelfer-config. Exit 0 = deaktiviert, 1 = aktiviert (Remote erlaubt)."""
 import json
 import sys
 from pathlib import Path
 
-for p in [Path("/etc/pi-installer/config.json"), Path.home() / ".config" / "pi-installer" / "config.json"]:
+_CANDIDATES = [
+    Path("/etc/setuphelfer/config.json"),
+    Path("/etc/pi-installer/config.json"),
+    Path.home() / ".config" / "setuphelfer" / "config.json",
+    Path.home() / ".config" / "pi-installer" / "config.json",
+]
+for p in _CANDIDATES:
     if p.exists():
         try:
             data = json.loads(p.read_text(encoding="utf-8"))

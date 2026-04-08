@@ -1,6 +1,8 @@
-# Start- und Initialisierungsfluss – PI-Installer
+# Start- und Initialisierungsfluss – Setuphelfer
 
 _Phase 4 – Strukturelle Systemvereinfachung_
+
+**Referenz Namen/Pfade/systemd:** [NAMING_AND_SERVICES.md](NAMING_AND_SERVICES.md) (ab 1.4.0).
 
 ## 1. Ziel
 
@@ -55,14 +57,16 @@ Start- und Initialisierungslogik soll nachvollziehbar und konsistent sein.
 
 ---
 
-## 5. Service-Definitionen
+## 5. Service-Definitionen (Produktion ab 1.4.0)
 
-| Service | Datei | ExecStart |
-|---------|-------|-----------|
-| pi-installer | pi-installer.service, debian/ | start.sh (Backend + Frontend) |
-| pi-installer-backend | pi-installer-backend.service | start-backend.sh (nur Backend) |
+| Service | Datei (Vorlage) | ExecStart (Kern) |
+|---------|----------------|------------------|
+| **setuphelfer-backend** | `setuphelfer-backend.service` | `scripts/start-backend.sh` – **Port 8000** |
+| **setuphelfer** | `setuphelfer.service` | `scripts/start-browser-production.sh` – Web-UI (**vite preview**), kein zweites Backend |
 
-**Aktiver Installationspfad:** `./scripts/install-backend-service.sh` richtet `pi-installer-backend` ein.
+**Hinweis:** Die Web-UI-Unit startet **nicht** `./start.sh` (Vite-Dev), um Schreibzugriffe auf `frontend/node_modules/.vite` unter `/opt` zu vermeiden.
+
+**Aktiver Pfad:** `./scripts/install-backend-service.sh` / `install-system.sh` richten **`setuphelfer-backend`** (und bei Vollinstallation **`setuphelfer`**) ein. Legacy: `pi-installer-backend.service`.
 
 ---
 

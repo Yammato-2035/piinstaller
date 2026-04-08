@@ -1,46 +1,58 @@
 #!/bin/sh
 # set -e entfernt: Fehlerbehandlung explizit, damit dpkg nicht bei jedem Fehler abbricht
 
-INSTALL_DIR="/opt/pi-installer"
-CONFIG_DIR="/etc/pi-installer"
-LOG_DIR="/var/log/pi-installer"
-SERVICE_USER="pi-installer"
+INSTALL_DIR="/opt/setuphelfer"
+CONFIG_DIR="/etc/setuphelfer"
+LOG_DIR="/var/log/setuphelfer"
+STATE_DIR="/var/lib/setuphelfer"
+SERVICE_USER="setuphelfer"
 
 case "$1" in
   configure)
+    # Alte systemd-Units stilllegen (Migration von pi-installer → setuphelfer)
+    for old in pi-installer.service pi-installer-backend.service; do
+      systemctl stop "$old" 2>/dev/null || true
+      systemctl disable "$old" 2>/dev/null || true
+    done
+
     # Service-User und Gruppe anlegen
     if ! getent passwd "$SERVICE_USER" >/dev/null 2>&1; then
-      # Versuche Gruppe mit gleichem Namen anzulegen
       if ! getent group "$SERVICE_USER" >/dev/null 2>&1; then
         groupadd --system "$SERVICE_USER" 2>/dev/null || true
       fi
-      if ! adduser --system --no-create-home --disabled-login --gecos "PI-Installer Service" --ingroup "$SERVICE_USER" "$SERVICE_USER" 2>/dev/null; then
-        useradd --system --no-create-home --comment "PI-Installer Service" --gid "$SERVICE_USER" "$SERVICE_USER" 2>/dev/null || \
-        useradd --system --no-create-home --comment "PI-Installer Service" "$SERVICE_USER" 2>/dev/null || true
+      if ! adduser --system --no-create-home --disabled-login --gecos "Setuphelfer Service" --ingroup "$SERVICE_USER" "$SERVICE_USER" 2>/dev/null; then
+        useradd --system --no-create-home --comment "Setuphelfer Service" --gid "$SERVICE_USER" "$SERVICE_USER" 2>/dev/null || \
+        useradd --system --no-create-home --comment "Setuphelfer Service" "$SERVICE_USER" 2>/dev/null || true
       fi
     fi
 
-    # Gruppe ermitteln (User könnte andere Gruppe haben, z.B. nogroup)
     SERVICE_GROUP=$(id -gn "$SERVICE_USER" 2>/dev/null || echo "$SERVICE_USER")
-    
-    # Service-Datei anpassen: Group auf tatsächliche Gruppe setzen
-    if [ -f /etc/systemd/system/pi-installer.service ]; then
-      # Ersetze Group=pi-installer durch die tatsächliche Gruppe
-      sed -i "s/^Group=.*/Group=$SERVICE_GROUP/" /etc/systemd/system/pi-installer.service 2>/dev/null || true
+
+    for _svc in /etc/systemd/system/setuphelfer.service /etc/systemd/system/setuphelfer-backend.service; do
+      if [ -f "$_svc" ]; then
+        sed -i "s/^Group=.*/Group=$SERVICE_GROUP/" "$_svc" 2>/dev/null || true
+      fi
+    done
+
+    mkdir -p "$CONFIG_DIR" "$LOG_DIR" "$STATE_DIR"
+
+    # Konfiguration von Legacy übernehmen (einmalig), wenn Ziel noch leer
+    if [ ! -f "$CONFIG_DIR/config.json" ] && [ -f "/etc/pi-installer/config.json" ]; then
+      cp -a "/etc/pi-installer/config.json" "$CONFIG_DIR/" 2>/dev/null || true
+    fi
+    if [ ! -f "$CONFIG_DIR/backup.json" ] && [ -f "/etc/pi-installer/backup.json" ]; then
+      cp -a "/etc/pi-installer/backup.json" "$CONFIG_DIR/" 2>/dev/null || true
     fi
 
-    # Verzeichnisse anlegen falls nicht vorhanden
-    mkdir -p "$CONFIG_DIR" "$LOG_DIR"
-    
-    # Temporär auf root setzen, damit root schreiben kann (falls schon pi-installer gehört)
+    # Temporär auf root setzen, damit root schreiben kann
     [ -d "$INSTALL_DIR" ] && chown -R root:root "$INSTALL_DIR" 2>/dev/null || true
 
-    # Konfiguration anlegen, falls nicht vorhanden
     if [ ! -f "$CONFIG_DIR/config.yaml" ]; then
       cat > "$CONFIG_DIR/config.yaml" << 'EOF'
-install_dir: /opt/pi-installer
-config_dir: /etc/pi-installer
-log_dir: /var/log/pi-installer
+install_dir: /opt/setuphelfer
+config_dir: /etc/setuphelfer
+log_dir: /var/log/setuphelfer
+state_dir: /var/lib/setuphelfer
 backend:
   host: 0.0.0.0
   port: 8000
@@ -49,7 +61,6 @@ frontend:
 EOF
     fi
 
-    # Backend: Virtual Environment und Dependencies (als root, BEVOR chown)
     if [ -d "$INSTALL_DIR/backend" ] && [ ! -d "$INSTALL_DIR/backend/venv" ]; then
       PYTHON=""
       for py in python3.12 python3.11 python3.10 python3.9 python3; do
@@ -76,12 +87,10 @@ EOF
       fi
     fi
 
-    # Frontend: npm install (als root, BEVOR chown)
     if [ -d "$INSTALL_DIR/frontend" ] && [ ! -d "$INSTALL_DIR/frontend/node_modules" ]; then
       if command -v npm >/dev/null 2>&1; then
         cd "$INSTALL_DIR/frontend" 2>/dev/null || true
         if [ -f "package.json" ]; then
-          # npm-Cache ins Installationsverzeichnis, nicht ins Home
           export npm_config_cache="$INSTALL_DIR/.npm-cache"
           mkdir -p "$npm_config_cache"
           if npm install --silent 2>&1 | grep -v "npm WARN" >/dev/null 2>&1; then
@@ -93,16 +102,15 @@ EOF
       fi
     fi
 
-    # Jetzt alle Berechtigungen setzen (nach allen Build-Schritten)
     [ -d "$INSTALL_DIR" ] && chown -R "$SERVICE_USER:$SERVICE_GROUP" "$INSTALL_DIR" 2>/dev/null || true
     [ -d "$CONFIG_DIR" ] && chown -R "$SERVICE_USER:$SERVICE_GROUP" "$CONFIG_DIR" 2>/dev/null || true
     [ -d "$LOG_DIR" ] && chown -R "$SERVICE_USER:$SERVICE_GROUP" "$LOG_DIR" 2>/dev/null || true
+    [ -d "$STATE_DIR" ] && chown -R "$SERVICE_USER:$SERVICE_GROUP" "$STATE_DIR" 2>/dev/null || true
     [ -d "$INSTALL_DIR" ] && chmod 755 "$INSTALL_DIR" 2>/dev/null || true
     [ -d "$CONFIG_DIR" ] && chmod 755 "$CONFIG_DIR" 2>/dev/null || true
     [ -d "$LOG_DIR" ] && chmod 755 "$LOG_DIR" 2>/dev/null || true
+    [ -d "$STATE_DIR" ] && chmod 755 "$STATE_DIR" 2>/dev/null || true
 
-    # Tauri Binary sollte bereits im Paket enthalten sein (wird beim .deb Build erstellt)
-    # Falls nicht vorhanden (z. B. bei manueller Installation), versuche es zu bauen
     if [ ! -x "$INSTALL_DIR/frontend/src-tauri/target/release/pi-installer" ]; then
       BUILD_USER="${SUDO_USER:-}"
       if [ -n "$BUILD_USER" ] && su -s /bin/bash "$BUILD_USER" -c "command -v cargo" >/dev/null 2>&1; then
@@ -121,19 +129,19 @@ EOF
       echo "✅ Tauri-Binary gefunden – App-Fenster verfügbar."
     fi
 
-    # systemd
     systemctl daemon-reload 2>/dev/null || true
-    systemctl enable pi-installer.service 2>/dev/null || true
-    systemctl start pi-installer.service 2>/dev/null || true
+    systemctl enable setuphelfer-backend.service 2>/dev/null || true
+    systemctl enable setuphelfer.service 2>/dev/null || true
+    systemctl start setuphelfer-backend.service 2>/dev/null || true
+    systemctl start setuphelfer.service 2>/dev/null || true
 
-    # Desktop-Datenbank
     if command -v update-desktop-database >/dev/null 2>&1; then
       update-desktop-database -q /usr/share/applications 2>/dev/null || true
     fi
 
-    echo "SetupHelfer wurde installiert. Startmenü: SetupHelfer / SetupHelfer (Browser)."
-    echo "Schreibtisch-Starter anlegen (Logo-Icon): bash $INSTALL_DIR/scripts/desktop-pi-installer-launcher-anlegen.sh"
-    echo "Service: systemctl status pi-installer"
+    echo "Setuphelfer wurde installiert. Startmenü: SetupHelfer / SetupHelfer (Browser)."
+    echo "Schreibtisch-Starter: bash $INSTALL_DIR/scripts/desktop-setuphelfer-launcher-anlegen.sh"
+    echo "Services: systemctl status setuphelfer-backend setuphelfer"
     ;;
   abort-upgrade|abort-remove|abort-deconfigure)
     ;;

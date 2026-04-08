@@ -2,7 +2,7 @@
 # Baut das PI-Installer Debian-Paket (.deb).
 # Voraussetzung: debhelper, rsync (apt install debhelper rsync)
 # Ausführung: im Repository-Root: ./scripts/build-deb.sh
-# Ergebnis: ../pi-installer_<version>_all.deb
+# Ergebnis: ../setuphelfer_<version>_all.deb
 
 set -e
 
@@ -52,13 +52,13 @@ else
   echo "✅ Tauri Binary gefunden: $TAURI_BINARY"
 fi
 
-# Hinweis: Version in debian/changelog ggf. anpassen (erste Zeile: pi-installer (VERSION-1)).
+# Hinweis: Source-Paketname in debian/changelog bleibt „pi-installer“ (debian/control: Source); Binary-Paket: setuphelfer.
 
 dpkg-buildpackage -us -uc -b -tc
 
 echo ""
 echo "Fertig. Paket liegt im übergeordneten Verzeichnis:"
-ls -la ../pi-installer_*_all.deb 2>/dev/null || true
+ls -la ../setuphelfer_*_all.deb 2>/dev/null || true
 echo ""
-echo "Installation: sudo apt install ./pi-installer_${VERSION}-1_all.deb"
-echo "Update:       sudo apt install --only-upgrade ./pi-installer_*.deb"
+echo "Installation: sudo apt install ./setuphelfer_${VERSION}-1_all.deb"
+echo "Update:       sudo apt install --only-upgrade ./setuphelfer_*.deb"

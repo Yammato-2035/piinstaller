@@ -1,10 +1,10 @@
-# PI-Installer – SD-Card-Image / Overlay-Build (Phase 1.2 Transformationsplan)
+# Setuphelfer – SD-Card-Image / Overlay-Build (Phase 1.2 Transformationsplan)
 #
-# Erstellt ein Artefakt für die PI-Installer-Installation auf Raspberry Pi OS:
+# Erstellt ein Artefakt für die Setuphelfer-Installation auf Raspberry Pi OS:
 # - Tarball mit Skripten + Hinweisen für Image-Builder
 # - Vollständiges .img-Building erfordert pi-gen oder manuelles Vorgehen (siehe docs/SD_CARD_IMAGE.md)
 #
-name: Build PI-Installer Image Artifacts
+name: Build Setuphelfer Image Artifacts
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/create_installer.sh'
-      - 'pi-installer.service'
+      - 'setuphelfer.service'
       - 'start.sh'
       - '.github/workflows/build-image.yml'
 
@@ -25,17 +25,17 @@ jobs:
 
       - name: Create overlay tarball
         run: |
-          mkdir -p build-overlay/pi-installer
-          cp -r scripts/create_installer.sh pi-installer.service start.sh backend frontend build-overlay/pi-installer/ 2>/dev/null || true
-          cp VERSION build-overlay/pi-installer/ 2>/dev/null || true
-          echo "PI-Installer $(cat VERSION). Über diese Dateien kann ein Image-Builder die Installation in ein Raspberry Pi OS Image einbauen." > build-overlay/README.txt
-          tar -czvf pi-installer-overlay.tar.gz -C build-overlay .
+          mkdir -p build-overlay/setuphelfer
+          cp -r scripts/create_installer.sh setuphelfer.service setuphelfer-backend.service start.sh backend frontend build-overlay/setuphelfer/ 2>/dev/null || true
+          cp VERSION build-overlay/setuphelfer/ 2>/dev/null || true
+          echo "Setuphelfer $(cat VERSION). Über diese Dateien kann ein Image-Builder die Installation in ein Raspberry Pi OS Image einbauen." > build-overlay/README.txt
+          tar -czvf setuphelfer-overlay.tar.gz -C build-overlay .
 
       - name: Upload overlay artifact
         uses: actions/upload-artifact@v4
         with:
-          name: pi-installer-overlay
-          path: pi-installer-overlay.tar.gz
+          name: setuphelfer-overlay
+          path: setuphelfer-overlay.tar.gz
 
   # Optional: Hinweis-Job (echtes .img-Building siehe docs/SD_CARD_IMAGE.md)
   hint:

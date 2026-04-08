@@ -1,7 +1,7 @@
 #!/bin/bash
-# PI-Installer – Saubere Deinstallation (manuelle Installation aus install-system.sh / deploy-to-opt.sh)
+# Setuphelfer – Saubere Deinstallation (manuelle Installation aus install-system.sh / deploy-to-opt.sh)
 # Entfernt Service, Startmenü-Einträge, Symlinks, Verzeichnisse und optional den User.
-# Bei Installation per .deb stattdessen: sudo apt purge pi-installer
+# Bei Installation per .deb: sudo apt purge setuphelfer
 #
 # Aufruf: sudo ./scripts/uninstall-system.sh
 
@@ -22,25 +22,26 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-INSTALL_DIR="/opt/pi-installer"
-CONFIG_DIR="/etc/pi-installer"
-LOG_DIR="/var/log/pi-installer"
+INSTALL_DIR="/opt/setuphelfer"
+CONFIG_DIR="/etc/setuphelfer"
+LOG_DIR="/var/log/setuphelfer"
+STATE_DIR="/var/lib/setuphelfer"
 BIN_DIR="/usr/local/bin"
 SYSTEMD_DIR="/etc/systemd/system"
 ENV_DIR="/etc/profile.d"
 APPLICATIONS_DIR="/usr/share/applications"
-SERVICE_USER="pi-installer"
+SERVICE_USER="setuphelfer"
 
 echo ""
 echo -e "${CYAN}============================================${NC}"
-echo -e "${CYAN}  PI-Installer Deinstallation${NC}"
+echo -e "${CYAN}  Setuphelfer Deinstallation${NC}"
 echo -e "${CYAN}============================================${NC}"
 echo ""
 
 # Prüfen ob als .deb installiert
-if dpkg -l pi-installer 2>/dev/null | grep -q '^ii'; then
-  echo -e "${YELLOW}PI-Installer ist als Paket installiert. Bitte deinstallieren mit:${NC}"
-  echo "  sudo apt remove pi-installer    # oder: sudo apt purge pi-installer"
+if dpkg -l setuphelfer 2>/dev/null | grep -q '^ii'; then
+  echo -e "${YELLOW}Setuphelfer ist als Paket installiert. Bitte deinstallieren mit:${NC}"
+  echo "  sudo apt remove setuphelfer    # oder: sudo apt purge setuphelfer"
   echo ""
   read -p "Trotzdem dieses Skript ausführen (Reste entfernen)? (j/n) " -n 1 -r
   echo ""
@@ -51,9 +52,12 @@ fi
 
 # 1. Service stoppen und entfernen
 info "Service stoppen und deaktivieren..."
-systemctl stop pi-installer.service 2>/dev/null || true
-systemctl disable pi-installer.service 2>/dev/null || true
-rm -f "$SYSTEMD_DIR/pi-installer.service"
+for u in setuphelfer.service setuphelfer-backend.service pi-installer.service pi-installer-backend.service; do
+  systemctl stop "$u" 2>/dev/null || true
+  systemctl disable "$u" 2>/dev/null || true
+done
+rm -f "$SYSTEMD_DIR/setuphelfer.service" "$SYSTEMD_DIR/setuphelfer-backend.service" \
+      "$SYSTEMD_DIR/pi-installer.service" "$SYSTEMD_DIR/pi-installer-backend.service"
 systemctl daemon-reload
 ok "Service entfernt"
 
@@ -67,12 +71,14 @@ ok "Startmenü-Einträge entfernt"
 
 # 3. Symlinks in /usr/local/bin
 info "Symlinks entfernen..."
-rm -f "$BIN_DIR/pi-installer" "$BIN_DIR/pi-installer-backend" "$BIN_DIR/pi-installer-frontend" \
+rm -f "$BIN_DIR/setuphelfer" "$BIN_DIR/setuphelfer-backend" "$BIN_DIR/setuphelfer-frontend" \
+      "$BIN_DIR/setuphelfer-start" "$BIN_DIR/setuphelfer-scripts" \
+      "$BIN_DIR/pi-installer" "$BIN_DIR/pi-installer-backend" "$BIN_DIR/pi-installer-frontend" \
       "$BIN_DIR/pi-installer-start" "$BIN_DIR/pi-installer-scripts"
 ok "Symlinks entfernt"
 
 # 4. Umgebungsvariablen (profile.d)
-rm -f "$ENV_DIR/pi-installer.sh"
+rm -f "$ENV_DIR/setuphelfer.sh" "$ENV_DIR/pi-installer.sh"
 ok "Profile.d-Eintrag entfernt"
 
 # 5. Verzeichnisse löschen
@@ -80,6 +86,7 @@ info "Installationsverzeichnisse entfernen..."
 rm -rf "$INSTALL_DIR"
 rm -rf "$CONFIG_DIR"
 rm -rf "$LOG_DIR"
+rm -rf "$STATE_DIR"
 ok "Verzeichnisse entfernt"
 
 # 6. Optional: Service-User entfernen

@@ -1,14 +1,14 @@
 Source: pi-installer
 Section: admin
 Priority: optional
-Maintainer: PI-Installer Team <https://github.com/Yammato-2035/piinstaller>
+Maintainer: Setuphelfer Team <https://github.com/Yammato-2035/piinstaller>
 Build-Depends: debhelper-compat (= 13), rsync
 Standards-Version: 4.6.2
 Homepage: https://github.com/Yammato-2035/piinstaller
 Vcs-Browser: https://github.com/Yammato-2035/piinstaller
 Vcs-Git: https://github.com/Yammato-2035/piinstaller.git
 
-Package: pi-installer
+Package: setuphelfer
 Architecture: all
 Depends: ${misc:Depends},
          python3 (>= 3.9),
@@ -18,14 +18,16 @@ Depends: ${misc:Depends},
          npm,
          curl,
          adduser
-Description: Konfigurations-Assistent für Raspberry Pi
- PI-Installer bietet eine Weboberfläche zur Einrichtung und Verwaltung
+Replaces: pi-installer (<< 1.4.0)
+Breaks: pi-installer (<< 1.4.0)
+Description: Konfigurations-Assistent (Setuphelfer) für Raspberry Pi und Linux
+ Setuphelfer bietet eine Weboberfläche zur Einrichtung und Verwaltung
  von Raspberry Pi (und Debian-basierten) Systemen: System-Updates,
  Backup, NAS, Webserver, Sicherheit, Control Center und mehr.
  .
  Backend (FastAPI) und Frontend (React/Vite) laufen als systemd-Service
- unter dem dedizierten Benutzer pi-installer. Startmenü-Einträge werden
+ unter dem dedizierten Benutzer setuphelfer. Startmenü-Einträge werden
  automatisch angelegt.
  .
- Nach der Installation: Anwendungen → „PI-Installer“ oder
- „sudo systemctl start pi-installer“.
+ Nach der Installation: Anwendungen → „Setuphelfer“ oder
+ „sudo systemctl start setuphelfer“.

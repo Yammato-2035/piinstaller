@@ -39,13 +39,13 @@ jobs:
       - name: Build .deb
         run: |
           dpkg-buildpackage -us -uc -b -tc
-          DEB=$(ls -t ../pi-installer_*_all.deb 2>/dev/null | head -1)
+          DEB=$(ls -t ../setuphelfer_*_all.deb 2>/dev/null | head -1)
           echo "deb_path=$DEB" >> $GITHUB_OUTPUT
           cp "$DEB" .
 
       - name: Generate SHA256SUMS
         run: |
-          DEB=$(ls -t pi-installer_*_all.deb 2>/dev/null | head -1)
+          DEB=$(ls -t setuphelfer_*_all.deb 2>/dev/null | head -1)
           sha256sum "$DEB" > SHA256SUMS
           cat SHA256SUMS
 
@@ -53,7 +53,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            pi-installer_*_all.deb
+            setuphelfer_*_all.deb
             SHA256SUMS
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

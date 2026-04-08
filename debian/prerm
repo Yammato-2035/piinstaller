@@ -3,8 +3,10 @@ set -e
 
 case "$1" in
   remove|upgrade|deconfigure)
-    systemctl stop pi-installer.service 2>/dev/null || true
-    systemctl disable pi-installer.service 2>/dev/null || true
+    systemctl stop setuphelfer.service 2>/dev/null || true
+    systemctl stop setuphelfer-backend.service 2>/dev/null || true
+    systemctl disable setuphelfer.service 2>/dev/null || true
+    systemctl disable setuphelfer-backend.service 2>/dev/null || true
     ;;
   failed-upgrade)
     ;;

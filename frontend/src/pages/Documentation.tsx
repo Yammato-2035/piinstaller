@@ -1050,6 +1050,25 @@ const Documentation: React.FC = () => {
               <div className="space-y-4 opacity-95">
                 <p className="text-sm">Aus den Troubleshooting-Seiten zusammengestellte FAQ. Jeder Eintrag: Fehlername, Beschreibung, Lösungen. Logs: Einstellungen → Logs. Zur <strong>Wissensbasis</strong> für Einsteiger und Begleiter siehe Kapitel <strong>Dashboard</strong> und <code className="bg-slate-700 px-1 rounded">docs/user/GUIDED_UX_AND_COMPANION.md</code>.</p>
                 <div className="space-y-3">
+                  {/* FAQ: Version & Changelog (Mitwirkende) */}
+                  <div className="rounded-lg border border-violet-600/50 bg-violet-950/25 overflow-hidden">
+                    <div className="px-4 py-2 bg-violet-900/40 border-b border-violet-600/50">
+                      <h4 className="font-semibold text-violet-200">Version und Changelog – wo wird was gepflegt?</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Kontext:</strong> Für nachvollziehbare Releases und dieselbe Versionsnummer in App, Paket und Repo.</p>
+                      <div className="rounded bg-violet-950/30 border border-violet-700/40 p-3 mt-2">
+                        <p className="font-semibold text-violet-300 mb-1">Kurzcheck (Details: <code className="bg-slate-700 px-1 rounded">docs/developer/VERSIONING.md</code>):</p>
+                        <ol className="list-decimal list-inside text-slate-300 space-y-1">
+                          <li>Versionsfeld nur in <code className="bg-slate-700 px-1 rounded">config/version.json</code> anheben.</li>
+                          <li><code className="bg-slate-700 px-1 rounded">cd frontend &amp;&amp; node sync-version.js</code> ausführen (schreibt u. a. <code className="bg-slate-700 px-1 rounded">VERSION</code>, Frontend, Tauri).</li>
+                          <li><code className="bg-slate-700 px-1 rounded">CHANGELOG.md</code> im Projektroot ergänzen.</li>
+                          <li>Dieses Kapitel <strong>„Versionen &amp; Changelog“</strong> hier in der App mit derselben Version und Kurzstichpunkten ergänzen.</li>
+                          <li>Bei nutzerrelevanten Änderungen: FAQ anpassen oder neuen Eintrag; bei Debian-Build <code className="bg-slate-700 px-1 rounded">debian/changelog</code> (Source-Paket <code className="bg-slate-700 px-1 rounded">pi-installer</code>) mitführen.</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
                   {/* FAQ: Erfahrungslevel */}
                   <div className="rounded-lg border border-emerald-600/50 bg-emerald-950/25 overflow-hidden">
                     <div className="px-4 py-2 bg-emerald-900/40 border-b border-emerald-600/50">
@@ -1061,7 +1080,7 @@ const Documentation: React.FC = () => {
                         <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
                         <ul className="list-disc list-inside text-slate-300 space-y-1">
                           <li>Backend muss laufen (Port 8000). Fehlermeldung im Toast kann Details von der API enthalten (<code className="bg-slate-700 px-1 rounded">detail</code>).</li>
-                          <li>Das Profil wird unter <code className="bg-slate-700 px-1 rounded">user_profile.json</code> gespeichert; ohne Schreibrechte unter <code className="bg-slate-700 px-1 rounded">/etc/pi-installer/</code> nutzt das Backend automatisch <code className="bg-slate-700 px-1 rounded">~/.config/pi-installer/</code>.</li>
+                          <li>Das Profil wird unter <code className="bg-slate-700 px-1 rounded">user_profile.json</code> gespeichert; ohne Schreibrechte unter <code className="bg-slate-700 px-1 rounded">/etc/setuphelfer/</code> nutzt das Backend automatisch <code className="bg-slate-700 px-1 rounded">~/.config/setuphelfer/</code> (Legacy: <code className="bg-slate-700 px-1 rounded">/etc/pi-installer/</code> / <code className="bg-slate-700 px-1 rounded">~/.config/pi-installer/</code>).</li>
                           <li>Seite neu laden, nachdem die Speicherung geklappt hat.</li>
                         </ul>
                       </div>
@@ -1149,10 +1168,27 @@ const Documentation: React.FC = () => {
                         <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
                         <ul className="list-disc list-inside text-slate-300 space-y-1">
                           <li>Alles: <code className="bg-slate-700 px-1 rounded">./start.sh</code></li>
-                          <li>Mit Auswahl Tauri / Browser / Nur Backend: <code className="bg-slate-700 px-1 rounded">./scripts/start-pi-installer.sh</code> (bzw. <strong>SetupHelfer.desktop</strong> auf dem Schreibtisch)</li>
+                          <li>Mit Auswahl Tauri / Browser / Nur Backend: <code className="bg-slate-700 px-1 rounded">./scripts/start-setuphelfer.sh</code> (Alias: <code className="bg-slate-700 px-1 rounded">start-pi-installer.sh</code>) bzw. <strong>SetupHelfer.desktop</strong> auf dem Schreibtisch</li>
                           <li>Nur Backend: <code className="bg-slate-700 px-1 rounded">./start-backend.sh</code></li>
                           <li>Frontend: <code className="bg-slate-700 px-1 rounded">./start-frontend.sh</code> oder <code className="bg-slate-700 px-1 rounded">cd frontend && npm run dev</code></li>
                           <li>Desktop-App: <code className="bg-slate-700 px-1 rounded">cd frontend && npm run tauri:dev</code> (Backend separat)</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Service /opt EACCES Vite */}
+                  <div className="rounded-lg border border-rose-600/50 bg-rose-950/20 overflow-hidden">
+                    <div className="px-4 py-2 bg-rose-900/40 border-b border-rose-600/50">
+                      <h4 className="font-semibold text-rose-200">systemd /opt: EACCES bei node_modules/.vite oder UI startet nicht</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Journal zeigt z. B. <code className="bg-slate-700 px-1 rounded">permission denied, mkdir …/frontend/node_modules/.vite</code> – oft Vite-<strong>Dev</strong> unter <code className="bg-slate-700 px-1 rounded">/opt/setuphelfer</code> (Legacy: <code className="bg-slate-700 px-1 rounded">/opt/pi-installer</code>) statt Produktions-Preview.</p>
+                      <p className="text-slate-300 mb-2"><strong>Ursache:</strong> Vermischung von Repo-Entwicklung (<code className="bg-slate-700 px-1 rounded">./start.sh</code> = <code className="bg-slate-700 px-1 rounded">npm run dev</code>) und installiertem Service, oder veraltete Unit mit <code className="bg-slate-700 px-1 rounded">ExecStart=…/start.sh</code>.</p>
+                      <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
+                        <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>Unit prüfen: <code className="bg-slate-700 px-1 rounded">ExecStart</code> muss auf <code className="bg-slate-700 px-1 rounded">…/scripts/start-browser-production.sh</code> zeigen; <code className="bg-slate-700 px-1 rounded">daemon-reload</code> und Service neu starten</li>
+                          <li>Doku: <code className="bg-slate-700 px-1 rounded">docs/BETRIEB_REPO_VS_SERVICE.md</code> (Repo-Modus vs. Service-Modus)</li>
                         </ul>
                       </div>
                     </div>
@@ -1426,7 +1462,7 @@ const Documentation: React.FC = () => {
                       <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
                         <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
                         <ul className="list-disc list-inside text-slate-300 space-y-1">
-                          <li><strong>Systemweite Installation (empfohlen für Produktion):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/install-system.sh | sudo bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">/opt/pi-installer/</code>, globale Befehle verfügbar</li>
+                          <li><strong>Systemweite Installation (empfohlen für Produktion):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/install-system.sh | sudo bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">/opt/setuphelfer/</code>, globale Befehle (<code className="bg-slate-700 px-1 rounded">setuphelfer</code>, …) verfügbar</li>
                           <li><strong>Benutzer-Installation (für Entwicklung/Test):</strong> <code className="bg-slate-700 px-1 rounded">curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/create_installer.sh | bash</code> – installiert nach <code className="bg-slate-700 px-1 rounded">$HOME/SetupHelfer/</code>, keine Root-Rechte nötig</li>
                           <li>Siehe <code className="bg-slate-700 px-1 rounded">docs/SYSTEM_INSTALLATION.md</code> für Details</li>
                         </ul>
@@ -1457,7 +1493,7 @@ const Documentation: React.FC = () => {
                       <h4 className="font-semibold text-slate-200">Log-Datei</h4>
                     </div>
                     <div className="p-4 text-sm">
-                      <p className="text-slate-300"><code className="bg-slate-700 px-1 rounded">…/logs/pi-installer.log</code> · Einstellungen → Logs laden · <code className="bg-slate-700 px-1 rounded">PI_INSTALLER_LOG_PATH</code></p>
+                      <p className="text-slate-300"><code className="bg-slate-700 px-1 rounded">…/logs/pi-installer.log</code> (Repo) bzw. unter <code className="bg-slate-700 px-1 rounded">/var/log/setuphelfer/</code> · Einstellungen → Logs laden · <code className="bg-slate-700 px-1 rounded">PI_INSTALLER_LOG_PATH</code> / <code className="bg-slate-700 px-1 rounded">SETUPHELFER_LOG_DIR</code></p>
                     </div>
                   </div>
                 </div>
@@ -1535,9 +1571,66 @@ const Documentation: React.FC = () => {
                 <p className="text-sm">
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
-                <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
+                  <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
                   <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: {appVersion}</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.4.0.5 (Installer/ENV Setuphelfer-Standard)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Deploy/Install:</strong> <code className="bg-slate-700 px-1 rounded">STATE_DIR</code> zuverlässig angelegt; <code className="bg-slate-700 px-1 rounded">SETUPHELFER_*</code> primär, <code className="bg-slate-700 px-1 rounded">PI_INSTALLER_*</code> Legacy; Symlink <code className="bg-slate-700 px-1 rounded">setuphelfer</code> → <code className="bg-slate-700 px-1 rounded">start-setuphelfer.sh</code></li>
+                      <li><strong>Backend:</strong> <code className="bg-slate-700 px-1 rounded">install_paths.py</code> – Umgebungsreihenfolge verbindlich; <code className="bg-slate-700 px-1 rounded">SETUPHELFER_MODE</code></li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.4.0.4 (Phase F Zielsystem)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Prüfung:</strong> <code className="bg-slate-700 px-1 rounded">scripts/verify-setuphelfer-install.sh</code> – systemd, <code className="bg-slate-700 px-1 rounded">curl</code> API/Web, optional <code className="bg-slate-700 px-1 rounded">journalctl</code></li>
+                      <li><strong>Doku:</strong> <code className="bg-slate-700 px-1 rounded">docs/VERIFY_TARGET_SYSTEM.md</code>; Verweise in <code className="bg-slate-700 px-1 rounded">SYSTEM_INSTALLATION.md</code>, Architektur-README</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.4.0.3 (Changelog &amp; FAQ-Pflege D4)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>VERSIONING.md:</strong> Release-Checkliste Phase D4; Root-<code className="bg-slate-700 px-1 rounded">CHANGELOG.md</code> als feste Ergänzung</li>
+                      <li><strong>Workflow:</strong> Cursor-Regel <code className="bg-slate-700 px-1 rounded">projekt-workflow.mdc</code> – Quelle <code className="bg-slate-700 px-1 rounded">config/version.json</code>, Sync, FAQ-Pflicht bei passenden Änderungen</li>
+                      <li><strong>FAQ:</strong> neuer Eintrag „Version und Changelog – wo wird was gepflegt?“</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.4.0.2 (Architektur D3)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Referenz:</strong> <code className="bg-slate-700 px-1 rounded">docs/architecture/NAMING_AND_SERVICES.md</code> (Namen, Paket, Pfade, systemd, ENV); <code className="bg-slate-700 px-1 rounded">docs/architecture/README.md</code></li>
+                      <li><strong>Aktualisiert:</strong> <code className="bg-slate-700 px-1 rounded">init_flow.md</code>, <code className="bg-slate-700 px-1 rounded">config_flow.md</code>; Review: <code className="bg-slate-700 px-1 rounded">phase1_structure.md</code>, <code className="bg-slate-700 px-1 rounded">phase4_structural_simplification.md</code>, Konsistenz-/Backlog-Hinweise</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.4.0.1 (Dokumentation D2)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Doku:</strong> <code className="bg-slate-700 px-1 rounded">docs/START_APPS.md</code>, <code className="bg-slate-700 px-1 rounded">BETRIEB_REPO_VS_SERVICE.md</code>, <code className="bg-slate-700 px-1 rounded">SYSTEM_INSTALLATION.md</code>, <code className="bg-slate-700 px-1 rounded">SD_CARD_IMAGE.md</code>; README; FAQ/In-App auf Setuphelfer-Pfade und Units abgestimmt</li>
+                      <li><strong>Skripte:</strong> Zusammenfassung in <code className="bg-slate-700 px-1 rounded">install-system.sh</code>; <code className="bg-slate-700 px-1 rounded">uninstall-system.sh</code> entfernt <code className="bg-slate-700 px-1 rounded">setuphelfer*</code>-Symlinks und Desktop-Einträge</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.4.0.0 (Setuphelfer Service-Pfade)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>systemd:</strong> <code className="bg-slate-700 px-1 rounded">setuphelfer-backend.service</code> (Port 8000), <code className="bg-slate-700 px-1 rounded">setuphelfer.service</code> (Web-UI); User <code className="bg-slate-700 px-1 rounded">setuphelfer</code>; Pfade <code className="bg-slate-700 px-1 rounded">/opt/setuphelfer</code>, <code className="bg-slate-700 px-1 rounded">/etc/setuphelfer</code>, <code className="bg-slate-700 px-1 rounded">/var/lib/setuphelfer</code>, <code className="bg-slate-700 px-1 rounded">/var/log/setuphelfer</code></li>
+                      <li><strong>DEB:</strong> Paket <code className="bg-slate-700 px-1 rounded">setuphelfer</code> (ersetzt <code className="bg-slate-700 px-1 rounded">pi-installer</code> &lt; 1.4.0); Backend <code className="bg-slate-700 px-1 rounded">install_paths</code> ohne Home-Fallback im Service-Modus</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.9.5 (Service-Topologie Backend-Owner)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Port 8000:</strong> nur Backend-Service; Web-UI mit <code className="bg-slate-700 px-1 rounded">Requires=</code> Backend; <code className="bg-slate-700 px-1 rounded">start-browser-production.sh</code> startet kein zweites Backend</li>
+                      <li><strong>Doku:</strong> <code className="bg-slate-700 px-1 rounded">docs/BETRIEB_REPO_VS_SERVICE.md</code> (Historie: pi-installer-Units)</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.9.4 (Betrieb Repo vs. Service)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>systemd /opt:</strong> <code className="bg-slate-700 px-1 rounded">pi-installer.service</code> startet <code className="bg-slate-700 px-1 rounded">scripts/start-browser-production.sh</code> (vite preview, kein Dev-Server); Vite-Cache optional unter <code className="bg-slate-700 px-1 rounded">/tmp</code> (aktuell: <code className="bg-slate-700 px-1 rounded">setuphelfer.service</code>)</li>
+                      <li><strong>Doku:</strong> <code className="bg-slate-700 px-1 rounded">docs/BETRIEB_REPO_VS_SERVICE.md</code>; FAQ Eintrag EACCES <code className="bg-slate-700 px-1 rounded">node_modules/.vite</code></li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.9.3 (Backup Ampel – Freigabelage)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Backup & Restore:</strong> Ampel an Phase‑3‑Freigabelage ausgerichtet (kein Grün ohne nachgewiesenen Backup‑Lauf; Gelb „Kern nicht verifiziert“; Rot u. a. bei <code className="bg-slate-700 px-1 rounded">sudo_required</code> / Risiko-Signalen)</li>
@@ -1604,7 +1697,7 @@ const Documentation: React.FC = () => {
                   <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.4.0 (Systemweite Installation, Dual Display X11 frühe Konfiguration)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
-                      <li><strong>Installation:</strong> Systemweite Installation nach /opt/pi-installer/ gemäß Linux FHS; install-system.sh, update-system.sh; docs/SYSTEM_INSTALLATION.md</li>
+                      <li><strong>Installation:</strong> Systemweite Installation nach <code className="bg-slate-700 px-1 rounded">/opt/setuphelfer/</code> (Historie: <code className="bg-slate-700 px-1 rounded">/opt/pi-installer/</code>) gemäß Linux FHS; install-system.sh, update-system.sh; docs/SYSTEM_INSTALLATION.md</li>
                       <li><strong>Dual Display X11:</strong> LightDM session-setup-script für frühe Konfiguration; Position korrekt (DSI links unten, HDMI rechts oben); keine mehrfachen Umschaltungen</li>
                     </ul>
                   </div>

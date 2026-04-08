@@ -1,7 +1,8 @@
 #!/bin/bash
-# PI-Installer - Startet Backend und Frontend (Browser-Modus)
+# PI-Installer – Backend + Frontend im Entwicklungsmodus (Vite dev auf :3001).
+# Für systemd unter /opt: scripts/start-browser-production.sh (vite preview), nicht dieses Skript.
 # Für Tauri-App: start-backend.sh + start-frontend-desktop.sh --window
-# Siehe: docs/START_APPS.md
+# Siehe: docs/START_APPS.md, docs/BETRIEB_REPO_VS_SERVICE.md
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 

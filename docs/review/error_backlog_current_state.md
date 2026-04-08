@@ -27,7 +27,7 @@ Priorisierung:
 
 - **Problem**:
   - `README.md` beschreibt eine Struktur mit `Dockerfile`, `docker-compose.yml`, Root‑`INSTALL.md`, `ARCHITECTURE.md`, `FEATURES.md`, `SUGGESTIONS.md`, die so im Repo nicht mehr existiert bzw. an andere Orte verschoben wurde.
-  - Systeminstallation (FHS `/opt/pi-installer/`, Scripts unter `scripts/`) ist im README nicht konsistent zu `docs/SYSTEM_INSTALLATION.md` und den aktuellen Startskripten (`scripts/start-*.sh`, `scripts/start-all.sh`).
+  - Systeminstallation (FHS **`/opt/setuphelfer/`** seit 1.4.0; Legacy `/opt/pi-installer/`) – README, `docs/SYSTEM_INSTALLATION.md` und `scripts/start-*.sh` wurden in 1.4.0.x angeglichen; Restrisiko: vereinzelte alte Verweise in Randdokumenten.
 - **Betroffener Bereich**: Einstieg für Entwickler und Administratoren.
 - **Risiko**:
   - Falsche Annahmen über Container‑Support / Dockerfiles.

@@ -1,12 +1,12 @@
 #!/usr/bin/make -f
-# PI-Installer Debian package build
+# Setuphelfer Debian package build
 
 %:
 	dh $@
 
 override_dh_auto_install:
-	# Programmdateien nach /opt/pi-installer (ohne Entwicklung/ Build-Artefakte)
-	install -d debian/pi-installer/opt/pi-installer
+	# Programmdateien nach /opt/setuphelfer (ohne Entwicklung/ Build-Artefakte)
+	install -d debian/setuphelfer/opt/setuphelfer
 	rsync -a --exclude='.git' \
 	      --exclude='node_modules' \
 	      --exclude='venv' \
@@ -22,31 +22,33 @@ override_dh_auto_install:
 	      --exclude='target/**/*.o' \
 	      --exclude='target/**/*.a' \
 	      --exclude='debian' \
-	      . debian/pi-installer/opt/pi-installer/
+	      . debian/setuphelfer/opt/setuphelfer/
 	# Tauri Binary explizit einbinden, falls vorhanden (wird beim Build erstellt)
 	if [ -f frontend/src-tauri/target/release/pi-installer ]; then \
-		install -d debian/pi-installer/opt/pi-installer/frontend/src-tauri/target/release; \
-		install -m 755 frontend/src-tauri/target/release/pi-installer debian/pi-installer/opt/pi-installer/frontend/src-tauri/target/release/pi-installer; \
+		install -d debian/setuphelfer/opt/setuphelfer/frontend/src-tauri/target/release; \
+		install -m 755 frontend/src-tauri/target/release/pi-installer debian/setuphelfer/opt/setuphelfer/frontend/src-tauri/target/release/pi-installer; \
 		echo "✅ Tauri Binary in Paket eingebunden"; \
 	else \
 		echo "⚠️  Tauri Binary nicht gefunden - Paket wird ohne Tauri Binary gebaut"; \
 	fi
-	# Verzeichnisse für Konfiguration und Logs (Inhalt in postinst)
-	install -d debian/pi-installer/etc/pi-installer
-	install -d debian/pi-installer/var/log/pi-installer
-	# systemd-Service
-	install -d debian/pi-installer/etc/systemd/system
-	install -m 644 debian/pi-installer.service debian/pi-installer/etc/systemd/system/pi-installer.service
+	# Verzeichnisplatzhalter (Inhalt in postinst)
+	install -d debian/setuphelfer/etc/setuphelfer
+	install -d debian/setuphelfer/var/log/setuphelfer
+	install -d debian/setuphelfer/var/lib/setuphelfer
+	# systemd-Services (Backend = Owner :8000; Web-UI getrennt)
+	install -d debian/setuphelfer/etc/systemd/system
+	install -m 644 debian/setuphelfer-backend.service debian/setuphelfer/etc/systemd/system/setuphelfer-backend.service
+	install -m 644 debian/setuphelfer.service debian/setuphelfer/etc/systemd/system/setuphelfer.service
 	# Umgebungsvariablen für alle Nutzer
-	install -d debian/pi-installer/etc/profile.d
-	install -m 644 debian/pi-installer.sh debian/pi-installer/etc/profile.d/pi-installer.sh
+	install -d debian/setuphelfer/etc/profile.d
+	install -m 644 debian/setuphelfer.sh debian/setuphelfer/etc/profile.d/setuphelfer.sh
 	# Startmenü-Einträge
-	install -d debian/pi-installer/usr/share/applications
-	install -m 644 debian/pi-installer.desktop debian/pi-installer/usr/share/applications/pi-installer.desktop
-	install -m 644 debian/pi-installer-browser.desktop debian/pi-installer/usr/share/applications/pi-installer-browser.desktop
+	install -d debian/setuphelfer/usr/share/applications
+	install -m 644 debian/setuphelfer.desktop debian/setuphelfer/usr/share/applications/setuphelfer.desktop
+	install -m 644 debian/setuphelfer-browser.desktop debian/setuphelfer/usr/share/applications/setuphelfer-browser.desktop
 	# Skripte ausführbar machen
-	find debian/pi-installer/opt/pi-installer -type f -name '*.sh' -exec chmod 755 {} \;
+	find debian/setuphelfer/opt/setuphelfer -type f -name '*.sh' -exec chmod 755 {} \;
 
 override_dh_auto_clean:
 	dh_auto_clean
-	rm -rf debian/pi-installer
+	rm -rf debian/setuphelfer

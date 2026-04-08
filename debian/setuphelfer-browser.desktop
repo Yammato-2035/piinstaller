@@ -2,10 +2,10 @@
 Version=1.0
 Type=Application
 Name=SetupHelfer (Browser)
-Comment=Weboberfläche im Standard-Browser (Vite Port 3001; Backend muss laufen)
+Comment=Weboberfläche im Standard-Browser (Port 3001; Backend muss laufen)
 Exec=sh -c "xdg-open http://127.0.0.1:3001 2>/dev/null || sensible-browser http://127.0.0.1:3001"
-Path=/opt/pi-installer
-Icon=/opt/pi-installer/frontend/src-tauri/icons/icon.png
+Path=/opt/setuphelfer
+Icon=/opt/setuphelfer/frontend/src-tauri/icons/icon.png
 Terminal=false
 Categories=System;Settings;Utility;
-Keywords=setuphelfer;browser;pi;installer;
+Keywords=setuphelfer;browser;raspberry;

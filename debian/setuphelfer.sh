@@ -1,0 +1,10 @@
+# Setuphelfer Umgebungsvariablen (Debian-Paket setuphelfer)
+export SETUPHELFER_DIR="/opt/setuphelfer"
+export PI_INSTALLER_DIR="/opt/setuphelfer"
+export SETUPHELFER_CONFIG_DIR="/etc/setuphelfer"
+export PI_INSTALLER_CONFIG_DIR="/etc/setuphelfer"
+export SETUPHELFER_LOG_DIR="/var/log/setuphelfer"
+export PI_INSTALLER_LOG_DIR="/var/log/setuphelfer"
+export SETUPHELFER_STATE_DIR="/var/lib/setuphelfer"
+export PI_INSTALLER_STATE_DIR="/var/lib/setuphelfer"
+export PATH="$SETUPHELFER_DIR/scripts:$PATH"

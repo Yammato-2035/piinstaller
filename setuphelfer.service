@@ -1,0 +1,51 @@
+# Setuphelfer systemd Service (Web-UI)
+# Manuell:  sudo cp setuphelfer.service /etc/systemd/system/
+#           sudo sed -i "s|{{INSTALL_DIR}}|/opt/setuphelfer|g" /etc/systemd/system/setuphelfer.service
+#           sudo systemctl daemon-reload && sudo systemctl enable --now setuphelfer
+
+[Unit]
+Description=Setuphelfer Web-UI (vite preview; Backend in setuphelfer-backend.service)
+After=network-online.target setuphelfer-backend.service
+Wants=network-online.target
+Requires=setuphelfer-backend.service
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{USER}}
+WorkingDirectory={{INSTALL_DIR}}
+ExecStart={{INSTALL_DIR}}/scripts/start-browser-production.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment=PI_INSTALLER_DEV=0
+Environment=APP_EDITION=release
+Environment=PIP_CACHE_DIR={{INSTALL_DIR}}/.pip-cache
+Environment="SETUPHELFER_DIR={{INSTALL_DIR}}"
+Environment="PI_INSTALLER_DIR={{INSTALL_DIR}}"
+Environment="SETUPHELFER_CONFIG_DIR={{PI_INSTALLER_CONFIG_DIR}}"
+Environment="PI_INSTALLER_CONFIG_DIR={{PI_INSTALLER_CONFIG_DIR}}"
+Environment="SETUPHELFER_LOG_DIR={{PI_INSTALLER_LOG_DIR}}"
+Environment="PI_INSTALLER_LOG_DIR={{PI_INSTALLER_LOG_DIR}}"
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+NoNewPrivileges=yes
+MemoryMax=512M
+LimitNOFILE=4096
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelLogs=yes
+LockPersonality=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+ReadWritePaths={{INSTALL_DIR}} /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp
+
+[Install]
+WantedBy=multi-user.target

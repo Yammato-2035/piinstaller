@@ -16,7 +16,7 @@
 - [ ] **Backend-Texte** für dieses Modul (Fehler, Diagnose), die im UI erscheinen, benannt (Sprache/Lücken).
 - [ ] **Diagnose-Logik** vorhanden oder bewusst nicht zutreffend (API-Pfad, Fallback).
 - [ ] **Doku / FAQ / Wissensbasis** – Matrix in CURSOR_WORK_RULES durchgegangen; Anpassung oder Begründung für „nein“.
-- [ ] **Version & Changelog** – [VERSIONING.md](./VERSIONING.md); `config/version.json` + `CHANGELOG.md` + ggf. In-App-Changelog.
+- [ ] **Version & Changelog** – [VERSIONING.md](./VERSIONING.md) (Abschnitt „Release-Pflicht … D4“); `config/version.json` → `sync-version.js` → `CHANGELOG.md` + In-App „Versionen & Changelog“ + bei Bedarf FAQ.
 - [ ] **Restliste** offener Punkte (i18n-Rest, Tests, technische Schuld) erstellt.
 
 ---

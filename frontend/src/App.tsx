@@ -324,7 +324,10 @@ function App() {
     setHeaderBackendOk(null)
     setBackendError(false)
     setBackendErrorReason(null)
-    const base = getApiBase() || 'http://127.0.0.1:8000'
+    const storedBase = (getApiBase() || '').trim().replace(/\/$/, '')
+    const candidates = [storedBase, 'http://127.0.0.1:8000', 'http://localhost:8000']
+      .filter(Boolean)
+      .filter((v, i, a) => a.indexOf(v) === i)
     const timeoutMs = 15000
     const maxRetries = 3
 
@@ -332,51 +335,42 @@ function App() {
       const url = `${apiBase.replace(/\/$/, '')}/api/system-info`
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
-      const res = await fetch(url, { signal: controller.signal })
-      clearTimeout(timeoutId)
-      return res
+      try {
+        return await fetch(url, { signal: controller.signal })
+      } finally {
+        clearTimeout(timeoutId)
+      }
     }
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const response = await tryFetch(base)
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`)
-        }
-        const data = await response.json()
-        setSystemInfo(data)
-        setHeaderBackendOk(true)
-        return
-      } catch (error) {
-        const isAbort = error instanceof Error && error.name === 'AbortError'
-        const reason: 'timeout' | 'connection' | 'other' = isAbort ? 'timeout' : 'connection'
-        if (attempt < maxRetries) {
-          await new Promise((r) => setTimeout(r, 1500))
-          continue
-        }
-        console.error(i18n.t('app.errors.systemInfoLoad'), error)
-        setBackendErrorReason(reason)
-        setBackendError(true)
-        // Fallback: Wenn Standard-URL 127.0.0.1 war, einmal localhost probieren (IPv6/Resolver-Probleme)
-        if (base === 'http://127.0.0.1:8000') {
-          try {
-            const res = await tryFetch('http://localhost:8000')
-            if (!res.ok) {
-              throw new Error(`HTTP ${res.status}`)
-            }
-            const data = await res.json()
-            setApiBase('http://localhost:8000')
-            setSystemInfo(data)
-            setBackendError(false)
-            setBackendErrorReason(null)
-            setHeaderBackendOk(true)
-            return
-          } catch {
-            // Fallback fehlgeschlagen, Fehlerzustand bleibt
+    let lastReason: 'timeout' | 'connection' | 'other' = 'connection'
+    let lastError: unknown = null
+    for (const base of candidates) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await tryFetch(base)
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`)
+          }
+          const data = await response.json()
+          setSystemInfo(data)
+          if (storedBase && base !== storedBase) {
+            setApiBase(base)
+          }
+          setHeaderBackendOk(true)
+          return
+        } catch (error) {
+          lastError = error
+          const isAbort = error instanceof Error && error.name === 'AbortError'
+          lastReason = isAbort ? 'timeout' : 'connection'
+          if (attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, 1500))
           }
         }
       }
     }
+    console.error(i18n.t('app.errors.systemInfoLoad'), lastError)
+    setBackendErrorReason(lastReason)
+    setBackendError(true)
     setHeaderBackendOk(false)
   }, [])
 

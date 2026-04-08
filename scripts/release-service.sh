@@ -221,7 +221,7 @@ fix_error() {
       
       # Bereinige alte Build-Artefakte
       log "Bereinige alte Build-Artefakte..."
-      rm -rf debian/pi-installer debian/*.debhelper debian/files ../pi-installer_*.deb ../pi-installer_*.changes ../pi-installer_*.buildinfo 2>/dev/null || true
+      rm -rf debian/setuphelfer debian/*.debhelper debian/files ../setuphelfer_*.deb ../setuphelfer_*.changes ../setuphelfer_*.buildinfo 2>/dev/null || true
       
       # Prüfe ob Version und changelog synchron sind
       local version=$(jq -r '.version // empty' "$REPO_ROOT/config/version.json" 2>/dev/null || cat "$REPO_ROOT/VERSION" 2>/dev/null | tr -d '\n')
@@ -279,7 +279,7 @@ fix_error() {
     "local_update")
       log "Update-Fehler: Analysiere Fehlerursache..."
       
-      local deb_file=$(ls -t ../pi-installer_*_all.deb 2>/dev/null | head -1)
+      local deb_file=$(ls -t ../setuphelfer_*_all.deb 2>/dev/null | head -1)
       if [ -z "$deb_file" ]; then
         log_error "Kein DEB-Paket gefunden"
         return 1
@@ -543,7 +543,7 @@ build_deb() {
   fi
   
   # Bereinige alte Build-Artefakte
-  rm -rf debian/pi-installer debian/*.debhelper debian/files ../pi-installer_*.deb ../pi-installer_*.changes ../pi-installer_*.buildinfo 2>/dev/null || true
+  rm -rf debian/setuphelfer debian/*.debhelper debian/files ../setuphelfer_*.deb ../setuphelfer_*.changes ../setuphelfer_*.buildinfo 2>/dev/null || true
   
   # Baue DEB-Paket
   log "Baue DEB-Paket..."
@@ -552,7 +552,7 @@ build_deb() {
     return 1
   }
   
-  local deb_file=$(ls -t ../pi-installer_*_all.deb 2>/dev/null | head -1)
+  local deb_file=$(ls -t ../setuphelfer_*_all.deb 2>/dev/null | head -1)
   if [ -n "$deb_file" ]; then
     log_success "DEB-Paket erstellt: $deb_file"
   else
@@ -618,9 +618,9 @@ update_local_installation() {
   # DEB-Paket suchen (dpkg-buildpackage legt es in .. ab, also $REPO_ROOT/..)
   local deb_file=""
   local parent_dir="$REPO_ROOT/.."
-  deb_file=$(ls -t "$parent_dir"/pi-installer_*_all.deb 2>/dev/null | head -1)
+  deb_file=$(ls -t "$parent_dir"/setuphelfer_*_all.deb 2>/dev/null | head -1)
   if [ -z "$deb_file" ] || [ ! -f "$deb_file" ]; then
-    deb_file=$(cd "$REPO_ROOT" && ls -t ../pi-installer_*_all.deb 2>/dev/null | head -1)
+    deb_file=$(cd "$REPO_ROOT" && ls -t ../setuphelfer_*_all.deb 2>/dev/null | head -1)
   fi
   if [ -z "$deb_file" ] || [ ! -f "$deb_file" ]; then
     log_warn "Kein DEB-Paket gefunden – lokales Update übersprungen"
@@ -635,44 +635,44 @@ update_local_installation() {
   log "Installiere DEB-Paket: $deb_file"
   
   # Nach /tmp kopieren (apt kann aus manchen Verzeichnissen nicht lesen)
-  sudo cp "$deb_file" /tmp/pi-installer-update.deb 2>/dev/null || {
+  sudo cp "$deb_file" /tmp/setuphelfer-update.deb 2>/dev/null || {
     handle_error "local_update" "DEB-Datei konnte nicht nach /tmp kopiert werden"
     return 1
   }
   
-  # Prüfen ob pi-installer bereits installiert ist
-  if dpkg -l pi-installer 2>/dev/null | grep -q '^ii'; then
+  # Prüfen ob setuphelfer (oder Legacy pi-installer) bereits installiert ist
+  if dpkg -l setuphelfer 2>/dev/null | grep -q '^ii' || dpkg -l pi-installer 2>/dev/null | grep -q '^ii'; then
     # Upgrade: zuerst --only-upgrade, bei Fehler normale Installation
     log "Führe apt install --only-upgrade aus..."
-    if sudo apt install --only-upgrade -y /tmp/pi-installer-update.deb >> "$LOG_FILE" 2>&1; then
+    if sudo apt install --only-upgrade -y /tmp/setuphelfer-update.deb >> "$LOG_FILE" 2>&1; then
       log_success "Lokale Installation aktualisiert (Upgrade)"
     else
       log_warn "apt --only-upgrade fehlgeschlagen, versuche normale Installation..."
-      if sudo apt install -y /tmp/pi-installer-update.deb >> "$LOG_FILE" 2>&1; then
+      if sudo apt install -y /tmp/setuphelfer-update.deb >> "$LOG_FILE" 2>&1; then
         log_success "Lokale Installation durchgeführt"
       else
         log_error "Details siehe $LOG_FILE"
-        handle_error "local_update" "Lokale Installation konnte nicht aktualisiert werden. Bitte manuell: sudo apt install -y /tmp/pi-installer-update.deb"
-        sudo rm -f /tmp/pi-installer-update.deb 2>/dev/null || true
+        handle_error "local_update" "Lokale Installation konnte nicht aktualisiert werden. Bitte manuell: sudo apt install -y /tmp/setuphelfer-update.deb"
+        sudo rm -f /tmp/setuphelfer-update.deb 2>/dev/null || true
         return 1
       fi
     fi
   else
     # Ersteinrichtung
-    log "pi-installer war nicht installiert – führe Ersteinrichtung durch..."
-    if sudo apt install -y /tmp/pi-installer-update.deb >> "$LOG_FILE" 2>&1; then
+    log "setuphelfer war nicht installiert – führe Ersteinrichtung durch..."
+    if sudo apt install -y /tmp/setuphelfer-update.deb >> "$LOG_FILE" 2>&1; then
       log_success "Lokale Installation durchgeführt (Ersteinrichtung)"
     else
       log_error "apt-Ausgabe siehe $LOG_FILE"
-      handle_error "local_update" "Installation des DEB-Pakets fehlgeschlagen. Bitte manuell: sudo apt install -y /tmp/pi-installer-update.deb"
-      sudo rm -f /tmp/pi-installer-update.deb 2>/dev/null || true
+      handle_error "local_update" "Installation des DEB-Pakets fehlgeschlagen. Bitte manuell: sudo apt install -y /tmp/setuphelfer-update.deb"
+      sudo rm -f /tmp/setuphelfer-update.deb 2>/dev/null || true
       return 1
     fi
   fi
   
   # Cleanup: Datei wurde mit sudo cp erstellt → gehört root; Cleanup in Subshell,
   # damit ein fehlgeschlagenes sudo rm den Rückgabewert der Funktion nicht verfälscht (set -e).
-  ( sudo rm -f /tmp/pi-installer-update.deb 2>/dev/null || true )
+  ( sudo rm -f /tmp/setuphelfer-update.deb 2>/dev/null || true )
   return 0
 }
 
@@ -818,7 +818,7 @@ main() {
       log_success "=========================================="
       log_success "Release-Service erfolgreich abgeschlossen!"
       log_success "Neue Version: $new_version"
-      log_success "DEB-Paket: $(ls -t ../pi-installer_*_all.deb 2>/dev/null | head -1 || echo 'nicht gefunden')"
+      log_success "DEB-Paket: $(ls -t ../setuphelfer_*_all.deb 2>/dev/null | head -1 || echo 'nicht gefunden')"
       log_success "=========================================="
     else
       retry_count=$((retry_count + 1))

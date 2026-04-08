@@ -6,7 +6,8 @@ Ein umfassendes, **benutzerfreundliches System** zur automatisierten Konfigurati
 
 **Neueste Version / Download:** [Releases](https://github.com/Yammato-2035/piinstaller/releases) · [CHANGELOG](CHANGELOG.md)
 
-**Neu ab 1.3.4.0:** Systemweite Installation gemäß Linux FHS (`/opt/pi-installer/`), globale Befehle verfügbar, frühe Dual Display X11-Konfiguration ohne mehrfache Umschaltungen.
+**Neu ab 1.4.0:** Produkt **Setuphelfer**, systemweite Installation unter **`/opt/setuphelfer/`**, Paket **`setuphelfer`** (ersetzt `pi-installer` &lt; 1.4.0), systemd **`setuphelfer-backend`** / **`setuphelfer`**.  
+**Neu ab 1.3.4.0:** Systemweite Installation gemäß Linux FHS, globale Befehle, frühe Dual Display X11-Konfiguration ohne mehrfache Umschaltungen.
 **Neu ab 1.3.1.0:** App Store mit 7 Apps, Erste-Schritte-Assistent, Dashboard „Dein Pi läuft!", Mobile-Navigation (Hamburger-Menü), kontextsensitive Hilfe, One-Click-Installer, Laufwerk klonen (Backup & Restore), DSI-Radio (Freenove TFT) mit Lautstärke- und Anzeige-Steuerung.
 
 ## 🎯 Kernfeatures

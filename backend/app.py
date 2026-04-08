@@ -25,6 +25,7 @@ import signal
 import xml.etree.ElementTree as ET
 from pydantic import BaseModel
 
+from core.install_paths import audit_rules_file as _audit_rules_path, get_config_dir, get_opt_install_dir, is_dev_mode
 from modules.backup import with_backup_contract
 
 # Update-Center: Kompatibilitäts-Gate für DEB-Build
@@ -334,24 +335,28 @@ def _os_release() -> dict:
 
 def _config_path() -> Path:
     """
-    Prefer /etc/pi-installer/config.json when writable, else fallback to ~/.config/pi-installer/config.json.
-    REGRESSION-RISK: doppelte Konfiguration – Runtime liest ausschließlich config.json; nicht auf config.yaml wechseln.
+    Runtime: config.json unter get_config_dir() (ENV SETUPHELFER_CONFIG_DIR / PI_INSTALLER_CONFIG_DIR).
+    Produktion (PI_INSTALLER_DEV != 1): kein Home-Fallback – nur systemweite/ENV-Pfade.
+    Entwicklung (PI_INSTALLER_DEV=1): ~/.config/setuphelfer/config.json.
+    REGRESSION-RISK: ausschließlich config.json; nicht auf config.yaml wechseln.
     """
-    etc = Path("/etc/pi-installer/config.json")
+    base = get_config_dir()
+    target = base / "config.json"
+    if not is_dev_mode():
+        try:
+            base.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
+        return target
     try:
-        etc.parent.mkdir(parents=True, exist_ok=True)
-        # check writable (as current process)
-        if etc.exists():
-            if os.access(str(etc), os.W_OK):
-                return etc
-        else:
-            if os.access(str(etc.parent), os.W_OK):
-                return etc
+        base.mkdir(parents=True, exist_ok=True)
+        if target.exists() and os.access(str(target), os.W_OK):
+            return target
+        if os.access(str(base), os.W_OK):
+            return target
     except Exception:
         pass
-    home = Path.home() / ".config" / "pi-installer" / "config.json"
-    home.parent.mkdir(parents=True, exist_ok=True)
-    return home
+    return target
 
 
 def _default_settings() -> dict:
@@ -407,8 +412,8 @@ def _user_profile_primary_path() -> Path:
 
 
 def _user_profile_fallback_path() -> Path:
-    """Immer im Home-Config-Baum – beschreibbar ohne Root-Rechte."""
-    return Path.home() / ".config" / "pi-installer" / "user_profile.json"
+    """Home-Fallback für Profil (Dev oder wenn /etc nicht beschreibbar)."""
+    return Path.home() / ".config" / "setuphelfer" / "user_profile.json"
 
 
 def _user_profile_candidate_paths() -> list[Path]:
@@ -1529,11 +1534,13 @@ def _demo_users():
 @app.get("/api/system/paths")
 async def get_system_paths():
     """Prüft kritische Pfade (NVMe-Boot, Konfiguration). Hilft bei Pfad-Problemen nach Laufwerkswechsel."""
+    _cfg = get_config_dir() / "config.json"
+    _bk = get_config_dir() / "backup.json"
     paths = {
-        "config_etc": "/etc/pi-installer/config.json",
-        "config_etc_exists": Path("/etc/pi-installer/config.json").exists(),
-        "config_home": str(Path.home() / ".config" / "pi-installer" / "config.json"),
-        "backup_json": "/etc/pi-installer/backup.json",
+        "config_etc": str(_cfg),
+        "config_etc_exists": _cfg.exists(),
+        "config_home": str(Path.home() / ".config" / "setuphelfer" / "config.json"),
+        "backup_json": str(_bk),
         "boot_firmware": "/boot/firmware",
         "boot_firmware_config": "/boot/firmware/config.txt",
         "boot_firmware_cmdline": "/boot/firmware/cmdline.txt",
@@ -2369,7 +2376,7 @@ async def get_version():
 
 
 # ---------- Self-Update: Auf /opt installieren / aktualisieren ----------
-OPT_INSTALL_DIR = Path("/opt/pi-installer")
+OPT_INSTALL_DIR = get_opt_install_dir()
 
 
 def _read_version_from_path(root: Path) -> Optional[str]:
@@ -2492,7 +2499,7 @@ if get_app_edition() == "repo":
             return JSONResponse(status_code=503, content={"status": "error", "message": "Update-Center nicht verfügbar."})
         repo_root = get_update_center_repo_root()
         source_version = get_pi_installer_version()
-        OPT = Path("/opt/pi-installer")
+        OPT = get_opt_install_dir()
         installed_version = None
         if OPT.exists():
             vf = OPT / "config" / "version.json"
@@ -4015,8 +4022,8 @@ def get_security_config():
         auditd_running = get_running_services().get("auditd", False)
         
         # Prüfe ob Audit-Regeln existieren
-        audit_rules_file = "/etc/audit/rules.d/pi-installer.rules"
-        audit_rules_exist = run_command(f"test -f {audit_rules_file}")
+        audit_rules_fp = str(_audit_rules_path())
+        audit_rules_exist = run_command(f"test -f {shlex.quote(audit_rules_fp)}")
         audit_rules_configured = audit_rules_exist["success"]
         
         # Prüfe ob auditd aktiv ist
@@ -5954,9 +5961,9 @@ async def configure_security(request: Request):
                     results.append("⚠️ Auditd Service konnte nicht aktiviert werden")
                 
                 # Konfiguriere Audit-Regeln
-                audit_rules_file = "/etc/audit/rules.d/pi-installer.rules"
+                audit_rules_file = str(_audit_rules_path())
                 audit_rules = [
-                    "# PI-Installer Audit Rules",
+                    "# Setuphelfer Audit Rules",
                     "# Überwache alle Systemaufrufe",
                     "-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time-change",
                     "-a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k time-change",
@@ -8231,7 +8238,7 @@ async def backup_status():
 # -------------------- Backup Settings + Scheduling --------------------
 
 def _backup_settings_path() -> Path:
-    return Path("/etc/pi-installer/backup.json")
+    return get_config_dir() / "backup.json"
 
 
 def _default_backup_settings() -> dict:
@@ -8327,19 +8334,20 @@ def _write_backup_settings(settings: dict, sudo_password: str) -> None:
     import tempfile
 
     content = json.dumps(settings, indent=2)
-    run_command("mkdir -p /etc/pi-installer", sudo=True, sudo_password=sudo_password)
+    _cfg_dir = get_config_dir()
+    run_command(f"mkdir -p {shlex.quote(str(_cfg_dir))}", sudo=True, sudo_password=sudo_password)
 
-    with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="pi-installer-backup-", suffix=".json") as f:
+    with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="setuphelfer-backup-", suffix=".json") as f:
         f.write(content)
         tmp_path = f.name
 
-    # move atomically into place with correct permissions
-    run_command(f"mv {shlex.quote(tmp_path)} /etc/pi-installer/backup.json", sudo=True, sudo_password=sudo_password)
-    run_command("chmod 600 /etc/pi-installer/backup.json", sudo=True, sudo_password=sudo_password)
+    dest = _cfg_dir / "backup.json"
+    run_command(f"mv {shlex.quote(tmp_path)} {shlex.quote(str(dest))}", sudo=True, sudo_password=sudo_password)
+    run_command(f"chmod 600 {shlex.quote(str(dest))}", sudo=True, sudo_password=sudo_password)
 
 
 def _systemd_timer_name(rule_id: Optional[str] = None) -> str:
-    base = "pi-installer-backup"
+    base = "setuphelfer-backup"
     if rule_id:
         rid = "".join(ch for ch in str(rule_id) if ch.isalnum() or ch in ("-", "_")).strip("-_")
         rid = rid[:32] if rid else "default"
@@ -8349,17 +8357,17 @@ def _systemd_timer_name(rule_id: Optional[str] = None) -> str:
 
 def _render_systemd_service(rule_id: str) -> str:
     return """[Unit]
-Description=PI-Installer scheduled backup
+Description=Setuphelfer scheduled backup
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/pi-installer-backup-run --rule {rule_id}
+ExecStart=/usr/local/bin/setuphelfer-backup-run --rule {rule_id}
 """.format(rule_id=rule_id)
 
 
 def _render_systemd_timer(on_calendar: str, rule_name: str = "") -> str:
     return f"""[Unit]
-Description=PI-Installer scheduled backup timer{(' - ' + rule_name) if rule_name else ''}
+Description=Setuphelfer scheduled backup timer{(' - ' + rule_name) if rule_name else ''}
 
 [Timer]
 OnCalendar={on_calendar}
@@ -8371,9 +8379,11 @@ WantedBy=timers.target
 
 
 def _render_backup_runner_script() -> str:
-    # Minimaler Runner: liest /etc/pi-installer/backup.json und erstellt Backup + Retention + optional WebDAV Upload.
+    # Minimaler Runner: liest backup.json unter get_config_dir() und erstellt Backup + Retention + optional WebDAV Upload.
     # läuft als root via systemd service.
-    return r"""#!/usr/bin/env python3
+    _cfg_json = str(get_config_dir() / "backup.json")
+    return (
+        r"""#!/usr/bin/env python3
 import argparse
 import json
 import os
@@ -8384,7 +8394,7 @@ import time
 import glob
 from pathlib import Path
 
-CFG = Path("/etc/pi-installer/backup.json")
+CFG = Path("__SETUPHELFER_BACKUP_JSON__")
 
 def run_cmd(cmd, shell=True):
     # SECURITY NOTE: shell=True retained; callers may pass composite commands. Prefer list + shell=False where possible.
@@ -8526,7 +8536,7 @@ def main():
     args = ap.parse_args()
 
     if not CFG.exists():
-        raise SystemExit("missing /etc/pi-installer/backup.json")
+        raise SystemExit("missing backup configuration (backup.json)")
     cfg = json.loads(CFG.read_text() or "{}")
     if not cfg.get("enabled", True):
         print("disabled")
@@ -8691,14 +8701,15 @@ def main():
 if __name__ == "__main__":
     main()
 """
+    ).replace("__SETUPHELFER_BACKUP_JSON__", _cfg_json)
 
 
 def _apply_backup_schedule(settings: dict, sudo_password: str) -> None:
     # ensure runner
-    runner = "/usr/local/bin/pi-installer-backup-run"
+    runner = "/usr/local/bin/setuphelfer-backup-run"
     script = _render_backup_runner_script()
     import tempfile
-    with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="pi-installer-runner-", suffix=".py") as f:
+    with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="setuphelfer-runner-", suffix=".py") as f:
         f.write(script)
         tmp_runner = f.name
     run_command(f"mv {shlex.quote(tmp_runner)} {shlex.quote(runner)}", sudo=True, sudo_password=sudo_password)
@@ -8733,7 +8744,7 @@ def _apply_backup_schedule(settings: dict, sudo_password: str) -> None:
             if isinstance(r, dict) and r.get("id"):
                 keep_ids.add(_systemd_timer_name(str(r["id"])))
         sysdir = Path("/etc/systemd/system")
-        for p in sysdir.glob("pi-installer-backup-*.timer"):
+        for p in list(sysdir.glob("setuphelfer-backup-*.timer")) + list(sysdir.glob("pi-installer-backup-*.timer")):
             name = p.name.replace(".timer", "")
             if name not in keep_ids:
                 run_command(f"systemctl disable --now {shlex.quote(name)}.timer 2>/dev/null || true", sudo=True, sudo_password=sudo_password)
@@ -8755,10 +8766,10 @@ def _apply_backup_schedule(settings: dict, sudo_password: str) -> None:
         svc_txt = _render_systemd_service(rid)
         timer_txt = _render_systemd_timer(on_cal, rule_name=str(rule.get("name") or "").strip())
 
-        with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="pi-installer-svc-", suffix=".service") as f:
+        with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="setuphelfer-svc-", suffix=".service") as f:
             f.write(svc_txt)
             tmp_svc = f.name
-        with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="pi-installer-timer-", suffix=".timer") as f:
+        with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", prefix="setuphelfer-timer-", suffix=".timer") as f:
             f.write(timer_txt)
             tmp_timer = f.name
 
@@ -8902,7 +8913,7 @@ async def backup_run_now(request: Request):
             ),
         )
 
-    runner = "/usr/local/bin/pi-installer-backup-run"
+    runner = "/usr/local/bin/setuphelfer-backup-run"
     rule_id = (data.get("rule_id") or "").strip()
     # ensure it exists via applying schedule with current settings
     settings = _read_backup_settings()
@@ -8988,7 +8999,7 @@ async def backup_cloud_test(request: Request):
 async def backup_cloud_list(rule_id: str = ""):
     """
     Listet externe Backups im konfigurierten WebDAV-Ziel (Seafile).
-    Nutzt gespeicherte Settings (/etc/pi-installer/backup.json).
+    Nutzt gespeicherte Settings (backup.json unter get_config_dir()).
     """
     settings = _read_backup_settings()
     cloud = settings.get("cloud") or {}

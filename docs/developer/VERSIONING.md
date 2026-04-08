@@ -1,4 +1,4 @@
-# PI-Installer – Versionsschema und -führung
+# Setuphelfer – Versionsschema und -führung
 
 **Prozess & Berichte (Cursor / Moduländerungen):** [CURSOR_WORK_RULES.md](./CURSOR_WORK_RULES.md) · Checkliste [MODULE_EDIT_CHECKLIST.md](./MODULE_EDIT_CHECKLIST.md).
 
@@ -51,7 +51,18 @@ So bleibt jeder Stand (z. B. aus Git) einer konkreten Version zugeordnet.
 
 - Der Changelog wird in der **Dokumentation** der Anwendung geführt (Seite „Dokumentation“ → Kapitel „Versionen & Changelog“). Dort sind pro Version die Änderungen (Bugfixes, Ergänzungen, Features) kurz beschrieben.
 - **Regel:** Zu jeder Änderung/Fehlerbehebung wird die Dokumentation **selbstständig** ergänzt: Versionsnummer erhöhen (pro Bereich), Changelog-Eintrag anlegen, ggf. Troubleshooting oder andere Kapitel anpassen.
-- Für Releases kann zusätzlich eine Datei `CHANGELOG.md` im Root gepflegt werden (optional).
+- **`CHANGELOG.md`** im Projektroot soll zu jedem Release bzw. jeder inhaltlich relevanten Änderung mitgeführt werden (Nachvollziehbarkeit außerhalb der App).
+
+### Release-Pflicht für Maintainer (Phase D4)
+
+Kurzcheck bei Änderungen, die Nutzer oder Betrieb betreffen:
+
+1. **`config/version.json`** → `version` erhöhen (Schema siehe oben).
+2. **`cd frontend && node sync-version.js`** ausführen.
+3. **`CHANGELOG.md`** (Root) um einen Eintrag ergänzen.
+4. **In-App:** `frontend/src/pages/Documentation.tsx` → Kapitel **„Versionen & Changelog“** um dieselbe Version mit Kurzstichpunkten ergänzen.
+5. **FAQ:** Wenn sich typische Fehlerbilder, Startpfade oder Begriffe ändern → Abschnitt **„FAQ – Häufige Fragen“** in `Documentation.tsx` anpassen oder neuen Eintrag anlegen; in Markdown-Dokumenten ggf. „Siehe Dokumentation → FAQ“ verlinken.
+6. **Debian:** Bei Paket-Build `debian/changelog` (Source-Paketname `pi-installer`) passend zur Version setzen.
 
 ---
 

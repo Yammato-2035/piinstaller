@@ -1,0 +1,38 @@
+[Unit]
+Description=Setuphelfer Backend (API auf Port 8000, alleiniger Owner)
+Documentation=https://github.com/Yammato-2035/piinstaller
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=setuphelfer
+# Group wird in postinst auf die tatsächliche Gruppe gesetzt (kann nogroup sein)
+Group=nogroup
+WorkingDirectory=/opt/setuphelfer
+ExecStart=/opt/setuphelfer/scripts/start-backend.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+Environment="SETUPHELFER_DIR=/opt/setuphelfer"
+Environment="PI_INSTALLER_DIR=/opt/setuphelfer"
+Environment="SETUPHELFER_CONFIG_DIR=/etc/setuphelfer"
+Environment="PI_INSTALLER_CONFIG_DIR=/etc/setuphelfer"
+Environment="SETUPHELFER_LOG_DIR=/var/log/setuphelfer"
+Environment="PI_INSTALLER_LOG_DIR=/var/log/setuphelfer"
+Environment="SETUPHELFER_STATE_DIR=/var/lib/setuphelfer"
+Environment="PI_INSTALLER_STATE_DIR=/var/lib/setuphelfer"
+Environment="PI_INSTALLER_DEV=0"
+Environment="APP_EDITION=release"
+Environment="PIP_CACHE_DIR=/opt/setuphelfer/.pip-cache"
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp
+MemoryMax=512M
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

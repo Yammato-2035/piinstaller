@@ -1,3 +1,51 @@
+pi-installer (1.4.0.5-1) unstable; urgency=medium
+
+  * Version 1.4.0.5 – Betrieb: deploy STATE_DIR mkdir; install-system SETUPHELFER_* primär, STATE chown, Symlink start-setuphelfer; install_paths env-Reihenfolge; create_installer/install-backend mkdir FHS; SETUPHELFER_MODE
+
+ -- Setuphelfer Team <https://github.com/Yammato-2035/piinstaller>  Tue, 08 Apr 2026 12:00:00 +0200
+
+pi-installer (1.4.0.4-1) unstable; urgency=medium
+
+  * Version 1.4.0.4 – Phase F: verify-setuphelfer-install.sh (systemd, curl, journalctl); docs/VERIFY_TARGET_SYSTEM.md; Verweise in Architektur/SYSTEM_INSTALLATION
+
+ -- Setuphelfer Team <https://github.com/Yammato-2035/piinstaller>  Mon, 07 Apr 2026 21:00:00 +0200
+
+pi-installer (1.4.0.3-1) unstable; urgency=medium
+
+  * Version 1.4.0.3 – Phase D4: VERSIONING.md Release-Checkliste; projekt-workflow (config/version.json, setuphelfer-backend); FAQ Version/Changelog; In-App Versionsblock
+
+ -- Setuphelfer Team <https://github.com/Yammato-2035/piinstaller>  Mon, 07 Apr 2026 20:00:00 +0200
+
+pi-installer (1.4.0.2-1) unstable; urgency=medium
+
+  * Version 1.4.0.2 – Doku Phase D3: Architektur-Referenz NAMING_AND_SERVICES, architecture/README; init_flow/config_flow; Review-Dokumente (phase1, phase4, consistency, error backlog)
+
+ -- Setuphelfer Team <https://github.com/Yammato-2035/piinstaller>  Mon, 07 Apr 2026 19:00:00 +0200
+
+pi-installer (1.4.0.1-1) unstable; urgency=medium
+
+  * Version 1.4.0.1 – Doku Phase D2: Nutzerdoku (START_APPS, BETRIEB_REPO_VS_SERVICE, SYSTEM_INSTALLATION, SD_CARD_IMAGE), README, In-App-Dokumentation; install-system Zusammenfassung; uninstall setuphelfer-Symlinks/Desktop; FAQ/Pfade
+
+ -- Setuphelfer Team <https://github.com/Yammato-2035/piinstaller>  Mon, 07 Apr 2026 18:00:00 +0200
+
+pi-installer (1.4.0.0-1) unstable; urgency=medium
+
+  * Version 1.4.0.0 – Setuphelfer: Binary-Paket setuphelfer; User setuphelfer; Pfade /opt|etc|var/lib|var/log/setuphelfer; systemd setuphelfer-backend/setuphelfer; Backend-Pfadlogik ohne Home-Fallback im Service; Replaces pi-installer (< 1.4.0)
+
+ -- Setuphelfer Team <https://github.com/Yammato-2035/piinstaller>  Tue, 08 Apr 2026 12:00:00 +0200
+
+pi-installer (1.3.9.5-1) unstable; urgency=low
+
+  * Version 1.3.9.5 – pi-installer-backend als alleiniger Owner :8000; pi-installer Web-UI mit Requires; keine doppelte Backend-Startlogik
+
+ -- PI-Installer Team <https://github.com/Yammato-2035/piinstaller>  Mon, 07 Apr 2026 20:00:00 +0200
+
+pi-installer (1.3.9.4-1) unstable; urgency=low
+
+  * Version 1.3.9.4 – systemd: Produktions-Frontend (vite preview) statt Vite-Dev unter /opt; Doku Repo vs. Service
+
+ -- PI-Installer Team <https://github.com/Yammato-2035/piinstaller>  Mon, 07 Apr 2026 18:00:00 +0200
+
 pi-installer (1.3.9.3-1) unstable; urgency=low
 
   * Version 1.3.9.3 – Backup & Restore: Ampel an Phase-3-Freigabelage (kein Grün ohne nachgewiesenen Backup-Lauf), i18n + Doku

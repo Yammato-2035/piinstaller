@@ -9,6 +9,8 @@ import os
 import time
 import logging
 
+from core.install_paths import get_opt_install_dir, get_state_dir
+
 logger = logging.getLogger(__name__)
 
 # TTL Standard: 30 Minuten
@@ -16,16 +18,18 @@ DEFAULT_TTL_SECONDS = 1800
 
 
 def _key_file_path() -> Path:
-    """Key-Datei: PI_INSTALLER_DIR/.sudo_key oder Repo-Root; Fallback ~/.config/pi-installer/sudo.key wenn nicht schreibbar."""
+    """Key-Datei: Installationsverzeichnis/.sudo_key, Zustandsverzeichnis/sudo.key oder Repo-Root; Dev: ~/.config/setuphelfer/sudo.key."""
     candidates = []
-    install_dir = os.environ.get("PI_INSTALLER_DIR")
-    if install_dir:
-        candidates.append(Path(install_dir).resolve() / ".sudo_key")
+    for env_key in ("SETUPHELFER_DIR", "PI_INSTALLER_DIR"):
+        install_dir = os.environ.get(env_key)
+        if install_dir:
+            candidates.append(Path(install_dir).resolve() / ".sudo_key")
+    candidates.append(get_opt_install_dir() / ".sudo_key")
+    candidates.append(get_state_dir() / "sudo.key")
     # Entwicklung: Repo-Root = backend/core/.. -> backend/.. = Repo
     repo_root = Path(__file__).resolve().parent.parent.parent
     candidates.append(repo_root / ".sudo_key")
-    # Fallback: XDG Config (immer schreibbar für aktuellen User)
-    xdg = Path.home() / ".config" / "pi-installer" / "sudo.key"
+    xdg = Path.home() / ".config" / "setuphelfer" / "sudo.key"
     candidates.append(xdg)
     for p in candidates:
         try:

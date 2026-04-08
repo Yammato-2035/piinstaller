@@ -36,7 +36,13 @@ const apiProxy = {
   },
 }
 
+/** Unter /opt: Cache nach /tmp legen (Service-User, kein Schreiben in node_modules/.vite nötig). */
+const viteCacheDir =
+  process.env.PI_INSTALLER_VITE_CACHE_DIR ||
+  path.resolve(__dirname, 'node_modules/.vite')
+
 export default defineConfig({
+  cacheDir: viteCacheDir,
   base: isTauriProductionBuild ? './' : '/',
   plugins: [react()],
   define: {

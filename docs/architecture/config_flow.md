@@ -1,6 +1,8 @@
-# Konfigurationsfluss – PI-Installer
+# Konfigurationsfluss – Setuphelfer
 
 _Phase 4 – Strukturelle Systemvereinfachung_
+
+**Pfade und Legacy:** [NAMING_AND_SERVICES.md](NAMING_AND_SERVICES.md). Implementierung: `backend/core/install_paths.py`.
 
 ## 1. Ziel
 
@@ -44,7 +46,7 @@ Konfiguration soll nachvollziehbar sein: eine Primärquelle, klare Defaults, def
 ### Primärquelle (Layering)
 
 1. **Defaults:** `backend/debug/defaults.yaml`
-2. **System:** `/etc/pi-installer/debug.config.yaml` (optional)
+2. **System:** `/etc/setuphelfer/debug.config.yaml` (optional; Legacy: `/etc/pi-installer/`)
 3. **ENV:** `PIINSTALLER_DEBUG_ENABLED`, `PIINSTALLER_DEBUG_LEVEL`, `PIINSTALLER_DEBUG_PATH`
 
 ### Ladepfad

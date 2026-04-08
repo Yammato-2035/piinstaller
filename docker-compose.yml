@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: pi-installer-backend
+    container_name: setuphelfer-backend
     # Backend intentionally not exposed to external network for security.
     # Only frontend (same network) can reach backend. Use "ports: - 8000:8000" for host access.
     expose:
@@ -13,12 +13,12 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     networks:
-      - pi-network
+      - setuphelfer-network
     restart: unless-stopped
 
   frontend:
     image: node:18-alpine
-    container_name: pi-installer-frontend
+    container_name: setuphelfer-frontend
     working_dir: /app
     ports:
       - "3001:3001"
@@ -29,12 +29,12 @@ services:
       # Browser (host) reaches backend; if backend only has "expose", add ports: - "8000:8000" for host access
       - VITE_API_URL=http://localhost:8000
     networks:
-      - pi-network
+      - setuphelfer-network
     restart: unless-stopped
     depends_on:
       - backend
     command: sh -c "npm install && npm run dev"
 
 networks:
-  pi-network:
+  setuphelfer-network:
     driver: bridge

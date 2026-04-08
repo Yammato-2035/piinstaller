@@ -2,6 +2,8 @@
 
 _Datum: 2026-03-09_
 
+**Ergänzung 2026-04 (Setuphelfer 1.4.x):** Service- und Pfadnamen sind konsolidiert; maßgeblich für Reviews: **`docs/architecture/NAMING_AND_SERVICES.md`**. Die folgenden Abschnitte beschreiben die Ausgangslage und Maßnahmen bis März 2026 und können historische Begriffe (**pi-installer**-Units) enthalten.
+
 ## 1. Zielbild
 
 - Zuständigkeiten klarer

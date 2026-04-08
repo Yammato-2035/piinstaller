@@ -1,12 +1,12 @@
 #!/bin/bash
-# PI-Installer – Single-Script-Installer (One-Click Experience)
+# Setuphelfer – Single-Script-Installer (One-Click Experience)
 # Nutzung:
 #   Aus dem Repository:  ./scripts/create_installer.sh
 #   Oder (wenn gehostet): curl -sSL https://get.pi-installer.io | bash
 #
-# Umgebungsvariablen:
-#   PI_INSTALLER_REPO   – Git-URL zum Klonen (nur bei curl | bash nötig)
-#   PI_INSTALLER_DIR   – Installationsverzeichnis (Default: $HOME/PI-Installer bei Klon)
+# Umgebungsvariablen (Primär SETUPHELFER_*; Legacy PI_INSTALLER_*):
+#   SETUPHELFER_REPO / PI_INSTALLER_REPO – Git-URL zum Klonen
+#   SETUPHELFER_DIR / PI_INSTALLER_DIR  – Installationsverzeichnis (Default bei Klon: $HOME/PI-Installer)
 
 set -e
 set -u
@@ -23,20 +23,20 @@ ok()    { echo -e "${GREEN}[OK]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 err()   { echo -e "${RED}[FEHLER]${NC} $*"; }
 
-# Prüfen ob wir innerhalb eines PI-Installer-Repos sind (start.sh + backend vorhanden)
+# Prüfen ob wir innerhalb eines Setuphelfer-Repos sind (start.sh + backend vorhanden)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 if [ -f "$REPO_ROOT/start.sh" ] && [ -d "$REPO_ROOT/backend" ] && [ -d "$REPO_ROOT/frontend" ]; then
   INSTALL_DIR="$REPO_ROOT"
   FROM_REPO=1
 else
-  INSTALL_DIR="${PI_INSTALLER_DIR:-$HOME/PI-Installer}"
+  INSTALL_DIR="${SETUPHELFER_DIR:-${PI_INSTALLER_DIR:-$HOME/PI-Installer}}"
   FROM_REPO=0
 fi
 
-# Standard-Repo beim Aufruf per "curl | bash" (ersetzen Sie OWNER durch Ihren GitHub-Benutzernamen)
-DEFAULT_REPO_URL="${PI_INSTALLER_DEFAULT_REPO:-https://github.com/Yammato-2035/piinstaller.git}"
-REPO_URL="${PI_INSTALLER_REPO:-$DEFAULT_REPO_URL}"
+# Standard-Repo beim Aufruf per "curl | bash"
+DEFAULT_REPO_URL="${SETUPHELFER_DEFAULT_REPO:-${PI_INSTALLER_DEFAULT_REPO:-https://github.com/Yammato-2035/piinstaller.git}}"
+REPO_URL="${SETUPHELFER_REPO:-${PI_INSTALLER_REPO:-$DEFAULT_REPO_URL}}"
 TOTAL_STEPS=6
 STEP=0
 
@@ -160,52 +160,64 @@ if [ -z "$CURRENT_USER" ]; then
   CURRENT_USER="$(whoami)"
 fi
 
-SERVICE_FILE="$INSTALL_DIR/pi-installer.service"
 SYSTEMD_DIR="/etc/systemd/system"
-if [ -f "$SERVICE_FILE" ]; then
-  if [ -w "$SYSTEMD_DIR" ] || sudo -n true 2>/dev/null; then
-    TMP_SVC="$(mktemp)"
-    sed -e "s|{{INSTALL_DIR}}|$INSTALL_DIR|g" -e "s|{{USER}}|$CURRENT_USER|g" "$SERVICE_FILE" > "$TMP_SVC"
-    sudo cp "$TMP_SVC" "$SYSTEMD_DIR/pi-installer.service"
-    rm -f "$TMP_SVC"
-    sudo systemctl daemon-reload
-    sudo systemctl enable pi-installer 2>/dev/null || true
-    sudo systemctl start pi-installer 2>/dev/null || true
-    ok "Service aktiviert und gestartet: pi-installer (Start bei Boot)."
-  else
-    warn "Keine Schreibrechte für $SYSTEMD_DIR. Service manuell einrichten:"
-    echo "  sudo cp $SERVICE_FILE $SYSTEMD_DIR/"
-    echo "  sudo sed -i 's|{{INSTALL_DIR}}|$INSTALL_DIR|g;s|{{USER}}|$CURRENT_USER|g' $SYSTEMD_DIR/pi-installer.service"
-    echo "  sudo systemctl daemon-reload && sudo systemctl enable --now pi-installer"
-  fi
-else
-  warn "Service-Vorlage nicht gefunden: $SERVICE_FILE – Start bitte manuell mit: $INSTALL_DIR/start.sh"
-fi
+# FHS-typische Pfade (wie install-system.sh); bei abweichendem INSTALL_DIR ggf. Unit anpassen
+PI_CFG_DIR="${SETUPHELFER_CONFIG_DIR:-${PI_INSTALLER_CONFIG_DIR:-/etc/setuphelfer}}"
+PI_LOG_DIR="${SETUPHELFER_LOG_DIR:-${PI_INSTALLER_LOG_DIR:-/var/log/setuphelfer}}"
+PI_STATE_DIR="${SETUPHELFER_STATE_DIR:-${PI_INSTALLER_STATE_DIR:-/var/lib/setuphelfer}}"
+SED_UNIT=( -e "s|{{INSTALL_DIR}}|$INSTALL_DIR|g" -e "s|{{USER}}|$CURRENT_USER|g"
+  -e "s|{{PI_INSTALLER_CONFIG_DIR}}|$PI_CFG_DIR|g" -e "s|{{PI_INSTALLER_LOG_DIR}}|$PI_LOG_DIR|g"
+  -e "s|{{PI_INSTALLER_STATE_DIR}}|$PI_STATE_DIR|g" )
 
-# Backend als eigener Service (optional, für DSI Radio / nur API)
-BACKEND_SERVICE_FILE="$INSTALL_DIR/pi-installer-backend.service"
+BACKEND_SERVICE_FILE="$INSTALL_DIR/setuphelfer-backend.service"
+SERVICE_FILE="$INSTALL_DIR/setuphelfer.service"
+
 if [ -f "$BACKEND_SERVICE_FILE" ]; then
   if [ -w "$SYSTEMD_DIR" ] || sudo -n true 2>/dev/null; then
+    sudo mkdir -p "$PI_CFG_DIR" "$PI_LOG_DIR" "$PI_STATE_DIR" 2>/dev/null || true
     TMP_BS="$(mktemp)"
-    sed -e "s|{{INSTALL_DIR}}|$INSTALL_DIR|g" -e "s|{{USER}}|$CURRENT_USER|g" "$BACKEND_SERVICE_FILE" > "$TMP_BS"
-    sudo cp "$TMP_BS" "$SYSTEMD_DIR/pi-installer-backend.service"
+    sed "${SED_UNIT[@]}" "$BACKEND_SERVICE_FILE" > "$TMP_BS"
+    sudo cp "$TMP_BS" "$SYSTEMD_DIR/setuphelfer-backend.service"
     rm -f "$TMP_BS"
     sudo systemctl daemon-reload
-    sudo systemctl enable pi-installer-backend 2>/dev/null || true
-    sudo systemctl start pi-installer-backend 2>/dev/null || true
-    ok "Backend-Service aktiviert und gestartet: pi-installer-backend (Port 8000)."
+    sudo systemctl enable setuphelfer-backend 2>/dev/null || true
+    sudo systemctl start setuphelfer-backend 2>/dev/null || true
+    ok "Backend-Service: setuphelfer-backend (Port 8000)."
   else
     warn "Backend-Service manuell einrichten:"
     echo "  sudo cp $BACKEND_SERVICE_FILE $SYSTEMD_DIR/"
-    echo "  sudo sed -i 's|{{INSTALL_DIR}}|$INSTALL_DIR|g;s|{{USER}}|$CURRENT_USER|g' $SYSTEMD_DIR/pi-installer-backend.service"
-    echo "  sudo systemctl daemon-reload && sudo systemctl enable --now pi-installer-backend"
+    echo "  sudo sed -i 's|{{INSTALL_DIR}}|$INSTALL_DIR|g;s|{{USER}}|$CURRENT_USER|g;s|{{PI_INSTALLER_CONFIG_DIR}}|$PI_CFG_DIR|g;s|{{PI_INSTALLER_LOG_DIR}}|$PI_LOG_DIR|g;s|{{PI_INSTALLER_STATE_DIR}}|$PI_STATE_DIR|g' $SYSTEMD_DIR/setuphelfer-backend.service"
+    echo "  sudo systemctl daemon-reload && sudo systemctl enable --now setuphelfer-backend"
   fi
+else
+  warn "Vorlage fehlt: $BACKEND_SERVICE_FILE"
+fi
+
+if [ -f "$SERVICE_FILE" ]; then
+  if [ -w "$SYSTEMD_DIR" ] || sudo -n true 2>/dev/null; then
+    sudo mkdir -p "$PI_CFG_DIR" "$PI_LOG_DIR" "$PI_STATE_DIR" 2>/dev/null || true
+    TMP_SVC="$(mktemp)"
+    sed "${SED_UNIT[@]}" "$SERVICE_FILE" > "$TMP_SVC"
+    sudo cp "$TMP_SVC" "$SYSTEMD_DIR/setuphelfer.service"
+    rm -f "$TMP_SVC"
+    sudo systemctl daemon-reload
+    sudo systemctl enable setuphelfer 2>/dev/null || true
+    sudo systemctl start setuphelfer 2>/dev/null || true
+    ok "Web-UI-Service: setuphelfer (benötigt setuphelfer-backend)."
+  else
+    warn "Keine Schreibrechte für $SYSTEMD_DIR. Service manuell einrichten:"
+    echo "  sudo cp $SERVICE_FILE $SYSTEMD_DIR/"
+    echo "  sudo sed -i 's|{{INSTALL_DIR}}|$INSTALL_DIR|g;s|{{USER}}|$CURRENT_USER|g;s|{{PI_INSTALLER_CONFIG_DIR}}|$PI_CFG_DIR|g;s|{{PI_INSTALLER_LOG_DIR}}|$PI_LOG_DIR|g;s|{{PI_INSTALLER_STATE_DIR}}|$PI_STATE_DIR|g' $SYSTEMD_DIR/setuphelfer.service"
+    echo "  sudo systemctl daemon-reload && sudo systemctl enable --now setuphelfer"
+  fi
+else
+  warn "Service-Vorlage nicht gefunden: $SERVICE_FILE – Start: $INSTALL_DIR/scripts/start-browser-production.sh (nach setuphelfer-backend)"
 fi
 
 # ---------- Abschluss ----------
 echo ""
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  PI-Installer Installation abgeschlossen${NC}"
+echo -e "${GREEN}  Setuphelfer – Installation abgeschlossen${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
@@ -226,6 +238,7 @@ else
 fi
 
 echo "  Falls der Service gestartet wurde, läuft PI-Installer bereits."
-echo "  Sonst starten mit:  $INSTALL_DIR/start.sh"
+echo "  Browser (Produktion):  $INSTALL_DIR/scripts/start-browser-production.sh"
+echo "  Entwicklung (Vite dev): $INSTALL_DIR/start.sh  (besser: Repo klonen, nicht parallel zu systemd)"
 echo "  Oder als Dienst:    sudo systemctl start pi-installer"
 echo ""

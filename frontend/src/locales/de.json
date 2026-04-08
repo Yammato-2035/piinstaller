@@ -250,7 +250,7 @@
   "dashboard.backendError.apiUrlLabel": "Genutzte API-URL:",
   "dashboard.backendError.apiUrlDefault": "http://127.0.0.1:8000 (Standard)",
   "dashboard.backendError.solution": "Lösung:",
-  "dashboard.backendError.solutionBody": "Im Projektordner ./start-backend.sh ausführen. Oder als Dienst: sudo systemctl start pi-installer-backend. Läuft der Server auf einem anderen Rechner: Einstellungen → Allgemein → Server-URL eintragen (z. B. http://<IP>:8000).",
+  "dashboard.backendError.solutionBody": "Im Projektordner ./start-backend.sh ausführen. Oder als Dienst: sudo systemctl start setuphelfer-backend. Läuft der Server auf einem anderen Rechner: Einstellungen → Allgemein → Server-URL eintragen (z. B. http://<IP>:8000).",
   "dashboard.backendError.retry": "Verbindung jetzt prüfen",
   "dashboard.backendError.settingsServerUrl": "Einstellungen → Server-URL anpassen",
   "dashboard.backendError.settingsLogs": "Einstellungen → Logs",

@@ -21,8 +21,9 @@ from .logger import get_run_id, set_run_id, _app_info
 from .redaction import get_redact_patterns, redact_recursive, redact_string
 from .sink import get_sink
 
+from core.install_paths import get_log_dir
+
 BUNDLE_VERSION = "1"
-SYSTEM_LOG_DIR = Path("/var/log/pi-installer")
 MAX_SYSTEM_LOG_LINES = 2000
 MAX_SYSTEM_LOG_FILES = 10
 
@@ -158,12 +159,13 @@ def _redact_text_line_by_line(text: str, patterns: List[Any]) -> str:
 
 
 def _collect_system_logs(max_lines: int = MAX_SYSTEM_LOG_LINES, max_files: int = MAX_SYSTEM_LOG_FILES) -> str:
-    """Liest letzte Zeilen aus /var/log/pi-installer/* (begrenzt)."""
-    if not SYSTEM_LOG_DIR.is_dir():
+    """Liest letzte Zeilen aus dem App-Logverzeichnis (get_log_dir, begrenzt)."""
+    _log_dir = get_log_dir()
+    if not _log_dir.is_dir():
         return ""
     lines: List[str] = []
     try:
-        files = sorted(SYSTEM_LOG_DIR.iterdir(), key=lambda p: p.stat().st_mtime if p.is_file() else 0, reverse=True)
+        files = sorted(_log_dir.iterdir(), key=lambda p: p.stat().st_mtime if p.is_file() else 0, reverse=True)
         for fp in files[:max_files]:
             if not fp.is_file():
                 continue
@@ -191,7 +193,7 @@ def create_support_bundle(
 ) -> Path:
     """
     Erzeugt output_dir/piinstaller-support-<timestamp>-<run_id>.zip mit:
-    - Debug-Logs (redigiert), System-Logs /var/log/pi-installer (begrenzt)
+    - Debug-Logs (redigiert), System-Logs unter get_log_dir() (begrenzt)
     - system_snapshot.json (redigiert)
     - debug.config.effective.yaml
     - manifest.json (bundle_version, created_at, run_id, file list, redaction_enabled)

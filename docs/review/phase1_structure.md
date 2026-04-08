@@ -2,6 +2,8 @@
 
 _Projektanalyse: Modulverantwortlichkeiten, Hauptpfade, Konfiguration, Debug, Initialisierung_
 
+**Stand Pfade/Services (ab 1.4.0):** siehe **`docs/architecture/NAMING_AND_SERVICES.md`**. Tabellen unten nennen wo nötig **Legacy**-Pfade für Altinstallationen.
+
 ---
 
 ## 1. Modulübersicht
@@ -74,15 +76,15 @@ _Projektanalyse: Modulverantwortlichkeiten, Hauptpfade, Konfiguration, Debug, In
 |--------|-------|
 | `start-backend.sh` | Backend (uvicorn) auf Port 8000 |
 | `start.sh` | Backend + Frontend (npm run dev) |
-| `start-pi-installer.sh` | Wartet auf Backend, öffnet Dialog (Tauri/Browser) |
+| `start-setuphelfer.sh` | Wartet auf Backend, Dialog (Tauri/Browser); Alias `start-pi-installer.sh` |
 
 ### Konfigurationspfade
 
 | Pfad | Verwendung |
 |------|------------|
-| `/etc/pi-installer/config.json` | Primär (wenn schreibbar) |
-| `~/.config/pi-installer/config.json` | Fallback (User) |
-| `/etc/pi-installer/debug.config.yaml` | Debug-Konfiguration (optional) |
+| `/etc/setuphelfer/config.json` | Primär (wenn schreibbar; Legacy: `/etc/pi-installer/`) |
+| `~/.config/setuphelfer/config.json` | Fallback (User/Dev; Legacy: `pi-installer`) |
+| `/etc/setuphelfer/debug.config.yaml` | Debug-Konfiguration (optional) |
 
 ### Persistenzpfade
 

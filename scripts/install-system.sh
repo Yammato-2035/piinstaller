@@ -1,6 +1,6 @@
 #!/bin/bash
-# PI-Installer – Systemweite Installation gemäß Linux Filesystem Hierarchy Standard
-# Installiert PI-Installer nach /opt/pi-installer/ mit Konfiguration in /etc/pi-installer/
+# Setuphelfer – Systemweite Installation gemäß Linux Filesystem Hierarchy Standard
+# Installiert nach /opt/setuphelfer/ mit Konfiguration in /etc/setuphelfer/
 # Erstellt Symlinks, setzt Umgebungsvariablen und richtet systemd Service ein
 #
 # Verwendung:
@@ -27,9 +27,10 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # Installationsverzeichnisse (gemäß Linux FHS)
-INSTALL_DIR="/opt/pi-installer"
-CONFIG_DIR="/etc/pi-installer"
-LOG_DIR="/var/log/pi-installer"
+INSTALL_DIR="/opt/setuphelfer"
+CONFIG_DIR="/etc/setuphelfer"
+LOG_DIR="/var/log/setuphelfer"
+STATE_DIR="/var/lib/setuphelfer"
 BIN_DIR="/usr/local/bin"
 SYSTEMD_DIR="/etc/systemd/system"
 ENV_DIR="/etc/profile.d"
@@ -40,28 +41,29 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Prüfe ob wir im Repository sind
 if [ ! -f "$REPO_ROOT/start.sh" ] || [ ! -d "$REPO_ROOT/backend" ] || [ ! -d "$REPO_ROOT/frontend" ]; then
-  err "Repository-Struktur nicht gefunden. Bitte aus dem PI-Installer-Verzeichnis ausführen."
+  err "Repository-Struktur nicht gefunden. Bitte aus dem Setuphelfer-Repository ausführen."
   exit 1
 fi
 
-# Service-User:
-# - PI_INSTALLER_USE_SERVICE_USER=1  → dedizierten System-User "pi-installer" anlegen und nutzen (empfohlen für Produktion)
-# - PI_INSTALLER_USER=volker         → festen User setzen (z. B. dein Login)
-# - sonst                             → wer sudo ausführt (SUDO_USER)
-SERVICE_USER_NAME="pi-installer"
-if [ "${PI_INSTALLER_USE_SERVICE_USER:-0}" = "1" ]; then
+# Service-User (Primär: SETUPHELFER_*; Legacy: PI_INSTALLER_*)
+# - SETUPHELFER_USE_SERVICE_USER=1 oder PI_INSTALLER_USE_SERVICE_USER=1 → User setuphelfer
+# - SETUPHELFER_USER=… oder PI_INSTALLER_USER=… → fester Login-User
+# - sonst → SUDO_USER
+SERVICE_USER_NAME="setuphelfer"
+USE_SVC="${SETUPHELFER_USE_SERVICE_USER:-${PI_INSTALLER_USE_SERVICE_USER:-0}}"
+if [ "$USE_SVC" = "1" ]; then
   if ! getent passwd "$SERVICE_USER_NAME" >/dev/null 2>&1; then
     info "Lege dedizierten Service-User an: $SERVICE_USER_NAME"
-    useradd --system --no-create-home --comment "PI-Installer Service" "$SERVICE_USER_NAME"
+    useradd --system --no-create-home --comment "Setuphelfer Service" "$SERVICE_USER_NAME"
     ok "User $SERVICE_USER_NAME erstellt"
   else
     ok "Service-User $SERVICE_USER_NAME existiert bereits"
   fi
   CURRENT_USER="$SERVICE_USER_NAME"
-elif [ -n "${PI_INSTALLER_USER:-}" ]; then
-  CURRENT_USER="$PI_INSTALLER_USER"
+elif [ -n "${SETUPHELFER_USER:-}" ] || [ -n "${PI_INSTALLER_USER:-}" ]; then
+  CURRENT_USER="${SETUPHELFER_USER:-$PI_INSTALLER_USER}"
   if ! getent passwd "$CURRENT_USER" >/dev/null 2>&1; then
-    err "User $CURRENT_USER existiert nicht. Bitte anlegen oder PI_INSTALLER_USER weglassen."
+    err "User $CURRENT_USER existiert nicht. Bitte anlegen oder SETUPHELFER_USER/PI_INSTALLER_USER weglassen."
     exit 1
   fi
 else
@@ -70,7 +72,7 @@ fi
 CURRENT_HOME=$(getent passwd "$CURRENT_USER" | cut -d: -f6)
 
 echo -e "${CYAN}============================================${NC}"
-echo -e "${CYAN}  PI-Installer Systemweite Installation${NC}"
+echo -e "${CYAN}  Setuphelfer – Systemweite Installation${NC}"
 echo -e "${CYAN}============================================${NC}"
 echo ""
 echo -e "${CYAN}Installationsverzeichnisse:${NC}"
@@ -80,8 +82,8 @@ echo -e "  Logs:          ${LOG_DIR}"
 echo -e "  Binaries:      ${BIN_DIR}"
 echo ""
 echo -e "${CYAN}Service-Benutzer:${NC} ${CURRENT_USER}"
-[ "${PI_INSTALLER_USE_SERVICE_USER:-0}" = "1" ] && echo -e "  (dedizierter System-User, kein Login)"
-[ -n "${PI_INSTALLER_USER:-}" ] && [ "${PI_INSTALLER_USE_SERVICE_USER:-0}" != "1" ] && echo -e "  (gesetzt via PI_INSTALLER_USER)"
+[ "$USE_SVC" = "1" ] && echo -e "  (dedizierter System-User, kein Login)"
+[ -n "${SETUPHELFER_USER:-}${PI_INSTALLER_USER:-}" ] && [ "$USE_SVC" != "1" ] && echo -e "  (gesetzt via SETUPHELFER_USER oder PI_INSTALLER_USER)"
 echo ""
 
 # --- Schritt 1: System-Abhängigkeiten installieren ---
@@ -137,16 +139,18 @@ fi
 info "[2/8] Verzeichnisse erstellen..."
 
 mkdir -p "$INSTALL_DIR"
-mkdir -p "$CONFIG_DIR"
+mkdir -p "$CONFIG_DIR" "$STATE_DIR"
 mkdir -p "$LOG_DIR"
 mkdir -p "$ENV_DIR"
 
 # Setze Berechtigungen
 chown -R "$CURRENT_USER:$CURRENT_USER" "$INSTALL_DIR"
 chown -R "$CURRENT_USER:$CURRENT_USER" "$CONFIG_DIR"
+chown -R "$CURRENT_USER:$CURRENT_USER" "$STATE_DIR"
 chown -R "$CURRENT_USER:$CURRENT_USER" "$LOG_DIR"
 chmod 755 "$INSTALL_DIR"
 chmod 755 "$CONFIG_DIR"
+chmod 755 "$STATE_DIR"
 chmod 755 "$LOG_DIR"
 
 ok "Verzeichnisse erstellt"
@@ -218,9 +222,9 @@ info "[6/8] Konfiguration einrichten..."
 if [ ! -f "$CONFIG_DIR/config.json" ]; then
   cat > "$CONFIG_DIR/config.json" << 'CONFIGEOF'
 {
-  "install_dir": "/opt/pi-installer",
-  "config_dir": "/etc/pi-installer",
-  "log_dir": "/var/log/pi-installer",
+  "install_dir": "/opt/setuphelfer",
+  "config_dir": "/etc/setuphelfer",
+  "log_dir": "/var/log/setuphelfer",
   "backend": {"host": "0.0.0.0", "port": 8000},
   "frontend": {"port": 3001}
 }
@@ -235,105 +239,81 @@ fi
 info "[7/8] Symlinks erstellen..."
 
 # Haupt-Symlinks
-ln -sf "$INSTALL_DIR/scripts/start-pi-installer.sh" "$BIN_DIR/pi-installer"
-ln -sf "$INSTALL_DIR/scripts/start-backend.sh" "$BIN_DIR/pi-installer-backend"
-ln -sf "$INSTALL_DIR/scripts/start-frontend.sh" "$BIN_DIR/pi-installer-frontend"
-ln -sf "$INSTALL_DIR/start.sh" "$BIN_DIR/pi-installer-start"
-
-# Script-Symlinks
-ln -sf "$INSTALL_DIR/scripts" "$BIN_DIR/pi-installer-scripts"
+# Primärer Starter: start-setuphelfer.sh (start-pi-installer.sh bleibt Legacy-Wrapper im Repo)
+ln -sf "$INSTALL_DIR/scripts/start-setuphelfer.sh" "$BIN_DIR/setuphelfer"
+ln -sf "$INSTALL_DIR/scripts/start-backend.sh" "$BIN_DIR/setuphelfer-backend"
+ln -sf "$INSTALL_DIR/scripts/start-frontend.sh" "$BIN_DIR/setuphelfer-frontend"
+ln -sf "$INSTALL_DIR/start.sh" "$BIN_DIR/setuphelfer-start"
+ln -sf "$INSTALL_DIR/scripts" "$BIN_DIR/setuphelfer-scripts"
 
 ok "Symlinks erstellt"
 
 # --- Schritt 8: Umgebungsvariablen setzen ---
 info "[8/8] Umgebungsvariablen setzen..."
 
-ENV_FILE="$ENV_DIR/pi-installer.sh"
+ENV_FILE="$ENV_DIR/setuphelfer.sh"
 cat > "$ENV_FILE" << 'ENVEOF'
-# PI-Installer Umgebungsvariablen
-# Wird automatisch beim Login geladen
-
-export PI_INSTALLER_DIR="/opt/pi-installer"
-export PI_INSTALLER_CONFIG_DIR="/etc/pi-installer"
-export PI_INSTALLER_LOG_DIR="/var/log/pi-installer"
-export PATH="$PI_INSTALLER_DIR/scripts:$PATH"
+# Setuphelfer – aktiver Standard (Primär)
+export SETUPHELFER_DIR="/opt/setuphelfer"
+export SETUPHELFER_CONFIG_DIR="/etc/setuphelfer"
+export SETUPHELFER_LOG_DIR="/var/log/setuphelfer"
+export SETUPHELFER_STATE_DIR="/var/lib/setuphelfer"
+# Legacy-Kompatibilität (ältere Skripte / Umgebungen lesen PI_INSTALLER_*)
+export PI_INSTALLER_DIR="$SETUPHELFER_DIR"
+export PI_INSTALLER_CONFIG_DIR="$SETUPHELFER_CONFIG_DIR"
+export PI_INSTALLER_LOG_DIR="$SETUPHELFER_LOG_DIR"
+export PI_INSTALLER_STATE_DIR="$SETUPHELFER_STATE_DIR"
+export PATH="$SETUPHELFER_DIR/scripts:$PATH"
 ENVEOF
 
 chmod 644 "$ENV_FILE"
 ok "Umgebungsvariablen gesetzt"
 
-# --- Schritt 9: systemd Service einrichten ---
-info "[9/9] systemd Service einrichten..."
+# --- Schritt 9: systemd Services einrichten (Backend = Owner :8000; Web-UI getrennt) ---
+info "[9/9] systemd Services einrichten..."
 
-SERVICE_FILE="$SYSTEMD_DIR/pi-installer.service"
+PRIMARY_GROUP="$(id -gn "$CURRENT_USER")"
+SED_SYS=( -e "s|{{INSTALL_DIR}}|$INSTALL_DIR|g" -e "s|{{USER}}|$CURRENT_USER|g"
+  -e "s|{{PI_INSTALLER_CONFIG_DIR}}|$CONFIG_DIR|g" -e "s|{{PI_INSTALLER_LOG_DIR}}|$LOG_DIR|g"
+  -e "s|{{PI_INSTALLER_STATE_DIR}}|$STATE_DIR|g" )
+sed "${SED_SYS[@]}" "$INSTALL_DIR/setuphelfer-backend.service" > "$SYSTEMD_DIR/setuphelfer-backend.service"
+sed -i "s/^Group=.*/Group=$PRIMARY_GROUP/" "$SYSTEMD_DIR/setuphelfer-backend.service" 2>/dev/null || true
+sed "${SED_SYS[@]}" "$INSTALL_DIR/setuphelfer.service" > "$SYSTEMD_DIR/setuphelfer.service"
+sed -i "s/^Group=.*/Group=$PRIMARY_GROUP/" "$SYSTEMD_DIR/setuphelfer.service" 2>/dev/null || true
 
-# Erstelle Service-Datei
-cat > "$SERVICE_FILE" << SERVICEEOF
-[Unit]
-Description=PI-Installer (Backend + Frontend)
-Documentation=https://github.com/Yammato-2035/piinstaller
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=${CURRENT_USER}
-Group=${CURRENT_USER}
-WorkingDirectory=${INSTALL_DIR}
-ExecStart=${INSTALL_DIR}/start.sh
-Restart=on-failure
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-Environment="PI_INSTALLER_DIR=${INSTALL_DIR}"
-Environment="PI_INSTALLER_CONFIG_DIR=${CONFIG_DIR}"
-Environment="PI_INSTALLER_LOG_DIR=${LOG_DIR}"
-Environment="PI_INSTALLER_DEV=0"
-Environment="PIP_CACHE_DIR=${INSTALL_DIR}/.pip-cache"
-
-# Sicherheit
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=${INSTALL_DIR} ${CONFIG_DIR} ${LOG_DIR}
-
-[Install]
-WantedBy=multi-user.target
-SERVICEEOF
-
-# Lade systemd neu
 systemctl daemon-reload
-ok "systemd Service erstellt"
+ok "systemd: setuphelfer-backend.service + setuphelfer.service geschrieben"
 
-# Frage ob Service aktiviert werden soll
 echo ""
-read -p "Soll der PI-Installer Service automatisch beim Booten starten? (j/n) " -n 1 -r
+read -p "Sollen setuphelfer-backend und setuphelfer beim Booten starten? (j/n) " -n 1 -r
 echo ""
 if [[ $REPLY =~ ^[JjYy]$ ]]; then
-  systemctl enable pi-installer.service
-  ok "Service aktiviert (startet beim Booten)"
-  
-  read -p "Soll der Service jetzt gestartet werden? (j/n) " -n 1 -r
+  systemctl enable setuphelfer-backend.service
+  systemctl enable setuphelfer.service
+  ok "Services aktiviert (Backend + Web-UI)"
+
+  read -p "Jetzt starten? (j/n) " -n 1 -r
   echo ""
   if [[ $REPLY =~ ^[JjYy]$ ]]; then
-    systemctl start pi-installer.service
+    systemctl start setuphelfer-backend.service
     sleep 2
-    if systemctl is-active --quiet pi-installer.service; then
-      ok "Service gestartet"
+    systemctl start setuphelfer.service
+    sleep 2
+    if systemctl is-active --quiet setuphelfer-backend.service && systemctl is-active --quiet setuphelfer.service; then
+      ok "Beide Services gestartet"
     else
-      warn "Service konnte nicht gestartet werden. Prüfe Logs mit: journalctl -u pi-installer -n 50"
+      warn "Mindestens ein Service aktiv? journalctl -u setuphelfer-backend -u setuphelfer -n 50"
     fi
   fi
 else
-  info "Service nicht aktiviert. Starten mit: sudo systemctl start pi-installer"
+  info "Nicht aktiviert. Start: sudo systemctl start setuphelfer-backend setuphelfer"
 fi
 
 # --- Schritt 10: Startmenü-Einträge (Anwendungen) ---
 info "Startmenü-Einträge anlegen..."
 if [ -f "$INSTALL_DIR/scripts/install-desktop-entries.sh" ]; then
   bash "$INSTALL_DIR/scripts/install-desktop-entries.sh" "$INSTALL_DIR"
-  ok "PI-Installer erscheint im Startmenü unter Anwendungen"
+  ok "SetupHelfer erscheint im Startmenü unter Anwendungen"
 else
   warn "install-desktop-entries.sh nicht gefunden. Startmenü-Einträge später: sudo $INSTALL_DIR/scripts/install-desktop-entries.sh"
 fi
@@ -350,20 +330,20 @@ echo -e "  Konfiguration: ${CONFIG_DIR}"
 echo -e "  Logs:          ${LOG_DIR}"
 echo ""
 echo -e "${CYAN}Startmenü:${NC}"
-echo -e "  Unter ${GREEN}Anwendungen${NC} / Startmenü: ${GREEN}PI-Installer${NC} und ${GREEN}PI-Installer (im Browser)${NC}"
+echo -e "  Unter ${GREEN}Anwendungen${NC} / Startmenü: ${GREEN}SetupHelfer${NC} und ${GREEN}SetupHelfer (Browser)${NC}"
 echo ""
 echo -e "${CYAN}Verfügbare Befehle:${NC}"
-echo -e "  ${GREEN}pi-installer${NC}              - Startet PI-Installer (Backend + Frontend)"
-echo -e "  ${GREEN}pi-installer-backend${NC}     - Startet nur Backend"
-echo -e "  ${GREEN}pi-installer-frontend${NC}    - Startet nur Frontend"
-echo -e "  ${GREEN}pi-installer-start${NC}      - Startet beide Services"
+echo -e "  ${GREEN}setuphelfer${NC}              - Starter (Tauri/Browser/Backend)"
+echo -e "  ${GREEN}setuphelfer-backend${NC}     - Nur Backend"
+echo -e "  ${GREEN}setuphelfer-frontend${NC}    - Nur Frontend-Skript"
+echo -e "  ${GREEN}setuphelfer-start${NC}       - Wie start.sh"
 echo ""
 echo -e "${CYAN}Service-Verwaltung:${NC}"
-echo -e "  Status:        ${GREEN}sudo systemctl status pi-installer${NC}"
-echo -e "  Starten:       ${GREEN}sudo systemctl start pi-installer${NC}"
-echo -e "  Stoppen:       ${GREEN}sudo systemctl stop pi-installer${NC}"
-echo -e "  Aktivieren:    ${GREEN}sudo systemctl enable pi-installer${NC}"
-echo -e "  Logs:          ${GREEN}sudo journalctl -u pi-installer -f${NC}"
+echo -e "  Status:        ${GREEN}sudo systemctl status setuphelfer-backend setuphelfer${NC}"
+echo -e "  Starten:       ${GREEN}sudo systemctl start setuphelfer-backend setuphelfer${NC}"
+echo -e "  Stoppen:       ${GREEN}sudo systemctl stop setuphelfer setuphelfer-backend${NC}"
+echo -e "  Aktivieren:    ${GREEN}sudo systemctl enable setuphelfer-backend setuphelfer${NC}"
+echo -e "  Logs:          ${GREEN}sudo journalctl -u setuphelfer-backend -u setuphelfer -f${NC}"
 echo ""
 echo -e "${CYAN}Zugriff:${NC}"
 echo -e "  Web-Interface: ${GREEN}http://localhost:3001${NC}"
