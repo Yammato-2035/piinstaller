@@ -607,6 +607,15 @@ const Documentation: React.FC = () => {
               </h2>
               <div className="space-y-4 opacity-95">
                 <p className="text-sm">Backup & Restore ermöglicht vollständige, inkrementelle oder Daten-Backups – lokal oder in die Cloud.</p>
+                <div className="rounded-lg border border-blue-600/40 bg-slate-900/40 p-3">
+                  <h3 className="text-base font-semibold text-blue-200 mb-2">{t('documentation.nav.backup-restore')} – Worst-Case / Full-Recovery (Backend)</h3>
+                  <p className="text-sm text-slate-300 mb-2">{t('documentation.backupRestore.fulRecoveryP1')}</p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-2 text-slate-300">
+                    <li>{t('documentation.backupRestore.fulRecoveryLi1')}</li>
+                    <li>{t('documentation.backupRestore.fulRecoveryLi2')}</li>
+                    <li><code className="bg-slate-700 px-1 rounded">{t('documentation.backupRestore.fulRecoveryLi3')}</code></li>
+                  </ul>
+                </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white dark:text-white mb-2">Funktionen</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-4">
@@ -1066,6 +1075,23 @@ const Documentation: React.FC = () => {
                           <li>Dieses Kapitel <strong>„Versionen &amp; Changelog“</strong> hier in der App mit derselben Version und Kurzstichpunkten ergänzen.</li>
                           <li>Bei nutzerrelevanten Änderungen: FAQ anpassen oder neuen Eintrag; bei Debian-Build <code className="bg-slate-700 px-1 rounded">debian/changelog</code> (Source-Paket <code className="bg-slate-700 px-1 rounded">pi-installer</code>) mitführen.</li>
                         </ol>
+                      </div>
+                    </div>
+                  </div>
+                  {/* FAQ: Worst-Case Backup / Recovery-Engines */}
+                  <div className="rounded-lg border border-sky-600/50 bg-sky-950/25 overflow-hidden">
+                    <div className="px-4 py-2 bg-sky-900/40 border-b border-sky-600/50">
+                      <h4 className="font-semibold text-sky-200">{t('documentation.faq.backupEngines.title')}</h4>
+                    </div>
+                    <div className="p-4 text-sm">
+                      <p className="text-slate-300 mb-2"><strong>{t('documentation.faq.backupEngines.context')}</strong> {t('documentation.faq.backupEngines.lead')}</p>
+                      <div className="rounded bg-sky-950/30 border border-sky-700/40 p-3 mt-2">
+                        <p className="font-semibold text-sky-300 mb-1">{t('documentation.faq.backupEngines.fixTitle')}</p>
+                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                          <li>{t('documentation.faq.backupEngines.fix1')}</li>
+                          <li>{t('documentation.faq.backupEngines.fix2')}</li>
+                          <li>{t('documentation.faq.backupEngines.fix3')}</li>
+                        </ul>
                       </div>
                     </div>
                   </div>
@@ -1574,6 +1600,13 @@ const Documentation: React.FC = () => {
                   <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
                   <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: {appVersion}</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.4.1.0 (Backup-/Recovery-Engines)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Backend:</strong> <code className="bg-slate-700 px-1 rounded">backup_engine</code>, <code className="bg-slate-700 px-1 rounded">backup_verify</code>, <code className="bg-slate-700 px-1 rounded">restore_engine</code>, <code className="bg-slate-700 px-1 rounded">backup_crypto</code>, <code className="bg-slate-700 px-1 rounded">recovery_transport</code>; <code className="bg-slate-700 px-1 rounded">recovery/main.py</code></li>
+                      <li><strong>Doku/FAQ/i18n:</strong> <code className="bg-slate-700 px-1 rounded">docs/developer/BACKUP_RECOVERY_ENGINES.md</code>; FAQ Worst-Case; Kapitel Backup &amp; Restore erweitert</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.4.0.5 (Installer/ENV Setuphelfer-Standard)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Deploy/Install:</strong> <code className="bg-slate-700 px-1 rounded">STATE_DIR</code> zuverlässig angelegt; <code className="bg-slate-700 px-1 rounded">SETUPHELFER_*</code> primär, <code className="bg-slate-700 px-1 rounded">PI_INSTALLER_*</code> Legacy; Symlink <code className="bg-slate-700 px-1 rounded">setuphelfer</code> → <code className="bg-slate-700 px-1 rounded">start-setuphelfer.sh</code></li>

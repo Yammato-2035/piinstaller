@@ -8,6 +8,7 @@ _Phase 4 – Strukturelle Systemvereinfachung_
 |-------|---------------------|---------------|
 | **raspberry_pi_config** | `_get_pi_config_module()` – Raspberry-Pi-Konfiguration, Overlays, EDID, Audio, Display | Hardware- und Low-Level-Konfiguration |
 | **backup** | `_get_backup_module()` – Backup-/Restore-Logik | Backup-Jobs, Verifizierung |
+| **backup_engine / backup_verify / restore_engine** | (optional, API-Integration folgt) | Worst-Case: Rohabbild, Manifest, Verify, Restore, siehe `docs/developer/BACKUP_RECOVERY_ENGINES.md` |
 | **control_center** | `_get_control_center_module()` – WLAN, SSH, VNC, Telemetrie, OLED, Lüfter | Systemeinstellungen, Peripherie |
 
 ---

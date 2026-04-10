@@ -1,3 +1,9 @@
+pi-installer (1.4.1.0-1) unstable; urgency=medium
+
+  * Version 1.4.1.0 – Backup-/Recovery-Engines (backup_engine, backup_verify, restore_engine, backup_crypto, recovery_transport, recovery/main.py); Doku BACKUP_RECOVERY_ENGINES.md; FAQ & i18n
+
+ -- Setuphelfer Team <https://github.com/Yammato-2035/piinstaller>  Tue, 08 Apr 2026 18:00:00 +0200
+
 pi-installer (1.4.0.5-1) unstable; urgency=medium
 
   * Version 1.4.0.5 – Betrieb: deploy STATE_DIR mkdir; install-system SETUPHELFER_* primär, STATE chown, Symlink start-setuphelfer; install_paths env-Reihenfolge; create_installer/install-backend mkdir FHS; SETUPHELFER_MODE
