@@ -45,6 +45,26 @@ Technische Referenz zu den Python-Modulen für Rohabbilder, Dateiarchive, Verifi
 - `verify_deep` extrahiert mit `filter="tar"` (falls verfügbar), damit Symlinks nicht materialisiert werden; Manifest-Einträge nutzen `type` (`file`/`dir`/`symlink`) und bei Symlinks `link_target`. Für Symlink-Leafs wird kein `Path.resolve()` verwendet (sonst würde der Symlink fälschlich aufgelöst).
 - `restore_files` erlaubt symbolische Links, sofern relative Ziele nach `..`-Auflösung im Restore-Wurzelverzeichnis verbleiben; absolute Symlink-Ziele werden für reale Systembäume zugelassen (Risiko beim späteren **Folgen** des Links bleibt). Hardlinks/FIFOs/Geräte bleiben gesperrt; `MANIFEST.json` wird nicht ins Ziel geschrieben.
 
+## Restore-Test (isoliert)
+
+Ziel: Datei-Restore **ohne** Schreiben nach `/` oder produktiven Systempfaden – nur unter `/tmp/setuphelfer-restore-test`.
+
+**API:** `restore_files(archive_path, target_directory, allowed_target_prefixes=(Path("/tmp/setuphelfer-restore-test"),), dry_run=False)` aus `backend/modules/restore_engine.py`. `target_directory` muss unter mindestens einem Eintrag von `allowed_target_prefixes` liegen (`path_under_any_prefix`); das ist die Allowlist-Prüfung und darf nicht umgangen werden.
+
+**Skript:** `tools/setuphelfer_restore_isolated_test.py` – leert und legt das Zielverzeichnis an, ruft `restore_files` auf und prüft Struktur, Beispieldateien, Symlinks (`readlink`) sowie, dass alle **Pfadknoten** unter der Restore-Wurzel liegen (ohne Symlink-Ziele aufzulösen).
+
+**Aufruf (Repo-Root):**
+
+```bash
+PYTHONPATH=backend python3 tools/setuphelfer_restore_isolated_test.py
+# oder eigenes Archiv:
+SETUPHELFER_RESTORE_TEST_ARCHIVE=/pfad/zum/backup.tar.gz PYTHONPATH=backend python3 tools/setuphelfer_restore_isolated_test.py
+```
+
+**Ergebnis (Stand Prüfung im Repo):** Lauf ohne Archivargument erzeugt ein synthetisches `etc/`-Abbild per `create_file_backup` und stellt nach isoliertem Restore die erwarteten Symlinks (u. a. `50-pipewire.conf` → `/usr/share/alsa/alsa.conf.d/50-pipewire.conf`) wieder her; JSON-Bericht unter `/tmp/setuphelfer-restore-test-report.json`. Ein produktionnahes VM-Archiv muss über Variable/Argument angebunden werden, damit exakt dieselben Dateipfade wie auf der Quell-VM geprüft werden können.
+
+**Grenzen:** Kein Boot-Nachweis; absolute Symlink-Ziele zeigen beim `readlink` aus dem Restore-Baum heraus – das ist beabsichtigt kompatibel zu Debian-`/etc`, stellt aber keine „Inhalt liegt unter Restore-Wurzel“-Garantie dar.
+
 ## Nicht bewiesene Full-Recovery-Aspekte
 
 - Kein realer Reboot-/Bootloader-Nachweis durch die Unit-Tests.
