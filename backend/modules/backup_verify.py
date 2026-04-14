@@ -6,9 +6,9 @@ from __future__ import annotations
 
 import json
 import os
+import posixpath
 import subprocess
 import tarfile
-import tempfile
 from pathlib import Path
 from typing import Any, Callable
 
@@ -25,6 +25,44 @@ from core.backup_recovery_i18n import (
 from modules.backup_engine import MANIFEST_NAME, _sha256_file
 
 VERIFY_STAGING_SUBDIR = "setuphelfer_verify"
+
+
+def _is_safe_member_name(name: str) -> bool:
+    n = name.lstrip("./")
+    if not n:
+        return False
+    if n.startswith("/") or posixpath.isabs(n):
+        return False
+    normalized = posixpath.normpath(n)
+    if normalized in {".", ".."} or normalized.startswith("../"):
+        return False
+    return True
+
+
+def _safe_member_name(name: str) -> str:
+    n = name.lstrip("./")
+    return posixpath.normpath(n)
+
+
+def _validate_archive_members(tf: tarfile.TarFile) -> tuple[bool, str | None]:
+    for m in tf.getmembers():
+        if not _is_safe_member_name(m.name):
+            return False, f"unsafe path: {m.name}"
+        if m.issym() or m.islnk() or m.isdev() or m.isfifo():
+            return False, f"unsupported member type: {m.name}"
+    return True, None
+
+
+def _manifest_path_to_staging(path_value: str, staging: Path) -> Path:
+    p = Path(path_value)
+    if p.is_absolute():
+        parts = list(p.parts)
+        if parts and parts[0] == "/":
+            parts = parts[1:]
+        p = Path(*parts)
+    target = (staging / p).resolve()
+    target.relative_to(staging.resolve())
+    return target
 
 
 def _run(
@@ -49,6 +87,9 @@ def verify_basic(
         return False, K_MISSING_MANIFEST, str(p)
     try:
         with tarfile.open(p, "r:*") as tf:
+            ok_members, err = _validate_archive_members(tf)
+            if not ok_members:
+                return False, K_EXTRACT_FAILED, err
             names = tf.getnames()
             if MANIFEST_NAME not in names and f"./{MANIFEST_NAME}" not in names:
                 return False, K_MISSING_MANIFEST, None
@@ -87,6 +128,9 @@ def verify_deep(
     try:
         staging.mkdir(parents=True, exist_ok=True)
         with tarfile.open(archive_path, "r:*") as tf:
+            ok_members, err = _validate_archive_members(tf)
+            if not ok_members:
+                return False, K_EXTRACT_FAILED, {**details, "error": err}
             try:
                 tf.extractall(path=staging, filter="data")
             except TypeError:
@@ -112,10 +156,10 @@ def verify_deep(
             expect = ent.get("sha256")
             if not name or not expect:
                 continue
-            fp = Path(name)
-            if not fp.is_file():
-                alt = staging / fp.name
-                fp = alt if alt.is_file() else fp
+            try:
+                fp = _manifest_path_to_staging(str(name), staging)
+            except ValueError:
+                return False, K_CHECKSUM_MISMATCH, {**details, "file": str(name), "error": "path traversal"}
             if not fp.is_file():
                 return False, K_CHECKSUM_MISMATCH, {**details, "file": str(name)}
             got = _sha256_file(fp)

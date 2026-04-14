@@ -1,5 +1,7 @@
 # ASUS ROG Lüftersteuerung unter Linux
 
+**APT / totes Repo / Docker auf Linux Mint:** siehe die interne Wissensdatenbank [APT_REPOSITORIEN_UND_DOCKER_FAQ.md](knowledge-base/APT_REPOSITORIEN_UND_DOCKER_FAQ.md) (u. a. `repo.asus-linux.org`, Grafana-Keyring, Docker `noble` statt Mint-Codename).
+
 ## Übersicht
 
 ASUS ROG Laptops haben spezielle Hardware für die Lüftersteuerung, die unter Windows über die Zusatztasten (Fn+F5) gesteuert werden kann. Unter Linux funktioniert dies standardmäßig nicht, aber mit `asusctl` kann die Lüftersteuerung aktiviert werden.

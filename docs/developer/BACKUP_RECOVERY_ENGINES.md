@@ -22,6 +22,32 @@ Technische Referenz zu den Python-Modulen für Rohabbilder, Dateiarchive, Verifi
 - **Destruktive** Befehle (`dd`, `sfdisk`) nur nach expliziter Allowlist-Prüfung.
 - **Bootfähigkeit** nach Restore auf echter Hardware ist **manuell** nachzuweisen; automatisierte Tests arbeiten nur in temporären Verzeichnissen (`backend/tests/test_backup_recovery_engines.py`).
 
+## Backup-Modelle (Ist-Stand)
+
+- **Image-basiert:** `create_image_backup` erzeugt ein Rohabbild per `dd` für allowlist-fähige Whole-Disk-Geräte.
+- **File-basiert:** `create_file_backup` archiviert Dateien und Verzeichnisse rekursiv als `tar.gz`.
+- **Hybrid:** Manifest kann parallel Dateichecksummen und `sfdisk -d`-Layout enthalten, ersetzt aber keinen echten Boot-Nachweis.
+
+## File-Engine (korrigierter Stand)
+
+- Verzeichnisse werden rekursiv gesichert; reguläre Dateien bleiben unterstützt.
+- Archivpfade sind relativ zum Root-Kontext (`/etc/hosts -> etc/hosts`), keine flachen `p.name`-Einträge mehr.
+- Kollisionsschutz ist aktiv: doppelte Zielpfade im Archiv führen zu sauberem Abbruch.
+- Überlappende Eingaben (`/home` plus `/home/user/...`) werden nicht doppelt archiviert; übersprungene Eingaben stehen im Manifest unter `skipped_inputs`.
+- Symlinks und Sonderdateien werden restriktiv abgewiesen, damit keine stillen Sicherheits- oder Restore-Überraschungen entstehen.
+
+## Verify/Restore (korrigierter Stand)
+
+- `verify_basic` prüft zusätzlich auf unsichere Archiv-Member (Traversal/absolute Pfade/Link-Sondertypen).
+- `verify_deep` validiert Member vor Extraktion und vergleicht Manifest-Pfade gegen die entpackte relative Struktur.
+- `restore_files` entpackt nur sichere Member, blockiert Traversal/Links/Sondertypen und schreibt `MANIFEST.json` nicht ins Zielverzeichnis.
+
+## Nicht bewiesene Full-Recovery-Aspekte
+
+- Kein realer Reboot-/Bootloader-Nachweis durch die Unit-Tests.
+- Kein Nachweis eines kompletten End-to-End-Laufs (Backup -> Restore -> Boot) in einer frischen VM in diesem Dokument.
+- Kein Nachweis auf echter Raspberry-Pi-Hardware in dieser Codeänderung.
+
 ## Siehe auch
 
 - Nutzerüberblick: In-App **Dokumentation** → Kapitel **Backup & Restore** und **FAQ**.

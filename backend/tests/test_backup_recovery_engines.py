@@ -5,7 +5,12 @@ Lauf: cd backend && python -m unittest tests.test_backup_recovery_engines -v
 
 from __future__ import annotations
 
+import io
+import json
+import tarfile
+import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 import sys
@@ -32,48 +37,14 @@ class TestAllowlist(unittest.TestCase):
 
 
 class TestBackupRoundtrip(unittest.TestCase):
-    def test_simulate_destroy_and_restore(self):
-        """Fake-System in tmp: Datei sichern, löschen, aus Archiv wiederherstellen."""
-        import tempfile
-
+    def test_file_backup_single_file_still_works(self):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
-            sysdir = base / "fake_root" / "etc"
-            sysdir.mkdir(parents=True)
-            f = sysdir / "important.cfg"
-            f.write_text("secret=42\n", encoding="utf-8")
-
-            arch = base / "bak.tar.gz"
-            res = create_file_backup(
-                [f],
-                archive_path=arch,
-                allowed_source_prefixes=(base,),
-                allowed_output_prefixes=(base,),
-            )
-            self.assertTrue(res.ok, res.detail)
-            f.unlink()
-            self.assertFalse(f.is_file())
-
-            restore_dir = base / "restored"
-            rr = restore_files(
-                arch,
-                restore_dir,
-                allowed_target_prefixes=(base,),
-                dry_run=False,
-            )
-            self.assertTrue(rr[0], rr[2])
-            # extractall legt MANIFEST + Dateiname ab
-            found = list(restore_dir.rglob("important.cfg"))
-            self.assertTrue(found, "restored file missing")
-            self.assertEqual(found[0].read_text(encoding="utf-8"), "secret=42\n")
-
-    def test_verify_basic_and_deep(self):
-        import tempfile
-
-        with tempfile.TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            f = base / "a.txt"
+            src = base / "src"
+            src.mkdir()
+            f = src / "a.txt"
             f.write_text("x", encoding="utf-8")
+
             arch = base / "b.tar.gz"
             res = create_file_backup(
                 [f],
@@ -81,11 +52,177 @@ class TestBackupRoundtrip(unittest.TestCase):
                 allowed_source_prefixes=(base,),
                 allowed_output_prefixes=(base,),
             )
-            self.assertTrue(res.ok)
+            self.assertTrue(res.ok, res.detail)
             vb, k1, _ = verify_basic(arch)
             self.assertTrue(vb, k1)
             vd, k2, det = verify_deep(arch, extract_root=base, try_loop_mount_image=False)
             self.assertTrue(vd, (k2, det))
+
+    def test_directory_backup_recursive_with_relative_paths(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            root = base / "fake_root"
+            (root / "etc").mkdir(parents=True)
+            (root / "opt" / "setuphelfer-test").mkdir(parents=True)
+            (root / "home" / "volker" / "testdata").mkdir(parents=True)
+            (root / "etc" / "hosts").write_text("127.0.0.1 localhost\n", encoding="utf-8")
+            (root / "opt" / "setuphelfer-test" / "marker.txt").write_text("marker\n", encoding="utf-8")
+            (root / "home" / "volker" / "testdata" / "file.txt").write_text("payload\n", encoding="utf-8")
+
+            arch = base / "bak.tar.gz"
+            res = create_file_backup(
+                [root / "etc", root / "opt", root / "home"],
+                archive_path=arch,
+                allowed_source_prefixes=(base,),
+                allowed_output_prefixes=(base,),
+            )
+            self.assertTrue(res.ok, res.detail)
+            with tarfile.open(arch, "r:*") as tf:
+                names = set(tf.getnames())
+            self.assertTrue(any(name.endswith("/etc/hosts") for name in names))
+            self.assertTrue(any(name.endswith("/opt/setuphelfer-test/marker.txt") for name in names))
+            self.assertTrue(any(name.endswith("/home/volker/testdata/file.txt") for name in names))
+            self.assertNotIn("hosts", names)
+            self.assertNotIn("marker.txt", names)
+
+    def test_restore_preserves_relative_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            src_root = base / "fake_root"
+            (src_root / "etc").mkdir(parents=True)
+            (src_root / "etc" / "important.cfg").write_text("secret=42\n", encoding="utf-8")
+            arch = base / "bak.tar.gz"
+            res = create_file_backup(
+                [src_root / "etc"],
+                archive_path=arch,
+                allowed_source_prefixes=(base,),
+                allowed_output_prefixes=(base,),
+            )
+            self.assertTrue(res.ok, res.detail)
+            restore_dir = base / "restore"
+            rr = restore_files(arch, restore_dir, allowed_target_prefixes=(base,), dry_run=False)
+            self.assertTrue(rr[0], rr[2])
+            found = list(restore_dir.rglob("important.cfg"))
+            self.assertTrue(found, "restored file missing")
+            self.assertEqual(found[0].read_text(encoding="utf-8"), "secret=42\n")
+            self.assertFalse((restore_dir / "MANIFEST.json").exists())
+
+    def test_overlapping_input_paths_are_deduplicated_and_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            home = base / "home"
+            nested = home / "volker" / "testdata"
+            nested.mkdir(parents=True)
+            (nested / "file.txt").write_text("x\n", encoding="utf-8")
+
+            arch = base / "bak.tar.gz"
+            res = create_file_backup(
+                [home, nested],
+                archive_path=arch,
+                allowed_source_prefixes=(base,),
+                allowed_output_prefixes=(base,),
+            )
+            self.assertTrue(res.ok, res.detail)
+            self.assertIn(str(nested.resolve()), res.manifest.get("skipped_inputs", []))
+
+    def test_archive_name_collisions_are_detected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            p1 = base / "a.txt"
+            p2 = base / "b.txt"
+            p1.write_text("a\n", encoding="utf-8")
+            p2.write_text("b\n", encoding="utf-8")
+            arch = base / "bak.tar.gz"
+
+            with patch("modules.backup_engine._to_archive_path", return_value="same/path.txt"):
+                res = create_file_backup(
+                    [p1, p2],
+                    archive_path=arch,
+                    allowed_source_prefixes=(base,),
+                    allowed_output_prefixes=(base,),
+                )
+            self.assertFalse(res.ok)
+            self.assertIn("collision", (res.detail or "").lower())
+
+    def test_verify_deep_fails_on_manifest_archive_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            src = base / "src"
+            src.mkdir()
+            good = src / "good.txt"
+            good.write_text("ok\n", encoding="utf-8")
+            arch = base / "bad-manifest.tar.gz"
+            res = create_file_backup(
+                [good],
+                archive_path=arch,
+                allowed_source_prefixes=(base,),
+                allowed_output_prefixes=(base,),
+            )
+            self.assertTrue(res.ok, res.detail)
+
+            with tarfile.open(arch, "r:*") as tf:
+                members = tf.getmembers()
+                payloads: dict[str, bytes] = {}
+                for m in members:
+                    if m.isfile():
+                        fh = tf.extractfile(m)
+                        assert fh is not None
+                        payloads[m.name] = fh.read()
+
+            manifest = json.loads(payloads["MANIFEST.json"].decode("utf-8"))
+            manifest["files"][0]["path"] = "missing/file.txt"
+            payloads["MANIFEST.json"] = json.dumps(manifest).encode("utf-8")
+
+            rewritten = base / "rewritten.tar.gz"
+            with tarfile.open(rewritten, "w:gz") as tf:
+                for m in members:
+                    data = payloads.get(m.name)
+                    if data is None:
+                        tf.addfile(m)
+                        continue
+                    info = tarfile.TarInfo(name=m.name)
+                    info.mode = m.mode
+                    info.mtime = m.mtime
+                    info.size = len(data)
+                    tf.addfile(info, io.BytesIO(data))
+
+            ok, key, detail = verify_deep(rewritten, extract_root=base, try_loop_mount_image=False)
+            self.assertFalse(ok)
+            self.assertEqual(key, "backup_recovery.error.checksum_mismatch")
+            self.assertEqual(detail.get("file"), "missing/file.txt")
+
+    def test_allowlist_restrictions_are_still_enforced(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            src = base / "src"
+            src.mkdir()
+            f = src / "a.txt"
+            f.write_text("x", encoding="utf-8")
+            arch = base / "b.tar.gz"
+
+            with self.assertRaises(ValueError):
+                create_file_backup(
+                    [f],
+                    archive_path=arch,
+                    allowed_source_prefixes=(base / "other",),
+                    allowed_output_prefixes=(base,),
+                )
+
+            res = create_file_backup(
+                [f],
+                archive_path=arch,
+                allowed_source_prefixes=(base,),
+                allowed_output_prefixes=(base,),
+            )
+            self.assertTrue(res.ok, res.detail)
+            ok, key, _ = restore_files(
+                arch,
+                base / "restore",
+                allowed_target_prefixes=(base / "not-allowed",),
+                dry_run=False,
+            )
+            self.assertFalse(ok)
+            self.assertEqual(key, "backup_recovery.error.path_not_allowed")
 
 
 class TestCrypto(unittest.TestCase):

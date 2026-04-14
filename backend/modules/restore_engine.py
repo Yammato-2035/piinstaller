@@ -4,6 +4,7 @@ Restore-Engine: Partitionstabelle, Rohabbild, Dateien, Bootloader – nur Allowl
 
 from __future__ import annotations
 
+import posixpath
 import subprocess
 import tarfile
 from pathlib import Path
@@ -18,6 +19,22 @@ from core.backup_recovery_i18n import (
     K_RESTORE_PT_FAILED,
 )
 from core.block_device_allowlist import assert_allowed_block_device
+
+
+def _is_safe_member_name(name: str) -> bool:
+    n = name.lstrip("./")
+    if not n:
+        return False
+    if n.startswith("/") or posixpath.isabs(n):
+        return False
+    normalized = posixpath.normpath(n)
+    if normalized in {".", ".."} or normalized.startswith("../"):
+        return False
+    return True
+
+
+def _safe_member_name(name: str) -> str:
+    return posixpath.normpath(name.lstrip("./"))
 
 def _run(
     argv: list[str],
@@ -94,12 +111,30 @@ def restore_files(
     if dry_run:
         return True, K_OPERATION_OK, None
     try:
+        from modules.backup_engine import MANIFEST_NAME
+
         td.mkdir(parents=True, exist_ok=True)
+        root_resolved = td.resolve()
         with tarfile.open(archive_path, "r:*") as tf:
+            allowed_members: list[tarfile.TarInfo] = []
+            for member in tf.getmembers():
+                if not _is_safe_member_name(member.name):
+                    return False, K_RESTORE_FILES_FAILED, f"unsafe archive path: {member.name}"
+                if member.issym() or member.islnk() or member.isdev() or member.isfifo():
+                    return False, K_RESTORE_FILES_FAILED, f"unsupported archive member: {member.name}"
+                safe_name = _safe_member_name(member.name)
+                if safe_name == MANIFEST_NAME:
+                    continue
+                target_path = (td / safe_name).resolve()
+                try:
+                    target_path.relative_to(root_resolved)
+                except ValueError:
+                    return False, K_RESTORE_FILES_FAILED, f"path traversal detected: {member.name}"
+                allowed_members.append(member)
             try:
-                tf.extractall(path=td, filter="data")
+                tf.extractall(path=td, members=allowed_members, filter="data")
             except TypeError:
-                tf.extractall(path=td)
+                tf.extractall(path=td, members=allowed_members)
         return True, K_OPERATION_OK, None
     except Exception as e:
         return False, K_RESTORE_FILES_FAILED, str(e)

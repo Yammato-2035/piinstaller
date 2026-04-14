@@ -122,6 +122,38 @@
   - Abschnitt 1 definiert das fachliche und technische Verhalten (inkl. Analyse-UI und Deep-Verify).
   - Ein vollständiger Reality-Check mit produktionsnahen Backups bleibt ausdrücklich als nächster Schritt offen.
 
+## Backup / Restore – Datei-Engine (Full-Recovery-Vorbereitung)
+
+### Sichert das Backup ganze Verzeichnisse oder nur einzelne Dateien?
+
+- Die file-basierte Engine sichert jetzt beides: einzelne Dateien und Verzeichnisse rekursiv.
+- Symlinks und Sonderdateien werden aktuell restriktiv abgewiesen (kein stilles Mitnehmen).
+
+### Wie werden Pfade im Archiv gespeichert?
+
+- Als relative Pfade ohne führendes `/`, z. B. `etc/hosts` oder `home/volker/testdata/file.txt`.
+- Keine flachen Dateinamen mehr.
+
+### Warum sind flache Dateinamen im Archiv gefährlich?
+
+- Unterschiedliche Quellpfade können denselben Namen haben (`.../etc/hosts`, `.../tmp/hosts`).
+- Das verursacht Kollisionen und macht Restore-Ergebnisse fachlich unzuverlässig.
+
+### Ist das System bereits für Full-Recovery bewiesen?
+
+- Nein. Der Codepfad ist gehärtet, aber ein echter End-to-End-Nachweis mit Reboot fehlt weiterhin.
+- Dafür sind VM- und später Hardware-Läufe notwendig.
+
+### Was unterscheidet file-basiertes Backup von image-basiertem Backup?
+
+- File-basiert sichert ausgewählte Dateibäume mit Manifest/Checksummen.
+- Image-basiert sichert Blockdevice-Rohdaten (`dd`) und bildet den Datenträgerzustand bitnah ab.
+
+### Warum ist ein VM-Test vor dem Raspberry-Pi-Test sinnvoll?
+
+- Eine VM erlaubt zerstörungsarme End-to-End-Tests (Backup -> Restore -> Reboot) mit klaren Logs.
+- Erst danach sollte der gleiche Ablauf auf echter Pi-Hardware geprüft werden.
+
 ## Einsteigerführung & Begleiter (ab 1.3.9.0)
 
 - **Zentrale Logik:** `frontend/src/beginner/moduleModel.ts` (ModuleId, ExperienceLevel, MODULE_DEFINITIONS, App-Store-Meta).

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import stat
 import platform
 import subprocess
 import sys
@@ -67,6 +68,83 @@ def _run_capture(
     )
 
 
+def _to_archive_path(path: Path) -> str:
+    rp = path.resolve()
+    parts = list(rp.parts)
+    if parts and parts[0] == "/":
+        parts = parts[1:]
+    rel = Path(*parts)
+    rel_str = rel.as_posix().lstrip("/")
+    if not rel_str or rel_str in {".", ".."}:
+        raise ValueError("Invalid archive path")
+    if "/../" in f"/{rel_str}/" or rel_str.startswith("../"):
+        raise ValueError("Path traversal is not allowed in archive path")
+    return rel_str
+
+
+def _iter_top_level_sources(paths: Sequence[str | Path]) -> tuple[list[Path], list[str]]:
+    resolved: list[Path] = []
+    skipped: list[str] = []
+    for raw in paths:
+        rp = Path(raw).resolve()
+        if not rp.exists():
+            raise ValueError(f"Backup source does not exist: {rp}")
+        if rp in resolved:
+            continue
+        resolved.append(rp)
+
+    selected: list[Path] = []
+    for rp in sorted(resolved, key=lambda p: (len(p.parts), str(p))):
+        if any(rp != base and rp.is_relative_to(base) for base in selected):
+            skipped.append(str(rp))
+            continue
+        selected.append(rp)
+    return selected, skipped
+
+
+def _collect_archive_members(paths: Sequence[str | Path]) -> tuple[list[tuple[Path, str, bool]], list[str]]:
+    top_level_sources, skipped = _iter_top_level_sources(paths)
+    members: list[tuple[Path, str, bool]] = []
+    seen_arcnames: dict[str, Path] = {}
+
+    def add_member(src: Path, *, is_dir: bool) -> None:
+        if src.is_symlink():
+            raise ValueError(f"Symlink source is not supported: {src}")
+        mode = src.stat().st_mode
+        if is_dir:
+            if not stat.S_ISDIR(mode):
+                raise ValueError(f"Expected directory source: {src}")
+        elif not stat.S_ISREG(mode):
+            raise ValueError(f"Special file is not supported: {src}")
+
+        arc = _to_archive_path(src)
+        other = seen_arcnames.get(arc)
+        if other is not None and other != src:
+            raise ValueError(f"Archive path collision detected: {arc} ({other} vs {src})")
+        seen_arcnames[arc] = src
+        members.append((src, arc, is_dir))
+
+    for src in top_level_sources:
+        if src.is_file():
+            add_member(src, is_dir=False)
+            continue
+        if src.is_dir():
+            add_member(src, is_dir=True)
+            for child in sorted(src.rglob("*")):
+                if child.is_symlink():
+                    raise ValueError(f"Symlink source is not supported: {child}")
+                if child.is_dir():
+                    add_member(child, is_dir=True)
+                elif child.is_file():
+                    add_member(child, is_dir=False)
+                else:
+                    raise ValueError(f"Special file is not supported: {child}")
+            continue
+        raise ValueError(f"Unsupported backup source type: {src}")
+
+    return members, skipped
+
+
 def _system_metadata() -> dict[str, Any]:
     u = platform.uname()
     return {
@@ -87,6 +165,8 @@ def _system_metadata() -> dict[str, Any]:
 def create_manifest(
     file_paths: Sequence[str | Path],
     *,
+    archive_paths: Mapping[str, str] | None = None,
+    skipped_inputs: Sequence[str] | None = None,
     partition_device: str | Path | None = None,
     runner: Callable[..., subprocess.CompletedProcess[str]] | None = None,
 ) -> dict[str, Any]:
@@ -98,9 +178,12 @@ def create_manifest(
         p = Path(raw)
         if not p.is_file():
             continue
+        resolved = str(p.resolve())
+        arc_path = archive_paths.get(resolved) if archive_paths else None
         entries.append(
             {
-                "path": str(p),
+                "path": arc_path or resolved,
+                "source_path": resolved,
                 "sha256": _sha256_file(p),
                 "size": str(p.stat().st_size),
             }
@@ -118,6 +201,7 @@ def create_manifest(
         "version": 1,
         "kind": "setuphelfer-backup-manifest",
         "files": entries,
+        "skipped_inputs": list(skipped_inputs or []),
         "partition_layout_sfdisk_d": layout,
         "system": _system_metadata(),
     }
@@ -195,9 +279,18 @@ def create_file_backup(
     arch = Path(archive_path)
     _assert_output_allowed(arch, allowed_output_prefixes)
 
-    manifest = create_manifest(paths, partition_device=partition_device, runner=runner)
-
     try:
+        members, skipped_inputs = _collect_archive_members(paths)
+        file_members = [src for (src, _, is_dir) in members if not is_dir]
+        archive_paths = {str(src.resolve()): arc for (src, arc, is_dir) in members if not is_dir}
+        manifest = create_manifest(
+            file_members,
+            archive_paths=archive_paths,
+            skipped_inputs=skipped_inputs,
+            partition_device=partition_device,
+            runner=runner,
+        )
+
         with tempfile.TemporaryDirectory(prefix="setuphelfer_bak_") as tmp:
             tdir = Path(tmp)
             man_path = tdir / MANIFEST_NAME
@@ -205,10 +298,8 @@ def create_file_backup(
 
             with tarfile.open(arch, "w:gz") as tf:
                 tf.add(man_path, arcname=MANIFEST_NAME)
-                for raw in paths:
-                    p = Path(raw).resolve()
-                    if p.is_file():
-                        tf.add(p, arcname=p.name)
+                for src, arc, is_dir in members:
+                    tf.add(src, arcname=arc, recursive=False)
 
         return FileBackupResult(True, str(arch), manifest, K_OPERATION_OK, None)
     except Exception as e:
