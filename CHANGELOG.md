@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Fixed (Backup / Recovery - Symlinks und Sonderdateien, file-based)
+- Symbolische Links werden als Symlinks archiviert (ohne Dereferenzierung); rekursive Sammlung mit `os.walk(..., followlinks=False)`.
+- Sockets/FIFOs/Geraete: nicht archiviert, Eintrag unter `skipped_members` statt komplettem Abbruch.
+- `backend/modules/backup_symlink_safety.py`: Pruefung relativer Symlink-Ziele gegen Pfadflucht aus Restore-/Verify-Wurzel.
+- Verify/Restore: symbolische Tar-Mitglieder erlaubt; `extractall` bevorzugt `filter="tar"`; Manifest `type` / `link_target`; kein `Path.resolve()` auf Symlink-Leafs in der Verifikation.
+
 ### Fixed (Backup / Recovery ù file-based engine hardening)
 - `backend/modules/backup_engine.py`: file-based Backup archiviert jetzt Dateien **und** Verzeichnisse rekursiv mit relativen, kollisionsgeschùtzten Archivpfaden; ùberlappende Eingaben werden dedupliziert und im Manifest dokumentiert (`skipped_inputs`).
 - `backend/modules/backup_verify.py`: Verify blockiert unsichere Archiv-Member (Traversal, absolute Pfade, Link-/Sondertypen) und prùft Manifestpfade konsistent zur extrahierten Struktur.

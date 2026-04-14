@@ -12,6 +12,7 @@ Technische Referenz zu den Python-Modulen für Rohabbilder, Dateiarchive, Verifi
 | Engine | `backend/modules/backup_engine.py` | `create_image_backup`, `create_file_backup`, `create_manifest` (SHA-256, optional `sfdisk -d`, Metadaten). |
 | Verifikation | `backend/modules/backup_verify.py` | `verify_basic`, `verify_deep` (Extraktion unter `/tmp/.../setuphelfer_verify/`). |
 | Restore | `backend/modules/restore_engine.py` | `restore_partition_table`, `restore_image`, `restore_files`, `install_bootloader` (nur erlaubte Geräte). |
+| Symlink-Policy | `backend/modules/backup_symlink_safety.py` | Prüfung relativer Symlink-Ziele gegen Pfadflucht aus dem Restore-/Verify-Wurzelverzeichnis. |
 | Transport | `backend/modules/recovery_transport.py` | `auto_mount_usb`, `connect_webdav`, `download_backup` (curl, keine Paketinstallation). |
 | Verschlüsselung | `backend/modules/backup_crypto.py` | AES-256-GCM (`cryptography`); **Schlüssel nie im Archiv**. |
 | Recovery-CLI | `recovery/main.py` | Menü bei defektem Root-System (USB/WebDAV/Diagnose-Hinweis). |
@@ -34,13 +35,15 @@ Technische Referenz zu den Python-Modulen für Rohabbilder, Dateiarchive, Verifi
 - Archivpfade sind relativ zum Root-Kontext (`/etc/hosts -> etc/hosts`), keine flachen `p.name`-Einträge mehr.
 - Kollisionsschutz ist aktiv: doppelte Zielpfade im Archiv führen zu sauberem Abbruch.
 - Überlappende Eingaben (`/home` plus `/home/user/...`) werden nicht doppelt archiviert; übersprungene Eingaben stehen im Manifest unter `skipped_inputs`.
-- Symlinks und Sonderdateien werden restriktiv abgewiesen, damit keine stillen Sicherheits- oder Restore-Überraschungen entstehen.
+- **Symlinks:** werden als Symlinks ins Archiv übernommen (**ohne** Dereferenzierung beim `tar`-Add), damit typische Linux-Bäume wie `/etc` (z. B. `alsa/conf.d/*.conf`) nicht mehr am Backup scheitern.
+- **Sonderdateien** (Sockets, FIFOs, Geräte usw.): werden beim rekursiven Sammeln **nicht** archiviert und im Manifest unter `skipped_members` dokumentiert (kein Abbruch des gesamten Laufs wegen eines einzelnen Sockets).
+- Archivpfad-Ermittlung nutzt bewusst **kein** `Path.resolve()` auf Quellpfaden, damit logische Pfade erhalten bleiben (kein stilles Wegfolgen von Symlinks bei der Namensgebung).
 
 ## Verify/Restore (korrigierter Stand)
 
-- `verify_basic` prüft zusätzlich auf unsichere Archiv-Member (Traversal/absolute Pfade/Link-Sondertypen).
-- `verify_deep` validiert Member vor Extraktion und vergleicht Manifest-Pfade gegen die entpackte relative Struktur.
-- `restore_files` entpackt nur sichere Member, blockiert Traversal/Links/Sondertypen und schreibt `MANIFEST.json` nicht ins Zielverzeichnis.
+- `verify_basic` prüft unsichere **Member-Namen** (Traversal, absolute Pfade); symbolische Links im Archiv sind erlaubt, Hardlinks/FIFOs/Geräte-Einträge weiterhin blockiert.
+- `verify_deep` extrahiert mit `filter="tar"` (falls verfügbar), damit Symlinks nicht materialisiert werden; Manifest-Einträge nutzen `type` (`file`/`dir`/`symlink`) und bei Symlinks `link_target`. Für Symlink-Leafs wird kein `Path.resolve()` verwendet (sonst würde der Symlink fälschlich aufgelöst).
+- `restore_files` erlaubt symbolische Links, sofern relative Ziele nach `..`-Auflösung im Restore-Wurzelverzeichnis verbleiben; absolute Symlink-Ziele werden für reale Systembäume zugelassen (Risiko beim späteren **Folgen** des Links bleibt). Hardlinks/FIFOs/Geräte bleiben gesperrt; `MANIFEST.json` wird nicht ins Ziel geschrieben.
 
 ## Nicht bewiesene Full-Recovery-Aspekte
 

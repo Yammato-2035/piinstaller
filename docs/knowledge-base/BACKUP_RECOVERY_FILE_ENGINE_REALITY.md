@@ -15,13 +15,14 @@
 - Relative Archivpfade ohne führenden Slash (`etc/hosts`, `home/...`, `opt/...`).
 - Kollisionserkennung für Archivzielpfade mit sauberem Fehlerabbruch.
 - Überlappende Eingaben werden dedupliziert (z. B. `/home` plus `/home/user`), dokumentiert im Manifest (`skipped_inputs`).
-- Restriktives Verhalten bei Symlinks/Sonderdateien: Abbruch statt stiller Teil-Sicherung.
+- **Symlinks (2026-04):** In einer Debian-VM schlug ein Verzeichnis-Backup an `/etc` mit `Symlink source is not supported: /etc/alsa/conf.d/50-pipewire.conf` fehl. Ursache war die pauschale Ablehnung von Symlinks in `_collect_archive_members`. Behebung: Symlinks werden ohne Dereferenzierung archiviert; Manifest enthält `type: symlink` und `link_target`.
+- **Sonderdateien:** werden nicht archiviert, erscheinen unter `skipped_members` (kein Totalausfall mehr).
 
 ## Verify-/Restore-Konsistenz
 
-- Verify prüft unsichere Member (Traversal, absolute Pfade, Links/Sondertypen) vor Verarbeitung.
-- Deep-Verify bewertet Manifestpfade gegen die extrahierte relative Struktur.
-- Restore entpackt nur sichere Member und verhindert Zielpfad-Ausbruch aus dem erlaubten Ziel.
+- Verify erlaubt symbolische Tar-Member; Hardlinks/FIFOs/Geräte bleiben blockiert.
+- Deep-Verify prüft Symlinks per Manifest (`link_target`) und vermeidet `Path.resolve()` auf Symlink-Leafs.
+- Restore erlaubt Symlinks mit Prüfung relativer Ziele gegen Pfadflucht (`backup_symlink_safety.py`); `extractall` nutzt `filter="tar"` wenn verfügbar.
 
 ## Grenzen (weiterhin offen)
 

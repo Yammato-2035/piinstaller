@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import io
 import json
+import os
+import socket
 import tarfile
 import tempfile
 import unittest
@@ -23,7 +25,109 @@ from core.block_device_allowlist import is_allowed_block_device
 from modules.backup_crypto import decrypt_bytes, encrypt_bytes, generate_key
 from modules.backup_engine import create_file_backup, create_manifest
 from modules.backup_verify import verify_basic, verify_deep
+from modules.backup_symlink_safety import tar_symlink_linkname_allowed
 from modules.restore_engine import restore_files
+
+
+@unittest.skipUnless(os.name == "posix", "POSIX only: symlinks and unix sockets")
+class TestSymlinkAndSpecialFiles(unittest.TestCase):
+    def test_directory_backup_preserves_symlink_without_dereference(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            d = base / "fake_etc" / "alsa" / "conf.d"
+            d.mkdir(parents=True)
+            real = d / "real.conf"
+            real.write_text("pcm\n", encoding="utf-8")
+            link = d / "50-pipewire.conf"
+            link.symlink_to("real.conf")
+            arch = base / "bak.tar.gz"
+            res = create_file_backup(
+                [base / "fake_etc"],
+                archive_path=arch,
+                allowed_source_prefixes=(base,),
+                allowed_output_prefixes=(base,),
+            )
+            self.assertTrue(res.ok, res.detail)
+            sym_entries = [e for e in res.manifest.get("files", []) if e.get("type") == "symlink"]
+            self.assertTrue(sym_entries, "manifest should list symlink entries")
+            le = next(e for e in sym_entries if e["path"].endswith("50-pipewire.conf"))
+            self.assertEqual(le.get("link_target"), "real.conf")
+            with tarfile.open(arch, "r:*") as tf:
+                names = {m.name: m for m in tf.getmembers()}
+                m = next(x for x in names.values() if x.name.endswith("50-pipewire.conf"))
+                self.assertTrue(m.issym(), "tar member must be symlink, not dereferenced file")
+                self.assertEqual(m.linkname, "real.conf")
+
+    def test_restore_roundtrip_symlink_and_verify_deep(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            d = base / "app"
+            d.mkdir()
+            (d / "target.txt").write_text("x", encoding="utf-8")
+            (d / "alias.txt").symlink_to("target.txt")
+            arch = base / "bak.tar.gz"
+            res = create_file_backup(
+                [d],
+                archive_path=arch,
+                allowed_source_prefixes=(base,),
+                allowed_output_prefixes=(base,),
+            )
+            self.assertTrue(res.ok, res.detail)
+            out = base / "rest"
+            rr = restore_files(arch, out, allowed_target_prefixes=(base,), dry_run=False)
+            self.assertTrue(rr[0], rr[2])
+            alias = next(out.rglob("alias.txt"))
+            self.assertTrue(alias.is_symlink())
+            self.assertEqual(os.readlink(alias), "target.txt")
+            vd, k, det = verify_deep(arch, extract_root=base, try_loop_mount_image=False)
+            self.assertTrue(vd, (k, det))
+
+    def test_unix_socket_is_skipped_and_manifest_skipped_members(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            d = base / "mix"
+            d.mkdir()
+            (d / "ok.txt").write_text("ok", encoding="utf-8")
+            sock_path = d / "sock"
+            s = socket.socket(socket.AF_UNIX)
+            try:
+                s.bind(str(sock_path))
+            finally:
+                s.close()
+            arch = base / "bak.tar.gz"
+            res = create_file_backup(
+                [d],
+                archive_path=arch,
+                allowed_source_prefixes=(base,),
+                allowed_output_prefixes=(base,),
+            )
+            self.assertTrue(res.ok, res.detail)
+            skipped = res.manifest.get("skipped_members") or []
+            self.assertTrue(any("sock" in str(x.get("path", "")) for x in skipped))
+            rr = restore_files(arch, base / "out", allowed_target_prefixes=(base,), dry_run=False)
+            self.assertTrue(rr[0], rr[2])
+            found_ok = list((base / "out").rglob("ok.txt"))
+            self.assertTrue(found_ok and found_ok[0].is_file())
+
+    def test_restore_rejects_symlink_whose_relative_target_escapes_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            arch = base / "evil.tar.gz"
+            with tarfile.open(arch, "w:gz") as tf:
+                info = tarfile.TarInfo(name="subdir/link")
+                info.type = tarfile.SYMTYPE
+                info.linkname = "../../../outside-secret"
+                info.mode = 0o777
+                tf.addfile(info)
+            rr = restore_files(arch, base / "out", allowed_target_prefixes=(base,), dry_run=False)
+            self.assertFalse(rr[0])
+            self.assertIn("escapes", (rr[2] or "").lower())
+
+    def test_tar_symlink_linkname_allowed_helper(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            self.assertTrue(tar_symlink_linkname_allowed("data/file", "etc/x", root))
+            self.assertFalse(tar_symlink_linkname_allowed("../../../etc/passwd", "etc/x", root))
 
 
 class TestAllowlist(unittest.TestCase):

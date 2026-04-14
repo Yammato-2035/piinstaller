@@ -19,6 +19,7 @@ from core.backup_recovery_i18n import (
     K_RESTORE_PT_FAILED,
 )
 from core.block_device_allowlist import assert_allowed_block_device
+from modules.backup_symlink_safety import tar_symlink_linkname_allowed
 
 
 def _is_safe_member_name(name: str) -> bool:
@@ -114,27 +115,38 @@ def restore_files(
         from modules.backup_engine import MANIFEST_NAME
 
         td.mkdir(parents=True, exist_ok=True)
-        root_resolved = td.resolve()
+        root_resolved = td.absolute()
         with tarfile.open(archive_path, "r:*") as tf:
             allowed_members: list[tarfile.TarInfo] = []
             for member in tf.getmembers():
                 if not _is_safe_member_name(member.name):
                     return False, K_RESTORE_FILES_FAILED, f"unsafe archive path: {member.name}"
-                if member.issym() or member.islnk() or member.isdev() or member.isfifo():
-                    return False, K_RESTORE_FILES_FAILED, f"unsupported archive member: {member.name}"
                 safe_name = _safe_member_name(member.name)
                 if safe_name == MANIFEST_NAME:
                     continue
-                target_path = (td / safe_name).resolve()
+                target_path = (td / safe_name).absolute()
                 try:
-                    target_path.relative_to(root_resolved)
+                    target_path.relative_to(root_resolved.absolute())
                 except ValueError:
                     return False, K_RESTORE_FILES_FAILED, f"path traversal detected: {member.name}"
+
+                if member.issym():
+                    if "\x00" in (member.linkname or ""):
+                        return False, K_RESTORE_FILES_FAILED, f"unsafe symlink target: {member.name}"
+                    if not tar_symlink_linkname_allowed(member.linkname or "", safe_name, root_resolved):
+                        return False, K_RESTORE_FILES_FAILED, f"symlink target escapes restore root: {member.name}"
+                    allowed_members.append(member)
+                    continue
+                if member.islnk() or member.isdev() or member.isfifo():
+                    return False, K_RESTORE_FILES_FAILED, f"unsupported archive member: {member.name}"
                 allowed_members.append(member)
             try:
-                tf.extractall(path=td, members=allowed_members, filter="data")
+                tf.extractall(path=td, members=allowed_members, filter="tar")
             except TypeError:
-                tf.extractall(path=td, members=allowed_members)
+                try:
+                    tf.extractall(path=td, members=allowed_members, filter="data")
+                except TypeError:
+                    tf.extractall(path=td, members=allowed_members)
         return True, K_OPERATION_OK, None
     except Exception as e:
         return False, K_RESTORE_FILES_FAILED, str(e)

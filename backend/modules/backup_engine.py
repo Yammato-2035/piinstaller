@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import stat
 import platform
 import subprocess
@@ -69,7 +70,8 @@ def _run_capture(
 
 
 def _to_archive_path(path: Path) -> str:
-    rp = path.resolve()
+    """Archiv-Pfad ohne Symlink-Auflösung (logischer Pfad wie auf dem Quellsystem)."""
+    rp = path.absolute()
     parts = list(rp.parts)
     if parts and parts[0] == "/":
         parts = parts[1:]
@@ -86,7 +88,7 @@ def _iter_top_level_sources(paths: Sequence[str | Path]) -> tuple[list[Path], li
     resolved: list[Path] = []
     skipped: list[str] = []
     for raw in paths:
-        rp = Path(raw).resolve()
+        rp = Path(raw).absolute()
         if not rp.exists():
             raise ValueError(f"Backup source does not exist: {rp}")
         if rp in resolved:
@@ -102,47 +104,80 @@ def _iter_top_level_sources(paths: Sequence[str | Path]) -> tuple[list[Path], li
     return selected, skipped
 
 
-def _collect_archive_members(paths: Sequence[str | Path]) -> tuple[list[tuple[Path, str, bool]], list[str]]:
+def _walk_tree_no_follow(root: Path) -> list[Path]:
+    """Alle Einträge unter root (ohne root selbst), ohne durch Symlink-Verzeichnisse zu wandern."""
+    out: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(root, topdown=True, followlinks=False):
+        base = Path(dirpath)
+        for dn in dirnames:
+            out.append(base / dn)
+        for fn in filenames:
+            out.append(base / fn)
+    return sorted(out)
+
+
+def _backup_entry_kind(path: Path) -> str | None:
+    """Klassifiziert nur via lstat (kein Folgen von Symlinks)."""
+    try:
+        st = os.lstat(path)
+    except OSError:
+        return None
+    if stat.S_ISLNK(st.st_mode):
+        return "symlink"
+    if stat.S_ISDIR(st.st_mode):
+        return "dir"
+    if stat.S_ISREG(st.st_mode):
+        return "file"
+    return None
+
+
+def _collect_archive_members(
+    paths: Sequence[str | Path],
+) -> tuple[list[tuple[Path, str, str]], list[str], list[dict[str, str]]]:
+    """Liefert (src, arcname, kind) mit kind in file|dir|symlink sowie skipped_special-Einträge."""
     top_level_sources, skipped = _iter_top_level_sources(paths)
-    members: list[tuple[Path, str, bool]] = []
+    members: list[tuple[Path, str, str]] = []
     seen_arcnames: dict[str, Path] = {}
+    skipped_special: list[dict[str, str]] = []
 
-    def add_member(src: Path, *, is_dir: bool) -> None:
-        if src.is_symlink():
-            raise ValueError(f"Symlink source is not supported: {src}")
-        mode = src.stat().st_mode
-        if is_dir:
-            if not stat.S_ISDIR(mode):
-                raise ValueError(f"Expected directory source: {src}")
-        elif not stat.S_ISREG(mode):
-            raise ValueError(f"Special file is not supported: {src}")
-
+    def add_member(src: Path, *, kind: str) -> None:
         arc = _to_archive_path(src)
         other = seen_arcnames.get(arc)
         if other is not None and other != src:
             raise ValueError(f"Archive path collision detected: {arc} ({other} vs {src})")
         seen_arcnames[arc] = src
-        members.append((src, arc, is_dir))
+        members.append((src, arc, kind))
 
     for src in top_level_sources:
-        if src.is_file():
-            add_member(src, is_dir=False)
+        top_kind = _backup_entry_kind(src)
+        if top_kind == "symlink":
+            add_member(src, kind="symlink")
             continue
-        if src.is_dir():
-            add_member(src, is_dir=True)
-            for child in sorted(src.rglob("*")):
-                if child.is_symlink():
-                    raise ValueError(f"Symlink source is not supported: {child}")
-                if child.is_dir():
-                    add_member(child, is_dir=True)
-                elif child.is_file():
-                    add_member(child, is_dir=False)
+        if top_kind == "file":
+            add_member(src, kind="file")
+            continue
+        if top_kind == "dir":
+            add_member(src, kind="dir")
+            for child in _walk_tree_no_follow(src):
+                ck = _backup_entry_kind(child)
+                if ck == "symlink":
+                    add_member(child, kind="symlink")
+                elif ck == "dir":
+                    add_member(child, kind="dir")
+                elif ck == "file":
+                    add_member(child, kind="file")
                 else:
-                    raise ValueError(f"Special file is not supported: {child}")
+                    skipped_special.append(
+                        {
+                            "path": str(child.absolute()),
+                            "archive_path": _to_archive_path(child),
+                            "reason": "unsupported_special_file",
+                        }
+                    )
             continue
         raise ValueError(f"Unsupported backup source type: {src}")
 
-    return members, skipped
+    return members, skipped, skipped_special
 
 
 def _system_metadata() -> dict[str, Any]:
@@ -163,31 +198,40 @@ def _system_metadata() -> dict[str, Any]:
 
 
 def create_manifest(
-    file_paths: Sequence[str | Path],
+    file_paths: Sequence[str | Path] | None = None,
     *,
     archive_paths: Mapping[str, str] | None = None,
     skipped_inputs: Sequence[str] | None = None,
+    skipped_members: Sequence[Mapping[str, str]] | None = None,
+    backup_entries: Sequence[Mapping[str, Any]] | None = None,
     partition_device: str | Path | None = None,
     runner: Callable[..., subprocess.CompletedProcess[str]] | None = None,
 ) -> dict[str, Any]:
     """
     Erzeugt Manifest-Dict mit sha256, optional sfdisk -d, System-Metadaten.
+
+    Entweder klassisch über ``file_paths`` + ``archive_paths`` oder über
+    ``backup_entries`` (Dateien, Verzeichnisse, Symlinks mit ``type``).
     """
-    entries: list[dict[str, str]] = []
-    for raw in file_paths:
-        p = Path(raw)
-        if not p.is_file():
-            continue
-        resolved = str(p.resolve())
-        arc_path = archive_paths.get(resolved) if archive_paths else None
-        entries.append(
-            {
-                "path": arc_path or resolved,
-                "source_path": resolved,
-                "sha256": _sha256_file(p),
-                "size": str(p.stat().st_size),
-            }
-        )
+    entries: list[dict[str, Any]] = []
+    if backup_entries is not None:
+        entries.extend(dict(e) for e in backup_entries)
+    else:
+        for raw in file_paths or []:
+            p = Path(raw)
+            if not p.is_file():
+                continue
+            resolved = str(p.absolute())
+            arc_path = archive_paths.get(resolved) if archive_paths else None
+            entries.append(
+                {
+                    "path": arc_path or resolved,
+                    "source_path": resolved,
+                    "type": "file",
+                    "sha256": _sha256_file(p),
+                    "size": str(p.stat().st_size),
+                }
+            )
     layout = ""
     if partition_device is not None:
         assert_allowed_block_device(partition_device)
@@ -202,6 +246,7 @@ def create_manifest(
         "kind": "setuphelfer-backup-manifest",
         "files": entries,
         "skipped_inputs": list(skipped_inputs or []),
+        "skipped_members": list(skipped_members or []),
         "partition_layout_sfdisk_d": layout,
         "system": _system_metadata(),
     }
@@ -280,13 +325,39 @@ def create_file_backup(
     _assert_output_allowed(arch, allowed_output_prefixes)
 
     try:
-        members, skipped_inputs = _collect_archive_members(paths)
-        file_members = [src for (src, _, is_dir) in members if not is_dir]
-        archive_paths = {str(src.resolve()): arc for (src, arc, is_dir) in members if not is_dir}
+        members, skipped_inputs, skipped_special = _collect_archive_members(paths)
+        backup_entries: list[dict[str, Any]] = []
+        for src, arc, kind in members:
+            src_abs = str(src.absolute())
+            if kind == "file":
+                backup_entries.append(
+                    {
+                        "path": arc,
+                        "source_path": src_abs,
+                        "type": "file",
+                        "sha256": _sha256_file(src),
+                        "size": str(src.stat().st_size),
+                    }
+                )
+            elif kind == "symlink":
+                backup_entries.append(
+                    {
+                        "path": arc,
+                        "source_path": src_abs,
+                        "type": "symlink",
+                        "link_target": os.readlink(src),
+                    }
+                )
+            elif kind == "dir":
+                backup_entries.append({"path": arc, "source_path": src_abs, "type": "dir"})
+            else:
+                raise ValueError(f"Unknown backup member kind: {kind}")
+
         manifest = create_manifest(
-            file_members,
-            archive_paths=archive_paths,
+            None,
             skipped_inputs=skipped_inputs,
+            skipped_members=skipped_special,
+            backup_entries=backup_entries,
             partition_device=partition_device,
             runner=runner,
         )
@@ -298,7 +369,7 @@ def create_file_backup(
 
             with tarfile.open(arch, "w:gz") as tf:
                 tf.add(man_path, arcname=MANIFEST_NAME)
-                for src, arc, is_dir in members:
+                for src, arc, _kind in members:
                     tf.add(src, arcname=arc, recursive=False)
 
         return FileBackupResult(True, str(arch), manifest, K_OPERATION_OK, None)

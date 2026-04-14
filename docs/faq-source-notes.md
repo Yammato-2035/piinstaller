@@ -127,7 +127,22 @@
 ### Sichert das Backup ganze Verzeichnisse oder nur einzelne Dateien?
 
 - Die file-basierte Engine sichert jetzt beides: einzelne Dateien und Verzeichnisse rekursiv.
-- Symlinks und Sonderdateien werden aktuell restriktiv abgewiesen (kein stilles Mitnehmen).
+- **Symlinks** werden als Symlinks archiviert (ohne Dereferenzierung beim Packen), damit reale Bäume wie `/etc` nicht mehr an typischen Konfigurations-Symlinks scheitern.
+- **Sockets/FIFOs/Geräte** werden nicht ins Archiv übernommen und im Manifest unter `skipped_members` gelistet (der Lauf bricht dafür nicht mehr komplett ab).
+
+### Was passiert mit Symlinks im Backup?
+
+- Sie landen als echte Symlink-Einträge im `tar.gz` (Zielstring wie `os.readlink`, kein Kopieren des Zielinhalts).
+- Dereferenzierung ist **kein** Standard: sonst würde sich Semantik und Layout gegenüber dem Quellsystem ändern.
+
+### Warum schlägt ein System-Backup an Spezialdateien nicht mehr komplett fehl?
+
+- Spezialdateien werden übersprungen und dokumentiert (`skipped_members`), statt den gesamten `create_file_backup`-Lauf zu beenden.
+
+### Welche Linux-Dateitypen werden gesichert, welche nicht?
+
+- **Reguläre Dateien**, **Verzeichnisse**, **symbolische Links:** ja (rekursiv, ohne durch Symlink-Verzeichnisse zu wandern).
+- **Sockets, FIFOs, Block/Char-Geräte, Hardlinks im Archiv:** nein (übersprungen bzw. beim Restore/Verify blockiert).
 
 ### Wie werden Pfade im Archiv gespeichert?
 

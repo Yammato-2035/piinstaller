@@ -23,6 +23,7 @@ from core.backup_recovery_i18n import (
 )
 
 from modules.backup_engine import MANIFEST_NAME, _sha256_file
+from modules.backup_symlink_safety import tar_symlink_linkname_allowed
 
 VERIFY_STAGING_SUBDIR = "setuphelfer_verify"
 
@@ -48,7 +49,11 @@ def _validate_archive_members(tf: tarfile.TarFile) -> tuple[bool, str | None]:
     for m in tf.getmembers():
         if not _is_safe_member_name(m.name):
             return False, f"unsafe path: {m.name}"
-        if m.issym() or m.islnk() or m.isdev() or m.isfifo():
+        if m.issym():
+            if "\x00" in (m.linkname or ""):
+                return False, f"unsafe symlink target: {m.name}"
+            continue
+        if m.islnk() or m.isdev() or m.isfifo():
             return False, f"unsupported member type: {m.name}"
     return True, None
 
@@ -60,8 +65,9 @@ def _manifest_path_to_staging(path_value: str, staging: Path) -> Path:
         if parts and parts[0] == "/":
             parts = parts[1:]
         p = Path(*parts)
-    target = (staging / p).resolve()
-    target.relative_to(staging.resolve())
+    # Kein resolve(): würde Symlinks im Archiv-Pfad auflösen und z.B. Verifikation von Symlink-Einträgen zerstören.
+    target = (staging / p).absolute()
+    target.relative_to(staging.absolute())
     return target
 
 
@@ -132,9 +138,13 @@ def verify_deep(
             if not ok_members:
                 return False, K_EXTRACT_FAILED, {**details, "error": err}
             try:
-                tf.extractall(path=staging, filter="data")
+                # "tar" erhält Symlinks wie klassisches tar; "data" kann Symlinks materialisieren.
+                tf.extractall(path=staging, filter="tar")
             except TypeError:
-                tf.extractall(path=staging)
+                try:
+                    tf.extractall(path=staging, filter="data")
+                except TypeError:
+                    tf.extractall(path=staging)
     except Exception as e:
         return False, K_EXTRACT_FAILED, {**details, "error": str(e)}
 
@@ -149,17 +159,49 @@ def verify_deep(
 
     files = manifest.get("files") or []
     if verify_checksums and isinstance(files, list):
+        staging_root = staging.absolute()
         for ent in files:
             if not isinstance(ent, dict):
                 continue
             name = ent.get("path") or ent.get("name")
-            expect = ent.get("sha256")
-            if not name or not expect:
+            if not name:
                 continue
+            typ = str(ent.get("type") or "file")
             try:
                 fp = _manifest_path_to_staging(str(name), staging)
             except ValueError:
                 return False, K_CHECKSUM_MISMATCH, {**details, "file": str(name), "error": "path traversal"}
+
+            if typ == "dir":
+                if not fp.is_dir():
+                    return False, K_CHECKSUM_MISMATCH, {**details, "file": str(name), "error": "expected directory"}
+                continue
+
+            if typ == "symlink":
+                expect_tgt = ent.get("link_target")
+                if expect_tgt is None:
+                    return False, K_CHECKSUM_MISMATCH, {**details, "file": str(name), "error": "missing link_target"}
+                if not fp.is_symlink():
+                    return False, K_CHECKSUM_MISMATCH, {**details, "file": str(name), "error": "expected symlink"}
+                got_tgt = os.readlink(fp)
+                if got_tgt != str(expect_tgt):
+                    return False, K_CHECKSUM_MISMATCH, {
+                        **details,
+                        "file": str(name),
+                        "expected_link": str(expect_tgt),
+                        "got_link": got_tgt,
+                    }
+                if not tar_symlink_linkname_allowed(got_tgt, _safe_member_name(str(name)), staging_root):
+                    return False, K_CHECKSUM_MISMATCH, {
+                        **details,
+                        "file": str(name),
+                        "error": "symlink target escapes staging root",
+                    }
+                continue
+
+            expect = ent.get("sha256")
+            if not expect:
+                continue
             if not fp.is_file():
                 return False, K_CHECKSUM_MISMATCH, {**details, "file": str(name)}
             got = _sha256_file(fp)
