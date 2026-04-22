@@ -1,0 +1,88 @@
+========================================
+SETUPHELFER-B LIVE — ROHDATEN (Host + fehlgeschlagene Gast-Kommandos)
+Erzeugt: 2026-04-19 (Host)
+========================================
+
+----------------------------------------
+[HOST] VBoxManage showvminfo setuphelfer-b | grep ^State:
+Auszug (manuell gefiltert):
+State:                       running (since 2026-04-19T10:12:20.193000000)
+
+----------------------------------------
+[HOST] VBoxManage controlvm setuphelfer-b screenshotpng …
+Befehl:
+  VBoxManage controlvm setuphelfer-b screenshotpng /tmp/setuphelfer-b-console.png
+Ergebnis: Exit 0
+Dateigröße (Host): 61491 Bytes
+Kopie ins Repo:
+  cp /tmp/setuphelfer-b-console.png tools/vm-test/reports/setuphelfer-b-grub-2026-04-19.png
+
+----------------------------------------
+[HOST] Tastatur-Scancode (Enter) an Gast gesendet
+Befehl:
+  VBoxManage controlvm setuphelfer-b keyboardputscancode 1c 9c
+Hinweis: absichtlich nur Host→Gast-Tastatur; keine Paketinstallation.
+
+----------------------------------------
+[HOST] Wartezeit danach: sleep 90 (Sekunden)
+
+----------------------------------------
+[HOST] Zweiter Screenshot
+Befehl:
+  VBoxManage controlvm setuphelfer-b screenshotpng /tmp/setuphelfer-b-after-enter.png
+Ergebnis: Exit 0
+Dateigröße (Host): 127840 Bytes
+Kopie ins Repo:
+  cp /tmp/setuphelfer-b-after-enter.png tools/vm-test/reports/setuphelfer-b-xfce-live-2026-04-19.png
+
+----------------------------------------
+[HOST] VBoxManage guestcontrol … (Gast-Shell; fehlgeschlagen)
+Befehl:
+  VBoxManage guestcontrol setuphelfer-b run --exe "/bin/bash" --username user --wait-stdout --timeout 90000 -- /bin/bash -c "uname -a; echo ---; cat /etc/os-release; echo ---; lsblk -f; echo ---; mount | head -30; echo ---; df -h; echo ---; ip a"
+Stdout/Stderr (komplett):
+VBoxManage: warning: Error getting stdout handle: VERR_NOT_IMPLEMENTED
+VBoxManage: warning: Error getting stderr handle: VERR_NOT_IMPLEMENTED
+VBoxManage: error: Waiting for guest process failed: The guest execution service is not ready (yet)
+VBoxManage: error: Details: code VBOX_E_IPRT_ERROR (0x80bb0005), component GuestSessionWrap, interface IGuestSession, callee nsISupports
+VBoxManage: error: Context: "WaitForArray(ComSafeArrayAsInParam(aWaitStartFlags), 30 * 1000, &waitResult)" at line 770 of file VBoxManageGuestCtrl.cpp
+Exit-Code: 1
+
+----------------------------------------
+[HOST] VBoxManage guestproperty enumerate setuphelfer-b | head -40
+Ausgabe:
+/VirtualBox/HostGuest/SysprepArgs   = ''              @ 2026-04-19T10:12:20.147Z TRANSIENT, RDONLYGUEST
+/VirtualBox/HostGuest/SysprepExec   = ''              @ 2026-04-19T10:12:20.147Z TRANSIENT, RDONLYGUEST
+/VirtualBox/HostInfo/GUI/LanguageID = 'de_DE'         @ 2026-04-19T10:27:01.054Z RDONLYGUEST
+/VirtualBox/HostInfo/VBoxRev        = '162802'        @ 2026-04-19T10:12:20.193Z TRANSIENT, RDONLYGUEST
+/VirtualBox/HostInfo/VBoxVer        = '7.0.16'        @ 2026-04-19T10:12:20.193Z TRANSIENT, RDONLYGUEST
+/VirtualBox/HostInfo/VBoxVerExt     = '7.0.16_Ubuntu' @ 2026-04-19T10:12:20.193Z TRANSIENT, RDONLYGUEST
+/VirtualBox/VMInfo/ResetCounter     = '0'             @ 2026-04-19T10:12:20.147Z TRANSIENT, RDONLYGUEST
+/VirtualBox/VMInfo/ResumeCounter    = '0'             @ 2026-04-19T10:12:20.147Z TRANSIENT, RDONLYGUEST
+
+----------------------------------------
+[GAST] uname -a
+(nicht ausgeführt — siehe guestcontrol-Fehler oben)
+
+----------------------------------------
+[GAST] cat /etc/os-release
+(nicht ausgeführt — siehe guestcontrol-Fehler oben)
+
+----------------------------------------
+[GAST] lsblk -f
+(nicht ausgeführt — siehe guestcontrol-Fehler oben)
+
+----------------------------------------
+[GAST] mount | head -30
+(nicht ausgeführt — siehe guestcontrol-Fehler oben)
+
+----------------------------------------
+[GAST] df -h
+(nicht ausgeführt — siehe guestcontrol-Fehler oben)
+
+----------------------------------------
+[GAST] ip a
+(nicht ausgeführt — siehe guestcontrol-Fehler oben)
+
+========================================
+END OF REPORT
+========================================

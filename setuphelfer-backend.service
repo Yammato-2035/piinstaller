@@ -10,6 +10,7 @@ Wants=network-online.target
 Type=simple
 User={{USER}}
 Group={{USER}}
+SupplementaryGroups=setuphelfer
 WorkingDirectory={{INSTALL_DIR}}
 ExecStart={{INSTALL_DIR}}/scripts/start-backend.sh
 Restart=on-failure
@@ -31,20 +32,19 @@ ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 PrivateDevices=yes
-NoNewPrivileges=yes
+# Kein NoNewPrivileges: sonst funktioniert setuid-„sudo“ nicht (Full-Backup braucht sudo).
 MemoryMax=512M
 LimitNOFILE=4096
 ProtectKernelTunables=yes
 ProtectControlGroups=yes
 ProtectKernelLogs=yes
 LockPersonality=yes
-RestrictSUIDSGID=yes
+# Kein RestrictSUIDSGID / leeres CapabilityBoundingSet: sonst kein setuid-„sudo“ (Full-Backup).
+RestrictSUIDSGID=no
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-CapabilityBoundingSet=
-AmbientCapabilities=
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
-ReadWritePaths={{INSTALL_DIR}} /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp
+ReadWritePaths={{INSTALL_DIR}} /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt
 
 [Install]
 WantedBy=multi-user.target

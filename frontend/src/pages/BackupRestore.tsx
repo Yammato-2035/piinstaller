@@ -2381,6 +2381,10 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                     </div>
                   </div>
 
+                  {!checkingTarget && targetCheck?.status === 'success' && targetCheck?.storage_validation?.ok === true && (
+                    <div className="mt-2 text-xs text-emerald-300/90">{t('backup.ui.targetStatus.storageOk')}</div>
+                  )}
+
                   {!checkingTarget && targetCheck?.status === 'success' && (
                     <div className="mt-3 grid sm:grid-cols-3 gap-3 text-sm items-stretch">
                       <div className="p-3 bg-slate-800/40 border border-slate-700 rounded-lg min-w-0">

@@ -34,6 +34,141 @@ Severity = Literal["info", "low", "medium", "high", "critical"]
 
 LocalizationModel = Literal["legacy", "key_v1"]
 
+# Rescue-/Read-only-Diagnose (Ampel, nur Codes — Texte im Frontend i18n)
+RescueRiskLevel = Literal["green", "yellow", "red"]
+
+
+class RescueFinding(BaseModel):
+    """Einzelbefund der Rescue-Analyse; keine Freitexte, nur Codes + Evidence."""
+
+    code: str = Field(..., description="Stabiler i18n-Code, z. B. rescue.storage.duplicate_uuid")
+    area: str = Field(
+        ...,
+        description="Kategorie: storage | smart | filesystem | boot | network",
+    )
+    risk_level: RescueRiskLevel = Field(..., description="Ampel pro Befund")
+    evidence: dict[str, Any] = Field(default_factory=dict, description="Strukturierte Rohdaten (ohne UI-Text)")
+
+
+class RescueAnalyzeResponse(BaseModel):
+    """Antwort von GET /api/rescue/analyze und CLI-Report."""
+
+    status: Literal["ok", "error"] = "ok"
+    risk_level: RescueRiskLevel
+    findings: list[RescueFinding] = Field(default_factory=list)
+    devices: list[dict[str, Any]] = Field(default_factory=list)
+    boot_status: dict[str, Any] = Field(default_factory=dict)
+    network_status: dict[str, Any] = Field(default_factory=dict)
+    generated_at: str = Field(..., description="UTC ISO8601")
+
+
+RestoreDryRunMode = Literal["analyze_only", "dryrun"]
+
+RestoreDecision = Literal[
+    "proceed_possible",
+    "proceed_with_explicit_risk_ack",
+    "do_not_restore",
+    "recommend_data_recovery_first",
+    "recommend_new_target_disk",
+]
+
+
+class RestoreDryRunRequest(BaseModel):
+    """POST /api/rescue/restore-dryrun — keine Secrets im Klartext; nur Flags."""
+
+    backup_file: str = Field(..., description="Absoluter Pfad zu .tar.gz unter erlaubten Wurzeln")
+    target_device: Optional[str] = Field(None, description="Optional: Whole-Disk-Blockgerät für Kapazitäts-/Layout-Vergleich")
+    mode: RestoreDryRunMode = Field(default="dryrun", description="analyze_only = kein Sandbox-Extract")
+    encryption_key_available: bool = Field(
+        default=False,
+        description="True wenn Nutzer angibt, einen Schlüssel parat zu haben (kein Schlüsselübertrag)",
+    )
+
+
+class RestoreDryRunResponse(BaseModel):
+    """Antwort Restore-Dry-Run — nur strukturierte Codes in findings/recommended_actions."""
+
+    status: Literal["ok", "error"] = "ok"
+    restore_risk_level: RescueRiskLevel
+    restore_decision: RestoreDecision
+    backup_assessment: dict[str, Any] = Field(default_factory=dict)
+    target_assessment: dict[str, Any] = Field(default_factory=dict)
+    dryrun: dict[str, Any] = Field(default_factory=dict)
+    bootability: dict[str, Any] = Field(default_factory=dict)
+    findings: list[RescueFinding] = Field(default_factory=list)
+    recommended_actions: list[str] = Field(default_factory=list, description="Nur stabile Aktions-Codes")
+    report_paths: dict[str, str] = Field(default_factory=dict)
+    generated_at: str = Field(..., description="UTC ISO8601")
+    dry_run_token: Optional[str] = Field(
+        default=None,
+        description="Einmal-Token für POST /api/rescue/restore (nur wenn allow_restore)",
+    )
+    allow_restore: bool = Field(
+        default=False,
+        description="True nur bei erfolgreichem Modus dryrun + DRYRUN_OK + kein RED-Entscheid",
+    )
+    session_id: str = Field(
+        default="",
+        description="Server-Session: DB-Session bei authentifizierter API, sonst servergenerierte Korrelations-ID",
+    )
+
+
+RestoreResultCode = Literal[
+    "RESTORE_SUCCESS",
+    "RESTORE_SUCCESS_WITH_WARNINGS",
+    "RESTORE_PARTIAL",
+    "RESTORE_FAILED",
+    "RESTORE_BLOCKED",
+]
+
+
+class RescueRestoreRequest(BaseModel):
+    """POST /api/rescue/restore — kontrollierter Restore (Phase 3)."""
+
+    session_id: str = Field(
+        ...,
+        min_length=4,
+        description="Muss exakt der session_id aus dem zugehörigen Dry-Run entsprechen (Session-Bindung)",
+    )
+    backup_id: str = Field(
+        ...,
+        description="Absoluter Pfad zum Backup-Archiv (entspricht Dry-Run backup_file)",
+    )
+    restore_target_directory: str = Field(
+        ...,
+        description="Leeres/aufbereitetes Zielverzeichnis unter erlaubtem Live-Restore-Präfix",
+    )
+    target_device: Optional[str] = Field(
+        None,
+        description="Muss mit Dry-Run target_device übereinstimmen (optional)",
+    )
+    dry_run_token: str = Field(..., description="Token aus RestoreDryRunResponse")
+    confirmation: bool = Field(..., description="Muss true sein")
+    risk_acknowledged: bool = Field(default=False, description="Bei YELLOW-Zwang true")
+    target_confirmation_text: str = Field(
+        ...,
+        description="Gerätename (basename) oder RESTORE_NO_BLOCK_DEVICE",
+    )
+    encryption_key_hex: Optional[str] = Field(
+        default=None,
+        description="Optional: 64 Hex-Zeichen (32 Byte) für SHB1-AES-Archive — nicht loggen",
+    )
+    perform_boot_repair: bool = Field(
+        default=False,
+        description="Bootloader/initramfs-Schritte nur auf Ziel (nicht auf laufendes System)",
+    )
+
+
+class RescueRestoreResponse(BaseModel):
+    """Antwort echter Restore — Codes in warnings, kein Freitext."""
+
+    status: Literal["ok", "error"] = "ok"
+    result: RestoreResultCode
+    warnings: list[str] = Field(default_factory=list)
+    log_path: str = Field(default="", description="Pfad zum Append-Log")
+    bootable: bool = Field(default=False)
+    codes: list[str] = Field(default_factory=list, description="Zusätzliche Status-/Fehlercodes")
+
 
 class DiagnosisInterpretRequest(BaseModel):
     """Eingabe für POST /api/diagnosis/interpret."""
@@ -114,6 +249,11 @@ class DiagnosisRecord(BaseModel):
     area: str
     beginner_safe: bool = True
     companion_mode: CompanionMode = "recommendation"
+
+    risk_level: Optional[RescueRiskLevel] = Field(
+        default=None,
+        description="Optional: Ampel (green|yellow|red) für Rescue-/übergreifende Darstellung",
+    )
 
     class Config:
         json_schema_extra = {

@@ -20,6 +20,7 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 REPO = Path(__file__).resolve().parents[1]
 BACKEND = REPO / "backend"
@@ -63,12 +64,15 @@ def _create_synthetic_archive() -> Path:
         _ensure_backend_path()
         from modules.backup_engine import create_file_backup
 
-        res = create_file_backup(
-            [tmp_parent / "etc"],
-            archive_path=arch,
-            allowed_source_prefixes=(tmp_parent,),
-            allowed_output_prefixes=(Path("/tmp"),),
-        )
+        # Synthetisches Archiv unter /tmp: Ziel-Mount-Prüfung der Engine würde abbrechen;
+        # hier nur Restore-Pfadlogik testen, nicht externes Backup-Medium.
+        with patch("modules.backup_engine.validate_backup_target"):
+            res = create_file_backup(
+                [tmp_parent / "etc"],
+                archive_path=arch,
+                allowed_source_prefixes=(tmp_parent,),
+                allowed_output_prefixes=(Path("/tmp"),),
+            )
         if not res.ok:
             raise RuntimeError(f"create_file_backup failed: {res.detail}")
         return arch

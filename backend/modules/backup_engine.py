@@ -8,6 +8,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import posixpath
+import shutil
 import stat
 import platform
 import subprocess
@@ -21,6 +23,7 @@ from typing import Any, Callable, Mapping, Sequence
 
 from core.backup_path_allowlist import assert_paths_allowed, path_under_any_prefix
 from core.backup_recovery_i18n import (
+    K_BACKUP_FAILED_MANIFEST_MISSING,
     K_DD_FAILED,
     K_MANIFEST_WRITE_FAILED,
     K_OPERATION_OK,
@@ -30,8 +33,10 @@ from core.backup_recovery_i18n import (
     tr,
 )
 from core.block_device_allowlist import assert_allowed_block_device
+from modules.storage_detection import BackupTargetValidationError, validate_backup_target
 
 MANIFEST_NAME = "MANIFEST.json"
+MANIFEST_KIND = "setuphelfer-backup-manifest"
 META_OS_RELEASE_MAX = 65536
 
 
@@ -197,6 +202,26 @@ def _system_metadata() -> dict[str, Any]:
     }
 
 
+def _public_manifest_entry(ent: Mapping[str, Any]) -> dict[str, Any]:
+    """Nur stabile Felder für MANIFEST.json (kein source_path, keine internen Keys)."""
+    typ = str(ent.get("type") or "file")
+    out: dict[str, Any] = {"path": str(ent.get("path") or ""), "type": typ}
+    if typ == "file":
+        if ent.get("size") is not None:
+            out["size"] = str(ent.get("size"))
+        if ent.get("sha256"):
+            out["sha256"] = str(ent.get("sha256"))
+    elif typ == "symlink":
+        if ent.get("link_target") is not None:
+            out["link_target"] = str(ent.get("link_target"))
+    elif typ == "hardlink":
+        if ent.get("link_target") is not None:
+            out["link_target"] = str(ent.get("link_target"))
+    elif typ == "dir":
+        pass
+    return out
+
+
 def create_manifest(
     file_paths: Sequence[str | Path] | None = None,
     *,
@@ -212,10 +237,14 @@ def create_manifest(
 
     Entweder klassisch über ``file_paths`` + ``archive_paths`` oder über
     ``backup_entries`` (Dateien, Verzeichnisse, Symlinks mit ``type``).
+
+    Öffentliches Schema: ``entries`` (Liste von Objekten mit path/type/…),
+    ``created_at``, ``skipped`` (konsolidiert). Legacy-Reader können
+    ``manifest.get("entries") or manifest.get("files")`` nutzen.
     """
-    entries: list[dict[str, Any]] = []
+    raw_entries: list[dict[str, Any]] = []
     if backup_entries is not None:
-        entries.extend(dict(e) for e in backup_entries)
+        raw_entries.extend(dict(e) for e in backup_entries)
     else:
         for raw in file_paths or []:
             p = Path(raw)
@@ -223,15 +252,25 @@ def create_manifest(
                 continue
             resolved = str(p.absolute())
             arc_path = archive_paths.get(resolved) if archive_paths else None
-            entries.append(
+            st = os.lstat(p)
+            raw_entries.append(
                 {
                     "path": arc_path or resolved,
                     "source_path": resolved,
                     "type": "file",
                     "sha256": _sha256_file(p),
-                    "size": str(p.stat().st_size),
+                    "size": str(st.st_size),
                 }
             )
+    entries = [_public_manifest_entry(e) for e in raw_entries]
+    skipped_list: list[dict[str, Any]] = []
+    for s in skipped_inputs or []:
+        skipped_list.append({"kind": "superseded_input", "path": str(s)})
+    for d in skipped_members or []:
+        row = dict(d)
+        row.setdefault("kind", "skipped_member")
+        skipped_list.append(row)
+
     layout = ""
     if partition_device is not None:
         assert_allowed_block_device(partition_device)
@@ -241,10 +280,13 @@ def create_manifest(
             raise RuntimeError(tr(K_SFDISK_FAILED))
         layout = r.stdout or ""
 
+    created = datetime.now(timezone.utc).isoformat()
     manifest: dict[str, Any] = {
         "version": 1,
-        "kind": "setuphelfer-backup-manifest",
-        "files": entries,
+        "kind": MANIFEST_KIND,
+        "created_at": created,
+        "entries": entries,
+        "skipped": skipped_list,
         "skipped_inputs": list(skipped_inputs or []),
         "skipped_members": list(skipped_members or []),
         "partition_layout_sfdisk_d": layout,
@@ -319,10 +361,20 @@ def create_file_backup(
 ) -> FileBackupResult:
     """
     packt Dateien in tar.gz; Manifest enthält Checksummen und optional sfdisk.
+
+    Vor dem Packen: ``validate_backup_target`` (Mount/Gerät/Dateisystem) für
+    ``archive_path``; bei Verstoß Abbruch mit i18n-Schlüssel, kein Archiv.
     """
     assert_paths_allowed(paths, allowed_source_prefixes)
     arch = Path(archive_path)
     _assert_output_allowed(arch, allowed_output_prefixes)
+
+    try:
+        validate_backup_target(arch, runner=runner)
+    except BackupTargetValidationError as e:
+        msg = tr(e.message_key)
+        detail = f"{msg}: {e.detail}" if e.detail else msg
+        return FileBackupResult(False, None, None, e.message_key, detail)
 
     try:
         members, skipped_inputs, skipped_special = _collect_archive_members(paths)
@@ -330,13 +382,14 @@ def create_file_backup(
         for src, arc, kind in members:
             src_abs = str(src.absolute())
             if kind == "file":
+                st = os.lstat(src)
                 backup_entries.append(
                     {
                         "path": arc,
                         "source_path": src_abs,
                         "type": "file",
                         "sha256": _sha256_file(src),
-                        "size": str(src.stat().st_size),
+                        "size": str(st.st_size),
                     }
                 )
             elif kind == "symlink":
@@ -372,8 +425,26 @@ def create_file_backup(
                 for src, arc, _kind in members:
                     tf.add(src, arcname=arc, recursive=False)
 
+        if not archive_contains_manifest(arch):
+            try:
+                arch.unlink()
+            except OSError:
+                pass
+            return FileBackupResult(
+                False,
+                None,
+                None,
+                K_BACKUP_FAILED_MANIFEST_MISSING,
+                tr(K_BACKUP_FAILED_MANIFEST_MISSING),
+            )
+
         return FileBackupResult(True, str(arch), manifest, K_OPERATION_OK, None)
     except Exception as e:
+        try:
+            if arch.exists():
+                arch.unlink()
+        except OSError:
+            pass
         return FileBackupResult(False, None, None, K_TAR_FAILED, f"{tr(K_TAR_FAILED)}: {e!s}")
 
 
@@ -386,11 +457,217 @@ def write_manifest_to_file(manifest: Mapping[str, Any], path: str | Path) -> tup
         return False, f"{tr(K_MANIFEST_WRITE_FAILED)}: {e!s}"
 
 
+def _gnu_meta_tar_types() -> set[int]:
+    out: set[int] = set()
+    for _attr in ("GNUTYPE_LONGNAME", "GNUTYPE_LONGLINK", "GNUTYPE_SPARSE"):
+        if hasattr(tarfile, _attr):
+            out.add(getattr(tarfile, _attr))
+    return out
+
+
+def _norm_tar_arcname(name: str) -> str:
+    n = (name or "").strip()
+    while n.startswith("./"):
+        n = n[2:]
+    return n.lstrip("/")
+
+
+def archive_contains_manifest(archive_path: str | Path) -> bool:
+    """True, wenn das Archiv ein lesbares Mitglied ``MANIFEST.json`` enthält (Pfad-normalisiert)."""
+    p = Path(archive_path)
+    if not p.is_file():
+        return False
+    try:
+        with tarfile.open(p, "r:*") as tf:
+            for raw in tf.getnames():
+                if _norm_tar_arcname(raw) == MANIFEST_NAME:
+                    return True
+    except (OSError, tarfile.TarError, EOFError):
+        return False
+    return False
+
+
+def _tar_member_path_unsafe(name: str) -> bool:
+    n = name.lstrip("./")
+    if not n:
+        return True
+    if n.startswith("/") or posixpath.isabs(n):
+        return True
+    norm = posixpath.normpath(n)
+    if norm in {".", ".."} or norm.startswith("../"):
+        return True
+    if "/../" in f"/{norm}/":
+        return True
+    return False
+
+
+def embed_manifest_in_tar_gz(archive_path: str | Path) -> tuple[bool, str | None]:
+    """
+    Liest ein bestehendes .tar.gz (z. B. klassisches Root-Backup per ``tar -czf``),
+    erzeugt ein MANIFEST.json aus den Archiv-Metadaten (TarInfo wie lstat; SHA-256
+    für reguläre Dateien per Stream aus dem Archiv) und schreibt ein neues Archiv
+    (MANIFEST.json zuerst, dann alle bisherigen Mitglieder außer einer vorhandenen
+    MANIFEST.json). Temporäre Dateien liegen unter ``tempfile.gettempdir()`` (typisch
+    ``/tmp``), damit der Dienst-User auch schreiben kann, wenn das Archiv z. B. unter
+    ``/mnt/…`` (root:root) liegt; abschließend per ``shutil.move`` an den Zielpfad.
+    """
+    path = Path(archive_path)
+    if not path.is_file():
+        return False, "archive not found"
+    gnu_skip = _gnu_meta_tar_types()
+
+    def _embed_temp_base() -> Path:
+        for d in (path.parent, Path(tempfile.gettempdir())):
+            try:
+                if d.is_dir() and os.access(d, os.W_OK | os.X_OK):
+                    return d
+            except OSError:
+                continue
+        return Path(tempfile.gettempdir())
+
+    tmp_dir = _embed_temp_base()
+    tmp_path = tmp_dir / f"setuphelfer.embed.{os.getpid()}.{path.name}.tmp"
+
+    def pass1_build_entries() -> tuple[list[dict[str, Any]], str | None]:
+        entries: list[dict[str, Any]] = []
+        try:
+            with tarfile.open(path, "r:gz") as tf:
+                for m in tf.getmembers():
+                    if m.type in gnu_skip:
+                        continue
+                    name_raw = m.name or ""
+                    # Root-Backups (tar -czf … /) enthalten oft ein Mitglied „.“ — wie im Restore überspringen.
+                    if (name_raw or "").strip() in (".", "./"):
+                        continue
+                    if _tar_member_path_unsafe(name_raw):
+                        return [], f"unsafe archive member name: {name_raw!r}"
+                    arc = _norm_tar_arcname(name_raw)
+                    if not arc or arc == MANIFEST_NAME:
+                        continue
+                    if m.isdir():
+                        entries.append({"path": arc, "type": "dir"})
+                    elif m.issym():
+                        entries.append(
+                            {
+                                "path": arc,
+                                "type": "symlink",
+                                "link_target": m.linkname or "",
+                            }
+                        )
+                    elif m.islnk() and not m.issym():
+                        entries.append(
+                            {
+                                "path": arc,
+                                "type": "hardlink",
+                                "link_target": m.linkname or "",
+                            }
+                        )
+                    elif m.isfile():
+                        h = hashlib.sha256()
+                        fobj = tf.extractfile(m)
+                        if fobj is None:
+                            return [], f"cannot read archive member: {arc!r}"
+                        try:
+                            for chunk in iter(lambda: fobj.read(1024 * 1024), b""):
+                                h.update(chunk)
+                        finally:
+                            fobj.close()
+                        entries.append(
+                            {
+                                "path": arc,
+                                "type": "file",
+                                "size": str(m.size),
+                                "sha256": h.hexdigest(),
+                            }
+                        )
+                    elif getattr(tarfile, "CONTTYPE", None) is not None and m.type == tarfile.CONTTYPE:
+                        continue
+                    elif m.isdev() or m.isfifo():
+                        return [], f"unsupported member for manifest ingest: {arc!r}"
+                    else:
+                        return [], f"unsupported tar type for member: {arc!r}"
+        except (OSError, tarfile.TarError) as e:
+            return [], str(e)
+        return entries, None
+
+    entries, err = pass1_build_entries()
+    if err:
+        return False, err
+
+    skipped: list[dict[str, Any]] = []
+    manifest_body = create_manifest(
+        None,
+        skipped_inputs=[],
+        skipped_members=skipped,
+        backup_entries=entries,
+        partition_device=None,
+        runner=None,
+    )
+
+    try:
+        if tmp_path.exists():
+            tmp_path.unlink()
+    except OSError:
+        pass
+
+    try:
+        with tempfile.TemporaryDirectory(prefix="setuphelfer_mf_", dir=str(tmp_dir)) as tdir:
+            man_path = Path(tdir) / MANIFEST_NAME
+            man_path.write_text(json.dumps(manifest_body, indent=2), encoding="utf-8")
+
+            with tarfile.open(path, "r:gz") as src, tarfile.open(tmp_path, "w:gz") as dst:
+                dst.add(man_path, arcname=MANIFEST_NAME)
+                for m in src.getmembers():
+                    if m.type in gnu_skip:
+                        continue
+                    arc = _norm_tar_arcname(m.name or "")
+                    if not arc or arc == MANIFEST_NAME:
+                        continue
+                    if m.isdir() or m.issym():
+                        dst.addfile(m)
+                    else:
+                        fobj = src.extractfile(m)
+                        dst.addfile(m, fobj)
+    except (OSError, tarfile.TarError) as e:
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except OSError:
+            pass
+        return False, str(e)
+
+    try:
+        path.unlink(missing_ok=True)
+        if tmp_path.resolve().parent == path.resolve().parent:
+            os.replace(tmp_path, path)
+        else:
+            shutil.move(str(tmp_path), str(path))
+    except OSError as e:
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except OSError:
+            pass
+        return False, str(e)
+
+    if not archive_contains_manifest(path):
+        try:
+            path.unlink()
+        except OSError:
+            pass
+        return False, "MANIFEST.json missing after embed rebuild"
+
+    return True, None
+
+
 __all__ = [
     "MANIFEST_NAME",
+    "MANIFEST_KIND",
+    "archive_contains_manifest",
     "create_image_backup",
     "create_file_backup",
     "create_manifest",
+    "embed_manifest_in_tar_gz",
     "write_manifest_to_file",
     "ImageBackupResult",
     "FileBackupResult",

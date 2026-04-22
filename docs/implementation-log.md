@@ -272,3 +272,102 @@
 - **Erfolg:** `status: success`, `enabled`, `connected_devices`, `code: bluetooth.ok` (bzw. `bluetooth.rfkill_blocked` bei Block).
 - **Weiterhin unklar / Grenzen:** Ohne `rfkill`-Binary wird der Block-Check übersprungen; „Bluetooth aus“ nur per `rfkill` wird dann nicht von „Adapter fehlt“ unterschieden, bis `bluetoothctl show` läuft. Zustand „Powered: no“ ohne rfkill-Block liefert weiterhin `enabled: true`, solange die Geräteliste gelesen werden kann. Sehr alte `bluetoothctl`-Versionen ohne `--timeout` oder ohne `devices Connected` können `unknown_error` auslösen.
 
+## Rescue-Stick / Read-only-Diagnose (Phase 0–1, 2026-04)
+
+### Umgesetzt
+
+- **Phase 0:** `docs/architecture/RESCUE_BOOT_ARCHITECTURE.md` mit Boot-States `BOOT_OK`, `BOOT_DEGRADED`, `BOOT_FAILSAFE`, Mermaid-Bootablauf, Offline/DHCP-Konzept (ohne ISO-Build).
+- **Phase 1 – Backend:** `backend/modules/inspect_storage.py`, `inspect_boot.py`, `rescue_readonly_analyze.py`; Modelle `RescueFinding`, `RescueAnalyzeResponse`, `RescueRiskLevel`, optionales `DiagnosisRecord.risk_level` in `backend/models/diagnosis.py`.
+- **API:** `GET /api/rescue/analyze` (`backend/api/routes/rescue.py`, Einbindung in `backend/app.py`).
+- **CLI:** `scripts/rescue_mode.py` (Text- oder JSON-Stdout, Berichte unter `/tmp/setuphelfer-rescue-report.*`).
+- **i18n:** `rescue.*.title` / `user_summary` in `frontend/src/locales/de.json` und `en.json`.
+- **Doku:** `docs/rescue/RESCUE_DIAGNOSIS.md`, `docs/faq/RESCUE_FAQ.md`.
+- **Tests:** `backend/tests/test_rescue_analyze.py` (API-Shape, UUID-Konflikt-Hilfslogik mit Patch).
+
+### Nicht umgesetzt
+
+- Bootstick-Image/ISO-Erstellung, Pi- und x86-Bootloader-Feinparametrisierung, WLAN-Quick-Setup, automatisches RO-Test-Mount fremder Systeme, Restore (explizit ausgeschlossen).
+
+### Tests (durchgeführt vs. theoretisch)
+
+- Lokal ausführbar: `python3 -m py_compile` auf neue Module; `python3 -m unittest tests.test_rescue_analyze` (setzt lauffähiges FastAPI-Backend voraus).
+- **Real:** API- und CLI-Lauf auf dem Entwicklungs-Host führt echte `lsblk`/`blkid`/`findmnt`-Aufrufe aus (nur lesend); Ergebnis hängt von Hardware/Root-Rechten ab.
+- **Theoretisch / simuliert:** UUID-Konflikt-Logik über `unittest.mock.patch` auf blkid-Daten.
+- Nicht durchgeführt: gezielte VM-Simulation „defekte Partition“ mit erwarteten Ampel-Stufen (kein automatisierter QEMU-Lauf in dieser Änderung).
+
+### Bekannte Grenzen
+
+- Viele Dateisystemtypen werden nur mit blkid gelistet, ohne fsck-Pfad.
+- Gateway-Erreichbarkeit per `ping` kann in gesperrten Netzen fehlschlagen, ohne dass das System „kaputt“ ist.
+- Initramfs-Kennung heuristisch; false-positive „initrd_missing“ möglich.
+
+## Rescue Restore Dry-Run (Phase 2, 2026-04)
+
+### Umgesetzt
+
+- Module: `rescue_backup_discovery.py`, `rescue_target_assessment.py`, `rescue_restore_dryrun.py`, `rescue_boot_restore_check.py`; zentrale Pfadregeln `core/rescue_allowlist.py`.
+- Wiederverwendung: `backup_verify.verify_basic` / `verify_deep`, `restore_engine.restore_files` (nur `dry_run=True` + Pfad-Allowlist), `backup_engine`/`MANIFEST_KIND`, `backup_symlink_safety`-Logik indirekt über Restore/Verify, `inspect_boot`/`inspect_storage`-Bausteine.
+- API: `POST /api/rescue/restore-dryrun` mit `RestoreDryRunRequest`/`RestoreDryRunResponse` in `models/diagnosis.py`.
+- CLI: `scripts/rescue_mode.py --restore-dryrun-backup … [--target-device …] [--mode analyze_only|dryrun]`.
+- Berichte: `/tmp/setuphelfer-rescue-dryrun.json` / `.md`.
+- Tests: `backend/tests/test_rescue_restore_dryrun.py` (fünf Szenarien; erfordert pydantic + `/tmp/setuphelfer-test`).
+- Doku: `docs/rescue/RESCUE_DRYRUN.md`, `docs/rescue/RESTORE_RISK_MODEL.md`, FAQ aktualisiert; i18n-Grundstock `rescue.dryrun.*`, `rescue.bootability.*`, `rescue.decision.*`.
+
+### Nicht umgesetzt
+
+- Echter Restore, Bootloader-Schreiben, Entschlüsselung echter `.gpg`-Inhalte, Image-Build.
+
+### Tests
+
+- `python3 -m py_compile` auf neue/geänderte Dateien (ohne venv).
+- Unit-Tests der Pipeline nur mit installiertem Backend-Stack (pydantic); sonst Skip.
+
+### Sicherheit
+
+- Backup-Lesen und Sandbox-Schreiben strikt über Pfad-Tupel; keine Abkürzung um `restore_engine`-Allowlist; Extrakt nur unter `/tmp/setuphelfer-rescue-dryrun-staging` bzw. bestehende Verify-/Preview-Konventionen.
+
+## Rescue kontrollierter Restore (Phase 3, 2026-04)
+
+### Umgesetzt
+
+- **Gating:** `backend/modules/rescue_restore_gate.py` (`validate_restore_preconditions`, Bestätigungs-Phrase, TTL-Grant); Fehlercodes `rescue.restore.RESTORE_BLOCKED_*`.
+- **Ausführung:** `backend/modules/rescue_restore_execute.py` (`run_rescue_restore`, Post-Check `post_restore_validate`, Mount-Abgleich, `verify_basic`, optional Entschlüsselung, `restore_files` ohne Dry-Run nur auf Allowlist-Ziele).
+- **Boot:** `backend/modules/rescue_boot_repair.py` (validieren, optional chroot/GRUB/initramfs — nur mit Flag und Ziel-Blockgerät).
+- **Dry-Run-Anbindung:** Token/Grant in `rescue_restore_dryrun.py` bei erfolgreichem Dry-Run; Modelle `RescueRestoreRequest` / `RescueRestoreResponse` in `models/diagnosis.py`.
+- **API:** `POST /api/rescue/restore` in `backend/api/routes/rescue.py`.
+- **CLI:** `scripts/rescue_mode.py --restore-live …`.
+- **Tests:** `backend/tests/test_rescue_restore_phase3.py` (gemockt, kein Schreiben auf Produktivsysteme).
+- **Doku:** `docs/rescue/RESTORE_EXECUTION.md`, `docs/rescue/BOOT_REPAIR.md`, FAQ `docs/faq/RESCUE_FAQ.md`; i18n `rescue.restore.*`, `rescue.boot_repair.*`, `rescue.validation.*`.
+
+### Bekannte Grenzen
+
+- Boot-Reparatur-Ergebnis fließt in die HTTP-Antwort noch nicht als strukturierte Warnliste ein; Heuristik `bootable` kann von echter Hardware abweichen.
+- Rollback bei fehlgeschlagenem Restore: nur manuell (Zielverzeichnis ggf. teilweise befüllt).
+- Integrations-Tests ohne Mock erfordern isolierte VM/Testplatte (siehe `tools/vm-test/`).
+
+### Sicherheit
+
+- Token-Verbrauch nach erfolgreichem `restore_files` (Nachschärfung 3.N); kein Restore ohne übereinstimmendes Backup-/Zielgerät aus dem Grant.
+
+## Rescue Restore Nachschärfung (Phase 3.N, 2026-04)
+
+### Umgesetzt
+
+- **Session-Bindung:** `session_id` in `RestoreDryRunResponse` / `RescueRestoreRequest`; Grant enthält `session_id`, optional `session_source` (`remote_db` bei Bearer-Dry-Run). Gate-Codes `rescue.restore.session_*`, `dryrun_missing`, `confirmation_missing`, `risk_ack_missing`.
+- **Zielidentität:** `core/device_identity.py` (`build_device_identity`, `compare_device_identity`); Snapshot im Grant; Abgleich vor Restore.
+- **Hard-Stops:** `core/rescue_hardstop.py` (Backup-Snapshot, Schlüsselpflicht, SMART kritisch, Quelle=Ziel, Identität); API prüft bei `remote_db` die authentifizierte Session gegen den Grant.
+- **Gestufte Ausführung:** Stages in `rescue_restore_execute.run_rescue_restore` mit Audit in JSON+Markdown.
+- **Token-Verbrauch:** erst nach erfolgreichem `restore_files`.
+- **Ergebnis:** `RESTORE_BLOCKED` für harte Vorab-Blocker; Boot-Reparatur modular in `rescue_boot_repair.py` (`detect_boot_context`, …).
+- **Doku:** `docs/architecture/RESCUE_STATE_MODEL.md`, `RESCUE_HARDSTOPS.md`, `RESCUE_DECISION_ENGINE.md`, `docs/rescue/BOOT_COMPATIBILITY_LIMITATIONS.md`; FAQ + `RESTORE_EXECUTION.md` erweitert.
+- **Tests:** `backend/tests/test_rescue_restore_phase3.py` um Hard-Stop und Session-Gate ergänzt (mit mocks; Host ohne pydantic: Skip).
+
+### Tests (real)
+
+- In dieser Umgebung: `python3 -m unittest` nur wenn pydantic installiert; sonst Skip — **kein** Anspruch auf grüne CI ohne Abhängigkeiten.
+
+### Bekannte Grenzen
+
+- `target_mounted_active` für beliebige Pfade auf dem Root-Dateisystem ist absichtlich nicht pauschal aktiv (False Positives auf `/tmp`-Testzielen); Schutz primär über Allowlist + `target_device` + `is_running_system_disk`.
+- Boot-Kontext-Erkennung bleibt heuristisch (`unknown` → keine Auto-Reparatur).
+

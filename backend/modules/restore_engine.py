@@ -22,7 +22,14 @@ from core.block_device_allowlist import assert_allowed_block_device
 from modules.backup_symlink_safety import tar_symlink_linkname_allowed
 
 
+def _is_tar_root_placeholder(name: str | None) -> bool:
+    """Klassische Root-Backups enthalten oft ein Verzeichnismitglied ``.`` / ``./`` — nicht extrahieren."""
+    return (name or "").strip() in (".", "./")
+
+
 def _is_safe_member_name(name: str) -> bool:
+    if _is_tar_root_placeholder(name):
+        return False
     n = name.lstrip("./")
     if not n:
         return False
@@ -119,6 +126,8 @@ def restore_files(
         with tarfile.open(archive_path, "r:*") as tf:
             allowed_members: list[tarfile.TarInfo] = []
             for member in tf.getmembers():
+                if _is_tar_root_placeholder(member.name):
+                    continue
                 if not _is_safe_member_name(member.name):
                     return False, K_RESTORE_FILES_FAILED, f"unsafe archive path: {member.name}"
                 safe_name = _safe_member_name(member.name)
@@ -137,7 +146,12 @@ def restore_files(
                         return False, K_RESTORE_FILES_FAILED, f"symlink target escapes restore root: {member.name}"
                     allowed_members.append(member)
                     continue
-                if member.islnk() or member.isdev() or member.isfifo():
+                if member.islnk() and not member.issym():
+                    if "\x00" in (member.linkname or ""):
+                        return False, K_RESTORE_FILES_FAILED, f"unsafe hardlink target: {member.name}"
+                    allowed_members.append(member)
+                    continue
+                if member.isdev() or member.isfifo():
                     return False, K_RESTORE_FILES_FAILED, f"unsupported archive member: {member.name}"
                 allowed_members.append(member)
             try:

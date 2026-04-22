@@ -15,6 +15,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 FRONTEND_PID=""
 
+# npm-Cache unter Installationsbaum (systemd: ProtectHome maskiert $HOME → nicht ~/.npm schreiben)
+export npm_config_cache="${npm_config_cache:-$REPO_ROOT/.npm-cache}"
+mkdir -p "$npm_config_cache"
+
 BACKEND_PORT="${PI_INSTALLER_BACKEND_PORT:-8000}"
 BACKEND_HEALTH="${PI_INSTALLER_BACKEND_HEALTH_URL:-http://127.0.0.1:${BACKEND_PORT}/api/version}"
 

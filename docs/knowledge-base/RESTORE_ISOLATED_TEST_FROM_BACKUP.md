@@ -35,3 +35,9 @@ Validierung der **Datei-Restore-Logik** (`restore_files`) in ein **reines Testve
 ## Fazit-Formulierung
 
 Für den geprüften Lauf: **Restore auf Dateisystemebene plausibel** (Struktur + Symlink-Metadaten + Allowlist + kein Schreiben nach `/`).
+
+---
+
+## English summary
+
+Isolated `restore_files` test under `/tmp/setuphelfer-restore-test` using `tools/setuphelfer_restore_isolated_test.py`. Proves directory tree, symlinks, and allowlist behaviour without touching `/`. Not a boot proof; combine with [FULL_RESTORE_BOOT_TEST.md](FULL_RESTORE_BOOT_TEST.md) for VM reboot context.

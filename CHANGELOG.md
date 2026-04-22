@@ -13,11 +13,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - `backend/modules/backup_symlink_safety.py`: Pruefung relativer Symlink-Ziele gegen Pfadflucht aus Restore-/Verify-Wurzel.
 - Verify/Restore: symbolische Tar-Mitglieder erlaubt; `extractall` bevorzugt `filter="tar"`; Manifest `type` / `link_target`; kein `Path.resolve()` auf Symlink-Leafs in der Verifikation.
 
-### Fixed (Backup / Recovery ù file-based engine hardening)
-- `backend/modules/backup_engine.py`: file-based Backup archiviert jetzt Dateien **und** Verzeichnisse rekursiv mit relativen, kollisionsgeschùtzten Archivpfaden; ùberlappende Eingaben werden dedupliziert und im Manifest dokumentiert (`skipped_inputs`).
-- `backend/modules/backup_verify.py`: Verify blockiert unsichere Archiv-Member (Traversal, absolute Pfade, Link-/Sondertypen) und prùft Manifestpfade konsistent zur extrahierten Struktur.
+### Fixed (Backup / Recovery ÔøΩ file-based engine hardening)
+- `backend/modules/backup_engine.py`: file-based Backup archiviert jetzt Dateien **und** Verzeichnisse rekursiv mit relativen, kollisionsgeschÔøΩtzten Archivpfaden; ÔøΩberlappende Eingaben werden dedupliziert und im Manifest dokumentiert (`skipped_inputs`).
+- `backend/modules/backup_verify.py`: Verify blockiert unsichere Archiv-Member (Traversal, absolute Pfade, Link-/Sondertypen) und prÔøΩft Manifestpfade konsistent zur extrahierten Struktur.
 - `backend/modules/restore_engine.py`: Restore entpackt nur sichere Member, blockiert Traversal/Link-/Sondertypen und schreibt `MANIFEST.json` nicht in das Restore-Ziel.
-- `backend/tests/test_backup_recovery_engines.py`: Tests fùr rekursive Verzeichnisarchivierung, relative Pfade, Kollisionsfehler, Restore-Pfadstruktur, Manifest/Archiv-Inkonsistenz und Allowlist-Schutz erweitert.
+- `backend/tests/test_backup_recovery_engines.py`: Tests fÔøΩr rekursive Verzeichnisarchivierung, relative Pfade, Kollisionsfehler, Restore-Pfadstruktur, Manifest/Archiv-Inkonsistenz und Allowlist-Schutz erweitert.
 - Dokumentation aktualisiert: `docs/developer/BACKUP_RECOVERY_ENGINES.md`, `docs/faq-source-notes.md`, `docs/knowledge-base/BACKUP_RECOVERY_FILE_ENGINE_REALITY.md`, `docs/knowledge-base/README.md`.
 
 ### Added (Dokumentation / Wissensbasis)
@@ -25,72 +25,92 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Wissensbasis erweitert um `docs/knowledge-base/APT_REPOSITORIEN_UND_DOCKER_FAQ.md` und `docs/knowledge-base/CHAT_ZUSAMMENFASSUNG_APT_DOCKER_2026-04.md`.
 
 ### Notes
-- Die File-Engine-Hùrtung verbessert die technische Wiederherstellbarkeit, ersetzt aber keinen echten Full-Recovery-Nachweis mit VM-Reboot und anschlieùendem Hardware-Test.
+- Die File-Engine-HÔøΩrtung verbessert die technische Wiederherstellbarkeit, ersetzt aber keinen echten Full-Recovery-Nachweis mit VM-Reboot und anschlieÔøΩendem Hardware-Test.
+
+
+---
+
+## [1.5.0.0] - 2026-04-22
+
+### Added
+
+- Deterministischer Restore-Pfad ohne manuelle API-Workarounds; verpflichtendes **Manifest** im Archiv (Fail-Fast bei fehlendem oder ungÔøΩltigem `MANIFEST.json`).
+- Zweisprachige Backend-Texte fÔøΩr `backup_recovery_i18n` ÔøΩber Locale (`SETUPHELFER_LANG` / `LC_MESSAGES` / `LANG` mit PrÔøΩfix `de`) sowie ergÔøΩnzte Frontend-Keys (`backup.messages.*`, `verify.messages.*`, `restore.messages.*`).
+- Wissensbasis: [docs/knowledge-base/FULL_RESTORE_BOOT_TEST.md](docs/knowledge-base/FULL_RESTORE_BOOT_TEST.md) mit DE/EN-Kurzfassung und Verweis auf den VM-Report.
+
+### Changed
+
+- **systemd**-Units und Installer-Flow stabilisiert (Speicherlimits, Capabilities, FinalprÔøΩfung aktiver Dienste nach `install-system.sh`).
+- Dokumentation zu Backup-/Recovery-Engines und Manifest um deterministisches Verhalten und englische Kurzabschnitte ergÔøΩnzt.
+
+### Fixed
+
+- Restore-/Boot-Themenkreis in Doku und FAQ konsolidiert; fehlende i18n-Zuordnung fÔøΩr u. a. `backup.failed_manifest_missing` / Archiv-IntegritÔøΩt in der Web-UI.
 
 ---
 
 ## [1.4.1.0] - 2026-04-07
 
-### Added (Backup / Recovery ù Engines & Doku)
+### Added (Backup / Recovery ÔøΩ Engines & Doku)
 - **Backend:** `backup_engine`, `backup_verify`, `restore_engine`, `backup_crypto` (AES-256-GCM), `recovery_transport`; Hilfen `block_device_allowlist`, `backup_path_allowlist`, `backup_recovery_i18n`.
-- **CLI:** `recovery/main.py` (Recovery-Menù bei unvollstùndigem Root).
-- **Tests:** `backend/tests/test_backup_recovery_engines.py` (Simulation Zerstùrung/Wiederherstellung in `/tmp`).
+- **CLI:** `recovery/main.py` (Recovery-MenÔøΩ bei unvollstÔøΩndigem Root).
+- **Tests:** `backend/tests/test_backup_recovery_engines.py` (Simulation ZerstÔøΩrung/Wiederherstellung in `/tmp`).
 - **Doku:** `docs/developer/BACKUP_RECOVERY_ENGINES.md`; In-App **Backup & Restore** + **FAQ**; i18n-Keys `documentation.backupRestore.*`, `documentation.faq.backupEngines.*`.
-- **Hinweis:** Schlùssel fùr Verschlùsselung werden **nicht** ins Backup geschrieben; Boot-Tests auf echter Hardware weiterhin manuell.
+- **Hinweis:** SchlÔøΩssel fÔøΩr VerschlÔøΩsselung werden **nicht** ins Backup geschrieben; Boot-Tests auf echter Hardware weiterhin manuell.
 
 ---
 
 ## [1.4.0.5] - 2026-04-07
 
-### Changed (Betrieb ù Setuphelfer-Standard, PI_INSTALLER Legacy)
-- **`scripts/deploy-to-opt.sh`:** `mkdir -p` fùr **`STATE_DIR`** vor `chown`; Texte/Titel Setuphelfer; Hinweis zu Unit-Platzhaltern `{{PI_INSTALLER_*}}`.
-- **`scripts/install-system.sh`:** Banner/Fehlertexte Setuphelfer; **`SETUPHELFER_USE_SERVICE_USER`** / **`SETUPHELFER_USER`** mit Fallback auf `PI_INSTALLER_*`; **`chown`/`chmod`** fùr **`STATE_DIR`**; Symlink **`setuphelfer` ? `start-setuphelfer.sh`**; **`profile.d`:** Primùr `SETUPHELFER_*`, `PI_INSTALLER_*` nur als Spiegel aus denselben Werten.
-- **`backend/core/install_paths.py`:** `_env_path_setup_then_legacy` ù explizit SETUPHELFER vor PI_INSTALLER (Bugfix: `get_state_dir` nutzte fùlschlich `_env_path_first`).
-- **`scripts/install-backend-service.sh`**, **`create_installer.sh`:** `SETUPHELFER_*`-Variablen zuerst; **`sudo mkdir -p`** fùr Config/Log/State vor Service-Install.
+### Changed (Betrieb ÔøΩ Setuphelfer-Standard, PI_INSTALLER Legacy)
+- **`scripts/deploy-to-opt.sh`:** `mkdir -p` fÔøΩr **`STATE_DIR`** vor `chown`; Texte/Titel Setuphelfer; Hinweis zu Unit-Platzhaltern `{{PI_INSTALLER_*}}`.
+- **`scripts/install-system.sh`:** Banner/Fehlertexte Setuphelfer; **`SETUPHELFER_USE_SERVICE_USER`** / **`SETUPHELFER_USER`** mit Fallback auf `PI_INSTALLER_*`; **`chown`/`chmod`** fÔøΩr **`STATE_DIR`**; Symlink **`setuphelfer` ? `start-setuphelfer.sh`**; **`profile.d`:** PrimÔøΩr `SETUPHELFER_*`, `PI_INSTALLER_*` nur als Spiegel aus denselben Werten.
+- **`backend/core/install_paths.py`:** `_env_path_setup_then_legacy` ÔøΩ explizit SETUPHELFER vor PI_INSTALLER (Bugfix: `get_state_dir` nutzte fÔøΩlschlich `_env_path_first`).
+- **`scripts/install-backend-service.sh`**, **`create_installer.sh`:** `SETUPHELFER_*`-Variablen zuerst; **`sudo mkdir -p`** fÔøΩr Config/Log/State vor Service-Install.
 - **`scripts/start-setuphelfer.sh`:** **`SETUPHELFER_MODE`** vor **`PI_INSTALLER_MODE`**.
 - **`scripts/uninstall-system.sh`:** Kopfkommentar Setuphelfer.
-- **`docs/architecture/NAMING_AND_SERVICES.md`:** ENV-Reihenfolge prùzisiert.
+- **`docs/architecture/NAMING_AND_SERVICES.md`:** ENV-Reihenfolge prÔøΩzisiert.
 
 ---
 
 ## [1.4.0.4] - 2026-04-07
 
-### Added (Phase F ù Zielsystem-Prùfung)
-- **`scripts/verify-setuphelfer-install.sh`** ù Prùft **systemd** (`setuphelfer-backend` / `setuphelfer`, Legacy `pi-installer*`), **curl** auf `/api/version` und Web-UI :3001, optional **journalctl**; Exit-Code 0/1.
-- **`docs/VERIFY_TARGET_SYSTEM.md`** ù Kurzanleitung und manuelle Kommandos; Verweise in `NAMING_AND_SERVICES.md`, `architecture/README.md`, `SYSTEM_INSTALLATION.md`.
+### Added (Phase F ÔøΩ Zielsystem-PrÔøΩfung)
+- **`scripts/verify-setuphelfer-install.sh`** ÔøΩ PrÔøΩft **systemd** (`setuphelfer-backend` / `setuphelfer`, Legacy `pi-installer*`), **curl** auf `/api/version` und Web-UI :3001, optional **journalctl**; Exit-Code 0/1.
+- **`docs/VERIFY_TARGET_SYSTEM.md`** ÔøΩ Kurzanleitung und manuelle Kommandos; Verweise in `NAMING_AND_SERVICES.md`, `architecture/README.md`, `SYSTEM_INSTALLATION.md`.
 
 ---
 
 ## [1.4.0.3] - 2026-04-07
 
-### Changed (Phase D4 ù Changelog-, Versions- und FAQ-Pflege)
-- **Workflow:** `.cursor/rules/projekt-workflow.mdc` ù einheitliche Quelle **`config/version.json`**, Sync per `sync-version.js`; Changelog-Pflicht; systemd **setuphelfer-backend** in Abschnitt 6.
-- **Doku:** `docs/developer/VERSIONING.md` ù Titel Setuphelfer, Abschnitt **ùRelease-Pflicht fùr Maintainer (Phase D4)ù** (Checkliste: version.json, sync, CHANGELOG.md, In-App-Changelog, FAQ, debian/changelog).
-- **In-App:** FAQ-Eintrag **ùVersion und Changelog ù wo wird was gepflegt?ù** fùr Mitwirkende; Versionsblock **1.4.0.3**.
+### Changed (Phase D4 ÔøΩ Changelog-, Versions- und FAQ-Pflege)
+- **Workflow:** `.cursor/rules/projekt-workflow.mdc` ÔøΩ einheitliche Quelle **`config/version.json`**, Sync per `sync-version.js`; Changelog-Pflicht; systemd **setuphelfer-backend** in Abschnitt 6.
+- **Doku:** `docs/developer/VERSIONING.md` ÔøΩ Titel Setuphelfer, Abschnitt **ÔøΩRelease-Pflicht fÔøΩr Maintainer (Phase D4)ÔøΩ** (Checkliste: version.json, sync, CHANGELOG.md, In-App-Changelog, FAQ, debian/changelog).
+- **In-App:** FAQ-Eintrag **ÔøΩVersion und Changelog ÔøΩ wo wird was gepflegt?ÔøΩ** fÔøΩr Mitwirkende; Versionsblock **1.4.0.3**.
 
 ---
 
 ## [1.4.0.2] - 2026-04-07
 
-### Changed (Architektur & Review ù Phase D3)
-- **Referenz:** `docs/architecture/NAMING_AND_SERVICES.md` ù Produktname, Debian-Source vs. Binary-Paket `setuphelfer`, Pfade, systemd-Units, ENV (`SETUPHELFER_*` / `PI_INSTALLER_*`), Tauri-Binary-Hinweis.
-- **Index:** `docs/architecture/README.md` ù Einstieg in Architektur-Dokumente.
+### Changed (Architektur & Review ÔøΩ Phase D3)
+- **Referenz:** `docs/architecture/NAMING_AND_SERVICES.md` ÔøΩ Produktname, Debian-Source vs. Binary-Paket `setuphelfer`, Pfade, systemd-Units, ENV (`SETUPHELFER_*` / `PI_INSTALLER_*`), Tauri-Binary-Hinweis.
+- **Index:** `docs/architecture/README.md` ÔøΩ Einstieg in Architektur-Dokumente.
 - **Aktualisiert:** `init_flow.md`, `config_flow.md`; Review: `phase1_structure.md`, `phase4_structural_simplification.md`, `repository_consistency_report.md`, `error_backlog_current_state.md` (A-02 eingegrenzt).
 
 ---
 
 ## [1.4.0.1] - 2026-04-07
 
-### Changed (Dokumentation ù Phase D2)
-- **Nutzerdoku:** `docs/START_APPS.md`, `docs/BETRIEB_REPO_VS_SERVICE.md`, `docs/SYSTEM_INSTALLATION.md`, `docs/SD_CARD_IMAGE.md` auf **Setuphelfer**-Pfade und **systemd**-Units (`setuphelfer.service`, `setuphelfer-backend.service`) ausgerichtet; Legacy-Hinweise fùr `pi-installer` &lt; 1.4.0 wo nùtig.
-- **In-App:** `Documentation.tsx` ù FAQ (Starter, Pfade), Versionsblock **1.4.0.1**; **README** ù Kurzverweis auf `/opt/setuphelfer`.
-- **Skripte:** `install-system.sh` ù Zusammenfassung nach Installation (Befehle, systemd, Startmenù); `uninstall-system.sh` ù Entfernen der Symlinks **`setuphelfer*`**, Desktop-Dateien **`setuphelfer*.desktop`**, optionaler User **`setuphelfer`**.
+### Changed (Dokumentation ÔøΩ Phase D2)
+- **Nutzerdoku:** `docs/START_APPS.md`, `docs/BETRIEB_REPO_VS_SERVICE.md`, `docs/SYSTEM_INSTALLATION.md`, `docs/SD_CARD_IMAGE.md` auf **Setuphelfer**-Pfade und **systemd**-Units (`setuphelfer.service`, `setuphelfer-backend.service`) ausgerichtet; Legacy-Hinweise fÔøΩr `pi-installer` &lt; 1.4.0 wo nÔøΩtig.
+- **In-App:** `Documentation.tsx` ÔøΩ FAQ (Starter, Pfade), Versionsblock **1.4.0.1**; **README** ÔøΩ Kurzverweis auf `/opt/setuphelfer`.
+- **Skripte:** `install-system.sh` ÔøΩ Zusammenfassung nach Installation (Befehle, systemd, StartmenÔøΩ); `uninstall-system.sh` ÔøΩ Entfernen der Symlinks **`setuphelfer*`**, Desktop-Dateien **`setuphelfer*.desktop`**, optionaler User **`setuphelfer`**.
 
 ---
 
 ## [1.4.0.0] - 2026-04-08
 
-### Changed (Breaking ù Betrieb)
+### Changed (Breaking ÔøΩ Betrieb)
 - **Produkt-/Service-Name:** Debian-Binarypaket **`setuphelfer`** (ersetzt `pi-installer` &lt; 1.4.0); System-User **`setuphelfer`**; Pfade **`/opt/setuphelfer`**, **`/etc/setuphelfer`**, **`/var/lib/setuphelfer`**, **`/var/log/setuphelfer`**.
 - **systemd:** **`setuphelfer-backend.service`** + **`setuphelfer.service`**; Vorlagen im Repo-Root `setuphelfer*.service`; alte `pi-installer*.service` werden bei Deploy/postinst stillgelegt.
 - **Backend:** zentrale Pfadlogik `backend/core/install_paths.py`; **`_config_path()`** ohne Home-Fallback im Service-Modus; **`PI_INSTALLER_CONFIG_DIR`** / **`SETUPHELFER_*`** wirksam; Backup/Audit/Support-Bundle auf dynamische Pfade.
@@ -100,9 +120,9 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ## [1.3.9.5] - 2026-04-07
 
 ### Fixed
-- **Service-Topologie:** Port **8000** gehùrt nur noch **`pi-installer-backend.service`**. `scripts/start-browser-production.sh` startet kein Uvicorn mehr; bei fehlendem API klare Fehlermeldung und Exit.
+- **Service-Topologie:** Port **8000** gehÔøΩrt nur noch **`pi-installer-backend.service`**. `scripts/start-browser-production.sh` startet kein Uvicorn mehr; bei fehlendem API klare Fehlermeldung und Exit.
 - **systemd:** `pi-installer.service` **`Requires=pi-installer-backend.service`** (DEB + Vorlagen); **`debian/pi-installer-backend.service`** im Paket; `postinst`/`prerm`/`deploy-to-opt.sh`/`install-system.sh`/`create_installer.sh` aktivieren/starten Backend vor Web-UI.
-- **APP_EDITION:** Explizit **`release`** in Unit-Vorlagen (zusùtzlich zu DEB); Pfade **`PI_INSTALLER_*`** per Platzhalter in beiden Vorlagen.
+- **APP_EDITION:** Explizit **`release`** in Unit-Vorlagen (zusÔøΩtzlich zu DEB); Pfade **`PI_INSTALLER_*`** per Platzhalter in beiden Vorlagen.
 - **install-backend-service.sh:** Unter **`/opt/pi-installer`** User **`pi-installer`**, falls vorhanden.
 
 ### Changed
@@ -114,7 +134,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Fixed
 - **Betrieb / systemd:** `pi-installer.service` startet nicht mehr `./start.sh` (Vite-Dev, Schreibzugriffe auf `frontend/node_modules/.vite`). Stattdessen `scripts/start-browser-production.sh` mit `vite preview` auf gebautem `frontend/dist/` und optionalem Vite-Cache unter `/tmp` (`PI_INSTALLER_VITE_CACHE_DIR`).
-- **Deploy:** `scripts/deploy-to-opt.sh` fùhrt `npm run build` aus und schreibt die gleiche `ExecStart`-Zeile.
+- **Deploy:** `scripts/deploy-to-opt.sh` fÔøΩhrt `npm run build` aus und schreibt die gleiche `ExecStart`-Zeile.
 
 ### Changed
 - **Dokumentation:** `docs/BETRIEB_REPO_VS_SERVICE.md` (Repo-Modus vs. Service-Modus); Verweise in `docs/START_APPS.md`, `docs/SYSTEM_INSTALLATION.md`; FAQ und Versionskapitel in der App.
@@ -124,8 +144,8 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ## [1.3.9.3] - 2026-04-07
 
 ### Changed
-- **Backup & Restore:** Ampel auf **Freigabelage Phase 3** ausgerichtet (kein Grùn ohne nachgewiesenen Backup-Lauf; Gelb bei ùKern nicht verifiziertù; Rot bei `sudo_required` bzw. Diagnose/Restore-Vorschau-Risiko); Pflicht-Hinweistext per i18n.
-- **Dokumentation:** `docs/developer/BACKUP_RESTORE_PHASE3_RELEASE_ASSESSMENT.md` ergùnzt/verwendet; Verifikationsnotiz Phase 2D/2E referenziert.
+- **Backup & Restore:** Ampel auf **Freigabelage Phase 3** ausgerichtet (kein GrÔøΩn ohne nachgewiesenen Backup-Lauf; Gelb bei ÔøΩKern nicht verifiziertÔøΩ; Rot bei `sudo_required` bzw. Diagnose/Restore-Vorschau-Risiko); Pflicht-Hinweistext per i18n.
+- **Dokumentation:** `docs/developer/BACKUP_RESTORE_PHASE3_RELEASE_ASSESSMENT.md` ergÔøΩnzt/verwendet; Verifikationsnotiz Phase 2D/2E referenziert.
 
 ### Notes
 - Keine neue Backup-Kernfunktion; keine Produktionsfreigabe behauptet.
@@ -135,11 +155,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ## [1.3.9.2] - 2026-04-03
 
 ### Added
-- **Diagnose (Architektur):** Kanonisches ùbergangsschema `localization_model` (`legacy` \| `key_v1`), i18n-Key-Felder (`title_key`, `user_message_key`, `suggested_action_keys`), `diagnosis_code`, Referenzen (`docs_refs`, ?) in `backend/models/diagnosis.py`; Doku `docs/architecture/diagnosis_localization.md`.
+- **Diagnose (Architektur):** Kanonisches ÔøΩbergangsschema `localization_model` (`legacy` \| `key_v1`), i18n-Key-Felder (`title_key`, `user_message_key`, `suggested_action_keys`), `diagnosis_code`, Referenzen (`docs_refs`, ?) in `backend/models/diagnosis.py`; Doku `docs/architecture/diagnosis_localization.md`.
 - **Backend-Interpreter:** `interpret_v1` auf **v2**; Webserver-Portkonflikt, Backup-Verify-Fehler, System-Backend-unreachable und generischer Fallback liefern **key_v1** + EN-Fallback-Strings; Firewall-Regeln vorerst **legacy** (deutsche Freitexte, `schema_version` 1).
 
 ### Changed
-- **Frontend:** `DiagnosisPanel` wùhlt Texte per Keys oder Legacy; Typen in `types/diagnosis.ts`; `localBackendDiagnosis` / `localDiagnosisFallback` auf **key_v1**; neue Keys unter `diagnosis.codes.*` in `de.json` / `en.json`.
+- **Frontend:** `DiagnosisPanel` wÔøΩhlt Texte per Keys oder Legacy; Typen in `types/diagnosis.ts`; `localBackendDiagnosis` / `localDiagnosisFallback` auf **key_v1**; neue Keys unter `diagnosis.codes.*` in `de.json` / `en.json`.
 - **Version:** Patch `1.3.9.2` (`config/version.json`).
 
 ---

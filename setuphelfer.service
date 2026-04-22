@@ -28,23 +28,26 @@ Environment="SETUPHELFER_CONFIG_DIR={{PI_INSTALLER_CONFIG_DIR}}"
 Environment="PI_INSTALLER_CONFIG_DIR={{PI_INSTALLER_CONFIG_DIR}}"
 Environment="SETUPHELFER_LOG_DIR={{PI_INSTALLER_LOG_DIR}}"
 Environment="PI_INSTALLER_LOG_DIR={{PI_INSTALLER_LOG_DIR}}"
+# read-only: npm/node lesen ggf. ~/.npmrc; Cache schreiben unter INSTALL_DIR (nicht in $HOME — siehe npm_config_cache)
+Environment="npm_config_cache={{INSTALL_DIR}}/.npm-cache"
+Environment="NODE_OPTIONS=--max-old-space-size=1024"
 ProtectSystem=strict
-ProtectHome=yes
+ProtectHome=read-only
 PrivateTmp=yes
 PrivateDevices=yes
 NoNewPrivileges=yes
-MemoryMax=512M
+MemoryMax=1024M
 LimitNOFILE=4096
 ProtectKernelTunables=yes
 ProtectControlGroups=yes
 ProtectKernelLogs=yes
 LockPersonality=yes
 RestrictSUIDSGID=yes
-RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
 CapabilityBoundingSet=
 AmbientCapabilities=
 SystemCallArchitectures=native
-SystemCallFilter=@system-service
+# Nicht @system-service filtern: node/vite benötigt Syscalls, die dort teils gesperrt sind (SIGSYS).
 ReadWritePaths={{INSTALL_DIR}} /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp
 
 [Install]

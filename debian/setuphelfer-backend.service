@@ -9,6 +9,7 @@ Type=simple
 User=setuphelfer
 # Group wird in postinst auf die tatsächliche Gruppe gesetzt (kann nogroup sein)
 Group=nogroup
+SupplementaryGroups=setuphelfer
 WorkingDirectory=/opt/setuphelfer
 ExecStart=/opt/setuphelfer/scripts/start-backend.sh
 Restart=on-failure
@@ -26,11 +27,11 @@ Environment="PI_INSTALLER_STATE_DIR=/var/lib/setuphelfer"
 Environment="PI_INSTALLER_DEV=0"
 Environment="APP_EDITION=release"
 Environment="PIP_CACHE_DIR=/opt/setuphelfer/.pip-cache"
-NoNewPrivileges=true
+# Kein NoNewPrivileges: Full-Backup führt sudo aus (setuid würde sonst blockieren).
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp
+ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt
 MemoryMax=512M
 LimitNOFILE=4096
 

@@ -1,0 +1,129 @@
+========================================
+SETUPHELFER VM INVENTORY
+Datum: 2026-04-15T19:28:50+00:00
+Hostname: debian
+========================================
+
+[SYSTEM]
+Linux debian 6.12.73+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.73-1 (2026-02-17) x86_64 GNU/Linux
+PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+NAME="Debian GNU/Linux"
+VERSION_ID="13"
+VERSION="13 (trixie)"
+VERSION_CODENAME=trixie
+DEBIAN_VERSION_FULL=13.4
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+IMAGE_ID=live
+BUILD_ID=20260314T112523Z
+
+[UPTIME]
+ 19:28:51 up  1:59,  5 users,  load average: 0.00, 0.00, 0.00
+
+[USER]
+user
+
+[DISKS]
+NAME   FSTYPE   FSVER            LABEL                  UUID                                 FSAVAIL FSUSE% MOUNTPOINTS
+loop0  squashfs 4.0                                                                                0   100% /run/live/rootfs/filesystem.squashfs
+sda                                                                                                         
+sdb                                                                                                         
+└─sdb1 ext4     1.0                                     3e0b943b-d148-492c-b204-671a8026572b    7.4G     0% /mnt/backup-test
+sdc                                                                                                         
+sr0    iso9660  Joliet Extension d-live 13.4.0 xf amd64 2026-03-14-11-25-23-00                     0   100% /run/live/medium
+
+[MOUNTS]
+sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)
+proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+udev on /dev type devtmpfs (rw,nosuid,relatime,size=1933024k,nr_inodes=483256,mode=755,inode64)
+devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=600,ptmxmode=000)
+tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=401404k,mode=755,inode64)
+/dev/sr0 on /run/live/medium type iso9660 (ro,noatime,nojoliet,check=s,map=n,blocksize=2048,iocharset=utf8)
+/dev/loop0 on /run/live/rootfs/filesystem.squashfs type squashfs (ro,noatime,errors=continue)
+tmpfs on /run/live/overlay type tmpfs (rw,noatime,mode=755,inode64)
+overlay on / type overlay (rw,noatime,lowerdir=/run/live/rootfs/filesystem.squashfs/,upperdir=/run/live/overlay/rw,workdir=/run/live/overlay/work,redirect_dir=on,uuid=on)
+securityfs on /sys/kernel/security type securityfs (rw,nosuid,nodev,noexec,relatime)
+tmpfs on /dev/shm type tmpfs (rw,nosuid,nodev,inode64)
+cgroup2 on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot)
+pstore on /sys/fs/pstore type pstore (rw,nosuid,nodev,noexec,relatime)
+bpf on /sys/fs/bpf type bpf (rw,nosuid,nodev,noexec,relatime,mode=700)
+systemd-1 on /proc/sys/fs/binfmt_misc type autofs (rw,relatime,fd=40,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=1911)
+tmpfs on /run/lock type tmpfs (rw,nosuid,nodev,noexec,relatime,size=5120k,inode64)
+debugfs on /sys/kernel/debug type debugfs (rw,nosuid,nodev,noexec,relatime)
+mqueue on /dev/mqueue type mqueue (rw,nosuid,nodev,noexec,relatime)
+tracefs on /sys/kernel/tracing type tracefs (rw,nosuid,nodev,noexec,relatime)
+hugetlbfs on /dev/hugepages type hugetlbfs (rw,nosuid,nodev,relatime,pagesize=2M)
+tmpfs on /run/credentials/systemd-journald.service type tmpfs (ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,inode64,noswap)
+fusectl on /sys/fs/fuse/connections type fusectl (rw,nosuid,nodev,noexec,relatime)
+configfs on /sys/kernel/config type configfs (rw,nosuid,nodev,noexec,relatime)
+tmpfs on /tmp type tmpfs (rw,nosuid,nodev,relatime,inode64)
+binfmt_misc on /proc/sys/fs/binfmt_misc type binfmt_misc (rw,nosuid,nodev,noexec,relatime)
+tmpfs on /run/credentials/getty@tty1.service type tmpfs (ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,inode64,noswap)
+tmpfs on /run/user/1000 type tmpfs (rw,nosuid,nodev,relatime,size=401400k,nr_inodes=100350,mode=700,uid=1000,gid=1000,inode64)
+portal on /run/user/1000/doc type fuse.portal (rw,nosuid,nodev,relatime,user_id=1000,group_id=1000)
+/dev/sdb1 on /mnt/backup-test type ext4 (rw,relatime)
+tmpfs on /run/user/108 type tmpfs (rw,nosuid,nodev,relatime,size=401400k,nr_inodes=100350,mode=700,uid=108,gid=113,inode64)
+
+[DISK USAGE]
+Filesystem      Size  Used Avail Use% Mounted on
+udev            1.9G     0  1.9G   0% /dev
+tmpfs           392M  1.1M  391M   1% /run
+/dev/sr0        3.6G  3.6G     0 100% /run/live/medium
+/dev/loop0      2.9G  2.9G     0 100% /run/live/rootfs/filesystem.squashfs
+tmpfs           2.0G  1.2G  771M  61% /run/live/overlay
+overlay         2.0G  1.2G  771M  61% /
+tmpfs           2.0G     0  2.0G   0% /dev/shm
+tmpfs           5.0M  8.0K  5.0M   1% /run/lock
+tmpfs           1.0M     0  1.0M   0% /run/credentials/systemd-journald.service
+tmpfs           2.0G   16K  2.0G   1% /tmp
+tmpfs           1.0M     0  1.0M   0% /run/credentials/getty@tty1.service
+tmpfs           392M  120K  392M   1% /run/user/1000
+/dev/sdb1       7.8G  2.1M  7.4G   1% /mnt/backup-test
+tmpfs           392M   96K  392M   1% /run/user/108
+
+[NETWORK]
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host noprefixroute 
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:9b:41:49 brd ff:ff:ff:ff:ff:ff
+    altname enx0800279b4149
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute enp0s3
+       valid_lft 81861sec preferred_lft 81861sec
+    inet6 fe80::8506:41d2:c0bd:2307/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+
+[SERVICES – SETUPHELFER]
+  setuphelfer-backend.service                                                              loaded active running   Setuphelfer Backend (API)
+
+[PROCESSES – SETUPHELFER]
+user        7232  0.0  2.1 211460 86796 ?        Ssl  17:46   0:04 /opt/setuphelfer/backend/venv/bin/python3 -m uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1
+root        7315  0.0  0.1  19696  7368 pts/0    S+   17:52   0:00 sudo systemctl status setuphelfer-backend.service
+root        7317  0.0  0.0  19696  2384 pts/1    Ss   17:52   0:00 sudo systemctl status setuphelfer-backend.service
+root        7318  0.0  0.2  21096  8860 pts/1    S+   17:52   0:00 systemctl status setuphelfer-backend.service
+
+[FILESYSTEM CHECK – MARKER]
+total 0
+drwxr-xr-x  1 root root  80 Apr 15 18:06 .
+drwxr-xr-x  1 root root 200 Apr 15 17:29 ..
+drwxrwxr-x 18 user user 780 Apr 15 17:46 setuphelfer
+drwxr-xr-x  2 root root  60 Apr 15 18:06 testdata
+total 0
+drwxr-xr-x  1 root root  60 Apr 15 17:29 .
+drwxr-xr-x  1 root root 200 Apr 15 17:29 ..
+drwx------ 17 user user 580 Apr 15 18:23 user
+
+[BACKUP TARGET CHECK]
+total 4.0K
+drwxr-xr-x 1 root root   60 Apr 15 18:06 .
+drwxr-xr-x 1 root root  200 Apr 15 17:29 ..
+drwxr-xr-x 3 root root 4.0K Apr 15 18:05 backup-test
+
+========================================
+END OF REPORT
+========================================

@@ -36,6 +36,30 @@
 - FAQ-Kandidat: ja
 - Tutorial-Kandidat: ja (Erklärung „Wie prüfe ich, ob mein verschlüsseltes Backup wirklich lesbar ist?“)
 
+## Backup / Restore – Warum verweigert Setuphelfer mein Backup-Ziel?
+
+- Thema: Datei-Backup-Ziel (Pfad erlaubt, aber Speicherort unsicher).
+- Problem:
+  - Backups könnten auf dem Root-Dateisystem, tmpfs oder einem Live-Medium landen, obwohl ein separates Laufwerk gemeint war.
+- Ursache:
+  - Früher prüfte die Engine nur Pfad-Allowlists, nicht Mount-Herkunft und Dateisystem-Typ.
+- Lösung:
+  - Vor `create_file_backup` prüft `validate_backup_target` u. a. `findmnt`: Ziel muss gemountet sein, `source` muss ein `/dev/…`-Blockgerät sein, Mount darf nicht `/` sein, Dateisystem nur `ext4`/`xfs`/`ntfs`; `squashfs`/`iso9660`/`overlay` u. a. werden abgelehnt.
+- FAQ-Kandidat: ja
+- Tutorial-Kandidat: ja (externes Volume einbinden und Mount prüfen)
+
+## Backup / Restore – Warum funktioniert mein Backup-Ziel ohne manuelles chown nicht?
+
+- Thema: Schreibrechte auf eingehängtem USB/Platte trotz gültigem Pfad und Mount-Prüfung.
+- Problem:
+  - Viele Systeme mounten externe Medien als `root:root` mit `0755`; der Setuphelfer-Backend-Prozess läuft nicht als root.
+- Ursache:
+  - Ohne Gruppenzugriff schlägt der Schreibtest bzw. `tar`/`Manifest`-Schreiben auf dem Ziel fehl.
+- Lösung:
+  - Gruppe `setuphelfer` anlegen (passiert bei `install-system.sh` / Debian-Postinst), Mount-Punkt `root:setuphelfer` mit `0770`, Backend-Unit mit `SupplementaryGroups=setuphelfer`. Optional nur in Tests: `SETUPHELFER_FIX_PERMISSIONS=1` oder VM-Skript `VMTEST_BACKUP_OWNER_GROUP`.
+- FAQ-Kandidat: ja
+- Tutorial-Kandidat: ja (einmalige Einrichtung des Backup-Mounts)
+
 ## Backup / Restore – Warum ist Root-Restore gesperrt?
 
 - Thema: Produktiver Restore auf `/`
@@ -168,6 +192,34 @@
 
 - Eine VM erlaubt zerstörungsarme End-to-End-Tests (Backup -> Restore -> Reboot) mit klaren Logs.
 - Erst danach sollte der gleiche Ablauf auf echter Pi-Hardware geprüft werden.
+
+## Backup / Restore – Warum wird mein Backup abgebrochen?
+
+- Thema: Abbruch trotz sichtbarer `tar.gz` oder mitten im Lauf.
+- Typische Ursachen: **Manifest** konnte nicht eingebettet oder im Archiv nicht verifiziert werden (**Fail-Fast**, Archiv wird entfernt); **Tar**-Returncode ≠ 0; **Speicher voll**; **Ziel nicht beschreibbar** (Gruppe/Mount).
+- API/UI: strukturierter Code (z. B. `backup.failed_manifest_missing`, `backup.backup_target_not_writable`) statt stiller Halb-Erfolge.
+- FAQ-Kandidat: ja
+
+## Backup / Restore – Warum startet Setuphelfer nach Restore jetzt automatisch?
+
+- Thema: Dienste nach Neuinstallation / Zielsystem.
+- Kontext: Ein **Datei-Restore** kopiert nur Archiv-Inhalt; Units und `/opt`-Installation gehören zum **Installer** (`scripts/install-system.sh`), nicht automatisch zu jedem Restore.
+- Nach vollständigem Setuphelfer-Install auf dem Ziel: **`daemon-reload`** und gezielter Start von **`setuphelfer-backend`** und **`setuphelfer`** – der Installer prüft den **Finalzustand** (beide aktiv).
+- FAQ-Kandidat: ja
+
+## Backup / Restore – Was passiert bei fehlenden Berechtigungen?
+
+- Thema: Schreibtest schlägt fehl, obwohl der Pfad „existiert“.
+- Ursache: Backend läuft nicht als root; Mount oft `0755` / falsche Gruppe.
+- Lösung: `root:setuphelfer`, `0770`, `SupplementaryGroups=setuphelfer` auf der Backend-Unit; Details: [knowledge-base/BACKUP_TARGET_PERMISSIONS.md](knowledge-base/BACKUP_TARGET_PERMISSIONS.md).
+- FAQ-Kandidat: ja
+
+## Backup / Restore – Warum gibt es kein „Warning aber success“ mehr?
+
+- Thema: Früher konnten Tar-Warnungen oder unvollständige Schritte noch als Erfolg durchrutschen.
+- Heute: Auf dem beschriebenen API-Pfad für Datei-Backups ist das Ergebnis **eindeutig** SUCCESS oder FAILED (Manifest-Pflicht, kein Erfolg bei fehlendem `MANIFEST.json` im Archiv).
+- Verify/Restore: kritische Integritätsfehler führen zu klaren Fehlercodes, keine grüne Erfolgsmeldung bei unbrauchbarem Archiv.
+- FAQ-Kandidat: ja
 
 ## Einsteigerführung & Begleiter (ab 1.3.9.0)
 

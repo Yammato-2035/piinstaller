@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -11,6 +12,7 @@ interface BackupJob {
   job_id: string
   status?: string
   message?: string
+  code?: string
   backup_file?: string
   bytes_current?: number
   upload_progress_pct?: number
@@ -18,6 +20,22 @@ interface BackupJob {
   warning?: string
   results?: string[]
   encrypted?: boolean
+}
+
+function backupApiCodeToI18nSuffix(code: string): string {
+  const c = code.trim()
+  if (c.startsWith('backup.')) return c.slice('backup.'.length).replace(/\./g, '_')
+  return c.replace(/^backup\.messages\./i, '')
+}
+
+function jobUserFacingMessage(t: TFunction, job: BackupJob): string {
+  if (job.status === 'error' && job.code && typeof job.code === 'string' && job.code.startsWith('backup.')) {
+    const suffix = backupApiCodeToI18nSuffix(job.code)
+    const key = `backup.messages.${suffix}`
+    const translated = t(key)
+    if (translated !== key) return translated
+  }
+  return (job.message || '').trim()
 }
 
 const RunningBackupModal: React.FC = () => {
@@ -309,6 +327,8 @@ const RunningBackupModal: React.FC = () => {
 
   if (!shouldShow) return null
 
+  const faceMsg = jobUserFacingMessage(t, backupJob)
+
   return (
     <AnimatePresence>
       {shouldShow && (
@@ -376,9 +396,9 @@ const RunningBackupModal: React.FC = () => {
                 </div>
               )}
 
-              {backupJob.message && (
+              {faceMsg && (
                 <div className="text-xs text-slate-300">
-                  <span className="font-semibold">{t('runningBackup.label.message')}</span> {backupJob.message}
+                  <span className="font-semibold">{t('runningBackup.label.message')}</span> {faceMsg}
                 </div>
               )}
 

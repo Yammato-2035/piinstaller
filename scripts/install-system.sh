@@ -6,6 +6,11 @@
 # Verwendung:
 #   sudo ./scripts/install-system.sh
 #   Oder aus dem Repository: curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/install-system.sh | sudo bash
+#
+# Nicht-interaktiv (CI / VM-Test, keine read-Prompts):
+#   sudo env SETUPHELFER_NONINTERACTIVE=1 \
+#     SETUPHELFER_SYSTEMD_ENABLE=yes SETUPHELFER_SYSTEMD_START_NOW=yes \
+#     PI_INSTALLER_USER=volker ./scripts/install-system.sh
 
 set -e
 
@@ -71,6 +76,25 @@ else
 fi
 CURRENT_HOME=$(getent passwd "$CURRENT_USER" | cut -d: -f6)
 
+# Gruppe für sichere Backup-Mounts (0770, root:<Gruppe>); systemd: SupplementaryGroups im Backend-Unit
+BACKUP_GROUP="${SETUPHELFER_BACKUP_GROUP:-setuphelfer}"
+if ! getent group "$BACKUP_GROUP" >/dev/null 2>&1; then
+  if groupadd --system "$BACKUP_GROUP" 2>/dev/null; then
+    ok "Gruppe $BACKUP_GROUP angelegt (system)"
+  elif groupadd "$BACKUP_GROUP" 2>/dev/null; then
+    ok "Gruppe $BACKUP_GROUP angelegt"
+  else
+    warn "Konnte Gruppe $BACKUP_GROUP nicht anlegen — Backup-Ziele ggf. manuell mit root:$BACKUP_GROUP und 0770 einrichten."
+  fi
+else
+  ok "Gruppe $BACKUP_GROUP existiert bereits"
+fi
+if [ -n "$CURRENT_USER" ] && [ "$CURRENT_USER" != root ] && id "$CURRENT_USER" >/dev/null 2>&1; then
+  if usermod -aG "$BACKUP_GROUP" "$CURRENT_USER" 2>/dev/null; then
+    ok "User $CURRENT_USER ist Mitglied von $BACKUP_GROUP (für interaktive Shells: neu einloggen)"
+  fi
+fi
+
 echo -e "${CYAN}============================================${NC}"
 echo -e "${CYAN}  Setuphelfer – Systemweite Installation${NC}"
 echo -e "${CYAN}============================================${NC}"
@@ -100,6 +124,7 @@ if command -v apt-get >/dev/null 2>&1; then
     git \
     curl \
     wget \
+    rsync \
     build-essential \
     python3-gi \
     gir1.2-gstreamer-1.0 \
@@ -158,6 +183,11 @@ ok "Verzeichnisse erstellt"
 # --- Schritt 3: Dateien kopieren ---
 info "[3/8] Dateien nach ${INSTALL_DIR} kopieren..."
 
+if ! command -v rsync >/dev/null 2>&1; then
+  err "rsync fehlt (wird zum Kopieren ins Installationsverzeichnis benötigt). z. B.: apt-get install -y rsync oder dnf install -y rsync"
+  exit 1
+fi
+
 # Kopiere alle Dateien (ausgenommen .git, node_modules, venv, etc.)
 rsync -a --exclude='.git' \
       --exclude='node_modules' \
@@ -199,6 +229,14 @@ if command -v npm >/dev/null 2>&1; then
   cd "$INSTALL_DIR/frontend"
   npm install --silent 2>&1 | grep -v "npm WARN" || true
   ok "Frontend-Dependencies installiert"
+  # Produktions-Build im Installer erzeugen, damit der systemd-Start kein schweres Build mehr triggern muss.
+  export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=1024}"
+  if npm run build 2>&1; then
+    ok "Frontend-Produktionsbuild erzeugt"
+  else
+    err "Frontend-Build fehlgeschlagen (npm run build)."
+    exit 1
+  fi
   if command -v cargo >/dev/null 2>&1; then
     info "Tauri-App bauen (App-Fenster für Startmenü)..."
     if ( cd "$INSTALL_DIR/frontend" && npm run tauri:build 2>&1 ); then
@@ -281,28 +319,67 @@ sed -i "s/^Group=.*/Group=$PRIMARY_GROUP/" "$SYSTEMD_DIR/setuphelfer-backend.ser
 sed "${SED_SYS[@]}" "$INSTALL_DIR/setuphelfer.service" > "$SYSTEMD_DIR/setuphelfer.service"
 sed -i "s/^Group=.*/Group=$PRIMARY_GROUP/" "$SYSTEMD_DIR/setuphelfer.service" 2>/dev/null || true
 
+# Deterministisch: keine lokalen Drop-Ins für Setuphelfer-Units zulassen.
+# Zielzustand kommt ausschließlich aus den Unit-Dateien im Installationsbaum.
+rm -rf /etc/systemd/system/setuphelfer.service.d
+rm -rf /etc/systemd/system/setuphelfer-backend.service.d
+
+systemctl daemon-reexec
 systemctl daemon-reload
 ok "systemd: setuphelfer-backend.service + setuphelfer.service geschrieben"
 
 echo ""
-read -p "Sollen setuphelfer-backend und setuphelfer beim Booten starten? (j/n) " -n 1 -r
-echo ""
-if [[ $REPLY =~ ^[JjYy]$ ]]; then
+_enable_systemd_units=""
+_start_systemd_now=""
+if [[ "${SETUPHELFER_NONINTERACTIVE:-0}" == "1" || "${CI:-}" == "true" ]]; then
+  _enable_systemd_units="${SETUPHELFER_SYSTEMD_ENABLE:-yes}"
+  _start_systemd_now="${SETUPHELFER_SYSTEMD_START_NOW:-yes}"
+  info "Nicht-interaktiv: systemd enable=${_enable_systemd_units} start_now=${_start_systemd_now}"
+else
+  read -p "Sollen setuphelfer-backend und setuphelfer beim Booten starten? (j/n) " -n 1 -r
+  echo ""
+  if [[ $REPLY =~ ^[JjYy]$ ]]; then
+    _enable_systemd_units="yes"
+  else
+    _enable_systemd_units="no"
+  fi
+fi
+
+if [[ "${_enable_systemd_units}" =~ ^(1|[Yy]|[Yy]es|[Jj]a|[Tt]rue)$ ]]; then
   systemctl enable setuphelfer-backend.service
   systemctl enable setuphelfer.service
   ok "Services aktiviert (Backend + Web-UI)"
 
-  read -p "Jetzt starten? (j/n) " -n 1 -r
-  echo ""
-  if [[ $REPLY =~ ^[JjYy]$ ]]; then
+  if [[ "${SETUPHELFER_NONINTERACTIVE:-0}" != "1" && "${CI:-}" != "true" ]]; then
+    read -p "Jetzt starten? (j/n) " -n 1 -r
+    echo ""
+    if [[ $REPLY =~ ^[JjYy]$ ]]; then
+      _start_systemd_now="yes"
+    else
+      _start_systemd_now="no"
+    fi
+  fi
+
+  if [[ "${_start_systemd_now}" =~ ^(1|[Yy]|[Yy]es|[Jj]a|[Tt]rue)$ ]]; then
     systemctl start setuphelfer-backend.service
     sleep 2
     systemctl start setuphelfer.service
-    sleep 2
-    if systemctl is-active --quiet setuphelfer-backend.service && systemctl is-active --quiet setuphelfer.service; then
+    _ok_backend=0
+    _ok_web=0
+    for _i in 1 2 3 4 5 6 7 8; do
+      systemctl is-active --quiet setuphelfer-backend.service && _ok_backend=1 || true
+      systemctl is-active --quiet setuphelfer.service && _ok_web=1 || true
+      if [[ "$_ok_backend" -eq 1 && "$_ok_web" -eq 1 ]]; then
+        break
+      fi
+      sleep 2
+    done
+    if [[ "$_ok_backend" -eq 1 && "$_ok_web" -eq 1 ]]; then
       ok "Beide Services gestartet"
     else
-      warn "Mindestens ein Service aktiv? journalctl -u setuphelfer-backend -u setuphelfer -n 50"
+      err "Service-Validierung fehlgeschlagen: setuphelfer-backend oder setuphelfer ist nicht aktiv."
+      journalctl -u setuphelfer-backend -u setuphelfer -n 80 --no-pager || true
+      exit 1
     fi
   fi
 else

@@ -1,0 +1,27 @@
+========================================
+SETUPHELFER VM INVENTORY – setuphelfer-b
+========================================
+Datum (Host): 2026-04-18 (ISO8601 lokal beim Erzeugen dieser Datei)
+Hinweis: Kein lesender Gast-Zugriff per SSH möglich; nur Host-/VBox-Belege und Fehlversuche.
+
+----------------------------------------
+[SSH – FEHLVERSUCH]
+Benutzer: user (analog setuphelfer-a)
+Befehl wiederholt: ssh -o BatchMode=yes -o ConnectTimeout=12 -p 2223 user@localhost
+Ergebnis: "Connection timed out during banner exchange" / Verbindung zu 127.0.0.1:2223: Timeout
+Interpretation (nur indizielle, keine Annahme als Fakt): Auf Gast-Port 22 antwortet kein SSH-Daemon rechtzeitig, oder Gast hat kein erreichbares Netz/kein sshd.
+
+----------------------------------------
+[VBOX – VM-ZUSTAND / SPEICHER / NAT]
+Auszug von: VBoxManage showvminfo setuphelfer-b
+
+State:                       running (seit Start-Session; Stand Erzeugung dieser Datei)
+SATA Port 0: system-b.vdi  (Pfad: tools/vm-test/disks/system-b.vdi)
+SATA Port 1: backup-b.vdi
+SATA Port 2: restore-target-b.vdi
+SATA Port 3: Empty (keine ISO eingehängt)
+NIC 1: NAT, Rule guestssh: Host-Port 2223 -> Gast-Port 22
+
+----------------------------------------
+END OF REPORT (Host-only, kein Gast-Inventar)
+========================================

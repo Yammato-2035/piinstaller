@@ -1,0 +1,6 @@
+# Lokale VM-Testdaten nie committen (Platzhalter-Datei behalten)
+disks/*
+!disks/.gitkeep
+*.log
+logs/
+*.iso

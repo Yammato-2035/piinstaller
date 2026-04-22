@@ -12,8 +12,9 @@ import socket
 import tarfile
 import tempfile
 import unittest
-from unittest.mock import patch
 from pathlib import Path
+from subprocess import CompletedProcess
+from unittest.mock import patch
 
 import sys
 
@@ -21,16 +22,39 @@ _backend = Path(__file__).resolve().parent.parent
 if str(_backend) not in sys.path:
     sys.path.insert(0, str(_backend))
 
+from datetime import datetime, timezone
+
+from core.backup_recovery_i18n import (
+    K_ARCHIVE_CORRUPT,
+    K_BACKUP_FAILED_MANIFEST_MISSING,
+    K_BACKUP_TARGET_NOT_WRITABLE,
+    K_VERIFY_INTEGRITY_FAILED,
+)
 from core.block_device_allowlist import is_allowed_block_device
 from modules.backup_crypto import decrypt_bytes, encrypt_bytes, generate_key
-from modules.backup_engine import create_file_backup, create_manifest
+from modules.backup_engine import create_file_backup, create_manifest, embed_manifest_in_tar_gz
+from modules.storage_detection import (
+    BackupTargetValidationError,
+    assert_backup_target_dir_writable,
+    classify_devices,
+    validate_backup_target,
+)
 from modules.backup_verify import verify_basic, verify_deep
 from modules.backup_symlink_safety import tar_symlink_linkname_allowed
 from modules.restore_engine import restore_files
 
 
+class _SkipMountValidationMixin:
+    """create_file_backup-Tests unter /tmp: Mount-Sicherheitsprüfung per Mock umgehen."""
+
+    def setUp(self) -> None:
+        p = patch("modules.backup_engine.validate_backup_target")
+        p.start()
+        self.addCleanup(p.stop)
+
+
 @unittest.skipUnless(os.name == "posix", "POSIX only: symlinks and unix sockets")
-class TestSymlinkAndSpecialFiles(unittest.TestCase):
+class TestSymlinkAndSpecialFiles(_SkipMountValidationMixin, unittest.TestCase):
     def test_directory_backup_preserves_symlink_without_dereference(self):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -48,7 +72,7 @@ class TestSymlinkAndSpecialFiles(unittest.TestCase):
                 allowed_output_prefixes=(base,),
             )
             self.assertTrue(res.ok, res.detail)
-            sym_entries = [e for e in res.manifest.get("files", []) if e.get("type") == "symlink"]
+            sym_entries = [e for e in (res.manifest.get("entries") or res.manifest.get("files") or []) if e.get("type") == "symlink"]
             self.assertTrue(sym_entries, "manifest should list symlink entries")
             le = next(e for e in sym_entries if e["path"].endswith("50-pipewire.conf"))
             self.assertEqual(le.get("link_target"), "real.conf")
@@ -140,7 +164,7 @@ class TestAllowlist(unittest.TestCase):
         self.assertTrue(is_allowed_block_device("/dev/mmcblk0"))
 
 
-class TestBackupRoundtrip(unittest.TestCase):
+class TestBackupRoundtrip(_SkipMountValidationMixin, unittest.TestCase):
     def test_file_backup_single_file_still_works(self):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -188,6 +212,24 @@ class TestBackupRoundtrip(unittest.TestCase):
             self.assertTrue(any(name.endswith("/home/volker/testdata/file.txt") for name in names))
             self.assertNotIn("hosts", names)
             self.assertNotIn("marker.txt", names)
+
+    def test_restore_skips_tar_root_dot_member(self):
+        """Root-Backups (tar aus /) enthalten oft ein Mitglied ``.`` — darf Restore nicht abbrechen."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            arch = base / "rootish.tar.gz"
+            hello = base / "hello.txt"
+            hello.write_text("x", encoding="utf-8")
+            with tarfile.open(arch, "w:gz") as tf:
+                dot = tarfile.TarInfo(name=".")
+                dot.type = tarfile.DIRTYPE
+                dot.mode = 0o755
+                tf.addfile(dot)
+                tf.add(hello, arcname="hello.txt")
+            out = base / "out"
+            ok, key, err = restore_files(arch, out, allowed_target_prefixes=(base,), dry_run=False)
+            self.assertTrue(ok, (key, err))
+            self.assertTrue((out / "hello.txt").is_file())
 
     def test_restore_preserves_relative_tree(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -274,7 +316,9 @@ class TestBackupRoundtrip(unittest.TestCase):
                         payloads[m.name] = fh.read()
 
             manifest = json.loads(payloads["MANIFEST.json"].decode("utf-8"))
-            manifest["files"][0]["path"] = "missing/file.txt"
+            rows = manifest.get("entries") or manifest.get("files") or []
+            rows[0]["path"] = "missing/file.txt"
+            manifest["entries"] = rows
             payloads["MANIFEST.json"] = json.dumps(manifest).encode("utf-8")
 
             rewritten = base / "rewritten.tar.gz"
@@ -292,8 +336,12 @@ class TestBackupRoundtrip(unittest.TestCase):
 
             ok, key, detail = verify_deep(rewritten, extract_root=base, try_loop_mount_image=False)
             self.assertFalse(ok)
-            self.assertEqual(key, "backup_recovery.error.checksum_mismatch")
-            self.assertEqual(detail.get("file"), "missing/file.txt")
+            self.assertEqual(key, K_VERIFY_INTEGRITY_FAILED)
+            self.assertFalse(detail.get("valid", True))
+            errs = detail.get("errors") or []
+            self.assertTrue(errs, "expected structured errors")
+            self.assertEqual(errs[0].get("kind"), "missing_file")
+            self.assertEqual(errs[0].get("path"), "missing/file.txt")
 
     def test_allowlist_restrictions_are_still_enforced(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -329,6 +377,144 @@ class TestBackupRoundtrip(unittest.TestCase):
             self.assertEqual(key, "backup_recovery.error.path_not_allowed")
 
 
+class TestVerifyDeepHardening(_SkipMountValidationMixin, unittest.TestCase):
+    def test_create_file_backup_fails_when_manifest_missing_in_archive_after_write(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            src = base / "src"
+            src.mkdir()
+            (src / "a.txt").write_text("x", encoding="utf-8")
+            arch = base / "b.tar.gz"
+            with patch("modules.backup_engine.archive_contains_manifest", return_value=False):
+                res = create_file_backup(
+                    [src / "a.txt"],
+                    archive_path=arch,
+                    allowed_source_prefixes=(base,),
+                    allowed_output_prefixes=(base,),
+                )
+            self.assertFalse(res.ok, res.detail)
+            self.assertEqual(res.message_key, K_BACKUP_FAILED_MANIFEST_MISSING)
+            self.assertFalse(arch.exists(), "partial archive must be removed")
+
+    def test_verify_deep_rejects_corrupt_manifest_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            arch = base / "bad-man.tar.gz"
+            with tarfile.open(arch, "w:gz") as tf:
+                raw = b"{ not json"
+                info = tarfile.TarInfo(name="MANIFEST.json")
+                info.size = len(raw)
+                tf.addfile(info, io.BytesIO(raw))
+            ok, key, det = verify_deep(arch, extract_root=base, try_loop_mount_image=False)
+            self.assertFalse(ok)
+            self.assertEqual(key, "backup_recovery.error.missing_manifest")
+            kinds = {e.get("kind") for e in (det.get("errors") or [])}
+            self.assertIn("invalid_manifest_json", kinds)
+
+    def test_verify_deep_hardlink_matches_target_sha256(self):
+        import hashlib
+
+        data = b"shared-payload-bytes"
+        h = hashlib.sha256(data).hexdigest()
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            arch = base / "hl.tar.gz"
+            man = {
+                "version": 1,
+                "kind": "setuphelfer-backup-manifest",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "entries": [
+                    {"path": "tgt.bin", "type": "file", "size": str(len(data)), "sha256": h},
+                    {"path": "hl.bin", "type": "hardlink", "link_target": "tgt.bin"},
+                ],
+                "skipped": [],
+                "skipped_inputs": [],
+                "skipped_members": [],
+                "partition_layout_sfdisk_d": "",
+                "system": {},
+            }
+            raw_man = json.dumps(man).encode("utf-8")
+            with tarfile.open(arch, "w:gz") as tf:
+                mi = tarfile.TarInfo(name="MANIFEST.json")
+                mi.size = len(raw_man)
+                tf.addfile(mi, io.BytesIO(raw_man))
+                ti = tarfile.TarInfo(name="tgt.bin")
+                ti.size = len(data)
+                tf.addfile(ti, io.BytesIO(data))
+                hi = tarfile.TarInfo(name="hl.bin")
+                hi.type = tarfile.LNKTYPE
+                hi.linkname = "tgt.bin"
+                hi.size = 0
+                tf.addfile(hi)
+            ok, key, det = verify_deep(arch, extract_root=base, try_loop_mount_image=False)
+            self.assertTrue(ok, (key, det))
+            self.assertTrue(det.get("valid"))
+
+    def test_verify_deep_hardlink_fails_when_target_sha256_wrong_in_manifest(self):
+        import hashlib
+
+        data = b"shared-payload-bytes"
+        h_bad = hashlib.sha256(b"other").hexdigest()
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            arch = base / "hl-bad.tar.gz"
+            man = {
+                "version": 1,
+                "kind": "setuphelfer-backup-manifest",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "entries": [
+                    {"path": "tgt.bin", "type": "file", "size": str(len(data)), "sha256": h_bad},
+                    {"path": "hl.bin", "type": "hardlink", "link_target": "tgt.bin"},
+                ],
+                "skipped": [],
+                "skipped_inputs": [],
+                "skipped_members": [],
+                "partition_layout_sfdisk_d": "",
+                "system": {},
+            }
+            raw_man = json.dumps(man).encode("utf-8")
+            with tarfile.open(arch, "w:gz") as tf:
+                mi = tarfile.TarInfo(name="MANIFEST.json")
+                mi.size = len(raw_man)
+                tf.addfile(mi, io.BytesIO(raw_man))
+                ti = tarfile.TarInfo(name="tgt.bin")
+                ti.size = len(data)
+                tf.addfile(ti, io.BytesIO(data))
+                hi = tarfile.TarInfo(name="hl.bin")
+                hi.type = tarfile.LNKTYPE
+                hi.linkname = "tgt.bin"
+                hi.size = 0
+                tf.addfile(hi)
+            ok, key, det = verify_deep(arch, extract_root=base, try_loop_mount_image=False)
+            self.assertFalse(ok)
+            self.assertEqual(key, K_VERIFY_INTEGRITY_FAILED)
+            kinds = [e.get("kind") for e in (det.get("errors") or [])]
+            self.assertIn("hash_mismatch", kinds)
+
+    def test_verify_deep_rejects_truncated_gzip(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            src = base / "src"
+            src.mkdir()
+            (src / "a.txt").write_text("hello", encoding="utf-8")
+            arch = base / "good.tar.gz"
+            res = create_file_backup(
+                [src / "a.txt"],
+                archive_path=arch,
+                allowed_source_prefixes=(base,),
+                allowed_output_prefixes=(base,),
+            )
+            self.assertTrue(res.ok, res.detail)
+            full = arch.read_bytes()
+            raw = full[: max(len(full) // 2, 10)]
+            bad = base / "trunc.tar.gz"
+            bad.write_bytes(raw)
+            ok, key, det = verify_deep(bad, extract_root=base, try_loop_mount_image=False)
+            self.assertFalse(ok)
+            self.assertEqual(key, K_ARCHIVE_CORRUPT)
+            self.assertEqual((det.get("errors") or [{}])[0].get("kind"), "gzip_corrupt")
+
+
 class TestCrypto(unittest.TestCase):
     def test_aes_roundtrip_no_key_in_ciphertext(self):
         key = generate_key()
@@ -346,7 +532,31 @@ class TestManifest(unittest.TestCase):
             p = Path(tmp) / "x.bin"
             p.write_bytes(b"abc")
             m = create_manifest([p], partition_device=None)
-            self.assertEqual(m["files"][0]["sha256"], "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+            ent0 = (m.get("entries") or m.get("files") or [{}])[0]
+            self.assertEqual(ent0.get("sha256"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+
+
+class TestEmbedManifestInTar(unittest.TestCase):
+    def test_embed_adds_manifest_to_plain_tar_gz(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            raw = base / "plain.tar.gz"
+            hello = base / "hello.txt"
+            hello.write_text("hello", encoding="utf-8")
+            with tarfile.open(raw, "w:gz") as tf:
+                tf.add(hello, arcname="hello.txt")
+            ok, err = embed_manifest_in_tar_gz(raw)
+            self.assertTrue(ok, err)
+            with tarfile.open(raw, "r:gz") as tf:
+                first = tf.getmembers()[0].name.lstrip("./")
+                self.assertEqual(first, "MANIFEST.json")
+                data = tf.extractfile("MANIFEST.json")
+                assert data is not None
+                man = json.loads(data.read().decode("utf-8"))
+                self.assertEqual(man.get("kind"), "setuphelfer-backup-manifest")
+                self.assertIn("entries", man)
+                paths = {e.get("path") for e in (man.get("entries") or [])}
+                self.assertIn("hello.txt", paths)
 
 
 class TestDdSmoke(unittest.TestCase):
@@ -372,6 +582,197 @@ class TestDdSmoke(unittest.TestCase):
                 runner=fake_run,
             )
             self.assertTrue(r.ok)
+
+
+class TestBackupTargetMountValidation(unittest.TestCase):
+    def test_classify_devices_categories(self) -> None:
+        devices = [
+            {
+                "device": "/dev/sda1",
+                "partitions": [],
+                "fstype": "ext4",
+                "mountpoint": "/",
+                "size": "100G",
+                "type": "part",
+            },
+            {
+                "device": "/dev/sda2",
+                "partitions": [],
+                "fstype": "ext4",
+                "mountpoint": "/mnt/bak",
+                "size": "50G",
+                "type": "part",
+            },
+            {
+                "device": "/dev/loop0",
+                "partitions": [],
+                "fstype": "squashfs",
+                "mountpoint": "/rofs",
+                "size": "2G",
+                "type": "loop",
+            },
+            {
+                "device": "/dev/sda3",
+                "partitions": [],
+                "fstype": "vfat",
+                "mountpoint": "/boot/efi",
+                "size": "512M",
+                "type": "part",
+            },
+        ]
+        c = classify_devices(devices)
+        self.assertEqual(c[0]["category"], "system_disk")
+        self.assertEqual(c[1]["category"], "backup_candidate")
+        self.assertEqual(c[2]["category"], "live_system")
+        self.assertEqual(c[3]["category"], "unknown")
+
+    def test_validate_rejects_root_filesystem(self) -> None:
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["findmnt", "-J"]:
+                body = {
+                    "filesystems": [
+                        {"source": "/dev/sda1", "target": "/", "fstype": "ext4"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            arch = base / "b.tar.gz"
+            arch.parent.mkdir(parents=True, exist_ok=True)
+            with self.assertRaises(BackupTargetValidationError) as ctx:
+                validate_backup_target(arch, runner=fake_run)
+            self.assertEqual(ctx.exception.message_key, "backup_recovery.error.backup_target_root_filesystem")
+
+    def test_validate_rejects_not_mounted(self) -> None:
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["findmnt", "-J"]:
+                return CompletedProcess(argv, 1, "", "not found")
+            return CompletedProcess(argv, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            arch = Path(tmp) / "b.tar.gz"
+            with self.assertRaises(BackupTargetValidationError) as ctx:
+                validate_backup_target(arch, runner=fake_run)
+            self.assertEqual(ctx.exception.message_key, "backup_recovery.error.backup_target_not_mounted")
+
+    def test_validate_accepts_ext4_block_device_mount(self) -> None:
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["findmnt", "-J"]:
+                mount_at = str(Path(argv[2]).resolve())
+                body = {
+                    "filesystems": [
+                        {"source": "/dev/sdb1", "target": mount_at, "fstype": "ext4"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            arch = Path(tmp) / "b.tar.gz"
+            validate_backup_target(arch, runner=fake_run)
+
+    def test_validate_rejects_unwritable_directory(self) -> None:
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["findmnt", "-J"]:
+                mount_at = str(Path(argv[2]).resolve())
+                body = {
+                    "filesystems": [
+                        {"source": "/dev/sdb1", "target": mount_at, "fstype": "ext4"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            d = base / "mount_here"
+            d.mkdir()
+            try:
+                os.chmod(d, 0o555)
+                arch = d / "b.tar.gz"
+                with self.assertRaises(BackupTargetValidationError) as ctx:
+                    validate_backup_target(arch, runner=fake_run)
+                self.assertEqual(ctx.exception.message_key, K_BACKUP_TARGET_NOT_WRITABLE)
+            finally:
+                os.chmod(d, 0o700)
+
+    def test_assert_writable_ok_on_tmp(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            assert_backup_target_dir_writable(Path(tmp))
+
+    def test_writable_probe_detail_mentions_group_when_gid_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp) / "w"
+            d.mkdir()
+            # Kein patch auf os.stat (Path.is_dir nutzt os.stat global).
+            with patch("modules.storage_detection.os.open", side_effect=PermissionError("denied")):
+                with patch(
+                    "modules.storage_detection.grp.getgrnam",
+                    return_value=type("G", (), {"gr_gid": 12345678})(),
+                ):
+                    with self.assertRaises(BackupTargetValidationError) as ctx:
+                        assert_backup_target_dir_writable(d)
+            self.assertIn("Gruppe", ctx.exception.detail or "")
+
+    def test_validate_rejects_squashfs(self) -> None:
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["findmnt", "-J"]:
+                mount_at = str(Path(argv[2]).resolve())
+                body = {
+                    "filesystems": [
+                        {"source": "/dev/loop0", "target": mount_at, "fstype": "squashfs"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            arch = Path(tmp) / "b.tar.gz"
+            with self.assertRaises(BackupTargetValidationError) as ctx:
+                validate_backup_target(arch, runner=fake_run)
+            self.assertEqual(ctx.exception.message_key, "backup_recovery.error.backup_target_live_filesystem")
+
+    def test_validate_rejects_tmpfs_non_block_source(self) -> None:
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["findmnt", "-J"]:
+                mount_at = str(Path(argv[2]).resolve())
+                body = {
+                    "filesystems": [
+                        {"source": "tmpfs", "target": mount_at, "fstype": "tmpfs"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            arch = Path(tmp) / "b.tar.gz"
+            with self.assertRaises(BackupTargetValidationError) as ctx:
+                validate_backup_target(arch, runner=fake_run)
+            self.assertEqual(ctx.exception.message_key, "backup_recovery.error.backup_target_non_block_source")
+
+    def test_create_file_backup_aborts_on_validation_failure(self) -> None:
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["findmnt", "-J"]:
+                return CompletedProcess(argv, 1, "", "no")
+            return CompletedProcess(argv, 0, "", "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            src = base / "src"
+            src.mkdir()
+            (src / "a.txt").write_text("x", encoding="utf-8")
+            arch = base / "b.tar.gz"
+            res = create_file_backup(
+                [src / "a.txt"],
+                archive_path=arch,
+                allowed_source_prefixes=(base,),
+                allowed_output_prefixes=(base,),
+                runner=fake_run,
+            )
+            self.assertFalse(res.ok)
+            self.assertEqual(res.message_key, "backup_recovery.error.backup_target_not_mounted")
 
 
 if __name__ == "__main__":

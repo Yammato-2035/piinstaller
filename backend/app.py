@@ -26,7 +26,9 @@ import xml.etree.ElementTree as ET
 from pydantic import BaseModel
 
 from core.install_paths import audit_rules_file as _audit_rules_path, get_config_dir, get_opt_install_dir, is_dev_mode
+from core.backup_recovery_i18n import K_BACKUP_FAILED_MANIFEST_MISSING, tr
 from modules.backup import with_backup_contract
+from modules.storage_detection import BackupTargetValidationError, validate_backup_target
 
 # Update-Center: Kompatibilitäts-Gate für DEB-Build
 try:
@@ -677,6 +679,72 @@ def _find_last_full_backup(backup_dir: str) -> tuple[Optional[str], Optional[int
         return None, None
 
 
+# API-Codes (backup.*) für UI/i18n; Werte = Engine-Schlüssel aus backup_recovery_i18n
+_BACKUP_TARGET_ERR_TO_API = {
+    "backup_recovery.error.backup_target_parent_missing": "backup.backup_target_parent_missing",
+    "backup_recovery.error.backup_target_not_mounted": "backup.backup_target_not_mounted",
+    "backup_recovery.error.backup_target_root_filesystem": "backup.backup_target_root_filesystem",
+    "backup_recovery.error.backup_target_non_block_source": "backup.backup_target_non_block_source",
+    "backup_recovery.error.backup_target_live_filesystem": "backup.backup_target_live_filesystem",
+    "backup_recovery.error.backup_target_filesystem_not_permitted": "backup.backup_target_filesystem_not_permitted",
+    "backup_recovery.error.backup_target_not_writable": "backup.backup_target_not_writable",
+}
+
+
+def _env_backup_group_name() -> str:
+    """Gruppenname für optionales chown (nur SETUPHELFER_FIX_PERMISSIONS=1); alphanumerisch + _ -."""
+    g = (os.environ.get("SETUPHELFER_BACKUP_GROUP") or "setuphelfer").strip()
+    if not g or len(g) > 32 or not re.match(r"^[a-zA-Z][a-zA-Z0-9_-]{0,31}$", g):
+        return "setuphelfer"
+    return g
+
+
+def _apply_optional_backup_target_permissions_fix(backup_dir: str, sudo_password: str) -> None:
+    """
+    Nur wenn SETUPHELFER_FIX_PERMISSIONS=1: einmalig chown root:<Gruppe> und chmod 0770 (Test/VM).
+    Im Normalbetrieb deaktiviert — kein automatisches Rechte-Anheben.
+    """
+    if os.environ.get("SETUPHELFER_FIX_PERMISSIONS") != "1":
+        return
+    grp_name = _env_backup_group_name()
+    qdir = shlex.quote(backup_dir)
+    qgrp = shlex.quote(grp_name)
+    cmd = f"chown root:{qgrp} {qdir} && chmod 0770 {qdir}"
+    logger.warning(
+        "SETUPHELFER_FIX_PERMISSIONS=1: setze Backup-Ziel %s auf root:%s mit Modus 0770 (nur für kontrollierte Umgebungen).",
+        backup_dir,
+        grp_name,
+    )
+    res = run_command(cmd, sudo=True, sudo_password=sudo_password, timeout=60)
+    if not res.get("success"):
+        logger.error(
+            "SETUPHELFER_FIX_PERMISSIONS: Rechte-Anpassung fehlgeschlagen: %s",
+            (res.get("stderr") or res.get("stdout") or res.get("error") or res),
+        )
+
+
+def _prospect_backup_archive_path(
+    backup_type: str,
+    backup_dir: str,
+    timestamp: str,
+    last_backup_hint: str,
+) -> Optional[str]:
+    """Geplanter Archivpfad für dieselbe Logik wie tar-Ziel (Mount-Prüfung vor Start)."""
+    bt = (backup_type or "").strip().lower()
+    if bt == "full":
+        return f"{backup_dir}/pi-backup-full-{timestamp}.tar.gz"
+    if bt == "data":
+        return f"{backup_dir}/pi-backup-data-{timestamp}.tar.gz"
+    if bt == "incremental":
+        last_backup = (last_backup_hint or "").strip()
+        if not last_backup:
+            last_full, last_full_mtime = _find_last_full_backup(backup_dir)
+            if not (last_full and last_full_mtime):
+                return f"{backup_dir}/pi-backup-full-{timestamp}.tar.gz"
+        return f"{backup_dir}/pi-backup-inc-{timestamp}.tar.gz"
+    return None
+
+
 def _do_backup_logic(
     *,
     sudo_password: str,
@@ -692,29 +760,6 @@ def _do_backup_logic(
     Returns a dict shaped like the API response.
     """
     results: list[str] = []
-
-    def _tar_warning_ok(result: dict, backup_file_path: str) -> bool:
-        try:
-            rc = result.get("returncode")
-            if rc != 1:
-                return False
-            test_cmd = f"test -s {shlex.quote(backup_file_path)}"
-            t = run_command(test_cmd)
-            if not t["success"] and sudo_password:
-                t = run_command(test_cmd, sudo=True, sudo_password=sudo_password)
-            return bool(t["success"])
-        except Exception:
-            return False
-
-    def _tar_partial_ok(result: dict, backup_file_path: str) -> bool:
-        try:
-            test_cmd = f"test -s {shlex.quote(backup_file_path)}"
-            t = run_command(test_cmd)
-            if not t["success"] and sudo_password:
-                t = run_command(test_cmd, sudo=True, sudo_password=sudo_password)
-            return bool(t["success"])
-        except Exception:
-            return False
 
     def _tar_no_space(result: dict) -> bool:
         combined = ((result.get("stderr") or "") + "\n" + (result.get("stdout") or "")).lower()
@@ -737,7 +782,6 @@ def _do_backup_logic(
         try:
             uid = os.getuid()
             gid = os.getgid()
-            run_command(f"chmod 0755 {shlex.quote(backup_dir)}", sudo=True, sudo_password=sudo_password)
             run_command(f"chmod 0644 {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
             run_command(f"chown {uid}:{gid} {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
         except Exception:
@@ -752,7 +796,26 @@ def _do_backup_logic(
         except Exception:
             pass
 
-    warning = None
+    def _embed_manifest_after_tar(path: Optional[str]) -> tuple[bool, str | None]:
+        """Nach ``tar -czf``: MANIFEST.json zwingend einbetten und im Archiv verifizieren."""
+        if not path or not str(path).endswith(".tar.gz"):
+            _cleanup_backup_file(path)
+            return False, tr(K_BACKUP_FAILED_MANIFEST_MISSING)
+        try:
+            from modules.backup_engine import archive_contains_manifest, embed_manifest_in_tar_gz
+
+            ok, err = embed_manifest_in_tar_gz(path)
+            if not ok:
+                _cleanup_backup_file(path)
+                return False, err or tr(K_BACKUP_FAILED_MANIFEST_MISSING)
+            if not archive_contains_manifest(path):
+                _cleanup_backup_file(path)
+                return False, tr(K_BACKUP_FAILED_MANIFEST_MISSING)
+            return True, None
+        except Exception as e:
+            _cleanup_backup_file(path)
+            return False, str(e)
+
     backup_file = None
     last_full = None
 
@@ -769,27 +832,62 @@ def _do_backup_logic(
             "info",
         )
 
+    prospective = _prospect_backup_archive_path(backup_type, backup_dir, timestamp, last_backup_hint)
+    if prospective:
+        try:
+            _apply_optional_backup_target_permissions_fix(backup_dir, sudo_password)
+            validate_backup_target(Path(prospective), runner=None)
+        except BackupTargetValidationError as e:
+            msg = tr(e.message_key)
+            detail_line = f"{msg}: {e.detail}" if e.detail else msg
+            results.append(detail_line)
+            api_code = _BACKUP_TARGET_ERR_TO_API.get(e.message_key, "backup.failed")
+            return _bc(
+                {
+                    "status": "error",
+                    "message": msg,
+                    "results": results,
+                    "backup_file": None,
+                    "timestamp": timestamp,
+                },
+                api_code,
+                "error",
+                {"i18n_key": e.message_key, "detail": e.detail},
+            )
+
     def _run_tar(cmd: str) -> dict:
         if not cancel_event:
             return run_command(cmd, sudo=True, sudo_password=sudo_password, timeout=7200)
         # cancelable tar
         try:
             # start in separate process group so we can kill everything (tar+gzip)
-            proc = subprocess.Popen(
-                ["sudo", "-S", "sh", "-c", cmd],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                preexec_fn=os.setsid,
-            )
-            try:
-                if proc.stdin:
-                    proc.stdin.write((sudo_password or "") + "\n")
-                    proc.stdin.flush()
-                    proc.stdin.close()
-            except Exception:
-                pass
+            # Ohne Passwort: sudo -n (NOPASSWD) — kein „-S“ und kein stdin schließen, sonst
+            # „I/O operation on closed file“ wenn der Worker-Thread stdin an sudo bindet.
+            if sudo_password:
+                proc = subprocess.Popen(
+                    ["sudo", "-S", "sh", "-c", cmd],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    preexec_fn=os.setsid,
+                )
+                try:
+                    if proc.stdin:
+                        proc.stdin.write(sudo_password + "\n")
+                        proc.stdin.flush()
+                        proc.stdin.close()
+                except Exception:
+                    pass
+            else:
+                proc = subprocess.Popen(
+                    ["sudo", "-n", "sh", "-c", cmd],
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    preexec_fn=os.setsid,
+                )
 
             # expose pgid for cancel endpoint
             try:
@@ -827,8 +925,10 @@ def _do_backup_logic(
                     return {"success": False, "returncode": -9, "stderr": "Timeout", "stdout": ""}
                 time.sleep(0.5)
 
-            out, err = proc.communicate(timeout=1)
-            return {"success": proc.returncode == 0, "returncode": proc.returncode, "stdout": out or "", "stderr": err or ""}
+            # Nach manuellem stdin.close() bei „-S“ darf communicate() stdin anfassen → ValueError/closed file
+            out = (proc.stdout.read() if proc.stdout else "") or ""
+            err = (proc.stderr.read() if proc.stderr else "") or ""
+            return {"success": proc.returncode == 0, "returncode": proc.returncode, "stdout": out, "stderr": err}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
@@ -850,6 +950,23 @@ def _do_backup_logic(
         if backup_result.get("success"):
             results.append(f"Vollständiges Backup erstellt: {backup_file}")
             _make_backup_readable(backup_file)
+            ok_m, det_m = _embed_manifest_after_tar(backup_file)
+            if not ok_m:
+                if det_m:
+                    results.append(det_m)
+                return _bc(
+                    {
+                        "status": "error",
+                        "message": tr(K_BACKUP_FAILED_MANIFEST_MISSING),
+                        "results": results,
+                        "backup_file": None,
+                        "timestamp": timestamp,
+                    },
+                    "backup.failed_manifest_missing",
+                    "error",
+                    {"i18n_key": K_BACKUP_FAILED_MANIFEST_MISSING, "detail": det_m},
+                )
+            results.append(f"MANIFEST.json eingebettet und verifiziert: {backup_file}")
             return _bc(
                 {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp},
                 "backup.success",
@@ -869,25 +986,6 @@ def _do_backup_logic(
                 "backup.no_space",
                 "error",
                 {"free_hint": free_hint} if free_hint else None,
-            )
-        if _tar_warning_ok(backup_result, backup_file):
-            warning = "Backup erstellt, aber tar meldete Warnungen."
-            results.append(f"⚠️ Backup erstellt mit Warnungen: {backup_file}")
-            _make_backup_readable(backup_file)
-            out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
-            out["warning"] = warning
-            return _bc(out, "backup.success", "success", {"tar_warning": True})
-        if _tar_partial_ok(backup_result, backup_file):
-            warning = f"Backup wurde erstellt, aber tar lieferte Returncode {backup_result.get('returncode')}."
-            results.append(f"⚠️ Backup erstellt (möglicherweise unvollständig): {backup_file}")
-            _make_backup_readable(backup_file)
-            out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
-            out["warning"] = warning
-            return _bc(
-                out,
-                "backup.success",
-                "success",
-                {"tar_returncode": backup_result.get("returncode")},
             )
         if _is_backup_timeout(backup_result):
             stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Timeout")
@@ -944,6 +1042,23 @@ def _do_backup_logic(
         if backup_result.get("success"):
             results.append(f"Inkrementelles Backup erstellt: {backup_file}")
             _make_backup_readable(backup_file)
+            ok_m, det_m = _embed_manifest_after_tar(backup_file)
+            if not ok_m:
+                if det_m:
+                    results.append(det_m)
+                return _bc(
+                    {
+                        "status": "error",
+                        "message": tr(K_BACKUP_FAILED_MANIFEST_MISSING),
+                        "results": results,
+                        "backup_file": None,
+                        "timestamp": timestamp,
+                    },
+                    "backup.failed_manifest_missing",
+                    "error",
+                    {"i18n_key": K_BACKUP_FAILED_MANIFEST_MISSING, "detail": det_m},
+                )
+            results.append(f"MANIFEST.json eingebettet und verifiziert: {backup_file}")
             out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
             if last_full:
                 out["last_full_backup"] = last_full
@@ -961,15 +1076,6 @@ def _do_backup_logic(
                 "error",
                 {"free_hint": free_hint} if free_hint else None,
             )
-        if _tar_warning_ok(backup_result, backup_file) or _tar_partial_ok(backup_result, backup_file):
-            warning = "Backup erstellt, aber tar meldete Warnungen."
-            results.append(f"⚠️ Inkrementelles Backup erstellt mit Warnungen: {backup_file}")
-            _make_backup_readable(backup_file)
-            out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
-            out["warning"] = warning
-            if last_full:
-                out["last_full_backup"] = last_full
-            return _bc(out, "backup.success", "success", {"tar_warning": True})
         if _is_backup_timeout(backup_result):
             stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Timeout")
             results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
@@ -1003,6 +1109,23 @@ def _do_backup_logic(
         if backup_result.get("success"):
             results.append(f"Daten-Backup erstellt: {backup_file}")
             _make_backup_readable(backup_file)
+            ok_m, det_m = _embed_manifest_after_tar(backup_file)
+            if not ok_m:
+                if det_m:
+                    results.append(det_m)
+                return _bc(
+                    {
+                        "status": "error",
+                        "message": tr(K_BACKUP_FAILED_MANIFEST_MISSING),
+                        "results": results,
+                        "backup_file": None,
+                        "timestamp": timestamp,
+                    },
+                    "backup.failed_manifest_missing",
+                    "error",
+                    {"i18n_key": K_BACKUP_FAILED_MANIFEST_MISSING, "detail": det_m},
+                )
+            results.append(f"MANIFEST.json eingebettet und verifiziert: {backup_file}")
             return _bc(
                 {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp},
                 "backup.success",
@@ -1021,13 +1144,6 @@ def _do_backup_logic(
                 "error",
                 {"free_hint": free_hint} if free_hint else None,
             )
-        if _tar_warning_ok(backup_result, backup_file) or _tar_partial_ok(backup_result, backup_file):
-            warning = "Backup erstellt, aber tar meldete Warnungen."
-            results.append(f"⚠️ Daten-Backup erstellt mit Warnungen: {backup_file}")
-            _make_backup_readable(backup_file)
-            out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
-            out["warning"] = warning
-            return _bc(out, "backup.success", "success", {"tar_warning": True})
         if _is_backup_timeout(backup_result):
             stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Timeout")
             results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
@@ -1510,6 +1626,12 @@ except ImportError:
 try:
     from api.routes.diagnosis import router as diagnosis_router
     app.include_router(diagnosis_router)
+except ImportError:
+    pass
+
+try:
+    from api.routes.rescue import router as rescue_router
+    app.include_router(rescue_router)
 except ImportError:
     pass
 
@@ -9930,6 +10052,10 @@ async def backup_target_check(backup_dir: str, create: int = 0):
             if "Permission denied" in combined:
                 reason = reason or "permission_denied"
                 hints.append("Schreibrechte fehlen (Permission denied).")
+                hints.append(
+                    "Empfohlen: Mount-Punkt root:setuphelfer, Modus 0770; Backend-Unit mit SupplementaryGroups=setuphelfer "
+                    "(siehe docs/developer/BACKUP_RECOVERY_ENGINES.md). Optional Test: SETUPHELFER_FIX_PERMISSIONS=1."
+                )
                 if write_test.get("mode") == "user" and not sudo_password:
                     hints.append("Mit sudo könnte es funktionieren (Sudo-Passwort fehlt / Backend neu gestartet).")
             if "No space left on device" in combined:
@@ -9944,6 +10070,31 @@ async def backup_target_check(backup_dir: str, create: int = 0):
             write_test["reason_code"] = reason
             write_test["hints"] = hints
             write_test["suggest_usb_prepare"] = suggest_usb_prepare
+
+        storage_validation = {"ok": True, "i18n_key": None, "detail": None}
+        if exists and is_dir:
+            probe_arch = p / ".__pi_installer_backup_mount_probe__.tar.gz"
+            try:
+                validate_backup_target(probe_arch, runner=None)
+            except BackupTargetValidationError as e:
+                api_code = _BACKUP_TARGET_ERR_TO_API.get(e.message_key, "backup.failed")
+                return with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": tr(e.message_key),
+                        "backup_dir": backup_dir,
+                        "exists": exists,
+                        "is_dir": is_dir,
+                        "created": created,
+                        "fs": fs,
+                        "write_test": write_test,
+                        "mount": mount_info,
+                        "storage_validation": {"ok": False, "i18n_key": e.message_key, "detail": e.detail},
+                    },
+                    api_code,
+                    "error",
+                    {"i18n_key": e.message_key, "detail": e.detail},
+                )
 
         wt_ok = bool(write_test.get("success")) if (exists and is_dir) else True
         tc_code = "backup.target_check_ok" if wt_ok else "backup.target_not_writable"
@@ -9962,6 +10113,7 @@ async def backup_target_check(backup_dir: str, create: int = 0):
                 "fs": fs,
                 "write_test": write_test,
                 "mount": mount_info,
+                "storage_validation": storage_validation,
             },
             tc_code,
             tc_sev,
@@ -11988,7 +12140,7 @@ async def verify_backup(request: Request):
                 {
                     "status": "success",
                     "api_status": "error",
-                    "message": "Backup-Archiv enthält gesperrte Einträge (Traversal, absolute Pfade, Symlinks, Hardlinks oder Sonderdateien).",
+                    "message": "Backup-Archiv enthält gesperrte Einträge (Traversal, absolute Pfade oder nicht unterstützte Sonderdateien wie Geräte/FIFOs).",
                     "data": {"results": {"valid": False, "blocked_entries": arch_analysis.get("blocked_entries"), "analysis": arch_analysis}},
                     "results": {
                         "file": str(bf),
@@ -12500,8 +12652,9 @@ def _cleanup_old_preview_dirs(keep_dir: Path, max_age_seconds: int = PREVIEW_SAN
 def _analyze_tar_members(backup_file: str) -> dict:
     """
     Analysiert ein tar.gz-Archiv:
-    - zählt Dateien/Verzeichnisse
-    - sammelt problematische Einträge (Traversal, absolute Pfade, Symlinks, Hardlinks, Sonderdateien)
+    - zählt Dateien/Verzeichnisse/Sonderfälle
+    - sammelt nur echte Risiken (Traversal, absolute Pfade, Geräte/FIFO, unbekannte Tar-Typen)
+    Reguläre Linux-Backups mit Symlinks und Hardlinks (z. B. /etc/alternatives, usrmerge) sind erlaubt.
     """
     import tarfile
 
@@ -12513,14 +12666,26 @@ def _analyze_tar_members(backup_file: str) -> dict:
         "system_like_entries": [],
     }
 
-    allowed_types = {tarfile.REGTYPE, tarfile.AREGTYPE, tarfile.DIRTYPE}
+    allowed_member_types = {
+        tarfile.REGTYPE,
+        tarfile.AREGTYPE,
+        tarfile.DIRTYPE,
+        tarfile.SYMTYPE,
+        tarfile.LNKTYPE,
+    }
+    _ct = getattr(tarfile, "CONTTYPE", None)
+    if _ct is not None:
+        allowed_member_types.add(_ct)
     gnu_meta_types = set()
     for _attr in ("GNUTYPE_LONGNAME", "GNUTYPE_LONGLINK", "GNUTYPE_SPARSE"):
         if hasattr(tarfile, _attr):
             gnu_meta_types.add(getattr(tarfile, _attr))
 
     def is_blocked_path(name: str) -> bool:
-        if name.startswith("../") or "/../" in name or name.startswith("/"):
+        n = name.lstrip("./")
+        if not n:
+            return True
+        if n.startswith("/") or n.startswith("../") or "/../" in f"/{n}/":
             return True
         return False
 
@@ -12543,9 +12708,9 @@ def _analyze_tar_members(backup_file: str) -> dict:
             if is_system_like(name):
                 info["system_like_entries"].append(name)
 
-            nonregular = member.type not in allowed_types or member.issym() or member.islnk()
             is_special = bool(getattr(member, "isdev", lambda: False)()) or bool(getattr(member, "isfifo", lambda: False)())
-            if is_blocked_path(name) or nonregular or is_special:
+            bad_type = member.type not in allowed_member_types
+            if is_blocked_path(name) or is_special or bad_type:
                 info["blocked_entries"].append(name)
 
     return info
@@ -12693,7 +12858,7 @@ async def restore_backup(request: Request):
                     {
                         "status": "error",
                         "api_status": "error",
-                        "message": "Backup-Archiv enthält problematische Einträge (Pfad-Traversal, Symlinks, Sonderdateien).",
+                        "message": "Backup-Archiv enthält problematische Einträge (Pfad-Traversal, absolute Pfade oder nicht unterstützte Sonderdateien).",
                         "data": {"analysis": analysis},
                         "analysis": analysis,
                     },

@@ -25,12 +25,15 @@ Environment="PI_INSTALLER_LOG_DIR=/var/log/setuphelfer"
 Environment="PI_INSTALLER_DEV=0"
 Environment="APP_EDITION=release"
 Environment="PIP_CACHE_DIR=/opt/setuphelfer/.pip-cache"
+Environment="npm_config_cache=/opt/setuphelfer/.npm-cache"
+Environment="NODE_OPTIONS=--max-old-space-size=1024"
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer
-MemoryMax=512M
+ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp
+MemoryMax=1024M
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
 LimitNOFILE=4096
 
 [Install]

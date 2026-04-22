@@ -1,0 +1,37 @@
+========================================
+SETUPHELFER-B LIVE-GAST-INVENTAR (geplant)
+========================================
+Erzeugt (Host): 2026-04-19
+Hinweis: Keine Shell-Ausgabe aus dem Gast; nur reproduzierbare Host-Befunde und SSH-Diagnose.
+
+----------------------------------------
+[HOST – VM-ZUSTAND NACH VORBEREITUNG]
+Befehl: VBoxManage showvminfo setuphelfer-b (Auszug)
+State:                       running (seit 2026-04-19T10:12:20Z nach Startbefehl)
+Boot Device 1:               DVD
+Boot Device 2:               HardDisk
+SATA Port 0: system-b.vdi
+SATA Port 1: backup-b.vdi
+SATA Port 2: restore-target-b.vdi
+SATA Port 3: /home/volker/Downloads/debian-live-13.4.0-amd64-xfce.iso (DVD)
+NIC 1: NAT, Rule guestssh: host port 2223 -> guest port 22
+
+----------------------------------------
+[HOST – SSH-DIAGNOSE GAST user@localhost:2223]
+Ziel: Lesende Gast-Inventur wie auf setuphelfer-a.
+Befehl (Beispiel): ssh -o BatchMode=yes -o ConnectTimeout=10 -p 2223 user@localhost 'uname -a'
+Ergebnis: TCP-Verbindung zu 127.0.0.1:2223 wird aufgebaut (ssh -vv: "Connection established.", danach lokale SSH-Version), es folgt **kein** Banner / keine Server-Version innerhalb der Wartezeit → **kein nutzbarer SSH-Dienst am Gast-Port 22** aus Sicht des Hosts (oder Dienst startet nicht / Firewall).
+
+Wiederholte Warteversuche (15 s Abstand, >14 Zyklen): keine erfolgreiche Shell-Session.
+
+Folgerung: Die geforderten Gast-Befehle
+  uname -a, /etc/os-release, lsblk -f, mount, df -h, ip a
+konnten **nicht** automatisiert ohne Gast-Zugang erhoben werden.
+
+----------------------------------------
+[HOST – MANUELLER NÄCHSTER SCHRITT (Dokumentation, keine Ausführung hier)]
+Falls SSH im Live-System gewünscht ist: an der **VBox-Konsole** im Live-System prüfen, ob Paket openssh-server vorhanden ist und ob `sudo systemctl start ssh` (oder gleichwertig) den Dienst startet; danach erneut `ssh -p 2223 user@localhost` und dieses File mit echten Gast-Ausgaben **unter neuem Dateinamen** ergänzen (bestehende Reports nicht überschreiben).
+
+========================================
+END OF REPORT (Host-only)
+========================================

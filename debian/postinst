@@ -26,6 +26,14 @@ case "$1" in
       fi
     fi
 
+    BACKUP_GROUP="${SETUPHELFER_BACKUP_GROUP:-setuphelfer}"
+    if ! getent group "$BACKUP_GROUP" >/dev/null 2>&1; then
+      groupadd --system "$BACKUP_GROUP" 2>/dev/null || groupadd "$BACKUP_GROUP" 2>/dev/null || true
+    fi
+    if getent passwd "$SERVICE_USER" >/dev/null 2>&1; then
+      usermod -aG "$BACKUP_GROUP" "$SERVICE_USER" 2>/dev/null || true
+    fi
+
     SERVICE_GROUP=$(id -gn "$SERVICE_USER" 2>/dev/null || echo "$SERVICE_USER")
 
     for _svc in /etc/systemd/system/setuphelfer.service /etc/systemd/system/setuphelfer-backend.service; do
