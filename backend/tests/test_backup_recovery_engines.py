@@ -43,6 +43,72 @@ from modules.backup_verify import verify_basic, verify_deep
 from modules.backup_symlink_safety import tar_symlink_linkname_allowed
 from modules.restore_engine import restore_files
 
+# Schreibpfad für validate_write_target (core.safe_device)
+_T_SAFE = Path("/tmp/setuphelfer-test/recovery-engine-mountval")
+
+
+def _lsblk_usb_sdb1_at(mount: str) -> dict:
+    return {
+        "blockdevices": [
+            {
+                "path": "/dev/sdb",
+                "name": "sdb",
+                "type": "disk",
+                "size": "20G",
+                "rm": "1",
+                "ro": False,
+                "tran": "usb",
+                "children": [
+                    {
+                        "path": "/dev/sdb1",
+                        "name": "sdb1",
+                        "type": "part",
+                        "fstype": "ext4",
+                        "mountpoints": [mount],
+                        "size": "20G",
+                    }
+                ],
+            }
+        ]
+    }
+
+
+def _lsblk_usb_sda_whole() -> dict:
+    return {
+        "blockdevices": [
+            {
+                "path": "/dev/sda",
+                "name": "sda",
+                "type": "disk",
+                "size": "20G",
+                "rm": "1",
+                "ro": False,
+                "tran": "usb",
+                "children": [
+                    {
+                        "path": "/dev/sda1",
+                        "name": "sda1",
+                        "type": "part",
+                        "fstype": "ext4",
+                        "mountpoints": ["/mnt/other"],
+                        "size": "20G",
+                    }
+                ],
+            }
+        ]
+    }
+
+
+def _wrap_fake_run_with_lsblk(inner, mount_for_lsblk: str):
+    lsblk = _lsblk_usb_sdb1_at(mount_for_lsblk)
+
+    def fake_run(argv, **kwargs):
+        if argv[:2] == ["lsblk", "-J"]:
+            return CompletedProcess(argv, 0, json.dumps(lsblk), "")
+        return inner(argv, **kwargs)
+
+    return fake_run
+
 
 class _SkipMountValidationMixin:
     """create_file_backup-Tests unter /tmp: Mount-Sicherheitsprüfung per Mock umgehen."""
@@ -570,6 +636,8 @@ class TestDdSmoke(unittest.TestCase):
             out = Path(tmp) / "out.img"
 
             def fake_run(argv, **kwargs):
+                if argv[:2] == ["lsblk", "-J"]:
+                    return CompletedProcess(argv, 0, json.dumps(_lsblk_usb_sda_whole()), "")
                 for part in argv:
                     if isinstance(part, str) and part.startswith("of="):
                         Path(part.split("=", 1)[1]).write_bytes(b"\0")
@@ -658,7 +726,7 @@ class TestBackupTargetMountValidation(unittest.TestCase):
             self.assertEqual(ctx.exception.message_key, "backup_recovery.error.backup_target_not_mounted")
 
     def test_validate_accepts_ext4_block_device_mount(self) -> None:
-        def fake_run(argv, **kwargs):
+        def inner(argv, **kwargs):
             if argv[:2] == ["findmnt", "-J"]:
                 mount_at = str(Path(argv[2]).resolve())
                 body = {
@@ -669,12 +737,15 @@ class TestBackupTargetMountValidation(unittest.TestCase):
                 return CompletedProcess(argv, 0, json.dumps(body), "")
             return CompletedProcess(argv, 0, "", "")
 
-        with tempfile.TemporaryDirectory() as tmp:
-            arch = Path(tmp) / "b.tar.gz"
-            validate_backup_target(arch, runner=fake_run)
+        _T_SAFE.mkdir(parents=True, exist_ok=True)
+        base = _T_SAFE / "ext4ok"
+        base.mkdir(parents=True, exist_ok=True)
+        fake_run = _wrap_fake_run_with_lsblk(inner, str(base.resolve()))
+        arch = base / "b.tar.gz"
+        validate_backup_target(arch, runner=fake_run)
 
     def test_validate_rejects_unwritable_directory(self) -> None:
-        def fake_run(argv, **kwargs):
+        def inner(argv, **kwargs):
             if argv[:2] == ["findmnt", "-J"]:
                 mount_at = str(Path(argv[2]).resolve())
                 body = {
@@ -685,18 +756,20 @@ class TestBackupTargetMountValidation(unittest.TestCase):
                 return CompletedProcess(argv, 0, json.dumps(body), "")
             return CompletedProcess(argv, 0, "", "")
 
-        with tempfile.TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            d = base / "mount_here"
-            d.mkdir()
-            try:
-                os.chmod(d, 0o555)
-                arch = d / "b.tar.gz"
-                with self.assertRaises(BackupTargetValidationError) as ctx:
-                    validate_backup_target(arch, runner=fake_run)
-                self.assertEqual(ctx.exception.message_key, K_BACKUP_TARGET_NOT_WRITABLE)
-            finally:
-                os.chmod(d, 0o700)
+        _T_SAFE.mkdir(parents=True, exist_ok=True)
+        base = _T_SAFE / "unwritable"
+        base.mkdir(parents=True, exist_ok=True)
+        d = base / "mount_here"
+        d.mkdir()
+        fake_run = _wrap_fake_run_with_lsblk(inner, str(d.resolve()))
+        try:
+            os.chmod(d, 0o555)
+            arch = d / "b.tar.gz"
+            with self.assertRaises(BackupTargetValidationError) as ctx:
+                validate_backup_target(arch, runner=fake_run)
+            self.assertEqual(ctx.exception.message_key, K_BACKUP_TARGET_NOT_WRITABLE)
+        finally:
+            os.chmod(d, 0o700)
 
     def test_assert_writable_ok_on_tmp(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

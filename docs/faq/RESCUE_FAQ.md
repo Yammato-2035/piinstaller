@@ -62,3 +62,51 @@ Ja. Die API liefert nur **Codes**; Texte kommen aus `frontend/src/locales/de.jso
 - **`session_id`**: stets aus Dry-Run-JSON übernehmen; bei Remote-Login muss dieselbe Session den Restore ausführen, wenn der Grant `session_source: remote_db` trägt.
 - Boot-Reparatur nur explizit (`perform_boot_repair`) und nur mit Blockgerät — modular dokumentiert in `docs/rescue/BOOT_REPAIR.md` und `docs/rescue/BOOT_COMPATIBILITY_LIMITATIONS.md`.
 - Zielidentität (Seriennummer/UUID/Größe) wird mit Dry-Run verglichen — schützt vor vertauschten `/dev/sdX`-Namen.
+
+## Warum lief mein Backup, aber das System ist nach Restore trotzdem nicht nutzbar?
+
+Ein erfolgreiches Archiv ist nur ein Teilkriterium. Entscheidend ist der Zielzustand: Dienste muessen starten, Pfade/Berechtigungen muessen stimmen und Boot muss reproduzierbar funktionieren.
+
+## Warum startet der Dienst nach Restore nicht?
+
+Typische Ursachen sind systemd-Restriktionen, fehlende Runtime-Variablen (z. B. `NODE_OPTIONS`), falsche Berechtigungen oder Port-Konflikte.
+
+## Warum reicht ein erfolgreiches Archiv allein nicht aus?
+
+Weil Integritaet des Backups nicht automatisch bedeutet, dass die Zielumgebung konsistent ist. Setuphelfer bewertet daher Verify, Restore-Validierung und Runtime-Status zusammen.
+
+## Warum verwendet Setuphelfer eine Gruppe statt manuellem `chown`?
+
+Das Gruppenmodell (`setuphelfer`, `0770`, `SupplementaryGroups`) ist reproduzierbar und weniger fehleranfaellig als ad-hoc `chown`-Workarounds.
+
+## Warum scheitert Restore auf `/tmp`?
+
+`/tmp` ist haeufig `tmpfs` und damit speicherbegrenzt. Fuer groeßere Backups fuehrt das zu Platzproblemen.
+
+## Warum erkennt die Diagnose mehrere Ursachen?
+
+Der Matcher kann Primaerdiagnose plus Nebenbefunde liefern, wenn mehrere starke Signale gleichzeitig vorliegen.
+
+## Was bedeutet niedrige Confidence?
+
+Niedrige Confidence bedeutet: Es gibt nur schwache Evidenz, meist Symptom statt belastbarer Root-Cause. Weitere Checks sind erforderlich.
+
+## Warum sammeln wir System- und Laufwerksdaten?
+
+Damit Fehler reproduzierbar einem Hardware-/Boot-/Storage-Kontext zugeordnet werden koennen. Ohne diesen Kontext bleiben viele Diagnosen unscharf.
+
+## Warum reicht ein Fehlertext allein nicht?
+
+Ein einzelner Fehlertext ist oft nur ein Symptom. Fuer belastbare Ursachen braucht es Signale, Umgebungskontext und den realen Testausgang.
+
+## Warum lernt das System nicht blind automatisch?
+
+Weil unkontrolliertes Lernen Fehlannahmen verfestigt. Neue Evidenz wird strukturiert erfasst und nachvollziehbar in Katalog/Regeln/Testfaelle rueckgefuehrt.
+
+## Warum muessen Symptome und Root-Cause getrennt erfasst werden?
+
+Damit falsche Erstannahmen sichtbar bleiben und spaeter korrigiert werden koennen. Das verhindert, dass der Diagnosekatalog Symptome mit Ursachen verwechselt.
+
+## Warum ist der isolierte Raspberry-Pi-Test nicht sofort freigegeben?
+
+Vor dem Pi-Haupttest muessen Wechselmedienpfade (externe NVMe, USB-Stick, SD-Karte) unter kontrollierten Bedingungen abgedeckt sein. Ohne diese Vorstufe waere die Ursache bei Fehlern nicht sauber eingrenzbar.

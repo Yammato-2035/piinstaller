@@ -40,6 +40,7 @@ K_BACKUP_TARGET_NON_BLOCK_SOURCE = "backup_recovery.error.backup_target_non_bloc
 K_BACKUP_TARGET_LIVE_FILESYSTEM = "backup_recovery.error.backup_target_live_filesystem"
 K_BACKUP_TARGET_FILESYSTEM_NOT_PERMITTED = "backup_recovery.error.backup_target_filesystem_not_permitted"
 K_BACKUP_TARGET_NOT_WRITABLE = "backup_recovery.error.backup_target_not_writable"
+K_BACKUP_TARGET_WRITE_PROTECTED = "backup_recovery.error.backup_target_write_protected"
 
 # recovery/main.py
 K_RECOVERY_MENU_TITLE = "recovery.menu.title"
@@ -89,6 +90,7 @@ DEFAULT_CATALOG: dict[str, str] = {
     K_BACKUP_TARGET_LIVE_FILESYSTEM: "Backup target uses a live/read-only medium filesystem.",
     K_BACKUP_TARGET_FILESYSTEM_NOT_PERMITTED: "Backup target filesystem is not permitted for backups.",
     K_BACKUP_TARGET_NOT_WRITABLE: "Backup target directory is not writable for the Setuphelfer process (check owner/group, e.g. root:setuphelfer and mode 0770).",
+    K_BACKUP_TARGET_WRITE_PROTECTED: "Backup or restore target blocked by storage write protection (see diagnosis id in details).",
     K_RECOVERY_MENU_TITLE: "Setuphelfer recovery",
     K_RECOVERY_OPT_USB: "Restore from USB",
     K_RECOVERY_OPT_CLOUD: "Restore from cloud",
@@ -129,6 +131,7 @@ DEFAULT_CATALOG_DE: dict[str, str] = {
     K_BACKUP_TARGET_LIVE_FILESYSTEM: "Backup-Ziel nutzt ein Live-/schreibgeschütztes Dateisystem.",
     K_BACKUP_TARGET_FILESYSTEM_NOT_PERMITTED: "Dateisystem am Backup-Ziel ist für Backups nicht zugelassen.",
     K_BACKUP_TARGET_NOT_WRITABLE: "Backup-Ziel ist für den Setuphelfer-Prozess nicht beschreibbar (Besitzer/Gruppe prüfen, z. B. root:setuphelfer und Modus 0770).",
+    K_BACKUP_TARGET_WRITE_PROTECTED: "Backup- oder Restore-Ziel durch Storage-Schreibschutz blockiert (Diagnose-ID in den Details).",
     K_RECOVERY_MENU_TITLE: "Setuphelfer-Wiederherstellung",
     K_RECOVERY_OPT_USB: "Wiederherstellen von USB",
     K_RECOVERY_OPT_CLOUD: "Wiederherstellen aus der Cloud",

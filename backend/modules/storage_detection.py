@@ -18,6 +18,7 @@ from pathlib import Path
 _os_stat = os.stat
 from typing import Any, Callable, Mapping, Sequence
 
+from core.safe_device import WriteTargetProtectionError, validate_write_target
 from core.backup_recovery_i18n import (
     K_BACKUP_TARGET_FILESYSTEM_NOT_PERMITTED,
     K_BACKUP_TARGET_LIVE_FILESYSTEM,
@@ -26,6 +27,7 @@ from core.backup_recovery_i18n import (
     K_BACKUP_TARGET_NOT_WRITABLE,
     K_BACKUP_TARGET_PARENT_MISSING,
     K_BACKUP_TARGET_ROOT_FILESYSTEM,
+    K_BACKUP_TARGET_WRITE_PROTECTED,
 )
 
 Runner = Callable[..., subprocess.CompletedProcess[str]]
@@ -279,6 +281,14 @@ def validate_backup_target(
             K_BACKUP_TARGET_FILESYSTEM_NOT_PERMITTED,
             fst or "(unknown)",
         )
+
+    try:
+        validate_write_target(write_base, runner=runner)
+    except WriteTargetProtectionError as e:
+        raise BackupTargetValidationError(
+            K_BACKUP_TARGET_WRITE_PROTECTED,
+            f"{e.diagnosis_id}: {e}",
+        ) from e
 
     assert_backup_target_dir_writable(write_base)
 

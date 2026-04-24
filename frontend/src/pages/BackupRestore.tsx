@@ -6,7 +6,9 @@ import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { fetchApi } from '../api'
 import { postDiagnosisInterpret } from '../api/diagnosisApi'
+import { postDiagnosticsAnalyze } from '../api/diagnosticsApi'
 import DiagnosisPanel from '../components/DiagnosisPanel'
+import DiagnosticsAssistantPanel from '../components/DiagnosticsAssistantPanel'
 import { PandaCompanion, PandaRail, PandaHelperStrip, type PandaStatus } from '../components/companions'
 import PageHeader from '../components/layout/PageHeader'
 import type { ExperienceLevel } from '../components/Sidebar'
@@ -15,6 +17,7 @@ import { TrafficLightBadge } from '../components/trafficLight/TrafficLightBadge'
 import { deriveBackupSafetyTrafficLight } from '../trafficLight/trafficLightModel'
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import type { DiagnosisRecord } from '../types/diagnosis'
+import type { DiagnosticsAnalyzeResponse, DiagnosticsUserLevel } from '../types/diagnostics'
 import { usePlatform } from '../context/PlatformContext'
 import type { TFunction } from 'i18next'
 
@@ -194,7 +197,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const [backupType, setBackupType] = useState<'full' | 'incremental' | 'data'>('full')
   const [targets, setTargets] = useState<any[]>([])
   const [backupDirMode, setBackupDirMode] = useState<'default' | 'usb' | 'cloud' | 'custom'>('default')
-  const [backupDir, setBackupDir] = useState('/mnt/backups')
+  const [backupDir, setBackupDir] = useState('/mnt/setuphelfer/backups')
   const [showCloudBackups, setShowCloudBackups] = useState(false)
   const [encryptionEnabled, setEncryptionEnabled] = useState(false)
   const [encryptionMethod, setEncryptionMethod] = useState<'gpg' | 'openssl'>('gpg')
@@ -214,11 +217,12 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const [sudoModalSubtitle, setSudoModalSubtitle] = useState(t('backup.i18n.sudoRequiredSubtitle'))
   const [sudoModalConfirmText, setSudoModalConfirmText] = useState(t('backup.i18n.confirm'))
   const [pendingAction, setPendingAction] = useState<null | ((sudoPassword: string, skipTest?: boolean) => Promise<void>)>(null)
-  const DEFAULT_BACKUP_DIR = '/mnt/backups'
+  const DEFAULT_BACKUP_DIR = '/mnt/setuphelfer/backups'
   const LAST_DIR_KEY = 'pi_installer_last_backup_dir'
   const BACKUP_JOB_STORAGE_KEY = 'pi_installer_running_backup_job'
   const [verifying, setVerifying] = useState<Record<string, boolean>>({})
   const [verifyDiagnosis, setVerifyDiagnosis] = useState<DiagnosisRecord | null>(null)
+  const [structuredDiagnostics, setStructuredDiagnostics] = useState<DiagnosticsAnalyzeResponse | null>(null)
   const [backupSettings, setBackupSettings] = useState<any>(null)
   const [settingsLoading, setSettingsLoading] = useState(false)
   const [backupJob, setBackupJob] = useState<any>(null)
@@ -245,6 +249,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const [deepVerifyFile, setDeepVerifyFile] = useState<string | null>(null)
   const [deepVerifyKey, setDeepVerifyKey] = useState('')
   const [sawSudoRequiredForBackupRun, setSawSudoRequiredForBackupRun] = useState(false)
+
+  const diagnosticsLevel: DiagnosticsUserLevel =
+    experienceLevel === 'beginner' ? 'beginner' : experienceLevel === 'advanced' ? 'advanced' : 'expert'
 
   useEffect(() => {
     loadTargets()
@@ -1187,6 +1194,33 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
     })
     setVerifyDiagnosis(rec)
   }, [])
+
+  useEffect(() => {
+    if (!verifyDiagnosis) {
+      setStructuredDiagnostics(null)
+      return
+    }
+    let cancelled = false
+    const run = async () => {
+      const result = await postDiagnosticsAnalyze({
+        question: `Verify/Restore Diagnose: ${verifyDiagnosis.diagnosis_id}`,
+        context: { mode: 'backup_verify', user_level: diagnosticsLevel },
+        signals: {
+          verify_status: 'failed',
+          manifest_present: true,
+          archive_corrupted: verifyDiagnosis.diagnosis_id.includes('archive'),
+          storage_full: verifyDiagnosis.technical_summary.toLowerCase().includes('no space'),
+          filesystem_readonly: verifyDiagnosis.technical_summary.toLowerCase().includes('read-only'),
+          setuphelfer_group_present: !verifyDiagnosis.technical_summary.toLowerCase().includes('setuphelfer group'),
+        },
+      })
+      if (!cancelled) setStructuredDiagnostics(result)
+    }
+    void run()
+    return () => {
+      cancelled = true
+    }
+  }, [verifyDiagnosis, diagnosticsLevel])
 
   const verifyBackup = async (backupFile: string, mode: 'basic' | 'deep' = 'basic') => {
     if (mode === 'deep') {
@@ -2977,6 +3011,9 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                 {verifyDiagnosis && (
                   <div className="mb-4 space-y-2">
                     <DiagnosisPanel record={verifyDiagnosis} />
+                    {structuredDiagnostics && (
+                      <DiagnosticsAssistantPanel result={structuredDiagnostics} level={diagnosticsLevel} />
+                    )}
                     <button
                       type="button"
                       onClick={() => setVerifyDiagnosis(null)}

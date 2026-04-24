@@ -32,7 +32,7 @@ from core.backup_recovery_i18n import (
     K_TAR_FAILED,
     tr,
 )
-from core.block_device_allowlist import assert_allowed_block_device
+from core.safe_device import WriteTargetProtectionError, validate_write_target
 from modules.storage_detection import BackupTargetValidationError, validate_backup_target
 
 MANIFEST_NAME = "MANIFEST.json"
@@ -273,7 +273,7 @@ def create_manifest(
 
     layout = ""
     if partition_device is not None:
-        assert_allowed_block_device(partition_device)
+        validate_write_target(partition_device, runner=runner)
         dev = str(partition_device)
         r = _run_capture(["sfdisk", "-d", dev], runner=runner, timeout=120)
         if r.returncode != 0:
@@ -321,7 +321,10 @@ def create_image_backup(
     """
     Rohabbild mit dd (nur allowlisted Blockgeräte). output_file muss unter allowed_output_prefixes liegen.
     """
-    assert_allowed_block_device(target_device)
+    try:
+        validate_write_target(target_device, runner=runner)
+    except WriteTargetProtectionError as e:
+        return ImageBackupResult(False, None, K_DD_FAILED, f"{e.diagnosis_id}: {e}")
     out = Path(output_file)
     _assert_output_allowed(out, allowed_output_prefixes)
 

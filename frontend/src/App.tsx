@@ -32,7 +32,7 @@ import RemoteView from './features/remote/RemoteView'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
 import BootSplash from './components/BootSplash'
-import { fetchApi, getApiBase, setApiBase, setScreenshotMode, fetchExperienceLevelFromApi, readStoredExperienceLevel } from './api'
+import { fetchApi, setScreenshotMode, fetchExperienceLevelFromApi, readStoredExperienceLevel } from './api'
 import { getThemeShot, isThemeScreenshotCapture } from './themeScreenshot'
 import { PlatformProvider, platformRawFromSystemInfo, usePlatform } from './context/PlatformContext'
 import { MainStatusBarProvider, useMainStatusBar, useOptionalMainStatusBar } from './context/MainStatusBarContext'
@@ -324,48 +324,32 @@ function App() {
     setHeaderBackendOk(null)
     setBackendError(false)
     setBackendErrorReason(null)
-    const storedBase = (getApiBase() || '').trim().replace(/\/$/, '')
-    const candidates = [storedBase, 'http://127.0.0.1:8000', 'http://localhost:8000']
-      .filter(Boolean)
-      .filter((v, i, a) => a.indexOf(v) === i)
     const timeoutMs = 15000
     const maxRetries = 3
 
-    const tryFetch = async (apiBase: string): Promise<Response> => {
-      const url = `${apiBase.replace(/\/$/, '')}/api/system-info`
+    let lastReason: 'timeout' | 'connection' | 'other' = 'connection'
+    let lastError: unknown = null
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
       try {
-        return await fetch(url, { signal: controller.signal })
+        const response = await fetchApi('/api/system-info', { signal: controller.signal })
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+        const data = await response.json()
+        setSystemInfo(data)
+        setHeaderBackendOk(true)
+        return
+      } catch (error) {
+        lastError = error
+        const isAbort = error instanceof Error && error.name === 'AbortError'
+        lastReason = isAbort ? 'timeout' : 'connection'
+        if (attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, 1500))
+        }
       } finally {
         clearTimeout(timeoutId)
-      }
-    }
-
-    let lastReason: 'timeout' | 'connection' | 'other' = 'connection'
-    let lastError: unknown = null
-    for (const base of candidates) {
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-          const response = await tryFetch(base)
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`)
-          }
-          const data = await response.json()
-          setSystemInfo(data)
-          if (storedBase && base !== storedBase) {
-            setApiBase(base)
-          }
-          setHeaderBackendOk(true)
-          return
-        } catch (error) {
-          lastError = error
-          const isAbort = error instanceof Error && error.name === 'AbortError'
-          lastReason = isAbort ? 'timeout' : 'connection'
-          if (attempt < maxRetries) {
-            await new Promise((r) => setTimeout(r, 1500))
-          }
-        }
       }
     }
     console.error(i18n.t('app.errors.systemInfoLoad'), lastError)

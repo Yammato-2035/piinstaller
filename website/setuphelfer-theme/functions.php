@@ -19,9 +19,9 @@ add_action('after_setup_theme', 'setuphelfer_setup');
 function setuphelfer_assets() {
     // Wichtig für Child-Themes: get_stylesheet_uri() würde im Child-Kontext die Child-Styles laden.
     // Wir wollen aber die Parent-Styles als Basis.
-    wp_enqueue_style('setuphelfer-style', get_template_directory_uri() . '/style.css', [], '1.3.8.12');
-    wp_enqueue_script('setuphelfer-nav', get_template_directory_uri().'/assets/js/nav.js', [], '1.3.8.2', true);
-    wp_enqueue_script('setuphelfer-consent', get_template_directory_uri().'/assets/js/consent.js', [], '1.3.8.2', true);
+    wp_enqueue_style('setuphelfer-style', get_template_directory_uri() . '/style.css', [], '1.5.0.0');
+    wp_enqueue_script('setuphelfer-nav', get_template_directory_uri().'/assets/js/nav.js', [], '1.5.0.0', true);
+    wp_enqueue_script('setuphelfer-consent', get_template_directory_uri().'/assets/js/consent.js', [], '1.5.0.0', true);
     wp_enqueue_script('setuphelfer-live-status', get_template_directory_uri().'/assets/js/live-status.js', [], '1.0.1', true);
     $matomo_url = defined('SETUPHELFER_MATOMO_URL') ? constant('SETUPHELFER_MATOMO_URL') : '';
     $matomo_site_id = defined('SETUPHELFER_MATOMO_SITE_ID') ? constant('SETUPHELFER_MATOMO_SITE_ID') : '';
@@ -617,7 +617,7 @@ function setuphelfer_schema_org() {
             'alternateName' => 'SetupHelfer Desktop',
             'applicationCategory' => 'UtilitiesApplication',
             'operatingSystem' => 'Linux, Raspberry Pi OS',
-            'softwareVersion' => '1.3.8.2',
+            'softwareVersion' => '1.5.0.0',
             'url' => home_url('/download/'),
             'author' => ['@type' => 'Person', 'name' => 'Volker Glienke'],
         ];

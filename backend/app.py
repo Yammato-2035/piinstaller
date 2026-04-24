@@ -365,7 +365,7 @@ def _default_settings() -> dict:
     out = {
         "ui": {"language": "de"},
         "backup": {
-            "default_dir": "/mnt/backups",
+            "default_dir": "/mnt/setuphelfer/backups",
             # Nachweisbare Real-Test-Zustände (persistiert in config.json)
             "realtest_state": {},
         },
@@ -1495,6 +1495,9 @@ def _get_cors_origins() -> list[str]:
         "http://localhost:3001",
         "http://127.0.0.1:3001",
         "http://pi-installer.local:3001",
+        # Tauri dev (tauri.conf.json devUrl) + Vite strictPort
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
     ]
     extra = os.environ.get("PI_INSTALLER_CORS_ORIGINS", "").strip()
     if not extra:
@@ -1635,6 +1638,12 @@ try:
 except ImportError:
     pass
 
+try:
+    from api.routes.diagnostics import router as diagnostics_router
+    app.include_router(diagnostics_router)
+except ImportError:
+    pass
+
 def _is_demo_mode(request: Request) -> bool:
     """Prüft ob X-Demo-Mode Header gesetzt ist (für Screenshot-Dokumentation ohne echte Daten)."""
     return request.headers.get("X-Demo-Mode") == "1"
@@ -1667,11 +1676,25 @@ async def get_system_paths():
         "boot_firmware_config": "/boot/firmware/config.txt",
         "boot_firmware_cmdline": "/boot/firmware/cmdline.txt",
         "boot_firmware_exists": Path("/boot/firmware").exists(),
-        "mnt_backups": "/mnt/backups",
-        "mnt_backups_exists": Path("/mnt/backups").exists(),
+        "mnt_backups": "/mnt/setuphelfer/backups",
+        "mnt_backups_exists": Path("/mnt/setuphelfer/backups").exists(),
         "root_mount": _root_mount_device(),
     }
     return {"status": "success", "paths": paths}
+
+
+@app.get("/api/system/devices")
+async def get_system_devices():
+    """Klassifizierte Blockgeräte (lsblk): nur Information, keine automatische Auswahl."""
+    try:
+        from core.safe_device import devices_for_api
+
+        return {"status": "success", "devices": devices_for_api()}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": str(e), "devices": []},
+        )
 
 
 def _root_mount_device() -> Optional[str]:
@@ -2948,15 +2971,18 @@ def _validate_backup_dir(path_str: str) -> str:
     - nutzt realpath
     - muss absolut sein
     - keine gefährlichen Zeichen (Shell-Injection)
-    - muss unter erlaubten Mount-Roots liegen (USB-Sticks liegen typischerweise unter /media, /run/media, /mnt, /home)
+    - Storage-Schreibschutz (Allowlist, keine System-/Boot-/Windows-Ziele)
     - darf kein kritischer Systempfad sein
     """
+    from core.safe_device import WriteTargetProtectionError, validate_write_target
+
     resolved = _normalize_path(path_str)
-    if not _is_under_allowed_root(resolved):
-        raise ValueError("backup_dir muss unter /mnt, /media, /run/media oder /home liegen")
+    try:
+        validate_write_target(resolved, runner=None)
+    except WriteTargetProtectionError as e:
+        raise ValueError(f"{e.diagnosis_id}: {e}") from e
     if _is_critical_system_path(resolved):
         raise ValueError("backup_dir darf kein kritischer Systempfad sein")
-    # Verhindere versehentliches Backup direkt auf Root-Verzeichnis
     if str(resolved) == "/":
         raise ValueError("backup_dir darf nicht / sein")
     return str(resolved)
@@ -8366,7 +8392,7 @@ def _backup_settings_path() -> Path:
 def _default_backup_settings() -> dict:
     return {
         "enabled": True,
-        "backup_dir": "/mnt/backups",
+        "backup_dir": "/mnt/setuphelfer/backups",
         "retention": {"keep_last": 5},
         # legacy (pre multi-schedule). kept for migration/backward compat.
         "incremental_only": False,
@@ -8679,7 +8705,7 @@ def main():
         rule = {"id": "legacy", "type": "full", "target": "local", "keep_last": int((cfg.get("retention") or {}).get("keep_last", 5) or 5)}
         rid = "legacy"
 
-    backup_dir = cfg.get("backup_dir") or "/mnt/backups"
+    backup_dir = cfg.get("backup_dir") or "/mnt/setuphelfer/backups"
     Path(backup_dir).mkdir(parents=True, exist_ok=True)
     ts = time.strftime("%Y%m%d_%H%M%S")
 
@@ -8953,15 +8979,22 @@ async def backup_set_settings(request: Request):
 
     # validate some fields
     try:
-        base["backup_dir"] = _validate_backup_dir(base.get("backup_dir", "/mnt/backups"))
+        base["backup_dir"] = _validate_backup_dir(base.get("backup_dir", "/mnt/setuphelfer/backups"))
     except Exception as ve:
+        from core.safe_device import WriteTargetProtectionError
+
+        details: dict = {"reason": str(ve)}
+        if isinstance(ve, WriteTargetProtectionError):
+            details["diagnosis_id"] = ve.diagnosis_id
+        elif isinstance(ve.__cause__, WriteTargetProtectionError):
+            details["diagnosis_id"] = ve.__cause__.diagnosis_id
         return JSONResponse(
             status_code=200,
             content=with_backup_contract(
                 {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"},
                 "backup.path_invalid",
                 "error",
-                {"reason": str(ve)},
+                details,
             ),
         )
     try:
@@ -11411,7 +11444,7 @@ async def create_backup(request: Request):
                     ),
                 )
 
-        backup_dir = data.get("backup_dir", "/mnt/backups")
+        backup_dir = data.get("backup_dir", "/mnt/setuphelfer/backups")
         try:
             backup_dir = _validate_backup_dir(backup_dir)
         except Exception as ve:
@@ -11910,7 +11943,7 @@ async def create_backup(request: Request):
         )
 
 @app.get("/api/backup/list")
-async def list_backups(backup_dir: str = "/mnt/backups"):
+async def list_backups(backup_dir: str = "/mnt/setuphelfer/backups"):
     """Liste aller Backups"""
     try:
         try:

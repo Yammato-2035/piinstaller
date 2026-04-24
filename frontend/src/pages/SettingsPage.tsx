@@ -875,10 +875,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
               <div>
                 <div className="text-xs text-slate-400 mb-1">Standard Backup-Ziel</div>
                 <input
-                  value={settings.backup?.default_dir ?? '/mnt/backups'}
+                  value={settings.backup?.default_dir ?? '/mnt/setuphelfer/backups'}
                   onChange={(e) => setSettings((s: any) => ({ ...s, backup: { ...(s.backup || {}), default_dir: e.target.value } }))}
                   className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white"
-                  placeholder="/mnt/backups"
+                  placeholder="/mnt/setuphelfer/backups"
                 />
                 <div className="text-xs text-slate-500 mt-1">Muss unter /mnt, /media, /run/media oder /home liegen.</div>
               </div>

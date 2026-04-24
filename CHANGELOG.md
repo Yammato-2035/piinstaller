@@ -7,6 +7,29 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added (Diagnose-Assistent, Phase DIAG-1 Kern)
+- Neuer strukturierter Diagnosekern unter `backend/core/diagnostics/` mit stabilem Katalog (30 Faelle), deterministischem Matcher und API-Endpunkten `POST /api/diagnostics/analyze`, `GET /api/diagnostics/catalog`, `GET /api/diagnostics/{id}`.
+- Frontend-Erweiterung: `DiagnosticsAssistantPanel` mit Ausgabe nach Nutzerstufe (Beginner/Advanced/Expert), angebunden im Backup/Verify-Flow.
+- Wissensbasis erweitert um `docs/knowledge-base/diagnostics/*` (Architektur, Datenmodell, Katalog, Matching-Regeln, UI-Stufen).
+
+### Added (Diagnose-Lernschleife, Phase DIAG-1.1)
+- Strukturiertes Evidenz- und Hardwareprofil-Modell (`EvidenceRecord`, `SystemProfile`, `StorageDevice`) inkl. API-Endpunkte `GET /api/diagnostics/evidence/schema` und `GET /api/diagnostics/evidence/sample`.
+- Persistente Evidenz-/Profilablage unter `data/diagnostics/evidence/` und `data/diagnostics/profiles/` mit Seed-Faellen aus bekannten Projektproblemen.
+- Diagnosekatalog-Rueckkopplung um Evidence-Zaehler und Kontexte (`seen_in_platforms`, `common_*_contexts`) erweitert.
+- Neue Pflichtdokumentation fuer Lernschleife und Entwicklerworkflow (`EVIDENCE_MODEL.md`, `LEARNING_LOOP.md`, `TEST_SCENARIO_CATALOG.md`, `HARDWARE_PROFILE_SCHEMA.md`, `DIAGNOSTIC_DEVELOPMENT_WORKFLOW.md`).
+
+### Added (HW-TEST-1 Vorbereitung vor Pi-Isolationstest)
+- Strikte Hardware-Testmatrix mit 24 Szenarien fuer Linux-Laptop -> externe NVMe, USB-3.2-Stick (64 GB), SD-Karte (64 GB) inkl. Negativ-/Grenzfaelle in `data/diagnostics/hw_test_1_matrix.json`.
+- Neue Test-Evidence-Dokumente fuer Matrix, Durchfuehrung und Pi-Freigabegate unter `docs/knowledge-base/test-evidence/`.
+- Zusaetzliche System-/Medienprofile fuer Laptop und Wechselmedien unter `data/diagnostics/profiles/`.
+- Geplantes Evidence-Template fuer noch nicht ausgefuehrte Realhardwarelaeufe sowie optionaler Dev-Helper `scripts/diagnostics/new_evidence_record.py`.
+- Neue Konsistenztests fuer HW-Matrix und Profile (`backend/tests/test_hw_test_1_matrix_v1.py`, `backend/tests/test_hw_profiles_v1.py`).
+
+### Added (HW-EXEC-1 externe NVMe, reale Evidenz)
+- Reale Ausfuehrung von `HW1-01` bis `HW1-05` mit jeweils genau einem EvidenceRecord (`EVID-2026-HW1-01` bis `EVID-2026-HW1-05`), inklusive fehlgeschlagener und inkonklusiver Ergebnisse.
+- Neuer Ausfuehrungsreport `docs/knowledge-base/test-evidence/HW_EXEC_1_EXTERNAL_NVME_REPORT.md` mit Diagnose-/Ursachenbewertung pro Test.
+- Diagnosekatalog erweitert um `SYSTEMD-NNP-031` (NoNewPrivileges blockiert sudo im Restore-/Runtime-Pfad).
+
 ### Fixed (Backup / Recovery - Symlinks und Sonderdateien, file-based)
 - Symbolische Links werden als Symlinks archiviert (ohne Dereferenzierung); rekursive Sammlung mit `os.walk(..., followlinks=False)`.
 - Sockets/FIFOs/Geraete: nicht archiviert, Eintrag unter `skipped_members` statt komplettem Abbruch.

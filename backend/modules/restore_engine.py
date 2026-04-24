@@ -18,7 +18,7 @@ from core.backup_recovery_i18n import (
     K_RESTORE_IMAGE_FAILED,
     K_RESTORE_PT_FAILED,
 )
-from core.block_device_allowlist import assert_allowed_block_device
+from core.safe_device import WriteTargetProtectionError, validate_write_target
 from modules.backup_symlink_safety import tar_symlink_linkname_allowed
 
 
@@ -61,7 +61,10 @@ def restore_partition_table(
     runner: Callable[..., subprocess.CompletedProcess[str]] | None = None,
 ) -> tuple[bool, str, str | None]:
     """Schreibt Layout mit sfdisk (Gerät allowlisted)."""
-    assert_allowed_block_device(target_device)
+    try:
+        validate_write_target(target_device, runner=runner)
+    except WriteTargetProtectionError as e:
+        return False, K_RESTORE_PT_FAILED, f"{e.diagnosis_id}: {e}"
     dev = str(target_device)
     if dry_run:
         return True, K_OPERATION_OK, None
@@ -88,7 +91,10 @@ def restore_image(
     dd_bs: str = "4M",
 ) -> tuple[bool, str, str | None]:
     """dd von Abbild auf Zielgerät (destruktiv)."""
-    assert_allowed_block_device(target_device)
+    try:
+        validate_write_target(target_device, runner=runner)
+    except WriteTargetProtectionError as e:
+        return False, K_RESTORE_IMAGE_FAILED, f"{e.diagnosis_id}: {e}"
     if dry_run:
         return True, K_OPERATION_OK, None
     img = Path(image_file)
@@ -112,6 +118,12 @@ def restore_files(
 ) -> tuple[bool, str, str | None]:
     """Entpackt tar.gz unter target_directory (muss unter erlaubten Präfixen liegen)."""
     td = Path(target_directory)
+    try:
+        validate_write_target(td, runner=runner)
+    except WriteTargetProtectionError as e:
+        from core.backup_recovery_i18n import K_PATH_NOT_ALLOWED
+
+        return False, K_PATH_NOT_ALLOWED, f"{e.diagnosis_id}: {e}"
     if not path_under_any_prefix(td, allowed_target_prefixes):
         from core.backup_recovery_i18n import K_PATH_NOT_ALLOWED
 
