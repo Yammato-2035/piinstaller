@@ -3074,9 +3074,23 @@ async def get_system_network(request: Request):
 
 @app.get("/api/version")
 async def get_version():
-    """Gibt die PI-Installer Versionsnummer zurück."""
+    """Gibt die Setuphelfer-Version und kompatible Metadaten zurück (Single Source: config/version.json)."""
     # nicht cachen, damit VERSION-Änderungen ohne Restart sichtbar werden
-    return {"status": "success", "version": get_pi_installer_version()}
+    repo_root = Path(__file__).resolve().parent.parent
+    try:
+        is_opt_runtime = repo_root.resolve() == get_opt_install_dir().resolve()
+    except OSError:
+        is_opt_runtime = False
+    ver = get_pi_installer_version()
+    edition = (os.environ.get("APP_EDITION") or "").strip() or None
+    return {
+        "status": "success",
+        "version": ver,
+        "app_name": "setuphelfer",
+        "tauri_app_id": "de.pi-installer.app",
+        "install_profile": "opt" if is_opt_runtime else "non_opt",
+        **({"app_edition": edition} if edition else {}),
+    }
 
 
 @app.get("/api/system/service-conflicts")

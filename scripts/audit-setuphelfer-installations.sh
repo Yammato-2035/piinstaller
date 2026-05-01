@@ -160,7 +160,8 @@ if [[ ${#_arch[@]} -gt 0 ]]; then
   for d in "${_arch[@]}"; do
     echo "  $d"
     if find "$d" -maxdepth 3 -type f -perm -111 2>/dev/null | head -5 | grep -q .; then
-      echo -e "  ${YELLOW}Hinweis:${NC} unter $d wurden ausführbare Dateien gefunden (nur dokumentiert, nichts gelöscht)."
+      echo -e "  ${YELLOW}WARN:${NC} unter $d wurden ausführbare Dateien gefunden (Archiv prüfen, nichts automatisch löschen)."
+      bump_warn
     fi
   done
 else
@@ -230,6 +231,17 @@ else
   echo "Desktop: keine Exec-Ziele auf ${_NEEDLE}."
 fi
 
+_legacy_desktop_names=$(
+  find /usr/share/applications /home/*/.local/share/applications /home/*/Desktop \
+    -maxdepth 1 -type f -name 'pi-installer*.desktop' 2>/dev/null || true
+)
+if [[ -n "$_legacy_desktop_names" ]]; then
+  echo -e "${YELLOW}WARN Desktop-Dateiname historisch:${NC}"
+  echo "$_legacy_desktop_names" | sed 's/^/  /'
+  echo "  → Dateiname ist Legacy, Exec kann trotzdem korrekt sein."
+  bump_warn
+fi
+
 section "Desktop-Starter (Exec-Zeilen, Auszug)"
 for d in /usr/share/applications /home/*/.local/share/applications /home/*/Desktop; do
   [[ -d "$d" ]] || continue
@@ -263,26 +275,120 @@ fi
 section "Laufende Prozesse (Auszug)"
 pgrep -af 'setuphelfer|pi-installer|uvicorn.*app:app|vite preview' 2>/dev/null | grep -v 'audit-setuphelfer' || true
 
-section "Repo-Tauri vs. ${_OPT}/setuphelfer (Release, nur Hinweis)"
-if [[ -f "$REPO_ROOT/frontend/src-tauri/target/release/pi-installer" ]] && [[ -f ${_OPT}/setuphelfer/frontend/src-tauri/target/release/pi-installer ]]; then
-  _repo_stat=$(stat -c '%Y %s' "$REPO_ROOT/frontend/src-tauri/target/release/pi-installer" 2>/dev/null || stat -f '%m %z' "$REPO_ROOT/frontend/src-tauri/target/release/pi-installer" 2>/dev/null)
-  _opt_stat=$(stat -c '%Y %s' "${_OPT}/setuphelfer/frontend/src-tauri/target/release/pi-installer" 2>/dev/null || stat -f '%m %z' "${_OPT}/setuphelfer/frontend/src-tauri/target/release/pi-installer" 2>/dev/null)
-  _repo_t="${_repo_stat%% *}"
-  _opt_t="${_opt_stat%% *}"
-  _repo_s="${_repo_stat#* }"
-  _opt_s="${_opt_stat#* }"
-  if [[ -n "$_repo_t" && -n "$_opt_t" && "$_repo_t" -lt "$_opt_t" ]]; then
-    echo -e "${CYAN}Hinweis:${NC} Repo-Tauri ist älter (mtime) als ${_OPT}/setuphelfer — bei Deploy ggf. neu bauen."
+section "Frontend-Build (dist) vs. Source"
+_DIST_DIR="$REPO_ROOT/frontend/dist"
+if [[ ! -d "$_DIST_DIR" ]]; then
+  echo -e "${YELLOW}WARN:${NC} frontend/dist fehlt — für Produktion: cd frontend && npm run build"
+  bump_warn
+else
+  _dist_newest=$(find "$_DIST_DIR" -type f -printf '%T@\n' 2>/dev/null | sort -n | tail -1 || echo "0")
+  _src_newest=$(find "$REPO_ROOT/frontend/src" -type f \( -name '*.tsx' -o -name '*.ts' -o -name '*.css' \) -printf '%T@\n' 2>/dev/null | sort -n | tail -1 || echo "0")
+  if awk -v d="$_dist_newest" -v s="$_src_newest" 'BEGIN{exit !(s>d)}'; then
+    echo -e "${YELLOW}WARN:${NC} frontend/src wirkt neuer als frontend/dist — Build veraltet (npm run build)."
+    bump_warn
+  else
+    echo -e "${GREEN}OK:${NC} dist-Zeitstempel nicht hinter dem jüngsten relevanten Source-Stand zurück."
   fi
-  _thresh=$((_opt_s * 9 / 10))
-  if [[ -n "$_repo_s" && -n "$_opt_s" && "$_repo_s" -lt "$_thresh" ]]; then
-    echo -e "${CYAN}Hinweis:${NC} Repo-Tauri ist deutlich kleiner als ${_OPT}/setuphelfer (${_repo_s} vs ${_opt_s} Bytes)."
+  _dist_needle_hits=$(grep -rIl "${_NEEDLE}" "$_DIST_DIR" 2>/dev/null | wc -l)
+  if [[ "${_dist_needle_hits:-0}" -gt 0 ]]; then
+    echo -e "${RED}FAIL:${NC} frontend/dist enthält funktionalen Legacy-Pfad ${_NEEDLE}:"
+    grep -rIn "${_NEEDLE}" "$_DIST_DIR" 2>/dev/null | head -20 | sed 's/^/  /'
+    bump_fail
+  else
+    echo -e "${GREEN}OK:${NC} kein ${_NEEDLE} in frontend/dist."
   fi
-  if [[ -n "$_repo_t" && -n "$_opt_t" && "$_repo_t" -ge "$_opt_t" ]] && [[ -n "$_repo_s" && -n "$_opt_s" && "$_repo_s" -ge "$_thresh" ]]; then
-    echo "Repo- und /opt-Tauri wirken konsistent."
+fi
+
+section "API-Version vs. config/version.json"
+_CFG_VER="$(read_version_file "$REPO_ROOT/config/version.json")"
+echo "Repo config/version.json: ${_CFG_VER}"
+_BACKEND_LISTEN=0
+if command -v ss >/dev/null 2>&1 && ss -tln 2>/dev/null | grep -qE '127\.0\.0\.1:8000|:8000'; then
+  _BACKEND_LISTEN=1
+fi
+if [[ "$_BACKEND_LISTEN" -eq 1 ]]; then
+  _API_RAW=$(curl -sS --max-time 4 http://127.0.0.1:8000/api/version 2>/dev/null || true)
+  _API_VER=""
+  if command -v jq >/dev/null 2>&1; then
+    _API_VER=$(echo "$_API_RAW" | jq -r '.version // empty' 2>/dev/null || true)
+  else
+    _API_VER=$(echo "$_API_RAW" | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+  fi
+  if [[ -z "$_API_VER" ]]; then
+    echo -e "${RED}FAIL:${NC} Port 8000 lauscht, aber /api/version liefert keine Version (Antwort evtl. leer oder kein Setuphelfer)."
+    bump_fail
+  elif [[ "$_API_VER" != "$_CFG_VER" ]]; then
+    echo -e "${RED}FAIL:${NC} Versionskonflikt: API meldet \"${_API_VER}\", Repo config \"${_CFG_VER}\"."
+    bump_fail
+  else
+    echo -e "${GREEN}OK:${NC} /api/version und config/version.json stimmen überein (${_API_VER})."
   fi
 else
-  echo "(Vergleich übersprungen: eine der beiden Binaries fehlt)"
+  echo -e "${YELLOW}WARN:${NC} Kein Listener auf :8000 — Versionsabgleich mit laufendem Backend übersprungen."
+  bump_warn
+fi
+
+section "Tauri Release-Binary (Repo) vs. Source & ${_OPT}/setuphelfer"
+_REPO_TAURI="$REPO_ROOT/frontend/src-tauri/target/release/pi-installer"
+_OPT_TAURI="${_OPT}/setuphelfer/frontend/src-tauri/target/release/pi-installer"
+if [[ -x "$_REPO_TAURI" ]]; then
+  _bin_mtime=$(stat -c '%Y' "$_REPO_TAURI" 2>/dev/null || stat -f '%m' "$_REPO_TAURI" 2>/dev/null || echo "0")
+  _src_tauri_newest=$(find "$REPO_ROOT/frontend/src" "$REPO_ROOT/frontend/src-tauri" -type f \( -name '*.rs' -o -name '*.tsx' -o -name '*.ts' -o -name 'tauri.conf.json' -o -name 'Cargo.toml' \) -printf '%T@\n' 2>/dev/null | sort -n | tail -1 || echo "0")
+  if awk -v b="$_bin_mtime" -v s="$_src_tauri_newest" 'BEGIN{exit !(s>b)}'; then
+    echo -e "${RED}FAIL:${NC} Repo-Tauri-Binary ist älter als jüngste Quell-Änderung — npm run tauri:build im frontend/ ausführen."
+    bump_fail
+  else
+    echo -e "${GREEN}OK:${NC} Repo-Tauri-Binary nicht hinter src/src-tauri zurück."
+  fi
+  if [[ "$REPO_ROOT" != "${_OPT}/setuphelfer" ]] && [[ -x "$_OPT_TAURI" ]]; then
+    rm=$(stat -c '%Y' "$_REPO_TAURI" 2>/dev/null || stat -f '%m' "$_REPO_TAURI" 2>/dev/null)
+    om=$(stat -c '%Y' "$_OPT_TAURI" 2>/dev/null || stat -f '%m' "$_OPT_TAURI" 2>/dev/null)
+    rs=$(stat -c '%s' "$_REPO_TAURI" 2>/dev/null || stat -f '%z' "$_REPO_TAURI" 2>/dev/null)
+    os=$(stat -c '%s' "$_OPT_TAURI" 2>/dev/null || stat -f '%z' "$_OPT_TAURI" 2>/dev/null)
+    _stale=0
+    if [[ -n "$rm" && -n "$om" && "$rm" -lt "$om" ]]; then _stale=1; fi
+    if [[ -n "$rs" && -n "$os" ]]; then
+      _thresh=$((os * 9 / 10))
+      if [[ "$rs" -lt "$_thresh" ]]; then _stale=1; fi
+    fi
+    if [[ "$_stale" -eq 1 ]]; then
+      echo -e "${RED}FAIL:${NC} Repo-Tauri ist veraltet gegenüber ${_OPT}/setuphelfer (mtime/Größe) — gleichen Stand bauen oder /opt-Starter nutzen."
+      bump_fail
+    else
+      echo -e "${GREEN}OK:${NC} Repo-Tauri plausibel konsistent zu /opt/setuphelfer-Binary."
+    fi
+  fi
+else
+  echo -e "${YELLOW}WARN:${NC} Kein ausführbares Repo-Tauri-Binary unter frontend/src-tauri/target/release/pi-installer (Tauri-Start aus Repo ggf. nicht möglich)."
+  bump_warn
+fi
+
+section "LocalStorage / Tauri (API-URL Hinweise, nur Heuristik)"
+if [[ -d "${HOME}/.local/share/de.pi-installer.app/localstorage" ]]; then
+  echo -e "${YELLOW}WARN:${NC} Historischer Tauri-Datenpfad de.pi-installer.app vorhanden."
+  bump_warn
+  _ls_warn=0
+  for _f in "${HOME}"/.local/share/de.pi-installer.app/localstorage/*.localstorage; do
+    [[ -f "$_f" ]] || continue
+    if grep -aEo 'https?://[^[:space:]"]+' "$_f" 2>/dev/null | grep -vE '127\.0\.0\.1:8000|localhost:8000|localhost:5173|http://127\.0\.0\.1:5173' | grep -q .; then
+      echo -e "${YELLOW}WARN:${NC} In $(basename "$_f") URL(s) außerhalb Standard-Backend (127.0.0.1:8000) — gespeicherte API-Basis in der App prüfen."
+      _ls_warn=1
+    fi
+  done
+  if [[ "$_ls_warn" -eq 1 ]]; then
+    bump_warn
+  else
+    echo -e "${GREEN}OK:${NC} Keine auffälligen Nicht-Standard-URLs in Tauri-LocalStorage (oberflächlich)."
+  fi
+else
+  echo "(kein de.pi-installer.app/localstorage)"
+fi
+
+section "Repo-Tauri vs. ${_OPT}/setuphelfer (Kurzüberblick)"
+if [[ -f "$_REPO_TAURI" ]] && [[ -f "$_OPT_TAURI" ]]; then
+  ls -la "$_REPO_TAURI" "$_OPT_TAURI" 2>/dev/null || true
+else
+  echo "(mindestens eine Release-Binary fehlt — Details siehe Abschnitt oben)"
 fi
 
 section "Reversibilität Legacy-Service (Hinweis)"

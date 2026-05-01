@@ -31,6 +31,8 @@ cd frontend && npm run tauri:build
 
 Das Repo-Skript bricht bei veralteter Repo-Tauri gegenüber `/opt/setuphelfer` nun **mit Hinweis** ab, sofern nicht `SETUPHELFER_ALLOW_OLD_REPO_TAURI=1` gesetzt ist.
 
+Siehe ergänzend: `docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md` (Source/Build/Runtime/API-Konsistenz).
+
 ## Richtige Startwege (Überblick)
 
 - **Desktop:** `~/Desktop/SetupHelfer.desktop` soll auf `/opt/setuphelfer/scripts/start-setuphelfer.sh` zeigen.
@@ -60,6 +62,8 @@ Im Repo:
 Tauri legt WebView-Daten u. a. ab unter:
 
 `~/.local/share/de.pi-installer.app/`
+
+Die App-ID `de.pi-installer.app` ist aktuell ein **historischer Identifier**. Das ist zulässig, muss aber bei Diagnose von Clientzuständen (gespeicherte API-URL, alte UI-Zustände) berücksichtigt werden.
 
 Dort kann u. a. eine gespeicherte Backend-URL liegen (Key `pi-installer-api-base`). Ungültige Ports (z. B. `80000`) führen zu „Server antwortet nicht“, obwohl `setuphelfer-backend` läuft. Die Anwendung bereinigt defekte Werte in neueren Builds; bei Bedarf LocalStorage dort prüfen oder die App neu starten nach Fix.
 

@@ -32,6 +32,7 @@ import RemoteView from './features/remote/RemoteView'
 import FirstRunWizard, { FIRST_RUN_DONE_KEY } from './components/FirstRunWizard'
 import RunningBackupModal from './components/RunningBackupModal'
 import BootSplash from './components/BootSplash'
+import ApiRuntimeConsistencyBanner from './components/ApiRuntimeConsistencyBanner'
 import { fetchApi, setScreenshotMode, fetchExperienceLevelFromApi, readStoredExperienceLevel } from './api'
 import { getThemeShot, isThemeScreenshotCapture } from './themeScreenshot'
 import { PlatformProvider, platformRawFromSystemInfo, usePlatform } from './context/PlatformContext'
@@ -652,6 +653,7 @@ function App() {
             />
             <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
               <AppTopHeader headerBackendOk={headerBackendOk} />
+              <ApiRuntimeConsistencyBanner />
               <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div

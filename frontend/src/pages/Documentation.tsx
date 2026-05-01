@@ -1208,7 +1208,7 @@ const Documentation: React.FC = () => {
                       <h4 className="font-semibold text-rose-200">systemd /opt: EACCES bei node_modules/.vite oder UI startet nicht</h4>
                     </div>
                     <div className="p-4 text-sm">
-                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Journal zeigt z. B. <code className="bg-slate-700 px-1 rounded">permission denied, mkdir …/frontend/node_modules/.vite</code> – oft Vite-<strong>Dev</strong> unter <code className="bg-slate-700 px-1 rounded">/opt/setuphelfer</code> (Legacy, archiviert: <code className="bg-slate-700 px-1 rounded">{`/opt/${'pi-installer'}/`}</code>) statt Produktions-Preview.</p>
+                      <p className="text-slate-300 mb-2"><strong>Beschreibung:</strong> Journal zeigt z. B. <code className="bg-slate-700 px-1 rounded">permission denied, mkdir …/frontend/node_modules/.vite</code> – oft Vite-<strong>Dev</strong> unter <code className="bg-slate-700 px-1 rounded">/opt/setuphelfer</code> (Legacy, archiviert: früher ein Ordner <code className="bg-slate-700 px-1 rounded">pi-installer</code> direkt unter <code className="bg-slate-700 px-1 rounded">/opt/</code>) statt Produktions-Preview.</p>
                       <p className="text-slate-300 mb-2"><strong>Ursache:</strong> Vermischung von Repo-Entwicklung (<code className="bg-slate-700 px-1 rounded">./start.sh</code> = <code className="bg-slate-700 px-1 rounded">npm run dev</code>) und installiertem Service, oder veraltete Unit mit <code className="bg-slate-700 px-1 rounded">ExecStart=…/start.sh</code>.</p>
                       <div className="rounded bg-emerald-950/30 border border-emerald-700/40 p-3 mt-2">
                         <p className="font-semibold text-emerald-300 mb-1">Lösungen:</p>
@@ -1730,7 +1730,7 @@ const Documentation: React.FC = () => {
                   <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.3.4.0 (Systemweite Installation, Dual Display X11 frühe Konfiguration)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
-                      <li><strong>Installation:</strong> Systemweite Installation nach <code className="bg-slate-700 px-1 rounded">/opt/setuphelfer/</code> (Historie, nicht mehr aktiv: <code className="bg-slate-700 px-1 rounded">{`/opt/${'pi-installer'}/`}</code>) gemäß Linux FHS; install-system.sh, update-system.sh; docs/SYSTEM_INSTALLATION.md</li>
+                      <li><strong>Installation:</strong> Systemweite Installation nach <code className="bg-slate-700 px-1 rounded">/opt/setuphelfer/</code> (Historie: Ordner <code className="bg-slate-700 px-1 rounded">pi-installer</code> unter <code className="bg-slate-700 px-1 rounded">/opt/</code>, nicht mehr aktiv) gemäß Linux FHS; install-system.sh, update-system.sh; docs/SYSTEM_INSTALLATION.md</li>
                       <li><strong>Dual Display X11:</strong> LightDM session-setup-script für frühe Konfiguration; Position korrekt (DSI links unten, HDMI rechts oben); keine mehrfachen Umschaltungen</li>
                     </ul>
                   </div>

@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-const TAURI_DEFAULT_API = 'http://127.0.0.1:8000';
+export const TAURI_DEFAULT_API = 'http://127.0.0.1:8000';
 const DEFAULT_API_TIMEOUT_MS = 12000;
 
 /** LocalStorage-Key für optionale Backend-URL (z. B. wenn Backend auf anderem Rechner läuft). */
