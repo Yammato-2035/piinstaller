@@ -236,10 +236,32 @@ _legacy_desktop_names=$(
     -maxdepth 1 -type f -name 'pi-installer*.desktop' 2>/dev/null || true
 )
 if [[ -n "$_legacy_desktop_names" ]]; then
-  echo -e "${YELLOW}WARN Desktop-Dateiname historisch:${NC}"
-  echo "$_legacy_desktop_names" | sed 's/^/  /'
-  echo "  → Dateiname ist Legacy, Exec kann trotzdem korrekt sein."
-  bump_warn
+  _legacy_name_warn=0
+  while IFS= read -r _df; do
+    [[ -n "$_df" ]] || continue
+    _is_hidden=0
+    if grep -qE '^[[:space:]]*Hidden[[:space:]]*=[[:space:]]*true' "$_df" 2>/dev/null && \
+       grep -qE '^[[:space:]]*NoDisplay[[:space:]]*=[[:space:]]*true' "$_df" 2>/dev/null; then
+      _is_hidden=1
+    fi
+    _base="$(basename "$_df")"
+    _user_override="${HOME}/.local/share/applications/${_base}"
+    if [[ "$_is_hidden" -eq 0 ]] && [[ "$_df" == /usr/share/applications/* ]] && [[ -f "$_user_override" ]]; then
+      if grep -qE '^[[:space:]]*Hidden[[:space:]]*=[[:space:]]*true' "$_user_override" 2>/dev/null && \
+         grep -qE '^[[:space:]]*NoDisplay[[:space:]]*=[[:space:]]*true' "$_user_override" 2>/dev/null; then
+        _is_hidden=1
+      fi
+    fi
+    if [[ "$_is_hidden" -eq 1 ]]; then
+      echo -e "${CYAN}INFO:${NC} historischer Desktop-Dateiname deaktiviert: $_df"
+    else
+      echo -e "${YELLOW}WARN:${NC} historischer Desktop-Dateiname aktiv sichtbar: $_df"
+      _legacy_name_warn=1
+    fi
+  done <<< "$_legacy_desktop_names"
+  if [[ "$_legacy_name_warn" -eq 1 ]]; then
+    bump_warn
+  fi
 fi
 
 section "Desktop-Starter (Exec-Zeilen, Auszug)"
@@ -365,13 +387,16 @@ fi
 
 section "LocalStorage / Tauri (API-URL Hinweise, nur Heuristik)"
 if [[ -d "${HOME}/.local/share/de.pi-installer.app/localstorage" ]]; then
-  echo -e "${YELLOW}WARN:${NC} Historischer Tauri-Datenpfad de.pi-installer.app vorhanden."
-  bump_warn
+  echo -e "${CYAN}INFO:${NC} Historischer Tauri-Datenpfad de.pi-installer.app vorhanden."
   _ls_warn=0
   for _f in "${HOME}"/.local/share/de.pi-installer.app/localstorage/*.localstorage; do
     [[ -f "$_f" ]] || continue
     if grep -aEo 'https?://[^[:space:]"]+' "$_f" 2>/dev/null | grep -vE '127\.0\.0\.1:8000|localhost:8000|localhost:5173|http://127\.0\.0\.1:5173' | grep -q .; then
       echo -e "${YELLOW}WARN:${NC} In $(basename "$_f") URL(s) außerhalb Standard-Backend (127.0.0.1:8000) — gespeicherte API-Basis in der App prüfen."
+      _ls_warn=1
+    fi
+    if grep -aE '/opt/pi-installer' "$_f" 2>/dev/null | grep -q .; then
+      echo -e "${YELLOW}WARN:${NC} In $(basename "$_f") Legacy-Pfadhinweis auf /opt/pi-installer gefunden."
       _ls_warn=1
     fi
   done
