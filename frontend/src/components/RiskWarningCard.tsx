@@ -14,7 +14,7 @@ interface RiskWarningCardProps {
 
 const CARD_STYLES: Record<RiskLevel, { border: string; bg: string; icon: string }> = {
   green: { border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', icon: 'text-emerald-400' },
-  yellow: { border: 'border-amber-500/40', bg: 'bg-amber-500/10', icon: 'text-amber-400' },
+  yellow: { border: 'border-amber-300/70', bg: 'bg-amber-900/35', icon: 'text-amber-200' },
   red: { border: 'border-red-500/40', bg: 'bg-red-500/10', icon: 'text-red-400' },
 }
 

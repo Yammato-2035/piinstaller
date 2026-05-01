@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import i18n from '../i18n'
+import { fetchApi } from '../api'
 import { usePlatform } from '../context/PlatformContext'
 import { useUIMode, type UIMode } from '../context/UIModeContext'
 import AppIcon from './AppIcon'
@@ -106,6 +107,19 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
   const [version] = useState<string>(typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '…')
   const [newBadges, setNewBadges] = useState<Record<string, boolean>>({})
   const [uiLang] = useState<'de' | 'en'>(() => (i18n.language?.startsWith('en') ? 'en' : 'de'))
+  const [runtimeIps, setRuntimeIps] = useState<string[]>([])
+
+  const loadRuntimeIps = useCallback(async () => {
+    try {
+      const response = await fetchApi('/api/system/network')
+      if (!response.ok) return
+      const data = await response.json()
+      const ips = Array.isArray(data?.ips) ? data.ips.filter((ip: unknown) => typeof ip === 'string' && ip && ip !== '0.0.0.0') : []
+      setRuntimeIps(ips)
+    } catch {
+      // Ruhig bleiben: Sidebar darf bei kurzzeitiger API-Störung nicht "springen".
+    }
+  }, [])
 
   useEffect(() => {
     const badges: Record<string, boolean> = {}
@@ -117,6 +131,14 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     })
     setNewBadges(badges)
   }, [currentPage])
+
+  useEffect(() => {
+    void loadRuntimeIps()
+    const id = window.setInterval(() => {
+      void loadRuntimeIps()
+    }, 15000)
+    return () => window.clearInterval(id)
+  }, [loadRuntimeIps])
 
   const menuItems = useMemo(() => buildMenuItems(t, isRaspberryPi, freenoveDetected, appEdition), [t, isRaspberryPi, freenoveDetected, appEdition])
 
@@ -282,6 +304,11 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
             <AppIcon name="ok" category="status" size={16} statusColor="ok" />
             {t('sidebar.runtimeStatus.ok')}
           </p>
+          {runtimeIps.length > 0 && (
+            <p className="mt-1 text-[10px] leading-snug text-sky-700 dark:text-sky-300 break-words">
+              {runtimeIps.slice(0, 2).join(' · ')}
+            </p>
+          )}
           <p className="mt-1.5 text-[10px] leading-snug text-slate-500 dark:text-slate-400">{t('sidebar.runtimeStatus.hint')}</p>
           <div className="mt-2.5 pt-2.5 border-t border-slate-300 dark:border-slate-700 space-y-2">
             <p className="text-slate-500 dark:text-slate-400 text-xs mb-2">{t('sidebar.copyright')}</p>

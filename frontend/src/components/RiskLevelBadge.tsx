@@ -17,8 +17,8 @@ const STYLES: Record<RiskLevel, { bg: string; text: string; labelKey: string }> 
     labelKey: 'risk.label.safe',
   },
   yellow: {
-    bg: 'bg-amber-500/20 border-amber-500/50',
-    text: 'text-amber-400',
+    bg: 'bg-amber-900/45 border-amber-300/70',
+    text: 'text-amber-100',
     labelKey: 'risk.label.systemChange',
   },
   red: {

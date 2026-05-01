@@ -34,10 +34,10 @@ Version=1.0
 Type=Application
 Name=SetupHelfer
 Comment=Backend prüfen, dann Auswahl: Tauri-App, Browser oder nur Backend (API)
-Exec=$START_SCRIPT
+Exec=/bin/bash -lc 'SETUPHELFER_MODE=tauri $START_SCRIPT'
 Path=$INSTALL_DIR
 Icon=$ICON
-Terminal=true
+Terminal=false
 Categories=System;Settings;Utility;
 Keywords=setuphelfer;raspberry;pi;linux;
 StartupWMClass=setuphelfer

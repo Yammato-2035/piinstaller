@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::process::Command;
 use std::thread;
 use std::time::Duration;
 
@@ -7,6 +8,41 @@ use tauri::Manager;
 #[tauri::command]
 fn exit_app() {
     std::process::exit(0);
+}
+
+#[tauri::command]
+fn launch_update_terminal() -> Result<String, String> {
+    let shell_cmd = "sudo apt update && sudo apt upgrade; echo ''; read -p 'Druecke Enter zum Schliessen' dummy";
+    let terms: [(&str, &[&str]); 8] = [
+        ("gnome-terminal", &["--", "bash", "-lc"]),
+        ("xfce4-terminal", &["-e"]),
+        ("konsole", &["-e", "bash", "-lc"]),
+        ("mate-terminal", &["--", "bash", "-lc"]),
+        ("xterm", &["-e"]),
+        ("lxterminal", &["-e"]),
+        ("kitty", &["bash", "-lc"]),
+        ("alacritty", &["-e", "bash", "-lc"]),
+    ];
+
+    for (term, prefix) in terms {
+        let mut cmd = Command::new(term);
+        if term == "xfce4-terminal" || term == "xterm" || term == "lxterminal" {
+            let wrapped = format!("bash -lc \"{}\"", shell_cmd.replace('"', "\\\""));
+            for p in prefix {
+                cmd.arg(p);
+            }
+            cmd.arg(wrapped);
+        } else {
+            for p in prefix {
+                cmd.arg(p);
+            }
+            cmd.arg(shell_cmd);
+        }
+        if cmd.spawn().is_ok() {
+            return Ok(format!("Terminal geoeffnet ({term})."));
+        }
+    }
+    Err("Kein passendes Terminalprogramm gefunden.".to_string())
 }
 
 /// Gibt den empfohlenen Ordner für Dokumentations-Screenshots zurück.
@@ -39,7 +75,12 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_screenshots::init())
-        .invoke_handler(tauri::generate_handler![exit_app, get_screenshots_output_dir, copy_screenshot_to])
+        .invoke_handler(tauri::generate_handler![
+            exit_app,
+            get_screenshots_output_dir,
+            copy_screenshot_to,
+            launch_update_terminal
+        ])
         .setup(|app| {
             let handle = app.handle().clone();
             thread::spawn(move || {

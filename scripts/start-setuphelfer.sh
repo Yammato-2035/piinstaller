@@ -170,6 +170,22 @@ setuphelfer_block_stale_repo_tauri_if_needed() {
   exit 2
 }
 
+# True, wenn mindestens ein nicht-zombifizierter Prozess zur Binary läuft.
+setuphelfer_has_live_tauri_process() {
+  local pids pid st
+  pids="$(pgrep -f "$TAURI_BINARY" 2>/dev/null || true)"
+  [ -n "$pids" ] || return 1
+  for pid in $pids; do
+    st="$(ps -o stat= -p "$pid" 2>/dev/null | tr -d '[:space:]')"
+    [ -z "$st" ] && continue
+    case "$st" in
+      Z*|*Z*) ;; # Zombie ignorieren
+      *) return 0 ;;
+    esac
+  done
+  return 1
+}
+
 case "$MODE" in
   backend)
     echo "🖥️  Nur Backend (SetupHelfer-API)"
@@ -207,7 +223,6 @@ case "$MODE" in
     ;;
   tauri)
     echo "🎨 Starte SetupHelfer (Tauri-App)..."
-    echo "   (GDK_BACKEND=x11 für stabiles Rendering unter Wayland)"
     echo ""
     kill_port 5173
     setuphelfer_block_stale_repo_tauri_if_needed
@@ -219,12 +234,20 @@ case "$MODE" in
       # Log-Datei vorbereiten
       touch /tmp/setuphelfer-tauri.log
       chmod 666 /tmp/setuphelfer-tauri.log 2>/dev/null || true
-      env GDK_BACKEND=x11 "$TAURI_BINARY" >>/tmp/setuphelfer-tauri.log 2>&1 &
+      if [ "${XDG_SESSION_TYPE:-}" = "x11" ]; then
+        env GDK_BACKEND=x11 "$TAURI_BINARY" >>/tmp/setuphelfer-tauri.log 2>&1 &
+      else
+        "$TAURI_BINARY" >>/tmp/setuphelfer-tauri.log 2>&1 &
+      fi
       TAURI_PID=$!
       sleep 2
-      if kill -0 "$TAURI_PID" 2>/dev/null; then
-        # Binary läuft, warte auf Beendigung
-        wait $TAURI_PID
+      if kill -0 "$TAURI_PID" 2>/dev/null || setuphelfer_has_live_tauri_process; then
+        # Tauri kann den Startprozess wechseln (Fork/Exec). Das ist kein Crash.
+        # Nur auf den Original-PID warten, falls er noch existiert.
+        if kill -0 "$TAURI_PID" 2>/dev/null; then
+          wait "$TAURI_PID"
+          exit 0
+        fi
         exit 0
       else
         # Binary beendete sich sofort (Absturz/Fehler)
@@ -247,7 +270,7 @@ case "$MODE" in
       # Entwicklungsmodus mit Cargo - nur wenn Schreibrechte vorhanden
       if [ -w "$PROJECT_ROOT/frontend/node_modules" ] && [ -w "$PROJECT_ROOT/frontend/src-tauri" ]; then
         echo "   Versuche Entwicklungsmodus (tauri:dev)..."
-        exec env GDK_BACKEND=x11 npm run tauri:dev
+        exec npm run tauri:dev
       else
         echo "⚠️  Keine Schreibrechte für Entwicklungsmodus (Verzeichnis gehört ggf. dem Service-User setuphelfer)."
         echo "   Öffne im Browser..."

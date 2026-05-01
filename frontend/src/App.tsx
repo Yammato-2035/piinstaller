@@ -353,6 +353,19 @@ function App() {
         clearTimeout(timeoutId)
       }
     }
+    // Fallback: Wenn /api/system-info fehlschlaegt, aber /api/version erreichbar ist,
+    // ist der Server nicht "offline". Dann keine harte Offline-Diagnose anzeigen.
+    try {
+      const ping = await fetchApi('/api/version')
+      if (ping.ok) {
+        setBackendError(false)
+        setBackendErrorReason(null)
+        setHeaderBackendOk(true)
+        return
+      }
+    } catch {
+      // ignore and continue with offline state
+    }
     console.error(i18n.t('app.errors.systemInfoLoad'), lastError)
     setBackendErrorReason(lastReason)
     setBackendError(true)
@@ -374,6 +387,16 @@ function App() {
     if (themeShot === 'error') return
     fetchSystemInfo()
   }, [fetchSystemInfo, themeShot])
+
+  // Falls der Startcheck einmal fehlschlug, aber der Server kurz danach verfügbar ist:
+  // regelmäßig neu prüfen und den Fehlerzustand automatisch auflösen.
+  useEffect(() => {
+    if (!backendError) return
+    const id = window.setInterval(() => {
+      void fetchSystemInfo()
+    }, 8000)
+    return () => window.clearInterval(id)
+  }, [backendError, fetchSystemInfo])
 
   useEffect(() => {
     fetchFreenoveDetection()

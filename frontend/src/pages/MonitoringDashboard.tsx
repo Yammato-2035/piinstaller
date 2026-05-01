@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CheckCircle, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
@@ -22,6 +23,7 @@ interface MonitoringDashboardProps {
 }
 
 const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({ experienceLevel = 'beginner' }) => {
+  const { t } = useTranslation()
   const { pageSubtitleLabel, isRaspberryPi } = usePlatform()
   const [status, setStatus] = useState<any>(null)
   const [metrics, setMetrics] = useState<any[]>([])
@@ -203,6 +205,11 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({ experienceLev
   const promLamp = deriveMonitoringComponentLamp(!!status?.prometheus?.installed, !!status?.prometheus?.running)
   const grafLamp = deriveMonitoringComponentLamp(!!status?.grafana?.installed, !!status?.grafana?.running)
   const nodeLamp = deriveMonitoringComponentLamp(!!status?.node_exporter?.installed, !!status?.node_exporter?.running)
+  const monitoringCompanionStatus = useMemo(() => {
+    if (monitoringOverall.lamp === 'red') return 'danger' as const
+    if (monitoringOverall.lamp === 'yellow') return 'warning' as const
+    return 'success' as const
+  }, [monitoringOverall.lamp])
 
   if (dataLoading) {
     return <PageSkeleton cards={3} />
@@ -251,7 +258,7 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({ experienceLev
             frame={false}
             showTrafficLight
             trafficLightPosition="bottom-right"
-            status="info"
+            status={monitoringCompanionStatus}
             title="Monitoring-Begleiter"
             subtitle="Ich helfe dir, Last und Dienste Schritt für Schritt zu verstehen."
           />
@@ -340,6 +347,9 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({ experienceLev
               <span className="text-slate-400">Nicht installiert</span>
             )}
           </p>
+          {status?.grafana?.installed && !status?.grafana?.running && (
+            <p className="text-amber-300 text-xs mt-2">{t('monitoring.grafana.installedNotStarted')}</p>
+          )}
           {status?.grafana?.running && (
             <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer" className="text-sky-400 text-sm mt-2 block hover:underline">
               → Grafana öffnen (Standard: admin/admin)

@@ -200,6 +200,7 @@ function pickPrimaryRecommendation(s: SystemStatusLights | null): PrimaryRecomme
 
 const FIRST_STEPS_STORAGE = 'setuphelfer_dashboard_firststeps_v1'
 const BEGINNER_CHECKLIST_KEY = 'setuphelfer_beginner_checklist_v1'
+const UPDATE_REMINDER_UNTIL_KEY = 'setuphelfer_updates_reminder_until_v1'
 
 const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backendErrorReason, onRetryBackend, setCurrentPage, experienceLevel }) => {
   const { t } = useTranslation()
@@ -211,8 +212,18 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
   const [historyData, setHistoryData] = useState<any[]>([])
   const [updatesData, setUpdatesData] = useState<{ total: number; categories?: Record<string, number>; updates?: { package: string; version: string; category: string }[] } | null>(null)
   const [updatesModalOpen, setUpdatesModalOpen] = useState(false)
+  const [updateSafetyModalOpen, setUpdateSafetyModalOpen] = useState(false)
   const [updateTerminalLoading, setUpdateTerminalLoading] = useState(false)
   const [updateTerminalError, setUpdateTerminalError] = useState<{ message?: string; copyable_command?: string } | null>(null)
+  const [updateReminderUntil, setUpdateReminderUntil] = useState<number | null>(null)
+  const [networkFallback, setNetworkFallback] = useState<{
+    ips: string[]
+    hostname?: string
+    primary_ip?: string | null
+    localhost?: string
+    warnings?: string[]
+  } | null>(null)
+  const [backendOfflineConfirmed, setBackendOfflineConfirmed] = useState(false)
   const [servicesStatus, setServicesStatus] = useState<{ dev?: { installed_count: number; total_parts: number; basic_ok: boolean }; webserver?: { running: boolean; reachable: boolean }; musicbox?: { installed: boolean; basic_ok: boolean } } | null>(null)
   const [systemStatusLights, setSystemStatusLights] = useState<SystemStatusLights | null>(null)
   const [firstStepsDismissed, setFirstStepsDismissed] = useState(false)
@@ -228,6 +239,18 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
   const isBeginnerMode = mode === 'basic'
   const isBeginnerExperience = experienceLevel === 'beginner'
   const isBeginnerView = isBeginnerMode && isBeginnerExperience
+  const isUpdateReminderActive = useMemo(
+    () => typeof updateReminderUntil === 'number' && updateReminderUntil > Date.now(),
+    [updateReminderUntil],
+  )
+  const updateRiskLevel = useMemo<'none' | 'normal' | 'high'>(() => {
+    const sec = updatesData?.categories?.security ?? 0
+    const crit = updatesData?.categories?.critical ?? 0
+    const total = updatesData?.total ?? 0
+    if (sec > 0 || crit > 0) return 'high'
+    if (total > 0) return 'normal'
+    return 'none'
+  }, [updatesData])
 
   /** Standard: offen (auch Fortgeschritten), damit der Panda sichtbar ist; nur Entwickler-Ansicht startet zu. */
   const [pandaShortcutsOpen, setPandaShortcutsOpen] = useState(
@@ -267,6 +290,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
     loadSecurityConfig()
     loadUpdates()
     loadServicesStatus()
+    void loadNetworkFallback()
     const pollInterval = systemInfo?.is_raspberry_pi ? 30000 : 5000
     const interval = setInterval(async () => {
       try {
@@ -330,6 +354,27 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
     }
   }
 
+  const loadNetworkFallback = async () => {
+    try {
+      const response = await fetchApi('/api/system/network')
+      const data = await response.json()
+      if (data?.status === 'success') {
+        const ips = Array.isArray(data.ips)
+          ? data.ips.filter((ip: unknown) => typeof ip === 'string' && ip && ip !== '0.0.0.0')
+          : []
+        setNetworkFallback({
+          ips,
+          hostname: data.hostname,
+          primary_ip: data.primary_ip ?? null,
+          localhost: data.localhost || '127.0.0.1',
+          warnings: Array.isArray(data.warnings) ? data.warnings : [],
+        })
+      }
+    } catch {
+      // unkritisch: Dashboard bleibt auch ohne Fallback-Info nutzbar
+    }
+  }
+
   const loadSystemStatus = React.useCallback(async () => {
     try {
       const response = await fetchApi('/api/system/status')
@@ -354,6 +399,20 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       if (raw) setBeginnerChecklist(JSON.parse(raw) as Record<string, boolean>)
     } catch {
       setBeginnerChecklist({})
+    }
+  }, [])
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(UPDATE_REMINDER_UNTIL_KEY)
+      if (!raw) return
+      const ts = Number(raw)
+      if (!Number.isFinite(ts) || ts <= Date.now()) {
+        localStorage.removeItem(UPDATE_REMINDER_UNTIL_KEY)
+        return
+      }
+      setUpdateReminderUntil(ts)
+    } catch {
+      setUpdateReminderUntil(null)
     }
   }, [])
 
@@ -397,6 +456,18 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       if (data.status === 'success') {
         toast.success(data.message || t('dashboard.toast.terminalOpened'))
       } else {
+        const noGuiSession =
+          typeof data?.message === 'string' &&
+          (data.message.includes('Keine grafische Sitzung erkannt') || data.message.includes('DISPLAY/WAYLAND'))
+        if (noGuiSession && typeof window !== 'undefined' && (window as any).__TAURI__?.core?.invoke) {
+          try {
+            const msg = await (window as any).__TAURI__.core.invoke('launch_update_terminal')
+            toast.success(String(msg || t('dashboard.toast.terminalOpened')))
+            return
+          } catch {
+            // fallback to standard error path
+          }
+        }
         setUpdateTerminalError({ message: data.message, copyable_command: data.copyable_command })
         toast.error(data.message || t('dashboard.toast.terminalFailed'))
       }
@@ -410,6 +481,31 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
   const copyUpdateCommand = () => {
     const cmd = updateTerminalError?.copyable_command || 'sudo apt update && sudo apt upgrade'
     navigator.clipboard?.writeText(cmd).then(() => toast.success(t('dashboard.toast.commandCopied'))).catch(() => {})
+  }
+  const postponeUpdatesOneDay = () => {
+    const ts = Date.now() + 24 * 60 * 60 * 1000
+    setUpdateReminderUntil(ts)
+    try {
+      localStorage.setItem(UPDATE_REMINDER_UNTIL_KEY, String(ts))
+    } catch {
+      // ignore localStorage issues
+    }
+    toast(t('dashboard.updates.safetyModal.deferredToast'))
+  }
+  const clearUpdateReminder = () => {
+    setUpdateReminderUntil(null)
+    try {
+      localStorage.removeItem(UPDATE_REMINDER_UNTIL_KEY)
+    } catch {
+      // ignore
+    }
+  }
+  const requestUpdateStart = () => {
+    if (isBeginnerExperience) {
+      setUpdateSafetyModalOpen(true)
+      return
+    }
+    void runUpdateInTerminal()
   }
 
   const SECURITY_TOTAL = 5 // Firewall, Fail2Ban, Auto-Updates, SSH-Härtung, Audit-Logging
@@ -446,6 +542,15 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
     if (activeCount === SECURITY_TOTAL) return t('dashboard.security.fullyConfigured')
     return t('dashboard.security.partial', { count: activeCount, total: SECURITY_TOTAL })
   }
+
+  const networkIps: string[] =
+    (stats?.network?.ips && Array.isArray(stats.network.ips) && stats.network.ips.length > 0)
+      ? stats.network.ips
+      : (networkFallback?.ips || [])
+  const networkHostname: string | undefined = stats?.network?.hostname || networkFallback?.hostname
+  const localOnlyAddress = networkFallback?.localhost || '127.0.0.1'
+  const localOnlyHint =
+    networkFallback?.warnings?.[0] || t('dashboard.network.localOnlyNoLanIp')
 
   const StatusItem = ({ label, status, value, tooltip }: any) => (
     <div className="flex items-center justify-between p-4 border-b border-slate-700 last:border-0">
@@ -557,11 +662,31 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
   const checklistDoneCount = checklistKeys.filter(k => beginnerChecklist[k]).length
 
   const backendUnreachableDiagnosis = React.useMemo(() => {
-    if (!backendError) return null
+    if (!backendError || !!systemInfo) return null
     return localBackendDiagnosis(backendErrorReason, {
       technical: `reason=${backendErrorReason ?? 'other'}, api_base=${getApiBase() || ''}`,
     })
-  }, [backendError, backendErrorReason])
+  }, [backendError, backendErrorReason, systemInfo])
+
+  useEffect(() => {
+    let cancelled = false
+    if (!backendError) {
+      setBackendOfflineConfirmed(false)
+      return
+    }
+    ;(async () => {
+      try {
+        const res = await fetchApi('/api/version')
+        if (cancelled) return
+        setBackendOfflineConfirmed(!res.ok)
+      } catch {
+        if (!cancelled) setBackendOfflineConfirmed(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [backendError])
 
   const cpuPercent = stats?.cpu?.usage ?? 0
   const memPercent = stats?.memory?.percent ?? 0
@@ -640,7 +765,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                       const pr = primaryRecommendation
                       if (pr.kind === 'restore' || pr.kind === 'backup') setCurrentPage('backup')
                       else if (pr.kind === 'security') setCurrentPage('security')
-                      else if (pr.kind === 'updates') void runUpdateInTerminal()
+                      else if (pr.kind === 'updates') requestUpdateStart()
                       else setCurrentPage('wizard')
                     }}
                     className="shrink-0 px-4 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold w-full sm:w-auto text-center"
@@ -650,7 +775,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 ) : primaryRecommendation.kind === 'updates' ? (
                   <button
                     type="button"
-                    onClick={() => void runUpdateInTerminal()}
+                    onClick={requestUpdateStart}
                     className="shrink-0 px-4 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold w-full sm:w-auto text-center"
                   >
                     {ctaLabel}
@@ -880,7 +1005,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 const pr = primaryRecommendation
                 if (pr.kind === 'restore' || pr.kind === 'backup') setCurrentPage('backup')
                 else if (pr.kind === 'security') setCurrentPage('security')
-                else if (pr.kind === 'updates') void runUpdateInTerminal()
+                else if (pr.kind === 'updates') requestUpdateStart()
                 else setCurrentPage('wizard')
               }}
               className="shrink-0 px-4 py-2.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold text-center w-full sm:w-auto"
@@ -1097,7 +1222,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             )}
             <button
               type="button"
-              onClick={runUpdateInTerminal}
+              onClick={requestUpdateStart}
               disabled={updateTerminalLoading}
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-medium disabled:opacity-50"
             >
@@ -1145,13 +1270,31 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
             </button>
             <button
               type="button"
-              onClick={runUpdateInTerminal}
+              onClick={requestUpdateStart}
               disabled={updateTerminalLoading}
               className="px-3 py-1.5 sm:px-4 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50"
             >
               {updateTerminalLoading ? '…' : t('dashboard.updates.runInTerminal')}
             </button>
           </div>
+        </motion.div>
+      )}
+      {isBeginnerExperience && isUpdateReminderActive && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-lg border border-amber-500/40 bg-amber-900/20 px-3 py-2.5 sm:px-4 sm:py-3 flex flex-wrap items-center justify-between gap-2"
+        >
+          <p className="text-xs sm:text-sm text-amber-100">
+            {t('dashboard.updates.reminder.active')}
+          </p>
+          <button
+            type="button"
+            onClick={clearUpdateReminder}
+            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded text-xs font-medium"
+          >
+            {t('dashboard.updates.reminder.checkNow')}
+          </button>
         </motion.div>
       )}
 
@@ -1175,7 +1318,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           </div>
           <button
             type="button"
-            onClick={runUpdateInTerminal}
+            onClick={requestUpdateStart}
             disabled={updateTerminalLoading}
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50 shrink-0"
           >
@@ -1186,7 +1329,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
         </details>
       )}
 
-      {backendError && !stats && backendUnreachableDiagnosis && (
+      {backendError && backendOfflineConfirmed && !systemInfo && !stats && backendUnreachableDiagnosis && (
         <div className="space-y-3">
           <DiagnosisPanel record={backendUnreachableDiagnosis} />
           <div className="card-warning flex items-start gap-3">
@@ -1266,12 +1409,56 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
               <p className="text-slate-500 text-xs mt-4">{t('dashboard.updates.installHint')} <code className="bg-slate-700 px-1 rounded">sudo apt update && sudo apt upgrade</code></p>
               <button
                 type="button"
-                onClick={runUpdateInTerminal}
+                onClick={requestUpdateStart}
                 disabled={updateTerminalLoading}
                 className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
               >
                 {updateTerminalLoading ? '…' : t('dashboard.updates.runInTerminal')}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {updateSafetyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setUpdateSafetyModalOpen(false)}>
+          <div className="bg-slate-800 border border-slate-600 rounded-xl shadow-xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-white">{t('dashboard.updates.safetyModal.title')}</h3>
+              <button type="button" onClick={() => setUpdateSafetyModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div className="p-4 space-y-3">
+              <p className="text-sm text-slate-200">{t('dashboard.updates.safetyModal.body')}</p>
+              {updateRiskLevel === 'high' ? (
+                <p className="text-sm text-red-300">{t('dashboard.updates.safetyModal.highRisk')}</p>
+              ) : updateRiskLevel === 'normal' ? (
+                <p className="text-sm text-amber-300">{t('dashboard.updates.safetyModal.normalRisk')}</p>
+              ) : (
+                <p className="text-sm text-slate-300">{t('dashboard.updates.safetyModal.noUpdates')}</p>
+              )}
+              <div className="flex flex-wrap gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUpdateSafetyModalOpen(false)
+                    postponeUpdatesOneDay()
+                  }}
+                  className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-sm font-medium"
+                >
+                  {t('dashboard.updates.safetyModal.defer')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUpdateSafetyModalOpen(false)
+                    void runUpdateInTerminal()
+                  }}
+                  disabled={updateTerminalLoading}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                >
+                  {updateTerminalLoading ? '…' : t('dashboard.updates.safetyModal.runNow')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1367,7 +1554,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           </div>
 
           {/* IP-Adressen & Hostname – nur in Übersicht */}
-          {(dashboardSection === 'overview') && (stats.network?.ips?.length > 0 || stats.network?.hostname) && (
+          {(dashboardSection === 'overview') && (networkIps.length > 0 || networkHostname) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1379,23 +1566,32 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 {t('dashboard.network.title')}
               </h2>
               <div className="flex flex-wrap items-center gap-4 text-sm">
-                {stats.network.hostname && (
+                {networkHostname && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
                     <span className="text-slate-400 block mb-0.5">{t('dashboard.network.hostname')}</span>
-                    <span className="text-white font-mono">{stats.network.hostname}</span>
+                    <span className="text-white font-mono">{networkHostname}</span>
                   </div>
                 )}
-                {stats.network.ips && stats.network.ips.length > 0 && (
+                {networkIps.length > 0 && (
                   <div className="p-3 bg-slate-700/30 rounded-lg">
                     <span className="text-slate-400 block mb-1">{t('dashboard.network.ips')}</span>
                     <div className="flex flex-wrap gap-2">
-                      {stats.network.ips.map((ip: string, i: number) => (
+                      {networkIps.map((ip: string, i: number) => (
                         <span key={i} className="font-mono text-sky-300 bg-slate-800 px-2 py-1 rounded" title={t('dashboard.network.ipHint', { ip })}>
                           {ip}
                         </span>
                       ))}
                     </div>
-                    <p className="text-slate-200 text-xs mt-2 font-medium">{t('dashboard.network.reachableFromOthers', { ip: stats.network.ips[0] })}</p>
+                    <p className="text-slate-200 text-xs mt-2 font-medium">{t('dashboard.network.reachableFromOthers', { ip: networkIps[0] })}</p>
+                  </div>
+                )}
+                {networkIps.length === 0 && (
+                  <div className="p-3 bg-slate-700/30 rounded-lg">
+                    <span className="text-slate-400 block mb-1">{t('dashboard.network.ips')}</span>
+                    <span className="font-mono text-slate-300 bg-slate-800 px-2 py-1 rounded inline-block">{localOnlyAddress} (lokal)</span>
+                    <p className="text-amber-300 text-xs mt-2 font-medium">
+                      {localOnlyHint}
+                    </p>
                   </div>
                 )}
               </div>

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TAURI_DEFAULT_API, getApiBase, normalizeApiBaseUrl, setApiBase } from '../api'
+import { TAURI_DEFAULT_API, fetchApi, getApiBase, normalizeApiBaseUrl, setApiBase } from '../api'
 
 const EXPECTED_TAURI_APP_ID = 'de.pi-installer.app'
 
@@ -13,6 +13,7 @@ type BannerState =
   | { kind: 'loading' }
   | { kind: 'ok'; backendVersion: string; apiBaseLabel: string }
   | { kind: 'unreachable'; apiBaseLabel: string }
+  | { kind: 'stale_api_base'; apiBaseLabel: string; suggestedBase: string; backendVersion: string }
   | { kind: 'version_mismatch'; backendVersion: string; uiVersion: string; apiBaseLabel: string }
   | { kind: 'app_id_mismatch'; got: string; apiBaseLabel: string }
 
@@ -25,14 +26,36 @@ export default function ApiRuntimeConsistencyBanner() {
     setState({ kind: 'loading' })
     const base = getApiBase()
     const apiBaseLabel = base ? normalizeApiBaseUrl(base) : t('app.apiConsistency.apiBase.sameOrigin')
-    const path = '/api/version'
-    const url = base ? `${base.replace(/\/+$/, '')}${path}` : path
     const uiVer = frontendBuildVersion()
     try {
-      const ctrl = new AbortController()
-      const tid = window.setTimeout(() => ctrl.abort(), 12_000)
-      const res = await fetch(url, { signal: ctrl.signal, credentials: 'omit' })
-      window.clearTimeout(tid)
+      const requestVersion = async (mode: 'configured' | 'relative' | 'default') => {
+        if (mode === 'configured') {
+          return fetchApi('/api/version')
+        }
+        if (mode === 'relative') {
+          return fetch('/api/version', { credentials: 'omit' })
+        }
+        return fetch(`${TAURI_DEFAULT_API}/api/version`, { credentials: 'omit' })
+      }
+
+      let res = await requestVersion('configured')
+      let source: 'configured' | 'relative' | 'default' = 'configured'
+      if (!res.ok && base) {
+        const fallbackOrder: Array<'relative' | 'default'> =
+          !!(window as unknown as { __TAURI__?: unknown }).__TAURI__ ? ['default', 'relative'] : ['relative', 'default']
+        for (const fb of fallbackOrder) {
+          try {
+            const candidate = await requestVersion(fb)
+            if (candidate.ok) {
+              res = candidate
+              source = fb
+              break
+            }
+          } catch {
+            // ignore fallback errors
+          }
+        }
+      }
       if (!res.ok) {
         setState({ kind: 'unreachable', apiBaseLabel })
         return
@@ -58,6 +81,15 @@ export default function ApiRuntimeConsistencyBanner() {
           backendVersion,
           uiVersion: uiVer,
           apiBaseLabel,
+        })
+        return
+      }
+      if (base && source !== 'configured') {
+        setState({
+          kind: 'stale_api_base',
+          apiBaseLabel,
+          suggestedBase: source === 'default' ? TAURI_DEFAULT_API : t('app.apiConsistency.apiBase.sameOrigin'),
+          backendVersion,
         })
         return
       }
@@ -140,6 +172,35 @@ export default function ApiRuntimeConsistencyBanner() {
           <button
             type="button"
             className="rounded-md bg-amber-800 px-3 py-1 text-xs font-medium text-white hover:bg-amber-900 dark:bg-amber-600"
+            onClick={resetToDefault}
+          >
+            {t('app.apiConsistency.resetApiBase')}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (state.kind === 'stale_api_base') {
+    return (
+      <div
+        className="flex-none border-b border-amber-400/80 bg-amber-100 px-4 py-2 text-sm text-amber-950 dark:border-amber-600 dark:bg-amber-950/40 dark:text-amber-100"
+        role="status"
+      >
+        <p className="font-medium">{t('app.apiConsistency.staleApiBaseTitle')}</p>
+        <p className="mt-1 text-xs">
+          {t('app.apiConsistency.apiBaseLabel')}: <code className="rounded bg-black/10 px-1">{state.apiBaseLabel}</code>
+        </p>
+        <p className="mt-1 text-xs">
+          {t('app.apiConsistency.backend')}: <code className="rounded bg-black/10 px-1">{state.backendVersion}</code>
+        </p>
+        <p className="mt-1 text-xs opacity-90">
+          {t('app.apiConsistency.suggestedBase')}: <code className="rounded bg-black/10 px-1">{state.suggestedBase}</code>
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="rounded-md bg-amber-800 px-3 py-1 text-xs font-medium text-white hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500"
             onClick={resetToDefault}
           >
             {t('app.apiConsistency.resetApiBase')}

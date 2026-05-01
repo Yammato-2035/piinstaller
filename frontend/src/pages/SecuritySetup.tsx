@@ -33,10 +33,12 @@ const SecuritySetup: React.FC = () => {
   const [showRuleEditor, setShowRuleEditor] = useState(false)
   const [newRule, setNewRule] = useState({ rule: '', direction: 'allow' })
   const [firewallRuleDiagnosis, setFirewallRuleDiagnosis] = useState<DiagnosisRecord | null>(null)
+  const [statusApiSecurityLamp, setStatusApiSecurityLamp] = useState<'green' | 'yellow' | 'red' | null>(null)
 
   useEffect(() => {
     loadSecurityStatus()
     loadInstalledPackages()
+    loadSystemStatusLamp()
   }, [])
 
   const handleChange = (field: string, value: any) => {
@@ -113,6 +115,7 @@ const SecuritySetup: React.FC = () => {
     } catch (error) {
       console.error('Fehler beim Laden der Security-Config:', error)
     } finally {
+      void loadSystemStatusLamp()
       setInitialConfigLoading(false)
     }
   }
@@ -215,6 +218,21 @@ const SecuritySetup: React.FC = () => {
     }
   }
 
+  const loadSystemStatusLamp = async () => {
+    try {
+      const response = await fetchApi('/api/system/status')
+      const data = await response.json()
+      const security = data?.data?.security || data?.security
+      if (security === 'green' || security === 'yellow' || security === 'red') {
+        setStatusApiSecurityLamp(security)
+      } else {
+        setStatusApiSecurityLamp(null)
+      }
+    } catch {
+      setStatusApiSecurityLamp(null)
+    }
+  }
+
   const runSecurityScan = async () => {
     setLoading(true)
     try {
@@ -302,15 +320,32 @@ const SecuritySetup: React.FC = () => {
   )
 
   const securityCompanionStatus = useMemo((): PandaStatus => {
+    if (statusApiSecurityLamp === 'red') return 'danger'
+    if (statusApiSecurityLamp === 'yellow') return 'warning'
+    if (statusApiSecurityLamp === 'green') return 'success'
     const secUpd = scanResults?.updates?.categories?.security
     const crit = scanResults?.updates?.categories?.critical
     if (typeof secUpd === 'number' && secUpd > 0) return 'danger'
     if (typeof crit === 'number' && crit > 0) return 'danger'
-    if (securityConfig?.ufw?.active && securityConfig?.fail2ban?.running) return 'success'
-    if (securityConfig?.ufw?.installed && !securityConfig?.ufw?.active) return 'warning'
-    if (securityConfig?.fail2ban?.installed && !securityConfig?.fail2ban?.running) return 'warning'
+    const ufwStatus = String(securityConfig?.ufw?.status || '').toLowerCase()
+    const ufwEffectiveActive =
+      !!securityConfig?.ufw?.active ||
+      (!!securityConfig?.ufw?.installed &&
+        (ufwStatus.includes('active') ||
+          ufwStatus.includes('aktiv') ||
+          ufwStatus.includes('enabled=yes') ||
+          ufwStatus.includes('via systemctl') ||
+          ufwStatus.includes('wahrscheinlich')))
+    const activeCount =
+      (ufwEffectiveActive ? 1 : 0) +
+      (securityConfig?.fail2ban?.running ? 1 : 0) +
+      (securityConfig?.auto_updates?.enabled ? 1 : 0) +
+      (securityConfig?.ssh_hardening?.enabled ? 1 : 0) +
+      (securityConfig?.audit_logging?.enabled ? 1 : 0)
+    if (activeCount >= 5) return 'success'
+    if (activeCount >= 1) return 'warning'
     return 'info'
-  }, [securityConfig, scanResults])
+  }, [securityConfig, scanResults, statusApiSecurityLamp])
 
   if (initialConfigLoading) {
     return <PageSkeleton cards={3} hasList listRows={4} />

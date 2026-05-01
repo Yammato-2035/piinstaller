@@ -541,8 +541,58 @@ def _compute_system_status() -> dict:
         else:
             status["restore"] = "red"
 
-        status["security"] = "yellow"
-        status["updates"] = "yellow"
+        # Security aus realer Konfiguration ableiten (gleiches 5er-Modell wie UI)
+        try:
+            sec = get_security_config() or {}
+            ufw = sec.get("ufw") or {}
+            ssh_cfg = str((sec.get("ssh") or {}).get("config") or "").lower()
+            ufw_status = str(ufw.get("status") or "").lower()
+            ufw_active_effective = bool(ufw.get("active")) or (
+                bool(ufw.get("installed"))
+                and (
+                    "active" in ufw_status
+                    or "aktiv" in ufw_status
+                    or "enabled=yes" in ufw_status
+                    or "via systemctl" in ufw_status
+                    or "wahrscheinlich" in ufw_status
+                )
+            )
+            active_count = (
+                (1 if ufw_active_effective else 0)
+                + (1 if bool((sec.get("fail2ban") or {}).get("running")) else 0)
+                + (1 if bool((sec.get("auto_updates") or {}).get("enabled")) else 0)
+                + (1 if bool((sec.get("ssh_hardening") or {}).get("enabled")) else 0)
+                + (1 if bool((sec.get("audit_logging") or {}).get("enabled")) else 0)
+            )
+            # Kritische Maengel: Firewall nicht installiert oder Root-SSH-Login aktiv.
+            if not bool(ufw.get("installed")):
+                status["security"] = "red"
+            elif "permitrootlogin yes" in ssh_cfg:
+                status["security"] = "red"
+            elif active_count >= 5:
+                status["security"] = "green"
+            elif active_count >= 1:
+                status["security"] = "yellow"
+            else:
+                status["security"] = "red"
+        except Exception:
+            status["security"] = "yellow"
+
+        # Updates anhand Kategorien differenziert bewerten.
+        try:
+            upd = get_updates_categorized()
+            total = int(upd.get("total") or 0)
+            cats = upd.get("categories") or {}
+            sec_cnt = int(cats.get("security") or 0)
+            crit_cnt = int(cats.get("critical") or 0)
+            if total == 0:
+                status["updates"] = "green"
+            elif sec_cnt > 0 or crit_cnt > 0:
+                status["updates"] = "red"
+            else:
+                status["updates"] = "yellow"
+        except Exception:
+            status["updates"] = "yellow"
     except Exception as e:
         logger.error(f"Fehler bei Systemstatus-Berechnung: {e}", exc_info=True)
     return status
@@ -2057,6 +2107,10 @@ def _get_cors_origins() -> list[str]:
         # Tauri dev (tauri.conf.json devUrl) + Vite strictPort
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        # Tauri (WebView) Produktions-/Lokal-Origin
+        "http://tauri.localhost",
+        "https://tauri.localhost",
+        "tauri://localhost",
     ]
     extra = os.environ.get("PI_INSTALLER_CORS_ORIGINS", "").strip()
     if not extra:
@@ -3054,13 +3108,30 @@ async def get_system_network(request: Request):
         if _is_demo_mode(request):
             d = _demo_network()
             log.step_end("system_network", data={"demo": True})
-            return {"status": "success", "ips": d["ips"], "hostname": d["hostname"], "frontend_port": 3001, "backend_port": 8000}
+            demo_ips = d.get("ips", []) if isinstance(d, dict) else []
+            return {
+                "status": "success",
+                "ips": demo_ips,
+                "localhost": "127.0.0.1",
+                "primary_ip": demo_ips[0] if demo_ips else None,
+                "interfaces": [{"name": "demo0", "ip": ip, "source": "demo"} for ip in demo_ips],
+                "warnings": [],
+                "source": "demo",
+                "hostname": d.get("hostname", "demo-host") if isinstance(d, dict) else "demo-host",
+                "frontend_port": 3001,
+                "backend_port": 8000,
+            }
         net_info = get_network_info()
         log.step_end("system_network", data={"hostname": net_info.get("hostname"), "ip_count": len(net_info.get("ips", []))})
         frontend_port = _detect_frontend_port()
         return {
             "status": "success",
             "ips": net_info.get("ips", []),
+            "localhost": net_info.get("localhost", "127.0.0.1"),
+            "primary_ip": net_info.get("primary_ip"),
+            "interfaces": net_info.get("interfaces", []),
+            "warnings": net_info.get("warnings", []),
+            "source": net_info.get("source", "none"),
             "hostname": net_info.get("hostname", "unknown"),
             "frontend_port": frontend_port,
             "backend_port": 8000,
@@ -4600,23 +4671,84 @@ def _is_reachable_lan_ip(ip: str) -> bool:
         return False
     if s.startswith("127.") or s.startswith("fe80:"):
         return False
+    if s.startswith("169.254."):
+        return False
     return True
 
 
 def get_network_info():
-    """Netzwerk-Informationen. Nur IPs zurückgeben, die von anderen Geräten erreichbar sind (kein 0.0.0.0)."""
+    """Netzwerk-Informationen für UI/API inklusive robuster LAN-Erkennung im Service-Kontext."""
     log = get_logger("network", "detect")
     log.step_start("get_network_info")
     t0 = time.perf_counter()
     try:
-        log.decision("source_filter", data={"source": "hostname -I", "filter": "reachable_lan_only", "exclude": "0.0.0.0,127.x,fe80"})
-        result = subprocess.run(["hostname", "-I"], capture_output=True, text=True, timeout=5)
-        raw = (result.stdout or "").strip()
-        candidates = [x for x in raw.split() if x] if raw else []
-        ips = [x for x in candidates if _is_reachable_lan_ip(x)]
+        warnings = []
+        interfaces = []
+        source = "none"
+        ips = []
+
+        # Primärquelle: ip -4 -o addr show scope global (liefert Interface + IPv4 robust im systemd-Kontext)
+        ip_result = run_command(
+            "/usr/sbin/ip -4 -o addr show scope global 2>/dev/null || "
+            "/sbin/ip -4 -o addr show scope global 2>/dev/null || "
+            "ip -4 -o addr show scope global 2>/dev/null"
+        )
+        raw_ip_lines = (ip_result.get("stdout") or "").splitlines() if ip_result.get("success") else []
+        excluded_if_prefixes = ("lo", "docker", "veth", "br-", "virbr", "wg", "tailscale")
+        seen_ips = set()
+
+        for line in raw_ip_lines:
+            m = re.search(r"^\s*\d+:\s+([^\s:]+)\s+inet\s+([0-9.]+)/\d+", line)
+            if not m:
+                continue
+            iface = (m.group(1) or "").split("@", 1)[0]
+            addr = m.group(2) or ""
+            iface_l = iface.lower()
+            if iface_l.startswith(excluded_if_prefixes):
+                continue
+            if not _is_reachable_lan_ip(addr):
+                continue
+            if addr in seen_ips:
+                continue
+            seen_ips.add(addr)
+            ips.append(addr)
+            interfaces.append({"name": iface, "ip": addr, "source": "ip-addr-global"})
+
+        if ips:
+            source = "ip-addr-global"
+
+        # Fallback: hostname -I
+        if not ips:
+            log.decision("source_filter", data={"source": "hostname -I fallback", "filter": "reachable_lan_only"})
+            result = subprocess.run(["hostname", "-I"], capture_output=True, text=True, timeout=5)
+            raw = (result.stdout or "").strip()
+            candidates = [x for x in raw.split() if x] if raw else []
+            for addr in candidates:
+                if not _is_reachable_lan_ip(addr):
+                    continue
+                if addr in seen_ips:
+                    continue
+                seen_ips.add(addr)
+                ips.append(addr)
+                interfaces.append({"name": "unknown", "ip": addr, "source": "hostname-I"})
+            if ips:
+                source = "hostname-I"
+
+        if not ips:
+            warnings.append("Nur lokal erreichbar - keine LAN-IP erkannt")
+            source = "none"
+
         result = subprocess.run(["hostname"], capture_output=True, text=True, timeout=5)
         hostname = (result.stdout or "").strip() or "unknown"
-        out = {"ips": ips, "hostname": hostname}
+        out = {
+            "ips": ips,
+            "localhost": "127.0.0.1",
+            "primary_ip": ips[0] if ips else None,
+            "interfaces": interfaces,
+            "warnings": warnings,
+            "source": source,
+            "hostname": hostname,
+        }
         log.apply_noop("get_network_info", data={"reason": "read_only_discovery"})
         log.step_end("get_network_info", duration_ms=(time.perf_counter() - t0) * 1000, data={"hostname": hostname, "ip_count": len(ips)})
         return out
@@ -6036,6 +6168,23 @@ def _open_terminal_with_command(shell_cmd: str) -> tuple[bool, str]:
     import shutil
     wrapped = f"{shell_cmd}; echo ''; read -p 'Drücke Enter zum Schließen' dummy; exit 0"
     env = os.environ.copy()
+    uid = os.getuid()
+    xdg_runtime_dir = env.get("XDG_RUNTIME_DIR") or f"/run/user/{uid}"
+    if os.path.isdir(xdg_runtime_dir):
+        env.setdefault("XDG_RUNTIME_DIR", xdg_runtime_dir)
+        bus_path = os.path.join(xdg_runtime_dir, "bus")
+        if os.path.exists(bus_path):
+            env.setdefault("DBUS_SESSION_BUS_ADDRESS", f"unix:path={bus_path}")
+    # Falls der Dienst ohne GUI-Session läuft, bevorzugt klaren Fehler statt "scheinbar erfolgreich".
+    if not env.get("DISPLAY") and not env.get("WAYLAND_DISPLAY"):
+        if os.path.exists("/tmp/.X11-unix/X0"):
+            env["DISPLAY"] = ":0"
+        else:
+            return False, (
+                "Keine grafische Sitzung erkannt (DISPLAY/WAYLAND fehlen). "
+                "Bitte Terminal manuell öffnen und ausführen: "
+                f"{shell_cmd}"
+            )
     # Erweiterte Liste: GNOME, XFCE, KDE, MATE, LXDE, Kitty, Alacritty, QTerminal, Tilix
     for term_cmd, term_args in [
         ("gnome-terminal", ["--", "bash", "-c", wrapped]),
@@ -6054,7 +6203,7 @@ def _open_terminal_with_command(shell_cmd: str) -> tuple[bool, str]:
         path = shutil.which(term_cmd)
         if path:
             try:
-                subprocess.Popen(
+                p = subprocess.Popen(
                     [path] + term_args,
                     env=env,
                     start_new_session=True,
@@ -6062,6 +6211,11 @@ def _open_terminal_with_command(shell_cmd: str) -> tuple[bool, str]:
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
+                time.sleep(0.4)
+                rc = p.poll()
+                if rc not in (None, 0):
+                    logger.warning(f"Terminal startete nicht stabil ({term_cmd}), rc={rc}")
+                    continue
                 return True, f"Terminal geöffnet ({term_cmd}). Passwort im Fenster eingeben."
             except Exception as e:
                 logger.warning(f"Terminal starten ({term_cmd}) fehlgeschlagen: {e}")
@@ -8601,7 +8755,7 @@ async def monitoring_status():
             },
             "node_exporter": {
                 "installed": node_exporter_installed,
-                "running": node_exporter_running,
+                "running": node_exporter_running or (run_command("ss -tlnp 2>/dev/null | grep -q ':9100 '")["success"] and node_exporter_installed),
             },
         }
     except Exception as e:
