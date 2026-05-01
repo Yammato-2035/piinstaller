@@ -115,6 +115,61 @@ kill_port() {
   fi
 }
 
+# Liest Versions-String aus dem Repo (nur Anzeige; blockiert nicht bei Fehler).
+setuphelfer_read_repo_version() {
+  local vf="$PROJECT_ROOT/config/version.json"
+  if [ ! -f "$vf" ]; then
+    echo "?"
+    return
+  fi
+  if command -v python3 >/dev/null 2>&1; then
+    python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('version','?'))" "$vf" 2>/dev/null || echo "?"
+  else
+    echo "?"
+  fi
+}
+
+# Verhindert stilles Starten einer veralteten Release-Tauri aus dem Entwicklungs-Repo,
+# wenn eine aktuellere Binary unter /opt/setuphelfer existiert.
+# Überspringen: SETUPHELFER_ALLOW_OLD_REPO_TAURI=1
+setuphelfer_block_stale_repo_tauri_if_needed() {
+  [ "$MODE" = "tauri" ] || return 0
+  [ "$PROJECT_ROOT" != "/opt/setuphelfer" ] || return 0
+  [ "${SETUPHELFER_ALLOW_OLD_REPO_TAURI:-}" = "1" ] && return 0
+
+  local repo_t opt_t rm om rs os thresh stale=0
+  repo_t="$PROJECT_ROOT/frontend/src-tauri/target/release/pi-installer"
+  opt_t="/opt/setuphelfer/frontend/src-tauri/target/release/pi-installer"
+  [ -x "$repo_t" ] || return 0
+  [ -x "$opt_t" ] || return 0
+
+  rm=$(stat -c '%Y' "$repo_t" 2>/dev/null || stat -f '%m' "$repo_t" 2>/dev/null) || return 0
+  om=$(stat -c '%Y' "$opt_t" 2>/dev/null || stat -f '%m' "$opt_t" 2>/dev/null) || return 0
+  rs=$(stat -c '%s' "$repo_t" 2>/dev/null || stat -f '%z' "$repo_t" 2>/dev/null) || return 0
+  os=$(stat -c '%s' "$opt_t" 2>/dev/null || stat -f '%z' "$opt_t" 2>/dev/null) || return 0
+
+  if [ -n "$rm" ] && [ -n "$om" ] && [ "$rm" -lt "$om" ]; then
+    stale=1
+  fi
+  thresh=$((os * 9 / 10))
+  if [ -n "$rs" ] && [ -n "$os" ] && [ "$rs" -lt "$thresh" ]; then
+    stale=1
+  fi
+  [ "$stale" -eq 1 ] || return 0
+
+  echo ""
+  echo "❌ Repo-Tauri-Release ist veraltet gegenüber /opt/setuphelfer — Start abgebrochen."
+  echo "   config/version.json (Repo): $(setuphelfer_read_repo_version)"
+  echo "   Repo-Binary:  mtime=$rm Größe=${rs} Bytes — $repo_t"
+  echo "   /opt-Binary:  mtime=$om Größe=${os} Bytes — $opt_t"
+  echo ""
+  echo "   Abhilfe: cd \"$PROJECT_ROOT/frontend\" && npm run tauri:build"
+  echo "   Oder System-Starter: /opt/setuphelfer/scripts/start-setuphelfer.sh"
+  echo "   Absichtlich alte Binary: SETUPHELFER_ALLOW_OLD_REPO_TAURI=1 \"\$0\""
+  echo ""
+  exit 2
+}
+
 case "$MODE" in
   backend)
     echo "🖥️  Nur Backend (SetupHelfer-API)"
@@ -155,6 +210,7 @@ case "$MODE" in
     echo "   (GDK_BACKEND=x11 für stabiles Rendering unter Wayland)"
     echo ""
     kill_port 5173
+    setuphelfer_block_stale_repo_tauri_if_needed
     TAURI_BINARY="$PROJECT_ROOT/frontend/src-tauri/target/release/pi-installer"
     if [ -x "$TAURI_BINARY" ]; then
       # Installation unter /opt: gebaute Binary nutzen (kein Rust/Cargo nötig)
