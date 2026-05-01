@@ -27,11 +27,12 @@ Environment="PI_INSTALLER_STATE_DIR=/var/lib/setuphelfer"
 Environment="PI_INSTALLER_DEV=0"
 Environment="APP_EDITION=release"
 Environment="PIP_CACHE_DIR=/opt/setuphelfer/.pip-cache"
-# Kein NoNewPrivileges: Full-Backup führt sudo aus (setuid würde sonst blockieren).
+# Tar/Backup ohne sudo (Ziel /mnt/setuphelfer/backups, Gruppe setuphelfer).
+NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt
+ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt /mnt/setuphelfer
 MemoryMax=512M
 LimitNOFILE=4096
 

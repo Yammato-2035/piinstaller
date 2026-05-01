@@ -3,7 +3,7 @@
 #                2. sudo cp pi-installer.service.install /etc/systemd/system/pi-installer.service
 #                3. sudo systemctl daemon-reload && sudo systemctl enable --now pi-installer
 #
-# INSTALL_DIR = Projektordner (z. B. /home/volker/piinstaller oder /opt/pi-installer).
+# INSTALL_DIR = Projektordner (z. B. /home/volker/piinstaller oder /opt/setuphelfer).
 # Kein Pfad mit Leerzeichen (z. B. nicht „Software aus PI holen“) – kann zu Problemen führen.
 
 [Unit]

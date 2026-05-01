@@ -5,6 +5,7 @@ SAFE-DEVICE-1: Schreibschutz, Klassifikation, validate_write_target (ohne echte 
 from __future__ import annotations
 
 import json
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -139,7 +140,7 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
         def fake_run(argv, **kwargs):
             if argv[:2] == ["lsblk", "-J"]:
                 return CompletedProcess(argv, 0, json.dumps(_lsblk_system_disk()), "")
-            if argv[:2] == ["findmnt", "-J"]:
+            if argv[:3] == ["findmnt", "-J", "-T"]:
                 body = {
                     "filesystems": [
                         {"source": "/dev/nvme0n1p1", "target": mount, "fstype": "ext4"},
@@ -159,7 +160,7 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
         def fake_run(argv, **kwargs):
             if argv[:2] == ["lsblk", "-J"]:
                 return CompletedProcess(argv, 0, json.dumps(_lsblk_windows_disk()), "")
-            if argv[:2] == ["findmnt", "-J"]:
+            if argv[:3] == ["findmnt", "-J", "-T"]:
                 body = {
                     "filesystems": [
                         {"source": "/dev/nvme1n1p2", "target": mount, "fstype": "ext4"},
@@ -172,10 +173,45 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
             validate_write_target(Path(mount) / "x.tar.gz", runner=fake_run)
         self.assertEqual(ctx.exception.diagnosis_id, "STORAGE-PROTECTION-003")
 
-    def test_validate_blocks_media_mount(self) -> None:
+    def test_validate_allows_external_media_mount(self) -> None:
+        mount = "/media/volker/setuphelfer-back"
+        Path(mount).mkdir(parents=True, exist_ok=True)
+
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["lsblk", "-J"]:
+                return CompletedProcess(argv, 0, json.dumps(_lsblk_safe_usb(mount)), "")
+            if argv[:3] == ["findmnt", "-J", "-T"]:
+                body = {
+                    "filesystems": [
+                        {"source": "/dev/sdb1", "target": mount, "fstype": "ext4"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 1, "", "")
+
+        validate_write_target(Path(mount) / "backups" / "bk.tar.gz", runner=fake_run)
+
+    def test_validate_blocks_media_non_block_source(self) -> None:
+        mount = "/media/volker/fake-dir"
+
+        def fake_run(argv, **kwargs):
+            if argv[:3] == ["findmnt", "-J", "-T"]:
+                body = {
+                    "filesystems": [
+                        {"source": "tmpfs", "target": mount, "fstype": "tmpfs"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 1, "", "")
+
         with self.assertRaises(WriteTargetProtectionError) as ctx:
-            validate_write_target("/media/user/MyStick/backup", runner=None)
+            validate_write_target(Path(mount) / "backup", runner=fake_run)
         self.assertEqual(ctx.exception.diagnosis_id, "STORAGE-PROTECTION-005")
+
+    def test_validate_blocks_tmp_backup_path(self) -> None:
+        with self.assertRaises(WriteTargetProtectionError) as ctx:
+            validate_write_target("/tmp/backup", runner=None)
+        self.assertEqual(ctx.exception.diagnosis_id, "STORAGE-PROTECTION-004")
 
     def test_validate_allows_safe_test_mount(self) -> None:
         mount = "/tmp/setuphelfer-test/safe-dev-v1-ok"
@@ -184,13 +220,147 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
         def fake_run(argv, **kwargs):
             if argv[:2] == ["lsblk", "-J"]:
                 return CompletedProcess(argv, 0, json.dumps(_lsblk_safe_usb(mount)), "")
-            if argv[:2] == ["findmnt", "-J"]:
+            if argv[:3] == ["findmnt", "-J", "-T"]:
                 body = {
                     "filesystems": [
                         {"source": "/dev/sdb1", "target": mount, "fstype": "ext4"},
                     ]
                 }
                 return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 1, "", "")
+
+        validate_write_target(Path(mount) / "arch.tar.gz", runner=fake_run)
+
+    def test_validate_allows_uuid_symlink_source(self) -> None:
+        mount = "/tmp/setuphelfer-test/safe-dev-v1-uuid"
+        Path(mount).mkdir(parents=True, exist_ok=True)
+
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as td:
+            fake_dev = Path(td) / "sdb1"
+            fake_dev.touch()
+            by_uuid = Path(td) / "by-uuid-111"
+            by_uuid.symlink_to(fake_dev)
+
+            def fake_run(argv, **kwargs):
+                if argv[:2] == ["lsblk", "-J"]:
+                    return CompletedProcess(argv, 0, json.dumps(_lsblk_safe_usb(mount)), "")
+                if argv[:3] == ["findmnt", "-J", "-T"]:
+                    body = {
+                        "filesystems": [
+                            {"source": f"/dev/disk/by-uuid/{by_uuid.name}", "target": mount, "fstype": "ext4"},
+                        ]
+                    }
+                    return CompletedProcess(argv, 0, json.dumps(body), "")
+                return CompletedProcess(argv, 1, "", "")
+
+            from unittest.mock import patch
+            orig_realpath = os.path.realpath
+
+            def fake_realpath(src: str, *args, **kwargs) -> str:
+                if src == f"/dev/disk/by-uuid/{by_uuid.name}":
+                    return "/dev/sdb1"
+                return orig_realpath(src, *args, **kwargs)
+
+            with patch("core.safe_device.os.path.realpath", side_effect=fake_realpath):
+                with patch("core.safe_device._is_block_device_path", return_value=True):
+                    validate_write_target(Path(mount) / "arch.tar.gz", runner=fake_run)
+
+    def test_validate_allows_autofs_with_real_block_underlay(self) -> None:
+        mount = "/tmp/setuphelfer-test/safe-dev-v1-autofs"
+        Path(mount).mkdir(parents=True, exist_ok=True)
+
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["lsblk", "-J"]:
+                return CompletedProcess(argv, 0, json.dumps(_lsblk_safe_usb(mount)), "")
+            if argv[:3] == ["findmnt", "-J", "-T"]:
+                body = {
+                    "filesystems": [
+                        {"source": "systemd-1", "target": mount, "fstype": "autofs"},
+                        {"source": "/dev/sdb1", "target": mount, "fstype": "ext4"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 1, "", "")
+
+        validate_write_target(Path(mount) / "arch.tar.gz", runner=fake_run)
+
+    def test_validate_blocks_unknown_automount_source(self) -> None:
+        mount = "/tmp/setuphelfer-test/safe-dev-v1-autofs-unknown"
+        Path(mount).mkdir(parents=True, exist_ok=True)
+
+        def fake_run(argv, **kwargs):
+            if argv[:3] == ["findmnt", "-J", "-T"]:
+                body = {
+                    "filesystems": [
+                        {"source": "systemd-1", "target": mount, "fstype": "autofs"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            if argv[:3] == ["findmnt", "-J", "-R"]:
+                body = {
+                    "filesystems": [
+                        {"source": "systemd-1", "target": mount, "fstype": "autofs"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 1, "", "")
+
+        with self.assertRaises(WriteTargetProtectionError) as ctx:
+            validate_write_target(Path(mount) / "arch.tar.gz", runner=fake_run)
+        self.assertEqual(ctx.exception.diagnosis_id, "STORAGE-PROTECTION-004")
+        self.assertIn("mount_source_seen=systemd-1", str(ctx.exception))
+
+    def test_validate_allows_autofs_nested_findmnt_r_output(self) -> None:
+        mount = "/tmp/setuphelfer-test/safe-dev-v1-autofs-nested"
+        Path(mount).mkdir(parents=True, exist_ok=True)
+
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["lsblk", "-J"]:
+                return CompletedProcess(argv, 0, json.dumps(_lsblk_safe_usb(mount)), "")
+            if argv[:3] == ["findmnt", "-J", "-T"]:
+                body = {
+                    "filesystems": [
+                        {"source": "systemd-1", "target": mount, "fstype": "autofs"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            if argv[:3] == ["findmnt", "-J", "-R"]:
+                body = {
+                    "filesystems": [
+                        {
+                            "source": "systemd-1",
+                            "target": mount,
+                            "fstype": "autofs",
+                            "children": [
+                                {"source": "/dev/sdb1", "target": mount, "fstype": "ext4"},
+                            ],
+                        }
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 1, "", "")
+
+        validate_write_target(Path(mount) / "arch.tar.gz", runner=fake_run)
+
+    def test_validate_allows_after_automount_retry(self) -> None:
+        mount = "/tmp/setuphelfer-test/safe-dev-v1-autofs-retry"
+        Path(mount).mkdir(parents=True, exist_ok=True)
+        calls = {"t": 0}
+
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["lsblk", "-J"]:
+                return CompletedProcess(argv, 0, json.dumps(_lsblk_safe_usb(mount)), "")
+            if argv[:3] == ["findmnt", "-J", "-T"]:
+                calls["t"] += 1
+                if calls["t"] == 1:
+                    body = {"filesystems": [{"source": "systemd-1", "target": mount, "fstype": "autofs"}]}
+                else:
+                    body = {"filesystems": [{"source": "/dev/sdb1", "target": mount, "fstype": "ext4"}]}
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            if argv[:3] == ["findmnt", "-J", "-R"]:
+                return CompletedProcess(argv, 0, json.dumps({"filesystems": []}), "")
             return CompletedProcess(argv, 1, "", "")
 
         validate_write_target(Path(mount) / "arch.tar.gz", runner=fake_run)

@@ -63,12 +63,12 @@ Ohne Repository: neue .deb von GitHub Releases herunterladen und erneut `sudo ap
 
 ## Was das Paket macht
 
-- Installiert alle Dateien nach **/opt/pi-installer**
+- Installiert alle Dateien nach **/opt/setuphelfer** (aktuelles DEB **setuphelfer**; vor 1.4.0: Paket/Legacy-Pfade siehe Changelog)
 - **Bindet das Tauri Binary ein** (falls beim Build erstellt)
-- Legt den Service-Benutzer **pi-installer** an
-- Konfiguration: **/etc/pi-installer**, Logs: **/var/log/pi-installer**
-- Richtet **systemd-Service** `pi-installer.service` ein (startet beim Booten)
-- Legt **Startmenü-Einträge** an (PI-Installer, PI-Installer im Browser)
+- Legt den Service-Benutzer **setuphelfer** an
+- Konfiguration: **/etc/setuphelfer**, Logs: **/var/log/setuphelfer**, State: **/var/lib/setuphelfer**
+- Richtet **systemd-Units** `setuphelfer-backend.service` und ggf. `setuphelfer.service` ein
+- Legt **Startmenü-Einträge** an (Setuphelfer)
 - Beim ersten Install/Update: Backend-Venv und Frontend-`npm install` werden automatisch ausgeführt
 - Falls Tauri Binary fehlt: Versucht es während der Installation zu bauen (nur wenn `cargo` verfügbar)
 

@@ -118,7 +118,7 @@ run_both_vite() {
 }
 
 run_setuphelfer() {
-  exec "$REPO_ROOT/scripts/start-pi-installer.sh"
+  exec "$REPO_ROOT/scripts/start-setuphelfer.sh"
 }
 
 run_frontend_browser() {

@@ -85,6 +85,21 @@ export function normalizeApiBaseUrl(raw: string): string {
   return v
 }
 
+function isValidApiBaseUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw)
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false
+    // Expliziter Port muss im gültigen TCP-Bereich liegen.
+    if (u.port) {
+      const p = Number(u.port)
+      if (!Number.isInteger(p) || p < 1 || p > 65535) return false
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Wenn true, werden API-Anfragen mit X-Demo-Mode: 1 gesendet (Platzhalter für Screenshots). */
 let _screenshotMode = false;
 
@@ -103,7 +118,12 @@ export function isScreenshotMode(): boolean {
 export function getApiBase(): string {
   try {
     const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(API_BASE_STORAGE_KEY) : null;
-    if (stored && typeof stored === 'string' && stored.trim()) return normalizeApiBaseUrl(stored);
+    if (stored && typeof stored === 'string' && stored.trim()) {
+      const normalized = normalizeApiBaseUrl(stored)
+      if (isValidApiBaseUrl(normalized)) return normalized
+      // Defekten Eintrag bereinigen, damit Tauri auf den sicheren Default zurückfällt.
+      localStorage.removeItem(API_BASE_STORAGE_KEY)
+    }
   } catch {
     // ignore
   }

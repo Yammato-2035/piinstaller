@@ -1,5 +1,5 @@
 #!/bin/bash
-# Phase F – Zielsystem-Prüfung nach Installation (Setuphelfer oder Legacy pi-installer)
+# Phase F – Zielsystem-Prüfung nach Installation (Setuphelfer)
 # Nutzt: systemctl, curl, optional journalctl (ohne Änderungen am System).
 #
 # Aufruf (im Repo oder auf dem Zielsystem):
@@ -52,15 +52,14 @@ BACKEND_UNIT=""
 WEB_UNIT=""
 if systemctl cat setuphelfer-backend.service &>/dev/null; then
   BACKEND_UNIT="setuphelfer-backend.service"
-  WEB_UNIT="setuphelfer.service"
-elif systemctl cat pi-installer-backend.service &>/dev/null; then
-  BACKEND_UNIT="pi-installer-backend.service"
-  WEB_UNIT="pi-installer.service"
-  warn "Legacy-Units (pi-installer*) – Migration: Paket setuphelfer / docs/SYSTEM_INSTALLATION.md"
+  WEB_UNIT=""
+  if systemctl cat setuphelfer.service &>/dev/null; then
+    WEB_UNIT="setuphelfer.service"
+  fi
 fi
 
 if [[ -z "$BACKEND_UNIT" ]]; then
-  warn "Keine bekannte Backend-Unit (setuphelfer-backend / pi-installer-backend). API-Check trotzdem."
+  fail "setuphelfer-backend.service nicht gefunden (siehe docs/SYSTEM_INSTALLATION.md)."
 else
   info "Backend-Unit: $BACKEND_UNIT"
   if systemctl is-active --quiet "$BACKEND_UNIT" 2>/dev/null; then

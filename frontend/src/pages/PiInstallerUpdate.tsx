@@ -332,7 +332,7 @@ const PiInstallerUpdate: React.FC = () => {
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-4">
               <h2 className="font-semibold text-slate-800 dark:text-white mb-2">Auf /opt installieren oder aktualisieren</h2>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                Kopiert das aktuelle Quellverzeichnis nach /opt/pi-installer, setzt den Service-User pi-installer und startet den Dienst neu.
+                Kopiert das aktuelle Quellverzeichnis nach /opt/setuphelfer, setzt den Service-User setuphelfer und startet die Dienste neu.
               </p>
               <button
                 type="button"

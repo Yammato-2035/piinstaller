@@ -9,8 +9,8 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-INSTALL_DIR="/opt/pi-installer"
-SERVICE_USER="pi-installer"
+INSTALL_DIR="/opt/setuphelfer"
+SERVICE_USER="setuphelfer"
 SERVICE_GROUP=$(id -gn "$SERVICE_USER" 2>/dev/null || echo "$SERVICE_USER")
 
 echo "Repariere Installation unter $INSTALL_DIR..."
@@ -45,8 +45,9 @@ if [ -d "$INSTALL_DIR/frontend" ] && [ ! -d "$INSTALL_DIR/frontend/node_modules"
   fi
 fi
 
-# Alles an pi-installer übergeben
-chown -R "$SERVICE_USER:$SERVICE_GROUP" "$INSTALL_DIR" /etc/pi-installer /var/log/pi-installer 2>/dev/null || true
+# Alles an setuphelfer übergeben
+chown -R "$SERVICE_USER:$SERVICE_GROUP" "$INSTALL_DIR" \
+  /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer 2>/dev/null || true
 
 echo ""
-echo "Fertig. Service neu starten: sudo systemctl restart pi-installer"
+echo "Fertig. Service neu starten: sudo systemctl restart setuphelfer-backend.service"

@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import stat
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
@@ -463,6 +464,210 @@ def _simple_block_source(src: str) -> bool:
     )
 
 
+def _is_block_device_path(dev_path: str) -> bool:
+    try:
+        st = os.stat(dev_path)
+    except OSError:
+        return False
+    return stat.S_ISBLK(st.st_mode)
+
+
+def _is_known_block_source_via_lsblk(dev_path: str, *, runner: Runner | None = None) -> bool:
+    tree = _lsblk_tree(runner=runner)
+    disk_node = _find_disk_node_for_block_path(dev_path, tree)
+    return disk_node is not None
+
+
+def _resolve_block_source_candidate(src: str, *, runner: Runner | None = None) -> tuple[str | None, str]:
+    """
+    Liefert (resolved_source, reason).
+    Erlaubt nur konservative echte Blockpfade:
+    - /dev/sdX[/N], /dev/nvmeXnY[pN], /dev/mmcblkN[pN]
+    - /dev/disk/by-uuid/* -> realpath auf obige Formen
+    """
+    s = (src or "").strip()
+    if not s:
+        return None, "empty_source"
+    if "mapper" in s:
+        return None, "mapper_not_allowed"
+    if s.startswith("/dev/disk/by-uuid/"):
+        try:
+            rp = os.path.realpath(s)
+        except OSError:
+            return None, "uuid_realpath_failed"
+        if not rp.startswith("/dev/"):
+            return None, "uuid_realpath_not_dev"
+        if "mapper" in rp:
+            return None, "uuid_mapper_not_allowed"
+        if not _simple_block_source(rp):
+            return None, "uuid_realpath_not_simple_block"
+        if not _is_block_device_path(rp):
+            if _is_known_block_source_via_lsblk(rp, runner=runner):
+                return rp, "uuid_resolved_known_via_lsblk"
+            return None, "uuid_realpath_not_block_device"
+        return rp, "uuid_resolved"
+    if not _simple_block_source(s):
+        return None, "not_simple_block_source"
+    if not _is_block_device_path(s):
+        if _is_known_block_source_via_lsblk(s, runner=runner):
+            return s, "simple_block_known_via_lsblk"
+        return None, "not_block_device"
+    return s, "simple_block_source"
+
+
+def _flatten_findmnt_nodes(nodes: Any) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    if not isinstance(nodes, list):
+        return out
+    for n in nodes:
+        if not isinstance(n, dict):
+            continue
+        out.append(n)
+        ch = n.get("children")
+        if isinstance(ch, list):
+            out.extend(_flatten_findmnt_nodes(ch))
+    return out
+
+
+def _findmnt_entries_for_path(path: Path, *, runner: Runner | None = None) -> list[dict[str, Any]]:
+    r = _run(["findmnt", "-J", "-T", str(path)], runner=runner, timeout=30)
+    if r.returncode != 0:
+        return []
+    try:
+        data = json.loads(r.stdout or "{}")
+    except json.JSONDecodeError:
+        return []
+    fss = data.get("filesystems")
+    return _flatten_findmnt_nodes(fss)
+
+
+def _findmnt_entries_recursive(target: str, *, runner: Runner | None = None) -> list[dict[str, Any]]:
+    r = _run(["findmnt", "-J", "-R", target], runner=runner, timeout=30)
+    if r.returncode != 0:
+        return []
+    try:
+        data = json.loads(r.stdout or "{}")
+    except json.JSONDecodeError:
+        return []
+    fss = data.get("filesystems")
+    return _flatten_findmnt_nodes(fss)
+
+
+def resolve_mount_source_for_path(path: str | Path, *, runner: Runner | None = None) -> dict[str, str]:
+    """
+    Robuste Mount-Source-Auflösung für systemd-automount/autofs.
+    Bei Unsicherheit bleibt die Entscheidung konservativ (kein resolved_source).
+    """
+    p = path if isinstance(path, Path) else Path(str(path))
+    try:
+        anchor = _find_existing_anchor(p.resolve())
+    except OSError:
+        anchor = _find_existing_anchor(p)
+
+    entries = _findmnt_entries_for_path(anchor, runner=runner)
+    if not entries:
+        return {
+            "mount_source_seen": "",
+            "resolved_source": "",
+            "fstype": "",
+            "target": str(anchor),
+            "reason": "findmnt_t_no_entries",
+        }
+
+    # Für Diagnosezwecke: was wurde zuerst gesehen?
+    first = entries[0]
+    first_src = str(first.get("source") or "")
+    first_fst = str(first.get("fstype") or "")
+    first_tgt = str(first.get("target") or str(anchor))
+
+    def _pick(entries_in: list[dict[str, Any]]) -> tuple[str, str, str, str] | None:
+        best: tuple[int, str, str, str, str] | None = None
+        for fs in entries_in:
+            src = str(fs.get("source") or "").strip()
+            fst = str(fs.get("fstype") or "").strip()
+            tgt = str(fs.get("target") or "").strip()
+            resolved, why = _resolve_block_source_candidate(src, runner=runner)
+            if not resolved:
+                continue
+            score = 0
+            if fst.lower() != "autofs":
+                score += 40
+            if src.startswith("/dev/"):
+                score += 20
+            if tgt:
+                score += len(tgt)
+            if best is None or score > best[0]:
+                best = (score, src, resolved, fst, tgt)
+        if best is None:
+            return None
+        return best[1], best[2], best[3], best[4]
+
+    chosen = _pick(entries)
+    if chosen is None:
+        # Bei systemd-automount ggf. zuerst Triggern (stat/listdir) und einmal -T neu lesen.
+        looks_automount_now = any(
+            str(fs.get("fstype") or "").lower() == "autofs"
+            or str(fs.get("source") or "").startswith("systemd-")
+            for fs in entries
+        )
+        if looks_automount_now:
+            try:
+                os.stat(str(anchor))
+            except OSError:
+                pass
+            try:
+                if anchor.is_dir():
+                    next(anchor.iterdir(), None)
+            except (OSError, StopIteration):
+                pass
+            retry_entries = _findmnt_entries_for_path(anchor, runner=runner)
+            chosen = _pick(retry_entries)
+            if chosen is not None:
+                seen_src, resolved_src, fstype, target = chosen
+                return {
+                    "mount_source_seen": seen_src or first_src,
+                    "resolved_source": resolved_src,
+                    "fstype": fstype or first_fst,
+                    "target": target or first_tgt,
+                    "reason": "ok_after_automount_trigger",
+                }
+
+        # automount/autofs-Layer gesehen? Dann rekursiv denselben TARGET-Baum prüfen.
+        looks_automount = any(
+            str(fs.get("fstype") or "").lower() == "autofs"
+            or str(fs.get("source") or "").startswith("systemd-")
+            for fs in entries
+        )
+        if looks_automount:
+            rec = _findmnt_entries_recursive(first_tgt or str(anchor), runner=runner)
+            chosen = _pick(rec)
+            if chosen is None:
+                return {
+                    "mount_source_seen": first_src,
+                    "resolved_source": "",
+                    "fstype": first_fst,
+                    "target": first_tgt,
+                    "reason": "automount_layer_no_resolved_block_source",
+                }
+        else:
+            return {
+                "mount_source_seen": first_src,
+                "resolved_source": "",
+                "fstype": first_fst,
+                "target": first_tgt,
+                "reason": "no_resolvable_block_source",
+            }
+
+    seen_src, resolved_src, fstype, target = chosen
+    return {
+        "mount_source_seen": seen_src or first_src,
+        "resolved_source": resolved_src,
+        "fstype": fstype or first_fst,
+        "target": target or first_tgt,
+        "reason": "ok",
+    }
+
+
 def _fail_from_classification(cd: ClassifiedDevice) -> None:
     if cd.is_system_disk:
         raise WriteTargetProtectionError(
@@ -488,8 +693,9 @@ def validate_write_target(target: str | Path, *, runner: Runner | None = None) -
     """
     Harte Prüfung vor jedem Schreibzugriff auf einen Blockpfad oder ein Backup-Verzeichnis.
 
-    - Verzeichnis: muss unter write_safe_prefixes liegen, nicht unter /media, und darf nicht
-      auf geschützter System-/Boot-/Windows-Platte liegen.
+    - Verzeichnis: muss unter write_safe_prefixes liegen; Ausnahme: echte externe Mounts
+      unter /media oder /run/media werden nach Mount-/Device-Prüfung gezielt erlaubt.
+      Geschützte System-/Boot-/Windows-Platten bleiben gesperrt.
     - Blockgerät (/dev/...): Muster-Allowlist + gleiche Klassifikation auf der zugehörigen Disk.
     """
     raw = str(target).strip()
@@ -531,18 +737,13 @@ def _validate_dir_write(path: Path, *, runner: Runner | None = None) -> None:
         raise WriteTargetProtectionError(_DIAG_NOT_ALLOWLIST, "Pfad konnte nicht aufgelöst werden", detail=str(e)) from e
 
     rs = str(resolved)
-    if rs.startswith("/media/") or rs.startswith("/run/media/"):
-        raise WriteTargetProtectionError(
-            _DIAG_UNSAFE_MOUNT,
-            "Schreibziel unter /media oder /run/media ist nicht erlaubt",
-            detail=rs,
-        )
+    is_media_tree = rs.startswith("/media/") or rs.startswith("/run/media/")
 
     if str(resolved) == "/":
         raise WriteTargetProtectionError(_DIAG_SYSTEM, "Root ist kein erlaubtes Schreibziel")
 
     allowed = write_safe_prefixes_resolved()
-    if not _path_under_any_prefix(resolved, allowed):
+    if not is_media_tree and not _path_under_any_prefix(resolved, allowed):
         raise WriteTargetProtectionError(
             _DIAG_NOT_ALLOWLIST,
             "Pfad liegt nicht unter einem freigegebenen Schreibpräfix",
@@ -553,23 +754,36 @@ def _validate_dir_write(path: Path, *, runner: Runner | None = None) -> None:
     if path_under_prefixes(resolved, RESCUE_DRYRUN_WRITE_PREFIXES):
         return
 
-    anchor = _find_existing_anchor(resolved)
-    fs = _findmnt_for_path(anchor, runner=runner)
-    if not fs:
-        raise WriteTargetProtectionError(
-            _DIAG_NOT_ALLOWLIST,
-            "Kein findmnt-Eintrag für Schreibziel (nicht auf Block-Mount?)",
-            detail=str(anchor),
+    mount_info = resolve_mount_source_for_path(resolved, runner=runner)
+    resolved_source = mount_info.get("resolved_source") or ""
+    fstype = str(mount_info.get("fstype") or "").strip().lower()
+    if not resolved_source:
+        diag = _DIAG_UNSAFE_MOUNT if is_media_tree else _DIAG_NOT_ALLOWLIST
+        reason = (
+            "Mount-Quelle ist kein einfaches Blockgerät (z. B. mapper)"
+            f" [mount_source_seen={mount_info.get('mount_source_seen') or '(empty)'}; "
+            f"resolved_source={mount_info.get('resolved_source') or '(none)'}; "
+            f"fstype={mount_info.get('fstype') or '(unknown)'}; "
+            f"target={mount_info.get('target') or '(unknown)'}; "
+            f"reason={mount_info.get('reason') or 'unknown'}]"
         )
-    src = fs.get("source")
-    src_s = src if isinstance(src, str) else ""
-    if not _simple_block_source(src_s):
-        raise WriteTargetProtectionError(
-            _DIAG_NOT_ALLOWLIST,
-            "Mount-Quelle ist kein einfaches Blockgerät (z. B. mapper)",
-            detail=src_s or "(empty)",
-        )
-    cd = _classified_for_block(src_s, runner=runner)
+        raise WriteTargetProtectionError(diag, reason, detail=mount_info)
+    if is_media_tree:
+        # /media ist nur erlaubt, wenn ein reales lokales Blockdevice gemountet ist.
+        if not resolved_source.startswith("/dev/"):
+            raise WriteTargetProtectionError(
+                _DIAG_UNSAFE_MOUNT,
+                "Schreibziel unter /media ohne lokales Blockgerät ist nicht erlaubt",
+                detail=str(mount_info),
+            )
+        whole_src = _canonical_whole_disk(resolved_source)
+        if whole_src.startswith("/dev/loop") or fstype in ("tmpfs", "overlay"):
+            raise WriteTargetProtectionError(
+                _DIAG_UNSAFE_MOUNT,
+                "Schreibziel unter /media ist auf unsicherem Dateisystem/Device nicht erlaubt",
+                detail=str(mount_info),
+            )
+    cd = _classified_for_block(resolved_source, runner=runner)
     _fail_from_classification(cd)
 
 

@@ -3,12 +3,19 @@ from __future__ import annotations
 from core.diagnostics.models import DiagnosticCase, DiagnosticsAnalyzeRequest
 from core.diagnostics.registry import get_case_by_id
 from core.diagnostics.sources import normalized_question, normalized_signals
+from core.install_paths import path_text_suggests_legacy_pi_tree
 
 
 def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
     hits: list[str] = []
     # normalized_signals lowercases Werte
     sp = (signals.get("storage_protection") or "").strip().lower()
+    code = (signals.get("code") or "").strip().lower()
+    details_diag = (signals.get("details.diagnosis_id") or signals.get("diagnosis_id") or "").strip().upper()
+    stderr = (signals.get("stderr") or "").strip().lower()
+    unreadable_sources = (signals.get("unreadable_sources") or "").strip().lower()
+    owner_mode = (signals.get("mount_owner_mode") or signals.get("owner_mode") or "").strip().lower()
+    probe_err = (signals.get("target_probe_error") or "").strip().lower()
     if sp == "storage-protection-001":
         hits.append("STORAGE-PROTECTION-001")
     if sp == "storage-protection-002":
@@ -40,6 +47,12 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
         hits.append("SYSTEMD-AF-014")
     if signals.get("sudo_no_new_privileges") == "true":
         hits.append("SYSTEMD-NNP-031")
+    if code == "backup.sudo_blocked_by_nnp" or details_diag == "SYSTEMD-NNP-031":
+        hits.append("SYSTEMD-NNP-031")
+    if code == "backup.source_permission_denied" or details_diag == "BACKUP-SOURCE-PERM-032":
+        hits.append("BACKUP-SOURCE-PERM-032")
+    if ("permission denied" in stderr or "keine berechtigung" in stderr) and unreadable_sources not in {"", "null", "[]"}:
+        hits.append("BACKUP-SOURCE-PERM-032")
     if signals.get("ssh_enabled") == "false":
         hits.append("SSH-DISABLED-017")
     if signals.get("port_22_open") == "false":
@@ -54,10 +67,33 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
         hits.append("FS-FULL-022")
     if signals.get("setuphelfer_group_present") == "false":
         hits.append("PERM-GROUP-008")
+    if "permission denied" in probe_err or "keine berechtigung" in probe_err:
+        hits.append("PERM-GROUP-008")
     if signals.get("owner_mode_valid") == "false":
+        hits.append("OWNER-MODE-023")
+    if "root:root" in owner_mode and ("755" in owner_mode or "drwxr-xr-x" in owner_mode):
         hits.append("OWNER-MODE-023")
     if signals.get("raspi_boot_ok") == "false":
         hits.append("PI-BOOT-024")
+
+    sc_ids = (signals.get("service_conflict_ids") or "").upper()
+    for token in (
+        "SERVICE-CONFLICT-033",
+        "SERVICE-CONFLICT-034",
+        "SERVICE-CONFLICT-035",
+        "SERVICE-CONFLICT-036",
+    ):
+        if token in sc_ids:
+            hits.append(token)
+    if signals.get("systemd_pi_installer_service") == "active" or signals.get("systemd_pi_installer_backend_service") == "active":
+        hits.append("SERVICE-CONFLICT-033")
+    pot = (signals.get("port_8000_owner_text") or "").strip().lower()
+    if path_text_suggests_legacy_pi_tree(pot):
+        hits.append("SERVICE-CONFLICT-034")
+    if signals.get("mixed_opt_install") == "true" and signals.get("legacy_systemd_still_enabled") == "true":
+        hits.append("SERVICE-CONFLICT-035")
+    if signals.get("legacy_must_not_overwrite_new") == "true":
+        hits.append("SERVICE-CONFLICT-036")
     return hits
 
 
@@ -77,7 +113,7 @@ def _pattern_matches(question: str) -> list[str]:
         hits.append("NODE-OPTIONS-012")
     if "addressfamily" in question:
         hits.append("SYSTEMD-AF-014")
-    if "no new privileges" in question or "nonewprivileges" in question:
+    if "no new privileges" in question or "nonewprivileges" in question or "keine neuen privilegien" in question:
         hits.append("SYSTEMD-NNP-031")
     if "ssh" in question:
         hits.extend(["SSH-DISABLED-017", "SSH-PORT-016"])

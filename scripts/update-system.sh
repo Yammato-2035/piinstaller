@@ -1,6 +1,6 @@
 #!/bin/bash
 # Setuphelfer – Systemweite Installation aktualisieren
-# Aktualisiert eine bestehende Installation unter /opt/setuphelfer/ (Legacy: /opt/pi-installer/)
+# Aktualisiert eine bestehende Installation unter /opt/setuphelfer/
 #
 # Verwendung:
 #   sudo ./scripts/update-system.sh
@@ -29,14 +29,10 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CURRENT_USER="${SUDO_USER:-$USER}"
 
 INSTALL_DIR="/opt/setuphelfer"
-if [ ! -d "$INSTALL_DIR" ] && [ -d "/opt/pi-installer" ]; then
-  INSTALL_DIR="/opt/pi-installer"
-  warn "Legacy-Pfad /opt/pi-installer – bitte auf Paket setuphelfer migrieren (/opt/setuphelfer)."
-fi
 
 # Prüfe ob Installation existiert
 if [ ! -d "$INSTALL_DIR" ]; then
-  err "Keine Installation gefunden in /opt/setuphelfer (oder Legacy /opt/pi-installer)"
+  err "Keine Installation gefunden in /opt/setuphelfer"
   err "Bitte zuerst installieren mit: sudo ./scripts/install-system.sh"
   exit 1
 fi

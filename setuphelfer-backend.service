@@ -32,19 +32,19 @@ ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 PrivateDevices=yes
-# Kein NoNewPrivileges: sonst funktioniert setuid-„sudo“ nicht (Full-Backup braucht sudo).
+# Backup/Tar läuft als Dienstnutzer mit SupplementaryGroups=setuphelfer — kein sudo im Normalpfad.
+NoNewPrivileges=true
 MemoryMax=512M
 LimitNOFILE=4096
 ProtectKernelTunables=yes
 ProtectControlGroups=yes
 ProtectKernelLogs=yes
 LockPersonality=yes
-# Kein RestrictSUIDSGID / leeres CapabilityBoundingSet: sonst kein setuid-„sudo“ (Full-Backup).
-RestrictSUIDSGID=no
+RestrictSUIDSGID=yes
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
-ReadWritePaths={{INSTALL_DIR}} /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt
+ReadWritePaths={{INSTALL_DIR}} /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt /mnt/setuphelfer
 
 [Install]
 WantedBy=multi-user.target

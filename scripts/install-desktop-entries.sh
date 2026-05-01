@@ -17,9 +17,6 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 START_SCRIPT="$INSTALL_DIR/scripts/start-setuphelfer.sh"
-if [ ! -x "$START_SCRIPT" ] && [ -f "$INSTALL_DIR/scripts/start-pi-installer.sh" ]; then
-  START_SCRIPT="$INSTALL_DIR/scripts/start-pi-installer.sh"
-fi
 if [ ! -f "$START_SCRIPT" ]; then
   echo "Installationsverzeichnis nicht gefunden oder Starter fehlt: $INSTALL_DIR" >&2
   exit 1

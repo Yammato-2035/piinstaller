@@ -74,6 +74,19 @@ fi
 
 # Port: Standard 8000, überschreibbar mit PI_INSTALLER_BACKEND_PORT (z. B. wenn 8000 belegt)
 PORT="${PI_INSTALLER_BACKEND_PORT:-8000}"
+export PI_INSTALLER_BACKEND_PORT="$PORT"
+
+# Service-Konflikt (pi-installer vs. Setuphelfer auf :8000) — kein blindes kill, nur Erkennung
+if [ -z "${PI_INSTALLER_SKIP_SERVICE_CONFLICT_GUARD:-}" ] && [ -z "${SETUPHELFER_SKIP_SERVICE_CONFLICT_GUARD:-}" ]; then
+  _pf=0
+  "$PYTHON" -c "from core.service_conflict_guard import port_preflight_main; raise SystemExit(port_preflight_main())" || _pf=$?
+  if [ "$_pf" -eq 10 ]; then
+    exit 0
+  fi
+  if [ "$_pf" -eq 2 ]; then
+    exit 2
+  fi
+fi
 
 # Nur TCP-LISTEN prüfen (Browser/WebKit mit ESTABLISHED → :8000 sind Clients, blockieren den Port nicht)
 _tcp_port_listen_busy() {

@@ -17,7 +17,7 @@ _Kurzüberblick für Entwickler – welche Hauptteile es gibt und wie sie zusamm
   - Optionaler Tauri-Wrapper (Desktop-App) unter `src-tauri/`.
 
 - **Systemintegration / Skripte (`scripts/`)**
-  - Systemweite Installation in `/opt/pi-installer/` (FHS-konform).
+  - Systemweite Installation in `/opt/setuphelfer/` (FHS-konform; Legacy vor 1.4.0: archivierter Ordnername „pi-installer“ unter `/opt`).
   - Start-/Installations-/Service-Skripte (`start-*.sh`, `install-system.sh`, `install-backend-service.sh` etc.).
 
 - **Dokumentation (`docs/`)**

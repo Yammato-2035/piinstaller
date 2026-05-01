@@ -10,7 +10,14 @@ SERVICE_USER="setuphelfer"
 case "$1" in
   configure)
     # Alte systemd-Units stilllegen (Migration von pi-installer → setuphelfer)
+    echo "[setuphelfer postinst] Legacy pi-installer*: pruefen (stop/disable, keine Datenloeschung; archivierte Daten unter /opt bleiben erhalten)."
     for old in pi-installer.service pi-installer-backend.service; do
+      if systemctl is-active "$old" 2>/dev/null | grep -qx active; then
+        echo "[setuphelfer postinst] $old war aktiv — wird jetzt gestoppt."
+      fi
+      if systemctl is-enabled "$old" 2>/dev/null | grep -qE '^(enabled|enabled-runtime)$'; then
+        echo "[setuphelfer postinst] $old war enabled — wird jetzt deaktiviert."
+      fi
       systemctl stop "$old" 2>/dev/null || true
       systemctl disable "$old" 2>/dev/null || true
     done
@@ -43,6 +50,13 @@ case "$1" in
     done
 
     mkdir -p "$CONFIG_DIR" "$LOG_DIR" "$STATE_DIR"
+
+    BACKUP_STAGING="/mnt/setuphelfer"
+    BACKUP_DIR="/mnt/setuphelfer/backups"
+    if mkdir -p "$BACKUP_DIR" 2>/dev/null; then
+      chown "root:$BACKUP_GROUP" "$BACKUP_STAGING" "$BACKUP_DIR" 2>/dev/null || true
+      chmod 0770 "$BACKUP_STAGING" "$BACKUP_DIR" 2>/dev/null || true
+    fi
 
     # Konfiguration von Legacy übernehmen (einmalig), wenn Ziel noch leer
     if [ ! -f "$CONFIG_DIR/config.json" ] && [ -f "/etc/pi-installer/config.json" ]; then

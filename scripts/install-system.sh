@@ -178,7 +178,56 @@ chmod 755 "$CONFIG_DIR"
 chmod 755 "$STATE_DIR"
 chmod 755 "$LOG_DIR"
 
+# --- Backup-Ziel /mnt/setuphelfer/backups (NVMe-Tests: nicht unter /media; Gruppe setuphelfer, 0770) ---
+SETUPHELFER_BACKUP_STAGING_ROOT="${SETUPHELFER_BACKUP_STAGING_ROOT:-/mnt/setuphelfer}"
+SETUPHELFER_BACKUP_DIR="${SETUPHELFER_BACKUP_DIR:-/mnt/setuphelfer/backups}"
+if mkdir -p "$SETUPHELFER_BACKUP_DIR" 2>/dev/null; then
+  if [ "$(id -u)" -eq 0 ]; then
+    chown "root:$BACKUP_GROUP" "$SETUPHELFER_BACKUP_STAGING_ROOT" "$SETUPHELFER_BACKUP_DIR" 2>/dev/null || true
+    chmod 0770 "$SETUPHELFER_BACKUP_STAGING_ROOT" "$SETUPHELFER_BACKUP_DIR" 2>/dev/null || true
+    ok "Backup-Staging $SETUPHELFER_BACKUP_STAGING_ROOT und $SETUPHELFER_BACKUP_DIR (root:$BACKUP_GROUP, 0770)"
+  else
+    warn "Nicht als root: Besitzer root:$BACKUP_GROUP und chmod 0770 auf $SETUPHELFER_BACKUP_DIR ggf. manuell setzen."
+  fi
+else
+  warn "Konnte $SETUPHELFER_BACKUP_DIR nicht anlegen (root nötig unter /mnt)."
+fi
+
 ok "Verzeichnisse erstellt"
+
+# --- Schritt 2b: Downgrade-Schutz (ältere Quelle darf neuere /opt-Installation nicht überschreiben) ---
+if [ -d "$INSTALL_DIR/backend" ] && [ -f "$REPO_ROOT/config/version.json" ]; then
+  info "[2b/8] Versionscheck (Quelle vs. bestehende Installation unter $INSTALL_DIR)..."
+  if SH_INSTALL_GUARD_REPO="$REPO_ROOT" SH_INSTALL_GUARD_TARGET="$INSTALL_DIR" "$PYTHON" -c "
+import os, sys
+from pathlib import Path
+t = Path(os.environ['SH_INSTALL_GUARD_TARGET'])
+sys.path.insert(0, str(t / 'backend'))
+try:
+    from core.service_conflict_guard import compare_versions, read_version_from_install_root
+except ImportError:
+    sys.exit(0)
+repo = Path(os.environ['SH_INSTALL_GUARD_REPO'])
+vr = read_version_from_install_root(repo) or '0'
+vi = read_version_from_install_root(t)
+if vi and compare_versions(vr, vi) < 0:
+    sys.stderr.write(
+        'Abbruch: Zielinstallation ist neuer (installiert %s) als die Quelle (%s).\\n'
+        % (vi, vr)
+    )
+    sys.exit(2)
+sys.exit(0)
+"; then
+    ok "Versionscheck bestanden"
+  else
+    if [ "${SETUPHELFER_ALLOW_DOWNGRADE:-0}" = "1" ]; then
+      warn "Versionscheck umgangen (SETUPHELFER_ALLOW_DOWNGRADE=1)."
+    else
+      err "Installation abgebrochen: neuere Version liegt bereits unter $INSTALL_DIR."
+      exit 1
+    fi
+  fi
+fi
 
 # --- Schritt 3: Dateien kopieren ---
 info "[3/8] Dateien nach ${INSTALL_DIR} kopieren..."
@@ -277,7 +326,7 @@ fi
 info "[7/8] Symlinks erstellen..."
 
 # Haupt-Symlinks
-# Primärer Starter: start-setuphelfer.sh (start-pi-installer.sh bleibt Legacy-Wrapper im Repo)
+# Primärer Starter: start-setuphelfer.sh (start-pi-installer.sh leitet nur weiter, nicht für neue Desktop-Einträge)
 ln -sf "$INSTALL_DIR/scripts/start-setuphelfer.sh" "$BIN_DIR/setuphelfer"
 ln -sf "$INSTALL_DIR/scripts/start-backend.sh" "$BIN_DIR/setuphelfer-backend"
 ln -sf "$INSTALL_DIR/scripts/start-frontend.sh" "$BIN_DIR/setuphelfer-frontend"
@@ -309,6 +358,14 @@ ok "Umgebungsvariablen gesetzt"
 
 # --- Schritt 9: systemd Services einrichten (Backend = Owner :8000; Web-UI getrennt) ---
 info "[9/9] systemd Services einrichten..."
+
+for _legacy in pi-installer.service pi-installer-backend.service; do
+  if systemctl is-active --quiet "$_legacy" 2>/dev/null; then
+    info "Legacy $_legacy ist aktiv — wird gestoppt/deaktiviert (archivierte Daten unter /opt werden nicht geloescht)."
+  fi
+  systemctl stop "$_legacy" 2>/dev/null || true
+  systemctl disable "$_legacy" 2>/dev/null || true
+done
 
 PRIMARY_GROUP="$(id -gn "$CURRENT_USER")"
 SED_SYS=( -e "s|{{INSTALL_DIR}}|$INSTALL_DIR|g" -e "s|{{USER}}|$CURRENT_USER|g"

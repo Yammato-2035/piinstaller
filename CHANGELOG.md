@@ -7,6 +7,78 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Fixed (Backup API - FIX-9 API consistency, HW pre-06)
+- `GET /api/backup/list` nutzt jetzt eine eigene read-only Validierung mit `resolve_mount_source_for_path` statt der Schreibpr�fung aus Create; autofs/systemd-automount wird auf reales Blockdevice aufgel�st.
+- Fehlerantworten von `backup/list` liefern strukturierte Details (`mount_source_seen`, `resolved_source`, `fstype`, `target`, `diagnosis_id`) f�r Evidence/Diagnose.
+- `POST /api/backup/create` (`type=data`) gibt Source-Planung nun auch im Erfolgspfad zur�ck (`selected_sources`, `skipped_sources`, `required_sources`, `optional_sources`).
+- `POST /api/backup/restore` (`mode=preview`) erg�nzt PrivateTmp-Kontext (`private_tmp_isolation`, `preview_dir_visibility_note`, `service_private_tmp_hint`).
+- i18n erg�nzt: `backup.messages.preview_private_tmp_hint` (DE/EN).
+
+### Fixed (Backup API - FIX-10 backup/list stability hardening)
+- `/api/backup/list` auf read-only Pfad validiert (ohne Write-Probe), weiterhin harte Blockade f�r `/media` / `/run/media`.
+- Validierung und Dateiscan in `asyncio.to_thread + asyncio.wait_for` mit kurzen harten Grenzen (3s/4s), um Worker-Blockade zu reduzieren.
+- Strukturierter Timeout-Code f�r Listen-Endpunkt: `backup.list_timeout` inkl. `details.command`, `details.timeout_seconds`, `details.target`.
+- Dateidatum ohne externe `date`-Subprozesse (reines `datetime.fromtimestamp`), um zus�tzliche Blockadequellen zu entfernen.
+- i18n erg�nzt: `backup.messages.list_timeout` (DE/EN).
+
+### Fixed (Backup API - FIX-11 backup/list decouple via index)
+- `GET /api/backup/list` ist vom direkten Directory-Scan entkoppelt und liest prim�r aus einem lokalen Backup-Index (`backup-index.json` im State-Verzeichnis).
+- Erfolgreiche Backup-L�ufe aktualisieren den Index mit Metadaten (`backup_file`, `created_at`, `encrypted`, `size_bytes`, `type`, `target`, `source_summary`, `manifest_present`, `verification_status`, `storage_path`) ohne Secrets.
+- Bei fehlendem Index liefert `backup/list` deterministisch `success` mit leerer Liste und `index_available=false` statt Mount-Scan.
+- Optionale Existenzpr�fung pro Indexeintrag ist kurz getaktet (`quick_stat`); bei Timeout bleibt der Eintrag sichtbar mit `status=unknown`.
+- `/media` und `/run/media` bleiben sofort blockiert (`backup.path_invalid`, `STORAGE-PROTECTION-005`) ohne Dateisystemscan.
+
+### Fixed (Backup API - FIX-12 restore enforcement)
+- `POST /api/backup/restore` trennt `mode=preview` und `mode=restore` jetzt strikt; `mode=restore` l�uft nicht mehr durch den Preview-Pfad.
+- API-Vertrag gesch�rft: bei `mode=restore` ist `target_dir` Pflicht (`backup.restore_target_missing`), `target_dir="/"` wird hart blockiert.
+- Restore-Ziele werden bei `mode=restore` deterministisch validiert; ung�ltige Ziele liefern `backup.restore_target_invalid`, nicht beschreibbare Ziele `backup.restore_not_writable`.
+- Erfolgs-Code f�r echten Restore erg�nzt: `backup.restore_success`; Preview bleibt `backup.restore_preview_ok`.
+
+### Fixed (Storage Protection - FIX-8 runtime path verification)
+- Ursache fuer weiterhin auftretendes `STORAGE-PROTECTION-004` im aktiven Backup-Pfad nachgewiesen: Runtime unter `/opt/setuphelfer` war teils nicht synchron und der Backup-Target-Validator nutzte einen abweichenden Mount-Pfad.
+- `core.safe_device.resolve_mount_source_for_path()` erweitert: `str|Path`, rekursive `findmnt -R`-Flattening, automount-Trigger-Retry, und lsblk-Fallback wenn `PrivateDevices=yes` den direkten `/dev/*`-stat verhindert.
+- `modules.storage_detection.validate_backup_target()` auf dieselbe robuste Mount-Aufloesung umgestellt (`resolve_mount_source_for_path`) statt separater, uneinheitlicher `findmnt`-Entscheidung.
+- Neue Tests: `test_storage_detection_fix8_runtime_v1.py` plus erweiterte `test_safe_device_storage_protection_v1.py` (nested automount/retry).
+
+### Fixed (Storage Protection - FIX-7 automount source resolution)
+- `backend/core/safe_device.py`: robuste Mount-Source-Aufloesung fuer `validate_write_target()` via `findmnt -J -T` inkl. Layer-Fall `systemd-1/autofs` -> reales Blockgeraet.
+- UUID-Sources (`/dev/disk/by-uuid/...`) werden auf das echte Blockdevice aufgeloest und als Blockgeraet verifiziert; bei Unsicherheit bleibt `STORAGE-PROTECTION-004` bestehen.
+- Fehlerdetail bei `STORAGE-PROTECTION-004` erweitert (u. a. `mount_source_seen`, `resolved_source`, `fstype`, `target`, `reason`) fuer bessere Evidence.
+- Tests erweitert: autofs/systemd-automount, UUID-Source, unknown/unsafe Source bleibt blockiert.
+
+### Added (Service conflict guard, pi-installer vs. Setuphelfer)
+- Neues Modul `backend/core/service_conflict_guard.py`: systemd-/Pfad-/Port-8000-Erkennung, keine blinde Prozessbeendigung ueber die API.
+- `GET /api/system/service-conflicts` (nur lesend); Preflight in `scripts/start-backend.sh` und vor `uvicorn.run` in `app.py` (`__main__`).
+- Diagnosekatalog `SERVICE-CONFLICT-033` bis `036` plus Matcher-Signale; Tests `backend/tests/test_service_conflict_guard_v1.py`.
+- `debian/postinst` und `scripts/install-system.sh`: klar geloggt stop/disable von `pi-installer*.service`, Downgrade-Schutz fuer `/opt/setuphelfer` (optional `SETUPHELFER_ALLOW_DOWNGRADE=1`).
+- Doku: `docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md`, `docs/developer/NAMING_AND_SERVICES.md`, `docs/faq/SERVICE_CONFLICT_FAQ.md`.
+
+### Fixed (Backup API � FIX-2 sudo gate, HW1 / NoNewPrivileges)
+- **`POST /api/backup/create`:** kein pauschales `sudo -n true` mehr fuer **`type=data`** und **`target=local`** nach erfolgreicher Zielvalidierung (`_validate_backup_dir` / Allowlist); Zielverzeichnis per **`os.makedirs`** ohne sudo. Bei fehlenden Rechten: **`backup.mkdir_failed`** mit **`PERM-GROUP-008`**. Wenn sudo weiterhin noetig ist (z. B. Full-Backup) und NNP sudo blockiert: neuer API-Code **`backup.sudo_blocked_by_nnp`** mit Detail **`SYSTEMD-NNP-031`**. Tests: `backend/tests/test_backup_create_sudo_gate_v1.py`.
+
+### Fixed (Backup API - FIX-3 data source scope, HW1)
+- `type=data` nutzt einen nicht-privilegierten Quell-Scope ohne pauschales `/opt`; root-/container-nahe Pfade (z. B. `/opt/containerd`) sind nicht mehr Teil des Data-Backups.
+- Nicht lesbare optionale Quellen werden als `skipped_sources` dokumentiert; nicht lesbare Pflichtquellen liefern strukturiert **`backup.source_permission_denied`** mit Details (`unreadable_sources`, `required_permission`) und `diagnosis_id=BACKUP-SOURCE-PERM-032`.
+- Tar-`Permission denied` im Data-Pfad wird auf denselben strukturierten API-Code gemappt statt nur als Rohfehltext.
+- Tests erg�nzt: `backend/tests/test_backup_data_source_scope_v1.py`.
+
+### Fixed (Backup Runtime - FIX-4 source trace + path unification, HW1)
+- Runtime-Mismatch behoben: aktiver `type=data`-Pfad nutzt nicht mehr die Altliste `/home /var/www /opt`, sondern ausschlie�lich Source-Planning.
+- Harte Ausschlussregel f�r Data-Backups erg�nzt: gesamter `/opt`-Tree (inkl. `/opt/containerd`) wird in `type=data` nie als `selected_sources` akzeptiert.
+- Strukturierte Trace-Logs vor Tar-Lauf erg�nzt (`backup_type`, `target`, `selected_sources`, `skipped_sources`, `required_sources`, `optional_sources`, `effective_tar_command`).
+- Fehlerdetails bei `backup.source_permission_denied` erweitert um `selected_sources`, `skipped_sources`, `required_sources`, `optional_sources` (weiterhin `diagnosis_id=BACKUP-SOURCE-PERM-032`).
+- Eingebetteter Scheduler-Runner (`_render_backup_runner_script`) auf dieselbe Data-Source-Planung umgestellt, damit API- und Runtime-/Scheduler-Pfad konsistent sind.
+
+### Fixed (Backup API - FIX-5 data home model, HW1)
+- `type=data` verwendet als Pflichtquelle ausschlie�lich das Home des **effektiven Dienstnutzers** (`pwd.getpwuid(os.geteuid()).pw_dir`) statt implizitem Login-Shell-Kontext.
+- Home-Readchecks behandeln `PermissionError` nun deterministisch als lesbarkeitsbezogenen Source-Fehler; dadurch wird der strukturierte Pfad `backup.source_permission_denied` (`BACKUP-SOURCE-PERM-032`) statt ungemapptem `backup.error` genutzt.
+- Keine automatische Aufnahme fremder Home-Verzeichnisse unter `/home/*`; Data-Backup bleibt strikt service-context-basiert ohne sudo.
+
+### Added (Backup API - FIX-6 data test source model, HW1)
+- F�r reproduzierbare HW-L�ufe unterst�tzt `type=data` jetzt explizite Pflichtquellen �ber `SETUPHELFER_DATA_BACKUP_SOURCES` (z. B. `/mnt/setuphelfer/test-data`).
+- Ist die Variable gesetzt, ersetzt sie die Default-Pflichtquelle (Service-Home) vollst�ndig; `/home` ist dann keine implizite Voraussetzung f�r HW-Success.
+- Konfigurierte Quellen werden nur unter `/mnt/setuphelfer` akzeptiert (Allowlist), `/opt/*` bleibt weiterhin hart ausgeschlossen.
+
 ### Added (Diagnose-Assistent, Phase DIAG-1 Kern)
 - Neuer strukturierter Diagnosekern unter `backend/core/diagnostics/` mit stabilem Katalog (30 Faelle), deterministischem Matcher und API-Endpunkten `POST /api/diagnostics/analyze`, `GET /api/diagnostics/catalog`, `GET /api/diagnostics/{id}`.
 - Frontend-Erweiterung: `DiagnosticsAssistantPanel` mit Ausgabe nach Nutzerstufe (Beginner/Advanced/Expert), angebunden im Backup/Verify-Flow.

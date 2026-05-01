@@ -13,14 +13,14 @@ Diese Anleitung zeigt, wie Sie PI-Installer auf einem **neu installierten Raspbe
 
 ### Option 1: Systemweite Installation (empfohlen)
 
-Installiert PI-Installer nach `/opt/pi-installer/` gemäß Linux-Standards:
+Installiert Setuphelfer (PI-Installer) nach `/opt/setuphelfer/` gemäß Linux-Standards:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/scripts/install-system.sh | sudo bash
 ```
 
 **Nach der Installation:**
-- Globale Befehle verfügbar: `pi-installer`, `pi-installer-backend`, etc.
+- Globale Befehle verfügbar: `setuphelfer`, `setuphelfer-backend`, etc.
 - Web-Interface: http://localhost:3001
 - Service startet automatisch beim Booten
 
@@ -88,10 +88,10 @@ curl -sSL https://raw.githubusercontent.com/Yammato-2035/piinstaller/main/script
 
 **Was passiert:**
 1. ✅ System-Abhängigkeiten werden installiert (Python, Node.js, Git, etc.)
-2. ✅ Repository wird geklont nach `/opt/pi-installer/`
+2. ✅ Repository wird geklont nach `/opt/setuphelfer/`
 3. ✅ Backend-Dependencies werden installiert
 4. ✅ Frontend-Dependencies werden installiert
-5. ✅ Konfiguration wird erstellt (`/etc/pi-installer/`)
+5. ✅ Konfiguration wird erstellt (`/etc/setuphelfer/`)
 6. ✅ Symlinks werden erstellt (`/usr/local/bin/`)
 7. ✅ Umgebungsvariablen werden gesetzt
 8. ✅ systemd Service wird eingerichtet
@@ -156,9 +156,9 @@ hostname -I
 - Alle benötigten Python- und Node-Pakete
 
 ### Verzeichnisse (bei systemweiter Installation)
-- `/opt/pi-installer/` – Programmdateien
-- `/etc/pi-installer/` – Konfiguration
-- `/var/log/pi-installer/` – Logs
+- `/opt/setuphelfer/` – Programmdateien
+- `/etc/setuphelfer/` – Konfiguration
+- `/var/log/setuphelfer/` – Logs
 
 ---
 
@@ -166,19 +166,19 @@ hostname -I
 
 ```bash
 # Hauptbefehl (startet Backend + Frontend)
-pi-installer
+setuphelfer
 
 # Nur Backend
-pi-installer-backend
+setuphelfer-backend
 
 # Nur Frontend
-pi-installer-frontend
+setuphelfer-frontend
 
 # Service-Verwaltung
-sudo systemctl status pi-installer
-sudo systemctl start pi-installer
-sudo systemctl stop pi-installer
-sudo systemctl restart pi-installer
+sudo systemctl status setuphelfer-backend
+sudo systemctl start setuphelfer-backend
+sudo systemctl stop setuphelfer-backend
+sudo systemctl restart setuphelfer-backend
 ```
 
 ---
@@ -208,13 +208,13 @@ sudo raspi-config
 
 ```bash
 # Status prüfen:
-sudo systemctl status pi-installer
+sudo systemctl status setuphelfer-backend
 
 # Logs anzeigen:
-sudo journalctl -u pi-installer -n 50
+sudo journalctl -u setuphelfer-backend -n 50
 
 # Manuell starten:
-sudo systemctl start pi-installer
+sudo systemctl start setuphelfer-backend
 ```
 
 ### Port bereits belegt
@@ -265,4 +265,4 @@ A: Nein, Internetverbindung ist für Package-Downloads erforderlich
 A: Ja, funktioniert auf Raspberry Pi 4 und neuer
 
 **F: Wie aktualisiere ich PI-Installer?**  
-A: Bei systemweiter Installation: `sudo /opt/pi-installer/scripts/update-system.sh`
+A: Bei systemweiter Installation: `sudo /opt/setuphelfer/scripts/update-system.sh`

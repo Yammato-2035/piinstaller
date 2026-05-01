@@ -132,7 +132,7 @@ cd /path/to/PI-Installer
 sudo ./scripts/update-system.sh
 ```
 
-Das Skript aktualisiert `/opt/setuphelfer` (oder Legacy `/opt/pi-installer`, falls nur diese Installation existiert), legt ein Backup an und startet die passenden Services neu.
+Das Skript aktualisiert ausschließlich `/opt/setuphelfer`, legt ein Backup an und startet die passenden Services neu. (Historische Installationen unter dem alten Ordnernamen „pi-installer“ unter `/opt` sind archiviert und werden hier nicht angesprochen — Migration siehe Changelog 1.4.0.)
 
 ## Deinstallation
 

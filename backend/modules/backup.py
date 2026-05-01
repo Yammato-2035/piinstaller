@@ -345,6 +345,18 @@ class BackupModule:
         else:
             return False, backup_file, f"Unbekannte Verschlüsselungsmethode: {encryption_method}"
     
+    def _gpg_subprocess_env(self) -> dict:
+        """GNUPGHOME unter /tmp o. ä., damit systemd-Dienste ohne schreibbares User-Home GPG nutzen können."""
+        env = os.environ.copy()
+        raw = (os.environ.get("SETUPHELFER_GNUPG_HOME") or "").strip()
+        if raw:
+            gnupg_home = raw
+        else:
+            gnupg_home = str(Path(tempfile.gettempdir()) / "setuphelfer-gnupg")
+        Path(gnupg_home).mkdir(parents=True, mode=0o700, exist_ok=True)
+        env["GNUPGHOME"] = gnupg_home
+        return env
+
     def _encrypt_gpg(
         self,
         backup_file: str,
@@ -367,9 +379,8 @@ class BackupModule:
                 return False, backup_file, "GPG konnte nicht installiert werden"
         
         encrypted_file = f"{backup_file}.gpg"
-        
-        encrypted_file = f"{backup_file}.gpg"
-        
+        gpg_env = self._gpg_subprocess_env()
+
         if encryption_key:
             # Verschlüsselung mit Passphrase
             proc = subprocess.Popen(
@@ -377,7 +388,8 @@ class BackupModule:
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
+                env=gpg_env,
             )
             stdout, stderr = proc.communicate(input=encryption_key, timeout=3600)
             success = proc.returncode == 0
@@ -387,7 +399,8 @@ class BackupModule:
                 ["gpg", "--batch", "--yes", "--cipher-algo", "AES256", "--compress-algo", "1", "-c", backup_file],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
+                env=gpg_env,
             )
             stdout, stderr = proc.communicate(timeout=3600)
             success = proc.returncode == 0
@@ -489,7 +502,9 @@ class BackupModule:
         
         if not output_file:
             output_file = encrypted_file.replace(".gpg", "")
-        
+
+        gpg_env = self._gpg_subprocess_env()
+
         if encryption_key:
             # Entschlüsselung mit Passphrase
             with open(output_file, 'wb') as out:
@@ -498,7 +513,8 @@ class BackupModule:
                     stdin=subprocess.PIPE,
                     stdout=out,
                     stderr=subprocess.PIPE,
-                    text=False
+                    text=False,
+                    env=gpg_env,
                 )
                 stdout, stderr = proc.communicate(input=encryption_key.encode(), timeout=3600)
                 success = proc.returncode == 0
@@ -509,7 +525,8 @@ class BackupModule:
                     ["gpg", "--batch", "--yes", "-d", encrypted_file],
                     stdout=out,
                     stderr=subprocess.PIPE,
-                    text=False
+                    text=False,
+                    env=gpg_env,
                 )
                 stdout, stderr = proc.communicate(timeout=3600)
                 success = proc.returncode == 0

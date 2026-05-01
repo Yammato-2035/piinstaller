@@ -6,6 +6,7 @@ from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 import os
+import pwd
 from pathlib import Path
 import psutil
 import subprocess
@@ -14,19 +15,21 @@ import logging
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 import shlex
 import re
-from typing import Optional
+from typing import Any, Optional
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 import asyncio
 import uuid
 import threading
+import tempfile
 import time
 import signal
+import shutil
 import xml.etree.ElementTree as ET
 from pydantic import BaseModel
 
 from core.install_paths import audit_rules_file as _audit_rules_path, get_config_dir, get_opt_install_dir, is_dev_mode
-from core.backup_recovery_i18n import K_BACKUP_FAILED_MANIFEST_MISSING, tr
+from core.backup_recovery_i18n import K_BACKUP_FAILED_MANIFEST_MISSING, K_BACKUP_TARGET_NOT_WRITABLE, tr
 from modules.backup import with_backup_contract
 from modules.storage_detection import BackupTargetValidationError, validate_backup_target
 
@@ -124,7 +127,7 @@ logger.info("Log-Datei: %s", str(LOG_PATH))
 
 def get_pi_installer_version() -> str:
     """Liest die PI-Installer Version aus `config/version.json`.
-    Bevorzugt PI_INSTALLER_DIR (Installationsverzeichnis, z.B. /opt/pi-installer).
+    Bevorzugt PI_INSTALLER_DIR bzw. SETUPHELFER_DIR (Installationsverzeichnis, z.B. /opt/setuphelfer).
     Fällt bei Bedarf auf die historische VERSION-Datei zurück (anti-regressiv).
     """
     try:
@@ -745,12 +748,211 @@ def _prospect_backup_archive_path(
     return None
 
 
+def _is_readable_data_source(path: Path) -> tuple[bool, str]:
+    """Prüft, ob ein Verzeichnis im Dienstkontext lesbar/begehbar ist."""
+    try:
+        rp = path.resolve()
+    except OSError as e:
+        return False, str(e)
+    try:
+        if not rp.exists():
+            return False, "Pfad existiert nicht"
+        if not rp.is_dir():
+            return False, "Pfad ist kein Verzeichnis"
+    except OSError as e:
+        return False, str(e)
+    if not os.access(str(rp), os.R_OK | os.X_OK):
+        return False, "Lesen/Betreten nicht erlaubt"
+    # Schneller Runtime-Probezugriff, damit ACL/Traverse-Fehler früh sichtbar sind.
+    try:
+        with os.scandir(rp):
+            pass
+    except OSError as e:
+        return False, str(e)
+    return True, ""
+
+
+def _service_user_home_path() -> Path:
+    """Home-Pfad des effektiven Dienstnutzers (unabhängig von Login-Shell-Kontext)."""
+    try:
+        return Path(pwd.getpwuid(os.geteuid()).pw_dir)
+    except Exception:
+        return Path.home()
+
+
+def _split_configured_data_sources(raw: str) -> list[str]:
+    parts = [p.strip() for p in re.split(r"[,\n:;]+", raw or "") if p.strip()]
+    out: list[str] = []
+    seen: set[str] = set()
+    for item in parts:
+        if item not in seen:
+            seen.add(item)
+            out.append(item)
+    return out
+
+
+def _is_allowed_data_source_path(path: Path) -> bool:
+    """Erlaubt nur nicht-privilegierte Data-Quellen unter /mnt/setuphelfer."""
+    try:
+        rp = path.resolve()
+    except OSError:
+        return False
+    allow_root = Path("/mnt/setuphelfer").resolve()
+    return rp == allow_root or allow_root in rp.parents
+
+
+def _configured_data_backup_sources() -> list[Path]:
+    raw = os.environ.get("SETUPHELFER_DATA_BACKUP_SOURCES", "").strip()
+    if not raw:
+        return []
+    out: list[Path] = []
+    seen: set[str] = set()
+    for s in _split_configured_data_sources(raw):
+        p = Path(s)
+        ps = str(p)
+        if ps not in seen:
+            seen.add(ps)
+            out.append(p)
+    return out
+
+
+def _data_required_source_candidates() -> list[Path]:
+    """
+    Pflichtquellen für type=data.
+    - Wenn SETUPHELFER_DATA_BACKUP_SOURCES gesetzt ist: genau diese Quellen (HW-Testmodus).
+    - Sonst: Home des Dienstnutzers.
+    """
+    configured = _configured_data_backup_sources()
+    if configured:
+        return configured
+    return [_service_user_home_path()]
+
+
+def _data_optional_source_candidates() -> list[Path]:
+    """Optionale Quellen für type=data; dürfen bei fehlender Lesbarkeit geskippt werden."""
+    return []
+
+
+def _data_path_under_opt_tree(path: Path) -> bool:
+    """True, wenn der Pfad /opt oder darunter liegt (type=data darf das nicht archivieren)."""
+    try:
+        rp = path.resolve()
+    except OSError:
+        return True
+    try:
+        opt_root = Path("/opt").resolve()
+    except OSError:
+        return False
+    return rp == opt_root or opt_root in rp.parents
+
+
+def _plan_data_backup_sources() -> tuple[list[str], list[dict], list[dict]]:
+    """
+    Liefert Datenquellen für type=data (nicht-privilegierter Scope).
+    Rückgabe: (included_sources, skipped_optional_sources, unreadable_required_sources)
+    """
+    required_candidates = _data_required_source_candidates()
+    optional_candidates = _data_optional_source_candidates()
+    includes: list[str] = []
+    skipped_optional: list[dict] = []
+    unreadable_required: list[dict] = []
+
+    seen: set[str] = set()
+
+    def _add_include(p: Path) -> None:
+        s = str(p)
+        if s not in seen:
+            seen.add(s)
+            includes.append(s)
+
+    for candidate in required_candidates:
+        if _data_path_under_opt_tree(candidate):
+            unreadable_required.append({"path": str(candidate), "reason": "type=data excludes /opt tree"})
+            continue
+        if not _is_allowed_data_source_path(candidate):
+            unreadable_required.append({"path": str(candidate), "reason": "type=data source outside allowlist (/mnt/setuphelfer)"})
+            continue
+        ok, reason = _is_readable_data_source(candidate)
+        if ok:
+            resolved = candidate.resolve()
+            if _data_path_under_opt_tree(resolved):
+                unreadable_required.append({"path": str(candidate), "reason": "type=data excludes /opt tree"})
+                continue
+            if not _is_allowed_data_source_path(resolved):
+                unreadable_required.append({"path": str(candidate), "reason": "type=data source outside allowlist (/mnt/setuphelfer)"})
+                continue
+            _add_include(resolved)
+        else:
+            unreadable_required.append({"path": str(candidate), "reason": reason or "nicht lesbar"})
+
+    for candidate in optional_candidates:
+        if _data_path_under_opt_tree(candidate):
+            skipped_optional.append({"path": str(candidate), "reason": "type=data excludes /opt tree"})
+            continue
+        if not _is_allowed_data_source_path(candidate):
+            skipped_optional.append({"path": str(candidate), "reason": "type=data source outside allowlist (/mnt/setuphelfer)"})
+            continue
+        ok, reason = _is_readable_data_source(candidate)
+        if ok:
+            resolved = candidate.resolve()
+            if _data_path_under_opt_tree(resolved):
+                skipped_optional.append({"path": str(candidate), "reason": "type=data excludes /opt tree"})
+                continue
+            if not _is_allowed_data_source_path(resolved):
+                skipped_optional.append({"path": str(candidate), "reason": "type=data source outside allowlist (/mnt/setuphelfer)"})
+                continue
+            _add_include(resolved)
+        else:
+            skipped_optional.append({"path": str(candidate), "reason": reason or "optional, nicht lesbar"})
+
+    return includes, skipped_optional, unreadable_required
+
+
+def _extract_permission_denied_paths(stderr_text: str) -> list[str]:
+    out: list[str] = []
+    if not stderr_text:
+        return out
+    for line in stderr_text.splitlines():
+        m_de = re.search(r"^tar:\s+([^:]+):\s+.*Keine Berechtigung", line)
+        m_en = re.search(r"^tar:\s+([^:]+):\s+.*Permission denied", line)
+        m = m_de or m_en
+        if not m:
+            continue
+        p = m.group(1).strip()
+        if p and p not in out:
+            out.append(p)
+    return out
+
+
+def _backup_path_looks_encrypted(path: str) -> bool:
+    p = (path or "").lower()
+    return p.endswith(".gpg") or p.endswith(".enc") or ".tar.gz.gpg" in p or ".tar.gz.enc" in p
+
+
+def _normalize_backup_create_crypto_payload(data: dict) -> dict:
+    """QA/UI: encryption=true + password → encryption_method + encryption_key (Default gpg)."""
+    if not isinstance(data, dict):
+        return {}
+    out = dict(data)
+    enc_flag = out.get("encryption")
+    wants_enc = enc_flag is True or (isinstance(enc_flag, str) and enc_flag.strip().lower() in ("true", "1", "yes"))
+    if wants_enc and not (out.get("encryption_method") or "").strip():
+        out["encryption_method"] = "gpg"
+    ek = out.get("encryption_key")
+    if not (isinstance(ek, str) and ek.strip()):
+        pw = out.get("password")
+        if isinstance(pw, str) and pw.strip():
+            out["encryption_key"] = pw.strip()
+    return out
+
+
 def _do_backup_logic(
     *,
     sudo_password: str,
     backup_type: str,
     backup_dir: str,
     timestamp: str,
+    target: str = "local",
     last_backup_hint: str = "",
     cancel_event: Optional[threading.Event] = None,
     job: Optional[dict] = None,
@@ -760,6 +962,13 @@ def _do_backup_logic(
     Returns a dict shaped like the API response.
     """
     results: list[str] = []
+    runtime_markers: dict[str, Any] = {
+        "suspend_guard_active": False,
+        "inhibit_available": False,
+        "backup_started_at": _now_iso(),
+        "backup_finished_at": None,
+        "abort_reason": None,
+    }
 
     def _tar_no_space(result: dict) -> bool:
         combined = ((result.get("stderr") or "") + "\n" + (result.get("stdout") or "")).lower()
@@ -779,11 +988,23 @@ def _do_backup_logic(
         return ""
 
     def _make_backup_readable(path: str) -> None:
+        """Archiv lesbar für Gruppe; ohne sudo wenn der Prozess Owner ist (Normalfall unter systemd)."""
         try:
-            uid = os.getuid()
-            gid = os.getgid()
-            run_command(f"chmod 0644 {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
-            run_command(f"chown {uid}:{gid} {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
+            p = Path(path)
+            if not p.is_file():
+                return
+            try:
+                os.chmod(p, 0o644)
+            except OSError:
+                if (sudo_password or "").strip():
+                    run_command(f"chmod 0644 {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
+            st = p.stat()
+            if st.st_uid == os.geteuid():
+                return
+            if (sudo_password or "").strip():
+                uid = os.getuid()
+                gid = os.getgid()
+                run_command(f"chown {uid}:{gid} {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
         except Exception:
             pass
 
@@ -791,14 +1012,41 @@ def _do_backup_logic(
         try:
             if not path:
                 return
-            # best-effort cleanup (file likely created as root)
-            run_command(f"rm -f {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
+            p = Path(path)
+            try:
+                p.unlink(missing_ok=True)
+            except OSError:
+                if (sudo_password or "").strip():
+                    run_command(f"rm -f {shlex.quote(path)}", sudo=True, sudo_password=sudo_password)
         except Exception:
             pass
 
+    def _partial_backup_path(path: Optional[str]) -> Optional[str]:
+        if not path:
+            return None
+        return f"{path}.partial"
+
+    def _finalize_partial_backup(partial_path: Optional[str], final_path: Optional[str]) -> tuple[bool, str | None]:
+        if not partial_path or not final_path:
+            return False, "partial/final path fehlt"
+        try:
+            os.replace(partial_path, final_path)
+            return True, None
+        except OSError:
+            if (sudo_password or "").strip():
+                mv = run_command(
+                    f"mv -f {shlex.quote(partial_path)} {shlex.quote(final_path)}",
+                    sudo=True,
+                    sudo_password=sudo_password,
+                )
+                if mv.get("success"):
+                    return True, None
+                return False, (mv.get("stderr") or mv.get("error") or "mv fehlgeschlagen")[:300]
+            return False, "atomarer rename fehlgeschlagen"
+
     def _embed_manifest_after_tar(path: Optional[str]) -> tuple[bool, str | None]:
         """Nach ``tar -czf``: MANIFEST.json zwingend einbetten und im Archiv verifizieren."""
-        if not path or not str(path).endswith(".tar.gz"):
+        if not path or not (str(path).endswith(".tar.gz") or str(path).endswith(".tar.gz.partial")):
             _cleanup_backup_file(path)
             return False, tr(K_BACKUP_FAILED_MANIFEST_MISSING)
         try:
@@ -820,7 +1068,15 @@ def _do_backup_logic(
     last_full = None
 
     def _bc(payload: dict, code: str, severity: str, details: Optional[dict] = None) -> dict:
-        return with_backup_contract(payload, code, severity, details)
+        final_markers = dict(runtime_markers)
+        if not final_markers.get("backup_finished_at"):
+            final_markers["backup_finished_at"] = _now_iso()
+        merged_details: dict[str, Any] = {}
+        if details:
+            merged_details.update(details)
+        # Laufzeitmarker immer ausliefern, damit started/finished in jedem finalen Zustand konsistent sind.
+        merged_details.update(final_markers)
+        return with_backup_contract(payload, code, severity, merged_details)
 
     def _is_backup_timeout(result: dict) -> bool:
         return result.get("returncode") == -9 or (result.get("stderr") or "").strip() == "Timeout"
@@ -842,6 +1098,13 @@ def _do_backup_logic(
             detail_line = f"{msg}: {e.detail}" if e.detail else msg
             results.append(detail_line)
             api_code = _BACKUP_TARGET_ERR_TO_API.get(e.message_key, "backup.failed")
+            det: dict = {"i18n_key": e.message_key, "detail": e.detail}
+            if e.message_key == K_BACKUP_TARGET_NOT_WRITABLE and e.detail and (
+                "Permission denied" in e.detail
+                or "Keine Berechtigung" in e.detail
+                or "[Errno 13]" in e.detail
+            ):
+                det["diagnosis_id"] = "PERM-GROUP-008"
             return _bc(
                 {
                     "status": "error",
@@ -852,42 +1115,62 @@ def _do_backup_logic(
                 },
                 api_code,
                 "error",
-                {"i18n_key": e.message_key, "detail": e.detail},
+                det,
             )
 
+    def _build_inhibited_shell_cmd(inner_cmd: str) -> tuple[str, bool]:
+        inhibit = shutil.which("systemd-inhibit")
+        if not inhibit:
+            return inner_cmd, False
+        wrapped = (
+            f"{shlex.quote(inhibit)} "
+            "--what=sleep "
+            "--why='Setuphelfer Backup läuft' "
+            "--mode=block "
+            "sh -c "
+            f"{shlex.quote(inner_cmd)}"
+        )
+        return wrapped, True
+
     def _run_tar(cmd: str) -> dict:
+        # Tar läuft als Backend-Prozess (SupplementaryGroups=setuphelfer); kein sudo — sonst
+        # NoNewPrivileges=true und setuid-sudo kollidieren (HW1-01..05).
+        guarded_cmd, guarded = _build_inhibited_shell_cmd(cmd)
+        runtime_markers["inhibit_available"] = bool(shutil.which("systemd-inhibit"))
+        runtime_markers["suspend_guard_active"] = guarded
         if not cancel_event:
-            return run_command(cmd, sudo=True, sudo_password=sudo_password, timeout=7200)
+            return run_command(guarded_cmd, sudo=False, sudo_password=None, timeout=7200)
         # cancelable tar
         try:
-            # start in separate process group so we can kill everything (tar+gzip)
-            # Ohne Passwort: sudo -n (NOPASSWD) — kein „-S“ und kein stdin schließen, sonst
-            # „I/O operation on closed file“ wenn der Worker-Thread stdin an sudo bindet.
-            if sudo_password:
-                proc = subprocess.Popen(
-                    ["sudo", "-S", "sh", "-c", cmd],
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    preexec_fn=os.setsid,
-                )
+            stderr_chunks: list[str] = []
+            stderr_lock = threading.Lock()
+
+            proc = subprocess.Popen(
+                ["sh", "-c", guarded_cmd],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                text=True,
+                preexec_fn=os.setsid,
+            )
+
+            def _drain_stderr() -> None:
+                if not proc.stderr:
+                    return
                 try:
-                    if proc.stdin:
-                        proc.stdin.write(sudo_password + "\n")
-                        proc.stdin.flush()
-                        proc.stdin.close()
+                    while True:
+                        chunk = proc.stderr.read(4096)
+                        if not chunk:
+                            break
+                        with stderr_lock:
+                            stderr_chunks.append(chunk)
+                            if len(stderr_chunks) > 64:
+                                stderr_chunks.pop(0)
                 except Exception:
                     pass
-            else:
-                proc = subprocess.Popen(
-                    ["sudo", "-n", "sh", "-c", cmd],
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    preexec_fn=os.setsid,
-                )
+
+            stderr_thread = threading.Thread(target=_drain_stderr, daemon=True)
+            stderr_thread.start()
 
             # expose pgid for cancel endpoint
             try:
@@ -899,6 +1182,31 @@ def _do_backup_logic(
 
             start = time.monotonic()
             while True:
+                active_pkg_ops = _detect_active_package_operations()
+                if active_pkg_ops:
+                    runtime_markers["abort_reason"] = "package_activity_detected"
+                    runtime_markers["package_activity_detected"] = active_pkg_ops[:5]
+                    try:
+                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                    except Exception:
+                        try:
+                            proc.terminate()
+                        except Exception:
+                            pass
+                    try:
+                        proc.wait(timeout=5)
+                    except Exception:
+                        try:
+                            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                        except Exception:
+                            pass
+                    return {
+                        "success": False,
+                        "returncode": -16,
+                        "stderr": "Package activity detected during backup",
+                        "stdout": "",
+                        "active_package_processes": active_pkg_ops[:10],
+                    }
                 if cancel_event.is_set():
                     try:
                         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
@@ -925,32 +1233,42 @@ def _do_backup_logic(
                     return {"success": False, "returncode": -9, "stderr": "Timeout", "stdout": ""}
                 time.sleep(0.5)
 
-            # Nach manuellem stdin.close() bei „-S“ darf communicate() stdin anfassen → ValueError/closed file
-            out = (proc.stdout.read() if proc.stdout else "") or ""
-            err = (proc.stderr.read() if proc.stderr else "") or ""
-            return {"success": proc.returncode == 0, "returncode": proc.returncode, "stdout": out, "stderr": err}
+            stderr_thread.join(timeout=2)
+            with stderr_lock:
+                err = "".join(stderr_chunks)
+            return {"success": proc.returncode == 0, "returncode": proc.returncode, "stdout": "", "stderr": err}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
     if backup_type == "full":
         backup_file = f"{backup_dir}/pi-backup-full-{timestamp}.tar.gz"
+        backup_file_partial = _partial_backup_path(backup_file)
         backup_cmd = (
-            f"tar -czf {shlex.quote(backup_file)} "
+            f"tar -czf {shlex.quote(str(backup_file_partial))} "
             f"--exclude={shlex.quote(backup_dir)} "
-            f"--exclude=/proc --exclude=/sys --exclude=/dev --exclude=/tmp --exclude=/run --exclude=/mnt /"
+            f"--exclude=/proc --exclude=/sys --exclude=/dev --exclude=/tmp --exclude=/run --exclude=/mnt "
+            f"--exclude=/media --exclude=/run/media /"
         )
         backup_result = _run_tar(backup_cmd)
         if (cancel_event and cancel_event.is_set()) or backup_result.get("returncode") == -15:
-            _cleanup_backup_file(backup_file)
+            runtime_markers["abort_reason"] = "cancelled"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
             return _bc(
-                {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp},
+                {
+                    "status": "cancelled",
+                    "message": "Backup abgebrochen",
+                    "results": ["⚠️ Abbruch angefordert"],
+                    "backup_file": None,
+                    "timestamp": timestamp,
+                },
                 "backup.cancelled",
                 "info",
+                dict(runtime_markers),
             )
         if backup_result.get("success"):
-            results.append(f"Vollständiges Backup erstellt: {backup_file}")
-            _make_backup_readable(backup_file)
-            ok_m, det_m = _embed_manifest_after_tar(backup_file)
+            _make_backup_readable(backup_file_partial)
+            ok_m, det_m = _embed_manifest_after_tar(backup_file_partial)
             if not ok_m:
                 if det_m:
                     results.append(det_m)
@@ -966,11 +1284,36 @@ def _do_backup_logic(
                     "error",
                     {"i18n_key": K_BACKUP_FAILED_MANIFEST_MISSING, "detail": det_m},
                 )
+            ok_rename, rename_err = _finalize_partial_backup(backup_file_partial, backup_file)
+            if not ok_rename:
+                _cleanup_backup_file(backup_file_partial)
+                return _bc(
+                    {
+                        "status": "error",
+                        "message": "Backup fehlgeschlagen",
+                        "results": results + [f"Atomarer Abschluss fehlgeschlagen: {rename_err or 'unbekannt'}"],
+                        "backup_file": None,
+                        "timestamp": timestamp,
+                    },
+                    "backup.finalize_failed",
+                    "error",
+                    {"reason": rename_err or "finalize_failed"},
+                )
+            results.append(f"Vollständiges Backup erstellt: {backup_file}")
             results.append(f"MANIFEST.json eingebettet und verifiziert: {backup_file}")
+            _record_backup_index_entry(
+                backup_file=backup_file,
+                backup_type="full",
+                target=target,
+                selected_sources=[],
+                manifest_present=True,
+            )
+            runtime_markers["backup_finished_at"] = _now_iso()
             return _bc(
                 {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp},
                 "backup.success",
                 "success",
+                dict(runtime_markers),
             )
         if _tar_no_space(backup_result):
             free_hint = _fs_free_hint(backup_dir)
@@ -980,34 +1323,55 @@ def _do_backup_logic(
             results.append(f"❌ {msg}")
             if backup_result.get("stderr"):
                 results.append(f"tar/stderr: {(backup_result.get('stderr') or '')[:200]}")
-            _cleanup_backup_file(backup_file)
+            runtime_markers["abort_reason"] = "no_space"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
             return _bc(
-                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
                 "backup.no_space",
                 "error",
-                {"free_hint": free_hint} if free_hint else None,
+                dict({"free_hint": free_hint} if free_hint else {}, **runtime_markers),
             )
         if _is_backup_timeout(backup_result):
             stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Timeout")
             results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
-            _cleanup_backup_file(backup_file)
+            runtime_markers["abort_reason"] = "timeout"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
             return _bc(
-                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
                 "backup.timeout",
                 "error",
+                dict(runtime_markers),
+            )
+        if backup_result.get("returncode") == -16:
+            results.append("Backup abgebrochen: laufende Paket-/Update-Aktivität erkannt")
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
+            return _bc(
+                {"status": "error", "message": "Backup abgebrochen", "results": results, "backup_file": None, "timestamp": timestamp},
+                "backup.blocked_package_activity",
+                "error",
+                dict(
+                    {"active_package_processes": backup_result.get("active_package_processes") or []},
+                    **runtime_markers,
+                ),
             )
         stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
         results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
-        _cleanup_backup_file(backup_file)
+        runtime_markers["abort_reason"] = "tar_failed"
+        _cleanup_backup_file(backup_file_partial)
+        runtime_markers["backup_finished_at"] = _now_iso()
         return _bc(
-            {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+            {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
             "backup.failed",
             "error",
-            {"stderr_excerpt": str(stderr)[:200]},
+            dict({"stderr_excerpt": str(stderr)[:200]}, **runtime_markers),
         )
 
     if backup_type == "incremental":
         backup_file = f"{backup_dir}/pi-backup-inc-{timestamp}.tar.gz"
+        backup_file_partial = _partial_backup_path(backup_file)
         last_backup = (last_backup_hint or "").strip()
         if not last_backup:
             last_full, last_full_mtime = _find_last_full_backup(backup_dir)
@@ -1021,28 +1385,31 @@ def _do_backup_logic(
                     backup_type="full",
                     backup_dir=backup_dir,
                     timestamp=timestamp,
+                    target=target,
                     cancel_event=cancel_event,
                     job=job,
                 )
 
         backup_cmd = (
-            f"tar -czf {shlex.quote(backup_file)} "
+            f"tar -czf {shlex.quote(str(backup_file_partial))} "
             f"--newer-mtime={shlex.quote(str(last_backup))} "
             f"--exclude={shlex.quote(backup_dir)} "
             f"/home /etc /var/www"
         )
         backup_result = _run_tar(backup_cmd)
         if (cancel_event and cancel_event.is_set()) or backup_result.get("returncode") == -15:
-            _cleanup_backup_file(backup_file)
+            runtime_markers["abort_reason"] = "cancelled"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
             return _bc(
                 {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp},
                 "backup.cancelled",
                 "info",
+                dict(runtime_markers),
             )
         if backup_result.get("success"):
-            results.append(f"Inkrementelles Backup erstellt: {backup_file}")
-            _make_backup_readable(backup_file)
-            ok_m, det_m = _embed_manifest_after_tar(backup_file)
+            _make_backup_readable(backup_file_partial)
+            ok_m, det_m = _embed_manifest_after_tar(backup_file_partial)
             if not ok_m:
                 if det_m:
                     results.append(det_m)
@@ -1058,58 +1425,168 @@ def _do_backup_logic(
                     "error",
                     {"i18n_key": K_BACKUP_FAILED_MANIFEST_MISSING, "detail": det_m},
                 )
+            ok_rename, rename_err = _finalize_partial_backup(backup_file_partial, backup_file)
+            if not ok_rename:
+                _cleanup_backup_file(backup_file_partial)
+                return _bc(
+                    {
+                        "status": "error",
+                        "message": "Backup fehlgeschlagen",
+                        "results": results + [f"Atomarer Abschluss fehlgeschlagen: {rename_err or 'unbekannt'}"],
+                        "backup_file": None,
+                        "timestamp": timestamp,
+                    },
+                    "backup.finalize_failed",
+                    "error",
+                    {"reason": rename_err or "finalize_failed"},
+                )
+            results.append(f"Inkrementelles Backup erstellt: {backup_file}")
             results.append(f"MANIFEST.json eingebettet und verifiziert: {backup_file}")
+            _record_backup_index_entry(
+                backup_file=backup_file,
+                backup_type="incremental",
+                target=target,
+                selected_sources=[],
+                manifest_present=True,
+            )
             out = {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp}
             if last_full:
                 out["last_full_backup"] = last_full
-            return _bc(out, "backup.success", "success")
+            runtime_markers["backup_finished_at"] = _now_iso()
+            return _bc(out, "backup.success", "success", dict(runtime_markers))
         if _tar_no_space(backup_result):
             free_hint = _fs_free_hint(backup_dir)
             msg = "Nicht genug Speicherplatz im Zielverzeichnis."
             if free_hint:
                 msg += f" Freier Speicher: {free_hint}."
             results.append(f"❌ {msg}")
-            _cleanup_backup_file(backup_file)
+            runtime_markers["abort_reason"] = "no_space"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
             return _bc(
-                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
                 "backup.no_space",
                 "error",
-                {"free_hint": free_hint} if free_hint else None,
+                dict({"free_hint": free_hint} if free_hint else {}, **runtime_markers),
             )
         if _is_backup_timeout(backup_result):
             stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Timeout")
             results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
-            _cleanup_backup_file(backup_file)
+            runtime_markers["abort_reason"] = "timeout"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
             return _bc(
-                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
                 "backup.timeout",
                 "error",
+                dict(runtime_markers),
+            )
+        if backup_result.get("returncode") == -16:
+            results.append("Backup abgebrochen: laufende Paket-/Update-Aktivität erkannt")
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
+            return _bc(
+                {"status": "error", "message": "Backup abgebrochen", "results": results, "backup_file": None, "timestamp": timestamp},
+                "backup.blocked_package_activity",
+                "error",
+                dict(
+                    {"active_package_processes": backup_result.get("active_package_processes") or []},
+                    **runtime_markers,
+                ),
             )
         stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
         results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
-        _cleanup_backup_file(backup_file)
+        runtime_markers["abort_reason"] = "tar_failed"
+        _cleanup_backup_file(backup_file_partial)
+        runtime_markers["backup_finished_at"] = _now_iso()
         return _bc(
-            {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+            {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
             "backup.failed",
             "error",
-            {"stderr_excerpt": str(stderr)[:200]},
+            dict({"stderr_excerpt": str(stderr)[:200]}, **runtime_markers),
         )
 
     if backup_type == "data":
         backup_file = f"{backup_dir}/pi-backup-data-{timestamp}.tar.gz"
-        backup_cmd = f"tar -czf {shlex.quote(backup_file)} /home /var/www /opt"
+        backup_file_partial = _partial_backup_path(backup_file)
+        data_sources, skipped_optional, unreadable_required = _plan_data_backup_sources()
+        required_sources = [str(p) for p in _data_required_source_candidates()]
+        optional_sources = [str(p) for p in _data_optional_source_candidates()]
+        logger.info(
+            "[backup.data.trace] type=%s target=%s selected_sources=%s skipped_sources=%s required_sources=%s optional_sources=%s",
+            backup_type,
+            target,
+            data_sources,
+            skipped_optional,
+            required_sources,
+            optional_sources,
+        )
+        if skipped_optional:
+            skipped_txt = ", ".join(str(x.get("path")) for x in skipped_optional if x.get("path"))
+            if skipped_txt:
+                results.append(f"Optionale Datenquellen übersprungen: {skipped_txt}")
+        if unreadable_required:
+            unreadable_txt = ", ".join(str(x.get("path")) for x in unreadable_required if x.get("path"))
+            if unreadable_txt:
+                results.append(f"Pflichtquelle nicht lesbar: {unreadable_txt}")
+            return _bc(
+                {
+                    "status": "error",
+                    "message": "Datenquelle nicht lesbar",
+                    "results": results,
+                    "backup_file": None,
+                    "timestamp": timestamp,
+                },
+                "backup.source_permission_denied",
+                "error",
+                {
+                    "selected_sources": data_sources,
+                    "unreadable_sources": unreadable_required,
+                    "skipped_sources": skipped_optional,
+                    "required_sources": required_sources,
+                    "optional_sources": optional_sources,
+                    "required_permission": "read_execute",
+                    "diagnosis_id": "BACKUP-SOURCE-PERM-032",
+                },
+            )
+        if not data_sources:
+            return _bc(
+                {
+                    "status": "error",
+                    "message": "Keine gültigen Datenquellen für type=data",
+                    "results": results,
+                    "backup_file": None,
+                    "timestamp": timestamp,
+                },
+                "backup.source_permission_denied",
+                "error",
+                {
+                    "selected_sources": data_sources,
+                    "unreadable_sources": [],
+                    "skipped_sources": skipped_optional,
+                    "required_sources": required_sources,
+                    "optional_sources": optional_sources,
+                    "required_permission": "read_execute",
+                    "diagnosis_id": "BACKUP-SOURCE-PERM-032",
+                },
+            )
+        src_args = " ".join(shlex.quote(s) for s in data_sources)
+        backup_cmd = f"tar -czf {shlex.quote(str(backup_file_partial))} {src_args}"
+        logger.info("[backup.data.trace] effective_tar_command=%s", backup_cmd)
         backup_result = _run_tar(backup_cmd)
         if (cancel_event and cancel_event.is_set()) or backup_result.get("returncode") == -15:
-            _cleanup_backup_file(backup_file)
+            runtime_markers["abort_reason"] = "cancelled"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
             return _bc(
                 {"status": "cancelled", "message": "Backup abgebrochen", "results": ["⚠️ Abbruch angefordert"], "backup_file": None, "timestamp": timestamp},
                 "backup.cancelled",
                 "info",
+                dict(runtime_markers),
             )
         if backup_result.get("success"):
-            results.append(f"Daten-Backup erstellt: {backup_file}")
-            _make_backup_readable(backup_file)
-            ok_m, det_m = _embed_manifest_after_tar(backup_file)
+            _make_backup_readable(backup_file_partial)
+            ok_m, det_m = _embed_manifest_after_tar(backup_file_partial)
             if not ok_m:
                 if det_m:
                     results.append(det_m)
@@ -1125,11 +1602,43 @@ def _do_backup_logic(
                     "error",
                     {"i18n_key": K_BACKUP_FAILED_MANIFEST_MISSING, "detail": det_m},
                 )
+            ok_rename, rename_err = _finalize_partial_backup(backup_file_partial, backup_file)
+            if not ok_rename:
+                _cleanup_backup_file(backup_file_partial)
+                return _bc(
+                    {
+                        "status": "error",
+                        "message": "Backup fehlgeschlagen",
+                        "results": results + [f"Atomarer Abschluss fehlgeschlagen: {rename_err or 'unbekannt'}"],
+                        "backup_file": None,
+                        "timestamp": timestamp,
+                    },
+                    "backup.finalize_failed",
+                    "error",
+                    {"reason": rename_err or "finalize_failed"},
+                )
+            results.append(f"Daten-Backup erstellt: {backup_file}")
             results.append(f"MANIFEST.json eingebettet und verifiziert: {backup_file}")
+            _record_backup_index_entry(
+                backup_file=backup_file,
+                backup_type="data",
+                target=target,
+                selected_sources=data_sources,
+                manifest_present=True,
+            )
             return _bc(
                 {"status": "success", "message": "Backup erstellt", "results": results, "backup_file": backup_file, "timestamp": timestamp},
                 "backup.success",
                 "success",
+                dict(
+                    {
+                    "selected_sources": data_sources,
+                    "skipped_sources": skipped_optional,
+                    "required_sources": required_sources,
+                    "optional_sources": optional_sources,
+                    },
+                    **runtime_markers,
+                ),
             )
         if _tar_no_space(backup_result):
             free_hint = _fs_free_hint(backup_dir)
@@ -1137,30 +1646,80 @@ def _do_backup_logic(
             if free_hint:
                 msg += f" Freier Speicher: {free_hint}."
             results.append(f"❌ {msg}")
-            _cleanup_backup_file(backup_file)
+            runtime_markers["abort_reason"] = "no_space"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
             return _bc(
-                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
                 "backup.no_space",
                 "error",
-                {"free_hint": free_hint} if free_hint else None,
+                dict({"free_hint": free_hint} if free_hint else {}, **runtime_markers),
             )
         if _is_backup_timeout(backup_result):
             stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Timeout")
             results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
-            _cleanup_backup_file(backup_file)
+            runtime_markers["abort_reason"] = "timeout"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
             return _bc(
-                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
                 "backup.timeout",
                 "error",
+                dict(runtime_markers),
+            )
+        if backup_result.get("returncode") == -16:
+            results.append("Backup abgebrochen: laufende Paket-/Update-Aktivität erkannt")
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
+            return _bc(
+                {"status": "error", "message": "Backup abgebrochen", "results": results, "backup_file": None, "timestamp": timestamp},
+                "backup.blocked_package_activity",
+                "error",
+                dict(
+                    {"active_package_processes": backup_result.get("active_package_processes") or []},
+                    **runtime_markers,
+                ),
+            )
+        stderr_text = (backup_result.get("stderr") or "")
+        denied_paths = _extract_permission_denied_paths(stderr_text)
+        if denied_paths:
+            results.append(f"Nicht lesbare Quellen: {', '.join(denied_paths[:5])}")
+            runtime_markers["abort_reason"] = "source_permission_denied"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
+            return _bc(
+                {
+                    "status": "error",
+                    "message": "Datenquelle nicht lesbar",
+                    "results": results,
+                    "backup_file": None,
+                    "timestamp": timestamp,
+                },
+                "backup.source_permission_denied",
+                "error",
+                dict(
+                    {
+                    "selected_sources": data_sources,
+                    "unreadable_sources": [{"path": p, "reason": "permission_denied"} for p in denied_paths],
+                    "skipped_sources": skipped_optional,
+                    "required_sources": required_sources,
+                    "optional_sources": optional_sources,
+                    "required_permission": "read_execute",
+                    "diagnosis_id": "BACKUP-SOURCE-PERM-032",
+                    },
+                    **runtime_markers,
+                ),
             )
         stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
         results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
-        _cleanup_backup_file(backup_file)
+        runtime_markers["abort_reason"] = "tar_failed"
+        _cleanup_backup_file(backup_file_partial)
+        runtime_markers["backup_finished_at"] = _now_iso()
         return _bc(
-            {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": backup_file, "timestamp": timestamp},
+            {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
             "backup.failed",
             "error",
-            {"stderr_excerpt": str(stderr)[:200]},
+            dict({"stderr_excerpt": str(stderr)[:200]}, **runtime_markers),
         )
 
     return _bc(
@@ -2520,6 +3079,18 @@ async def get_version():
     return {"status": "success", "version": get_pi_installer_version()}
 
 
+@app.get("/api/system/service-conflicts")
+async def get_service_conflicts():
+    """Lesend: parallele pi-installer-/Setuphelfer-Dienste, Port-8000-Inhaber, Empfehlungen (keine Stop-Aktion)."""
+    from core.service_conflict_guard import build_service_conflict_report
+
+    try:
+        port = int(os.environ.get("PI_INSTALLER_BACKEND_PORT", "8000"))
+    except ValueError:
+        port = 8000
+    return {"status": "success", **build_service_conflict_report(port=port)}
+
+
 # ---------- Self-Update: Auf /opt installieren / aktualisieren ----------
 OPT_INSTALL_DIR = get_opt_install_dir()
 
@@ -2986,6 +3557,225 @@ def _validate_backup_dir(path_str: str) -> str:
     if str(resolved) == "/":
         raise ValueError("backup_dir darf nicht / sein")
     return str(resolved)
+
+
+def _detect_active_package_operations() -> list[dict[str, Any]]:
+    """
+    Liefert laufende Paketmanager-/Upgrade-Prozesse (apt, dpkg, unattended-upgrades).
+    Wird als Preflight-Gate vor Backup-Start genutzt.
+    """
+    active: list[dict[str, Any]] = []
+    try:
+        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+            try:
+                pid = int(proc.info.get("pid") or 0)
+                name = str(proc.info.get("name") or "").strip()
+                cmdline = proc.info.get("cmdline") or []
+                cmd_joined = " ".join(str(x) for x in cmdline if x)
+                hay = f"{name} {cmd_joined}".lower()
+
+                # Nicht blockierend: apt transport helper und shutdown-wait helper.
+                if "/usr/lib/apt/methods/" in hay:
+                    continue
+                if "unattended-upgrade-shutdown" in hay:
+                    continue
+
+                # Blockierende Frontend-/Lock-Prozesse.
+                is_blocking = any(
+                    token in hay
+                    for token in (
+                        " apt-get ",
+                        " apt ",
+                        " dpkg ",
+                        "unattended-upgrade",
+                        "apt.systemd.daily",
+                    )
+                ) or name in {"apt", "apt-get", "dpkg", "apt.systemd.daily"}
+
+                if is_blocking:
+                    active.append(
+                        {
+                            "pid": pid,
+                            "name": name,
+                            "cmdline": cmd_joined[:300],
+                        }
+                    )
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+    except Exception:
+        return []
+    # eigene Hilfsprozesse wie "apt list" aus anderen Endpunkten sollen nicht doppelt gewertet werden,
+    # aber für Backup-Preflight gilt konservativ: bei sichtbarer Aktivität blockieren.
+    return active
+
+
+def _validate_restore_target_dir(path_str: str) -> str:
+    """
+    Validiert restore target_dir mit harter Root-/Systempfad-Sperre.
+    Nutzt primär validate_write_target; bei STORAGE-PROTECTION-004 auf /mnt/setuphelfer
+    ist ein kontrollierter Fallback auf lokale Schreibprobe erlaubt.
+    """
+    from core.safe_device import WriteTargetProtectionError, validate_write_target
+
+    resolved = _normalize_path(path_str)
+    if str(resolved) == "/":
+        raise ValueError("RESTORE-RUNTIME-006: restore target darf nicht / sein")
+    if _is_critical_system_path(resolved):
+        raise ValueError("RESTORE-RUNTIME-006: restore target ist kritischer Systempfad")
+    if str(resolved).startswith("/media/") or str(resolved).startswith("/run/media/"):
+        raise ValueError("STORAGE-PROTECTION-005: restore target unter /media oder /run/media ist nicht erlaubt")
+    if not _is_under_allowed_root(resolved):
+        raise ValueError("STORAGE-PROTECTION-004: restore target liegt außerhalb der Allowlist")
+
+    fallback_ok = False
+    try:
+        validate_write_target(resolved, runner=None)
+    except WriteTargetProtectionError as e:
+        if e.diagnosis_id == "STORAGE-PROTECTION-004" and str(resolved).startswith("/mnt/setuphelfer/"):
+            fallback_ok = True
+        else:
+            raise ValueError(f"{e.diagnosis_id}: {e}") from e
+
+    p = Path(resolved)
+    try:
+        p.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        raise ValueError(f"PERM-GROUP-008: restore target konnte nicht angelegt werden ({e})") from e
+    probe = p / f".restore-probe-{os.getpid()}"
+    try:
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+    except Exception as e:
+        raise ValueError(f"PERM-GROUP-008: restore target nicht beschreibbar ({e})") from e
+
+    if fallback_ok:
+        logger.warning("restore_target_validation_fallback", extra={"target": str(resolved), "reason": "storage-protection-004-mnt-setuphelfer"})
+    return str(resolved)
+
+
+def _private_tmp_isolation_active() -> bool:
+    """
+    Ermittelt heuristisch, ob der laufende Prozess in einem systemd-PrivateTmp läuft.
+    """
+    try:
+        mi = Path("/proc/self/mountinfo")
+        if not mi.exists():
+            return False
+        for line in mi.read_text(encoding="utf-8", errors="ignore").splitlines():
+            if " /tmp " in f" {line} " and "systemd-private-" in line:
+                return True
+    except Exception:
+        return False
+    return False
+
+
+def _backup_index_path() -> Path:
+    base = (
+        os.environ.get("SETUPHELFER_STATE_DIR")
+        or os.environ.get("PI_INSTALLER_STATE_DIR")
+        or "/var/lib/setuphelfer"
+    )
+    return Path(base).resolve() / "backup-index.json"
+
+
+def _load_backup_index() -> list[dict[str, Any]]:
+    p = _backup_index_path()
+    if not p.exists():
+        return []
+    try:
+        data = json.loads(p.read_text(encoding="utf-8") or "[]")
+    except Exception:
+        return []
+    if isinstance(data, dict):
+        items = data.get("backups")
+        return items if isinstance(items, list) else []
+    return data if isinstance(data, list) else []
+
+
+def _save_backup_index(entries: list[dict[str, Any]]) -> None:
+    p = _backup_index_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"schema": 1, "updated_at": datetime.now(timezone.utc).isoformat(), "backups": entries}
+    p.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def _record_backup_index_entry(
+    *,
+    backup_file: str,
+    backup_type: str,
+    target: str,
+    selected_sources: Optional[list[str]] = None,
+    manifest_present: Optional[bool] = None,
+) -> None:
+    """
+    Schreibt/aktualisiert read-only List-Index nach erfolgreichem Backup.
+    Keine Secrets, nur Metadaten.
+    """
+    try:
+        bf = Path(backup_file)
+        size_bytes = bf.stat().st_size if bf.exists() else 0
+        encrypted = backup_file.endswith(".gpg") or backup_file.endswith(".enc") or ".tar.gz.gpg" in backup_file or ".tar.gz.enc" in backup_file
+        entry = {
+            "backup_file": backup_file,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "encrypted": bool(encrypted),
+            "size_bytes": int(size_bytes),
+            "type": str(backup_type or ""),
+            "target": str(target or ""),
+            "source_summary": {"selected_sources": list(selected_sources or [])},
+            "manifest_present": manifest_present if manifest_present is not None else None,
+            "verification_status": "unknown",
+            "storage_path": str(bf.parent),
+        }
+        entries = _load_backup_index()
+        keep: list[dict[str, Any]] = [e for e in entries if str(e.get("backup_file") or "") != backup_file]
+        keep.append(entry)
+        keep = sorted(keep, key=lambda x: str(x.get("created_at") or ""), reverse=True)[:500]
+        _save_backup_index(keep)
+    except Exception:
+        logger.exception("backup_index_update_failed")
+
+
+def _validate_backup_list_dir(path_str: str) -> tuple[str, dict]:
+    """
+    Validierung für reines Listen von Backups (kein Schreibtest).
+    Nutzt dieselbe Mount-Auflösung wie Schreibpfade, bleibt aber read-only.
+    """
+    raw = Path((path_str or "").strip())
+    if not str(raw):
+        raise ValueError("STORAGE-PROTECTION-004: leerer Listenpfad")
+    if not raw.is_absolute():
+        raise ValueError("STORAGE-PROTECTION-004: Listenpfad muss absolut sein")
+    # Für list bewusst kein Path.resolve(): kann bei automount-Pfaden blockieren.
+    resolved = Path(os.path.normpath(str(raw)))
+    if _is_critical_system_path(resolved):
+        raise ValueError(
+            "STORAGE-PROTECTION-004: kritischer Systempfad ist nicht als Backup-Listenpfad erlaubt"
+        )
+    if str(resolved) == "/":
+        raise ValueError("STORAGE-PROTECTION-001: Root ist kein erlaubter Backup-Listenpfad")
+    if str(resolved).startswith("/media/") or str(resolved).startswith("/run/media/"):
+        raise ValueError("STORAGE-PROTECTION-005: Listenpfad unter /media oder /run/media ist nicht erlaubt")
+    if not _is_under_allowed_root(resolved):
+        raise ValueError("STORAGE-PROTECTION-004: Listenpfad liegt außerhalb der Allowlist")
+    return str(resolved), {"target": str(resolved), "validation_mode": "read_only"}
+
+
+def _backup_create_needs_sudo_precheck(backup_type: str, target: str) -> bool:
+    """
+    True, wenn /api/backup/create vor dem Tar einen sudo-Sanity-Check und sudo-mkdir braucht.
+    data + local auf Allowlist-Zielen: kein Gate (Tar ohne sudo, FIX-2 / NoNewPrivileges).
+    """
+    bt = (backup_type or "").strip().lower()
+    tgt = (target or "local").strip().lower()
+    return not (bt == "data" and tgt == "local")
+
+
+def _sudo_n_true_failed_due_to_nnp(sudo_test: dict) -> bool:
+    combined = ((sudo_test.get("stderr") or "") + "\n" + (sudo_test.get("stdout") or "")).lower()
+    needles = ("no new privileges", "keine neuen privilegien", "nnp")
+    return any(n in combined for n in needles)
+
 
 # ==================== Hilfsfunktionen ====================
 
@@ -8540,6 +9330,7 @@ import shutil
 import subprocess
 import time
 import glob
+import pwd
 from pathlib import Path
 
 CFG = Path("__SETUPHELFER_BACKUP_JSON__")
@@ -8678,6 +9469,127 @@ def local_verify_gzip(path):
     r = run_cmd(f"tar -tzf {shlex.quote(str(path))} >/dev/null 2>&1")
     return r.returncode == 0
 
+def is_readable_data_source(path):
+    try:
+        rp = path.resolve()
+    except Exception as e:
+        return False, str(e)
+    try:
+        if not rp.exists() or not rp.is_dir():
+            return False, "missing or not dir"
+    except Exception as e:
+        return False, str(e)
+    if not os.access(str(rp), os.R_OK | os.X_OK):
+        return False, "no access"
+    try:
+        with os.scandir(rp):
+            pass
+    except Exception as e:
+        return False, str(e)
+    return True, ""
+
+def service_user_home_path():
+    try:
+        return Path(pwd.getpwuid(os.geteuid()).pw_dir)
+    except Exception:
+        return Path.home()
+
+def split_configured_data_sources(raw):
+    return [p.strip() for p in str(raw or '').replace(':', ',').replace(';', ',').split(',') if p.strip()]
+
+def allowed_data_source_path(p):
+    try:
+        rp = p.resolve()
+    except Exception:
+        return False
+    try:
+        allow_root = Path('/mnt/setuphelfer').resolve()
+    except Exception:
+        return False
+    return rp == allow_root or allow_root in rp.parents
+
+def configured_data_backup_sources():
+    raw = (os.environ.get('SETUPHELFER_DATA_BACKUP_SOURCES') or '').strip()
+    if not raw:
+        return []
+    out = []
+    seen = set()
+    for item in split_configured_data_sources(raw):
+        if item in seen:
+            continue
+        seen.add(item)
+        out.append(Path(item))
+    return out
+
+def path_under_opt_tree(p):
+    try:
+        rp = p.resolve()
+    except Exception:
+        return True
+    try:
+        opt_root = Path("/opt").resolve()
+    except Exception:
+        return False
+    return rp == opt_root or opt_root in rp.parents
+
+def plan_data_backup_sources():
+    configured = configured_data_backup_sources()
+    required = configured if configured else [service_user_home_path()]
+    optional = []
+    includes = []
+    skipped = []
+    unreadable_req = []
+    seen = set()
+
+    def add_inc(p):
+        s = str(p.resolve())
+        if s in seen:
+            return
+        seen.add(s)
+        includes.append(s)
+
+    for candidate in required:
+        if path_under_opt_tree(candidate):
+            unreadable_req.append({"path": str(candidate), "reason": "type=data excludes /opt tree"})
+            continue
+        if not allowed_data_source_path(candidate):
+            unreadable_req.append({"path": str(candidate), "reason": "type=data source outside allowlist (/mnt/setuphelfer)"})
+            continue
+        ok, reason = is_readable_data_source(candidate)
+        if ok:
+            resolved = candidate.resolve()
+            if path_under_opt_tree(resolved):
+                unreadable_req.append({"path": str(candidate), "reason": "type=data excludes /opt tree"})
+                continue
+            if not allowed_data_source_path(resolved):
+                unreadable_req.append({"path": str(candidate), "reason": "type=data source outside allowlist (/mnt/setuphelfer)"})
+                continue
+            add_inc(candidate)
+        else:
+            unreadable_req.append({"path": str(candidate), "reason": reason or "not readable"})
+
+    for candidate in optional:
+        if path_under_opt_tree(candidate):
+            skipped.append({"path": str(candidate), "reason": "type=data excludes /opt tree"})
+            continue
+        if not allowed_data_source_path(candidate):
+            skipped.append({"path": str(candidate), "reason": "type=data source outside allowlist (/mnt/setuphelfer)"})
+            continue
+        ok, reason = is_readable_data_source(candidate)
+        if ok:
+            resolved = candidate.resolve()
+            if path_under_opt_tree(resolved):
+                skipped.append({"path": str(candidate), "reason": "type=data excludes /opt tree"})
+                continue
+            if not allowed_data_source_path(resolved):
+                skipped.append({"path": str(candidate), "reason": "type=data source outside allowlist (/mnt/setuphelfer)"})
+                continue
+            add_inc(candidate)
+        else:
+            skipped.append({"path": str(candidate), "reason": reason or "optional unreadable"})
+
+    return includes, skipped, unreadable_req
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rule", required=False, default="", help="rule id")
@@ -8728,7 +9640,12 @@ def main():
             r = tar_create(out, ["/home", "/etc", "/var/www", "/opt"], exclude_dir=backup_dir, newer_epoch=int(last_m), full_system=False)
     elif rtype == "data":
         out = f"{backup_dir}/pi-backup-data-{rid}-{ts}.tar.gz"
-        r = tar_create(out, ["/home", "/var/www", "/opt"], exclude_dir=backup_dir, full_system=False)
+        inc, _skipped_ds, unread_req = plan_data_backup_sources()
+        if unread_req:
+            raise SystemExit("data backup: required source unreadable: " + str(unread_req))
+        if not inc:
+            raise SystemExit("data backup: no readable sources (check home and optional /var/www)")
+        r = tar_create(out, inc, exclude_dir=backup_dir, full_system=False)
     elif rtype == "personal":
         ds_id = rule.get("dataset") or "personal_default"
         ds = (cfg.get("datasets") or {}).get(ds_id) if isinstance(cfg.get("datasets"), dict) else None
@@ -11426,23 +12343,27 @@ async def create_backup(request: Request):
             data = await request.json()
         except Exception:
             data = {}
+        data = _normalize_backup_create_crypto_payload(data if isinstance(data, dict) else {})
+        encrypt_requested = bool((data.get("encryption_method") or "").strip())
+        enc_flag = data.get("encryption")
+        wants_enc_flag = enc_flag is True or (isinstance(enc_flag, str) and enc_flag.strip().lower() in ("true", "1", "yes"))
+        if wants_enc_flag and not (data.get("encryption_key") or "").strip():
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": "Verschlüsselung angefordert, aber kein Passwort/Schlüssel (password oder encryption_key).",
+                    },
+                    "backup.encrypt_password_required",
+                    "error",
+                ),
+            )
 
         sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
         backup_type = (data.get("type", "full") or "full").strip()
         run_async = bool(data.get("async", False))
         target = (data.get("target") or "local").strip()  # local | cloud_only | local_and_cloud
-
-        if not sudo_password:
-            sudo_test = run_command("sudo -n true", sudo=False)
-            if not sudo_test.get("success"):
-                return JSONResponse(
-                    status_code=200,
-                    content=with_backup_contract(
-                        {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
-                        "backup.sudo_required",
-                        "error",
-                    ),
-                )
 
         backup_dir = data.get("backup_dir", "/mnt/setuphelfer/backups")
         try:
@@ -11458,19 +12379,86 @@ async def create_backup(request: Request):
                 ),
             )
 
-        timestamp = run_command("date +%Y%m%d_%H%M%S").get("stdout", "").strip()
-
-        mkdir_result = run_command(f"mkdir -p {shlex.quote(backup_dir)}", sudo=True, sudo_password=sudo_password, timeout=60)
-        if not mkdir_result.get("success"):
+        active_pkg_ops = _detect_active_package_operations()
+        if active_pkg_ops:
+            logger.warning(
+                "backup_preflight_blocked_package_activity",
+                extra={"action": "backup_preflight", "active_package_processes": active_pkg_ops[:5]},
+            )
             return JSONResponse(
                 status_code=200,
                 content=with_backup_contract(
-                    {"status": "error", "message": f"Backup-Verzeichnis konnte nicht erstellt werden: {backup_dir}"},
-                    "backup.mkdir_failed",
+                    {
+                        "status": "error",
+                        "message": "Backup-Start blockiert: laufende Paket-/Update-Aktivität erkannt",
+                    },
+                    "backup.blocked_package_activity",
                     "error",
-                    {"path": backup_dir},
+                    {
+                        "diagnosis_id": "UPDATE-CONFLICT-041",
+                        "active_package_processes": active_pkg_ops[:10],
+                    },
                 ),
             )
+
+        needs_sudo_precheck = _backup_create_needs_sudo_precheck(backup_type, target)
+
+        if needs_sudo_precheck and not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test.get("success"):
+                if _sudo_n_true_failed_due_to_nnp(sudo_test):
+                    return JSONResponse(
+                        status_code=200,
+                        content=with_backup_contract(
+                            {
+                                "status": "error",
+                                "message": "sudo ist in diesem Dienstkontext nicht verfügbar (NoNewPrivileges). / sudo is not available in this service context (NoNewPrivileges).",
+                                "requires_sudo_password": False,
+                            },
+                            "backup.sudo_blocked_by_nnp",
+                            "error",
+                            {"diagnosis_id": "SYSTEMD-NNP-031"},
+                        ),
+                    )
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                        "backup.sudo_required",
+                        "error",
+                    ),
+                )
+
+        timestamp = run_command("date +%Y%m%d_%H%M%S").get("stdout", "").strip()
+
+        if needs_sudo_precheck:
+            mkdir_result = run_command(f"mkdir -p {shlex.quote(backup_dir)}", sudo=True, sudo_password=sudo_password, timeout=60)
+            if not mkdir_result.get("success"):
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": f"Backup-Verzeichnis konnte nicht erstellt werden: {backup_dir}"},
+                        "backup.mkdir_failed",
+                        "error",
+                        {"path": backup_dir},
+                    ),
+                )
+        else:
+            try:
+                os.makedirs(backup_dir, exist_ok=True)
+            except OSError as e:
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": f"Backup-Verzeichnis konnte nicht erstellt oder nicht beschrieben werden: {backup_dir}",
+                        },
+                        "backup.mkdir_failed",
+                        "error",
+                        {"path": backup_dir, "reason": str(e), "diagnosis_id": "PERM-GROUP-008"},
+                    ),
+                )
 
         # precompute backup file name for UI
         bf = None
@@ -11648,6 +12636,7 @@ async def create_backup(request: Request):
                         backup_type=backup_type,
                         backup_dir=backup_dir,
                         timestamp=timestamp,
+                        target=target,
                         last_backup_hint=last_hint,
                         cancel_event=cancel_ev,
                         job=BACKUP_JOBS[job_id],
@@ -11681,12 +12670,37 @@ async def create_backup(request: Request):
                                 BACKUP_JOBS[job_id]["encrypted"] = True
                                 BACKUP_JOBS[job_id]["results"].append(f"verschlüsselt: {enc_file}")
                                 logger.info(f"Backup verschlüsselt: {enc_file}")
+                            elif encrypt_requested:
+                                try:
+                                    if backup_file_path and Path(backup_file_path).exists():
+                                        Path(backup_file_path).unlink()
+                                except OSError:
+                                    pass
+                                BACKUP_JOBS[job_id]["status"] = "error"
+                                BACKUP_JOBS[job_id]["backup_file"] = None
+                                BACKUP_JOBS[job_id]["message"] = f"Verschlüsselung fehlgeschlagen: {enc_error or 'Unbekannter Fehler'}"
+                                BACKUP_JOBS[job_id]["code"] = "backup.encrypt_failed"
+                                BACKUP_JOBS[job_id]["severity"] = "error"
+                                BACKUP_JOBS[job_id]["results"].append(f"Verschlüsselung fehlgeschlagen: {enc_error}")
                             else:
                                 BACKUP_JOBS[job_id]["results"].append(f"Verschlüsselung fehlgeschlagen: {enc_error}")
                                 BACKUP_JOBS[job_id]["warning"] = f"Verschlüsselung fehlgeschlagen: {enc_error}"
                         except Exception as e:
-                            BACKUP_JOBS[job_id]["results"].append(f"Verschlüsselung Fehler: {str(e)}")
-                            BACKUP_JOBS[job_id]["warning"] = f"Verschlüsselung Fehler: {str(e)}"
+                            if encrypt_requested:
+                                try:
+                                    if backup_file_path and Path(backup_file_path).exists():
+                                        Path(backup_file_path).unlink()
+                                except OSError:
+                                    pass
+                                BACKUP_JOBS[job_id]["status"] = "error"
+                                BACKUP_JOBS[job_id]["backup_file"] = None
+                                BACKUP_JOBS[job_id]["message"] = f"Verschlüsselung fehlgeschlagen: {str(e)}"
+                                BACKUP_JOBS[job_id]["code"] = "backup.encrypt_failed"
+                                BACKUP_JOBS[job_id]["severity"] = "error"
+                                BACKUP_JOBS[job_id]["results"].append(f"Verschlüsselung Fehler: {str(e)}")
+                            else:
+                                BACKUP_JOBS[job_id]["results"].append(f"Verschlüsselung Fehler: {str(e)}")
+                                BACKUP_JOBS[job_id]["warning"] = f"Verschlüsselung Fehler: {str(e)}"
                     else:
                         BACKUP_JOBS[job_id]["backup_file"] = backup_file_path
 
@@ -11873,6 +12887,7 @@ async def create_backup(request: Request):
             backup_type=backup_type,
             backup_dir=backup_dir,
             timestamp=timestamp,
+            target=target,
             last_backup_hint=last_hint,
         )
         
@@ -11894,10 +12909,50 @@ async def create_backup(request: Request):
                     backup_file_path = enc_file
                     result["backup_file"] = enc_file
                     result["results"] = (result.get("results") or []) + [f"verschlüsselt: {enc_file}"]
+                    result["encrypted"] = True
+                elif encrypt_requested:
+                    try:
+                        if backup_file_path and Path(backup_file_path).exists():
+                            Path(backup_file_path).unlink()
+                    except OSError:
+                        pass
+                    result = {
+                        "status": "error",
+                        "message": f"Verschlüsselung fehlgeschlagen: {enc_error or 'Unbekannter Fehler'}",
+                        "results": result.get("results") or [],
+                        "backup_file": None,
+                        "timestamp": timestamp,
+                    }
+                    result = with_backup_contract(
+                        result,
+                        "backup.encrypt_failed",
+                        "error",
+                        {"reason": (enc_error or "")[:300]},
+                    )
                 else:
                     result["warning"] = (result.get("warning") or "") + f" Verschlüsselung fehlgeschlagen: {enc_error}"
             except Exception as e:
-                result["warning"] = (result.get("warning") or "") + f" Verschlüsselung Fehler: {str(e)}"
+                if encrypt_requested:
+                    try:
+                        if backup_file_path and Path(backup_file_path).exists():
+                            Path(backup_file_path).unlink()
+                    except OSError:
+                        pass
+                    result = {
+                        "status": "error",
+                        "message": f"Verschlüsselung fehlgeschlagen: {str(e)}",
+                        "results": result.get("results") or [],
+                        "backup_file": None,
+                        "timestamp": timestamp,
+                    }
+                    result = with_backup_contract(
+                        result,
+                        "backup.encrypt_failed",
+                        "error",
+                        {"reason": str(e)[:300]},
+                    )
+                else:
+                    result["warning"] = (result.get("warning") or "") + f" Verschlüsselung Fehler: {str(e)}"
         
         # Cloud-Upload nur bei explizitem Cloud-Ziel; bei target="local" (z.B. USB) nie hochladen
         cloud_should_upload = target in ("cloud_only", "local_and_cloud")
@@ -11946,75 +13001,123 @@ async def create_backup(request: Request):
 async def list_backups(backup_dir: str = "/mnt/setuphelfer/backups"):
     """Liste aller Backups"""
     try:
+        logger.info("backup_list start", extra={"action": "backup_list", "backup_dir": str(backup_dir)})
+        details = {}
         try:
-            backup_dir = _validate_backup_dir(backup_dir)
+            backup_dir, details = _validate_backup_list_dir(backup_dir)
         except Exception as ve:
+            logger.error("backup_list validate_error", extra={"action": "backup_list", "backup_dir": str(backup_dir), "error": str(ve)[:300]})
+            reason = str(ve)
+            diagnosis_id = ""
+            if "STORAGE-PROTECTION-005" in reason:
+                diagnosis_id = "STORAGE-PROTECTION-005"
+            elif "STORAGE-PROTECTION-004" in reason:
+                diagnosis_id = "STORAGE-PROTECTION-004"
             return JSONResponse(
                 status_code=200,
                 content=with_backup_contract(
                     {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}", "backups": []},
                     "backup.path_invalid",
                     "error",
-                    {"reason": str(ve)},
+                    {
+                        "reason": reason,
+                        "diagnosis_id": diagnosis_id,
+                        "target": details.get("target", backup_dir),
+                        "validation_mode": "read_only",
+                    },
                 ),
             )
 
-        p = Path(backup_dir)
-        # Wenn das Verzeichnis nicht existiert, einfach leer zurückgeben
-        if not p.exists():
-            return with_backup_contract({"status": "success", "backups": []}, "backup.list_ok", "success")
+        try:
+            idx = await asyncio.wait_for(asyncio.to_thread(_load_backup_index), timeout=1.0)
+        except TimeoutError:
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": "Backup-Index konnte nicht rechtzeitig gelesen werden.",
+                        "backups": [],
+                    },
+                    "backup.list_timeout",
+                    "error",
+                    {"path": backup_dir, "phase": "index_read", "timeout_seconds": 1},
+                ),
+            )
 
-        backups = []
-        # Robust: Python glob statt Shell-Glob (funktioniert auch mit Spaces)
-        # Suche auch nach verschlüsselten Backups (.tar.gz.gpg, .tar.gz.enc)
-        all_backup_files = list(p.glob("*.tar.gz")) + list(p.glob("*.tar.gz.gpg")) + list(p.glob("*.tar.gz.enc"))
-        for f in sorted(all_backup_files):
-            try:
-                st = f.stat()
-                size = st.st_size
-                mtime = st.st_mtime
+        if not idx:
+            return with_backup_contract(
+                {
+                    "status": "success",
+                    "backups": [],
+                    "count": 0,
+                    "path": backup_dir,
+                    "validation_mode": "read_only",
+                    "index_available": False,
+                    "message": "Noch kein Backup-Index vorhanden",
+                },
+                "backup.list_ok",
+                "success",
+            )
 
-                def human(n: int) -> str:
-                    for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
-                        if n < 1024:
-                            return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
-                        n /= 1024
-                    return f"{n:.1f} PB"
-
-                # einfache Datumsdarstellung (lokal)
-                date_str = run_command(f"date -d @{int(mtime)} '+%Y-%m-%d %H:%M:%S'").get("stdout", "").strip()
-                if not date_str:
-                    date_str = ""
-
-                backup_info = {
-                    "file": str(f),
-                    "size": human(size),
-                    "date": date_str,
-                    "encrypted": False,
-                }
-                # Prüfe auf Verschlüsselung (auch verschachtelte Endungen wie .tar.gz.gpg)
-                filename = str(f)
-                if filename.endswith('.gpg') or filename.endswith('.enc') or '.tar.gz.gpg' in filename or '.tar.gz.enc' in filename:
-                    backup_info["encrypted"] = True
-                # Prüfe auf Cloud-Backup (Dateiname enthält möglicherweise Hinweise)
-                if 'cloud' in str(f).lower() or 'remote' in str(f).lower():
-                    backup_info["location"] = "Cloud"
-                else:
-                    backup_info["location"] = "Lokal"
-                backups.append(backup_info)
-            except Exception:
+        wanted_prefix = backup_dir.rstrip("/") + "/"
+        matched = []
+        for e in idx:
+            bf = str(e.get("backup_file") or "")
+            sp = str(e.get("storage_path") or "")
+            if not bf:
                 continue
+            if not (sp == backup_dir or bf.startswith(wanted_prefix)):
+                continue
+            ext_ok = bf.endswith(".tar.gz") or bf.endswith(".tar.gz.gpg") or bf.endswith(".tar.gz.enc")
+            if not ext_ok:
+                continue
+            row = {
+                "file": bf,
+                "size_bytes": int(e.get("size_bytes") or 0),
+                "date": str(e.get("created_at") or ""),
+                "encrypted": bool(e.get("encrypted")),
+                "location": "Lokal",
+                "status": "unknown",
+                "type": str(e.get("type") or ""),
+            }
+            try:
+                exists = await asyncio.wait_for(asyncio.to_thread(Path(bf).exists), timeout=0.2)
+                row["status"] = "available" if exists else "missing"
+            except TimeoutError:
+                row["status"] = "unknown"
+            matched.append(row)
 
-        return with_backup_contract({"status": "success", "backups": backups}, "backup.list_ok", "success")
+        logger.info("backup_list index_ok", extra={"action": "backup_list", "count": len(matched), "backup_dir": backup_dir})
+        return with_backup_contract(
+            {
+                "status": "success",
+                "backups": matched,
+                "count": len(matched),
+                "path": backup_dir,
+                "validation_mode": "read_only",
+                "index_available": True,
+            },
+            "backup.list_ok",
+            "success",
+        )
     except Exception as e:
         logger.error("Backup-Liste fehlgeschlagen", extra={"action": "backup_list", "error": str(e)[:300]}, exc_info=True)
+        err_code = "backup.list_failed"
+        detail = str(e)[:300]
+        cmd = ""
+        tsec = None
+        if "Command" in detail and "timed out" in detail:
+            err_code = "backup.list_timeout"
+            cmd = detail
+            tsec = 3
         return JSONResponse(
             status_code=200,
             content=with_backup_contract(
                 {"status": "error", "message": str(e)[:500], "backups": []},
-                "backup.list_failed",
+                err_code,
                 "error",
-                {"detail": str(e)[:300]},
+                {"detail": detail, "command": cmd, "timeout_seconds": tsec},
             ),
         )
 
@@ -12027,9 +13130,9 @@ async def verify_backup(request: Request):
     except Exception:
         data = {}
 
-    backup_file = (data.get("backup_file") or "").strip()
+    backup_file = (data.get("backup_file") or data.get("file") or "").strip()
     mode = (data.get("mode") or "basic").strip().lower()
-    encryption_key = data.get("encryption_key") or None
+    encryption_key = data.get("encryption_key") or data.get("password") or None
 
     if mode not in ("basic", "deep"):
         mode = "basic"
@@ -12118,6 +13221,28 @@ async def verify_backup(request: Request):
             ),
         )
 
+    if str(bf).endswith(".partial"):
+        _merge_backup_realtest_state(
+            last_verify_ok=False,
+            last_verify_path=str(bf),
+            last_failure_kind="verify_partial_blocked",
+            last_failure_message="Partial-Archiv ist kein gültiges Backup",
+        )
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Partial-Archive dürfen nicht verifiziert werden",
+                    "data": {"results": {"valid": False, "file": str(bf), "error": "partial_archive_not_allowed"}},
+                },
+                "backup.verify_partial_not_allowed",
+                "error",
+                {"file": str(bf), "diagnosis_id": "BACKUP-ARCHIVE-003"},
+            ),
+        )
+
     # Prüfe, ob verschlüsselt
     is_encrypted = backup_file.endswith('.gpg') or backup_file.endswith('.enc') or '.tar.gz.gpg' in backup_file or '.tar.gz.enc' in backup_file
 
@@ -12153,7 +13278,7 @@ async def verify_backup(request: Request):
                     },
                     "backup.verify_archive_unreadable",
                     "error",
-                    {"reason": str(e)[:200]},
+                    {"reason": str(e)[:200], "diagnosis_id": "BACKUP-ARCHIVE-002"},
                 ),
             )
         if arch_analysis.get("blocked_entries"):
@@ -12169,27 +13294,113 @@ async def verify_backup(request: Request):
                 "Backup-Verify: gesperrte Archiv-Einträge",
                 extra={"action": "backup_verify", "path": str(bf), "blocked": arch_analysis.get("blocked_entries")},
             )
-            return with_backup_contract(
-                {
-                    "status": "success",
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Archiv enthält gesperrte Einträge (Traversal, absolute Pfade oder nicht unterstützte Sonderdateien wie Geräte/FIFOs).",
+                        "data": {"results": {"valid": False, "blocked_entries": arch_analysis.get("blocked_entries"), "analysis": arch_analysis}},
+                        "results": {
+                            "file": str(bf),
+                            "exists": True,
+                            "encrypted": False,
+                            "valid": False,
+                            "blocked_entries": arch_analysis.get("blocked_entries"),
+                            "analysis": arch_analysis,
+                            "error": "Gesperrte Archiv-Einträge",
+                            "verification_mode": mode,
+                        },
+                    },
+                    "backup.verify_blocked_entries",
+                    "error",
+                    {"diagnosis_id": "RESTORE-PATH-004"},
+                ),
+            )
+        plain_arch_analysis = arch_analysis
+
+        if mode == "deep":
+            from core.backup_recovery_i18n import (
+                K_ARCHIVE_CORRUPT,
+                K_EXTRACT_FAILED,
+                K_MISSING_MANIFEST,
+                K_VERIFY_INTEGRITY_FAILED,
+            )
+            from modules.backup_verify import verify_deep
+
+            vd_ok, vd_key, vd_details = verify_deep(
+                str(bf),
+                verify_checksums=True,
+                strict_archive_manifest=False,
+                try_loop_mount_image=False,
+                runner=None,
+            )
+            if not vd_ok:
+                details_err: dict = vd_details or {}
+                errs = details_err.get("errors") or []
+                err_msg = ""
+                if details_err.get("gzip_error"):
+                    err_msg = str(details_err.get("gzip_error"))[:300]
+                elif errs:
+                    err_msg = str((errs[0] or {}).get("detail") or (errs[0] or {}).get("kind") or "")[:300]
+                else:
+                    err_msg = str(details_err.get("error") or vd_key or "")[:300]
+                diag_id: Optional[str] = None
+                api_code = "backup.verify_failed"
+                if vd_key == K_MISSING_MANIFEST:
+                    api_code = "backup.failed_manifest_missing"
+                    diag_id = "BACKUP-MANIFEST-001"
+                elif vd_key == K_VERIFY_INTEGRITY_FAILED:
+                    api_code = "backup.verify_integrity_failed"
+                    if any(isinstance(x, dict) and x.get("kind") == "hash_mismatch" for x in errs):
+                        diag_id = "BACKUP-HASH-003"
+                    else:
+                        diag_id = "BACKUP-ARCHIVE-002"
+                elif vd_key == K_ARCHIVE_CORRUPT:
+                    api_code = "backup.verify_archive_unreadable"
+                    diag_id = "BACKUP-ARCHIVE-002"
+                elif vd_key == K_EXTRACT_FAILED:
+                    api_code = "backup.verify_archive_unreadable"
+                    diag_id = "BACKUP-ARCHIVE-002"
+
+                _merge_backup_realtest_state(
+                    last_verify_ok=False,
+                    last_verify_path=str(bf),
+                    last_failure_kind="verify_deep_integrity",
+                    last_failure_message=err_msg[:300],
+                )
+                msg = tr(vd_key) if vd_key else "Tiefenprüfung fehlgeschlagen"
+                res_payload = {
+                    "status": "error",
                     "api_status": "error",
-                    "message": "Backup-Archiv enthält gesperrte Einträge (Traversal, absolute Pfade oder nicht unterstützte Sonderdateien wie Geräte/FIFOs).",
-                    "data": {"results": {"valid": False, "blocked_entries": arch_analysis.get("blocked_entries"), "analysis": arch_analysis}},
+                    "message": msg,
+                    "data": {
+                        "results": {
+                            "valid": False,
+                            "file": str(bf),
+                            "exists": True,
+                            "encrypted": False,
+                            "error": err_msg,
+                            "verification_mode": mode,
+                            "verify_details": details_err,
+                        }
+                    },
                     "results": {
                         "file": str(bf),
                         "exists": True,
                         "encrypted": False,
                         "valid": False,
-                        "blocked_entries": arch_analysis.get("blocked_entries"),
-                        "analysis": arch_analysis,
-                        "error": "Gesperrte Archiv-Einträge",
+                        "error": err_msg,
                         "verification_mode": mode,
+                        "verify_details": details_err,
                     },
-                },
-                "backup.verify_blocked_entries",
-                "error",
-            )
-        plain_arch_analysis = arch_analysis
+                }
+                det_kw = {"diagnosis_id": diag_id, "verify_key": vd_key} if diag_id else {"verify_key": vd_key}
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(res_payload, api_code, "error", det_kw),
+                )
 
     results = {
         "file": backup_file,
@@ -12306,6 +13517,8 @@ async def verify_backup(request: Request):
                 "backup.verify_module_load_failed",
                 "error",
             )
+
+        module.run_command = run_command
 
         # Temporäres Verzeichnis für Entschlüsselung
         tmp_root = Path("/tmp/pi-installer-backup-verify")
@@ -12715,10 +13928,18 @@ def _analyze_tar_members(backup_file: str) -> dict:
             gnu_meta_types.add(getattr(tarfile, _attr))
 
     def is_blocked_path(name: str) -> bool:
-        n = name.lstrip("./")
-        if not n:
+        # Nicht name.lstrip("./") verwenden: würde "../../../tmp/a" fälschlich zu "tmp/a" kollabieren.
+        import posixpath
+
+        raw = name or ""
+        if not raw.strip():
             return True
-        if n.startswith("/") or n.startswith("../") or "/../" in f"/{n}/":
+        if raw.startswith("/") or posixpath.isabs(raw):
+            return True
+        for seg in raw.split("/"):
+            if seg == "..":
+                return True
+        if "/../" in f"/{raw}/":
             return True
         return False
 
@@ -12762,11 +13983,30 @@ async def restore_backup(request: Request):
         except Exception:
             data = {}
 
-        backup_file = (data.get("backup_file") or "").strip()
+        backup_file = (data.get("backup_file") or data.get("file") or "").strip()
         mode = (data.get("mode") or "preview").strip().lower()
+        target_dir = (data.get("target_dir") or "").strip()
+        restore_key = data.get("encryption_key") or data.get("password")
+        if isinstance(restore_key, str):
+            restore_key = restore_key.strip() or None
+        else:
+            restore_key = None
 
-        if mode not in ("preview", "root", "dry-run"):
-            mode = "preview"
+        if mode not in ("preview", "restore"):
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Ungültiger Restore-Modus. Erlaubt sind nur 'preview' oder 'restore'.",
+                        "data": {"mode": mode},
+                    },
+                    "backup.restore_invalid_mode",
+                    "error",
+                    {"mode": mode},
+                ),
+            )
 
         if not backup_file:
             return JSONResponse(
@@ -12847,116 +14087,94 @@ async def restore_backup(request: Request):
                 ),
             )
 
-        # Analyse des Archivs – gemeinsam für Preview/Root
+        import shutil as _shutil_restore
+        import tempfile as _tmpfile_restore
+
+        decrypt_temp_dir: Optional[str] = None
+        work_archive = str(bf)
         try:
-            analysis = _analyze_tar_members(str(bf))
-        except Exception as e:
-            # Kein last_preview_ok / last_dry_run_ok überschreiben: Analysefehler ist kein fehlgeschlagener Lauf.
-            _merge_backup_realtest_state(
-                last_failure_kind="restore_analyze_fail",
-                last_failure_message=str(e)[:300],
-            )
-            return JSONResponse(
-                status_code=200,
-                content=with_backup_contract(
-                    {
-                        "status": "error",
-                        "api_status": "error",
-                        "message": f"Backup-Archiv konnte nicht analysiert werden: {str(e)}",
-                        "data": {"analysis_error": str(e)[:300]},
-                    },
-                    "backup.restore_analyze_failed",
-                    "error",
-                    {"reason": str(e)[:300]},
-                ),
-            )
-
-        if analysis["blocked_entries"]:
-            logger.warning(
-                "Restore blockiert: problematische Archiv-Einträge",
-                extra={
-                    "action": "backup_restore",
-                    "path": str(bf),
-                    "blocked_count": len(analysis.get("blocked_entries") or []),
-                },
-            )
-            # Gesperrte Archive: kein Extraktionsversuch — last_*_ok nicht zurücksetzen (vgl. Real-Test-Reihenfolge).
-            _merge_backup_realtest_state(
-                last_failure_kind="restore_blocked_entries",
-                last_failure_message="Archiv enthält gesperrte Einträge",
-            )
-            return JSONResponse(
-                status_code=200,
-                content=with_backup_contract(
-                    {
-                        "status": "error",
-                        "api_status": "error",
-                        "message": "Backup-Archiv enthält problematische Einträge (Pfad-Traversal, absolute Pfade oder nicht unterstützte Sonderdateien).",
-                        "data": {"analysis": analysis},
-                        "analysis": analysis,
-                    },
-                    "backup.restore_blocked_entries",
-                    "error",
-                ),
-            )
-
-        # Dry-Run: nur Analyse & Pfadliste zurückgeben, keine Schreiboperation
-        if mode == "dry-run":
-            total_entries = analysis["total_files"] + analysis["total_dirs"] + analysis["total_other"]
-            logger.info(
-                "Backup-Restore Dry-Run",
-                extra={"action": "backup_restore_dry_run", "path": str(bf), "total_entries": total_entries},
-            )
-            _merge_backup_realtest_state(
-                last_dry_run_ok=True,
-                last_dry_run_path=str(bf),
-                last_failure_kind="",
-                last_failure_message="",
-            )
-            return with_backup_contract(
-                {
-                    "status": "success",
-                    "api_status": "ok",
-                    "message": "Dry-Run erfolgreich – keine Änderungen geschrieben.",
-                    "data": {
-                        "mode": "dry-run",
-                        "analysis": analysis,
-                        "total_entries": total_entries,
-                        "backup_file": str(bf),
-                    },
-                },
-                "backup.restore_dry_run_ok",
-                "success",
-                {"total_entries": total_entries},
-            )
-
-        # Preview-Modus: sicherer Test-Restore in eigenes Verzeichnis (Sandbox unter /tmp, kein sudo nötig)
-        if mode == "preview":
-            ts = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
-            RESTORE_PREVIEW_BASE.mkdir(parents=True, exist_ok=True)
-            preview_dir = RESTORE_PREVIEW_BASE / ts
-            preview_dir.mkdir(parents=True, exist_ok=True)
-
-            restore_cmd = f"tar -xzf {shlex.quote(str(bf))} -C {shlex.quote(str(preview_dir))}"
-            # Sandbox liegt unter /tmp/setuphelfer-restore-test – hier ist kein sudo erforderlich
-            restore_result = await run_command_async(restore_cmd, sudo=False, sudo_password=None, timeout=7200)
-
-            if not restore_result.get("success"):
-                logger.error(
-                    "Preview-Restore fehlgeschlagen",
-                    extra={
-                        "action": "backup_restore_preview",
-                        "path": str(bf),
-                        "preview_dir": str(preview_dir),
-                        "error": (restore_result.get("stderr") or restore_result.get("error") or "")[:200],
-                    },
+            if _backup_path_looks_encrypted(work_archive):
+                if not restore_key:
+                    _merge_backup_realtest_state(
+                        last_failure_kind="restore_encrypted_no_password",
+                        last_failure_message="Verschlüsseltes Backup: Passwort erforderlich",
+                    )
+                    return JSONResponse(
+                        status_code=200,
+                        content=with_backup_contract(
+                            {
+                                "status": "error",
+                                "api_status": "error",
+                                "message": "Verschlüsseltes Backup: Passwort (password oder encryption_key) erforderlich.",
+                                "data": {},
+                            },
+                            "backup.restore_decrypt_password_required",
+                            "error",
+                        ),
+                    )
+                tmp_root_restore = Path("/tmp/pi-installer-backup-restore")
+                tmp_root_restore.mkdir(parents=True, exist_ok=True)
+                decrypt_temp_dir = _tmpfile_restore.mkdtemp(prefix="restore-dec-", dir=str(tmp_root_restore))
+                decrypted_restore_path = Path(decrypt_temp_dir) / "decrypted.tar.gz"
+                try:
+                    restore_mod = _get_backup_module()
+                except Exception as e_mod:
+                    _merge_backup_realtest_state(
+                        last_failure_kind="restore_decrypt_module",
+                        last_failure_message=str(e_mod)[:300],
+                    )
+                    return JSONResponse(
+                        status_code=200,
+                        content=with_backup_contract(
+                            {
+                                "status": "error",
+                                "api_status": "error",
+                                "message": f"Backup-Modul konnte nicht geladen werden: {str(e_mod)[:200]}",
+                                "data": {},
+                            },
+                            "backup.restore_decrypt_module_failed",
+                            "error",
+                            {"reason": str(e_mod)[:200]},
+                        ),
+                    )
+                restore_mod.run_command = run_command
+                enc_method_restore = "gpg" if ".gpg" in work_archive.lower() else "openssl"
+                ok_dec_r, _dec_out_r, err_dec_r = restore_mod.decrypt_backup(
+                    work_archive,
+                    restore_key,
+                    enc_method_restore,
+                    str(decrypted_restore_path),
+                    "",
                 )
+                if not ok_dec_r or not decrypted_restore_path.exists():
+                    _merge_backup_realtest_state(
+                        last_failure_kind="restore_decrypt_fail",
+                        last_failure_message=(err_dec_r or "")[:300],
+                    )
+                    return JSONResponse(
+                        status_code=200,
+                        content=with_backup_contract(
+                            {
+                                "status": "error",
+                                "api_status": "error",
+                                "message": "Backup konnte nicht entschlüsselt werden.",
+                                "data": {"error": (err_dec_r or "")[:300]},
+                            },
+                            "backup.restore_decrypt_failed",
+                            "error",
+                            {"reason": (err_dec_r or "")[:200]},
+                        ),
+                    )
+                work_archive = str(decrypted_restore_path)
+
+            # Analyse des Archivs – gemeinsam für Preview/Root
+            try:
+                analysis = _analyze_tar_members(work_archive)
+            except Exception as e:
+                # Kein last_preview_ok / last_dry_run_ok überschreiben: Analysefehler ist kein fehlgeschlagener Lauf.
                 _merge_backup_realtest_state(
-                    last_preview_ok=False,
-                    last_preview_dir=str(preview_dir),
-                    last_preview_backup=str(bf),
-                    last_failure_kind="restore_preview_extract_fail",
-                    last_failure_message=(restore_result.get("stderr") or restore_result.get("error") or "")[:300],
+                    last_failure_kind="restore_analyze_fail",
+                    last_failure_message=str(e)[:300],
                 )
                 return JSONResponse(
                     status_code=200,
@@ -12964,79 +14182,267 @@ async def restore_backup(request: Request):
                         {
                             "status": "error",
                             "api_status": "error",
-                            "message": f"Preview-Restore fehlgeschlagen: {restore_result.get('stderr', 'Unbekannter Fehler')[:200]}",
-                            "data": {
+                            "message": f"Backup-Archiv konnte nicht analysiert werden: {str(e)}",
+                            "data": {"analysis_error": str(e)[:300]},
+                        },
+                        "backup.restore_analyze_failed",
+                        "error",
+                        {"reason": str(e)[:300]},
+                    ),
+                )
+
+            if analysis["blocked_entries"]:
+                logger.warning(
+                    "Restore blockiert: problematische Archiv-Einträge",
+                    extra={
+                        "action": "backup_restore",
+                        "path": str(bf),
+                        "blocked_count": len(analysis.get("blocked_entries") or []),
+                    },
+                )
+                # Gesperrte Archive: kein Extraktionsversuch — last_*_ok nicht zurücksetzen (vgl. Real-Test-Reihenfolge).
+                _merge_backup_realtest_state(
+                    last_failure_kind="restore_blocked_entries",
+                    last_failure_message="Archiv enthält gesperrte Einträge",
+                )
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": "Backup-Archiv enthält problematische Einträge (Pfad-Traversal, absolute Pfade oder nicht unterstützte Sonderdateien).",
+                            "data": {"analysis": analysis},
+                            "analysis": analysis,
+                        },
+                        "backup.restore_blocked_entries",
+                        "error",
+                        {"diagnosis_id": "RESTORE-PATH-004"},
+                    ),
+                )
+
+            # Preview-Modus: sicherer Test-Restore in eigenes Verzeichnis (Sandbox unter /tmp, kein sudo nötig)
+            if mode == "preview":
+                ts = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+                RESTORE_PREVIEW_BASE.mkdir(parents=True, exist_ok=True)
+                preview_dir = RESTORE_PREVIEW_BASE / ts
+                preview_dir.mkdir(parents=True, exist_ok=True)
+
+                restore_cmd = f"tar -xzf {shlex.quote(work_archive)} -C {shlex.quote(str(preview_dir))}"
+                # Sandbox liegt unter /tmp/setuphelfer-restore-test – hier ist kein sudo erforderlich
+                restore_result = await run_command_async(restore_cmd, sudo=False, sudo_password=None, timeout=7200)
+
+                if not restore_result.get("success"):
+                    logger.error(
+                        "Preview-Restore fehlgeschlagen",
+                        extra={
+                            "action": "backup_restore_preview",
+                            "path": str(bf),
+                            "preview_dir": str(preview_dir),
+                            "error": (restore_result.get("stderr") or restore_result.get("error") or "")[:200],
+                        },
+                    )
+                    _merge_backup_realtest_state(
+                        last_preview_ok=False,
+                        last_preview_dir=str(preview_dir),
+                        last_preview_backup=str(bf),
+                        last_failure_kind="restore_preview_extract_fail",
+                        last_failure_message=(restore_result.get("stderr") or restore_result.get("error") or "")[:300],
+                    )
+                    return JSONResponse(
+                        status_code=200,
+                        content=with_backup_contract(
+                            {
+                                "status": "error",
+                                "api_status": "error",
+                                "message": f"Preview-Restore fehlgeschlagen: {restore_result.get('stderr', 'Unbekannter Fehler')[:200]}",
+                                "data": {
+                                    "preview_dir": str(preview_dir),
+                                    "analysis": analysis,
+                                },
                                 "preview_dir": str(preview_dir),
                                 "analysis": analysis,
                             },
+                            "backup.restore_failed",
+                            "error",
+                        ),
+                    )
+
+                # Metadaten für Preview-Antwort
+                total_entries = analysis["total_files"] + analysis["total_dirs"] + analysis["total_other"]
+                logger.info(
+                    "Preview-Restore erfolgreich",
+                    extra={
+                        "action": "backup_restore_preview",
+                        "path": str(bf),
+                        "preview_dir": str(preview_dir),
+                        "total_entries": total_entries,
+                    },
+                )
+                _merge_backup_realtest_state(
+                    last_preview_ok=True,
+                    last_preview_dir=str(preview_dir),
+                    last_preview_backup=str(bf),
+                    last_failure_kind="",
+                    last_failure_message="",
+                )
+                _cleanup_old_preview_dirs(preview_dir)
+                private_tmp_isolation = _private_tmp_isolation_active()
+                preview_visibility_note = (
+                    "Preview-Dateien liegen im PrivateTmp-Namespace des Backend-Dienstes und sind im normalen Host-/tmp ggf. nicht sichtbar."
+                    if private_tmp_isolation
+                    else "Preview-Dateien liegen im normalen /tmp-Namespace."
+                )
+                private_tmp_hint_key = "backup.messages.preview_private_tmp_hint" if private_tmp_isolation else ""
+                return with_backup_contract(
+                    {
+                        "status": "success",
+                        "api_status": "ok",
+                        "mode": "preview",
+                        "message": "Test-Restore erfolgreich. System wurde nicht überschrieben.",
+                        "preview_dir": str(preview_dir),
+                        "private_tmp_isolation": private_tmp_isolation,
+                        "preview_dir_visibility_note": preview_visibility_note,
+                        "service_private_tmp_hint": private_tmp_hint_key,
+                        "analysis": analysis,
+                        "total_entries": total_entries,
+                        "data": {
+                            "mode": "preview",
                             "preview_dir": str(preview_dir),
+                            "private_tmp_isolation": private_tmp_isolation,
+                            "preview_dir_visibility_note": preview_visibility_note,
+                            "service_private_tmp_hint": private_tmp_hint_key,
                             "analysis": analysis,
+                            "total_entries": total_entries,
+                        },
+                    },
+                    "backup.restore_preview_ok",
+                    "success",
+                    {
+                        "total_entries": total_entries,
+                        "private_tmp_isolation": private_tmp_isolation,
+                        "preview_dir_visibility_note": preview_visibility_note,
+                        "service_private_tmp_hint": private_tmp_hint_key,
+                    },
+                )
+
+            # Restore-Modus: target_dir ist Pflicht und wird strikt validiert.
+            if not target_dir:
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": "Restore-Zielpfad fehlt (target_dir ist bei mode=restore erforderlich).",
+                            "data": {"mode": mode},
+                        },
+                        "backup.restore_target_missing",
+                        "error",
+                    ),
+                )
+
+            if target_dir.strip() == "/":
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": "Restore-Ziel '/' ist aus Sicherheitsgründen gesperrt.",
+                            "data": {"target_dir": target_dir},
+                        },
+                        "backup.restore_target_invalid",
+                        "error",
+                        {"diagnosis_id": "RESTORE-RUNTIME-006", "target": target_dir},
+                    ),
+                )
+
+            try:
+                validated_target_dir = _validate_restore_target_dir(target_dir)
+            except Exception as ve:
+                reason = str(ve)
+                diagnosis_id = ""
+                code = "backup.restore_target_invalid"
+                if "PERM-GROUP-008" in reason or "not writable" in reason.lower() or "nicht beschreibbar" in reason.lower():
+                    code = "backup.restore_not_writable"
+                    diagnosis_id = "PERM-GROUP-008"
+                elif "STORAGE-PROTECTION-005" in reason:
+                    diagnosis_id = "STORAGE-PROTECTION-005"
+                elif "STORAGE-PROTECTION-004" in reason:
+                    diagnosis_id = "STORAGE-PROTECTION-004"
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": f"Ungültiges Restore-Ziel: {reason}",
+                            "data": {"target_dir": target_dir},
+                        },
+                        code,
+                        "error",
+                        {"reason": reason, "target": target_dir, "diagnosis_id": diagnosis_id},
+                    ),
+                )
+
+            restore_cmd = f"tar -xzf {shlex.quote(work_archive)} -C {shlex.quote(str(validated_target_dir))}"
+            restore_result = await run_command_async(restore_cmd, sudo=False, sudo_password=None, timeout=7200)
+            if not restore_result.get("success"):
+                err_txt = str(restore_result.get("stderr") or restore_result.get("error") or restore_result.get("stdout") or "")
+                if "Permission denied" in err_txt or "Keine Berechtigung" in err_txt:
+                    return JSONResponse(
+                        status_code=200,
+                        content=with_backup_contract(
+                            {
+                                "status": "error",
+                                "api_status": "error",
+                                "message": "Restore-Ziel ist nicht beschreibbar.",
+                                "data": {"target_dir": validated_target_dir, "error": err_txt[:300]},
+                            },
+                            "backup.restore_not_writable",
+                            "error",
+                            {"diagnosis_id": "PERM-GROUP-008", "target": validated_target_dir},
+                        ),
+                    )
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": f"Restore fehlgeschlagen: {err_txt[:200] or 'Unbekannter Fehler'}",
+                            "data": {"target_dir": validated_target_dir, "error": err_txt[:300]},
                         },
                         "backup.restore_failed",
                         "error",
                     ),
                 )
 
-            # Metadaten für Preview-Antwort
             total_entries = analysis["total_files"] + analysis["total_dirs"] + analysis["total_other"]
-            logger.info(
-                "Preview-Restore erfolgreich",
-                extra={
-                    "action": "backup_restore_preview",
-                    "path": str(bf),
-                    "preview_dir": str(preview_dir),
-                    "total_entries": total_entries,
-                },
-            )
-            _merge_backup_realtest_state(
-                last_preview_ok=True,
-                last_preview_dir=str(preview_dir),
-                last_preview_backup=str(bf),
-                last_failure_kind="",
-                last_failure_message="",
-            )
-            _cleanup_old_preview_dirs(preview_dir)
             return with_backup_contract(
                 {
                     "status": "success",
                     "api_status": "ok",
-                    "mode": "preview",
-                    "message": "Test-Restore erfolgreich. System wurde nicht überschrieben.",
-                    "preview_dir": str(preview_dir),
+                    "mode": "restore",
+                    "message": "Restore erfolgreich ausgeführt.",
+                    "target_dir": validated_target_dir,
                     "analysis": analysis,
                     "total_entries": total_entries,
                     "data": {
-                        "mode": "preview",
-                        "preview_dir": str(preview_dir),
+                        "mode": "restore",
+                        "target_dir": validated_target_dir,
                         "analysis": analysis,
                         "total_entries": total_entries,
                     },
                 },
-                "backup.restore_preview_ok",
+                "backup.restore_success",
                 "success",
-                {"total_entries": total_entries},
+                {"target_dir": validated_target_dir, "total_entries": total_entries},
             )
-
-        # Root-Modus: in dieser Phase weiterhin gesperrt (Feature-Gatekeeping)
-        logger.warning(
-            "Root-Restore blockiert (Gatekeeping aktiv)",
-            extra={"action": "backup_restore_root_blocked", "path": str(bf), "mode": mode},
-        )
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract(
-                {
-                    "status": "error",
-                    "api_status": "error",
-                    "message": "Produktiver Root-Restore ist in dieser Phase gesperrt. Bitte nur Preview- oder Dry-Run-Modus verwenden.",
-                    "mode": mode,
-                    "analysis": analysis,
-                    "data": {"mode": mode, "analysis": analysis},
-                },
-                "backup.restore_root_blocked",
-                "error",
-            ),
-        )
+        finally:
+            if decrypt_temp_dir:
+                _shutil_restore.rmtree(decrypt_temp_dir, ignore_errors=True)
     except Exception as e:
         logger.error(f"💥 Fehler bei Backup-Restore: {str(e)}", exc_info=True)
         return JSONResponse(
@@ -13829,4 +15235,12 @@ async def bluetooth_set_enabled(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    from core.service_conflict_guard import preflight_block_legacy_on_port
+
+    try:
+        _uvicorn_port = int(os.environ.get("PI_INSTALLER_BACKEND_PORT", "8000"))
+    except ValueError:
+        _uvicorn_port = 8000
+    preflight_block_legacy_on_port(_uvicorn_port)
+    uvicorn.run(app, host="0.0.0.0", port=_uvicorn_port)

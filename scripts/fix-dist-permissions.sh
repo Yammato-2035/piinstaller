@@ -3,7 +3,7 @@
 
 set -e
 
-INSTALL_DIR="${1:-/opt/pi-installer}"
+INSTALL_DIR="${1:-/opt/setuphelfer}"
 FRONTEND_DIR="$INSTALL_DIR/frontend"
 DIST_DIR="$FRONTEND_DIR/dist"
 

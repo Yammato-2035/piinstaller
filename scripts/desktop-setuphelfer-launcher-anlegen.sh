@@ -8,13 +8,10 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 START_SCRIPT="$PROJECT_ROOT/scripts/start-setuphelfer.sh"
-if [ ! -f "$START_SCRIPT" ]; then
-  START_SCRIPT="$PROJECT_ROOT/scripts/start-pi-installer.sh"
-fi
 ICON_PNG="$PROJECT_ROOT/frontend/src-tauri/icons/icon.png"
 ICON_SVG="$PROJECT_ROOT/frontend/public/assets/branding/logo/logo-main.svg"
 
-chmod +x "$PROJECT_ROOT/scripts/start-setuphelfer.sh" "$PROJECT_ROOT/scripts/start-pi-installer.sh" 2>/dev/null
+chmod +x "$PROJECT_ROOT/scripts/start-setuphelfer.sh" 2>/dev/null
 chmod +x "$PROJECT_ROOT/scripts/start-backend.sh" 2>/dev/null
 chmod +x "$PROJECT_ROOT/scripts/start-frontend-desktop.sh" 2>/dev/null
 

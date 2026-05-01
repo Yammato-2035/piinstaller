@@ -899,7 +899,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
       {isBeginnerView && setCurrentPage && !backendError && (
         <section className="space-y-4">
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Jetzt starten (empfohlen)</p>
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-400 uppercase tracking-wide mb-2">Jetzt starten (empfohlen)</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
               {(['wizard', 'app-store', 'backup'] as const).map(mid => {
                 const def = MODULE_DEFINITIONS[mid]
@@ -913,10 +913,10 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                   )
                 const tone =
                   mid === 'wizard'
-                    ? 'bg-sky-600/20 hover:bg-sky-600/30 border-sky-500/35'
+                    ? 'bg-sky-100 hover:bg-sky-200 border-sky-400/70 dark:bg-sky-700/30 dark:hover:bg-sky-700/40 dark:border-sky-400/50'
                     : mid === 'app-store'
-                      ? 'bg-emerald-600/15 hover:bg-emerald-600/25 border-emerald-500/35'
-                      : 'bg-indigo-600/20 hover:bg-indigo-600/30 border-indigo-500/35'
+                      ? 'bg-emerald-100 hover:bg-emerald-200 border-emerald-400/70 dark:bg-emerald-700/28 dark:hover:bg-emerald-700/38 dark:border-emerald-400/50'
+                      : 'bg-indigo-100 hover:bg-indigo-200 border-indigo-400/70 dark:bg-indigo-700/30 dark:hover:bg-indigo-700/40 dark:border-indigo-400/50'
                 return (
                   <button
                     key={mid}
@@ -926,10 +926,10 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                   >
                     {icon}
                     <div className="min-w-0">
-                      <p className="text-xs sm:text-sm font-semibold text-slate-50 leading-snug">{def.title}</p>
-                      <p className="text-[11px] sm:text-xs text-slate-200/80 mt-0.5 line-clamp-3">{def.subtitle}</p>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-50 leading-snug">{def.title}</p>
+                      <p className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-100 mt-0.5 line-clamp-3">{def.subtitle}</p>
                       {def.warningText && (
-                        <p className="text-[10px] text-amber-200/90 mt-1.5 leading-snug">{def.warningText}</p>
+                        <p className="text-[10px] text-amber-900 dark:text-amber-100 mt-1.5 leading-snug">{def.warningText}</p>
                       )}
                     </div>
                   </button>
@@ -939,66 +939,66 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
           </div>
 
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Optional – wenn du schon weiter bist</p>
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-400 uppercase tracking-wide mb-2">Optional – wenn du schon weiter bist</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => handleTaskNavigate('monitoring')}
-                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-amber-600/10 hover:bg-amber-600/18 border border-amber-500/25 transition-colors text-left"
+                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-amber-100 hover:bg-amber-200 border border-amber-400/70 dark:bg-amber-700/25 dark:hover:bg-amber-700/35 dark:border-amber-400/45 transition-colors text-left"
               >
                 <AppIcon name="monitoring" category="navigation" size={32} className="shrink-0 mt-0.5" />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <p className="text-xs sm:text-sm font-semibold text-amber-100 leading-snug">{MODULE_DEFINITIONS.monitoring.title}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-amber-900 dark:text-amber-100 leading-snug">{MODULE_DEFINITIONS.monitoring.title}</p>
                     <BeginnerGuidanceMarker kind="advanced" compact />
                   </div>
-                  <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5">{MODULE_DEFINITIONS.monitoring.subtitle}</p>
+                  <p className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-100 mt-0.5">{MODULE_DEFINITIONS.monitoring.subtitle}</p>
                 </div>
               </button>
               <button
                 type="button"
                 onClick={() => handleTaskNavigate('documentation')}
-                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-slate-700/30 hover:bg-slate-700/45 border border-slate-500/35 transition-colors text-left"
+                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-slate-200 hover:bg-slate-300 border border-slate-400/70 dark:bg-slate-700/45 dark:hover:bg-slate-700/60 dark:border-slate-400/50 transition-colors text-left"
               >
                 <AppIcon name="documentation" category="navigation" size={32} className="shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-semibold text-slate-100 leading-snug">{MODULE_DEFINITIONS.documentation.title}</p>
-                  <p className="text-[11px] sm:text-xs text-slate-200/75 mt-0.5">{MODULE_DEFINITIONS.documentation.subtitle}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug">{MODULE_DEFINITIONS.documentation.title}</p>
+                  <p className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-100 mt-0.5">{MODULE_DEFINITIONS.documentation.subtitle}</p>
                 </div>
               </button>
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Später oder für Fortgeschrittene</p>
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-400 uppercase tracking-wide mb-2">Später oder für Fortgeschrittene</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => handleTaskNavigate('learning')}
-                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-teal-900/20 hover:bg-teal-900/30 border border-teal-600/25 transition-colors text-left opacity-90"
+                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-teal-100 hover:bg-teal-200 border border-teal-400/70 dark:bg-teal-900/35 dark:hover:bg-teal-900/45 dark:border-teal-500/45 transition-colors text-left"
               >
-                <AppIcon name="documentation" category="navigation" size={32} className="shrink-0 mt-0.5 opacity-80" />
+                <AppIcon name="documentation" category="navigation" size={32} className="shrink-0 mt-0.5" />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <p className="text-xs sm:text-sm font-semibold text-teal-100 leading-snug">{MODULE_DEFINITIONS.learning.title}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-teal-900 dark:text-teal-100 leading-snug">{MODULE_DEFINITIONS.learning.title}</p>
                     <BeginnerGuidanceMarker kind="later" compact />
                   </div>
-                  <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">{MODULE_DEFINITIONS.learning.subtitle}</p>
+                  <p className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-100 mt-0.5">{MODULE_DEFINITIONS.learning.subtitle}</p>
                 </div>
               </button>
               <button
                 type="button"
                 onClick={() => handleTaskNavigate('settings')}
-                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-slate-800/50 hover:bg-slate-800/70 border border-slate-600/40 transition-colors text-left"
+                className="flex items-start gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-slate-200 hover:bg-slate-300 border border-slate-400/70 dark:bg-slate-800/65 dark:hover:bg-slate-800/80 dark:border-slate-400/55 transition-colors text-left"
               >
                 <AppIcon name="advanced" category="navigation" size={32} className="shrink-0 mt-0.5" />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <p className="text-xs sm:text-sm font-semibold text-slate-100 leading-snug">{MODULE_DEFINITIONS['control-center'].title}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug">{MODULE_DEFINITIONS['control-center'].title}</p>
                     <BeginnerGuidanceMarker kind="later" compact />
                     <BeginnerGuidanceMarker kind="advanced" compact />
                   </div>
-                  <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+                  <p className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-100 mt-0.5">
                     Erst nach Umschalten des Erfahrungslevels – über Einstellungen freischalten.
                   </p>
                 </div>

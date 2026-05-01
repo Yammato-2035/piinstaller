@@ -18,7 +18,11 @@ from pathlib import Path
 _os_stat = os.stat
 from typing import Any, Callable, Mapping, Sequence
 
-from core.safe_device import WriteTargetProtectionError, validate_write_target
+from core.safe_device import (
+    WriteTargetProtectionError,
+    resolve_mount_source_for_path,
+    validate_write_target,
+)
 from core.backup_recovery_i18n import (
     K_BACKUP_TARGET_FILESYSTEM_NOT_PERMITTED,
     K_BACKUP_TARGET_LIVE_FILESYSTEM,
@@ -236,39 +240,35 @@ def validate_backup_target(
             str(write_base),
         )
 
-    fss = _findmnt_json_for_path(write_base, runner=runner)
-    if not fss:
-        raise BackupTargetValidationError(
-            K_BACKUP_TARGET_NOT_MOUNTED,
-            str(write_base),
-        )
-
-    fs = _pick_mount_for_path(write_base, fss)
-    if fs is None:
-        raise BackupTargetValidationError(
-            K_BACKUP_TARGET_NOT_MOUNTED,
-            str(write_base),
-        )
-
-    target = fs.get("target")
-    target_s = target if isinstance(target, str) else ""
-    tnorm = target_s.rstrip("/") or "/"
+    mount_info = resolve_mount_source_for_path(write_base, runner=runner)
+    tnorm = (mount_info.get("target") or "").rstrip("/") or "/"
     if tnorm == "/":
         raise BackupTargetValidationError(
             K_BACKUP_TARGET_ROOT_FILESYSTEM,
             str(write_base),
         )
 
-    source = fs.get("source")
-    source_s = source if isinstance(source, str) else ""
-    if not _source_is_block_device(source_s):
+    fst = (mount_info.get("fstype") or "").strip().lower()
+    source_s = (mount_info.get("resolved_source") or "").strip()
+    reason_s = (mount_info.get("reason") or "").strip()
+    if not source_s:
+        if reason_s == "findmnt_t_no_entries":
+            raise BackupTargetValidationError(
+                K_BACKUP_TARGET_NOT_MOUNTED,
+                str(write_base),
+            )
+        if fst in _LIVE_FSTYPES:
+            raise BackupTargetValidationError(
+                K_BACKUP_TARGET_LIVE_FILESYSTEM,
+                fst,
+            )
+        detail = (mount_info.get("mount_source_seen") or "(empty)") + " | " + (
+            mount_info.get("reason") or "unknown"
+        )
         raise BackupTargetValidationError(
             K_BACKUP_TARGET_NON_BLOCK_SOURCE,
-            source_s or "(empty)",
+            detail,
         )
-
-    fst_raw = fs.get("fstype")
-    fst = (fst_raw.lower() if isinstance(fst_raw, str) else "") or ""
 
     if fst in _LIVE_FSTYPES:
         raise BackupTargetValidationError(
