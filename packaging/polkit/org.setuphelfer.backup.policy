@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/Software/polkit/policyconfig-1.dtd">
+<policyconfig>
+  <vendor>Setuphelfer</vendor>
+  <vendor_url>https://setuphelfer.example/</vendor_url>
+
+  <!-- Wird von pkcheck im Starter geprüft (Engagement vor systemctl). -->
+  <action id="org.setuphelfer.backup.start">
+    <description>Setuphelfer Backup-Job steuern</description>
+    <message>Administratorauthentifizierung wird benötigt, um Backup-Starter-Aktionen auszuführen.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+</policyconfig>

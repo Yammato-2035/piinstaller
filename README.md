@@ -1,13 +1,26 @@
-# PI-Installer - Raspberry Pi Konfigurations-Assistent 🥧
+# Setuphelfer – Konfigurations-Assistent (Repository: piinstaller) 🥧
 
 [![CI](https://github.com/Yammato-2035/piinstaller/actions/workflows/ci.yml/badge.svg)](https://github.com/Yammato-2035/piinstaller/actions/workflows/ci.yml)
 
-Ein umfassendes, **benutzerfreundliches System** zur automatisierten Konfiguration und Härtung eines Raspberry Pi mit moderner Web-GUI. Von der Grundkonfiguration direkt zum produktiven System!
+**Setuphelfer** ist ein **benutzerfreundliches System** zur automatisierten Konfiguration und Härtung von Raspberry Pi und Debian-basierten Zielen mit moderner Web-GUI – von der Grundkonfiguration bis zu erweiterten Modulen (Backup, NAS, Sicherheit, Control Center u. a.).
 
-**Neueste Version / Download:** [Releases](https://github.com/Yammato-2035/piinstaller/releases) · [CHANGELOG](CHANGELOG.md)
+**Aktueller Entwicklungsstand:** **1.5.0.0** (siehe [`config/version.json`](config/version.json), [CHANGELOG](CHANGELOG.md), [Releases](https://github.com/Yammato-2035/piinstaller/releases)).
 
-**Neu ab 1.4.0:** Produkt **Setuphelfer**, systemweite Installation unter **`/opt/setuphelfer/`**, Paket **`setuphelfer`** (ersetzt `pi-installer` &lt; 1.4.0), systemd **`setuphelfer-backend`** / **`setuphelfer`**.  
-**Neu ab 1.3.4.0:** Systemweite Installation gemäß Linux FHS, globale Befehle, frühe Dual Display X11-Konfiguration ohne mehrfache Umschaltungen.
+### Backup & Restore (Stand 1.5.0.0)
+
+- **Daten-Backup (Data-Runner):** Ausführung über Helper/Template-Unit (`packaging/systemd/setuphelfer-backup@.service`, Polkit, Starter) – siehe [`docs/developer/BACKUP_SYSTEMD_RUN_MIGRATION.md`](docs/developer/BACKUP_SYSTEMD_RUN_MIGRATION.md).
+- **Full-Backup-Runner:** vorbereitet und teilvalidiert (`backend/tools/backup_runner.py`); PoC/Referenz: `backend/tools/backup_runner_poc.py`.
+- **Verify:** *basic* und *deep* über die API/Engines (`backup_verify`).
+- **Schutzmechanismen:** Partial-Archiv-Schutz, Paketmanager-/Wartungsfenster-Schutz, Suspend-Schutz über **systemd-inhibit** (Details in Entwicklerdoku und [`docs/developer/BACKUP_RESTORE_STABILITY_TEST_MATRIX.md`](docs/developer/BACKUP_RESTORE_STABILITY_TEST_MATRIX.md)).
+
+**Wichtig:** Restore- und Boot-Nachweise laufen **zunächst nur in VMs** (Testmatrix/Runbooks). **Kein** Einsatz auf Produktivsystemen ohne **durchgeführtes, erfolgreiches Restore** in der vorgesehenen Testumgebung.
+
+**Installation / Entwicklung:** Setuphelfer befindet sich in **aktiver Entwicklung**. Echte Hardwaretests sind erst sinnvoll **nach** nachvollziehbarem VM-Nachweis (Backup → Verify → Restore-Preview → Restore → Reboot). Das Projekt ist **nicht** als „vollständig produktionsreif inkl. Full-Recovery ohne VM-Nachweis“ zu verstehen.
+
+---
+
+**Neu ab 1.4.0:** Produktname **Setuphelfer**, systemweite Installation unter **`/opt/setuphelfer/`**, Paket **`setuphelfer`** (ersetzt `pi-installer` &lt; 1.4.0), systemd **`setuphelfer-backend`** / **`setuphelfer`**.  
+**Neu ab 1.3.4.0:** Systemweite Installation gemäß Linux FHS, globale Befehle, frühe Dual Display X11-Konfiguration ohne mehrfache Umschaltungen.  
 **Neu ab 1.3.1.0:** App Store mit 7 Apps, Erste-Schritte-Assistent, Dashboard „Dein Pi läuft!", Mobile-Navigation (Hamburger-Menü), kontextsensitive Hilfe, One-Click-Installer, Laufwerk klonen (Backup & Restore), DSI-Radio (Freenove TFT) mit Lautstärke- und Anzeige-Steuerung.
 
 ## 🎯 Kernfeatures
@@ -440,9 +453,9 @@ MIT License - Siehe [LICENSE](./LICENSE) für Details
 ## 🌟 Status
 
 - **Version:** siehe [config/version.json](./config/version.json) (eine Quelle; [VERSIONING.md](./docs/developer/VERSIONING.md))
-- **Status:** Production Ready
-- **Letztes Update:** Februar 2026
-- **Support bis:** Januar 2027
+- **Status:** aktiv entwickelt; Backup/Verify/Restore-Pfade werden testgetrieben abgesichert (VM-/Evidence-Runbooks), **kein** Marketing-Versprechen „vollständig abgeschlossener Full-Recovery auf Hardware“ ohne entsprechende Tests.
+- **Letztes README-Update (Inhalt):** Mai 2026 (Entwicklungsstand 1.5.0.0)
+- **Support bis:** Januar 2027 (Planungsgröße, keine Garantie)
 
 ### Weitere Informationen
 - 📖 **[Detaillierte Docs](./INSTALL.md)**

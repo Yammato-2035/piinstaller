@@ -109,7 +109,8 @@ class TestBackupDataSourceScopeV1(unittest.TestCase):
         def fake_run_command(cmd, sudo=False, sudo_password=None, timeout=10):
             s = str(cmd)
             seen_cmds.append(s)
-            if s.startswith("tar -czf "):
+            # _run_tar nutzt systemd-inhibit + sh -c; Kommando beginnt nicht mit "tar -czf "
+            if "tar -czf" in s:
                 return {
                     "success": False,
                     "stderr": "tar: /mnt/setuphelfer/test-data: Funktion open fehlgeschlagen: Keine Berechtigung\n",
@@ -134,7 +135,7 @@ class TestBackupDataSourceScopeV1(unittest.TestCase):
         self.assertEqual((out.get("details") or {}).get("selected_sources"), ["/mnt/setuphelfer/test-data"])
         unreadable = (out.get("details") or {}).get("unreadable_sources") or []
         self.assertTrue(any(x.get("path") == "/mnt/setuphelfer/test-data" for x in unreadable))
-        tar_cmds = [c for c in seen_cmds if c.startswith("tar -czf ")]
+        tar_cmds = [c for c in seen_cmds if "tar -czf" in c]
         self.assertTrue(tar_cmds, "expected tar command")
         self.assertFalse(any(" /opt " in c or c.endswith(" /opt") for c in tar_cmds), tar_cmds)
 

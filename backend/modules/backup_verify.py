@@ -9,6 +9,7 @@ import os
 import posixpath
 import subprocess
 import tarfile
+import hashlib
 from pathlib import Path
 from typing import Any, Callable
 
@@ -114,6 +115,29 @@ def _member_arc_key(name: str | None) -> str:
     if not x:
         return ""
     return posixpath.normpath(x.rstrip("/"))
+
+
+def _sha256_archive_payload_without_manifest(archive_path: Path) -> str:
+    h = hashlib.sha256()
+    with tarfile.open(archive_path, "r:*") as tf:
+        for m in tf.getmembers():
+            mk = _member_arc_key(m.name)
+            if not mk or mk == _manifest_row_key(MANIFEST_NAME):
+                continue
+            h.update(mk.encode("utf-8", errors="ignore"))
+            h.update(b"\0")
+            h.update(str(m.type).encode("ascii", errors="ignore"))
+            h.update(b"\0")
+            h.update(str(m.size).encode("ascii", errors="ignore"))
+            h.update(b"\0")
+            if m.isfile():
+                fobj = tf.extractfile(m)
+                if fobj is not None:
+                    for chunk in iter(lambda: fobj.read(1024 * 1024), b""):
+                        h.update(chunk)
+            elif m.issym() or m.islnk():
+                h.update((m.linkname or "").encode("utf-8", errors="ignore"))
+    return h.hexdigest()
 
 
 def verify_basic(
@@ -235,6 +259,56 @@ def verify_deep(
             except json.JSONDecodeError as e:
                 details["errors"] = [{"kind": "invalid_manifest_json", "path": MANIFEST_NAME, "detail": str(e)}]
                 return _fail(K_MISSING_MANIFEST, error=str(e))
+
+            # Runner-Metadaten prüfen (falls vorhanden): Pflichtfelder + Integrität.
+            meta_keys = {"job_id", "backup_type", "source", "backup_dir", "created_at", "completed_at", "archive_size", "hash"}
+            if meta_keys.issubset(set(manifest.keys())):
+                meta_errors: list[dict[str, Any]] = []
+                for k in ("job_id", "backup_type", "source", "backup_dir", "created_at", "completed_at"):
+                    v = manifest.get(k)
+                    if not isinstance(v, str) or not v.strip():
+                        meta_errors.append({"kind": "manifest_metadata_missing", "path": MANIFEST_NAME, "detail": f"missing_or_empty:{k}"})
+                try:
+                    expected_size = int(str(manifest.get("archive_size") or "0"))
+                except ValueError:
+                    expected_size = -1
+                actual_size = int(ap.stat().st_size)
+                if expected_size != actual_size:
+                    details["archive_size_note"] = f"archive_size manifest={expected_size} actual={actual_size}"
+                mh = str(manifest.get("hash") or "")
+                if not mh.startswith("sha256:"):
+                    meta_errors.append({"kind": "manifest_metadata_missing", "path": MANIFEST_NAME, "detail": "hash_format"})
+                else:
+                    actual_payload_hash = _sha256_archive_payload_without_manifest(ap)
+                    expected_payload_hash = mh.split(":", 1)[1]
+                    if expected_payload_hash != actual_payload_hash:
+                        meta_errors.append(
+                            {
+                                "kind": "hash_mismatch",
+                                "path": MANIFEST_NAME,
+                                "detail": f"manifest={expected_payload_hash} actual={actual_payload_hash}",
+                            }
+                        )
+
+                job_id = str(manifest.get("job_id") or "").strip()
+                if job_id:
+                    status_file = Path("/var/lib/setuphelfer/backup-jobs") / job_id / "status.json"
+                    if status_file.exists():
+                        try:
+                            st = json.loads(status_file.read_text(encoding="utf-8") or "{}")
+                            if isinstance(st, dict):
+                                if str(st.get("backup_type") or "") and str(st.get("backup_type")) != str(manifest.get("backup_type")):
+                                    meta_errors.append({"kind": "manifest_metadata_mismatch", "path": MANIFEST_NAME, "detail": "backup_type_vs_status"})
+                                if str(st.get("source") or "") and str(st.get("source")) != str(manifest.get("source")):
+                                    meta_errors.append({"kind": "manifest_metadata_mismatch", "path": MANIFEST_NAME, "detail": "source_vs_status"})
+                                if str(st.get("backup_dir") or "") and str(st.get("backup_dir")) != str(manifest.get("backup_dir")):
+                                    meta_errors.append({"kind": "manifest_metadata_mismatch", "path": MANIFEST_NAME, "detail": "backup_dir_vs_status"})
+                        except Exception:
+                            pass
+
+                if meta_errors:
+                    details["errors"] = meta_errors
+                    return _fail(K_VERIFY_INTEGRITY_FAILED, error="manifest_metadata_or_hash_mismatch")
 
             rows = manifest.get("entries") or manifest.get("files") or []
             manifest_keys: set[str] = set()

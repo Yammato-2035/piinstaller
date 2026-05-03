@@ -1,0 +1,35 @@
+// Eng beschränkt: nur Setuphelfer-Backup-Template und Starter-Aktion.
+// Gruppe setuphelfer (explizite Mitgliedschaft erforderlich).
+
+polkit.addRule(function (action, subject) {
+  if (action.id === "org.setuphelfer.backup.start") {
+    // Kein subject.active/subject.local: Backend und Starter laufen ohne Login-Session (systemd).
+    if (subject.isInGroup("setuphelfer")) {
+      return polkit.Result.YES;
+    }
+  }
+});
+
+// Erlaubt systemctl start/stop/status nur für setuphelfer-backup@*.service (keine anderen Units).
+polkit.addRule(function (action, subject) {
+  if (action.id !== "org.freedesktop.systemd1.manage-units") {
+    return undefined;
+  }
+  var unit = null;
+  try {
+    unit = action.lookup("unit");
+  } catch (e) {
+    return undefined;
+  }
+  if (!unit || typeof unit !== "string") {
+    return undefined;
+  }
+  // Nur Template-Instanz setuphelfer-backup@<job>.service
+  if (!/^setuphelfer-backup@[^@]+\.service$/.test(unit)) {
+    return undefined;
+  }
+  if (!subject.isInGroup("setuphelfer")) {
+    return undefined;
+  }
+  return polkit.Result.YES;
+});

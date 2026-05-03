@@ -39,6 +39,39 @@ Die API liefert mindestens:
 
 Damit ist ein robuster Abgleich zwischen UI-Build-Version (`__APP_VERSION__`) und Backend-Version moeglich.
 
+## Systemstatus-Policy (`/api/system/status`)
+
+Die Ampeln fuer Dashboard/Companion werden nicht mehr statisch gesetzt, sondern aus realen Signalen berechnet:
+
+- `security`:
+  - `green`: alle 5 Bausteine aktiv (UFW, Fail2Ban, Auto-Updates, SSH-Haertung, Audit-Logging)
+  - `yellow`: mindestens ein Baustein fehlt
+  - `red`: kritischer Mangel (z. B. `PermitRootLogin yes` oder Firewall nicht installiert)
+- `updates`:
+  - `green`: keine Updates
+  - `yellow`: nur notwendige/optionale Updates
+  - `red`: Security- oder Critical-Updates vorhanden
+
+Wichtig: Dashboard, Security-Begleiter und `/api/system/status` muessen denselben Lampenzustand anzeigen.
+
+## Netzwerk-API (`/api/system/network`)
+
+Die API liefert neben `ips`/`hostname` jetzt zusaetzlich:
+
+- `localhost` (lokale Adresse, aktuell `127.0.0.1`)
+- `primary_ip`
+- `interfaces` (Quelle/Interface pro erkannter IP)
+- `warnings`
+- `source` (`ip-addr-global`, `hostname-I`, `none`)
+
+Erkennung:
+
+- Primaer: `ip -4 -o addr show scope global`
+- Fallback: `hostname -I`
+- Filter: `lo`, `docker*`, `veth*`, `br-*`, `virbr*`, `wg*`, `tailscale*`, Loopback/Link-Local
+
+Wenn keine LAN-IP ermittelt wird, bleibt die API explizit auf "lokal" und liefert eine begruendete Warnung statt leerem/unklarem Zustand.
+
 ## Frontend-Client: API-URL und LocalStorage
 
 - Bekannter Key fuer API-Basis: `pi-installer-api-base` (historischer Name, weiterhin kompatibel).
@@ -64,6 +97,8 @@ cd /home/volker/piinstaller
 bash -n scripts/*.sh
 ./scripts/audit-setuphelfer-installations.sh
 curl -s http://127.0.0.1:8000/api/version
+curl -s http://127.0.0.1:8000/api/system/status
+curl -s http://127.0.0.1:8000/api/system/network
 ```
 
 Erwartung:
@@ -72,6 +107,13 @@ Erwartung:
 - `/api/version` konsistent zu `config/version.json`
 - `frontend/dist` und Repo-Tauri-Binary nicht veraltet
 - `FINAL_VERDICT: OK` (oder maximal begruendetes WARN ohne Funktionsrisiko)
+
+## Update-Start (Einsteiger-Schutz + Tauri-Fallback)
+
+- Einsteigerfluss: "Update im Terminal" zeigt zuerst eine Sicherheitsabfrage mit Option "Spaeter erinnern" (24h).
+- Backend-Endpoint `/api/system/run-update-in-terminal` startet ein Terminal nur mit valider GUI-Session.
+- Falls Backend im systemd-Kontext keine GUI-Session hat (`DISPLAY/WAYLAND` fehlt), kann die Tauri-App das Terminal lokal ueber einen Tauri-Command starten.
+- Ergebnis: kein "falsches Erfolgssignal" mehr, entweder sichtbares Terminal oder klarer manueller Hinweis.
 
 ## Typische Fehlerbilder
 

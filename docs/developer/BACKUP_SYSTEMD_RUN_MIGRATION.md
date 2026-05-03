@@ -119,6 +119,128 @@ Der Thread-Modus bleibt produktiv, solange folgende Schutzmechanismen wirksam si
 - Verify läuft erfolgreich auf erzeugten Archiven
 - Restore ist bootfähig validiert
 
+## Data-Runner Pilot (aktuelle Phase)
+
+- Scope: nur `type=data` kann optional ueber isolierten Runner laufen.
+- Feature-Schalter: `SETUPHELFER_BACKUP_RUNNER_MODE=thread|systemd-template`
+- Default bleibt: `thread`
+- Bei `systemd-template` wird fuer `type=data` eine installierte Template-Unit gestartet.
+- Fachlicher Status bleibt `status.json` unter `/var/lib/setuphelfer/backup-jobs/<job_id>/status.json`.
+- Cancel erfolgt ueber `systemctl stop <unit>`.
+- Suspend-Schutz bleibt Pflicht; bei Fehler: `backup.inhibit_failed` + `SYSTEMD-INHIBIT-042`.
+- Bekannte Grenze: Full-Backup ist in dieser Phase noch nicht auf Runner migriert.
+
+## Entscheidung: systemd-run nicht als Produktivstart aus dem Backend
+
+- `systemd-run` aus dem gehaerteten Backend ist im Feld nicht zuverlaessig (Policy/Bus/Auth-Abhaengigkeiten).
+- Der Fehler zeigte sich bereits als nicht-deterministisches Startproblem (`interactive authentication required`, `failed to connect to bus`).
+- Fuer Endkunden ist das kein stabiler Produktivpfad.
+- Produktivstart soll ueber installierte, definierte Unit erfolgen:
+  - Backend triggert `setuphelfer-backup@<job_id>.service`
+  - keine freien transient Units als Standardpfad.
+
+## Template-Unit Entwurf (Produktivziel)
+
+Datei (Installationsziel):
+
+- `/etc/systemd/system/setuphelfer-backup@.service`
+
+Repo-Entwurf:
+
+- `packaging/systemd/setuphelfer-backup@.service`
+
+Grundsaetze:
+
+- Instanzname = `job_id` (`%i`)
+- `ExecStart` ruft Runner nur mit `--job-id %i` (plus feste Laufzeitpfade)
+- Runner liest Jobkonfiguration aus:
+  - `/var/lib/setuphelfer/backup-jobs/%i/job.json`
+- keine Parametertunnelung ueber Unit-Namen.
+
+Empfohlene Unit-Eigenschaften:
+
+- `Type=simple`
+- `User=root` (begruendet: systemweiter Sleep-Inhibitor + robuste Prozesskontrolle ohne Session-Abhaengigkeit)
+- `Group=setuphelfer`
+- `SupplementaryGroups=setuphelfer`
+- `KillSignal=SIGTERM`
+- `TimeoutStopSec=30`
+- `NoNewPrivileges=no` nur fuer Runner-Unit (nicht fuer Backend)
+- `ProtectSystem=strict`
+- `PrivateTmp=yes`
+- `ReadWritePaths=/mnt/setuphelfer /var/lib/setuphelfer /var/log/setuphelfer`
+- `WorkingDirectory=/opt/setuphelfer/backend`
+
+## Job-Konfigurationsvertrag
+
+Pfad:
+
+- `/var/lib/setuphelfer/backup-jobs/<job_id>/job.json`
+
+Mindestfelder:
+
+- `job_id`
+- `backup_type`
+- `backup_dir`
+- `source`
+- `lang`
+- `requested_by`
+- `created_at`
+
+Regeln:
+
+- Backend schreibt `job.json`.
+- Runner liest `job.json`.
+- `status.json` bleibt fachliche Statusquelle.
+- Keine sensiblen Klartext-Geheimnisse in `job.json`.
+
+## Startmechanismus (Zielbild)
+
+Backend-Trigger:
+
+- `systemctl start setuphelfer-backup@<job_id>.service`
+
+Feature-Schalter bleibt verpflichtend:
+
+- `SETUPHELFER_BACKUP_RUNNER_MODE=thread|systemd-template`
+- Default: `thread`
+
+Wenn `systemd-template` aktiv:
+
+- Backend legt `job.json` + initiales `status.json` an.
+- Backend startet Template-Unit.
+- API gibt `accepted` + `job_id` zurueck.
+
+## Berechtigungen/Polkit (Produktivstrategie)
+
+Beobachtung:
+
+- Start/Stop von Units aus Service-Kontext ist ohne explizite Freigabe nicht robust garantiert.
+
+Option A (empfohlen):
+
+- gezielte Polkit-Regel nur fuer `setuphelfer-backend`:
+  - erlaubt `start/stop/status` fuer `setuphelfer-backup@*.service`
+  - keine generelle `systemctl`-Freigabe
+
+Option B:
+
+- kleiner root-owned Starter-Helper mit festem Unit-Namensmuster
+
+Bewertung:
+
+- Option A ist transparenter und systemd-nativ.
+- Option B ist fallback-tauglich, aber zusaetzliche Binary-/Auditflaeche.
+
+## Testplan (naechste Phase)
+
+1. Template-Unit manuell als root mit Test-`job.json` starten.
+2. `status.json` entsteht und wird laufend aktualisiert.
+3. Data-Backup laeuft mit `.partial -> .tar.gz` bei Erfolg.
+4. `systemd-inhibit` ist im Runner aktiv (kein ungeschuetzter Lauf).
+5. Cancel via `systemctl stop setuphelfer-backup@<job_id>.service` funktioniert.
+6. API-Startpfad erst nach Polkit/Helper-Freigabe scharf schalten.
+
 ## API-Design (Skizze, nicht implementiert)
 
 ### `POST /api/backup/create`

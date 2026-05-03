@@ -1600,6 +1600,14 @@ const Documentation: React.FC = () => {
                   <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
                   <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: {appVersion}</p>
                   <div className="mb-3">
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.5.0.0 (Backup-Runner / Recovery-Grundlage)</p>
+                    <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
+                      <li><strong>Data-Runner:</strong> Helper/Template-Unit <code className="bg-slate-700 px-1 rounded">setuphelfer-backup@.service</code>, Polkit, <code className="bg-slate-700 px-1 rounded">packaging/helpers/setuphelfer-backup-starter.py</code>; Doku <code className="bg-slate-700 px-1 rounded">BACKUP_SYSTEMD_RUN_MIGRATION.md</code></li>
+                      <li><strong>Full-Runner:</strong> vorbereitet/teilvalidiert (<code className="bg-slate-700 px-1 rounded">backend/tools/backup_runner.py</code>); Verify basic/deep; Partial-Archiv-, Paketmanager- und Suspend-Schutz (<code className="bg-slate-700 px-1 rounded">systemd-inhibit</code>); Testmatrix <code className="bg-slate-700 px-1 rounded">BACKUP_RESTORE_STABILITY_TEST_MATRIX.md</code></li>
+                      <li><strong>Hinweis:</strong> Restore-/Boot-Nachweis zunächst in VMs; kein Produktiveinsatz ohne erfolgreiches Restore-Testing</li>
+                    </ul>
+                  </div>
+                  <div className="mb-3 pt-3 border-t border-sky-700/40 dark:border-sky-700/40">
                     <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.4.1.0 (Backup-/Recovery-Engines)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Backend:</strong> <code className="bg-slate-700 px-1 rounded">backup_engine</code>, <code className="bg-slate-700 px-1 rounded">backup_verify</code>, <code className="bg-slate-700 px-1 rounded">restore_engine</code>, <code className="bg-slate-700 px-1 rounded">backup_crypto</code>, <code className="bg-slate-700 px-1 rounded">recovery_transport</code>; <code className="bg-slate-700 px-1 rounded">recovery/main.py</code></li>

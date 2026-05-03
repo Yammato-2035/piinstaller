@@ -100,6 +100,16 @@ Diese Matrix validiert den aktuellen produktiven Thread-Backup-Pfad.
 - Abbruchkriterium: Verify akzeptiert `.partial` oder liefert unklaren Erfolg.
 - Belegpflicht: API-Response mit Fehlercode und Diagnose.
 
+### TEST 6b: Inhibit-Fehler im Service-Kontext
+
+- Ziel: Backup darf ohne aktiven Suspend-Schutz nicht anlaufen.
+- Startbedingung: `systemd-inhibit` scheitert im Service-Kontext (z. B. Access denied / Binary nicht nutzbar).
+- Durchfuehrung: `POST /api/backup/create` (data/full) im betroffenen Service-Kontext.
+- Erwartetes Ergebnis: `status=error`, `code=backup.inhibit_failed`, `diagnosis_id=SYSTEMD-INHIBIT-042`.
+- Regel: Kein ungeschuetzter tar-Lauf ohne Suspend-Schutz.
+- Abbruchkriterium: generisches `backup.failed`, oder Backup laeuft ohne Inhibit weiter.
+- Belegpflicht: API-Response inkl. `inhibit_available`, `inhibit_error`, `suspend_guard_active=false`, `partial_deleted`.
+
 ### TEST 7: Verify deep direkt nach Backup
 
 - Ziel: Integritaet und Inhaltspruefung direkt nach Backup.
@@ -108,6 +118,33 @@ Diese Matrix validiert den aktuellen produktiven Thread-Backup-Pfad.
 - Erwartetes Ergebnis: `backup.verify_success` (oder definierter Integritaets-Fehlercode).
 - Abbruchkriterium: Uneindeutiger Verify-Status ohne Diagnosecode.
 - Belegpflicht: Verify-Response, Details/Diagnose-ID, Laufzeitmarker.
+
+### TEST 7a: Runner Data-Backup (systemd-Pilot)
+
+- Ziel: Data-Backup kann optional isoliert ueber Runner laufen.
+- Startbedingung: `SETUPHELFER_BACKUP_RUNNER_MODE=systemd`.
+- Durchfuehrung: `POST /api/backup/create` mit `type=data`.
+- Erwartetes Ergebnis: transient Unit gestartet, `status.json` vorhanden, `.partial` waehrend Lauf, final `.tar.gz` nur bei Erfolg.
+- Abbruchkriterium: kein Runner-Start, kein Statusvertrag, oder `.partial` bleibt als scheinbar gueltiges Archiv.
+- Belegpflicht: API-Response, Unit-Name, `status.json`, Dateiliste.
+
+### TEST 7b: Runner Cancel
+
+- Ziel: Cancel stoppt die Runner-Unit deterministisch.
+- Startbedingung: laufender Runner-Data-Job.
+- Durchfuehrung: `POST /api/backup/jobs/{job_id}/cancel`.
+- Erwartetes Ergebnis: `systemctl stop <unit>`, final `status=cancelled`, `code=backup.cancelled`, kein finales Archiv aus Abbruchlauf, keine `.partial`-Reste.
+- Abbruchkriterium: Cancel ohne finalen Status oder mit verbleibendem Teilartefakt.
+- Belegpflicht: Cancel-Response, finales `status.json`, Dateiliste.
+
+### TEST 7c: Runner Paketmanager-Konflikt
+
+- Ziel: laufende Paketaktivitaet blockiert Runner sicher.
+- Startbedingung: laufender Runner-Data-Job.
+- Durchfuehrung: waehrend Lauf apt/dpkg Aktivitaet starten.
+- Erwartetes Ergebnis: `status=error`, `code=backup.blocked_package_activity`, `diagnosis_id=UPDATE-CONFLICT-041`, `.partial` Cleanup.
+- Abbruchkriterium: Backup laeuft trotz Konflikt ungeprueft weiter.
+- Belegpflicht: API/Statusdatei, Prozessbeleg, Dateiliste.
 
 ### TEST 8: Restore Preview
 

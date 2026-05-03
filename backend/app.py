@@ -614,10 +614,15 @@ def _new_job_id() -> str:
 
 def _has_active_long_running_job() -> bool:
     """True, wenn ein Backup- oder Klon-Job noch nicht im Endzustand ist (Phase 2C: ein aktiver Job)."""
-    for j in BACKUP_JOBS.values():
+    terminal_runner = frozenset({"success", "error", "cancelled", "failed"})
+    for jid, j in BACKUP_JOBS.items():
         st = j.get("status")
-        if st in ("queued", "running", "cancel_requested"):
-            return True
+        if st not in ("queued", "running", "cancel_requested"):
+            continue
+        rs = _read_backup_runner_status(jid)
+        if rs and str(rs.get("status") or "").strip().lower() in terminal_runner:
+            continue
+        return True
     return False
 
 
@@ -631,6 +636,205 @@ def _job_snapshot(job: dict) -> dict:
     except Exception:
         pass
     return snap
+
+
+def _backup_runner_mode() -> str:
+    mode = (os.environ.get("SETUPHELFER_BACKUP_RUNNER_MODE") or "thread").strip().lower()
+    return mode if mode in ("thread", "systemd-template") else "thread"
+
+
+def _backup_start_mode() -> str:
+    """
+    Startmodus fuer Backup-Jobs.
+    Default bleibt "thread". "systemd" und "helper" sind vorbereitet.
+    Legacy-Mapping: SETUPHELFER_BACKUP_RUNNER_MODE=systemd-template => systemd.
+    """
+    mode = (os.environ.get("SETUPHELFER_BACKUP_START_MODE") or "").strip().lower()
+    if mode in ("thread", "systemd", "helper"):
+        return mode
+    legacy = _backup_runner_mode()
+    if legacy == "systemd-template":
+        return "systemd"
+    return "thread"
+
+
+_BACKUP_JOB_ID_RE = re.compile(r"^[a-zA-Z0-9._-]{1,80}$")
+
+
+def _default_backup_helper_path() -> str:
+    return (os.environ.get("SETUPHELFER_BACKUP_HELPER_PATH") or "/usr/lib/setuphelfer/setuphelfer-backup-starter").strip()
+
+
+def _start_backup_via_helper(job_id: str) -> tuple[bool, str, dict[str, Any]]:
+    """
+    Startet den installierten Backup-Starter (Privilege-Boundary), stdout = JSON.
+    Nur fuer mode=helper vorgesehen.
+    """
+    jid = (job_id or "").strip()
+    if not _BACKUP_JOB_ID_RE.fullmatch(jid):
+        return False, "backup.starter_invalid_job_id", {}
+    helper_path = _default_backup_helper_path()
+    hp = Path(helper_path)
+    if not hp.is_file() or not os.access(hp, os.X_OK):
+        return False, "backup.starter_not_found", {}
+    try:
+        cp = subprocess.run(
+            [str(hp), "start", jid],
+            capture_output=True,
+            text=True,
+            shell=False,
+            timeout=10,
+        )
+    except subprocess.TimeoutExpired:
+        return False, "backup.starter_timeout", {}
+    except Exception as e:
+        return False, "backup.starter_invalid_response", {"error": str(e)[:300]}
+    out = (cp.stdout or "").strip()
+    if not out:
+        return False, "backup.starter_invalid_response", {"stderr_excerpt": ((cp.stderr or "")[:300])}
+    try:
+        raw = json.loads(out)
+    except json.JSONDecodeError:
+        return False, "backup.starter_invalid_response", {"stdout_excerpt": out[:300]}
+    if not isinstance(raw, dict):
+        return False, "backup.starter_invalid_response", {}
+    if raw.get("ok") is True:
+        code = str(raw.get("code") or "backup.starter_started")
+        return True, code, raw
+    code = str(raw.get("code") or "backup.starter_failed")
+    return False, code, raw
+
+
+def _systemctl_run_argv(argv: list[str], *, timeout: int) -> dict[str, Any]:
+    """Minimal kompatibles Ergebnis wie run_command fuer Erfolg/Fehler."""
+    try:
+        subprocess.run(
+            argv,
+            shell=False,
+            check=True,
+            timeout=timeout,
+            capture_output=True,
+            text=True,
+        )
+        return {"success": True, "stdout": "", "stderr": "", "returncode": 0}
+    except subprocess.TimeoutExpired as e:
+        return {"success": False, "stdout": (e.stdout or "")[:300] if e.stdout else "", "stderr": "timeout", "returncode": -1}
+    except subprocess.CalledProcessError as e:
+        return {
+            "success": False,
+            "stdout": (e.stdout or "")[:300],
+            "stderr": (e.stderr or "")[:300],
+            "returncode": e.returncode,
+        }
+    except FileNotFoundError:
+        return {"success": False, "stdout": "", "stderr": "systemctl not found", "returncode": -1}
+
+
+def _backup_runner_status_dir() -> Path:
+    base = (os.environ.get("SETUPHELFER_BACKUP_STATUS_DIR") or "/var/lib/setuphelfer/backup-jobs").strip()
+    return Path(base).resolve()
+
+
+def _backup_runner_status_file(job_id: str) -> Path:
+    return _backup_runner_status_dir() / job_id / "status.json"
+
+
+def _backup_runner_job_file(job_id: str) -> Path:
+    return _backup_runner_status_dir() / job_id / "job.json"
+
+
+def _read_backup_runner_status(job_id: str) -> Optional[dict]:
+    p = _backup_runner_status_file(job_id)
+    if not p.exists():
+        return None
+    try:
+        data = json.loads(p.read_text(encoding="utf-8") or "{}")
+        return data if isinstance(data, dict) else None
+    except Exception:
+        return None
+
+
+def _systemd_unit_state(unit_name: str, unit_scope: str = "system") -> dict:
+    unit = (unit_name or "").strip()
+    if not unit:
+        return {}
+    scope = (unit_scope or "system").strip().lower()
+    props = ["ActiveState", "SubState", "Result", "ExecMainStatus", "ExecMainCode", "MainPID"]
+    argv = ["systemctl", "--user", "show", unit, "--no-pager"] if scope == "user" else ["systemctl", "show", unit, "--no-pager"]
+    for p in props:
+        argv.extend(["-p", p])
+    try:
+        cp = subprocess.run(
+            argv,
+            shell=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return {}
+    if cp.returncode != 0:
+        return {}
+    out: dict[str, str] = {}
+    for ln in (cp.stdout or "").splitlines():
+        if "=" not in ln:
+            continue
+        k, v = ln.split("=", 1)
+        out[k.strip()] = v.strip()
+    return out
+
+
+def _runner_status_to_job(status_data: dict) -> dict:
+    raw_status = status_data.get("status")
+    mapped_status = str(raw_status).strip().lower() if raw_status not in (None, "") else "running"
+    arch = status_data.get("archive_path")
+    job = {
+        "job_id": status_data.get("job_id"),
+        "status": mapped_status,
+        "type": status_data.get("backup_type") or "data",
+        "backup_dir": status_data.get("backup_dir"),
+        "backup_file": arch if arch else None,
+        "target": "local",
+        "started_at": status_data.get("backup_started_at"),
+        "finished_at": status_data.get("backup_finished_at"),
+        "message": status_data.get("message") or "",
+        "code": status_data.get("code") or "backup.job.running",
+        "severity": status_data.get("severity") or "info",
+        "results": status_data.get("results") or [],
+        "unit_name": status_data.get("unit_name"),
+        "diagnosis_id": status_data.get("diagnosis_id"),
+        "abort_reason": status_data.get("abort_reason"),
+        "source": status_data.get("source"),
+        "partial_path": status_data.get("partial_path"),
+        "progress_optional": status_data.get("progress_optional"),
+        "unit_scope": status_data.get("unit_scope") or "system",
+    }
+    unit_state = _systemd_unit_state(str(status_data.get("unit_name") or ""), str(status_data.get("unit_scope") or "system"))
+    if unit_state:
+        job["systemd"] = unit_state
+    return job
+
+
+def _sync_ram_job_from_runner(job_id: str) -> None:
+    """Überschreibt BACKUP_JOBS aus status.json, wenn der Runner einen Endzustand geschrieben hat."""
+    rs = _read_backup_runner_status(job_id)
+    if not rs or job_id not in BACKUP_JOBS:
+        return
+    st = str(rs.get("status") or "").strip().lower()
+    terminal = frozenset({"success", "error", "cancelled", "failed"})
+    if st not in terminal:
+        return
+    j = BACKUP_JOBS[job_id]
+    j["status"] = "error" if st == "failed" else st
+    j["code"] = str(rs.get("code") or j.get("code") or "")
+    j["severity"] = str(rs.get("severity") or j.get("severity") or "info")
+    j["finished_at"] = rs.get("backup_finished_at") or j.get("finished_at")
+    msg = str(rs.get("message") or "").strip()
+    if msg:
+        j["message"] = msg
+    ap = rs.get("archive_path")
+    j["backup_file"] = ap if ap else None
 
 
 def _curl_put_with_progress(
@@ -1182,11 +1386,40 @@ def _do_backup_logic(
         )
         return wrapped, True
 
+    def _is_inhibit_failure(backup_result: dict) -> tuple[bool, str]:
+        combined = (
+            f"{backup_result.get('stderr') or ''}\n"
+            f"{backup_result.get('stdout') or ''}\n"
+            f"{backup_result.get('error') or ''}"
+        ).lower()
+        if "failed to inhibit" in combined:
+            return True, (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "").strip()
+        if "access denied" in combined and runtime_markers.get("suspend_guard_active"):
+            return True, (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "").strip()
+        if backup_result.get("returncode") == -42:
+            return True, (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "").strip()
+        return False, ""
+
+    def _cleanup_partial_with_flag(partial_path: str) -> bool:
+        p = Path(partial_path)
+        existed_before = p.exists()
+        _cleanup_backup_file(partial_path)
+        if not existed_before:
+            return False
+        return not p.exists()
+
     def _run_tar(cmd: str) -> dict:
         # Tar läuft als Backend-Prozess (SupplementaryGroups=setuphelfer); kein sudo — sonst
         # NoNewPrivileges=true und setuid-sudo kollidieren (HW1-01..05).
+        inhibit_bin = shutil.which("systemd-inhibit")
+        runtime_markers["inhibit_available"] = bool(inhibit_bin)
+        if not inhibit_bin:
+            runtime_markers["suspend_guard_active"] = False
+            return {"success": False, "returncode": -42, "stderr": "systemd-inhibit binary not found", "stdout": ""}
+        if not os.access(inhibit_bin, os.X_OK):
+            runtime_markers["suspend_guard_active"] = False
+            return {"success": False, "returncode": -42, "stderr": "systemd-inhibit is not executable", "stdout": ""}
         guarded_cmd, guarded = _build_inhibited_shell_cmd(cmd)
-        runtime_markers["inhibit_available"] = bool(shutil.which("systemd-inhibit"))
         runtime_markers["suspend_guard_active"] = guarded
         if not cancel_event:
             return run_command(guarded_cmd, sudo=False, sudo_password=None, timeout=7200)
@@ -1407,6 +1640,27 @@ def _do_backup_logic(
                     **runtime_markers,
                 ),
             )
+        inhibit_failed, inhibit_error = _is_inhibit_failure(backup_result)
+        if inhibit_failed:
+            results.append(f"Backup fehlgeschlagen: {str(inhibit_error)[:200]}")
+            runtime_markers["abort_reason"] = "inhibit_failed"
+            runtime_markers["suspend_guard_active"] = False
+            partial_deleted = _cleanup_partial_with_flag(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
+            return _bc(
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
+                "backup.inhibit_failed",
+                "error",
+                {
+                    **runtime_markers,
+                    "diagnosis_id": "SYSTEMD-INHIBIT-042",
+                    "inhibit_available": bool(runtime_markers.get("inhibit_available")),
+                    "inhibit_error": str(inhibit_error)[:300],
+                    "suspend_guard_active": False,
+                    "backup_file": None,
+                    "partial_deleted": bool(partial_deleted),
+                },
+            )
         stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
         results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
         runtime_markers["abort_reason"] = "tar_failed"
@@ -1544,6 +1798,27 @@ def _do_backup_logic(
                     **runtime_markers,
                 ),
             )
+        inhibit_failed, inhibit_error = _is_inhibit_failure(backup_result)
+        if inhibit_failed:
+            results.append(f"Backup fehlgeschlagen: {str(inhibit_error)[:200]}")
+            runtime_markers["abort_reason"] = "inhibit_failed"
+            runtime_markers["suspend_guard_active"] = False
+            partial_deleted = _cleanup_partial_with_flag(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
+            return _bc(
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
+                "backup.inhibit_failed",
+                "error",
+                {
+                    **runtime_markers,
+                    "diagnosis_id": "SYSTEMD-INHIBIT-042",
+                    "inhibit_available": bool(runtime_markers.get("inhibit_available")),
+                    "inhibit_error": str(inhibit_error)[:300],
+                    "suspend_guard_active": False,
+                    "backup_file": None,
+                    "partial_deleted": bool(partial_deleted),
+                },
+            )
         stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
         results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
         runtime_markers["abort_reason"] = "tar_failed"
@@ -1633,6 +1908,36 @@ def _do_backup_logic(
                 "backup.cancelled",
                 "info",
                 dict(runtime_markers),
+            )
+        stderr_tar = (backup_result.get("stderr") or "") + "\n" + (backup_result.get("stdout") or "")
+        denied_before_manifest = _extract_permission_denied_paths(stderr_tar)
+        if denied_before_manifest:
+            results.append(f"Nicht lesbare Quellen: {', '.join(denied_before_manifest[:5])}")
+            runtime_markers["abort_reason"] = "source_permission_denied"
+            _cleanup_backup_file(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
+            return _bc(
+                {
+                    "status": "error",
+                    "message": "Datenquelle nicht lesbar",
+                    "results": results,
+                    "backup_file": None,
+                    "timestamp": timestamp,
+                },
+                "backup.source_permission_denied",
+                "error",
+                dict(
+                    {
+                        "selected_sources": data_sources,
+                        "unreadable_sources": [{"path": p, "reason": "permission_denied"} for p in denied_before_manifest],
+                        "skipped_sources": skipped_optional,
+                        "required_sources": required_sources,
+                        "optional_sources": optional_sources,
+                        "required_permission": "read_execute",
+                        "diagnosis_id": "BACKUP-SOURCE-PERM-032",
+                    },
+                    **runtime_markers,
+                ),
             )
         if backup_result.get("success"):
             _make_backup_readable(backup_file_partial)
@@ -1760,6 +2065,27 @@ def _do_backup_logic(
                     **runtime_markers,
                 ),
             )
+        inhibit_failed, inhibit_error = _is_inhibit_failure(backup_result)
+        if inhibit_failed:
+            results.append(f"Backup fehlgeschlagen: {str(inhibit_error)[:200]}")
+            runtime_markers["abort_reason"] = "inhibit_failed"
+            runtime_markers["suspend_guard_active"] = False
+            partial_deleted = _cleanup_partial_with_flag(backup_file_partial)
+            runtime_markers["backup_finished_at"] = _now_iso()
+            return _bc(
+                {"status": "error", "message": "Backup fehlgeschlagen", "results": results, "backup_file": None, "timestamp": timestamp},
+                "backup.inhibit_failed",
+                "error",
+                {
+                    **runtime_markers,
+                    "diagnosis_id": "SYSTEMD-INHIBIT-042",
+                    "inhibit_available": bool(runtime_markers.get("inhibit_available")),
+                    "inhibit_error": str(inhibit_error)[:300],
+                    "suspend_guard_active": False,
+                    "backup_file": None,
+                    "partial_deleted": bool(partial_deleted),
+                },
+            )
         stderr = (backup_result.get("stderr") or backup_result.get("stdout") or backup_result.get("error") or "Unbekannter Fehler")
         results.append(f"Backup fehlgeschlagen: {str(stderr)[:200]}")
         runtime_markers["abort_reason"] = "tar_failed"
@@ -1794,6 +2120,10 @@ async def backup_jobs_list():
 @app.get("/api/backup/jobs/{job_id}")
 async def backup_job_status(job_id: str):
     job_id = (job_id or "").strip()
+    runner_status = _read_backup_runner_status(job_id)
+    if runner_status:
+        _sync_ram_job_from_runner(job_id)
+        return with_backup_contract({"status": "success", "job": _runner_status_to_job(runner_status)}, "backup.job_status", "success")
     job = BACKUP_JOBS.get(job_id)
     if not job:
         return JSONResponse(
@@ -1806,6 +2136,53 @@ async def backup_job_status(job_id: str):
 @app.post("/api/backup/jobs/{job_id}/cancel")
 async def backup_job_cancel(job_id: str):
     job_id = (job_id or "").strip()
+    runner_status = _read_backup_runner_status(job_id)
+    if runner_status:
+        rs_st = str(runner_status.get("status") or "").strip().lower()
+        _sync_ram_job_from_runner(job_id)
+        if rs_st == "cancelled":
+            return with_backup_contract(
+                {"status": "success", "message": "Job bereits abgebrochen"},
+                "backup.job_already_done",
+                "info",
+                {"job_id": job_id},
+            )
+        if rs_st in ("success", "error", "failed"):
+            return with_backup_contract(
+                {"status": "success", "message": "Job ist bereits abgeschlossen"},
+                "backup.job_already_done",
+                "info",
+                {"job_id": job_id, "runner_status": rs_st},
+            )
+        unit_name = str(runner_status.get("unit_name") or "").strip()
+        unit_scope = str(runner_status.get("unit_scope") or "system").strip().lower()
+        if not unit_name:
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract({"status": "error", "message": "Runner-Unit unbekannt"}, "backup.cancel_failed", "error"),
+            )
+        if unit_scope == "user":
+            stop_argv = ["systemctl", "--user", "stop", unit_name]
+        else:
+            stop_argv = ["systemctl", "stop", unit_name]
+        stop_res = _systemctl_run_argv(stop_argv, timeout=30)
+        if not stop_res.get("success"):
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": "Abbruch fehlgeschlagen"},
+                    "backup.cancel_failed",
+                    "error",
+                    {"unit_name": unit_name, "stderr": (stop_res.get("stderr") or "")[:300]},
+                ),
+            )
+        return with_backup_contract(
+            {"status": "success", "message": "Abbruch angefordert"},
+            "backup.cancel_requested",
+            "success",
+            {"unit_name": unit_name, "unit_scope": unit_scope},
+        )
+
     job = BACKUP_JOBS.get(job_id)
     if not job:
         return JSONResponse(
@@ -3846,14 +4223,24 @@ def _validate_backup_list_dir(path_str: str) -> tuple[str, dict]:
     return str(resolved), {"target": str(resolved), "validation_mode": "read_only"}
 
 
-def _backup_create_needs_sudo_precheck(backup_type: str, target: str) -> bool:
+def _backup_create_needs_sudo_precheck(
+    backup_type: str,
+    target: str,
+    *,
+    skip_full_when_systemd_template: bool = False,
+) -> bool:
     """
     True, wenn /api/backup/create vor dem Tar einen sudo-Sanity-Check und sudo-mkdir braucht.
     data + local auf Allowlist-Zielen: kein Gate (Tar ohne sudo, FIX-2 / NoNewPrivileges).
+    full + local + systemd-template-Pfad: ebenfalls kein Gate (Tar läuft im Root-Runner-Service).
     """
     bt = (backup_type or "").strip().lower()
     tgt = (target or "local").strip().lower()
-    return not (bt == "data" and tgt == "local")
+    if bt == "data" and tgt == "local":
+        return False
+    if skip_full_when_systemd_template and bt == "full" and tgt == "local":
+        return False
+    return True
 
 
 def _sudo_n_true_failed_due_to_nnp(sudo_test: dict) -> bool:
@@ -12569,7 +12956,19 @@ async def create_backup(request: Request):
                 ),
             )
 
-        needs_sudo_precheck = _backup_create_needs_sudo_precheck(backup_type, target)
+        runner_mode = _backup_runner_mode()
+        backup_start_mode = _backup_start_mode()
+        use_full_template_runner = backup_type == "full" and (
+            backup_start_mode == "helper"
+            or backup_start_mode == "systemd"
+            or runner_mode == "systemd-template"
+        )
+
+        needs_sudo_precheck = _backup_create_needs_sudo_precheck(
+            backup_type,
+            target,
+            skip_full_when_systemd_template=use_full_template_runner,
+        )
 
         if needs_sudo_precheck and not sudo_password:
             sudo_test = run_command("sudo -n true", sudo=False)
@@ -12641,6 +13040,13 @@ async def create_backup(request: Request):
         # cloud settings from persisted backup settings
         backup_settings = _read_backup_settings()
         cloud = backup_settings.get("cloud") or {}
+
+        use_data_template_runner = backup_type == "data" and (
+            backup_start_mode == "helper"
+            or backup_start_mode == "systemd"
+            or runner_mode == "systemd-template"
+        )
+        use_helper_for_start = backup_type == "data" and backup_start_mode == "helper"
 
         def _cloud_remote_url(local_file: str, cloud_settings: dict = None) -> Optional[str]:
             # Verwende übergebene Cloud-Einstellungen oder die aus dem äußeren Scope
@@ -12759,6 +13165,399 @@ async def create_backup(request: Request):
                 return True, remote
             logger.error("[Cloud-Upload] PROPFIND HTTP %s; PUT war %s", code, put_code)
             return False, f"Remote Verifizierung fehlgeschlagen (HTTP {code or '—'})"
+
+        if use_data_template_runner:
+            if _has_active_long_running_job():
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": "Es läuft bereits ein Backup- oder Klon-Auftrag.",
+                        },
+                        "backup.job_conflict",
+                        "error",
+                    ),
+                )
+
+            data_sources, skipped_optional, unreadable_required = _plan_data_backup_sources()
+            required_sources = [str(p) for p in _data_required_source_candidates()]
+            optional_sources = [str(p) for p in _data_optional_source_candidates()]
+            if unreadable_required or not data_sources:
+                unreadable_txt = ", ".join(str(x.get("path")) for x in unreadable_required if x.get("path"))
+                results = []
+                if unreadable_txt:
+                    results.append(f"Pflichtquelle nicht lesbar: {unreadable_txt}")
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": "Datenquelle nicht lesbar",
+                            "results": results,
+                            "backup_file": None,
+                            "timestamp": timestamp,
+                        },
+                        "backup.source_permission_denied",
+                        "error",
+                        {
+                            "selected_sources": data_sources,
+                            "unreadable_sources": unreadable_required,
+                            "skipped_sources": skipped_optional,
+                            "required_sources": required_sources,
+                            "optional_sources": optional_sources,
+                            "required_permission": "read_execute",
+                            "diagnosis_id": "BACKUP-SOURCE-PERM-032",
+                        },
+                    ),
+                )
+
+            source = data_sources[0]
+            job_id = _new_job_id()
+            unit_name = f"setuphelfer-backup@{job_id}.service"
+            status_dir = _backup_runner_status_dir()
+            job_file = _backup_runner_job_file(job_id)
+            status_file = _backup_runner_status_file(job_id)
+            status_file.parent.mkdir(parents=True, exist_ok=True)
+            job_payload = {
+                "job_id": job_id,
+                "backup_type": "data",
+                "backup_dir": backup_dir,
+                "source": source,
+                "lang": str(data.get("lang") or ""),
+                "requested_by": "api",
+                "created_at": _now_iso(),
+            }
+            job_file.write_text(json.dumps(job_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            initial_status = {
+                "job_id": job_id,
+                "unit_name": unit_name,
+                "unit_scope": "system",
+                "status": "queued",
+                "code": "backup.job.queued",
+                "severity": "info",
+                "diagnosis_id": None,
+                "backup_started_at": _now_iso(),
+                "backup_finished_at": None,
+                "backup_type": "data",
+                "backup_dir": backup_dir,
+                "source": source,
+                "archive_path": bf,
+                "partial_path": f"{bf}.partial",
+                "abort_reason": None,
+                "progress_optional": None,
+            }
+            status_file.write_text(json.dumps(initial_status, ensure_ascii=False, indent=2), encoding="utf-8")
+
+            BACKUP_JOBS[job_id] = {
+                "job_id": job_id,
+                "status": "queued",
+                "type": backup_type,
+                "backup_dir": backup_dir,
+                "backup_file": bf,
+                "target": target,
+                "started_at": _now_iso(),
+                "finished_at": None,
+                "message": "Wartet…",
+                "code": "backup.job.queued",
+                "severity": "info",
+                "results": [],
+                "unit_name": unit_name,
+                "unit_scope": "system",
+                "status_source": "systemd_runner",
+            }
+
+            if use_helper_for_start:
+                ok, hcode, hraw = _start_backup_via_helper(job_id)
+                if not ok:
+                    BACKUP_JOBS[job_id]["status"] = "error"
+                    BACKUP_JOBS[job_id]["message"] = "Backup-Starter fehlgeschlagen"
+                    BACKUP_JOBS[job_id]["code"] = hcode
+                    BACKUP_JOBS[job_id]["severity"] = "error"
+                    try:
+                        status_file.write_text(
+                            json.dumps(
+                                {
+                                    **initial_status,
+                                    "status": "error",
+                                    "code": hcode,
+                                    "severity": "error",
+                                    "diagnosis_id": "SYSTEMD-RUNNER-001",
+                                    "abort_reason": "starter_failed",
+                                    "backup_finished_at": _now_iso(),
+                                    "starter_response": hraw,
+                                    "unit_scope": "system",
+                                },
+                                ensure_ascii=False,
+                                indent=2,
+                            ),
+                            encoding="utf-8",
+                        )
+                    except Exception:
+                        pass
+                    return JSONResponse(
+                        status_code=200,
+                        content=with_backup_contract(
+                            {"status": "error", "message": "Backup-Starter fehlgeschlagen"},
+                            hcode,
+                            "error",
+                            {"diagnosis_id": "SYSTEMD-RUNNER-001", **(hraw if isinstance(hraw, dict) else {})},
+                        ),
+                    )
+                return with_backup_contract(
+                    {
+                        "status": "accepted",
+                        "job_id": job_id,
+                        "backup_file": bf,
+                        "message": "Backup gestartet",
+                    },
+                    "backup.job_started",
+                    "success",
+                    {
+                        "job_id": job_id,
+                        "unit_name": unit_name,
+                        "runner_mode": "helper",
+                        "starter_code": hcode,
+                        "starter": hraw,
+                        "start_mode": backup_start_mode,
+                        "unit_scope": "system",
+                    },
+                )
+
+            run_res = _systemctl_run_argv(["systemctl", "start", unit_name], timeout=60)
+            if not run_res.get("success"):
+                BACKUP_JOBS[job_id]["status"] = "error"
+                BACKUP_JOBS[job_id]["message"] = "Backup-Runner konnte nicht gestartet werden"
+                BACKUP_JOBS[job_id]["code"] = "backup.runner_start_failed"
+                BACKUP_JOBS[job_id]["severity"] = "error"
+                try:
+                    status_file.write_text(
+                        json.dumps(
+                            {
+                                **initial_status,
+                                "status": "error",
+                                "code": "backup.runner_start_failed",
+                                "severity": "error",
+                                "diagnosis_id": "SYSTEMD-RUNNER-001",
+                                "abort_reason": "runner_start_failed",
+                                "backup_finished_at": _now_iso(),
+                                "stderr_excerpt": (run_res.get("stderr") or run_res.get("error") or "")[:300],
+                                "unit_scope": "system",
+                            },
+                            ensure_ascii=False,
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
+                except Exception:
+                    pass
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": "Backup-Runner konnte nicht gestartet werden"},
+                        "backup.runner_start_failed",
+                        "error",
+                        {"diagnosis_id": "SYSTEMD-RUNNER-001", "stderr": (run_res.get("stderr") or run_res.get("error") or "")[:300]},
+                    ),
+                )
+
+            return with_backup_contract(
+                {
+                    "status": "accepted",
+                    "job_id": job_id,
+                    "backup_file": bf,
+                    "message": "Backup gestartet",
+                },
+                "backup.job_started",
+                "success",
+                {
+                    "job_id": job_id,
+                    "unit_name": unit_name,
+                    "runner_mode": "systemd-template",
+                    "start_mode": backup_start_mode,
+                    "unit_scope": "system",
+                },
+            )
+
+        elif use_full_template_runner:
+            if _has_active_long_running_job():
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": "Es läuft bereits ein Backup- oder Klon-Auftrag.",
+                        },
+                        "backup.job_conflict",
+                        "error",
+                    ),
+                )
+
+            job_id = _new_job_id()
+            unit_name = f"setuphelfer-backup@{job_id}.service"
+            status_dir = _backup_runner_status_dir()
+            job_file = _backup_runner_job_file(job_id)
+            status_file = _backup_runner_status_file(job_id)
+            status_file.parent.mkdir(parents=True, exist_ok=True)
+            job_payload = {
+                "job_id": job_id,
+                "backup_type": "full",
+                "backup_dir": backup_dir,
+                "source": "/",
+                "lang": str(data.get("lang") or ""),
+                "requested_by": "api",
+                "created_at": _now_iso(),
+            }
+            job_file.write_text(json.dumps(job_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            initial_status = {
+                "job_id": job_id,
+                "unit_name": unit_name,
+                "unit_scope": "system",
+                "status": "queued",
+                "code": "backup.job.queued",
+                "severity": "info",
+                "diagnosis_id": None,
+                "backup_started_at": _now_iso(),
+                "backup_finished_at": None,
+                "backup_type": "full",
+                "backup_dir": backup_dir,
+                "source": "/",
+                "archive_path": bf,
+                "partial_path": f"{bf}.partial",
+                "abort_reason": None,
+                "progress_optional": None,
+            }
+            status_file.write_text(json.dumps(initial_status, ensure_ascii=False, indent=2), encoding="utf-8")
+
+            BACKUP_JOBS[job_id] = {
+                "job_id": job_id,
+                "status": "queued",
+                "type": backup_type,
+                "backup_dir": backup_dir,
+                "backup_file": bf,
+                "target": target,
+                "started_at": _now_iso(),
+                "finished_at": None,
+                "message": "Wartet…",
+                "code": "backup.job.queued",
+                "severity": "info",
+                "results": [],
+                "unit_name": unit_name,
+                "unit_scope": "system",
+                "status_source": "systemd_runner",
+            }
+
+            if backup_start_mode == "helper":
+                ok, hcode, hraw = _start_backup_via_helper(job_id)
+                if not ok:
+                    BACKUP_JOBS[job_id]["status"] = "error"
+                    BACKUP_JOBS[job_id]["message"] = "Backup-Starter fehlgeschlagen"
+                    BACKUP_JOBS[job_id]["code"] = hcode
+                    BACKUP_JOBS[job_id]["severity"] = "error"
+                    try:
+                        status_file.write_text(
+                            json.dumps(
+                                {
+                                    **initial_status,
+                                    "status": "error",
+                                    "code": hcode,
+                                    "severity": "error",
+                                    "diagnosis_id": "SYSTEMD-RUNNER-001",
+                                    "abort_reason": "starter_failed",
+                                    "backup_finished_at": _now_iso(),
+                                    "starter_response": hraw,
+                                    "unit_scope": "system",
+                                },
+                                ensure_ascii=False,
+                                indent=2,
+                            ),
+                            encoding="utf-8",
+                        )
+                    except Exception:
+                        pass
+                    return JSONResponse(
+                        status_code=200,
+                        content=with_backup_contract(
+                            {"status": "error", "message": "Backup-Starter fehlgeschlagen"},
+                            hcode,
+                            "error",
+                            {"diagnosis_id": "SYSTEMD-RUNNER-001", **(hraw if isinstance(hraw, dict) else {})},
+                        ),
+                    )
+                return with_backup_contract(
+                    {
+                        "status": "accepted",
+                        "job_id": job_id,
+                        "backup_file": bf,
+                        "message": "Backup gestartet",
+                    },
+                    "backup.job_started",
+                    "success",
+                    {
+                        "job_id": job_id,
+                        "unit_name": unit_name,
+                        "runner_mode": "helper",
+                        "starter_code": hcode,
+                        "starter": hraw,
+                        "start_mode": backup_start_mode,
+                        "unit_scope": "system",
+                    },
+                )
+
+            run_res = _systemctl_run_argv(["systemctl", "start", unit_name], timeout=60)
+            if not run_res.get("success"):
+                BACKUP_JOBS[job_id]["status"] = "error"
+                BACKUP_JOBS[job_id]["message"] = "Backup-Runner konnte nicht gestartet werden"
+                BACKUP_JOBS[job_id]["code"] = "backup.runner_start_failed"
+                BACKUP_JOBS[job_id]["severity"] = "error"
+                try:
+                    status_file.write_text(
+                        json.dumps(
+                            {
+                                **initial_status,
+                                "status": "error",
+                                "code": "backup.runner_start_failed",
+                                "severity": "error",
+                                "diagnosis_id": "SYSTEMD-RUNNER-001",
+                                "abort_reason": "runner_start_failed",
+                                "backup_finished_at": _now_iso(),
+                                "stderr_excerpt": (run_res.get("stderr") or run_res.get("error") or "")[:300],
+                                "unit_scope": "system",
+                            },
+                            ensure_ascii=False,
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
+                except Exception:
+                    pass
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": "Backup-Runner konnte nicht gestartet werden"},
+                        "backup.runner_start_failed",
+                        "error",
+                        {"diagnosis_id": "SYSTEMD-RUNNER-001", "stderr": (run_res.get("stderr") or run_res.get("error") or "")[:300]},
+                    ),
+                )
+
+            return with_backup_contract(
+                {
+                    "status": "accepted",
+                    "job_id": job_id,
+                    "backup_file": bf,
+                    "message": "Backup gestartet",
+                },
+                "backup.job_started",
+                "success",
+                {
+                    "job_id": job_id,
+                    "unit_name": unit_name,
+                    "runner_mode": "systemd-template",
+                    "start_mode": backup_start_mode,
+                    "unit_scope": "system",
+                },
+            )
 
         if run_async:
             if _has_active_long_running_job():
@@ -13521,6 +14320,12 @@ async def verify_backup(request: Request):
                     diag_id = "BACKUP-MANIFEST-001"
                 elif vd_key == K_VERIFY_INTEGRITY_FAILED:
                     api_code = "backup.verify_integrity_failed"
+                    if any(
+                        isinstance(x, dict)
+                        and x.get("kind") in ("hash_mismatch", "manifest_metadata_mismatch")
+                        for x in errs
+                    ):
+                        api_code = "backup.failed_integrity_mismatch"
                     if any(isinstance(x, dict) and x.get("kind") == "hash_mismatch" for x in errs):
                         diag_id = "BACKUP-HASH-003"
                     else:

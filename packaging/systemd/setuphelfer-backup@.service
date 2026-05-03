@@ -1,0 +1,21 @@
+[Unit]
+Description=Setuphelfer Backup Runner (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=setuphelfer
+SupplementaryGroups=setuphelfer
+WorkingDirectory=/opt/setuphelfer/backend
+ExecStart=/opt/setuphelfer/backend/venv/bin/python3 /opt/setuphelfer/backend/tools/backup_runner.py --job-id %i --status-dir /var/lib/setuphelfer/backup-jobs --unit-name setuphelfer-backup@%i.service --unit-scope system
+KillSignal=SIGTERM
+TimeoutStopSec=30
+NoNewPrivileges=no
+ProtectSystem=strict
+PrivateTmp=yes
+ReadWritePaths=/mnt/setuphelfer /var/lib/setuphelfer /var/log/setuphelfer
+
+[Install]
+WantedBy=multi-user.target
