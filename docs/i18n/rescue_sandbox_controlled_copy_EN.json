@@ -1,0 +1,6 @@
+{
+  "rescue_sandbox_copy_verified": "Rescue sandbox copy verified",
+  "sandbox_copy_hash_mismatch": "Sandbox copy: hash mismatch",
+  "sandbox_copy_final_gate_ready": "Sandbox copy: final gate ready",
+  "sandbox_copy_blocked": "Sandbox copy blocked"
+}

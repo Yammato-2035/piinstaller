@@ -1,0 +1,6 @@
+{
+  "rescue_build_emulation_ready": "Rescue-Build-Emulation bereit",
+  "simulated_outputs_verified": "Simulierte Outputs verifiziert",
+  "readonly_emulation_active": "Readonly-Emulation aktiv",
+  "build_emulation_blocked": "Build-Emulation blockiert"
+}

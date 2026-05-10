@@ -221,6 +221,47 @@
 - Verify/Restore: kritische Integritätsfehler führen zu klaren Fehlercodes, keine grüne Erfolgsmeldung bei unbrauchbarem Archiv.
 - FAQ-Kandidat: ja
 
+## Rescue Deploy — Warum sind jetzt echte Kopien erlaubt?
+
+- Vorher: nur **Pläne** (`sandbox_*_copy_plan.json`) ohne Bytes zu schreiben.
+- Jetzt: **Controlled Copy** kopiert ausschliesslich laut Plan, nur nach Precheck (Sandbox-Final-Gate, Safety, Pfad-/Groessenregeln), nur nach `build/rescue/sandbox/config-copy/` bzw. `runtime-copy/`, mit SHA256 und Verify.
+- FAQ-Kandidat: ja
+
+## Rescue Deploy — Warum nur innerhalb der Sandbox?
+
+- Risiko-Containment: kein Schreiben nach `/`, keine Evidence-/History-Pfade als Ziel, keine Symlink-Flucht aus `build/rescue/`, kein ISO/QCOW2/VM-Artefakt.
+- FAQ-Kandidat: ja
+
+## Rescue Deploy — Warum sind Hashes Pflicht?
+
+- Bit-fuer-Bit-Nachweis, dass Ziel == Quelle; Verify und Seal referenzieren die Rohbytes der Handoffs.
+- FAQ-Kandidat: ja
+
+## Rescue Deploy — Warum weiterhin kein Build?
+
+- Diese Phase ersetzt **keinen** `lb build`/ISO/Chroot; sie bereitet nur konsistente Sandbox-Dateien fuer spaetere Schritte vor.
+- FAQ-Kandidat: ja
+
+## Rescue Deploy — Warum wird noch keine echte ISO erzeugt?
+
+- Die **Build-Environment-Emulation** erzeugt nur JSON-Metadaten (erwartete Pfade, Groessenbereiche, simulierte Logs). Echte ISOs braeuchten live-build, SquashFS-Pack und Boot-Image-Tools — explizit ausgeschlossen.
+- FAQ-Kandidat: ja
+
+## Rescue Deploy — Warum sind Outputs nur emuliert?
+
+- Risiko- und Scope-Kontrolle: `generated: false` und `readonly_emulated: true` signalisieren, dass keine binaeren Artefakte geschrieben werden; Verify prueft das.
+- FAQ-Kandidat: ja
+
+## Rescue Deploy — Warum ist generated=false wichtig?
+
+- Unterscheidet **Plan/Simulation** von echter Build-Ausgabe; Final-Gate und Audit koennen darauf bestehen, dass keine Faelschung von „fertig gebaut“ vorliegt.
+- FAQ-Kandidat: ja
+
+## Rescue Deploy — Warum wird readonly_emulated geprueft?
+
+- Sicherstellung, dass die Emulationskette nicht fälschlich echte Schreib-/Build-Pfade beansprucht und dass Metadaten konsistent zum Strict-Mode sind.
+- FAQ-Kandidat: ja
+
 ## Einsteigerführung & Begleiter (ab 1.3.9.0)
 
 - **Zentrale Logik:** `frontend/src/beginner/moduleModel.ts` (ModuleId, ExperienceLevel, MODULE_DEFINITIONS, App-Store-Meta).

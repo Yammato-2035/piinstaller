@@ -7,6 +7,13 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added (Rescue — sandbox controlled copy & build environment emulation)
+- Deploy-Runner `runner_rescue_sandbox_controlled_copy.py`: Precheck, Config-/Runtime-Kopie nur unter `build/rescue/sandbox/`, SHA256-Verify, Seal, Final-Gate; Handoffs unter `docs/evidence/runtime-results/handoff/`.
+- Deploy-Runner `runner_rescue_build_environment_emulation.py`: read-only Emulation (Snapshot, Workspace, Outputs-Metadaten, Logs, Overlay), Verify, Seal, Final-Gate; Artefakte unter `build/rescue/emulation/`.
+- API (`/api/deploy`): `POST /rescue/sandbox-copy/{precheck,config,runtime,verify,seal,final-gate}` und `POST /rescue/build-emulation/{environment-snapshot,workspace,outputs,logs,overlay,verify,seal,final-gate}` mit passenden `DEPLOY_RESCUE_*`-Response-Codes.
+- Tests: `test_deploy_runner_rescue_sandbox_controlled_copy_v1.py`, `test_deploy_runner_rescue_build_environment_emulation_v1.py`.
+- Doku/KB/Evidence/i18n: u. a. `DEPLOY_RESCUE_SANDBOX_CONTROLLED_COPY_{DE,EN}.md`, `DEPLOY_RESCUE_BUILD_ENVIRONMENT_EMULATION_{DE,EN}.md`, KB-Artikel und FAQ-Ergänzungen.
+
 ### Fixed (Backup API - FIX-9 API consistency, HW pre-06)
 - `GET /api/backup/list` nutzt jetzt eine eigene read-only Validierung mit `resolve_mount_source_for_path` statt der Schreibprï¿½fung aus Create; autofs/systemd-automount wird auf reales Blockdevice aufgelï¿½st.
 - Fehlerantworten von `backup/list` liefern strukturierte Details (`mount_source_seen`, `resolved_source`, `fstype`, `target`, `diagnosis_id`) fï¿½r Evidence/Diagnose.
