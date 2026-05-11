@@ -47,7 +47,7 @@
     "failing_pytest_evidence": "docs/evidence/release-gates/current_failures.json",
     "failure_clusters": [],
     "missing_tests_notes": [
-      "GitHub CI (ci.yml): Diagnostics-Mapping behoben (Commits 1cdee5f + 9a2b96c); Run 25688864468 — nächster -x-Fehler Rescue-Dryrun/smartctl fehlt auf Runner.",
+      "GitHub CI (ci.yml): Diagnostics-Mapping behoben (Commits 1cdee5f + 9a2b96c); smartctl in Rescue-Dryrun ist behoben; neuer -x-Fehler: tests/test_rescue_restore_phase3.py::TestRescueRestoreGate::test_session_missing (Run 25689506120).",
       "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
       "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix, Evidence noch Template)",
       "Echter Read-only Rescue-Stick-Lauf (RS-*, Evidence rot)"
@@ -83,9 +83,9 @@
     "P1": [
       {
         "id": "P1-CI-EVIDENCE",
-        "title": "GitHub CI rot — Rescue-Dryrun (smartctl fehlt) behoben: inspect_storage tolerant; nächster ci.yml-Lauf nötig",
+        "title": "GitHub CI rot — smartctl Rescue-Dryrun behoben; nächster -x-Fehler Phase3 Gate: test_session_missing",
         "blocks": ["öffentliche Reproduzierbarkeit"],
-        "next_step": "Produktfix committed: backend/modules/inspect_storage.py _run_capture fängt FileNotFoundError (smartctl) ab; CI erneut abwarten und ci_evidence aktualisieren"
+        "next_step": "Aktuellen Code-Mismatch (dryrun_missing vs session_missing) in test_rescue_restore_phase3.py klären; bis dahin CI bleibt rot."
       },
       {
         "id": "P1-RESCUE-RS",

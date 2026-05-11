@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): smartctl/Rescue-Dryrun-Fix für fehlendes Tool committed (inspect_storage toleriert FileNotFoundError); Remote bleibt bis zum nächsten erfolgreichen Lauf rot; lokal pytest grün siehe `current_failures.json`  
+**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): smartctl/Rescue-Dryrun-Fix für fehlendes Tool committed (inspect_storage toleriert FileNotFoundError); nächster Blocker jetzt Phase3 Gate `test_session_missing` (Run 25689506120); Remote bleibt bis zum nächsten erfolgreichen Lauf rot; lokal pytest grün siehe `current_failures.json`  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

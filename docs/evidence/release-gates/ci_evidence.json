@@ -1,27 +1,27 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-11T20:30:00Z",
+  "generated": "2026-05-11T20:33:30Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
   "latest_runs_queried": 5,
   "latest_run": {
-    "database_id": 25688864468,
+    "database_id": 25689506120,
     "conclusion": "failure",
-    "created_at": "2026-05-11T18:19:46Z",
-    "updated_at": "2026-05-11T18:20:30Z",
+    "created_at": "2026-05-11T18:32:20Z",
+    "updated_at": "2026-05-11T18:32:58Z",
     "head_branch": "main",
-    "head_sha": "9a2b96cb9437239ac4aa321b9f3cf2398a3e1ac4",
-    "display_title": "Fix diagnostics evidence_store coerce for tracked seeds",
-    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25688864468",
+    "head_sha": "d0c9ddf28e8fba72ead7611ca68ffba73a778fca",
+    "display_title": "Fix CI rescue dryrun smartctl handling",
+    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25689506120",
     "jobs": [
       {
         "name": "lint-and-test",
         "conclusion": "failure",
         "failed_step": "Pytest",
         "failed_step_number": 8,
-        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25688864468"
+        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25689506120"
       }
     ]
   },
@@ -35,18 +35,18 @@
     "evidence_store_commit": "9a2b96cb9437239ac4aa321b9f3cf2398a3e1ac4"
   },
   "failure_analysis": {
-    "analyzed_at": "2026-05-11T20:28:00Z",
+    "analyzed_at": "2026-05-11T20:33:00Z",
     "pytest_command_ci": "python -m pytest tests/ -v --tb=short -x",
     "failure_phase": "test_execution",
     "first_error": {
-      "type": "FileNotFoundError",
-      "message": "No such file or directory: 'smartctl'",
-      "trigger_file": "tests/test_rescue_restore_dryrun.py",
-      "trigger_test": "TestRescueRestoreDryrun::test_2_target_capacity_red",
-      "line": 94
+      "type": "AssertionError",
+      "message": "'rescue.restore.dryrun_missing' != 'rescue.restore.session_missing'",
+      "trigger_file": "tests/test_rescue_restore_phase3.py",
+      "trigger_test": "TestRescueRestoreGate::test_session_missing",
+      "line": 77
     },
-    "root_cause_summary": "Rescue-Dryrun ruft smartctl auf; CI-Runner ohne smartctl im PATH. Fix: backend/modules/inspect_storage.py _run_capture fängt FileNotFoundError ab und behandelt smartctl als not_available (kein Crash).",
-    "log_source": "gh run view 25688864468 --log-failed"
+    "root_cause_summary": "Nach erfolgreicher smartctl-Toleranz im Rescue-Dryrun kommt CI als nächsten Abbruch auf `test_session_missing` in `test_rescue_restore_phase3.py` (Dryrun-/Session-Error-Code Erwartung).",
+    "log_source": "gh run view 25689506120 --log-failed"
   },
   "rescue_dryrun_smartctl_remediation": {
     "analysis_doc": "docs/evidence/release-gates/ci_rescue_dryrun_smartctl_analysis_2026-05-11.md",
@@ -60,17 +60,17 @@
     ]
   },
   "local_pytest_parity": {
-    "executed_at": "2026-05-11T20:24:00Z",
+    "executed_at": "2026-05-11T20:33:00Z",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default PYTHONPATH=. python -m pytest tests/ -q --tb=no",
     "cwd": "backend",
     "interpreter": "/tmp/piinstaller-test-venv/bin/python",
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Volle Suite lokal grün; Remote -x stoppt jetzt an smartctl (Rescue-Test)."
+    "note": "Volle Suite lokal grün; Remote -x stoppt jetzt an `test_session_missing` (Phase3 Gate)."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Diagnostics-Mapping-Blocker behoben; Gesamt-CI rot bis smartctl/Rescue-Test oder Mock separat gelöst.",
+  "notes": "Diagnostics-Mapping und smartctl-Handling sind behoben (lokal + bis in Phase3). Gesamt-CI bleibt rot bis zur nächsten erfolgreichen workflow-Ausführung (aktuell: session_missing Code-Mismatch).",
   "ampel": "rot",
   "evidence_complete": false,
   "failure_root_cause_documented": true,

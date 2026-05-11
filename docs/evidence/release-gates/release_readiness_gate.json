@@ -5,10 +5,10 @@
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "Diagnostics-Mapping/Seeds auf main; Rescue-Dryrun smartctl fehlt wurde produktseitig tolerant behandelt (Commit ausstehend im CI); CI bleibt bis zum nächsten erfolgreichen Workflow-Lauf rot. BR-001 weiter blockiert.",
+  "summary": "Diagnostics-Mapping/Seeds auf main; Rescue-Dryrun smartctl fehlt wurde tolerant behandelt; CI bleibt bis zum nächsten erfolgreichen Workflow-Lauf rot (aktuell: Phase3 Gate Code-Mismatch `test_session_missing`, Run 25689506120). BR-001 weiter blockiert.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
-    "GitHub Actions: Run 25688864468 — smartctl FileNotFoundError (ci_evidence.json); Fix in Backend produktseitig ergänzt, CI rerun ausstehend"
+    "GitHub Actions: Run 25689506120 — nächster -x-Fehler Phase3 Gate Code-Mismatch (vorher smartctl FileNotFoundError behoben)"
   ],
   "pytest_note": "Lokales pytest tests/ am 2026-05-11 (Prompt 2 erneut, ~21:15Z): 0 failures, 1526 passed — current_failures.json; Release bleibt über P0/CI blockiert.",
   "recommendation": "do_not_release"
