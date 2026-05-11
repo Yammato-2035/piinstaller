@@ -1,0 +1,135 @@
+{
+  "schema": "setuphelfer.blocker_inventory.v1",
+  "id": "blocker_inventory",
+  "generated": "2026-05-11",
+  "prompt02_rerun": {
+    "executed_at": "2026-05-11T21:15:00Z",
+    "spec": "docs/cursor/PROMPT_02_BLOCKER_INVENTORY.md",
+    "phases": ["phase1_testbestand", "phase2_fehler_pytest", "phase3_klassifikation", "phase4_outputs"]
+  },
+  "pytest_local_followup": {
+    "executed_at": "2026-05-11T21:15:00Z",
+    "failed": 0,
+    "passed": 1526,
+    "evidence": "docs/evidence/release-gates/current_failures.json",
+    "diagnostics_evidence_audit": "docs/evidence/release-gates/diagnostics_evidence_seed_audit_2026-05-11.json"
+  },
+  "prompt": "PROMPT_02_BLOCKER_INVENTORY",
+  "phase1_teststand": {
+    "pytest_test_files": 190,
+    "pytest_source": "backend/tests",
+    "pytest_inventory_evidence": "docs/evidence/release-gates/test_inventory.json",
+    "test_documentation_samples": [
+      "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
+      "docs/testing/HARDWARE_TEST_MATRIX.md",
+      "docs/testing/RESCUE_STICK_TEST_MATRIX.md",
+      "docs/developer/BACKUP_RESTORE_STABILITY_TEST_MATRIX.md",
+      "docs/knowledge-base/deploy/DEPLOY_HARDWARE_GATE.md"
+    ],
+    "evidence_directories": [
+      "docs/evidence/",
+      "docs/evidence/release-gates/",
+      "docs/evidence/hardware/",
+      "docs/evidence/backup-restore/",
+      "docs/evidence/rescue-stick/",
+      "docs/evidence/website/"
+    ],
+    "report_snapshots": [
+      "docs/evidence/release-gates/release_readiness_report.md",
+      "docs/evidence/release-gates/pytest_failures_summary_2026-05-11.txt",
+      "docs/evidence/release-gates/ci_evidence.json",
+      "docs/evidence/release-gates/ci_failure_analysis_STRICT_2026-05-11.md",
+      "docs/evidence/release-gates/STRICT_CI_BR_GATE_RUN_REPORT_2026-05-11.md"
+    ]
+  },
+  "phase2_findings": {
+    "failing_pytest_count": 0,
+    "failing_pytest_evidence": "docs/evidence/release-gates/current_failures.json",
+    "failure_clusters": [],
+    "missing_tests_notes": [
+      "GitHub CI (ci.yml): Pytest-Collect schlägt fehl — deploy.runner_rescue_io fehlt auf main (ci_evidence.json failure_analysis, 2026-05-11).",
+      "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
+      "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix, Evidence noch Template)",
+      "Echter Read-only Rescue-Stick-Lauf (RS-*, Evidence rot)"
+    ],
+    "unstable_or_environment_sensitive": [
+      "Pfade unter /media (PermissionError) – Produktcode jetzt defensiver (preflight/backup.py); Tests auf portables /tmp angeglichen wo nötig"
+    ],
+    "legacy_pi_installer_setuphelfer": {
+      "ampel": "gelb",
+      "evidence": "docs/evidence/release-gates/legacy_inventory.json",
+      "notes": "PI_INSTALLER_DEV, PI_INSTALLER_BACKEND_PORT, npm-Paketname pi-installer, i18n-Hinweise pi-installer-api-base; Hotspots in app.py, deploy/, service_conflict_guard"
+    },
+    "service_port_paths": {
+      "ampel": "gelb",
+      "evidence": "docs/evidence/release-gates/runtime_inventory.json",
+      "notes": "Backend 8000, Frontend-Dev 3001/5173, Rescue-Doku 8010; systemd setuphelfer-backend / setuphelfer"
+    },
+    "mount_permission": {
+      "ampel": "gelb",
+      "evidence": "docs/evidence/release-gates/storage_permission_inventory.json",
+      "notes": "safe_device + Preflight-Quellen; HW-Mountfälle in Matrizen offen"
+    }
+  },
+  "phase3_blockers": {
+    "P0": [
+      {
+        "id": "P0-HW-E2E",
+        "title": "Kein dokumentierter Hardware-Nachweis Backup→Verify→Restore→Boot",
+        "blocks": ["Hardwaretests", "Produktionsversprechen Recovery"],
+        "next_step": "HW-001 oder HW-005 nach Runbook; Evidence JSON füllen"
+      }
+    ],
+    "P1": [
+      {
+        "id": "P1-CI-EVIDENCE",
+        "title": "GitHub CI rot — fehlendes Modul deploy.runner_rescue_io auf main (Pytest-Collect)",
+        "blocks": ["öffentliche Reproduzierbarkeit"],
+        "next_step": "ci_failure_analysis_STRICT_2026-05-11.md: runner_rescue_io.py committen/pushen; CI erneut; weitere fehlende deploy-Dateien nach -x prüfen"
+      },
+      {
+        "id": "P1-RESCUE-RS",
+        "title": "Rescue-Stick / RS-* Evidence (E2E/Operator) ausstehend",
+        "blocks": ["Rescue-Release", "Recovery-Gate"],
+        "next_step": "RS-Matrix und echten Read-only-Stick-Lauf; phase3-Unit-Tests lokal grün (Snapshot 2026-05-11)"
+      }
+    ],
+    "P2": [
+      {
+        "id": "P2-WEB-WT",
+        "title": "Live-Website vs. WT-* / Statusseite noch nicht abgenommen",
+        "blocks": ["Website-Transparenz"],
+        "next_step": "PUBLIC_STATUS_PAGE in Site einbinden; github_status_link.json"
+      },
+      {
+        "id": "P2-LEGAL",
+        "title": "Impressum/Datenschutz/Affiliate nur Repo-Entwurf",
+        "blocks": ["Monetarisierungs-Go-Live"],
+        "next_step": "legal_release_gate.md mit Review füllen"
+      }
+    ],
+    "P3": [
+      {
+        "id": "P3-MONOLITH",
+        "title": "Monolith-Audit ohne Refactor (DOMAIN_BOUNDARIES Stub)",
+        "blocks": ["langfristige Wartbarkeit"],
+        "next_step": "PROMPT_05 ausführen"
+      },
+      {
+        "id": "P3-CLOUD",
+        "title": "Cloudserver Edition",
+        "blocks": [],
+        "next_step": "schwarz geparkt"
+      }
+    ]
+  },
+  "failure_priority_crosswalk": [],
+  "failure_priority_crosswalk_note": "2026-05-11 Prompt-2-Neuaufzeichnung (21:15Z): keine pytest-Failures; historische nodeid-Zuordnungen in Git-Historie.",
+  "recommended_order": [
+    "1) P0 HW-E2E nach Matrix/Runbook (Backup→Verify→Restore→Boot)",
+    "2) CI-Gesamtlauf in Evidence verlinken (P1-CI-EVIDENCE)",
+    "3) Rescue-Stick / RS-* Evidence (P1-RESCUE-RS)",
+    "4) Website-/Legal-Gates (P2)",
+    "5) Monolith-Audit Prompt 5 (P3)"
+  ]
+}
