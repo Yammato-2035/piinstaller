@@ -60,12 +60,24 @@ class TestInstrumentationScopes(unittest.TestCase):
         def capture_write(event_dict):
             events.append(event_dict)
 
+        def _empty_ip_run(cmd, sudo=False, sudo_password=None, timeout=10):
+            return {"success": True, "stdout": "", "stderr": "", "returncode": 0}
+
+        class _EmptyProc:
+            stdout = ""
+            returncode = 0
+
+        def _empty_subprocess_run(args, **kwargs):
+            return _EmptyProc()
+
         with tempfile.TemporaryDirectory() as d:
             os.environ["PIINSTALLER_DEBUG_PATH"] = str(Path(d) / "debug.jsonl")
             get_effective_config_cached(force_reload=True)
             init_debug()
             with mock.patch("debug.logger.write_event", side_effect=capture_write):
-                get_network_info()
+                with mock.patch("app.run_command", side_effect=_empty_ip_run):
+                    with mock.patch("app.subprocess.run", side_effect=_empty_subprocess_run):
+                        get_network_info()
             scopes = [e.get("scope", {}) for e in events]
             module_ids = [s.get("module_id") for s in scopes]
             step_ids = [s.get("step_id") for s in scopes]
