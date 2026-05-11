@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-11 — **CI-Failure-Analyse** (`ci_evidence.json` + `ci_failure_analysis_STRICT_2026-05-11.md`): GitHub Pytest rot (fehlendes `deploy.runner_rescue_io` auf `main`); lokal pytest grün siehe `current_failures.json`  
+**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): Deploy-Paket auf `main` ergänzt (df13af4); GitHub Pytest mit `-x` weiter **rot** — erster Fehler `test_backup_full_excludes_fix13_v1` (Run 25687412698); lokal pytest grün siehe `current_failures.json`  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition
@@ -56,7 +56,7 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | ID | Thema | Nächster Schritt |
 |----|-------|------------------|
 | P1-PYTEST | Lokale Suite **grün** (0 failures, Snapshot 2026-05-11); **CI-Lauf in Evidence** weiterhin offen | `current_failures.json`, `blocker_inventory.json` → `pytest_local_followup` |
-| P1-CI | Kein verlinkter grüner CI-Lauf in Evidence | GitHub Actions URL + Run-ID in Evidence ergänzen |
+| P1-CI | GitHub CI rot (Run 25687412698); kein grüner Lauf | Fix13-Pytest vs. CI; danach erneuter Lauf, URL/Conclusion in `ci_evidence.json` |
 | P1-RESCUE | Rescue-Stick / RS-* Evidence (Unit-Tests phase3 + Bundle lokal grün) | `RESCUE_STICK_TEST_MATRIX.md`, `docs/evidence/rescue-stick/` |
 
 ### P2 (Website/Transparenz/Recht)
