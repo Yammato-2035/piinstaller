@@ -45,8 +45,19 @@
       "trigger_test": "TestRescueRestoreDryrun::test_2_target_capacity_red",
       "line": 94
     },
-    "root_cause_summary": "Nach Diagnostics-Fix: Rescue-Dryrun ruft smartctl auf; GitHub ubuntu-latest ohne smartctl im PATH.",
+    "root_cause_summary": "Rescue-Dryrun ruft smartctl auf; CI-Runner ohne smartctl im PATH. Fix: backend/modules/inspect_storage.py _run_capture fängt FileNotFoundError ab und behandelt smartctl als not_available (kein Crash).",
     "log_source": "gh run view 25688864468 --log-failed"
+  },
+  "rescue_dryrun_smartctl_remediation": {
+    "analysis_doc": "docs/evidence/release-gates/ci_rescue_dryrun_smartctl_analysis_2026-05-11.md",
+    "code_change": "backend/modules/inspect_storage.py (_run_capture: FileNotFoundError -> CompletedProcess returncode=127)",
+    "product_logic_changed": false,
+    "tests_verified_locally": [
+      "tests/test_rescue_restore_dryrun.py::TestRescueRestoreDryrun::test_2_target_capacity_red",
+      "tests/test_rescue_restore_dryrun.py",
+      "tests/test_rescue* tests/*storage* tests/test_safe_device*",
+      "tests/"
+    ]
   },
   "local_pytest_parity": {
     "executed_at": "2026-05-11T20:24:00Z",

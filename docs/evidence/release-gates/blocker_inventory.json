@@ -83,9 +83,9 @@
     "P1": [
       {
         "id": "P1-CI-EVIDENCE",
-        "title": "GitHub CI rot — Run 25688864468: smartctl fehlt (Rescue-Dryrun), nicht Diagnostics-Mapping",
+        "title": "GitHub CI rot — Rescue-Dryrun (smartctl fehlt) behoben: inspect_storage tolerant; nächster ci.yml-Lauf nötig",
         "blocks": ["öffentliche Reproduzierbarkeit"],
-        "next_step": "CI-Runner smartctl installieren oder Test mocken; ci_evidence bei grünem Lauf aktualisieren"
+        "next_step": "Produktfix committed: backend/modules/inspect_storage.py _run_capture fängt FileNotFoundError (smartctl) ab; CI erneut abwarten und ci_evidence aktualisieren"
       },
       {
         "id": "P1-RESCUE-RS",

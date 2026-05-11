@@ -5,10 +5,10 @@
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "Diagnostics-Mapping/Seeds auf main; CI weiter rot wegen smartctl/Rescue-Dryrun (Run 25688864468). BR-001 weiter blockiert.",
+  "summary": "Diagnostics-Mapping/Seeds auf main; Rescue-Dryrun smartctl fehlt wurde produktseitig tolerant behandelt (Commit ausstehend im CI); CI bleibt bis zum nächsten erfolgreichen Workflow-Lauf rot. BR-001 weiter blockiert.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
-    "GitHub Actions: Run 25688864468 — smartctl FileNotFoundError (ci_evidence.json)"
+    "GitHub Actions: Run 25688864468 — smartctl FileNotFoundError (ci_evidence.json); Fix in Backend produktseitig ergänzt, CI rerun ausstehend"
   ],
   "pytest_note": "Lokales pytest tests/ am 2026-05-11 (Prompt 2 erneut, ~21:15Z): 0 failures, 1526 passed — current_failures.json; Release bleibt über P0/CI blockiert.",
   "recommendation": "do_not_release"

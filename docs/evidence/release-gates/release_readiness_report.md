@@ -5,7 +5,7 @@
 
 ## Kurzfassung
 
-Repo-Transparenz (Roadmap, Matrizen, Evidence-Templates) ist **angelegt**. **Deploy-Modul** auf `main` ergänzt (`df13af4`). **Fix13-CI-Fehler:** Ursache `_run_tar` bricht ohne nutzbares **systemd-inhibit** vor `run_command` ab (Kategorie D+E); **Test** minimal um inhibit-Mocks ergänzt — siehe `ci_fix13_backup_test_analysis_2026-05-11.md`. **GitHub CI:** `data/diagnostics` versioniert + `evidence_store`-Coerce auf **main**; Diagnostics-Mapping **nicht** mehr der -x-Blocker. Aktueller Fehler: **smartctl** fehlt im Runner (`test_rescue_restore_dryrun`, Run **25688864468**). **BR-001** blocked, **Pytest** lokal **1526/0**.
+Repo-Transparenz (Roadmap, Matrizen, Evidence-Templates) ist **angelegt**. **Deploy-Modul** auf `main` ergänzt (`df13af4`). **Fix13-CI-Fehler:** Ursache `_run_tar` bricht ohne nutzbares **systemd-inhibit** vor `run_command` ab (Kategorie D+E); **Test** minimal um inhibit-Mocks ergänzt — siehe `ci_fix13_backup_test_analysis_2026-05-11.md`. **GitHub CI:** `data/diagnostics` versioniert + `evidence_store`-Coerce auf **main**; Diagnostics-Mapping **nicht** mehr der -x-Blocker. Aktueller Rescue-Blocker: **smartctl** fehlte im Runner (`test_rescue_restore_dryrun`, Run **25688864468**); Fix: `inspect_storage._run_capture` tolerant gemacht (CI rerun ausstehend). **BR-001** blocked, **Pytest** lokal **1526/0**.
 
 ## Ampelüberblick
 

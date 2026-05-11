@@ -29,7 +29,13 @@ def _run_capture(
     timeout: int = 90,
 ) -> subprocess.CompletedProcess[str]:
     run = runner or subprocess.run
-    return run(argv, capture_output=True, text=True, timeout=timeout, check=False)
+    try:
+        return run(argv, capture_output=True, text=True, timeout=timeout, check=False)
+    except FileNotFoundError as e:
+        # CI-Runner kann Tools wie smartctl fehlen lassen.
+        # Einheitlicher Fallback: nicht über Exception abbrechen, sondern als "command not available"
+        # weiter verarbeiten (smart_classify_disk prüft Text/returncode).
+        return subprocess.CompletedProcess(argv, 127, stdout="", stderr=str(e))
 
 
 def _flatten_block_nodes(nodes: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:

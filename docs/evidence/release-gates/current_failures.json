@@ -11,7 +11,7 @@
     "python": "3.12.3",
     "cwd": "backend",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default python -m pytest tests/ -q --tb=no",
-    "notes": "Volle Suite 1526 passed; data/diagnostics + evidence_store-Coerce auf main; GitHub-Gesamt-CI siehe ci_evidence.json (smartctl/Rescue)."
+    "notes": "Volle Suite 1526 passed; data/diagnostics + evidence_store-Coerce auf main; inspect_storage behandelt fehlendes smartctl tolerant (Rescue-Dryrun). GitHub-Gesamt-CI siehe ci_evidence.json (noch nicht success)."
   },
   "summary": {
     "failed": 0,
