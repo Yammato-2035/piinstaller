@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "runbook_id",
+    "started_at",
+    "completed_at",
+    "operator",
+    "host",
+    "target_device",
+    "pre_state",
+    "post_state",
+    "runner_result",
+    "evidence",
+    "pass_fail",
+    "rollback_status"
+  ],
+  "properties": {
+    "runbook_id": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "operator": {
+      "type": "string"
+    },
+    "host": {
+      "type": "string"
+    },
+    "target_device": {
+      "type": "string"
+    },
+    "pre_state": {
+      "type": "object"
+    },
+    "post_state": {
+      "type": "object"
+    },
+    "runner_result": {
+      "type": "object"
+    },
+    "evidence": {
+      "type": "object"
+    },
+    "pass_fail": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "rollback_status": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "feature_freeze",
+  "title": "Phase 0 – Feature-Freeze",
+  "effective_from": "2026-05-11",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "rules": [
+    "Keine neue Feature-Produktion in dieser Arbeitsphase.",
+    "Nur Stabilisierung, Bugfixes, Tests, Doku, Transparenz."
+  ],
+  "notes": "Repository-Struktur und Matrizen angelegt; formale Abnahme (Review + Link ins Project) ausstehend.",
+  "executed_at": null
+}

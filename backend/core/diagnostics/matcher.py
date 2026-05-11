@@ -51,6 +51,10 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
         hits.append("SYSTEMD-NNP-031")
     if code == "backup.source_permission_denied" or details_diag == "BACKUP-SOURCE-PERM-032":
         hits.append("BACKUP-SOURCE-PERM-032")
+    if code == "backup.verify_integrity_failed":
+        hits.append("VERIFY-STAGING-038")
+    if code == "backup.restore_failed" and ("enospc" in stderr or "no space left on device" in stderr):
+        hits.append("RESTORE-TMPFS-007")
     if ("permission denied" in stderr or "keine berechtigung" in stderr) and unreadable_sources not in {"", "null", "[]"}:
         hits.append("BACKUP-SOURCE-PERM-032")
     if signals.get("ssh_enabled") == "false":
@@ -105,6 +109,10 @@ def _pattern_matches(question: str) -> list[str]:
         hits.append("BACKUP-HASH-003")
     if "tmp" in question or "tmpfs" in question:
         hits.append("RESTORE-TMPFS-007")
+    if "memorymax" in question or ("cgroup" in question and "memory" in question) or ("oom" in question and ("verify" in question or "preview" in question)):
+        hits.append("SYSTEMD-MEMORYMAX-037")
+    if "verify_integrity" in question or ("deep" in question and "integrit" in question):
+        hits.append("VERIFY-STAGING-038")
     if "startet nicht" in question or "does not start" in question:
         hits.extend(["SYSTEMD-START-009", "RUNTIME-PORT-011"])
     if "crash" in question:

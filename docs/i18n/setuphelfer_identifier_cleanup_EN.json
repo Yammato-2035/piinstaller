@@ -1,0 +1,7 @@
+{
+  "legacy_cleanup_classified": "Legacy cleanup classified",
+  "safe_rewrite_plan_generated": "Safe rewrite plan generated",
+  "controlled_rewrite_applied": "Controlled rewrite applied",
+  "historical_reference_kept": "Historical reference kept",
+  "manual_review_required": "Manual review required"
+}

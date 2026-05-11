@@ -27,6 +27,27 @@ class TestDiagnosticsMatcherV1(unittest.TestCase):
         ids = [h.id for h in hits]
         self.assertIn("SSH-DISABLED-017", ids)
 
+    def test_verify_integrity_failed_signal(self):
+        req = DiagnosticsAnalyzeRequest(
+            question="",
+            signals={"code": "backup.verify_integrity_failed"},
+        )
+        ids = [h.id for h in match_diagnoses(req)]
+        self.assertIn("VERIFY-STAGING-038", ids)
+
+    def test_restore_failed_enospc_signal(self):
+        req = DiagnosticsAnalyzeRequest(
+            question="",
+            signals={"code": "backup.restore_failed", "stderr": "tar: write: No space left on device"},
+        )
+        ids = [h.id for h in match_diagnoses(req)]
+        self.assertIn("RESTORE-TMPFS-007", ids)
+
+    def test_memorymax_question_pattern(self):
+        req = DiagnosticsAnalyzeRequest(question="Deep verify bricht ab, MemoryMax zu klein?")
+        ids = [h.id for h in match_diagnoses(req)]
+        self.assertIn("SYSTEMD-MEMORYMAX-037", ids)
+
 
 if __name__ == "__main__":
     unittest.main()

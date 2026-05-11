@@ -1,0 +1,6 @@
+{
+  "seal_created": "Validator-Report-Seal erzeugt",
+  "seal_blocked": "Seal blockiert",
+  "invalid_dryrun_report": "Ungueltiger Dryrun-Report",
+  "overwrite_blocked": "Ueberschreiben ohne explicit_overwrite nicht erlaubt"
+}

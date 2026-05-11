@@ -1,0 +1,7 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "affiliate_release_gate",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "notes": "Policies angelegt; Live-Kennzeichnung und AT-* Evidence ausstehend."
+}

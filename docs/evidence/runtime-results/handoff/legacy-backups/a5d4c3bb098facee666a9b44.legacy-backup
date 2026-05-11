@@ -1,0 +1,5 @@
+{
+  "original_text": "x=PI_INSTALLER_HOME\n",
+  "source_file": "backend/deploy/_elim_runtime_tmp.py",
+  "strict_mode": "runtime_identifier_elimination_apply"
+}

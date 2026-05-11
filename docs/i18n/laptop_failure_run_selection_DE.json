@@ -1,0 +1,6 @@
+{
+  "run_selection_ready": "Laptop-Failure-Run-Auswahl: bereit",
+  "run_selection_review_required": "Laptop-Failure-Run-Auswahl: Review erforderlich",
+  "run_selection_blocked": "Laptop-Failure-Run-Auswahl: blockiert",
+  "productive_marker_blocked": "Auswahl blockiert: Produktiv- oder internes OS-Volume im Kontext erkannt"
+}

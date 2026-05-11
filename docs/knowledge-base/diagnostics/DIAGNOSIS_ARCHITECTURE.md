@@ -39,3 +39,12 @@ Diese Signale werden in Dashboard/Companion gespiegelt und dienen als "first-lev
 - Netzwerk liefert bei fehlender LAN-IP explizit lokalen Zustand statt leerem Feld
 
 Damit ist Diagnose im UI nicht nur textuell, sondern auch als konsistenter Lampenzustand nachvollziehbar.
+
+## Erweiterungen (Verify / Preview / systemd)
+
+Zusaetzliche Katalog-IDs fuer hauefige Test- und Betriebsfaelle:
+
+- **`SYSTEMD-MEMORYMAX-037`**: cgroup `MemoryMax` zu klein → OOM oder Abbruch bei Verify/Preview.
+- **`VERIFY-STAGING-038`**: `backup.verify_integrity_failed` durch Staging-/Symlink-Pruefung (oft Full-Root-Archive).
+
+Matcher reagiert u. a. auf `signals.code == backup.verify_integrity_failed`, auf `backup.restore_failed` mit ENOSPC in `stderr`, sowie auf Frage-Pattern (`memorymax`, `tmpfs`, `verify_integrity`). Detailtabelle: `DIAGNOSIS_CATALOG.md`, Hintergrund: `docs/knowledge-base/BACKUP_VERIFY_PREVIEW_RUNTIME.md`.

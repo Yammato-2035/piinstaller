@@ -1,0 +1,53 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "runtime_inventory",
+  "generated": "2026-05-11",
+  "last_prompt02_refresh": "2026-05-11T21:15:00Z",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "notes": "Stichprobe aus Repo + Prompt-2-Erweiterung; Live-System kann abweichen. Zuletzt bei erneuter Prompt-2-Ausführung berührt (Metadaten/Refresh, keine Portwerte neu vermessen).",
+  "backend": {
+    "default_port": 8000,
+    "port_env": ["PI_INSTALLER_BACKEND_PORT", "SETUPHELFER_READINESS_BASE_URL"],
+    "server": "uvicorn app:app",
+    "start_script": "start.sh"
+  },
+  "frontend": {
+    "package_name_legacy": "pi-installer",
+    "package_version": "1.7.0",
+    "path": "frontend/",
+    "dev_ports": {
+      "vite": 5173,
+      "browser_doc_default": 3001,
+      "api_base_tauri_build": "http://127.0.0.1:8000"
+    }
+  },
+  "systemd_units_repo": [
+    "debian/setuphelfer-backend.service",
+    "debian/setuphelfer.service",
+    "packaging/systemd/setuphelfer-backup@.service",
+    "setuphelfer-backend.service",
+    "setuphelfer.service"
+  ],
+  "conflict_detection": {
+    "module": "backend/core/service_conflict_guard.py",
+    "description": "Parallele Dienste / Port-Inhaber; pi-installer vs. Setuphelfer"
+  },
+  "rescue_docs_ports": {
+    "note": "Rescue-Dokumente referenzieren teils 8010 für isolierte Live-Umgebung",
+    "examples": ["8010 in runner_rescue_iso_artifact_preparation.py"]
+  },
+  "ci_reference": {
+    "workflow_path": ".github/workflows/ci.yml",
+    "job": "lint-and-test",
+    "pytest_workdir": "backend",
+    "env_PI_INSTALLER_DEV": "1",
+    "evidence_file": "docs/evidence/release-gates/ci_evidence.json",
+    "notes": "Letzte abgefragte GitHub-Läufe conclusion=failure — siehe ci_evidence.json; lokales pytest grün separat in current_failures.json."
+  },
+  "dual_branding_risks": [
+    "Umgebungsvariablen PI_INSTALLER_* neben Setuphelfer",
+    "lokaler Storage-Key pi-installer-api-base (i18n)",
+    "npm package.json name pi-installer"
+  ]
+}

@@ -1,0 +1,7 @@
+Pytest – Prompt 2 erneut ausgeführt (2026-05-11T21:15Z)
+Befehl: PI_INSTALLER_DEV=1 PYTHONWARNINGS=default python -m pytest tests/ -q --tb=no
+Ergebnis: 0 failed, 1526 passed, 2 warnings (~19 s)
+
+Keine FAILED-Zeilen.
+
+Evidence-Seeds: data/diagnostics/evidence/ → 38 JSON-Dateien, nach core.diagnostics.evidence_store._coerce_evidence_dict als EvidenceRecord valide (siehe diagnostics_evidence_seed_audit_2026-05-11.json).

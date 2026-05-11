@@ -1,0 +1,6 @@
+{
+  "final_export_package_ok": "Laptop failure final export package: ok",
+  "final_export_package_review_required": "Laptop failure final export package: review required",
+  "final_export_package_blocked": "Laptop failure final export package: blocked",
+  "final_export_package_hashes_attached": "SHA256 attached for all package files"
+}

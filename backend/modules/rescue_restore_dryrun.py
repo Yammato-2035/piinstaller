@@ -82,10 +82,20 @@ def analyze_tar_members_for_rescue(backup_file: str) -> dict[str, Any]:
             gnu_meta_types.add(getattr(tarfile, _attr))
 
     def is_blocked_path(name: str) -> bool:
-        n = name.lstrip("./")
-        if not n:
+        import posixpath
+
+        raw = name or ""
+        if not raw.strip():
             return True
-        if n.startswith("/") or n.startswith("../") or "/../" in f"/{n}/":
+        if raw.startswith("/") or posixpath.isabs(raw):
+            return True
+        for seg in raw.split("/"):
+            if seg == "..":
+                return True
+        if "/../" in f"/{raw}/":
+            return True
+        norm = posixpath.normpath(raw)
+        if norm == ".." or norm.startswith("../"):
             return True
         return False
 

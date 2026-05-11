@@ -1,0 +1,7 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "website_release_gate",
+  "ampel": "rot",
+  "evidence_complete": false,
+  "notes": "Markdown-Basis im Repo; Live-Site und WT-* Evidence ausstehend."
+}

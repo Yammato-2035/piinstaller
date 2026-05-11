@@ -1,0 +1,6 @@
+{
+  "hotspot_cleanup_planned": "Hotspot cleanup planned",
+  "hotspot_cleanup_applied": "Hotspot cleanup applied",
+  "unknown_cluster_skipped": "Unknown cluster skipped",
+  "critical_identifiers_remaining": "Critical identifiers remaining"
+}

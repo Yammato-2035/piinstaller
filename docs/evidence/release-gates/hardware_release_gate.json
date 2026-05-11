@@ -1,0 +1,8 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "hardware_release_gate",
+  "ampel": "rot",
+  "evidence_complete": false,
+  "matrix": "docs/testing/HARDWARE_TEST_MATRIX.md",
+  "open_hw_ids": ["HW-001", "HW-002", "HW-003", "HW-004", "HW-005", "HW-006", "HW-007", "HW-008", "HW-009", "HW-010"]
+}

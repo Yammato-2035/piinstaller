@@ -1,0 +1,119 @@
+{
+  "report_id": "RUNNER_LAB_ACCEPTANCE_REPORT_V1",
+  "generated_at": "2026-05-11T18:29:30.425611+00:00",
+  "acceptance_status": "blocked",
+  "operator_decision_required": true,
+  "runbook_outcomes": [
+    {
+      "runbook_id": "RUNBOOK_SUDOERS_RUNTIME_DRYRUN",
+      "status": "missing",
+      "evidence_status": "missing",
+      "safety_status": "blocked",
+      "required_repeat": true,
+      "notes": [
+        "runbook_result_missing"
+      ]
+    },
+    {
+      "runbook_id": "RUNBOOK_PRIVILEGED_RUNNER_VALIDATION_DRYRUN",
+      "status": "missing",
+      "evidence_status": "missing",
+      "safety_status": "blocked",
+      "required_repeat": true,
+      "notes": [
+        "runbook_result_missing"
+      ]
+    },
+    {
+      "runbook_id": "RUNBOOK_REAL_WRITE_HARDWARE_E2E",
+      "status": "missing",
+      "evidence_status": "missing",
+      "safety_status": "blocked",
+      "required_repeat": true,
+      "notes": [
+        "runbook_result_missing"
+      ]
+    },
+    {
+      "runbook_id": "RUNBOOK_FAILURE_INJECTION_HARDWARE_E2E",
+      "status": "missing",
+      "evidence_status": "missing",
+      "safety_status": "blocked",
+      "required_repeat": true,
+      "notes": [
+        "runbook_result_missing"
+      ]
+    },
+    {
+      "runbook_id": "RUNBOOK_DEVICE_REENUMERATION",
+      "status": "missing",
+      "evidence_status": "missing",
+      "safety_status": "blocked",
+      "required_repeat": true,
+      "notes": [
+        "runbook_result_missing"
+      ]
+    },
+    {
+      "runbook_id": "RUNBOOK_HOTPLUG_UNMOUNT_RACE",
+      "status": "missing",
+      "evidence_status": "missing",
+      "safety_status": "blocked",
+      "required_repeat": true,
+      "notes": [
+        "runbook_result_missing"
+      ]
+    },
+    {
+      "runbook_id": "RUNBOOK_ROLLBACK_RUNTIME",
+      "status": "missing",
+      "evidence_status": "missing",
+      "safety_status": "blocked",
+      "required_repeat": true,
+      "notes": [
+        "runbook_result_missing"
+      ]
+    }
+  ],
+  "evidence_summary": {
+    "total_files": 0,
+    "valid_files": 0,
+    "invalid_files": 0,
+    "missing_runbooks": [
+      "RUNBOOK_SUDOERS_RUNTIME_DRYRUN",
+      "RUNBOOK_PRIVILEGED_RUNNER_VALIDATION_DRYRUN",
+      "RUNBOOK_REAL_WRITE_HARDWARE_E2E",
+      "RUNBOOK_FAILURE_INJECTION_HARDWARE_E2E",
+      "RUNBOOK_DEVICE_REENUMERATION",
+      "RUNBOOK_HOTPLUG_UNMOUNT_RACE",
+      "RUNBOOK_ROLLBACK_RUNTIME"
+    ],
+    "pass_count": 0,
+    "failed_count": 0,
+    "repeat_required_count": 7,
+    "evidence_complete_count": 0,
+    "evidence_partial_count": 0,
+    "evidence_missing_count": 14
+  },
+  "blocking_findings": [
+    "RESULT_SEQUENCE_OUT_OF_ORDER"
+  ],
+  "residual_risks": [
+    "LAB_RISK_FIRST_HARDWARE_SCOPE_LIMITED",
+    "LAB_RISK_SINGLE_HOST_ONLY",
+    "LAB_RISK_LIMITED_MEDIA_TYPES",
+    "LAB_RISK_OPERATOR_DEPENDENT",
+    "LAB_RISK_NOT_PRODUCTION_READY"
+  ],
+  "required_repeats": [
+    "RUNBOOK_SUDOERS_RUNTIME_DRYRUN",
+    "RUNBOOK_PRIVILEGED_RUNNER_VALIDATION_DRYRUN",
+    "RUNBOOK_REAL_WRITE_HARDWARE_E2E",
+    "RUNBOOK_FAILURE_INJECTION_HARDWARE_E2E",
+    "RUNBOOK_DEVICE_REENUMERATION",
+    "RUNBOOK_HOTPLUG_UNMOUNT_RACE",
+    "RUNBOOK_ROLLBACK_RUNTIME"
+  ],
+  "warnings": [],
+  "errors": []
+}

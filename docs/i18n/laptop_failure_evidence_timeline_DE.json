@@ -1,0 +1,6 @@
+{
+  "evidence_timeline_ok": "Laptop-Failure-Evidence-Timeline: ok",
+  "evidence_timeline_review_required": "Laptop-Failure-Evidence-Timeline: Review erforderlich",
+  "evidence_timeline_blocked": "Laptop-Failure-Evidence-Timeline: blockiert",
+  "evidence_timeline_chronological": "Timeline-Eintraege wurden chronologisch sortiert"
+}

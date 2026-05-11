@@ -1,0 +1,5 @@
+{
+  "cycle": 2,
+  "original_text": "export PI_INSTALLER_HOME=/tmp\n",
+  "source_file": "backend/tests/_hotspot_c2_apply.txt"
+}

@@ -1,0 +1,6 @@
+{
+  "rescue_runtime_assembly_ready": "Rescue runtime assembly ready",
+  "startup_script_assembly_validated": "Startup script assembly validated (templates only)",
+  "recovery_runtime_assembly_ready": "Recovery runtime assembly ready",
+  "rescue_runtime_assembly_blocked": "Rescue runtime assembly blocked (gate)"
+}

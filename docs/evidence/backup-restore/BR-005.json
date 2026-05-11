@@ -1,0 +1,20 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "BR-005",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "executed_at": "2026-05-11T22:00:00Z",
+  "environment": {
+    "api": "POST /api/backup/verify",
+    "mode": "deep",
+    "archive_path_relative": "docs/evidence/backup-restore/samples/br-verify-sample.tar.gz",
+    "archive_path_used_in_api": "/home/volker/piinstaller/docs/evidence/backup-restore/samples/br-verify-sample.tar.gz",
+    "archive_path_note": "Wie BR-004 — Deep-Verify mit gleichem Archiv.",
+    "archive_origin": "synthetisch: hello.txt + embed_manifest_in_tar_gz",
+    "br001_chain": "BR-001 blockiert — siehe BR-004 notes."
+  },
+  "result": "ok",
+  "api_code": "backup.verify_success",
+  "artifacts": ["docs/evidence/backup-restore/samples/br-verify-sample.tar.gz"],
+  "notes": "Verify Deep API erfolgreich (Extrakt/SHA gegen MANIFEST). Ampel gelb wegen fehlender Kopplung an erfolgreiches BR-001-Backup derselben Session."
+}

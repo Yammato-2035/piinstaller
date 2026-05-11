@@ -1,0 +1,11 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "backup_restore_release_gate",
+  "generated": "2026-05-11T22:00:00Z",
+  "ampel": "rot",
+  "evidence_complete": false,
+  "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
+  "open_br_ids": ["BR-001", "BR-002", "BR-003", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
+  "partial_br_ids": ["BR-004", "BR-005"],
+  "notes": "BR-004/BR-005: API-Verify gegen Referenzarchiv dokumentiert (gelb, Kette ohne BR-001). BR-001 weiter offen bis externes/freigegebenes Schreibziel."
+}

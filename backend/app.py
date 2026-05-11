@@ -2,12 +2,26 @@
 PI-Installer Backend - FastAPI mit erweiterten Endpoints
 """
 
+import importlib.util
+import sys
+import sysconfig
+from pathlib import Path
+
+# Verhindert Konflikt mit lokalem Verzeichnis "backend/inspect":
+# FastAPI/Starlette importieren das stdlib-Modul "inspect".
+_stdlib_inspect = Path(sysconfig.get_paths()["stdlib"]) / "inspect.py"
+if _stdlib_inspect.is_file():
+    _inspect_spec = importlib.util.spec_from_file_location("inspect", _stdlib_inspect)
+    if _inspect_spec and _inspect_spec.loader:
+        _inspect_mod = importlib.util.module_from_spec(_inspect_spec)
+        _inspect_spec.loader.exec_module(_inspect_mod)
+        sys.modules["inspect"] = _inspect_mod
+
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 import os
 import pwd
-from pathlib import Path
 import psutil
 import subprocess
 import json
@@ -126,38 +140,11 @@ logger.info("Log-Datei: %s", str(LOG_PATH))
 # ==================== Version ====================
 
 def get_pi_installer_version() -> str:
-    """Liest die PI-Installer Version aus `config/version.json`.
-    Bevorzugt PI_INSTALLER_DIR bzw. SETUPHELFER_DIR (Installationsverzeichnis, z.B. /opt/setuphelfer).
-    Fällt bei Bedarf auf die historische VERSION-Datei zurück (anti-regressiv).
-    """
+    """Liest die Projektversion aus der zentralen Source-of-Truth."""
     try:
-        # Basisverzeichnis: Installationsverzeichnis hat Vorrang (systemd setzt PI_INSTALLER_DIR)
-        install_dir = os.environ.get("PI_INSTALLER_DIR")
-        if install_dir:
-            base = Path(install_dir).resolve()
-        else:
-            # Repo-Root bei Entwicklung: backend/.. = Projektroot
-            base = Path(__file__).resolve().parent.parent
+        from core.versioning import get_project_version
 
-        # 1. Versuch: config/version.json
-        version_json = base / "config" / "version.json"
-        if version_json.exists():
-            try:
-                import json  # lokal, um Importkreise zu vermeiden
-
-                data = json.loads(version_json.read_text(encoding="utf-8"))
-                v = str(data.get("version") or "").strip()
-                if v:
-                    return v
-            except Exception:
-                # stiller Fallback auf VERSION
-                pass
-
-        # 2. Fallback: historische VERSION-Datei (Kompatibilität für alte Installationen/Skripte)
-        version_path = base / "VERSION"
-        if version_path.exists():
-            v = version_path.read_text(encoding="utf-8").strip()
-            return v or "0.0.0"
+        return get_project_version()
     except Exception:
         pass
     return "0.0.0"
@@ -2634,6 +2621,92 @@ try:
 except ImportError:
     pass
 
+try:
+    import importlib.util
+
+    _inspect_dir = Path(__file__).resolve().parent / "inspect"
+    _inspect_routes = _inspect_dir / "routes.py"
+    _inspect_routes_spec = importlib.util.spec_from_file_location("setuphelfer_inspect_routes", _inspect_routes)
+    if _inspect_routes_spec and _inspect_routes_spec.loader:
+        _inspect_routes_module = importlib.util.module_from_spec(_inspect_routes_spec)
+        _inspect_routes_spec.loader.exec_module(_inspect_routes_module)
+        app.include_router(_inspect_routes_module.router)
+except Exception:
+    logger.exception("Inspect-Router konnte nicht registriert werden; GET /api/inspect/run fehlt dann (404).")
+
+try:
+    import importlib.util
+
+    _safety_routes = Path(__file__).resolve().parent / "safety" / "routes.py"
+    _safety_spec = importlib.util.spec_from_file_location("setuphelfer_safety_routes", _safety_routes)
+    if _safety_spec and _safety_spec.loader:
+        _safety_mod = importlib.util.module_from_spec(_safety_spec)
+        _safety_spec.loader.exec_module(_safety_mod)
+        app.include_router(_safety_mod.router)
+except Exception:
+    logger.exception("Safety-Router konnte nicht registriert werden; GET /api/safety/targets fehlt dann (404).")
+
+try:
+    import importlib.util
+
+    _preflight_routes = Path(__file__).resolve().parent / "preflight" / "routes.py"
+    _preflight_spec = importlib.util.spec_from_file_location("setuphelfer_preflight_routes", _preflight_routes)
+    if _preflight_spec and _preflight_spec.loader:
+        _preflight_mod = importlib.util.module_from_spec(_preflight_spec)
+        _preflight_spec.loader.exec_module(_preflight_mod)
+        app.include_router(_preflight_mod.router)
+except Exception:
+    logger.exception("Preflight-Router konnte nicht registriert werden; /api/preflight/* fehlt dann (404).")
+
+try:
+    import importlib.util
+
+    _rescue_preview_routes = Path(__file__).resolve().parent / "rescue" / "routes.py"
+    _rescue_preview_spec = importlib.util.spec_from_file_location("setuphelfer_rescue_preview_routes", _rescue_preview_routes)
+    if _rescue_preview_spec and _rescue_preview_spec.loader:
+        _rescue_preview_mod = importlib.util.module_from_spec(_rescue_preview_spec)
+        _rescue_preview_spec.loader.exec_module(_rescue_preview_mod)
+        app.include_router(_rescue_preview_mod.router)
+except Exception:
+    logger.exception("Rescue-Preview-Router konnte nicht registriert werden; /api/rescue/preview fehlt dann (404).")
+
+
+try:
+    import importlib.util
+
+    _boot_routes = Path(__file__).resolve().parent / "boot" / "routes.py"
+    _boot_spec = importlib.util.spec_from_file_location("setuphelfer_boot_routes", _boot_routes)
+    if _boot_spec and _boot_spec.loader:
+        _boot_mod = importlib.util.module_from_spec(_boot_spec)
+        _boot_spec.loader.exec_module(_boot_mod)
+        app.include_router(_boot_mod.router)
+except Exception:
+    logger.exception("Boot-Capability-Router konnte nicht registriert werden; /api/boot/capability fehlt dann (404).")
+
+try:
+    import importlib.util
+
+    _recovery_routes = Path(__file__).resolve().parent / "recovery" / "routes.py"
+    _recovery_spec = importlib.util.spec_from_file_location("setuphelfer_recovery_routes", _recovery_routes)
+    if _recovery_spec and _recovery_spec.loader:
+        _recovery_mod = importlib.util.module_from_spec(_recovery_spec)
+        _recovery_spec.loader.exec_module(_recovery_mod)
+        app.include_router(_recovery_mod.router)
+except Exception:
+    logger.exception("Recovery-Minimal-Plan-Router konnte nicht registriert werden; /api/recovery/minimal/plan fehlt dann (404).")
+
+try:
+    import importlib.util
+
+    _deploy_routes = Path(__file__).resolve().parent / "deploy" / "routes.py"
+    _deploy_spec = importlib.util.spec_from_file_location("setuphelfer_deploy_routes", _deploy_routes)
+    if _deploy_spec and _deploy_spec.loader:
+        _deploy_mod = importlib.util.module_from_spec(_deploy_spec)
+        _deploy_spec.loader.exec_module(_deploy_mod)
+        app.include_router(_deploy_mod.router)
+except Exception:
+    logger.exception("Deploy-Plan-Router konnte nicht registriert werden; /api/deploy/plan fehlt dann (404).")
+
 def _is_demo_mode(request: Request) -> bool:
     """Prüft ob X-Demo-Mode Header gesetzt ist (für Screenshot-Dokumentation ohne echte Daten)."""
     return request.headers.get("X-Demo-Mode") == "1"
@@ -3522,22 +3595,14 @@ async def get_system_network(request: Request):
 
 @app.get("/api/version")
 async def get_version():
-    """Gibt die Setuphelfer-Version und kompatible Metadaten zurück (Single Source: config/version.json)."""
-    # nicht cachen, damit VERSION-Änderungen ohne Restart sichtbar werden
-    repo_root = Path(__file__).resolve().parent.parent
-    try:
-        is_opt_runtime = repo_root.resolve() == get_opt_install_dir().resolve()
-    except OSError:
-        is_opt_runtime = False
-    ver = get_pi_installer_version()
-    edition = (os.environ.get("APP_EDITION") or "").strip() or None
+    """Gibt zentrale Projektversion + Stage + Track zurück."""
+    from core.versioning import load_project_version
+
+    info = load_project_version()
     return {
-        "status": "success",
-        "version": ver,
-        "app_name": "setuphelfer",
-        "tauri_app_id": "de.pi-installer.app",
-        "install_profile": "opt" if is_opt_runtime else "non_opt",
-        **({"app_edition": edition} if edition else {}),
+        "project_version": info.project_version,
+        "release_stage": info.release_stage,
+        "version_track": info.version_track,
     }
 
 
@@ -5124,6 +5189,11 @@ def get_network_info():
         if not ips:
             warnings.append("Nur lokal erreichbar - keine LAN-IP erkannt")
             source = "none"
+
+        log.decision(
+            "network_source",
+            data={"source": source, "ip_count": len(ips), "interface_count": len(interfaces)},
+        )
 
         result = subprocess.run(["hostname"], capture_output=True, text=True, timeout=5)
         hostname = (result.stdout or "").strip() or "unknown"
@@ -14913,6 +14983,9 @@ def _analyze_tar_members(backup_file: str) -> dict:
             if seg == "..":
                 return True
         if "/../" in f"/{raw}/":
+            return True
+        norm = posixpath.normpath(raw)
+        if norm == ".." or norm.startswith("../"):
             return True
         return False
 

@@ -1,0 +1,6 @@
+{
+  "cleanup_cycle_planned": "Cleanup-Zyklus geplant",
+  "cleanup_cycle_applied": "Cleanup-Zyklus angewendet",
+  "cleanup_cycle_postcheck_completed": "Cleanup-Zyklus Postcheck abgeschlossen",
+  "next_cleanup_cycle_required": "Naechster Cleanup-Zyklus erforderlich"
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "legacy_inventory",
+  "generated": "2026-05-11",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "identifiers": [
+    {
+      "pattern": "PI_INSTALLER_DEV",
+      "context": "backend CI (.github/workflows/ci.yml), Laufzeit-Flags",
+      "action": "Dokumentieren als Legacy-Dev-Flag; Migration siehe Deploy-/Branding-Doku."
+    },
+    {
+      "pattern": "pi-installer / pi_installer",
+      "context": "Noch in Codebasis und CHANGELOG vorhanden (Migration zu Setuphelfer)",
+      "action": "Hotspots via `docs/deploy/DEPLOY_SETUPHELFER_IDENTIFIER_*` abarbeiten."
+    }
+  ],
+  "notes": "Stichprobe per Suche; vollständiges Audit als Issue P1-003 führen."
+}

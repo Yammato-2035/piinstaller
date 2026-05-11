@@ -18,7 +18,7 @@ except ImportError:
 
 from .config import load_debug_config, get_effective_config_cached
 from .logger import get_run_id, set_run_id, _app_info
-from .redaction import get_redact_patterns, redact_recursive, redact_string
+from .redaction import compile_patterns, get_redact_patterns, redact_recursive, redact_string
 from .sink import get_sink
 
 from core.install_paths import get_log_dir

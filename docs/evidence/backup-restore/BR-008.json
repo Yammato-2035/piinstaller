@@ -1,0 +1,11 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "BR-008",
+  "ampel": "rot",
+  "evidence_complete": false,
+  "executed_at": null,
+  "environment": {},
+  "result": null,
+  "artifacts": [],
+  "notes": "Template \u2013 noch kein belastbarer Testnachweis."
+}

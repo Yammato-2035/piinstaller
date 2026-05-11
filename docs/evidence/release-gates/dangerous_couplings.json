@@ -1,0 +1,21 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "dangerous_couplings",
+  "generated": "2026-05-11",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "items": [
+    {
+      "id": "DC-001",
+      "description": "Zentrale app.py mit vielen Domänen",
+      "risk": "Regression bei kleinen Änderungen",
+      "mitigation": "REGRESSION_TEST_PLAN.md, kleine Schritte"
+    },
+    {
+      "id": "DC-002",
+      "description": "Legacy-Umgebungsvariablen parallel zu Setuphelfer",
+      "risk": "Verwechslung in Support/Doku",
+      "mitigation": "legacy_inventory.json, Branding-Guard-Tests"
+    }
+  ]
+}

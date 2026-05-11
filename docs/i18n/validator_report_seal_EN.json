@@ -1,0 +1,6 @@
+{
+  "seal_created": "Validator report seal created",
+  "seal_blocked": "Seal blocked",
+  "invalid_dryrun_report": "Invalid dry-run report",
+  "overwrite_blocked": "Overwrite blocked without explicit_overwrite"
+}

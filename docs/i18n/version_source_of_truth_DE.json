@@ -1,0 +1,6 @@
+{
+  "version_source_valid": "Versionsquelle ist gueltig",
+  "version_drift_detected": "Versions-Drift erkannt",
+  "inconsistent_release_stage": "Inkonsistente Release-Stufe",
+  "centralized_version_updated": "Zentrale Version wurde aktualisiert"
+}

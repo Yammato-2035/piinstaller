@@ -6,7 +6,9 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from subprocess import CompletedProcess
@@ -174,8 +176,13 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
         self.assertEqual(ctx.exception.diagnosis_id, "STORAGE-PROTECTION-003")
 
     def test_validate_allows_external_media_mount(self) -> None:
-        mount = "/media/volker/setuphelfer-back"
-        Path(mount).mkdir(parents=True, exist_ok=True)
+        # Unter freigegebenem Test-Präfix (/tmp/setuphelfer-test): keine Kollision mit
+        # echten /media/*-Mounts (PermissionError auf Entwicklerrechnern).
+        base = Path("/tmp/setuphelfer-test")
+        base.mkdir(parents=True, exist_ok=True)
+        mount = tempfile.mkdtemp(prefix="extusb-", dir=str(base))
+        self.addCleanup(lambda: shutil.rmtree(mount, ignore_errors=True))
+        os.makedirs(Path(mount) / "backups", exist_ok=True)
 
         def fake_run(argv, **kwargs):
             if argv[:2] == ["lsblk", "-J"]:

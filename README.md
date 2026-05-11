@@ -217,6 +217,17 @@ http://localhost:3001
 
 ## 📚 Dokumentation
 
+### Transparenz & Produktionsreife (Ampel / Testmatrix)
+
+- **[Öffentlicher Status (Markdown)](./docs/roadmap/PUBLIC_STATUS_PAGE.md)** – Ampelüberblick für Website/GitHub
+- **[Statusmatrix](./docs/roadmap/STATUS_MATRIX.md)** – Phasen P0–P8, Blocker, Verweise auf Evidence
+- **[Roadmap 2026](./docs/roadmap/ROADMAP_2026.md)** – Stabilisierung ohne neuen Funktionsumfang
+- **[Release-Checkliste](./docs/roadmap/RELEASE_READINESS_CHECKLIST.md)** · **[Monetarisierung](./docs/roadmap/MONETIZATION_READINESS_CHECKLIST.md)** · **[UG-Start](./docs/roadmap/UG_START_CHECKLIST.md)**
+- **Testmatrizen:** [Hardware](./docs/testing/HARDWARE_TEST_MATRIX.md) · [Backup/Restore](./docs/testing/BACKUP_RESTORE_TEST_MATRIX.md) · [Rescue-Stick](./docs/testing/RESCUE_STICK_TEST_MATRIX.md) · [Website](./docs/testing/WEBSITE_TRANSPARENCY_TEST_MATRIX.md) · [Affiliate](./docs/testing/AFFILIATE_TRANSPARENCY_TEST_MATRIX.md)
+- **[Evidence-Verzeichnis](./docs/evidence/README.md)** – Nachweisregeln; z. B. [aktuelle Pytest-Failures (Snapshot)](./docs/evidence/release-gates/current_failures.json)
+- **[GitHub Project Setup (Felder/Views)](./docs/roadmap/GITHUB_PROJECT_SETUP.md)** – manuell in GitHub anlegen
+- **Cursor-Prompts:** [`docs/cursor/`](./docs/cursor/)
+
 - **[SECURITY.md](./SECURITY.md)** - Sicherheitshinweise, Netzwerk (LAN/Internet), VPN-Empfehlung, CORS
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Beitragen (Fork, Branch, PR, Code-Style)
 - **[docs/developer/CURSOR_WORK_RULES.md](./docs/developer/CURSOR_WORK_RULES.md)** - Verbindliche Arbeitsregeln (Vorprüfung, i18n, Doku/Changelog/Version, Berichtspflicht); Checkliste und Vorlage im gleichen Ordner
@@ -454,6 +465,7 @@ MIT License - Siehe [LICENSE](./LICENSE) für Details
 
 - **Version:** siehe [config/version.json](./config/version.json) (eine Quelle; [VERSIONING.md](./docs/developer/VERSIONING.md))
 - **Status:** aktiv entwickelt; Backup/Verify/Restore-Pfade werden testgetrieben abgesichert (VM-/Evidence-Runbooks), **kein** Marketing-Versprechen „vollständig abgeschlossener Full-Recovery auf Hardware“ ohne entsprechende Tests.
+- **CI / Tests:** Badge oben → [GitHub Actions CI](https://github.com/Yammato-2035/piinstaller/actions/workflows/ci.yml). Zusätzlich existiert ein dokumentierter **Pytest-Snapshot** (lokal, Mai 2026): 1511 bestanden, 15 fehlgeschlagen – Details in [`docs/evidence/release-gates/current_failures.json`](./docs/evidence/release-gates/current_failures.json) und [`pytest_failures_summary_2026-05-11.txt`](./docs/evidence/release-gates/pytest_failures_summary_2026-05-11.txt).
 - **Letztes README-Update (Inhalt):** Mai 2026 (Entwicklungsstand 1.5.0.0)
 - **Support bis:** Januar 2027 (Planungsgröße, keine Garantie)
 

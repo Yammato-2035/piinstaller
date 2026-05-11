@@ -1,0 +1,18 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "storage_permission_inventory",
+  "generated": "2026-05-11",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "notes": "Kein Laufzeit-Scan in dieser Session. Relevante Tests/Module manuell verifizieren.",
+  "related_tests": [
+    "backend/tests/test_safe_device_storage_protection_v1.py",
+    "backend/tests/test_storage_detection_fix8_runtime_v1.py",
+    "backend/tests/test_backup_create_sudo_gate_v1.py"
+  ],
+  "open_checks": [
+    "Externe SSD: Schreib/Read-only am Ziel",
+    "SD langsam: Timeouts Backup",
+    "Mount-Namespace vs. UI-Erwartung"
+  ]
+}

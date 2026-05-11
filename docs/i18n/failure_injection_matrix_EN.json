@@ -1,0 +1,6 @@
+{
+  "failure_matrix_generated": "Failure injection matrix generated",
+  "productive_target_blocked": "Productive target blocked",
+  "rollback_required": "Rollback required",
+  "destructive_operation_blocked": "Destructive operation blocked"
+}

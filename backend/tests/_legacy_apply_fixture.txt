@@ -1,0 +1,1 @@
+export PI_INSTALLER_DIR=1

@@ -1,0 +1,11 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "github_public_status_gate",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "notes": "Repo-Dateien vorhanden; GitHub Project + öffentliche Konsistenz manuell prüfen.",
+  "required_links": [
+    "README oder Docs-Link auf docs/roadmap/PUBLIC_STATUS_PAGE.md",
+    "README-Link auf docs/testing/"
+  ]
+}

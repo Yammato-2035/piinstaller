@@ -1,0 +1,6 @@
+{
+  "hotspot_analysis_completed": "Hotspot analysis completed",
+  "critical_runtime_identifier_detected": "Critical runtime identifier detected",
+  "unknown_identifier_requires_review": "Unknown identifier requires review",
+  "cleanup_priority_generated": "Cleanup priority generated"
+}

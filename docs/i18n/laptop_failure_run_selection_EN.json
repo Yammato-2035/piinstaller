@@ -1,0 +1,6 @@
+{
+  "run_selection_ready": "Laptop failure run selection: ready",
+  "run_selection_review_required": "Laptop failure run selection: review required",
+  "run_selection_blocked": "Laptop failure run selection: blocked",
+  "productive_marker_blocked": "Selection blocked: productive or internal OS volume marker detected in context"
+}

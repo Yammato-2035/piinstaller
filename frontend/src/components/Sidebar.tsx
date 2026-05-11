@@ -82,6 +82,7 @@ function buildMenuItems(
     { type: 'divider' },
     { id: 'control-center', labelKey: 'sidebar.menu.controlCenter', appIcon: 'control-center', modes: ['advanced'] },
     { id: 'periphery-scan', labelKey: 'sidebar.menu.peripheryScan', appIcon: 'periphery-scan', modes: ['advanced', 'diagnose'] },
+    { id: 'inspect', labelKey: 'sidebar.menu.inspect', appIcon: 'diagnose', modes: ['advanced', 'diagnose'] },
     { id: 'webserver', labelKey: 'sidebar.menu.webserver', icon: Globe, modes: ['advanced'] },
     { id: 'nas', labelKey: 'sidebar.menu.nas', icon: HardDrive, modes: ['advanced'] },
     { id: 'homeautomation', labelKey: 'sidebar.menu.homeAutomation', icon: Home, modes: ['advanced'] },

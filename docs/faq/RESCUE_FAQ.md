@@ -276,3 +276,241 @@ Wenn ein schneller Existenz-Check (`quick_stat`) nicht rechtzeitig antwortet, bl
 
 Since FIX-11, `GET /api/backup/list` reads from a local backup index instead of scanning the mount path directly.  
 If a quick existence check (`quick_stat`) does not return within the short timeout, the entry is kept and marked as `status=unknown` to avoid blocking the API worker.
+
+## Rescue ISO — Artefakt-Vorbereitung (Strict, kein echter ISO-Build)
+
+### Warum wird hier noch keine echte ISO erzeugt?
+
+Die Phase **DEPLOY_RESCUE_ISO_ARTIFACT_PREPARATION** legt nur Verzeichnisse, Platzhalter und JSON-Manifeste unter `build/rescue/` sowie das Gate-JSON unter `docs/evidence/…/handoff/` an. Echte Abbilder erfordern `xorriso`/`grub-mkrescue` und ausdrückliche Release-Schritte — alles bewusst ausgeschlossen, bis Layout, Branding und Recovery-Nachweise konsistent sind.
+
+### Warum wird das RootFS zuerst simuliert?
+
+Damit Pfade wie `/opt/setuphelfer`, `/run/setuphelfer/evidence` und Overlay-Annahmen **ohne** Kopieren von Host-Systemdateien dokumentiert und per Manifest abgleichbar sind, bevor ein späterer Live-Build Squashfs/Initrd materialisiert.
+
+### Warum ein readonly-Overlay?
+
+Das Live-Root soll schreibgeschützt bleiben; Laufzeit-Änderungen laufen über tmpfs/Upper — so bleibt die Basis reproduzierbar und es gibt keine stillen Schreibzugriffe auf das Lower-Layer.
+
+### Warum keine automatische Persistenz auf Zielplatten?
+
+Zielplatten sind potenziell produktiv. Persistenz nur explizit (z. B. Operator-USB oder sekundäres Medium), niemals automatisch auf erkannten Installationszielen — siehe `overlay_persistence_strategy.json`.
+
+### Why is no real ISO produced in this step?
+
+**DEPLOY_RESCUE_ISO_ARTIFACT_PREPARATION** only creates directories, placeholders, and JSON manifests under `build/rescue/` plus the readiness handoff. Real images need `xorriso` / `grub-mkrescue` and explicit release steps, which stay out of scope until branding and recovery evidence gates are satisfied.
+
+### Why simulate the rootfs first?
+
+To document expected paths (`/opt/setuphelfer`, `/run/setuphelfer/evidence`, etc.) and overlay assumptions **without** copying host system files, before a later live build produces squashfs/initrd.
+
+### Why a read-only overlay?
+
+The live root stays immutable; runtime deltas use tmpfs/upper so the base stays reproducible and the lower layer is not silently modified.
+
+### Why no automatic persistence to target disks?
+
+Target disks may hold production data. Persistence is operator-explicit only (e.g. USB), never auto-applied to detected install targets — see `overlay_persistence_strategy.json`.
+
+## Rescue — Pseudo-Boot-Integration (Strict, keine VM)
+
+### Warum wird hier noch keine echte VM gestartet?
+
+**DEPLOY_RESCUE_PSEUDO_BOOT_INTEGRATION** erzeugt nur JSON-Manifeste und Handoffs. Eine VM würde QEMU/VirtualBox, Kernel-Images und privilegierte Laufzeit voraussetzen — alles außerhalb dieses Strict-Modus.
+
+### Warum wird Pseudo-Boot zuerst validiert?
+
+Damit Reihenfolge (EFI → initrd → readonly Root → tmpfs → Backend → UI), Overlay-Policy und Safety-Scans **ohne** Seiteneffekte abgesichert sind, bevor echte Hardware- oder ISO-Tests anstehen.
+
+### Warum ist das readonly-Overlay Pflicht?
+
+Damit die simulierte Live-Basis nicht fälschlich als schreibbar dokumentiert wird; Upper nur tmpfs, keine stillen Schreib-Mounts auf produktive Ziele.
+
+### Warum keine Auto-Recovery?
+
+Automatische Restore-/Repair-Pfade wären riskant ohne Session-/Token-Gates. Die Safety-Validierung sucht nach riskanten Routen-Segmenten und dokumentiert explizit fehlende Auto-Restore-Defaults.
+
+### Why is no real VM started here?
+
+**DEPLOY_RESCUE_PSEUDO_BOOT_INTEGRATION** only writes JSON artifacts and handoffs. A VM implies QEMU/VirtualBox, kernel images, and privileged runtime — all out of scope for this strict mode.
+
+### Why validate pseudo-boot first?
+
+To lock in ordering (EFI → initrd → read-only root → tmpfs → backend → UI), overlay policy, and safety scans **without** side effects before hardware or ISO tests.
+
+### Why is a read-only overlay mandatory?
+
+So the simulated live base is never documented as writable; upper layer is tmpfs only, with no silent write mounts to production targets.
+
+### Why no auto-recovery?
+
+Automatic restore/repair paths are unsafe without session/token gates. The safety validation scans for risky route segments and records explicit no-auto-restore defaults.
+
+## Rescue — Runtime Assembly (Strict, vor ISO)
+
+### Warum kommt Runtime-Assembly vor dem ISO-Build?
+
+Die ISO materialisiert Squashfs/Kernel — sinnvoll erst, wenn unter `build/rescue/runtime/` Verzeichnislayout, Offline-Config und Recovery-Module **manifestiert** sind, damit Live-Build und QA dieselbe Soll-Struktur prüfen können.
+
+### Warum sind Startup-Skripte nur Templates?
+
+Echte Starts würden `systemd`/Dienstabhängigkeiten und privilegierte Laufzeit erfordern. Die Pipeline schreibt nur Shell-Templates mit No-Op (`:`), ohne Service-Aktivierung.
+
+### Warum ist eine readonly-Runtime vorgesehen?
+
+Damit dokumentierte Defaults **keine** stillen Schreibpfade auf produktive Ziele implizieren; Upper/Temp und Evidence-Export bleiben operatoren-explicit.
+
+### Warum keine VM?
+
+VM-Boot ist kein Teil dieser Phase; QEMU/VirtualBox bleiben außerhalb, um STRICT-Mode und reproduzierbare JSON-Artefakte zu wahren.
+
+### Why does runtime assembly come before ISO build?
+
+An ISO packs squashfs/kernel — it is safer once `build/rescue/runtime/` layout, offline config, and recovery modules are **manifested** so live-build and QA share the same target structure.
+
+### Why are startup scripts templates only?
+
+Real starts would require `systemd`/service dependencies and privileged runtime. The pipeline writes shell templates with a no-op (`:`), no service activation.
+
+### Why is a read-only runtime required?
+
+So documented defaults imply **no** silent writes to production targets; upper/tmp and evidence export stay operator-explicit.
+
+### Why no VM here?
+
+VM boot is out of scope for this phase; QEMU/VirtualBox stay outside to preserve strict mode and reproducible JSON artifacts.
+
+## Rescue — Runtime-Bundle Manifest & Seal (Strict)
+
+### Warum wird das Runtime-Bundle vor dem ISO-Build versiegelt?
+
+Das Seal fasst **Inventar + Rohbyte-Hashes** in prüfbare SHA256-Werte zusammen, damit spätere ISO-/Live-Schritte oder CI dieselbe Materialbasis verifizieren können — ohne schon ein Abbild zu bauen.
+
+### Warum Hashes über Rohbytes?
+
+Byte-identische Dateien liefern reproduzierbare SHA256-Werte; Text-Kanonisierung allein würde Binärdateien (z. B. Assets) falsch abbilden.
+
+### Warum sind `.iso`/`.img` im Runtime-Baum verboten?
+
+Das Bundle beschreibt eine **simulierte** Laufzeitstruktur; echte Abbilder gehören in gesonderte, kontrollierte Pfade (z. B. `build/rescue/output/`) und würden das Bundle-Ziel verwässern.
+
+### Warum kein kryptografisches Signieren?
+
+Scope ist **Hash-/Seal-Nachweis** im Repo; PKI-Signaturen wären Release-/Key-Management und bewusst nicht Teil dieser Phase.
+
+### Why seal the runtime bundle before ISO build?
+
+The seal rolls **inventory + raw-byte hashes** into verifiable SHA256 values so later ISO/live steps or CI can verify the same material basis — without building an image yet.
+
+### Why hash raw bytes?
+
+Byte-identical files yield reproducible SHA256 values; text canonicalization alone would mis-handle binary assets.
+
+### Why forbid `.iso`/`.img` under the runtime tree?
+
+The bundle describes a **simulated** runtime layout; real images belong in separate controlled locations and would blur the bundle contract.
+
+### Why no cryptographic signing?
+
+This phase is a **hash/seal proof** in-repo; PKI signatures imply release/key management and stay out of scope here.
+
+## Rescue — Debian Live Build Inputs (Strict)
+
+### Warum wird `live-build` hier noch nicht ausgeführt?
+
+Diese Phase schreibt **nur** Konfigurationsfragmente (Verzeichnisse, Paketliste, Templates). Die eigentliche Image-Erzeugung bleibt beim Operator bzw. in einer spaeteren, klar getrennten Umgebung — damit keine Chroot-/Installationspfade aus der API heraus geoeffnet werden.
+
+### Warum sind Hooks nur `.template`-Dateien?
+
+Templates sind **nicht ausfuehrbar** und signalisieren: kein automatisches Anwenden im Deploy-Backend. So bleiben gefaehrliche Befehlssequenzen ausserhalb des strikten JSON-/Datei-Scanners, bis ein Mensch sie bewusst uebernimmt.
+
+### Warum werden Paketlisten zuerst geprueft?
+
+Die Liste beschreibt **nur** intendierte Pakete fuer den spaeteren Live-Build; Safety- und Final-Gates pruefen Konsistenz und verbotene Muster, **bevor** irgendwo ein Installationslauf angebunden wird.
+
+### Warum wird keine ISO/IMG erzeugt?
+
+Ziel ist **Materialvorbereitung und Nachweis** (`build/rescue/debian-live/` + Handoffs), nicht Medien-Schreiben. Abbilder waeren ein anderer Risiko- und Freigabe-Kreis.
+
+### Why is `live-build` not executed here?
+
+This phase only writes **configuration fragments** (directories, package list, templates). Actual image production stays with the operator or a later isolated environment so no chroot/install paths are opened from the API.
+
+### Why are hooks `.template` files only?
+
+Templates are **non-executable** and signal that the deploy backend does not auto-apply them. Risky command sequences stay outside strict scanners until a human adopts them deliberately.
+
+### Why validate package lists early?
+
+The list only declares **intended** packages for a later live build; safety and final gates check consistency and forbidden patterns **before** any install run is wired up.
+
+### Why no ISO/IMG here?
+
+The goal is **input preparation and evidence** (`build/rescue/debian-live/` plus handoffs), not media writes. Images belong to a different risk and approval cycle.
+
+## Rescue — Dry Build Orchestration (Strict)
+
+### Warum laeuft noch kein echter Debian-Live-Build?
+
+Die Dry-Orchestrierung erzeugt **nur** JSON (Stage-Graph, Aufloesung, Simulation). Ein echter Image-Build waere ein privilegierter, nicht-deterministischer Schritt und bleibt bewusst **ausserhalb** dieser API.
+
+### Warum Dry-Orchestrierung zuerst validiert wird?
+
+So lassen sich **Abhaengigkeiten, fehlende Handoffs und Safety-Muster** pruefen, bevor ein Operator externe Werkzeuge startet. Das reduziert False-Starts und hält Nachweise im Repo konsistent.
+
+### Warum keine ISO erzeugt wird?
+
+ISO-Erzeugung impliziert **xorriso/grub-mkrescue**-aehnliche Pfade und Medien-Schreiben; diese Phase bleibt strikt bei Planungs- und Simulationsdaten.
+
+### Warum bleiben Build-Stages read-only?
+
+Jede Stage traegt `destructive: false` und `execute_allowed: false`. Damit signalisieren wir: **keine** Ausfuehrung von Build-, Chroot- oder Installationsbefehlen aus dem Deploy-Backend.
+
+### Why is there still no real Debian Live build here?
+
+Dry orchestration only emits **JSON** (stage graph, resolution, simulation). A real image build is a privileged, non-deterministic step and stays **outside** this API.
+
+### Why validate dry orchestration first?
+
+Dependencies, missing handoffs, and safety patterns are checked **before** an operator starts external tooling. That cuts false starts and keeps evidence consistent in-repo.
+
+### Why no ISO here?
+
+ISO production implies **xorriso** / **grub-mkrescue**-class tooling and media writes; this phase stays strictly on planning and simulation data.
+
+### Why are build stages read-only?
+
+Every stage carries `destructive: false` and `execute_allowed: false`, signaling **no** build, chroot, or install execution from the deploy backend.
+
+## Rescue — Build Sandbox Preparation (Strict)
+
+### Warum wird noch keine echte Build-Sandbox ausgefuehrt?
+
+Diese Phase legt **nur** Verzeichnisse und JSON-Plaene an. Echte Kopien, Mounts oder Image-Schritte bleiben beim Operator bzw. in einer spaeteren, klar abgegrenzten Umgebung.
+
+### Warum wird Overlay nur geplant?
+
+`lowerdir`/`upperdir`/`workdir` beschreiben eine **spaetere** Overlay-Konfiguration. Ohne Mount bleibt das System konsistent mit Strict-Mode und ohne Kernel-Seiteneffekte aus der API.
+
+### Warum sind keine Mounts erlaubt?
+
+Mounts wuerden Host-Zustand und Rechtegrenzen verletzen; der Runner bleibt bei **Metadaten und Pfadplanung**, damit Safety-Scanner und Gates reproduzierbar bleiben.
+
+### Warum bleibt Cleanup read-only?
+
+Der Cleanup-Plan listet Ziele und Reihenfolgen mit `destructive_cleanup: false` — **kein** `rm -rf` oder aehnliche Befehle im Runner; Ausfuehrung ist Sache eines separaten, kontrollierten Schritts.
+
+### Why is a real build sandbox not executed yet?
+
+This phase only creates **directories and JSON plans**. Real copies, mounts, or image steps stay with the operator or a later isolated environment.
+
+### Why is overlay planning only?
+
+`lowerdir`/`upperdir`/`workdir` describe a **future** overlay layout. Without mounts, strict mode stays intact and the API avoids kernel side effects.
+
+### Why no mounts here?
+
+Mounts would change host state and privilege boundaries; the runner stays on **metadata and path planning** so scanners and gates stay reproducible.
+
+### Why is cleanup read-only?
+
+The cleanup plan lists targets and order with `destructive_cleanup: false` — **no** `rm -rf` or similar commands in the runner; execution belongs to a separate controlled step.

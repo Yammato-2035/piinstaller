@@ -1,0 +1,6 @@
+{
+  "rescue_rootfs_artifact_prepared": "Rescue rootfs artifact prepared (simulated layout, manifest written)",
+  "offline_frontend_artifacts_validated": "Offline frontend artifacts validated (no build executed)",
+  "rescue_backend_manifest_generated": "Rescue backend manifest generated",
+  "rescue_artifact_readiness_blocked": "Rescue artifact readiness blocked (gate)"
+}

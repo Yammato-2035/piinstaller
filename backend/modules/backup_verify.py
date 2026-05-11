@@ -31,13 +31,25 @@ VERIFY_STAGING_SUBDIR = "setuphelfer_verify"
 
 
 def _is_safe_member_name(name: str) -> bool:
-    n = name.lstrip("./")
-    if not n:
+    """
+    True, wenn der Tar-Mitgliedsname ein sicherer relativer Archivpfad ist.
+
+    GNU-``tar`` bei Vollbackup von ``/`` liefert typischerweise ``.`` und ``./…``;
+    das ist kein Traversal. Weiterhin verboten: ``..``-Segmente, absolute Pfade,
+    sowie nach ``normpath`` noch nach oben entweichende Pfade.
+    """
+    raw = name or ""
+    if not raw.strip():
         return False
-    if n.startswith("/") or posixpath.isabs(n):
+    if raw.startswith("/") or posixpath.isabs(raw):
         return False
-    normalized = posixpath.normpath(n)
-    if normalized in {".", ".."} or normalized.startswith("../"):
+    for seg in raw.split("/"):
+        if seg == "..":
+            return False
+    if "/../" in f"/{raw}/":
+        return False
+    norm = posixpath.normpath(raw)
+    if norm == ".." or norm.startswith("../"):
         return False
     return True
 

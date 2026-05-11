@@ -21,6 +21,7 @@ import SettingsPage from './pages/SettingsPage'
 import RaspberryPiConfig from './pages/RaspberryPiConfig'
 import ControlCenter from './pages/ControlCenter'
 import PeripheryScan from './pages/PeripheryScan'
+import InspectRun from './pages/InspectRun'
 import KinoStreaming from './pages/KinoStreaming'
 import Documentation from './pages/Documentation'
 import AppStore from './pages/AppStore'
@@ -110,6 +111,7 @@ type Page =
   | 'raspberry-pi-config'
   | 'control-center'
   | 'periphery-scan'
+  | 'inspect'
   | 'settings'
   | 'documentation'
   | 'app-store'
@@ -127,7 +129,7 @@ function getInitialPage(): Page {
   if (typeof window === 'undefined') return 'dashboard'
   const p = new URLSearchParams(window.location.search).get('page')
   if (p === 'tft') return 'tft'
-  if (p && ['dashboard', 'security', 'users', 'devenv', 'webserver', 'mailserver', 'nas', 'homeautomation', 'musicbox', 'kino-streaming', 'wizard', 'presets', 'learning', 'monitoring', 'backup', 'raspberry-pi-config', 'control-center', 'periphery-scan', 'settings', 'documentation', 'app-store', 'pi-installer-update', 'dsi-radio-settings', 'remote'].includes(p)) return p as Page
+  if (p && ['dashboard', 'security', 'users', 'devenv', 'webserver', 'mailserver', 'nas', 'homeautomation', 'musicbox', 'kino-streaming', 'wizard', 'presets', 'learning', 'monitoring', 'backup', 'raspberry-pi-config', 'control-center', 'periphery-scan', 'inspect', 'settings', 'documentation', 'app-store', 'pi-installer-update', 'dsi-radio-settings', 'remote'].includes(p)) return p as Page
   return 'dashboard'
 }
 
@@ -561,6 +563,8 @@ function App() {
         return <ControlCenter isRaspberryPi={platformRaw.isRaspberryPi} />
       case 'periphery-scan':
         return <PeripheryScan setCurrentPage={handlePageChange} />
+      case 'inspect':
+        return <InspectRun />
       case 'settings':
         return <SettingsPage setCurrentPage={handlePageChange} onExperienceLevelChange={setExperienceLevel} />
       case 'documentation':

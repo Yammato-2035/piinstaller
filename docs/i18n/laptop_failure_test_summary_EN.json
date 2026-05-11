@@ -1,0 +1,6 @@
+{
+  "test_summary_ok": "Laptop failure test summary: ok",
+  "test_summary_review_required": "Laptop failure test summary: review required",
+  "test_summary_blocked": "Laptop failure test summary: blocked",
+  "test_summary_has_findings": "Summary contains findings from validation"
+}

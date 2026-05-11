@@ -1,0 +1,6 @@
+{
+  "execution_log_template_ok": "Laptop failure execution log template: ready",
+  "execution_log_template_review_required": "Laptop failure execution log template: review required",
+  "execution_log_template_blocked": "Laptop failure execution log template: blocked",
+  "execution_log_template_medium_risk_note": "Medium-risk runs should be treated as later steps"
+}

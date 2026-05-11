@@ -1,0 +1,6 @@
+{
+  "readiness_gate_ready": "Readiness-Gate: bereit",
+  "readiness_review_required": "Readiness-Gate: Review erforderlich",
+  "readiness_blocked": "Readiness-Gate: blockiert",
+  "missing_safety_conditions": "Sicherheitsbedingungen unvollstaendig"
+}

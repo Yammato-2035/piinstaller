@@ -1,0 +1,6 @@
+{
+  "rescue_dry_build_ready": "Rescue-Dry-Build bereit",
+  "build_stage_graph_validated": "Build-Stage-Graph validiert",
+  "package_resolution_ready": "Paketaufloesung bereit",
+  "dry_build_blocked": "Dry-Build blockiert"
+}

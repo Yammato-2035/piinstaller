@@ -1,6 +1,6 @@
 # Diagnosis Catalog
 
-Aktueller Starter-Katalog: **41 Diagnosefaelle** (inkl. Service-Konflikte `SERVICE-CONFLICT-033` bis `036`, siehe `SERVICE_CONFLICTS.md`).
+Aktueller Starter-Katalog: **43 Diagnosefaelle** (inkl. Service-Konflikte `SERVICE-CONFLICT-033` bis `036`, Verify/Runtime `SYSTEMD-MEMORYMAX-037`, `VERIFY-STAGING-038`; siehe `SERVICE_CONFLICTS.md`).
 
 Abgedeckte Domaenen:
 
@@ -29,6 +29,8 @@ Beispiele:
 - `SYSTEMD-NNP-031` (NoNewPrivileges blockiert sudo im Restore-/Runtime-Pfad; bei falschem sudo-Gate vor Tar siehe FIX-2)
 - `BACKUP-SOURCE-PERM-032` (Data-Backup enthält nicht lesbare Quellpfade; Ziel ist ok, aber Data-Scope umfasst root-only oder nicht zugreifbare Quellen, siehe FIX-3/FIX-4/FIX-5; bei Analyse immer `selected_sources` gegen erwarteten Service-Context-Scope prüfen)
 - `SERVICE-CONFLICT-033` bis `036` (parallele pi-installer-/Setuphelfer-Dienste, Port-8000-Inhaber, gemischte `/opt`-Bäume; siehe `SERVICE_CONFLICTS.md`)
+- `SYSTEMD-MEMORYMAX-037` (zu kleines `MemoryMax`/`MemorySwapMax` → OOM oder Abbruch bei Verify/Preview)
+- `VERIFY-STAGING-038` (`backup.verify_integrity_failed` durch Staging-/Symlink-Regeln, typisch bei Full-Root-Archiven)
 
 ## HW1-03 — Beispiele, Symptome, typische Ursachen
 
@@ -42,6 +44,11 @@ Referenzlauf **HW1-03** (externe NVMe, produktionsnahe Pfade): Evidence z. B. `d
 | **RESTORE-PATH-004** | Preview findet `../` oder absolute Member-Pfade | `backup.restore_blocked_entries` | Bösartiges oder fehlerhaft gepacktes Archiv; historisch: unsichere Pfadnormalisierung (behoben: kein `lstrip("./")` mehr) |
 | **STORAGE-PROTECTION-005** | Ziel unter `/media/…` für Schreib-Backup | `backup.path_invalid`, Reason `STORAGE-PROTECTION-005` | Automount-Pfad gewählt statt `/mnt/setuphelfer/…` |
 | **PERM-GROUP-008** | Schreibprobe auf `…/backups` schlägt mit EACCES fehl trotz „richtigem“ Pfad | `backup.backup_target_not_writable` | Prozess ohne wirksame Gruppe `setuphelfer`, fehlende `SupplementaryGroups`, Owner/Mode nicht `root:setuphelfer` + `0770` |
+| **RESTORE-TMPFS-007** | Restore-Preview-Extrakt schlägt mit ENOSPC fehl; große Platte unter `/mnt` ist frei | `backup.restore_failed`, stderr „No space“ / `enospc` | Preview nutzt `/tmp`/PrivateTmp oder kleines `TMPDIR`; Staging nicht auf großem Mount |
+| **SYSTEMD-MEMORYMAX-037** | Deep-Verify oder Preview bricht ab, Journal: OOM/cgroup | Neustart des Dienstes während Lauf, kleines `MemoryMax` in Drop-in | `MemoryMax`/`MemorySwapMax` für `setuphelfer-backend` anheben (siehe KB `BACKUP_VERIFY_PREVIEW_RUNTIME.md`) |
+| **VERIFY-STAGING-038** | Deep-Verify: viele `invalid_symlink` / Staging-Hinweise | `backup.verify_integrity_failed` | Full-Root-Archiv vs. strikte Integritätsregeln; nicht zwingend Bit-Rot |
+
+Ausführliche Betriebsnotiz: [../BACKUP_VERIFY_PREVIEW_RUNTIME.md](../BACKUP_VERIFY_PREVIEW_RUNTIME.md).
 
 ## Restore API Enforcement (FIX-12)
 

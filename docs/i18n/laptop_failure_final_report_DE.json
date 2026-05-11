@@ -1,0 +1,6 @@
+{
+  "final_report_ok": "Laptop-Failure-Final-Report: ok",
+  "final_report_review_required": "Laptop-Failure-Final-Report: Review erforderlich",
+  "final_report_blocked": "Laptop-Failure-Final-Report: blockiert",
+  "final_report_recommendation_proceed": "Empfehlung: proceed"
+}

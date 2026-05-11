@@ -1,0 +1,6 @@
+{
+  "runtime_identifiers_eliminated": "Runtime-Identifier eliminiert",
+  "runtime_compatibility_alias_valid": "Runtime-Kompatibilitaets-Aliase gueltig",
+  "no_active_runtime_identifiers_remaining": "Keine aktiven Runtime-Identifier verbleibend",
+  "runtime_cleanup_completed": "Runtime-Bereinigung abgeschlossen"
+}

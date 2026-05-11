@@ -1,0 +1,3 @@
+# Evidence: DEPLOY_SETUPHELFER_IDENTIFIER_CLEANUP_CYCLE
+
+Handoff: `setuphelfer_identifier_cleanup_cycle_1_plan.json`, `setuphelfer_identifier_cleanup_cycle_1_result.json`, `setuphelfer_identifier_cleanup_cycle_1_postcheck.json`

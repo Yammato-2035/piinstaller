@@ -1,0 +1,3959 @@
+{
+  "analysis_schema_version": 1,
+  "analysis_status": "review_required",
+  "clusters": {
+    "api": [],
+    "backend_runtime": [],
+    "env_config": [],
+    "frontend_runtime": [],
+    "historical_runtime_dependency": [],
+    "migration_alias": [],
+    "packaging": [],
+    "scripts": [],
+    "tauri": [],
+    "tests": [],
+    "unknown": [
+      {
+        "criticality": "medium",
+        "line": 208,
+        "path": "docs/FREENOVE_COMPUTER_CASE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 223,
+        "path": "docs/FREENOVE_COMPUTER_CASE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 230,
+        "path": "docs/FREENOVE_COMPUTER_CASE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 56,
+        "path": "docs/SYSTEM_AUDIT_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 74,
+        "path": "docs/SYSTEM_AUDIT_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "PI_INSTALLER_",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 75,
+        "path": "docs/SYSTEM_AUDIT_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 78,
+        "path": "docs/SYSTEM_AUDIT_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 79,
+        "path": "docs/SYSTEM_AUDIT_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 81,
+        "path": "docs/SYSTEM_AUDIT_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 82,
+        "path": "docs/SYSTEM_AUDIT_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 119,
+        "path": "docs/SYSTEM_AUDIT_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 140,
+        "path": "docs/SYSTEM_AUDIT_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 142,
+        "path": "docs/SYSTEM_AUDIT_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 132,
+        "path": "docs/implementation-log.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 61,
+        "path": "docs/DSI_RADIO_APP.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 64,
+        "path": "docs/DSI_RADIO_APP.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 33,
+        "path": "docs/REMOTE_COMPANION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 40,
+        "path": "docs/REMOTE_COMPANION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 112,
+        "path": "docs/REMOTE_COMPANION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 3,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 25,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 47,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 50,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 55,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 63,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 135,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 150,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 161,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 7,
+        "path": "docs/INTERNETRADIO_KNOWLEDGEBASE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 11,
+        "path": "docs/INTERNETRADIO_KNOWLEDGEBASE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 96,
+        "path": "docs/INTERNETRADIO_KNOWLEDGEBASE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 31,
+        "path": "docs/PATHS_NVME.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 32,
+        "path": "docs/PATHS_NVME.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 33,
+        "path": "docs/PATHS_NVME.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 48,
+        "path": "docs/PATHS_NVME.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 49,
+        "path": "docs/PATHS_NVME.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 81,
+        "path": "docs/PATHS_NVME.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 104,
+        "path": "docs/PATHS_NVME.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 43,
+        "path": "docs/BETRIEB_REPO_VS_SERVICE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 39,
+        "path": "docs/CLONE_ARCHITECTURE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 72,
+        "path": "docs/CLONE_ARCHITECTURE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 73,
+        "path": "docs/CLONE_ARCHITECTURE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 74,
+        "path": "docs/CLONE_ARCHITECTURE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 81,
+        "path": "docs/CLONE_ARCHITECTURE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 21,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 28,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 37,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 40,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 41,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 47,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 48,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 59,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 62,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 79,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 80,
+        "path": "docs/PACKAGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 1,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 8,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 13,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 16,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 21,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 23,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 25,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 27,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 29,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 31,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 32,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 35,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 37,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 41,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 44,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller",
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 50,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 53,
+        "path": "docs/GET_PI_INSTALLER_IO.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 16,
+        "path": "docs/START_APPS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 41,
+        "path": "docs/START_APPS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 56,
+        "path": "docs/START_APPS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 67,
+        "path": "docs/START_APPS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 79,
+        "path": "docs/START_APPS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 80,
+        "path": "docs/START_APPS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 81,
+        "path": "docs/START_APPS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 82,
+        "path": "docs/START_APPS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 152,
+        "path": "docs/START_APPS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 13,
+        "path": "docs/backup-restore-realtest.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 21,
+        "path": "docs/backup-restore-realtest.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 98,
+        "path": "docs/FREENOVE_AUDIO_TROUBLESHOOTING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 22,
+        "path": "docs/RADIO_METADATA_DEBUGGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 23,
+        "path": "docs/RADIO_METADATA_DEBUGGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 24,
+        "path": "docs/RADIO_METADATA_DEBUGGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 25,
+        "path": "docs/RADIO_METADATA_DEBUGGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 29,
+        "path": "docs/RADIO_METADATA_DEBUGGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 30,
+        "path": "docs/RADIO_METADATA_DEBUGGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 31,
+        "path": "docs/RADIO_METADATA_DEBUGGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 70,
+        "path": "docs/RADIO_METADATA_DEBUGGING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 18,
+        "path": "docs/ANALYSE_HUERDEN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 62,
+        "path": "docs/ANALYSE_HUERDEN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 72,
+        "path": "docs/ANALYSE_HUERDEN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 84,
+        "path": "docs/ANALYSE_HUERDEN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 85,
+        "path": "docs/ANALYSE_HUERDEN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 93,
+        "path": "docs/ANALYSE_HUERDEN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 18,
+        "path": "docs/SD_CARD_IMAGE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 26,
+        "path": "docs/SD_CARD_IMAGE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 30,
+        "path": "docs/SD_CARD_IMAGE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller",
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 64,
+        "path": "docs/SD_CARD_IMAGE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 19,
+        "path": "docs/INSTALLATION_PI5.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 32,
+        "path": "docs/INSTALLATION_PI5.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 44,
+        "path": "docs/INSTALLATION_PI5.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 86,
+        "path": "docs/INSTALLATION_PI5.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 107,
+        "path": "docs/INSTALLATION_PI5.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 16,
+        "path": "docs/PICTURE_FRAME_APP.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 33,
+        "path": "docs/PICTURE_FRAME_APP.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 129,
+        "path": "docs/REMOTE_COMPANION_DEV.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 78,
+        "path": "docs/FREENOVE_TFT_DISPLAY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 80,
+        "path": "docs/FREENOVE_TFT_DISPLAY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 139,
+        "path": "docs/FREENOVE_TFT_DISPLAY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 18,
+        "path": "docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 23,
+        "path": "docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 77,
+        "path": "docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 89,
+        "path": "docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "de.pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 90,
+        "path": "docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "de.pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 96,
+        "path": "docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 23,
+        "path": "docs/knowledge-base/APT_REPOSITORIEN_UND_DOCKER_FAQ.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 9,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 17,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 51,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 54,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 57,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 64,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "de.pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 66,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "de.pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 68,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 72,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 75,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 76,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 80,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 1,
+        "path": "docs/faq/SERVICE_CONFLICT_FAQ.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 3,
+        "path": "docs/faq/SERVICE_CONFLICT_FAQ.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 13,
+        "path": "docs/faq/SERVICE_CONFLICT_FAQ.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 19,
+        "path": "docs/faq/SERVICE_CONFLICT_FAQ.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 100,
+        "path": "docs/faq/RESCUE_FAQ.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 1196,
+        "path": "docs/faq/BACKUP_RESTORE_FAQ_EN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 1211,
+        "path": "docs/faq/BACKUP_RESTORE_FAQ_EN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 1203,
+        "path": "docs/faq/BACKUP_RESTORE_FAQ_DE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 1218,
+        "path": "docs/faq/BACKUP_RESTORE_FAQ_DE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 5,
+        "path": "docs/faq/STORAGE_PROTECTION_FAQ.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 7,
+        "path": "docs/faq/STORAGE_PROTECTION_FAQ.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 33,
+        "path": "docs/development/anti_regression_summary.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 35,
+        "path": "docs/development/anti_regression_summary.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 51,
+        "path": "docs/development/anti_regression_summary.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 39,
+        "path": "docs/development/change_checklist.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 21,
+        "path": "docs/development/anti_regression_rules.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 119,
+        "path": "docs/development/anti_regression_rules.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 7,
+        "path": "docs/developer/LEGACY_IDENTIFIER_POLICY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 8,
+        "path": "docs/developer/LEGACY_IDENTIFIER_POLICY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 9,
+        "path": "docs/developer/LEGACY_IDENTIFIER_POLICY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 10,
+        "path": "docs/developer/LEGACY_IDENTIFIER_POLICY.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 27,
+        "path": "docs/developer/backend_structure.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 54,
+        "path": "docs/developer/backend_structure.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 67,
+        "path": "docs/developer/backend_structure.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 12,
+        "path": "docs/developer/BUILD_DEB.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 13,
+        "path": "docs/developer/BUILD_DEB.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 16,
+        "path": "docs/developer/BUILD_DEB.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 42,
+        "path": "docs/developer/BUILD_DEB.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 46,
+        "path": "docs/developer/BUILD_DEB.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 51,
+        "path": "docs/developer/BUILD_DEB.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 52,
+        "path": "docs/developer/BUILD_DEB.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 58,
+        "path": "docs/developer/BUILD_DEB.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 65,
+        "path": "docs/developer/BUILD_DEB.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 7,
+        "path": "docs/developer/REPOSITORY_ERSTELLEN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 32,
+        "path": "docs/developer/REPOSITORY_ERSTELLEN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 155,
+        "path": "docs/developer/WORKFLOW_LAPTOP_PI.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 175,
+        "path": "docs/developer/WORKFLOW_LAPTOP_PI.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 15,
+        "path": "docs/developer/README_remote_architecture.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 28,
+        "path": "docs/developer/README_remote_architecture.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 72,
+        "path": "docs/developer/update-center.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 13,
+        "path": "docs/developer/GITHUB_SETUP.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 21,
+        "path": "docs/developer/GITHUB_SETUP.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 65,
+        "path": "docs/developer/VERSIONING.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 16,
+        "path": "docs/developer/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 17,
+        "path": "docs/developer/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 23,
+        "path": "docs/developer/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 195,
+        "path": "docs/developer/FIXES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 26,
+        "path": "docs/inspect/INSPECT_PHASE_0_1_EN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 41,
+        "path": "docs/inspect/INSPECT_PHASE_2_DE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 41,
+        "path": "docs/inspect/INSPECT_PHASE_2_EN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 26,
+        "path": "docs/inspect/INSPECT_PHASE_0_1_DE.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 34,
+        "path": "docs/review/beginner_restructure_plan.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 35,
+        "path": "docs/review/beginner_restructure_plan.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 103,
+        "path": "docs/review/beginner_restructure_plan.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 109,
+        "path": "docs/review/beginner_restructure_plan.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 141,
+        "path": "docs/review/beginner_restructure_plan.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 149,
+        "path": "docs/review/beginner_restructure_plan.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 31,
+        "path": "docs/review/security_hardening_report.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 33,
+        "path": "docs/review/security_hardening_report.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 76,
+        "path": "docs/review/security_hardening_report.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 77,
+        "path": "docs/review/security_hardening_report.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 79,
+        "path": "docs/review/phase1_structure.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 93,
+        "path": "docs/review/phase1_structure.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 123,
+        "path": "docs/review/phase1_structure.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 154,
+        "path": "docs/review/phase1_structure.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 191,
+        "path": "docs/review/phase1_structure.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 26,
+        "path": "docs/review/audit_fix_log.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 51,
+        "path": "docs/review/audit_fix_log.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 110,
+        "path": "docs/review/audit_fix_log.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 37,
+        "path": "docs/review/repository_consistency_report.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 90,
+        "path": "docs/review/repository_consistency_report.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 22,
+        "path": "docs/review/security_improvements_review.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 27,
+        "path": "docs/review/security_improvements_review.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 49,
+        "path": "docs/review/security_improvements_review.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 50,
+        "path": "docs/review/security_improvements_review.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 51,
+        "path": "docs/review/security_improvements_review.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 67,
+        "path": "docs/review/security_improvements_review.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 79,
+        "path": "docs/review/security_improvements_review.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 5,
+        "path": "docs/review/phase4_structural_simplification.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 29,
+        "path": "docs/review/phase4_structural_simplification.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 76,
+        "path": "docs/review/phase4_structural_simplification.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 77,
+        "path": "docs/review/phase4_structural_simplification.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 89,
+        "path": "docs/review/phase4_structural_simplification.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 90,
+        "path": "docs/review/phase4_structural_simplification.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 130,
+        "path": "docs/review/phase4_structural_simplification.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 131,
+        "path": "docs/review/phase4_structural_simplification.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 150,
+        "path": "docs/review/phase4_structural_simplification.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 188,
+        "path": "docs/review/phase4_structural_simplification.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 21,
+        "path": "docs/review/final_fix_summary.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 12,
+        "path": "docs/review/priorisierte_todo_liste.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 13,
+        "path": "docs/website/tutorial_template.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 12,
+        "path": "docs/evidence/DEPLOY_WRITE_RUNNER_RUNTIME_VALIDATION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 96,
+        "path": "docs/evidence/DEPLOY_REAL_WRITE_FAILURE_INJECTION_RUNTIME.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 9,
+        "path": "docs/evidence/DEPLOY_RUNNER_ROOTLESS_E2E.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 9,
+        "path": "docs/user/NETWORK_ACCESS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 10,
+        "path": "docs/user/NETWORK_ACCESS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 12,
+        "path": "docs/user/NETWORK_ACCESS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 28,
+        "path": "docs/user/QUICKSTART.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 248,
+        "path": "docs/user/PYTHON_SETUP.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 11,
+        "path": "docs/user/GUIDED_UX_AND_COMPANION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 32,
+        "path": "docs/user/GUIDED_UX_AND_COMPANION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 33,
+        "path": "docs/user/GUIDED_UX_AND_COMPANION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 16,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 19,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 31,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 165,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 169,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 176,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 180,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 181,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 217,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 245,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 252,
+        "path": "docs/user/INSTALL.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 58,
+        "path": "docs/user/WORKFLOW_QUICKSTART.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 65,
+        "path": "docs/user/WORKFLOW_QUICKSTART.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 26,
+        "path": "docs/architecture/ui_modes.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 116,
+        "path": "docs/architecture/ui_modes.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 32,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 41,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 48,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 89,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 170,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 171,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 174,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 175,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 177,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 192,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 193,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 204,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 214,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 215,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 239,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 270,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 275,
+        "path": "docs/architecture/BOOTSTICK_PLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 20,
+        "path": "docs/architecture/debug_flow.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 10,
+        "path": "docs/architecture/TRANSFORMATIONSPLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 19,
+        "path": "docs/architecture/TRANSFORMATIONSPLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 227,
+        "path": "docs/architecture/TRANSFORMATIONSPLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 242,
+        "path": "docs/architecture/TRANSFORMATIONSPLAN.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 1,
+        "path": "docs/architecture/diagnose_companion.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 1,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 3,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 7,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 10,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 13,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 16,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 22,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 24,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 31,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 36,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 38,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "piinstaller",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 42,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 44,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 47,
+        "path": "docs/architecture/UMZUG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 295,
+        "path": "docs/architecture/STARTED.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 19,
+        "path": "docs/architecture/config_flow.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 20,
+        "path": "docs/architecture/config_flow.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 72,
+        "path": "docs/architecture/config_flow.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 81,
+        "path": "docs/architecture/config_flow.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 12,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 13,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 14,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 24,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 25,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 26,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 27,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 28,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 30,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 32,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 33,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 34,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 35,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 58,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 70,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 21,
+        "path": "docs/architecture/init_flow.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 56,
+        "path": "docs/architecture/init_flow.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 31,
+        "path": "docs/knowledge-base/diagnostics/DIAGNOSIS_CATALOG.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 1,
+        "path": "docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 5,
+        "path": "docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 12,
+        "path": "docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 19,
+        "path": "docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 21,
+        "path": "docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 25,
+        "path": "docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 36,
+        "path": "docs/knowledge-base/diagnostics/STORAGE_PROTECTION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 37,
+        "path": "docs/knowledge-base/diagnostics/STORAGE_PROTECTION.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 125,
+        "path": "docs/knowledge-base/test-evidence/HW_EXEC_1_EXTERNAL_NVME_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 380,
+        "path": "docs/knowledge-base/test-evidence/HW_EXEC_1_EXTERNAL_NVME_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 394,
+        "path": "docs/knowledge-base/test-evidence/HW_EXEC_1_EXTERNAL_NVME_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 403,
+        "path": "docs/knowledge-base/test-evidence/HW_EXEC_1_EXTERNAL_NVME_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 404,
+        "path": "docs/knowledge-base/test-evidence/HW_EXEC_1_EXTERNAL_NVME_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 405,
+        "path": "docs/knowledge-base/test-evidence/HW_EXEC_1_EXTERNAL_NVME_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 439,
+        "path": "docs/knowledge-base/test-evidence/HW_EXEC_1_EXTERNAL_NVME_REPORT.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 77,
+        "path": "docs/knowledge-base/test-evidence/HW_EXEC_1_REPEAT_INSTRUCTIONS.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 12,
+        "path": "docs/review/security/repo_vs_release_separation_checklist.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 30,
+        "path": "docs/review/security/repo_vs_release_separation_checklist.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 15,
+        "path": "docs/review/security/hardening_changes.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 34,
+        "path": "docs/review/security/module_inventory.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 113,
+        "path": "docs/review/security/module_inventory.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 115,
+        "path": "docs/review/security/module_inventory.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 116,
+        "path": "docs/review/security/module_inventory.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 20,
+        "path": "docs/review/security/build_packaging_repo_release_split.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 29,
+        "path": "docs/review/security/build_packaging_repo_release_split.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 18,
+        "path": "docs/review/security/frontend_repo_release_split.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 23,
+        "path": "docs/review/security/frontend_repo_release_split.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 25,
+        "path": "docs/review/security/frontend_repo_release_split.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 45,
+        "path": "docs/review/security/frontend_repo_release_split.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 54,
+        "path": "docs/review/security/frontend_repo_release_split.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 42,
+        "path": "docs/review/security/repo_release_mode_summary.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 45,
+        "path": "docs/review/security/repo_release_mode_summary.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 5,
+        "path": "docs/review/security/modules/debian-packaging.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 30,
+        "path": "docs/review/security/modules/debian-packaging.md",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 13,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 14,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 22,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "piinstaller"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 30,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 38,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 46,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 47,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 55,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 56,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 57,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 65,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 73,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 81,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 82,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "PI_INSTALLER_"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 90,
+        "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+        "source": "legacy_identifier_inventory",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 13,
+        "path": "docs/VERIFY_TARGET_SYSTEM.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 18,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 145,
+        "path": "docs/SYSTEM_INSTALLATION.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 6,
+        "path": "docs/BETRIEB_REPO_VS_SERVICE.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 16,
+        "path": "docs/BETRIEB_REPO_VS_SERVICE.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 57,
+        "path": "docs/BETRIEB_REPO_VS_SERVICE.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 7,
+        "path": "docs/START_APPS.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 114,
+        "path": "docs/knowledge-base/README.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 106,
+        "path": "docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 47,
+        "path": "docs/knowledge-base/HW1_PHASE_SUMMARY.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 11,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 40,
+        "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 15,
+        "path": "docs/faq/SERVICE_CONFLICT_FAQ.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 1203,
+        "path": "docs/faq/BACKUP_RESTORE_FAQ_EN.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 1210,
+        "path": "docs/faq/BACKUP_RESTORE_FAQ_DE.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 20,
+        "path": "docs/developer/architecture_overview.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 12,
+        "path": "docs/developer/NAMING_AND_SERVICES.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 85,
+        "path": "docs/review/phase1_structure.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 86,
+        "path": "docs/review/phase1_structure.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 16,
+        "path": "docs/review/repository_consistency_report.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 30,
+        "path": "docs/review/error_backlog_current_state.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "/opt/pi-installer"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 49,
+        "path": "docs/architecture/config_flow.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 50,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "medium",
+        "line": 61,
+        "path": "docs/architecture/NAMING_AND_SERVICES.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer"
+        ]
+      },
+      {
+        "criticality": "low",
+        "line": 69,
+        "path": "docs/architecture/init_flow.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "pi-installer-backend"
+        ]
+      },
+      {
+        "criticality": "critical",
+        "line": 18,
+        "path": "docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md",
+        "source": "setuphelfer_identifier_consistency_check",
+        "tokens": [
+          "pi-installer",
+          "pi-installer.service"
+        ]
+      }
+    ]
+  },
+  "critical_count": 121,
+  "generated_at": "2026-05-09T20:28:24Z",
+  "high_count": 0,
+  "low_count": 30,
+  "medium_count": 233,
+  "recommended_next_cleanup_targets": [
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/ANALYSE_HUERDEN.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/BETRIEB_REPO_VS_SERVICE.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/FREENOVE_TFT_DISPLAY.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/GET_PI_INSTALLER_IO.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/REMOTE_COMPANION.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/SD_CARD_IMAGE.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/START_APPS.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/SYSTEM_AUDIT_REPORT.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/SYSTEM_INSTALLATION.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/architecture/BOOTSTICK_PLAN.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/architecture/NAMING_AND_SERVICES.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/architecture/TRANSFORMATIONSPLAN.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/architecture/UMZUG.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/architecture/config_flow.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/architecture/init_flow.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/developer/LEGACY_IDENTIFIER_POLICY.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/developer/NAMING_AND_SERVICES.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/developer/README_remote_architecture.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/development/anti_regression_rules.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/development/anti_regression_summary.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/faq/SERVICE_CONFLICT_FAQ.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/inspect/INSPECT_PHASE_0_1_DE.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/inspect/INSPECT_PHASE_0_1_EN.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/inspect/INSPECT_PHASE_2_DE.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/inspect/INSPECT_PHASE_2_EN.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/knowledge-base/test-evidence/HW_EXEC_1_EXTERNAL_NVME_REPORT.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/review/audit_fix_log.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/review/beginner_restructure_plan.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/review/error_backlog_current_state.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/review/phase1_structure.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/review/phase4_structural_simplification.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/review/repository_consistency_report.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/review/security/build_packaging_repo_release_split.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/review/security/hardening_changes.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/review/security/module_inventory.md",
+      "rationale": "priority:unknown:critical"
+    },
+    {
+      "cluster": "unknown",
+      "criticality": "critical",
+      "path": "docs/review/security/modules/debian-packaging.md",
+      "rationale": "priority:unknown:critical"
+    }
+  ],
+  "remaining_identifier_count": 384,
+  "strict_mode": "legacy_identifier_hotspot_analysis",
+  "top_hotspots": [
+    {
+      "hit_count": 17,
+      "max_criticality": "critical",
+      "path": "docs/GET_PI_INSTALLER_IO.md"
+    },
+    {
+      "hit_count": 17,
+      "max_criticality": "critical",
+      "path": "docs/architecture/BOOTSTICK_PLAN.md"
+    },
+    {
+      "hit_count": 17,
+      "max_criticality": "critical",
+      "path": "docs/architecture/NAMING_AND_SERVICES.md"
+    },
+    {
+      "hit_count": 15,
+      "max_criticality": "critical",
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json"
+    },
+    {
+      "hit_count": 14,
+      "max_criticality": "critical",
+      "path": "docs/architecture/UMZUG.md"
+    },
+    {
+      "hit_count": 14,
+      "max_criticality": "critical",
+      "path": "docs/knowledge-base/INSTALLATION_PATH_AUDIT.md"
+    },
+    {
+      "hit_count": 11,
+      "max_criticality": "medium",
+      "path": "docs/PACKAGING.md"
+    },
+    {
+      "hit_count": 11,
+      "max_criticality": "critical",
+      "path": "docs/SYSTEM_INSTALLATION.md"
+    },
+    {
+      "hit_count": 11,
+      "max_criticality": "critical",
+      "path": "docs/user/INSTALL.md"
+    },
+    {
+      "hit_count": 10,
+      "max_criticality": "critical",
+      "path": "docs/START_APPS.md"
+    },
+    {
+      "hit_count": 10,
+      "max_criticality": "critical",
+      "path": "docs/SYSTEM_AUDIT_REPORT.md"
+    },
+    {
+      "hit_count": 10,
+      "max_criticality": "critical",
+      "path": "docs/review/phase4_structural_simplification.md"
+    },
+    {
+      "hit_count": 9,
+      "max_criticality": "medium",
+      "path": "docs/developer/BUILD_DEB.md"
+    },
+    {
+      "hit_count": 8,
+      "max_criticality": "medium",
+      "path": "docs/RADIO_METADATA_DEBUGGING.md"
+    },
+    {
+      "hit_count": 7,
+      "max_criticality": "medium",
+      "path": "docs/PATHS_NVME.md"
+    },
+    {
+      "hit_count": 7,
+      "max_criticality": "critical",
+      "path": "docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md"
+    },
+    {
+      "hit_count": 7,
+      "max_criticality": "critical",
+      "path": "docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md"
+    },
+    {
+      "hit_count": 7,
+      "max_criticality": "critical",
+      "path": "docs/knowledge-base/test-evidence/HW_EXEC_1_EXTERNAL_NVME_REPORT.md"
+    },
+    {
+      "hit_count": 7,
+      "max_criticality": "critical",
+      "path": "docs/review/phase1_structure.md"
+    },
+    {
+      "hit_count": 7,
+      "max_criticality": "critical",
+      "path": "docs/review/security_improvements_review.md"
+    },
+    {
+      "hit_count": 6,
+      "max_criticality": "critical",
+      "path": "docs/ANALYSE_HUERDEN.md"
+    },
+    {
+      "hit_count": 6,
+      "max_criticality": "critical",
+      "path": "docs/review/beginner_restructure_plan.md"
+    },
+    {
+      "hit_count": 5,
+      "max_criticality": "medium",
+      "path": "docs/CLONE_ARCHITECTURE.md"
+    },
+    {
+      "hit_count": 5,
+      "max_criticality": "medium",
+      "path": "docs/INSTALLATION_PI5.md"
+    },
+    {
+      "hit_count": 5,
+      "max_criticality": "critical",
+      "path": "docs/architecture/config_flow.md"
+    }
+  ]
+}

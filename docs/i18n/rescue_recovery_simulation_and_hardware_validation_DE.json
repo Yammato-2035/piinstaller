@@ -1,0 +1,7 @@
+{
+  "restore preview active": "Restore-Preview aktiv — keine Schreiboperationen.",
+  "backup verify passed": "Backup-Verify bestanden (SHA256/Manifest).",
+  "recovery target validated": "Recovery-Ziel validiert (readonly, ohne Systempfade).",
+  "readonly recovery chain ready": "Readonly-Recovery-Kette technisch vollständig.",
+  "recovery readiness blocked": "Recovery-Readiness blockiert — Subgates oder Integrität prüfen."
+}

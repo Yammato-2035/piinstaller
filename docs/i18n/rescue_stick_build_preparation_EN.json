@@ -1,0 +1,7 @@
+{
+  "rescue_live_os_selected": "Debian Live selected as the recommended rescue baseline",
+  "rescue_mvp_scope_accepted": "MVP scope accepted without automatic restore/repair writes",
+  "rescue_build_readiness_ready": "Rescue build readiness: ready for next manual build steps",
+  "usb_write_blocked": "USB write / dd is blocked in this phase",
+  "restore_execute_blocked": "Restore execute remains blocked; preview only"
+}

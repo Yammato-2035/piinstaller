@@ -132,8 +132,9 @@ def get_version_from_json(path: Path) -> str | None:
         return None
     try:
         data = json.loads(raw)
-        if isinstance(data.get("version"), str):
-            return data["version"].strip()
+        v = data.get("project_version") or data.get("version")
+        if isinstance(v, str):
+            return v.strip()
     except Exception:
         pass
     return None

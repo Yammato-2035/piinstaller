@@ -1,0 +1,6 @@
+{
+  "rescue_dry_build_ready": "Rescue dry build ready",
+  "build_stage_graph_validated": "Build stage graph validated",
+  "package_resolution_ready": "Package resolution ready",
+  "dry_build_blocked": "Dry build blocked"
+}

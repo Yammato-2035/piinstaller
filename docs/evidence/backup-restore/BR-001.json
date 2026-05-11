@@ -1,0 +1,27 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "BR-001",
+  "ampel": "rot",
+  "evidence_complete": true,
+  "executed_at": "2026-05-11T22:00:00Z",
+  "environment": {
+    "host_role": "STRICT_CI_BR_EVIDENCE_RUN",
+    "api": "FastAPI TestClient POST /api/backup/create",
+    "payload_summary": {
+      "type": "full",
+      "target": "local",
+      "backup_dir": "/tmp/setuphelfer-test/br-ci-evidence2",
+      "async": false
+    },
+    "constraint_notes": [
+      "Kein sudo übergeben (STRICT: kein interaktives sudo ohne dokumentierte Notwendigkeit).",
+      "Ziel unter /tmp/setuphelfer-test — laut validate_write_target Klassifikation Systemplatte → STORAGE-PROTECTION-001.",
+      "Kein Schreiben auf externe/freigegebene Medien in dieser Umgebung verfügbar."
+    ]
+  },
+  "result": "blocked",
+  "api_code": "backup.path_invalid",
+  "api_message_excerpt": "STORAGE-PROTECTION-001: Schreibzugriff auf Systemplatte ist nicht erlaubt",
+  "artifacts": [],
+  "notes": "Full-Backup BR-001 in dieser Laufumgebung nicht ausführbar: Schreibziel wird gegen System-/Root-Dateisicherung geblockt. Freigabe: externes Mount unter /media oder /run/media bzw. freigegebenes Backup-Verzeichnis laut Runbook; optional dokumentiertes sudo nur wenn Betriebskonzept es fordert. Kettennachweis BR-004/BR-005 daher mit separatem Referenzarchiv (siehe BR-004/BR-005)."
+}

@@ -1,0 +1,6 @@
+{
+  "evaluation_completed": "Evaluation completed",
+  "mismatch_detected": "Mismatch between expected and observed",
+  "deviations_detected": "Deviations detected",
+  "evaluation_blocked": "Evaluation blocked"
+}

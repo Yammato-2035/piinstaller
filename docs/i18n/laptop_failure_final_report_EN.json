@@ -1,0 +1,6 @@
+{
+  "final_report_ok": "Laptop failure final report: ok",
+  "final_report_review_required": "Laptop failure final report: review required",
+  "final_report_blocked": "Laptop failure final report: blocked",
+  "final_report_recommendation_proceed": "Recommendation: proceed"
+}

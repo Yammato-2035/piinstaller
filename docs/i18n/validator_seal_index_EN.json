@@ -1,0 +1,6 @@
+{
+  "seal_indexed": "Seal indexed",
+  "invalid_seal_skipped": "Invalid seal skipped",
+  "no_valid_seals_found": "No valid seals found",
+  "overwrite_blocked": "Index overwrite blocked without explicit_overwrite"
+}

@@ -1,0 +1,6 @@
+{
+  "test_session_generated": "Testsession erzeugt",
+  "manual_execution_only": "Nur manuelle Ausführung erlaubt",
+  "expected_final_state": "Erwarteter Endzustand",
+  "abort_condition_reached": "Abort-Bedingung erreicht"
+}

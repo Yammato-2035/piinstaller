@@ -1,0 +1,6 @@
+{
+  "branding_guard_ok": "Branding-Guard ohne aktive Legacy-Treffer",
+  "active_legacy_branding_blocked": "Aktive Legacy-Marken blockieren den Branding-Guard",
+  "historical_legacy_reference_allowed": "Historische Legacy-Referenz im erlaubten Kontext",
+  "setuphelfer_branding_enforced": "Setuphelfer-Marke fuer Runtime erzwungen"
+}

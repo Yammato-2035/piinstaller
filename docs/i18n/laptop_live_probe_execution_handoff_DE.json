@@ -1,0 +1,6 @@
+{
+  "laptop_live_probe_plan_ready": "Live-Probe-Plan bereit",
+  "laptop_live_probe_execute_readonly_done": "Live-Probe read-only ausgefuehrt",
+  "laptop_live_probe_final_gate_blocked": "Live-Probe Final-Gate blockiert",
+  "laptop_live_probe_legacy_detected": "Legacy pi-installer in API-Antwort erkannt"
+}

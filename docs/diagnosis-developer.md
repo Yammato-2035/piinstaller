@@ -36,6 +36,10 @@ Bei Fehler von `POST /api/webserver/configure` (Seite **Webserver → Konfigurat
 
 Bei fehlgeschlagener **lokaler** Prüfung (`POST /api/backup/verify`, Basic oder Deep) ruft `BackupRestore.tsx` `POST /api/diagnosis/interpret` mit `area: backup_restore`, `event_type: verify_failed` und der Roh-/Fehlermeldung auf. Es gibt **keine** Quick-Fix-Buttons und keine Änderung der Verify-Backendlogik.
 
+## Strukturierter Diagnosekatalog (`/api/diagnostics/*`)
+
+Zusaetzlich zum Interpreter liegt der Katalog in `backend/core/diagnostics/registry.py` (IDs als Source of Truth), Zuordnung in `matcher.py`. Fuer Verify/Preview-Betrieb u. a.: **`SYSTEMD-MEMORYMAX-037`**, **`VERIFY-STAGING-038`**, erweiterte Einordnung von **`RESTORE-TMPFS-007`** (ENOSPC bei Preview trotz freier Datenplatte). Doku: `docs/knowledge-base/diagnostics/DIAGNOSIS_CATALOG.md`, `docs/knowledge-base/BACKUP_VERIFY_PREVIEW_RUNTIME.md`.
+
 ## Offline-Fall
 
 Wenn das Backend nicht erreichbar ist, kann kein `POST /interpret` ausgeführt werden. Dashboard nutzt `localBackendDiagnosis()` – Semantik muss mit `_rule_system_backend_unreachable` übereinstimmen (siehe `docs/architecture/diagnose_companion.md`). **Hinweis:** Schlägt Verify fehl, während der Diagnose-Endpunkt nicht erreichbar ist, bleibt das Panel leer (`postDiagnosisInterpret` liefert `null`) – Toasts und bestehende UI bleiben bestehen.

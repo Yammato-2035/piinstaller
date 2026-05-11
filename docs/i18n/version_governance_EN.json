@@ -1,0 +1,6 @@
+{
+  "version_bump_detected": "Version bump detected",
+  "missing_version_bump": "Missing version bump",
+  "inconsistent_version_state": "Inconsistent version state",
+  "phase_completed": "Phase completed"
+}

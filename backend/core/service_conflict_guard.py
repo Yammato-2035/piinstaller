@@ -55,12 +55,12 @@ def compare_versions(a: str, b: str) -> int:
 
 
 def read_version_from_install_root(root: Path) -> str | None:
-    """Liest config/version.json, sonst VERSION-Datei."""
+    """Liest config/version.json (project_version), sonst VERSION-Datei."""
     try:
         vj = root / "config" / "version.json"
         if vj.is_file():
             data = json.loads(vj.read_text(encoding="utf-8"))
-            v = str(data.get("version") or "").strip()
+            v = str(data.get("project_version") or data.get("version") or "").strip()
             if v:
                 return v
         vf = root / "VERSION"

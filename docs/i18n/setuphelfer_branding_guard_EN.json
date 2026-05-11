@@ -1,0 +1,6 @@
+{
+  "branding_guard_ok": "Branding guard: no active legacy hits",
+  "active_legacy_branding_blocked": "Active legacy branding blocked by guard",
+  "historical_legacy_reference_allowed": "Historical legacy reference in allowed context",
+  "setuphelfer_branding_enforced": "Setuphelfer branding enforced for runtime"
+}

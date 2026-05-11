@@ -1,0 +1,3287 @@
+{
+  "counts": {
+    "active_runtime_identifier": 400
+  },
+  "findings": [
+    {
+      "classification": "active_runtime_identifier",
+      "line": 3,
+      "path": "docs/evidence/runtime-results/handoff/legacy-backups/da4e4a7138822bd35915ed5e.legacy-backup",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 22,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 31,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 40,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 49,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 50,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 59,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 60,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 61,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 70,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 79,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 88,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 89,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 98,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 99,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 108,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 109,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 110,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 119,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 120,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 121,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 130,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 139,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 140,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 149,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 158,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 167,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 176,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 185,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 194,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 203,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 212,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 221,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 230,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 239,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 248,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 257,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 266,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 275,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 284,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 293,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 302,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 311,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 320,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 329,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 338,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 347,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 356,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 365,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 374,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 383,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 392,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 401,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 410,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 419,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 428,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 437,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 446,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 455,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 464,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 473,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 482,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 491,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 500,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 509,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 518,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 524,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 527,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 533,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 536,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 542,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 545,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 551,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 554,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 560,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 563,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 569,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 572,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 578,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 581,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 587,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 590,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 596,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 599,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 605,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 608,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 614,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 617,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 623,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 626,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 632,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 635,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 641,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 644,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 650,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 653,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 654,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 655,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 661,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 664,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 670,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 673,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 682,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 691,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 700,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 709,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 718,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 727,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 736,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 745,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 754,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 763,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 772,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 781,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 790,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 799,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 808,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 817,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 826,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 835,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 844,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 853,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 862,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 863,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 872,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 881,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 882,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 891,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 900,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 909,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 910,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 919,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 928,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 937,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 938,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 947,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 956,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 965,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 974,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 983,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 992,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1001,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1010,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1019,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1020,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1029,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1038,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1047,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1056,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1065,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1074,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1083,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1084,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "de.pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1093,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1094,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "de.pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1103,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1112,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1121,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1130,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1139,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1140,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1149,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1150,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1159,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1160,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1169,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1170,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "de.pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1179,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1180,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "de.pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1189,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1198,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1199,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1208,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1209,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1218,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1219,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1228,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1229,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1238,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1247,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1256,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1257,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1266,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1267,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1276,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1285,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1294,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1303,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1312,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1321,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1330,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1339,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1340,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1341,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1350,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1351,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1360,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1361,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1362,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1371,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1380,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1389,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1390,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1391,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1400,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1401,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1410,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1419,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1420,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1429,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1438,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1447,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1456,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1457,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1466,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1475,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1484,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1493,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1502,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1511,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1520,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1529,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1538,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1547,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1556,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1565,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1574,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1583,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1592,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1601,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1610,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1619,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1628,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1637,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1638,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1639,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1648,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1649,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1658,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1667,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1676,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1685,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1694,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1703,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1712,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1721,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1730,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1739,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1740,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1741,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1750,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1759,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1760,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1769,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1778,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1787,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1788,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1797,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1798,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1807,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1816,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1825,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1834,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1843,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1852,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1861,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1862,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1871,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1880,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1889,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1898,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1907,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1916,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1925,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1934,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1943,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1944,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1945,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1954,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1955,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1956,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1965,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1974,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1975,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1984,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 1993,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2002,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2011,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2020,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2021,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2030,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2031,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2040,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2049,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2050,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer-backend"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2059,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2068,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2077,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2086,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2095,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2104,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2113,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2122,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2131,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2140,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2149,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2158,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2167,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2176,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2185,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2194,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2195,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2204,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2213,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2222,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2231,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2232,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2241,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2250,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2259,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2268,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2277,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2286,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2295,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2304,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2313,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2322,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2331,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2332,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2341,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2350,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2359,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2360,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2369,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2378,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2387,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2396,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2397,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2406,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2407,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2416,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2417,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2426,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2435,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2444,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2453,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2462,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2471,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2472,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2481,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2490,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2499,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2508,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2509,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2518,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2527,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2536,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2545,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2554,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2563,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2572,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2581,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2590,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2599,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2608,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2617,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2618,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2619,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2628,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2629,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2630,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2639,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2640,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "pi-installer.service"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2649,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2658,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2667,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2676,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2685,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2694,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2703,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2712,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "piinstaller"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2721,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2730,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2739,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2740,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer",
+        "/opt/pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2749,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2758,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2767,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2776,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2785,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2794,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2803,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2812,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2821,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2830,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2839,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2848,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2857,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "PI_INSTALLER_"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2866,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    },
+    {
+      "classification": "active_runtime_identifier",
+      "line": 2875,
+      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+      "tokens": [
+        "pi-installer"
+      ]
+    }
+  ],
+  "findings_truncated": true,
+  "generated_at": "2026-05-11T18:29:32Z",
+  "inventory_schema_version": 1,
+  "inventory_status": "review_required",
+  "scan_targets": [
+    "docs",
+    "backend",
+    "frontend",
+    "scripts",
+    "systemd",
+    "src-tauri",
+    "package.json"
+  ],
+  "strict_mode": "legacy_identifier_inventory",
+  "tokens": [
+    "pi-installer",
+    "piinstaller",
+    "PI_INSTALLER_",
+    "de.pi-installer",
+    "/opt/pi-installer",
+    "pi-installer.service",
+    "pi-installer-backend",
+    "pi-installer-frontend"
+  ]
+}

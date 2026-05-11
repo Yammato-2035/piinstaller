@@ -1,0 +1,6 @@
+{
+  "runorder_ready": "Laptop failure operator runorder: ready",
+  "runorder_review_required": "Laptop failure operator runorder: review required",
+  "runorder_blocked": "Laptop failure operator runorder: blocked",
+  "medium_risk_deferred": "Medium risk is ordered last in the runorder"
+}

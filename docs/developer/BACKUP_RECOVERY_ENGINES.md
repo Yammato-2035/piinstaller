@@ -256,6 +256,7 @@ SETUPHELFER_RESTORE_TEST_ARCHIVE=/pfad/zum/backup.tar.gz PYTHONPATH=backend pyth
 
 ## Siehe auch
 
+- Betrieb / VM-Tests (Memory cgroup, `TMPDIR`, Preview-Platz, Deep-Verify-Integrität): [BACKUP_VERIFY_PREVIEW_RUNTIME.md](../knowledge-base/BACKUP_VERIFY_PREVIEW_RUNTIME.md).
 - Nutzerüberblick: In-App **Dokumentation** → Kapitel **Backup & Restore** und **FAQ**.
 - Bestehende UI-/API-Logik: `backend/modules/backup.py`, `app.py` (Backup-Jobs).
 - Geplanter Ausbau **echte Home-Daten** (nur explizit, nach HW- und Freigabe-Gates): [TODO_REAL_DATA_HOME_BACKUP.md](./TODO_REAL_DATA_HOME_BACKUP.md).

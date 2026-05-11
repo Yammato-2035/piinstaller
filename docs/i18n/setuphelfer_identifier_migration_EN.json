@@ -1,0 +1,6 @@
+{
+  "legacy_identifier_detected": "Legacy identifier detected",
+  "deprecated_runtime_identifier": "Deprecated runtime identifier",
+  "setuphelfer_migration_ready": "Setuphelfer migration ready",
+  "runtime_identifier_blocked": "Runtime identifier blocked"
+}

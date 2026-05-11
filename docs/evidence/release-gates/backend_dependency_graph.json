@@ -1,0 +1,18 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "backend_dependency_graph",
+  "generated": "2026-05-11",
+  "ampel": "rot",
+  "evidence_complete": false,
+  "nodes": [
+    {"id": "app", "path": "backend/app.py", "note": "große Monolith-Datei"},
+    {"id": "deploy", "path": "backend/deploy/", "note": "Runner, Rescue, Execute"},
+    {"id": "core", "path": "backend/core/", "note": "u.a. service_conflict_guard"},
+    {"id": "boot", "path": "backend/boot/"}
+  ],
+  "edges": [
+    {"from": "deploy", "to": "app", "kind": "imports_routes_indirect"},
+    {"from": "app", "to": "core", "kind": "mixed_domains"}
+  ],
+  "next_step": "Detaillierter Import-Graph via Prompt 5 (ohne Refactoring)"
+}

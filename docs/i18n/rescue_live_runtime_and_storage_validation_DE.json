@@ -1,0 +1,7 @@
+{
+  "readonly mount active": "Readonly-Mount aktiv (nur unter build/rescue/runtime-mounts/).",
+  "rw mount blocked": "RW-Mount blockiert (Strict-Mode Rescue).",
+  "efi analysis complete": "EFI-/Boot-Analyse abgeschlossen (nur Analyse, keine Reparatur).",
+  "external evidence export ready": "Evidence-Export auf externes oder freigegebenes Ziel möglich (Ziel explizit wählen).",
+  "remote help preparation ready": "Remote-Hilfe vorbereitet; SSH wird nicht automatisch gestartet."
+}

@@ -6,6 +6,14 @@
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# Optional: Repo-Root-.env (APP_EDITION, PI_INSTALLER_DEV, Ports, …) — wie scripts/start-backend.sh
+if [ -f "$SCRIPT_DIR/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$SCRIPT_DIR/.env"
+  set +a
+fi
+
 echo "🚀 PI-Installer Startskript"
 echo "================================"
 echo ""

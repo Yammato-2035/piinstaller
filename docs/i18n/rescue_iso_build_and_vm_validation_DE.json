@@ -1,0 +1,7 @@
+{
+  "rescue_iso_build_phase_started": "Rescue-ISO-Build- und VM-Validierungsphase aktiv",
+  "rescue_iso_output_under_build_rescue": "ISO-Ausgabe nur unter build/rescue/output/",
+  "rescue_vm_only_testing": "Nur VM-Tests, keine Produktiv-Hardware",
+  "rescue_usb_still_blocked": "USB-Schreiben weiterhin gesperrt",
+  "rescue_restore_execute_blocked": "Restore-Execute bleibt gesperrt"
+}

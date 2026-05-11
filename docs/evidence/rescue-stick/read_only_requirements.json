@@ -1,0 +1,16 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "read_only_requirements",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "rules": [
+    "Keine Schreiboperationen auf interne Systemplatten.",
+    "Nur Storage-Erkennung, Backup-Fund, Verify, Bericht.",
+    "Restore nur nach separatem Freigabe-Runbook."
+  ],
+  "references": [
+    "docs/testing/RESCUE_STICK_TEST_MATRIX.md",
+    "docs/evidence/rescue-stick/debian_live_decision.md"
+  ],
+  "executed_at": null
+}

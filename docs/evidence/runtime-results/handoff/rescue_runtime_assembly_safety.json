@@ -1,0 +1,19 @@
+{
+  "evaluation": {
+    "rescue_runtime_assembly_safety_eval_status": "ok"
+  },
+  "forbidden_segments_scanned": [
+    "restore-execute",
+    "publish-release",
+    "deploy-release",
+    "partition-write",
+    "grub-repair",
+    "efi-write",
+    "auto-repair",
+    "auto-restore"
+  ],
+  "generated_at": "2026-05-09T23:12:15Z",
+  "rescue_runtime_assembly_safety_schema_version": 1,
+  "runner_scan_note": "forbidden_syscalls_in_runner_enforced_by_unit_tests",
+  "strict_mode": "rescue_runtime_assembly_pipeline"
+}

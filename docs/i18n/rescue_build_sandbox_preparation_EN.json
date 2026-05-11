@@ -1,0 +1,6 @@
+{
+  "rescue_build_sandbox_ready": "Rescue build sandbox ready",
+  "sandbox_safety_validated": "Sandbox safety validated",
+  "sandbox_blocked": "Sandbox blocked",
+  "overlay_workspace_prepared": "Overlay workspace prepared (plan only)"
+}

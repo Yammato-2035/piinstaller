@@ -1,0 +1,6 @@
+{
+  "legacy_runtime_detected": "Legacy-Runtime-Signale im Handoff erkannt",
+  "runtime_coexistence_blocked": "Runtime-Koexistenz blockiert (Konflikte)",
+  "migration_recommendation_generated": "Migrations-Empfehlungen erzeugt (nur Advisory)",
+  "upgrade_path_validated": "Upgrade-Pfad-Matrix validiert"
+}

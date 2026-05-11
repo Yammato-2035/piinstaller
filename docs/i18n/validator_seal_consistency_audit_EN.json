@@ -1,0 +1,7 @@
+{
+  "seal_audit_ok": "Seal consistency audit ok",
+  "sha256_mismatch": "SHA256 does not match source report",
+  "missing_source_report": "Source report missing",
+  "invalid_seal_json": "Seal file is not valid JSON",
+  "no_valid_audit_entries": "No valid index entry"
+}

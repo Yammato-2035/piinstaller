@@ -1,0 +1,6 @@
+{
+  "final_acceptance_accepted": "Evidence acceptance passed",
+  "final_acceptance_review_required": "Evidence acceptance requires review",
+  "final_acceptance_blocked": "Evidence acceptance blocked",
+  "snapshot_invalid": "Final snapshot invalid or hash mismatch"
+}

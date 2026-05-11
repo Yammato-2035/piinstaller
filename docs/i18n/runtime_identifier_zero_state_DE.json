@@ -1,0 +1,6 @@
+{
+  "runtime_identifier_zero_state_verified": "Runtime-Identifier Zero State verifiziert",
+  "runtime_identifiers_still_active": "Runtime-Identifier noch aktiv",
+  "patch_bump_prepared": "Patch-Bump vorbereitet",
+  "patch_bump_applied": "Patch-Bump angewendet"
+}

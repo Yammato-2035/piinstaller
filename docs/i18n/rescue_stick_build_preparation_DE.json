@@ -1,0 +1,7 @@
+{
+  "rescue_live_os_selected": "Debian Live als empfohlene Rescue-Basis ausgewaehlt",
+  "rescue_mvp_scope_accepted": "MVP-Scope ohne automatische Restore-/Repair-Writes akzeptiert",
+  "rescue_build_readiness_ready": "Rescue-Build-Readiness: bereit fuer naechste manuelle Build-Schritte",
+  "usb_write_blocked": "USB-Schreiben / dd ist in dieser Phase gesperrt",
+  "restore_execute_blocked": "Restore-Execute bleibt gesperrt; nur Preview erlaubt"
+}

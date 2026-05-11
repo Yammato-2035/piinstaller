@@ -1,0 +1,6 @@
+{
+  "rescue_runtime_bundle_inventory_ready": "Rescue runtime bundle inventory ready",
+  "rescue_runtime_bundle_sealed": "Rescue runtime bundle sealed",
+  "runtime_bundle_hash_mismatch": "Runtime bundle hash mismatch",
+  "runtime_bundle_consistency_blocked": "Runtime bundle consistency blocked"
+}

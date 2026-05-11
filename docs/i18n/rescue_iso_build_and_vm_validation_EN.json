@@ -1,0 +1,7 @@
+{
+  "rescue_iso_build_phase_started": "Rescue ISO build and VM validation phase active",
+  "rescue_iso_output_under_build_rescue": "ISO output only under build/rescue/output/",
+  "rescue_vm_only_testing": "VM-only testing, no production hardware",
+  "rescue_usb_still_blocked": "USB write remains blocked",
+  "rescue_restore_execute_blocked": "Restore execute remains blocked"
+}

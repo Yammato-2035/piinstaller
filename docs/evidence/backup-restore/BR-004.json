@@ -1,0 +1,20 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "BR-004",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "executed_at": "2026-05-11T22:00:00Z",
+  "environment": {
+    "api": "POST /api/backup/verify",
+    "mode": "basic",
+    "archive_path_relative": "docs/evidence/backup-restore/samples/br-verify-sample.tar.gz",
+    "archive_path_used_in_api": "/home/volker/piinstaller/docs/evidence/backup-restore/samples/br-verify-sample.tar.gz",
+    "archive_path_note": "Verify erfordert absoluten Pfad unter BACKUP_ALLOWED_ROOTS (/home/...); auf anderem Rechner Repo-Root voranstellen.",
+    "archive_origin": "synthetisch: hello.txt + embed_manifest_in_tar_gz (gleiches Manifest-Format wie Produktionspfad)",
+    "br001_chain": "BR-001 in diesem Lauf blockiert — Verify gegen unabhängiges gültiges Archiv (Matrix-Spalte „gültiges Archiv“ erfüllt, Kette BR-001→004 formal offen)."
+  },
+  "result": "ok",
+  "api_code": "backup.verify_success",
+  "artifacts": ["docs/evidence/backup-restore/samples/br-verify-sample.tar.gz"],
+  "notes": "Verify Basic API erfolgreich. Für vollständige Release-Kette zusätzlich BR-001 auf freigegebenem externen Ziel ausführen und dasselbe Archiv nachweisen."
+}

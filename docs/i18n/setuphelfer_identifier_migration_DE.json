@@ -1,0 +1,6 @@
+{
+  "legacy_identifier_detected": "Legacy-Identifier erkannt",
+  "deprecated_runtime_identifier": "Veralteter Runtime-Identifier",
+  "setuphelfer_migration_ready": "Setuphelfer-Migration bereit",
+  "runtime_identifier_blocked": "Runtime-Identifier blockiert"
+}

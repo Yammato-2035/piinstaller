@@ -1,0 +1,16 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "version_inventory",
+  "generated": "2026-05-11",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "sources": [
+    {
+      "path": "package.json",
+      "name": "pi-installer",
+      "version": "1.7.0",
+      "note": "Legacy npm-Paketname; UI-Branding separat prüfen"
+    }
+  ],
+  "action": "Build-/Versionsanzeige in App und Release-Artefakten mit diesen Quellen abgleichen (CHANGELOG, Debian-Paket)."
+}

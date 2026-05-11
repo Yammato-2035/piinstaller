@@ -1,0 +1,6 @@
+{
+  "final_snapshot_ok": "Evidence final snapshot created",
+  "final_snapshot_blocked": "Final snapshot blocked",
+  "final_snapshot_review_required": "Final snapshot review required",
+  "timeline_invalid": "Timeline invalid or empty"
+}

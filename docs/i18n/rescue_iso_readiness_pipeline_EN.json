@@ -1,0 +1,6 @@
+{
+  "rescue iso baseline ready": "Rescue ISO baseline verified (Debian-live evidence present).",
+  "offline recovery runtime validated": "Offline recovery runtime validated (modules/routes).",
+  "rescue bootflow simulated": "Rescue bootflow simulated (no VM execution).",
+  "rescue iso readiness blocked": "Rescue ISO readiness blocked — check gates or safety."
+}

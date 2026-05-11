@@ -1,0 +1,6 @@
+{
+  "execution_log_template_ok": "Laptop-Failure-Execution-Log-Template: bereit",
+  "execution_log_template_review_required": "Laptop-Failure-Execution-Log-Template: Review erforderlich",
+  "execution_log_template_blocked": "Laptop-Failure-Execution-Log-Template: blockiert",
+  "execution_log_template_medium_risk_note": "Medium-Risk-Laeufe sind als spaetere Schritte vorzusehen"
+}

@@ -1,0 +1,6 @@
+{
+  "rescue_rootfs_artifact_prepared": "Rescue-RootFS-Artefakt vorbereitet (simuliert, Manifest geschrieben)",
+  "offline_frontend_artifacts_validated": "Offline-Frontend-Artefakte analysiert (kein Build ausgefuehrt)",
+  "rescue_backend_manifest_generated": "Rescue-Backend-Manifest erzeugt",
+  "rescue_artifact_readiness_blocked": "Rescue-Artefakt-Readiness blockiert (Gate)"
+}

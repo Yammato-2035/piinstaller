@@ -1,0 +1,6 @@
+{
+  "test_summary_ok": "Laptop-Failure-Test-Summary: ok",
+  "test_summary_review_required": "Laptop-Failure-Test-Summary: Review erforderlich",
+  "test_summary_blocked": "Laptop-Failure-Test-Summary: blockiert",
+  "test_summary_has_findings": "Summary enthaelt Findings aus der Validierung"
+}

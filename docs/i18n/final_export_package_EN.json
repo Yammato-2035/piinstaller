@@ -1,0 +1,6 @@
+{
+  "final_export_package_ok": "Final evidence export package created",
+  "final_export_package_review_required": "Final evidence export package created with review notice",
+  "final_export_package_blocked": "Final evidence export package blocked",
+  "final_export_package_invalid": "Acceptance or input files invalid"
+}

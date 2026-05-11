@@ -1,0 +1,6 @@
+{
+  "final_export_package_ok": "Finales Evidence-Exportpaket erstellt",
+  "final_export_package_review_required": "Finales Evidence-Exportpaket mit Review-Hinweis erstellt",
+  "final_export_package_blocked": "Finales Evidence-Exportpaket blockiert",
+  "final_export_package_invalid": "Acceptance oder Input-Dateien ungueltig"
+}

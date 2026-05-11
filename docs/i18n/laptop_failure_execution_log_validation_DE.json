@@ -1,0 +1,6 @@
+{
+  "execution_log_validation_ok": "Laptop-Failure-Execution-Log-Validierung: ok",
+  "execution_log_validation_review_required": "Laptop-Failure-Execution-Log-Validierung: Review erforderlich",
+  "execution_log_validation_blocked": "Laptop-Failure-Execution-Log-Validierung: blockiert",
+  "execution_log_validation_missing_required_fields": "Validierung blockiert: Pflichtfelder im Execution-Log fehlen"
+}

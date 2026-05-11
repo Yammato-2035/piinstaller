@@ -1,0 +1,16 @@
+{
+  "build_directory_only": "build/rescue/",
+  "gate_status": "blocked",
+  "generated_at": "2026-05-09T22:44:30Z",
+  "inputs": {
+    "backend_manifest": "build/rescue/backend_manifest.json",
+    "boot_artifact_manifest": "build/rescue/boot_artifact_manifest.json",
+    "frontend_manifest": "build/rescue/frontend_manifest.json",
+    "overlay_persistence_strategy": "build/rescue/overlay_persistence_strategy.json",
+    "rescue_iso_final_readiness_gate": "docs/evidence/runtime-results/handoff/rescue_iso_final_readiness_gate.json",
+    "rootfs_manifest": "build/rescue/rootfs_manifest.json"
+  },
+  "no_writes_outside_build_rescue": true,
+  "rescue_artifact_readiness_gate_schema_version": 1,
+  "strict_mode": "rescue_iso_artifact_preparation"
+}

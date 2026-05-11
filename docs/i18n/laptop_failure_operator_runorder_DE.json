@@ -1,0 +1,6 @@
+{
+  "runorder_ready": "Laptop-Failure-Operator-Runorder: bereit",
+  "runorder_review_required": "Laptop-Failure-Operator-Runorder: Review erforderlich",
+  "runorder_blocked": "Laptop-Failure-Operator-Runorder: blockiert",
+  "medium_risk_deferred": "Mittleres Risiko wird in der Runorder zuletzt geführt"
+}

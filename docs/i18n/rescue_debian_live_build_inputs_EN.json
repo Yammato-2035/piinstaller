@@ -1,0 +1,6 @@
+{
+  "debian_live_build_inputs_ready": "Debian Live build inputs ready",
+  "package_list_prepared": "Package list prepared",
+  "build_input_safety_blocked": "Build input safety blocked",
+  "hook_template_validation_failed": "Hook template validation failed"
+}

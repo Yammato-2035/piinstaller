@@ -1,0 +1,6 @@
+{
+  "pseudo_boot_manifest_ready": "Pseudo-Boot-Manifest bereit (simulierte Kette)",
+  "recovery_ui_integration_validated": "Recovery-UI-Integration geprueft (InspectRun)",
+  "backend_health_integration_ready": "Backend-Health-Integration aus Static-Scan bereit",
+  "pseudo_boot_readiness_blocked": "Pseudo-Boot-Readiness blockiert (Gate)"
+}

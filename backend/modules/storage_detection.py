@@ -66,7 +66,7 @@ def detect_block_devices(*, runner: Runner | None = None) -> list[dict[str, Any]
     Rückgabe: Liste von Dicts mit device, partitions, fstype, mountpoint, size, type.
     """
     r = _run_capture(
-        ["lsblk", "-J", "-o", "NAME,FSTYPE,SIZE,MOUNTPOINT,TYPE"],
+        ["lsblk", "-J", "-o", "NAME,FSTYPE,SIZE,MOUNTPOINT,TYPE,RM,RO,TRAN,ROTA,MODEL,VENDOR"],
         runner=runner,
         timeout=30,
     )
@@ -99,6 +99,12 @@ def _normalize_lsblk_node(node: Mapping[str, Any]) -> dict[str, Any]:
         "mountpoint": node.get("mountpoint"),
         "size": node.get("size"),
         "type": node.get("type"),
+        "removable": node.get("rm"),
+        "ro": node.get("ro"),
+        "transport": node.get("tran"),
+        "rotational": node.get("rota"),
+        "model": node.get("model"),
+        "vendor": node.get("vendor"),
     }
 
 

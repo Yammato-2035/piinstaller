@@ -1,0 +1,7 @@
+{
+  "expected_targets_count": 1,
+  "generated_at": "2026-05-09T23:29:46Z",
+  "rescue_sandbox_copy_verify_result_schema_version": 1,
+  "strict_mode": "rescue_sandbox_controlled_copy",
+  "verify_eval_status": "blocked"
+}

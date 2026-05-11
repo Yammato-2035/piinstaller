@@ -9,6 +9,7 @@
 | [CHANGE_REPORT_TEMPLATE.md](./CHANGE_REPORT_TEMPLATE.md) | Pflichtgliederung für Abschlussberichte. |
 | [VERSIONING.md](./VERSIONING.md) | Versionsschema, `config/version.json`, `sync-version.js`, Changelog-Pflege. |
 | [BACKUP_RECOVERY_ENGINES.md](./BACKUP_RECOVERY_ENGINES.md) | Worst-Case-Backup: Module `backup_engine`, Verify, Restore, Crypto, Recovery-CLI. |
+| [../knowledge-base/BACKUP_VERIFY_PREVIEW_RUNTIME.md](../knowledge-base/BACKUP_VERIFY_PREVIEW_RUNTIME.md) | **Betrieb/VM-Tests:** systemd `MemoryMax`, `TMPDIR`/PrivateTmp, Deep-Verify-Integrität, VBox-Platten — Verknüpfung mit Diagnose-IDs `037`/`038` und FAQ. |
 | [../architecture/diagnosis_localization.md](../architecture/diagnosis_localization.md) | Diagnose: `key_v1` / Legacy, i18n-Key-Konvention, Übergang. |
 | [architecture_overview.md](./architecture_overview.md) | Architekturüberblick. |
 | [frontend_structure.md](./frontend_structure.md) / [backend_structure.md](./backend_structure.md) | Strukturhinweise. |

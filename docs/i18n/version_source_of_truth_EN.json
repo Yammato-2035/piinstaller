@@ -1,0 +1,6 @@
+{
+  "version_source_valid": "Version source valid",
+  "version_drift_detected": "Version drift detected",
+  "inconsistent_release_stage": "Inconsistent release stage",
+  "centralized_version_updated": "Centralized version updated"
+}

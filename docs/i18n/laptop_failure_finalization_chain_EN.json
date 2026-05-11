@@ -1,0 +1,7 @@
+{
+  "laptop_failure_final_snapshot_ok": "Laptop failure final snapshot: ok",
+  "laptop_failure_final_acceptance_accepted": "Laptop failure final acceptance: accepted",
+  "laptop_failure_finalized_export_created": "Laptop failure finalized export created",
+  "laptop_failure_finalized_export_blocked": "Laptop failure finalized export blocked",
+  "review_required_before_next_run": "Review required before next run"
+}

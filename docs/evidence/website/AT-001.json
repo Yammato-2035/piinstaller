@@ -1,0 +1,11 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "AT-001",
+  "ampel": "rot",
+  "evidence_complete": false,
+  "executed_at": null,
+  "environment": {},
+  "result": null,
+  "artifacts": [],
+  "notes": "Template – noch kein belastbarer Testnachweis."
+}

@@ -19,7 +19,7 @@ let v;
 try {
   const raw = fs.readFileSync(vPath, 'utf8');
   const data = JSON.parse(raw);
-  v = String(data.version || '').trim() || '0.0.0';
+  v = String(data.project_version || data.version || '').trim() || '0.0.0';
 } catch (e) {
   console.warn('[sync-version] config/version.json nicht lesbar:', e.message);
   process.exit(0);
