@@ -1,11 +1,11 @@
 # Release Readiness – Bericht
 
-**Generiert:** 2026-05-11 (Evidence nach Post-Push-CI-Lauf)  
+**Generiert:** 2026-05-11 (nach Fix13-Analyse und Testpatch)  
 **Gesamtstatus:** `blocked`
 
 ## Kurzfassung
 
-Repo-Transparenz (Roadmap, Matrizen, Evidence-Templates) ist **angelegt**. **Deploy-Modul-Lücke** auf `main` wurde behoben (Commit `df13af4`, vollständiges `backend/deploy/`). **GitHub CI** ist weiter **rot**: erster Fehler unter `pytest -x` ist jetzt **`test_backup_full_excludes_fix13_v1`** (kein erwarteter tar-Befehl); Run **25687412698** (`ci_evidence.json`). Historische Analyse zum Import: `ci_failure_analysis_STRICT_2026-05-11.md`. **STRICT CI + BR-Evidence** (2026-05-11): `BR-001` blocked, `BR-004`/`BR-005` gelb. **Pytest** lokal **1526/0** (ohne `-x`-Reihenfolge). → **kein** Produktionsstart.
+Repo-Transparenz (Roadmap, Matrizen, Evidence-Templates) ist **angelegt**. **Deploy-Modul** auf `main` ergänzt (`df13af4`). **Fix13-CI-Fehler:** Ursache `_run_tar` bricht ohne nutzbares **systemd-inhibit** vor `run_command` ab (Kategorie D+E); **Test** minimal um inhibit-Mocks ergänzt — siehe `ci_fix13_backup_test_analysis_2026-05-11.md`. **GitHub CI:** bis zum nächsten erfolgreichen Lauf weiter als **rot** zu führen (`ci_evidence.json`). **STRICT CI + BR-Evidence:** `BR-001` blocked, `BR-004`/`BR-005` gelb. **Pytest** lokal **1526/0** nach Patch. → **kein** Produktionsstart ohne grünen Remote-CI-Lauf.
 
 ## Ampelüberblick
 
@@ -14,7 +14,7 @@ Repo-Transparenz (Roadmap, Matrizen, Evidence-Templates) ist **angelegt**. **Dep
 | Backup/Restore/Verify (Evidence) | Rot (BR-001 offen; Verify-Teil gelb) |
 | Hardware | Rot |
 | Rescue Stick real | Rot |
-| CI-Nachweis aktuell | Rot — letzter Lauf: Failure Run 25687412698 (`test_backup_full_excludes_fix13_v1`); Deploy-Import-Blocker auf `main` behoben |
+| CI-Nachweis aktuell | Rot — Fix13 Testpatch eingereicht; Remote-Lauf nach Push verifizieren (historisch: Run 25687412698) |
 | Website live vs. Markdown | Rot |
 | Affiliate | Gelb (Policies) |
 | Legal | Rot |

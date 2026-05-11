@@ -5,6 +5,8 @@ FIX-13: Full-Backup schließt /media-Bäume aus und nutzt robuste cancelbare tar
 from __future__ import annotations
 
 import importlib.util
+import os
+import shutil
 import sys
 import threading
 import unittest
@@ -25,22 +27,42 @@ class TestBackupFullExcludesFix13V1(unittest.TestCase):
     def test_full_backup_command_excludes_media_and_existing_paths(self) -> None:
         import app as app_module
 
+        # _run_tar verlangt systemd-inhibit (Pfad + os.X_OK); in CI fehlt das oft —
+        # ohne Mock würde run_command nie den tar-String sehen (kein Assertions-Blindfix).
+        fake_inhibit = "/usr/bin/systemd-inhibit"
+        real_which = shutil.which
+
+        def which_side_effect(cmd, mode=os.F_OK | os.X_OK, path=None):
+            if cmd == "systemd-inhibit":
+                return fake_inhibit
+            return real_which(cmd, mode=mode, path=path)
+
+        real_access = os.access
+
+        def access_side_effect(path, mode):
+            if str(path) == fake_inhibit and mode == os.X_OK:
+                return True
+            return real_access(path, mode)
+
         seen_cmds: list[str] = []
 
         def fake_run_command(cmd, sudo=False, sudo_password=None, timeout=10):
             seen_cmds.append(str(cmd))
             return {"success": False, "stderr": "simulated tar fail", "stdout": "", "returncode": 2}
 
-        with patch.object(app_module, "run_command", side_effect=fake_run_command):
-            with patch.object(app_module, "validate_backup_target"):
-                out = app_module._do_backup_logic(
-                    sudo_password="",
-                    backup_type="full",
-                    backup_dir="/media/volker/setuphelfer-back/backups",
-                    timestamp="20260429_223000",
-                )
+        with patch.object(app_module.shutil, "which", side_effect=which_side_effect):
+            with patch.object(app_module.os, "access", side_effect=access_side_effect):
+                with patch.object(app_module, "run_command", side_effect=fake_run_command):
+                    with patch.object(app_module, "validate_backup_target"):
+                        out = app_module._do_backup_logic(
+                            sudo_password="",
+                            backup_type="full",
+                            backup_dir="/media/volker/setuphelfer-back/backups",
+                            timestamp="20260429_223000",
+                        )
 
-        tar_cmds = [c for c in seen_cmds if c.startswith("tar -czf ")]
+        # run_command erhält systemd-inhibit + sh -c + inneres tar (Suspend-Guard).
+        tar_cmds = [c for c in seen_cmds if "tar -czf " in c]
         self.assertTrue(tar_cmds, "expected tar command for full backup")
         tar_cmd = tar_cmds[0]
         self.assertIn("--exclude=/proc", tar_cmd)
@@ -52,7 +74,8 @@ class TestBackupFullExcludesFix13V1(unittest.TestCase):
         self.assertIn("--exclude=/media", tar_cmd)
         self.assertIn("--exclude=/run/media", tar_cmd)
         self.assertIn("--exclude=/media/volker/setuphelfer-back/backups", tar_cmd)
-        self.assertTrue(tar_cmd.endswith(" /"), tar_cmd)
+        self.assertIn("tar -czf ", tar_cmd)
+        self.assertIn("--exclude=/run/media /", tar_cmd)
         self.assertEqual(out.get("code"), "backup.failed")
 
     def test_cancelable_tar_uses_devnull_stdout_and_drains_stderr(self) -> None:

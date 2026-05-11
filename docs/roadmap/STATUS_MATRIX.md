@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): Deploy-Paket auf `main` ergänzt (df13af4); GitHub Pytest mit `-x` weiter **rot** — erster Fehler `test_backup_full_excludes_fix13_v1` (Run 25687412698); lokal pytest grün siehe `current_failures.json`  
+**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): Fix13-Test an inhibit-freie Umgebung angepasst (`ci_fix13_backup_test_analysis_2026-05-11.md`); GitHub-Ampel nach nächstem `ci.yml`-Lauf aktualisieren; lokal pytest grün siehe `current_failures.json`  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

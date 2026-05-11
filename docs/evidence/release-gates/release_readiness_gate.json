@@ -1,14 +1,14 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-11T18:05:00Z",
+  "generated": "2026-05-11T19:35:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "CI rot: Nach Deploy-Vollständigkeit (df13af4) schlägt GitHub Pytest mit -x an test_backup_full_excludes_fix13_v1 fehl (AssertionError); siehe ci_evidence.json latest_run 25687412698. BR-001 weiter blockiert ohne externes Ziel.",
+  "summary": "Fix13-CI-Ursache analysiert (systemd-inhibit / Test-Setup); Testpatch committed — GitHub-Ampel erst nach grünem Workflow-Lauf. BR-001 weiter blockiert ohne externes Ziel.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
-    "GitHub Actions: Pytest fehlgeschlagen — Run 25687412698, erster Fehler test_backup_full_excludes_fix13_v1 (ci_evidence.json failure_analysis)"
+    "GitHub Actions: letzter dokumentierter Lauf Run 25687412698 failure; Nachverifikation nach Fix13-Commit erforderlich (ci_evidence.json)"
   ],
   "pytest_note": "Lokales pytest tests/ am 2026-05-11 (Prompt 2 erneut, ~21:15Z): 0 failures, 1526 passed — current_failures.json; Release bleibt über P0/CI blockiert.",
   "recommendation": "do_not_release"

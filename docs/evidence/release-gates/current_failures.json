@@ -1,0 +1,32 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "current_failures",
+  "generated": "2026-05-11T19:35:00Z",
+  "executed_at": "2026-05-11T19:35:00Z",
+  "prompt": "PROMPT_02_BLOCKER_INVENTORY",
+  "prompt_rerun": true,
+  "ampel": "gruen",
+  "evidence_complete": true,
+  "environment": {
+    "python": "3.12.3",
+    "cwd": "backend",
+    "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default python -m pytest tests/ -q --tb=no",
+    "notes": "Nach Fix13-Testpatch: volle Suite 1526 passed (venv /tmp/piinstaller-test-venv, backend/requirements.txt). Evidence-Seeds unverändert siehe Audit-JSON."
+  },
+  "summary": {
+    "failed": 0,
+    "passed": 1526,
+    "warnings": 3,
+    "duration_seconds_approx": 19
+  },
+  "failures": [],
+  "artifacts": [
+    "docs/evidence/release-gates/pytest_failures_summary_2026-05-11.txt",
+    "docs/evidence/release-gates/blocker_inventory.json",
+    "docs/evidence/release-gates/runtime_inventory.json",
+    "docs/evidence/release-gates/diagnostics_evidence_seed_audit_2026-05-11.json",
+    "docs/evidence/release-gates/prompt02_abschlussbericht.md"
+  ],
+  "blocker_inventory": "docs/evidence/release-gates/blocker_inventory.json",
+  "notes": "Release-Gesamtbild weiter blockiert über P0 (HW-E2E) und P1 (CI-/Stick-Evidence); lokaler Pytest-Snapshot ist grün."
+}

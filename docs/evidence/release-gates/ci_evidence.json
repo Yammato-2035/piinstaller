@@ -44,20 +44,27 @@
     },
     "root_cause_summary": "Nach Behebung des deploy-Imports sammelt CI 252 Tests; der erste Lauf mit -x scheitert an test_backup_full_excludes_fix13_v1: erwarteter tar-Befehl für Full-Backup wird nicht aus den aufgezeichneten Aufrufen gefunden (leere Liste).",
     "log_source": "gh run view 25687412698 --log-failed",
-    "github_tree_note": "Deploy-Import-Pfad ist auf head_sha nicht mehr der Blocker; siehe prior_blocker_resolved."
+    "github_tree_note": "Deploy-Import-Pfad ist auf head_sha nicht mehr der Blocker; siehe prior_blocker_resolved.",
+    "fix13_root_cause_category": "D+E",
+    "fix13_remediation_summary": "_run_tar in app.py bricht ohne nutzbares systemd-inhibit vor run_command ab; CI-Umgebung ohne inhibit → seen_cmds leer. Test patcht which/access gezielt, behält alle Exclude-Assertions; siehe ci_fix13_backup_test_analysis_2026-05-11.md."
+  },
+  "fix13_remediation": {
+    "analysis_doc": "docs/evidence/release-gates/ci_fix13_backup_test_analysis_2026-05-11.md",
+    "code_change": "backend/tests/test_backup_full_excludes_fix13_v1.py only",
+    "product_logic_changed": false
   },
   "local_pytest_parity": {
-    "executed_at": "2026-05-11T22:00:00Z",
-    "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default python -m pytest tests/ -q --tb=no",
+    "executed_at": "2026-05-11T19:30:00Z",
+    "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default PYTHONPATH=. python -m pytest tests/ -q --tb=no",
     "cwd": "backend",
-    "interpreter": "/tmp/sh-venv/bin/python",
+    "interpreter": "/tmp/piinstaller-test-venv/bin/python",
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Lokaler Lauf ohne -x; CI nutzt -x und bricht beim ersten Fehler. Diskrepanz CI vs. lokal für Fix13-Test separat klären."
+    "note": "Lokaler Lauf nach Fix13-Testpatch (venv aus backend/requirements.txt). GitHub-CI-Ampel erst nach erfolgreichem Workflow-Lauf auf Grün setzen."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Ruff/Bandit in CI mit continue-on-error; harter Fehler ist Pytest. CI bleibt rot bis grüner Workflow-Lauf auf GitHub Actions.",
+  "notes": "Ruff/Bandit in CI mit continue-on-error; harter Fehler ist Pytest. latest_run zeigt letzten bekannten Remote-Lauf vor Fix13-Push — nach Push gh run list prüfen.",
   "ampel": "rot",
   "evidence_complete": false,
   "failure_root_cause_documented": true,
