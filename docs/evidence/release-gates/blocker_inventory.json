@@ -47,7 +47,7 @@
     "failing_pytest_evidence": "docs/evidence/release-gates/current_failures.json",
     "failure_clusters": [],
     "missing_tests_notes": [
-      "GitHub CI (ci.yml): Diagnostics-Mapping-Failure (Run 25688331226) — Ursache E: data/diagnostics nicht im Repo (.gitignore data/); Remediation: Ausnahme + versionierte Seeds (ci_diagnostics_evidence_mapping_analysis_2026-05-11.md).",
+      "GitHub CI (ci.yml): Diagnostics-Mapping behoben (Commits 1cdee5f + 9a2b96c); Run 25688864468 — nächster -x-Fehler Rescue-Dryrun/smartctl fehlt auf Runner.",
       "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
       "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix, Evidence noch Template)",
       "Echter Read-only Rescue-Stick-Lauf (RS-*, Evidence rot)"
@@ -83,9 +83,9 @@
     "P1": [
       {
         "id": "P1-CI-EVIDENCE",
-        "title": "GitHub CI — nach data/diagnostics-Commit erneut prüfen (vorher: PERM-GROUP-008 None im leeren Clone)",
+        "title": "GitHub CI rot — Run 25688864468: smartctl fehlt (Rescue-Dryrun), nicht Diagnostics-Mapping",
         "blocks": ["öffentliche Reproduzierbarkeit"],
-        "next_step": "gh run list ci.yml; bei success ci_evidence latest_run + ampel grün"
+        "next_step": "CI-Runner smartctl installieren oder Test mocken; ci_evidence bei grünem Lauf aktualisieren"
       },
       {
         "id": "P1-RESCUE-RS",

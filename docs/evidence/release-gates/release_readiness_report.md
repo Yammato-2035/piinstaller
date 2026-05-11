@@ -5,7 +5,7 @@
 
 ## Kurzfassung
 
-Repo-Transparenz (Roadmap, Matrizen, Evidence-Templates) ist **angelegt**. **Deploy-Modul** auf `main` ergänzt (`df13af4`). **Fix13-CI-Fehler:** Ursache `_run_tar` bricht ohne nutzbares **systemd-inhibit** vor `run_command` ab (Kategorie D+E); **Test** minimal um inhibit-Mocks ergänzt — siehe `ci_fix13_backup_test_analysis_2026-05-11.md`. **GitHub CI:** Diagnostics-Mapping-Fehler durch **nicht versioniertes** `data/diagnostics/` (`.gitignore` `data/`) — **behoben** durch Ausnahme + Eintrag der Evidence-/Profil-JSONs; siehe `ci_diagnostics_evidence_mapping_analysis_2026-05-11.md`. Letzter dokumentierter Remote-Lauf vor Fix weiter **25688331226** (`ci_evidence.json` bis neuer grüner Lauf). **BR-001** blocked, **Pytest** lokal **1526/0**.
+Repo-Transparenz (Roadmap, Matrizen, Evidence-Templates) ist **angelegt**. **Deploy-Modul** auf `main` ergänzt (`df13af4`). **Fix13-CI-Fehler:** Ursache `_run_tar` bricht ohne nutzbares **systemd-inhibit** vor `run_command` ab (Kategorie D+E); **Test** minimal um inhibit-Mocks ergänzt — siehe `ci_fix13_backup_test_analysis_2026-05-11.md`. **GitHub CI:** `data/diagnostics` versioniert + `evidence_store`-Coerce auf **main**; Diagnostics-Mapping **nicht** mehr der -x-Blocker. Aktueller Fehler: **smartctl** fehlt im Runner (`test_rescue_restore_dryrun`, Run **25688864468**). **BR-001** blocked, **Pytest** lokal **1526/0**.
 
 ## Ampelüberblick
 

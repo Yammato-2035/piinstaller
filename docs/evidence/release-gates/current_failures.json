@@ -1,8 +1,8 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "current_failures",
-  "generated": "2026-05-11T20:25:00Z",
-  "executed_at": "2026-05-11T20:25:00Z",
+  "generated": "2026-05-11T20:32:00Z",
+  "executed_at": "2026-05-11T20:32:00Z",
   "prompt": "PROMPT_02_BLOCKER_INVENTORY",
   "prompt_rerun": true,
   "ampel": "gruen",
@@ -11,7 +11,7 @@
     "python": "3.12.3",
     "cwd": "backend",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default python -m pytest tests/ -q --tb=no",
-    "notes": "Volle Suite 1526 passed; data/diagnostics im Repo (Diagnostics-CI); Audit diagnostics_evidence_seed_audit_2026-05-11.json."
+    "notes": "Volle Suite 1526 passed; data/diagnostics + evidence_store-Coerce auf main; GitHub-Gesamt-CI siehe ci_evidence.json (smartctl/Rescue)."
   },
   "summary": {
     "failed": 0,

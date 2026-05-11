@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): `data/diagnostics` versioniert (Diagnostics-Mapping-Root-Cause); Remote-Ampel nach nächstem Lauf; lokal pytest grün siehe `current_failures.json`  
+**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): Diagnostics-Evidence gefixt; Remote rot wegen smartctl/Rescue (Run 25688864468); lokal pytest grün siehe `current_failures.json`  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

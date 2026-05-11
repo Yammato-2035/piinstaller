@@ -26,6 +26,8 @@
 
 **E)** Remote/CI hatte einen anderen (leeren) Datenstand als die lokale Arbeitskopie mit Evidence-Dateien — **nicht** ein Mapping-Bug in `evidence_summary_map()` und **kein** veraltetes Assertion-Ziel relativ zum Schema.
 
+**B)** Nach Einspielen der Seeds schlug CI mit `EvidenceRecord(**data)`/`ValidationError` fehl — auf `main` fehlte die **Coerce-/Validate-Ladepipeline** in `evidence_store.py` (Commit `9a2b96c` nachgezogen).
+
 ## 5. Minimaler Fix
 
 1. **`.gitignore`:** `data/` durch `data/*` ersetzen und **`!data/diagnostics/`** sowie **`!data/diagnostics/**`** ergänzen — weiterhin `data/apps` o. Ä. ignoriert, nur Diagnostik-Pfad explizit versioniert.  
@@ -37,3 +39,12 @@
 - `data/diagnostics/profiles/*.json` (6 Dateien)  
 - `data/diagnostics/hw_test_1_matrix.json`  
 - `docs/evidence/release-gates/diagnostics_evidence_seed_audit_2026-05-11.json` (Zeitstempel / Konsistenz)
+
+## 7. Zusatz: `evidence_store.py` auf Remote
+
+- Im Git-Stand vor `9a2b96c` war `load_evidence_records` noch **ohne** `_coerce_evidence_dict` / `model_validate` — getrackte Seeds wie `EVID-2026-HW1-04.json` (ohne `severity`/`confidence` im JSON) lösten `ValidationError` aus.  
+- **Fix:** Workspace-Implementierung mit Coerce + `EvidenceRecord.model_validate` committen (`9a2b96c`).
+
+## 8. CI nach Fix (Run 25688864468, `9a2b96c`)
+
+- `test_diagnostics_evidence_mapping_v1` und `test_diagnostics_api_v1::test_catalog_available` laufen durch; erster `-x`-Fehler danach: `test_rescue_restore_dryrun` — `FileNotFoundError: smartctl` (Runner-Umgebung, nicht Diagnostics-Mapping).
