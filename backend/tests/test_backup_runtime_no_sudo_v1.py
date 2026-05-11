@@ -18,14 +18,22 @@ class TestBackupRuntimeNoSudoV1(unittest.TestCase):
         app_py = _backend / "app.py"
         self.assertTrue(app_py.is_file(), "app.py expected")
         text = app_py.read_text(encoding="utf-8")
+        # Nur Ausschnitte prüfen — bei assertIn(needle, gesamtes app.py) werden Fehlermeldungen riesig (716k+),
+        # was CI-Logs/Pytest-Ausgabe sprengen kann.
+        start = text.find("def _run_tar")
+        self.assertGreaterEqual(start, 0, "_run_tar helper not found in app.py")
+        cancel = text.find("# cancelable tar", start)
+        self.assertGreater(cancel, start, "non-cancelable _run_tar block end marker not found")
+        head = text[start:cancel]
         self.assertIn(
-            "return run_command(cmd, sudo=False, sudo_password=None, timeout=7200)",
-            text,
-            "_run_tar (non-cancel) must invoke tar without sudo",
+            "return run_command(guarded_cmd, sudo=False, sudo_password=None, timeout=7200)",
+            head,
+            "_run_tar (non-cancel) must invoke tar without sudo (via systemd-inhibit wrapped command)",
         )
+        tail = text[cancel : cancel + 3500]
         self.assertIn(
-            '["sh", "-c", cmd]',
-            text,
+            '["sh", "-c", guarded_cmd]',
+            tail,
             "cancelable tar must use plain sh -c without sudo",
         )
 

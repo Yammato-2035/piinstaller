@@ -44,3 +44,7 @@
 
 - Beide Fix13-Tests **PASSED** im Workflow-Log.
 - Mit `pytest -x` schlägt der **nächste** Test fehl: `test_restore_rejects_symlink_whose_relative_target_escapes_root` erwartete das Wort `escapes` im Fehlertext; der Produktpfad liefert `storage-protection-004` (deutsch) — **Kategorie B** am Recovery-Test, nicht an Fix13. Minimaler Folge-Fix: Assertion akzeptiert `escapes` **oder** `storage-protection` bei weiterhin `self.assertFalse(rr[0])`.
+
+## 8. GitHub CI (Run 25688063476, Commit `65a5b92`)
+
+- Recovery-Symlink-Test **PASSED**; nächster `-x`-Fehler `test_backup_runtime_no_sudo_v1::test_run_tar_uses_run_command_without_sudo` — Workflow-Log bricht direkt nach `self.assertIn(` ab. Wahrscheinliche Ursache: **assertIn** mit komplettem `app.py` (~716 KB) als Haystack erzeugt bei Misserfolg extrem große Diff-Ausgabe. Fix: Test prüft nur `_run_tar`-Ausschnitte (`test_backup_runtime_no_sudo_v1.py`).

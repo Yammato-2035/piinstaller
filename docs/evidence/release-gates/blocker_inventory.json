@@ -47,7 +47,7 @@
     "failing_pytest_evidence": "docs/evidence/release-gates/current_failures.json",
     "failure_clusters": [],
     "missing_tests_notes": [
-      "GitHub CI (ci.yml): Fix13 auf Run 25687923662 grün; nächster -x-Fehler test_backup_recovery_engines (Assertion „escapes“ vs. storage-protection-004) — Test minimal erweitert, neuer Lauf nach Push.",
+      "GitHub CI (ci.yml): Run 25688063476 — Recovery gefixt; nächster -x-Fehler test_backup_runtime_no_sudo (assertIn/app.py-Haystack) — Ausschnittsprüfung committed, neuer Lauf.",
       "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
       "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix, Evidence noch Template)",
       "Echter Read-only Rescue-Stick-Lauf (RS-*, Evidence rot)"
@@ -83,7 +83,7 @@
     "P1": [
       {
         "id": "P1-CI-EVIDENCE",
-        "title": "GitHub CI rot — Run 25687923662: Recovery-Symlink-Test (Assertion vs. i18n); Fix committed, Push → gh run list",
+        "title": "GitHub CI rot — Run 25688063476; backup_runtime assert-Scope-Fix committed",
         "blocks": ["öffentliche Reproduzierbarkeit"],
         "next_step": "Nach Push grünen ci.yml-Lauf in ci_evidence.json eintragen"
       },
