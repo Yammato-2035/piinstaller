@@ -5,10 +5,10 @@
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "Fix13-CI-Ursache analysiert (systemd-inhibit / Test-Setup); Testpatch committed — GitHub-Ampel erst nach grünem Workflow-Lauf. BR-001 weiter blockiert ohne externes Ziel.",
+  "summary": "Fix13 in CI verifiziert (Run 25687923662); folgender -x-Fehler Recovery-Assertion — nachgelagerter Testfix committed, GitHub-Ampel nach nächstem Lauf. BR-001 weiter blockiert.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
-    "GitHub Actions: letzter dokumentierter Lauf Run 25687412698 failure; Nachverifikation nach Fix13-Commit erforderlich (ci_evidence.json)"
+    "GitHub Actions: Run 25687923662 failure (Recovery-Test); erneuter Lauf nach Symlink-Assertion-Fix (ci_evidence.json)"
   ],
   "pytest_note": "Lokales pytest tests/ am 2026-05-11 (Prompt 2 erneut, ~21:15Z): 0 failures, 1526 passed — current_failures.json; Release bleibt über P0/CI blockiert.",
   "recommendation": "do_not_release"

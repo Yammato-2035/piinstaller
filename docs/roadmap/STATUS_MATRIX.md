@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): Fix13-Test an inhibit-freie Umgebung angepasst (`ci_fix13_backup_test_analysis_2026-05-11.md`); GitHub-Ampel nach nächstem `ci.yml`-Lauf aktualisieren; lokal pytest grün siehe `current_failures.json`  
+**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): Fix13 auf GitHub grün (Run 25687923662); Recovery-Symlink-Test an i18n angepasst — nächster `ci.yml`-Lauf für Gesamt-Ampel; lokal pytest grün siehe `current_failures.json`  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

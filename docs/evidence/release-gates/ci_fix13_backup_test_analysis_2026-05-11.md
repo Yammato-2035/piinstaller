@@ -39,3 +39,8 @@
 - `tests/test_backup_full_excludes_fix13_v1.py` — **2 passed**
 - `tests/test_backup_runtime_no_sudo_v1.py`, `tests/test_backup_recovery_engines.py`, `tests/test_preflight_backup_v1.py` — **43 passed**
 - `tests/` vollständig — **1526 passed**
+
+## 7. GitHub CI (Run 25687923662, Commit `b2948c9`)
+
+- Beide Fix13-Tests **PASSED** im Workflow-Log.
+- Mit `pytest -x` schlägt der **nächste** Test fehl: `test_restore_rejects_symlink_whose_relative_target_escapes_root` erwartete das Wort `escapes` im Fehlertext; der Produktpfad liefert `storage-protection-004` (deutsch) — **Kategorie B** am Recovery-Test, nicht an Fix13. Minimaler Folge-Fix: Assertion akzeptiert `escapes` **oder** `storage-protection` bei weiterhin `self.assertFalse(rr[0])`.

@@ -5,7 +5,7 @@
 
 ## Kurzfassung
 
-Repo-Transparenz (Roadmap, Matrizen, Evidence-Templates) ist **angelegt**. **Deploy-Modul** auf `main` ergänzt (`df13af4`). **Fix13-CI-Fehler:** Ursache `_run_tar` bricht ohne nutzbares **systemd-inhibit** vor `run_command` ab (Kategorie D+E); **Test** minimal um inhibit-Mocks ergänzt — siehe `ci_fix13_backup_test_analysis_2026-05-11.md`. **GitHub CI:** bis zum nächsten erfolgreichen Lauf weiter als **rot** zu führen (`ci_evidence.json`). **STRICT CI + BR-Evidence:** `BR-001` blocked, `BR-004`/`BR-005` gelb. **Pytest** lokal **1526/0** nach Patch. → **kein** Produktionsstart ohne grünen Remote-CI-Lauf.
+Repo-Transparenz (Roadmap, Matrizen, Evidence-Templates) ist **angelegt**. **Deploy-Modul** auf `main` ergänzt (`df13af4`). **Fix13-CI-Fehler:** Ursache `_run_tar` bricht ohne nutzbares **systemd-inhibit** vor `run_command` ab (Kategorie D+E); **Test** minimal um inhibit-Mocks ergänzt — siehe `ci_fix13_backup_test_analysis_2026-05-11.md`. **GitHub CI:** Run **25687923662** — Fix13 grün, danach Recovery-Symlink-Assertion (i18n); Folge-Testfix committed — Ampel nach nächstem Lauf (`ci_evidence.json`). **STRICT CI + BR-Evidence:** `BR-001` blocked, `BR-004`/`BR-005` gelb. **Pytest** lokal **1526/0**. → **kein** Produktionsstart ohne grünen Remote-CI-Lauf.
 
 ## Ampelüberblick
 

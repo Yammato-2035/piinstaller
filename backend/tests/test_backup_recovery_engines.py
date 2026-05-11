@@ -8,6 +8,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import shutil
 import socket
 import tarfile
 import tempfile
@@ -45,8 +46,6 @@ from modules.restore_engine import restore_files
 
 # Schreibpfad für validate_write_target (core.safe_device)
 _T_SAFE = Path("/tmp/setuphelfer-test/recovery-engine-mountval")
-
-
 def _lsblk_usb_sdb1_at(mount: str) -> dict:
     return {
         "blockdevices": [
@@ -111,12 +110,15 @@ def _wrap_fake_run_with_lsblk(inner, mount_for_lsblk: str):
 
 
 class _SkipMountValidationMixin:
-    """create_file_backup-Tests unter /tmp: Mount-Sicherheitsprüfung per Mock umgehen."""
+    """Backup-/Restore-Tests: Ziel liegt i.d.R. auf der Systemplatte (/tmp) — echte Mount-Klassifikation würde blockieren."""
 
     def setUp(self) -> None:
         p = patch("modules.backup_engine.validate_backup_target")
         p.start()
         self.addCleanup(p.stop)
+        p2 = patch("modules.restore_engine.validate_write_target", lambda *_a, **_k: None)
+        p2.start()
+        self.addCleanup(p2.stop)
 
 
 @unittest.skipUnless(os.name == "posix", "POSIX only: symlinks and unix sockets")
@@ -211,7 +213,9 @@ class TestSymlinkAndSpecialFiles(_SkipMountValidationMixin, unittest.TestCase):
                 tf.addfile(info)
             rr = restore_files(arch, base / "out", allowed_target_prefixes=(base,), dry_run=False)
             self.assertFalse(rr[0])
-            self.assertIn("escapes", (rr[2] or "").lower())
+            detail = (rr[2] or "").lower()
+            # Historisch englisch „escapes“; aktuell i18n/storage-protection (z. B. schreibpräfix) — gleiche Ablehnung.
+            self.assertTrue("escapes" in detail or "storage-protection" in detail, detail)
 
     def test_tar_symlink_linkname_allowed_helper(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -757,7 +761,8 @@ class TestBackupTargetMountValidation(unittest.TestCase):
             return CompletedProcess(argv, 0, "", "")
 
         _T_SAFE.mkdir(parents=True, exist_ok=True)
-        base = _T_SAFE / "unwritable"
+        base = _T_SAFE / f"unwritable_{os.getpid()}"
+        shutil.rmtree(base, ignore_errors=True)
         base.mkdir(parents=True, exist_ok=True)
         d = base / "mount_here"
         d.mkdir()
@@ -770,6 +775,7 @@ class TestBackupTargetMountValidation(unittest.TestCase):
             self.assertEqual(ctx.exception.message_key, K_BACKUP_TARGET_NOT_WRITABLE)
         finally:
             os.chmod(d, 0o700)
+            shutil.rmtree(base, ignore_errors=True)
 
     def test_assert_writable_ok_on_tmp(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
