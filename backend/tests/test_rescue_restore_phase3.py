@@ -1,7 +1,6 @@
 """Phase 3.N: Restore-Session, Hard-Stops, gestufte Ausführung (mocks, kein Produktiv-IO)."""
 
 from __future__ import annotations
-
 import sys
 import unittest
 from pathlib import Path
@@ -65,14 +64,29 @@ class TestRescueRestoreGate(unittest.TestCase):
         self.assertEqual(code, "rescue.restore.confirmation_missing")
 
     def test_session_missing(self):
-        ok, code, _ = validate_restore_preconditions(
-            dry_run_token="x",
-            backup_file="/tmp/setuphelfer-test/a.tar.gz",
-            target_device=None,
-            confirmation=True,
-            risk_acknowledged=False,
-            session_id="",
-        )
+        grant_state = {
+            "created_at": "2099-01-01T00:00:00+00:00",
+            "session_id": "expected-session",
+            "allow_restore": True,
+            "dryrun_mode": "dryrun",
+            "dryrun_simulation_status": "DRYRUN_OK",
+            "restore_decision": "proceed_possible",
+            "restore_risk_level": "green",
+            "backup_file": "/tmp/setuphelfer-test/a.tar.gz",
+            "target_device": None,
+        }
+        with patch(
+            "modules.rescue_restore_gate.load_dry_run_grant",
+            return_value=grant_state,
+        ):
+            ok, code, _ = validate_restore_preconditions(
+                dry_run_token="tok",
+                backup_file="/tmp/setuphelfer-test/a.tar.gz",
+                target_device=None,
+                confirmation=True,
+                risk_acknowledged=False,
+                session_id="",
+            )
         self.assertFalse(ok)
         self.assertEqual(code, "rescue.restore.session_missing")
 
@@ -133,8 +147,25 @@ class TestRescueRestoreExecuteMocked(unittest.TestCase):
                                                     "modules.rescue_restore_execute.run_boot_repair_pipeline",
                                                     return_value={"performed": False, "codes": []},
                                                 ):
-                                                    with patch.object(Path, "stat", return_value=type("S", (), {"st_size": 100, "st_mtime": 1.0})()):
-                                                        out = run_rescue_restore(req)
+                                                    with patch.object(
+                                                        Path,
+                                                        "stat",
+                                                        return_value=type(
+                                                            "S",
+                                                            (),
+                                                            {
+                                                                "st_size": 100,
+                                                                "st_mtime": 1.0,
+                                                                # Path.is_dir() nutzt st_mode: dir-mode 0o40755 (statt stdlib.stat import).
+                                                                "st_mode": 0o40755,
+                                                            },
+                                                        )(),
+                                                    ):
+                                                        with patch(
+                                                            "modules.rescue_restore_execute.post_restore_validate",
+                                                            return_value=("RESTORE_SUCCESS", []),
+                                                        ):
+                                                            out = run_rescue_restore(req)
         self.assertEqual(out.status, "ok")
         self.assertEqual(out.result, "RESTORE_SUCCESS")
         self.assertTrue(out.bootable)
