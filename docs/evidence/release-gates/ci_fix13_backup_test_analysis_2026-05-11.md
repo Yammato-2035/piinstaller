@@ -48,3 +48,8 @@
 ## 8. GitHub CI (Run 25688063476, Commit `65a5b92`)
 
 - Recovery-Symlink-Test **PASSED**; nächster `-x`-Fehler `test_backup_runtime_no_sudo_v1::test_run_tar_uses_run_command_without_sudo` — Workflow-Log bricht direkt nach `self.assertIn(` ab. Wahrscheinliche Ursache: **assertIn** mit komplettem `app.py` (~716 KB) als Haystack erzeugt bei Misserfolg extrem große Diff-Ausgabe. Fix: Test prüft nur `_run_tar`-Ausschnitte (`test_backup_runtime_no_sudo_v1.py`).
+
+## 9. Weitere CI-Kette (nach Fix13-Ziel)
+
+- **Run 25688221790** (`ef0c084`): `test_debug_instrumentation::test_network_detect_emits_scope` — DECISION fehlte je nach Runner-Netzdaten; Fix: deterministische Mocks für `app.run_command` / `app.subprocess.run` (`test_debug_instrumentation.py`).
+- **Run 25688331226** (`015eca3`): nächster `-x`-Fehler `test_diagnostics_evidence_mapping_v1::test_confirmed_count_for_perm_group` — Evidence-Mapping/Fixtures, **außerhalb** Fix13-Scope; CI gesamt weiter **rot**, bis dort separat behoben.

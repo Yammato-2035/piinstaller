@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): Fix13 auf GitHub grün (Run 25687923662); Recovery-Symlink-Test an i18n angepasst — nächster `ci.yml`-Lauf für Gesamt-Ampel; lokal pytest grün siehe `current_failures.json`  
+**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): Fix13 + Backup-Folgetests in CI grün; aktueller Rotpunkt Diagnostics-Mapping (Run 25688331226); lokal pytest grün siehe `current_failures.json`  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

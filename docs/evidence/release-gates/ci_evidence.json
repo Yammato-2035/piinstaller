@@ -1,35 +1,29 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-11T18:15:00Z",
+  "generated": "2026-05-11T18:20:00Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
   "latest_runs_queried": 5,
   "latest_run": {
-    "database_id": 25688063476,
+    "database_id": 25688331226,
     "conclusion": "failure",
-    "created_at": "2026-05-11T18:03:52Z",
-    "updated_at": "2026-05-11T18:04:24Z",
+    "created_at": "2026-05-11T18:09:04Z",
+    "updated_at": "2026-05-11T18:09:39Z",
     "head_branch": "main",
-    "head_sha": "65a5b92220ff94d13e0602423abb70d648fa0958",
-    "display_title": "Fix CI backup recovery symlink rejection assertion",
-    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25688063476",
+    "head_sha": "015eca3e032d378a74f347f3625acdb5f191d477",
+    "display_title": "Fix CI debug network instrumentation test determinism",
+    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25688331226",
     "jobs": [
       {
         "name": "lint-and-test",
         "conclusion": "failure",
         "failed_step": "Pytest",
         "failed_step_number": 8,
-        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25688063476"
+        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25688331226"
       }
     ]
-  },
-  "prior_blocker_resolved": {
-    "resolved_at": "2026-05-11T17:51Z",
-    "commit": "df13af4821d53042c6ae10616446e6d2b953d7a7",
-    "issue": "ModuleNotFoundError: No module named 'deploy.runner_rescue_io'",
-    "fix_summary": "Vollständiges backend/deploy-Paket auf main versioniert; Pytest-Collect läuft durch."
   },
   "fix13_verification": {
     "ci_run_id": 25687923662,
@@ -42,37 +36,41 @@
     "log_source": "gh run view 25687923662 --log"
   },
   "failure_analysis": {
-    "analyzed_at": "2026-05-11T18:12:00Z",
+    "analyzed_at": "2026-05-11T18:18:00Z",
     "pytest_command_ci": "python -m pytest tests/ -v --tb=short -x",
     "failure_phase": "test_execution",
     "first_error": {
       "type": "AssertionError",
-      "message": "test_backup_runtime_no_sudo_v1::test_run_tar_uses_run_command_without_sudo (Log abgeschnitten nach assertIn; vermutlich assertIn mit komplettem app.py als Haystack)",
-      "trigger_file": "tests/test_backup_runtime_no_sudo_v1.py",
-      "trigger_test": "TestBackupRuntimeNoSudoV1::test_run_tar_uses_run_command_without_sudo",
+      "message": "unexpectedly None (test_confirmed_count_for_perm_group)",
+      "trigger_file": "tests/test_diagnostics_evidence_mapping_v1.py",
+      "trigger_test": "TestDiagnosticsEvidenceMappingV1::test_confirmed_count_for_perm_group",
       "line": 21
     },
-    "root_cause_summary": "Nach Recovery-Fix: nächster -x-Fehler in test_backup_runtime_no_sudo_v1 — siehe ci_fix13_backup_test_analysis Abschnitt 8 (Ausschnittsprüfung statt gesamtem app.py).",
-    "log_source": "gh run view 25688063476 --log-failed",
-    "fix13_historical": "Fix13 inhibit-Mock: ci_fix13_backup_test_analysis_2026-05-11.md Abschnitte 1–6."
+    "root_cause_summary": "Nach Fix13 + Folge-Testfixes schlägt der nächste -x-Lauf an Diagnostics-Evidence-Mapping fehl (nicht Backup-Fix13). Siehe ci_fix13_backup_test_analysis Abschnitt 9.",
+    "log_source": "gh run view 25688331226 --log-failed"
   },
   "fix13_remediation": {
     "analysis_doc": "docs/evidence/release-gates/ci_fix13_backup_test_analysis_2026-05-11.md",
-    "code_change": "backend/tests/test_backup_full_excludes_fix13_v1.py",
+    "commits": [
+      "b2948c91bd519523f3009bff4eea8853570c4c63",
+      "65a5b9220ff94d13e0602423abb70d648fa0958",
+      "ef0c0841729c0109f142ead4cc68db091a973e80",
+      "015eca3e032d378a74f347f3625acdb5f191d477"
+    ],
     "product_logic_changed": false
   },
   "local_pytest_parity": {
-    "executed_at": "2026-05-11T19:50:00Z",
+    "executed_at": "2026-05-11T20:10:00Z",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default PYTHONPATH=. python -m pytest tests/ -q --tb=no",
     "cwd": "backend",
     "interpreter": "/tmp/piinstaller-test-venv/bin/python",
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Inkl. backup_runtime_no_sudo Ausschnitts-Assert (Commit folgt Push)."
+    "note": "Lokal alle 1526 Tests; Remote-CI subset ~252 Sammel-Items, -x stoppt am ersten Fehler (derzeit Diagnostics-Mapping)."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Ampel rot bis nach backup_runtime-Testfix ein grüner Workflow-Lauf vorliegt.",
+  "notes": "Fix13 und direkte Backup-/Runtime-/Debug-Folgetests in CI grün verifiziert (Runs 25687923662 ff.); Gesamt-Workflow rot bis diagnostics_mapping grün.",
   "ampel": "rot",
   "evidence_complete": false,
   "failure_root_cause_documented": true,
