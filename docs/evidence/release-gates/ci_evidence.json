@@ -1,27 +1,27 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-11T20:33:30Z",
+  "generated": "2026-05-11T20:36:30Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
   "latest_runs_queried": 5,
   "latest_run": {
-    "database_id": 25689506120,
+    "database_id": 25689674694,
     "conclusion": "failure",
-    "created_at": "2026-05-11T18:32:20Z",
-    "updated_at": "2026-05-11T18:32:58Z",
+    "created_at": "2026-05-11T18:35:31Z",
+    "updated_at": "2026-05-11T18:36:12Z",
     "head_branch": "main",
-    "head_sha": "d0c9ddf28e8fba72ead7611ca68ffba73a778fca",
-    "display_title": "Fix CI rescue dryrun smartctl handling",
-    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25689506120",
+    "head_sha": "003cae9b61e6910c3fbf48ff44a5271b7c0fda7c",
+    "display_title": "docs: update CI blocker to session_missing",
+    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25689674694",
     "jobs": [
       {
         "name": "lint-and-test",
         "conclusion": "failure",
         "failed_step": "Pytest",
         "failed_step_number": 8,
-        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25689506120"
+        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25689674694"
       }
     ]
   },
@@ -35,7 +35,7 @@
     "evidence_store_commit": "9a2b96cb9437239ac4aa321b9f3cf2398a3e1ac4"
   },
   "failure_analysis": {
-    "analyzed_at": "2026-05-11T20:33:00Z",
+    "analyzed_at": "2026-05-11T20:36:00Z",
     "pytest_command_ci": "python -m pytest tests/ -v --tb=short -x",
     "failure_phase": "test_execution",
     "first_error": {
@@ -46,7 +46,7 @@
       "line": 77
     },
     "root_cause_summary": "Nach erfolgreicher smartctl-Toleranz im Rescue-Dryrun kommt CI als nächsten Abbruch auf `test_session_missing` in `test_rescue_restore_phase3.py` (Dryrun-/Session-Error-Code Erwartung).",
-    "log_source": "gh run view 25689506120 --log-failed"
+    "log_source": "gh run view 25689674694 --log-failed"
   },
   "rescue_dryrun_smartctl_remediation": {
     "analysis_doc": "docs/evidence/release-gates/ci_rescue_dryrun_smartctl_analysis_2026-05-11.md",
