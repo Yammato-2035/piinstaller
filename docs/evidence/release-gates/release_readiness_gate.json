@@ -5,10 +5,10 @@
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "Fix13 in CI verifiziert; Folge-Backup-/Debug-Tests angepasst — aktueller CI-Blocker Diagnostics-Evidence-Mapping (Run 25688331226). BR-001 weiter blockiert.",
+  "summary": "Diagnostics-Evidence: Root-Cause .gitignore/data/ — Seeds versioniert; GitHub-CI nach Push erneut belegen. BR-001 weiter blockiert.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
-    "GitHub Actions: Run 25688331226 failure — test_diagnostics_evidence_mapping_v1 (ci_evidence.json)"
+    "GitHub Actions: Ampel nach nächstem ci.yml-Lauf (vorher Run 25688331226, diagnostics mapping) — ci_evidence.json"
   ],
   "pytest_note": "Lokales pytest tests/ am 2026-05-11 (Prompt 2 erneut, ~21:15Z): 0 failures, 1526 passed — current_failures.json; Release bleibt über P0/CI blockiert.",
   "recommendation": "do_not_release"

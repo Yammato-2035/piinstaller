@@ -1,0 +1,67 @@
+{
+  "id": "EVID-2026-HW1-R03",
+  "timestamp": "2026-04-24T22:30:00.000000+00:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-01",
+  "test_goal": "HW1-01 End-to-End: Backup (data/local) + Verify + Restore-Preview auf ext4 unter /mnt/setuphelfer/backups/test-run nach FIX-2; keine Workarounds waehrend des Laufs.",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "Zielpfad /mnt/setuphelfer/backups/test-run: laut findmnt kein separater ext4-Mount (vorherige NVMe-Partition nicht eingebunden); ls -ld zeigte drwxr-xr-x root:root (nicht root:setuphelfer 0770).",
+  "encryption_profile": "n/a",
+  "boot_profile": "n/a",
+  "observed_symptoms": [
+    "Phase 0 (Login-Shell su - volker): id -G enthielt 1001 (setuphelfer).",
+    "ls -ld /mnt/setuphelfer/backups/test-run → drwxr-xr-x root root — Abweichung von erwartetem drwxrwx--- root setuphelfer.",
+    "touch /mnt/setuphelfer/backups/test-run/_probe_r03 → Keine Berechtigung (EACCES); Phase-0-Abbruch laut Vorgabe.",
+    "curl http://127.0.0.1:8000/api/version → Version 1.3.4.15; lsof Port 8000 → Prozess pi-installer (/opt/pi-installer), nicht setuphelfer-backend (inactive).",
+    "POST /api/backup/create (data, local) gegen aktuellen :8000-Listener → {\"status\":\"error\",\"message\":\"Sudo-Passwort erforderlich\",...} (kein FIX-2-Verhalten auf diesem Listener).",
+    "Verify und Restore-Preview nicht ausgefuehrt (Abbruch nach Phase 0 / kein gueltiges Backup)."
+  ],
+  "raw_signals": {
+    "phase0_id_G": "1000 4 24 27 30 46 100 105 125 132 1001",
+    "phase0_ls_ld": "drwxr-xr-x 2 root root 4096 ... /mnt/setuphelfer/backups/test-run",
+    "phase0_touch": "touch: ... _probe_r03: Keine Berechtigung",
+    "findmnt_test_run": "(leer — kein Mount-Eintrag fuer diesen Pfad)",
+    "lsblk_excerpt": "sdb1 exfat /media/volker/INTENSO (ehemalige ext4-test-run-Konfiguration auf Host nicht mehr aktiv)",
+    "api_version": "{\"status\":\"success\",\"version\":\"1.3.4.15\"}",
+    "lsof_8000": "python3 pi-installer LISTEN *:8000",
+    "systemctl_setuphelfer_backend": "inactive",
+    "api_backup_create_response": "{\"status\":\"error\",\"message\":\"Sudo-Passwort erforderlich\",\"requires_sudo_password\":true}"
+  },
+  "matched_diagnosis_ids": [
+    "PERM-GROUP-008",
+    "OWNER-MODE-023"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "PERM-GROUP-008",
+      "link": "suspected",
+      "note": "Ziel nicht beschreibbar fuer Gruppe setuphelfer (755 root:root statt 770 root:setuphelfer)."
+    },
+    {
+      "diagnosis_id": "OWNER-MODE-023",
+      "link": "suspected",
+      "note": "Owner/Mode des Zielpfads weicht vom erwarteten Modell ab; kein aktiver ext4-Mount unter test-run."
+    }
+  ],
+  "suspected_root_causes": [
+    "ext4-Partition nicht nach /mnt/setuphelfer/backups/test-run gemountet; Verzeichnis ist lokales root:root-755-Stub.",
+    "Port 8000 von pi-installer belegt; setuphelfer-backend mit FIX-2 nicht aktiv — API-Test traf nicht den Ziel-Stack.",
+    "Optional: Operator muss pi-installer stoppen, setuphelfer-backend starten, Mount+chown/chmod laut HW_EXEC_1_REPEAT_INSTRUCTIONS erneut setzen."
+  ],
+  "confirmed_root_cause": "touch schlug auf 755 root:root fehl; kein weiterer Schritt lief.",
+  "corrective_actions": [
+    "ext4 wie dokumentiert mounten; chown root:setuphelfer; chmod 0770 auf Mountpunkt.",
+    "setuphelfer-backend auf 8000 bringen (Konflikt mit pi-installer loesen); sicherstellen, dass installierter Code FIX-2 enthaelt.",
+    "R03 erneut fahren, wenn Phase 0 gruen ist."
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

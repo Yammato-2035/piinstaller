@@ -1,0 +1,28 @@
+{
+  "id": "profile-media-external-nvme-1tb",
+  "platform_class": "linux_laptop",
+  "cpu_model": "",
+  "cpu_arch": "x86_64",
+  "core_count": 0,
+  "ram_total_mb": 0,
+  "os_name": "",
+  "os_version": "",
+  "kernel_version": "",
+  "boot_mode": "unknown",
+  "filesystem_root": "",
+  "filesystem_backup_target": "ext4",
+  "storage_devices": [
+    {
+      "name": "/dev/nvme1n1",
+      "type": "nvme",
+      "size_gb": 1000,
+      "filesystem": "ext4",
+      "mountpoint": "/mnt/backups-nvme",
+      "removable": true,
+      "encrypted": false,
+      "health_info": {
+        "note": "external enclosure"
+      }
+    }
+  ]
+}

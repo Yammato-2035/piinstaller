@@ -1,0 +1,45 @@
+{
+  "evidence_id": "EVID-2026-HW1-07",
+  "phase": "HW-EXEC-1-07",
+  "timestamp_utc": "2026-04-28T21:07:00Z",
+  "outcome": "success",
+  "backup_file": "/mnt/setuphelfer/backups/pi-backup-data-20260428_230633.tar.gz",
+  "backup_result": {
+    "code": "backup.success",
+    "selected_sources": [
+      "/mnt/setuphelfer/test-data"
+    ]
+  },
+  "verify_result": {
+    "code": "backup.verify_success",
+    "valid": true
+  },
+  "preview_result": {
+    "code": "backup.restore_preview_ok",
+    "blocked_entries_count": 0
+  },
+  "restore_target": "/mnt/setuphelfer/restore-target/hw1-07",
+  "restore_result": {
+    "code": "backup.restore_success",
+    "mode": "restore",
+    "status": "success"
+  },
+  "validation_result": {
+    "readme_present": true,
+    "sample_json_present": true,
+    "manifest_present": true,
+    "readme_matches_source": true,
+    "sample_json_matches_source": true,
+    "sample_json_value": {
+      "ok": true
+    },
+    "unexpected_system_paths": [],
+    "outside_target_entries": []
+  },
+  "matched_diagnosis_ids": [],
+  "deviation_vs_hw1_06": "Keine funktionale Abweichung; Kette lief erneut ohne zusätzliche Fixes erfolgreich durch.",
+  "notes": [
+    "Reproduzierbarkeitslauf nach FIX-12 erfolgreich.",
+    "Keine 500-Fehler beobachtet."
+  ]
+}

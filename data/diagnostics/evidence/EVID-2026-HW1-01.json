@@ -1,0 +1,62 @@
+{
+  "id": "EVID-2026-HW1-01",
+  "timestamp": "2026-04-23T18:15:10Z",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-01",
+  "test_goal": "Backup auf externe NVMe unverschluesselt",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "external_nvme_sda4_ext4",
+  "encryption_profile": "off",
+  "boot_profile": "laptop_nvme",
+  "observed_symptoms": [
+    "POST /api/backup/create fordert zuerst sudo password",
+    "nach hinterlegtem sudo password weiterhin Fehler: Backup-Verzeichnis konnte nicht erstellt werden"
+  ],
+  "raw_signals": {
+    "backup_dir": "/media/volker/a8cd880d-ba96-49a5-b5cd-135cd7f020b0",
+    "api_response_1": {
+      "status": "error",
+      "message": "Sudo-Passwort erforderlich",
+      "requires_sudo_password": true
+    },
+    "api_response_2": {
+      "status": "error",
+      "message": "Backup-Verzeichnis konnte nicht erstellt werden: /media/volker/a8cd880d-ba96-49a5-b5cd-135cd7f020b0"
+    }
+  },
+  "matched_diagnosis_ids": [
+    "PERM-GROUP-008",
+    "OWNER-MODE-023"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "PERM-GROUP-008",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "OWNER-MODE-023",
+      "status": "suspected"
+    }
+  ],
+  "suspected_root_causes": [
+    "Backend-User pi-installer hat keinen Zugriff auf Mountpfad /media/volker",
+    "Gruppenmodell setuphelfer nicht vorhanden (Group lookup schlug fehl)"
+  ],
+  "confirmed_root_cause": "Zielpfad ist fuer den Backend-Prozess nicht beschreibbar",
+  "corrective_actions": [
+    "Gruppen-/ACL-Modell fuer Backend-User und Zielmount reproduzierbar einrichten",
+    "Mountpoint-Rechte vor Backup mit target-check validieren"
+  ],
+  "unresolved_questions": [
+    "Soll fuer pi-installer ein dediziertes ACL-Setup statt globaler chmod/chown genutzt werden?"
+  ],
+  "docs_updated": false,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

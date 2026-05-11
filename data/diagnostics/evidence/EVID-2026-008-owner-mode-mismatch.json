@@ -1,0 +1,51 @@
+{
+  "id": "EVID-2026-008",
+  "timestamp": "2026-04-19T12:00:00Z",
+  "source_type": "hardware_test",
+  "domain": "permissions",
+  "platform": "raspberry_pi",
+  "scenario": "owner_mode_root_0755",
+  "test_goal": "root:root + 0755 Abweichung vom Gruppenmodell erkennen",
+  "outcome": "failed",
+  "severity": "medium",
+  "confidence": "high",
+  "system_profile_id": "profile-rpi5-usb-nvme",
+  "storage_profile": "nvme_root_usb_backup",
+  "encryption_profile": "none",
+  "boot_profile": "rpi_usb_nvme_mixed",
+  "observed_symptoms": [
+    "Schreibzugriffe fuer setuphelfer scheitern",
+    "Owner root:root mit 0755"
+  ],
+  "raw_signals": {
+    "owner_mode_valid": false,
+    "permission_denied": true
+  },
+  "matched_diagnosis_ids": [
+    "OWNER-MODE-023",
+    "PERM-GROUP-008"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "OWNER-MODE-023",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "PERM-GROUP-008",
+      "status": "suspected"
+    }
+  ],
+  "suspected_root_causes": [
+    "Manuelles chown/chmod statt reproduzierbarem Gruppenmodell"
+  ],
+  "confirmed_root_cause": "Falscher Owner/Mode am Zielpfad",
+  "corrective_actions": [
+    "Owner/Group auf root:setuphelfer setzen",
+    "Mode auf 0770 setzen"
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": true,
+  "catalog_updated": true,
+  "tests_added": true
+}

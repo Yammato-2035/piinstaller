@@ -1,0 +1,69 @@
+{
+  "evidence_id": "EVID-2026-HW1-R11",
+  "run_id": "HW-EXEC-1-01-R11",
+  "date_utc": "2026-04-27",
+  "phase": "HW-EXEC-1-01",
+  "outcome": "success",
+  "observed_symptoms": [],
+  "raw_signals": {
+    "precheck": {
+      "service_conflicts": "GET /api/system/service-conflicts → conflicts=[], should_block_start=false (Phase 0, Operator)",
+      "api_version": "GET /api/version → 1.5.0.0",
+      "data_backup_env": "SETUPHELFER_DATA_BACKUP_SOURCES=/mnt/setuphelfer/test-data",
+      "findmnt_backup_dir": "ext4 on /dev/sda4 for /mnt/setuphelfer/backups/test-run (incl. autofs line acceptable)",
+      "write_probe": "touch /mnt/setuphelfer/backups/test-run/_probe_r11 OK"
+    },
+    "backup_create_response": {
+      "status": "success",
+      "message": "Backup erstellt",
+      "results": [
+        "Daten-Backup erstellt: /mnt/setuphelfer/backups/test-run/pi-backup-data-20260427_213058.tar.gz",
+        "MANIFEST.json eingebettet und verifiziert: /mnt/setuphelfer/backups/test-run/pi-backup-data-20260427_213058.tar.gz"
+      ],
+      "backup_file": "/mnt/setuphelfer/backups/test-run/pi-backup-data-20260427_213058.tar.gz",
+      "timestamp": "20260427_213058",
+      "code": "backup.success",
+      "severity": "success"
+    },
+    "archive_tar_listing_head": [
+      "MANIFEST.json",
+      "mnt/setuphelfer/test-data/",
+      "mnt/setuphelfer/test-data/README.txt",
+      "mnt/setuphelfer/test-data/sample.json"
+    ],
+    "verify_response": {
+      "status": "success",
+      "api_status": "ok",
+      "code": "backup.verify_success",
+      "severity": "success",
+      "results": {
+        "file": "/mnt/setuphelfer/backups/test-run/pi-backup-data-20260427_213058.tar.gz",
+        "exists": true,
+        "encrypted": false,
+        "valid": true,
+        "verification_mode": "deep",
+        "file_count": 4
+      }
+    },
+    "restore_preview_response": {
+      "status": "success",
+      "api_status": "ok",
+      "mode": "preview",
+      "code": "backup.restore_preview_ok",
+      "severity": "success",
+      "preview_dir": "/tmp/setuphelfer-restore-test/20260427-193147",
+      "analysis": {
+        "total_files": 3,
+        "total_dirs": 1,
+        "blocked_entries": []
+      }
+    }
+  },
+  "selected_sources": [
+    "/mnt/setuphelfer/test-data"
+  ],
+  "selected_sources_note": "API success payload omits selected_sources; confirmed via SETUPHELFER_DATA_BACKUP_SOURCES, _plan_data_backup_sources semantics, and tar member paths under mnt/setuphelfer/test-data only (no /home, no /opt).",
+  "matched_diagnosis_ids": [],
+  "suspected_root_causes": [],
+  "confirmed_root_cause": "resolved – unified safe_device + storage_detection + automount fix + explicit data source"
+}

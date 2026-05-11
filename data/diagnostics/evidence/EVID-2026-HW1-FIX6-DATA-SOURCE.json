@@ -1,0 +1,62 @@
+{
+  "id": "EVID-2026-HW1-FIX6-DATA-SOURCE",
+  "timestamp": "2026-04-26T19:40:00+02:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-FIX6-DATA-TEST-SOURCE",
+  "test_goal": "Reproduzierbare Data-Testquelle fuer HW1 unter ProtectHome=yes bereitstellen, ohne Backup-Lauf.",
+  "outcome": "success",
+  "severity": "medium",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "test_data_source=/mnt/setuphelfer/test-data",
+  "encryption_profile": "n/a",
+  "boot_profile": "n/a",
+  "observed_symptoms": [
+    "Vor FIX-6: Data-Plan im Runtime-Kontext nutzte Service-Home und fuehrte unter ProtectHome zu BACKUP-SOURCE-PERM-032.",
+    "Nach FIX-6: explizite Data-Quelle /mnt/setuphelfer/test-data im Service-Kontext lesbar und im Source-Plan exklusiv enthalten."
+  ],
+  "raw_signals": {
+    "test_source_dir": "drwxrws--- root setuphelfer /mnt/setuphelfer/test-data",
+    "test_source_files": [
+      "README.txt",
+      "sample.json"
+    ],
+    "service_dropin": "/etc/systemd/system/setuphelfer-backend.service.d/20-hw1-data-source.conf",
+    "service_env": "SETUPHELFER_DATA_BACKUP_SOURCES=/mnt/setuphelfer/test-data",
+    "service_flags": "ProtectHome=yes; NoNewPrivileges=yes; ReadWritePaths includes /mnt/setuphelfer",
+    "source_plan_runtime": {
+      "includes": [
+        "/mnt/setuphelfer/test-data"
+      ],
+      "skipped": [],
+      "unreadable": []
+    }
+  },
+  "matched_diagnosis_ids": [
+    "BACKUP-SOURCE-PERM-032"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "BACKUP-SOURCE-PERM-032",
+      "link": "mitigated",
+      "note": "Data-Scope auf explizite lesbare Testquelle verschoben."
+    }
+  ],
+  "suspected_root_causes": [
+    "Service-Home ist unter ProtectHome im Laufzeitkontext nicht lesbar.",
+    "Data-Backup ohne explizite Testquelle war fuer HW1 nicht reproduzierbar."
+  ],
+  "confirmed_root_cause": "Data-Scope ohne explizite HW-Testquelle kollidierte mit ProtectHome-Policy.",
+  "corrective_actions": [
+    "Explizite Testquelle /mnt/setuphelfer/test-data eingerichtet.",
+    "SETUPHELFER_DATA_BACKUP_SOURCES im Service gesetzt.",
+    "Source-Plan auf Allowlist-/Service-Context-Logik fuer konfigurierte Pflichtquellen erweitert."
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": true,
+  "catalog_updated": false,
+  "tests_added": true
+}

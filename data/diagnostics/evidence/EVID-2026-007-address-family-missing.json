@@ -1,0 +1,46 @@
+{
+  "id": "EVID-2026-007",
+  "timestamp": "2026-04-19T11:10:00Z",
+  "source_type": "manual_test",
+  "domain": "systemd_services",
+  "platform": "linux_pc",
+  "scenario": "address_family_restricted_network_fail",
+  "test_goal": "AddressFamily-Fehlkonfiguration als netzwerkbezogene Unit-Ursache markieren",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "medium",
+  "system_profile_id": "profile-vm-generic",
+  "storage_profile": "local_ext4",
+  "encryption_profile": "none",
+  "boot_profile": "host_uefi",
+  "observed_symptoms": [
+    "Dienst laeuft ohne Netzwerkzugriff",
+    "Socket-Initialisierung scheitert"
+  ],
+  "raw_signals": {
+    "address_family_restricted": true,
+    "backend_service_active": false
+  },
+  "matched_diagnosis_ids": [
+    "SYSTEMD-AF-014"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "SYSTEMD-AF-014",
+      "status": "confirmed"
+    }
+  ],
+  "suspected_root_causes": [
+    "AddressFamily whitelist unvollstaendig"
+  ],
+  "confirmed_root_cause": "Benoetigte Netzwerkfamilie in systemd Unit nicht freigegeben",
+  "corrective_actions": [
+    "AddressFamily erweitern",
+    "Connectivity erneut testen"
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": true,
+  "tests_added": false
+}

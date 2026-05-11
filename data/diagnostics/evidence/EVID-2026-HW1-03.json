@@ -1,0 +1,133 @@
+{
+  "id": "EVID-2026-HW1-03",
+  "timestamp": "2026-04-27T12:00:00Z",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_pc",
+  "scenario": "HW-EXEC-1-03",
+  "test_goal": "HW1-03 Negative Testmatrix (Manifest/Hash/Archive/Media/Perm/Restore)",
+  "outcome": "success",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "",
+  "storage_profile": "external_nvme_usb",
+  "encryption_profile": "none",
+  "boot_profile": "unknown",
+  "observed_symptoms": [],
+  "raw_signals": {
+    "precheck": {
+      "service_conflicts_empty": true,
+      "should_block_start": false,
+      "api_version": "1.5.0.0",
+      "baseline_backup_file": "/mnt/setuphelfer/backups/test-run/pi-backup-data-20260427_215534.tar.gz"
+    },
+    "negative_tests": {
+      "A_missing_manifest": {
+        "artifact": "/mnt/setuphelfer/backups/test-run/hw103-A-no-manifest.tar.gz",
+        "expected_code": "backup.failed_manifest_missing",
+        "actual_code": "backup.failed_manifest_missing",
+        "matched_diagnosis_ids": [
+          "BACKUP-MANIFEST-001"
+        ]
+      },
+      "B_hash_mismatch": {
+        "artifact": "/mnt/setuphelfer/backups/test-run/hw103-B-hash.tar.gz",
+        "expected_code": "backup.verify_integrity_failed",
+        "actual_code": "backup.verify_integrity_failed",
+        "matched_diagnosis_ids": [
+          "BACKUP-HASH-003"
+        ]
+      },
+      "C_corrupt_truncated": {
+        "artifact": "/mnt/setuphelfer/backups/test-run/hw103-C-trunc.tar.gz",
+        "expected_code": "backup.verify_archive_unreadable",
+        "actual_code": "backup.verify_archive_unreadable",
+        "details_diagnosis_id": "BACKUP-ARCHIVE-002",
+        "matched_diagnosis_ids": [
+          "BACKUP-ARCHIVE-002"
+        ]
+      },
+      "D_disallowed_media": {
+        "request_backup_dir": "/media/volker",
+        "expected_pattern": "STORAGE-PROTECTION-*",
+        "actual_code": "backup.path_invalid",
+        "details_reason_prefix": "STORAGE-PROTECTION-005"
+      },
+      "E_target_not_writable": {
+        "request_backup_dir": "/mnt/setuphelfer/backups/test-run/hw103-e-ro",
+        "setup": "chmod 555 on directory before POST",
+        "expected_diagnosis": "PERM-GROUP-008",
+        "actual_code": "backup.backup_target_not_writable",
+        "matched_diagnosis_ids": [
+          "PERM-GROUP-008"
+        ]
+      },
+      "F_restore_path_traversal": {
+        "artifact": "/mnt/setuphelfer/backups/test-run/hw103-F-traversal.tar.gz",
+        "expected_code": "backup.restore_blocked_entries",
+        "actual_code": "backup.restore_blocked_entries",
+        "blocked_entries": [
+          "../../../tmp/hw103-evil-marker.txt"
+        ],
+        "matched_diagnosis_ids": [
+          "RESTORE-PATH-004"
+        ]
+      }
+    },
+    "legacy_hw103_meta": {
+      "run_id": "HW-EXEC-1-03",
+      "date_utc": "2026-04-27",
+      "project": "Setuphelfer",
+      "expected_code": "see raw_signals.negative_tests per case",
+      "actual_code": "see raw_signals.negative_tests per case",
+      "tests_added_note": "Automatisierte pytest-Erweiterung fuer verify_deep+Manipulationsfaelle optional; HW1-03 hier als Host-E2E mit reproduzierbaren Artefakten unter /mnt/setuphelfer/backups/test-run/hw103-*.tar.gz.",
+      "phase9_diagnosis_sync": {
+        "new_diagnosis_cases_required": false,
+        "matcher_registry": "Bestehende IDs decken die beobachteten Codes; keine neue Root-Cause-Klasse.",
+        "faq_kb_followup": "Optional: FAQ-Verweis, dass verify mode=deep Manifest+SHA prueft; KB bereits BACKUP-MANIFEST-001 / BACKUP-HASH-003 / BACKUP-ARCHIVE-002."
+      }
+    }
+  },
+  "matched_diagnosis_ids": [
+    "BACKUP-MANIFEST-001",
+    "BACKUP-HASH-003",
+    "BACKUP-ARCHIVE-002",
+    "STORAGE-PROTECTION-005",
+    "PERM-GROUP-008",
+    "RESTORE-PATH-004"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "BACKUP-MANIFEST-001",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "BACKUP-HASH-003",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "BACKUP-ARCHIVE-002",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "STORAGE-PROTECTION-005",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "PERM-GROUP-008",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "RESTORE-PATH-004",
+      "status": "confirmed"
+    }
+  ],
+  "suspected_root_causes": [],
+  "confirmed_root_cause": "Verify-Deep nutzt modules.backup_verify.verify_deep fuer unverschluesselte .tar.gz; Tar-Member-Pfadpruefung nutzt kein lstrip(\"./\") mehr (Traversal ../.. wurde faelschlich als erlaubt gewertet); Ziel-Schreibprobe liefert diagnosis_id PERM-GROUP-008; Restore-Block liefert RESTORE-PATH-004; /media-Ziele STORAGE-PROTECTION-005.",
+  "corrective_actions": [],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

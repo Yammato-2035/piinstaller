@@ -1,0 +1,61 @@
+{
+  "id": "EVID-2026-HW1-R05",
+  "timestamp": "2026-04-25T10:06:30.000000+00:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-01",
+  "test_goal": "Vollständiger HW1-01 End-to-End Nachweis nach FIX-3: Backup(data/local) -> Verify -> Preview ohne sudo und ohne unlesbare Quellen.",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "ext4 /dev/sda4 auf /mnt/setuphelfer/backups/test-run; root:setuphelfer; drwxrws---; Login-Shell-Gruppe setuphelfer aktiv.",
+  "encryption_profile": "n/a",
+  "boot_profile": "n/a",
+  "observed_symptoms": [
+    "Pre-Check vollständig grün (Gruppe, Mount ext4, Zielrechte, Schreibprobe, API 1.5.0.0, Port 8000 setuphelfer-backend).",
+    "POST /api/backup/create (type=data,target=local) lief ~1717s und endete mit status=error, code=backup.failed.",
+    "Kein sudo-Gate-Fehler (weder backup.sudo_required noch backup.sudo_blocked_by_nnp).",
+    "API-Result enthält weiterhin tar Permission-Fehler auf Quellpfaden (/home, /opt/containerd).",
+    "Verify/Preview nicht ausgeführt, da Backup nicht erfolgreich war (harter Abbruchpfad)."
+  ],
+  "raw_signals": {
+    "phase0_id_G": "1000 4 24 27 30 46 100 105 125 132 1001",
+    "phase0_ls_ld": "drwxrws--- root:setuphelfer /mnt/setuphelfer/backups/test-run",
+    "phase0_findmnt": "/dev/sda4 ext4 -> /mnt/setuphelfer/backups/test-run",
+    "phase0_touch": "touch _probe_r05 => success",
+    "api_version": "{\"status\":\"success\",\"version\":\"1.5.0.0\"}",
+    "lsof_8000": "python3 (setuphelfer-backend) LISTEN localhost:8000",
+    "backup_create_response": "status=error code=backup.failed backup_file=/mnt/setuphelfer/backups/test-run/pi-backup-data-20260425_113707.tar.gz",
+    "backup_create_results_excerpt": "tar: /home: Funktion open fehlgeschlagen: Keine Berechtigung; tar: /opt/containerd: Funktion open ...",
+    "backup_create_duration_s": 1717,
+    "backend_http_log": "POST /api/backup/create HTTP/1.1 200 OK at 12:05:44"
+  },
+  "matched_diagnosis_ids": [
+    "BACKUP-SOURCE-PERM-032"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "BACKUP-SOURCE-PERM-032",
+      "link": "confirmed",
+      "note": "Data-Backup enthält im Lauf weiterhin nicht lesbare/systemnahe Quellen; Tar bricht mit Permission denied auf Quellpfaden ab."
+    }
+  ],
+  "suspected_root_causes": [
+    "Deployter Runtime-Code auf dem Host nutzt für type=data weiterhin den alten Quellscope (/home /var/www /opt) statt FIX-3-Scope.",
+    "Service-Kontext kann Teile von /home bzw. /opt/containerd erwartungsgemäß nicht lesen; ohne Quellscope-Fix bleibt Lauf instabil."
+  ],
+  "confirmed_root_cause": "API-Response zeigt im stderr_excerpt weiterhin /opt/containerd im Tar-Aufruf-Kontext; damit ist FIX-3-Quellscope auf dem laufenden Hostprozess nicht wirksam.",
+  "corrective_actions": [
+    "Sicherstellen, dass setuphelfer-backend wirklich mit dem aktuellen FIX-3-Code aus /opt/setuphelfer/backend/app.py läuft (Dienst neu deployen/restarten).",
+    "Vor R06 /api/backup/create kurz gegen kleinen Testpfad validieren und prüfen, dass /opt nicht mehr Teil des data-Scope ist."
+  ],
+  "unresolved_questions": [
+    "Warum liefert der laufende Dienst noch den alten data-Scope, obwohl Repo FIX-3 enthält (falsches Runtime-Artefakt, alter Prozess oder nicht übernommene Datei)?"
+  ],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

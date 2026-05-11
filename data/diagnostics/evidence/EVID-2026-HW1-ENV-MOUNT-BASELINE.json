@@ -1,0 +1,69 @@
+{
+  "id": "EVID-2026-HW1-ENV-MOUNT-BASELINE",
+  "timestamp": "2026-04-26T13:42:00+02:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-ENV-MOUNT-BASELINE",
+  "test_goal": "Stabile, reproduzierbare ext4-Mount-/Rechtebasis fuer HW1-01 auf /mnt/setuphelfer/backups/test-run herstellen (ohne Backup-Lauf).",
+  "outcome": "success",
+  "severity": "medium",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "Externe Testpartition /dev/sda4, UUID a8cd880d-ba96-49a5-b5cd-135cd7f020b0, ext4",
+  "encryption_profile": "n/a",
+  "boot_profile": "n/a",
+  "observed_symptoms": [
+    "Vorherzustand: ext4-Testpartition war unter /media/volker/<uuid> automounted und nicht unter /mnt/setuphelfer/backups/test-run aktiv.",
+    "Vorherzustand test-run: root:root 0755, Schreibprobe schlug fehl.",
+    "Nach Umstellung: ext4 unter /mnt/setuphelfer/backups/test-run aktiv, root:setuphelfer 2770, Schreibprobe erfolgreich."
+  ],
+  "raw_signals": {
+    "phase0_lsblk_pre": "sda4 ext4 UUID=a8cd880d-ba96-49a5-b5cd-135cd7f020b0 mounted at /media/volker/a8cd880d-ba96-49a5-b5cd-135cd7f020b0",
+    "phase0_findmnt_pre": "no_entry",
+    "blkid_sda4": "/dev/sda4: UUID=\"a8cd880d-ba96-49a5-b5cd-135cd7f020b0\" TYPE=\"ext4\"",
+    "fstab_backup": "/etc/fstab.setuphelfer-hw1.bak",
+    "fstab_entry": "UUID=a8cd880d-ba96-49a5-b5cd-135cd7f020b0 /mnt/setuphelfer/backups/test-run ext4 defaults,nofail,x-systemd.automount 0 2",
+    "findmnt_final": "TARGET=/mnt/setuphelfer/backups/test-run SOURCE=/dev/sda4 FSTYPE=ext4",
+    "ls_ld_final": "drwxrws--- root setuphelfer /mnt/setuphelfer/backups/test-run",
+    "id_G_final": "1000 4 24 27 30 46 100 105 125 132 1001",
+    "touch_probe_final": "ok (/mnt/setuphelfer/backups/test-run/_baseline_probe)",
+    "service_status": "setuphelfer-backend active (running)",
+    "service_group_paths": "SupplementaryGroups=setuphelfer; ReadWritePaths includes /mnt /mnt/setuphelfer",
+    "port_8000": "python3 (setuphelfer-backend) listening on localhost:8000",
+    "api_version": "{\"status\":\"success\",\"version\":\"1.5.0.0\"}",
+    "media_mount_check": "no /media/volker mount for UUID a8cd880d-ba96-49a5-b5cd-135cd7f020b0 after baseline fix"
+  },
+  "matched_diagnosis_ids": [
+    "OWNER-MODE-023",
+    "PERM-GROUP-008"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "OWNER-MODE-023",
+      "link": "confirmed",
+      "note": "Vorher falscher Zielpfad-Owner/Mode (root:root 0755) blockierte Schreibprobe."
+    },
+    {
+      "diagnosis_id": "PERM-GROUP-008",
+      "link": "context",
+      "note": "Gruppe setuphelfer war vorhanden; Hauptursache war der fehlende korrekte Mount/Rechtezustand."
+    }
+  ],
+  "suspected_root_causes": [
+    "Automount unter /media/volker ohne persistente UUID-basierte Zuordnung auf den HW1-Mountpoint.",
+    "Mountpoint /mnt/setuphelfer/backups/test-run fiel auf lokales Verzeichnis mit Standardrechten zurueck."
+  ],
+  "confirmed_root_cause": "Fehlende persistente UUID-Mountbasis fuer den ext4-Testdatentraeger fuehrte zu Mount auf /media und zu instabilen Zielrechten am HW1-Mountpoint.",
+  "corrective_actions": [
+    "Falschen /media-Mount der ext4-Testpartition ausgehangen.",
+    "Mountpoint /mnt/setuphelfer/backups/test-run vorbereitet und Rechte auf root:setuphelfer + 2770 gesetzt.",
+    "Persistenten UUID-Eintrag in /etc/fstab mit defaults,nofail,x-systemd.automount angelegt.",
+    "daemon-reload + mount -a ausgefuehrt und Endzustand validiert."
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

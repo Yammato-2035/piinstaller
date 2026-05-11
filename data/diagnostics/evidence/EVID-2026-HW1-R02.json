@@ -1,0 +1,57 @@
+{
+  "id": "EVID-2026-HW1-R02",
+  "timestamp": "2026-04-24T21:16:00.000000+00:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-01",
+  "test_goal": "Backup + Verify + Restore-Preview auf ext4 unter /mnt/setuphelfer/backups/test-run; API 127.0.0.1:8000; Login-Shell Phase 0 bestanden.",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "/dev/sdb4 ext4 → /mnt/setuphelfer/backups/test-run; Schreibtest in Login-Shell (su - volker) OK.",
+  "encryption_profile": "n/a",
+  "boot_profile": "n/a",
+  "observed_symptoms": [
+    "Phase 0 in Login-Shell: id -G enthält 1001 (setuphelfer); touch _final_probe_hw1_r02 erfolgreich.",
+    "POST /api/backup/create (type=data, backup_dir=/mnt/setuphelfer/backups/test-run) sofort mit code backup.sudo_required / requires_sudo_password true — kein Archiv erzeugt.",
+    "setuphelfer.service (UI): npm run build bricht mit exit 159 (Ungültiger Betriebssystemaufruf) ab — kein lauschender Vite-Preview-Port.",
+    "setuphelfer-backend.service: active, NoNewPrivileges=true; reproduzierbar blockiert subprocess sudo unter gleicher Sandbox (Journal: sudo meldet no_new_privileges)."
+  ],
+  "raw_signals": {
+    "api_backup_create_response": "{\"status\":\"error\",\"message\":\"Sudo-Passwort erforderlich\",\"requires_sudo_password\":true,\"code\":\"backup.sudo_required\",\"severity\":\"error\"}",
+    "api_version": "{\"status\":\"success\",\"version\":\"1.4.1.0\"}",
+    "systemd_sudo_nnp_repro": "run-u643.service python subprocess.run('sudo -n true'): rc 1, stderr contains 'Flag \\\"keine neuen Privilegien\\\" ist gesetzt'",
+    "journal_setuphelfer_ui": "start-browser-production.sh: npm run build → exit 159, RestrictSUIDSGID/SystemCallFilter-Kontext vermutet",
+    "lsof_8000": "python3 (setuphelfer-backend) LISTEN 127.0.0.1:8000"
+  },
+  "matched_diagnosis_ids": [
+    "SYSTEMD-NNP-031",
+    "backup.sudo_required"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "SYSTEMD-NNP-031",
+      "link": "confirmed",
+      "note": "create_backup prüft sudo -n true vor Tar; unter NoNewPrivileges schlägt sudo fehl → API verlangt Passwort, kein passwordloser Weg für leeren sudo_store."
+    }
+  ],
+  "suspected_root_causes": [
+    "API-Gate /api/backup/create nutzt sudo für Vorbedingung und mkdir; mit NoNewPrivileges=true ist sudo im Dienstprozess nicht ausführbar.",
+    "Optional zweite Ursache UI: systemd-Härtung für setuphelfer.service blockiert npm/node beim Build."
+  ],
+  "confirmed_root_cause": "Unter identischer Service-Sandbox schlägt `sudo -n true` mit Rückgabe 1 und deutscher NNP-Meldung fehl; die API bricht daraufhin mit backup.sudo_required ab — Backup wurde nicht gestartet.",
+  "corrective_actions": [
+    "Produkt/API: Vorbedingung ohne sudo prüfen wenn Ziel bereits beschreibbar (oder mkdir ohne sudo wenn Rechte reichen); siehe FIX-1-Pfad für Tar.",
+    "Operativ: bis API angepasst ist, kein strenger HW1-01-Erfolg über diese Schnittstelle unter NNP erwarten.",
+    "UI: setuphelfer.service-Unit für vite/npm lockern oder Build out-of-band; nicht Gegenstand dieses Laufs."
+  ],
+  "unresolved_questions": [
+    "Ob Übergabe von sudo_password per API unter NNP überhaupt helfen kann (sudo -S setuid ebenfalls blockiert) — nicht getestet, um kein Passwort in Logs zu schreiben."
+  ],
+  "docs_updated": false,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

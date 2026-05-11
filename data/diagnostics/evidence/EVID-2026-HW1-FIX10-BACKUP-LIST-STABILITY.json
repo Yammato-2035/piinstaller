@@ -1,0 +1,28 @@
+{
+  "id": "EVID-2026-HW1-FIX10-BACKUP-LIST-STABILITY",
+  "timestamp": "2026-04-28T18:33:00+00:00",
+  "scenario": "FIX-10-BACKUP-LIST-STABILITY",
+  "source_type": "runtime_smoke",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "outcome": "inconclusive",
+  "summary": "api/version und service-conflicts stabil; backup/list weiterhin intermittierend timeout trotz read-only/timeouts/thread-offload",
+  "checks": {
+    "api_version": "ok",
+    "api_system_service_conflicts": "ok",
+    "api_backup_list_valid_path": "timeout_intermittent",
+    "api_backup_list_media_path": "timeout_intermittent_or_path_invalid",
+    "service_restart_behavior": "intermittent stop-sigterm timeout under stress"
+  },
+  "matched_diagnosis_ids": [
+    "APP-030",
+    "LOGS-029"
+  ],
+  "blocked_for_hw1_06": true,
+  "notes": [
+    "List endpoint refactored to read-only validation and non-recursive scan.",
+    "List validation and scan wrapped in asyncio.to_thread + asyncio.wait_for with structured backup.list_timeout.",
+    "Timeout path for /media deterministic when request completes: backup.path_invalid + STORAGE-PROTECTION-005.",
+    "Live environment still shows intermittent request hangs before handler returns for list endpoint."
+  ]
+}

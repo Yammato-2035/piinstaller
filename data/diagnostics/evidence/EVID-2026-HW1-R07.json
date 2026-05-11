@@ -1,0 +1,71 @@
+{
+  "id": "EVID-2026-HW1-R07",
+  "timestamp": "2026-04-26T11:46:12.190343+00:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-01",
+  "test_goal": "HW1-01 R07 End-to-End nach persistenter Mount-Baseline (Backup+Verify+Preview, data/local, ohne sudo)",
+  "outcome": "failed",
+  "severity": "medium",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "",
+  "encryption_profile": "",
+  "boot_profile": "",
+  "observed_symptoms": [
+    "Phase-0-Gates gruen: ext4-Mount auf /mnt/setuphelfer/backups/test-run, root:setuphelfer 2770, Schreibprobe ok, Port 8000 ok, Version 1.5.0.0.",
+    "POST /api/backup/create (type=data,target=local) brach sofort mit backup.error ab: [Errno 13] Permission denied: '/home/volker'.",
+    "Verify/Preview wurden regelkonform nicht gestartet, da Backup nicht erfolgreich war."
+  ],
+  "raw_signals": {
+    "precheck": {
+      "findmnt": "TARGET=/mnt/setuphelfer/backups/test-run SOURCE=/dev/sda4 FSTYPE=ext4",
+      "ls_ld": "drwxrws--- root setuphelfer /mnt/setuphelfer/backups/test-run",
+      "id_G": "1000 4 24 27 30 46 100 105 125 132 1001",
+      "touch_probe": "ok (/mnt/setuphelfer/backups/test-run/_probe_r07)",
+      "api_version": {
+        "status": "success",
+        "version": "1.5.0.0"
+      },
+      "port_8000": "python3 (setuphelfer-backend) listening on localhost:8000"
+    },
+    "backup_create_response": {
+      "status": "error",
+      "message": "Fehler bei der Backup-Erstellung: [Errno 13] Permission denied: '/home/volker'",
+      "code": "backup.error",
+      "severity": "error",
+      "details": {
+        "detail": "[Errno 13] Permission denied: '/home/volker'"
+      }
+    },
+    "run_result": {
+      "create_status": "error",
+      "create_code": "backup.error",
+      "create_message": "Fehler bei der Backup-Erstellung: [Errno 13] Permission denied: '/home/volker'",
+      "backup_file": null,
+      "verify_ran": false,
+      "preview_ran": false
+    }
+  },
+  "matched_diagnosis_ids": [
+    "BACKUP-SOURCE-PERM-032"
+  ],
+  "diagnosis_links": [],
+  "suspected_root_causes": [
+    "Data-Source-Planung im Service-Kontext kann das Pflicht-Home-Verzeichnis /home/volker nicht lesen (Permission denied).",
+    "Runtime-Hardening/Umgebungsrechte fuer Home-Zugriff verhindern den type=data-Quellzugriff trotz stabilem Ziel-Mount."
+  ],
+  "confirmed_root_cause": "Backup-Pfad scheitert vor Tar-Lauf an nicht lesbarer Pflichtquelle '/home/volker' im aktiven Service-Kontext.",
+  "corrective_actions": [
+    "Kein Workaround in R07; Lauf nach Backup-Fehler beendet.",
+    "Naechste Analyse muss Service-Kontext fuer lesbaren Data-Pflichtpfad pruefen (ohne Scope-Regression auf /opt)."
+  ],
+  "unresolved_questions": [
+    "Warum liefert type=data aktuell backup.error statt strukturierter backup.source_permission_denied-Antwort?"
+  ],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

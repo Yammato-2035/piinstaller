@@ -17,6 +17,7 @@ build/
 .env
 .env.*
 !.env.example
+!.env.development.example
 *.pem
 secrets/
 .sudo_key
@@ -49,8 +50,10 @@ Thumbs.db
 docs/PI-Installer-Dokumentation.pdf
 docs/PI-Installer-Dokumentation.md
 
-# Docker-App-Daten (Phase 2.2; data/apps/<app_id>)
-data/
+# Docker-App-Daten (Phase 2.2; data/apps/<app_id>) — ausgenommen: versionierte Diagnostik-Evidence/Katalog (CI/tests)
+data/*
+!data/diagnostics/
+!data/diagnostics/**
 
 # Debian-Paket (Build-Artefakte, .deb ggf. im Repo-Root)
 debian/pi-installer/

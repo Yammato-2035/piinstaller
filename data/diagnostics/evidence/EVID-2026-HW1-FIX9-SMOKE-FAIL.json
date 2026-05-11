@@ -1,0 +1,36 @@
+{
+  "id": "EVID-2026-HW1-FIX9-SMOKE-FAIL",
+  "timestamp": "2026-04-28T18:22:50+00:00",
+  "scenario": "SERVICE-SMOKE-FIX-BEFORE-HW1-06",
+  "source_type": "runtime_smoke",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "outcome": "failed",
+  "checks": {
+    "service_active": true,
+    "port_8000_listener": "python3 (setuphelfer-backend)",
+    "api_version": {
+      "status": "success",
+      "version": "1.5.0.0"
+    },
+    "service_conflicts": "timeout_on_smoke_after_restart",
+    "backup_list_valid_path": "timeout",
+    "backup_list_media_path": "timeout"
+  },
+  "observed_symptoms": [
+    "curl --max-time 5 to /api/system/service-conflicts timed out after 5s (post-restart)",
+    "curl --max-time 5 to /api/backup/list?backup_dir=/mnt/setuphelfer/backups/test-run timed out",
+    "curl --max-time 5 to /api/backup/list?backup_dir=/media/volker/INTENSO timed out",
+    "lsof shows multiple CLOSE_WAIT sockets on backend process"
+  ],
+  "raw_signals": {
+    "systemctl_restart": "stop-sigterm timeout, process killed by SIGKILL before clean restart",
+    "journal_hint": "service answered /api/version and one /api/system/service-conflicts, then smoke calls time out"
+  },
+  "matched_diagnosis_ids": [
+    "APP-030",
+    "LOGS-029"
+  ],
+  "confirmed_root_cause": "Backend responsiveness is unstable under smoke load (endpoint timeouts despite active service/listener).",
+  "hw1_06_release": "blocked"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "diagnostics_evidence_seed_audit",
+  "generated": "2026-05-11T20:20:00Z",
+  "prompt": "PROMPT_02_BLOCKER_INVENTORY",
+  "relative_directory": "data/diagnostics/evidence",
+  "json_file_count": 38,
+  "records_loaded_via_coerce": 38,
+  "strict_validation_errors": [],
+  "notes": "Nach .gitignore-Ausnahme data/diagnostics: gleiche 38 Evidence-JSONs via coerce+validate; Katalog/Profile unter data/diagnostics versioniert. Siehe ci_diagnostics_evidence_mapping_analysis_2026-05-11.md."
+}

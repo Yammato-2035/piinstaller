@@ -1,0 +1,61 @@
+{
+  "evidence_id": "EVID-2026-HW1-06-R2",
+  "phase": "HW-EXEC-1-06-R2",
+  "timestamp_utc": "2026-04-28T21:03:00Z",
+  "outcome": "success",
+  "backup_file": "/mnt/setuphelfer/backups/pi-backup-data-20260428_230201.tar.gz",
+  "verify_result": {
+    "code": "backup.verify_success",
+    "valid": true
+  },
+  "preview_result": {
+    "code": "backup.restore_preview_ok",
+    "blocked_entries_count": 0,
+    "private_tmp_isolation": true
+  },
+  "restore_target": "/mnt/setuphelfer/restore-target/hw1-06-r2",
+  "restore_result": {
+    "code": "backup.restore_success",
+    "mode": "restore",
+    "status": "success"
+  },
+  "validation_result": {
+    "readme_present": true,
+    "sample_json_present": true,
+    "manifest_present": true,
+    "readme_matches_source": true,
+    "sample_json_matches_source": true,
+    "sample_json_value": {
+      "ok": true
+    },
+    "unexpected_system_paths": [],
+    "outside_target_entries": []
+  },
+  "negative_tests": {
+    "A_media_target": {
+      "target_dir": "/media/volker/INTENSO",
+      "code": "backup.restore_target_invalid",
+      "diagnosis_id": "STORAGE-PROTECTION-005"
+    },
+    "B_non_writable_target": {
+      "target_dir": "/mnt/setuphelfer/restore-nowrite",
+      "code": "backup.restore_not_writable",
+      "diagnosis_id": "PERM-GROUP-008"
+    },
+    "C_root_target": {
+      "target_dir": "/",
+      "code": "backup.restore_target_invalid",
+      "diagnosis_id": "RESTORE-RUNTIME-006"
+    }
+  },
+  "matched_diagnosis_ids": [
+    "STORAGE-PROTECTION-005",
+    "PERM-GROUP-008",
+    "RESTORE-RUNTIME-006"
+  ],
+  "notes": [
+    "Pre-check gates all green on rebuilt ext4 NVMe mount.",
+    "No 500 errors observed in this run.",
+    "Restore behavior now clearly separates preview and restore paths."
+  ]
+}

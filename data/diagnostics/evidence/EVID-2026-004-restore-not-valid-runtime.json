@@ -1,0 +1,52 @@
+{
+  "id": "EVID-2026-004",
+  "timestamp": "2026-04-19T09:20:00Z",
+  "source_type": "hardware_test",
+  "domain": "app_setuphelfer_runtime",
+  "platform": "raspberry_pi",
+  "scenario": "post_restore_backend_down",
+  "test_goal": "Deterministischen Restore inkl. Runtime-Validierung absichern",
+  "outcome": "partial",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-rpi5-usb-nvme",
+  "storage_profile": "nvme_root_usb_backup",
+  "encryption_profile": "none",
+  "boot_profile": "rpi_usb_nvme_mixed",
+  "observed_symptoms": [
+    "Restore result success_with_warnings",
+    "Frontend erreichbar, Backend nicht erreichbar"
+  ],
+  "raw_signals": {
+    "frontend_service_active": true,
+    "backend_service_active": false,
+    "verify_status": "ok"
+  },
+  "matched_diagnosis_ids": [
+    "UI-NO-BACKEND-015",
+    "RESTORE-RUNTIME-006"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "UI-NO-BACKEND-015",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "RESTORE-RUNTIME-006",
+      "status": "confirmed"
+    }
+  ],
+  "suspected_root_causes": [
+    "systemd Unit-Konfiguration passt nicht zum Zielsystem"
+  ],
+  "confirmed_root_cause": "Runtime nach Restore nicht vollstaendig betriebsbereit",
+  "corrective_actions": [
+    "systemctl status/journal pruefen",
+    "Runtime-Parameter und Unit haerten"
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": true,
+  "catalog_updated": true,
+  "tests_added": false
+}

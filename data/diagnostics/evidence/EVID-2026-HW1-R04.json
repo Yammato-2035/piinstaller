@@ -1,0 +1,59 @@
+{
+  "id": "EVID-2026-HW1-R04",
+  "timestamp": "2026-04-25T07:13:20.000000+00:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-01",
+  "test_goal": "End-to-End HW1-01 auf ext4-NVMe: Backup(data/local) + Verify + Restore-Preview ohne sudo-Gate nach ENV-FIX und FIX-2.",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "ext4 /dev/sda4 -> /mnt/setuphelfer/backups/test-run, Owner root:setuphelfer, Mode 0770, Login-Shell-Schreibtest erfolgreich.",
+  "encryption_profile": "n/a",
+  "boot_profile": "n/a",
+  "observed_symptoms": [
+    "Phase-0-Checks erfolgreich: Gruppe setuphelfer aktiv, _probe_r04 schrieb erfolgreich, API-Version 1.5.0.0 erreichbar.",
+    "POST /api/backup/create mit type=data,target=local lief lange (~28 min) und endete mit status=error, code=backup.failed.",
+    "Wichtig: kein backup.sudo_required und kein backup.sudo_blocked_by_nnp im Response (FIX-2-Gate nicht ausgelöst).",
+    "Fehlersignal im API-Result: tar konnte Quellpfade nicht lesen (u.a. /home und /opt/containerd; 'Keine Berechtigung').",
+    "Verify/Preview nicht gestartet, da Backup-Schritt nicht erfolgreich war (strikter Ablauf HW1-01)."
+  ],
+  "raw_signals": {
+    "phase0_id_G": "1000 4 24 27 30 46 100 105 125 132 1001",
+    "phase0_touch": "touch /mnt/setuphelfer/backups/test-run/_probe_r04 -> success",
+    "api_version": "{\"status\":\"success\",\"version\":\"1.5.0.0\"}",
+    "backup_create_request": "POST /api/backup/create {backup_dir:/mnt/setuphelfer/backups/test-run,type:data,target:local}",
+    "backup_create_response": "status=error code=backup.failed backup_file=/mnt/setuphelfer/backups/test-run/pi-backup-data-20260425_084413.tar.gz",
+    "backup_create_results_excerpt": "tar: /home: Funktion open fehlgeschlagen: Keine Berechtigung; tar: /opt/containerd: Funktion open ...",
+    "backend_http_log": "POST /api/backup/create -> 200 OK at 09:12:55",
+    "runtime_port": "python3 (setuphelfer-backend) listening on localhost:8000"
+  },
+  "matched_diagnosis_ids": [
+    "BACKUP-SOURCE-PERM-032"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "BACKUP-SOURCE-PERM-032",
+      "link": "suspected",
+      "note": "Data-Scope umfasste nicht lesbare/systemnahe Quellen (u. a. /opt/containerd) und führte zu Permission-Denied im Tar-Lauf."
+    }
+  ],
+  "suspected_root_causes": [
+    "data-backup Quellen (/home /var/www /opt) enthielten root- oder hardening-geschützte Pfade; tar lief ohne sudo und brach bei Permission Denied ab.",
+    "Möglicher Einfluss von ProtectHome/systemd-Runtime-Hardening auf Leserechte im Dienstkontext."
+  ],
+  "confirmed_root_cause": "Im API-Ergebnis ist tar-Fehler 'Keine Berechtigung' auf Quellpfaden enthalten; Backup-Schritt erreichte keinen success-Status.",
+  "corrective_actions": [
+    "Für HW1-01 muss der data-backup Quellumfang/Leserechte im Dienstkontext geklärt werden, ohne sudo im Tar-Pfad zu reaktivieren.",
+    "Nach Korrektur neuen Lauf mit neuer Evidence-ID (R05 oder R04b) starten."
+  ],
+  "unresolved_questions": [
+    "Welche konkreten Pfade unter /home und /opt im Zielsystem sind absichtlich nicht lesbar und sollen im data-backup enthalten sein?"
+  ],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

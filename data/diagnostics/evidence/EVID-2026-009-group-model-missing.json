@@ -1,0 +1,47 @@
+{
+  "id": "EVID-2026-009",
+  "timestamp": "2026-04-19T12:30:00Z",
+  "source_type": "hardware_test",
+  "domain": "permissions",
+  "platform": "raspberry_pi",
+  "scenario": "setuphelfer_group_missing",
+  "test_goal": "setuphelfer-Gruppe und SupplementaryGroups als Pflichtkontext erfassen",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-rpi5-usb-nvme",
+  "storage_profile": "nvme_root_usb_backup",
+  "encryption_profile": "none",
+  "boot_profile": "rpi_usb_nvme_mixed",
+  "observed_symptoms": [
+    "Service hat keinen Zugriff auf Backup-Verzeichnis",
+    "setuphelfer Gruppe fehlt in Nutzerkontext"
+  ],
+  "raw_signals": {
+    "setuphelfer_group_present": false,
+    "supplementary_groups_valid": false
+  },
+  "matched_diagnosis_ids": [
+    "PERM-GROUP-008"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "PERM-GROUP-008",
+      "status": "confirmed"
+    }
+  ],
+  "suspected_root_causes": [
+    "Serviceuser ohne setuphelfer Gruppenzuordnung"
+  ],
+  "confirmed_root_cause": "Reproduzierbares Berechtigungsmodell nicht angewendet",
+  "corrective_actions": [
+    "Gruppe setuphelfer erstellen",
+    "SupplementaryGroups in Unit setzen",
+    "Verzeichnisrechte 0770 erzwingen"
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": true,
+  "catalog_updated": true,
+  "tests_added": true
+}

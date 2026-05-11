@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): Fix13 + Backup-Folgetests in CI grün; aktueller Rotpunkt Diagnostics-Mapping (Run 25688331226); lokal pytest grün siehe `current_failures.json`  
+**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): `data/diagnostics` versioniert (Diagnostics-Mapping-Root-Cause); Remote-Ampel nach nächstem Lauf; lokal pytest grün siehe `current_failures.json`  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

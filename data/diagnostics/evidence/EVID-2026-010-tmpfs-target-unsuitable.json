@@ -1,0 +1,51 @@
+{
+  "id": "EVID-2026-010",
+  "timestamp": "2026-04-19T13:05:00Z",
+  "source_type": "vm_test",
+  "domain": "storage_filesystem",
+  "platform": "vm",
+  "scenario": "restore_target_tmp_tmpfs",
+  "test_goal": "/tmp bzw. tmpfs fuer grosse Restores als Risikokontext markieren",
+  "outcome": "failed",
+  "severity": "medium",
+  "confidence": "high",
+  "system_profile_id": "profile-vm-generic",
+  "storage_profile": "tmpfs_target",
+  "encryption_profile": "none",
+  "boot_profile": "vm_bios",
+  "observed_symptoms": [
+    "Restore bricht mit no space left on device ab"
+  ],
+  "raw_signals": {
+    "storage_full": true,
+    "target_path": "/tmp/setuphelfer_restore",
+    "tmpfs_detected": true
+  },
+  "matched_diagnosis_ids": [
+    "RESTORE-TMPFS-007",
+    "FS-FULL-022"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "RESTORE-TMPFS-007",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "FS-FULL-022",
+      "status": "suspected"
+    }
+  ],
+  "suspected_root_causes": [
+    "Restoreziel auf tmpfs mit unzureichender Kapazitaet"
+  ],
+  "confirmed_root_cause": "Speichermedium fuer Restore ungeeignet",
+  "corrective_actions": [
+    "Restoreziel auf persistentes Medium verschieben",
+    "Freien Speicher vor Restore validieren"
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": true,
+  "catalog_updated": true,
+  "tests_added": true
+}

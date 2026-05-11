@@ -1,0 +1,60 @@
+{
+  "id": "EVID-2026-HW1-ENV-DEPLOY-01",
+  "timestamp": "2026-04-25T06:32:39.712239+00:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-ENV-DEPLOY",
+  "test_goal": "Altinstallation pi-installer auf Port 8000 stilllegen und aktuellen Setuphelfer-Stand aus Repo nach /opt/setuphelfer deployen (ohne HW-Lauf).",
+  "outcome": "success",
+  "severity": "medium",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "Runtime-Pfade /opt/pi-installer (alt) und /opt/setuphelfer (neu) verifiziert; aktiver Port 8000 auf setuphelfer-backend umgestellt.",
+  "encryption_profile": "n/a",
+  "boot_profile": "n/a",
+  "observed_symptoms": [
+    "Initialzustand: pi-installer.service active, Port 8000 durch /opt/pi-installer (Version 1.3.4.15) belegt.",
+    "pi-installer.service wurde gestoppt und disabled.",
+    "Repo-Stand wurde per rsync nach /opt/setuphelfer synchronisiert (keine Misch-Runtime auf /opt/pi-installer).",
+    "setuphelfer-backend.service startet aktiv auf 127.0.0.1:8000; /api/version liefert 1.5.0.0.",
+    "FIX-2-Marker im deployten Code vorhanden (_backup_create_needs_sudo_precheck, backup.sudo_blocked_by_nnp)."
+  ],
+  "raw_signals": {
+    "service_list_before": "pi-installer.service active running; setuphelfer.service auto-restart",
+    "port_8000_before": "python3 (pi-installer) LISTEN *:8000",
+    "api_version_before": "{\"status\":\"success\",\"version\":\"1.3.4.15\"}",
+    "pi_installer_disabled": "systemctl is-enabled pi-installer.service => disabled; is-active => inactive",
+    "service_list_after": "setuphelfer-backend.service active running",
+    "port_8000_after": "python3 (volker) LISTEN 127.0.0.1:8000",
+    "api_version_after": "{\"status\":\"success\",\"version\":\"1.5.0.0\"}",
+    "unit_security": "NoNewPrivileges=true, SupplementaryGroups=setuphelfer, ReadWritePaths incl. /mnt /mnt/setuphelfer (via drop-in)",
+    "fix2_markers": "app.py contains _backup_create_needs_sudo_precheck and backup.sudo_blocked_by_nnp"
+  },
+  "matched_diagnosis_ids": [
+    "UI-NO-BACKEND-015"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "UI-NO-BACKEND-015",
+      "link": "refuted",
+      "note": "Nach Deploy ist das Backend auf 127.0.0.1:8000 aktiv erreichbar."
+    }
+  ],
+  "suspected_root_causes": [
+    "Alte /opt/pi-installer-Installation hat Port 8000 monopolisiert und HW-Läufe gegen falschen API-Stand geführt."
+  ],
+  "confirmed_root_cause": "Aktiver Listener auf 8000 war pi-installer 1.3.4.15; nach Stop/Disable und Deploy auf /opt/setuphelfer antwortet 1.5.0.0.",
+  "corrective_actions": [
+    "pi-installer.service gestoppt + disabled",
+    "Repo-Stand nach /opt/setuphelfer deployed",
+    "setuphelfer-backend.service daemon-reload + restart"
+  ],
+  "unresolved_questions": [
+    "Mount-/Rechtezustand von /mnt/setuphelfer/backups/test-run muss separat vor HW1-01 R04 hergestellt werden (derzeit nicht ext4-gemountet)."
+  ],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

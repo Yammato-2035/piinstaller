@@ -1,0 +1,55 @@
+{
+  "id": "EVID-2026-HW1-02",
+  "timestamp": "2026-04-23T18:15:35Z",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-02",
+  "test_goal": "Backup auf externe NVMe verschluesselt",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "external_nvme_sda4_ext4",
+  "encryption_profile": "on_openssl",
+  "boot_profile": "laptop_nvme",
+  "observed_symptoms": [
+    "POST /api/backup/create mit encryption_method/encryption_key scheitert am Verzeichniszugriff"
+  ],
+  "raw_signals": {
+    "backup_dir": "/media/volker/a8cd880d-ba96-49a5-b5cd-135cd7f020b0",
+    "encryption_method": "openssl",
+    "api_response": {
+      "status": "error",
+      "message": "Backup-Verzeichnis konnte nicht erstellt werden: /media/volker/a8cd880d-ba96-49a5-b5cd-135cd7f020b0"
+    }
+  },
+  "matched_diagnosis_ids": [
+    "PERM-GROUP-008",
+    "OWNER-MODE-023"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "PERM-GROUP-008",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "OWNER-MODE-023",
+      "status": "suspected"
+    }
+  ],
+  "suspected_root_causes": [
+    "Gleicher Schreib-/Rechteblocker wie HW1-01, Verschluesselungspfad wurde gar nicht erreicht"
+  ],
+  "confirmed_root_cause": "Zielpfad ist fuer den Backend-Prozess nicht beschreibbar",
+  "corrective_actions": [
+    "Schreibrechte auf Zielmount fuer Backend-User vor Verschluesselungstests herstellen"
+  ],
+  "unresolved_questions": [
+    "Soll Verschluesselungsvorpruefung frueher scheitern, wenn Target-Write bereits fehlschlaegt?"
+  ],
+  "docs_updated": false,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

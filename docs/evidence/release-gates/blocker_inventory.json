@@ -47,7 +47,7 @@
     "failing_pytest_evidence": "docs/evidence/release-gates/current_failures.json",
     "failure_clusters": [],
     "missing_tests_notes": [
-      "GitHub CI (ci.yml): Run 25688331226 — Fix13 + Folge-Tests grün bis test_diagnostics_evidence_mapping_v1::test_confirmed_count_for_perm_group (None); separater Blocker.",
+      "GitHub CI (ci.yml): Diagnostics-Mapping-Failure (Run 25688331226) — Ursache E: data/diagnostics nicht im Repo (.gitignore data/); Remediation: Ausnahme + versionierte Seeds (ci_diagnostics_evidence_mapping_analysis_2026-05-11.md).",
       "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
       "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix, Evidence noch Template)",
       "Echter Read-only Rescue-Stick-Lauf (RS-*, Evidence rot)"
@@ -83,9 +83,9 @@
     "P1": [
       {
         "id": "P1-CI-EVIDENCE",
-        "title": "GitHub CI rot — Run 25688331226: diagnostics_evidence_mapping (nach Fix13-Kette)",
+        "title": "GitHub CI — nach data/diagnostics-Commit erneut prüfen (vorher: PERM-GROUP-008 None im leeren Clone)",
         "blocks": ["öffentliche Reproduzierbarkeit"],
-        "next_step": "test_diagnostics_evidence_mapping_v1 / Evidence-Fixtures; danach ci_evidence latest_run auf success"
+        "next_step": "gh run list ci.yml; bei success ci_evidence latest_run + ampel grün"
       },
       {
         "id": "P1-RESCUE-RS",

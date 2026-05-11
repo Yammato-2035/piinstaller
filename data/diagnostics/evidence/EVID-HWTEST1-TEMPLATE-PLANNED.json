@@ -1,0 +1,34 @@
+{
+  "id": "EVID-HWTEST1-TEMPLATE-PLANNED",
+  "timestamp": "2026-04-23T00:00:00Z",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-XX",
+  "test_goal": "Template fuer geplanten Realhardware-Testlauf",
+  "outcome": "inconclusive",
+  "severity": "low",
+  "confidence": "low",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "target_medium_profile_id",
+  "encryption_profile": "on_or_off",
+  "boot_profile": "laptop_nvme",
+  "observed_symptoms": [],
+  "raw_signals": {
+    "test_status": "planned_not_executed",
+    "requires_confirmation": true,
+    "destructive_risk": false
+  },
+  "matched_diagnosis_ids": [],
+  "diagnosis_links": [],
+  "suspected_root_causes": [],
+  "confirmed_root_cause": "",
+  "corrective_actions": [],
+  "unresolved_questions": [
+    "Realhardware-Test noch nicht durchgefuehrt"
+  ],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

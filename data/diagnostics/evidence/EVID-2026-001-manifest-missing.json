@@ -1,0 +1,47 @@
+{
+  "id": "EVID-2026-001",
+  "timestamp": "2026-04-18T10:30:00Z",
+  "source_type": "vm_test",
+  "domain": "backup_restore",
+  "platform": "vm",
+  "scenario": "verify_missing_manifest",
+  "test_goal": "Fail-fast bei fehlendem MANIFEST.json validieren",
+  "outcome": "failed",
+  "severity": "critical",
+  "confidence": "high",
+  "system_profile_id": "profile-vm-generic",
+  "storage_profile": "usb_ext4_single",
+  "encryption_profile": "none",
+  "boot_profile": "vm_bios",
+  "observed_symptoms": [
+    "verify_basic liefert missing_manifest",
+    "restore wird blockiert"
+  ],
+  "raw_signals": {
+    "manifest_present": false,
+    "verify_status": "failed",
+    "error_code": "backup_recovery.error.missing_manifest"
+  },
+  "matched_diagnosis_ids": [
+    "BACKUP-MANIFEST-001"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "BACKUP-MANIFEST-001",
+      "status": "confirmed"
+    }
+  ],
+  "suspected_root_causes": [
+    "Backup unvollstaendig abgeschlossen"
+  ],
+  "confirmed_root_cause": "Archiv ohne MANIFEST.json",
+  "corrective_actions": [
+    "Backup neu erstellen",
+    "Verify erneut ausfuehren"
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": true,
+  "catalog_updated": true,
+  "tests_added": true
+}

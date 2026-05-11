@@ -1,0 +1,51 @@
+{
+  "id": "EVID-2026-006",
+  "timestamp": "2026-04-19T10:45:00Z",
+  "source_type": "manual_test",
+  "domain": "app_setuphelfer_runtime",
+  "platform": "linux_pc",
+  "scenario": "node_options_missing_runtime",
+  "test_goal": "Fehlende NODE_OPTIONS als eigenstaendige Root-Cause erfassen",
+  "outcome": "failed",
+  "severity": "medium",
+  "confidence": "medium",
+  "system_profile_id": "profile-vm-generic",
+  "storage_profile": "local_ext4",
+  "encryption_profile": "none",
+  "boot_profile": "host_uefi",
+  "observed_symptoms": [
+    "Service startet, beendet sich sofort",
+    "Umgebung ohne erwartete Node Runtime Flags"
+  ],
+  "raw_signals": {
+    "node_options_present": false,
+    "service_restart_loop": true
+  },
+  "matched_diagnosis_ids": [
+    "NODE-OPTIONS-012",
+    "SYSTEMD-CRASH-010"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "NODE-OPTIONS-012",
+      "status": "confirmed"
+    },
+    {
+      "diagnosis_id": "SYSTEMD-CRASH-010",
+      "status": "suspected"
+    }
+  ],
+  "suspected_root_causes": [
+    "Service-Environment unvollstaendig"
+  ],
+  "confirmed_root_cause": "NODE_OPTIONS fehlt",
+  "corrective_actions": [
+    "Unit Environment ergaenzen",
+    "Restart und Healthcheck ausfuehren"
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": true,
+  "tests_added": false
+}

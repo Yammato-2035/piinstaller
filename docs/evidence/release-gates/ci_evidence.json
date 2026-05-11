@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-11T18:20:00Z",
+  "generated": "2026-05-11T20:25:00Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
@@ -23,7 +23,28 @@
         "failed_step_number": 8,
         "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25688331226"
       }
-    ]
+    ],
+    "note": "Letzter dokumentierter Lauf vor Fix „data/diagnostics versionieren“; nach Push neuen Run eintragen."
+  },
+  "diagnostics_evidence_remediation": {
+    "category": "E",
+    "analysis_doc": "docs/evidence/release-gates/ci_diagnostics_evidence_mapping_analysis_2026-05-11.md",
+    "summary": ".gitignore ignorierte data/ vollständig; data/diagnostics/evidence/*.json waren im CI-Clone nicht vorhanden → evidence_summary_map ohne PERM-GROUP-008. Fix: data/* + !data/diagnostics/** und versionierte Seeds.",
+    "product_logic_changed": false
+  },
+  "failure_analysis": {
+    "analyzed_at": "2026-05-11T20:22:00Z",
+    "pytest_command_ci": "python -m pytest tests/ -v --tb=short -x",
+    "failure_phase": "test_execution",
+    "historical_first_error_run_25688331226": {
+      "type": "AssertionError",
+      "message": "unexpectedly None (test_confirmed_count_for_perm_group)",
+      "trigger_file": "tests/test_diagnostics_evidence_mapping_v1.py",
+      "trigger_test": "TestDiagnosticsEvidenceMappingV1::test_confirmed_count_for_perm_group",
+      "line": 21
+    },
+    "root_cause_summary": "Leeres Evidence-Verzeichnis im Remote-Clone wegen .gitignore data/ — behoben durch Ausnahme und git add data/diagnostics (siehe diagnostics_evidence_remediation).",
+    "log_source": "gh run view 25688331226 --log-failed"
   },
   "fix13_verification": {
     "ci_run_id": 25687923662,
@@ -35,42 +56,18 @@
     "result_on_ci": "passed",
     "log_source": "gh run view 25687923662 --log"
   },
-  "failure_analysis": {
-    "analyzed_at": "2026-05-11T18:18:00Z",
-    "pytest_command_ci": "python -m pytest tests/ -v --tb=short -x",
-    "failure_phase": "test_execution",
-    "first_error": {
-      "type": "AssertionError",
-      "message": "unexpectedly None (test_confirmed_count_for_perm_group)",
-      "trigger_file": "tests/test_diagnostics_evidence_mapping_v1.py",
-      "trigger_test": "TestDiagnosticsEvidenceMappingV1::test_confirmed_count_for_perm_group",
-      "line": 21
-    },
-    "root_cause_summary": "Nach Fix13 + Folge-Testfixes schlägt der nächste -x-Lauf an Diagnostics-Evidence-Mapping fehl (nicht Backup-Fix13). Siehe ci_fix13_backup_test_analysis Abschnitt 9.",
-    "log_source": "gh run view 25688331226 --log-failed"
-  },
-  "fix13_remediation": {
-    "analysis_doc": "docs/evidence/release-gates/ci_fix13_backup_test_analysis_2026-05-11.md",
-    "commits": [
-      "b2948c91bd519523f3009bff4eea8853570c4c63",
-      "65a5b9220ff94d13e0602423abb70d648fa0958",
-      "ef0c0841729c0109f142ead4cc68db091a973e80",
-      "015eca3e032d378a74f347f3625acdb5f191d477"
-    ],
-    "product_logic_changed": false
-  },
   "local_pytest_parity": {
-    "executed_at": "2026-05-11T20:10:00Z",
+    "executed_at": "2026-05-11T20:24:00Z",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default PYTHONPATH=. python -m pytest tests/ -q --tb=no",
     "cwd": "backend",
     "interpreter": "/tmp/piinstaller-test-venv/bin/python",
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Lokal alle 1526 Tests; Remote-CI subset ~252 Sammel-Items, -x stoppt am ersten Fehler (derzeit Diagnostics-Mapping)."
+    "note": "Nach Versionierung data/diagnostics; Diagnostics-Tests + volle Suite grün lokal."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Fix13 und direkte Backup-/Runtime-/Debug-Folgetests in CI grün verifiziert (Runs 25687923662 ff.); Gesamt-Workflow rot bis diagnostics_mapping grün.",
+  "notes": "CI-Ampel erst nach erfolgreichem Workflow-Lauf auf main mit data/diagnostics im Tree auf Grün setzen (gh run list).",
   "ampel": "rot",
   "evidence_complete": false,
   "failure_root_cause_documented": true,

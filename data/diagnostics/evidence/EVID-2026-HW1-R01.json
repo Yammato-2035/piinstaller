@@ -1,0 +1,59 @@
+{
+  "id": "EVID-2026-HW1-R01",
+  "timestamp": "2026-04-24T21:04:36.684120+00:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-01",
+  "test_goal": "Backup + Verify + Restore-Preview auf externer NVMe (ext4), Zielpfad /mnt/setuphelfer/backups/test-run, ohne /media, ohne sudo im Tar-/Verify-/Preview-Pfad (FIX-1 / SAFE-DEVICE-1).",
+  "outcome": "failed",
+  "severity": "medium",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "Externe SATA/NVMe-ähnliche Platte: /dev/sdb4 als ext4 nach /mnt/setuphelfer/backups/test-run gemountet (lsblk). Mount-Stat: drwxrws--- root:setuphelfer auf FS-Wurzel.",
+  "encryption_profile": "n/a",
+  "boot_profile": "n/a",
+  "observed_symptoms": [
+    "Phase-0-Schreibtest: touch /mnt/setuphelfer/backups/test-run/_probe als normaler Shell-Nutzer → 'Keine Berechtigung' (EACCES).",
+    "id -G in derselben Shell: kein Eintrag 1001 (setuphelfer), obwohl Nutzer laut getent group Mitglied der Gruppe setuphelfer ist.",
+    "Mit sg setuphelfer -c 'touch …' am gleichen Pfad: Schreiben erfolgreich → Dateisystem- und Verzeichnisrechte plausibel, fehlender aktiver Supplementary-Group-Kontext der Login-Shell.",
+    "HW1-01 Produktablauf (Backup / Verify / Preview über UI/API) nach strikter Vorgabe nicht gestartet, da Abbruch nach Phase 0 vorgesehen."
+  ],
+  "raw_signals": {
+    "phase0_touch_stderr": "touch: '/mnt/setuphelfer/backups/test-run/_probe_agent' kann nicht berührt werden: Keine Berechtigung",
+    "id_G_numeric": "1000 4 24 27 30 46 100 105 125 132 (ohne 1001/setuphelfer in dieser Session)",
+    "getent_group_setuphelfer": "setuphelfer:x:1001:volker",
+    "lsblk_sdb4": "sdb4 ext4 /mnt/setuphelfer/backups/test-run",
+    "sudo_stat_mountpoint": "770 root:setuphelfer (drwxrws---)",
+    "sg_setuphelfer_touch": "erfolgreich, Datei _probe_sg angelegt",
+    "api_port8000": "curl http://127.0.0.1:8000/api/version → {\"status\":\"success\",\"version\":\"1.3.4.15\"}; Prozess uvicorn unter /opt/pi-installer/backend (nicht Ziel-setuphelfer-backend.service)",
+    "systemctl_setuphelfer_backend": "inactive; start-backend.sh beendet Dienst sofort wenn Port 8000 belegt; installierte Unit ohne SupplementaryGroups=setuphelfer und ohne ReadWritePaths=/mnt/setuphelfer (Abweichung von debian/setuphelfer-backend.service im Repo)"
+  },
+  "matched_diagnosis_ids": [
+    "PERM-GROUP-008"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "PERM-GROUP-008",
+      "link": "suspected",
+      "note": "Ziel unter 0770 root:setuphelfer nicht beschreibbar ohne wirksame Gruppe setuphelfer im Prozess; hier Session-Kontext Shell vs. erwarteter Backend-Kontext."
+    }
+  ],
+  "suspected_root_causes": [
+    "Supplementary Group setuphelfer nach Eintrag in /etc/group noch nicht in der laufenden Desktop-/IDE-Shell aktiv (Neu-Anmeldung oder newgrp/setuphelfer-Session für Phase-0-Checks nötig).",
+    "Zusätzlich: installierte setuphelfer-backend.service-Unit veraltet gegenüber Repo (fehlende ReadWritePaths /mnt/setuphelfer, fehlende SupplementaryGroups) — Risiko für späteren API-Schreibtest auch nach erfolgreichem manuellen touch."
+  ],
+  "confirmed_root_cause": "Nachweislich fehlte in der für die Checks genutzten Shell die numerische GID 1001 in der effektiven Gruppenmenge (id -G), sodass touch auf 0770 root:setuphelfer fehlschlug; mit explizitem setuphelfer-Gruppenkontext (sg) war Schreiben möglich.",
+  "corrective_actions": [
+    "Neu einloggen oder newgrp setuphelfer / Prüfshell mit aktiver Gruppe setuphelfer für Phase 0.",
+    "setuphelfer-backend.service aus aktuellem Paket/Repo neu installieren, daemon-reload, ReadWritePaths und SupplementaryGroups verifizieren; Port-Konflikt mit zweitem Backend auf 8000 klären.",
+    "Phase 0 erneut ausführen, dann HW1-01 strikt nach HW_TEST_1_EXECUTION_GUIDE.md ohne Abweichung."
+  ],
+  "unresolved_questions": [
+    "Ob systemd beim Start des Backend-Nutzers die Supplementary Groups aus NSS immer lädt (dann könnte Dienst trotzdem schreiben) — nicht gegen produktive API getestet, da HW1-01 nach Vorgabe bei touch-Abbruch nicht fortgesetzt wurde."
+  ],
+  "docs_updated": false,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

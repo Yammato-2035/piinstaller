@@ -1,0 +1,69 @@
+{
+  "evidence_id": "EVID-2026-HW1-06-ENV-BASELINE",
+  "phase": "HW1-06-ENV-BASELINE",
+  "timestamp_utc": "2026-04-28T20:18:00Z",
+  "outcome": "failed",
+  "goal": "Mount- und Restore-Zielbasis fuer HW1-06 stabil herstellen (nur Umgebung, kein Backup/Verify/Restore)",
+  "scope_enforced": {
+    "backup_started": false,
+    "verify_started": false,
+    "restore_started": false
+  },
+  "before_state": {
+    "findmnt_test_run": "timeout",
+    "findmnt_recursive_test_run": "timeout",
+    "proc_mounts_entry": "systemd-1 /mnt/setuphelfer/backups/test-run autofs ...",
+    "fstab_entry": "UUID=a8cd880d-ba96-49a5-b5cd-135cd7f020b0 /mnt/setuphelfer/backups/test-run ext4 defaults,nofail,x-systemd.automount 0 2",
+    "backup_path_permissions": "probe timed out (path access hangs)",
+    "restore_target_exists": false
+  },
+  "actions": [
+    {
+      "step": "phase_1_automount_trigger",
+      "command": "timeout 5s ls /mnt/setuphelfer/backups/test-run >/dev/null",
+      "result": "timeout",
+      "exit_code": 124
+    },
+    {
+      "step": "phase_1_findmnt_after_trigger",
+      "command": "timeout 5s findmnt /mnt/setuphelfer/backups/test-run",
+      "result": "timeout",
+      "exit_code": 124
+    },
+    {
+      "step": "phase_1_mount_attempt",
+      "command": "sudo systemctl daemon-reload && timeout 10s sudo mount /mnt/setuphelfer/backups/test-run",
+      "result": "mount command returned success but mount state remained unresolved",
+      "mount_exit": 0
+    },
+    {
+      "step": "phase_1_recheck_after_mount",
+      "command": "timeout 5s findmnt /mnt/setuphelfer/backups/test-run",
+      "result": "timeout",
+      "exit_code": 124
+    }
+  ],
+  "after_state": {
+    "proc_mounts_entry": "systemd-1 /mnt/setuphelfer/backups/test-run autofs ...",
+    "ext4_mount_confirmed": false,
+    "backup_path_permissions_confirmed": false,
+    "restore_target_created": false
+  },
+  "gate_checklist": {
+    "ext4_mount_active": false,
+    "backup_target_root_setuphelfer_2770": false,
+    "restore_target_root_setuphelfer_2770": false,
+    "write_test_backup_target_ok": false,
+    "write_test_restore_target_ok": false,
+    "api_smoke_ok": "not_executed_due_to_mount_failure_rule",
+    "backup_list_ok": "not_executed_in_this_phase_due_to_mount_failure_rule"
+  },
+  "confirmed_root_causes": [
+    "Mountpoint /mnt/setuphelfer/backups/test-run remains in autofs layer and blocks direct access checks",
+    "Expected ext4 mount state for HW1-06 baseline could not be confirmed after trigger and manual mount attempt"
+  ],
+  "notes": [
+    "Per runbook rule, execution stopped after unresolved mount failure in phase 1.",
+    "No permission mutations and no restore-target creation were performed after mount failure."
+  ]
+}

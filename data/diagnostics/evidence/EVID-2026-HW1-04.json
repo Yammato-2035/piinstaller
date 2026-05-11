@@ -1,0 +1,82 @@
+{
+  "id": "EVID-2026-HW1-04",
+  "timestamp": "2026-04-27T20:13:00+00:00",
+  "scenario": "HW1-04",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "test_goal": "Restore-Preview vertiefen, Restore-/Zielvalidierung (externe ext4-NVMe, keine Pi/USB/SD, kein Full-System-Restore)",
+  "outcome": "success",
+  "pre_check": {
+    "GET_/api/system/service-conflicts": {
+      "conflicts": [],
+      "should_block_start": false
+    },
+    "GET_/api/version": "1.5.0.0",
+    "findmnt_/mnt/setuphelfer/backups/test-run": "ext4 auf /dev/sda4 (zusaetzlicher autofs-Eintrag systemd-1 wie in frueheren Laeufen)",
+    "path_/mnt/setuphelfer/test-data": "vorhanden",
+    "SETUPHELFER_DATA_BACKUP_SOURCES": "/mnt/setuphelfer/test-data (systemd setuphelfer-backend.service Environment, nicht Login-Shell)"
+  },
+  "backup_file": "/mnt/setuphelfer/backups/test-run/pi-backup-data-20260427_221317.tar.gz",
+  "verify_result": {
+    "status": "success",
+    "code": "backup.verify_success",
+    "mode": "deep",
+    "valid": true,
+    "sample_files": [
+      "MANIFEST.json",
+      "mnt/setuphelfer/test-data/",
+      "mnt/setuphelfer/test-data/README.txt",
+      "mnt/setuphelfer/test-data/sample.json"
+    ]
+  },
+  "preview_result": {
+    "status": "success",
+    "code": "backup.restore_preview_ok",
+    "blocked_entries": [],
+    "preview_dir_api": "/tmp/setuphelfer-restore-test/20260427-201334",
+    "private_tmp_note": "setuphelfer-backend nutzt PrivateTmp; Preview-Pfad ist im Dienst-namespace nicht 1:1 unter /tmp des Operators sichtbar. Inhalt stattdessen per tar aus dem Archiv und per API-Analyse verifiziert.",
+    "content_cross_check": {
+      "tar_member_README.txt": "fixture",
+      "tar_member_sample.json": "{\"ok\":true}",
+      "manifest_version": 1,
+      "paths_outside_sandbox": "keine; extract nur nach API-Erfolg unter Dienst-/tmp-Sandbox"
+    }
+  },
+  "target_validation_results": {
+    "A_media_backup_target": {
+      "request": "POST /api/backup/create backup_dir=/media/volker/INTENSO/hw104-probe",
+      "result_code": "backup.path_invalid",
+      "details_reason": "STORAGE-PROTECTION-005: Schreibziel unter /media oder /run/media ist nicht erlaubt",
+      "passed": true
+    },
+    "B_non_writable_under_mnt_setuphelfer": {
+      "request": "POST /api/backup/create backup_dir=/mnt/setuphelfer/backups/test-run/hw104-nowrite (root:root 555)",
+      "result_code": "backup.backup_target_not_writable",
+      "details_diagnosis_id": "PERM-GROUP-008",
+      "passed": true
+    },
+    "C_traversal_archive_restore_preview": {
+      "request": "POST /api/backup/restore file=hw104-traverse.tar.gz mode=preview",
+      "result_code": "backup.restore_blocked_entries",
+      "blocked_entries": ["../../../tmp/setuphelfer-traverse-evil.txt"],
+      "details_diagnosis_id": "RESTORE-PATH-004",
+      "passed": true
+    }
+  },
+  "matched_diagnosis_ids": [
+    "STORAGE-PROTECTION-005",
+    "PERM-GROUP-008",
+    "RESTORE-PATH-004"
+  ],
+  "confirmed_root_causes": [
+    "Ziele unter /media werden durch Storage-Protection korrekt abgewiesen.",
+    "Nicht beschreibbare Backup-Ziele unter /mnt/setuphelfer liefern backup.backup_target_not_writable mit diagnosis_id PERM-GROUP-008.",
+    "Tar-Mitglieder mit Path-Traversal werden vor Extract geblockt (RESTORE-PATH-004)."
+  ],
+  "http_500_observed": false,
+  "notes": [
+    "GET /api/backup/list lieferte in dieser Session backup.path_invalid (STORAGE-PROTECTION-004) wegen /mnt-Aufloesung; HW1-04 Baseline nutzte direktes POST backup/create auf den NVMe-Pfad unter /mnt/setuphelfer/backups/test-run ohne Blockade.",
+    "Testartefakte hw104-nowrite und hw104-traverse.tar.gz nach Lauf entfernt."
+  ]
+}

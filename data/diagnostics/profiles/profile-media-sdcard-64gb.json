@@ -1,0 +1,28 @@
+{
+  "id": "profile-media-sdcard-64gb",
+  "platform_class": "linux_laptop",
+  "cpu_model": "",
+  "cpu_arch": "x86_64",
+  "core_count": 0,
+  "ram_total_mb": 0,
+  "os_name": "",
+  "os_version": "",
+  "kernel_version": "",
+  "boot_mode": "unknown",
+  "filesystem_root": "",
+  "filesystem_backup_target": "ext4",
+  "storage_devices": [
+    {
+      "name": "/dev/mmcblk0p1",
+      "type": "sd",
+      "size_gb": 64,
+      "filesystem": "ext4",
+      "mountpoint": "/mnt/backups-sd",
+      "removable": true,
+      "encrypted": false,
+      "health_info": {
+        "note": "consumer sd card"
+      }
+    }
+  ]
+}

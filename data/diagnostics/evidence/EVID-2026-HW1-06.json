@@ -1,0 +1,103 @@
+{
+  "evidence_id": "EVID-2026-HW1-06",
+  "phase": "HW-EXEC-1-06",
+  "timestamp_utc": "2026-04-28T20:46:30Z",
+  "outcome": "failed",
+  "backup_file": "/mnt/setuphelfer/backups/pi-backup-data-20260428_224600.tar.gz",
+  "restore_target": "/mnt/setuphelfer/restore-target",
+  "restore_result": {
+    "status": "success_preview_only",
+    "code": "backup.restore_preview_ok",
+    "mode_returned_by_api": "preview",
+    "requested_mode": "restore"
+  },
+  "restored_files": [
+    "MANIFEST.json",
+    "mnt/setuphelfer/test-data/README.txt",
+    "mnt/setuphelfer/test-data/sample.json"
+  ],
+  "validation_result": {
+    "phase_0_precheck": {
+      "service_conflicts": {
+        "status": "pass",
+        "conflicts": [],
+        "should_block_start": false
+      },
+      "api_version": {
+        "status": "pass",
+        "version": "1.5.0.0"
+      },
+      "backup_mount": {
+        "status": "pass",
+        "command": "findmnt /mnt/setuphelfer/backups",
+        "actual_source": "/dev/sda1",
+        "actual_fstype": "ext4"
+      },
+      "backup_dir_permissions": {
+        "status": "pass",
+        "command": "ls -ld /mnt/setuphelfer/backups",
+        "actual_owner_group": "root:setuphelfer",
+        "actual_mode": "drwxrws---"
+      },
+      "test_data_permissions": {
+        "status": "pass",
+        "command": "ls -ld /mnt/setuphelfer/test-data",
+        "actual_owner_group": "root:setuphelfer",
+        "actual_mode": "drwxrws---"
+      },
+      "restore_target_prepared": {
+        "status": "pass",
+        "command": "ls -ld /mnt/setuphelfer/restore-target",
+        "actual_owner_group": "root:setuphelfer",
+        "actual_mode": "drwxrws---"
+      },
+      "backup_list_endpoint": {
+        "status": "pass",
+        "code": "backup.list_ok",
+        "timeout": false
+      }
+    },
+    "backup_verify": {
+      "create_code": "backup.success",
+      "verify_code": "backup.verify_success",
+      "selected_sources": [
+        "/mnt/setuphelfer/test-data"
+      ]
+    },
+    "content_validation": {
+      "has_readme": true,
+      "has_sample_json": true,
+      "readme_matches_source": true,
+      "sample_json_matches_source": true,
+      "manifest_present": true
+    }
+  },
+  "negative_target_results": {
+    "A_media": {
+      "requested_target_dir": "/media/volker/INTENSO/hw106",
+      "actual_code": "backup.restore_preview_ok",
+      "status": "failed_expected_block_missing"
+    },
+    "B_nowrite": {
+      "requested_target_dir": "/mnt/setuphelfer/restore-nowrite",
+      "actual_code": "backup.restore_preview_ok",
+      "status": "failed_expected_block_missing"
+    },
+    "C_root": {
+      "requested_target_dir": "/",
+      "actual_code": "backup.restore_preview_ok",
+      "status": "failed_expected_block_missing"
+    }
+  },
+  "matched_diagnosis_ids": [
+    "RESTORE-RUNTIME-006"
+  ],
+  "confirmed_root_causes": [
+    "Restore endpoint returns preview mode even when mode=restore with target_dir is requested.",
+    "Negative restore target checks (media, non-writable, root) are not enforced in current API behavior because target_dir is ignored in preview path."
+  ],
+  "notes": [
+    "No productive root overwrite occurred.",
+    "Backup and verify gates are green, but HW1-06 fails due to restore target enforcement gap."
+  ]
+}

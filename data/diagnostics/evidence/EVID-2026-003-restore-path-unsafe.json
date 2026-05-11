@@ -1,0 +1,45 @@
+{
+  "id": "EVID-2026-003",
+  "timestamp": "2026-04-18T11:55:00Z",
+  "source_type": "api_test",
+  "domain": "backup_restore",
+  "platform": "linux_pc",
+  "scenario": "restore_path_traversal_block",
+  "test_goal": "Path-Containment bei Restore erzwingen",
+  "outcome": "failed",
+  "severity": "critical",
+  "confidence": "high",
+  "system_profile_id": "profile-vm-generic",
+  "storage_profile": "local_ext4",
+  "encryption_profile": "none",
+  "boot_profile": "host_uefi",
+  "observed_symptoms": [
+    "restore_files rejected unsafe archive path"
+  ],
+  "raw_signals": {
+    "restore_path_safe": false,
+    "error_code": "backup_recovery.error.restore_files_failed"
+  },
+  "matched_diagnosis_ids": [
+    "RESTORE-PATH-004"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "RESTORE-PATH-004",
+      "status": "confirmed"
+    }
+  ],
+  "suspected_root_causes": [
+    "Archiv enthaelt traversal-Pfade"
+  ],
+  "confirmed_root_cause": "Path-Containment-Verletzung",
+  "corrective_actions": [
+    "Archiv verwerfen",
+    "Neues vertrauenswuerdiges Backup verwenden"
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": true,
+  "catalog_updated": true,
+  "tests_added": true
+}

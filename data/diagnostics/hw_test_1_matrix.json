@@ -1,0 +1,461 @@
+{
+  "phase": "HW-TEST-1",
+  "status": "planned",
+  "platform": "linux_laptop",
+  "source_system_profile_id": "profile-linux-laptop-nvme-host",
+  "tests": [
+    {
+      "test_id": "HW1-01",
+      "platform": "linux_laptop",
+      "source_state": "interne_nvme_betriebsbereit",
+      "target_medium": "external_nvme",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "backup",
+      "expected_result": "backup_created_and_listed",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "FS-RO-021",
+        "FS-FULL-022",
+        "PERM-GROUP-008"
+      ],
+      "result": "passed",
+      "hw_exec_1_repeat_post_fix1": {
+        "status": "success",
+        "evidence_id": "EVID-2026-HW1-R11",
+        "notes": "2026-04-27 R11: Phase 0 gruen; POST backup/create (type=data, target=local) backup.success ohne path_invalid/STORAGE-PROTECTION/sudo/source_permission; Tar enthaelt nur /mnt/setuphelfer/test-data; verify deep success; restore preview success. Evidence EVID-2026-HW1-R11."
+      }
+    },
+    {
+      "test_id": "HW1-02",
+      "platform": "linux_laptop",
+      "source_state": "interne_nvme_betriebsbereit",
+      "target_medium": "external_nvme",
+      "target_filesystem": "ext4",
+      "encryption": true,
+      "key_file_status": "present",
+      "test_type": "backup",
+      "expected_result": "encrypted_backup_created",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "BACKUP-ARCHIVE-002",
+        "RESTORE-PATH-004"
+      ],
+      "result": "passed",
+      "hw_exec_1_repeat_post_fix1": {
+        "status": "success",
+        "evidence_id": "EVID-2026-HW1-R12",
+        "notes": "2026-04-27 R12: type=data, target=local, encryption=true+password; backup.success mit .tar.gz.gpg; verify deep + restore preview mit korrektem Passwort; Negativtests FALSCH liefern backup.verify_decrypt_failed bzw. backup.restore_decrypt_failed. Evidence EVID-2026-HW1-R12."
+      }
+    },
+    {
+      "test_id": "HW1-03",
+      "platform": "linux_laptop",
+      "source_state": "backup_on_external_nvme",
+      "target_medium": "external_nvme",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "verify",
+      "expected_result": "verify_ok",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "BACKUP-MANIFEST-001",
+        "BACKUP-HASH-003",
+        "BACKUP-ARCHIVE-002"
+      ],
+      "result": "passed",
+      "hw_exec_1_repeat_post_fix1": {
+        "status": "success",
+        "evidence_id": "EVID-2026-HW1-03",
+        "notes": "2026-04-27 HW-EXEC-1-03: kontrollierte Negativtests A–F (Manifest, Hash, korrupt, /media STORAGE-005, nicht beschreibbar PERM-008, Restore-Traversal RESTORE-004); keine 500er; Evidence EVID-2026-HW1-03."
+      }
+    },
+    {
+      "test_id": "HW1-04",
+      "platform": "linux_laptop",
+      "source_state": "verified_backup_on_external_nvme",
+      "target_medium": "external_nvme",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "restore_preview",
+      "expected_result": "preview_ok_no_blockers",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "RESTORE-PATH-004",
+        "RESTORE-TMPFS-007",
+        "RESTORE-PARTIAL-005"
+      ],
+      "result": "passed",
+      "hw_exec_1_repeat_post_fix1": {
+        "status": "success",
+        "evidence_id": "EVID-2026-HW1-04",
+        "notes": "2026-04-27 HW-EXEC-1-04: frisches data/local-Backup + verify deep OK; restore preview OK (blocked_entries leer); Inhalt README/sample/MANIFEST per tar geprueft; Zielvalidierung A /media STORAGE-005, B nicht beschreibbar PERM-008, C Traversal RESTORE-004; keine 500er; Evidence EVID-2026-HW1-04."
+      }
+    },
+    {
+      "test_id": "HW1-05",
+      "platform": "linux_laptop",
+      "source_state": "restore_preview_ok_external_nvme",
+      "target_medium": "external_nvme",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "post_restore_validation",
+      "expected_result": "services_api_ui_reachable",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "RESTORE-RUNTIME-006",
+        "UI-NO-BACKEND-015",
+        "SYSTEMD-START-009"
+      ],
+      "result": "passed",
+      "hw_exec_1_repeat_post_fix1": {
+        "status": "success",
+        "evidence_id": "EVID-2026-HW1-05",
+        "notes": "2026-04-27 HW-EXEC-1-05: verify deep success, preview success (blocked_entries leer), Preview-Analyse plausibel ohne /etc,/root,/opt; PrivateTmp-Verhalten validiert; Zielvalidierung /media => STORAGE-PROTECTION-005, non-writable => PERM-GROUP-008, Traversal => RESTORE-PATH-004; keine 500er; Evidence EVID-2026-HW1-05."
+      }
+    },
+    {
+      "test_id": "HW1-06",
+      "platform": "linux_laptop",
+      "source_state": "interne_nvme_betriebsbereit",
+      "target_medium": "usb_3_2_64gb",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "backup",
+      "expected_result": "backup_created_on_usb",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "FS-RO-021",
+        "FS-FULL-022",
+        "PERM-GROUP-008"
+      ],
+      "result": "failed",
+      "hw_exec_1_repeat_post_fix1": {
+        "status": "success",
+        "evidence_id": "EVID-2026-HW1-06-R2",
+        "notes": "2026-04-28 HW-EXEC-1-06-R2: alle Gates gruen. Backup(create)=backup.success, Verify(deep)=backup.verify_success, Preview=backup.restore_preview_ok ohne blocked_entries, echter Restore auf /mnt/setuphelfer/restore-target/hw1-06-r2=backup.restore_success mit realen Dateien. Negativtests deterministisch: /media -> backup.restore_target_invalid (STORAGE-PROTECTION-005), non-writable -> backup.restore_not_writable (PERM-GROUP-008), / -> backup.restore_target_invalid (RESTORE-RUNTIME-006). Keine 500er."
+      }
+    },
+    {
+      "test_id": "HW1-07",
+      "platform": "linux_laptop",
+      "source_state": "interne_nvme_betriebsbereit",
+      "target_medium": "usb_3_2_64gb",
+      "target_filesystem": "ext4",
+      "encryption": true,
+      "key_file_status": "present",
+      "test_type": "backup",
+      "expected_result": "encrypted_backup_created_on_usb",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "BACKUP-ARCHIVE-002",
+        "RESTORE-PATH-004"
+      ],
+      "result": "passed",
+      "hw_exec_1_repeat_post_fix1": {
+        "status": "success",
+        "evidence_id": "EVID-2026-HW1-07",
+        "notes": "2026-04-28 HW-EXEC-1-07: Reproduzierbarkeit erfolgreich bestätigt. Pre-Check grün; Backup(create)=backup.success mit selected_sources=/mnt/setuphelfer/test-data; Verify(deep)=backup.verify_success; Preview=backup.restore_preview_ok ohne blocked_entries; echter Restore auf /mnt/setuphelfer/restore-target/hw1-07=backup.restore_success; Inhaltsvalidierung (README/sample/MANIFEST) vollständig und konsistent; keine Dateien außerhalb target_dir."
+      }
+    },
+    {
+      "test_id": "HW1-08",
+      "platform": "linux_laptop",
+      "source_state": "backup_on_usb",
+      "target_medium": "usb_3_2_64gb",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "verify",
+      "expected_result": "verify_ok",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "BACKUP-MANIFEST-001",
+        "BACKUP-HASH-003",
+        "BACKUP-ARCHIVE-002"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-09",
+      "platform": "linux_laptop",
+      "source_state": "verified_backup_on_usb",
+      "target_medium": "usb_3_2_64gb",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "restore_preview",
+      "expected_result": "preview_ok_or_explicit_block",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "RESTORE-TMPFS-007",
+        "RESTORE-PATH-004",
+        "RESTORE-PARTIAL-005"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-10",
+      "platform": "linux_laptop",
+      "source_state": "usb_under_load",
+      "target_medium": "usb_3_2_64gb",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "backup",
+      "expected_result": "space_write_permission_validated",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "FS-FULL-022",
+        "FS-RO-021",
+        "OWNER-MODE-023",
+        "PERM-GROUP-008"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-11",
+      "platform": "linux_laptop",
+      "source_state": "interne_nvme_betriebsbereit",
+      "target_medium": "sd_card_64gb",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "backup",
+      "expected_result": "backup_created_on_sd",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "FS-RO-021",
+        "FS-FULL-022",
+        "PERM-GROUP-008"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-12",
+      "platform": "linux_laptop",
+      "source_state": "interne_nvme_betriebsbereit",
+      "target_medium": "sd_card_64gb",
+      "target_filesystem": "ext4",
+      "encryption": true,
+      "key_file_status": "present",
+      "test_type": "backup",
+      "expected_result": "encrypted_backup_created_on_sd",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "BACKUP-ARCHIVE-002",
+        "RESTORE-PATH-004"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-13",
+      "platform": "linux_laptop",
+      "source_state": "backup_on_sd",
+      "target_medium": "sd_card_64gb",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "verify",
+      "expected_result": "verify_ok",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "BACKUP-MANIFEST-001",
+        "BACKUP-HASH-003",
+        "BACKUP-ARCHIVE-002"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-14",
+      "platform": "linux_laptop",
+      "source_state": "verified_backup_on_sd",
+      "target_medium": "sd_card_64gb",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "restore_preview",
+      "expected_result": "preview_ok_or_explicit_block",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "RESTORE-PATH-004",
+        "RESTORE-PARTIAL-005",
+        "RESTORE-TMPFS-007"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-15",
+      "platform": "linux_laptop",
+      "source_state": "sd_card_stability_check",
+      "target_medium": "sd_card_64gb",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "verify",
+      "expected_result": "mount_write_behavior_classified",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "FS-RO-021",
+        "FS-FULL-022",
+        "OWNER-MODE-023"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-16",
+      "platform": "linux_laptop",
+      "source_state": "encrypted_backup_exists",
+      "target_medium": "external_nvme",
+      "target_filesystem": "ext4",
+      "encryption": true,
+      "key_file_status": "missing",
+      "test_type": "restore_preview",
+      "expected_result": "blocked_with_clear_reason",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "BACKUP-ARCHIVE-002",
+        "RESTORE-PATH-004"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-17",
+      "platform": "linux_laptop",
+      "source_state": "encrypted_backup_exists",
+      "target_medium": "external_nvme",
+      "target_filesystem": "ext4",
+      "encryption": true,
+      "key_file_status": "wrong",
+      "test_type": "restore_preview",
+      "expected_result": "blocked_with_key_invalid",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "BACKUP-ARCHIVE-002"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-18",
+      "platform": "linux_laptop",
+      "source_state": "target_forced_read_only",
+      "target_medium": "usb_3_2_64gb",
+      "target_filesystem": "ext4_ro",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "backup",
+      "expected_result": "fail_fast_not_writable",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "FS-RO-021",
+        "PERM-GROUP-008"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-19",
+      "platform": "linux_laptop",
+      "source_state": "target_near_full",
+      "target_medium": "sd_card_64gb",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "backup",
+      "expected_result": "fail_fast_insufficient_space",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "FS-FULL-022"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-20",
+      "platform": "linux_laptop",
+      "source_state": "mount_removed_mid_operation",
+      "target_medium": "usb_3_2_64gb",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "backup",
+      "expected_result": "operation_aborts_with_explicit_error",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "FS-RO-021",
+        "FS-FULL-022"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-21",
+      "platform": "linux_laptop",
+      "source_state": "missing_group_or_wrong_mode",
+      "target_medium": "external_nvme",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "backup",
+      "expected_result": "permission_model_failure_detected",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "PERM-GROUP-008",
+        "OWNER-MODE-023"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-22",
+      "platform": "linux_laptop",
+      "source_state": "restore_target_tmpfs",
+      "target_medium": "tmpfs",
+      "target_filesystem": "tmpfs",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "restore_preview",
+      "expected_result": "explicit_tmpfs_risk_or_failure",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "RESTORE-TMPFS-007",
+        "FS-FULL-022"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-23",
+      "platform": "linux_laptop",
+      "source_state": "manipulated_archive_no_manifest",
+      "target_medium": "external_nvme",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "verify",
+      "expected_result": "manifest_missing_detected",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "BACKUP-MANIFEST-001"
+      ],
+      "result": "planned"
+    },
+    {
+      "test_id": "HW1-24",
+      "platform": "linux_laptop",
+      "source_state": "manipulated_archive_hash_mismatch",
+      "target_medium": "external_nvme",
+      "target_filesystem": "ext4",
+      "encryption": false,
+      "key_file_status": "n/a",
+      "test_type": "verify",
+      "expected_result": "hash_mismatch_detected",
+      "evidence_required": true,
+      "possible_diagnosis_ids": [
+        "BACKUP-HASH-003",
+        "BACKUP-ARCHIVE-002"
+      ],
+      "result": "planned"
+    }
+  ]
+}

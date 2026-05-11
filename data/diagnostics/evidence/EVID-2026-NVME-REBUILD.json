@@ -1,0 +1,86 @@
+{
+  "evidence_id": "EVID-2026-NVME-REBUILD",
+  "phase": "NVME-REBUILD-HW1",
+  "timestamp_utc": "2026-04-28T20:42:00Z",
+  "outcome": "success",
+  "device": "/dev/sda",
+  "device_model": "Samsung SSD 970 EVO Plus 2TB",
+  "device_transport": "usb",
+  "scope_enforced": {
+    "setuphelfer_tests_run": false,
+    "backup_run": false,
+    "verify_run": false,
+    "restore_run": false
+  },
+  "old_structure": {
+    "problem_summary": "Vorherige HW1-Basis nutzte zeitweise autofs/systemd-automount-Layer und nicht deterministische Mount-Sichtbarkeit.",
+    "mount_issue_reference": "HW1-06 Pre-Check / ENV-BASELINE"
+  },
+  "new_structure": {
+    "partition_table": "gpt",
+    "partitions": [
+      {
+        "path": "/dev/sda1",
+        "size": "931.5G",
+        "fs": "ext4",
+        "label": "setuphelfer-back",
+        "uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+        "mountpoint": "/mnt/setuphelfer/backups"
+      },
+      {
+        "path": "/dev/sda2",
+        "size": "931.5G",
+        "fs": "ntfs",
+        "label": "windows-backup",
+        "uuid": "01BDA42D54D84B41",
+        "mountpoint": "/mnt/windows-backup"
+      }
+    ]
+  },
+  "fstab_entries": [
+    "UUID=adbd53e5-26fd-4723-b0f1-1880dbaa2719 /mnt/setuphelfer/backups ext4 defaults,nofail 0 2",
+    "UUID=01BDA42D54D84B41 /mnt/windows-backup ntfs defaults,nofail 0 2"
+  ],
+  "mount_validation": {
+    "/mnt/setuphelfer/backups": {
+      "source": "/dev/sda1",
+      "fstype": "ext4",
+      "autofs": false
+    },
+    "/mnt/windows-backup": {
+      "source": "/dev/sda2",
+      "fstype": "fuseblk",
+      "autofs": false
+    }
+  },
+  "permissions": {
+    "/mnt/setuphelfer/backups": {
+      "owner_group": "root:setuphelfer",
+      "mode": "drwxrws---"
+    }
+  },
+  "write_tests": [
+    {
+      "path": "/mnt/setuphelfer/backups/_nvme_test",
+      "result": "success"
+    }
+  ],
+  "api_smoke": {
+    "version": {
+      "status": "success",
+      "value": "1.5.0.0"
+    },
+    "service_conflicts": {
+      "status": "success",
+      "conflicts": [],
+      "should_block_start": false
+    },
+    "backup_list": {
+      "status": "success",
+      "code": "backup.list_ok",
+      "timeout": false,
+      "path": "/mnt/setuphelfer/backups"
+    }
+  },
+  "conclusion": "Externe NVMe ist neu strukturiert, stabil gemountet (ohne autofs), Setuphelfer-Mountrechte sind gesetzt, Schreibtest erfolgreich."
+}

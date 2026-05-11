@@ -1,0 +1,59 @@
+{
+  "id": "EVID-2026-HW1-R09",
+  "timestamp": "2026-04-27T21:02:00+02:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-01",
+  "test_goal": "HW1-01 End-to-End R09: Backup (data/local) -> Verify -> Restore-Preview auf externer ext4-NVMe unter /mnt/setuphelfer/backups/test-run, ohne Workarounds.",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "storage_profile": "findmnt -T /mnt/setuphelfer/backups/test-run zeigte ext4 auf /dev/sda4 (plus autofs-Overlay).",
+  "encryption_profile": "n/a",
+  "boot_profile": "n/a",
+  "observed_symptoms": [
+    "Pre-Check war voll gruen: service-conflicts leer und should_block_start=false, /api/version=1.5.0.0, Rechte auf test-run und test-data root:setuphelfer drwxrws---, SETUPHELFER_DATA_BACKUP_SOURCES gesetzt.",
+    "POST /api/backup/create (data/local) schlug sofort fehl mit code=backup.path_invalid.",
+    "details.reason enthielt STORAGE-PROTECTION-004: Mount-Quelle ist kein einfaches Blockgeraet (z. B. mapper).",
+    "Verify und Restore-Preview wurden gemaess Vorgabe nicht gestartet (Abbruch bei erstem Fehler, kein Workaround)."
+  ],
+  "raw_signals": {
+    "service_conflicts": "{\"status\":\"success\",\"conflicts\":[],\"should_block_start\":false}",
+    "api_version": "{\"status\":\"success\",\"version\":\"1.5.0.0\"}",
+    "findmnt_test_run": "TARGET=/mnt/setuphelfer/backups/test-run SOURCE=/dev/sda4 FSTYPE=ext4 (zusaetzlich autofs sichtbar)",
+    "ls_test_run": "drwxrws--- root setuphelfer /mnt/setuphelfer/backups/test-run",
+    "ls_test_data": "drwxrws--- root setuphelfer /mnt/setuphelfer/test-data",
+    "env_data_source": "SETUPHELFER_DATA_BACKUP_SOURCES=/mnt/setuphelfer/test-data",
+    "backup_create_response": "{\"status\":\"error\",\"message\":\"Ungültiges Backup-Ziel: STORAGE-PROTECTION-004: Mount-Quelle ist kein einfaches Blockgerät (z. B. mapper)\",\"code\":\"backup.path_invalid\",\"severity\":\"error\",\"details\":{\"reason\":\"STORAGE-PROTECTION-004: Mount-Quelle ist kein einfaches Blockgerät (z. B. mapper)\"}}",
+    "verify_response": "not_run_due_to_backup_failure",
+    "preview_response": "not_run_due_to_backup_failure"
+  },
+  "matched_diagnosis_ids": [
+    "STORAGE-PROTECTION-004"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "STORAGE-PROTECTION-004",
+      "link": "confirmed",
+      "note": "Backup-Create wurde vom Storage-Allowlist-/Mount-Source-Check explizit blockiert."
+    }
+  ],
+  "suspected_root_causes": [
+    "Storage-Protection klassifiziert die Mount-Quelle im aktuellen Host-Kontext als nicht erlaubtes/einfaches Blockgeraet.",
+    "Dadurch wird der HW1-01-Durchlauf vor Backup-Archiv-Erstellung abgebrochen."
+  ],
+  "confirmed_root_cause": "API blockiert mit backup.path_invalid und STORAGE-PROTECTION-004.",
+  "corrective_actions": [
+    "Storage-Protection-Kriterium fuer den konkreten ext4-Mount-/autofs-Kontext analysieren und regelkonform korrigieren.",
+    "Erst nach gruenem Backup-Create den E2E-Lauf (Verify/Preview) erneut starten."
+  ],
+  "unresolved_questions": [
+    "Warum wird /dev/sda4 ext4 trotz gueltigem Ziel durch den Mount-Source-Check als nicht zulaessig klassifiziert?"
+  ],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": false,
+  "tests_added": false
+}

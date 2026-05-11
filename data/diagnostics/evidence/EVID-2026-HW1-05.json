@@ -1,0 +1,102 @@
+{
+  "id": "EVID-2026-HW1-05",
+  "timestamp": "2026-04-27T20:20:31+00:00",
+  "scenario": "HW1-05",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "outcome": "success",
+  "preview_result": {
+    "status": "success",
+    "code": "backup.restore_preview_ok",
+    "preview_dir": "/tmp/setuphelfer-restore-test/20260427-202031",
+    "analysis": {
+      "total_files": 3,
+      "total_dirs": 1,
+      "total_other": 0,
+      "blocked_entries": []
+    }
+  },
+  "analysis": {
+    "verify_code": "backup.verify_success",
+    "verify_valid": true,
+    "archive_members": [
+      "MANIFEST.json",
+      "mnt/setuphelfer/test-data",
+      "mnt/setuphelfer/test-data/README.txt",
+      "mnt/setuphelfer/test-data/sample.json"
+    ],
+    "unexpected_system_paths": [],
+    "manifest_host_consistency": [
+      {
+        "path": "mnt/setuphelfer/test-data/README.txt",
+        "expected_sha256": "e80b71cd14d3cbd65f4173abcbfcf01a545dbca32a72d575108b553a648cc96f",
+        "current_sha256": "e80b71cd14d3cbd65f4173abcbfcf01a545dbca32a72d575108b553a648cc96f",
+        "match": true
+      },
+      {
+        "path": "mnt/setuphelfer/test-data/sample.json",
+        "expected_sha256": "e5f1eb4d806641698a35efe20e098efd20d7d57a9b90ee69079d5bb650920726",
+        "current_sha256": "e5f1eb4d806641698a35efe20e098efd20d7d57a9b90ee69079d5bb650920726",
+        "match": true
+      }
+    ]
+  },
+  "blocked_entries": {
+    "baseline_preview": [],
+    "traversal_test": [
+      "../../../tmp/hw105-evil.txt"
+    ]
+  },
+  "target_validation": {
+    "A_valid_under_mnt": {
+      "result": "success",
+      "code": "backup.restore_preview_ok"
+    },
+    "B_media_user": {
+      "result": "blocked",
+      "code": "backup.path_invalid",
+      "reason": "STORAGE-PROTECTION-005"
+    },
+    "C_non_writable_under_mnt": {
+      "result": "blocked",
+      "code": "backup.backup_target_not_writable",
+      "diagnosis_id": "PERM-GROUP-008"
+    },
+    "D_traversal_archive": {
+      "result": "blocked",
+      "code": "backup.restore_blocked_entries",
+      "diagnosis_id": "RESTORE-PATH-004"
+    }
+  },
+  "restore_risks": {
+    "simulated_only_no_root_restore": true,
+    "would_overwrite_paths": [
+      "/mnt/setuphelfer/test-data",
+      "/mnt/setuphelfer/test-data/README.txt",
+      "/mnt/setuphelfer/test-data/sample.json"
+    ],
+    "system_root_conflicts": [],
+    "notes": [
+      "Kein produktiver Root-Restore ausgeführt.",
+      "Würden-Überschreibungen liegen nur im erwarteten Testdatenbaum unter /mnt/setuphelfer/test-data."
+    ]
+  },
+  "private_tmp_validation": {
+    "preview_dir_visible_in_user_tmp": false,
+    "classification": "expected_service_isolation",
+    "is_bug": false
+  },
+  "matched_diagnosis_ids": [
+    "STORAGE-PROTECTION-005",
+    "PERM-GROUP-008",
+    "RESTORE-PATH-004"
+  ],
+  "confirmed_root_causes": [
+    "Storage protection blockiert /media-Write-Ziele deterministisch.",
+    "Berechtigungsmodell blockiert nicht beschreibbare Ziele unter /mnt/setuphelfer deterministisch.",
+    "Pfad-Traversal wird vor Extract deterministisch geblockt.",
+    "PrivateTmp erklärt nicht sichtbare preview_dir im User-/tmp."
+  ],
+  "http_500_observed": false
+}

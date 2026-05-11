@@ -1,0 +1,38 @@
+{
+  "id": "EVID-2026-HW1-FIX8-SAFE-DEVICE-RUNTIME",
+  "timestamp": "2026-04-27T21:15:00+02:00",
+  "source_type": "api_test",
+  "domain": "storage_filesystem",
+  "platform": "linux_laptop",
+  "scenario": "runtime_path_verification",
+  "test_goal": "Nachweis und Behebung, warum FIX-7 im aktiven Backup-Pfad nicht wirksam war.",
+  "outcome": "success",
+  "severity": "medium",
+  "confidence": "high",
+  "observed_symptoms": [
+    "R10 zeigte weiterhin backup.path_invalid mit STORAGE-PROTECTION-004 vor Source-Plan.",
+    "Runtime-Prozess lief aus /opt/setuphelfer/backend, aber /opt-safe_device enthielt initial nicht den erwarteten FIX-7-Symbolsatz.",
+    "Im aktiven API-Target-Check trat zusaetzlich backup_target_non_block_source mit detail systemd-1 auf."
+  ],
+  "raw_signals": {
+    "runtime_cwd": "/opt/setuphelfer/backend",
+    "runtime_env": "PI_INSTALLER_DIR=/opt/setuphelfer; SETUPHELFER_DATA_BACKUP_SOURCES=/mnt/setuphelfer/test-data",
+    "smoke_resolve_after_fix": "{'mount_source_seen': '/dev/sda4', 'resolved_source': '/dev/sda4', 'fstype': 'ext4', 'target': '/mnt/setuphelfer/backups/test-run', 'reason': 'ok'}",
+    "smoke_validate_after_fix": "validate: OK",
+    "target_check_after_fix8": "status=success, storage_validation.ok=true"
+  },
+  "matched_diagnosis_ids": [
+    "STORAGE-PROTECTION-004"
+  ],
+  "suspected_root_causes": [
+    "Runtime-/Deploy-Drift zwischen Repo und /opt.",
+    "Abweichender Validierungspfad in modules.storage_detection gegenueber core.safe_device.",
+    "PrivateDevices-Sandboxing verhindert direkte /dev-Stat-Pruefung im Servicekontext."
+  ],
+  "confirmed_root_cause": "Aktiver Backup-Target-Gate nutzte nicht durchgaengig dieselbe robuste automount-Aufloesung; dadurch blieb STORAGE-PROTECTION-004 wirksam.",
+  "corrective_actions": [
+    "Repo nach /opt synchronisiert und Dienst neu gestartet.",
+    "safe_device um nested automount parsing, trigger-retry und lsblk-Fallback erweitert.",
+    "storage_detection.validate_backup_target auf resolve_mount_source_for_path umgestellt."
+  ]
+}

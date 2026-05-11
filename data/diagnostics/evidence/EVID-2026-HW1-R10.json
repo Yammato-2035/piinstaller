@@ -1,0 +1,49 @@
+{
+  "id": "EVID-2026-HW1-R10",
+  "timestamp": "2026-04-27T21:08:00+02:00",
+  "source_type": "hardware_test",
+  "domain": "backup_restore",
+  "platform": "linux_laptop",
+  "scenario": "HW1-01",
+  "test_goal": "HW1-01 End-to-End R10: Backup (data/local) -> Verify -> Restore-Preview auf ext4-NVMe mit expliziter Datenquelle /mnt/setuphelfer/test-data.",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-linux-laptop-nvme-host",
+  "observed_symptoms": [
+    "Pre-Check war gruen: service-conflicts leer, should_block_start=false, /api/version=1.5.0.0.",
+    "findmnt zeigte fuer denselben Target-Pfad sowohl systemd-1/autofs als auch /dev/sda4 ext4.",
+    "Zielrechte fuer /mnt/setuphelfer/backups/test-run und /mnt/setuphelfer/test-data waren root:setuphelfer drwxrws---.",
+    "Environment enthielt SETUPHELFER_DATA_BACKUP_SOURCES=/mnt/setuphelfer/test-data.",
+    "POST /api/backup/create (type=data,target=local) brach sofort mit backup.path_invalid und STORAGE-PROTECTION-004 ab.",
+    "Verify/Preview gemaess Vorgabe nicht gestartet."
+  ],
+  "raw_signals": {
+    "service_conflicts": "{\"status\":\"success\",\"conflicts\":[],\"should_block_start\":false}",
+    "api_version": "{\"status\":\"success\",\"version\":\"1.5.0.0\"}",
+    "findmnt_test_run": "systemd-1 autofs /mnt/setuphelfer/backups/test-run ; /dev/sda4 ext4 /mnt/setuphelfer/backups/test-run",
+    "ls_test_run": "drwxrws--- root setuphelfer /mnt/setuphelfer/backups/test-run",
+    "ls_test_data": "drwxrws--- root setuphelfer /mnt/setuphelfer/test-data",
+    "env_data_source": "SETUPHELFER_DATA_BACKUP_SOURCES=/mnt/setuphelfer/test-data",
+    "write_probe": "touch /mnt/setuphelfer/backups/test-run/_probe_r10 => success",
+    "backup_create_response": "{\"status\":\"error\",\"message\":\"Ungültiges Backup-Ziel: STORAGE-PROTECTION-004: Mount-Quelle ist kein einfaches Blockgerät (z. B. mapper)\",\"code\":\"backup.path_invalid\",\"severity\":\"error\",\"details\":{\"reason\":\"STORAGE-PROTECTION-004: Mount-Quelle ist kein einfaches Blockgerät (z. B. mapper)\"}}",
+    "verify_response": "not_run_due_to_backup_failure",
+    "preview_response": "not_run_due_to_backup_failure"
+  },
+  "selected_sources": [],
+  "matched_diagnosis_ids": [
+    "STORAGE-PROTECTION-004"
+  ],
+  "suspected_root_causes": [
+    "Laufender Runtime-Stand auf :8000 verwendet weiterhin die alte Mount-Source-Ermittlung und erkennt den autofs-Layer nicht robust.",
+    "Dadurch wird der ext4-Target trotz gueltiger Vorbedingungen vor Source-Plan blockiert."
+  ],
+  "confirmed_root_cause": "Backup wurde vor Source-Plan mit backup.path_invalid (STORAGE-PROTECTION-004) abgebrochen.",
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "STORAGE-PROTECTION-004",
+      "link": "confirmed",
+      "note": "Storage-Protection blockiert das Ziel bereits im Validate-Write-Target-Pfad."
+    }
+  ]
+}

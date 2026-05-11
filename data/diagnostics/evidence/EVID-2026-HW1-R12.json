@@ -1,0 +1,55 @@
+{
+  "evidence_id": "EVID-2026-HW1-R12",
+  "run_id": "HW-EXEC-1-02-R12",
+  "date_utc": "2026-04-27",
+  "phase": "HW-EXEC-1-02",
+  "outcome": "success",
+  "observed_symptoms": [],
+  "encryption_used": true,
+  "password_correct": {
+    "backup_create": true,
+    "verify_deep_correct_key": true,
+    "restore_preview_correct_key": true,
+    "verify_wrong_key": false,
+    "restore_preview_wrong_key": false
+  },
+  "raw_signals": {
+    "environment_note": "Gleiche Basis wie R11: externe ext4 unter /mnt/setuphelfer/backups/test-run, SETUPHELFER_DATA_BACKUP_SOURCES=/mnt/setuphelfer/test-data.",
+    "backup_create_request": {
+      "backup_dir": "/mnt/setuphelfer/backups/test-run",
+      "type": "data",
+      "target": "local",
+      "encryption": true,
+      "password": "TEST-HW1-KEY-01"
+    },
+    "backup_create_response": {
+      "status": "success",
+      "code": "backup.success",
+      "backup_file": "/mnt/setuphelfer/backups/test-run/pi-backup-data-20260427_214304.tar.gz.gpg",
+      "encrypted": true
+    },
+    "verify_deep_ok": {
+      "payload_keys": ["file", "mode", "password"],
+      "code": "backup.verify_success",
+      "results_encrypted": true,
+      "results_valid": true
+    },
+    "restore_preview_ok": {
+      "payload_keys": ["file", "mode", "password"],
+      "code": "backup.restore_preview_ok",
+      "preview_dir": "/tmp/setuphelfer-restore-test/20260427-194407"
+    },
+    "negative_verify_wrong_password": {
+      "status": "error",
+      "code": "backup.verify_decrypt_failed",
+      "api_status": "error"
+    },
+    "negative_restore_wrong_password": {
+      "status": "error",
+      "code": "backup.restore_decrypt_failed",
+      "api_status": "error"
+    }
+  },
+  "matched_diagnosis_ids": [],
+  "confirmed_root_cause": "resolved – encrypted data backup (GPG) with writable GNUPGHOME under /tmp for hardened service, API aliases encryption/password and file/backup_file, verify sets BackupModule.run_command, restore preview decrypts to temp before tar extract; wrong passphrase yields backup.verify_decrypt_failed / backup.restore_decrypt_failed without crash"
+}

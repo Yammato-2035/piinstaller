@@ -1,0 +1,44 @@
+{
+  "id": "EVID-2026-002",
+  "timestamp": "2026-04-18T11:10:00Z",
+  "source_type": "vm_test",
+  "domain": "backup_restore",
+  "platform": "vm",
+  "scenario": "verify_hash_mismatch",
+  "test_goal": "Manifest-/Dateihash-Divergenz korrekt klassifizieren",
+  "outcome": "failed",
+  "severity": "high",
+  "confidence": "high",
+  "system_profile_id": "profile-vm-generic",
+  "storage_profile": "local_ext4",
+  "encryption_profile": "none",
+  "boot_profile": "vm_bios",
+  "observed_symptoms": [
+    "verify_deep errors.kind=hash_mismatch"
+  ],
+  "raw_signals": {
+    "verify_status": "hash_mismatch",
+    "manifest_present": true
+  },
+  "matched_diagnosis_ids": [
+    "BACKUP-HASH-003"
+  ],
+  "diagnosis_links": [
+    {
+      "diagnosis_id": "BACKUP-HASH-003",
+      "status": "confirmed"
+    }
+  ],
+  "suspected_root_causes": [
+    "Dateibeschaedigung waehrend Transport"
+  ],
+  "confirmed_root_cause": "Pruefsummenabweichung zwischen Manifest und Daten",
+  "corrective_actions": [
+    "Neues Vollbackup erstellen"
+  ],
+  "unresolved_questions": [],
+  "docs_updated": true,
+  "faq_updated": false,
+  "catalog_updated": true,
+  "tests_added": true
+}
