@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): smartctl/Rescue-Dryrun-Fix für fehlendes Tool committed (inspect_storage toleriert FileNotFoundError); nächster Blocker jetzt Phase3 Gate `test_session_missing` (Run 25689506120); Remote bleibt bis zum nächsten erfolgreichen Lauf rot; lokal pytest grün siehe `current_failures.json`  
+**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): smartctl/Rescue-Dryrun-Fix für fehlendes Tool committed; Phase3 Gate `test_session_missing` behoben (Commit b8af051); nächster Blocker jetzt SafeDevice-Mount PermissionError unter `/media` in `tests/test_safe_device_storage_protection_v1.py::test_validate_allows_external_media_mount` (Run 25690310122); Remote bleibt rot; lokal pytest grün siehe `current_failures.json`  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

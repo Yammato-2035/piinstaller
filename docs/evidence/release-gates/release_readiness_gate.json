@@ -1,14 +1,14 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-11T19:35:00Z",
+  "generated": "2026-05-11T18:56:43Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "Diagnostics-Mapping/Seeds auf main; Rescue-Dryrun smartctl fehlt wurde tolerant behandelt; CI bleibt bis zum nächsten erfolgreichen Workflow-Lauf rot (aktuell: Phase3 Gate Code-Mismatch `test_session_missing`, Run 25689506120). BR-001 weiter blockiert.",
+  "summary": "Diagnostics-Mapping/Seeds auf main; Rescue-Dryrun smartctl fehlt wurde tolerant behandelt; Phase3 Gate `test_session_missing` ist (lokal + CI bis dahin) behoben (Commit b8af051). CI bleibt rot, weil der nächste -x-Stop im SafeDevice-Mount-Pfad auf `/media` scheitert (PermissionError; Run 25690310122). BR-001 weiter blockiert.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
-    "GitHub Actions: Run 25689506120 — nächster -x-Fehler Phase3 Gate Code-Mismatch (vorher smartctl FileNotFoundError behoben)"
+    "GitHub Actions: Run 25690310122 — nächster -x-Fehler SafeDevice-Mount (`tests/test_safe_device_storage_protection_v1.py::test_validate_allows_external_media_mount`, PermissionError `/media/volker`)"
   ],
   "pytest_note": "Lokales pytest tests/ am 2026-05-11 (Prompt 2 erneut, ~21:15Z): 0 failures, 1526 passed — current_failures.json; Release bleibt über P0/CI blockiert.",
   "recommendation": "do_not_release"

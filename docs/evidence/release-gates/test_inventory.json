@@ -12,7 +12,7 @@
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json"
   },
-  "notes": "Inventar aus Dateisystem; gr\u00fcn erst wenn CI gr\u00fcn und Hardware-E2E-Evidence vorliegt. Pytest 1526 passed; data/diagnostics versioniert (Diagnostics-CI) sowie inspect_storage toleriert fehlendes smartctl (Rescue-Dryrun). Evidence: ci_diagnostics_evidence_mapping_analysis_2026-05-11.md + ci_rescue_dryrun_smartctl_analysis_2026-05-11.md.",
+  "notes": "Inventar aus Dateisystem; gr\u00fcn erst wenn CI gr\u00fcn und Hardware-E2E-Evidence vorliegt. Pytest 1526 passed; data/diagnostics versioniert (Diagnostics-CI) sowie inspect_storage toleriert fehlendes smartctl (Rescue-Dryrun). Phase3 Gate `test_session_missing` ist behoben (Commit b8af051); CI bleibt aktuell rot wegen SafeDevice-Mount PermissionError unter `/media` (Run 25690310122). Evidence: ci_diagnostics_evidence_mapping_analysis_2026-05-11.md + ci_rescue_dryrun_smartctl_analysis_2026-05-11.md + ci_rescue_phase3_session_error_analysis_2026-05-11.md.",
   "test_files": [
     "test_anti_regression.py",
     "test_api_consistency_fix9_v1.py",

@@ -1,27 +1,27 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-11T20:36:30Z",
+  "generated": "2026-05-11T18:56:43Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
   "latest_runs_queried": 5,
   "latest_run": {
-    "database_id": 25689674694,
+    "database_id": 25690310122,
     "conclusion": "failure",
-    "created_at": "2026-05-11T18:35:31Z",
-    "updated_at": "2026-05-11T18:36:12Z",
+    "created_at": "2026-05-11T18:47:50Z",
+    "updated_at": "2026-05-11T18:48:31Z",
     "head_branch": "main",
-    "head_sha": "003cae9b61e6910c3fbf48ff44a5271b7c0fda7c",
-    "display_title": "docs: update CI blocker to session_missing",
-    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25689674694",
+    "head_sha": "b8af051744ec81156bad1da28a6ca92987ac585e",
+    "display_title": "Fix CI rescue phase3 session_missing code",
+    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25690310122",
     "jobs": [
       {
         "name": "lint-and-test",
         "conclusion": "failure",
         "failed_step": "Pytest",
         "failed_step_number": 8,
-        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25689674694"
+        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25690310122"
       }
     ]
   },
@@ -35,18 +35,18 @@
     "evidence_store_commit": "9a2b96cb9437239ac4aa321b9f3cf2398a3e1ac4"
   },
   "failure_analysis": {
-    "analyzed_at": "2026-05-11T20:36:00Z",
+    "analyzed_at": "2026-05-11T18:56:00Z",
     "pytest_command_ci": "python -m pytest tests/ -v --tb=short -x",
     "failure_phase": "test_execution",
     "first_error": {
-      "type": "AssertionError",
-      "message": "'rescue.restore.dryrun_missing' != 'rescue.restore.session_missing'",
-      "trigger_file": "tests/test_rescue_restore_phase3.py",
-      "trigger_test": "TestRescueRestoreGate::test_session_missing",
-      "line": 77
+      "type": "PermissionError",
+      "message": "[Errno 13] Permission denied: '/media/volker'",
+      "trigger_file": "tests/test_safe_device_storage_protection_v1.py",
+      "trigger_test": "TestSafeDeviceStorageProtectionV1::test_validate_allows_external_media_mount",
+      "line": 178
     },
-    "root_cause_summary": "Nach erfolgreicher smartctl-Toleranz im Rescue-Dryrun kommt CI als nächsten Abbruch auf `test_session_missing` in `test_rescue_restore_phase3.py` (Dryrun-/Session-Error-Code Erwartung).",
-    "log_source": "gh run view 25689674694 --log-failed"
+    "root_cause_summary": "Nachdem `test_session_missing` lokal + bis zur Phase3-Gate-Ebene deterministisch gemockt ist, bricht CI beim nächsten -x-Blocker im SafeDevice-Mount-Fall ab: PermissionError beim Anlegen unter `/media`.",
+    "log_source": "gh run view 25690310122 --log-failed"
   },
   "rescue_dryrun_smartctl_remediation": {
     "analysis_doc": "docs/evidence/release-gates/ci_rescue_dryrun_smartctl_analysis_2026-05-11.md",
@@ -67,10 +67,10 @@
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Volle Suite lokal grün; Remote -x stoppt jetzt an `test_session_missing` (Phase3 Gate)."
+    "note": "Volle Suite lokal grün; Remote -x stoppt jetzt nach Session-Missing-Fix an `tests/test_safe_device_storage_protection_v1.py::test_validate_allows_external_media_mount` (PermissionError `/media`)."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Diagnostics-Mapping und smartctl-Handling sind behoben (lokal + bis in Phase3). Gesamt-CI bleibt rot bis zur nächsten erfolgreichen workflow-Ausführung (aktuell: session_missing Code-Mismatch).",
+  "notes": "Diagnostics-Mapping und smartctl-Handling sind behoben. Der zuvorige Phase3 Gate `test_session_missing`-Mismatch ist behoben; Gesamt-CI bleibt rot, weil der nächste -x-Blocker jetzt im SafeDevice-Mount-Pfad auf `/media` scheitert.",
   "ampel": "rot",
   "evidence_complete": false,
   "failure_root_cause_documented": true,

@@ -11,7 +11,7 @@
     "python": "3.12.3",
     "cwd": "backend",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default python -m pytest tests/ -q --tb=no",
-    "notes": "Volle Suite 1526 passed; data/diagnostics + evidence_store-Coerce auf main; inspect_storage behandelt fehlendes smartctl tolerant (Rescue-Dryrun). GitHub-Gesamt-CI siehe ci_evidence.json (noch nicht success)."
+    "notes": "Volle Suite 1526 passed; data/diagnostics + evidence_store-Coerce auf main; inspect_storage behandelt fehlendes smartctl tolerant (Rescue-Dryrun). GitHub-Gesamt-CI siehe ci_evidence.json (CI weiterhin rot, jetzt SafeDevice-Mount PermissionError unter `/media`)."
   },
   "summary": {
     "failed": 0,
@@ -28,5 +28,5 @@
     "docs/evidence/release-gates/prompt02_abschlussbericht.md"
   ],
   "blocker_inventory": "docs/evidence/release-gates/blocker_inventory.json",
-  "notes": "Release-Gesamtbild weiter blockiert über P0 (HW-E2E) und P1 (CI-/Stick-Evidence); lokaler Pytest-Snapshot ist grün."
+  "notes": "Release-Gesamtbild weiter blockiert über P0 (HW-E2E) und P1 (CI-/Stick-Evidence); lokaler Pytest-Snapshot ist grün, CI bleibt jedoch (Stand Run 25690310122) bis zum SafeDevice-Mount PermissionError rot."
 }
