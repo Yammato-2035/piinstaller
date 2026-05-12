@@ -1,8 +1,8 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "current_failures",
-  "generated": "2026-05-12T03:41:31Z",
-  "executed_at": "2026-05-11T20:32:00Z",
+  "generated": "2026-05-12T14:00:00Z",
+  "executed_at": "2026-05-12T14:00:00Z",
   "prompt": "PROMPT_02_BLOCKER_INVENTORY",
   "prompt_rerun": true,
   "ampel": "gruen",
@@ -11,7 +11,7 @@
     "python": "3.12.3",
     "cwd": "backend",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default python -m pytest tests/ -q --tb=no",
-    "notes": "Lokaler Snapshot (1526 passed) bezieht sich auf den lokalen Tree vor/nach Workspace-Sync; GitHub CI zu 36d234b: Run 25691681846 failure — `test_no_sudoers_file_written` PermissionError unter /etc/sudoers.d. Details: ci_evidence.json + post_workspace_sync_commit_hygiene_2026-05-11.md."
+    "notes": "Lokaler Snapshot 1526 passed (2026-05-12). Deploy-Runner sudoers-Boundary: Testfix `test_no_sudoers_file_written` (os.lstat + Quelltext-Audit). Remote CI: letzter dokumentierter Lauf 25712570438 failure (Harness /mnt); GitHub success separat nachweisen — ci_evidence.json."
   },
   "summary": {
     "failed": 0,
@@ -28,5 +28,5 @@
     "docs/evidence/release-gates/prompt02_abschlussbericht.md"
   ],
   "blocker_inventory": "docs/evidence/release-gates/blocker_inventory.json",
-  "notes": "Lokaler Pytest-Snapshot bleibt Referenz für Entwicklung; Remote-CI (main @ 36d234b) ist rot — siehe ci_evidence.json Run 25691681846. Kein Erfolg „CI grün“ ohne GitHub Actions success."
+  "notes": "Lokaler Pytest-Snapshot; Remote-CI weiter über GitHub success zu verifizieren. Deploy sudoers-Boundary: `ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`."
 }

@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-12T12:10:00Z",
+  "generated": "2026-05-12T14:00:00Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
@@ -70,6 +70,14 @@
     "root_cause_summary": "Hygiene-Commit 7e0323b: erster -x-Stop in `test_deploy_write_harness_v1` — `setUp` legt `self.cache` unter `/mnt/setuphelfer/cache/deploy` an; auf dem GitHub-Runner schlägt `mkdir` für `/mnt/setuphelfer` mit PermissionError fehl (kein success). Vorheriger Referenz-Lauf zu 36d234b: Run 25691681846 (Permission-Boundary sudoers).",
     "log_source": "gh run view 25712570438 --log-failed"
   },
+  "deploy_runner_permission_boundary_remediation": {
+    "analysis_doc": "docs/evidence/release-gates/ci_deploy_runner_permission_boundary_analysis_2026-05-11.md",
+    "category": "A und D",
+    "code_change": "backend/tests/test_deploy_runner_permission_boundary_v1.py (test_no_sudoers_file_written: os.lstat statt Path.exists; PermissionError/EACCES/EPERM → Quelltext-Audit ohne skipTest)",
+    "product_logic_changed": false,
+    "pytest_local": {"passed": 1526, "failed": 0, "command": "PYTHONPATH=. python -m pytest tests/ -q --tb=no"},
+    "ci_followup": "Nach Push neuen ci.yml-Lauf prüfen; ohne GitHub conclusion:success weiter rot dokumentieren."
+  },
   "failure_analysis_workspace_sync_36d234b": {
     "analyzed_at": "2026-05-12T03:41:00Z",
     "first_error": {
@@ -77,7 +85,8 @@
       "message": "[Errno 13] Permission denied: '/etc/sudoers.d/setuphelfer-runner'",
       "trigger_file": "tests/test_deploy_runner_permission_boundary_v1.py",
       "trigger_test": "TestDeployRunnerPermissionBoundaryV1::test_no_sudoers_file_written",
-      "line": 114
+      "line": 114,
+      "note": "Historisch: pathlib.Path.exists() auf Py3.12 bei EACCES/EPERM; behoben laut deploy_runner_permission_boundary_remediation."
     },
     "log_source": "gh run view 25691681846 --log-failed"
   },
@@ -93,17 +102,17 @@
     ]
   },
   "local_pytest_parity": {
-    "executed_at": "2026-05-12T12:05:00Z",
+    "executed_at": "2026-05-12T14:00:00Z",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default PYTHONPATH=. python -m pytest tests/ -q --tb=no",
     "cwd": "backend",
-    "interpreter": "/tmp/piinstaller-test-venv/bin/python",
+    "interpreter": "venv mit backend/requirements.txt (lokal verifiziert)",
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Lokal nach Hygiene-Commit 1526 passed. Remote CI Run 25712570438 (HEAD 7e0323b): failure — erster -x-Fehler `test_deploy_write_harness_v1::test_execute_writes_limited_and_sha` (mkdir /mnt/setuphelfer). Referenz-Lauf 36d234b: Run 25691681846."
+    "note": "Lokal nach Permission-Boundary-Testfix weiterhin 1526 passed. Letzter dokumentierter Remote-Lauf 25712570438 (7e0323b): erster -x weiterhin `test_deploy_write_harness_v1` (/mnt/setuphelfer). sudoers-Boundary: Remediation siehe deploy_runner_permission_boundary_remediation — Remote erst nach neuem Push verifizieren."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Hygiene-Commit `chore: clean workspace sync modes and artifacts` (7e0323b) gepusht. Aktueller CI-Lauf: Run **25712570438** — **failure** (erster -x: `test_deploy_write_harness_v1`, /mnt/setuphelfer). Historie 36d234b: Run **25691681846**. Inventare + `post_workspace_sync_commit_hygiene_2026-05-11.md`. Ampel rot bis GitHub `conclusion: success`.",
+  "notes": "Deploy-Runner-Permission-Boundary: Analyse `ci_deploy_runner_permission_boundary_analysis_2026-05-11.md` + Testfix (kein skipTest, kein /etc-Write). Hygiene 7e0323b / letzter Run **25712570438** weiter failure (Harness /mnt) bis neuer Lauf nach Boundary-Push. Referenz sudoers-CI: **25691681846**. Ampel rot ohne GitHub success.",
   "ampel": "rot",
   "evidence_complete": false,
   "failure_root_cause_documented": true,

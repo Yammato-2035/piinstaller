@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.blocker_inventory.v1",
   "id": "blocker_inventory",
-  "generated": "2026-05-12T12:10:00Z",
+  "generated": "2026-05-12T14:00:00Z",
   "prompt02_rerun": {
     "executed_at": "2026-05-11T21:15:00Z",
     "spec": "docs/cursor/PROMPT_02_BLOCKER_INVENTORY.md",
@@ -47,7 +47,7 @@
     "failing_pytest_evidence": "docs/evidence/release-gates/current_failures.json",
     "failure_clusters": [],
     "missing_tests_notes": [
-      "GitHub CI: Run **25712570438** (Hygiene 7e0323b) — failure, erster -x `test_deploy_write_harness_v1` (`/mnt/setuphelfer`). Referenz 36d234b: Run **25691681846** (sudoers Permission-Boundary).",
+      "GitHub CI: Permission-Boundary sudoers-Testfix eingereicht (`ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`); Remote erst nach neuem Run verifizieren. Letzter dokumentierter Lauf 25712570438: erster -x `test_deploy_write_harness_v1` (/mnt/setuphelfer). Historie 36d234b: 25691681846 (`test_no_sudoers_file_written`).",
       "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
       "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix, Evidence noch Template)",
       "Echter Read-only Rescue-Stick-Lauf (RS-*, Evidence rot)"
@@ -83,7 +83,7 @@
     "P1": [
       {
         "id": "P1-CI-EVIDENCE",
-        "title": "GitHub CI rot — Run **25712570438** (Hygiene 7e0323b): erster -x-Fehler `test_deploy_write_harness_v1::test_execute_writes_limited_and_sha` (PermissionError `/mnt/setuphelfer`). Referenz 36d234b: Run **25691681846**.",
+        "title": "GitHub CI rot — letzter dokumentierter Lauf **25712570438**: `test_deploy_write_harness_v1` (/mnt/setuphelfer). Deploy-Runner sudoers-Boundary-Test: Fix eingereicht, Remote-Verifikation offen.",
         "blocks": ["öffentliche Reproduzierbarkeit"],
         "next_step": "Test portabel machen: auf PermissionError/OSError bei exists() tolerieren oder Pfad mocken — ohne echte sudoers-Schreiboperationen; Evidence: post_workspace_sync_commit_hygiene_2026-05-11.md."
       },

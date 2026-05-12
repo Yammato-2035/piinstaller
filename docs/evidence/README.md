@@ -10,7 +10,7 @@ Dieses Verzeichnis sammelt **maschinenlesbare und nachvollziehbare** Testnachwei
 | `backup-restore/` | Backup, Verify, Restore, Fehlerfälle |
 | `rescue-stick/` | Read-only Rescue-/Live-Flows |
 | `website/` | Transparenz-, Status-, Affiliate-Checks |
-| `release-gates/` | Sammelgates, Inventare, CI-/Release-Nachweise (`current_failures.json`, **`blocker_inventory.json`** Prompt 2, **`ci_evidence.json`** — letzter GitHub-Lauf inkl. Conclusion/Run-ID, **`ci_failure_analysis_STRICT_*.md`**, `post_workspace_sync_commit_hygiene_*.md`, `mode_change_inventory_*.json`, `workspace_artifact_inventory_*.json`, Pytest-Zusammenfassungen, optional `diagnostics_evidence_seed_audit_*.json` für `data/diagnostics/evidence`) |
+| `release-gates/` | Sammelgates, Inventare, CI-/Release-Nachweise (`current_failures.json`, **`blocker_inventory.json`** Prompt 2, **`ci_evidence.json`** — letzter GitHub-Lauf inkl. Conclusion/Run-ID, **`ci_failure_analysis_STRICT_*.md`**, `ci_deploy_runner_permission_boundary_analysis_*.md`, `post_workspace_sync_commit_hygiene_*.md`, `mode_change_inventory_*.json`, `workspace_artifact_inventory_*.json`, Pytest-Zusammenfassungen, optional `diagnostics_evidence_seed_audit_*.json` für `data/diagnostics/evidence`) |
 
 ## Schema
 

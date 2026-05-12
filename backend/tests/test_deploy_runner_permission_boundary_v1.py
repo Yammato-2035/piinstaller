@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import os
 import re
 import sys
@@ -22,6 +23,27 @@ from deploy.runner_permission_boundary import (
 
 
 class TestDeployRunnerPermissionBoundaryV1(unittest.TestCase):
+    def _assert_no_production_python_names_sudoers_dropin(self, canonical: str) -> None:
+        """Wenn /etc nicht statbar ist: sicherstellen, dass kein Produkt-Python diesen Drop-in-Pfad literal referenziert.
+
+        Ziel ist der Nachweis, dass der Codepfad keinen Schreib-/Installationszielstring für diesen falschen
+        Dateinamen enthält (Boundary-Audit). Der kanonische produktive Pfad nutzt `setuphelfer-deploy-runner`.
+        """
+        paths: list[Path] = []
+        deploy_root = _BACKEND / "deploy"
+        if deploy_root.is_dir():
+            paths.extend(sorted(deploy_root.rglob("*.py")))
+        runner_tool = _BACKEND / "tools" / "deploy_write_runner.py"
+        if runner_tool.is_file():
+            paths.append(runner_tool)
+        for path in paths:
+            rel = path.relative_to(_BACKEND)
+            if "test" in rel.parts:
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if canonical in text:
+                self.fail(f"production source must not reference {canonical!r}: {path}")
+
     def test_sudoers_example_has_required_restrictions(self):
         out = build_runner_sudoers_policy_example()
         req = set(out["required_restrictions"])
@@ -111,13 +133,27 @@ class TestDeployRunnerPermissionBoundaryV1(unittest.TestCase):
             self.assertEqual(out_job["path_status"], "ok")
 
     def test_no_sudoers_file_written(self):
-        p = Path("/etc/sudoers.d/setuphelfer-runner")
+        """Kein Drop-in `/etc/sudoers.d/setuphelfer-runner` auf dem Host (sofern stat möglich).
+
+        Unter Python 3.12+ wirft `Path.exists()` hier oft `PermissionError` (pathlib ignoriert EACCES/EPERM
+        nicht wie ENOENT). `os.lstat` ist gleichwertig; bei fehlenden Rechten bleibt der Nachweis, dass
+        kein Produktcode diesen Pfad literal ansteuert (kein write/open/chmod zu sudoers aus dem getesteten
+        Quellbaum für diesen String).
+        """
+        sudoers_dropin = "/etc/sudoers.d/setuphelfer-runner"
         try:
-            present = p.exists()
+            os.lstat(sudoers_dropin)
+        except FileNotFoundError:
+            return
         except PermissionError:
-            # GitHub Actions u. ä.: kein stat auf sudoers.d möglich — kein Nachweis aus diesem Prozess.
-            self.skipTest("cannot stat /etc/sudoers.d/setuphelfer-runner on this environment")
-        self.assertFalse(present)
+            self._assert_no_production_python_names_sudoers_dropin(sudoers_dropin)
+            return
+        except OSError as exc:
+            if exc.errno in (errno.EACCES, errno.EPERM):
+                self._assert_no_production_python_names_sudoers_dropin(sudoers_dropin)
+                return
+            raise
+        self.fail(f"unexpected host sudoers drop-in exists: {sudoers_dropin!r}")
 
     def test_no_forbidden_systemcalls(self):
         src = (_BACKEND / "deploy" / "runner_permission_boundary.py").read_text(encoding="utf-8").lower()
