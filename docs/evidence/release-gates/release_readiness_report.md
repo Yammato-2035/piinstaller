@@ -1,11 +1,11 @@
 # Release Readiness – Bericht
 
-**Generiert:** 2026-05-12 (STRICT BR-Gate Evidence-Aktualisierung)  
+**Generiert:** 2026-05-12 (STRICT BR — freigegebener externer Pfad, Evidence-Nachzug)  
 **Gesamtstatus:** `blocked`
 
 ## Kurzfassung
 
-Repo-Transparenz (Roadmap, Matrizen, Evidence) ist **angelegt**. **GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`) — Voraussetzung für Release-Arbeit, ersetzt aber keine HW-/Backup-Evidence. **STRICT BR-Gate 2026-05-12:** BR-001 dokumentiert als **blocked** (keine ausdrückliche Freigabe eines externen Schreibziels; kein Full-Backup, kein Safety-API-Lauf gegen Produktivziel). BR-004/BR-005 **blocked** (Verify nur gegen dasselbe BR-001-Archiv). **Release gesamt** weiter **blocked** (Restore Preview, HW-E2E). **Pytest** lokal siehe `current_failures.json`.
+**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001:** Freigegebener externer Zielpfad per `findmnt`/`lsblk` **extern (/dev/sdd1)**; **Produktions-Backend** `127.0.0.1:8000` verweigert denselben Pfad mit **STORAGE-PROTECTION-001** (Kontext `setuphelfer` vs. ACL/0750 auf `/media/gabriel`); **kein** Full-Backup-Archiv erzeugt. **BR-004/BR-005** ohne Archiv **blocked**. **Release gesamt** **blocked**. **Pytest** siehe `current_failures.json`.
 
 ## Ampelüberblick
 

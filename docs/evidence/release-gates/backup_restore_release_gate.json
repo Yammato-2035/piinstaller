@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-12T18:45:00Z",
+  "generated": "2026-05-12T17:55:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
@@ -13,5 +13,5 @@
   },
   "open_br_ids": ["BR-001", "BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
   "partial_br_ids": [],
-  "notes": "STRICT BR-Gate 2026-05-12: BR-001 blocked (keine explizite Freigabe eines externen Schreibziels; kein Full-Backup). BR-004/BR-005 blocked (Kettenregel: nur Verify gegen BR-001-Archiv). GitHub CI Run 25751304968 success bleibt Voraussetzung, ersetzt aber keine HW-/Backup-Evidence."
+  "notes": "STRICT BR-Gate 2026-05-12 (Update): Freigegebener Pfad /media/gabriel/setuphelfer-back/setuphelfer-backups — Shell extern /dev/sdd1 ok; Produktions-API :8000 STORAGE-001 (setuphelfer vs. /media/gabriel ACL); kein Full-Backup-Job; BR-004/005 blocked ohne Archiv. CI Run 25751304968 success."
 }

@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-12 — **CI (`ci.yml`):** Run **25751304968** = **success** (`ci_evidence.json` Ampel grün). **Release-Gesamtbild:** weiter rot (BR-001 STRICT blocked ohne Zielfreigabe; BR-004/005 kettenblockiert; Restore Preview / HW-E2E offen).  
+**Stand:** 2026-05-12 — **CI (`ci.yml`):** Run **25751304968** = **success** (`ci_evidence.json` Ampel grün). **Release-Gesamtbild:** weiter rot (BR-001 externer Pfad freigegeben, aber Run **blocked**: Dienst-API + kein Full-Archiv; BR-004/005 kettenblockiert; Restore Preview / HW-E2E offen).  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

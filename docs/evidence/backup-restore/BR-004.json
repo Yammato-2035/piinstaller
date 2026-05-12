@@ -5,20 +5,20 @@
   "status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "commit": "7b49d4d6c887e679633f1ac21673f27033b9a27f",
+  "commit": "7452231bfab6521a6aefb947cfccb9a5551879bc",
   "ci_run": "25751304968",
-  "br001_chain": "BR-001 blocked 2026-05-12 — kein Archiv aus Full-Backup; Verify Basic gegen dasselbe BR-001-Archiv nicht ausgeführt.",
+  "br001_chain": "BR-001 blocked 2026-05-12 — kein Archiv aus Full-Backup-Job; Verify Basic nur gegen BR-001-Archiv zulässig.",
   "archive_from_br001": "",
   "environment": {
     "api": "POST /api/backup/verify",
     "mode": "basic",
-    "note": "Vorheriger Referenzlauf (2026-05-11) nutzte docs/evidence/backup-restore/samples/br-verify-sample.tar.gz — gültig für API-Smoke, erfüllt aber nicht die Kettenregel BR-001→BR-004."
+    "freigegebener_zielordner": "/media/gabriel/setuphelfer-back/setuphelfer-backups"
   },
   "result": "blocked",
   "api_code": null,
   "artifacts": [],
   "notes": [
-    "Verify Basic nur zulässig grün/evidence_complete gegen das tatsächliche BR-001-Archiv — BR-001 nicht passed.",
-    "Kein API-Aufruf in dieser Session gegen ein externes Produktionsarchiv."
+    "BR-001 lieferte kein pi-backup-full-*.tar.gz — kein Verify Basic gegen BR-001-Archiv.",
+    "Blocker: produktiver Backend-Dienst (:8000) STORAGE-001 auf freigegebenem Pfad; Full-Backup nicht gestartet (siehe BR-001.json)."
   ]
 }

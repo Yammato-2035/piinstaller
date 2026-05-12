@@ -2,7 +2,7 @@
 
 | ID | Test | Voraussetzung | Erwartung | Status | Evidence |
 |----|------|---------------|-----------|--------|----------|
-| BR-001 | Full Backup gültige Quelle | Freigegebenes externes Ziel oder `/mnt/setuphelfer/backups` gemountet | Archiv + Manifest + SHA256 | Rot (blocked 2026-05-12) | docs/evidence/backup-restore/BR-001.json |
+| BR-001 | Full Backup gültige Quelle | Freigegebenes externes Ziel oder `/mnt/setuphelfer/backups` gemountet | Archiv + Manifest + SHA256 | Rot (blocked 2026-05-12 — Pfad frei, API/Scope) | docs/evidence/backup-restore/BR-001.json |
 | BR-002 | Ziel nicht beschreibbar | Rechte entzogen | harter Abbruch | Rot | docs/evidence/backup-restore/BR-002.json |
 | BR-003 | `.partial` Archiv prüfen | abgebrochene Sicherung | Verify blockiert | Rot | docs/evidence/backup-restore/BR-003.json |
 | BR-004 | Verify Basic gültig | **dieselbe** Archivdatei wie BR-001 | ok | Rot (blocked — BR-001) | docs/evidence/backup-restore/BR-004.json |
@@ -17,4 +17,4 @@
 
 Viele Szenarien haben Abdeckung unter `backend/tests/` (z. B. Backup/Restore/Write-Guard). **Grün in dieser Matrix** verlangt zusätzlich dokumentierte Läufe mit Evidence-JSON gemäß `docs/evidence/README.md`.
 
-**STRICT-Kette (2026-05-12):** BR-001 = **blocked** (keine ausdrückliche Pfadfreigabe für externes Medium; Safety-Gate nicht gegen Produktivziel ausgeführt). BR-004/BR-005 = **blocked** (Verify nur gegen das BR-001-Archiv zulässig). CI bleibt **success** (Run **25751304968**). Früherer API-Smoke mit `samples/br-verify-sample.tar.gz` erfüllt die Kettenregel nicht.
+**STRICT-Kette (2026-05-12, extern freigegeben):** Zielpfad **`/media/gabriel/setuphelfer-back/setuphelfer-backups`** — Shell: ext4 auf **`/dev/sdd1`**, nicht Root-FS. **Produktions-API** `127.0.0.1:8000` → `STORAGE-PROTECTION-001` (Dienstnutzer `setuphelfer` ohne Traverse auf **`/media/gabriel`** bei `0750`/ACL nur `gabriel`). **Workspace-Validierung** (`validate_write_target`, TestClient target-check als `gabriel`) → Schreibprobe ok; **kein** Full-Backup-Job gestartet (Scope/Laufzeit `/` + API-Gate). BR-004/BR-005 **blocked** ohne Archiv. CI **success** Run **25751304968**.

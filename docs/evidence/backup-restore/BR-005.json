@@ -5,20 +5,20 @@
   "status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "commit": "7b49d4d6c887e679633f1ac21673f27033b9a27f",
+  "commit": "7452231bfab6521a6aefb947cfccb9a5551879bc",
   "ci_run": "25751304968",
-  "br001_chain": "BR-001 blocked 2026-05-12 — kein Archiv aus Full-Backup; Verify Deep gegen dasselbe BR-001-Archiv nicht ausgeführt.",
+  "br001_chain": "BR-001 blocked 2026-05-12 — kein Archiv aus Full-Backup-Job; Verify Deep nur gegen BR-001-Archiv zulässig.",
   "archive_from_br001": "",
   "environment": {
     "api": "POST /api/backup/verify",
     "mode": "deep",
-    "note": "Kettenregel wie BR-004."
+    "freigegebener_zielordner": "/media/gabriel/setuphelfer-back/setuphelfer-backups"
   },
   "result": "blocked",
   "api_code": null,
   "artifacts": [],
   "notes": [
-    "Verify Deep nur zulässig grün/evidence_complete gegen das tatsächliche BR-001-Archiv — BR-001 nicht passed.",
-    "Kein API-Aufruf in dieser Session gegen ein externes Produktionsarchiv."
+    "BR-001 lieferte kein Archiv — kein Verify Deep gegen dasselbe BR-001-Archiv.",
+    "Siehe BR-001.json (Dienstkontext / Full-Backup-Scope)."
   ]
 }
