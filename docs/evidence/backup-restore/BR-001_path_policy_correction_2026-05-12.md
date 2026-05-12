@@ -74,6 +74,13 @@ In diesem Durchlauf wurde **kein** Unterordner im Prompt genannt → Ziel bleibt
 
 Es erfolgte **keine** Umgehung auf andere Pfade, **kein** Bind, **keine** ACL-Änderung.
 
+## Nachtrag — technische Ursache STORAGE-001 (Shell vs. API)
+
+Ausführliche Analyse (nur Lesen, kein Deploy in diesem Lauf):  
+**`docs/evidence/backup-restore/BR-001_productive_target_check_media_path_analysis_2026-05-12.md`**
+
+Kurz: **`/media/gabriel`** ist für „other“ nicht traversierbar; die API läuft als **`setuphelfer`**. Die Mount-Auflösung kann auf einen Vorfahren wie **`/media`** fallen, wo **`findmnt -T`** die **Root-Partition** (`nvme0n1p2`) liefert → **STORAGE-PROTECTION-001**, obwohl der freigegebene Pfad auf **`/dev/sda1`** liegt.
+
 ## Abnahme (Policy-Dokument)
 
 | Kriterium | Erfüllt? |

@@ -1,17 +1,17 @@
 # Release Readiness – Bericht
 
-**Generiert:** 2026-05-12 (STRICT — BR-001 Pfad-Politkorrektur, nur Freigabepfad)  
+**Generiert:** 2026-05-12 (STRICT — Shell vs. API target-check, Freigabepfad)  
 **Gesamtstatus:** `blocked`
 
 ## Kurzfassung
 
-**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001:** Betreiber erlaubt **ausschließlich** **`/media/gabriel/setuphelfer-back`** (`/dev/sda1`, ext4, Label **setuphelfer-back**, UUID **`adbd53e5-26fd-4723-b0f1-1880dbaa2719`**). **Kein** `/mnt/setuphelfer/backups`, **kein** Bind, keine anderen Pfade. Lesende Verifikation des Mounts **ok**; produktiver **`target-check`** auf dem Freigabepfad → **STORAGE-001** (nicht grün); **`sudo -n -u setuphelfer`** nicht ausführbar → Zugriff **nicht** nachgewiesen. Evidence: **`BR-001_path_policy_correction_2026-05-12.md`**, **`BR-001.json`**. **Release gesamt** `blocked`.
+**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001:** Betreiberpfad **`/media/gabriel/setuphelfer-back`** — Shell **`findmnt -T`** → **`/dev/sda1`**; produktive API **`target-check`** → **STORAGE-PROTECTION-001**. Analyse: **`BR-001_productive_target_check_media_path_analysis_2026-05-12.md`** (Hauptursache **C+D**: kein Traverse **`/media/gabriel`** für **`setuphelfer`**, Anker **`/media`** → **`findmnt`** liefert **`/`** / **`nvme0n1p2`**). Workspace↔`/opt` weiter abweichend; **kein** Deploy/Restart in diesem Lauf. **Release gesamt** `blocked`.
 
 ## Ampelüberblick
 
 | Bereich | Status |
 |---------|--------|
-| Backup/Restore/Verify (Evidence) | Rot (BR-001 **blocked** — nur `/media/gabriel/setuphelfer-back`; target-check STORAGE-001; Dienstnutzer unverifiziert) |
+| Backup/Restore/Verify (Evidence) | Rot (BR-001 **blocked** — STORAGE-001 auf Freigabepfad; Ursache C+D dokumentiert) |
 | Hardware | Rot |
 | Rescue Stick real | Rot |
 | CI-Nachweis aktuell | **Grün** (GitHub `ci.yml` Run **25751304968** success, HEAD 55d7cec) — Release gesamt wegen BR-001 weiter `blocked` |

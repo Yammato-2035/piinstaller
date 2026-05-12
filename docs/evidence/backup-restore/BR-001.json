@@ -89,7 +89,15 @@
     "code": "backup.path_invalid",
     "diagnosis": "STORAGE-PROTECTION-001",
     "message_excerpt": "STORAGE-PROTECTION-001: Schreibzugriff auf Systemplatte ist nicht erlaubt",
-    "evidence_file": "docs/evidence/backup-restore/BR-001_path_policy_correction_2026-05-12.md"
+    "evidence_file": "docs/evidence/backup-restore/BR-001_productive_target_check_media_path_analysis_2026-05-12.md",
+    "root_cause_categories": ["C_service_user_cannot_traverse_media_gabriel", "D_anchor_findmnt_resolves_to_root_nvme"],
+    "secondary_workspace_vs_opt": ["A_app_py_findmnt_helpers_drift", "B_safe_device_bracket_normalization_missing_on_opt"]
+  },
+  "productive_target_shell_vs_api": {
+    "shell_findmnt_T_full_path_source": "/dev/sda1",
+    "findmnt_T_if_anchor_is_media": "/ on /dev/nvme0n1p2",
+    "api_diagnosis": "STORAGE-PROTECTION-001",
+    "analysis_md": "docs/evidence/backup-restore/BR-001_productive_target_check_media_path_analysis_2026-05-12.md"
   },
   "productive_target_check_deprecated_path_historical": {
     "path": "/mnt/setuphelfer/backups",
@@ -102,10 +110,11 @@
     "Deploy-Versuch: Dateien kurz nach /opt kopiert; nach Geräte-Abweichung Rollback.",
     "systemctl restart: sudo Passwort erforderlich.",
     "Historisch: target-check /mnt/setuphelfer/backups → STORAGE-004.",
-    "2026-05-12 Policy: ausschließlich /media/gabriel/setuphelfer-back; target-check → STORAGE-001; sudo -n setuphelfer nicht verifiziert; kein Backup."
+    "2026-05-12 Policy: ausschließlich /media/gabriel/setuphelfer-back; target-check → STORAGE-001; sudo -n setuphelfer nicht verifiziert; kein Backup.",
+    "2026-05-12 Analyse Shell vs. API (nur lesend): BR-001_productive_target_check_media_path_analysis_2026-05-12.md; kein Deploy/Restart."
   ],
   "started_at": "2026-05-12T17:53:06Z",
-  "completed_at": "2026-05-12T23:30:00Z",
+  "completed_at": "2026-05-12T23:55:00Z",
   "environment": {
     "hostname": "volker-ROG-Strix",
     "executing_user": "gabriel",
@@ -114,11 +123,13 @@
   "notes": [
     "Betreiberfreigabe: nur /media/gabriel/setuphelfer-back auf /dev/sda1 ext4 — kein /mnt/setuphelfer/backups, kein Bind, kein anderer Pfad.",
     "BR-001 blocked: API target-check auf Freigabepfad nicht grün (STORAGE-001); Dienstnutzer-Zugriff mit sudo -n nicht nachweisbar.",
+    "2026-05-12 Analyse: Shell vs. API — Hauptursache C+D (Traverse /media/gabriel + Anker findmnt → nvme); siehe BR-001_productive_target_check_media_path_analysis_2026-05-12.md.",
     "Keine ACL-Änderung, kein Ausweichen — siehe BR-001_path_policy_correction_2026-05-12.md."
   ],
   "result": "blocked",
   "api_code": "backup.path_invalid",
   "artifacts": [
+    "docs/evidence/backup-restore/BR-001_productive_target_check_media_path_analysis_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_path_policy_correction_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_target_access_analysis_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_mnt_setuphelfer_target_prepare_2026-05-12.md",

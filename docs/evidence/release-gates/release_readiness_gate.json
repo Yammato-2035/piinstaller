@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-12T23:35:00Z",
+  "generated": "2026-05-12T23:58:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — Betreiber: nur **`/media/gabriel/setuphelfer-back`**; produktiver target-check dort → **STORAGE-001**; Dienstnutzer mit `sudo -n` nicht verifiziert; **kein** `/mnt/setuphelfer/backups`, **kein** Bind. Evidence: `BR-001_path_policy_correction_2026-05-12.md`. **Release gesamt** blocked.",
+  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — Shell zeigt `/dev/sda1` für Freigabepfad; API **STORAGE-001** (Analyse: Traverse `/media/gabriel` + `findmnt`-Anker → Root). Evidence: **`BR-001_productive_target_check_media_path_analysis_2026-05-12.md`**. **Release gesamt** blocked.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
   ],

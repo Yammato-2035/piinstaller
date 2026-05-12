@@ -167,3 +167,9 @@ Begründung=extern (usb), rw; kein /mnt/setuphelfer/backups; kein Bind
 | Device-/Mount-Lage eindeutig dokumentiert | **Ja** (inkl. Widerspruch BR-Pfad vs. externes Volume) |
 | Keine Schreiboperation | **Ja** |
 | BR-001 nur bei eindeutiger UUID/Mount freigeben | **Vorgabe eingehalten** — Zielpfad ist **`/media/gabriel/setuphelfer-back`** laut Betreiber; **`/mnt/setuphelfer/backups`** ist **kein** BR-001-Ziel. BR-001 bleibt **blocked**, bis API + Dienstnutzer grün sind (siehe **`BR-001_path_policy_correction_2026-05-12.md`**). |
+
+---
+
+## Nachtrag (2026-05-12) — Shell vs. API
+
+Siehe **`BR-001_productive_target_check_media_path_analysis_2026-05-12.md`**: **STORAGE-001** entsteht v. a. durch **fehlenden Traverse** für **`setuphelfer`** unter **`/media/gabriel`** und nachfolgende **Anker-/findmnt-Auflösung** auf **`/`** / **`nvme0n1p2`** — nicht durch falsches Label am Zielmount selbst.

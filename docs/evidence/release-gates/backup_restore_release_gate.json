@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-12T23:35:00Z",
+  "generated": "2026-05-12T23:58:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
@@ -13,5 +13,5 @@
   },
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
   "partial_br_ids": [],
-  "notes": "BR-001 **blocked**: Betreiberpfad ausschließlich **`/media/gabriel/setuphelfer-back`** (`/dev/sda1` ext4 rw) — **kein** `/mnt/setuphelfer/backups`, **kein** Bind. Produktiver target-check auf Freigabepfad → **STORAGE-001**; `sudo -n -u setuphelfer` nicht verifiziert. Evidence: `BR-001_path_policy_correction_2026-05-12.md`, `BR-001.json`. Kein Backup. CI 25751304968 success."
+  "notes": "BR-001 **blocked**: Freigabe **`/media/gabriel/setuphelfer-back`**; produktiver target-check **STORAGE-001** — Ursache dokumentiert (Traverse `/media/gabriel` für `setuphelfer` + Anker/findmnt → Root-FS): **`BR-001_productive_target_check_media_path_analysis_2026-05-12.md`**. Workspace↔`/opt` Drift `app.py`/`safe_device.py`; **kein** Deploy in diesem Lauf. Kein Backup. CI 25751304968 success."
 }
