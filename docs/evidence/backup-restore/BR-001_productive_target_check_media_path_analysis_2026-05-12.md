@@ -150,3 +150,7 @@ Im Repository wurde die in **Abschnitt 7** skizzierte **Code**-Variante umgesetz
 ## 12. Strategischer Pfad `/media/setuphelfer/setuphelfer-back` (Doku, 2026-05-12)
 
 Dieser Pfad ist in Produkt- und Evidence-Doku als **konventionelles externes Ziel** beschrieben — **nur** zulässig, wenn er **tatsächlich auf dem gewählten externen Blockgerät** liegt. Auf der Evidence-Maschine existiert er **nicht**; es wurde **kein** `mkdir`, **kein** Bind-Mount und **keine** ACL-Änderung durchgeführt. Das derzeit gemountete externe ext4-Volume mit LABEL **setuphelfer-back** liegt unter **`/media/gabriel/setuphelfer-back`**. Abstimmung mit dem Betreiber: strategischer Mount unter **`/media/setuphelfer/...`** vs. Beibehaltung des Benutzerpfads — siehe **`BR-001_external_target_policy_2026-05-12.md`** und **`BR-001_backend_deploy_status_2026-05-12.md`** (produktives Backend zu Workspace-Zeitpunkt noch nicht synchron, **sudo** für Deploy blockiert).
+
+## 13. Deploy Diagnose-Fix (2026-05-13, Betreiberfreigabe)
+
+Vier Dateien (`app.py`, `safe_device.py`, `registry.py`, `matcher.py`) — siehe **`BR-001_backend_deploy_status_2026-05-12.md`** (sha256 alt/neu, Operator-Runbook). **target-check** laut Freigabe nur gegen **`/media/gabriel/setuphelfer-back`** (nicht gegen `/media/setuphelfer/setuphelfer-back`, solange nicht extern gemountet). Im Cursor-Agenten: Deploy **BLOCKED** (kein TTY-`sudo`); produktiver **target-check** daher unverändert **STORAGE-001** bis Runbook auf dem Host ausgeführt wurde.

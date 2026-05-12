@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-13T00:10:00Z",
+  "generated": "2026-05-13T01:05:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
@@ -13,5 +13,5 @@
   },
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
   "partial_br_ids": [],
-  "notes": "BR-001 **blocked**: kein grüner produktiver target-check / kein E2E-Backup. Betreiberpfad weiter **`/media/gabriel/setuphelfer-back`**; strategischer Doku-Pfad **`/media/setuphelfer/setuphelfer-back`** nur auf externem Medium (`BR-001_external_target_policy_2026-05-12.md`, `docs/backup/BACKUP_TARGET_POLICY_*.md`). Historisch API **STORAGE-001**; Workspace **006** — **`/opt`**-Deploy **blockiert** (`sudo` Passwort, `BR-001_backend_deploy_status_2026-05-12.md`). Kein Backup. CI 25751304968 success."
+  "notes": "BR-001 **blocked**. **Deploy** vier Dateien (`app.py`, `safe_device.py`, `registry.py`, `matcher.py`) — **Betreiberfreigabe** liegt vor; **Ausführung im Cursor-Agent BLOCKED** (interaktives `sudo`). Runbook + sha256: **`BR-001_backend_deploy_status_2026-05-12.md`**. **target-check** nur **`/media/gabriel/setuphelfer-back`** — bis Deploy auf Host weiter **STORAGE-001**. Kein Backup. CI 25751304968 success."
 }

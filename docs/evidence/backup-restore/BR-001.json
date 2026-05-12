@@ -116,10 +116,43 @@
     "evidence_selection_md": "docs/evidence/backup-restore/BR-001_external_target_selection_2026-05-12.md"
   },
   "productive_backend_sync_2026_05_12": {
-    "workspace_git_head": "03cf7bd43e6bff1f7147ec742d50cf3ceb1b7515",
+    "workspace_git_head": "a1aebba17985d0646ff440913709c1e47e766c67",
     "opt_diff_files": ["app.py", "core/safe_device.py", "core/diagnostics/registry.py", "core/diagnostics/matcher.py"],
-    "deploy_status": "blocked_sudo_password_required",
+    "deploy_status": "blocked_no_interactive_sudo_in_agent_2026_05_13",
     "evidence_md": "docs/evidence/backup-restore/BR-001_backend_deploy_status_2026-05-12.md"
+  },
+  "deploy_four_files_operator_approved_2026_05_13": {
+    "approved_files": [
+      "backend/app.py",
+      "backend/core/safe_device.py",
+      "backend/core/diagnostics/registry.py",
+      "backend/core/diagnostics/matcher.py"
+    ],
+    "executed_on_host": false,
+    "blocker": "sudo requires TTY or password; Cursor agent has no interactive sudo",
+    "backup_dir_intended": "/tmp/setuphelfer-deploy-backup-<timestamp>",
+    "backup_dir_created": false,
+    "sha256_opt_before": {
+      "app.py": "68a740b72aaadba848a8f35536b1b9ad19ca538e6fdbb9889764c43257ac9138",
+      "core/safe_device.py": "2c0085c5bb6ecc24b53f92b83ae6aba2fa6aa59b05bb5f9918b85afd00930601",
+      "core/diagnostics/registry.py": "d11835c09f02c0901d945e3f1bf15c48967b08d42e071c3bbb22b198e40562a0",
+      "core/diagnostics/matcher.py": "2c369ca919d2d65c53b1573d584f2863959853adeecf6c8ef8b3c2b6fd95b3f8"
+    },
+    "sha256_workspace_source": {
+      "app.py": "60517c0c9cbae832b94788e419f13f6c8872084c45e37cb0b62c1f3ea5db486a",
+      "core/safe_device.py": "e33be50f750ce36631f3d3943bc90e3d60d72bfbf669e6ba375ee5468a52b849",
+      "core/diagnostics/registry.py": "5986134ca868c981692c93af24dc8bcf1e5231014fc4b26986f0a5951adbc0a6",
+      "core/diagnostics/matcher.py": "348335c22c4e9b299ff7fff0736845a3ad8395596be04627e3dd12be2547c0fe"
+    },
+    "systemctl_restart": "not_executed",
+    "target_check_approved_path_only": "/media/gabriel/setuphelfer-back",
+    "target_check_strategic_path_not_used": "/media/setuphelfer/setuphelfer-back",
+    "target_check_result_2026_05_13": {
+      "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/gabriel/setuphelfer-back&create=0",
+      "code": "backup.path_invalid",
+      "diagnosis": "STORAGE-PROTECTION-001",
+      "note": "Unchanged until /opt receives workspace files and service restart"
+    }
   },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
@@ -149,7 +182,8 @@
     "2026-05-12 Policy: ausschließlich /media/gabriel/setuphelfer-back; target-check → STORAGE-001; sudo -n setuphelfer nicht verifiziert; kein Backup.",
     "2026-05-12 Analyse Shell vs. API (nur lesend): BR-001_productive_target_check_media_path_analysis_2026-05-12.md; kein Deploy/Restart.",
     "2026-05-12 Workspace: Diagnosefix STORAGE-006 + backup.target_traverse_denied (kein produktiver Re-Check, kein Backup).",
-    "2026-05-12: Strategischer Pfad /media/setuphelfer/setuphelfer-back dokumentiert; externe Kandidaten nur lesend; Deploy /opt blockiert (sudo); target-check strategischer Pfad → STORAGE-001 auf altem Backend."
+    "2026-05-12: Strategischer Pfad /media/setuphelfer/setuphelfer-back dokumentiert; externe Kandidaten nur lesend; Deploy /opt blockiert (sudo); target-check strategischer Pfad → STORAGE-001 auf altem Backend.",
+    "2026-05-13: Betreiberfreigabe Deploy 4 Dateien — im Cursor-Agent BLOCKED (sudo TTY/Passwort); sha256 + Runbook BR-001_backend_deploy_status; target-check /media/gabriel/setuphelfer-back weiter STORAGE-001 bis Deploy auf Host."
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -164,7 +198,8 @@
     "2026-05-12 Analyse: Shell vs. API — Hauptursache C+D (Traverse /media/gabriel + Anker findmnt → nvme); siehe BR-001_productive_target_check_media_path_analysis_2026-05-12.md.",
     "Keine ACL-Änderung, kein Ausweichen — siehe BR-001_path_policy_correction_2026-05-12.md.",
     "2026-05-12: Workspace-Code meldet bei fehlendem Traverse künftig STORAGE-006 (nicht 001); BR-001_target_permission_diagnostics_fix_2026-05-12.md — Betrieb weiter blocked bis grüner Check + Freigabe.",
-    "Strategischer Doku-Pfad /media/setuphelfer/setuphelfer-back nur auf externem Medium; bestehendes Volume weiter /media/gabriel/setuphelfer-back bis Betreiberentscheidung."
+    "Strategischer Doku-Pfad /media/setuphelfer/setuphelfer-back nur auf externem Medium; bestehendes Volume weiter /media/gabriel/setuphelfer-back bis Betreiberentscheidung.",
+    "2026-05-13: Vier-Dateien-Deploy nach /opt freigegeben — im Agent nicht ausführbar; Operator-Runbook in BR-001_backend_deploy_status_2026-05-12.md."
   ],
   "result": "blocked",
   "api_code": "backup.path_invalid",

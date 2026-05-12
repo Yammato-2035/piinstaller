@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-13T00:10:00Z",
+  "generated": "2026-05-13T01:05:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — produktives `/opt` weicht vom Workspace ab (**Deploy blockiert:** `sudo`); strategische Doku **`/media/setuphelfer/setuphelfer-back`** + externe Priorität in Doku/FAQ/i18n; Betreiber-Mount weiter dokumentiert unter **`/media/gabriel/setuphelfer-back`**. Evidence: `BR-001_backend_deploy_status_2026-05-12.md`, `BR-001_external_target_selection_2026-05-12.md`. **Release gesamt** blocked.",
+  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — **Deploy** der vier Diagnose-Dateien nach `/opt` **vom Agent nicht ausgeführt** (kein interaktives `sudo`); Runbook in **`BR-001_backend_deploy_status_2026-05-12.md`**. **target-check** **`/media/gabriel/setuphelfer-back`** weiter **STORAGE-001** bis Host-Deploy. **Release gesamt** blocked.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
   ],
