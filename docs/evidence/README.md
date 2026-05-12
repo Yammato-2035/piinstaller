@@ -29,3 +29,5 @@ Templates mit `evidence_complete: false` sind **kein** Grün-Nachweis.
 > Grün gibt es nur mit Testnachweis, Doku und Evidence-Datei.
 
 Keine Grün-Markierung allein aufgrund von Code-Review oder `py_compile`.
+
+**STRICT Backup/Verify-Kette:** BR-004 und BR-005 gelten nur dann als abgenommen, wenn sie **dasselbe Archiv** prüfen, das BR-001 auf einem **freigegebenen** externen Ziel erzeugt hat (siehe `docs/testing/BACKUP_RESTORE_TEST_MATRIX.md`, `docs/evidence/release-gates/backup_restore_release_gate.json`).

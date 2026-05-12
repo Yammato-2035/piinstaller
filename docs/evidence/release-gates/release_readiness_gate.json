@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-12T18:36:00Z",
+  "generated": "2026-05-12T18:45:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success** (HEAD `55d7cec`, Harness-Portabilität + vorherige Fixes). **Release gesamt** weiter blockiert (BR-001: kein dokumentierter HW-E2E-Backup→Verify→Restore-Zyklus).",
+  "summary": "**GitHub CI:** Run **25751304968** — **success** (HEAD `55d7cec`). **STRICT BR-Gate (2026-05-12):** BR-001 **blocked** (keine explizite Freigabe eines externen Backup-Ziels; kein Full-Backup). BR-004/BR-005 **blocked** (Kettenregel: Verify nur gegen BR-001-Archiv). **Release gesamt** weiter blockiert (Restore Preview, HW-E2E, dokumentierte Backup-Kette fehlen).",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
   ],

@@ -1,11 +1,17 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-11T22:00:00Z",
+  "generated": "2026-05-12T18:45:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
-  "open_br_ids": ["BR-001", "BR-002", "BR-003", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
-  "partial_br_ids": ["BR-004", "BR-005"],
-  "notes": "BR-004/BR-005: API-Verify gegen Referenzarchiv dokumentiert (gelb, Kette ohne BR-001). BR-001 weiter offen bis externes/freigegebenes Schreibziel."
+  "ci_reference": {
+    "run_id": "25751304968",
+    "conclusion": "success",
+    "head_sha": "55d7ceceac15e28d53efec707e1b10221f2de5ba",
+    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25751304968"
+  },
+  "open_br_ids": ["BR-001", "BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
+  "partial_br_ids": [],
+  "notes": "STRICT BR-Gate 2026-05-12: BR-001 blocked (keine explizite Freigabe eines externen Schreibziels; kein Full-Backup). BR-004/BR-005 blocked (Kettenregel: nur Verify gegen BR-001-Archiv). GitHub CI Run 25751304968 success bleibt Voraussetzung, ersetzt aber keine HW-/Backup-Evidence."
 }

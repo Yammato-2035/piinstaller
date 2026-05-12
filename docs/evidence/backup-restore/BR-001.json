@@ -1,27 +1,65 @@
 {
   "schema": "setuphelfer.evidence.v1",
+  "test_id": "BR-001",
   "id": "BR-001",
+  "status": "blocked",
   "ampel": "rot",
   "evidence_complete": true,
-  "executed_at": "2026-05-11T22:00:00Z",
+  "commit": "7b49d4d6c887e679633f1ac21673f27033b9a27f",
+  "ci_run": "25751304968",
+  "ci_run_url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25751304968",
+  "ci_conclusion": "success",
+  "ci_head_sha": "55d7ceceac15e28d53efec707e1b10221f2de5ba",
+  "source": "/home/volker/piinstaller (Repo-Root; kein Backup-Job gestartet)",
+  "target": "",
+  "archive": "",
+  "manifest_present": false,
+  "sha256_present": false,
+  "safety_gate": {
+    "status": "not_executed",
+    "reason": "Kein Full-Backup gestartet: Schreibziel nicht ausdrücklich freigegeben (STRICT — keine automatische Wahl unter /media/*/ ohne Betreiber-Freigabe). validate_write_target gegen ein produktives externes Ziel wurde nicht aufgerufen.",
+    "target_classification": "review_required",
+    "candidate_external_mountpoints_observed": [
+      "/media/gabriel/SDCARD1 (vfat, /dev/sda1)",
+      "/media/gabriel/INTENSO (exfat, /dev/sdc1)",
+      "/media/gabriel/setuphelfer-back (ext4, /dev/sdd1)",
+      "/media/gabriel/windows-backup (fuseblk ntfs, /dev/sdd2)"
+    ],
+    "category_b_mnt_setuphelfer_backups": "/mnt/setuphelfer/backups — in findmnt nicht gemountet",
+    "forbidden_without_approval": [
+      "/tmp",
+      "/home",
+      "/",
+      "/var",
+      "interne nvme0n1p2 (/)",
+      "/boot/efi"
+    ],
+    "api_note": "POST /api/backup/create und validate_write_target (core.safe_device) sind im Produkt vorhanden — Aufruf nur nach expliziter Zielfreigabe."
+  },
+  "logs": [],
+  "started_at": "2026-05-12T17:40:25Z",
+  "completed_at": "2026-05-12T17:40:25Z",
   "environment": {
-    "host_role": "STRICT_CI_BR_EVIDENCE_RUN",
-    "api": "FastAPI TestClient POST /api/backup/create",
-    "payload_summary": {
-      "type": "full",
-      "target": "local",
-      "backup_dir": "/tmp/setuphelfer-test/br-ci-evidence2",
-      "async": false
-    },
-    "constraint_notes": [
-      "Kein sudo übergeben (STRICT: kein interaktives sudo ohne dokumentierte Notwendigkeit).",
-      "Ziel unter /tmp/setuphelfer-test — laut validate_write_target Klassifikation Systemplatte → STORAGE-PROTECTION-001.",
-      "Kein Schreiben auf externe/freigegebene Medien in dieser Umgebung verfügbar."
+    "hostname": "volker-ROG-Strix",
+    "executing_user": "gabriel",
+    "repo_path": "/home/volker/piinstaller",
+    "os": "Linux 6.8.0-111-generic x86_64",
+    "version_file": "1.5.0.0",
+    "phase1_commands": [
+      "git rev-parse HEAD",
+      "gh run view 25751304968 -R Yammato-2035/piinstaller --json conclusion,headSha,createdAt,url",
+      "lsblk -f",
+      "findmnt",
+      "df -h"
     ]
   },
+  "notes": [
+    "Voraussetzung GitHub CI: Run 25751304968 — conclusion success (Voraussetzung für Release-Gate-Arbeit dokumentiert).",
+    "BR-001 Full Backup wurde nicht ausgeführt: STRICT verlangt ausdrücklich freigegebenes externes Ziel oder vorbereiteten Setuphelfer-Mount — keine schriftliche Pfadfreigabe in dieser Session.",
+    "BR-004/BR-005 dürfen erst nach erfolgreichem BR-001 dasselbe Archiv prüfen — siehe BR-004.json und BR-005.json (blocked, Kettenabhängigkeit).",
+    "Keine Archive, Manifeste oder großen Artefakte ins Repo geschrieben."
+  ],
   "result": "blocked",
-  "api_code": "backup.path_invalid",
-  "api_message_excerpt": "STORAGE-PROTECTION-001: Schreibzugriff auf Systemplatte ist nicht erlaubt",
-  "artifacts": [],
-  "notes": "Full-Backup BR-001 in dieser Laufumgebung nicht ausführbar: Schreibziel wird gegen System-/Root-Dateisicherung geblockt. Freigabe: externes Mount unter /media oder /run/media bzw. freigegebenes Backup-Verzeichnis laut Runbook; optional dokumentiertes sudo nur wenn Betriebskonzept es fordert. Kettennachweis BR-004/BR-005 daher mit separatem Referenzarchiv (siehe BR-004/BR-005)."
+  "api_code": null,
+  "artifacts": []
 }

@@ -1,8 +1,8 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "current_failures",
-  "generated": "2026-05-12T18:36:00Z",
-  "executed_at": "2026-05-12T18:36:00Z",
+  "generated": "2026-05-12T18:45:00Z",
+  "executed_at": "2026-05-12T18:45:00Z",
   "prompt": "PROMPT_02_BLOCKER_INVENTORY",
   "prompt_rerun": true,
   "ampel": "gruen",
@@ -28,5 +28,5 @@
     "docs/evidence/release-gates/prompt02_abschlussbericht.md"
   ],
   "blocker_inventory": "docs/evidence/release-gates/blocker_inventory.json",
-  "notes": "GitHub CI `ci.yml` success (Run 25751304968). Inventar aus Dateisystem; grün erst mit HW-E2E-Evidence (BR-001)."
+  "notes": "GitHub CI `ci.yml` success (Run 25751304968). STRICT BR-Gate 2026-05-12: BR-001 blocked (externes Ziel nicht freigegeben); BR-004/005 blocked (Kette). Pytest-Ampel grün ersetzt keine Backup-HW-Evidence."
 }

@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "test_inventory",
-  "generated": "2026-05-12T18:36:00Z",
+  "generated": "2026-05-12T18:45:00Z",
   "source": "backend/tests",
   "test_file_count": 190,
   "ampel": "gelb",
@@ -12,7 +12,7 @@
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json"
   },
-  "notes": "GitHub CI `ci.yml` Run **25751304968** success. Inventar aus Dateisystem; Gesamt-Go-Live weiter über BR-001/HW-E2E.",
+  "notes": "GitHub CI `ci.yml` Run **25751304968** success. STRICT BR-001/004/005 Evidence 2026-05-12: blocked (siehe backup_restore_release_gate.json). Gesamt-Go-Live weiter über freigegebenes externes Backup + HW-E2E.",
   "test_files": [
     "test_anti_regression.py",
     "test_api_consistency_fix9_v1.py",

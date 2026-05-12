@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-12 — **CI (`ci.yml`):** Run **25751304968** = **success** (`ci_evidence.json` Ampel grün). **Release-Gesamtbild:** weiter rot wegen BR-001 / HW-E2E.  
+**Stand:** 2026-05-12 — **CI (`ci.yml`):** Run **25751304968** = **success** (`ci_evidence.json` Ampel grün). **Release-Gesamtbild:** weiter rot (BR-001 STRICT blocked ohne Zielfreigabe; BR-004/005 kettenblockiert; Restore Preview / HW-E2E offen).  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition
@@ -18,8 +18,8 @@
 |---------|-------|----------|------------------|
 | Phase 0 Arbeitsmodus | Gelb | Struktur & Matrizen angelegt, GitHub Project manuell | `docs/evidence/release-gates/feature_freeze.json` |
 | Phase 1 Bestandsaufnahme | Gelb | Testinventar + **Pytest Snapshot** (0× fail, 1526× pass, lokal); CI-/HW-Evidence separat | `test_inventory.json`, `current_failures.json`, `pytest_failures_summary_2026-05-11.txt` |
-| Backup | Gelb | Viele grüne Unit-Tests; **HW-/E2E-Abnahmen** weiter offen (Matrizen) | `BACKUP_RESTORE_TEST_MATRIX.md`, `docs/evidence/backup-restore/` |
-| Verify | Gelb | API Basic/Deep gegen Referenzarchiv dokumentiert; Kette mit BR-001 offen | `docs/evidence/backup-restore/BR-004.json`, `BR-005.json` |
+| Backup | Rot | STRICT BR-001 blocked (kein freigegebenes externes Ziel; Evidence 2026-05-12) | `BACKUP_RESTORE_TEST_MATRIX.md`, `BR-001.json` |
+| Verify | Rot | BR-004/BR-005 blocked — nur zulässig gegen BR-001-Archiv (BR-001 nicht passed) | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |
 | Rescue Stick | Gelb | viel Deploy-/Rescue-Testcode; echter Read-only-Stick offen | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` |

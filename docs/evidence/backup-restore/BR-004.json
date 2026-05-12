@@ -1,20 +1,24 @@
 {
   "schema": "setuphelfer.evidence.v1",
+  "test_id": "BR-004",
   "id": "BR-004",
-  "ampel": "gelb",
+  "status": "blocked",
+  "ampel": "rot",
   "evidence_complete": false,
-  "executed_at": "2026-05-11T22:00:00Z",
+  "commit": "7b49d4d6c887e679633f1ac21673f27033b9a27f",
+  "ci_run": "25751304968",
+  "br001_chain": "BR-001 blocked 2026-05-12 — kein Archiv aus Full-Backup; Verify Basic gegen dasselbe BR-001-Archiv nicht ausgeführt.",
+  "archive_from_br001": "",
   "environment": {
     "api": "POST /api/backup/verify",
     "mode": "basic",
-    "archive_path_relative": "docs/evidence/backup-restore/samples/br-verify-sample.tar.gz",
-    "archive_path_used_in_api": "/home/volker/piinstaller/docs/evidence/backup-restore/samples/br-verify-sample.tar.gz",
-    "archive_path_note": "Verify erfordert absoluten Pfad unter BACKUP_ALLOWED_ROOTS (/home/...); auf anderem Rechner Repo-Root voranstellen.",
-    "archive_origin": "synthetisch: hello.txt + embed_manifest_in_tar_gz (gleiches Manifest-Format wie Produktionspfad)",
-    "br001_chain": "BR-001 in diesem Lauf blockiert — Verify gegen unabhängiges gültiges Archiv (Matrix-Spalte „gültiges Archiv“ erfüllt, Kette BR-001→004 formal offen)."
+    "note": "Vorheriger Referenzlauf (2026-05-11) nutzte docs/evidence/backup-restore/samples/br-verify-sample.tar.gz — gültig für API-Smoke, erfüllt aber nicht die Kettenregel BR-001→BR-004."
   },
-  "result": "ok",
-  "api_code": "backup.verify_success",
-  "artifacts": ["docs/evidence/backup-restore/samples/br-verify-sample.tar.gz"],
-  "notes": "Verify Basic API erfolgreich. Für vollständige Release-Kette zusätzlich BR-001 auf freigegebenem externen Ziel ausführen und dasselbe Archiv nachweisen."
+  "result": "blocked",
+  "api_code": null,
+  "artifacts": [],
+  "notes": [
+    "Verify Basic nur zulässig grün/evidence_complete gegen das tatsächliche BR-001-Archiv — BR-001 nicht passed.",
+    "Kein API-Aufruf in dieser Session gegen ein externes Produktionsarchiv."
+  ]
 }
