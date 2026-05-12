@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-12T20:38:00Z",
+  "generated": "2026-05-12T21:05:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
@@ -12,6 +12,6 @@
     "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25751304968"
   },
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
-  "partial_br_ids": ["BR-001"],
-  "notes": "BR-001 Option 2: /mnt/setuphelfer/backups auf sdd1; review_required bis Deploy+Restart+target-check produktiv. Repo: findmnt-Flatten + Klammer-SOURCE (safe_device). Kein Backup. CI 25751304968 success."
+  "partial_br_ids": [],
+  "notes": "BR-001 **blocked** (2026-05-12): produktiver target-check gegen /mnt/setuphelfer/backups → STORAGE-004 (nvme0n1p2[/mnt]); Host-Layout weicht von Freigabe ab (setuphelfer-back auf sda1, sdd1=INTENSO). Deploy kurz nach /opt, dann Rollback auf /tmp/setuphelfer-deploy-backup-20260512T194722Z; systemctl restart nicht möglich (sudo Passwort). Evidence: BR-001_productive_target_check_2026-05-12.md, BR-001.json. Kein Backup. CI 25751304968 success."
 }

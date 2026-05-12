@@ -109,6 +109,10 @@ Ergebnis: **25 passed**.
 - **Zusätzlicher Codefix:** findmnt liefert `SOURCE=/dev/sdd1[/setuphelfer-backups]` — `safe_device` normalisiert das nun auf **`/dev/sdd1`** (keine Allowlist-Lockernung). Siehe `BR-001_mnt_setuphelfer_target_prepare_2026-05-12.md`.
 - **Produktion:** Deploy + `systemctl restart setuphelfer-backend` ausstehend; **`sudo -u setuphelfer`**-Tests ausstehend (sudo-Passwort).
 
+## Nachtrag II — produktiver Ist-Zustand (Abend 2026-05-12)
+
+Die oben beschriebene **sdd1**-Konstellation ist auf dem Mess-Host **nicht mehr** gültig: **`setuphelfer-back`** hängt an **`/dev/sda1`**, **`/dev/sdd1`** ist ein anderes Volume. **`/mnt/setuphelfer/backups`** fällt für `findmnt` unter den internen Stack → **STORAGE-004** im produktiven API-Check. Details: **`BR-001_productive_target_check_2026-05-12.md`**.
+
 ## Abnahme (STRICT)
 
 - Ursache **A + C** dokumentiert; **C** im Produktcode minimal behoben (Flatten).  

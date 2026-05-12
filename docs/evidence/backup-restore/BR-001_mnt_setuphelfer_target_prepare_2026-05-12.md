@@ -49,10 +49,6 @@ Minimalfix in **`core/safe_device.py`:** `_normalize_findmnt_bracket_block_sourc
 
 ## BR-001 Ampel
 
-**Weiter `blocked` / `review_required`**, bis:
-
-1. Fix auf **`/opt`** deployt und **`setuphelfer-backend`** neu gestartet, und  
-2. **`curl` target-check** als Produktion **grün**, und  
-3. optional: **`sudo -u setuphelfer`** Schreibprobe nach Freigabe verifiziert.
+**`blocked`** (Stand Abend 2026-05-12): produktiver `target-check` für `/mnt/setuphelfer/backups` weiterhin **rot** (STORAGE-004, interner nvme-Pfad); Host-Layout wich von der Freigabe **nur sdd1** ab (Label auf **sda1**, sdd1 = anderes Medium). Deploy-Versuch nach `/opt` wurde **zurückgerollt**. Siehe **`BR-001_productive_target_check_2026-05-12.md`**.
 
 **Kein** Backup-Job gestartet.

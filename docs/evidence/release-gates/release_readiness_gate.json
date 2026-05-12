@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-12T20:38:00Z",
+  "generated": "2026-05-12T21:05:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** Option 2 `/mnt/setuphelfer/backups` auf externem sdd1; Evidence **review_required** bis Deploy+produktiver `target-check` grün; **safe_device** Klammer-SOURCE-Fix im Repo. **Release gesamt** blocked.",
+  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — produktiver `target-check` für `/mnt/setuphelfer/backups` rot (STORAGE-004); Geräte-Freigabe (/dev/sdd1) stimmt nicht mit aktuellem lsblk überein; Deploy nach /opt zurückgerollt; `systemctl restart` ohne interaktives sudo nicht möglich. **Release gesamt** blocked.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
   ],
