@@ -56,7 +56,7 @@ Befehl:
 
 **Ergebnis:** Keine Treffer für die geprüften Muster → **Root-`.venv/` wurde nicht versioniert** (laut Commit-Message: aus Index entfernt + `.gitignore` ergänzt).
 
-**Zusätzlicher Review-Hinweis (manuell):** Unter **`A backend/cache/deploy/`** wurden u. a. **`*.img`**, **`blk*`** und ähnliche Deploy-Cache-Dateien **neu hinzugefügt**. Das sind potenziell **große Binär-Artefakte**; fachlich klären, ob sie absichtlich im Repo liegen müssen (LFS, Größe, CI-Zeit) — **kein automatisches Löschen** in dieser Analyse.
+**Zusätzlicher Review-Hinweis (manuell):** Unter **`A backend/cache/deploy/`** wurden u. a. **`*.img`**, **`blk*`** und ähnliche Deploy-Cache-Dateien **neu hinzugefügt**. Diese wurden in der **Hygiene-Nachbearbeitung** (siehe unten) als **Klasse D** aus dem Git-Index entfernt und per `.gitignore` ausgeschlossen.
 
 ## 3. Bewertung Mode-Change-Welle
 
@@ -67,9 +67,22 @@ Befehl:
   - oder gezielt: `git update-index --chmod=-x -- <path>` für alle Nicht-Skripte nach Allowlist
 - **Nicht** ohne Liste und Review: `.sh`/Entrypoints explizit **von** `-x`-Entzug ausnehmen.
 
-## 4. Optionaler Hygiene-Fix (Phase 5)
+## 4. Hygiene-Fix (ausgeführt)
 
-**In diesem Schritt nicht ausgeführt** (nur dokumentiert): Mode-Korrektur und ggf. Review der `backend/cache/deploy/*`-Binärdateien verdienen einen **eigenen**, kleinen, nachvollziehbaren Commit — nicht blind revertieren.
+Siehe Inventare:
+
+- `docs/evidence/release-gates/mode_change_inventory_2026-05-11.json`
+- `docs/evidence/release-gates/workspace_artifact_inventory_2026-05-11.json`
+
+Kurz:
+
+- **1606** Mode-Changes aus `36d234b` inventarisiert; **1602** Pfade im Git-Index auf **nicht ausführbar** zurück (`git update-index --chmod=-x`); **4** echte **`.sh`**-Skripte bleiben **755** (`git update-index --chmod=+x`, siehe JSON `keep_executable_755`). Auf Workspaces ohne Schreibrecht auf alle Dateien kann `git status` weiter **MM** (Index 644, Worktree noch +x) anzeigen — der committed Stand ist der Index.
+- **`backend/cache/deploy/**`** und **`backend/job_rt_outside.json`** per `git rm --cached` aus dem Index entfernt (Dateien bleiben lokal unter `.gitignore` möglich); `.gitignore` um `backend/cache/deploy/` und `backend/job_rt_outside.json` ergänzt.
+- **CI-Portabilität:** `tests/test_deploy_runner_permission_boundary_v1.py::test_no_sudoers_file_written` fängt `PermissionError` auf restriktiven Runnern ab (`skipTest` nur wenn `exists()` nicht statbar ist) — keine Produktlogik geändert.
+
+**Hygiene-Commit:** Meldung `chore: clean workspace sync modes and artifacts` — SHA mit `git log -1` auf `main` ermitteln (nicht in dieser Datei gespiegelt, damit amend/rebase keine Drift erzeugt).
+
+**Hinweis:** Ein fälschlich mitgestagtes Submodule **`ckb-next`** wurde vor dem Commit wieder aus dem Index genommen (`git restore --staged ckb-next`).
 
 ## 5. Evidence
 
@@ -77,4 +90,5 @@ Siehe aktualisierte Dateien unter `docs/evidence/release-gates/` und `docs/roadm
 
 ## 6. Nächster offener Blocker (CI)
 
-- **P1:** `test_no_sudoers_file_written` — `PermissionError` bei `Path(...).exists()` unter `/etc/sudoers.d/…` auf GitHub Actions (Run **25691681846**).
+- Nach Push des Hygiene-Commits: **neuen** GitHub Actions-Lauf dokumentieren (**kein „CI grün“** ohne `conclusion: success`).
+- Vorheriger Referenz-Lauf zu `36d234b`: **25691681846** (failure — siehe Historie oben).

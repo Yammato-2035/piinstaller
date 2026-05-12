@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.blocker_inventory.v1",
   "id": "blocker_inventory",
-  "generated": "2026-05-12T03:41:31Z",
+  "generated": "2026-05-12T12:00:00Z",
   "prompt02_rerun": {
     "executed_at": "2026-05-11T21:15:00Z",
     "spec": "docs/cursor/PROMPT_02_BLOCKER_INVENTORY.md",
@@ -47,7 +47,7 @@
     "failing_pytest_evidence": "docs/evidence/release-gates/current_failures.json",
     "failure_clusters": [],
     "missing_tests_notes": [
-      "GitHub CI (ci.yml) zu Commit 36d234b: Run 25691681846 — erster -x-Fehler `tests/test_deploy_runner_permission_boundary_v1.py::TestDeployRunnerPermissionBoundaryV1::test_no_sudoers_file_written` (PermissionError auf `/etc/sudoers.d/setuphelfer-runner` bei `Path.exists`). Vorherige Safe-Device-/media-Blocker-Erwähnung ist gegenüber diesem Lauf nicht mehr der erste Stopper.",
+      "GitHub CI: Hygiene-Fix (Modes + Cache-Artefakte + Permission-Boundary-Portabilität) nach 36d234b — nach Push neuen Run dokumentieren; Referenz failure Run 25691681846 (SHA 36d234b).",
       "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
       "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix, Evidence noch Template)",
       "Echter Read-only Rescue-Stick-Lauf (RS-*, Evidence rot)"
@@ -83,7 +83,7 @@
     "P1": [
       {
         "id": "P1-CI-EVIDENCE",
-        "title": "GitHub CI rot — Run 25691681846 (SHA 36d234b): erster -x-Fehler Deploy permission boundary `test_no_sudoers_file_written` (PermissionError /etc/sudoers.d bei exists)",
+        "title": "GitHub CI — nach Workspace-Sync 36d234b: Hygiene-Fix (Modes/Artefakte) eingereicht; Outcome erst nach neuem Actions-Lauf (Referenz failure: Run 25691681846)",
         "blocks": ["öffentliche Reproduzierbarkeit"],
         "next_step": "Test portabel machen: auf PermissionError/OSError bei exists() tolerieren oder Pfad mocken — ohne echte sudoers-Schreiboperationen; Evidence: post_workspace_sync_commit_hygiene_2026-05-11.md."
       },

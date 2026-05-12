@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-12T03:41:31Z",
+  "generated": "2026-05-12T12:00:00Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
@@ -28,6 +28,11 @@
   "workspace_sync_commit_hygiene": {
     "commit": "36d234be5505ec92e51621dee52111db797176a3",
     "analysis_doc": "docs/evidence/release-gates/post_workspace_sync_commit_hygiene_2026-05-11.md",
+    "inventories": [
+      "docs/evidence/release-gates/mode_change_inventory_2026-05-11.json",
+      "docs/evidence/release-gates/workspace_artifact_inventory_2026-05-11.json"
+    ],
+    "hygiene_followup": "Modes zurück auf 644 (1602 Pfade im Index), 4× .sh 755, backend/cache/deploy + backend/job_rt_outside.json aus Index, .gitignore ergänzt, Permission-Boundary-Test CI-portabel — Hygiene-Commit: `chore: clean workspace sync modes and artifacts` (SHA: `git log -1`).",
     "commit_shortstat": "2562 files changed, 54178 insertions(+), 81 deletions(-)",
     "mode_change_100644_to_100755_count": 1606,
     "name_status": {"M": 1611, "A": 951, "D": 0},
@@ -69,17 +74,17 @@
     ]
   },
   "local_pytest_parity": {
-    "executed_at": "2026-05-11T20:33:00Z",
+    "executed_at": "2026-05-12T12:05:00Z",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default PYTHONPATH=. python -m pytest tests/ -q --tb=no",
     "cwd": "backend",
     "interpreter": "/tmp/piinstaller-test-venv/bin/python",
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Lokaler Snapshot kann von GitHub -x-Reihenfolge abweichen; Remote-Stand 36d234b: Run 25691681846 scheitert an deploy permission boundary (`test_no_sudoers_file_written`, PermissionError auf `/etc/sudoers.d/...`)."
+    "note": "Nach Hygiene-Fix lokal erneut 1526 passed; Remote-Stand zu 36d234b: Run 25691681846 (failure). Neuen Actions-Lauf nach Hygiene-Push dokumentieren."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Workspace-Sync 36d234b: Commit-Hygiene-Doku `post_workspace_sync_commit_hygiene_2026-05-11.md`. CI zu diesem SHA: failure Run 25691681846 — erster Fehler PermissionError in `test_deploy_runner_permission_boundary_v1.py::test_no_sudoers_file_written` (Path.exists auf /etc/sudoers.d). GitHub Actions noch nicht success → Ampel rot.",
+  "notes": "Workspace-Sync 36d234b + Hygiene-Fix (Modes/Artefakte/Runner-Test-Portabilität): Inventare `mode_change_inventory_2026-05-11.json` + `workspace_artifact_inventory_2026-05-11.json` / `post_workspace_sync_commit_hygiene_2026-05-11.md`. Referenz-CI zu 36d234b: failure Run 25691681846. Nach Push des Hygiene-Commits neuen Run-ID in ci_evidence eintragen — bis `conclusion: success` Ampel rot.",
   "ampel": "rot",
   "evidence_complete": false,
   "failure_root_cause_documented": true,

@@ -1,0 +1,81 @@
+{
+  "schema": "setuphelfer.mode_change_inventory.v1",
+  "id": "mode_change_inventory",
+  "generated_ref": "commit 36d234be5505ec92e51621dee52111db797176a3",
+  "source_file": "/tmp/setuphelfer_mode_changes.txt",
+  "summary": {
+    "mode_change_lines": 1606,
+    "paths_parsed": 1606,
+    "keep_executable_755": {
+      "count": 4,
+      "reason": "paths ending in .sh (echte Shell-Skripte)",
+      "paths": [
+        "debian/setuphelfer.sh",
+        "scripts/desktop-bilderrahmen-launcher-anlegen.sh",
+        "scripts/desktop-dsi-radio-launcher-anlegen.sh",
+        "scripts/install-freenove-tft-apps.sh"
+      ]
+    },
+    "reset_to_non_executable_644": {
+      "count": 1602,
+      "reason": "alle übrigen Endungen (Markdown/JSON/Python/TSX/… laut Policy nicht 755)"
+    }
+  },
+  "extension_histogram": {
+    ".svg": 405,
+    ".md": 369,
+    ".png": 197,
+    ".py": 157,
+    ".html": 147,
+    ".tsx": 63,
+    ".json": 61,
+    ".php": 50,
+    ".jpg": 32,
+    ".ts": 27,
+    "(noext)": 16,
+    ".txt": 14,
+    ".js": 11,
+    ".css": 9,
+    ".yml": 6,
+    ".zip": 6,
+    ".service": 5,
+    ".sh": 4,
+    ".desktop": 3,
+    ".rs": 3,
+    ".qml": 2,
+    ".yaml": 2,
+    ".mjs": 2,
+    ".example": 1,
+    ".user": 1,
+    ".qmlproject": 1,
+    ".100": 1,
+    ".24": 1,
+    ".5": 1,
+    ".ini": 1,
+    ".csv": 1,
+    ".lock": 1,
+    ".toml": 1,
+    ".ico": 1,
+    ".conf": 1,
+    ".rules": 1,
+    ".policy": 1,
+    ".install": 1
+  },
+  "classification": {
+    "A_source_doc_config": "Dateien bleiben im Repo; nur Git-Modus korrigieren",
+    "B_scripts_sh": "4× .sh — 755 beibehalten",
+    "C_wrong_plus_x": "1602 Pfade — git update-index --chmod=-x"
+  },
+  "hygiene_applied": {
+    "executed_at": "2026-05-12T03:50:28Z",
+    "git_update_index_chmod_minus_x": 1602,
+    "filesystem_chmod_minus_x": 1602,
+    "kept_executable_sh_paths": [
+      "debian/setuphelfer.sh",
+      "scripts/desktop-bilderrahmen-launcher-anlegen.sh",
+      "scripts/desktop-dsi-radio-launcher-anlegen.sh",
+      "scripts/install-freenove-tft-apps.sh"
+    ],
+    "note": "4× .sh mit git update-index --chmod=+x und chmod +x gesichert."
+  }
+}

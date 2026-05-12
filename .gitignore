@@ -15,6 +15,11 @@ __pycache__/
 dist/
 build/
 
+# Deploy-Runner Cache (Laufzeit / Harness; nicht versionieren — siehe workspace_artifact_inventory_2026-05-11.json)
+backend/cache/deploy/
+# Einmalig generiertes Runner-Test-JSON (lokal; nicht versionieren)
+backend/job_rt_outside.json
+
 # Umgebungsvariablen & Secrets (keine Passwörter versionieren)
 .env
 .env.*

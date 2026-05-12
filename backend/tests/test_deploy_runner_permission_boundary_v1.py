@@ -111,7 +111,13 @@ class TestDeployRunnerPermissionBoundaryV1(unittest.TestCase):
             self.assertEqual(out_job["path_status"], "ok")
 
     def test_no_sudoers_file_written(self):
-        self.assertFalse(Path("/etc/sudoers.d/setuphelfer-runner").exists())
+        p = Path("/etc/sudoers.d/setuphelfer-runner")
+        try:
+            present = p.exists()
+        except PermissionError:
+            # GitHub Actions u. ä.: kein stat auf sudoers.d möglich — kein Nachweis aus diesem Prozess.
+            self.skipTest("cannot stat /etc/sudoers.d/setuphelfer-runner on this environment")
+        self.assertFalse(present)
 
     def test_no_forbidden_systemcalls(self):
         src = (_BACKEND / "deploy" / "runner_permission_boundary.py").read_text(encoding="utf-8").lower()

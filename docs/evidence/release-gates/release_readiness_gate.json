@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-12T03:41:31Z",
+  "generated": "2026-05-12T12:00:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "Workspace-Sync 36d234b: Commit-Hygiene dokumentiert (`post_workspace_sync_commit_hygiene_2026-05-11.md`). GitHub CI zu diesem SHA: Run **25691681846** — **failure**; erster -x-Fehler: `test_deploy_runner_permission_boundary_v1.py::test_no_sudoers_file_written` (PermissionError bei `Path.exists` unter `/etc/sudoers.d`). **Kein CI-success** → Release weiter blockiert. BR-001 unverändert.",
+  "summary": "Workspace-Sync 36d234b: Hygiene-Fix (Modes/Artefakte/Runner-Test-Portabilität) eingereicht — Outcome über neuen GitHub Actions-Lauf zu verifizieren. Referenz-CI zu 36d234b: Run **25691681846** (failure). **Kein CI-success** bis `conclusion: success`. BR-001 unverändert.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
     "GitHub Actions: Run 25691681846 (head 36d234b) — failure: Deploy permission boundary `test_no_sudoers_file_written` (PermissionError `/etc/sudoers.d/setuphelfer-runner`)"

@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-12 — **CI** (`ci_evidence.json`): Workspace-Sync **36d234b**; Run **25691681846** = **failure**; erster -x-Fehler: `test_deploy_runner_permission_boundary_v1.py::test_no_sudoers_file_written` (PermissionError `/etc/sudoers.d/...` bei `Path.exists`). Commit-Hygiene: `post_workspace_sync_commit_hygiene_2026-05-11.md`. **Kein CI-success** bis GitHub Actions grün.  
+**Stand:** 2026-05-12 — **Hygiene-Fix** nach 36d234b: Mode-Inventory + Artefakt-Inventory; `backend/cache/deploy/` aus Index + `.gitignore`; Permission-Boundary-Test CI-portabel. **CI:** neuen Lauf nach Push dokumentieren — **kein Grün** ohne GitHub `success`. Referenz failure: Run **25691681846** (SHA 36d234b).  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition
