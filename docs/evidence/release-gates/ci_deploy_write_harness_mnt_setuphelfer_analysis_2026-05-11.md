@@ -43,3 +43,5 @@ Keine Änderung an `write_harness.py`-Sicherheitslogik, kein `sudo`, kein `mkdir
 ## Phase 7 — CI-Folge
 
 Nach `git push origin main`: `gh run list -R Yammato-2035/piinstaller --workflow ci.yml --limit 5` — **„CI grün“** nur bei GitHub **`conclusion: success`**; `ci_evidence.json` entsprechend nachziehen.
+
+**Verifiziert:** Run **25751304968** (HEAD `55d7cec`) — **`conclusion: success`** (~1m31s). `ci_evidence.json`: `ampel` **grün**, `latest_run` aktualisiert.

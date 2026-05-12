@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-12T18:00:00Z",
+  "generated": "2026-05-12T18:36:00Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
@@ -15,24 +15,24 @@
     "first_failure_summary": "test_deploy_runner_permission_boundary_v1::test_no_sudoers_file_written — PermissionError auf /etc/sudoers.d bei Path.exists"
   },
   "latest_run": {
-    "database_id": 25750787235,
-    "conclusion": "failure",
-    "created_at": "2026-05-12T17:23:58Z",
-    "updated_at": "2026-05-12T17:25:06Z",
+    "database_id": 25751304968,
+    "conclusion": "success",
+    "created_at": "2026-05-12T17:33:50Z",
+    "updated_at": "2026-05-12T17:35:21Z",
     "head_branch": "main",
-    "head_sha": "352062154bac7ebcc1ec36a35f0ca55f8082eccc",
-    "display_title": "Fix CI deploy runner permission boundary test",
-    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25750787235",
+    "head_sha": "55d7ceceac15e28d53efec707e1b10221f2de5ba",
+    "display_title": "Fix CI deploy write harness test portability",
+    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25751304968",
     "jobs": [
       {
         "name": "lint-and-test",
-        "conclusion": "failure",
-        "failed_step": "Pytest",
-        "failed_step_number": 8,
-        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25750787235"
+        "conclusion": "success",
+        "failed_step": null,
+        "failed_step_number": null,
+        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25751304968"
       }
     ],
-    "note": "`test_no_sudoers_file_written` in diesem Lauf vor `test_deploy_write_harness_v1` bestanden (1225 passed bis -x)."
+    "note": "Pytest vollständig (ohne -x-Abbruch); vorheriger failure-Run zu Harness: 25750787235 (3520621)."
   },
   "workspace_sync_commit_hygiene": {
     "commit": "36d234be5505ec92e51621dee52111db797176a3",
@@ -58,18 +58,12 @@
     "evidence_store_commit": "9a2b96cb9437239ac4aa321b9f3cf2398a3e1ac4"
   },
   "failure_analysis": {
-    "analyzed_at": "2026-05-12T12:10:00Z",
+    "analyzed_at": "2026-05-12T18:36:00Z",
     "pytest_command_ci": "python -m pytest tests/ -v --tb=short -x",
-    "failure_phase": "test_execution",
-    "first_error": {
-      "type": "PermissionError",
-      "message": "[Errno 13] Permission denied: '/mnt/setuphelfer'",
-      "trigger_file": "tests/test_deploy_write_harness_v1.py",
-      "trigger_test": "TestDeployWriteHarnessV1::test_execute_writes_limited_and_sha",
-      "line": 46
-    },
-    "root_cause_summary": "Historisch Run 25750787235 / 3520621: erster -x `test_deploy_write_harness_v1` — setUp legte Cache unter `/mnt/setuphelfer/cache/deploy` an; GitHub Runner verweigert mkdir unter `/mnt/setuphelfer`. Testfix: Cache-Image unter `backend/cache/deploy` (Prefix aus cache_execute._ALLOWED_CACHE_DEPLOY). CI-Outcome nach erneutem Push dokumentieren.",
-    "log_source": "gh run view 25750787235 --log-failed"
+    "failure_phase": "none",
+    "first_error": null,
+    "root_cause_summary": "Letzter Workflow-Lauf **25751304968** (HEAD 55d7cec): **success**. Historischer erster -x vor Harness-Fix: Run **25750787235** — `test_deploy_write_harness_v1` / PermissionError `/mnt/setuphelfer` (setUp nutzte `/mnt/setuphelfer/cache/deploy`; behoben durch Test-Cache unter `backend/cache/deploy`).",
+    "log_source": "gh run view 25751304968 — success; historisches Log: gh run view 25750787235 --log-failed"
   },
   "deploy_runner_permission_boundary_remediation": {
     "analysis_doc": "docs/evidence/release-gates/ci_deploy_runner_permission_boundary_analysis_2026-05-11.md",
@@ -77,15 +71,14 @@
     "code_change": "backend/tests/test_deploy_runner_permission_boundary_v1.py (test_no_sudoers_file_written: os.lstat statt Path.exists; PermissionError/EACCES/EPERM → Quelltext-Audit ohne skipTest)",
     "product_logic_changed": false,
     "pytest_local": {"passed": 1526, "failed": 0, "command": "PYTHONPATH=. python -m pytest tests/ -q --tb=no"},
-    "ci_followup": "Nach Push neuen ci.yml-Lauf prüfen; ohne GitHub conclusion:success weiter rot dokumentieren."
-  },
-  "deploy_write_harness_mnt_ci_fix": {
+    "ci_followup": "Verifiziert: Run **25751304968** conclusion success.",
     "analysis_doc": "docs/evidence/release-gates/ci_deploy_write_harness_mnt_setuphelfer_analysis_2026-05-11.md",
     "category": "A",
     "code_change": "backend/tests/test_deploy_write_harness_v1.py — setUp nutzt backend/cache/deploy statt /mnt/setuphelfer/cache/deploy; tearDown entfernt harness-src.img",
     "product_logic_changed": false,
     "pytest_local": {"passed": 1526, "failed": 0, "command": "PYTHONPATH=. python -m pytest tests/ -q --tb=no"},
-    "ci_followup": "Nach Push gh run list; latest_run und conclusion aktualisieren."
+    "ci_verified_github_run_id": 25751304968,
+    "ci_followup": "Verifiziert: Run **25751304968** conclusion success."
   },
   "failure_analysis_workspace_sync_36d234b": {
     "analyzed_at": "2026-05-12T03:41:00Z",
@@ -111,19 +104,19 @@
     ]
   },
   "local_pytest_parity": {
-    "executed_at": "2026-05-12T18:00:00Z",
+    "executed_at": "2026-05-12T18:36:00Z",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default PYTHONPATH=. python -m pytest tests/ -q --tb=no",
     "cwd": "backend",
     "interpreter": "venv mit backend/requirements.txt (lokal verifiziert)",
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Lokal nach Harness-Portabilitätsfix weiterhin 1526 passed. Letzter dokumentierter Remote-Lauf **25750787235**: failure an Harness unter /mnt (siehe failure_analysis); Fix im Tree — nächsten Run nach Push eintragen."
+    "note": "Lokal 1526 passed. Remote **25751304968** (55d7cec): GitHub Actions CI **success**."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Deploy-Write-Harness: Test nutzt `backend/cache/deploy` statt `/mnt/setuphelfer/...` (Analyse `ci_deploy_write_harness_mnt_setuphelfer_analysis_2026-05-11.md`). Letzter eingetragener Run **25750787235** = failure (Harness /mnt) — **Ampel erst bei neuem GitHub success grün**. Sudoers-Boundary: Run 3520621. Historie: 25712570438, 25691681846.",
-  "ampel": "rot",
-  "evidence_complete": false,
+  "notes": "**GitHub CI (`ci.yml`):** Run **25751304968** — **success** (HEAD `55d7cec`, Harness-Portabilität). Analysen: `ci_deploy_write_harness_mnt_setuphelfer_analysis_2026-05-11.md`, `ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`. Release-Gesamtempel kann weiter rot sein (BR-001 / E2E).",
+  "ampel": "gruen",
+  "evidence_complete": true,
   "failure_root_cause_documented": true,
-  "ci_still_red": true
+  "ci_still_red": false
 }

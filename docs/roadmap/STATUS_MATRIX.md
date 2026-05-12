@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-12 — **CI:** Harness-Test auf `backend/cache/deploy` portiert (`ci_deploy_write_harness_mnt_setuphelfer_analysis_2026-05-11.md`); sudoers-Boundary (`ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`). Letzter eingetragener Run **25750787235** = failure (historisch). **Kein Grün** ohne GitHub `success` nach neuem Push.  
+**Stand:** 2026-05-12 — **CI (`ci.yml`):** Run **25751304968** = **success** (`ci_evidence.json` Ampel grün). **Release-Gesamtbild:** weiter rot wegen BR-001 / HW-E2E.  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

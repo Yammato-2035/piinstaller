@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.blocker_inventory.v1",
   "id": "blocker_inventory",
-  "generated": "2026-05-12T18:00:00Z",
+  "generated": "2026-05-12T18:36:00Z",
   "prompt02_rerun": {
     "executed_at": "2026-05-11T21:15:00Z",
     "spec": "docs/cursor/PROMPT_02_BLOCKER_INVENTORY.md",
@@ -47,7 +47,7 @@
     "failing_pytest_evidence": "docs/evidence/release-gates/current_failures.json",
     "failure_clusters": [],
     "missing_tests_notes": [
-      "GitHub CI: Harness-Test portiert auf `backend/cache/deploy` (`ci_deploy_write_harness_mnt_setuphelfer_analysis_2026-05-11.md`); sudoers-Boundary (`ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`). Remote success erst nach neuem gh-Run. Historisch: Run 25750787235 (Harness /mnt), 25691681846.",
+      "GitHub CI (`ci.yml`): Run **25751304968** — **success** (55d7cec). Historie: Harness-Failure 25750787235; sudoers 25691681846.",
       "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
       "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix, Evidence noch Template)",
       "Echter Read-only Rescue-Stick-Lauf (RS-*, Evidence rot)"
@@ -83,9 +83,9 @@
     "P1": [
       {
         "id": "P1-CI-EVIDENCE",
-        "title": "GitHub CI — letzter dokumentierter Lauf **25750787235**: historisch Harness `/mnt/setuphelfer`; Testfix Harness-Portabilität eingereicht — Remote **success** nach Push verifizieren.",
+        "title": "GitHub CI `ci.yml` — Run **25751304968** **success** (HEAD 55d7cec). Release weiter über BR-001 / E2E-Evidence zu bewerten.",
         "blocks": ["öffentliche Reproduzierbarkeit"],
-        "next_step": "Neuen Actions-Lauf nach Harness-Fix auswerten; ci_evidence.json latest_run/conclusion aktualisieren."
+        "next_step": "HW-E2E / BR-001 laut Matrix; CI-Nachweis liegt mit Run 25751304968 vor."
       },
       {
         "id": "P1-RESCUE-RS",

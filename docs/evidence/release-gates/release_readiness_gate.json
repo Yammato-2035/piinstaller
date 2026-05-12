@@ -1,15 +1,14 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-12T18:00:00Z",
+  "generated": "2026-05-12T18:36:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "Deploy-Write-Harness-Test auf `backend/cache/deploy` portiert (`ci_deploy_write_harness_mnt_setuphelfer_analysis_2026-05-11.md`); sudoers-Boundary weiter dokumentiert. Letzter eingetragener Run **25750787235** — **failure** (historisch Harness /mnt). **GitHub success** nach Harness-Push nachzuweisen — blockiert. BR-001 unverändert.",
+  "summary": "**GitHub CI:** Run **25751304968** — **success** (HEAD `55d7cec`, Harness-Portabilität + vorherige Fixes). **Release gesamt** weiter blockiert (BR-001: kein dokumentierter HW-E2E-Backup→Verify→Restore-Zyklus).",
   "blockers_p0": [
-    "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
-    "GitHub Actions: letzter dokumentierter Run **25750787235** — failure (Harness /mnt); Harness-Portabilitätsfix eingereicht — neuen Run auswerten."
+    "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
   ],
-  "pytest_note": "Lokal 2026-05-12: pytest tests/ 1526 passed (Boundary + Harness-Portabilität); Remote CI success separat nachweisen.",
+  "pytest_note": "Lokal 2026-05-12: pytest tests/ 1526 passed; Remote CI Workflow `ci.yml` zuletzt **success** (Run 25751304968).",
   "recommendation": "do_not_release"
 }
