@@ -48,3 +48,5 @@
 ## Phase 7 — CI-Verifikation
 
 Nach `git push origin main`: `gh run list -R Yammato-2035/piinstaller --workflow ci.yml --limit 5` — **Ampel „CI grün“** nur bei GitHub **`conclusion: success`**. Der zuletzt dokumentierte Lauf vor diesem Fix (Hygiene-HEAD `7e0323b`) scheiterte zuerst an `test_deploy_write_harness_v1` (`/mnt/setuphelfer`); der vorliegende Fix adressiert den **sudoers-Boundary**-Stop aus Run `25691681846`.
+
+**Nach Push des Testfixes (Commit `3520621`):** Run **25750787235** — weiterhin **`failure`** (erster `-x`: `test_deploy_write_harness_v1`, `PermissionError` auf `/mnt/setuphelfer`). Der Test `test_no_sudoers_file_written` wurde in diesem Lauf **vor** dem Harness-Test ausgeführt und ist **nicht** mehr der erste Fehler (1225 Tests bestanden bis zum `-x`-Abbruch im Harness).

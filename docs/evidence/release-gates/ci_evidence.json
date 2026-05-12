@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-12T14:00:00Z",
+  "generated": "2026-05-12T17:26:00Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
@@ -15,23 +15,24 @@
     "first_failure_summary": "test_deploy_runner_permission_boundary_v1::test_no_sudoers_file_written — PermissionError auf /etc/sudoers.d bei Path.exists"
   },
   "latest_run": {
-    "database_id": 25712570438,
+    "database_id": 25750787235,
     "conclusion": "failure",
-    "created_at": "2026-05-12T04:02:29Z",
-    "updated_at": "2026-05-12T04:03:39Z",
+    "created_at": "2026-05-12T17:23:58Z",
+    "updated_at": "2026-05-12T17:25:06Z",
     "head_branch": "main",
-    "head_sha": "7e0323bd394358fa385352a5502232e7f41415a7",
-    "display_title": "chore: clean workspace sync modes and artifacts",
-    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25712570438",
+    "head_sha": "352062154bac7ebcc1ec36a35f0ca55f8082eccc",
+    "display_title": "Fix CI deploy runner permission boundary test",
+    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25750787235",
     "jobs": [
       {
         "name": "lint-and-test",
         "conclusion": "failure",
         "failed_step": "Pytest",
         "failed_step_number": 8,
-        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25712570438"
+        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25750787235"
       }
-    ]
+    ],
+    "note": "`test_no_sudoers_file_written` in diesem Lauf vor `test_deploy_write_harness_v1` bestanden (1225 passed bis -x)."
   },
   "workspace_sync_commit_hygiene": {
     "commit": "36d234be5505ec92e51621dee52111db797176a3",
@@ -67,8 +68,8 @@
       "trigger_test": "TestDeployWriteHarnessV1::test_execute_writes_limited_and_sha",
       "line": 46
     },
-    "root_cause_summary": "Hygiene-Commit 7e0323b: erster -x-Stop in `test_deploy_write_harness_v1` — `setUp` legt `self.cache` unter `/mnt/setuphelfer/cache/deploy` an; auf dem GitHub-Runner schlägt `mkdir` für `/mnt/setuphelfer` mit PermissionError fehl (kein success). Vorheriger Referenz-Lauf zu 36d234b: Run 25691681846 (Permission-Boundary sudoers).",
-    "log_source": "gh run view 25712570438 --log-failed"
+    "root_cause_summary": "Run 3520621: erster -x-Stop weiterhin `test_deploy_write_harness_v1` — `setUp` legt Cache unter `/mnt/setuphelfer/cache/deploy` an; Runner verweigert `mkdir` unter `/mnt/setuphelfer` (PermissionError). Deploy-Runner sudoers-Boundary-Test `test_no_sudoers_file_written` in diesem Lauf vorher bestanden (siehe latest_run.note).",
+    "log_source": "gh run view 25750787235 --log-failed"
   },
   "deploy_runner_permission_boundary_remediation": {
     "analysis_doc": "docs/evidence/release-gates/ci_deploy_runner_permission_boundary_analysis_2026-05-11.md",
@@ -109,10 +110,10 @@
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Lokal nach Permission-Boundary-Testfix weiterhin 1526 passed. Letzter dokumentierter Remote-Lauf 25712570438 (7e0323b): erster -x weiterhin `test_deploy_write_harness_v1` (/mnt/setuphelfer). sudoers-Boundary: Remediation siehe deploy_runner_permission_boundary_remediation — Remote erst nach neuem Push verifizieren."
+    "note": "Lokal 1526 passed. Remote Run **25750787235** (3520621): failure — erster -x `test_deploy_write_harness_v1` (/mnt/setuphelfer); sudoers-Boundary-Test in diesem Lauf grün bis -x."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Deploy-Runner-Permission-Boundary: Analyse `ci_deploy_runner_permission_boundary_analysis_2026-05-11.md` + Testfix (kein skipTest, kein /etc-Write). Hygiene 7e0323b / letzter Run **25712570438** weiter failure (Harness /mnt) bis neuer Lauf nach Boundary-Push. Referenz sudoers-CI: **25691681846**. Ampel rot ohne GitHub success.",
+  "notes": "Letzter CI-Lauf **25750787235** (3520621): **failure** — erster -x `test_deploy_write_harness_v1` (/mnt/setuphelfer). Sudoers-Boundary-Fix verifiziert (Test davor bestanden). Historie: 25712570438, 25691681846. Ampel rot ohne GitHub success.",
   "ampel": "rot",
   "evidence_complete": false,
   "failure_root_cause_documented": true,
