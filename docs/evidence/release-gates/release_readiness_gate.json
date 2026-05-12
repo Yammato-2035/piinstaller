@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-12T23:59:00Z",
+  "generated": "2026-05-13T00:10:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — Freigabepfad unverändert; historisch API **STORAGE-001** (Fehlklassifikation). **Workspace:** Diagnose **STORAGE-006** / **`backup.target_traverse_denied`** — **`BR-001_target_permission_diagnostics_fix_2026-05-12.md`**. **Release gesamt** blocked (E2E-/produktiver Nachweis offen).",
+  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — produktives `/opt` weicht vom Workspace ab (**Deploy blockiert:** `sudo`); strategische Doku **`/media/setuphelfer/setuphelfer-back`** + externe Priorität in Doku/FAQ/i18n; Betreiber-Mount weiter dokumentiert unter **`/media/gabriel/setuphelfer-back`**. Evidence: `BR-001_backend_deploy_status_2026-05-12.md`, `BR-001_external_target_selection_2026-05-12.md`. **Release gesamt** blocked.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
   ],

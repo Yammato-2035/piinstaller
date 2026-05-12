@@ -7,7 +7,7 @@ Dieses Verzeichnis sammelt **maschinenlesbare und nachvollziehbare** Testnachwei
 | Ordner | Inhalt |
 |--------|--------|
 | `hardware/` | Hardwareläufe (Pi, Laptop, Medien) |
-| `backup-restore/` | Backup, Verify, Restore, Fehlerfälle |
+| `backup-restore/` | Backup, Verify, Restore, Fehlerfälle, **externe Zielrichtlinie** (`BR-001_external_target_*`, `BACKUP_TARGET_POLICY_*`) |
 | `rescue-stick/` | Read-only Rescue-/Live-Flows |
 | `website/` | Transparenz-, Status-, Affiliate-Checks |
 | `release-gates/` | Sammelgates, Inventare, CI-/Release-Nachweise (`current_failures.json`, **`blocker_inventory.json`** Prompt 2, **`ci_evidence.json`** — letzter GitHub-Lauf inkl. Conclusion/Run-ID, **`ci_failure_analysis_STRICT_*.md`**, `ci_deploy_runner_permission_boundary_analysis_*.md`, `ci_deploy_write_harness_mnt_setuphelfer_analysis_*.md`, `post_workspace_sync_commit_hygiene_*.md`, `mode_change_inventory_*.json`, `workspace_artifact_inventory_*.json`, Pytest-Zusammenfassungen, optional `diagnostics_evidence_seed_audit_*.json` für `data/diagnostics/evidence`) |
@@ -30,4 +30,4 @@ Templates mit `evidence_complete: false` sind **kein** Grün-Nachweis.
 
 Keine Grün-Markierung allein aufgrund von Code-Review oder `py_compile`.
 
-**STRICT Backup/Verify-Kette:** BR-004 und BR-005 gelten nur dann als abgenommen, wenn sie **dasselbe Archiv** prüfen, das BR-001 auf einem **freigegebenen** externen Ziel erzeugt hat (siehe `docs/testing/BACKUP_RESTORE_TEST_MATRIX.md`, `docs/evidence/release-gates/backup_restore_release_gate.json`). **Hinweis 2026-05-12:** BR-001-Ziel nur **`/media/gabriel/setuphelfer-back`**. Shell vs. API: **`BR-001_productive_target_check_media_path_analysis_2026-05-12.md`**. **Workspace-Diagnosefix (Traverse):** **`BR-001_target_permission_diagnostics_fix_2026-05-12.md`** (**STORAGE-006**, **`backup.target_traverse_denied`**). Policy: **`BR-001_path_policy_correction_2026-05-12.md`**, **`BR-001.json`**.
+**STRICT Backup/Verify-Kette:** BR-004 und BR-005 gelten nur dann als abgenommen, wenn sie **dasselbe Archiv** prüfen, das BR-001 auf einem **freigegebenen** externen Ziel erzeugt hat (siehe `docs/testing/BACKUP_RESTORE_TEST_MATRIX.md`, `docs/evidence/release-gates/backup_restore_release_gate.json`). **Hinweis 2026-05-12:** Betreiber-Mount-Beispiel **`/media/gabriel/setuphelfer-back`**. Shell vs. API: **`BR-001_productive_target_check_media_path_analysis_2026-05-12.md`**. **Workspace-Diagnosefix (Traverse):** **`BR-001_target_permission_diagnostics_fix_2026-05-12.md`** (**STORAGE-006**, **`backup.target_traverse_denied`**). Policy: **`BR-001_path_policy_correction_2026-05-12.md`**, **`BR-001.json`**. **Hinweis 2026-05-13:** Strategischer Doku-Pfad **`/media/setuphelfer/setuphelfer-back`** (nur auf externem Medium); externe Priorität: **`docs/backup/BACKUP_TARGET_POLICY_DE.md`** / **`EN.md`**; Deploy-Status **`BR-001_backend_deploy_status_2026-05-12.md`**.

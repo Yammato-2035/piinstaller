@@ -104,6 +104,31 @@
       }
     }
   },
+  "strategic_backup_target_path_2026_05_12": {
+    "path": "/media/setuphelfer/setuphelfer-back",
+    "documentation_only_until_operator_approval": true,
+    "constraints": [
+      "Nur wenn Mount auf externem Blockgerät, nicht auf Root-FS",
+      "Kein automatisches mkdir/bind/chmod ohne Freigabe",
+      "Kein Ersatz für bestehende Mounts unter /media/<user>/..."
+    ],
+    "evidence_policy_md": "docs/evidence/backup-restore/BR-001_external_target_policy_2026-05-12.md",
+    "evidence_selection_md": "docs/evidence/backup-restore/BR-001_external_target_selection_2026-05-12.md"
+  },
+  "productive_backend_sync_2026_05_12": {
+    "workspace_git_head": "03cf7bd43e6bff1f7147ec742d50cf3ceb1b7515",
+    "opt_diff_files": ["app.py", "core/safe_device.py", "core/diagnostics/registry.py", "core/diagnostics/matcher.py"],
+    "deploy_status": "blocked_sudo_password_required",
+    "evidence_md": "docs/evidence/backup-restore/BR-001_backend_deploy_status_2026-05-12.md"
+  },
+  "target_check_strategic_path_probe_2026_05_12": {
+    "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
+    "path_exists_on_host": false,
+    "api_result": "error",
+    "code": "backup.path_invalid",
+    "diagnosis": "STORAGE-PROTECTION-001",
+    "note": "Produktiver Backend-Code noch ohne Workspace-Diagnosefix 006; Pfad nicht angelegt — kein Backup."
+  },
   "productive_target_shell_vs_api": {
     "shell_findmnt_T_full_path_source": "/dev/sda1",
     "findmnt_T_if_anchor_is_media": "/ on /dev/nvme0n1p2",
@@ -123,7 +148,8 @@
     "Historisch: target-check /mnt/setuphelfer/backups → STORAGE-004.",
     "2026-05-12 Policy: ausschließlich /media/gabriel/setuphelfer-back; target-check → STORAGE-001; sudo -n setuphelfer nicht verifiziert; kein Backup.",
     "2026-05-12 Analyse Shell vs. API (nur lesend): BR-001_productive_target_check_media_path_analysis_2026-05-12.md; kein Deploy/Restart.",
-    "2026-05-12 Workspace: Diagnosefix STORAGE-006 + backup.target_traverse_denied (kein produktiver Re-Check, kein Backup)."
+    "2026-05-12 Workspace: Diagnosefix STORAGE-006 + backup.target_traverse_denied (kein produktiver Re-Check, kein Backup).",
+    "2026-05-12: Strategischer Pfad /media/setuphelfer/setuphelfer-back dokumentiert; externe Kandidaten nur lesend; Deploy /opt blockiert (sudo); target-check strategischer Pfad → STORAGE-001 auf altem Backend."
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -137,7 +163,8 @@
     "BR-001 blocked: API target-check auf Freigabepfad nicht grün (STORAGE-001); Dienstnutzer-Zugriff mit sudo -n nicht nachweisbar.",
     "2026-05-12 Analyse: Shell vs. API — Hauptursache C+D (Traverse /media/gabriel + Anker findmnt → nvme); siehe BR-001_productive_target_check_media_path_analysis_2026-05-12.md.",
     "Keine ACL-Änderung, kein Ausweichen — siehe BR-001_path_policy_correction_2026-05-12.md.",
-    "2026-05-12: Workspace-Code meldet bei fehlendem Traverse künftig STORAGE-006 (nicht 001); BR-001_target_permission_diagnostics_fix_2026-05-12.md — Betrieb weiter blocked bis grüner Check + Freigabe."
+    "2026-05-12: Workspace-Code meldet bei fehlendem Traverse künftig STORAGE-006 (nicht 001); BR-001_target_permission_diagnostics_fix_2026-05-12.md — Betrieb weiter blocked bis grüner Check + Freigabe.",
+    "Strategischer Doku-Pfad /media/setuphelfer/setuphelfer-back nur auf externem Medium; bestehendes Volume weiter /media/gabriel/setuphelfer-back bis Betreiberentscheidung."
   ],
   "result": "blocked",
   "api_code": "backup.path_invalid",
@@ -149,6 +176,9 @@
     "docs/evidence/backup-restore/BR-001_productive_target_check_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.json",
-    "docs/evidence/backup-restore/BR-001_target_permission_diagnostics_fix_2026-05-12.md"
+    "docs/evidence/backup-restore/BR-001_target_permission_diagnostics_fix_2026-05-12.md",
+    "docs/evidence/backup-restore/BR-001_external_target_policy_2026-05-12.md",
+    "docs/evidence/backup-restore/BR-001_external_target_selection_2026-05-12.md",
+    "docs/evidence/backup-restore/BR-001_backend_deploy_status_2026-05-12.md"
   ]
 }

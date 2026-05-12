@@ -16,6 +16,22 @@ Die frühere Logik blockierte `/media` pauschal. Das war zu streng, weil Linux-D
 
 `/media` wird nicht pauschal freigegeben. Ein Ziel unter `/media` ist nur erlaubt, wenn es auf ein echtes, sicheres Blockgerät zeigt und nicht System-, Boot-, Windows- oder EFI-Partition ist.
 
+## Welche externen Medien bevorzugt Setuphelfer als Backup-Ziel?
+
+Setuphelfer soll Backups **auf externen Datenträgern** ablegen — **nicht** auf Root-, Boot- oder Systemplatte. Priorität (höchste zuerst): **externe NVMe**, **externe SSD**, **externe HDD**, **USB-Stick**, **SD-Karte**. Interne NVMe mit `/` oder andere interne Systempfade sind ungeeignet. Details: `docs/backup/BACKUP_TARGET_POLICY_DE.md`, `docs/knowledge-base/backup/BACKUP_TARGET_SELECTION.md`.
+
+## Was bedeutet der strategische Pfad `/media/setuphelfer/setuphelfer-back`?
+
+Das ist ein **konventioneller Zielpfad in der Doku**, der **nur** genutzt werden darf, wenn er **wirklich auf dem ausgewählten externen Medium** liegt (Mount-Quelle ist ein externes `/dev/...`, nicht das Root-Dateisystem). Setuphelfer legt ihn **nicht automatisch** an, **formatiert** nicht und **verschiebt** keine bestehenden Mounts. Wenn Ihr externes Volume bereits unter z. B. `/media/<Benutzer>/setuphelfer-back` hängt, gibt es **keine** automatische Umdeutigung — das ist eine **Betreiberfreigabe** (Mount/Bind/Policy).
+
+## Was passiert, wenn Setuphelfer das Ziel nicht traversieren oder nicht beschreiben darf?
+
+Dann wird **kein** Ausweichen auf interne Pfade erzwungen. Nach aktuellem Backend-Stand im Workspace meldet die API u. a. **`backup.target_traverse_denied`** mit Diagnose **STORAGE-PROTECTION-006**. Der Nutzer/Betrieb muss **Freigaben oder Mount/Rechte** klären.
+
+## Warum formatiert oder partitioniert Setuphelfer nicht automatisch?
+
+Daten auf externen Platten sollen erhalten bleiben. Ohne eindeutiges, sicheres externes Ziel bleibt Backup **blockiert**.
+
 ## Warum muss `/media` beim Full-Backup ausgeschlossen werden?
 
 Wenn `/` gesichert wird, würde `/media` sonst externe Datenträger mit in das Backup aufnehmen. Das kann zu riesigen Backups, rekursiven Läufen oder Stalls führen.

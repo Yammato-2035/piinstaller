@@ -16,6 +16,22 @@ The previous logic blocked `/media` globally. This was too strict because Linux 
 
 `/media` was not globally allowed. A target below `/media` is only accepted if it resolves to a real, safe block device and is not a system, boot, Windows, or EFI partition.
 
+## Which external media does Setuphelfer prefer for backups?
+
+Backups should live on **external media**, not the root/boot/system drive. Priority (highest first): **external NVMe**, **external SSD**, **external HDD**, **USB flash drive**, **SD card**. Internal NVMe hosting `/` and other internal-only paths are unsuitable. See `docs/backup/BACKUP_TARGET_POLICY_EN.md` and `docs/knowledge-base/backup/BACKUP_TARGET_SELECTION.md`.
+
+## What does the strategic path `/media/setuphelfer/setuphelfer-back` mean?
+
+This is a **documented conventional path** that may be used **only** if it truly resides on the **selected external volume** (mount source is an external `/dev/...`, not the root filesystem). Setuphelfer does **not** create it automatically, does **not** format disks, and does **not** relocate existing mounts. If your volume is already mounted elsewhere (e.g. `/media/<user>/setuphelfer-back`), there is **no** automatic rewrite — that requires **explicit operator approval** (mount/bind/policy).
+
+## What if Setuphelfer cannot traverse or write the target?
+
+There is **no** silent fallback to internal space. With the current workspace backend, the API reports **`backup.target_traverse_denied`** with diagnosis **STORAGE-PROTECTION-006**. The operator/user must fix permissions/mounts.
+
+## Why does Setuphelfer not auto-format or partition?
+
+Existing data on external media must be preserved. Without a clearly safe external target, backup stays **blocked**.
+
 ## Why must `/media` be excluded from full backups?
 
 When backing up `/`, including `/media` would also include external drives. This can lead to huge backups, recursive backup runs, or stalls.

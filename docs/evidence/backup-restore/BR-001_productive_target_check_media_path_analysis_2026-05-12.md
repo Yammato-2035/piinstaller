@@ -146,3 +146,7 @@ Wie zuvor: **Passwort nötig** — Traverse/Schreiben für **`setuphelfer`** hie
 ## 11. Workspace-Umsetzung (2026-05-12, Diagnosefix)
 
 Im Repository wurde die in **Abschnitt 7** skizzierte **Code**-Variante umgesetzt: fehlende Traversierung unter **`/media`** / **`/run/media`** führt zu **STORAGE-PROTECTION-006** und API-Code **`backup.target_traverse_denied`**, nicht mehr zu fälschlicher **STORAGE-PROTECTION-001**. Details und Testnachweise: **`BR-001_target_permission_diagnostics_fix_2026-05-12.md`**. **Kein** produktiver Re-Deploy oder **`target-check`**-Re-Lauf in diesem Schritt (keine ausdrückliche Freigabe).
+
+## 12. Strategischer Pfad `/media/setuphelfer/setuphelfer-back` (Doku, 2026-05-12)
+
+Dieser Pfad ist in Produkt- und Evidence-Doku als **konventionelles externes Ziel** beschrieben — **nur** zulässig, wenn er **tatsächlich auf dem gewählten externen Blockgerät** liegt. Auf der Evidence-Maschine existiert er **nicht**; es wurde **kein** `mkdir`, **kein** Bind-Mount und **keine** ACL-Änderung durchgeführt. Das derzeit gemountete externe ext4-Volume mit LABEL **setuphelfer-back** liegt unter **`/media/gabriel/setuphelfer-back`**. Abstimmung mit dem Betreiber: strategischer Mount unter **`/media/setuphelfer/...`** vs. Beibehaltung des Benutzerpfads — siehe **`BR-001_external_target_policy_2026-05-12.md`** und **`BR-001_backend_deploy_status_2026-05-12.md`** (produktives Backend zu Workspace-Zeitpunkt noch nicht synchron, **sudo** für Deploy blockiert).
