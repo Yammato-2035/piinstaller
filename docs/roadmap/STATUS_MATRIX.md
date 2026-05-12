@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-12 — **CI:** sudoers-Boundary-Testfix dokumentiert (`ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`); letzter bekannter Lauf **25712570438** = failure (Harness `/mnt/setuphelfer`). **Kein Grün** ohne GitHub `success`.  
+**Stand:** 2026-05-12 — **CI:** Harness-Test auf `backend/cache/deploy` portiert (`ci_deploy_write_harness_mnt_setuphelfer_analysis_2026-05-11.md`); sudoers-Boundary (`ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`). Letzter eingetragener Run **25750787235** = failure (historisch). **Kein Grün** ohne GitHub `success` nach neuem Push.  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

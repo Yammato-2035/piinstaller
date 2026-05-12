@@ -42,7 +42,9 @@ class TestDeployWriteHarnessV1(unittest.TestCase):
         mod._DEPLOY_FINAL_CONFIRMATION_STORE.clear()
         self.base = Path("/tmp/setuphelfer-deploy-test").resolve()
         self.base.mkdir(parents=True, exist_ok=True)
-        self.cache = Path("/mnt/setuphelfer/cache/deploy").resolve()
+        # CI: kein Schreibzugriff unter /mnt/setuphelfer — erlaubtes Cache-Root wie Produkt:
+        # deploy.cache_execute._BACKEND_CACHE_DEPLOY (backend/cache/deploy).
+        self.cache = (_BACKEND / "cache" / "deploy").resolve()
         self.cache.mkdir(parents=True, exist_ok=True)
         self.image = self.cache / "harness-src.img"
         self.image.write_bytes(b"abcdefghijklmnopqrstuvwxyz")
@@ -72,6 +74,8 @@ class TestDeployWriteHarnessV1(unittest.TestCase):
             os.environ["SETUPHELFER_DEPLOY_TEST_MODE"] = self._old_test_mode
         if self.target.exists():
             self.target.unlink()
+        if getattr(self, "image", None) and self.image.exists():
+            self.image.unlink()
 
     def _final_result(self, code: str = "DEPLOY_FINAL_CONFIRMATION_READY"):
         return {

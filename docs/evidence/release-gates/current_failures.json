@@ -1,8 +1,8 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "current_failures",
-  "generated": "2026-05-12T14:00:00Z",
-  "executed_at": "2026-05-12T14:00:00Z",
+  "generated": "2026-05-12T18:00:00Z",
+  "executed_at": "2026-05-12T18:00:00Z",
   "prompt": "PROMPT_02_BLOCKER_INVENTORY",
   "prompt_rerun": true,
   "ampel": "gruen",
@@ -11,7 +11,7 @@
     "python": "3.12.3",
     "cwd": "backend",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default python -m pytest tests/ -q --tb=no",
-    "notes": "Lokaler Snapshot 1526 passed (2026-05-12). Deploy-Runner sudoers-Boundary: Testfix `test_no_sudoers_file_written` (os.lstat + Quelltext-Audit). Remote CI: letzter dokumentierter Lauf 25712570438 failure (Harness /mnt); GitHub success separat nachweisen — ci_evidence.json."
+    "notes": "Lokaler Snapshot 1526 passed (2026-05-12). Deploy-Write-Harness: Cache im Test unter backend/cache/deploy (`ci_deploy_write_harness_mnt_setuphelfer_analysis_2026-05-11.md`). Sudoers-Boundary: `ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`. Remote: letzter dokumentierter Run 25750787235 (historisch Harness /mnt) — neuen Run nach Harness-Push in ci_evidence.json eintragen."
   },
   "summary": {
     "failed": 0,
@@ -28,5 +28,5 @@
     "docs/evidence/release-gates/prompt02_abschlussbericht.md"
   ],
   "blocker_inventory": "docs/evidence/release-gates/blocker_inventory.json",
-  "notes": "Lokaler Pytest-Snapshot; Remote-CI weiter über GitHub success zu verifizieren. Deploy sudoers-Boundary: `ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`."
+  "notes": "Lokaler Pytest-Snapshot; Remote-CI über GitHub success. Deploy-Harness: `ci_deploy_write_harness_mnt_setuphelfer_analysis_2026-05-11.md`; sudoers-Boundary: `ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`."
 }

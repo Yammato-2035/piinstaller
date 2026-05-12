@@ -1,15 +1,15 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-12T14:00:00Z",
+  "generated": "2026-05-12T18:00:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "Deploy-Runner sudoers-Boundary-Testfix eingereicht (`ci_deploy_runner_permission_boundary_analysis_2026-05-11.md`); GitHub success noch offen. Letzter dokumentierter Lauf **25712570438** — **failure** (`test_deploy_write_harness_v1`, `/mnt/setuphelfer`). **Kein CI-success** → blockiert. BR-001 unverändert.",
+  "summary": "Deploy-Write-Harness-Test auf `backend/cache/deploy` portiert (`ci_deploy_write_harness_mnt_setuphelfer_analysis_2026-05-11.md`); sudoers-Boundary weiter dokumentiert. Letzter eingetragener Run **25750787235** — **failure** (historisch Harness /mnt). **GitHub success** nach Harness-Push nachzuweisen — blockiert. BR-001 unverändert.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
-    "GitHub Actions: Run **25712570438** (HEAD 7e0323b) — failure: `test_deploy_write_harness_v1` (`/mnt/setuphelfer`). Sudoers-Boundary-Testfix nach 25691681846 — Remote-Verifikation ausstehend."
+    "GitHub Actions: letzter dokumentierter Run **25750787235** — failure (Harness /mnt); Harness-Portabilitätsfix eingereicht — neuen Run auswerten."
   ],
-  "pytest_note": "Lokal 2026-05-12: pytest tests/ 1526 passed (nach Boundary-Fix); Remote CI erst nach neuem Push/Fetch als success nachweisbar.",
+  "pytest_note": "Lokal 2026-05-12: pytest tests/ 1526 passed (Boundary + Harness-Portabilität); Remote CI success separat nachweisen.",
   "recommendation": "do_not_release"
 }
