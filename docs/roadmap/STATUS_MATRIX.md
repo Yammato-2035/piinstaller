@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-11 — **CI** (`ci_evidence.json`): smartctl/Rescue-Dryrun-Fix für fehlendes Tool committed; Phase3 Gate `test_session_missing` behoben (Commit b8af051); nächster Blocker jetzt SafeDevice-Mount PermissionError unter `/media` in `tests/test_safe_device_storage_protection_v1.py::test_validate_allows_external_media_mount` (Run 25690310122); Remote bleibt rot; lokal pytest grün siehe `current_failures.json`  
+**Stand:** 2026-05-12 — **CI** (`ci_evidence.json`): Workspace-Sync **36d234b**; Run **25691681846** = **failure**; erster -x-Fehler: `test_deploy_runner_permission_boundary_v1.py::test_no_sudoers_file_written` (PermissionError `/etc/sudoers.d/...` bei `Path.exists`). Commit-Hygiene: `post_workspace_sync_commit_hygiene_2026-05-11.md`. **Kein CI-success** bis GitHub Actions grün.  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

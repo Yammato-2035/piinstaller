@@ -1,29 +1,38 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-11T18:56:43Z",
+  "generated": "2026-05-12T03:41:31Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
   "latest_runs_queried": 5,
   "latest_run": {
-    "database_id": 25690310122,
+    "database_id": 25691681846,
     "conclusion": "failure",
-    "created_at": "2026-05-11T18:47:50Z",
-    "updated_at": "2026-05-11T18:48:31Z",
+    "created_at": "2026-05-11T19:14:23Z",
+    "updated_at": "2026-05-11T19:15:29Z",
     "head_branch": "main",
-    "head_sha": "b8af051744ec81156bad1da28a6ca92987ac585e",
-    "display_title": "Fix CI rescue phase3 session_missing code",
-    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25690310122",
+    "head_sha": "36d234be5505ec92e51621dee52111db797176a3",
+    "display_title": "chore: workspace sync; Fix CI safe device external media test",
+    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25691681846",
     "jobs": [
       {
         "name": "lint-and-test",
         "conclusion": "failure",
         "failed_step": "Pytest",
         "failed_step_number": 8,
-        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25690310122"
+        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25691681846"
       }
     ]
+  },
+  "workspace_sync_commit_hygiene": {
+    "commit": "36d234be5505ec92e51621dee52111db797176a3",
+    "analysis_doc": "docs/evidence/release-gates/post_workspace_sync_commit_hygiene_2026-05-11.md",
+    "commit_shortstat": "2562 files changed, 54178 insertions(+), 81 deletions(-)",
+    "mode_change_100644_to_100755_count": 1606,
+    "name_status": {"M": 1611, "A": 951, "D": 0},
+    "artifacts_grep_no_venv_node_modules": true,
+    "note": "Viele +x auf Nicht-Skripte; neue Binärdateien unter backend/cache/deploy/ — Review-Hygiene, kein automatisches Revert."
   },
   "diagnostics_evidence_remediation": {
     "category": "E then B",
@@ -35,18 +44,18 @@
     "evidence_store_commit": "9a2b96cb9437239ac4aa321b9f3cf2398a3e1ac4"
   },
   "failure_analysis": {
-    "analyzed_at": "2026-05-11T18:56:00Z",
+    "analyzed_at": "2026-05-12T03:41:00Z",
     "pytest_command_ci": "python -m pytest tests/ -v --tb=short -x",
     "failure_phase": "test_execution",
     "first_error": {
       "type": "PermissionError",
-      "message": "[Errno 13] Permission denied: '/media/volker'",
-      "trigger_file": "tests/test_safe_device_storage_protection_v1.py",
-      "trigger_test": "TestSafeDeviceStorageProtectionV1::test_validate_allows_external_media_mount",
-      "line": 178
+      "message": "[Errno 13] Permission denied: '/etc/sudoers.d/setuphelfer-runner'",
+      "trigger_file": "tests/test_deploy_runner_permission_boundary_v1.py",
+      "trigger_test": "TestDeployRunnerPermissionBoundaryV1::test_no_sudoers_file_written",
+      "line": 114
     },
-    "root_cause_summary": "Nachdem `test_session_missing` lokal + bis zur Phase3-Gate-Ebene deterministisch gemockt ist, bricht CI beim nächsten -x-Blocker im SafeDevice-Mount-Fall ab: PermissionError beim Anlegen unter `/media`.",
-    "log_source": "gh run view 25690310122 --log-failed"
+    "root_cause_summary": "Nach Workspace-Sync-Commit 36d234b bricht CI beim ersten -x-Stop in `test_no_sudoers_file_written` ab: `Path.exists()` unter `/etc/sudoers.d/` löst auf dem GitHub-Runner PermissionError aus (nicht `False`). Das ist ein neuer Blocker gegenüber dem früheren Safe-Device-/media-Problem.",
+    "log_source": "gh run view 25691681846 --log-failed"
   },
   "rescue_dryrun_smartctl_remediation": {
     "analysis_doc": "docs/evidence/release-gates/ci_rescue_dryrun_smartctl_analysis_2026-05-11.md",
@@ -67,10 +76,10 @@
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Volle Suite lokal grün; Remote -x stoppt jetzt nach Session-Missing-Fix an `tests/test_safe_device_storage_protection_v1.py::test_validate_allows_external_media_mount` (PermissionError `/media`)."
+    "note": "Lokaler Snapshot kann von GitHub -x-Reihenfolge abweichen; Remote-Stand 36d234b: Run 25691681846 scheitert an deploy permission boundary (`test_no_sudoers_file_written`, PermissionError auf `/etc/sudoers.d/...`)."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Diagnostics-Mapping und smartctl-Handling sind behoben. Der zuvorige Phase3 Gate `test_session_missing`-Mismatch ist behoben; Gesamt-CI bleibt rot, weil der nächste -x-Blocker jetzt im SafeDevice-Mount-Pfad auf `/media` scheitert.",
+  "notes": "Workspace-Sync 36d234b: Commit-Hygiene-Doku `post_workspace_sync_commit_hygiene_2026-05-11.md`. CI zu diesem SHA: failure Run 25691681846 — erster Fehler PermissionError in `test_deploy_runner_permission_boundary_v1.py::test_no_sudoers_file_written` (Path.exists auf /etc/sudoers.d). GitHub Actions noch nicht success → Ampel rot.",
   "ampel": "rot",
   "evidence_complete": false,
   "failure_root_cause_documented": true,

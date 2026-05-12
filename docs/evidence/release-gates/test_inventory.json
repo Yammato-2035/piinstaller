@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "test_inventory",
-  "generated": "2026-05-11T20:25:00Z",
+  "generated": "2026-05-12T03:41:31Z",
   "source": "backend/tests",
   "test_file_count": 190,
   "ampel": "gelb",
@@ -12,7 +12,7 @@
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json"
   },
-  "notes": "Inventar aus Dateisystem; gr\u00fcn erst wenn CI gr\u00fcn und Hardware-E2E-Evidence vorliegt. Pytest 1526 passed; data/diagnostics versioniert (Diagnostics-CI) sowie inspect_storage toleriert fehlendes smartctl (Rescue-Dryrun). Phase3 Gate `test_session_missing` ist behoben (Commit b8af051); CI bleibt aktuell rot wegen SafeDevice-Mount PermissionError unter `/media` (Run 25690310122). Evidence: ci_diagnostics_evidence_mapping_analysis_2026-05-11.md + ci_rescue_dryrun_smartctl_analysis_2026-05-11.md + ci_rescue_phase3_session_error_analysis_2026-05-11.md.",
+  "notes": "Inventar aus Dateisystem; gr\u00fcn erst wenn CI gr\u00fcn und Hardware-E2E-Evidence vorliegt. Pytest lokal Snapshot siehe current_failures.json. Remote-CI zu 36d234b: Run 25691681846 failure (`test_no_sudoers_file_written`). Commit-Hygiene: post_workspace_sync_commit_hygiene_2026-05-11.md.",
   "test_files": [
     "test_anti_regression.py",
     "test_api_consistency_fix9_v1.py",

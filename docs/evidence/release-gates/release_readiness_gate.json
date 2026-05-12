@@ -1,14 +1,14 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-11T18:56:43Z",
+  "generated": "2026-05-12T03:41:31Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "Diagnostics-Mapping/Seeds auf main; Rescue-Dryrun smartctl fehlt wurde tolerant behandelt; Phase3 Gate `test_session_missing` ist (lokal + CI bis dahin) behoben (Commit b8af051). CI bleibt rot, weil der nächste -x-Stop im SafeDevice-Mount-Pfad auf `/media` scheitert (PermissionError; Run 25690310122). BR-001 weiter blockiert.",
+  "summary": "Workspace-Sync 36d234b: Commit-Hygiene dokumentiert (`post_workspace_sync_commit_hygiene_2026-05-11.md`). GitHub CI zu diesem SHA: Run **25691681846** — **failure**; erster -x-Fehler: `test_deploy_runner_permission_boundary_v1.py::test_no_sudoers_file_written` (PermissionError bei `Path.exists` unter `/etc/sudoers.d`). **Kein CI-success** → Release weiter blockiert. BR-001 unverändert.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
-    "GitHub Actions: Run 25690310122 — nächster -x-Fehler SafeDevice-Mount (`tests/test_safe_device_storage_protection_v1.py::test_validate_allows_external_media_mount`, PermissionError `/media/volker`)"
+    "GitHub Actions: Run 25691681846 (head 36d234b) — failure: Deploy permission boundary `test_no_sudoers_file_written` (PermissionError `/etc/sudoers.d/setuphelfer-runner`)"
   ],
   "pytest_note": "Lokales pytest tests/ am 2026-05-11 (Prompt 2 erneut, ~21:15Z): 0 failures, 1526 passed — current_failures.json; Release bleibt über P0/CI blockiert.",
   "recommendation": "do_not_release"
