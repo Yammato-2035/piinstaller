@@ -382,6 +382,19 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
             validate_write_target("/dev/nvme0n1", runner=fake_run)
 
 
+class TestFindmntBracketBlockSource(unittest.TestCase):
+    def test_normalize_strips_findmnt_bind_subpath_suffix(self) -> None:
+        from core.safe_device import _normalize_findmnt_bracket_block_source
+
+        self.assertEqual(
+            _normalize_findmnt_bracket_block_source("/dev/sdd1[/setuphelfer-backups]"),
+            "/dev/sdd1",
+        )
+        self.assertEqual(_normalize_findmnt_bracket_block_source("/dev/nvme0n1p2[/snap]"), "/dev/nvme0n1p2")
+        self.assertEqual(_normalize_findmnt_bracket_block_source("/dev/mmcblk0p1[/x]"), "/dev/mmcblk0p1")
+        self.assertEqual(_normalize_findmnt_bracket_block_source("/dev/sdd1"), "/dev/sdd1")
+
+
 class TestDiagnosticsMatcherStorageProtection(unittest.TestCase):
     def test_matcher_maps_storage_signal(self) -> None:
         from core.diagnostics.matcher import match_diagnoses

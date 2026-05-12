@@ -464,6 +464,22 @@ def _simple_block_source(src: str) -> bool:
     )
 
 
+_FINDMNT_BRACKET_BLOCK = re.compile(
+    r"^(/dev/(?:sd[a-z]+\d+|nvme\d+n\d+(?:p\d+)?|mmcblk\d+(?:p\d+)?))\[.+]$"
+)
+
+
+def _normalize_findmnt_bracket_block_source(src: str) -> str:
+    """
+    findmnt -J kann bei Bind-Mounts auf ein Unterverzeichnis SOURCE wie
+    ``/dev/sdd1[/subdir]`` liefern. Für Allowlist und Blockklassifikation
+    wird nur die Partition (/dev/sdd1, …) verwendet.
+    """
+    s = (src or "").strip()
+    m = _FINDMNT_BRACKET_BLOCK.match(s)
+    return m.group(1) if m else s
+
+
 def _is_block_device_path(dev_path: str) -> bool:
     try:
         st = os.stat(dev_path)
@@ -488,6 +504,7 @@ def _resolve_block_source_candidate(src: str, *, runner: Runner | None = None) -
     s = (src or "").strip()
     if not s:
         return None, "empty_source"
+    s = _normalize_findmnt_bracket_block_source(s)
     if "mapper" in s:
         return None, "mapper_not_allowed"
     if s.startswith("/dev/disk/by-uuid/"):
