@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-12T17:55:00Z",
+  "generated": "2026-05-12T20:08:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success** (HEAD `55d7cec`). **STRICT BR (2026-05-12):** Externer Pfad `/media/gabriel/setuphelfer-back/setuphelfer-backups` freigegeben und per Shell extern verifiziert; **BR-001** dennoch **blocked** (Produktions-API :8000 STORAGE-001 / Dienst-Traverse; kein Full-Backup gestartet). **BR-004/BR-005** **blocked** ohne Archiv. **Release gesamt** weiter blockiert.",
+  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** Service-User-Zugriff und findmnt-Diagnose dokumentiert (`BR-001_target_access_analysis_2026-05-12.md`); **Code-Fix** findmnt-Flatten in `app.py` (keine Allowlist-Änderung). **BR-001** weiter **blocked** bis Betrieb Traverse/Bind-Mount freigibt und produktives target-check grün ist. **Release gesamt** blocked."
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
   ],

@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.blocker_inventory.v1",
   "id": "blocker_inventory",
-  "generated": "2026-05-12T17:55:00Z",
+  "generated": "2026-05-12T20:08:00Z",
   "prompt02_rerun": {
     "executed_at": "2026-05-11T21:15:00Z",
     "spec": "docs/cursor/PROMPT_02_BLOCKER_INVENTORY.md",
@@ -49,7 +49,7 @@
     "missing_tests_notes": [
       "GitHub CI (`ci.yml`): Run **25751304968** — **success** (55d7cec). Historie: Harness-Failure 25750787235; sudoers 25691681846.",
       "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
-      "STRICT BR 2026-05-12: BR-001 blocked trotz freigegebenem externem Pfad (Produktions-API STORAGE-001 / Dienst-Traverse / kein Full-Job); BR-004/005 blocked — BR-001.json",
+      "BR-001 2026-05-12: Ursache A+C dokumentiert; findmnt-Flatten-Fix app.py; Betrieb ACL/Bind-Mount ausstehend — BR-001.json, BR-001_target_access_analysis_2026-05-12.md",
       "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix)",
       "Echter Read-only Rescue-Stick-Lauf (RS-*, Evidence rot)"
     ],

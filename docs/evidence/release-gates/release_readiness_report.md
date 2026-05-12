@@ -5,7 +5,7 @@
 
 ## Kurzfassung
 
-**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001:** Freigegebener externer Zielpfad per `findmnt`/`lsblk` **extern (/dev/sdd1)**; **Produktions-Backend** `127.0.0.1:8000` verweigert denselben Pfad mit **STORAGE-PROTECTION-001** (Kontext `setuphelfer` vs. ACL/0750 auf `/media/gabriel`); **kein** Full-Backup-Archiv erzeugt. **BR-004/BR-005** ohne Archiv **blocked**. **Release gesamt** **blocked**. **Pytest** siehe `current_failures.json`.
+**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001 / Zielzugriff:** Analyse `docs/evidence/backup-restore/BR-001_target_access_analysis_2026-05-12.md` — Ursache A (Traverse) + C (findmnt-Flatten-Fix im Repo). Produktions-API bleibt bis Betriebs-Freigabe (ACL/Bind-Mount) und Deploy **blocked** für denselben Pfad.
 
 ## Ampelüberblick
 

@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-12 — **CI (`ci.yml`):** Run **25751304968** = **success** (`ci_evidence.json` Ampel grün). **Release-Gesamtbild:** weiter rot (BR-001 externer Pfad freigegeben, aber Run **blocked**: Dienst-API + kein Full-Archiv; BR-004/005 kettenblockiert; Restore Preview / HW-E2E offen).  
+**Stand:** 2026-05-12 — **CI:** Run **25751304968** success. **BR-001:** Analyse + findmnt-Fix im Repo; Dienst-Zielzugriff weiter Betriebs-Thema (Traverse `/media/gabriel`). **Release** rot.  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

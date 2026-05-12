@@ -22,7 +22,7 @@
       "realpath": "/media/gabriel/setuphelfer-back/setuphelfer-backups",
       "findmnt_T": "TARGET=/media/gabriel/setuphelfer-back SOURCE=/dev/sdd1 FSTYPE=ext4 (rw,nosuid,nodev,…)",
       "df_h": "/dev/sdd1 auf /media/gabriel/setuphelfer-back — ca. 679 GB frei (22% belegt)",
-      "lsblk_sdd": "sdd1 ext4 LABEL setuphelfer-back → /media/gabriel/setuphelfer-back; sdd2 ntfs → /media/gabriel/windows-backup",
+      "lsblk_sdd": "sdd1 ext4 LABEL setuphelfer-back — MOUNTPOINTS: /mnt/setuphelfer/backups und /media/gabriel/setuphelfer-back; sdd2 ntfs → /media/gabriel/windows-backup",
       "stat_dir": "drwxrwsr-x root:setuphelfer auf Elternvolume; Unterverzeichnis setuphelfer-backups drwxrwsr-x gabriel:setuphelfer",
       "quelle_vs_ziel": "Repo/Quelle /home/volker/piinstaller ≠ Zielpfad (keine Identität)",
       "kein_root_home_tmp_var_efi": "Ziel liegt unter /media auf Partition sdd1, nicht auf nvme0n1p2 (/), /boot/efi, /home, /tmp, /var"
@@ -32,33 +32,42 @@
       "classification": "allowed",
       "detail": "resolve_mount_source → /dev/sdd1; ClassifiedDevice is_system_disk=false, is_foreign_os_disk=false"
     },
+    "cause_classification": {
+      "A_service_traverse": true,
+      "B_desktop_user_mount_path": true,
+      "C_findmnt_json_not_flattened": true,
+      "summary": "A: setuphelfer ohne Traverse auf /media/gabriel (0750 + ACL user:gabriel:r-x, other::---). B: Pfad unter /media/<user>/…. C: findmnt -J children wurden in _findmnt_mounts nicht eingebunden; Root-Match zu breit → irreführendes mount-JSON (behoben: _flatten_findmnt_filesystems in app.py)."
+    },
     "production_api": {
       "endpoint": "GET http://127.0.0.1:8000/api/backup/target-check (uvicorn setuphelfer, /opt/setuphelfer/backend)",
       "classification": "blocked",
       "code": "backup.path_invalid",
       "diagnosis_id": "STORAGE-PROTECTION-001",
-      "hypothesis_root_cause": "/media/gabriel ist 0750 root:root mit ACL user:gabriel:r-x — Dienstnutzer setuphelfer (uid 995, nur Gruppe setuphelfer) kann /media/gabriel nicht traversieren; Validierung im Dienstkontext scheitert konservativ mit Systemplatten-Fehlercode.",
-      "note": "Gleiche core.safe_device-Validierung aus venv interaktiv als gabriel: OK. Abweichung ist Laufzeitkontext / Pfad-Traverse, nicht das freigegebene Zielmedium selbst."
+      "confirmed_root_cause_A": "getfacl /media/gabriel: user:gabriel:r-x; other::--- — id setuphelfer hat keine Traverse-Rechte auf /media/gabriel; _validate_backup_dir schlägt im Dienst fehl.",
+      "note": "STORAGE-001 ist Symptom der harten Klassifikation nach fehlgeschlagener/verkürzter Pfadauflösung im Dienstkontext; primärer Betriebsfix bleibt Traverse (Option 1/2 in Analyse-Markdown)."
     },
     "workspace_api_smoke": {
       "tool": "starlette.testclient gegen app aus /home/volker/piinstaller/backend; Interpreter /opt/setuphelfer/backend/venv/bin/python3",
       "target_check_status": "success",
       "target_check_code": "backup.target_check_ok",
       "write_test": "Schreibtest ok (User)",
-      "api_mount_block_anomaly": "JSON-Feld mount zeigte fälschlich TARGET=/ SOURCE=/dev/nvme0n1p2 — widerspricht findmnt -T; Ground Truth bleibt Shell-findmnt + validate_write_target."
+      "findmnt_mount_json_fix": "Repo: _findmnt_mounts flacht findmnt-children; _best_mount_for_path wählt längsten TARGET (z. B. /media/gabriel/setuphelfer-back statt /). Deploy auf /opt ausstehend."
     },
     "full_backup_not_started": {
       "reason": "type=full würde per Code tar über gesamtes / (Ausnahmen u. a. /media) ausführen — Laufzeit/Größe außerhalb dieser Evidence-Session; zusätzlich blockiert produktiver Einstieg über :8000 wie oben.",
       "no_dd_mkfs_restore": true
     }
   },
+  "target_access_analysis": "docs/evidence/backup-restore/BR-001_target_access_analysis_2026-05-12.md",
   "logs": [
-    "Phase 1: realpath/findmnt/df/stat/lsblk — externes ext4-Ziel verifiziert.",
-    "Phase 2: validate_write_target (Workspace-CLI) allowed; GET :8000/target-check blocked STORAGE-001; TestClient target-check success mit mount-JSON-Anomalie.",
-    "Phase 3: kein POST /api/backup/create — kein Full-Backup-Job gestartet."
+    "Phase 1: realpath/findmnt/df/stat/getfacl/id/systemctl — siehe Analyse-Markdown.",
+    "Phase 2: sudo -n -u setuphelfer test … nicht ausführbar (Passwort) — Traverse aus ACL/stat abgeleitet.",
+    "Phase 3–5: Codepfad _findmnt_mounts / _best_mount_for_path analysiert; Ursache A+B+C dokumentiert.",
+    "Phase 6–7: Minimalfix findmnt-Flatten + pytest (siehe Commit); keine Allowlist-Änderung.",
+    "Kein POST /api/backup/create — kein Full-Backup-Job."
   ],
   "started_at": "2026-05-12T17:53:06Z",
-  "completed_at": "2026-05-12T17:53:06Z",
+  "completed_at": "2026-05-12T20:05:00Z",
   "environment": {
     "hostname": "volker-ROG-Strix",
     "executing_user": "gabriel",
@@ -66,11 +75,14 @@
     "version_file": "1.5.0.0"
   },
   "notes": [
-    "Freigegebener Pfad exakt wie vom Betreiber genutzt; keine anderen Schreibziele.",
-    "Nächster technischer Schritt für grünes Gate: ACL oder Gruppe für setuphelfer auf /media/gabriel (Traverse), oder Backup unter /mnt/… mit Dienstzugriff; danach Full-Backup geplant einplanen (Laufzeit).",
+    "Freigegebener Pfad unverändert; keine anderen Schreibziele.",
+    "Produktcode: findmnt-Flatten in app.py (keine safe_device-Abschwächung).",
+    "Freigabe für nächsten Schritt: Betrieb wählt Option 1 (ACL setuphelfer auf /media/gabriel) oder Option 2 (/mnt/setuphelfer/backups + Bind-Mount) und startet Dienst neu / deployt Fix.",
     "Keine Backup-Archive ins Repository."
   ],
   "result": "blocked",
   "api_code": null,
-  "artifacts": []
+  "artifacts": [
+    "docs/evidence/backup-restore/BR-001_target_access_analysis_2026-05-12.md"
+  ]
 }

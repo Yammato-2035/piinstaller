@@ -11715,6 +11715,26 @@ def _lsblk_tree() -> dict:
     except Exception:
         return {}
 
+
+def _flatten_findmnt_filesystems(nodes: Any) -> list[dict[str, Any]]:
+    """
+    Flacht findmnt -J \"filesystems\" rekursiv ab (children-Keys).
+    Ohne Flatten liefert findmnt nur die Wurzelknoten — dann sieht target-check
+    fälschlich nur TARGET=/ und wählt die Root-Partition statt des echten Mounts.
+    """
+    out: list[dict[str, Any]] = []
+    if not isinstance(nodes, list):
+        return out
+    for n in nodes:
+        if not isinstance(n, dict):
+            continue
+        out.append(n)
+        ch = n.get("children")
+        if isinstance(ch, list):
+            out.extend(_flatten_findmnt_filesystems(ch))
+    return out
+
+
 def _findmnt_mounts() -> list[dict]:
     """
     Liefert Mounts aus findmnt (JSON), inkl. TARGET mit Leerzeichen.
@@ -11724,7 +11744,7 @@ def _findmnt_mounts() -> list[dict]:
         if not res["success"]:
             return []
         data = json.loads(res.get("stdout", "") or "{}")
-        return data.get("filesystems", []) or []
+        return _flatten_findmnt_filesystems(data.get("filesystems", []) or [])
     except Exception:
         return []
 
