@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-12 — **Hygiene-Fix** nach 36d234b: Mode-Inventory + Artefakt-Inventory; `backend/cache/deploy/` aus Index + `.gitignore`; Permission-Boundary-Test CI-portabel. **CI:** neuen Lauf nach Push dokumentieren — **kein Grün** ohne GitHub `success`. Referenz failure: Run **25691681846** (SHA 36d234b).  
+**Stand:** 2026-05-12 — **CI** nach Hygiene **7e0323b:** Run **25712570438** = **failure** (`test_deploy_write_harness_v1`, `/mnt/setuphelfer`). Referenz 36d234b: Run **25691681846**. **Kein „CI grün“** ohne GitHub `success`.  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition

@@ -90,5 +90,5 @@ Siehe aktualisierte Dateien unter `docs/evidence/release-gates/` und `docs/roadm
 
 ## 6. Nächster offener Blocker (CI)
 
-- Nach Push des Hygiene-Commits: **neuen** GitHub Actions-Lauf dokumentieren (**kein „CI grün“** ohne `conclusion: success`).
-- Vorheriger Referenz-Lauf zu `36d234b`: **25691681846** (failure — siehe Historie oben).
+- **Nach Hygiene-Push (HEAD `7e0323b`):** CI Run **25712570438** — **failure**; erster `-x`-Fehler: `tests/test_deploy_write_harness_v1.py::TestDeployWriteHarnessV1::test_execute_writes_limited_and_sha` — `PermissionError: '/mnt/setuphelfer'` beim `mkdir` in `setUp` (Runner hat kein beschreibbares `/mnt/setuphelfer`). URL: https://github.com/Yammato-2035/piinstaller/actions/runs/25712570438 — **kein „CI grün“**.
+- **Referenz-Lauf zu `36d234b`:** Run **25691681846** (failure — `test_no_sudoers_file_written` / `/etc/sudoers.d`, siehe Abschnitt 1).

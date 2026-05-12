@@ -1,15 +1,15 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-12T12:00:00Z",
+  "generated": "2026-05-12T12:10:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "Workspace-Sync 36d234b: Hygiene-Fix (Modes/Artefakte/Runner-Test-Portabilität) eingereicht — Outcome über neuen GitHub Actions-Lauf zu verifizieren. Referenz-CI zu 36d234b: Run **25691681846** (failure). **Kein CI-success** bis `conclusion: success`. BR-001 unverändert.",
+  "summary": "Hygiene-Commit 7e0323b gepusht. Aktueller CI-Lauf **25712570438** — **failure** (erster -x: `test_deploy_write_harness_v1`, PermissionError `/mnt/setuphelfer`). Referenz 36d234b: Run **25691681846**. **Kein CI-success** → Release blockiert. BR-001 unverändert.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium",
-    "GitHub Actions: Run 25691681846 (head 36d234b) — failure: Deploy permission boundary `test_no_sudoers_file_written` (PermissionError `/etc/sudoers.d/setuphelfer-runner`)"
+    "GitHub Actions: Run **25712570438** (head 7e0323b, Hygiene) — failure: `test_deploy_write_harness_v1::test_execute_writes_limited_and_sha` (PermissionError `/mnt/setuphelfer`). Historisch 36d234b: Run **25691681846** — `test_no_sudoers_file_written`."
   ],
-  "pytest_note": "Lokales pytest tests/ am 2026-05-11 (Prompt 2 erneut, ~21:15Z): 0 failures, 1526 passed — current_failures.json; Release bleibt über P0/CI blockiert.",
+  "pytest_note": "Lokales pytest tests/ nach Hygiene (2026-05-12): 0 failures, 1526 passed — current_failures.json; Remote CI weiter rot (Run 25712570438).",
   "recommendation": "do_not_release"
 }

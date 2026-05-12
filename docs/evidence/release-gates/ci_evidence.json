@@ -1,27 +1,35 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "ci_evidence",
-  "generated": "2026-05-12T12:00:00Z",
+  "generated": "2026-05-12T12:10:00Z",
   "workflow_file": ".github/workflows/ci.yml",
   "workflow_name": "CI",
   "repository": "https://github.com/Yammato-2035/piinstaller",
   "latest_runs_queried": 5,
-  "latest_run": {
+  "reference_ci_run_workspace_sync_36d234b": {
     "database_id": 25691681846,
     "conclusion": "failure",
-    "created_at": "2026-05-11T19:14:23Z",
-    "updated_at": "2026-05-11T19:15:29Z",
-    "head_branch": "main",
     "head_sha": "36d234be5505ec92e51621dee52111db797176a3",
     "display_title": "chore: workspace sync; Fix CI safe device external media test",
     "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25691681846",
+    "first_failure_summary": "test_deploy_runner_permission_boundary_v1::test_no_sudoers_file_written — PermissionError auf /etc/sudoers.d bei Path.exists"
+  },
+  "latest_run": {
+    "database_id": 25712570438,
+    "conclusion": "failure",
+    "created_at": "2026-05-12T04:02:29Z",
+    "updated_at": "2026-05-12T04:03:39Z",
+    "head_branch": "main",
+    "head_sha": "7e0323bd394358fa385352a5502232e7f41415a7",
+    "display_title": "chore: clean workspace sync modes and artifacts",
+    "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25712570438",
     "jobs": [
       {
         "name": "lint-and-test",
         "conclusion": "failure",
         "failed_step": "Pytest",
         "failed_step_number": 8,
-        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25691681846"
+        "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25712570438"
       }
     ]
   },
@@ -49,9 +57,21 @@
     "evidence_store_commit": "9a2b96cb9437239ac4aa321b9f3cf2398a3e1ac4"
   },
   "failure_analysis": {
-    "analyzed_at": "2026-05-12T03:41:00Z",
+    "analyzed_at": "2026-05-12T12:10:00Z",
     "pytest_command_ci": "python -m pytest tests/ -v --tb=short -x",
     "failure_phase": "test_execution",
+    "first_error": {
+      "type": "PermissionError",
+      "message": "[Errno 13] Permission denied: '/mnt/setuphelfer'",
+      "trigger_file": "tests/test_deploy_write_harness_v1.py",
+      "trigger_test": "TestDeployWriteHarnessV1::test_execute_writes_limited_and_sha",
+      "line": 46
+    },
+    "root_cause_summary": "Hygiene-Commit 7e0323b: erster -x-Stop in `test_deploy_write_harness_v1` — `setUp` legt `self.cache` unter `/mnt/setuphelfer/cache/deploy` an; auf dem GitHub-Runner schlägt `mkdir` für `/mnt/setuphelfer` mit PermissionError fehl (kein success). Vorheriger Referenz-Lauf zu 36d234b: Run 25691681846 (Permission-Boundary sudoers).",
+    "log_source": "gh run view 25712570438 --log-failed"
+  },
+  "failure_analysis_workspace_sync_36d234b": {
+    "analyzed_at": "2026-05-12T03:41:00Z",
     "first_error": {
       "type": "PermissionError",
       "message": "[Errno 13] Permission denied: '/etc/sudoers.d/setuphelfer-runner'",
@@ -59,7 +79,6 @@
       "trigger_test": "TestDeployRunnerPermissionBoundaryV1::test_no_sudoers_file_written",
       "line": 114
     },
-    "root_cause_summary": "Nach Workspace-Sync-Commit 36d234b bricht CI beim ersten -x-Stop in `test_no_sudoers_file_written` ab: `Path.exists()` unter `/etc/sudoers.d/` löst auf dem GitHub-Runner PermissionError aus (nicht `False`). Das ist ein neuer Blocker gegenüber dem früheren Safe-Device-/media-Problem.",
     "log_source": "gh run view 25691681846 --log-failed"
   },
   "rescue_dryrun_smartctl_remediation": {
@@ -81,10 +100,10 @@
     "passed": 1526,
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json",
-    "note": "Nach Hygiene-Fix lokal erneut 1526 passed; Remote-Stand zu 36d234b: Run 25691681846 (failure). Neuen Actions-Lauf nach Hygiene-Push dokumentieren."
+    "note": "Lokal nach Hygiene-Commit 1526 passed. Remote CI Run 25712570438 (HEAD 7e0323b): failure — erster -x-Fehler `test_deploy_write_harness_v1::test_execute_writes_limited_and_sha` (mkdir /mnt/setuphelfer). Referenz-Lauf 36d234b: Run 25691681846."
   },
   "workflow_steps_documented": ["Checkout", "Python 3.12", "pip install", "ruff", "bandit", "pytest -v --tb=short -x"],
-  "notes": "Workspace-Sync 36d234b + Hygiene-Fix (Modes/Artefakte/Runner-Test-Portabilität): Inventare `mode_change_inventory_2026-05-11.json` + `workspace_artifact_inventory_2026-05-11.json` / `post_workspace_sync_commit_hygiene_2026-05-11.md`. Referenz-CI zu 36d234b: failure Run 25691681846. Nach Push des Hygiene-Commits neuen Run-ID in ci_evidence eintragen — bis `conclusion: success` Ampel rot.",
+  "notes": "Hygiene-Commit `chore: clean workspace sync modes and artifacts` (7e0323b) gepusht. Aktueller CI-Lauf: Run **25712570438** — **failure** (erster -x: `test_deploy_write_harness_v1`, /mnt/setuphelfer). Historie 36d234b: Run **25691681846**. Inventare + `post_workspace_sync_commit_hygiene_2026-05-11.md`. Ampel rot bis GitHub `conclusion: success`.",
   "ampel": "rot",
   "evidence_complete": false,
   "failure_root_cause_documented": true,
