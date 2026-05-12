@@ -35,6 +35,14 @@
     "systemctl_restart": "nicht_ausgefuehrt_sudo_passwort",
     "sudo_u_setuphelfer_tests": "nicht_ausgefuehrt_sudo_passwort"
   },
+  "device_mount_baseline_2026_05_12": {
+    "captured_at": "2026-05-12T22:15:00Z",
+    "mode": "read_only",
+    "result": "blocked",
+    "summary": "/mnt/setuphelfer/backups auf nvme0n1p2 (Root); setuphelfer-back nur auf /dev/sda1 → /media/gabriel/setuphelfer-back; mehrere USB-Medien; keine Freigabe für BR-Pfad bis Bind+Freigabe.",
+    "evidence_md": "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.md",
+    "evidence_json": "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.json"
+  },
   "productive_target_check": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/mnt/setuphelfer/backups&create=0",
     "result": "error",
@@ -57,14 +65,17 @@
     "repo_path": "/home/volker/piinstaller"
   },
   "notes": [
-    "Nächste Freigabe: Hardware so anbinden, dass Freigabe (/dev/sdd1/setuphelfer-back) mit lsblk übereinstimmt ODER neue Freigabe für aktuelles sda1-Volume; dann Bind /mnt/setuphelfer/backups darauf; dann Deploy Fixes + sudo systemctl restart + curl target-check.",
-    "Repo main enthält weiterhin findmnt-Flatten + Klammer-Normalisierung — erst nach validiertem externen Mount deployen."
+    "Baseline 2026-05-12: siehe BR-001_device_mount_baseline_* — externes setuphelfer-back ist /dev/sda1 UUID adbd53e5-… unter /media/gabriel/setuphelfer-back; /mnt/setuphelfer/backups liegt auf Root nvme0n1p2 bis ein Bind definiert ist.",
+    "Nächste Freigabe: schriftlich UUID+PATH wie Baseline; Bind /mnt/setuphelfer/backups auf freigegebenen Unterpfad; dann Deploy + restart + target-check (kein BR-001-Backup vorher).",
+    "Repo main: findmnt-Flatten + Klammer-Normalisierung — erst nach validiertem externen Mount deployen."
   ],
   "result": "blocked",
   "api_code": "backup.path_invalid",
   "artifacts": [
     "docs/evidence/backup-restore/BR-001_target_access_analysis_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_mnt_setuphelfer_target_prepare_2026-05-12.md",
-    "docs/evidence/backup-restore/BR-001_productive_target_check_2026-05-12.md"
+    "docs/evidence/backup-restore/BR-001_productive_target_check_2026-05-12.md",
+    "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.md",
+    "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.json"
   ]
 }

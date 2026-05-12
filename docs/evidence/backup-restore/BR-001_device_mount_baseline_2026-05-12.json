@@ -1,0 +1,102 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "BR-001_device_mount_baseline",
+  "test_id": "BR-001",
+  "status": "blocked",
+  "ampel": "rot",
+  "evidence_complete": true,
+  "executed_at": "2026-05-12T22:15:00Z",
+  "mode": "read_only_strict",
+  "environment": {
+    "hostname": "volker-ROG-Strix",
+    "repo_path": "/home/volker/piinstaller"
+  },
+  "phase1_snapshot": {
+    "lsblk_summary": {
+      "label_setuphelfer_back": [
+        {
+          "path": "/dev/sda1",
+          "fstype": "ext4",
+          "label": "setuphelfer-back",
+          "uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+          "mountpoints": "/media/gabriel/setuphelfer-back",
+          "tran": "usb",
+          "model": "Samsung SSD 970 EVO Plus 2TB"
+        }
+      ],
+      "ext4_removable_usb": ["/dev/sda1"],
+      "other_usb_mounts": [
+        {"path": "/dev/sdb1", "fstype": "vfat", "label": "SDCARD1", "mount": "/media/gabriel/SDCARD1"},
+        {"path": "/dev/sdd1", "fstype": "exfat", "label": "INTENSO", "mount": "/media/gabriel/INTENSO"},
+        {"path": "/dev/sda2", "fstype": "ntfs", "label": "windows-backup", "mount": "/media/gabriel/windows-backup"}
+      ],
+      "internal_root": {"path": "/dev/nvme0n1p2", "fstype": "ext4", "uuid": "57b5dd3e-2461-41f2-821a-3c81ed058dcd", "mount": "/"}
+    },
+    "findmnt_T_mnt_setuphelfer_backups": {
+      "target": "/",
+      "source": "/dev/nvme0n1p2",
+      "fstype": "ext4",
+      "on_internal_nvme_root": true
+    },
+    "findmnt_T_media_setuphelfer_back": {
+      "target": "/media/gabriel/setuphelfer-back",
+      "source": "/dev/sda1",
+      "fstype": "ext4",
+      "rw": true
+    },
+    "stat_mnt_setuphelfer_backups": {
+      "path": "/mnt/setuphelfer/backups",
+      "device_major_minor": "259/9",
+      "uid_gid": "root:setuphelfer",
+      "mode": "2770"
+    }
+  },
+  "phase2_consistency": {
+    "exactly_one_external_backup_medium": false,
+    "unique_uuid_for_setuphelfer_back_volume": true,
+    "label_uuid_device_mount_coherent_for_sda1": true,
+    "mnt_setuphelfer_backups_on_external_or_bind": false,
+    "findmnt_T_mnt_points_to_external": false,
+    "external_sda1_rw": true,
+    "mnt_backups_is_internal_not_root_separate_fs": false,
+    "mnt_backups_on_internal_nvme_with_root": true,
+    "conflicting_labels_or_duplicate_setuphelfer_back": false,
+    "multiple_removable_devices_present": true
+  },
+  "phase3_release_recommendation": {
+    "unambiguous_for_br001_path": false,
+    "primary_external_ext4_candidate": {
+      "device": "/dev/sda1",
+      "uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+      "label": "setuphelfer-back",
+      "fstype": "ext4",
+      "current_mount": "/media/gabriel/setuphelfer-back"
+    },
+    "br001_intended_path_requires_bind": "/mnt/setuphelfer/backups",
+    "legacy_approval_sdd1_setuphelfer_back": "inconsistent_with_current_lsblk_sdd1_is_intenso_exfat",
+    "br001_status": "blocked"
+  },
+  "phase4_productive_readonly": {
+    "opt_backend_path": "/opt/setuphelfer/backend",
+    "opt_backend_is_git_repo": false,
+    "api_version_sample": {
+      "url": "http://127.0.0.1:8000/api/version",
+      "version": "1.5.0.0",
+      "install_profile": "opt",
+      "app_edition": "release"
+    },
+    "deploy_procedure_known_not_executed": "diff/cp selected backend files to /opt; backup old files; sudo systemctl restart setuphelfer-backend",
+    "must_clarify_before_deploy": [
+      "Bind or mount /mnt/setuphelfer/backups to approved UUID subpath",
+      "Written approval matching current PATH and UUID (not obsolete sdd1+setuphelfer-back)",
+      "Service user traverse/write verification",
+      "sudo policy for restart if needed"
+    ]
+  },
+  "artifacts": [
+    "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.md"
+  ],
+  "notes": [
+    "No backup, restore, dd, mkfs, mount, chmod, systemctl, deploy executed in this capture."
+  ]
+}

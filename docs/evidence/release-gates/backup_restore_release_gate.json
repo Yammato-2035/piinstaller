@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-12T21:05:00Z",
+  "generated": "2026-05-12T22:20:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
@@ -13,5 +13,5 @@
   },
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
   "partial_br_ids": [],
-  "notes": "BR-001 **blocked** (2026-05-12): produktiver target-check gegen /mnt/setuphelfer/backups → STORAGE-004 (nvme0n1p2[/mnt]); Host-Layout weicht von Freigabe ab (setuphelfer-back auf sda1, sdd1=INTENSO). Deploy kurz nach /opt, dann Rollback auf /tmp/setuphelfer-deploy-backup-20260512T194722Z; systemctl restart nicht möglich (sudo Passwort). Evidence: BR-001_productive_target_check_2026-05-12.md, BR-001.json. Kein Backup. CI 25751304968 success."
+  "notes": "BR-001 **blocked**: Device-/Mount-Baseline 2026-05-12 (nur lesend) — /mnt/setuphelfer/backups auf Root nvme0n1p2; setuphelfer-back auf /dev/sda1 UUID adbd53e5-… → /media/gabriel/setuphelfer-back; mehrere USB-Medien; kein Bind des BR-Pfads. Evidence: BR-001_device_mount_baseline_2026-05-12.{md,json}, BR-001.json. Produktiver target-check zuvor STORAGE-004. Kein Backup. CI 25751304968 success."
 }

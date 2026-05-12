@@ -1,17 +1,17 @@
 # Release Readiness – Bericht
 
-**Generiert:** 2026-05-12 (STRICT — produktiver target-check, Deploy-Versuch, Rollback)  
+**Generiert:** 2026-05-12 (STRICT — Device-/Mount-Baseline, nur lesend)  
 **Gesamtstatus:** `blocked`
 
 ## Kurzfassung
 
-**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001:** Produktiver **`GET /api/backup/target-check?backup_dir=/mnt/setuphelfer/backups`** → **`backup.path_invalid`** / **STORAGE-PROTECTION-004** (`nvme0n1p2[/mnt]`). Freigabe **nur /dev/sdd1** passt nicht zum Ist-Layout (**setuphelfer-back** auf **sda1**, **sdd1** = anderes Volume). Kurzzeitiger Dateikopie-Deploy nach `/opt/setuphelfer/backend` wurde **zurückgerollt** (`/tmp/setuphelfer-deploy-backup-20260512T194722Z`). **`systemctl restart`** und **`sudo -u setuphelfer`**-Tests: nicht ohne interaktives Passwort. Vollständige Spur: `BR-001_productive_target_check_2026-05-12.md`, `BR-001.json`.
+**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001:** Lesende **Device-/Mount-Baseline** (`BR-001_device_mount_baseline_2026-05-12.{md,json}`): **`/mnt/setuphelfer/backups`** liegt auf **`/`** / **`/dev/nvme0n1p2`** (intern); Volume mit Label **`setuphelfer-back`** ist **`/dev/sda1`** (UUID **`adbd53e5-26fd-4723-b0f1-1880dbaa2719`**) unter **`/media/gabriel/setuphelfer-back`** — **kein** Bind des BR-Pfads auf dieses Medium; **mehrere** USB-Medien gleichzeitig. Zuvor: produktiver target-check STORAGE-004; Deploy-Versuch zurückgerollt. **Release gesamt** `blocked`.
 
 ## Ampelüberblick
 
 | Bereich | Status |
 |---------|--------|
-| Backup/Restore/Verify (Evidence) | Rot (BR-001 **blocked** — produktiver target-check fehlgeschlagen) |
+| Backup/Restore/Verify (Evidence) | Rot (BR-001 **blocked** — Baseline: BR-Pfad nicht auf externes UUID; target-check zuvor rot) |
 | Hardware | Rot |
 | Rescue Stick real | Rot |
 | CI-Nachweis aktuell | **Grün** (GitHub `ci.yml` Run **25751304968** success, HEAD 55d7cec) — Release gesamt wegen BR-001 weiter `blocked` |

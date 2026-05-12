@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.blocker_inventory.v1",
   "id": "blocker_inventory",
-  "generated": "2026-05-12T21:05:00Z",
+  "generated": "2026-05-12T22:20:00Z",
   "prompt02_rerun": {
     "executed_at": "2026-05-11T21:15:00Z",
     "spec": "docs/cursor/PROMPT_02_BLOCKER_INVENTORY.md",
@@ -49,7 +49,8 @@
     "missing_tests_notes": [
       "GitHub CI (`ci.yml`): Run **25751304968** — **success** (55d7cec). Historie: Harness-Failure 25750787235; sudoers 25691681846.",
       "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
-      "BR-001 2026-05-12: produktiver target-check /mnt/setuphelfer/backups → STORAGE-004; Freigabe vs. Host (sda1 vs. sdd1) — blocked; BR-001_productive_target_check_2026-05-12.md",
+      "BR-001 2026-05-12: Device-/Mount-Baseline (nur lesend) — BR-001_device_mount_baseline_2026-05-12.{md,json}; /mnt/setuphelfer/backups intern nvme; setuphelfer-back auf sda1 unter /media/gabriel/…",
+      "BR-001 2026-05-12: produktiver target-check /mnt/setuphelfer/backups → STORAGE-004; BR-001_productive_target_check_2026-05-12.md",
       "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix)",
       "Echter Read-only Rescue-Stick-Lauf (RS-*, Evidence rot)"
     ],

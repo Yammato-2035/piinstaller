@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-12T21:05:00Z",
+  "generated": "2026-05-12T22:20:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — produktiver `target-check` für `/mnt/setuphelfer/backups` rot (STORAGE-004); Geräte-Freigabe (/dev/sdd1) stimmt nicht mit aktuellem lsblk überein; Deploy nach /opt zurückgerollt; `systemctl restart` ohne interaktives sudo nicht möglich. **Release gesamt** blocked.",
+  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — Baseline 2026-05-12: BR-Pfad `/mnt/setuphelfer/backups` liegt auf internem Root-FS; externes Label `setuphelfer-back` nur auf `/dev/sda1` unter `/media/gabriel/...`; mehrere USB-Medien; Freigabe für BR-Pfad erst nach Bind+UUID-Freigabe. **Release gesamt** blocked.",
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
   ],
