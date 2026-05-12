@@ -91,7 +91,18 @@
     "message_excerpt": "STORAGE-PROTECTION-001: Schreibzugriff auf Systemplatte ist nicht erlaubt",
     "evidence_file": "docs/evidence/backup-restore/BR-001_productive_target_check_media_path_analysis_2026-05-12.md",
     "root_cause_categories": ["C_service_user_cannot_traverse_media_gabriel", "D_anchor_findmnt_resolves_to_root_nvme"],
-    "secondary_workspace_vs_opt": ["A_app_py_findmnt_helpers_drift", "B_safe_device_bracket_normalization_missing_on_opt"]
+    "secondary_workspace_vs_opt": ["A_app_py_findmnt_helpers_drift", "B_safe_device_bracket_normalization_missing_on_opt"],
+    "workspace_diagnostic_fix_2026_05_12": {
+      "summary": "Traverse-Verweigerung unter /media|/run/media → STORAGE-PROTECTION-006; API backup.target_traverse_denied; kein Fallback auf Root-Mount als Systemplatte",
+      "evidence_md": "docs/evidence/backup-restore/BR-001_target_permission_diagnostics_fix_2026-05-12.md",
+      "tests": "backend/tests/test_backup_target_permission_diagnostics_v1.py",
+      "productive_api_revalidated": false,
+      "expected_when_traverse_still_denied_after_deploy": {
+        "code": "backup.target_traverse_denied",
+        "diagnosis_id": "STORAGE-PROTECTION-006",
+        "still_blocks_backup": true
+      }
+    }
   },
   "productive_target_shell_vs_api": {
     "shell_findmnt_T_full_path_source": "/dev/sda1",
@@ -111,7 +122,8 @@
     "systemctl restart: sudo Passwort erforderlich.",
     "Historisch: target-check /mnt/setuphelfer/backups → STORAGE-004.",
     "2026-05-12 Policy: ausschließlich /media/gabriel/setuphelfer-back; target-check → STORAGE-001; sudo -n setuphelfer nicht verifiziert; kein Backup.",
-    "2026-05-12 Analyse Shell vs. API (nur lesend): BR-001_productive_target_check_media_path_analysis_2026-05-12.md; kein Deploy/Restart."
+    "2026-05-12 Analyse Shell vs. API (nur lesend): BR-001_productive_target_check_media_path_analysis_2026-05-12.md; kein Deploy/Restart.",
+    "2026-05-12 Workspace: Diagnosefix STORAGE-006 + backup.target_traverse_denied (kein produktiver Re-Check, kein Backup)."
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -124,7 +136,8 @@
     "Betreiberfreigabe: nur /media/gabriel/setuphelfer-back auf /dev/sda1 ext4 — kein /mnt/setuphelfer/backups, kein Bind, kein anderer Pfad.",
     "BR-001 blocked: API target-check auf Freigabepfad nicht grün (STORAGE-001); Dienstnutzer-Zugriff mit sudo -n nicht nachweisbar.",
     "2026-05-12 Analyse: Shell vs. API — Hauptursache C+D (Traverse /media/gabriel + Anker findmnt → nvme); siehe BR-001_productive_target_check_media_path_analysis_2026-05-12.md.",
-    "Keine ACL-Änderung, kein Ausweichen — siehe BR-001_path_policy_correction_2026-05-12.md."
+    "Keine ACL-Änderung, kein Ausweichen — siehe BR-001_path_policy_correction_2026-05-12.md.",
+    "2026-05-12: Workspace-Code meldet bei fehlendem Traverse künftig STORAGE-006 (nicht 001); BR-001_target_permission_diagnostics_fix_2026-05-12.md — Betrieb weiter blocked bis grüner Check + Freigabe."
   ],
   "result": "blocked",
   "api_code": "backup.path_invalid",
@@ -135,6 +148,7 @@
     "docs/evidence/backup-restore/BR-001_mnt_setuphelfer_target_prepare_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_productive_target_check_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.md",
-    "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.json"
+    "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.json",
+    "docs/evidence/backup-restore/BR-001_target_permission_diagnostics_fix_2026-05-12.md"
   ]
 }

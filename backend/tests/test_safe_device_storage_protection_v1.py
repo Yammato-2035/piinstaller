@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from subprocess import CompletedProcess
+from unittest.mock import patch
 _backend = Path(__file__).resolve().parent.parent
 if str(_backend) not in sys.path:
     sys.path.insert(0, str(_backend))
@@ -198,6 +199,7 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
 
         validate_write_target(Path(mount) / "backups" / "bk.tar.gz", runner=fake_run)
 
+    @patch("core.safe_device._assert_media_tree_traversable", lambda _p: None)
     def test_validate_blocks_media_non_block_source(self) -> None:
         mount = "/media/volker/fake-dir"
 

@@ -142,3 +142,7 @@ Wie zuvor: **Passwort nötig** — Traverse/Schreiben für **`setuphelfer`** hie
 | Kein Backup | **Ja** |
 | Ursache dokumentiert | **Ja** |
 | target-check nur den Freigabepfad betrachtet | **Ja** |
+
+## 11. Workspace-Umsetzung (2026-05-12, Diagnosefix)
+
+Im Repository wurde die in **Abschnitt 7** skizzierte **Code**-Variante umgesetzt: fehlende Traversierung unter **`/media`** / **`/run/media`** führt zu **STORAGE-PROTECTION-006** und API-Code **`backup.target_traverse_denied`**, nicht mehr zu fälschlicher **STORAGE-PROTECTION-001**. Details und Testnachweise: **`BR-001_target_permission_diagnostics_fix_2026-05-12.md`**. **Kein** produktiver Re-Deploy oder **`target-check`**-Re-Lauf in diesem Schritt (keine ausdrückliche Freigabe).

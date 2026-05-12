@@ -26,6 +26,8 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
         hits.append("STORAGE-PROTECTION-004")
     if sp == "storage-protection-005":
         hits.append("STORAGE-PROTECTION-005")
+    if sp == "storage-protection-006":
+        hits.append("STORAGE-PROTECTION-006")
     if signals.get("manifest_present") == "false":
         hits.append("BACKUP-MANIFEST-001")
     if signals.get("archive_corrupted") == "true":

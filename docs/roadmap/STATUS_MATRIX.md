@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-12 — **CI:** Run **25751304968** success. **BR-001:** Freigabepfad; API STORAGE-001 — Ursache Shell vs. API dokumentiert — **blocked**. **Release** rot.  
+**Stand:** 2026-05-12 — **CI:** Run **25751304968** success. **BR-001:** Freigabepfad; historisch API STORAGE-001 — **Workspace-Diagnosefix STORAGE-006** dokumentiert — **blocked** (E2E-/produktiver grüner Check ausstehend). **Release** rot.  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition
@@ -18,7 +18,7 @@
 |---------|-------|----------|------------------|
 | Phase 0 Arbeitsmodus | Gelb | Struktur & Matrizen angelegt, GitHub Project manuell | `docs/evidence/release-gates/feature_freeze.json` |
 | Phase 1 Bestandsaufnahme | Gelb | Testinventar + **Pytest Snapshot** (0× fail, 1526× pass, lokal); CI-/HW-Evidence separat | `test_inventory.json`, `current_failures.json`, `pytest_failures_summary_2026-05-11.txt` |
-| Backup | Rot | BR-001 blocked — STORAGE-001 auf `/media/gabriel/setuphelfer-back`; Analyse C+D | `BR-001.json`, `BR-001_productive_target_check_media_path_analysis_2026-05-12.md` |
+| Backup | Rot | BR-001 blocked — E2E/produktiver Check ausstehend; Diagnosefix 006 im Workspace (`BR-001_target_permission_diagnostics_fix_2026-05-12.md`) | `BR-001.json`, `BR-001_productive_target_check_media_path_analysis_2026-05-12.md` |
 | Verify | Rot | BR-004/BR-005 blocked — nur zulässig gegen BR-001-Archiv (BR-001 nicht passed) | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |

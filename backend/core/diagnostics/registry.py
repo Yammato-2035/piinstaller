@@ -83,6 +83,28 @@ DIAGNOSTIC_CATALOG: list[DiagnosticCase] = [
     DiagnosticCase(id="STORAGE-PROTECTION-004", domain="storage_filesystem", title_de="Schreibzugriff: Ziel nicht auf Allowlist", title_en="Write blocked: not allowlisted", summary_de="Pfad oder Blockgeraet entspricht nicht den freigegebenen Mustern.", summary_en="Path or block device does not match allowed patterns.", severity="critical", confidence="high", detection_sources=["api_result", "storage_protection"], tags=["storage", "write_protection", "allowlist"]),
     DiagnosticCase(id="STORAGE-PROTECTION-005", domain="storage_filesystem", title_de="Schreibzugriff: unsicherer Mount-Baum", title_en="Write blocked: unsafe mount tree", summary_de="Ziel liegt unter /media oder /run/media, aber nicht auf einem sicheren lokalen Blockgeraet-Mount.", summary_en="Target is under /media or /run/media but not on a safe local block-device mount.", severity="critical", confidence="high", detection_sources=["api_result", "storage_protection"], tags=["storage", "write_protection", "automount"]),
     DiagnosticCase(
+        id="STORAGE-PROTECTION-006",
+        domain="storage_filesystem",
+        title_de="Schreibziel: Traverse unter /media blockiert",
+        title_en="Write target: traverse under /media denied",
+        summary_de="Der Dienst kann den Pfad unter /media oder /run/media nicht traversieren; eine Mount-Ermittlung wuerde sonst irrefuehrend auf die Systemplatte fallen.",
+        summary_en="The service cannot traverse the path under /media or /run/media; mount resolution would misleadingly map to the system disk.",
+        severity="critical",
+        confidence="high",
+        detection_sources=["api_result", "storage_protection"],
+        destructive_risk=True,
+        root_causes=["Fehlende Traverse-Rechte auf Zwischenverzeichnissen (z. B. /media/user)", "Owner/Modus des Einhaengepunkts"],
+        recommended_actions=[
+            _a(
+                "fix-media-traverse",
+                1,
+                "Traverse fuer den Dienstnutzer sicherstellen (Betrieb) oder Betreiber-Praefix pruefen — keine automatische ACL durch das Produkt.",
+                "Ensure service-user traverse permissions (operator) or verify mount prefix — no automatic ACL from the product.",
+            )
+        ],
+        tags=["storage", "permissions", "traverse", "media"],
+    ),
+    DiagnosticCase(
         id="SERVICE-CONFLICT-033",
         domain="systemd_services",
         title_de="Alte pi-installer-Instanz blockiert Setuphelfer",

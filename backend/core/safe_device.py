@@ -6,6 +6,7 @@ DETECT ≠ WRITE: alle Blockgeräte können erkannt werden; Schreibzugriffe nur 
 
 from __future__ import annotations
 
+import errno
 import json
 import os
 import re
@@ -38,6 +39,7 @@ _DIAG_BOOT = "STORAGE-PROTECTION-002"
 _DIAG_FOREIGN = "STORAGE-PROTECTION-003"
 _DIAG_NOT_ALLOWLIST = "STORAGE-PROTECTION-004"
 _DIAG_UNSAFE_MOUNT = "STORAGE-PROTECTION-005"
+_DIAG_TRAVERSE_DENIED = "STORAGE-PROTECTION-006"
 
 _NTFS_LARGE_BYTES = 50 * 1024 * 1024 * 1024
 
@@ -98,6 +100,64 @@ def _assert_abs_path_safe_chars(path_str: str) -> None:
     forbidden = ["\n", "\r", "\t", "\x00", "`", "$", ";", "&", "|", "<", ">", "!", "\"", "'"]
     if any(ch in stripped for ch in forbidden):
         raise WriteTargetProtectionError(_DIAG_NOT_ALLOWLIST, "Pfad enthält verbotene Zeichen")
+
+
+def _is_backup_media_tree_path(path_str: str) -> bool:
+    s = (path_str or "").rstrip("/")
+    if s in ("/media", "/run/media"):
+        return True
+    return s.startswith("/media/") or s.startswith("/run/media/")
+
+
+def _assert_media_tree_traversable(path: Path) -> None:
+    """
+    Fail-fast für /media und /run/media: Wenn ein Zwischenverzeichnis für diesen
+    Prozess nicht traversierbar ist, darf nicht später per findmnt-Anker auf /
+    zurückgefallen werden (falsche STORAGE-001 „Systemplatte“).
+
+    Erwartet einen absoluten Pfad (ohne Shell-Metazeichen; siehe _assert_abs_path_safe_chars).
+    """
+    ps = str(path)
+    if not _is_backup_media_tree_path(ps):
+        return
+    cur = Path("/")
+    for part in path.parts[1:]:
+        parent = cur
+        nxt = parent / part
+        try:
+            if not os.access(str(parent), os.X_OK):
+                raise WriteTargetProtectionError(
+                    _DIAG_TRAVERSE_DENIED,
+                    "Backup-Ziel unter /media oder /run/media: Zwischenverzeichnis nicht traversierbar (fehlendes Ausführungsrecht)",
+                    detail=str(parent),
+                )
+        except WriteTargetProtectionError:
+            raise
+        except OSError as e:
+            raise WriteTargetProtectionError(
+                _DIAG_TRAVERSE_DENIED,
+                "Backup-Ziel unter /media oder /run/media: Traverse-Prüfung fehlgeschlagen",
+                detail=str(e),
+            ) from e
+        try:
+            os.stat(str(nxt))
+        except FileNotFoundError:
+            return
+        except PermissionError as e:
+            raise WriteTargetProtectionError(
+                _DIAG_TRAVERSE_DENIED,
+                "Backup-Ziel unter /media oder /run/media: Zwischenpfad nicht lesbar (Traverse verweigert)",
+                detail=str(nxt),
+            ) from e
+        except OSError as e:
+            if getattr(e, "errno", None) in (errno.EACCES, errno.EPERM):
+                raise WriteTargetProtectionError(
+                    _DIAG_TRAVERSE_DENIED,
+                    "Backup-Ziel unter /media oder /run/media: Zwischenpfad nicht zugänglich",
+                    detail=str(nxt),
+                ) from e
+            raise
+        cur = nxt
 
 
 def _parse_size_bytes(s: Any) -> int:
@@ -576,9 +636,18 @@ def resolve_mount_source_for_path(path: str | Path, *, runner: Runner | None = N
     Bei Unsicherheit bleibt die Entscheidung konservativ (kein resolved_source).
     """
     p = path if isinstance(path, Path) else Path(str(path))
+    _assert_media_tree_traversable(p)
     try:
         anchor = _find_existing_anchor(p.resolve())
-    except OSError:
+    except OSError as e:
+        if _is_backup_media_tree_path(str(p)) and (
+            isinstance(e, PermissionError) or getattr(e, "errno", None) in (errno.EACCES, errno.EPERM)
+        ):
+            raise WriteTargetProtectionError(
+                _DIAG_TRAVERSE_DENIED,
+                "Mount-Ermittlung: Zielpfad unter /media oder /run/media nicht auflösbar (Berechtigung)",
+                detail=str(e),
+            ) from e
         anchor = _find_existing_anchor(p)
 
     entries = _findmnt_entries_for_path(anchor, runner=runner)
@@ -748,11 +817,21 @@ def _validate_block_write(dev_path: str, *, runner: Runner | None = None) -> Non
 
 def _validate_dir_write(path: Path, *, runner: Runner | None = None) -> None:
     _assert_abs_path_safe_chars(str(path))
+    _assert_media_tree_traversable(path)
     try:
         resolved = path.resolve()
     except OSError as e:
+        if _is_backup_media_tree_path(str(path)) and (
+            isinstance(e, PermissionError) or getattr(e, "errno", None) in (errno.EACCES, errno.EPERM)
+        ):
+            raise WriteTargetProtectionError(
+                _DIAG_TRAVERSE_DENIED,
+                "Backup-Ziel unter /media oder /run/media: Pfad konnte nicht aufgelöst werden (Berechtigung)",
+                detail=str(e),
+            ) from e
         raise WriteTargetProtectionError(_DIAG_NOT_ALLOWLIST, "Pfad konnte nicht aufgelöst werden", detail=str(e)) from e
 
+    _assert_media_tree_traversable(resolved)
     rs = str(resolved)
     is_media_tree = rs.startswith("/media/") or rs.startswith("/run/media/")
 

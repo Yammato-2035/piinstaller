@@ -11457,13 +11457,20 @@ async def backup_target_check(backup_dir: str, create: int = 0):
         try:
             backup_dir = _validate_backup_dir(backup_dir)
         except Exception as ve:
+            msg = str(ve)
+            bc = "backup.path_invalid"
+            det: dict[str, Any] = {"reason": msg}
+            if msg.startswith("STORAGE-PROTECTION-006") or "STORAGE-PROTECTION-006:" in msg:
+                bc = "backup.target_traverse_denied"
+                det["diagnosis_id"] = "STORAGE-PROTECTION-006"
+                det["reason"] = msg.split(":", 1)[1].strip() if ":" in msg else msg
             return JSONResponse(
                 status_code=200,
                 content=with_backup_contract(
-                    {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"},
-                    "backup.path_invalid",
+                    {"status": "error", "message": f"Ungültiges Backup-Ziel: {msg}"},
+                    bc,
                     "error",
-                    {"reason": str(ve)},
+                    det,
                 ),
             )
 
