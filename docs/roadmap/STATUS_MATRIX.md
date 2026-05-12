@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-12 — **CI:** Run **25751304968** success. **BR-001:** Device-/Mount-Baseline dokumentiert; BR-Pfad intern, externes Label auf **sda1** — **blocked**. **Release** rot.  
+**Stand:** 2026-05-12 — **CI:** Run **25751304968** success. **BR-001:** Betreiberpfad **`/media/gabriel/setuphelfer-back`**; target-check **STORAGE-001**; Dienstnutzer unverifiziert — **blocked**. **Release** rot.  
 **Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
 
 ## Ampeldefinition
@@ -18,7 +18,7 @@
 |---------|-------|----------|------------------|
 | Phase 0 Arbeitsmodus | Gelb | Struktur & Matrizen angelegt, GitHub Project manuell | `docs/evidence/release-gates/feature_freeze.json` |
 | Phase 1 Bestandsaufnahme | Gelb | Testinventar + **Pytest Snapshot** (0× fail, 1526× pass, lokal); CI-/HW-Evidence separat | `test_inventory.json`, `current_failures.json`, `pytest_failures_summary_2026-05-11.txt` |
-| Backup | Rot | BR-001 blocked — Baseline: `/mnt/setuphelfer/backups` nicht auf externes UUID; target-check zuvor rot | `BR-001.json`, `BR-001_device_mount_baseline_2026-05-12.md` |
+| Backup | Rot | BR-001 blocked — nur `/media/gabriel/setuphelfer-back`; API target-check STORAGE-001; `sudo -n` setuphelfer nicht verifiziert | `BR-001.json`, `BR-001_path_policy_correction_2026-05-12.md` |
 | Verify | Rot | BR-004/BR-005 blocked — nur zulässig gegen BR-001-Archiv (BR-001 nicht passed) | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |

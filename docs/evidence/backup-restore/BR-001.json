@@ -11,10 +11,33 @@
   "ci_conclusion": "success",
   "ci_head_sha": "55d7ceceac15e28d53efec707e1b10221f2de5ba",
   "source": "/ (type=full — nicht gestartet)",
-  "target": "/mnt/setuphelfer/backups",
+  "target": "/media/gabriel/setuphelfer-back",
   "archive": "",
   "manifest_present": false,
   "sha256_present": false,
+  "operator_path_policy_2026_05_12": {
+    "approved_path_only": "/media/gabriel/setuphelfer-back",
+    "approved_device": "/dev/sda1",
+    "approved_fstype": "ext4",
+    "approved_label": "setuphelfer-back",
+    "approved_uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+    "subpath_in_prompt": null,
+    "forbidden": [
+      "/mnt/setuphelfer/backups",
+      "bind_mount",
+      "alternate_paths_automatic",
+      "/tmp",
+      "/home",
+      "/var",
+      "root_fs_nvme_as_target",
+      "sdb1",
+      "sdd1",
+      "INTENSO",
+      "windows-backup",
+      "other_media_without_approval"
+    ],
+    "evidence": "docs/evidence/backup-restore/BR-001_path_policy_correction_2026-05-12.md"
+  },
   "productive_deploy_attempt_2026_05_12": {
     "workspace_head": "b77c109d402a053cec4544a06919613b9167624d",
     "opt_backend_path": "/opt/setuphelfer/backend",
@@ -38,40 +61,65 @@
   "device_mount_baseline_2026_05_12": {
     "captured_at": "2026-05-12T22:15:00Z",
     "mode": "read_only",
-    "result": "blocked",
-    "summary": "/mnt/setuphelfer/backups auf nvme0n1p2 (Root); setuphelfer-back nur auf /dev/sda1 → /media/gabriel/setuphelfer-back; mehrere USB-Medien; keine Freigabe für BR-Pfad bis Bind+Freigabe.",
+    "result": "superseded_by_operator_path_policy_see_path_policy_md",
+    "summary": "Historischer Snapshot: /mnt/setuphelfer/backups auf nvme0n1p2; externes Volume /dev/sda1 unter /media/gabriel/setuphelfer-back. Maßgeblich ab Betreiber-Politkorrektur: nur /media/gabriel/setuphelfer-back (kein /mnt, kein Bind).",
     "evidence_md": "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.md",
     "evidence_json": "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.json"
   },
+  "approved_path_verification_2026_05_12": {
+    "path": "/media/gabriel/setuphelfer-back",
+    "phase1_readonly": {
+      "path_exists": true,
+      "findmnt_T_source": "/dev/sda1",
+      "fstype": "ext4",
+      "rw": true,
+      "not_root_nvme_mount": true,
+      "stat_device": "8/1"
+    },
+    "service_user_sudo_n": {
+      "test_x_media_gabriel": "not_executed_password_required",
+      "test_x_target": "not_executed_password_required",
+      "test_w_target": "not_executed_password_required",
+      "write_probe": "not_executed_no_explicit_sudo_n_success"
+    }
+  },
   "productive_target_check": {
-    "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/mnt/setuphelfer/backups&create=0",
+    "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/gabriel/setuphelfer-back&create=0",
     "result": "error",
     "code": "backup.path_invalid",
+    "diagnosis": "STORAGE-PROTECTION-001",
+    "message_excerpt": "STORAGE-PROTECTION-001: Schreibzugriff auf Systemplatte ist nicht erlaubt",
+    "evidence_file": "docs/evidence/backup-restore/BR-001_path_policy_correction_2026-05-12.md"
+  },
+  "productive_target_check_deprecated_path_historical": {
+    "path": "/mnt/setuphelfer/backups",
+    "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/mnt/setuphelfer/backups&create=0",
+    "note": "Nicht mehr BR-001-Ziel laut Betreiber; nur historisch",
     "diagnosis": "STORAGE-PROTECTION-004",
-    "message_excerpt": "mount_source_seen=/dev/nvme0n1p2[/mnt]; resolved_source=(none); target=/mnt",
     "evidence_file": "docs/evidence/backup-restore/BR-001_productive_target_check_2026-05-12.md"
   },
   "logs": [
     "Deploy-Versuch: Dateien kurz nach /opt kopiert; nach Geräte-Abweichung Rollback.",
     "systemctl restart: sudo Passwort erforderlich.",
-    "curl target-check produktiv: weiterhin STORAGE-004 (Pfad unter /mnt auf nvme-Stack, nicht externes freigegebenes Volume).",
-    "Kein Backup-Job."
+    "Historisch: target-check /mnt/setuphelfer/backups → STORAGE-004.",
+    "2026-05-12 Policy: ausschließlich /media/gabriel/setuphelfer-back; target-check → STORAGE-001; sudo -n setuphelfer nicht verifiziert; kein Backup."
   ],
   "started_at": "2026-05-12T17:53:06Z",
-  "completed_at": "2026-05-12T20:50:00Z",
+  "completed_at": "2026-05-12T23:30:00Z",
   "environment": {
     "hostname": "volker-ROG-Strix",
     "executing_user": "gabriel",
     "repo_path": "/home/volker/piinstaller"
   },
   "notes": [
-    "Baseline 2026-05-12: siehe BR-001_device_mount_baseline_* — externes setuphelfer-back ist /dev/sda1 UUID adbd53e5-… unter /media/gabriel/setuphelfer-back; /mnt/setuphelfer/backups liegt auf Root nvme0n1p2 bis ein Bind definiert ist.",
-    "Nächste Freigabe: schriftlich UUID+PATH wie Baseline; Bind /mnt/setuphelfer/backups auf freigegebenen Unterpfad; dann Deploy + restart + target-check (kein BR-001-Backup vorher).",
-    "Repo main: findmnt-Flatten + Klammer-Normalisierung — erst nach validiertem externen Mount deployen."
+    "Betreiberfreigabe: nur /media/gabriel/setuphelfer-back auf /dev/sda1 ext4 — kein /mnt/setuphelfer/backups, kein Bind, kein anderer Pfad.",
+    "BR-001 blocked: API target-check auf Freigabepfad nicht grün (STORAGE-001); Dienstnutzer-Zugriff mit sudo -n nicht nachweisbar.",
+    "Keine ACL-Änderung, kein Ausweichen — siehe BR-001_path_policy_correction_2026-05-12.md."
   ],
   "result": "blocked",
   "api_code": "backup.path_invalid",
   "artifacts": [
+    "docs/evidence/backup-restore/BR-001_path_policy_correction_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_target_access_analysis_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_mnt_setuphelfer_target_prepare_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_productive_target_check_2026-05-12.md",

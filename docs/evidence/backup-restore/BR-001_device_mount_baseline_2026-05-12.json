@@ -6,6 +6,7 @@
   "ampel": "rot",
   "evidence_complete": true,
   "executed_at": "2026-05-12T22:15:00Z",
+  "operator_path_policy_updated_at": "2026-05-12T23:30:00Z",
   "mode": "read_only_strict",
   "environment": {
     "hostname": "volker-ROG-Strix",
@@ -64,7 +65,16 @@
     "multiple_removable_devices_present": true
   },
   "phase3_release_recommendation": {
-    "unambiguous_for_br001_path": false,
+    "operator_approved_br001_path_only": "/media/gabriel/setuphelfer-back",
+    "forbidden_br001_paths": [
+      "/mnt/setuphelfer/backups",
+      "bind_mount_any",
+      "sdb1",
+      "sdd1",
+      "INTENSO",
+      "windows-backup",
+      "other_media_without_prompt"
+    ],
     "primary_external_ext4_candidate": {
       "device": "/dev/sda1",
       "uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
@@ -72,9 +82,8 @@
       "fstype": "ext4",
       "current_mount": "/media/gabriel/setuphelfer-back"
     },
-    "br001_intended_path_requires_bind": "/mnt/setuphelfer/backups",
-    "legacy_approval_sdd1_setuphelfer_back": "inconsistent_with_current_lsblk_sdd1_is_intenso_exfat",
-    "br001_status": "blocked"
+    "deprecated_baseline_bind_recommendation": "withdrawn_by_operator_2026-05-12",
+    "br001_status": "blocked_api_target_check_storage_001_and_or_service_user_unverified"
   },
   "phase4_productive_readonly": {
     "opt_backend_path": "/opt/setuphelfer/backend",
@@ -87,16 +96,18 @@
     },
     "deploy_procedure_known_not_executed": "diff/cp selected backend files to /opt; backup old files; sudo systemctl restart setuphelfer-backend",
     "must_clarify_before_deploy": [
-      "Bind or mount /mnt/setuphelfer/backups to approved UUID subpath",
-      "Written approval matching current PATH and UUID (not obsolete sdd1+setuphelfer-back)",
-      "Service user traverse/write verification",
-      "sudo policy for restart if needed"
+      "BR-001 only on /media/gabriel/setuphelfer-back (or explicitly named subpath) — no /mnt/setuphelfer/backups, no bind",
+      "Productive target-check green on approved path only (currently STORAGE-001 on API)",
+      "Service user traverse/write verified (sudo -n or equivalent)",
+      "sudo policy for restart if backend deploy needed"
     ]
   },
   "artifacts": [
-    "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.md"
+    "docs/evidence/backup-restore/BR-001_device_mount_baseline_2026-05-12.md",
+    "docs/evidence/backup-restore/BR-001_path_policy_correction_2026-05-12.md"
   ],
   "notes": [
-    "No backup, restore, dd, mkfs, mount, chmod, systemctl, deploy executed in this capture."
+    "No backup, restore, dd, mkfs, mount, chmod, systemctl, deploy executed in this capture.",
+    "Operator path policy 2026-05-12: BR-001 target only /media/gabriel/setuphelfer-back — see BR-001_path_policy_correction_2026-05-12.md; bind and /mnt/setuphelfer/backups withdrawn as BR targets."
   ]
 }

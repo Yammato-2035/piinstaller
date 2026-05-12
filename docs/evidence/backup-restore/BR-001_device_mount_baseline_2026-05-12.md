@@ -116,27 +116,30 @@ TARGET                          SOURCE    FSTYPE OPTIONS
 
 ## Phase 3 — Freigabeempfehlung
 
-**Keine** Freigabe im Sinne „Bind **`/mnt/setuphelfer/backups`** ist bereits das externe Volume mit UUID …“ — **trifft nicht zu**.
+**Widerruf / Übersteuerung (Betreiber, 2026-05-12):** Eine etwaige frühere Empfehlung, **`/mnt/setuphelfer/backups`** per **Bind** anzubinden, ist **unzulässig**. Maßgeblich ist ausschließlich: **`/media/gabriel/setuphelfer-back`** (bzw. namentlich freigegebener Unterordner darunter). Details: **`BR-001_path_policy_correction_2026-05-12.md`**.
 
-**Operatorische Klärung (nach Baseline, noch keine Aktion durch diese Evidence):**
+**Betreiber-Freigabe (aktuell):**
 
-1. **Primäres externes ext4-Backup-Kandidat** (Label/UUID eindeutig): **`/dev/sda1`**, UUID **`adbd53e5-26fd-4723-b0f1-1880dbaa2719`**, aktuell unter **`/media/gabriel/setuphelfer-back`**.  
-2. **`/mnt/setuphelfer/backups`** muss — **wenn** BR-001 genau diesen Pfad nutzen soll — **vor** Freigabe/Backup per Betrieb **explizit** auf dieses Medium (oder einen freigegebenen Unterpfad darauf) **gebunden** werden; derzeit **nicht** der Fall.  
-3. Ältere Freigaben, die **`/dev/sdd1`** mit **`setuphelfer-back`** verknüpfen, sind mit diesem **`lsblk`‑Stand inkonsistent** (**`sdd1`** = **INTENSO**, exfat).
+| Feld | Wert |
+|------|------|
+| Gerät | **`/dev/sda1`** (`sda`) |
+| Pfad | **`/media/gabriel/setuphelfer-back`** |
+| FS / Label / UUID | **ext4** / **setuphelfer-back** / **`adbd53e5-26fd-4723-b0f1-1880dbaa2719`** |
+| Größe (Partition) | ca. **931,5 G** |
 
-**Muster-Freigabetext (erst nach erfolgreichem Bind + erneutem lesenden Check):**
+**Nicht zulässig:** **`/mnt/setuphelfer/backups`**, **Bind**, andere `/media/...`-Ziele, **sdb1/sdd1**/INTENSO/windows-backup, interne NVMe als BR-001-Ziel.
+
+**Muster-Freigabetext (Betreiber, ohne Bind):**
 
 ```text
-Freigegeben werden soll ausschließlich:
+Freigegeben wird ausschließlich:
 UUID=adbd53e5-26fd-4723-b0f1-1880dbaa2719
 LABEL=setuphelfer-back
-Mount-Ziel=/mnt/setuphelfer/backups   (nur nach verifiziertem Bind auf Unterpfad dieses UUID)
+Mount-Ziel=/media/gabriel/setuphelfer-back
 Filesystem=ext4
 Device aktuell=/dev/sda1
-Begründung=extern (usb), rw, nicht System-Root — nach Bind; vorher BR-001 blocked
+Begründung=extern (usb), rw; kein /mnt/setuphelfer/backups; kein Bind
 ```
-
----
 
 ## Phase 4 — Produktiv-Deploy (nur dokumentiert, nicht ausgeführt)
 
@@ -146,7 +149,7 @@ Begründung=extern (usb), rw, nicht System-Root — nach Bind; vorher BR-001 blo
 | Git-Repo unter `/opt/.../backend`? | **Nein** |
 | Laufende API (lesend `GET /api/version`) | **`1.5.0.0`**, `install_profile`: **`opt`**, `app_edition`: **`release`** |
 | Deployverfahren (bekannt, nicht ausgeführt) | Abgleich Workspace-Dateien (z. B. `app.py`, `core/safe_device.py`) mit `/opt/...`, Backup der alten Dateien, **`sudo systemctl restart setuphelfer-backend`** |
-| Vor erneutem Deploy zu klären | **(1)** Bind/ Mount-Kette: `/mnt/setuphelfer/backups` → gewünschtes UUID; **(2)** schriftliche Freigabe mit **aktuellem** `PATH`/`UUID`; **(3)** Dienstnutzer-Traverse/Schreibprobe; **(4)** sudo für Restart falls erforderlich |
+| Vor erneutem Deploy zu klären | **(1)** Betreiberpfad ausschließlich `/media/gabriel/setuphelfer-back` (kein `/mnt/…`, kein Bind). **(2)** Produktiver `target-check` auf genau diesem Pfad grün (aktuell STORAGE-001). **(3)** Dienstnutzer-Traverse/Schreibprobe verifizieren. **(4)** sudo für Restart falls Deploy nötig. |
 
 ---
 
@@ -163,4 +166,4 @@ Begründung=extern (usb), rw, nicht System-Root — nach Bind; vorher BR-001 blo
 |-----------|----------|
 | Device-/Mount-Lage eindeutig dokumentiert | **Ja** (inkl. Widerspruch BR-Pfad vs. externes Volume) |
 | Keine Schreiboperation | **Ja** |
-| BR-001 nur bei eindeutiger UUID/Mount freigeben | **Vorgabe eingehalten** — derzeit **nicht** freigegeben, **blocked** |
+| BR-001 nur bei eindeutiger UUID/Mount freigeben | **Vorgabe eingehalten** — Zielpfad ist **`/media/gabriel/setuphelfer-back`** laut Betreiber; **`/mnt/setuphelfer/backups`** ist **kein** BR-001-Ziel. BR-001 bleibt **blocked**, bis API + Dienstnutzer grün sind (siehe **`BR-001_path_policy_correction_2026-05-12.md`**). |

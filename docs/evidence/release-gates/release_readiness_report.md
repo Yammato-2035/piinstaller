@@ -1,17 +1,17 @@
 # Release Readiness – Bericht
 
-**Generiert:** 2026-05-12 (STRICT — Device-/Mount-Baseline, nur lesend)  
+**Generiert:** 2026-05-12 (STRICT — BR-001 Pfad-Politkorrektur, nur Freigabepfad)  
 **Gesamtstatus:** `blocked`
 
 ## Kurzfassung
 
-**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001:** Lesende **Device-/Mount-Baseline** (`BR-001_device_mount_baseline_2026-05-12.{md,json}`): **`/mnt/setuphelfer/backups`** liegt auf **`/`** / **`/dev/nvme0n1p2`** (intern); Volume mit Label **`setuphelfer-back`** ist **`/dev/sda1`** (UUID **`adbd53e5-26fd-4723-b0f1-1880dbaa2719`**) unter **`/media/gabriel/setuphelfer-back`** — **kein** Bind des BR-Pfads auf dieses Medium; **mehrere** USB-Medien gleichzeitig. Zuvor: produktiver target-check STORAGE-004; Deploy-Versuch zurückgerollt. **Release gesamt** `blocked`.
+**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001:** Betreiber erlaubt **ausschließlich** **`/media/gabriel/setuphelfer-back`** (`/dev/sda1`, ext4, Label **setuphelfer-back**, UUID **`adbd53e5-26fd-4723-b0f1-1880dbaa2719`**). **Kein** `/mnt/setuphelfer/backups`, **kein** Bind, keine anderen Pfade. Lesende Verifikation des Mounts **ok**; produktiver **`target-check`** auf dem Freigabepfad → **STORAGE-001** (nicht grün); **`sudo -n -u setuphelfer`** nicht ausführbar → Zugriff **nicht** nachgewiesen. Evidence: **`BR-001_path_policy_correction_2026-05-12.md`**, **`BR-001.json`**. **Release gesamt** `blocked`.
 
 ## Ampelüberblick
 
 | Bereich | Status |
 |---------|--------|
-| Backup/Restore/Verify (Evidence) | Rot (BR-001 **blocked** — Baseline: BR-Pfad nicht auf externes UUID; target-check zuvor rot) |
+| Backup/Restore/Verify (Evidence) | Rot (BR-001 **blocked** — nur `/media/gabriel/setuphelfer-back`; target-check STORAGE-001; Dienstnutzer unverifiziert) |
 | Hardware | Rot |
 | Rescue Stick real | Rot |
 | CI-Nachweis aktuell | **Grün** (GitHub `ci.yml` Run **25751304968** success, HEAD 55d7cec) — Release gesamt wegen BR-001 weiter `blocked` |
