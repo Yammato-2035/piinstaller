@@ -103,6 +103,12 @@ Ergebnis: **25 passed**.
 2. **Betrieb:** Option 1 **oder** 2 mit expliziter Freigabe, bis `setuphelfer` den Zielpfad traversieren und `_validate_backup_dir` erfolgreich durchlaufen kann.  
 3. Erst danach: Backup-Job starten (`target-check` + Service-User-Schreibprobe grün).
 
+## Nachtrag — Option 2 (`/mnt/setuphelfer/backups`, 2026-05-12)
+
+- **`/mnt/setuphelfer/backups`** ist auf dem Mess-Host bereits als **Bind** auf das externe **`/dev/sdd1`**-Volume (Unterpfad `setuphelfer-backups`) eingerichtet; `root:setuphelfer`, **`2770`**.
+- **Zusätzlicher Codefix:** findmnt liefert `SOURCE=/dev/sdd1[/setuphelfer-backups]` — `safe_device` normalisiert das nun auf **`/dev/sdd1`** (keine Allowlist-Lockernung). Siehe `BR-001_mnt_setuphelfer_target_prepare_2026-05-12.md`.
+- **Produktion:** Deploy + `systemctl restart setuphelfer-backend` ausstehend; **`sudo -u setuphelfer`**-Tests ausstehend (sudo-Passwort).
+
 ## Abnahme (STRICT)
 
 - Ursache **A + C** dokumentiert; **C** im Produktcode minimal behoben (Flatten).  

@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-12T20:08:00Z",
+  "generated": "2026-05-12T20:38:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
@@ -11,7 +11,7 @@
     "head_sha": "55d7ceceac15e28d53efec707e1b10221f2de5ba",
     "url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25751304968"
   },
-  "open_br_ids": ["BR-001", "BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
-  "partial_br_ids": [],
-  "notes": "BR-001: Ursache A (setuphelfer-Traverse /media/gabriel) + C (findmnt-JSON nicht geflacht, irreführendes mount) dokumentiert; Repo-Fix _flatten_findmnt_filesystems (app.py), Tests; Betrieb: ACL/Bind-Mount-Freigabe ausstehend. BR-001 weiter blocked bis Service target-check grün. CI 25751304968 success."
+  "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
+  "partial_br_ids": ["BR-001"],
+  "notes": "BR-001 Option 2: /mnt/setuphelfer/backups auf sdd1; review_required bis Deploy+Restart+target-check produktiv. Repo: findmnt-Flatten + Klammer-SOURCE (safe_device). Kein Backup. CI 25751304968 success."
 }

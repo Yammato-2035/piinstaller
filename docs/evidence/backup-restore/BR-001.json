@@ -2,87 +2,82 @@
   "schema": "setuphelfer.evidence.v1",
   "test_id": "BR-001",
   "id": "BR-001",
-  "status": "blocked",
-  "ampel": "rot",
+  "status": "review_required",
+  "ampel": "gelb",
   "evidence_complete": true,
-  "commit": "7452231bfab6521a6aefb947cfccb9a5551879bc",
+  "commit": "e9df5ce3c1ef6e4468c85a0be463148884a1ad62",
   "ci_run": "25751304968",
   "ci_run_url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25751304968",
   "ci_conclusion": "success",
   "ci_head_sha": "55d7ceceac15e28d53efec707e1b10221f2de5ba",
-  "source": "/ (geplanter Umfang bei type=full laut Implementierung — tar wurde nicht gestartet)",
-  "target": "/media/gabriel/setuphelfer-back/setuphelfer-backups",
+  "source": "/ (geplanter Umfang bei type=full — kein Backup gestartet)",
+  "target": "/mnt/setuphelfer/backups",
+  "target_option2_media_bind_source": "/media/gabriel/setuphelfer-back/setuphelfer-backups",
   "archive": "",
   "manifest_present": false,
   "sha256_present": false,
   "safety_gate": {
     "overall": "review_required",
-    "freigegebener_zielpfad": "/media/gabriel/setuphelfer-back/setuphelfer-backups",
-    "phase1_shell_ground_truth": {
-      "realpath": "/media/gabriel/setuphelfer-back/setuphelfer-backups",
-      "findmnt_T": "TARGET=/media/gabriel/setuphelfer-back SOURCE=/dev/sdd1 FSTYPE=ext4 (rw,nosuid,nodev,…)",
-      "df_h": "/dev/sdd1 auf /media/gabriel/setuphelfer-back — ca. 679 GB frei (22% belegt)",
-      "lsblk_sdd": "sdd1 ext4 LABEL setuphelfer-back — MOUNTPOINTS: /mnt/setuphelfer/backups und /media/gabriel/setuphelfer-back; sdd2 ntfs → /media/gabriel/windows-backup",
-      "stat_dir": "drwxrwsr-x root:setuphelfer auf Elternvolume; Unterverzeichnis setuphelfer-backups drwxrwsr-x gabriel:setuphelfer",
-      "quelle_vs_ziel": "Repo/Quelle /home/volker/piinstaller ≠ Zielpfad (keine Identität)",
-      "kein_root_home_tmp_var_efi": "Ziel liegt unter /media auf Partition sdd1, nicht auf nvme0n1p2 (/), /boot/efi, /home, /tmp, /var"
+    "option2_freigabe": "Extern /dev/sdd1 LABEL setuphelfer-back nur unter /mnt/setuphelfer/backups; kein mkfs/dd/Restore/interne Platten",
+    "phase1_device": {
+      "lsblk": "sdd1 ext4 setuphelfer-back; MOUNTPOINTS /mnt/setuphelfer/backups und /media/gabriel/setuphelfer-back",
+      "findmnt_media_subpath": "SOURCE=/dev/sdd1 FSTYPE=ext4 rw",
+      "findmnt_mnt_backups": "TARGET=/mnt/setuphelfer/backups SOURCE=/dev/sdd1[/setuphelfer-backups] ext4 rw",
+      "stat_mnt_backups": "root:setuphelfer 2770"
     },
-    "validate_write_target": {
-      "runner": "workspace core.safe_device (PI_INSTALLER_DEV=1, UID gabriel)",
-      "classification": "allowed",
-      "detail": "resolve_mount_source → /dev/sdd1; ClassifiedDevice is_system_disk=false, is_foreign_os_disk=false"
+    "phase2_prepare": {
+      "action": "keine_live_aenderung",
+      "reason": "Pfad bereits korrekt als Bind auf sdd1-Unterverzeichnis; keine Überschreibung ohne neue Messung"
     },
-    "cause_classification": {
-      "A_service_traverse": true,
-      "B_desktop_user_mount_path": true,
-      "C_findmnt_json_not_flattened": true,
-      "summary": "A: setuphelfer ohne Traverse auf /media/gabriel (0750 + ACL user:gabriel:r-x, other::---). B: Pfad unter /media/<user>/…. C: findmnt -J children wurden in _findmnt_mounts nicht eingebunden; Root-Match zu breit → irreführendes mount-JSON (behoben: _flatten_findmnt_filesystems in app.py)."
+    "phase3_service_user_probe": {
+      "sudo_u_setuphelfer": "nicht_ausgefuehrt",
+      "reason": "sudo -n erfordert Passwort — statisch: 2770 + Gruppe setuphelfer sollte Schreibzugriff erlauben"
     },
-    "production_api": {
-      "endpoint": "GET http://127.0.0.1:8000/api/backup/target-check (uvicorn setuphelfer, /opt/setuphelfer/backend)",
-      "classification": "blocked",
-      "code": "backup.path_invalid",
-      "diagnosis_id": "STORAGE-PROTECTION-001",
-      "confirmed_root_cause_A": "getfacl /media/gabriel: user:gabriel:r-x; other::--- — id setuphelfer hat keine Traverse-Rechte auf /media/gabriel; _validate_backup_dir schlägt im Dienst fehl.",
-      "note": "STORAGE-001 ist Symptom der harten Klassifikation nach fehlgeschlagener/verkürzter Pfadauflösung im Dienstkontext; primärer Betriebsfix bleibt Traverse (Option 1/2 in Analyse-Markdown)."
+    "phase4_deploy": {
+      "opt_backend_git": "nicht_vorhanden",
+      "systemctl_restart": "nicht_ausgefuehrt",
+      "reason": "keine sudo-Freigabe für Deploy/Restart in dieser Session"
     },
-    "workspace_api_smoke": {
-      "tool": "starlette.testclient gegen app aus /home/volker/piinstaller/backend; Interpreter /opt/setuphelfer/backend/venv/bin/python3",
-      "target_check_status": "success",
-      "target_check_code": "backup.target_check_ok",
-      "write_test": "Schreibtest ok (User)",
-      "findmnt_mount_json_fix": "Repo: _findmnt_mounts flacht findmnt-children; _best_mount_for_path wählt längsten TARGET (z. B. /media/gabriel/setuphelfer-back statt /). Deploy auf /opt ausstehend."
+    "phase5_target_check": {
+      "path": "/mnt/setuphelfer/backups",
+      "production_curl_127001_8000_vor_deploy": {
+        "note": "Alter Stand: STORAGE-PROTECTION-004 wegen nicht aufgelöstem SOURCE /dev/sdd1[/setuphelfer-backups]",
+        "expectation_after_deploy": "backup.target_check_ok mit mount.target=/mnt/setuphelfer/backups"
+      },
+      "workspace_testclient_nach_klammer_fix": {
+        "status": "success",
+        "code": "backup.target_check_ok",
+        "mount_target": "/mnt/setuphelfer/backups",
+        "write_test": "Schreibtest ok (User, gabriel)"
+      }
     },
-    "full_backup_not_started": {
-      "reason": "type=full würde per Code tar über gesamtes / (Ausnahmen u. a. /media) ausführen — Laufzeit/Größe außerhalb dieser Evidence-Session; zusätzlich blockiert produktiver Einstieg über :8000 wie oben.",
-      "no_dd_mkfs_restore": true
-    }
+    "code_fixes_repo": [
+      "app.py: _flatten_findmnt_filesystems (Commit 142f6c4)",
+      "safe_device.py: _normalize_findmnt_bracket_block_source für /dev/sdX[/sub] (dieser Lauf)"
+    ],
+    "full_backup_not_started": true
   },
-  "target_access_analysis": "docs/evidence/backup-restore/BR-001_target_access_analysis_2026-05-12.md",
   "logs": [
-    "Phase 1: realpath/findmnt/df/stat/getfacl/id/systemctl — siehe Analyse-Markdown.",
-    "Phase 2: sudo -n -u setuphelfer test … nicht ausführbar (Passwort) — Traverse aus ACL/stat abgeleitet.",
-    "Phase 3–5: Codepfad _findmnt_mounts / _best_mount_for_path analysiert; Ursache A+B+C dokumentiert.",
-    "Phase 6–7: Minimalfix findmnt-Flatten + pytest (siehe Commit); keine Allowlist-Änderung.",
-    "Kein POST /api/backup/create — kein Full-Backup-Job."
+    "Option 2: /mnt/setuphelfer/backups bereits Bind auf /dev/sdd1[/setuphelfer-backups]; Phase 1 ok.",
+    "sudo setuphelfer-Tests und systemctl restart: nicht ausgeführt (Passwort).",
+    "safe_device: Klammer-SOURCE normalisiert; pytest safe_device/storage/preflight 28 passed.",
+    "Kein POST /api/backup/create."
   ],
   "started_at": "2026-05-12T17:53:06Z",
-  "completed_at": "2026-05-12T20:05:00Z",
+  "completed_at": "2026-05-12T20:35:00Z",
   "environment": {
     "hostname": "volker-ROG-Strix",
     "executing_user": "gabriel",
-    "repo_path": "/home/volker/piinstaller",
-    "version_file": "1.5.0.0"
+    "repo_path": "/home/volker/piinstaller"
   },
   "notes": [
-    "Freigegebener Pfad unverändert; keine anderen Schreibziele.",
-    "Produktcode: findmnt-Flatten in app.py (keine safe_device-Abschwächung).",
-    "Freigabe für nächsten Schritt: Betrieb wählt Option 1 (ACL setuphelfer auf /media/gabriel) oder Option 2 (/mnt/setuphelfer/backups + Bind-Mount) und startet Dienst neu / deployt Fix.",
-    "Keine Backup-Archive ins Repository."
+    "BR-001 bleibt bis produktivem grünem target-check + optionaler sudo-Schreibprobe review_required (nicht passed).",
+    "Nächste Freigabe: Deploy safe_device-Klammerfix + findmnt-Flatten nach /opt, restart setuphelfer-backend, curl target-check als Verifikation."
   ],
-  "result": "blocked",
+  "result": "review_required",
   "api_code": null,
   "artifacts": [
-    "docs/evidence/backup-restore/BR-001_target_access_analysis_2026-05-12.md"
+    "docs/evidence/backup-restore/BR-001_target_access_analysis_2026-05-12.md",
+    "docs/evidence/backup-restore/BR-001_mnt_setuphelfer_target_prepare_2026-05-12.md"
   ]
 }
