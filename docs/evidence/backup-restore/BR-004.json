@@ -7,7 +7,7 @@
   "evidence_complete": false,
   "commit": "7452231bfab6521a6aefb947cfccb9a5551879bc",
   "ci_run": "25751304968",
-  "br001_chain": "BR-001 blocked — Starter-Deploy 2026-05-13 per sudo im Agent nicht möglich; kein neues Archiv; Verify Basic nur gegen BR-001-Archiv zulässig.",
+  "br001_chain": "BR-001 blocked — Runner stale job / job_conflict + optional Starter-Deploy; kein neues Archiv; Verify Basic nur gegen BR-001-Archiv zulässig.",
   "archive_from_br001": "",
   "environment": {
     "api": "POST /api/backup/verify",
@@ -18,7 +18,7 @@
   "api_code": null,
   "artifacts": [],
   "notes": [
-    "2026-05-13: Starter-Update-Retry — sudo install blockiert, kein zweites POST create; BR-001_starter_update_and_retry_2026-05-13.md.",
+    "2026-05-13: POST create blocked by backup.job_conflict (stale queued vs systemd failed) until app.py deploy — BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md",
     "2026-05-13: BR-001 POST /api/backup/create (erster Lauf) starter_invalid_path — BR-001_full_backup_run_2026-05-13.md.",
     "Verify Basic nicht gestartet (kein identisches BR-001-Archiv aus diesem Run)."
   ]

@@ -606,8 +606,46 @@ def _new_job_id() -> str:
     return uuid.uuid4().hex[:12]
 
 
+def _runner_unit_failed_exit(systemd_props: dict) -> bool:
+    """True, wenn die Runner-Unit systemd-seitig als fehlgeschlagen gilt (z. B. EROFS unter ProtectSystem)."""
+    ast = (systemd_props.get("ActiveState") or "").lower()
+    res = (systemd_props.get("Result") or "").lower()
+    return ast == "failed" or res in ("exit-code", "signal", "core-dump", "timeout")
+
+
+def _sync_stale_runner_job_from_systemd(job_id: str) -> None:
+    """
+    status.json kann bei frühem Runner-Abbruch noch 'queued' sein, während die systemd-Unit bereits
+    failed/exit-code ist — dann blockiert _has_active_long_running_job fälschlich neue Jobs.
+    """
+    j = BACKUP_JOBS.get(job_id)
+    if not j:
+        return
+    if str(j.get("status") or "") not in ("queued", "running", "cancel_requested"):
+        return
+    rs = _read_backup_runner_status(job_id)
+    if not rs:
+        return
+    if str(rs.get("status") or "").strip().lower() in ("success", "error", "cancelled", "failed"):
+        return
+    un = str(rs.get("unit_name") or j.get("unit_name") or "").strip()
+    usc = str(rs.get("unit_scope") or j.get("unit_scope") or "system").strip().lower()
+    if not un:
+        return
+    su = _systemd_unit_state(un, usc)
+    if not _runner_unit_failed_exit(su):
+        return
+    j["status"] = "error"
+    j["code"] = str(j.get("code") or "backup.runner_unit_failed")
+    j["severity"] = "error"
+    j["message"] = "Backup-Runner-Unit fehlgeschlagen (systemd); Statusdatei noch nicht aktualisiert"
+    j["finished_at"] = _now_iso()
+
+
 def _has_active_long_running_job() -> bool:
     """True, wenn ein Backup- oder Klon-Job noch nicht im Endzustand ist (Phase 2C: ein aktiver Job)."""
+    for jid in list(BACKUP_JOBS.keys()):
+        _sync_stale_runner_job_from_systemd(jid)
     terminal_runner = frozenset({"success", "error", "cancelled", "failed"})
     for jid, j in BACKUP_JOBS.items():
         st = j.get("status")
@@ -2103,6 +2141,8 @@ def _do_backup_logic(
 @app.get("/api/backup/jobs")
 async def backup_jobs_list():
     """Liste aller Backup-Jobs, insbesondere laufende"""
+    for jid in list(BACKUP_JOBS.keys()):
+        _sync_stale_runner_job_from_systemd(jid)
     running = []
     for job_id, job in BACKUP_JOBS.items():
         status = job.get("status", "")
@@ -2114,9 +2154,15 @@ async def backup_jobs_list():
 @app.get("/api/backup/jobs/{job_id}")
 async def backup_job_status(job_id: str):
     job_id = (job_id or "").strip()
+    if job_id in BACKUP_JOBS:
+        _sync_stale_runner_job_from_systemd(job_id)
     runner_status = _read_backup_runner_status(job_id)
     if runner_status:
         _sync_ram_job_from_runner(job_id)
+    j_ram = BACKUP_JOBS.get(job_id)
+    if j_ram and str(j_ram.get("status") or "") == "error":
+        return with_backup_contract({"status": "success", "job": _job_snapshot(j_ram)}, "backup.job_status", "success")
+    if runner_status:
         return with_backup_contract({"status": "success", "job": _runner_status_to_job(runner_status)}, "backup.job_status", "success")
     job = BACKUP_JOBS.get(job_id)
     if not job:

@@ -345,6 +345,27 @@
     "restore_started": false,
     "evidence_md": "docs/evidence/backup-restore/BR-001_starter_update_and_retry_2026-05-13.md"
   },
+  "br001_runner_readwritepaths_and_stale_sync_2026_05_13": {
+    "failed_job_id": "96ed5d89c443",
+    "failure_mode": "EROFS_manifest_under_ProtectSystem_strict_runner_unit",
+    "manifest_path_example": "/media/gabriel/setuphelfer-back/.96ed5d89c443.MANIFEST.json",
+    "runner_unit_readwritepaths_before_repo_fix": "/mnt/setuphelfer /var/lib/setuphelfer /var/log/setuphelfer",
+    "host_drop_in_path": "/etc/systemd/system/setuphelfer-backup@.service.d/backup-target.conf",
+    "effective_readwritepaths_after_merge": "/mnt/setuphelfer /var/lib/setuphelfer /var/log/setuphelfer /media/gabriel/setuphelfer-back",
+    "repo_packaging_unit_updated": "packaging/systemd/setuphelfer-backup@.service",
+    "repo_backend_stale_systemd_sync": "backend/app.py _sync_stale_runner_job_from_systemd _has_active_long_running_job backup_jobs_list backup_job_status",
+    "status_json_stale_queued": true,
+    "systemd_unit_state": "ActiveState=failed Result=exit-code",
+    "journalctl_agent": "no_entries_non_adm_user",
+    "post_create_response": "backup.job_conflict",
+    "new_job_id": null,
+    "br001_retry_completed": false,
+    "br004_executed": false,
+    "br005_executed": false,
+    "restore_started": false,
+    "deploy_workspace_app_py_to_opt_required": true,
+    "evidence_md": "docs/evidence/backup-restore/BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md"
+  },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
     "path_exists_on_host": false,
@@ -379,7 +400,8 @@
     "2026-05-13 STRICT full sync: sudo BLOCKED; backend py files already match workspace SHA256; only config/version.json differs (legacy vs version_source_of_truth); /api/version 500; target-check backup.backup_target_not_writable; findmnt rw vs API ro; BR-001_backend_update_and_version_fix_2026-05-13.md",
     "2026-05-13: systemd ReadWritePaths — /media/gabriel/setuphelfer-back ergänzt in debian/setuphelfer-backend.service + setuphelfer-backend.service; Drop-in-Beispiel docs/operations/systemd/; Evidence BR-001_systemd_readwritepaths_analysis_2026-05-13.md; kein Backup; Host-restart nicht im Agent",
     "2026-05-13 STRICT BR-001 full backup: Gates+target-check ok; POST /api/backup/create full local → backup.starter_invalid_path (helper allowlist only /mnt/setuphelfer/backups); job 2ef832fc32a2 error; repo starter fix ALLOWED_BACKUP_ROOTS; sudo install starter blocked; BR-001_full_backup_run_2026-05-13.md",
-    "2026-05-13 STRICT starter update retry: Phase0 ok; Phase1 repo allowlist ok prod SHA 96341f… vs workspace 55615b…; Phase2-3 sudo BLOCKED — kein install kein zweites POST create; Phase4 target-check ok; BR-001_starter_update_and_retry_2026-05-13.md"
+    "2026-05-13 STRICT starter update retry: Phase0 ok; Phase1 repo allowlist ok prod SHA 96341f… vs workspace 55615b…; Phase2-3 sudo BLOCKED — kein install kein zweites POST create; Phase4 target-check ok; BR-001_starter_update_and_retry_2026-05-13.md",
+    "2026-05-13 Runner ReadWritePaths + stale sync: Job 96ed5d89c443 systemd failed status.json queued; POST create job_conflict; Repo-Fix packaging/systemd + app.py stale-systemd-sync; deploy /opt + restart — BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md"
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -417,6 +439,7 @@
     "docs/evidence/backup-restore/BR-001_backend_deploy_status_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_systemd_readwritepaths_analysis_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_full_backup_run_2026-05-13.md",
-    "docs/evidence/backup-restore/BR-001_starter_update_and_retry_2026-05-13.md"
+    "docs/evidence/backup-restore/BR-001_starter_update_and_retry_2026-05-13.md",
+    "docs/evidence/backup-restore/BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md"
   ]
 }

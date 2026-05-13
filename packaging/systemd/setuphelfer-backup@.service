@@ -15,7 +15,7 @@ TimeoutStopSec=30
 NoNewPrivileges=no
 ProtectSystem=strict
 PrivateTmp=yes
-ReadWritePaths=/mnt/setuphelfer /var/lib/setuphelfer /var/log/setuphelfer
+ReadWritePaths=/mnt/setuphelfer /var/lib/setuphelfer /var/log/setuphelfer /media/gabriel/setuphelfer-back
 
 [Install]
 WantedBy=multi-user.target

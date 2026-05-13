@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-13T23:00:00Z",
+  "generated": "2026-05-13T23:45:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
@@ -13,5 +13,5 @@
   },
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
   "partial_br_ids": [],
-  "notes": "BR-001 **blocked** (E2E). **Starter-Update-Retry 2026-05-13:** Repo-Starters **`ALLOWED_BACKUP_ROOTS`** enthält **`/media/gabriel/setuphelfer-back`**; produktiver Starter noch alter SHA (**`96341f48…`** vs. Workspace **`55615b84…`**). **`sudo install`** nach **`/usr/lib/setuphelfer/setuphelfer-backup-starter`** im **Agent nicht ausführbar** (TTY/Passwort) — **kein** produktives Update, **kein** zweites **`POST /api/backup/create`** — Evidence **`BR-001_starter_update_and_retry_2026-05-13.md`**, **`BR-001.json`** (`br001_starter_update_retry_2026_05_13`). **Vorheriger Lauf:** **`POST /api/backup/create`** → **`backup.starter_invalid_path`** — **`BR-001_full_backup_run_2026-05-13.md`**. Gates + **`target-check`** weiter **`backup.target_check_ok`**. **BR-004/BR-005:** blocked. CI **25751304968** success."
+  "notes": "BR-001 **blocked**. **Runner 2026-05-13:** Job **`96ed5d89c443`** — **EROFS** auf **`/media/gabriel/setuphelfer-back`** (Manifest) durch **`ProtectSystem=strict`** ohne Media in **`ReadWritePaths`**; Drop-In merged vier Pfade; **Repo** `packaging/systemd/setuphelfer-backup@.service` + Example-Drop-In. **`status.json`** blieb **`queued`**, systemd **`failed`** → **`backup.job_conflict`**; **Fix** in **`backend/app.py`** (stale-systemd-Sync) — **Deploy `/opt` + restart**. Evidence **`BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md`**. Starter-/sudo-Themen siehe **`BR-001_starter_update_and_retry_2026-05-13.md`**, **`BR-001_full_backup_run_2026-05-13.md`**. **BR-004/BR-005:** blocked. CI **25751304968** success."
 }

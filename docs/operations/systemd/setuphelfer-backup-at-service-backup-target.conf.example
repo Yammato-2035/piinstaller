@@ -1,0 +1,13 @@
+# Drop-In für setuphelfer-backup@.service (Runner)
+# Ziel: unter ProtectSystem=strict Schreibzugriff auf das freigegebene BR-001-Backup-Ziel.
+# Installation (Operator):
+#   sudo install -o root -g root -m 0644 setuphelfer-backup-at-service-backup-target.conf.example \
+#     /etc/systemd/system/setuphelfer-backup@.service.d/backup-target.conf
+#   sudo systemctl daemon-reload
+#
+# Wichtig: ReadWritePaths-Zeilen aus Unit + Drop-in werden zusammengeführt. Diese Datei listet
+# die vollständige gewünschte Menge, falls ein schmales Drop-In sonst nur den Media-Pfad setzt.
+
+[Service]
+ReadWritePaths=
+ReadWritePaths=/mnt/setuphelfer /var/lib/setuphelfer /var/log/setuphelfer /media/gabriel/setuphelfer-back
