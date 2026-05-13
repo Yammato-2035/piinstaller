@@ -366,6 +366,49 @@
     "deploy_workspace_app_py_to_opt_required": true,
     "evidence_md": "docs/evidence/backup-restore/BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md"
   },
+  "br001_stale_job_sync_deploy_retry_attempt_2026_05_13": {
+    "executed_at": "2026-05-13T17:05:00Z",
+    "workspace_git_head": "0c874c5b868175f75b3c4acc2b7cf5d28203f5ce",
+    "workspace_app_py_sha256": "d3b9d85c91ebebe906e7938a64d9d9f4bcffea9840156b84915146568f06d668",
+    "opt_app_py_sha256": "60517c0c9cbae832b94788e419f13f6c8872084c45e37cb0b62c1f3ea5db486a",
+    "phase1_sudo_backup_dir": "blocked_tty_password",
+    "sudo_stderr_excerpt": "sudo: ein Terminal ist erforderlich, um das Passwort zu lesen; verwenden Sie entweder die Option -S zum Lesen von der Standardeingabe oder konfigurieren Sie einen Askpass-Helfer",
+    "deploy_install_app_py_to_opt": "not_executed",
+    "systemctl_restart_backend": "not_executed",
+    "backend_version_gate": {
+      "script": "scripts/check-backend-version-gate.sh",
+      "exit_code": 0
+    },
+    "get_job_96ed5d89c443": {
+      "url": "http://127.0.0.1:8000/api/backup/jobs/96ed5d89c443",
+      "job_status_api": "queued",
+      "systemd_in_payload": {
+        "ActiveState": "failed",
+        "Result": "exit-code"
+      },
+      "code": "backup.job_status",
+      "interpretation": "Produktives app.py noch ohne stale-RAM-Sync; GET zeigt weiter queued trotz systemd failed"
+    },
+    "post_backup_create_retry": {
+      "body": "{\"type\":\"full\",\"backup_dir\":\"/media/gabriel/setuphelfer-back\",\"target\":\"local\"}",
+      "code": "backup.job_conflict",
+      "job_conflict_cleared": false
+    },
+    "target_check_precheck": {
+      "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/gabriel/setuphelfer-back&create=0",
+      "code": "backup.target_check_ok",
+      "mount_readonly": false,
+      "write_test_success": true,
+      "approved_uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+      "approved_label": "setuphelfer-back",
+      "approved_path": "/media/gabriel/setuphelfer-back"
+    },
+    "br001_new_job_id": null,
+    "br004_executed": false,
+    "br005_executed": false,
+    "restore_started": false,
+    "evidence_md": "docs/evidence/backup-restore/BR-001_stale_job_sync_fix_and_retry_2026-05-13.md"
+  },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
     "path_exists_on_host": false,
@@ -401,7 +444,8 @@
     "2026-05-13: systemd ReadWritePaths — /media/gabriel/setuphelfer-back ergänzt in debian/setuphelfer-backend.service + setuphelfer-backend.service; Drop-in-Beispiel docs/operations/systemd/; Evidence BR-001_systemd_readwritepaths_analysis_2026-05-13.md; kein Backup; Host-restart nicht im Agent",
     "2026-05-13 STRICT BR-001 full backup: Gates+target-check ok; POST /api/backup/create full local → backup.starter_invalid_path (helper allowlist only /mnt/setuphelfer/backups); job 2ef832fc32a2 error; repo starter fix ALLOWED_BACKUP_ROOTS; sudo install starter blocked; BR-001_full_backup_run_2026-05-13.md",
     "2026-05-13 STRICT starter update retry: Phase0 ok; Phase1 repo allowlist ok prod SHA 96341f… vs workspace 55615b…; Phase2-3 sudo BLOCKED — kein install kein zweites POST create; Phase4 target-check ok; BR-001_starter_update_and_retry_2026-05-13.md",
-    "2026-05-13 Runner ReadWritePaths + stale sync: Job 96ed5d89c443 systemd failed status.json queued; POST create job_conflict; Repo-Fix packaging/systemd + app.py stale-systemd-sync; deploy /opt + restart — BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md"
+    "2026-05-13 Runner ReadWritePaths + stale sync: Job 96ed5d89c443 systemd failed status.json queued; POST create job_conflict; Repo-Fix packaging/systemd + app.py stale-systemd-sync; deploy /opt + restart — BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md",
+    "2026-05-13 STRICT stale-sync deploy retry: Phase0 ok; SHA workspace≠opt; sudo Phase1 BLOCKED (TTY/Passwort); kein install kein restart; GET job weiter queued+systemd failed; POST create weiter backup.job_conflict; target-check ok; BR-001_stale_job_sync_fix_and_retry_2026-05-13.md"
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -440,6 +484,7 @@
     "docs/evidence/backup-restore/BR-001_systemd_readwritepaths_analysis_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_full_backup_run_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_starter_update_and_retry_2026-05-13.md",
-    "docs/evidence/backup-restore/BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md"
+    "docs/evidence/backup-restore/BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md",
+    "docs/evidence/backup-restore/BR-001_stale_job_sync_fix_and_retry_2026-05-13.md"
   ]
 }

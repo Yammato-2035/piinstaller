@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-13 — **BR-001:** Runner-Job **`96ed5d89c443`** EROFS (Manifest) / **`ProtectSystem=strict`**; Drop-In merged **`ReadWritePaths`** inkl. Media; **`status.json`** stale **`queued`** → API **`backup.job_conflict`** bis **`app.py`**-Sync deployed. Repo: **`packaging/systemd/setuphelfer-backup@.service`**, **`backend/app.py`**. Evidence **`BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md`**. **BR-004/005:** blocked. **Regel:** Grün nur mit Testnachweis …
+**Stand:** 2026-05-13 — **BR-001:** Runner-Job **`96ed5d89c443`** EROFS (Manifest) / **`ProtectSystem=strict`**; Drop-In merged **`ReadWritePaths`** inkl. Media; **`status.json`** stale **`queued`** → API **`backup.job_conflict`** bis **`app.py`**-Sync nach **`/opt`** deployt und Backend neu gestartet. **STRICT-Retry:** **`sudo`** im Agent **blockiert** — Evidence **`BR-001_stale_job_sync_fix_and_retry_2026-05-13.md`**. Repo: **`packaging/systemd/setuphelfer-backup@.service`**, **`backend/app.py`**. **BR-004/005:** blocked. **Regel:** Grün nur mit Testnachweis …
 
 ## Ampeldefinition
 
@@ -17,7 +17,7 @@
 |---------|-------|----------|------------------|
 | Phase 0 Arbeitsmodus | Gelb | Struktur & Matrizen angelegt, GitHub Project manuell | `docs/evidence/release-gates/feature_freeze.json` |
 | Phase 1 Bestandsaufnahme | Gelb | Testinventar + **Pytest Snapshot** (0× fail, 1526× pass, lokal); CI-/HW-Evidence separat | `test_inventory.json`, `current_failures.json`, `pytest_failures_summary_2026-05-11.txt` |
-| Backup | Rot | BR-001 blocked — Runner EROFS + stale job RAM (`backup.job_conflict`); Fix `app.py` + Unit-Template; Deploy `/opt` + restart | `BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md`, `BR-001.json`, `backend/app.py` |
+| Backup | Rot | BR-001 blocked — stale job + `backup.job_conflict` bis `app.py` deploy/restart (sudo oft TTY); Evidence `BR-001_stale_job_sync_fix_and_retry_2026-05-13.md` | `BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md`, `BR-001_stale_job_sync_fix_and_retry_2026-05-13.md`, `BR-001.json`, `backend/app.py` |
 | Verify | Rot | BR-004/BR-005 blocked — kein neues BR-001-Archiv aus diesem Lauf | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |

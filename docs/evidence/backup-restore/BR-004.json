@@ -19,6 +19,7 @@
   "artifacts": [],
   "notes": [
     "2026-05-13: POST create blocked by backup.job_conflict (stale queued vs systemd failed) until app.py deploy — BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md",
+    "2026-05-13: Deploy app.py (/opt) + restart weiter BLOCKED (sudo TTY); job_conflict unverändert — BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
     "2026-05-13: BR-001 POST /api/backup/create (erster Lauf) starter_invalid_path — BR-001_full_backup_run_2026-05-13.md.",
     "Verify Basic nicht gestartet (kein identisches BR-001-Archiv aus diesem Run)."
   ]
