@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-13 — **BR-001:** Full-Backup-Versuch (`POST /api/backup/create`) an **`backup.starter_invalid_path`** gescheitert — **`setuphelfer-backup-starter`** musste **`/media/gabriel/setuphelfer-back`** in **`ALLOWED_BACKUP_ROOTS`** erhalten (Repo-Fix); Operator-**`sudo install`** auf Host. Vorher: Gates + **`target-check`** grün, **`ReadWritePaths`** mit Freigabepfad — **`BR-001_full_backup_run_2026-05-13.md`**. **BR-004/005:** blocked. **Regel:** Grün nur mit Testnachweis …
+**Stand:** 2026-05-13 — **BR-001:** Geplanter **`sudo install`** des Repo-**`setuphelfer-backup-starter`** nach **`/usr/lib/setuphelfer/`** im Agent **blockiert** — kein produktives Update, **kein** erneutes Full-Backup; **`BR-001_starter_update_and_retry_2026-05-13.md`**. Zuvor **`backup.starter_invalid_path`** — **`BR-001_full_backup_run_2026-05-13.md`**. **BR-004/005:** blocked. **Regel:** Grün nur mit Testnachweis …
 
 ## Ampeldefinition
 
@@ -17,7 +17,7 @@
 |---------|-------|----------|------------------|
 | Phase 0 Arbeitsmodus | Gelb | Struktur & Matrizen angelegt, GitHub Project manuell | `docs/evidence/release-gates/feature_freeze.json` |
 | Phase 1 Bestandsaufnahme | Gelb | Testinventar + **Pytest Snapshot** (0× fail, 1526× pass, lokal); CI-/HW-Evidence separat | `test_inventory.json`, `current_failures.json`, `pytest_failures_summary_2026-05-11.txt` |
-| Backup | Rot | BR-001 blocked — Full-Backup 2026-05-13: **`backup.starter_invalid_path`** (Starter nur `/mnt/setuphelfer/backups` bis Repo-Fix); Gates + target-check grün; Deploy Starter | `BR-001.json`, `BR-001_full_backup_run_2026-05-13.md`, `packaging/helpers/setuphelfer-backup-starter.py` |
+| Backup | Rot | BR-001 blocked — Repo-Starter mit Media-Pfad; **produktiver** Starter noch alt; **`sudo install`** im Agent nicht möglich — **`BR-001_starter_update_and_retry_2026-05-13.md`** | `BR-001.json`, `packaging/helpers/setuphelfer-backup-starter.py` |
 | Verify | Rot | BR-004/BR-005 blocked — kein neues BR-001-Archiv aus diesem Lauf | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |

@@ -102,3 +102,7 @@ Kein paralleler zweiter Job.
 - `BR-001.json` → `br001_full_backup_attempt_2026_05_13`
 - `packaging/helpers/setuphelfer-backup-starter.py` (Fix)
 - `BR-001_systemd_readwritepaths_analysis_2026-05-13.md` (ReadWritePaths-Kontext)
+
+## Nachtrag — Starter-Update und erneuter Versuch (2026-05-13, später)
+
+Operator wollte den Repo-Starter nach **`/usr/lib/setuphelfer/setuphelfer-backup-starter`** installieren und BR-001 erneut starten. **Im Cursor-Agent:** **`sudo`** weiterhin **nicht** verfügbar (TTY/Passwort) → **kein** Install, **kein** zweites **`POST /api/backup/create`**. Vollständige Dokumentation: **`BR-001_starter_update_and_retry_2026-05-13.md`**, JSON-Key **`br001_starter_update_retry_2026_05_13`** in **`BR-001.json`**.

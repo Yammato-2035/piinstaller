@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "test_inventory",
-  "generated": "2026-05-13T22:30:00Z",
+  "generated": "2026-05-13T23:00:00Z",
   "source": "backend/tests",
   "test_file_count": 190,
   "ampel": "gelb",
@@ -12,7 +12,7 @@
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json"
   },
-  "notes": "GitHub CI Run **25751304968** success. BR-001 2026-05-13: Full-Backup an starter_invalid_path gescheitert — siehe BR-001_full_backup_run_2026-05-13.md; BR-004/005 blocked.",
+  "notes": "GitHub CI Run **25751304968** success. BR-001 2026-05-13: Starter-Update per sudo im Agent blockiert — BR-001_starter_update_and_retry_2026-05-13.md; BR-004/005 blocked.",
   "test_files": [
     "test_anti_regression.py",
     "test_api_consistency_fix9_v1.py",

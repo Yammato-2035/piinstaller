@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "current_failures",
-  "generated": "2026-05-13T22:30:00Z",
+  "generated": "2026-05-13T23:00:00Z",
   "executed_at": "2026-05-12T17:55:00Z",
   "prompt": "PROMPT_02_BLOCKER_INVENTORY",
   "prompt_rerun": true,
@@ -28,5 +28,5 @@
     "docs/evidence/release-gates/prompt02_abschlussbericht.md"
   ],
   "blocker_inventory": "docs/evidence/release-gates/blocker_inventory.json",
-  "notes": "GitHub CI `ci.yml` success (Run 25751304968). BR-001 2026-05-13: Full-Backup-Versuch backup.starter_invalid_path — Starter-Deploy offen; BR-004/005 blocked. Pytest grün ersetzt keine Backup-E2E-Evidence."
+  "notes": "GitHub CI `ci.yml` success (Run 25751304968). BR-001: sudo install backup-starter blocked 2026-05-13 — kein Retry-Backup; BR-004/005 blocked. Pytest grün ersetzt keine Backup-E2E-Evidence."
 }

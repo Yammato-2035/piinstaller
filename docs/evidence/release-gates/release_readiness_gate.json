@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-13T22:30:00Z",
+  "generated": "2026-05-13T23:00:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — Full-Backup-Versuch 2026-05-13 an **`backup.starter_invalid_path`** (Starter-Allowlist); Repo-Starter-Fix + Operator-Deploy offen — **`BR-001_full_backup_run_2026-05-13.md`**. **BR-004/005:** blocked. **Backend-Version-Gate** — `scripts/check-backend-version-gate.sh`. APT weiter **rot**. Release gesamt blocked.",
+  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** — Starter-Deploy per **`sudo install`** im Agent **nicht** ausgeführt; Retry-Doku **`BR-001_starter_update_and_retry_2026-05-13.md`**; voriger Create-Lauf **`backup.starter_invalid_path`** — **`BR-001_full_backup_run_2026-05-13.md`**. **BR-004/005:** blocked. **Backend-Version-Gate** — `scripts/check-backend-version-gate.sh`. APT weiter **rot**. Release gesamt blocked.",
   "backend_version_gate": {
     "check_script": "scripts/check-backend-version-gate.sh",
     "evidence_json": "docs/evidence/release-gates/backend_version_update_gate.json",

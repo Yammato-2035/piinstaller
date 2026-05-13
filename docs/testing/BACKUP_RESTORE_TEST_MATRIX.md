@@ -2,7 +2,7 @@
 
 | ID | Test | Voraussetzung | Erwartung | Status | Evidence |
 |----|------|---------------|-----------|--------|----------|
-| BR-001 | Full Backup freigegebenes Ziel | Nur **`/media/gabriel/setuphelfer-back`** (ext4, USB), Gates + **`target-check`** grün; **`setuphelfer-backup-starter`** muss Ziel erlauben | Archiv + Manifest + SHA256 | Rot (blocked — Starter **`backup.starter_invalid_path`** bis Deploy Repo-Starter) | `BR-001.json`, `BR-001_full_backup_run_2026-05-13.md` |
+| BR-001 | Full Backup freigegebenes Ziel | Nur **`/media/gabriel/setuphelfer-back`** (ext4, USB), Gates + **`target-check`** grün; produktiver **`setuphelfer-backup-starter`** = Repo-Version mit **`ALLOWED_BACKUP_ROOTS`** | Archiv + Manifest + SHA256 | Rot (blocked — **`sudo install`** Starter im Agent nicht möglich; alter Starter → **`backup.starter_invalid_path`** beim Create) | `BR-001.json`, `BR-001_full_backup_run_2026-05-13.md`, `BR-001_starter_update_and_retry_2026-05-13.md` |
 | BR-002 | Ziel nicht beschreibbar | Rechte entzogen | harter Abbruch | Rot | docs/evidence/backup-restore/BR-002.json |
 | BR-003 | `.partial` Archiv prüfen | abgebrochene Sicherung | Verify blockiert | Rot | docs/evidence/backup-restore/BR-003.json |
 | BR-004 | Verify Basic gültig | **dieselbe** Archivdatei wie BR-001 | ok | Rot (blocked — BR-001) | docs/evidence/backup-restore/BR-004.json |
@@ -17,4 +17,4 @@
 
 Viele Szenarien haben Abdeckung unter `backend/tests/` (z. B. Backup/Restore/Write-Guard). **Grün in dieser Matrix** verlangt zusätzlich dokumentierte Läufe mit Evidence-JSON gemäß `docs/evidence/README.md`.
 
-**STRICT-Kette (2026-05-13):** Freigegebener Pfad **`/media/gabriel/setuphelfer-back`** — **`target-check`** und Version-Gate grün; Full-Backup **`POST /api/backup/create`** scheiterte an **`backup.starter_invalid_path`**, weil der installierte Starter nur **`/mnt/setuphelfer/backups`** erlaubte — Repo-Fix **`packaging/helpers/setuphelfer-backup-starter.py`** (`ALLOWED_BACKUP_ROOTS`). Historischer STRICT-/mnt-Hinweis 2026-05-12 bleibt für ältere Runs in älterer Evidence.
+**STRICT-Kette (2026-05-13):** Freigegebener Pfad **`/media/gabriel/setuphelfer-back`** — **`target-check`** und Version-Gate grün; Full-Backup **`POST /api/backup/create`** scheiterte zuerst an **`backup.starter_invalid_path`** (alter Starter). Repo-Fix **`packaging/helpers/setuphelfer-backup-starter.py`**. **Retry:** produktives **`sudo install`** des Starters im Agent-Umfeld **nicht** ausgeführt — Evidence **`BR-001_starter_update_and_retry_2026-05-13.md`**. Historischer STRICT-/mnt-Hinweis 2026-05-12 bleibt für ältere Runs in älterer Evidence.

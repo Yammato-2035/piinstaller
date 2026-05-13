@@ -320,6 +320,31 @@
     "mnt_setuphelfer_backups_used_as_target": false,
     "evidence_md": "docs/evidence/backup-restore/BR-001_full_backup_run_2026-05-13.md"
   },
+  "br001_starter_update_retry_2026_05_13": {
+    "executed_at_local": "2026-05-13T18:28:35+02:00",
+    "phase0_gate_exit": 0,
+    "phase0_api_version_http": 200,
+    "starter_repo_path": "packaging/helpers/setuphelfer-backup-starter.py",
+    "starter_prod_path": "/usr/lib/setuphelfer/setuphelfer-backup-starter",
+    "repo_allowlist_contains_approved_path": true,
+    "prod_grep_allowed_backup_roots": "no_match_legacy_starter",
+    "sha256_workspace_repo": "55615b84f867f35fdae09113716845207f322cbca2730e8e15ca41790fa1e771",
+    "sha256_prod_before": "96341f48e5764cee895d48b6c06ba0a4aa84d29cd74ada42332c83bc1022325a",
+    "sha256_prod_after": null,
+    "planned_tmp_backup_dir": "/tmp/setuphelfer-starter-backup-20260513T162835Z",
+    "sudo_mkdir_install": "blocked_password_or_tty_required",
+    "prod_starter_updated": false,
+    "phase4_target_check_code": "backup.target_check_ok",
+    "phase4_mount_readonly": false,
+    "phase4_uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+    "phase4_device": "/dev/sdb1",
+    "post_backup_create_executed": false,
+    "br001_retry_result": "blocked_operator_sudo_required",
+    "br004_executed": false,
+    "br005_executed": false,
+    "restore_started": false,
+    "evidence_md": "docs/evidence/backup-restore/BR-001_starter_update_and_retry_2026-05-13.md"
+  },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
     "path_exists_on_host": false,
@@ -353,7 +378,8 @@
     "2026-05-13 STRICT: core.versioning fehlt unter /opt — /api/version HTTP 500; keine weiteren lokalen Modul-Imports in versioning.py; config/version.json auf /opt vorhanden; sudo install BLOCKED; target-check Snapshot HTTP 200 backup.target_check_ok; kein Backup gestartet.",
     "2026-05-13 STRICT full sync: sudo BLOCKED; backend py files already match workspace SHA256; only config/version.json differs (legacy vs version_source_of_truth); /api/version 500; target-check backup.backup_target_not_writable; findmnt rw vs API ro; BR-001_backend_update_and_version_fix_2026-05-13.md",
     "2026-05-13: systemd ReadWritePaths — /media/gabriel/setuphelfer-back ergänzt in debian/setuphelfer-backend.service + setuphelfer-backend.service; Drop-in-Beispiel docs/operations/systemd/; Evidence BR-001_systemd_readwritepaths_analysis_2026-05-13.md; kein Backup; Host-restart nicht im Agent",
-    "2026-05-13 STRICT BR-001 full backup: Gates+target-check ok; POST /api/backup/create full local → backup.starter_invalid_path (helper allowlist only /mnt/setuphelfer/backups); job 2ef832fc32a2 error; repo starter fix ALLOWED_BACKUP_ROOTS; sudo install starter blocked; BR-001_full_backup_run_2026-05-13.md"
+    "2026-05-13 STRICT BR-001 full backup: Gates+target-check ok; POST /api/backup/create full local → backup.starter_invalid_path (helper allowlist only /mnt/setuphelfer/backups); job 2ef832fc32a2 error; repo starter fix ALLOWED_BACKUP_ROOTS; sudo install starter blocked; BR-001_full_backup_run_2026-05-13.md",
+    "2026-05-13 STRICT starter update retry: Phase0 ok; Phase1 repo allowlist ok prod SHA 96341f… vs workspace 55615b…; Phase2-3 sudo BLOCKED — kein install kein zweites POST create; Phase4 target-check ok; BR-001_starter_update_and_retry_2026-05-13.md"
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -364,6 +390,7 @@
   },
   "notes": [
     "Betreiberfreigabe: nur /media/gabriel/setuphelfer-back auf /dev/sda1 ext4 — kein /mnt/setuphelfer/backups, kein Bind, kein anderer Pfad.",
+    "2026-05-13 starter update retry: sudo install /usr/lib/setuphelfer/setuphelfer-backup-starter blocked in agent — br001_starter_update_retry_2026_05_13; operator must run Phase2-3 then POST create.",
     "BR-001 2026-05-13 full-backup attempt: starter_invalid_path — deploy packaging/helpers/setuphelfer-backup-starter.py to /usr/lib/setuphelfer/ or set SETUPHELFER_BACKUP_START_MODE=systemd per operator policy; see br001_full_backup_attempt_2026_05_13.",
     "2026-05-12 Analyse: Shell vs. API — Hauptursache C+D (Traverse /media/gabriel + Anker findmnt → nvme); siehe BR-001_productive_target_check_media_path_analysis_2026-05-12.md.",
     "Keine ACL-Änderung, kein Ausweichen — siehe BR-001_path_policy_correction_2026-05-12.md.",
@@ -389,6 +416,7 @@
     "docs/evidence/backup-restore/BR-001_readonly_target_and_api500_analysis_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_backend_deploy_status_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_systemd_readwritepaths_analysis_2026-05-13.md",
-    "docs/evidence/backup-restore/BR-001_full_backup_run_2026-05-13.md"
+    "docs/evidence/backup-restore/BR-001_full_backup_run_2026-05-13.md",
+    "docs/evidence/backup-restore/BR-001_starter_update_and_retry_2026-05-13.md"
   ]
 }

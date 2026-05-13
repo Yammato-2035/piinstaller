@@ -7,7 +7,7 @@
   "evidence_complete": false,
   "commit": "7452231bfab6521a6aefb947cfccb9a5551879bc",
   "ci_run": "25751304968",
-  "br001_chain": "BR-001 full-backup 2026-05-13 fehlgeschlagen (backup.starter_invalid_path) — kein neues Archiv; Verify Deep nur gegen BR-001-Archiv zulässig.",
+  "br001_chain": "BR-001 blocked — Starter-Deploy 2026-05-13 per sudo im Agent nicht möglich; kein neues Archiv; Verify Deep nur gegen BR-001-Archiv zulässig.",
   "archive_from_br001": "",
   "environment": {
     "api": "POST /api/backup/verify",
@@ -18,7 +18,8 @@
   "api_code": null,
   "artifacts": [],
   "notes": [
-    "2026-05-13: Kein erfolgreiches BR-001-Archiv — Verify Deep nicht ausgeführt (BR-001_full_backup_run_2026-05-13.md).",
+    "2026-05-13: Starter-Update-Retry ohne erfolgreichen sudo install — kein erneutes Full-Backup; BR-001_starter_update_and_retry_2026-05-13.md.",
+    "2026-05-13: Kein erfolgreiches BR-001-Archiv aus STRICT-Kette — Verify Deep nicht ausgeführt (BR-001_full_backup_run_2026-05-13.md).",
     "Historische Full-Archive auf dem Medium (z. B. pi-backup-full-20260430_*) sind nicht Gegenstand dieses strikten BR-001/004/005-Kettentests."
   ]
 }
