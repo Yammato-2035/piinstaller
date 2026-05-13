@@ -409,6 +409,31 @@
     "restore_started": false,
     "evidence_md": "docs/evidence/backup-restore/BR-001_stale_job_sync_fix_and_retry_2026-05-13.md"
   },
+  "br001_package_activity_failure_e341a326ac69_2026_05_13": {
+    "job_id": "e341a326ac69",
+    "backup_dir": "/media/gabriel/setuphelfer-back",
+    "status": "error",
+    "code": "backup.blocked_package_activity",
+    "diagnosis_id": "UPDATE-CONFLICT-041",
+    "abort_reason": "package_activity_detected_runtime",
+    "backup_started_at": "2026-05-13T17:24:03.027232+00:00",
+    "backup_finished_at": "2026-05-13T19:07:39.802091+00:00",
+    "duration_note": "approx_1h43m_wall_clock_UTC",
+    "active_package_process_cmdline": "/usr/bin/apt-get autoremove --purge -y",
+    "timer_context": "mintupdate_automation_autoremove_timer_coincident_with_finish",
+    "partial_deleted": true,
+    "manifest_residual_path": "/media/gabriel/setuphelfer-back/.e341a326ac69.MANIFEST.json",
+    "manifest_residual_present": true,
+    "final_archive_present": false,
+    "planned_archive_basename": "pi-backup-full-20260513_192403.tar.gz",
+    "journalctl_evidence_capture": "no_entries_non_journal_group_use_sudo_journalctl_on_host",
+    "br001_result": "failed",
+    "br004_executed": false,
+    "br005_executed": false,
+    "restore_started": false,
+    "retry_runbook": "docs/evidence/backup-restore/BR-001_package_activity_retry_runbook_2026-05-13.md",
+    "evidence_md": "docs/evidence/backup-restore/BR-001_package_activity_failure_2026-05-13.md"
+  },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
     "path_exists_on_host": false,
@@ -445,7 +470,8 @@
     "2026-05-13 STRICT BR-001 full backup: Gates+target-check ok; POST /api/backup/create full local → backup.starter_invalid_path (helper allowlist only /mnt/setuphelfer/backups); job 2ef832fc32a2 error; repo starter fix ALLOWED_BACKUP_ROOTS; sudo install starter blocked; BR-001_full_backup_run_2026-05-13.md",
     "2026-05-13 STRICT starter update retry: Phase0 ok; Phase1 repo allowlist ok prod SHA 96341f… vs workspace 55615b…; Phase2-3 sudo BLOCKED — kein install kein zweites POST create; Phase4 target-check ok; BR-001_starter_update_and_retry_2026-05-13.md",
     "2026-05-13 Runner ReadWritePaths + stale sync: Job 96ed5d89c443 systemd failed status.json queued; POST create job_conflict; Repo-Fix packaging/systemd + app.py stale-systemd-sync; deploy /opt + restart — BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md",
-    "2026-05-13 STRICT stale-sync deploy retry: Phase0 ok; SHA workspace≠opt; sudo Phase1 BLOCKED (TTY/Passwort); kein install kein restart; GET job weiter queued+systemd failed; POST create weiter backup.job_conflict; target-check ok; BR-001_stale_job_sync_fix_and_retry_2026-05-13.md"
+    "2026-05-13 STRICT stale-sync deploy retry: Phase0 ok; SHA workspace≠opt; sudo Phase1 BLOCKED (TTY/Passwort); kein install kein restart; GET job weiter queued+systemd failed; POST create weiter backup.job_conflict; target-check ok; BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
+    "2026-05-13 BR-001 Job e341a326ac69: backup.blocked_package_activity UPDATE-CONFLICT-041; apt-get autoremove --purge -y; mintupdate-automation-autoremove.timer; partial gelöscht; Manifest-Rest .e341a326ac69.MANIFEST.json — BR-001_package_activity_failure_2026-05-13.md; Retry-Runbook BR-001_package_activity_retry_runbook_2026-05-13.md"
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -463,10 +489,11 @@
     "2026-05-12: Workspace-Code meldet bei fehlendem Traverse künftig STORAGE-006 (nicht 001); BR-001_target_permission_diagnostics_fix_2026-05-12.md — Betrieb weiter blocked bis grüner Check + Freigabe.",
     "Strategischer Doku-Pfad /media/setuphelfer/setuphelfer-back nur auf externem Medium; bestehendes Volume weiter /media/gabriel/setuphelfer-back bis Betreiberentscheidung.",
     "2026-05-13: Vier-Dateien-Deploy nach /opt freigegeben — im Agent nicht ausführbar; Operator-Runbook in BR-001_backend_deploy_status_2026-05-12.md.",
-    "2026-05-13: Zusätzlich legacy /opt/config/version.json (kein version_source_of_truth) für /api/version 500; Backend-Python-Dateien bereits SHA256-gleich Workspace; Operator: sudo install version.json + restart; Evidence productive_backend_full_update_attempt_2026_05_13."
+    "2026-05-13: Zusätzlich legacy /opt/config/version.json (kein version_source_of_truth) für /api/version 500; Backend-Python-Dateien bereits SHA256-gleich Workspace; Operator: sudo install version.json + restart; Evidence productive_backend_full_update_attempt_2026_05_13.",
+    "2026-05-13 Job e341a326ac69: Full-Backup lief ~1h43 bis backup.blocked_package_activity (UPDATE-CONFLICT-041); parallel apt-get autoremove; kein finales Archiv; Manifest-Rest auf Zielmedium — siehe br001_package_activity_failure_e341a326ac69_2026_05_13 und package_activity_retry_runbook."
   ],
-  "result": "blocked",
-  "api_code": "backup.starter_invalid_path",
+  "result": "failed",
+  "api_code": "backup.blocked_package_activity",
   "artifacts": [
     "docs/evidence/backup-restore/BR-001_productive_target_check_media_path_analysis_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_path_policy_correction_2026-05-12.md",
@@ -485,6 +512,8 @@
     "docs/evidence/backup-restore/BR-001_full_backup_run_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_starter_update_and_retry_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md",
-    "docs/evidence/backup-restore/BR-001_stale_job_sync_fix_and_retry_2026-05-13.md"
+    "docs/evidence/backup-restore/BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
+    "docs/evidence/backup-restore/BR-001_package_activity_failure_2026-05-13.md",
+    "docs/evidence/backup-restore/BR-001_package_activity_retry_runbook_2026-05-13.md"
   ]
 }

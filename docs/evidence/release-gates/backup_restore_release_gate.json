@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-13T17:10:00Z",
+  "generated": "2026-05-13T19:20:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
@@ -13,5 +13,5 @@
   },
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
   "partial_br_ids": [],
-  "notes": "BR-001 **blocked**. **Runner 2026-05-13:** Job **`96ed5d89c443`** — **EROFS** (Manifest) + stale **`queued`** vs systemd **`failed`** → **`backup.job_conflict`**. **Repo-Fix** `backend/app.py` (stale-systemd-Sync) + Unit-Template. **STRICT-Retry 2026-05-13:** **`sudo`** Phase1 **BLOCKED** (TTY/Passwort) → **kein** Deploy **`/opt`**, **kein** Restart; API weiter **`backup.job_conflict`**. Evidence **`BR-001_stale_job_sync_fix_and_retry_2026-05-13.md`**, **`BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md`**. **BR-004/BR-005:** blocked. CI **25751304968** success."
+  "notes": "BR-001 **failed** (letzter dokumentierter Lauf): Job **`e341a326ac69`** — **`backup.blocked_package_activity`**, **`UPDATE-CONFLICT-041`**, parallel **`apt-get autoremove --purge -y`** / **`mintupdate-automation-autoremove.timer`**; kein finales Archiv; Manifest-Rest auf Zielmedium. Evidence **`BR-001_package_activity_failure_2026-05-13.md`**, Retry-Runbook **`BR-001_package_activity_retry_runbook_2026-05-13.md`**. Zusätzlich historisch: stale-job / **`app.py`**-Deploy-Themen (`BR-001_stale_job_sync_fix_and_retry_2026-05-13.md`). **BR-004/BR-005:** blocked. CI **25751304968** success."
 }

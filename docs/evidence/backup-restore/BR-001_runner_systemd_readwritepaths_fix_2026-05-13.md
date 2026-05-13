@@ -136,3 +136,9 @@ Im Agent-Lauf: **kein** erfolgreicher neuer Job, daher **kein** finales **`.tar.
 - `BR-001.json` → `br001_runner_readwritepaths_and_stale_sync_2026_05_13`
 - `packaging/systemd/setuphelfer-backup@.service`
 - `docs/operations/systemd/setuphelfer-backup-at-service-backup-target.conf.example`
+
+---
+
+## Nachtrag — Paketaktivität (unabhängiger Abbruchpfad)
+
+Ein späterer produktiver Lauf (**Job `e341a326ac69`**) scheiterte **nicht** an EROFS/ReadWritePaths, sondern an **`backup.blocked_package_activity`** (**`UPDATE-CONFLICT-041`**) durch laufendes **`apt-get autoremove`** im Mint-Automation-Kontext. Siehe **`BR-001_package_activity_failure_2026-05-13.md`** und **`BR-001_package_activity_retry_runbook_2026-05-13.md`**.
