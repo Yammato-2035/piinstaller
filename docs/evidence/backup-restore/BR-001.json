@@ -149,10 +149,115 @@
     "target_check_strategic_path_not_used": "/media/setuphelfer/setuphelfer-back",
     "target_check_result_2026_05_13": {
       "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/gabriel/setuphelfer-back&create=0",
-      "code": "backup.path_invalid",
-      "diagnosis": "STORAGE-PROTECTION-001",
-      "note": "Unchanged until /opt receives workspace files and service restart"
+      "code": "backup.backup_target_not_writable",
+      "http_status": 200,
+      "json_status": "error",
+      "note": "Snapshot after productive_backend_full_update_attempt_2026_05_13; findmnt rw vs API ro documented"
     }
+  },
+  "core_versioning_api_version_repair_2026_05_13": {
+    "prompt": "STRICT partial deploy — ModuleNotFoundError core.versioning",
+    "workspace_versioning_py": "/home/volker/piinstaller/backend/core/versioning.py",
+    "workspace_file_present": true,
+    "workspace_sha256": "39c22a547578ec5027455ef29565d6e8a368348a71cd2101999507d5544d0f1d",
+    "opt_versioning_py": "/opt/setuphelfer/backend/core/versioning.py",
+    "opt_file_existed_before_attempt": false,
+    "root_cause_documented": "app.py imports core.versioning; file missing under /opt/setuphelfer/backend/core/",
+    "corrected_assessment_2026_05_13": "opt versioning.py now present and SHA256-identical to workspace; /api/version 500 primarily from legacy /opt/setuphelfer/config/version.json schema (no version_source_of_truth)",
+    "extra_local_python_imports_in_versioning_py": false,
+    "opt_config_version_json_present": true,
+    "opt_config_version_json_path": "/opt/setuphelfer/config/version.json",
+    "opt_config_version_json_legacy_schema": true,
+    "tmp_backup_of_existing_opt_file": "not_applicable_file_was_new_in_opt",
+    "sudo_install_executed": false,
+    "sudo_failure": "password_or_tty_required",
+    "files_copied_to_opt": [],
+    "systemctl_restart_executed": false,
+    "curl_api_version": {
+      "url": "http://127.0.0.1:8000/api/version",
+      "http_status": 500,
+      "body_excerpt": "Internal Server Error"
+    },
+    "curl_target_check_approved_path": {
+      "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/gabriel/setuphelfer-back&create=0",
+      "http_status": 200,
+      "code": "backup.target_check_ok",
+      "note": "Earlier 2026-05-13 snapshot; superseded by productive_backend_full_update_attempt_2026_05_13 target_check"
+    },
+    "backup_job_started": false,
+    "evidence_md": "docs/evidence/backup-restore/BR-001_backend_deploy_status_2026-05-12.md",
+    "operator_minimal_command": "sudo install -o setuphelfer -g setuphelfer -m 0644 WS/backend/core/versioning.py /opt/setuphelfer/backend/core/versioning.py && sudo systemctl restart setuphelfer-backend.service"
+  },
+  "productive_backend_full_update_attempt_2026_05_13": {
+    "executed_at": "2026-05-13T04:06:00Z",
+    "workspace_git_head": "6398f1217d1d5b23e35f0a0d23bc16915d3aa7a4",
+    "workspace_git_dirty": true,
+    "sudo_available_in_agent": false,
+    "sudo_error": "password_or_tty_required",
+    "planned_backup_dir": "/tmp/setuphelfer-deploy-backup-20260513T040623Z",
+    "tmp_backup_created": false,
+    "sha256sums_before_file": "not_created_sudo_blocked",
+    "sha256sums_after_file": "not_created_sudo_blocked",
+    "backend_files_workspace_vs_opt_identical_sha256": {
+      "backend/app.py": "60517c0c9cbae832b94788e419f13f6c8872084c45e37cb0b62c1f3ea5db486a",
+      "backend/core/safe_device.py": "e33be50f750ce36631f3d3943bc90e3d60d72bfbf669e6ba375ee5468a52b849",
+      "backend/core/versioning.py": "39c22a547578ec5027455ef29565d6e8a368348a71cd2101999507d5544d0f1d",
+      "backend/core/diagnostics/registry.py": "5986134ca868c981692c93af24dc8bcf1e5231014fc4b26986f0a5951adbc0a6",
+      "backend/core/diagnostics/matcher.py": "348335c22c4e9b299ff7fff0736845a3ad8395596be04627e3dd12be2547c0fe"
+    },
+    "config_version_json": {
+      "workspace_sha256": "67a28e1f0e195a17bf07712c447402a73ed59e32dee12559fda9e0b67a722515",
+      "opt_sha256": "23af5e3a50eff08548950b932b8d5aebad5b90eec94728cc85f0f85a1de4e107",
+      "opt_schema": "legacy_version_codename_release_date",
+      "workspace_schema": "version_source_of_truth_project_version"
+    },
+    "files_intended_for_install": [
+      "backend/app.py",
+      "backend/core/safe_device.py",
+      "backend/core/versioning.py",
+      "backend/core/diagnostics/registry.py",
+      "backend/core/diagnostics/matcher.py",
+      "config/version.json"
+    ],
+    "install_executed": false,
+    "systemctl_restart_executed": false,
+    "curl_api_version": {
+      "http_status": 500,
+      "body_excerpt": "Internal Server Error"
+    },
+    "findmnt_T_approved_path": {
+      "target": "/media/gabriel/setuphelfer-back",
+      "source": "/dev/sdd1",
+      "fstype": "ext4",
+      "options": "rw,nosuid,nodev,relatime,errors=remount-ro,stripe=8191"
+    },
+    "lsblk_approved_volume": {
+      "uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+      "label": "setuphelfer-back",
+      "fstype": "ext4",
+      "path": "/dev/sdd1",
+      "mountpoints": "/media/gabriel/setuphelfer-back",
+      "tran": "usb"
+    },
+    "target_check_approved_path_only": {
+      "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/gabriel/setuphelfer-back&create=0",
+      "http_status": 200,
+      "json_status": "error",
+      "code": "backup.backup_target_not_writable",
+      "write_test_reason_code": "mount_readonly",
+      "api_mount_options": "ro,nosuid,nodev,relatime,errors=remount-ro,stripe=8191",
+      "api_mount_readonly": true,
+      "findmnt_vs_api_readonly_contradiction": true
+    },
+    "forbidden_path_used": false,
+    "mnt_setuphelfer_backups_used": false,
+    "backup_job_started": false,
+    "br001_status": "blocked",
+    "br001_note": "ready_for_explicit_operator_approval not met until /api/version 200 and target-check success per operator policy",
+    "evidence_md": [
+      "docs/evidence/backup-restore/BR-001_backend_update_and_version_fix_2026-05-13.md",
+      "docs/evidence/backup-restore/BR-001_readonly_target_and_api500_analysis_2026-05-12.md"
+    ]
   },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
@@ -183,7 +288,9 @@
     "2026-05-12 Analyse Shell vs. API (nur lesend): BR-001_productive_target_check_media_path_analysis_2026-05-12.md; kein Deploy/Restart.",
     "2026-05-12 Workspace: Diagnosefix STORAGE-006 + backup.target_traverse_denied (kein produktiver Re-Check, kein Backup).",
     "2026-05-12: Strategischer Pfad /media/setuphelfer/setuphelfer-back dokumentiert; externe Kandidaten nur lesend; Deploy /opt blockiert (sudo); target-check strategischer Pfad → STORAGE-001 auf altem Backend.",
-    "2026-05-13: Betreiberfreigabe Deploy 4 Dateien — im Cursor-Agent BLOCKED (sudo TTY/Passwort); sha256 + Runbook BR-001_backend_deploy_status; target-check /media/gabriel/setuphelfer-back weiter STORAGE-001 bis Deploy auf Host."
+    "2026-05-13: Betreiberfreigabe Deploy 4 Dateien — im Cursor-Agent BLOCKED (sudo TTY/Passwort); sha256 + Runbook BR-001_backend_deploy_status; target-check /media/gabriel/setuphelfer-back weiter STORAGE-001 bis Deploy auf Host.",
+    "2026-05-13 STRICT: core.versioning fehlt unter /opt — /api/version HTTP 500; keine weiteren lokalen Modul-Imports in versioning.py; config/version.json auf /opt vorhanden; sudo install BLOCKED; target-check Snapshot HTTP 200 backup.target_check_ok; kein Backup gestartet.",
+    "2026-05-13 STRICT full sync: sudo BLOCKED; backend py files already match workspace SHA256; only config/version.json differs (legacy vs version_source_of_truth); /api/version 500; target-check backup.backup_target_not_writable; findmnt rw vs API ro; BR-001_backend_update_and_version_fix_2026-05-13.md"
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -194,15 +301,16 @@
   },
   "notes": [
     "Betreiberfreigabe: nur /media/gabriel/setuphelfer-back auf /dev/sda1 ext4 — kein /mnt/setuphelfer/backups, kein Bind, kein anderer Pfad.",
-    "BR-001 blocked: API target-check auf Freigabepfad nicht grün (STORAGE-001); Dienstnutzer-Zugriff mit sudo -n nicht nachweisbar.",
+    "BR-001 blocked: E2E-Gate ausstehend; /api/version HTTP 500 (legacy /opt/config/version.json); target-check 2026-05-13: backup.backup_target_not_writable; findmnt rw vs API ro — siehe productive_backend_full_update_attempt_2026_05_13.",
     "2026-05-12 Analyse: Shell vs. API — Hauptursache C+D (Traverse /media/gabriel + Anker findmnt → nvme); siehe BR-001_productive_target_check_media_path_analysis_2026-05-12.md.",
     "Keine ACL-Änderung, kein Ausweichen — siehe BR-001_path_policy_correction_2026-05-12.md.",
     "2026-05-12: Workspace-Code meldet bei fehlendem Traverse künftig STORAGE-006 (nicht 001); BR-001_target_permission_diagnostics_fix_2026-05-12.md — Betrieb weiter blocked bis grüner Check + Freigabe.",
     "Strategischer Doku-Pfad /media/setuphelfer/setuphelfer-back nur auf externem Medium; bestehendes Volume weiter /media/gabriel/setuphelfer-back bis Betreiberentscheidung.",
-    "2026-05-13: Vier-Dateien-Deploy nach /opt freigegeben — im Agent nicht ausführbar; Operator-Runbook in BR-001_backend_deploy_status_2026-05-12.md."
+    "2026-05-13: Vier-Dateien-Deploy nach /opt freigegeben — im Agent nicht ausführbar; Operator-Runbook in BR-001_backend_deploy_status_2026-05-12.md.",
+    "2026-05-13: Zusätzlich legacy /opt/config/version.json (kein version_source_of_truth) für /api/version 500; Backend-Python-Dateien bereits SHA256-gleich Workspace; Operator: sudo install version.json + restart; Evidence productive_backend_full_update_attempt_2026_05_13."
   ],
   "result": "blocked",
-  "api_code": "backup.path_invalid",
+  "api_code": "backup.backup_target_not_writable",
   "artifacts": [
     "docs/evidence/backup-restore/BR-001_productive_target_check_media_path_analysis_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_path_policy_correction_2026-05-12.md",
@@ -214,6 +322,8 @@
     "docs/evidence/backup-restore/BR-001_target_permission_diagnostics_fix_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_external_target_policy_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_external_target_selection_2026-05-12.md",
+    "docs/evidence/backup-restore/BR-001_backend_update_and_version_fix_2026-05-13.md",
+    "docs/evidence/backup-restore/BR-001_readonly_target_and_api500_analysis_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_backend_deploy_status_2026-05-12.md"
   ]
 }

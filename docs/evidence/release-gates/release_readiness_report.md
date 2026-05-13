@@ -1,11 +1,11 @@
 # Release Readiness – Bericht
 
-**Generiert:** 2026-05-13 (STRICT — Vier-Dateien-Deploy freigegeben, Agent ohne TTY-`sudo`)  
+**Generiert:** 2026-05-13 (STRICT — Voll-Deploy/Version-Fix, Agent ohne TTY-`sudo`)  
 **Gesamtstatus:** `blocked`
 
 ## Kurzfassung
 
-**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001:** **blocked** — Betreiber hat **Deploy** von vier Backend-Dateien nach **`/opt`** freigegeben; **Ausführung im Cursor-Agent BLOCKED** (`sudo` verlangt interaktives Terminal/Passwort). **sha256** alt ( `/opt` ) vs. neu (Workspace `a1aebba…`) und **Operator-Runbook** in **`BR-001_backend_deploy_status_2026-05-12.md`**. **target-check** ausschließlich **`/media/gabriel/setuphelfer-back`** erneut ausgeführt → unverändert **STORAGE-PROTECTION-001** / `backup.path_invalid` (Produktivcode noch nicht ersetzt). **Kein** Backup-Start; **`/mnt/setuphelfer/backups`** und **`/media/setuphelfer/setuphelfer-back`** nicht für den Check verwendet.
+**GitHub Actions `ci.yml`:** Run **25751304968** — **success** (HEAD `55d7cec`). **BR-001:** **blocked**. Produktiv: **`GET /api/version` → HTTP 500** — Ursache dokumentiert: **`/opt/setuphelfer/config/version.json`** hat noch das **Legacy-Schema** (`version`/`codename`/`release_date`), **`core.versioning`** erwartet **`version_source_of_truth": true`**. Die fünf Backend-Dateien **`app.py`**, **`safe_device.py`**, **`versioning.py`**, **`registry.py`**, **`matcher.py`** sind unter **`/opt`** per **SHA256 identisch** zum Workspace; ausstehend ist primär **`config/version.json`** + **`systemctl restart`** ( **`sudo`** im Agent **BLOCKED** ). **`target-check`** ausschließlich **`/media/gabriel/setuphelfer-back`:** **HTTP 200**, JSON **`backup.backup_target_not_writable`** (Schreibtest EROFS); Shell-**`findmnt`** zeigt **`rw`** — Widerspruch in **`BR-001_readonly_target_and_api500_analysis_2026-05-12.md`**. Evidence-Hauptdatei: **`BR-001_backend_update_and_version_fix_2026-05-13.md`**. **Kein** Backup-Start.
 
 ## Ampelüberblick
 

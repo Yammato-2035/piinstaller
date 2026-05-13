@@ -154,3 +154,32 @@ Dieser Pfad ist in Produkt- und Evidence-Doku als **konventionelles externes Zie
 ## 13. Deploy Diagnose-Fix (2026-05-13, Betreiberfreigabe)
 
 Vier Dateien (`app.py`, `safe_device.py`, `registry.py`, `matcher.py`) — siehe **`BR-001_backend_deploy_status_2026-05-12.md`** (sha256 alt/neu, Operator-Runbook). **target-check** laut Freigabe nur gegen **`/media/gabriel/setuphelfer-back`** (nicht gegen `/media/setuphelfer/setuphelfer-back`, solange nicht extern gemountet). Im Cursor-Agenten: Deploy **BLOCKED** (kein TTY-`sudo`); produktiver **target-check** daher unverändert **STORAGE-001** bis Runbook auf dem Host ausgeführt wurde.
+
+## 14. STRICT 2026-05-13 — Paralleler Snapshot (`core.versioning` vs. target-check)
+
+**Kontext:** Nach Teildeploy kann **`app.py`** `core.versioning` erwarten, während **`/opt/setuphelfer/backend/core/versioning.py`** fehlt → **`ModuleNotFoundError`** auf **`/api/version`**.
+
+| Prüfung | Ergebnis |
+|---------|----------|
+| Workspace `backend/core/versioning.py` | vorhanden |
+| `/opt/setuphelfer/backend/core/versioning.py` | **fehlte** (vor geplantem `install`) |
+| Zusätzliche lokale Imports in `versioning.py` | **keine** (nur stdlib); **`/opt/setuphelfer/config/version.json`** vorhanden |
+| `sudo install` / `systemctl restart` (Cursor-Agent) | **nicht ausgeführt** (sudo Passwort/TTY) |
+| **`GET /api/version`** | **HTTP 500** `Internal Server Error` |
+| **`GET …/target-check?backup_dir=/media/gabriel/setuphelfer-back&create=0`** (gleicher Lauf) | **HTTP 200**, **`code":"backup.target_check_ok"`**, u. a. **`mount.source":"/dev/sdd1"`** (Gerät kann sich vom Stand 2026-05-12 unterscheiden) |
+
+**Hinweis (2026-05-13 Nachmessung):** `core/versioning.py` liegt inzwischen unter `/opt` (SHA256 = Workspace); **`/api/version` 500** folgt primär aus **altem** `/opt/setuphelfer/config/version.json` ohne `version_source_of_truth` — siehe Abschnitt **15** und **`BR-001_backend_update_and_version_fix_2026-05-13.md`**.
+
+## 15. STRICT 2026-05-13 — Workspace-Parität, `version.json`, `target-check`
+
+| Prüfung | Ergebnis |
+|---------|----------|
+| `app.py` … `matcher.py` (Workspace vs. `/opt`) | **SHA256 identisch** (siehe `BR-001_backend_update_and_version_fix_2026-05-13.md`) |
+| `core/versioning.py` | **identisch** |
+| `/opt/setuphelfer/config/version.json` | **Altes Schema** — **Ursache `/api/version` 500** (nicht `version_source_of_truth`) |
+| `sudo` Deploy | **BLOCKED** |
+| `findmnt -T /media/gabriel/setuphelfer-back` | **rw**, ext4, SOURCE `/dev/sdd1`, UUID **adbd53e5-…** |
+| `GET …target-check?backup_dir=/media/gabriel/setuphelfer-back&create=0` | **HTTP 200**, **`backup.backup_target_not_writable`**, API **`mount_readonly": true`**, **`ro`** in `mount.options`, EROFS auf Schreibprobe |
+| Widerspruch Shell rw vs. API ro | **Ja** — **`BR-001_readonly_target_and_api500_analysis_2026-05-12.md`** |
+
+**Hinweis:** Abschnitt 14 beschrieb u. a. erfolgreichen `target-check`; der Messzeitpunkt **2026-05-13** danach zeigt **fehlgeschlagenen Schreibtest** trotz gleichem Freigabepfad — Zustand des Mounts/API kann sich unterscheiden; beide Snapshots bleiben in den jeweiligen Evidence-Dateien nachvollziehbar.

@@ -110,3 +110,74 @@ echo "BACKUP=$BACKUP"
 ```
 
 **Rollback** (nur bei Bedarf): aus `$BACKUP` die vier Dateien zurück nach `$OPT/…` kopieren, `chown setuphelfer:setuphelfer`, `systemctl restart`.
+
+---
+
+## STRICT — `core.versioning` für `/api/version` (2026-05-13)
+
+### Phase 1 — Modulprüfung
+
+| Prüfung | Ergebnis |
+|---------|----------|
+| Workspace `backend/core/versioning.py` | **vorhanden** (`ls -l` ok) |
+| `/opt/setuphelfer/backend/core/versioning.py` | **fehlte** (`ls`: keine Datei) — **Ursache** für `ModuleNotFoundError: No module named 'core.versioning'` nach Teildeploy von `app.py`, das `core.versioning` importiert |
+| Imports in `versioning.py` | nur **stdlib** (`json`, `dataclasses`, `pathlib`, `typing`) |
+
+### Phase 2 — Laufzeitabhängigkeit (ohne weitere Python-Module)
+
+- `versioning.py` liest **`config/version.json`** relativ zu `_REPO_ROOT` = zwei Ebenen über `backend/core/versioning.py` → **`/opt/setuphelfer/config/version.json`**.
+- **`/opt/setuphelfer/config/version.json`:** **vorhanden** — **keine** weiteren fehlenden lokalen Python-Module für `versioning.py` identifiziert.
+
+### Phase 3 — Backup der Zieldatei
+
+- Datei unter `/opt` **existierte nicht** → **„neu in /opt“** — kein `/tmp/setuphelfer-deploy-backup-*`-Backup einer alten `versioning.py` erforderlich.
+
+### Phase 4–5 — Deploy / Restart (Agent)
+
+**BLOCKED:** `sudo install …` schlägt fehl mit *„ein Terminal ist erforderlich … Passwort ist notwendig“*. **Keine** Datei nach `/opt` kopiert, **`systemctl restart`** nicht ausgeführt.
+
+### Verifikation (ohne erfolgreichen Deploy)
+
+| Prüfung | Ergebnis (2026-05-13, Host) |
+|---------|------------------------------|
+| `curl -i http://127.0.0.1:8000/api/version` | **HTTP 500** `Internal Server Error` (konsistent mit fehlendem `core.versioning` auf Importpfad von `/api/version`) |
+| `curl -i "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/gabriel/setuphelfer-back&create=0"` | **HTTP 200**, JSON **`status":"success"`**, **`code":"backup.target_check_ok"`** (unabhängig von fehlendem `versioning`-Modul) |
+| `systemctl status setuphelfer-backend.service --no-pager` | **active (running)** |
+
+### Operator — Minimalbefehl (nur diese eine Datei)
+
+Kein Backup-Start, kein Restore, kein anderer Zielpfad:
+
+```bash
+sudo install -o setuphelfer -g setuphelfer -m 0644 \
+  /home/volker/piinstaller/backend/core/versioning.py \
+  /opt/setuphelfer/backend/core/versioning.py
+sudo systemctl restart setuphelfer-backend.service
+curl -i http://127.0.0.1:8000/api/version
+```
+
+**SHA256** Quelle (Workspace): `39c22a547578ec5027455ef29565d6e8a368348a71cd2101999507d5544d0f1d` — `backend/core/versioning.py`.
+
+---
+
+## STRICT — Vollständiger Backend-/Version-Sync (2026-05-13, Phasen 0–9)
+
+### Kurzfassung
+
+| Thema | Ergebnis |
+|-------|----------|
+| `sudo` für `/tmp`-Backup + `install` + `restart` | **BLOCKED** (TTY/Passwort) |
+| `backend/app.py` … `matcher.py` vs. Workspace | **SHA256 identisch** (bereits auf Workspace-Stand) |
+| `core/versioning.py` | **identisch** (Zwischenstand „fehlend unter `/opt`“ aus früherem STRICT-Lauf ist **überholt**) |
+| **`/opt/setuphelfer/config/version.json`** | **Altes Schema** (`version`/`codename`/`release_date`) → **`/api/version` → HTTP 500** |
+| Workspace `config/version.json` | **Neues Schema** mit `version_source_of_truth` |
+| `target-check` nur `/media/gabriel/setuphelfer-back` | **HTTP 200**, JSON-Fehler **`backup.backup_target_not_writable`**; Shell-`findmnt` **rw**, API **`ro`** + EROFS → **`BR-001_readonly_target_and_api500_analysis_2026-05-12.md`** |
+| Backup gestartet | **Nein** |
+
+### Operator — vollständiges Runbook (wie Prompt; interaktiv)
+
+Geplanter Backup-Pfad: `/tmp/setuphelfer-deploy-backup-$(date -u +%Y%m%dT%H%M%SZ)` — siehe **`BR-001_backend_update_and_version_fix_2026-05-13.md`** für SHA256-Referenz und Befund „nur `version.json` drift“.
+
+### Abnahme (dieser Lauf)
+
+**Nicht erfolgreich:** `/api/version` nicht HTTP 200; `target-check` nicht „sauber grün“; BR-001 bleibt **`blocked`**.

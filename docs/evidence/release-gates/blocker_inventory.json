@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.blocker_inventory.v1",
   "id": "blocker_inventory",
-  "generated": "2026-05-13T01:05:00Z",
+  "generated": "2026-05-13T04:15:00Z",
   "prompt02_rerun": {
     "executed_at": "2026-05-11T21:15:00Z",
     "spec": "docs/cursor/PROMPT_02_BLOCKER_INVENTORY.md",
@@ -50,6 +50,8 @@
       "GitHub CI (`ci.yml`): Run **25751304968** — **success** (55d7cec). Historie: Harness-Failure 25750787235; sudoers 25691681846.",
       "Prompt 2 erneut (2026-05-11T21:15Z): pytest tests/ 0 failures, 1526 passed — current_failures.json, pytest_failures_summary_2026-05-11.txt.",
       "BR-001 2026-05-13: Vier-Dateien-Deploy /opt freigegeben — Agent BLOCKED (sudo TTY); Runbook BR-001_backend_deploy_status; target-check /media/gabriel weiter 001 bis Host-Deploy",
+      "BR-001 2026-05-13: fehlendes core.versioning unter /opt — /api/version HTTP 500; sudo install versioning.py BLOCKED; target-check Snapshot backup.target_check_ok; BR-001.json core_versioning_api_version_repair_2026_05_13",
+      "BR-001 2026-05-13 full sync: /opt backend py = workspace SHA256; only config/version.json legacy; /api/version 500; target-check backup.backup_target_not_writable; findmnt rw vs API ro; sudo BLOCKED — BR-001_backend_update_and_version_fix_2026-05-13.md",
       "BR-001 2026-05-12: Device-/Mount-Baseline — BR-001_device_mount_baseline_2026-05-12.{md,json} (historisch /mnt-Zeilen nur Dokumentation)",
       "BR-001 2026-05-12: produktiver target-check /mnt/setuphelfer/backups → STORAGE-004; BR-001_productive_target_check_2026-05-12.md",
       "End-to-End Backup→Verify→Restore→Boot auf freigegebenem Hardwaremedium (siehe BR-/HW-Matrix)",
