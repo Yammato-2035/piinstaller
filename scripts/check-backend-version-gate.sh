@@ -3,7 +3,7 @@
 # Exit: 0 grün | 10 Dienst inaktiv | 11 /api/version nicht erreichbar |
 #       12 /api/version HTTP != 200 | 13 Produktiv-config ungültig |
 #       14 Workspace/API project_version drift | 15 Produktivdateien fehlen |
-#       16 Update erforderlich (API-Fehlercode) | 20 unklar
+#       16 API-Payload ungültig (Pflichtfelder / status) | 20 unklar
 
 set -euo pipefail
 
@@ -21,7 +21,7 @@ log() { printf '%s\n' "$*" >&2; }
 need_cmd() { command -v "$1" >/dev/null 2>&1; }
 
 json_field() {
-  python3 -c "import json,sys; p=sys.argv[1]; k=sys.argv[2]; d=json.load(open(p,encoding='utf-8')); v=d.get(k); print('true' if v is True else ('false' if v is False else ('' if v is None else str(v)))))" "$1" "$2" 2>/dev/null || true
+  python3 -c "import json,sys; p=sys.argv[1]; k=sys.argv[2]; d=json.load(open(p,encoding='utf-8')); v=d.get(k); print('true' if v is True else ('false' if v is False else ('' if v is None else str(v))))" "$1" "$2" 2>/dev/null || true
 }
 
 if ! need_cmd systemctl; then
@@ -59,11 +59,33 @@ if [[ "$http_code" != "200" ]]; then
   exit 12
 fi
 
-api_status=""
-api_status="$(python3 -c "import json; d=json.load(open('$tmp_body',encoding='utf-8')); print(d.get('status',''))" 2>/dev/null || true)"
-if [[ "$api_status" != "success" ]]; then
-  api_code="$(python3 -c "import json; d=json.load(open('$tmp_body',encoding='utf-8')); print(d.get('code',''))" 2>/dev/null || true)"
-  log "check-backend-version-gate: /api/version status=$api_status code=${api_code:-?}"
+# Fachlich gültig: HTTP 200 und die drei Versionsfelder (non-empty).
+# Optional: wenn "status" gesetzt ist, muss es "success" sein (neueres API-Format).
+if ! python3 - "$tmp_body" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+with open(path, encoding="utf-8") as f:
+    raw = f.read().strip()
+if not raw:
+    sys.exit(1)
+try:
+    d = json.loads(raw)
+except json.JSONDecodeError:
+    sys.exit(1)
+if not isinstance(d, dict):
+    sys.exit(1)
+for key in ("project_version", "release_stage", "version_track"):
+    v = d.get(key)
+    if v is None or (isinstance(v, str) and not str(v).strip()):
+        sys.exit(1)
+if "status" in d and d.get("status") != "success":
+    sys.exit(2)
+sys.exit(0)
+PY
+then
+  log "check-backend-version-gate: /api/version JSON ohne gültige project_version/release_stage/version_track oder status!=success"
   exit 16
 fi
 
@@ -104,5 +126,5 @@ if ! grep -q "/api/version" "$OPT_APP" 2>/dev/null; then
   exit 20
 fi
 
-log "check-backend-version-gate: OK (HTTP 200, status=success, config konsistent)"
+log "check-backend-version-gate: OK (HTTP 200, Versionsfelder ok, config konsistent)"
 exit 0

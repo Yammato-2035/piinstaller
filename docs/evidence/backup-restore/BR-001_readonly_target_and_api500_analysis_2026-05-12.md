@@ -5,7 +5,7 @@
 ## Kontext
 
 - Freigegebenes Ziel: **`/media/gabriel/setuphelfer-back`**, UUID **`adbd53e5-26fd-4723-b0f1-1880dbaa2719`**, LABEL **setuphelfer-back**, FS **ext4**.
-- **`/api/version`:** **HTTP 500** — siehe **`BR-001_backend_update_and_version_fix_2026-05-13.md`**: produktives **`/opt/setuphelfer/config/version.json`** hat **kein** `version_source_of_truth`-Schema; `core.versioning` validiert strikt und wirft.
+- **`/api/version`:** (historisch) **HTTP 500** bei Legacy-`config/version.json` — siehe **`BR-001_backend_update_and_version_fix_2026-05-13.md`**. Nach Update kann die API auch **nur** `project_version` / `release_stage` / `version_track` liefern (**ohne** `status`); das **Version-Gate-Skript** akzeptiert dieses schlanke Format (**2026-05-13**).
 
 ## Beobachtung A — Shell (`findmnt`)
 
@@ -48,7 +48,35 @@ Auszug aus der JSON-Antwort:
 - **Kein** `remount,rw`, **keine** automatische Reparatur, **kein** Backup-Start.
 - Kein alternativer Backup-Pfad.
 
-## Verweise
+## Messung 2026-05-13 (zeitgleich Gate-Skript-Fix, nur Analyse)
 
-- Gesamtlauf Deploy/Evidence: **`BR-001_backend_update_and_version_fix_2026-05-13.md`**
-- Pfad-/Traverse-Historie: **`BR-001_productive_target_check_media_path_analysis_2026-05-12.md`**
+**Zeitstempel Start/Ende:** `2026-05-13T18:03:33+02:00` (lokal).
+
+### `findmnt -T /media/gabriel/setuphelfer-back`
+
+```text
+TARGET                          SOURCE    FSTYPE OPTIONS
+/media/gabriel/setuphelfer-back /dev/sdb1 ext4   rw,nosuid,nodev,relatime,errors=remount-ro,stripe=8191
+```
+
+### `/proc/mounts` (Auszug)
+
+```text
+/dev/sdb1 /media/gabriel/setuphelfer-back ext4 rw,nosuid,nodev,relatime,errors=remount-ro,stripe=8191 0 0
+```
+
+### `lsblk` (relevant)
+
+- **`/dev/sdb1`:** ext4, LABEL **setuphelfer-back**, UUID **`adbd53e5-26fd-4723-b0f1-1880dbaa2719`**, MOUNTPOINT **`/media/gabriel/setuphelfer-back`**, **RO**-Spalte **0**, TRAN **usb**.
+
+### `target-check` (gleicher Zeitpunkt)
+
+**Request:** `GET /api/backup/target-check?backup_dir=/media/gabriel/setuphelfer-back&create=0`
+
+- **`mount.options`:** **`ro,...`**, **`mount_readonly": true`**
+- **`write_test`:** EROFS, **`reason_code":"mount_readonly"`**
+- **`code`:** **`backup.backup_target_not_writable`**
+
+### Fazit Messung
+
+**Widerspruch bleibt:** Shell-**`rw`** vs. API-**`ro`** + EROFS auf Schreibprobe — **keine** Reparatur, **kein** `remount,rw`, **kein** Backup.

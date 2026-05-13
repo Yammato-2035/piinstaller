@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backend_version_gate_log_2026_05_13",
-  "generated": "2026-05-13T12:00:00Z",
+  "generated": "2026-05-13T18:05:00Z",
   "result": "documented",
   "artifacts": [
     "docs/evidence/release-gates/backend_version_gate_2026-05-13.md",
@@ -9,5 +9,10 @@
     "scripts/check-backend-version-gate.sh",
     "docs/operations/BACKEND_VERSION_UPDATE_GATE_DE.md",
     "docs/operations/BACKEND_VERSION_UPDATE_GATE_EN.md"
-  ]
+  ],
+  "gate_script_parse_fix_2026_05_13": {
+    "summary": "check-backend-version-gate.sh accepts slim /api/version (project_version, release_stage, version_track); status optional; json_field parenthesis fix; removed stray line after heredoc",
+    "script_exit_after_fix": 0,
+    "readonly_contradiction": "2026-05-13T18:03:33+02:00 findmnt+proc rw vs target-check ro EROFS — BR-001_readonly_target_and_api500_analysis_2026-05-12.md"
+  }
 }

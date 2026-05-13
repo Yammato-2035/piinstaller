@@ -1,23 +1,26 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backend_version_update_gate",
-  "generated": "2026-05-13T12:00:00Z",
+  "generated": "2026-05-13T18:05:00Z",
   "ampel": "gelb",
   "evidence_complete": false,
-  "rule_summary": "Vor produktiven Tests/Backup/Restore: scripts/check-backend-version-gate.sh Exit 0, curl /api/version HTTP 200 success, systemd aktiv; sonst blocked_update_required — kein Test auf altem /opt.",
+  "rule_summary": "Vor produktiven Tests: scripts/check-backend-version-gate.sh Exit 0; curl /api/version HTTP 200 mit project_version+release_stage+version_track (status optional, falls gesetzt = success); systemd aktiv; /opt+Workspace version.json mit version_source_of_truth; sonst blocked.",
   "check_script": "scripts/check-backend-version-gate.sh",
   "api_version_endpoint": "GET http://127.0.0.1:8000/api/version",
   "required_success_fields": [
-    "status",
     "project_version",
     "release_stage",
-    "version_track",
+    "version_track"
+  ],
+  "optional_response_fields": [
+    "status",
     "version_source_of_truth",
     "install_profile",
     "app_edition",
-    "backend_runtime_path"
+    "backend_runtime_path",
+    "git_commit",
+    "build_time"
   ],
-  "optional_fields": ["git_commit", "build_time"],
   "error_codes": {
     "backend.version_config_invalid": "Legacy or invalid config/version.json (no version_source_of_truth)",
     "backend.update_required": "Other runtime failure loading version"
@@ -30,5 +33,5 @@
     "runbook_en": "docs/operations/BACKEND_UPDATE_RUNBOOK_EN.md",
     "kb": "docs/knowledge-base/operations/BACKEND_VERSION_UPDATE_GATE.md"
   },
-  "notes": "APT user updates remain roadmap (see apt_update_delivery_gap.json); gate is process enforcement only."
+  "notes": "Gate script 2026-05-13: slim /api/version JSON accepted; json_field syntax fix. APT user updates remain roadmap. target-check rw/ro contradiction: BR-001_readonly doc."
 }

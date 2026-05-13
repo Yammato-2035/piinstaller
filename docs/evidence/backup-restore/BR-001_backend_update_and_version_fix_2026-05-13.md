@@ -119,6 +119,12 @@ e33be50f750ce36631f3d3943bc90e3d60d72bfbf669e6ba375ee5468a52b849  backend/core/s
 
 **SHA256SUMS.before / after / workspace** (vollständige Spalten): **nicht erzeugt** — Phase 4 nicht durchführbar ohne `sudo`.
 
+## Gate-Skript `/api/version`-Parsing (2026-05-13)
+
+- **Problem:** Produktiv lieferte **`GET /api/version`** teils **HTTP 200** mit **nur** `project_version`, `release_stage`, `version_track` (**ohne** `status":"success"`). Das Gate-Skript verlangte zwingend `status` → fälschlich Exit **16**.
+- **Fix:** `scripts/check-backend-version-gate.sh` prüft **HTTP 200** und nicht-leere Pflichtfelder; **`status`** ist optional — wenn gesetzt, muss es **`success`** sein. Zusätzlich: Syntaxfehler in **`json_field()`** (ein Klammerzeichen zu viel) behoben; fehlerhafte **zweite** Zeile `"$tmp_body"` nach Heredoc entfernt (verursachte „Keine Berechtigung“ beim Ausführen der Temp-Datei).
+- **Verifikation:** `./scripts/check-backend-version-gate.sh` → **Exit 0** (sofern Workspace- und `/opt`-`version.json` konsistent).
+
 ## Phase 12 — Tests
 
 Nur Evidence/Doku im Repo geändert; **keine** zusätzliche Pytest-Pflicht für diesen Commit.

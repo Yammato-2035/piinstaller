@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-13 — **Backend-Version-Gate:** Prozess+Doku+Skript aktiv (`scripts/check-backend-version-gate.sh`, `docs/operations/BACKEND_VERSION_UPDATE_GATE_*.md`); produktiv weiter **`/api/version`** bis Operator-Update. **BR-001:** blocked (siehe vorherige Evidence). **Regel:** Grün nur mit Testnachweis …
+**Stand:** 2026-05-13 — **Backend-Version-Gate:** Skript akzeptiert schlanke **`/api/version`**-Antwort (200 + drei Versionsfelder); **`check-backend-version-gate.sh`** Exit **0** nach Fix. **target-check** `/media/gabriel/setuphelfer-back`: **findmnt/proc rw** vs. API **ro**/EROFS weiter dokumentiert (**BR-001_readonly**). **BR-001:** weiter blocked (E2E). **Regel:** Grün nur mit Testnachweis …
 
 ## Ampeldefinition
 

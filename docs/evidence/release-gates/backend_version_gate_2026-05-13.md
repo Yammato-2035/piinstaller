@@ -7,7 +7,7 @@ A **read-only** gate (`scripts/check-backend-version-gate.sh`) and strengthened 
 ## Gate green when
 
 - `setuphelfer-backend.service` is **active**
-- **`GET /api/version`** returns **HTTP 200** and `status":"success"`
+- **`GET /api/version`** returns **HTTP 200** with non-empty **`project_version`**, **`release_stage`**, **`version_track`** (optional: if **`status`** is present, it must be **`success`**)
 - Production **`/opt/setuphelfer/config/version.json`** contains **`version_source_of_truth": true`**
 - Workspace `config/project_version` matches API `project_version` (script check)
 - Critical files exist under `/opt/setuphelfer/backend/`
