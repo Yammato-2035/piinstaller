@@ -1,7 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-13 — **BR-001:** blocked — **`/api/version`** **500** (Legacy **`/opt/setuphelfer/config/version.json`**); Backend-**`.py`**-Kern = Workspace-SHA256; Operator: **`version.json`** installieren + Restart; **`target-check`** Freigabepfad: **`backup.backup_target_not_writable`**, **findmnt rw** vs. API **ro** (Evidence **`BR-001_backend_update_and_version_fix_2026-05-13.md`**); **kein** Backup gestartet.  
-**Regel:** Grün nur mit Testnachweis, Doku und Evidence-Datei (siehe `docs/evidence/README.md`).
+**Stand:** 2026-05-13 — **Backend-Version-Gate:** Prozess+Doku+Skript aktiv (`scripts/check-backend-version-gate.sh`, `docs/operations/BACKEND_VERSION_UPDATE_GATE_*.md`); produktiv weiter **`/api/version`** bis Operator-Update. **BR-001:** blocked (siehe vorherige Evidence). **Regel:** Grün nur mit Testnachweis …
 
 ## Ampeldefinition
 
@@ -27,6 +26,7 @@
 | Website-Transparenz | Gelb | Markdown-Basis im Repo | `docs/roadmap/PUBLIC_STATUS_PAGE.md`, `docs/testing/WEBSITE_TRANSPARENCY_TEST_MATRIX.md` |
 | Affiliate / Monetarisierung | Gelb | Policies als Markdown | `docs/monetization/` |
 | Release Gate UG-Start | Rot | Gates nicht grün | `docs/roadmap/RELEASE_READINESS_CHECKLIST.md` |
+| Backend-Version-Gate | Gelb | Regel+Skript+`/api/version`-Diagnose im Repo; produktiver Gate-Grün-Status ausstehend | `docs/evidence/release-gates/backend_version_update_gate.json`, `scripts/check-backend-version-gate.sh` |
 | Cloudserver Edition | Schwarz | nach Modularisierung | — |
 
 ## Phasen-ToDos (Kurz)

@@ -1,5 +1,9 @@
 # Prompt 08 – Release-Gate (inkl. Monetarisierung)
 
+## PHASE 0 – BACKEND VERSION GATE (Pflicht)
+
+`scripts/check-backend-version-gate.sh`, `curl -i http://127.0.0.1:8000/api/version`, `systemctl status setuphelfer-backend.service` — Release-Gate nicht „grün“ setzen, wenn produktives Backend nicht verifiziert ist.
+
 STRICT MODE – RELEASE READINESS GATE
 
 ZIEL:

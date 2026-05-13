@@ -1,5 +1,9 @@
 # FAQ – Backup & Restore – Deutsch
 
+## Muss vor Backup-/Restore-Tests das Backend-Version-Gate grün sein?
+
+**Ja.** Solange **`GET /api/version`** nicht **HTTP 200** mit **`status":"success"`** liefert oder die produktive **`config/version.json`** nicht dem freigegebenen Schema entspricht, sind Testergebnisse nicht belastbar. Zuerst **`scripts/check-backend-version-gate.sh`** und das Update-Runbook (`docs/operations/BACKEND_UPDATE_RUNBOOK_DE.md`) — **kein** Backup-Start bei `blocked_update_required`.
+
 ## Warum darf das Backup nicht auf dem Root-Dateisystem liegen?
 
 Ein Backup auf dem gleichen Dateisystem wie das laufende System ist unsicher. Bei einem Festplattenfehler, einer Fehlbedienung oder einem Restore-Fehler kann das Backup gleichzeitig mit dem Original verloren gehen.

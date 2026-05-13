@@ -42,7 +42,14 @@ import shutil
 import xml.etree.ElementTree as ET
 from pydantic import BaseModel
 
-from core.install_paths import audit_rules_file as _audit_rules_path, get_config_dir, get_opt_install_dir, is_dev_mode
+from core.install_paths import (
+    audit_rules_file as _audit_rules_path,
+    get_backend_runtime_dir,
+    get_config_dir,
+    get_install_profile,
+    get_opt_install_dir,
+    is_dev_mode,
+)
 from core.backup_recovery_i18n import K_BACKUP_FAILED_MANIFEST_MISSING, K_BACKUP_TARGET_NOT_WRITABLE, tr
 from modules.backup import with_backup_contract
 from modules.storage_detection import BackupTargetValidationError, validate_backup_target
@@ -3595,15 +3602,58 @@ async def get_system_network(request: Request):
 
 @app.get("/api/version")
 async def get_version():
-    """Gibt zentrale Projektversion + Stage + Track zurück."""
-    from core.versioning import load_project_version
+    """Gibt zentrale Projektversion, Stage, Track und Laufzeit-Metadaten zurück (Versions-Gate)."""
+    from core.versioning import api_version_error_code, load_project_version, version_config_path
 
-    info = load_project_version()
-    return {
+    vf = version_config_path()
+    try:
+        info = load_project_version()
+    except Exception as exc:  # noqa: BLE001 — bewusst: Diagnose statt generischem 500
+        code = api_version_error_code(exc)
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "error",
+                "code": code,
+                "detail": str(exc),
+                "version_config_path": str(vf),
+                "blocked_update_required": True,
+            },
+        )
+
+    build_time = (os.environ.get("SETUPHELFER_BUILD_TIME") or "").strip() or None
+    repo_root = Path(__file__).resolve().parent.parent
+    git_commit: str | None = None
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=0.35,
+            check=False,
+        )
+        if proc.returncode == 0:
+            h = (proc.stdout or "").strip()
+            if h:
+                git_commit = h[:64]
+    except Exception:
+        pass
+
+    payload: dict[str, Any] = {
+        "status": "success",
         "project_version": info.project_version,
         "release_stage": info.release_stage,
         "version_track": info.version_track,
+        "version_source_of_truth": True,
+        "install_profile": get_install_profile(),
+        "app_edition": get_app_edition(),
+        "backend_runtime_path": str(get_backend_runtime_dir().resolve()),
     }
+    if build_time:
+        payload["build_time"] = build_time
+    if git_commit:
+        payload["git_commit"] = git_commit
+    return payload
 
 
 @app.get("/api/system/service-conflicts")

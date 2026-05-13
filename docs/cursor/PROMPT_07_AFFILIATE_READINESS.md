@@ -1,5 +1,9 @@
 # Prompt 07 – Affiliate-Readiness
 
+## PHASE 0 – BACKEND VERSION GATE (Pflicht)
+
+Nur bei Live-API-Checks: Gate grün.
+
 STRICT MODE – AFFILIATE READINESS PREP
 
 ZIEL:

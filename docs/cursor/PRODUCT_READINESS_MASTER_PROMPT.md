@@ -3,6 +3,12 @@
 ```text
 STRICT MODE – SETUPHELFER PRODUKTIONSREIFE OHNE NEUE FEATURES
 
+PHASE 0 – BACKEND VERSION GATE (Pflicht vor Runtime-/Backup-/Restore-/HW-Checks)
+- scripts/check-backend-version-gate.sh (Exit 0 = grün)
+- curl -i http://127.0.0.1:8000/api/version — HTTP 200, status success
+- systemctl status setuphelfer-backend.service --no-pager
+- Wenn nicht grün: abbrechen, docs/operations/BACKEND_VERSION_UPDATE_GATE_*.md — kein Backup, kein Restore
+
 ZIEL:
 Bringe das Projekt Setuphelfer in Richtung Produktions- und Monetarisierungsreife, ohne neue Features zu entwickeln.
 

@@ -1,5 +1,9 @@
 # FAQ – Backup & Restore – English
 
+## Do I need a green backend version gate before backup/restore tests?
+
+**Yes.** If **`GET /api/version`** does not return **HTTP 200** with **`status":"success"`**, or production **`config/version.json`** does not match the approved schema, results are not trustworthy. Run **`scripts/check-backend-version-gate.sh`** and the update runbook (`docs/operations/BACKEND_UPDATE_RUNBOOK_EN.md`) first — **no** backup job while `blocked_update_required`.
+
 ## Why must the backup not be stored on the root filesystem?
 
 A backup stored on the same filesystem as the running system is unsafe. A disk failure, user error, or restore problem may destroy both the original system and the backup.

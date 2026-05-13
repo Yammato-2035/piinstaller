@@ -10,6 +10,11 @@ _VERSION_FILE = _REPO_ROOT / "config" / "version.json"
 _VALID_RELEASE_STAGES = {"internal_testing", "staging", "production_ready"}
 
 
+def version_config_path() -> Path:
+    """Pfad zur zentralen `config/version.json` (Repo-/Installationsroot)."""
+    return _VERSION_FILE
+
+
 @dataclass(frozen=True)
 class ProjectVersionInfo:
     project_version: str
@@ -34,6 +39,16 @@ def load_project_version(*, version_file: Path | None = None) -> ProjectVersionI
     if not track:
         raise ValueError("version_track missing")
     return ProjectVersionInfo(project_version=version, release_stage=stage, version_track=track)
+
+
+def api_version_error_code(exc: BaseException) -> str:
+    """
+    Diagnosecode für fehlgeschlagene /api/version-Ladung.
+    Kein stilles Akzeptieren alter Schemas: Konfigurationsfehler vs. sonstiger Laufzeitfehler.
+    """
+    if isinstance(exc, (FileNotFoundError, json.JSONDecodeError, ValueError)):
+        return "backend.version_config_invalid"
+    return "backend.update_required"
 
 
 def get_project_version() -> str:

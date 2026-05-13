@@ -1,5 +1,9 @@
 # Prompt 06 – Website-Transparenz
 
+## PHASE 0 – BACKEND VERSION GATE (Pflicht)
+
+Nur bei API-/Live-Checks gegen Port 8000: Gate grün; sonst rein Markdown fortfahren.
+
 STRICT MODE – WEBSITE TRANSPARENCY PREP
 
 ZIEL:

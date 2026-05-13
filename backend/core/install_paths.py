@@ -75,6 +75,24 @@ def get_opt_install_dir() -> Path:
     return DEFAULT_OPT
 
 
+def get_backend_runtime_dir() -> Path:
+    """Pfad des Verzeichnisses `backend/` (enthält `app.py`)."""
+    return Path(__file__).resolve().parent.parent
+
+
+def get_install_profile() -> str:
+    """
+    Laufzeit-Installationsprofil: ``opt`` wenn dieser Code aus ``<setuphelfer>/backend``
+    unter ``get_opt_install_dir()`` lädt, sonst ``repo`` (Entwicklung/anderer Baum).
+    """
+    try:
+        runtime = get_backend_runtime_dir().resolve()
+        opt_backend = (get_opt_install_dir() / "backend").resolve()
+    except (OSError, ValueError):
+        return "repo"
+    return "opt" if runtime == opt_backend else "repo"
+
+
 def get_config_dir() -> Path:
     """Konfigurationsverzeichnis (/etc/setuphelfer oder Dev: ~/.config/setuphelfer)."""
     p = _env_path_setup_then_legacy("SETUPHELFER_CONFIG_DIR", "PI_INSTALLER_CONFIG_DIR")

@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-13T04:15:00Z",
+  "generated": "2026-05-13T14:00:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
@@ -13,5 +13,5 @@
   },
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010"],
   "partial_br_ids": [],
-  "notes": "BR-001 **blocked** (E2E). Produktiv: **`/api/version` HTTP 500** — **`/opt/setuphelfer/config/version.json`** noch **Legacy-Schema** (kein `version_source_of_truth`); Backend-**`.py`**-Kern (app, safe_device, versioning, registry, matcher) **SHA256-identisch** zum Workspace; Fix = **`sudo install`** Workspace-`config/version.json` + **`systemctl restart`** (Agent: **sudo BLOCKED**). **`target-check`** nur **`/media/gabriel/setuphelfer-back`**: **HTTP 200**, **`backup.backup_target_not_writable`**, API **`ro`**/EROFS vs. Shell-**`findmnt` rw** — **`BR-001_readonly_target_and_api500_analysis_2026-05-12.md`**. Evidence: **`BR-001_backend_update_and_version_fix_2026-05-13.md`**, **`BR-001.json`** → `productive_backend_full_update_attempt_2026_05_13`. Kein Backup-Start. CI 25751304968 success."
+  "notes": "BR-001 **blocked** (E2E). Produktiv: **`/api/version` HTTP 500** — **`/opt/setuphelfer/config/version.json`** noch **Legacy-Schema** (kein `version_source_of_truth`); Backend-**`.py`**-Kern (app, safe_device, versioning, registry, matcher) **SHA256-identisch** zum Workspace; Fix = **`sudo install`** Workspace-`config/version.json` + **`systemctl restart`** (Agent: **sudo BLOCKED**). **`target-check`** nur **`/media/gabriel/setuphelfer-back`**: **HTTP 200**, **`backup.backup_target_not_writable`**, API **`ro`**/EROFS vs. Shell-**`findmnt` rw** — **`BR-001_readonly_target_and_api500_analysis_2026-05-12.md`**. Evidence: **`BR-001_backend_update_and_version_fix_2026-05-13.md`**, **`BR-001.json`** → `productive_backend_full_update_attempt_2026_05_13`. **Backend-Version-Gate:** `scripts/check-backend-version-gate.sh`, `backend_version_update_gate.json`, `/api/version` **503** bei ungültiger Config (Workspace-Implementierung). Kein Backup-Start. CI 25751304968 success."
 }

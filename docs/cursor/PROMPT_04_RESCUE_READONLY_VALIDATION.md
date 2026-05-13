@@ -1,5 +1,9 @@
 # Prompt 04 – Rescue Read-only
 
+## PHASE 0 – BACKEND VERSION GATE (Pflicht)
+
+`scripts/check-backend-version-gate.sh`, `curl -i http://127.0.0.1:8000/api/version`, `systemctl status setuphelfer-backend.service` — wenn nicht grün: **abbrechen** (kein produktiver Rescue-Lauf gegen falsches Backend).
+
 STRICT MODE – RESCUE READONLY VALIDATION PREP
 
 ZIEL:

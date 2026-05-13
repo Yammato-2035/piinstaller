@@ -13,6 +13,26 @@
 
 ---
 
+## Backend-Version-Gate (Pflicht vor Runtime-, Backup-, Restore-, Hardwaretests)
+
+Vor **jedem** produktiven Testlauf, **jedem** Prompt, der das **laufende** Backend unter `/opt` oder einen Dienst auf Port **8000** voraussetzt, und **vor** Backup-/Restore-/Hardware-Tests am Zielsystem:
+
+1. **`scripts/check-backend-version-gate.sh`** ausführen (oder gleichwertige manuelle Prüfung).
+2. **`curl -i http://127.0.0.1:8000/api/version`** — muss **HTTP 200** und **`status":"success"`** liefern.
+3. **`systemctl status setuphelfer-backend.service --no-pager`** — Dienst muss **aktiv** sein.
+
+**Pflichtfelder** in einer gültigen `/api/version`-Antwort (Gate „grün“): `project_version`, `release_stage`, `version_track`, `version_source_of_truth`, `install_profile`, `app_edition`, `backend_runtime_path` (optional: `git_commit`, `build_time`).
+
+**Wenn das Gate nicht grün ist:**
+
+- **Keine** Backup-, Restore- oder Hardwaretests starten.
+- **Keine** BR-001ff.-Laufwerksaktionen aus Evidence-Prompts ohne vorherigen grünen Gate-Status.
+- Stattdessen **`blocked_update_required`** dokumentieren und **Update-Gate / Runbook** ausführen: siehe **`docs/operations/BACKEND_VERSION_UPDATE_GATE_DE.md`** (bzw. EN) und **`docs/operations/BACKEND_UPDATE_RUNBOOK_DE.md`**.
+
+Abweichung von Workspace-`config/version.json` oder veraltetes `/opt/setuphelfer/config/version.json` (ohne `version_source_of_truth`) blockiert alle abhängigen Tests.
+
+---
+
 ## Abschnitt 1 – Vorprüfung vor jeder Änderung
 
 Vor Bearbeitung eines **Moduls** (oder eines klar abgegrenzten Bereichs) ist Folgendes **zu prüfen und im Bericht zu dokumentieren** (siehe [CHANGE_REPORT_TEMPLATE.md](./CHANGE_REPORT_TEMPLATE.md)):

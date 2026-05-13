@@ -1,11 +1,16 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-13T04:15:00Z",
+  "generated": "2026-05-13T14:00:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked**. Produktiv **`/api/version` → HTTP 500:** Legacy **`/opt/setuphelfer/config/version.json`** (Backend-`.py` bereits Workspace-SHA256); Operator-**`sudo install`** + **Restart** — Agent **BLOCKED**. **`target-check`** nur **`/media/gabriel/setuphelfer-back`:** **`backup.backup_target_not_writable`**, Widerspruch **findmnt rw** vs. API **`ro`**/EROFS — Evidence **`BR-001_backend_update_and_version_fix_2026-05-13.md`**. Kein Backup. Release gesamt blocked.",
+  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **blocked** (s. BR-001-Evidence). Neu: **Backend-Version-Gate** — `scripts/check-backend-version-gate.sh`, `docs/operations/BACKEND_VERSION_UPDATE_GATE_*.md`, `/api/version` liefert bei ungültiger `config/version.json` **503** + `backend.version_config_invalid`. APT-Nutzer-Update weiter **rot** (`apt_update_delivery_gap.json`). Release gesamt blocked.",
+  "backend_version_gate": {
+    "check_script": "scripts/check-backend-version-gate.sh",
+    "evidence_json": "docs/evidence/release-gates/backend_version_update_gate.json",
+    "apt_gap": "docs/evidence/release-gates/apt_update_delivery_gap.json"
+  },
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
   ],

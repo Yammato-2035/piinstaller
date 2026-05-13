@@ -1,0 +1,34 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "backend_version_update_gate",
+  "generated": "2026-05-13T12:00:00Z",
+  "ampel": "gelb",
+  "evidence_complete": false,
+  "rule_summary": "Vor produktiven Tests/Backup/Restore: scripts/check-backend-version-gate.sh Exit 0, curl /api/version HTTP 200 success, systemd aktiv; sonst blocked_update_required — kein Test auf altem /opt.",
+  "check_script": "scripts/check-backend-version-gate.sh",
+  "api_version_endpoint": "GET http://127.0.0.1:8000/api/version",
+  "required_success_fields": [
+    "status",
+    "project_version",
+    "release_stage",
+    "version_track",
+    "version_source_of_truth",
+    "install_profile",
+    "app_edition",
+    "backend_runtime_path"
+  ],
+  "optional_fields": ["git_commit", "build_time"],
+  "error_codes": {
+    "backend.version_config_invalid": "Legacy or invalid config/version.json (no version_source_of_truth)",
+    "backend.update_required": "Other runtime failure loading version"
+  },
+  "http_status_on_config_error": 503,
+  "documentation": {
+    "de": "docs/operations/BACKEND_VERSION_UPDATE_GATE_DE.md",
+    "en": "docs/operations/BACKEND_VERSION_UPDATE_GATE_EN.md",
+    "runbook_de": "docs/operations/BACKEND_UPDATE_RUNBOOK_DE.md",
+    "runbook_en": "docs/operations/BACKEND_UPDATE_RUNBOOK_EN.md",
+    "kb": "docs/knowledge-base/operations/BACKEND_VERSION_UPDATE_GATE.md"
+  },
+  "notes": "APT user updates remain roadmap (see apt_update_delivery_gap.json); gate is process enforcement only."
+}

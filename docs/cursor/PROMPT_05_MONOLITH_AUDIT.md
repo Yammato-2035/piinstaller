@@ -1,5 +1,9 @@
 # Prompt 05 – Monolith-Audit (nur Analyse)
 
+## PHASE 0 – BACKEND VERSION GATE (Pflicht)
+
+Nur relevant, falls Prompt **gegen laufendes** Backend/API arbeitet: `scripts/check-backend-version-gate.sh` etc. — sonst dokumentisch fortfahren.
+
 STRICT MODE – MONOLITH AUDIT ONLY
 
 ZIEL:

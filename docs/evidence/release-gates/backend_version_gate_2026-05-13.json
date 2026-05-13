@@ -1,0 +1,13 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "backend_version_gate_log_2026_05_13",
+  "generated": "2026-05-13T12:00:00Z",
+  "result": "documented",
+  "artifacts": [
+    "docs/evidence/release-gates/backend_version_gate_2026-05-13.md",
+    "docs/evidence/release-gates/backend_version_update_gate.json",
+    "scripts/check-backend-version-gate.sh",
+    "docs/operations/BACKEND_VERSION_UPDATE_GATE_DE.md",
+    "docs/operations/BACKEND_VERSION_UPDATE_GATE_EN.md"
+  ]
+}

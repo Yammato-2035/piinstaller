@@ -1,0 +1,27 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "id": "apt_update_delivery_gap",
+  "generated": "2026-05-13T12:00:00Z",
+  "ampel": "rot",
+  "summary": "End-user APT updates for Setuphelfer are not production-ready: no signed APT repository wired to CI; apt update alone does not install new backend bits.",
+  "distinction": {
+    "apt_update": "Refreshes package index metadata only.",
+    "apt_upgrade_or_install": "Installs or upgrades packages when a suitable .deb is available from a configured source."
+  },
+  "required_for_green": [
+    "reproducible_deb",
+    "package_name",
+    "version_alignment_config_version_json",
+    "maintainer_scripts",
+    "systemd_restart_policy",
+    "config_version_json_migration",
+    "apt_repository_or_signed_channel",
+    "gpg_signing",
+    "update_tests",
+    "rollback_strategy"
+  ],
+  "documentation": [
+    "docs/roadmap/APT_UPDATE_DELIVERY_PLAN.md",
+    "docs/packaging/APT_REPOSITORY_PLAN.md"
+  ]
+}

@@ -5,6 +5,8 @@
 ```text
 STRICT MODE – SETUPHELFER BLOCKER INVENTORY
 
+PHASE 0 – BACKEND VERSION GATE: scripts/check-backend-version-gate.sh (Exit 0), curl /api/version HTTP 200 success, systemctl status setuphelfer-backend — sonst abbrechen; docs/operations/BACKEND_VERSION_UPDATE_GATE_*.md — kein produktiver HW-/Backup-Test auf altem /opt.
+
 ZIEL:
 Erfasse alle bestehenden Probleme, die Produktionsreife, Hardwaretests, Backup/Restore, Bootstick oder Website-Transparenz blockieren.
 
