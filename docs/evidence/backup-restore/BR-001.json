@@ -434,6 +434,40 @@
     "retry_runbook": "docs/evidence/backup-restore/BR-001_package_activity_retry_runbook_2026-05-13.md",
     "evidence_md": "docs/evidence/backup-restore/BR-001_package_activity_failure_2026-05-13.md"
   },
+  "br001_package_timer_paused_retry_attempt_2026_05_13": {
+    "executed_at": "2026-05-13T19:21:00Z",
+    "phase0_backend_version_gate_exit": 0,
+    "phase0_api_version_http": 200,
+    "phase0_backend_systemd": "active_running",
+    "phase1_target_path": "/media/gabriel/setuphelfer-back",
+    "phase1_uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+    "phase1_label": "setuphelfer-back",
+    "phase1_fstype": "ext4",
+    "phase1_mount_rw": true,
+    "phase1_target_check_code": "backup.target_check_ok",
+    "phase1_mount_readonly": false,
+    "phase1_write_test_success": true,
+    "phase2_ps_excerpt": [
+      "unattended-upgrade-shutdown --wait-for-signal (root)",
+      "mintUpdate (gabriel)"
+    ],
+    "phase2_sudo_fuser_dpkg_audit": "blocked_tty_password",
+    "phase2_running_services_excerpt": "unattended-upgrades.service active",
+    "phase2_stop_rule_triggered": true,
+    "phase2_stop_reason": "active_package_related_processes_per_strict_prompt",
+    "phase3_timer_evidence_host_path": "/tmp/setuphelfer-package-timers-20260513T192137Z.txt",
+    "phase3_timers_active_before": "apt-daily apt-daily-upgrade dpkg-db-backup apt-show-versions mintupdate-automation-upgrade mintupdate-automation-autoremove timers active; unattended-upgrades.service active",
+    "phase4_timer_stop_executed": false,
+    "phase5_post_backup_create_executed": false,
+    "new_job_id": null,
+    "phase8_timer_restore_executed": false,
+    "phase8_note": "no_timer_stop_in_this_run_nothing_to_restore",
+    "br001_result": "blocked_phase2",
+    "br004_executed": false,
+    "br005_executed": false,
+    "restore_started": false,
+    "evidence_md": "docs/evidence/backup-restore/BR-001_package_timer_paused_retry_2026-05-13.md"
+  },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
     "path_exists_on_host": false,
@@ -471,7 +505,8 @@
     "2026-05-13 STRICT starter update retry: Phase0 ok; Phase1 repo allowlist ok prod SHA 96341f… vs workspace 55615b…; Phase2-3 sudo BLOCKED — kein install kein zweites POST create; Phase4 target-check ok; BR-001_starter_update_and_retry_2026-05-13.md",
     "2026-05-13 Runner ReadWritePaths + stale sync: Job 96ed5d89c443 systemd failed status.json queued; POST create job_conflict; Repo-Fix packaging/systemd + app.py stale-systemd-sync; deploy /opt + restart — BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md",
     "2026-05-13 STRICT stale-sync deploy retry: Phase0 ok; SHA workspace≠opt; sudo Phase1 BLOCKED (TTY/Passwort); kein install kein restart; GET job weiter queued+systemd failed; POST create weiter backup.job_conflict; target-check ok; BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
-    "2026-05-13 BR-001 Job e341a326ac69: backup.blocked_package_activity UPDATE-CONFLICT-041; apt-get autoremove --purge -y; mintupdate-automation-autoremove.timer; partial gelöscht; Manifest-Rest .e341a326ac69.MANIFEST.json — BR-001_package_activity_failure_2026-05-13.md; Retry-Runbook BR-001_package_activity_retry_runbook_2026-05-13.md"
+    "2026-05-13 BR-001 Job e341a326ac69: backup.blocked_package_activity UPDATE-CONFLICT-041; apt-get autoremove --purge -y; mintupdate-automation-autoremove.timer; partial gelöscht; Manifest-Rest .e341a326ac69.MANIFEST.json — BR-001_package_activity_failure_2026-05-13.md; Retry-Runbook BR-001_package_activity_retry_runbook_2026-05-13.md",
+    "2026-05-13 STRICT timer-pause retry: Phase0-1 ok; Phase2 STOP mintUpdate + unattended-upgrade-shutdown + unattended-upgrades.service; sudo fuser/dpkg/stop blocked TTY; kein POST create; BR-001_package_timer_paused_retry_2026-05-13.md"
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -490,7 +525,8 @@
     "Strategischer Doku-Pfad /media/setuphelfer/setuphelfer-back nur auf externem Medium; bestehendes Volume weiter /media/gabriel/setuphelfer-back bis Betreiberentscheidung.",
     "2026-05-13: Vier-Dateien-Deploy nach /opt freigegeben — im Agent nicht ausführbar; Operator-Runbook in BR-001_backend_deploy_status_2026-05-12.md.",
     "2026-05-13: Zusätzlich legacy /opt/config/version.json (kein version_source_of_truth) für /api/version 500; Backend-Python-Dateien bereits SHA256-gleich Workspace; Operator: sudo install version.json + restart; Evidence productive_backend_full_update_attempt_2026_05_13.",
-    "2026-05-13 Job e341a326ac69: Full-Backup lief ~1h43 bis backup.blocked_package_activity (UPDATE-CONFLICT-041); parallel apt-get autoremove; kein finales Archiv; Manifest-Rest auf Zielmedium — siehe br001_package_activity_failure_e341a326ac69_2026_05_13 und package_activity_retry_runbook."
+    "2026-05-13 Job e341a326ac69: Full-Backup lief ~1h43 bis backup.blocked_package_activity (UPDATE-CONFLICT-041); parallel apt-get autoremove; kein finales Archiv; Manifest-Rest auf Zielmedium — siehe br001_package_activity_failure_e341a326ac69_2026_05_13 und package_activity_retry_runbook.",
+    "2026-05-13 STRICT timer-pause retry-Versuch: Phase2 STOP (mintUpdate, unattended-upgrade-shutdown); sudo für fuser/timer stop fehlt — kein neuer Job — BR-001_package_timer_paused_retry_2026-05-13.md"
   ],
   "result": "failed",
   "api_code": "backup.blocked_package_activity",
@@ -514,6 +550,7 @@
     "docs/evidence/backup-restore/BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_package_activity_failure_2026-05-13.md",
-    "docs/evidence/backup-restore/BR-001_package_activity_retry_runbook_2026-05-13.md"
+    "docs/evidence/backup-restore/BR-001_package_activity_retry_runbook_2026-05-13.md",
+    "docs/evidence/backup-restore/BR-001_package_timer_paused_retry_2026-05-13.md"
   ]
 }

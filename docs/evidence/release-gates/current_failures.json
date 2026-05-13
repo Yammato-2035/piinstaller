@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "current_failures",
-  "generated": "2026-05-13T17:10:00Z",
+  "generated": "2026-05-13T19:25:00Z",
   "executed_at": "2026-05-12T17:55:00Z",
   "prompt": "PROMPT_02_BLOCKER_INVENTORY",
   "prompt_rerun": true,
@@ -28,5 +28,5 @@
     "docs/evidence/release-gates/prompt02_abschlussbericht.md"
   ],
   "blocker_inventory": "docs/evidence/release-gates/blocker_inventory.json",
-  "notes": "GitHub CI success. BR-001: sudo blockiert Deploy stale-sync app.py nach /opt — weiter job_conflict; BR-001_stale_job_sync_fix_and_retry_2026-05-13.md. BR-004/005 blocked."
+  "notes": "GitHub CI success. BR-001: STRICT timer-pause Retry STOP Phase2 + sudo blocked — BR-001_package_timer_paused_retry_2026-05-13.md. BR-004/005 blocked."
 }

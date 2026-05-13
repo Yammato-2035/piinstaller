@@ -4,6 +4,8 @@
 
 **Zielpfad (unverändert):** nur **`/media/gabriel/setuphelfer-back`**.
 
+**Hinweis (2026-05-13):** Ein automatisierter „Timer-pause“-Retry kann bereits an **Phase 2** scheitern, wenn weiterhin **`mintUpdate`** oder **`unattended-upgrade-shutdown`** läuft — dann zuerst Prozesse beenden/abwarten, **danach** erneut Phase 2 und erst bei sauberem Befund Timer stoppen. Evidence: **`BR-001_package_timer_paused_retry_2026-05-13.md`**.
+
 **Verbote:** kein Restore, kein Verify vor finalem Archiv, kein anderer Backup-Pfad, **keine dauerhafte Deaktivierung** von APT-/Mint-Timern (nur **temporär** für die geplante Backup-Fenster).
 
 ---

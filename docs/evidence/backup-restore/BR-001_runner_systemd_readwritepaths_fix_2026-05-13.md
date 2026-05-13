@@ -142,3 +142,5 @@ Im Agent-Lauf: **kein** erfolgreicher neuer Job, daher **kein** finales **`.tar.
 ## Nachtrag — Paketaktivität (unabhängiger Abbruchpfad)
 
 Ein späterer produktiver Lauf (**Job `e341a326ac69`**) scheiterte **nicht** an EROFS/ReadWritePaths, sondern an **`backup.blocked_package_activity`** (**`UPDATE-CONFLICT-041`**) durch laufendes **`apt-get autoremove`** im Mint-Automation-Kontext. Siehe **`BR-001_package_activity_failure_2026-05-13.md`** und **`BR-001_package_activity_retry_runbook_2026-05-13.md`**.
+
+**Nachtrag Timer-pause Retry:** **`BR-001_package_timer_paused_retry_2026-05-13.md`** (STOP Phase 2 / sudo).

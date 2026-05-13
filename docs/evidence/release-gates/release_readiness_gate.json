@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-13T19:20:00Z",
+  "generated": "2026-05-13T19:25:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **failed** — Job **`e341a326ac69`** abgebrochen durch **`backup.blocked_package_activity`** (**`UPDATE-CONFLICT-041`**, Mint **`apt-get autoremove`**). Evidence **`BR-001_package_activity_failure_2026-05-13.md`**, Runbook **`BR-001_package_activity_retry_runbook_2026-05-13.md`**. **BR-004/005:** blocked (kein finales Archiv). **Backend-Version-Gate** Skript weiter nutzbar. Release blocked.",
+  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **failed** — kein neuer erfolgreicher Lauf; STRICT timer-pause Retry **STOP Phase 2** + **sudo** blockiert — **`BR-001_package_timer_paused_retry_2026-05-13.md`**. **BR-004/005:** blocked. Release blocked.",
   "backend_version_gate": {
     "check_script": "scripts/check-backend-version-gate.sh",
     "evidence_json": "docs/evidence/release-gates/backend_version_update_gate.json",

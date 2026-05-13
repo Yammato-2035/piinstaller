@@ -107,3 +107,9 @@ find /media/gabriel/setuphelfer-back -maxdepth 1 -type f \
 
 - Maschinenlesbar: `BR-001.json` → **`br001_package_activity_failure_e341a326ac69_2026_05_13`**
 - Sicherer Retry-Ablauf: **`BR-001_package_activity_retry_runbook_2026-05-13.md`**
+
+---
+
+## Follow-up (STRICT timer-pause Retry, 2026-05-13)
+
+Geplanter erneuter Lauf **mit** temporärem Timer-Stopp scheiterte **vor** Timer-Stopp an **Phase 2** (laufende **`mintUpdate`** / **`unattended-upgrade-shutdown`**) und an fehlendem **`sudo`** im Agent für **`fuser`**/Timer-**stop**. Siehe **`BR-001_package_timer_paused_retry_2026-05-13.md`**.

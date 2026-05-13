@@ -7,7 +7,7 @@
   "evidence_complete": false,
   "commit": "7452231bfab6521a6aefb947cfccb9a5551879bc",
   "ci_run": "25751304968",
-  "br001_chain": "BR-001 failed — Job e341a326ac69 backup.blocked_package_activity (UPDATE-CONFLICT-041); kein finales .tar.gz; Verify Basic nur nach erfolgreichem BR-001.",
+  "br001_chain": "BR-001 blocked — timer-pause Retry STOP Phase2/sudo; kein finales Archiv; Verify Basic erst nach erfolgreichem BR-001.",
   "archive_from_br001": "",
   "environment": {
     "api": "POST /api/backup/verify",
@@ -21,6 +21,6 @@
     "2026-05-13: POST create blocked by backup.job_conflict (stale queued vs systemd failed) until app.py deploy — BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md",
     "2026-05-13: Deploy app.py (/opt) + restart weiter BLOCKED (sudo TTY); job_conflict unverändert — BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
     "2026-05-13: BR-001 POST /api/backup/create (erster Lauf) starter_invalid_path — BR-001_full_backup_run_2026-05-13.md.",
-    "2026-05-13: BR-001 Job e341a326ac69 fehlgeschlagen (Paketaktivität) — kein finales Archiv — BR-001_package_activity_failure_2026-05-13.md",
+    "2026-05-13: STRICT timer-pause Retry: Phase2 STOP + sudo fehlt — kein neuer Job — BR-001_package_timer_paused_retry_2026-05-13.md",
   ]
 }
