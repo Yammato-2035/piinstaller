@@ -113,3 +113,14 @@ find /media/gabriel/setuphelfer-back -maxdepth 1 -type f \
 ## Follow-up (STRICT timer-pause Retry, 2026-05-13)
 
 Geplanter erneuter Lauf **mit** temporärem Timer-Stopp scheiterte **vor** Timer-Stopp an **Phase 2** (laufende **`mintUpdate`** / **`unattended-upgrade-shutdown`**) und an fehlendem **`sudo`** im Agent für **`fuser`**/Timer-**stop**. Siehe **`BR-001_package_timer_paused_retry_2026-05-13.md`**.
+
+---
+
+## Produkt-Design (Preflight, 2026-05-13)
+
+Aus diesem Fehlerfall wurde die Spezifikation **„Backup Package Activity Preflight“** abgeleitet (Prozesse, Locks, `dpkg --audit`, Timer, UI/i18n, Evidence-Felder) — **ohne** Implementierung im gleichen Schritt:
+
+- **`docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`**
+- **`docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_EN.md`**
+- **`docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md`**
+- Testmatrix-ID **BR-011**

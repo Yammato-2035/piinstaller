@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "test_inventory",
-  "generated": "2026-05-13T19:25:00Z",
+  "generated": "2026-05-13T20:30:00Z",
   "source": "backend/tests",
   "test_file_count": 190,
   "ampel": "gelb",
@@ -12,7 +12,7 @@
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json"
   },
-  "notes": "GitHub CI success. BR-001 2026-05-13: timer-pause Retry STOP Phase2/sudo — BR-001_package_timer_paused_retry_2026-05-13.md; BR-004/005 blocked.",
+  "notes": "GitHub CI success. BR-011 Preflight design docs; BR-001 blocked; BR-004/005 blocked.",
   "test_files": [
     "test_anti_regression.py",
     "test_api_consistency_fix9_v1.py",

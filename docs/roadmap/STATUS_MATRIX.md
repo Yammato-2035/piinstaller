@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-13 — **BR-001:** Letzter Retry-Versuch (Timer-pause-Pipeline) **STOP Phase 2** (`mintUpdate`, unattended) + **sudo** fehlt — **`BR-001_package_timer_paused_retry_2026-05-13.md`**. Weiterhin: **`e341a326ac69`** package activity (**`BR-001_package_activity_failure_2026-05-13.md`**). **BR-004/005:** blocked. **Regel:** Grün nur mit Testnachweis …
+**Stand:** 2026-05-13 — **BR-011** (*Backup Package Activity Preflight*): Spezifikation **DE/EN** + Knowledge-Base dokumentiert — **`docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`**. **BR-001** weiter failed/blocked (siehe **`BR-001_package_timer_paused_retry_2026-05-13.md`**). **BR-004/005:** blocked. **Regel:** Grün nur mit Testnachweis …
 
 ## Ampeldefinition
 
@@ -18,6 +18,7 @@
 | Phase 0 Arbeitsmodus | Gelb | Struktur & Matrizen angelegt, GitHub Project manuell | `docs/evidence/release-gates/feature_freeze.json` |
 | Phase 1 Bestandsaufnahme | Gelb | Testinventar + **Pytest Snapshot** (0× fail, 1526× pass, lokal); CI-/HW-Evidence separat | `test_inventory.json`, `current_failures.json`, `pytest_failures_summary_2026-05-11.txt` |
 | Backup | Rot | BR-001 failed/blocked — Phase2 STOP + sudo für Timer; Evidence `BR-001_package_timer_paused_retry_2026-05-13.md` | `BR-001_package_activity_failure_2026-05-13.md`, `BR-001_package_activity_retry_runbook_2026-05-13.md`, `BR-001.json` |
+| Backup Preflight **BR-011** | Gelb | Spezifikation + Testmatrix; API/UI/Implementierung offen | `docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`, `docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md` |
 | Verify | Rot | BR-004/BR-005 blocked — kein neues BR-001-Archiv aus diesem Lauf | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |

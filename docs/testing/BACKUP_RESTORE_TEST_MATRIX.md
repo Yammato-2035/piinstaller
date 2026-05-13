@@ -12,9 +12,12 @@
 | BR-008 | Restore externes Ziel | freigegebenes Medium | Restore erfolgreich | Rot | docs/evidence/backup-restore/BR-008.json |
 | BR-009 | Interne Disk Schutz | interne Systemplatte | blockiert | Rot | docs/evidence/backup-restore/BR-009.json |
 | BR-010 | Boot nach Restore | restored System | bootfähig | Rot | docs/evidence/backup-restore/BR-010.json |
+| **BR-011** | **Package Activity Preflight** | Spezifikation `docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`; API-Diagnose vor `POST /api/backup/create`; Locks, `dpkg --audit`, Timer read-only; kein `disable` | `backup.package_preflight_*` / Blockerliste | **Gelb** (Design dokumentiert — Implementierung offen) | `BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`, `BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_EN.md`, `docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md` |
 
 ## Verknüpfung Unit-/CI-Tests
 
 Viele Szenarien haben Abdeckung unter `backend/tests/` (z. B. Backup/Restore/Write-Guard). **Grün in dieser Matrix** verlangt zusätzlich dokumentierte Läufe mit Evidence-JSON gemäß `docs/evidence/README.md`.
 
 **STRICT-Kette (2026-05-13):** Timer-pause-Retry-Versuch — **STOP Phase 2** (`mintUpdate`, `unattended-upgrade-shutdown`) + **sudo** fehlt für `fuser`/Timer — **`BR-001_package_timer_paused_retry_2026-05-13.md`**. Zuvor Job **`e341a326ac69`** **`backup.blocked_package_activity`** — **`BR-001_package_activity_failure_2026-05-13.md`**. Früher: EROFS/stale-sync … **`BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md`**, **`BR-001_stale_job_sync_fix_and_retry_2026-05-13.md`**, Starter **`BR-001_full_backup_run_2026-05-13.md`**.
+
+**Design 2026-05-13:** **BR-011** — *Backup Package Activity Preflight* (Prozesse, Locks, `dpkg --audit`, Timer, UI/i18n) — **`docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`** / **EN**, Knowledge-Base **`docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md`**.

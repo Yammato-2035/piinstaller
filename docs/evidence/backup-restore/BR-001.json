@@ -506,7 +506,8 @@
     "2026-05-13 Runner ReadWritePaths + stale sync: Job 96ed5d89c443 systemd failed status.json queued; POST create job_conflict; Repo-Fix packaging/systemd + app.py stale-systemd-sync; deploy /opt + restart — BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md",
     "2026-05-13 STRICT stale-sync deploy retry: Phase0 ok; SHA workspace≠opt; sudo Phase1 BLOCKED (TTY/Passwort); kein install kein restart; GET job weiter queued+systemd failed; POST create weiter backup.job_conflict; target-check ok; BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
     "2026-05-13 BR-001 Job e341a326ac69: backup.blocked_package_activity UPDATE-CONFLICT-041; apt-get autoremove --purge -y; mintupdate-automation-autoremove.timer; partial gelöscht; Manifest-Rest .e341a326ac69.MANIFEST.json — BR-001_package_activity_failure_2026-05-13.md; Retry-Runbook BR-001_package_activity_retry_runbook_2026-05-13.md",
-    "2026-05-13 STRICT timer-pause retry: Phase0-1 ok; Phase2 STOP mintUpdate + unattended-upgrade-shutdown + unattended-upgrades.service; sudo fuser/dpkg/stop blocked TTY; kein POST create; BR-001_package_timer_paused_retry_2026-05-13.md"
+    "2026-05-13 STRICT timer-pause retry: Phase0-1 ok; Phase2 STOP mintUpdate + unattended-upgrade-shutdown + unattended-upgrades.service; sudo fuser/dpkg/stop blocked TTY; kein POST create; BR-001_package_timer_paused_retry_2026-05-13.md",
+    "2026-05-13: BR-011 Backup Package Activity Preflight — Spez DE/EN + KB + Matrix; aus e341a326ac69/timer-retry; keine Produktcode-Änderung in diesem Prompt"
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -526,7 +527,8 @@
     "2026-05-13: Vier-Dateien-Deploy nach /opt freigegeben — im Agent nicht ausführbar; Operator-Runbook in BR-001_backend_deploy_status_2026-05-12.md.",
     "2026-05-13: Zusätzlich legacy /opt/config/version.json (kein version_source_of_truth) für /api/version 500; Backend-Python-Dateien bereits SHA256-gleich Workspace; Operator: sudo install version.json + restart; Evidence productive_backend_full_update_attempt_2026_05_13.",
     "2026-05-13 Job e341a326ac69: Full-Backup lief ~1h43 bis backup.blocked_package_activity (UPDATE-CONFLICT-041); parallel apt-get autoremove; kein finales Archiv; Manifest-Rest auf Zielmedium — siehe br001_package_activity_failure_e341a326ac69_2026_05_13 und package_activity_retry_runbook.",
-    "2026-05-13 STRICT timer-pause retry-Versuch: Phase2 STOP (mintUpdate, unattended-upgrade-shutdown); sudo für fuser/timer stop fehlt — kein neuer Job — BR-001_package_timer_paused_retry_2026-05-13.md"
+    "2026-05-13 STRICT timer-pause retry-Versuch: Phase2 STOP (mintUpdate, unattended-upgrade-shutdown); sudo für fuser/timer stop fehlt — kein neuer Job — BR-001_package_timer_paused_retry_2026-05-13.md",
+    "2026-05-13: BR-011 Preflight-Spezifikation (docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE|EN.md, knowledge-base) — Implementierung offen"
   ],
   "result": "failed",
   "api_code": "backup.blocked_package_activity",
@@ -551,6 +553,9 @@
     "docs/evidence/backup-restore/BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_package_activity_failure_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_package_activity_retry_runbook_2026-05-13.md",
-    "docs/evidence/backup-restore/BR-001_package_timer_paused_retry_2026-05-13.md"
+    "docs/evidence/backup-restore/BR-001_package_timer_paused_retry_2026-05-13.md",
+    "docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md",
+    "docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_EN.md",
+    "docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md"
   ]
 }

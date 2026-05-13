@@ -8,6 +8,8 @@
 
 **Verbote:** kein Restore, kein Verify vor finalem Archiv, kein anderer Backup-Pfad, **keine dauerhafte Deaktivierung** von APT-/Mint-Timern (nur **temporär** für die geplante Backup-Fenster).
 
+**Produkt-Roadmap:** Mittelfristig soll ein **API/UI-Preflight** („Backup Package Activity Preflight“, Test-ID **BR-011**) die manuellen Phasen 2–4 strukturieren — siehe **`docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`** und Knowledge-Base **`docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md`**.
+
 ---
 
 ## 1. Backend-Version-Gate
