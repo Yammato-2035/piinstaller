@@ -256,8 +256,27 @@
     "br001_note": "ready_for_explicit_operator_approval not met until /api/version 200 and target-check success per operator policy",
     "evidence_md": [
       "docs/evidence/backup-restore/BR-001_backend_update_and_version_fix_2026-05-13.md",
-      "docs/evidence/backup-restore/BR-001_readonly_target_and_api500_analysis_2026-05-12.md"
+      "docs/evidence/backup-restore/BR-001_readonly_target_and_api500_analysis_2026-05-12.md",
+      "docs/evidence/backup-restore/BR-001_systemd_readwritepaths_analysis_2026-05-13.md"
     ]
+  },
+  "systemd_sandbox_readwritepaths_2026_05_13": {
+    "summary": "ProtectSystem=strict: /media/gabriel/setuphelfer-back fehlte in ReadWritePaths → API write_test EROFS trotz Host findmnt rw",
+    "readwritepaths_effective_before_host": "/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt /mnt/setuphelfer",
+    "approved_path_in_readwritepaths_before": false,
+    "repo_readwritepaths_after": "/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt /mnt/setuphelfer /media/gabriel/setuphelfer-back",
+    "repo_files_changed": [
+      "debian/setuphelfer-backend.service",
+      "setuphelfer-backend.service"
+    ],
+    "operator_drop_in_example": "docs/operations/systemd/setuphelfer-backend-backup-target.conf.example",
+    "live_etc_drop_in_applied_in_agent": false,
+    "daemon_reload_restart_executed_in_agent": false,
+    "target_check_after_host_unit_or_drop_in": "operator_verify_pending",
+    "erofs_expected_resolved_after_host_restart": "yes_if_sandbox_only",
+    "backup_job_started": false,
+    "br001_status": "blocked",
+    "evidence_md": "docs/evidence/backup-restore/BR-001_systemd_readwritepaths_analysis_2026-05-13.md"
   },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
@@ -290,7 +309,8 @@
     "2026-05-12: Strategischer Pfad /media/setuphelfer/setuphelfer-back dokumentiert; externe Kandidaten nur lesend; Deploy /opt blockiert (sudo); target-check strategischer Pfad → STORAGE-001 auf altem Backend.",
     "2026-05-13: Betreiberfreigabe Deploy 4 Dateien — im Cursor-Agent BLOCKED (sudo TTY/Passwort); sha256 + Runbook BR-001_backend_deploy_status; target-check /media/gabriel/setuphelfer-back weiter STORAGE-001 bis Deploy auf Host.",
     "2026-05-13 STRICT: core.versioning fehlt unter /opt — /api/version HTTP 500; keine weiteren lokalen Modul-Imports in versioning.py; config/version.json auf /opt vorhanden; sudo install BLOCKED; target-check Snapshot HTTP 200 backup.target_check_ok; kein Backup gestartet.",
-    "2026-05-13 STRICT full sync: sudo BLOCKED; backend py files already match workspace SHA256; only config/version.json differs (legacy vs version_source_of_truth); /api/version 500; target-check backup.backup_target_not_writable; findmnt rw vs API ro; BR-001_backend_update_and_version_fix_2026-05-13.md"
+    "2026-05-13 STRICT full sync: sudo BLOCKED; backend py files already match workspace SHA256; only config/version.json differs (legacy vs version_source_of_truth); /api/version 500; target-check backup.backup_target_not_writable; findmnt rw vs API ro; BR-001_backend_update_and_version_fix_2026-05-13.md",
+    "2026-05-13: systemd ReadWritePaths — /media/gabriel/setuphelfer-back ergänzt in debian/setuphelfer-backend.service + setuphelfer-backend.service; Drop-in-Beispiel docs/operations/systemd/; Evidence BR-001_systemd_readwritepaths_analysis_2026-05-13.md; kein Backup; Host-restart nicht im Agent"
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -301,7 +321,7 @@
   },
   "notes": [
     "Betreiberfreigabe: nur /media/gabriel/setuphelfer-back auf /dev/sda1 ext4 — kein /mnt/setuphelfer/backups, kein Bind, kein anderer Pfad.",
-    "BR-001 blocked: E2E-Gate ausstehend; /api/version HTTP 500 (legacy /opt/config/version.json); target-check 2026-05-13: backup.backup_target_not_writable; findmnt rw vs API ro — siehe productive_backend_full_update_attempt_2026_05_13.",
+    "BR-001 blocked: E2E-Gate ausstehend; /api/version HTTP 500 (legacy /opt/config/version.json); target-check 2026-05-13: backup.backup_target_not_writable; findmnt rw vs API ro — systemd ReadWritePaths-Fix im Repo + Operator-Drop-in/restart siehe systemd_sandbox_readwritepaths_2026_05_13.",
     "2026-05-12 Analyse: Shell vs. API — Hauptursache C+D (Traverse /media/gabriel + Anker findmnt → nvme); siehe BR-001_productive_target_check_media_path_analysis_2026-05-12.md.",
     "Keine ACL-Änderung, kein Ausweichen — siehe BR-001_path_policy_correction_2026-05-12.md.",
     "2026-05-12: Workspace-Code meldet bei fehlendem Traverse künftig STORAGE-006 (nicht 001); BR-001_target_permission_diagnostics_fix_2026-05-12.md — Betrieb weiter blocked bis grüner Check + Freigabe.",
@@ -324,6 +344,7 @@
     "docs/evidence/backup-restore/BR-001_external_target_selection_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_backend_update_and_version_fix_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_readonly_target_and_api500_analysis_2026-05-12.md",
-    "docs/evidence/backup-restore/BR-001_backend_deploy_status_2026-05-12.md"
+    "docs/evidence/backup-restore/BR-001_backend_deploy_status_2026-05-12.md",
+    "docs/evidence/backup-restore/BR-001_systemd_readwritepaths_analysis_2026-05-13.md"
   ]
 }

@@ -104,7 +104,12 @@ Eingehalten: kein Backup, kein Restore, kein `/mnt/setuphelfer/backups`, kein `/
 ## Phase 10 — BR-001
 
 - **Kein** Backup gestartet, **keine** BR-001-Ausführung.
-- BR-001 bleibt **`blocked`**; höchstens **`ready_for_explicit_operator_approval`** nach separater Nutzerfreigabe — derzeit **nicht** erfüllt, weil **`/api/version`** nicht grün und **`target-check`** nicht erfolgreich.
+- BR-001 bleibt **`blocked`**; nach systemd-**`ReadWritePaths`**-Fix auf dem Host: **`target-check`** erneut prüfen, dann ggf. **`ready_for_explicit_operator_approval`** nur mit separater Nutzerfreigabe.
+
+## systemd `ReadWritePaths` vs. EROFS (2026-05-13)
+
+**Ursache** des Shell-**`rw`** / API-**EROFS**-Widerspruchs: **`ProtectSystem=strict`** ohne Eintrag **`/media/gabriel/setuphelfer-back`** in **`ReadWritePaths`**.  
+**Repo:** `debian/setuphelfer-backend.service`, `setuphelfer-backend.service` ergänzt. **Operator-Drop-in:** `docs/operations/systemd/setuphelfer-backend-backup-target.conf.example` → Evidence **`BR-001_systemd_readwritepaths_analysis_2026-05-13.md`**. Live-**`daemon-reload`/`restart`** im Agenten nicht ausgeführt (`sudo`).
 
 ## SHA256 — Referenz „workspace“ (Quelle für Install)
 

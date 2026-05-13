@@ -28,11 +28,12 @@ Environment="PI_INSTALLER_DEV=0"
 Environment="APP_EDITION=release"
 Environment="PIP_CACHE_DIR=/opt/setuphelfer/.pip-cache"
 # Tar/Backup ohne sudo (Ziel /mnt/setuphelfer/backups, Gruppe setuphelfer).
+# Freigegebener externer BR-001-Pfad (Betreiber): Schreibzugriff unter ProtectSystem=strict.
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt /mnt/setuphelfer
+ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt /mnt/setuphelfer /media/gabriel/setuphelfer-back
 MemoryMax=512M
 LimitNOFILE=4096
 

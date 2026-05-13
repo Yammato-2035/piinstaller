@@ -1,0 +1,21 @@
+# Drop-in: Schreibzugriff auf freigegebenes BR-001-Backup-Ziel (Beispiel)
+
+**Zielpfad (verbindlich):** `/media/gabriel/setuphelfer-back`
+
+Kopieren nach:
+
+`/etc/systemd/system/setuphelfer-backend.service.d/backup-target.conf`
+
+```ini
+[Service]
+ReadWritePaths=/media/gabriel/setuphelfer-back
+```
+
+Dann:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart setuphelfer-backend.service
+```
+
+Die Haupt-Unit (`debian/setuphelfer-backend.service` im Repo) enthält denselben Pfad künftig in **`ReadWritePaths=`** für Neuinstallationen; dieses Drop-in dient der Nachrüstung ohne vollständige Unit-Überschreibung.

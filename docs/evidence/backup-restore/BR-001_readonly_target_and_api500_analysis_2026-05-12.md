@@ -2,6 +2,11 @@
 
 **Datum Erstanlage:** 2026-05-13 (Evidence-Nachzug; Inhalt bezieht sich auf Messungen **2026-05-13** am freigegebenen Pfad **`/media/gabriel/setuphelfer-back`**).
 
+## Root cause (2026-05-13): systemd `ProtectSystem=strict` / `ReadWritePaths`
+
+Der Widerspruch **Shell `rw`** vs. **API EROFS** ist mit hoher Wahrscheinlichkeit der **systemd-Service-Sandbox** geschuldet: **`/media/gabriel/setuphelfer-back`** fehlte in **`ReadWritePaths`**, während **`ProtectSystem=strict`** aktiv war — Schreibzugriffe unter **`/media/...`** werden im Namespace **verweigert** (EROFS), unabhängig vom echten Mount-**`rw`** auf dem Host.  
+**Nachweis und Operator-Schritte:** **`BR-001_systemd_readwritepaths_analysis_2026-05-13.md`**; Repo-Fix in **`debian/setuphelfer-backend.service`** / **`setuphelfer-backend.service`**; Drop-in-Beispiel **`docs/operations/systemd/setuphelfer-backend-backup-target.conf.example`**.
+
 ## Kontext
 
 - Freigegebenes Ziel: **`/media/gabriel/setuphelfer-back`**, UUID **`adbd53e5-26fd-4723-b0f1-1880dbaa2719`**, LABEL **setuphelfer-back**, FS **ext4**.
