@@ -4,7 +4,7 @@
   "id": "BR-001",
   "status": "blocked",
   "ampel": "rot",
-  "evidence_complete": true,
+  "evidence_complete": false,
   "commit": "b77c109d402a053cec4544a06919613b9167624d",
   "ci_run": "25751304968",
   "ci_run_url": "https://github.com/Yammato-2035/piinstaller/actions/runs/25751304968",
@@ -278,6 +278,48 @@
     "br001_status": "blocked",
     "evidence_md": "docs/evidence/backup-restore/BR-001_systemd_readwritepaths_analysis_2026-05-13.md"
   },
+  "br001_full_backup_attempt_2026_05_13": {
+    "executed_at_local": "2026-05-13T18:21:45+02:00",
+    "backend_version_gate_exit": 0,
+    "api_version_http": 200,
+    "systemd_active": "active_running",
+    "readwritepaths_includes_approved": true,
+    "approved_backup_dir": "/media/gabriel/setuphelfer-back",
+    "device": "/dev/sdb1",
+    "uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+    "label": "setuphelfer-back",
+    "fstype": "ext4",
+    "mount_rw": true,
+    "target_check_code": "backup.target_check_ok",
+    "backup_create_request_json": {
+      "type": "full",
+      "backup_dir": "/media/gabriel/setuphelfer-back",
+      "target": "local"
+    },
+    "backup_create_http": 200,
+    "backup_create_status": "error",
+    "backup_create_code": "backup.starter_invalid_path",
+    "job_id": "2ef832fc32a2",
+    "job_final_status": "error",
+    "job_final_code": "backup.starter_invalid_path",
+    "planned_backup_file": "/media/gabriel/setuphelfer-back/pi-backup-full-20260513_182202.tar.gz",
+    "planned_partial_path": "/media/gabriel/setuphelfer-back/pi-backup-full-20260513_182202.tar.gz.partial",
+    "archive_created": false,
+    "partial_present_on_disk": false,
+    "manifest_present": false,
+    "sha256_present": false,
+    "root_cause": "setuphelfer-backup-starter ALLOWED_BACKUP_ROOT only /mnt/setuphelfer/backups until fix; /media/gabriel/setuphelfer-back rejected",
+    "repo_starter_fix": "packaging/helpers/setuphelfer-backup-starter.py ALLOWED_BACKUP_ROOTS includes /media/gabriel/setuphelfer-back",
+    "live_starter_deployed_in_agent": false,
+    "sudo_install_blocked": "password_or_tty_required",
+    "br001_result": "failed",
+    "br004_skipped": true,
+    "br005_skipped": true,
+    "restore_started": false,
+    "forbidden_path_used": false,
+    "mnt_setuphelfer_backups_used_as_target": false,
+    "evidence_md": "docs/evidence/backup-restore/BR-001_full_backup_run_2026-05-13.md"
+  },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
     "path_exists_on_host": false,
@@ -310,7 +352,8 @@
     "2026-05-13: Betreiberfreigabe Deploy 4 Dateien — im Cursor-Agent BLOCKED (sudo TTY/Passwort); sha256 + Runbook BR-001_backend_deploy_status; target-check /media/gabriel/setuphelfer-back weiter STORAGE-001 bis Deploy auf Host.",
     "2026-05-13 STRICT: core.versioning fehlt unter /opt — /api/version HTTP 500; keine weiteren lokalen Modul-Imports in versioning.py; config/version.json auf /opt vorhanden; sudo install BLOCKED; target-check Snapshot HTTP 200 backup.target_check_ok; kein Backup gestartet.",
     "2026-05-13 STRICT full sync: sudo BLOCKED; backend py files already match workspace SHA256; only config/version.json differs (legacy vs version_source_of_truth); /api/version 500; target-check backup.backup_target_not_writable; findmnt rw vs API ro; BR-001_backend_update_and_version_fix_2026-05-13.md",
-    "2026-05-13: systemd ReadWritePaths — /media/gabriel/setuphelfer-back ergänzt in debian/setuphelfer-backend.service + setuphelfer-backend.service; Drop-in-Beispiel docs/operations/systemd/; Evidence BR-001_systemd_readwritepaths_analysis_2026-05-13.md; kein Backup; Host-restart nicht im Agent"
+    "2026-05-13: systemd ReadWritePaths — /media/gabriel/setuphelfer-back ergänzt in debian/setuphelfer-backend.service + setuphelfer-backend.service; Drop-in-Beispiel docs/operations/systemd/; Evidence BR-001_systemd_readwritepaths_analysis_2026-05-13.md; kein Backup; Host-restart nicht im Agent",
+    "2026-05-13 STRICT BR-001 full backup: Gates+target-check ok; POST /api/backup/create full local → backup.starter_invalid_path (helper allowlist only /mnt/setuphelfer/backups); job 2ef832fc32a2 error; repo starter fix ALLOWED_BACKUP_ROOTS; sudo install starter blocked; BR-001_full_backup_run_2026-05-13.md"
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -321,7 +364,7 @@
   },
   "notes": [
     "Betreiberfreigabe: nur /media/gabriel/setuphelfer-back auf /dev/sda1 ext4 — kein /mnt/setuphelfer/backups, kein Bind, kein anderer Pfad.",
-    "BR-001 blocked: E2E-Gate ausstehend; /api/version HTTP 500 (legacy /opt/config/version.json); target-check 2026-05-13: backup.backup_target_not_writable; findmnt rw vs API ro — systemd ReadWritePaths-Fix im Repo + Operator-Drop-in/restart siehe systemd_sandbox_readwritepaths_2026_05_13.",
+    "BR-001 2026-05-13 full-backup attempt: starter_invalid_path — deploy packaging/helpers/setuphelfer-backup-starter.py to /usr/lib/setuphelfer/ or set SETUPHELFER_BACKUP_START_MODE=systemd per operator policy; see br001_full_backup_attempt_2026_05_13.",
     "2026-05-12 Analyse: Shell vs. API — Hauptursache C+D (Traverse /media/gabriel + Anker findmnt → nvme); siehe BR-001_productive_target_check_media_path_analysis_2026-05-12.md.",
     "Keine ACL-Änderung, kein Ausweichen — siehe BR-001_path_policy_correction_2026-05-12.md.",
     "2026-05-12: Workspace-Code meldet bei fehlendem Traverse künftig STORAGE-006 (nicht 001); BR-001_target_permission_diagnostics_fix_2026-05-12.md — Betrieb weiter blocked bis grüner Check + Freigabe.",
@@ -330,7 +373,7 @@
     "2026-05-13: Zusätzlich legacy /opt/config/version.json (kein version_source_of_truth) für /api/version 500; Backend-Python-Dateien bereits SHA256-gleich Workspace; Operator: sudo install version.json + restart; Evidence productive_backend_full_update_attempt_2026_05_13."
   ],
   "result": "blocked",
-  "api_code": "backup.backup_target_not_writable",
+  "api_code": "backup.starter_invalid_path",
   "artifacts": [
     "docs/evidence/backup-restore/BR-001_productive_target_check_media_path_analysis_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_path_policy_correction_2026-05-12.md",
@@ -345,6 +388,7 @@
     "docs/evidence/backup-restore/BR-001_backend_update_and_version_fix_2026-05-13.md",
     "docs/evidence/backup-restore/BR-001_readonly_target_and_api500_analysis_2026-05-12.md",
     "docs/evidence/backup-restore/BR-001_backend_deploy_status_2026-05-12.md",
-    "docs/evidence/backup-restore/BR-001_systemd_readwritepaths_analysis_2026-05-13.md"
+    "docs/evidence/backup-restore/BR-001_systemd_readwritepaths_analysis_2026-05-13.md",
+    "docs/evidence/backup-restore/BR-001_full_backup_run_2026-05-13.md"
   ]
 }

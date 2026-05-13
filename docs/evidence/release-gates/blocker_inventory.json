@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.blocker_inventory.v1",
   "id": "blocker_inventory",
-  "generated": "2026-05-13T20:10:00Z",
+  "generated": "2026-05-13T22:30:00Z",
   "prompt02_rerun": {
     "executed_at": "2026-05-11T21:15:00Z",
     "spec": "docs/cursor/PROMPT_02_BLOCKER_INVENTORY.md",
@@ -53,6 +53,7 @@
       "BR-001 2026-05-13: fehlendes core.versioning unter /opt — /api/version HTTP 500; sudo install versioning.py BLOCKED; target-check Snapshot backup.target_check_ok; BR-001.json core_versioning_api_version_repair_2026_05_13",
       "BR-001 2026-05-13 full sync: /opt backend py = workspace SHA256; only config/version.json legacy; /api/version 500; target-check backup.backup_target_not_writable; findmnt rw vs API ro; sudo BLOCKED — BR-001_backend_update_and_version_fix_2026-05-13.md",
       "2026-05-13: Backend-Version-Gate — CURSOR_WORK_RULES, scripts/check-backend-version-gate.sh, /api/version 503 bei invalid config, APT roadmap apt_update_delivery_gap.json",
+      "BR-001 2026-05-13 STRICT full backup: POST /api/backup/create → backup.starter_invalid_path (starter allowlist); repo fix packaging/helpers/setuphelfer-backup-starter.py; sudo install blocked — BR-001_full_backup_run_2026-05-13.md",
       "BR-001 2026-05-13: systemd ProtectSystem=strict — fehlendes ReadWritePaths für /media/gabriel/setuphelfer-back → API EROFS; Repo-Unit-Fix + Drop-in-Beispiel; Host-restart pending — BR-001_systemd_readwritepaths_analysis_2026-05-13.md",
       "BR-001 2026-05-12: Device-/Mount-Baseline — BR-001_device_mount_baseline_2026-05-12.{md,json} (historisch /mnt-Zeilen nur Dokumentation)",
       "BR-001 2026-05-12: produktiver target-check /mnt/setuphelfer/backups → STORAGE-004; BR-001_productive_target_check_2026-05-12.md",

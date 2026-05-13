@@ -79,11 +79,11 @@ class TestBackupStarterValidation(unittest.TestCase):
     def test_backup_dir_outside_allowed_rejected(self) -> None:
         outside = self.base / "tmp" / "x"
         outside.mkdir(parents=True, exist_ok=True)
-        with patch.object(self.mod, "ALLOWED_BACKUP_ROOT", self.allowed):
+        with patch.object(self.mod, "ALLOWED_BACKUP_ROOTS", (self.allowed,)):
             self.assertFalse(self.mod._validate_backup_dir(str(outside)))
 
     def test_relative_backup_dir_rejected(self) -> None:
-        with patch.object(self.mod, "ALLOWED_BACKUP_ROOT", self.allowed):
+        with patch.object(self.mod, "ALLOWED_BACKUP_ROOTS", (self.allowed,)):
             self.assertFalse(self.mod._validate_backup_dir("relative/path"))
 
     def test_unit_name_built_internally(self) -> None:
@@ -108,7 +108,7 @@ class TestBackupStarterValidation(unittest.TestCase):
             return _CP()
 
         with patch.object(self.mod, "JOB_BASE_DIR", self.jobs):
-            with patch.object(self.mod, "ALLOWED_BACKUP_ROOT", self.allowed):
+            with patch.object(self.mod, "ALLOWED_BACKUP_ROOTS", (self.allowed,)):
                 with patch.object(self.mod, "_authorized_for_starter", return_value=True):
                     with patch.object(self.mod.subprocess, "run", side_effect=_fake_run):
                         rc = self.mod.main(["start", "job1"])
@@ -116,12 +116,18 @@ class TestBackupStarterValidation(unittest.TestCase):
         self.assertEqual(calls["cmd"], ["systemctl", "start", "setuphelfer-backup@job1.service"])
         self.assertIs(calls["shell"], False)
 
+    def test_backup_dir_under_second_allowed_root_ok(self) -> None:
+        media_root = self.base / "media" / "gabriel" / "setuphelfer-back"
+        media_root.mkdir(parents=True)
+        with patch.object(self.mod, "ALLOWED_BACKUP_ROOTS", (self.allowed, media_root.resolve())):
+            self.assertTrue(self.mod._validate_backup_dir(str(media_root)))
+
     def test_symlink_outside_allowed_rejected(self) -> None:
         outside = self.base / "other"
         outside.mkdir(parents=True, exist_ok=True)
         link = self.allowed / "link-out"
         link.symlink_to(outside, target_is_directory=True)
-        with patch.object(self.mod, "ALLOWED_BACKUP_ROOT", self.allowed):
+        with patch.object(self.mod, "ALLOWED_BACKUP_ROOTS", (self.allowed,)):
             self.assertFalse(self.mod._validate_backup_dir(str(link)))
 
     def test_invalid_job_id_code(self) -> None:
@@ -283,7 +289,7 @@ class TestStarterPolkitAuth(unittest.TestCase):
                 encoding="utf-8",
             )
             with patch.object(self.mod, "JOB_BASE_DIR", jobs):
-                with patch.object(self.mod, "ALLOWED_BACKUP_ROOT", allowed):
+                with patch.object(self.mod, "ALLOWED_BACKUP_ROOTS", (allowed,)):
                     with patch.object(self.mod.os, "geteuid", return_value=1000):
                         with patch.object(self.mod, "_authorized_for_starter", return_value=False):
                             with redirect_stdout(buf):

@@ -12,7 +12,14 @@ from typing import Any
 PKIT_ACTION = "org.setuphelfer.backup.start"
 
 JOB_ID_RE = re.compile(r"^[a-zA-Z0-9._-]{1,80}$")
-ALLOWED_BACKUP_ROOT = Path("/mnt/setuphelfer/backups").resolve()
+# Erlaubte Backup-Ziele (jeweils realpath muss unter genau einer dieser Wurzeln liegen).
+# Zweiter Eintrag: BR-001 / Betreiberfreigabe — nur dieser Media-Pfad, kein generisches /media.
+ALLOWED_BACKUP_ROOTS: tuple[Path, ...] = (
+    Path("/mnt/setuphelfer/backups").resolve(),
+    Path("/media/gabriel/setuphelfer-back").resolve(),
+)
+# Abwärtskompatibel für Tests/Doku, die nur die erste Wurzel patchen.
+ALLOWED_BACKUP_ROOT = ALLOWED_BACKUP_ROOTS[0]
 JOB_BASE_DIR = Path("/var/lib/setuphelfer/backup-jobs")
 UNIT_PREFIX = "setuphelfer-backup@"
 UNIT_SUFFIX = ".service"
@@ -65,8 +72,10 @@ def _validate_backup_dir(path_value: str) -> bool:
     p = Path(path_value)
     if not p.is_absolute():
         return False
-    resolved = _safe_resolve_under(ALLOWED_BACKUP_ROOT, p)
-    return resolved is not None
+    for root in ALLOWED_BACKUP_ROOTS:
+        if _safe_resolve_under(root, p) is not None:
+            return True
+    return False
 
 
 def _result(ok: bool, action: str, job_id: str, code: str) -> dict[str, Any]:

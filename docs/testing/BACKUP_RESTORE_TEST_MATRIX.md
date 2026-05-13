@@ -2,7 +2,7 @@
 
 | ID | Test | Voraussetzung | Erwartung | Status | Evidence |
 |----|------|---------------|-----------|--------|----------|
-| BR-001 | Full Backup gültige Quelle | `/mnt/setuphelfer/backups` auf extern sdd1 + produktives target-check grün | Archiv + Manifest + SHA256 | Gelb (review_required — Ziel vorbereitet, Deploy/Verifikation offen) | docs/evidence/backup-restore/BR-001.json |
+| BR-001 | Full Backup freigegebenes Ziel | Nur **`/media/gabriel/setuphelfer-back`** (ext4, USB), Gates + **`target-check`** grün; **`setuphelfer-backup-starter`** muss Ziel erlauben | Archiv + Manifest + SHA256 | Rot (blocked — Starter **`backup.starter_invalid_path`** bis Deploy Repo-Starter) | `BR-001.json`, `BR-001_full_backup_run_2026-05-13.md` |
 | BR-002 | Ziel nicht beschreibbar | Rechte entzogen | harter Abbruch | Rot | docs/evidence/backup-restore/BR-002.json |
 | BR-003 | `.partial` Archiv prüfen | abgebrochene Sicherung | Verify blockiert | Rot | docs/evidence/backup-restore/BR-003.json |
 | BR-004 | Verify Basic gültig | **dieselbe** Archivdatei wie BR-001 | ok | Rot (blocked — BR-001) | docs/evidence/backup-restore/BR-004.json |
@@ -17,4 +17,4 @@
 
 Viele Szenarien haben Abdeckung unter `backend/tests/` (z. B. Backup/Restore/Write-Guard). **Grün in dieser Matrix** verlangt zusätzlich dokumentierte Läufe mit Evidence-JSON gemäß `docs/evidence/README.md`.
 
-**STRICT-Kette (2026-05-12, Option 2):** **`/mnt/setuphelfer/backups`** — Bind auf **`/dev/sdd1`** (`setuphelfer-back`), `root:setuphelfer` **`2770`**. Media-Pfad `/media/gabriel/…` bleibt für Dienstnutzer ohne ACL problematisch; **produktiver** Pfad ist `/mnt/…`. Repo-Fixes: **findmnt-Flatten** (`app.py`) + **Klammer-SOURCE** (`safe_device`). **Produktions-`target-check`** nach Deploy/Restart verifizieren; **sudo-`setuphelfer`-Schreibprobe** optional. Kein Backup-Job. CI **25751304968** success.
+**STRICT-Kette (2026-05-13):** Freigegebener Pfad **`/media/gabriel/setuphelfer-back`** — **`target-check`** und Version-Gate grün; Full-Backup **`POST /api/backup/create`** scheiterte an **`backup.starter_invalid_path`**, weil der installierte Starter nur **`/mnt/setuphelfer/backups`** erlaubte — Repo-Fix **`packaging/helpers/setuphelfer-backup-starter.py`** (`ALLOWED_BACKUP_ROOTS`). Historischer STRICT-/mnt-Hinweis 2026-05-12 bleibt für ältere Runs in älterer Evidence.

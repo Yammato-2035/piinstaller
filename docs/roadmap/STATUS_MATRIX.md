@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-13 — **Backend-Version-Gate:** Skript akzeptiert schlanke **`/api/version`**-Antwort (200 + drei Versionsfelder); **`check-backend-version-gate.sh`** Exit **0** nach Fix. **target-check** `/media/gabriel/setuphelfer-back`: **findmnt/proc rw** vs. API **ro**/EROFS — **Ursache systemd-Sandbox** (`ReadWritePaths` ohne Freigabepfad) behoben **im Repo** (`debian/setuphelfer-backend.service`, `setuphelfer-backend.service`); Live-Nachweis nach Operator-**restart** — **`BR-001_systemd_readwritepaths_analysis_2026-05-13.md`**. **BR-001:** weiter blocked (E2E, kein Backup). **Regel:** Grün nur mit Testnachweis …
+**Stand:** 2026-05-13 — **BR-001:** Full-Backup-Versuch (`POST /api/backup/create`) an **`backup.starter_invalid_path`** gescheitert — **`setuphelfer-backup-starter`** musste **`/media/gabriel/setuphelfer-back`** in **`ALLOWED_BACKUP_ROOTS`** erhalten (Repo-Fix); Operator-**`sudo install`** auf Host. Vorher: Gates + **`target-check`** grün, **`ReadWritePaths`** mit Freigabepfad — **`BR-001_full_backup_run_2026-05-13.md`**. **BR-004/005:** blocked. **Regel:** Grün nur mit Testnachweis …
 
 ## Ampeldefinition
 
@@ -17,8 +17,8 @@
 |---------|-------|----------|------------------|
 | Phase 0 Arbeitsmodus | Gelb | Struktur & Matrizen angelegt, GitHub Project manuell | `docs/evidence/release-gates/feature_freeze.json` |
 | Phase 1 Bestandsaufnahme | Gelb | Testinventar + **Pytest Snapshot** (0× fail, 1526× pass, lokal); CI-/HW-Evidence separat | `test_inventory.json`, `current_failures.json`, `pytest_failures_summary_2026-05-11.txt` |
-| Backup | Rot | BR-001 blocked — **`/api/version`** 500 (**`/opt/.../config/version.json`** Legacy); Backend-`.py` = Workspace; **target-check** `backup.backup_target_not_writable` + rw/ro (systemd **`ReadWritePaths`**-Fix im Repo + Drop-in-Beispiel; Host-Restart ausstehend) | `BR-001.json`, `BR-001_systemd_readwritepaths_analysis_2026-05-13.md`, `BR-001_backend_update_and_version_fix_2026-05-13.md` |
-| Verify | Rot | BR-004/BR-005 blocked — nur zulässig gegen BR-001-Archiv (BR-001 nicht passed) | `BR-004.json`, `BR-005.json` |
+| Backup | Rot | BR-001 blocked — Full-Backup 2026-05-13: **`backup.starter_invalid_path`** (Starter nur `/mnt/setuphelfer/backups` bis Repo-Fix); Gates + target-check grün; Deploy Starter | `BR-001.json`, `BR-001_full_backup_run_2026-05-13.md`, `packaging/helpers/setuphelfer-backup-starter.py` |
+| Verify | Rot | BR-004/BR-005 blocked — kein neues BR-001-Archiv aus diesem Lauf | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |
 | Rescue Stick | Gelb | viel Deploy-/Rescue-Testcode; echter Read-only-Stick offen | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` |
