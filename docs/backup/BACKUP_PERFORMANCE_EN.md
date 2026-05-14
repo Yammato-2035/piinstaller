@@ -20,3 +20,10 @@
 - **BR-019** profiles  
 
 (Legacy **BR-012** finalization fix; **BR-013** target write I/O.)
+
+## UI progress & evidence (2026-05-14)
+
+- **`RunningBackupModal`** and **Create backup** (`BackupRestore`) render structured **`progress_optional`**: phase, operation, compression, human-readable bytes, throughput, elapsed time, **ETA only with reliable `bytes_total_estimate`** (else `backup.messages.eta_unknown`), target free space, `warning_codes`, `health_flags`.
+- **No archive percent bar** without a positive **`bytes_total_estimate`** (copy explains active progress without percent).
+- **Evidence bundle:** buttons call **`GET`/`POST /api/backup/jobs/{job_id}/evidence`** (see `BACKUP_EVIDENCE_COLLECTOR_*.md`).
+- Frontend unit tests: `npm run test` → `src/utils/backupJobProgressDisplay.test.ts` (Vitest).

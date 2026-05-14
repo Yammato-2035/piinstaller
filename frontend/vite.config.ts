@@ -1,6 +1,6 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import pkg from './package.json'
 
@@ -61,5 +61,10 @@ export default defineConfig({
     port: 3001,
     host: '0.0.0.0',
     proxy: { ...apiProxy },
+  },
+  test: {
+    environment: 'node',
+    include: ['src/**/*.test.ts'],
+    passWithNoTests: true,
   },
 })

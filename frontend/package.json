@@ -1,6 +1,6 @@
 {
   "name": "pi-installer-frontend",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "SetupHelfer — Web GUI for Raspberry Pi and Linux",
   "private": true,
   "dependencies": {
@@ -28,6 +28,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext ts,tsx",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "tauri": "tauri",
     "tauri:dev": "bash -c 'export PATH=\"$HOME/.cargo/bin:$PATH\"; [ -f \"$HOME/.cargo/env\" ] && . \"$HOME/.cargo/env\"; exec tauri dev'",
     "tauri:build": "bash -c 'export PATH=\"$HOME/.cargo/bin:/usr/local/bin:$PATH\"; [ -f \"$HOME/.cargo/env\" ] && . \"$HOME/.cargo/env\"; unset CI; exec tauri build'",
@@ -44,6 +46,7 @@
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.0",
     "typescript": "^5.2.0",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vitest": "^3.2.4"
   }
 }

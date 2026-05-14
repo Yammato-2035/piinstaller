@@ -16,6 +16,8 @@ import BeginnerGuidanceMarker from '../beginner/BeginnerGuidanceMarker'
 import { TrafficLightBadge } from '../components/trafficLight/TrafficLightBadge'
 import { deriveBackupSafetyTrafficLight } from '../trafficLight/trafficLightModel'
 import SudoPasswordModal from '../components/SudoPasswordModal'
+import BackupJobProgressSection from '../components/BackupJobProgressSection'
+import BackupJobEvidencePanel from '../components/BackupJobEvidencePanel'
 import type { DiagnosisRecord } from '../types/diagnosis'
 import type { DiagnosticsAnalyzeResponse, DiagnosticsUserLevel } from '../types/diagnostics'
 import { usePlatform } from '../context/PlatformContext'
@@ -1027,7 +1029,6 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
               backup_file: data.backup_file || '',
               message: t('backup.i18n.create.running'),
             }
-            console.log('Setting backupJob:', jobData) // Debug
             setBackupJob(jobData)
             // Speichere sofort in localStorage für globale Komponente
             try {
@@ -1044,7 +1045,6 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(data.job_id)}`)
                   const d = await r.json()
                   if (d.status === 'success' && d.job) {
-                    console.log('Polling backupJob update:', d.job) // Debug
                     setBackupJob(d.job)
                     // Aktualisiere localStorage
                     try {
@@ -2087,8 +2087,20 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       <div className="text-xs text-sky-100/80 mt-1">
                         {t('runningBackup.label.status')}{' '}
                         <span className="font-semibold">{backupJob.status || t('backup.ui.status.queued')}</span>
-                        {typeof backupJob.bytes_current === 'number' ? t('backup.i18n.job.sizeMb', { mb: (backupJob.bytes_current / 1024 / 1024).toFixed(1) }) : ''}
+                        {typeof backupJob.bytes_current === 'number' &&
+                        (typeof backupJob.progress_optional !== 'object' || backupJob.progress_optional === null)
+                          ? t('backup.i18n.job.sizeMb', { mb: (backupJob.bytes_current / 1024 / 1024).toFixed(1) })
+                          : ''}
                       </div>
+                      <BackupJobProgressSection
+                        job={backupJob}
+                        t={t}
+                        textClass="text-xs text-sky-100/85"
+                        mutedClass="text-sky-200/50"
+                      />
+                      {backupJob.job_id ? (
+                        <BackupJobEvidencePanel jobId={String(backupJob.job_id)} t={t} />
+                      ) : null}
                       {backupJobUiPhase === 'encrypt' && (
                         <motion.div
                           initial={{ opacity: 0 }}

@@ -20,3 +20,10 @@
 - **BR-019** Profile  
 
 (Historisch **BR-012** = Finalisierungs-Fix; **BR-013** = Schreib-EIO.)
+
+## UI-Fortschritt und Evidence (2026-05-14)
+
+- **`RunningBackupModal`** und **Backup erstellen** (`BackupRestore`) zeigen strukturiertes **`progress_optional`**: Phase, Aktion, Kompression, Datenmenge (human-readable), Durchsatz, Laufzeit, **Restzeit nur bei belastbarer Gesamtgröße** (sonst i18n `backup.messages.eta_unknown`), Ziel frei, Warnungen (`warning_codes`), Health-Flags.
+- **Keine Prozentanzeige** ohne positives **`bytes_total_estimate`** (Hilfstext „Fortschritt aktiv …“).
+- **Diagnosepaket:** Buttons rufen **`GET`/`POST /api/backup/jobs/{job_id}/evidence`** auf (siehe `BACKUP_EVIDENCE_COLLECTOR_*.md`).
+- Frontend-Unit-Tests: `npm run test` → `src/utils/backupJobProgressDisplay.test.ts` (Vitest).

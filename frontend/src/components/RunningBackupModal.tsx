@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { fetchApi } from '../api'
+import BackupJobProgressSection from './BackupJobProgressSection'
+import BackupJobEvidencePanel from './BackupJobEvidencePanel'
 
 const BACKUP_JOB_STORAGE_KEY = 'pi_installer_running_backup_job'
 
@@ -20,6 +22,7 @@ interface BackupJob {
   warning?: string
   results?: string[]
   encrypted?: boolean
+  progress_optional?: unknown
 }
 
 function backupApiCodeToI18nSuffix(code: string): string {
@@ -278,7 +281,7 @@ const RunningBackupModal: React.FC = () => {
             if (intervalId) window.clearInterval(intervalId)
             intervalId = null
             // Schließe Modal nach 3 Sekunden
-            setTimeout(() => setIsOpen(false), 3000)
+            setTimeout(() => setIsOpen(false), 6500)
           }
         }
       } catch {
@@ -384,11 +387,16 @@ const RunningBackupModal: React.FC = () => {
                 </div>
               )}
 
-              {typeof backupJob.bytes_current === 'number' && (
+              {typeof backupJob.bytes_current === 'number' &&
+                (typeof backupJob.progress_optional !== 'object' || backupJob.progress_optional === null) && (
                 <div className="text-xs text-slate-300">
                   <span className="font-semibold">{t('runningBackup.label.size')}</span> {(backupJob.bytes_current / 1024 / 1024).toFixed(1)} MB
                 </div>
               )}
+
+              <BackupJobProgressSection job={backupJob} t={t} />
+
+              {backupJob.job_id ? <BackupJobEvidencePanel jobId={backupJob.job_id} t={t} compact /> : null}
 
               {backupJob.status === 'cancel_requested' && (
                 <div className="p-3 bg-amber-900/20 border border-amber-700/40 rounded-lg text-amber-200 text-sm">

@@ -17,3 +17,10 @@ Copies `status.json`, `job.json`, tar stderr log when present; `systemctl` statu
 
 - Automatically when the runner reaches `_mark_terminal` with an active pipeline context.
 - Manual: `python3 backend/tools/backup_evidence_collector.py --job-id <ID> …`
+
+## API (UI / support)
+
+- **`GET /api/backup/jobs/{job_id}/evidence`** — reads an existing `manifest.json` (does **not** start backup or restore). Always **HTTP 200** with contract field **`evidence`**: `evidence_status`, `evidence_dir`, `manifest_path`, `collected_sources`, `permission_denied_sources`, `errors`. If no manifest yet: `evidence_status: not_available` (not a 500).
+- **`POST /api/backup/jobs/{job_id}/evidence`** — runs the collector again (still **no** backup/restore). Denied privileges appear in **`permission_denied_sources`**; hard issues in **`errors`**, still **HTTP 200** with structured body (no blanket 500 for `journalctl`/root).
+
+The web UI (“Create / refresh evidence”, “Show manifest”) calls these endpoints; see i18n key `runningBackup.evidence.hintPaths` for filesystem paths.

@@ -3,7 +3,7 @@
   "id": "test_inventory",
   "generated": "2026-05-14T12:00:00Z",
   "source": "backend/tests",
-  "test_file_count": 197,
+  "test_file_count": 198,
   "ampel": "gelb",
   "evidence_complete": false,
   "pytest_snapshot": {
@@ -12,7 +12,7 @@
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json"
   },
-  "notes": "GitHub CI success. BR-012/BR-013 runner tests; BR-016–BR-019 archive/progress/evidence pytest; BR-001 blocked; BR-004/005 blocked.",
+  "notes": "GitHub CI success. BR-012/BR-013 runner tests; BR-016–BR-019 + `test_backup_job_evidence_api_v1`; Frontend Vitest `backupJobProgressDisplay.test.ts`; BR-001 blocked; BR-004/005 blocked.",
   "test_files": [
     "test_anti_regression.py",
     "test_api_consistency_fix9_v1.py",
@@ -22,6 +22,7 @@
     "test_backup_evidence_collector_v1.py",
     "test_backup_findmnt_mount_flatten_v1.py",
     "test_backup_full_excludes_fix13_v1.py",
+    "test_backup_job_evidence_api_v1.py",
     "test_backup_list_decouple_fix11_v1.py",
     "test_backup_progress_merge_v1.py",
     "test_backup_recovery_engines.py",

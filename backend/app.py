@@ -868,6 +868,126 @@ def _sync_ram_job_from_runner(job_id: str) -> None:
         j["message"] = msg
     ap = rs.get("archive_path")
     j["backup_file"] = ap if ap else None
+    if rs.get("progress_optional") is not None:
+        j["progress_optional"] = rs.get("progress_optional")
+
+
+def _backup_evidence_manifest_paths(job_id: str) -> list[Path]:
+    jid = (job_id or "").strip()
+    return [
+        Path("/var/lib/setuphelfer/evidence/backup-jobs") / jid / "manifest.json",
+        Path(f"/tmp/setuphelfer-evidence-{jid}") / "manifest.json",
+    ]
+
+
+def _read_backup_evidence_manifest_disk(job_id: str) -> tuple[Optional[Path], Optional[dict]]:
+    for p in _backup_evidence_manifest_paths(job_id):
+        if not p.is_file():
+            continue
+        try:
+            raw = json.loads(p.read_text(encoding="utf-8") or "{}")
+            if isinstance(raw, dict):
+                return p, raw
+        except Exception:
+            return p, None
+    return None, None
+
+
+def _normalize_evidence_api_payload(manifest: Optional[dict], manifest_path: Optional[Path]) -> dict[str, Any]:
+    """Strukturierte Evidence-Antwort fuer API (kein harter 500 bei fehlenden Rechten)."""
+    if not manifest or not isinstance(manifest, dict):
+        out_dir = None
+        if manifest_path is not None:
+            try:
+                out_dir = str(manifest_path.parent.resolve())
+            except Exception:
+                out_dir = str(manifest_path.parent)
+        return {
+            "evidence_status": "not_available",
+            "evidence_dir": out_dir,
+            "manifest_path": str(manifest_path) if manifest_path else None,
+            "collected_sources": [],
+            "permission_denied_sources": [],
+            "errors": [],
+        }
+    out_dir = manifest.get("output_dir")
+    if not out_dir and manifest_path is not None:
+        try:
+            out_dir = str(manifest_path.parent.resolve())
+        except Exception:
+            out_dir = str(manifest_path.parent)
+    mpath = str(manifest_path) if manifest_path else None
+    if not mpath and out_dir:
+        mpath = str(Path(str(out_dir)) / "manifest.json")
+    collected: list[dict[str, Any]] = []
+    for a in manifest.get("artifacts") or []:
+        if isinstance(a, dict):
+            collected.append(
+                {
+                    "name": a.get("name"),
+                    "status": a.get("status"),
+                    "detail": a.get("detail"),
+                    "bytes": a.get("bytes"),
+                }
+            )
+    for c in manifest.get("captures") or []:
+        if isinstance(c, dict):
+            collected.append(
+                {
+                    "name": c.get("label"),
+                    "status": "ok" if c.get("ok") else "capture_failed",
+                    "permission_denied": bool(c.get("permission_denied")),
+                    "returncode": c.get("returncode"),
+                }
+            )
+    perm: list[Any] = list(manifest.get("permission_denied") or [])
+    errors: list[str] = []
+    return {
+        "evidence_status": "ok",
+        "evidence_dir": str(out_dir) if out_dir else None,
+        "manifest_path": mpath,
+        "collected_sources": collected,
+        "permission_denied_sources": perm,
+        "errors": errors,
+    }
+
+
+def _run_backup_evidence_collect(job_id: str) -> tuple[Optional[dict], Optional[str]]:
+    """Fuehrt den Evidence-Collector aus (startet kein Backup). Gibt (manifest, error_message) zurueck."""
+    try:
+        from tools.backup_evidence_collector import collect_backup_job_evidence
+    except Exception as e:  # noqa: BLE001
+        return None, f"collector_import:{e}"
+    jid = (job_id or "").strip()
+    rs = _read_backup_runner_status(jid) or {}
+    job_meta: dict[str, Any] = {}
+    jf = _backup_runner_job_file(jid)
+    if jf.is_file():
+        try:
+            raw = json.loads(jf.read_text(encoding="utf-8") or "{}")
+            if isinstance(raw, dict):
+                job_meta = raw
+        except Exception:
+            pass
+    unit_name = str(rs.get("unit_name") or job_meta.get("unit_name") or "").strip()
+    if not unit_name:
+        unit_name = f"setuphelfer-backup@{jid}.service"
+    unit_scope = str(rs.get("unit_scope") or job_meta.get("unit_scope") or "system").strip() or "system"
+    backup_dir = rs.get("backup_dir") or job_meta.get("backup_dir")
+    bd = str(backup_dir).strip() if backup_dir else None
+    try:
+        manifest = collect_backup_job_evidence(
+            jid,
+            status_dir=_backup_runner_status_dir(),
+            unit_name=unit_name,
+            unit_scope=unit_scope,
+            backup_dir=bd,
+        )
+        if isinstance(manifest, dict):
+            return manifest, None
+        return None, "collector_invalid_return"
+    except Exception as e:  # noqa: BLE001
+        return None, str(e)
 
 
 def _curl_put_with_progress(
@@ -2257,6 +2377,103 @@ async def backup_job_cancel(job_id: str):
         pass
 
     return with_backup_contract({"status": "success", "message": "Abbruch angefordert"}, "backup.cancel_requested", "success")
+
+
+@app.get("/api/backup/jobs/{job_id}/evidence")
+async def backup_job_evidence_get(job_id: str):
+    """Liest vorhandenes Evidence-Manifest (kein Backup-/Restore-Start)."""
+    jid = (job_id or "").strip()
+    if not _BACKUP_JOB_ID_RE.fullmatch(jid):
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "message": "Ungültige job_id",
+                    "evidence": {
+                        "evidence_status": "invalid_job_id",
+                        "evidence_dir": None,
+                        "manifest_path": None,
+                        "collected_sources": [],
+                        "permission_denied_sources": [],
+                        "errors": ["invalid_job_id"],
+                    },
+                },
+                "backup.evidence.invalid_job_id",
+                "error",
+                {"job_id": jid},
+            ),
+        )
+    mp_path, manifest = _read_backup_evidence_manifest_disk(jid)
+    ev = _normalize_evidence_api_payload(manifest, mp_path)
+    if ev.get("evidence_status") == "not_available":
+        return with_backup_contract(
+            {"status": "success", "evidence": ev},
+            "backup.evidence.not_available",
+            "info",
+            {"job_id": jid},
+        )
+    return with_backup_contract(
+        {"status": "success", "evidence": ev},
+        "backup.evidence.ok",
+        "success",
+        {"job_id": jid},
+    )
+
+
+@app.post("/api/backup/jobs/{job_id}/evidence")
+async def backup_job_evidence_collect(job_id: str):
+    """Sammelt Diagnose-Artefakte erneut ein (kein Backup-/Restore-Start)."""
+    jid = (job_id or "").strip()
+    if not _BACKUP_JOB_ID_RE.fullmatch(jid):
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {
+                    "status": "error",
+                    "message": "Ungültige job_id",
+                    "evidence": {
+                        "evidence_status": "invalid_job_id",
+                        "evidence_dir": None,
+                        "manifest_path": None,
+                        "collected_sources": [],
+                        "permission_denied_sources": [],
+                        "errors": ["invalid_job_id"],
+                    },
+                },
+                "backup.evidence.invalid_job_id",
+                "error",
+                {"job_id": jid},
+            ),
+        )
+    manifest, err = _run_backup_evidence_collect(jid)
+    if err:
+        ev = _normalize_evidence_api_payload(None, None)
+        ev["evidence_status"] = "error"
+        ev["errors"] = [err]
+        return with_backup_contract(
+            {"status": "success", "evidence": ev},
+            "backup.evidence.collect_failed",
+            "info",
+            {"job_id": jid},
+        )
+    mdir = manifest.get("output_dir") if isinstance(manifest, dict) else None
+    mp = Path(str(mdir)) / "manifest.json" if mdir else None
+    mp_resolved: Optional[Path] = mp if mp and mp.is_file() else None
+    ev = _normalize_evidence_api_payload(manifest if isinstance(manifest, dict) else None, mp_resolved)
+    if ev.get("permission_denied_sources"):
+        return with_backup_contract(
+            {"status": "success", "evidence": ev},
+            "backup.evidence.ok_with_permissions_denied",
+            "info",
+            {"job_id": jid},
+        )
+    return with_backup_contract(
+        {"status": "success", "evidence": ev},
+        "backup.evidence.ok",
+        "success",
+        {"job_id": jid},
+    )
 
 
 def _load_or_init_config() -> dict:
