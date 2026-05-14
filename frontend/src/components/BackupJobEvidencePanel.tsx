@@ -50,8 +50,13 @@ export const BackupJobEvidencePanel: React.FC<Props> = ({ jobId, t, compact }) =
       const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(jobId)}/evidence`, { method: 'POST' })
       const d = await r.json()
       if (d.status === 'success' && d.evidence) {
-        setEvidence(d.evidence as EvidenceApiPayload)
-        toast.success(t('runningBackup.evidence.collectOk'))
+        const evp = d.evidence as EvidenceApiPayload
+        setEvidence(evp)
+        if (evp.evidence_status === 'error') {
+          toast.error(t('runningBackup.evidence.collectError'))
+        } else {
+          toast.success(t('runningBackup.evidence.collectOk'))
+        }
       } else {
         toast.error(d.message || t('runningBackup.evidence.collectError'))
       }
