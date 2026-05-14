@@ -1,11 +1,11 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-14T08:30:00Z",
+  "generated": "2026-05-14T06:45:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **failed**/blocked. **BR-012:** Runner-Finalisierung — Code-Fix + Tests (**`backup_runner.py`**), großes Archiv-E2E offen — **`BR-001_runner_finalization_performance_failure_2026-05-14.md`**. **BR-011** Preflight Design. **BR-004/005:** blocked. Release blocked.",
+  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **failed**/blocked. **BR-012:** Runner-Finalisierung — Code-Fix + Tests (**`backup_runner.py`**); **Deploy-Prep 2026-05-14:** `/opt` Runner **SHA256 = Workspace**; `sudo install` im Agent blockiert; **kein** neuer Backup-Start. Großes Archiv-E2E offen — **`BR-001_runner_finalization_performance_failure_2026-05-14.md`**. **BR-011** Preflight Design. **BR-004/005:** blocked. Release blocked.",
   "backend_version_gate": {
     "check_script": "scripts/check-backend-version-gate.sh",
     "evidence_json": "docs/evidence/release-gates/backend_version_update_gate.json",

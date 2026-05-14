@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backup_restore_release_gate",
-  "generated": "2026-05-14T08:30:00Z",
+  "generated": "2026-05-14T06:45:00Z",
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
@@ -13,5 +13,5 @@
   },
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010", "BR-011"],
   "partial_br_ids": ["BR-012"],
-  "notes": "BR-001 **failed** / Retry **blocked**. **BR-011** Preflight — Design offen. **BR-012** Runner-Finalisierung — Fix `backup_runner.py` + Unit-Tests im Repo; **HW-Abnahme** großes Full-Backup weiter offen — Evidence **`BR-001_runner_finalization_performance_failure_2026-05-14.md`**, Job **`2cff11287f67`**. CI **25751304968** success."
+  "notes": "BR-001 **failed** / Retry **blocked**. **BR-011** Preflight — Design offen. **BR-012** Runner-Finalisierung — Fix `backup_runner.py` + Unit-Tests im Repo; **2026-05-14 Deploy-Prep:** produktiver `/opt`-Runner **SHA256 = Workspace** (`77b5bbaa…`); `sudo install` im Agent nicht ausführbar (kein Byte-Wechsel nötig); **kein** `POST` create; Evidence Abschnitt 6 + **`br001_runner_fix_deploy_prep_2026_05_14`**. **HW-Abnahme** großes Full-Backup weiter offen — **`BR-001_runner_finalization_performance_failure_2026-05-14.md`**, Job **`2cff11287f67`**. CI **25751304968** success."
 }

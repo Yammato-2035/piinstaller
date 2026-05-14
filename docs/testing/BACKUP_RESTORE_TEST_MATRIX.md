@@ -13,7 +13,7 @@
 | BR-009 | Interne Disk Schutz | interne Systemplatte | blockiert | Rot | docs/evidence/backup-restore/BR-009.json |
 | BR-010 | Boot nach Restore | restored System | bootfähig | Rot | docs/evidence/backup-restore/BR-010.json |
 | **BR-011** | **Package Activity Preflight** | Spezifikation `docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`; API-Diagnose vor `POST /api/backup/create`; Locks, `dpkg --audit`, Timer read-only; kein `disable` | `backup.package_preflight_*` / Blockerliste | **Gelb** (Design dokumentiert — Implementierung offen) | `BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`, `BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_EN.md`, `docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md` |
-| **BR-012** | **Backup Runner Finalization Performance** | `backup_runner.py`: kein **3×** Full-Scan bei Erfolg; `finalize_phase` in `progress_optional`; Manifest-Rewrite Retries nur bei Fehler; bounded streaming | Job `2cff11287f67` Evidence; pytest `test_backup_runner_finalization_v1` | **Gelb** (Fix im Repo — HW-Abnahme großes Archiv offen) | `BR-001_runner_finalization_performance_failure_2026-05-14.md`, `backend/tools/backup_runner.py`, `BR-001.json` |
+| **BR-012** | **Backup Runner Finalization Performance** | `backup_runner.py`: kein **3×** Full-Scan bei Erfolg; `finalize_phase` in `progress_optional`; Manifest-Rewrite Retries nur bei Fehler; bounded streaming | Job `2cff11287f67` Evidence; pytest `test_backup_runner_finalization_v1`; **2026-05-14:** produktiver `/opt`-Runner SHA256 **=** Workspace (**`77b5bbaa…`**), Deploy-Prep `br001_runner_fix_deploy_prep_2026_05_14` | **Gelb** (Fix im Repo + Opt verifiziert — HW-Abnahme großes Archiv / Gates offen) | `BR-001_runner_finalization_performance_failure_2026-05-14.md`, `backend/tools/backup_runner.py`, `BR-001.json` |
 
 ## Verknüpfung Unit-/CI-Tests
 
@@ -23,4 +23,4 @@ Viele Szenarien haben Abdeckung unter `backend/tests/` (z. B. Backup/Restore/Wri
 
 **Design 2026-05-13:** **BR-011** — *Backup Package Activity Preflight* (Prozesse, Locks, `dpkg --audit`, Timer, UI/i18n) — **`docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`** / **EN**, Knowledge-Base **`docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md`**.
 
-**2026-05-14:** **BR-012** — Runner-Finalisierung Job **`2cff11287f67`** (Timeout, `.partial.manifest-tmp` 0 Byte, dreifacher I/O-Bug) — Evidence **`BR-001_runner_finalization_performance_failure_2026-05-14.md`**; Fix **`backend/tools/backup_runner.py`**.
+**2026-05-14:** **BR-012** — Runner-Finalisierung Job **`2cff11287f67`** (Timeout, `.partial.manifest-tmp` 0 Byte, dreifacher I/O-Bug) — Evidence **`BR-001_runner_finalization_performance_failure_2026-05-14.md`**; Fix **`backend/tools/backup_runner.py`**. **Deploy-Prep:** Workspace/`/opt` **SHA256 gleich**; `sudo install` im Agent blockiert; kein `POST` create; siehe Evidence Abschnitt 6 / **`br001_runner_fix_deploy_prep_2026_05_14`**.

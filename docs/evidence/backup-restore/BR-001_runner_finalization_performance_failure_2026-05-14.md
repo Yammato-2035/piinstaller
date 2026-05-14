@@ -81,3 +81,25 @@ Bisher wurde `progress_optional` in der **Tar-Monitor-Schleife** aktualisiert, *
 - `BR-001.json` → **`br001_runner_finalization_performance_2cff11287f67_2026_05_14`**
 - Testmatrix: **BR-012**
 - Code: `backend/tools/backup_runner.py`
+
+---
+
+## 6. Produktiv-Deploy / Retry-Vorbereitung (2026-05-14, STRICT)
+
+| Prüfung | Ergebnis |
+|---------|----------|
+| Workspace-`git` HEAD | **`e0a2e28`** — `fix: improve backup runner finalization performance` |
+| `./scripts/check-backend-version-gate.sh` | **Exit 0** |
+| `GET /api/version` | **HTTP 200** — `project_version` **1.7.1**, `backend_runtime_path` **`/opt/setuphelfer/backend`** |
+| `sha256sum` Workspace vs. `/opt/.../backup_runner.py` | **identisch** — **`77b5bbaa1f84f4138d7632f9184200e6675b760a2bbbca3211dcea03825dd6d4`** |
+| `grep finalize_phase` auf `/opt/.../backup_runner.py` | Treffer vorhanden (`finalize_phase` / `finalize_bytes_processed`) |
+| `sudo install …` laut Runbook | In diesem Agent-Lauf **nicht ausführbar** (`sudo: ein Terminal ist erforderlich …`); fachlich **kein zusätzlicher Byte-Wechsel** nötig, weil Opt bereits dem Fix-Commit entspricht |
+| `GET /api/backup/jobs/2cff11287f67` | **`status":"error"`**, Meldung u. a. systemd-Runner fehlgeschlagen |
+| `systemctl status setuphelfer-backup@2cff11287f67.service` | **failed (Result: timeout)**, **SIGKILL**, Dauer **~10h 32min** |
+| `systemctl show setuphelfer-backup@2cff11287f67.service` (Auszug) | **`TimeoutStartUSec=1min 30s`**, **`TimeoutStopUSec=30s`**, **`RuntimeMaxUSec=infinity`**, **`WatchdogUSec=0`** |
+| Finales Archiv `pi-backup-full-20260513_214230.tar.gz` | **fehlt** weiterhin |
+| Geplante Cleanup-Pfade (`…214230…partial`, `…manifest-tmp`, `.2cff11287f67.MANIFEST.json`) | **nicht vorhanden** zum Prüfzeitpunkt — **kein** `rm` ausgeführt (nichts zu löschen bzw. Operator hat Partial bereits entfernt) |
+| Verbleibendes Sidecar | **`.pi-backup-full-20260513_214230.tar.gz.partial.MANIFEST.json`** (**348** Byte) — **nicht** gelöscht (Dokumentations-/Spurenartefakt; nicht in der expliziten Dreier-Löschliste) |
+| Paralleles Zielmedium (Hinweis) | **`pi-backup-full-20260514_083550.tar.gz.partial`** — **kein** Teil dieses Prompts; **kein** Verify, **kein** Umbenennen; nächster BR-001-Retry erst nach **grünen Gates** und klarer Job-Disziplin |
+
+**Kein** `POST /api/backup/create` in diesem Lauf.

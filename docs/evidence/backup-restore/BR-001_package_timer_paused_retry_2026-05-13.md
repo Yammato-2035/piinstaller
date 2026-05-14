@@ -100,3 +100,5 @@ Kein vorheriges **`stop`** durch diesen Lauf → **`start`** der Paket-Timer hie
 - Vorheriger Fehler: **`BR-001_package_activity_failure_2026-05-13.md`**
 - Runbook: **`BR-001_package_activity_retry_runbook_2026-05-13.md`**
 - Maschinenlesbar: `BR-001.json` → **`br001_package_timer_paused_retry_attempt_2026_05_13`**
+
+**Bezug 2026-05-14:** Nach dem Runner-Finalisierungs-Fix (**`e0a2e28`**) bleibt der **timer-pause-Retry** unverändert relevant: **kein** neuer BR-001-Start, solange Phase 2 (Paket-/Mint-Prozesse) oder fehlendes **`sudo`** für temporären Timer-**stop** die STRICT-Regeln auslösen. Deploy-Prep und Medien-Inventar: **`BR-001_runner_finalization_performance_failure_2026-05-14.md`** Abschnitt 6, JSON **`br001_runner_fix_deploy_prep_2026_05_14`**.

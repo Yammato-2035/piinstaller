@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-14 — **BR-012** (*Runner Finalization*): Fix **`backup_runner.py`** + Unit-Tests; Evidence **`BR-001_runner_finalization_performance_failure_2026-05-14.md`** (Job **`2cff11287f67`**). **BR-011** Preflight Design. **BR-001** weiter failed/blocked. **BR-004/005:** blocked. **Regel:** Grün nur mit Testnachweis …
+**Stand:** 2026-05-14 — **BR-012** (*Runner Finalization*): Fix **`backup_runner.py`** + Unit-Tests; **Deploy-Prep:** `/opt` **SHA256 = Workspace**; Evidence **`BR-001_runner_finalization_performance_failure_2026-05-14.md`** (Job **`2cff11287f67`**). **BR-011** Preflight Design. **BR-001** weiter failed/blocked. **BR-004/005:** blocked. **Regel:** Grün nur mit Testnachweis …
 
 ## Ampeldefinition
 
@@ -19,7 +19,7 @@
 | Phase 1 Bestandsaufnahme | Gelb | Testinventar + **Pytest Snapshot** (0× fail, 1526× pass, lokal); CI-/HW-Evidence separat | `test_inventory.json`, `current_failures.json`, `pytest_failures_summary_2026-05-11.txt` |
 | Backup | Rot | BR-001 failed/blocked — Phase2 STOP + sudo für Timer; Evidence `BR-001_package_timer_paused_retry_2026-05-13.md` | `BR-001_package_activity_failure_2026-05-13.md`, `BR-001_package_activity_retry_runbook_2026-05-13.md`, `BR-001.json` |
 | Backup Preflight **BR-011** | Gelb | Spezifikation + Testmatrix; API/UI/Implementierung offen | `docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`, `docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md` |
-| **BR-012** Runner-Finalisierung | Gelb | Fix `backup_runner.py` + pytest; großes Full-Backup E2E offen | `BR-001_runner_finalization_performance_failure_2026-05-14.md`, `backend/tools/backup_runner.py` |
+| **BR-012** Runner-Finalisierung | Gelb | Fix `backup_runner.py` + pytest; **2026-05-14** produktiver Runner SHA256 = Workspace (Deploy-Prep) | `BR-001_runner_finalization_performance_failure_2026-05-14.md`, `backend/tools/backup_runner.py`, `BR-001.json` → `br001_runner_fix_deploy_prep_2026_05_14` |
 | Verify | Rot | BR-004/BR-005 blocked — kein neues BR-001-Archiv aus diesem Lauf | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |

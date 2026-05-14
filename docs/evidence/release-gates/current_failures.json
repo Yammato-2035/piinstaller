@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "current_failures",
-  "generated": "2026-05-14T08:30:00Z",
+  "generated": "2026-05-14T06:45:00Z",
   "executed_at": "2026-05-12T17:55:00Z",
   "prompt": "PROMPT_02_BLOCKER_INVENTORY",
   "prompt_rerun": true,
@@ -28,5 +28,5 @@
     "docs/evidence/release-gates/prompt02_abschlussbericht.md"
   ],
   "blocker_inventory": "docs/evidence/release-gates/blocker_inventory.json",
-  "notes": "GitHub CI success. BR-012 backup_runner finalization fix + tests. BR-001 blocked. BR-004/005 blocked."
+  "notes": "GitHub CI success. BR-012 backup_runner finalization fix + tests; Deploy-Prep 2026-05-14 (Opt SHA256 = Workspace). BR-001 blocked. BR-004/005 blocked."
 }
