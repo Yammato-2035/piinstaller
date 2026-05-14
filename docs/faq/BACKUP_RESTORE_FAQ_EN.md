@@ -6,7 +6,11 @@
 
 ## Why is full-root backup slow and why does it not scale with many CPU cores?
 
-**gzip** (and classic **`tar -czf`**) compresses mostly **single-threaded**. Many cores barely help; **I/O** and **one CPU** often cap throughput. **pigz** uses multiple threads while staying **gzip-compatible** (faster when installed). **zstd** is faster/scales better but needs an **end-to-end** pipeline including finalize/manifest — until then the product stays **gzip-compatible**. **Full root** is intentionally an **expert/long-run** path; for daily use and Raspberry Pi prefer **smaller profiles** (see **`docs/backup/BACKUP_PERFORMANCE_EN.md`**, matrix **BR-016**, **BR-019**).
+**gzip** (and classic **`tar -czf`**) compresses mostly **single-threaded**. Many cores barely help; **I/O** and **one CPU** often cap throughput. **pigz** uses multiple threads while staying **gzip-compatible** (faster when installed). **zstd** is faster/scales better but needs an **end-to-end** pipeline including finalize/manifest — until then the product stays **gzip-compatible**. **Full root** is intentionally an **expert/long-run** path; for daily use and Raspberry Pi prefer **smaller profiles** (see **`docs/backup/BACKUP_PERFORMANCE_EN.md`**, profile overview **`docs/backup/BACKUP_PROFILES_EN.md`**, matrix **BR-016**, **BR-019**).
+
+## Which profiles does the UI offer?
+
+The default is **“Recommended backup”** (`recommended`). **Expert mode / full root** (`full-expert`) is separated visually and needs a confirmation checkbox; legacy API `type: full` behaves like **full-expert** with warnings. Details and API: **`docs/backup/BACKUP_PROFILES_EN.md`**, endpoints `/api/backup/profiles` and `/api/backup/profile-preview`.
 
 ## What about progress, ETA, and evidence?
 

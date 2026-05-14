@@ -117,6 +117,7 @@ class TestBackupCreateSudoGateV1(unittest.TestCase):
                     "backup_dir": "/mnt/setuphelfer/backups/__pytest_full__",
                     "type": "full",
                     "target": "local",
+                    "confirm_full_expert": True,
                 },
             )
         self.assertEqual(r.status_code, 200)
@@ -151,6 +152,7 @@ class TestBackupCreateSudoGateV1(unittest.TestCase):
                     "backup_dir": "/mnt/setuphelfer/backups/__pytest_nnp__",
                     "type": "full",
                     "target": "local",
+                    "confirm_full_expert": True,
                 },
             )
         self.assertEqual(r.status_code, 200)

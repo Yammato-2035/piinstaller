@@ -6,7 +6,11 @@
 
 ## Warum dauert ein Full-Root-Backup so lange und skaliert schlecht mit vielen CPU-Kernen?
 
-**gzip** (und klassisches **`tar -czf`**) komprimiert im Wesentlichen **single-threaded**. Viele Kerne helfen kaum; oft limitieren **I/O** und **eine CPU** den Durchsatz. **pigz** nutzt mehrere Threads, bleibt aber **gzip-kompatibel** (schneller, wenn installiert). **zstd** ist schneller/skaliert besser, erfordert aber eine **durchgängige** Pipeline inkl. Finalisierung/Manifest — bis dahin bleibt das Produkt **gzip-kompatibel**. Ein **vollständiges Root-Backup** ist bewusst ein **Experten-/Langläuferpfad**; für Alltag und Pi eignen sich **kleinere Profile** (siehe **`docs/backup/BACKUP_PERFORMANCE_DE.md`**, Testmatrix **BR-016**, **BR-019**).
+**gzip** (und klassisches **`tar -czf`**) komprimiert im Wesentlichen **single-threaded**. Viele Kerne helfen kaum; oft limitieren **I/O** und **eine CPU** den Durchsatz. **pigz** nutzt mehrere Threads, bleibt aber **gzip-kompatibel** (schneller, wenn installiert). **zstd** ist schneller/skaliert besser, erfordert aber eine **durchgängige** Pipeline inkl. Finalisierung/Manifest — bis dahin bleibt das Produkt **gzip-kompatibel**. Ein **vollständiges Root-Backup** ist bewusst ein **Experten-/Langläuferpfad**; für Alltag und Pi eignen sich **kleinere Profile** (siehe **`docs/backup/BACKUP_PERFORMANCE_DE.md`**, Profilübersicht **`docs/backup/BACKUP_PROFILES_DE.md`**, Testmatrix **BR-016**, **BR-019**).
+
+## Welche Profile gibt es in der UI?
+
+Standard ist **„Empfohlenes Backup“** (`recommended`). **Expertenmodus / vollständiges Root-Backup** (`full-expert`) ist sichtbar getrennt und erfordert eine Checkbox; Legacy-API `type: full` verhält sich wie **full-expert** inkl. Warnungen. Details und API: **`docs/backup/BACKUP_PROFILES_DE.md`**, Endpunkte `/api/backup/profiles` und `/api/backup/profile-preview`.
 
 ## Was ist mit Fortschritt, ETA und Evidence?
 

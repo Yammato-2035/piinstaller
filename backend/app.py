@@ -42,7 +42,12 @@ import shutil
 import xml.etree.ElementTree as ET
 from pydantic import BaseModel
 
-from core.backup_archive_options import normalize_backup_profile
+from core.backup_profiles import (
+    build_profile_preview,
+    normalize_backup_profile,
+    profile_specs_public,
+    resolve_profile_request,
+)
 from core.install_paths import (
     audit_rules_file as _audit_rules_path,
     get_backend_runtime_dir,
@@ -12022,6 +12027,63 @@ async def backup_target_check(backup_dir: str, create: int = 0):
         )
 
 
+def _backup_profiles_list_payload() -> dict[str, Any]:
+    return with_backup_contract(
+        {"status": "success", "profiles": profile_specs_public()},
+        "backup.profiles_list",
+        "success",
+    )
+
+
+@app.get("/api/backup/profiles")
+async def backup_profiles_list_get():
+    return _backup_profiles_list_payload()
+
+
+@app.post("/api/backup/profiles")
+async def backup_profiles_list_post():
+    return _backup_profiles_list_payload()
+
+
+@app.post("/api/backup/profile-preview")
+async def backup_profile_preview(request: Request):
+    """Read-only: Profilbeschreibung und Zielgroesse, kein Backup-Start."""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    if not isinstance(body, dict):
+        body = {}
+    prof = str(body.get("profile") or "recommended").strip()
+    bd_raw = body.get("backup_dir", "")
+    try:
+        bd = _validate_backup_dir(str(bd_raw))
+    except Exception as ve:
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"},
+                "backup.path_invalid",
+                "error",
+                {"reason": str(ve)},
+            ),
+        )
+    tf: Optional[int] = None
+    try:
+        p = Path(bd)
+        if p.is_dir():
+            tf = int(shutil.disk_usage(str(p)).free)
+    except Exception:
+        pass
+    preview = build_profile_preview(profile_raw=prof, backup_dir=bd, target_free_bytes=tf)
+    return with_backup_contract(
+        {"status": "success", "preview": preview},
+        "backup.profile_preview",
+        "success",
+        {"profile": prof, "backup_dir": bd},
+    )
+
+
 def _lsblk_tree() -> dict:
     """
     Liefert lsblk JSON (mit MOUNTPOINTS), fallback auf MOUNTPOINT.
@@ -13327,11 +13389,54 @@ async def create_backup(request: Request):
             )
 
         sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        backup_type = (data.get("type", "full") or "full").strip()
+        raw_type_f = data.get("type")
+        if raw_type_f is None or str(raw_type_f).strip() == "":
+            raw_type = "profile"
+        else:
+            raw_type = str(raw_type_f).strip().lower()
+        profile_in = str(data.get("profile") or data.get("backup_profile") or "").strip()
+
+        allowed_create_types = frozenset({"profile", "full", "data", "incremental"})
+        if raw_type not in allowed_create_types:
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {"status": "error", "message": f"Ungültiger Backup-Typ: {raw_type}"},
+                    "backup.create_unknown_type",
+                    "error",
+                    {"allowed": sorted(allowed_create_types)},
+                ),
+            )
+
+        create_warning_codes: list[str] = []
+        needs_full_confirm = False
+        normalized_profile = ""
+
+        if raw_type == "incremental":
+            backup_type = "incremental"
+            normalized_profile, w = normalize_backup_profile(profile_in or None)
+            create_warning_codes.extend(w)
+        elif raw_type == "data":
+            backup_type = "data"
+            normalized_profile, w = normalize_backup_profile(profile_in or None)
+            create_warning_codes.extend(w)
+        elif raw_type == "full":
+            r = resolve_profile_request(request_type="full", profile_raw=None)
+            backup_type = str(r["runner_backup_type"])
+            normalized_profile = str(r["normalized_profile"])
+            create_warning_codes.extend(list(r.get("warning_codes") or []))
+            needs_full_confirm = bool(r.get("requires_expert_confirmation"))
+        else:
+            r = resolve_profile_request(request_type="profile", profile_raw=profile_in or None)
+            backup_type = str(r["runner_backup_type"])
+            normalized_profile = str(r["normalized_profile"])
+            create_warning_codes.extend(list(r.get("warning_codes") or []))
+            needs_full_confirm = bool(r.get("requires_expert_confirmation"))
+
         run_async = bool(data.get("async", False))
         target = (data.get("target") or "local").strip()  # local | cloud_only | local_and_cloud
 
-        backup_dir = data.get("backup_dir", "/mnt/setuphelfer/backups")
+        backup_dir = data.get("backup_dir") or ""
         try:
             backup_dir = _validate_backup_dir(backup_dir)
         except Exception as ve:
@@ -13342,6 +13447,25 @@ async def create_backup(request: Request):
                     "backup.path_invalid",
                     "error",
                     {"reason": str(ve)},
+                ),
+            )
+
+        if needs_full_confirm and not bool(data.get("confirm_full_expert")):
+            return JSONResponse(
+                status_code=200,
+                content=with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": "Vollständiges System-Backup (Root) erfordert explizite Bestätigung.",
+                        "warning_codes": create_warning_codes,
+                    },
+                    "backup.full_expert_confirmation_required",
+                    "error",
+                    {
+                        "requires_confirm_full_expert": True,
+                        "warning_codes": create_warning_codes,
+                        "normalized_profile": normalized_profile,
+                    },
                 ),
             )
 
@@ -13638,7 +13762,8 @@ async def create_backup(request: Request):
                 "lang": str(data.get("lang") or ""),
                 "requested_by": "api",
                 "created_at": _now_iso(),
-                "backup_profile": normalize_backup_profile(str(data.get("backup_profile") or "").strip() or None)[0],
+                "backup_profile": normalized_profile,
+                "profile_warning_codes": create_warning_codes,
             }
             job_file.write_text(json.dumps(job_payload, ensure_ascii=False, indent=2), encoding="utf-8")
             initial_status = {
@@ -13819,7 +13944,8 @@ async def create_backup(request: Request):
                 "lang": str(data.get("lang") or ""),
                 "requested_by": "api",
                 "created_at": _now_iso(),
-                "backup_profile": normalize_backup_profile(str(data.get("backup_profile") or "").strip() or None)[0],
+                "backup_profile": normalized_profile,
+                "profile_warning_codes": create_warning_codes,
             }
             job_file.write_text(json.dumps(job_payload, ensure_ascii=False, indent=2), encoding="utf-8")
             initial_status = {

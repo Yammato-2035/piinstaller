@@ -22,6 +22,7 @@ import type { DiagnosisRecord } from '../types/diagnosis'
 import type { DiagnosticsAnalyzeResponse, DiagnosticsUserLevel } from '../types/diagnostics'
 import { usePlatform } from '../context/PlatformContext'
 import type { TFunction } from 'i18next'
+import { buildBackupCreateBody, type BackupSelection } from '../utils/backupCreateBody'
 
 type BackupTab = 'backup' | 'settings' | 'restore' | 'clone'
 
@@ -189,6 +190,19 @@ function toastFromApi(
   else toastFn(msg, opts as Record<string, unknown>)
 }
 
+function backupProfileConfirmLabel(t: TFunction, sel: BackupSelection): string {
+  if (sel === 'incremental') return t('backup.i18n.type.incremental')
+  if (sel === 'data') return t('backup.i18n.type.data')
+  const keyMap: Record<string, string> = {
+    recommended: 'backup.profiles.recommended.title',
+    'fast-system': 'backup.profiles.fast_system.title',
+    'user-data': 'backup.profiles.user_data.title',
+    developer: 'backup.profiles.developer.title',
+    'full-expert': 'backup.profiles.full_expert.title',
+  }
+  return t(keyMap[sel] ?? 'backup.profiles.recommended.title')
+}
+
 const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginner' }) => {
   const { t } = useTranslation()
   const { pageSubtitleLabel } = usePlatform()
@@ -196,10 +210,13 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const [activeTab, setActiveTab] = useState<BackupTab>('backup')
   const [backups, setBackups] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
-  const [backupType, setBackupType] = useState<'full' | 'incremental' | 'data'>('full')
+  const [backupSelection, setBackupSelection] = useState<BackupSelection>('recommended')
+  const [confirmFullExpert, setConfirmFullExpert] = useState(false)
+  const [profilePreview, setProfilePreview] = useState<Record<string, unknown> | null>(null)
+  const [profilePreviewLoading, setProfilePreviewLoading] = useState(false)
   const [targets, setTargets] = useState<any[]>([])
   const [backupDirMode, setBackupDirMode] = useState<'default' | 'usb' | 'cloud' | 'custom'>('default')
-  const [backupDir, setBackupDir] = useState('/mnt/setuphelfer/backups')
+  const [backupDir, setBackupDir] = useState('')
   const [showCloudBackups, setShowCloudBackups] = useState(false)
   const [encryptionEnabled, setEncryptionEnabled] = useState(false)
   const [encryptionMethod, setEncryptionMethod] = useState<'gpg' | 'openssl'>('gpg')
@@ -219,7 +236,8 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   const [sudoModalSubtitle, setSudoModalSubtitle] = useState(t('backup.i18n.sudoRequiredSubtitle'))
   const [sudoModalConfirmText, setSudoModalConfirmText] = useState(t('backup.i18n.confirm'))
   const [pendingAction, setPendingAction] = useState<null | ((sudoPassword: string, skipTest?: boolean) => Promise<void>)>(null)
-  const DEFAULT_BACKUP_DIR = '/mnt/setuphelfer/backups'
+  /** Früherer UI-Default — nicht mehr als Produkt-Ziel verwenden. */
+  const DEPRECATED_DEFAULT_MNT_BACKUP = '/mnt/setuphelfer/backups'
   const LAST_DIR_KEY = 'pi_installer_last_backup_dir'
   const BACKUP_JOB_STORAGE_KEY = 'pi_installer_running_backup_job'
   const [verifying, setVerifying] = useState<Record<string, boolean>>({})
@@ -417,8 +435,16 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
     try {
       const last = localStorage.getItem(LAST_DIR_KEY)
       if (last && typeof last === 'string' && last.startsWith('/')) {
-        setBackupDirMode(last === DEFAULT_BACKUP_DIR ? 'default' : 'custom')
-        setBackupDir(last)
+        if (last === DEPRECATED_DEFAULT_MNT_BACKUP) {
+          try {
+            localStorage.removeItem(LAST_DIR_KEY)
+          } catch {
+            // ignore
+          }
+        } else {
+          setBackupDirMode('default')
+          setBackupDir(last)
+        }
       }
     } catch {
       // ignore
@@ -432,15 +458,58 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
   }, [backupDir])
 
   useEffect(() => {
-    checkTarget(backupDir)
+    if (!backupDir?.trim()) {
+      setTargetCheck(null)
+      return
+    }
+    checkTarget(backupDir.trim())
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backupDir])
 
   useEffect(() => {
+    if (backupSelection !== 'full-expert') setConfirmFullExpert(false)
+  }, [backupSelection])
+
+  const profileForPreview = useMemo(() => {
+    if (backupSelection === 'incremental' || backupSelection === 'data') return null
+    return backupSelection
+  }, [backupSelection])
+
+  useEffect(() => {
+    if (!profileForPreview || !backupDir?.trim()) {
+      setProfilePreview(null)
+      setProfilePreviewLoading(false)
+      return
+    }
+    let cancelled = false
+    setProfilePreviewLoading(true)
+    void (async () => {
+      try {
+        const r = await fetchApi('/api/backup/profile-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile: profileForPreview, backup_dir: backupDir.trim() }),
+        })
+        const d = await r.json()
+        if (cancelled) return
+        if (d.status === 'success' && d.preview) setProfilePreview(d.preview as Record<string, unknown>)
+        else setProfilePreview(null)
+      } catch {
+        if (!cancelled) setProfilePreview(null)
+      } finally {
+        if (!cancelled) setProfilePreviewLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [backupDir, profileForPreview])
+
+  useEffect(() => {
     // letztes Ziel merken (damit "USB/letztes Ziel" schnell wieder erreichbar ist)
     try {
-      if (backupDir && typeof backupDir === 'string') {
-        localStorage.setItem(LAST_DIR_KEY, backupDir)
+      if (backupDir && typeof backupDir === 'string' && backupDir.trim()) {
+        localStorage.setItem(LAST_DIR_KEY, backupDir.trim())
       }
     } catch {
       // ignore
@@ -951,16 +1020,31 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
       }
     }
 
+    if (isCloudTarget && !backupDir?.trim()) {
+      toast.error(t('backup.i18n.create.needBackupDir'))
+      return
+    }
+
+    if (!isCloudTarget) {
+      if (!backupDir?.trim()) {
+        toast.error(t('backup.i18n.create.needBackupDir'))
+        return
+      }
+      if (backupSelection === 'full-expert' && !confirmFullExpert) {
+        toast.error(t('backup.ui.fullExpert.needConfirmToast'))
+        return
+      }
+      if (targetCheck?.status !== 'success' || targetCheck?.write_test?.success !== true) {
+        toast.error(t('backup.i18n.create.targetNotReady'))
+        return
+      }
+    }
+
     const targetText = isCloudTarget ? t('backup.i18n.cloud.targetCloudOnly') : t('backup.i18n.cloud.targetLocalIn', { dir: backupDir })
     if (
       !window.confirm(
         t('backup.i18n.create.confirm', {
-          type:
-            backupType === 'full'
-              ? t('backup.i18n.type.full')
-              : backupType === 'incremental'
-                ? t('backup.i18n.type.incremental')
-                : t('backup.i18n.type.data'),
+          type: backupProfileConfirmLabel(t, backupSelection),
           target: targetText,
         })
       )
@@ -984,35 +1068,30 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
             // Lokales Ziel: optional Cloud-Upload wenn aktiviert
             targetValue = backupSettings?.cloud?.enabled ? 'local_and_cloud' : 'local'
           }
-          
-          const requestBody: any = {
-            type: backupType,
-            backup_dir: backupDir,
+
+          const requestBody = buildBackupCreateBody(backupSelection, {
+            backupDir: backupDir.trim(),
             target: targetValue,
             async: true,
-          }
+            confirmFullExpert,
+          })
           if (encryptionEnabled && encryptionMethod && encryptionKey) {
             requestBody.encryption_method = encryptionMethod
             requestBody.encryption_key = encryptionKey
           }
-          
-          const backupTypeText =
-            backupType === 'full'
-              ? t('backup.i18n.type.full')
-              : backupType === 'incremental'
-                ? t('backup.i18n.type.incremental')
-                : t('backup.i18n.type.data')
+
+          const backupTypeText = backupProfileConfirmLabel(t, backupSelection)
           const encryptionText = encryptionEnabled ? t('backup.i18n.create.encryptionPart', { method: encryptionMethod.toUpperCase() }) : ''
-          const targetText = isCloudTarget ? t('backup.i18n.location.cloud') : t('backup.i18n.create.targetLocal', { dir: backupDir })
-          
+          const targetTextToast = isCloudTarget ? t('backup.i18n.location.cloud') : t('backup.i18n.create.targetLocal', { dir: backupDir })
+
           toast(
-            t('backup.i18n.create.inProgressToast', { type: backupTypeText, encryptionPart: encryptionText, target: targetText }),
-            { 
+            t('backup.i18n.create.inProgressToast', { type: backupTypeText, encryptionPart: encryptionText, target: targetTextToast }),
+            {
               duration: 5000,
-              icon: 'ℹ️'
+              icon: 'ℹ️',
             }
           )
-          
+
           const response = await fetchApi('/api/backup/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2193,7 +2272,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   <button
                     onClick={() => {
                       setBackupDirMode('default')
-                      setBackupDir(DEFAULT_BACKUP_DIR)
+                      setBackupDir('')
                     }}
                     className={`p-4 rounded-lg border-2 transition-all text-left ${
                       backupDirMode === 'default'
@@ -2225,7 +2304,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                       } else {
                         setSelectedTarget('')
                         setSelectedDevice('')
-                        setBackupDir(DEFAULT_BACKUP_DIR)
+                        setBackupDir('')
                       }
                     }}
                     className={`p-4 rounded-lg border-2 transition-all text-left ${
@@ -2244,8 +2323,6 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                   <button
                     onClick={() => {
                       setBackupDirMode('cloud')
-                      // local staging dir stays as-is; default to standard if unset
-                      if (!backupDir || typeof backupDir !== 'string') setBackupDir(DEFAULT_BACKUP_DIR)
                       toast(t('backup.ui.cloud.toastChosen'), { duration: 4500 })
                     }}
                     className={`p-4 rounded-lg border-2 transition-all text-left ${
@@ -2484,29 +2561,132 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                 </div>
               </div>
 
-              {/* Schritt 2: Backup-Typ wählen */}
+              {/* Schritt 2: Sicherungsprofil */}
               <div>
                 <h3 className="text-sm font-semibold text-sky-300 mb-1">{t('backup.ui.step2.title')}</h3>
                 <label className="block text-white font-semibold mb-2">{t('backup.ui.step2.typeLabel')}</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {(['full', 'incremental', 'data'] as const).map((typeId) => (
-                    <button
-                      key={typeId}
-                      onClick={() => setBackupType(typeId)}
-                      className={`p-4 rounded-lg border-2 transition-all relative group text-left ${
-                        backupType === typeId
-                          ? 'bg-sky-600/20 border-sky-500'
-                          : 'bg-slate-700/30 border-slate-600 hover:border-slate-500'
-                      }`}
-                    >
-                      <div className="font-bold text-white mb-1">{t(`backup.ui.backupType.${typeId}.label`)}</div>
-                      <div className="text-xs text-slate-400">{t(`backup.ui.backupType.${typeId}.desc`)}</div>
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 w-72">
-                        {t(`backup.ui.backupType.${typeId}.hint`)}
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                <div className="grid sm:grid-cols-2 gap-3 mb-3">
+                  {(['recommended', 'fast-system', 'user-data', 'developer'] as const).map((pid) => {
+                    const slug = pid.replace(/-/g, '_')
+                    return (
+                      <button
+                        key={pid}
+                        type="button"
+                        onClick={() => setBackupSelection(pid)}
+                        className={`p-4 rounded-lg border-2 transition-all text-left ${
+                          backupSelection === pid
+                            ? 'bg-sky-600/20 border-sky-500'
+                            : 'bg-slate-700/30 border-slate-600 hover:border-slate-500'
+                        }`}
+                      >
+                        <div className="font-bold text-white mb-1">{t(`backup.profiles.${slug}.title`)}</div>
+                        <div className="text-xs text-slate-400">{t(`backup.profiles.${slug}.desc`)}</div>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="mb-3 p-4 rounded-lg border-2 border-amber-600/40 bg-amber-900/15">
+                  <button
+                    type="button"
+                    onClick={() => setBackupSelection('full-expert')}
+                    className={`w-full text-left p-2 rounded-md transition-all ${
+                      backupSelection === 'full-expert' ? 'bg-amber-600/30' : 'hover:bg-amber-600/10'
+                    }`}
+                  >
+                    <div className="font-bold text-amber-200">{t('backup.profiles.full_expert.title')}</div>
+                    <div className="text-xs text-amber-100/80 mt-1">{t('backup.profiles.full_expert.desc')}</div>
+                    <div className="text-xs text-amber-200/90 mt-2">{t('backup.ui.fullExpert.runtimeWarning')}</div>
+                  </button>
+                  {backupSelection === 'full-expert' && (
+                    <label className="mt-3 flex items-start gap-2 cursor-pointer text-sm text-slate-200">
+                      <input
+                        type="checkbox"
+                        checked={confirmFullExpert}
+                        onChange={(e) => setConfirmFullExpert(e.target.checked)}
+                        className="mt-1 w-4 h-4 accent-amber-500 shrink-0"
+                      />
+                      <span>{t('backup.ui.fullExpert.checkbox')}</span>
+                    </label>
+                  )}
+                </div>
+                <div className="text-xs text-slate-500 mb-2">{t('backup.ui.step2.legacyRow')}</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setBackupSelection('incremental')}
+                    className={`p-3 rounded-lg border-2 transition-all text-left ${
+                      backupSelection === 'incremental'
+                        ? 'bg-sky-600/20 border-sky-500'
+                        : 'bg-slate-700/30 border-slate-600 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="font-bold text-white text-sm">{t('backup.ui.backupType.incremental.label')}</div>
+                    <div className="text-xs text-slate-400">{t('backup.ui.backupType.incremental.desc')}</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBackupSelection('data')}
+                    className={`p-3 rounded-lg border-2 transition-all text-left ${
+                      backupSelection === 'data'
+                        ? 'bg-sky-600/20 border-sky-500'
+                        : 'bg-slate-700/30 border-slate-600 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="font-bold text-white text-sm">{t('backup.ui.backupType.data.label')}</div>
+                    <div className="text-xs text-slate-400">{t('backup.ui.backupType.data.desc')}</div>
+                  </button>
+                </div>
+                <div className="mt-4 p-4 bg-slate-900/40 border border-slate-700 rounded-lg text-sm space-y-2">
+                  <div className="text-sky-300 font-semibold">{t('backup.ui.profilePreview.title')}</div>
+                  {profilePreviewLoading && <div className="text-xs text-slate-400">{t('backup.ui.profilePreview.loading')}</div>}
+                  {!profilePreviewLoading && !profilePreview && (
+                    <div className="text-xs text-slate-500">{t('backup.ui.profilePreview.needPathOrLegacy')}</div>
+                  )}
+                  {!profilePreviewLoading && profilePreview && (
+                    <>
+                      <div className="text-xs text-slate-500">{t('backup.ui.profilePreview.noEta')}</div>
+                      {profilePreview.recommended === true && (
+                        <div className="text-xs text-emerald-300/90">{t('backup.ui.profilePreview.recommendedBadge')}</div>
+                      )}
+                      <div>
+                        <div className="text-xs font-semibold text-slate-300 mb-1">{t('backup.ui.profilePreview.included')}</div>
+                        <ul className="text-xs text-slate-400 list-disc pl-4 max-h-28 overflow-y-auto">
+                          {(Array.isArray(profilePreview.included_paths) ? profilePreview.included_paths : []).map((p: unknown) => (
+                            <li key={String(p)} className="break-all">
+                              {String(p)}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    </button>
-                  ))}
+                      <div>
+                        <div className="text-xs font-semibold text-slate-300 mb-1">{t('backup.ui.profilePreview.excluded')}</div>
+                        <ul className="text-xs text-slate-400 list-disc pl-4 max-h-24 overflow-y-auto">
+                          {(Array.isArray(profilePreview.excluded_patterns) ? profilePreview.excluded_patterns : []).map((p: unknown) => (
+                            <li key={String(p)} className="break-all">
+                              {String(p)}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      {Array.isArray(profilePreview.warning_codes) && profilePreview.warning_codes.length > 0 && (
+                        <div>
+                          <div className="text-xs font-semibold text-amber-200/90 mb-1">{t('backup.ui.profilePreview.warnings')}</div>
+                          <ul className="text-xs text-amber-100/90 list-disc pl-4">
+                            {(profilePreview.warning_codes as unknown[]).map((w) => {
+                              const code = String(w)
+                              const k = `backup.warnings.${code.replace(/[^a-zA-Z0-9_]/g, '_')}`
+                              const msg = t(k)
+                              return (
+                                <li key={code} className="break-all">
+                                  {msg === k ? code : msg}
+                                </li>
+                              )
+                            })}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -2564,7 +2744,16 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
 
               <button
                 onClick={createBackup}
-                disabled={loading || (encryptionEnabled && encryptionMethod === 'openssl' && !encryptionKey)}
+                disabled={
+                  loading ||
+                  (encryptionEnabled && encryptionMethod === 'openssl' && !encryptionKey) ||
+                  (backupDirMode !== 'cloud' &&
+                    (!backupDir?.trim() ||
+                      targetCheck?.status !== 'success' ||
+                      targetCheck?.write_test?.success !== true ||
+                      (backupSelection === 'full-expert' && !confirmFullExpert))) ||
+                  (backupDirMode === 'cloud' && !backupDir?.trim())
+                }
                 className="btn-primary w-full"
               >
                 {loading ? t('backup.ui.create.loading') : t('backup.ui.create.button')}
@@ -2682,7 +2871,7 @@ const BackupRestore: React.FC<BackupRestoreProps> = ({ experienceLevel = 'beginn
                 <button
                   onClick={() => {
                     setBackupDirMode('default')
-                    setBackupDir(DEFAULT_BACKUP_DIR)
+                    setBackupDir('')
                     setShowCloudBackups(false)
                     loadBackups()
                   }}

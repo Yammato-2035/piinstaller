@@ -97,7 +97,17 @@ def open_url(method, path, data=None, timeout=120):
 def jload(resp):
     return json.loads(resp.read().decode("utf-8"))
 
-with open_url("POST", "/api/backup/create", {"type": "full", "backup_dir": backup_dir, "target": "local", "async": True}) as resp:
+with open_url(
+    "POST",
+    "/api/backup/create",
+    {
+        "type": "full",
+        "backup_dir": backup_dir,
+        "target": "local",
+        "async": True,
+        "confirm_full_expert": True,
+    },
+) as resp:
     out = jload(resp)
 
 job_id = out.get("job_id") or (out.get("details") or {}).get("job_id")

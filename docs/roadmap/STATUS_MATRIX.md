@@ -24,7 +24,7 @@
 | **BR-016** Backup Performance / Kompression | Gelb | pigz wenn verfügbar; Profile-Excludes; zstd vorbereitet; Doku `BACKUP_PERFORMANCE_*` | `test_backup_archive_options_v1.py`, `core/backup_archive_options.py` |
 | **BR-017** Backup Evidence Collector | Gelb | `tools/backup_evidence_collector.py`; Runner-Hook; fehlende Rechte → `permission_denied` | `test_backup_evidence_collector_v1.py`, `BACKUP_EVIDENCE_COLLECTOR_DE.md` |
 | **BR-018** Backup Progress / ETA | Gelb | UI: `BackupJobProgressSection` + Modal/Page; API Evidence `GET`/`POST`; ETA ohne Total = i18n „unbekannt“ | `BACKUP_PERFORMANCE_DE.md`, `test_backup_job_evidence_api_v1.py`, Vitest `backupJobProgressDisplay.test.ts` |
-| **BR-019** Backup Profiles | Gelb | Default **`recommended`**; **`full-expert`** nur explizit | `test_backup_archive_options_v1.py` |
+| **BR-019** Backup Profiles | Gelb | API-Liste/Preview, Create-Vertrag, UI-Standard **recommended**, Full-Expert nur mit Checkbox; pytest `test_backup_profiles_v1` + Vitest `backupCreateBody.test.ts`; HW-Abnahme Daten-Scope offen | `docs/backup/BACKUP_PROFILES_DE.md`, `BACKUP_PROFILES_EN.md`, `docs/knowledge-base/backup/BACKUP_PROFILES.md` |
 | Verify | Rot | BR-004/BR-005 blocked — kein neues BR-001-Archiv aus diesem Lauf | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |

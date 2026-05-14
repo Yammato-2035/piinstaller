@@ -1,7 +1,7 @@
 """
-Backup-Archive: Profile, Kompression (gzip-kompatibel), optionale Excludes.
+Backup-Archive: Kompression (gzip-kompatibel), optionale Excludes.
 
-Full-Root bleibt Expertenpfad; Standard-Profil ist ``recommended``.
+Profile-IDs und Excludes-Map: siehe ``core.backup_profiles``.
 zstd ist vorbereitet (Erkennung + Metadaten), End-to-End erst nach
 Anpassung der Manifest-/Hash-Pipeline an nicht-gzip-Streams.
 """
@@ -14,40 +14,34 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-PROFILE_RECOMMENDED = "recommended"
-PROFILE_FAST_SYSTEM = "fast-system"
-PROFILE_USER_DATA = "user-data"
-PROFILE_DEVELOPER = "developer"
-PROFILE_FULL_EXPERT = "full-expert"
-
-DEFAULT_BACKUP_PROFILE = PROFILE_RECOMMENDED
-
-VALID_BACKUP_PROFILES: frozenset[str] = frozenset(
-    {
-        PROFILE_RECOMMENDED,
-        PROFILE_FAST_SYSTEM,
-        PROFILE_USER_DATA,
-        PROFILE_DEVELOPER,
-        PROFILE_FULL_EXPERT,
-    }
+from core.backup_profiles import (
+    DEFAULT_BACKUP_PROFILE,
+    PROFILE_DEVELOPER,
+    PROFILE_EXTRA_EXCLUDES,
+    PROFILE_FAST_SYSTEM,
+    PROFILE_FULL_EXPERT,
+    PROFILE_RECOMMENDED,
+    PROFILE_USER_DATA,
+    VALID_BACKUP_PROFILES,
+    normalize_backup_profile,
 )
 
-PROFILE_EXTRA_EXCLUDES: dict[str, tuple[str, ...]] = {
-    PROFILE_RECOMMENDED: ("/var/cache", "/var/tmp"),
-    PROFILE_FAST_SYSTEM: ("/var/cache", "/var/tmp"),
-    PROFILE_USER_DATA: (),
-    PROFILE_DEVELOPER: ("/var/cache", "/var/tmp"),
-    PROFILE_FULL_EXPERT: (),
-}
-
-
-def normalize_backup_profile(raw: str | None) -> tuple[str, list[str]]:
-    p = (raw or "").strip().lower() or DEFAULT_BACKUP_PROFILE
-    if p not in VALID_BACKUP_PROFILES:
-        return DEFAULT_BACKUP_PROFILE, ["backup_profile_unknown_defaulted"]
-    if p == PROFILE_FULL_EXPERT:
-        return p, ["backup_profile_full_expert_selected"]
-    return p, []
+__all__ = [
+    "DEFAULT_BACKUP_PROFILE",
+    "PROFILE_DEVELOPER",
+    "PROFILE_EXTRA_EXCLUDES",
+    "PROFILE_FAST_SYSTEM",
+    "PROFILE_FULL_EXPERT",
+    "PROFILE_RECOMMENDED",
+    "PROFILE_USER_DATA",
+    "VALID_BACKUP_PROFILES",
+    "normalize_backup_profile",
+    "is_pi_like_host",
+    "zstd_available",
+    "pigz_available",
+    "resolve_compression_choice",
+    "build_full_root_tar_command",
+]
 
 
 def is_pi_like_host() -> bool:
