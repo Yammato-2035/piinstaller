@@ -16,9 +16,13 @@ import time
 from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import psutil
+
+# Status-Herzschlag während teurer Finalisierung (SHA256 / Manifest-Rewrite)
+_FINALIZE_PROGRESS_INTERVAL_S = 30.0
+_FINALIZE_HASH_PROGRESS_BYTES = 4 * 1024 * 1024
 
 # Volles tar-stderr: /var/log/setuphelfer/backup-<job_id>.log; Kopf/Schwanz nur im RAM.
 STDERR_LOG_DIR = Path("/var/log/setuphelfer")
@@ -140,12 +144,49 @@ def _sha256_file(path: str | Path) -> str:
     return h.hexdigest()
 
 
-def _sha256_archive_payload(archive_path: str | Path) -> str:
+def _throttled_finalize_progress(
+    progress: Callable[[str, int], None] | None,
+    *,
+    phase: str,
+    processed: int,
+    state: dict[str, Any],
+) -> None:
+    """Ruft progress(phase, processed) höchstens alle _FINALIZE_PROGRESS_INTERVAL_S auf — plus beim Phasenwechsel."""
+    if progress is None:
+        return
+    now = time.monotonic()
+    prev_phase = state.get("phase") or ""
+    if phase != prev_phase:
+        state["phase"] = phase
+        state["t"] = now
+        progress(phase, processed)
+        return
+    if now - float(state.get("t") or 0.0) >= _FINALIZE_PROGRESS_INTERVAL_S:
+        state["t"] = now
+        progress(phase, processed)
+
+
+def _sha256_archive_payload(
+    archive_path: str | Path,
+    *,
+    progress: Callable[[str, int], None] | None = None,
+    progress_state: dict[str, Any] | None = None,
+) -> str:
     """
     Deterministischer Integritäts-Hash über Archivinhalt ohne MANIFEST.json,
     damit der Hash stabil bleibt, obwohl das Manifest den Hash selbst trägt.
+
+    Streamt Member-Inhalte in konstanten Chunks; optional progress(phase, bytes_processed).
     """
+    st: dict[str, Any] = progress_state if progress_state is not None else {"t": 0.0, "phase": ""}
+    try:
+        total_est = Path(archive_path).stat().st_size
+    except OSError:
+        total_est = 0
+    processed = 0
+    _throttled_finalize_progress(progress, phase="finalizing_hash", processed=processed, state=st)
     h = hashlib.sha256()
+    since_emit = 0
     with tarfile.open(archive_path, "r:*") as tf:
         for member in tf.getmembers():
             arc = (member.name or "").lstrip("./")
@@ -161,18 +202,37 @@ def _sha256_archive_payload(archive_path: str | Path) -> str:
                 fobj = tf.extractfile(member)
                 if fobj is not None:
                     for chunk in iter(lambda: fobj.read(1024 * 1024), b""):
+                        if not chunk:
+                            break
                         h.update(chunk)
+                        processed += len(chunk)
+                        since_emit += len(chunk)
+                        if since_emit >= _FINALIZE_HASH_PROGRESS_BYTES:
+                            since_emit = 0
+                            _throttled_finalize_progress(
+                                progress, phase="finalizing_hash", processed=processed, state=st
+                            )
             elif member.issym() or member.islnk():
                 h.update((member.linkname or "").encode("utf-8", errors="ignore"))
+    _throttled_finalize_progress(progress, phase="finalizing_hash", processed=max(processed, total_est), state=st)
     return h.hexdigest()
 
 
-def _rewrite_manifest_in_archive(archive_path: str | Path, manifest_payload: dict[str, Any]) -> tuple[bool, str | None]:
+def _rewrite_manifest_in_archive(
+    archive_path: str | Path,
+    manifest_payload: dict[str, Any],
+    *,
+    progress: Callable[[str, int], None] | None = None,
+    progress_state: dict[str, Any] | None = None,
+) -> tuple[bool, str | None]:
     path = Path(archive_path)
     tmp = path.with_suffix(path.suffix + ".manifest-tmp")
     manifest_tmp = path.parent / f".{path.name}.MANIFEST.json"
+    st: dict[str, Any] = progress_state if progress_state is not None else {"t": 0.0, "phase": ""}
+    processed = 0
     try:
         manifest_tmp.write_text(json.dumps(manifest_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        _throttled_finalize_progress(progress, phase="finalizing_manifest", processed=0, state=st)
         with tarfile.open(path, "r:gz") as src, tarfile.open(tmp, "w:gz") as dst:
             dst.add(manifest_tmp, arcname="MANIFEST.json")
             for m in src.getmembers():
@@ -184,6 +244,11 @@ def _rewrite_manifest_in_archive(archive_path: str | Path, manifest_payload: dic
                 else:
                     fobj = src.extractfile(m)
                     dst.addfile(m, fobj)
+                    if m.isfile():
+                        processed += int(getattr(m, "size", 0) or 0)
+                        _throttled_finalize_progress(
+                            progress, phase="finalizing_manifest", processed=processed, state=st
+                        )
         os.replace(tmp, path)
     except Exception as e:
         try:
@@ -532,47 +597,25 @@ def _run_tar_pipeline_from_preflight(
         return 0
     if rc == 0:
         completed_at = _now_iso()
-        for _ in range(3):
-            if STOP_REQUESTED:
-                _write_cancel_final(
-                    status_file,
-                    status,
-                    partial_path,
-                    manifest_tmp_path,
-                    abort_reason="user_cancel",
-                )
-                return 0
+        finalize_prog_state: dict[str, Any] = {"t": 0.0, "phase": ""}
+
+        def _finalize_emit(phase: str, proc_bytes: int) -> None:
             try:
-                current_size = Path(partial_path).stat().st_size
-            except Exception:
-                current_size = 0
-            payload_hash = _sha256_archive_payload(partial_path)
-            manifest_payload.update(
-                {
-                    "completed_at": completed_at,
-                    "archive_size": str(current_size),
-                    "hash": f"sha256:{payload_hash}",
-                }
+                psz = Path(partial_path).stat().st_size
+            except OSError:
+                psz = 0
+            now_m = time.monotonic()
+            _update_status(
+                status_file,
+                status,
+                progress_optional={
+                    "bytes_current": psz,
+                    "running_for_s": int(now_m - start_monotonic),
+                    "finalize_phase": phase,
+                    "finalize_bytes_processed": proc_bytes,
+                },
             )
-            ok_manifest, manifest_err = _rewrite_manifest_in_archive(partial_path, manifest_payload)
-            if not ok_manifest:
-                _update_status(
-                    status_file,
-                    status,
-                    status="error",
-                    code="backup.failed_manifest_missing",
-                    severity="error",
-                    diagnosis_id="BACKUP-MANIFEST-001",
-                    abort_reason="manifest_embed_failed",
-                    backup_finished_at=_now_iso(),
-                    suspend_guard_active=False,
-                    partial_deleted=_cleanup_partial(partial_path),
-                    manifest_error=str(manifest_err or "")[:300],
-                    subprocess_returncode=0,
-                    tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
-                )
-                _mark_terminal()
-                return 1
+
         if STOP_REQUESTED:
             _write_cancel_final(
                 status_file,
@@ -582,6 +625,70 @@ def _run_tar_pipeline_from_preflight(
                 abort_reason="user_cancel",
             )
             return 0
+        try:
+            current_size = Path(partial_path).stat().st_size
+        except Exception:
+            current_size = 0
+        payload_hash = _sha256_archive_payload(
+            partial_path,
+            progress=_finalize_emit,
+            progress_state=finalize_prog_state,
+        )
+        manifest_payload.update(
+            {
+                "completed_at": completed_at,
+                "archive_size": str(current_size),
+                "hash": f"sha256:{payload_hash}",
+            }
+        )
+        ok_manifest = False
+        manifest_err: str | None = None
+        for _attempt in range(3):
+            if STOP_REQUESTED:
+                _write_cancel_final(
+                    status_file,
+                    status,
+                    partial_path,
+                    manifest_tmp_path,
+                    abort_reason="user_cancel",
+                )
+                return 0
+            ok_manifest, manifest_err = _rewrite_manifest_in_archive(
+                partial_path,
+                manifest_payload,
+                progress=_finalize_emit,
+                progress_state=finalize_prog_state,
+            )
+            if ok_manifest:
+                break
+        if not ok_manifest:
+            _update_status(
+                status_file,
+                status,
+                status="error",
+                code="backup.failed_manifest_missing",
+                severity="error",
+                diagnosis_id="BACKUP-MANIFEST-001",
+                abort_reason="manifest_embed_failed",
+                backup_finished_at=_now_iso(),
+                suspend_guard_active=False,
+                partial_deleted=_cleanup_partial(partial_path),
+                manifest_error=str(manifest_err or "")[:300],
+                subprocess_returncode=0,
+                tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
+            )
+            _mark_terminal()
+            return 1
+        if STOP_REQUESTED:
+            _write_cancel_final(
+                status_file,
+                status,
+                partial_path,
+                manifest_tmp_path,
+                abort_reason="user_cancel",
+            )
+            return 0
+        _finalize_emit("renaming", current_size)
         ok_rename = False
         rename_error = ""
         try:
@@ -603,8 +710,13 @@ def _run_tar_pipeline_from_preflight(
                 partial_deleted=not Path(partial_path).exists(),
                 archive_path=archive_path,
                 partial_path=partial_path,
-                progress_optional={"bytes_current": Path(archive_path).stat().st_size if Path(archive_path).exists() else 0},
-                manifest_hash=f"sha256:{_sha256_archive_payload(archive_path)}" if Path(archive_path).exists() else "",
+                progress_optional={
+                    "bytes_current": Path(archive_path).stat().st_size if Path(archive_path).exists() else 0,
+                    "running_for_s": int(time.monotonic() - start_monotonic),
+                    "finalize_phase": "complete",
+                    "finalize_bytes_processed": Path(archive_path).stat().st_size if Path(archive_path).exists() else 0,
+                },
+                manifest_hash=f"sha256:{payload_hash}",
                 subprocess_returncode=0,
                 tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
             )

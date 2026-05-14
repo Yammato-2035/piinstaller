@@ -1,17 +1,17 @@
 # Release Readiness – Bericht
 
-**Generiert:** 2026-05-13 (BR-001 timer-pause Retry — **STOP Phase 2** / **sudo**)  
+**Generiert:** 2026-05-14 (BR-001 Runner-Finalisierung **BR-012** / Job `2cff11287f67`)  
 **Gesamtstatus:** `blocked`
 
 ## Kurzfassung
 
-**GitHub Actions `ci.yml`:** Run **25751304968** — **success**. **BR-001:** **failed** / Retry **blocked** (siehe vorher). **Neu:** **BR-011** *Backup Package Activity Preflight* — **Spezifikation** und Knowledge-Base im Repo (`docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_*.md`, `docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md`); **Implementierung** API/UI ausstehend. **Neu:** verbindliches **Backend-Version-Gate** — `docs/developer/CURSOR_WORK_RULES.md`, **`scripts/check-backend-version-gate.sh`**, Operations-Doku **`docs/operations/BACKEND_VERSION_UPDATE_GATE_*.md`**, Runbooks **`BACKEND_UPDATE_RUNBOOK_*.md`**, Evidence **`backend_version_update_gate.json`**. **`GET /api/version`** liefert bei ungültiger produktiver `config/version.json` nun **HTTP 503** mit Codes **`backend.version_config_invalid`** / **`backend.update_required`** statt generischem 500. **APT:** `apt update` vs. `apt upgrade`/`install` und Lieferlücke dokumentiert unter **`docs/roadmap/APT_UPDATE_DELIVERY_PLAN.md`**, **`docs/packaging/APT_REPOSITORY_PLAN.md`**, **`apt_update_delivery_gap.json`**. **Kein** Backup-Start.
+**GitHub Actions `ci.yml`:** Run **25751304968** — **success**. **BR-001:** **failed**/blocked. **BR-012:** Runner-Finalisierung Job **`2cff11287f67`** — systemd-**Timeout** während Hash/Manifest-Repack; Fix **`backend/tools/backup_runner.py`** + Evidence **`BR-001_runner_finalization_performance_failure_2026-05-14.md`** (E2E großes Archiv offen). **BR-011** *Backup Package Activity Preflight* — Spezifikation im Repo; **Implementierung** API/UI ausstehend. **Neu:** verbindliches **Backend-Version-Gate** — `docs/developer/CURSOR_WORK_RULES.md`, **`scripts/check-backend-version-gate.sh`**, Operations-Doku **`docs/operations/BACKEND_VERSION_UPDATE_GATE_*.md`**, Runbooks **`BACKEND_UPDATE_RUNBOOK_*.md`**, Evidence **`backend_version_update_gate.json`**. **`GET /api/version`** liefert bei ungültiger produktiver `config/version.json` nun **HTTP 503** mit Codes **`backend.version_config_invalid`** / **`backend.update_required`** statt generischem 500. **APT:** `apt update` vs. `apt upgrade`/`install` und Lieferlücke dokumentiert unter **`docs/roadmap/APT_UPDATE_DELIVERY_PLAN.md`**, **`docs/packaging/APT_REPOSITORY_PLAN.md`**, **`apt_update_delivery_gap.json`**. **Kein** Backup-Start.
 
 ## Ampelüberblick
 
 | Bereich | Status |
 |---------|--------|
-| Backup/Restore/Verify (Evidence) | Rot (BR-001 **failed** — Job `e341a326ac69` package activity; siehe Runbook) |
+| Backup/Restore/Verify (Evidence) | Rot (BR-001 **failed**; **BR-012** Fix im Repo, großes E2E-Backup offen) |
 | Backend-Version-Gate (Prozess) | Gelb (Skript+Doku+503-Diagnose; produktiver Grün-Stand ausstehend) |
 | Hardware | Rot |
 | Rescue Stick real | Rot |

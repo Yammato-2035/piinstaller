@@ -468,6 +468,28 @@
     "restore_started": false,
     "evidence_md": "docs/evidence/backup-restore/BR-001_package_timer_paused_retry_2026-05-13.md"
   },
+  "br001_runner_finalization_performance_2cff11287f67_2026_05_14": {
+    "job_id": "2cff11287f67",
+    "backup_dir": "/media/gabriel/setuphelfer-back",
+    "partial_path": "/media/gabriel/setuphelfer-back/pi-backup-full-20260513_214230.tar.gz.partial",
+    "partial_size_bytes": 226121290508,
+    "manifest_tmp_gz_path": "/media/gabriel/setuphelfer-back/pi-backup-full-20260513_214230.tar.gz.partial.manifest-tmp",
+    "manifest_tmp_zero_byte_observed": true,
+    "systemd_result": "failed_timeout_sigkill",
+    "systemd_duration_note": "approx_10h32m",
+    "root_cause_codes": [
+      "triple_finalize_loop_hash_plus_rewrite_on_success",
+      "third_sha256_after_rename_redundant",
+      "full_tar_repack_for_manifest_embed_O_archive_size",
+      "no_progress_optional_during_finalize_before_fix"
+    ],
+    "repo_fix_2026_05_14": "backend/tools/backup_runner.py — single hash, manifest retry only, reuse payload_hash for manifest_hash, finalize_phase progress",
+    "tests": "backend/tests/test_backup_runner_finalization_v1.py",
+    "matrix_row": "BR-012",
+    "br001_result": "failed",
+    "final_archive_present": false,
+    "evidence_md": "docs/evidence/backup-restore/BR-001_runner_finalization_performance_failure_2026-05-14.md"
+  },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
     "path_exists_on_host": false,
@@ -528,7 +550,8 @@
     "2026-05-13: Zusätzlich legacy /opt/config/version.json (kein version_source_of_truth) für /api/version 500; Backend-Python-Dateien bereits SHA256-gleich Workspace; Operator: sudo install version.json + restart; Evidence productive_backend_full_update_attempt_2026_05_13.",
     "2026-05-13 Job e341a326ac69: Full-Backup lief ~1h43 bis backup.blocked_package_activity (UPDATE-CONFLICT-041); parallel apt-get autoremove; kein finales Archiv; Manifest-Rest auf Zielmedium — siehe br001_package_activity_failure_e341a326ac69_2026_05_13 und package_activity_retry_runbook.",
     "2026-05-13 STRICT timer-pause retry-Versuch: Phase2 STOP (mintUpdate, unattended-upgrade-shutdown); sudo für fuser/timer stop fehlt — kein neuer Job — BR-001_package_timer_paused_retry_2026-05-13.md",
-    "2026-05-13: BR-011 Preflight-Spezifikation (docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE|EN.md, knowledge-base) — Implementierung offen"
+    "2026-05-13: BR-011 Preflight-Spezifikation (docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE|EN.md, knowledge-base) — Implementierung offen",
+    "2026-05-14 Job 2cff11287f67: Runner Finalisierung ~210GiB — systemd timeout SIGKILL; triple hash+rewrite bug + dritter SHA256; Evidence BR-001_runner_finalization_performance_failure_2026-05-14.md; Fix backup_runner.py BR-012"
   ],
   "result": "failed",
   "api_code": "backup.blocked_package_activity",
@@ -556,6 +579,7 @@
     "docs/evidence/backup-restore/BR-001_package_timer_paused_retry_2026-05-13.md",
     "docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md",
     "docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_EN.md",
-    "docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md"
+    "docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md",
+    "docs/evidence/backup-restore/BR-001_runner_finalization_performance_failure_2026-05-14.md"
   ]
 }

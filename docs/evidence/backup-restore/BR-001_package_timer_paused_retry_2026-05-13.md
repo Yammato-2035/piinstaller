@@ -91,6 +91,8 @@ Kein vorheriges **`stop`** durch diesen Lauf → **`start`** der Paket-Timer hie
 4. Timer wie im Runbook **`BR-001_package_activity_retry_runbook_2026-05-13.md`** nur **`stop`**, nach Backup wieder **`start`**.
 5. Dann **`POST /api/backup/create`** mit neuer **`job_id`**.
 
+**Nacharbeit 2026-05-14:** Ein späterer Clean-Retry kann an **Runner-Finalisierung** (Hash/Manifest-Repack, systemd-Timeout) scheitern — Job **`2cff11287f67`**, Evidence **`BR-001_runner_finalization_performance_failure_2026-05-14.md`**, Code-Fix **`backup_runner.py`** (**BR-012**).
+
 ---
 
 ## Verweise

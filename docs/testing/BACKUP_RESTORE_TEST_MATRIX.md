@@ -13,6 +13,7 @@
 | BR-009 | Interne Disk Schutz | interne Systemplatte | blockiert | Rot | docs/evidence/backup-restore/BR-009.json |
 | BR-010 | Boot nach Restore | restored System | bootfähig | Rot | docs/evidence/backup-restore/BR-010.json |
 | **BR-011** | **Package Activity Preflight** | Spezifikation `docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`; API-Diagnose vor `POST /api/backup/create`; Locks, `dpkg --audit`, Timer read-only; kein `disable` | `backup.package_preflight_*` / Blockerliste | **Gelb** (Design dokumentiert — Implementierung offen) | `BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`, `BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_EN.md`, `docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md` |
+| **BR-012** | **Backup Runner Finalization Performance** | `backup_runner.py`: kein **3×** Full-Scan bei Erfolg; `finalize_phase` in `progress_optional`; Manifest-Rewrite Retries nur bei Fehler; bounded streaming | Job `2cff11287f67` Evidence; pytest `test_backup_runner_finalization_v1` | **Gelb** (Fix im Repo — HW-Abnahme großes Archiv offen) | `BR-001_runner_finalization_performance_failure_2026-05-14.md`, `backend/tools/backup_runner.py`, `BR-001.json` |
 
 ## Verknüpfung Unit-/CI-Tests
 
@@ -21,3 +22,5 @@ Viele Szenarien haben Abdeckung unter `backend/tests/` (z. B. Backup/Restore/Wri
 **STRICT-Kette (2026-05-13):** Timer-pause-Retry-Versuch — **STOP Phase 2** (`mintUpdate`, `unattended-upgrade-shutdown`) + **sudo** fehlt für `fuser`/Timer — **`BR-001_package_timer_paused_retry_2026-05-13.md`**. Zuvor Job **`e341a326ac69`** **`backup.blocked_package_activity`** — **`BR-001_package_activity_failure_2026-05-13.md`**. Früher: EROFS/stale-sync … **`BR-001_runner_systemd_readwritepaths_fix_2026-05-13.md`**, **`BR-001_stale_job_sync_fix_and_retry_2026-05-13.md`**, Starter **`BR-001_full_backup_run_2026-05-13.md`**.
 
 **Design 2026-05-13:** **BR-011** — *Backup Package Activity Preflight* (Prozesse, Locks, `dpkg --audit`, Timer, UI/i18n) — **`docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`** / **EN**, Knowledge-Base **`docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md`**.
+
+**2026-05-14:** **BR-012** — Runner-Finalisierung Job **`2cff11287f67`** (Timeout, `.partial.manifest-tmp` 0 Byte, dreifacher I/O-Bug) — Evidence **`BR-001_runner_finalization_performance_failure_2026-05-14.md`**; Fix **`backend/tools/backup_runner.py`**.
