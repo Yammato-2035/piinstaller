@@ -378,6 +378,30 @@ function DeployDriftPanel({ dashboard, t }: { dashboard: DashboardPayload; t: TF
           <dd className="break-all">{missWs.length ? missWs.join(', ') : '—'}</dd>
         </div>
       </dl>
+      <div className="text-xs border-t border-white/10 pt-2 grid sm:grid-cols-2 gap-2">
+        <div>
+          <div className="font-semibold text-slate-200">{t('devDashboard.deployDrift.manifest.workspace')}</div>
+          <div className="text-slate-400">
+            {Boolean(dd.manifest_available_workspace) ? t('devDashboard.deployDrift.manifest.present') : t('devDashboard.deployDrift.manifest.absent')}
+          </div>
+        </div>
+        <div>
+          <div className="font-semibold text-slate-200">{t('devDashboard.deployDrift.manifest.runtime')}</div>
+          <div className="text-slate-400">
+            {Boolean(dd.manifest_available_runtime) ? t('devDashboard.deployDrift.manifest.present') : t('devDashboard.deployDrift.manifest.absent')}
+          </div>
+        </div>
+        <div className="sm:col-span-2">
+          <div className="font-semibold text-slate-200">{t('devDashboard.deployDrift.manifest.match')}</div>
+          <div className="text-slate-400">
+            {dd.manifest_match === true
+              ? '✓'
+              : dd.manifest_match === false
+                ? '✗'
+                : t('devDashboard.deployDrift.manifest.unknown')}
+          </div>
+        </div>
+      </div>
       <div className="text-xs">
         <div className="font-semibold text-slate-200 mb-1">{t('devDashboard.deployDrift.suggested')}</div>
         <ul className="list-disc pl-4 space-y-0.5 text-sky-100/90">
@@ -386,6 +410,16 @@ function DeployDriftPanel({ dashboard, t }: { dashboard: DashboardPayload; t: TF
           ))}
         </ul>
       </div>
+      {Array.isArray(dd.manifest_warnings) && (dd.manifest_warnings as string[]).length > 0 ? (
+        <div className="text-xs border-t border-white/10 pt-2">
+          <div className="font-semibold text-slate-300 mb-1">{t('devDashboard.deployDrift.manifestNotes')}</div>
+          <ul className="list-disc pl-4 text-amber-100/90">
+            {(dd.manifest_warnings as string[]).slice(0, 8).map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       {ddWarns.length > 0 ? (
         <div className="text-xs border-t border-white/10 pt-2">
           <div className="font-semibold text-slate-300 mb-1">{t('devDashboard.deployDrift.warnings')}</div>

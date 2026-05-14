@@ -8,6 +8,8 @@ Dieses Verzeichnis indexiert **Prompts**, **Abschlussberichte** und **Modul-Meta
 
 **Deploy-Drift:** Zusätzlich liefert `deploy_drift` einen read-only Abgleich **Workspace vs. produktiver Runtime-Baum** (`get_opt_install_dir()`, typisch `/opt/setuphelfer`): kleine Whitelist relevanter Dateien (Backend-Kern, `config/version.json`, ausgewählte Frontend-Quellen), SHA256 nur bis 384 KiB, darüber Groesse+mtime. Kein automatischer Deploy, kein Restart, keine Installation.
 
+**Deployment-Manifest:** Schema und Generator (`backend/tools/generate_deploy_manifest.py`) schreiben `build/deploy/setuphelfer-deploy-manifest.json` (lokal, nicht versioniert — liegt unter `build/`). Das Cockpit liest Workspace- und Runtime-Manifest optional (`manifest_*`-Felder in `deploy_drift`) und vergleicht Hashes, ohne Bundles zu hashen.
+
 - `modules/*.json` — maschinenlesbare Moduldefinitionen (Ampel, nächste Schritte, Blocker, Artefakt-Pfade).
 - `prompts/` — Ablage für wiederverwendbare Entwickler-Prompts (optional).
 - `reports/` — Kurzberichte / Session-Abschlüsse (optional).

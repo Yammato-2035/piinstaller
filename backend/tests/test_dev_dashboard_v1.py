@@ -14,6 +14,15 @@ if str(_backend) not in sys.path:
 
 from core import dev_dashboard as dd  # noqa: E402
 
+_MANIFEST_DRIFT_NEUTRAL: dict[str, object] = {
+    "workspace_manifest_path": "/tmp/manifest-ws.json",
+    "runtime_manifest_path": "/tmp/manifest-rt.json",
+    "manifest_available_workspace": True,
+    "manifest_available_runtime": True,
+    "manifest_match": True,
+    "manifest_warnings": [],
+}
+
 
 class TestDevDashboardCore(unittest.TestCase):
     def test_build_dashboard_status_empty_repo_no_crash(self):
@@ -108,14 +117,15 @@ class TestDevDashboardCore(unittest.TestCase):
 
     @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("probe.txt",))
     def test_deploy_drift_green_identical_files(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            ws = Path(td) / "w"
-            rt = Path(td) / "r"
-            ws.mkdir()
-            rt.mkdir()
-            (ws / "probe.txt").write_text("same", encoding="utf-8")
-            (rt / "probe.txt").write_text("same", encoding="utf-8")
-            out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
+            with tempfile.TemporaryDirectory() as td:
+                ws = Path(td) / "w"
+                rt = Path(td) / "r"
+                ws.mkdir()
+                rt.mkdir()
+                (ws / "probe.txt").write_text("same", encoding="utf-8")
+                (rt / "probe.txt").write_text("same", encoding="utf-8")
+                out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
         self.assertEqual(out["status"], "green")
         self.assertEqual(out["matching_files_count"], 1)
         self.assertEqual(out["differing_files_count"], 0)
@@ -123,29 +133,31 @@ class TestDevDashboardCore(unittest.TestCase):
 
     @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("probe.txt",))
     def test_deploy_drift_yellow_missing_runtime_file(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            ws = Path(td) / "w"
-            rt = Path(td) / "r"
-            ws.mkdir()
-            rt.mkdir()
-            (ws / "probe.txt").write_text("only-ws", encoding="utf-8")
-            out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
+            with tempfile.TemporaryDirectory() as td:
+                ws = Path(td) / "w"
+                rt = Path(td) / "r"
+                ws.mkdir()
+                rt.mkdir()
+                (ws / "probe.txt").write_text("only-ws", encoding="utf-8")
+                out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
         self.assertEqual(out["status"], "yellow")
         self.assertEqual(out["missing_runtime_files"], ["probe.txt"])
         self.assertIn("deploy_backend_files", out["suggested_actions"])
 
     @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("backend/probe.py",))
     def test_deploy_drift_yellow_content_mismatch(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            ws = Path(td) / "w"
-            rt = Path(td) / "r"
-            ws.mkdir()
-            rt.mkdir()
-            (ws / "backend").mkdir()
-            (rt / "backend").mkdir()
-            (ws / "backend" / "probe.py").write_text("a", encoding="utf-8")
-            (rt / "backend" / "probe.py").write_text("b", encoding="utf-8")
-            out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
+            with tempfile.TemporaryDirectory() as td:
+                ws = Path(td) / "w"
+                rt = Path(td) / "r"
+                ws.mkdir()
+                rt.mkdir()
+                (ws / "backend").mkdir()
+                (rt / "backend").mkdir()
+                (ws / "backend" / "probe.py").write_text("a", encoding="utf-8")
+                (rt / "backend" / "probe.py").write_text("b", encoding="utf-8")
+                out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
         self.assertEqual(out["status"], "yellow")
         self.assertEqual(out["differing_files_count"], 1)
         self.assertIn("deploy_backend_files", out["suggested_actions"])
@@ -153,15 +165,16 @@ class TestDevDashboardCore(unittest.TestCase):
     @patch.object(dd, "DEPLOY_DRIFT_MAX_HASH_BYTES", 8)
     @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("big.bin",))
     def test_deploy_drift_large_file_uses_metadata_not_full_hash(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            ws = Path(td) / "w"
-            rt = Path(td) / "r"
-            ws.mkdir()
-            rt.mkdir()
-            payload = b"0123456789abcdef"
-            (ws / "big.bin").write_bytes(payload)
-            (rt / "big.bin").write_bytes(payload)
-            out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
+            with tempfile.TemporaryDirectory() as td:
+                ws = Path(td) / "w"
+                rt = Path(td) / "r"
+                ws.mkdir()
+                rt.mkdir()
+                payload = b"0123456789abcdef"
+                (ws / "big.bin").write_bytes(payload)
+                (rt / "big.bin").write_bytes(payload)
+                out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
         self.assertEqual(out["status"], "green")
         self.assertEqual(out["matching_files_count"], 1)
         rows = out.get("checked_files") or []

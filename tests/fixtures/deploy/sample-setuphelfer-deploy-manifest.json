@@ -1,0 +1,21 @@
+{
+  "manifest_version": 1,
+  "generated_at": "2026-05-13T12:00:00+00:00",
+  "project_version": "0.0.0-fixture",
+  "release_stage": "internal_testing",
+  "version_track": "fixture",
+  "git_commit": null,
+  "git_branch": null,
+  "workspace_root": "/tmp/fixture-workspace",
+  "app_edition": "test",
+  "files": [
+    {
+      "relative_path": "config/version.json",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "size_bytes": 1,
+      "kind": "config",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    }
+  ]
+}

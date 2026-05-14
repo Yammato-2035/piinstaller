@@ -19,3 +19,8 @@ Existing `fetchApi` behaviour (localStorage key `pi-installer-api-base`) remains
 ## Deploy drift (read-only)
 
 The status payload includes `deploy_drift` with **green**/**yellow**/**gray** traffic (file drift is **yellow**, not an automatic “red”). `suggested_actions` are human hints only (deploy/restart/rebuild) with **no** automatic execution.
+
+## Deployment manifest
+
+- Generator: `backend/tools/generate_deploy_manifest.py` (no sudo; default output `build/deploy/setuphelfer-deploy-manifest.json` under ignored `build/`).
+- Logic/whitelist: `backend/core/deploy_manifest.py`; runtime may optionally ship the manifest under `build/deploy/` or `deploy/` relative to `/opt/setuphelfer` (read-only checks in the cockpit).

@@ -17,18 +17,13 @@ from typing import Any
 
 UTC = timezone.utc
 
+# Deploy-Drift-Dateiliste = kanonisches Deployment-Manifest (core.deploy_manifest).
+from core.deploy_manifest import DEPLOY_MANIFEST_REL_PATHS, manifest_drift_for_roots
+
+DEPLOY_DRIFT_REL_PATHS = DEPLOY_MANIFEST_REL_PATHS
+
 # Read-only Deploy-Drift: nur kleine/mittlere Text-Dateien hashen; groessere per Groesse+mtime.
 DEPLOY_DRIFT_MAX_HASH_BYTES = 384 * 1024
-DEPLOY_DRIFT_REL_PATHS: tuple[str, ...] = (
-    "backend/app.py",
-    "backend/core/versioning.py",
-    "backend/core/install_paths.py",
-    "backend/core/dev_dashboard.py",
-    "config/version.json",
-    "frontend/package.json",
-    "frontend/src/components/ApiRuntimeConsistencyBanner.tsx",
-    "frontend/src/pages/DevDashboardBody.tsx",
-)
 
 
 def _repo_root() -> Path:
@@ -194,6 +189,54 @@ def _metadata_compare(wp: Path, rp: Path) -> tuple[bool | None, str | None]:
     return False, "compared_by_size_mtime"
 
 
+def _default_manifest_drift_slice() -> dict[str, Any]:
+    return {
+        "workspace_manifest_path": None,
+        "runtime_manifest_path": None,
+        "manifest_available_workspace": False,
+        "manifest_available_runtime": False,
+        "manifest_match": None,
+        "manifest_warnings": [],
+    }
+
+
+def _append_manifest_suggestions(suggested: list[str], mw: list[str]) -> None:
+    if not mw:
+        return
+    if "workspace_manifest_missing" in mw or "workspace_manifest_unreadable" in mw:
+        if "generate_deploy_manifest" not in suggested:
+            suggested.insert(0, "generate_deploy_manifest")
+    if "runtime_manifest_missing" in mw:
+        if "deploy_manifest_optional" not in suggested:
+            suggested.append("deploy_manifest_optional")
+
+
+def _dedupe_suggested_actions(suggested: list[str]) -> list[str]:
+    out = list(dict.fromkeys(suggested))
+    if any(x != "none" for x in out):
+        out = [x for x in out if x != "none"]
+    return out if out else ["none"]
+
+
+def _merge_manifest_into_deploy_drift(
+    *,
+    drift_status: str,
+    suggested: list[str],
+    base: dict[str, Any],
+    mf: dict[str, Any],
+) -> dict[str, Any]:
+    mw = mf.get("manifest_warnings") or []
+    st = drift_status
+    if mf.get("manifest_match") is False or (mw and st == "green"):
+        st = "yellow"
+    _append_manifest_suggestions(suggested, mw)
+    sug = _dedupe_suggested_actions(suggested)
+    out = {**base, **mf}
+    out["status"] = st
+    out["suggested_actions"] = sug
+    return out
+
+
 def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[str, Any]:
     """
     Read-only: Workspace-Checkout vs. produktiver Runtime-Baum (typ. /opt/setuphelfer).
@@ -217,12 +260,13 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
             "missing_workspace_files": [],
             "warnings": [f"workspace_root_resolve:{exc}"],
             "suggested_actions": ["none"],
+            **_default_manifest_drift_slice(),
         }
     try:
         rt_r = runtime_root.expanduser().resolve()
     except OSError as exc:
-        return {
-            "status": "gray",
+        mf = manifest_drift_for_roots(workspace_root=ws_r, runtime_root=None)
+        base = {
             "workspace_root": str(ws_r),
             "runtime_root": str(runtime_root),
             "checked_files": [],
@@ -231,12 +275,17 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
             "missing_runtime_files": [],
             "missing_workspace_files": [],
             "warnings": [f"runtime_root_resolve:{exc}"],
-            "suggested_actions": ["none"],
         }
+        return _merge_manifest_into_deploy_drift(
+            drift_status="gray",
+            suggested=["none"],
+            base=base,
+            mf=mf,
+        )
 
     if ws_r == rt_r:
-        return {
-            "status": "gray",
+        mf = manifest_drift_for_roots(workspace_root=ws_r, runtime_root=ws_r)
+        base = {
             "workspace_root": str(ws_r),
             "runtime_root": str(rt_r),
             "checked_files": [],
@@ -245,13 +294,18 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
             "missing_runtime_files": [],
             "missing_workspace_files": [],
             "warnings": ["deploy_drift_same_workspace_and_runtime_root"],
-            "suggested_actions": ["none"],
         }
+        return _merge_manifest_into_deploy_drift(
+            drift_status="gray",
+            suggested=["none"],
+            base=base,
+            mf=mf,
+        )
 
     if not rt_r.is_dir():
         dd_warnings.append("runtime_root_not_a_directory")
-        return {
-            "status": "gray",
+        mf = manifest_drift_for_roots(workspace_root=ws_r, runtime_root=None)
+        base = {
             "workspace_root": str(ws_r),
             "runtime_root": str(rt_r),
             "checked_files": [],
@@ -260,8 +314,13 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
             "missing_runtime_files": [],
             "missing_workspace_files": [],
             "warnings": dd_warnings,
-            "suggested_actions": ["none"],
         }
+        return _merge_manifest_into_deploy_drift(
+            drift_status="gray",
+            suggested=["none"],
+            base=base,
+            mf=mf,
+        )
 
     match_n = 0
     diff_n = 0
@@ -383,8 +442,8 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
     else:
         drift_status = "yellow"
 
-    return {
-        "status": drift_status,
+    mf = manifest_drift_for_roots(workspace_root=ws_r, runtime_root=rt_r if rt_r.is_dir() else None)
+    base = {
         "workspace_root": str(ws_r),
         "runtime_root": str(rt_r),
         "checked_files": checked,
@@ -393,8 +452,13 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
         "missing_runtime_files": missing_rt,
         "missing_workspace_files": missing_ws,
         "warnings": dd_warnings,
-        "suggested_actions": suggested,
     }
+    return _merge_manifest_into_deploy_drift(
+        drift_status=drift_status,
+        suggested=suggested,
+        base=base,
+        mf=mf,
+    )
 
 
 def _read_workspace_version_info(ws_root: Path) -> tuple[str | None, str | None, str | None]:

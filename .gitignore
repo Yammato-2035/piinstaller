@@ -14,6 +14,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+# u.a. build/deploy/setuphelfer-deploy-manifest.json (Generator: backend/tools/generate_deploy_manifest.py)
 
 # Deploy-Runner Cache (Laufzeit / Harness; nicht versionieren — siehe workspace_artifact_inventory_2026-05-11.json)
 backend/cache/deploy/

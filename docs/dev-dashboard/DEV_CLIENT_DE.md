@@ -19,3 +19,8 @@ Die bestehende `fetchApi`-Logik (localStorage `pi-installer-api-base`) bleibt di
 ## Deploy-Drift (read-only)
 
 Die Status-API enthält `deploy_drift` mit Ampel **green**/**yellow**/**gray** (Dateiabweichungen sind **gelb**, kein automatisches „rot“ aus Drift-Checks). Vorgeschlagene Aktionen sind reine Text-Hinweise (Deploy/Restart/Rebuild), **ohne** automatische Ausführung.
+
+## Deployment-Manifest
+
+- Generator: `backend/tools/generate_deploy_manifest.py` (ohne sudo; Standardausgabe `build/deploy/setuphelfer-deploy-manifest.json`, liegt unter `build/` und ist git-ignoriert).
+- Logik/Whitelist: `backend/core/deploy_manifest.py`; Runtime liest optional Manifest unter `build/deploy/` oder `deploy/` relativ zu `/opt/setuphelfer`.

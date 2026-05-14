@@ -57,6 +57,12 @@ const baseDashboard: DashboardPayload = {
     missing_workspace_files: [],
     warnings: [],
     suggested_actions: ['none'],
+    workspace_manifest_path: '/home/dev/piinstaller/build/deploy/setuphelfer-deploy-manifest.json',
+    runtime_manifest_path: '/opt/setuphelfer/build/deploy/setuphelfer-deploy-manifest.json',
+    manifest_available_workspace: true,
+    manifest_available_runtime: true,
+    manifest_match: true,
+    manifest_warnings: [],
   },
 }
 
@@ -239,6 +245,22 @@ describe('DevDashboardBody', () => {
     expect(html).toContain('data-testid="dev-dashboard-deploy-drift-card"')
     expect(html).toContain('Deploy-Drift')
     expect(html).toContain('Frontend neu bauen')
+  })
+
+  it('zeigt Manifest-Hinweis und generate_deploy_manifest', () => {
+    const dash: DashboardPayload = {
+      ...baseDashboard,
+      deploy_drift: {
+        ...(baseDashboard.deploy_drift as object),
+        manifest_available_workspace: false,
+        manifest_match: null,
+        manifest_warnings: ['workspace_manifest_missing'],
+        suggested_actions: ['generate_deploy_manifest'],
+      },
+    }
+    const { html } = wrap({ filter: 'all', expanded: {}, selectedId: 'backup-restore', dashboard: dash })
+    expect(html).toContain('workspace_manifest_missing')
+    expect(html).toContain('Deployment-Manifest erzeugen')
   })
 
   it('Restart-Primary ist disabled; Probes rufen postAction nur bei Klick (hier nicht geklickt)', () => {
