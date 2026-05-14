@@ -1,8 +1,8 @@
 # Prompt 08 – Release-Gate (inkl. Monetarisierung)
 
-## PHASE 0 – BACKEND VERSION GATE (Pflicht)
+## PHASE 0 – Mandatory Runtime Version Gate (Pflicht)
 
-`scripts/check-backend-version-gate.sh`, `curl -i http://127.0.0.1:8000/api/version`, `systemctl status setuphelfer-backend.service` — Release-Gate nicht „grün“ setzen, wenn produktives Backend nicht verifiziert ist.
+`./scripts/check-runtime-deploy-gate.sh` (Exit 0) oder Mindest-Set `./scripts/check-backend-version-gate.sh` + `GET /api/dev-dashboard/status`. Bei Exit **≠ 0**: **STOP** — Release-Gate nicht „grün“ setzen; **`blocked_runtime_outdated`**.
 
 STRICT MODE – RELEASE READINESS GATE
 

@@ -1,8 +1,8 @@
 # Prompt 05 – Monolith-Audit (nur Analyse)
 
-## PHASE 0 – BACKEND VERSION GATE (Pflicht)
+## PHASE 0 – Mandatory Runtime Version Gate (Pflicht)
 
-Nur relevant, falls Prompt **gegen laufendes** Backend/API arbeitet: `scripts/check-backend-version-gate.sh` etc. — sonst dokumentisch fortfahren.
+Nur relevant, falls Prompt **gegen laufendes** Backend/API arbeitet: `./scripts/check-runtime-deploy-gate.sh` (Exit 0) oder `./scripts/check-backend-version-gate.sh` + `GET /api/dev-dashboard/status`. Bei Fehler **STOP** / **`blocked_runtime_outdated`** — sonst dokumentisch fortfahren.
 
 STRICT MODE – MONOLITH AUDIT ONLY
 

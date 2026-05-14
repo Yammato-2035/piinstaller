@@ -1,0 +1,34 @@
+---
+description: Phase 0 — kein Runtime-/HW-/Backup-Test ohne aktuelles Backend- und Paket-Gate
+alwaysApply: true
+---
+
+# Phase 0 (obligatorisch)
+
+Gilt, sobald der **aktuelle Auftrag** Backend, produktive **Runtime** unter `/opt/setuphelfer`, **Backup**, **Restore**, **Rescue**, **Deploy**, **systemd**, **Paketierung** (deb/rpm/Installer) oder **Hardware**/**Zielsystem**/**Verify** am laufenden Dienst berührt — inkl. manueller oder automatisierter Tests dagegen.
+
+## Vor dem ersten relevanten Schritt
+
+Phase 0 ist **nur bestanden**, wenn **alle** zutreffenden Punkte erfüllt sind (was nicht zutrifft, z. B. reiner Workspace-Unit-Test ohne `/opt`, explizit im Auftrag ausnehmen und trotzdem **kein** Backup/Restore/HW):
+
+1. **`./scripts/check-runtime-deploy-gate.sh`** (Exit **0**), falls vorhanden; zusätzlich oder alternativ **`./scripts/check-backend-version-gate.sh`** (prüft u. a. Produktivdateien unter `/opt`). Bei Fehler: Abschlussbericht **`blocked_runtime_outdated`**.
+2. `GET /api/version` liefert **HTTP 200** (gleiche Basis-URL wie das Gate, üblich `http://127.0.0.1:8000`).
+3. `project_version` in der API-Response **stimmt** mit `config/version.json` im **Workspace** überein (das Skript prüft das mit).
+4. Wenn gegen die **produktive Runtime** getestet wird: `backend_runtime_path` in `/api/version` zeigt auf **`/opt/setuphelfer/backend`** (per `curl`/`jq` prüfen, falls Skript das nicht explizit loggt).
+5. Development Cockpit: `deploy_drift` meldet **keine** für den Auftrag **relevanten** Abweichungen zwischen Workspace und `/opt` (Status nicht „rot“ für die geprüften Kerndateien; gelbe reine Manifest-Hinweise nur mit **expliziter** Freigabe im Auftrag).
+6. Wenn ein Deployment-Manifest existiert: Workspace- und Runtime-Manifest **stimmen überein**, oder die Abweichung ist **schriftlich** im Auftrag/Evidence dokumentiert.
+7. `setuphelfer-backend.service` ist **aktiv** (das Gate-Skript prüft `systemctl is-active`).
+8. Der unter **`/opt/setuphelfer`** ausgeführte Stand ist **nicht älter** als der Commit, gegen den getestet werden soll (z. B. `deploy_drift`, Manifest, oder `git -C /opt/setuphelfer rev-parse HEAD` vs. erwarteter Hash — **manuell** abgleichen).
+
+## Bei Fehlschlag
+
+- **STOP.** Kein Backup, kein Restore, kein Hardwaretest, kein produktives Verify, kein Zielpfadtest am Gerät.
+- **Kein** Workaround über veralteten Code unter `/opt`.
+- Vorgehen: Runtime/Paket **aktualisieren**, Dienst **neu starten** (nur wenn im Auftrag erlaubt), Gate **erneut** ausführen.
+
+## Erlaubt ohne vollständiges Phase 0
+
+- Reine **Code-Edits** ohne Ausführung gegen Live-Runtime.
+- **pytest**/**Vitest**, die **mocks** nutzen und weder Dienst noch `/opt` noch echte Geräte ansprechen — sofern der Auftrag das klar so begrenzt.
+
+Ausführliche Checkliste und API-Hinweise: `docs/dev-dashboard/PHASE0_RUNTIME_GATE.md`.

@@ -82,7 +82,22 @@ class BackendVersionGateV1Tests(unittest.TestCase):
         rules = _backend.parent / "docs" / "developer" / "CURSOR_WORK_RULES.md"
         text = rules.read_text(encoding="utf-8")
         self.assertIn("check-backend-version-gate.sh", text)
-        self.assertIn("Backend-Version-Gate", text)
+        self.assertIn("check-runtime-deploy-gate.sh", text)
+        self.assertIn("Mandatory Runtime Version Gate", text)
+        self.assertIn("blocked_runtime_outdated", text)
+
+    def test_runtime_deploy_gate_scripts_exist(self) -> None:
+        root = _backend.parent
+        self.assertTrue((root / "scripts" / "check-runtime-deploy-gate.sh").is_file())
+        self.assertTrue((root / "scripts" / "runtime_deploy_gate_eval.py").is_file())
+
+    def test_runtime_deploy_gate_shell_syntax(self) -> None:
+        import subprocess
+
+        root = _backend.parent
+        sh = root / "scripts" / "check-runtime-deploy-gate.sh"
+        r = subprocess.run(["bash", "-n", str(sh)], capture_output=True, text=True, check=False)
+        self.assertEqual(r.returncode, 0, msg=(r.stderr or r.stdout or "").strip())
 
 
 if __name__ == "__main__":

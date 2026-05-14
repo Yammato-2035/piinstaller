@@ -1,9 +1,10 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "apt_update_delivery_gap",
-  "generated": "2026-05-13T12:00:00Z",
+  "generated": "2026-05-13T20:00:00Z",
   "ampel": "rot",
-  "summary": "End-user APT updates for Setuphelfer are not production-ready: no signed APT repository wired to CI; apt update alone does not install new backend bits.",
+  "summary": "End-user APT updates for Setuphelfer are not production-ready: no signed APT repository wired to CI; apt update alone does not install new backend bits. **PKG-001** (gelb/rot): runtime deploy gate scripts + package acceptance docs added; full pipeline still open.",
+  "package_runtime_gate_id": "PKG-001",
   "distinction": {
     "apt_update": "Refreshes package index metadata only.",
     "apt_upgrade_or_install": "Installs or upgrades packages when a suitable .deb is available from a configured source."
@@ -22,6 +23,12 @@
   ],
   "documentation": [
     "docs/roadmap/APT_UPDATE_DELIVERY_PLAN.md",
-    "docs/packaging/APT_REPOSITORY_PLAN.md"
+    "docs/packaging/APT_REPOSITORY_PLAN.md",
+    "docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md",
+    "docs/packaging/PACKAGE_DEPLOYMENT_GATE_EN.md",
+    "docs/packaging/SETUPHELFER_UPDATE_CHECK_DE.md",
+    "docs/packaging/SETUPHELFER_UPDATE_CHECK_EN.md",
+    "scripts/check-runtime-deploy-gate.sh",
+    "scripts/runtime_deploy_gate_eval.py"
   ]
 }

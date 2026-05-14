@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-13 — **DEV-001** (*Development Cockpit*): Modul-JSON **backup-restore** mit Matrix/Gate abgeglichen; Cockpit **gelb**. **BR-013** (*Ziel-Schreib-EIO*): Klassifikation **`backup.write_io_error`** / **`BACKUP-IO-ERROR-050`** (Job **`f744c2936468`**); **BR-012** Finalisierung; **BR-011** Preflight. **BR-016–BR-019** (Performance, Evidence+**API**, Progress/**UI**/ETA, Profile): Code + Doku + pytest/Vitest **gelb** (HW-/E2E-Abnahme offen). **BR-001** failed/blocked. **BR-004/005:** blocked.
+**Stand:** 2026-05-13 — **PKG-001** (*Runtime-Paket-Deploy-Gate*): Skripte + Doku; Ampel **gelb/rot** bis Repo/Pipeline vollständig. **DEV-001** (*Development Cockpit*): Modul-JSON **backup-restore** mit Matrix/Gate abgeglichen; Cockpit **gelb**. **BR-013** (*Ziel-Schreib-EIO*): Klassifikation **`backup.write_io_error`** / **`BACKUP-IO-ERROR-050`** (Job **`f744c2936468`**); **BR-012** Finalisierung; **BR-011** Preflight. **BR-016–BR-019** (Performance, Evidence+**API**, Progress/**UI**/ETA, Profile): Code + Doku + pytest/Vitest **gelb** (HW-/E2E-Abnahme offen). **BR-001** failed/blocked. **BR-004/005:** blocked.
 
 ## Ampeldefinition
 
@@ -35,6 +35,7 @@
 | Release Gate UG-Start | Rot | Gates nicht grün | `docs/roadmap/RELEASE_READINESS_CHECKLIST.md` |
 | Development Cockpit **DEV-001** | Gelb | `GET /api/dev-dashboard/*` read-only; POST-Aktionen nur Platzhalter (`confirm_required`); UI nur Entwickler; **Runtime vs. Workspace** + **`deploy_drift`** (Whitelist + optionales Deployment-Manifest); Vitest-Smoke (`DevDashboardBody`); separater Tauri-Dev-Client nur dokumentiert (`DEV_CLIENT_*.md`); produktive Integration/HW-Abnahme offen | `docs/testing/DEVELOPMENT_COCKPIT_MATRIX.md`, `docs/dev-dashboard/README.md`, `docs/dev-dashboard/DEV_CLIENT_DE.md`, `backend/core/dev_dashboard.py`, `backend/core/deploy_manifest.py` |
 | Backend-Version-Gate | Gelb | Regel+Skript+`/api/version`-Diagnose im Repo; produktiver Gate-Grün-Status ausstehend | `docs/evidence/release-gates/backend_version_update_gate.json`, `scripts/check-backend-version-gate.sh` |
+| **PKG-001** Runtime-Paket-Deploy-Gate | Gelb/Rot | `.deb`-Abnahme, lokale Installation, `check-runtime-deploy-gate.sh` / `deploy_drift`; Pipeline/signiertes Repo noch nicht produktiv komplett | `docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md`, `PACKAGE_DEPLOYMENT_GATE_EN.md`, `scripts/check-runtime-deploy-gate.sh`, `scripts/runtime_deploy_gate_eval.py`, `docs/evidence/release-gates/apt_update_delivery_gap.json` |
 | Cloudserver Edition | Schwarz | nach Modularisierung | — |
 
 ## Phasen-ToDos (Kurz)

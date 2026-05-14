@@ -11,7 +11,7 @@
     "python": "3.12.3",
     "cwd": "backend",
     "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default python -m pytest tests/ -q --tb=no",
-    "notes": "Lokaler Snapshot 1526 passed (2026-05-12). Remote GitHub CI `ci.yml`: Run **25751304968** — **success** (55d7cec). Harness-/sudoers-Analysen siehe ci_evidence.json."
+    "notes": "Lokaler Snapshot 1526 passed (2026-05-12). Remote GitHub CI `ci.yml`: Run **25751304968** — **success** (55d7cec). Harness-/sudoers-Analysen siehe ci_evidence.json. **2026-05-13:** Runtime-Deploy-Gate: `scripts/check-runtime-deploy-gate.sh`, `scripts/runtime_deploy_gate_eval.py`, pytest `test_runtime_deploy_gate_eval_v1.py`."
   },
   "summary": {
     "failed": 0,

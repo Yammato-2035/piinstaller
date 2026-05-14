@@ -1,8 +1,8 @@
 # Prompt 07 – Affiliate-Readiness
 
-## PHASE 0 – BACKEND VERSION GATE (Pflicht)
+## PHASE 0 – Mandatory Runtime Version Gate (Pflicht)
 
-Nur bei Live-API-Checks: Gate grün.
+Nur bei Live-API-Checks: `./scripts/check-runtime-deploy-gate.sh` (Exit 0) oder Mindest-Gate; bei Fehler **STOP** / **`blocked_runtime_outdated`**.
 
 STRICT MODE – AFFILIATE READINESS PREP
 

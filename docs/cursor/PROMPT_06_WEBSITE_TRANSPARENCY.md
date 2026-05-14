@@ -1,8 +1,8 @@
 # Prompt 06 – Website-Transparenz
 
-## PHASE 0 – BACKEND VERSION GATE (Pflicht)
+## PHASE 0 – Mandatory Runtime Version Gate (Pflicht)
 
-Nur bei API-/Live-Checks gegen Port 8000: Gate grün; sonst rein Markdown fortfahren.
+Nur bei API-/Live-Checks gegen Port 8000: `./scripts/check-runtime-deploy-gate.sh` (Exit 0) oder Mindest-Gate; sonst rein Markdown fortfahren.
 
 STRICT MODE – WEBSITE TRANSPARENCY PREP
 

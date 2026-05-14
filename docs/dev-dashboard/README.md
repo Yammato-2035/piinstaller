@@ -2,13 +2,15 @@
 
 **Matrix:** DEV-001 (Gelb) — siehe `docs/testing/DEVELOPMENT_COCKPIT_MATRIX.md`.
 
+**Phase 0 (Pflicht vor Runtime-/Backup-/HW-Tests):** siehe `PHASE0_RUNTIME_GATE.md` und die Cursor-Regel `.cursor/rules/runtime-phase0-gate.mdc` — kein produktiver Testlauf ohne aktuelles Backend-/Paket-Gate.
+
 Dieses Verzeichnis indexiert **Prompts**, **Abschlussberichte** und **Modul-Metadaten** für das interne Dashboard (`GET /api/dev-dashboard/status`, `modules`, `evidence-index`; UI-Seite „Development Cockpit“, Sidebar nur bei Entwickler-Profil).
 
 **Runtime vs. Workspace:** `GET /api/dev-dashboard/status` liefert zusätzlich die Objekte `runtime`, `workspace`, `frontend` und `consistency` (Versionsabgleich installierte API vs. Checkout vs. Frontend-Build). Optional: Query-Parameter `frontend_build_version`, `frontend_runtime_source` (`dev` \| `build` \| `unknown`). Wenn Backend unter `/opt/setuphelfer` läuft, der Checkout aber woanders liegt: Umgebungsvariable `SETUPHELFER_DEV_WORKSPACE_ROOT` auf das Repo-Root setzen. Details: `DEV_CLIENT_DE.md` / `DEV_CLIENT_EN.md`.
 
 **Deploy-Drift:** Zusätzlich liefert `deploy_drift` einen read-only Abgleich **Workspace vs. produktiver Runtime-Baum** (`get_opt_install_dir()`, typisch `/opt/setuphelfer`): kleine Whitelist relevanter Dateien (Backend-Kern, `config/version.json`, ausgewählte Frontend-Quellen), SHA256 nur bis 384 KiB, darüber Groesse+mtime. Kein automatischer Deploy, kein Restart, keine Installation.
 
-**Deployment-Manifest:** Schema und Generator (`backend/tools/generate_deploy_manifest.py`) schreiben `build/deploy/setuphelfer-deploy-manifest.json` (lokal, nicht versioniert — liegt unter `build/`). Das Cockpit liest Workspace- und Runtime-Manifest optional (`manifest_*`-Felder in `deploy_drift`) und vergleicht Hashes, ohne Bundles zu hashen.
+**Deployment-Manifest:** Schema und Generator (`backend/tools/generate_deploy_manifest.py`) schreiben `build/deploy/setuphelfer-deploy-manifest.json` (lokal, nicht versioniert — liegt unter `build/`). Das Cockpit liest Workspace- und Runtime-Manifest optional (`manifest_*`-Felder in `deploy_drift`) und vergleicht Hashes, ohne Bundles zu hashen. **`scripts/check-runtime-deploy-gate.sh`** wertet `deploy_drift`/Manifest im Gate aus; Pflichtreihenfolge siehe `docs/developer/CURSOR_WORK_RULES.md` und **PKG-001** (`docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md`).
 
 - `modules/*.json` — maschinenlesbare Moduldefinitionen (Ampel, nächste Schritte, Blocker, Artefakt-Pfade).
 - `prompts/` — Ablage für wiederverwendbare Entwickler-Prompts (optional).

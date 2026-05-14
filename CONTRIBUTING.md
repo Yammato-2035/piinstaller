@@ -8,7 +8,7 @@ Danke für dein Interesse! So kannst du mitmachen.
 
 Für **Modulbearbeitungen**, i18n-Pflicht, Nachweise zu Tests, Changelog und Version gilt:
 
-1. **[docs/developer/CURSOR_WORK_RULES.md](docs/developer/CURSOR_WORK_RULES.md)** – zentrales Regelwerk (Phase 0/1: Vorprüfung, **Backend-Version-Gate** vor Runtime-Tests, keine unnötigen Installationen, Modulvollständigkeit).
+1. **[docs/developer/CURSOR_WORK_RULES.md](docs/developer/CURSOR_WORK_RULES.md)** – zentrales Regelwerk (Vorprüfung, **Mandatory Runtime Version Gate** inkl. `check-runtime-deploy-gate.sh` / `check-backend-version-gate.sh` vor Runtime-Tests, keine unnötigen Installationen, Modulvollständigkeit).
 2. **[docs/developer/MODULE_EDIT_CHECKLIST.md](docs/developer/MODULE_EDIT_CHECKLIST.md)** – Checkliste zum Abhaken.
 3. **[docs/developer/CHANGE_REPORT_TEMPLATE.md](docs/developer/CHANGE_REPORT_TEMPLATE.md)** – Berichtsvorlage für relevante Änderungen.
 

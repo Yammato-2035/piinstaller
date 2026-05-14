@@ -13,23 +13,25 @@
 
 ---
 
-## Backend-Version-Gate (Pflicht vor Runtime-, Backup-, Restore-, Hardwaretests)
+## Mandatory Runtime Version Gate (Pflicht vor Runtime-, Backend-, Backup-, Restore-, Rescue-, Deploy-, HW-Tests)
 
-Vor **jedem** produktiven Testlauf, **jedem** Prompt, der das **laufende** Backend unter `/opt` oder einen Dienst auf Port **8000** voraussetzt, und **vor** Backup-/Restore-/Hardware-Tests am Zielsystem:
+Vor **jedem** produktiven Testlauf, **jedem** Prompt oder Operator-Schritt, der das **laufende** Backend (Port **8000**), **`/opt/setuphelfer`**, Backup, Restore, Rescue, Deploy, **Zielpfad**-Prüfungen oder **Verify** gegen die echte Runtime voraussetzt:
 
-1. **`scripts/check-backend-version-gate.sh`** ausführen (oder gleichwertige manuelle Prüfung).
-2. **`curl -i http://127.0.0.1:8000/api/version`** — muss **HTTP 200** und **`status":"success"`** liefern.
-3. **`systemctl status setuphelfer-backend.service --no-pager`** — Dienst muss **aktiv** sein.
+1. **`./scripts/check-runtime-deploy-gate.sh`** ausführen (Exit **0**), **sofern** das Skript im Repo existiert.  
+   Falls nicht vorhanden oder nur Teilkontext: mindestens **`./scripts/check-backend-version-gate.sh`** (Exit **0**) **und** manuell **`GET /api/dev-dashboard/status`** prüfen (`dashboard.deploy_drift`, optionales Deployment-Manifest).
+2. **`GET /api/version`** — **HTTP 200**, gültige Payload (`status":"success"` wo definiert), **`project_version`** (bzw. `version`) **identisch** zu **`config/version.json`** im Workspace.
+3. **`backend_runtime_path`** plausibel: bei **`install_profile=opt`** oder **`app_edition=release`** muss der Pfad **`/opt/setuphelfer/backend`** sein (keine Abweichung ohne dokumentierte Freigabe).
+4. **`systemctl is-active setuphelfer-backend.service`** = aktiv (im kombinierten Gate-Skript enthalten).
+5. **`deploy_drift`**: kein Status **gelb** mit `suggested_actions`, die **`deploy_backend_files`** oder **`restart_backend_manual`** enthalten; **`manifest_match`** darf nicht **`false`** sein, wenn Manifeste vorliegen (Details Skript/Doku).
+6. **`deploy_drift`** Status **gray**: nur mit **dokumentiertem** Grund oder Umgebungsvariable **`RUNTIME_GATE_ALLOW_DEPLOY_DRIFT_GRAY=1`** (siehe `scripts/check-runtime-deploy-gate.sh` / `runtime_deploy_gate_eval.py`).
 
-**Pflichtfelder** in einer gültigen `/api/version`-Antwort (Gate „grün“): `project_version`, `release_stage`, `version_track`, `version_source_of_truth`, `install_profile`, `app_edition`, `backend_runtime_path` (optional: `git_commit`, `build_time`).
+**Wenn eine Bedingung fehlschlägt:**
 
-**Wenn das Gate nicht grün ist:**
+- **STOP.** Keine Tests gegen Port **8000**, **kein** Backup, **kein** Restore, **keine** Zielpfadprüfung am Gerät, **kein** produktives Verify, **kein** Workaround über veralteten Code unter `/opt`.
+- Im Abschlussbericht **`blocked_runtime_outdated`** nennen und das Gate-Ergebnis (Exit-Code, Logzeilen) dokumentieren.
+- Runbook: **`docs/operations/BACKEND_VERSION_UPDATE_GATE_DE.md`** / **`BACKEND_UPDATE_RUNBOOK_DE.md`** sowie **`docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md`** (Paketpflicht bei abnahmefähigen Runtime-Commits).
 
-- **Keine** Backup-, Restore- oder Hardwaretests starten.
-- **Keine** BR-001ff.-Laufwerksaktionen aus Evidence-Prompts ohne vorherigen grünen Gate-Status.
-- Stattdessen **`blocked_update_required`** dokumentieren und **Update-Gate / Runbook** ausführen: siehe **`docs/operations/BACKEND_VERSION_UPDATE_GATE_DE.md`** (bzw. EN) und **`docs/operations/BACKEND_UPDATE_RUNBOOK_DE.md`**.
-
-Abweichung von Workspace-`config/version.json` oder veraltetes `/opt/setuphelfer/config/version.json` (ohne `version_source_of_truth`) blockiert alle abhängigen Tests.
+**Hinweis:** **`scripts/check-backend-version-gate.sh`** prüft zusätzlich Produktivdateien unter `/opt` und strenge Payload-Regeln. **`scripts/check-runtime-deploy-gate.sh`** wertet danach **`deploy_drift`** über **`/api/dev-dashboard/status`** aus. **Empfohlen:** beide Skripte nacheinander ausführen, wenn das volle Gate gewünscht ist. CI ohne laufenden Dienst: nur **`RUNTIME_GATE_SKIP_DEPLOY_DRIFT=1`** setzen, wenn das **schriftlich** im Auftrag begründet ist.
 
 ---
 

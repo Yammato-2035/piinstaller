@@ -1,8 +1,9 @@
 # Prompt 01 – Statusmatrix
 
-## PHASE 0 – BACKEND VERSION GATE (Pflicht)
+## PHASE 0 – Mandatory Runtime Version Gate (Pflicht)
 
-Vor produktiven Runtime-, Backup-, Restore- oder Hardware-Schritten: `scripts/check-backend-version-gate.sh` (Exit **0**), `curl -i http://127.0.0.1:8000/api/version` (**HTTP 200**, `status":"success"`), `systemctl status setuphelfer-backend.service --no-pager`. Wenn nicht grün: **abbrechen**, `docs/operations/BACKEND_VERSION_UPDATE_GATE_DE.md` / `_EN.md` — **kein** Backup, **kein** Restore.
+1. `./scripts/check-runtime-deploy-gate.sh` (Exit **0**), falls vorhanden; sonst `./scripts/check-backend-version-gate.sh` plus `GET /api/dev-dashboard/status` (`deploy_drift`) manuell.
+2. Bei Exit **≠ 0**: **STOP** — kein produktiver Schritt gegen `/opt` oder Port **8000**; Abschlussbericht **`blocked_runtime_outdated`** + Gate-Log; `docs/developer/CURSOR_WORK_RULES.md`.
 
 ---
 
