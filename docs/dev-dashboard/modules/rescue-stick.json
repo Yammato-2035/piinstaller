@@ -6,9 +6,13 @@
   "summary": "Rescue-/Read-only-Pfade und HW-Abnahmen noch offen; keine grüne Produktreife.",
   "last_updated": "2026-05-14",
   "commits": [],
-  "current_focus": "Dokumentation und Matrix RS-*",
-  "next_steps": ["Evidence RS-001ff. nachziehen", "Matrix RESCUE_STICK_TEST_MATRIX prüfen"],
-  "blockers": ["HW-Stick-Tests offen"],
+  "current_focus": "RS-Matrix, Stick-Erkennung, sichere Preview/Execute",
+  "next_steps": [
+    "Evidence RS-001ff. und Exportpfade dokumentieren",
+    "Storage Discovery mit echtem Stick gegen `RESCUE_STICK_TEST_MATRIX` prüfen",
+    "Boot/EFI-Szenarien mit Read-only-Stick verifizieren"
+  ],
+  "blockers": ["HW-Stick-Tests offen", "Echter Read-only-Stick noch nicht abgenommen"],
   "evidence_files": [],
   "prompt_files": [],
   "report_files": [],
@@ -18,7 +22,43 @@
   "diagnostics": [],
   "i18n": [],
   "tests": [],
-  "children": [],
+  "children": [
+    {
+      "id": "rs-concept",
+      "title": "Konzept & Geltungsbereich",
+      "area": "rescue",
+      "status": "yellow",
+      "summary": "Rescue-Edition vs. normale Installation; welche Pfade schreibgeschützt bleiben — Doku/Matrix abstimmen."
+    },
+    {
+      "id": "rs-storage-discovery",
+      "title": "Storage Discovery",
+      "area": "rescue",
+      "status": "yellow",
+      "summary": "Geräte-Enumeration, Hotplug, sichere Allowlist — Unit-Tests vs. HW offen."
+    },
+    {
+      "id": "rs-preview-execute",
+      "title": "Preview / Execute",
+      "area": "rescue",
+      "status": "red",
+      "summary": "Dry-run vs. echte Schritte; Operator-Bestätigungen und Hard-Stops müssen HW-belegt werden."
+    },
+    {
+      "id": "rs-boot-efi",
+      "title": "Boot / EFI",
+      "area": "rescue",
+      "status": "red",
+      "summary": "Boot-Reparatur-Pfade, EFI-Partitionen, Firmware-Varianten — Evidence RS-* fehlt teilweise."
+    },
+    {
+      "id": "rs-evidence-export",
+      "title": "Evidence Export",
+      "area": "rescue",
+      "status": "yellow",
+      "summary": "Support-Bundle / Rescue-Evidence konsistent exportieren; Zielmedien-Policies beachten."
+    }
+  ],
   "artifacts": [
     {"path": "docs/testing/RESCUE_STICK_TEST_MATRIX.md", "kind": "doc"},
     {"path": "docs/faq/RESCUE_FAQ.md", "kind": "faq"}

@@ -99,6 +99,71 @@ def _mount_summary_minimal() -> list[dict[str, str]]:
     return out
 
 
+_ALLOWED_TRAFFIC = frozenset({"green", "yellow", "red", "gray"})
+
+
+def _as_str_list(val: Any) -> list[str]:
+    if val is None:
+        return []
+    if isinstance(val, list):
+        return [str(x) for x in val if x is not None and str(x).strip()]
+    if isinstance(val, str) and val.strip():
+        return [val.strip()]
+    return []
+
+
+def _normalize_traffic(raw: Any) -> tuple[str, str | None]:
+    s = str(raw or "").strip().lower()
+    if s in _ALLOWED_TRAFFIC:
+        return s, None
+    if s:
+        return "gray", f"invalid_traffic:{raw!r}"
+    return "gray", None
+
+
+def _normalize_module_dict(data: dict[str, Any], warns: list[str], *, _depth: int = 0) -> dict[str, Any]:
+    """Kanonisiert Modul-JSON: Ampel, Listenfelder, Kinder rekursiv. Keine Exceptions bei Randfaellen."""
+    if _depth > 12:
+        warns.append("module_children_depth_exceeded")
+        return dict(data)
+    out = dict(data)
+    st, wnote = _normalize_traffic(out.get("status"))
+    out["status"] = st
+    if wnote:
+        mid = str(out.get("id") or "?")
+        warns.append(f"module:{mid}:{wnote}")
+
+    for lk in (
+        "next_steps",
+        "blockers",
+        "evidence_files",
+        "prompt_files",
+        "report_files",
+        "docs",
+        "faq",
+        "knowledge_base",
+        "diagnostics",
+        "i18n",
+        "tests",
+        "commits",
+    ):
+        out[lk] = _as_str_list(out.get(lk))
+
+    children_raw = out.get("children")
+    kids: list[dict[str, Any]] = []
+    if isinstance(children_raw, list):
+        for idx, ch in enumerate(children_raw):
+            if isinstance(ch, dict):
+                kids.append(_normalize_module_dict(dict(ch), warns, _depth=_depth + 1))
+            else:
+                warns.append(f"module_child_not_object:{out.get('id')}:{idx}")
+    out["children"] = kids
+
+    if not isinstance(out.get("artifacts"), list):
+        out["artifacts"] = []
+    return out
+
+
 def _load_module_definitions(repo: Path) -> tuple[list[dict[str, Any]], list[str]]:
     mods_dir = repo / "docs" / "dev-dashboard" / "modules"
     warns: list[str] = []
@@ -106,6 +171,7 @@ def _load_module_definitions(repo: Path) -> tuple[list[dict[str, Any]], list[str
     if not mods_dir.is_dir():
         warns.append(f"modules_dir_missing:{mods_dir}")
         return modules, warns
+    seen_ids: set[str] = set()
     for jp in sorted(mods_dir.glob("*.json")):
         data, err = _safe_read_json(jp)
         if err or not data:
@@ -116,6 +182,11 @@ def _load_module_definitions(repo: Path) -> tuple[list[dict[str, Any]], list[str
             continue
         data = dict(data)
         data["_source_file"] = str(jp.relative_to(repo)).replace("\\", "/")
+        data = _normalize_module_dict(data, warns)
+        mid = str(data.get("id") or jp.stem).strip()
+        if mid in seen_ids:
+            warns.append(f"duplicate_module_id:{mid}")
+        seen_ids.add(mid)
         modules.append(data)
     return modules, warns
 
@@ -234,12 +305,14 @@ def build_module_detail(module_id: str, repo_root: Path | None = None) -> dict[s
     mods_dir = repo / "docs" / "dev-dashboard" / "modules"
     if not mods_dir.is_dir():
         return {"status": "error", "module_id": mid, "warnings": ["modules_dir_missing"], "module": None}
+    warns: list[str] = []
     for jp in sorted(mods_dir.glob("*.json")):
         data, err = _safe_read_json(jp)
         if err or not isinstance(data, dict):
             continue
         if str(data.get("id") or "").strip() == mid or jp.stem == mid:
-            return {"status": "success", "module_id": str(data.get("id") or mid), "module": _enrich_artifacts(repo, data), "warnings": []}
+            norm = _normalize_module_dict(dict(data), warns)
+            return {"status": "success", "module_id": str(data.get("id") or mid), "module": _enrich_artifacts(repo, norm), "warnings": warns}
     return {"status": "error", "module_id": mid, "warnings": ["module_not_found"], "module": None}
 
 

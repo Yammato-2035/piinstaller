@@ -3,12 +3,16 @@
   "title": "Packaging & Updates",
   "area": "packaging",
   "status": "yellow",
-  "summary": "APT-/Update-Delivery und DEB-Pipeline weiter offen; Update-Center-Gates beachten.",
+  "summary": "DEB-Pipeline, Backend-Version-Gate und Update-Delivery; APT-/Repository-Strategie weiter offen.",
   "last_updated": "2026-05-14",
   "commits": [],
-  "current_focus": "DEB-Build, Version-Gate, Self-Update",
-  "next_steps": ["CI vs. lokale venv abstimmen", "Release-Readiness Checkliste"],
-  "blockers": ["Release-Gate nicht grün"],
+  "current_focus": "DEB-Build, Version-Gate, Self-Update, Dienst-Units",
+  "next_steps": [
+    "CI vs. lokale venv mit `scripts/check-backend-version-gate.sh` abstimmen",
+    "Release-Readiness Checkliste und Update-Center-Gates verlinken",
+    "Installer/Service-Units unter `/opt` dokumentieren und testen"
+  ],
+  "blockers": ["Release-Gate nicht grün", "APT-/Update-Delivery-Konzept nicht final"],
   "evidence_files": [],
   "prompt_files": [],
   "report_files": [],
@@ -18,7 +22,36 @@
   "diagnostics": [],
   "i18n": [],
   "tests": [],
-  "children": [],
+  "children": [
+    {
+      "id": "pkg-version-gate",
+      "title": "Backend-Version-Gate",
+      "area": "packaging",
+      "status": "yellow",
+      "summary": "`scripts/check-backend-version-gate.sh` + `/api/version`; produktiver Grün-Nachweis ausstehend."
+    },
+    {
+      "id": "pkg-apt-repo",
+      "title": "APT / Repository",
+      "area": "packaging",
+      "status": "yellow",
+      "summary": "Öffentliche oder interne Paketquelle, Signing, Pinning — Entscheidung und Doku offen."
+    },
+    {
+      "id": "pkg-installer-units",
+      "title": "Installer & Service Units",
+      "area": "packaging",
+      "status": "yellow",
+      "summary": "postinst/systemd für Backend/Frontend; Konflikt-Guards und Ports dokumentieren."
+    },
+    {
+      "id": "pkg-update-delivery",
+      "title": "Update Delivery",
+      "area": "packaging",
+      "status": "red",
+      "summary": "Self-Update / Update-Center vs. manuelle DEB-Rolle; sichere Rollback-Story fehlt."
+    }
+  ],
   "artifacts": [
     {"path": "docs/developer/BUILD_DEB.md", "kind": "doc"},
     {"path": "scripts/check-backend-version-gate.sh", "kind": "doc"}

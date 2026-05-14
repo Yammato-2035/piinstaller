@@ -21,6 +21,7 @@
   "children": [],
   "artifacts": [
     {"path": "frontend/src/pages/DevDashboard.tsx", "kind": "doc"},
+    {"path": "frontend/src/pages/DevDashboardBody.tsx", "kind": "doc"},
     {"path": "frontend/src/components/BackupJobProgressSection.tsx", "kind": "doc"}
   ]
 }

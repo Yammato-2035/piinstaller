@@ -8,7 +8,7 @@
   "commits": [],
   "current_focus": "Matcher, Evidence-Mapping, UI-Panels",
   "next_steps": ["Seed-Cases erweitern", "i18n-Konsistenz prüfen"],
-  "blockers": [],
+  "blockers": ["HW-Abnahme Diagnostics-UI und Matcher-Regression offen"],
   "evidence_files": [],
   "prompt_files": [],
   "report_files": [],

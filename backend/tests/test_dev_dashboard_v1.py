@@ -1,5 +1,6 @@
 """Development Cockpit API — read-only, keine Backup-/Restore-Ausführung."""
 
+import json
 import sys
 import tempfile
 import unittest
@@ -44,6 +45,27 @@ class TestDevDashboardCore(unittest.TestCase):
             self.assertIn("buckets", out)
             warns = out.get("warnings") or []
             self.assertIn("docs_evidence_missing", warns)
+
+    def test_module_json_invalid_traffic_becomes_gray(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            mod_dir = root / "docs" / "dev-dashboard" / "modules"
+            mod_dir.mkdir(parents=True)
+            raw = {
+                "id": "z-invalid-traffic",
+                "title": "T",
+                "area": "backup",
+                "status": "orange",
+                "last_updated": "2026-01-01",
+            }
+            (mod_dir / "z-invalid-traffic.json").write_text(json.dumps(raw), encoding="utf-8")
+            out = dd.build_modules_list(repo_root=root)
+            self.assertEqual(out.get("status"), "success")
+            mods = out.get("modules") or []
+            self.assertEqual(len(mods), 1)
+            self.assertEqual(mods[0].get("status"), "gray")
+            warns = out.get("warnings") or []
+            self.assertTrue(any("invalid_traffic" in w for w in warns))
 
     def test_action_placeholders(self):
         r1 = dd.action_placeholder_response("restart-backend")
@@ -92,6 +114,15 @@ class TestDevDashboardApiV1(unittest.TestCase):
         self.assertIsNotNone(br)
         children = br.get("children") or []
         self.assertGreaterEqual(len(children), 1)
+
+    def test_module_detail_backup_restore(self):
+        r = self.client.get("/api/dev-dashboard/modules/backup-restore")
+        self.assertEqual(r.status_code, 200, r.text)
+        payload = r.json()
+        self.assertEqual(payload.get("status"), "success")
+        mod = payload.get("module") or {}
+        self.assertEqual(mod.get("id"), "backup-restore")
+        self.assertGreaterEqual(len(mod.get("children") or []), 1)
 
     def test_evidence_index_200(self):
         r = self.client.get("/api/dev-dashboard/evidence-index")

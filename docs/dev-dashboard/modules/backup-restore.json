@@ -3,14 +3,15 @@
   "title": "Backup & Restore",
   "area": "backup",
   "status": "yellow",
-  "summary": "BR-001 weiterhin nicht grün. BR-016–BR-019 gelb/rot. BR-019: recommended als Default, Full-Expert nur mit Bestätigung. Progress-UI und Evidence-API vorhanden; Performance und Zielmedium-/USB-Stabilität HW-offen.",
+  "summary": "BR-001 weiterhin nicht grün. BR-016–BR-019 gelb/rot. BR-019: recommended als Default, Full-Expert nur mit Bestätigung. Progress-UI (BR-018) und Evidence-API vorhanden; BR-017 Evidence Collector; Performance (BR-016) und Zielmedium-/USB-Stabilität HW-offen.",
   "last_updated": "2026-05-14",
   "commits": [],
   "current_focus": "Profile-API, Preview, Gates, Runner-Performance",
   "next_steps": [
     "BR-001 Retry/HW nach freigegebenem Zielmedium",
-    "Runner-Finalisierung (BR-012) und Write-I/O (BR-013) weiter belegen",
-    "fast-system von Full-Root entkoppeln, sobald Runner-Scope steht"
+    "BR-012 Runner-Finalisierung und BR-013 Write-I/O weiter belegen",
+    "BR-016–BR-018 HW-/E2E-Abnahme Performance, Evidence, Progress",
+    "BR-019 Profil-Daten-Scope auf Zielmedium verifizieren"
   ],
   "blockers": ["BR-001 blocked/failed", "Release-Gate rot/gelb"],
   "evidence_files": ["docs/evidence/backup-restore/BR-001.json"],
@@ -24,18 +25,39 @@
   "tests": ["backend/tests/test_backup_profiles_v1.py", "frontend/src/utils/backupCreateBody.test.ts"],
   "children": [
     {
-      "id": "br-019-profiles",
-      "title": "BR-019 Backup Profiles",
-      "area": "backup",
-      "status": "yellow",
-      "summary": "recommended als UI-/Create-Default; Full-Root nur Expertenmodus mit Bestätigung; pytest/Vitest grün lokal, HW-Daten-Scope offen."
-    },
-    {
       "id": "br-001-target-hw",
       "title": "BR-001 Zielmedium / HW-Stabilität",
       "area": "backup",
       "status": "red",
       "summary": "Weiter failed/blocked; Ziel-Schreib-EIO (BR-013) und USB-/Medium-Stabilität als offenes HW-Thema."
+    },
+    {
+      "id": "br-016-performance",
+      "title": "BR-016 Performance / Kompression",
+      "area": "backup",
+      "status": "yellow",
+      "summary": "pigz/Profile-Excludes; zstd vorbereitet; Messungen und HW-Last noch offen."
+    },
+    {
+      "id": "br-017-evidence-collector",
+      "title": "BR-017 Evidence Collector",
+      "area": "backup",
+      "status": "yellow",
+      "summary": "Collector + Runner-Hook; Rechte edge-cases; vollständige Abnahme mit Archiven offen."
+    },
+    {
+      "id": "br-018-progress-ui",
+      "title": "BR-018 Progress / ETA / UI",
+      "area": "backup",
+      "status": "yellow",
+      "summary": "BackupJobProgressSection, Evidence-Modal; ETA ohne Total = i18n „unbekannt“."
+    },
+    {
+      "id": "br-019-profiles",
+      "title": "BR-019 Backup Profiles",
+      "area": "backup",
+      "status": "yellow",
+      "summary": "recommended als UI-/Create-Default; Full-Root nur Expertenmodus mit Bestätigung; HW-Daten-Scope offen."
     }
   ],
   "artifacts": [
