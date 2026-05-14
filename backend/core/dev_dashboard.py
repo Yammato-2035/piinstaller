@@ -85,6 +85,254 @@ def _git_summary(repo: Path) -> dict[str, Any] | None:
         return None
 
 
+def _effective_workspace_root(repo: Path) -> Path:
+    """
+    Optional: SETUPHELFER_DEV_WORKSPACE_ROOT zeigt auf einen Checkout (z. B. /home/.../piinstaller),
+    während die API aus /opt/setuphelfer laeuft — dann unterscheiden sich Runtime- und Workspace-Version.
+    """
+    raw = (os.environ.get("SETUPHELFER_DEV_WORKSPACE_ROOT") or "").strip()
+    if not raw:
+        return repo
+    try:
+        p = Path(raw).expanduser().resolve()
+        if p.is_dir():
+            return p
+    except OSError:
+        pass
+    return repo
+
+
+def _numeric_version_tuple(s: str) -> tuple[int, ...] | None:
+    s = str(s).strip()
+    if not s:
+        return None
+    nums: list[int] = []
+    for chunk in s.replace("_", ".").split("."):
+        if not chunk:
+            continue
+        acc = ""
+        for ch in chunk:
+            if ch.isdigit():
+                acc += ch
+            else:
+                break
+        if not acc:
+            return None
+        nums.append(int(acc))
+    return tuple(nums) if nums else None
+
+
+def _compare_dotted_versions(a: str, b: str) -> int | None:
+    """-1 wenn a<b, 0 gleich, 1 wenn a>b; None wenn nicht vergleichbar."""
+    ta, tb = _numeric_version_tuple(a), _numeric_version_tuple(b)
+    if ta is None or tb is None:
+        return None
+    n = max(len(ta), len(tb))
+    for i in range(n):
+        va = ta[i] if i < len(ta) else 0
+        vb = tb[i] if i < len(tb) else 0
+        if va < vb:
+            return -1
+        if va > vb:
+            return 1
+    return 0
+
+
+def _read_workspace_version_info(ws_root: Path) -> tuple[str | None, str | None, str | None]:
+    """Liest config/version.json unter ws_root; keine Exceptions nach außen."""
+    vf = ws_root / "config" / "version.json"
+    try:
+        from core.versioning import load_project_version
+
+        vi = load_project_version(version_file=vf)
+        return vi.project_version, vi.release_stage, vi.version_track
+    except Exception:
+        return None, None, None
+
+
+def _git_workspace_detail(repo: Path) -> dict[str, Any]:
+    """Git-Metadaten; fehlendes Git oder fehlende Upstream-Refs → null-Felder, kein Raise."""
+    out: dict[str, Any] = {
+        "git_head": None,
+        "git_branch": None,
+        "git_dirty_count": None,
+        "git_unpushed_count": None,
+    }
+    try:
+        hp = subprocess.run(
+            ["git", "-C", str(repo), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=0.45,
+            check=False,
+        )
+        if hp.returncode == 0:
+            hx = (hp.stdout or "").strip()
+            if hx:
+                out["git_head"] = hx[:64]
+        br = subprocess.run(
+            ["git", "-C", str(repo), "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=0.35,
+            check=False,
+        )
+        if br.returncode == 0:
+            bx = (br.stdout or "").strip()
+            if bx and bx != "HEAD":
+                out["git_branch"] = bx
+        st = subprocess.run(
+            ["git", "-C", str(repo), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            timeout=0.55,
+            check=False,
+        )
+        if st.returncode == 0:
+            lines = [ln for ln in (st.stdout or "").splitlines() if ln.strip()]
+            out["git_dirty_count"] = len(lines)
+        up = subprocess.run(
+            ["git", "-C", str(repo), "rev-list", "--count", "@{u}..HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=0.55,
+            check=False,
+        )
+        if up.returncode == 0:
+            raw_u = (up.stdout or "").strip()
+            if raw_u.isdigit():
+                out["git_unpushed_count"] = int(raw_u)
+    except Exception:
+        pass
+    return out
+
+
+def _normalize_frontend_runtime_source(raw: str | None) -> str:
+    s = str(raw or "").strip().lower()
+    if s in {"dev", "build", "unknown"}:
+        return s
+    return "unknown"
+
+
+def _build_runtime_workspace_sections(
+    *,
+    repo: Path,
+    warnings: list[str],
+    backend_version: str | None,
+    install_profile: str | None,
+    app_edition: str | None,
+    release_stage: str | None,
+    version_track: str | None,
+    frontend_build_version: str | None,
+    frontend_runtime_source: str,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    ws_root = _effective_workspace_root(repo)
+    if ws_root != repo:
+        warnings.append("workspace_root_from_env:SETUPHELFER_DEV_WORKSPACE_ROOT")
+
+    ws_pv, ws_rs, ws_vt = _read_workspace_version_info(ws_root)
+    if ws_pv is None and (ws_root / "config" / "version.json").is_file():
+        warnings.append("workspace_version_unreadable")
+
+    git_detail = _git_workspace_detail(ws_root)
+    try:
+        from core.install_paths import get_backend_runtime_dir
+
+        backend_runtime_path = str(get_backend_runtime_dir().resolve())
+    except Exception as exc:  # noqa: BLE001
+        warnings.append(f"backend_runtime_path:{exc}")
+        backend_runtime_path = ""
+
+    runtime: dict[str, Any] = {
+        "backend_api_reachable": True,
+        "backend_version": backend_version,
+        "backend_project_version": backend_version,
+        "release_stage": release_stage,
+        "version_track": version_track,
+        "install_profile": install_profile,
+        "backend_runtime_path": backend_runtime_path or None,
+        "app_edition": app_edition,
+    }
+
+    workspace: dict[str, Any] = {
+        "workspace_path": str(ws_root),
+        "workspace_version": ws_pv,
+        "workspace_release_stage": ws_rs,
+        "workspace_version_track": ws_vt,
+        "git_head": git_detail.get("git_head"),
+        "git_branch": git_detail.get("git_branch"),
+        "git_dirty_count": git_detail.get("git_dirty_count"),
+        "git_unpushed_count": git_detail.get("git_unpushed_count"),
+    }
+
+    fe_src = _normalize_frontend_runtime_source(frontend_runtime_source)
+    fe_ver = (frontend_build_version or "").strip() or None
+    fe_matches: bool | None
+    if fe_src == "dev" or fe_ver is None:
+        fe_matches = None
+    else:
+        fe_matches = bool(backend_version) and fe_ver == (backend_version or "")
+
+    frontend: dict[str, Any] = {
+        "frontend_build_version": fe_ver,
+        "frontend_runtime_source": fe_src,
+        "frontend_version_matches_backend": fe_matches,
+    }
+
+    cw: list[str] = []
+    if not backend_version:
+        cw.append("version_unknown")
+    if not ws_pv:
+        cw.append("version_unknown")
+
+    bw_match: bool | None = None
+    if backend_version and ws_pv:
+        bw_match = backend_version == ws_pv
+        if not bw_match:
+            cmp = _compare_dotted_versions(backend_version, ws_pv)
+            if cmp == -1:
+                cw.append("backend_runtime_outdated")
+            elif cmp == 1:
+                cw.append("workspace_behind_runtime")
+            else:
+                cw.append("version_divergence")
+
+    fb_match: bool | None = None
+    if fe_src == "dev":
+        fb_match = None
+    elif fe_ver is None:
+        fb_match = None
+    elif not backend_version:
+        fb_match = None
+    else:
+        fb_match = fe_ver == backend_version
+        if not fb_match:
+            cw.append("frontend_build_outdated")
+
+    dirty = git_detail.get("git_dirty_count")
+    if isinstance(dirty, int) and dirty > 0:
+        cw.append("workspace_dirty")
+    unpushed = git_detail.get("git_unpushed_count")
+    if isinstance(unpushed, int) and unpushed > 0:
+        cw.append("workspace_unpushed")
+
+    if not backend_version:
+        status = "red"
+    elif cw:
+        status = "yellow"
+    else:
+        status = "green"
+
+    consistency: dict[str, Any] = {
+        "backend_workspace_match": bw_match,
+        "frontend_backend_match": fb_match,
+        "status": status,
+        "warnings": sorted(set(cw)),
+    }
+
+    return runtime, workspace, frontend, consistency
+
+
 def _mount_summary_minimal() -> list[dict[str, str]]:
     """Read-only: erste Zeilen von /proc/mounts (kein findmnt/sudo)."""
     out: list[dict[str, str]] = []
@@ -225,6 +473,8 @@ def build_dashboard_status(
     repo_root: Path | None = None,
     running_jobs: list[dict[str, Any]] | None = None,
     package_activity: list[dict[str, Any]] | None = None,
+    frontend_build_version: str | None = None,
+    frontend_runtime_source: str | None = None,
 ) -> dict[str, Any]:
     repo = repo_root or _repo_root()
     warnings: list[str] = []
@@ -232,6 +482,8 @@ def build_dashboard_status(
     generated = datetime.now(tz=UTC).isoformat()
 
     backend_version = None
+    release_stage_rt: str | None = None
+    version_track_rt: str | None = None
     install_profile = None
     app_edition = None
     try:
@@ -239,6 +491,8 @@ def build_dashboard_status(
 
         vi = load_project_version()
         backend_version = vi.project_version
+        release_stage_rt = vi.release_stage
+        version_track_rt = vi.version_track
     except Exception as exc:  # noqa: BLE001
         warnings.append(f"version_load:{exc}")
 
@@ -249,6 +503,19 @@ def build_dashboard_status(
         app_edition = str(get_app_edition())
     except Exception as exc:  # noqa: BLE001
         warnings.append(f"edition_load:{exc}")
+
+    fe_src = _normalize_frontend_runtime_source(frontend_runtime_source)
+    runtime, workspace, frontend, consistency = _build_runtime_workspace_sections(
+        repo=repo,
+        warnings=warnings,
+        backend_version=backend_version,
+        install_profile=install_profile,
+        app_edition=app_edition,
+        release_stage=release_stage_rt,
+        version_track=version_track_rt,
+        frontend_build_version=frontend_build_version,
+        frontend_runtime_source=fe_src,
+    )
 
     gate_path = repo / "docs" / "evidence" / "release-gates" / "backup_restore_release_gate.json"
     gate, gerr = _safe_read_json(gate_path)
@@ -283,6 +550,10 @@ def build_dashboard_status(
         "package_activity_summary": {"count": len(package_activity or []), "samples": (package_activity or [])[:5]},
         "git_summary": _git_summary(repo),
         "matrix_files": matrix_hint,
+        "runtime": runtime,
+        "workspace": workspace,
+        "frontend": frontend,
+        "consistency": consistency,
         "warnings": warnings,
         "errors": errors,
     }

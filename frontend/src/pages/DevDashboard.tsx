@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
-import { fetchApi } from '../api'
+import { fetchApi, getApiBase, normalizeApiBaseUrl } from '../api'
 import { DevDashboardBody, type DashboardPayload, type ModuleRow } from './DevDashboardBody'
 import { matchesFilter, type FilterKey } from './devDashboardFilters'
 
@@ -15,11 +15,25 @@ const DevDashboard: React.FC = () => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
+  const [apiBaseDisplay, setApiBaseDisplay] = useState('')
+
+  const devDashboardStatusUrl = useCallback(() => {
+    const params = new URLSearchParams()
+    const fv =
+      typeof __APP_VERSION__ !== 'undefined' && String(__APP_VERSION__).trim() ? String(__APP_VERSION__).trim() : ''
+    if (fv) params.set('frontend_build_version', fv)
+    params.set('frontend_runtime_source', import.meta.env.DEV ? 'dev' : 'build')
+    const q = params.toString()
+    return `/api/dev-dashboard/status?${q}`
+  }, [])
+
   const loadAll = useCallback(async () => {
     setLoading(true)
     try {
+      const base = getApiBase()
+      setApiBaseDisplay(base ? normalizeApiBaseUrl(base) : t('app.apiConsistency.apiBase.sameOrigin'))
       const [r1, r2, r3] = await Promise.all([
-        fetchApi('/api/dev-dashboard/status'),
+        fetchApi(devDashboardStatusUrl()),
         fetchApi('/api/dev-dashboard/modules'),
         fetchApi('/api/dev-dashboard/evidence-index'),
       ])
@@ -37,7 +51,7 @@ const DevDashboard: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }, [t])
+  }, [t, devDashboardStatusUrl])
 
   useEffect(() => {
     void loadAll()
@@ -83,6 +97,7 @@ const DevDashboard: React.FC = () => {
       onSelectModuleId={setSelectedId}
       onRefresh={() => void loadAll()}
       postAction={postAction}
+      apiBaseDisplay={apiBaseDisplay}
     />
   )
 }

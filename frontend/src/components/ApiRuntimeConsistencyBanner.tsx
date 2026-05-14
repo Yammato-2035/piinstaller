@@ -5,7 +5,8 @@ import { TAURI_DEFAULT_API, fetchApi, getApiBase, normalizeApiBaseUrl, setApiBas
 const EXPECTED_TAURI_APP_ID = 'de.pi-installer.app'
 
 function frontendBuildVersion(): string {
-  return typeof __APP_VERSION__ !== 'undefined' ? String(__APP_VERSION__).trim() : '0.0.0'
+  if (typeof __APP_VERSION__ === 'undefined') return ''
+  return String(__APP_VERSION__).trim()
 }
 
 type BannerState =
@@ -62,10 +63,11 @@ export default function ApiRuntimeConsistencyBanner() {
       }
       const data = (await res.json()) as {
         version?: string
+        project_version?: string
         tauri_app_id?: string
         app_name?: string
       }
-      const backendVersion = String(data?.version || '').trim()
+      const backendVersion = String(data?.version ?? data?.project_version ?? '').trim()
       if (!backendVersion) {
         setState({ kind: 'unreachable', apiBaseLabel })
         return
@@ -75,7 +77,7 @@ export default function ApiRuntimeConsistencyBanner() {
         setState({ kind: 'app_id_mismatch', got: tidExpect, apiBaseLabel })
         return
       }
-      if (backendVersion !== uiVer) {
+      if (uiVer && backendVersion !== uiVer) {
         setState({
           kind: 'version_mismatch',
           backendVersion,

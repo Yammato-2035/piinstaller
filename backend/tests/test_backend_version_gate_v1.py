@@ -58,6 +58,7 @@ class BackendVersionGateV1Tests(unittest.TestCase):
             "backend_runtime_path",
         ):
             self.assertIn(key, data, msg=f"missing {key}")
+        self.assertEqual(data.get("version"), data.get("project_version"), msg="version alias must match project_version")
 
     @unittest.skipUnless(_HAS_TC, "FastAPI TestClient oder app nicht verfügbar")
     def test_api_version_503_on_invalid_version_config(self) -> None:

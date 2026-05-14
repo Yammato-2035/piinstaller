@@ -44,6 +44,8 @@ export type DevDashboardBodyProps = {
   onSelectModuleId: (id: string) => void
   onRefresh: () => void
   postAction: (path: string) => void | Promise<void>
+  /** Anzeige der konfigurierten API-Basis (Browser); optional. */
+  apiBaseDisplay?: string
 }
 
 export function DevDashboardBody({
@@ -60,6 +62,7 @@ export function DevDashboardBody({
   onSelectModuleId,
   onRefresh,
   postAction,
+  apiBaseDisplay,
 }: DevDashboardBodyProps) {
   const filteredModules = modules.filter((m) => matchesFilter(m, filter))
 
@@ -87,6 +90,8 @@ export function DevDashboardBody({
       <div className="rounded-lg border border-slate-600 bg-slate-900/50 px-4 py-3 text-sm text-slate-300">
         {t('devDashboard.readOnlyNotice')}
       </div>
+
+      <RuntimeWorkspacePanel dashboard={dashboard} t={t} apiBaseDisplay={apiBaseDisplay} />
 
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={() => onRefresh()} className="btn-secondary inline-flex items-center gap-2" disabled={loading}>
@@ -299,6 +304,128 @@ export function DevDashboardBody({
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function RuntimeWorkspacePanel({
+  dashboard,
+  t,
+  apiBaseDisplay,
+}: {
+  dashboard: DashboardPayload
+  t: TFunction
+  apiBaseDisplay?: string
+}) {
+  if (!dashboard) return null
+  const runtime = dashboard.runtime as Record<string, unknown> | undefined
+  const workspace = dashboard.workspace as Record<string, unknown> | undefined
+  const frontend = dashboard.frontend as Record<string, unknown> | undefined
+  const consistency = dashboard.consistency as Record<string, unknown> | undefined
+  const st = String(consistency?.status || 'gray')
+  const borderTone =
+    st === 'red'
+      ? 'border-rose-500/70 bg-rose-950/30'
+      : st === 'yellow'
+        ? 'border-amber-500/70 bg-amber-950/25'
+        : st === 'gray'
+          ? 'border-slate-500/60 bg-slate-900/40'
+          : 'border-emerald-600/50 bg-emerald-950/20'
+  const feSrc = String(frontend?.frontend_runtime_source || 'unknown')
+  const feSrcLabel = t(`devDashboard.runtimeWorkspace.source.${feSrc}`, {
+    defaultValue: feSrc,
+  })
+  const cw = Array.isArray(consistency?.warnings) ? (consistency?.warnings as string[]) : []
+  const tri =
+    st === 'red'
+      ? t('devDashboard.status.red')
+      : st === 'yellow'
+        ? t('devDashboard.status.yellow')
+        : st === 'gray'
+          ? t('devDashboard.status.gray')
+          : t('devDashboard.status.green')
+
+  const fmtTri = (v: unknown) => (v === true ? '✓' : v === false ? '✗' : '—')
+
+  return (
+    <div
+      className={`rounded-xl border p-4 space-y-3 ${borderTone}`}
+      data-testid="dev-dashboard-runtime-workspace-card"
+    >
+      <div>
+        <h2 className="text-base font-semibold text-white">{t('devDashboard.runtimeWorkspace.title')}</h2>
+        <p className="text-xs text-slate-300 mt-1">{t('devDashboard.runtimeWorkspace.subtitle')}</p>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+        <span className="text-slate-400">{t('devDashboard.runtimeWorkspace.consistency')}:</span>
+        <span className="font-mono font-bold text-white">{tri}</span>
+        <span className="text-xs text-slate-500">({st})</span>
+      </div>
+      {apiBaseDisplay ? (
+        <div className="text-xs text-slate-400">
+          {t('devDashboard.runtimeWorkspace.apiBase')}: <code className="text-slate-200 break-all">{apiBaseDisplay}</code>
+        </div>
+      ) : null}
+      <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-xs text-slate-200">
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.backendVersion')}</dt>
+          <dd className="font-mono break-all">{String(runtime?.backend_project_version ?? runtime?.backend_version ?? '—')}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.workspaceVersion')}</dt>
+          <dd className="font-mono break-all">{String(workspace?.workspace_version ?? '—')}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.frontendBuild')}</dt>
+          <dd className="font-mono break-all">{String(frontend?.frontend_build_version ?? '—')}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.frontendSource')}</dt>
+          <dd>{feSrcLabel}</dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.runtimePath')}</dt>
+          <dd className="font-mono break-all text-slate-300">{String(runtime?.backend_runtime_path ?? '—')}</dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.workspacePath')}</dt>
+          <dd className="font-mono break-all text-slate-300">{String(workspace?.workspace_path ?? '—')}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.gitHead')}</dt>
+          <dd className="font-mono break-all">{String(workspace?.git_head ?? '—')}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.gitBranch')}</dt>
+          <dd className="font-mono break-all">{String(workspace?.git_branch ?? '—')}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.dirtyCount')}</dt>
+          <dd>{workspace?.git_dirty_count != null ? String(workspace.git_dirty_count) : '—'}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.unpushedCount')}</dt>
+          <dd>{workspace?.git_unpushed_count != null ? String(workspace.git_unpushed_count) : '—'}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.workspaceMatches')}</dt>
+          <dd className="font-mono">{fmtTri(consistency?.backend_workspace_match)}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.runtimeWorkspace.frontendMatches')}</dt>
+          <dd className="font-mono">{fmtTri(consistency?.frontend_backend_match)}</dd>
+        </div>
+      </dl>
+      {cw.length > 0 ? (
+        <div className="text-xs border-t border-white/10 pt-2">
+          <div className="font-semibold text-slate-300 mb-1">{t('devDashboard.runtimeWorkspace.warnings')}</div>
+          <ul className="list-disc pl-4 space-y-0.5 text-amber-100/90">
+            {cw.map((w) => (
+              <li key={w}>{t(`devDashboard.runtimeWorkspace.warn.${w}`, { defaultValue: w })}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </div>
   )
 }

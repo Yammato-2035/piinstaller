@@ -5,6 +5,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 _backend = Path(__file__).resolve().parent.parent
 if str(_backend) not in sys.path:
@@ -23,6 +25,11 @@ class TestDevDashboardCore(unittest.TestCase):
             self.assertIsInstance(body.get("warnings"), list)
             self.assertIsInstance(body.get("errors"), list)
             self.assertEqual(body.get("release_gate_status"), "unknown")
+            self.assertIn("runtime", body)
+            self.assertIn("workspace", body)
+            self.assertIn("frontend", body)
+            self.assertIn("consistency", body)
+            self.assertIn("backend_api_reachable", body.get("runtime") or {})
 
     def test_build_modules_list_missing_dir(self):
         with tempfile.TemporaryDirectory() as td:
@@ -82,6 +89,49 @@ class TestDevDashboardCore(unittest.TestCase):
         self.assertEqual(r3.get("status"), "error")
         self.assertEqual(r3.get("result"), "unknown_action")
 
+    @patch("core.versioning.load_project_version")
+    def test_consistency_frontend_build_outdated_yellow(self, lp: MagicMock) -> None:
+        lp.return_value = SimpleNamespace(project_version="1.7.1", release_stage="internal_testing", version_track="t")
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            (tmp / "docs" / "evidence" / "release-gates").mkdir(parents=True)
+            (tmp / "docs" / "evidence" / "release-gates" / "backup_restore_release_gate.json").write_text(
+                '{"ampel":"gelb"}', encoding="utf-8"
+            )
+            (tmp / "config").mkdir(parents=True)
+            (tmp / "config" / "version.json").write_text(
+                json.dumps(
+                    {
+                        "project_version": "1.7.1",
+                        "release_stage": "internal_testing",
+                        "version_source_of_truth": True,
+                        "version_track": "t",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            body = dd.build_dashboard_status(
+                repo_root=tmp,
+                running_jobs=[],
+                package_activity=[],
+                frontend_build_version="1.5.0.0",
+                frontend_runtime_source="build",
+            )
+        self.assertEqual(body.get("consistency", {}).get("status"), "yellow")
+        self.assertIn("frontend_build_outdated", body.get("consistency", {}).get("warnings") or [])
+
+    @patch("core.versioning.load_project_version", side_effect=FileNotFoundError("no version"))
+    def test_consistency_red_when_runtime_version_unreadable(self, _lp: MagicMock) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            (tmp / "docs" / "evidence" / "release-gates").mkdir(parents=True)
+            (tmp / "docs" / "evidence" / "release-gates" / "backup_restore_release_gate.json").write_text(
+                '{"ampel":"gelb"}', encoding="utf-8"
+            )
+            body = dd.build_dashboard_status(repo_root=tmp, running_jobs=[], package_activity=[])
+        self.assertEqual(body.get("consistency", {}).get("status"), "red")
+        self.assertIn("version_unknown", body.get("consistency", {}).get("warnings") or [])
+
 
 try:
     from fastapi.testclient import TestClient
@@ -105,6 +155,16 @@ class TestDevDashboardApiV1(unittest.TestCase):
         data = r.json()
         self.assertEqual(data.get("status"), "success")
         self.assertIn("dashboard", data)
+        dash = data.get("dashboard") or {}
+        for key in ("runtime", "workspace", "frontend", "consistency"):
+            self.assertIn(key, dash, msg=key)
+
+    def test_status_accepts_frontend_query_params(self):
+        r = self.client.get("/api/dev-dashboard/status?frontend_build_version=0.0.1-test&frontend_runtime_source=build")
+        self.assertEqual(r.status_code, 200, r.text)
+        fe = (r.json().get("dashboard") or {}).get("frontend") or {}
+        self.assertEqual(fe.get("frontend_build_version"), "0.0.1-test")
+        self.assertEqual(fe.get("frontend_runtime_source"), "build")
 
     def test_modules_includes_backup_restore_with_children(self):
         r = self.client.get("/api/dev-dashboard/modules")

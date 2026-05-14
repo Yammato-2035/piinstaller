@@ -17,7 +17,7 @@ if _stdlib_inspect.is_file():
         _inspect_spec.loader.exec_module(_inspect_mod)
         sys.modules["inspect"] = _inspect_mod
 
-from fastapi import Body, FastAPI, HTTPException, Request
+from fastapi import Body, FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 import os
@@ -3911,6 +3911,8 @@ async def get_version():
     payload: dict[str, Any] = {
         "status": "success",
         "project_version": info.project_version,
+        # Alias für ältere UI / Banner, die nur `version` erwarten (gleicher Wert wie project_version).
+        "version": info.project_version,
         "release_stage": info.release_stage,
         "version_track": info.version_track,
         "version_source_of_truth": True,
@@ -3926,7 +3928,16 @@ async def get_version():
 
 
 @app.get("/api/dev-dashboard/status")
-async def dev_dashboard_status():
+async def dev_dashboard_status(
+    frontend_build_version: str | None = Query(
+        default=None,
+        description="Optional: Frontend-Build-Version (__APP_VERSION__), fuer Runtime-vs-Workspace-Konsistenz.",
+    ),
+    frontend_runtime_source: str | None = Query(
+        default=None,
+        description="Optional: dev | build | unknown — steuert frontend_version_matches_backend.",
+    ),
+):
     """Read-only: Development Cockpit Gesamtstatus (kein Backup/Restore)."""
     from core import dev_dashboard as dev_dashboard_core
 
@@ -3938,7 +3949,13 @@ async def dev_dashboard_status():
         if status in ("queued", "running", "cancel_requested") or not status:
             running.append(_job_snapshot(job))
     pkg = _detect_active_package_operations()
-    body = dev_dashboard_core.build_dashboard_status(running_jobs=running, package_activity=pkg)
+    fe_ver = (frontend_build_version or "").strip() or None
+    body = dev_dashboard_core.build_dashboard_status(
+        running_jobs=running,
+        package_activity=pkg,
+        frontend_build_version=fe_ver,
+        frontend_runtime_source=frontend_runtime_source,
+    )
     return {"status": "success", "dashboard": body}
 
 

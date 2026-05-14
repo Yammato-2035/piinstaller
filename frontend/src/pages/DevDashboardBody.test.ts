@@ -21,6 +21,31 @@ const baseDashboard: DashboardPayload = {
   app_edition: 'test',
   active_backup_jobs: [],
   mount_summary: [],
+  runtime: {
+    backend_api_reachable: true,
+    backend_version: '9.9.9-test',
+    backend_project_version: '9.9.9-test',
+    backend_runtime_path: '/opt/setuphelfer/backend',
+  },
+  workspace: {
+    workspace_path: '/home/dev/piinstaller',
+    workspace_version: '9.9.9-test',
+    git_head: 'c0ffee',
+    git_branch: 'main',
+    git_dirty_count: 0,
+    git_unpushed_count: null,
+  },
+  frontend: {
+    frontend_build_version: '9.9.9-test',
+    frontend_runtime_source: 'build',
+    frontend_version_matches_backend: true,
+  },
+  consistency: {
+    status: 'green',
+    warnings: [],
+    backend_workspace_match: true,
+    frontend_backend_match: true,
+  },
 }
 
 const backupModule: ModuleRow = {
@@ -108,6 +133,7 @@ function wrap(
       onSelectModuleId: bodyProps.onSelectModuleId ?? vi.fn(),
       onRefresh: bodyProps.onRefresh ?? vi.fn(),
       postAction: postActionSpy,
+      apiBaseDisplay: bodyProps.apiBaseDisplay ?? 'http://127.0.0.1:8000',
     }),
   )
   return { html: renderMarkup(el as React.ReactElement), postAction: postActionSpy }
@@ -146,6 +172,33 @@ describe('DevDashboardBody', () => {
     expect(html).toContain('docs/evidence/x.json')
     expect(html).toContain('docs/missing-for-test.md')
     expect(html).toContain('text-slate-500')
+  })
+
+  it('zeigt Runtime-vs-Workspace-Karte mit Ampel', () => {
+    const { html } = wrap({ filter: 'all', expanded: {}, selectedId: 'backup-restore' })
+    expect(html).toContain('data-testid="dev-dashboard-runtime-workspace-card"')
+    expect(html).toContain('Runtime vs. Workspace')
+    expect(html).toContain('Grün')
+  })
+
+  it('warnt bei veraltetem Frontend-Build (Ampel Gelb)', () => {
+    const dash: DashboardPayload = {
+      ...baseDashboard,
+      frontend: {
+        frontend_build_version: '1.5.0.0',
+        frontend_runtime_source: 'build',
+        frontend_version_matches_backend: false,
+      },
+      consistency: {
+        status: 'yellow',
+        warnings: ['frontend_build_outdated'],
+        backend_workspace_match: true,
+        frontend_backend_match: false,
+      },
+    }
+    const { html } = wrap({ filter: 'all', expanded: {}, selectedId: 'backup-restore', dashboard: dash })
+    expect(html).toContain('Gelb')
+    expect(html).toContain('Frontend-Build weicht')
   })
 
   it('Restart-Primary ist disabled; Probes rufen postAction nur bei Klick (hier nicht geklickt)', () => {
