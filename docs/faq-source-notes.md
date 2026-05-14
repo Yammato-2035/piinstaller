@@ -197,7 +197,7 @@
 
 - Thema: Abbruch trotz sichtbarer `tar.gz` oder mitten im Lauf.
 - Typische Ursachen: **Manifest** konnte nicht eingebettet oder im Archiv nicht verifiziert werden (**Fail-Fast**, Archiv wird entfernt); **Tar**-Returncode ≠ 0; **Speicher voll**; **Ziel nicht beschreibbar** (Gruppe/Mount).
-- API/UI: strukturierter Code (z. B. `backup.failed_manifest_missing`, `backup.backup_target_not_writable`) statt stiller Halb-Erfolge.
+- API/UI: strukturierter Code (z. B. `backup.failed_manifest_missing`, `backup.backup_target_not_writable`, `backup.write_io_error` / **BACKUP-IO-ERROR-050** bei Ziel-Schreib-EIO während tar/gzip) statt stiller Halb-Erfolge.
 - FAQ-Kandidat: ja
 
 ## Backup / Restore – Warum startet Setuphelfer nach Restore jetzt automatisch?

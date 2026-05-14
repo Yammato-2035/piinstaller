@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.blocker_inventory.v1",
   "id": "blocker_inventory",
-  "generated": "2026-05-14T06:45:00Z",
+  "generated": "2026-05-14T12:00:00Z",
   "prompt02_rerun": {
     "executed_at": "2026-05-11T21:15:00Z",
     "spec": "docs/cursor/PROMPT_02_BLOCKER_INVENTORY.md",
@@ -54,7 +54,7 @@
       "BR-001 2026-05-13 full sync: /opt backend py = workspace SHA256; only config/version.json legacy; /api/version 500; target-check backup.backup_target_not_writable; findmnt rw vs API ro; sudo BLOCKED — BR-001_backend_update_and_version_fix_2026-05-13.md",
       "2026-05-13: Backend-Version-Gate — CURSOR_WORK_RULES, scripts/check-backend-version-gate.sh, /api/version 503 bei invalid config, APT roadmap apt_update_delivery_gap.json",
       "2026-05-13: BR-011 Backup Package Activity Preflight — Spezifikation DE/EN + KB + Matrix; keine Produktcode-Änderung in diesem Prompt",
-      "2026-05-14: BR-012 Deploy-Prep — produktiver backup_runner.py SHA256 = Workspace (77b5bbaa…); sudo install im Agent blockiert; kein POST create; br001_runner_fix_deploy_prep_2026_05_14",
+      "2026-05-14: BR-013 Ziel-Schreib-EIO — Job f744c2936468 gzip/tar stderr; backup.write_io_error BACKUP-IO-ERROR-050; tests test_backup_runner_write_io_v1; BR-001_write_io_error_2026-05-14.md",
       "BR-001 2026-05-13 STRICT stale-sync: sudo mkdir/install/restart BLOCKED (TTY) — kein /opt app.py; job 96ed5d89c443 weiter queued+systemd failed; POST create job_conflict; BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
       "BR-001 2026-05-13 STRICT full backup: POST /api/backup/create → backup.starter_invalid_path (starter allowlist); repo fix packaging/helpers/setuphelfer-backup-starter.py; sudo install blocked — BR-001_full_backup_run_2026-05-13.md",
       "BR-001 2026-05-13: systemd ProtectSystem=strict — fehlendes ReadWritePaths für /media/gabriel/setuphelfer-back → API EROFS; Repo-Unit-Fix + Drop-in-Beispiel; Host-restart pending — BR-001_systemd_readwritepaths_analysis_2026-05-13.md",

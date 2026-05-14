@@ -22,5 +22,6 @@
     "2026-05-13: sudo blockiert Deploy stale-sync app.py — weiter blocked — BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
     "2026-05-13: Kein erfolgreiches BR-001-Archiv aus STRICT-Kette — Verify Deep nicht ausgeführt (BR-001_full_backup_run_2026-05-13.md).",
     "2026-05-13: STRICT timer-pause Retry STOP — BR-001_package_timer_paused_retry_2026-05-13.md",
+    "2026-05-14: BR-001 Job f744c2936468 — Schreib-EIO auf `.partial`; kein Deep-Verify auf unfertigem Archiv — BR-005 blocked — BR-001_write_io_error_2026-05-14.md"
   ]
 }

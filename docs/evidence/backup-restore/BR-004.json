@@ -22,5 +22,6 @@
     "2026-05-13: Deploy app.py (/opt) + restart weiter BLOCKED (sudo TTY); job_conflict unverändert — BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
     "2026-05-13: BR-001 POST /api/backup/create (erster Lauf) starter_invalid_path — BR-001_full_backup_run_2026-05-13.md.",
     "2026-05-13: STRICT timer-pause Retry: Phase2 STOP + sudo fehlt — kein neuer Job — BR-001_package_timer_paused_retry_2026-05-13.md",
+    "2026-05-14: BR-001 Job f744c2936468 — Ziel-Schreib-EIO (`backup.write_io_error` / BACKUP-IO-050); keine gültige Archivdatei für Verify — BR-004 weiter blocked — BR-001_write_io_error_2026-05-14.md"
   ]
 }

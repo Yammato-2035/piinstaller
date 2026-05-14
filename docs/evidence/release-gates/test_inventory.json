@@ -1,9 +1,9 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "test_inventory",
-  "generated": "2026-05-14T06:45:00Z",
+  "generated": "2026-05-14T12:00:00Z",
   "source": "backend/tests",
-  "test_file_count": 191,
+  "test_file_count": 192,
   "ampel": "gelb",
   "evidence_complete": false,
   "pytest_snapshot": {
@@ -12,7 +12,7 @@
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json"
   },
-  "notes": "GitHub CI success. BR-012 runner finalization tests + prod runner SHA256 match workspace (Deploy-Prep); BR-001 blocked; BR-004/005 blocked.",
+  "notes": "GitHub CI success. BR-012/BR-013 runner tests; BR-001 blocked; BR-004/005 blocked.",
   "test_files": [
     "test_anti_regression.py",
     "test_api_consistency_fix9_v1.py",
@@ -22,6 +22,7 @@
     "test_backup_list_decouple_fix11_v1.py",
     "test_backup_recovery_engines.py",
     "test_backup_runner_finalization_v1.py",
+    "test_backup_runner_write_io_v1.py",
     "test_backup_runtime_no_sudo_v1.py",
     "test_boot_capability_v1.py",
     "test_boot_repair_execute_v1.py",

@@ -512,6 +512,27 @@
     "post_create_backup_in_this_prompt": false,
     "evidence_md": "docs/evidence/backup-restore/BR-001_runner_finalization_performance_failure_2026-05-14.md"
   },
+  "br001_write_io_error_f744c2936468_2026_05_14": {
+    "job_id": "f744c2936468",
+    "backup_dir": "/media/gabriel/setuphelfer-back",
+    "partial_path": "/media/gabriel/setuphelfer-back/pi-backup-full-20260514_083550.tar.gz.partial",
+    "partial_size_bytes": 67779952640,
+    "stderr_markers": ["gzip: stdout: Input/output error", "Wrote only 6144 of 10240 bytes"],
+    "status_snapshot_code": "backup.failed",
+    "status_snapshot_abort_reason": "tar_failed",
+    "runner_classification_after_fix": {
+      "code": "backup.write_io_error",
+      "diagnosis_id": "BACKUP-IO-ERROR-050",
+      "abort_reason": "target_write_io_error",
+      "partial_deleted": false
+    },
+    "br001_result": "failed",
+    "not_package_activity": true,
+    "not_finalization": true,
+    "matrix_row": "BR-013",
+    "evidence_md": "docs/evidence/backup-restore/BR-001_write_io_error_2026-05-14.md",
+    "kb_md": "docs/knowledge-base/backup/BACKUP_TARGET_WRITE_IO_ERROR.md"
+  },
   "target_check_strategic_path_probe_2026_05_12": {
     "url": "http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/setuphelfer-back&create=0",
     "path_exists_on_host": false,
@@ -551,7 +572,10 @@
     "2026-05-13 STRICT stale-sync deploy retry: Phase0 ok; SHA workspace≠opt; sudo Phase1 BLOCKED (TTY/Passwort); kein install kein restart; GET job weiter queued+systemd failed; POST create weiter backup.job_conflict; target-check ok; BR-001_stale_job_sync_fix_and_retry_2026-05-13.md",
     "2026-05-13 BR-001 Job e341a326ac69: backup.blocked_package_activity UPDATE-CONFLICT-041; apt-get autoremove --purge -y; mintupdate-automation-autoremove.timer; partial gelöscht; Manifest-Rest .e341a326ac69.MANIFEST.json — BR-001_package_activity_failure_2026-05-13.md; Retry-Runbook BR-001_package_activity_retry_runbook_2026-05-13.md",
     "2026-05-13 STRICT timer-pause retry: Phase0-1 ok; Phase2 STOP mintUpdate + unattended-upgrade-shutdown + unattended-upgrades.service; sudo fuser/dpkg/stop blocked TTY; kein POST create; BR-001_package_timer_paused_retry_2026-05-13.md",
-    "2026-05-13: BR-011 Backup Package Activity Preflight — Spez DE/EN + KB + Matrix; aus e341a326ac69/timer-retry; keine Produktcode-Änderung in diesem Prompt"
+    "2026-05-13: BR-011 Backup Package Activity Preflight — Spez DE/EN + KB + Matrix; aus e341a326ac69/timer-retry; keine Produktcode-Änderung in diesem Prompt",
+    "2026-05-14 Job 2cff11287f67: Runner Finalisierung ~210GiB — systemd timeout SIGKILL; triple hash+rewrite bug + dritter SHA256; Evidence BR-001_runner_finalization_performance_failure_2026-05-14.md; Fix backup_runner.py BR-012",
+    "2026-05-14 Deploy-Prep: SHA256 Workspace=/opt backup_runner.py identisch (77b5bbaa…); finalize_* in /opt vorhanden; sudo install im Agent blockiert; kein POST create; alte .partial-Pfade fehlen; Sidecar .pi-backup-full-20260513_214230…MANIFEST.json verbleibt dokumentiert",
+    "2026-05-14 Job f744c2936468: Ziel-Schreib-EIO (gzip Input/output error, tar short-write auf .partial) — nicht Paketaktivität/Finalisierung; Evidence BR-001_write_io_error_2026-05-14.md; BR-013 backup.write_io_error + BACKUP-IO-ERROR-050"
   ],
   "started_at": "2026-05-12T17:53:06Z",
   "completed_at": "2026-05-12T23:55:00Z",
@@ -574,7 +598,8 @@
     "2026-05-13 STRICT timer-pause retry-Versuch: Phase2 STOP (mintUpdate, unattended-upgrade-shutdown); sudo für fuser/timer stop fehlt — kein neuer Job — BR-001_package_timer_paused_retry_2026-05-13.md",
     "2026-05-13: BR-011 Preflight-Spezifikation (docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE|EN.md, knowledge-base) — Implementierung offen",
     "2026-05-14 Job 2cff11287f67: Runner Finalisierung ~210GiB — systemd timeout SIGKILL; triple hash+rewrite bug + dritter SHA256; Evidence BR-001_runner_finalization_performance_failure_2026-05-14.md; Fix backup_runner.py BR-012",
-    "2026-05-14 Deploy-Prep: SHA256 Workspace=/opt backup_runner.py identisch (77b5bbaa…); finalize_* in /opt vorhanden; sudo install im Agent blockiert; kein POST create; alte .partial-Pfade fehlen; Sidecar .pi-backup-full-20260513_214230…MANIFEST.json verbleibt dokumentiert"
+    "2026-05-14 Deploy-Prep: SHA256 Workspace=/opt backup_runner.py identisch (77b5bbaa…); finalize_* in /opt vorhanden; sudo install im Agent blockiert; kein POST create; alte .partial-Pfade fehlen; Sidecar .pi-backup-full-20260513_214230…MANIFEST.json verbleibt dokumentiert",
+    "2026-05-14 Job f744c2936468: Ziel-Schreib-EIO (gzip Input/output error, tar short-write auf .partial) — nicht Paketaktivität/Finalisierung; Evidence BR-001_write_io_error_2026-05-14.md; BR-013 backup.write_io_error + BACKUP-IO-ERROR-050"
   ],
   "result": "failed",
   "api_code": "backup.blocked_package_activity",
@@ -603,6 +628,8 @@
     "docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md",
     "docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_EN.md",
     "docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md",
-    "docs/evidence/backup-restore/BR-001_runner_finalization_performance_failure_2026-05-14.md"
+    "docs/evidence/backup-restore/BR-001_runner_finalization_performance_failure_2026-05-14.md",
+    "docs/evidence/backup-restore/BR-001_write_io_error_2026-05-14.md",
+    "docs/knowledge-base/backup/BACKUP_TARGET_WRITE_IO_ERROR.md"
   ]
 }

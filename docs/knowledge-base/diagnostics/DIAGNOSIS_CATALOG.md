@@ -1,6 +1,6 @@
 # Diagnosis Catalog
 
-Aktueller Starter-Katalog: **43 Diagnosefaelle** (inkl. Service-Konflikte `SERVICE-CONFLICT-033` bis `036`, Verify/Runtime `SYSTEMD-MEMORYMAX-037`, `VERIFY-STAGING-038`; siehe `SERVICE_CONFLICTS.md`).
+Aktueller Starter-Katalog: **44 Diagnosefälle** (inkl. **BACKUP-IO-ERROR-050** Ziel-Schreib-EIO während tar/gzip; Service-Konflikte `SERVICE-CONFLICT-033` bis `036`, Verify/Runtime `SYSTEMD-MEMORYMAX-037`, `VERIFY-STAGING-038`; siehe `SERVICE_CONFLICTS.md`).
 
 Abgedeckte Domaenen:
 
@@ -21,6 +21,7 @@ Abgedeckte Domaenen:
 Beispiele:
 
 - `BACKUP-MANIFEST-001` (Manifest fehlt)
+- `BACKUP-IO-ERROR-050` (Ziel-Schreib-EIO während Archivierung: `gzip`/`tar` stderr Input/output error, Short-Write auf `.partial`; API `backup.write_io_error`)
 - `RESTORE-PATH-004` (Path-Containment verletzt)
 - `SYSTEMD-RESTRICT-013` (Unit-Hardening blockiert Laufzeit)
 - `UI-NO-BACKEND-015` (Frontend erreichbar, Backend down)
@@ -39,6 +40,7 @@ Referenzlauf **HW1-03** (externe NVMe, produktionsnahe Pfade): Evidence z. B. `d
 | ID | Reales Beispiel (HW1-03-Kontext) | Typische Symptome | Typische Ursachen |
 |----|----------------------------------|-------------------|-------------------|
 | **BACKUP-MANIFEST-001** | Verify `mode=deep` auf Archiv ohne eingebettete `MANIFEST.json` | API `backup.failed_manifest_missing`; UI „Manifest fehlt“ | Abgebrochenes Backup, manuell geändertes `.tar.gz`, altes Format ohne Manifest-Einbettung |
+| **BACKUP-IO-ERROR-050** | Full-Backup auf externes ext4: `gzip: stdout: Input/output error`, `tar: …partial: Wrote only …` | API `backup.write_io_error`; `.partial` bleibt; `partial_deleted: false` | Defektes/unstabiles Zielmedium, Kabel/Strom, USB-Reset; ext4 `errors=remount-ro`; **nicht** Verify/Restore der Partial |
 | **BACKUP-ARCHIVE-002** | `gzip -t` oder Tar-Lesefehler auf dem NVMe-Archiv | `backup.verify_archive_unreadable`; Diagnose im `details`-Block | Truncation, defektes Medium, Kopiervorgang unterbrochen |
 | **BACKUP-HASH-003** | Deep-Verify: extrahierte Bytes ≠ Manifest-SHA | `backup.verify_integrity_failed` mit `hash_mismatch` in Details | Bit-Rot, Manipulation, falsches Archiv (gleicher Dateiname) |
 | **RESTORE-PATH-004** | Preview findet `../` oder absolute Member-Pfade | `backup.restore_blocked_entries` | Bösartiges oder fehlerhaft gepacktes Archiv; historisch: unsichere Pfadnormalisierung (behoben: kein `lstrip("./")` mehr) |

@@ -969,6 +969,7 @@
   "backup.messages.cancelled": "Backup was cancelled.",
   "backup.messages.no_space": "Not enough free disk space on the target.",
   "backup.messages.failed": "Backup failed.",
+  "backup.messages.write_io_error": "Backup failed: write I/O error on the target medium while creating the archive. Check USB/SATA power and cables, kernel logs (dmesg), and whether the filesystem remounted read-only. Do not verify or restore the partial file as a complete backup.",
   "backup.messages.timeout": "Backup timed out.",
   "backup.messages.path_invalid": "Invalid backup path or target.",
   "backup.messages.mkdir_failed": "The backup directory could not be created.",

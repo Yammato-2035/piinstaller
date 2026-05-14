@@ -969,6 +969,7 @@
   "backup.messages.cancelled": "Backup wurde abgebrochen.",
   "backup.messages.no_space": "Auf dem Ziel ist nicht genug freier Speicherplatz.",
   "backup.messages.failed": "Backup ist fehlgeschlagen.",
+  "backup.messages.write_io_error": "Backup fehlgeschlagen: Schreib-E/A-Fehler auf dem Zielmedium beim Erstellen des Archivs. USB-/SATA-Strom und Kabel prüfen, Kernel-Log (dmesg), ob das Dateisystem read-only remountet wurde. Die .partial-Datei nicht als vollständiges Backup verifizieren oder wiederherstellen.",
   "backup.messages.timeout": "Das Backup hat das Zeitlimit überschritten.",
   "backup.messages.path_invalid": "Ungültiger Backup-Pfad oder Zielort.",
   "backup.messages.mkdir_failed": "Das Backup-Verzeichnis konnte nicht angelegt werden.",

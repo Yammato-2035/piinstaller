@@ -136,6 +136,16 @@ def _cleanup_partial(partial_path: str) -> bool:
     return existed and not p.exists()
 
 
+def _stderr_indicates_target_write_io_error(head_text: str, tail_text: str) -> bool:
+    """True if tar/gzip stderr suggests EIO / short-write on the backup archive stream (BACKUP-IO-ERROR-050)."""
+    blob = f"{head_text or ''}\n{tail_text or ''}".lower()
+    if "input/output error" in blob:
+        return True
+    if "wrote only" in blob and "byte" in blob:
+        return True
+    return False
+
+
 def _sha256_file(path: str | Path) -> str:
     h = hashlib.sha256()
     with Path(path).open("rb") as f:
@@ -762,6 +772,26 @@ def _run_tar_pipeline_from_preflight(
             stderr_tail=tail_text,
             stderr_excerpt=stderr_excerpt_tail,
             tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
+        )
+        _mark_terminal()
+        return 1
+
+    if _stderr_indicates_target_write_io_error(head_text, tail_text):
+        _update_status(
+            status_file,
+            status,
+            status="error",
+            code="backup.write_io_error",
+            severity="error",
+            diagnosis_id="BACKUP-IO-ERROR-050",
+            abort_reason="target_write_io_error",
+            backup_finished_at=_now_iso(),
+            stderr_excerpt=stderr_excerpt_tail,
+            stderr_tail=tail_text,
+            subprocess_returncode=rc,
+            tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
+            suspend_guard_active=False,
+            partial_deleted=False,
         )
         _mark_terminal()
         return 1

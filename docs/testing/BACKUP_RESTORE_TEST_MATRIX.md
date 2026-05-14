@@ -2,11 +2,11 @@
 
 | ID | Test | Voraussetzung | Erwartung | Status | Evidence |
 |----|------|---------------|-----------|--------|----------|
-| BR-001 | Full Backup freigegebenes Ziel | Nur **`/media/gabriel/setuphelfer-back`**; Phase 2 ohne Paketprozesse; Timer nur temp. stop/start (nicht disable); sudo für Locks/Timer | Archiv + Manifest + SHA256 | Rot (blocked — Retry STOP Phase 2 oder sudo; Evidence **`BR-001_package_timer_paused_retry_2026-05-13.md`**) | `BR-001_package_activity_failure_2026-05-13.md`, `BR-001_package_activity_retry_runbook_2026-05-13.md`, `BR-001.json` |
+| BR-001 | Full Backup freigegebenes Ziel | Nur **`/media/gabriel/setuphelfer-back`**; Phase 2 ohne Paketprozesse; Timer nur temp. stop/start (nicht disable); sudo für Locks/Timer | Archiv + Manifest + SHA256 | Rot (blocked — Retry STOP Phase 2 oder sudo; zusätzlich Job **`f744c2936468`** Schreib-EIO — **`BR-001_write_io_error_2026-05-14.md`**) | `BR-001_package_activity_failure_2026-05-13.md`, `BR-001_package_activity_retry_runbook_2026-05-13.md`, `BR-001.json`, `BR-001_write_io_error_2026-05-14.md` |
 | BR-002 | Ziel nicht beschreibbar | Rechte entzogen | harter Abbruch | Rot | docs/evidence/backup-restore/BR-002.json |
 | BR-003 | `.partial` Archiv prüfen | abgebrochene Sicherung | Verify blockiert | Rot | docs/evidence/backup-restore/BR-003.json |
-| BR-004 | Verify Basic gültig | **dieselbe** Archivdatei wie BR-001 | ok | Rot (blocked — BR-001) | docs/evidence/backup-restore/BR-004.json |
-| BR-005 | Verify Deep gültig | **dieselbe** Archivdatei wie BR-001 | ok | Rot (blocked — BR-001) | docs/evidence/backup-restore/BR-005.json |
+| BR-004 | Verify Basic gültig | **dieselbe** Archivdatei wie BR-001 | ok | Rot (blocked — BR-001; bei Schreib-EIO **`backup.write_io_error`** keine gültige Archivdatei — BR-013) | docs/evidence/backup-restore/BR-004.json |
+| BR-005 | Verify Deep gültig | **dieselbe** Archivdatei wie BR-001 | ok | Rot (blocked — BR-001; keine Verify-Kette auf `.partial` nach EIO — BR-013) | docs/evidence/backup-restore/BR-005.json |
 | BR-006 | Verify beschädigt | manipuliertes Archiv | hash_mismatch / corrupt | Rot | docs/evidence/backup-restore/BR-006.json |
 | BR-007 | Restore Preview | gültiges Archiv | keine Schreiboperation | Rot | docs/evidence/backup-restore/BR-007.json |
 | BR-008 | Restore externes Ziel | freigegebenes Medium | Restore erfolgreich | Rot | docs/evidence/backup-restore/BR-008.json |
@@ -14,6 +14,7 @@
 | BR-010 | Boot nach Restore | restored System | bootfähig | Rot | docs/evidence/backup-restore/BR-010.json |
 | **BR-011** | **Package Activity Preflight** | Spezifikation `docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`; API-Diagnose vor `POST /api/backup/create`; Locks, `dpkg --audit`, Timer read-only; kein `disable` | `backup.package_preflight_*` / Blockerliste | **Gelb** (Design dokumentiert — Implementierung offen) | `BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`, `BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_EN.md`, `docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md` |
 | **BR-012** | **Backup Runner Finalization Performance** | `backup_runner.py`: kein **3×** Full-Scan bei Erfolg; `finalize_phase` in `progress_optional`; Manifest-Rewrite Retries nur bei Fehler; bounded streaming | Job `2cff11287f67` Evidence; pytest `test_backup_runner_finalization_v1`; **2026-05-14:** produktiver `/opt`-Runner SHA256 **=** Workspace (**`77b5bbaa…`**), Deploy-Prep `br001_runner_fix_deploy_prep_2026_05_14` | **Gelb** (Fix im Repo + Opt verifiziert — HW-Abnahme großes Archiv / Gates offen) | `BR-001_runner_finalization_performance_failure_2026-05-14.md`, `backend/tools/backup_runner.py`, `BR-001.json` |
+| **BR-013** | **Backup Target Write I/O Error Handling** | `stderr` von tar/gzip: **`Input/output error`**, **`Wrote only … bytes`** → `backup.write_io_error`, **`BACKUP-IO-ERROR-050`**, `abort_reason: target_write_io_error`; **keine** Partial-Löschung bei EIO; keine Verify/Restore-Kette auf Partial | Job `f744c2936468`; pytest `test_backup_runner_write_io_v1` | **Gelb** (Klassifikation + i18n im Repo — erneuter HW-Lauf nach Medien-Stabilität) | `BR-001_write_io_error_2026-05-14.md`, `BACKUP_TARGET_WRITE_IO_ERROR.md`, `backup_runner.py`, `BR-001.json` |
 
 ## Verknüpfung Unit-/CI-Tests
 
@@ -23,4 +24,4 @@ Viele Szenarien haben Abdeckung unter `backend/tests/` (z. B. Backup/Restore/Wri
 
 **Design 2026-05-13:** **BR-011** — *Backup Package Activity Preflight* (Prozesse, Locks, `dpkg --audit`, Timer, UI/i18n) — **`docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`** / **EN**, Knowledge-Base **`docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md`**.
 
-**2026-05-14:** **BR-012** — Runner-Finalisierung Job **`2cff11287f67`** (Timeout, `.partial.manifest-tmp` 0 Byte, dreifacher I/O-Bug) — Evidence **`BR-001_runner_finalization_performance_failure_2026-05-14.md`**; Fix **`backend/tools/backup_runner.py`**. **Deploy-Prep:** Workspace/`/opt` **SHA256 gleich**; `sudo install` im Agent blockiert; kein `POST` create; siehe Evidence Abschnitt 6 / **`br001_runner_fix_deploy_prep_2026_05_14`**.
+**2026-05-14:** **BR-012** — Runner-Finalisierung Job **`2cff11287f67`** (Timeout, `.partial.manifest-tmp` 0 Byte, dreifacher I/O-Bug) — Evidence **`BR-001_runner_finalization_performance_failure_2026-05-14.md`**; Fix **`backend/tools/backup_runner.py`**. **Deploy-Prep:** Workspace/`/opt` **SHA256 gleich**; `sudo install` im Agent blockiert; kein `POST` create; siehe Evidence Abschnitt 6 / **`br001_runner_fix_deploy_prep_2026_05_14`**. **BR-013** — Job **`f744c2936468`**: Ziel-Schreib-EIO (`gzip`/`tar` stderr) — **`BR-001_write_io_error_2026-05-14.md`**, KB **`BACKUP_TARGET_WRITE_IO_ERROR.md`**, Code **`backup.write_io_error`**.

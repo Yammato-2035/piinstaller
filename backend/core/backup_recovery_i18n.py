@@ -41,6 +41,7 @@ K_BACKUP_TARGET_LIVE_FILESYSTEM = "backup_recovery.error.backup_target_live_file
 K_BACKUP_TARGET_FILESYSTEM_NOT_PERMITTED = "backup_recovery.error.backup_target_filesystem_not_permitted"
 K_BACKUP_TARGET_NOT_WRITABLE = "backup_recovery.error.backup_target_not_writable"
 K_BACKUP_TARGET_WRITE_PROTECTED = "backup_recovery.error.backup_target_write_protected"
+K_TARGET_WRITE_IO_ERROR = "backup_recovery.error.target_write_io_error"
 
 # recovery/main.py
 K_RECOVERY_MENU_TITLE = "recovery.menu.title"
@@ -91,6 +92,7 @@ DEFAULT_CATALOG: dict[str, str] = {
     K_BACKUP_TARGET_FILESYSTEM_NOT_PERMITTED: "Backup target filesystem is not permitted for backups.",
     K_BACKUP_TARGET_NOT_WRITABLE: "Backup target directory is not writable for the Setuphelfer process (check owner/group, e.g. root:setuphelfer and mode 0770).",
     K_BACKUP_TARGET_WRITE_PROTECTED: "Backup or restore target blocked by storage write protection (see diagnosis id in details).",
+    K_TARGET_WRITE_IO_ERROR: "Backup failed: the target medium returned a write I/O error while creating the archive (EIO). Check cables, power, SMART/dmesg, and remount-ro; do not treat the partial file as a valid backup.",
     K_RECOVERY_MENU_TITLE: "Setuphelfer recovery",
     K_RECOVERY_OPT_USB: "Restore from USB",
     K_RECOVERY_OPT_CLOUD: "Restore from cloud",
@@ -132,6 +134,7 @@ DEFAULT_CATALOG_DE: dict[str, str] = {
     K_BACKUP_TARGET_FILESYSTEM_NOT_PERMITTED: "Dateisystem am Backup-Ziel ist für Backups nicht zugelassen.",
     K_BACKUP_TARGET_NOT_WRITABLE: "Backup-Ziel ist für den Setuphelfer-Prozess nicht beschreibbar (Besitzer/Gruppe prüfen, z. B. root:setuphelfer und Modus 0770).",
     K_BACKUP_TARGET_WRITE_PROTECTED: "Backup- oder Restore-Ziel durch Storage-Schreibschutz blockiert (Diagnose-ID in den Details).",
+    K_TARGET_WRITE_IO_ERROR: "Backup fehlgeschlagen: Das Zielmedium meldete einen Schreib-E/A-Fehler beim Erstellen des Archivs (EIO). Kabel, Stromversorgung, SMART/dmesg und remount-ro prüfen; die .partial-Datei nicht als gültiges Backup verwenden.",
     K_RECOVERY_MENU_TITLE: "Setuphelfer-Wiederherstellung",
     K_RECOVERY_OPT_USB: "Wiederherstellen von USB",
     K_RECOVERY_OPT_CLOUD: "Wiederherstellen aus der Cloud",
