@@ -1,0 +1,26 @@
+{
+  "id": "frontend-ux",
+  "title": "Frontend UX",
+  "area": "frontend",
+  "status": "yellow",
+  "summary": "Backup-Progress und Evidence-Panels; Development Cockpit neu. Konsistenz Ampel vs. Release-Gate manuell halten.",
+  "last_updated": "2026-05-14",
+  "commits": [],
+  "current_focus": "DevDashboard, BackupRestore Profile-UI",
+  "next_steps": ["Vitest-Abdeckung erweitern", "Erfahrungslevel vs. Experten-Seiten prüfen"],
+  "blockers": [],
+  "evidence_files": [],
+  "prompt_files": [],
+  "report_files": [],
+  "docs": ["docs/review/ux_lint_report.md"],
+  "faq": [],
+  "knowledge_base": [],
+  "diagnostics": [],
+  "i18n": ["frontend/src/locales/de.json", "frontend/src/locales/en.json"],
+  "tests": ["frontend/src/utils/backupJobProgressDisplay.test.ts"],
+  "children": [],
+  "artifacts": [
+    {"path": "frontend/src/pages/DevDashboard.tsx", "kind": "doc"},
+    {"path": "frontend/src/components/BackupJobProgressSection.tsx", "kind": "doc"}
+  ]
+}

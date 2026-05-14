@@ -1,0 +1,113 @@
+"""Development Cockpit API — read-only, keine Backup-/Restore-Ausführung."""
+
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+_backend = Path(__file__).resolve().parent.parent
+if str(_backend) not in sys.path:
+    sys.path.insert(0, str(_backend))
+
+from core import dev_dashboard as dd  # noqa: E402
+
+
+class TestDevDashboardCore(unittest.TestCase):
+    def test_build_dashboard_status_empty_repo_no_crash(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = dd.build_dashboard_status(repo_root=tmp, running_jobs=[], package_activity=[])
+            self.assertIn("generated_at", body)
+            self.assertTrue(body.get("backend_running"))
+            self.assertIsInstance(body.get("warnings"), list)
+            self.assertIsInstance(body.get("errors"), list)
+            self.assertEqual(body.get("release_gate_status"), "unknown")
+
+    def test_build_modules_list_missing_dir(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            out = dd.build_modules_list(repo_root=tmp)
+            self.assertEqual(out.get("status"), "success")
+            self.assertEqual(out.get("modules"), [])
+            self.assertTrue(any("modules_dir_missing" in w for w in (out.get("warnings") or [])))
+
+    def test_build_module_detail_not_found(self):
+        out = dd.build_module_detail("__no_such_module__xyz__")
+        self.assertEqual(out.get("status"), "error")
+        self.assertIsNone(out.get("module"))
+
+    def test_build_evidence_index_tolerates_missing_docs_evidence(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            out = dd.build_evidence_index(repo_root=tmp, max_files=10)
+            self.assertEqual(out.get("status"), "success")
+            self.assertIn("buckets", out)
+            warns = out.get("warnings") or []
+            self.assertIn("docs_evidence_missing", warns)
+
+    def test_action_placeholders(self):
+        r1 = dd.action_placeholder_response("restart-backend")
+        self.assertEqual(r1.get("result"), "not_implemented_safe")
+        self.assertTrue(r1.get("confirm_required"))
+        self.assertEqual(r1.get("message_key"), "devDashboard.actions.restartBackendNotImplemented")
+
+        r2 = dd.action_placeholder_response("start-backup")
+        self.assertEqual(r2.get("result"), "use_existing_backup_api")
+        self.assertTrue(r2.get("confirm_required"))
+        self.assertEqual(r2.get("message_key"), "devDashboard.actions.startBackupUseExistingApi")
+
+        r3 = dd.action_placeholder_response("destroy-world")
+        self.assertEqual(r3.get("status"), "error")
+        self.assertEqual(r3.get("result"), "unknown_action")
+
+
+try:
+    from fastapi.testclient import TestClient
+    from app import app
+
+    _HAS_APP = True
+except Exception:
+    _HAS_APP = False
+    TestClient = None
+    app = None
+
+
+@unittest.skipUnless(_HAS_APP, "FastAPI TestClient oder app nicht verfuegbar")
+class TestDevDashboardApiV1(unittest.TestCase):
+    def setUp(self):
+        self.client = TestClient(app, base_url="http://localhost")
+
+    def test_status_200(self):
+        r = self.client.get("/api/dev-dashboard/status")
+        self.assertEqual(r.status_code, 200, r.text)
+        data = r.json()
+        self.assertEqual(data.get("status"), "success")
+        self.assertIn("dashboard", data)
+
+    def test_modules_includes_backup_restore_with_children(self):
+        r = self.client.get("/api/dev-dashboard/modules")
+        self.assertEqual(r.status_code, 200, r.text)
+        mods = r.json().get("modules") or []
+        br = next((m for m in mods if m.get("id") == "backup-restore"), None)
+        self.assertIsNotNone(br)
+        children = br.get("children") or []
+        self.assertGreaterEqual(len(children), 1)
+
+    def test_evidence_index_200(self):
+        r = self.client.get("/api/dev-dashboard/evidence-index")
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(r.json().get("status"), "success")
+
+    def test_post_restart_placeholder(self):
+        r = self.client.post("/api/dev-dashboard/actions/restart-backend", json={})
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(r.json().get("result"), "not_implemented_safe")
+
+    def test_post_start_backup_placeholder(self):
+        r = self.client.post("/api/dev-dashboard/actions/start-backup", json={})
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(r.json().get("result"), "use_existing_backup_api")
+
+
+if __name__ == "__main__":
+    unittest.main()

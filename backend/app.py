@@ -3925,6 +3925,58 @@ async def get_version():
     return payload
 
 
+@app.get("/api/dev-dashboard/status")
+async def dev_dashboard_status():
+    """Read-only: Development Cockpit Gesamtstatus (kein Backup/Restore)."""
+    from core import dev_dashboard as dev_dashboard_core
+
+    for jid in list(BACKUP_JOBS.keys()):
+        _sync_stale_runner_job_from_systemd(jid)
+    running: list[dict[str, Any]] = []
+    for _job_id, job in BACKUP_JOBS.items():
+        status = job.get("status", "")
+        if status in ("queued", "running", "cancel_requested") or not status:
+            running.append(_job_snapshot(job))
+    pkg = _detect_active_package_operations()
+    body = dev_dashboard_core.build_dashboard_status(running_jobs=running, package_activity=pkg)
+    return {"status": "success", "dashboard": body}
+
+
+@app.get("/api/dev-dashboard/modules")
+async def dev_dashboard_modules():
+    from core import dev_dashboard as dev_dashboard_core
+
+    return dev_dashboard_core.build_modules_list()
+
+
+@app.get("/api/dev-dashboard/modules/{module_id}")
+async def dev_dashboard_module_detail(module_id: str):
+    from core import dev_dashboard as dev_dashboard_core
+
+    return dev_dashboard_core.build_module_detail(module_id)
+
+
+@app.get("/api/dev-dashboard/evidence-index")
+async def dev_dashboard_evidence_index():
+    from core import dev_dashboard as dev_dashboard_core
+
+    return dev_dashboard_core.build_evidence_index()
+
+
+@app.post("/api/dev-dashboard/actions/restart-backend")
+async def dev_dashboard_action_restart_backend():
+    from core import dev_dashboard as dev_dashboard_core
+
+    return dev_dashboard_core.action_placeholder_response("restart-backend")
+
+
+@app.post("/api/dev-dashboard/actions/start-backup")
+async def dev_dashboard_action_start_backup():
+    from core import dev_dashboard as dev_dashboard_core
+
+    return dev_dashboard_core.action_placeholder_response("start-backup")
+
+
 @app.get("/api/system/service-conflicts")
 async def get_service_conflicts():
     """Lesend: parallele pi-installer-/Setuphelfer-Dienste, Port-8000-Inhaber, Empfehlungen (keine Stop-Aktion)."""

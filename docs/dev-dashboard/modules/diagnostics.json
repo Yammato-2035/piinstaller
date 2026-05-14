@@ -1,0 +1,26 @@
+{
+  "id": "diagnostics",
+  "title": "Diagnostics & Diagnose",
+  "area": "diagnostics",
+  "status": "yellow",
+  "summary": "Assistant-API und Evidence-Modelle im Aufbau; vollständige HW-Abnahme offen.",
+  "last_updated": "2026-05-14",
+  "commits": [],
+  "current_focus": "Matcher, Evidence-Mapping, UI-Panels",
+  "next_steps": ["Seed-Cases erweitern", "i18n-Konsistenz prüfen"],
+  "blockers": [],
+  "evidence_files": [],
+  "prompt_files": [],
+  "report_files": [],
+  "docs": ["docs/diagnostics-notes.md"],
+  "faq": [],
+  "knowledge_base": ["docs/knowledge-base/diagnostics/"],
+  "diagnostics": ["backend/core/diagnostics/"],
+  "i18n": ["frontend/src/locales/de.json"],
+  "tests": ["backend/tests/test_diagnostics_api_v1.py"],
+  "children": [],
+  "artifacts": [
+    {"path": "docs/knowledge-base/diagnostics/DIAGNOSIS_ARCHITECTURE.md", "kind": "kb"},
+    {"path": "docs/diagnostics-notes.md", "kind": "doc"}
+  ]
+}

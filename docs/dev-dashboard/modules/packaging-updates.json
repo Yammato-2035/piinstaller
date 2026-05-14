@@ -1,0 +1,26 @@
+{
+  "id": "packaging-updates",
+  "title": "Packaging & Updates",
+  "area": "packaging",
+  "status": "yellow",
+  "summary": "APT-/Update-Delivery und DEB-Pipeline weiter offen; Update-Center-Gates beachten.",
+  "last_updated": "2026-05-14",
+  "commits": [],
+  "current_focus": "DEB-Build, Version-Gate, Self-Update",
+  "next_steps": ["CI vs. lokale venv abstimmen", "Release-Readiness Checkliste"],
+  "blockers": ["Release-Gate nicht grün"],
+  "evidence_files": [],
+  "prompt_files": [],
+  "report_files": [],
+  "docs": ["docs/developer/BUILD_DEB.md", "docs/PACKAGING.md"],
+  "faq": [],
+  "knowledge_base": ["docs/knowledge-base/BUILD_RUNTIME_CONSISTENCY.md"],
+  "diagnostics": [],
+  "i18n": [],
+  "tests": [],
+  "children": [],
+  "artifacts": [
+    {"path": "docs/developer/BUILD_DEB.md", "kind": "doc"},
+    {"path": "scripts/check-backend-version-gate.sh", "kind": "doc"}
+  ]
+}

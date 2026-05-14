@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-14 — **BR-013** (*Ziel-Schreib-EIO*): Klassifikation **`backup.write_io_error`** / **`BACKUP-IO-ERROR-050`** (Job **`f744c2936468`**); **BR-012** Finalisierung; **BR-011** Preflight. **BR-016–BR-019** (Performance, Evidence+**API**, Progress/**UI**/ETA, Profile): Code + Doku + pytest/Vitest **gelb** (HW-/E2E-Abnahme offen). **BR-001** failed/blocked. **BR-004/005:** blocked.
+**Stand:** 2026-05-14 — **DEV-001** (*Development Cockpit*): interne read-only API + Expert-UI **gelb** (produktive Abnahme offen). **BR-013** (*Ziel-Schreib-EIO*): Klassifikation **`backup.write_io_error`** / **`BACKUP-IO-ERROR-050`** (Job **`f744c2936468`**); **BR-012** Finalisierung; **BR-011** Preflight. **BR-016–BR-019** (Performance, Evidence+**API**, Progress/**UI**/ETA, Profile): Code + Doku + pytest/Vitest **gelb** (HW-/E2E-Abnahme offen). **BR-001** failed/blocked. **BR-004/005:** blocked.
 
 ## Ampeldefinition
 
@@ -33,6 +33,7 @@
 | Website-Transparenz | Gelb | Markdown-Basis im Repo | `docs/roadmap/PUBLIC_STATUS_PAGE.md`, `docs/testing/WEBSITE_TRANSPARENCY_TEST_MATRIX.md` |
 | Affiliate / Monetarisierung | Gelb | Policies als Markdown | `docs/monetization/` |
 | Release Gate UG-Start | Rot | Gates nicht grün | `docs/roadmap/RELEASE_READINESS_CHECKLIST.md` |
+| Development Cockpit **DEV-001** | Gelb | `GET /api/dev-dashboard/*` read-only; POST-Aktionen nur Platzhalter (`confirm_required`); UI nur Entwickler; produktive Integration/HW-Abnahme offen | `docs/testing/DEVELOPMENT_COCKPIT_MATRIX.md`, `docs/dev-dashboard/README.md`, `backend/core/dev_dashboard.py` |
 | Backend-Version-Gate | Gelb | Regel+Skript+`/api/version`-Diagnose im Repo; produktiver Gate-Grün-Status ausstehend | `docs/evidence/release-gates/backend_version_update_gate.json`, `scripts/check-backend-version-gate.sh` |
 | Cloudserver Edition | Schwarz | nach Modularisierung | — |
 

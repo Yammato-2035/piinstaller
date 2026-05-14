@@ -1,0 +1,52 @@
+{
+  "id": "backup-restore",
+  "title": "Backup & Restore",
+  "area": "backup",
+  "status": "yellow",
+  "summary": "BR-001 weiterhin nicht grün. BR-016–BR-019 gelb/rot. BR-019: recommended als Default, Full-Expert nur mit Bestätigung. Progress-UI und Evidence-API vorhanden; Performance und Zielmedium-/USB-Stabilität HW-offen.",
+  "last_updated": "2026-05-14",
+  "commits": [],
+  "current_focus": "Profile-API, Preview, Gates, Runner-Performance",
+  "next_steps": [
+    "BR-001 Retry/HW nach freigegebenem Zielmedium",
+    "Runner-Finalisierung (BR-012) und Write-I/O (BR-013) weiter belegen",
+    "fast-system von Full-Root entkoppeln, sobald Runner-Scope steht"
+  ],
+  "blockers": ["BR-001 blocked/failed", "Release-Gate rot/gelb"],
+  "evidence_files": ["docs/evidence/backup-restore/BR-001.json"],
+  "prompt_files": [],
+  "report_files": [],
+  "docs": ["docs/backup/BACKUP_PROFILES_DE.md", "docs/backup/BACKUP_PROFILES_EN.md"],
+  "faq": ["docs/faq/BACKUP_RESTORE_FAQ_DE.md", "docs/faq/BACKUP_RESTORE_FAQ_EN.md"],
+  "knowledge_base": ["docs/knowledge-base/backup/BACKUP_PROFILES.md"],
+  "diagnostics": [],
+  "i18n": ["frontend/src/locales/de.json", "frontend/src/locales/en.json"],
+  "tests": ["backend/tests/test_backup_profiles_v1.py", "frontend/src/utils/backupCreateBody.test.ts"],
+  "children": [
+    {
+      "id": "br-019-profiles",
+      "title": "BR-019 Backup Profiles",
+      "area": "backup",
+      "status": "yellow",
+      "summary": "recommended als UI-/Create-Default; Full-Root nur Expertenmodus mit Bestätigung; pytest/Vitest grün lokal, HW-Daten-Scope offen."
+    },
+    {
+      "id": "br-001-target-hw",
+      "title": "BR-001 Zielmedium / HW-Stabilität",
+      "area": "backup",
+      "status": "red",
+      "summary": "Weiter failed/blocked; Ziel-Schreib-EIO (BR-013) und USB-/Medium-Stabilität als offenes HW-Thema."
+    }
+  ],
+  "artifacts": [
+    {"path": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md", "kind": "gate", "status": "yellow"},
+    {"path": "docs/evidence/release-gates/backup_restore_release_gate.json", "kind": "gate"},
+    {"path": "docs/backup/BACKUP_PROFILES_DE.md", "kind": "doc", "language": "de"},
+    {"path": "docs/backup/BACKUP_PROFILES_EN.md", "kind": "doc", "language": "en"},
+    {"path": "docs/faq/BACKUP_RESTORE_FAQ_DE.md", "kind": "faq", "language": "de"},
+    {"path": "docs/faq/BACKUP_RESTORE_FAQ_EN.md", "kind": "faq", "language": "en"},
+    {"path": "docs/knowledge-base/backup/BACKUP_PROFILES.md", "kind": "kb"},
+    {"path": "backend/core/backup_profiles.py", "kind": "test"},
+    {"path": "frontend/src/utils/backupCreateBody.ts", "kind": "i18n"}
+  ]
+}

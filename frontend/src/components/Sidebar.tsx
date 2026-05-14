@@ -29,6 +29,7 @@ import {
   Radio,
   Upload,
   Smartphone,
+  Terminal,
 } from 'lucide-react'
 import BeginnerGuidanceMarker from '../beginner/BeginnerGuidanceMarker'
 import { getModuleDefinition, type ExperienceLevel } from '../beginner/moduleModel'
@@ -91,6 +92,7 @@ function buildMenuItems(
     { id: 'learning', labelKey: 'sidebar.menu.learning', icon: BookOpen, modes: ['advanced'] },
     ...(appEdition === 'repo' ? [{ id: 'pi-installer-update', labelKey: 'sidebar.menu.setuphelferUpdate', icon: Upload, modes: ['advanced'] as UIMode[] }] : []),
     { id: 'devenv', labelKey: 'sidebar.menu.devenv', icon: Code, modes: ['advanced'], developerOnly: true },
+    { id: 'dev-dashboard', labelKey: 'sidebar.menu.devDashboard', icon: Terminal, modes: ['advanced', 'diagnose'], developerOnly: true },
     { id: 'mailserver', labelKey: 'sidebar.menu.mailserver', icon: Mail, modes: ['advanced'], developerOnly: true },
   ]
   if (isRaspberryPi) {

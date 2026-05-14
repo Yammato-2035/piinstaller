@@ -55,6 +55,10 @@ const RISK_MAP: Record<string, RiskEntry> = {
     level: 'yellow',
     warningKey: 'risk.warning.devenv',
   },
+  'dev-dashboard': {
+    level: 'yellow',
+    warningKey: 'risk.warning.devDashboard',
+  },
 
   'raspberry-pi-config': {
     level: 'red',

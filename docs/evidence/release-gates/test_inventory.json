@@ -3,7 +3,7 @@
   "id": "test_inventory",
   "generated": "2026-05-14T12:00:00Z",
   "source": "backend/tests",
-  "test_file_count": 198,
+  "test_file_count": 199,
   "ampel": "gelb",
   "evidence_complete": false,
   "pytest_snapshot": {
@@ -12,7 +12,7 @@
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json"
   },
-  "notes": "GitHub CI success. BR-012/BR-013 runner tests; BR-016–BR-019 + `test_backup_job_evidence_api_v1`, `test_backup_profiles_v1`; Frontend Vitest `backupJobProgressDisplay.test.ts`, `backupCreateBody.test.ts`; BR-001 blocked; BR-004/005 blocked.",
+  "notes": "GitHub CI success. **DEV-001** Development Cockpit (`test_dev_dashboard_v1.py`, `devDashboardFilters.test.ts`). BR-012/BR-013 runner tests; BR-016–BR-019 + `test_backup_job_evidence_api_v1`, `test_backup_profiles_v1`; Frontend Vitest `backupJobProgressDisplay.test.ts`, `backupCreateBody.test.ts`; BR-001 blocked; BR-004/005 blocked.",
   "test_files": [
     "test_anti_regression.py",
     "test_api_consistency_fix9_v1.py",
@@ -38,6 +38,7 @@
     "test_debug_instrumentation.py",
     "test_debug_logger.py",
     "test_debug.py",
+    "test_dev_dashboard_v1.py",
     "test_deploy_cache_execute_v1.py",
     "test_deploy_cache_plan_v1.py",
     "test_deploy_execute_v1.py",
