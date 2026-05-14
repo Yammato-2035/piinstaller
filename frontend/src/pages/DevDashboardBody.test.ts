@@ -46,6 +46,18 @@ const baseDashboard: DashboardPayload = {
     backend_workspace_match: true,
     frontend_backend_match: true,
   },
+  deploy_drift: {
+    status: 'green',
+    workspace_root: '/home/dev/piinstaller',
+    runtime_root: '/opt/setuphelfer',
+    checked_files: [],
+    matching_files_count: 8,
+    differing_files_count: 0,
+    missing_runtime_files: [],
+    missing_workspace_files: [],
+    warnings: [],
+    suggested_actions: ['none'],
+  },
 }
 
 const backupModule: ModuleRow = {
@@ -199,6 +211,34 @@ describe('DevDashboardBody', () => {
     const { html } = wrap({ filter: 'all', expanded: {}, selectedId: 'backup-restore', dashboard: dash })
     expect(html).toContain('Gelb')
     expect(html).toContain('Frontend-Build weicht')
+  })
+
+  it('zeigt Deploy-Drift-Karte mit Vorschlägen', () => {
+    const dash: DashboardPayload = {
+      ...baseDashboard,
+      deploy_drift: {
+        status: 'yellow',
+        workspace_root: '/ws',
+        runtime_root: '/opt/setuphelfer',
+        checked_files: [
+          {
+            relative_path: 'frontend/package.json',
+            matches: false,
+            reason: 'sha256_mismatch',
+          },
+        ],
+        matching_files_count: 0,
+        differing_files_count: 1,
+        missing_runtime_files: [],
+        missing_workspace_files: [],
+        warnings: [],
+        suggested_actions: ['rebuild_frontend'],
+      },
+    }
+    const { html } = wrap({ filter: 'all', expanded: {}, selectedId: 'backup-restore', dashboard: dash })
+    expect(html).toContain('data-testid="dev-dashboard-deploy-drift-card"')
+    expect(html).toContain('Deploy-Drift')
+    expect(html).toContain('Frontend neu bauen')
   })
 
   it('Restart-Primary ist disabled; Probes rufen postAction nur bei Klick (hier nicht geklickt)', () => {

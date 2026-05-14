@@ -6,6 +6,8 @@ Dieses Verzeichnis indexiert **Prompts**, **Abschlussberichte** und **Modul-Meta
 
 **Runtime vs. Workspace:** `GET /api/dev-dashboard/status` liefert zusätzlich die Objekte `runtime`, `workspace`, `frontend` und `consistency` (Versionsabgleich installierte API vs. Checkout vs. Frontend-Build). Optional: Query-Parameter `frontend_build_version`, `frontend_runtime_source` (`dev` \| `build` \| `unknown`). Wenn Backend unter `/opt/setuphelfer` läuft, der Checkout aber woanders liegt: Umgebungsvariable `SETUPHELFER_DEV_WORKSPACE_ROOT` auf das Repo-Root setzen. Details: `DEV_CLIENT_DE.md` / `DEV_CLIENT_EN.md`.
 
+**Deploy-Drift:** Zusätzlich liefert `deploy_drift` einen read-only Abgleich **Workspace vs. produktiver Runtime-Baum** (`get_opt_install_dir()`, typisch `/opt/setuphelfer`): kleine Whitelist relevanter Dateien (Backend-Kern, `config/version.json`, ausgewählte Frontend-Quellen), SHA256 nur bis 384 KiB, darüber Groesse+mtime. Kein automatischer Deploy, kein Restart, keine Installation.
+
 - `modules/*.json` — maschinenlesbare Moduldefinitionen (Ampel, nächste Schritte, Blocker, Artefakt-Pfade).
 - `prompts/` — Ablage für wiederverwendbare Entwickler-Prompts (optional).
 - `reports/` — Kurzberichte / Session-Abschlüsse (optional).

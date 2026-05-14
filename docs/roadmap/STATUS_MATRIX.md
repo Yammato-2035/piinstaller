@@ -33,7 +33,7 @@
 | Website-Transparenz | Gelb | Markdown-Basis im Repo | `docs/roadmap/PUBLIC_STATUS_PAGE.md`, `docs/testing/WEBSITE_TRANSPARENCY_TEST_MATRIX.md` |
 | Affiliate / Monetarisierung | Gelb | Policies als Markdown | `docs/monetization/` |
 | Release Gate UG-Start | Rot | Gates nicht grün | `docs/roadmap/RELEASE_READINESS_CHECKLIST.md` |
-| Development Cockpit **DEV-001** | Gelb | `GET /api/dev-dashboard/*` read-only; POST-Aktionen nur Platzhalter (`confirm_required`); UI nur Entwickler; **Runtime vs. Workspace** in Status-API + UI-Karte; Vitest-Smoke (`DevDashboardBody`); separater Tauri-Dev-Client nur dokumentiert (`DEV_CLIENT_*.md`); produktive Integration/HW-Abnahme offen | `docs/testing/DEVELOPMENT_COCKPIT_MATRIX.md`, `docs/dev-dashboard/README.md`, `docs/dev-dashboard/DEV_CLIENT_DE.md`, `backend/core/dev_dashboard.py` |
+| Development Cockpit **DEV-001** | Gelb | `GET /api/dev-dashboard/*` read-only; POST-Aktionen nur Platzhalter (`confirm_required`); UI nur Entwickler; **Runtime vs. Workspace** + **`deploy_drift`** (read-only Datei-Whitelist vs. `/opt/setuphelfer`); Vitest-Smoke (`DevDashboardBody`); separater Tauri-Dev-Client nur dokumentiert (`DEV_CLIENT_*.md`); produktive Integration/HW-Abnahme offen | `docs/testing/DEVELOPMENT_COCKPIT_MATRIX.md`, `docs/dev-dashboard/README.md`, `docs/dev-dashboard/DEV_CLIENT_DE.md`, `backend/core/dev_dashboard.py` |
 | Backend-Version-Gate | Gelb | Regel+Skript+`/api/version`-Diagnose im Repo; produktiver Gate-Grün-Status ausstehend | `docs/evidence/release-gates/backend_version_update_gate.json`, `scripts/check-backend-version-gate.sh` |
 | Cloudserver Edition | Schwarz | nach Modularisierung | — |
 

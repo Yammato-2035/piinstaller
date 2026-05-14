@@ -29,6 +29,7 @@ class TestDevDashboardCore(unittest.TestCase):
             self.assertIn("workspace", body)
             self.assertIn("frontend", body)
             self.assertIn("consistency", body)
+            self.assertIn("deploy_drift", body)
             self.assertIn("backend_api_reachable", body.get("runtime") or {})
 
     def test_build_modules_list_missing_dir(self):
@@ -88,6 +89,84 @@ class TestDevDashboardCore(unittest.TestCase):
         r3 = dd.action_placeholder_response("destroy-world")
         self.assertEqual(r3.get("status"), "error")
         self.assertEqual(r3.get("result"), "unknown_action")
+
+    def test_deploy_drift_same_root_gray(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            out = dd._compute_deploy_drift(workspace_root=root, runtime_root=root)
+        self.assertEqual(out["status"], "gray")
+        self.assertIn("deploy_drift_same_workspace_and_runtime_root", out["warnings"])
+
+    def test_deploy_drift_runtime_missing_dir_gray(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            ws = Path(td) / "ws"
+            rt = Path(td) / "rt_missing"
+            ws.mkdir()
+            out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        self.assertEqual(out["status"], "gray")
+        self.assertIn("runtime_root_not_a_directory", out.get("warnings") or [])
+
+    @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("probe.txt",))
+    def test_deploy_drift_green_identical_files(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            ws = Path(td) / "w"
+            rt = Path(td) / "r"
+            ws.mkdir()
+            rt.mkdir()
+            (ws / "probe.txt").write_text("same", encoding="utf-8")
+            (rt / "probe.txt").write_text("same", encoding="utf-8")
+            out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        self.assertEqual(out["status"], "green")
+        self.assertEqual(out["matching_files_count"], 1)
+        self.assertEqual(out["differing_files_count"], 0)
+        self.assertEqual(out["suggested_actions"], ["none"])
+
+    @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("probe.txt",))
+    def test_deploy_drift_yellow_missing_runtime_file(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            ws = Path(td) / "w"
+            rt = Path(td) / "r"
+            ws.mkdir()
+            rt.mkdir()
+            (ws / "probe.txt").write_text("only-ws", encoding="utf-8")
+            out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        self.assertEqual(out["status"], "yellow")
+        self.assertEqual(out["missing_runtime_files"], ["probe.txt"])
+        self.assertIn("deploy_backend_files", out["suggested_actions"])
+
+    @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("backend/probe.py",))
+    def test_deploy_drift_yellow_content_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            ws = Path(td) / "w"
+            rt = Path(td) / "r"
+            ws.mkdir()
+            rt.mkdir()
+            (ws / "backend").mkdir()
+            (rt / "backend").mkdir()
+            (ws / "backend" / "probe.py").write_text("a", encoding="utf-8")
+            (rt / "backend" / "probe.py").write_text("b", encoding="utf-8")
+            out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        self.assertEqual(out["status"], "yellow")
+        self.assertEqual(out["differing_files_count"], 1)
+        self.assertIn("deploy_backend_files", out["suggested_actions"])
+
+    @patch.object(dd, "DEPLOY_DRIFT_MAX_HASH_BYTES", 8)
+    @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("big.bin",))
+    def test_deploy_drift_large_file_uses_metadata_not_full_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            ws = Path(td) / "w"
+            rt = Path(td) / "r"
+            ws.mkdir()
+            rt.mkdir()
+            payload = b"0123456789abcdef"
+            (ws / "big.bin").write_bytes(payload)
+            (rt / "big.bin").write_bytes(payload)
+            out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        self.assertEqual(out["status"], "green")
+        self.assertEqual(out["matching_files_count"], 1)
+        rows = out.get("checked_files") or []
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].get("reason"), "compared_by_size_mtime")
 
     @patch("core.versioning.load_project_version")
     def test_consistency_frontend_build_outdated_yellow(self, lp: MagicMock) -> None:
@@ -156,7 +235,7 @@ class TestDevDashboardApiV1(unittest.TestCase):
         self.assertEqual(data.get("status"), "success")
         self.assertIn("dashboard", data)
         dash = data.get("dashboard") or {}
-        for key in ("runtime", "workspace", "frontend", "consistency"):
+        for key in ("runtime", "workspace", "frontend", "consistency", "deploy_drift"):
             self.assertIn(key, dash, msg=key)
 
     def test_status_accepts_frontend_query_params(self):

@@ -15,3 +15,7 @@
 ## API-Basis
 
 Die bestehende `fetchApi`-Logik (localStorage `pi-installer-api-base`) bleibt die konfigurierbare API-Basis; das Dev-Dashboard zeigt die gewählte Basis in der Karte „Runtime vs. Workspace“ an.
+
+## Deploy-Drift (read-only)
+
+Die Status-API enthält `deploy_drift` mit Ampel **green**/**yellow**/**gray** (Dateiabweichungen sind **gelb**, kein automatisches „rot“ aus Drift-Checks). Vorgeschlagene Aktionen sind reine Text-Hinweise (Deploy/Restart/Rebuild), **ohne** automatische Ausführung.

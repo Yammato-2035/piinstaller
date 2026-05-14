@@ -93,6 +93,8 @@ export function DevDashboardBody({
 
       <RuntimeWorkspacePanel dashboard={dashboard} t={t} apiBaseDisplay={apiBaseDisplay} />
 
+      <DeployDriftPanel dashboard={dashboard} t={t} />
+
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={() => onRefresh()} className="btn-secondary inline-flex items-center gap-2" disabled={loading}>
           <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
@@ -304,6 +306,113 @@ export function DevDashboardBody({
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function DeployDriftPanel({ dashboard, t }: { dashboard: DashboardPayload; t: TFunction }) {
+  if (!dashboard) return null
+  const dd = dashboard.deploy_drift as Record<string, unknown> | undefined
+  if (!dd) return null
+  const st = String(dd.status || 'gray')
+  const borderTone =
+    st === 'red'
+      ? 'border-rose-500/70 bg-rose-950/30'
+      : st === 'yellow'
+        ? 'border-amber-500/70 bg-amber-950/25'
+        : st === 'gray'
+          ? 'border-slate-500/60 bg-slate-900/40'
+          : 'border-emerald-600/50 bg-emerald-950/20'
+  const tri =
+    st === 'red'
+      ? t('devDashboard.status.red')
+      : st === 'yellow'
+        ? t('devDashboard.status.yellow')
+        : st === 'gray'
+          ? t('devDashboard.status.gray')
+          : t('devDashboard.status.green')
+  const checked = Array.isArray(dd.checked_files) ? (dd.checked_files as Record<string, unknown>[]) : []
+  const missRt = Array.isArray(dd.missing_runtime_files) ? (dd.missing_runtime_files as string[]) : []
+  const missWs = Array.isArray(dd.missing_workspace_files) ? (dd.missing_workspace_files as string[]) : []
+  const ddWarns = Array.isArray(dd.warnings) ? (dd.warnings as string[]) : []
+  const actions = Array.isArray(dd.suggested_actions) ? (dd.suggested_actions as string[]) : []
+
+  return (
+    <div className={`rounded-xl border p-4 space-y-3 ${borderTone}`} data-testid="dev-dashboard-deploy-drift-card">
+      <div>
+        <h2 className="text-base font-semibold text-white">{t('devDashboard.deployDrift.title')}</h2>
+        <p className="text-xs text-slate-300 mt-1">{t('devDashboard.deployDrift.subtitle')}</p>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+        <span className="text-slate-400">{t('devDashboard.deployDrift.statusLabel')}</span>
+        <span className="font-mono font-bold text-white">{tri}</span>
+        <span className="text-xs text-slate-500">({st})</span>
+      </div>
+      <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-xs text-slate-200">
+        <div className="sm:col-span-2">
+          <dt className="text-slate-500">{t('devDashboard.deployDrift.runtimeRoot')}</dt>
+          <dd className="font-mono break-all text-slate-300">{String(dd.runtime_root ?? '—')}</dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-slate-500">{t('devDashboard.deployDrift.workspaceRoot')}</dt>
+          <dd className="font-mono break-all text-slate-300">{String(dd.workspace_root ?? '—')}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.deployDrift.checkedCount')}</dt>
+          <dd>{checked.length}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.deployDrift.matching')}</dt>
+          <dd>{String(dd.matching_files_count ?? '—')}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.deployDrift.differing')}</dt>
+          <dd>{String(dd.differing_files_count ?? '—')}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.deployDrift.missingRuntime')}</dt>
+          <dd className="break-all">{missRt.length ? missRt.join(', ') : '—'}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.deployDrift.missingWorkspace')}</dt>
+          <dd className="break-all">{missWs.length ? missWs.join(', ') : '—'}</dd>
+        </div>
+      </dl>
+      <div className="text-xs">
+        <div className="font-semibold text-slate-200 mb-1">{t('devDashboard.deployDrift.suggested')}</div>
+        <ul className="list-disc pl-4 space-y-0.5 text-sky-100/90">
+          {actions.map((a) => (
+            <li key={a}>{t(`devDashboard.deployDrift.action.${a}`, { defaultValue: a })}</li>
+          ))}
+        </ul>
+      </div>
+      {ddWarns.length > 0 ? (
+        <div className="text-xs border-t border-white/10 pt-2">
+          <div className="font-semibold text-slate-300 mb-1">{t('devDashboard.deployDrift.warnings')}</div>
+          <ul className="list-disc pl-4 text-amber-100/90">
+            {ddWarns.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {checked.length > 0 ? (
+        <div className="text-xs border-t border-white/10 pt-2">
+          <div className="font-semibold text-slate-200 mb-1">{t('devDashboard.deployDrift.details')}</div>
+          <div className="max-h-40 overflow-y-auto space-y-1 font-mono text-slate-400">
+            {checked.map((row) => (
+              <div key={String(row.relative_path)} className="flex flex-wrap gap-x-2">
+                <span className="text-slate-300">{String(row.relative_path)}</span>
+                <span>
+                  {t('devDashboard.deployDrift.matches')}:{' '}
+                  {row.matches === true ? '✓' : row.matches === false ? '✗' : '—'}
+                </span>
+                {row.reason ? <span className="text-slate-500">({String(row.reason)})</span> : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

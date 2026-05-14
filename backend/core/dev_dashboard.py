@@ -7,6 +7,7 @@ Warnungen/Eintraege in ``warnings``/``errors`` gesetzt.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import subprocess
@@ -15,6 +16,19 @@ from pathlib import Path
 from typing import Any
 
 UTC = timezone.utc
+
+# Read-only Deploy-Drift: nur kleine/mittlere Text-Dateien hashen; groessere per Groesse+mtime.
+DEPLOY_DRIFT_MAX_HASH_BYTES = 384 * 1024
+DEPLOY_DRIFT_REL_PATHS: tuple[str, ...] = (
+    "backend/app.py",
+    "backend/core/versioning.py",
+    "backend/core/install_paths.py",
+    "backend/core/dev_dashboard.py",
+    "config/version.json",
+    "frontend/package.json",
+    "frontend/src/components/ApiRuntimeConsistencyBanner.tsx",
+    "frontend/src/pages/DevDashboardBody.tsx",
+)
 
 
 def _repo_root() -> Path:
@@ -136,6 +150,251 @@ def _compare_dotted_versions(a: str, b: str) -> int | None:
         if va > vb:
             return 1
     return 0
+
+
+def _path_must_be_under(root: Path, candidate: Path) -> bool:
+    try:
+        candidate.resolve().relative_to(root.resolve())
+        return True
+    except (ValueError, OSError):
+        return False
+
+
+def _sha256_file_limited(path: Path, max_bytes: int) -> tuple[str | None, str | None]:
+    """SHA256 des gesamten Files nur wenn size <= max_bytes; sonst (None, reason)."""
+    try:
+        st = path.stat()
+    except OSError as exc:
+        return None, f"stat_error:{exc}"
+    if st.st_size > max_bytes:
+        return None, "skipped_too_large_for_hash"
+    try:
+        digest = hashlib.sha256()
+        with path.open("rb") as fh:
+            while True:
+                chunk = fh.read(65536)
+                if not chunk:
+                    break
+                digest.update(chunk)
+        return digest.hexdigest(), None
+    except OSError as exc:
+        return None, f"read_error:{exc}"
+
+
+def _metadata_compare(wp: Path, rp: Path) -> tuple[bool | None, str | None]:
+    """Groesse + mtime fuer grosse Dateien (kein Full-Hash)."""
+    try:
+        sw, sr = wp.stat(), rp.stat()
+    except OSError as exc:
+        return None, f"stat_error:{exc}"
+    same_size = sw.st_size == sr.st_size
+    same_mtime = int(sw.st_mtime) == int(sr.st_mtime)
+    if same_size and same_mtime:
+        return True, "compared_by_size_mtime"
+    return False, "compared_by_size_mtime"
+
+
+def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[str, Any]:
+    """
+    Read-only: Workspace-Checkout vs. produktiver Runtime-Baum (typ. /opt/setuphelfer).
+    Drift → status yellow/gray; rot nur fuer globale Konsistenz, nicht hier.
+    """
+    dd_warnings: list[str] = []
+    checked: list[dict[str, Any]] = []
+    missing_rt: list[str] = []
+    missing_ws: list[str] = []
+    try:
+        ws_r = workspace_root.expanduser().resolve()
+    except OSError as exc:
+        return {
+            "status": "gray",
+            "workspace_root": str(workspace_root),
+            "runtime_root": str(runtime_root),
+            "checked_files": [],
+            "matching_files_count": 0,
+            "differing_files_count": 0,
+            "missing_runtime_files": [],
+            "missing_workspace_files": [],
+            "warnings": [f"workspace_root_resolve:{exc}"],
+            "suggested_actions": ["none"],
+        }
+    try:
+        rt_r = runtime_root.expanduser().resolve()
+    except OSError as exc:
+        return {
+            "status": "gray",
+            "workspace_root": str(ws_r),
+            "runtime_root": str(runtime_root),
+            "checked_files": [],
+            "matching_files_count": 0,
+            "differing_files_count": 0,
+            "missing_runtime_files": [],
+            "missing_workspace_files": [],
+            "warnings": [f"runtime_root_resolve:{exc}"],
+            "suggested_actions": ["none"],
+        }
+
+    if ws_r == rt_r:
+        return {
+            "status": "gray",
+            "workspace_root": str(ws_r),
+            "runtime_root": str(rt_r),
+            "checked_files": [],
+            "matching_files_count": 0,
+            "differing_files_count": 0,
+            "missing_runtime_files": [],
+            "missing_workspace_files": [],
+            "warnings": ["deploy_drift_same_workspace_and_runtime_root"],
+            "suggested_actions": ["none"],
+        }
+
+    if not rt_r.is_dir():
+        dd_warnings.append("runtime_root_not_a_directory")
+        return {
+            "status": "gray",
+            "workspace_root": str(ws_r),
+            "runtime_root": str(rt_r),
+            "checked_files": [],
+            "matching_files_count": 0,
+            "differing_files_count": 0,
+            "missing_runtime_files": [],
+            "missing_workspace_files": [],
+            "warnings": dd_warnings,
+            "suggested_actions": ["none"],
+        }
+
+    match_n = 0
+    diff_n = 0
+
+    for rel in DEPLOY_DRIFT_REL_PATHS:
+        rel = rel.replace("\\", "/").strip().lstrip("/")
+        if ".." in rel.split("/"):
+            dd_warnings.append(f"deploy_drift_invalid_rel:{rel}")
+            continue
+        wp = (ws_r / rel).resolve()
+        rp = (rt_r / rel).resolve()
+        if not _path_must_be_under(ws_r, wp) or not _path_must_be_under(rt_r, rp):
+            checked.append(
+                {
+                    "relative_path": rel,
+                    "workspace_path": str(wp),
+                    "runtime_path": str(rp),
+                    "workspace_sha256": None,
+                    "runtime_sha256": None,
+                    "matches": None,
+                    "reason": "path_outside_root",
+                }
+            )
+            dd_warnings.append(f"path_outside_root:{rel}")
+            continue
+
+        entry: dict[str, Any] = {
+            "relative_path": rel,
+            "workspace_path": str(wp),
+            "runtime_path": str(rp),
+            "workspace_sha256": None,
+            "runtime_sha256": None,
+            "matches": None,
+            "reason": None,
+        }
+        ws_exists = wp.is_file()
+        rt_exists = rp.is_file()
+        if not ws_exists:
+            missing_ws.append(rel)
+            entry["reason"] = "missing_workspace"
+            checked.append(entry)
+            continue
+        if not rt_exists:
+            missing_rt.append(rel)
+            entry["reason"] = "missing_runtime"
+            checked.append(entry)
+            continue
+
+        try:
+            wsz = wp.stat().st_size
+            rsz = rp.stat().st_size
+        except OSError as exc:
+            entry["reason"] = f"stat_error:{exc}"
+            entry["matches"] = None
+            dd_warnings.append(f"stat:{rel}:{exc}")
+            checked.append(entry)
+            continue
+
+        use_hash = max(wsz, rsz) <= DEPLOY_DRIFT_MAX_HASH_BYTES
+        if use_hash:
+            wh, werr = _sha256_file_limited(wp, DEPLOY_DRIFT_MAX_HASH_BYTES)
+            rh, rerr = _sha256_file_limited(rp, DEPLOY_DRIFT_MAX_HASH_BYTES)
+            entry["workspace_sha256"] = wh
+            entry["runtime_sha256"] = rh
+            if werr or rerr:
+                entry["reason"] = werr or rerr
+                entry["matches"] = None
+                dd_warnings.append(f"hash_skipped:{rel}:{entry['reason']}")
+            elif wh and rh:
+                entry["matches"] = wh == rh
+                entry["reason"] = "sha256" if entry["matches"] else "sha256_mismatch"
+                if entry["matches"]:
+                    match_n += 1
+                else:
+                    diff_n += 1
+            else:
+                entry["matches"] = None
+                dd_warnings.append(f"hash_none:{rel}")
+        else:
+            meta_match, meta_reason = _metadata_compare(wp, rp)
+            entry["matches"] = meta_match
+            entry["reason"] = meta_reason
+            if meta_match is True:
+                match_n += 1
+            elif meta_match is False:
+                diff_n += 1
+            else:
+                dd_warnings.append(f"metadata:{rel}:{meta_reason}")
+
+        checked.append(entry)
+
+    suggested: list[str] = []
+    rt_code_issue = (
+        any(
+            (
+                str(e.get("relative_path", "")).startswith("backend/")
+                or e.get("relative_path") == "config/version.json"
+            )
+            and e.get("matches") is False
+            for e in checked
+        )
+        or any(m.startswith("backend/") or m == "config/version.json" for m in missing_rt)
+    )
+    fe_issue = any(
+        str(e.get("relative_path", "")).startswith("frontend/") and e.get("matches") is False for e in checked
+    ) or any(m.startswith("frontend/") for m in missing_rt)
+    if missing_rt or rt_code_issue:
+        suggested.extend(["deploy_backend_files", "restart_backend_manual"])
+    if fe_issue:
+        suggested.append("rebuild_frontend")
+    if not suggested:
+        suggested.append("none")
+    suggested = list(dict.fromkeys(suggested))
+
+    if diff_n == 0 and not missing_rt and not missing_ws and not dd_warnings and match_n > 0:
+        drift_status = "green"
+    elif not checked and not missing_rt and not missing_ws:
+        drift_status = "gray"
+    else:
+        drift_status = "yellow"
+
+    return {
+        "status": drift_status,
+        "workspace_root": str(ws_r),
+        "runtime_root": str(rt_r),
+        "checked_files": checked,
+        "matching_files_count": match_n,
+        "differing_files_count": diff_n,
+        "missing_runtime_files": missing_rt,
+        "missing_workspace_files": missing_ws,
+        "warnings": dd_warnings,
+        "suggested_actions": suggested,
+    }
 
 
 def _read_workspace_version_info(ws_root: Path) -> tuple[str | None, str | None, str | None]:
@@ -517,6 +776,20 @@ def build_dashboard_status(
         frontend_runtime_source=fe_src,
     )
 
+    try:
+        from core.install_paths import get_opt_install_dir
+
+        runtime_install_root = get_opt_install_dir().resolve()
+    except OSError as exc:
+        warnings.append(f"deploy_drift_opt_resolve:{exc}")
+        try:
+            runtime_install_root = Path("/opt/setuphelfer").resolve()
+        except OSError:
+            runtime_install_root = Path("/opt/setuphelfer")
+
+    ws_for_drift = _effective_workspace_root(repo)
+    deploy_drift = _compute_deploy_drift(workspace_root=ws_for_drift, runtime_root=runtime_install_root)
+
     gate_path = repo / "docs" / "evidence" / "release-gates" / "backup_restore_release_gate.json"
     gate, gerr = _safe_read_json(gate_path)
     if gerr:
@@ -554,6 +827,7 @@ def build_dashboard_status(
         "workspace": workspace,
         "frontend": frontend,
         "consistency": consistency,
+        "deploy_drift": deploy_drift,
         "warnings": warnings,
         "errors": errors,
     }
