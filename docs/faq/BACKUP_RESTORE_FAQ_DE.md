@@ -4,6 +4,14 @@
 
 **Ja.** Solange **`GET /api/version`** nicht **HTTP 200** mit **`status":"success"`** liefert oder die produktive **`config/version.json`** nicht dem freigegebenen Schema entspricht, sind Testergebnisse nicht belastbar. Zuerst **`scripts/check-backend-version-gate.sh`** und das Update-Runbook (`docs/operations/BACKEND_UPDATE_RUNBOOK_DE.md`) — **kein** Backup-Start bei `blocked_update_required`.
 
+## Warum dauert ein Full-Root-Backup so lange und skaliert schlecht mit vielen CPU-Kernen?
+
+**gzip** (und klassisches **`tar -czf`**) komprimiert im Wesentlichen **single-threaded**. Viele Kerne helfen kaum; oft limitieren **I/O** und **eine CPU** den Durchsatz. **pigz** nutzt mehrere Threads, bleibt aber **gzip-kompatibel** (schneller, wenn installiert). **zstd** ist schneller/skaliert besser, erfordert aber eine **durchgängige** Pipeline inkl. Finalisierung/Manifest — bis dahin bleibt das Produkt **gzip-kompatibel**. Ein **vollständiges Root-Backup** ist bewusst ein **Experten-/Langläuferpfad**; für Alltag und Pi eignen sich **kleinere Profile** (siehe **`docs/backup/BACKUP_PERFORMANCE_DE.md`**, Testmatrix **BR-016**, **BR-019**).
+
+## Was ist mit Fortschritt, ETA und Evidence?
+
+Der Runner füllt **`progress_optional`** (u. a. Phase, Durchsatz, **`eta_seconds`** nur bei belastbarer Schätzung sonst **`null`**). Nach Job-Ende kann ein **Evidence-Paket** erzeugt werden (Logs, `systemctl`, `journalctl`-Auszüge, Mounts) — siehe **`docs/backup/BACKUP_EVIDENCE_COLLECTOR_DE.md`** (**BR-017**). UI-Hinweise: **`backup.messages.*`** in den Locale-Dateien (z. B. langsamer Lauf, Kompression als Flaschenhals, Paketblocker, ETA).
+
 ## Warum darf das Backup nicht auf dem Root-Dateisystem liegen?
 
 Ein Backup auf dem gleichen Dateisystem wie das laufende System ist unsicher. Bei einem Festplattenfehler, einer Fehlbedienung oder einem Restore-Fehler kann das Backup gleichzeitig mit dem Original verloren gehen.

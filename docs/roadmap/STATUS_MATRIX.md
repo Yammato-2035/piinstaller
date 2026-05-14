@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-14 — **BR-013** (*Ziel-Schreib-EIO*): Klassifikation **`backup.write_io_error`** / **`BACKUP-IO-ERROR-050`** (Job **`f744c2936468`**); **BR-012** Finalisierung; **BR-011** Preflight. **BR-001** failed/blocked. **BR-004/005:** blocked.
+**Stand:** 2026-05-14 — **BR-013** (*Ziel-Schreib-EIO*): Klassifikation **`backup.write_io_error`** / **`BACKUP-IO-ERROR-050`** (Job **`f744c2936468`**); **BR-012** Finalisierung; **BR-011** Preflight. **BR-016–BR-019** (Performance, Evidence, Progress/ETA, Profile): Code + Doku + pytest **gelb** (HW-/E2E-Abnahme offen). **BR-001** failed/blocked. **BR-004/005:** blocked.
 
 ## Ampeldefinition
 
@@ -21,6 +21,10 @@
 | Backup Preflight **BR-011** | Gelb | Spezifikation + Testmatrix; API/UI/Implementierung offen | `docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`, `docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md` |
 | **BR-013** Ziel-Schreib-EIO | Gelb | `backup.write_io_error` + pytest; KB `BACKUP_TARGET_WRITE_IO_ERROR.md` | `BR-001_write_io_error_2026-05-14.md`, `backup_runner.py`, `BR-001.json` |
 | **BR-012** Runner-Finalisierung | Gelb | Fix `backup_runner.py` + pytest; **2026-05-14** produktiver Runner SHA256 = Workspace (Deploy-Prep) | `BR-001_runner_finalization_performance_failure_2026-05-14.md`, `backend/tools/backup_runner.py`, `BR-001.json` → `br001_runner_fix_deploy_prep_2026_05_14` |
+| **BR-016** Backup Performance / Kompression | Gelb | pigz wenn verfügbar; Profile-Excludes; zstd vorbereitet; Doku `BACKUP_PERFORMANCE_*` | `test_backup_archive_options_v1.py`, `core/backup_archive_options.py` |
+| **BR-017** Backup Evidence Collector | Gelb | `tools/backup_evidence_collector.py`; Runner-Hook; fehlende Rechte → `permission_denied` | `test_backup_evidence_collector_v1.py`, `BACKUP_EVIDENCE_COLLECTOR_DE.md` |
+| **BR-018** Backup Progress / ETA | Gelb | `progress_optional` erweitert; ETA nur belastbar | `test_backup_progress_merge_v1.py`, `core/backup_progress.py` |
+| **BR-019** Backup Profiles | Gelb | Default **`recommended`**; **`full-expert`** nur explizit | `test_backup_archive_options_v1.py` |
 | Verify | Rot | BR-004/BR-005 blocked — kein neues BR-001-Archiv aus diesem Lauf | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |

@@ -42,6 +42,7 @@ import shutil
 import xml.etree.ElementTree as ET
 from pydantic import BaseModel
 
+from core.backup_archive_options import normalize_backup_profile
 from core.install_paths import (
     audit_rules_file as _audit_rules_path,
     get_backend_runtime_dir,
@@ -13420,6 +13421,7 @@ async def create_backup(request: Request):
                 "lang": str(data.get("lang") or ""),
                 "requested_by": "api",
                 "created_at": _now_iso(),
+                "backup_profile": normalize_backup_profile(str(data.get("backup_profile") or "").strip() or None)[0],
             }
             job_file.write_text(json.dumps(job_payload, ensure_ascii=False, indent=2), encoding="utf-8")
             initial_status = {
@@ -13600,6 +13602,7 @@ async def create_backup(request: Request):
                 "lang": str(data.get("lang") or ""),
                 "requested_by": "api",
                 "created_at": _now_iso(),
+                "backup_profile": normalize_backup_profile(str(data.get("backup_profile") or "").strip() or None)[0],
             }
             job_file.write_text(json.dumps(job_payload, ensure_ascii=False, indent=2), encoding="utf-8")
             initial_status = {

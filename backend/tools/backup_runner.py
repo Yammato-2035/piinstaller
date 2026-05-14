@@ -20,6 +20,12 @@ from typing import Any, Callable
 
 import psutil
 
+from core.backup_archive_options import (
+    PROFILE_FULL_EXPERT,
+    build_full_root_tar_command,
+)
+from core.backup_progress import merge_progress_optional, quick_target_preflight
+
 # Status-Herzschlag während teurer Finalisierung (SHA256 / Manifest-Rewrite)
 _FINALIZE_PROGRESS_INTERVAL_S = 30.0
 _FINALIZE_HASH_PROGRESS_BYTES = 4 * 1024 * 1024
@@ -33,6 +39,8 @@ STDERR_TAIL_MAX_LINES = 20
 STOP_REQUESTED = False
 CHILD_PROC: subprocess.Popen[str] | None = None
 STATUS_FINAL_WRITTEN = False
+_EVIDENCE_CTX: dict[str, Any] | None = None
+_EVIDENCE_COLLECTED = False
 
 
 def _now_iso() -> str:
@@ -305,9 +313,32 @@ def _on_signal(signum: int, frame: Any) -> None:
     _kill_child_group()
 
 
+def _try_collect_evidence(status_file: Path, status: dict[str, Any]) -> None:
+    try:
+        from tools.backup_evidence_collector import collect_backup_job_evidence
+    except ImportError:
+        from backup_evidence_collector import collect_backup_job_evidence
+
+    jid = str(status.get("job_id") or "").strip()
+    if not jid:
+        return
+    status_dir = status_file.parent.parent
+    un = str(status.get("unit_name") or f"setuphelfer-backup@{jid}.service")
+    us = str(status.get("unit_scope") or "system")
+    bd = str(status.get("backup_dir") or "").strip() or None
+    collect_backup_job_evidence(jid, status_dir=status_dir, unit_name=un, unit_scope=us, backup_dir=bd)
+
+
 def _mark_terminal() -> None:
-    global STATUS_FINAL_WRITTEN
+    global STATUS_FINAL_WRITTEN, _EVIDENCE_CTX, _EVIDENCE_COLLECTED
     STATUS_FINAL_WRITTEN = True
+    if _EVIDENCE_CTX and not _EVIDENCE_COLLECTED:
+        _EVIDENCE_COLLECTED = True
+        try:
+            _try_collect_evidence(_EVIDENCE_CTX["status_file"], _EVIDENCE_CTX["status"])
+        except Exception:
+            pass
+        _EVIDENCE_CTX = None
 
 
 def _write_cancel_final(
@@ -365,14 +396,11 @@ def _cancel_if_stop_requested(
 
 
 def _full_inner_tar_command(partial_path: str, backup_dir_resolved: str) -> str:
-    """Wie app._do_backup_logic (full): Archiv über / mit festen Excludes; Zielverzeichnis ausgeschlossen."""
-    bd = str(Path(backup_dir_resolved).resolve())
-    return (
-        f"tar -czf {shlex.quote(partial_path)} "
-        f"--exclude={shlex.quote(bd)} "
-        f"--exclude=/proc --exclude=/sys --exclude=/dev --exclude=/tmp --exclude=/run --exclude=/mnt "
-        f"--exclude=/media --exclude=/run/media /"
+    """Legacy: vollständiger Root-Backup-Befehl wie zuvor (Profil ``full-expert``)."""
+    cmd, _meta = build_full_root_tar_command(
+        partial_path, backup_dir_resolved, profile=PROFILE_FULL_EXPERT
     )
+    return cmd
 
 
 def _run_tar_pipeline_from_preflight(
@@ -383,9 +411,12 @@ def _run_tar_pipeline_from_preflight(
     archive_path: str,
     manifest_payload: dict[str, Any],
     inner_tar_cmd: str,
+    progress_ctx: dict[str, Any] | None = None,
 ) -> int:
     """Gemeinsame Pipeline: Preflight (Paket/Inhibit), inhibit-wrap, Monitor, Manifest, finalize — ohne Data-/Full-Tar zu vermischen."""
-    global CHILD_PROC
+    global CHILD_PROC, _EVIDENCE_CTX, _EVIDENCE_COLLECTED
+    _EVIDENCE_CTX = {"status_file": status_file, "status": status}
+    _EVIDENCE_COLLECTED = False
 
     if _cancel_if_stop_requested(status_file, status, partial_path, manifest_tmp_path):
         return 0
@@ -532,6 +563,32 @@ def _run_tar_pipeline_from_preflight(
         return ht, tt, _child_exit_code(CHILD_PROC)
 
     start_monotonic = time.monotonic()
+    if progress_ctx is not None:
+        progress_ctx["start_monotonic"] = start_monotonic
+        warns = list(progress_ctx.get("profile_warnings") or [])
+        notes = progress_ctx.get("preflight_notes") or []
+        if isinstance(notes, list):
+            warns.extend([f"preflight:{n}" for n in notes[:8]])
+        po = merge_progress_optional(
+            status.get("progress_optional"),
+            phase="preflight",
+            bytes_current=0,
+            bytes_total_estimate=progress_ctx.get("bytes_total_estimate"),
+            start_monotonic=start_monotonic,
+            compression_method=str(progress_ctx.get("compression_method") or "gzip"),
+            current_operation="package_and_inhibit_ok",
+            target_mount=progress_ctx.get("target_mount"),
+            target_free_bytes=progress_ctx.get("target_free_bytes"),
+            warning_codes=warns,
+            health_flags={"compression_detail": status.get("compression_detail") or {}},
+            throughput_state=progress_ctx["throughput_state"],
+        )
+        _update_status(
+            status_file,
+            status,
+            progress_optional=po,
+            compression_method=str(progress_ctx.get("compression_method") or "gzip"),
+        )
     while True:
         if STOP_REQUESTED:
             _kill_child_group()
@@ -578,7 +635,35 @@ def _run_tar_pipeline_from_preflight(
                 size = 0
         except Exception:
             size = 0
-        _update_status(status_file, status, progress_optional={"bytes_current": size, "running_for_s": int(time.monotonic() - start_monotonic)})
+        if progress_ctx is not None:
+            pc = progress_ctx
+            sm = float(pc.get("start_monotonic") or start_monotonic)
+            warns = list(pc.get("profile_warnings") or [])
+            po = merge_progress_optional(
+                status.get("progress_optional"),
+                phase="archiving",
+                bytes_current=size,
+                bytes_total_estimate=pc.get("bytes_total_estimate"),
+                start_monotonic=sm,
+                compression_method=str(pc.get("compression_method") or "gzip"),
+                current_operation="tar_create_stream",
+                target_mount=pc.get("target_mount"),
+                target_free_bytes=pc.get("target_free_bytes"),
+                warning_codes=warns,
+                health_flags={"compression_detail": status.get("compression_detail") or {}},
+                throughput_state=pc["throughput_state"],
+            )
+            po["running_for_s"] = int(time.monotonic() - start_monotonic)
+            _update_status(status_file, status, progress_optional=po)
+        else:
+            _update_status(
+                status_file,
+                status,
+                progress_optional={
+                    "bytes_current": size,
+                    "running_for_s": int(time.monotonic() - start_monotonic),
+                },
+            )
         time.sleep(0.5)
 
     if STOP_REQUESTED:
@@ -615,16 +700,17 @@ def _run_tar_pipeline_from_preflight(
             except OSError:
                 psz = 0
             now_m = time.monotonic()
-            _update_status(
-                status_file,
-                status,
-                progress_optional={
+            merged = dict(status.get("progress_optional") or {})
+            merged.update(
+                {
                     "bytes_current": psz,
                     "running_for_s": int(now_m - start_monotonic),
                     "finalize_phase": phase,
                     "finalize_bytes_processed": proc_bytes,
-                },
+                    "phase": "finalizing",
+                }
             )
+            _update_status(status_file, status, progress_optional=merged)
 
         if STOP_REQUESTED:
             _write_cancel_final(
@@ -707,6 +793,17 @@ def _run_tar_pipeline_from_preflight(
         except Exception as e:
             rename_error = str(e)
         if ok_rename:
+            asz = Path(archive_path).stat().st_size if Path(archive_path).exists() else 0
+            merged_ok = dict(status.get("progress_optional") or {})
+            merged_ok.update(
+                {
+                    "bytes_current": asz,
+                    "running_for_s": int(time.monotonic() - start_monotonic),
+                    "finalize_phase": "complete",
+                    "finalize_bytes_processed": asz,
+                    "phase": "completed",
+                }
+            )
             _update_status(
                 status_file,
                 status,
@@ -720,12 +817,7 @@ def _run_tar_pipeline_from_preflight(
                 partial_deleted=not Path(partial_path).exists(),
                 archive_path=archive_path,
                 partial_path=partial_path,
-                progress_optional={
-                    "bytes_current": Path(archive_path).stat().st_size if Path(archive_path).exists() else 0,
-                    "running_for_s": int(time.monotonic() - start_monotonic),
-                    "finalize_phase": "complete",
-                    "finalize_bytes_processed": Path(archive_path).stat().st_size if Path(archive_path).exists() else 0,
-                },
+                progress_optional=merged_ok,
                 manifest_hash=f"sha256:{payload_hash}",
                 subprocess_returncode=0,
                 tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
@@ -830,9 +922,11 @@ def _parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    global CHILD_PROC, STATUS_FINAL_WRITTEN
+    global CHILD_PROC, STATUS_FINAL_WRITTEN, _EVIDENCE_CTX, _EVIDENCE_COLLECTED
     args = _parse_args()
     STATUS_FINAL_WRITTEN = False
+    _EVIDENCE_CTX = None
+    _EVIDENCE_COLLECTED = False
     signal.signal(signal.SIGTERM, _on_signal)
     signal.signal(signal.SIGINT, _on_signal)
 
@@ -952,7 +1046,21 @@ def main() -> int:
                 pass
 
         atexit.register(_finalize_cancel_if_needed_full)
-        inner_full = _full_inner_tar_command(partial_path, backup_dir)
+        profile_arg = str(job_meta.get("backup_profile") or "").strip()
+        inner_full, compression_meta = build_full_root_tar_command(
+            partial_path, backup_dir, profile=profile_arg or "recommended"
+        )
+        status_full["compression_detail"] = compression_meta
+        pre = quick_target_preflight(backup_dir)
+        progress_ctx: dict[str, Any] = {
+            "throughput_state": {"last_bytes": 0, "last_t": time.monotonic()},
+            "compression_method": compression_meta["compression_method"],
+            "target_free_bytes": pre.get("target_free_bytes"),
+            "target_mount": pre.get("target_mount"),
+            "bytes_total_estimate": None,
+            "profile_warnings": list(compression_meta.get("profile_warnings") or []),
+            "preflight_notes": pre.get("preflight_notes") or [],
+        }
         return _run_tar_pipeline_from_preflight(
             status_file,
             status_full,
@@ -961,6 +1069,7 @@ def main() -> int:
             archive_path,
             manifest_payload_full,
             inner_full,
+            progress_ctx=progress_ctx,
         )
 
     if not backup_dir_raw or not source_raw:
@@ -1059,6 +1168,7 @@ def main() -> int:
         archive_path,
         manifest_payload,
         inner_tar_cmd,
+        progress_ctx=None,
     )
 
 if __name__ == "__main__":

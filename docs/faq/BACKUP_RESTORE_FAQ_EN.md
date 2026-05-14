@@ -4,6 +4,14 @@
 
 **Yes.** If **`GET /api/version`** does not return **HTTP 200** with **`status":"success"`**, or production **`config/version.json`** does not match the approved schema, results are not trustworthy. Run **`scripts/check-backend-version-gate.sh`** and the update runbook (`docs/operations/BACKEND_UPDATE_RUNBOOK_EN.md`) first — **no** backup job while `blocked_update_required`.
 
+## Why is full-root backup slow and why does it not scale with many CPU cores?
+
+**gzip** (and classic **`tar -czf`**) compresses mostly **single-threaded**. Many cores barely help; **I/O** and **one CPU** often cap throughput. **pigz** uses multiple threads while staying **gzip-compatible** (faster when installed). **zstd** is faster/scales better but needs an **end-to-end** pipeline including finalize/manifest — until then the product stays **gzip-compatible**. **Full root** is intentionally an **expert/long-run** path; for daily use and Raspberry Pi prefer **smaller profiles** (see **`docs/backup/BACKUP_PERFORMANCE_EN.md`**, matrix **BR-016**, **BR-019**).
+
+## What about progress, ETA, and evidence?
+
+The runner fills **`progress_optional`** (phase, throughput, **`eta_seconds`** only with a reliable estimate, otherwise **`null`**). After job end an **evidence bundle** can be collected (logs, `systemctl`, `journalctl` excerpts, mounts) — see **`docs/backup/BACKUP_EVIDENCE_COLLECTOR_EN.md`** (**BR-017**). UI copy lives under **`backup.messages.*`** in locales (slow but active, compression bottleneck, package blocker, ETA).
+
 ## Why must the backup not be stored on the root filesystem?
 
 A backup stored on the same filesystem as the running system is unsafe. A disk failure, user error, or restore problem may destroy both the original system and the backup.
