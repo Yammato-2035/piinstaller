@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-14 — **DEV-001** (*Development Cockpit*): interne read-only API + Expert-UI **gelb** (produktive Abnahme offen). **BR-013** (*Ziel-Schreib-EIO*): Klassifikation **`backup.write_io_error`** / **`BACKUP-IO-ERROR-050`** (Job **`f744c2936468`**); **BR-012** Finalisierung; **BR-011** Preflight. **BR-016–BR-019** (Performance, Evidence+**API**, Progress/**UI**/ETA, Profile): Code + Doku + pytest/Vitest **gelb** (HW-/E2E-Abnahme offen). **BR-001** failed/blocked. **BR-004/005:** blocked.
+**Stand:** 2026-05-13 — **DEV-001** (*Development Cockpit*): Modul-JSON **backup-restore** mit Matrix/Gate abgeglichen; Cockpit **gelb**. **BR-013** (*Ziel-Schreib-EIO*): Klassifikation **`backup.write_io_error`** / **`BACKUP-IO-ERROR-050`** (Job **`f744c2936468`**); **BR-012** Finalisierung; **BR-011** Preflight. **BR-016–BR-019** (Performance, Evidence+**API**, Progress/**UI**/ETA, Profile): Code + Doku + pytest/Vitest **gelb** (HW-/E2E-Abnahme offen). **BR-001** failed/blocked. **BR-004/005:** blocked.
 
 ## Ampeldefinition
 

@@ -1,7 +1,7 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "test_inventory",
-  "generated": "2026-05-14T12:00:00Z",
+  "generated": "2026-05-13T18:00:00Z",
   "source": "backend/tests",
   "test_file_count": 199,
   "ampel": "gelb",
@@ -12,7 +12,7 @@
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json"
   },
-  "notes": "GitHub CI success. **DEV-001** Cockpit: `test_dev_dashboard_v1.py`, Vitest `DevDashboardBody.test.ts`, `devDashboardFilters.test.ts`. BR-012/BR-013 runner tests; BR-016–BR-019 + `test_backup_job_evidence_api_v1`, `test_backup_profiles_v1`; Frontend Vitest `backupJobProgressDisplay.test.ts`, `backupCreateBody.test.ts`; BR-001 blocked; BR-004/005 blocked.",
+  "notes": "GitHub CI success. **DEV-001** Cockpit: `test_dev_dashboard_v1.py`, Vitest `DevDashboardBody.test.ts`, `devDashboardFilters.test.ts`; **2026-05-13** Roadmap-Daten `backup-restore.json` ↔ Matrix/Gate. BR-012/BR-013 runner tests; BR-016–BR-019 + `test_backup_job_evidence_api_v1`, `test_backup_profiles_v1`; Frontend Vitest `backupJobProgressDisplay.test.ts`, `backupCreateBody.test.ts`; BR-001 blocked; BR-004/005 blocked.",
   "test_files": [
     "test_anti_regression.py",
     "test_api_consistency_fix9_v1.py",

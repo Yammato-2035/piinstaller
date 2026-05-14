@@ -2,69 +2,262 @@
   "id": "backup-restore",
   "title": "Backup & Restore",
   "area": "backup",
-  "status": "yellow",
-  "summary": "BR-001 weiterhin nicht grün. BR-016–BR-019 gelb/rot. BR-019: recommended als Default, Full-Expert nur mit Bestätigung. Progress-UI (BR-018) und Evidence-API vorhanden; BR-017 Evidence Collector; Performance (BR-016) und Zielmedium-/USB-Stabilität HW-offen.",
-  "last_updated": "2026-05-14",
-  "commits": [],
-  "current_focus": "Profile-API, Preview, Gates, Runner-Performance",
-  "next_steps": [
-    "BR-001 Retry/HW nach freigegebenem Zielmedium",
-    "BR-012 Runner-Finalisierung und BR-013 Write-I/O weiter belegen",
-    "BR-016–BR-018 HW-/E2E-Abnahme Performance, Evidence, Progress",
-    "BR-019 Profil-Daten-Scope auf Zielmedium verifizieren"
+  "status": "red",
+  "summary": "Ampel wie STATUS_MATRIX/Gate: BR-001 failed/blocked (kein belastbarer Full-Backup-Nachweis; Jobs inkl. Schreib-EIO); BR-004/BR-005 blocked an BR-001-Kette; BR-011 Preflight gelb/offen; BR-012/BR-013 gelb (Code/Tests, HW offen); BR-016–BR-019 gelb (E2E/HW). Release-Gate Backup/Restore bleibt rot.",
+  "last_updated": "2026-05-13",
+  "commits": [
+    "300d75e fix: classify backup target write io errors (BR-013)",
+    "3d8bd1d feat(backup): Performance-Profile, Progress-Merge, Evidence-Collector (BR-016–BR-019)",
+    "0ce7345 feat(backup-ui): Fortschritt progress_optional, Evidence-API, Vitest",
+    "8253d1b fix(backup-ui): Evidence-POST bei evidence_status=error keinen Erfolg-Toast",
+    "1f83a5e Add backup profile default and full expert guard (BR-019)",
+    "ce9951a docs: note backend venv path for BR-019 pytest",
+    "bc42e53 Add development cockpit dashboard (DEV-001)",
+    "a5e6ebb Stabilize development cockpit dashboard",
+    "f9fe3bf Normalize file mode on Sidebar and riskLevels (644)",
+    "8a13fd9 Fix accidental executable file modes"
   ],
-  "blockers": ["BR-001 blocked/failed", "Release-Gate rot/gelb"],
-  "evidence_files": ["docs/evidence/backup-restore/BR-001.json"],
+  "current_focus": "BR-001 Ziel/HW erneut freigeben; BR-011 Implementierung; BR-012/013 HW-Abnahme; BR-016–019 E2E",
+  "next_steps": [
+    "BR-001: freigegebenes Zielmedium, Phase-2/sudo-Kette, erneuter Lauf ohne EIO — Evidence in BR-001.json fortführen",
+    "BR-011: Preflight-Spezifikation in API/UI umsetzen (BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_*)",
+    "BR-012/013: großes Archiv / Medien-Stabilität — Runner-Finalisierung und write_io_error in Produktion belegen",
+    "BR-016–019: HW-/E2E gegen Matrix; Profile vs. Runner-Scope dokumentieren",
+    "BR-004/BR-005: erst nach gültigem BR-001-Archiv (kein Verify auf .partial nach EIO)"
+  ],
+  "blockers": [
+    "BR-001: kein erfolgreicher Full-Backup-Nachweis (blocked/failed laut BR-001.json und Matrix)",
+    "BR-004/BR-005: blocked — Kette an BR-001 und BR-013 (keine gültige Archivdatei)",
+    "backup_restore_release_gate.json: ampel rot — kein Release-Grün"
+  ],
+  "evidence_files": [
+    "docs/evidence/backup-restore/BR-001.json",
+    "docs/evidence/backup-restore/BR-001_write_io_error_2026-05-14.md",
+    "docs/evidence/backup-restore/BR-001_runner_finalization_performance_failure_2026-05-14.md",
+    "docs/evidence/backup-restore/BR-001_package_timer_paused_retry_2026-05-13.md",
+    "docs/evidence/backup-restore/BR-004.json",
+    "docs/evidence/backup-restore/BR-005.json"
+  ],
   "prompt_files": [],
-  "report_files": [],
-  "docs": ["docs/backup/BACKUP_PROFILES_DE.md", "docs/backup/BACKUP_PROFILES_EN.md"],
-  "faq": ["docs/faq/BACKUP_RESTORE_FAQ_DE.md", "docs/faq/BACKUP_RESTORE_FAQ_EN.md"],
-  "knowledge_base": ["docs/knowledge-base/backup/BACKUP_PROFILES.md"],
+  "report_files": [
+    "docs/dev-dashboard/reports/backup-restore-evidence-index.md",
+    "docs/dev-dashboard/reports/prompts-missing.md"
+  ],
+  "docs": [
+    "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md",
+    "docs/backup/BACKUP_PERFORMANCE_DE.md",
+    "docs/backup/BACKUP_PERFORMANCE_EN.md",
+    "docs/backup/BACKUP_EVIDENCE_COLLECTOR_DE.md",
+    "docs/backup/BACKUP_EVIDENCE_COLLECTOR_EN.md",
+    "docs/backup/BACKUP_PROFILES_DE.md",
+    "docs/backup/BACKUP_PROFILES_EN.md",
+    "docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md",
+    "docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_EN.md"
+  ],
+  "faq": [
+    "docs/faq/BACKUP_RESTORE_FAQ_DE.md",
+    "docs/faq/BACKUP_RESTORE_FAQ_EN.md"
+  ],
+  "knowledge_base": [
+    "docs/knowledge-base/backup/BACKUP_PROFILES.md",
+    "docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md",
+    "docs/knowledge-base/backup/BACKUP_TARGET_WRITE_IO_ERROR.md"
+  ],
   "diagnostics": [],
-  "i18n": ["frontend/src/locales/de.json", "frontend/src/locales/en.json"],
-  "tests": ["backend/tests/test_backup_profiles_v1.py", "frontend/src/utils/backupCreateBody.test.ts"],
+  "i18n": [
+    "frontend/src/locales/de.json",
+    "frontend/src/locales/en.json"
+  ],
+  "tests": [
+    "backend/tests/test_backup_profiles_v1.py",
+    "backend/tests/test_backup_archive_options_v1.py",
+    "backend/tests/test_backup_evidence_collector_v1.py",
+    "backend/tests/test_backup_job_evidence_api_v1.py",
+    "backend/tests/test_backup_progress_merge_v1.py",
+    "backend/tests/test_backup_runner_finalization_v1.py",
+    "backend/tests/test_backup_runner_write_io_v1.py",
+    "frontend/src/utils/backupCreateBody.test.ts",
+    "frontend/src/utils/backupJobProgressDisplay.test.ts"
+  ],
   "children": [
     {
-      "id": "br-001-target-hw",
-      "title": "BR-001 Zielmedium / HW-Stabilität",
+      "id": "br-001-full-backup",
+      "title": "BR-001 Full Backup (freigegebenes Ziel)",
       "area": "backup",
       "status": "red",
-      "summary": "Weiter failed/blocked; Ziel-Schreib-EIO (BR-013) und USB-/Medium-Stabilität als offenes HW-Thema."
+      "last_updated": "2026-05-14",
+      "summary": "Matrix/Gate: Rot — kein belastbarer erfolgreicher Lauf; u. a. Package-Activity/Phase-2/sudo, Job f744c2936468 Schreib-EIO (`backup.write_io_error` / BACKUP-IO-050). Kein Archiv+Manifest+SHA256 laut Evidence.",
+      "commits": ["b77c109d402a053cec4544a06919613b9167624d (BR-001.json Stand)", "ce9951a docs venv Hinweis"],
+      "next_steps": [
+        "Freigabe-Pfad beibehalten; STRICT-Retry nur mit dokumentiertem sudo/Timer-Konzept",
+        "Neuen Job nach Medien-Stabilität; Evidence BR-001.json aktualisieren"
+      ],
+      "blockers": ["blocked/failed laut BR-001.json", "BR-013 EIO blockiert Verify-Kette"],
+      "evidence_files": [
+        "docs/evidence/backup-restore/BR-001.json",
+        "docs/evidence/backup-restore/BR-001_write_io_error_2026-05-14.md",
+        "docs/evidence/backup-restore/BR-001_package_timer_paused_retry_2026-05-13.md",
+        "docs/evidence/backup-restore/BR-001_runner_finalization_performance_failure_2026-05-14.md"
+      ],
+      "docs": ["docs/testing/BACKUP_RESTORE_TEST_MATRIX.md"],
+      "tests": ["backend/tests/test_backup_create_sudo_gate_v1.py", "backend/tests/test_backup_runner_write_io_v1.py"]
+    },
+    {
+      "id": "br-004-verify-basic",
+      "title": "BR-004 Verify Basic",
+      "area": "backup",
+      "status": "red",
+      "last_updated": "2026-05-14",
+      "summary": "Laut Matrix und BR-004.json: blocked — dieselbe Archivdatei wie BR-001 fehlt bzw. keine gültige Datei nach EIO.",
+      "commits": ["7452231bfab6521a6aefb947cfccb9a5551879bc (BR-004.json)"],
+      "next_steps": ["Nach erfolgreichem BR-001 POST /api/backup/verify mode=basic"],
+      "blockers": ["BR-001", "BR-013 keine Verify-Kette auf .partial"],
+      "evidence_files": ["docs/evidence/backup-restore/BR-004.json"],
+      "docs": ["docs/testing/BACKUP_RESTORE_TEST_MATRIX.md"],
+      "tests": ["backend/tests/test_backup_recovery_engines.py"]
+    },
+    {
+      "id": "br-005-verify-deep",
+      "title": "BR-005 Verify Deep",
+      "area": "backup",
+      "status": "red",
+      "last_updated": "2026-05-14",
+      "summary": "Laut Matrix und BR-005.json: blocked — Deep-Verify erst nach BR-001 success.",
+      "commits": ["7452231bfab6521a6aefb947cfccb9a5551879bc (BR-005.json)"],
+      "next_steps": ["Nach BR-001 und Basic-Verify Deep ausführen"],
+      "blockers": ["BR-001", "BR-013"],
+      "evidence_files": ["docs/evidence/backup-restore/BR-005.json"],
+      "docs": ["docs/testing/BACKUP_RESTORE_TEST_MATRIX.md"],
+      "tests": ["backend/tests/test_backup_recovery_engines.py"]
+    },
+    {
+      "id": "br-011-package-preflight",
+      "title": "BR-011 Package Activity Preflight",
+      "area": "backup",
+      "status": "yellow",
+      "last_updated": "2026-05-13",
+      "summary": "Gelb — Design + Testmatrix; API/UI/Implementierung laut Matrix offen (kein disable von Timern im Design).",
+      "commits": [],
+      "next_steps": ["Diagnose vor POST /api/backup/create gemäß Preflight-Doku"],
+      "blockers": ["Implementierung offen"],
+      "evidence_files": [],
+      "docs": [
+        "docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md",
+        "docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_EN.md",
+        "docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md"
+      ],
+      "tests": []
+    },
+    {
+      "id": "br-012-runner-finalization",
+      "title": "BR-012 Runner Finalization / Performance",
+      "area": "backup",
+      "status": "yellow",
+      "last_updated": "2026-05-14",
+      "summary": "Gelb — Fix in backup_runner.py + pytest; Matrix: Job 2cff11287f67 Evidence; Deploy-Prep / großes Archiv HW offen.",
+      "commits": ["3d8bd1d", "a5e6ebb"],
+      "next_steps": ["HW-Abnahme großes Archiv", "Gates mit neuem Lauf aktualisieren"],
+      "blockers": ["HW-/Produktionsabnahme offen"],
+      "evidence_files": ["docs/evidence/backup-restore/BR-001_runner_finalization_performance_failure_2026-05-14.md"],
+      "docs": ["docs/testing/BACKUP_RESTORE_TEST_MATRIX.md"],
+      "tests": ["backend/tests/test_backup_runner_finalization_v1.py"]
+    },
+    {
+      "id": "br-013-write-io",
+      "title": "BR-013 Ziel-Schreib-EIO / BACKUP-IO-050",
+      "area": "backup",
+      "status": "yellow",
+      "last_updated": "2026-05-14",
+      "summary": "Gelb — Klassifikation `backup.write_io_error` im Code + pytest; KB vorhanden; erneuter HW-Lauf nach Medien-Stabilität.",
+      "commits": ["300d75e"],
+      "next_steps": ["Medien/HW stabil; erneuter Backup-Lauf ohne EIO"],
+      "blockers": ["Hardware/Zielmedium"],
+      "evidence_files": ["docs/evidence/backup-restore/BR-001_write_io_error_2026-05-14.md"],
+      "docs": ["docs/knowledge-base/backup/BACKUP_TARGET_WRITE_IO_ERROR.md"],
+      "tests": ["backend/tests/test_backup_runner_write_io_v1.py"]
     },
     {
       "id": "br-016-performance",
-      "title": "BR-016 Performance / Kompression",
+      "title": "BR-016 Backup Performance & Kompression",
       "area": "backup",
       "status": "yellow",
-      "summary": "pigz/Profile-Excludes; zstd vorbereitet; Messungen und HW-Last noch offen."
+      "last_updated": "2026-05-13",
+      "summary": "Gelb — pigz/Profile-Excludes, zstd vorbereitet; nicht produktreif / HW-Messung offen (Matrix).",
+      "commits": ["3d8bd1d"],
+      "next_steps": ["Messungen auf Ziel-HW", "Matrix-Status nach Abnahme anheben"],
+      "blockers": ["HW-Last / E2E offen"],
+      "evidence_files": [],
+      "docs": ["docs/backup/BACKUP_PERFORMANCE_DE.md", "docs/backup/BACKUP_PERFORMANCE_EN.md"],
+      "tests": ["backend/tests/test_backup_archive_options_v1.py"]
     },
     {
       "id": "br-017-evidence-collector",
-      "title": "BR-017 Evidence Collector",
+      "title": "BR-017 Backup Evidence Collector",
       "area": "backup",
       "status": "yellow",
-      "summary": "Collector + Runner-Hook; Rechte edge-cases; vollständige Abnahme mit Archiven offen."
+      "last_updated": "2026-05-13",
+      "summary": "Gelb — Collector + Runner-Hook + API GET/POST Evidence; E2E mit realem Job-Ende laut Matrix offen (nicht BR-018).",
+      "commits": ["3d8bd1d", "0ce7345", "8253d1b"],
+      "next_steps": ["End-to-End mit Archiv und permission_denied-Pfaden"],
+      "blockers": ["HW-/E2E"],
+      "evidence_files": [],
+      "docs": ["docs/backup/BACKUP_EVIDENCE_COLLECTOR_DE.md", "docs/backup/BACKUP_EVIDENCE_COLLECTOR_EN.md"],
+      "tests": ["backend/tests/test_backup_evidence_collector_v1.py", "backend/tests/test_backup_job_evidence_api_v1.py"]
     },
     {
       "id": "br-018-progress-ui",
-      "title": "BR-018 Progress / ETA / UI",
+      "title": "BR-018 Backup Progress / ETA / UI",
       "area": "backup",
       "status": "yellow",
-      "summary": "BackupJobProgressSection, Evidence-Modal; ETA ohne Total = i18n „unbekannt“."
+      "last_updated": "2026-05-13",
+      "summary": "Gelb — BackupJobProgressSection, progress_optional, Vitest; ETA ohne Total = i18n „unbekannt“; E2E offen.",
+      "commits": ["0ce7345", "8253d1b"],
+      "next_steps": ["UI-E2E mit laufendem Job und Evidence-Panel"],
+      "blockers": ["E2E offen"],
+      "evidence_files": [],
+      "docs": ["docs/backup/BACKUP_PERFORMANCE_DE.md"],
+      "tests": ["backend/tests/test_backup_progress_merge_v1.py", "backend/tests/test_backup_job_evidence_api_v1.py", "frontend/src/utils/backupJobProgressDisplay.test.ts"]
     },
     {
-      "id": "br-019-profiles",
+      "id": "br-019-backup-profiles",
       "title": "BR-019 Backup Profiles",
       "area": "backup",
       "status": "yellow",
-      "summary": "recommended als UI-/Create-Default; Full-Root nur Expertenmodus mit Bestätigung; HW-Daten-Scope offen."
+      "last_updated": "2026-05-13",
+      "summary": "Gelb — recommended Default, Full-Expert nur mit Bestätigung; API Preview/Create; Runner-Scope/HW laut Matrix offen. Kein stiller /mnt/setuphelfer/backups-Default.",
+      "commits": ["1f83a5e", "ce9951a"],
+      "next_steps": ["Profil vs. Runner-Daten-Scope auf freigegebenem Medium verifizieren"],
+      "blockers": ["HW-Abnahme Daten-Scope"],
+      "evidence_files": [],
+      "docs": ["docs/backup/BACKUP_PROFILES_DE.md", "docs/backup/BACKUP_PROFILES_EN.md", "docs/knowledge-base/backup/BACKUP_PROFILES.md"],
+      "tests": ["backend/tests/test_backup_profiles_v1.py", "frontend/src/utils/backupCreateBody.test.ts"]
+    },
+    {
+      "id": "br-002-010-matrix-offen",
+      "title": "BR-002–BR-003, BR-006–BR-010 (laut Testmatrix)",
+      "area": "backup",
+      "status": "red",
+      "last_updated": "2026-05-13",
+      "summary": "Kompakt: laut BACKUP_RESTORE_TEST_MATRIX weiter Rot (Ziel nicht beschreibbar, .partial, manipuliertes Archiv, Restore/Boot-Szenarien usw.) — jeweils Evidence JSON unter docs/evidence/backup-restore/.",
+      "commits": [],
+      "next_steps": ["Nach BR-001/Verify-Fortschritt Matrix-Zeilen einzeln abarbeiten"],
+      "blockers": ["BR-001-Kette", "fehlende produktive Läufe"],
+      "evidence_files": [],
+      "docs": ["docs/testing/BACKUP_RESTORE_TEST_MATRIX.md"],
+      "tests": []
     }
   ],
   "artifacts": [
-    {"path": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md", "kind": "gate", "status": "yellow"},
+    {"path": "docs/testing/BACKUP_RESTORE_TEST_MATRIX.md", "kind": "gate", "status": "red"},
     {"path": "docs/evidence/release-gates/backup_restore_release_gate.json", "kind": "gate"},
+    {"path": "docs/dev-dashboard/reports/backup-restore-evidence-index.md", "kind": "report"},
+    {"path": "docs/dev-dashboard/reports/prompts-missing.md", "kind": "report"},
     {"path": "docs/backup/BACKUP_PROFILES_DE.md", "kind": "doc", "language": "de"},
     {"path": "docs/backup/BACKUP_PROFILES_EN.md", "kind": "doc", "language": "en"},
+    {"path": "docs/backup/BACKUP_PERFORMANCE_DE.md", "kind": "doc", "language": "de"},
+    {"path": "docs/backup/BACKUP_PERFORMANCE_EN.md", "kind": "doc", "language": "en"},
+    {"path": "docs/backup/BACKUP_EVIDENCE_COLLECTOR_DE.md", "kind": "doc", "language": "de"},
+    {"path": "docs/backup/BACKUP_EVIDENCE_COLLECTOR_EN.md", "kind": "doc", "language": "en"},
     {"path": "docs/faq/BACKUP_RESTORE_FAQ_DE.md", "kind": "faq", "language": "de"},
     {"path": "docs/faq/BACKUP_RESTORE_FAQ_EN.md", "kind": "faq", "language": "en"},
     {"path": "docs/knowledge-base/backup/BACKUP_PROFILES.md", "kind": "kb"},

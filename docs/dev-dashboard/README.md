@@ -14,6 +14,7 @@ Dieses Verzeichnis indexiert **Prompts**, **Abschlussberichte** und **Modul-Meta
 
 - Speicherort: `docs/dev-dashboard/prompts/` (Dateiname z. B. `PROMPT_<thema>_<datum>.md` oder `.txt`).
 - Im Modul-JSON: Feld `prompt_files` als **Liste von Repo-relativen Pfaden** (keine eingebetteten Langtexte).
+- Wenn noch keine Prompt-Dateien existieren: Kurzindex `docs/dev-dashboard/reports/prompts-missing.md` verlinken und `prompt_files` leer lassen (keine Platzhalter-Riesenfiles).
 - Keine Log-Auszüge oder Shell-Transkripte direkt in `modules/*.json` ablegen — nur Verweis auf Datei.
 
 ## Konvention: Abschlussberichte
