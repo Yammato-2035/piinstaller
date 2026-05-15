@@ -40,6 +40,16 @@ class TestDevDashboardCore(unittest.TestCase):
             self.assertIn("consistency", body)
             self.assertIn("deploy_drift", body)
             self.assertIn("backend_api_reachable", body.get("runtime") or {})
+            for key in (
+                "runtime_gate",
+                "safe_test_mode",
+                "package_gate",
+                "tests_evidence",
+                "roadmap",
+                "structure_health",
+                "updated_at",
+            ):
+                self.assertIn(key, body, msg=key)
 
     def test_build_modules_list_missing_dir(self):
         with tempfile.TemporaryDirectory() as td:
@@ -290,6 +300,60 @@ class TestDevDashboardApiV1(unittest.TestCase):
         r = self.client.post("/api/dev-dashboard/actions/start-backup", json={})
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(r.json().get("result"), "use_existing_backup_api")
+
+    def test_status_includes_cockpit_sections(self):
+        r = self.client.get("/api/dev-dashboard/status")
+        self.assertEqual(r.status_code, 200, r.text)
+        dash = r.json().get("dashboard") or {}
+        self.assertIn("runtime_gate", dash)
+        self.assertIn("safe_test_mode", dash)
+        stm = dash.get("safe_test_mode") or {}
+        self.assertIn(stm.get("mode"), ("LOCKED", "UNLOCKED"))
+
+    def test_prompt_findings_200(self):
+        r = self.client.get("/api/dev-dashboard/prompt-findings")
+        self.assertEqual(r.status_code, 200, r.text)
+        data = r.json()
+        self.assertEqual(data.get("status"), "success")
+        self.assertIn("findings", data)
+
+    def test_cursor_meta_prompt_200(self):
+        r = self.client.get("/api/dev-dashboard/cursor-meta-prompt")
+        self.assertEqual(r.status_code, 200, r.text)
+        data = r.json()
+        self.assertEqual(data.get("status"), "success")
+        self.assertIn("prompt", data)
+
+    def test_ai_prompt_generate_requires_confirmation(self):
+        r = self.client.post("/api/ai/prompt/generate", json={"provider": "manual"})
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(r.json().get("error"), "confirmation_required")
+
+
+class TestDevDashboardCockpit(unittest.TestCase):
+    def test_safe_mode_locked_when_runtime_gate_fails(self):
+        from core.dev_dashboard_cockpit import build_runtime_gate, build_safe_test_mode
+
+        rg = build_runtime_gate(
+            consistency={"status": "red", "backend_workspace_match": False, "warnings": []},
+            deploy_drift={"status": "yellow", "suggested_actions": ["deploy_backend_files"]},
+            runtime={"backend_runtime_path": "/wrong"},
+            workspace={"workspace_version": "1.0.0"},
+            install_profile="opt",
+            app_edition="release",
+        )
+        stm = build_safe_test_mode(rg)
+        self.assertEqual(stm["mode"], "LOCKED")
+        self.assertTrue(stm["locked"])
+        self.assertIn("backup", stm["blocked_operations"])
+
+    def test_build_roadmap_missing_matrix_no_crash(self):
+        from core.dev_dashboard_cockpit import build_roadmap
+
+        with tempfile.TemporaryDirectory() as td:
+            out = build_roadmap(Path(td))
+        self.assertIn("tabs", out)
+        self.assertFalse(out["changed_to_green"]["available"])
 
 
 if __name__ == "__main__":

@@ -46,6 +46,8 @@ export type DevDashboardBodyProps = {
   postAction: (path: string) => void | Promise<void>
   /** Anzeige der konfigurierten API-Basis (Browser); optional. */
   apiBaseDisplay?: string
+  hideHeader?: boolean
+  hideRuntimePanels?: boolean
 }
 
 export function DevDashboardBody({
@@ -63,6 +65,8 @@ export function DevDashboardBody({
   onRefresh,
   postAction,
   apiBaseDisplay,
+  hideHeader = false,
+  hideRuntimePanels = false,
 }: DevDashboardBodyProps) {
   const filteredModules = modules.filter((m) => matchesFilter(m, filter))
 
@@ -75,25 +79,31 @@ export function DevDashboardBody({
   const mounts = Array.isArray(dashboard?.mount_summary) ? (dashboard?.mount_summary as Record<string, string>[]) : []
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6 text-slate-100">
-      <PageHeader
-        visualStyle="tech-panel"
-        tone="settings"
-        title={t('devDashboard.title')}
-        subtitle={t('devDashboard.subtitle')}
-        badge={<Terminal className="text-violet-400 shrink-0" size={28} aria-hidden />}
-      />
+    <div className={hideHeader ? 'space-y-6' : 'max-w-6xl mx-auto px-4 py-6 space-y-6 text-slate-100'}>
+      {!hideHeader ? (
+        <>
+          <PageHeader
+            visualStyle="tech-panel"
+            tone="settings"
+            title={t('devDashboard.title')}
+            subtitle={t('devDashboard.subtitle')}
+            badge={<Terminal className="text-violet-400 shrink-0" size={28} aria-hidden />}
+          />
+          <div className="rounded-lg border border-amber-700/50 bg-amber-950/30 px-4 py-3 text-sm text-amber-100">
+            {t('devDashboard.expertOnlyNotice')}
+          </div>
+          <div className="rounded-lg border border-slate-600 bg-slate-900/50 px-4 py-3 text-sm text-slate-300">
+            {t('devDashboard.readOnlyNotice')}
+          </div>
+        </>
+      ) : null}
 
-      <div className="rounded-lg border border-amber-700/50 bg-amber-950/30 px-4 py-3 text-sm text-amber-100">
-        {t('devDashboard.expertOnlyNotice')}
-      </div>
-      <div className="rounded-lg border border-slate-600 bg-slate-900/50 px-4 py-3 text-sm text-slate-300">
-        {t('devDashboard.readOnlyNotice')}
-      </div>
-
-      <RuntimeWorkspacePanel dashboard={dashboard} t={t} apiBaseDisplay={apiBaseDisplay} />
-
-      <DeployDriftPanel dashboard={dashboard} t={t} />
+      {!hideRuntimePanels ? (
+        <>
+          <RuntimeWorkspacePanel dashboard={dashboard} t={t} apiBaseDisplay={apiBaseDisplay} />
+          <DeployDriftPanel dashboard={dashboard} t={t} />
+        </>
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={() => onRefresh()} className="btn-secondary inline-flex items-center gap-2" disabled={loading}>
@@ -310,7 +320,7 @@ export function DevDashboardBody({
   )
 }
 
-function DeployDriftPanel({ dashboard, t }: { dashboard: DashboardPayload; t: TFunction }) {
+export function DeployDriftPanel({ dashboard, t }: { dashboard: DashboardPayload; t: TFunction }) {
   if (!dashboard) return null
   const dd = dashboard.deploy_drift as Record<string, unknown> | undefined
   if (!dd) return null
@@ -451,7 +461,7 @@ function DeployDriftPanel({ dashboard, t }: { dashboard: DashboardPayload; t: TF
   )
 }
 
-function RuntimeWorkspacePanel({
+export function RuntimeWorkspacePanel({
   dashboard,
   t,
   apiBaseDisplay,

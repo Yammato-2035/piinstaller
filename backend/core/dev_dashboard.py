@@ -874,7 +874,7 @@ def build_dashboard_status(
         except OSError as exc:
             matrix_hint[rel] = {"exists": False, "error": str(exc)}
 
-    return {
+    body: dict[str, Any] = {
         "generated_at": generated,
         "backend_version": backend_version,
         "install_profile": install_profile,
@@ -895,6 +895,14 @@ def build_dashboard_status(
         "warnings": warnings,
         "errors": errors,
     }
+    try:
+        from core.dev_dashboard_cockpit import enrich_dashboard_cockpit
+
+        enrich_dashboard_cockpit(body, repo_root=repo)
+    except Exception as exc:  # noqa: BLE001
+        warnings.append(f"cockpit_enrich:{exc}")
+        body["updated_at"] = generated
+    return body
 
 
 def build_modules_list(repo_root: Path | None = None) -> dict[str, Any]:

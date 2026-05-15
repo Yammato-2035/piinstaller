@@ -1,0 +1,599 @@
+"""
+Development Control Cockpit — Runtime-Gates, Safe-Test-Mode, Strukturprüfungen, KI-Prompt-Export.
+
+Read-only. Keine Service-Restarts, keine Deployments, kein apt.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+UTC = timezone.utc
+
+EXPECTED_OPT_BACKEND = "/opt/setuphelfer/backend"
+GATES_DIR = "docs/evidence/release-gates"
+MATRIX_PATH = "docs/roadmap/STATUS_MATRIX.md"
+
+FORBIDDEN_ARTIFACT_PATTERNS = (
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    "node_modules/",
+    ".env",
+    "credentials.json",
+    "*.pyc",
+)
+
+DANGEROUS_TEST_OPS = (
+    "backup",
+    "restore",
+    "verify",
+    "target_path_tests",
+    "hardware_tests",
+    "rescue_tests",
+)
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parent.parent.parent
+
+
+def _safe_read_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
+    try:
+        if not path.is_file():
+            return None, f"missing:{path}"
+        return json.loads(path.read_text(encoding="utf-8", errors="replace")), None
+    except Exception as exc:  # noqa: BLE001
+        return None, f"read_error:{path}:{exc}"
+
+
+def _systemd_unit_state(unit: str) -> dict[str, Any]:
+    out: dict[str, Any] = {"unit": unit, "is_active": None, "load_state": None, "error": None}
+    try:
+        proc = subprocess.run(
+            ["systemctl", "is-active", unit],
+            capture_output=True,
+            text=True,
+            timeout=1.0,
+            check=False,
+        )
+        out["is_active"] = (proc.stdout or "").strip() or None
+        if proc.returncode not in (0, 3):
+            out["error"] = (proc.stderr or "").strip()[:200] or f"exit_{proc.returncode}"
+    except Exception as exc:  # noqa: BLE001
+        out["error"] = str(exc)[:200]
+    try:
+        proc2 = subprocess.run(
+            ["systemctl", "show", unit, "--property=LoadState", "--value"],
+            capture_output=True,
+            text=True,
+            timeout=1.0,
+            check=False,
+        )
+        if proc2.returncode == 0:
+            out["load_state"] = (proc2.stdout or "").strip() or None
+    except Exception:
+        pass
+    return out
+
+
+def _dpkg_setuphelfer_installed() -> dict[str, Any]:
+    info: dict[str, Any] = {"checked": True, "installed": False, "packages": [], "error": None}
+    try:
+        proc = subprocess.run(
+            ["dpkg-query", "-W", "-f=${Package}\t${Version}\n", "setuphelfer", "setuphelfer-backend"],
+            capture_output=True,
+            text=True,
+            timeout=2.0,
+            check=False,
+        )
+        lines = [ln.strip() for ln in (proc.stdout or "").splitlines() if ln.strip()]
+        if lines:
+            info["installed"] = True
+            info["packages"] = lines[:10]
+        elif proc.returncode == 0:
+            info["installed"] = False
+    except FileNotFoundError:
+        info["checked"] = False
+        info["error"] = "dpkg_query_unavailable"
+    except Exception as exc:  # noqa: BLE001
+        info["error"] = str(exc)[:200]
+    return info
+
+
+def _normalize_ampel(raw: str | None) -> str:
+    s = str(raw or "").strip().lower()
+    mapping = {
+        "grün": "green",
+        "gruen": "green",
+        "green": "green",
+        "gelb": "yellow",
+        "yellow": "yellow",
+        "rot": "red",
+        "red": "red",
+        "schwarz": "gray",
+        "gray": "gray",
+        "grey": "gray",
+        "blocked": "red",
+        "failed": "red",
+    }
+    return mapping.get(s, "unknown")
+
+
+def build_runtime_gate(
+    *,
+    consistency: dict[str, Any],
+    deploy_drift: dict[str, Any],
+    runtime: dict[str, Any],
+    workspace: dict[str, Any],
+    install_profile: str | None,
+    app_edition: str | None,
+) -> dict[str, Any]:
+    """Phase-0-nahe Runtime-Gate-Auswertung (read-only, kein Shell-Gate-Aufruf)."""
+    checks: list[dict[str, Any]] = []
+    blockers: list[str] = []
+
+    bw = consistency.get("backend_workspace_match")
+    checks.append({"id": "backend_workspace_match", "ok": bw is True, "value": bw})
+    if bw is False:
+        blockers.append("blocked_runtime_outdated")
+
+    dd_status = str(deploy_drift.get("status") or "unknown").lower()
+    manifest_match = deploy_drift.get("manifest_match")
+    checks.append({"id": "deploy_drift_status", "ok": dd_status == "green", "value": dd_status})
+    if dd_status == "yellow":
+        sug = deploy_drift.get("suggested_actions") or []
+        if isinstance(sug, list) and "deploy_backend_files" in sug:
+            blockers.append("deploy_drift_backend_files")
+    if dd_status == "gray":
+        blockers.append("deploy_drift_unknown")
+    if manifest_match is False:
+        blockers.append("manifest_mismatch")
+
+    brp = str(runtime.get("backend_runtime_path") or "").strip().rstrip("/")
+    prof = str(install_profile or "").strip().lower()
+    edition = str(app_edition or "").strip().lower()
+    path_ok = True
+    if prof == "opt" or edition == "release":
+        path_ok = brp == EXPECTED_OPT_BACKEND.rstrip("/")
+    checks.append({"id": "backend_runtime_path", "ok": path_ok, "value": brp})
+
+    svc = _systemd_unit_state("setuphelfer-backend.service")
+    svc_active = svc.get("is_active") == "active"
+    checks.append({"id": "setuphelfer_backend_service", "ok": svc_active, "value": svc})
+
+    cons_st = str(consistency.get("status") or "unknown")
+    checks.append({"id": "consistency_status", "ok": cons_st == "green", "value": cons_st})
+
+    passed = not blockers and all(c.get("ok") for c in checks if c.get("ok") is not None)
+    # gray drift without explicit allow → not passed
+    if dd_status == "gray":
+        passed = False
+
+    status = "green" if passed else ("yellow" if cons_st == "yellow" and not blockers else "red")
+    if blockers:
+        status = "red"
+
+    return {
+        "status": status,
+        "passed": passed,
+        "checks": checks,
+        "blockers": sorted(set(blockers)),
+        "workspace_version": workspace.get("workspace_version"),
+        "runtime_version": runtime.get("backend_project_version"),
+        "deploy_drift_status": dd_status,
+        "manifest_match": manifest_match,
+        "service": svc,
+        "phase0_hint": "./scripts/check-runtime-deploy-gate.sh",
+    }
+
+
+def build_safe_test_mode(runtime_gate: dict[str, Any]) -> dict[str, Any]:
+    locked = not runtime_gate.get("passed")
+    mode = "LOCKED" if locked else "UNLOCKED"
+    return {
+        "mode": mode,
+        "locked": locked,
+        "reason": runtime_gate.get("blockers") or [],
+        "blocked_operations": list(DANGEROUS_TEST_OPS) if locked else [],
+        "message_key": "devDashboard.safeTestMode.locked" if locked else "devDashboard.safeTestMode.unlocked",
+    }
+
+
+def build_package_gate(repo: Path) -> dict[str, Any]:
+    gap_path = repo / GATES_DIR / "apt_update_delivery_gap.json"
+    gap, gerr = _safe_read_json(gap_path)
+    dpkg = _dpkg_setuphelfer_installed()
+    runtime_root = Path("/opt/setuphelfer")
+    runtime_present = False
+    try:
+        runtime_present = runtime_root.is_dir()
+    except OSError:
+        runtime_present = False
+
+    ampel = "unknown"
+    summary = None
+    if isinstance(gap, dict):
+        ampel = _normalize_ampel(str(gap.get("ampel") or gap.get("status") or "unknown"))
+        summary = gap.get("summary")
+
+    update_available: bool | None = None
+    if isinstance(gap, dict) and gap.get("ampel") in ("rot", "red"):
+        update_available = True
+    elif dpkg.get("installed"):
+        update_available = None
+
+    return {
+        "status": ampel if ampel != "unknown" else "yellow",
+        "deb_installed": dpkg.get("installed"),
+        "dpkg": dpkg,
+        "runtime_tree_present": runtime_present,
+        "apt_repo_documented": isinstance(gap, dict),
+        "update_available": update_available,
+        "requires_confirmation": True,
+        "summary": summary,
+        "gap_path": str(gap_path.relative_to(repo)).replace("\\", "/") if gap_path.is_file() else None,
+        "warnings": [gerr] if gerr else [],
+        "forbidden_actions": ["apt_install", "apt_upgrade", "automatic_package_update"],
+    }
+
+
+def build_tests_evidence(repo: Path) -> dict[str, Any]:
+    names = (
+        "test_inventory.json",
+        "current_failures.json",
+        "release_readiness_gate.json",
+        "backup_restore_release_gate.json",
+    )
+    files: dict[str, Any] = {}
+    warnings: list[str] = []
+    for name in names:
+        p = repo / GATES_DIR / name
+        data, err = _safe_read_json(p)
+        entry: dict[str, Any] = {"path": str(p.relative_to(repo)).replace("\\", "/"), "exists": p.is_file()}
+        if err:
+            warnings.append(err)
+            entry["status"] = "unknown"
+        elif isinstance(data, dict):
+            entry["status"] = "ok"
+            entry["ampel"] = _normalize_ampel(str(data.get("ampel") or data.get("overall_status") or ""))
+            entry["evidence_complete"] = data.get("evidence_complete")
+            entry["id"] = data.get("id")
+            if name == "current_failures.json":
+                summ = data.get("summary") or {}
+                entry["pytest_failed"] = summ.get("failed")
+                entry["pytest_passed"] = summ.get("passed")
+        else:
+            entry["status"] = "unknown"
+        files[name] = entry
+
+    overall = "green"
+    if any(files[n].get("ampel") == "red" for n in names if files.get(n, {}).get("exists")):
+        overall = "red"
+    elif any(files[n].get("evidence_complete") is False for n in names if files.get(n, {}).get("exists")):
+        overall = "yellow"
+
+    return {"status": overall, "files": files, "warnings": warnings}
+
+
+def _parse_status_matrix(repo: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    path = repo / MATRIX_PATH
+    warns: list[str] = []
+    items: list[dict[str, Any]] = []
+    if not path.is_file():
+        warns.append(f"missing:{MATRIX_PATH}")
+        return items, warns
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        warns.append(f"read_error:{exc}")
+        return items, warns
+
+    row_re = re.compile(r"^\|\s*\*\*(.+?)\*\*\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|")
+    for line in text.splitlines():
+        m = row_re.match(line.strip())
+        if not m:
+            continue
+        title, ampel_raw, kurz, evidence = m.group(1), m.group(2), m.group(3), m.group(4)
+        ampel = _normalize_ampel(ampel_raw.strip())
+        category = "blocked"
+        if ampel == "green":
+            category = "created"
+        elif ampel == "yellow":
+            category = "in_progress"
+        elif ampel in ("red", "unknown"):
+            if "blocked" in kurz.lower() or "failed" in kurz.lower() or "rot" in ampel_raw.lower():
+                category = "blocked"
+            else:
+                category = "planned"
+        elif ampel == "gray":
+            category = "planned"
+
+        items.append(
+            {
+                "title": title.strip(),
+                "status": ampel,
+                "category": category,
+                "source": MATRIX_PATH,
+                "summary": kurz.strip()[:400],
+                "evidence_refs": [x.strip() for x in re.split(r"[,`]", evidence) if x.strip() and "/" in x][:8],
+                "last_updated": None,
+                "hints": [],
+            }
+        )
+    return items, warns
+
+
+def build_roadmap(repo: Path) -> dict[str, Any]:
+    matrix_items, warns = _parse_status_matrix(repo)
+    modules_dir = repo / "docs" / "dev-dashboard" / "modules"
+    module_items: list[dict[str, Any]] = []
+    if modules_dir.is_dir():
+        for jp in sorted(modules_dir.glob("*.json")):
+            data, err = _safe_read_json(jp)
+            if err or not isinstance(data, dict):
+                continue
+            st = _normalize_ampel(str(data.get("status") or "gray"))
+            cat = "in_progress" if st == "yellow" else ("created" if st == "green" else ("blocked" if st == "red" else "planned"))
+            module_items.append(
+                {
+                    "title": str(data.get("title") or jp.stem),
+                    "status": st,
+                    "category": cat,
+                    "source": str(jp.relative_to(repo)).replace("\\", "/"),
+                    "summary": str(data.get("summary") or "")[:400],
+                    "evidence_refs": list(data.get("evidence_files") or [])[:8],
+                    "last_updated": data.get("last_updated"),
+                    "hints": list(data.get("blockers") or [])[:6],
+                }
+            )
+
+    all_items = matrix_items + module_items
+    tabs: dict[str, list[dict[str, Any]]] = {
+        "created": [i for i in all_items if i["category"] == "created"],
+        "in_progress": [i for i in all_items if i["category"] == "in_progress"],
+        "planned": [i for i in all_items if i["category"] == "planned"],
+        "blocked": [i for i in all_items if i["category"] == "blocked"],
+    }
+
+    green_without_evidence: list[str] = []
+    for it in all_items:
+        if it.get("status") == "green" and not it.get("evidence_refs"):
+            green_without_evidence.append(str(it.get("title")))
+
+    return {
+        "tabs": tabs,
+        "counts": {k: len(v) for k, v in tabs.items()},
+        "changed_to_green": {
+            "available": False,
+            "message": "Keine belastbare Änderungshistorie vorhanden",
+            "items": [],
+        },
+        "green_without_evidence": green_without_evidence[:20],
+        "missing_matrix_entries": [],
+        "warnings": warns,
+    }
+
+
+def _git_hygiene(repo: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    findings: list[dict[str, Any]] = []
+    detail: dict[str, Any] = {
+        "dirty_count": None,
+        "untracked_count": None,
+        "forbidden_matches": [],
+        "add_all_risk": False,
+    }
+    try:
+        st = subprocess.run(
+            ["git", "-C", str(repo), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            timeout=2.0,
+            check=False,
+        )
+        if st.returncode == 0:
+            lines = [ln for ln in (st.stdout or "").splitlines() if ln.strip()]
+            detail["dirty_count"] = len(lines)
+            untracked = [ln for ln in lines if ln.startswith("??")]
+            detail["untracked_count"] = len(untracked)
+            if len(untracked) > 50:
+                detail["add_all_risk"] = True
+                findings.append(
+                    {
+                        "severity": "warning",
+                        "id": "git_add_all_risk",
+                        "message": f"Viele untracked Dateien ({len(untracked)}) — git add -A vermeiden",
+                    }
+                )
+            for ln in lines:
+                path_part = ln[3:].strip().split(" -> ")[-1]
+                for pat in FORBIDDEN_ARTIFACT_PATTERNS:
+                    if pat.rstrip("/") in path_part or path_part.endswith(".pyc"):
+                        detail["forbidden_matches"].append(path_part)
+                        findings.append(
+                            {
+                                "severity": "critical",
+                                "id": "forbidden_artifact",
+                                "message": f"Verbotenes Artefakt in Git-Status: {path_part}",
+                                "path": path_part,
+                            }
+                        )
+                        break
+    except Exception as exc:  # noqa: BLE001
+        detail["error"] = str(exc)[:200]
+    return detail, findings
+
+
+def build_structure_health(repo: Path, dashboard: dict[str, Any]) -> dict[str, Any]:
+    critical: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+    actions: list[str] = []
+
+    git_h, git_findings = _git_hygiene(repo)
+    critical.extend([f for f in git_findings if f.get("severity") == "critical"])
+    warnings.extend([f for f in git_findings if f.get("severity") == "warning"])
+
+    rg = dashboard.get("runtime_gate") or {}
+    if not rg.get("passed"):
+        critical.append(
+            {
+                "severity": "critical",
+                "id": "runtime_gate_failed",
+                "message": "Runtime-Gate nicht bestanden — Phase-0 blockiert",
+                "blockers": rg.get("blockers"),
+            }
+        )
+        actions.append("Führe ./scripts/check-runtime-deploy-gate.sh aus und behebe Drift/Version")
+
+    roadmap = dashboard.get("roadmap") or {}
+    for title in roadmap.get("green_without_evidence") or []:
+        warnings.append(
+            {
+                "severity": "warning",
+                "id": "green_without_evidence",
+                "message": f"Matrix/Modul grün ohne Evidence-Verweis: {title}",
+            }
+        )
+
+    te = dashboard.get("tests_evidence") or {}
+    for fname, meta in (te.get("files") or {}).items():
+        if isinstance(meta, dict) and meta.get("evidence_complete") is False:
+            warnings.append(
+                {
+                    "severity": "warning",
+                    "id": "evidence_incomplete",
+                    "message": f"Evidence unvollständig: {fname}",
+                }
+            )
+
+    score = 100
+    score -= len(critical) * 25
+    score -= len(warnings) * 8
+    score = max(0, min(100, score))
+
+    if critical:
+        status = "red"
+    elif warnings:
+        status = "yellow"
+    else:
+        status = "green"
+
+    return {
+        "status": status,
+        "score": score,
+        "critical_findings": critical,
+        "warnings": warnings,
+        "recommended_next_actions": actions[:12],
+        "git_hygiene": git_h,
+        "docs_consistency": {"matrix_exists": (repo / MATRIX_PATH).is_file()},
+        "packaging_consistency": {
+            "deploy_drift_status": (dashboard.get("deploy_drift") or {}).get("status"),
+        },
+    }
+
+
+def build_prompt_findings(repo: Path, dashboard: dict[str, Any]) -> dict[str, Any]:
+    sh = dashboard.get("structure_health") or {}
+    rg = dashboard.get("runtime_gate") or {}
+    stm = dashboard.get("safe_test_mode") or {}
+
+    findings: list[dict[str, Any]] = []
+    for item in sh.get("critical_findings") or []:
+        findings.append({**item, "priority": "P0"})
+    for item in sh.get("warnings") or []:
+        findings.append({**item, "priority": "P1"})
+
+    affected_files: list[str] = []
+    dd = dashboard.get("deploy_drift") or {}
+    for row in dd.get("checked_files") or []:
+        if isinstance(row, dict) and row.get("matches") is False:
+            rel = row.get("relative_path")
+            if rel:
+                affected_files.append(str(rel))
+
+    return {
+        "generated_at": datetime.now(tz=UTC).isoformat(),
+        "findings": findings,
+        "affected_files": sorted(set(affected_files))[:40],
+        "risks": list(rg.get("blockers") or []),
+        "priorities": sorted({f.get("priority") for f in findings if f.get("priority")}),
+        "forbidden_actions": list(stm.get("blocked_operations") or []) + ["apt_install", "apt_upgrade", "git_add_all", "automatic_deploy"],
+        "runtime_gate_passed": rg.get("passed"),
+        "safe_test_mode": stm.get("mode"),
+    }
+
+
+def build_cursor_meta_prompt(repo: Path, findings_payload: dict[str, Any]) -> dict[str, Any]:
+    lines = [
+        "# Setuphelfer Development Control Cockpit — Cursor Meta-Prompt",
+        "",
+        "## Kontext",
+        f"Repository: {repo}",
+        f"Generiert: {findings_payload.get('generated_at')}",
+        "",
+        "## Verbotene Aktionen (STRICT)",
+    ]
+    for act in findings_payload.get("forbidden_actions") or []:
+        lines.append(f"- {act}")
+    lines.append("")
+    lines.append("## Runtime / Safe Test Mode")
+    lines.append(f"- runtime_gate_passed: {findings_payload.get('runtime_gate_passed')}")
+    lines.append(f"- safe_test_mode: {findings_payload.get('safe_test_mode')}")
+    lines.append("")
+    lines.append("## Findings (priorisiert)")
+    for f in findings_payload.get("findings") or []:
+        lines.append(f"- [{f.get('priority', '?')}] {f.get('id')}: {f.get('message')}")
+    lines.append("")
+    lines.append("## Betroffene Dateien")
+    for p in findings_payload.get("affected_files") or []:
+        lines.append(f"- {p}")
+    lines.append("")
+    lines.append("## Gewünschtes Cursor-Format")
+    lines.append("- Nur fokussierte Änderungen; keine git add -A")
+    lines.append("- Phase 0: check-runtime-deploy-gate.sh vor Runtime-Tests")
+    lines.append("- Abschlussbericht bei Gate-Fehler: blocked_runtime_outdated")
+
+    body = "\n".join(lines)
+    return {
+        "format": "cursor_meta_prompt_v1",
+        "prompt": body,
+        "findings": findings_payload,
+    }
+
+
+def enrich_dashboard_cockpit(body: dict[str, Any], *, repo_root: Path | None = None) -> dict[str, Any]:
+    """Erweitert build_dashboard_status-Body um Cockpit-Felder."""
+    repo = repo_root or _repo_root()
+    consistency = body.get("consistency") or {}
+    deploy_drift = body.get("deploy_drift") or {}
+    runtime = body.get("runtime") or {}
+    workspace = body.get("workspace") or {}
+
+    runtime_gate = build_runtime_gate(
+        consistency=consistency,
+        deploy_drift=deploy_drift,
+        runtime=runtime,
+        workspace=workspace,
+        install_profile=body.get("install_profile"),
+        app_edition=body.get("app_edition"),
+    )
+    safe_test_mode = build_safe_test_mode(runtime_gate)
+    package_gate = build_package_gate(repo)
+    tests_evidence = build_tests_evidence(repo)
+    roadmap = build_roadmap(repo)
+
+    body["runtime_gate"] = runtime_gate
+    body["safe_test_mode"] = safe_test_mode
+    body["package_gate"] = package_gate
+    body["tests_evidence"] = tests_evidence
+    body["roadmap"] = roadmap
+    body["updated_at"] = datetime.now(tz=UTC).isoformat()
+
+    structure_health = build_structure_health(repo, body)
+    body["structure_health"] = structure_health
+    return body

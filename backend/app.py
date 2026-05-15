@@ -3994,6 +3994,82 @@ async def dev_dashboard_action_start_backup():
     return dev_dashboard_core.action_placeholder_response("start-backup")
 
 
+@app.get("/api/dev-dashboard/prompt-findings")
+async def dev_dashboard_prompt_findings(
+    frontend_build_version: str | None = Query(default=None),
+    frontend_runtime_source: str | None = Query(default=None),
+):
+    """Read-only: strukturierte Findings fuer KI-Export."""
+    from core import dev_dashboard as dev_dashboard_core
+    from core.dev_dashboard_cockpit import build_prompt_findings
+
+    fe_ver = (frontend_build_version or "").strip() or None
+    body = dev_dashboard_core.build_dashboard_status(
+        running_jobs=[],
+        package_activity=[],
+        frontend_build_version=fe_ver,
+        frontend_runtime_source=frontend_runtime_source,
+    )
+    repo = dev_dashboard_core._repo_root()
+    findings = build_prompt_findings(repo, body)
+    return {"status": "success", "findings": findings}
+
+
+@app.get("/api/dev-dashboard/cursor-meta-prompt")
+async def dev_dashboard_cursor_meta_prompt(
+    frontend_build_version: str | None = Query(default=None),
+    frontend_runtime_source: str | None = Query(default=None),
+):
+    """Read-only: Cursor-kompatibler Meta-Prompt aus Cockpit-Findings."""
+    from core import dev_dashboard as dev_dashboard_core
+    from core.dev_dashboard_cockpit import build_cursor_meta_prompt, build_prompt_findings
+
+    fe_ver = (frontend_build_version or "").strip() or None
+    body = dev_dashboard_core.build_dashboard_status(
+        running_jobs=[],
+        package_activity=[],
+        frontend_build_version=fe_ver,
+        frontend_runtime_source=frontend_runtime_source,
+    )
+    repo = dev_dashboard_core._repo_root()
+    findings = build_prompt_findings(repo, body)
+    meta = build_cursor_meta_prompt(repo, findings)
+    return {"status": "success", **meta}
+
+
+@app.post("/api/ai/prompt/generate")
+async def ai_prompt_generate_stub(body: dict[str, Any] | None = None):
+    """
+    Optional vorbereitet: keine externe KI-Ausfuehrung, keine Secrets.
+    Erfordert explizite Bestaetigung im Request-Body.
+    """
+    payload = body if isinstance(body, dict) else {}
+    confirmed = bool(payload.get("confirmed") is True)
+    provider = str(payload.get("provider") or "manual").strip().lower()
+    if provider not in ("openai", "anthropic", "manual"):
+        return {"status": "error", "error": "invalid_provider"}
+    if not confirmed:
+        return {
+            "status": "error",
+            "error": "confirmation_required",
+            "message_key": "devDashboard.aiPrompt.confirmRequired",
+        }
+    from core import dev_dashboard as dev_dashboard_core
+    from core.dev_dashboard_cockpit import build_cursor_meta_prompt, build_prompt_findings
+
+    repo = dev_dashboard_core._repo_root()
+    dash = dev_dashboard_core.build_dashboard_status(running_jobs=[], package_activity=[])
+    findings = build_prompt_findings(repo, dash)
+    meta = build_cursor_meta_prompt(repo, findings)
+    return {
+        "status": "success",
+        "provider": provider,
+        "executed": False,
+        "message_key": "devDashboard.aiPrompt.manualOnly",
+        "prompt": meta.get("prompt"),
+    }
+
+
 @app.get("/api/system/service-conflicts")
 async def get_service_conflicts():
     """Lesend: parallele pi-installer-/Setuphelfer-Dienste, Port-8000-Inhaber, Empfehlungen (keine Stop-Aktion)."""
