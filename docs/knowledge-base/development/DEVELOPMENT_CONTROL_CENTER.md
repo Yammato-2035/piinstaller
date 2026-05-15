@@ -22,7 +22,9 @@ Das **Development Control Center** ist die externe Governance-Ansicht für Setup
 
 ## Evidence & rote Module
 
-Release-Gates unter `docs/evidence/release-gates/` (z. B. `backup_restore_release_gate.json`) können **rot** bleiben, solange BR-001 o. Ä. offen sind — das ist **kein UI-Fehler**. Das Cockpit zeigt diese Zustände; es erfindet kein Grün.
+Release-Gates unter `docs/evidence/release-gates/` (z. B. `backup_restore_release_gate.json`) bleiben **rot**, solange BR-001 offen ist — **kein UI-Fehler**. `tests_evidence` kann **gelb** sein (pytest ok, Release blockiert). Runtime-Gate grün ≠ BR-001 freigegeben.
+
+Rückkehrplan: [CORE_RECOVERY_TEST_RETURN.md](./CORE_RECOVERY_TEST_RETURN.md)
 
 ## Verweise
 

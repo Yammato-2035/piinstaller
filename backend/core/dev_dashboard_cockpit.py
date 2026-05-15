@@ -272,11 +272,29 @@ def build_tests_evidence(repo: Path) -> dict[str, Any]:
             entry["status"] = "unknown"
         files[name] = entry
 
+    release_only_gates = frozenset(
+        {"release_readiness_gate.json", "backup_restore_release_gate.json"},
+    )
     overall = "green"
     if any(files[n].get("ampel") == "red" for n in names if files.get(n, {}).get("exists")):
         overall = "red"
     elif any(files[n].get("evidence_complete") is False for n in names if files.get(n, {}).get("exists")):
         overall = "yellow"
+
+    # BR-001/Release-Gates rot ist erwartet — pytest/Inventory ok → nicht pauschal "rot" aggregieren.
+    if overall == "red":
+        red_names = [n for n in names if files.get(n, {}).get("ampel") == "red"]
+        if red_names and all(n in release_only_gates for n in red_names):
+            inv = files.get("test_inventory.json") or {}
+            cf = files.get("current_failures.json") or {}
+            hygiene_ok = inv.get("ampel") in ("green", "yellow", "gray") and cf.get("ampel") == "green"
+            incomplete_non_release = any(
+                files[n].get("evidence_complete") is False
+                for n in names
+                if n not in release_only_gates and files.get(n, {}).get("exists")
+            )
+            if hygiene_ok and not incomplete_non_release:
+                overall = "yellow"
 
     return {"status": overall, "files": files, "warnings": warnings}
 
@@ -470,6 +488,16 @@ def build_structure_health(repo: Path, dashboard: dict[str, Any]) -> dict[str, A
                     "message": f"Evidence unvollständig: {fname}",
                 }
             )
+    if rg.get("passed"):
+        br_gate = (te.get("files") or {}).get("backup_restore_release_gate.json") or {}
+        if br_gate.get("ampel") == "red":
+            warnings.append(
+                {
+                    "severity": "warning",
+                    "id": "br001_release_blocked",
+                    "message": "BR-001 / Release-Gate Backup-Restore rot — externes Backup auf freigegebenem Medium (kein Cockpit-Start)",
+                }
+            )
 
     score = 100
     score -= len(critical) * 25
@@ -553,10 +581,33 @@ def build_cursor_meta_prompt(repo: Path, findings_payload: dict[str, Any]) -> di
     for p in findings_payload.get("affected_files") or []:
         lines.append(f"- {p}")
     lines.append("")
+    lines.append("## Recommended Cursor Work Order (Core Recovery Test Return)")
+    if findings_payload.get("runtime_gate_passed"):
+        lines.extend(
+            [
+                "1. Evidence/Release-Gates konsistent halten (kein Fake-Grün für BR-001)",
+                "2. CI/pytest lokal und remote abgleichen (current_failures, test_inventory)",
+                "3. BR-001: externes Backup auf freigegebenem Medium — außerhalb Cockpit",
+                "4. Verify gegen echtes Archiv (nach BR-001)",
+                "5. Restore Preview / Sandbox",
+                "6. Hardware E2E (nach Gate + Evidence)",
+                "7. Boot-/Service-Recovery",
+                "8. Rescue-Stick-Ausbau erst danach",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "1. ./scripts/check-runtime-deploy-gate.sh (Exit 0)",
+                "2. Deploy/Workspace-Drop-in — keine Runtime-Tests vor grünem Gate",
+            ]
+        )
+    lines.append("")
     lines.append("## Gewünschtes Cursor-Format")
     lines.append("- Nur fokussierte Änderungen; keine git add -A")
     lines.append("- Phase 0: check-runtime-deploy-gate.sh vor Runtime-Tests")
     lines.append("- Abschlussbericht bei Gate-Fehler: blocked_runtime_outdated")
+    lines.append("- BR-001 nicht künstlich freigeben")
 
     body = "\n".join(lines)
     return {

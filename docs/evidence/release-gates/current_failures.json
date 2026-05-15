@@ -1,8 +1,8 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "current_failures",
-  "generated": "2026-05-13T22:30:00Z",
-  "executed_at": "2026-05-12T17:55:00Z",
+  "generated": "2026-05-15T19:15:00Z",
+  "executed_at": "2026-05-15T19:10:00Z",
   "prompt": "PROMPT_02_BLOCKER_INVENTORY",
   "prompt_rerun": true,
   "ampel": "gruen",
@@ -10,23 +10,25 @@
   "environment": {
     "python": "3.12.3",
     "cwd": "backend",
-    "command": "PI_INSTALLER_DEV=1 PYTHONWARNINGS=default python -m pytest tests/ -q --tb=no",
-    "notes": "Lokaler Snapshot 1526 passed (2026-05-12). Remote GitHub CI `ci.yml`: Run **25751304968** — **success** (55d7cec). Harness-/sudoers-Analysen siehe ci_evidence.json. **2026-05-13:** Runtime-Deploy-Gate: `scripts/check-runtime-deploy-gate.sh`, `scripts/runtime_deploy_gate_eval.py`, pytest `test_runtime_deploy_gate_eval_v1.py`."
+    "command": "PI_INSTALLER_DEV=1 python -m pytest tests/ -q --tb=no",
+    "notes": "Lokal 1624 passed (2026-05-15). Runtime-Deploy-Gate Exit 0. Remote CI Referenz Run 25751304968 success."
   },
   "summary": {
     "failed": 0,
-    "passed": 1526,
+    "passed": 1624,
     "warnings": 3,
-    "duration_seconds_approx": 19
+    "duration_seconds_approx": 21
   },
   "failures": [],
   "artifacts": [
-    "docs/evidence/release-gates/pytest_failures_summary_2026-05-11.txt",
     "docs/evidence/release-gates/blocker_inventory.json",
     "docs/evidence/release-gates/runtime_inventory.json",
-    "docs/evidence/release-gates/diagnostics_evidence_seed_audit_2026-05-11.json",
-    "docs/evidence/release-gates/prompt02_abschlussbericht.md"
+    "docs/evidence/release-gates/ci_evidence.json"
   ],
   "blocker_inventory": "docs/evidence/release-gates/blocker_inventory.json",
-  "notes": "GitHub CI success. **DEV-001** Cockpit: Runtime-vs-Workspace (API+UI), Dev-Client-Doku `DEV_CLIENT_DE/EN.md`; Vitest `DevDashboardBody.test.ts`. **2026-05-13** Cockpit-Roadmap-Daten Backup/Restore ↔ Matrix. BR-012/BR-013 backup_runner (Finalisierung + Write-I/O). BR-016–BR-019 + Evidence-API/UI + `test_backup_job_evidence_api_v1`, `test_backup_profiles_v1`; Frontend Vitest `backupJobProgressDisplay.test.ts`, `backupCreateBody.test.ts`. BR-001 blocked. BR-004/005 blocked."
+  "runtime_deploy_gate": {
+    "passed": true,
+    "check_script": "scripts/check-runtime-deploy-gate.sh"
+  },
+  "notes": "pytest grün. BR-001/Release-Gates separat rot (backup_restore_release_gate.json). Kein Fake-Grün für BR-001."
 }

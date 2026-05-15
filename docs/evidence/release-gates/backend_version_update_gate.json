@@ -1,9 +1,14 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "backend_version_update_gate",
-  "generated": "2026-05-13T18:05:00Z",
+  "generated": "2026-05-15T19:15:00Z",
   "ampel": "gelb",
-  "evidence_complete": false,
+  "evidence_complete": true,
+  "runtime_deploy_gate": {
+    "passed": true,
+    "check_script": "scripts/check-runtime-deploy-gate.sh",
+    "verified_at": "2026-05-15"
+  },
   "rule_summary": "Vor produktiven Tests: scripts/check-backend-version-gate.sh Exit 0; curl /api/version HTTP 200 mit project_version+release_stage+version_track (status optional, falls gesetzt = success); systemd aktiv; /opt+Workspace version.json mit version_source_of_truth; sonst blocked.",
   "check_script": "scripts/check-backend-version-gate.sh",
   "api_version_endpoint": "GET http://127.0.0.1:8000/api/version",
@@ -33,5 +38,5 @@
     "runbook_en": "docs/operations/BACKEND_UPDATE_RUNBOOK_EN.md",
     "kb": "docs/knowledge-base/operations/BACKEND_VERSION_UPDATE_GATE.md"
   },
-  "notes": "Gate script 2026-05-13: slim /api/version JSON accepted; json_field syntax fix. APT user updates remain roadmap. target-check rw/ro contradiction: BR-001_readonly doc."
+  "notes": "2026-05-15: Runtime-Deploy-Gate grün (Version/Drift/Manifest). APT-Endnutzer-Updates weiterhin roadmap (apt_update_delivery_gap rot). BR-001 unverändert blocked."
 }

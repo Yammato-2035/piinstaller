@@ -12,7 +12,10 @@
     "Release-Readiness Checkliste und Update-Center-Gates verlinken",
     "Installer/Service-Units unter `/opt` dokumentieren und testen"
   ],
-  "blockers": ["Release-Gate nicht grün", "APT-/Update-Delivery-Konzept nicht final"],
+  "blockers": [
+    "APT-/Repository-Pipeline nicht produktionsreif (apt_update_delivery_gap rot)",
+    "Runtime-Deploy-Gate grün; BR-001/Release-Gate Backup weiter rot"
+  ],
   "evidence_files": [],
   "prompt_files": [],
   "report_files": [],

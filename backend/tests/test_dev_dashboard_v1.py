@@ -376,6 +376,32 @@ class TestDevDashboardCockpit(unittest.TestCase):
         self.assertIn("tabs", out)
         self.assertFalse(out["changed_to_green"]["available"])
 
+    def test_tests_evidence_yellow_when_only_release_gates_red(self):
+        from core.dev_dashboard_cockpit import build_tests_evidence
+
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            gates = repo / "docs" / "evidence" / "release-gates"
+            gates.mkdir(parents=True)
+            (gates / "test_inventory.json").write_text(
+                json.dumps({"ampel": "gelb", "evidence_complete": True}),
+                encoding="utf-8",
+            )
+            (gates / "current_failures.json").write_text(
+                json.dumps({"ampel": "gruen", "evidence_complete": True}),
+                encoding="utf-8",
+            )
+            (gates / "release_readiness_gate.json").write_text(
+                json.dumps({"ampel": "rot", "evidence_complete": True}),
+                encoding="utf-8",
+            )
+            (gates / "backup_restore_release_gate.json").write_text(
+                json.dumps({"ampel": "rot", "evidence_complete": True}),
+                encoding="utf-8",
+            )
+            out = build_tests_evidence(repo)
+        self.assertEqual(out["status"], "yellow")
+
 
 if __name__ == "__main__":
     unittest.main()

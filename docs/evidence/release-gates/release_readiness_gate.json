@@ -1,11 +1,19 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-13T21:30:00Z",
+  "generated": "2026-05-15T19:15:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
-  "evidence_complete": false,
-  "summary": "**GitHub CI:** Run **25751304968** — **success**. **BR-001:** **failed**/blocked. **BR-012:** Runner-Finalisierung — Fix + Deploy-Prep. **BR-013:** Ziel-Schreib-EIO Job **`f744c2936468`** — `backup.write_io_error` / **`BACKUP-IO-ERROR-050`**; KB **`BACKUP_TARGET_WRITE_IO_ERROR.md`**. **BR-011** Preflight Design. **BR-004/005:** blocked. Release blocked.",
+  "evidence_complete": true,
+  "summary": "**Runtime-Deploy-Gate (PKG-001):** `check-runtime-deploy-gate.sh` Exit 0, `runtime_gate.passed` true, `deploy_drift` green (2026-05-15). **Release bleibt blockiert:** **BR-001** — kein vollständiger Backup-Verify-Restore-Zyklus auf freigegebenem Medium. **CI:** Run **25751304968** success (Referenz); lokaler pytest 2026-05-15: **1624 passed**. BR-012/013/004/005 weiterhin offen.",
+  "runtime_deploy_gate": {
+    "check_script": "scripts/check-runtime-deploy-gate.sh",
+    "eval_script": "scripts/runtime_deploy_gate_eval.py",
+    "passed": true,
+    "deploy_drift_status": "green",
+    "verified_at": "2026-05-15",
+    "notes": "Phase-0-Gate grün; schließt BR-001 nicht automatisch."
+  },
   "backend_version_gate": {
     "check_script": "scripts/check-backend-version-gate.sh",
     "runtime_deploy_gate": "scripts/check-runtime-deploy-gate.sh",
@@ -17,6 +25,6 @@
   "blockers_p0": [
     "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
   ],
-  "pytest_note": "Lokal 2026-05-12: pytest tests/ 1532 passed (inkl. target-permission-Diagnose); Remote CI Workflow `ci.yml` zuletzt **success** (Run 25751304968).",
+  "pytest_note": "Lokal 2026-05-15: pytest tests/ 1624 passed; Remote CI `ci.yml` Referenz Run 25751304968 success.",
   "recommendation": "do_not_release"
 }
