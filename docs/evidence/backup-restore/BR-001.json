@@ -5,6 +5,14 @@
   "status": "teilvalidiert",
   "ampel": "gelb",
   "evidence_complete": false,
+  "storage_io_stability_2026_05_15": {
+    "evidence": "docs/evidence/runtime-results/BR-001-storage-io-stability-2026-05-15.json",
+    "root_cause": "usb_1-2.1_disconnect_under_write",
+    "compressor": "gzip_single_thread",
+    "pigz_available": false,
+    "stability_test_15gib": "passed",
+    "full_retry_ready": false
+  },
   "full_root_longrun_2026_05_15": {
     "evidence": "docs/evidence/runtime-results/BR-001-full-root-longrun-2026-05-15.json",
     "status": "failed",

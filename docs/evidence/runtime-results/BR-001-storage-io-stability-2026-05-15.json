@@ -1,0 +1,79 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "test_id": "BR-001",
+  "run_id": "BR-001-storage-io-stability-2026-05-15",
+  "captured_at": "2026-05-15T22:04:31+02:00",
+  "status": "analyzed",
+  "ampel": "gelb",
+  "runtime_gate": {
+    "passed": true,
+    "deploy_drift": "green"
+  },
+  "compression_runtime": {
+    "active_compressor": "gzip",
+    "parallel_compression": false,
+    "pigz_installed": false,
+    "pigz_available_check": false,
+    "tar_command": "tar -czf <partial> ... /",
+    "threads": 1,
+    "failed_job_compression_method": "gzip",
+    "peak_throughput_mib_s_backup": 18.15,
+    "note": "pigz wird nur genutzt wenn `which pigz` auf dem Host true liefert; hier nicht installiert."
+  },
+  "target_hardware": {
+    "model": "HGST HTS721010A9E630",
+    "capacity_gib": 931.5,
+    "rotational": true,
+    "usb_bridge": "SABRENT (152d:1561)",
+    "usb_driver": "uas",
+    "usb_path_current": "usb6/6-1 (xhci 09:00.4)",
+    "usb_path_failure": "usb 1-2.1 (hub port, high-speed)",
+    "filesystem_uuid_current": "44ce6f76-7896-4623-87b0-d81aedbed6d5",
+    "filesystem_uuid_failure_run": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+    "uuid_changed_note": "Nach Disconnect wurde sda1 neu formatiert (leer, 24K belegt) — alte Archive auf Partition nicht mehr vorhanden."
+  },
+  "kernel_root_cause": {
+    "time_local": "2026-05-15T19:55:20–19:55:43",
+    "correlated_job": "f4269a25a421",
+    "correlated_phase": "tar_create_stream ~6.8 GiB written",
+    "events": [
+      "usb 1-2.1: reset high-speed USB device",
+      "device descriptor read/64, error -110 / -71",
+      "usb 1-2.1: USB disconnect",
+      "device offline error, dev sda, sector … op WRITE",
+      "EXT4-fs I/O error / journal abort / remount read-only",
+      "gzip: stdout: Input/output error"
+    ],
+    "source_log": "var/lib/setuphelfer/evidence/backup-jobs/f4269a25a421/capture_journal_kernel_tail.txt"
+  },
+  "smart": {
+    "overall": "PASSED",
+    "reallocated_sectors": 0,
+    "current_pending": 0,
+    "offline_uncorrectable": 0,
+    "udma_crc_errors": 0,
+    "temperature_c": 31,
+    "power_on_hours": 4199
+  },
+  "stability_test": {
+    "method": "dd sequential write + fdatasync",
+    "size_gib": 15,
+    "duration_s": 139,
+    "avg_throughput_mib_s": 110,
+    "dd_exit": 0,
+    "mount_stable": true,
+    "kernel_errors_in_window": false,
+    "file_removed_after_test": true
+  },
+  "gzip_vs_pigz_decision": {
+    "decision": "keep_gzip_default",
+    "pigz_change_in_this_task": false,
+    "rationale": "Failure war USB-Disconnect, nicht gzip-CPU-Limit; pigz könnte RAM/Spitzenlast erhöhen; optional später mit Thread-Cap."
+  },
+  "full_retry_ready": false,
+  "retry_blockers": [
+    "USB-Topologie stabilisieren (direkter Port, kein instabiler Hub 1-2.1)",
+    "Gleicher Mount-Pfad setuphelfer-back1 nach Betreiber-Freigabe",
+    "Neues leeres FS — alte BR-001-Archive fehlen"
+  ]
+}

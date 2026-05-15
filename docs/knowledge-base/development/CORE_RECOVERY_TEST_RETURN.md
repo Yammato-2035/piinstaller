@@ -16,7 +16,7 @@ Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery
 
 1. **Governance stabil** — erledigt (Runtime-Gate, Evidence konsistent, kein Fake-Grün)
 2. **BR-001 Daten** — validiert: `docs/evidence/runtime-results/BR-001-external-validation-2026-05-15.md`
-3. **BR-001 Full Root** — **failed:** Langlauf `f4269a25a421`, I/O + Gerätetrennung — `docs/evidence/runtime-results/BR-001-full-root-longrun-2026-05-15.md`; nach stabilem Remount erneut
+3. **BR-001 Full Root** — **failed** (USB-Hub-Disconnect); **Storage/I-O analysiert** — `docs/knowledge-base/storage/BR-001-external-hdd-usb-stability.md`, 15 GiB-Stabilitätstest OK; Retry nach USB-Fix
 4. **Verify Full** — offen (kein fertiges Archiv)
 4. **Restore Preview** — Sandbox, keine Produktiv-Restore
 5. **Rescue Preview** — read-only / geplant
