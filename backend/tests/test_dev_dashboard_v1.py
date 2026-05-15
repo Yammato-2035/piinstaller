@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -211,6 +212,26 @@ class TestDevDashboardCore(unittest.TestCase):
         rows = out.get("checked_files") or []
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0].get("reason"), "compared_by_size_mtime")
+
+    @patch.object(dd, "DEPLOY_DRIFT_MAX_HASH_BYTES", 8)
+    @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("big.bin",))
+    def test_deploy_drift_large_file_same_content_different_mtime_green(self) -> None:
+        with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
+            with tempfile.TemporaryDirectory() as td:
+                ws = Path(td) / "w"
+                rt = Path(td) / "r"
+                ws.mkdir()
+                rt.mkdir()
+                payload = b"0123456789abcdef"
+                (ws / "big.bin").write_bytes(payload)
+                (rt / "big.bin").write_bytes(payload)
+                time.sleep(1.1)
+                (ws / "big.bin").touch()
+                out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        self.assertEqual(out["status"], "green")
+        self.assertEqual(out["suggested_actions"], ["none"])
+        rows = out.get("checked_files") or []
+        self.assertEqual(rows[0].get("reason"), "sha256_same_content")
 
     @patch("core.versioning.load_project_version")
     def test_consistency_frontend_build_outdated_yellow(self, lp: MagicMock) -> None:

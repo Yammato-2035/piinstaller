@@ -241,8 +241,22 @@ def _sha256_file_limited(path: Path, max_bytes: int) -> tuple[str | None, str | 
         return None, f"read_error:{exc}"
 
 
+def _sha256_file_full(path: Path) -> tuple[str | None, str | None]:
+    try:
+        digest = hashlib.sha256()
+        with path.open("rb") as fh:
+            while True:
+                chunk = fh.read(65536)
+                if not chunk:
+                    break
+                digest.update(chunk)
+        return digest.hexdigest(), None
+    except OSError as exc:
+        return None, f"read_error:{exc}"
+
+
 def _metadata_compare(wp: Path, rp: Path) -> tuple[bool | None, str | None]:
-    """Groesse + mtime fuer grosse Dateien (kein Full-Hash)."""
+    """Groesse + mtime fuer grosse Dateien; bei gleicher Groesse aber abweichendem mtime SHA256."""
     try:
         sw, sr = wp.stat(), rp.stat()
     except OSError as exc:
@@ -251,6 +265,15 @@ def _metadata_compare(wp: Path, rp: Path) -> tuple[bool | None, str | None]:
     same_mtime = int(sw.st_mtime) == int(sr.st_mtime)
     if same_size and same_mtime:
         return True, "compared_by_size_mtime"
+    if same_size and not same_mtime:
+        wh, werr = _sha256_file_full(wp)
+        rh, rerr = _sha256_file_full(rp)
+        if werr or rerr:
+            return None, werr or rerr
+        if wh and rh:
+            if wh == rh:
+                return True, "sha256_same_content"
+            return False, "sha256_mismatch"
     return False, "compared_by_size_mtime"
 
 
