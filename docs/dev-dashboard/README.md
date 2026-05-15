@@ -4,6 +4,8 @@
 
 **Phase 0 (Pflicht vor Runtime-/Backup-/HW-Tests):** siehe `PHASE0_RUNTIME_GATE.md` und die Cursor-Regel `.cursor/rules/runtime-phase0-gate.mdc` — kein produktiver Testlauf ohne aktuelles Backend-/Paket-Gate.
 
+**Live-Validierung 2026-05-15:** `docs/knowledge-base/development/DEVELOPMENT_DASHBOARD.md` — Deploy-Drift **green** mit `SETUPHELFER_DEV_WORKSPACE_ROOT`; Cockpit-APIs HTTP 200; Runtime-Gate im Cockpit **yellow** bei git-dirty Workspace und inaktivem systemd während manuellem Prozessstart.
+
 Dieses Verzeichnis indexiert **Prompts**, **Abschlussberichte** und **Modul-Metadaten** für das interne **Development Control Cockpit** (`GET /api/dev-dashboard/status` inkl. `runtime_gate`, `safe_test_mode`, `structure_health`, `roadmap`; `GET /api/dev-dashboard/prompt-findings`, `cursor-meta-prompt`; UI `DevelopmentDashboard.tsx`, Sidebar nur bei Entwickler-Profil). **Keine** Schreibaktionen, Backups, Restores, apt oder Deployments über das Cockpit.
 
 **Runtime vs. Workspace:** `GET /api/dev-dashboard/status` liefert zusätzlich die Objekte `runtime`, `workspace`, `frontend` und `consistency` (Versionsabgleich installierte API vs. Checkout vs. Frontend-Build). Optional: Query-Parameter `frontend_build_version`, `frontend_runtime_source` (`dev` \| `build` \| `unknown`). Wenn Backend unter `/opt/setuphelfer` läuft, der Checkout aber woanders liegt: Umgebungsvariable `SETUPHELFER_DEV_WORKSPACE_ROOT` auf das Repo-Root setzen. Details: `DEV_CLIENT_DE.md` / `DEV_CLIENT_EN.md`.

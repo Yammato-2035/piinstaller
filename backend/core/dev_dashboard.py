@@ -94,6 +94,29 @@ def _git_summary(repo: Path) -> dict[str, Any] | None:
         return None
 
 
+def _workspace_root_from_dotenv(repo: Path) -> Path | None:
+    """Liest SETUPHELFER_DEV_WORKSPACE_ROOT aus repo/.env (typ. /opt/setuphelfer/.env)."""
+    env_path = repo / ".env"
+    try:
+        if not env_path.is_file():
+            return None
+        for line in env_path.read_text(encoding="utf-8", errors="replace").splitlines():
+            s = line.strip()
+            if not s or s.startswith("#") or "=" not in s:
+                continue
+            key, _, val = s.partition("=")
+            if key.strip() != "SETUPHELFER_DEV_WORKSPACE_ROOT":
+                continue
+            raw = val.strip().strip('"').strip("'")
+            if not raw:
+                return None
+            p = Path(raw).expanduser().resolve()
+            return p if p.is_dir() else None
+    except OSError:
+        return None
+    return None
+
+
 def _effective_workspace_root(repo: Path) -> Path:
     """
     Optional: SETUPHELFER_DEV_WORKSPACE_ROOT zeigt auf einen Checkout (z. B. /home/.../piinstaller),
@@ -101,6 +124,9 @@ def _effective_workspace_root(repo: Path) -> Path:
     """
     raw = (os.environ.get("SETUPHELFER_DEV_WORKSPACE_ROOT") or "").strip()
     if not raw:
+        dot = _workspace_root_from_dotenv(repo)
+        if dot is not None:
+            return dot
         return repo
     try:
         p = Path(raw).expanduser().resolve()
@@ -820,10 +846,11 @@ def build_dashboard_status(
         warnings.append(f"version_load:{exc}")
 
     try:
-        from core.settings import get_app_edition, get_install_profile
+        from core.install_paths import get_install_profile
 
         install_profile = str(get_install_profile())
-        app_edition = str(get_app_edition())
+        raw_ed = (os.environ.get("APP_EDITION") or "").strip().lower()
+        app_edition = raw_ed if raw_ed in ("repo", "release") else "release"
     except Exception as exc:  # noqa: BLE001
         warnings.append(f"edition_load:{exc}")
 
