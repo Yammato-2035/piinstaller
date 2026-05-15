@@ -49,6 +49,9 @@ cat >"$TMP" <<EOF
 # Auto: scripts/write-dev-workspace-systemd-dropin.sh — Deploy-Drift / Phase-0-Gate
 [Service]
 Environment="SETUPHELFER_DEV_WORKSPACE_ROOT=$WS_ROOT"
+# ProtectHome=yes + ReadOnlyPaths reicht unter systemd oft NICHT fuer /home/... (stat → EACCES).
+# read-only: /home lesbar, Deploy-Drift Workspace-vs-/opt funktioniert.
+ProtectHome=read-only
 ReadOnlyPaths=$WS_ROOT
 # Checkout-Dateien sind oft Gruppe workspace (664) — ohne diese Gruppe bleibt deploy_drift gelb.
 SupplementaryGroups=setuphelfer workspace
@@ -56,7 +59,7 @@ EOF
 
 echo "Drop-in: $DROPIN_FILE"
 echo "  SETUPHELFER_DEV_WORKSPACE_ROOT=$WS_ROOT"
-echo "  ReadOnlyPaths + SupplementaryGroups=setuphelfer workspace"
+echo "  ProtectHome=read-only + ReadOnlyPaths + SupplementaryGroups=setuphelfer workspace"
 sudo mkdir -p "$DROPIN_DIR"
 sudo cp "$TMP" "$DROPIN_FILE"
 sudo systemctl daemon-reload

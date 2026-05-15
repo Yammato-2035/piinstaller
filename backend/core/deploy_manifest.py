@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import re
+import stat
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -219,9 +220,27 @@ def _path_under_root(root: Path, candidate: Path) -> bool:
         return False
 
 
+def safe_path_is_file(path: Path) -> bool:
+    """
+    Zuverlaessiger als Path.is_file() unter systemd ProtectHome+ReadOnlyPaths:
+    is_file() kann false liefern, obwohl os.stat/open lesbar ist.
+    """
+    try:
+        return stat.S_ISREG(os.stat(path, follow_symlinks=True).st_mode)
+    except OSError:
+        return False
+
+
+def safe_path_is_dir(path: Path) -> bool:
+    try:
+        return stat.S_ISDIR(os.stat(path, follow_symlinks=True).st_mode)
+    except OSError:
+        return False
+
+
 def _safe_read_manifest(path: Path) -> tuple[dict[str, Any] | None, str | None]:
     try:
-        if not path.is_file():
+        if not safe_path_is_file(path):
             return None, "missing"
         raw = path.read_text(encoding="utf-8", errors="replace")
         data = json.loads(raw)

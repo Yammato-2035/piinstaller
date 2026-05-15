@@ -20,13 +20,21 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 
 Voraussetzungen u. a.: `setuphelfer-backend.service` aktiv, `/api/version` HTTP 200, `project_version` = `config/version.json`, `deploy_drift` nicht blockierend, `backend_runtime_path` = `/opt/setuphelfer/backend`.
 
-Bei `ProtectHome=yes` und Workspace unter `/home/...`:
+### Workspace-Zugriff (Development-Drop-in)
+
+Das Development Cockpit und `deploy_drift` brauchen **lesenden** Zugriff auf den Workspace-Checkout (z. B. unter `/home/.../piinstaller`), während die API aus `/opt/setuphelfer` läuft.
+
+- **Root Cause:** `ProtectHome=yes` in der Basis-Unit blockiert `/home` so, dass weder `Path.is_file()` noch `os.stat` auf den Checkout zugreifen — auch mit `ReadOnlyPaths` auf den Workspace-Pfad (systemd: `EACCES`).
+- **Developer-Drop-in only:** `scripts/write-dev-workspace-systemd-dropin.sh` setzt **`ProtectHome=read-only`** (nur für Maschinen mit `SETUPHELFER_DEV_WORKSPACE_ROOT`). Die Release-/Endnutzer-Härtung der Haupt-Unit (`ProtectHome=yes`) wird **nicht** pauschal abgesenkt.
+- **Gate bleibt read-only:** Deploy-Drift vergleicht Hashes/Manifeste; es gibt keinen Schreibzugriff auf den Workspace und keine automatischen Deploy-Aktionen aus dem Cockpit.
 
 ```bash
 sudo ./scripts/write-dev-workspace-systemd-dropin.sh
 sudo systemctl daemon-reload
 sudo systemctl restart setuphelfer-backend.service
 ```
+
+Prüfung: `runtime_gate.passed` true und `deploy_drift.status` green in `/api/dev-dashboard/status`.
 
 ## Deploy nach /opt
 

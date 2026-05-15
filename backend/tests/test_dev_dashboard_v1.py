@@ -113,12 +113,7 @@ class TestDevDashboardCore(unittest.TestCase):
     def test_safe_is_file_permission_error_returns_false(self) -> None:
         p = Path("/home/volker/piinstaller/config/version.json")
 
-        def boom(self: Path) -> bool:  # noqa: ANN001
-            if str(self) == str(p):
-                raise PermissionError(13, "Permission denied")
-            return Path.is_file(self)
-
-        with patch.object(Path, "is_file", boom):
+        with patch("core.deploy_manifest.os.stat", side_effect=PermissionError(13, "Permission denied")):
             self.assertFalse(dd._safe_is_file(p))
 
     def test_effective_workspace_root_absolute_when_is_dir_blocked(self) -> None:

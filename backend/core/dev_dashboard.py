@@ -18,7 +18,12 @@ from typing import Any
 UTC = timezone.utc
 
 # Deploy-Drift-Dateiliste = kanonisches Deployment-Manifest (core.deploy_manifest).
-from core.deploy_manifest import DEPLOY_MANIFEST_REL_PATHS, manifest_drift_for_roots
+from core.deploy_manifest import (
+    DEPLOY_MANIFEST_REL_PATHS,
+    manifest_drift_for_roots,
+    safe_path_is_dir,
+    safe_path_is_file,
+)
 
 DEPLOY_DRIFT_REL_PATHS = DEPLOY_MANIFEST_REL_PATHS
 
@@ -41,18 +46,12 @@ def _safe_read_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
 
 
 def _safe_is_file(path: Path) -> bool:
-    """is_file() ohne PermissionError (systemd ProtectHome auf Workspace unter /home)."""
-    try:
-        return path.is_file()
-    except OSError:
-        return False
+    """Lesbarkeit unter ProtectHome+ReadOnlyPaths (siehe deploy_manifest.safe_path_is_file)."""
+    return safe_path_is_file(path)
 
 
 def _safe_is_dir(path: Path) -> bool:
-    try:
-        return path.is_dir()
-    except OSError:
-        return False
+    return safe_path_is_dir(path)
 
 
 def _walk_files_under(base: Path, *, rel_root: Path | None, max_files: int = 400) -> list[dict[str, Any]]:
