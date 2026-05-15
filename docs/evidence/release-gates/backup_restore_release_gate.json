@@ -21,5 +21,5 @@
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010", "BR-011"],
   "partial_br_ids": ["BR-001", "BR-012", "BR-013", "BR-016", "BR-017", "BR-018", "BR-019"],
   "blocked_br_ids": [],
-  "notes": "BR-001 **teilvalidiert (2026-05-15):** echtes externes Daten-Backup + Verify auf /media/gabriel/setuphelfer-back1 — docs/evidence/runtime-results/BR-001-external-validation-2026-05-15.md. Full-Backup (/) weiterhin offen. BR-004/005 weiter an Restore-Kette. Kein Fake-Grün."
+  "notes": "BR-001 Daten teilvalidiert; Full-Root-Langlauf 2026-05-15 **failed** (BACKUP-IO-ERROR-050, /dev/sda1 Disconnect) — docs/evidence/runtime-results/BR-001-full-root-longrun-2026-05-15.md. BR-004/005 an Restore-Kette. Kein Fake-Grün."
 }

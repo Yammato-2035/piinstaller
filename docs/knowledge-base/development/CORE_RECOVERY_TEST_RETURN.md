@@ -8,15 +8,16 @@ Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery
 |---------|-------|---------|
 | Runtime-Deploy-Gate | grün | `runtime_gate.passed`, `deploy_drift` green |
 | pytest / CI Evidence | grün/gelb | 1624 passed lokal |
-| Release / BR-001 | **gelb** | externes **Daten**-Backup + Verify auf `setuphelfer-back1` (2026-05-15); **Full** (`/`) noch offen |
+| Release / BR-001 | **gelb/rot** | Daten-Backup + Verify **grün** (2026-05-15); Full-Root-Langlauf **failed** (USB-Disconnect ~6,8 GiB, siehe `BR-001-full-root-longrun-2026-05-15.md`) |
 | APT/Packaging-Pipeline | **rot** | kein produktives Update-Channel |
 | Backup/Restore-Modul (Cockpit) | **gelb/rot** | Backup-Teilnachweis; Restore/Rescue rot |
 
 ## Phasen (Reihenfolge)
 
 1. **Governance stabil** — erledigt (Runtime-Gate, Evidence konsistent, kein Fake-Grün)
-2. **BR-001** — **teilvalidiert:** Daten-Backup + Verify auf `/media/gabriel/setuphelfer-back1` — siehe `docs/evidence/runtime-results/BR-001-external-validation-2026-05-15.md`
-3. **Verify** — für Lauf 2026-05-15 erledigt (deep, API)
+2. **BR-001 Daten** — validiert: `docs/evidence/runtime-results/BR-001-external-validation-2026-05-15.md`
+3. **BR-001 Full Root** — **failed:** Langlauf `f4269a25a421`, I/O + Gerätetrennung — `docs/evidence/runtime-results/BR-001-full-root-longrun-2026-05-15.md`; nach stabilem Remount erneut
+4. **Verify Full** — offen (kein fertiges Archiv)
 4. **Restore Preview** — Sandbox, keine Produktiv-Restore
 5. **Rescue Preview** — read-only / geplant
 6. **Hardware E2E** — nach Gate + BR-001-Evidence

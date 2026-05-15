@@ -4559,49 +4559,9 @@ def _detect_active_package_operations() -> list[dict[str, Any]]:
     Liefert laufende Paketmanager-/Upgrade-Prozesse (apt, dpkg, unattended-upgrades).
     Wird als Preflight-Gate vor Backup-Start genutzt.
     """
-    active: list[dict[str, Any]] = []
-    try:
-        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
-            try:
-                pid = int(proc.info.get("pid") or 0)
-                name = str(proc.info.get("name") or "").strip()
-                cmdline = proc.info.get("cmdline") or []
-                cmd_joined = " ".join(str(x) for x in cmdline if x)
-                hay = f"{name} {cmd_joined}".lower()
+    from core.package_activity import detect_active_package_operations
 
-                # Nicht blockierend: apt transport helper und shutdown-wait helper.
-                if "/usr/lib/apt/methods/" in hay:
-                    continue
-                if "unattended-upgrade-shutdown" in hay:
-                    continue
-
-                # Blockierende Frontend-/Lock-Prozesse.
-                is_blocking = any(
-                    token in hay
-                    for token in (
-                        " apt-get ",
-                        " apt ",
-                        " dpkg ",
-                        "unattended-upgrade",
-                        "apt.systemd.daily",
-                    )
-                ) or name in {"apt", "apt-get", "dpkg", "apt.systemd.daily"}
-
-                if is_blocking:
-                    active.append(
-                        {
-                            "pid": pid,
-                            "name": name,
-                            "cmdline": cmd_joined[:300],
-                        }
-                    )
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                continue
-    except Exception:
-        return []
-    # eigene Hilfsprozesse wie "apt list" aus anderen Endpunkten sollen nicht doppelt gewertet werden,
-    # aber für Backup-Preflight gilt konservativ: bei sichtbarer Aktivität blockieren.
-    return active
+    return detect_active_package_operations()
 
 
 def _validate_restore_target_dir(path_str: str) -> str:

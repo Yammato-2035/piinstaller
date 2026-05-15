@@ -1,0 +1,88 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "test_id": "BR-001",
+  "run_id": "BR-001-full-root-longrun-2026-05-15",
+  "captured_at": "2026-05-15T19:55:43+02:00",
+  "status": "failed",
+  "ampel": "rot",
+  "summary": "Full-Root-Backup (/, type=full) auf setuphelfer-back1: systemd-Runner lief ~8,7 min (~6,8 GiB), dann BACKUP-IO-ERROR-050 — externes /dev/sda1 während des Laufs vom System getrennt (Mount weg, lsblk ohne sda). Zwei vorherige Läufe scheiterten an backup.blocked_package_activity (apt list vom Dashboard); Fix: read-only apt list nicht mehr blockierend (core/package_activity.py).",
+  "runtime_gate_at_start": {
+    "passed": true,
+    "deploy_drift": "green",
+    "safe_test_mode": "UNLOCKED"
+  },
+  "target_medium": {
+    "device": "/dev/sda1",
+    "mountpoint": "/media/gabriel/setuphelfer-back1",
+    "uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+    "fstype": "ext4",
+    "free_gib_before": 679,
+    "lost_during_run": true
+  },
+  "preflight": {
+    "apt_dpkg_idle_at_start": true,
+    "no_partial_on_target_at_start": true,
+    "root_used_gib_approx": 435,
+    "active_excludes": [
+      "backup_dir (resolved target)",
+      "/proc",
+      "/sys",
+      "/dev",
+      "/tmp",
+      "/run",
+      "/mnt",
+      "/media",
+      "/run/media",
+      "profile full-expert extra excludes"
+    ],
+    "compression": "gzip (tar -czf)",
+    "inhibit": true
+  },
+  "attempts": [
+    {
+      "job_id": "226d160b3093",
+      "started": "2026-05-15T17:43:47Z",
+      "duration_s": 12,
+      "code": "backup.blocked_package_activity",
+      "bytes": 202899456,
+      "note": "apt list from GET /api/system/status path"
+    },
+    {
+      "job_id": "2a422288c385",
+      "started": "2026-05-15T17:44:40Z",
+      "duration_s": 48,
+      "code": "backup.blocked_package_activity",
+      "bytes": 0,
+      "note": "same root cause"
+    },
+    {
+      "job_id": "f4269a25a421",
+      "started": "2026-05-15T17:46:59Z",
+      "finished": "2026-05-15T17:55:43Z",
+      "duration_s": 523,
+      "code": "backup.write_io_error",
+      "diagnosis_id": "BACKUP-IO-ERROR-050",
+      "abort_reason": "target_write_io_error",
+      "archive_partial_gib_max": 6.77,
+      "throughput_mib_s_peak": 18.15,
+      "archive": "pi-backup-full-20260515_194659.tar.gz.partial",
+      "partial_deleted": false,
+      "mount_lost": true
+    }
+  ],
+  "verify": {
+    "executed": false,
+    "reason": "no_complete_archive"
+  },
+  "root_cause": {
+    "primary": "external_block_device_disconnect",
+    "evidence": "gzip stdout Input/output error; findmnt setuphelfer-back1 missing; lsblk without sda after 19:55",
+    "secondary_mitigated": "false_positive package_activity on apt list"
+  },
+  "next_steps": [
+    "USB/Kabel/SATA-Dock prüfen; /dev/sda1 remounten",
+    "Stale .partial bereinigen nach Freigabe",
+    "mintupdate/apt-daily Timer-Fenster beachten",
+    "Full-Backup erneut starten wenn Medium stabil >30 min"
+  ]
+}
