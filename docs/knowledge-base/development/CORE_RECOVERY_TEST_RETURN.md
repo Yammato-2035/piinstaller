@@ -8,7 +8,7 @@ Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery
 |---------|-------|---------|
 | Runtime-Deploy-Gate | grün | `runtime_gate.passed`, `deploy_drift` green |
 | pytest / CI Evidence | grün/gelb | 1624 passed lokal |
-| Release / BR-001 | **gelb/rot** | Daten-Backup + Verify **grün** (2026-05-15); Full-Root-Langlauf **failed** (USB-Disconnect ~6,8 GiB, siehe `BR-001-full-root-longrun-2026-05-15.md`) |
+| Release / BR-001 | **gelb/rot** | Daten-Backup + Verify **grün**; Full-Root: USB-Fix OK, Retry 76 min ~97 GiB dann **apt-get**-Abbruch — `BR-001-full-root-retry-controlled-2026-05-15.md` |
 | APT/Packaging-Pipeline | **rot** | kein produktives Update-Channel |
 | Backup/Restore-Modul (Cockpit) | **gelb/rot** | Backup-Teilnachweis; Restore/Rescue rot |
 
@@ -16,13 +16,13 @@ Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery
 
 1. **Governance stabil** — erledigt (Runtime-Gate, Evidence konsistent, kein Fake-Grün)
 2. **BR-001 Daten** — validiert: `docs/evidence/runtime-results/BR-001-external-validation-2026-05-15.md`
-3. **BR-001 Full Root** — **failed** (USB-Hub-Disconnect); **Storage/I-O analysiert** — `docs/knowledge-base/storage/BR-001-external-hdd-usb-stability.md`, 15 GiB-Stabilitätstest OK; Retry nach USB-Fix
+3. **BR-001 Full Root** — **failed** (2 Läufe: USB-Disconnect; Retry USB-stabil, mintupdate-Kollision) — Storage: `docs/knowledge-base/storage/BR-001-external-hdd-usb-stability.md`
 4. **Verify Full** — offen (kein fertiges Archiv)
-4. **Restore Preview** — Sandbox, keine Produktiv-Restore
-5. **Rescue Preview** — read-only / geplant
-6. **Hardware E2E** — nach Gate + BR-001-Evidence
-7. **Boot-/Service-Recovery**
-8. **Rescue-Stick-Ausbau** — erst nach 1–7
+5. **Restore Preview** — Sandbox, keine Produktiv-Restore
+6. **Rescue Preview** — read-only / geplant
+7. **Hardware E2E** — nach Gate + BR-001-Evidence
+8. **Boot-/Service-Recovery**
+9. **Rescue-Stick-Ausbau** — erst nach 1–8
 
 ## Verboten in Vorbereitungsphase
 

@@ -1,0 +1,65 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "test_id": "BR-001",
+  "run_id": "BR-001-full-root-retry-controlled-2026-05-15",
+  "captured_at": "2026-05-15T23:25:48+02:00",
+  "status": "failed",
+  "ampel": "gelb",
+  "summary": "Kontrollierter Full-Root-Retry: USB/Mount 76 min stabil (Bus 006 UAS direkt), ~97 GiB geschrieben, Abbruch backup.blocked_package_activity durch mintupdate apt-get install — kein USB-Disconnect. Verify nicht ausgeführt.",
+  "runtime_gate_at_start": {
+    "passed": true,
+    "deploy_drift": "green",
+    "safe_test_mode": "UNLOCKED"
+  },
+  "hardware_topology": {
+    "documented_change": "Vorheriger Fehler usb 1-2.1 Hub; Retry an Bus 006 Port 001 direkt (lsusb -t), UAS 5000M",
+    "bridge": "SABRENT 152d:1561",
+    "disk": "HGST HTS721010A9E630 rotational",
+    "mount": "/media/gabriel/setuphelfer-back1",
+    "uuid": "44ce6f76-7896-4623-87b0-d81aedbed6d5",
+    "options": "rw,noatime"
+  },
+  "backup": {
+    "job_id": "4f2031bbe2f1",
+    "unit": "setuphelfer-backup@4f2031bbe2f1.service",
+    "archive": "pi-backup-full-20260515_220945.tar.gz",
+    "started_utc": "2026-05-15T20:09:45.671178+00:00",
+    "finished_utc": "2026-05-15T21:25:48.923204+00:00",
+    "duration_s": 4562,
+    "bytes_written_at_abort": 103865384960,
+    "gib_written_at_abort": 96.75,
+    "compression": "gzip (tar -czf, single-thread)",
+    "code": "backup.blocked_package_activity",
+    "diagnosis_id": "UPDATE-CONFLICT-041",
+    "abort_reason": "package_activity_detected_runtime",
+    "partial_deleted": true,
+    "blocking_process": {
+      "name": "apt-get",
+      "cmdline": "apt-get install --assume-yes --option Dpkg::Options::=--force-confnew"
+    },
+    "likely_trigger": "mintupdate-automation-upgrade.timer (fired ~23:25 CEST)"
+  },
+  "usb_stability": {
+    "kernel_errors_in_backup_window": false,
+    "device_present_after_abort": true,
+    "mount_rw_after_abort": true,
+    "disconnect": false
+  },
+  "monitoring": {
+    "monitor_log": "/tmp/br001-full-retry-monitor.log (local, not committed)",
+    "samples_minutely": 76,
+    "peak_gib_observed": 93.85,
+    "peak_throughput_mib_s_observed": 63.02,
+    "avg_throughput_mib_s_approx": 21.7
+  },
+  "verify": {
+    "executed": false,
+    "reason": "no_complete_archive"
+  },
+  "br001_full_validated": false,
+  "next_retry_requirements": [
+    "mintupdate/apt Timer während Langlauf pausieren (Betreiber)",
+    "USB-Topologie beibehalten (Bus 006 direkt)",
+    "Erneut type=full nach freiem apt-Fenster"
+  ]
+}

@@ -5,6 +5,17 @@
   "status": "teilvalidiert",
   "ampel": "gelb",
   "evidence_complete": false,
+  "full_root_retry_controlled_2026_05_15": {
+    "evidence": "docs/evidence/runtime-results/BR-001-full-root-retry-controlled-2026-05-15.json",
+    "status": "failed",
+    "job_id": "4f2031bbe2f1",
+    "duration_s": 4562,
+    "gib_written": 96.75,
+    "usb_stable": true,
+    "code": "backup.blocked_package_activity",
+    "verify": false,
+    "full_validated": false
+  },
   "storage_io_stability_2026_05_15": {
     "evidence": "docs/evidence/runtime-results/BR-001-storage-io-stability-2026-05-15.json",
     "root_cause": "usb_1-2.1_disconnect_under_write",
