@@ -17,6 +17,8 @@ JOB_ID_RE = re.compile(r"^[a-zA-Z0-9._-]{1,80}$")
 ALLOWED_BACKUP_ROOTS: tuple[Path, ...] = (
     Path("/mnt/setuphelfer/backups").resolve(),
     Path("/media/gabriel/setuphelfer-back").resolve(),
+    # Gleiches externes Volume (sda1/ext4) — aktueller Mountpunkt laut lsblk/findmnt.
+    Path("/media/gabriel/setuphelfer-back1").resolve(),
 )
 # Abwärtskompatibel für Tests/Doku, die nur die erste Wurzel patchen.
 ALLOWED_BACKUP_ROOT = ALLOWED_BACKUP_ROOTS[0]

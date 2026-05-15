@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+_backend = Path(__file__).resolve().parent.parent
+if str(_backend) not in sys.path:
+    sys.path.insert(0, str(_backend))
+
 import argparse
 import atexit
 import hashlib

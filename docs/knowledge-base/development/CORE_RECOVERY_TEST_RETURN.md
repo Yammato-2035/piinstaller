@@ -8,15 +8,15 @@ Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery
 |---------|-------|---------|
 | Runtime-Deploy-Gate | grün | `runtime_gate.passed`, `deploy_drift` green |
 | pytest / CI Evidence | grün/gelb | 1624 passed lokal |
-| Release / BR-001 | **rot** | kein Full-Backup-Nachweis auf freigegebenem Medium |
+| Release / BR-001 | **gelb** | externes **Daten**-Backup + Verify auf `setuphelfer-back1` (2026-05-15); **Full** (`/`) noch offen |
 | APT/Packaging-Pipeline | **rot** | kein produktives Update-Channel |
-| Backup/Restore-Modul (Cockpit) | **rot** | BR-001-Kette |
+| Backup/Restore-Modul (Cockpit) | **gelb/rot** | Backup-Teilnachweis; Restore/Rescue rot |
 
 ## Phasen (Reihenfolge)
 
 1. **Governance stabil** — erledigt (Runtime-Gate, Evidence konsistent, kein Fake-Grün)
-2. **BR-001** — externes Backup auf freigegebenem Medium (außerhalb Cockpit; sudo/Zielpfad laut Runbook)
-3. **Verify** — gegen echtes Archiv (nach BR-001)
+2. **BR-001** — **teilvalidiert:** Daten-Backup + Verify auf `/media/gabriel/setuphelfer-back1` — siehe `docs/evidence/runtime-results/BR-001-external-validation-2026-05-15.md`
+3. **Verify** — für Lauf 2026-05-15 erledigt (deep, API)
 4. **Restore Preview** — Sandbox, keine Produktiv-Restore
 5. **Rescue Preview** — read-only / geplant
 6. **Hardware E2E** — nach Gate + BR-001-Evidence

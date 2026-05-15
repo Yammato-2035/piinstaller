@@ -1,0 +1,63 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "test_id": "BR-001",
+  "run_id": "BR-001-external-validation-2026-05-15",
+  "captured_at": "2026-05-15T19:23:28+02:00",
+  "status": "teilvalidiert",
+  "ampel": "gelb",
+  "summary": "Erstes echtes externes Daten-Backup (profile=recommended) auf freigegebenem Medium /media/gabriel/setuphelfer-back1 (/dev/sda1); API-Verify deep erfolgreich. Kein Full-Root-Backup (/). Restore/Rescue unverändert rot.",
+  "runtime_gate": {
+    "passed": true,
+    "deploy_drift": "green",
+    "safe_test_mode": "UNLOCKED",
+    "gate_script": "./scripts/check-runtime-deploy-gate.sh exit 0"
+  },
+  "target_medium": {
+    "device": "/dev/sda1",
+    "uuid": "adbd53e5-26fd-4723-b0f1-1880dbaa2719",
+    "fstype": "ext4",
+    "mountpoint": "/media/gabriel/setuphelfer-back1",
+    "free_gib_approx": 679,
+    "writable": true
+  },
+  "backup": {
+    "job_id": "9481e637d8db",
+    "api": "POST /api/backup/create",
+    "profile": "recommended",
+    "backup_type": "data",
+    "source": "/mnt/setuphelfer/test-data",
+    "backup_dir": "/media/gabriel/setuphelfer-back1",
+    "archive": "pi-backup-data-20260515_192328.tar.gz",
+    "archive_bytes": 570,
+    "archive_sha256": "489efb1e4966135485cec126fc0f591b44c740d8bf268dd1490161474035c5ff",
+    "manifest_in_archive": true,
+    "manifest_hash_runner": "sha256:a9dae7c78440cfd1a226e3561919e4b23233cbeb023251bb39346d1bd0b784b9",
+    "partial_deleted": true,
+    "duration_s_approx": 0.08,
+    "runner_mode": "helper",
+    "unit": "setuphelfer-backup@9481e637d8db.service"
+  },
+  "verify": {
+    "api": "POST /api/backup/verify",
+    "mode": "deep",
+    "code": "backup.verify_success",
+    "valid": true,
+    "file_count": 4
+  },
+  "blockers_remaining": [
+    "BR-001 Full-Backup (type=full, Quelle /) noch nicht ausgeführt",
+    "Restore-Preview / HW-E2E offen",
+    "Pfad /media/gabriel/setuphelfer-back ohne Mount — nicht als Schreibziel nutzbar"
+  ],
+  "fixes_applied_this_run": [
+    "SETUPHELFER_BACKUP_HELPER_PATH auf /opt/.../setuphelfer-backup-starter.py (back1 in ALLOWED_BACKUP_ROOTS)",
+    "systemd drop-in backup-target.conf: ReadWritePaths setuphelfer-back1 + PYTHONPATH",
+    "backup_runner.py: sys.path Bootstrap für systemd-ExecStart"
+  ],
+  "forbidden_not_used": [
+    "/mnt/setuphelfer/backups",
+    "/media/gabriel/setuphelfer-back (Write-Guard: Systemplatte)",
+    "restore",
+    "dry-run"
+  ]
+}

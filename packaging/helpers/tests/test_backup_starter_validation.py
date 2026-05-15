@@ -122,6 +122,12 @@ class TestBackupStarterValidation(unittest.TestCase):
         with patch.object(self.mod, "ALLOWED_BACKUP_ROOTS", (self.allowed, media_root.resolve())):
             self.assertTrue(self.mod._validate_backup_dir(str(media_root)))
 
+    def test_backup_dir_under_setuphelfer_back1_allowed_root_ok(self) -> None:
+        media_root = self.base / "media" / "gabriel" / "setuphelfer-back1"
+        media_root.mkdir(parents=True)
+        with patch.object(self.mod, "ALLOWED_BACKUP_ROOTS", (self.allowed, media_root.resolve())):
+            self.assertTrue(self.mod._validate_backup_dir(str(media_root)))
+
     def test_symlink_outside_allowed_rejected(self) -> None:
         outside = self.base / "other"
         outside.mkdir(parents=True, exist_ok=True)

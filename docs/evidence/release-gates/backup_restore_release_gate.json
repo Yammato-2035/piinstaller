@@ -19,7 +19,7 @@
     "notes": "CI grün ersetzt keinen BR-001-Nachweis auf Zielmedium."
   },
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010", "BR-011"],
-  "partial_br_ids": ["BR-012", "BR-013", "BR-016", "BR-017", "BR-018", "BR-019"],
-  "blocked_br_ids": ["BR-001"],
-  "notes": "BR-001 **failed/blocked** — kein erfolgreicher Full-Backup-Nachweis (siehe docs/evidence/backup-restore/BR-001.json). BR-004/005 blocked an BR-001-Kette. BR-012/013 gelb (Runner/EIO). Runtime-Gate 2026-05-15 grün. Kein Verify auf `.partial` nach EIO (BR-013). Kein Fake-Grün in Cockpit."
+  "partial_br_ids": ["BR-001", "BR-012", "BR-013", "BR-016", "BR-017", "BR-018", "BR-019"],
+  "blocked_br_ids": [],
+  "notes": "BR-001 **teilvalidiert (2026-05-15):** echtes externes Daten-Backup + Verify auf /media/gabriel/setuphelfer-back1 — docs/evidence/runtime-results/BR-001-external-validation-2026-05-15.md. Full-Backup (/) weiterhin offen. BR-004/005 weiter an Restore-Kette. Kein Fake-Grün."
 }
