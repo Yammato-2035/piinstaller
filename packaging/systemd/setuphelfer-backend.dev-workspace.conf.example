@@ -1,0 +1,8 @@
+# Optional: Deploy-Drift / Phase-0-Gate mit Workspace unter /home (ProtectHome=yes).
+# Installieren:
+#   SETUPHELFER_DEV_WORKSPACE_ROOT=/home/USER/piinstaller ./scripts/write-dev-workspace-systemd-dropin.sh
+# oder manuell nach /etc/systemd/system/setuphelfer-backend.service.d/dev-workspace.conf
+[Service]
+Environment="SETUPHELFER_DEV_WORKSPACE_ROOT=/home/USER/piinstaller"
+ReadOnlyPaths=/home/USER/piinstaller
+SupplementaryGroups=setuphelfer workspace

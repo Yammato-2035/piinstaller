@@ -57,11 +57,23 @@ tmp_api="$(mktemp)"
 tmp_dd="$(mktemp)"
 trap 'rm -f "$tmp_api" "$tmp_dd"' EXIT
 
+# Nach systemctl restart: kurz active/ss, aber Uvicorn noch nicht bereit (curl 7).
+API_RETRIES="${RUNTIME_GATE_API_RETRIES:-8}"
+API_SLEEP="${RUNTIME_GATE_API_SLEEP_SEC:-1}"
+
 http_code="000"
-http_code="$(curl -sS -o "$tmp_api" -w '%{http_code}' --connect-timeout 2 --max-time 8 "${BASE_URL}/api/version" || true)"
+for ((attempt = 1; attempt <= API_RETRIES; attempt++)); do
+  http_code="$(curl -sS -o "$tmp_api" -w '%{http_code}' --connect-timeout 2 --max-time 8 "${BASE_URL}/api/version" 2>/dev/null || echo 000)"
+  if [[ "$http_code" != "000" ]]; then
+    break
+  fi
+  if [[ "$attempt" -lt "$API_RETRIES" ]]; then
+    sleep "$API_SLEEP"
+  fi
+done
 
 if [[ "$http_code" == "000" ]]; then
-  log "check-runtime-deploy-gate: /api/version nicht erreichbar"
+  log "check-runtime-deploy-gate: /api/version nicht erreichbar (nach ${API_RETRIES} Versuchen; ggf. Dienst-Log: journalctl -u $SERVICE -n 30)"
   exit 11
 fi
 if [[ "$http_code" != "200" ]]; then
@@ -71,17 +83,28 @@ fi
 
 skip_dd="${RUNTIME_GATE_SKIP_DEPLOY_DRIFT:-}"
 if [[ "$skip_dd" == "1" ]]; then
-  if python3 "$EVAL_PY" --api-version-file "$tmp_api" --workspace-version-file "$WS_VER" --skip-deploy-drift; then
+  set +e
+  python3 "$EVAL_PY" --api-version-file "$tmp_api" --workspace-version-file "$WS_VER" --skip-deploy-drift
+  ec=$?
+  set -e
+  if [[ "$ec" -eq 0 ]]; then
     log "check-runtime-deploy-gate: OK (Version/Pfad; deploy_drift uebersprungen)"
     exit 0
   fi
-  ec=$?
-  log "check-runtime-deploy-gate: Evaluator Exit $ec"
+  log "check-runtime-deploy-gate: Evaluator Exit $ec (nicht bestanden)"
   exit "$ec"
 fi
 
 http_dd="000"
-http_dd="$(curl -sS -o "$tmp_dd" -w '%{http_code}' --connect-timeout 2 --max-time 12 "${BASE_URL}/api/dev-dashboard/status" || true)"
+for ((attempt = 1; attempt <= API_RETRIES; attempt++)); do
+  http_dd="$(curl -sS -o "$tmp_dd" -w '%{http_code}' --connect-timeout 2 --max-time 12 "${BASE_URL}/api/dev-dashboard/status" 2>/dev/null || echo 000)"
+  if [[ "$http_dd" == "200" ]]; then
+    break
+  fi
+  if [[ "$attempt" -lt "$API_RETRIES" ]]; then
+    sleep "$API_SLEEP"
+  fi
+done
 if [[ "$http_dd" != "200" ]]; then
   log "check-runtime-deploy-gate: /api/dev-dashboard/status HTTP $http_dd (oder nicht erreichbar)"
   exit 20
@@ -92,10 +115,13 @@ allow_gray=0
 py_args=(--api-version-file "$tmp_api" --workspace-version-file "$WS_VER" --dev-dashboard-file "$tmp_dd")
 [[ "$allow_gray" == "1" ]] && py_args+=(--allow-gray)
 
-if python3 "$EVAL_PY" "${py_args[@]}"; then
+set +e
+python3 "$EVAL_PY" "${py_args[@]}"
+ec=$?
+set -e
+if [[ "$ec" -eq 0 ]]; then
   log "check-runtime-deploy-gate: OK (Version, Pfad, deploy_drift/Manifest)"
   exit 0
 fi
-ec=$?
-log "check-runtime-deploy-gate: Evaluator Exit $ec"
+log "check-runtime-deploy-gate: Evaluator Exit $ec (nicht bestanden)"
 exit "$ec"

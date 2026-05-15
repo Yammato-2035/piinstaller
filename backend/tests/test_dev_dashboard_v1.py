@@ -1,6 +1,7 @@
 """Development Cockpit API — read-only, keine Backup-/Restore-Ausführung."""
 
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -108,6 +109,31 @@ class TestDevDashboardCore(unittest.TestCase):
         r3 = dd.action_placeholder_response("destroy-world")
         self.assertEqual(r3.get("status"), "error")
         self.assertEqual(r3.get("result"), "unknown_action")
+
+    def test_safe_is_file_permission_error_returns_false(self) -> None:
+        p = Path("/home/volker/piinstaller/config/version.json")
+
+        def boom(self: Path) -> bool:  # noqa: ANN001
+            if str(self) == str(p):
+                raise PermissionError(13, "Permission denied")
+            return Path.is_file(self)
+
+        with patch.object(Path, "is_file", boom):
+            self.assertFalse(dd._safe_is_file(p))
+
+    def test_effective_workspace_root_absolute_when_is_dir_blocked(self) -> None:
+        repo = Path("/opt/setuphelfer")
+        target = Path("/home/user/piinstaller")
+
+        def fake_is_dir(self: Path) -> bool:  # noqa: ANN001
+            if str(self) == str(target):
+                return False
+            return Path.is_dir(self)
+
+        with patch.object(Path, "is_dir", fake_is_dir):
+            with patch.dict(os.environ, {"SETUPHELFER_DEV_WORKSPACE_ROOT": str(target)}, clear=False):
+                got = dd._effective_workspace_root(repo)
+        self.assertEqual(got, target)
 
     def test_deploy_drift_same_root_gray(self) -> None:
         with tempfile.TemporaryDirectory() as td:

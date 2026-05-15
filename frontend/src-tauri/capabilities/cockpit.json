@@ -1,0 +1,6 @@
+{
+  "identifier": "cockpit-capability",
+  "description": "Externes Development Control Center — read-only Governance",
+  "windows": ["cockpit"],
+  "permissions": ["core:default", "shell:allow-open"]
+}

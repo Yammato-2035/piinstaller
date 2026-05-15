@@ -1,62 +1,61 @@
-# Setuphelfer Development Cockpit (intern)
+# Development Dashboard & Control Center
 
-**Matrix:** DEV-001 (Gelb) — siehe `docs/testing/DEVELOPMENT_COCKPIT_MATRIX.md`.
+Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 
-**Phase 0 (Pflicht vor Runtime-/Backup-/HW-Tests):** siehe `PHASE0_RUNTIME_GATE.md` und die Cursor-Regel `.cursor/rules/runtime-phase0-gate.mdc` — kein produktiver Testlauf ohne aktuelles Backend-/Paket-Gate.
+| Oberfläche | Zweck | Einstieg |
+|----------|--------|---------|
+| **Development Cockpit** (inline) | Modulboard, Roadmap, Detail-Panels | `?page=dev-dashboard` oder Sidebar (Browser-Fallback) |
+| **Development Control Center** (extern) | Live-Governance, 16-Bereiche-Matrix, Timeline | Tauri-Fenster `cockpit` oder `?window=cockpit` |
 
-**Live-Validierung 2026-05-15:** `docs/knowledge-base/development/DEVELOPMENT_DASHBOARD.md` — Deploy-Drift **green** mit `SETUPHELFER_DEV_WORKSPACE_ROOT`; Cockpit-APIs HTTP 200; Runtime-Gate im Cockpit **yellow** bei git-dirty Workspace und inaktivem systemd während manuellem Prozessstart.
+## Runtime vs. Standalone
 
-Dieses Verzeichnis indexiert **Prompts**, **Abschlussberichte** und **Modul-Metadaten** für das interne **Development Control Cockpit** (`GET /api/dev-dashboard/status` inkl. `runtime_gate`, `safe_test_mode`, `structure_health`, `roadmap`; `GET /api/dev-dashboard/prompt-findings`, `cursor-meta-prompt`; UI `DevelopmentDashboard.tsx`, Sidebar nur bei Entwickler-Profil). **Keine** Schreibaktionen, Backups, Restores, apt oder Deployments über das Cockpit.
+- **Runtime-API** (`source=runtime_api`): Backend unter `/opt/setuphelfer`, Endpunkte `/api/dev-dashboard/*`. Gates und Drift beziehen sich auf die produktive Installation.
+- **Standalone** (API offline): Workspace-Scan (Tauri) oder Snapshot (`frontend/public/dev-dashboard.snapshot.json`). **Safe Test Mode bleibt LOCKED** — keine Runtime-Tests, kein Backup/Restore.
 
-**Runtime vs. Workspace:** `GET /api/dev-dashboard/status` liefert zusätzlich die Objekte `runtime`, `workspace`, `frontend` und `consistency` (Versionsabgleich installierte API vs. Checkout vs. Frontend-Build). Optional: Query-Parameter `frontend_build_version`, `frontend_runtime_source` (`dev` \| `build` \| `unknown`). Wenn Backend unter `/opt/setuphelfer` läuft, der Checkout aber woanders liegt: Umgebungsvariable `SETUPHELFER_DEV_WORKSPACE_ROOT` auf das Repo-Root setzen. Details: `DEV_CLIENT_DE.md` / `DEV_CLIENT_EN.md`.
+## Phase-0-Gate (Pflicht vor Runtime-Arbeit)
 
-**Deploy-Drift:** Zusätzlich liefert `deploy_drift` einen read-only Abgleich **Workspace vs. produktiver Runtime-Baum** (`get_opt_install_dir()`, typisch `/opt/setuphelfer`): kleine Whitelist relevanter Dateien (Backend-Kern, `config/version.json`, ausgewählte Frontend-Quellen), SHA256 nur bis 384 KiB, darüber Groesse+mtime. Kein automatischer Deploy, kein Restart, keine Installation.
+```bash
+./scripts/check-runtime-deploy-gate.sh   # Exit 0
+```
 
-**Deployment-Manifest:** Schema und Generator (`backend/tools/generate_deploy_manifest.py`) schreiben `build/deploy/setuphelfer-deploy-manifest.json` (lokal, nicht versioniert — liegt unter `build/`). Das Cockpit liest Workspace- und Runtime-Manifest optional (`manifest_*`-Felder in `deploy_drift`) und vergleicht Hashes, ohne Bundles zu hashen. **`scripts/check-runtime-deploy-gate.sh`** wertet `deploy_drift`/Manifest im Gate aus; Pflichtreihenfolge siehe `docs/developer/CURSOR_WORK_RULES.md` und **PKG-001** (`docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md`).
+Voraussetzungen u. a.: `setuphelfer-backend.service` aktiv, `/api/version` HTTP 200, `project_version` = `config/version.json`, `deploy_drift` nicht blockierend, `backend_runtime_path` = `/opt/setuphelfer/backend`.
 
-- `modules/*.json` — maschinenlesbare Moduldefinitionen (Ampel, nächste Schritte, Blocker, Artefakt-Pfade).
-- `prompts/` — Ablage für wiederverwendbare Entwickler-Prompts (optional).
-- `reports/` — Kurzberichte / Session-Abschlüsse (optional).
+Bei `ProtectHome=yes` und Workspace unter `/home/...`:
 
-**Hinweis:** Markdown unter `docs/` wird im Dashboard primär **verlinkt** (Existenz-Check), nicht vollständig geparst.
+```bash
+sudo ./scripts/write-dev-workspace-systemd-dropin.sh
+sudo systemctl daemon-reload
+sudo systemctl restart setuphelfer-backend.service
+```
 
-## Konvention: Prompts
+## Deploy nach /opt
 
-- Speicherort: `docs/dev-dashboard/prompts/` (Dateiname z. B. `PROMPT_<thema>_<datum>.md` oder `.txt`).
-- Im Modul-JSON: Feld `prompt_files` als **Liste von Repo-relativen Pfaden** (keine eingebetteten Langtexte).
-- Wenn noch keine Prompt-Dateien existieren: Kurzindex `docs/dev-dashboard/reports/prompts-missing.md` verlinken und `prompt_files` leer lassen (keine Platzhalter-Riesenfiles).
-- Keine Log-Auszüge oder Shell-Transkripte direkt in `modules/*.json` ablegen — nur Verweis auf Datei.
+```bash
+sudo ./scripts/deploy-to-opt.sh /home/volker/piinstaller
+sudo systemctl restart setuphelfer-backend.service
+```
 
-## Konvention: Abschlussberichte
+Manifest erzeugen (Workspace):
 
-- Speicherort: `docs/dev-dashboard/reports/` (z. B. `SESSION_<datum>_<kurz>.md`).
-- Im Modul-JSON: Feld `report_files` mit relativen Pfaden.
-- Für release-relevante Feststellungen zusätzlich die bestehende Evidence-Struktur unter `docs/evidence/` nutzen und in `evidence_files` verlinken.
+```bash
+python3 backend/tools/generate_deploy_manifest.py
+```
 
-## Konvention: Module → Prompts/Berichte
+## Control Center starten
 
-- Jedes Modul in `modules/<slug>.json` hat eine stabile `id` (kebab-case, konsistent mit Dateiname empfohlen).
-- `artifacts[]` beschreibt Pfade mit `kind` (`doc`, `faq`, `kb`, `evidence`, `prompt`, `report`, `gate`, …) für Existenz-Checks in der API.
-- `children[]` optional: Unterpunkte mit eigener `id`, `status`, `summary` — **keine** tiefen Objekt-Bäume; maximal flache Liste.
+```bash
+cd frontend
+npm run tauri:dev-cockpit      # Tauri + Backend (empfohlen)
+npm run dev:cockpit             # nur Browser: ?window=cockpit
+npm run tauri:dev-standalone    # ohne Backend-Zwang
+```
 
-## Commit-Hashes
+In der Haupt-App (Tauri): Sidebar **„Control Center (extern)“** → `open_development_cockpit`.
 
-- Optionales Feld `commits`: Liste von Strings, z. B. `abc1234 Kurzbeschreibung` oder `abc1234` — manuell nach Merge pflegen, nicht automatisch aus CI schreiben.
+## Governance (kurz)
 
-## Nächste Schritte (`next_steps`)
+- **Matrix**: 16 Bereiche (runtime, backup, evidence, …) — Ampeln aus API/Modulen, kein Fake-Grün.
+- **Timeline**: lokale Historie (`localStorage`), echte Übergänge (grün/regression/api on/off).
+- **Prompt-Export**: Meta-Prompt mit Blockern, Work Order, Modulzuständen.
 
-- Kurze imperative Sätze oder Ticket-IDs, max. eine Zeile pro Eintrag.
-- Regelmäßig abhaken/ersetzen, wenn erledigt; veraltete Einträge vermeiden.
-
-## Nebenschritte / Blocker (`blockers`)
-
-- `blockers`: konkrete Hindernisse (Gate, HW, fehlende Evidence).
-- Feinere „Nebenschritte“ gehören in `next_steps` oder in Kinder-`summary` unter `children`, nicht in riesige `summary`-Felder der Wurzel.
-
-## API-Normalisierung
-
-- Unbekannte Ampel-Werte in JSON werden serverseitig auf `gray` gesetzt; Listenfelder fehlender Keys werden zu `[]`. Parser bleiben tolerant (kein 500 bei fehlenden Dateien).
-
-## Testlücken (Frontend)
-
-- Vollständige Interaktions- und Layout-Tests mit `@testing-library/react` + **jsdom** sind im Projekt derzeit **nicht** als Abhängigkeit vorgesehen. Smoke-Tests nutzen `react-dom/server` (`renderToStaticMarkup`) auf `DevDashboardBody` — keine echten Klicks, keine echten `fetch`-Calls in diesen Tests.
+Weitere Sprachen: [EXTERNAL_CONTROL_CENTER_DE.md](./EXTERNAL_CONTROL_CENTER_DE.md), [EXTERNAL_CONTROL_CENTER_EN.md](./EXTERNAL_CONTROL_CENTER_EN.md).

@@ -3941,22 +3941,26 @@ async def dev_dashboard_status(
     """Read-only: Development Cockpit Gesamtstatus (kein Backup/Restore)."""
     from core import dev_dashboard as dev_dashboard_core
 
-    for jid in list(BACKUP_JOBS.keys()):
-        _sync_stale_runner_job_from_systemd(jid)
-    running: list[dict[str, Any]] = []
-    for _job_id, job in BACKUP_JOBS.items():
-        status = job.get("status", "")
-        if status in ("queued", "running", "cancel_requested") or not status:
-            running.append(_job_snapshot(job))
-    pkg = _detect_active_package_operations()
-    fe_ver = (frontend_build_version or "").strip() or None
-    body = dev_dashboard_core.build_dashboard_status(
-        running_jobs=running,
-        package_activity=pkg,
-        frontend_build_version=fe_ver,
-        frontend_runtime_source=frontend_runtime_source,
-    )
-    return {"status": "success", "dashboard": body}
+    try:
+        for jid in list(BACKUP_JOBS.keys()):
+            _sync_stale_runner_job_from_systemd(jid)
+        running: list[dict[str, Any]] = []
+        for _job_id, job in BACKUP_JOBS.items():
+            status = job.get("status", "")
+            if status in ("queued", "running", "cancel_requested") or not status:
+                running.append(_job_snapshot(job))
+        pkg = _detect_active_package_operations()
+        fe_ver = (frontend_build_version or "").strip() or None
+        body = dev_dashboard_core.build_dashboard_status(
+            running_jobs=running,
+            package_activity=pkg,
+            frontend_build_version=fe_ver,
+            frontend_runtime_source=frontend_runtime_source,
+        )
+        return {"status": "success", "dashboard": body}
+    except Exception:
+        logger.exception("dev_dashboard_status failed")
+        raise
 
 
 @app.get("/api/dev-dashboard/modules")

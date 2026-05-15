@@ -2337,12 +2337,15 @@ dependencies = [
 
 [[package]]
 name = "pi-installer"
-version = "1.5.0"
+version = "1.7.1"
 dependencies = [
+ "serde",
+ "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-screenshots",
  "tauri-plugin-shell",
+ "url",
 ]
 
 [[package]]

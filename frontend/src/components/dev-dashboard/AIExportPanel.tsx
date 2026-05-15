@@ -5,9 +5,11 @@ import { fetchApi } from '../../api'
 
 type AIExportPanelProps = {
   statusQuery: string
+  apiReachable: boolean
+  standaloneMetaPrompt?: string
 }
 
-export function AIExportPanel({ statusQuery }: AIExportPanelProps) {
+export function AIExportPanel({ statusQuery, apiReachable, standaloneMetaPrompt }: AIExportPanelProps) {
   const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [prompt, setPrompt] = useState('')
@@ -15,6 +17,12 @@ export function AIExportPanel({ statusQuery }: AIExportPanelProps) {
   const loadPrompt = async () => {
     setLoading(true)
     try {
+      if (!apiReachable && standaloneMetaPrompt) {
+        setPrompt(standaloneMetaPrompt)
+        await navigator.clipboard?.writeText(standaloneMetaPrompt).catch(() => undefined)
+        toast.success(t('devDashboard.aiPrompt.copiedStandalone'))
+        return
+      }
       const r = await fetchApi(`/api/dev-dashboard/cursor-meta-prompt?${statusQuery}`)
       const d = await r.json().catch(() => ({}))
       if (d?.status === 'success' && typeof d.prompt === 'string') {
@@ -25,7 +33,13 @@ export function AIExportPanel({ statusQuery }: AIExportPanelProps) {
         toast.error(t('devDashboard.noData'))
       }
     } catch {
-      toast.error(t('devDashboard.noData'))
+      if (standaloneMetaPrompt) {
+        setPrompt(standaloneMetaPrompt)
+        await navigator.clipboard?.writeText(standaloneMetaPrompt).catch(() => undefined)
+        toast.success(t('devDashboard.aiPrompt.copiedStandalone'))
+      } else {
+        toast.error(t('devDashboard.noData'))
+      }
     } finally {
       setLoading(false)
     }
@@ -34,7 +48,9 @@ export function AIExportPanel({ statusQuery }: AIExportPanelProps) {
   return (
     <div className="rounded-xl border border-indigo-600/50 bg-indigo-950/20 p-4" data-testid="dev-dashboard-ai-export-panel">
       <h2 className="text-base font-semibold text-white">{t('devDashboard.aiPrompt.title')}</h2>
-      <p className="text-xs text-slate-300 mt-1">{t('devDashboard.aiPrompt.subtitle')}</p>
+      <p className="text-xs text-slate-300 mt-1">
+        {apiReachable ? t('devDashboard.aiPrompt.subtitle') : t('devDashboard.aiPrompt.subtitleStandalone')}
+      </p>
       <button
         type="button"
         className="btn-secondary mt-3 text-sm"

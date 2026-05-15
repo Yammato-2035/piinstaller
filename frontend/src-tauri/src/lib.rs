@@ -3,7 +3,37 @@ use std::process::Command;
 use std::thread;
 use std::time::Duration;
 
-use tauri::Manager;
+use tauri::{Manager, WebviewUrl};
+use tauri::webview::WebviewWindowBuilder;
+
+mod dev_dashboard_standalone;
+
+#[tauri::command]
+async fn open_development_cockpit(app: tauri::AppHandle) -> Result<String, String> {
+    const LABEL: &str = "cockpit";
+    if let Some(win) = app.get_webview_window(LABEL) {
+        let _ = win.unminimize();
+        let _ = win.show();
+        let _ = win.set_focus();
+        return Ok("focused".into());
+    }
+    let url = if cfg!(debug_assertions) {
+        WebviewUrl::External(
+            "http://localhost:5173/?window=cockpit"
+                .parse::<url::Url>()
+                .map_err(|e: url::ParseError| e.to_string())?,
+        )
+    } else {
+        WebviewUrl::App("index.html?window=cockpit".into())
+    };
+    WebviewWindowBuilder::new(&app, LABEL, url)
+        .title("SetupHelfer — Development Control Center")
+        .inner_size(1440.0, 900.0)
+        .min_inner_size(960.0, 600.0)
+        .build()
+        .map_err(|e| e.to_string())?;
+    Ok("opened".into())
+}
 
 #[tauri::command]
 fn exit_app() {
@@ -79,7 +109,9 @@ pub fn run() {
             exit_app,
             get_screenshots_output_dir,
             copy_screenshot_to,
-            launch_update_terminal
+            launch_update_terminal,
+            dev_dashboard_standalone::get_dev_dashboard_workspace_status,
+            open_development_cockpit
         ])
         .setup(|app| {
             let handle = app.handle().clone();

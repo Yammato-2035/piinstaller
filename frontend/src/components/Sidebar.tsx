@@ -8,6 +8,7 @@ import { useUIMode, type UIMode } from '../context/UIModeContext'
 import AppIcon from './AppIcon'
 import RiskLevelBadge from './RiskLevelBadge'
 import { getPageRisk } from '../config/riskLevels'
+import { openDevelopmentCockpit } from '../lib/devDashboard/openCockpit'
 import type { TFunction } from 'i18next'
 import {
   Shield,
@@ -92,7 +93,7 @@ function buildMenuItems(
     { id: 'learning', labelKey: 'sidebar.menu.learning', icon: BookOpen, modes: ['advanced'] },
     ...(appEdition === 'repo' ? [{ id: 'pi-installer-update', labelKey: 'sidebar.menu.setuphelferUpdate', icon: Upload, modes: ['advanced'] as UIMode[] }] : []),
     { id: 'devenv', labelKey: 'sidebar.menu.devenv', icon: Code, modes: ['advanced'], developerOnly: true },
-    { id: 'dev-dashboard', labelKey: 'sidebar.menu.devDashboard', icon: Terminal, modes: ['advanced', 'diagnose'], developerOnly: true },
+    { id: 'dev-dashboard', labelKey: 'sidebar.menu.devCockpit', icon: Terminal, modes: ['advanced', 'diagnose'], developerOnly: true },
     { id: 'mailserver', labelKey: 'sidebar.menu.mailserver', icon: Mail, modes: ['advanced'], developerOnly: true },
   ]
   if (isRaspberryPi) {
@@ -166,13 +167,30 @@ const SidebarComponent: React.FC<SidebarProps> = ({ currentPage, setCurrentPage,
     })
   }, [menuItems, mode, isBeginnerSidebar, experienceLevel])
   
-  const handlePageChange = useCallback((pageId: string) => {
-    try {
-      localStorage.removeItem(NEW_BADGE_KEY + pageId)
-      setNewBadges(prev => ({ ...prev, [pageId]: false }))
-    } catch { /* ignore */ }
-    setCurrentPage(pageId)
-  }, [setCurrentPage])
+  const handlePageChange = useCallback(
+    (pageId: string) => {
+      if (pageId === 'dev-dashboard') {
+        void openDevelopmentCockpit()
+          .then((r) => {
+            if (r === 'tauri' || r === 'window') {
+              toast(t('devDashboard.governance.cockpitOpened'), { icon: '🎛️', duration: 4000 })
+            } else {
+              setCurrentPage(pageId)
+            }
+          })
+          .catch(() => setCurrentPage(pageId))
+        return
+      }
+      try {
+        localStorage.removeItem(NEW_BADGE_KEY + pageId)
+        setNewBadges(prev => ({ ...prev, [pageId]: false }))
+      } catch {
+        /* ignore */
+      }
+      setCurrentPage(pageId)
+    },
+    [setCurrentPage, t],
+  )
   
   const handleThemeChange = useCallback((newTheme: Theme) => {
     setTheme(newTheme)

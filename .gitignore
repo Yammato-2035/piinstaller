@@ -42,8 +42,10 @@ frontend/src-tauri/target/
 logs/
 *.log
 
-# IDE / Editor
-.cursor/
+# IDE / Editor (Cursor: Projektregeln unter .cursor/rules/ versionieren)
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 .idea/
 .vscode/
 *.swp

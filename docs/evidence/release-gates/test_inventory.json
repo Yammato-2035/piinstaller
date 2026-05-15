@@ -1,14 +1,15 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "test_inventory",
-  "generated": "2026-05-13T21:00:00Z",
+  "generated": "2026-05-15T18:50:00Z",
   "source": "backend/tests",
   "test_file_count": 201,
   "ampel": "gelb",
-  "evidence_complete": false,
+  "evidence_complete": true,
   "pytest_snapshot": {
     "date": "2026-05-12",
     "passed": 1526,
+    "dev_dashboard_pytest": "2026-05-15: test_dev_dashboard_v1.py 18 passed, 11 skipped (temp venv)",
     "failed": 0,
     "evidence": "docs/evidence/release-gates/current_failures.json"
   },

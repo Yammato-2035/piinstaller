@@ -24,7 +24,9 @@ wait_for_backend() {
   return 1
 }
 
-if curl -sS --max-time 2 "$BACKEND_URL/api/version" >/dev/null 2>&1; then
+if [ "${SETUPHELFER_TAURI_STANDALONE:-}" = "1" ] || [ "${PI_INSTALLER_TAURI_STANDALONE:-}" = "1" ]; then
+  echo "[Tauri-Dev] Standalone-Modus: Backend wird nicht gestartet (Development Cockpit Workspace-Fallback)."
+elif curl -sS --max-time 2 "$BACKEND_URL/api/version" >/dev/null 2>&1; then
   : # Backend läuft
 else
   echo "[Tauri-Dev] Backend nicht erreichbar – starte Backend..."

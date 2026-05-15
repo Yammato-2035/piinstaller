@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { RefreshCw, Terminal } from 'lucide-react'
-import { fetchApi, getApiBase, normalizeApiBaseUrl } from '../api'
+import { fetchApi, normalizeApiBaseUrl } from '../api'
 import PageHeader from '../components/layout/PageHeader'
 import { DevDashboardBody, type DashboardPayload, type ModuleRow } from './DevDashboardBody'
 import { RuntimeWorkspacePanel } from './DevDashboardBody'
-import { matchesFilter, type FilterKey } from './devDashboardFilters'
+import type { FilterKey } from './devDashboardFilters'
 import { StatusCard } from '../components/dev-dashboard/StatusCard'
 import { RuntimeGatePanel } from '../components/dev-dashboard/RuntimeGatePanel'
 import { DeployDriftPanel } from '../components/dev-dashboard/DeployDriftPanel'
@@ -20,6 +20,9 @@ import { CommitHygienePanel } from '../components/dev-dashboard/CommitHygienePan
 import { DocsConsistencyPanel } from '../components/dev-dashboard/DocsConsistencyPanel'
 import { RoadmapDrawer } from '../components/dev-dashboard/RoadmapDrawer'
 import { AIExportPanel } from '../components/dev-dashboard/AIExportPanel'
+import { StandaloneModeBanner } from '../components/dev-dashboard/StandaloneModeBanner'
+import { getApiBaseLabel, loadDevDashboard } from '../lib/devDashboard/loadDevDashboard'
+import type { DevDashboardCapabilities, DevDashboardDataSource } from '../lib/devDashboard/types'
 
 type SidebarSection = 'overview' | 'gates' | 'structure' | 'roadmap' | 'modules'
 
@@ -34,6 +37,18 @@ const DevelopmentDashboard: React.FC = () => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [apiBaseDisplay, setApiBaseDisplay] = useState('')
+  const [dataSource, setDataSource] = useState<DevDashboardDataSource>('unavailable')
+  const [apiReachable, setApiReachable] = useState(false)
+  const [capabilities, setCapabilities] = useState<DevDashboardCapabilities>({
+    runtimeApi: false,
+    workspaceAnalysis: false,
+    structureHealth: false,
+    roadmap: false,
+    promptExport: true,
+    runtimeTests: false,
+  })
+  const [workspaceRoot, setWorkspaceRoot] = useState<string | undefined>()
+  const [standaloneMetaPrompt, setStandaloneMetaPrompt] = useState<string | undefined>()
 
   const statusQuery = useMemo(() => {
     const params = new URLSearchParams()
@@ -44,27 +59,23 @@ const DevelopmentDashboard: React.FC = () => {
     return params.toString()
   }, [])
 
-  const devDashboardStatusUrl = useCallback(
-    () => `/api/dev-dashboard/status?${statusQuery}`,
-    [statusQuery],
-  )
-
   const loadAll = useCallback(async () => {
     setLoading(true)
     try {
-      const base = getApiBase()
+      const base = getApiBaseLabel()
       setApiBaseDisplay(base ? normalizeApiBaseUrl(base) : t('app.apiConsistency.apiBase.sameOrigin'))
-      const [r1, r2, r3] = await Promise.all([
-        fetchApi(devDashboardStatusUrl()),
-        fetchApi('/api/dev-dashboard/modules'),
-        fetchApi('/api/dev-dashboard/evidence-index'),
-      ])
-      const d1 = await r1.json().catch(() => ({}))
-      const d2 = await r2.json().catch(() => ({}))
-      const d3 = await r3.json().catch(() => ({}))
-      setDashboard((d1?.dashboard as DashboardPayload) ?? null)
-      setModules(Array.isArray(d2?.modules) ? (d2.modules as ModuleRow[]) : [])
-      setEvidenceIndex(d3 && typeof d3 === 'object' ? (d3 as Record<string, unknown>) : null)
+      const result = await loadDevDashboard(statusQuery)
+      setDashboard(result.dashboard)
+      setModules(result.modules)
+      setEvidenceIndex(result.evidenceIndex)
+      setDataSource(result.source)
+      setApiReachable(result.apiReachable)
+      setCapabilities(result.capabilities)
+      setWorkspaceRoot(result.workspaceRoot)
+      setStandaloneMetaPrompt(result.metaPrompt)
+      if (!result.apiReachable && result.source !== 'runtime_api') {
+        toast(t('devDashboard.standalone.toastOffline'), { icon: '⚠️', duration: 6000 })
+      }
     } catch {
       toast.error(t('devDashboard.noData'))
       setDashboard(null)
@@ -73,13 +84,17 @@ const DevelopmentDashboard: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }, [t, devDashboardStatusUrl])
+  }, [t, statusQuery])
 
   useEffect(() => {
     void loadAll()
   }, [loadAll])
 
   const postAction = async (path: string) => {
+    if (!apiReachable || dataSource !== 'runtime_api') {
+      toast.error(t('devDashboard.standalone.runtimeTestsLocked'))
+      return
+    }
     try {
       const r = await fetchApi(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
       const d = await r.json().catch(() => ({}))
@@ -95,6 +110,10 @@ const DevelopmentDashboard: React.FC = () => {
   const rg = (dashboard?.runtime_gate as Record<string, unknown>) || {}
   const stm = (dashboard?.safe_test_mode as Record<string, unknown>) || {}
   const sh = (dashboard?.structure_health as Record<string, unknown>) || {}
+  const runtimeGateLabel =
+    !apiReachable || rg.passed === false
+      ? t('devDashboard.standalone.blocked')
+      : String(rg.status ?? '—')
 
   const navBtn = (id: SidebarSection, label: string) => (
     <button
@@ -116,6 +135,13 @@ const DevelopmentDashboard: React.FC = () => {
         title={t('devDashboard.title')}
         subtitle={t('devDashboard.subtitle')}
         badge={<Terminal className="text-violet-400 shrink-0" size={28} aria-hidden />}
+      />
+
+      <StandaloneModeBanner
+        source={dataSource}
+        apiReachable={apiReachable}
+        capabilities={capabilities}
+        workspaceRoot={workspaceRoot}
       />
 
       <div className="rounded-lg border border-amber-700/50 bg-amber-950/30 px-4 py-3 text-sm text-amber-100 mb-4">
@@ -142,13 +168,13 @@ const DevelopmentDashboard: React.FC = () => {
           <div className="grid md:grid-cols-3 gap-4" data-testid="dev-dashboard-status-cards">
             <StatusCard
               label={t('devDashboard.runtimeGate.title')}
-              value={String(rg.status ?? '—')}
-              tone={String(rg.status || 'gray')}
+              value={runtimeGateLabel}
+              tone={!apiReachable || rg.passed === false ? 'red' : String(rg.status || 'gray')}
               testId="dev-dashboard-runtime-gate-summary"
             />
             <StatusCard
               label={t('devDashboard.safeTestMode.title')}
-              value={String(stm.mode ?? '—')}
+              value={String(stm.mode ?? 'LOCKED')}
               tone={stm.locked ? 'red' : 'green'}
               testId="dev-dashboard-safe-test-summary"
             />
@@ -178,7 +204,11 @@ const DevelopmentDashboard: React.FC = () => {
               <EvidencePanel dashboard={dashboard} t={t} />
               <CommitHygienePanel dashboard={dashboard} t={t} />
               <DocsConsistencyPanel dashboard={dashboard} t={t} />
-              <AIExportPanel statusQuery={statusQuery} />
+              <AIExportPanel
+                statusQuery={statusQuery}
+                apiReachable={apiReachable}
+                standaloneMetaPrompt={standaloneMetaPrompt}
+              />
             </>
           )}
 

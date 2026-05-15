@@ -32,12 +32,27 @@ def _repo_root() -> Path:
 
 def _safe_read_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
     try:
-        if not path.is_file():
+        if not _safe_is_file(path):
             return None, f"missing:{path}"
         raw = path.read_text(encoding="utf-8", errors="replace")
         return json.loads(raw), None
     except Exception as exc:  # noqa: BLE001
         return None, f"read_error:{path}:{exc}"
+
+
+def _safe_is_file(path: Path) -> bool:
+    """is_file() ohne PermissionError (systemd ProtectHome auf Workspace unter /home)."""
+    try:
+        return path.is_file()
+    except OSError:
+        return False
+
+
+def _safe_is_dir(path: Path) -> bool:
+    try:
+        return path.is_dir()
+    except OSError:
+        return False
 
 
 def _walk_files_under(base: Path, *, rel_root: Path | None, max_files: int = 400) -> list[dict[str, Any]]:
@@ -94,6 +109,37 @@ def _git_summary(repo: Path) -> dict[str, Any] | None:
         return None
 
 
+def _configured_workspace_path(raw: str) -> Path | None:
+    """
+    Workspace-Pfad aus Env oder .env.
+
+    Unter systemd (ProtectHome=yes) kann is_dir() auf /home/... fehlschlagen, obwohl der Pfad
+    per ReadOnlyPaths freigegeben ist — absoluter konfigurierter Pfad wird dann trotzdem genutzt.
+    """
+    s = (raw or "").strip()
+    if not s:
+        return None
+    try:
+        p = Path(s).expanduser()
+        try:
+            p = p.resolve()
+        except OSError:
+            pass
+    except OSError:
+        return None
+    try:
+        if p.is_dir():
+            return p
+    except OSError:
+        pass
+    try:
+        if p.is_absolute() and len(p.parts) >= 2:
+            return p
+    except OSError:
+        pass
+    return None
+
+
 def _workspace_root_from_dotenv(repo: Path) -> Path | None:
     """Liest SETUPHELFER_DEV_WORKSPACE_ROOT aus repo/.env (typ. /opt/setuphelfer/.env)."""
     env_path = repo / ".env"
@@ -108,10 +154,7 @@ def _workspace_root_from_dotenv(repo: Path) -> Path | None:
             if key.strip() != "SETUPHELFER_DEV_WORKSPACE_ROOT":
                 continue
             raw = val.strip().strip('"').strip("'")
-            if not raw:
-                return None
-            p = Path(raw).expanduser().resolve()
-            return p if p.is_dir() else None
+            return _configured_workspace_path(raw)
     except OSError:
         return None
     return None
@@ -128,12 +171,9 @@ def _effective_workspace_root(repo: Path) -> Path:
         if dot is not None:
             return dot
         return repo
-    try:
-        p = Path(raw).expanduser().resolve()
-        if p.is_dir():
-            return p
-    except OSError:
-        pass
+    cfg = _configured_workspace_path(raw)
+    if cfg is not None:
+        return cfg
     return repo
 
 
@@ -328,7 +368,7 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
             mf=mf,
         )
 
-    if not rt_r.is_dir():
+    if not _safe_is_dir(rt_r):
         dd_warnings.append("runtime_root_not_a_directory")
         mf = manifest_drift_for_roots(workspace_root=ws_r, runtime_root=None)
         base = {
@@ -356,8 +396,23 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
         if ".." in rel.split("/"):
             dd_warnings.append(f"deploy_drift_invalid_rel:{rel}")
             continue
-        wp = (ws_r / rel).resolve()
-        rp = (rt_r / rel).resolve()
+        try:
+            wp = (ws_r / rel).resolve()
+            rp = (rt_r / rel).resolve()
+        except OSError as exc:
+            checked.append(
+                {
+                    "relative_path": rel,
+                    "workspace_path": str(ws_r / rel),
+                    "runtime_path": str(rt_r / rel),
+                    "workspace_sha256": None,
+                    "runtime_sha256": None,
+                    "matches": None,
+                    "reason": f"resolve_error:{exc}",
+                }
+            )
+            dd_warnings.append(f"resolve:{rel}:{exc}")
+            continue
         if not _path_must_be_under(ws_r, wp) or not _path_must_be_under(rt_r, rp):
             checked.append(
                 {
@@ -382,8 +437,8 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
             "matches": None,
             "reason": None,
         }
-        ws_exists = wp.is_file()
-        rt_exists = rp.is_file()
+        ws_exists = _safe_is_file(wp)
+        rt_exists = _safe_is_file(rp)
         if not ws_exists:
             missing_ws.append(rel)
             entry["reason"] = "missing_workspace"
@@ -468,7 +523,7 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
     else:
         drift_status = "yellow"
 
-    mf = manifest_drift_for_roots(workspace_root=ws_r, runtime_root=rt_r if rt_r.is_dir() else None)
+    mf = manifest_drift_for_roots(workspace_root=ws_r, runtime_root=rt_r if _safe_is_dir(rt_r) else None)
     base = {
         "workspace_root": str(ws_r),
         "runtime_root": str(rt_r),
@@ -580,7 +635,7 @@ def _build_runtime_workspace_sections(
         warnings.append("workspace_root_from_env:SETUPHELFER_DEV_WORKSPACE_ROOT")
 
     ws_pv, ws_rs, ws_vt = _read_workspace_version_info(ws_root)
-    if ws_pv is None and (ws_root / "config" / "version.json").is_file():
+    if ws_pv is None and _safe_is_file(ws_root / "config" / "version.json"):
         warnings.append("workspace_version_unreadable")
 
     git_detail = _git_workspace_detail(ws_root)

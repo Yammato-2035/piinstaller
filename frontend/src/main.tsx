@@ -2,6 +2,8 @@ import React, { Component, ErrorInfo, ReactNode } from 'react'
 import ReactDOM from 'react-dom/client'
 import i18n from './i18n'
 import App from './App'
+import CockpitApp from './CockpitApp'
+import { isCockpitWindow } from './lib/devDashboard/cockpitWindow'
 import './index.css'
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -34,7 +36,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      {isCockpitWindow() ? <CockpitApp /> : <App />}
     </ErrorBoundary>
   </React.StrictMode>,
 )
