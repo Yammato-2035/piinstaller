@@ -2,22 +2,28 @@
 
 Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery-Tests **ohne** Cockpit-Features.
 
-## Status 2026-05-15
+## Status 2026-05-16 (BR-001 Full Root + Verify Deep — Versuch)
 
 | Bereich | Ampel | Ehrlich |
 |---------|-------|---------|
-| Runtime-Deploy-Gate | grün | `runtime_gate.passed`, `deploy_drift` green |
-| pytest / CI Evidence | grün/gelb | 1624 passed lokal |
-| Release / BR-001 | **gelb/rot** | Daten-Backup + Verify **grün**; Full-Root: USB-Fix OK, Retry 76 min ~97 GiB dann **apt-get**-Abbruch — `BR-001-full-root-retry-controlled-2026-05-15.md` |
+| Runtime-Deploy-Gate | grün | Phase 0: `./scripts/check-runtime-deploy-gate.sh` Exit 0; Cockpit-API `runtime_gate.passed`, `deploy_drift` green, `safe_test_mode` UNLOCKED |
+| pytest / CI Evidence | grün/gelb | wie zuvor; auf diesem Runner oft kein `pytest`-Modul installiert |
+| Release / BR-001 Full Root + Verify Deep | **rot (blockiert)** | **Kein** vollständiges externes Full-Root-Archiv und **kein** Verify deep in diesem Lauf: siehe `docs/evidence/runtime-results/handoff/BR001_full_root_validation_attempt_2026-05-16.json` |
 | APT/Packaging-Pipeline | **rot** | kein produktives Update-Channel |
-| Backup/Restore-Modul (Cockpit) | **gelb/rot** | Backup-Teilnachweis; Restore/Rescue rot |
+| Backup/Restore-Modul (Cockpit) | **gelb/rot** | Restore/Rescue unverändert rot |
+
+### Blocker (ehrlich, kein Fake-Grün)
+
+1. **Externes Ziel vs. Dienstbenutzer:** USB ist unter `/media/gabriel/Backup` gemountet (**0700** `gabriel:gabriel`). Der Backend-Dienst läuft als **`User=setuphelfer`** und kann diesen Pfad **nicht** lesen/schreiben → API-`POST /api/backup/create` mit externem Medium scheitert hier ohne Betreiber-Anpassung (ACL/Gruppe/eigenes Mount unter `/mnt/setuphelfer/…`).
+2. **Default `backup_dir`:** `/mnt/setuphelfer/backups` liegt auf **/** (internes NVMe) — für diesen STRICT-Lauf **kein** Ersatz für „externes Medium“.
+3. **Package-Freeze:** `systemctl stop` der apt-Timer in dieser Session **nicht** ausgeführt (interaktives `sudo`-Passwort nötig). Vor einem echten Lauf wie in der Runbook-Vorgabe mit `pkexec`/Konsole nachholen.
 
 ## Phasen (Reihenfolge)
 
 1. **Governance stabil** — erledigt (Runtime-Gate, Evidence konsistent, kein Fake-Grün)
 2. **BR-001 Daten** — validiert: `docs/evidence/runtime-results/BR-001-external-validation-2026-05-15.md`
-3. **BR-001 Full Root** — **failed** (2 Läufe: USB-Disconnect; Retry USB-stabil, mintupdate-Kollision) — Storage: `docs/knowledge-base/storage/BR-001-external-hdd-usb-stability.md`
-4. **Verify Full** — offen (kein fertiges Archiv)
+3. **BR-001 Full Root** — **failed** (2 Läufe: USB-Disconnect; Retry USB-stabil, mintupdate-Kollision) — Storage: `docs/knowledge-base/storage/BR-001-external-hdd-usb-stability.md`; **2026-05-16:** erneuter Final-Versuch **blockiert** (Mount-Rechte + Freeze nicht automatisierbar)
+4. **Verify Full** — offen (kein fertiges externes Full-Root-Archiv aus diesem Lauf)
 5. **Restore Preview** — Sandbox, keine Produktiv-Restore
 6. **Rescue Preview** — read-only / geplant
 7. **Hardware E2E** — nach Gate + BR-001-Evidence

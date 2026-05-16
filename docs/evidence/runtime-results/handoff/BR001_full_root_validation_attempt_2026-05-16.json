@@ -1,0 +1,62 @@
+{
+  "title": "BR-001 Full Root + Verify Deep — Versuch / Abnahme-Status",
+  "date_local": "2026-05-16",
+  "abnahme_erreicht": false,
+  "phase0_runtime_gate": {
+    "check_runtime_deploy_gate_exit": 0,
+    "runtime_gate_passed": true,
+    "deploy_drift_status": "green",
+    "safe_test_mode": "UNLOCKED"
+  },
+  "phase1_storage_snapshot": {
+    "usb_topology_lsusb_t": "Bus 006 Mass Storage Driver=uas 5000M (HGST USB)",
+    "root_mount": "/dev/nvme0n1p2 on / ext4 rw,errors=remount-ro",
+    "external_ext4": {
+      "device": "/dev/sda1",
+      "uuid": "44ce6f76-7896-4623-87b0-d81aedbed6d5",
+      "model": "HGST HTS721010A9E630",
+      "mount": "/media/gabriel/Backup",
+      "fstype": "ext4",
+      "size_df": "~917G total, ~880G avail (1% used)"
+    },
+    "smartctl": "Permission denied without elevated rights",
+    "dmesg_tail": "empty_or_unprivileged_in_this_context",
+    "journalctl_kernel": "no_entries_or_unprivileged"
+  },
+  "phase2_package_freeze": {
+    "requested_timers": [
+      "mintupdate-automation-upgrade.timer",
+      "apt-daily.timer",
+      "apt-daily-upgrade.timer"
+    ],
+    "executed": false,
+    "reason": "sudo -n systemctl stop requires password in this non-interactive session"
+  },
+  "phase4_blocker": {
+    "code": "BACKUP_TARGET_SERVICE_USER_USB_ACL",
+    "detail": "POST /api/backup/create runs as User=setuphelfer. Mount /media/gabriel/Backup is mode 0700 owner gabriel:gabriel — setuphelfer cannot traverse or write. Default configured backup_dir /mnt/setuphelfer/backups is on internal nvme (/) — rejected for this STRICT run (externes Medium required).",
+    "unattended_upgrade_shutdown_present": true,
+    "note_readonly_exclusion": "unattended-upgrade-shutdown excluded from package_activity blocking per package_activity.py"
+  },
+  "phase5_verify_deep": {
+    "executed": false,
+    "reason": "No completed full-root archive on allowed external path"
+  },
+  "phase6_timer_restore": {
+    "note": "Timers were not stopped in this session; no restart required"
+  },
+  "constraints_confirmed": {
+    "no_restore": true,
+    "no_sandbox_restore": true,
+    "no_hardware_test": true,
+    "no_internal_target_for_this_strict_run": true,
+    "no_apt_install_upgrade": true,
+    "no_auto_deploy": true,
+    "no_fake_verify": true
+  },
+  "operator_next_steps": [
+    "Either chmod/ACL on external backup root so setuphelfer can write (e.g. group setuphelfer + g+rwX, or dedicated subdirectory owned by setuphelfer:setuphelfer), or mount USB under /mnt/setuphelfer/... per product conventions with correct ownership.",
+    "Stop apt-related timers with pkexec/sudo during maintenance window, then start full backup with backup_dir pointing at writable external path and confirm_full_expert + async as required.",
+    "After success: POST /api/backup/verify with mode=deep on final .tar.gz path."
+  ]
+}
