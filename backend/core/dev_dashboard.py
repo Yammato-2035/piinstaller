@@ -897,12 +897,12 @@ def _enrich_artifacts(repo: Path, mod: dict[str, Any]) -> dict[str, Any]:
 def _backup_target_preview_safe() -> dict[str, Any]:
     """Read-only Hinweis aus backup.json + preview_backup_target_access (keine Schreibprobe)."""
     try:
-        from core.backup_target_service_access import preview_backup_target_access, read_configured_backup_dir
+        from core.backup_target_service_access import inspect_backup_target_mount, read_configured_backup_dir
 
         bd = read_configured_backup_dir()
         if not bd:
             return {"configured": False, "preview": None}
-        return {"configured": True, "preview": preview_backup_target_access(bd)}
+        return {"configured": True, "preview": inspect_backup_target_mount(bd)}
     except Exception as exc:  # noqa: BLE001
         return {"configured": None, "preview": None, "error": str(exc)}
 

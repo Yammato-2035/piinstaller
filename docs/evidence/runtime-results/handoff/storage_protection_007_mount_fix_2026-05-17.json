@@ -1,0 +1,10 @@
+{
+  "title": "STORAGE-PROTECTION-001 false positive fix for /media/setuphelfer",
+  "date": "2026-05-17",
+  "root_cause": "Missing path /media/setuphelfer/br001: _find_existing_anchor walks to /media on root filesystem; classify as system disk → misleading STORAGE-PROTECTION-001",
+  "fix": "STORAGE-PROTECTION-007 preflight for paths under /media/setuphelfer when anchor is system disk and target missing",
+  "operator_script": "scripts/operator/setup-external-backup-target.sh",
+  "kb": "docs/knowledge-base/storage/external-backup-target-mount.md",
+  "security": "no_weakening_of_write_guard",
+  "target_check_after_operator_mount": "operator_must_run_sudo_script_then_expect_success"
+}

@@ -19,6 +19,8 @@ if str(_backend) not in sys.path:
 
 from core.safe_device import (
     WriteTargetProtectionError,
+    inspect_write_target_mount,
+    is_under_setuphelfer_product_media,
     list_classified_devices,
     validate_write_target,
     write_safe_prefixes_resolved,
@@ -135,6 +137,62 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
         foreign = [d for d in devs if d.is_foreign_os_disk]
         self.assertEqual(len(foreign), 1)
         self.assertFalse(foreign[0].is_write_allowed)
+
+    @patch("core.safe_device._assert_media_tree_traversable", lambda _p: None)
+    def test_setuphelfer_missing_path_raises_007_not_001(self) -> None:
+        """Fehlendes /media/setuphelfer/br001 darf nicht als Systemplatten-001 erscheinen."""
+
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["lsblk", "-J"]:
+                return CompletedProcess(argv, 0, json.dumps(_lsblk_system_disk()), "")
+            if argv[:3] == ["findmnt", "-J", "-T"]:
+                body = {
+                    "filesystems": [
+                        {"source": "/dev/nvme0n1p1", "target": "/media", "fstype": "ext4"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 1, "", "")
+
+        with self.assertRaises(WriteTargetProtectionError) as ctx:
+            validate_write_target("/media/setuphelfer/br001", runner=fake_run)
+        self.assertEqual(ctx.exception.diagnosis_id, "STORAGE-PROTECTION-007")
+        self.assertTrue(is_under_setuphelfer_product_media("/media/setuphelfer/br001"))
+
+    @patch("core.safe_device._assert_media_tree_traversable", lambda _p: None)
+    def test_setuphelfer_bind_mount_path_allowed(self) -> None:
+        base = Path("/tmp/setuphelfer-test")
+        base.mkdir(parents=True, exist_ok=True)
+        mount = tempfile.mkdtemp(prefix="sh-media-", dir=str(base))
+        target = Path(mount) / "br001"
+        target.mkdir()
+        self.addCleanup(lambda: shutil.rmtree(mount, ignore_errors=True))
+
+        def fake_anchor(path: Path) -> Path:
+            if str(path).startswith("/media/setuphelfer"):
+                return Path(mount)
+            return path
+
+        def fake_run(argv, **kwargs):
+            if argv[:2] == ["lsblk", "-J"]:
+                return CompletedProcess(argv, 0, json.dumps(_lsblk_safe_usb(mount)), "")
+            if argv[:3] == ["findmnt", "-J", "-T"]:
+                body = {
+                    "filesystems": [
+                        {"source": "/dev/sdb1", "target": mount, "fstype": "ext4"},
+                    ]
+                }
+                return CompletedProcess(argv, 0, json.dumps(body), "")
+            return CompletedProcess(argv, 1, "", "")
+
+        with patch("core.safe_device._find_existing_anchor", side_effect=fake_anchor):
+            validate_write_target("/media/setuphelfer/br001", runner=fake_run)
+
+    def test_inspect_write_target_mount_predicts_007(self) -> None:
+        with patch("core.safe_device._assert_media_tree_traversable", lambda _p: None):
+            with patch("core.safe_device._mount_anchor_is_system_disk", return_value=True):
+                out = inspect_write_target_mount("/media/setuphelfer/br001", runner=None)
+        self.assertEqual(out.get("would_block_diagnosis_id"), "STORAGE-PROTECTION-007")
 
     def test_validate_blocks_system_disk_source(self) -> None:
         mount = "/tmp/setuphelfer-test/safe-dev-v1-mnt"

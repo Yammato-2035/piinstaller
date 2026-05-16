@@ -21,6 +21,7 @@ Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery
 5. **BR-001 Final Full Root (2026-05-16):** **nicht ausgeführt** — Host ohne angelegtes **`/media/setuphelfer/<label>`**; kein interaktives `sudo` in der Agent-Session; `target-check` auf Planpfad liefert **`STORAGE-PROTECTION-001`** (Ziel nicht als externes Block-FS valide / nicht vorhanden). Evidence: `docs/evidence/runtime-results/handoff/BR001_final_full_root_execution_preflight_2026-05-16.json`.
 6. **Operator-Handoff (2026-05-16):** Vollständige Copy/Paste-Sequenz liegt unter **`docs/evidence/runtime-results/handoff/BR001_operator_final_execution_handoff.md`** — BR-001 bleibt fachlich **offen**, bis der Betreiber die Schritte ausführt und Evidence schreibt.
 7. **Ausführungsversuch (2026-05-17, Agent):** **STOP in Phase 0** — `/media/setuphelfer/br001` fehlt; `target-check` → **STORAGE-PROTECTION-001**; USB nur unter `/media/gabriel/Backup` (nicht als BR-001-Ziel nutzbar). Evidence: `docs/evidence/runtime-results/handoff/BR001_operator_execution_blocked_2026-05-17.json`.
+8. **Mount-Diagnose (2026-05-17):** **STORAGE-PROTECTION-007** statt irreführendem **001** bei fehlendem externen Mount; Operator-Skript **`scripts/operator/setup-external-backup-target.sh`** + KB **`external-backup-target-mount.md`**. `target-check` **success** erst nach Betreiber-Mount.
 
 ## Phasen (Reihenfolge)
 

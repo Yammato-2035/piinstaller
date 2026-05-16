@@ -22,6 +22,7 @@ from typing import Any
 BACKUP_TARGET_PERMISSION_001 = "BACKUP-TARGET-PERMISSION-001"
 BACKUP_TARGET_NOT_WRITABLE_002 = "BACKUP-TARGET-NOT-WRITABLE-002"
 BACKUP_TARGET_USER_MOUNT_003 = "BACKUP-TARGET-USER-MOUNT-003"
+BACKUP_TARGET_EXTERNAL_MOUNT_004 = "BACKUP-TARGET-EXTERNAL-MOUNT-004"
 
 _RE_DIAG = re.compile(r"^(BACKUP-TARGET-[A-Z0-9-]+):\s*(.*)$", re.DOTALL)
 
@@ -117,6 +118,24 @@ def assert_backup_target_writable_for_service(resolved: Path) -> None:
     raise _classify_not_writable(resolved, f"Schreibprobe fehlgeschlagen ({err})")
 
 
+def inspect_backup_target_mount(backup_dir_str: str) -> dict[str, Any]:
+    """Mount-/Blockgerät-Diagnose inkl. STORAGE-PROTECTION-007-Vorhersage."""
+    s = (backup_dir_str or "").strip()
+    base = preview_backup_target_access(s)
+    if not s:
+        return base
+    try:
+        from core.safe_device import inspect_write_target_mount
+
+        base["mount_inspection"] = inspect_write_target_mount(s)
+        wid = (base.get("mount_inspection") or {}).get("would_block_diagnosis_id")
+        if wid == "STORAGE-PROTECTION-007":
+            base["diagnosis_hint"] = BACKUP_TARGET_EXTERNAL_MOUNT_004
+    except Exception as exc:  # noqa: BLE001
+        base["mount_inspection_error"] = str(exc)
+    return base
+
+
 def preview_backup_target_access(backup_dir_str: str) -> dict[str, Any]:
     """
     Read-only / ohne Schreibprobe: os.access + Mountbaum-Hinweis für Cockpit/Dev-Dashboard.
@@ -195,9 +214,11 @@ def read_configured_backup_dir() -> str | None:
 
 
 __all__ = [
+    "BACKUP_TARGET_EXTERNAL_MOUNT_004",
     "BACKUP_TARGET_NOT_WRITABLE_002",
     "BACKUP_TARGET_PERMISSION_001",
     "BACKUP_TARGET_USER_MOUNT_003",
+    "inspect_backup_target_mount",
     "assert_backup_target_writable_for_service",
     "extract_backup_target_diagnosis_id",
     "is_user_session_media_tree",

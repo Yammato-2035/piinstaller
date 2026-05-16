@@ -47,6 +47,9 @@ Details: `GET /api/backup/target-check`, `POST /api/backup/create`, `POST /api/b
 **Vollständige ausführbare Sequenz (Shell, curl, Freeze, Monitoring):**  
 `docs/evidence/runtime-results/handoff/BR001_operator_final_execution_handoff.md`
 
+**Mount / STORAGE-PROTECTION-001 vs. 007:**  
+`docs/knowledge-base/storage/external-backup-target-mount.md` — Operator-Skript `scripts/operator/setup-external-backup-target.sh`
+
 ## FAQ
 
 ### Warum kann Setuphelfer nicht nach `/media/<user>/…` schreiben?

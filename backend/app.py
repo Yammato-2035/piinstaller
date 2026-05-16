@@ -11903,6 +11903,10 @@ async def backup_target_check(backup_dir: str, create: int = 0):
                 bc = "backup.target_traverse_denied"
                 det["diagnosis_id"] = "STORAGE-PROTECTION-006"
                 det["reason"] = msg.split(":", 1)[1].strip() if ":" in msg else msg
+            elif msg.startswith("STORAGE-PROTECTION-007") or "STORAGE-PROTECTION-007:" in msg:
+                bc = "backup.target_external_mount_required"
+                det["diagnosis_id"] = "STORAGE-PROTECTION-007"
+                det["reason"] = msg.split(":", 1)[1].strip() if ":" in msg else msg
             else:
                 from core.backup_target_service_access import extract_backup_target_diagnosis_id
 

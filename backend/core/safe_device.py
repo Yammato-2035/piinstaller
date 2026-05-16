@@ -40,6 +40,7 @@ _DIAG_FOREIGN = "STORAGE-PROTECTION-003"
 _DIAG_NOT_ALLOWLIST = "STORAGE-PROTECTION-004"
 _DIAG_UNSAFE_MOUNT = "STORAGE-PROTECTION-005"
 _DIAG_TRAVERSE_DENIED = "STORAGE-PROTECTION-006"
+_DIAG_EXTERNAL_MOUNT_REQUIRED = "STORAGE-PROTECTION-007"
 
 _NTFS_LARGE_BYTES = 50 * 1024 * 1024 * 1024
 
@@ -100,6 +101,17 @@ def _assert_abs_path_safe_chars(path_str: str) -> None:
     forbidden = ["\n", "\r", "\t", "\x00", "`", "$", ";", "&", "|", "<", ">", "!", "\"", "'"]
     if any(ch in stripped for ch in forbidden):
         raise WriteTargetProtectionError(_DIAG_NOT_ALLOWLIST, "Pfad enthält verbotene Zeichen")
+
+
+def is_under_setuphelfer_product_media(path: str | Path) -> bool:
+    """
+    True für /media/setuphelfer/… (empfohlener produktiver externer Baum, kein /media/<login>/…).
+    """
+    try:
+        parts = Path(path).parts
+    except Exception:
+        return False
+    return len(parts) >= 3 and parts[1] == "media" and parts[2] == "setuphelfer"
 
 
 def _is_backup_media_tree_path(path_str: str) -> bool:
@@ -754,6 +766,81 @@ def resolve_mount_source_for_path(path: str | Path, *, runner: Runner | None = N
     }
 
 
+def _mount_anchor_is_system_disk(anchor: Path, *, runner: Runner | None = None) -> bool:
+    """True, wenn der findmnt-Anker auf der Systemplatte (/) liegt."""
+    try:
+        mi = resolve_mount_source_for_path(anchor, runner=runner)
+    except WriteTargetProtectionError:
+        return True
+    src = (mi.get("resolved_source") or "").strip()
+    if not src:
+        return True
+    try:
+        cd = _classified_for_block(src, runner=runner)
+    except WriteTargetProtectionError:
+        return True
+    return bool(cd.is_system_disk)
+
+
+def _preflight_setuphelfer_external_mount(resolved: Path, *, runner: Runner | None = None) -> None:
+    """
+    Verhindert irreführendes STORAGE-PROTECTION-001, wenn /media/setuphelfer/… noch nicht
+    auf einem externen Blockgerät gemountet ist (Pfad fehlt → Anker fällt auf / oder /media auf /).
+    """
+    if resolved.exists():
+        return
+    anchor = _find_existing_anchor(resolved)
+    if _mount_anchor_is_system_disk(anchor, runner=runner):
+        raise WriteTargetProtectionError(
+            _DIAG_EXTERNAL_MOUNT_REQUIRED,
+            "Backup-Ziel unter /media/setuphelfer existiert nicht auf einem gemounteten externen Blockgerät",
+            detail={
+                "path": str(resolved),
+                "anchor": str(anchor),
+                "hint": "operator_direct_mount_or_bind_mount",
+                "kb": "docs/knowledge-base/storage/external-backup-target-mount.md",
+            },
+        )
+
+
+def inspect_write_target_mount(path: str | Path, *, runner: Runner | None = None) -> dict[str, Any]:
+    """Read-only Mount-Diagnose für API/Cockpit (kein Schreibzugriff)."""
+    p = Path(path) if isinstance(path, Path) else Path(str(path).strip())
+    out: dict[str, Any] = {
+        "path": str(p),
+        "under_setuphelfer_product_media": is_under_setuphelfer_product_media(p),
+        "exists": False,
+        "anchor": None,
+        "mount_info": None,
+        "anchor_on_system_disk": None,
+        "would_block_diagnosis_id": None,
+        "bind_mount_detected": False,
+    }
+    try:
+        out["exists"] = p.exists()
+    except OSError as e:
+        out["error"] = str(e)
+        return out
+    try:
+        anchor = _find_existing_anchor(p.resolve() if out["exists"] else p)
+    except OSError:
+        anchor = _find_existing_anchor(p)
+    out["anchor"] = str(anchor)
+    try:
+        mi = resolve_mount_source_for_path(anchor, runner=runner)
+        out["mount_info"] = dict(mi)
+        seen = str(mi.get("mount_source_seen") or "")
+        out["bind_mount_detected"] = "[" in seen and seen.startswith("/dev/")
+        out["anchor_on_system_disk"] = _mount_anchor_is_system_disk(anchor, runner=runner)
+    except WriteTargetProtectionError as e:
+        out["would_block_diagnosis_id"] = e.diagnosis_id
+        out["mount_error"] = str(e)
+        return out
+    if out["under_setuphelfer_product_media"] and not out["exists"] and out.get("anchor_on_system_disk"):
+        out["would_block_diagnosis_id"] = _DIAG_EXTERNAL_MOUNT_REQUIRED
+    return out
+
+
 def _fail_from_classification(cd: ClassifiedDevice) -> None:
     if cd.is_system_disk:
         raise WriteTargetProtectionError(
@@ -850,6 +937,9 @@ def _validate_dir_write(path: Path, *, runner: Runner | None = None) -> None:
     if path_under_prefixes(resolved, RESCUE_DRYRUN_WRITE_PREFIXES):
         return
 
+    if is_under_setuphelfer_product_media(resolved):
+        _preflight_setuphelfer_external_mount(resolved, runner=runner)
+
     mount_info = resolve_mount_source_for_path(resolved, runner=runner)
     resolved_source = mount_info.get("resolved_source") or ""
     fstype = str(mount_info.get("fstype") or "").strip().lower()
@@ -893,8 +983,11 @@ __all__ = [
     "PartitionInfo",
     "WriteTargetProtectionError",
     "devices_for_api",
+    "inspect_write_target_mount",
+    "is_under_setuphelfer_product_media",
     "list_classified_devices",
     "protection_signal_map",
+    "resolve_mount_source_for_path",
     "validate_write_target",
     "write_safe_prefixes_resolved",
 ]
