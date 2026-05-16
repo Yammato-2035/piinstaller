@@ -8,7 +8,7 @@ Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery
 |---------|-------|---------|
 | Runtime-Deploy-Gate | grün | Phase 0: `./scripts/check-runtime-deploy-gate.sh` Exit 0; Cockpit-API `runtime_gate.passed`, `deploy_drift` green, `safe_test_mode` UNLOCKED |
 | pytest / CI Evidence | grün/gelb | wie zuvor; auf diesem Runner oft kein `pytest`-Modul installiert |
-| Release / BR-001 Full Root + Verify Deep | **rot (blockiert)** | **Kein** vollständiges externes Full-Root-Archiv und **kein** Verify deep: ältere Analyse `BR001_full_root_validation_attempt_2026-05-16.json`; Preflight Final `BR001_final_full_root_execution_preflight_2026-05-16.json` (fehlendes `/media/setuphelfer/<label>`, kein sudo in Agent) |
+| Release / BR-001 Full Root + Verify Deep | **rot (blockiert)** | Ausführungsrezept: **`BR001_operator_final_execution_handoff.md`**; weiterhin kein fertiges externes Archiv/Verify bis Betreiber **`/media/setuphelfer/<label>`** + Lauf; ältere Evidence: `BR001_full_root_validation_attempt_2026-05-16.json`, `BR001_final_full_root_execution_preflight_2026-05-16.json` |
 | APT/Packaging-Pipeline | **rot** | kein produktives Update-Channel |
 | Backup/Restore-Modul (Cockpit) | **gelb/rot** | Restore/Rescue unverändert rot |
 
@@ -19,6 +19,7 @@ Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery
 3. **Package-Freeze:** `systemctl stop` der apt-Timer in dieser Session **nicht** ausgeführt (interaktives `sudo`-Passwort nötig). Vor einem echten Lauf wie in der Runbook-Vorgabe mit `pkexec`/Konsole nachholen.
 4. **Zielrechte / systemd (2026-05-16):** Architektur und API-Diagnosen **`BACKUP-TARGET-*`** dokumentiert und implementiert; **`ReadWritePaths`** im Repo auf **`/media/setuphelfer`** vereinheitlicht (ohne `/media/gabriel/…`). Betreiber: Verzeichnis anlegen + Dienst neu starten — siehe KB `external-backup-target-architecture.md`.
 5. **BR-001 Final Full Root (2026-05-16):** **nicht ausgeführt** — Host ohne angelegtes **`/media/setuphelfer/<label>`**; kein interaktives `sudo` in der Agent-Session; `target-check` auf Planpfad liefert **`STORAGE-PROTECTION-001`** (Ziel nicht als externes Block-FS valide / nicht vorhanden). Evidence: `docs/evidence/runtime-results/handoff/BR001_final_full_root_execution_preflight_2026-05-16.json`.
+6. **Operator-Handoff (2026-05-16):** Vollständige Copy/Paste-Sequenz liegt unter **`docs/evidence/runtime-results/handoff/BR001_operator_final_execution_handoff.md`** — BR-001 bleibt fachlich **offen**, bis der Betreiber die Schritte ausführt und Evidence schreibt.
 
 ## Phasen (Reihenfolge)
 
@@ -38,6 +39,7 @@ Kein Backup-/Restore-Start aus Cockpit, kein HW-Test, kein apt upgrade, kein aut
 
 ## Verweise
 
+- `docs/evidence/runtime-results/handoff/BR001_operator_final_execution_handoff.md` — **finaler Operator-Handoff** (copy/paste Befehle, kein Backup-Start aus dem Repo heraus)
 - `docs/evidence/release-gates/backup_restore_release_gate.json`
 - `docs/evidence/backup-restore/BR-001.json`
 - `docs/testing/BACKUP_RESTORE_TEST_MATRIX.md`

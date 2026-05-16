@@ -44,6 +44,9 @@ Details: `GET /api/backup/target-check`, `POST /api/backup/create`, `POST /api/b
 4. `sudo systemctl daemon-reload && sudo systemctl restart setuphelfer-backend.service`.
 5. In den App-Einstellungen **`backup_dir`** auf dieses Verzeichnis setzen; **`GET /api/backup/target-check?backup_dir=…`** zur Kontrolle.
 
+**Vollständige ausführbare Sequenz (Shell, curl, Freeze, Monitoring):**  
+`docs/evidence/runtime-results/handoff/BR001_operator_final_execution_handoff.md`
+
 ## FAQ
 
 ### Warum kann Setuphelfer nicht nach `/media/<user>/…` schreiben?
