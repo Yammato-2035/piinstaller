@@ -11,5 +11,6 @@
     "failed": "BACKUP-TARGET-AUTO-MOUNT-FAILED"
   },
   "live_discover_sample": "HGST USB /dev/sda1 at /media/gabriel/Backup",
-  "target_check_success_requires": "sudo_password + systemctl restart backend after deploy"
+  "target_check_success_requires": "sudo_password + systemctl restart backend after deploy",
+  "runtime_deploy_2026_05_17": "see automatic_external_target_runtime_deploy_2026-05-17.json — target-check success on host"
 }

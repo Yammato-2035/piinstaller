@@ -75,6 +75,14 @@ Typisch **0700** für den Session-User; der Backend-Dienst hat dort kein zuverl�
 
 `STORAGE-PROTECTION-*` blockiert Systemplatten und Root-FS — Backups sollen auf echte externe Medien.
 
+## Runtime-Deploy (Operator)
+
+1. Backend nach `/opt` synchronisieren (z. B. `rsync` aus dem Repo oder `sudo ./scripts/deploy-to-opt.sh`).
+2. `systemctl restart setuphelfer-backend.service`
+3. Mount: `sudo ./scripts/operator/setup-external-backup-target.sh br001`  
+   (ohne interaktives sudo-TTY alternativ: `systemd-run --wait -p User=root bash …/setup-external-backup-target.sh br001`)
+4. `curl -sG 'http://127.0.0.1:8000/api/backup/target-check' --data-urlencode 'backup_dir=/media/setuphelfer/br001'`
+
 ## Siehe auch
 
 - `external-backup-target-mount.md`

@@ -1,0 +1,43 @@
+{
+  "title": "Automatic external target — runtime deploy and target-check success",
+  "date": "2026-05-17",
+  "phase0": {
+    "before": {
+      "gate_exit": 14,
+      "deploy_drift": "yellow",
+      "drifting_files": ["backend/app.py"],
+      "missing_runtime": ["backend/core/backup_target_auto_prepare.py"],
+      "runtime_gate_passed": false,
+      "safe_test_mode": "LOCKED"
+    },
+    "after": {
+      "gate_exit": 0,
+      "deploy_drift": "green",
+      "runtime_gate_passed": true,
+      "safe_test_mode": "UNLOCKED"
+    }
+  },
+  "deploy": {
+    "method": "rsync backend/ → /opt/setuphelfer/backend/ (group setuphelfer, no sudo)",
+    "restart": "systemctl restart setuphelfer-backend.service (user session)"
+  },
+  "mount": {
+    "script": "scripts/operator/setup-external-backup-target.sh br001",
+    "execution": "systemd-run User=root (bind /media/gabriel/Backup → /media/setuphelfer/br001)",
+    "target": "/media/setuphelfer/br001",
+    "source": "/dev/sda1",
+    "owner": "root:setuphelfer",
+    "mode": "0770"
+  },
+  "target_check": {
+    "backup_dir": "/media/setuphelfer/br001",
+    "status": "success",
+    "code": "backup.target_check_ok",
+    "mount_source": "/dev/sda1",
+    "is_usb": true,
+    "write_test_success": true,
+    "no_storage_protection_001": true,
+    "no_storage_protection_007": true
+  },
+  "br001_operational": "target-check success — Full-Root-Backup noch nicht gestartet (Operator: Package-Timer stoppen, dann POST /api/backup/create)"
+}
