@@ -21,5 +21,5 @@
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010", "BR-011"],
   "partial_br_ids": ["BR-001", "BR-012", "BR-013", "BR-016", "BR-017", "BR-018", "BR-019"],
   "blocked_br_ids": [],
-  "notes": "BR-001 Daten teilvalidiert; Full-Root-Langlauf 2026-05-15 **failed** (BACKUP-IO-ERROR-050, /dev/sda1 Disconnect) — docs/evidence/runtime-results/BR-001-full-root-longrun-2026-05-15.md. BR-004/005 an Restore-Kette. Kein Fake-Grün."
+  "notes": "BR-001 Daten teilvalidiert; Full-Root br001 2026-05-16: Job e0bba3dff5e5 **blocked_package_activity** (Forensik package_activity_forensics_2026-05-16.md); Retry 927469d42503 ohne Verify bis finales Archiv. Full-Root 2026-05-15 failed IO-050. Kein Fake-Grün."
 }

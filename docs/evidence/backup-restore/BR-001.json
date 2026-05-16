@@ -5,6 +5,18 @@
   "status": "teilvalidiert",
   "ampel": "gelb",
   "evidence_complete": false,
+  "full_root_br001_2026_05_16": {
+    "evidence": "docs/evidence/runtime-results/BR-001-full-root-br001-2026-05-16.json",
+    "forensics_md": "docs/evidence/runtime-results/package_activity_forensics_2026-05-16.md",
+    "target": "/media/setuphelfer/br001",
+    "failed_job_id": "e0bba3dff5e5",
+    "failed_code": "backup.blocked_package_activity",
+    "failed_gib": 115.06,
+    "retry_job_id": "927469d42503",
+    "retry_status": "running_at_evidence_capture",
+    "verify": false,
+    "full_validated": false
+  },
   "full_root_retry_controlled_2026_05_15": {
     "evidence": "docs/evidence/runtime-results/BR-001-full-root-retry-controlled-2026-05-15.json",
     "status": "failed",
@@ -671,6 +683,8 @@
     "docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md",
     "docs/evidence/backup-restore/BR-001_runner_finalization_performance_failure_2026-05-14.md",
     "docs/evidence/backup-restore/BR-001_write_io_error_2026-05-14.md",
-    "docs/knowledge-base/backup/BACKUP_TARGET_WRITE_IO_ERROR.md"
+    "docs/knowledge-base/backup/BACKUP_TARGET_WRITE_IO_ERROR.md",
+    "docs/evidence/runtime-results/package_activity_forensics_2026-05-16.md",
+    "docs/evidence/runtime-results/BR-001-full-root-br001-2026-05-16.json"
   ]
 }

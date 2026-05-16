@@ -1,0 +1,51 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "test_id": "BR-001",
+  "captured_at": "2026-05-16T16:05:00Z",
+  "target": "/media/setuphelfer/br001",
+  "device": "/dev/sda1",
+  "runtime_gate": {
+    "check_runtime_deploy_gate_exit": 0,
+    "deploy_drift_status": "green",
+    "safe_test_mode": "UNLOCKED",
+    "project_version": "1.7.1",
+    "backend_runtime_path": "/opt/setuphelfer/backend"
+  },
+  "runs": [
+    {
+      "job_id": "e0bba3dff5e5",
+      "status": "failed",
+      "code": "backup.blocked_package_activity",
+      "diagnosis_id": "UPDATE-CONFLICT-041",
+      "abort_reason": "package_activity_detected_runtime",
+      "started_at": "2026-05-16T13:57:10.585961+00:00",
+      "finished_at": "2026-05-16T15:23:48.345628+00:00",
+      "duration_s": 5197,
+      "gib_written": 115.06,
+      "archive_planned": "/media/setuphelfer/br001/pi-backup-full-20260516_155710.tar.gz",
+      "partial_deleted": true,
+      "active_package_processes": [
+        {"pid": 536223, "name": "apt", "cmdline": ""}
+      ],
+      "root_cause_class": "UPDATE-CONFLICT-041",
+      "root_cause_subtype": "apt_process_name_block_legacy_or_empty_cmdline",
+      "verify": false,
+      "sha256": null,
+      "forensics_md": "docs/evidence/runtime-results/package_activity_forensics_2026-05-16.md"
+    },
+    {
+      "job_id": "927469d42503",
+      "status": "running",
+      "code": "backup.job.running",
+      "started_at": "2026-05-16T15:24:57.968050+00:00",
+      "archive_planned": "/media/setuphelfer/br001/pi-backup-full-20260516_172457.tar.gz",
+      "snapshot_partial_gib": 50,
+      "verify": false,
+      "sha256": null,
+      "notes": "Forensik-Snapshot; Verify Deep nur nach finalem .tar.gz"
+    }
+  ],
+  "kernel_usb_window": "NO_USB_ERRORS_IN_WINDOW",
+  "full_validated": false,
+  "br001_status": "teilweise_validiert"
+}
