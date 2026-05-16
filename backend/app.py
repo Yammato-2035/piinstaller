@@ -11884,44 +11884,176 @@ async def backup_targets():
             ),
         )
 
+@app.get("/api/backup/external-targets")
+async def backup_external_targets_list():
+    """Read-only: externe USB/removable-Kandidaten für /media/setuphelfer/<label>."""
+    try:
+        from core.backup_target_auto_prepare import discover_external_backup_candidates
+
+        items = [c.to_public_dict() for c in discover_external_backup_candidates()]
+        return with_backup_contract(
+            {"status": "success", "candidates": items, "count": len(items)},
+            "backup.external_targets_ok",
+            "success",
+            {"count": len(items)},
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": str(e), "candidates": []},
+                "backup.external_targets_failed",
+                "error",
+                {"detail": str(e)},
+            ),
+        )
+
+
+@app.post("/api/backup/target-prepare")
+async def backup_target_prepare(request: Request):
+    """
+    Bereitet /media/setuphelfer/<label> auf (Bind- oder Direkt-Mount, root:setuphelfer 0770).
+    Erfordert sudo_password. Kein Formatieren, keine Löschung fremder Daten.
+    """
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        if not isinstance(data, dict):
+            data = {}
+        label = str(data.get("label") or "br001").strip()
+        uuid = (data.get("uuid") or data.get("partition_uuid") or "").strip() or None
+        partition = (data.get("partition") or data.get("device") or "").strip() or None
+        mode = str(data.get("mode") or "auto").strip().lower()
+        sudo_password = (data.get("sudo_password") or "").strip() or (sudo_store.get_password() or "")
+        if not sudo_password:
+            sudo_test = run_command("sudo -n true", sudo=False)
+            if not sudo_test.get("success"):
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                        "backup.sudo_required",
+                        "error",
+                    ),
+                )
+        from core.backup_target_auto_prepare import (
+            BACKUP_TARGET_AUTO_MOUNT_FAILED,
+            BACKUP_TARGET_AUTO_MOUNT_READY,
+            prepare_setuphelfer_external_target,
+        )
+
+        result = prepare_setuphelfer_external_target(
+            label=label,
+            sudo_password=sudo_password,
+            run=run_command,
+            uuid=uuid,
+            partition=partition,
+            mode=mode,
+        )
+        diag = result.get("diagnosis_id")
+        if result.get("status") == "ready":
+            return with_backup_contract(
+                result,
+                "backup.target_auto_mount_ready",
+                "success",
+                {"diagnosis_id": BACKUP_TARGET_AUTO_MOUNT_READY, "backup_dir": result.get("backup_dir")},
+            )
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                result,
+                "backup.target_auto_mount_failed",
+                "error",
+                {"diagnosis_id": BACKUP_TARGET_AUTO_MOUNT_FAILED},
+            ),
+        )
+    except Exception as e:
+        logger.exception("backup_target_prepare failed")
+        return JSONResponse(
+            status_code=200,
+            content=with_backup_contract(
+                {"status": "error", "message": str(e)},
+                "backup.target_auto_mount_failed",
+                "error",
+                {"detail": str(e)},
+            ),
+        )
+
+
 @app.get("/api/backup/target-check")
-async def backup_target_check(backup_dir: str, create: int = 0):
+async def backup_target_check(
+    backup_dir: str,
+    create: int = 0,
+    auto_prepare: int = 0,
+    label: str = "br001",
+):
     """
     Prüft ein Backup-Ziel:
     - Existenz / optional anlegen (create=1)
     - Freier Speicher (statvfs)
     - Schreibtest (normaler User, fallback: sudo wenn Passwort gespeichert)
+    - auto_prepare=1: bei STORAGE-PROTECTION-007 Ziel per sudo vorbereiten (wenn Passwort bekannt)
     """
+    prepare_result: dict[str, Any] | None = None
     try:
+        if not (backup_dir or "").strip():
+            from core.backup_target_auto_prepare import setuphelfer_backup_dir, sanitize_setuphelfer_label
+
+            backup_dir = str(setuphelfer_backup_dir(label or "br001"))
         try:
             backup_dir = _validate_backup_dir(backup_dir)
         except Exception as ve:
             msg = str(ve)
-            bc = "backup.path_invalid"
-            det: dict[str, Any] = {"reason": msg}
-            if msg.startswith("STORAGE-PROTECTION-006") or "STORAGE-PROTECTION-006:" in msg:
-                bc = "backup.target_traverse_denied"
-                det["diagnosis_id"] = "STORAGE-PROTECTION-006"
-                det["reason"] = msg.split(":", 1)[1].strip() if ":" in msg else msg
-            elif msg.startswith("STORAGE-PROTECTION-007") or "STORAGE-PROTECTION-007:" in msg:
-                bc = "backup.target_external_mount_required"
-                det["diagnosis_id"] = "STORAGE-PROTECTION-007"
-                det["reason"] = msg.split(":", 1)[1].strip() if ":" in msg else msg
-            else:
-                from core.backup_target_service_access import extract_backup_target_diagnosis_id
+            if auto_prepare and ("STORAGE-PROTECTION-007" in msg or "BACKUP-TARGET-EXTERNAL-MOUNT" in msg):
+                sudo_password = sudo_store.get_password() or ""
+                if sudo_password:
+                    from core.backup_target_auto_prepare import prepare_setuphelfer_external_target
 
-                btd = extract_backup_target_diagnosis_id(msg)
-                if btd:
-                    det["diagnosis_id"] = btd
-            return JSONResponse(
-                status_code=200,
-                content=with_backup_contract(
-                    {"status": "error", "message": f"Ungültiges Backup-Ziel: {msg}"},
-                    bc,
-                    "error",
-                    det,
-                ),
-            )
+                    prepare_result = prepare_setuphelfer_external_target(
+                        label=label or "br001",
+                        sudo_password=sudo_password,
+                        run=run_command,
+                    )
+                    if prepare_result.get("status") == "ready":
+                        backup_dir = str(prepare_result.get("backup_dir") or backup_dir)
+                        try:
+                            backup_dir = _validate_backup_dir(backup_dir)
+                            msg = ""
+                        except Exception as ve2:
+                            msg = str(ve2)
+            if msg:
+                bc = "backup.path_invalid"
+                det: dict[str, Any] = {"reason": msg}
+                if msg.startswith("STORAGE-PROTECTION-006") or "STORAGE-PROTECTION-006:" in msg:
+                    bc = "backup.target_traverse_denied"
+                    det["diagnosis_id"] = "STORAGE-PROTECTION-006"
+                    det["reason"] = msg.split(":", 1)[1].strip() if ":" in msg else msg
+                elif msg.startswith("STORAGE-PROTECTION-007") or "STORAGE-PROTECTION-007:" in msg:
+                    bc = "backup.target_external_mount_required"
+                    det["diagnosis_id"] = "STORAGE-PROTECTION-007"
+                    det["reason"] = msg.split(":", 1)[1].strip() if ":" in msg else msg
+                elif "BACKUP-TARGET-AUTO-MOUNT-FAILED" in msg:
+                    bc = "backup.target_auto_mount_failed"
+                    det["diagnosis_id"] = "BACKUP-TARGET-AUTO-MOUNT-FAILED"
+                else:
+                    from core.backup_target_service_access import extract_backup_target_diagnosis_id
+
+                    btd = extract_backup_target_diagnosis_id(msg)
+                    if btd:
+                        det["diagnosis_id"] = btd
+                if prepare_result:
+                    det["auto_prepare"] = prepare_result
+                return JSONResponse(
+                    status_code=200,
+                    content=with_backup_contract(
+                        {"status": "error", "message": f"Ungültiges Backup-Ziel: {msg}"},
+                        bc,
+                        "error",
+                        det,
+                    ),
+                )
 
         p = Path(backup_dir)
         sudo_password = (sudo_store.get_password() or "")
@@ -12134,18 +12266,23 @@ async def backup_target_check(backup_dir: str, create: int = 0):
         if not wt_ok and isinstance(write_test.get("reason_code"), str):
             tc_details = {"reason_code": write_test.get("reason_code")}
 
+        success_payload: dict[str, Any] = {
+            "status": "success",
+            "backup_dir": backup_dir,
+            "exists": exists,
+            "is_dir": is_dir,
+            "created": created,
+            "fs": fs,
+            "write_test": write_test,
+            "mount": mount_info,
+            "storage_validation": storage_validation,
+        }
+        if prepare_result:
+            success_payload["auto_prepare"] = prepare_result
+            if prepare_result.get("diagnosis_id"):
+                success_payload["diagnosis_id"] = prepare_result.get("diagnosis_id")
         return with_backup_contract(
-            {
-                "status": "success",
-                "backup_dir": backup_dir,
-                "exists": exists,
-                "is_dir": is_dir,
-                "created": created,
-                "fs": fs,
-                "write_test": write_test,
-                "mount": mount_info,
-                "storage_validation": storage_validation,
-            },
+            success_payload,
             tc_code,
             tc_sev,
             tc_details,

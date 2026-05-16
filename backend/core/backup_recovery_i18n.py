@@ -47,6 +47,8 @@ K_BACKUP_TARGET_SERVICE_NOT_WRITABLE_002 = "backup_recovery.error.backup_target_
 K_BACKUP_TARGET_USER_MEDIA_MOUNT_003 = "backup_recovery.error.backup_target_user_media_mount_003"
 K_BACKUP_TARGET_EXTERNAL_MOUNT_004 = "backup_recovery.error.backup_target_external_mount_004"
 K_STORAGE_EXTERNAL_MOUNT_007 = "backup_recovery.error.storage_external_mount_007"
+K_BACKUP_TARGET_AUTO_MOUNT_READY = "backup_recovery.ok.backup_target_auto_mount_ready"
+K_BACKUP_TARGET_AUTO_MOUNT_FAILED = "backup_recovery.error.backup_target_auto_mount_failed"
 
 # recovery/main.py
 K_RECOVERY_MENU_TITLE = "recovery.menu.title"
@@ -103,6 +105,8 @@ DEFAULT_CATALOG: dict[str, str] = {
     K_BACKUP_TARGET_USER_MEDIA_MOUNT_003: "Path is under a desktop user session mount (/media/<user>/ or /run/media/<user>/). Use /media/setuphelfer/… or /mnt/setuphelfer/external/… with group setuphelfer — not a login-owned 0700 directory.",
     K_BACKUP_TARGET_EXTERNAL_MOUNT_004: "No external block filesystem is mounted at this path under /media/setuphelfer. Run the operator mount or bind-mount procedure first.",
     K_STORAGE_EXTERNAL_MOUNT_007: "Backup path under /media/setuphelfer is not on a mounted external block device (often mistaken as system-disk block). Mount USB to /media/setuphelfer/<label> before target-check.",
+    K_BACKUP_TARGET_AUTO_MOUNT_READY: "External backup target prepared under /media/setuphelfer (service-compatible permissions).",
+    K_BACKUP_TARGET_AUTO_MOUNT_FAILED: "Automatic preparation of the external backup target failed.",
     K_RECOVERY_MENU_TITLE: "Setuphelfer recovery",
     K_RECOVERY_OPT_USB: "Restore from USB",
     K_RECOVERY_OPT_CLOUD: "Restore from cloud",
@@ -150,6 +154,8 @@ DEFAULT_CATALOG_DE: dict[str, str] = {
     K_BACKUP_TARGET_USER_MEDIA_MOUNT_003: "Pfad liegt unter einem Desktop-Benutzer-Mount (/media/<Benutzer>/ oder /run/media/<Benutzer>/). Nutzen Sie /media/setuphelfer/… oder /mnt/setuphelfer/external/… mit Gruppe setuphelfer — kein login-eigenes 0700-Verzeichnis.",
     K_BACKUP_TARGET_EXTERNAL_MOUNT_004: "Unter /media/setuphelfer ist kein externes Block-Dateisystem gemountet. Zuerst Operator-Mount oder Bind-Mount ausführen.",
     K_STORAGE_EXTERNAL_MOUNT_007: "Backup-Pfad unter /media/setuphelfer liegt nicht auf einem gemounteten externen Blockgerät (wird oft fälschlich als Systemplatten-Block gemeldet). USB nach /media/setuphelfer/<label> mounten, dann target-check.",
+    K_BACKUP_TARGET_AUTO_MOUNT_READY: "Externes Backup-Ziel unter /media/setuphelfer wurde vorbereitet (dienstkompatible Rechte).",
+    K_BACKUP_TARGET_AUTO_MOUNT_FAILED: "Automatische Vorbereitung des externen Backup-Ziels ist fehlgeschlagen.",
     K_RECOVERY_MENU_TITLE: "Setuphelfer-Wiederherstellung",
     K_RECOVERY_OPT_USB: "Wiederherstellen von USB",
     K_RECOVERY_OPT_CLOUD: "Wiederherstellen aus der Cloud",

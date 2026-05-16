@@ -50,6 +50,9 @@ Details: `GET /api/backup/target-check`, `POST /api/backup/create`, `POST /api/b
 **Mount / STORAGE-PROTECTION-001 vs. 007:**  
 `docs/knowledge-base/storage/external-backup-target-mount.md` — Operator-Skript `scripts/operator/setup-external-backup-target.sh`
 
+**Automatische Vorbereitung (API):**  
+`docs/knowledge-base/storage/automatic-external-backup-target.md` — `POST /api/backup/target-prepare`, `GET /api/backup/external-targets`
+
 ## FAQ
 
 ### Warum kann Setuphelfer nicht nach `/media/<user>/…` schreiben?

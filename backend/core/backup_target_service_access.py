@@ -122,6 +122,12 @@ def inspect_backup_target_mount(backup_dir_str: str) -> dict[str, Any]:
     """Mount-/Blockgerät-Diagnose inkl. STORAGE-PROTECTION-007-Vorhersage."""
     s = (backup_dir_str or "").strip()
     base = preview_backup_target_access(s)
+    try:
+        from core.backup_target_auto_prepare import discover_external_backup_candidates
+
+        base["external_candidates"] = [c.to_public_dict() for c in discover_external_backup_candidates()]
+    except Exception as exc:  # noqa: BLE001
+        base["external_candidates_error"] = str(exc)
     if not s:
         return base
     try:

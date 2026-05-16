@@ -4,6 +4,8 @@ import toast from 'react-hot-toast'
 import { Activity, Copy, RefreshCw, Terminal } from 'lucide-react'
 import { StandaloneModeBanner } from '../components/dev-dashboard/StandaloneModeBanner'
 import { RuntimeGatePanel } from '../components/dev-dashboard/RuntimeGatePanel'
+import { CockpitBackupProgressPanel } from '../components/dev-dashboard/CockpitBackupProgressPanel'
+import { CockpitBackupTargetPanel } from '../components/dev-dashboard/CockpitBackupTargetPanel'
 import { DeployDriftPanel } from '../components/dev-dashboard/DeployDriftPanel'
 import { SafeTestModePanel } from '../components/dev-dashboard/SafeTestModePanel'
 import { writeCockpitRefreshSec } from '../lib/devDashboard/cockpitWindow'
@@ -172,6 +174,9 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
           ))}
         </ul>
       ) : null}
+
+      <CockpitBackupTargetPanel refreshSec={mon.refreshSec} />
+      <CockpitBackupProgressPanel refreshSec={mon.refreshSec} />
 
       {(mon.changedToGreen.length > 0 || mon.regressed.length > 0) && (
         <div className="grid md:grid-cols-2 gap-3 mb-4" data-testid="cockpit-transitions">

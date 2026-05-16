@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # BR-001: Externes Backup-Ziel unter /media/setuphelfer/<label> einrichten (Operator, sudo).
 # Kein Backup-Start. Kein chmod 777. Kein /media/<login>/… als Ziel.
+# Alternative API: POST /api/backup/target-prepare (siehe docs/knowledge-base/storage/automatic-external-backup-target.md)
 set -euo pipefail
 
 LABEL="${1:-br001}"

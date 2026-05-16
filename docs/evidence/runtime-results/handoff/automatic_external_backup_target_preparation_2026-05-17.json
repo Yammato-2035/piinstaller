@@ -1,0 +1,15 @@
+{
+  "title": "Automatic external backup target preparation",
+  "date": "2026-05-17",
+  "api": {
+    "GET /api/backup/external-targets": "discover USB/removable ext4 candidates",
+    "POST /api/backup/target-prepare": "prepare /media/setuphelfer/<label> bind or direct mount",
+    "GET /api/backup/target-check?auto_prepare=1": "optional auto prepare when sudo stored"
+  },
+  "diagnosis_ids": {
+    "ready": "BACKUP-TARGET-AUTO-MOUNT-READY",
+    "failed": "BACKUP-TARGET-AUTO-MOUNT-FAILED"
+  },
+  "live_discover_sample": "HGST USB /dev/sda1 at /media/gabriel/Backup",
+  "target_check_success_requires": "sudo_password + systemctl restart backend after deploy"
+}
