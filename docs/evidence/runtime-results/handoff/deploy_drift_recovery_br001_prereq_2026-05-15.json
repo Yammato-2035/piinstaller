@@ -1,0 +1,48 @@
+{
+  "event": "deploy_drift_recovery",
+  "date_utc": "2026-05-15",
+  "workspace_root": "/home/volker/piinstaller",
+  "runtime_root": "/opt/setuphelfer",
+  "root_cause": "Workspace backend/app.py was newer than /opt (SHA256 mismatch, ~140 bytes size delta). Changes were applied in the workspace (stale backup-runner job sync into RAM BACKUP_JOBS) but not deployed to the production runtime tree. No manifest or version.json drift; deploy manifest matched throughout.",
+  "drifting_files": [
+    {
+      "relative_path": "backend/app.py",
+      "comparison_before": "workspace_sha256 b730ace060356d4337b7959e8cd893f10b6d0a08e5ae8e3f42c6c7684d846db6 vs runtime_sha256 1b1e7b7b6577c2a14290b178a3b5c32d57e9096fde7440da9a04b67499196730",
+      "reason_runtime_behind": "manual_edit_in_workspace_without_runtime_sync"
+    }
+  ],
+  "non_drifting": {
+    "config_version_json": "identical_sha256",
+    "deploy_manifest": "manifest_match_true",
+    "other_gate_checked_files": "sha256_match_except_app_py"
+  },
+  "remediation": {
+    "action": "cp workspace backend/app.py to /opt/setuphelfer/backend/app.py",
+    "systemctl_restart": "attempted_timeout_then_service_remained_active; file_on_disk_synchronized_before_gate_recheck",
+    "post_sha256": "both_paths b730ace060356d4337b7959e8cd893f10b6d0a08e5ae8e3f42c6c7684d846db6"
+  },
+  "constraints_respected": {
+    "backup_started": false,
+    "restore_started": false,
+    "hardware_test": false,
+    "apt_install_upgrade": false,
+    "automatic_deployment": false,
+    "git_add_all": false,
+    "gates_weakened": false,
+    "deploy_drift_ignored": false,
+    "second_api_port": false
+  },
+  "verification": {
+    "check_runtime_deploy_gate_exit_0": true,
+    "api_version_http_200": true,
+    "runtime_gate_passed_expected": true,
+    "deploy_drift_status_green_expected": true,
+    "safe_test_mode_unlocked_expected": true
+  },
+  "pytest_phase7": {
+    "command_attempted": "python3 -m pytest backend/tests/test_runtime_deploy_gate_eval_v1.py backend/tests/test_dev_dashboard_v1.py backend/tests/test_deploy_manifest.py",
+    "result": "skipped_module_pytest_not_installed_in_runner_environment"
+  },
+  "br001_full_validation_allowed_after": true,
+  "notes": "Large app.py is compared by size/mtime in deploy_drift until content matches; runtime gate treats yellow deploy_drift with backend file mismatch as failure."
+}

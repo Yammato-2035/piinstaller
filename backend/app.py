@@ -630,9 +630,13 @@ def _sync_stale_runner_job_from_systemd(job_id: str) -> None:
     if str(j.get("status") or "") not in ("queued", "running", "cancel_requested"):
         return
     rs = _read_backup_runner_status(job_id)
+    if rs:
+        st_rs = str(rs.get("status") or "").strip().lower()
+        terminal_runner = frozenset({"success", "error", "cancelled", "failed"})
+        if st_rs in terminal_runner:
+            _sync_ram_job_from_runner(job_id)
+            return
     if not rs:
-        return
-    if str(rs.get("status") or "").strip().lower() in ("success", "error", "cancelled", "failed"):
         return
     un = str(rs.get("unit_name") or j.get("unit_name") or "").strip()
     usc = str(rs.get("unit_scope") or j.get("unit_scope") or "system").strip().lower()
