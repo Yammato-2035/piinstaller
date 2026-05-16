@@ -13,7 +13,11 @@
     "failed_code": "backup.blocked_package_activity",
     "failed_gib": 115.06,
     "retry_job_id": "927469d42503",
-    "retry_status": "running_at_evidence_capture",
+    "retry_status": "failed",
+    "retry_code": "backup.failed",
+    "retry_abort_reason": "tar_failed",
+    "retry_gib": 211.74,
+    "retry_duration_s": 14223,
     "verify": false,
     "full_validated": false
   },

@@ -24,7 +24,7 @@ Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery
 7. **Ausführungsversuch (2026-05-17, Agent):** **STOP in Phase 0** — `/media/setuphelfer/br001` fehlt; `target-check` → **STORAGE-PROTECTION-001**; USB nur unter `/media/gabriel/Backup` (nicht als BR-001-Ziel nutzbar). Evidence: `docs/evidence/runtime-results/handoff/BR001_operator_execution_blocked_2026-05-17.json`.
 8. **Mount-Diagnose (2026-05-17):** **STORAGE-PROTECTION-007** statt irreführendem **001** bei fehlendem externen Mount; Operator-Skript **`scripts/operator/setup-external-backup-target.sh`** + KB **`external-backup-target-mount.md`**.
 9. **Runtime Deploy + target-check (2026-05-17):** Auto-Prepare-Code nach `/opt`, Backend-Restart, Bind **`/media/setuphelfer/br001`**; **`target-check` success** — Evidence `automatic_external_target_runtime_deploy_2026-05-17.json`. BR-001 Full Root **noch nicht** gestartet.
-10. **BR-001 Full Root br001 (2026-05-16 STRICT):** Job **`e0bba3dff5e5`** failed **`UPDATE-CONFLICT-041`** (~115 GiB, `apt` PID 536223 leere cmdline — Forensik `package_activity_forensics_2026-05-16.md`). Retry **`927469d42503`** läuft; Verify Deep/SHA256 **offen** bis finales Archiv.
+10. **BR-001 Full Root br001 (2026-05-16 STRICT):** Job **`e0bba3dff5e5`** failed **`UPDATE-CONFLICT-041`** (~115 GiB). Retry **`927469d42503`** failed **`backup.failed`** / **`tar_failed`** (~212 GiB, ~4h, tar rc=1, Partial gelöscht) — Forensik `package_activity_forensics_2026-05-16.md`. Verify Deep **nicht** (kein Archiv).
 
 ## Phasen (Reihenfolge)
 

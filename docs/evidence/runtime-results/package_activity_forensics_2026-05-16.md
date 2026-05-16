@@ -7,7 +7,7 @@
 | job_id | Ergebnis | Ziel | Ende (UTC) |
 |--------|----------|------|------------|
 | `e0bba3dff5e5` | `backup.blocked_package_activity` | `/media/setuphelfer/br001` | `2026-05-16T15:23:48Z` |
-| `927469d42503` | `running` (Forensik-Snapshot) | `/media/setuphelfer/br001` | — |
+| `927469d42503` | `backup.failed` (`tar_failed`, rc=1) | `/media/setuphelfer/br001` | `2026-05-16T19:22:02Z` |
 
 ---
 
@@ -111,19 +111,27 @@ Früherer BR-001-Abbruch mit **nachweislich mutierendem** `apt-get autoremove --
 
 ---
 
-## Phase 1 — Job `927469d42503` (laufend, Snapshot)
+## Phase 1 — Job `927469d42503` (final)
 
 | Feld | Wert |
 |------|------|
-| **status** | `running` |
-| **phase** | `archiving` |
-| **archive_path** | `/media/setuphelfer/br001/pi-backup-full-20260516_172457.tar.gz` |
-| **partial** | ~45 GiB (Snapshot ~18:01 CEST) |
-| **MainPID** | 537002 (`backup_runner.py` unter `/opt`) |
-| **RAM (systemd)** | ~14.9G peak |
-| **stderr** | `/var/log/setuphelfer/backup-927469d42503.log` |
+| **status** | `error` / `backup.failed` |
+| **abort_reason** | `tar_failed` |
+| **Laufzeit** | ~3h 57min (~14223 s) |
+| **bytes bei Abbruch** | ~212 GiB |
+| **partial_deleted** | `true` — kein `.partial`, kein finales `.tar.gz` auf `br001` |
+| **subprocess_returncode** | `1` |
+| **Paketaktivität** | **nicht** Auslöser (Lauf deutlich über erstem 041-Abbruch hinaus) |
 
-**Kein Eingriff** in diesen Lauf.
+### stderr / tar (Auszug)
+
+- `journal … system.journal: Datei hat sich beim Lesen geändert`
+- viele `Socket ignoriert` (ibus, docker, gnupg)
+- `sh failed with exit status 1`
+- **Kein** `Input/output error` in erfasstem Log → **nicht** BACKUP-IO-ERROR-050
+- Log nur ~95 Zeilen (Ende stderr) — vollständiger Kontext: Host `sudo cat` / erweitertes journalctl
+
+**Klassifikation:** `tar_exit_1` (GNU tar Warnungen/Dateiänderung während Lesens), nicht UPDATE-CONFLICT-041.
 
 ---
 
@@ -144,9 +152,7 @@ Früherer BR-001-Abbruch mit **nachweislich mutierendem** `apt-get autoremove --
 
 ## Verify Deep / BR-001-Abschluss
 
-**Ausstehend** bis Job `927469d42503` mit finalem `.tar.gz` endet. Kein Verify, kein SHA256, kein grünes BR-001 ohne echten Erfolg.
-
-Watcher (lokal, read-only): `/tmp/br001_watch_927469d42503.sh` → Log `/tmp/br001_watch_927469d42503.log`
+**Nicht ausgeführt** — Job `927469d42503` endete mit `backup.failed` / `tar_failed`. Kein SHA256, kein `POST /api/backup/verify` deep (kein Archiv).
 
 ---
 
