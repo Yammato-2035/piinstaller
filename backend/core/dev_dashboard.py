@@ -894,6 +894,19 @@ def _enrich_artifacts(repo: Path, mod: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _backup_target_preview_safe() -> dict[str, Any]:
+    """Read-only Hinweis aus backup.json + preview_backup_target_access (keine Schreibprobe)."""
+    try:
+        from core.backup_target_service_access import preview_backup_target_access, read_configured_backup_dir
+
+        bd = read_configured_backup_dir()
+        if not bd:
+            return {"configured": False, "preview": None}
+        return {"configured": True, "preview": preview_backup_target_access(bd)}
+    except Exception as exc:  # noqa: BLE001
+        return {"configured": None, "preview": None, "error": str(exc)}
+
+
 def build_dashboard_status(
     *,
     repo_root: Path | None = None,
@@ -988,6 +1001,7 @@ def build_dashboard_status(
         "release_gate_path": str(gate_path.relative_to(repo)).replace("\\", "/") if gate_path.is_file() else str(gate_path),
         "active_backup_jobs": list(running_jobs or []),
         "mount_summary": _mount_summary_minimal(),
+        "backup_target_preview": _backup_target_preview_safe(),
         "package_activity_summary": {"count": len(package_activity or []), "samples": (package_activity or [])[:5]},
         "git_summary": _git_summary(repo),
         "matrix_files": matrix_hint,

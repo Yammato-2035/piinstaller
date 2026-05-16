@@ -1,0 +1,27 @@
+{
+  "title": "External backup target permission architecture",
+  "date": "2026-05-16",
+  "runtime_gate_required": true,
+  "summary": "Documented and implemented service-user backup target checks; systemd ReadWritePaths moved to /media/setuphelfer; diagnosis IDs BACKUP-TARGET-PERMISSION-001, NOT-WRITABLE-002, USER-MOUNT-003.",
+  "code_paths": [
+    "backend/core/backup_target_service_access.py",
+    "backend/app.py (_validate_backup_dir, API error details)",
+    "backend/core/dev_dashboard.py (backup_target_preview)",
+    "backend/core/backup_recovery_i18n.py",
+    "setuphelfer-backend.service",
+    "debian/setuphelfer-backend.service",
+    "packaging/systemd/setuphelfer-backup@.service",
+    "packaging/systemd/setuphelfer-backup@.service.d/backup-target-br001.conf"
+  ],
+  "kb": [
+    "docs/knowledge-base/storage/external-backup-target-architecture.md",
+    "docs/knowledge-base/runtime/systemd-backup-service-backup-targets.md"
+  ],
+  "constraints": {
+    "no_backup": true,
+    "no_restore": true,
+    "no_chmod_777": true,
+    "no_backend_user_root": true,
+    "no_gate_weakening": true
+  }
+}

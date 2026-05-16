@@ -42,6 +42,9 @@ K_BACKUP_TARGET_FILESYSTEM_NOT_PERMITTED = "backup_recovery.error.backup_target_
 K_BACKUP_TARGET_NOT_WRITABLE = "backup_recovery.error.backup_target_not_writable"
 K_BACKUP_TARGET_WRITE_PROTECTED = "backup_recovery.error.backup_target_write_protected"
 K_TARGET_WRITE_IO_ERROR = "backup_recovery.error.target_write_io_error"
+K_BACKUP_TARGET_SERVICE_PERMISSION_001 = "backup_recovery.error.backup_target_service_permission_001"
+K_BACKUP_TARGET_SERVICE_NOT_WRITABLE_002 = "backup_recovery.error.backup_target_service_not_writable_002"
+K_BACKUP_TARGET_USER_MEDIA_MOUNT_003 = "backup_recovery.error.backup_target_user_media_mount_003"
 
 # recovery/main.py
 K_RECOVERY_MENU_TITLE = "recovery.menu.title"
@@ -93,6 +96,9 @@ DEFAULT_CATALOG: dict[str, str] = {
     K_BACKUP_TARGET_NOT_WRITABLE: "Backup target directory is not writable for the Setuphelfer process (check owner/group, e.g. root:setuphelfer and mode 0770).",
     K_BACKUP_TARGET_WRITE_PROTECTED: "Backup or restore target blocked by storage write protection (see diagnosis id in details).",
     K_TARGET_WRITE_IO_ERROR: "Backup failed: the target medium returned a write I/O error while creating the archive (EIO). Check cables, power, SMART/dmesg, and remount-ro; do not treat the partial file as a valid backup.",
+    K_BACKUP_TARGET_SERVICE_PERMISSION_001: "Backup path is allowed but the Setuphelfer service user cannot write (group ACL, chmod, or systemd ReadWritePaths under ProtectSystem=strict).",
+    K_BACKUP_TARGET_SERVICE_NOT_WRITABLE_002: "Backup target is not writable for the Setuphelfer service user.",
+    K_BACKUP_TARGET_USER_MEDIA_MOUNT_003: "Path is under a desktop user session mount (/media/<user>/ or /run/media/<user>/). Use /media/setuphelfer/… or /mnt/setuphelfer/external/… with group setuphelfer — not a login-owned 0700 directory.",
     K_RECOVERY_MENU_TITLE: "Setuphelfer recovery",
     K_RECOVERY_OPT_USB: "Restore from USB",
     K_RECOVERY_OPT_CLOUD: "Restore from cloud",
@@ -135,6 +141,9 @@ DEFAULT_CATALOG_DE: dict[str, str] = {
     K_BACKUP_TARGET_NOT_WRITABLE: "Backup-Ziel ist für den Setuphelfer-Prozess nicht beschreibbar (Besitzer/Gruppe prüfen, z. B. root:setuphelfer und Modus 0770).",
     K_BACKUP_TARGET_WRITE_PROTECTED: "Backup- oder Restore-Ziel durch Storage-Schreibschutz blockiert (Diagnose-ID in den Details).",
     K_TARGET_WRITE_IO_ERROR: "Backup fehlgeschlagen: Das Zielmedium meldete einen Schreib-E/A-Fehler beim Erstellen des Archivs (EIO). Kabel, Stromversorgung, SMART/dmesg und remount-ro prüfen; die .partial-Datei nicht als gültiges Backup verwenden.",
+    K_BACKUP_TARGET_SERVICE_PERMISSION_001: "Pfad ist zulässig, aber der Setuphelfer-Dienstnutzer darf nicht schreiben (Gruppe/ACL/chmod oder systemd ReadWritePaths bei ProtectSystem=strict).",
+    K_BACKUP_TARGET_SERVICE_NOT_WRITABLE_002: "Backup-Ziel ist für den Setuphelfer-Dienstnutzer nicht beschreibbar.",
+    K_BACKUP_TARGET_USER_MEDIA_MOUNT_003: "Pfad liegt unter einem Desktop-Benutzer-Mount (/media/<Benutzer>/ oder /run/media/<Benutzer>/). Nutzen Sie /media/setuphelfer/… oder /mnt/setuphelfer/external/… mit Gruppe setuphelfer — kein login-eigenes 0700-Verzeichnis.",
     K_RECOVERY_MENU_TITLE: "Setuphelfer-Wiederherstellung",
     K_RECOVERY_OPT_USB: "Wiederherstellen von USB",
     K_RECOVERY_OPT_CLOUD: "Wiederherstellen aus der Cloud",

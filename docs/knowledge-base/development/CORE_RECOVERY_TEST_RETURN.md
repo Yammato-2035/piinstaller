@@ -17,6 +17,7 @@ Governance/Runtime-Gate ist stabil (Phase 0 grün). Rückkehr zu echten Recovery
 1. **Externes Ziel vs. Dienstbenutzer:** USB ist unter `/media/gabriel/Backup` gemountet (**0700** `gabriel:gabriel`). Der Backend-Dienst läuft als **`User=setuphelfer`** und kann diesen Pfad **nicht** lesen/schreiben → API-`POST /api/backup/create` mit externem Medium scheitert hier ohne Betreiber-Anpassung (ACL/Gruppe/eigenes Mount unter `/mnt/setuphelfer/…`).
 2. **Default `backup_dir`:** `/mnt/setuphelfer/backups` liegt auf **/** (internes NVMe) — für diesen STRICT-Lauf **kein** Ersatz für „externes Medium“.
 3. **Package-Freeze:** `systemctl stop` der apt-Timer in dieser Session **nicht** ausgeführt (interaktives `sudo`-Passwort nötig). Vor einem echten Lauf wie in der Runbook-Vorgabe mit `pkexec`/Konsole nachholen.
+4. **Zielrechte / systemd (2026-05-16):** Architektur und API-Diagnosen **`BACKUP-TARGET-*`** dokumentiert und implementiert; **`ReadWritePaths`** im Repo auf **`/media/setuphelfer`** vereinheitlicht (ohne `/media/gabriel/…`). Betreiber: Verzeichnis anlegen + Dienst neu starten — siehe KB `external-backup-target-architecture.md`.
 
 ## Phasen (Reihenfolge)
 

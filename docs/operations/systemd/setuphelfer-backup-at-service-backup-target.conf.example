@@ -10,4 +10,4 @@
 
 [Service]
 ReadWritePaths=
-ReadWritePaths=/mnt/setuphelfer /var/lib/setuphelfer /var/log/setuphelfer /media/gabriel/setuphelfer-back
+ReadWritePaths=/mnt/setuphelfer /var/lib/setuphelfer /var/log/setuphelfer /media/setuphelfer

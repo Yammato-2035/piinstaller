@@ -33,7 +33,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt /mnt/setuphelfer /media/gabriel/setuphelfer-back
+ReadWritePaths=/opt/setuphelfer /etc/setuphelfer /var/log/setuphelfer /var/lib/setuphelfer /tmp /mnt /mnt/setuphelfer /media/setuphelfer
 MemoryMax=512M
 LimitNOFILE=4096
 

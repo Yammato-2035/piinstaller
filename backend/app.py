@@ -4543,7 +4543,9 @@ def _validate_backup_dir(path_str: str) -> str:
     - keine gefährlichen Zeichen (Shell-Injection)
     - Storage-Schreibschutz (Allowlist, keine System-/Boot-/Windows-Ziele)
     - darf kein kritischer Systempfad sein
+    - Dienstnutzer (setuphelfer) muss beschreiben können (BACKUP-TARGET-*)
     """
+    from core.backup_target_service_access import assert_backup_target_writable_for_service
     from core.safe_device import WriteTargetProtectionError, validate_write_target
 
     resolved = _normalize_path(path_str)
@@ -4555,6 +4557,7 @@ def _validate_backup_dir(path_str: str) -> str:
         raise ValueError("backup_dir darf kein kritischer Systempfad sein")
     if str(resolved) == "/":
         raise ValueError("backup_dir darf nicht / sein")
+    assert_backup_target_writable_for_service(resolved)
     return str(resolved)
 
 
@@ -10955,9 +10958,13 @@ async def backup_set_settings(request: Request):
     try:
         base["backup_dir"] = _validate_backup_dir(base.get("backup_dir", "/mnt/setuphelfer/backups"))
     except Exception as ve:
+        from core.backup_target_service_access import extract_backup_target_diagnosis_id
         from core.safe_device import WriteTargetProtectionError
 
         details: dict = {"reason": str(ve)}
+        btd = extract_backup_target_diagnosis_id(str(ve))
+        if btd:
+            details["diagnosis_id"] = btd
         if isinstance(ve, WriteTargetProtectionError):
             details["diagnosis_id"] = ve.diagnosis_id
         elif isinstance(ve.__cause__, WriteTargetProtectionError):
@@ -11896,6 +11903,12 @@ async def backup_target_check(backup_dir: str, create: int = 0):
                 bc = "backup.target_traverse_denied"
                 det["diagnosis_id"] = "STORAGE-PROTECTION-006"
                 det["reason"] = msg.split(":", 1)[1].strip() if ":" in msg else msg
+            else:
+                from core.backup_target_service_access import extract_backup_target_diagnosis_id
+
+                btd = extract_backup_target_diagnosis_id(msg)
+                if btd:
+                    det["diagnosis_id"] = btd
             return JSONResponse(
                 status_code=200,
                 content=with_backup_contract(
@@ -12172,13 +12185,19 @@ async def backup_profile_preview(request: Request):
     try:
         bd = _validate_backup_dir(str(bd_raw))
     except Exception as ve:
+        from core.backup_target_service_access import extract_backup_target_diagnosis_id
+
+        det = {"reason": str(ve)}
+        btd = extract_backup_target_diagnosis_id(str(ve))
+        if btd:
+            det["diagnosis_id"] = btd
         return JSONResponse(
             status_code=200,
             content=with_backup_contract(
                 {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"},
                 "backup.path_invalid",
                 "error",
-                {"reason": str(ve)},
+                det,
             ),
         )
     tf: Optional[int] = None
@@ -13553,13 +13572,19 @@ async def create_backup(request: Request):
         try:
             backup_dir = _validate_backup_dir(backup_dir)
         except Exception as ve:
+            from core.backup_target_service_access import extract_backup_target_diagnosis_id
+
+            det: dict[str, Any] = {"reason": str(ve)}
+            btd = extract_backup_target_diagnosis_id(str(ve))
+            if btd:
+                det["diagnosis_id"] = btd
             return JSONResponse(
                 status_code=200,
                 content=with_backup_contract(
                     {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"},
                     "backup.path_invalid",
                     "error",
-                    {"reason": str(ve)},
+                    det,
                 ),
             )
 

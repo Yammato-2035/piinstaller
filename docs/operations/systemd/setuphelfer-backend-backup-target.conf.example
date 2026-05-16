@@ -1,6 +1,6 @@
-# Drop-in: Schreibzugriff auf freigegebenes BR-001-Backup-Ziel (Beispiel)
+# Drop-in: Schreibzugriff auf freigegebenes externes Backup-Ziel (Beispiel)
 
-**Zielpfad (verbindlich):** `/media/gabriel/setuphelfer-back`
+**Zielpfad (empfohlen, ohne Login-Home-Abhängigkeit):** `/media/setuphelfer` (z. B. Unterverzeichnis pro Volume)
 
 Kopieren nach:
 
@@ -8,7 +8,7 @@ Kopieren nach:
 
 ```ini
 [Service]
-ReadWritePaths=/media/gabriel/setuphelfer-back
+ReadWritePaths=/media/setuphelfer
 ```
 
 Dann:
@@ -18,4 +18,6 @@ sudo systemctl daemon-reload
 sudo systemctl restart setuphelfer-backend.service
 ```
 
-Die Haupt-Unit (`debian/setuphelfer-backend.service` im Repo) enthält denselben Pfad künftig in **`ReadWritePaths=`** für Neuinstallationen; dieses Drop-in dient der Nachrüstung ohne vollständige Unit-Überschreibung.
+Die Haupt-Unit (`debian/setuphelfer-backend.service` im Repo) enthält **`/media/setuphelfer`** in **`ReadWritePaths=`** für Neuinstallationen; dieses Drop-in dient der Nachrüstung oder zusätzlichen Pfaden ohne vollständige Unit-Überschreibung.
+
+**Migration:** Frühere Beispiele mit `/media/gabriel/setuphelfer-back` sind an einen konkreten Desktop-Login gebunden und für den Dienstnutzer `setuphelfer` oft ungeeignet; siehe `docs/knowledge-base/storage/external-backup-target-architecture.md`.
