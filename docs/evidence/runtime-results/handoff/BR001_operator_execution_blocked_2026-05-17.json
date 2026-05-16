@@ -1,0 +1,27 @@
+{
+  "title": "BR-001 final operator execution attempt",
+  "date": "2026-05-17",
+  "phase0_target_check": {
+    "backup_dir": "/media/setuphelfer/br001",
+    "path_exists": false,
+    "api_status": "error",
+    "code": "backup.path_invalid",
+    "reason": "STORAGE-PROTECTION-001: Schreibzugriff auf Systemplatte ist nicht erlaubt"
+  },
+  "host_storage_note": "USB ext4 sda1 mounted at /media/gabriel/Backup — BR001 path /media/setuphelfer/br001 not created; STRICT forbids using /media/<user> as backup target",
+  "phases_executed": {
+    "operator_setup": false,
+    "package_freeze": false,
+    "full_root_backup": false,
+    "sha256": false,
+    "verify_deep": false,
+    "timer_cleanup": false
+  },
+  "runtime_gate_after_stop": {
+    "check_runtime_deploy_gate_exit": 0,
+    "runtime_gate_passed": true,
+    "deploy_drift": "green",
+    "safe_test_mode": "UNLOCKED"
+  },
+  "commit_intended_success": "skipped_no_fake_evidence"
+}
