@@ -1,0 +1,46 @@
+{
+  "title": "BR-001 Final Full Root — Ausführung (Preflight / Blocker)",
+  "date_utc": "2026-05-16",
+  "success": false,
+  "phase0_runtime_gate": {
+    "check_runtime_deploy_gate_exit": 0,
+    "runtime_gate_passed": true,
+    "deploy_drift": "green",
+    "safe_test_mode": "UNLOCKED"
+  },
+  "phase1_external_target": {
+    "path_planned": "/media/setuphelfer/br001",
+    "path_exists": false,
+    "operator_mkdir_chown_chmod": "required_sudo_interactive_not_available_in_agent",
+    "lsblk_note": "/media/setuphelfer not present on host; USB may be mounted elsewhere (e.g. /media/gabriel/Backup) — migration to /media/setuphelfer still pending",
+    "api_target_check_sample": {
+      "backup_dir": "/media/setuphelfer/br001",
+      "result": "error",
+      "reason": "STORAGE-PROTECTION-001: Schreibzugriff auf Systemplatte ist nicht erlaubt",
+      "interpretation": "Zielpfad existiert nicht / Mount-Anker fällt in safe_device-Klassifikation nicht als externes Block-FS durch — Ziel muss real existieren und an USB/ext4 hängen"
+    }
+  },
+  "phase2_package_freeze": {
+    "executed": false,
+    "reason": "sudo -n systemctl stop … requires password"
+  },
+  "phases4_to6": {
+    "full_root_backup_started": false,
+    "verify_deep": false,
+    "timer_cleanup": "n/a"
+  },
+  "constraints_respected": {
+    "no_restore": true,
+    "no_internal_target": true,
+    "no_apt": true,
+    "no_fake_evidence": true,
+    "no_return_to_media_user_path": true
+  },
+  "operator_required_next": [
+    "Mount externes ext4 (USB) und lege /media/setuphelfer/<label> an: sudo mkdir -p /media/setuphelfer/<label> && sudo chown root:setuphelfer … && sudo chmod 0770 …",
+    "systemctl daemon-reload && restart setuphelfer-backend nach ReadWritePaths-Anpassung falls nötig",
+    "GET /api/backup/target-check?backup_dir=… muss success liefern (kein STORAGE-001)",
+    "Dann POST /api/backup/create type=full, confirm_full_expert, async, backup_dir=…",
+    "Nach Abschluss POST /api/backup/verify mode=deep"
+  ]
+}
