@@ -32,6 +32,11 @@ from core.backup_archive_options import (
     build_full_root_tar_command,
 )
 from core.backup_progress import merge_progress_optional, quick_target_preflight
+from core.backup_tar_warning_classification import (
+    classification_to_job_status_fields,
+    classify_tar_run,
+    decide_tar_nonzero_job_outcome,
+)
 
 # Status-Herzschlag während teurer Finalisierung (SHA256 / Manifest-Rewrite)
 _FINALIZE_PROGRESS_INTERVAL_S = 30.0
@@ -133,6 +138,86 @@ def _stderr_indicates_target_write_io_error(head_text: str, tail_text: str) -> b
     if "wrote only" in blob and "byte" in blob:
         return True
     return False
+
+
+def _read_full_tar_stderr(head_text: str, tail_text: str, stderr_log_path: Path | None) -> str:
+    chunks = [head_text or "", tail_text or ""]
+    if stderr_log_path and stderr_log_path.is_file():
+        try:
+            chunks.append(stderr_log_path.read_text(encoding="utf-8", errors="replace"))
+        except OSError:
+            pass
+    return "\n".join(chunks)
+
+
+def _runner_verify_deep(archive_path: str | Path) -> tuple[bool, str | None]:
+    import tempfile
+
+    from modules.backup_verify import verify_deep
+
+    with tempfile.TemporaryDirectory(prefix="setuphelfer-runner-vd-") as td:
+        ok, key, _details = verify_deep(
+            str(archive_path),
+            verify_checksums=True,
+            strict_archive_manifest=False,
+            try_loop_mount_image=False,
+            extract_root=td,
+        )
+        return bool(ok), (str(key) if key else None)
+
+
+def _cleanup_archive(path: str | Path) -> None:
+    try:
+        Path(path).unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+def _publish_tar_nonzero_failure(
+    status_file: Path,
+    status: dict[str, Any],
+    *,
+    partial_path: str,
+    rc: int,
+    stderr_excerpt: str,
+    stderr_tail: str,
+    stderr_log_path: Path | None,
+    tar_class_fields: dict[str, Any],
+    outcome: dict[str, Any],
+) -> int:
+    partial_deleted = bool(outcome.get("partial_deleted"))
+    if partial_deleted:
+        partial_deleted = _cleanup_partial(partial_path)
+    _skip = {
+        "status",
+        "code",
+        "severity",
+        "abort_reason",
+        "partial_deleted",
+        "classification",
+        "allows_warning_downgrade",
+    }
+    _skip |= set(tar_class_fields.keys())
+    _update_status(
+        status_file,
+        status,
+        status=str(outcome.get("status") or "error"),
+        code=str(outcome.get("code") or "backup.failed"),
+        severity=str(outcome.get("severity") or "error"),
+        diagnosis_id=None,
+        abort_reason=outcome.get("abort_reason"),
+        backup_finished_at=_now_iso(),
+        stderr_excerpt=stderr_excerpt,
+        stderr_tail=stderr_tail,
+        subprocess_returncode=rc,
+        tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
+        suspend_guard_active=False,
+        partial_deleted=partial_deleted,
+        **tar_class_fields,
+        **{k: v for k, v in outcome.items() if k not in _skip},
+    )
+    _mark_terminal()
+    return 1
 
 
 def _sha256_file(path: str | Path) -> str:
@@ -671,7 +756,91 @@ def _run_tar_pipeline_from_preflight(
             abort_reason="user_cancel",
         )
         return 0
-    if rc == 0:
+
+    stderr_blob = _read_full_tar_stderr(head_text, tail_text, stderr_log_path)
+    tar_cls = classify_tar_run(tar_exit_code=rc, stderr_text=stderr_blob)
+    tar_class_fields = classification_to_job_status_fields(tar_cls)
+    volatile_tar_finalize = False
+
+    if inhibit_failed:
+        _update_status(
+            status_file,
+            status,
+            status="error",
+            code="backup.inhibit_failed",
+            severity="error",
+            diagnosis_id="SYSTEMD-INHIBIT-042",
+            abort_reason="inhibit_failed",
+            backup_finished_at=_now_iso(),
+            inhibit_available=True,
+            inhibit_error=head_text.strip()[:300],
+            suspend_guard_active=False,
+            partial_deleted=_cleanup_partial(partial_path),
+            subprocess_returncode=rc,
+            stderr_tail=tail_text,
+            stderr_excerpt=stderr_excerpt_tail,
+            tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
+            **tar_class_fields,
+        )
+        _mark_terminal()
+        return 1
+
+    if _stderr_indicates_target_write_io_error(head_text, tail_text):
+        _update_status(
+            status_file,
+            status,
+            status="error",
+            code="backup.write_io_error",
+            severity="error",
+            diagnosis_id="BACKUP-IO-ERROR-050",
+            abort_reason="target_write_io_error",
+            backup_finished_at=_now_iso(),
+            stderr_excerpt=stderr_excerpt_tail,
+            stderr_tail=tail_text,
+            subprocess_returncode=rc,
+            tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
+            suspend_guard_active=False,
+            partial_deleted=False,
+            **tar_class_fields,
+        )
+        _mark_terminal()
+        return 1
+
+    if rc != 0:
+        try:
+            _partial_stat = Path(partial_path).stat()
+            _partial_exists = True
+            _partial_bytes = int(_partial_stat.st_size)
+        except OSError:
+            _partial_exists = False
+            _partial_bytes = 0
+        if tar_cls.allows_warning_downgrade and _partial_exists and _partial_bytes > 0:
+            volatile_tar_finalize = True
+        else:
+            _outcome = decide_tar_nonzero_job_outcome(
+                tar_exit_code=rc,
+                stderr_text=stderr_blob,
+                partial_exists=_partial_exists,
+                partial_bytes=_partial_bytes,
+                final_archive_exists=False,
+                finalize_attempted=False,
+                finalize_ok=False,
+                sha256_verified=False,
+                verify_deep_ok=False,
+            )
+            return _publish_tar_nonzero_failure(
+                status_file,
+                status,
+                partial_path=partial_path,
+                rc=rc,
+                stderr_excerpt=stderr_excerpt_tail,
+                stderr_tail=tail_text,
+                stderr_log_path=stderr_log_path,
+                tar_class_fields=tar_class_fields,
+                outcome=_outcome,
+            )
+
+    if rc == 0 or volatile_tar_finalize:
         completed_at = _now_iso()
         finalize_prog_state: dict[str, Any] = {"t": 0.0, "phase": ""}
 
@@ -739,6 +908,29 @@ def _run_tar_pipeline_from_preflight(
             if ok_manifest:
                 break
         if not ok_manifest:
+            if volatile_tar_finalize:
+                _outcome = decide_tar_nonzero_job_outcome(
+                    tar_exit_code=rc,
+                    stderr_text=stderr_blob,
+                    partial_exists=True,
+                    partial_bytes=current_size,
+                    final_archive_exists=False,
+                    finalize_attempted=True,
+                    finalize_ok=False,
+                    sha256_verified=False,
+                    verify_deep_ok=False,
+                )
+                return _publish_tar_nonzero_failure(
+                    status_file,
+                    status,
+                    partial_path=partial_path,
+                    rc=rc,
+                    stderr_excerpt=stderr_excerpt_tail,
+                    stderr_tail=tail_text,
+                    stderr_log_path=stderr_log_path,
+                    tar_class_fields=tar_class_fields,
+                    outcome=_outcome,
+                )
             _update_status(
                 status_file,
                 status,
@@ -785,6 +977,64 @@ def _run_tar_pipeline_from_preflight(
                     "phase": "completed",
                 }
             )
+            if volatile_tar_finalize:
+                vd_ok, vd_key = _runner_verify_deep(archive_path)
+                _outcome = decide_tar_nonzero_job_outcome(
+                    tar_exit_code=rc,
+                    stderr_text=stderr_blob,
+                    partial_exists=True,
+                    partial_bytes=current_size,
+                    final_archive_exists=True,
+                    finalize_attempted=True,
+                    finalize_ok=True,
+                    sha256_verified=bool(payload_hash),
+                    verify_deep_ok=vd_ok,
+                )
+                if str(_outcome.get("code")) == "backup.success_with_warnings":
+                    _update_status(
+                        status_file,
+                        status,
+                        status="success",
+                        code="backup.success_with_warnings",
+                        severity="success",
+                        warning_status="completed_with_warnings",
+                        backup_integrity_status="verified",
+                        diagnosis_id=None,
+                        abort_reason=None,
+                        backup_finished_at=_now_iso(),
+                        suspend_guard_active=False,
+                        partial_deleted=not Path(partial_path).exists(),
+                        archive_path=archive_path,
+                        partial_path=partial_path,
+                        progress_optional=merged_ok,
+                        manifest_hash=f"sha256:{payload_hash}",
+                        subprocess_returncode=rc,
+                        tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
+                        verify_deep_ok=vd_ok,
+                        verify_deep_message_key=vd_key,
+                        warnings=_outcome.get("warnings"),
+                        **tar_class_fields,
+                    )
+                    try:
+                        Path(manifest_tmp_path).unlink(missing_ok=True)
+                    except Exception:
+                        pass
+                    _mark_terminal()
+                    return 0
+                _cleanup_archive(archive_path)
+                if "partial_deleted" in _outcome and _outcome.get("partial_deleted"):
+                    _cleanup_partial(partial_path)
+                return _publish_tar_nonzero_failure(
+                    status_file,
+                    status,
+                    partial_path=partial_path,
+                    rc=rc,
+                    stderr_excerpt=stderr_excerpt_tail,
+                    stderr_tail=tail_text,
+                    stderr_log_path=stderr_log_path,
+                    tar_class_fields=tar_class_fields,
+                    outcome=_outcome,
+                )
             _update_status(
                 status_file,
                 status,
@@ -809,6 +1059,29 @@ def _run_tar_pipeline_from_preflight(
                 pass
             _mark_terminal()
             return 0
+        if volatile_tar_finalize:
+            _outcome = decide_tar_nonzero_job_outcome(
+                tar_exit_code=rc,
+                stderr_text=stderr_blob,
+                partial_exists=True,
+                partial_bytes=current_size,
+                final_archive_exists=False,
+                finalize_attempted=True,
+                finalize_ok=False,
+                sha256_verified=False,
+                verify_deep_ok=False,
+            )
+            return _publish_tar_nonzero_failure(
+                status_file,
+                status,
+                partial_path=partial_path,
+                rc=rc,
+                stderr_excerpt=stderr_excerpt_tail,
+                stderr_tail=tail_text,
+                stderr_log_path=stderr_log_path,
+                tar_class_fields=tar_class_fields,
+                outcome=_outcome,
+            )
         _update_status(
             status_file,
             status,
@@ -827,66 +1100,28 @@ def _run_tar_pipeline_from_preflight(
         _mark_terminal()
         return 1
 
-    if inhibit_failed:
-        _update_status(
-            status_file,
-            status,
-            status="error",
-            code="backup.inhibit_failed",
-            severity="error",
-            diagnosis_id="SYSTEMD-INHIBIT-042",
-            abort_reason="inhibit_failed",
-            backup_finished_at=_now_iso(),
-            inhibit_available=True,
-            inhibit_error=head_text.strip()[:300],
-            suspend_guard_active=False,
-            partial_deleted=_cleanup_partial(partial_path),
-            subprocess_returncode=rc,
-            stderr_tail=tail_text,
-            stderr_excerpt=stderr_excerpt_tail,
-            tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
-        )
-        _mark_terminal()
-        return 1
-
-    if _stderr_indicates_target_write_io_error(head_text, tail_text):
-        _update_status(
-            status_file,
-            status,
-            status="error",
-            code="backup.write_io_error",
-            severity="error",
-            diagnosis_id="BACKUP-IO-ERROR-050",
-            abort_reason="target_write_io_error",
-            backup_finished_at=_now_iso(),
-            stderr_excerpt=stderr_excerpt_tail,
-            stderr_tail=tail_text,
-            subprocess_returncode=rc,
-            tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
-            suspend_guard_active=False,
-            partial_deleted=False,
-        )
-        _mark_terminal()
-        return 1
-
-    _update_status(
+    _outcome = decide_tar_nonzero_job_outcome(
+        tar_exit_code=rc,
+        stderr_text=stderr_blob,
+        partial_exists=False,
+        partial_bytes=0,
+        final_archive_exists=False,
+        finalize_attempted=False,
+        finalize_ok=False,
+        sha256_verified=False,
+        verify_deep_ok=False,
+    )
+    return _publish_tar_nonzero_failure(
         status_file,
         status,
-        status="error",
-        code="backup.failed",
-        severity="error",
-        diagnosis_id=None,
-        abort_reason="tar_failed",
-        backup_finished_at=_now_iso(),
+        partial_path=partial_path,
+        rc=rc,
         stderr_excerpt=stderr_excerpt_tail,
         stderr_tail=tail_text,
-        subprocess_returncode=rc,
-        tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
-        suspend_guard_active=False,
-        partial_deleted=_cleanup_partial(partial_path),
+        stderr_log_path=stderr_log_path,
+        tar_class_fields=tar_class_fields,
+        outcome=_outcome,
     )
-    _mark_terminal()
-    return 1
 
 
 def _parse_args() -> argparse.Namespace:

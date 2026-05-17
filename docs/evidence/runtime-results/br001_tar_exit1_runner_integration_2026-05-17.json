@@ -1,0 +1,46 @@
+{
+  "schema": "setuphelfer.br001.tar_exit1_runner_integration.v1",
+  "date": "2026-05-17",
+  "input_forensics_file": "docs/evidence/runtime-results/br001_tar_exit1_forensics_2026-05-16.json",
+  "code_files_changed": [
+    "backend/core/backup_tar_warning_classification.py",
+    "backend/tools/backup_runner.py",
+    "backend/tests/test_backup_tar_warning_classification_v1.py",
+    "backend/tests/test_backup_runner_tar_exit1_integration_v1.py"
+  ],
+  "tests_added": [
+    "backend/tests/test_backup_runner_tar_exit1_integration_v1.py"
+  ],
+  "tests_passed": {
+    "test_backup_tar_warning_classification_v1": "12/12 unittest OK",
+    "test_backup_runner_tar_exit1_integration_v1": "12/12 unittest OK",
+    "test_backup_runner_write_io_v1": "6/6 manual",
+    "test_backup_recovery_engines": "33/33 unittest OK"
+  },
+  "runner_integration_status": "integrated_workspace_not_deployed",
+  "downgrade_rules": [
+    "tar exit 1 is never plain backup.success",
+    "volatile-only may attempt finalize on non-empty .partial then verify_deep",
+    "backup.success_with_warnings only if sha256 + verify_deep OK",
+    "no final archive => backup.warning_not_promoted and partial cleanup",
+    "io/space/eof/critical paths => backup.failed"
+  ],
+  "status_fields_added": [
+    "tar_warning_classification",
+    "tar_warning_downgrade_allowed",
+    "operational_success_allowed",
+    "final_archive_required",
+    "sha256_required",
+    "verify_deep_required",
+    "volatile_warning_paths",
+    "fatal_patterns_found",
+    "tar_downgrade_blockers",
+    "warning_status",
+    "backup_integrity_status",
+    "warnings"
+  ],
+  "excludes_changed": false,
+  "no_backup_started": true,
+  "no_restore_started": true,
+  "no_deploy_done": true
+}

@@ -4,6 +4,26 @@
 
 **Ja.** Solange **`GET /api/version`** nicht **HTTP 200** mit **`status":"success"`** liefert oder die produktive **`config/version.json`** nicht dem freigegebenen Schema entspricht, sind Testergebnisse nicht belastbar. Zuerst **`scripts/check-backend-version-gate.sh`** und das Update-Runbook (`docs/operations/BACKEND_UPDATE_RUNBOOK_DE.md`) — **kein** Backup-Start bei `blocked_update_required`.
 
+## Warum bedeutet tar Exitcode 1 nicht automatisch ein kaputtes Backup?
+
+GNU **tar** verwendet Exitcode **1** für „mit Warnungen beendet“ (z. B. **Datei hat sich beim Lesen geändert**, **Socket ignoriert**). Das Archiv kann trotzdem vollständig sein — Setuphelfer wertet das **nicht** allein aus dem Exitcode ab. Details und BR-001-Forensik: **`docs/backup/TAR_EXIT_1_CLASSIFICATION_DE.md`**, Evidence `docs/evidence/runtime-results/br001_tar_exit1_forensics_2026-05-16.json`.
+
+## Warum akzeptiert Setuphelfer tar Exit 1 nicht blind?
+
+Der Runner (`backup_runner.py`) bricht bei **`returncode != 0`** mit **`abort_reason: tar_failed`** ab, entfernt die `.partial` und erzeugt **kein** finales Archiv — damit kein SHA256 und kein Verify Deep. Das verhindert „Warnung = Erfolg“ ohne Nachweis. Der Runner klassifiziert stderr und schreibt u. a. `tar_warning_classification` in den Jobstatus. **Volatile-only** führt nur nach erfolgreicher Finalisierung **und** Verify Deep zu `backup.success_with_warnings` / `completed_with_warnings` — nicht zu normalem `backup.success`. Ohne finales Archiv bleibt der Lauf fehlgeschlagen (`backup.warning_not_promoted`). Deploy der Runner-Version nach `/opt` ist weiterhin ein separater Schritt.
+
+## Warum werden volatile Live-Dateien gesondert klassifiziert?
+
+Pfade wie **Journal**, **~/.cache**, **Agent-Sockets** (gpg, ibus, Docker Desktop) ändern sich während eines langen Full-Backups normal. Sie sind von **kritischen** Pfaden (`/etc`, `/boot`, …) zu trennen. Nur erlaubte volatile Muster dürfen überhaupt in Betracht kommen, den Job von „hart fehlgeschlagen“ herabzustufen — siehe **`docs/knowledge-base/backup/TAR_EXIT_1_LIVE_FILES.md`**.
+
+## Warum bleiben SHA256 und Verify Deep nach Warnungen zwingend?
+
+Exitcode und stderr beweisen **keine** Integrität des gzip/tar-Streams. Setuphelfer verlangt ein **finales** `.tar.gz`, eingebettetes **MANIFEST.json**, Payload-**SHA256** und **Verify Deep**, bevor ein Lauf mit tar-Warnungen als Erfolg gelten könnte.
+
+## Warum gibt es ohne finales Archiv keinen Erfolg?
+
+Ohne Rename von `.partial` zu `.tar.gz` fehlt das Artefakt für Hash, Manifest und Restore. Beispiel Job **`927469d42503`**: ~227 GiB geschrieben, danach Exit **1**, **`partial_deleted: true`** — Status bleibt **`backup.failed`**, Verify wird **nicht** gestartet.
+
 ## Warum dauert ein Full-Root-Backup so lange und skaliert schlecht mit vielen CPU-Kernen?
 
 **gzip** (und klassisches **`tar -czf`**) komprimiert im Wesentlichen **single-threaded**. Viele Kerne helfen kaum; oft limitieren **I/O** und **eine CPU** den Durchsatz. **pigz** nutzt mehrere Threads, bleibt aber **gzip-kompatibel** (schneller, wenn installiert). **zstd** ist schneller/skaliert besser, erfordert aber eine **durchgängige** Pipeline inkl. Finalisierung/Manifest — bis dahin bleibt das Produkt **gzip-kompatibel**. Ein **vollständiges Root-Backup** ist bewusst ein **Experten-/Langläuferpfad**; für Alltag und Pi eignen sich **kleinere Profile** (siehe **`docs/backup/BACKUP_PERFORMANCE_DE.md`**, Profilübersicht **`docs/backup/BACKUP_PROFILES_DE.md`**, Testmatrix **BR-016**, **BR-019**).

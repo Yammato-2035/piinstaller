@@ -1,0 +1,53 @@
+{
+  "schema": "setuphelfer.br001.tar_exit1_forensics.v1",
+  "job_id": "927469d42503",
+  "started_at": "2026-05-16T15:24:57.968050+00:00",
+  "failed_at": "2026-05-16T19:22:02.177632+00:00",
+  "runtime_seconds": 14223,
+  "bytes_written_before_cleanup": 227273342976,
+  "tar_exit_code": 1,
+  "abort_reason": "tar_failed",
+  "stderr_summary": "GNU tar exit 1 after ~211 GiB partial write: predominantly Socket ignoriert on gpg-agent, Docker Desktop, ibus cache, and Discord cache sockets; one live journal file change under /var/log/journal/.../system.journal; pipeline ended with 'sh failed with exit status 1'. No I/O, disk-full, EOF, or permission-denied on critical paths in stderr.",
+  "full_warning_categories": [
+    "leading_slash_stripped_info",
+    "socket_ignored",
+    "file_changed_while_reading",
+    "shell_pipeline_exit_1"
+  ],
+  "critical_errors_found": false,
+  "io_errors_found": false,
+  "package_activity_found": false,
+  "volatile_paths_detected": [
+    "/root/.gnupg/S.gpg-agent.extra",
+    "/root/.gnupg/S.gpg-agent.browser",
+    "/root/.gnupg/S.gpg-agent.ssh",
+    "/root/.gnupg/S.dirmngr",
+    "/root/.gnupg/S.gpg-agent",
+    "/var/log/journal/cc3dd4e4e6964881a0a0d368b6df3544/system.journal",
+    "/home/volker/.var/app/com.discordapp.Discord/cache/scoped_dirTM63Te/SingletonSocket",
+    "/home/volker/.docker/desktop/filesystem-volume.sock",
+    "/home/volker/.docker/desktop/ethernet-vfkit.sock",
+    "/home/volker/.docker/desktop/vms/0/00000002.000007cf",
+    "/home/volker/.docker/desktop/vpnkit-bridge-fd.sock",
+    "/home/volker/.docker/desktop/console.sock",
+    "/home/volker/.cache/ibus/dbus-*",
+    "/home/gabriel/.cache/ibus/dbus-*"
+  ],
+  "critical_paths_detected": [],
+  "classification": "TAR_VOLATILE_WARNINGS_ONLY",
+  "classification_module": "core.backup_tar_warning_classification.classify_tar_run",
+  "recommendation": "Do not treat exit 1 as success without final archive. For next BR-001: prefer profile recommended/fast-system (adds /var/cache, /var/tmp excludes) or extend full-expert excludes for /var/log/journal, home .cache/ibus, and document Docker Desktop as non-deterministic; after tar completes, require SHA256 + verify_deep before any success downgrade. Wire classification into backup_runner only after tests and explicit deploy approval.",
+  "no_archive_created": true,
+  "partial_deleted": true,
+  "sha256_skipped_reason": "no_final_archive: partial pi-backup-full-20260516_172457.tar.gz.partial removed on tar_failed (status.partial_deleted=true)",
+  "verify_deep_skipped_reason": "no_final_archive: backup.failed / abort_reason tar_failed — verify requires complete .tar.gz with embedded MANIFEST.json",
+  "runtime_gate": {
+    "script": "scripts/check-runtime-deploy-gate.sh",
+    "result": "OK",
+    "note": "Version, Pfad, deploy_drift/Manifest — forensics session 2026-05-17"
+  },
+  "backup_profile": "full-expert",
+  "backup_dir": "/media/setuphelfer/br001",
+  "tar_stderr_log": "/var/log/setuphelfer/backup-927469d42503.log",
+  "journal_notes": "journalctl -u setuphelfer-backend.service for 2026-05-16 21:00-21:35: no entries visible without adm/system group; evidence capture shows unit start at 17:24:57 local only"
+}

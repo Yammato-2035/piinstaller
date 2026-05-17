@@ -4,6 +4,26 @@
 
 **Yes.** If **`GET /api/version`** does not return **HTTP 200** with **`status":"success"`**, or production **`config/version.json`** does not match the approved schema, results are not trustworthy. Run **`scripts/check-backend-version-gate.sh`** and the update runbook (`docs/operations/BACKEND_UPDATE_RUNBOOK_EN.md`) first — **no** backup job while `blocked_update_required`.
 
+## Why does tar exit code 1 not automatically mean a broken backup?
+
+GNU **tar** uses exit code **1** for “finished with warnings” (e.g. **file changed as we read it**, **socket ignored**). The archive may still be complete — Setuphelfer does **not** infer that from the exit code alone. See **`docs/backup/TAR_EXIT_1_CLASSIFICATION_EN.md`** and evidence `docs/evidence/runtime-results/br001_tar_exit1_forensics_2026-05-16.json`.
+
+## Why does Setuphelfer not blindly accept tar exit 1?
+
+The runner classifies stderr and records e.g. **`tar_warning_classification`** on the job. Without a final archive it still fails (`backup.warning_not_promoted`, partial cleanup). **Volatile-only** paths may finalize a complete `.partial` and run verify deep; promotion to **`backup.success_with_warnings`** / **`completed_with_warnings`** happens only after SHA256 and verify deep succeed — never plain **`backup.success`**. Deploying the updated runner to `/opt` is a separate step after runtime gate approval.
+
+## Why are volatile live files classified separately?
+
+Paths such as **journal files**, **`~/.cache`**, and **agent sockets** (gpg, ibus, Docker Desktop) change during long full backups. They must be distinguished from **critical** paths (`/etc`, `/boot`, …). Only allowed volatile patterns may be considered for downgrading a hard failure — see **`docs/knowledge-base/backup/TAR_EXIT_1_LIVE_FILES.md`**.
+
+## Why are SHA256 and verify deep still mandatory after warnings?
+
+Exit code and stderr do **not** prove gzip/tar stream integrity. Setuphelfer requires a **final** `.tar.gz`, embedded **MANIFEST.json**, payload **SHA256**, and **verify deep** before a warning-bearing run could count as success.
+
+## Why is there no success without a final archive?
+
+Without renaming `.partial` to `.tar.gz` there is no artifact for hash, manifest, or restore. Example job **`927469d42503`**: ~227 GiB written, then exit **1**, **`partial_deleted: true`** — status stays **`backup.failed`**, verify is **not** started.
+
 ## Why is full-root backup slow and why does it not scale with many CPU cores?
 
 **gzip** (and classic **`tar -czf`**) compresses mostly **single-threaded**. Many cores barely help; **I/O** and **one CPU** often cap throughput. **pigz** uses multiple threads while staying **gzip-compatible** (faster when installed). **zstd** is faster/scales better but needs an **end-to-end** pipeline including finalize/manifest — until then the product stays **gzip-compatible**. **Full root** is intentionally an **expert/long-run** path; for daily use and Raspberry Pi prefer **smaller profiles** (see **`docs/backup/BACKUP_PERFORMANCE_EN.md`**, profile overview **`docs/backup/BACKUP_PROFILES_EN.md`**, matrix **BR-016**, **BR-019**).
