@@ -1,0 +1,61 @@
+{
+  "schema": "setuphelfer.br001.tar_exit1_runtime_deploy_gate.v1",
+  "date": "2026-05-17",
+  "commit": "9252515",
+  "commit_full": "92525154cfe427bc0e5e4f826f149b2613d12829",
+  "task": "deploy_tar_exit1_runner_fix_to_runtime",
+  "pre_gate_status": {
+    "check_runtime_deploy_gate_exit": 14,
+    "evaluator_reason": "deploy_drift deploy_backend_files",
+    "safe_test_mode": "LOCKED",
+    "safe_test_mode_reasons": ["deploy_drift_backend_files"],
+    "differing_files": [
+      {
+        "relative_path": "backend/tools/backup_runner.py",
+        "reason": "sha256_mismatch"
+      }
+    ]
+  },
+  "post_gate_status": {
+    "check_runtime_deploy_gate_exit": 0,
+    "message": "OK (Version, Pfad, deploy_drift/Manifest)",
+    "deploy_drift_status": "green",
+    "differing_files_count": 0,
+    "suggested_actions": ["none"],
+    "safe_test_mode": "UNLOCKED",
+    "safe_test_mode_locked": false
+  },
+  "push_status": {
+    "pushed": true,
+    "remote": "origin/main",
+    "range": "1ac8c0f..9252515"
+  },
+  "deploy_method": {
+    "preferred_script": "scripts/deploy-to-opt.sh",
+    "preferred_script_result": "not_run_sudo_password_required",
+    "actual_method": "controlled_drift_file_sync",
+    "files_synced": [
+      "backend/tools/backup_runner.py",
+      "backend/core/backup_tar_warning_classification.py"
+    ],
+    "source": "/home/volker/piinstaller",
+    "target": "/opt/setuphelfer",
+    "sha256_verified_after_copy": true
+  },
+  "backend_runtime_path": "/opt/setuphelfer/backend",
+  "service_active": true,
+  "service_restart": true,
+  "service_restart_method": "systemctl restart setuphelfer-backend.service (without sudo; user gabriel)",
+  "api_version_ok": true,
+  "project_version": "1.7.1",
+  "apt_install_run": false,
+  "apt_upgrade_run": false,
+  "backup_started": false,
+  "restore_started": false,
+  "verify_deep_started": false,
+  "ready_for_next_br001": true,
+  "notes": [
+    "Full deploy-to-opt.sh requires sudo password on this host; drift blocker resolved by syncing gate-listed runner file plus runtime import dependency.",
+    "pip/npm steps from full deploy were not re-run; only backend files required for tar exit-1 classification changed."
+  ]
+}
