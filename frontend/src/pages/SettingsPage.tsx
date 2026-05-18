@@ -111,6 +111,37 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
     }
   }
 
+  const applyEmailNotifFromApi = (emailData: Record<string, unknown>) => {
+    setEmailNotif({
+      enabled: !!emailData.enabled,
+      on_backup_success: emailData.on_backup_success !== false,
+      on_backup_failure: !!emailData.on_backup_failure,
+      email_to: String(emailData.email_to || ''),
+      email_from: String(emailData.email_from || ''),
+      smtp_host: String(emailData.smtp_host || ''),
+      smtp_port: Number(emailData.smtp_port) || 587,
+      smtp_username: String(emailData.smtp_username || ''),
+      smtp_starttls: emailData.smtp_starttls !== false,
+      smtp_password_set: !!emailData.smtp_password_set,
+      configured: !!emailData.configured,
+      last_test_status: emailData.last_test_status as string | undefined,
+      last_test_error_class: (emailData.last_test_error_class as string | null) ?? null,
+      env_writable: emailData.env_writable as boolean | undefined,
+    })
+  }
+
+  const refreshNotificationSettings = async () => {
+    try {
+      const r = await fetchApi('/api/settings/notifications/email')
+      const emailData = await r.json()
+      if (emailData?.status === 'success') {
+        applyEmailNotifFromApi(emailData)
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   const loadAll = async () => {
     try {
       const [a, b, c, profileRes, emailRes] = await Promise.all([
@@ -127,22 +158,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
       const emailData = await emailRes.json()
       if (ia?.status === 'success') setInitStatus(ia)
       if (emailData?.status === 'success') {
-        setEmailNotif({
-          enabled: !!emailData.enabled,
-          on_backup_success: emailData.on_backup_success !== false,
-          on_backup_failure: !!emailData.on_backup_failure,
-          email_to: emailData.email_to || '',
-          email_from: emailData.email_from || '',
-          smtp_host: emailData.smtp_host || '',
-          smtp_port: Number(emailData.smtp_port) || 587,
-          smtp_username: emailData.smtp_username || '',
-          smtp_starttls: emailData.smtp_starttls !== false,
-          smtp_password_set: !!emailData.smtp_password_set,
-          configured: !!emailData.configured,
-          last_test_status: emailData.last_test_status,
-          last_test_error_class: emailData.last_test_error_class,
-          env_writable: emailData.env_writable,
-        })
+        applyEmailNotifFromApi(emailData)
         setEmailNotifPassword('')
       }
       if (sb?.status === 'success') setSettings(sb.settings)
@@ -400,6 +416,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
 
   const saveEmailNotificationSettings = async () => {
     if (!emailNotif) return
+    setActiveTab('notifications')
     await requireSudo(
       {
         title: 'E-Mail-Benachrichtigungen speichern',
@@ -432,23 +449,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
           const d = await r.json()
           if (d.status === 'success') {
             toast.success('E-Mail-Einstellungen gespeichert')
-            setEmailNotif({
-              enabled: !!d.enabled,
-              on_backup_success: d.on_backup_success !== false,
-              on_backup_failure: !!d.on_backup_failure,
-              email_to: d.email_to || '',
-              email_from: d.email_from || '',
-              smtp_host: d.smtp_host || '',
-              smtp_port: Number(d.smtp_port) || 587,
-              smtp_username: d.smtp_username || '',
-              smtp_starttls: d.smtp_starttls !== false,
-              smtp_password_set: !!d.smtp_password_set,
-              configured: !!d.configured,
-              last_test_status: d.last_test_status,
-              last_test_error_class: d.last_test_error_class,
-              env_writable: d.env_writable,
-            })
+            applyEmailNotifFromApi(d)
             setEmailNotifPassword('')
+            setActiveTab('notifications')
           } else if (d.requires_sudo_password) {
             toast.error('Sudo-Passwort erforderlich zum Speichern')
           } else if (d.operator_commands?.length) {
@@ -466,6 +469,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
   }
 
   const testEmailNotification = async () => {
+    setActiveTab('notifications')
     setTestingEmailNotif(true)
     try {
       const r = await fetchApi('/api/settings/notifications/email/test', { method: 'POST' })
@@ -488,10 +492,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
           last_test_error_class: d.error_class,
         })
       }
+      setActiveTab('notifications')
     } catch {
       toast.error('Testmail fehlgeschlagen (Server nicht erreichbar)')
     } finally {
       setTestingEmailNotif(false)
+      setActiveTab('notifications')
     }
   }
 
@@ -656,64 +662,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
             }`}
           >
             {t('settings.tab.cloudBackup')}
-            {activeTab === 'notifications' && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card space-y-4">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Mail className="text-sky-400" />
-              E-Mail-Benachrichtigungen
-            </h3>
-            <p className="text-sm text-slate-400">
-              Benachrichtigung nach erfolgreichem Backup. Für Gmail ist ein App-Passwort erforderlich. Das Passwort wird
-              nicht angezeigt. BR-001 wird erst durch Archiv, SHA256 und Verify Deep grün.
-            </p>
-            {!emailNotif ? (
-              <div className="text-sm text-slate-400">Lade…</div>
-            ) : (
-              <div className="space-y-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={emailNotif.enabled} onChange={(e) => setEmailNotif({ ...emailNotif, enabled: e.target.checked })} className="w-5 h-5 accent-sky-500" />
-                  <span className="text-white">Backup-Erfolg per E-Mail melden</span>
-                </label>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <div className="text-xs text-slate-400 mb-1">Empfängeradresse</div>
-                    <input type="email" value={emailNotif.email_to} onChange={(e) => setEmailNotif({ ...emailNotif, email_to: e.target.value })} className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-400 mb-1">Absenderadresse</div>
-                    <input type="email" value={emailNotif.email_from} onChange={(e) => setEmailNotif({ ...emailNotif, email_from: e.target.value })} className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-400 mb-1">SMTP-Host</div>
-                    <input value={emailNotif.smtp_host} onChange={(e) => setEmailNotif({ ...emailNotif, smtp_host: e.target.value })} placeholder="smtp.gmail.com" className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-400 mb-1">SMTP-Port</div>
-                    <input type="number" min={1} max={65535} value={emailNotif.smtp_port} onChange={(e) => setEmailNotif({ ...emailNotif, smtp_port: parseInt(e.target.value, 10) || 587 })} className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <div className="text-xs text-slate-400 mb-1">SMTP-Benutzername</div>
-                    <input type="email" value={emailNotif.smtp_username} onChange={(e) => setEmailNotif({ ...emailNotif, smtp_username: e.target.value })} className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <div className="text-xs text-slate-400 mb-1">SMTP-App-Passwort</div>
-                    <input type="password" value={emailNotifPassword} onChange={(e) => setEmailNotifPassword(e.target.value)} placeholder={emailNotif.smtp_password_set ? 'Neues App-Passwort (leer = behalten)' : 'App-Passwort eingeben'} autoComplete="new-password" className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
-                  </div>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={emailNotif.smtp_starttls} onChange={(e) => setEmailNotif({ ...emailNotif, smtp_starttls: e.target.checked })} className="w-5 h-5 accent-sky-500" />
-                  <span className="text-white">STARTTLS aktivieren</span>
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={saveEmailNotificationSettings} disabled={savingEmailNotif} className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm disabled:opacity-50">{savingEmailNotif ? 'Speichere…' : 'Speichern'}</button>
-                  <button type="button" onClick={testEmailNotification} disabled={testingEmailNotif || !emailNotif.enabled} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm disabled:opacity-50 flex items-center gap-2">{testingEmailNotif ? <RefreshCw size={16} className="animate-spin" /> : <Mail size={16} />} Testmail senden</button>
-                </div>
-              </div>
-            )}
-          </motion.div>
-        )}
-
-        {activeTab === 'cloud' && (
+            {activeTab === 'cloud' && (
               <motion.div
                 layoutId="activeTab"
                 className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
@@ -1144,6 +1093,137 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
               <ScreenshotDocCard setCurrentPage={setCurrentPage} />
             )}
           </div>
+        )}
+
+
+        {activeTab === 'notifications' && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card space-y-4">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Mail className="text-sky-400" />
+              E-Mail-Benachrichtigungen
+            </h3>
+            <p className="text-sm text-slate-400">
+              Benachrichtigung nach erfolgreichem Backup. Für Gmail ist ein App-Passwort erforderlich. Das Passwort wird
+              nicht angezeigt und nicht in Logs ausgegeben. BR-001 wird erst durch Archiv, SHA256 und Verify Deep grün.
+            </p>
+            {!emailNotif ? (
+              <div className="text-sm text-slate-400">Lade…</div>
+            ) : (
+              <motion.div className="space-y-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailNotif.enabled}
+                    onChange={(e) => setEmailNotif({ ...emailNotif, enabled: e.target.checked })}
+                    className="w-5 h-5 accent-sky-500"
+                  />
+                  <span className="text-white">Backup-Erfolg per E-Mail melden</span>
+                </label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="text-xs text-slate-400 mb-1">Empfängeradresse</div>
+                    <input
+                      type="email"
+                      value={emailNotif.email_to}
+                      onChange={(e) => setEmailNotif({ ...emailNotif, email_to: e.target.value })}
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400 mb-1">Absenderadresse</div>
+                    <input
+                      type="email"
+                      value={emailNotif.email_from}
+                      onChange={(e) => setEmailNotif({ ...emailNotif, email_from: e.target.value })}
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400 mb-1">SMTP-Host</div>
+                    <input
+                      value={emailNotif.smtp_host}
+                      onChange={(e) => setEmailNotif({ ...emailNotif, smtp_host: e.target.value })}
+                      placeholder="smtp.gmail.com"
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400 mb-1">SMTP-Port</div>
+                    <input
+                      type="number"
+                      min={1}
+                      max={65535}
+                      value={emailNotif.smtp_port}
+                      onChange={(e) =>
+                        setEmailNotif({ ...emailNotif, smtp_port: parseInt(e.target.value, 10) || 587 })
+                      }
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs text-slate-400 mb-1">SMTP-Benutzername</div>
+                    <input
+                      type="email"
+                      value={emailNotif.smtp_username}
+                      onChange={(e) => setEmailNotif({ ...emailNotif, smtp_username: e.target.value })}
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs text-slate-400 mb-1">SMTP-App-Passwort</div>
+                    <input
+                      type="password"
+                      value={emailNotifPassword}
+                      onChange={(e) => setEmailNotifPassword(e.target.value)}
+                      placeholder="Neues App-Passwort eingeben (leer = bestehendes behalten)"
+                      autoComplete="new-password"
+                      className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">
+                      Passwort gespeichert: {emailNotif.smtp_password_set ? 'ja' : 'nein'}. Leer lassen, um das bestehende Passwort beizubehalten.
+                    </p>
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailNotif.smtp_starttls}
+                    onChange={(e) => setEmailNotif({ ...emailNotif, smtp_starttls: e.target.checked })}
+                    className="w-5 h-5 accent-sky-500"
+                  />
+                  <span className="text-white">STARTTLS aktivieren</span>
+                </label>
+                {emailNotif.last_test_status && emailNotif.last_test_status !== 'unknown' && (
+                  <p className="text-sm text-slate-400">
+                    Letzter Test:{' '}
+                    <span className={emailNotif.last_test_status === 'sent' ? 'text-green-400' : 'text-red-300'}>
+                      {emailNotif.last_test_status}
+                      {emailNotif.last_test_error_class ? ` (${emailNotif.last_test_error_class})` : ''}
+                    </span>
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={saveEmailNotificationSettings}
+                    disabled={savingEmailNotif}
+                    className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm disabled:opacity-50"
+                  >
+                    {savingEmailNotif ? 'Speichere…' : 'Speichern'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={testEmailNotification}
+                    disabled={testingEmailNotif || !emailNotif.enabled}
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {testingEmailNotif ? <RefreshCw size={16} className="animate-spin" /> : <Mail size={16} />}
+                    Testmail senden
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
         )}
 
         {activeTab === 'cloud' && (

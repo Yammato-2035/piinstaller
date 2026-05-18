@@ -66,6 +66,17 @@ class TestNotificationSettingsCoreV1(unittest.TestCase):
         self.assertTrue(pub["smtp_password_set"])
         self.assertEqual(pub["email_to"], "user@example.com")
 
+    def test_merge_keeps_password_when_empty_string(self) -> None:
+        env_path = self.config_dir / "notification.env"
+        env_path.write_text(
+            f"{ENV_KEYS['smtp_password']}=keep-me\n",
+            encoding="utf-8",
+        )
+        with patch("core.notification_settings.notification_env_path", return_value=self._env_path()):
+            env_map, errs = merge_settings_payload({"smtp_password": "   "})
+        self.assertEqual(errs, [])
+        self.assertEqual(env_map[ENV_KEYS["smtp_password"]], "keep-me")
+
     def test_merge_keeps_password_when_omitted(self) -> None:
         env_path = self.config_dir / "notification.env"
         env_path.write_text(
