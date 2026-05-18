@@ -1,0 +1,13 @@
+{
+  "task": "br001_systemd_readwritepaths_dropin",
+  "target_path": "/media/setuphelfer/br001",
+  "repo_dropin": "packaging/systemd/setuphelfer-backend.service.d/backup-target-br001.conf",
+  "dropin_content": "[Service]\\nReadWritePaths=/media/setuphelfer/br001\\n",
+  "protect_system_expected": "strict",
+  "broad_media_access": false,
+  "backup_started": false,
+  "restore_started": false,
+  "verify_deep_started": false,
+  "apt_install_run": false,
+  "apt_upgrade_run": false
+}
