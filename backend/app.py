@@ -2653,6 +2653,51 @@ async def set_user_experience_via_settings(payload: dict = Body(...)):
     return _update_user_profile_body(payload)
 
 
+@app.get("/api/settings/notifications/email")
+async def get_notification_email_settings():
+    from core.notification_settings import build_public_settings
+
+    return {"status": "success", **build_public_settings()}
+
+
+@app.post("/api/settings/notifications/email")
+async def post_notification_email_settings(request: Request):
+    from core.notification_settings import build_public_settings, notification_env_path, save_notification_settings
+
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    if not isinstance(data, dict):
+        data = {}
+
+    sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
+
+    def _sudo_install(staging: Path) -> bool:
+        if not sudo_password:
+            return False
+        dest = notification_env_path()
+        cmd = f"install -o root -g setuphelfer -m 640 {shlex.quote(str(staging))} {shlex.quote(str(dest))}"
+        res = run_command(cmd, sudo=True, sudo_password=sudo_password, timeout=30)
+        return bool(res.get("success"))
+
+    result = save_notification_settings(data, sudo_install=_sudo_install if sudo_password else None)
+    if result.get("status") != "success":
+        body = {"status": "error", **result}
+        if result.get("write_status") == "requires_operator_write" and not sudo_password:
+            body["requires_sudo_password"] = True
+        return JSONResponse(status_code=200, content=body)
+    return {"status": "success", **build_public_settings(), **result}
+
+
+@app.post("/api/settings/notifications/email/test")
+async def post_notification_email_test():
+    from core.notification_settings import run_notification_test_email
+
+    result = run_notification_test_email()
+    return {"status": "success", **result}
+
+
 @app.get("/api/presets/list")
 async def api_list_presets():
     """

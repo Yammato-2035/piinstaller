@@ -13,7 +13,13 @@ Not for `backup.failed`, `backup.warning_not_promoted`, missing archive, or fail
 
 BR-001 integrity requires a final archive, SHA256, and verify deep. Notifications must not imply success when that chain failed.
 
-## Configuration
+## Settings UI
+
+Use **Settings → Email notifications** to set recipient, SMTP host, username, and a **Gmail app password**. The password is never returned by the API (`smtp_password_set` only). Use **Send test email** to verify SMTP without starting a backup.
+
+For Gmail, an **app password** is usually required (Google account → Security), not your normal login password.
+
+## Configuration (environment)
 
 Environment variables (see `.env.example`). Store secrets in `.env` or systemd `EnvironmentFile` only — **never** commit credentials.
 

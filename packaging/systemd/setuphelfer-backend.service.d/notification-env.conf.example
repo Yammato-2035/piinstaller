@@ -1,0 +1,10 @@
+# Operator: installieren nach /etc/systemd/system/setuphelfer-backend.service.d/notification-env.conf
+# und SMTP-Variablen in /etc/setuphelfer/notification.env (640, root:setuphelfer).
+#
+#   sudo cp packaging/systemd/setuphelfer-backend.service.d/notification-env.conf.example \
+#     /etc/systemd/system/setuphelfer-backend.service.d/notification-env.conf
+#   sudo systemctl daemon-reload
+#   sudo systemctl restart setuphelfer-backend.service
+
+[Service]
+EnvironmentFile=-/etc/setuphelfer/notification.env

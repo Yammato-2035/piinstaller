@@ -28,6 +28,10 @@ Without renaming `.partial` to `.tar.gz` there is no artifact for hash, manifest
 
 Only when the job reports **`backup.success`**, or **`backup.success_with_warnings`** with verified integrity (runner verify deep ok). No mail on failure or `warning_not_promoted`. See **`docs/backup/BACKUP_NOTIFICATIONS_EN.md`**.
 
+## How do I configure SMTP and send a test email?
+
+In **Settings → Email notifications**: set recipient, SMTP fields, and a Gmail **app password**, then **Save** (sudo if prompted) and **Send test email**. The password is never shown in the UI after save.
+
 ## Why does an SMTP error not fail the backup?
 
 Email is **optional** and runs **after** success is recorded. If SMTP fails, `notification_email_status` is `failed` but backup status stays success. Credentials belong in `.env` or systemd, **not** in git (see `.env.example`).

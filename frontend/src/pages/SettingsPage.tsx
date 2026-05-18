@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
-import { Cloud, RefreshCw, CheckCircle, XCircle } from 'lucide-react'
+import { Cloud, Mail, RefreshCw, CheckCircle, XCircle } from 'lucide-react'
 import AppIcon from '../components/AppIcon'
 import {
   fetchApi,
@@ -22,6 +22,23 @@ type GeneralSubTab = 'init' | 'network' | 'basic' | 'screenshots'
 
 export type ExperienceLevel = 'beginner' | 'advanced' | 'developer'
 
+export type EmailNotificationSettings = {
+  enabled: boolean
+  on_backup_success: boolean
+  on_backup_failure: boolean
+  email_to: string
+  email_from: string
+  smtp_host: string
+  smtp_port: number
+  smtp_username: string
+  smtp_starttls: boolean
+  smtp_password_set?: boolean
+  configured?: boolean
+  last_test_status?: string
+  last_test_error_class?: string | null
+  env_writable?: boolean
+}
+
 interface SettingsPageProps {
   setCurrentPage?: (page: string) => void
   /** Wird aufgerufen, nachdem das Erfahrungslevel gespeichert wurde – aktualisiert Sidebar sofort. */
@@ -33,7 +50,11 @@ const ADVANCED_SETTINGS_KEY = 'pi-installer-advanced-settings'
 const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienceLevelChange }) => {
   const { t, i18n } = useTranslation()
   const { isRaspberryPi, pageSubtitleLabel } = usePlatform()
-  const [activeTab, setActiveTab] = useState<'general' | 'cloud' | 'logs'>('general')
+  const [activeTab, setActiveTab] = useState<'general' | 'notifications' | 'cloud' | 'logs'>('general')
+  const [emailNotif, setEmailNotif] = useState<EmailNotificationSettings | null>(null)
+  const [emailNotifPassword, setEmailNotifPassword] = useState('')
+  const [savingEmailNotif, setSavingEmailNotif] = useState(false)
+  const [testingEmailNotif, setTestingEmailNotif] = useState(false)
   const [experienceLevel, setExperienceLevelState] = useState<ExperienceLevel>('beginner')
   const [experienceLevelSaving, setExperienceLevelSaving] = useState(false)
   const [generalSubTab, setGeneralSubTab] = useState<GeneralSubTab>('init')
@@ -92,17 +113,38 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
 
   const loadAll = async () => {
     try {
-      const [a, b, c, profileRes] = await Promise.all([
+      const [a, b, c, profileRes, emailRes] = await Promise.all([
         fetchApi('/api/init/status'),
         fetchApi('/api/settings'),
         fetchApi('/api/backup/settings'),
         fetchApi('/api/user-profile'),
+        fetchApi('/api/settings/notifications/email'),
       ])
       const ia = await a.json()
       const sb = await b.json()
       const bc = await c.json()
       const profileData = await profileRes.json()
+      const emailData = await emailRes.json()
       if (ia?.status === 'success') setInitStatus(ia)
+      if (emailData?.status === 'success') {
+        setEmailNotif({
+          enabled: !!emailData.enabled,
+          on_backup_success: emailData.on_backup_success !== false,
+          on_backup_failure: !!emailData.on_backup_failure,
+          email_to: emailData.email_to || '',
+          email_from: emailData.email_from || '',
+          smtp_host: emailData.smtp_host || '',
+          smtp_port: Number(emailData.smtp_port) || 587,
+          smtp_username: emailData.smtp_username || '',
+          smtp_starttls: emailData.smtp_starttls !== false,
+          smtp_password_set: !!emailData.smtp_password_set,
+          configured: !!emailData.configured,
+          last_test_status: emailData.last_test_status,
+          last_test_error_class: emailData.last_test_error_class,
+          env_writable: emailData.env_writable,
+        })
+        setEmailNotifPassword('')
+      }
       if (sb?.status === 'success') setSettings(sb.settings)
       if (bc?.status === 'success') setBackupSettings(bc.settings)
       if (profileData?.status === 'success' && profileData?.profile?.experience_level) {
@@ -356,6 +398,103 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
     }
   }
 
+  const saveEmailNotificationSettings = async () => {
+    if (!emailNotif) return
+    await requireSudo(
+      {
+        title: 'E-Mail-Benachrichtigungen speichern',
+        subtitle: 'Schreibt /etc/setuphelfer/notification.env (Administrator).',
+        confirmText: 'Speichern',
+      },
+      async (pwd?: string) => {
+        setSavingEmailNotif(true)
+        try {
+          const body: Record<string, unknown> = {
+            enabled: emailNotif.enabled,
+            on_backup_success: emailNotif.on_backup_success,
+            on_backup_failure: emailNotif.on_backup_failure,
+            email_to: emailNotif.email_to,
+            email_from: emailNotif.email_from,
+            smtp_host: emailNotif.smtp_host,
+            smtp_port: emailNotif.smtp_port,
+            smtp_username: emailNotif.smtp_username,
+            smtp_starttls: emailNotif.smtp_starttls,
+          }
+          if (emailNotifPassword.trim()) {
+            body.smtp_password = emailNotifPassword.trim()
+          }
+          if (pwd) body.sudo_password = pwd
+          const r = await fetchApi('/api/settings/notifications/email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
+          const d = await r.json()
+          if (d.status === 'success') {
+            toast.success('E-Mail-Einstellungen gespeichert')
+            setEmailNotif({
+              enabled: !!d.enabled,
+              on_backup_success: d.on_backup_success !== false,
+              on_backup_failure: !!d.on_backup_failure,
+              email_to: d.email_to || '',
+              email_from: d.email_from || '',
+              smtp_host: d.smtp_host || '',
+              smtp_port: Number(d.smtp_port) || 587,
+              smtp_username: d.smtp_username || '',
+              smtp_starttls: d.smtp_starttls !== false,
+              smtp_password_set: !!d.smtp_password_set,
+              configured: !!d.configured,
+              last_test_status: d.last_test_status,
+              last_test_error_class: d.last_test_error_class,
+              env_writable: d.env_writable,
+            })
+            setEmailNotifPassword('')
+          } else if (d.requires_sudo_password) {
+            toast.error('Sudo-Passwort erforderlich zum Speichern')
+          } else if (d.operator_commands?.length) {
+            toast.error(d.message || 'Administratorrechte erforderlich', { duration: 12000 })
+          } else {
+            toast.error(d.message || 'Speichern fehlgeschlagen')
+          }
+        } catch {
+          toast.error('Speichern fehlgeschlagen (Server nicht erreichbar)')
+        } finally {
+          setSavingEmailNotif(false)
+        }
+      },
+    )
+  }
+
+  const testEmailNotification = async () => {
+    setTestingEmailNotif(true)
+    try {
+      const r = await fetchApi('/api/settings/notifications/email/test', { method: 'POST' })
+      const d = await r.json()
+      if (d.status === 'sent') {
+        toast.success(d.message || 'Testmail gesendet')
+      } else if (d.status === 'failed') {
+        const hint =
+          d.error_class === 'smtp_auth_failed'
+            ? 'SMTP-Authentifizierung fehlgeschlagen (Gmail: App-Passwort prüfen).'
+            : d.message || 'Testmail fehlgeschlagen'
+        toast.error(hint, { duration: 12000 })
+      } else {
+        toast.error(d.message || `Test übersprungen (${d.status || '—'})`)
+      }
+      if (emailNotif) {
+        setEmailNotif({
+          ...emailNotif,
+          last_test_status: d.status,
+          last_test_error_class: d.error_class,
+        })
+      }
+    } catch {
+      toast.error('Testmail fehlgeschlagen (Server nicht erreichbar)')
+    } finally {
+      setTestingEmailNotif(false)
+    }
+  }
+
   const hasSavedSudoPassword = async () => {
     try {
       const r = await fetchApi('/api/users/sudo-password/check')
@@ -490,6 +629,25 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
             )}
           </button>
           <button
+            onClick={() => setActiveTab('notifications')}
+            className={`px-4 py-2 font-medium transition-all relative flex items-center gap-2 ${
+              activeTab === 'notifications'
+                ? 'text-sky-400'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Mail size={16} />
+            E-Mail-Benachrichtigungen
+            {activeTab === 'notifications' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"
+                initial={false}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+          <button
             onClick={() => setActiveTab('cloud')}
             className={`px-4 py-2 font-medium transition-all relative ${
               activeTab === 'cloud'
@@ -498,7 +656,64 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
             }`}
           >
             {t('settings.tab.cloudBackup')}
-            {activeTab === 'cloud' && (
+            {activeTab === 'notifications' && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card space-y-4">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Mail className="text-sky-400" />
+              E-Mail-Benachrichtigungen
+            </h3>
+            <p className="text-sm text-slate-400">
+              Benachrichtigung nach erfolgreichem Backup. Für Gmail ist ein App-Passwort erforderlich. Das Passwort wird
+              nicht angezeigt. BR-001 wird erst durch Archiv, SHA256 und Verify Deep grün.
+            </p>
+            {!emailNotif ? (
+              <div className="text-sm text-slate-400">Lade…</div>
+            ) : (
+              <div className="space-y-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={emailNotif.enabled} onChange={(e) => setEmailNotif({ ...emailNotif, enabled: e.target.checked })} className="w-5 h-5 accent-sky-500" />
+                  <span className="text-white">Backup-Erfolg per E-Mail melden</span>
+                </label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="text-xs text-slate-400 mb-1">Empfängeradresse</div>
+                    <input type="email" value={emailNotif.email_to} onChange={(e) => setEmailNotif({ ...emailNotif, email_to: e.target.value })} className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400 mb-1">Absenderadresse</div>
+                    <input type="email" value={emailNotif.email_from} onChange={(e) => setEmailNotif({ ...emailNotif, email_from: e.target.value })} className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400 mb-1">SMTP-Host</div>
+                    <input value={emailNotif.smtp_host} onChange={(e) => setEmailNotif({ ...emailNotif, smtp_host: e.target.value })} placeholder="smtp.gmail.com" className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400 mb-1">SMTP-Port</div>
+                    <input type="number" min={1} max={65535} value={emailNotif.smtp_port} onChange={(e) => setEmailNotif({ ...emailNotif, smtp_port: parseInt(e.target.value, 10) || 587 })} className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs text-slate-400 mb-1">SMTP-Benutzername</div>
+                    <input type="email" value={emailNotif.smtp_username} onChange={(e) => setEmailNotif({ ...emailNotif, smtp_username: e.target.value })} className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs text-slate-400 mb-1">SMTP-App-Passwort</div>
+                    <input type="password" value={emailNotifPassword} onChange={(e) => setEmailNotifPassword(e.target.value)} placeholder={emailNotif.smtp_password_set ? 'Neues App-Passwort (leer = behalten)' : 'App-Passwort eingeben'} autoComplete="new-password" className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white" />
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={emailNotif.smtp_starttls} onChange={(e) => setEmailNotif({ ...emailNotif, smtp_starttls: e.target.checked })} className="w-5 h-5 accent-sky-500" />
+                  <span className="text-white">STARTTLS aktivieren</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={saveEmailNotificationSettings} disabled={savingEmailNotif} className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm disabled:opacity-50">{savingEmailNotif ? 'Speichere…' : 'Speichern'}</button>
+                  <button type="button" onClick={testEmailNotification} disabled={testingEmailNotif || !emailNotif.enabled} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm disabled:opacity-50 flex items-center gap-2">{testingEmailNotif ? <RefreshCw size={16} className="animate-spin" /> : <Mail size={16} />} Testmail senden</button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {activeTab === 'cloud' && (
               <motion.div
                 layoutId="activeTab"
                 className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400"

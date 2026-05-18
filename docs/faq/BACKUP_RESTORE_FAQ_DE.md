@@ -28,6 +28,10 @@ Ohne Rename von `.partial` zu `.tar.gz` fehlt das Artefakt für Hash, Manifest u
 
 Nur wenn der Job **`backup.success`** meldet oder **`backup.success_with_warnings`** mit verifizierter Integrität (Verify Deep im Runner ok). Keine Mail bei Fehlschlag oder `warning_not_promoted`. Details: **`docs/backup/BACKUP_NOTIFICATIONS_DE.md`**.
 
+## Wie konfiguriere ich SMTP und eine Testmail?
+
+Unter **Einstellungen → E-Mail-Benachrichtigungen**: Empfänger, SMTP-Daten und Gmail-**App-Passwort** setzen, **Speichern** (ggf. Sudo), dann **Testmail senden**. Das Passwort wird in der UI nicht angezeigt.
+
 ## Warum schlägt ein SMTP-Fehler das Backup nicht fehl?
 
 Der Mailversand ist **optional** und **nachgelagert**. Scheitert SMTP, bleibt `notification_email_status: failed`, der Backup-Status bleibt Erfolg. Zugangsdaten gehören in `.env` oder systemd, **nicht** ins Git-Repository (siehe `.env.example`).

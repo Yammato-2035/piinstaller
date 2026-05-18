@@ -13,7 +13,13 @@ Nicht bei `backup.failed`, `backup.warning_not_promoted`, fehlendem Archiv oder 
 
 BR-001 und die Integritätskette verlangen ein finales Archiv, SHA256 und Verify Deep. Die Benachrichtigung darf keinen „Erfolg“ suggerieren, wenn die Kette nicht bestanden wurde.
 
-## Konfiguration
+## Konfiguration über die UI
+
+Unter **Einstellungen → E-Mail-Benachrichtigungen** können Empfänger, SMTP-Daten und ein **Gmail-App-Passwort** gesetzt werden. Das Passwort wird **nicht** angezeigt und nicht in API-Antworten zurückgegeben (`smtp_password_set` nur true/false). Mit **Testmail senden** prüfen Sie SMTP ohne Backup.
+
+Für Gmail ist in der Regel ein **App-Passwort** (Google-Konto → Sicherheit) erforderlich, nicht das normale Login-Passwort.
+
+## Konfiguration (Umgebungsvariablen)
 
 Umgebungsvariablen (siehe `.env.example`):
 
