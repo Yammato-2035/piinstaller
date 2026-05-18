@@ -37,6 +37,11 @@ from core.backup_tar_warning_classification import (
     classify_tar_run,
     decide_tar_nonzero_job_outcome,
 )
+from core.notification_service import (
+    load_notification_config,
+    maybe_send_backup_success_email,
+    notification_status_fields,
+)
 
 # Status-Herzschlag während teurer Finalisierung (SHA256 / Manifest-Rewrite)
 _FINALIZE_PROGRESS_INTERVAL_S = 30.0
@@ -1015,6 +1020,26 @@ def _run_tar_pipeline_from_preflight(
                         warnings=_outcome.get("warnings"),
                         **tar_class_fields,
                     )
+                    _attach_backup_success_notification(
+                        status_file,
+                        status,
+                        job_id=str(status.get("job_id") or ""),
+                        code="backup.success_with_warnings",
+                        backup_type=str(status.get("backup_type") or ""),
+                        backup_profile=str(
+                            (status.get("compression_detail") or {}).get("profile_normalized")
+                            or status.get("backup_profile")
+                            or ""
+                        ),
+                        backup_dir=str(status.get("backup_dir") or ""),
+                        archive_path=archive_path,
+                        manifest_hash=f"sha256:{payload_hash}",
+                        verify_deep_ok=vd_ok,
+                        backup_integrity_status="verified",
+                        verify_deep_message_key=vd_key,
+                        warning_status="completed_with_warnings",
+                        warnings=_outcome.get("warnings"),
+                    )
                     try:
                         Path(manifest_tmp_path).unlink(missing_ok=True)
                     except Exception:
@@ -1052,6 +1077,21 @@ def _run_tar_pipeline_from_preflight(
                 manifest_hash=f"sha256:{payload_hash}",
                 subprocess_returncode=0,
                 tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
+            )
+            _attach_backup_success_notification(
+                status_file,
+                status,
+                job_id=str(status.get("job_id") or ""),
+                code="backup.success",
+                backup_type=str(status.get("backup_type") or ""),
+                backup_profile=str(
+                    (status.get("compression_detail") or {}).get("profile_normalized")
+                    or status.get("backup_profile")
+                    or ""
+                ),
+                backup_dir=str(status.get("backup_dir") or ""),
+                archive_path=archive_path,
+                manifest_hash=f"sha256:{payload_hash}",
             )
             try:
                 Path(manifest_tmp_path).unlink(missing_ok=True)
@@ -1122,6 +1162,56 @@ def _run_tar_pipeline_from_preflight(
         tar_class_fields=tar_class_fields,
         outcome=_outcome,
     )
+
+
+def _attach_backup_success_notification(
+    status_file: Path,
+    state: dict[str, Any],
+    *,
+    job_id: str,
+    code: str,
+    backup_type: str,
+    backup_profile: str,
+    backup_dir: str,
+    archive_path: str,
+    manifest_hash: str,
+    verify_deep_ok: bool | None = None,
+    backup_integrity_status: str | None = None,
+    verify_deep_message_key: str | None = None,
+    warning_status: str | None = None,
+    warnings: Any = None,
+) -> None:
+    """Best-effort E-Mail after success; never changes backup status on SMTP failure."""
+    prog = state.get("progress_optional") if isinstance(state.get("progress_optional"), dict) else {}
+    bytes_written = prog.get("bytes_current")
+    runtime_s = prog.get("running_for_s") or prog.get("elapsed_seconds")
+    try:
+        bytes_int = int(bytes_written) if bytes_written is not None else None
+    except (TypeError, ValueError):
+        bytes_int = None
+    try:
+        runtime_int = int(runtime_s) if runtime_s is not None else None
+    except (TypeError, ValueError):
+        runtime_int = None
+    cfg = load_notification_config()
+    result = maybe_send_backup_success_email(
+        job_id=job_id,
+        status_code=code,
+        backup_type=backup_type,
+        backup_profile=backup_profile,
+        target_path=backup_dir,
+        archive_path=archive_path,
+        manifest_hash=manifest_hash,
+        verify_deep_ok=verify_deep_ok,
+        backup_integrity_status=backup_integrity_status,
+        verify_deep_message_key=verify_deep_message_key,
+        runtime_seconds=runtime_int,
+        bytes_written=bytes_int,
+        warning_status=warning_status,
+        warnings=warnings,
+        config=cfg,
+    )
+    _update_status(status_file, state, **notification_status_fields(cfg, result))
 
 
 def _parse_args() -> argparse.Namespace:

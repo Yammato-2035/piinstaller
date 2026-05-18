@@ -24,6 +24,14 @@ Exit code and stderr do **not** prove gzip/tar stream integrity. Setuphelfer req
 
 Without renaming `.partial` to `.tar.gz` there is no artifact for hash, manifest, or restore. Example job **`927469d42503`**: ~227 GiB written, then exit **1**, **`partial_deleted: true`** — status stays **`backup.failed`**, verify is **not** started.
 
+## When is a backup success email sent?
+
+Only when the job reports **`backup.success`**, or **`backup.success_with_warnings`** with verified integrity (runner verify deep ok). No mail on failure or `warning_not_promoted`. See **`docs/backup/BACKUP_NOTIFICATIONS_EN.md`**.
+
+## Why does an SMTP error not fail the backup?
+
+Email is **optional** and runs **after** success is recorded. If SMTP fails, `notification_email_status` is `failed` but backup status stays success. Credentials belong in `.env` or systemd, **not** in git (see `.env.example`).
+
 ## Why is full-root backup slow and why does it not scale with many CPU cores?
 
 **gzip** (and classic **`tar -czf`**) compresses mostly **single-threaded**. Many cores barely help; **I/O** and **one CPU** often cap throughput. **pigz** uses multiple threads while staying **gzip-compatible** (faster when installed). **zstd** is faster/scales better but needs an **end-to-end** pipeline including finalize/manifest — until then the product stays **gzip-compatible**. **Full root** is intentionally an **expert/long-run** path; for daily use and Raspberry Pi prefer **smaller profiles** (see **`docs/backup/BACKUP_PERFORMANCE_EN.md`**, profile overview **`docs/backup/BACKUP_PROFILES_EN.md`**, matrix **BR-016**, **BR-019**).

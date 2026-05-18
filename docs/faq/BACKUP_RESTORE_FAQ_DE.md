@@ -24,6 +24,14 @@ Exitcode und stderr beweisen **keine** Integrität des gzip/tar-Streams. Setuphe
 
 Ohne Rename von `.partial` zu `.tar.gz` fehlt das Artefakt für Hash, Manifest und Restore. Beispiel Job **`927469d42503`**: ~227 GiB geschrieben, danach Exit **1**, **`partial_deleted: true`** — Status bleibt **`backup.failed`**, Verify wird **nicht** gestartet.
 
+## Wann wird nach einem Backup eine E-Mail gesendet?
+
+Nur wenn der Job **`backup.success`** meldet oder **`backup.success_with_warnings`** mit verifizierter Integrität (Verify Deep im Runner ok). Keine Mail bei Fehlschlag oder `warning_not_promoted`. Details: **`docs/backup/BACKUP_NOTIFICATIONS_DE.md`**.
+
+## Warum schlägt ein SMTP-Fehler das Backup nicht fehl?
+
+Der Mailversand ist **optional** und **nachgelagert**. Scheitert SMTP, bleibt `notification_email_status: failed`, der Backup-Status bleibt Erfolg. Zugangsdaten gehören in `.env` oder systemd, **nicht** ins Git-Repository (siehe `.env.example`).
+
 ## Warum dauert ein Full-Root-Backup so lange und skaliert schlecht mit vielen CPU-Kernen?
 
 **gzip** (und klassisches **`tar -czf`**) komprimiert im Wesentlichen **single-threaded**. Viele Kerne helfen kaum; oft limitieren **I/O** und **eine CPU** den Durchsatz. **pigz** nutzt mehrere Threads, bleibt aber **gzip-kompatibel** (schneller, wenn installiert). **zstd** ist schneller/skaliert besser, erfordert aber eine **durchgängige** Pipeline inkl. Finalisierung/Manifest — bis dahin bleibt das Produkt **gzip-kompatibel**. Ein **vollständiges Root-Backup** ist bewusst ein **Experten-/Langläuferpfad**; für Alltag und Pi eignen sich **kleinere Profile** (siehe **`docs/backup/BACKUP_PERFORMANCE_DE.md`**, Profilübersicht **`docs/backup/BACKUP_PROFILES_DE.md`**, Testmatrix **BR-016**, **BR-019**).
