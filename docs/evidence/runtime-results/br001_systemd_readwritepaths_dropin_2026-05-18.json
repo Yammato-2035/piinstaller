@@ -9,5 +9,33 @@
   "restore_started": false,
   "verify_deep_started": false,
   "apt_install_run": false,
-  "apt_upgrade_run": false
+  "apt_upgrade_run": false,
+  "commit_hash": "f123d54",
+  "commit_full": "f123d5489fd10bdd5cb422738bf20113455bc4d3",
+  "push_status": "pushed origin/main (9252515..f123d54)",
+  "prior_dropin_content": "ReadWritePaths=/media/setuphelfer (broad, replaced in repo)",
+  "readwritepaths_before": [
+    "/opt/setuphelfer",
+    "/etc/setuphelfer",
+    "/var/log/setuphelfer",
+    "/var/lib/setuphelfer",
+    "/tmp",
+    "/mnt",
+    "/mnt/setuphelfer",
+    "/media/gabriel/setuphelfer-back"
+  ],
+  "deploy_done": false,
+  "deploy_blocker": "sudo password required for /etc/systemd/system/...",
+  "service_restarted": false,
+  "readwritepaths_after": null,
+  "target_check_status": "error BACKUP-TARGET-NOT-WRITABLE-002 (unchanged, deploy pending)",
+  "runtime_gate_status": "exit 0 (pre-deploy snapshot)",
+  "ready_for_br001_retry": false,
+  "operator_commands": [
+    "sudo mkdir -p /etc/systemd/system/setuphelfer-backend.service.d",
+    "sudo cp packaging/systemd/setuphelfer-backend.service.d/backup-target-br001.conf /etc/systemd/system/setuphelfer-backend.service.d/br001-media-setuphelfer.conf",
+    "sudo systemctl daemon-reload",
+    "sudo systemctl restart setuphelfer-backend.service",
+    "curl -s 'http://127.0.0.1:8000/api/backup/target-check?backup_dir=/media/setuphelfer/br001&create=0'"
+  ]
 }
