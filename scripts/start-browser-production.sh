@@ -1,70 +1,45 @@
 #!/bin/bash
-# PI-Installer – Browser-Oberfläche im Produktionsmodus (vite preview auf gebautem frontend/dist).
-# Kein Vite-Dev-Server. Backend wird hier NICHT gestartet – einziger Owner: setuphelfer-backend.service
-# bzw. manuell ./scripts/start-backend.sh (siehe docs/BETRIEB_REPO_VS_SERVICE.md).
+# Setuphelfer – Browser-Oberfläche im Produktionsmodus (vite preview auf gebautem frontend/dist).
+# Backend: setuphelfer-backend.service (nicht hier starten).
 #
-# Verwendung:
-#   – systemd: setuphelfer.service → ExecStart zeigt auf dieses Skript (nicht auf ./start.sh).
-#   – Manuell: ./scripts/start-browser-production.sh  (aus dem Installations- oder Repo-Root)
-#
-# Entwicklung im Repo: weiterhin ./start.sh (Vite dev).
+# systemd: setuphelfer.service → dieses Skript mit exec npm run preview (Vordergrund, PID 1 = vite).
 
-set -eo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-FRONTEND_PID=""
 
-# npm-Cache unter Installationsbaum (systemd: ProtectHome maskiert $HOME → nicht ~/.npm schreiben)
 export npm_config_cache="${npm_config_cache:-$REPO_ROOT/.npm-cache}"
 mkdir -p "$npm_config_cache"
 
 BACKEND_PORT="${PI_INSTALLER_BACKEND_PORT:-8000}"
 BACKEND_HEALTH="${PI_INSTALLER_BACKEND_HEALTH_URL:-http://127.0.0.1:${BACKEND_PORT}/api/version}"
 
-echo "🚀 PI-Installer – Browser (Produktion, vite preview)"
-echo "====================================================="
-echo ""
+echo "Setuphelfer Web-UI production preview"
+echo "Backend health: $BACKEND_HEALTH"
 
-cleanup() {
-  echo ""
-  echo "🛑 Beende Prozesse..."
-  kill "$FRONTEND_PID" 2>/dev/null || true
-  exit 0
-}
-
-trap cleanup SIGINT SIGTERM
-
-echo "📡 Prüfe Backend (Port ${BACKEND_PORT}, einziger Owner: setuphelfer-backend oder start-backend.sh)..."
 if ! curl -sS --max-time 4 "$BACKEND_HEALTH" >/dev/null 2>&1; then
-  echo "❌ Backend antwortet nicht unter $BACKEND_HEALTH"
-  echo "   Standard (systemd): sudo systemctl enable --now setuphelfer-backend.service"
-  echo "   Manuell im Repo:  ./scripts/start-backend.sh"
+  echo "Backend antwortet nicht unter $BACKEND_HEALTH"
+  echo "Standard: sudo systemctl enable --now setuphelfer-backend.service"
   exit 1
 fi
 
-# Vite-Cache außerhalb von node_modules/.vite (kein EACCES bei restriktiven Rechten)
 export PI_INSTALLER_VITE_CACHE_DIR="${PI_INSTALLER_VITE_CACHE_DIR:-/tmp/setuphelfer-vite-cache}"
 mkdir -p "$PI_INSTALLER_VITE_CACHE_DIR"
 
-echo "🎨 Frontend (Produktion)..."
 cd "$REPO_ROOT/frontend"
-if [ ! -d "node_modules" ]; then
-  echo "📦 Installiere Frontend-Dependencies..."
-  npm install
-fi
+
 if [ ! -f "dist/index.html" ]; then
-  echo "📦 Erzeuge Produktions-Build (vite build)..."
-  npm run build
+  echo "Frontend-Build fehlt: $REPO_ROOT/frontend/dist/index.html"
+  echo "Bitte vorher bauen/deployen: cd frontend && npm run build"
+  exit 1
 fi
 
-npm run preview &
-FRONTEND_PID=$!
+if [ ! -d "node_modules" ]; then
+  echo "Frontend node_modules fehlt unter $REPO_ROOT/frontend"
+  echo "Bitte einmalig installieren (nicht im Produktivstart): cd frontend && npm install"
+  exit 1
+fi
 
-echo ""
-echo "✅ Browser-UI: vite preview (gebündeltes dist/)"
-echo "📡 Backend:   http://localhost:${BACKEND_PORT}"
-echo "🎨 Frontend:  http://localhost:3001"
-echo ""
-
-wait
+echo "Frontend: http://127.0.0.1:3001"
+exec npm run preview -- --host 127.0.0.1 --port 3001 --strictPort
