@@ -1,0 +1,28 @@
+{
+  "task": "notification_smtp_ssl_mode",
+  "head_before": "ee7d564",
+  "head_feature": "b3d596b",
+  "smtp_ssl_supported": true,
+  "smtp_starttls_still_supported": true,
+  "smtp_security_field": true,
+  "port_465_supported": true,
+  "password_exposed": false,
+  "unit_tests": "34 passed (notification_service, notification_settings_api, backup_runner_notification_integration)",
+  "frontend_build_success": true,
+  "deploy_done": true,
+  "runtime_gate_exit": 0,
+  "api_get_sample": {
+    "smtp_security": "starttls",
+    "smtp_port": 587,
+    "smtp_password_set": true
+  },
+  "testmail_status": "not_tested",
+  "smtp_error_class": null,
+  "testmail_note": "glienke.de SMTP credentials not available in agent context; operator must configure UI and send test mail manually",
+  "backup_started": false,
+  "restore_started": false,
+  "verify_deep_started": false,
+  "apt_install_run": false,
+  "apt_upgrade_run": false,
+  "br001_ready_after_smtp_ssl": false
+}
