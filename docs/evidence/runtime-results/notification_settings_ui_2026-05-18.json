@@ -1,0 +1,37 @@
+{
+  "task": "notification_settings_ui",
+  "timestamp_utc": "2026-05-18T13:00:00Z",
+  "head": "f671d92",
+  "commit": "f671d92 Add email notification settings",
+  "password_returned_by_api": false,
+  "password_logged": false,
+  "settings_ui_available": true,
+  "settings_ui_note": "Tab E-Mail-Benachrichtigungen in SettingsPage.tsx; Frontend-Rebuild/Reload für Produktions-UI erforderlich",
+  "testmail_endpoint_available": true,
+  "testmail_endpoint_runtime_verified": false,
+  "testmail_endpoint_runtime_note": "GET /api/settings/notifications/email lieferte 404 bis systemctl restart (D-Bus-Timeout ohne sudo); app.py unter /opt enthält Routen",
+  "testmail_status": "not_tested_runtime",
+  "runtime_gate_exit": 0,
+  "deploy_drift": "green",
+  "safe_test_mode": "UNLOCKED",
+  "backend_files_deployed_to_opt": [
+    "/opt/setuphelfer/backend/core/notification_settings.py",
+    "/opt/setuphelfer/backend/app.py"
+  ],
+  "backend_restart_attempted": true,
+  "backend_restart_success": false,
+  "backend_restart_note": "systemctl restart timeout; Operator: sudo systemctl restart setuphelfer-backend.service",
+  "unit_tests_passed": true,
+  "backup_started": false,
+  "restore_started": false,
+  "verify_deep_started": false,
+  "apt_install_run": false,
+  "apt_upgrade_run": false,
+  "br001_ready_after_settings": true,
+  "br001_mail_on_success_expected": "after_operator_sets_gmail_app_password_and_restart",
+  "operator_actions": [
+    "sudo systemctl restart setuphelfer-backend.service",
+    "Einstellungen → E-Mail-Benachrichtigungen: App-Passwort setzen, Speichern, Testmail senden",
+    "Bei Produktions-UI: Frontend bauen/deployen falls Tab nicht sichtbar"
+  ]
+}
