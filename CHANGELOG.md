@@ -7,6 +7,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Fixed (Web UI runtime service, production preview)
+- **`setuphelfer.service`:** production start script keeps **vite preview** in the **foreground** via `exec npm run preview -- --host 127.0.0.1 --port 3001 --strictPort` (fixes inactive/dead unit with exit 0 when preview ran in background). Commit `0a1e4a0`.
+- Production start **no longer** runs `npm install` or `npm run build`; missing `frontend/dist/index.html` or `node_modules` fails with a clear message.
+- Web UI expected on **`http://127.0.0.1:3001`**; backend API remains on **`http://127.0.0.1:8000`**. Docs: `docs/operations/WEB_UI_RUNTIME_SERVICE_{DE,EN}.md`, KB `docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`.
+
 ### Added (Rescue � sandbox controlled copy & build environment emulation)
 - Deploy-Runner `runner_rescue_sandbox_controlled_copy.py`: Precheck, Config-/Runtime-Kopie nur unter `build/rescue/sandbox/`, SHA256-Verify, Seal, Final-Gate; Handoffs unter `docs/evidence/runtime-results/handoff/`.
 - Deploy-Runner `runner_rescue_build_environment_emulation.py`: read-only Emulation (Snapshot, Workspace, Outputs-Metadaten, Logs, Overlay), Verify, Seal, Final-Gate; Artefakte unter `build/rescue/emulation/`.

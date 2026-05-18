@@ -4,6 +4,16 @@
 
 **Ja.** Solange **`GET /api/version`** nicht **HTTP 200** mit **`status":"success"`** liefert oder die produktive **`config/version.json`** nicht dem freigegebenen Schema entspricht, sind Testergebnisse nicht belastbar. Zuerst **`scripts/check-backend-version-gate.sh`** und das Update-Runbook (`docs/operations/BACKEND_UPDATE_RUNBOOK_DE.md`) — **kein** Backup-Start bei `blocked_update_required`.
 
+## Die Weboberfläche ist unter Port 3001 nicht erreichbar. Was prüfen?
+
+1. **Backend:** `curl -s http://127.0.0.1:8000/api/version` — muss `success` liefern; sonst `setuphelfer-backend.service` prüfen.
+2. **Web-UI-Dienst:** `systemctl is-active setuphelfer.service` — muss **active** sein.
+3. **Port:** `ss -ltnp | grep ':3001'` und `curl -I http://127.0.0.1:3001` — erwartet **HTTP 200**.
+4. **Runtime-Gate:** `./scripts/check-runtime-deploy-gate.sh` — Exit **0** vor Backup/BR-001.
+5. **Dienst inactive/dead mit Exit 0/SUCCESS:** Startskript unter `/opt` muss Vite Preview im **Vordergrund** starten (`exec npm run preview …`), nicht im Hintergrund (`&` + `wait`). Details: **`docs/operations/WEB_UI_RUNTIME_SERVICE_DE.md`**, KB **`docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`**, Evidence `docs/evidence/runtime-results/setuphelfer_web_ui_runtime_repair_2026-05-18.json`.
+
+**Kein Backup**, Restore oder Verify Deep starten, bis Backend, Web-UI und Gate grün sind.
+
 ## Warum bedeutet tar Exitcode 1 nicht automatisch ein kaputtes Backup?
 
 GNU **tar** verwendet Exitcode **1** für „mit Warnungen beendet“ (z. B. **Datei hat sich beim Lesen geändert**, **Socket ignoriert**). Das Archiv kann trotzdem vollständig sein — Setuphelfer wertet das **nicht** allein aus dem Exitcode ab. Details und BR-001-Forensik: **`docs/backup/TAR_EXIT_1_CLASSIFICATION_DE.md`**, Evidence `docs/evidence/runtime-results/br001_tar_exit1_forensics_2026-05-16.json`.

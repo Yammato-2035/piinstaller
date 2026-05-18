@@ -4,6 +4,16 @@
 
 **Yes.** If **`GET /api/version`** does not return **HTTP 200** with **`status":"success"`**, or production **`config/version.json`** does not match the approved schema, results are not trustworthy. Run **`scripts/check-backend-version-gate.sh`** and the update runbook (`docs/operations/BACKEND_UPDATE_RUNBOOK_EN.md`) first — **no** backup job while `blocked_update_required`.
 
+## The web UI on port 3001 is unreachable. What should I check?
+
+1. **Backend:** `curl -s http://127.0.0.1:8000/api/version` must return `success`.
+2. **Web UI unit:** `systemctl is-active setuphelfer.service` must be **active**.
+3. **Port:** `ss -ltnp | grep ':3001'` and `curl -I http://127.0.0.1:3001` — expect **HTTP 200**.
+4. **Runtime gate:** `./scripts/check-runtime-deploy-gate.sh` — exit **0** before backup/BR-001.
+5. **Service inactive/dead with exit 0/SUCCESS:** production script must run Vite preview in the **foreground** (`exec npm run preview …`), not background (`&` + `wait`). See **`docs/operations/WEB_UI_RUNTIME_SERVICE_EN.md`**, KB **`docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`**.
+
+Do **not** start backup, restore, or verify deep until runtime is green.
+
 ## Why does tar exit code 1 not automatically mean a broken backup?
 
 GNU **tar** uses exit code **1** for “finished with warnings” (e.g. **file changed as we read it**, **socket ignored**). The archive may still be complete — Setuphelfer does **not** infer that from the exit code alone. See **`docs/backup/TAR_EXIT_1_CLASSIFICATION_EN.md`** and evidence `docs/evidence/runtime-results/br001_tar_exit1_forensics_2026-05-16.json`.

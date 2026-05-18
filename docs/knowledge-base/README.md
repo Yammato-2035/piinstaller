@@ -11,6 +11,8 @@ Kuratierte Notizen aus Support- und Setup-Runden, damit Lösungen **nicht doppel
 | [BACKUP_TARGET_PERMISSIONS.md](BACKUP_TARGET_PERMISSIONS.md) | **Betrieb:** sicheres Schreibmodell für Backup-Mounts (`setuphelfer`-Gruppe, 0770, systemd `SupplementaryGroups`, optional VM-/Test-Flags) |
 | [FULL_RESTORE_BOOT_TEST.md](FULL_RESTORE_BOOT_TEST.md) | **Nachweis (VM):** Datei-Restore, Boot von Zielplatte, SSH-Check; Verweis auf ausführlichen Report; Hinweis auf Installer-Finalzustand |
 | [BUILD_RUNTIME_CONSISTENCY.md](BUILD_RUNTIME_CONSISTENCY.md) | **Betrieb/Runtime:** Konsistenz von Source, Build, Tauri, API-Version, Status-Ampeln, Netzwerk- und Update-Start-Verhalten |
+| [runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md](runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md) | **Web-UI-Service:** `setuphelfer.service` inactive mit Exit 0 — Hintergrund-`preview` vs. `exec` (Fix `0a1e4a0`); Verweis auf Operations-Doku und Evidence |
+| [runtime/systemd-backup-service-backup-targets.md](runtime/systemd-backup-service-backup-targets.md) | **systemd Backup@:** ReadWritePaths und Zielpfade |
 | [INSTALLATION_PATH_AUDIT.md](INSTALLATION_PATH_AUDIT.md) | **Audit-Leitfaden:** Pfadmigration, Legacy-Erkennung, funktionale Regeln und erwartete Audit-Ausgaben |
 | [BACKUP_VERIFY_PREVIEW_RUNTIME.md](BACKUP_VERIFY_PREVIEW_RUNTIME.md) | **Betrieb/VM-Tests:** `MemoryMax`/OOM, `TMPDIR`/PrivateTmp/ENOSPC bei Verify & Restore-Preview, Deep-Verify-Integrität (Symlinks/Staging), VBox-VDI-Resize + `growpart` |
 | [inspect/INSPECT_PHASE_0_1_DE.md](inspect/INSPECT_PHASE_0_1_DE.md) | **Inspect (DE):** Defensive Analyse in Phase 0/1, Rohdatenmodell, keine Schreiboperationen |
