@@ -13,6 +13,8 @@ declare global {
 }
 
 export const TAURI_DEFAULT_API = 'http://127.0.0.1:8000';
+/** Produktions-Web-UI (vite preview / statisches dist): Backend immer auf :8000, kein Same-Origin-Proxy. */
+export const PRODUCTION_WEB_DEFAULT_API = TAURI_DEFAULT_API;
 const DEFAULT_API_TIMEOUT_MS = 12000;
 
 /** LocalStorage-Key für optionale Backend-URL (z. B. wenn Backend auf anderem Rechner läuft). */
@@ -114,25 +116,40 @@ export function isScreenshotMode(): boolean {
   return _screenshotMode;
 }
 
-/** API-Basis-URL (leer = gleiche Origin, für Proxy). Gespeicherte URL hat Vorrang vor Build-Zeit-VITE_API_BASE. */
+/** Vite dev server mit /api-Proxy (nicht vite preview / nicht Produktion). */
+export function usesViteDevProxy(): boolean {
+  return import.meta.env.DEV && typeof window !== 'undefined' && !window.__TAURI__;
+}
+
+/** Standard-API-Basis ohne gespeicherten Wert: Dev-Web = Proxy (leer), sonst :8000. */
+export function getDefaultApiBase(): string {
+  if (usesViteDevProxy()) return '';
+  if (typeof window !== 'undefined' && window.__TAURI__ && import.meta.env.DEV) return '';
+  return PRODUCTION_WEB_DEFAULT_API;
+}
+
+/** API-Basis-URL. Gespeicherte URL hat Vorrang; Release-Web fällt nicht auf Same-Origin zurück. */
 export function getApiBase(): string {
   try {
     const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(API_BASE_STORAGE_KEY) : null;
     if (stored && typeof stored === 'string' && stored.trim()) {
       const normalized = normalizeApiBaseUrl(stored)
       if (isValidApiBaseUrl(normalized)) return normalized
-      // Defekten Eintrag bereinigen, damit Tauri auf den sicheren Default zurückfällt.
       localStorage.removeItem(API_BASE_STORAGE_KEY)
     }
   } catch {
     // ignore
   }
   const env = import.meta.env.VITE_API_BASE as string | undefined;
-  if (env && typeof env === 'string') return normalizeApiBaseUrl(env);
-  // Tauri Dev: Seite von Vite (localhost:5173) – relative /api nutzen, Vite-Proxy leitet weiter.
-  if (typeof window !== 'undefined' && window.__TAURI__ && import.meta.env.DEV) return '';
-  if (typeof window !== 'undefined' && window.__TAURI__) return TAURI_DEFAULT_API;
-  return '';
+  if (env && typeof env === 'string' && env.trim()) return normalizeApiBaseUrl(env);
+  return getDefaultApiBase();
+}
+
+/** Setzt API-Basis auf den modusabhängigen Standard (Produktion: http://127.0.0.1:8000). */
+export function resetApiBaseToDefault(): void {
+  const def = getDefaultApiBase();
+  if (def) setApiBase(def);
+  else setApiBase('');
 }
 
 /** Setzt die Backend-URL (z. B. nach erfolgreichem Fallback-Test) und löst API-Base-Change aus. */

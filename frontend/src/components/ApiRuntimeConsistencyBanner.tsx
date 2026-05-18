@@ -1,6 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TAURI_DEFAULT_API, fetchApi, getApiBase, normalizeApiBaseUrl, setApiBase } from '../api'
+import {
+  PRODUCTION_WEB_DEFAULT_API,
+  TAURI_DEFAULT_API,
+  fetchApi,
+  getApiBase,
+  getDefaultApiBase,
+  normalizeApiBaseUrl,
+  resetApiBaseToDefault,
+  usesViteDevProxy,
+} from '../api'
 
 const EXPECTED_TAURI_APP_ID = 'de.pi-installer.app'
 
@@ -26,7 +35,11 @@ export default function ApiRuntimeConsistencyBanner() {
     if (typeof window === 'undefined') return
     setState({ kind: 'loading' })
     const base = getApiBase()
-    const apiBaseLabel = base ? normalizeApiBaseUrl(base) : t('app.apiConsistency.apiBase.sameOrigin')
+    const apiBaseLabel = base
+      ? normalizeApiBaseUrl(base)
+      : usesViteDevProxy()
+        ? t('app.apiConsistency.apiBase.sameOrigin')
+        : PRODUCTION_WEB_DEFAULT_API
     const uiVer = frontendBuildVersion()
     try {
       const requestVersion = async (mode: 'configured' | 'relative' | 'default') => {
@@ -42,8 +55,12 @@ export default function ApiRuntimeConsistencyBanner() {
       let res = await requestVersion('configured')
       let source: 'configured' | 'relative' | 'default' = 'configured'
       if (!res.ok && base) {
-        const fallbackOrder: Array<'relative' | 'default'> =
-          !!(window as unknown as { __TAURI__?: unknown }).__TAURI__ ? ['default', 'relative'] : ['relative', 'default']
+        const isTauri = !!(window as unknown as { __TAURI__?: unknown }).__TAURI__
+        const fallbackOrder: Array<'relative' | 'default'> = usesViteDevProxy()
+          ? ['relative', 'default']
+          : isTauri
+            ? ['default', 'relative']
+            : ['default']
         for (const fb of fallbackOrder) {
           try {
             const candidate = await requestVersion(fb)
@@ -90,7 +107,10 @@ export default function ApiRuntimeConsistencyBanner() {
         setState({
           kind: 'stale_api_base',
           apiBaseLabel,
-          suggestedBase: source === 'default' ? TAURI_DEFAULT_API : t('app.apiConsistency.apiBase.sameOrigin'),
+          suggestedBase:
+            source === 'default'
+              ? getDefaultApiBase() || TAURI_DEFAULT_API
+              : t('app.apiConsistency.apiBase.sameOrigin'),
           backendVersion,
         })
         return
@@ -112,12 +132,7 @@ export default function ApiRuntimeConsistencyBanner() {
   }, [runCheck])
 
   const resetToDefault = () => {
-    const isTauri = !!(window as unknown as { __TAURI__?: unknown }).__TAURI__
-    if (isTauri) {
-      setApiBase(TAURI_DEFAULT_API)
-    } else {
-      setApiBase('')
-    }
+    resetApiBaseToDefault()
     void runCheck()
   }
 

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { RefreshCw, Terminal } from 'lucide-react'
-import { fetchApi, normalizeApiBaseUrl } from '../api'
+import { fetchApi } from '../api'
 import PageHeader from '../components/layout/PageHeader'
 import { DevDashboardBody, type DashboardPayload, type ModuleRow } from './DevDashboardBody'
 import { RuntimeWorkspacePanel } from './DevDashboardBody'
@@ -62,8 +62,7 @@ const DevelopmentDashboard: React.FC = () => {
   const loadAll = useCallback(async () => {
     setLoading(true)
     try {
-      const base = getApiBaseLabel()
-      setApiBaseDisplay(base ? normalizeApiBaseUrl(base) : t('app.apiConsistency.apiBase.sameOrigin'))
+      setApiBaseDisplay(getApiBaseLabel())
       const result = await loadDevDashboard(statusQuery)
       setDashboard(result.dashboard)
       setModules(result.modules)

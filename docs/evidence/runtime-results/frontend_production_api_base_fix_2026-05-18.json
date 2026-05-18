@@ -1,0 +1,19 @@
+{
+  "task": "frontend_production_api_base_fix",
+  "head_before": "516b411",
+  "frontend_port_3001_ok": true,
+  "backend_port_8000_ok": true,
+  "production_default_api_base": "http://127.0.0.1:8000",
+  "same_origin_proxy_not_used_in_release": true,
+  "frontend_unit_tests": "40 passed (incl. api.apiBase.test.ts x4)",
+  "frontend_build_success": true,
+  "frontend_deploy_done": true,
+  "runtime_gate_exit": 0,
+  "ui_backend_connection_ok": true,
+  "ui_smoke_note": "Hard reload in browser; reset stored API URL if old empty value persisted",
+  "backup_started": false,
+  "restore_started": false,
+  "verify_deep_started": false,
+  "apt_install_run": false,
+  "apt_upgrade_run": false
+}

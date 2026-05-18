@@ -1,4 +1,4 @@
-import { fetchApi, getApiBase } from '../../api'
+import { fetchApi, getApiBase, getDefaultApiBase, usesViteDevProxy } from '../../api'
 import type { DashboardPayload, ModuleRow } from '../../pages/DevDashboardBody'
 import {
   buildMinimalUnavailableDashboard,
@@ -129,5 +129,7 @@ export async function loadDevDashboard(statusQuery: string): Promise<DevDashboar
 
 export function getApiBaseLabel(): string {
   const base = getApiBase()
-  return base || '(same-origin / nicht gesetzt)'
+  if (base) return base
+  if (usesViteDevProxy()) return '(same-origin / Vite-Proxy)'
+  return getDefaultApiBase()
 }

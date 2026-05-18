@@ -7,6 +7,8 @@ import AppIcon from '../components/AppIcon'
 import {
   fetchApi,
   getApiBase,
+  getDefaultApiBase,
+  resetApiBaseToDefault,
   API_BASE_STORAGE_KEY,
   normalizeApiBaseUrl,
   saveUserProfilePayload,
@@ -92,19 +94,20 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
   const [loadingNetwork, setLoadingNetwork] = useState(false)
   const [apiBaseUrl, setApiBaseUrl] = useState(() => {
     try {
-      const b = getApiBase()
-      return b || ''
+      return getApiBase()
     } catch {
-      return ''
+      return getDefaultApiBase()
     }
   })
 
   const saveApiBaseUrl = (value: string) => {
-    const v = normalizeApiBaseUrl(value)
+    const trimmed = value.trim()
+    const v = trimmed ? normalizeApiBaseUrl(trimmed) : ''
     try {
       if (v) localStorage.setItem(API_BASE_STORAGE_KEY, v)
       else localStorage.removeItem(API_BASE_STORAGE_KEY)
-      setApiBaseUrl(v)
+      const effective = v || getDefaultApiBase()
+      setApiBaseUrl(effective)
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('pi-installer-api-base-changed'))
       }
@@ -822,7 +825,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
           <h3 className="text-lg font-bold text-white mb-3">Verbindung zum Server</h3>
           <p className="text-sm text-slate-400 mb-3">
-            Wenn die rote Anzeige „Server nicht erreichbar“ erscheint, läuft der Server möglicherweise auf einem anderen Rechner. Hier die Adresse eintragen (z. B. <code className="text-sky-300">http://192.168.1.10:8000</code>) – <strong className="text-slate-200">ohne</strong> <code className="text-sky-300">/api</code> am Ende. Leer lassen = automatisch (localhost:8000).
+            Backend-Standard in der Produktions-Web-UI: <code className="text-sky-300">http://127.0.0.1:8000</code> (ohne <code className="text-sky-300">/api</code> am Ende). Bei Remote-Backend die Adresse eintragen (z. B. <code className="text-sky-300">http://192.168.1.10:8000</code>).
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <input
@@ -839,15 +842,20 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
             >
               Übernehmen
             </button>
-            {apiBaseUrl && (
-              <button
-                type="button"
-                onClick={() => saveApiBaseUrl('')}
-                className="px-3 py-2 text-slate-400 hover:text-white text-sm"
-              >
-                Auf Standard zurücksetzen
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                resetApiBaseToDefault()
+                setApiBaseUrl(getDefaultApiBase())
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('pi-installer-api-base-changed'))
+                }
+                toast.success(t('settings.toast.serverUrlReset'))
+              }}
+              className="px-3 py-2 text-slate-400 hover:text-white text-sm"
+            >
+              Auf Standard zurücksetzen
+            </button>
           </div>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
