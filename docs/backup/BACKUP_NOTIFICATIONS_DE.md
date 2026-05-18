@@ -15,9 +15,17 @@ BR-001 und die Integritätskette verlangen ein finales Archiv, SHA256 und Verify
 
 ## Konfiguration über die UI
 
-Unter **Einstellungen → E-Mail-Benachrichtigungen** können Empfänger, SMTP-Daten und ein **Gmail-App-Passwort** gesetzt werden. Das Passwort wird **nicht** angezeigt und nicht in API-Antworten zurückgegeben (`smtp_password_set` nur true/false). Mit **Testmail senden** prüfen Sie SMTP ohne Backup.
+Unter **Einstellungen → E-Mail-Benachrichtigungen** können Empfänger, SMTP-Daten und das Mailbox-Passwort gesetzt werden. Das Passwort wird **nicht** angezeigt und nicht in API-Antworten zurückgegeben (`smtp_password_set` nur true/false). Mit **Testmail senden** prüfen Sie SMTP ohne Backup.
 
-Für Gmail ist in der Regel ein **App-Passwort** (Google-Konto → Sicherheit) erforderlich, nicht das normale Login-Passwort.
+**Verschlüsselung (`smtp_security`):**
+
+| Modus | Typischer Port | Verhalten |
+|-------|----------------|-----------|
+| `starttls` | 587 | `SMTP` + `STARTTLS` |
+| `ssl` | 465 | `SMTP_SSL` (implizites TLS) |
+| `none` | 25 o. ä. | unverschlüsselt |
+
+Ohne `SETUPHELFER_NOTIFY_SMTP_SECURITY`: Port **465** → `ssl`, sonst `smtp_starttls=true` → `starttls`.
 
 ## Konfiguration (Umgebungsvariablen)
 
@@ -29,6 +37,7 @@ Umgebungsvariablen (siehe `.env.example`):
 | `SETUPHELFER_NOTIFY_EMAIL_TO` | Empfänger |
 | `SETUPHELFER_NOTIFY_EMAIL_FROM` | Absender |
 | `SETUPHELFER_NOTIFY_SMTP_*` | SMTP-Server, Port, Zugangsdaten |
+| `SETUPHELFER_NOTIFY_SMTP_SECURITY` | `starttls`, `ssl` oder `none` |
 | `SETUPHELFER_NOTIFY_ON_BACKUP_SUCCESS` | Standard `true` |
 
 Secrets nur in `.env` (gitignored) oder systemd `EnvironmentFile`, **nicht** im Repository.

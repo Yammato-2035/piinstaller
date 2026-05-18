@@ -22,6 +22,8 @@ type GeneralSubTab = 'init' | 'network' | 'basic' | 'screenshots'
 
 export type ExperienceLevel = 'beginner' | 'advanced' | 'developer'
 
+export type SmtpSecurityMode = 'starttls' | 'ssl' | 'none'
+
 export type EmailNotificationSettings = {
   enabled: boolean
   on_backup_success: boolean
@@ -31,6 +33,7 @@ export type EmailNotificationSettings = {
   smtp_host: string
   smtp_port: number
   smtp_username: string
+  smtp_security: SmtpSecurityMode
   smtp_starttls: boolean
   smtp_password_set?: boolean
   configured?: boolean
@@ -121,6 +124,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
       smtp_host: String(emailData.smtp_host || ''),
       smtp_port: Number(emailData.smtp_port) || 587,
       smtp_username: String(emailData.smtp_username || ''),
+      smtp_security:
+        emailData.smtp_security === 'ssl' || emailData.smtp_security === 'none'
+          ? (emailData.smtp_security as SmtpSecurityMode)
+          : emailData.smtp_starttls === false && Number(emailData.smtp_port) === 465
+            ? 'ssl'
+            : 'starttls',
       smtp_starttls: emailData.smtp_starttls !== false,
       smtp_password_set: !!emailData.smtp_password_set,
       configured: !!emailData.configured,
@@ -417,55 +426,49 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
   const saveEmailNotificationSettings = async () => {
     if (!emailNotif) return
     setActiveTab('notifications')
-    await requireSudo(
-      {
-        title: 'E-Mail-Benachrichtigungen speichern',
-        subtitle: 'Schreibt /etc/setuphelfer/notification.env (Administrator).',
-        confirmText: 'Speichern',
-      },
-      async (pwd?: string) => {
-        setSavingEmailNotif(true)
-        try {
-          const body: Record<string, unknown> = {
-            enabled: emailNotif.enabled,
-            on_backup_success: emailNotif.on_backup_success,
-            on_backup_failure: emailNotif.on_backup_failure,
-            email_to: emailNotif.email_to,
-            email_from: emailNotif.email_from,
-            smtp_host: emailNotif.smtp_host,
-            smtp_port: emailNotif.smtp_port,
-            smtp_username: emailNotif.smtp_username,
-            smtp_starttls: emailNotif.smtp_starttls,
-          }
-          if (emailNotifPassword.trim()) {
-            body.smtp_password = emailNotifPassword.trim()
-          }
-          if (pwd) body.sudo_password = pwd
-          const r = await fetchApi('/api/settings/notifications/email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          })
-          const d = await r.json()
-          if (d.status === 'success') {
-            toast.success('E-Mail-Einstellungen gespeichert')
-            applyEmailNotifFromApi(d)
-            setEmailNotifPassword('')
-            setActiveTab('notifications')
-          } else if (d.requires_sudo_password) {
-            toast.error('Sudo-Passwort erforderlich zum Speichern')
-          } else if (d.operator_commands?.length) {
-            toast.error(d.message || 'Administratorrechte erforderlich', { duration: 12000 })
-          } else {
-            toast.error(d.message || 'Speichern fehlgeschlagen')
-          }
-        } catch {
-          toast.error('Speichern fehlgeschlagen (Server nicht erreichbar)')
-        } finally {
-          setSavingEmailNotif(false)
-        }
-      },
-    )
+    setSavingEmailNotif(true)
+    try {
+      const body: Record<string, unknown> = {
+        enabled: emailNotif.enabled,
+        on_backup_success: emailNotif.on_backup_success,
+        on_backup_failure: emailNotif.on_backup_failure,
+        email_to: emailNotif.email_to,
+        email_from: emailNotif.email_from,
+        smtp_host: emailNotif.smtp_host,
+        smtp_port: emailNotif.smtp_port,
+        smtp_username: emailNotif.smtp_username,
+        smtp_security: emailNotif.smtp_security,
+        smtp_starttls: emailNotif.smtp_security === 'starttls',
+      }
+      if (emailNotifPassword.trim()) {
+        body.smtp_password = emailNotifPassword.trim()
+      }
+      const r = await fetchApi('/api/settings/notifications/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const d = await r.json()
+      if (d.status === 'success') {
+        toast.success('E-Mail-Einstellungen gespeichert')
+        applyEmailNotifFromApi(d)
+        setEmailNotifPassword('')
+      } else if (d.requires_operator_write && d.operator_commands?.length) {
+        const cmds = (d.operator_commands as string[]).filter((c) => !c.startsWith('#')).join('\n')
+        toast.error(
+          (d.message as string) ||
+            'Speichern auf dem Server nicht möglich (Betreiber-Schritte in der Konsole).',
+          { duration: 14000 },
+        )
+        if (cmds) console.info('notification.env operator commands:\n', cmds)
+      } else {
+        toast.error((d.message as string) || 'Speichern fehlgeschlagen')
+      }
+    } catch {
+      toast.error('Speichern fehlgeschlagen (Server nicht erreichbar)')
+    } finally {
+      setSavingEmailNotif(false)
+    }
   }
 
   const testEmailNotification = async () => {
@@ -479,8 +482,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
       } else if (d.status === 'failed') {
         const hint =
           d.error_class === 'smtp_auth_failed'
-            ? 'SMTP-Authentifizierung fehlgeschlagen (Gmail: App-Passwort prüfen).'
-            : d.message || 'Testmail fehlgeschlagen'
+            ? 'SMTP-Authentifizierung fehlgeschlagen (Benutzername/Passwort/Absender prüfen).'
+            : d.error_class === 'smtp_tls_failed'
+              ? 'TLS/SSL-Fehler: Für Port 465 „SSL/TLS direkt“ wählen; für Port 587 „STARTTLS“.'
+              : d.error_class === 'smtp_connection_failed'
+                ? 'Verbindung zum SMTP-Server fehlgeschlagen (Host/Port/Firewall prüfen).'
+                : d.message || 'Testmail fehlgeschlagen'
         toast.error(hint, { duration: 12000 })
       } else {
         toast.error(d.message || `Test übersprungen (${d.status || '—'})`)
@@ -512,11 +519,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
     }
   }
 
-  const storeSudoPassword = async (sudoPassword: string) => {
+  const storeSudoPassword = async (sudoPassword: string, skipTest = true) => {
     const resp = await fetchApi('/api/users/sudo-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sudo_password: sudoPassword }),
+      body: JSON.stringify({ sudo_password: sudoPassword, skip_test: skipTest }),
     })
     const data = await resp.json()
     if (data.status !== 'success') {
@@ -534,8 +541,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
     }
 
     setSudoModalOpen(true)
-    setPendingAction(() => async (pwd: string) => {
-      await storeSudoPassword(pwd)
+    setPendingAction(() => async (pwd: string, skipTest?: boolean) => {
+      await storeSudoPassword(pwd, skipTest ?? true)
       await action(pwd)
     })
   }
@@ -585,10 +592,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
           setSudoModalOpen(false)
           setPendingAction(null)
         }}
-        onConfirm={async (pwd) => {
+        onConfirm={async (pwd, skipTest) => {
           try {
             if (!pendingAction) return
-            await pendingAction(pwd)
+            await pendingAction(pwd, skipTest)
             toast.success(t('settings.toast.sudoSavedSession'))
             setSudoModalOpen(false)
             setPendingAction(null)
@@ -1184,15 +1191,34 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                     </p>
                   </div>
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={emailNotif.smtp_starttls}
-                    onChange={(e) => setEmailNotif({ ...emailNotif, smtp_starttls: e.target.checked })}
-                    className="w-5 h-5 accent-sky-500"
-                  />
-                  <span className="text-white">STARTTLS aktivieren</span>
-                </label>
+                <div className="sm:col-span-2">
+                  <div className="text-xs text-slate-400 mb-1">Verschlüsselung</div>
+                  <select
+                    value={emailNotif.smtp_security}
+                    onChange={(e) => {
+                      const mode = e.target.value as SmtpSecurityMode
+                      const updates: Partial<EmailNotificationSettings> = {
+                        smtp_security: mode,
+                        smtp_starttls: mode === 'starttls',
+                      }
+                      if (mode === 'ssl' && (emailNotif.smtp_port === 587 || !emailNotif.smtp_port)) {
+                        updates.smtp_port = 465
+                      }
+                      if (mode === 'starttls' && emailNotif.smtp_port === 465) {
+                        updates.smtp_port = 587
+                      }
+                      setEmailNotif({ ...emailNotif, ...updates })
+                    }}
+                    className="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                  >
+                    <option value="ssl">SSL/TLS direkt (typisch Port 465)</option>
+                    <option value="starttls">STARTTLS (typisch Port 587)</option>
+                    <option value="none">Keine Verschlüsselung</option>
+                  </select>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Für SMTP Port 465 bitte SSL/TLS direkt wählen. STARTTLS ist typischerweise Port 587.
+                  </p>
+                </div>
                 {emailNotif.last_test_status && emailNotif.last_test_status !== 'unknown' && (
                   <p className="text-sm text-slate-400">
                     Letzter Test:{' '}

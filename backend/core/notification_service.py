@@ -5,9 +5,13 @@ from __future__ import annotations
 import os
 import re
 import smtplib
+import ssl
 from dataclasses import dataclass
 from email.message import EmailMessage
-from typing import Any, Mapping
+from typing import Any, Literal
+
+SMTP_SECURITY_MODES = frozenset({"starttls", "ssl", "none"})
+SmtpSecurity = Literal["starttls", "ssl", "none"]
 
 __all__ = [
     "EmailNotificationResult",
@@ -33,6 +37,18 @@ def _env_str(name: str) -> str:
     return (os.environ.get(name) or "").strip()
 
 
+def normalize_smtp_security(value: str | None, *, port: int, smtp_starttls: bool) -> SmtpSecurity:
+    """Resolve encryption mode; legacy smtp_starttls + port 465 heuristics when security unset."""
+    raw = (value or "").strip().lower()
+    if raw in SMTP_SECURITY_MODES:
+        return raw  # type: ignore[return-value]
+    if port == 465:
+        return "ssl"
+    if smtp_starttls:
+        return "starttls"
+    return "none"
+
+
 @dataclass(frozen=True)
 class NotificationConfig:
     email_enabled: bool
@@ -42,6 +58,7 @@ class NotificationConfig:
     smtp_port: int
     smtp_username: str
     smtp_password: str
+    smtp_security: SmtpSecurity
     smtp_starttls: bool
     notify_on_backup_success: bool
     notify_on_backup_failure: bool
@@ -72,6 +89,12 @@ def load_notification_config() -> NotificationConfig:
         port = int(port_raw)
     except ValueError:
         port = 587
+    starttls = _env_bool("SETUPHELFER_NOTIFY_SMTP_STARTTLS", default=True)
+    security = normalize_smtp_security(
+        _env_str("SETUPHELFER_NOTIFY_SMTP_SECURITY"),
+        port=port,
+        smtp_starttls=starttls,
+    )
     return NotificationConfig(
         email_enabled=_env_bool("SETUPHELFER_NOTIFY_EMAIL_ENABLED"),
         email_to=_env_str("SETUPHELFER_NOTIFY_EMAIL_TO"),
@@ -80,7 +103,8 @@ def load_notification_config() -> NotificationConfig:
         smtp_port=port,
         smtp_username=_env_str("SETUPHELFER_NOTIFY_SMTP_USERNAME"),
         smtp_password=_env_str("SETUPHELFER_NOTIFY_SMTP_PASSWORD"),
-        smtp_starttls=_env_bool("SETUPHELFER_NOTIFY_SMTP_STARTTLS", default=True),
+        smtp_security=security,
+        smtp_starttls=security == "starttls",
         notify_on_backup_success=_env_bool("SETUPHELFER_NOTIFY_ON_BACKUP_SUCCESS", default=True),
         notify_on_backup_failure=_env_bool("SETUPHELFER_NOTIFY_ON_BACKUP_FAILURE", default=False),
     )
@@ -228,17 +252,39 @@ def send_backup_success_email(
             _smtp_send_default(cfg, msg)
         return EmailNotificationResult(status="sent", recipient_masked=masked)
     except Exception as exc:
-        err = re.sub(r"(?i)(password|passwd|auth|credential)[^\s]*", "[redacted]", str(exc))[:300]
+        err = _safe_smtp_error_message(exc)
         return EmailNotificationResult(status="failed", error=err, recipient_masked=masked)
 
 
+def _safe_smtp_error_message(exc: BaseException) -> str:
+    text = str(exc)
+    text = re.sub(r"(?i)(password|passwd|credential)[^\s]*", "[redacted]", text)
+    text = re.sub(r"(?i)(auth[^\s]*\s*[:=]\s*)\S+", r"\1[redacted]", text)
+    return text[:300]
+
+
+def _smtp_login_and_send(smtp: smtplib.SMTP, cfg: NotificationConfig, msg: EmailMessage) -> None:
+    if cfg.smtp_username:
+        smtp.login(cfg.smtp_username, cfg.smtp_password)
+    smtp.send_message(msg)
+
+
 def _smtp_send_default(cfg: NotificationConfig, msg: EmailMessage) -> None:
-    with smtplib.SMTP(cfg.smtp_host, cfg.smtp_port, timeout=60) as smtp:
-        if cfg.smtp_starttls:
-            smtp.starttls()
-        if cfg.smtp_username:
-            smtp.login(cfg.smtp_username, cfg.smtp_password)
-        smtp.send_message(msg)
+    timeout = 60
+    tls_context = ssl.create_default_context()
+    if cfg.smtp_security == "ssl":
+        with smtplib.SMTP_SSL(
+            cfg.smtp_host,
+            cfg.smtp_port,
+            timeout=timeout,
+            context=tls_context,
+        ) as smtp:
+            _smtp_login_and_send(smtp, cfg, msg)
+        return
+    with smtplib.SMTP(cfg.smtp_host, cfg.smtp_port, timeout=timeout) as smtp:
+        if cfg.smtp_security == "starttls":
+            smtp.starttls(context=tls_context)
+        _smtp_login_and_send(smtp, cfg, msg)
 
 
 def maybe_send_backup_success_email(

@@ -4,16 +4,19 @@ from __future__ import annotations
 
 import os
 import unittest
+from email.message import EmailMessage
 from unittest import mock
 
 from core.notification_service import (
     EmailNotificationResult,
     NotificationConfig,
+    _smtp_send_default,
     build_backup_success_body,
     build_backup_success_subject,
     load_notification_config,
     mask_email_address,
     maybe_send_backup_success_email,
+    normalize_smtp_security,
     notification_status_fields,
     send_backup_success_email,
     should_notify_backup_success,
@@ -29,6 +32,7 @@ def _full_config(**overrides: object) -> NotificationConfig:
         smtp_port=587,
         smtp_username="user",
         smtp_password="secret",
+        smtp_security="starttls",
         smtp_starttls=True,
         notify_on_backup_success=True,
         notify_on_backup_failure=False,
@@ -142,12 +146,47 @@ class TestNotificationServiceV1(unittest.TestCase):
         blob = str(fields)
         self.assertNotIn("secret", blob)
 
+    def test_normalize_port_465_defaults_ssl(self) -> None:
+        self.assertEqual(normalize_smtp_security(None, port=465, smtp_starttls=True), "ssl")
+
+    def test_normalize_starttls_flag(self) -> None:
+        self.assertEqual(normalize_smtp_security(None, port=587, smtp_starttls=True), "starttls")
+        self.assertEqual(normalize_smtp_security(None, port=587, smtp_starttls=False), "none")
+
+    def test_smtp_ssl_uses_smtp_ssl_class(self) -> None:
+        cfg = _full_config(smtp_security="ssl", smtp_port=465, smtp_starttls=False)
+        msg = EmailMessage()
+        msg["Subject"] = "t"
+        msg["From"] = cfg.email_from
+        msg["To"] = cfg.email_to
+        msg.set_content("body")
+        with mock.patch("smtplib.SMTP_SSL") as mock_ssl, mock.patch("smtplib.SMTP") as mock_plain:
+            mock_ssl.return_value.__enter__.return_value = mock.Mock()
+            _smtp_send_default(cfg, msg)
+            mock_ssl.assert_called_once()
+            mock_plain.assert_not_called()
+
+    def test_smtp_starttls_uses_smtp_and_starttls(self) -> None:
+        cfg = _full_config(smtp_security="starttls", smtp_port=587)
+        msg = EmailMessage()
+        msg["Subject"] = "t"
+        msg["From"] = cfg.email_from
+        msg["To"] = cfg.email_to
+        msg.set_content("body")
+        with mock.patch("smtplib.SMTP_SSL") as mock_ssl, mock.patch("smtplib.SMTP") as mock_plain:
+            smtp = mock_plain.return_value.__enter__.return_value
+            _smtp_send_default(cfg, msg)
+            mock_plain.assert_called_once()
+            mock_ssl.assert_not_called()
+            smtp.starttls.assert_called_once()
+
     def test_env_example_has_empty_placeholders(self) -> None:
         root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         path = os.path.join(root, ".env.example")
         with open(path, encoding="utf-8") as f:
             text = f.read()
         self.assertIn("SETUPHELFER_NOTIFY_EMAIL_TO=", text)
+        self.assertIn("SETUPHELFER_NOTIFY_SMTP_SECURITY=", text)
         self.assertNotIn("googlemail.com", text)
         self.assertNotIn("SETUPHELFER_NOTIFY_SMTP_PASSWORD=secret", text)
 

@@ -13,6 +13,7 @@ from core.notification_settings import (
     ENV_KEYS,
     build_public_settings,
     classify_smtp_error,
+    config_from_env_map,
     merge_settings_payload,
     notification_env_path,
     parse_env_file,
@@ -113,6 +114,91 @@ class TestNotificationSettingsCoreV1(unittest.TestCase):
 
     def test_classify_smtp_535(self) -> None:
         self.assertEqual(classify_smtp_error("535 Username and Password not accepted"), "smtp_auth_failed")
+
+    def test_classify_smtp_tls(self) -> None:
+        self.assertEqual(classify_smtp_error("SSL: WRONG_VERSION_NUMBER"), "smtp_tls_failed")
+
+    def test_port_465_without_security_defaults_ssl_in_config(self) -> None:
+        env_map = {
+            ENV_KEYS["smtp_port"]: "465",
+            ENV_KEYS["smtp_starttls"]: "false",
+        }
+        cfg = config_from_env_map(env_map)
+        self.assertEqual(cfg.smtp_security, "ssl")
+        self.assertFalse(cfg.smtp_starttls)
+
+    def test_merge_glienke_ssl_465_valid(self) -> None:
+        with patch("core.notification_settings.notification_env_path", return_value=self._env_path()):
+            env_map, errs = merge_settings_payload(
+                {
+                    "smtp_host": "mail.glienke.de",
+                    "smtp_port": 465,
+                    "smtp_security": "ssl",
+                    "smtp_starttls": False,
+                    "email_to": "volker@example.com",
+                    "email_from": "volker@example.com",
+                }
+            )
+        self.assertEqual(errs, [])
+        self.assertEqual(env_map[ENV_KEYS["smtp_security"]], "ssl")
+        self.assertEqual(env_map[ENV_KEYS["smtp_port"]], "465")
+        self.assertEqual(env_map[ENV_KEYS["smtp_starttls"]], "false")
+
+    def test_merge_port_465_starttls_rejected(self) -> None:
+        with patch("core.notification_settings.notification_env_path", return_value=self._env_path()):
+            _, errs = merge_settings_payload(
+                {"smtp_port": 465, "smtp_security": "starttls", "email_to": "a@b.com", "email_from": "a@b.com"}
+            )
+        self.assertTrue(any("465" in e for e in errs))
+
+    def test_build_public_includes_smtp_security(self) -> None:
+        env_path = self.config_dir / "notification.env"
+        env_path.write_text(
+            serialize_env_lines(
+                {
+                    ENV_KEYS["enabled"]: "true",
+                    ENV_KEYS["email_to"]: "u@example.com",
+                    ENV_KEYS["email_from"]: "u@example.com",
+                    ENV_KEYS["smtp_host"]: "smtp.example.com",
+                    ENV_KEYS["smtp_port"]: "465",
+                    ENV_KEYS["smtp_username"]: "u@example.com",
+                    ENV_KEYS["smtp_password"]: "pw",
+                    ENV_KEYS["smtp_security"]: "ssl",
+                    ENV_KEYS["smtp_starttls"]: "false",
+                    ENV_KEYS["on_backup_success"]: "true",
+                    ENV_KEYS["on_backup_failure"]: "false",
+                }
+            ),
+            encoding="utf-8",
+        )
+        with (
+            patch("core.notification_settings.get_config_dir", return_value=self.config_dir),
+            patch("core.notification_settings.get_state_dir", return_value=self.state_dir),
+            patch("core.notification_settings.notification_env_path", return_value=self._env_path()),
+        ):
+            pub = build_public_settings()
+        self.assertEqual(pub["smtp_security"], "ssl")
+        raw = json.dumps(pub)
+        self.assertNotIn("pw", raw)
+
+    def test_can_write_when_parent_writable_but_file_readonly(self) -> None:
+        env_path = self.config_dir / "notification.env"
+        env_path.write_text(f"{ENV_KEYS['email_to']}=a@b.com\n", encoding="utf-8")
+
+        def _access(path, mode):  # noqa: ARG001
+            if path == env_path:
+                return False
+            if path == env_path.parent and mode == os.W_OK:
+                return True
+            return os.access(path, mode)
+
+        with (
+            patch("core.notification_settings.notification_env_path", return_value=env_path),
+            patch("os.access", side_effect=_access),
+        ):
+            from core.notification_settings import can_write_notification_env_direct
+
+            self.assertTrue(can_write_notification_env_direct())
 
     def test_save_direct_write(self) -> None:
         with (

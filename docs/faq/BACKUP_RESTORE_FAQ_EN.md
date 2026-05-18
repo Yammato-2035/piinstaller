@@ -30,7 +30,7 @@ Only when the job reports **`backup.success`**, or **`backup.success_with_warnin
 
 ## How do I configure SMTP and send a test email?
 
-In **Settings → Email notifications**: set recipient, SMTP fields, and a Gmail **app password**, then **Save** (sudo if prompted) and **Send test email**. The password is never shown in the UI after save.
+In **Settings → Email notifications**: set recipient, SMTP fields, **encryption** (`SSL/TLS` for port 465 or `STARTTLS` for port 587), and mailbox password, then **Save** and **Send test email**. The password is never shown in the UI after save.
 
 ## Why does an SMTP error not fail the backup?
 

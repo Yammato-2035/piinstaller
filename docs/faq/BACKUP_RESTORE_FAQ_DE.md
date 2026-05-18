@@ -30,7 +30,7 @@ Nur wenn der Job **`backup.success`** meldet oder **`backup.success_with_warning
 
 ## Wie konfiguriere ich SMTP und eine Testmail?
 
-Unter **Einstellungen → E-Mail-Benachrichtigungen**: Empfänger, SMTP-Daten und Gmail-**App-Passwort** setzen, **Speichern** (ggf. Sudo), dann **Testmail senden**. Das Passwort wird in der UI nicht angezeigt.
+Unter **Einstellungen → E-Mail-Benachrichtigungen**: Empfänger, SMTP-Daten, **Verschlüsselung** (`SSL/TLS` für Port 465 oder `STARTTLS` für Port 587) und Mailbox-Passwort setzen, **Speichern**, dann **Testmail senden**. Das Passwort wird in der UI nicht angezeigt.
 
 ## Warum schlägt ein SMTP-Fehler das Backup nicht fehl?
 

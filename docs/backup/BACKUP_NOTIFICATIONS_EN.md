@@ -15,9 +15,17 @@ BR-001 integrity requires a final archive, SHA256, and verify deep. Notification
 
 ## Settings UI
 
-Use **Settings → Email notifications** to set recipient, SMTP host, username, and a **Gmail app password**. The password is never returned by the API (`smtp_password_set` only). Use **Send test email** to verify SMTP without starting a backup.
+Use **Settings → Email notifications** to set recipient, SMTP host, username, and mailbox password. The password is never returned by the API (`smtp_password_set` only). Use **Send test email** to verify SMTP without starting a backup.
 
-For Gmail, an **app password** is usually required (Google account → Security), not your normal login password.
+**Encryption (`smtp_security`):**
+
+| Mode | Typical port | Behaviour |
+|------|--------------|-----------|
+| `starttls` | 587 | `SMTP` + `STARTTLS` |
+| `ssl` | 465 | `SMTP_SSL` (implicit TLS) |
+| `none` | 25 etc. | plain SMTP |
+
+If `SETUPHELFER_NOTIFY_SMTP_SECURITY` is unset: port **465** → `ssl`; else `smtp_starttls=true` → `starttls`.
 
 ## Configuration (environment)
 

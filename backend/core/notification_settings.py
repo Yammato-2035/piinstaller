@@ -12,7 +12,9 @@ from core.install_paths import get_config_dir, get_state_dir
 from core.notification_service import (
     EmailNotificationResult,
     NotificationConfig,
+    SMTP_SECURITY_MODES,
     load_notification_config,
+    normalize_smtp_security,
     send_backup_success_email,
 )
 
@@ -30,6 +32,7 @@ ENV_KEYS = {
     "smtp_username": "SETUPHELFER_NOTIFY_SMTP_USERNAME",
     "smtp_password": "SETUPHELFER_NOTIFY_SMTP_PASSWORD",
     "smtp_starttls": "SETUPHELFER_NOTIFY_SMTP_STARTTLS",
+    "smtp_security": "SETUPHELFER_NOTIFY_SMTP_SECURITY",
 }
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -83,9 +86,23 @@ def classify_smtp_error(error: str | None) -> str | None:
     if not error:
         return None
     low = error.lower()
-    if "535" in low or "badcredentials" in low or "username and" in low:
+    if (
+        "535" in low
+        or "badcredentials" in low
+        or "username and" in low
+        or "authentication" in low
+        or "smtpauthenticationerror" in low
+    ):
         return "smtp_auth_failed"
-    if "connection refused" in low or "timed out" in low or "gaierror" in low:
+    if (
+        "ssl" in low
+        or "tls" in low
+        or "certificate" in low
+        or "wrap_socket" in low
+        or "sslerror" in low
+    ):
+        return "smtp_tls_failed"
+    if "connection refused" in low or "timed out" in low or "gaierror" in low or "connect" in low:
         return "smtp_connection_failed"
     return "smtp_send_failed"
 
@@ -96,6 +113,12 @@ def config_from_env_map(env: dict[str, str]) -> NotificationConfig:
         port = int(port_raw)
     except ValueError:
         port = 587
+    starttls = _env_to_bool(env.get(ENV_KEYS["smtp_starttls"]), default=True)
+    security = normalize_smtp_security(
+        env.get(ENV_KEYS["smtp_security"]),
+        port=port,
+        smtp_starttls=starttls,
+    )
     return NotificationConfig(
         email_enabled=_env_to_bool(env.get(ENV_KEYS["enabled"])),
         email_to=(env.get(ENV_KEYS["email_to"]) or "").strip(),
@@ -104,7 +127,8 @@ def config_from_env_map(env: dict[str, str]) -> NotificationConfig:
         smtp_port=port,
         smtp_username=(env.get(ENV_KEYS["smtp_username"]) or "").strip(),
         smtp_password=(env.get(ENV_KEYS["smtp_password"]) or "").strip(),
-        smtp_starttls=_env_to_bool(env.get(ENV_KEYS["smtp_starttls"]), default=True),
+        smtp_security=security,
+        smtp_starttls=security == "starttls",
         notify_on_backup_success=_env_to_bool(env.get(ENV_KEYS["on_backup_success"]), default=True),
         notify_on_backup_failure=_env_to_bool(env.get(ENV_KEYS["on_backup_failure"]), default=False),
     )
@@ -173,6 +197,7 @@ def build_public_settings() -> dict[str, Any]:
         "smtp_host": cfg.smtp_host,
         "smtp_port": cfg.smtp_port,
         "smtp_username": cfg.smtp_username,
+        "smtp_security": cfg.smtp_security,
         "smtp_starttls": cfg.smtp_starttls,
         "smtp_password_set": bool((parse_env_file(notification_env_path()).get(ENV_KEYS["smtp_password"]) or "").strip()),
         "configured": configured,
@@ -184,9 +209,10 @@ def build_public_settings() -> dict[str, Any]:
 
 
 def can_write_notification_env_direct() -> bool:
+    """True when notification.env can be created/updated without sudo (ReadWritePaths + Unix perms)."""
     path = notification_env_path()
-    if path.exists():
-        return os.access(path, os.W_OK)
+    if path.exists() and os.access(path, os.W_OK):
+        return True
     parent = path.parent
     return parent.is_dir() and os.access(parent, os.W_OK)
 
@@ -206,6 +232,7 @@ def serialize_env_lines(env_map: dict[str, str]) -> str:
         ENV_KEYS["smtp_port"],
         ENV_KEYS["smtp_username"],
         ENV_KEYS["smtp_password"],
+        ENV_KEYS["smtp_security"],
         ENV_KEYS["smtp_starttls"],
     ]
     for key in order:
@@ -246,12 +273,38 @@ def merge_settings_payload(payload: dict[str, Any]) -> tuple[dict[str, str], lis
         errors.append(str(e))
         port = 587
 
-    smtp_starttls = bool(
+    smtp_starttls_legacy = bool(
         payload.get(
             "smtp_starttls",
             _env_to_bool(current.get(ENV_KEYS["smtp_starttls"]), default=True),
         )
     )
+    security_raw = payload.get("smtp_security")
+    if security_raw is not None:
+        security = str(security_raw).strip().lower()
+        if security not in SMTP_SECURITY_MODES:
+            errors.append("smtp_security muss starttls, ssl oder none sein")
+            security = normalize_smtp_security(
+                current.get(ENV_KEYS["smtp_security"]),
+                port=port,
+                smtp_starttls=smtp_starttls_legacy,
+            )
+    else:
+        security = normalize_smtp_security(
+            current.get(ENV_KEYS["smtp_security"]),
+            port=port,
+            smtp_starttls=smtp_starttls_legacy,
+        )
+
+    if port == 465 and security == "starttls":
+        errors.append(
+            "Port 465 erwartet smtp_security=ssl (implizites TLS). "
+            "Für STARTTLS typischerweise Port 587."
+        )
+    if port == 587 and security == "ssl":
+        errors.append(
+            "Port 587 mit smtp_security=ssl ist unüblich; für STARTTLS smtp_security=starttls wählen."
+        )
 
     new_password = payload.get("smtp_password")
     if new_password is not None and str(new_password).strip():
@@ -280,7 +333,8 @@ def merge_settings_payload(payload: dict[str, Any]) -> tuple[dict[str, str], lis
         ENV_KEYS["smtp_port"]: str(port),
         ENV_KEYS["smtp_username"]: smtp_username,
         ENV_KEYS["smtp_password"]: password,
-        ENV_KEYS["smtp_starttls"]: _bool_to_env(smtp_starttls),
+        ENV_KEYS["smtp_security"]: security,
+        ENV_KEYS["smtp_starttls"]: _bool_to_env(security == "starttls"),
     }
     return env_map, errors
 
@@ -296,6 +350,10 @@ def write_notification_env_atomic(env_map: dict[str, str]) -> None:
             fh.flush()
             os.fsync(fh.fileno())
         os.replace(tmp_name, path)
+        try:
+            os.chmod(path, 0o660)
+        except OSError:
+            pass
     finally:
         if os.path.exists(tmp_name):
             try:
@@ -332,7 +390,11 @@ def write_notification_env_via_staging(env_map: dict[str, str]) -> Path:
 def operator_install_commands(staging: Path) -> list[str]:
     dest = notification_env_path()
     return [
-        f"sudo install -o root -g setuphelfer -m 640 {staging} {dest}",
+        "# Drop-in (ReadWritePaths) — siehe packaging/.../notification-env.conf.example",
+        "sudo cp packaging/systemd/setuphelfer-backend.service.d/notification-env.conf.example "
+        "/etc/systemd/system/setuphelfer-backend.service.d/notification-env.conf",
+        f"sudo install -o root -g setuphelfer -m 660 {staging} {dest}",
+        "sudo systemctl daemon-reload",
         "sudo systemctl restart setuphelfer-backend.service",
     ]
 
@@ -377,14 +439,20 @@ def save_notification_settings(
         return {
             "status": "error",
             "write_status": "sudo_install_failed",
-            "message": "Speichern mit Administratorrechten fehlgeschlagen",
+            "message": (
+                "Speichern mit Administratorrechten fehlgeschlagen "
+                "(sudo ist im Backend-Dienst durch NoNewPrivileges blockiert)"
+            ),
             "operator_commands": operator_install_commands(staging),
         }
 
     return {
         "status": "error",
         "write_status": "requires_operator_write",
-        "message": "Administratorrechte erforderlich",
+        "message": (
+            "notification.env ist nicht beschreibbar. Drop-in mit ReadWritePaths=/etc/setuphelfer "
+            "installieren und Dienst neu starten (siehe operator_commands)."
+        ),
         "operator_commands": operator_install_commands(staging),
     }
 
