@@ -213,7 +213,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
   const [updatesData, setUpdatesData] = useState<{ total: number; categories?: Record<string, number>; updates?: { package: string; version: string; category: string }[] } | null>(null)
   const [updatesModalOpen, setUpdatesModalOpen] = useState(false)
   const [updateSafetyModalOpen, setUpdateSafetyModalOpen] = useState(false)
-  const [updateTerminalLoading, setUpdateTerminalLoading] = useState(false)
+  const [updateTerminalLoading] = useState(false)
   const [updateTerminalError, setUpdateTerminalError] = useState<{ message?: string; copyable_command?: string } | null>(null)
   const [updateReminderUntil, setUpdateReminderUntil] = useState<number | null>(null)
   const [networkFallback, setNetworkFallback] = useState<{
@@ -447,36 +447,14 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
     })
   }
 
-  const runUpdateInTerminal = async () => {
-    setUpdateTerminalError(null)
-    setUpdateTerminalLoading(true)
-    try {
-      const response = await fetchApi('/api/system/run-update-in-terminal', { method: 'POST' })
-      const data = await response.json()
-      if (data.status === 'success') {
-        toast.success(data.message || t('dashboard.toast.terminalOpened'))
-      } else {
-        const noGuiSession =
-          typeof data?.message === 'string' &&
-          (data.message.includes('Keine grafische Sitzung erkannt') || data.message.includes('DISPLAY/WAYLAND'))
-        if (noGuiSession && typeof window !== 'undefined' && (window as any).__TAURI__?.core?.invoke) {
-          try {
-            const msg = await (window as any).__TAURI__.core.invoke('launch_update_terminal')
-            toast.success(String(msg || t('dashboard.toast.terminalOpened')))
-            return
-          } catch {
-            // fallback to standard error path
-          }
-        }
-        setUpdateTerminalError({ message: data.message, copyable_command: data.copyable_command })
-        toast.error(data.message || t('dashboard.toast.terminalFailed'))
-      }
-    } catch (e) {
-      setUpdateTerminalError({ message: t('dashboard.toast.terminalOpenError'), copyable_command: 'sudo apt update && sudo apt upgrade' })
-      toast.error(t('dashboard.toast.terminalOpenError'))
-    } finally {
-      setUpdateTerminalLoading(false)
-    }
+  const showUpdateInstructions = () => {
+    const commands = ['sudo apt update', 'sudo apt upgrade']
+    const copyable = commands.join(' && ')
+    setUpdateTerminalError({
+      message: t('dashboard.updates.manualOnlyMessage'),
+      copyable_command: copyable,
+    })
+    setUpdateSafetyModalOpen(true)
   }
   const copyUpdateCommand = () => {
     const cmd = updateTerminalError?.copyable_command || 'sudo apt update && sudo apt upgrade'
@@ -501,11 +479,7 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
     }
   }
   const requestUpdateStart = () => {
-    if (isBeginnerExperience) {
-      setUpdateSafetyModalOpen(true)
-      return
-    }
-    void runUpdateInTerminal()
+    showUpdateInstructions()
   }
 
   const SECURITY_TOTAL = 5 // Firewall, Fail2Ban, Auto-Updates, SSH-Härtung, Audit-Logging
@@ -1450,13 +1424,11 @@ const Dashboard: React.FC<DashboardProps> = ({ systemInfo, backendError, backend
                 <button
                   type="button"
                   onClick={() => {
-                    setUpdateSafetyModalOpen(false)
-                    void runUpdateInTerminal()
+                    copyUpdateCommand()
                   }}
-                  disabled={updateTerminalLoading}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium"
                 >
-                  {updateTerminalLoading ? '…' : t('dashboard.updates.safetyModal.runNow')}
+                  {t('dashboard.updates.safetyModal.copyCommands')}
                 </button>
               </div>
             </div>

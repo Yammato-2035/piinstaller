@@ -7,6 +7,13 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Update button: manual guidance only, no GUI/apt from backend)
+- **UI / `Dashboard.tsx`:** Buttons heissen nicht mehr "Update starten" / "Run update in terminal", sondern zeigen eine manuelle Anleitung (z. B. "Update-Hinweise anzeigen" / "Show update guide"). Klicks oeffnen das Sicherheits-Modal mit den Befehlen `sudo apt update` / `sudo apt upgrade` und einer **BR-001-Warnung**; kein `__TAURI__.invoke('launch_update_terminal')`-Fallback mehr.
+- **API `POST /api/system/run-update-in-terminal`:** liefert immer `status=manual_required`, `code=updates.manual_terminal_required`, `commands`, `copyable_command`, `blocked_auto_execution=true`, `br001_warning` — **kein** subprocess, kein `_open_terminal_with_command`, kein `apt`.
+- Hintergrund: systemd-Backend hat keine grafische Sitzung; automatisches `apt update/upgrade` ist vor BR-001 unsicher (Paketmanager-Locks).
+- Tests: `backend/tests/test_update_button_manual_only_v1.py` (Endpoint ruft `subprocess.Popen` und `_open_terminal_with_command` nicht auf).
+- Evidence: `docs/evidence/runtime-results/update_button_manual_only_2026-05-19.json`.
+
 ### Fixed (Web UI runtime service, production static server)
 - **`setuphelfer.service`:** `scripts/start-browser-production.sh` startet die gebaute SPA mit **`exec python3 scripts/serve-frontend-production.py`** (stdlib **`ThreadingHTTPServer`**, SPA-Fallback, **`/api/*`** auf :3001 mit **404** und Hinweis auf Backend :8000). Kein **Vite preview** und kein **Node** mehr im Web-UI-Dienstprozess (weniger bewegliche Teile bei Browser-Reloads).
 - Produktivstart weiterhin **ohne** `npm install` / `npm run build`; fehlendes **`frontend/dist/index.html`** beendet mit Exit **1** und klarer Meldung; **`node_modules`** ist fuer den Web-UI-Dienst nicht noetig.

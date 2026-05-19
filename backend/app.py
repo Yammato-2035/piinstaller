@@ -7248,20 +7248,33 @@ def _open_terminal_with_command(shell_cmd: str) -> tuple[bool, str]:
 
 @app.post("/api/system/run-update-in-terminal")
 async def run_update_in_terminal():
-    """Öffnet ein Terminal-Fenster mit 'sudo apt update && sudo apt upgrade'.
-    Der Benutzer gibt das Passwort im geöffneten Terminal ein. Bei fehlendem Terminal: copyable_command für manuelles Ausführen."""
-    try:
-        cmd = "sudo apt update && sudo apt upgrade"
-        success, msg = _open_terminal_with_command(cmd)
-        if success:
-            return {"status": "success", "message": msg, "copyable_command": cmd}
-        return JSONResponse(
-            status_code=200,
-            content={"status": "error", "message": msg, "copyable_command": cmd}
-        )
-    except Exception as e:
-        logger.exception("run-update-in-terminal fehlgeschlagen")
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
+    """Manuelle Update-Anleitung. Backend startet keine grafische Sitzung und kein apt.
+
+    - Kein subprocess, kein Terminal, kein sudo, kein pkexec.
+    - Antwort ist immer `status=manual_required` (HTTP 200).
+    """
+    commands = ["sudo apt update", "sudo apt upgrade"]
+    copyable = " && ".join(commands)
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": "manual_required",
+            "code": "updates.manual_terminal_required",
+            "message": (
+                "Setuphelfer fuehrt aus Sicherheitsgruenden keine unbeaufsichtigten "
+                "Systemupdates aus. Bitte ein Terminal manuell oeffnen und die "
+                "Befehle ausfuehren — nicht waehrend Backup/Restore/Paketmanager-Vorgang."
+            ),
+            "commands": commands,
+            "copyable_command": copyable,
+            "blocked_auto_execution": True,
+            "reason": "systemd_service_has_no_graphical_session_and_auto_apt_upgrade_is_unsafe",
+            "br001_warning": (
+                "Vor einem BR-001-Backup keine Updates starten — Paketmanager-Locks "
+                "koennen Backups blockieren."
+            ),
+        },
+    )
 
 
 @app.get("/api/system/terminal-available")
