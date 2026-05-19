@@ -10,7 +10,7 @@
 2. **Web-UI-Dienst:** `systemctl is-active setuphelfer.service` — muss **active** sein.
 3. **Port:** `ss -ltnp | grep ':3001'` und `curl -I http://127.0.0.1:3001` — erwartet **HTTP 200**.
 4. **Runtime-Gate:** `./scripts/check-runtime-deploy-gate.sh` — Exit **0** vor Backup/BR-001.
-5. **Dienst inactive/dead mit Exit 0/SUCCESS:** Startskript unter `/opt` muss Vite Preview im **Vordergrund** starten (`exec npm run preview …`), nicht im Hintergrund (`&` + `wait`). Details: **`docs/operations/WEB_UI_RUNTIME_SERVICE_DE.md`**, KB **`docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`**, Evidence `docs/evidence/runtime-results/setuphelfer_web_ui_runtime_repair_2026-05-18.json`.
+5. **Dienst inactive/dead mit Exit 0/SUCCESS:** Historisch: Vite Preview im **Vordergrund** (`exec npm run preview …`), nicht im Hintergrund (`&` + `wait`). Aktuell: **`serve-frontend-production.py`** (stdlib) statt Vite-Preview. Details: **`docs/operations/WEB_UI_RUNTIME_SERVICE_DE.md`**, KB **`docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`**, Evidence `docs/evidence/runtime-results/setuphelfer_web_ui_runtime_repair_2026-05-18.json`, `docs/evidence/runtime-results/web_ui_reload_crash_repair_2026-05-19.json`.
 
 **Kein Backup**, Restore oder Verify Deep starten, bis Backend, Web-UI und Gate grün sind.
 

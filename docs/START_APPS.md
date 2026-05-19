@@ -4,7 +4,7 @@
 
 **Installiert unter `/opt` (systemd) vs. Entwicklung im Repo:** strikt getrennte Startmodi und typische Fehler (z. B. Vite-Dev im Installationspfad) – siehe **`docs/BETRIEB_REPO_VS_SERVICE.md`**.
 
-**systemd (Produktion):** **`setuphelfer-backend.service`** (Port **8000**), **`setuphelfer.service`** (Web-UI, **vite preview**). Legacy: `pi-installer*.service`.
+**systemd (Produktion):** **`setuphelfer-backend.service`** (Port **8000**), **`setuphelfer.service`** (Web-UI, **Python-Static-Server** für `frontend/dist/`). Legacy: `pi-installer*.service`.
 
 ---
 

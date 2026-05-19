@@ -29,7 +29,7 @@ Zwei klar getrennte Szenarien. Vermischung führt zu typischen Fehlern (z. B. 
 | Komponente | Rolle |
 |------------|-------|
 | `setuphelfer-backend.service` | **Alleiniger Owner von Port 8000** – startet **`scripts/start-backend.sh`** (Uvicorn). |
-| `setuphelfer.service` | Nur **Web-UI**: **`scripts/start-browser-production.sh`** → **`exec npm run preview`** auf **`127.0.0.1:3001`** (Vite **preview** auf **`frontend/dist/`**). Startet **kein** Backend; bricht ab, wenn `/api/version` nicht erreichbar ist. Betrieb/Troubleshooting: **`docs/operations/WEB_UI_RUNTIME_SERVICE_DE.md`**. |
+| `setuphelfer.service` | Nur **Web-UI**: **`scripts/start-browser-production.sh`** → **`exec python3 …/serve-frontend-production.py`** auf **`127.0.0.1:3001`** (stdlib-Server für **`frontend/dist/`**). Startet **kein** Backend; bricht ab, wenn `/api/version` nicht erreichbar ist. Betrieb/Troubleshooting: **`docs/operations/WEB_UI_RUNTIME_SERVICE_DE.md`**. |
 
 **Standardbetrieb:**
 
@@ -40,7 +40,7 @@ Zwei klar getrennte Szenarien. Vermischung führt zu typischen Fehlern (z. B. 
 
 **Nicht parallel sinnvoll:** Zusätzlich im Terminal `./start.sh` im Repo starten, während beide Services aktiv sind.
 
-**Vite-Cache im Produktivstart:** `PI_INSTALLER_VITE_CACHE_DIR` bzw. Setuphelfer-Äquivalente – standardmäßig Cache unter `/tmp` (siehe `scripts/start-browser-production.sh`), nicht zwingend Schreiben unter `node_modules/.vite`.
+**Vite-Cache / Dev:** Entwicklung mit `./start.sh` (Vite **dev**) — nicht parallel zu aktiven `/opt`-Services. Produktion: kein Vite-Cache für den Web-UI-Dienst nötig (kein `node_modules/.vite` zur Laufzeit für :3001).
 
 ---
 
@@ -64,7 +64,7 @@ curl -sS -o /dev/null -w "%{http_code}" http://127.0.0.1:3001/
 |---------|-----------|
 | `curl http://127.0.0.1:8000/api/version` | Backend OK? |
 | `curl -I http://127.0.0.1:3001/` | Liefert preview/UI etwas (HTTP 200)? |
-| `systemctl status setuphelfer.service` | **inactive/dead** mit **status=0/SUCCESS** und kein Port 3001? → Startskript muss **`exec npm run preview`** nutzen (kein `&` + `wait`). Siehe **`docs/operations/WEB_UI_RUNTIME_SERVICE_DE.md`**. |
+| `systemctl status setuphelfer.service` | **inactive/dead** mit **status=0/SUCCESS** und kein Port 3001? → Historisch: Shell als Hauptprozess (`npm run preview &` + `wait`). Aktuell: **`exec python3 …/serve-frontend-production.py`** ohne Hintergrundjob. Siehe **`docs/operations/WEB_UI_RUNTIME_SERVICE_DE.md`**. |
 | `journalctl -u setuphelfer.service` | Tritt **EACCES** / **mkdir … node_modules/.vite** auf? → Dann läuft noch **Dev-Start** (`start.sh` / `npm run dev`) statt `start-browser-production.sh`. `ExecStart` muss auf **`…/scripts/start-browser-production.sh`** zeigen. |
 | Falsche gespeicherte API-URL in der App | Einstellungen zur Backend-URL; Release-Default **`http://127.0.0.1:8000`** (nicht Same-Origin auf :3001). |
 

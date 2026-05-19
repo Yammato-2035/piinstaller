@@ -1,9 +1,10 @@
 # Web-UI-Runtime: `setuphelfer.service`
 
-Betriebsdokumentation für die produktive Weboberfläche (Vite **preview** auf `frontend/dist/`).
+Betriebsdokumentation für die produktive Weboberfläche: **stdlib-HTTP-Server** (Python) liefert die gebaute SPA aus **`frontend/dist/`** — **kein** Node/Vite zur Laufzeit im Web-UI-Dienst.
 
-**Evidence (Reparatur 2026-05-18):** `docs/evidence/runtime-results/setuphelfer_web_ui_runtime_repair_2026-05-18.json`  
-**Fix-Commit:** `0a1e4a0` — *Keep production web UI preview running in foreground*
+**Evidence (Reparatur 2026-05-18, Hintergrundprozess):** `docs/evidence/runtime-results/setuphelfer_web_ui_runtime_repair_2026-05-18.json`  
+**Evidence (Stabilisierung Reload / ohne Vite-Preview):** `docs/evidence/runtime-results/web_ui_reload_crash_repair_2026-05-19.json`  
+**Älterer Fix-Commit:** `0a1e4a0` — *Vite preview im Vordergrund (exec)* — weiterhin relevant für Diagnose älterer Deployments.
 
 ---
 
@@ -12,7 +13,7 @@ Betriebsdokumentation für die produktive Weboberfläche (Vite **preview** auf `
 | Unit | Rolle | Port (Standard) |
 |------|--------|-----------------|
 | **`setuphelfer-backend.service`** | API (Uvicorn), alleiniger Owner von Port **8000** | `127.0.0.1:8000` |
-| **`setuphelfer.service`** | Nur **Web-UI**: `scripts/start-browser-production.sh` → **`exec npm run preview`** | `127.0.0.1:3001` |
+| **`setuphelfer.service`** | Nur **Web-UI**: `scripts/start-browser-production.sh` → **`exec python3 …/serve-frontend-production.py`** (SPA-Fallback, `/api/*` hier **404** mit Hinweis auf :8000) | `127.0.0.1:3001` |
 
 Die Web-UI startet **kein** zweites Backend. `Requires=setuphelfer-backend.service` — ohne erreichbares `/api/version` bricht das Startskript mit Exit **1** ab.
 
@@ -52,16 +53,13 @@ curl -s http://127.0.0.1:8000/api/version
 
 **Ursache (behoben in `0a1e4a0`):** `start-browser-production.sh` startete **`npm run preview &`** im Hintergrund und wartete mit **`wait`**. Unter systemd **`Type=simple`** war die **Shell** der Hauptprozess — nicht Vite. Beendete sich die Shell (Kindprozess weg, Signal-Handler), meldete systemd **SUCCESS** → **kein** dauerhafter Listener auf 3001.
 
-**Korrektur:** Vite Preview im **Vordergrund** per **`exec`**:
+**Korrektur (historisch, `0a1e4a0`):** Vite Preview im **Vordergrund** per **`exec`** statt Shell als Hauptprozess.
 
-```bash
-exec npm run preview -- --host 127.0.0.1 --port 3001 --strictPort
-```
+**Aktueller Produktivweg:** Statt Vite **preview** dient **`scripts/serve-frontend-production.py`** (stdlib **`ThreadingHTTPServer`**) nur zum Ausliefern von **`frontend/dist/`** mit SPA-Fallback. Dadurch entfällt die Node-/Vite-Laufzeitabhängigkeit für **`setuphelfer.service`** (weniger bewegliche Teile bei Browser-Reloads und Signalen).
 
-- Kein `&`, kein `wait`, kein Hintergrundprozess  
-- **`--strictPort`**: Port-Konflikt schlägt sofort fehl  
-- Kein **`npm install`** / **`npm run build`** im Produktivstart (reproduzierbarer Deploy)  
-- Fehlt `frontend/dist/index.html` oder `node_modules` → klare Fehlermeldung, Exit **1**
+- Kein **`npm install`** / **`npm run build`** im Produktivstart  
+- Fehlt **`frontend/dist/index.html`** → klare Fehlermeldung, Exit **1**  
+- **`node_modules`** ist für den Web-UI-Dienst **nicht** erforderlich (Build weiterhin mit `npm run build` beim Deploy)
 
 ---
 
@@ -76,7 +74,9 @@ cd /home/volker/piinstaller   # oder Ihr Checkout
 cd frontend && npm run build && cd ..
 
 sudo cp scripts/start-browser-production.sh /opt/setuphelfer/scripts/
+sudo cp scripts/serve-frontend-production.py /opt/setuphelfer/scripts/
 sudo chmod +x /opt/setuphelfer/scripts/start-browser-production.sh
+sudo chmod +x /opt/setuphelfer/scripts/serve-frontend-production.py
 sudo cp -a frontend/dist/. /opt/setuphelfer/frontend/dist/
 
 sudo systemctl daemon-reload

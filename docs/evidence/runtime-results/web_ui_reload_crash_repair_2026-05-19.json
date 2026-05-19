@@ -1,0 +1,19 @@
+{
+  "task": "web_ui_reload_crash_repair_static_server",
+  "date_local": "2026-05-19",
+  "summary_de": "Produktive Web-UI unter :3001 nutzt stdlib-Python (ThreadingHTTPServer) statt Vite preview; SPA-Fallback; /api/* auf :3001 -> 404 mit Hinweis auf :8000.",
+  "summary_en": "Production web UI on :3001 uses stdlib Python (ThreadingHTTPServer) instead of Vite preview; SPA fallback; /api/* on :3001 returns 404 pointing to :8000.",
+  "scripts": [
+    "scripts/serve-frontend-production.py",
+    "scripts/start-browser-production.sh"
+  ],
+  "systemd_unit_description_updated": "setuphelfer.service / debian/setuphelfer.service",
+  "journalctl_note": "Full unit logs require adm group or sudo: sudo journalctl -u setuphelfer.service -n 300 --no-pager",
+  "workspace_verification": {
+    "py_compile_serve_frontend_production_py": "ok",
+    "bash_n_start_browser_production_sh": "ok",
+    "pytest_backend_tests_test_serve_frontend_static_v1_py": "4 passed"
+  },
+  "runtime_deploy_on_this_host": "not executed in agent session (operator: sudo cp scripts + dist, systemctl restart setuphelfer.service)",
+  "prior_repair_reference": "docs/evidence/runtime-results/setuphelfer_web_ui_runtime_repair_2026-05-18.json"
+}

@@ -43,7 +43,7 @@ Implementierung: `backend/core/install_paths.py`.
 | Unit | Rolle |
 |------|--------|
 | **`setuphelfer-backend.service`** | Alleinig **Owner von Port 8000**; startet `scripts/start-backend.sh` (Uvicorn). |
-| **`setuphelfer.service`** | **Web-UI**: `scripts/start-browser-production.sh` (Vite **preview** auf `frontend/dist/`). **Requires** Backend; startet kein zweites Backend. |
+| **`setuphelfer.service`** | **Web-UI**: `scripts/start-browser-production.sh` → **`serve-frontend-production.py`** (stdlib HTTP, `frontend/dist/`). **Requires** Backend; startet kein zweites Backend. |
 
 Vorlagen: Repo-Root `setuphelfer.service`, `setuphelfer-backend.service`; Debian installiert nach `/etc/systemd/system/`.
 

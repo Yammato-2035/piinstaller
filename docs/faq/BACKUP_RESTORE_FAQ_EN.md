@@ -10,7 +10,7 @@
 2. **Web UI unit:** `systemctl is-active setuphelfer.service` must be **active**.
 3. **Port:** `ss -ltnp | grep ':3001'` and `curl -I http://127.0.0.1:3001` — expect **HTTP 200**.
 4. **Runtime gate:** `./scripts/check-runtime-deploy-gate.sh` — exit **0** before backup/BR-001.
-5. **Service inactive/dead with exit 0/SUCCESS:** production script must run Vite preview in the **foreground** (`exec npm run preview …`), not background (`&` + `wait`). See **`docs/operations/WEB_UI_RUNTIME_SERVICE_EN.md`**, KB **`docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`**.
+5. **Service inactive/dead with exit 0/SUCCESS:** Historically: run Vite preview in the **foreground** (`exec npm run preview …`), not background (`&` + `wait`). Current: **`serve-frontend-production.py`** (stdlib) instead of Vite preview. See **`docs/operations/WEB_UI_RUNTIME_SERVICE_EN.md`**, KB **`docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`**, evidence `docs/evidence/runtime-results/setuphelfer_web_ui_runtime_repair_2026-05-18.json`, `docs/evidence/runtime-results/web_ui_reload_crash_repair_2026-05-19.json`.
 
 Do **not** start backup, restore, or verify deep until runtime is green.
 

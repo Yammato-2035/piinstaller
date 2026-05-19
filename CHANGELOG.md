@@ -7,10 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
-### Fixed (Web UI runtime service, production preview)
-- **`setuphelfer.service`:** production start script keeps **vite preview** in the **foreground** via `exec npm run preview -- --host 127.0.0.1 --port 3001 --strictPort` (fixes inactive/dead unit with exit 0 when preview ran in background). Commit `0a1e4a0`.
-- Production start **no longer** runs `npm install` or `npm run build`; missing `frontend/dist/index.html` or `node_modules` fails with a clear message.
-- Web UI expected on **`http://127.0.0.1:3001`**; backend API remains on **`http://127.0.0.1:8000`**. Docs: `docs/operations/WEB_UI_RUNTIME_SERVICE_{DE,EN}.md`, KB `docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`.
+### Fixed (Web UI runtime service, production static server)
+- **`setuphelfer.service`:** `scripts/start-browser-production.sh` startet die gebaute SPA mit **`exec python3 scripts/serve-frontend-production.py`** (stdlib **`ThreadingHTTPServer`**, SPA-Fallback, **`/api/*`** auf :3001 mit **404** und Hinweis auf Backend :8000). Kein **Vite preview** und kein **Node** mehr im Web-UI-Dienstprozess (weniger bewegliche Teile bei Browser-Reloads).
+- Produktivstart weiterhin **ohne** `npm install` / `npm run build`; fehlendes **`frontend/dist/index.html`** beendet mit Exit **1** und klarer Meldung; **`node_modules`** ist fuer den Web-UI-Dienst nicht noetig.
+- Aeltere Deployments / Diagnose: Vite im Vordergrund per `exec` (Commit **`0a1e4a0`**). Doku/KB/Evidence: `docs/operations/WEB_UI_RUNTIME_SERVICE_{DE,EN}.md`, `docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`, `docs/evidence/runtime-results/web_ui_reload_crash_repair_2026-05-19.json`.
 
 ### Added (Rescue � sandbox controlled copy & build environment emulation)
 - Deploy-Runner `runner_rescue_sandbox_controlled_copy.py`: Precheck, Config-/Runtime-Kopie nur unter `build/rescue/sandbox/`, SHA256-Verify, Seal, Final-Gate; Handoffs unter `docs/evidence/runtime-results/handoff/`.

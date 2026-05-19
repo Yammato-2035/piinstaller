@@ -62,9 +62,9 @@ Start- und Initialisierungslogik soll nachvollziehbar und konsistent sein.
 | Service | Datei (Vorlage) | ExecStart (Kern) |
 |---------|----------------|------------------|
 | **setuphelfer-backend** | `setuphelfer-backend.service` | `scripts/start-backend.sh` – **Port 8000** |
-| **setuphelfer** | `setuphelfer.service` | `scripts/start-browser-production.sh` – Web-UI (**vite preview**), kein zweites Backend |
+| **setuphelfer** | `setuphelfer.service` | `scripts/start-browser-production.sh` – Web-UI (**Python stdlib** auf `frontend/dist/`), kein zweites Backend |
 
-**Hinweis:** Die Web-UI-Unit startet **nicht** `./start.sh` (Vite-Dev), um Schreibzugriffe auf `frontend/node_modules/.vite` unter `/opt` zu vermeiden.
+**Hinweis:** Die Web-UI-Unit startet **nicht** `./start.sh` (Vite-Dev), um Schreibzugriffe auf `frontend/node_modules/.vite` unter `/opt` zu vermeiden. Stattdessen: statischer Build unter `frontend/dist/` + **`serve-frontend-production.py`**.
 
 **Aktiver Pfad:** `./scripts/install-backend-service.sh` / `install-system.sh` richten **`setuphelfer-backend`** (und bei Vollinstallation **`setuphelfer`**) ein. Legacy: `pi-installer-backend.service`.
 

@@ -4,7 +4,7 @@
 #           sudo systemctl daemon-reload && sudo systemctl enable --now setuphelfer
 
 [Unit]
-Description=Setuphelfer Web-UI (vite preview; Backend in setuphelfer-backend.service)
+Description=Setuphelfer Web-UI (static SPA on :3001; Backend in setuphelfer-backend.service)
 After=network-online.target setuphelfer-backend.service
 Wants=network-online.target
 Requires=setuphelfer-backend.service

@@ -86,6 +86,7 @@ rsync -a --exclude='.git' \
       "$SOURCE_DIR/" "$INSTALL_DIR/"
 # Berechtigungen erst am Ende setzen, damit root alle Build-Schritte (venv, npm, tauri) ausführen kann
 find "$INSTALL_DIR" -type f -name "*.sh" -exec chmod +x {} \;
+find "$INSTALL_DIR/scripts" -maxdepth 1 -type f -name "serve-frontend-production.py" -exec chmod +x {} \; 2>/dev/null || true
 ok "Dateien kopiert"
 
 # Backend Venv (als root anlegen, dann chown – Service braucht keine Schreibrechte in venv außer pip cache)
@@ -123,7 +124,7 @@ if command -v npm >/dev/null 2>&1; then
   if npm run build 2>&1; then
     ok "frontend/dist erzeugt (vite build)"
   else
-    warn "vite build fehlgeschlagen – start-browser-production.sh versucht beim Start erneut."
+    warn "vite build fehlgeschlagen – ohne frontend/dist/index.html startet setuphelfer.service nicht (Exit 1)."
   fi
   # Tauri-Build: Cargo/Rust liegen oft im Benutzer-Kontext; mit sudo ist $HOME=/root und cargo fehlt.
   # Daher Build als der User ausführen, der sudo aufgerufen hat (der hat meist Rust).

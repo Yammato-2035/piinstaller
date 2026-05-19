@@ -16,9 +16,13 @@ Unter **`Type=simple`** war die **Bash-Shell** der Hauptprozess. Das Skript star
 exec npm run preview -- --host 127.0.0.1 --port 3001 --strictPort
 ```
 
-- Vite bleibt Hauptprozess (PID für systemd)  
+- Vite bleibt Hauptprozess (PID für systemd) — **nur bei älteren Deployments**, die noch Vite-Preview nutzen  
 - Kein `npm install` / `npm run build` im Service-Start  
 - Fehlendes `dist/index.html` → Exit **1** mit klarer Meldung  
+
+## Follow-up: statischer Python-Server (aktuell)
+
+Für neue Deployments liefert **`scripts/serve-frontend-production.py`** die SPA aus **`frontend/dist/`** ohne Node zur Laufzeit. Details: `docs/operations/WEB_UI_RUNTIME_SERVICE_DE.md`, Evidence `docs/evidence/runtime-results/web_ui_reload_crash_repair_2026-05-19.json`.
 
 ## Prüfkommandos
 
@@ -40,7 +44,8 @@ Erwartung nach Fix: **active**, Port **3001** LISTEN, **HTTP 200**.
 
 ## Evidence
 
-`docs/evidence/runtime-results/setuphelfer_web_ui_runtime_repair_2026-05-18.json`
+`docs/evidence/runtime-results/setuphelfer_web_ui_runtime_repair_2026-05-18.json`  
+`docs/evidence/runtime-results/web_ui_reload_crash_repair_2026-05-19.json`
 
 ## Ausführliche Doku
 
