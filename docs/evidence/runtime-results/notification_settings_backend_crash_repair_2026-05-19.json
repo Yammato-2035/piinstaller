@@ -40,5 +40,5 @@
   "apt_install_run": false,
   "apt_upgrade_run": false,
   "br001_ready_after_backend_stability": false,
-  "workspace_commit_after_fix": "1177f03"
+  "workspace_commit_after_fix": "1c0a8dd"
 }
