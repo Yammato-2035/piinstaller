@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 import tempfile
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from core.install_paths import get_config_dir, get_state_dir
 from core.notification_service import (
@@ -47,15 +50,23 @@ def notification_test_meta_path() -> Path:
 
 
 def parse_env_file(path: Path) -> dict[str, str]:
+    """Parse KEY=value lines; never raises (invalid UTF-8, I/O, malformed lines)."""
     if not path.is_file():
         return {}
+    try:
+        raw = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return {}
     out: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in raw.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
         k, _, v = line.partition("=")
-        out[k.strip()] = v.strip()
+        key = k.strip()
+        if not key:
+            continue
+        out[key] = v.strip()
     return out
 
 
@@ -178,6 +189,33 @@ def write_test_meta(status: str, error_class: str | None = None) -> None:
 
 
 def build_public_settings() -> dict[str, Any]:
+    """Public notification UI state; never raises (no secrets in return value)."""
+    try:
+        return _build_public_settings_impl()
+    except Exception as exc:
+        logger.warning("build_public_settings failed: %s", type(exc).__name__, exc_info=True)
+        p = notification_env_path()
+        return {
+            "enabled": False,
+            "on_backup_success": True,
+            "on_backup_failure": False,
+            "email_to": "",
+            "email_from": "",
+            "smtp_host": "",
+            "smtp_port": 587,
+            "smtp_username": "",
+            "smtp_security": "starttls",
+            "smtp_starttls": True,
+            "smtp_password_set": False,
+            "configured": False,
+            "env_path": str(p),
+            "env_writable": can_write_notification_env_direct(),
+            "last_test_status": "unknown",
+            "last_test_error_class": "settings_read_failed",
+        }
+
+
+def _build_public_settings_impl() -> dict[str, Any]:
     cfg = load_effective_notification_config()
     meta = read_test_meta()
     configured = cfg.email_fully_configured() and bool(cfg.smtp_password or False)
@@ -420,7 +458,8 @@ def save_notification_settings(
             return {
                 "status": "error",
                 "write_status": "write_failed",
-                "message": f"Speichern fehlgeschlagen: {e}",
+                "message": "Speichern fehlgeschlagen (Dateisystem / Rechte).",
+                "error_class": type(e).__name__,
             }
 
     staging = write_notification_env_via_staging(env_map)

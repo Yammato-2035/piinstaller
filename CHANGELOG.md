@@ -12,6 +12,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Produktivstart weiterhin **ohne** `npm install` / `npm run build`; fehlendes **`frontend/dist/index.html`** beendet mit Exit **1** und klarer Meldung; **`node_modules`** ist fuer den Web-UI-Dienst nicht noetig.
 - Aeltere Deployments / Diagnose: Vite im Vordergrund per `exec` (Commit **`0a1e4a0`**). Doku/KB/Evidence: `docs/operations/WEB_UI_RUNTIME_SERVICE_{DE,EN}.md`, `docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`, `docs/evidence/runtime-results/web_ui_reload_crash_repair_2026-05-19.json`.
 
+### Fixed (Backend stability: system status vs. notification settings)
+- **`/api/system/status`:** teure `apt`-Schritte laufen nicht mehr im Uvicorn-Event-Loop (`asyncio.to_thread`); `get_updates_categorized` verzichtet auf `apt-get update` und pro-Paket-`apt-get upgrade -s` (verhindert Minuten-Blockaden bei `workers=1` und falsche „Backend tot“-Symptomatik beim UI-Reload).
+- **Benachrichtigungen:** robusteres Lesen von `notification.env` (UTF-8 mit `errors=replace`, keine Exceptions aus dem Parser), defensiver `build_public_settings`, strukturierte Fehler bei Schreibfehlern ohne Exception-Text; API-Handler mit Fallback-JSON.
+- **Paketaktivitaet:** `apt-get` mit `-s` / `--simulate` / `--dry-run` gilt als nicht blockierend.
+- Doku: `docs/operations/BACKUP_NOTIFICATIONS_RUNTIME_{DE,EN}.md`; Evidence: `docs/evidence/runtime-results/notification_settings_backend_crash_repair_2026-05-19.json`.
+
 ### Added (Rescue ï¿½ sandbox controlled copy & build environment emulation)
 - Deploy-Runner `runner_rescue_sandbox_controlled_copy.py`: Precheck, Config-/Runtime-Kopie nur unter `build/rescue/sandbox/`, SHA256-Verify, Seal, Final-Gate; Handoffs unter `docs/evidence/runtime-results/handoff/`.
 - Deploy-Runner `runner_rescue_build_environment_emulation.py`: read-only Emulation (Snapshot, Workspace, Outputs-Metadaten, Logs, Overlay), Verify, Seal, Final-Gate; Artefakte unter `build/rescue/emulation/`.

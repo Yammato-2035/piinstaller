@@ -252,7 +252,61 @@ class TestNotificationSettingsCoreV1(unittest.TestCase):
         self.assertEqual(out["status"], "sent")
         self.assertNotIn("pw", json.dumps(out))
 
-    def test_smtp_error_no_password_in_message(self) -> None:
+    def test_parse_env_file_invalid_utf8(self) -> None:
+        env_path = self.config_dir / "notification.env"
+        env_path.write_bytes(b"g\xff\xffbage\nSETUPHELFER_NOTIFY_EMAIL_TO=a@b.com\n")
+        parsed = parse_env_file(env_path)
+        self.assertEqual(parsed.get(ENV_KEYS["email_to"]), "a@b.com")
+
+    def test_parse_env_file_empty(self) -> None:
+        env_path = self.config_dir / "notification.env"
+        env_path.write_text("", encoding="utf-8")
+        self.assertEqual(parse_env_file(env_path), {})
+
+    def test_parse_env_file_skips_bad_lines(self) -> None:
+        env_path = self.config_dir / "notification.env"
+        env_path.write_text("no_equals_line\nSETUPHELFER_NOTIFY_EMAIL_TO=a@b.com\n", encoding="utf-8")
+        self.assertEqual(parse_env_file(env_path).get(ENV_KEYS["email_to"]), "a@b.com")
+
+    def test_build_public_never_raises_on_broken_config(self) -> None:
+        with (
+            patch("core.notification_settings.get_config_dir", return_value=self.config_dir),
+            patch("core.notification_settings.get_state_dir", return_value=self.state_dir),
+            patch("core.notification_settings.notification_env_path", return_value=self._env_path()),
+            patch(
+                "core.notification_settings._build_public_settings_impl",
+                side_effect=RuntimeError("simulated"),
+            ),
+        ):
+            pub = build_public_settings()
+        self.assertEqual(pub["last_test_error_class"], "settings_read_failed")
+        self.assertFalse(pub["configured"])
+
+    def test_save_write_oserror_json_no_secret(self) -> None:
+        with (
+            patch("core.notification_settings.get_config_dir", return_value=self.config_dir),
+            patch("core.notification_settings.get_state_dir", return_value=self.state_dir),
+            patch("core.notification_settings.notification_env_path", return_value=self._env_path()),
+            patch("core.notification_settings.can_write_notification_env_direct", return_value=True),
+            patch(
+                "core.notification_settings.write_notification_env_atomic",
+                side_effect=PermissionError("denied"),
+            ),
+        ):
+            result = save_notification_settings(
+                {
+                    "enabled": True,
+                    "email_to": "u@example.com",
+                    "email_from": "u@example.com",
+                    "smtp_host": "smtp.gmail.com",
+                    "smtp_port": 587,
+                    "smtp_username": "u@example.com",
+                    "smtp_password": "secret123",
+                }
+            )
+        self.assertEqual(result["status"], "error")
+        self.assertEqual(result["write_status"], "write_failed")
+        self.assertNotIn("secret123", str(result))
         env_path = self.config_dir / "notification.env"
         env_path.write_text(
             serialize_env_lines(

@@ -254,7 +254,8 @@ async def system_status():
     Liefert Ampelwerte für Backup, Restore, Security, Updates.
     """
     try:
-        status = _compute_system_status()
+        # Subprozesse (apt, psutil, …) blockieren nicht den Uvicorn-Event-Loop (workers=1).
+        status = await asyncio.to_thread(_compute_system_status)
         rs = (APP_SETTINGS.get("backup") or {}).get("realtest_state") or {}
         payload = dict(status)
         payload["realtest_state"] = rs
@@ -2657,12 +2658,24 @@ async def set_user_experience_via_settings(payload: dict = Body(...)):
 async def get_notification_email_settings():
     from core.notification_settings import build_public_settings
 
-    return {"status": "success", **build_public_settings()}
+    try:
+        return {"status": "success", **build_public_settings()}
+    except Exception as exc:
+        logger.exception("get_notification_email_settings failed")
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": "Benachrichtigungseinstellungen konnten nicht gelesen werden.",
+                "diagnosis_id": "NOTIFY-READ-001",
+                "error_class": type(exc).__name__,
+            },
+        )
 
 
 @app.post("/api/settings/notifications/email")
 async def post_notification_email_settings(request: Request):
-    from core.notification_settings import build_public_settings, notification_env_path, save_notification_settings
+    from core.notification_settings import build_public_settings, save_notification_settings
 
     try:
         data = await request.json()
@@ -2671,31 +2684,61 @@ async def post_notification_email_settings(request: Request):
     if not isinstance(data, dict):
         data = {}
 
-    sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-
-    def _sudo_install(staging: Path) -> bool:
-        if not sudo_password:
-            return False
-        dest = notification_env_path()
-        cmd = f"install -o root -g setuphelfer -m 640 {shlex.quote(str(staging))} {shlex.quote(str(dest))}"
-        res = run_command(cmd, sudo=True, sudo_password=sudo_password, timeout=30)
-        return bool(res.get("success"))
-
-    result = save_notification_settings(data, sudo_install=_sudo_install if sudo_password else None)
+    # NoNewPrivileges=true im Backend: sudo install schlägt immer fehl — nur direkter Schreibpfad.
+    try:
+        result = save_notification_settings(data, sudo_install=None)
+    except Exception as exc:
+        logger.exception("save_notification_settings unexpected failure")
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": "Speichern fehlgeschlagen (unerwarteter Fehler).",
+                "error_class": type(exc).__name__,
+                "diagnosis_id": "NOTIFY-SAVE-001",
+            },
+        )
     if result.get("status") != "success":
         body = {"status": "error", **result}
-        if result.get("write_status") == "requires_operator_write" and not sudo_password:
-            body["requires_sudo_password"] = True
+        ws = result.get("write_status")
+        if ws in ("requires_operator_write", "sudo_install_failed"):
+            body["requires_operator_write"] = True
+            body["diagnosis_id"] = "SYSTEMD-NNP-031"
         return JSONResponse(status_code=200, content=body)
-    return {"status": "success", **build_public_settings(), **result}
+    try:
+        return {"status": "success", **build_public_settings(), **result}
+    except Exception as exc:
+        logger.exception("post_notification_email_settings response build failed")
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": "Gespeichert, aber Antwort konnte nicht aufgebaut werden.",
+                "error_class": type(exc).__name__,
+                "diagnosis_id": "NOTIFY-SAVE-002",
+                **{k: v for k, v in result.items() if k in ("write_status", "message")},
+            },
+        )
 
 
 @app.post("/api/settings/notifications/email/test")
 async def post_notification_email_test():
     from core.notification_settings import run_notification_test_email
 
-    result = run_notification_test_email()
-    return {"status": "success", **result}
+    try:
+        result = run_notification_test_email()
+        return {"status": "success", **result}
+    except Exception as exc:
+        logger.exception("run_notification_test_email failed")
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": "Testmail-Endpunkt fehlgeschlagen.",
+                "error_class": type(exc).__name__,
+                "diagnosis_id": "NOTIFY-TEST-001",
+            },
+        )
 
 
 @app.get("/api/presets/list")
@@ -4794,6 +4837,16 @@ def _sudo_n_true_failed_due_to_nnp(sudo_test: dict) -> bool:
     return any(n in combined for n in needles)
 
 
+def _sudo_usable_from_backend_service() -> bool:
+    """False when systemd NoNewPrivileges blocks setuid sudo in this process."""
+    res = run_command("sudo -n true", sudo=False, timeout=5)
+    if res.get("success"):
+        return True
+    if _sudo_n_true_failed_due_to_nnp(res):
+        return False
+    return True
+
+
 # ==================== Hilfsfunktionen ====================
 
 def _ensure_packagekit_stopped(sudo_password: Optional[str] = None) -> None:
@@ -6598,10 +6651,12 @@ async def update_user_profile_post(payload: dict = Body(...)):
 async def check_sudo_password():
     """Prüft ob ein sudo-Passwort gespeichert ist"""
     has_password = sudo_store.has_password()
+    sudo_usable = _sudo_usable_from_backend_service()
     return {
         "status": "success",
         "has_password": has_password,
-        "message": "Sudo-Passwort gespeichert" if has_password else "Kein sudo-Passwort gespeichert"
+        "sudo_usable_from_service": sudo_usable,
+        "message": "Sudo-Passwort gespeichert" if has_password else "Kein sudo-Passwort gespeichert",
     }
 
 @app.post("/api/users/sudo-password")
@@ -6632,7 +6687,22 @@ async def save_sudo_password(request: Request):
             sudo_store.store_password(sudo_password)
             logger.info("save_sudo_password: Gespeichert ohne Prüfung (skip_test=True)")
             return {"status": "success", "message": "Sudo-Passwort gespeichert"}
-        
+
+        if not _sudo_usable_from_backend_service():
+            sudo_store.store_password(sudo_password)
+            logger.info(
+                "save_sudo_password: Gespeichert ohne Prüfung (NoNewPrivileges blockiert sudo im Dienst)"
+            )
+            return {
+                "status": "success",
+                "message": (
+                    "Sudo-Passwort gespeichert. Eine sudo-Prüfung ist im Backend-Dienst nicht möglich "
+                    "(NoNewPrivileges) — das ist bei Setuphelfer normal."
+                ),
+                "sudo_test_skipped": True,
+                "sudo_usable_from_service": False,
+            }
+
         # Test ob Passwort funktioniert (/usr/bin/true, kein PATH nötig)
         test_result = run_command("/usr/bin/true", sudo=True, sudo_password=sudo_password, timeout=15)
         ok = test_result.get("success", False)
@@ -6657,6 +6727,20 @@ async def save_sudo_password(request: Request):
                     status_code=200,
                     content={"status": "error", "message": "Sudo-Passwort falsch oder ungültig."},
                 )
+            if _sudo_n_true_failed_due_to_nnp(test_result):
+                sudo_store.store_password(sudo_password)
+                logger.info(
+                    "save_sudo_password: Gespeichert nach NNP-Sudo-Test-Fehler (NoNewPrivileges)"
+                )
+                return {
+                    "status": "success",
+                    "message": (
+                        "Sudo-Passwort gespeichert. sudo ist im Backend-Dienst nicht verfügbar "
+                        "(NoNewPrivileges) — Prüfung entfällt."
+                    ),
+                    "sudo_test_skipped": True,
+                    "sudo_usable_from_service": False,
+                }
             logger.warning("save_sudo_password: Sudo-Test fehlgeschlagen err=%s", err[:300])
             return JSONResponse(
                 status_code=200,
@@ -8136,10 +8220,8 @@ async def configure_security(request: Request):
 def get_updates_categorized():
     """Updates kategorisieren. Kein PackageKit-Stop hier – würde bei Aufruf ohne Passwort (Dashboard/Updates-API) Polkit-Abfrage-Schleife auslösen."""
     try:
-        # Zuerst apt update ausführen (ohne zu installieren)
-        run_command("apt-get update -qq 2>/dev/null", sudo=False)
-        
-        # Update-Liste abrufen
+        # Kein `apt-get update` hier: würde /api/system/status und andere Requests bei workers=1
+        # minutenlang blockieren (to_thread hilft, bleibt aber teuer). Liste via apt list reicht für Ampel.
         result = run_command("apt list --upgradable 2>/dev/null | tail -n +2")
         updates = []
         
@@ -8153,14 +8235,13 @@ def get_updates_categorized():
                         package_part = parts[0]
                         package = package_part.split("/")[0]
                         version = package_part.split("/")[1] if "/" in package_part else ""
-                        
-                        # Sicherheits-Updates prüfen (apt-get upgrade --dry-run -s)
-                        security_result = run_command(f"apt-get upgrade -s {package} 2>/dev/null | grep -i security")
-                        is_security = security_result["success"] and security_result["stdout"].strip() != ""
+                        # Kein `apt-get upgrade -s <pkg>` pro Paket: erzeugt Last, blockiert I/O und
+                        # täuschte package_activity als „mutierend“ (siehe package_activity.py).
+                        is_security = "security" in package.lower() or "-sec" in package.lower()
                         
                         # Kategorisieren
                         category = "optional"
-                        if is_security or "security" in package.lower() or "-sec" in package.lower():
+                        if is_security:
                             category = "security"
                         elif "kernel" in package.lower() or "linux-image" in package.lower() or "linux-headers" in package.lower():
                             category = "critical"
