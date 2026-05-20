@@ -8,13 +8,20 @@
 
 ## Ursache
 
-Browser- und Desktop-Caches sind während des Laufs schreibaktiv. `full-expert` sichert `/` inkl. dieser Pfade.
+- Browser- und Desktop-Caches sind während des Laufs schreibaktiv.
+- **Timeshift** (`/timeshift`, `/timeshift/snapshots`): Live-Snapshots ändern sich beim Lesen → `Datei hat sich beim Lesen geändert`, `TAR_CRITICAL_WARNING`, `tar_failed`.
+- `full-expert` sichert `/` inkl. dieser Pfade (bitgenau/maximal, nicht stabil für BR-001).
 
 ## Empfehlung für nächsten BR-001-Retry
 
-1. Profil **`full-root-stable`**: Full-Root mit dokumentierten Excludes für `~/.cache`, Chrome/Chromium-Caches, Trash — keine heimlichen Datenlöschungen außerhalb dieser Kategorien.
-2. Alternativ: Browser schließen, weiter `full-expert` (risikoreicher).
-3. Package-Freeze aktiv lassen; Partial (~212 GiB) vor Retry separat bereinigen.
+1. Profil **`full-root-stable`**: Full-Root mit dokumentierten Excludes für **Timeshift**, `~/.cache`, Chrome/Chromium-Caches, Trash — stabilitätsorientiert, kein Raw-Full-System-Bitgenauigkeit.
+2. Alternativ: Browser schließen, Timeshift pausieren, weiter `full-expert` (risikoreicher).
+3. Package-Freeze aktiv lassen; Partial vor Retry separat bereinigen.
+
+## Timeshift (Job 6d4e161b2f8c, 2026-05-20)
+
+- pigz lief korrekt; Abbruch durch `/timeshift`-Live-Änderungen, nicht durch Kompression.
+- Ab Fix: `full-root-stable` setzt `--exclude=/timeshift` (und Unterpfade) auf dem tar-Befehl; `full-expert` unverändert.
 
 ## Abgrenzung
 

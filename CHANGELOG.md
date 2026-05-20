@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Fixed (BR-001: Timeshift excludes, runner failure mail)
+- **`full-root-stable`:** tar excludes `/timeshift` and snapshot paths (live snapshots caused `tar_failed` / `TAR_CRITICAL_WARNING` on job `6d4e161b2f8c`); `full-expert` unchanged.
+- **Failure mail:** `backup_runner` uses `load_effective_notification_config()` (reads `/etc/setuphelfer/notification.env`); `setuphelfer-backup@.service` loads the same `EnvironmentFile`.
+
 ### Added (Backup pipeline: pigz, telemetry, failure mail, BR-001 stable profile)
 - **Kompression:** `pigz` wenn vorhanden (`SETUPHELFER_BACKUP_COMPRESSION_ENGINE=auto|gzip|pigz`), Fallback gzip mit `compression_fallback_gzip`; explizites `pigz` ohne Binary blockiert mit `backup.compression_unavailable`.
 - **Telemetrie:** Top-Level-Felder in `status.json` / API (`phase`, `written_human`, `compression_engine`, Raten, `last_error_*`, `notification_status`).

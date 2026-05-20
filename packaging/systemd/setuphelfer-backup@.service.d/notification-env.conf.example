@@ -1,0 +1,5 @@
+# Optional drop-in: same notification.env as setuphelfer-backend.service
+# Install: sudo cp notification-env.conf.example /etc/systemd/system/setuphelfer-backup@.service.d/notification-env.conf
+#          sudo systemctl daemon-reload
+[Service]
+EnvironmentFile=-/etc/setuphelfer/notification.env

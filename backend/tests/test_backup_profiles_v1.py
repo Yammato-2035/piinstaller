@@ -13,9 +13,12 @@ if str(_backend) not in sys.path:
 
 from core.backup_profiles import (  # noqa: E402
     PROFILE_FULL_EXPERT,
+    PROFILE_FULL_ROOT_STABLE,
     PROFILE_RECOMMENDED,
+    PROFILE_EXTRA_EXCLUDES,
     build_profile_preview,
     filter_included_paths_for_target,
+    logical_excluded_patterns,
     normalize_backup_profile,
     profile_specs_public,
     resolve_profile_request,
@@ -83,6 +86,17 @@ class BackupProfilesModelTests(unittest.TestCase):
         prev = build_profile_preview(profile_raw="recommended", backup_dir="/tmp/sh-preview-test", target_free_bytes=1000)
         self.assertEqual(prev["profile"], "recommended")
         self.assertIsNone(prev["estimated_size_bytes"])
+
+    def test_full_root_stable_has_timeshift_excludes(self) -> None:
+        exc = PROFILE_EXTRA_EXCLUDES[PROFILE_FULL_ROOT_STABLE]
+        self.assertIn("/timeshift", exc)
+        self.assertIn("/timeshift/snapshots", exc)
+        self.assertNotIn("/timeshift", PROFILE_EXTRA_EXCLUDES[PROFILE_FULL_EXPERT])
+
+    def test_logical_excluded_patterns_full_root_stable_includes_timeshift(self) -> None:
+        patterns = logical_excluded_patterns(PROFILE_FULL_ROOT_STABLE)
+        self.assertIn("/timeshift", patterns)
+        self.assertIn("/timeshift/snapshots/*", patterns)
 
 
 class BackupProfilesApiTests(unittest.TestCase):

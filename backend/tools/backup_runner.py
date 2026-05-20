@@ -38,8 +38,8 @@ from core.backup_tar_warning_classification import (
     decide_tar_nonzero_job_outcome,
 )
 from core.backup_telemetry import sync_status_telemetry
+from core.notification_settings import load_effective_notification_config
 from core.notification_service import (
-    load_notification_config,
     maybe_send_backup_failure_email,
     maybe_send_backup_success_email,
     notification_status_fields,
@@ -1218,7 +1218,7 @@ def _attach_backup_failure_notification(
         runtime_int = None
     cd = state.get("compression_detail") if isinstance(state.get("compression_detail"), dict) else {}
     profile = str(cd.get("profile_normalized") or state.get("backup_profile") or "")
-    cfg = load_notification_config()
+    cfg = load_effective_notification_config()
     result = maybe_send_backup_failure_email(
         job_id=job_id,
         status=str(state.get("status") or "error"),
@@ -1271,7 +1271,7 @@ def _attach_backup_success_notification(
         runtime_int = int(runtime_s) if runtime_s is not None else None
     except (TypeError, ValueError):
         runtime_int = None
-    cfg = load_notification_config()
+    cfg = load_effective_notification_config()
     result = maybe_send_backup_success_email(
         job_id=job_id,
         status_code=code,

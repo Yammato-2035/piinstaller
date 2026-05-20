@@ -22,6 +22,12 @@
 - Short error excerpt
 - Note: no restore without Verify Deep
 
+### Backup runner context (`setuphelfer-backup@.service`)
+
+- The runner uses **`load_effective_notification_config()`** from `/etc/setuphelfer/notification.env` (same as the settings API), not process `os.environ` alone.
+- The unit includes `EnvironmentFile=-/etc/setuphelfer/notification.env` (defense in depth).
+- If the API shows `on_backup_failure=true` but the job had `skipped_disabled`, the runner likely did not load the env file — fixed by deploy.
+
 ### When no mail is sent
 
 - `skipped_disabled`, `skipped_not_configured`, `skipped_not_applicable`

@@ -31,6 +31,14 @@ VALID_BACKUP_PROFILES: frozenset[str] = frozenset(
     }
 )
 
+# Live snapshot store — changes during read; excluded from stability-oriented full-root-stable only.
+_BR001_TIMESHIFT_EXCLUDES: tuple[str, ...] = (
+    "/timeshift",
+    "/timeshift/*",
+    "/timeshift/snapshots",
+    "/timeshift/snapshots/*",
+)
+
 # Volatile browser/desktop caches — not restore-critical; avoids live-file tar failures on BR-001.
 _BR001_VOLATILE_CACHE_EXCLUDES: tuple[str, ...] = (
     "/home/*/.cache",
@@ -50,7 +58,7 @@ PROFILE_EXTRA_EXCLUDES: dict[str, tuple[str, ...]] = {
     PROFILE_USER_DATA: (),
     PROFILE_DEVELOPER: ("/var/cache", "/var/tmp"),
     PROFILE_FULL_EXPERT: (),
-    PROFILE_FULL_ROOT_STABLE: _BR001_VOLATILE_CACHE_EXCLUDES,
+    PROFILE_FULL_ROOT_STABLE: _BR001_TIMESHIFT_EXCLUDES + _BR001_VOLATILE_CACHE_EXCLUDES,
 }
 
 _DEVELOPER_EXCLUDE_GLOBS = (
@@ -140,6 +148,8 @@ def logical_excluded_patterns(profile: str) -> list[str]:
         return list(base) + list(_DEVELOPER_EXCLUDE_GLOBS)
     if profile in (PROFILE_RECOMMENDED, PROFILE_FAST_SYSTEM):
         return list(base) + ["/var/cache", "/var/tmp"]
+    if profile == PROFILE_FULL_ROOT_STABLE:
+        return list(base) + list(_BR001_TIMESHIFT_EXCLUDES) + list(_BR001_VOLATILE_CACHE_EXCLUDES)
     return list(base)
 
 

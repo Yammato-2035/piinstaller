@@ -52,3 +52,22 @@ def test_build_full_contains_safety_excludes() -> None:
 def test_recommended_adds_cache_excludes() -> None:
     cmd, _meta = bao.build_full_root_tar_command("/tmp/x.partial", "/tmp/backupdir", profile=bao.PROFILE_RECOMMENDED)
     assert "/var/cache" in cmd or "var/cache" in cmd
+
+
+def test_full_root_stable_excludes_timeshift() -> None:
+    cmd, meta = bao.build_full_root_tar_command(
+        "/tmp/x.partial", "/tmp/backupdir", profile=bao.PROFILE_FULL_ROOT_STABLE
+    )
+    assert meta["profile_normalized"] == bao.PROFILE_FULL_ROOT_STABLE
+    assert "--exclude=/timeshift" in cmd
+    assert "/timeshift/*" in cmd
+    assert "--exclude=/timeshift/snapshots" in cmd
+    assert "/timeshift/snapshots/*" in cmd
+
+
+def test_full_expert_unaffected_by_timeshift_excludes() -> None:
+    cmd, meta = bao.build_full_root_tar_command(
+        "/tmp/x.partial", "/tmp/backupdir", profile=bao.PROFILE_FULL_EXPERT
+    )
+    assert meta["profile_normalized"] == bao.PROFILE_FULL_EXPERT
+    assert "/timeshift" not in cmd

@@ -20,8 +20,14 @@ Kein automatisches `apt install` — pigz muss vom Betreiber bereitgestellt werd
 
 - `engine=pigz` und pigz fehlt → Preflight-Block `backup.compression_unavailable` (kein stiller Fallback).
 
+## BR-001 / full-root-stable
+
+- **pigz** beschleunigt nur die Kompression; **tar** bleibt single-threaded beim Lesen.
+- Profil **`full-root-stable`** schließt u. a. **Timeshift** (`/timeshift`) und volatile Caches aus — verhindert `tar_failed` durch Live-Snapshots.
+- **`full-expert`** bleibt maximal (inkl. Timeshift) und kann an wechselnden Snapshot-Dateien scheitern.
+
 ## Laufzeit-Hinweise
 
-- Full-Root auf Live-Systemen kann viele Stunden dauern (gzip).
+- Full-Root auf Live-Systemen kann viele Stunden dauern (gzip/pigz).
 - Development Dashboard warnt ab 2 h Laufzeit mit gzip.
 - Kein Fortschritt > 5 min → Stale-Warnung im Dashboard.

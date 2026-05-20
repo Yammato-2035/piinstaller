@@ -16,7 +16,13 @@ See German doc `BACKUP_PERFORMANCE_DE.md` for the table.
 
 - `engine=pigz` without binary → preflight block `backup.compression_unavailable`.
 
+## BR-001 / full-root-stable
+
+- **pigz** speeds compression only; **tar** read phase stays single-threaded.
+- **`full-root-stable`** excludes **Timeshift** (`/timeshift`) and volatile caches to avoid live-snapshot `tar_failed`.
+- **`full-expert`** remains maximal and may fail on changing snapshot files.
+
 ## Runtime notes
 
-- Full-root on live systems can take hours with gzip.
+- Full-root on live systems can take hours (gzip/pigz).
 - Dashboard warns after 2h with gzip; stale progress after 5 minutes without byte growth.

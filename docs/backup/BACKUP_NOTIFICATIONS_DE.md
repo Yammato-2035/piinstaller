@@ -22,6 +22,12 @@
 - Fehlerkern (gekürzt)
 - Hinweis: Kein Restore ohne Verify Deep
 
+### Runner-Kontext (systemd `setuphelfer-backup@.service`)
+
+- Der Backup-Runner lädt **`load_effective_notification_config()`** aus `/etc/setuphelfer/notification.env` (wie die Settings-API), nicht nur Prozess-`os.environ`.
+- Die Unit enthält `EnvironmentFile=-/etc/setuphelfer/notification.env` (zusätzlich zur Datei-Ladung im Code).
+- Wenn die API `on_backup_failure=true` zeigt, der Runner aber `skipped_disabled` meldete: typisch fehlende Env-Datei im Runner — nach Deploy/Fix nicht mehr.
+
 ### Wann keine Mail
 
 - `skipped_disabled`: E-Mail global aus

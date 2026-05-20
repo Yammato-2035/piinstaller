@@ -47,7 +47,7 @@ class TestBackupRunnerNotificationIntegrationV1(unittest.TestCase):
                 "backup_dir": "/media/setuphelfer/br001",
                 "progress_optional": {"bytes_current": 1000, "running_for_s": 42},
             }
-            with mock.patch.object(br, "load_notification_config", return_value=cfg), mock.patch.object(
+            with mock.patch.object(br, "load_effective_notification_config", return_value=cfg), mock.patch.object(
                 br, "maybe_send_backup_success_email", side_effect=fake_send
             ):
                 br._attach_backup_success_notification(
@@ -87,7 +87,7 @@ class TestBackupRunnerNotificationIntegrationV1(unittest.TestCase):
             status_file.parent.mkdir(parents=True)
             state = {"job_id": "j", "code": "backup.success", "status": "success"}
             status_file.write_text(json.dumps(state), encoding="utf-8")
-            with mock.patch.object(br, "load_notification_config", return_value=cfg), mock.patch.object(
+            with mock.patch.object(br, "load_effective_notification_config", return_value=cfg), mock.patch.object(
                 br,
                 "maybe_send_backup_success_email",
                 return_value=EmailNotificationResult(status="failed", error="smtp down"),
@@ -137,7 +137,7 @@ class TestBackupRunnerNotificationIntegrationV1(unittest.TestCase):
                 "abort_reason": "tar_failed",
             }
             status_file.write_text(json.dumps(state), encoding="utf-8")
-            with mock.patch.object(br, "load_notification_config", return_value=cfg), mock.patch.object(
+            with mock.patch.object(br, "load_effective_notification_config", return_value=cfg), mock.patch.object(
                 br, "maybe_send_backup_failure_email", side_effect=fake_fail
             ):
                 br._attach_backup_failure_notification(
