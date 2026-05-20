@@ -1,60 +1,50 @@
 {
   "task": "br001_package_activity_freeze_ready",
-  "captured_at": "2026-05-20T02:12:00Z",
-  "head": "e09ac12",
+  "captured_at": "2026-05-20T03:30:00Z",
+  "head": "ea4a436",
   "previous_br001_job": "1f54bdd9ea2f",
+  "previous_br001_evidence": "docs/evidence/runtime-results/BR-001-full-root-br001-2026-05-19.json",
   "previous_abort_reason": "package_activity_detected_runtime",
   "previous_diagnosis_id": "UPDATE-CONFLICT-041",
-  "freeze_applied": false,
-  "freeze_blocked_reason": "sudo_password_required",
-  "freeze_attempt": {
-    "method": "sudo -n systemctl stop/mask",
-    "result": "all commands failed: sudo password required in agent shell"
+  "previous_failure_trigger": {
+    "pid": 154963,
+    "name": "apt-get",
+    "cmdline": "/usr/bin/apt-get autoremove --purge -y"
   },
-  "operator_freeze_commands": [
-    "sudo systemctl stop apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true",
-    "sudo systemctl stop apt-daily.service apt-daily-upgrade.service 2>/dev/null || true",
-    "sudo systemctl stop unattended-upgrades.service 2>/dev/null || true",
-    "sudo systemctl stop packagekit.service packagekit-offline-update.service 2>/dev/null || true",
-    "sudo systemctl mask apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true",
-    "sudo systemctl mask apt-daily.service apt-daily-upgrade.service 2>/dev/null || true",
-    "sudo systemctl mask unattended-upgrades.service 2>/dev/null || true",
-    "sudo systemctl mask packagekit.service packagekit-offline-update.service 2>/dev/null || true"
-  ],
-  "operator_unfreeze_after_br001_commands": [
-    "sudo systemctl unmask apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service unattended-upgrades.service packagekit.service packagekit-offline-update.service 2>/dev/null || true",
-    "sudo systemctl enable --now apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true",
-    "sudo systemctl start unattended-upgrades.service 2>/dev/null || true"
-  ],
-  "units_planned_for_freeze": [
-    "apt-daily.timer",
-    "apt-daily-upgrade.timer",
-    "apt-daily.service",
-    "apt-daily-upgrade.service",
-    "unattended-upgrades.service",
-    "packagekit.service",
-    "packagekit-offline-update.service"
-  ],
-  "apt_daily_timer_active": true,
-  "apt_daily_upgrade_timer_active": true,
-  "unattended_upgrades_active": true,
+  "freeze_applied": true,
+  "freeze_applied_by": "operator",
+  "freeze_verified_at": "2026-05-20T03:30:00Z",
+  "apt_daily_timer_active": false,
+  "apt_daily_upgrade_timer_active": false,
+  "unattended_upgrades_active": false,
   "packagekit_active": false,
-  "package_activity_processes_after": [
-    {
-      "pid": 2184,
-      "comm": "unattended-upgr",
-      "args": "unattended-upgrade-shutdown --wait-for-signal",
-      "note": "unchanged; freeze not applied"
-    }
-  ],
-  "mutating_apt_dpkg_processes_after": [],
-  "locks_after": {
-    "apt_dpkg_locks_held": false
+  "apt_daily_timer_enabled_state": "masked",
+  "apt_daily_upgrade_timer_enabled_state": "masked",
+  "unattended_upgrades_enabled_state": "masked",
+  "packagekit_enabled_state": "masked",
+  "apt_daily_timer_active_state": "inactive",
+  "apt_daily_upgrade_timer_active_state": "inactive",
+  "unattended_upgrades_active_state": "inactive",
+  "packagekit_active_state": "inactive",
+  "package_activity_processes_after": [],
+  "package_activity_grep_note": "ps grep matched chrome video_capture substring only; no apt/dpkg/unattended/packagekit processes",
+  "locks_after": [],
+  "dpkg_lock_files": {
+    "/var/lib/dpkg/lock-frontend": "exists size=0 no_holder",
+    "/var/lib/dpkg/lock": "exists size=0 no_holder",
+    "/var/lib/apt/lists/lock": "exists size=0"
   },
+  "non_package_locks_observed": ["chrome", "cursor", "pipewire", "cron"],
   "runtime_gate_exit": 0,
   "target_check_code": "backup.target_check_ok",
-  "target_mount_source": "/dev/sda1",
+  "target_check_status": "success",
+  "target_path": "/media/setuphelfer/br001",
+  "target_device": "/dev/sda1",
+  "target_fstype": "ext4",
+  "target_is_usb": true,
+  "target_write_test_success": true,
   "smtp_last_test_status": "sent",
+  "smtp_configured": true,
   "backup_started": false,
   "restore_started": false,
   "verify_deep_started": false,
@@ -62,6 +52,11 @@
   "apt_upgrade_run": false,
   "apt_install_run": false,
   "apt_autoremove_run": false,
-  "br001_ready_after_package_freeze": false,
-  "br001_retry_allowed_after": "operator runs freeze commands, re-verifies Phase 5 checks, then starts BR-001 in separate prompt"
+  "br001_ready_after_package_freeze": true,
+  "br001_retry_next_prompt": "STRICT MODE – START BR-001 FULL-ROOT BACKUP AFTER PACKAGE FREEZE",
+  "operator_unfreeze_after_br001_commands": [
+    "sudo systemctl unmask apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service unattended-upgrades.service packagekit.service packagekit-offline-update.service 2>/dev/null || true",
+    "sudo systemctl enable --now apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true",
+    "sudo systemctl start unattended-upgrades.service 2>/dev/null || true"
+  ]
 }
