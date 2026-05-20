@@ -36,9 +36,9 @@ class TestBackupCompressionEngineV1(unittest.TestCase):
         with patch.object(bao, "_compression_engine_env", return_value="pigz"):
             with patch.object(bao, "pigz_available", return_value=False):
                 meta = bao.resolve_compression_choice(profile=bao.PROFILE_RECOMMENDED)
-        self.assertTrue(meta.get("compression_preflight_blocked"))
-        cmd, _ = bao.build_full_root_tar_command("/tmp/x.partial", "/tmp/bd", profile=bao.PROFILE_RECOMMENDED)
-        self.assertEqual(cmd, "")
+                self.assertTrue(meta.get("compression_preflight_blocked"))
+                cmd, _ = bao.build_full_root_tar_command("/tmp/x.partial", "/tmp/bd", profile=bao.PROFILE_RECOMMENDED)
+                self.assertEqual(cmd, "")
 
     def test_full_root_stable_excludes_browser_cache(self) -> None:
         cmd, meta = bao.build_full_root_tar_command(
