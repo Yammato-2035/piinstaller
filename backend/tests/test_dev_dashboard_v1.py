@@ -423,6 +423,35 @@ class TestDevDashboardCockpit(unittest.TestCase):
             out = build_tests_evidence(repo)
         self.assertEqual(out["status"], "yellow")
 
+    def test_build_br001_gates_offline_primary(self):
+        from core.dev_dashboard_cockpit import build_br001_gates, enrich_dashboard_cockpit
+
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            gates = repo / "docs" / "evidence" / "release-gates"
+            gates.mkdir(parents=True)
+            (gates / "backup_restore_release_gate.json").write_text(
+                json.dumps(
+                    {
+                        "br001_gates": {
+                            "live": {"id": "BR-001-LIVE", "release_gate": False, "ampel": "rot", "role": "experimental"},
+                            "offline": {"id": "BR-001-OFFLINE", "release_gate": True, "ampel": "rot", "role": "release_gate"},
+                        },
+                        "release_gate_primary": "BR-001-OFFLINE",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            g = build_br001_gates(repo)
+            self.assertFalse(g["live"]["release_gate"])
+            self.assertTrue(g["offline"]["release_gate"])
+            self.assertEqual(g["primary_release_gate"], "BR-001-OFFLINE")
+            body: dict = {"consistency": {}, "deploy_drift": {}, "runtime": {}, "workspace": {}}
+            enrich_dashboard_cockpit(body, repo_root=repo)
+            self.assertIn("br001_gates", body)
+            self.assertIn("rescue_stick_board", body)
+            self.assertEqual(body.get("release_gate_primary"), "BR-001-OFFLINE")
+
 
 if __name__ == "__main__":
     unittest.main()

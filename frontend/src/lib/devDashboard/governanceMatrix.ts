@@ -80,7 +80,16 @@ export function buildGovernanceMatrix(params: {
         ? 'Runtime-API starten; check-runtime-deploy-gate.sh'
         : './scripts/check-runtime-deploy-gate.sh',
     ),
-    mk('backup', moduleTraffic(modules, /backup/i), [], 'BR-001 / Backup-Gate'),
+    mk(
+      'backup',
+      (() => {
+        const br001 = (dashboard?.br001_gates as Record<string, unknown>) || {}
+        const offlineSide = (br001.offline as Record<string, unknown>) || {}
+        return offlineSide.status != null ? normTraffic(offlineSide.status) : moduleTraffic(modules, /backup/i)
+      })(),
+      [],
+      'BR-001-OFFLINE (Rettungsstick) — kein Live-Desktop-Gate',
+    ),
     mk('restore', moduleTraffic(modules, /restore/i), [], 'Restore-Evidence prüfen'),
     mk('verify', stm.locked ? 'yellow' : runtimeGatePassed ? 'green' : 'red', [], 'Verify nach grünem Gate'),
     mk('rescue', moduleTraffic(modules, /rescue/i), [], 'Rescue-Stick Evidence'),

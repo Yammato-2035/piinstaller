@@ -2,7 +2,9 @@
 
 | ID | Test | Voraussetzung | Erwartung | Status | Evidence |
 |----|------|---------------|-----------|--------|----------|
-| BR-001 | Full Backup freigegebenes Ziel | Nur **`/media/gabriel/setuphelfer-back`**; Phase 2 ohne Paketprozesse; Timer nur temp. stop/start (nicht disable); sudo für Locks/Timer | Archiv + Manifest + SHA256 | Rot (blocked — Retry STOP Phase 2 oder sudo; zusätzlich Job **`f744c2936468`** Schreib-EIO — **`BR-001_write_io_error_2026-05-14.md`**) | `BR-001_package_activity_failure_2026-05-13.md`, `BR-001_package_activity_retry_runbook_2026-05-13.md`, `BR-001.json`, `BR-001_write_io_error_2026-05-14.md` |
+| **BR-001-OFFLINE** | Full Backup **Rettungsstick**, Quellplatte still | Boot Stick; read-only interne Platte; externes Ziel; pigz; kein Live-apt/Timeshift | Archiv + Manifest + SHA256 + Verify Deep | **Rot** (Release-Gate — HW/E2E offen) | `BR-001_offline_gate_pivot_2026-05-20.md`, `RESCUE_STICK_TEST_MATRIX.md`, `BR-001_GATE_STRATEGY_DE.md` |
+| BR-001-LIVE | Full Backup Desktop **laufend** | Experimentell — **kein** Release-Gate; keine Gate-Retries | Monitoring only | **Rot** (experimentell) | `BR-001-full-root-stable-pigz-timeshift-retry-2026-05-20.json`, `BR-001_package_activity_failure_2026-05-13.md` |
+| ~~BR-001~~ | *(ersetzt durch BR-001-OFFLINE / BR-001-LIVE)* | — | — | — | `BR-001.json` (Historie) |
 | BR-002 | Ziel nicht beschreibbar | Rechte entzogen | harter Abbruch | Rot | docs/evidence/backup-restore/BR-002.json |
 | BR-003 | `.partial` Archiv prüfen | abgebrochene Sicherung | Verify blockiert | Rot | docs/evidence/backup-restore/BR-003.json |
 | BR-004 | Verify Basic gültig | **dieselbe** Archivdatei wie BR-001 | ok | Rot (blocked — BR-001; bei Schreib-EIO **`backup.write_io_error`** keine gültige Archivdatei — BR-013) | docs/evidence/backup-restore/BR-004.json |

@@ -13,7 +13,7 @@ function workOrder(areas: GovernanceAreaStatus[]): string[] {
   if (runtime?.status !== 'green') steps.push('1. Runtime deploy + API erreichbar machen')
   if (gates?.status !== 'green') steps.push('2. ./scripts/check-runtime-deploy-gate.sh (Exit 0)')
   if (evidence?.status !== 'green') steps.push('3. Evidence-Dateien unter docs/evidence/release-gates/ reparieren')
-  if (backup?.status === 'red') steps.push('4. BR-001 / Backup-Gate (kein Backup-Start ohne Gate)')
+  if (backup?.status === 'red') steps.push('4. BR-001-OFFLINE Rettungsstick (kein Live-Desktop-Gate-Retry)')
   if (restore?.status === 'red') steps.push('5. Restore Preview / Sandbox-Gates')
   if (!steps.length) steps.push('1. Gate grün halten; fokussierte Änderungen mit erneutem Gate-Check')
   return steps

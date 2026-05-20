@@ -3,64 +3,95 @@
   "title": "Rescue Stick",
   "area": "rescue",
   "status": "red",
-  "summary": "Rescue-/Read-only-Pfade und HW-Abnahmen noch offen; keine grüne Produktreife.",
-  "last_updated": "2026-05-14",
+  "summary": "BR-001-OFFLINE Release-Gate: Rettungsstick read-only, Offline-Full-Backup auf externes Ziel. Code/Deploy-Pipelines teilweise; RS-001–RS-008 HW rot.",
+  "last_updated": "2026-05-20",
   "commits": [],
-  "current_focus": "RS-Matrix, Stick-Erkennung, sichere Preview/Execute",
+  "current_focus": "BR-001-OFFLINE E2E: Boot → read-only Quellplatte → Backup pigz → SHA256 → Verify Deep",
   "next_steps": [
-    "Evidence RS-001ff. und Exportpfade dokumentieren",
-    "Storage Discovery mit echtem Stick gegen `RESCUE_STICK_TEST_MATRIX` prüfen",
-    "Boot/EFI-Szenarien mit Read-only-Stick verifizieren"
+    "build/rescue + live-build Config materialisieren (controlled ISO)",
+    "RS-001–005 auf echter HW mit read-only interner Platte",
+    "Offline Full-Backup + Evidence RS-006/007",
+    "Rescue Stick Board im Development Cockpit beobachten"
   ],
-  "blockers": ["HW-Stick-Tests offen", "Echter Read-only-Stick noch nicht abgenommen"],
-  "evidence_files": [],
+  "blockers": [
+    "HW-Stick-Tests offen",
+    "debian_live_build_config / iso_test_pipeline missing",
+    "BR-001-OFFLINE nicht grün"
+  ],
+  "evidence_files": [
+    "docs/evidence/release-gates/BR-001_offline_gate_pivot_2026-05-20.md",
+    "docs/evidence/runtime-results/BR-001-offline-gate-pivot-2026-05-20.json",
+    "docs/evidence/runtime-results/handoff/rescue_stick_component_inventory.json"
+  ],
   "prompt_files": [],
   "report_files": [],
-  "docs": ["docs/testing/RESCUE_STICK_TEST_MATRIX.md"],
+  "docs": [
+    "docs/testing/RESCUE_STICK_TEST_MATRIX.md",
+    "docs/rescue/SETUPHELFER_RESCUE_STICK_ARCHITECTURE_DE.md",
+    "docs/architecture/BR-001_GATE_STRATEGY_DE.md"
+  ],
   "faq": ["docs/faq/RESCUE_FAQ.md"],
   "knowledge_base": ["docs/rescue/"],
   "diagnostics": [],
   "i18n": [],
-  "tests": [],
+  "tests": [
+    "backend/tests/test_deploy_runner_rescue_stick_component_inventory_v1.py",
+    "backend/tests/test_deploy_runner_rescue_readonly_mount_orchestrator_v1.py"
+  ],
   "children": [
+    {
+      "id": "rs-br001-offline",
+      "title": "BR-001-OFFLINE (Release-Gate)",
+      "area": "rescue",
+      "status": "red",
+      "summary": "Full-Backup auf stillstehendem Dateisystem vom Stick; externes Ziel; SHA256 + Verify Deep."
+    },
     {
       "id": "rs-concept",
       "title": "Konzept & Geltungsbereich",
       "area": "rescue",
       "status": "yellow",
-      "summary": "Rescue-Edition vs. normale Installation; welche Pfade schreibgeschützt bleiben — Doku/Matrix abstimmen."
+      "summary": "Rescue vs. Installer; BR-001-OFFLINE in Architektur-Doku verankert."
     },
     {
       "id": "rs-storage-discovery",
       "title": "Storage Discovery",
       "area": "rescue",
       "status": "yellow",
-      "summary": "Geräte-Enumeration, Hotplug, sichere Allowlist — Unit-Tests vs. HW offen."
+      "summary": "Geräte-Enumeration, Hotplug, Allowlist — Unit-Tests vs. HW offen."
+    },
+    {
+      "id": "rs-readonly-mount",
+      "title": "Read-only Quellplatte",
+      "area": "rescue",
+      "status": "yellow",
+      "summary": "Orchestrator + Handoff; RS-005 HW rot."
     },
     {
       "id": "rs-preview-execute",
       "title": "Preview / Execute",
       "area": "rescue",
       "status": "red",
-      "summary": "Dry-run vs. echte Schritte; Operator-Bestätigungen und Hard-Stops müssen HW-belegt werden."
+      "summary": "Restore Preview ja; Execute nicht MVP; Operator-Bestätigungen HW-belegt ausstehend."
     },
     {
       "id": "rs-boot-efi",
-      "title": "Boot / EFI",
+      "title": "Boot / EFI / ISO-Build",
       "area": "rescue",
       "status": "red",
-      "summary": "Boot-Reparatur-Pfade, EFI-Partitionen, Firmware-Varianten — Evidence RS-* fehlt teilweise."
+      "summary": "build-rescue-iso-controlled dry-run; live-build Config fehlt; RS-001 rot."
     },
     {
       "id": "rs-evidence-export",
       "title": "Evidence Export",
       "area": "rescue",
       "status": "yellow",
-      "summary": "Support-Bundle / Rescue-Evidence konsistent exportieren; Zielmedien-Policies beachten."
+      "summary": "Support-Bundle / RS-008; Zielmedien-Policies."
     }
   ],
   "artifacts": [
     {"path": "docs/testing/RESCUE_STICK_TEST_MATRIX.md", "kind": "doc"},
-    {"path": "docs/faq/RESCUE_FAQ.md", "kind": "faq"}
+    {"path": "docs/faq/RESCUE_FAQ.md", "kind": "faq"},
+    {"path": "scripts/rescue/build-rescue-iso-controlled.sh", "kind": "script"}
   ]
 }

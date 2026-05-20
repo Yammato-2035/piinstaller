@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-13 — **PKG-001** (*Runtime-Paket-Deploy-Gate*): Skripte + Doku; Ampel **gelb/rot** bis Repo/Pipeline vollständig. **DEV-001** (*Development Cockpit*): Modul-JSON **backup-restore** mit Matrix/Gate abgeglichen; Cockpit **gelb**. **BR-013** (*Ziel-Schreib-EIO*): Klassifikation **`backup.write_io_error`** / **`BACKUP-IO-ERROR-050`** (Job **`f744c2936468`**); **BR-012** Finalisierung; **BR-011** Preflight. **BR-016–BR-019** (Performance, Evidence+**API**, Progress/**UI**/ETA, Profile): Code + Doku + pytest/Vitest **gelb** (HW-/E2E-Abnahme offen). **BR-001** failed/blocked. **BR-004/005:** blocked.
+**Stand:** 2026-05-20 — **BR-001-Pivot:** **BR-001-LIVE** experimentell/rot (kein Release-Gate, keine Live-Desktop-Gate-Retries). **BR-001-OFFLINE** (Rettungsstick) = **Release-Gate** (rot bis HW-E2E). **PKG-001**, **DEV-001**, **BR-011–BR-019** wie zuvor. **BR-004/005:** blocked an **BR-001-OFFLINE**-Archiv. Siehe `docs/architecture/BR-001_GATE_STRATEGY_DE.md`.
 
 ## Ampeldefinition
 
@@ -17,7 +17,8 @@
 |---------|-------|----------|------------------|
 | Phase 0 Arbeitsmodus | Gelb | Struktur & Matrizen angelegt, GitHub Project manuell | `docs/evidence/release-gates/feature_freeze.json` |
 | Phase 1 Bestandsaufnahme | Gelb | Testinventar + **Pytest Snapshot** (0× fail, 1526× pass, lokal); CI-/HW-Evidence separat | `test_inventory.json`, `current_failures.json`, `pytest_failures_summary_2026-05-11.txt` |
-| Backup | Rot | BR-001 failed/blocked — Phase2 STOP + sudo; zusätzlich Job **`f744c2936468`** Schreib-EIO — **`BR-001_write_io_error_2026-05-14.md`** | `BR-001_package_timer_paused_retry_2026-05-13.md`, `BR-001.json`, `BR-001_write_io_error_2026-05-14.md` |
+| Backup / BR-001-OFFLINE | Rot | Release-Gate: Rettungsstick Full-Backup HW offen — **`BR-001_offline_gate_pivot_2026-05-20.md`** | `RESCUE_STICK_TEST_MATRIX.md`, `BR-001_GATE_STRATEGY_DE.md` |
+| BR-001-LIVE (Desktop) | Rot | Experimentell — Live tar/Chrome/Timeshift/apt; **kein** Release-Retry | `BR-001-full-root-stable-pigz-timeshift-retry-2026-05-20.json` |
 | Backup Preflight **BR-011** | Gelb | Spezifikation + Testmatrix; API/UI/Implementierung offen | `docs/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_DE.md`, `docs/knowledge-base/backup/BACKUP_PACKAGE_ACTIVITY_PREFLIGHT.md` |
 | **BR-013** Ziel-Schreib-EIO | Gelb | `backup.write_io_error` + pytest; KB `BACKUP_TARGET_WRITE_IO_ERROR.md` | `BR-001_write_io_error_2026-05-14.md`, `backup_runner.py`, `BR-001.json` |
 | **BR-012** Runner-Finalisierung | Gelb | Fix `backup_runner.py` + pytest; **2026-05-14** produktiver Runner SHA256 = Workspace (Deploy-Prep) | `BR-001_runner_finalization_performance_failure_2026-05-14.md`, `backend/tools/backup_runner.py`, `BR-001.json` → `br001_runner_fix_deploy_prep_2026_05_14` |
@@ -28,7 +29,7 @@
 | Verify | Rot | BR-004/BR-005 blocked — kein neues BR-001-Archiv aus diesem Lauf | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |
-| Rescue Stick | Gelb | viel Deploy-/Rescue-Testcode; echter Read-only-Stick offen | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` |
+| Rescue Stick | Rot | BR-001-OFFLINE Release-Gate; Deploy-Pipelines teilweise; RS-001–008 HW rot | `RESCUE_STICK_TEST_MATRIX.md`, `rescue-stick.json` |
 | Monolith-Audit | Rot | DOMAIN_BOUNDARIES Stub | `docs/architecture/DOMAIN_BOUNDARIES.md` |
 | Website-Transparenz | Gelb | Markdown-Basis im Repo | `docs/roadmap/PUBLIC_STATUS_PAGE.md`, `docs/testing/WEBSITE_TRANSPARENCY_TEST_MATRIX.md` |
 | Affiliate / Monetarisierung | Gelb | Policies als Markdown | `docs/monetization/` |

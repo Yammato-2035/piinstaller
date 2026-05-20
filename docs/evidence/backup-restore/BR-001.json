@@ -690,5 +690,16 @@
     "docs/knowledge-base/backup/BACKUP_TARGET_WRITE_IO_ERROR.md",
     "docs/evidence/runtime-results/package_activity_forensics_2026-05-16.md",
     "docs/evidence/runtime-results/BR-001-full-root-br001-2026-05-16.json"
-  ]
+  ],
+  "gate_pivot_2026_05_20": {
+    "br001_live_release_gate": false,
+    "br001_live_role": "experimental",
+    "br001_offline_release_gate": true,
+    "br001_offline_id": "BR-001-OFFLINE",
+    "stop_live_desktop_retry_as_release_gate": true,
+    "evidence_md": "docs/evidence/release-gates/BR-001_offline_gate_pivot_2026-05-20.md",
+    "evidence_json": "docs/evidence/runtime-results/BR-001-offline-gate-pivot-2026-05-20.json",
+    "architecture": "docs/architecture/BR-001_GATE_STRATEGY_DE.md",
+    "latest_live_failure": "docs/evidence/runtime-results/BR-001-full-root-stable-pigz-timeshift-retry-2026-05-20.json"
+  }
 }

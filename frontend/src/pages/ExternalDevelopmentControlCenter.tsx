@@ -6,6 +6,7 @@ import { StandaloneModeBanner } from '../components/dev-dashboard/StandaloneMode
 import { RuntimeGatePanel } from '../components/dev-dashboard/RuntimeGatePanel'
 import { CockpitBackupProgressPanel } from '../components/dev-dashboard/CockpitBackupProgressPanel'
 import { CockpitBackupTargetPanel } from '../components/dev-dashboard/CockpitBackupTargetPanel'
+import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { DeployDriftPanel } from '../components/dev-dashboard/DeployDriftPanel'
 import { SafeTestModePanel } from '../components/dev-dashboard/SafeTestModePanel'
 import { writeCockpitRefreshSec } from '../lib/devDashboard/cockpitWindow'
@@ -175,6 +176,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
         </ul>
       ) : null}
 
+      <RescueStickBoard dashboard={mon.dashboard} />
       <CockpitBackupTargetPanel refreshSec={mon.refreshSec} />
       <CockpitBackupProgressPanel refreshSec={mon.refreshSec} />
 

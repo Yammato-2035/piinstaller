@@ -3,8 +3,8 @@
   "title": "Backup & Restore",
   "area": "backup",
   "status": "red",
-  "summary": "Ampel wie STATUS_MATRIX/Gate: BR-001 failed/blocked (kein belastbarer Full-Backup-Nachweis; Jobs inkl. Schreib-EIO); BR-004/BR-005 blocked an BR-001-Kette; BR-011 Preflight gelb/offen; BR-012/BR-013 gelb (Code/Tests, HW offen); BR-016–BR-019 gelb (E2E/HW). Release-Gate Backup/Restore bleibt rot.",
-  "last_updated": "2026-05-13",
+  "summary": "Pivot 2026-05-20: BR-001-LIVE experimentell/rot (kein Release-Gate, keine Live-Desktop-Retries als Gate). BR-001-OFFLINE über Rettungsstick = Release-Gate (rot bis HW-E2E). BR-004/BR-005 an Offline-Archiv. BR-011–BR-019 unverändert gelb/teilweise.",
+  "last_updated": "2026-05-20",
   "commits": [
     "300d75e fix: classify backup target write io errors (BR-013)",
     "3d8bd1d feat(backup): Performance-Profile, Progress-Merge, Evidence-Collector (BR-016–BR-019)",
@@ -17,18 +17,20 @@
     "f9fe3bf Normalize file mode on Sidebar and riskLevels (644)",
     "8a13fd9 Fix accidental executable file modes"
   ],
-  "current_focus": "BR-001 Ziel/HW erneut freigeben; BR-011 Implementierung; BR-012/013 HW-Abnahme; BR-016–019 E2E",
+  "current_focus": "BR-001-OFFLINE auf Rettungsstick (RS-001–007); BR-001-LIVE nur experimentell; BR-011 Implementierung",
   "next_steps": [
-    "BR-001: freigegebenes Zielmedium, Phase-2/sudo-Kette, erneuter Lauf ohne EIO — Evidence in BR-001.json fortführen",
+    "BR-001-OFFLINE: Stick booten, Quellplatte read-only, Full-Backup externes Ziel, SHA256, Verify Deep — Evidence RS-006/007",
+    "BR-001-LIVE: keine Release-Retries; optional system-stable für laufenden Desktop",
     "BR-011: Preflight-Spezifikation in API/UI umsetzen (BACKUP_PACKAGE_ACTIVITY_PREFLIGHT_*)",
     "BR-012/013: großes Archiv / Medien-Stabilität — Runner-Finalisierung und write_io_error in Produktion belegen",
     "BR-016–019: HW-/E2E gegen Matrix; Profile vs. Runner-Scope dokumentieren",
     "BR-004/BR-005: erst nach gültigem BR-001-Archiv (kein Verify auf .partial nach EIO)"
   ],
   "blockers": [
-    "BR-001: kein erfolgreicher Full-Backup-Nachweis (blocked/failed laut BR-001.json und Matrix)",
-    "BR-004/BR-005: blocked — Kette an BR-001 und BR-013 (keine gültige Archivdatei)",
-    "backup_restore_release_gate.json: ampel rot — kein Release-Grün"
+    "BR-001-OFFLINE: Rettungsstick-HW-E2E fehlt (Release-Gate)",
+    "BR-001-LIVE: bewusst kein Release-Gate (Live tar/apt/Chrome/Timeshift)",
+    "BR-004/BR-005: blocked — erst nach BR-001-OFFLINE-Archiv",
+    "backup_restore_release_gate.json: ampel rot — BR-001-OFFLINE nicht grün"
   ],
   "evidence_files": [
     "docs/evidence/backup-restore/BR-001.json",
@@ -81,26 +83,44 @@
   ],
   "children": [
     {
-      "id": "br-001-full-backup",
-      "title": "BR-001 Full Backup (freigegebenes Ziel)",
+      "id": "br-001-live-desktop",
+      "title": "BR-001-LIVE Desktop (experimentell)",
       "area": "backup",
       "status": "red",
-      "last_updated": "2026-05-14",
-      "summary": "Matrix/Gate: Rot — kein belastbarer erfolgreicher Lauf; u. a. Package-Activity/Phase-2/sudo, Job f744c2936468 Schreib-EIO (`backup.write_io_error` / BACKUP-IO-050). Kein Archiv+Manifest+SHA256 laut Evidence.",
-      "commits": ["b77c109d402a053cec4544a06919613b9167624d (BR-001.json Stand)", "ce9951a docs venv Hinweis"],
+      "last_updated": "2026-05-20",
+      "summary": "Kein Release-Gate. Live Full-Root: tar_failed (Chrome), Timeshift, apt/autoremove, EIO — keine weiteren Gate-Retries.",
       "next_steps": [
-        "Freigabe-Pfad beibehalten; STRICT-Retry nur mit dokumentiertem sudo/Timer-Konzept",
-        "Neuen Job nach Medien-Stabilität; Evidence BR-001.json aktualisieren"
+        "Nur Monitoring/Profil system-stable; kein Release-Retry Full-Root",
+        "Evidence fortführen ohne Ampel-Grün für Live"
       ],
-      "blockers": ["blocked/failed laut BR-001.json", "BR-013 EIO blockiert Verify-Kette"],
+      "blockers": ["release_gate_disabled_2026_05_20"],
       "evidence_files": [
-        "docs/evidence/backup-restore/BR-001.json",
-        "docs/evidence/backup-restore/BR-001_write_io_error_2026-05-14.md",
-        "docs/evidence/backup-restore/BR-001_package_timer_paused_retry_2026-05-13.md",
-        "docs/evidence/backup-restore/BR-001_runner_finalization_performance_failure_2026-05-14.md"
+        "docs/evidence/runtime-results/BR-001-full-root-stable-pigz-timeshift-retry-2026-05-20.json",
+        "docs/evidence/backup-restore/BR-001_package_activity_failure_2026-05-13.md",
+        "docs/architecture/BR-001_GATE_STRATEGY_DE.md"
       ],
-      "docs": ["docs/testing/BACKUP_RESTORE_TEST_MATRIX.md"],
-      "tests": ["backend/tests/test_backup_create_sudo_gate_v1.py", "backend/tests/test_backup_runner_write_io_v1.py"]
+      "docs": ["docs/testing/BACKUP_RESTORE_TEST_MATRIX.md", "docs/knowledge-base/backup/BR001_TAR_LIVE_CACHE_FAILURES.md"],
+      "tests": ["backend/tests/test_backup_runner_write_io_v1.py"]
+    },
+    {
+      "id": "br-001-offline-rescue",
+      "title": "BR-001-OFFLINE Rettungsstick (Release-Gate)",
+      "area": "backup",
+      "status": "red",
+      "last_updated": "2026-05-20",
+      "summary": "Release-Gate Desktop Privat: Full-Backup offline auf externem Ziel, stillstehende Quellplatte, SHA256, Verify Deep, Restore Preview.",
+      "next_steps": [
+        "RS-001 Boot, RS-005 read-only Mount, Offline-Backup pigz, RS-007 Verify",
+        "Evidence BR-001-offline-gate-pivot + RS-Matrix"
+      ],
+      "blockers": ["HW-Stick-E2E offen", "ISO-Build/RS-* rot"],
+      "evidence_files": [
+        "docs/evidence/release-gates/BR-001_offline_gate_pivot_2026-05-20.md",
+        "docs/evidence/runtime-results/BR-001-offline-gate-pivot-2026-05-20.json",
+        "docs/testing/RESCUE_STICK_TEST_MATRIX.md"
+      ],
+      "docs": ["docs/rescue/SETUPHELFER_RESCUE_STICK_ARCHITECTURE_DE.md", "docs/architecture/BR-001_GATE_STRATEGY_DE.md"],
+      "tests": ["backend/tests/test_deploy_runner_rescue_stick_component_inventory_v1.py"]
     },
     {
       "id": "br-004-verify-basic",

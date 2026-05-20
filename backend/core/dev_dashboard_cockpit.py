@@ -494,8 +494,8 @@ def build_structure_health(repo: Path, dashboard: dict[str, Any]) -> dict[str, A
             warnings.append(
                 {
                     "severity": "warning",
-                    "id": "br001_release_blocked",
-                    "message": "BR-001 / Release-Gate Backup-Restore rot — externes Backup auf freigegebenem Medium (kein Cockpit-Start)",
+                    "id": "br001_offline_release_blocked",
+                    "message": "BR-001-OFFLINE (Rettungsstick) rot — Release-Gate; keine Live-Desktop-BR-001-Retries als Gate",
                 }
             )
 
@@ -607,13 +607,89 @@ def build_cursor_meta_prompt(repo: Path, findings_payload: dict[str, Any]) -> di
     lines.append("- Nur fokussierte Änderungen; keine git add -A")
     lines.append("- Phase 0: check-runtime-deploy-gate.sh vor Runtime-Tests")
     lines.append("- Abschlussbericht bei Gate-Fehler: blocked_runtime_outdated")
-    lines.append("- BR-001 nicht künstlich freigeben")
+    lines.append("- BR-001-OFFLINE (Rettungsstick) = Release-Gate; BR-001-LIVE experimentell, keine Live-Gate-Retries")
 
     body = "\n".join(lines)
     return {
         "format": "cursor_meta_prompt_v1",
         "prompt": body,
         "findings": findings_payload,
+    }
+
+
+def build_br001_gates(repo: Path) -> dict[str, Any]:
+    """BR-001-LIVE (experimentell) vs. BR-001-OFFLINE (Release-Gate) — read-only aus Gate-JSON."""
+    gate_path = repo / GATES_DIR / "backup_restore_release_gate.json"
+    gate, _err = _safe_read_json(gate_path)
+    nested = (gate or {}).get("br001_gates") if isinstance(gate, dict) else None
+    if isinstance(nested, dict) and nested:
+        live = nested.get("live") or {}
+        offline = nested.get("offline") or {}
+        return {
+            "primary_release_gate": str(gate.get("release_gate_primary") or "BR-001-OFFLINE"),
+            "live": {
+                "id": str(live.get("id") or "BR-001-LIVE"),
+                "release_gate": bool(live.get("release_gate", False)),
+                "role": str(live.get("role") or "experimental"),
+                "status": _normalize_ampel(str(live.get("ampel") or "red")),
+                "summary": live.get("summary"),
+                "policy": live.get("policy"),
+            },
+            "offline": {
+                "id": str(offline.get("id") or "BR-001-OFFLINE"),
+                "release_gate": bool(offline.get("release_gate", True)),
+                "role": str(offline.get("role") or "release_gate"),
+                "status": _normalize_ampel(str(offline.get("ampel") or "red")),
+                "summary": offline.get("summary"),
+            },
+            "gate_path": str(gate_path.relative_to(repo)).replace("\\", "/"),
+            "pivot_evidence": "docs/evidence/release-gates/BR-001_offline_gate_pivot_2026-05-20.md",
+        }
+    return {
+        "primary_release_gate": "BR-001-OFFLINE",
+        "live": {
+            "id": "BR-001-LIVE",
+            "release_gate": False,
+            "role": "experimental",
+            "status": "red",
+            "summary": "Live Full-Root kein Release-Gate",
+            "policy": "no_live_desktop_retry_as_release_gate",
+        },
+        "offline": {
+            "id": "BR-001-OFFLINE",
+            "release_gate": True,
+            "role": "release_gate",
+            "status": "red",
+            "summary": "Rettungsstick Offline-Full-Backup",
+        },
+        "gate_path": str(gate_path.relative_to(repo)).replace("\\", "/"),
+        "pivot_evidence": "docs/evidence/release-gates/BR-001_offline_gate_pivot_2026-05-20.md",
+    }
+
+
+def build_rescue_stick_board(repo: Path) -> dict[str, Any]:
+    """Kompakte RS-/BR-001-OFFLINE-Übersicht für Development Cockpit."""
+    inv_path = repo / "docs/evidence/runtime-results/handoff/rescue_stick_component_inventory.json"
+    inv, _ = _safe_read_json(inv_path)
+    counts = (inv or {}).get("counts") if isinstance(inv, dict) else {}
+    components = (inv or {}).get("components") if isinstance(inv, dict) else []
+    missing_mvp = [
+        str(c.get("component_id"))
+        for c in components
+        if isinstance(c, dict) and c.get("status") == "missing" and c.get("required_for_mvp")
+    ]
+    rs_matrix = repo / "docs/testing/RESCUE_STICK_TEST_MATRIX.md"
+    br001 = build_br001_gates(repo)
+    return {
+        "br001_offline_status": (br001.get("offline") or {}).get("status"),
+        "br001_live_status": (br001.get("live") or {}).get("status"),
+        "br001_live_release_gate": (br001.get("live") or {}).get("release_gate"),
+        "component_inventory_path": str(inv_path.relative_to(repo)).replace("\\", "/") if inv_path.is_file() else None,
+        "component_counts": counts,
+        "missing_mvp_component_ids": missing_mvp[:12],
+        "rs_matrix_exists": rs_matrix.is_file(),
+        "rs_tests_all_red": True,
+        "notes": "Release-Gate nur BR-001-OFFLINE; Live-Desktop-Retries nicht als Gate.",
     }
 
 
@@ -647,4 +723,9 @@ def enrich_dashboard_cockpit(body: dict[str, Any], *, repo_root: Path | None = N
 
     structure_health = build_structure_health(repo, body)
     body["structure_health"] = structure_health
+    body["br001_gates"] = build_br001_gates(repo)
+    body["rescue_stick_board"] = build_rescue_stick_board(repo)
+    offline_st = str((body["br001_gates"].get("offline") or {}).get("status") or "red")
+    body["release_gate_primary"] = body["br001_gates"].get("primary_release_gate")
+    body["release_gate_br001_offline_status"] = offline_st
     return body

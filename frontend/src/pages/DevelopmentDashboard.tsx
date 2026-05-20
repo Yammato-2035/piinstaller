@@ -14,6 +14,7 @@ import { PackageGatePanel } from '../components/dev-dashboard/PackageGatePanel'
 import { SafeTestModePanel } from '../components/dev-dashboard/SafeTestModePanel'
 import { EvidencePanel } from '../components/dev-dashboard/EvidencePanel'
 import { ReleaseGatePanel } from '../components/dev-dashboard/ReleaseGatePanel'
+import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RecommendedActionsPanel } from '../components/dev-dashboard/RecommendedActionsPanel'
 import { StructuralHealthPanel } from '../components/dev-dashboard/StructuralHealthPanel'
 import { CommitHygienePanel } from '../components/dev-dashboard/CommitHygienePanel'
@@ -192,6 +193,7 @@ const DevelopmentDashboard: React.FC = () => {
               <RuntimeWorkspacePanel dashboard={dashboard} t={t} apiBaseDisplay={apiBaseDisplay} />
               <DeployDriftPanel dashboard={dashboard} t={t} />
               <PackageGatePanel dashboard={dashboard} t={t} />
+              <RescueStickBoard dashboard={dashboard} />
               <ReleaseGatePanel dashboard={dashboard} t={t} />
               <RecommendedActionsPanel dashboard={dashboard} t={t} />
             </>

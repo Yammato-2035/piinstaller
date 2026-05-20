@@ -185,7 +185,10 @@ export function CockpitBackupProgressPanel({ refreshSec }: { refreshSec: number 
         <HardDrive size={16} className="text-emerald-400 shrink-0" aria-hidden />
         {t('devDashboard.governance.backupProgress.title')}
       </h2>
-      <p className="text-[11px] text-emerald-200/70 mb-3">{t('devDashboard.governance.backupProgress.subtitle')}</p>
+      <p className="text-[11px] text-emerald-200/70 mb-2">{t('devDashboard.governance.backupProgress.subtitle')}</p>
+      <p className="text-[11px] text-amber-200/90 mb-3 border border-amber-800/40 rounded px-2 py-1.5 bg-amber-950/30">
+        {t('devDashboard.governance.backupProgress.greenRule')}
+      </p>
 
       {error ? (
         <p className="text-xs text-amber-300">{error}</p>

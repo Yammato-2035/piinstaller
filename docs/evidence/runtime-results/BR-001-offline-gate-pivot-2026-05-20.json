@@ -1,0 +1,70 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "task": "BR-001-offline-gate-pivot",
+  "captured_at": "2026-05-20T22:00:00Z",
+  "decision": {
+    "br001_live_release_gate": false,
+    "br001_live_role": "experimental",
+    "br001_offline_release_gate": true,
+    "br001_offline_id": "BR-001-OFFLINE",
+    "stop_live_desktop_retries_as_gate": true
+  },
+  "live_failure_summary": {
+    "apt_autoremove": {
+      "job_id": "e341a326ac69",
+      "code": "backup.blocked_package_activity",
+      "evidence": "docs/evidence/backup-restore/BR-001_package_activity_failure_2026-05-13.md"
+    },
+    "timeshift": {
+      "evidence": "docs/evidence/runtime-results/BR-001-full-root-stable-pigz-retry-2026-05-20.json",
+      "abort_reason": "tar_failed"
+    },
+    "chrome_profile": {
+      "path": "/home/gabriel/.config/google-chrome",
+      "evidence": "docs/evidence/runtime-results/BR-001-full-root-stable-pigz-timeshift-retry-2026-05-20.json",
+      "tar_return_code": 1
+    },
+    "tar_exit_1_partial_no_final": {
+      "job_id": "c597e6f59e1f",
+      "written_gib": 141.97,
+      "evidence": "docs/evidence/runtime-results/BR-001-full-root-stable-pigz-timeshift-retry-2026-05-20.json"
+    },
+    "write_io_partial": {
+      "job_id": "f744c2936468",
+      "evidence": "docs/evidence/backup-restore/BR-001_write_io_error_2026-05-14.md"
+    }
+  },
+  "rescue_stick_ist": {
+    "build_rescue": "scripts/rescue/build-rescue-iso-controlled.sh (dry-run default)",
+    "storage_discovery": "existing_code",
+    "readonly_mount": "existing_pipelines_unit_tested",
+    "backup_runner_host": "existing",
+    "verify_deep": "existing_engine_rs007_red",
+    "restore_preview": "existing_preview_only",
+    "evidence_rs_matrix": "docs/testing/RESCUE_STICK_TEST_MATRIX.md all red"
+  },
+  "offline_mvp_gaps": [
+    "debian_live_build_config",
+    "iso_build_scripts",
+    "iso_test_pipeline",
+    "offline_ui",
+    "hw_e2e_offline_full_backup"
+  ],
+  "partitioning_assistant": {
+    "required_for_replace_disk_restore": true,
+    "blocks_br001_offline_backup": false,
+    "implemented": false
+  },
+  "malware_scan": {
+    "blocks_backup": false,
+    "optional_before_restore": true,
+    "ui_warning_required": true,
+    "implemented": false
+  },
+  "architecture_doc": "docs/architecture/BR-001_GATE_STRATEGY_DE.md",
+  "backup_started": false,
+  "restore_started": false,
+  "verify_deep_started": false,
+  "apt_run": false,
+  "unfreeze_done": false
+}
