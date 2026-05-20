@@ -7,6 +7,14 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added (Backup pipeline: pigz, telemetry, failure mail, BR-001 stable profile)
+- **Kompression:** `pigz` wenn vorhanden (`SETUPHELFER_BACKUP_COMPRESSION_ENGINE=auto|gzip|pigz`), Fallback gzip mit `compression_fallback_gzip`; explizites `pigz` ohne Binary blockiert mit `backup.compression_unavailable`.
+- **Telemetrie:** Top-Level-Felder in `status.json` / API (`phase`, `written_human`, `compression_engine`, Raten, `last_error_*`, `notification_status`).
+- **E-Mail:** Fehler-Mail bei `backup.failed` wenn `SETUPHELFER_NOTIFY_ON_BACKUP_FAILURE=true`; UI-Schalter „Bei Backup-Fehler E-Mail senden“.
+- **Profil `full-root-stable`:** BR-001-taugliche Excludes für Browser-/User-Caches (dokumentiert).
+- **Development Dashboard:** Phasen, Warnungen (langer gzip-Lauf, stale progress), Fehlerbereich, BR-001-Grün-Regel.
+- Doku: `docs/backup/BACKUP_NOTIFICATIONS_{DE,EN}.md`, `docs/backup/BACKUP_PERFORMANCE_{DE,EN}.md`, `docs/knowledge-base/backup/BR001_TAR_LIVE_CACHE_FAILURES.md`.
+
 ### Changed (Update button: manual guidance only, no GUI/apt from backend)
 - **UI / `Dashboard.tsx`:** Buttons heissen nicht mehr "Update starten" / "Run update in terminal", sondern zeigen eine manuelle Anleitung (z. B. "Update-Hinweise anzeigen" / "Show update guide"). Klicks oeffnen das Sicherheits-Modal mit den Befehlen `sudo apt update` / `sudo apt upgrade` und einer **BR-001-Warnung**; kein `__TAURI__.invoke('launch_update_terminal')`-Fallback mehr.
 - **API `POST /api/system/run-update-in-terminal`:** liefert immer `status=manual_required`, `code=updates.manual_terminal_required`, `commands`, `copyable_command`, `blocked_auto_execution=true`, `br001_warning` — **kein** subprocess, kein `_open_terminal_with_command`, kein `apt`.

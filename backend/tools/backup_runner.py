@@ -37,8 +37,10 @@ from core.backup_tar_warning_classification import (
     classify_tar_run,
     decide_tar_nonzero_job_outcome,
 )
+from core.backup_telemetry import sync_status_telemetry
 from core.notification_service import (
     load_notification_config,
+    maybe_send_backup_failure_email,
     maybe_send_backup_success_email,
     notification_status_fields,
 )
@@ -115,6 +117,7 @@ def _write_status(path: Path, payload: dict[str, Any]) -> None:
 
 def _update_status(path: Path, state: dict[str, Any], **kwargs: Any) -> None:
     state.update(kwargs)
+    sync_status_telemetry(state)
     _write_status(path, state)
 
 
@@ -203,11 +206,12 @@ def _publish_tar_nonzero_failure(
         "allows_warning_downgrade",
     }
     _skip |= set(tar_class_fields.keys())
+    final_code = str(outcome.get("code") or "backup.failed")
     _update_status(
         status_file,
         status,
         status=str(outcome.get("status") or "error"),
-        code=str(outcome.get("code") or "backup.failed"),
+        code=final_code,
         severity=str(outcome.get("severity") or "error"),
         diagnosis_id=None,
         abort_reason=outcome.get("abort_reason"),
@@ -218,8 +222,20 @@ def _publish_tar_nonzero_failure(
         tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
         suspend_guard_active=False,
         partial_deleted=partial_deleted,
+        final_archive_exists=False,
+        last_error_code=final_code,
+        last_error_message=stderr_excerpt[:500] if stderr_excerpt else None,
+        last_status_message=f"Backup fehlgeschlagen ({outcome.get('abort_reason') or 'tar_failed'})",
         **tar_class_fields,
         **{k: v for k, v in outcome.items() if k not in _skip},
+    )
+    _attach_backup_failure_notification(
+        status_file,
+        status,
+        job_id=str(status.get("job_id") or ""),
+        code=final_code,
+        stderr_excerpt=stderr_excerpt,
+        tar_return_code=rc,
     )
     _mark_terminal()
     return 1
@@ -646,7 +662,11 @@ def _run_tar_pipeline_from_preflight(
             bytes_current=0,
             bytes_total_estimate=progress_ctx.get("bytes_total_estimate"),
             start_monotonic=start_monotonic,
-            compression_method=str(progress_ctx.get("compression_method") or "gzip"),
+            compression_method=str(
+                progress_ctx.get("compression_method")
+                or (status.get("compression_detail") or {}).get("compression_engine")
+                or "gzip"
+            ),
             current_operation="package_and_inhibit_ok",
             target_mount=progress_ctx.get("target_mount"),
             target_free_bytes=progress_ctx.get("target_free_bytes"),
@@ -694,6 +714,17 @@ def _run_tar_pipeline_from_preflight(
                 stderr_tail=tail_text_p,
                 stderr_excerpt=excerpt_tail_p,
                 tar_stderr_log=str(stderr_log_path) if stderr_log_path else None,
+                final_archive_exists=False,
+                last_error_code="backup.blocked_package_activity",
+                last_status_message="Backup blockiert: Paketaktivität",
+            )
+            _attach_backup_failure_notification(
+                status_file,
+                status,
+                job_id=str(status.get("job_id") or ""),
+                code="backup.blocked_package_activity",
+                stderr_excerpt=excerpt_tail_p,
+                tar_return_code=rc_pkg,
             )
             _mark_terminal()
             return 1
@@ -1164,6 +1195,53 @@ def _run_tar_pipeline_from_preflight(
     )
 
 
+def _attach_backup_failure_notification(
+    status_file: Path,
+    state: dict[str, Any],
+    *,
+    job_id: str,
+    code: str,
+    stderr_excerpt: str = "",
+    tar_return_code: int | None = None,
+) -> None:
+    """Best-effort failure E-Mail; never changes backup status on SMTP failure."""
+    prog = state.get("progress_optional") if isinstance(state.get("progress_optional"), dict) else {}
+    bytes_written = prog.get("bytes_current") or state.get("written_bytes")
+    runtime_s = prog.get("running_for_s") or prog.get("elapsed_seconds") or state.get("elapsed_seconds")
+    try:
+        bytes_int = int(bytes_written) if bytes_written is not None else None
+    except (TypeError, ValueError):
+        bytes_int = None
+    try:
+        runtime_int = int(runtime_s) if runtime_s is not None else None
+    except (TypeError, ValueError):
+        runtime_int = None
+    cd = state.get("compression_detail") if isinstance(state.get("compression_detail"), dict) else {}
+    profile = str(cd.get("profile_normalized") or state.get("backup_profile") or "")
+    cfg = load_notification_config()
+    result = maybe_send_backup_failure_email(
+        job_id=job_id,
+        status=str(state.get("status") or "error"),
+        status_code=code,
+        backup_type=str(state.get("backup_type") or ""),
+        backup_profile=profile,
+        target_path=str(state.get("backup_dir") or ""),
+        diagnosis_id=str(state.get("diagnosis_id") or ""),
+        abort_reason=str(state.get("abort_reason") or ""),
+        archive_path=str(state.get("archive_path") or ""),
+        partial_path=str(state.get("partial_path") or ""),
+        partial_deleted=state.get("partial_deleted") if "partial_deleted" in state else None,
+        final_archive_exists=bool(state.get("final_archive_exists")),
+        runtime_seconds=runtime_int,
+        bytes_written=bytes_int,
+        tar_return_code=tar_return_code if tar_return_code is not None else state.get("subprocess_returncode"),
+        tar_warning_classification=str(state.get("tar_warning_classification") or ""),
+        error_excerpt=stderr_excerpt or str(state.get("stderr_excerpt") or "")[:800],
+        config=cfg,
+    )
+    _update_status(status_file, state, **notification_status_fields(cfg, result))
+
+
 def _attach_backup_success_notification(
     status_file: Path,
     state: dict[str, Any],
@@ -1357,10 +1435,34 @@ def main() -> int:
             partial_path, backup_dir, profile=profile_arg or "recommended"
         )
         status_full["compression_detail"] = compression_meta
+        if compression_meta.get("compression_preflight_blocked"):
+            msg = str(compression_meta.get("compression_preflight_message") or "Kompression nicht verfügbar")
+            _update_status(
+                status_file,
+                status_full,
+                status="error",
+                code="backup.compression_unavailable",
+                severity="error",
+                abort_reason="compression_preflight_blocked",
+                backup_finished_at=_now_iso(),
+                last_error_code="backup.compression_unavailable",
+                last_error_message=msg[:500],
+                last_status_message=msg[:200],
+                final_archive_exists=False,
+            )
+            _attach_backup_failure_notification(
+                status_file,
+                status_full,
+                job_id=job_id,
+                code="backup.compression_unavailable",
+                stderr_excerpt=msg,
+            )
+            _mark_terminal()
+            return 1
         pre = quick_target_preflight(backup_dir)
         progress_ctx: dict[str, Any] = {
             "throughput_state": {"last_bytes": 0, "last_t": time.monotonic()},
-            "compression_method": compression_meta["compression_method"],
+            "compression_method": compression_meta.get("compression_engine") or compression_meta["compression_method"],
             "target_free_bytes": pre.get("target_free_bytes"),
             "target_mount": pre.get("target_mount"),
             "bytes_total_estimate": None,

@@ -36,11 +36,18 @@ except Exception:  # noqa: BLE001
 class BackupProfilesModelTests(unittest.TestCase):
     def test_list_five_profiles(self) -> None:
         specs = profile_specs_public()
-        self.assertEqual(len(specs), 5)
+        self.assertEqual(len(specs), 6)
         ids = {x["id"] for x in specs}
         self.assertEqual(
             ids,
-            {"recommended", "fast-system", "user-data", "developer", "full-expert"},
+            {
+                "recommended",
+                "fast-system",
+                "user-data",
+                "developer",
+                "full-expert",
+                "full-root-stable",
+            },
         )
 
     def test_recommended_default_normalize(self) -> None:

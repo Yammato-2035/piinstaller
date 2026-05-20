@@ -1,41 +1,29 @@
-# Backup success: email notifications
+# Backup notifications (email)
 
-## When is email sent?
+## Success mail
 
-Only after a completed backup job with:
+- Trigger: `backup.success` or `backup.success_with_warnings` with Verify Deep ok.
+- Switch: `SETUPHELFER_NOTIFY_ON_BACKUP_SUCCESS` (default: on).
+- UI: Settings → notify on backup success.
 
-- **`backup.success`**, or
-- **`backup.success_with_warnings`** with **`backup_integrity_status: verified`** and successful runner **verify deep**
+## Failure mail
 
-Not for `backup.failed`, `backup.warning_not_promoted`, missing archive, or failed verify.
+- Trigger: `backup.failed`, `backup.blocked_package_activity`, I/O errors, inhibit failures, etc.
+- Switch: `SETUPHELFER_NOTIFY_ON_BACKUP_FAILURE` (default: off until enabled).
+- UI: Settings → send email on backup failure.
+- Subject: `Setuphelfer — Backup fehlgeschlagen (<job_id>)`.
 
-## Why verify is required for warnings
+### Body (no secrets)
 
-BR-001 integrity requires a final archive, SHA256, and verify deep. Notifications must not imply success when that chain failed.
+- Job ID, status/code, diagnosis, abort reason
+- Target path, profile, runtime, bytes written
+- final archive yes/no, partial path, partial deleted
+- `tar_return_code`, `tar_warning_classification`
+- Short error excerpt
+- Note: no restore without Verify Deep
 
-## Settings UI
+### When no mail is sent
 
-Use **Settings → Email notifications** to set recipient, SMTP host, username, and mailbox password. The password is never returned by the API (`smtp_password_set` only). Use **Send test email** to verify SMTP without starting a backup.
+- `skipped_disabled`, `skipped_not_configured`, `skipped_not_applicable`
 
-**Encryption (`smtp_security`):**
-
-| Mode | Typical port | Behaviour |
-|------|--------------|-----------|
-| `starttls` | 587 | `SMTP` + `STARTTLS` |
-| `ssl` | 465 | `SMTP_SSL` (implicit TLS) |
-| `none` | 25 etc. | plain SMTP |
-
-If `SETUPHELFER_NOTIFY_SMTP_SECURITY` is unset: port **465** → `ssl`; else `smtp_starttls=true` → `starttls`.
-
-## Configuration (environment)
-
-Environment variables (see `.env.example`). Store secrets in `.env` or systemd `EnvironmentFile` only — **never** commit credentials.
-
-## Mail failures do not fail the backup
-
-SMTP errors only set `notification_email_status: failed` on the job. Backup `code`/`status` stay success.
-
-## Implementation
-
-- `backend/core/notification_service.py`
-- Invoked from `backend/tools/backup_runner.py` after success status update
+SMTP errors do not change backup outcome (`notification_status=failed` on the job).

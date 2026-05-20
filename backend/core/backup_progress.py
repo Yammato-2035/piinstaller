@@ -46,16 +46,22 @@ def merge_progress_optional(
         remaining = max(0, bytes_total_estimate - bytes_current)
         eta = int(remaining / (mib_s * 1024 * 1024))
 
+    from core.backup_telemetry import format_bytes_human, format_rate_human
+
     base = dict(existing) if isinstance(existing, dict) else {}
+    rate_bps = (float(mib_s) * 1024 * 1024) if mib_s is not None else None
     out: dict[str, Any] = {
         **base,
         "phase": phase,
         "bytes_current": bytes_current,
+        "written_human": format_bytes_human(bytes_current),
         "bytes_total_estimate": bytes_total_estimate,
         "elapsed_seconds": int(elapsed),
         "throughput_mib_s": round(mib_s, 4) if mib_s is not None else None,
-        "eta_seconds": eta,
+        "estimated_write_rate_bytes_per_sec": round(rate_bps, 2) if rate_bps else None,
+        "estimated_write_rate_human": format_rate_human(rate_bps),
         "compression_method": compression_method,
+        "compression_engine": compression_method,
         "current_operation": current_operation,
         "target_mount": target_mount,
         "target_free_bytes": target_free_bytes,

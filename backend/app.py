@@ -852,6 +852,23 @@ def _runner_status_to_job(status_data: dict) -> dict:
         "partial_path": status_data.get("partial_path"),
         "progress_optional": status_data.get("progress_optional"),
         "unit_scope": status_data.get("unit_scope") or "system",
+        "phase": status_data.get("phase"),
+        "written_bytes": status_data.get("written_bytes"),
+        "written_human": status_data.get("written_human"),
+        "elapsed_seconds": status_data.get("elapsed_seconds"),
+        "compression_engine": status_data.get("compression_engine"),
+        "compression_threads": status_data.get("compression_threads"),
+        "estimated_write_rate_human": status_data.get("estimated_write_rate_human"),
+        "last_status_message": status_data.get("last_status_message"),
+        "last_error_code": status_data.get("last_error_code"),
+        "tar_warning_classification": status_data.get("tar_warning_classification"),
+        "fatal_patterns_found": status_data.get("fatal_patterns_found"),
+        "volatile_warning_paths": status_data.get("volatile_warning_paths"),
+        "partial_deleted": status_data.get("partial_deleted"),
+        "final_archive_exists": status_data.get("final_archive_exists"),
+        "notification_status": status_data.get("notification_status")
+        or status_data.get("notification_email_status"),
+        "subprocess_returncode": status_data.get("subprocess_returncode"),
     }
     unit_state = _systemd_unit_state(str(status_data.get("unit_name") or ""), str(status_data.get("unit_scope") or "system"))
     if unit_state:

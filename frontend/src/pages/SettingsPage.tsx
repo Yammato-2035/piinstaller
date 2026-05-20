@@ -1134,6 +1134,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                   />
                   <span className="text-white">Backup-Erfolg per E-Mail melden</span>
                 </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailNotif.on_backup_failure}
+                    onChange={(e) => setEmailNotif({ ...emailNotif, on_backup_failure: e.target.checked })}
+                    className="w-5 h-5 accent-rose-500"
+                  />
+                  <span className="text-white">Bei Backup-Fehler E-Mail senden</span>
+                </label>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <div className="text-xs text-slate-400 mb-1">Empfängeradresse</div>

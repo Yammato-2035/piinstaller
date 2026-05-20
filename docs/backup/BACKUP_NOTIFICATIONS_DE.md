@@ -1,61 +1,36 @@
-# Backup-Erfolg: E-Mail-Benachrichtigungen
+# Backup-Benachrichtigungen (E-Mail)
 
-## Wann wird eine E-Mail gesendet?
+## Erfolgs-Mail
 
-Nur nach abgeschlossenem Backup-Job mit:
+- Auslöser: `backup.success` oder `backup.success_with_warnings` mit Verify Deep ok.
+- Schalter: `SETUPHELFER_NOTIFY_ON_BACKUP_SUCCESS` (Standard: an).
+- UI: Einstellungen → „Backup-Erfolg per E-Mail melden“.
 
-- **`backup.success`**, oder
-- **`backup.success_with_warnings`** mit **`backup_integrity_status: verified`** und erfolgreichem **Verify Deep** im Runner
+## Fehler-Mail
 
-Nicht bei `backup.failed`, `backup.warning_not_promoted`, fehlendem Archiv oder ungültigem Verify.
+- Auslöser: `backup.failed`, `backup.blocked_package_activity`, I/O-Fehler, Inhibit-Fehler u. a. Terminalfehler.
+- Schalter: `SETUPHELFER_NOTIFY_ON_BACKUP_FAILURE` (Standard: aus, nach Konfiguration an).
+- UI: Einstellungen → „Bei Backup-Fehler E-Mail senden“.
+- Betreff: `Setuphelfer — Backup fehlgeschlagen (<job_id>)`.
 
-## Warum nur nach erfolgreichem Verify (bei Warnungen)?
+### Inhalt (keine Secrets)
 
-BR-001 und die Integritätskette verlangen ein finales Archiv, SHA256 und Verify Deep. Die Benachrichtigung darf keinen „Erfolg“ suggerieren, wenn die Kette nicht bestanden wurde.
+- Job-ID, Status/Code, Diagnose, Abbruchgrund
+- Zielpfad, Profil, Laufzeit, geschriebene Bytes
+- finales Archiv ja/nein, Partial-Pfad, Partial gelöscht
+- `tar_return_code`, `tar_warning_classification`
+- Fehlerkern (gekürzt)
+- Hinweis: Kein Restore ohne Verify Deep
 
-## Konfiguration über die UI
+### Wann keine Mail
 
-Unter **Einstellungen → E-Mail-Benachrichtigungen** können Empfänger, SMTP-Daten und das Mailbox-Passwort gesetzt werden. Das Passwort wird **nicht** angezeigt und nicht in API-Antworten zurückgegeben (`smtp_password_set` nur true/false). Mit **Testmail senden** prüfen Sie SMTP ohne Backup.
+- `skipped_disabled`: E-Mail global aus
+- `skipped_not_configured`: SMTP unvollständig
+- `skipped_not_applicable`: Failure-Notify aus oder kein Fehlerstatus
 
-**Verschlüsselung (`smtp_security`):**
+SMTP-Fehler ändern den Backup-Status nicht (`notification_status=failed` im Job).
 
-| Modus | Typischer Port | Verhalten |
-|-------|----------------|-----------|
-| `starttls` | 587 | `SMTP` + `STARTTLS` |
-| `ssl` | 465 | `SMTP_SSL` (implizites TLS) |
-| `none` | 25 o. ä. | unverschlüsselt |
+## Beispiel backup.failed (BR-001)
 
-Ohne `SETUPHELFER_NOTIFY_SMTP_SECURITY`: Port **465** → `ssl`, sonst `smtp_starttls=true` → `starttls`.
-
-## Konfiguration (Umgebungsvariablen)
-
-Umgebungsvariablen (siehe `.env.example`):
-
-| Variable | Bedeutung |
-|----------|-----------|
-| `SETUPHELFER_NOTIFY_EMAIL_ENABLED` | `true` zum Aktivieren |
-| `SETUPHELFER_NOTIFY_EMAIL_TO` | Empfänger |
-| `SETUPHELFER_NOTIFY_EMAIL_FROM` | Absender |
-| `SETUPHELFER_NOTIFY_SMTP_*` | SMTP-Server, Port, Zugangsdaten |
-| `SETUPHELFER_NOTIFY_SMTP_SECURITY` | `starttls`, `ssl` oder `none` |
-| `SETUPHELFER_NOTIFY_ON_BACKUP_SUCCESS` | Standard `true` |
-
-Secrets nur in `.env` (gitignored) oder systemd `EnvironmentFile`, **nicht** im Repository.
-
-## Warum Mailversand das Backup nicht fehlschlägt
-
-SMTP-Fehler setzen nur `notification_email_status: failed` im Jobstatus. `code` und `status` des Backups bleiben unverändert.
-
-## Jobstatus-Felder
-
-- `notification_email_enabled`
-- `notification_email_status` (`sent`, `failed`, `skipped_*`)
-- `notification_email_sent`
-- `notification_email_error`
-- `notification_email_to_configured`
-- `notification_email_recipient_masked` (z. B. `v***@example.com`)
-
-## Implementierung
-
-- `backend/core/notification_service.py`
-- Aufruf aus `backend/tools/backup_runner.py` nach Erfolgs-`_update_status`
+- `backup.failed` / `tar_failed` / `TAR_CRITICAL_WARNING`
+- Live-Datei (z. B. Chrome-Cache) → kein finales Archiv, kein SHA256, kein Verify Deep

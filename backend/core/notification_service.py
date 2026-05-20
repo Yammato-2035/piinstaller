@@ -16,12 +16,16 @@ SmtpSecurity = Literal["starttls", "ssl", "none"]
 __all__ = [
     "EmailNotificationResult",
     "NotificationConfig",
+    "build_backup_failure_body",
+    "build_backup_failure_subject",
     "build_backup_success_body",
     "build_backup_success_subject",
     "load_notification_config",
     "mask_email_address",
+    "maybe_send_backup_failure_email",
     "maybe_send_backup_success_email",
     "notification_status_fields",
+    "should_notify_backup_failure",
     "should_notify_backup_success",
 ]
 
@@ -123,6 +127,226 @@ def mask_email_address(address: str) -> str:
     else:
         masked_local = f"{local[0]}***"
     return f"{masked_local}@{domain}"
+
+
+def should_notify_backup_failure(
+    *,
+    status: str,
+    code: str,
+    config: NotificationConfig | None = None,
+) -> bool:
+    cfg = config or load_notification_config()
+    if not cfg.email_enabled or not cfg.notify_on_backup_failure:
+        return False
+    st = (status or "").strip().lower()
+    if st in ("error", "failed"):
+        return True
+    c = (code or "").strip().lower()
+    return c in (
+        "backup.failed",
+        "backup.blocked_package_activity",
+        "backup.write_io_error",
+        "backup.inhibit_failed",
+        "backup.failed_manifest_missing",
+    )
+
+
+def build_backup_failure_subject(job_id: str) -> str:
+    jid = (job_id or "").strip() or "unknown"
+    return f"Setuphelfer — Backup fehlgeschlagen ({jid})"
+
+
+def build_backup_failure_body(
+    *,
+    job_id: str,
+    status_code: str,
+    backup_type: str = "",
+    backup_profile: str = "",
+    target_path: str = "",
+    target_device: str = "",
+    diagnosis_id: str = "",
+    abort_reason: str = "",
+    archive_path: str = "",
+    partial_path: str = "",
+    partial_deleted: bool | None = None,
+    final_archive_exists: bool | None = None,
+    runtime_seconds: int | None = None,
+    bytes_written: int | None = None,
+    tar_return_code: int | None = None,
+    tar_warning_classification: str = "",
+    error_excerpt: str = "",
+    next_step: str = "",
+) -> str:
+    lines = [
+        "Setuphelfer — Backup fehlgeschlagen",
+        "",
+        f"Job-ID: {job_id or '—'}",
+        f"Status/Code: {status_code or '—'}",
+    ]
+    if diagnosis_id:
+        lines.append(f"Diagnose: {diagnosis_id}")
+    if abort_reason:
+        lines.append(f"Abbruchgrund: {abort_reason}")
+    if backup_type:
+        lines.append(f"Backup-Typ: {backup_type}")
+    if backup_profile:
+        lines.append(f"Profil: {backup_profile}")
+    if target_path:
+        lines.append(f"Zielverzeichnis: {target_path}")
+    if target_device:
+        lines.append(f"Zielgerät: {target_device}")
+    if runtime_seconds is not None:
+        lines.append(f"Laufzeit: {runtime_seconds} s")
+    if bytes_written is not None:
+        lines.append(f"Bytes geschrieben: {bytes_written}")
+    if final_archive_exists is not None:
+        lines.append(f"Finales Archiv: {'ja' if final_archive_exists else 'nein'}")
+    if partial_path:
+        lines.append(f"Partial: {partial_path}")
+    if partial_deleted is not None:
+        lines.append(f"Partial gelöscht: {'ja' if partial_deleted else 'nein'}")
+    if tar_return_code is not None:
+        lines.append(f"tar_return_code: {tar_return_code}")
+    if tar_warning_classification:
+        lines.append(f"tar_warning_classification: {tar_warning_classification}")
+    if error_excerpt:
+        lines.append("")
+        lines.append("Fehlerkern:")
+        lines.append(error_excerpt[:800])
+    lines.extend(
+        [
+            "",
+            "Hinweis: Kein Restore ohne Verify Deep und finales Archiv.",
+            next_step or "Nächster Schritt: Ursache beheben, Partial ggf. bereinigen, erneut testen.",
+            "",
+            "— Setuphelfer (automatische Benachrichtigung)",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def send_backup_failure_email(
+    *,
+    job_id: str,
+    status_code: str,
+    backup_type: str = "",
+    backup_profile: str = "",
+    target_path: str = "",
+    target_device: str = "",
+    diagnosis_id: str = "",
+    abort_reason: str = "",
+    archive_path: str = "",
+    partial_path: str = "",
+    partial_deleted: bool | None = None,
+    final_archive_exists: bool | None = None,
+    runtime_seconds: int | None = None,
+    bytes_written: int | None = None,
+    tar_return_code: int | None = None,
+    tar_warning_classification: str = "",
+    error_excerpt: str = "",
+    next_step: str = "",
+    config: NotificationConfig | None = None,
+    smtp_send: Any | None = None,
+) -> EmailNotificationResult:
+    cfg = config or load_notification_config()
+    if not cfg.email_enabled:
+        return EmailNotificationResult(status="skipped_disabled")
+    if not cfg.email_fully_configured():
+        return EmailNotificationResult(status="skipped_not_configured")
+
+    masked = mask_email_address(cfg.email_to)
+    subject = build_backup_failure_subject(job_id)
+    body = build_backup_failure_body(
+        job_id=job_id,
+        status_code=status_code,
+        backup_type=backup_type,
+        backup_profile=backup_profile,
+        target_path=target_path,
+        target_device=target_device,
+        diagnosis_id=diagnosis_id,
+        abort_reason=abort_reason,
+        archive_path=archive_path,
+        partial_path=partial_path,
+        partial_deleted=partial_deleted,
+        final_archive_exists=final_archive_exists,
+        runtime_seconds=runtime_seconds,
+        bytes_written=bytes_written,
+        tar_return_code=tar_return_code,
+        tar_warning_classification=tar_warning_classification,
+        error_excerpt=error_excerpt,
+        next_step=next_step,
+    )
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = cfg.email_from
+    msg["To"] = cfg.email_to
+    msg.set_content(body)
+
+    try:
+        if smtp_send is not None:
+            smtp_send(cfg, msg)
+        else:
+            _smtp_send_default(cfg, msg)
+        return EmailNotificationResult(status="sent", recipient_masked=masked)
+    except Exception as exc:
+        err = _safe_smtp_error_message(exc)
+        return EmailNotificationResult(status="failed", error=err, recipient_masked=masked)
+
+
+def maybe_send_backup_failure_email(
+    *,
+    job_id: str,
+    status: str,
+    status_code: str,
+    backup_type: str = "",
+    backup_profile: str = "",
+    target_path: str = "",
+    target_device: str = "",
+    diagnosis_id: str = "",
+    abort_reason: str = "",
+    archive_path: str = "",
+    partial_path: str = "",
+    partial_deleted: bool | None = None,
+    final_archive_exists: bool | None = None,
+    runtime_seconds: int | None = None,
+    bytes_written: int | None = None,
+    tar_return_code: int | None = None,
+    tar_warning_classification: str = "",
+    error_excerpt: str = "",
+    next_step: str = "",
+    config: NotificationConfig | None = None,
+    smtp_send: Any | None = None,
+) -> EmailNotificationResult:
+    cfg = config or load_notification_config()
+    if not should_notify_backup_failure(status=status, code=status_code, config=cfg):
+        if not cfg.email_enabled:
+            return EmailNotificationResult(status="skipped_disabled")
+        if not cfg.email_fully_configured():
+            return EmailNotificationResult(status="skipped_not_configured")
+        return EmailNotificationResult(status="skipped_not_applicable")
+
+    return send_backup_failure_email(
+        job_id=job_id,
+        status_code=status_code,
+        backup_type=backup_type,
+        backup_profile=backup_profile,
+        target_path=target_path,
+        target_device=target_device,
+        diagnosis_id=diagnosis_id,
+        abort_reason=abort_reason,
+        archive_path=archive_path,
+        partial_path=partial_path,
+        partial_deleted=partial_deleted,
+        final_archive_exists=final_archive_exists,
+        runtime_seconds=runtime_seconds,
+        bytes_written=bytes_written,
+        tar_return_code=tar_return_code,
+        tar_warning_classification=tar_warning_classification,
+        error_excerpt=error_excerpt,
+        next_step=next_step,
+        config=cfg,
+        smtp_send=smtp_send,
+    )
 
 
 def should_notify_backup_success(
@@ -361,6 +585,8 @@ def notification_status_fields(
         "notification_email_status": result.status,
         "notification_email_sent": result.sent,
         "notification_email_error": (result.error or "")[:300] if result.error else None,
+        "notification_error_class": (result.error or "")[:120] if result.error else None,
+        "notification_status": result.status,
         "notification_email_to_configured": bool(c.email_to),
         "notification_email_recipient_masked": result.recipient_masked
         or (mask_email_address(c.email_to) if c.email_to else None),

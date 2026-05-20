@@ -16,6 +16,7 @@ PROFILE_FAST_SYSTEM = "fast-system"
 PROFILE_USER_DATA = "user-data"
 PROFILE_DEVELOPER = "developer"
 PROFILE_FULL_EXPERT = "full-expert"
+PROFILE_FULL_ROOT_STABLE = "full-root-stable"
 
 DEFAULT_BACKUP_PROFILE = PROFILE_RECOMMENDED
 
@@ -26,7 +27,21 @@ VALID_BACKUP_PROFILES: frozenset[str] = frozenset(
         PROFILE_USER_DATA,
         PROFILE_DEVELOPER,
         PROFILE_FULL_EXPERT,
+        PROFILE_FULL_ROOT_STABLE,
     }
+)
+
+# Volatile browser/desktop caches — not restore-critical; avoids live-file tar failures on BR-001.
+_BR001_VOLATILE_CACHE_EXCLUDES: tuple[str, ...] = (
+    "/home/*/.cache",
+    "/home/*/.cache/google-chrome",
+    "/home/*/.cache/chromium",
+    "/home/*/.cache/mozilla",
+    "/home/*/.config/google-chrome/Default/Cache",
+    "/home/*/.config/google-chrome/Default/Code Cache",
+    "/home/*/.config/chromium/Default/Cache",
+    "/home/*/.config/chromium/Default/Code Cache",
+    "/home/*/.local/share/Trash",
 )
 
 PROFILE_EXTRA_EXCLUDES: dict[str, tuple[str, ...]] = {
@@ -35,6 +50,7 @@ PROFILE_EXTRA_EXCLUDES: dict[str, tuple[str, ...]] = {
     PROFILE_USER_DATA: (),
     PROFILE_DEVELOPER: ("/var/cache", "/var/tmp"),
     PROFILE_FULL_EXPERT: (),
+    PROFILE_FULL_ROOT_STABLE: _BR001_VOLATILE_CACHE_EXCLUDES,
 }
 
 _DEVELOPER_EXCLUDE_GLOBS = (
@@ -54,6 +70,8 @@ def normalize_backup_profile(raw: str | None) -> tuple[str, list[str]]:
         return DEFAULT_BACKUP_PROFILE, ["backup_profile_unknown_defaulted"]
     if p == PROFILE_FULL_EXPERT:
         return p, ["backup_profile_full_expert_selected"]
+    if p == PROFILE_FULL_ROOT_STABLE:
+        return p, ["backup_profile_full_root_stable_selected"]
     return p, []
 
 
@@ -90,7 +108,7 @@ def filter_included_paths_for_target(included: list[str], backup_dir: str) -> tu
 
 def _logical_included_paths(profile: str) -> list[str]:
     """Beschreibende Quellpfade fuer Preview (nicht zwingend alle im Data-Runner v1)."""
-    if profile == PROFILE_FULL_EXPERT or profile == PROFILE_FAST_SYSTEM:
+    if profile in (PROFILE_FULL_EXPERT, PROFILE_FULL_ROOT_STABLE, PROFILE_FAST_SYSTEM):
         return ["/"]
     if profile == PROFILE_RECOMMENDED:
         return [
@@ -183,6 +201,15 @@ def resolve_profile_request(*, request_type: str, profile_raw: str | None) -> di
             "recommended": False,
             "api_request_type": "profile",
         }
+    if prof == PROFILE_FULL_ROOT_STABLE:
+        return {
+            "runner_backup_type": "full",
+            "normalized_profile": prof,
+            "warning_codes": warnings + ["backup_profile_br001_stable_excludes"],
+            "requires_expert_confirmation": True,
+            "recommended": False,
+            "api_request_type": "profile",
+        }
     if prof == PROFILE_FAST_SYSTEM:
         return {
             "runner_backup_type": "full",
@@ -244,6 +271,14 @@ def profile_specs_public() -> list[dict[str, Any]]:
             "i18n_title_key": "backup.profiles.full_expert.title",
             "i18n_desc_key": "backup.profiles.full_expert.desc",
             "exclude_categories_key": "backup.profiles.full_expert.excludes",
+        },
+        {
+            "id": PROFILE_FULL_ROOT_STABLE,
+            "warning_level": "warning",
+            "strict_full_root": True,
+            "i18n_title_key": "backup.profiles.full_root_stable.title",
+            "i18n_desc_key": "backup.profiles.full_root_stable.desc",
+            "exclude_categories_key": "backup.profiles.full_root_stable.excludes",
         },
     ]
 
