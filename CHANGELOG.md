@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added (Monolith boundary audit before rescue stick)
+- Architecture audit and target boundaries: `docs/architecture/MONOLITH_BOUNDARY_AUDIT_2026-05-20.md`, `MODULE_BOUNDARIES_TARGET_2026-05-20.md`, `MONOLITH_DECOMPOSITION_PLAN_2026-05-20.md`, `NO_DUPLICATE_MODULE_RULES.md`.
+- Rescue stick core dependency map: `docs/rescue-stick/RESCUE_STICK_CORE_DEPENDENCIES_2026-05-20.md`.
+- Warn-only guard: `scripts/check-module-boundaries.sh`; pytest `backend/tests/test_module_boundaries_v1.py`.
+- Evidence: `docs/evidence/runtime-results/monolith_boundary_audit_before_rescue_2026-05-20.json`.
+
 ### Fixed (BR-001: Timeshift excludes, runner failure mail)
 - **`full-root-stable`:** tar excludes `/timeshift` and snapshot paths (live snapshots caused `tar_failed` / `TAR_CRITICAL_WARNING` on job `6d4e161b2f8c`); `full-expert` unchanged.
 - **Failure mail:** `backup_runner` uses `load_effective_notification_config()` (reads `/etc/setuphelfer/notification.env`); `setuphelfer-backup@.service` loads the same `EnvironmentFile`.

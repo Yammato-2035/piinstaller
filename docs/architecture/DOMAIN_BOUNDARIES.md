@@ -1,7 +1,13 @@
-# Domänengrenzen (Ist-Aufnahme – Stub)
+# Domänengrenzen (Verweis)
 
-**Status:** Rot – vorläufig, kein Code-Scan in diesem Schritt abgeschlossen.  
-**Nächster Schritt:** Prompt `docs/cursor/PROMPT_05_MONOLITH_AUDIT.md` ausführen und diese Datei ersetzen/ergänzen.
+**Status:** Ersetzt durch Monolith-Audit 2026-05-20.  
+**Verbindliche Dokumente:**
+
+- [`MONOLITH_BOUNDARY_AUDIT_2026-05-20.md`](MONOLITH_BOUNDARY_AUDIT_2026-05-20.md) — Ist, Duplikate, Risiken  
+- [`MODULE_BOUNDARIES_TARGET_2026-05-20.md`](MODULE_BOUNDARIES_TARGET_2026-05-20.md) — Soll Core/Live/Rescue/Cloud  
+- [`MONOLITH_DECOMPOSITION_PLAN_2026-05-20.md`](MONOLITH_DECOMPOSITION_PLAN_2026-05-20.md) — Phasen A–D  
+- [`NO_DUPLICATE_MODULE_RULES.md`](NO_DUPLICATE_MODULE_RULES.md) — Anti-Duplikat-Regeln  
+- [`../rescue-stick/RESCUE_STICK_CORE_DEPENDENCIES_2026-05-20.md`](../rescue-stick/RESCUE_STICK_CORE_DEPENDENCIES_2026-05-20.md)
 
 ## Ziel-Domänen (Soll-Katalog)
 

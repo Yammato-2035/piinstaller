@@ -1,0 +1,44 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "task": "monolith_boundary_audit_before_rescue",
+  "captured_at": "2026-05-20T23:30:00Z",
+  "head_before_audit": "2a4ed5e",
+  "runtime_gate_exit": 0,
+  "runtime_gate_script": "./scripts/check-runtime-deploy-gate.sh",
+  "backup_started": false,
+  "restore_started": false,
+  "verify_deep_started": false,
+  "apt_update_run": false,
+  "apt_upgrade_run": false,
+  "apt_install_run": false,
+  "apt_autoremove_run": false,
+  "unfreeze_done": false,
+  "monolith_audit_done": true,
+  "duplicates_identified": true,
+  "target_module_boundaries_defined": true,
+  "decomposition_plan_created": true,
+  "no_duplicate_module_rules_created": true,
+  "rescue_core_dependencies_defined": true,
+  "br001_offline_next_allowed_after_audit": true,
+  "largest_monolith_files": [
+    "backend/app.py (~738 KiB)",
+    "backend/deploy/routes.py (~201 KiB)",
+    "backend/tools/backup_runner.py (~57 KiB)",
+    "backend/core/safe_device.py (~35 KiB)"
+  ],
+  "critical_duplicate_areas": [
+    "storage_discovery",
+    "mount_target_check",
+    "write_guard_vs_safe_device",
+    "deploy_rescue_runner_handoffs"
+  ],
+  "recommendation": "minimal_extract_phase_a_b1_b2_before_rescue_stick_iso",
+  "documents": [
+    "docs/architecture/MONOLITH_BOUNDARY_AUDIT_2026-05-20.md",
+    "docs/architecture/MODULE_BOUNDARIES_TARGET_2026-05-20.md",
+    "docs/architecture/MONOLITH_DECOMPOSITION_PLAN_2026-05-20.md",
+    "docs/architecture/NO_DUPLICATE_MODULE_RULES.md",
+    "docs/rescue-stick/RESCUE_STICK_CORE_DEPENDENCIES_2026-05-20.md"
+  ],
+  "guard_script": "scripts/check-module-boundaries.sh"
+}
