@@ -1,0 +1,108 @@
+{
+  "task": "br001_package_activity_freeze_before_retry",
+  "captured_at": "2026-05-20T02:10:00Z",
+  "head": "e09ac12",
+  "previous_br001_job": "1f54bdd9ea2f",
+  "previous_br001_evidence": "docs/evidence/runtime-results/BR-001-full-root-br001-2026-05-19.json",
+  "previous_abort_reason": "package_activity_detected_runtime",
+  "previous_diagnosis_id": "UPDATE-CONFLICT-041",
+  "previous_failure_trigger": {
+    "pid": 154963,
+    "name": "apt-get",
+    "cmdline": "/usr/bin/apt-get autoremove --purge -y"
+  },
+  "runtime_gate_exit": 0,
+  "target_check": {
+    "status": "success",
+    "code": "backup.target_check_ok",
+    "mount_source": "/dev/sda1",
+    "mount_fstype": "ext4"
+  },
+  "smtp_last_test_status": "sent",
+  "package_activity_processes_before": [
+    {
+      "pid": 2184,
+      "ppid": 1,
+      "user": "root",
+      "comm": "unattended-upgr",
+      "args": "/usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal",
+      "note": "Shutdown-Wartezustand, kein apt-get/dpkg-Schreiblauf zum Prüfzeitpunkt"
+    }
+  ],
+  "mutating_apt_dpkg_processes_before": [],
+  "locks_before": {
+    "apt_dpkg_locks_held": false,
+    "lock_files": {
+      "/var/lib/dpkg/lock-frontend": "exists size=0 no_fuser",
+      "/var/lib/dpkg/lock": "exists size=0 no_fuser",
+      "/var/lib/apt/lists/lock": "exists size=0"
+    },
+    "lslocks_apt_dpkg_matches": []
+  },
+  "timers_before": {
+    "apt-daily.timer": {
+      "enabled": "enabled",
+      "active": "active",
+      "sub_state": "waiting",
+      "next_elapsed": "apt-daily.service (55min ago trigger per list-timers)"
+    },
+    "apt-daily-upgrade.timer": {
+      "enabled": "enabled",
+      "active": "active",
+      "sub_state": "waiting",
+      "next_elapsed": "apt-daily-upgrade.service (9h ago)"
+    },
+    "apt-show-versions.timer": {
+      "enabled": "enabled",
+      "active": "active"
+    },
+    "dpkg-db-backup.timer": {
+      "enabled": "enabled",
+      "active": "active"
+    },
+    "prometheus-node-exporter-apt.timer": {
+      "enabled": "enabled",
+      "active": "active"
+    },
+    "packagekit": "no_packagekit_timers"
+  },
+  "services_before": {
+    "apt-daily.service": {
+      "unit_file_state": "static",
+      "active": "inactive",
+      "sub_state": "dead"
+    },
+    "apt-daily-upgrade.service": {
+      "unit_file_state": "static",
+      "active": "inactive",
+      "sub_state": "dead"
+    },
+    "unattended-upgrades.service": {
+      "unit_file_state": "enabled",
+      "active": "active",
+      "sub_state": "running",
+      "note": "Unattended Upgrades Shutdown (wait-for-signal)"
+    },
+    "packagekit.service": {
+      "unit_file_state": "static",
+      "active": "inactive",
+      "sub_state": "dead"
+    },
+    "packagekit-offline-update.service": {
+      "unit_file_state": "static",
+      "active": "inactive",
+      "sub_state": "dead"
+    }
+  },
+  "preflight_stop_condition": {
+    "mutating_apt_dpkg_running": false,
+    "proceed_to_freeze": true
+  },
+  "backup_started": false,
+  "restore_started": false,
+  "verify_deep_started": false,
+  "apt_update_run": false,
+  "apt_upgrade_run": false,
+  "apt_install_run": false,
+  "apt_autoremove_run": false
+}

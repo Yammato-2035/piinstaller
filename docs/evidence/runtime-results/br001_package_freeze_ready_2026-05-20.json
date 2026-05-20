@@ -1,0 +1,67 @@
+{
+  "task": "br001_package_activity_freeze_ready",
+  "captured_at": "2026-05-20T02:12:00Z",
+  "head": "e09ac12",
+  "previous_br001_job": "1f54bdd9ea2f",
+  "previous_abort_reason": "package_activity_detected_runtime",
+  "previous_diagnosis_id": "UPDATE-CONFLICT-041",
+  "freeze_applied": false,
+  "freeze_blocked_reason": "sudo_password_required",
+  "freeze_attempt": {
+    "method": "sudo -n systemctl stop/mask",
+    "result": "all commands failed: sudo password required in agent shell"
+  },
+  "operator_freeze_commands": [
+    "sudo systemctl stop apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true",
+    "sudo systemctl stop apt-daily.service apt-daily-upgrade.service 2>/dev/null || true",
+    "sudo systemctl stop unattended-upgrades.service 2>/dev/null || true",
+    "sudo systemctl stop packagekit.service packagekit-offline-update.service 2>/dev/null || true",
+    "sudo systemctl mask apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true",
+    "sudo systemctl mask apt-daily.service apt-daily-upgrade.service 2>/dev/null || true",
+    "sudo systemctl mask unattended-upgrades.service 2>/dev/null || true",
+    "sudo systemctl mask packagekit.service packagekit-offline-update.service 2>/dev/null || true"
+  ],
+  "operator_unfreeze_after_br001_commands": [
+    "sudo systemctl unmask apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service unattended-upgrades.service packagekit.service packagekit-offline-update.service 2>/dev/null || true",
+    "sudo systemctl enable --now apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true",
+    "sudo systemctl start unattended-upgrades.service 2>/dev/null || true"
+  ],
+  "units_planned_for_freeze": [
+    "apt-daily.timer",
+    "apt-daily-upgrade.timer",
+    "apt-daily.service",
+    "apt-daily-upgrade.service",
+    "unattended-upgrades.service",
+    "packagekit.service",
+    "packagekit-offline-update.service"
+  ],
+  "apt_daily_timer_active": true,
+  "apt_daily_upgrade_timer_active": true,
+  "unattended_upgrades_active": true,
+  "packagekit_active": false,
+  "package_activity_processes_after": [
+    {
+      "pid": 2184,
+      "comm": "unattended-upgr",
+      "args": "unattended-upgrade-shutdown --wait-for-signal",
+      "note": "unchanged; freeze not applied"
+    }
+  ],
+  "mutating_apt_dpkg_processes_after": [],
+  "locks_after": {
+    "apt_dpkg_locks_held": false
+  },
+  "runtime_gate_exit": 0,
+  "target_check_code": "backup.target_check_ok",
+  "target_mount_source": "/dev/sda1",
+  "smtp_last_test_status": "sent",
+  "backup_started": false,
+  "restore_started": false,
+  "verify_deep_started": false,
+  "apt_update_run": false,
+  "apt_upgrade_run": false,
+  "apt_install_run": false,
+  "apt_autoremove_run": false,
+  "br001_ready_after_package_freeze": false,
+  "br001_retry_allowed_after": "operator runs freeze commands, re-verifies Phase 5 checks, then starts BR-001 in separate prompt"
+}
