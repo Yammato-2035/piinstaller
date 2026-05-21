@@ -7,6 +7,14 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added (Rescue Phase C.4 — restore preview handoff planning)
+- **`rescue/restore_preview_orchestrator.py`**, **`core/restore_profiles.py`**, **`core/backup_before_write_gate.py`**: restore preview plan only (`execution_allowed: false`).
+- Profile `offline-full-restore-preview`; references canonical `modules.rescue_restore_dryrun` and `modules.backup_verify`.
+- Deploy route: `POST /api/deploy/rescue/restore-preview-plan`.
+- Docs: `RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md`, `BACKUP_BEFORE_OVERWRITE_GATE_2026-05-20.md`.
+- Tests: `test_restore_profiles_offline_preview_v1`, `test_backup_before_write_gate_v1`, `test_rescue_restore_preview_plan_v1`.
+- Evidence: `rescue_phase_c4_restore_preview_handoff_2026-05-20.json`.
+
 ### Added (Rescue Phase C.1–C.3 — boot context, offline-full profile, backup plan)
 - **`rescue/boot_context.py`**, **`rescue/backup_orchestrator.py`**: read-only boot context and offline BR-001 backup **plan** only (`execution_allowed: false`).
 - **`core/backup_profiles`**: profile `offline-full`, `get_backup_profile()`, `CANONICAL_BACKUP_RUNNER_MODULE`.

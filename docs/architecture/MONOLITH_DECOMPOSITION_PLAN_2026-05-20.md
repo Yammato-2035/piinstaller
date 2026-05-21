@@ -44,7 +44,7 @@
 | C.1 `rescue/boot_context.py` | Boot-Kontext read-only | install_paths, mount_snapshot hints | `test_rescue_boot_context_v1` | **done** |
 | C.2 `rescue/backup_orchestrator.py` | Offline-Backup-**Plan** only | `backup_profiles`, boot_context | `test_rescue_offline_backup_plan_v1` | **done** |
 | C.3 `offline-full` Profil | Metadaten, Excludes | `get_backup_profile` | `test_backup_profiles_offline_full_v1` | **done** |
-| C.4 Restore-Preview-Handoff | UI/API Preview | `rescue_restore_dryrun` | — | offen |
+| C.4 Restore-Preview-Handoff | `restore_preview_orchestrator`, `restore_profiles`, `backup_before_write_gate` | `rescue_restore_dryrun`, `backup_verify` (Ref only) | `test_rescue_restore_preview_plan_v1` | **done** |
 | C.5 Deploy-Runner dünn | Runner nur Handoff | Facades | bestehende Deploy-Tests | teilweise (B.1/B.2) |
 | C.6 Backup **execute** auf HW | systemd + `backup_runner` | Safety + target-check | HW später | **nicht** in C.1–C.3 |
 

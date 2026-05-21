@@ -28,6 +28,8 @@ Kuratierte Notizen aus Support- und Setup-Runden, damit Lösungen **nicht doppel
 Neue Themen: eigene Datei unter `knowledge-base/` oder Abschnitt in der APT-FAQ ergänzen.
 
 | [rescue/RESCUE_ORCHESTRATOR_PREVIEW.md](rescue/RESCUE_ORCHESTRATOR_PREVIEW.md) | **Rescue Preview:** Safety/Verify/Dryrun-Orchestrierung ohne Execute in Phase 1 |
+| [../rescue-stick/RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md](../rescue-stick/RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md) | **Rettungsstick C.4:** Restore-Preview-Plan, kanonische Dryrun/Verify-Referenz, kein Restore |
+| [../rescue-stick/BACKUP_BEFORE_OVERWRITE_GATE_2026-05-20.md](../rescue-stick/BACKUP_BEFORE_OVERWRITE_GATE_2026-05-20.md) | **Backup-before-overwrite:** Gate vor Restore-Preview bei belegten Zielen |
 
 | [rescue/RESCUE_ORCHESTRATOR_EXECUTE.md](rescue/RESCUE_ORCHESTRATOR_EXECUTE.md) | **Rescue Execute:** Preview-Session-Gate, Token, Re-Checks vor Restore |
 | [rescue/POST_RESTORE_VALIDATION.md](rescue/POST_RESTORE_VALIDATION.md) | **Post-Restore Validation:** Read-only Plausibilitätsprüfung nach Restore, ohne Boot-Repair/Auto-Install |

@@ -1460,3 +1460,18 @@ Schreiboperationen auf Systemplatten sind riskant; Preview- und Verify-Stränge 
 ## Warum kein Auto-Restore erlaubt ist?
 Restore ist destruktiv und erfordert Sessions, Tokens und Zielprüfungen — keine stillen Automatismen in der ISO-Readiness-Pipeline.
 
+## Warum zeigt der Rettungsstick erst eine Restore-Vorschau?
+Der Stick orchestriert in Phase C.4 nur einen **Preview-Plan** (`build_rescue_restore_preview_plan`). Die kanonische Engine `modules.rescue_restore_dryrun` wird referenziert, aber nicht automatisch ausgeführt. Details: `docs/rescue-stick/RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md`.
+
+## Warum wird nicht sofort wiederhergestellt?
+`execution_allowed` bleibt **false**. Es gibt keine Route `restore/start` oder `restore/run` im C.4-Strang. Erst nach expliziter Freigabe, Verify und Backup-before-overwrite kann eine spätere Execute-Phase folgen.
+
+## Warum muss ein Ziel mit vorhandenen Daten zuerst gesichert werden?
+`core/backup_before_write_gate` setzt bei erkannten Dateisystemen, OS- oder Nutzerdaten `backup_required: true`. Ohne Evidence ist der Preview-Plan **blocked** oder **required** — kein stilles Überschreiben.
+
+## Warum reicht ein Operator-Override nicht als sichere Datensicherung?
+Override liefert höchstens `review_required`, nie automatisch `satisfied`. Es dokumentiert eine bewusste Entscheidung, ersetzt aber kein Backup des Ziels.
+
+## Warum muss Verify vor Restore erfolgen?
+Profil `offline-full-restore-preview` verlangt `requires_verify_before_restore`. `verify_status: failed` blockiert den Plan; `unknown` führt zu `review_required`.
+

@@ -42,6 +42,13 @@ Deploy-Runner `runner_rescue_storage_discovery` und `runner_rescue_readonly_moun
 - `rescue/backup_orchestrator.py` — Offline-Plan; referenziert `backend.tools.backup_runner`, startet ihn **nicht**.
 - Profil `offline-full` nur in `core/backup_profiles.py` (`get_backup_profile`).
 
+**Restore Preview Plan-only (Phase C.4):**
+
+- `rescue/restore_preview_orchestrator.py` — Plan/Handoff; referenziert `modules.rescue_restore_dryrun`, startet **kein** Restore.
+- `core/restore_profiles.py` — Profil `offline-full-restore-preview` (Metadaten).
+- `core/backup_before_write_gate.py` — Gate-Entscheidung, keine Backup-Ausführung.
+- Kein zweiter Restore-Runner, kein zweiter Verify-Runner.
+
 ## Prüfung
 
 ```bash

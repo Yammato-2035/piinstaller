@@ -229,6 +229,7 @@ from deploy.runner_rescue_readonly_mount_orchestrator import (
 )
 from rescue.backup_orchestrator import build_rescue_offline_backup_plan
 from rescue.boot_context import build_rescue_boot_context
+from rescue.restore_preview_orchestrator import build_rescue_restore_preview_plan
 from deploy.runner_rescue_efi_boot_analyzer import build_rescue_efi_boot_analysis
 from deploy.runner_rescue_persistent_evidence_export import (
     build_rescue_evidence_export_plan,
@@ -960,6 +961,21 @@ class DeployRescueOfflineBackupPlanRequest(BaseModel):
     target_path: str | None = Field(default=None, max_length=512)
     backup_profile_id: str = Field(default="offline-full", max_length=64)
     boot_context: dict[str, Any] | None = None
+
+
+class DeployRescueRestorePreviewPlanRequest(BaseModel):
+    source_root: str | None = Field(default=None, max_length=512)
+    backup_archive_path: str | None = Field(default=None, max_length=512)
+    manifest_path: str | None = Field(default=None, max_length=512)
+    target_device_or_path: str | None = Field(default=None, max_length=512)
+    restore_profile_id: str = Field(default="offline-full-restore-preview", max_length=64)
+    boot_context: dict[str, Any] | None = None
+    verify_status: str | None = Field(default=None, max_length=32)
+    target_classification: str | None = Field(default=None, max_length=64)
+    operator_override: bool = False
+    existing_filesystems: bool | None = None
+    existing_os_indicators: bool | None = None
+    user_data_indicators: bool | None = None
 
 
 class DeployRescueEvidenceExportRequest(BaseModel):
@@ -3951,6 +3967,14 @@ def _offline_backup_plan_deploy_code(st: str) -> str:
     return "DEPLOY_RESCUE_OFFLINE_BACKUP_PLAN_BLOCKED"
 
 
+def _restore_preview_plan_deploy_code(st: str) -> str:
+    if st == "ready":
+        return "DEPLOY_RESCUE_RESTORE_PREVIEW_PLAN_READY"
+    if st == "review_required":
+        return "DEPLOY_RESCUE_RESTORE_PREVIEW_PLAN_REVIEW_REQUIRED"
+    return "DEPLOY_RESCUE_RESTORE_PREVIEW_PLAN_BLOCKED"
+
+
 def _iso_readiness_pipeline_code(prefix: str, status: str) -> str:
     if status == "blocked":
         return f"DEPLOY_RESCUE_{prefix}_BLOCKED"
@@ -4095,6 +4119,34 @@ async def post_deploy_rescue_offline_backup_plan(
     return {
         "code": _offline_backup_plan_deploy_code(st),
         "rescue_offline_backup_plan": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+        "blocked_reasons": list(res.get("blocked_reasons") or []),
+    }
+
+
+@router.post("/rescue/restore-preview-plan")
+async def post_deploy_rescue_restore_preview_plan(
+    body: DeployRescueRestorePreviewPlanRequest,
+) -> dict[str, Any]:
+    res = build_rescue_restore_preview_plan(
+        source_root=body.source_root,
+        boot_context=body.boot_context,
+        restore_profile_id=body.restore_profile_id,
+        backup_archive_path=body.backup_archive_path,
+        manifest_path=body.manifest_path,
+        target_device_or_path=body.target_device_or_path,
+        target_classification=body.target_classification,
+        verify_status=body.verify_status,
+        operator_override=body.operator_override,
+        existing_filesystems=body.existing_filesystems,
+        existing_os_indicators=body.existing_os_indicators,
+        user_data_indicators=body.user_data_indicators,
+    )
+    st = str(res.get("status") or "blocked")
+    return {
+        "code": _restore_preview_plan_deploy_code(st),
+        "rescue_restore_preview_plan": res,
         "warnings": list(res.get("warnings") or []),
         "errors": list(res.get("errors") or []),
         "blocked_reasons": list(res.get("blocked_reasons") or []),

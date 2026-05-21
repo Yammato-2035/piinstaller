@@ -16,11 +16,14 @@
 | Backup Profile offline-full | `core/backup_profiles.get_backup_profile("offline-full")` | **Implementiert** (Phase C.3); siehe `RESCUE_OFFLINE_FULL_BACKUP_PROFILE_2026-05-20.md` |
 | Boot Context | `rescue/boot_context.py` | **Implementiert** (Phase C.1); siehe `RESCUE_BOOT_CONTEXT_2026-05-20.md` |
 | Offline Backup Plan | `rescue/backup_orchestrator.py` | **Plan only** (Phase C.2); siehe `RESCUE_OFFLINE_BACKUP_ORCHESTRATOR_2026-05-20.md` |
+| Restore Preview Plan | `rescue/restore_preview_orchestrator.py` | **Plan only** (Phase C.4); siehe `RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md` |
+| Backup-before-overwrite | `core/backup_before_write_gate.py` | Gate only; siehe `BACKUP_BEFORE_OVERWRITE_GATE_2026-05-20.md` |
+| Restore Preview Profil | `core/restore_profiles.py` | `offline-full-restore-preview` |
 | Backup Runner | `tools/backup_runner.py` | systemd `setuphelfer-backup@` |
 | Manifest + SHA256 | Runner finalize + `modules/backup_engine` | — |
 | Verify Deep | `modules/backup_verify.verify_deep` | Runner-Hook |
 | Evidence | `tools/backup_evidence_collector`, release-gates JSON | RS-008 |
-| Restore Preview | `modules/rescue_restore_dryrun`, `rescue/orchestrator` preview | kein Execute |
+| Restore Preview | `modules/rescue_restore_dryrun` (kanonisch), `rescue/restore_preview_orchestrator` (Plan) | kein Execute |
 | Notifications | `core/notification_service` | optional Failure/Success |
 
 ---
@@ -32,7 +35,7 @@
 | `rescue/boot_context.py` | Kontext, Pfade, keine Live-apt | Phase C.1 |
 | `rescue/backup_orchestrator.py` | Offline-Plan (kein Start) | Phase C.2 |
 | Deploy-Runner Storage/Mount | Handoff über Core-Facades | Phase B |
-| `rescue/rescue_restore_preview.py` (Soll) | UI/API Restore-Preview | C.4 |
+| `rescue/restore_preview_orchestrator.py` | Restore-Preview-Plan | **C.4 done** |
 
 **Deploy-Runner** bleiben für Lab/Handoff; Produktlogik wandert nicht in Runner.
 

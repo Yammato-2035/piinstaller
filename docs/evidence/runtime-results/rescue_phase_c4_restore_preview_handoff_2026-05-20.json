@@ -1,0 +1,42 @@
+{
+  "status": "ok",
+  "runtime_gate": "ok",
+  "boundary_gate": "ok",
+  "commit_before": "693c86a",
+  "modules_added": [
+    "backend/rescue/restore_preview_orchestrator.py",
+    "backend/core/restore_profiles.py",
+    "backend/core/backup_before_write_gate.py"
+  ],
+  "profiles_added": ["offline-full-restore-preview"],
+  "routes_added": ["POST /api/deploy/rescue/restore-preview-plan"],
+  "tests": [
+    "backend.tests.test_restore_profiles_offline_preview_v1",
+    "backend.tests.test_backup_before_write_gate_v1",
+    "backend.tests.test_rescue_restore_preview_plan_v1",
+    "backend.tests.test_module_boundaries_v1"
+  ],
+  "forbidden_actions_not_performed": [
+    "iso_build",
+    "backup",
+    "restore",
+    "verify_deep",
+    "mount",
+    "umount",
+    "mkfs",
+    "parted",
+    "dd",
+    "tar_extract",
+    "rsync",
+    "bootloader_write",
+    "efi_write",
+    "apt_install",
+    "apt_upgrade",
+    "deploy",
+    "backend_restart"
+  ],
+  "execution_allowed": false,
+  "canonical_restore_preview": "modules.rescue_restore_dryrun.run_restore_dryrun_pipeline",
+  "canonical_verify": "modules.backup_verify",
+  "next_allowed_step": "Phase C.5 partition assistant preview or Phase B.3 app.py target-check adapter"
+}

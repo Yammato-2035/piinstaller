@@ -1453,3 +1453,18 @@ Writes to system disks are risky; preview and verify strands run before any late
 ## Why no automatic restore?
 Restore is destructive and needs sessions, tokens, and target checks — no silent automation in the ISO readiness pipeline.
 
+## Why does the rescue stick show a restore preview first?
+Phase C.4 only builds a **preview plan** (`build_rescue_restore_preview_plan`). The canonical engine `modules.rescue_restore_dryrun` is referenced, not auto-run. See `docs/rescue-stick/RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md`.
+
+## Why is restore not executed immediately?
+`execution_allowed` stays **false**. There is no `restore/start` or `restore/run` route in the C.4 strand. Execute requires explicit approval, verify, and backup-before-overwrite in a later phase.
+
+## Why must a target with existing data be backed up first?
+`core/backup_before_write_gate` sets `backup_required: true` when filesystems, OS, or user data are detected. Without evidence the preview plan is **blocked** or **required**.
+
+## Why is an operator override not a safe backup?
+Override yields at most `review_required`, never automatic `satisfied`. It records intent; it does not replace a target backup.
+
+## Why must verify run before restore?
+Profile `offline-full-restore-preview` requires `requires_verify_before_restore`. `verify_status: failed` blocks the plan; `unknown` yields `review_required`.
+
