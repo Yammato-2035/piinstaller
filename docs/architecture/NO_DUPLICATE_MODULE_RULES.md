@@ -29,6 +29,13 @@
 
 ---
 
+## Kanonische Facades (ab 2026-05-20)
+
+- **Storage:** `backend/core/storage_facade.py` — einzige neue Stelle für lsblk/blkid-Inventar in Rescue/Deploy-Orchestrierung.
+- **Mount:** `backend/core/mount_facade.py` — findmnt-Inventar und RO-Mount-**Plan** (keine Ausführung).
+
+Deploy-Runner `runner_rescue_storage_discovery` und `runner_rescue_readonly_mount_orchestrator` importieren diese Facades.
+
 ## Prüfung
 
 ```bash
@@ -36,6 +43,8 @@
 ```
 
 Exit **0** = keine Warnungen; Exit **1** = Warnungen (blockiert CI erst wenn explizit aktiviert).
+
+Siehe auch: `docs/architecture/MODULE_FREEZE_REGISTER_2026-05-20.md`, `CORE_STORAGE_MOUNT_FACADES_2026-05-20.md`.
 
 ---
 

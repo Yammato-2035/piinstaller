@@ -9,7 +9,8 @@
 
 | Schritt | Core-/Kanon-Modul | Heute |
 |--------|-------------------|--------|
-| Storage Discovery | `modules/storage_detection`, `core/safe_device` | + Deploy-Handoff `runner_rescue_storage_discovery` |
+| Storage Discovery | **`core.storage_facade`**, `modules/storage_detection`, `core/safe_device` | Deploy-Runner nur Handoff; **kein** eigener lsblk-Parser |
+| Mount / RO-Plan | **`core.mount_facade`**, `runner_rescue_readonly_mount_orchestrator` | Plan only — kein mount subprocess im MVP |
 | Zielprüfung extern | `safe_device.validate_write_target`, `backup_target_service_access` | API `target-check` in `app.py` |
 | Write Guard (Preview) | `safety/write_guard.evaluate_write_target` | `rescue/orchestrator.py` |
 | Backup Profile offline-full | `core/backup_profiles`, `core/backup_archive_options` | Profil `full-root-stable` als Vorlage → **`offline-full`** |

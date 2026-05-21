@@ -60,12 +60,16 @@ class DeployRunnerRescueStorageDiscoveryV1Tests(unittest.TestCase):
                 ]
             }
         )
-        with mock.patch("deploy.runner_rescue_storage_discovery.subprocess.run") as m:
+        with mock.patch("core.storage_facade.subprocess.run") as m:
             m.side_effect = [
                 mock.MagicMock(returncode=0, stdout=fake, stderr=""),
                 mock.MagicMock(returncode=0, stdout="/dev/foo: UUID=\"AAA\"\n", stderr=""),
             ]
-            r = execute_rescue_storage_discovery(explicit_overwrite=True, explicit_execute_storage_discovery=True)
+            with mock.patch("core.storage_facade.detect_block_devices", return_value=[]):
+                with mock.patch("core.storage_facade.detect_filesystems", return_value={}):
+                    r = execute_rescue_storage_discovery(
+                        explicit_overwrite=True, explicit_execute_storage_discovery=True
+                    )
         self.assertEqual(r.get("rescue_storage_discovery_result_status"), "ok")
         body = r.get("rescue_storage_discovery_result") or {}
         self.assertTrue((body.get("evaluation") or {}).get("readonly_analysis_only"))

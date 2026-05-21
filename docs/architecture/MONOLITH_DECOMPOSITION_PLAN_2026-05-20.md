@@ -13,17 +13,20 @@
 | A.2 Rescue-Orchestrator-Imports festhalten | `rescue/orchestrator.py` | Niedrig | `test_rescue_orchestrator_*` | Revert Import-Pfad | Execute-Restore |
 | A.3 Profil-ID `offline-full` reservieren | `backup_profiles.py` (nur Konstante/Doku) | Niedrig | `test_backup_profiles_v1` | Git revert | Runner-Verhalten |
 | A.4 `NO_DUPLICATE_MODULE_RULES` + `check-module-boundaries.sh` | docs + scripts | Niedrig | `test_module_boundaries_v1` | Script löschen | — |
+| A.5 **Module Freeze Register** | `MODULE_FREEZE_REGISTER_2026-05-20.md` | Niedrig | — | — | — |
 
-**Exit A:** Rettungsstick-Team weiß, welche Funktionen **importiert** werden dürfen.
+**Exit A:** erfüllt (2026-05-20).
 
 ---
 
 ## Phase B — Extract Small Core (kleine Moves, je 1 PR)
 
-| Schritt | Extract | Von → Nach | Risiko | Tests |
-|---------|---------|------------|--------|-------|
-| B.1 Storage parser facade | `core/storage/__init__.py` re-export `detect_block_devices` | `storage_detection.py` | Mittel | `test_storage_detection_*`, `test_safe_device_*` |
-| B.2 Target check facade | `core/mount/target_inspect.py` | `backup_target_service_access` + `safe_device.resolve_mount_source` | Mittel | `test_backup_target_*` |
+| Schritt | Extract | Von → Nach | Risiko | Tests | Status |
+|---------|---------|------------|--------|-------|--------|
+| B.1 Storage facade | `core/storage_facade.py` | `storage_detection` + rescue flat lsblk | Mittel | `test_core_storage_facade_v1` | **Done 2026-05-20** |
+| B.2 Mount facade | `core/mount_facade.py` | findmnt plan/inventory | Mittel | `test_core_mount_facade_v1` | **Done 2026-05-20** |
+| B.2b Runner migration | rescue storage + readonly mount runners | Facades | Mittel | deploy runner tests | **Done 2026-05-20** |
+| B.3 Target check facade | `core/mount/target_inspect.py` | `backup_target_service_access` + `safe_device` | Mittel | `test_backup_target_*` | Offen |
 | B.3 Profile builder single entry | `core/backup/build_create_job.py` | `app.py` create-Body + profiles | Hoch | `test_backup_profiles_v1`, `test_backup_create_*` |
 | B.4 Evidence writer wrapper | `core/evidence/job_end.py` | `backup_evidence_collector.py` | Niedrig | `test_backup_evidence_collector_v1` |
 | B.5 Notification config | `core/notifications/effective.py` | `notification_settings` | Niedrig | notification tests |

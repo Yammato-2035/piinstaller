@@ -1,0 +1,44 @@
+{
+  "schema": "setuphelfer.evidence.v1",
+  "task": "core_storage_mount_facades",
+  "status": "ok",
+  "analysis_only": false,
+  "runtime_gate": "exit_0",
+  "commit_before": "0ad366c",
+  "facades_added": [
+    "backend/core/storage_facade.py",
+    "backend/core/mount_facade.py"
+  ],
+  "runners_migrated": [
+    "backend/deploy/runner_rescue_storage_discovery.py",
+    "backend/deploy/runner_rescue_readonly_mount_orchestrator.py"
+  ],
+  "legacy_duplicates_remaining": [
+    "backend/app.py (_findmnt_mounts, USB routes)",
+    "backend/core/safe_device.py (full mount resolution)",
+    "backend/deploy/real_write_guard.py"
+  ],
+  "boundary_guard_status": "check-module-boundaries.sh exit 0",
+  "tests": [
+    "backend.tests.test_core_storage_facade_v1",
+    "backend.tests.test_core_mount_facade_v1",
+    "backend.tests.test_module_boundaries_v1",
+    "backend.tests.test_deploy_runner_rescue_storage_discovery_v1",
+    "backend.tests.test_deploy_runner_rescue_readonly_mount_orchestrator_v1"
+  ],
+  "forbidden_actions_not_performed": [
+    "backup",
+    "restore",
+    "verify_deep",
+    "mount",
+    "umount",
+    "mkfs",
+    "parted",
+    "dd",
+    "apt install",
+    "apt upgrade",
+    "deploy",
+    "backend restart"
+  ],
+  "next_allowed_step": "rescue_phase_c_boot_context_and_offline_full_profile_or_app_target_check_adapter"
+}

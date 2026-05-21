@@ -17,8 +17,12 @@ class ModuleBoundariesV1Tests(unittest.TestCase):
             "docs/architecture/MODULE_BOUNDARIES_TARGET_2026-05-20.md",
             "docs/architecture/MONOLITH_DECOMPOSITION_PLAN_2026-05-20.md",
             "docs/architecture/NO_DUPLICATE_MODULE_RULES.md",
+            "docs/architecture/MODULE_FREEZE_REGISTER_2026-05-20.md",
+            "docs/architecture/CORE_STORAGE_MOUNT_FACADES_2026-05-20.md",
             "docs/rescue-stick/RESCUE_STICK_CORE_DEPENDENCIES_2026-05-20.md",
         ]
+        for rel in ("backend/core/storage_facade.py", "backend/core/mount_facade.py"):
+            self.assertTrue((_REPO / rel).is_file(), msg=rel)
         for rel in required:
             self.assertTrue((_REPO / rel).is_file(), msg=rel)
 

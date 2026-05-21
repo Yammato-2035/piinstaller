@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from datetime import datetime, timezone
 from typing import Any
 
+from core.storage_facade import build_storage_inventory_snapshot, classify_storage_devices
 from deploy.runner_rescue_io import (
     ensure_rescue_workspace_dirs,
     guard_handoff_overwrite,
@@ -55,6 +55,7 @@ def build_rescue_storage_discovery_plan(*, explicit_overwrite: bool = False) -> 
         "rescue_storage_discovery_plan_schema_version": 1,
         "strict_mode": "rescue_live_storage_readonly",
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "storage_facade": "core.storage_facade.build_storage_inventory_snapshot",
         "allowed_readonly_commands": [
             {"cmd": "lsblk", "args": ["-J", "-o", "NAME,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINT,SIZE,MODEL,TRAN"]},
             {"cmd": "blkid"},
@@ -79,85 +80,6 @@ def build_rescue_storage_discovery_plan(*, explicit_overwrite: bool = False) -> 
     if werr:
         return _emit_plan("blocked", body, wrote=False, warnings=[], errors=[werr])
     return _emit_plan("ok", body, wrote=True, warnings=[], errors=[])
-
-
-def _walk_lsblk(node: dict[str, Any], out: list[dict[str, Any]]) -> None:
-    if not isinstance(node, dict):
-        return
-    name = node.get("name") or node.get("NAME")
-    if name:
-        out.append(
-            {
-                "name": name,
-                "type": node.get("type") or node.get("TYPE"),
-                "fstype": node.get("fstype") or node.get("FSTYPE"),
-                "label": node.get("label") or node.get("LABEL"),
-                "uuid": node.get("uuid") or node.get("UUID"),
-                "mountpoint": node.get("mountpoint") or node.get("MOUNTPOINT"),
-                "size": node.get("size") or node.get("SIZE"),
-                "model": node.get("model") or node.get("MODEL"),
-                "tran": node.get("tran") or node.get("TRAN"),
-            }
-        )
-    for ch in node.get("children") or []:
-        if isinstance(ch, dict):
-            _walk_lsblk(ch, out)
-
-
-def _classify(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    flags = {
-        "nvme": False,
-        "sata": False,
-        "usb": False,
-        "sd": False,
-        "efi_system_partition": False,
-        "linux_fs": False,
-        "ntfs": False,
-        "btrfs": False,
-        "xfs": False,
-        "crypto_luks": False,
-        "backup_candidate": False,
-        "system_disk_candidate": False,
-    }
-    uuids: list[str] = []
-    for r in rows:
-        name = str(r.get("name") or "").lower()
-        tran = str(r.get("tran") or "").lower()
-        fst = str(r.get("fstype") or "").lower()
-        partlabel = str(r.get("label") or "").lower()
-        u = str(r.get("uuid") or "").strip()
-        if u:
-            uuids.append(u)
-        if "nvme" in name:
-            flags["nvme"] = True
-        if tran == "usb":
-            flags["usb"] = True
-        if name.startswith("sd") and tran != "usb":
-            flags["sata"] = True
-        if name.startswith("mmc"):
-            flags["sd"] = True
-        if fst == "vfat" and ("efi" in partlabel or "esp" in partlabel):
-            flags["efi_system_partition"] = True
-        if fst in ("ext2", "ext3", "ext4", "xfs", "btrfs"):
-            flags["linux_fs"] = True
-        if fst == "ntfs":
-            flags["ntfs"] = True
-        if fst == "btrfs":
-            flags["btrfs"] = True
-        if fst == "xfs":
-            flags["xfs"] = True
-        if "crypto" in fst or "luks" in fst:
-            flags["crypto_luks"] = True
-        if "backup" in partlabel or "setuphelfer" in partlabel:
-            flags["backup_candidate"] = True
-        if r.get("mountpoint") in ("/", "/boot", "/efi"):
-            flags["system_disk_candidate"] = True
-
-    uuid_counts: dict[str, int] = {}
-    for u in uuids:
-        uuid_counts[u] = uuid_counts.get(u, 0) + 1
-    uuid_conflicts = [u for u, c in uuid_counts.items() if c > 1 and u]
-    return {"flags": flags, "uuid_conflicts": uuid_conflicts, "row_count": len(rows)}
 
 
 def execute_rescue_storage_discovery(
@@ -192,43 +114,20 @@ def execute_rescue_storage_discovery(
     if perr:
         warnings.append(str(perr))
 
-    rows: list[dict[str, Any]] = []
-    lsblk_raw = ""
-    blkid_raw = ""
-    try:
-        p1 = subprocess.run(
-            ["lsblk", "-J", "-o", "NAME,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINT,SIZE,MODEL,TRAN"],
-            capture_output=True,
-            text=True,
-            timeout=45,
-            check=False,
-        )
-        lsblk_raw = (p1.stdout or "")[:800_000]
-        if p1.returncode == 0 and lsblk_raw.strip():
-            tree = json.loads(lsblk_raw)
-            for dev in tree.get("blockdevices") or []:
-                if isinstance(dev, dict):
-                    _walk_lsblk(dev, rows)
-        else:
-            warnings.append("RESCUE_STORAGE_LSBLK_NONZERO_OR_EMPTY")
-    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError) as e:
-        warnings.append(f"RESCUE_STORAGE_LSBLK_FAILED:{type(e).__name__}")
+    snapshot = build_storage_inventory_snapshot(mode="rescue")
+    warnings.extend(snapshot.get("warnings") or [])
 
-    try:
-        p2 = subprocess.run(["blkid"], capture_output=True, text=True, timeout=30, check=False)
-        blkid_raw = (p2.stdout or "")[:400_000]
-    except (OSError, subprocess.TimeoutExpired):
-        warnings.append("RESCUE_STORAGE_BLKID_FAILED")
-
-    cls = _classify(rows)
     raw_body: dict[str, Any] = {
         "rescue_storage_discovery_result_schema_version": 1,
         "strict_mode": "rescue_live_storage_readonly",
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "lsblk_rows": rows[:500],
-        "classification": cls,
-        "lsblk_excerpt": lsblk_raw[:20_000],
-        "blkid_excerpt": blkid_raw[:20_000],
+        "storage_facade_status": snapshot.get("status"),
+        "lsblk_rows": snapshot.get("lsblk_rows") or [],
+        "classification": snapshot.get("classification") or classify_storage_devices(snapshot.get("lsblk_rows") or []),
+        "backup_target_candidates": snapshot.get("backup_target_candidates") or [],
+        "restore_target_candidates": snapshot.get("restore_target_candidates") or [],
+        "lsblk_excerpt": snapshot.get("lsblk_excerpt") or "",
+        "blkid_excerpt": snapshot.get("blkid_excerpt") or "",
     }
     werr = write_json_handoff(out_path, raw_body, max_bytes=_MAX_BYTES)
     if werr:

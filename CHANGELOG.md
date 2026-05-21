@@ -7,6 +7,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added (Core storage/mount facades — Phase B.1/B.2)
+- **`core.storage_facade`**, **`core.mount_facade`**: read-only inventory/planning; Rescue deploy runners migrated.
+- Docs: `MODULE_FREEZE_REGISTER_2026-05-20.md`, `CORE_STORAGE_MOUNT_FACADES_2026-05-20.md`; extended `check-module-boundaries.sh`.
+- Tests: `test_core_storage_facade_v1`, `test_core_mount_facade_v1`; Evidence `core_storage_mount_facades_2026-05-20.json`.
+
 ### Added (Monolith boundary audit before rescue stick)
 - Architecture audit and target boundaries: `docs/architecture/MONOLITH_BOUNDARY_AUDIT_2026-05-20.md`, `MODULE_BOUNDARIES_TARGET_2026-05-20.md`, `MONOLITH_DECOMPOSITION_PLAN_2026-05-20.md`, `NO_DUPLICATE_MODULE_RULES.md`.
 - Rescue stick core dependency map: `docs/rescue-stick/RESCUE_STICK_CORE_DEPENDENCIES_2026-05-20.md`.

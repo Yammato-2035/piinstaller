@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import os
-import re
 from datetime import datetime, timezone
 from typing import Any
 
+from core.mount_facade import plan_readonly_source_mount
+from core.storage_facade import build_storage_inventory_snapshot
 from deploy.runner_rescue_io import REPO_ROOT, ensure_rescue_workspace_dirs, guard_handoff_overwrite, load_json_handoff, resolve_handoff_path, write_json_handoff
 
 _PLAN_REL = "docs/evidence/runtime-results/handoff/readonly_mount_plan.json"
@@ -55,34 +56,25 @@ def build_readonly_mount_plan(*, explicit_overwrite: bool = False) -> dict[str, 
     (REPO_ROOT / _MOUNT_PREFIX.rstrip("/")).mkdir(parents=True, exist_ok=True)
 
     disc, _ = load_json_handoff("docs/evidence/runtime-results/handoff/rescue_storage_discovery_result.json", "RESCUE_RDMDISC")
-    tentative: list[dict[str, Any]] = []
-    if isinstance(disc, dict):
-        rows = disc.get("lsblk_rows") if isinstance(disc.get("lsblk_rows"), list) else []
-        for r in rows[:40]:
-            if not isinstance(r, dict):
-                continue
-            fst = str(r.get("fstype") or "").lower()
-            if fst in ("vfat", "ext4", "ntfs", "btrfs", "xfs") and r.get("name"):
-                safe = re.sub(r"[^a-zA-Z0-9_-]+", "_", str(r.get("name")))
-                mp = f"{_MOUNT_PREFIX}{safe}"
-                tentative.append(
-                    {
-                        "device_hint": str(r.get("name")),
-                        "filesystem": fst,
-                        "mountpoint": mp,
-                        "read_only": True,
-                        "purpose": "inspect_readonly",
-                    }
-                )
+    storage_snapshot: dict[str, Any]
+    if isinstance(disc, dict) and disc.get("lsblk_rows"):
+        storage_snapshot = {
+            "lsblk_rows": disc.get("lsblk_rows"),
+            "status": "ok",
+        }
+    else:
+        storage_snapshot = build_storage_inventory_snapshot(mode="rescue")
 
+    plan_core = plan_readonly_source_mount(storage_snapshot, mount_root_prefix=_MOUNT_PREFIX)
     body: dict[str, Any] = {
         "readonly_mount_plan_schema_version": 1,
         "strict_mode": "rescue_readonly_mount_only",
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "mount_facade": "core.mount_facade.plan_readonly_source_mount",
         "mount_root_prefix": _MOUNT_PREFIX,
-        "cleanup_policy": "unmount_and_rmdir_after_validation_session",
-        "forbidden": ["rw", "remount,rw", "mount", "/", "/boot", "/efi"],
-        "planned_operations": tentative[:12],
+        "cleanup_policy": plan_core.get("cleanup_policy"),
+        "forbidden": plan_core.get("forbidden"),
+        "planned_operations": plan_core.get("planned_operations") or [],
     }
     werr = write_json_handoff(out_path, body, max_bytes=_MAX_BYTES)
     if werr:
