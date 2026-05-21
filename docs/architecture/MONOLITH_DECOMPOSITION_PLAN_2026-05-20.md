@@ -39,13 +39,14 @@
 
 ## Phase C — Rescue Orchestrator (nach B.1–B.2)
 
-| Schritt | Inhalt | Nutzt Core | Tests |
-|---------|--------|------------|-------|
-| C.1 `rescue_boot_context.py` | `mode=rescue`, paths, readonly default | install_paths | Unit |
-| C.2 `rescue_storage_orchestrator.py` | Ersetzt Logik-Duplikat in `runner_rescue_storage_discovery` | `core/storage` | `test_deploy_runner_rescue_storage_discovery_v1` (Handoff gleich) |
-| C.3 `rescue_readonly_source.py` | RO-Mount-Plan | `core/mount` | `test_deploy_runner_rescue_readonly_mount_orchestrator_v1` |
-| C.4 `rescue_backup_orchestrator.py` | Job-Env + systemd spawn | `tools/backup_runner`, profiles `offline-full` | HW später |
-| C.5 Deploy-Runner dünn | Runner nur `write_json_handoff` | — | bestehende Deploy-Tests |
+| Schritt | Inhalt | Nutzt Core | Tests | Status |
+|---------|--------|------------|-------|--------|
+| C.1 `rescue/boot_context.py` | Boot-Kontext read-only | install_paths, mount_snapshot hints | `test_rescue_boot_context_v1` | **done** |
+| C.2 `rescue/backup_orchestrator.py` | Offline-Backup-**Plan** only | `backup_profiles`, boot_context | `test_rescue_offline_backup_plan_v1` | **done** |
+| C.3 `offline-full` Profil | Metadaten, Excludes | `get_backup_profile` | `test_backup_profiles_offline_full_v1` | **done** |
+| C.4 Restore-Preview-Handoff | UI/API Preview | `rescue_restore_dryrun` | — | offen |
+| C.5 Deploy-Runner dünn | Runner nur Handoff | Facades | bestehende Deploy-Tests | teilweise (B.1/B.2) |
+| C.6 Backup **execute** auf HW | systemd + `backup_runner` | Safety + target-check | HW später | **nicht** in C.1–C.3 |
 
 **Nicht anfassen:** ISO-Build-Produktion, Partitionierungsassistent, Cloudserver.
 

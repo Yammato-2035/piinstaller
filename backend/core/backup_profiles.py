@@ -17,6 +17,9 @@ PROFILE_USER_DATA = "user-data"
 PROFILE_DEVELOPER = "developer"
 PROFILE_FULL_EXPERT = "full-expert"
 PROFILE_FULL_ROOT_STABLE = "full-root-stable"
+PROFILE_OFFLINE_FULL = "offline-full"
+
+CANONICAL_BACKUP_RUNNER_MODULE = "backend.tools.backup_runner"
 
 DEFAULT_BACKUP_PROFILE = PROFILE_RECOMMENDED
 
@@ -28,7 +31,19 @@ VALID_BACKUP_PROFILES: frozenset[str] = frozenset(
         PROFILE_DEVELOPER,
         PROFILE_FULL_EXPERT,
         PROFILE_FULL_ROOT_STABLE,
+        PROFILE_OFFLINE_FULL,
     }
+)
+
+_OFFLINE_FULL_DEFAULT_EXCLUDES: tuple[str, ...] = (
+    "/proc",
+    "/sys",
+    "/dev",
+    "/tmp",
+    "/run",
+    "/mnt",
+    "/media",
+    "/run/media",
 )
 
 # Live snapshot store — changes during read; excluded from stability-oriented full-root-stable only.
@@ -59,7 +74,34 @@ PROFILE_EXTRA_EXCLUDES: dict[str, tuple[str, ...]] = {
     PROFILE_DEVELOPER: ("/var/cache", "/var/tmp"),
     PROFILE_FULL_EXPERT: (),
     PROFILE_FULL_ROOT_STABLE: _BR001_TIMESHIFT_EXCLUDES + _BR001_VOLATILE_CACHE_EXCLUDES,
+    PROFILE_OFFLINE_FULL: _OFFLINE_FULL_DEFAULT_EXCLUDES,
 }
+
+
+def get_backup_profile(profile_id: str) -> dict[str, Any]:
+    """
+    Kanonische Profil-Metadaten (kein Tar, kein Runner-Start).
+    """
+    pid = (profile_id or "").strip().lower()
+    if pid != PROFILE_OFFLINE_FULL:
+        return {"profile_id": pid, "unknown": True}
+
+    return {
+        "profile_id": PROFILE_OFFLINE_FULL,
+        "description": "Full backup from offline/rescue source root",
+        "source_root_required": True,
+        "requires_live_package_freeze": False,
+        "requires_systemd_inhibit": False,
+        "allowed_contexts": ["rescue", "offline"],
+        "default_excludes": list(_OFFLINE_FULL_DEFAULT_EXCLUDES),
+        "exclude_backup_target": True,
+        "manifest_required": True,
+        "sha256_required": True,
+        "verify_after_backup_recommended": True,
+        "write_target_must_be_external": True,
+        "no_internal_drive_write_without_override": True,
+        "unknown": False,
+    }
 
 _DEVELOPER_EXCLUDE_GLOBS = (
     "**/node_modules",
@@ -80,6 +122,8 @@ def normalize_backup_profile(raw: str | None) -> tuple[str, list[str]]:
         return p, ["backup_profile_full_expert_selected"]
     if p == PROFILE_FULL_ROOT_STABLE:
         return p, ["backup_profile_full_root_stable_selected"]
+    if p == PROFILE_OFFLINE_FULL:
+        return p, ["backup_profile_offline_full_selected"]
     return p, []
 
 
@@ -116,7 +160,7 @@ def filter_included_paths_for_target(included: list[str], backup_dir: str) -> tu
 
 def _logical_included_paths(profile: str) -> list[str]:
     """Beschreibende Quellpfade fuer Preview (nicht zwingend alle im Data-Runner v1)."""
-    if profile in (PROFILE_FULL_EXPERT, PROFILE_FULL_ROOT_STABLE, PROFILE_FAST_SYSTEM):
+    if profile in (PROFILE_FULL_EXPERT, PROFILE_FULL_ROOT_STABLE, PROFILE_OFFLINE_FULL, PROFILE_FAST_SYSTEM):
         return ["/"]
     if profile == PROFILE_RECOMMENDED:
         return [
@@ -150,6 +194,8 @@ def logical_excluded_patterns(profile: str) -> list[str]:
         return list(base) + ["/var/cache", "/var/tmp"]
     if profile == PROFILE_FULL_ROOT_STABLE:
         return list(base) + list(_BR001_TIMESHIFT_EXCLUDES) + list(_BR001_VOLATILE_CACHE_EXCLUDES)
+    if profile == PROFILE_OFFLINE_FULL:
+        return list(_OFFLINE_FULL_DEFAULT_EXCLUDES)
     return list(base)
 
 
@@ -216,6 +262,15 @@ def resolve_profile_request(*, request_type: str, profile_raw: str | None) -> di
             "runner_backup_type": "full",
             "normalized_profile": prof,
             "warning_codes": warnings + ["backup_profile_br001_stable_excludes"],
+            "requires_expert_confirmation": True,
+            "recommended": False,
+            "api_request_type": "profile",
+        }
+    if prof == PROFILE_OFFLINE_FULL:
+        return {
+            "runner_backup_type": "full",
+            "normalized_profile": prof,
+            "warning_codes": warnings + ["backup_profile_offline_full_rescue"],
             "requires_expert_confirmation": True,
             "recommended": False,
             "api_request_type": "profile",
@@ -289,6 +344,14 @@ def profile_specs_public() -> list[dict[str, Any]]:
             "i18n_title_key": "backup.profiles.full_root_stable.title",
             "i18n_desc_key": "backup.profiles.full_root_stable.desc",
             "exclude_categories_key": "backup.profiles.full_root_stable.excludes",
+        },
+        {
+            "id": PROFILE_OFFLINE_FULL,
+            "warning_level": "warning",
+            "strict_full_root": True,
+            "i18n_title_key": "backup.profiles.offline_full.title",
+            "i18n_desc_key": "backup.profiles.offline_full.desc",
+            "exclude_categories_key": "backup.profiles.offline_full.excludes",
         },
     ]
 

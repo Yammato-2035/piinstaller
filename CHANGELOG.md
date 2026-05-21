@@ -7,6 +7,14 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added (Rescue Phase C.1–C.3 — boot context, offline-full profile, backup plan)
+- **`rescue/boot_context.py`**, **`rescue/backup_orchestrator.py`**: read-only boot context and offline BR-001 backup **plan** only (`execution_allowed: false`).
+- **`core/backup_profiles`**: profile `offline-full`, `get_backup_profile()`, `CANONICAL_BACKUP_RUNNER_MODULE`.
+- Deploy preview routes: `POST /api/deploy/rescue/boot-context/preview`, `POST /api/deploy/rescue/offline-backup-plan`.
+- Docs: `RESCUE_BOOT_CONTEXT_2026-05-20.md`, `RESCUE_OFFLINE_FULL_BACKUP_PROFILE_2026-05-20.md`, `RESCUE_OFFLINE_BACKUP_ORCHESTRATOR_2026-05-20.md`.
+- Tests: `test_rescue_boot_context_v1`, `test_rescue_offline_backup_plan_v1`, `test_backup_profiles_offline_full_v1`.
+- Evidence: `docs/evidence/runtime-results/rescue_phase_c_boot_context_offline_backup_2026-05-20.json`.
+
 ### Added (Core storage/mount facades — Phase B.1/B.2)
 - **`core.storage_facade`**, **`core.mount_facade`**: read-only inventory/planning; Rescue deploy runners migrated.
 - Docs: `MODULE_FREEZE_REGISTER_2026-05-20.md`, `CORE_STORAGE_MOUNT_FACADES_2026-05-20.md`; extended `check-module-boundaries.sh`.

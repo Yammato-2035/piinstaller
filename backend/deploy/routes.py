@@ -227,6 +227,8 @@ from deploy.runner_rescue_readonly_mount_orchestrator import (
     build_readonly_mount_result,
     execute_readonly_mount_validation,
 )
+from rescue.backup_orchestrator import build_rescue_offline_backup_plan
+from rescue.boot_context import build_rescue_boot_context
 from deploy.runner_rescue_efi_boot_analyzer import build_rescue_efi_boot_analysis
 from deploy.runner_rescue_persistent_evidence_export import (
     build_rescue_evidence_export_plan,
@@ -941,6 +943,23 @@ class DeployRescueReadonlyMountRequest(BaseModel):
     explicit_overwrite: bool = False
     action: str = Field(default="plan", min_length=3, max_length=16)
     explicit_execute_readonly_mount: bool = False
+
+
+class DeployRescueBootContextPreviewRequest(BaseModel):
+    source_root: str | None = Field(default=None, max_length=512)
+    storage_snapshot_ref: str | None = Field(default=None, max_length=256)
+    mount_snapshot_ref: str | None = Field(default=None, max_length=256)
+    rescue_mode_hint: bool | None = None
+    live_system_hint: bool | None = None
+    network_available_hint: bool | None = None
+    ui_mode_hint: str | None = Field(default=None, max_length=32)
+
+
+class DeployRescueOfflineBackupPlanRequest(BaseModel):
+    source_root: str | None = Field(default=None, max_length=512)
+    target_path: str | None = Field(default=None, max_length=512)
+    backup_profile_id: str = Field(default="offline-full", max_length=64)
+    boot_context: dict[str, Any] | None = None
 
 
 class DeployRescueEvidenceExportRequest(BaseModel):
@@ -3924,6 +3943,14 @@ def _rescue_deploy_code(prefix: str, st: str) -> str:
     return b
 
 
+def _offline_backup_plan_deploy_code(st: str) -> str:
+    if st == "ready":
+        return "DEPLOY_RESCUE_OFFLINE_BACKUP_PLAN_READY"
+    if st == "review_required":
+        return "DEPLOY_RESCUE_OFFLINE_BACKUP_PLAN_REVIEW_REQUIRED"
+    return "DEPLOY_RESCUE_OFFLINE_BACKUP_PLAN_BLOCKED"
+
+
 def _iso_readiness_pipeline_code(prefix: str, status: str) -> str:
     if status == "blocked":
         return f"DEPLOY_RESCUE_{prefix}_BLOCKED"
@@ -4029,6 +4056,48 @@ async def post_deploy_rescue_readonly_mount_validation(body: DeployRescueReadonl
         "rescue_readonly_mount": res,
         "warnings": list(res.get("warnings") or []),
         "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue/boot-context/preview")
+async def post_deploy_rescue_boot_context_preview(
+    body: DeployRescueBootContextPreviewRequest,
+) -> dict[str, Any]:
+    res = build_rescue_boot_context(
+        source_root=body.source_root,
+        storage_snapshot_ref=body.storage_snapshot_ref,
+        mount_snapshot_ref=body.mount_snapshot_ref,
+        rescue_mode_hint=body.rescue_mode_hint,
+        live_system_hint=body.live_system_hint,
+        network_available_hint=body.network_available_hint,
+        ui_mode_hint=body.ui_mode_hint,
+    )
+    st = str(res.get("status") or "blocked")
+    return {
+        "code": _rescue_deploy_code("BOOT_CONTEXT", st),
+        "rescue_boot_context": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue/offline-backup-plan")
+async def post_deploy_rescue_offline_backup_plan(
+    body: DeployRescueOfflineBackupPlanRequest,
+) -> dict[str, Any]:
+    res = build_rescue_offline_backup_plan(
+        source_root=body.source_root,
+        target_path=body.target_path,
+        boot_context=body.boot_context,
+        backup_profile_id=body.backup_profile_id,
+    )
+    st = str(res.get("status") or "blocked")
+    return {
+        "code": _offline_backup_plan_deploy_code(st),
+        "rescue_offline_backup_plan": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+        "blocked_reasons": list(res.get("blocked_reasons") or []),
     }
 
 

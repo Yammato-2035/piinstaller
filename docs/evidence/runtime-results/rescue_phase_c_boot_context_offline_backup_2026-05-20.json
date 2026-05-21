@@ -1,0 +1,40 @@
+{
+  "status": "ok",
+  "runtime_gate": "ok",
+  "boundary_gate": "ok",
+  "commit_before": "210cf91",
+  "modules_added": [
+    "backend/rescue/boot_context.py",
+    "backend/rescue/backup_orchestrator.py"
+  ],
+  "profiles_added": ["offline-full"],
+  "routes_added": [
+    "POST /api/deploy/rescue/boot-context/preview",
+    "POST /api/deploy/rescue/offline-backup-plan"
+  ],
+  "tests": [
+    "backend.tests.test_rescue_boot_context_v1",
+    "backend.tests.test_rescue_offline_backup_plan_v1",
+    "backend.tests.test_backup_profiles_offline_full_v1",
+    "backend.tests.test_module_boundaries_v1",
+    "backend.tests.test_backup_profiles_v1"
+  ],
+  "forbidden_actions_not_performed": [
+    "iso_build",
+    "backup",
+    "restore",
+    "verify_deep",
+    "mount",
+    "umount",
+    "mkfs",
+    "parted",
+    "dd",
+    "apt_install",
+    "apt_upgrade",
+    "deploy",
+    "backend_restart"
+  ],
+  "canonical_runner": "backend.tools.backup_runner",
+  "execution_allowed": false,
+  "next_allowed_step": "Phase C.4 restore-preview handoff or Phase B.3 app.py target-check adapter"
+}

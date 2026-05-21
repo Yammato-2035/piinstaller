@@ -37,9 +37,9 @@ except Exception:  # noqa: BLE001
 
 
 class BackupProfilesModelTests(unittest.TestCase):
-    def test_list_five_profiles(self) -> None:
+    def test_list_seven_profiles(self) -> None:
         specs = profile_specs_public()
-        self.assertEqual(len(specs), 6)
+        self.assertEqual(len(specs), 7)
         ids = {x["id"] for x in specs}
         self.assertEqual(
             ids,
@@ -50,6 +50,7 @@ class BackupProfilesModelTests(unittest.TestCase):
                 "developer",
                 "full-expert",
                 "full-root-stable",
+                "offline-full",
             },
         )
 

@@ -13,7 +13,9 @@
 | Mount / RO-Plan | **`core.mount_facade`**, `runner_rescue_readonly_mount_orchestrator` | Plan only — kein mount subprocess im MVP |
 | Zielprüfung extern | `safe_device.validate_write_target`, `backup_target_service_access` | API `target-check` in `app.py` |
 | Write Guard (Preview) | `safety/write_guard.evaluate_write_target` | `rescue/orchestrator.py` |
-| Backup Profile offline-full | `core/backup_profiles`, `core/backup_archive_options` | Profil `full-root-stable` als Vorlage → **`offline-full`** |
+| Backup Profile offline-full | `core/backup_profiles.get_backup_profile("offline-full")` | **Implementiert** (Phase C.3); siehe `RESCUE_OFFLINE_FULL_BACKUP_PROFILE_2026-05-20.md` |
+| Boot Context | `rescue/boot_context.py` | **Implementiert** (Phase C.1); siehe `RESCUE_BOOT_CONTEXT_2026-05-20.md` |
+| Offline Backup Plan | `rescue/backup_orchestrator.py` | **Plan only** (Phase C.2); siehe `RESCUE_OFFLINE_BACKUP_ORCHESTRATOR_2026-05-20.md` |
 | Backup Runner | `tools/backup_runner.py` | systemd `setuphelfer-backup@` |
 | Manifest + SHA256 | Runner finalize + `modules/backup_engine` | — |
 | Verify Deep | `modules/backup_verify.verify_deep` | Runner-Hook |
@@ -25,13 +27,12 @@
 
 ## Rescue-spezifisch (neu/erweitern, Orchestration only)
 
-| Modul (Soll) | Zweck |
-|--------------|--------|
-| `rescue/rescue_boot_context.py` | `mode=rescue`, Pfade, keine Live-apt |
-| `rescue/rescue_storage_orchestrator.py` | interne + externe Medien listen |
-| `rescue/rescue_readonly_source.py` | Quellplatte RO mounten |
-| `rescue/rescue_backup_orchestrator.py` | Offline-Job starten (Env, sudo-Gate) |
-| `rescue/rescue_restore_preview.py` | UI/API für Preview |
+| Modul | Zweck | Status |
+|-------|--------|--------|
+| `rescue/boot_context.py` | Kontext, Pfade, keine Live-apt | Phase C.1 |
+| `rescue/backup_orchestrator.py` | Offline-Plan (kein Start) | Phase C.2 |
+| Deploy-Runner Storage/Mount | Handoff über Core-Facades | Phase B |
+| `rescue/rescue_restore_preview.py` (Soll) | UI/API Restore-Preview | C.4 |
 
 **Deploy-Runner** bleiben für Lab/Handoff; Produktlogik wandert nicht in Runner.
 

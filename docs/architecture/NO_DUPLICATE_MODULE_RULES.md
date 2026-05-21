@@ -36,6 +36,12 @@
 
 Deploy-Runner `runner_rescue_storage_discovery` und `runner_rescue_readonly_mount_orchestrator` importieren diese Facades.
 
+**Rescue Plan-only (Phase C.1–C.3):**
+
+- `rescue/boot_context.py` — Kontext, keine Mounts/Schreibaktionen.
+- `rescue/backup_orchestrator.py` — Offline-Plan; referenziert `backend.tools.backup_runner`, startet ihn **nicht**.
+- Profil `offline-full` nur in `core/backup_profiles.py` (`get_backup_profile`).
+
 ## Prüfung
 
 ```bash
