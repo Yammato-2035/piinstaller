@@ -24,7 +24,7 @@ _Stand: 2026-03-10 – Phase 1: Nur Analyse, keine Code-Änderungen._
   - Icon-/Designsystem bereits vorhanden (z. B. `frontend/dist/assets/icons/...`, `AppIcon`-Komponente), aber eher technisch/Modul-orientiert.
 
 - **Apps (`apps/`)**
-  - Spezielle Begleit-Apps wie `apps/dsi_radio/*` (DSI-Radio, QML/Qt + GStreamer-Player) und `apps/picture_frame/picture_frame.py` (Bilderrahmen).
+  - Spezielle Begleit-Apps wie `apps/dsi_radio/*` (DSI-Radio, QML/Qt + GStreamer-Player), `apps/picture_frame/picture_frame.py` (Bilderrahmen) und `apps/partitionshelfer/` (Partitionshelfer, tkinter).
   - Diese Apps nutzen das Backend teilweise (Metadaten, Konfiguration) und haben eigene Startpfade.
 
 - **Skripte & Systemintegration (`scripts/`, `start*.sh`, `debian/*`)**
