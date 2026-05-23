@@ -2,6 +2,10 @@
 
 Geführtes Partitionierungstool für Linux – Anfängerfreundlich, auf Deutsch, mit Sicherheitsprüfungen vor jeder geplanten Aktion.
 
+**Primäre Oberfläche:** React-Seite `frontend/src/pages/PartitionManager.tsx` (Setuphelfer-Frontend / Tauri), API unter `/api/partitions/*`.
+
+**Fallback:** tkinter-App in diesem Ordner (`python3 start.py` oder `./scripts/start-partitionshelfer.sh`).
+
 **Phase 1 (aktuell):** Festplatten scannen, grafische Darstellung, Sicherheitsanalyse, Use-Case-Wizards (ohne Schreiboperationen).
 
 **Phase 2 (geplant):** Partitionen anlegen/löschen/formatieren/vergrößern – nur nach expliziter Bestätigung und Protokollierung (align mit `docs/architecture/BR-001_GATE_STRATEGY_DE.md`).

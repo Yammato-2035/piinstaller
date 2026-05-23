@@ -3007,6 +3007,13 @@ except ImportError:
     pass
 
 try:
+    from api.routes.partitions import partition_router
+
+    app.include_router(partition_router, prefix="/api/partitions")
+except ImportError:
+    pass
+
+try:
     import importlib.util
 
     _inspect_dir = Path(__file__).resolve().parent / "inspect"

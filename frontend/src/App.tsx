@@ -17,6 +17,7 @@ import PresetsSetup from './pages/PresetsSetup'
 import LearningComputerSetup from './pages/LearningComputerSetup'
 import MonitoringDashboard from './pages/MonitoringDashboard'
 import BackupRestore from './pages/BackupRestore'
+import PartitionManager from './pages/PartitionManager'
 import DevDashboard from './pages/DevDashboard'
 import SettingsPage from './pages/SettingsPage'
 import RaspberryPiConfig from './pages/RaspberryPiConfig'
@@ -109,6 +110,7 @@ type Page =
   | 'learning'
   | 'monitoring'
   | 'backup'
+  | 'partitions'
   | 'dev-dashboard'
   | 'raspberry-pi-config'
   | 'control-center'
@@ -131,7 +133,7 @@ function getInitialPage(): Page {
   if (typeof window === 'undefined') return 'dashboard'
   const p = new URLSearchParams(window.location.search).get('page')
   if (p === 'tft') return 'tft'
-  if (p && ['dashboard', 'security', 'users', 'devenv', 'webserver', 'mailserver', 'nas', 'homeautomation', 'musicbox', 'kino-streaming', 'wizard', 'presets', 'learning', 'monitoring', 'backup', 'dev-dashboard', 'raspberry-pi-config', 'control-center', 'periphery-scan', 'inspect', 'settings', 'documentation', 'app-store', 'pi-installer-update', 'dsi-radio-settings', 'remote'].includes(p)) return p as Page
+  if (p && ['dashboard', 'security', 'users', 'devenv', 'webserver', 'mailserver', 'nas', 'homeautomation', 'musicbox', 'kino-streaming', 'wizard', 'presets', 'learning', 'monitoring', 'backup', 'partitions', 'dev-dashboard', 'raspberry-pi-config', 'control-center', 'periphery-scan', 'inspect', 'settings', 'documentation', 'app-store', 'pi-installer-update', 'dsi-radio-settings', 'remote'].includes(p)) return p as Page
   return 'dashboard'
 }
 
@@ -548,6 +550,8 @@ function App() {
         return <MonitoringDashboard />
       case 'backup':
         return <BackupRestore experienceLevel={experienceLevel} />
+      case 'partitions':
+        return <PartitionManager experienceLevel={experienceLevel} />
       case 'dev-dashboard':
         return experienceLevel === 'developer' ? <DevDashboard /> : (
           <Dashboard

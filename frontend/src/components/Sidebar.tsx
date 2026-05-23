@@ -71,6 +71,7 @@ function buildMenuItems(
     { id: 'wizard', labelKey: 'sidebar.menu.wizard', appIcon: 'wizard', modes: ['basic'] },
     { id: 'app-store', labelKey: 'sidebar.menu.appStore', appIcon: 'app-store', modes: ['basic'] },
     { id: 'backup', labelKey: 'sidebar.menu.backup', appIcon: 'backup', modes: ['basic'] },
+    { id: 'partitions', labelKey: 'sidebar.menu.partitions', icon: HardDrive, modes: ['basic', 'advanced'] },
     { id: 'monitoring', labelKey: 'sidebar.menu.monitoring', appIcon: 'monitoring', modes: ['basic', 'advanced', 'diagnose'] },
     { id: 'documentation', labelKey: 'sidebar.menu.documentation', appIcon: 'documentation', modes: ['basic'] },
     { type: 'divider' },
