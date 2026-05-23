@@ -132,3 +132,21 @@ Loader: `frontend/src/i18n/index.ts`
 Nach diesem Lauf: gezieltes `git add` (kein `git add -A`), Message:
 
 `feat(partitionshelfer): integrate read-only React phase 1`
+
+---
+
+## Post-Merge Cleanup (2026-05-23)
+
+Siehe auch: `docs/evidence/partitions/PARTITIONS_OPENAPI_500_FIX.md`
+
+| Punkt | Ergebnis |
+|-------|----------|
+| OpenAPI-500 Ursache | Fehlende `model_rebuild()` in `backend/deploy/routes.py` (Deploy-Rescue-Modelle), **nicht** Partitions-Router |
+| Korrigierte Datei | `backend/deploy/routes.py` (+6 `model_rebuild()`) |
+| `/openapi.json` vorher | **500** |
+| `/openapi.json` nachher | **200** (Runtime, nach Datei-Sync nach `/opt`) |
+| `/api/partitions/scan` | weiter **200** |
+| Test-Duplikat | `test_partitions_api.py` gelöscht; kanonisch: `test_partitions_api_v1.py` |
+| Runtime-Gate | **Exit 0** |
+| Schreibschutz Phase 1 | **aktiv** (unverändert) |
+| Deploy | `deploy-to-opt.sh` ohne sudo-Passwort blockiert; `routes.py` manuell nach `/opt` kopiert |
