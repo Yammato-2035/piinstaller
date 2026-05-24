@@ -205,6 +205,18 @@ from deploy.runner_rescue_build_environment_emulation import (
     build_rescue_simulated_build_workspace,
     verify_rescue_build_emulation,
 )
+from deploy.runner_rescue_stick_readonly_build_emulation import (
+    build_rescue_stick_build_workspace_snapshot,
+    build_rescue_stick_evidence_manifest,
+    build_rescue_stick_expected_debian_live_tree,
+    build_rescue_stick_frontend_bundle_preview,
+    build_rescue_stick_network_webui_preview,
+    build_rescue_stick_package_list_preview,
+    build_rescue_stick_readonly_build_final_gate,
+    build_rescue_stick_runtime_bundle_preview,
+    build_rescue_stick_systemd_service_preview,
+    run_rescue_stick_readonly_build_emulation_all,
+)
 from deploy.runner_rescue_iso_test_matrix import build_rescue_iso_test_matrix
 from deploy.runner_rescue_build_readiness_gate import build_rescue_build_readiness_gate
 from deploy.runner_rescue_live_build_config_generator import build_rescue_live_build_config
@@ -3744,6 +3756,196 @@ async def post_deploy_rescue_build_emulation_final_gate(body: DeployRescueHandof
         "rescue_build_emulation_final_gate": res,
         "warnings": list(res.get("warnings") or []),
         "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue-stick/build-emulation/workspace-snapshot")
+async def post_deploy_rescue_stick_build_emulation_workspace_snapshot(
+    body: DeployRescueHandoffOverwriteRequest,
+) -> dict[str, Any]:
+    res = build_rescue_stick_build_workspace_snapshot(explicit_overwrite=bool(body.explicit_overwrite))
+    st = str(res.get("rescue_stick_build_workspace_snapshot_status") or "blocked")
+    code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_WORKSPACE_BLOCKED"
+    if st == "ok":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_WORKSPACE_OK"
+    elif st == "review_required":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_WORKSPACE_REVIEW_REQUIRED"
+    return {
+        "code": code,
+        "rescue_stick_build_workspace_snapshot": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue-stick/build-emulation/debian-live-tree")
+async def post_deploy_rescue_stick_build_emulation_debian_live_tree(
+    body: DeployRescueHandoffOverwriteRequest,
+) -> dict[str, Any]:
+    res = build_rescue_stick_expected_debian_live_tree(explicit_overwrite=bool(body.explicit_overwrite))
+    st = str(res.get("rescue_stick_expected_debian_live_tree_status") or "blocked")
+    code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_DEBIAN_TREE_BLOCKED"
+    if st == "ok":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_DEBIAN_TREE_OK"
+    elif st == "review_required":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_DEBIAN_TREE_REVIEW_REQUIRED"
+    return {
+        "code": code,
+        "rescue_stick_expected_debian_live_tree": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue-stick/build-emulation/package-list")
+async def post_deploy_rescue_stick_build_emulation_package_list(
+    body: DeployRescueHandoffOverwriteRequest,
+) -> dict[str, Any]:
+    res = build_rescue_stick_package_list_preview(explicit_overwrite=bool(body.explicit_overwrite))
+    st = str(res.get("rescue_stick_package_list_preview_status") or "blocked")
+    code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_PACKAGE_LIST_BLOCKED"
+    if st == "ok":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_PACKAGE_LIST_OK"
+    elif st == "review_required":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_PACKAGE_LIST_REVIEW_REQUIRED"
+    return {
+        "code": code,
+        "rescue_stick_package_list_preview": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue-stick/build-emulation/runtime-bundle")
+async def post_deploy_rescue_stick_build_emulation_runtime_bundle(
+    body: DeployRescueHandoffOverwriteRequest,
+) -> dict[str, Any]:
+    res = build_rescue_stick_runtime_bundle_preview(explicit_overwrite=bool(body.explicit_overwrite))
+    st = str(res.get("rescue_stick_runtime_bundle_preview_status") or "blocked")
+    code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_RUNTIME_BUNDLE_BLOCKED"
+    if st == "ok":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_RUNTIME_BUNDLE_OK"
+    elif st == "review_required":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_RUNTIME_BUNDLE_REVIEW_REQUIRED"
+    return {
+        "code": code,
+        "rescue_stick_runtime_bundle_preview": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue-stick/build-emulation/frontend-bundle")
+async def post_deploy_rescue_stick_build_emulation_frontend_bundle(
+    body: DeployRescueHandoffOverwriteRequest,
+) -> dict[str, Any]:
+    res = build_rescue_stick_frontend_bundle_preview(explicit_overwrite=bool(body.explicit_overwrite))
+    st = str(res.get("rescue_stick_frontend_bundle_preview_status") or "blocked")
+    code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_FRONTEND_BUNDLE_BLOCKED"
+    if st == "ok":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_FRONTEND_BUNDLE_OK"
+    elif st == "review_required":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_FRONTEND_BUNDLE_REVIEW_REQUIRED"
+    return {
+        "code": code,
+        "rescue_stick_frontend_bundle_preview": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue-stick/build-emulation/systemd-services")
+async def post_deploy_rescue_stick_build_emulation_systemd_services(
+    body: DeployRescueHandoffOverwriteRequest,
+) -> dict[str, Any]:
+    res = build_rescue_stick_systemd_service_preview(explicit_overwrite=bool(body.explicit_overwrite))
+    st = str(res.get("rescue_stick_systemd_service_preview_status") or "blocked")
+    code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_SYSTEMD_BLOCKED"
+    if st == "ok":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_SYSTEMD_OK"
+    elif st == "review_required":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_SYSTEMD_REVIEW_REQUIRED"
+    return {
+        "code": code,
+        "rescue_stick_systemd_service_preview": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue-stick/build-emulation/network-webui")
+async def post_deploy_rescue_stick_build_emulation_network_webui(
+    body: DeployRescueHandoffOverwriteRequest,
+) -> dict[str, Any]:
+    res = build_rescue_stick_network_webui_preview(explicit_overwrite=bool(body.explicit_overwrite))
+    st = str(res.get("rescue_stick_network_webui_preview_status") or "blocked")
+    code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_NETWORK_BLOCKED"
+    if st == "ok":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_NETWORK_OK"
+    elif st == "review_required":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_NETWORK_REVIEW_REQUIRED"
+    return {
+        "code": code,
+        "rescue_stick_network_webui_preview": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue-stick/build-emulation/evidence-manifest")
+async def post_deploy_rescue_stick_build_emulation_evidence_manifest(
+    body: DeployRescueHandoffOverwriteRequest,
+) -> dict[str, Any]:
+    res = build_rescue_stick_evidence_manifest(explicit_overwrite=bool(body.explicit_overwrite))
+    st = str(res.get("rescue_stick_evidence_manifest_status") or "blocked")
+    code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_MANIFEST_BLOCKED"
+    if st == "ok":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_MANIFEST_OK"
+    elif st == "review_required":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_MANIFEST_REVIEW_REQUIRED"
+    return {
+        "code": code,
+        "rescue_stick_evidence_manifest": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue-stick/build-emulation/final-gate")
+async def post_deploy_rescue_stick_build_emulation_final_gate(
+    body: DeployRescueHandoffOverwriteRequest,
+) -> dict[str, Any]:
+    res = build_rescue_stick_readonly_build_final_gate(explicit_overwrite=bool(body.explicit_overwrite))
+    st = str(res.get("rescue_stick_readonly_build_final_gate_status") or "blocked")
+    code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_FINAL_GATE_BLOCKED"
+    if st == "ready":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_FINAL_GATE_READY"
+    elif st == "review_required":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_FINAL_GATE_REVIEW_REQUIRED"
+    return {
+        "code": code,
+        "rescue_stick_readonly_build_final_gate": res,
+        "warnings": list(res.get("warnings") or []),
+        "errors": list(res.get("errors") or []),
+    }
+
+
+@router.post("/rescue-stick/build-emulation/run-all")
+async def post_deploy_rescue_stick_build_emulation_run_all(
+    body: DeployRescueHandoffOverwriteRequest,
+) -> dict[str, Any]:
+    res = run_rescue_stick_readonly_build_emulation_all(explicit_overwrite=bool(body.explicit_overwrite))
+    st = str(res.get("rescue_stick_readonly_build_emulation_all_status") or "blocked")
+    code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_FINAL_GATE_BLOCKED"
+    if st == "ready":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_FINAL_GATE_READY"
+    elif st == "review_required":
+        code = "DEPLOY_RESCUE_STICK_BUILD_EMULATION_FINAL_GATE_REVIEW_REQUIRED"
+    return {
+        "code": code,
+        "rescue_stick_readonly_build_emulation_all": res,
+        "warnings": [],
+        "errors": [],
     }
 
 
