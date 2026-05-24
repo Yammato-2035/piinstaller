@@ -14,7 +14,19 @@ import DiskVisualizer from '../components/partition/DiskVisualizer'
 import PartitionDetailPanel from '../components/partition/PartitionDetailPanel'
 import PartitionWizardModal from '../components/partition/PartitionWizardModal'
 import ActionQueueBar from '../components/partition/ActionQueueBar'
-import { fetchDisks, type DiskInfo, type PartitionInfo } from '../api/partitionApi'
+import PartitionSafetyPreviewPanel from '../components/partition/PartitionSafetyPreviewPanel'
+import {
+  fetchDisks,
+  fetchManifestLayoutPreview,
+  fetchPartitionHardstopPreview,
+  fetchRestoreHandoffPreview,
+  partitionNameToDevice,
+  type DiskInfo,
+  type HardstopPreviewResult,
+  type ManifestLayoutPreviewResult,
+  type PartitionInfo,
+  type RestoreHandoffPreviewResult,
+} from '../api/partitionApi'
 
 interface Props {
   experienceLevel?: ExperienceLevel
@@ -26,6 +38,13 @@ const PartitionManager: React.FC<Props> = ({ experienceLevel = 'beginner' }) => 
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<PartitionInfo | null>(null)
   const [wizardOpen, setWizardOpen] = useState(false)
+  const [hardstopPreview, setHardstopPreview] = useState<HardstopPreviewResult | null>(null)
+  const [manifestPreview, setManifestPreview] = useState<ManifestLayoutPreviewResult | null>(null)
+  const [restoreHandoff, setRestoreHandoff] = useState<RestoreHandoffPreviewResult | null>(null)
+  const [safetyLoading, setSafetyLoading] = useState(false)
+  const [safetyError, setSafetyError] = useState<string | null>(null)
+
+  const selectedDevice = selected ? partitionNameToDevice(selected.name) : null
 
   const loadDisks = useCallback(async () => {
     setLoading(true)
@@ -42,6 +61,44 @@ const PartitionManager: React.FC<Props> = ({ experienceLevel = 'beginner' }) => 
   useEffect(() => {
     loadDisks()
   }, [loadDisks])
+
+  const loadSafetyPreview = useCallback(async () => {
+    if (!selectedDevice) {
+      setHardstopPreview(null)
+      setManifestPreview(null)
+      setRestoreHandoff(null)
+      setSafetyError(null)
+      return
+    }
+    setSafetyLoading(true)
+    setSafetyError(null)
+    try {
+      const hardstop = await fetchPartitionHardstopPreview(selectedDevice)
+      setHardstopPreview(hardstop)
+      const manifest = await fetchManifestLayoutPreview({
+        manifest: null,
+        target_device: selectedDevice,
+      })
+      setManifestPreview(manifest)
+      const handoff = await fetchRestoreHandoffPreview({
+        target_device: selectedDevice,
+        hardstop_result: hardstop.evaluation,
+        manifest_layout_preview: manifest,
+      })
+      setRestoreHandoff(handoff)
+    } catch (e) {
+      setHardstopPreview(null)
+      setManifestPreview(null)
+      setRestoreHandoff(null)
+      setSafetyError(e instanceof Error ? e.message : t('partition.phase2.error'))
+    } finally {
+      setSafetyLoading(false)
+    }
+  }, [selectedDevice, t])
+
+  useEffect(() => {
+    loadSafetyPreview()
+  }, [loadSafetyPreview])
 
   const pandaText = selected?.is_system_critical
     ? 'Diese Partition gehört zu deinem laufenden System – bitte sehr vorsichtig sein.'
@@ -122,6 +179,16 @@ const PartitionManager: React.FC<Props> = ({ experienceLevel = 'beginner' }) => 
           </div>
         </div>
       </div>
+
+      <PartitionSafetyPreviewPanel
+        selectedDevice={selectedDevice}
+        hardstopPreview={hardstopPreview}
+        manifestLayoutPreview={manifestPreview}
+        restoreHandoffPreview={restoreHandoff}
+        loading={safetyLoading}
+        error={safetyError}
+        onRefreshSafetyPreview={loadSafetyPreview}
+      />
 
       <ActionQueueBar onApplied={loadDisks} />
       {wizardOpen && <PartitionWizardModal onClose={() => setWizardOpen(false)} />}

@@ -124,6 +124,124 @@ export async function applyQueue(confirmed: boolean): Promise<QueueApplyResult> 
   return res.json()
 }
 
+// ── Phase 2: Safety Contracts (read-only preview) ─────────────────────────
+
+export type HardstopStatus = 'ok' | 'review_required' | 'blocked'
+export type RiskLevel = 'green' | 'yellow' | 'red'
+
+export interface HardstopMessage {
+  code: string
+  message: string
+}
+
+export interface HardstopEvaluation {
+  status: HardstopStatus
+  hardstops: HardstopMessage[]
+  warnings: HardstopMessage[]
+  risk_level: RiskLevel
+  write_allowed: false
+  codes: string[]
+}
+
+export interface HardstopPreviewResult {
+  context: {
+    target_device: string
+    smart_status?: string
+    same_as_backup_source?: boolean
+    write_allowed: false
+    [key: string]: unknown
+  }
+  evaluation: HardstopEvaluation
+  write_allowed: false
+}
+
+export interface ManifestLayoutRow {
+  device?: string | null
+  size?: string | number | null
+  fs_type?: string | null
+  mountpoint?: string | null
+  label?: string | null
+  flags?: string[]
+  source?: string
+}
+
+export interface ManifestLayoutPreviewResult {
+  status: 'ok' | 'review_required' | 'unavailable'
+  source: string
+  target_device: string | null
+  original_layout: ManifestLayoutRow[]
+  suggested_layout: ManifestLayoutRow[]
+  warnings: HardstopMessage[]
+  write_allowed: false
+  generated_at?: string
+}
+
+export interface RestoreHandoffPreviewResult {
+  status: 'ready' | 'review_required' | 'blocked'
+  handoff_type: string
+  target_device: string | null
+  restore_execution_allowed: false
+  write_allowed: false
+  required_next_gates: string[]
+  recommended_next_step?: string
+  codes: string[]
+  evidence_refs?: string[]
+}
+
+export async function fetchPartitionHardstopPreview(
+  targetDevice: string
+): Promise<HardstopPreviewResult> {
+  const q = new URLSearchParams({ target_device: targetDevice })
+  const res = await fetchApi(`/api/partitions/hardstop-preview?${q}`)
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '')
+    throw new Error(`Hardstop-Preview fehlgeschlagen: ${res.status} ${detail}`.trim())
+  }
+  return res.json()
+}
+
+export async function fetchManifestLayoutPreview(payload: {
+  manifest: Record<string, unknown> | null
+  target_device: string | null
+}): Promise<ManifestLayoutPreviewResult> {
+  const res = await fetchApi('/api/partitions/manifest-layout-preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '')
+    throw new Error(`Manifest-Layout-Preview fehlgeschlagen: ${res.status} ${detail}`.trim())
+  }
+  return res.json()
+}
+
+export async function fetchRestoreHandoffPreview(payload: {
+  target_device: string
+  hardstop_result?: HardstopEvaluation | null
+  manifest_layout_preview?: ManifestLayoutPreviewResult | null
+  partition_plan_preview?: Record<string, unknown> | null
+  backup_manifest_ref?: string | null
+}): Promise<RestoreHandoffPreviewResult> {
+  const res = await fetchApi('/api/partitions/restore-handoff-preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '')
+    throw new Error(`Restore-Handoff-Preview fehlgeschlagen: ${res.status} ${detail}`.trim())
+  }
+  return res.json()
+}
+
+/** Zielgerät für Phase-2-Preview aus Partitionsname (z. B. sda1 → /dev/sda1). */
+export function partitionNameToDevice(partitionName: string): string {
+  const n = partitionName.trim()
+  if (n.startsWith('/dev/')) return n
+  return `/dev/${n}`
+}
+
 export const FS_FARBEN: Record<string, string> = {
   ext4: '#4CAF50',
   ext3: '#8BC34A',

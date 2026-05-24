@@ -31,6 +31,16 @@ PYTHONPATH=backend backend/venv/bin/python3 -m pytest \
   backend/tests/test_partitions_phase2_safety_contracts_v1.py -q
 ```
 
+## UI Preview
+
+- Seite: Partitionen (`PartitionManager`)
+- Panel: `PartitionSafetyPreviewPanel` (read-only)
+- Lädt bei Partition-Auswahl:
+  - `GET /api/partitions/hardstop-preview`
+  - `POST /api/partitions/manifest-layout-preview` (manifest=null)
+  - `POST /api/partitions/restore-handoff-preview`
+- Evidence: `docs/evidence/partitions/PARTITIONS_PHASE2_UI_PREVIEW_STUB.md`
+
 ## Weiterführend
 
 - Architektur: `docs/architecture/PARTITIONS_SAFETY_CONTRACTS.md`
