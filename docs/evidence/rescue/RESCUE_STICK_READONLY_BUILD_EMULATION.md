@@ -2,7 +2,37 @@
 
 **Date:** 2026-05-24  
 **Runner:** `backend/deploy/runner_rescue_stick_readonly_build_emulation.py`
-**Deploy baseline:** `b204dee` (Fix rescue stick build emulation readiness decisions)
+**Deploy baseline:** Finalize gate commit (post `f95acea`)
+
+## Full Deploy + Package-List Validation (2026-05-24)
+
+| Punkt | Ergebnis |
+|-------|----------|
+| **Vorheriger HEAD** | `f95acea` |
+| **Offizieller Deploy** | `sudo ./scripts/deploy-to-opt.sh` — **OK** (Operator-Terminal, Exit 0) |
+| **Runtime-Gate** | Exit **0** |
+| **CDN `/opt/…/frontend/dist`** | Keine `fonts.googleapis.com` / `fonts.gstatic.com` |
+| **OpenAPI** | **10** Routen |
+| **run-all (Runtime)** | `DEPLOY_RESCUE_STICK_BUILD_EMULATION_FINAL_GATE_READY` |
+| **Final-Gate** | **`ready`** — Emulation abgeschlossen |
+| **package_list** | **`ok`** — systemd-networkd Phase-1-Default dokumentiert; `live_os_network_test_pending: true` |
+| **real_iso_build_allowed** | **`false`** — kein ISO-Freigabe |
+| **Verbotene Artefakte/Aktionen** | keine |
+
+### Package-List Netzwerk (ohne apt)
+
+| Feld | Wert |
+|------|------|
+| `default_network_stack` | systemd-networkd |
+| `network_manager` | optional_later |
+| `avahi/mDNS` | optional_later |
+| `LAN-Zugriff` | blocked / default_off |
+| `Web-UI` | local_only |
+| `write_actions_over_lan` | blocked |
+| `rescue_auth_required_for_lan` | true |
+| `live_os_network_test_pending` | true (separates Hardware-Gate, nicht als erledigt behauptet) |
+
+**Statusregel:** Emulation **grün/ready**; echter ISO-Build bleibt eigenes Gate nach Live-OS-Netzwerktest.
 
 ## Scope
 
@@ -69,4 +99,4 @@ Emulation only — no ISO, no `lb build`, no debootstrap/chroot/apt/mount/qemu/d
 
 ## Nächster Schritt
 
-Operator: vollständiges `sudo ./scripts/deploy-to-opt.sh` (gesamtes `dist`/Backend), dann Debian-Live-OS-Netzwerktest → ISO-Build-Auftrag (separat, Phase 0).
+Debian-Live-OS-Netzwerktest (systemd-networkd) auf Hardware → danach separater ISO-Build-Auftrag mit Phase 0. **Kein ISO in diesem Auftrag.**

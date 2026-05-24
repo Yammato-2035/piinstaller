@@ -1,9 +1,9 @@
 {
   "component": "rescue_stick_readonly_build_final_gate",
   "errors": [],
-  "gate_status": "review_required",
+  "gate_status": "ready",
   "generated": false,
-  "generated_at": "2026-05-24T17:56:33.854075+00:00",
+  "generated_at": "2026-05-24T20:17:59.237786+00:00",
   "inputs_present": {
     "debian_live_tree": true,
     "frontend_bundle": true,
@@ -13,13 +13,13 @@
     "systemd": true,
     "workspace": true
   },
+  "live_os_network_test_pending": true,
   "no_real_build_execution": true,
   "partitions_finalized": true,
   "readonly_emulated": true,
+  "real_iso_build_allowed": false,
   "runtime_gate_exit_0_documented": true,
   "schema_version": "1.0",
-  "warnings": [
-    "RESCUE_STICK_FINAL_REVIEW_COMPONENTS:package_list"
-  ],
+  "warnings": [],
   "write_defaults_blocked": true
 }

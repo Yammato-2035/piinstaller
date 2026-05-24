@@ -55,7 +55,7 @@ Bis alle Gates **green** sind: nur Read-only Emulation, Handoffs, Previews.
 | **systemd-Service-Bind** | Backend `127.0.0.1:8000`, UI `127.0.0.1:3001`; kein Auto-Restore/Partition; LAN erst mit Rescue-LAN-Gate | Emulation: **ok** |
 | **LAN-Policy** | `default: local_only`, `lan_access: blocked`, `write_actions_over_lan: blocked`, `rescue_auth_required_for_lan: true` | Emulation: **ok** |
 
-**Emulation-Final-Gate (Workspace, Runner aktualisiert):** `review_required` — nur `package_list` (+ ggf. `frontend_bundle` bis dist-Redeploy). **Kein fake ready.**
+**Emulation-Final-Gate (Full Deploy 2026-05-24):** **`ready`** — `live_os_network_test_pending: true`, `real_iso_build_allowed: false`. Kein fake ready für ISO.
 
 ## Referenzen
 

@@ -344,7 +344,7 @@ def build_rescue_stick_package_list_preview(*, explicit_overwrite: bool = False)
             "parted",
             "storage_readonly",
             required=False,
-            status="review_required",
+            status="optional_later",
             reason="CLI only later; no auto partition",
             runtime_use="optional",
         ),
@@ -354,30 +354,37 @@ def build_rescue_stick_package_list_preview(*, explicit_overwrite: bool = False)
             "python3-venv",
             "python_runtime",
             required=False,
-            status="review_required",
-            reason="embedded venv vs system site-packages",
+            status="ok",
+            reason="runtime ships bundled venv under opt/setuphelfer/backend/venv",
             runtime_use="service_runtime",
         ),
-        _pkg("nginx", "webui_runtime", required=False, status="review_required", reason="static UI serving", runtime_use="service_runtime"),
+        _pkg(
+            "nginx",
+            "webui_runtime",
+            required=False,
+            status="optional_later",
+            reason="not phase_1; static UI via python http.server",
+            runtime_use="optional",
+        ),
         _pkg(
             "uvicorn",
             "webui_runtime",
             required=False,
-            status="review_required",
-            reason="if API served separately",
+            status="ok",
+            reason="bundled in backend venv; not apt package on stick",
             runtime_use="service_runtime",
         ),
     ]
     categories = sorted({p["category"] for p in packages})
-    review = sum(1 for p in packages if p["status"] in ("review_required", "optional_later"))
-    list_status: EmulStatus = "ok" if review < 4 else "review_required"
+    blocking_review = sum(1 for p in packages if p["status"] == "review_required")
+    list_status: EmulStatus = "ok" if blocking_review == 0 else "review_required"
     network_decided = any(p["name"] == "systemd-networkd" and p["status"] == "ok" for p in packages)
     pkg_warnings: list[str] = []
     if list_status == "review_required":
-        pkg_warnings.append("RESCUE_STICK_PKG_NON_NETWORK_REVIEW_ITEMS")
+        pkg_warnings.append("RESCUE_STICK_PKG_BLOCKING_REVIEW_ITEMS")
     if network_decided:
         pkg_warnings.append("RESCUE_STICK_PKG_NETWORK_STACK_PHASE1_DEFAULT_SYSTEMD_NETWORKD")
-    pkg_warnings.append("RESCUE_STICK_PKG_LIVE_OS_VALIDATION_PENDING")
+    pkg_warnings.append("RESCUE_STICK_PKG_LIVE_OS_NETWORK_TEST_PENDING")
     body = {
         "schema_version": "1.0",
         "component": "rescue_stick_package_list_preview",
@@ -386,11 +393,16 @@ def build_rescue_stick_package_list_preview(*, explicit_overwrite: bool = False)
         "generated_at": _utc_now(),
         "categories": categories,
         "packages": packages,
+        "selected_network_stack": "systemd-networkd",
+        "live_os_network_test_pending": True,
+        "real_iso_build_allowed": False,
+        "emulation_ready": list_status == "ok",
+        "reason": "Package list is emulation-ready; real Live-OS network validation remains separate gate.",
         "network_stack_decision": {
             "phase_1_default": "systemd-networkd",
             "alternative_optional_later": "network-manager",
             "lan_write": "blocked",
-            "live_os_validation": "pending",
+            "live_os_validation": "separate_hardware_gate",
         },
         "warnings": pkg_warnings,
         "errors": [],
@@ -675,10 +687,11 @@ def build_rescue_stick_network_webui_preview(*, explicit_overwrite: bool = False
         "errors": [],
     }
     wrote, errors = _write_emul(path, body, explicit_overwrite=explicit_overwrite)
+    st: EmulStatus = "blocked" if errors else "ok"
     return _emit(
         "rescue_stick_network_webui_preview",
         rel,
-        "review_required",
+        st,
         body,
         wrote=wrote,
         warnings=list(body["warnings"]),
@@ -911,6 +924,9 @@ def build_rescue_stick_readonly_build_final_gate(
     if review_components:
         warnings.append("RESCUE_STICK_FINAL_REVIEW_COMPONENTS:" + ",".join(review_components))
 
+    pkg_snap = snapshots.get("package_list")
+    live_os_pending = isinstance(pkg_snap, dict) and pkg_snap.get("live_os_network_test_pending") is True
+
     if errors:
         gate_status: Status = "blocked"
     elif warnings:
@@ -928,6 +944,8 @@ def build_rescue_stick_readonly_build_final_gate(
         "runtime_gate_exit_0_documented": runtime_gate_exit_0,
         "write_defaults_blocked": True,
         "partitions_finalized": _doc_exists("docs/evidence/partitions/PARTITIONS_FINAL_BROWSER_UI_SMOKE.md"),
+        "live_os_network_test_pending": live_os_pending,
+        "real_iso_build_allowed": False,
         "warnings": warnings,
         "errors": errors,
     }
