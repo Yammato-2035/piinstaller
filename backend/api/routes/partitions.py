@@ -16,6 +16,11 @@ from typing import Any, Literal, Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
+from core.partition_storage_facade import (
+    build_partition_target_safety_context,
+    read_backup_manifest_readonly,
+)
+
 _PARTITIONS_APP = Path(__file__).resolve().parents[3] / "apps" / "partitionshelfer"
 
 
@@ -216,6 +221,7 @@ class ApplyQueueBody(BaseModel):
 class ManifestLayoutPreviewBody(BaseModel):
     manifest: dict[str, Any] | None = None
     target_device: str | None = None
+    manifest_path: str | None = None
 
 
 class RestoreHandoffPreviewBody(BaseModel):
@@ -224,6 +230,8 @@ class RestoreHandoffPreviewBody(BaseModel):
     hardstop_result: dict[str, Any] | None = None
     manifest_layout_preview: dict[str, Any] | None = None
     backup_manifest_ref: str | None = None
+    verify_evidence: dict[str, Any] | None = None
+    operator_override: bool = False
 
 
 @partition_router.get("/hardstop-preview")
@@ -237,6 +245,8 @@ async def get_hardstop_preview(
     system_disk: bool = Query(False),
     identity_unknown: bool = Query(False),
     smart_state: str | None = Query(None, description="OK|WARNING|FAILED|UNKNOWN"),
+    use_inspect: bool = Query(False, description="Inspect-Ergebnis für write_guard einbeziehen"),
+    operator_override: bool = Query(False, description="Nie Freigabe – nur dokumentierter Hinweis"),
 ) -> dict[str, Any]:
     smart_summary: dict[str, Any] | None = None
     if smart_state:
@@ -249,6 +259,20 @@ async def get_hardstop_preview(
     if identity_unknown:
         storage_classification["identity_unknown"] = True
 
+    safety_ctx = build_partition_target_safety_context(
+        target_device,
+        backup_source_device=backup_source_device,
+        backup_archive_path=backup_archive_path,
+        manifest_path=manifest_path,
+        use_inspect=use_inspect,
+        operator_override=operator_override,
+        system_disk_hint=system_disk,
+        identity_unknown_hint=identity_unknown,
+        target_classification_hint=target_classification,
+    )
+    facade_class = safety_ctx.get("storage_classification") or {}
+    storage_classification = {**facade_class, **storage_classification}
+
     ctx = build_partition_hardstop_context(
         target_device=target_device,
         backup_source_device=backup_source_device,
@@ -258,28 +282,44 @@ async def get_hardstop_preview(
         smart_summary=smart_summary,
         planned_action=planned_action,
     )
+    ctx["storage_safety_context"] = safety_ctx
     result = evaluate_partition_hardstops(ctx)
     return {
         "context": ctx,
         "evaluation": result,
+        "storage_safety": safety_ctx,
         "write_allowed": False,
     }
 
 
 @partition_router.post("/manifest-layout-preview")
 async def post_manifest_layout_preview(body: ManifestLayoutPreviewBody) -> dict[str, Any]:
-    preview = build_manifest_layout_preview(body.manifest, body.target_device)
+    preview = build_manifest_layout_preview(
+        body.manifest,
+        body.target_device,
+        manifest_path=body.manifest_path,
+        manifest_reader=read_backup_manifest_readonly,
+    )
     return {**preview, "write_allowed": False}
 
 
 @partition_router.post("/restore-handoff-preview")
 async def post_restore_handoff_preview(body: RestoreHandoffPreviewBody) -> dict[str, Any]:
+    safety_ctx: dict[str, Any] | None = None
+    if body.hardstop_result is None:
+        safety_ctx = build_partition_target_safety_context(
+            body.target_device,
+            operator_override=body.operator_override,
+        )
     handoff = build_partition_restore_handoff(
         partition_plan_preview=body.partition_plan_preview,
         hardstop_result=body.hardstop_result,
         manifest_layout_preview=body.manifest_layout_preview,
         target_device=body.target_device,
         backup_manifest_ref=body.backup_manifest_ref,
+        verify_evidence=body.verify_evidence,
+        storage_safety_context=safety_ctx,
+        operator_override=body.operator_override,
     )
     return {**handoff, "write_allowed": False}
 

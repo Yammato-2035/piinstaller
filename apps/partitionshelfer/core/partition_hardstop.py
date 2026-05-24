@@ -216,6 +216,19 @@ def evaluate_partition_hardstops(context: dict[str, Any]) -> dict[str, Any]:
             f"Geplante Aktion '{planned}' ohne explizite Freigabe blockiert.",
         )
 
+    storage_safety = context.get("storage_safety_context")
+    if isinstance(storage_safety, dict):
+        for item in storage_safety.get("hardstops") or []:
+            if isinstance(item, dict):
+                code = str(item.get("code") or "partition.facade.hardstop")
+                msg = str(item.get("message") or code)
+                _stop(code, msg)
+        for item in storage_safety.get("warnings") or []:
+            if isinstance(item, dict):
+                code = str(item.get("code") or "partition.facade.warning")
+                msg = str(item.get("message") or code)
+                _warn(code, msg)
+
     if hardstops:
         status: HardstopStatus = "blocked"
         risk: RiskLevel = "red"

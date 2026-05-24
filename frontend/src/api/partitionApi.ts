@@ -152,6 +152,12 @@ export interface HardstopPreviewResult {
     [key: string]: unknown
   }
   evaluation: HardstopEvaluation
+  storage_safety?: {
+    status: string
+    write_allowed: false
+    hardstops?: HardstopMessage[]
+    warnings?: HardstopMessage[]
+  }
   write_allowed: false
 }
 
@@ -166,11 +172,15 @@ export interface ManifestLayoutRow {
 }
 
 export interface ManifestLayoutPreviewResult {
-  status: 'ok' | 'review_required' | 'unavailable'
+  status: 'ok' | 'review_required' | 'unavailable' | 'blocked'
   source: string
+  manifest_source?: 'inline' | 'null' | 'file_readonly'
+  manifest_path?: string | null
   target_device: string | null
   original_layout: ManifestLayoutRow[]
   suggested_layout: ManifestLayoutRow[]
+  layout?: Record<string, unknown>
+  compatibility?: { target_device?: string | null; warnings?: HardstopMessage[]; errors?: HardstopMessage[] }
   warnings: HardstopMessage[]
   write_allowed: false
   generated_at?: string
@@ -184,6 +194,8 @@ export interface RestoreHandoffPreviewResult {
   write_allowed: false
   required_next_gates: string[]
   recommended_next_step?: string
+  rescue_handoff_next?: string
+  handoff_sources?: Record<string, unknown>
   codes: string[]
   evidence_refs?: string[]
 }
@@ -203,6 +215,7 @@ export async function fetchPartitionHardstopPreview(
 export async function fetchManifestLayoutPreview(payload: {
   manifest: Record<string, unknown> | null
   target_device: string | null
+  manifest_path?: string | null
 }): Promise<ManifestLayoutPreviewResult> {
   const res = await fetchApi('/api/partitions/manifest-layout-preview', {
     method: 'POST',

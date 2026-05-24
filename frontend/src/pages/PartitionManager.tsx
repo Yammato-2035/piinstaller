@@ -43,6 +43,7 @@ const PartitionManager: React.FC<Props> = ({ experienceLevel = 'beginner' }) => 
   const [restoreHandoff, setRestoreHandoff] = useState<RestoreHandoffPreviewResult | null>(null)
   const [safetyLoading, setSafetyLoading] = useState(false)
   const [safetyError, setSafetyError] = useState<string | null>(null)
+  const [manifestPathInput, setManifestPathInput] = useState('')
 
   const selectedDevice = selected ? partitionNameToDevice(selected.name) : null
 
@@ -78,6 +79,7 @@ const PartitionManager: React.FC<Props> = ({ experienceLevel = 'beginner' }) => 
       const manifest = await fetchManifestLayoutPreview({
         manifest: null,
         target_device: selectedDevice,
+        manifest_path: manifestPathInput.trim() || null,
       })
       setManifestPreview(manifest)
       const handoff = await fetchRestoreHandoffPreview({
@@ -94,7 +96,7 @@ const PartitionManager: React.FC<Props> = ({ experienceLevel = 'beginner' }) => 
     } finally {
       setSafetyLoading(false)
     }
-  }, [selectedDevice, t])
+  }, [selectedDevice, manifestPathInput, t])
 
   useEffect(() => {
     loadSafetyPreview()
@@ -179,6 +181,23 @@ const PartitionManager: React.FC<Props> = ({ experienceLevel = 'beginner' }) => 
           </div>
         </div>
       </div>
+
+      {selectedDevice && (
+        <div className="px-4 pb-2 max-w-xl">
+          <label className="block text-xs text-slate-400 mb-1" htmlFor="manifest-path-input">
+            {t('partition.phase2.manifestPathLabel')}
+          </label>
+          <input
+            id="manifest-path-input"
+            type="text"
+            value={manifestPathInput}
+            onChange={(e) => setManifestPathInput(e.target.value)}
+            placeholder="/media/…/MANIFEST.json"
+            className="w-full text-xs font-mono rounded-lg border border-slate-600/60 bg-slate-900/60 px-2 py-1.5 text-slate-200"
+          />
+          <p className="text-[11px] text-slate-500 mt-1">{t('partition.phase2.manifestPathHint')}</p>
+        </div>
+      )}
 
       <PartitionSafetyPreviewPanel
         selectedDevice={selectedDevice}

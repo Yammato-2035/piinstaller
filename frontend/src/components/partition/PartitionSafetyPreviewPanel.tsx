@@ -199,6 +199,24 @@ const PartitionSafetyPreviewPanel: React.FC<Props> = ({
           ) : (
             <p className="text-xs text-slate-500">{t('partition.phase2.manifestEmpty')}</p>
           )}
+          {manifestLayoutPreview.manifest_path && (
+            <p className="text-[11px] text-slate-500 font-mono truncate">
+              {manifestLayoutPreview.manifest_path}
+            </p>
+          )}
+        </section>
+      )}
+
+      {hardstopPreview?.storage_safety && (
+        <section className="space-y-1">
+          <h4 className="text-xs font-semibold text-slate-300">{t('partition.phase2.facadeTitle')}</h4>
+          <span
+            className={`inline-block text-xs px-2 py-0.5 rounded border ${statusBadgeClass(
+              hardstopPreview.storage_safety.status
+            )}`}
+          >
+            {t(`partition.phase2.status.${hardstopPreview.storage_safety.status}`)}
+          </span>
         </section>
       )}
 
@@ -226,6 +244,23 @@ const PartitionSafetyPreviewPanel: React.FC<Props> = ({
           {restoreHandoffPreview.status === 'ready' && (
             <p className="text-xs text-teal-300/90">{t('partition.phase2.restorePreviewRecommended')}</p>
           )}
+        </section>
+      )}
+
+      {(evaluation || restoreHandoffPreview) && (
+        <section className="rounded-lg border border-slate-600/40 bg-slate-800/40 px-3 py-2">
+          <h4 className="text-xs font-semibold text-slate-300 mb-1">
+            {t('partition.phase2.nextSafeAction')}
+          </h4>
+          <p className="text-xs text-slate-400">
+            {evaluation?.status === 'blocked' || restoreHandoffPreview?.status === 'blocked'
+              ? t('partition.phase2.nextSafeActionBlocked')
+              : evaluation?.status === 'review_required' ||
+                  restoreHandoffPreview?.status === 'review_required' ||
+                  manifestLayoutPreview?.status === 'unavailable'
+                ? t('partition.phase2.nextSafeActionReview')
+                : t('partition.phase2.nextSafeActionOk')}
+          </p>
         </section>
       )}
     </div>
