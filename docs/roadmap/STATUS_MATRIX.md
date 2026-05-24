@@ -44,7 +44,7 @@
 | **Rescue stick temp runtime prep** | Grün | Skripte, Runbooks, Copy-Handoff | `scripts/rescue-live/` |
 | **Rescue stick Live-OS network validation** | Gelb | Session 3: Bundle ok; USB-Copy VFAT/symlinks; **kein Live-Boot** | `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md` |
 | **Controlled ISO build prep (live-build tree)** | Grün | Tree + Bundle Validator Exit 0 | `RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md` |
-| **Controlled ISO build execution** | Gelb | **ISO_BUILD_FAILED** — root/sudo/chroot | `RESCUE_CONTROLLED_ISO_BUILD_RESULT.md` |
+| **Controlled ISO build execution** | Gelb | Clean-State + noauto fix; **tar/adduser** Ursache dokumentiert; ISO ausstehend | `RESCUE_CONTROLLED_ISO_BUILD_RESULT.md` |
 | **Rescue ISO artifact** | Rot | Keine ISO erzeugt | — |
 | **Controlled ISO preparation** | Gelb | Build fehlgeschlagen; USB blocked | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md` |
 | **Rescue USB write gate** | Rot | **blocked** — `usb_write_allowed: false` | `RESCUE_USB_WRITE_GATE_RUNBOOK.md` |

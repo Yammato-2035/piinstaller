@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-lb config \
+lb config noauto \
   --distribution bookworm \
   --archive-areas "main" \
   --binary-images iso-hybrid \

@@ -1,21 +1,21 @@
 # Rescue Big Step — Status Plan
 
 **Datum:** 2026-05-24
-**Git HEAD:** `e7e2e07` (ISO-Build-Versuch)
+**Git HEAD:** `83ec644` (tar/adduser retry)
 **real_iso_build_allowed:** `false`
 **usb_write_allowed:** `false`
 
-| Bereich | Ziel | Aktueller Status | Blocker | Entscheidung |
-|---------|------|------------------|---------|--------------|
-| Temp Runtime Bundle | bereitstellen | **green** | — | Validator Exit 0 |
-| Live-build Tree | vorbereiten | **green** | — | Validator Exit 0 |
-| Controlled ISO Build | ISO erzeugen | **ISO_BUILD_FAILED** | root/sudo; auto/config noauto | Operator-Terminal |
-| Rescue ISO artifact | SHA256 | **blocked** | Keine ISO | — |
-| USB Write | blockiert | **blocked** | Gate | — |
-| Live-Medium Network Validation | grün | **review_required** | Kein Live-Boot | Operator |
+| Bereich | Ziel | Status | Blocker |
+|---------|------|--------|---------|
+| auto/config noauto | Fix | **green** | — |
+| Clean build state | chroot leer | **green** | rm ohne sudo ok |
+| Temp/Tree Validator | Exit 0 | **green** | — |
+| Controlled ISO Build | ISO | **review_required** | sudo lb build Operator |
+| Rescue ISO artifact | SHA256 | **blocked** | — |
+| USB Write | blockiert | **blocked** | — |
 
 ## Entscheidung
 
-1. ISO-Build-Versuche dokumentiert — **kein fake green**.
-2. Bundle-Safety-Scan **pass** (CDN/Secrets).
-3. **Nächster Schritt:** Operator führt `sudo lb build noauto` aus; Evidence ergänzen.
+1. **tar/adduser:** verunreinigter chroot aus fakeroot + cache — **kein ext4-Problem**.
+2. **Fix:** Clean + `auto/config noauto` — Build-State bereit.
+3. **Nächster Schritt:** Operator `sudo lb build noauto` im Terminal.

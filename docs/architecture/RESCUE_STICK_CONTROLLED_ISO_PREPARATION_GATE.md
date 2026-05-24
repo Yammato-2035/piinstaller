@@ -18,11 +18,12 @@
 | 6 | USB Write | **blocked** |
 | 7 | Operator ISO-Freigabe | **pass** (Auftrag) |
 
-## Bekannte Build-Blocker
+## Bekannte Build-Blocker (aktualisiert)
 
-- `auto/config` ohne `noauto` → Rekursion
-- `lb build` ohne `noauto` → blockiertes `auto/build`
-- `lb build noauto` → **root/sudo** erforderlich
+- ~~`auto/config` ohne `noauto`~~ → **behoben**
+- **`lb build` ohne `noauto`** → ruft blockiertes `auto/build` auf — **`sudo lb build noauto` verwenden**
+- **Verunreinigter chroot** nach fakeroot/cache → vor Retry `chroot cache binary local .build` löschen
+- **`lb build noauto`** → **root/sudo** erforderlich
 
 ## Flags
 

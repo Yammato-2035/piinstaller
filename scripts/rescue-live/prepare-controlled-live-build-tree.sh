@@ -121,7 +121,7 @@ chmod +x "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook
 cat > "${BUILD_ROOT}/auto/config" <<'EOF'
 #!/bin/sh
 set -eu
-lb config \
+lb config noauto \
   --distribution bookworm \
   --archive-areas "main" \
   --binary-images iso-hybrid \
