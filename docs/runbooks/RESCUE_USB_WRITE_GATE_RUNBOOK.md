@@ -55,6 +55,11 @@ sudo dd if=/path/to/live-image-amd64.hybrid.iso of=/dev/<TARGET> bs=4M status=pr
 2. Live-Evidence: `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md`
 3. Temp-Runtime local-only prüfen (`check-localonly.sh`)
 
+## Development Dashboard
+
+- USB-Write-Status: Cockpit-Panel **Rettungsstick Build** (`usb_write_gate` rot/blockiert)
+- Kein USB-Write-Button im Dashboard — separates Operator-Gate bleibt
+
 ## Referenzen
 
 - `RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md`

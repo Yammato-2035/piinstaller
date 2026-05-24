@@ -4100,6 +4100,22 @@ async def dev_dashboard_evidence_index():
     return dev_dashboard_core.build_evidence_index()
 
 
+@app.get("/api/dev-dashboard/rescue-build/status")
+async def dev_dashboard_rescue_build_status():
+    """Read-only: Rescue-/ISO-/Live-Build-Gates für Development Dashboard."""
+    from core.rescue_build_dashboard_state import (
+        build_rescue_build_dashboard_state,
+        rescue_build_status_api_code,
+    )
+
+    try:
+        body = build_rescue_build_dashboard_state()
+        return {"status": "success", "code": rescue_build_status_api_code(body), **body}
+    except Exception:
+        logger.exception("dev_dashboard_rescue_build_status failed")
+        raise
+
+
 @app.post("/api/dev-dashboard/actions/restart-backend")
 async def dev_dashboard_action_restart_backend():
     from core import dev_dashboard as dev_dashboard_core

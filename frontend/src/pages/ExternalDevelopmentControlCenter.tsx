@@ -7,6 +7,7 @@ import { RuntimeGatePanel } from '../components/dev-dashboard/RuntimeGatePanel'
 import { CockpitBackupProgressPanel } from '../components/dev-dashboard/CockpitBackupProgressPanel'
 import { CockpitBackupTargetPanel } from '../components/dev-dashboard/CockpitBackupTargetPanel'
 import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
+import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
 import { DeployDriftPanel } from '../components/dev-dashboard/DeployDriftPanel'
 import { SafeTestModePanel } from '../components/dev-dashboard/SafeTestModePanel'
 import { writeCockpitRefreshSec } from '../lib/devDashboard/cockpitWindow'
@@ -177,6 +178,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       ) : null}
 
       <RescueStickBoard dashboard={mon.dashboard} />
+      <RescueBuildPanel refreshSec={mon.refreshSec} />
       <CockpitBackupTargetPanel refreshSec={mon.refreshSec} />
       <CockpitBackupProgressPanel refreshSec={mon.refreshSec} />
 

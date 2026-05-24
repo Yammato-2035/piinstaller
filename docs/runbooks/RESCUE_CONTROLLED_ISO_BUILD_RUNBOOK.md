@@ -68,6 +68,14 @@ sha256sum live-image-amd64.hybrid.iso
 2. **Kein USB-Write** in dieser Phase
 3. USB-Schreiben: separater Auftrag → `RESCUE_USB_WRITE_GATE_RUNBOOK.md`
 
+## Development Dashboard / Logs
+
+- Status: `GET /api/dev-dashboard/rescue-build/status` oder Cockpit-Panel **Rettungsstick Build**
+- Persistente Logs (empfohlen): `scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build`
+  - `build/rescue/logs/controlled-iso-build/latest.log`
+  - `docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json`
+- Operator muss Terminalausgaben nicht mehr manuell sammeln — Dashboard liest Evidence + Logs
+
 ## Verboten ohne Gate
 
 - `dd`, `mkfs`, `parted write`
