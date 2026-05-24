@@ -18,8 +18,18 @@ build/
 
 # Deploy-Runner Cache (Laufzeit / Harness; nicht versionieren — siehe workspace_artifact_inventory_2026-05-11.json)
 backend/cache/deploy/
+cache/deploy/
+tmp_runner_img.img
+*.img
+*.img.tmp
+*.qcow2
+*.iso
 # Einmalig generiertes Runner-Test-JSON (lokal; nicht versionieren)
 backend/job_rt_outside.json
+
+# Test-/Tool-Caches (lokal)
+.pytest_cache/
+.npm-cache/
 
 # Umgebungsvariablen & Secrets (keine Passwörter versionieren)
 .env
