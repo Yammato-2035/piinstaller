@@ -74,6 +74,6 @@ def test_apply_queue_never_reports_successful_writes(client):
 
 
 def test_tkinter_fallback_still_present():
-    root = Path(__file__).resolve().parents[2].parent / "apps" / "partitionshelfer"
+    root = Path(__file__).resolve().parents[2] / "apps" / "partitionshelfer"
     assert (root / "start.py").is_file()
     assert (root / "ui" / "main_window.py").is_file()
