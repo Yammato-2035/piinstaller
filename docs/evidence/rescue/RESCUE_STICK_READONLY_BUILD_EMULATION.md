@@ -2,7 +2,23 @@
 
 **Date:** 2026-05-24  
 **Runner:** `backend/deploy/runner_rescue_stick_readonly_build_emulation.py`
-**Deploy baseline:** Finalize gate commit (post `f95acea`)
+**Deploy baseline:** `bdd9865` (Finalize rescue stick build emulation gate)
+
+## Exact bdd9865 Deploy Verification (2026-05-24)
+
+| Punkt | Ergebnis |
+|-------|----------|
+| **Git HEAD** | `bdd9865` |
+| **Offizieller Deploy** | Operator `sudo deploy-to-opt.sh` (vorherige Session Exit 0); Agent-Session: sudo nicht interaktiv — **Funktionsgleichheit:** Runner-SHA256 Workspace = `/opt`, Runtime-Gate Exit 0 |
+| **Runtime-Gate** | Exit **0** (deploy_drift/Manifest OK) |
+| **run-all** | `DEPLOY_RESCUE_STICK_BUILD_EMULATION_FINAL_GATE_READY`, `all_status: ready` |
+| **CDN `/opt/frontend/dist`** | keine Google-Fonts-CDN |
+| **Build-Artefakte** | keine ISO/IMG/QCOW2/squashfs/initrd/vmlinuz |
+| **real_iso_build_allowed** | `false` |
+| **live_os_network_test_pending** | `true` |
+| **Nächstes Gate** | [Live-OS Network Validation](RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_PLAN.md) |
+
+**Status:** Rescue stick read-only build emulation **green**; Real ISO build **blocked** bis Live-OS Network Validation abgeschlossen.
 
 ## Full Deploy + Package-List Validation (2026-05-24)
 

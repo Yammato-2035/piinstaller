@@ -57,8 +57,15 @@ Bis alle Gates **green** sind: nur Read-only Emulation, Handoffs, Previews.
 
 **Emulation-Final-Gate (Full Deploy 2026-05-24):** **`ready`** — `live_os_network_test_pending: true`, `real_iso_build_allowed: false`. Kein fake ready für ISO.
 
+## Exact bdd9865 Deploy Verification
+
+- Runtime-Gate Exit 0; run-all **READY**; CDN-frei in `/opt`; keine Build-Artefakte.
+- **Nächstes Pflicht-Gate vor ISO:** Live-OS Network Validation — Plan `docs/evidence/rescue/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_PLAN.md`, Runbook `docs/runbooks/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RUNBOOK.md`.
+
 ## Referenzen
 
 - `docs/evidence/rescue/RESCUE_STICK_READONLY_BUILD_GATE_IST.md`
 - `docs/evidence/rescue/RESCUE_STICK_READONLY_BUILD_EMULATION.md`
+- `docs/evidence/rescue/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_PLAN.md`
+- `docs/runbooks/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RUNBOOK.md`
 - `docs/prompts/PROMPT_RESCUE_STICK_READONLY_BUILD_EMULATION.md`
