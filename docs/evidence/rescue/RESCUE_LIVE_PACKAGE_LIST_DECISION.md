@@ -1,0 +1,52 @@
+# Rescue Live — Paketlisten-Entscheidung
+
+**Datum:** 2026-05-24
+**Git HEAD:** `0d211fc`
+**Pfad:** `build/rescue/live-build/setuphelfer-rescue-live/config/package-lists/setuphelfer.list.chroot`
+
+## Aktiv (minimal, konservativ)
+
+| Paket | Zweck |
+|-------|-------|
+| systemd | Init + Units |
+| systemd-sysv | SysV-Kompatibilität |
+| ca-certificates | TLS-Basis |
+| curl | API-Smoke / Diagnose |
+| jq | JSON/Manifest |
+| iproute2 | `ip`, Routing |
+| iputils-ping | Netzwerk-Diagnose |
+| net-tools | Legacy-Netzwerk-Tools |
+| util-linux | Basis-Utilities |
+| lsblk | Blockgeräte read-only |
+| smartmontools | SMART read-only |
+| python3 | Backend-Runtime |
+| python3-venv | venv im Bundle |
+| python3-pip | Pip-Fallback (minimal) |
+
+## Bewusst NICHT aktiv (optional_later)
+
+| Paket | Grund |
+|-------|-------|
+| network-manager | Phase 1 nutzt **systemd-networkd** |
+| avahi-daemon | Kein mDNS-Zwang |
+| nginx | UI über lokalen Python/static server |
+| parted | **Kein Schreib-Gate** — Partition-Write blockiert |
+| ntfs-3g | Schreib-Mount-Risiko — später mit Gate |
+| testdisk | Recovery-Write — später |
+| gparted | GUI-Partitionierung — blockiert |
+
+## Netzwerk-Strategie
+
+- **systemd-networkd** mit DHCP auf `en*` und `eth*`
+- **WLAN:** nicht automatisch — optional_later, keine Passwörter/Secrets im Image
+
+## Setuphelfer-Dienste
+
+- Backend: `127.0.0.1:8000` (local-only Script)
+- UI: `127.0.0.1:3001`
+- `SETUPHELFER_DISABLE_WRITES=1`
+- Kein Auto-Restore, Auto-Partition, Auto-Backup
+
+## apt in diesem Auftrag
+
+**Nicht ausgeführt.** Pakete werden erst innerhalb eines explizit freigegebenen `lb build` in chroot installiert.

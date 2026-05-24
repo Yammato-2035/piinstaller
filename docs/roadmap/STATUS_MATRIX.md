@@ -43,7 +43,9 @@
 | **Rescue stick temp runtime bundle** | Grün | `create-temp-runtime-bundle.sh` + Validator Exit 0; MANIFEST lokal | `RESCUE_TEMP_RUNTIME_BUNDLE_RESULT.md` |
 | **Rescue stick temp runtime prep** | Grün | Skripte, Runbooks, Copy-Handoff | `scripts/rescue-live/` |
 | **Rescue stick Live-OS network validation** | Gelb | Session 3: Bundle ok; USB-Copy VFAT/symlinks; **kein Live-Boot** | `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md` |
-| **Controlled ISO preparation** | Gelb | **ISO_PREP_REVIEW_REQUIRED** | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md` |
+| **Controlled ISO build prep (live-build tree)** | Gelb | Tree Validator Exit 0; **`lb`/xorriso fehlen**; kein ISO | `RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md` |
+| **Controlled ISO preparation** | Gelb | **ISO_BUILD_PREP_REVIEW_REQUIRED** | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md` |
+| **Rescue USB write gate** | Rot | **blocked** — `usb_write_allowed: false` | `RESCUE_USB_WRITE_GATE_RUNBOOK.md` |
 | **Rescue stick real ISO build** | Rot | **blocked** — `real_iso_build_allowed: false`; Live-OS **green** auf Hardware ausstehend | `RESCUE_STICK_READONLY_BUILD_GATE.md` |
 
 ## Phasen-ToDos (Kurz)

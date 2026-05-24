@@ -1,0 +1,14 @@
+systemd
+systemd-sysv
+ca-certificates
+curl
+jq
+iproute2
+iputils-ping
+net-tools
+util-linux
+lsblk
+smartmontools
+python3
+python3-venv
+python3-pip

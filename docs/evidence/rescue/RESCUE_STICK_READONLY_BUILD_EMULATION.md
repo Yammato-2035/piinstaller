@@ -39,11 +39,27 @@ Details: [RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md](RESCUE_STICK_LIVE_O
 | Temp Bundle erzeugt/validiert | **green** (lokal, nicht versioniert) |
 | Monolith-Gate | **review_required** — kein blocked |
 | Phase 3 Entkopplung | **nicht ausgeführt** |
-| Controlled ISO Prep Gate | **ISO_PREP_REVIEW_REQUIRED** |
+| Controlled ISO Prep Gate | **ISO_BUILD_PREP_REVIEW_REQUIRED** |
+| Controlled Live Build Tree | **green** — Validator Exit 0; Tools fehlen |
 | Live-OS Validation | **review_required** |
 | `real_iso_build_allowed` | **false** |
+| `usb_write_allowed` | **false** |
 
-Details: [RESCUE_BIG_STEP_STATUS_PLAN.md](RESCUE_BIG_STEP_STATUS_PLAN.md), [RESCUE_TEMP_RUNTIME_BUNDLE_RESULT.md](RESCUE_TEMP_RUNTIME_BUNDLE_RESULT.md)
+## Controlled Live Build Tree Prep (2026-05-24)
+
+| Punkt | Ergebnis |
+|-------|----------|
+| Build-Tree | `build/rescue/live-build/setuphelfer-rescue-live/` |
+| Tree Validator | Exit **0** |
+| Temp Bundle Validator | Exit **0**, 2775 files |
+| Tools `lb` / xorriso | **fehlen** |
+| ISO gebaut | **nein** |
+| USB geschrieben | **nein** |
+| Gesamtstatus Prep | **ISO_BUILD_PREP_REVIEW_REQUIRED** |
+
+Details: [RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md](RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md)
+
+## Big Step — Temp Bundle + ISO Prep Gate (2026-05-24)
 
 ## Temp Runtime Prep (2026-05-24)
 

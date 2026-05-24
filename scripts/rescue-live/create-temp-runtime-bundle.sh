@@ -26,7 +26,10 @@ RSYNC_EX=(--exclude='__pycache__' --exclude='*.pyc' --exclude='.env' --exclude='
 
 rsync -a "${RSYNC_EX[@]}" "$REPO_ROOT/backend/" "$BUNDLE/backend/"
 rsync -a "${RSYNC_EX[@]}" "$REPO_ROOT/frontend/dist/" "$BUNDLE/frontend/dist/"
-rsync -a "$REPO_ROOT/scripts/rescue-live/" "$BUNDLE/scripts/rescue-live/"
+mkdir -p "$BUNDLE/scripts/rescue-live"
+for _rl in start-backend-localonly.sh start-ui-localonly.sh check-localonly.sh; do
+  cp -a "$REPO_ROOT/scripts/rescue-live/$_rl" "$BUNDLE/scripts/rescue-live/"
+done
 cp -a "$REPO_ROOT/scripts/serve-frontend-production.py" "$BUNDLE/scripts/"
 cp -a "$REPO_ROOT/config/version.json" "$BUNDLE/config/"
 cp -a "$REPO_ROOT/VERSION" "$BUNDLE/VERSION"

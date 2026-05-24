@@ -1,0 +1,22 @@
+[Unit]
+Description=Setuphelfer Rescue Web UI
+After=setuphelfer-backend.service
+Wants=setuphelfer-backend.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/setuphelfer-rescue
+Environment=SETUPHELFER_RESCUE_ROOT=/opt/setuphelfer-rescue
+Environment=SETUPHELFER_RESCUE_MODE=1
+Environment=SETUPHELFER_DISABLE_WRITES=1
+ExecStart=/opt/setuphelfer-rescue/scripts/rescue-live/start-ui-localonly.sh
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/tmp /run /var/tmp
+
+[Install]
+WantedBy=multi-user.target

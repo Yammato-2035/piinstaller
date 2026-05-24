@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+echo "Use controlled gate before running lb build."
+exit 20
