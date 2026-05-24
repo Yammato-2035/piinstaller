@@ -72,7 +72,19 @@ Bis alle Gates **green** sind: nur Read-only Emulation, Handoffs, Previews.
 | **real_iso_build_allowed** | **false** |
 | **next_gate** | Hardware-Live-Boot mit systemd-networkd, dann ISO dry-run / controlled ISO prep |
 
-**Host-Proxy bestätigt:** Backend/UI localhost, 127.0.0.1-Bind, CDN-frei unter `/opt`. **Offen:** DHCP systemd-networkd, Offline-Live-Boot. **Hardware-Session 2026-05-24:** kein Live-Medium gebootet → weiter **review_required**.
+**Host-Proxy bestätigt:** Backend/UI localhost, 127.0.0.1-Bind, CDN-frei unter `/opt`. **Offen:** DHCP systemd-networkd auf gebootetem Live-Medium mit Temp-Runtime.
+
+## Temp Runtime Prep (2026-05-24)
+
+| Artefakt | Status |
+|----------|--------|
+| `RESCUE_LIVE_TEMP_RUNTIME_PREP_IST.md` | IST-Stand |
+| `RESCUE_TEMP_RUNTIME_BUNDLE_PREVIEW.md` | Bundle **ok** (Preview) |
+| `scripts/rescue-live/*` | local-only Start/Check |
+| `RESCUE_STICK_TEMP_RUNTIME_ON_LIVE_MEDIUM_RUNBOOK.md` | Operator-Runbook |
+| Result-Template | Evidence-Vorlage |
+
+**Temp Runtime Prep:** **green**. **Live-OS Validation:** **review_required**. **real_iso_build_allowed:** **false**.
 
 ## Referenzen
 
@@ -80,5 +92,6 @@ Bis alle Gates **green** sind: nur Read-only Emulation, Handoffs, Previews.
 - `docs/evidence/rescue/RESCUE_STICK_READONLY_BUILD_EMULATION.md`
 - `docs/evidence/rescue/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_PLAN.md`
 - `docs/evidence/rescue/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md`
-- `docs/runbooks/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RUNBOOK.md`
+- `docs/runbooks/RESCUE_STICK_TEMP_RUNTIME_ON_LIVE_MEDIUM_RUNBOOK.md`
+- `docs/evidence/rescue/RESCUE_LIVE_TEMP_RUNTIME_PREP_IST.md`
 - `docs/prompts/PROMPT_RESCUE_STICK_READONLY_BUILD_EMULATION.md`

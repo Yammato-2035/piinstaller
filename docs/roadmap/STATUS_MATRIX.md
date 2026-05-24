@@ -40,7 +40,8 @@
 | Cloudserver Edition | Schwarz | nach Modularisierung | — |
 | **Partitions Phase 2 UI Preview Stub** | Grün | Offizieller `deploy-to-opt` (2026-05-24); Gate Exit 0; API-Smoke read-only; UI-Bundle `index-B-1eLB5j.js` aus Deploy; Browser-Checkliste `?page=partitions` | `docs/evidence/partitions/PARTITIONS_PHASE2_UI_PREVIEW_STUB.md` |
 | **Rescue stick read-only build emulation** | Grün | run-all **ready**, CDN-frei; Emulation abgeschlossen | `RESCUE_STICK_READONLY_BUILD_EMULATION.md` |
-| **Rescue stick Live-OS network validation** | Gelb | **review_required** — Hardware-Session: kein Live-Medium gebootet; Host-Proxy localhost/CDN pass | `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md` |
+| **Rescue stick Live-OS network validation** | Gelb | **review_required** — Temp-Runtime Prep **green**; Hardware-Live-Test ausstehend | `RESCUE_LIVE_TEMP_RUNTIME_PREP_IST.md`, `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md` |
+| **Rescue stick temp runtime prep** | Grün | Bundle-Preview, local-only Skripte, Runbook, Result-Template | `RESCUE_TEMP_RUNTIME_BUNDLE_PREVIEW.md`, `scripts/rescue-live/` |
 | **Rescue stick real ISO build** | Rot | **blocked** — `real_iso_build_allowed: false`; Live-OS **green** auf Hardware ausstehend | `RESCUE_STICK_READONLY_BUILD_GATE.md` |
 
 ## Phasen-ToDos (Kurz)

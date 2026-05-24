@@ -20,6 +20,17 @@
 
 **Status:** Rescue stick read-only build emulation **green**; Live-OS network validation **review_required** (Host-Proxy only); Real ISO build **blocked**.
 
+## Temp Runtime Prep (2026-05-24)
+
+| Punkt | Status |
+|-------|--------|
+| Bundle-Preview + IST | **green** (Doku) |
+| `scripts/rescue-live/*` | local-only, kein sudo/apt/mount |
+| Live-OS Validation | **review_required** (Hardware ausstehend) |
+| `real_iso_build_allowed` | **false** |
+
+Details: [RESCUE_LIVE_TEMP_RUNTIME_PREP_IST.md](RESCUE_LIVE_TEMP_RUNTIME_PREP_IST.md)
+
 ## Live-OS Network Validation Result (2026-05-24)
 
 | Punkt | Ergebnis |
