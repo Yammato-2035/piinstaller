@@ -34,6 +34,15 @@
 
 Details: [RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md](RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md)
 
+## Hardware Live-Medium Validation (2026-05-24, Session 2)
+
+| Punkt | Ergebnis |
+|-------|----------|
+| **Live-Medium gebootet** | **Nein** — persistenter Ubuntu-Host, kein `/lib/live/mount/medium` |
+| **systemd-networkd / DHCP (Live)** | **not_tested** |
+| **Gesamtstatus Hardware** | **review_required** |
+| **real_iso_build_allowed** | **false** |
+
 ## Full Deploy + Package-List Validation (2026-05-24)
 
 | Punkt | Ergebnis |

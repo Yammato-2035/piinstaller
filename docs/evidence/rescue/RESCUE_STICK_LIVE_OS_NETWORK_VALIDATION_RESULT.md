@@ -2,12 +2,82 @@
 
 **Version:** 1.0
 **Datum:** 2026-05-24 (ca. 20:55 UTC / 22:55 CEST)
-**Git HEAD (Repo):** `2b6e5c4`
+**Git HEAD (Repo):** `174cb06` (Hardware-Test-Session)
 **Runtime-Gate vor Test:** Exit 0
 **Plan:** `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_PLAN.md`
 **Runbook:** `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RUNBOOK.md`
 
-## Testumgebung (Scope)
+## Hardware Live-Medium Validation (2026-05-24, Session 2)
+
+**Testdatum:** 2026-05-24 (ca. 20:59 UTC / 22:59 CEST)
+**Runtime-Gate vor Test:** Exit 0 (`174cb06`)
+
+### Testmedium / Verfügbarkeit
+
+| Feld | Ergebnis |
+|------|----------|
+| **Freigegebenes Live-/Rescue-Testmedium gebootet** | **Nein** |
+| **Erkannte Umgebung** | Persistente **Ubuntu-Desktop-Installation** auf NVMe (`ext4 /`), nicht Live-ISO |
+| **Live-Indikatoren** | Kein `/lib/live/mount/medium`; Kernel cmdline: `root=UUID=… ro` auf lokaler Partition |
+| **Bootmodus** | UEFI (`/boot/efi` auf `nvme0n1p1`) — **Host**, nicht Live-Stick |
+| **Distribution** | Ubuntu, Kernel `6.8.0-117-generic` |
+| **Vorgesehenes Ziel** | Debian-Live/Rettungsstick mit **systemd-networkd** — **nicht in dieser Session bootbar** |
+
+### Hardware (Session-Host, nicht Live-Medium)
+
+| Feld | Wert |
+|------|------|
+| **Gerät** | `volker-ROG-Strix` |
+| **CPU** | 32 logical CPUs (x86_64) |
+| **RAM** | ca. 30 GiB |
+| **Netzwerk** | LAN `enp3s0` + WLAN `wlp4s0` (DHCP via **NetworkManager**) |
+| **Internet** | vorhanden; **nicht** absichtlich getrennt (kein Live-Boot) |
+
+### Netzwerk-Stack (Live-Ziel nicht getestet)
+
+| Prüfung | Status | Evidence |
+|---------|--------|----------|
+| systemd-networkd aktiv | **not_tested** | Host: **inactive** |
+| NetworkManager | **active** (Host) | Nicht Ziel-Stack für Phase-1 Rescue |
+| DHCP (systemd-networkd) | **not_tested** | Kein Live-Medium |
+| Loopback | **pass** | `lo` UP |
+| DNS optional / Offline | **not_tested** | Kein isolierter Live-Boot |
+
+### Setuphelfer auf Session-Host (Proxy, nicht Live-Medium)
+
+| Prüfung | Status |
+|---------|--------|
+| Backend `127.0.0.1:8000` | **pass** (Host `/opt`) |
+| UI `127.0.0.1:3001` | **pass** |
+| Local-only Bind (Setuphelfer) | **pass** — `127.0.0.1:8000/3001` |
+| CDN-frei `/opt/dist` | **pass** |
+| Auto-Restore/Partition/Backup beim Start | **pass** (Proxy) — nicht beobachtet |
+
+### Pass/Fail-Matrix (Hardware Live-Medium)
+
+| Prüffeld | Ergebnis | Bewertung |
+|----------|----------|-----------|
+| Echtes Live-Medium gebootet | **fail** (nicht verfügbar) | Blocker für **green** |
+| systemd-networkd auf Live-Medium | **not_tested** | — |
+| DHCP auf Live-Medium | **not_tested** | — |
+| Backend/UI auf Live-Medium | **not_tested** | Host-Proxy separat dokumentiert |
+| Offline ohne WAN auf Live-Medium | **not_tested** | — |
+| Keine CDN-Pflicht (Live) | **not_tested** | Host `/opt`: pass |
+| Keine Auto-Write-Aktionen (Live) | **not_tested** | Host-Proxy: pass |
+
+### Gesamtstatus Hardware Live-Medium: **review_required**
+
+**Begründung:** In der Agent-/Entwicklungs-Session war **kein freigegebenes Rettungsstick-/Debian-Live-Testmedium gebootet**. Die Session lief auf dem installierten Host (`volker-ROG-Strix`). Ein erneuter Host-Proxy-Check bestätigt localhost/CDN erneut, ersetzt aber **nicht** den Hardware-Live-Test.
+
+**Kein fake green.** `real_iso_build_allowed: false`. `live_os_network_test: not passed`.
+
+### Operator-Aktion für green
+
+1. Freigegebenes Live-Testmedium physisch booten (kein ISO-**Build** in diesem Auftrag).
+2. Runbook `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RUNBOOK.md` auf **gebootetem** System ausführen.
+3. Evidence in diesem Abschnitt mit echten Live-Werten ergänzen; Gesamtstatus neu bewerten.
+
+## Testumgebung (Scope — Host-Proxy Session 1)
 
 | Feld | Wert |
 |------|------|
