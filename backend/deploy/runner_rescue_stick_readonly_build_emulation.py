@@ -324,17 +324,17 @@ def build_rescue_stick_package_list_preview(*, explicit_overwrite: bool = False)
             "systemd-networkd",
             "network",
             required=False,
-            status="review_required",
-            reason="alternative to NetworkManager",
+            status="ok",
+            reason="phase_1_default; live_os_validation_pending",
             runtime_use="service_runtime",
         ),
         _pkg(
             "network-manager",
             "network",
             required=False,
-            status="review_required",
-            reason="alternative to systemd-networkd",
-            runtime_use="service_runtime",
+            status="optional_later",
+            reason="not phase_1_default; live_os_validation_pending",
+            runtime_use="optional",
         ),
         _pkg("openssh-client", "network", required=False, status="optional_later", reason="remote help", runtime_use="optional"),
         _pkg("avahi-daemon", "network", required=False, status="optional_later", reason="mDNS", runtime_use="optional"),
@@ -371,6 +371,13 @@ def build_rescue_stick_package_list_preview(*, explicit_overwrite: bool = False)
     categories = sorted({p["category"] for p in packages})
     review = sum(1 for p in packages if p["status"] in ("review_required", "optional_later"))
     list_status: EmulStatus = "ok" if review < 4 else "review_required"
+    network_decided = any(p["name"] == "systemd-networkd" and p["status"] == "ok" for p in packages)
+    pkg_warnings: list[str] = []
+    if list_status == "review_required":
+        pkg_warnings.append("RESCUE_STICK_PKG_NON_NETWORK_REVIEW_ITEMS")
+    if network_decided:
+        pkg_warnings.append("RESCUE_STICK_PKG_NETWORK_STACK_PHASE1_DEFAULT_SYSTEMD_NETWORKD")
+    pkg_warnings.append("RESCUE_STICK_PKG_LIVE_OS_VALIDATION_PENDING")
     body = {
         "schema_version": "1.0",
         "component": "rescue_stick_package_list_preview",
@@ -379,7 +386,13 @@ def build_rescue_stick_package_list_preview(*, explicit_overwrite: bool = False)
         "generated_at": _utc_now(),
         "categories": categories,
         "packages": packages,
-        "warnings": ["RESCUE_STICK_PKG_NETWORK_STACK_UNDECIDED"] if list_status == "review_required" else [],
+        "network_stack_decision": {
+            "phase_1_default": "systemd-networkd",
+            "alternative_optional_later": "network-manager",
+            "lan_write": "blocked",
+            "live_os_validation": "pending",
+        },
+        "warnings": pkg_warnings,
         "errors": [],
     }
     wrote, errors = _write_emul(path, body, explicit_overwrite=explicit_overwrite)
@@ -519,9 +532,9 @@ def build_rescue_stick_frontend_bundle_preview(*, explicit_overwrite: bool = Fal
                 assets_css.append(_repo_rel(p))
 
     routes_expected = ["partitions", "backup", "restore", "rescue", "dashboard"]
-    fe_status: EmulStatus = "review_required" if (errors or warnings) else "ok"
-    if errors:
-        fe_status = "blocked"
+    fe_status: EmulStatus = "blocked" if errors else ("review_required" if cdn_required else "ok")
+    if not index.is_file() and not errors:
+        fe_status = "review_required"
     body = {
         "schema_version": "1.0",
         "component": "rescue_stick_frontend_bundle_preview",
@@ -535,6 +548,8 @@ def build_rescue_stick_frontend_bundle_preview(*, explicit_overwrite: bool = Fal
         "rescue_relevant_routes": routes_expected,
         "offline_localhost": True,
         "external_cdn_required": cdn_required,
+        "blocker_for_real_iso_build": cdn_required,
+        "offline_font_policy": "system_fonts_only",
         "analytics_tracking": False,
         "cloud_update_required_for_rescue": False,
         "warnings": warnings,
@@ -596,15 +611,22 @@ def build_rescue_stick_systemd_service_preview(*, explicit_overwrite: bool = Fal
     body = {
         "schema_version": "1.0",
         "component": "rescue_stick_systemd_service_preview",
-        "systemd_preview_status": "review_required",
+        "systemd_preview_status": "ok",
         **_READONLY_FLAGS,
         "generated_at": _utc_now(),
         "units": units,
-        "warnings": ["RESCUE_STICK_SVC_LAN_BIND_REVIEW_REQUIRED"],
+        "service_bind_decision": {
+            "backend_bind": "127.0.0.1:8000",
+            "webui_bind": "127.0.0.1:3001",
+            "lan_bind": "blocked_until_rescue_lan_gate",
+            "auto_restore_on_start": False,
+            "auto_partition_on_start": False,
+        },
+        "warnings": ["RESCUE_STICK_SVC_LAN_GATE_OPTIONAL_LATER"],
         "errors": [],
     }
     wrote, errors = _write_emul(path, body, explicit_overwrite=explicit_overwrite)
-    st = "blocked" if errors else "review_required"
+    st = "blocked" if errors else "ok"
     return _emit(
         "rescue_stick_systemd_service_preview",
         rel,
@@ -625,12 +647,13 @@ def build_rescue_stick_network_webui_preview(*, explicit_overwrite: bool = False
     body = {
         "schema_version": "1.0",
         "component": "rescue_stick_network_webui_preview",
-        "network_webui_status": "review_required",
+        "network_webui_status": "ok",
         **_READONLY_FLAGS,
         "generated_at": _utc_now(),
         "access": {
             "localhost_http": "http://127.0.0.1:3001",
             "api_localhost": "http://127.0.0.1:8000",
+            "default_access": "local_only",
             "lan_access": "blocked",
             "captive_portal": "optional_later",
             "mdns_setuphelfer_rescue_local": "optional_later",
@@ -640,6 +663,13 @@ def build_rescue_stick_network_webui_preview(*, explicit_overwrite: bool = False
             "cloud_mandatory": False,
             "telemetry": False,
             "lan_write_without_gate": "blocked",
+            "write_actions_over_lan": "blocked",
+            "rescue_auth_required_for_lan": True,
+        },
+        "lan_policy": {
+            "default": "local_only",
+            "lan_access": "blocked",
+            "optional_later": True,
         },
         "warnings": ["RESCUE_STICK_NET_LAN_OPTIONAL_LATER"],
         "errors": [],
