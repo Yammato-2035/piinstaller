@@ -24,13 +24,24 @@ Definiert Voraussetzungen für **ISO-Vorbereitung** — **kein** automatischer I
 | 11 | Evidence vollständig | **review_required** — Live-Result offen |
 | 12 | Operator-Freigabe ISO-Build | **fail** — nicht erteilt |
 
-## Gate-Status
+## Gate-Status (Session 3, 2026-05-24)
 
 **ISO_PREP_REVIEW_REQUIRED**
 
-- Temp-Bundle und Emulation: bereit
-- Live-OS Network Validation: offen
-- Echter ISO-Build: **blockiert**
+| # | Bedingung | Status |
+|---|-----------|--------|
+| 1 | Temp Runtime Bundle validiert | **pass** |
+| 2 | Live-Medium Network Validation green | **fail** — kein Live-Boot in Session 3 |
+| 3–5 | local_only / CDN / Auto-Write auf **Live** | **not_tested** |
+| 6 | Monolith-Gate nicht blocked | **pass** (review_required) |
+| 7–9 | Debian-Live / Paketliste / systemd Preview | **pass** (Emulation) |
+| 10 | Runtime-Bundle-Manifest | **pass** |
+| 11 | Evidence vollständig | **review_required** |
+| 12 | Operator ISO-Freigabe | **fail** |
+
+**Copy-Hinweis:** `cp -a` auf VFAT-USB (INTENSO) scheitert an `venv`-Symlinks — Operator: ext4 oder tar.
+
+**real_iso_build_allowed:** `false`
 
 ## Freigabe-Workflow (später)
 

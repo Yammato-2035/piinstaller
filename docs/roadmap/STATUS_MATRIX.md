@@ -42,8 +42,8 @@
 | **Rescue stick read-only build emulation** | Grün | run-all **ready**, CDN-frei; Emulation abgeschlossen | `RESCUE_STICK_READONLY_BUILD_EMULATION.md` |
 | **Rescue stick temp runtime bundle** | Grün | `create-temp-runtime-bundle.sh` + Validator Exit 0; MANIFEST lokal | `RESCUE_TEMP_RUNTIME_BUNDLE_RESULT.md` |
 | **Rescue stick temp runtime prep** | Grün | Skripte, Runbooks, Copy-Handoff | `scripts/rescue-live/` |
-| **Controlled ISO preparation** | Gelb | **ISO_PREP_REVIEW_REQUIRED** — Live-OS green fehlt | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md` |
-| **Rescue stick Live-OS network validation** | Gelb | **review_required** — Hardware-Live-Boot ausstehend | `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md` |
+| **Rescue stick Live-OS network validation** | Gelb | Session 3: Bundle ok; USB-Copy VFAT/symlinks; **kein Live-Boot** | `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md` |
+| **Controlled ISO preparation** | Gelb | **ISO_PREP_REVIEW_REQUIRED** | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md` |
 | **Rescue stick real ISO build** | Rot | **blocked** — `real_iso_build_allowed: false`; Live-OS **green** auf Hardware ausstehend | `RESCUE_STICK_READONLY_BUILD_GATE.md` |
 
 ## Phasen-ToDos (Kurz)

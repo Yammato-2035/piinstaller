@@ -20,6 +20,18 @@
 
 **Status:** Rescue stick read-only build emulation **green**; Live-OS network validation **review_required** (Host-Proxy only); Real ISO build **blocked**.
 
+## Live-Medium Execution (Session 3, 2026-05-24)
+
+| Punkt | Ergebnis |
+|-------|----------|
+| Bundle Validator | Exit **0**, MANIFEST sha256 `f5b02d78…` |
+| Copy INTENSO USB | **teilweise fehlgeschlagen** (venv symlinks/VFAT) |
+| Live-Boot | **nicht** |
+| Gesamtstatus | **review_required** |
+| ISO Prep | **ISO_PREP_REVIEW_REQUIRED** |
+
+Details: [RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md](RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md)
+
 ## Big Step — Temp Bundle + ISO Prep Gate (2026-05-24)
 
 | Punkt | Status |
