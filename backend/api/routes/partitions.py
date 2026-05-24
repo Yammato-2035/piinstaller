@@ -22,7 +22,7 @@ _PARTITIONS_APP = Path(__file__).resolve().parents[3] / "apps" / "partitionshelf
 _PKG = "setuphelfer_partitions_core"
 
 
-def _load_partitions_core() -> tuple[ModuleType, ModuleType]:
+def _load_partitions_core() -> dict[str, ModuleType]:
     """Lädt apps/partitionshelfer/core ohne Kollision mit backend/core."""
     core_dir = _PARTITIONS_APP / "core"
     if not core_dir.is_dir():
@@ -45,12 +45,30 @@ def _load_partitions_core() -> tuple[ModuleType, ModuleType]:
         setattr(pkg, name, mod)
         return mod
 
-    disk_scanner = _load_sub("disk_scanner", "disk_scanner.py")
-    safety_checks = _load_sub("safety_checks", "safety_checks.py")
-    return disk_scanner, safety_checks
+    return {
+        "disk_scanner": _load_sub("disk_scanner", "disk_scanner.py"),
+        "safety_checks": _load_sub("safety_checks", "safety_checks.py"),
+        "partition_hardstop": _load_sub("partition_hardstop", "partition_hardstop.py"),
+        "manifest_layout_preview": _load_sub(
+            "manifest_layout_preview", "manifest_layout_preview.py"
+        ),
+        "restore_handoff_contract": _load_sub(
+            "restore_handoff_contract", "restore_handoff_contract.py"
+        ),
+    }
 
 
-_disk_scanner, _safety_checks = _load_partitions_core()
+_core = _load_partitions_core()
+_disk_scanner = _core["disk_scanner"]
+_safety_checks = _core["safety_checks"]
+_partition_hardstop = _core["partition_hardstop"]
+_manifest_layout_preview = _core["manifest_layout_preview"]
+_restore_handoff_contract = _core["restore_handoff_contract"]
+
+build_partition_hardstop_context = _partition_hardstop.build_partition_hardstop_context
+evaluate_partition_hardstops = _partition_hardstop.evaluate_partition_hardstops
+build_manifest_layout_preview = _manifest_layout_preview.build_manifest_layout_preview
+build_partition_restore_handoff = _restore_handoff_contract.build_partition_restore_handoff
 
 Disk = _disk_scanner.Disk
 Partition = _disk_scanner.Partition
@@ -193,6 +211,77 @@ async def remove_queue_item(action_id: str) -> dict[str, str]:
 
 class ApplyQueueBody(BaseModel):
     confirmed: bool = False
+
+
+class ManifestLayoutPreviewBody(BaseModel):
+    manifest: dict[str, Any] | None = None
+    target_device: str | None = None
+
+
+class RestoreHandoffPreviewBody(BaseModel):
+    target_device: str
+    partition_plan_preview: dict[str, Any] | None = None
+    hardstop_result: dict[str, Any] | None = None
+    manifest_layout_preview: dict[str, Any] | None = None
+    backup_manifest_ref: str | None = None
+
+
+@partition_router.get("/hardstop-preview")
+async def get_hardstop_preview(
+    target_device: str = Query(..., description="Ziel z. B. /dev/sda oder sda1"),
+    backup_source_device: str | None = Query(None),
+    backup_archive_path: str | None = Query(None),
+    manifest_path: str | None = Query(None),
+    planned_action: str | None = Query(None),
+    target_classification: str | None = Query(None),
+    system_disk: bool = Query(False),
+    identity_unknown: bool = Query(False),
+    smart_state: str | None = Query(None, description="OK|WARNING|FAILED|UNKNOWN"),
+) -> dict[str, Any]:
+    smart_summary: dict[str, Any] | None = None
+    if smart_state:
+        smart_summary = {"state": smart_state.upper()}
+    storage_classification: dict[str, Any] = {}
+    if target_classification:
+        storage_classification["target_classification"] = target_classification
+    if system_disk:
+        storage_classification["system_disk"] = True
+    if identity_unknown:
+        storage_classification["identity_unknown"] = True
+
+    ctx = build_partition_hardstop_context(
+        target_device=target_device,
+        backup_source_device=backup_source_device,
+        backup_archive_path=backup_archive_path,
+        manifest_path=manifest_path,
+        storage_classification=storage_classification or None,
+        smart_summary=smart_summary,
+        planned_action=planned_action,
+    )
+    result = evaluate_partition_hardstops(ctx)
+    return {
+        "context": ctx,
+        "evaluation": result,
+        "write_allowed": False,
+    }
+
+
+@partition_router.post("/manifest-layout-preview")
+async def post_manifest_layout_preview(body: ManifestLayoutPreviewBody) -> dict[str, Any]:
+    preview = build_manifest_layout_preview(body.manifest, body.target_device)
+    return {**preview, "write_allowed": False}
+
+
+@partition_router.post("/restore-handoff-preview")
+async def post_restore_handoff_preview(body: RestoreHandoffPreviewBody) -> dict[str, Any]:
+    handoff = build_partition_restore_handoff(
+        partition_plan_preview=body.partition_plan_preview,
+        hardstop_result=body.hardstop_result,
+        manifest_layout_preview=body.manifest_layout_preview,
+        target_device=body.target_device,
+        backup_manifest_ref=body.backup_manifest_ref,
+    )
+    return {**handoff, "write_allowed": False}
 
 
 @partition_router.post("/queue/apply")
