@@ -1,0 +1,52 @@
+# Rettungsstick – Read-only Build-Gate (Vertrag)
+
+**Version:** 1.0 (Dokumentation)  
+**Bezug:** Partitions-Handoff `RESCUE_STICK_PARTITION_HANDOFF.md`, Finalisierung `ffd2d8a`
+
+## Zweck
+
+Definiert die **Pflicht-Gates**, bevor der Setuphelfer Rettungsstick in einen **echten** ISO-/Live-Build (`lb build`, debootstrap, chroot, apt, Stick-Write) gehen darf.
+
+Bis alle Gates **green** sind: nur Read-only Emulation, Handoffs, Previews.
+
+## Pflicht-Gates (alle green erforderlich)
+
+| # | Gate | Nachweis |
+|---|------|----------|
+| 1 | **Runtime-Gate** | `./scripts/check-runtime-deploy-gate.sh` Exit 0 |
+| 2 | **Partitionshelfer final read-only** | `docs/evidence/partitions/PARTITIONS_FINAL_BROWSER_UI_SMOKE.md` Status green |
+| 3 | **Backup/Verify/Restore-Preview** | Rescue/Backup-Runner-Handoffs ohne blocked; kein Auto-Restore |
+| 4 | **Rescue-Handoff** | `handoff_sources` aus Partitions-API + `RESCUE_STICK_PARTITION_HANDOFF.md` |
+| 5 | **Debian-Live-Basis** | `rescue_live_os_base_decision.json` → `debian_live` |
+| 6 | **Paketliste** | Definiert in `rescue_debian_live_build_plan.json` / Inputs-Handoff |
+| 7 | **Setuphelfer Runtime-Bundle** | `rescue_runtime_bundle_manifest` + Seal, keine Host-Pfade |
+| 8 | **Keine Secrets im Bundle** | Branding/Secret-Guard-Handoff |
+| 9 | **Keine Host-Pfade im Bundle** | Sandbox-Manifest, allowlist-konform |
+| 10 | **Kein Legacy-piinstaller-Branding** | `setuphelfer_branding_guard_check.json` |
+| 11 | **Kein Write-Default** | MVP-Scope: `forbidden_auto_operations_absent` |
+| 12 | **Gefährliche Live-Aktionen gated** | rescue_hardstop, write_guard, restore_gate |
+| 13 | **Kein automatisches Restore** | `restore_execution_allowed=false` in Previews |
+| 14 | **Kein automatisches Partitionieren** | Partitions Queue/Apply Stub |
+| 15 | **Evidence-Pfade** | `docs/evidence/runtime-results/handoff/rescue_*.json` + `build/rescue/` |
+
+## Erlaubt vor Gate-Freigabe
+
+- `runner_rescue_build_environment_emulation` (simulated workspace)
+- `runner_rescue_build_readiness_gate` (read-only Bewertung)
+- Paketlisten-**Preview**, systemd-**Preview**, Frontend/Backend-Bundle-**Preview**
+- Evidence-Manifeste unter `build/rescue/emulation/`
+
+## Verboten vor Gate-Freigabe
+
+`lb build`, debootstrap, chroot, `apt install`/`upgrade`, mount/umount für Stick-Provisioning, ISO-Erzeugung (xorriso/grub-mkrescue), `dd` auf Geräte, qemu-Boot als Produktivnachweis, automatischer Restore/Partition-Write.
+
+## Freigabe-Workflow (Operator)
+
+1. Alle 15 Gates prüfen (Handoff-JSON + Runtime-Gate + UI-Smoke).
+2. `rescue_build_readiness_gate` Status dokumentieren.
+3. Erst danach separater Auftrag „echter ISO-Build“ mit erneutem Phase-0-Gate.
+
+## Referenzen
+
+- `docs/evidence/rescue/RESCUE_STICK_READONLY_BUILD_GATE_IST.md`
+- `docs/prompts/PROMPT_RESCUE_STICK_READONLY_BUILD_EMULATION.md`
