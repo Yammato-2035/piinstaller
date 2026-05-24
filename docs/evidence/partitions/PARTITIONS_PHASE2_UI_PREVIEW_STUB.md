@@ -76,11 +76,55 @@ Hinweis: Offizieller `deploy-to-opt.sh` + `systemctl restart` durch Operator emp
 - **Queue/apply** bleibt Stub (Phase 2).
 - **`write_allowed=false`** bleibt in API und UI sichtbar.
 
-### Formale Einschränkung
+### Formale Einschränkung (historisch, vor Deploy 2026-05-24 17:24)
 
 **Der vollständige offizielle Deploy** über
 `sudo ./scripts/deploy-to-opt.sh /home/volker/piinstaller`
-**steht noch aus.** Der Runtime-Gate-Lauf ist **grün**, aber der Phase-2-UI-**dist**-Sync erfolgte als **Workaround** (Workspace-`vite build` + Kopie nach `/opt/setuphelfer/frontend/dist/`), nicht als abschließender Manifest-Deploy-Lauf für die UI-Quellen `395ba6f`.
+**stand zunächst aus.** Der Runtime-Gate-Lauf war **grün**, der Phase-2-UI-**dist**-Sync erfolgte vorübergehend als **Workaround** (`index-e3NQHPXg.js`). **Ersetzt** durch formale Deploy-Abnahme unten.
+
+---
+
+## Formale Deploy-Abnahme nach b647840
+
+**Datum/Zeit:** 2026-05-24 (nach Operator-Lauf `sudo ./scripts/deploy-to-opt.sh /home/volker/piinstaller`)
+
+| Prüfung | Ergebnis |
+|---------|----------|
+| Offizieller `deploy-to-opt.sh` | **ausgeführt** (Operator, Terminal-Log: Deploy abgeschlossen) |
+| Manueller dist-Sync in dieser Phase | **nein** |
+| `check-runtime-deploy-gate.sh` | **Exit 0** |
+| `setuphelfer-backend.service` | **active** |
+| `setuphelfer.service` (Web-UI) | **active** |
+| OpenAPI Partitions-Pfade | **8/8** (inkl. hardstop, manifest-layout, restore-handoff) |
+| `GET /api/partitions/scan` | **200**, 3 Disks |
+| `GET /api/partitions/hardstop-preview?target_device=/dev/sda1` | **200**, `review_required`/`yellow`, `write_allowed=false` |
+| `POST /api/partitions/manifest-layout-preview` (`manifest=null`) | `unavailable`, `write_allowed=false` |
+| UI `http://127.0.0.1:3001/` | **HTTP 200** |
+| Offizielles JS-Bundle (Deploy) | **`index-B-1eLB5j.js`** (aus `/opt/setuphelfer/frontend/dist/index.html`) |
+| Bundle-Strings | `Sicherheitsvorschau`, `hardstop-preview` **vorhanden** |
+| Quelle `PartitionSafetyPreviewPanel.tsx` unter `/opt` | **ja** |
+
+### Browser-Smoke (Checkliste)
+
+URL: `http://127.0.0.1:3001/?page=partitions`
+
+- [ ] Seite „Partitionen“ öffnet
+- [ ] Partition anklicken → Panel **„Sicherheitsvorschau“** unter Disk-Ansicht
+- [ ] Hardstop-, Manifest-, Restore-Handoff-Bereiche sichtbar
+- [ ] Keine Format-/Löschen-/Apply-Buttons im Phase-2-Panel
+- [ ] Schreibschutz sichtbar (`write_allowed=false` / Schreibzugriff blockiert)
+
+**Automatisiert bestätigt:** API + dist-Bundle + Gate. **Manuell:** Operator prüft Checkliste im Browser.
+
+### Schreibschutz (unverändert)
+
+- Keine Partitionierungs-, Format-, Lösch- oder Queue-Apply-Aktion ausgeführt.
+- Kein Backup/Restore/Verify Deep in diesem Lauf.
+- Queue/apply bleibt Phase-2-Stub.
+
+### Abnahmeentscheidung
+
+**Grün (Runtime formal):** offizieller Deploy, Gate Exit 0, API-Smoke read-only OK, UI-Bundle aus Deploy aktiv.
 
 ---
 

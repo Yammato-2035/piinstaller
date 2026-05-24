@@ -38,6 +38,7 @@
 | Backend-Version-Gate | Gelb | Regel+Skript+`/api/version`-Diagnose im Repo; produktiver Gate-Grün-Status ausstehend | `docs/evidence/release-gates/backend_version_update_gate.json`, `scripts/check-backend-version-gate.sh` |
 | **PKG-001** Runtime-Paket-Deploy-Gate | Gelb/Rot | `.deb`-Abnahme, lokale Installation, `check-runtime-deploy-gate.sh` / `deploy_drift`; Pipeline/signiertes Repo noch nicht produktiv komplett | `docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md`, `PACKAGE_DEPLOYMENT_GATE_EN.md`, `scripts/check-runtime-deploy-gate.sh`, `scripts/runtime_deploy_gate_eval.py`, `docs/evidence/release-gates/apt_update_delivery_gap.json` |
 | Cloudserver Edition | Schwarz | nach Modularisierung | — |
+| **Partitions Phase 2 UI Preview Stub** | Grün | Offizieller `deploy-to-opt` (2026-05-24); Gate Exit 0; API-Smoke read-only; UI-Bundle `index-B-1eLB5j.js` aus Deploy; Browser-Checkliste `?page=partitions` | `docs/evidence/partitions/PARTITIONS_PHASE2_UI_PREVIEW_STUB.md` |
 
 ## Phasen-ToDos (Kurz)
 
