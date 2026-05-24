@@ -1,54 +1,36 @@
 # Rescue Stick — Controlled ISO Preparation Gate
 
-**Version:** 1.1
-**real_iso_build_allowed:** `false`
+**Version:** 1.2
+**real_iso_build_allowed:** `false` (ISO-Build-Versuch fehlgeschlagen — Operator sudo nötig)
 **usb_write_allowed:** `false`
 
-## Zweck
+## Gate-Status (2026-05-24 — ISO Build Execution)
 
-Definiert Voraussetzungen für **ISO-Vorbereitung** und **Controlled Live Build Tree** — **kein** automatischer ISO-Build.
-
-## Gate-Status (2026-05-24 — Controlled Live Build Tree)
-
-**ISO_BUILD_PREP_REVIEW_REQUIRED**
+**ISO_BUILD_FAILED** — Validatoren grün, Tools ok, Build ohne root/sudo nicht abgeschlossen.
 
 | # | Bedingung | Status |
 |---|-----------|--------|
 | 1 | Temp Runtime Bundle validiert | **pass** |
-| 2 | Live-build Tree validiert | **pass** — Validator Exit 0 |
-| 3 | Paketliste + systemd-networkd + Services | **pass** — versioniert im Tree |
-| 4 | auto/build blockiert | **pass** — Exit 20 |
-| 5 | Toolcheck (`lb`, xorriso) | **fail** — fehlen auf Host |
-| 6 | Live-Medium Network Validation green | **fail/review** — kein Live-Boot |
-| 7 | Keine Build-Artefakte (ISO/squashfs) | **pass** |
-| 8 | Runbooks ISO + USB Gate | **pass** |
-| 9 | Operator ISO-Freigabe | **fail** |
-| 10 | Operator USB-Write-Freigabe | **fail** |
+| 2 | Live-build Tree validiert | **pass** |
+| 3 | Toolcheck lb/xorriso | **pass** |
+| 4 | ISO gebaut + SHA256 | **fail** — chroot/root |
+| 5 | Live-OS Validation | **review_required** |
+| 6 | USB Write | **blocked** |
+| 7 | Operator ISO-Freigabe | **pass** (Auftrag) |
 
-## Controlled ISO Build Prep
+## Bekannte Build-Blocker
 
-| Status | Bedeutung |
-|--------|-----------|
-| **ISO_BUILD_PREP_REVIEW_REQUIRED** | Tree ready; Tools fehlen; Live-OS offen |
-| ISO_BUILD_PREP_READY | Alle Validatoren + Tools + Evidence (noch nicht) |
-| ISO_BUILD_PREP_BLOCKED | Secrets/verbotene Artefakte (nicht der Fall) |
+- `auto/config` ohne `noauto` → Rekursion
+- `lb build` ohne `noauto` → blockiertes `auto/build`
+- `lb build noauto` → **root/sudo** erforderlich
 
 ## Flags
 
-- **real_iso_build_allowed:** `false`
+- **real_iso_build_allowed:** `false` (kein Artefakt)
 - **usb_write_allowed:** `false`
-- **next_gate:** Operator installiert `live-build` → Freigabe → `lb build` (Runbook)
-
-## Freigabe-Workflow
-
-1. Toolcheck grün (`RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md`)
-2. Build-Tree Validator Exit 0
-3. Operator schriftliche ISO-Build-Freigabe
-4. `RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md` — **manuell** `lb build`
-5. USB separat: `RESCUE_USB_WRITE_GATE_RUNBOOK.md`
+- **next_gate:** Operator `sudo lb build noauto` + SHA256-Evidence
 
 ## Referenzen
 
-- `RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md`
-- `RESCUE_BIG_STEP_STATUS_PLAN.md`
-- `RESCUE_STICK_READONLY_BUILD_GATE.md`
+- `RESCUE_CONTROLLED_ISO_BUILD_RESULT.md`
+- `RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md`
