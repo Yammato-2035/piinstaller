@@ -18,7 +18,21 @@
 | **live_os_network_test_pending** | `true` |
 | **Nächstes Gate** | [Live-OS Network Validation](RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_PLAN.md) |
 
-**Status:** Rescue stick read-only build emulation **green**; Real ISO build **blocked** bis Live-OS Network Validation abgeschlossen.
+**Status:** Rescue stick read-only build emulation **green**; Live-OS network validation **review_required** (Host-Proxy only); Real ISO build **blocked**.
+
+## Live-OS Network Validation Result (2026-05-24)
+
+| Punkt | Ergebnis |
+|-------|----------|
+| **Scope** | Host-Runtime-Proxy auf `volker-ROG-Strix`, **kein** Rescue-Stick-Live-Boot |
+| **Gesamtstatus** | **review_required** |
+| **Backend/UI localhost** | **pass** (curl, 127.0.0.1-Bind) |
+| **systemd-networkd / DHCP** | **not_tested** (Host: NetworkManager aktiv) |
+| **CDN `/opt/dist`** | **pass** |
+| **live_os_network_test_pending** | **true** (Handoff unverändert) |
+| **real_iso_build_allowed** | **false** |
+
+Details: [RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md](RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md)
 
 ## Full Deploy + Package-List Validation (2026-05-24)
 

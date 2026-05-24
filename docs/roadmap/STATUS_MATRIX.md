@@ -39,7 +39,9 @@
 | **PKG-001** Runtime-Paket-Deploy-Gate | Gelb/Rot | `.deb`-Abnahme, lokale Installation, `check-runtime-deploy-gate.sh` / `deploy_drift`; Pipeline/signiertes Repo noch nicht produktiv komplett | `docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md`, `PACKAGE_DEPLOYMENT_GATE_EN.md`, `scripts/check-runtime-deploy-gate.sh`, `scripts/runtime_deploy_gate_eval.py`, `docs/evidence/release-gates/apt_update_delivery_gap.json` |
 | Cloudserver Edition | Schwarz | nach Modularisierung | — |
 | **Partitions Phase 2 UI Preview Stub** | Grün | Offizieller `deploy-to-opt` (2026-05-24); Gate Exit 0; API-Smoke read-only; UI-Bundle `index-B-1eLB5j.js` aus Deploy; Browser-Checkliste `?page=partitions` | `docs/evidence/partitions/PARTITIONS_PHASE2_UI_PREVIEW_STUB.md` |
-| **Rescue stick read-only build emulation** | Grün | Exact `bdd9865`: Runtime-Gate 0, run-all **ready**, CDN-frei; `live_os_network_test_pending`; Real ISO **blocked** bis Live-OS Network Validation | `docs/evidence/rescue/RESCUE_STICK_READONLY_BUILD_EMULATION.md`, `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_PLAN.md` |
+| **Rescue stick read-only build emulation** | Grün | run-all **ready**, CDN-frei; Emulation abgeschlossen | `RESCUE_STICK_READONLY_BUILD_EMULATION.md` |
+| **Rescue stick Live-OS network validation** | Gelb | **review_required** — Host-Proxy pass (localhost/CDN); systemd-networkd/DHCP Live-Boot **not_tested** | `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md` |
+| **Rescue stick real ISO build** | Rot | **blocked** — `real_iso_build_allowed: false`; Live-OS **green** auf Hardware ausstehend | `RESCUE_STICK_READONLY_BUILD_GATE.md` |
 
 ## Phasen-ToDos (Kurz)
 

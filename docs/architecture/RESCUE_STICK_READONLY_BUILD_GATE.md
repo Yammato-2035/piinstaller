@@ -62,10 +62,23 @@ Bis alle Gates **green** sind: nur Read-only Emulation, Handoffs, Previews.
 - Runtime-Gate Exit 0; run-all **READY**; CDN-frei in `/opt`; keine Build-Artefakte.
 - **Nächstes Pflicht-Gate vor ISO:** Live-OS Network Validation — Plan `docs/evidence/rescue/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_PLAN.md`, Runbook `docs/runbooks/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RUNBOOK.md`.
 
+## Live-OS Network Validation Result (2026-05-24)
+
+| Feld | Wert |
+|------|------|
+| **Evidence** | `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md` |
+| **Gesamtstatus** | **review_required** (Host-Runtime-Proxy; kein gebootetes Live-OS) |
+| **live_os_network_test** | **not passed** — systemd-networkd/DHCP auf Live-Medium ausstehend |
+| **real_iso_build_allowed** | **false** |
+| **next_gate** | Hardware-Live-Boot mit systemd-networkd, dann ISO dry-run / controlled ISO prep |
+
+**Host-Proxy bestätigt:** Backend/UI localhost, 127.0.0.1-Bind, CDN-frei unter `/opt`. **Offen:** DHCP systemd-networkd, Offline-Live-Boot.
+
 ## Referenzen
 
 - `docs/evidence/rescue/RESCUE_STICK_READONLY_BUILD_GATE_IST.md`
 - `docs/evidence/rescue/RESCUE_STICK_READONLY_BUILD_EMULATION.md`
 - `docs/evidence/rescue/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_PLAN.md`
+- `docs/evidence/rescue/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md`
 - `docs/runbooks/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RUNBOOK.md`
 - `docs/prompts/PROMPT_RESCUE_STICK_READONLY_BUILD_EMULATION.md`
