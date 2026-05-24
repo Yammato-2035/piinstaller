@@ -20,6 +20,19 @@
 
 **Status:** Rescue stick read-only build emulation **green**; Live-OS network validation **review_required** (Host-Proxy only); Real ISO build **blocked**.
 
+## Big Step — Temp Bundle + ISO Prep Gate (2026-05-24)
+
+| Punkt | Status |
+|-------|--------|
+| Temp Bundle erzeugt/validiert | **green** (lokal, nicht versioniert) |
+| Monolith-Gate | **review_required** — kein blocked |
+| Phase 3 Entkopplung | **nicht ausgeführt** |
+| Controlled ISO Prep Gate | **ISO_PREP_REVIEW_REQUIRED** |
+| Live-OS Validation | **review_required** |
+| `real_iso_build_allowed` | **false** |
+
+Details: [RESCUE_BIG_STEP_STATUS_PLAN.md](RESCUE_BIG_STEP_STATUS_PLAN.md), [RESCUE_TEMP_RUNTIME_BUNDLE_RESULT.md](RESCUE_TEMP_RUNTIME_BUNDLE_RESULT.md)
+
 ## Temp Runtime Prep (2026-05-24)
 
 | Punkt | Status |

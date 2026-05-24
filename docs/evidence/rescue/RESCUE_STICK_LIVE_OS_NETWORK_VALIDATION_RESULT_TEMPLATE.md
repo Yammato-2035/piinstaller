@@ -1,7 +1,8 @@
 # Rescue Stick — Live-OS Network Validation Result (Template)
 
-**Operator:** Abschnitt ausfüllen nach Live-Medium-Test gemäß  
-`docs/runbooks/RESCUE_STICK_TEMP_RUNTIME_ON_LIVE_MEDIUM_RUNBOOK.md`
+**Operator:** Live-Medium-Test gemäß  
+`docs/runbooks/RESCUE_STICK_TEMP_RUNTIME_ON_LIVE_MEDIUM_RUNBOOK.md` und  
+`docs/runbooks/RESCUE_TEMP_RUNTIME_COPY_TO_LIVE_MEDIUM.md`
 
 ## Metadaten
 
@@ -9,6 +10,9 @@
 |------|------|
 | Testdatum | |
 | Git HEAD (Dev-Repo) | |
+| bundle_manifest_sha256 | |
+| bundle_validation_status | ok / fail |
+| copied_to_medium_by_operator | true / false |
 | Testmedium | |
 | Live-System / Kernel | |
 | Bootmodus (UEFI/Legacy) | |
@@ -18,6 +22,20 @@
 | Temp-Runtime-Pfad | |
 | systemd-networkd | |
 | NetworkManager | |
+| live_boot_detected | true / false |
+| setuphelfer_services_started_from_temp_bundle | true / false |
+| offline_mode_tested | true / false |
+| final_status | green / review_required / blocked |
+
+## Live-Boot-Evidence
+
+| Feld | Wert |
+|------|------|
+| `/proc/cmdline` | |
+| `/lib/live/mount/medium` vorhanden? | |
+| rootfs overlay/live? | |
+| check-localonly summary | |
+| ss -ltnp summary | |
 
 ## Pass/Fail-Matrix
 

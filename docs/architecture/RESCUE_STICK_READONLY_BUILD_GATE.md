@@ -84,7 +84,11 @@ Bis alle Gates **green** sind: nur Read-only Emulation, Handoffs, Previews.
 | `RESCUE_STICK_TEMP_RUNTIME_ON_LIVE_MEDIUM_RUNBOOK.md` | Operator-Runbook |
 | Result-Template | Evidence-Vorlage |
 
-**Temp Runtime Prep:** **green**. **Live-OS Validation:** **review_required**. **real_iso_build_allowed:** **false**.
+**Temp Runtime Prep:** **green**. **Temp Runtime Bundle (lokal):** **green** (Validator Exit 0). **Live-OS Validation:** **review_required**. **Controlled ISO Prep:** **ISO_PREP_REVIEW_REQUIRED**. **real_iso_build_allowed:** **false**.
+
+## Controlled ISO Preparation
+
+Siehe `docs/architecture/RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md` — kein ISO-Build ohne Operator-Freigabe.
 
 ## Referenzen
 
@@ -93,5 +97,8 @@ Bis alle Gates **green** sind: nur Read-only Emulation, Handoffs, Previews.
 - `docs/evidence/rescue/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_PLAN.md`
 - `docs/evidence/rescue/RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md`
 - `docs/runbooks/RESCUE_STICK_TEMP_RUNTIME_ON_LIVE_MEDIUM_RUNBOOK.md`
-- `docs/evidence/rescue/RESCUE_LIVE_TEMP_RUNTIME_PREP_IST.md`
+- `docs/architecture/RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md`
+- `docs/evidence/rescue/RESCUE_BIG_STEP_STATUS_PLAN.md`
+- `docs/evidence/rescue/RESCUE_BUILD_MONOLITH_BOUNDARY_GATE.md`
+- `docs/evidence/rescue/RESCUE_TEMP_RUNTIME_BUNDLE_RESULT.md`
 - `docs/prompts/PROMPT_RESCUE_STICK_READONLY_BUILD_EMULATION.md`
