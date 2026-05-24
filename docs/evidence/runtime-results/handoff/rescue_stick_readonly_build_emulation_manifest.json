@@ -3,38 +3,38 @@
   "emulation_files": [
     {
       "path": "build/rescue/emulation/rescue_stick_build_workspace_snapshot.json",
-      "sha256": "b3a04fa071bf33b06d5b846cb75b9a515ed1b5e40c84ec3b5f44206a5a92d125",
+      "sha256": "61a4c0df24ad4e42c17b655711bc657983b27bf0008587c6e66b580442346e7e",
       "size_bytes": 592
     },
     {
       "path": "build/rescue/emulation/rescue_stick_expected_debian_live_tree.json",
-      "sha256": "cfba30f56c068f04c6b4265c25e1962ad6b49f55002453d81b55c5828073d3ed",
+      "sha256": "673f4745f6355aa87e3dc65339dd8198b13762dc3db29e1880210d0847c919af",
       "size_bytes": 3037
     },
     {
       "path": "build/rescue/emulation/rescue_stick_package_list_preview.json",
-      "sha256": "ace2f35fd563d38ab131e3de6d38532c22e402c74054143c05c9537c69c1a65d",
-      "size_bytes": 4296
+      "sha256": "6d68f944365f339c0780d25a958468290bd10b1c3ffe03e0bbf4a15cceab0e29",
+      "size_bytes": 4622
     },
     {
       "path": "build/rescue/emulation/rescue_stick_runtime_bundle_preview.json",
-      "sha256": "47b607983d5434f6eaafbb827c2e662c00d0e51cb2cc13b24d445356e915c264",
+      "sha256": "283230a997e7e5abeeb2ac7ee01ba0d02a4d2b2ada0b1ef0514b4b8363ff7f83",
       "size_bytes": 1000
     },
     {
       "path": "build/rescue/emulation/rescue_stick_frontend_bundle_preview.json",
-      "sha256": "42c2035bb35ec707da452cdd6f816cf383f496faa788418295ed3c6cf35ba3dc",
-      "size_bytes": 869
+      "sha256": "6d6811f7813fbb7df161e5b9caa495348f333d2890ec3082c079ad63c435a33f",
+      "size_bytes": 895
     },
     {
       "path": "build/rescue/emulation/rescue_stick_systemd_service_preview.json",
-      "sha256": "38851c27f114b6033f07e907f9d1414137f835951a8f484c40a5047eccc8ca43",
-      "size_bytes": 1604
+      "sha256": "72dddd5e4cdb2b3f1f277665557d52812967512129f06f17a389340b03414144",
+      "size_bytes": 1820
     },
     {
       "path": "build/rescue/emulation/rescue_stick_network_webui_preview.json",
-      "sha256": "9cb09f624c0cc16712eefcff5fadd3cbf1890f0007415bcf5d720bf39a132150",
-      "size_bytes": 737
+      "sha256": "d2db82b3ccb63176510a099cf5ea69fcbee7dfd604f2978cf8d6c3bdfb1cb677",
+      "size_bytes": 951
     }
   ],
   "errors": [],
@@ -99,7 +99,7 @@
     "execution_context": []
   },
   "generated": false,
-  "generated_at": "2026-05-24T17:22:18.785101+00:00",
+  "generated_at": "2026-05-24T17:56:33.851577+00:00",
   "manifest_status": "review_required",
   "missing_emulation_files": [],
   "no_real_build_execution": true,

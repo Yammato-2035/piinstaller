@@ -52,3 +52,12 @@ Kein echter Build, keine ISO/IMG/QCOW2/squashfs/initrd/vmlinuz unter `build/resc
 **Warum Bundle-/Service-Preview zuerst?** Secrets, Branding, systemd-Sandbox und Netzwerkpolicy müssen vor dem Stick feststehen.
 
 **Warum LAN gefährlich?** Offener Schreibzugriff ohne Gates im Rettungsmodus ist blockiert (`lan_write_without_gate: blocked`).
+
+## Post-Deploy-Abnahme (2026-05-24)
+
+- Runtime-Gate Exit 0; alle API-Routen sichtbar; `run-all` ohne echte Build-Artefakte.
+- **Final-Gate:** `review_required` — Restpunkt Paketliste/Live-OS-Netzwerk; ggf. Frontend bis dist-Redeploy.
+- **Netzwerk:** systemd-networkd Phase-1-Default; NetworkManager optional_later; Live-Test pending.
+- **Fonts:** Keine Google-Fonts-Pflicht im Quell-`index.html`; Systemfonts; CDN in altem `/opt/…/dist` bis Redeploy.
+- **systemd:** 127.0.0.1 für Backend und UI; kein Auto-Restore/Partition.
+- **LAN:** `local_only`, LAN blockiert, Schreiben über LAN blockiert, später `rescue_auth_required`.

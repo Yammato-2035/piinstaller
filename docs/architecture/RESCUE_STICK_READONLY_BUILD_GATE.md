@@ -46,7 +46,19 @@ Bis alle Gates **green** sind: nur Read-only Emulation, Handoffs, Previews.
 2. `rescue_build_readiness_gate` Status dokumentieren.
 3. Erst danach separater Auftrag „echter ISO-Build“ mit erneutem Phase-0-Gate.
 
+## Post-Deploy Emulation (2026-05-24, Commit `60e3f31`)
+
+| Thema | Entscheidung | Final-Gate |
+|-------|----------------|------------|
+| **Netzwerk-Stack (Live-OS)** | Phase 1: **systemd-networkd** als Default; NetworkManager **optional_later**; Live-OS-Validierung noch **pending** | `package_list` → **review_required** bis Live-Test |
+| **Offline-Fonts / CDN** | Rescue ohne CDN-Pflicht: **Systemfonts**; `frontend/index.html` ohne Google Fonts (Rebuild `dist` nötig) | Runtime `/opt` dist ggf. noch alt → `frontend_bundle` review bis Redeploy |
+| **systemd-Service-Bind** | Backend `127.0.0.1:8000`, UI `127.0.0.1:3001`; kein Auto-Restore/Partition; LAN erst mit Rescue-LAN-Gate | Emulation: **ok** |
+| **LAN-Policy** | `default: local_only`, `lan_access: blocked`, `write_actions_over_lan: blocked`, `rescue_auth_required_for_lan: true` | Emulation: **ok** |
+
+**Emulation-Final-Gate (Workspace, Runner aktualisiert):** `review_required` — nur `package_list` (+ ggf. `frontend_bundle` bis dist-Redeploy). **Kein fake ready.**
+
 ## Referenzen
 
 - `docs/evidence/rescue/RESCUE_STICK_READONLY_BUILD_GATE_IST.md`
+- `docs/evidence/rescue/RESCUE_STICK_READONLY_BUILD_EMULATION.md`
 - `docs/prompts/PROMPT_RESCUE_STICK_READONLY_BUILD_EMULATION.md`

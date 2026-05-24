@@ -30,3 +30,12 @@ See the German deploy doc `RESCUE_STICK_READONLY_BUILD_EMULATION_DE.md` for the 
 ## Tests
 
 `backend/tests/test_deploy_runner_rescue_stick_readonly_build_emulation_v1.py`
+
+## Post-deploy acceptance (2026-05-24)
+
+- Runtime gate exit 0; all API routes live; `run-all` produced no ISO/img artifacts.
+- **Final gate:** `review_required` — package list / live OS network validation pending; frontend may stay review until `/opt` dist redeploy without CDN.
+- **Network:** systemd-networkd phase-1 default; NetworkManager optional_later; live test pending.
+- **Fonts:** Google Fonts removed from source `index.html`; system fonts; CDN in stale `/opt/…/dist` until redeploy.
+- **systemd:** bind 127.0.0.1; no auto-restore/partition on start.
+- **LAN:** local_only default; LAN blocked; writes over LAN blocked; `rescue_auth_required` for future LAN.
