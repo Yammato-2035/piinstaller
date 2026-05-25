@@ -1,8 +1,8 @@
 # Rescue ISO Executor Dashboard — Integration Result
 
 **Datum:** 2026-05-25
-**Git HEAD:** `27d790a` (vor Commit)
-**Status:** `green`
+**Git HEAD:** `653d41a` (aktueller Workspace fuer den ersten Runtime-Lauf)
+**Status:** `yellow`
 
 ## Neue Dashboard-Routen
 
@@ -124,6 +124,70 @@ Nach kontrolliertem Helper-Deploy auf `/opt/setuphelfer` erfolgreich verifiziert
   - `rescue-build-usb-blocked` sichtbar
   - keine Buttons fuer `dd`, `mkfs`, `parted` oder USB-Write
 
+## Erster Runtime-Lauf ueber den Executor
+
+Am 2026-05-25 wurde der erste kontrollierte Rescue-ISO-Lauf erneut ueber den produktiven Dashboard-/Executor-Pfad gestartet.
+
+### Vor dem Build
+
+- `./scripts/check-runtime-deploy-gate.sh` im Workspace: **Exit 0**
+- `GET /api/dev-dashboard/rescue-iso/status`:
+  - `status = green`
+  - `build_tree.validator_status = ok`
+  - `temp_runtime_bundle.status = ok`
+  - `iso_build.status = review_required`
+  - `stale_state.needs_sudo_clean = false`
+  - `next_operator_action.type = operator_sudo_required`
+  - `usb_write.allowed = false`
+
+### Executor-Schritte
+
+- `detect_stale_state`:
+  - `code = DEV_DASHBOARD_RESCUE_ISO_STEP_OK`
+  - `status = ok`
+  - `needs_sudo_clean = false`
+- `prebuild_check`:
+  - `code = DEV_DASHBOARD_RESCUE_ISO_STEP_OK`
+  - `status = ok`
+  - `details.status = green`
+  - vorgeschlagene Operator-Kommandos:
+    - `cd "/opt/setuphelfer/build/rescue/live-build/setuphelfer-rescue-live"`
+    - `./auto/config`
+    - `sudo lb build noauto`
+- `prepare_bundle`:
+  - `code = DEV_DASHBOARD_RESCUE_ISO_STEP_BLOCKED`
+  - `status = blocked`
+  - Ursache: `create-temp-runtime-bundle.sh` scheitert im produktiven `/opt`-Pfad mit `rsync`-Permission-Fehlern
+- `validate_bundle`:
+  - `status = blocked`
+  - Ursache: `MISSING: MANIFEST.json`
+- `prepare_tree`:
+  - `status = blocked`
+  - Ursache: `bundle MANIFEST.json missing`
+- `validate_tree`:
+  - `status = ok`
+  - letzter Build-Tree ist weiter formal gueltig, referenziert aber `build-tree-manifest source_head = 27d790a`
+
+### Ergebnis
+
+- **Kein** `sudo lb build noauto` ausgefuehrt, weil PHASE 4 bereits blockiert hat
+- Dashboard-Status danach:
+  - `status = yellow`
+  - `temp_runtime_bundle.status = review_required`
+  - `iso_build.status = not_started`
+  - `next_operator_action.type = fix_required`
+  - `usb_write.allowed = false`
+- Services bleiben aktiv:
+  - `setuphelfer-backend.service = active`
+  - `setuphelfer.service = active`
+- Summary/Logs bleiben dashboard-lesbar:
+  - `build/rescue/logs/controlled-iso-build/latest.log`
+  - `docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json`
+
+### Bewertung
+
+Die Dashboard-/Executor-Integration ist produktiv vorhanden und fuehrt den Operator korrekt bis zum Build-Befehl. Der erste echte Runtime-Lauf ist jedoch **nicht build-ready**, weil das produktive `/opt`-Temp-Bundle vor dem Build nicht reproduzierbar neu erstellt werden konnte. Ein ISO-Erfolg darf deshalb nicht gruen gemeldet werden.
+
 ## Explizit nicht hinzugefuegt
 
 - keine USB-Schreibfunktion
@@ -140,7 +204,9 @@ Nach kontrolliertem Helper-Deploy auf `/opt/setuphelfer` erfolgreich verifiziert
 - `chroot_package-lists.install` kann stale sein
 - `skipping chroot_package-lists.install, already done` ist ein harter Review-Hinweis
 - `tar failed` bei `adduser` bleibt als letzter Fehler / Stale-Indikator sichtbar
-- `./scripts/check-runtime-deploy-gate.sh` ist fuer die produktive Runtime inzwischen **grün (Exit 0)**; der ISO-Build selbst bleibt trotzdem `review_required`
+- `./scripts/check-runtime-deploy-gate.sh` ist fuer die produktive Runtime inzwischen **gruen (Exit 0)**; der ISO-Build selbst bleibt trotzdem `review_required`
+- im ersten Runtime-Lauf blockierten `prepare_bundle` und `prepare_tree` im produktiven `/opt`-Pfad
+- `validate_tree` referenziert dort weiter `source_head = 27d790a`, also nicht den aktuellen Workspace-Stand `653d41a`
 
 ## Deploy-Befund
 
@@ -154,6 +220,7 @@ Nach kontrolliertem Helper-Deploy auf `/opt/setuphelfer` erfolgreich verifiziert
 
 ## Naechster Operator-Schritt
 
-1. Operator fuehrt bei Bedarf den vorgeschlagenen sicheren Sudo-Clean im Live-Build-Baum aus
-2. danach kann der naechste kontrollierte Rescue-Build-Schritt erneut ueber das Dashboard angestossen werden
-3. USB-Schreiben bleibt weiterhin blockiert
+1. produktive `/opt`-Runtime zuerst auf den aktuellen Rescue-Executor-/Bundle-Stand bringen
+2. danach den Dashboard-Lauf erneut bei `detect_stale_state` / `prebuild_check` starten
+3. erst wenn `prepare_bundle`, `validate_bundle`, `prepare_tree` und `validate_tree` alle gruen sind, den Operator-Build erneut freigeben
+4. USB-Schreiben bleibt weiterhin blockiert

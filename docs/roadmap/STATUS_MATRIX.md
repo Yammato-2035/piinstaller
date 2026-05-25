@@ -44,8 +44,8 @@
 | **Rescue stick temp runtime prep** | Grün | Skripte, Runbooks, Copy-Handoff | `scripts/rescue-live/` |
 | **Rescue stick Live-OS network validation** | Gelb | Session 3: Bundle ok; USB-Copy VFAT/symlinks; **kein Live-Boot** | `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md` |
 | **Controlled ISO build prep (live-build tree)** | Grün | Tree + Bundle Validator Exit 0 | `RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md` |
-| **Controlled ISO build execution** | Gelb | Clean-State + noauto fix; **tar/adduser** Ursache dokumentiert; Dashboard-Executor erkennt stale root-owned State, Operator-Clean und Build-Kommandos; `auto/clean`-Rekursion behoben; produktives Runtime-Gate jetzt grün, ISO-Build selbst aber weiterhin `review_required`/operatorabhängig | `RESCUE_CONTROLLED_ISO_BUILD_RESULT.md`, `RESCUE_ISO_EXECUTOR_DASHBOARD_INTEGRATION_RESULT.md` |
-| **Rescue ISO artifact** | Rot | Keine ISO erzeugt | — |
+| **Controlled ISO build execution** | Gelb | Dashboard-/Executor-Pfad fuehrt bis PHASE 4; erster produktiver `/opt`-Lauf blockiert aktuell bei `prepare_bundle`/`prepare_tree` (Temp-Bundle nicht reproduzierbar erneuert, letzter validierter Tree weiter `source_head=27d790a`); Runtime-Gate bleibt gruen, USB bleibt blockiert | `RESCUE_CONTROLLED_ISO_BUILD_RESULT.md`, `RESCUE_ISO_EXECUTOR_DASHBOARD_INTEGRATION_RESULT.md`, `controlled_iso_build_latest_summary.json` |
+| **Rescue ISO artifact** | Rot | Keine ISO erzeugt; erster Runtime-Lauf ueber den Dashboard-Executor vor `sudo lb build noauto` blockiert | `controlled_iso_build_latest_summary.json` |
 | **Controlled ISO preparation** | Gelb | Build fehlgeschlagen; USB blocked | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md` |
 | **Rescue USB write gate** | Rot | **blocked** — `usb_write_allowed: false` | `RESCUE_USB_WRITE_GATE_RUNBOOK.md` |
 | **Rescue stick real ISO build** | Rot | **blocked** — `real_iso_build_allowed: false`; Live-OS **green** auf Hardware ausstehend | `RESCUE_STICK_READONLY_BUILD_GATE.md` |

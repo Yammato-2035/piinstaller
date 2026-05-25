@@ -1,0 +1,89 @@
+{
+  "phase": "controlled_rescue_iso_build",
+  "status": "review_required",
+  "attempted_via": "dashboard_executor",
+  "attempted_at": "2026-05-25T15:18:12Z",
+  "workspace_head": "653d41a",
+  "runtime_repo_root": "/opt/setuphelfer",
+  "runtime_gate_exit": 0,
+  "services_active": true,
+  "prebuild_status": "green",
+  "prebuild_summary": "Kontrollierter Rescue-ISO-Build bereit zur Pruefung",
+  "stale_state": {
+    "present": false,
+    "needs_sudo_clean": false,
+    "latest_log_path": "build/rescue/logs/controlled-iso-build/latest.log"
+  },
+  "steps": {
+    "detect_stale_state": {
+      "status": "ok",
+      "exit_code": 0
+    },
+    "prebuild_check": {
+      "status": "ok",
+      "exit_code": 0
+    },
+    "prepare_bundle": {
+      "status": "blocked",
+      "exit_code": 20,
+      "error": "command_failed:/opt/setuphelfer/scripts/rescue-live/create-temp-runtime-bundle.sh"
+    },
+    "validate_bundle": {
+      "status": "blocked",
+      "exit_code": 20,
+      "error": "MISSING: MANIFEST.json"
+    },
+    "prepare_tree": {
+      "status": "blocked",
+      "exit_code": 20,
+      "error": "ERROR: bundle MANIFEST.json missing"
+    },
+    "validate_tree": {
+      "status": "ok",
+      "exit_code": 0,
+      "build_tree_source_head": "27d790a"
+    },
+    "build_iso_operator_required": {
+      "status": "operator_required",
+      "commands": [
+        "cd \"/opt/setuphelfer/build/rescue/live-build/setuphelfer-rescue-live\"",
+        "./auto/config",
+        "sudo lb build noauto"
+      ]
+    }
+  },
+  "runtime_blocker": {
+    "type": "executor_prepare_bundle_blocked",
+    "summary": "Im produktiven /opt-Executor konnte das Temp-Runtime-Bundle nicht neu erzeugt werden; danach fehlte MANIFEST.json und prepare_tree blieb blockiert.",
+    "details": [
+      "prepare_bundle loggt rsync permission errors unter /opt/setuphelfer/build/rescue/temp-runtime/setuphelfer-rescue-runtime/backend",
+      "validate_tree ist zwar gruen, referenziert aber weiterhin build-tree-manifest source_head=27d790a",
+      "Der Dashboard-Status nach PHASE 4 ist yellow mit next_operator_action=fix_required"
+    ]
+  },
+  "dashboard_status_after_attempt": {
+    "status": "yellow",
+    "temp_runtime_bundle": "review_required",
+    "iso_build": "not_started",
+    "next_operator_action": "fix_required",
+    "usb_write_allowed": false
+  },
+  "iso_found": false,
+  "iso_path": null,
+  "iso_abs_path": null,
+  "iso_size_bytes": null,
+  "iso_sha256": null,
+  "lb_exit": null,
+  "forbidden_actions_executed": {
+    "usb_write": false,
+    "dd": false,
+    "mkfs": false,
+    "parted_write": false,
+    "backup": false,
+    "restore": false,
+    "verify_deep": false,
+    "queue_apply": false,
+    "apt_install_upgrade": false
+  },
+  "next_step": "Produktive /opt-Runtime zuerst auf den aktuellen Rescue-Executor-Stand bringen und den Dashboard-Lauf danach erneut bei PHASE 2 starten."
+}
