@@ -252,3 +252,53 @@ Nach dem finalen Workspace-Path-Fix und dem erneuten Runtime-Smoke auf `f2b13f5`
     - `sudo lb build noauto`
 
 Damit ist die Dashboard-/Executor-Integration fuer den Workspace-Path-Fix produktiv verifiziert. Der echte ISO-Build bleibt weiterhin ein separater Operator-Schritt ausserhalb dieses Strict-Mode-Laufs.
+
+## Echter ISO-Build ueber den Dashboard-Pfad (2026-05-25)
+
+Nach `887ace6` wurde der erste echte Operator-Build entlang des Dashboard-Pfads gestartet.
+
+### Vor dem Build
+
+- `./scripts/check-runtime-deploy-gate.sh` → **Exit 0**
+- `GET /api/dev-dashboard/rescue-iso/status`:
+  - `status = green`
+  - `workspace_path = /home/volker/piinstaller`
+  - `runtime_path = /opt/setuphelfer`
+  - `build_tree_path = /home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live`
+  - `usb_write.allowed = false`
+- `detect_stale_state` → **ok**
+- `prebuild_check` → **ok** / `green`
+- `prepare_bundle`, `validate_bundle`, `prepare_tree`, `validate_tree` → **ok**
+
+### Operator-Befehl
+
+```bash
+cd "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live"
+./auto/config
+sudo lb build noauto
+```
+
+### Ergebnis
+
+- `LB_EXIT = 100`
+- **keine ISO** erzeugt
+- Dashboard danach:
+  - `status = red`
+  - `next_operator_action.type = sudo_clean_required`
+  - `usb_write.allowed = false`
+- verbliebene Build-Artefakte:
+  - `binary/live/filesystem.squashfs`
+  - `binary/live/initrd.img`
+
+### Letzter Fehler aus `latest.log`
+
+```text
+dpkg: warning: 'start-stop-daemon' not found in PATH or not executable
+dpkg: error: 1 expected program not found in PATH or not executable
+E: Sub-process /usr/bin/dpkg returned an error code (2)
+LB_EXIT=100
+```
+
+### Bewertung
+
+Die Dashboard-/Executor-Integration bleibt fuer den Pfad und die kontrollierten Prepare-/Validate-Schritte **gruen verifiziert**. Der erste echte ISO-Build selbst ist jedoch **fehlgeschlagen** und bleibt deshalb `failed/review_required`. USB-Schreiben bleibt weiterhin blockiert.

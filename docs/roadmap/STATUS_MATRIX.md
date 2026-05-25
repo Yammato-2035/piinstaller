@@ -44,9 +44,9 @@
 | **Rescue stick temp runtime prep** | Grün | Skripte, Runbooks, Copy-Handoff | `scripts/rescue-live/` |
 | **Rescue stick Live-OS network validation** | Gelb | Session 3: Bundle ok; USB-Copy VFAT/symlinks; **kein Live-Boot** | `RESCUE_STICK_LIVE_OS_NETWORK_VALIDATION_RESULT.md` |
 | **Controlled ISO build prep (live-build tree)** | Grün | Tree + Bundle Validator Exit 0 | `RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md` |
-| **Controlled ISO build execution** | Gelb | Workspace-Path-Fix produktiv verifiziert: Runtime bleibt unter `/opt/setuphelfer`, Bundle/Tree laufen unter `/home/volker/piinstaller`; `prepare_bundle`, `validate_bundle`, `prepare_tree`, `validate_tree` runtime-seitig gruen; Operator-Build bleibt bewusst `operator_sudo_required`, USB bleibt blockiert | `RESCUE_CONTROLLED_ISO_BUILD_RESULT.md`, `RESCUE_ISO_EXECUTOR_WORKSPACE_PATH_FIX.md`, `RESCUE_ISO_EXECUTOR_DASHBOARD_INTEGRATION_RESULT.md`, `controlled_iso_build_latest_summary.json` |
-| **Rescue ISO artifact** | Rot | Keine ISO erzeugt; erster Runtime-Lauf ueber den Dashboard-Executor vor `sudo lb build noauto` blockiert | `controlled_iso_build_latest_summary.json` |
-| **Controlled ISO preparation** | Gelb | Build fehlgeschlagen; USB blocked | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md` |
+| **Controlled ISO build execution** | Rot | Workspace-Path-Fix produktiv verifiziert und Prepare-/Validate-Schritte gruen, aber erster echter `sudo lb build noauto` auf `887ace6` scheitert mit `LB_EXIT=100` (`start-stop-daemon`/`dpkg` im chroot); Dashboard danach `sudo_clean_required`, USB bleibt blockiert | `RESCUE_CONTROLLED_ISO_BUILD_RESULT.md`, `RESCUE_ISO_EXECUTOR_WORKSPACE_PATH_FIX.md`, `RESCUE_ISO_EXECUTOR_DASHBOARD_INTEGRATION_RESULT.md`, `controlled_iso_build_latest_summary.json` |
+| **Rescue ISO artifact** | Rot | Keine ISO erzeugt; nach dem echten Operator-Build nur Zwischenartefakte wie `filesystem.squashfs` und `initrd.img`, aber kein `.iso` | `controlled_iso_build_latest_summary.json` |
+| **Controlled ISO preparation** | Gelb | Workspace-Pfad und Executor-Prebuild gruen; echter Build weiterhin fehlerhaft, USB blocked | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md` |
 | **Rescue USB write gate** | Rot | **blocked** — `usb_write_allowed: false` | `RESCUE_USB_WRITE_GATE_RUNBOOK.md` |
 | **Rescue stick real ISO build** | Rot | **blocked** — `real_iso_build_allowed: false`; Live-OS **green** auf Hardware ausstehend | `RESCUE_STICK_READONLY_BUILD_GATE.md` |
 

@@ -1,10 +1,91 @@
 # Rescue Controlled ISO Build — Result
 
-**Datum:** 2026-05-25 (STRICT MODE – Workspace-Path-Fix Final)
-**Git HEAD:** `f2b13f5`
-**Gesamtstatus:** **PREBUILD_GREEN_OPERATOR_REQUIRED** → **Kein ISO-Build gestartet**
+**Datum:** 2026-05-25 (STRICT MODE – Controlled Rescue ISO Build Execution via Dashboard Path)
+**Git HEAD:** `887ace6`
+**Gesamtstatus:** **ISO_BUILD_FAILED** → **Kein ISO erzeugt**
 
 ---
+
+## Echter ISO-Build via Dashboard-Pfad (2026-05-25)
+
+### Vorbedingungen
+
+| Feld | Wert |
+|------|------|
+| Workspace HEAD vor Build | `887ace6` |
+| Runtime-Gate | Exit **0** |
+| `workspace_path` | `/home/volker/piinstaller` |
+| `runtime_path` | `/opt/setuphelfer` |
+| `build_tree_path` | `/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live` |
+| `usb_write.allowed` | **false** |
+| `detect_stale_state` | **ok** (`needs_sudo_clean = false`) |
+| `prebuild_check` | **ok** (`green`) |
+| `prepare_bundle` | **ok** |
+| `validate_bundle` | **ok** |
+| `prepare_tree` | **ok** |
+| `validate_tree` | **ok** |
+
+### Operator-Build-Befehl
+
+```bash
+cd "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live"
+./auto/config
+sudo lb build noauto
+```
+
+### Build-Ergebnis
+
+| Feld | Wert |
+|------|------|
+| `LB_EXIT` | **100** |
+| ISO gefunden | **nein** |
+| ISO-Pfad | `null` |
+| ISO-Groesse | `null` |
+| ISO-SHA256 | `null` |
+| `binary/live/filesystem.squashfs` | vorhanden, **429252608 Bytes** |
+| `binary/live/initrd.img` | vorhanden, **35634950 Bytes** |
+| Dashboard-Status nach Build | **red** |
+| `iso_build.status` | **not_started** |
+| `next_operator_action.type` | **sudo_clean_required** |
+
+### Fehlerursache aus dem Build-Log
+
+Der Build lief bis in die Binary-Stufe und scheiterte dann waehrend eines Paket-Upgrades im chroot:
+
+```text
+dpkg: warning: 'start-stop-daemon' not found in PATH or not executable
+dpkg: error: 1 expected program not found in PATH or not executable
+E: Sub-process /usr/bin/dpkg returned an error code (2)
+LB_EXIT=100
+```
+
+Der abschliessende `find`-Befehl im Operator-Terminal lieferte zusaetzlich:
+
+```text
+find: './chroot/root': Keine Berechtigung
+```
+
+Das ist ein Nachlauf-Effekt der root-owned chroot-Reste und **nicht** die primaere Build-Ursache.
+
+### Scan / Summary / Safety
+
+- `scan_iso` → **review_required**
+  - `iso_found = false`
+  - keine ISO-Artefakte gefunden
+  - heuristische Review-Hits aus dem Runtime-Bundle wurden gemeldet
+- `summarize` → **ok**
+  - `controlled_iso_build_latest_summary.json` aktualisiert
+- manueller Safety-Scan:
+  - **keine** CDN-Treffer in lesbaren Dateien
+  - **keine** Secret-Treffer in lesbaren Dateien
+  - der Scan war wegen root-owned Verzeichnissen unter `config/includes.chroot/opt/setuphelfer-rescue/` **nicht vollstaendig lesbar**
+  - unerwartete Build-Artefakte nach Fehlerlauf:
+    - `binary/live/filesystem.squashfs`
+    - `binary/live/initrd.img`
+
+### Bewertung
+
+Der kontrollierte Dashboard-Pfad bis zum echten Operator-Build war korrekt und reproduzierbar gruen. Der erste echte ISO-Build selbst ist jedoch **fehlgeschlagen** und darf deshalb nicht gruen gemeldet werden. USB-Write bleibt weiter blockiert.
 
 ## Dashboard-/Executor-Runtime-Abnahme (2026-05-25)
 
