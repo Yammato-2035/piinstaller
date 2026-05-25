@@ -5,6 +5,9 @@ lb config noauto \
   --archive-areas "main" \
   --binary-images iso-hybrid \
   --debian-installer false \
+  --security false \
+  --firmware-chroot false \
+  --firmware-binary false \
   --bootappend-live "boot=live components quiet splash setuphelfer_rescue=1" \
   --iso-volume "SETUPHELFER_RESCUE" \
   --iso-application "Setuphelfer Rescue Live"

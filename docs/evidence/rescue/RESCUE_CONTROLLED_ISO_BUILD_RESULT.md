@@ -141,3 +141,50 @@ Bei erneutem tar-Fehler **zuerst** erneut `sudo lb clean --purge` und `sudo rm -
 | USB Write | **blocked** |
 | Live Boot | **pending** |
 | real_usb_write_allowed | **false** |
+
+---
+
+## Dashboard Executor Integration (2026-05-25)
+
+| Bereich | Status |
+|---------|--------|
+| Development Dashboard Rescue ISO Executor | **implemented** |
+| Stale-State-Erkennung | **implemented** |
+| Operator-Sudo-Clean-Kommandos | **implemented** |
+| Operator-Build-Kommandoanzeige | **implemented** |
+| USB-Schreiben | **blocked** |
+
+### Erkannte aktuelle Blocker
+
+- stale root-owned live-build state kann `sudo clean` erforderlich machen
+- vorherige Altartefakte `initrd`, `vmlinuz`, `filesystem.squashfs` sind aus dem Build-Tree bereinigt
+- `auto/clean` war rekursiv kaputt (`lb clean` -> `auto/clean` -> `lb clean`) und ist jetzt auf direkten Stage-Directory-Clean korrigiert
+- `.build/chroot_package-lists.install` kann stale sein
+- `skipping chroot_package-lists.install, already done` bleibt ein harter Review-Hinweis
+- `tar failed` bei `adduser` / `File exists` aus `debootstrap.log` bleibt sichtbar
+- Runtime-Gate ist fuer die aktuelle produktive Runtime inzwischen **grün** (`check-runtime-deploy-gate.sh` Exit `0`)
+- Temp-Runtime-Bundle-Validator und Controlled-Build-Tree-Validator laufen auf dem aktuellen Stand **grün**
+- der eigentliche ISO-Build bleibt trotzdem **nicht ausgeführt** und weiter `review_required/operator_sudo_required`
+
+### Nächster Schritt
+
+Der nächste Operator-Schritt läuft jetzt über das Development Dashboard:
+
+1. `Stale-State prüfen`
+2. falls nötig `sudo clean`
+3. `Prebuild-Check`
+4. `Operator-Build-Befehl anzeigen`
+5. **erst danach** manueller Operator-Build ausserhalb des Agents
+
+**Kein USB-Write.**
+
+### Build-Tree-Review (2026-05-25)
+
+Zusätzlich verifiziert:
+
+- `setuphelfer.list.chroot` bleibt minimal und lokal-only
+- `auto/config` verwendet `lb config noauto`
+- `auto/clean` ist nicht rekursiv
+- `prepare-controlled-live-build-tree.sh` erzeugt den Tree reproduzierbar ohne Build-Ausführung
+- `validate-controlled-live-build-tree.sh` ist read-only und gibt Exit `0`
+- keine ISO-/Image-/Kernel-Artefakte im Tree oder Temp-Bundle

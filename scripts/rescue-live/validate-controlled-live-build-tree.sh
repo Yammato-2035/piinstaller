@@ -17,6 +17,8 @@ fail_token() { echo "FORBIDDEN_TOKEN: $*" >&2; exit 14; }
 
 REQ=(
   config/package-lists/setuphelfer.list.chroot
+  config/archives/debian-security.list.chroot
+  config/archives/debian-security.list.binary
   config/includes.chroot/opt/setuphelfer-rescue/MANIFEST.json
   config/includes.chroot/opt/setuphelfer-rescue/scripts/rescue-live/start-backend-localonly.sh
   config/includes.chroot/opt/setuphelfer-rescue/scripts/rescue-live/start-ui-localonly.sh
@@ -38,6 +40,24 @@ done
 
 if ! grep -q 'Use controlled gate before running lb build' "$BUILD_ROOT/auto/build"; then
   fail_missing "auto/build gate message"
+fi
+if grep -Eq '^[[:space:]]*lb[[:space:]]+clean([[:space:]]|$)' "$BUILD_ROOT/auto/clean"; then
+  fail_missing "auto/clean must not recurse into lb clean"
+fi
+if ! grep -q 'rm -rf .build chroot cache binary local' "$BUILD_ROOT/auto/clean"; then
+  fail_missing "auto/clean must remove only live-build stage directories"
+fi
+if ! grep -q 'lb config noauto' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must use noauto"
+fi
+if ! grep -q -- '--security false' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must disable broken default security repo"
+fi
+if ! grep -q -- '--firmware-chroot false' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must disable broken firmware contents fetch"
+fi
+if ! grep -q -- '--firmware-binary false' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must disable broken firmware contents fetch for binary stage"
 fi
 set +e
 "$BUILD_ROOT/auto/build" >/dev/null 2>&1
@@ -67,7 +87,11 @@ for scan_dir in backend config; do
   [[ -d "$RUNTIME/$scan_dir" ]] || continue
   if grep -rIE "$SECRET_PAT" "$RUNTIME/$scan_dir" \
     --exclude-dir='venv' --exclude-dir='tests' \
-    2>/dev/null | grep -v 'your-app-password' | grep -v 'BEGIN OPENSSH' | head -1 | grep -q .; then
+    2>/dev/null \
+    | grep -v 'your-app-password' \
+    | grep -v 'BEGIN OPENSSH' \
+    | grep -v 're.search(r"API_KEY=|SECRET=|PASSWORD=|TOKEN=|PRIVATE KEY"' \
+    | head -1 | grep -q .; then
     fail_secret "pattern in $scan_dir"
   fi
 done

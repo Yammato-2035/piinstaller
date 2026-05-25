@@ -45,7 +45,11 @@ for scan_dir in backend config; do
   [[ -d "$BUNDLE/$scan_dir" ]] || continue
   if grep -rIE "$SECRET_PAT" "$BUNDLE/$scan_dir" \
     --exclude-dir='venv' --exclude-dir='tests' --exclude-dir='.venv-ci' --exclude-dir='.venv' \
-    2>/dev/null | grep -v 'your-app-password' | grep -v 'BEGIN OPENSSH' | head -1 | grep -q .; then
+    2>/dev/null \
+    | grep -v 'your-app-password' \
+    | grep -v 'BEGIN OPENSSH' \
+    | grep -v 're.search(r"API_KEY=|SECRET=|PASSWORD=|TOKEN=|PRIVATE KEY"' \
+    | head -1 | grep -q .; then
     fail_secret "pattern match in $scan_dir"
   fi
 done

@@ -17,6 +17,7 @@ die() { echo "ERROR: $*" >&2; exit 1; }
 
 mkdir -p \
   "${BUILD_ROOT}/config/package-lists" \
+  "${BUILD_ROOT}/config/archives" \
   "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system" \
   "${BUILD_ROOT}/config/includes.chroot/etc/systemd/network" \
   "${BUILD_ROOT}/config/hooks/normal" \
@@ -34,7 +35,6 @@ iproute2
 iputils-ping
 net-tools
 util-linux
-lsblk
 smartmontools
 python3
 python3-venv
@@ -57,6 +57,14 @@ Name=eth*
 [Network]
 DHCP=yes
 IPv6AcceptRA=yes
+EOF
+
+cat > "${BUILD_ROOT}/config/archives/debian-security.list.chroot" <<'EOF'
+deb http://security.debian.org/ bookworm-security main
+EOF
+
+cat > "${BUILD_ROOT}/config/archives/debian-security.list.binary" <<'EOF'
+deb http://security.debian.org/ bookworm-security main
 EOF
 
 cat > "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer-backend.service" <<'EOF'
@@ -126,6 +134,9 @@ lb config noauto \
   --archive-areas "main" \
   --binary-images iso-hybrid \
   --debian-installer false \
+  --security false \
+  --firmware-chroot false \
+  --firmware-binary false \
   --bootappend-live "boot=live components quiet splash setuphelfer_rescue=1" \
   --iso-volume "SETUPHELFER_RESCUE" \
   --iso-application "Setuphelfer Rescue Live"
@@ -143,7 +154,8 @@ chmod +x "${BUILD_ROOT}/auto/build"
 cat > "${BUILD_ROOT}/auto/clean" <<'EOF'
 #!/bin/sh
 set -eu
-lb clean
+# Kein "lb clean" hier: live-build ruft auto/clean selbst auf und wuerde sonst rekursiv enden.
+rm -rf .build chroot cache binary local
 EOF
 chmod +x "${BUILD_ROOT}/auto/clean"
 
