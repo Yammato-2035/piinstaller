@@ -1,0 +1,15 @@
+[Unit]
+Description=Setuphelfer controlled deploy helper
+After=setuphelfer-backend.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/setuphelfer/scripts/setuphelfer-deploy-helper-root.sh --workspace /home/volker/piinstaller
+User=root
+Group=root
+NoNewPrivileges=false
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/opt/setuphelfer /var/lib/setuphelfer /run /home/volker/piinstaller
+TimeoutStartSec=600

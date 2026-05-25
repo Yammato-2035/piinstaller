@@ -16,6 +16,7 @@ import { EvidencePanel } from '../components/dev-dashboard/EvidencePanel'
 import { ReleaseGatePanel } from '../components/dev-dashboard/ReleaseGatePanel'
 import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
+import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel'
 import { RecommendedActionsPanel } from '../components/dev-dashboard/RecommendedActionsPanel'
 import { StructuralHealthPanel } from '../components/dev-dashboard/StructuralHealthPanel'
 import { CommitHygienePanel } from '../components/dev-dashboard/CommitHygienePanel'
@@ -23,6 +24,7 @@ import { DocsConsistencyPanel } from '../components/dev-dashboard/DocsConsistenc
 import { RoadmapDrawer } from '../components/dev-dashboard/RoadmapDrawer'
 import { AIExportPanel } from '../components/dev-dashboard/AIExportPanel'
 import { StandaloneModeBanner } from '../components/dev-dashboard/StandaloneModeBanner'
+import { UpdateStatusCard } from '../components/dev-dashboard/UpdateStatusCard'
 import { getApiBaseLabel, loadDevDashboard } from '../lib/devDashboard/loadDevDashboard'
 import type { DevDashboardCapabilities, DevDashboardDataSource } from '../lib/devDashboard/types'
 
@@ -193,6 +195,8 @@ const DevelopmentDashboard: React.FC = () => {
               <SafeTestModePanel dashboard={dashboard} t={t} />
               <RuntimeWorkspacePanel dashboard={dashboard} t={t} apiBaseDisplay={apiBaseDisplay} />
               <DeployDriftPanel dashboard={dashboard} t={t} />
+              <UpdateStatusCard refreshSec={30} />
+              <DeployStatusPanel refreshSec={15} />
               <PackageGatePanel dashboard={dashboard} t={t} />
               <RescueStickBoard dashboard={dashboard} />
               <RescueBuildPanel refreshSec={12} />

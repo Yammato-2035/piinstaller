@@ -4116,6 +4116,133 @@ async def dev_dashboard_rescue_build_status():
         raise
 
 
+class DevDashboardRescueIsoStepRequest(BaseModel):
+    step: str
+    operator_confirm: bool = False
+
+
+class DevDashboardDeployRequest(BaseModel):
+    operator_confirm: bool = False
+
+
+@app.get("/api/dev-dashboard/rescue-iso/status")
+async def dev_dashboard_rescue_iso_status():
+    from core.rescue_iso_build_state import build_rescue_iso_dashboard_state, rescue_iso_status_api_code
+
+    try:
+        body = build_rescue_iso_dashboard_state()
+        return {"code": rescue_iso_status_api_code(body), **body}
+    except Exception:
+        logger.exception("dev_dashboard_rescue_iso_status failed")
+        raise
+
+
+@app.post("/api/dev-dashboard/rescue-iso/step")
+async def dev_dashboard_rescue_iso_step(body: DevDashboardRescueIsoStepRequest):
+    from core.rescue_iso_build_executor import run_rescue_iso_step
+
+    try:
+        return run_rescue_iso_step(body.step, operator_confirm=body.operator_confirm)
+    except Exception:
+        logger.exception("dev_dashboard_rescue_iso_step failed")
+        raise
+
+
+@app.get("/api/dev-dashboard/rescue-iso/step/{action_id}")
+async def dev_dashboard_rescue_iso_step_status(action_id: str):
+    from core.rescue_iso_build_executor import get_rescue_iso_step_status
+
+    try:
+        return get_rescue_iso_step_status(action_id)
+    except Exception:
+        logger.exception("dev_dashboard_rescue_iso_step_status failed")
+        raise
+
+
+@app.post("/api/dev-dashboard/rescue-iso/operator-commands/sudo-clean")
+async def dev_dashboard_rescue_iso_operator_commands_sudo_clean(body: dict[str, Any] | None = Body(default=None)):
+    from core.rescue_iso_operator_commands import build_sudo_clean_commands
+
+    del body
+    try:
+        payload = build_sudo_clean_commands()
+        return {"code": "DEV_DASHBOARD_RESCUE_ISO_OPERATOR_REQUIRED", **payload}
+    except Exception:
+        logger.exception("dev_dashboard_rescue_iso_operator_commands_sudo_clean failed")
+        raise
+
+
+@app.post("/api/dev-dashboard/rescue-iso/operator-commands/build")
+async def dev_dashboard_rescue_iso_operator_commands_build(body: dict[str, Any] | None = Body(default=None)):
+    from core.rescue_iso_operator_commands import build_operator_build_commands
+
+    del body
+    try:
+        payload = build_operator_build_commands()
+        return {"code": "DEV_DASHBOARD_RESCUE_ISO_OPERATOR_REQUIRED", **payload}
+    except Exception:
+        logger.exception("dev_dashboard_rescue_iso_operator_commands_build failed")
+        raise
+
+
+@app.get("/api/dev-dashboard/deploy/status")
+async def dev_dashboard_deploy_status():
+    from core.deploy_orchestrator import get_deploy_status
+
+    try:
+        return get_deploy_status()
+    except Exception:
+        logger.exception("dev_dashboard_deploy_status failed")
+        raise
+
+
+@app.post("/api/dev-dashboard/deploy/request")
+async def dev_dashboard_deploy_request(body: DevDashboardDeployRequest):
+    from core.deploy_orchestrator import request_controlled_deploy
+
+    try:
+        return request_controlled_deploy(body.operator_confirm)
+    except Exception:
+        logger.exception("dev_dashboard_deploy_request failed")
+        raise
+
+
+@app.get("/api/dev-dashboard/deploy/logs")
+async def dev_dashboard_deploy_logs():
+    from core.deploy_orchestrator import read_deploy_logs
+
+    try:
+        return read_deploy_logs()
+    except Exception:
+        logger.exception("dev_dashboard_deploy_logs failed")
+        raise
+
+
+@app.post("/api/dev-dashboard/deploy/operator-setup-commands")
+async def dev_dashboard_deploy_operator_setup_commands(body: dict[str, Any] | None = Body(default=None)):
+    from core.deploy_orchestrator import build_deploy_operator_setup_commands
+
+    del body
+    try:
+        payload = build_deploy_operator_setup_commands()
+        return {"code": "DEV_DASHBOARD_DEPLOY_OPERATOR_REQUIRED", **payload}
+    except Exception:
+        logger.exception("dev_dashboard_deploy_operator_setup_commands failed")
+        raise
+
+
+@app.get("/api/dev-dashboard/update/status")
+async def dev_dashboard_update_status():
+    from core.update_check import build_update_status
+
+    try:
+        body = build_update_status()
+        return {"code": "DEV_DASHBOARD_UPDATE_STATUS_OK", **body}
+    except Exception:
+        logger.exception("dev_dashboard_update_status failed")
+        raise
+
+
 @app.post("/api/dev-dashboard/actions/restart-backend")
 async def dev_dashboard_action_restart_backend():
     from core import dev_dashboard as dev_dashboard_core

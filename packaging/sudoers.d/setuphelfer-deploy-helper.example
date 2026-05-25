@@ -1,0 +1,5 @@
+# Beispiel - nicht automatisch installieren.
+# Nur fuer Entwicklungsumgebungen und nur fuer die systemd-Unit,
+# niemals fuer deploy-to-opt.sh direkt oder fuer Wildcards.
+
+setuphelfer ALL=(root) NOPASSWD: /bin/systemctl start setuphelfer-deploy-helper.service, /bin/systemctl status setuphelfer-deploy-helper.service
