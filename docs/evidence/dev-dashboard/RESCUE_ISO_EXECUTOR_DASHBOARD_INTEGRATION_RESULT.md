@@ -113,8 +113,8 @@ Nach kontrolliertem Helper-Deploy auf `/opt/setuphelfer` erfolgreich verifiziert
   - `code = DEV_DASHBOARD_RESCUE_ISO_STEP_OK`
   - `status = ok`
 - `POST /api/dev-dashboard/rescue-iso/operator-commands/sudo-clean`:
-  - liefert nur den sicheren Clean-Pfad:
-    - `cd "/opt/setuphelfer/build/rescue/live-build/setuphelfer-rescue-live"`
+  - liefert nur den sicheren Workspace-Clean-Pfad:
+    - `cd "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live"`
     - `sudo rm -rf .build chroot cache binary local`
 - `POST /api/dev-dashboard/rescue-iso/step` mit `usb_write`:
   - `code = DEV_DASHBOARD_RESCUE_ISO_FORBIDDEN_STEP`
@@ -150,7 +150,7 @@ Am 2026-05-25 wurde der erste kontrollierte Rescue-ISO-Lauf erneut ueber den pro
   - `code = DEV_DASHBOARD_RESCUE_ISO_STEP_OK`
   - `status = ok`
   - `details.status = green`
-  - vorgeschlagene Operator-Kommandos:
+  - vorgeschlagene Operator-Kommandos waren in diesem fruehen Lauf noch falsch auf den Runtime-Pfad ausgerichtet:
     - `cd "/opt/setuphelfer/build/rescue/live-build/setuphelfer-rescue-live"`
     - `./auto/config`
     - `sudo lb build noauto`
@@ -224,3 +224,31 @@ Die Dashboard-/Executor-Integration ist produktiv vorhanden und fuehrt den Opera
 2. danach den Dashboard-Lauf erneut bei `detect_stale_state` / `prebuild_check` starten
 3. erst wenn `prepare_bundle`, `validate_bundle`, `prepare_tree` und `validate_tree` alle gruen sind, den Operator-Build erneut freigeben
 4. USB-Schreiben bleibt weiterhin blockiert
+
+## Workspace-Path-Fix Final (2026-05-25)
+
+Nach dem finalen Workspace-Path-Fix und dem erneuten Runtime-Smoke auf `f2b13f5` ist der produktive Executor jetzt im Zielzustand:
+
+- `GET /api/dev-dashboard/rescue-iso/status`:
+  - `status = green`
+  - `workspace_path = /home/volker/piinstaller`
+  - `runtime_path = /opt/setuphelfer`
+  - `build_tree_path = /home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live`
+  - `temp_runtime_bundle_path = /home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime`
+  - `build_tree.source_head = f2b13f5`
+  - `temp_runtime_bundle.source_head = f2b13f5`
+  - `stale_state.needs_sudo_clean = false`
+  - `usb_write.allowed = false`
+- `POST /api/dev-dashboard/rescue-iso/step`:
+  - `prepare_bundle` → `ok`
+  - `validate_bundle` → `ok`
+  - `prepare_tree` → `ok`
+  - `validate_tree` → `ok`
+- `POST /api/dev-dashboard/rescue-iso/step` mit `build_iso_operator_required`:
+  - `status = operator_required`
+  - Kommandos:
+    - `cd "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live"`
+    - `./auto/config`
+    - `sudo lb build noauto`
+
+Damit ist die Dashboard-/Executor-Integration fuer den Workspace-Path-Fix produktiv verifiziert. Der echte ISO-Build bleibt weiterhin ein separater Operator-Schritt ausserhalb dieses Strict-Mode-Laufs.

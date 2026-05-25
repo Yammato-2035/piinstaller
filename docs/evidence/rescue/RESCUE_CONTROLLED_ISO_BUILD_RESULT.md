@@ -1,7 +1,7 @@
 # Rescue Controlled ISO Build — Result
 
-**Datum:** 2026-05-25 (Dashboard-/Executor-Runtime-Abnahme nach Workspace-Path-Fix)
-**Git HEAD:** `751e2cf`
+**Datum:** 2026-05-25 (STRICT MODE – Workspace-Path-Fix Final)
+**Git HEAD:** `f2b13f5`
 **Gesamtstatus:** **PREBUILD_GREEN_OPERATOR_REQUIRED** → **Kein ISO-Build gestartet**
 
 ---
@@ -12,12 +12,13 @@
 
 | Feld | Wert |
 |------|------|
-| Workspace HEAD | `751e2cf` |
+| Workspace HEAD | `f2b13f5` |
 | Branch | `main` |
 | Runtime-Gate | Exit **0** |
 | Services | `setuphelfer-backend=active`, `setuphelfer=active` |
 | Runtime Path | `/opt/setuphelfer` |
 | Workspace Path | `/home/volker/piinstaller` |
+| Helper-Deploy | manuell gestartet, Runtime danach weiter **green** |
 
 ### Dashboard-Status vor Build
 
@@ -28,8 +29,8 @@
 | `path_mode` | `workspace_build_runtime_opt` |
 | `build_tree.validator_status` | **ok** |
 | `temp_runtime_bundle.status` | **ok** |
-| `build_tree.source_head` | `751e2cf` |
-| `temp_runtime_bundle.source_head` | `751e2cf` |
+| `build_tree.source_head` | `f2b13f5` |
+| `temp_runtime_bundle.source_head` | `f2b13f5` |
 | `iso_build.status` | **not_started** |
 | `stale_state.needs_sudo_clean` | **false** |
 | `next_operator_action.type` | **operator_sudo_required** |
@@ -65,13 +66,13 @@ sudo lb build noauto
 | Dashboard-Status nach PHASE 4 | **green** |
 | `next_operator_action.type` nach PHASE 4 | **operator_sudo_required** |
 | USB-Write | **blocked** |
-| `source_head` Bundle/Tree | `751e2cf` / `751e2cf` |
+| `source_head` Bundle/Tree | `f2b13f5` / `f2b13f5` |
 
 ### Aufgeloeste Blocker
 
 - Die produktive Runtime bleibt unter `/opt/setuphelfer`, waehrend Bundle und Build-Tree kontrolliert im Workspace `/home/volker/piinstaller` erzeugt werden.
 - `prepare_bundle`, `validate_bundle`, `prepare_tree` und `validate_tree` laufen jetzt ueber die Runtime-API mit Exit **0**.
-- `build-tree-manifest.json` und `MANIFEST.json` referenzieren jetzt den aktuellen Workspace-Stand `751e2cf`.
+- `build-tree-manifest.json` und `MANIFEST.json` referenzieren jetzt den aktuellen Workspace-Stand `f2b13f5`.
 - Der Dashboard-Operator-Befehl zeigt keinen `/opt`-Build-Pfad mehr, sondern den korrekten Workspace-Build-Root.
 - USB-Schreiben, `dd`, `mkfs`, `parted write`, Backup und Restore blieben weiterhin blockiert bzw. ungenutzt.
 

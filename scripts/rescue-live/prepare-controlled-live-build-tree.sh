@@ -8,6 +8,9 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BUILD_ROOT="${REPO_ROOT}/build/rescue/live-build/setuphelfer-rescue-live"
 BUNDLE_SRC="${REPO_ROOT}/build/rescue/temp-runtime/setuphelfer-rescue-runtime"
 BUNDLE_DST="${BUILD_ROOT}/config/includes.chroot/opt/setuphelfer-rescue"
+BOOTLOADER_DIR="${BUILD_ROOT}/config/bootloaders/isolinux"
+BOOTLOADER_TEMPLATE_ROOT="/usr/share/live/build/bootloaders/isolinux"
+TRASH_ROOT="${REPO_ROOT}/build/rescue/.trash"
 
 git_workspace() {
   git -c "safe.directory=${REPO_ROOT}" -C "$REPO_ROOT" "$@"
@@ -24,6 +27,34 @@ write_text_file() {
   mv -f "$tmp" "$target"
 }
 
+copy_host_file() {
+  local source="$1"
+  local target="$2"
+  local mode="$3"
+  mkdir -p "$(dirname "$target")"
+  install -m "$mode" "$source" "$target"
+}
+
+first_existing_file() {
+  local candidate
+  for candidate in "$@"; do
+    if [[ -f "$candidate" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+move_to_trash() {
+  local source="$1"
+  local target
+  [[ -e "$source" ]] || return 0
+  mkdir -p "$TRASH_ROOT"
+  target="${TRASH_ROOT}/$(basename "$source").$(date +%s).$$"
+  mv "$source" "$target"
+}
+
 SOURCE_HEAD="$(git_workspace rev-parse --short HEAD 2>/dev/null || echo unknown)"
 
 die() { echo "ERROR: $*" >&2; exit 1; }
@@ -37,9 +68,30 @@ mkdir -p \
   "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system" \
   "${BUILD_ROOT}/config/includes.chroot/etc/systemd/network" \
   "${BUILD_ROOT}/config/hooks/normal" \
-  "${BUILD_ROOT}/config/bootloaders" \
+  "${BOOTLOADER_DIR}" \
   "${BUILD_ROOT}/auto" \
   "${BUILD_ROOT}/evidence"
+
+HOST_ISOLINUX_BIN="$(first_existing_file /usr/lib/ISOLINUX/isolinux.bin /usr/lib/syslinux/isolinux.bin || true)"
+HOST_VESAMENU_C32="$(first_existing_file /usr/lib/syslinux/modules/bios/vesamenu.c32 /usr/lib/syslinux/vesamenu.c32 || true)"
+[[ -f "${BOOTLOADER_TEMPLATE_ROOT}/install.cfg" ]] || die "live-build isolinux template missing: ${BOOTLOADER_TEMPLATE_ROOT}"
+[[ -n "$HOST_ISOLINUX_BIN" ]] || die "host isolinux.bin missing — install package isolinux"
+[[ -n "$HOST_VESAMENU_C32" ]] || die "host vesamenu.c32 missing — install package syslinux-common"
+
+copy_host_file "${BOOTLOADER_TEMPLATE_ROOT}/install.cfg" "${BOOTLOADER_DIR}/install.cfg" 0644
+copy_host_file "${BOOTLOADER_TEMPLATE_ROOT}/isolinux.cfg" "${BOOTLOADER_DIR}/isolinux.cfg" 0644
+copy_host_file "${BOOTLOADER_TEMPLATE_ROOT}/live.cfg.in" "${BOOTLOADER_DIR}/live.cfg.in" 0644
+copy_host_file "${BOOTLOADER_TEMPLATE_ROOT}/menu.cfg" "${BOOTLOADER_DIR}/menu.cfg" 0644
+copy_host_file "${BOOTLOADER_TEMPLATE_ROOT}/splash.svg.in" "${BOOTLOADER_DIR}/splash.svg.in" 0644
+copy_host_file "${BOOTLOADER_TEMPLATE_ROOT}/stdmenu.cfg" "${BOOTLOADER_DIR}/stdmenu.cfg" 0644
+copy_host_file "$HOST_ISOLINUX_BIN" "${BOOTLOADER_DIR}/isolinux.bin" 0644
+copy_host_file "$HOST_VESAMENU_C32" "${BOOTLOADER_DIR}/vesamenu.c32" 0644
+for module in ldlinux.c32 libcom32.c32 libutil.c32 libmenu.c32; do
+  module_path="$(first_existing_file "/usr/lib/syslinux/modules/bios/${module}" "/usr/lib/syslinux/${module}" || true)"
+  if [[ -n "$module_path" ]]; then
+    copy_host_file "$module_path" "${BOOTLOADER_DIR}/${module}" 0644
+  fi
+done
 
 write_text_file "${BUILD_ROOT}/config/package-lists/setuphelfer.list.chroot" 0644 <<'EOF'
 systemd
@@ -172,10 +224,12 @@ rm -rf .build chroot cache binary local
 EOF
 
 if [[ -e "$BUNDLE_DST" ]]; then
-  old_bundle_dst="${BUNDLE_DST}.old.$(date +%s).$$"
-  mv "$BUNDLE_DST" "$old_bundle_dst"
-  rm -rf "$old_bundle_dst" 2>/dev/null || true
+  move_to_trash "$BUNDLE_DST"
 fi
+for stale_bundle in "$(dirname "$BUNDLE_DST")/$(basename "$BUNDLE_DST").old."*; do
+  [[ -e "$stale_bundle" ]] || continue
+  move_to_trash "$stale_bundle"
+done
 mkdir -p "$(dirname "$BUNDLE_DST")"
 rsync -rltL \
   --exclude='__pycache__' --exclude='*.pyc' --exclude='.env' \

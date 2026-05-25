@@ -1,16 +1,16 @@
 {
   "schema_version": 2,
   "phase": "controlled_rescue_iso_build",
-  "updated_at": "2026-05-25T16:46:36.756411+00:00",
+  "updated_at": "2026-05-25T18:08:12.087767+00:00",
   "status": "operator_required",
-  "last_action_id": "25b31d77304141c7ab6708ec20b1bccd",
+  "last_action_id": "4c586e5580114f9c8d7fe005f86a2c81",
   "last_step": "build_iso_operator_required",
   "last_action_status": "operator_required",
   "last_exit_code": 12,
   "last_error": "Kontrollierter Rescue-ISO-Build bereit zur Prüfung",
   "latest_log_path": "build/rescue/logs/controlled-iso-build/latest.log",
-  "action_log_path": "build/rescue/logs/controlled-iso-build/actions/25b31d77304141c7ab6708ec20b1bccd.log",
-  "action_status_path": "build/rescue/logs/controlled-iso-build/actions/25b31d77304141c7ab6708ec20b1bccd.json",
+  "action_log_path": "build/rescue/logs/controlled-iso-build/actions/4c586e5580114f9c8d7fe005f86a2c81.log",
+  "action_status_path": "build/rescue/logs/controlled-iso-build/actions/4c586e5580114f9c8d7fe005f86a2c81.json",
   "iso_found": false,
   "iso_path": null,
   "iso_abs_path": null,
@@ -42,7 +42,7 @@
   "dashboard_state": {
     "status": "green",
     "summary": "Kontrollierter Rescue-ISO-Build bereit zur Prüfung",
-    "generated_at": "2026-05-25T16:46:36.752766+00:00",
+    "generated_at": "2026-05-25T18:08:12.083725+00:00",
     "repo_root": "/home/volker/piinstaller",
     "runtime_repo_root": "/opt/setuphelfer",
     "runtime_path": "/opt/setuphelfer",
@@ -56,7 +56,7 @@
     "path_errors": [],
     "path_warnings": [],
     "repo": {
-      "head": "751e2cf",
+      "head": "f2b13f5",
       "branch": "main",
       "runtime_gate": "green",
       "runtime_gate_exit": 0,
@@ -84,7 +84,7 @@
       "auto_build_blocked": true,
       "missing_paths": [],
       "manifest_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/evidence/build-tree-manifest.json",
-      "source_head": "751e2cf"
+      "source_head": "f2b13f5"
     },
     "stale_state": {
       "present": false,
@@ -100,9 +100,9 @@
       "path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime",
       "status": "ok",
       "files_count": 2782,
-      "manifest_sha256": "9c1dcbd283eddd0afd1aa0b70513df1458b4ffad56509051a738a84b99a9abe1",
+      "manifest_sha256": "e5b4ddd47bc19386e2a1a3c773ec565b9b76b1613e3c3b36426742aefaf80d7e",
       "manifest_path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime/MANIFEST.json",
-      "source_head": "751e2cf",
+      "source_head": "f2b13f5",
       "error": null
     },
     "iso_build": {
@@ -123,10 +123,10 @@
     "logs": {
       "latest_log_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build/latest.log",
       "last_80_lines": [
-        "[2026-05-25T16:46:36.669747+00:00] STEP: build_iso_operator_required",
-        "[2026-05-25T16:46:36.669753+00:00] RUNTIME_PATH: /opt/setuphelfer",
-        "[2026-05-25T16:46:36.669756+00:00] WORKSPACE_PATH: /home/volker/piinstaller",
-        "[2026-05-25T16:46:36.669759+00:00] PATH_STATUS: ok"
+        "[2026-05-25T18:08:12.002932+00:00] STEP: build_iso_operator_required",
+        "[2026-05-25T18:08:12.002938+00:00] RUNTIME_PATH: /opt/setuphelfer",
+        "[2026-05-25T18:08:12.002941+00:00] WORKSPACE_PATH: /home/volker/piinstaller",
+        "[2026-05-25T18:08:12.002944+00:00] PATH_STATUS: ok"
       ],
       "last_error": null
     },
