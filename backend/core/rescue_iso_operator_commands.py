@@ -160,7 +160,9 @@ def build_sudo_clean_commands(*, repo_root: Path | None = None) -> dict[str, Any
     if paths.get("path_status") == "ok":
         commands = [
             f'cd "{build_root}"',
-            "sudo rm -rf .build chroot cache binary local",
+            "sudo rm -rf .build chroot cache binary local "
+            "config/includes.chroot/opt/setuphelfer-rescue "
+            "config/includes.chroot/opt/setuphelfer-rescue.old.*",
         ]
         warnings.extend(
             [

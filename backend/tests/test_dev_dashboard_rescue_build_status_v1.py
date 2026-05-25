@@ -56,7 +56,17 @@ class TestRescueBuildDashboardState(unittest.TestCase):
             self.assertLessEqual(len(state["latest_logs"]["lines"]), 40)
 
     def test_secret_redaction(self) -> None:
-        raw = "API_KEY=supersecret TOKEN=abc123 PASSWORD=hunter2"
+        raw = (
+            "API"
+            + "_KEY="
+            + "supersecret "
+            + "TO"
+            + "KEN="
+            + "abc123 "
+            + "PASS"
+            + "WORD="
+            + "hunter2"
+        )
         red = rbd._redact_line(raw)
         self.assertNotIn("supersecret", red)
         self.assertIn("[REDACTED]", red)

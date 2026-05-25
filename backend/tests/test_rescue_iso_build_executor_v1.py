@@ -54,6 +54,22 @@ class RescueIsoBuildExecutorTests(unittest.TestCase):
         path.write_text(body, encoding="utf-8")
         path.chmod(0o755)
 
+    def _write_dpkg_preflight_json(self, repo: Path, *, status: str, exit_code: int, summary: str) -> None:
+        path = repo / "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            (
+                "{\n"
+                f'  "status": "{status}",\n'
+                f'  "exit_code": {exit_code},\n'
+                f'  "summary": "{summary}",\n'
+                '  "chroot_status": "missing",\n'
+                '  "issues": []\n'
+                "}\n"
+            ),
+            encoding="utf-8",
+        )
+
     def test_toolcheck_is_read_only(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             repo = self._make_repo(td)
@@ -150,6 +166,139 @@ class RescueIsoBuildExecutorTests(unittest.TestCase):
             self.assertEqual(result["details"]["cwd"], str(repo))
             self.assertEqual(result["details"]["command"][1], "build/rescue/live-build/setuphelfer-rescue-live")
 
+    def test_dpkg_preflight_step_exists_and_is_read_only(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = self._make_repo(td)
+            marker = repo / "dpkg-preflight.marker"
+            self._script(
+                repo,
+                "scripts/rescue-live/validate-live-build-dpkg-preflight.sh",
+                (
+                    "#!/bin/sh\n"
+                    "mkdir -p docs/evidence/runtime-results/rescue\n"
+                    "cat > docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json <<'EOF'\n"
+                    '{\n'
+                    '  "status": "pre_chroot_ok",\n'
+                    '  "exit_code": 0,\n'
+                    '  "summary": "Preflight ok vor chroot-Erzeugung",\n'
+                    '  "chroot_status": "missing",\n'
+                    '  "issues": []\n'
+                    '}\n'
+                    "EOF\n"
+                    f"printf ok > \"{marker}\"\n"
+                ),
+            )
+            with patch.object(executor, "_repo_root", return_value=self._runtime_root()):
+                with patch.object(executor, "resolve_rescue_iso_paths", return_value=self._paths(repo)):
+                    result = executor.run_rescue_iso_step("dpkg_preflight")
+            self.assertEqual(result["status"], "ok")
+            self.assertTrue(marker.exists())
+            self.assertEqual(result["details"]["cwd"], str(repo))
+            self.assertEqual(result["details"]["command"][0], "scripts/rescue-live/validate-live-build-dpkg-preflight.sh")
+            self.assertIn("result", result["details"])
+
+    def test_dpkg_preflight_does_not_execute_lb_build_or_apt(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = self._make_repo(td)
+            commands: list[list[str]] = []
+
+            def fake_run_command(
+                repo_root: Path,
+                action: dict[str, object],
+                command: list[str],
+                *,
+                cwd: Path,
+                extra_env: dict[str, str] | None = None,
+            ) -> tuple[int, list[str]]:
+                del repo_root, action, cwd, extra_env
+                commands.append(command)
+                self._write_dpkg_preflight_json(repo, status="pre_chroot_ok", exit_code=0, summary="Preflight ok vor chroot-Erzeugung")
+                return 0, ["ok"]
+
+            with patch.object(executor, "_repo_root", return_value=self._runtime_root()):
+                with patch.object(executor, "resolve_rescue_iso_paths", return_value=self._paths(repo)):
+                    with patch.object(executor, "_run_command", side_effect=fake_run_command):
+                        result = executor.run_rescue_iso_step("dpkg_preflight")
+            self.assertEqual(result["status"], "ok")
+            self.assertEqual(commands, [["scripts/rescue-live/validate-live-build-dpkg-preflight.sh"]])
+            joined = "\n".join(" ".join(cmd) for cmd in commands)
+            self.assertNotIn("lb build", joined)
+            self.assertNotIn("apt", joined)
+
+    def test_dpkg_preflight_blocks_when_start_stop_daemon_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = self._make_repo(td)
+
+            def fake_run_command(
+                repo_root: Path,
+                action: dict[str, object],
+                command: list[str],
+                *,
+                cwd: Path,
+                extra_env: dict[str, str] | None = None,
+            ) -> tuple[int, list[str]]:
+                del repo_root, action, command, cwd, extra_env
+                self._write_dpkg_preflight_json(
+                    repo,
+                    status="chroot_start_stop_daemon_missing",
+                    exit_code=16,
+                    summary="start-stop-daemon im chroot fehlt",
+                )
+                return 16, ["missing start-stop-daemon"]
+
+            with patch.object(executor, "_repo_root", return_value=self._runtime_root()):
+                with patch.object(executor, "resolve_rescue_iso_paths", return_value=self._paths(repo)):
+                    with patch.object(executor, "_run_command", side_effect=fake_run_command):
+                        result = executor.run_rescue_iso_step("dpkg_preflight")
+            self.assertEqual(result["status"], "blocked")
+            self.assertEqual(result["exit_code"], 16)
+
+    def test_dpkg_preflight_ok_when_chroot_missing_and_tree_ready(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = self._make_repo(td)
+
+            def fake_run_command(
+                repo_root: Path,
+                action: dict[str, object],
+                command: list[str],
+                *,
+                cwd: Path,
+                extra_env: dict[str, str] | None = None,
+            ) -> tuple[int, list[str]]:
+                del repo_root, action, command, cwd, extra_env
+                self._write_dpkg_preflight_json(repo, status="pre_chroot_ok", exit_code=0, summary="Preflight ok vor chroot-Erzeugung")
+                return 0, ["pre_chroot_ok"]
+
+            with patch.object(executor, "_repo_root", return_value=self._runtime_root()):
+                with patch.object(executor, "resolve_rescue_iso_paths", return_value=self._paths(repo)):
+                    with patch.object(executor, "_run_command", side_effect=fake_run_command):
+                        result = executor.run_rescue_iso_step("dpkg_preflight")
+            self.assertEqual(result["status"], "ok")
+            self.assertEqual(result["exit_code"], 0)
+
+    def test_dpkg_preflight_summary_json_is_written(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = self._make_repo(td)
+
+            def fake_run_command(
+                repo_root: Path,
+                action: dict[str, object],
+                command: list[str],
+                *,
+                cwd: Path,
+                extra_env: dict[str, str] | None = None,
+            ) -> tuple[int, list[str]]:
+                del repo_root, action, command, cwd, extra_env
+                self._write_dpkg_preflight_json(repo, status="pre_chroot_ok", exit_code=0, summary="Preflight ok vor chroot-Erzeugung")
+                return 0, ["pre_chroot_ok"]
+
+            with patch.object(executor, "_repo_root", return_value=self._runtime_root()):
+                with patch.object(executor, "resolve_rescue_iso_paths", return_value=self._paths(repo)):
+                    with patch.object(executor, "_run_command", side_effect=fake_run_command):
+                        executor.run_rescue_iso_step("dpkg_preflight")
+            summary = repo / "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+            self.assertTrue(summary.is_file())
+
     def test_build_iso_operator_required_does_not_execute_build(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             repo = self._make_repo(td)
@@ -202,6 +351,7 @@ class RescueIsoBuildExecutorTests(unittest.TestCase):
             joined = "\n".join(payload["commands"])
             self.assertNotIn("lb clean", joined)
             self.assertIn("sudo rm -rf .build chroot cache binary local", joined)
+            self.assertIn("config/includes.chroot/opt/setuphelfer-rescue", joined)
 
     def test_validate_bundle_uses_workspace_manifest_path(self) -> None:
         with tempfile.TemporaryDirectory() as td:

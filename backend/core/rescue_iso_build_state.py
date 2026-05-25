@@ -28,6 +28,7 @@ _BUILD_TREE_REL = "build/rescue/live-build/setuphelfer-rescue-live"
 _LOG_DIR_REL = "build/rescue/logs/controlled-iso-build"
 _LATEST_LOG_REL = f"{_LOG_DIR_REL}/latest.log"
 _SUMMARY_REL = "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
+_DPKG_PREFLIGHT_REL = "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
 _USB_SUMMARY_REL = "docs/evidence/runtime-results/rescue/controlled_usb_write_latest_summary.json"
 _TEMP_BUNDLE_REL = "build/rescue/temp-runtime/setuphelfer-rescue-runtime"
 
@@ -61,6 +62,7 @@ _EVIDENCE_PATHS = (
     "docs/evidence/rescue/RESCUE_BIG_STEP_STATUS_PLAN.md",
     "docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md",
     _SUMMARY_REL,
+    _DPKG_PREFLIGHT_REL,
     _USB_SUMMARY_REL,
     _LATEST_LOG_REL,
 )
@@ -220,11 +222,44 @@ def _temp_runtime_bundle(repo: Path) -> dict[str, Any]:
     }
 
 
+def _dpkg_preflight(repo: Path) -> dict[str, Any]:
+    path = repo / _DPKG_PREFLIGHT_REL
+    data, err = _safe_read_json(path)
+    if err or not data:
+        return {
+            "status": "unknown",
+            "last_exit_code": None,
+            "summary": "dpkg preflight not run yet",
+            "chroot_status": "unknown",
+            "issues": [],
+            "dangerous_matches": [],
+            "forbidden_package_matches": [],
+            "json_path": str(path),
+        }
+    return {
+        "status": str(data.get("status") or "unknown"),
+        "last_exit_code": data.get("exit_code") if isinstance(data.get("exit_code"), int) else None,
+        "summary": str(data.get("summary") or ""),
+        "chroot_status": str(data.get("chroot_status") or "unknown"),
+        "issues": list(data.get("issues") or []),
+        "dangerous_matches": list(data.get("dangerous_matches") or []),
+        "forbidden_package_matches": list(data.get("forbidden_package_matches") or []),
+        "json_path": str(path),
+    }
+
+
 def _list_root_owned_entries(base: Path, *, limit: int = 40) -> list[Path]:
     out: list[Path] = []
     if not base.exists():
         return out
     try:
+        try:
+            if base.lstat().st_uid == 0:
+                out.append(base)
+                if len(out) >= limit:
+                    return out
+        except OSError:
+            return out
         for root, dirs, files in os.walk(base):
             for name in [*dirs, *files]:
                 path = Path(root) / name
@@ -273,8 +308,12 @@ def detect_live_build_stale_state(*, repo_root: Path | None = None) -> dict[str,
     repo = Path(str(paths["workspace_path"])).resolve(strict=False)
     build_root = Path(str(paths["build_tree_path"])).resolve(strict=False)
     root_owned: list[str] = []
-    for name in _STAGE_DIR_NAMES:
-        root_owned.extend(_repo_rel(repo, p) for p in _list_root_owned_entries(build_root / name))
+    ownership_targets = [build_root / name for name in _STAGE_DIR_NAMES]
+    generated_opt_root = build_root / "config/includes.chroot/opt"
+    ownership_targets.append(generated_opt_root / "setuphelfer-rescue")
+    ownership_targets.extend(sorted(generated_opt_root.glob("setuphelfer-rescue.old.*")))
+    for target in ownership_targets:
+        root_owned.extend(_repo_rel(repo, p) for p in _list_root_owned_entries(target))
     root_owned = list(dict.fromkeys(root_owned))[:40]
 
     stage_file = build_root / ".build/chroot_package-lists.install"
@@ -421,6 +460,7 @@ def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
     stale = state.get("stale_state") or {}
     build_tree = state.get("build_tree") or {}
     bundle = state.get("temp_runtime_bundle") or {}
+    dpkg_preflight = state.get("dpkg_preflight") or {}
     iso_build = state.get("iso_build") or {}
     path_errors = state.get("path_errors") or []
 
@@ -470,6 +510,39 @@ def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
             "label": "Live-Build-Baum ist nicht build-ready.",
             "commands": [],
         }
+    dpkg_status = str(dpkg_preflight.get("status") or "unknown")
+    if dpkg_status in {
+        "unsafe_auto_config",
+        "unsafe_auto_clean",
+        "forbidden_package",
+        "dangerous_path_override",
+        "chroot_dpkg_missing",
+        "chroot_start_stop_daemon_missing",
+    }:
+        return {
+            "type": "fix_required",
+            "label": dpkg_preflight.get("summary") or "DPKG-Preflight blockiert den Build.",
+            "commands": [],
+        }
+    if dpkg_status not in {"ok", "pre_chroot_ok"}:
+        return {
+            "type": "fix_required",
+            "label": "DPKG-Preflight muss erst grün sein, bevor ein echter ISO-Build freigegeben wird.",
+            "commands": [],
+        }
+    if dpkg_status in {"ok", "pre_chroot_ok"} and _backend_sudo_allowed():
+        return {
+            "type": "build_ready",
+            "label": "DPKG-Preflight ist grün; Build darf mit explizitem Operator-Confirm gestartet werden.",
+            "commands": [],
+        }
+    if dpkg_status in {"ok", "pre_chroot_ok"}:
+        build_cmds = build_operator_build_commands(repo_root=runtime_root)
+        return {
+            "type": "operator_sudo_required",
+            "label": "DPKG-Preflight ist grün; der echte Build bleibt ein separater Operator-Sudo-Schritt.",
+            "commands": build_cmds.get("commands") or [],
+        }
     if iso_build.get("status") == "success":
         return {"type": "none", "label": "ISO gefunden; USB-Schreiben bleibt separat blockiert.", "commands": []}
     if _backend_sudo_allowed():
@@ -497,12 +570,26 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
     build_tree = _build_tree(repo)
     stale_state = detect_live_build_stale_state(repo_root=repo)
     temp_bundle = _temp_runtime_bundle(repo)
+    dpkg_preflight = _dpkg_preflight(repo)
     logs = read_rescue_iso_latest_logs(repo_root=repo, max_lines=120)
     artifacts = summarize_rescue_iso_artifacts(repo_root=repo)
     summary = _summary_payload(runtime_root)
     iso_build = _status_from_summary(summary, artifacts, logs)
+    dpkg_status = str(dpkg_preflight.get("status") or "unknown")
 
-    if paths["path_status"] == "blocked" or runtime_gate["status"] == "red" or build_tree["validator_status"] == "blocked":
+    if (
+        paths["path_status"] == "blocked"
+        or runtime_gate["status"] == "red"
+        or build_tree["validator_status"] == "blocked"
+        or dpkg_status in {
+            "unsafe_auto_config",
+            "unsafe_auto_clean",
+            "forbidden_package",
+            "dangerous_path_override",
+            "chroot_dpkg_missing",
+            "chroot_start_stop_daemon_missing",
+        }
+    ):
         overall = "red"
     elif paths["path_status"] == "review_required":
         overall = "yellow"
@@ -515,7 +602,7 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
     elif stale_state["present"] or temp_bundle["status"] in {"review_required", "unknown"} or build_tree["validator_status"] in {
         "review_required",
         "unknown",
-    }:
+    } or dpkg_status == "review_required":
         overall = "yellow"
     elif runtime_gate["status"] == "unknown":
         overall = "gray"
@@ -538,6 +625,10 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
             summary_text = "sudo clean erforderlich wegen stale root-owned Build-State"
         elif stale_state["present"]:
             summary_text = "stale Build-State erkannt"
+        elif dpkg_status not in {"ok", "pre_chroot_ok", "unknown"}:
+            summary_text = dpkg_preflight.get("summary") or "DPKG-Preflight blockiert den Build"
+        elif dpkg_status == "unknown":
+            summary_text = "DPKG-Preflight noch nicht ausgeführt"
         elif iso_build["status"] == "success":
             summary_text = "ISO-Artefakt vorhanden"
         elif runtime_gate["status"] != "green":
@@ -572,6 +663,7 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
         "build_tree": build_tree,
         "stale_state": stale_state,
         "temp_runtime_bundle": temp_bundle,
+        "dpkg_preflight": dpkg_preflight,
         "iso_build": iso_build,
         "usb_write": {
             "allowed": False,

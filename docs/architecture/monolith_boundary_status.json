@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "overall_status": "yellow",
+  "summary": "Monolith-Grenzen sind dokumentiert, aber backend/app.py und die Deploy-/Rescue-Integration bleiben noch gekoppelt.",
+  "blockers": [
+    "backend_app_py_is_central_integration_point",
+    "deploy_and_rescue_paths_still_shared"
+  ],
+  "evidence_files": [
+    "docs/architecture/MONOLITH_BOUNDARY_MAP.md"
+  ],
+  "last_updated": "2026-05-25"
+}

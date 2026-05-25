@@ -66,6 +66,18 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
             self.assertTrue(payload["stale_state"]["needs_sudo_clean"])
             self.assertEqual(payload["next_operator_action"]["type"], "sudo_clean_required")
 
+    def test_generated_bundle_dir_root_owned_triggers_operator_action(self) -> None:
+        with self._repo() as td:
+            repo = Path(td)
+            self._init_git_repo(repo)
+            fake = repo / "build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue"
+            fake.parent.mkdir(parents=True, exist_ok=True)
+            fake.write_text("x", encoding="utf-8")
+            with patch.object(state, "_list_root_owned_entries", return_value=[fake]):
+                payload = state.build_rescue_iso_dashboard_state(repo_root=repo)
+            self.assertTrue(payload["stale_state"]["needs_sudo_clean"])
+            self.assertEqual(payload["next_operator_action"]["type"], "sudo_clean_required")
+
     def test_auto_config_without_noauto_is_review_required(self) -> None:
         with self._repo() as td:
             repo = Path(td)
@@ -247,6 +259,51 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
         with patch.object(state.subprocess, "run", side_effect=fake_run):
             value = state._git_value(repo, "rev-parse", "--short", "HEAD")
         self.assertEqual(value, "751e2cf")
+
+    def test_next_operator_action_requires_dpkg_preflight_before_build(self) -> None:
+        payload = state.build_next_operator_action(
+            {
+                "runtime_path": "/opt/setuphelfer",
+                "path_status": "ok",
+                "path_errors": [],
+                "repo": {"runtime_gate": "green"},
+                "tools": {
+                    "lb": {"present": True},
+                    "xorriso": {"present": True},
+                    "mksquashfs": {"present": True},
+                },
+                "stale_state": {"needs_sudo_clean": False, "present": False},
+                "build_tree": {"validator_status": "ok"},
+                "temp_runtime_bundle": {"status": "ok"},
+                "dpkg_preflight": {"status": "unknown", "summary": "dpkg preflight not run yet"},
+                "iso_build": {"status": "review_required"},
+            }
+        )
+        self.assertEqual(payload["type"], "fix_required")
+
+    def test_next_operator_action_allows_operator_build_only_after_dpkg_preflight_ok(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            self._init_git_repo(repo)
+            payload = state.build_next_operator_action(
+                {
+                    "runtime_path": str(repo),
+                    "path_status": "ok",
+                    "path_errors": [],
+                    "repo": {"runtime_gate": "green"},
+                    "tools": {
+                        "lb": {"present": True},
+                        "xorriso": {"present": True},
+                        "mksquashfs": {"present": True},
+                    },
+                    "stale_state": {"needs_sudo_clean": False, "present": False},
+                    "build_tree": {"validator_status": "ok"},
+                    "temp_runtime_bundle": {"status": "ok"},
+                    "dpkg_preflight": {"status": "ok", "summary": "DPKG preflight ok"},
+                    "iso_build": {"status": "review_required"},
+                }
+            )
+        self.assertEqual(payload["type"], "operator_sudo_required")
 
 
 class RescueIsoDashboardRouteRegistrationTests(unittest.TestCase):

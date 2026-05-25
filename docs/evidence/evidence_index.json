@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "overall_status": "green",
+  "summary": "Evidence-Index vorhanden; einzelne Bereiche behalten ihre eigene Ampel.",
+  "top_level_buckets": [
+    "governance",
+    "development_dashboard",
+    "rescue_runtime",
+    "test_register"
+  ],
+  "last_updated": "2026-05-25"
+}

@@ -36,6 +36,7 @@ _ALLOWED_STEPS = {
     "toolcheck",
     "detect_stale_state",
     "clean_user_state",
+    "dpkg_preflight",
     "prepare_bundle",
     "validate_bundle",
     "prepare_tree",
@@ -307,6 +308,11 @@ def _root_owned_under(path: Path) -> list[Path]:
     if not path.exists():
         return out
     try:
+        try:
+            if path.lstat().st_uid == 0:
+                out.append(path)
+        except OSError:
+            return out
         for root, dirs, files in os.walk(path):
             for name in [*dirs, *files]:
                 p = Path(root) / name
@@ -395,6 +401,7 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
     guarded_steps = {
         "detect_stale_state",
         "clean_user_state",
+        "dpkg_preflight",
         "prepare_bundle",
         "validate_bundle",
         "prepare_tree",
@@ -449,7 +456,10 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
 
     if step_name == "clean_user_state":
         build_root = _build_root(workspace_root)
+        generated_opt_root = build_root / "config/includes.chroot/opt"
         targets = [build_root / name for name in (".build", "chroot", "cache", "binary", "local")]
+        targets.append(generated_opt_root / "setuphelfer-rescue")
+        targets.extend(sorted(generated_opt_root.glob("setuphelfer-rescue.old.*")))
         root_owned: list[str] = []
         for target in targets:
             root_owned.extend(_repo_rel(repo, p) for p in _root_owned_under(target))
@@ -480,6 +490,41 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
             removed.append(_repo_rel(repo, target))
         action = _set_result(action, status="ok", exit_code=0, details={"removed": removed, "paths": paths})
         return _finish(repo, runtime_root, action, log_lines)
+
+    if step_name == "dpkg_preflight":
+        rc, cmd_log = _run_command(
+            repo,
+            action,
+            command=["scripts/rescue-live/validate-live-build-dpkg-preflight.sh"],
+            cwd=workspace_root,
+        )
+        details = {"command": ["scripts/rescue-live/validate-live-build-dpkg-preflight.sh"], "cwd": str(workspace_root)}
+        summary_path = workspace_root / "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+        if summary_path.is_file():
+            try:
+                details["result"] = json.loads(summary_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                pass
+        if rc == 0:
+            status = "ok"
+            exit_code = 0
+            errors: list[str] = []
+        elif rc == 20:
+            status = "review_required"
+            exit_code = 20
+            errors = ["dpkg_preflight_review_required"]
+        else:
+            status = "blocked"
+            exit_code = rc
+            errors = [f"dpkg_preflight_failed:{rc}"]
+        action = _set_result(
+            action,
+            status=status,
+            exit_code=exit_code,
+            details=details,
+            errors=errors,
+        )
+        return _finish(repo, runtime_root, action, log_lines + cmd_log)
 
     if step_name == "prepare_bundle":
         action, cmd_log = _execute_script_step(
@@ -530,6 +575,8 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
     if step_name == "prebuild_check":
         state = build_rescue_iso_dashboard_state(repo_root=runtime_root)
         missing = [name for name, item in (state.get("tools") or {}).items() if not item.get("present")]
+        dpkg_preflight = state.get("dpkg_preflight") or {}
+        dpkg_status = str(dpkg_preflight.get("status") or "unknown")
         if ((state.get("repo") or {}).get("runtime_gate")) != "green":
             action = _set_result(action, status="blocked", exit_code=14, errors=["runtime_gate_failed"], details=state)
         elif (state.get("stale_state") or {}).get("needs_sudo_clean"):
@@ -552,6 +599,19 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
             action = _set_result(action, status="blocked", exit_code=10, details=state, errors=["auto_config_missing_noauto"])
         elif not (state.get("build_tree") or {}).get("auto_build_blocked"):
             action = _set_result(action, status="blocked", exit_code=10, details=state, errors=["auto_build_not_blocked"])
+        elif dpkg_status in {"unknown"}:
+            action = _set_result(action, status="review_required", exit_code=20, details=state, errors=["dpkg_preflight_not_run"])
+        elif dpkg_status in {
+            "unsafe_auto_config",
+            "unsafe_auto_clean",
+            "forbidden_package",
+            "dangerous_path_override",
+            "chroot_dpkg_missing",
+            "chroot_start_stop_daemon_missing",
+        }:
+            action = _set_result(action, status="blocked", exit_code=16, details=state, errors=["dpkg_preflight_blocked"])
+        elif dpkg_status == "review_required":
+            action = _set_result(action, status="review_required", exit_code=20, details=state, errors=["dpkg_preflight_review_required"])
         else:
             action = _set_result(action, status="ok", exit_code=0, details=state)
         return _finish(repo, runtime_root, action, log_lines)

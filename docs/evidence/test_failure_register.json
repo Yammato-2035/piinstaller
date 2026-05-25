@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "summary": "Test-Register vorhanden; offene Testfelder werden separat bewertet.",
+  "open_failures_status": "yellow",
+  "tracked_areas": [
+    "runtime_gate",
+    "deploy_helper",
+    "update_check",
+    "rescue_iso_prebuild",
+    "packaging_readiness",
+    "ui_safety"
+  ],
+  "last_updated": "2026-05-25"
+}

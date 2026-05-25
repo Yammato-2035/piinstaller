@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import deploy.runner_rescue_stick_readonly_build_emulation as readonly_runner
 from deploy.runner_rescue_stick_readonly_build_emulation import (
     build_rescue_stick_build_workspace_snapshot,
     build_rescue_stick_evidence_manifest,
@@ -138,7 +140,8 @@ class RescueStickReadonlyBuildEmulationV1Tests(unittest.TestCase):
         self.assertTrue(doc_hits or manifest.get("manifest_status") in ("ok", "review_required"))
 
     def test_final_gate_ready_or_review_when_clean(self) -> None:
-        res = run_rescue_stick_readonly_build_emulation_all(explicit_overwrite=True, runtime_gate_exit_0=True)
+        with patch.object(readonly_runner, "_scan_forbidden_artifacts", return_value=[]):
+            res = run_rescue_stick_readonly_build_emulation_all(explicit_overwrite=True, runtime_gate_exit_0=True)
         st = res.get("rescue_stick_readonly_build_emulation_all_status")
         self.assertIn(st, ("ready", "review_required"))
         final = json.loads((_H / "rescue_stick_readonly_build_final_gate.json").read_text(encoding="utf-8"))

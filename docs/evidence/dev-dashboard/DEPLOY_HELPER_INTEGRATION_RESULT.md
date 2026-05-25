@@ -86,6 +86,24 @@ Verifiziert auf der produktiven Runtime:
   - `status = success`
   - Log-Tail endet mit `final_status=success`
 
+## Green-Up Runtime Refresh
+
+Nach dem finalen Helper-Deploy fuer die Green-Up-Erweiterung wurde zusaetzlich verifiziert:
+
+- letzter produktiver Job:
+  - `deploy-20260525T193756Z-954998`
+  - `status = success`
+  - `deploy_exit_code = 0`
+  - `runtime_gate_exit_before = 14`
+  - `runtime_gate_exit_after = 0`
+- Workspace und `/opt` sind fuer die neuen Green-Up-Dateien identisch:
+  - `backend/core/packaging_readiness_state.py`
+  - `backend/core/project_overview_dashboard_state.py`
+  - `backend/app.py`
+- neue Runtime-Endpunkte antworten produktiv:
+  - `GET /api/dev-dashboard/packaging/readiness` → `status = green`, `install_test_passed = false`
+  - `GET /api/dev-dashboard/project-overview` → `status = yellow`, mit `roadmap = green`, `tests = green`, `monolith = yellow`, `evidence = green`
+
 ## Folgehaertungen waehrend der Runtime-Abnahme
 
 Fuer den produktiven Lauf wurden zusaetzlich verifiziert bzw. nachgezogen:

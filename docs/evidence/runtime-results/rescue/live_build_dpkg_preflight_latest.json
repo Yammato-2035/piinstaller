@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "phase": "live_build_dpkg_preflight",
+  "build_root": "build/rescue/live-build/setuphelfer-rescue-live",
+  "status": "pre_chroot_ok",
+  "exit_code": 0,
+  "summary": "Preflight ok vor chroot-Erzeugung",
+  "expected_path": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+  "chroot_status": "missing",
+  "issues": [],
+  "dangerous_matches": [],
+  "forbidden_package_matches": [],
+  "checks": {
+    "build_tree_exists": true,
+    "auto_config_path": "build/rescue/live-build/setuphelfer-rescue-live/auto/config",
+    "auto_build_path": "build/rescue/live-build/setuphelfer-rescue-live/auto/build",
+    "auto_clean_path": "build/rescue/live-build/setuphelfer-rescue-live/auto/clean",
+    "package_list_path": "build/rescue/live-build/setuphelfer-rescue-live/config/package-lists/setuphelfer.list.chroot",
+    "chroot_path": "build/rescue/live-build/setuphelfer-rescue-live/chroot",
+    "expected_path": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  }
+}

@@ -302,3 +302,48 @@ LB_EXIT=100
 ### Bewertung
 
 Die Dashboard-/Executor-Integration bleibt fuer den Pfad und die kontrollierten Prepare-/Validate-Schritte **gruen verifiziert**. Der erste echte ISO-Build selbst ist jedoch **fehlgeschlagen** und bleibt deshalb `failed/review_required`. USB-Schreiben bleibt weiterhin blockiert.
+
+## Finaler Green-Up Runtime-Stand (2026-05-25)
+
+Nach dem letzten Helper-Deploy `deploy-20260525T193756Z-954998` wurde die produktive Runtime erneut gegen `/opt/setuphelfer` geprueft.
+
+### Runtime- und Dateistand
+
+- `./scripts/check-runtime-deploy-gate.sh` → **Exit 0**
+- SHA256 Workspace == `/opt` fuer:
+  - `backend/core/rescue_iso_build_executor.py`
+  - `backend/core/rescue_iso_build_state.py`
+  - `backend/app.py`
+- `GET /api/version`:
+  - HTTP `200`
+  - `backend_runtime_path = /opt/setuphelfer/backend`
+
+### Rescue-ISO-Smokes
+
+- `GET /api/dev-dashboard/rescue-iso/status`:
+  - `status = green`
+  - `workspace_path = /home/volker/piinstaller`
+  - `runtime_path = /opt/setuphelfer`
+  - `build_tree.path = /home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live`
+  - `temp_runtime_bundle.status = ok`
+  - `dpkg_preflight.status = pre_chroot_ok`
+  - `stale_state.needs_sudo_clean = false`
+  - `iso_build.status = not_started`
+  - `usb_write.allowed = false`
+  - `next_operator_action.type = operator_sudo_required`
+- `POST /api/dev-dashboard/rescue-iso/step`:
+  - `dpkg_preflight` → `ok`
+  - `prepare_bundle` → `ok`
+  - `validate_bundle` → `ok`
+  - `prepare_tree` → `ok`
+  - `validate_tree` → `ok`
+- `POST /api/dev-dashboard/rescue-iso/step` mit `build_iso_operator_required`:
+  - `status = operator_required`
+  - Kommandos:
+    - `cd "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live"`
+    - `./auto/config`
+    - `sudo lb build noauto`
+
+### Bewertung
+
+Der Rescue-ISO-Executor ist fuer den read-only/prebuild-Pfad produktiv **gruen**. Der echte ISO-Build bleibt weiterhin ein separater Operator-Sudo-Schritt ausserhalb dieses Strict-Mode-Laufs; deshalb wird kein ISO-Erfolg vorgetaeuscht.

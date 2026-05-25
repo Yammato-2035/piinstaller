@@ -59,6 +59,8 @@ from core.install_paths import (
 from core.backup_recovery_i18n import K_BACKUP_FAILED_MANIFEST_MISSING, K_BACKUP_TARGET_NOT_WRITABLE, tr
 from modules.backup import with_backup_contract
 from modules.storage_detection import BackupTargetValidationError, validate_backup_target
+from core.packaging_readiness_state import build_packaging_readiness_state
+from core.project_overview_dashboard_state import build_project_overview_dashboard_state
 
 # Update-Center: Kompatibilitäts-Gate für DEB-Build
 try:
@@ -4240,6 +4242,26 @@ async def dev_dashboard_update_status():
         return {"code": "DEV_DASHBOARD_UPDATE_STATUS_OK", **body}
     except Exception:
         logger.exception("dev_dashboard_update_status failed")
+        raise
+
+
+@app.get("/api/dev-dashboard/packaging/readiness")
+async def dev_dashboard_packaging_readiness():
+    try:
+        body = build_packaging_readiness_state()
+        return {"code": "DEV_DASHBOARD_PACKAGING_READINESS_OK", **body}
+    except Exception:
+        logger.exception("dev_dashboard_packaging_readiness failed")
+        raise
+
+
+@app.get("/api/dev-dashboard/project-overview")
+async def dev_dashboard_project_overview():
+    try:
+        body = build_project_overview_dashboard_state()
+        return {"code": "DEV_DASHBOARD_PROJECT_OVERVIEW_OK", **body}
+    except Exception:
+        logger.exception("dev_dashboard_project_overview failed")
         raise
 
 

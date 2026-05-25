@@ -131,5 +131,7 @@ assert m.get("usb_write_allowed") is False
 print(f"OK: build-tree-manifest source_head={m.get('source_head')}")
 PY
 
+"$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/validate-live-build-dpkg-preflight.sh" "$BUILD_ROOT"
+
 echo "OK: controlled live build tree validation passed"
 exit 0
