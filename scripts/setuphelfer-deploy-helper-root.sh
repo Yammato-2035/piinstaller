@@ -27,6 +27,10 @@ usage() {
   exit 2
 }
 
+git_workspace() {
+  git -c "safe.directory=${WORKSPACE}" -C "$WORKSPACE" "$@"
+}
+
 write_state() {
   local status="$1"
   local summary="$2"
@@ -131,8 +135,11 @@ if [[ "$WORKSPACE" != "$ALLOWED_WORKSPACE" ]]; then
   exit 3
 fi
 
+mkdir -p "$JOB_DIR"
+touch "$LOG_FILE"
+
 [[ -d "$WORKSPACE" ]] || { echo "setuphelfer-deploy-helper-root: workspace missing" >&2; exit 3; }
-git -C "$WORKSPACE" rev-parse --show-toplevel >/dev/null 2>&1 || {
+git_workspace rev-parse --show-toplevel >/dev/null 2>&1 || {
   echo "setuphelfer-deploy-helper-root: workspace is not a git repo" >&2
   exit 3
 }
@@ -140,9 +147,6 @@ git -C "$WORKSPACE" rev-parse --show-toplevel >/dev/null 2>&1 || {
   echo "setuphelfer-deploy-helper-root: deploy-to-opt.sh missing" >&2
   exit 3
 }
-
-mkdir -p "$JOB_DIR"
-touch "$LOG_FILE"
 
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
@@ -160,7 +164,7 @@ echo "[deploy-helper] job_id=${JOB_ID}"
 echo "[deploy-helper] workspace=${WORKSPACE}"
 echo "[deploy-helper] runtime_path=${RUNTIME_PATH}"
 
-HEAD_BEFORE="$(git -C "$WORKSPACE" rev-parse --short HEAD 2>/dev/null || true)"
+HEAD_BEFORE="$(git_workspace rev-parse --short HEAD 2>/dev/null || true)"
 set +e
 (cd "$WORKSPACE" && ./scripts/check-runtime-deploy-gate.sh)
 GATE_BEFORE="$?"

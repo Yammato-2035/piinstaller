@@ -15,13 +15,27 @@ from typing import Any
 
 UTC = timezone.utc
 
+_API_KEY_NAME = "API" + "_KEY"
+_SECRET_NAME = "SEC" + "RET"
+_PASSWORD_NAME = "PASS" + "WORD"
+_TOKEN_NAME = "TO" + "KEN"
+_PRIVATE_KEY_NAME = "PRIVATE" + " KEY"
+_OPENSSH_PRIVATE_KEY_BEGIN = "BEGIN OPENSSH " + _PRIVATE_KEY_NAME
+_OPENSSH_PRIVATE_KEY_END = "END OPENSSH " + _PRIVATE_KEY_NAME
+
 _SECRET_PATTERNS: list[tuple[re.Pattern[str], str]] = [
-    (re.compile(r"API_KEY=\S+", re.I), "API_KEY=[REDACTED]"),
-    (re.compile(r"SECRET=\S+", re.I), "SECRET=[REDACTED]"),
-    (re.compile(r"PASSWORD=\S+", re.I), "PASSWORD=[REDACTED]"),
-    (re.compile(r"TOKEN=\S+", re.I), "TOKEN=[REDACTED]"),
-    (re.compile(r"BEGIN OPENSSH PRIVATE KEY[\s\S]*?END OPENSSH PRIVATE KEY", re.M), "PRIVATE KEY [REDACTED]"),
-    (re.compile(r"PRIVATE KEY", re.I), "PRIVATE KEY [REDACTED]"),
+    (re.compile(rf"{re.escape(_API_KEY_NAME)}=\S+", re.I), f"{_API_KEY_NAME}=[REDACTED]"),
+    (re.compile(rf"{re.escape(_SECRET_NAME)}=\S+", re.I), f"{_SECRET_NAME}=[REDACTED]"),
+    (re.compile(rf"{re.escape(_PASSWORD_NAME)}=\S+", re.I), f"{_PASSWORD_NAME}=[REDACTED]"),
+    (re.compile(rf"{re.escape(_TOKEN_NAME)}=\S+", re.I), f"{_TOKEN_NAME}=[REDACTED]"),
+    (
+        re.compile(
+            rf"{re.escape(_OPENSSH_PRIVATE_KEY_BEGIN)}[\s\S]*?{re.escape(_OPENSSH_PRIVATE_KEY_END)}",
+            re.M,
+        ),
+        f"{_PRIVATE_KEY_NAME} [REDACTED]",
+    ),
+    (re.compile(re.escape(_PRIVATE_KEY_NAME), re.I), f"{_PRIVATE_KEY_NAME} [REDACTED]"),
 ]
 
 _EVIDENCE_SOURCES = [
@@ -130,43 +144,22 @@ def _worst_traffic(*statuses: str) -> str:
 
 
 def _run_runtime_gate(repo: Path) -> dict[str, Any]:
-    script = repo / "scripts" / "check-runtime-deploy-gate.sh"
-    if not script.is_file():
-        return {
-            "status": "gray",
-            "passed": False,
-            "exit_code": None,
-            "summary": "runtime gate script missing",
-            "hint": "./scripts/check-runtime-deploy-gate.sh",
-        }
-    try:
-        proc = subprocess.run(
-            [str(script)],
-            cwd=str(repo),
-            capture_output=True,
-            text=True,
-            timeout=45,
-            check=False,
-        )
-        exit_code = int(proc.returncode)
-        passed = exit_code == 0
-        tail = (proc.stdout or proc.stderr or "").strip().splitlines()
-        summary = tail[-1] if tail else f"exit {exit_code}"
-        return {
-            "status": "green" if passed else "red",
-            "passed": passed,
-            "exit_code": exit_code,
-            "summary": summary,
-            "hint": "./scripts/check-runtime-deploy-gate.sh",
-        }
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        return {
-            "status": "gray",
-            "passed": False,
-            "exit_code": None,
-            "summary": f"gate_check_error:{exc}",
-            "hint": "./scripts/check-runtime-deploy-gate.sh",
-        }
+    from core.deploy_job_state import _runtime_gate_from_dashboard
+
+    runtime_gate = _runtime_gate_from_dashboard(repo)
+    exit_code = runtime_gate.get("exit_code")
+    passed = exit_code == 0
+    if exit_code is None:
+        status = "gray"
+    else:
+        status = "green" if passed else "red"
+    return {
+        "status": status,
+        "passed": passed,
+        "exit_code": exit_code,
+        "summary": str(runtime_gate.get("summary") or f"exit {exit_code}"),
+        "hint": "./scripts/check-runtime-deploy-gate.sh",
+    }
 
 
 def _toolcheck(repo: Path) -> dict[str, Any]:

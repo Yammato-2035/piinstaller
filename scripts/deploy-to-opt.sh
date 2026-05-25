@@ -21,6 +21,31 @@ ok()    { echo -e "${GREEN}[OK]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 err()   { echo -e "${RED}[FEHLER]${NC} $*"; }
 
+safe_chown_tree() {
+  local target="$1"
+  if ! chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$target" 2>/dev/null; then
+    warn "chown übersprungen für $target (z. B. read-only systemd namespace oder geschützte Runtime-Dateien)."
+  fi
+}
+
+wait_for_backend_api() {
+  if ! command -v curl >/dev/null 2>&1; then
+    return 0
+  fi
+  local code="000"
+  local attempt
+  for attempt in 1 2 3 4 5 6 7 8 9 10; do
+    code="$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 2 --max-time 5 http://127.0.0.1:8000/api/version 2>/dev/null || echo 000)"
+    if [ "$code" = "200" ]; then
+      ok "Backend-API antwortet wieder auf /api/version"
+      return 0
+    fi
+    sleep 1
+  done
+  warn "Backend-API antwortet nach Service-Restart noch nicht stabil (letzter HTTP-Code: $code)."
+  return 0
+}
+
 if [ "$(id -u)" -ne 0 ]; then
   err "Dieses Skript muss mit sudo ausgeführt werden: sudo $0 [QUELLVERZEICHNIS]"
   exit 1
@@ -154,10 +179,10 @@ else
 fi
 
 # Jetzt alles an Service-User übergeben (nach allen Build-Schritten)
-chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$INSTALL_DIR"
-chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$CONFIG_DIR"
-chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$LOG_DIR"
-chown -R "$SERVICE_USER_NAME:$SERVICE_USER_NAME" "$STATE_DIR"
+safe_chown_tree "$INSTALL_DIR"
+safe_chown_tree "$CONFIG_DIR"
+safe_chown_tree "$LOG_DIR"
+safe_chown_tree "$STATE_DIR"
 
 # Alte Units stilllegen (Migration)
 for old in pi-installer.service pi-installer-backend.service; do
@@ -171,11 +196,15 @@ info "Systemd-Services aus Vorlagen schreiben (Backend + Web-UI)..."
 SED_ENV=( -e "s|{{INSTALL_DIR}}|$INSTALL_DIR|g" -e "s|{{USER}}|$SERVICE_USER_NAME|g"
   -e "s|{{PI_INSTALLER_CONFIG_DIR}}|$CONFIG_DIR|g" -e "s|{{PI_INSTALLER_LOG_DIR}}|$LOG_DIR|g"
   -e "s|{{PI_INSTALLER_STATE_DIR}}|$STATE_DIR|g" )
-sed "${SED_ENV[@]}" "$INSTALL_DIR/setuphelfer-backend.service" > "$SYSTEMD_DIR/setuphelfer-backend.service"
-sed -i "s/^Group=.*/Group=$SERVICE_GROUP/" "$SYSTEMD_DIR/setuphelfer-backend.service" 2>/dev/null || true
-sed "${SED_ENV[@]}" "$INSTALL_DIR/setuphelfer.service" > "$SYSTEMD_DIR/setuphelfer.service"
-sed -i "s/^Group=.*/Group=$SERVICE_GROUP/" "$SYSTEMD_DIR/setuphelfer.service" 2>/dev/null || true
-ok "systemd: setuphelfer-backend.service + setuphelfer.service"
+if [ -w "$SYSTEMD_DIR" ]; then
+  sed "${SED_ENV[@]}" "$INSTALL_DIR/setuphelfer-backend.service" > "$SYSTEMD_DIR/setuphelfer-backend.service"
+  sed -i "s/^Group=.*/Group=$SERVICE_GROUP/" "$SYSTEMD_DIR/setuphelfer-backend.service" 2>/dev/null || true
+  sed "${SED_ENV[@]}" "$INSTALL_DIR/setuphelfer.service" > "$SYSTEMD_DIR/setuphelfer.service"
+  sed -i "s/^Group=.*/Group=$SERVICE_GROUP/" "$SYSTEMD_DIR/setuphelfer.service" 2>/dev/null || true
+  ok "systemd: setuphelfer-backend.service + setuphelfer.service"
+else
+  warn "systemd-Unit-Dateien werden in diesem Kontext nicht neu geschrieben; vorhandene Units werden nur neu geladen/restarted."
+fi
 
 # AUDIT-FIX (A-03): Runtime liest config.json; erzeuge config.json statt config.yaml.
 # Konfiguration (nur anlegen wenn nicht vorhanden)
@@ -212,12 +241,16 @@ else
   systemctl start setuphelfer.service
 fi
 ok "Services gestartet (setuphelfer-backend, setuphelfer)"
+wait_for_backend_api
 
 # Startmenü-Einträge (Anwendungen)
 if [ -f "$INSTALL_DIR/scripts/install-desktop-entries.sh" ]; then
   info "Startmenü-Einträge anlegen..."
-  bash "$INSTALL_DIR/scripts/install-desktop-entries.sh" "$INSTALL_DIR"
-  ok "SetupHelfer erscheint im Startmenü"
+  if bash "$INSTALL_DIR/scripts/install-desktop-entries.sh" "$INSTALL_DIR"; then
+    ok "SetupHelfer erscheint im Startmenü"
+  else
+    warn "Startmenü-Einträge konnten in diesem Kontext nicht aktualisiert werden."
+  fi
 fi
 
 echo ""

@@ -11,5 +11,5 @@ NoNewPrivileges=false
 PrivateTmp=true
 ProtectSystem=full
 ProtectHome=read-only
-ReadWritePaths=/opt/setuphelfer /var/lib/setuphelfer /run /home/volker/piinstaller
+ReadWritePaths=/opt/setuphelfer /var/lib/setuphelfer /run /home/volker/piinstaller /etc/setuphelfer /etc/systemd/system
 TimeoutStartSec=600

@@ -19,7 +19,18 @@ BACKEND_HEALTH="${PI_INSTALLER_BACKEND_HEALTH_URL:-http://127.0.0.1:${BACKEND_PO
 echo "Setuphelfer Web-UI production (static SPA server)"
 echo "Backend health: $BACKEND_HEALTH"
 
-if ! curl -sS --max-time 4 "$BACKEND_HEALTH" >/dev/null 2>&1; then
+backend_ready=0
+for attempt in 1 2 3 4 5 6 7 8 9 10; do
+  if curl -sS --max-time 4 "$BACKEND_HEALTH" >/dev/null 2>&1; then
+    backend_ready=1
+    break
+  fi
+  if [ "$attempt" -lt 10 ]; then
+    sleep 1
+  fi
+done
+
+if [ "$backend_ready" -ne 1 ]; then
   echo "Backend antwortet nicht unter $BACKEND_HEALTH"
   echo "Standard: sudo systemctl enable --now setuphelfer-backend.service"
   exit 1

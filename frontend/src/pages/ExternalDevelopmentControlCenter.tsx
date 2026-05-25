@@ -6,10 +6,12 @@ import { StandaloneModeBanner } from '../components/dev-dashboard/StandaloneMode
 import { RuntimeGatePanel } from '../components/dev-dashboard/RuntimeGatePanel'
 import { CockpitBackupProgressPanel } from '../components/dev-dashboard/CockpitBackupProgressPanel'
 import { CockpitBackupTargetPanel } from '../components/dev-dashboard/CockpitBackupTargetPanel'
+import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel'
 import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
 import { DeployDriftPanel } from '../components/dev-dashboard/DeployDriftPanel'
 import { SafeTestModePanel } from '../components/dev-dashboard/SafeTestModePanel'
+import { UpdateStatusCard } from '../components/dev-dashboard/UpdateStatusCard'
 import { writeCockpitRefreshSec } from '../lib/devDashboard/cockpitWindow'
 import { AREA_LABELS } from '../lib/devDashboard/governanceMatrix'
 import { clearGovernanceHistory } from '../lib/devDashboard/governanceHistory'
@@ -178,6 +180,8 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       ) : null}
 
       <RescueStickBoard dashboard={mon.dashboard} />
+      <UpdateStatusCard refreshSec={Math.max(mon.refreshSec, 15)} />
+      <DeployStatusPanel refreshSec={Math.max(mon.refreshSec, 10)} />
       <RescueBuildPanel refreshSec={mon.refreshSec} />
       <CockpitBackupTargetPanel refreshSec={mon.refreshSec} />
       <CockpitBackupProgressPanel refreshSec={mon.refreshSec} />

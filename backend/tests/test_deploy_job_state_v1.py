@@ -38,7 +38,7 @@ class DeployJobStateTests(unittest.TestCase):
                     },
                     clear=False,
                 ),
-                patch.object(djs, "_run_runtime_gate", return_value={"exit_code": 0, "status": "green", "summary": "ok"}),
+                patch.object(djs, "_runtime_gate_from_dashboard", return_value={"exit_code": 0, "status": "green", "summary": "ok"}),
                 patch.object(djs, "_compute_deploy_drift", return_value=self._base_drift()),
                 patch.object(djs, "_helper_state", return_value={"systemd_unit_present": True, "can_start_without_password": "unknown", "requires_operator_setup": False}),
                 patch.object(djs, "_git_workspace_detail", return_value={"git_head": "abc123", "git_branch": "main", "git_dirty_count": 0, "git_unpushed_count": 0}),
@@ -62,7 +62,7 @@ class DeployJobStateTests(unittest.TestCase):
                     },
                     clear=False,
                 ),
-                patch.object(djs, "_run_runtime_gate", return_value={"exit_code": 14, "status": "yellow", "summary": "deploy required"}),
+                patch.object(djs, "_runtime_gate_from_dashboard", return_value={"exit_code": 14, "status": "yellow", "summary": "deploy required"}),
                 patch.object(djs, "_compute_deploy_drift", return_value=self._base_drift(status="yellow", suggested=["deploy_backend_files"])),
                 patch.object(djs, "_helper_state", return_value={"systemd_unit_present": True, "can_start_without_password": "unknown", "requires_operator_setup": False}),
                 patch.object(djs, "_git_workspace_detail", return_value={"git_head": "abc123", "git_branch": "main", "git_dirty_count": 0, "git_unpushed_count": 0}),
@@ -92,7 +92,7 @@ class DeployJobStateTests(unittest.TestCase):
                     },
                     clear=False,
                 ),
-                patch.object(djs, "_run_runtime_gate", return_value={"exit_code": 0, "status": "green", "summary": "ok"}),
+                patch.object(djs, "_runtime_gate_from_dashboard", return_value={"exit_code": 0, "status": "green", "summary": "ok"}),
                 patch.object(djs, "_compute_deploy_drift", return_value=self._base_drift()),
                 patch.object(djs, "_helper_state", return_value={"systemd_unit_present": True, "can_start_without_password": "unknown", "requires_operator_setup": False}),
                 patch.object(djs, "_git_workspace_detail", return_value={"git_head": "abc123", "git_branch": "main", "git_dirty_count": 0, "git_unpushed_count": 0}),
@@ -137,11 +137,11 @@ class DeployJobStateTests(unittest.TestCase):
                 patch.object(djs, "_git_workspace_detail", return_value={"git_head": "abc123", "git_branch": "main", "git_dirty_count": 0, "git_unpushed_count": 0}),
             ]
             with common_patches[0], common_patches[1], common_patches[2], common_patches[3], patch.object(
-                djs, "_run_runtime_gate", return_value={"exit_code": 14, "status": "yellow", "summary": "deploy required"}
+                djs, "_runtime_gate_from_dashboard", return_value={"exit_code": 14, "status": "yellow", "summary": "deploy required"}
             ):
                 blocked = djs.build_deploy_job_state()
             with common_patches[0], common_patches[1], common_patches[2], common_patches[3], patch.object(
-                djs, "_run_runtime_gate", return_value={"exit_code": 0, "status": "green", "summary": "ok"}
+                djs, "_runtime_gate_from_dashboard", return_value={"exit_code": 0, "status": "green", "summary": "ok"}
             ):
                 success = djs.build_deploy_job_state()
         self.assertNotEqual(blocked["status"], "success")

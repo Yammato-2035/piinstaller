@@ -146,35 +146,52 @@ def _runtime_gate_status(exit_code: int | None) -> str:
     return "red"
 
 
-def _run_runtime_gate(workspace_root: Path) -> dict[str, Any]:
-    script = workspace_root / "scripts" / "check-runtime-deploy-gate.sh"
-    if not script.is_file():
-        return {
-            "exit_code": None,
-            "status": "red",
-            "summary": "runtime_gate_script_missing",
-        }
+def _runtime_gate_from_dashboard(workspace_root: Path) -> dict[str, Any]:
     try:
-        proc = subprocess.run(
-            [str(script)],
-            cwd=str(workspace_root),
-            capture_output=True,
-            text=True,
-            timeout=45,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        return {
-            "exit_code": None,
-            "status": "red",
-            "summary": f"runtime_gate_error:{exc}",
-        }
-    merged = (proc.stdout or "") + ("\n" if proc.stdout and proc.stderr else "") + (proc.stderr or "")
-    lines = [redact_deploy_log_text(line) for line in merged.splitlines() if line.strip()]
+        from core.dev_dashboard import build_dashboard_status
+    except Exception as exc:
+        return {"exit_code": None, "status": "red", "summary": f"runtime_gate_import_error:{exc}"}
+
+    try:
+        body = build_dashboard_status(repo_root=workspace_root, frontend_runtime_source="build")
+    except Exception as exc:  # noqa: BLE001
+        return {"exit_code": None, "status": "red", "summary": f"runtime_gate_eval_error:{exc}"}
+
+    runtime_gate = dict(body.get("runtime_gate") or {})
+    deploy_drift = dict(body.get("deploy_drift") or {})
+    checks = list(runtime_gate.get("checks") or [])
+    blockers = list(runtime_gate.get("blockers") or [])
+
+    exit_code = 0
+    if not runtime_gate.get("passed"):
+        if "manifest_mismatch" in blockers:
+            exit_code = 16
+        elif "deploy_drift_backend_files" in blockers:
+            exit_code = 14
+        elif any(str(item).strip() == "restart_backend_manual" for item in list(deploy_drift.get("suggested_actions") or [])):
+            exit_code = 15
+        elif "deploy_drift_unknown" in blockers:
+            exit_code = 20
+        else:
+            check_map = {str(item.get("id") or ""): item for item in checks if isinstance(item, dict)}
+            svc = check_map.get("setuphelfer_backend_service") or {}
+            if svc.get("ok") is False:
+                exit_code = 10
+            elif (check_map.get("backend_runtime_path") or {}).get("ok") is False:
+                exit_code = 13
+            elif (check_map.get("backend_workspace_match") or {}).get("ok") is False:
+                exit_code = 12
+            else:
+                exit_code = 20
+
+    summary = "ok"
+    if blockers:
+        summary = ",".join(sorted({str(item) for item in blockers if str(item).strip()})) or f"exit {exit_code}"
+
     return {
-        "exit_code": int(proc.returncode),
-        "status": _runtime_gate_status(int(proc.returncode)),
-        "summary": lines[-1] if lines else f"exit {proc.returncode}",
+        "exit_code": exit_code,
+        "status": _runtime_gate_status(exit_code),
+        "summary": redact_deploy_log_text(summary),
     }
 
 
@@ -324,7 +341,7 @@ def build_deploy_job_state() -> dict[str, Any]:
     paths = get_deploy_state_paths()
     workspace = paths["workspace"]
     runtime_path = paths["runtime_path"]
-    runtime_gate = _run_runtime_gate(workspace)
+    runtime_gate = _runtime_gate_from_dashboard(workspace)
 
     deploy_drift_raw = _compute_deploy_drift(workspace_root=workspace, runtime_root=runtime_path)
     deploy_drift = {

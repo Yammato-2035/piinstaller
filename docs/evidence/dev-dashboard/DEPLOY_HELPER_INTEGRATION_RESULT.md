@@ -2,11 +2,11 @@
 
 **Datum:** 2026-05-25  
 **Workspace-HEAD vor Aenderung:** `27d790a`  
-**Runtime-Smoke:** pending
+**Runtime-Smoke:** success
 
 ## Ergebnis
 
-Der kontrollierte Deploy-Helper fuer das Development Dashboard wurde vorbereitet:
+Der kontrollierte Deploy-Helper fuer das Development Dashboard wurde umgesetzt, produktiv installiert und gegen die Runtime unter `/opt/setuphelfer` erfolgreich verifiziert:
 
 - read-only Deploy-Statusvertrag im Backend
 - kontrollierter Deploy-Orchestrator ohne Direktaufruf von `deploy-to-opt.sh`
@@ -56,9 +56,44 @@ Neu als kleine Karte:
 - kein Auto-Update
 - keine Paketmanager-Aktion
 
-## Operator-Setup verbleibt manuell
+## Operator-Setup
 
-Vor einer echten Runtime-Abnahme muss der Operator die systemd-Unit und das Root-Skript installieren; optional kann fuer Development ein eng begrenztes `sudoers`-Snippet gesetzt werden.
+Die produktive Installation der `systemd`-Unit und des Root-Skripts wurde manuell mit `sudo` durchgefuehrt; das optionale, eng begrenzte `sudoers`-Snippet bleibt nur ein Development-Hilfsmittel.
+
+## Runtime-Abnahme
+
+Verifiziert auf der produktiven Runtime:
+
+- `/var/lib/setuphelfer/deploy-jobs/latest.json`:
+  - `status = success`
+  - `deploy_exit_code = 0`
+  - `runtime_gate_exit_after = 0`
+- `./scripts/check-runtime-deploy-gate.sh`:
+  - Exit `0`
+- `GET /api/version`:
+  - HTTP `200`
+  - `backend_runtime_path = /opt/setuphelfer/backend`
+- `GET /api/dev-dashboard/deploy/status`:
+  - `status = success`
+  - `runtime_gate.exit_code = 0`
+  - `deploy_drift.status = green`
+- `GET /api/dev-dashboard/update/status`:
+  - `status = ok`
+  - `deploy_required = false`
+  - `automatic_update_allowed = false`
+  - `package_manager_update_allowed = false`
+- `GET /api/dev-dashboard/deploy/logs`:
+  - `status = success`
+  - Log-Tail endet mit `final_status=success`
+
+## Folgehaertungen waehrend der Runtime-Abnahme
+
+Fuer den produktiven Lauf wurden zusaetzlich verifiziert bzw. nachgezogen:
+
+- `deploy-to-opt.sh` behandelt schreibgeschuetzte Desktop-Entry-/systemnahe Nebenpfade als Warnung statt als Deploy-Abbruch
+- die Deploy-/Update-/Rescue-Statusaggregation verwendet fuer das Runtime-Gate eine interne read-only Auswertung statt eines Backend-Self-Calls ueber `curl`
+- `start-browser-production.sh` wartet kurz auf das Backend, damit `setuphelfer.service` nach einem Deploy ohne manuellen Zweit-Restart stabil startet
+- die Cockpit-Ansicht `?window=cockpit` zeigt jetzt ebenfalls `Deploy / Runtime-Synchronisation` und `Version / Update`
 
 ## Teststand
 
@@ -84,23 +119,16 @@ Erfolgreich:
 - Frontend-Build:
   - `npm --prefix frontend run build`
 
-Noch offen in diesem Dokumentationsstand:
-
-- realer Runtime-Smoke nach Installation des Helpers
-
 ## Phase-0 / Runtime-Gate
 
-Zum Zeitpunkt der Implementierung liefert das Runtime-Gate:
+Der urspruengliche Blocker `Exit 14` (`deploy_drift` auf `backend/app.py`) ist durch den kontrollierten Helper-Deploy aufgehoben.
+Der finale Phase-0-Lauf liefert:
 
-- Exit `14`
-- `deploy_drift.status = yellow`
-- betroffene Datei: `backend/app.py`
+- Exit `0`
+- `deploy_drift.status = green`
 - `manifest_match = true`
-- `suggested_actions = [deploy_backend_files, restart_backend_manual]`
-
-Das ist dokumentiert und **kein** gruener Runtime-Smoke.
 
 ## Fazit
 
-Die Architektur fuer den sicheren, kontrollierten Deploy ist umgesetzt und lokal testbar.  
-Die produktive Runtime-Abnahme bleibt **pending**, bis Operator-Setup und ein realer Deploy ueber die neue Helper-Strecke ausgefuehrt wurden.
+Die Architektur fuer den sicheren, kontrollierten Deploy ist umgesetzt, produktiv installiert und gegen die laufende Runtime erfolgreich abgenommen.
+Deploy-Gate, Deploy-/Update-API und Cockpit-UI sind fuer diesen Scope **gruen**; automatische Updates, Paketmanager-Aktionen und verbotene Schreibpfade bleiben weiterhin ausgeschlossen.
