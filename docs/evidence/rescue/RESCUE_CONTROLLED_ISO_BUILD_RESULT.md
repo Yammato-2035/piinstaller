@@ -1,30 +1,36 @@
 # Rescue Controlled ISO Build — Result
 
-**Datum:** 2026-05-25 (Dashboard-/Executor-Runtime-Lauf)
-**Git HEAD:** `653d41a`
-**Gesamtstatus:** **EXECUTOR_PREBUILD_BLOCKED** → **Kein ISO-Build gestartet**
+**Datum:** 2026-05-25 (Dashboard-/Executor-Runtime-Abnahme nach Workspace-Path-Fix)
+**Git HEAD:** `751e2cf`
+**Gesamtstatus:** **PREBUILD_GREEN_OPERATOR_REQUIRED** → **Kein ISO-Build gestartet**
 
 ---
 
-## Dashboard-/Executor-Lauf (2026-05-25)
+## Dashboard-/Executor-Runtime-Abnahme (2026-05-25)
 
 ### Phase 0 / Gate
 
 | Feld | Wert |
 |------|------|
-| Workspace HEAD | `653d41a` |
+| Workspace HEAD | `751e2cf` |
 | Branch | `main` |
 | Runtime-Gate | Exit **0** |
 | Services | `setuphelfer-backend=active`, `setuphelfer=active` |
+| Runtime Path | `/opt/setuphelfer` |
+| Workspace Path | `/home/volker/piinstaller` |
 
 ### Dashboard-Status vor Build
 
 | Feld | Wert |
 |------|------|
 | `status` | **green** |
+| `path_status` | **ok** |
+| `path_mode` | `workspace_build_runtime_opt` |
 | `build_tree.validator_status` | **ok** |
 | `temp_runtime_bundle.status` | **ok** |
-| `iso_build.status` | **review_required** |
+| `build_tree.source_head` | `751e2cf` |
+| `temp_runtime_bundle.source_head` | `751e2cf` |
+| `iso_build.status` | **not_started** |
 | `stale_state.needs_sudo_clean` | **false** |
 | `next_operator_action.type` | **operator_sudo_required** |
 | `usb_write.allowed` | **false** |
@@ -33,23 +39,21 @@
 
 | Step | Ergebnis |
 |------|----------|
-| `detect_stale_state` | **ok** |
-| `prebuild_check` | **ok** (`details.status = green`) |
-| `prepare_bundle` | **blocked** — `create-temp-runtime-bundle.sh` scheitert im produktiven `/opt`-Pfad |
-| `validate_bundle` | **blocked** — `MISSING: MANIFEST.json` |
-| `prepare_tree` | **blocked** — `bundle MANIFEST.json missing` |
-| `validate_tree` | **ok** — referenziert weiter `build-tree-manifest source_head = 27d790a` |
+| `prepare_bundle` | **ok** |
+| `validate_bundle` | **ok** |
+| `prepare_tree` | **ok** |
+| `validate_tree` | **ok** |
 | `build_iso_operator_required` | **operator_required** — Kommandos wurden angezeigt, aber **nicht** ausgefuehrt |
 
 ### Operator-Befehl aus dem Dashboard
 
 ```bash
-cd "/opt/setuphelfer/build/rescue/live-build/setuphelfer-rescue-live"
+cd "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live"
 ./auto/config
 sudo lb build noauto
 ```
 
-### Ergebnis des ersten Runtime-Laufs
+### Ergebnis der Runtime-Abnahme
 
 | Feld | Wert |
 |------|------|
@@ -58,17 +62,24 @@ sudo lb build noauto
 | ISO-Pfad | `null` |
 | ISO-Groesse | `null` |
 | ISO-SHA256 | `null` |
-| Dashboard-Status nach PHASE 4 | **yellow** |
-| `next_operator_action.type` nach PHASE 4 | **fix_required** |
+| Dashboard-Status nach PHASE 4 | **green** |
+| `next_operator_action.type` nach PHASE 4 | **operator_sudo_required** |
 | USB-Write | **blocked** |
+| `source_head` Bundle/Tree | `751e2cf` / `751e2cf` |
 
-### Blocker
+### Aufgeloeste Blocker
 
-- Das produktive Temp-Runtime-Bundle unter `/opt/setuphelfer/build/rescue/temp-runtime/` konnte nicht reproduzierbar neu erstellt werden.
-- `prepare_bundle` loggt `rsync`-Permission-Fehler beim Setzen von Rechten unter `.../setuphelfer-rescue-runtime/backend`.
-- Danach fehlt `MANIFEST.json`; dadurch bleiben `validate_bundle` und `prepare_tree` blockiert.
-- Der letzte validierte Build-Tree ist formal ok, zeigt aber weiter `source_head = 27d790a` statt des aktuellen Workspace-Standes `653d41a`.
-- Deshalb wurde **kein** `sudo lb build noauto` gestartet. Ein Build gegen diesen Zustand waere kein sauberer Dashboard-/Executor-Erfolg.
+- Die produktive Runtime bleibt unter `/opt/setuphelfer`, waehrend Bundle und Build-Tree kontrolliert im Workspace `/home/volker/piinstaller` erzeugt werden.
+- `prepare_bundle`, `validate_bundle`, `prepare_tree` und `validate_tree` laufen jetzt ueber die Runtime-API mit Exit **0**.
+- `build-tree-manifest.json` und `MANIFEST.json` referenzieren jetzt den aktuellen Workspace-Stand `751e2cf`.
+- Der Dashboard-Operator-Befehl zeigt keinen `/opt`-Build-Pfad mehr, sondern den korrekten Workspace-Build-Root.
+- USB-Schreiben, `dd`, `mkfs`, `parted write`, Backup und Restore blieben weiterhin blockiert bzw. ungenutzt.
+
+### Historischer Erstlauf (vor Workspace-Path-Fix)
+
+- Der erste produktive Executor-Lauf war noch auf `/opt`-nahe Build-Artefakte ausgerichtet und blieb deshalb in PHASE 4 blockiert.
+- `prepare_bundle` loggte dort `rsync`-Permission-Fehler, danach fehlte `MANIFEST.json`, wodurch `validate_bundle` und `prepare_tree` folgerichtig blockierten.
+- Dieser Altbefund ist fuer die Ursachenanalyse relevant, gilt aber nach der erfolgreichen Runtime-Abnahme auf `751e2cf` nicht mehr als aktueller Status.
 
 ### Safety
 

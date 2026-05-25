@@ -16,7 +16,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from core.rescue_iso_operator_commands import build_operator_build_commands, build_sudo_clean_commands
+from core.rescue_iso_operator_commands import (
+    build_operator_build_commands,
+    build_sudo_clean_commands,
+    resolve_rescue_iso_paths,
+)
 
 UTC = timezone.utc
 
@@ -112,9 +116,10 @@ def _repo_rel(repo: Path, path: Path) -> str:
 
 
 def _git_value(repo: Path, *args: str) -> str | None:
+    safe_root = repo.resolve(strict=False)
     try:
         proc = subprocess.run(
-            ["git", "-C", str(repo), *args],
+            ["git", "-c", f"safe.directory={safe_root}", "-C", str(repo), *args],
             capture_output=True,
             text=True,
             timeout=5,
@@ -148,6 +153,8 @@ def _build_tree(repo: Path) -> dict[str, Any]:
     root = repo / _BUILD_TREE_REL
     auto_config = root / "auto/config"
     auto_build = root / "auto/build"
+    manifest = root / "evidence/build-tree-manifest.json"
+    manifest_data, _ = _safe_read_json(manifest)
     required = [
         auto_config,
         auto_build,
@@ -175,12 +182,14 @@ def _build_tree(repo: Path) -> dict[str, Any]:
     else:
         validator = "review_required"
     return {
-        "path": _BUILD_TREE_REL,
+        "path": str(root),
         "exists": exists,
         "validator_status": validator,
         "auto_config_noauto": auto_config_noauto,
         "auto_build_blocked": auto_build_blocked,
         "missing_paths": missing,
+        "manifest_path": str(manifest) if manifest.exists() else None,
+        "source_head": (manifest_data or {}).get("source_head"),
     }
 
 
@@ -201,10 +210,12 @@ def _temp_runtime_bundle(repo: Path) -> dict[str, Any]:
     elif bundle_root.exists():
         status = "review_required"
     return {
+        "path": str(bundle_root),
         "status": status,
         "files_count": files_count,
         "manifest_sha256": sha,
-        "manifest_path": _repo_rel(repo, manifest) if manifest.exists() else None,
+        "manifest_path": str(manifest) if manifest.exists() else None,
+        "source_head": (data or {}).get("source_head") if data else None,
         "error": err,
     }
 
@@ -244,11 +255,12 @@ def _extract_last_error(lines: list[str]) -> str | None:
 
 
 def read_rescue_iso_latest_logs(*, repo_root: Path | None = None, max_lines: int = 80) -> dict[str, Any]:
-    repo = repo_root or _repo_root()
-    latest_log = repo / _LATEST_LOG_REL
+    runtime_root = (repo_root or _repo_root()).resolve(strict=False)
+    paths = resolve_rescue_iso_paths(repo_root=runtime_root)
+    latest_log = Path(str(paths["logs_path"])).resolve(strict=False) / "latest.log"
     lines = _read_recent_lines(latest_log, max_lines=max_lines)
     return {
-        "latest_log_path": _LATEST_LOG_REL,
+        "latest_log_path": str(latest_log),
         "last_80_lines": lines[-80:],
         "last_120_lines": lines[-120:],
         "last_error": _extract_last_error(lines),
@@ -256,15 +268,17 @@ def read_rescue_iso_latest_logs(*, repo_root: Path | None = None, max_lines: int
 
 
 def detect_live_build_stale_state(*, repo_root: Path | None = None) -> dict[str, Any]:
-    repo = repo_root or _repo_root()
-    build_root = repo / _BUILD_TREE_REL
+    runtime_root = (repo_root or _repo_root()).resolve(strict=False)
+    paths = resolve_rescue_iso_paths(repo_root=runtime_root)
+    repo = Path(str(paths["workspace_path"])).resolve(strict=False)
+    build_root = Path(str(paths["build_tree_path"])).resolve(strict=False)
     root_owned: list[str] = []
     for name in _STAGE_DIR_NAMES:
         root_owned.extend(_repo_rel(repo, p) for p in _list_root_owned_entries(build_root / name))
     root_owned = list(dict.fromkeys(root_owned))[:40]
 
     stage_file = build_root / ".build/chroot_package-lists.install"
-    latest_log = repo / _LATEST_LOG_REL
+    latest_log = Path(str(paths["logs_path"])).resolve(strict=False) / "latest.log"
     latest_lines = _read_recent_lines(latest_log, max_lines=160)
     skipped: list[str] = []
     repeated_auto_config_count = 0
@@ -299,13 +313,15 @@ def detect_live_build_stale_state(*, repo_root: Path | None = None) -> dict[str,
         "indicators": indicators,
         "stage_marker_present": stage_file.exists(),
         "debootstrap_log_path": _repo_rel(repo, debootstrap_log) if debootstrap_log.exists() else None,
-        "latest_log_path": _LATEST_LOG_REL,
+        "latest_log_path": str(latest_log),
     }
 
 
 def summarize_rescue_iso_artifacts(*, repo_root: Path | None = None) -> dict[str, Any]:
-    repo = repo_root or _repo_root()
-    build_root = repo / _BUILD_TREE_REL
+    runtime_root = (repo_root or _repo_root()).resolve(strict=False)
+    paths = resolve_rescue_iso_paths(repo_root=runtime_root)
+    repo = Path(str(paths["workspace_path"])).resolve(strict=False)
+    build_root = Path(str(paths["build_tree_path"])).resolve(strict=False)
     candidates: list[Path] = []
     if build_root.is_dir():
         for path in build_root.rglob("*.iso"):
@@ -346,8 +362,9 @@ def summarize_rescue_iso_artifacts(*, repo_root: Path | None = None) -> dict[str
     }
 
 
-def _summary_payload(repo: Path) -> dict[str, Any]:
-    data, _ = _safe_read_json(repo / _SUMMARY_REL)
+def _summary_payload(runtime_root: Path) -> dict[str, Any]:
+    paths = resolve_rescue_iso_paths(repo_root=runtime_root)
+    data, _ = _safe_read_json(Path(str(paths["summary_path"])).resolve(strict=False))
     return data or {}
 
 
@@ -397,17 +414,27 @@ def _backend_sudo_allowed() -> bool:
 
 
 def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
-    repo_root = Path(str(state.get("repo_root") or _repo_root()))
+    runtime_root = Path(str(state.get("runtime_path") or _repo_root()))
     runtime_gate = str(((state.get("repo") or {}).get("runtime_gate")) or "unknown")
+    path_status = str(state.get("path_status") or "unknown")
     tools = state.get("tools") or {}
     stale = state.get("stale_state") or {}
     build_tree = state.get("build_tree") or {}
     bundle = state.get("temp_runtime_bundle") or {}
     iso_build = state.get("iso_build") or {}
+    path_errors = state.get("path_errors") or []
+
+    if path_status != "ok":
+        details = "; ".join(str(item) for item in path_errors) if path_errors else "workspace_build_path_not_ready"
+        return {
+            "type": "fix_required",
+            "label": f"Workspace-Buildpfad ist nicht freigegeben oder nicht nutzbar ({details}).",
+            "commands": [],
+        }
 
     missing_tools = [name for name, item in tools.items() if isinstance(item, dict) and not item.get("present")]
     if stale.get("needs_sudo_clean"):
-        cmds = build_sudo_clean_commands(repo_root=repo_root)
+        cmds = build_sudo_clean_commands(repo_root=runtime_root)
         return {
             "type": "sudo_clean_required",
             "label": "Stale root-owned Build-State erkannt; Operator-Sudo-Clean erforderlich.",
@@ -451,7 +478,7 @@ def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
             "label": "Backend-Sudo-Konzept aktiv; Build kann nur mit explizitem Operator-Confirm gestartet werden.",
             "commands": [],
         }
-    build_cmds = build_operator_build_commands(repo_root=repo_root)
+    build_cmds = build_operator_build_commands(repo_root=runtime_root)
     return {
         "type": "operator_sudo_required",
         "label": "lb build benötigt sudo/root; Dashboard zeigt deshalb Operator-Befehl statt Direktstart.",
@@ -460,19 +487,25 @@ def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[str, Any]:
-    repo = (repo_root or _repo_root()).resolve(strict=False)
-    runtime_gate = _runtime_gate(repo)
+    runtime_root = (repo_root or _repo_root()).resolve(strict=False)
+    paths = resolve_rescue_iso_paths(repo_root=runtime_root)
+    repo = Path(str(paths["workspace_path"])).resolve(strict=False)
+    path_errors = set(str(item) for item in (paths.get("errors") or []))
+    gate_repo = runtime_root if {"WORKSPACE_MISSING", "WORKSPACE_NOT_GIT_REPO", "WORKSPACE_GIT_TOPLEVEL_MISMATCH"} & path_errors else repo
+    runtime_gate = _runtime_gate(gate_repo)
     tools = {name: _tool_presence(name) for name in _TOOL_NAMES}
     build_tree = _build_tree(repo)
     stale_state = detect_live_build_stale_state(repo_root=repo)
     temp_bundle = _temp_runtime_bundle(repo)
     logs = read_rescue_iso_latest_logs(repo_root=repo, max_lines=120)
     artifacts = summarize_rescue_iso_artifacts(repo_root=repo)
-    summary = _summary_payload(repo)
+    summary = _summary_payload(runtime_root)
     iso_build = _status_from_summary(summary, artifacts, logs)
 
-    if runtime_gate["status"] == "red" or build_tree["validator_status"] == "blocked":
+    if paths["path_status"] == "blocked" or runtime_gate["status"] == "red" or build_tree["validator_status"] == "blocked":
         overall = "red"
+    elif paths["path_status"] == "review_required":
+        overall = "yellow"
     elif stale_state["needs_sudo_clean"]:
         overall = "red"
     elif iso_build["status"] == "success" and runtime_gate["status"] == "green":
@@ -493,12 +526,15 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
             "green" if build_tree["validator_status"] == "ok" else ("yellow" if build_tree["validator_status"] != "blocked" else "red"),
         )
 
-    repo_head = _git_value(repo, "rev-parse", "--short", "HEAD")
-    repo_branch = _git_value(repo, "branch", "--show-current")
+    repo_head = paths.get("workspace_head") or _git_value(repo, "rev-parse", "--short", "HEAD")
+    repo_branch = paths.get("workspace_branch") or _git_value(repo, "branch", "--show-current")
     evidence_sources = [rel for rel in _EVIDENCE_PATHS if (repo / rel).exists()]
     summary_text = iso_build.get("last_error") or logs.get("last_error")
     if not summary_text:
-        if stale_state["needs_sudo_clean"]:
+        if paths["path_status"] != "ok":
+            details = ", ".join(str(item) for item in (paths.get("errors") or paths.get("warnings") or []))
+            summary_text = f"Workspace-Buildpfad nicht bereit ({details or paths['path_status']})"
+        elif stale_state["needs_sudo_clean"]:
             summary_text = "sudo clean erforderlich wegen stale root-owned Build-State"
         elif stale_state["present"]:
             summary_text = "stale Build-State erkannt"
@@ -514,6 +550,17 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
         "summary": summary_text,
         "generated_at": _now_iso(),
         "repo_root": str(repo),
+        "runtime_repo_root": str(runtime_root),
+        "runtime_path": str(paths["runtime_path"]),
+        "workspace_path": str(paths["workspace_path"]),
+        "build_tree_path": str(paths["build_tree_path"]),
+        "temp_runtime_bundle_path": str(paths["temp_runtime_bundle_path"]),
+        "logs_path": str(paths["logs_path"]),
+        "summary_path": str(paths["summary_path"]),
+        "path_mode": str(paths["path_mode"]),
+        "path_status": str(paths["path_status"]),
+        "path_errors": list(paths.get("errors") or []),
+        "path_warnings": list(paths.get("warnings") or []),
         "repo": {
             "head": repo_head,
             "branch": repo_branch,

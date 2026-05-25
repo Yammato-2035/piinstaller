@@ -14,6 +14,14 @@ type RescueIsoState = {
   summary?: string
   code?: string
   generated_at?: string
+  runtime_path?: string
+  workspace_path?: string
+  build_tree_path?: string
+  temp_runtime_bundle_path?: string
+  path_mode?: string
+  path_status?: string
+  path_errors?: string[]
+  path_warnings?: string[]
   repo?: {
     head?: string | null
     branch?: string | null
@@ -198,6 +206,9 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
   const overall = String(data?.status || 'gray')
   const logs = data?.logs?.last_80_lines || []
   const lastErr = data?.iso_build?.last_error || data?.logs?.last_error || data?.summary
+  const pathStatus = String(data?.path_status || 'unknown')
+  const pathWarnings = [...(data?.path_warnings || []), ...(data?.path_errors || [])]
+  const buildPathUnderOpt = String(data?.build_tree_path || '').startsWith('/opt/')
   const toolRows = Object.entries(data?.tools || {})
   const nextCommands = useMemo(
     () => (data?.next_operator_action?.commands || []).join('\n'),
@@ -303,11 +314,34 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
           <FlagRow label="HEAD" value={String(data?.repo?.head || '—')} />
           <FlagRow label={t('devDashboard.runtimeWorkspace.gitBranch')} value={String(data?.repo?.branch || '—')} />
           <FlagRow label={t('devDashboard.rescueIso.isoBuild')} value={String(data?.iso_build?.status || 'not_started')} />
+          <FlagRow label={t('devDashboard.rescueIso.pathStatus')} value={pathStatus} />
         </div>
 
         <div className={sectionClass}>
+          <p className="text-xs font-semibold text-slate-100">{t('devDashboard.rescueIso.pathContract')}</p>
+          <FlagRow label={t('devDashboard.rescueIso.runtimePath')} value={String(data?.runtime_path || '—')} />
+          <FlagRow label={t('devDashboard.rescueIso.workspacePath')} value={String(data?.workspace_path || '—')} />
+          <FlagRow label={t('devDashboard.rescueIso.buildTreePath')} value={String(data?.build_tree_path || '—')} />
+          <FlagRow
+            label={t('devDashboard.rescueIso.tempBundlePath')}
+            value={String(data?.temp_runtime_bundle_path || '—')}
+          />
+          <FlagRow label={t('devDashboard.rescueIso.pathMode')} value={String(data?.path_mode || '—')} />
+          {buildPathUnderOpt ? <p className="text-xs text-amber-200">{t('devDashboard.rescueIso.pathWarningOptBuild')}</p> : null}
+          {pathWarnings.length ? (
+            <div className="text-xs text-amber-100 space-y-1">
+              {pathWarnings.map((item) => (
+                <div key={item}>{item}</div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-3">
+        <div className={sectionClass}>
           <p className="text-xs font-semibold text-slate-100">{t('devDashboard.rescueIso.buildTree')}</p>
-          <FlagRow label="path" value={String(data?.build_tree?.path || '—')} />
+          <FlagRow label="path" value={String(data?.build_tree?.path || data?.build_tree_path || '—')} />
           <FlagRow
             label={t('devDashboard.rescueIso.autoConfigNoauto')}
             value={data?.build_tree?.auto_config_noauto ? 'true' : 'false'}
@@ -320,11 +354,6 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
             label={t('devDashboard.rescueIso.validatorStatus')}
             value={String(data?.build_tree?.validator_status || 'unknown')}
           />
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-3">
-        <div className={sectionClass}>
           <p className="text-xs font-semibold text-slate-100">{t('devDashboard.rescueIso.toolcheck')}</p>
           <div className="space-y-1">
             {toolRows.map(([name, tool]) => (
@@ -335,6 +364,7 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
 
         <div className={sectionClass}>
           <p className="text-xs font-semibold text-slate-100">{t('devDashboard.rescueIso.tempBundle')}</p>
+          <FlagRow label="path" value={String(data?.temp_runtime_bundle_path || '—')} />
           <FlagRow label={t('devDashboard.rescueIso.validatorStatus')} value={String(data?.temp_runtime_bundle?.status || 'unknown')} />
           <FlagRow label="files" value={String(data?.temp_runtime_bundle?.files_count ?? 0)} />
           <FlagRow

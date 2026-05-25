@@ -46,6 +46,43 @@ wait_for_backend_api() {
   return 0
 }
 
+write_backend_workspace_dropin() {
+  local ws_root="$1"
+  local dropin_dir="$SYSTEMD_DIR/setuphelfer-backend.service.d"
+  local dropin_file="$dropin_dir/dev-workspace.conf"
+  local tmp_dropin
+
+  if [[ -z "$ws_root" || ! "$ws_root" = /* ]]; then
+    warn "Backend-Workspace-Drop-in übersprungen (kein absoluter Workspace-Pfad): $ws_root"
+    return 0
+  fi
+  if [[ ! "$ws_root" = /home/* ]]; then
+    warn "Backend-Workspace-Drop-in nur für /home-Workspaces vorgesehen; übersprungen: $ws_root"
+    return 0
+  fi
+  if [[ ! -w "$SYSTEMD_DIR" ]]; then
+    warn "Backend-Workspace-Drop-in konnte in diesem Kontext nicht geschrieben werden."
+    return 0
+  fi
+
+  mkdir -p "$ws_root/build/rescue" "$ws_root/docs/evidence/runtime-results/rescue"
+  mkdir -p "$dropin_dir"
+  tmp_dropin="$(mktemp)"
+  cat >"$tmp_dropin" <<EOF
+# Auto: deploy-to-opt.sh — Dev-Workspace für Deploy-Drift / Rescue-Executor
+[Service]
+Environment="SETUPHELFER_DEV_WORKSPACE_ROOT=$ws_root"
+ProtectHome=read-only
+ReadOnlyPaths=$ws_root
+ReadWritePaths=$ws_root/build/rescue
+ReadWritePaths=$ws_root/docs/evidence/runtime-results/rescue
+SupplementaryGroups=setuphelfer workspace
+EOF
+  install -m 0644 "$tmp_dropin" "$dropin_file"
+  rm -f "$tmp_dropin"
+  ok "systemd: backend dev-workspace drop-in aktualisiert"
+}
+
 if [ "$(id -u)" -ne 0 ]; then
   err "Dieses Skript muss mit sudo ausgeführt werden: sudo $0 [QUELLVERZEICHNIS]"
   exit 1
@@ -202,6 +239,7 @@ if [ -w "$SYSTEMD_DIR" ]; then
   sed "${SED_ENV[@]}" "$INSTALL_DIR/setuphelfer.service" > "$SYSTEMD_DIR/setuphelfer.service"
   sed -i "s/^Group=.*/Group=$SERVICE_GROUP/" "$SYSTEMD_DIR/setuphelfer.service" 2>/dev/null || true
   ok "systemd: setuphelfer-backend.service + setuphelfer.service"
+  write_backend_workspace_dropin "$SOURCE_DIR"
 else
   warn "systemd-Unit-Dateien werden in diesem Kontext nicht neu geschrieben; vorhandene Units werden nur neu geladen/restarted."
 fi

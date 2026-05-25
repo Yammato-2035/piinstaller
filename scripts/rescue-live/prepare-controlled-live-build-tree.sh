@@ -8,7 +8,23 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BUILD_ROOT="${REPO_ROOT}/build/rescue/live-build/setuphelfer-rescue-live"
 BUNDLE_SRC="${REPO_ROOT}/build/rescue/temp-runtime/setuphelfer-rescue-runtime"
 BUNDLE_DST="${BUILD_ROOT}/config/includes.chroot/opt/setuphelfer-rescue"
-SOURCE_HEAD="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+
+git_workspace() {
+  git -c "safe.directory=${REPO_ROOT}" -C "$REPO_ROOT" "$@"
+}
+
+write_text_file() {
+  local target="$1"
+  local mode="$2"
+  local tmp
+  mkdir -p "$(dirname "$target")"
+  tmp="$(mktemp "${target}.tmp.XXXXXX")"
+  cat > "$tmp"
+  chmod "$mode" "$tmp"
+  mv -f "$tmp" "$target"
+}
+
+SOURCE_HEAD="$(git_workspace rev-parse --short HEAD 2>/dev/null || echo unknown)"
 
 die() { echo "ERROR: $*" >&2; exit 1; }
 
@@ -25,7 +41,7 @@ mkdir -p \
   "${BUILD_ROOT}/auto" \
   "${BUILD_ROOT}/evidence"
 
-cat > "${BUILD_ROOT}/config/package-lists/setuphelfer.list.chroot" <<'EOF'
+write_text_file "${BUILD_ROOT}/config/package-lists/setuphelfer.list.chroot" 0644 <<'EOF'
 systemd
 systemd-sysv
 ca-certificates
@@ -41,7 +57,7 @@ python3-venv
 python3-pip
 EOF
 
-cat > "${BUILD_ROOT}/config/includes.chroot/etc/systemd/network/20-wired.network" <<'EOF'
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/network/20-wired.network" 0644 <<'EOF'
 [Match]
 Name=en*
 
@@ -50,7 +66,7 @@ DHCP=yes
 IPv6AcceptRA=yes
 EOF
 
-cat > "${BUILD_ROOT}/config/includes.chroot/etc/systemd/network/25-ethernet-alt.network" <<'EOF'
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/network/25-ethernet-alt.network" 0644 <<'EOF'
 [Match]
 Name=eth*
 
@@ -59,15 +75,15 @@ DHCP=yes
 IPv6AcceptRA=yes
 EOF
 
-cat > "${BUILD_ROOT}/config/archives/debian-security.list.chroot" <<'EOF'
+write_text_file "${BUILD_ROOT}/config/archives/debian-security.list.chroot" 0644 <<'EOF'
 deb http://security.debian.org/ bookworm-security main
 EOF
 
-cat > "${BUILD_ROOT}/config/archives/debian-security.list.binary" <<'EOF'
+write_text_file "${BUILD_ROOT}/config/archives/debian-security.list.binary" 0644 <<'EOF'
 deb http://security.debian.org/ bookworm-security main
 EOF
 
-cat > "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer-backend.service" <<'EOF'
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer-backend.service" 0644 <<'EOF'
 [Unit]
 Description=Setuphelfer Rescue Backend
 After=network-online.target
@@ -92,7 +108,7 @@ ReadWritePaths=/tmp /run /var/tmp
 WantedBy=multi-user.target
 EOF
 
-cat > "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer.service" <<'EOF'
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer.service" 0644 <<'EOF'
 [Unit]
 Description=Setuphelfer Rescue Web UI
 After=setuphelfer-backend.service
@@ -117,16 +133,15 @@ ReadWritePaths=/tmp /run /var/tmp
 WantedBy=multi-user.target
 EOF
 
-cat > "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot" <<'EOF'
+write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot" 0755 <<'EOF'
 #!/bin/sh
 set -eu
 systemctl enable systemd-networkd.service || true
 systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
 EOF
-chmod +x "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot"
 
-cat > "${BUILD_ROOT}/auto/config" <<'EOF'
+write_text_file "${BUILD_ROOT}/auto/config" 0755 <<'EOF'
 #!/bin/sh
 set -eu
 lb config noauto \
@@ -141,27 +156,28 @@ lb config noauto \
   --iso-volume "SETUPHELFER_RESCUE" \
   --iso-application "Setuphelfer Rescue Live"
 EOF
-chmod +x "${BUILD_ROOT}/auto/config"
 
-cat > "${BUILD_ROOT}/auto/build" <<'EOF'
+write_text_file "${BUILD_ROOT}/auto/build" 0755 <<'EOF'
 #!/bin/sh
 set -eu
 echo "Use controlled gate before running lb build."
 exit 20
 EOF
-chmod +x "${BUILD_ROOT}/auto/build"
 
-cat > "${BUILD_ROOT}/auto/clean" <<'EOF'
+write_text_file "${BUILD_ROOT}/auto/clean" 0755 <<'EOF'
 #!/bin/sh
 set -eu
 # Kein "lb clean" hier: live-build ruft auto/clean selbst auf und wuerde sonst rekursiv enden.
 rm -rf .build chroot cache binary local
 EOF
-chmod +x "${BUILD_ROOT}/auto/clean"
 
-rm -rf "$BUNDLE_DST"
+if [[ -e "$BUNDLE_DST" ]]; then
+  old_bundle_dst="${BUNDLE_DST}.old.$(date +%s).$$"
+  mv "$BUNDLE_DST" "$old_bundle_dst"
+  rm -rf "$old_bundle_dst" 2>/dev/null || true
+fi
 mkdir -p "$(dirname "$BUNDLE_DST")"
-rsync -aL \
+rsync -rltL \
   --exclude='__pycache__' --exclude='*.pyc' --exclude='.env' \
   --exclude='node_modules' --exclude='*.iso' --exclude='*.img' --exclude='*.qcow2' \
   "$BUNDLE_SRC/" "$BUNDLE_DST/"
@@ -173,7 +189,7 @@ print(json.loads(open(sys.argv[1]).read())["files_count"])
 PY
 )"
 
-cat > "${BUILD_ROOT}/evidence/build-tree-manifest.json" <<EOF
+write_text_file "${BUILD_ROOT}/evidence/build-tree-manifest.json" 0644 <<EOF
 {
   "controlled_live_build_tree": true,
   "no_real_build_execution": true,
@@ -186,7 +202,7 @@ cat > "${BUILD_ROOT}/evidence/build-tree-manifest.json" <<EOF
 }
 EOF
 
-cat > "${BUILD_ROOT}/README_SETUPHELFER_RESCUE_LIVE.md" <<EOF
+write_text_file "${BUILD_ROOT}/README_SETUPHELFER_RESCUE_LIVE.md" 0644 <<EOF
 # Setuphelfer Rescue Live — Controlled Build Tree
 
 - Source HEAD: ${SOURCE_HEAD}

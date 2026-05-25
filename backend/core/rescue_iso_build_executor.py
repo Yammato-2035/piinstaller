@@ -17,7 +17,11 @@ from core.rescue_iso_build_state import (
     redact_rescue_log_text,
     summarize_rescue_iso_artifacts,
 )
-from core.rescue_iso_operator_commands import build_operator_build_commands, build_sudo_clean_commands
+from core.rescue_iso_operator_commands import (
+    build_operator_build_commands,
+    build_sudo_clean_commands,
+    resolve_rescue_iso_paths,
+)
 
 UTC = timezone.utc
 
@@ -102,6 +106,12 @@ def _latest_log_path(repo: Path) -> Path:
 
 def _summary_path(repo: Path) -> Path:
     return (repo / _SUMMARY_REL).resolve(strict=False)
+
+
+def _action_root(runtime_root: Path, paths: dict[str, Any]) -> Path:
+    if str(paths.get("path_status") or "") == "ok":
+        return Path(str(paths["workspace_path"])).resolve(strict=False)
+    return runtime_root
 
 
 def _ensure_dirs(repo: Path) -> None:
@@ -200,15 +210,15 @@ def _set_result(
     return action
 
 
-def _finish(repo: Path, action: dict[str, Any], log_lines: list[str]) -> dict[str, Any]:
-    _write_logs(repo, str(action["action_id"]), log_lines)
-    _persist_action(repo, action)
-    _write_summary(repo, action)
+def _finish(action_root: Path, runtime_root: Path, action: dict[str, Any], log_lines: list[str]) -> dict[str, Any]:
+    _write_logs(action_root, str(action["action_id"]), log_lines)
+    _persist_action(action_root, action)
+    _write_summary(action_root, runtime_root, action)
     return action
 
 
-def _write_summary(repo: Path, action: dict[str, Any]) -> None:
-    state = build_rescue_iso_dashboard_state(repo_root=repo)
+def _write_summary(action_root: Path, runtime_root: Path, action: dict[str, Any]) -> None:
+    state = build_rescue_iso_dashboard_state(repo_root=runtime_root)
     summary = {
         "schema_version": 2,
         "phase": "controlled_rescue_iso_build",
@@ -234,7 +244,7 @@ def _write_summary(repo: Path, action: dict[str, Any]) -> None:
         "details": action.get("details") or {},
         "dashboard_state": state,
     }
-    _write_json(_summary_path(repo), summary)
+    _write_json(_summary_path(action_root), summary)
 
 
 def _run_command(
@@ -286,7 +296,7 @@ def _execute_script_step(
         action,
         status=status,
         exit_code=0 if rc == 0 else 20,
-        details={"command": command},
+        details={"command": command, "cwd": str(cwd)},
         errors=[] if rc == 0 else [f"command_failed:{' '.join(command)}"],
     )
     return action, log_lines
@@ -351,12 +361,18 @@ def _scan_runtime_for_artifact_policy(repo: Path) -> dict[str, Any]:
 
 
 def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, Any]:
-    repo = _repo_root().resolve(strict=False)
+    runtime_root = _repo_root().resolve(strict=False)
+    paths = resolve_rescue_iso_paths(repo_root=runtime_root)
+    repo = _action_root(runtime_root, paths)
+    workspace_root = Path(str(paths["workspace_path"])).resolve(strict=False)
     _ensure_dirs(repo)
     step_name = str(step or "").strip()
     action = _new_action(repo, step_name, bool(operator_confirm))
     log_lines: list[str] = []
     _append_log(log_lines, f"STEP: {step_name}")
+    _append_log(log_lines, f"RUNTIME_PATH: {runtime_root}")
+    _append_log(log_lines, f"WORKSPACE_PATH: {workspace_root}")
+    _append_log(log_lines, f"PATH_STATUS: {paths.get('path_status')}")
 
     if step_name in _FORBIDDEN_STEPS:
         action = _set_result(
@@ -365,7 +381,7 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
             exit_code=13,
             errors=[f"forbidden_step:{step_name}"],
         )
-        return _finish(repo, action, log_lines)
+        return _finish(repo, runtime_root, action, log_lines)
 
     if step_name not in _ALLOWED_STEPS:
         action = _set_result(
@@ -374,12 +390,36 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
             exit_code=13,
             errors=[f"unsupported_step:{step_name}"],
         )
-        return _finish(repo, action, log_lines)
+        return _finish(repo, runtime_root, action, log_lines)
+
+    guarded_steps = {
+        "detect_stale_state",
+        "clean_user_state",
+        "prepare_bundle",
+        "validate_bundle",
+        "prepare_tree",
+        "validate_tree",
+        "prebuild_check",
+        "build_iso_operator_required",
+        "build_iso_with_sudo",
+        "scan_iso",
+        "summarize",
+    }
+    if step_name in guarded_steps and paths.get("path_status") != "ok":
+        action = _set_result(
+            action,
+            status="blocked",
+            exit_code=40,
+            details={"paths": paths},
+            errors=[f"path_status:{paths.get('path_status')}"] + list(paths.get("errors") or []),
+            warnings=list(paths.get("warnings") or []),
+        )
+        return _finish(repo, runtime_root, action, log_lines)
 
     if step_name == "status":
-        state = build_rescue_iso_dashboard_state(repo_root=repo)
+        state = build_rescue_iso_dashboard_state(repo_root=runtime_root)
         action = _set_result(action, status="ok", exit_code=0, details={"dashboard_state": state})
-        return _finish(repo, action, log_lines)
+        return _finish(repo, runtime_root, action, log_lines)
 
     if step_name == "toolcheck":
         details = {"tools": _toolcheck_details()}
@@ -392,10 +432,10 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
             details=details,
             errors=[] if not missing else [f"missing_tools:{', '.join(missing)}"],
         )
-        return _finish(repo, action, log_lines)
+        return _finish(repo, runtime_root, action, log_lines)
 
     if step_name == "detect_stale_state":
-        stale = detect_live_build_stale_state(repo_root=repo)
+        stale = detect_live_build_stale_state(repo_root=runtime_root)
         status = "review_required" if stale.get("present") else "ok"
         if stale.get("needs_sudo_clean"):
             status = "operator_required"
@@ -405,10 +445,10 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
             exit_code=12 if stale.get("needs_sudo_clean") else (11 if stale.get("present") else 0),
             details={"stale_state": stale},
         )
-        return _finish(repo, action, log_lines)
+        return _finish(repo, runtime_root, action, log_lines)
 
     if step_name == "clean_user_state":
-        build_root = _build_root(repo)
+        build_root = _build_root(workspace_root)
         targets = [build_root / name for name in (".build", "chroot", "cache", "binary", "local")]
         root_owned: list[str] = []
         for target in targets:
@@ -418,10 +458,10 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
                 action,
                 status="operator_required",
                 exit_code=12,
-                details={"commands": build_sudo_clean_commands(repo_root=repo).get("commands") or []},
+                details={"commands": build_sudo_clean_commands(repo_root=runtime_root).get("commands") or [], "paths": paths},
                 errors=["root_owned_state_detected"],
             )
-            return _finish(repo, action, log_lines)
+            return _finish(repo, runtime_root, action, log_lines)
         removed: list[str] = []
         for target in targets:
             if not target.exists():
@@ -435,56 +475,60 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
                     exit_code=40,
                     errors=[f"path_outside_build_tree:{target}"],
                 )
-                return _finish(repo, action, log_lines)
+                return _finish(repo, runtime_root, action, log_lines)
             _safe_remove(target)
             removed.append(_repo_rel(repo, target))
-        action = _set_result(action, status="ok", exit_code=0, details={"removed": removed})
-        return _finish(repo, action, log_lines)
+        action = _set_result(action, status="ok", exit_code=0, details={"removed": removed, "paths": paths})
+        return _finish(repo, runtime_root, action, log_lines)
 
     if step_name == "prepare_bundle":
         action, cmd_log = _execute_script_step(
             repo,
             action,
-            command=[str(repo / "scripts/rescue-live/create-temp-runtime-bundle.sh")],
-            cwd=repo,
+            command=["scripts/rescue-live/create-temp-runtime-bundle.sh"],
+            cwd=workspace_root,
         )
-        return _finish(repo, action, log_lines + cmd_log)
+        action["details"]["paths"] = paths
+        return _finish(repo, runtime_root, action, log_lines + cmd_log)
 
     if step_name == "validate_bundle":
         action, cmd_log = _execute_script_step(
             repo,
             action,
             command=[
-                str(repo / "scripts/rescue-live/validate-temp-runtime-bundle.sh"),
-                str(_bundle_root(repo)),
+                "scripts/rescue-live/validate-temp-runtime-bundle.sh",
+                "build/rescue/temp-runtime/setuphelfer-rescue-runtime",
             ],
-            cwd=repo,
+            cwd=workspace_root,
         )
-        return _finish(repo, action, log_lines + cmd_log)
+        action["details"]["paths"] = paths
+        return _finish(repo, runtime_root, action, log_lines + cmd_log)
 
     if step_name == "prepare_tree":
         action, cmd_log = _execute_script_step(
             repo,
             action,
-            command=[str(repo / "scripts/rescue-live/prepare-controlled-live-build-tree.sh")],
-            cwd=repo,
+            command=["scripts/rescue-live/prepare-controlled-live-build-tree.sh"],
+            cwd=workspace_root,
         )
-        return _finish(repo, action, log_lines + cmd_log)
+        action["details"]["paths"] = paths
+        return _finish(repo, runtime_root, action, log_lines + cmd_log)
 
     if step_name == "validate_tree":
         action, cmd_log = _execute_script_step(
             repo,
             action,
             command=[
-                str(repo / "scripts/rescue-live/validate-controlled-live-build-tree.sh"),
-                str(_build_root(repo)),
+                "scripts/rescue-live/validate-controlled-live-build-tree.sh",
+                "build/rescue/live-build/setuphelfer-rescue-live",
             ],
-            cwd=repo,
+            cwd=workspace_root,
         )
-        return _finish(repo, action, log_lines + cmd_log)
+        action["details"]["paths"] = paths
+        return _finish(repo, runtime_root, action, log_lines + cmd_log)
 
     if step_name == "prebuild_check":
-        state = build_rescue_iso_dashboard_state(repo_root=repo)
+        state = build_rescue_iso_dashboard_state(repo_root=runtime_root)
         missing = [name for name, item in (state.get("tools") or {}).items() if not item.get("present")]
         if ((state.get("repo") or {}).get("runtime_gate")) != "green":
             action = _set_result(action, status="blocked", exit_code=14, errors=["runtime_gate_failed"], details=state)
@@ -493,7 +537,7 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
                 action,
                 status="operator_required",
                 exit_code=12,
-                details={"commands": build_sudo_clean_commands(repo_root=repo).get("commands") or [], "state": state},
+                details={"commands": build_sudo_clean_commands(repo_root=runtime_root).get("commands") or [], "state": state},
                 errors=["sudo_clean_required"],
             )
         elif (state.get("stale_state") or {}).get("present"):
@@ -510,36 +554,36 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
             action = _set_result(action, status="blocked", exit_code=10, details=state, errors=["auto_build_not_blocked"])
         else:
             action = _set_result(action, status="ok", exit_code=0, details=state)
-        return _finish(repo, action, log_lines)
+        return _finish(repo, runtime_root, action, log_lines)
 
     if step_name == "build_iso_operator_required":
-        details = build_operator_build_commands(repo_root=repo)
+        details = build_operator_build_commands(repo_root=runtime_root)
         action = _set_result(action, status="operator_required", exit_code=12, details=details)
-        return _finish(repo, action, log_lines)
+        return _finish(repo, runtime_root, action, log_lines)
 
     if step_name == "build_iso_with_sudo":
         if not operator_confirm:
             action = _set_result(action, status="blocked", exit_code=40, errors=["operator_confirm_required"])
-            return _finish(repo, action, log_lines)
+            return _finish(repo, runtime_root, action, log_lines)
         if not _backend_sudo_allowed():
-            details = build_operator_build_commands(repo_root=repo)
+            details = build_operator_build_commands(repo_root=runtime_root)
             action = _set_result(action, status="operator_required", exit_code=12, details=details, errors=["backend_sudo_not_allowed"])
-            return _finish(repo, action, log_lines)
-        cfg_rc, cfg_lines = _run_command(repo, action, ["./auto/config"], cwd=_build_root(repo))
+            return _finish(repo, runtime_root, action, log_lines)
+        cfg_rc, cfg_lines = _run_command(repo, action, ["./auto/config"], cwd=_build_root(workspace_root))
         full_logs = log_lines + cfg_lines
         if cfg_rc != 0:
             action = _set_result(action, status="blocked", exit_code=20, errors=["auto_config_failed"])
-            return _finish(repo, action, full_logs)
-        build_rc, build_lines = _run_command(repo, action, ["sudo", "lb", "build", "noauto"], cwd=_build_root(repo))
+            return _finish(repo, runtime_root, action, full_logs)
+        build_rc, build_lines = _run_command(repo, action, ["sudo", "lb", "build", "noauto"], cwd=_build_root(workspace_root))
         full_logs.extend(build_lines)
         status = "ok" if build_rc == 0 else "blocked"
         exit_code = 0 if build_rc == 0 else 20
         action = _set_result(action, status=status, exit_code=exit_code, errors=[] if build_rc == 0 else ["sudo_lb_build_failed"])
-        return _finish(repo, action, full_logs)
+        return _finish(repo, runtime_root, action, full_logs)
 
     if step_name == "scan_iso":
-        artifacts = summarize_rescue_iso_artifacts(repo_root=repo)
-        scan = _scan_runtime_for_artifact_policy(repo)
+        artifacts = summarize_rescue_iso_artifacts(repo_root=runtime_root)
+        scan = _scan_runtime_for_artifact_policy(workspace_root)
         if not artifacts.get("iso_found"):
             action = _set_result(action, status="review_required", exit_code=30, details={"artifacts": artifacts, "scan": scan})
         elif scan.get("secret_hits") or scan.get("cdn_hits"):
@@ -552,21 +596,29 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
             )
         else:
             action = _set_result(action, status="ok", exit_code=0, details={"artifacts": artifacts, "scan": scan})
-        return _finish(repo, action, log_lines)
+        return _finish(repo, runtime_root, action, log_lines)
 
     if step_name == "summarize":
-        state = build_rescue_iso_dashboard_state(repo_root=repo)
+        state = build_rescue_iso_dashboard_state(repo_root=runtime_root)
         action = _set_result(action, status="ok", exit_code=0, details={"dashboard_state": state})
-        return _finish(repo, action, log_lines)
+        return _finish(repo, runtime_root, action, log_lines)
 
     action = _set_result(action, status="forbidden", exit_code=13, errors=[f"unhandled_step:{step_name}"])
-    return _finish(repo, action, log_lines)
+    return _finish(repo, runtime_root, action, log_lines)
 
 
 def get_rescue_iso_step_status(action_id: str) -> dict[str, Any]:
-    repo = _repo_root().resolve(strict=False)
-    path = _action_status_path(repo, str(action_id).strip())
-    body = _read_json(path)
+    runtime_root = _repo_root().resolve(strict=False)
+    paths = resolve_rescue_iso_paths(repo_root=runtime_root)
+    candidates = [
+        _action_status_path(_action_root(runtime_root, paths), str(action_id).strip()),
+        _action_status_path(runtime_root, str(action_id).strip()),
+    ]
+    body = None
+    for path in candidates:
+        body = _read_json(path)
+        if body is not None:
+            break
     if body is None:
         return {
             "action_id": action_id,
@@ -578,7 +630,9 @@ def get_rescue_iso_step_status(action_id: str) -> dict[str, Any]:
 
 
 def cancel_rescue_iso_step(action_id: str) -> dict[str, Any]:
-    repo = _repo_root().resolve(strict=False)
+    runtime_root = _repo_root().resolve(strict=False)
+    paths = resolve_rescue_iso_paths(repo_root=runtime_root)
+    repo = _action_root(runtime_root, paths)
     body = get_rescue_iso_step_status(action_id)
     if body.get("errors"):
         return body
@@ -610,5 +664,5 @@ def cancel_rescue_iso_step(action_id: str) -> dict[str, Any]:
     body["errors"] = ["cancelled_by_request"]
     body["pid"] = None
     _persist_action(repo, body)
-    _write_summary(repo, body)
+    _write_summary(repo, runtime_root, body)
     return body

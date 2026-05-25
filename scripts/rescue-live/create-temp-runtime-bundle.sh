@@ -7,7 +7,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 OUT_ROOT="${REPO_ROOT}/build/rescue/temp-runtime"
 BUNDLE="${OUT_ROOT}/setuphelfer-rescue-runtime"
-SOURCE_HEAD="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+STAGE="${OUT_ROOT}/.setuphelfer-rescue-runtime.tmp.$$"
+
+git_workspace() {
+  git -c "safe.directory=${REPO_ROOT}" -C "$REPO_ROOT" "$@"
+}
+
+SOURCE_HEAD="$(git_workspace rev-parse --short HEAD 2>/dev/null || echo unknown)"
 
 die() { echo "ERROR: $*" >&2; exit 1; }
 
@@ -15,8 +21,8 @@ die() { echo "ERROR: $*" >&2; exit 1; }
 [[ -f "$REPO_ROOT/frontend/dist/index.html" ]] || die "frontend/dist missing — run npm run build in frontend first"
 [[ -f "$REPO_ROOT/config/version.json" ]] || die "config/version.json missing"
 
-rm -rf "$BUNDLE"
-mkdir -p "$BUNDLE/scripts/rescue-live" "$BUNDLE/config" "$BUNDLE/frontend/dist"
+rm -rf "$STAGE"
+mkdir -p "$STAGE/scripts/rescue-live" "$STAGE/config" "$STAGE/frontend/dist"
 
 RSYNC_EX=(--exclude='__pycache__' --exclude='*.pyc' --exclude='.env' --exclude='*.env'
   --exclude='node_modules' --exclude='.git' --exclude='*.tar.gz' --exclude='*.tar'
@@ -24,17 +30,17 @@ RSYNC_EX=(--exclude='__pycache__' --exclude='*.pyc' --exclude='.env' --exclude='
   --exclude='cache/' --exclude='*.img' --exclude='*.iso' --exclude='*.qcow2'
   --exclude='.venv/' --exclude='.venv-ci/' --exclude='tests/' --exclude='CONFIG.md')
 
-rsync -a "${RSYNC_EX[@]}" "$REPO_ROOT/backend/" "$BUNDLE/backend/"
-rsync -a "${RSYNC_EX[@]}" "$REPO_ROOT/frontend/dist/" "$BUNDLE/frontend/dist/"
-mkdir -p "$BUNDLE/scripts/rescue-live"
+rsync -rlt "${RSYNC_EX[@]}" "$REPO_ROOT/backend/" "$STAGE/backend/"
+rsync -rlt "${RSYNC_EX[@]}" "$REPO_ROOT/frontend/dist/" "$STAGE/frontend/dist/"
+mkdir -p "$STAGE/scripts/rescue-live"
 for _rl in start-backend-localonly.sh start-ui-localonly.sh check-localonly.sh; do
-  cp -a "$REPO_ROOT/scripts/rescue-live/$_rl" "$BUNDLE/scripts/rescue-live/"
+  cp -a "$REPO_ROOT/scripts/rescue-live/$_rl" "$STAGE/scripts/rescue-live/"
 done
-cp -a "$REPO_ROOT/scripts/serve-frontend-production.py" "$BUNDLE/scripts/"
-cp -a "$REPO_ROOT/config/version.json" "$BUNDLE/config/"
-cp -a "$REPO_ROOT/VERSION" "$BUNDLE/VERSION"
+cp -a "$REPO_ROOT/scripts/serve-frontend-production.py" "$STAGE/scripts/"
+cp -a "$REPO_ROOT/config/version.json" "$STAGE/config/"
+cp -a "$REPO_ROOT/VERSION" "$STAGE/VERSION"
 
-cat > "$BUNDLE/README_RESCUE_TEMP_RUNTIME.md" <<EOF
+cat > "$STAGE/README_RESCUE_TEMP_RUNTIME.md" <<EOF
 # Setuphelfer Rescue Temp Runtime
 
 - Source HEAD: ${SOURCE_HEAD}
@@ -52,7 +58,7 @@ export SETUPHELFER_RESCUE_ROOT="\$(pwd)"
 EOF
 
 FORBIDDEN_SCAN="$(
-  find "$BUNDLE" -type f \( \
+  find "$STAGE" -type f \( \
     -name '*.iso' -o -name '*.img' -o -name '*.qcow2' \
     -o -name 'filesystem.squashfs' -o -name 'initrd.img' -o -name 'vmlinuz' \
     -o -name '.env' -o -name 'node_modules' \
@@ -64,7 +70,7 @@ if [[ -n "$FORBIDDEN_SCAN" ]]; then
   die "forbidden files in bundle"
 fi
 
-python3 - "$BUNDLE" "$SOURCE_HEAD" "$FORBIDDEN_SCAN" <<'PY'
+python3 - "$STAGE" "$SOURCE_HEAD" "$FORBIDDEN_SCAN" <<'PY'
 import hashlib
 import json
 import sys
@@ -103,5 +109,12 @@ manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
 print(f"MANIFEST: {manifest_path} ({len(files)} files)")
 PY
 
-chmod +x "$BUNDLE/scripts/rescue-live/"*.sh 2>/dev/null || true
+chmod +x "$STAGE/scripts/rescue-live/"*.sh 2>/dev/null || true
+
+if [[ -e "$BUNDLE" ]]; then
+  old_bundle="${OUT_ROOT}/.setuphelfer-rescue-runtime.old.$(date +%s).$$"
+  mv "$BUNDLE" "$old_bundle"
+  rm -rf "$old_bundle" 2>/dev/null || true
+fi
+mv "$STAGE" "$BUNDLE"
 echo "OK: bundle at $BUNDLE"

@@ -1,89 +1,160 @@
 {
+  "schema_version": 2,
   "phase": "controlled_rescue_iso_build",
-  "status": "review_required",
-  "attempted_via": "dashboard_executor",
-  "attempted_at": "2026-05-25T15:18:12Z",
-  "workspace_head": "653d41a",
-  "runtime_repo_root": "/opt/setuphelfer",
-  "runtime_gate_exit": 0,
-  "services_active": true,
-  "prebuild_status": "green",
-  "prebuild_summary": "Kontrollierter Rescue-ISO-Build bereit zur Pruefung",
-  "stale_state": {
-    "present": false,
-    "needs_sudo_clean": false,
-    "latest_log_path": "build/rescue/logs/controlled-iso-build/latest.log"
-  },
-  "steps": {
-    "detect_stale_state": {
-      "status": "ok",
-      "exit_code": 0
-    },
-    "prebuild_check": {
-      "status": "ok",
-      "exit_code": 0
-    },
-    "prepare_bundle": {
-      "status": "blocked",
-      "exit_code": 20,
-      "error": "command_failed:/opt/setuphelfer/scripts/rescue-live/create-temp-runtime-bundle.sh"
-    },
-    "validate_bundle": {
-      "status": "blocked",
-      "exit_code": 20,
-      "error": "MISSING: MANIFEST.json"
-    },
-    "prepare_tree": {
-      "status": "blocked",
-      "exit_code": 20,
-      "error": "ERROR: bundle MANIFEST.json missing"
-    },
-    "validate_tree": {
-      "status": "ok",
-      "exit_code": 0,
-      "build_tree_source_head": "27d790a"
-    },
-    "build_iso_operator_required": {
-      "status": "operator_required",
-      "commands": [
-        "cd \"/opt/setuphelfer/build/rescue/live-build/setuphelfer-rescue-live\"",
-        "./auto/config",
-        "sudo lb build noauto"
-      ]
-    }
-  },
-  "runtime_blocker": {
-    "type": "executor_prepare_bundle_blocked",
-    "summary": "Im produktiven /opt-Executor konnte das Temp-Runtime-Bundle nicht neu erzeugt werden; danach fehlte MANIFEST.json und prepare_tree blieb blockiert.",
-    "details": [
-      "prepare_bundle loggt rsync permission errors unter /opt/setuphelfer/build/rescue/temp-runtime/setuphelfer-rescue-runtime/backend",
-      "validate_tree ist zwar gruen, referenziert aber weiterhin build-tree-manifest source_head=27d790a",
-      "Der Dashboard-Status nach PHASE 4 ist yellow mit next_operator_action=fix_required"
-    ]
-  },
-  "dashboard_status_after_attempt": {
-    "status": "yellow",
-    "temp_runtime_bundle": "review_required",
-    "iso_build": "not_started",
-    "next_operator_action": "fix_required",
-    "usb_write_allowed": false
-  },
+  "updated_at": "2026-05-25T16:46:36.756411+00:00",
+  "status": "operator_required",
+  "last_action_id": "25b31d77304141c7ab6708ec20b1bccd",
+  "last_step": "build_iso_operator_required",
+  "last_action_status": "operator_required",
+  "last_exit_code": 12,
+  "last_error": "Kontrollierter Rescue-ISO-Build bereit zur Prüfung",
+  "latest_log_path": "build/rescue/logs/controlled-iso-build/latest.log",
+  "action_log_path": "build/rescue/logs/controlled-iso-build/actions/25b31d77304141c7ab6708ec20b1bccd.log",
+  "action_status_path": "build/rescue/logs/controlled-iso-build/actions/25b31d77304141c7ab6708ec20b1bccd.json",
   "iso_found": false,
   "iso_path": null,
   "iso_abs_path": null,
   "iso_size_bytes": null,
   "iso_sha256": null,
-  "lb_exit": null,
-  "forbidden_actions_executed": {
-    "usb_write": false,
-    "dd": false,
-    "mkfs": false,
-    "parted_write": false,
-    "backup": false,
-    "restore": false,
-    "verify_deep": false,
-    "queue_apply": false,
-    "apt_install_upgrade": false
+  "usb_write_allowed": false,
+  "dd_allowed": false,
+  "warnings": [],
+  "errors": [],
+  "details": {
+    "status": "operator_required",
+    "warning": "Nur ausführen, wenn Pfad exakt geprüft wurde.",
+    "runtime_path": "/opt/setuphelfer",
+    "workspace_path": "/home/volker/piinstaller",
+    "path_mode": "workspace_build_runtime_opt",
+    "path_status": "ok",
+    "build_root": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+    "commands": [
+      "cd \"/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live\"",
+      "./auto/config",
+      "sudo lb build noauto"
+    ],
+    "warnings": [
+      "Nur ausführen, wenn Pfad exakt geprüft wurde.",
+      "USB-Schreiben, dd, mkfs und Partition-Write bleiben verboten."
+    ],
+    "errors": []
   },
-  "next_step": "Produktive /opt-Runtime zuerst auf den aktuellen Rescue-Executor-Stand bringen und den Dashboard-Lauf danach erneut bei PHASE 2 starten."
+  "dashboard_state": {
+    "status": "green",
+    "summary": "Kontrollierter Rescue-ISO-Build bereit zur Prüfung",
+    "generated_at": "2026-05-25T16:46:36.752766+00:00",
+    "repo_root": "/home/volker/piinstaller",
+    "runtime_repo_root": "/opt/setuphelfer",
+    "runtime_path": "/opt/setuphelfer",
+    "workspace_path": "/home/volker/piinstaller",
+    "build_tree_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+    "temp_runtime_bundle_path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime",
+    "logs_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build",
+    "summary_path": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+    "path_mode": "workspace_build_runtime_opt",
+    "path_status": "ok",
+    "path_errors": [],
+    "path_warnings": [],
+    "repo": {
+      "head": "751e2cf",
+      "branch": "main",
+      "runtime_gate": "green",
+      "runtime_gate_exit": 0,
+      "runtime_gate_summary": "ok"
+    },
+    "tools": {
+      "lb": {
+        "present": true,
+        "path": "/usr/bin/lb"
+      },
+      "xorriso": {
+        "present": true,
+        "path": "/usr/bin/xorriso"
+      },
+      "mksquashfs": {
+        "present": true,
+        "path": "/usr/bin/mksquashfs"
+      }
+    },
+    "build_tree": {
+      "path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+      "exists": true,
+      "validator_status": "ok",
+      "auto_config_noauto": true,
+      "auto_build_blocked": true,
+      "missing_paths": [],
+      "manifest_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/evidence/build-tree-manifest.json",
+      "source_head": "751e2cf"
+    },
+    "stale_state": {
+      "present": false,
+      "root_owned_stage_files": [],
+      "skipped_live_build_stages": [],
+      "needs_sudo_clean": false,
+      "indicators": [],
+      "stage_marker_present": false,
+      "debootstrap_log_path": null,
+      "latest_log_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build/latest.log"
+    },
+    "temp_runtime_bundle": {
+      "path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime",
+      "status": "ok",
+      "files_count": 2782,
+      "manifest_sha256": "9c1dcbd283eddd0afd1aa0b70513df1458b4ffad56509051a738a84b99a9abe1",
+      "manifest_path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime/MANIFEST.json",
+      "source_head": "751e2cf",
+      "error": null
+    },
+    "iso_build": {
+      "status": "not_started",
+      "last_exit_code": null,
+      "last_error": null,
+      "iso_found": false,
+      "iso_path": null,
+      "iso_abs_path": null,
+      "iso_size_bytes": null,
+      "iso_sha256": null
+    },
+    "usb_write": {
+      "allowed": false,
+      "status": "blocked",
+      "reason": "separate gate required"
+    },
+    "logs": {
+      "latest_log_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build/latest.log",
+      "last_80_lines": [
+        "[2026-05-25T16:46:36.669747+00:00] STEP: build_iso_operator_required",
+        "[2026-05-25T16:46:36.669753+00:00] RUNTIME_PATH: /opt/setuphelfer",
+        "[2026-05-25T16:46:36.669756+00:00] WORKSPACE_PATH: /home/volker/piinstaller",
+        "[2026-05-25T16:46:36.669759+00:00] PATH_STATUS: ok"
+      ],
+      "last_error": null
+    },
+    "forbidden_actions": {
+      "dd_allowed": false,
+      "mkfs_allowed": false,
+      "parted_write_allowed": false,
+      "restore_allowed": false,
+      "backup_allowed": false,
+      "usb_write_allowed": false
+    },
+    "evidence_sources": [
+      "docs/evidence/rescue/RESCUE_CONTROLLED_ISO_BUILD_RESULT.md",
+      "docs/evidence/rescue/RESCUE_BIG_STEP_STATUS_PLAN.md",
+      "docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md",
+      "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+      "docs/evidence/runtime-results/rescue/controlled_usb_write_latest_summary.json",
+      "build/rescue/logs/controlled-iso-build/latest.log"
+    ],
+    "no_fake_green": true,
+    "next_operator_action": {
+      "type": "operator_sudo_required",
+      "label": "lb build benötigt sudo/root; Dashboard zeigt deshalb Operator-Befehl statt Direktstart.",
+      "commands": [
+        "cd \"/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live\"",
+        "./auto/config",
+        "sudo lb build noauto"
+      ]
+    }
+  }
 }

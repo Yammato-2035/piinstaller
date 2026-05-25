@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 _backend = Path(__file__).resolve().parent.parent
@@ -19,9 +21,13 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
     def _repo(self) -> tempfile.TemporaryDirectory[str]:
         return tempfile.TemporaryDirectory()
 
+    def _init_git_repo(self, repo: Path) -> None:
+        subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
+
     def test_missing_evidence_does_not_crash(self) -> None:
         with self._repo() as td:
             repo = Path(td)
+            self._init_git_repo(repo)
             payload = state.build_rescue_iso_dashboard_state(repo_root=repo)
             self.assertIn(payload["status"], ("gray", "yellow", "red", "green"))
             self.assertFalse(payload["usb_write"]["allowed"])
@@ -29,6 +35,7 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
     def test_tar_failed_is_detected_from_debootstrap_log(self) -> None:
         with self._repo() as td:
             repo = Path(td)
+            self._init_git_repo(repo)
             log = repo / "build/rescue/live-build/setuphelfer-rescue-live/chroot/debootstrap/debootstrap.log"
             log.parent.mkdir(parents=True, exist_ok=True)
             log.write_text("E: Tried to extract package, but tar failed. Exit...\n", encoding="utf-8")
@@ -38,6 +45,7 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
     def test_chroot_package_lists_install_stale_is_detected(self) -> None:
         with self._repo() as td:
             repo = Path(td)
+            self._init_git_repo(repo)
             marker = repo / "build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_package-lists.install"
             marker.parent.mkdir(parents=True, exist_ok=True)
             marker.write_text("done\n", encoding="utf-8")
@@ -49,6 +57,7 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
     def test_root_owned_stage_files_trigger_operator_action(self) -> None:
         with self._repo() as td:
             repo = Path(td)
+            self._init_git_repo(repo)
             fake = repo / "build/rescue/live-build/setuphelfer-rescue-live/.build/root-owned"
             fake.parent.mkdir(parents=True, exist_ok=True)
             fake.write_text("x", encoding="utf-8")
@@ -60,6 +69,7 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
     def test_auto_config_without_noauto_is_review_required(self) -> None:
         with self._repo() as td:
             repo = Path(td)
+            self._init_git_repo(repo)
             root = repo / "build/rescue/live-build/setuphelfer-rescue-live/auto"
             root.mkdir(parents=True, exist_ok=True)
             (root / "config").write_text("#!/bin/sh\nlb config\n", encoding="utf-8")
@@ -71,6 +81,7 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
     def test_auto_build_blocking_is_recognized(self) -> None:
         with self._repo() as td:
             repo = Path(td)
+            self._init_git_repo(repo)
             root = repo / "build/rescue/live-build/setuphelfer-rescue-live"
             (root / "auto").mkdir(parents=True, exist_ok=True)
             (root / "config/package-lists").mkdir(parents=True, exist_ok=True)
@@ -92,6 +103,7 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
     def test_iso_missing_is_not_green(self) -> None:
         with self._repo() as td:
             repo = Path(td)
+            self._init_git_repo(repo)
             payload = state.build_rescue_iso_dashboard_state(repo_root=repo)
             self.assertFalse(payload["iso_build"]["iso_found"])
             self.assertNotEqual(payload["status"], "green")
@@ -120,11 +132,121 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
     def test_last_log_lines_are_bounded(self) -> None:
         with self._repo() as td:
             repo = Path(td)
+            self._init_git_repo(repo)
             latest = repo / "build/rescue/logs/controlled-iso-build/latest.log"
             latest.parent.mkdir(parents=True, exist_ok=True)
             latest.write_text("\n".join(f"line {idx}" for idx in range(250)), encoding="utf-8")
             logs = state.read_rescue_iso_latest_logs(repo_root=repo)
             self.assertLessEqual(len(logs["last_80_lines"]), 80)
+
+    def test_status_separates_runtime_and_workspace_paths(self) -> None:
+        with self._repo() as td:
+            repo = Path(td)
+            self._init_git_repo(repo)
+            build_tree = repo / "build/rescue/live-build/setuphelfer-rescue-live"
+            bundle = repo / "build/rescue/temp-runtime/setuphelfer-rescue-runtime"
+            paths = {
+                "runtime_path": "/opt/setuphelfer",
+                "workspace_path": str(repo),
+                "build_tree_path": str(build_tree),
+                "temp_runtime_bundle_path": str(bundle),
+                "logs_path": str(repo / "build/rescue/logs/controlled-iso-build"),
+                "summary_path": str(repo / "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"),
+                "path_mode": "workspace_build_runtime_opt",
+                "path_status": "ok",
+                "errors": [],
+                "warnings": [],
+                "workspace_head": "653d41a",
+                "workspace_branch": "main",
+            }
+            with patch.object(state, "resolve_rescue_iso_paths", return_value=paths):
+                payload = state.build_rescue_iso_dashboard_state(repo_root=Path("/opt/setuphelfer"))
+            self.assertEqual(payload["runtime_path"], "/opt/setuphelfer")
+            self.assertEqual(payload["workspace_path"], str(repo))
+            self.assertEqual(payload["build_tree_path"], str(build_tree))
+            self.assertEqual(payload["temp_runtime_bundle_path"], str(bundle))
+            self.assertEqual(payload["path_mode"], "workspace_build_runtime_opt")
+            self.assertEqual(payload["path_status"], "ok")
+            self.assertNotIn("/opt/setuphelfer/build", payload["build_tree_path"])
+
+    def test_opt_runtime_build_workspace_is_not_accepted(self) -> None:
+        payload_paths = {
+            "runtime_path": "/opt/setuphelfer",
+            "workspace_path": "/opt/setuphelfer",
+            "build_tree_path": "/opt/setuphelfer/build/rescue/live-build/setuphelfer-rescue-live",
+            "temp_runtime_bundle_path": "/opt/setuphelfer/build/rescue/temp-runtime/setuphelfer-rescue-runtime",
+            "logs_path": "/opt/setuphelfer/build/rescue/logs/controlled-iso-build",
+            "summary_path": "/opt/setuphelfer/docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+            "path_mode": "workspace_build_runtime_opt",
+            "path_status": "blocked",
+            "errors": ["WORKSPACE_NOT_ALLOWLISTED"],
+            "warnings": ["WORKSPACE_PATH_POINTS_TO_RUNTIME_OPT"],
+            "workspace_head": None,
+            "workspace_branch": None,
+        }
+        with patch.object(state, "resolve_rescue_iso_paths", return_value=payload_paths):
+            payload = state.build_rescue_iso_dashboard_state(repo_root=Path("/opt/setuphelfer"))
+        self.assertEqual(payload["path_status"], "blocked")
+        self.assertEqual(payload["next_operator_action"]["type"], "fix_required")
+
+    def test_missing_workspace_is_blocked_not_crash(self) -> None:
+        repo = Path("/tmp/does-not-exist-for-rescue-test")
+        paths = {
+            "runtime_path": "/opt/setuphelfer",
+            "workspace_path": str(repo),
+            "build_tree_path": str(repo / "build/rescue/live-build/setuphelfer-rescue-live"),
+            "temp_runtime_bundle_path": str(repo / "build/rescue/temp-runtime/setuphelfer-rescue-runtime"),
+            "logs_path": str(repo / "build/rescue/logs/controlled-iso-build"),
+            "summary_path": str(repo / "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"),
+            "path_mode": "workspace_build_runtime_opt",
+            "path_status": "blocked",
+            "errors": ["WORKSPACE_MISSING"],
+            "warnings": [],
+            "workspace_head": None,
+            "workspace_branch": None,
+        }
+        with patch.object(state, "resolve_rescue_iso_paths", return_value=paths):
+            payload = state.build_rescue_iso_dashboard_state(repo_root=Path("/opt/setuphelfer"))
+        self.assertEqual(payload["path_status"], "blocked")
+        self.assertEqual(payload["next_operator_action"]["type"], "fix_required")
+
+    def test_source_head_comes_from_workspace_head(self) -> None:
+        with self._repo() as td:
+            repo = Path(td)
+            self._init_git_repo(repo)
+            root = repo / "build/rescue/live-build/setuphelfer-rescue-live/evidence"
+            root.mkdir(parents=True, exist_ok=True)
+            (root / "build-tree-manifest.json").write_text('{"source_head":"653d41a"}', encoding="utf-8")
+            paths = {
+                "runtime_path": "/opt/setuphelfer",
+                "workspace_path": str(repo),
+                "build_tree_path": str(repo / "build/rescue/live-build/setuphelfer-rescue-live"),
+                "temp_runtime_bundle_path": str(repo / "build/rescue/temp-runtime/setuphelfer-rescue-runtime"),
+                "logs_path": str(repo / "build/rescue/logs/controlled-iso-build"),
+                "summary_path": str(repo / "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"),
+                "path_mode": "workspace_build_runtime_opt",
+                "path_status": "ok",
+                "errors": [],
+                "warnings": [],
+                "workspace_head": "653d41a",
+                "workspace_branch": "main",
+            }
+            with patch.object(state, "resolve_rescue_iso_paths", return_value=paths):
+                payload = state.build_rescue_iso_dashboard_state(repo_root=Path("/opt/setuphelfer"))
+            self.assertEqual(payload["repo"]["head"], "653d41a")
+            self.assertEqual(payload["build_tree"]["source_head"], "653d41a")
+
+    def test_git_value_uses_safe_directory_for_workspace_repo(self) -> None:
+        repo = Path("/home/volker/piinstaller")
+
+        def fake_run(cmd: list[str], **_: object) -> SimpleNamespace:
+            self.assertIn("-c", cmd)
+            self.assertIn(f"safe.directory={repo}", cmd)
+            return SimpleNamespace(returncode=0, stdout="751e2cf\n")
+
+        with patch.object(state.subprocess, "run", side_effect=fake_run):
+            value = state._git_value(repo, "rev-parse", "--short", "HEAD")
+        self.assertEqual(value, "751e2cf")
 
 
 class RescueIsoDashboardRouteRegistrationTests(unittest.TestCase):
