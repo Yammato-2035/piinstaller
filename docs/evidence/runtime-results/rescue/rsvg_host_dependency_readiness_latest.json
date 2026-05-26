@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-05-26T17:56:00+00:00",
+  "host": {
+    "hostname": "volker-ROG-Strix",
+    "user": "gabriel"
+  },
+  "project_version": "1.7.2",
+  "commit": "d32f6ee",
+  "rsvg_convert_found": false,
+  "rsvg_convert_path": null,
+  "rsvg_found": false,
+  "rsvg_path": null,
+  "package_status": {
+    "installed": false,
+    "dpkg_status_excerpt": [
+      "dpkg-query: Paket »librsvg2-bin« ist nicht installiert und es ist keine Information verfügbar",
+      "Verwenden Sie dpkg --info (= dpkg-deb --info) zum Untersuchen von Archiven."
+    ],
+    "apt_cache_policy_excerpt": [
+      "librsvg2-bin:",
+      "  Installiert:           (keine)",
+      "  Installationskandidat: 2.58.0+dfsg-1build1",
+      "  Versionstabelle:",
+      "     2.58.0+dfsg-1build1 500",
+      "        500 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages"
+    ]
+  },
+  "status": "blocked",
+  "required_package": "librsvg2-bin",
+  "required_operator_action": "sudo apt update && sudo apt install librsvg2-bin",
+  "no_install_executed_by_cursor": true
+}

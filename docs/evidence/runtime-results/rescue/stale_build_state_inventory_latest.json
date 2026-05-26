@@ -1,0 +1,142 @@
+{
+  "checked_at": "2026-05-26T17:57:53.148064+00:00",
+  "commit": "d32f6ee",
+  "project_version": "1.7.2",
+  "scanned_paths": [
+    "build/rescue",
+    "build/rescue/sandbox",
+    "build/rescue/emulation",
+    "build/rescue/live-build",
+    "docs/evidence/runtime-results/rescue",
+    "docs/evidence/runtime-results/handoff"
+  ],
+  "root_owned_entries": {
+    "count": 43373,
+    "sample": [
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/.build/binary_chroot",
+        "mode": "-rw-r--r--",
+        "uid": 0,
+        "gid": 1003,
+        "size": 0,
+        "writable_by_current_user": false
+      },
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_package-lists.install",
+        "mode": "-rw-r--r--",
+        "uid": 0,
+        "gid": 1003,
+        "size": 0,
+        "writable_by_current_user": false
+      },
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/binary/live/filesystem.squashfs",
+        "mode": "-rw-r--r--",
+        "uid": 0,
+        "gid": 1003,
+        "size": 429252608,
+        "writable_by_current_user": false
+      },
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/binary/live/initrd.img",
+        "mode": "-rw-r--r--",
+        "uid": 0,
+        "gid": 1003,
+        "size": 35635054,
+        "writable_by_current_user": false
+      },
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/cache",
+        "mode": "drwxr-sr-x",
+        "uid": 0,
+        "gid": 1003,
+        "size": 4096,
+        "writable_by_current_user": false
+      },
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot",
+        "mode": "drwxr-sr-x",
+        "uid": 0,
+        "gid": 1003,
+        "size": 4096,
+        "writable_by_current_user": false
+      }
+    ]
+  },
+  "stale_candidates": {
+    "count": 43373,
+    "sample": [
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/.build/binary_chroot",
+        "mode": "-rw-r--r--",
+        "uid": 0,
+        "gid": 1003,
+        "size": 0,
+        "writable_by_current_user": false,
+        "reason": "root_owned_live_build_stage_marker"
+      },
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_package-lists.install",
+        "mode": "-rw-r--r--",
+        "uid": 0,
+        "gid": 1003,
+        "size": 0,
+        "writable_by_current_user": false,
+        "reason": "root_owned_live_build_stage_marker"
+      },
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/binary/live/filesystem.squashfs",
+        "mode": "-rw-r--r--",
+        "uid": 0,
+        "gid": 1003,
+        "size": 429252608,
+        "writable_by_current_user": false,
+        "reason": "root_owned_live_build_binary_tree"
+      },
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/binary/live/initrd.img",
+        "mode": "-rw-r--r--",
+        "uid": 0,
+        "gid": 1003,
+        "size": 35635054,
+        "writable_by_current_user": false,
+        "reason": "root_owned_live_build_binary_tree"
+      },
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/cache",
+        "mode": "drwxr-sr-x",
+        "uid": 0,
+        "gid": 1003,
+        "size": 4096,
+        "writable_by_current_user": false,
+        "reason": "root_owned_live_build_cache"
+      },
+      {
+        "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot",
+        "mode": "drwxr-sr-x",
+        "uid": 0,
+        "gid": 1003,
+        "size": 4096,
+        "writable_by_current_user": false,
+        "reason": "root_owned_live_build_chroot_tree"
+      }
+    ]
+  },
+  "writable_by_current_user": {
+    "build/rescue": true,
+    "build/rescue/sandbox": true,
+    "build/rescue/emulation": true,
+    "build/rescue/live-build": true,
+    "docs/evidence/runtime-results/rescue": true,
+    "docs/evidence/runtime-results/handoff": true
+  },
+  "cleanup_required": true,
+  "cleanup_risk": "medium",
+  "safe_cleanup_scope": [
+    "build/rescue/live-build/setuphelfer-rescue-live/.build",
+    "build/rescue/live-build/setuphelfer-rescue-live/binary",
+    "build/rescue/live-build/setuphelfer-rescue-live/cache",
+    "build/rescue/live-build/setuphelfer-rescue-live/chroot"
+  ],
+  "no_cleanup_executed_by_cursor": true
+}

@@ -1,0 +1,43 @@
+{
+  "plan_status": "ready_for_operator",
+  "reason": "Root-owned stale Rescue-Build-State ist eindeutig auf generierte Live-Build-Arbeitsverzeichnisse unter build/rescue/live-build/setuphelfer-rescue-live begrenzt. Evidence- und Runtime-Pfade wurden nicht als Cleanup-Ziel klassifiziert.",
+  "paths_to_clean": [
+    "build/rescue/live-build/setuphelfer-rescue-live/.build",
+    "build/rescue/live-build/setuphelfer-rescue-live/chroot",
+    "build/rescue/live-build/setuphelfer-rescue-live/cache",
+    "build/rescue/live-build/setuphelfer-rescue-live/binary"
+  ],
+  "paths_not_to_touch": [
+    "build/rescue/temp-runtime/setuphelfer-rescue-runtime",
+    "build/rescue/sandbox",
+    "build/rescue/emulation",
+    "docs/evidence/runtime-results/rescue",
+    "docs/evidence/runtime-results/handoff",
+    "/opt/setuphelfer",
+    "/var/lib/setuphelfer",
+    "/media",
+    "/mnt",
+    "/dev",
+    "/run",
+    "/tmp"
+  ],
+  "safety_rules": [
+    "Nur die explizit genannten generierten Rescue-Live-Build-Arbeitsverzeichnisse bereinigen.",
+    "Keine Evidence-Dateien loeschen.",
+    "Keine Runtime-Pfade unter /opt/setuphelfer oder /var/lib/setuphelfer anfassen.",
+    "Keine Wildcards auf Systempfade verwenden.",
+    "Kein chown -R auf die Repo-Wurzel.",
+    "Kein ISO-Build im selben Schritt starten."
+  ],
+  "exact_operator_commands": [
+    "cd \"/home/volker/piinstaller\"",
+    "sudo rm -rf \"build/rescue/live-build/setuphelfer-rescue-live/.build\" \"build/rescue/live-build/setuphelfer-rescue-live/chroot\" \"build/rescue/live-build/setuphelfer-rescue-live/cache\" \"build/rescue/live-build/setuphelfer-rescue-live/binary\" 2>/dev/null || true"
+  ],
+  "verification_commands": [
+    "cd \"/home/volker/piinstaller\"",
+    "git status --short",
+    "python3 - <<'PY'\nimport json, urllib.request\nwith urllib.request.urlopen('http://127.0.0.1:8000/api/dev-dashboard/rescue-iso/status', timeout=20) as r:\n    data = json.load(r)\nprint(json.dumps({\n  'status': data.get('status'),\n  'needs_sudo_clean': ((data.get('stale_state') or {}).get('needs_sudo_clean')),\n  'rsvg_status': ((data.get('rsvg_preflight') or {}).get('status')),\n  'next_operator_action': ((data.get('next_operator_action') or {}).get('type')),\n  'usb_write_allowed': ((data.get('usb_write') or {}).get('allowed'))\n}, ensure_ascii=False, indent=2))\nPY"
+  ],
+  "rollback_note": "Kein formaler Rollback vorgesehen; der Cleanup entfernt nur generierte Rescue-Live-Build-Artefakte. Danach den Rescue-Preflight erneut lesen und bei Bedarf Bundle/Tree erneut vorbereiten.",
+  "no_sudo_executed_by_cursor": true
+}

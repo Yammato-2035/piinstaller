@@ -1,0 +1,48 @@
+{
+  "checked_at": "2026-05-26T17:56:31.789991+00:00",
+  "commit": "d32f6ee",
+  "project_version": "1.7.2",
+  "runtime_gate_exit": 0,
+  "status": "red",
+  "summary": "sudo clean erforderlich wegen stale root-owned Build-State",
+  "rsvg_host_dependency": {
+    "status": "blocked",
+    "required_package": "librsvg2-bin",
+    "install_command": "sudo apt update && sudo apt install librsvg2-bin"
+  },
+  "rsvg_preflight": {
+    "status": "blocked",
+    "error_code": "blocked_build_tools_missing",
+    "summary": "live-build erwartet 'rsvg' fuer die splash.svg.in-zu-splash.png-Konvertierung; auf dem Host ist weder rsvg noch rsvg-convert vorhanden."
+  },
+  "stale_state": {
+    "present": true,
+    "needs_sudo_clean": true,
+    "indicator_sample": [
+      "chroot_package-lists.install stale"
+    ],
+    "root_owned_stage_files_sample": [
+      "build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_debianchroot",
+      "build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_package-lists.live",
+      "build/rescue/live-build/setuphelfer-rescue-live/.build/binary_linux-image",
+      "build/rescue/live-build/setuphelfer-rescue-live/chroot",
+      "build/rescue/live-build/setuphelfer-rescue-live/chroot/root"
+    ]
+  },
+  "next_operator_action": {
+    "type": "build_dependency_required",
+    "label": "live-build erwartet 'rsvg' fuer die splash.svg.in-zu-splash.png-Konvertierung; auf dem Host ist weder rsvg noch rsvg-convert vorhanden.",
+    "commands": [
+      "sudo apt install librsvg2-bin"
+    ]
+  },
+  "iso_build": {
+    "status": "not_started",
+    "iso_found": false
+  },
+  "usb_write": {
+    "allowed": false,
+    "status": "blocked"
+  },
+  "no_real_build_started_by_cursor": true
+}
