@@ -1,0 +1,43 @@
+{
+  "config_root": "build/rescue/live-build/setuphelfer-rescue-live/config",
+  "required_files": [
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/config",
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/build",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/package-lists/setuphelfer.list.chroot",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/isolinux/splash.svg.in"
+  ],
+  "optional_files": [
+    "build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/includes.binary",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/hooks",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/archives"
+  ],
+  "optional_files_present": [
+    "build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/includes.binary",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/hooks",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/archives"
+  ],
+  "missing_required_files": [],
+  "forbidden_artifacts_found": [],
+  "root_owned_blockers": [],
+  "remaining_root_owned_non_blocking_files": [
+    "build/rescue/live-build/setuphelfer-rescue-live/binary.packages",
+    "build/rescue/live-build/setuphelfer-rescue-live/chroot.headers",
+    "build/rescue/live-build/setuphelfer-rescue-live/chroot.packages.install",
+    "build/rescue/live-build/setuphelfer-rescue-live/chroot.packages.live"
+  ],
+  "file_inventory_sample": [
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/config",
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/build",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/isolinux/isolinux.cfg",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/isolinux/live.cfg.in",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/isolinux/splash.svg.in",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/MANIFEST.json",
+    "build/rescue/live-build/setuphelfer-rescue-live/config/package-lists/setuphelfer.list.chroot"
+  ],
+  "status": "ready",
+  "status_reason": "Die amd64-Live-Build-Konfiguration ist plausibel vorhanden. Keine ISO-/IMG-/QCOW2-Artefakte und keine blockierenden stale Build-Verzeichnisse wurden gefunden.",
+  "no_build_executed": true
+}

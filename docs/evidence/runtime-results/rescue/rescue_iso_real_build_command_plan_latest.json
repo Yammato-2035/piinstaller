@@ -1,0 +1,38 @@
+{
+  "plan_status": "ready_for_operator",
+  "working_directory": "build/rescue/live-build/setuphelfer-rescue-live",
+  "environment": {
+    "PATH": "$(pwd)/build/rescue/tool-compat/bin:$PATH"
+  },
+  "path_prefix": "$(pwd)/build/rescue/tool-compat/bin",
+  "target_architecture": "amd64",
+  "exact_command_preview": "lb build",
+  "expected_outputs": [
+    "binary/live/filesystem.squashfs",
+    "binary/live/initrd.img",
+    "binary/live/vmlinuz",
+    "live-image-amd64.hybrid.iso oder aehnliches amd64-ISO-Artefakt"
+  ],
+  "forbidden_outputs_before_build": [],
+  "timeout_recommendation": "mindestens 45-60 Minuten fuer einen spaeteren echten Operator-Build einplanen",
+  "log_paths": [
+    "build/rescue/logs/controlled-iso-build/latest.log",
+    "build/rescue/logs/controlled-iso-build/actions/"
+  ],
+  "evidence_paths": [
+    "docs/evidence/runtime-results/rescue/rescue_iso_build_target_selection_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_iso_host_toolchain_preflight_latest.json",
+    "docs/evidence/runtime-results/rescue/rsvg_project_local_wrapper_validation_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_live_build_config_preflight_latest.json"
+  ],
+  "stop_conditions": [
+    "missing tool",
+    "root-owned blocker",
+    "config missing",
+    "unexpected ISO/IMG already present",
+    "target architecture mismatch",
+    "usb_write accidentally allowed",
+    "runtime gate failed"
+  ],
+  "no_build_executed": true
+}

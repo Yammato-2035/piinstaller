@@ -1,0 +1,66 @@
+{
+  "checked_at": "2026-05-26T18:58:37.624298+00:00",
+  "commit": "35400f8",
+  "project_version": "1.7.2",
+  "target_architecture": "amd64",
+  "tools": {
+    "lb": {
+      "path": "/usr/bin/lb"
+    },
+    "xorriso": {
+      "path": "/usr/bin/xorriso"
+    },
+    "mksquashfs": {
+      "path": "/usr/bin/mksquashfs"
+    },
+    "grub-mkrescue": {
+      "path": "/usr/bin/grub-mkrescue"
+    },
+    "isolinux.bin": {
+      "path": null,
+      "known_file_locations": [
+        "/usr/lib/ISOLINUX/isolinux.bin"
+      ]
+    },
+    "rsvg-convert": {
+      "path": "/usr/bin/rsvg-convert"
+    }
+  },
+  "packages": {
+    "live-build": {
+      "installed": true
+    },
+    "xorriso": {
+      "installed": true
+    },
+    "squashfs-tools": {
+      "installed": true
+    },
+    "isolinux": {
+      "installed": true
+    },
+    "syslinux-common": {
+      "installed": true
+    },
+    "grub-pc-bin": {
+      "installed": true
+    },
+    "grub-efi-amd64-bin": {
+      "installed": true
+    },
+    "librsvg2-bin": {
+      "installed": true
+    }
+  },
+  "missing_tools": [],
+  "missing_packages": [],
+  "project_local_wrapper_status": {
+    "path": "build/rescue/tool-compat/bin/rsvg",
+    "exists": true,
+    "executable": true
+  },
+  "status": "ready",
+  "status_reason": "Alle fuer den amd64-Preflight benoetigten Host-Tools und Pakete sind vorhanden. isolinux.bin ist nicht im PATH, aber ueber das installierte Paket am erwarteten Dateipfad verfuegbar.",
+  "no_install_executed": true,
+  "no_build_executed": true
+}

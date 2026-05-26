@@ -1,0 +1,38 @@
+{
+  "checked_at": "2026-05-26T18:59:53.997623+00:00",
+  "commit": "35400f8",
+  "project_version": "1.7.2",
+  "status": "yellow",
+  "code": "DEV_DASHBOARD_RESCUE_ISO_STEP_REVIEW_REQUIRED",
+  "summary": "Kontrollierter Rescue-ISO-Build ist fuer einen separaten Build-Preflight vorbereitet.",
+  "preflight_readiness": "ready_for_build_preflight",
+  "target_architecture": "amd64",
+  "rsvg_preflight": {
+    "status": "ok",
+    "legacy_source": "project_local_wrapper",
+    "wrapper_path": "/home/volker/piinstaller/build/rescue/tool-compat/bin/rsvg",
+    "compat_path": "/usr/bin/rsvg-convert"
+  },
+  "stale_state": {
+    "present": false,
+    "needs_sudo_clean": false
+  },
+  "usb_write": {
+    "allowed": false,
+    "status": "blocked"
+  },
+  "real_iso_build": {
+    "allowed": false,
+    "status": "not_started"
+  },
+  "next_operator_action": {
+    "type": "operator_sudo_required",
+    "label": "DPKG-Preflight ist grün; der echte Build bleibt ein separater Operator-Sudo-Schritt.",
+    "commands": [
+      "cd \"/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live\"",
+      "export PATH=\"/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH\"",
+      "./auto/config",
+      "sudo env PATH=\"/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH\" lb build noauto"
+    ]
+  }
+}

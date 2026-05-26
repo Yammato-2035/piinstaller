@@ -1,0 +1,22 @@
+{
+  "wrapper_path": "build/rescue/tool-compat/bin/rsvg",
+  "executable": true,
+  "uses_rsvg_convert": true,
+  "path_precedence_ok": true,
+  "command_v_output": "/home/volker/piinstaller/build/rescue/tool-compat/bin/rsvg",
+  "help_invocation_ok": true,
+  "help_excerpt": [
+    "Convert SVG files to other image formats",
+    "Usage: rsvg-convert [OPTIONS] [FILE]...",
+    "-v, --version                      Display the version information",
+    "-w, --width <length>               Width [defaults to the width of the SVG]",
+    "-h, --height <length>              Height [defaults to the height of the SVG]",
+    "-f, --format <format>              Output format [default: png]",
+    "-o, --output <output>              Output filename [defaults to stdout]"
+  ],
+  "svg_conversion_smoke_test": "skipped",
+  "status": "ready",
+  "status_reason": "Der Wrapper ist ausfuehrbar, wird bei erweitertem PATH vor Systempfaden gefunden und delegiert auf rsvg-convert. Ein SVG-Smoke-Test wurde in diesem Preflight bewusst nicht ausgefuehrt.",
+  "no_global_symlink": true,
+  "no_system_change": true
+}

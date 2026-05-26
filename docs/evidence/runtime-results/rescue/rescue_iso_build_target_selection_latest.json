@@ -1,0 +1,13 @@
+{
+  "selected_target_architecture": "amd64",
+  "rejected_targets": {
+    "i386": "review_required",
+    "arm64": "deferred",
+    "armhf": "deferred"
+  },
+  "reason": "amd64 ist der primaere Kandidat fuer diesen letzten echten Build-Preflight. i386 bleibt ein separates Review-Ziel; arm64 und armhf bleiben getrennte Deferred-Tracks.",
+  "bootloader_family": "syslinux/grub",
+  "expected_image_format": "iso",
+  "no_multi_arch_build": true,
+  "no_build_executed": true
+}

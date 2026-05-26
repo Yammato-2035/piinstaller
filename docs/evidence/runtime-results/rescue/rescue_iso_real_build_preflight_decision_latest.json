@@ -1,0 +1,24 @@
+{
+  "decision_status": "ready_for_operator_build",
+  "project_version": "1.7.2",
+  "commit": "35400f8",
+  "target_architecture": "amd64",
+  "toolchain_status": "ready",
+  "rsvg_wrapper_status": "ready",
+  "live_build_config_status": "ready",
+  "api_rescue_status": "ready_for_build_preflight",
+  "usb_write_allowed": false,
+  "real_iso_build_allowed_in_this_run": false,
+  "next_recommended_prompt": "RESCUE_ISO_REAL_BUILD_OPERATOR_EXECUTION",
+  "operator_command_preview": "cd \"/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live\" && export PATH=\"/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH\" && ./auto/config && sudo env PATH=\"/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH\" lb build noauto",
+  "blocking_items": [],
+  "reason": "Der amd64-Zielpfad ist eindeutig gewählt, die Host-Toolchain ist bereit, der projektlokale rsvg-Wrapper ist validiert, die Live-Build-Konfiguration ist plausibel vorhanden, und die API meldet preflight_readiness=ready_for_build_preflight. Der echte ISO-Build bleibt trotzdem ein separater späterer Operator-Lauf.",
+  "evidence_files": [
+    "docs/evidence/runtime-results/rescue/rescue_iso_build_target_selection_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_iso_host_toolchain_preflight_latest.json",
+    "docs/evidence/runtime-results/rescue/rsvg_project_local_wrapper_validation_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_live_build_config_preflight_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_iso_real_build_command_plan_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_iso_status_after_real_build_preflight_latest.json"
+  ]
+}
