@@ -347,54 +347,24 @@ def _parse_status_matrix(repo: Path) -> tuple[list[dict[str, Any]], list[str]]:
     return items, warns
 
 
-def build_roadmap(repo: Path) -> dict[str, Any]:
-    matrix_items, warns = _parse_status_matrix(repo)
-    modules_dir = repo / "docs" / "dev-dashboard" / "modules"
-    module_items: list[dict[str, Any]] = []
-    if modules_dir.is_dir():
-        for jp in sorted(modules_dir.glob("*.json")):
-            data, err = _safe_read_json(jp)
-            if err or not isinstance(data, dict):
-                continue
-            st = _normalize_ampel(str(data.get("status") or "gray"))
-            cat = "in_progress" if st == "yellow" else ("created" if st == "green" else ("blocked" if st == "red" else "planned"))
-            module_items.append(
-                {
-                    "title": str(data.get("title") or jp.stem),
-                    "status": st,
-                    "category": cat,
-                    "source": str(jp.relative_to(repo)).replace("\\", "/"),
-                    "summary": str(data.get("summary") or "")[:400],
-                    "evidence_refs": list(data.get("evidence_files") or [])[:8],
-                    "last_updated": data.get("last_updated"),
-                    "hints": list(data.get("blockers") or [])[:6],
-                }
-            )
+def build_roadmap(repo: Path, *, dashboard_context: dict[str, Any] | None = None) -> dict[str, Any]:
+    from core.dev_dashboard_roadmap import build_dashboard_roadmap
 
-    all_items = matrix_items + module_items
-    tabs: dict[str, list[dict[str, Any]]] = {
-        "created": [i for i in all_items if i["category"] == "created"],
-        "in_progress": [i for i in all_items if i["category"] == "in_progress"],
-        "planned": [i for i in all_items if i["category"] == "planned"],
-        "blocked": [i for i in all_items if i["category"] == "blocked"],
-    }
-
-    green_without_evidence: list[str] = []
-    for it in all_items:
-        if it.get("status") == "green" and not it.get("evidence_refs"):
-            green_without_evidence.append(str(it.get("title")))
-
+    roadmap = build_dashboard_roadmap(repo_root=repo, dashboard_context=dashboard_context)
+    if isinstance(roadmap, dict) and roadmap:
+        return roadmap
     return {
-        "tabs": tabs,
-        "counts": {k: len(v) for k, v in tabs.items()},
+        "status": "review_required",
+        "tabs": {"created": [], "in_progress": [], "planned": [], "blocked": []},
+        "counts": {"created": 0, "in_progress": 0, "planned": 0, "blocked": 0},
         "changed_to_green": {
             "available": False,
             "message": "Keine belastbare Änderungshistorie vorhanden",
             "items": [],
         },
-        "green_without_evidence": green_without_evidence[:20],
+        "green_without_evidence": [],
         "missing_matrix_entries": [],
-        "warnings": warns,
+        "warnings": ["roadmap_registry_unavailable"],
     }
 
 
@@ -712,7 +682,7 @@ def enrich_dashboard_cockpit(body: dict[str, Any], *, repo_root: Path | None = N
     safe_test_mode = build_safe_test_mode(runtime_gate)
     package_gate = build_package_gate(repo)
     tests_evidence = build_tests_evidence(repo)
-    roadmap = build_roadmap(repo)
+    roadmap = build_roadmap(repo, dashboard_context=body)
 
     body["runtime_gate"] = runtime_gate
     body["safe_test_mode"] = safe_test_mode

@@ -1,0 +1,1344 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-26T20:44:08Z",
+  "project_version": "1.7.2",
+  "source_commit": "826b5dd",
+  "source_audit_ref": "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md",
+  "authoritative_sources": [
+    "docs/evidence/release-gates/backup_restore_release_gate.json",
+    "docs/evidence/release-gates/apt_update_delivery_gap.json",
+    "docs/dev-dashboard/modules/backup-restore.json",
+    "docs/dev-dashboard/modules/diagnostics.json",
+    "docs/dev-dashboard/modules/rescue-stick.json",
+    "docs/roadmap/MASTER_ROADMAP_2026_2030.md",
+    "docs/roadmap/ROADMAP_2026.md",
+    "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json",
+    "docs/testing/HARDWARE_TEST_MATRIX.md"
+  ],
+  "areas": [
+    {
+      "id": "runtime-governance",
+      "title_de": "Runtime / Governance",
+      "title_en": "Runtime / Governance",
+      "description_de": "Phase-0-Gate, Runtime-vs.-Workspace-Konsistenz und read-only Governance sind belegt, aber weiterhin nur Vorbedingung für Recovery-Core-Arbeit.",
+      "description_en": "Phase 0 gate, runtime-vs-workspace consistency, and read-only governance are documented, but they remain prerequisites rather than proof for recovery-core readiness.",
+      "status": "partial_green",
+      "priority": "P0",
+      "owner": "Setuphelfer Core",
+      "planned_start": "2026-05-15",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "runtime_smoke_tested",
+      "authoritative_evidence": [
+        "scripts/check-runtime-deploy-gate.sh",
+        "docs/dev-dashboard/PHASE0_RUNTIME_GATE.md",
+        "docs/evidence/dev-dashboard/PROJECT_OVERVIEW_DASHBOARD_INTEGRATION_RESULT.md"
+      ],
+      "milestones": [
+        {
+          "id": "runtime-phase0-gate",
+          "title_de": "Phase-0-Gate und Runtime-Overlay",
+          "title_en": "Phase 0 gate and runtime overlay",
+          "status": "partial_green",
+          "progress_percent": 85,
+          "planned_start": "2026-05-15",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "scripts/check-runtime-deploy-gate.sh",
+            "docs/dev-dashboard/PHASE0_RUNTIME_GATE.md"
+          ],
+          "tasks": [
+            {
+              "id": "runtime-gate-script-and-api",
+              "title_de": "Runtime-Gate per Script und `/api/version` absichern",
+              "title_en": "Secure the runtime gate via script and `/api/version`",
+              "status": "green",
+              "progress_percent": 100,
+              "evidence_links": [
+                "scripts/check-runtime-deploy-gate.sh",
+                "docs/evidence/dev-dashboard/PROJECT_OVERVIEW_DASHBOARD_INTEGRATION_RESULT.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Nur noch für neue read-only Dashboard-Pfade spiegeln.",
+              "next_action_en": "Only mirror it into new read-only dashboard paths."
+            },
+            {
+              "id": "runtime-roadmap-overlay",
+              "title_de": "Roadmap-Registry mit read-only Runtime-Overlay verbinden",
+              "title_en": "Connect the roadmap registry to a read-only runtime overlay",
+              "status": "partial_green",
+              "progress_percent": 70,
+              "evidence_links": [
+                "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md"
+              ],
+              "blocker_refs": [
+                "release-gate-still-red"
+              ],
+              "next_action_de": "Overlay im Dashboard ausliefern, ohne irgendeine Runtime-Aktion anzustoßen.",
+              "next_action_en": "Expose the overlay in the dashboard without triggering any runtime action."
+            }
+          ],
+          "blockers": [
+            {
+              "id": "release-gate-still-red",
+              "area_id": "runtime-governance",
+              "title_de": "Release-Gate für Recovery-Core bleibt rot",
+              "title_en": "Recovery-core release gate is still red",
+              "description_de": "Ein grünes Runtime-Gate ersetzt kein grünes Recovery-/Release-Gate für BR-001-OFFLINE, Verify, Restore und Rescue.",
+              "description_en": "A green runtime gate does not replace a green recovery/release gate for BR-001-OFFLINE, verify, restore, or rescue.",
+              "severity": "medium",
+              "status": "yellow",
+              "first_seen": "2026-05-20",
+              "last_seen": "2026-05-26",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/evidence/release-gates/backup_restore_release_gate.json"
+              ]
+            }
+          ],
+          "decision_refs": [
+            "runtime-phase0-before-runtime-tests"
+          ],
+          "next_prompt_id": "PACKAGE_UPDATE_GATE"
+        }
+      ],
+      "blockers": [],
+      "decisions": [
+        {
+          "id": "runtime-phase0-before-runtime-tests",
+          "area_id": "runtime-governance",
+          "title_de": "Phase 0 vor Runtime-Tests",
+          "title_en": "Phase 0 before runtime tests",
+          "decision_de": "Alle Runtime-Tests und produktiven Dashboard-Abnahmen bleiben an Phase 0 gekoppelt.",
+          "decision_en": "All runtime tests and production dashboard acceptances stay coupled to Phase 0.",
+          "reason_de": "Ohne Version-, Pfad- und Drift-Abgleich wären Ergebnisse gegen Port 8000 nicht belastbar.",
+          "reason_en": "Without version, path, and drift alignment, results against port 8000 would not be trustworthy.",
+          "decided_at": "2026-05-26",
+          "decided_by": "Setuphelfer Development Dashboard",
+          "evidence_links": [
+            "docs/dev-dashboard/PHASE0_RUNTIME_GATE.md"
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "id": "runtime-note-read-only",
+          "area_id": "runtime-governance",
+          "text_de": "Die Roadmap-Registry ist Steuerung und Dokumentation, kein Execute-Modul.",
+          "text_en": "The roadmap registry is for control and documentation, not for execution.",
+          "created_at": "2026-05-26",
+          "author": "Cursor",
+          "evidence_links": [
+            "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md"
+          ]
+        }
+      ],
+      "next_prompt_id": "PACKAGE_UPDATE_GATE",
+      "next_recommended_action": "Runtime-Gate grün halten und Recovery-Core-Freigaben davon sauber getrennt dokumentieren."
+    },
+    {
+      "id": "backup-br001",
+      "title_de": "Backup BR-001",
+      "title_en": "Backup BR-001",
+      "description_de": "BR-001-OFFLINE ist das Release-Gate. BR-001-LIVE bleibt experimentell und darf die Freigabelage nicht künstlich grün färben.",
+      "description_en": "BR-001-OFFLINE is the release gate. BR-001-LIVE remains experimental and must not paint the release state green.",
+      "status": "blocked",
+      "priority": "P0",
+      "owner": "Setuphelfer Recovery",
+      "planned_start": "2026-05-20",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "runtime_smoke_tested",
+      "authoritative_evidence": [
+        "docs/evidence/release-gates/backup_restore_release_gate.json",
+        "docs/dev-dashboard/modules/backup-restore.json",
+        "docs/architecture/BR-001_GATE_STRATEGY_DE.md"
+      ],
+      "milestones": [
+        {
+          "id": "br001-offline-release-gate",
+          "title_de": "BR-001-OFFLINE mit externem Ziel, Manifest, SHA256 und Verify",
+          "title_en": "BR-001-OFFLINE with external target, manifest, SHA256, and verify",
+          "status": "blocked",
+          "progress_percent": 30,
+          "planned_start": "2026-05-20",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/evidence/release-gates/backup_restore_release_gate.json",
+            "docs/testing/RESCUE_STICK_TEST_MATRIX.md"
+          ],
+          "tasks": [
+            {
+              "id": "br001-external-target-evidence",
+              "title_de": "Belastbaren Nachweis für externes Ziel vervollständigen",
+              "title_en": "Complete trustworthy evidence for the external target",
+              "status": "blocked",
+              "progress_percent": 25,
+              "evidence_links": [
+                "docs/evidence/release-gates/backup_restore_release_gate.json"
+              ],
+              "blocker_refs": [
+                "br001-offline-evidence-missing"
+              ],
+              "next_action_de": "Nur auf explizit freigegebenem externem Ziel und im Offline-Kontext weiterarbeiten.",
+              "next_action_en": "Continue only on an explicitly approved external target and in an offline context."
+            },
+            {
+              "id": "br001-manifest-sha-verify-chain",
+              "title_de": "Manifest-, SHA256- und Verify-Kette als Release-Nachweis schließen",
+              "title_en": "Close the manifest, SHA256, and verify chain as release evidence",
+              "status": "blocked",
+              "progress_percent": 20,
+              "evidence_links": [
+                "docs/evidence/release-gates/backup_restore_release_gate.json"
+              ],
+              "blocker_refs": [
+                "br001-offline-evidence-missing"
+              ],
+              "next_action_de": "Die gesamte Kette nur aus echten Offline-Läufen ableiten, nicht aus Live-Retries.",
+              "next_action_en": "Derive the full chain only from real offline runs, not from live retries."
+            }
+          ],
+          "blockers": [
+            {
+              "id": "br001-offline-evidence-missing",
+              "area_id": "backup-br001",
+              "title_de": "BR-001-OFFLINE ist nicht grün belegt",
+              "title_en": "BR-001-OFFLINE is not proven green",
+              "description_de": "Es fehlt weiterhin der vollständige belastbare Nachweis für Offline-Full-Backup auf externem Ziel inklusive SHA256 und Verify Deep.",
+              "description_en": "The full trustworthy proof for an offline full backup to an external target, including SHA256 and Verify Deep, is still missing.",
+              "severity": "critical",
+              "status": "blocked",
+              "first_seen": "2026-05-20",
+              "last_seen": "2026-05-26",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/evidence/release-gates/backup_restore_release_gate.json"
+              ]
+            }
+          ],
+          "decision_refs": [
+            "br001-offline-release-gate-decision"
+          ],
+          "next_prompt_id": "BR001_EXTERNAL_EVIDENCE"
+        }
+      ],
+      "blockers": [],
+      "decisions": [
+        {
+          "id": "br001-offline-release-gate-decision",
+          "area_id": "backup-br001",
+          "title_de": "BR-001-OFFLINE bleibt Release-Gate",
+          "title_en": "BR-001-OFFLINE remains the release gate",
+          "decision_de": "BR-001-LIVE bleibt experimentell; Freigaben werden nur noch aus BR-001-OFFLINE abgeleitet.",
+          "decision_en": "BR-001-LIVE remains experimental; release decisions are derived only from BR-001-OFFLINE.",
+          "reason_de": "Live-Desktop-Retries erzeugen keine belastbare Recovery-Freigabe und dürfen nicht als Ersatz für Offline-Evidence dienen.",
+          "reason_en": "Live desktop retries do not provide trustworthy recovery approval and must not replace offline evidence.",
+          "decided_at": "2026-05-20",
+          "decided_by": "Setuphelfer Recovery Strategy",
+          "evidence_links": [
+            "docs/evidence/release-gates/backup_restore_release_gate.json",
+            "docs/architecture/BR-001_GATE_STRATEGY_DE.md"
+          ]
+        }
+      ],
+      "notes": [],
+      "next_prompt_id": "BR001_EXTERNAL_EVIDENCE",
+      "next_recommended_action": "Evidence-Lücken für das echte Offline-Release-Gate klar schließen, ohne Live-Experimente als Grün-Ersatz zu werten."
+    },
+    {
+      "id": "verify",
+      "title_de": "Verify",
+      "title_en": "Verify",
+      "description_de": "Verify Basic und Verify Deep bleiben von einem gültigen BR-001-Archiv abhängig und sind derzeit nicht freigegeben.",
+      "description_en": "Verify Basic and Verify Deep remain dependent on a valid BR-001 archive and are not approved yet.",
+      "status": "blocked",
+      "priority": "P0",
+      "owner": "Setuphelfer Recovery",
+      "planned_start": "2026-05-20",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "static_analysis",
+      "authoritative_evidence": [
+        "docs/evidence/backup-restore/BR-004.json",
+        "docs/evidence/backup-restore/BR-005.json",
+        "docs/dev-dashboard/modules/backup-restore.json"
+      ],
+      "milestones": [
+        {
+          "id": "verify-br004-br005-chain",
+          "title_de": "Verify-Kette nach gültigem BR-001-Archiv",
+          "title_en": "Verify chain after a valid BR-001 archive",
+          "status": "blocked",
+          "progress_percent": 15,
+          "planned_start": "2026-05-20",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/evidence/backup-restore/BR-004.json",
+            "docs/evidence/backup-restore/BR-005.json"
+          ],
+          "tasks": [
+            {
+              "id": "verify-basic-after-br001",
+              "title_de": "Verify Basic nur nach gültigem BR-001 ausführen",
+              "title_en": "Run Verify Basic only after a valid BR-001",
+              "status": "blocked",
+              "progress_percent": 10,
+              "evidence_links": [
+                "docs/evidence/backup-restore/BR-004.json"
+              ],
+              "blocker_refs": [
+                "verify-waits-for-br001"
+              ],
+              "next_action_de": "Verify nicht auf `.partial` oder Live-Experimenten aufbauen.",
+              "next_action_en": "Do not build verify on `.partial` files or live experiments."
+            },
+            {
+              "id": "verify-deep-after-basic",
+              "title_de": "Verify Deep erst nach Basic-Verify und gültigem Archiv",
+              "title_en": "Run Verify Deep only after Basic Verify and a valid archive",
+              "status": "blocked",
+              "progress_percent": 10,
+              "evidence_links": [
+                "docs/evidence/backup-restore/BR-005.json"
+              ],
+              "blocker_refs": [
+                "verify-waits-for-br001"
+              ],
+              "next_action_de": "Deep-Verify als Folge von BR-001-OFFLINE und Verify Basic planen.",
+              "next_action_en": "Plan Deep Verify as a follow-up to BR-001-OFFLINE and Verify Basic."
+            }
+          ],
+          "blockers": [
+            {
+              "id": "verify-waits-for-br001",
+              "area_id": "verify",
+              "title_de": "Verify wartet auf gültiges BR-001-Archiv",
+              "title_en": "Verify waits for a valid BR-001 archive",
+              "description_de": "BR-004 und BR-005 dürfen nicht als grün gelten, solange kein belastbares BR-001-OFFLINE-Archiv vorliegt.",
+              "description_en": "BR-004 and BR-005 must not be marked green while no trustworthy BR-001-OFFLINE archive exists.",
+              "severity": "critical",
+              "status": "blocked",
+              "first_seen": "2026-05-14",
+              "last_seen": "2026-05-26",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/evidence/backup-restore/BR-004.json",
+                "docs/evidence/backup-restore/BR-005.json"
+              ]
+            }
+          ],
+          "decision_refs": [],
+          "next_prompt_id": "BR001_EXTERNAL_EVIDENCE"
+        }
+      ],
+      "blockers": [],
+      "decisions": [],
+      "notes": [],
+      "next_prompt_id": "BR001_EXTERNAL_EVIDENCE",
+      "next_recommended_action": "Verify strikt hinter BR-001-OFFLINE einsortieren und nicht aus Zwischenartefakten ableiten."
+    },
+    {
+      "id": "restore",
+      "title_de": "Restore",
+      "title_en": "Restore",
+      "description_de": "Restore bleibt bewusst zurückgestellt, bis Rettungsmedium, nicht-produktives Zielsystem und vorgelagerte Recovery-Evidence belastbar vorhanden sind.",
+      "description_en": "Restore remains intentionally deferred until a rescue medium, a non-production target system, and upstream recovery evidence are all trustworthy.",
+      "status": "deferred",
+      "priority": "P0",
+      "owner": "Setuphelfer Recovery",
+      "planned_start": null,
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "planning_only",
+      "authoritative_evidence": [
+        "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json",
+        "docs/knowledge-base/FULL_RESTORE_BOOT_TEST.md",
+        "docs/knowledge-base/RESTORE_ISOLATED_TEST_FROM_BACKUP.md"
+      ],
+      "milestones": [
+        {
+          "id": "restore-e2e-preconditions",
+          "title_de": "Restore-E2E sicher vorbereiten",
+          "title_en": "Prepare restore E2E safely",
+          "status": "deferred",
+          "progress_percent": 10,
+          "planned_start": null,
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json"
+          ],
+          "tasks": [
+            {
+              "id": "restore-bootable-medium",
+              "title_de": "Bootfähiges Rettungsmedium bereitstellen",
+              "title_en": "Provide a bootable rescue medium",
+              "status": "deferred",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [
+                "restore-no-safe-test-environment"
+              ],
+              "next_action_de": "Erst nach echtem Rescue-Boot-Nachweis aktivieren.",
+              "next_action_en": "Enable only after real rescue boot evidence exists."
+            },
+            {
+              "id": "restore-non-production-target",
+              "title_de": "Nicht-produktives Zielsystem definieren",
+              "title_en": "Define a non-production target system",
+              "status": "deferred",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [
+                "restore-no-safe-test-environment"
+              ],
+              "next_action_de": "Kein Restore gegen leere, unsichere oder produktive Systeme.",
+              "next_action_en": "No restore against empty, unsafe, or production systems."
+            }
+          ],
+          "blockers": [
+            {
+              "id": "restore-no-safe-test-environment",
+              "area_id": "restore",
+              "title_de": "Sichere Restore-Testumgebung fehlt",
+              "title_en": "Safe restore test environment missing",
+              "description_de": "Bootfähiges Rettungsmedium und nicht-produktives Zielsystem fehlen weiterhin als sichere E2E-Voraussetzung.",
+              "description_en": "A bootable rescue medium and a non-production target system are still missing as safe E2E prerequisites.",
+              "severity": "critical",
+              "status": "deferred",
+              "first_seen": "2026-05-20",
+              "last_seen": "2026-05-26",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json"
+              ]
+            }
+          ],
+          "decision_refs": [
+            "restore-e2e-deferred"
+          ],
+          "next_prompt_id": "RESTORE_E2E_PREPARATION"
+        }
+      ],
+      "blockers": [],
+      "decisions": [
+        {
+          "id": "restore-e2e-deferred",
+          "area_id": "restore",
+          "title_de": "Restore-E2E bleibt zurückgestellt",
+          "title_en": "Restore E2E remains deferred",
+          "decision_de": "Echter Restore-End-to-End-Test wurde zurückgestellt, weil kein geeignetes bootfähiges Rettungsmedium und kein nicht-produktives Zielsystem verfügbar waren. Ein Restore auf ein leeres, ungesichertes oder produktives System ohne belastbare Rettungsumgebung ist nicht vertretbar.",
+          "decision_en": "Real restore end-to-end testing was deferred because no suitable bootable rescue medium and no non-production target system were available. Restoring to an empty, unsafe or production system without a reliable rescue environment is not acceptable.",
+          "reason_de": "Ohne Rettungsmedium und ohne separates Testziel wäre jede Restore-Abnahme fachlich und sicherheitlich unvertretbar.",
+          "reason_en": "Without a rescue medium and a separate test target, any restore acceptance would be unsafe and professionally unsound.",
+          "decided_at": "2026-05-26",
+          "decided_by": "Setuphelfer Recovery Strategy",
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json",
+            "docs/knowledge-base/FULL_RESTORE_BOOT_TEST.md"
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "id": "restore-note-deferred-visible",
+          "area_id": "restore",
+          "text_de": "Die Zurückstellung ist kein Feature-Verlust, sondern eine bewusste Safety-Entscheidung.",
+          "text_en": "The deferral is not a feature loss but a deliberate safety decision.",
+          "created_at": "2026-05-26",
+          "author": "Cursor",
+          "evidence_links": [
+            "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md"
+          ]
+        }
+      ],
+      "next_prompt_id": "RESTORE_E2E_PREPARATION",
+      "next_recommended_action": "Restore erst nach bootfähigem Rettungsmedium, nicht-produktivem Zielsystem und verifiziertem BR-001 vorbereiten."
+    },
+    {
+      "id": "rescue-stick",
+      "title_de": "Rescue Stick",
+      "title_en": "Rescue Stick",
+      "description_de": "Read-only Build-/Emulationspfade sind sichtbar, aber realer ISO-/Boot-Nachweis und USB-/Hardware-Freigaben bleiben offen.",
+      "description_en": "Read-only build/emulation paths are visible, but real ISO/boot evidence and USB/hardware approvals remain open.",
+      "status": "blocked",
+      "priority": "P0",
+      "owner": "Setuphelfer Rescue",
+      "planned_start": "2026-05-20",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "static_analysis",
+      "authoritative_evidence": [
+        "docs/dev-dashboard/modules/rescue-stick.json",
+        "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json",
+        "docs/architecture/RESCUE_OPERATOR_POLICY.md",
+        "docs/architecture/RESCUE_TARGET_ARCHITECTURE_MATRIX.md"
+      ],
+      "milestones": [
+        {
+          "id": "rescue-real-build-and-boot",
+          "title_de": "Echter Build-, Artefakt- und Boot-Nachweis",
+          "title_en": "Real build, artifact, and boot evidence",
+          "status": "blocked",
+          "progress_percent": 35,
+          "planned_start": "2026-05-20",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json",
+            "docs/knowledge-base/recovery/RESCUE_ISO_BUILD_AND_VM_VALIDATION.md"
+          ],
+          "tasks": [
+            {
+              "id": "rescue-build-emulation-visible",
+              "title_de": "Build-/Emulationsstand transparent halten",
+              "title_en": "Keep build/emulation state transparent",
+              "status": "partial_green",
+              "progress_percent": 65,
+              "evidence_links": [
+                "docs/evidence/runtime-results/handoff/rescue_stick_readonly_build_final_gate.json"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Emulations- und Gate-Stand weiterhin klar vom echten Boot-Nachweis trennen.",
+              "next_action_en": "Keep emulation and gate state clearly separated from real boot evidence."
+            },
+            {
+              "id": "rescue-real-iso-boot-proof",
+              "title_de": "Realen ISO-/Boot-Nachweis schließen",
+              "title_en": "Close the real ISO/boot proof gap",
+              "status": "blocked",
+              "progress_percent": 15,
+              "evidence_links": [
+                "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json"
+              ],
+              "blocker_refs": [
+                "rescue-real-boot-proof-missing"
+              ],
+              "next_action_de": "Echten Operator-/Build-/Boot-Track separat und gated vorbereiten.",
+              "next_action_en": "Prepare the real operator/build/boot track separately and under gates."
+            }
+          ],
+          "blockers": [
+            {
+              "id": "rescue-real-boot-proof-missing",
+              "area_id": "rescue-stick",
+              "title_de": "Kein echter bootfähiger Rescue-Stick belegt",
+              "title_en": "No real bootable rescue stick is proven",
+              "description_de": "Solange kein echter bootfähiger Stick und kein Artefakt-/Boot-Nachweis vorliegen, bleibt Rescue nicht grün.",
+              "description_en": "Rescue must not turn green until a real bootable stick and artifact/boot proof exist.",
+              "severity": "critical",
+              "status": "blocked",
+              "first_seen": "2026-05-20",
+              "last_seen": "2026-05-26",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json",
+                "docs/knowledge-base/recovery/RESCUE_ISO_BUILD_AND_VM_VALIDATION.md"
+              ]
+            }
+          ],
+          "decision_refs": [
+            "rescue-no-green-without-real-boot"
+          ],
+          "next_prompt_id": "RESCUE_REAL_BUILD_GATE"
+        }
+      ],
+      "blockers": [],
+      "decisions": [
+        {
+          "id": "rescue-no-green-without-real-boot",
+          "area_id": "rescue-stick",
+          "title_de": "Rescue bleibt ohne echten Boot-Nachweis nicht grün",
+          "title_en": "Rescue stays non-green without real boot proof",
+          "decision_de": "Read-only Emulation und Build-Vorbereitung sind sichtbar, ersetzen aber keinen echten ISO-/Boot-/USB-Nachweis.",
+          "decision_en": "Read-only emulation and build preparation are visible, but they do not replace real ISO, boot, or USB proof.",
+          "reason_de": "Fake-Green würde den eigentlichen Hardware- und Safety-Status verschleiern.",
+          "reason_en": "Fake green would hide the real hardware and safety status.",
+          "decided_at": "2026-05-26",
+          "decided_by": "Setuphelfer Rescue Dashboard",
+          "evidence_links": [
+            "docs/architecture/RESCUE_OPERATOR_POLICY.md",
+            "docs/architecture/RESCUE_TARGET_ARCHITECTURE_MATRIX.md"
+          ]
+        }
+      ],
+      "notes": [],
+      "next_prompt_id": "RESCUE_REAL_BUILD_GATE",
+      "next_recommended_action": "Build-/Operator-/Boot-Blocker getrennt halten und den echten Bootpfad nicht mit Emulationsgrün verwechseln."
+    },
+    {
+      "id": "diagnostics",
+      "title_de": "Diagnostics",
+      "title_en": "Diagnostics",
+      "description_de": "Diagnostik besitzt bereits Katalog-/API-/Strukturanteile, benötigt aber weitere echte Fehlerfälle, UI-Auswertung, Evidence-Matrix und reproduzierbare Teststrecken, bevor sie als vollständig nutzbar gelten darf.",
+      "description_en": "Diagnostics already has catalog, API, and structural pieces, but it still needs more real error cases, UI evaluation, an evidence matrix, and reproducible test tracks before it can be considered fully usable.",
+      "status": "partial_green",
+      "priority": "P1",
+      "owner": "Setuphelfer Diagnostics",
+      "planned_start": "2026-05-14",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "unit_tested",
+      "authoritative_evidence": [
+        "docs/dev-dashboard/modules/diagnostics.json",
+        "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json",
+        "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md"
+      ],
+      "milestones": [
+        {
+          "id": "diagnostics-catalog-ui-evidence-track",
+          "title_de": "Diagnostik-Katalog, UI-Auswertung und Evidence-Teststrecke",
+          "title_en": "Diagnostics catalog, UI evaluation, and evidence test track",
+          "status": "partial_green",
+          "progress_percent": 55,
+          "planned_start": "2026-05-14",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json"
+          ],
+          "tasks": [
+            {
+              "id": "diagnostics-code-mapping",
+              "title_de": "Diagnosecodes und Mapping strukturiert halten",
+              "title_en": "Keep diagnostic codes and mapping structured",
+              "status": "partial_green",
+              "progress_percent": 70,
+              "evidence_links": [
+                "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Weitere echte Fehlerfälle auf denselben Mapping-Rahmen aufsetzen.",
+              "next_action_en": "Add more real error cases on top of the same mapping framework."
+            },
+            {
+              "id": "diagnostics-ui-evaluation",
+              "title_de": "UI-Auswertung und Evidence-Matrix ergänzen",
+              "title_en": "Add UI evaluation and an evidence matrix",
+              "status": "yellow",
+              "progress_percent": 35,
+              "evidence_links": [
+                "docs/dev-dashboard/modules/diagnostics.json"
+              ],
+              "blocker_refs": [
+                "diagnostics-real-error-track-missing"
+              ],
+              "next_action_de": "Dashboard-Zustände, leere States und echte Fehlerfälle systematisch belegen.",
+              "next_action_en": "Document dashboard states, empty states, and real error cases systematically."
+            },
+            {
+              "id": "diagnostics-reproducible-test-track",
+              "title_de": "Reproduzierbare Diagnostics-Teststrecke definieren",
+              "title_en": "Define a reproducible diagnostics test track",
+              "status": "yellow",
+              "progress_percent": 25,
+              "evidence_links": [
+                "docs/knowledge-base/diagnostics/TEST_SCENARIO_CATALOG.md"
+              ],
+              "blocker_refs": [
+                "diagnostics-real-error-track-missing"
+              ],
+              "next_action_de": "Nächsten Prompt auf reale Fehlerfälle, UI-Auswertung und neue Evidence ausrichten.",
+              "next_action_en": "Align the next prompt with real error cases, UI evaluation, and new evidence."
+            }
+          ],
+          "blockers": [
+            {
+              "id": "diagnostics-real-error-track-missing",
+              "area_id": "diagnostics",
+              "title_de": "Echte Fehlerfall-Teststrecke fehlt",
+              "title_en": "Real error-case test track is missing",
+              "description_de": "Diagnostik ist strukturell vorhanden, aber noch nicht durch reproduzierbare reale Fehlerfälle und UI-Evidence abgesichert.",
+              "description_en": "Diagnostics is structurally present, but it is not yet backed by reproducible real error cases and UI evidence.",
+              "severity": "medium",
+              "status": "yellow",
+              "first_seen": "2026-05-14",
+              "last_seen": "2026-05-26",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/dev-dashboard/modules/diagnostics.json",
+                "docs/knowledge-base/diagnostics/TEST_SCENARIO_CATALOG.md"
+              ]
+            }
+          ],
+          "decision_refs": [
+            "diagnostics-not-fully-green-yet"
+          ],
+          "next_prompt_id": "DIAGNOSTICS_TEST_TRACK"
+        }
+      ],
+      "blockers": [],
+      "decisions": [
+        {
+          "id": "diagnostics-not-fully-green-yet",
+          "area_id": "diagnostics",
+          "title_de": "Diagnostik bleibt vorerst teilgrün",
+          "title_en": "Diagnostics remains only partially green for now",
+          "decision_de": "Diagnostik besitzt bereits Katalog-/API-/Strukturanteile, benötigt aber weitere echte Fehlerfälle, UI-Auswertung, Evidence-Matrix und reproduzierbare Teststrecken, bevor sie als vollständig nutzbar gelten darf.",
+          "decision_en": "Diagnostics already has catalog, API, and structural pieces, but it still needs more real error cases, UI evaluation, an evidence matrix, and reproducible test tracks before it can be considered fully usable.",
+          "reason_de": "Ein grüner Status ohne reale Fehlerfälle und Dashboard-Evidence wäre nicht belastbar.",
+          "reason_en": "A green status without real error cases and dashboard evidence would not be trustworthy.",
+          "decided_at": "2026-05-26",
+          "decided_by": "Setuphelfer Diagnostics",
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json"
+          ]
+        }
+      ],
+      "notes": [],
+      "next_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+      "next_recommended_action": "Echte Fehlerfälle, UI-Auswertung und Evidence-Matrix als nächste belastbare Teststrecke priorisieren."
+    },
+    {
+      "id": "dev-dashboard",
+      "title_de": "Dev Dashboard",
+      "title_en": "Dev Dashboard",
+      "description_de": "Das Dashboard ist produktiv als read-only Cockpit vorhanden. Die neue Roadmap-/Next-Prompt-Registry ist implementiert, aber noch nicht als produktiv grün verifiziert.",
+      "description_en": "The dashboard exists as a production read-only cockpit. The new roadmap/next-prompt registry is implemented, but not yet proven green in production.",
+      "status": "partial_green",
+      "priority": "P1",
+      "owner": "Setuphelfer Dashboard",
+      "planned_start": "2026-05-24",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "static_analysis",
+      "authoritative_evidence": [
+        "docs/evidence/dev-dashboard/PROJECT_OVERVIEW_DASHBOARD_INTEGRATION_RESULT.md",
+        "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md"
+      ],
+      "milestones": [
+        {
+          "id": "dev-dashboard-roadmap-registry",
+          "title_de": "Roadmap-Registry und Next-Prompt-Export",
+          "title_en": "Roadmap registry and next-prompt export",
+          "status": "partial_green",
+          "progress_percent": 80,
+          "planned_start": "2026-05-26",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md"
+          ],
+          "tasks": [
+            {
+              "id": "dashboard-roadmap-schema-and-api",
+              "title_de": "Schema, JSON-Dateien und read-only API-Endpunkte ergänzen",
+              "title_en": "Add schema, JSON files, and read-only API endpoints",
+              "status": "green",
+              "progress_percent": 100,
+              "evidence_links": [
+                "docs/roadmap/setuphelfer_roadmap.schema.json"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "API- und UI-Tests als Evidence nachziehen.",
+              "next_action_en": "Follow up with API and UI tests as evidence."
+            },
+            {
+              "id": "dashboard-roadmap-ui",
+              "title_de": "Roadmap-Tab mit Baum, Details und Next-Prompt-Kachel ausbauen",
+              "title_en": "Expand the roadmap tab with a tree, details, and a next-prompt card",
+              "status": "partial_green",
+              "progress_percent": 70,
+              "evidence_links": [
+                "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Runtime-Abnahme oder Review-Evidence ergänzen, ohne Execute-Buttons einzubauen.",
+              "next_action_en": "Add runtime acceptance or review evidence without adding execute buttons."
+            }
+          ],
+          "blockers": [],
+          "decision_refs": [],
+          "next_prompt_id": "TERMINAL_A_READONLY"
+        }
+      ],
+      "blockers": [],
+      "decisions": [],
+      "notes": [],
+      "next_prompt_id": "TERMINAL_A_READONLY",
+      "next_recommended_action": "Read-only Roadmap- und Prompt-Nutzung festigen und manuelle Kommando-Protokollierung ergänzen."
+    },
+    {
+      "id": "packaging-update",
+      "title_de": "Packaging / Update",
+      "title_en": "Packaging / Update",
+      "description_de": "Packaging-Readiness und Runtime-Deploy-Gate sind dokumentiert, aber die produktionsreife APT-/Signatur-/Rollback-Kette fehlt weiterhin.",
+      "description_en": "Packaging readiness and the runtime deploy gate are documented, but the production-ready APT/signing/rollback chain is still missing.",
+      "status": "yellow",
+      "priority": "P1",
+      "owner": "Setuphelfer Packaging",
+      "planned_start": "2026-05-13",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "static_analysis",
+      "authoritative_evidence": [
+        "docs/evidence/release-gates/apt_update_delivery_gap.json",
+        "docs/roadmap/APT_UPDATE_DELIVERY_PLAN.md"
+      ],
+      "milestones": [
+        {
+          "id": "pkg001-update-gate-hardening",
+          "title_de": "PKG-001 Update-Gate härten",
+          "title_en": "Harden the PKG-001 update gate",
+          "status": "yellow",
+          "progress_percent": 45,
+          "planned_start": "2026-05-13",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/evidence/release-gates/apt_update_delivery_gap.json"
+          ],
+          "tasks": [
+            {
+              "id": "pkg001-read-only-status",
+              "title_de": "Read-only Packaging-Status im Dashboard konsistent halten",
+              "title_en": "Keep read-only packaging status consistent in the dashboard",
+              "status": "partial_green",
+              "progress_percent": 60,
+              "evidence_links": [
+                "docs/evidence/dev-dashboard/PROJECT_OVERVIEW_DASHBOARD_INTEGRATION_RESULT.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Status nicht als Produkt-Update-Freigabe missverstehen.",
+              "next_action_en": "Do not mistake status visibility for product update approval."
+            },
+            {
+              "id": "pkg001-signed-channel",
+              "title_de": "Signierten APT-/Channel-Pfad definieren",
+              "title_en": "Define the signed APT/channel path",
+              "status": "blocked",
+              "progress_percent": 15,
+              "evidence_links": [
+                "docs/evidence/release-gates/apt_update_delivery_gap.json"
+              ],
+              "blocker_refs": [
+                "pkg001-signed-channel-missing"
+              ],
+              "next_action_de": "Repo-, Signatur- und Rollback-Strategie dokumentiert zu Ende führen.",
+              "next_action_en": "Carry the repo, signing, and rollback strategy through to completion."
+            }
+          ],
+          "blockers": [
+            {
+              "id": "pkg001-signed-channel-missing",
+              "area_id": "packaging-update",
+              "title_de": "Signierter Update-Kanal fehlt",
+              "title_en": "Signed update channel is missing",
+              "description_de": "Ohne signierten Paketkanal, Rollback-Plan und Update-Tests bleibt Packaging nicht grün.",
+              "description_en": "Without a signed package channel, rollback plan, and update tests, packaging cannot turn green.",
+              "severity": "medium",
+              "status": "blocked",
+              "first_seen": "2026-05-13",
+              "last_seen": "2026-05-26",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/evidence/release-gates/apt_update_delivery_gap.json"
+              ]
+            }
+          ],
+          "decision_refs": [],
+          "next_prompt_id": "PACKAGE_UPDATE_GATE"
+        }
+      ],
+      "blockers": [],
+      "decisions": [],
+      "notes": [],
+      "next_prompt_id": "PACKAGE_UPDATE_GATE",
+      "next_recommended_action": "Packaging-Readiness weiter von echter Update-Freigabe trennen und die fehlende Signatur-/Rollback-Kette schließen."
+    },
+    {
+      "id": "website-marketing",
+      "title_de": "Website / Marketing",
+      "title_en": "Website / Marketing",
+      "description_de": "Website- und Marketing-Arbeit bleibt transparent dokumentiert, aber Recovery-Core hat weiter Vorrang vor Go-to-Market-Arbeit.",
+      "description_en": "Website and marketing work remains transparently documented, but recovery-core work still takes priority over go-to-market work.",
+      "status": "yellow",
+      "priority": "P2",
+      "owner": "Setuphelfer Product",
+      "planned_start": "2026-05-01",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "planning_only",
+      "authoritative_evidence": [
+        "docs/roadmap/PUBLIC_STATUS_PAGE.md",
+        "docs/review/setuphelfer_website_master_report.md"
+      ],
+      "milestones": [
+        {
+          "id": "website-transparency-without-fake-green",
+          "title_de": "Website-Transparenz ohne Recovery-Ablenkung",
+          "title_en": "Website transparency without distracting from recovery",
+          "status": "yellow",
+          "progress_percent": 40,
+          "planned_start": "2026-05-01",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/roadmap/PUBLIC_STATUS_PAGE.md"
+          ],
+          "tasks": [
+            {
+              "id": "website-status-docs",
+              "title_de": "Website-Status dokumentieren",
+              "title_en": "Document website status",
+              "status": "partial_green",
+              "progress_percent": 60,
+              "evidence_links": [
+                "docs/roadmap/PUBLIC_STATUS_PAGE.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Transparenz beibehalten, aber Recovery-Core nicht überholen.",
+              "next_action_en": "Keep transparency, but do not outrun recovery core."
+            },
+            {
+              "id": "marketing-after-recovery-core",
+              "title_de": "Marketing-Folgearbeit nach Recovery-Core-Grün",
+              "title_en": "Marketing follow-up after recovery core turns green",
+              "status": "deferred",
+              "progress_percent": 10,
+              "evidence_links": [],
+              "blocker_refs": [
+                "website-waits-for-recovery-core"
+              ],
+              "next_action_de": "Keine Marketing-Priorisierung vor grünem Recovery-Core, außer Doku/Planung.",
+              "next_action_en": "No marketing prioritization before recovery core is green, except docs/planning."
+            }
+          ],
+          "blockers": [
+            {
+              "id": "website-waits-for-recovery-core",
+              "area_id": "website-marketing",
+              "title_de": "Recovery-Core hat Vorrang",
+              "title_en": "Recovery core has priority",
+              "description_de": "Website- und Marketing-Arbeit darf Recovery-Core-Evidence nicht verdrängen.",
+              "description_en": "Website and marketing work must not displace recovery-core evidence work.",
+              "severity": "low",
+              "status": "yellow",
+              "first_seen": "2026-05-01",
+              "last_seen": "2026-05-26",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/roadmap/PUBLIC_STATUS_PAGE.md",
+                "docs/roadmap/MASTER_ROADMAP_2026_2030.md"
+              ]
+            }
+          ],
+          "decision_refs": [],
+          "next_prompt_id": null
+        }
+      ],
+      "blockers": [],
+      "decisions": [],
+      "notes": [],
+      "next_prompt_id": null,
+      "next_recommended_action": "Website- und Marketing-Transparenz pflegen, aber nicht vor Recovery-Core-Fortschritt priorisieren."
+    },
+    {
+      "id": "cloudserver-edition",
+      "title_de": "Cloudserver Edition",
+      "title_en": "Cloudserver Edition",
+      "description_de": "Cloudserver bleibt ein separater, späterer Track und ist nicht durch aktuelle Desktop-/Rescue-Evidence abgedeckt.",
+      "description_en": "Cloudserver remains a separate later track and is not covered by current desktop/rescue evidence.",
+      "status": "deferred",
+      "priority": "P3",
+      "owner": "Setuphelfer Product",
+      "planned_start": null,
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "planning_only",
+      "authoritative_evidence": [
+        "docs/architecture/MODULE_BOUNDARIES_TARGET_2026-05-20.md",
+        "docs/roadmap/ROADMAP_2026.md"
+      ],
+      "milestones": [
+        {
+          "id": "cloudserver-track-separated",
+          "title_de": "Cloudserver-Track getrennt halten",
+          "title_en": "Keep the cloudserver track separate",
+          "status": "deferred",
+          "progress_percent": 10,
+          "planned_start": null,
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/architecture/MODULE_BOUNDARIES_TARGET_2026-05-20.md"
+          ],
+          "tasks": [
+            {
+              "id": "cloudserver-not-before-recovery-core",
+              "title_de": "Cloudserver nicht vor Recovery-Core-Grün priorisieren",
+              "title_en": "Do not prioritize cloudserver before recovery core is green",
+              "status": "deferred",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [],
+              "next_action_de": "Nur als getrennten Planungs-Track dokumentieren.",
+              "next_action_en": "Document it only as a separate planning track."
+            }
+          ],
+          "blockers": [],
+          "decision_refs": [],
+          "next_prompt_id": null
+        }
+      ],
+      "blockers": [],
+      "decisions": [],
+      "notes": [],
+      "next_prompt_id": null,
+      "next_recommended_action": "Cloudserver getrennt und zurückgestellt halten, bis Recovery-Core stabil grün ist."
+    },
+    {
+      "id": "hostpilot-serverguide",
+      "title_de": "HostPilot / Serverguide",
+      "title_en": "HostPilot / Serverguide",
+      "description_de": "Für HostPilot / Serverguide liegt derzeit keine belastbare operative Statusquelle für die neue Registry vor.",
+      "description_en": "There is currently no trustworthy operational status source for HostPilot / Serverguide in the new registry.",
+      "status": "unknown",
+      "priority": "P3",
+      "owner": "Setuphelfer Product",
+      "planned_start": null,
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "none",
+      "authoritative_evidence": [],
+      "milestones": [
+        {
+          "id": "hostpilot-source-review",
+          "title_de": "Belastbare Quellen für HostPilot prüfen",
+          "title_en": "Review trustworthy sources for HostPilot",
+          "status": "unknown",
+          "progress_percent": 0,
+          "planned_start": null,
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [],
+          "tasks": [
+            {
+              "id": "hostpilot-no-source-yet",
+              "title_de": "Keine belastbare Quelllage vorhanden",
+              "title_en": "No trustworthy source situation yet",
+              "status": "unknown",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [],
+              "next_action_de": "Erst Quelle klären, dann Status modellieren.",
+              "next_action_en": "Clarify sources first, then model status."
+            }
+          ],
+          "blockers": [],
+          "decision_refs": [],
+          "next_prompt_id": null
+        }
+      ],
+      "blockers": [],
+      "decisions": [],
+      "notes": [
+        {
+          "id": "hostpilot-review-required",
+          "area_id": "hostpilot-serverguide",
+          "text_de": "Status bleibt `unknown`, bis eine belastbare Quelle identifiziert ist.",
+          "text_en": "Status remains `unknown` until a trustworthy source is identified.",
+          "created_at": "2026-05-26",
+          "author": "Cursor",
+          "evidence_links": [
+            "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md"
+          ]
+        }
+      ],
+      "next_prompt_id": null,
+      "next_recommended_action": "Review-required: zuerst belastbare Quelllage schaffen."
+    },
+    {
+      "id": "monolith-boundaries",
+      "title_de": "Monolith / Module Boundaries",
+      "title_en": "Monolith / Module Boundaries",
+      "description_de": "Grenzen und Zielarchitektur sind dokumentiert, aber der eigentliche Folgeschritt zur Härtung bleibt offen.",
+      "description_en": "Boundaries and the target architecture are documented, but the actual hardening follow-up remains open.",
+      "status": "yellow",
+      "priority": "P2",
+      "owner": "Setuphelfer Architecture",
+      "planned_start": "2026-05-20",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "static_analysis",
+      "authoritative_evidence": [
+        "docs/architecture/MODULE_BOUNDARIES_TARGET_2026-05-20.md",
+        "docs/architecture/MONOLITH_BOUNDARY_AUDIT_2026-05-20.md",
+        "docs/roadmap/MONOLITH_REFACTOR_PLAN.md"
+      ],
+      "milestones": [
+        {
+          "id": "monolith-boundary-followup",
+          "title_de": "Modulgrenzen härten ohne Big-Bang-Refactor",
+          "title_en": "Harden module boundaries without a big-bang refactor",
+          "status": "yellow",
+          "progress_percent": 45,
+          "planned_start": "2026-05-20",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/architecture/MODULE_BOUNDARIES_TARGET_2026-05-20.md"
+          ],
+          "tasks": [
+            {
+              "id": "monolith-boundary-docs",
+              "title_de": "Grenzen und Zielbaum dokumentieren",
+              "title_en": "Document boundaries and target tree",
+              "status": "partial_green",
+              "progress_percent": 75,
+              "evidence_links": [
+                "docs/architecture/MODULE_BOUNDARIES_TARGET_2026-05-20.md",
+                "docs/roadmap/MONOLITH_REFACTOR_PLAN.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Konkrete risikoarme Follow-ups vom Audit ableiten.",
+              "next_action_en": "Derive concrete low-risk follow-ups from the audit."
+            },
+            {
+              "id": "monolith-followup-prompt",
+              "title_de": "Follow-up-Prompt für modulare Härtung vorbereiten",
+              "title_en": "Prepare the follow-up prompt for modular hardening",
+              "status": "yellow",
+              "progress_percent": 30,
+              "evidence_links": [
+                "docs/architecture/MONOLITH_BOUNDARY_AUDIT_2026-05-20.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Nur kleine, reviewbare Extraktionen planen.",
+              "next_action_en": "Plan only small, reviewable extractions."
+            }
+          ],
+          "blockers": [],
+          "decision_refs": [],
+          "next_prompt_id": "MONOLITH_BOUNDARY_FOLLOWUP"
+        }
+      ],
+      "blockers": [],
+      "decisions": [],
+      "notes": [],
+      "next_prompt_id": "MONOLITH_BOUNDARY_FOLLOWUP",
+      "next_recommended_action": "Monolith-Folgeschritte klein halten und klar hinter Recovery-Core priorisieren."
+    },
+    {
+      "id": "future-test-tracks",
+      "title_de": "Future Test Tracks",
+      "title_en": "Future Test Tracks",
+      "description_de": "Zukünftige Teststrecken sind benannt, damit offene Recovery- und Rescue-Themen in konkrete Folgepfade überführt werden können.",
+      "description_en": "Future test tracks are named so open recovery and rescue topics can be converted into concrete follow-up paths.",
+      "status": "yellow",
+      "priority": "P1",
+      "owner": "Setuphelfer Test Governance",
+      "planned_start": "2026-05-26",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "planning_only",
+      "authoritative_evidence": [
+        "docs/testing/HARDWARE_TEST_MATRIX.md",
+        "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json"
+      ],
+      "milestones": [
+        {
+          "id": "future-recovery-test-tracks",
+          "title_de": "Konkrete Folge-Teststrecken sichtbar machen",
+          "title_en": "Make concrete follow-up test tracks visible",
+          "status": "yellow",
+          "progress_percent": 35,
+          "planned_start": "2026-05-26",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/testing/HARDWARE_TEST_MATRIX.md"
+          ],
+          "tasks": [
+            {
+              "id": "track-windows-laptop-rescue",
+              "title_de": "Windows-Laptop-Rettung",
+              "title_en": "Windows laptop rescue",
+              "status": "deferred",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [],
+              "next_action_de": "Nur als separater Safety-/Review-Track planen.",
+              "next_action_en": "Plan only as a separate safety/review track."
+            },
+            {
+              "id": "track-old-linux-laptop",
+              "title_de": "Alter Linux-Laptop",
+              "title_en": "Old Linux laptop",
+              "status": "deferred",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [],
+              "next_action_de": "Zielhardware und Testscope definieren.",
+              "next_action_en": "Define target hardware and test scope."
+            },
+            {
+              "id": "track-raspberry-pi5",
+              "title_de": "Raspberry Pi 5",
+              "title_en": "Raspberry Pi 5",
+              "status": "yellow",
+              "progress_percent": 20,
+              "evidence_links": [
+                "docs/testing/HARDWARE_TEST_MATRIX.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Vorhandene Matrix-Einträge als konkrete Folgepfade nutzen.",
+              "next_action_en": "Use the existing matrix entries as concrete follow-up paths."
+            },
+            {
+              "id": "track-nvme-target",
+              "title_de": "NVMe-Ziel",
+              "title_en": "NVMe target",
+              "status": "yellow",
+              "progress_percent": 15,
+              "evidence_links": [
+                "docs/testing/HARDWARE_TEST_MATRIX.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Externes NVMe-Ziel separat gegen BR-001/Verify bewerten.",
+              "next_action_en": "Evaluate an external NVMe target separately for BR-001/verify."
+            },
+            {
+              "id": "track-usb-hdd-target",
+              "title_de": "USB-HDD-Ziel",
+              "title_en": "USB HDD target",
+              "status": "deferred",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [],
+              "next_action_de": "Später als eigenes Medienprofil aufnehmen.",
+              "next_action_en": "Add later as a dedicated media profile."
+            },
+            {
+              "id": "track-sd-card-target",
+              "title_de": "SD-Karten-Ziel",
+              "title_en": "SD card target",
+              "status": "deferred",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [],
+              "next_action_de": "Nur nach externen stabileren Zielmedien priorisieren.",
+              "next_action_en": "Prioritize only after more stable external targets."
+            },
+            {
+              "id": "track-cloudserver-edition-test",
+              "title_de": "Cloudserver-Edition-Test",
+              "title_en": "Cloudserver edition test",
+              "status": "deferred",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [],
+              "next_action_de": "Getrennter Track nach Recovery-Core-Grün.",
+              "next_action_en": "Separate track after recovery core is green."
+            },
+            {
+              "id": "track-plesk-test",
+              "title_de": "Plesk-Test",
+              "title_en": "Plesk test",
+              "status": "deferred",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [],
+              "next_action_de": "Nur nach Cloudserver-/Host-Pfad konkretisieren.",
+              "next_action_en": "Only specify after the cloudserver/host path exists."
+            },
+            {
+              "id": "track-rescue-stick-boot-test",
+              "title_de": "Rescue-Stick-Boot-Test",
+              "title_en": "Rescue stick boot test",
+              "status": "blocked",
+              "progress_percent": 5,
+              "evidence_links": [
+                "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json"
+              ],
+              "blocker_refs": [
+                "future-rescue-boot-track-blocked"
+              ],
+              "next_action_de": "Erst nach echtem ISO-Artefakt und Operator-/Build-Gate weiterführen.",
+              "next_action_en": "Continue only after a real ISO artifact and the operator/build gate."
+            },
+            {
+              "id": "track-restore-non-production-target",
+              "title_de": "Restore auf nicht-produktives Zielsystem",
+              "title_en": "Restore to a non-production target system",
+              "status": "deferred",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [
+                "future-restore-track-deferred"
+              ],
+              "next_action_de": "Bootfähiges Rettungsmedium und Testziel zuerst sichern.",
+              "next_action_en": "Secure a bootable rescue medium and a test target first."
+            }
+          ],
+          "blockers": [
+            {
+              "id": "future-rescue-boot-track-blocked",
+              "area_id": "future-test-tracks",
+              "title_de": "Rescue-Boot-Test bleibt am echten ISO-Artefakt hängen",
+              "title_en": "Rescue boot test remains blocked by the real ISO artifact",
+              "description_de": "Der Rescue-Stick-Boot-Test darf erst nach echtem Build- und Artefakt-Nachweis weiterlaufen.",
+              "description_en": "The rescue stick boot test may continue only after real build and artifact evidence exists.",
+              "severity": "medium",
+              "status": "blocked",
+              "first_seen": "2026-05-26",
+              "last_seen": "2026-05-26",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json"
+              ]
+            },
+            {
+              "id": "future-restore-track-deferred",
+              "area_id": "future-test-tracks",
+              "title_de": "Restore-Testtrack bleibt zurückgestellt",
+              "title_en": "Restore test track remains deferred",
+              "description_de": "Der Restore-Testtrack bleibt bis zu sicherem Rettungsmedium und nicht-produktivem Zielsystem zurückgestellt.",
+              "description_en": "The restore test track stays deferred until a safe rescue medium and a non-production target system exist.",
+              "severity": "medium",
+              "status": "deferred",
+              "first_seen": "2026-05-26",
+              "last_seen": "2026-05-26",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json"
+              ]
+            }
+          ],
+          "decision_refs": [],
+          "next_prompt_id": "DIAGNOSTICS_TEST_TRACK"
+        }
+      ],
+      "blockers": [],
+      "decisions": [],
+      "notes": [],
+      "next_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+      "next_recommended_action": "Zukünftige Teststrecken sichtbar halten, damit Blocker in konkrete Folgepfade übergehen."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "selected_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+  "selected_at": "2026-05-26T20:44:08Z",
+  "reason": "Diagnostics is partially implemented, but real error cases, UI evaluation, and a reproducible evidence track are still missing. That gap weakens dashboard clarity and blocks more precise follow-up prompts across rescue and governance work.",
+  "blocked_by": [],
+  "unlocks": [
+    "Belastbare Diagnostics-Evidence",
+    "Klarere Dashboard-Begründungen",
+    "Bessere Auswahl des nächsten Prompts"
+  ],
+  "alternative_prompts": [
+    "BR001_EXTERNAL_EVIDENCE",
+    "PACKAGE_UPDATE_GATE",
+    "MONOLITH_BOUNDARY_FOLLOWUP",
+    "TERMINAL_A_READONLY"
+  ],
+  "source_roadmap_version": "1.0"
+}

@@ -221,7 +221,7 @@ const DevelopmentDashboard: React.FC = () => {
             </>
           )}
 
-          {(section === 'overview' || section === 'roadmap') && <RoadmapDrawer dashboard={dashboard} t={t} />}
+          {(section === 'overview' || section === 'roadmap') && <RoadmapDrawer dashboard={dashboard} t={t} apiReachable={apiReachable} />}
 
           {(section === 'overview' || section === 'modules') && (
             <DevDashboardBody

@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-26T20:44:08Z",
+  "project_version": "1.7.2",
+  "source_commit": "826b5dd",
+  "registry_path": "docs/roadmap/setuphelfer_next_prompts.json",
+  "selected_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+  "prompt_status_counts": {
+    "available": 4,
+    "blocked": 1,
+    "completed": 1,
+    "deferred": 1,
+    "obsolete": 0,
+    "recommended_next": 1
+  },
+  "selection_policy_ref": "docs/roadmap/setuphelfer_next_prompts.json",
+  "read_only": true,
+  "execution_allowed": false
+}

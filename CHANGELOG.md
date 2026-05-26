@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added (Dev Dashboard roadmap and next prompt registry)
+- **Development Dashboard / Roadmap:** Neue read-only Roadmap-/Meilenstein-Registry mit Bereichen, Milestones, Aufgaben, Blockern, Entscheidungen, Notizen, Evidence-Links und sichtbarer Restore-/Diagnostics-Begründung.
+- **Next Prompt Registry:** Prüfbare Prompt-Registry mit Auswahlregel, `recommended_next`, Plain-Text-Export und STRICT-MODE-Template; keine Execute-Buttons und keine Runtime-Aktionen aus der Roadmap.
+- **Backend / API:** Neue read-only Endpunkte unter `/api/dev-dashboard/roadmap*` für Bereiche, Milestones, Blocker, Entscheidungen und Prompt-Export.
+- **Doku / Evidence:** Neue Audit-, Registry-, FAQ- und Knowledge-Base-Dokumente unter `docs/roadmap/`, `docs/dev-dashboard/` und `docs/evidence/roadmap/`.
+
 ### Fixed (Rescue ISO rsvg preflight and notification email provider-limit hardening)
 - **Version:** Patch-Bump auf `1.7.2` in `config/version.json`, `frontend/package.json`, `frontend/src-tauri/tauri.conf.json`, `frontend/src-tauri/Cargo.toml` und Root-`package.json`.
 - **Rescue ISO:** Der Dashboard-/Executor-Prebuild klassifiziert die fehlende `rsvg`-Build-Abhaengigkeit jetzt vor `lb build`, blockiert den Build mit `blocked_build_tools_missing` und zeigt nur den Operator-Hinweis `sudo apt install librsvg2-bin` an; kein automatisches `apt`, kein ISO-Build.

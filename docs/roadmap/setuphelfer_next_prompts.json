@@ -1,0 +1,417 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-26T20:44:08Z",
+  "project_version": "1.7.2",
+  "source_commit": "826b5dd",
+  "selection_policy": [
+    "Priorität 1: Fehlender Nachweis, der mehrere Bereiche blockiert, zuerst.",
+    "Priorität 2: Wiederkehrende Unklarheit im Dashboard zuerst transparent machen.",
+    "Priorität 3: Gefährliche Runtime-Arbeit ohne Gate immer hinter Safety-/Gate-Arbeit einsortieren.",
+    "Priorität 4: Wenn Architektur steht, aber Evidence fehlt, ist die Teststrecke der nächste sinnvolle Prompt.",
+    "Priorität 5: Keine Marketing-, Cloudserver- oder HostPilot-Arbeit vor Recovery-Core-Grün, außer reine Doku/Planung."
+  ],
+  "selected_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+  "prompts": [
+    {
+      "id": "ROADMAP_B_NEXT",
+      "category": "dev_dashboard",
+      "title_de": "Dev Dashboard Roadmap & Next Prompt Registry",
+      "title_en": "Dev Dashboard roadmap and next prompt registry",
+      "scope": "Roadmap-Datenmodell, read-only API, Dashboard-Roadmap-Tab, Prompt-Export, Doku und Tests.",
+      "status": "completed",
+      "reason_de": "Die belastbare Registry wurde implementiert, damit wiederholte Feststellungen in konkrete nächste Schritte übersetzt werden.",
+      "reason_en": "The trustworthy registry was implemented so repeated findings are translated into concrete next steps.",
+      "prompt_text": "Pflege das Datenmodell, die read-only API, die Dashboard-Anzeige und die Evidence-Dokumentation für Roadmap und Next Prompt weiter, ohne Execute-Funktionen hinzuzufügen.",
+      "blocked_by": [],
+      "unlocks": [
+        "TERMINAL_A_READONLY",
+        "DIAGNOSTICS_TEST_TRACK"
+      ],
+      "expected_outputs": [
+        "Aktualisierte Roadmap-/Prompt-Registry",
+        "Read-only Dashboard-Anzeige",
+        "Ehrlicher Abschlussbericht mit empfohlenem Next Prompt"
+      ],
+      "safety_rules": [
+        "Keine Runtime-Aktion aus der Roadmap heraus ausführen.",
+        "Keine Status künstlich auf grün setzen."
+      ],
+      "allowed_paths": [
+        "backend/core/dev_dashboard*.py",
+        "backend/app.py",
+        "frontend/src/components/dev-dashboard/",
+        "frontend/src/pages/DevelopmentDashboard.tsx",
+        "docs/roadmap/",
+        "docs/dev-dashboard/",
+        "docs/evidence/roadmap/"
+      ],
+      "forbidden_actions": [
+        "runtime_execute",
+        "backup_start",
+        "restore_start"
+      ],
+      "tests": [
+        "backend/tests/test_dev_dashboard_roadmap_registry_v1.py",
+        "backend/tests/test_dev_dashboard_v1.py",
+        "npm run build"
+      ],
+      "documentation_targets": [
+        "docs/dev-dashboard/ROADMAP_REGISTRY_DE.md",
+        "docs/dev-dashboard/ROADMAP_REGISTRY_EN.md",
+        "docs/faq/dev_dashboard_roadmap_faq.md"
+      ],
+      "non_goals": [
+        "Kein Backup",
+        "Kein Restore",
+        "Kein Deploy",
+        "Keine Hardwareausführung"
+      ],
+      "created_at": "2026-05-26",
+      "updated_at": "2026-05-26"
+    },
+    {
+      "id": "TERMINAL_A_READONLY",
+      "category": "dev_dashboard",
+      "title_de": "Dev Dashboard Read-only Terminal / Command Runs",
+      "title_en": "Dev dashboard read-only terminal / command runs",
+      "scope": "Sichere Protokollierung manueller Kommandos und read-only Terminaldarstellung im Dashboard.",
+      "status": "available",
+      "reason_de": "Nach der Registry ist ein read-only Terminalpfad sinnvoll, damit manuelle Prüfkommandos nachvollziehbar dokumentiert werden.",
+      "reason_en": "After the registry, a read-only terminal path makes sense so manual verification commands are documented.",
+      "prompt_text": "Erweitere das Dashboard um eine read-only Ansicht für manuelle Kommandoläufe, ohne irgendeine Shell-Aktion direkt aus dem UI auszulösen.",
+      "blocked_by": [],
+      "unlocks": [
+        "Saubere Dokumentation manueller Checks",
+        "Weniger Status-Diskussion ohne Evidence"
+      ],
+      "expected_outputs": [
+        "Read-only Kommandolauf-Anzeige",
+        "Dokumentierte Kommandoprotokolle",
+        "Keine Execute-Buttons"
+      ],
+      "safety_rules": [
+        "Keine Shell-Ausführung aus dem Dashboard.",
+        "Nur Anzeige, Export und Protokollierung."
+      ],
+      "allowed_paths": [
+        "frontend/src/components/dev-dashboard/",
+        "backend/core/dev_dashboard*.py",
+        "docs/dev-dashboard/"
+      ],
+      "forbidden_actions": [
+        "shell_execute",
+        "sudo"
+      ],
+      "tests": [
+        "Backend-API-Tests für read-only Antwortformen",
+        "Frontend-Render-/Static-Tests"
+      ],
+      "documentation_targets": [
+        "docs/dev-dashboard/ROADMAP_REGISTRY_DE.md"
+      ],
+      "non_goals": [
+        "Keine Terminal-Steuerung",
+        "Keine Befehlsausführung",
+        "Keine Operator-Eskalation aus dem Dashboard"
+      ],
+      "created_at": "2026-05-26",
+      "updated_at": "2026-05-26"
+    },
+    {
+      "id": "DIAGNOSTICS_TEST_TRACK",
+      "category": "diagnostics",
+      "title_de": "Diagnostics Evidence Test Track",
+      "title_en": "Diagnostics evidence test track",
+      "scope": "Diagnostik-Katalog, UI-Auswertung, reale Fehlerfälle und Evidence-Matrix als reproduzierbare Teststrecke.",
+      "status": "recommended_next",
+      "reason_de": "Diagnostik ist teilweise vorhanden, aber echte Fehlerfälle, UI-Auswertung und Evidence fehlen. Dieser Nachweis verbessert zugleich Diagnostics, Dashboard-Transparenz und die Qualität zukünftiger Next Prompts.",
+      "reason_en": "Diagnostics is partially present, but real error cases, UI evaluation, and evidence are still missing. This proof improves diagnostics, dashboard transparency, and the quality of future next prompts.",
+      "prompt_text": "Baue eine reproduzierbare Diagnostics-Teststrecke auf, die echte Fehlerfälle, UI-Auswertung, Evidence-Matrix und klar dokumentierte Next Steps zusammenführt. Keine Runtime-Ausführung ohne Gate, keine Execute-Funktionen, keine künstliche Ampel-Grünfärbung.",
+      "blocked_by": [],
+      "unlocks": [
+        "Belastbare Diagnostics-Evidence",
+        "Klarere Dashboard-Begründungen",
+        "Bessere Auswahl des nächsten Prompts"
+      ],
+      "expected_outputs": [
+        "Diagnostics-Evidence-Matrix",
+        "UI-Auswertung mit echten Fehlerfällen",
+        "Aktualisierte KB-/FAQ-/Dashboard-Texte"
+      ],
+      "safety_rules": [
+        "Keine Runtime-Tests gegen Port 8000 bei rotem Phase-0-Gate.",
+        "Keine Rescue-, Backup- oder Restore-Ausführung."
+      ],
+      "allowed_paths": [
+        "backend/core/diagnostics/",
+        "backend/tests/",
+        "frontend/src/components/dev-dashboard/",
+        "frontend/src/locales/",
+        "docs/knowledge-base/diagnostics/",
+        "docs/evidence/runtime-results/rescue/",
+        "docs/dev-dashboard/"
+      ],
+      "forbidden_actions": [
+        "backup_start",
+        "restore_start",
+        "rescue_execute",
+        "sudo"
+      ],
+      "tests": [
+        "backend/tests/test_diagnostics_api_v1.py",
+        "gezielte neue Diagnostics-Tests",
+        "npm run build"
+      ],
+      "documentation_targets": [
+        "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+        "docs/dev-dashboard/ROADMAP_REGISTRY_DE.md",
+        "docs/faq/dev_dashboard_roadmap_faq.md"
+      ],
+      "non_goals": [
+        "Kein echter Rescue-Build",
+        "Kein Hardwaretest",
+        "Kein Deploy"
+      ],
+      "created_at": "2026-05-26",
+      "updated_at": "2026-05-26"
+    },
+    {
+      "id": "RESCUE_REAL_BUILD_GATE",
+      "category": "rescue",
+      "title_de": "Rescue Stick Real Build Gate",
+      "title_en": "Rescue stick real build gate",
+      "scope": "Echter Rescue-Buildpfad, Operator-Policy, Artefakt- und Boot-Nachweis.",
+      "status": "blocked",
+      "reason_de": "Erst sinnvoll, wenn Build-Emulation/Evidence vollständig und eine Bootmedium-Testumgebung verfügbar ist.",
+      "reason_en": "Only meaningful once build emulation/evidence is complete and a boot-medium test environment exists.",
+      "prompt_text": "Bereite den echten Rescue-Buildpfad nur im Rahmen dokumentierter Gates vor und trenne Operator-Policy, Artefakt-Verify und Boot-Nachweis sauber.",
+      "blocked_by": [
+        "Kein echter ISO-/Boot-Nachweis",
+        "Operator-/Build-/Boot-Track noch nicht vollständig belegt"
+      ],
+      "unlocks": [
+        "Rescue-Boot-Test",
+        "Restore-E2E-Vorbereitung"
+      ],
+      "expected_outputs": [
+        "Dokumentierte Build-/Boot-Gates",
+        "Neue Evidence nur für den echten Rescue-Pfad"
+      ],
+      "safety_rules": [
+        "Keine direkten Runtime-Aktionen aus dem Dashboard.",
+        "Kein unbeaufsichtigter Root-Pfad."
+      ],
+      "allowed_paths": [
+        "docs/architecture/RESCUE_OPERATOR_POLICY.md",
+        "docs/knowledge-base/recovery/",
+        "docs/evidence/runtime-results/rescue/",
+        "scripts/rescue-live/"
+      ],
+      "forbidden_actions": [
+        "direct_lb_build",
+        "password_stdin",
+        "askpass_hack"
+      ],
+      "tests": [
+        "Gezielte read-only Gate- und Parser-Tests"
+      ],
+      "documentation_targets": [
+        "docs/knowledge-base/recovery/RESCUE_ISO_BUILD_AND_VM_VALIDATION.md"
+      ],
+      "non_goals": [
+        "Kein ungated Rescue-Build",
+        "Keine automatische Root-Ausführung"
+      ],
+      "created_at": "2026-05-26",
+      "updated_at": "2026-05-26"
+    },
+    {
+      "id": "RESTORE_E2E_PREPARATION",
+      "category": "restore",
+      "title_de": "Restore End-to-End Preparation",
+      "title_en": "Restore end-to-end preparation",
+      "scope": "Sichere Vorbedingungen für Restore-E2E, ohne Restore-Ausführung.",
+      "status": "deferred",
+      "reason_de": "Benötigt bootfähiges Rettungsmedium, nicht-produktives Zielsystem und verifiziertes Backup.",
+      "reason_en": "Requires a bootable rescue medium, a non-production target system, and a verified backup.",
+      "prompt_text": "Dokumentiere und überprüfe ausschließlich die Vorbedingungen für Restore-E2E, ohne einen Restore zu starten oder Zielsysteme zu verändern.",
+      "blocked_by": [
+        "Kein bootfähiges Rettungsmedium",
+        "Kein nicht-produktives Zielsystem",
+        "BR-001-OFFLINE noch nicht grün"
+      ],
+      "unlocks": [
+        "Spätere Restore-E2E-Abnahme"
+      ],
+      "expected_outputs": [
+        "Klare Restore-Vorbedingungen",
+        "Sicherheitsbegründung für Deferred-Status"
+      ],
+      "safety_rules": [
+        "Kein Restore starten.",
+        "Keine Zielsysteme beschreiben."
+      ],
+      "allowed_paths": [
+        "docs/knowledge-base/",
+        "docs/evidence/runtime-results/rescue/",
+        "docs/roadmap/"
+      ],
+      "forbidden_actions": [
+        "restore_start",
+        "mount_write"
+      ],
+      "tests": [
+        "Nur statische/API-Tests ohne Restore-Ausführung"
+      ],
+      "documentation_targets": [
+        "docs/faq/dev_dashboard_roadmap_faq.md"
+      ],
+      "non_goals": [
+        "Kein echter Restore",
+        "Kein Hardwarelauf"
+      ],
+      "created_at": "2026-05-26",
+      "updated_at": "2026-05-26"
+    },
+    {
+      "id": "BR001_EXTERNAL_EVIDENCE",
+      "category": "backup",
+      "title_de": "BR-001 External Backup Evidence Completion",
+      "title_en": "BR-001 external backup evidence completion",
+      "scope": "Belastbare Evidence-Kette für BR-001-OFFLINE, getrennt von BR-001-LIVE.",
+      "status": "available",
+      "reason_de": "BR-001-OFFLINE blockiert Backup, Verify und Restore. Die Evidence-Lücke ist klar benannt und kann vorbereitet bzw. sauber vervollständigt werden, ohne Live-Experimente als Ersatz zu zählen.",
+      "reason_en": "BR-001-OFFLINE blocks backup, verify, and restore. The evidence gap is clearly named and can be prepared or completed cleanly without counting live experiments as a substitute.",
+      "prompt_text": "Arbeite die fehlende BR-001-OFFLINE-Evidence-Kette nach: externes Ziel, Manifest, SHA256, Verify und klare Trennung von BR-001-LIVE. Keine Fake-Green-Entscheidung.",
+      "blocked_by": [],
+      "unlocks": [
+        "Verify Basic",
+        "Verify Deep",
+        "Restore-E2E-Vorbereitung"
+      ],
+      "expected_outputs": [
+        "Aktualisierte BR-001-Evidence",
+        "Saubere Release-Gate-Begründung"
+      ],
+      "safety_rules": [
+        "BR-001-LIVE nicht als Release-Gate verwenden.",
+        "Kein künstliches Grün ohne vollständige Nachweise."
+      ],
+      "allowed_paths": [
+        "docs/evidence/release-gates/",
+        "docs/evidence/backup-restore/",
+        "docs/dev-dashboard/modules/backup-restore.json",
+        "docs/roadmap/"
+      ],
+      "forbidden_actions": [
+        "git_add_all"
+      ],
+      "tests": [
+        "Gezielte Gate-/Schema-/API-Tests"
+      ],
+      "documentation_targets": [
+        "docs/dev-dashboard/ROADMAP_REGISTRY_DE.md"
+      ],
+      "non_goals": [
+        "BR-001-LIVE nicht aufwerten",
+        "Keine ungated Runtime-Ausführung"
+      ],
+      "created_at": "2026-05-26",
+      "updated_at": "2026-05-26"
+    },
+    {
+      "id": "MONOLITH_BOUNDARY_FOLLOWUP",
+      "category": "monolith",
+      "title_de": "Module Boundary Hardening Follow-up",
+      "title_en": "Module boundary hardening follow-up",
+      "scope": "Kleine Folgearbeiten aus Boundary-Audit und Zielstruktur.",
+      "status": "available",
+      "reason_de": "Die Audit- und Zielstruktur ist dokumentiert; ein vorsichtiger Follow-up-Prompt ist verfügbar, darf aber Recovery-Core nicht verdrängen.",
+      "reason_en": "The audit and target structure are documented; a careful follow-up prompt is available, but it must not displace recovery core.",
+      "prompt_text": "Leite kleine, reviewbare Folgearbeiten aus Boundary-Audit und Zielstruktur ab. Keine großen Refactors, keine riskanten Verschiebungen im Recovery-Kern.",
+      "blocked_by": [],
+      "unlocks": [
+        "Kleinere modulare Entkopplungen",
+        "Weniger Risiko für spätere Rescue-/Backup-Arbeit"
+      ],
+      "expected_outputs": [
+        "Konkreter Boundary-Follow-up-Plan",
+        "Fokussierte Code- oder Doku-Härtungen"
+      ],
+      "safety_rules": [
+        "Kein Big-Bang-Refactor.",
+        "Backup/Restore/Safety zuletzt anfassen."
+      ],
+      "allowed_paths": [
+        "docs/architecture/",
+        "docs/roadmap/MONOLITH_REFACTOR_PLAN.md",
+        "backend/core/",
+        "backend/app.py"
+      ],
+      "forbidden_actions": [
+        "big_bang_refactor"
+      ],
+      "tests": [
+        "Gezielte pytest-Sicherheitsnetze"
+      ],
+      "documentation_targets": [
+        "docs/roadmap/MONOLITH_REFACTOR_PLAN.md"
+      ],
+      "non_goals": [
+        "Kein großer Umbau",
+        "Keine Recovery-Core-Regression"
+      ],
+      "created_at": "2026-05-26",
+      "updated_at": "2026-05-26"
+    },
+    {
+      "id": "PACKAGE_UPDATE_GATE",
+      "category": "packaging",
+      "title_de": "Package / Update Gate Hardening",
+      "title_en": "Package / update gate hardening",
+      "scope": "PKG-001, Signatur-/Channel-Strategie, Rollback und Update-Freigabegrenzen.",
+      "status": "available",
+      "reason_de": "Packaging-Readiness ist sichtbar, aber die produktionsreife Update-Kette bleibt offen und sollte nicht mit read-only Status verwechselt werden.",
+      "reason_en": "Packaging readiness is visible, but the production-ready update chain remains open and must not be confused with read-only status visibility.",
+      "prompt_text": "Härte das Package-/Update-Gate dokumentarisch und technisch ab, ohne automatische Paketaktionen, ohne apt-Ausführung und ohne Deploy.",
+      "blocked_by": [],
+      "unlocks": [
+        "Sauberere Packaging-Aussagen im Dashboard",
+        "Weniger Verwechslung zwischen Statussichtbarkeit und Update-Freigabe"
+      ],
+      "expected_outputs": [
+        "Geklärte Update-Grenzen",
+        "Verbesserte Packaging-Dokumentation",
+        "Read-only Gate-Konsistenz"
+      ],
+      "safety_rules": [
+        "Keine apt-Ausführung.",
+        "Keine automatischen Paketupdates."
+      ],
+      "allowed_paths": [
+        "docs/evidence/release-gates/apt_update_delivery_gap.json",
+        "docs/roadmap/APT_UPDATE_DELIVERY_PLAN.md",
+        "frontend/src/components/dev-dashboard/",
+        "backend/core/"
+      ],
+      "forbidden_actions": [
+        "apt_install",
+        "apt_upgrade"
+      ],
+      "tests": [
+        "Read-only Packaging-Tests",
+        "npm run build"
+      ],
+      "documentation_targets": [
+        "docs/dev-dashboard/ROADMAP_REGISTRY_EN.md"
+      ],
+      "non_goals": [
+        "Kein APT-Upgrade",
+        "Kein Paketbau",
+        "Kein Deploy"
+      ],
+      "created_at": "2026-05-26",
+      "updated_at": "2026-05-26"
+    }
+  ]
+}

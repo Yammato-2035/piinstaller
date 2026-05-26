@@ -1,0 +1,280 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-26T20:44:08Z",
+  "project_version": "1.7.2",
+  "source_commit": "826b5dd",
+  "milestones": [
+    {
+      "id": "runtime-phase0-gate",
+      "area_id": "runtime-governance",
+      "title_de": "Phase-0-Gate und Runtime-Overlay",
+      "title_en": "Phase 0 gate and runtime overlay",
+      "status": "partial_green",
+      "progress_percent": 85,
+      "next_prompt_id": "PACKAGE_UPDATE_GATE",
+      "evidence_links": [
+        "scripts/check-runtime-deploy-gate.sh",
+        "docs/dev-dashboard/PHASE0_RUNTIME_GATE.md"
+      ],
+      "task_ids": [
+        "runtime-gate-script-and-api",
+        "runtime-roadmap-overlay"
+      ],
+      "blocker_ids": [
+        "release-gate-still-red"
+      ],
+      "decision_refs": [
+        "runtime-phase0-before-runtime-tests"
+      ]
+    },
+    {
+      "id": "br001-offline-release-gate",
+      "area_id": "backup-br001",
+      "title_de": "BR-001-OFFLINE mit externem Ziel, Manifest, SHA256 und Verify",
+      "title_en": "BR-001-OFFLINE with external target, manifest, SHA256, and verify",
+      "status": "blocked",
+      "progress_percent": 30,
+      "next_prompt_id": "BR001_EXTERNAL_EVIDENCE",
+      "evidence_links": [
+        "docs/evidence/release-gates/backup_restore_release_gate.json",
+        "docs/testing/RESCUE_STICK_TEST_MATRIX.md"
+      ],
+      "task_ids": [
+        "br001-external-target-evidence",
+        "br001-manifest-sha-verify-chain"
+      ],
+      "blocker_ids": [
+        "br001-offline-evidence-missing"
+      ],
+      "decision_refs": [
+        "br001-offline-release-gate-decision"
+      ]
+    },
+    {
+      "id": "verify-br004-br005-chain",
+      "area_id": "verify",
+      "title_de": "Verify-Kette nach gültigem BR-001-Archiv",
+      "title_en": "Verify chain after a valid BR-001 archive",
+      "status": "blocked",
+      "progress_percent": 15,
+      "next_prompt_id": "BR001_EXTERNAL_EVIDENCE",
+      "evidence_links": [
+        "docs/evidence/backup-restore/BR-004.json",
+        "docs/evidence/backup-restore/BR-005.json"
+      ],
+      "task_ids": [
+        "verify-basic-after-br001",
+        "verify-deep-after-basic"
+      ],
+      "blocker_ids": [
+        "verify-waits-for-br001"
+      ],
+      "decision_refs": []
+    },
+    {
+      "id": "restore-e2e-preconditions",
+      "area_id": "restore",
+      "title_de": "Restore-E2E sicher vorbereiten",
+      "title_en": "Prepare restore E2E safely",
+      "status": "deferred",
+      "progress_percent": 10,
+      "next_prompt_id": "RESTORE_E2E_PREPARATION",
+      "evidence_links": [
+        "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json"
+      ],
+      "task_ids": [
+        "restore-bootable-medium",
+        "restore-non-production-target"
+      ],
+      "blocker_ids": [
+        "restore-no-safe-test-environment"
+      ],
+      "decision_refs": [
+        "restore-e2e-deferred"
+      ]
+    },
+    {
+      "id": "rescue-real-build-and-boot",
+      "area_id": "rescue-stick",
+      "title_de": "Echter Build-, Artefakt- und Boot-Nachweis",
+      "title_en": "Real build, artifact, and boot evidence",
+      "status": "blocked",
+      "progress_percent": 35,
+      "next_prompt_id": "RESCUE_REAL_BUILD_GATE",
+      "evidence_links": [
+        "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json",
+        "docs/knowledge-base/recovery/RESCUE_ISO_BUILD_AND_VM_VALIDATION.md"
+      ],
+      "task_ids": [
+        "rescue-build-emulation-visible",
+        "rescue-real-iso-boot-proof"
+      ],
+      "blocker_ids": [
+        "rescue-real-boot-proof-missing"
+      ],
+      "decision_refs": [
+        "rescue-no-green-without-real-boot"
+      ]
+    },
+    {
+      "id": "diagnostics-catalog-ui-evidence-track",
+      "area_id": "diagnostics",
+      "title_de": "Diagnostik-Katalog, UI-Auswertung und Evidence-Teststrecke",
+      "title_en": "Diagnostics catalog, UI evaluation, and evidence test track",
+      "status": "partial_green",
+      "progress_percent": 55,
+      "next_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+      "evidence_links": [
+        "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json"
+      ],
+      "task_ids": [
+        "diagnostics-code-mapping",
+        "diagnostics-ui-evaluation",
+        "diagnostics-reproducible-test-track"
+      ],
+      "blocker_ids": [
+        "diagnostics-real-error-track-missing"
+      ],
+      "decision_refs": [
+        "diagnostics-not-fully-green-yet"
+      ]
+    },
+    {
+      "id": "dev-dashboard-roadmap-registry",
+      "area_id": "dev-dashboard",
+      "title_de": "Roadmap-Registry und Next-Prompt-Export",
+      "title_en": "Roadmap registry and next-prompt export",
+      "status": "partial_green",
+      "progress_percent": 80,
+      "next_prompt_id": "TERMINAL_A_READONLY",
+      "evidence_links": [
+        "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md"
+      ],
+      "task_ids": [
+        "dashboard-roadmap-schema-and-api",
+        "dashboard-roadmap-ui"
+      ],
+      "blocker_ids": [],
+      "decision_refs": []
+    },
+    {
+      "id": "pkg001-update-gate-hardening",
+      "area_id": "packaging-update",
+      "title_de": "PKG-001 Update-Gate härten",
+      "title_en": "Harden the PKG-001 update gate",
+      "status": "yellow",
+      "progress_percent": 45,
+      "next_prompt_id": "PACKAGE_UPDATE_GATE",
+      "evidence_links": [
+        "docs/evidence/release-gates/apt_update_delivery_gap.json"
+      ],
+      "task_ids": [
+        "pkg001-read-only-status",
+        "pkg001-signed-channel"
+      ],
+      "blocker_ids": [
+        "pkg001-signed-channel-missing"
+      ],
+      "decision_refs": []
+    },
+    {
+      "id": "website-transparency-without-fake-green",
+      "area_id": "website-marketing",
+      "title_de": "Website-Transparenz ohne Recovery-Ablenkung",
+      "title_en": "Website transparency without distracting from recovery",
+      "status": "yellow",
+      "progress_percent": 40,
+      "next_prompt_id": null,
+      "evidence_links": [
+        "docs/roadmap/PUBLIC_STATUS_PAGE.md"
+      ],
+      "task_ids": [
+        "website-status-docs",
+        "marketing-after-recovery-core"
+      ],
+      "blocker_ids": [
+        "website-waits-for-recovery-core"
+      ],
+      "decision_refs": []
+    },
+    {
+      "id": "cloudserver-track-separated",
+      "area_id": "cloudserver-edition",
+      "title_de": "Cloudserver-Track getrennt halten",
+      "title_en": "Keep the cloudserver track separate",
+      "status": "deferred",
+      "progress_percent": 10,
+      "next_prompt_id": null,
+      "evidence_links": [
+        "docs/architecture/MODULE_BOUNDARIES_TARGET_2026-05-20.md"
+      ],
+      "task_ids": [
+        "cloudserver-not-before-recovery-core"
+      ],
+      "blocker_ids": [],
+      "decision_refs": []
+    },
+    {
+      "id": "hostpilot-source-review",
+      "area_id": "hostpilot-serverguide",
+      "title_de": "Belastbare Quellen für HostPilot prüfen",
+      "title_en": "Review trustworthy sources for HostPilot",
+      "status": "unknown",
+      "progress_percent": 0,
+      "next_prompt_id": null,
+      "evidence_links": [],
+      "task_ids": [
+        "hostpilot-no-source-yet"
+      ],
+      "blocker_ids": [],
+      "decision_refs": []
+    },
+    {
+      "id": "monolith-boundary-followup",
+      "area_id": "monolith-boundaries",
+      "title_de": "Modulgrenzen härten ohne Big-Bang-Refactor",
+      "title_en": "Harden module boundaries without a big-bang refactor",
+      "status": "yellow",
+      "progress_percent": 45,
+      "next_prompt_id": "MONOLITH_BOUNDARY_FOLLOWUP",
+      "evidence_links": [
+        "docs/architecture/MODULE_BOUNDARIES_TARGET_2026-05-20.md"
+      ],
+      "task_ids": [
+        "monolith-boundary-docs",
+        "monolith-followup-prompt"
+      ],
+      "blocker_ids": [],
+      "decision_refs": []
+    },
+    {
+      "id": "future-recovery-test-tracks",
+      "area_id": "future-test-tracks",
+      "title_de": "Konkrete Folge-Teststrecken sichtbar machen",
+      "title_en": "Make concrete follow-up test tracks visible",
+      "status": "yellow",
+      "progress_percent": 35,
+      "next_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+      "evidence_links": [
+        "docs/testing/HARDWARE_TEST_MATRIX.md"
+      ],
+      "task_ids": [
+        "track-windows-laptop-rescue",
+        "track-old-linux-laptop",
+        "track-raspberry-pi5",
+        "track-nvme-target",
+        "track-usb-hdd-target",
+        "track-sd-card-target",
+        "track-cloudserver-edition-test",
+        "track-plesk-test",
+        "track-rescue-stick-boot-test",
+        "track-restore-non-production-target"
+      ],
+      "blocker_ids": [
+        "future-rescue-boot-track-blocked",
+        "future-restore-track-deferred"
+      ],
+      "decision_refs": []
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-05-26T20:44:08Z",
+  "project_version": "1.7.2",
+  "source_commit": "826b5dd",
+  "status": "yellow",
+  "roadmap_path": "docs/roadmap/setuphelfer_roadmap.json",
+  "schema_path": "docs/roadmap/setuphelfer_roadmap.schema.json",
+  "milestones_path": "docs/roadmap/setuphelfer_milestones.json",
+  "next_prompts_path": "docs/roadmap/setuphelfer_next_prompts.json",
+  "source_audit_ref": "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md",
+  "status_counts": {
+    "blocked": 3,
+    "deferred": 3,
+    "green": 0,
+    "partial_green": 3,
+    "red": 0,
+    "unknown": 1,
+    "yellow": 3,
+    "deprecated": 0
+  },
+  "recommended_next_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+  "review_required_areas": [
+    "hostpilot-serverguide"
+  ],
+  "authoritative_sources": [
+    "docs/evidence/release-gates/backup_restore_release_gate.json",
+    "docs/evidence/release-gates/apt_update_delivery_gap.json",
+    "docs/dev-dashboard/modules/backup-restore.json",
+    "docs/dev-dashboard/modules/diagnostics.json",
+    "docs/dev-dashboard/modules/rescue-stick.json"
+  ]
+}

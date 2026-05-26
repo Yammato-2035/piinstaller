@@ -1,0 +1,467 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://setuphelfer.local/schemas/setuphelfer_roadmap.schema.json",
+  "title": "Setuphelfer Roadmap Registry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "project_version",
+    "source_commit",
+    "areas"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "project_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_commit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_audit_ref": {
+      "type": "string"
+    },
+    "authoritative_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "areas": {
+      "type": "array",
+      "minItems": 13,
+      "items": {
+        "$ref": "#/$defs/area"
+      }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "green",
+        "partial_green",
+        "yellow",
+        "red",
+        "blocked",
+        "deferred",
+        "unknown",
+        "deprecated"
+      ]
+    },
+    "evidenceLevel": {
+      "type": "string",
+      "enum": [
+        "none",
+        "planning_only",
+        "static_analysis",
+        "unit_tested",
+        "runtime_smoke_tested",
+        "hardware_tested",
+        "end_to_end_verified"
+      ]
+    },
+    "stringOrNull": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": [
+        "id",
+        "title_de",
+        "title_en",
+        "status",
+        "progress_percent",
+        "evidence_links",
+        "blocker_refs",
+        "next_action_de",
+        "next_action_en"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_de": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "progress_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "evidence_links": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "blocker_refs": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "next_action_de": {
+          "type": "string"
+        },
+        "next_action_en": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "blocker": {
+      "type": "object",
+      "required": [
+        "id",
+        "area_id",
+        "title_de",
+        "title_en",
+        "description_de",
+        "description_en",
+        "severity",
+        "status",
+        "first_seen",
+        "last_seen",
+        "resolved_at",
+        "resolution_de",
+        "resolution_en",
+        "evidence_links"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "area_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_de": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description_de": {
+          "type": "string"
+        },
+        "description_en": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "first_seen": {
+          "type": "string"
+        },
+        "last_seen": {
+          "type": "string"
+        },
+        "resolved_at": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "resolution_de": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "resolution_en": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "evidence_links": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": true
+    },
+    "decision": {
+      "type": "object",
+      "required": [
+        "id",
+        "area_id",
+        "title_de",
+        "title_en",
+        "decision_de",
+        "decision_en",
+        "reason_de",
+        "reason_en",
+        "decided_at",
+        "decided_by",
+        "evidence_links"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "area_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_de": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision_de": {
+          "type": "string"
+        },
+        "decision_en": {
+          "type": "string"
+        },
+        "reason_de": {
+          "type": "string"
+        },
+        "reason_en": {
+          "type": "string"
+        },
+        "decided_at": {
+          "type": "string"
+        },
+        "decided_by": {
+          "type": "string"
+        },
+        "evidence_links": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": true
+    },
+    "note": {
+      "type": "object",
+      "required": [
+        "id",
+        "area_id",
+        "text_de",
+        "text_en",
+        "created_at",
+        "author",
+        "evidence_links"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "area_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text_de": {
+          "type": "string"
+        },
+        "text_en": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "evidence_links": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": true
+    },
+    "milestone": {
+      "type": "object",
+      "required": [
+        "id",
+        "title_de",
+        "title_en",
+        "status",
+        "progress_percent",
+        "planned_start",
+        "planned_end",
+        "completed_at",
+        "evidence_links",
+        "tasks",
+        "blockers",
+        "decision_refs",
+        "next_prompt_id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_de": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "progress_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "planned_start": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "planned_end": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "completed_at": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "evidence_links": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/task"
+          }
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/blocker"
+          }
+        },
+        "decision_refs": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "next_prompt_id": {
+          "$ref": "#/$defs/stringOrNull"
+        }
+      },
+      "additionalProperties": true
+    },
+    "area": {
+      "type": "object",
+      "required": [
+        "id",
+        "title_de",
+        "title_en",
+        "description_de",
+        "description_en",
+        "status",
+        "priority",
+        "owner",
+        "planned_start",
+        "planned_end",
+        "completed_at",
+        "evidence_level",
+        "milestones",
+        "blockers",
+        "decisions",
+        "notes",
+        "next_prompt_id",
+        "next_recommended_action"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_de": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description_de": {
+          "type": "string"
+        },
+        "description_en": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "priority": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "planned_start": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "planned_end": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "completed_at": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "evidence_level": {
+          "$ref": "#/$defs/evidenceLevel"
+        },
+        "milestones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/milestone"
+          }
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/blocker"
+          }
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/decision"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/note"
+          }
+        },
+        "next_prompt_id": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "next_recommended_action": {
+          "type": "string"
+        },
+        "authoritative_evidence": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}
