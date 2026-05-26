@@ -1,0 +1,9 @@
+[2026-05-26 21:09:23] lb_build 
+[1;37mP[0m: Automatically populating config tree.
+[2026-05-26 21:09:23] lb_config 
+[1;37mP[0m: Executing auto/config script.
+[2026-05-26 21:09:23] lb_config noauto --distribution bookworm --archive-areas main --binary-images iso-hybrid --debian-installer false --security false --firmware-chroot false --firmware-binary false --bootappend-live boot=live components quiet splash setuphelfer_rescue=1 --iso-volume SETUPHELFER_RESCUE --iso-application Setuphelfer Rescue Live
+[1;37mP[0m: Considering defaults defined in /etc/live/build.conf
+P: Updating config tree for a debian/amd64 system
+[1;37mP[0m: Executing auto/build script.
+Use controlled gate before running lb build.

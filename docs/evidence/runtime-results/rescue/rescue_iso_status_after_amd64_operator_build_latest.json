@@ -1,0 +1,26 @@
+{
+  "checked_at": "2026-05-26T19:11:13.361490+00:00",
+  "commit": "ae4c251",
+  "project_version": "1.7.2",
+  "status": "yellow",
+  "code": "DEV_DASHBOARD_RESCUE_ISO_STEP_REVIEW_REQUIRED",
+  "summary": "Kontrollierter Rescue-ISO-Build ist fuer einen separaten Build-Preflight vorbereitet.",
+  "preflight_readiness": "ready_for_build_preflight",
+  "usb_write": {
+    "allowed": false,
+    "status": "blocked"
+  },
+  "real_iso_build": {
+    "allowed": false,
+    "status": "not_started"
+  },
+  "next_operator_action": {
+    "type": "operator_sudo_required",
+    "commands": [
+      "cd \"/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live\"",
+      "export PATH=\"/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH\"",
+      "./auto/config",
+      "sudo env PATH=\"/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH\" lb build noauto"
+    ]
+  }
+}

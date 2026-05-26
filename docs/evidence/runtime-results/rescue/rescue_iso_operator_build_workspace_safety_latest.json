@@ -1,0 +1,111 @@
+{
+  "checked_at": "2026-05-26T19:08:58.873985+00:00",
+  "commit": "ae4c251",
+  "project_version": "1.7.2",
+  "working_directory": "build/rescue/live-build/setuphelfer-rescue-live",
+  "pre_existing_iso_img_qcow2": [],
+  "root_owned_entries": [
+    {
+      "path": "wget-log.4",
+      "mode": "0o644",
+      "size": 256,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log.11",
+      "mode": "0o644",
+      "size": 366,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log.7",
+      "mode": "0o644",
+      "size": 366,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log.3",
+      "mode": "0o644",
+      "size": 366,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log.8",
+      "mode": "0o644",
+      "size": 256,
+      "is_dir": false
+    },
+    {
+      "path": "chroot.packages.live",
+      "mode": "0o644",
+      "size": 9256,
+      "is_dir": false
+    },
+    {
+      "path": "chroot.headers",
+      "mode": "0o644",
+      "size": 0,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log",
+      "mode": "0o644",
+      "size": 256,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log.6",
+      "mode": "0o644",
+      "size": 256,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log.9",
+      "mode": "0o644",
+      "size": 366,
+      "is_dir": false
+    },
+    {
+      "path": "chroot.packages.install",
+      "mode": "0o644",
+      "size": 8723,
+      "is_dir": false
+    },
+    {
+      "path": "binary.packages",
+      "mode": "0o644",
+      "size": 9256,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log.2",
+      "mode": "0o644",
+      "size": 256,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log.1",
+      "mode": "0o644",
+      "size": 366,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log.10",
+      "mode": "0o644",
+      "size": 256,
+      "is_dir": false
+    },
+    {
+      "path": "wget-log.5",
+      "mode": "0o644",
+      "size": 366,
+      "is_dir": false
+    }
+  ],
+  "root_owned_blockers": [],
+  "wrapper_path": "build/rescue/tool-compat/bin/rsvg",
+  "lb_path": "/usr/bin/lb",
+  "status": "ready",
+  "status_reason": "Keine blockierenden root-owned Build-Verzeichnisse und keine vorbestehenden ISO/IMG/QCOW2-Artefakte. Verbleibende root-owned Dateien sind dokumentiert, aber in diesem Lauf nicht als Safety-Blocker klassifiziert.",
+  "no_build_executed_yet": true
+}

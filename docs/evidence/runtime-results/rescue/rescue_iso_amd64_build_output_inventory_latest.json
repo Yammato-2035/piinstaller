@@ -1,0 +1,16 @@
+{
+  "build_exit_code": 20,
+  "iso_artifacts": [],
+  "image_artifacts": [],
+  "forbidden_artifacts": [],
+  "package_lists": [
+    {
+      "path": "binary.packages",
+      "size_bytes": 9256
+    }
+  ],
+  "artifact_sha256": {},
+  "artifact_sizes": {},
+  "status": "failed",
+  "no_usb_write": true
+}

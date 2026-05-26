@@ -1,0 +1,25 @@
+{
+  "run_status": "failed",
+  "started_at": "2026-05-26T19:09:23.911647+00:00",
+  "commit": "ae4c251",
+  "project_version": "1.7.2",
+  "target_architecture": "amd64",
+  "working_directory": "build/rescue/live-build/setuphelfer-rescue-live",
+  "command": "PATH=\"$(git rev-parse --show-toplevel)/build/rescue/tool-compat/bin:$PATH\" lb build",
+  "environment": {
+    "PATH_prefix": "build/rescue/tool-compat/bin"
+  },
+  "usb_write_allowed": false,
+  "no_usb_write": true,
+  "no_dd": true,
+  "no_mkfs": true,
+  "no_parted_write": true,
+  "logs": {
+    "stdout": "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_amd64_build_stdout_latest.log",
+    "stderr": "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_amd64_build_stderr_latest.log",
+    "combined": "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_amd64_build_combined_latest.log"
+  },
+  "finished_at": "2026-05-26T19:09:24.000727+00:00",
+  "duration_seconds": 0.089,
+  "exit_code": 20
+}
