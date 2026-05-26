@@ -1,0 +1,8 @@
+START 2026-05-26T22:15:26+02:00
+[2026-05-26 22:15:26] lb_config noauto --distribution bookworm --archive-areas main --binary-images iso-hybrid --debian-installer false --security false --firmware-chroot false --firmware-binary false --bootappend-live boot=live components quiet splash setuphelfer_rescue=1 --iso-volume SETUPHELFER_RESCUE --iso-application Setuphelfer Rescue Live
+[1;37mP[0m: Considering defaults defined in /etc/live/build.conf
+P: Updating config tree for a debian/amd64 system
+sudo: ein Terminal ist erforderlich, um das Passwort zu lesen; verwenden Sie entweder die Option -S zum Lesen von der Standardeingabe oder konfigurieren Sie einen Askpass-Helfer
+sudo: Ein Passwort ist notwendig
+LB_EXIT=1
+OK: summary written to /home/volker/piinstaller/docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json

@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-05-26T20:14:55.767780+00:00",
+  "commit": "df1397a",
+  "wrapper_path": "scripts/rescue-live/run-controlled-iso-build-with-logging.sh",
+  "requires_operator_confirmation": true,
+  "uses_lb_build_noauto": true,
+  "uses_project_local_rsvg_path": true,
+  "forbidden_commands_found": [],
+  "usb_write_present": false,
+  "global_symlink_present": false,
+  "system_patch_present": false,
+  "status": "ready",
+  "status_reason": "dd/mkfs/parted erscheinen nur in Guard-/Hinweistexten; der Wrapper fuehrt ausschliesslich ./auto/config und sudo env PATH=... lb build noauto aus.",
+  "no_build_executed_yet": true
+}

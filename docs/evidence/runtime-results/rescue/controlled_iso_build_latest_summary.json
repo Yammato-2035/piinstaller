@@ -1,142 +1,22 @@
 {
-  "schema_version": 2,
-  "phase": "controlled_rescue_iso_build",
-  "updated_at": "2026-05-25T20:09:00+00:00",
+  "controlled_iso_build_summary_schema_version": 1,
+  "started_at": "2026-05-26T22:15:26+02:00",
+  "ended_at": "2026-05-26T22:15:26+02:00",
+  "exit_code": 1,
   "status": "failed",
-  "last_action_id": "operator-lb-build-20260525T2001",
-  "last_step": "operator_lb_build_noauto",
-  "last_action_status": "failed",
-  "last_exit_code": 127,
-  "last_error": "/usr/bin/env: 'rsvg': No such file or directory",
-  "primary_error": "/usr/bin/env: 'rsvg': No such file or directory",
-  "latest_log_path": "build/rescue/logs/controlled-iso-build/latest.log",
   "iso_found": false,
   "iso_path": null,
-  "iso_abs_path": null,
-  "iso_size_bytes": null,
-  "iso_sha256": null,
-  "usb_write_started": false,
-  "usb_target": null,
-  "operator_confirm_1": false,
-  "operator_confirm_2": false,
-  "dd_executed": false,
-  "usb_verify_executed": false,
-  "dashboard_status_after_failure": "red",
-  "next_required_action": "fix_missing_rsvg_or_remove_rsvg_dependency",
+  "iso_size": null,
+  "sha256": null,
+  "last_120_lines": [
+    "START 2026-05-26T22:15:26+02:00",
+    "[2026-05-26 22:15:26] lb_config noauto --distribution bookworm --archive-areas main --binary-images iso-hybrid --debian-installer false --security false --firmware-chroot false --firmware-binary false --bootappend-live boot=live components quiet splash setuphelfer_rescue=1 --iso-volume SETUPHELFER_RESCUE --iso-application Setuphelfer Rescue Live",
+    "\u001b[1;37mP\u001b[0m: Considering defaults defined in /etc/live/build.conf",
+    "P: Updating config tree for a debian/amd64 system",
+    "sudo: ein Terminal ist erforderlich, um das Passwort zu lesen; verwenden Sie entweder die Option -S zum Lesen von der Standardeingabe oder konfigurieren Sie einen Askpass-Helfer",
+    "sudo: Ein Passwort ist notwendig",
+    "LB_EXIT=1"
+  ],
   "usb_write_allowed": false,
-  "dd_allowed": false,
-  "no_fake_green": true,
-  "warnings": [
-    "scan_review_required_secret_hits",
-    "scan_review_required_cdn_hits",
-    "usb_phase_blocked_until_successful_iso_exists"
-  ],
-  "errors": [
-    "lb_exit_127",
-    "iso_missing",
-    "usb_write_not_attempted"
-  ],
-  "details": {
-    "runtime_path": "/opt/setuphelfer",
-    "workspace_path": "/home/volker/piinstaller",
-    "build_root": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
-    "lb_exit": 127,
-    "failure_reason": "/usr/bin/env: 'rsvg': No such file or directory",
-    "scan_status": "review_required",
-    "scan_secret_hits_count": 8,
-    "scan_cdn_hits_count": 1,
-    "usb_write_blocked": true
-  },
-  "dashboard_state": {
-    "status": "red",
-    "summary": "sudo clean erforderlich wegen stale root-owned Build-State",
-    "runtime_path": "/opt/setuphelfer",
-    "workspace_path": "/home/volker/piinstaller",
-    "path_mode": "workspace_build_runtime_opt",
-    "path_status": "ok",
-    "repo": {
-      "head": "fe36af0",
-      "branch": "main",
-      "runtime_gate": "green",
-      "runtime_gate_exit": 0,
-      "runtime_gate_summary": "ok"
-    },
-    "build_tree": {
-      "path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
-      "validator_status": "ok",
-      "source_head": "fe36af0"
-    },
-    "temp_runtime_bundle": {
-      "status": "ok",
-      "source_head": "fe36af0"
-    },
-    "dpkg_preflight": {
-      "status": "pre_chroot_ok",
-      "last_exit_code": 0,
-      "summary": "Preflight ok vor chroot-Erzeugung"
-    },
-    "stale_state": {
-      "present": true,
-      "needs_sudo_clean": true,
-      "indicators": [
-        "chroot_package-lists.install stale"
-      ],
-      "root_owned_stage_files_sample": [
-        "build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_package-lists.install",
-        "build/rescue/live-build/setuphelfer-rescue-live/chroot",
-        "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/bin",
-        "build/rescue/live-build/setuphelfer-rescue-live/chroot/root"
-      ]
-    },
-    "iso_build": {
-      "status": "failed",
-      "last_exit_code": 127,
-      "last_error": "/usr/bin/env: 'rsvg': No such file or directory",
-      "iso_found": false,
-      "iso_path": null,
-      "iso_sha256": null
-    },
-    "usb_write": {
-      "allowed": false,
-      "status": "blocked",
-      "reason": "separate gate required"
-    },
-    "logs": {
-      "latest_log_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build/latest.log",
-      "last_error": "/usr/bin/env: 'rsvg': No such file or directory"
-    },
-    "next_operator_action": {
-      "type": "sudo_clean_required",
-      "label": "Stale root-owned Build-State erkannt; Operator-Sudo-Clean erforderlich.",
-      "commands": [
-        "cd \"/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live\"",
-        "sudo rm -rf .build chroot cache binary local config/includes.chroot/opt/setuphelfer-rescue config/includes.chroot/opt/setuphelfer-rescue.old.*"
-      ]
-    }
-  },
-  "current_fix_verification_2026_05_26": {
-    "base_notification_commit": "3adfc13",
-    "runtime_gate_exit": 0,
-    "services": {
-      "setuphelfer-backend.service": "active",
-      "setuphelfer.service": "active"
-    },
-    "project_version": "1.7.2",
-    "backend_runtime_path": "/opt/setuphelfer/backend",
-    "no_new_iso_build_executed": true,
-    "rsvg_preflight": {
-      "status": "blocked",
-      "error_code": "blocked_build_tools_missing",
-      "summary": "live-build erwartet 'rsvg' fuer die splash.svg.in-zu-splash.png-Konvertierung; auf dem Host ist weder rsvg noch rsvg-convert vorhanden.",
-      "hint_package": "librsvg2-bin",
-      "install_command": "sudo apt install librsvg2-bin"
-    },
-    "current_dashboard_state": {
-      "status": "red",
-      "summary": "sudo clean erforderlich wegen stale root-owned Build-State",
-      "iso_build_status": "not_started",
-      "usb_write_allowed": false,
-      "next_operator_action_type": "build_dependency_required"
-    }
-  }
+  "dd_executed": false
 }

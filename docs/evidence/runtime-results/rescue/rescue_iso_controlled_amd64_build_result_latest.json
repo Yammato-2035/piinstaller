@@ -1,0 +1,42 @@
+{
+  "result_status": "blocked",
+  "error_code": "blocked_requires_operator_sudo_policy",
+  "category": "operator_policy",
+  "project_version": "1.7.2",
+  "commit": "df1397a",
+  "target_architecture": "amd64",
+  "controlled_wrapper": true,
+  "direct_lb_build": false,
+  "started_at": "2026-05-26T20:15:26.139220+00:00",
+  "finished_at": "2026-05-26T20:15:26.230319+00:00",
+  "duration_seconds": 0.091,
+  "exit_code": 1,
+  "iso_created": false,
+  "iso_path": null,
+  "iso_size_bytes": null,
+  "iso_sha256": null,
+  "logs": {
+    "stdout": "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_controlled_amd64_build_stdout_latest.log",
+    "stderr": "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_controlled_amd64_build_stderr_latest.log",
+    "combined": "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_controlled_amd64_build_combined_latest.log",
+    "wrapper_latest": "build/rescue/logs/controlled-iso-build/latest.log",
+    "wrapper_summary": "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
+  },
+  "usb_write_performed": false,
+  "boot_test_performed": false,
+  "restore_performed": false,
+  "backup_performed": false,
+  "verify_deep_performed": false,
+  "safety_notes": [
+    "Kein direkter lb build verwendet.",
+    "Kein USB-Write ausgeführt.",
+    "Kein dd/mkfs/parted ausgeführt.",
+    "Kein zweiter Build-Versuch ausgeführt."
+  ],
+  "errors": [
+    "Wrapper lief gate-konform an, aber sudo konnte ohne Terminal/Passwort nicht kontrolliert fortgesetzt werden."
+  ],
+  "warnings": [
+    "Kein direkter lb build verwendet; der Wrapper startete ./auto/config und versuchte danach sudo env PATH=... lb build noauto."
+  ]
+}

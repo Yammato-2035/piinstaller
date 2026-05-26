@@ -1,0 +1,21 @@
+{
+  "build_exit_code": 1,
+  "iso_artifacts": [],
+  "image_artifacts": [],
+  "forbidden_artifacts": [],
+  "package_lists": [
+    {
+      "path": "binary.packages",
+      "size_bytes": 9256,
+      "mtime": "2026-05-25T20:00:36.761562+00:00",
+      "owner": "root",
+      "group": "workspace"
+    }
+  ],
+  "artifact_sha256": {},
+  "artifact_sizes": {},
+  "status": "blocked",
+  "no_usb_write": true,
+  "no_boot_test": true,
+  "no_restore_test": true
+}

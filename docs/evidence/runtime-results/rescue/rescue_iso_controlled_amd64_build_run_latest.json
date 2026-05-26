@@ -1,0 +1,28 @@
+{
+  "run_status": "failed",
+  "started_at": "2026-05-26T20:15:26.139220+00:00",
+  "commit": "df1397a",
+  "project_version": "1.7.2",
+  "target_architecture": "amd64",
+  "controlled_wrapper": "scripts/rescue-live/run-controlled-iso-build-with-logging.sh",
+  "operator_confirmation": true,
+  "direct_lb_build": false,
+  "usb_write_allowed": false,
+  "usb_write_performed": false,
+  "boot_test_performed": false,
+  "restore_performed": false,
+  "backup_performed": false,
+  "verify_deep_performed": false,
+  "logs": {
+    "stdout": "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_controlled_amd64_build_stdout_latest.log",
+    "stderr": "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_controlled_amd64_build_stderr_latest.log",
+    "combined": "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_controlled_amd64_build_combined_latest.log"
+  },
+  "wrapper_log_paths": {
+    "latest": "build/rescue/logs/controlled-iso-build/latest.log",
+    "summary": "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
+  },
+  "finished_at": "2026-05-26T20:15:26.230319+00:00",
+  "duration_seconds": 0.091,
+  "exit_code": 1
+}
