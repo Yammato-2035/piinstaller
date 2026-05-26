@@ -1,0 +1,47 @@
+{
+  "checked_at": "2026-05-26T18:14:47.641182+00:00",
+  "commit": "1801b61",
+  "project_version": "1.7.2",
+  "runtime_gate_exit": 0,
+  "status": "blocked_rsvg_dependency",
+  "dashboard_status": "red",
+  "summary": "live-build erwartet den Legacy-Befehl 'rsvg' fuer die splash.svg.in-zu-splash.png-Konvertierung; vorhanden ist nur rsvg-convert.",
+  "cleanup_status": {
+    "present": false,
+    "needs_sudo_clean": false,
+    "status": "clean"
+  },
+  "rsvg_verify_status": {
+    "status": "ready",
+    "rsvg_convert_path": "/usr/bin/rsvg-convert",
+    "rsvg_path": null,
+    "librsvg2_bin_installed": true
+  },
+  "rsvg_preflight": {
+    "status": "blocked",
+    "error_code": "blocked_build_tools_missing",
+    "summary": "live-build erwartet den Legacy-Befehl 'rsvg' fuer die splash.svg.in-zu-splash.png-Konvertierung; vorhanden ist nur rsvg-convert.",
+    "legacy_path": null,
+    "compat_path": "/usr/bin/rsvg-convert",
+    "warnings": [
+      "rsvg-convert allein wird vom aktuellen lb_binary_syslinux nicht direkt aufgerufen."
+    ]
+  },
+  "usb_write": {
+    "allowed": false,
+    "status": "blocked",
+    "reason": "separate gate required"
+  },
+  "real_iso_build": {
+    "allowed": false,
+    "status": "not_started"
+  },
+  "next_operator_action": {
+    "type": "build_dependency_required",
+    "label": "live-build erwartet den Legacy-Befehl 'rsvg' fuer die splash.svg.in-zu-splash.png-Konvertierung; vorhanden ist nur rsvg-convert.",
+    "commands": [
+      "sudo apt install librsvg2-bin"
+    ]
+  },
+  "no_real_build_started_by_cursor": true
+}

@@ -1,0 +1,40 @@
+{
+  "checked_at": "2026-05-26T18:14:47.641182+00:00",
+  "commit": "1801b61",
+  "project_version": "1.7.2",
+  "expected_removed_paths": [
+    "build/rescue/live-build/setuphelfer-rescue-live/.build",
+    "build/rescue/live-build/setuphelfer-rescue-live/chroot",
+    "build/rescue/live-build/setuphelfer-rescue-live/cache",
+    "build/rescue/live-build/setuphelfer-rescue-live/binary"
+  ],
+  "removed_paths": [
+    "build/rescue/live-build/setuphelfer-rescue-live/.build",
+    "build/rescue/live-build/setuphelfer-rescue-live/chroot",
+    "build/rescue/live-build/setuphelfer-rescue-live/cache",
+    "build/rescue/live-build/setuphelfer-rescue-live/binary"
+  ],
+  "remaining_paths": [],
+  "remaining_root_owned_entries": [
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.1",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.2",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.3",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.4",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.5",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.6",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.7",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.8",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.9",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.10",
+    "build/rescue/live-build/setuphelfer-rescue-live/wget-log.11",
+    "build/rescue/live-build/setuphelfer-rescue-live/chroot.headers",
+    "build/rescue/live-build/setuphelfer-rescue-live/chroot.packages.install",
+    "build/rescue/live-build/setuphelfer-rescue-live/chroot.packages.live",
+    "build/rescue/live-build/setuphelfer-rescue-live/binary.packages"
+  ],
+  "cleanup_verified": true,
+  "status": "clean",
+  "status_reason": "Die zuvor blockierenden Verzeichnisse .build, chroot, cache und binary sind entfernt. Verbleibende root-owned Dateien werden vom aktuellen Rescue-Status nicht mehr als stale/blockierend klassifiziert.",
+  "no_cleanup_executed_by_cursor": true
+}

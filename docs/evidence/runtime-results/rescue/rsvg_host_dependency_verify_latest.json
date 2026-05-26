@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-05-26T18:14:47.641182+00:00",
+  "commit": "1801b61",
+  "project_version": "1.7.2",
+  "rsvg_convert_path": "/usr/bin/rsvg-convert",
+  "rsvg_path": null,
+  "librsvg2_bin_installed": true,
+  "version_output": "rsvg-convert version 2.58.0",
+  "status": "ready",
+  "status_reason": "Das Host-Paket librsvg2-bin ist installiert und rsvg-convert ist verfuegbar. Der aktuelle Rescue-Preflight blockiert trotzdem weiter, weil live-build hier den Legacy-Befehl 'rsvg' statt nur rsvg-convert erwartet.",
+  "no_install_executed_by_cursor": true
+}

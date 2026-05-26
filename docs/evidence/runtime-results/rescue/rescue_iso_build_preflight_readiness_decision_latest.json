@@ -1,0 +1,27 @@
+{
+  "decision_status": "review_required",
+  "project_version": "1.7.2",
+  "commit": "1801b61",
+  "cleanup_status": "clean",
+  "rsvg_status": "ready",
+  "rescue_iso_status": "blocked_rsvg_dependency",
+  "usb_write_allowed": false,
+  "real_iso_build_allowed": false,
+  "next_recommended_prompt": "RESCUE_PREFLIGHT_REVIEW_REQUIRED_TRIAGE",
+  "reason": "Der Operator-Cleanup ist verifiziert und librsvg2-bin stellt rsvg-convert bereit. Der aktuelle Rescue-Preflight blockiert dennoch weiter, weil das verwendete live-build/lb_binary_syslinux weiterhin den Legacy-Befehl 'rsvg' erwartet und rsvg-convert allein nicht als ausreichend akzeptiert.",
+  "blocking_items": [
+    "Rescue-Preflight meldet weiter blocked_build_tools_missing, obwohl rsvg-convert vorhanden ist.",
+    "legacy_path fuer 'rsvg' bleibt null; compat_path fuer rsvg-convert ist gesetzt.",
+    "next_operator_action zeigt weiterhin build_dependency_required statt einer reinen Build-Preflight-Freigabe."
+  ],
+  "required_operator_actions": [],
+  "required_follow_up_actions": [
+    "Rescue-Preflight-Logik gegen den aktuellen Host-Zustand pruefen.",
+    "Entscheiden, ob ein Legacy-Alias 'rsvg' erforderlich ist oder die Preflight-Pruefung/Operator-Hinweise angepasst werden muessen."
+  ],
+  "evidence_files": [
+    "docs/evidence/runtime-results/rescue/stale_build_state_cleanup_verify_latest.json",
+    "docs/evidence/runtime-results/rescue/rsvg_host_dependency_verify_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_iso_status_after_operator_cleanup_and_rsvg_latest.json"
+  ]
+}
