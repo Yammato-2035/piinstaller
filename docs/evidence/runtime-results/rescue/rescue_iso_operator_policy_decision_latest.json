@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-05-26T20:36:15.077581+00:00",
+  "commit": "db05447",
+  "project_version": "1.7.2",
+  "decision_status": "manual_operator_terminal_required",
+  "chosen_short_term_policy": "manual_operator_terminal",
+  "chosen_product_policy": "systemd_root_helper_design_required",
+  "rejected_options": [
+    "password_stdin",
+    "askpass_hack",
+    "broad_nopasswd"
+  ],
+  "safety_reasoning": [
+    "Der Buildpfad ist fachlich klar, aber Root-Rechte duerfen nicht ueber Passwort-Weitergabe in nicht-interaktiven Kontexten erzwungen werden.",
+    "Ein echtes Operator-Terminal ist kurzfristig sicher, nachvollziehbar und sofort verfuegbar.",
+    "Eine eng begrenzte sudo-Allowlist ist als Designpfad okay, darf aber nur vom Operator installiert werden.",
+    "Ein systemd-/Polkit-Root-Helper bleibt der spaetere Produktpfad mit separatem Test- und Freigabe-Gate."
+  ],
+  "exact_next_operator_requirement": "Wrapper nur aus einem echten Operator-Terminal mit gueltigen sudo-Rechten starten oder vorab eine eng begrenzte dokumentierte Allowlist fuer genau diesen Wrapper installieren.",
+  "no_policy_installed": true,
+  "no_sudo_executed": true
+}

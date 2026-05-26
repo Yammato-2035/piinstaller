@@ -13,6 +13,7 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
     code = (signals.get("code") or "").strip().lower()
     details_diag = (signals.get("details.diagnosis_id") or signals.get("diagnosis_id") or "").strip().upper()
     stderr = (signals.get("stderr") or "").strip().lower()
+    summary = (signals.get("summary") or "").strip().lower()
     unreadable_sources = (signals.get("unreadable_sources") or "").strip().lower()
     owner_mode = (signals.get("mount_owner_mode") or signals.get("owner_mode") or "").strip().lower()
     probe_err = (signals.get("target_probe_error") or "").strip().lower()
@@ -81,6 +82,27 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
         hits.append("OWNER-MODE-023")
     if signals.get("raspi_boot_ok") == "false":
         hits.append("PI-BOOT-024")
+    if code == "blocked_requires_operator_sudo_policy" or details_diag == "RESCUE-BUILD-ROOT-001":
+        hits.append("RESCUE-BUILD-ROOT-001")
+    if (
+        "sudo: ein terminal ist erforderlich" in stderr
+        or "sudo: ein passwort ist notwendig" in stderr
+        or "sudo: a terminal is required" in stderr
+        or "sudo: a password is required" in stderr
+        or "blocked_requires_operator_sudo_policy" in summary
+    ):
+        hits.append("RESCUE-BUILD-ROOT-001")
+    if code == "blocked_controlled_build_gate_required" or details_diag == "RESCUE-BUILD-GATE-001":
+        hits.append("RESCUE-BUILD-GATE-001")
+    if "use controlled gate before running lb build" in stderr or "use controlled gate before running lb build" in summary:
+        hits.append("RESCUE-BUILD-GATE-001")
+    if signals.get("target_architecture") == "amd64" and (
+        signals.get("i386_covered") == "false"
+        or signals.get("arm64_covered") == "false"
+        or signals.get("armhf_covered") == "false"
+        or signals.get("architecture_track_status") == "review_required"
+    ):
+        hits.append("RESCUE-BUILD-ARCH-001")
 
     sc_ids = (signals.get("service_conflict_ids") or "").upper()
     for token in (
@@ -151,6 +173,12 @@ def _pattern_matches(question: str) -> list[str]:
         )
     if "windows" in question and ("laufwerk" in question or "disk" in question or "partition" in question):
         hits.append("STORAGE-PROTECTION-003")
+    if "rescue" in question and "sudo" in question:
+        hits.append("RESCUE-BUILD-ROOT-001")
+    if "lb build" in question and "gate" in question:
+        hits.append("RESCUE-BUILD-GATE-001")
+    if "rescue" in question and "architektur" in question:
+        hits.append("RESCUE-BUILD-ARCH-001")
     return hits
 
 

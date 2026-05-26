@@ -39,6 +39,32 @@ Wichtig:
 - `lb build noauto` ist nur im kontrollierten Operator-Kontext zulaessig.
 - Der projektlokale `rsvg`-Wrapper muss ueber `PATH` bevorzugt werden.
 
+## Neues Operator-Policy-Gate
+
+Der letzte gate-konforme Wrapper-Lauf scheiterte **nicht** an `rsvg`, Toolchain oder `live-build`-Konfiguration, sondern an fehlender kontrollierter Root-Ausführung:
+
+- `sudo: ein Terminal ist erforderlich`
+- `sudo: Ein Passwort ist notwendig`
+
+Deshalb trennt Setuphelfer jetzt sauber zwischen:
+
+- `RESCUE-BUILD-GATE-001`: direkter `lb build` wurde absichtlich vom `auto/build`-Gate blockiert
+- `RESCUE-BUILD-ROOT-001`: kontrollierter Wrapper-Pfad ist bekannt, aber sichere Root-Ausführung fehlt
+
+## Was als sichere Root-Ausführung gilt
+
+- echtes Operator-Terminal mit interaktivem `sudo`
+- oder eng begrenzte dokumentierte sudo-Allowlist nur fuer den freigegebenen Wrapper
+- spaeter optional: separater Root-Helper (`systemd-run`/Polkit/Root-Unit) als Produktpfad
+
+Nicht erlaubt:
+
+- Passwort via stdin
+- Askpass-Helfer als Workaround
+- breites/globales `NOPASSWD`
+- Aenderungen an `/usr/lib/live/build`
+- Deaktivieren oder Umgehen des `auto/build`-Gates
+
 ## Was weiterhin getrennt bleibt
 
 - USB-Write bleibt ein separates Safety-Gate.

@@ -1,6 +1,6 @@
 # Runbook — Controlled Rescue ISO Build
 
-**Version:** 1.1
+**Version:** 1.2
 **real_iso_build_allowed:** `false` (bis explizite Operator-Freigabe)
 **usb_write_allowed:** `false`
 
@@ -16,6 +16,11 @@ Schritt-für-Schritt-Anleitung für einen **kontrollierten** Debian-Live-ISO-Bui
 4. **Temp-Bundle:** Validator Exit **0**
 5. **Build-Tree:** `validate-controlled-live-build-tree.sh` Exit **0**
 6. **Operator-Freigabe** schriftlich (Issue/Ticket/E-Mail)
+7. **Operator-Policy-Gate:** Safe Root-Ausführung ist dokumentiert:
+   - kurzfristig bevorzugt: echtes Operator-Terminal mit `sudo`
+   - alternativ: eng begrenzte sudo-Allowlist für genau den dokumentierten Wrapper
+   - Produkt-Roadmap: separater `systemd`-/Root-Helper
+   - **nicht erlaubt:** Passwort über stdin, Askpass-Hacks, globales `NOPASSWD`, direkter `lb build`
 
 ## Vorbereitung (Repo)
 
@@ -68,11 +73,34 @@ export PATH="/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH"
 sudo env PATH="/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH" lb build noauto
 ```
 
+Vor `./auto/config` und `lb build` prueft der Wrapper jetzt explizit:
+
+- ob bereits Root-Rechte aktiv sind
+- ob der Aufruf in einem echten TTY/Operator-Terminal laeuft
+- ob `sudo -n true` als enge Non-Interactive-Policy funktioniert
+
+Wenn **keine** sichere Root-Ausführung verfuegbar ist, wird **kein** Build gestartet. Der Wrapper beendet dann mit Exit `30` und meldet:
+
+```text
+blocked_requires_operator_sudo_policy
+Run this command from an operator terminal with sudo privileges or install the documented allowlisted policy.
+```
+
 **NICHT automatisch ausführen**, solange das Dashboard `operator_required` meldet.
 
 Wenn das Dashboard `build_dependency_required` oder `blocked_build_tools_missing` meldet, **kein** `lb build` starten. Zuerst die benoetigte Build-Abhaengigkeit am Build-Host bereitstellen und den Preflight erneut pruefen.
 
 `auto/build` im Repo ist absichtlich blockiert (Exit 20). Ein direkter Aufruf wie `lb build` ohne `noauto` ist deshalb verboten und wird bewusst vom Gate gestoppt.
+
+## Operator-Policy-Gate
+
+Das Developer Dashboard zeigt den Root-Bedarf jetzt als eigenes Gate:
+
+- `status=review_required`, wenn der Buildpfad vorbereitet ist, aber noch ein echtes Operator-Terminal oder eine dokumentierte Allowlist-Policy fehlt
+- `error_code=blocked_requires_operator_sudo_policy`, wenn ein Wrapper-Lauf genau daran scheiterte
+- `status=ready` erst dann, wenn ein dokumentierter Root-Pfad fuer den kontrollierten Build zur Verfuegung steht
+
+Das Rescue-ISO bleibt trotz dieses Fortschritts **gelb**, bis ein echtes ISO-Artefakt vorliegt. USB-Write, Boot-Test und Restore bleiben getrennte Folgephasen.
 
 ## Erwartete Artefakte (nach Build)
 

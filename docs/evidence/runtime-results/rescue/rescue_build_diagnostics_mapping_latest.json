@@ -1,0 +1,123 @@
+{
+  "checked_at": "2026-05-26T20:36:15.077581+00:00",
+  "commit": "db05447",
+  "project_version": "1.7.2",
+  "diagnostic_codes": [
+    {
+      "id": "RESCUE-BUILD-ROOT-001",
+      "maps_from": [
+        "blocked_requires_operator_sudo_policy",
+        "sudo: ein Terminal ist erforderlich",
+        "sudo: a terminal is required"
+      ],
+      "docs": [
+        "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+        "docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md"
+      ]
+    },
+    {
+      "id": "RESCUE-BUILD-GATE-001",
+      "maps_from": [
+        "blocked_controlled_build_gate_required",
+        "Use controlled gate before running lb build."
+      ],
+      "docs": [
+        "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+        "docs/knowledge-base/recovery/RESCUE_ISO_CONTROLLED_BUILD_GATE.md"
+      ]
+    },
+    {
+      "id": "RESCUE-BUILD-ARCH-001",
+      "maps_from": [
+        "target_architecture=amd64 with i386/arm64/armhf not covered",
+        "architecture_track_status=review_required"
+      ],
+      "docs": [
+        "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+        "docs/architecture/RESCUE_TARGET_ARCHITECTURE_MATRIX.md"
+      ]
+    }
+  ],
+  "workspace_dashboard_preview": {
+    "operator_policy_gate": {
+      "status": "blocked",
+      "error_code": null,
+      "summary": "Operator-Policy wird erst relevant, wenn Runtime-, Toolchain- und Build-Preflight nicht mehr blockieren.",
+      "next_action": null,
+      "allowed_execution_modes": [
+        "manual_operator_terminal",
+        "sudoers_allowlist_design",
+        "systemd_root_helper_future"
+      ],
+      "forbidden_execution_modes": [
+        "password_stdin",
+        "askpass_hack",
+        "broad_nopasswd",
+        "direct_lb_build"
+      ],
+      "evidence_links": [
+        "docs/evidence/runtime-results/rescue/rescue_iso_controlled_amd64_build_result_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_iso_controlled_amd64_build_decision_latest.json"
+      ]
+    },
+    "rescue_build_progress": {
+      "target_architecture": "amd64",
+      "preflight": "blocked",
+      "controlled_gate": "ready",
+      "operator_policy": "blocked",
+      "iso_artifact": "not_started",
+      "artifact_verify": "not_started",
+      "boot_test": "not_started",
+      "usb_write": "blocked",
+      "restore_test": "deferred"
+    }
+  },
+  "tests": [
+    "backend.tests.test_rescue_build_diagnostics_mapping_v1",
+    "backend.tests.test_rescue_operator_policy_gate_v1",
+    "backend.tests.test_rescue_iso_build_result_classification_v1"
+  ],
+  "status": "ready",
+  "simulated_green_runtime_preview": {
+    "status": "yellow",
+    "summary": "Kontrollierte Root-Ausführung fehlt noch: nutze für den nächsten echten Build ein echtes Operator-Terminal mit sudo-Rechten oder eine eng begrenzte dokumentierte Allowlist-Policy.",
+    "preflight_readiness": "ready_for_build_preflight",
+    "operator_policy_gate": {
+      "status": "review_required",
+      "error_code": "blocked_requires_operator_sudo_policy",
+      "summary": "Kontrollierte Root-Ausführung fehlt noch: nutze für den nächsten echten Build ein echtes Operator-Terminal mit sudo-Rechten oder eine eng begrenzte dokumentierte Allowlist-Policy.",
+      "next_action": "manual_operator_terminal_required",
+      "allowed_execution_modes": [
+        "manual_operator_terminal",
+        "sudoers_allowlist_design",
+        "systemd_root_helper_future"
+      ],
+      "forbidden_execution_modes": [
+        "password_stdin",
+        "askpass_hack",
+        "broad_nopasswd",
+        "direct_lb_build"
+      ],
+      "evidence_links": [
+        "docs/evidence/runtime-results/rescue/rescue_iso_operator_sudo_policy_triage_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_iso_operator_policy_decision_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_iso_controlled_wrapper_policy_guard_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_operator_policy_gate_decision_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_iso_controlled_amd64_build_result_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_iso_controlled_amd64_build_decision_latest.json"
+      ]
+    },
+    "rescue_build_progress": {
+      "target_architecture": "amd64",
+      "preflight": "ready",
+      "controlled_gate": "ready",
+      "operator_policy": "review_required",
+      "iso_artifact": "not_started",
+      "artifact_verify": "not_started",
+      "boot_test": "not_started",
+      "usb_write": "blocked",
+      "restore_test": "deferred"
+    }
+  },
+  "workspace_dashboard_preview_note": "Undeployed workspace changes currently keep the live runtime comparison separate; simulated_green_runtime_preview shows the expected post-deploy operator-policy gate state."
+}

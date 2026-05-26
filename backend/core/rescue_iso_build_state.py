@@ -19,11 +19,16 @@ from typing import Any
 
 from core.rescue_iso_operator_commands import (
     build_operator_build_commands,
-    inspect_rsvg_build_dependency,
     build_sudo_clean_commands,
+    inspect_rsvg_build_dependency,
     resolve_rescue_iso_paths,
 )
-from core.rescue_iso_controlled_build_gate import read_latest_rescue_iso_build_attempt
+from core.rescue_iso_controlled_build_gate import (
+    CONTROLLED_GATE_ERROR_CODE,
+    CONTROLLED_ROOT_POLICY_ERROR_CODE,
+    CONTROLLED_ROOT_POLICY_NEXT_ACTION,
+    read_latest_rescue_iso_build_attempt,
+)
 
 UTC = timezone.utc
 
@@ -554,6 +559,98 @@ def build_rescue_target_architecture_matrix() -> dict[str, Any]:
     }
 
 
+def build_operator_policy_gate(
+    *,
+    repo_root: Path,
+    latest_attempt: dict[str, Any],
+    iso_build: dict[str, Any],
+    preflight_readiness: str,
+) -> dict[str, Any]:
+    evidence_candidates = [
+        "docs/evidence/runtime-results/rescue/rescue_iso_operator_sudo_policy_triage_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_iso_operator_policy_decision_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_iso_controlled_wrapper_policy_guard_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_operator_policy_gate_decision_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_iso_controlled_amd64_build_result_latest.json",
+        "docs/evidence/runtime-results/rescue/rescue_iso_controlled_amd64_build_decision_latest.json",
+    ]
+    evidence_links = [rel for rel in evidence_candidates if (repo_root / rel).exists()]
+    summary = "Operator-Policy für kontrollierte Root-Ausführung noch nicht dokumentiert."
+    status = "review_required"
+    error_code = None
+    next_action = None
+
+    if _backend_sudo_allowed():
+        status = "ready"
+        summary = "Dokumentierter Root-Pfad ist freigegeben; echter Build bleibt trotzdem operator-confirm-only."
+    elif iso_build.get("status") == "success":
+        status = "ready"
+        summary = "ISO-Artefakt ist bereits vorhanden; Operator-Policy-Gate bleibt als dokumentierter Buildpfad erhalten."
+    elif preflight_readiness == "blocked":
+        status = "blocked"
+        summary = "Operator-Policy wird erst relevant, wenn Runtime-, Toolchain- und Build-Preflight nicht mehr blockieren."
+    elif str(latest_attempt.get("error_code") or iso_build.get("error_code") or "") == CONTROLLED_ROOT_POLICY_ERROR_CODE:
+        status = "review_required"
+        error_code = CONTROLLED_ROOT_POLICY_ERROR_CODE
+        next_action = CONTROLLED_ROOT_POLICY_NEXT_ACTION
+        summary = (
+            "Kontrollierte Root-Ausführung fehlt noch: nutze für den nächsten echten Build ein "
+            "echtes Operator-Terminal mit sudo-Rechten oder eine eng begrenzte dokumentierte Allowlist-Policy."
+        )
+    elif preflight_readiness == "ready_for_build_preflight":
+        status = "review_required"
+        error_code = CONTROLLED_ROOT_POLICY_ERROR_CODE
+        next_action = CONTROLLED_ROOT_POLICY_NEXT_ACTION
+        summary = (
+            "Build-Preflight ist bereit, aber der echte ISO-Build bleibt blockiert, bis eine sichere "
+            "Operator-Policy für Root-Ausführung gewählt und dokumentiert ist."
+        )
+
+    return {
+        "status": status,
+        "error_code": error_code,
+        "summary": summary,
+        "next_action": next_action,
+        "allowed_execution_modes": [
+            "manual_operator_terminal",
+            "sudoers_allowlist_design",
+            "systemd_root_helper_future",
+        ],
+        "forbidden_execution_modes": [
+            "password_stdin",
+            "askpass_hack",
+            "broad_nopasswd",
+            "direct_lb_build",
+        ],
+        "evidence_links": evidence_links,
+    }
+
+
+def build_rescue_build_progress(
+    *,
+    preflight_readiness: str,
+    build_tree: dict[str, Any],
+    operator_policy_gate: dict[str, Any],
+    iso_build: dict[str, Any],
+) -> dict[str, Any]:
+    controlled_gate = (
+        "ready"
+        if build_tree.get("auto_config_noauto") and build_tree.get("auto_build_blocked")
+        else ("blocked" if build_tree.get("validator_status") == "blocked" else "review_required")
+    )
+    return {
+        "target_architecture": "amd64",
+        "preflight": "ready" if preflight_readiness == "ready_for_build_preflight" else preflight_readiness,
+        "controlled_gate": controlled_gate,
+        "operator_policy": str(operator_policy_gate.get("status") or "review_required"),
+        "iso_artifact": "ready" if iso_build.get("iso_found") else "not_started",
+        "artifact_verify": "not_started",
+        "boot_test": "not_started",
+        "usb_write": "blocked",
+        "restore_test": "deferred",
+    }
+
+
 def _preflight_readiness(state: dict[str, Any]) -> str:
     path_status = str(state.get("path_status") or "unknown")
     runtime_gate = str(((state.get("repo") or {}).get("runtime_gate")) or "unknown")
@@ -608,6 +705,7 @@ def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
     bundle = state.get("temp_runtime_bundle") or {}
     dpkg_preflight = state.get("dpkg_preflight") or {}
     iso_build = state.get("iso_build") or {}
+    operator_policy_gate = state.get("operator_policy_gate") or {}
     path_errors = state.get("path_errors") or []
 
     if path_status != "ok":
@@ -697,6 +795,12 @@ def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
             "label": "DPKG-Preflight ist grün; Build darf mit explizitem Operator-Confirm gestartet werden.",
             "commands": [],
         }
+    if str(operator_policy_gate.get("error_code") or iso_build.get("error_code") or "") == CONTROLLED_ROOT_POLICY_ERROR_CODE:
+        return {
+            "type": "operator_policy_required",
+            "label": str(operator_policy_gate.get("summary") or "Kontrollierte Root-Ausführung muss zuerst sauber festgelegt werden."),
+            "commands": ['scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build'],
+        }
     if dpkg_status in {"ok", "pre_chroot_ok"}:
         build_cmds = build_operator_build_commands(repo_root=runtime_root)
         return {
@@ -763,6 +867,18 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
             "dpkg_preflight": dpkg_preflight,
         }
     )
+    operator_policy_gate = build_operator_policy_gate(
+        repo_root=repo,
+        latest_attempt=latest_attempt,
+        iso_build=iso_build,
+        preflight_readiness=preflight_readiness,
+    )
+    rescue_build_progress = build_rescue_build_progress(
+        preflight_readiness=preflight_readiness,
+        build_tree=build_tree,
+        operator_policy_gate=operator_policy_gate,
+        iso_build=iso_build,
+    )
 
     if (
         paths["path_status"] == "blocked"
@@ -807,7 +923,9 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
     repo_head = paths.get("workspace_head") or _git_value(repo, "rev-parse", "--short", "HEAD")
     repo_branch = paths.get("workspace_branch") or _git_value(repo, "branch", "--show-current")
     evidence_sources = [rel for rel in _EVIDENCE_PATHS if (repo / rel).exists()]
-    summary_text = iso_build.get("last_error") or logs.get("last_error")
+    summary_text = operator_policy_gate.get("summary") if operator_policy_gate.get("error_code") == CONTROLLED_ROOT_POLICY_ERROR_CODE else None
+    if not summary_text:
+        summary_text = iso_build.get("last_error") or logs.get("last_error")
     if not summary_text:
         if paths["path_status"] != "ok":
             details = ", ".join(str(item) for item in (paths.get("errors") or paths.get("warnings") or []))
@@ -863,6 +981,8 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
         "temp_runtime_bundle": temp_bundle,
         "dpkg_preflight": dpkg_preflight,
         "iso_build": iso_build,
+        "operator_policy_gate": operator_policy_gate,
+        "rescue_build_progress": rescue_build_progress,
         "real_iso_build": {
             "allowed": False,
             "status": iso_build.get("error_code") or ("success" if iso_build.get("status") == "success" else "not_started"),

@@ -1,0 +1,57 @@
+{
+  "checked_at": "2026-05-26T20:36:15.077581+00:00",
+  "commit": "db05447",
+  "project_version": "1.7.2",
+  "steps": [
+    {
+      "id": "RESCUE_OPERATOR_POLICY_GATE",
+      "status": "yellow",
+      "goal": "kontrollierte Root-Ausfuehrung sauber definieren"
+    },
+    {
+      "id": "RESCUE_CONTROLLED_ISO_BUILD",
+      "status": "blocked",
+      "goal": "echten kontrollierten ISO-Build erst nach Operator-Policy starten"
+    },
+    {
+      "id": "RESCUE_ISO_ARTIFACT_VERIFY",
+      "status": "not_started",
+      "goal": "ISO-Artefakt pruefen"
+    },
+    {
+      "id": "RESCUE_ISO_VM_BOOT_TEST",
+      "status": "not_started",
+      "goal": "VM-Boottest nach erfolgreichem ISO-Build"
+    },
+    {
+      "id": "RESCUE_USB_WRITE_TEST",
+      "status": "blocked",
+      "goal": "USB-Write bleibt separates Gate"
+    },
+    {
+      "id": "RESCUE_HARDWARE_BOOT_TEST_AMD64",
+      "status": "deferred",
+      "goal": "Hardware-Boottest nach Artefakt-Verify"
+    },
+    {
+      "id": "RESCUE_I386_TRACK",
+      "status": "review_required",
+      "goal": "separaten Legacy-x86-Track planen"
+    },
+    {
+      "id": "RESCUE_ARM64_TRACK",
+      "status": "deferred",
+      "goal": "separaten ARM64-Image-Track planen"
+    },
+    {
+      "id": "RESCUE_ARMHF_TRACK",
+      "status": "deferred",
+      "goal": "separaten ARMHF-Legacy-Track planen"
+    },
+    {
+      "id": "RESTORE_E2E_FROM_RESCUE",
+      "status": "deferred",
+      "goal": "Restore-E2E erst nach Build/Boot"
+    }
+  ]
+}

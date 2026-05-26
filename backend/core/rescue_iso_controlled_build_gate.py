@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +9,9 @@ CONTROLLED_GATE_MESSAGE = "Use controlled gate before running lb build."
 CONTROLLED_GATE_ERROR_CODE = "blocked_controlled_build_gate_required"
 CONTROLLED_GATE_NEXT_ACTION = "use_controlled_rescue_build_gate"
 CONTROLLED_GATE_CATEGORY = "safety_gate"
+CONTROLLED_ROOT_POLICY_ERROR_CODE = "blocked_requires_operator_sudo_policy"
+CONTROLLED_ROOT_POLICY_NEXT_ACTION = "manual_operator_terminal_required"
+CONTROLLED_ROOT_POLICY_CATEGORY = "operator_policy"
 
 WORKING_DIRECTORY_REL = "build/rescue/live-build/setuphelfer-rescue-live"
 PATH_PREFIX_REL = "build/rescue/tool-compat/bin"
@@ -18,6 +22,12 @@ RESULT_LATEST_REL = "docs/evidence/runtime-results/rescue/rescue_iso_amd64_build
 DECISION_LATEST_REL = "docs/evidence/runtime-results/rescue/rescue_iso_amd64_build_decision_latest.json"
 COMBINED_LOG_LATEST_REL = (
     "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_amd64_build_combined_latest.log"
+)
+CONTROLLED_RUN_LATEST_REL = "docs/evidence/runtime-results/rescue/rescue_iso_controlled_amd64_build_run_latest.json"
+CONTROLLED_RESULT_LATEST_REL = "docs/evidence/runtime-results/rescue/rescue_iso_controlled_amd64_build_result_latest.json"
+CONTROLLED_DECISION_LATEST_REL = "docs/evidence/runtime-results/rescue/rescue_iso_controlled_amd64_build_decision_latest.json"
+CONTROLLED_COMBINED_LOG_LATEST_REL = (
+    "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_controlled_amd64_build_combined_latest.log"
 )
 
 
@@ -39,6 +49,18 @@ def _safe_read_json(path: Path) -> dict[str, Any] | None:
     except json.JSONDecodeError:
         return None
     return payload if isinstance(payload, dict) else None
+
+
+def _parse_iso(raw: Any) -> datetime | None:
+    text = str(raw or "").strip()
+    if not text:
+        return None
+    try:
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        return datetime.fromisoformat(text)
+    except ValueError:
+        return None
 
 
 def analyze_auto_build_gate(
@@ -200,6 +222,16 @@ def classify_rescue_iso_build_attempt(
     raw_errors = [str(item) for item in (result_body.get("errors") or []) if str(item)]
     raw_status = str(result_body.get("result_status") or "").lower()
     gate_message_found = CONTROLLED_GATE_MESSAGE in combined_log
+    sudo_policy_message_found = any(
+        token in combined_log.lower()
+        for token in (
+            "sudo: ein terminal ist erforderlich",
+            "sudo: ein passwort ist notwendig",
+            "sudo: a terminal is required",
+            "sudo: a password is required",
+        )
+    )
+    result_error_code = str(result_body.get("error_code") or (raw_errors[0] if raw_errors else "")).strip()
 
     if gate_message_found and not iso_created:
         return {
@@ -214,6 +246,27 @@ def classify_rescue_iso_build_attempt(
             ),
             "gate_message_found": True,
             "direct_lb_build_blocked": True,
+            "iso_created": False,
+            "usb_write_performed": usb_write_performed,
+            "exit_code": exit_code,
+            "command": run_body.get("command"),
+            "started_at": run_body.get("started_at"),
+            "finished_at": result_body.get("finished_at") or run_body.get("finished_at"),
+        }
+
+    if (sudo_policy_message_found or result_error_code == CONTROLLED_ROOT_POLICY_ERROR_CODE) and not iso_created:
+        return {
+            "attempted": attempted,
+            "result_status": "blocked",
+            "error_code": CONTROLLED_ROOT_POLICY_ERROR_CODE,
+            "category": CONTROLLED_ROOT_POLICY_CATEGORY,
+            "next_action": CONTROLLED_ROOT_POLICY_NEXT_ACTION,
+            "summary": (
+                "Kontrollierte Root-Ausführung fehlt; starte den Wrapper aus einem echten Operator-Terminal "
+                "mit sudo-Rechten oder richte eine eng begrenzte dokumentierte Operator-Policy ein."
+            ),
+            "gate_message_found": False,
+            "direct_lb_build_blocked": False,
             "iso_created": False,
             "usb_write_performed": usb_write_performed,
             "exit_code": exit_code,
@@ -252,8 +305,12 @@ def classify_rescue_iso_build_attempt(
     return {
         "attempted": attempted,
         "result_status": result_status,
-        "error_code": raw_errors[0] if raw_errors else None,
-        "category": "execution_failure" if result_status == "failed" else None,
+        "error_code": result_error_code or None,
+        "category": (
+            CONTROLLED_ROOT_POLICY_CATEGORY
+            if result_error_code == CONTROLLED_ROOT_POLICY_ERROR_CODE
+            else ("execution_failure" if result_status == "failed" else None)
+        ),
         "next_action": None,
         "summary": str((result_body.get("warnings") or [""])[0] or "").strip() or None,
         "gate_message_found": gate_message_found,
@@ -267,29 +324,69 @@ def classify_rescue_iso_build_attempt(
     }
 
 
-def read_latest_rescue_iso_build_attempt(repo_root: Path) -> dict[str, Any]:
-    run_path = repo_root / RUN_LATEST_REL
-    result_path = repo_root / RESULT_LATEST_REL
-    decision_path = repo_root / DECISION_LATEST_REL
-    log_path = repo_root / COMBINED_LOG_LATEST_REL
-
-    run_data = _safe_read_json(run_path) or {}
-    result_data = _safe_read_json(result_path) or {}
-    decision_data = _safe_read_json(decision_path) or {}
-    combined_log_text = _safe_read_text(log_path) or ""
-    classified = classify_rescue_iso_build_attempt(
-        run_data=run_data,
-        result_data=result_data,
-        combined_log_text=combined_log_text,
-    )
-    classified.update(
+def _attempt_specs() -> list[dict[str, str]]:
+    return [
         {
-            "run_path": RUN_LATEST_REL if run_path.exists() else None,
-            "result_path": RESULT_LATEST_REL if result_path.exists() else None,
-            "decision_path": DECISION_LATEST_REL if decision_path.exists() else None,
-            "combined_log_path": COMBINED_LOG_LATEST_REL if log_path.exists() else None,
-            "decision_status": decision_data.get("decision_status"),
-            "decision_next_prompt": decision_data.get("next_recommended_prompt"),
-        }
-    )
-    return classified
+            "kind": "controlled_wrapper",
+            "run": CONTROLLED_RUN_LATEST_REL,
+            "result": CONTROLLED_RESULT_LATEST_REL,
+            "decision": CONTROLLED_DECISION_LATEST_REL,
+            "log": CONTROLLED_COMBINED_LOG_LATEST_REL,
+        },
+        {
+            "kind": "direct_lb_build",
+            "run": RUN_LATEST_REL,
+            "result": RESULT_LATEST_REL,
+            "decision": DECISION_LATEST_REL,
+            "log": COMBINED_LOG_LATEST_REL,
+        },
+    ]
+
+
+def read_latest_rescue_iso_build_attempt(repo_root: Path) -> dict[str, Any]:
+    candidates: list[dict[str, Any]] = []
+    for spec in _attempt_specs():
+        run_path = repo_root / spec["run"]
+        result_path = repo_root / spec["result"]
+        decision_path = repo_root / spec["decision"]
+        log_path = repo_root / spec["log"]
+
+        run_data = _safe_read_json(run_path) or {}
+        result_data = _safe_read_json(result_path) or {}
+        decision_data = _safe_read_json(decision_path) or {}
+        combined_log_text = _safe_read_text(log_path) or ""
+        classified = classify_rescue_iso_build_attempt(
+            run_data=run_data,
+            result_data=result_data,
+            combined_log_text=combined_log_text,
+        )
+        if not classified.get("attempted"):
+            continue
+        finished_at = _parse_iso(classified.get("finished_at")) or _parse_iso(classified.get("started_at"))
+        if finished_at is None:
+            for path in (result_path, run_path, log_path):
+                try:
+                    finished_at = datetime.fromtimestamp(path.stat().st_mtime)
+                    break
+                except OSError:
+                    continue
+        classified.update(
+            {
+                "kind": spec["kind"],
+                "run_path": spec["run"] if run_path.exists() else None,
+                "result_path": spec["result"] if result_path.exists() else None,
+                "decision_path": spec["decision"] if decision_path.exists() else None,
+                "combined_log_path": spec["log"] if log_path.exists() else None,
+                "decision_status": decision_data.get("decision_status"),
+                "decision_next_prompt": decision_data.get("next_recommended_prompt"),
+                "_finished_sort_key": finished_at.timestamp() if finished_at else -1.0,
+            }
+        )
+        candidates.append(classified)
+
+    if not candidates:
+        return classify_rescue_iso_build_attempt()
+
+    best = max(candidates, key=lambda item: float(item.get("_finished_sort_key") or -1.0))
+    best.pop("_finished_sort_key", None)
+    return best

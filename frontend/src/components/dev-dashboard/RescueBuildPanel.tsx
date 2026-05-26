@@ -67,10 +67,31 @@ type RescueIsoState = {
     status?: string
     last_exit_code?: number | null
     last_error?: string | null
+    error_code?: string | null
     iso_found?: boolean
     iso_path?: string | null
     iso_size_bytes?: number | null
     iso_sha256?: string | null
+  }
+  operator_policy_gate?: {
+    status?: string
+    error_code?: string | null
+    summary?: string
+    next_action?: string | null
+    allowed_execution_modes?: string[]
+    forbidden_execution_modes?: string[]
+    evidence_links?: string[]
+  }
+  rescue_build_progress?: {
+    target_architecture?: string
+    preflight?: string
+    controlled_gate?: string
+    operator_policy?: string
+    iso_artifact?: string
+    artifact_verify?: string
+    boot_test?: string
+    usb_write?: string
+    restore_test?: string
   }
   real_iso_build?: {
     allowed?: boolean
@@ -233,7 +254,7 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
 
   const overall = String(data?.status || 'gray')
   const logs = data?.logs?.last_80_lines || []
-  const lastErr = data?.iso_build?.last_error || data?.logs?.last_error || data?.summary
+  const lastErr = data?.operator_policy_gate?.summary || data?.iso_build?.last_error || data?.logs?.last_error || data?.summary
   const pathStatus = String(data?.path_status || 'unknown')
   const preflightReadiness = String(data?.preflight_readiness || 'unknown')
   const pathWarnings = [...(data?.path_warnings || []), ...(data?.path_errors || [])]
@@ -241,6 +262,8 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
   const toolRows = Object.entries(data?.tools || {})
   const archCandidates = data?.target_architecture_matrix?.candidate_targets || []
   const archDeferred = data?.target_architecture_matrix?.deferred_targets || []
+  const operatorPolicyGate = data?.operator_policy_gate
+  const buildProgress = data?.rescue_build_progress
   const nextCommands = useMemo(
     () => (data?.next_operator_action?.commands || []).join('\n'),
     [data?.next_operator_action?.commands],
@@ -368,6 +391,76 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
               ))}
             </div>
           ) : null}
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-3">
+        <div className={sectionClass} data-testid="rescue-build-operator-policy-gate">
+          <p className="text-xs font-semibold text-slate-100">{t('devDashboard.rescueIso.operatorPolicyGate')}</p>
+          <FlagRow
+            label={t('devDashboard.rescueIso.operatorPolicyStatus')}
+            value={String(operatorPolicyGate?.status || 'unknown')}
+          />
+          <FlagRow
+            label={t('devDashboard.rescueIso.operatorPolicyErrorCode')}
+            value={String(operatorPolicyGate?.error_code || '—')}
+          />
+          <FlagRow
+            label={t('devDashboard.rescueIso.operatorPolicyNextAction')}
+            value={String(operatorPolicyGate?.next_action || '—')}
+          />
+          {operatorPolicyGate?.summary ? <p className="text-xs text-slate-300">{operatorPolicyGate.summary}</p> : null}
+          {operatorPolicyGate?.allowed_execution_modes?.length ? (
+            <div className="text-xs text-emerald-100 space-y-1">
+              <p className="font-semibold">{t('devDashboard.rescueIso.allowedExecutionModes')}</p>
+              {operatorPolicyGate.allowed_execution_modes.map((item) => (
+                <div key={item} className="font-mono">
+                  {item}
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {operatorPolicyGate?.forbidden_execution_modes?.length ? (
+            <div className="text-xs text-rose-200 space-y-1">
+              <p className="font-semibold">{t('devDashboard.rescueIso.forbiddenExecutionModes')}</p>
+              {operatorPolicyGate.forbidden_execution_modes.map((item) => (
+                <div key={item} className="font-mono">
+                  {item}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className={sectionClass} data-testid="rescue-build-progress">
+          <p className="text-xs font-semibold text-slate-100">{t('devDashboard.rescueIso.rescueBuildProgress')}</p>
+          <FlagRow
+            label={t('devDashboard.rescueIso.progressTargetArchitecture')}
+            value={String(buildProgress?.target_architecture || 'amd64')}
+          />
+          <FlagRow label={t('devDashboard.rescueIso.progressPreflight')} value={String(buildProgress?.preflight || 'unknown')} />
+          <FlagRow
+            label={t('devDashboard.rescueIso.progressControlledGate')}
+            value={String(buildProgress?.controlled_gate || 'unknown')}
+          />
+          <FlagRow
+            label={t('devDashboard.rescueIso.progressOperatorPolicy')}
+            value={String(buildProgress?.operator_policy || 'unknown')}
+          />
+          <FlagRow
+            label={t('devDashboard.rescueIso.progressIsoArtifact')}
+            value={String(buildProgress?.iso_artifact || 'not_started')}
+          />
+          <FlagRow
+            label={t('devDashboard.rescueIso.progressArtifactVerify')}
+            value={String(buildProgress?.artifact_verify || 'not_started')}
+          />
+          <FlagRow label={t('devDashboard.rescueIso.progressBootTest')} value={String(buildProgress?.boot_test || 'not_started')} />
+          <FlagRow label={t('devDashboard.rescueIso.progressUsbWrite')} value={String(buildProgress?.usb_write || 'blocked')} />
+          <FlagRow
+            label={t('devDashboard.rescueIso.progressRestoreTest')}
+            value={String(buildProgress?.restore_test || 'deferred')}
+          />
         </div>
       </div>
 
@@ -525,6 +618,16 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
           <p className="text-xs text-violet-100/90">{data.next_operator_action.label}</p>
           {nextCommands ? (
             <pre className="text-[10px] font-mono whitespace-pre-wrap text-violet-100/90">{nextCommands}</pre>
+          ) : null}
+          {operatorPolicyGate?.evidence_links?.length ? (
+            <div className="text-[10px] text-violet-100/80 space-y-1">
+              <p className="font-semibold">{t('devDashboard.rescueIso.operatorPolicyEvidence')}</p>
+              {operatorPolicyGate.evidence_links.map((item) => (
+                <div key={item} className="font-mono break-all">
+                  {item}
+                </div>
+              ))}
+            </div>
           ) : null}
         </div>
       ) : null}

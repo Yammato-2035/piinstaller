@@ -209,6 +209,91 @@ DIAGNOSTIC_CATALOG: list[DiagnosticCase] = [
         related_faq=["docs/faq/BACKUP_RESTORE_FAQ_DE.md", "docs/faq/BACKUP_RESTORE_FAQ_EN.md"],
         tags=["verify", "integrity", "symlink", "staging"],
     ),
+    DiagnosticCase(
+        id="RESCUE-BUILD-ROOT-001",
+        domain="systemd_services",
+        title_de="Rescue-ISO-Build benötigt kontrollierte Root-Ausführung",
+        title_en="Rescue ISO build requires controlled root execution",
+        summary_de="Der kontrollierte Rescue-ISO-Build wurde nicht wegen Toolchain oder rsvg blockiert, sondern weil keine sichere Root-Ausführung verfügbar war.",
+        summary_en="The controlled rescue ISO build was blocked by missing safe root execution, not by toolchain or rsvg issues.",
+        severity="high",
+        confidence="high",
+        detection_sources=["api_result", "log_pattern", "manual_test"],
+        root_causes=[
+            "Build läuft ohne echtes Operator-Terminal",
+            "Keine eng begrenzte sudo-Allowlist oder Root-Helper-Policy verfügbar",
+        ],
+        recommended_actions=[
+            _a(
+                "manual-operator-terminal",
+                1,
+                "Kontrollierten Rescue-Build aus einem echten Operator-Terminal mit sudo-Rechten starten oder eine dokumentierte eng begrenzte Operator-Policy vorbereiten. Keine Passwortweitergabe über stdin, kein globales NOPASSWD, kein Gate-Bypass.",
+                "Run the controlled rescue build from a real operator terminal with sudo privileges or prepare a documented narrowly allowlisted operator policy. Do not pass passwords through stdin, do not use broad NOPASSWD rules, and do not bypass the gate.",
+            )
+        ],
+        related_docs=[
+            "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+            "docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md",
+            "docs/knowledge-base/recovery/RESCUE_ISO_CONTROLLED_BUILD_GATE.md",
+        ],
+        related_faq=["docs/faq/rescue_iso_build_faq.md"],
+        tags=["rescue_build", "operator_policy", "safety_gate", "sudo"],
+        status_mapping={"blocked_requires_operator_sudo_policy": "warning"},
+    ),
+    DiagnosticCase(
+        id="RESCUE-BUILD-GATE-001",
+        domain="app_setuphelfer_runtime",
+        title_de="Direkter lb build wurde durch kontrolliertes Build-Gate blockiert",
+        title_en="Direct lb build was blocked by the controlled build gate",
+        summary_de="Der direkte lb-build-Aufruf wurde absichtlich vom kontrollierten `auto/build`-Gate mit Exit 20 gestoppt.",
+        summary_en="The direct lb build invocation was intentionally stopped by the controlled `auto/build` gate with exit 20.",
+        severity="medium",
+        confidence="high",
+        detection_sources=["api_result", "log_pattern", "manual_test"],
+        root_causes=["Direkter `lb build` statt kontrolliertem Wrapper/noauto-Pfad"],
+        recommended_actions=[
+            _a(
+                "use-controlled-gate",
+                1,
+                "Nur den dokumentierten kontrollierten Buildpfad mit Wrapper, `./auto/config` und `lb build noauto` verwenden.",
+                "Use only the documented controlled build path with the wrapper, `./auto/config`, and `lb build noauto`.",
+            )
+        ],
+        related_docs=[
+            "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+            "docs/knowledge-base/recovery/RESCUE_ISO_CONTROLLED_BUILD_GATE.md",
+        ],
+        related_faq=["docs/faq/rescue_iso_build_faq.md"],
+        tags=["rescue_build", "safety_gate", "auto_build", "lb_build"],
+        status_mapping={"blocked_controlled_build_gate_required": "warning"},
+    ),
+    DiagnosticCase(
+        id="RESCUE-BUILD-ARCH-001",
+        domain="app_setuphelfer_runtime",
+        title_de="Zielarchitektur nicht durch aktuellen Build abgedeckt",
+        title_en="Target architecture is not covered by the current build track",
+        summary_de="Der aktuelle Rescue-Build-Pfad deckt nur `amd64` als aktiven x86-Track ab; `i386`, `arm64` und `armhf` bleiben getrennte Pfade.",
+        summary_en="The current rescue build path only covers `amd64` as the active x86 track; `i386`, `arm64`, and `armhf` remain separate tracks.",
+        severity="medium",
+        confidence="high",
+        detection_sources=["api_result", "manual_test"],
+        root_causes=["Architekturmatrix trennt x86-ISO und ARM-Image-Pfade bewusst"],
+        recommended_actions=[
+            _a(
+                "review-architecture-track",
+                1,
+                "Nur `amd64` als aktuellen ISO-Track behandeln; `i386` separat reviewen und ARM als eigene Image-/Provisioning-Tracks dokumentieren.",
+                "Treat only `amd64` as the current ISO track; review `i386` separately and document ARM as dedicated image/provisioning tracks.",
+            )
+        ],
+        related_docs=[
+            "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+            "docs/architecture/RESCUE_TARGET_ARCHITECTURE_MATRIX.md",
+            "docs/knowledge-base/recovery/RESCUE_TARGET_ARCHITECTURES.md",
+        ],
+        related_faq=["docs/faq/rescue_iso_build_faq.md"],
+        tags=["rescue_build", "architecture", "amd64", "i386", "arm64", "armhf"],
+    ),
 ]
 
 

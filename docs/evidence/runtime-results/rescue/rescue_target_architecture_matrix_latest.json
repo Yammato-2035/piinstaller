@@ -1,7 +1,4 @@
 {
-  "checked_at": "2026-05-26T18:39:04+00:00",
-  "commit": "e2921cd",
-  "project_version": "1.7.2",
   "host_arch": {
     "machine": "x86_64",
     "normalized": "amd64"
@@ -15,7 +12,7 @@
       "bootloader_family": "syslinux/grub",
       "likely_format": "iso",
       "status": "primary_candidate",
-      "reason": "Primaerer x86-Rescue-ISO-Kandidat; noch kein finaler Build-/Boot-Nachweis."
+      "reason": "Primärer x86-Rescue-ISO-Kandidat; noch kein finaler Build-/Boot-Nachweis."
     },
     {
       "target": "i386",
@@ -24,7 +21,7 @@
       "bootloader_family": "syslinux/grub (legacy focus)",
       "likely_format": "iso",
       "status": "review_required",
-      "reason": "i386-Unterstuetzung ist moeglich, aber moderne UEFI-/Treiber-/Browser-/Paketlage ist eingeschraenkt. Separates Build-Ziel, nicht automatisch durch amd64 abgedeckt."
+      "reason": "i386-Unterstützung ist möglich, aber moderne UEFI-/Treiber-/Browser-/Paketlage ist eingeschränkt. Separates Build-Ziel, nicht automatisch durch amd64 abgedeckt."
     }
   ],
   "deferred_targets": [
@@ -35,7 +32,7 @@
       "bootloader_family": "board_firmware_or_uefi",
       "likely_format": "image",
       "status": "deferred",
-      "reason": "ARM benoetigt separate Kernel-/Firmware-/Bootloader-/Image-Strategie. Nicht mit x86-ISO gleichsetzen."
+      "reason": "ARM benötigt separate Kernel-/Firmware-/Bootloader-/Image-Strategie. Nicht mit x86-ISO gleichsetzen."
     },
     {
       "target": "armhf",
@@ -44,7 +41,7 @@
       "bootloader_family": "board_firmware",
       "likely_format": "image",
       "status": "deferred",
-      "reason": "Nur sinnvoll fuer ausgewaehlte aeltere Raspberry-Pi-/ARM-Geraete. Hoher Wartungsaufwand."
+      "reason": "Nur sinnvoll für ausgewählte ältere Raspberry-Pi-/ARM-Geräte. Hoher Wartungsaufwand."
     }
   ],
   "bootloader_notes": [
@@ -64,5 +61,16 @@
     "amd64 Build-Preflight und spaeter BIOS/UEFI-Bootnachweis",
     "i386 separates Build-Ziel mit BIOS-/UEFI-Review",
     "arm64 separates Provisioning-/Image-Konzept"
-  ]
+  ],
+  "checked_at": "2026-05-26T20:36:15.077581+00:00",
+  "commit": "db05447",
+  "project_version": "1.7.2",
+  "current_build_target": "amd64",
+  "current_build_target_status": "operator_policy_gate_pending",
+  "track_notes": {
+    "amd64": "current build target, operator policy gate pending",
+    "i386": "separate x86 legacy BIOS/limited UEFI track, review_required",
+    "arm64": "separate image/provisioning track, deferred",
+    "armhf": "separate legacy ARM track, deferred"
+  }
 }

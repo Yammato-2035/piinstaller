@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-05-26T20:36:15.077581+00:00",
+  "commit": "db05447",
+  "project_version": "1.7.2",
+  "policy_guard_status": "ready",
+  "wrapper_changed": true,
+  "checks_added": [
+    "tty_detected",
+    "already_root_detected",
+    "sudo_noninteractive_probe",
+    "explicit_policy_error_code",
+    "policy_exit_code_30"
+  ],
+  "failure_exit_code": 30,
+  "blocked_error_code": "blocked_requires_operator_sudo_policy",
+  "allowed_execution_modes": [
+    "already_root",
+    "manual_operator_terminal",
+    "sudoers_allowlist_design"
+  ],
+  "forbidden_execution_modes": [
+    "password_stdin",
+    "askpass_hack",
+    "broad_nopasswd",
+    "direct_lb_build"
+  ],
+  "no_build_executed": true
+}

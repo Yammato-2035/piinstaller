@@ -10,13 +10,14 @@ Der Rescue-ISO-Pfad muss Host-Architektur und Zielarchitektur sauber unterscheid
   Primärer Kandidat für den x86-Rescue-ISO-Pfad.
   Erwarteter Bootpfad: `BIOS/UEFI`.
   Zielformat: `ISO`.
-  Noch nicht final grün, solange Build- und Boot-Evidence fehlen.
+  Noch nicht final grün, solange Build-, Operator-Policy- und Boot-Evidence fehlen.
 
 - `i386`
   Separates x86-Ziel mit eingeschränkter moderner UEFI-/Treiberlage.
   Erwarteter Bootpfad: `BIOS/limited UEFI`.
   Zielformat: `ISO`.
   Status: `review_required`.
+  Eigener Legacy-x86-Track; nicht automatisch durch `amd64` mit erledigt.
 
 - `arm64`
   Separater ARM-Track mit eigener Firmware-/Kernel-/Image-Strategie.
@@ -35,3 +36,4 @@ Der Rescue-ISO-Pfad muss Host-Architektur und Zielarchitektur sauber unterscheid
 - ARM läuft nicht „einfach mit“ im normalen x86-ISO-Track.
 - `i386` wird nicht durch eine Chrome-`i386`-Repo-Warnung blockiert; Browser-Pakete sind für den Rescue-MVP nicht automatisch relevant.
 - `USB-Write` bleibt auch bei positivem Preflight separat blockiert.
+- `arm64` und `armhf` behalten eigene Image-/Board-/Bootloader-/Firmware-Tracks; sie sind kein Marketing-Beipack des `amd64`-Builds.

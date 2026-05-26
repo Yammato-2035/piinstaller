@@ -26,6 +26,22 @@ Weil der echte Build weiterhin ein separater Operator-Schritt mit eigenem Gate b
 
 Weil `auto/build` im kontrollierten Live-Build-Tree absichtlich nur das Safety-Gate darstellt. Der zulaessige Build-Pfad ist nicht `lb build`, sondern der kontrollierte Operator-Aufruf mit `./auto/config` und `lb build noauto` beziehungsweise `scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build`.
 
+## Warum wurde der Wrapper-Lauf mit `blocked_requires_operator_sudo_policy` gestoppt?
+
+Weil der Wrapper in einer Umgebung ohne echtes Terminal und ohne dokumentierte `sudo -n`-Policy lief. Das ist **kein** `rsvg`-, Toolchain- oder `live-build`-Konfigurationsfehler, sondern ein eigener Root-/Operator-Policy-Blocker.
+
+## Was ist jetzt die kurzfristig sichere Loesung?
+
+Den Wrapper aus einem echten Operator-Terminal mit gueltigen `sudo`-Rechten starten. Alternativ kann der Operator eine eng begrenzte sudo-Allowlist fuer genau diesen dokumentierten Wrapper vorbereiten. Setuphelfer installiert dabei **keine** Policy automatisch.
+
+## Was ist ausdruecklich nicht erlaubt?
+
+- Passwortweitergabe ueber stdin
+- Askpass-Hacks
+- pauschales/globales `NOPASSWD`
+- direkter `lb build`
+- globale `rsvg`-Symlinks oder Aenderungen an `/usr/lib/live/build`
+
 ## Warum ist `amd64` nicht automatisch „supported“, obwohl es der Hauptkandidat ist?
 
 Weil ohne echten Build- und Boot-Nachweis kein Ziel final grün markiert wird. `amd64` ist deshalb aktuell nur `primary_candidate`.

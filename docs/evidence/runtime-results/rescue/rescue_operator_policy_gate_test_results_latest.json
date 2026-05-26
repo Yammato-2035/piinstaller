@@ -1,0 +1,24 @@
+{
+  "checked_at": "2026-05-26T20:36:15.077581+00:00",
+  "commit": "db05447",
+  "project_version": "1.7.2",
+  "py_compile": {
+    "status": "passed",
+    "targets": [
+      "backend/core/dev_dashboard.py",
+      "backend/app.py"
+    ]
+  },
+  "backend_unittest": {
+    "status": "passed",
+    "suite_count": 6,
+    "tests_ran": 45,
+    "command": "backend/venv/bin/python3 -m unittest ... -v"
+  },
+  "frontend_build": {
+    "status": "passed",
+    "command": "npm --prefix frontend run build"
+  },
+  "no_build_executed": true,
+  "no_sudo_executed": true
+}

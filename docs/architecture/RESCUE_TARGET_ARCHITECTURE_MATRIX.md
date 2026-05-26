@@ -7,6 +7,7 @@ Die Rescue-Build-Planung trennt strikt zwischen Host-Architektur, Build-Ziel, Bo
 ## Grundsatz
 
 - `amd64` bleibt der primaere x86-Rescue-Kandidat.
+- `amd64` bleibt der aktuelle Build-Track, aber derzeit noch mit offenem Operator-Policy-Gate.
 - `i386` ist ein separates Review-Ziel und wird **nicht** aus `amd64` abgeleitet.
 - `arm64` und `armhf` bleiben getrennte Image-/Provisioning-Tracks.
 - Kein Ziel ist final freigegeben, solange kein Build- und Boot-Nachweis vorliegt.
@@ -19,6 +20,7 @@ Die Rescue-Build-Planung trennt strikt zwischen Host-Architektur, Build-Ziel, Bo
   Zielformat: `ISO`.
   Bootloader-Familie: `syslinux/grub`.
   Status: `primary_candidate`.
+  Zusatz: aktueller Build-Track, aber echter ISO-Build bleibt bis zum dokumentierten Operator-Policy-Gate gelb.
 
 - `i386`
   Separates 32-bit-x86-Ziel.
@@ -26,7 +28,7 @@ Die Rescue-Build-Planung trennt strikt zwischen Host-Architektur, Build-Ziel, Bo
   Zielformat: `ISO`.
   Bootloader-Familie: `syslinux/grub (legacy focus)`.
   Status: `review_required`.
-  Hinweis: nicht wegen Chrome-/Browser-Repos blockieren; diese Warnungen sind für den Rescue-MVP nicht automatisch relevant.
+  Hinweis: separater Legacy-x86-/BIOS-Track; nicht automatisch durch `amd64` abgedeckt.
 
 - `arm64`
   Separater 64-bit-ARM-Track.
@@ -48,3 +50,4 @@ Die Rescue-Build-Planung trennt strikt zwischen Host-Architektur, Build-Ziel, Bo
 - `i386` bleibt ein bewusstes eigenes Build-Ziel mit eigener Review- und Testspur.
 - `USB-Write` bleibt weiterhin separat blockiert.
 - Ein grüner Runtime-/Preflight-Status bedeutet maximal: bereit für einen **separaten** Build-Preflight oder Operator-Build-Schritt.
+- Kein Dashboard- oder Marketing-Text darf behaupten, dass `arm64` oder `armhf` bereits durch den `amd64`-ISO-Pfad abgedeckt sind.
