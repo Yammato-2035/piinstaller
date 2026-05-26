@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-05-26T20:01:00.252702+00:00",
+  "commit": "84d7dc6",
+  "project_version": "1.7.2",
+  "auto_build_path": "build/rescue/live-build/setuphelfer-rescue-live/auto/build",
+  "gate_message_found": true,
+  "expected_gate_mechanism": "auto/build ist absichtlich nur ein Stop-Script mit Exit 20. Der echte Build darf nur ueber den kontrollierten Setuphelfer-Buildpfad laufen, der auto/build nicht rekursiv ausloest und stattdessen ./auto/config plus lb build noauto nutzt.",
+  "expected_env_vars": [
+    "PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\""
+  ],
+  "expected_files": [
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/build",
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/config",
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/clean",
+    "build/rescue/live-build/setuphelfer-rescue-live/evidence/build-tree-manifest.json",
+    "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+  ],
+  "expected_working_directory": "build/rescue/live-build/setuphelfer-rescue-live",
+  "expected_command": "cd \"build/rescue/live-build/setuphelfer-rescue-live\" && export PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\" && ./auto/config && sudo env PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\" lb build noauto",
+  "direct_lb_build_blocked": true,
+  "conclusion": "controlled_gate_required",
+  "no_build_executed": true
+}

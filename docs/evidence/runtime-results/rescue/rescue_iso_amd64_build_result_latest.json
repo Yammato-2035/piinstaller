@@ -1,5 +1,5 @@
 {
-  "result_status": "failed",
+  "result_status": "blocked",
   "project_version": "1.7.2",
   "commit": "ae4c251",
   "target_architecture": "amd64",
@@ -26,9 +26,12 @@
     "Kein sudo-Fallback und kein zweiter Build-Versuch ausgeführt."
   ],
   "errors": [
-    "failed_live_build_config"
+    "blocked_controlled_build_gate_required"
   ],
   "warnings": [
     "auto/build blockiert direkten lb build; der konfigurierte Build-Pfad erwartet weiterhin den kontrollierten Gate-/Operator-Aufruf."
-  ]
+  ],
+  "category": "safety_gate",
+  "next_action": "use_controlled_rescue_build_gate",
+  "summary": "Direkter lb build wurde bewusst vom kontrollierten auto/build-Gate blockiert; zulaessig ist nur der kontrollierte Rescue-Buildpfad mit ./auto/config und lb build noauto."
 }

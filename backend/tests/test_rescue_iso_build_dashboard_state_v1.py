@@ -196,6 +196,93 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
         self.assertFalse(payload["usb_write"]["allowed"])
         self.assertFalse(payload["real_iso_build"]["allowed"])
 
+    def test_controlled_gate_block_is_exposed_without_fake_build_failure(self) -> None:
+        with self._repo() as td:
+            repo = Path(td)
+            self._init_git_repo(repo)
+            (repo / "docs/evidence/runtime-results/rescue/build-logs").mkdir(parents=True, exist_ok=True)
+            (repo / "docs/evidence/runtime-results/rescue/rescue_iso_amd64_build_run_latest.json").write_text(
+                (
+                    "{"
+                    '"command":"PATH=\\"$(git rev-parse --show-toplevel)/build/rescue/tool-compat/bin:$PATH\\" lb build",'
+                    '"started_at":"2026-05-26T19:09:23+00:00",'
+                    '"exit_code":20'
+                    "}"
+                ),
+                encoding="utf-8",
+            )
+            (repo / "docs/evidence/runtime-results/rescue/rescue_iso_amd64_build_result_latest.json").write_text(
+                (
+                    "{"
+                    '"result_status":"failed",'
+                    '"exit_code":20,'
+                    '"iso_created":false,'
+                    '"usb_write_performed":false,'
+                    '"errors":["failed_live_build_config"]'
+                    "}"
+                ),
+                encoding="utf-8",
+            )
+            (repo / "docs/evidence/runtime-results/rescue/build-logs/rescue_iso_amd64_build_combined_latest.log").write_text(
+                "Use controlled gate before running lb build.\n",
+                encoding="utf-8",
+            )
+            paths = {
+                "runtime_path": "/opt/setuphelfer",
+                "workspace_path": str(repo),
+                "build_tree_path": str(repo / "build/rescue/live-build/setuphelfer-rescue-live"),
+                "temp_runtime_bundle_path": str(repo / "build/rescue/temp-runtime/setuphelfer-rescue-runtime"),
+                "logs_path": str(repo / "build/rescue/logs/controlled-iso-build"),
+                "summary_path": str(repo / "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"),
+                "path_mode": "workspace_build_runtime_opt",
+                "path_status": "ok",
+                "errors": [],
+                "warnings": [],
+                "workspace_head": "84d7dc6",
+                "workspace_branch": "main",
+            }
+            with (
+                patch.object(state, "resolve_rescue_iso_paths", return_value=paths),
+                patch.object(state, "_runtime_gate", return_value={"status": "green", "exit_code": 0, "summary": "ok"}),
+                patch.object(state, "_tool_presence", return_value={"present": True, "path": "/usr/bin/tool"}),
+                patch.object(
+                    state,
+                    "inspect_rsvg_build_dependency",
+                    return_value={
+                        "required": True,
+                        "status": "ok",
+                        "summary": "legacy wrapper ready",
+                        "legacy_path": str(repo / "build/rescue/tool-compat/bin/rsvg"),
+                        "compat_path": "/usr/bin/rsvg-convert",
+                        "legacy_source": "project_local_wrapper",
+                        "error_code": None,
+                        "hint_package": "librsvg2-bin",
+                    },
+                ),
+                patch.object(state, "detect_live_build_stale_state", return_value={"present": False, "needs_sudo_clean": False}),
+                patch.object(state, "_temp_runtime_bundle", return_value={"status": "ok", "files_count": 1, "manifest_sha256": "abc"}),
+                patch.object(
+                    state,
+                    "_build_tree",
+                    return_value={"validator_status": "ok", "auto_config_noauto": True, "auto_build_blocked": True, "source_head": "84d7dc6"},
+                ),
+                patch.object(state, "_dpkg_preflight", return_value={"status": "pre_chroot_ok", "summary": "ok"}),
+                patch.object(state, "read_rescue_iso_latest_logs", return_value={"latest_log_path": "x", "last_80_lines": [], "last_error": None}),
+                patch.object(
+                    state,
+                    "summarize_rescue_iso_artifacts",
+                    return_value={"iso_found": False, "iso_path": None, "iso_abs_path": None, "iso_size_bytes": None, "iso_sha256": None},
+                ),
+                patch.object(state, "_summary_payload", return_value={}),
+            ):
+                payload = state.build_rescue_iso_dashboard_state(repo_root=Path("/opt/setuphelfer"))
+
+        self.assertEqual(payload["status"], "yellow")
+        self.assertEqual(payload["iso_build"]["status"], "blocked")
+        self.assertEqual(payload["iso_build"]["error_code"], "blocked_controlled_build_gate_required")
+        self.assertEqual(payload["iso_build"]["next_action"], "use_controlled_rescue_build_gate")
+        self.assertEqual(payload["real_iso_build"]["status"], "blocked_controlled_build_gate_required")
+
     def test_secret_redaction(self) -> None:
         raw = (
             "API"

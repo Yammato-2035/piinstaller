@@ -23,6 +23,7 @@ from core.rescue_iso_operator_commands import (
     build_sudo_clean_commands,
     resolve_rescue_iso_paths,
 )
+from core.rescue_iso_controlled_build_gate import read_latest_rescue_iso_build_attempt
 
 UTC = timezone.utc
 
@@ -409,7 +410,12 @@ def _summary_payload(runtime_root: Path) -> dict[str, Any]:
     return data or {}
 
 
-def _status_from_summary(summary: dict[str, Any], artifacts: dict[str, Any], logs: dict[str, Any]) -> dict[str, Any]:
+def _status_from_summary(
+    summary: dict[str, Any],
+    artifacts: dict[str, Any],
+    logs: dict[str, Any],
+    latest_attempt: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     payload = summary.get("dashboard_state") if isinstance(summary.get("dashboard_state"), dict) else summary
     raw = str(
         payload.get("status")
@@ -419,9 +425,12 @@ def _status_from_summary(summary: dict[str, Any], artifacts: dict[str, Any], log
         or "unknown"
     ).lower()
     exit_code = payload.get("last_exit_code")
-    last_error = payload.get("last_error") or logs.get("last_error")
+    attempt = latest_attempt or {}
+    last_error = attempt.get("summary") or payload.get("last_error") or logs.get("last_error")
     if artifacts.get("iso_found"):
         status = "success"
+    elif attempt.get("attempted") and attempt.get("result_status") == "blocked":
+        status = "blocked"
     elif raw in {"running"}:
         status = "running"
     elif raw in {"failed", "error", "blocked"} or (isinstance(exit_code, int) and exit_code not in (0, None)):
@@ -432,13 +441,21 @@ def _status_from_summary(summary: dict[str, Any], artifacts: dict[str, Any], log
         status = "not_started"
     return {
         "status": status,
-        "last_exit_code": exit_code if isinstance(exit_code, int) else None,
+        "last_exit_code": attempt.get("exit_code") if isinstance(attempt.get("exit_code"), int) else (exit_code if isinstance(exit_code, int) else None),
         "last_error": _redact_line(str(last_error)) if last_error else None,
         "iso_found": bool(artifacts.get("iso_found")),
         "iso_path": artifacts.get("iso_path"),
         "iso_abs_path": artifacts.get("iso_abs_path"),
         "iso_size_bytes": artifacts.get("iso_size_bytes"),
         "iso_sha256": artifacts.get("iso_sha256"),
+        "error_code": attempt.get("error_code"),
+        "category": attempt.get("category"),
+        "next_action": attempt.get("next_action"),
+        "attempted": bool(attempt.get("attempted")),
+        "attempted_command": attempt.get("command"),
+        "started_at": attempt.get("started_at"),
+        "finished_at": attempt.get("finished_at"),
+        "direct_lb_build_blocked": bool(attempt.get("direct_lb_build_blocked")),
     }
 
 
@@ -730,7 +747,8 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
     logs = read_rescue_iso_latest_logs(repo_root=repo, max_lines=120)
     artifacts = summarize_rescue_iso_artifacts(repo_root=repo)
     summary = _summary_payload(runtime_root)
-    iso_build = _status_from_summary(summary, artifacts, logs)
+    latest_attempt = read_latest_rescue_iso_build_attempt(repo)
+    iso_build = _status_from_summary(summary, artifacts, logs, latest_attempt)
     target_architecture_matrix = build_rescue_target_architecture_matrix()
     dpkg_status = str(dpkg_preflight.get("status") or "unknown")
     preflight_readiness = _preflight_readiness(
@@ -847,7 +865,7 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
         "iso_build": iso_build,
         "real_iso_build": {
             "allowed": False,
-            "status": "not_started",
+            "status": iso_build.get("error_code") or ("success" if iso_build.get("status") == "success" else "not_started"),
         },
         "usb_write": {
             "allowed": False,

@@ -1,0 +1,43 @@
+{
+  "contract_status": "ready",
+  "required_inputs": [
+    "Runtime-Gate Exit 0",
+    "DPKG-Preflight ok/pre_chroot_ok",
+    "materialisierter Live-Build-Tree vorhanden",
+    "projektlokaler rsvg-Wrapper im PATH",
+    "explizite Operator-Freigabe"
+  ],
+  "required_env": [
+    "PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\""
+  ],
+  "required_marker_files": [
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/build",
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/config",
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/clean",
+    "build/rescue/live-build/setuphelfer-rescue-live/evidence/build-tree-manifest.json",
+    "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+  ],
+  "required_evidence_files": [
+    "docs/evidence/runtime-results/rescue/rescue_iso_host_toolchain_preflight_latest.json",
+    "docs/evidence/runtime-results/rescue/rsvg_project_local_wrapper_validation_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_live_build_config_preflight_latest.json",
+    "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+  ],
+  "allowed_working_directory": "build/rescue/live-build/setuphelfer-rescue-live",
+  "allowed_command": "cd \"build/rescue/live-build/setuphelfer-rescue-live\" && export PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\" && ./auto/config && sudo env PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\" lb build noauto",
+  "forbidden_invocations": [
+    "lb build",
+    "PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\" lb build",
+    "sudo lb build",
+    "scripts/rescue/build-rescue-iso-controlled.sh"
+  ],
+  "operator_confirmation_required": true,
+  "usb_write_allowed": false,
+  "supported_target_architecture": "amd64",
+  "unsupported_targets": [
+    "i386",
+    "arm64",
+    "armhf"
+  ],
+  "no_build_executed": true
+}

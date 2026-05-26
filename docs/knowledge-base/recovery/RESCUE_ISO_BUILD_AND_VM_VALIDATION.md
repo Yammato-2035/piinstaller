@@ -5,7 +5,8 @@ Kurzreferenz für **Phase 1**: ISO aus Debian-Live-Tooling bauen, unter `build/r
 ## Leitplanken
 
 - Kein `dd` auf USB, kein Restore-Execute, keine Host-Internplatten-Writes aus den Runnern.
-- Build-Skript: `scripts/rescue/build-rescue-iso-controlled.sh` mit `SETUPHELFER_RESCUE_BUILD_APPROVED=1`.
+- Kontrollierter Operator-Pfad: `scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build`.
+- Der eigentliche Live-Build laeuft dabei nur im vorbereiteten Build-Tree mit `./auto/config` und `sudo env PATH="<repo>/build/rescue/tool-compat/bin:$PATH" lb build noauto`.
 - VM-Sicherheit: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`.
 
 ## Deploy-Doku

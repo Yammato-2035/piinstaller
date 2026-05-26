@@ -22,6 +22,10 @@ Er wird nur verwendet, wenn der spätere Operator-Build den `PATH` explizit um d
 
 Weil der echte Build weiterhin ein separater Operator-Schritt mit eigenem Gate bleibt. Auch ein positiver Preflight hebt die Schreib- und Build-Sicherheitsgrenzen nicht auf.
 
+## Warum wurde ein direkter `lb build` mit Exit 20 gestoppt?
+
+Weil `auto/build` im kontrollierten Live-Build-Tree absichtlich nur das Safety-Gate darstellt. Der zulaessige Build-Pfad ist nicht `lb build`, sondern der kontrollierte Operator-Aufruf mit `./auto/config` und `lb build noauto` beziehungsweise `scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build`.
+
 ## Warum ist `amd64` nicht automatisch „supported“, obwohl es der Hauptkandidat ist?
 
 Weil ohne echten Build- und Boot-Nachweis kein Ziel final grün markiert wird. `amd64` ist deshalb aktuell nur `primary_candidate`.

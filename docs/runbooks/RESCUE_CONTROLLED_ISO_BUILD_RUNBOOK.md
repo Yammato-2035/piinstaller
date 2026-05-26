@@ -53,27 +53,26 @@ sudo apt install librsvg2-bin
 
 Dieser Hinweis wird **nur angezeigt**, nicht automatisch ausgefuehrt.
 
-## Konfiguration (nach Operator-Freigabe)
+## Bevorzugter Operator-Pfad (nach Operator-Freigabe)
 
 ```bash
-cd build/rescue/live-build/setuphelfer-rescue-live
-./auto/config
+scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build
 ```
 
-**NICHT automatisch ausführen** — nur nach Freigabe.
-
-## ISO-Build (NUR nach expliziter Operator-Freigabe)
+Der Wrapper setzt den projektlokalen `rsvg`-Wrapper im `PATH` voran, fuehrt `./auto/config` aus und startet danach den echten Build als:
 
 ```bash
 cd build/rescue/live-build/setuphelfer-rescue-live
-sudo lb build noauto
+export PATH="/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH"
+./auto/config
+sudo env PATH="/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH" lb build noauto
 ```
 
 **NICHT automatisch ausführen**, solange das Dashboard `operator_required` meldet.
 
 Wenn das Dashboard `build_dependency_required` oder `blocked_build_tools_missing` meldet, **kein** `lb build` starten. Zuerst die benoetigte Build-Abhaengigkeit am Build-Host bereitstellen und den Preflight erneut pruefen.
 
-`auto/build` im Repo ist absichtlich blockiert (Exit 20).
+`auto/build` im Repo ist absichtlich blockiert (Exit 20). Ein direkter Aufruf wie `lb build` ohne `noauto` ist deshalb verboten und wird bewusst vom Gate gestoppt.
 
 ## Erwartete Artefakte (nach Build)
 

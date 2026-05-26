@@ -1,0 +1,49 @@
+{
+  "plan_status": "ready_for_operator",
+  "reason": "Der direkte lb-build-Aufruf bleibt verboten; der naechste echte Build darf nur ueber den kontrollierten Operator-Pfad mit noauto und projektlokalem PATH-Praefix laufen.",
+  "required_gate_inputs": [
+    "Runtime-Gate Exit 0",
+    "DPKG-Preflight ok/pre_chroot_ok",
+    "materialisierter Live-Build-Tree vorhanden",
+    "projektlokaler rsvg-Wrapper im PATH",
+    "explizite Operator-Freigabe"
+  ],
+  "required_env_vars": [
+    "PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\""
+  ],
+  "required_marker_files": [
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/build",
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/config",
+    "build/rescue/live-build/setuphelfer-rescue-live/auto/clean",
+    "build/rescue/live-build/setuphelfer-rescue-live/evidence/build-tree-manifest.json",
+    "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+  ],
+  "exact_operator_steps": [
+    "cd \"build/rescue/live-build/setuphelfer-rescue-live\"",
+    "export PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\"",
+    "./auto/config",
+    "sudo env PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\" lb build noauto"
+  ],
+  "exact_command_preview": "cd \"build/rescue/live-build/setuphelfer-rescue-live\" && export PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\" && ./auto/config && sudo env PATH=\"<repo>/build/rescue/tool-compat/bin:$PATH\" lb build noauto",
+  "working_directory": "build/rescue/live-build/setuphelfer-rescue-live",
+  "path_prefix": "build/rescue/tool-compat/bin",
+  "logs": [
+    "build/rescue/logs/controlled-iso-build/latest.log",
+    "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
+  ],
+  "stop_conditions": [
+    "Runtime-Gate nicht gruen",
+    "DPKG-Preflight nicht ok/pre_chroot_ok",
+    "rsvg-Wrapper nicht im PATH",
+    "USB-Write bleibt blockiert"
+  ],
+  "expected_outputs": [
+    "live-image-amd64.hybrid.iso im Live-Build-Arbeitsverzeichnis",
+    "aktualisierte controlled_iso_build_latest_summary.json"
+  ],
+  "target_architecture": "amd64",
+  "no_build_executed": true,
+  "usb_write_allowed": false,
+  "real_usb_write_allowed": false,
+  "preferred_wrapper_command": "scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build"
+}

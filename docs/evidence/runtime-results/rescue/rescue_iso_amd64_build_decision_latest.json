@@ -1,7 +1,7 @@
 {
-  "decision_status": "iso_build_failed",
+  "decision_status": "blocked",
   "next_recommended_prompt": "RESCUE_ISO_BUILD_FAILURE_TRIAGE",
-  "reason": "Der direkte lb-build-Lauf endete ohne ISO-Artefakt mit Exit-Code 20; auto/build blockiert weiterhin den direkten Build-Aufruf und verlangt den kontrollierten Gate-/Operator-Pfad.",
+  "reason": "Direkter lb build wurde bewusst vom kontrollierten auto/build-Gate blockiert; zulaessig ist nur der kontrollierte Rescue-Buildpfad mit ./auto/config und lb build noauto.",
   "evidence_files": [
     "docs/evidence/runtime-results/rescue/rescue_iso_operator_build_workspace_safety_latest.json",
     "docs/evidence/runtime-results/rescue/rescue_iso_amd64_build_run_latest.json",
@@ -13,5 +13,6 @@
   "usb_write_allowed": false,
   "real_usb_write_allowed": false,
   "boot_test_done": false,
-  "restore_test_done": false
+  "restore_test_done": false,
+  "corrected_error_code": "blocked_controlled_build_gate_required"
 }

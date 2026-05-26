@@ -11,6 +11,7 @@
   ],
   "artifact_sha256": {},
   "artifact_sizes": {},
-  "status": "failed",
-  "no_usb_write": true
+  "status": "blocked",
+  "no_usb_write": true,
+  "error_code": "blocked_controlled_build_gate_required"
 }

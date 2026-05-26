@@ -1,0 +1,17 @@
+{
+  "decision_status": "controlled_gate_contract_ready",
+  "corrected_error_code": "blocked_controlled_build_gate_required",
+  "next_recommended_prompt": "RESCUE_ISO_CONTROLLED_OPERATOR_BUILD_EXECUTION",
+  "reason": "Der direkte lb-build-Aufruf wurde bewusst vom auto/build-Safety-Gate blockiert. Der gate-konforme Operator-Pfad ist jetzt dokumentiert; die Runtime-API zeigt die neue Fehlerklassifikation erst nach einem separaten Deploy-Refresh.",
+  "evidence_files": [
+    "docs/evidence/runtime-results/rescue/rescue_iso_auto_build_gate_triage_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_iso_controlled_build_contract_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_iso_controlled_operator_build_plan_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_iso_status_after_controlled_gate_triage_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_iso_amd64_build_result_latest.json",
+    "docs/evidence/runtime-results/rescue/rescue_iso_amd64_build_decision_latest.json"
+  ],
+  "usb_write_allowed": false,
+  "iso_created": false,
+  "boot_test_done": false
+}

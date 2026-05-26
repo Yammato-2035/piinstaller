@@ -1,0 +1,480 @@
+{
+  "checked_at": "2026-05-26T20:01:00.252702+00:00",
+  "commit": "84d7dc6",
+  "project_version": "1.7.2",
+  "api_payload": {
+    "code": "DEV_DASHBOARD_RESCUE_ISO_STEP_REVIEW_REQUIRED",
+    "status": "yellow",
+    "summary": "Kontrollierter Rescue-ISO-Build ist fuer einen separaten Build-Preflight vorbereitet.",
+    "generated_at": "2026-05-26T20:01:00.417304+00:00",
+    "repo_root": "/home/volker/piinstaller",
+    "runtime_repo_root": "/opt/setuphelfer",
+    "runtime_path": "/opt/setuphelfer",
+    "workspace_path": "/home/volker/piinstaller",
+    "build_tree_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+    "temp_runtime_bundle_path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime",
+    "logs_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build",
+    "summary_path": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+    "path_mode": "workspace_build_runtime_opt",
+    "path_status": "ok",
+    "path_errors": [],
+    "path_warnings": [],
+    "repo": {
+      "head": "84d7dc6",
+      "branch": "main",
+      "runtime_gate": "green",
+      "runtime_gate_exit": 0,
+      "runtime_gate_summary": "ok"
+    },
+    "tools": {
+      "lb": {
+        "present": true,
+        "path": "/usr/bin/lb"
+      },
+      "xorriso": {
+        "present": true,
+        "path": "/usr/bin/xorriso"
+      },
+      "mksquashfs": {
+        "present": true,
+        "path": "/usr/bin/mksquashfs"
+      },
+      "rsvg": {
+        "present": true,
+        "path": "/home/volker/piinstaller/build/rescue/tool-compat/bin/rsvg",
+        "compat_path": "/usr/bin/rsvg-convert",
+        "legacy_source": "project_local_wrapper",
+        "required": true,
+        "hint_package": "librsvg2-bin",
+        "summary": "live-build erwartet den Legacy-Befehl 'rsvg'; der projektlokale Kompatibilitaets-Wrapper delegiert kontrolliert auf rsvg-convert."
+      }
+    },
+    "rsvg_preflight": {
+      "required": true,
+      "status": "ok",
+      "summary": "live-build erwartet den Legacy-Befehl 'rsvg'; der projektlokale Kompatibilitaets-Wrapper delegiert kontrolliert auf rsvg-convert.",
+      "command_name": "rsvg",
+      "legacy_path": "/home/volker/piinstaller/build/rescue/tool-compat/bin/rsvg",
+      "system_legacy_path": null,
+      "legacy_source": "project_local_wrapper",
+      "wrapper_path": "/home/volker/piinstaller/build/rescue/tool-compat/bin/rsvg",
+      "wrapper_exists": true,
+      "compat_command_name": "rsvg-convert",
+      "compat_path": "/usr/bin/rsvg-convert",
+      "hint_package": "librsvg2-bin",
+      "package_installed": true,
+      "install_command": "sudo apt install librsvg2-bin",
+      "commands": [],
+      "error_code": null,
+      "warnings": [
+        "Kein globaler /usr/bin/rsvg-Symlink; Operator-Build muss PATH explizit um den Wrapper erweitern."
+      ],
+      "splash_template_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/isolinux/splash.svg.in",
+      "live_build_script_path": "/usr/lib/live/build/lb_binary_syslinux",
+      "live_build_uses_rsvg": true,
+      "live_build_uses_rsvg_convert": false
+    },
+    "preflight_readiness": "ready_for_build_preflight",
+    "build_tree": {
+      "path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+      "exists": true,
+      "validator_status": "ok",
+      "auto_config_noauto": true,
+      "auto_build_blocked": true,
+      "missing_paths": [],
+      "manifest_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/evidence/build-tree-manifest.json",
+      "source_head": "fe36af0"
+    },
+    "stale_state": {
+      "present": false,
+      "root_owned_stage_files": [],
+      "skipped_live_build_stages": [],
+      "needs_sudo_clean": false,
+      "indicators": [],
+      "stage_marker_present": false,
+      "debootstrap_log_path": null,
+      "latest_log_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build/latest.log"
+    },
+    "target_architecture_matrix": {
+      "host_arch": {
+        "machine": "x86_64",
+        "normalized": "amd64"
+      },
+      "supported_targets": [],
+      "candidate_targets": [
+        {
+          "target": "amd64",
+          "label": "x86_64 / AMD64 / Intel 64",
+          "expected_boot": "BIOS/UEFI",
+          "bootloader_family": "syslinux/grub",
+          "likely_format": "iso",
+          "status": "primary_candidate",
+          "reason": "Primärer x86-Rescue-ISO-Kandidat; noch kein finaler Build-/Boot-Nachweis."
+        },
+        {
+          "target": "i386",
+          "label": "32-bit x86",
+          "expected_boot": "BIOS/limited UEFI",
+          "bootloader_family": "syslinux/grub (legacy focus)",
+          "likely_format": "iso",
+          "status": "review_required",
+          "reason": "i386-Unterstützung ist möglich, aber moderne UEFI-/Treiber-/Browser-/Paketlage ist eingeschränkt. Separates Build-Ziel, nicht automatisch durch amd64 abgedeckt."
+        }
+      ],
+      "deferred_targets": [
+        {
+          "target": "arm64",
+          "label": "ARM 64-bit",
+          "expected_boot": "board_specific / UEFI teilweise",
+          "bootloader_family": "board_firmware_or_uefi",
+          "likely_format": "image",
+          "status": "deferred",
+          "reason": "ARM benötigt separate Kernel-/Firmware-/Bootloader-/Image-Strategie. Nicht mit x86-ISO gleichsetzen."
+        },
+        {
+          "target": "armhf",
+          "label": "ARM 32-bit",
+          "expected_boot": "board_specific",
+          "bootloader_family": "board_firmware",
+          "likely_format": "image",
+          "status": "deferred",
+          "reason": "Nur sinnvoll für ausgewählte ältere Raspberry-Pi-/ARM-Geräte. Hoher Wartungsaufwand."
+        }
+      ],
+      "bootloader_notes": [
+        "amd64/i386 nutzen die x86-Bootloader-Schiene aus live-build (syslinux/grub).",
+        "arm64/armhf brauchen board- oder firmware-spezifische Bootpfade und bleiben getrennte Image-Tracks."
+      ],
+      "format_notes": [
+        "x86-Ziele werden als ISO-Kandidaten betrachtet.",
+        "ARM-Ziele werden als Image-Kandidaten betrachtet und nicht als normales x86-ISO behandelt."
+      ],
+      "blockers": [
+        "Kein Ziel ist final green ohne Build- und Boot-Evidence.",
+        "USB-Write bleibt separat blockiert.",
+        "Der echte ISO-Build bleibt ein separater Operator-Schritt."
+      ],
+      "next_required_tests": [
+        "amd64 Build-Preflight und spaeter BIOS/UEFI-Bootnachweis",
+        "i386 separates Build-Ziel mit BIOS-/UEFI-Review",
+        "arm64 separates Provisioning-/Image-Konzept"
+      ]
+    },
+    "temp_runtime_bundle": {
+      "path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime",
+      "status": "ok",
+      "files_count": 2784,
+      "manifest_sha256": "5a091b8b8c7dc3441befab430358dfd5200ccb906c10332a8255d525249d4223",
+      "manifest_path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime/MANIFEST.json",
+      "source_head": "fe36af0",
+      "error": null
+    },
+    "dpkg_preflight": {
+      "status": "pre_chroot_ok",
+      "last_exit_code": 0,
+      "summary": "Preflight ok vor chroot-Erzeugung",
+      "chroot_status": "missing",
+      "issues": [],
+      "dangerous_matches": [],
+      "forbidden_package_matches": [],
+      "json_path": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+    },
+    "iso_build": {
+      "status": "not_started",
+      "last_exit_code": null,
+      "last_error": null,
+      "iso_found": false,
+      "iso_path": null,
+      "iso_abs_path": null,
+      "iso_size_bytes": null,
+      "iso_sha256": null
+    },
+    "real_iso_build": {
+      "allowed": false,
+      "status": "not_started"
+    },
+    "usb_write": {
+      "allowed": false,
+      "status": "blocked",
+      "reason": "separate gate required"
+    },
+    "logs": {
+      "latest_log_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build/latest.log",
+      "last_80_lines": [
+        "[2026-05-25T20:02:02.795528+00:00] STEP: summarize",
+        "[2026-05-25T20:02:02.795534+00:00] RUNTIME_PATH: /opt/setuphelfer",
+        "[2026-05-25T20:02:02.795538+00:00] WORKSPACE_PATH: /home/volker/piinstaller",
+        "[2026-05-25T20:02:02.795540+00:00] PATH_STATUS: ok"
+      ],
+      "last_error": null
+    },
+    "forbidden_actions": {
+      "dd_allowed": false,
+      "mkfs_allowed": false,
+      "parted_write_allowed": false,
+      "restore_allowed": false,
+      "backup_allowed": false,
+      "usb_write_allowed": false
+    },
+    "evidence_sources": [
+      "docs/evidence/rescue/RESCUE_CONTROLLED_ISO_BUILD_RESULT.md",
+      "docs/evidence/rescue/RESCUE_BIG_STEP_STATUS_PLAN.md",
+      "docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md",
+      "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+      "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json",
+      "docs/evidence/runtime-results/rescue/controlled_usb_write_latest_summary.json",
+      "build/rescue/logs/controlled-iso-build/latest.log"
+    ],
+    "no_fake_green": true,
+    "next_operator_action": {
+      "type": "operator_sudo_required",
+      "label": "DPKG-Preflight ist grün; der echte Build bleibt ein separater Operator-Sudo-Schritt.",
+      "commands": [
+        "cd \"/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live\"",
+        "export PATH=\"/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH\"",
+        "./auto/config",
+        "sudo env PATH=\"/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH\" lb build noauto"
+      ]
+    }
+  },
+  "workspace_static_preview": {
+    "status": "red",
+    "summary": "Direkter lb build wurde bewusst vom kontrollierten auto/build-Gate blockiert; zulaessig ist nur der kontrollierte Rescue-Buildpfad mit ./auto/config und lb build noauto.",
+    "generated_at": "2026-05-26T20:01:00.561231+00:00",
+    "repo_root": "/home/volker/piinstaller",
+    "runtime_repo_root": "/home/volker/piinstaller",
+    "runtime_path": "/home/volker/piinstaller",
+    "workspace_path": "/home/volker/piinstaller",
+    "build_tree_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+    "temp_runtime_bundle_path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime",
+    "logs_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build",
+    "summary_path": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+    "path_mode": "workspace_build_runtime_local",
+    "path_status": "ok",
+    "path_errors": [],
+    "path_warnings": [],
+    "repo": {
+      "head": "84d7dc6",
+      "branch": "main",
+      "runtime_gate": "red",
+      "runtime_gate_exit": 13,
+      "runtime_gate_summary": "ok"
+    },
+    "tools": {
+      "lb": {
+        "present": true,
+        "path": "/usr/bin/lb"
+      },
+      "xorriso": {
+        "present": true,
+        "path": "/usr/bin/xorriso"
+      },
+      "mksquashfs": {
+        "present": true,
+        "path": "/usr/bin/mksquashfs"
+      },
+      "rsvg": {
+        "present": true,
+        "path": "/home/volker/piinstaller/build/rescue/tool-compat/bin/rsvg",
+        "compat_path": "/usr/bin/rsvg-convert",
+        "legacy_source": "project_local_wrapper",
+        "required": true,
+        "hint_package": "librsvg2-bin",
+        "summary": "live-build erwartet den Legacy-Befehl 'rsvg'; der projektlokale Kompatibilitaets-Wrapper delegiert kontrolliert auf rsvg-convert."
+      }
+    },
+    "rsvg_preflight": {
+      "required": true,
+      "status": "ok",
+      "summary": "live-build erwartet den Legacy-Befehl 'rsvg'; der projektlokale Kompatibilitaets-Wrapper delegiert kontrolliert auf rsvg-convert.",
+      "command_name": "rsvg",
+      "legacy_path": "/home/volker/piinstaller/build/rescue/tool-compat/bin/rsvg",
+      "system_legacy_path": null,
+      "legacy_source": "project_local_wrapper",
+      "wrapper_path": "/home/volker/piinstaller/build/rescue/tool-compat/bin/rsvg",
+      "wrapper_exists": true,
+      "compat_command_name": "rsvg-convert",
+      "compat_path": "/usr/bin/rsvg-convert",
+      "hint_package": "librsvg2-bin",
+      "package_installed": true,
+      "install_command": "sudo apt install librsvg2-bin",
+      "commands": [],
+      "error_code": null,
+      "warnings": [
+        "Kein globaler /usr/bin/rsvg-Symlink; Operator-Build muss PATH explizit um den Wrapper erweitern."
+      ],
+      "splash_template_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/isolinux/splash.svg.in",
+      "live_build_script_path": "/usr/lib/live/build/lb_binary_syslinux",
+      "live_build_uses_rsvg": true,
+      "live_build_uses_rsvg_convert": false
+    },
+    "preflight_readiness": "blocked",
+    "build_tree": {
+      "path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+      "exists": true,
+      "validator_status": "ok",
+      "auto_config_noauto": true,
+      "auto_build_blocked": true,
+      "missing_paths": [],
+      "manifest_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/evidence/build-tree-manifest.json",
+      "source_head": "fe36af0"
+    },
+    "stale_state": {
+      "present": false,
+      "root_owned_stage_files": [],
+      "skipped_live_build_stages": [],
+      "needs_sudo_clean": false,
+      "indicators": [],
+      "stage_marker_present": false,
+      "debootstrap_log_path": null,
+      "latest_log_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build/latest.log"
+    },
+    "target_architecture_matrix": {
+      "host_arch": {
+        "machine": "x86_64",
+        "normalized": "amd64"
+      },
+      "supported_targets": [],
+      "candidate_targets": [
+        {
+          "target": "amd64",
+          "label": "x86_64 / AMD64 / Intel 64",
+          "expected_boot": "BIOS/UEFI",
+          "bootloader_family": "syslinux/grub",
+          "likely_format": "iso",
+          "status": "primary_candidate",
+          "reason": "Primärer x86-Rescue-ISO-Kandidat; noch kein finaler Build-/Boot-Nachweis."
+        },
+        {
+          "target": "i386",
+          "label": "32-bit x86",
+          "expected_boot": "BIOS/limited UEFI",
+          "bootloader_family": "syslinux/grub (legacy focus)",
+          "likely_format": "iso",
+          "status": "review_required",
+          "reason": "i386-Unterstützung ist möglich, aber moderne UEFI-/Treiber-/Browser-/Paketlage ist eingeschränkt. Separates Build-Ziel, nicht automatisch durch amd64 abgedeckt."
+        }
+      ],
+      "deferred_targets": [
+        {
+          "target": "arm64",
+          "label": "ARM 64-bit",
+          "expected_boot": "board_specific / UEFI teilweise",
+          "bootloader_family": "board_firmware_or_uefi",
+          "likely_format": "image",
+          "status": "deferred",
+          "reason": "ARM benötigt separate Kernel-/Firmware-/Bootloader-/Image-Strategie. Nicht mit x86-ISO gleichsetzen."
+        },
+        {
+          "target": "armhf",
+          "label": "ARM 32-bit",
+          "expected_boot": "board_specific",
+          "bootloader_family": "board_firmware",
+          "likely_format": "image",
+          "status": "deferred",
+          "reason": "Nur sinnvoll für ausgewählte ältere Raspberry-Pi-/ARM-Geräte. Hoher Wartungsaufwand."
+        }
+      ],
+      "bootloader_notes": [
+        "amd64/i386 nutzen die x86-Bootloader-Schiene aus live-build (syslinux/grub).",
+        "arm64/armhf brauchen board- oder firmware-spezifische Bootpfade und bleiben getrennte Image-Tracks."
+      ],
+      "format_notes": [
+        "x86-Ziele werden als ISO-Kandidaten betrachtet.",
+        "ARM-Ziele werden als Image-Kandidaten betrachtet und nicht als normales x86-ISO behandelt."
+      ],
+      "blockers": [
+        "Kein Ziel ist final green ohne Build- und Boot-Evidence.",
+        "USB-Write bleibt separat blockiert.",
+        "Der echte ISO-Build bleibt ein separater Operator-Schritt."
+      ],
+      "next_required_tests": [
+        "amd64 Build-Preflight und spaeter BIOS/UEFI-Bootnachweis",
+        "i386 separates Build-Ziel mit BIOS-/UEFI-Review",
+        "arm64 separates Provisioning-/Image-Konzept"
+      ]
+    },
+    "temp_runtime_bundle": {
+      "path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime",
+      "status": "ok",
+      "files_count": 2784,
+      "manifest_sha256": "5a091b8b8c7dc3441befab430358dfd5200ccb906c10332a8255d525249d4223",
+      "manifest_path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime/MANIFEST.json",
+      "source_head": "fe36af0",
+      "error": null
+    },
+    "dpkg_preflight": {
+      "status": "pre_chroot_ok",
+      "last_exit_code": 0,
+      "summary": "Preflight ok vor chroot-Erzeugung",
+      "chroot_status": "missing",
+      "issues": [],
+      "dangerous_matches": [],
+      "forbidden_package_matches": [],
+      "json_path": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+    },
+    "iso_build": {
+      "status": "blocked",
+      "last_exit_code": 20,
+      "last_error": "Direkter lb build wurde bewusst vom kontrollierten auto/build-Gate blockiert; zulaessig ist nur der kontrollierte Rescue-Buildpfad mit ./auto/config und lb build noauto.",
+      "iso_found": false,
+      "iso_path": null,
+      "iso_abs_path": null,
+      "iso_size_bytes": null,
+      "iso_sha256": null,
+      "error_code": "blocked_controlled_build_gate_required",
+      "category": "safety_gate",
+      "next_action": "use_controlled_rescue_build_gate",
+      "attempted": true,
+      "attempted_command": "PATH=\"$(git rev-parse --show-toplevel)/build/rescue/tool-compat/bin:$PATH\" lb build",
+      "started_at": "2026-05-26T19:09:23.911647+00:00",
+      "finished_at": "2026-05-26T19:09:24.000727+00:00",
+      "direct_lb_build_blocked": true
+    },
+    "real_iso_build": {
+      "allowed": false,
+      "status": "blocked_controlled_build_gate_required"
+    },
+    "usb_write": {
+      "allowed": false,
+      "status": "blocked",
+      "reason": "separate gate required"
+    },
+    "logs": {
+      "latest_log_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build/latest.log",
+      "last_80_lines": [
+        "[2026-05-25T20:02:02.795528+00:00] STEP: summarize",
+        "[2026-05-25T20:02:02.795534+00:00] RUNTIME_PATH: /opt/setuphelfer",
+        "[2026-05-25T20:02:02.795538+00:00] WORKSPACE_PATH: /home/volker/piinstaller",
+        "[2026-05-25T20:02:02.795540+00:00] PATH_STATUS: ok"
+      ],
+      "last_error": null
+    },
+    "forbidden_actions": {
+      "dd_allowed": false,
+      "mkfs_allowed": false,
+      "parted_write_allowed": false,
+      "restore_allowed": false,
+      "backup_allowed": false,
+      "usb_write_allowed": false
+    },
+    "evidence_sources": [
+      "docs/evidence/rescue/RESCUE_CONTROLLED_ISO_BUILD_RESULT.md",
+      "docs/evidence/rescue/RESCUE_BIG_STEP_STATUS_PLAN.md",
+      "docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md",
+      "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+      "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json",
+      "docs/evidence/runtime-results/rescue/controlled_usb_write_latest_summary.json",
+      "build/rescue/logs/controlled-iso-build/latest.log"
+    ],
+    "no_fake_green": true,
+    "next_operator_action": {
+      "type": "fix_required",
+      "label": "Runtime-Gate muss grün sein, bevor weitere ISO-Schritte erlaubt sind.",
+      "commands": [
+        "./scripts/check-runtime-deploy-gate.sh"
+      ]
+    }
+  },
+  "runtime_api_matches_workspace_error_code": false
+}

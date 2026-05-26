@@ -6,6 +6,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BUILD_ROOT="${REPO_ROOT}/build/rescue/live-build/setuphelfer-rescue-live"
+PATH_PREFIX="${REPO_ROOT}/build/rescue/tool-compat/bin"
 LOG_DIR="${REPO_ROOT}/build/rescue/logs/controlled-iso-build"
 SUMMARY_DIR="${REPO_ROOT}/docs/evidence/runtime-results/rescue"
 LATEST_LOG="${LOG_DIR}/latest.log"
@@ -16,7 +17,8 @@ usage() {
 Usage: $0 [--operator-confirm-build]
 
 Without flag: preview gates and log paths only (Exit 20).
-With --operator-confirm-build: run ./auto/config and sudo lb build noauto.
+With --operator-confirm-build: run ./auto/config and sudo lb build noauto
+with the project-local rsvg wrapper in PATH.
 
 Log paths:
   ${LATEST_LOG}
@@ -36,6 +38,8 @@ preview_gates() {
     "${BUILD_ROOT}" 2>/dev/null || echo "WARN: build tree validator not ready"
   echo "Planned log: ${LATEST_LOG}"
   echo "Planned summary: ${SUMMARY_JSON}"
+  echo "Required PATH prefix: ${PATH_PREFIX}"
+  echo "Planned command: sudo env PATH=\"${PATH_PREFIX}:\$PATH\" lb build noauto"
 }
 
 write_summary() {
@@ -102,9 +106,9 @@ STARTED_AT="$(date -Is)"
 
 echo "START ${STARTED_AT}" | tee "${LATEST_LOG}" | tee "${STAMPED_LOG}"
 cd "${BUILD_ROOT}"
-./auto/config 2>&1 | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+env PATH="${PATH_PREFIX}:${PATH}" ./auto/config 2>&1 | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
 set +e
-sudo lb build noauto 2>&1 | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+sudo env PATH="${PATH_PREFIX}:${PATH}" lb build noauto 2>&1 | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
 LB_EXIT=$?
 set -e
 ENDED_AT="$(date -Is)"
