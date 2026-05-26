@@ -1,0 +1,68 @@
+{
+  "checked_at": "2026-05-26T18:39:04+00:00",
+  "commit": "e2921cd",
+  "project_version": "1.7.2",
+  "host_arch": {
+    "machine": "x86_64",
+    "normalized": "amd64"
+  },
+  "supported_targets": [],
+  "candidate_targets": [
+    {
+      "target": "amd64",
+      "label": "x86_64 / AMD64 / Intel 64",
+      "expected_boot": "BIOS/UEFI",
+      "bootloader_family": "syslinux/grub",
+      "likely_format": "iso",
+      "status": "primary_candidate",
+      "reason": "Primaerer x86-Rescue-ISO-Kandidat; noch kein finaler Build-/Boot-Nachweis."
+    },
+    {
+      "target": "i386",
+      "label": "32-bit x86",
+      "expected_boot": "BIOS/limited UEFI",
+      "bootloader_family": "syslinux/grub (legacy focus)",
+      "likely_format": "iso",
+      "status": "review_required",
+      "reason": "i386-Unterstuetzung ist moeglich, aber moderne UEFI-/Treiber-/Browser-/Paketlage ist eingeschraenkt. Separates Build-Ziel, nicht automatisch durch amd64 abgedeckt."
+    }
+  ],
+  "deferred_targets": [
+    {
+      "target": "arm64",
+      "label": "ARM 64-bit",
+      "expected_boot": "board_specific / UEFI teilweise",
+      "bootloader_family": "board_firmware_or_uefi",
+      "likely_format": "image",
+      "status": "deferred",
+      "reason": "ARM benoetigt separate Kernel-/Firmware-/Bootloader-/Image-Strategie. Nicht mit x86-ISO gleichsetzen."
+    },
+    {
+      "target": "armhf",
+      "label": "ARM 32-bit",
+      "expected_boot": "board_specific",
+      "bootloader_family": "board_firmware",
+      "likely_format": "image",
+      "status": "deferred",
+      "reason": "Nur sinnvoll fuer ausgewaehlte aeltere Raspberry-Pi-/ARM-Geraete. Hoher Wartungsaufwand."
+    }
+  ],
+  "bootloader_notes": [
+    "amd64/i386 nutzen die x86-Bootloader-Schiene aus live-build (syslinux/grub).",
+    "arm64/armhf brauchen board- oder firmware-spezifische Bootpfade und bleiben getrennte Image-Tracks."
+  ],
+  "format_notes": [
+    "x86-Ziele werden als ISO-Kandidaten betrachtet.",
+    "ARM-Ziele werden als Image-Kandidaten betrachtet und nicht als normales x86-ISO behandelt."
+  ],
+  "blockers": [
+    "Kein Ziel ist final green ohne Build- und Boot-Evidence.",
+    "USB-Write bleibt separat blockiert.",
+    "Der echte ISO-Build bleibt ein separater Operator-Schritt."
+  ],
+  "next_required_tests": [
+    "amd64 Build-Preflight und spaeter BIOS/UEFI-Bootnachweis",
+    "i386 separates Build-Ziel mit BIOS-/UEFI-Review",
+    "arm64 separates Provisioning-/Image-Konzept"
+  ]
+}

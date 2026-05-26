@@ -1,0 +1,12 @@
+{
+  "decision_status": "ready",
+  "chosen_strategy": "project_local_wrapper_required",
+  "reason": "Das installierte live-build/lb_binary_syslinux verlangt weiterhin den Legacy-Befehl 'rsvg'. Statt eines globalen Symlinks wird ein projektlokaler Wrapper unter build/rescue/tool-compat/bin/rsvg verwendet, der kontrolliert auf rsvg-convert delegiert.",
+  "risk": "medium",
+  "forbidden_global_actions": [
+    "Kein globaler Symlink nach /usr/bin/rsvg",
+    "Keine Änderung an /usr/lib/live/build",
+    "Keine Paketmanipulation jenseits der bereits manuell ausgeführten Installation von librsvg2-bin"
+  ],
+  "next_prompt": "RESCUE_ISO_REAL_BUILD_PREFLIGHT_ONLY"
+}

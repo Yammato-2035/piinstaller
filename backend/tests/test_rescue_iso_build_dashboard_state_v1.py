@@ -125,6 +125,77 @@ class RescueIsoBuildDashboardStateTests(unittest.TestCase):
         self.assertFalse(payload["usb_write"]["allowed"])
         self.assertFalse(payload["forbidden_actions"]["usb_write_allowed"])
 
+    def test_target_architecture_matrix_contains_candidates_without_final_green(self) -> None:
+        matrix = state.build_rescue_target_architecture_matrix()
+        targets = {
+            item["target"]: item["status"]
+            for item in [*(matrix.get("candidate_targets") or []), *(matrix.get("deferred_targets") or [])]
+        }
+        self.assertEqual(targets.get("amd64"), "primary_candidate")
+        self.assertEqual(targets.get("i386"), "review_required")
+        self.assertEqual(targets.get("arm64"), "deferred")
+        self.assertEqual(targets.get("armhf"), "deferred")
+        self.assertEqual(matrix.get("supported_targets"), [])
+
+    def test_preflight_ready_stays_yellow_until_iso_exists(self) -> None:
+        with self._repo() as td:
+            repo = Path(td)
+            self._init_git_repo(repo)
+            paths = {
+                "runtime_path": "/opt/setuphelfer",
+                "workspace_path": str(repo),
+                "build_tree_path": str(repo / "build/rescue/live-build/setuphelfer-rescue-live"),
+                "temp_runtime_bundle_path": str(repo / "build/rescue/temp-runtime/setuphelfer-rescue-runtime"),
+                "logs_path": str(repo / "build/rescue/logs/controlled-iso-build"),
+                "summary_path": str(repo / "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"),
+                "path_mode": "workspace_build_runtime_opt",
+                "path_status": "ok",
+                "errors": [],
+                "warnings": [],
+                "workspace_head": "653d41a",
+                "workspace_branch": "main",
+            }
+            with (
+                patch.object(state, "resolve_rescue_iso_paths", return_value=paths),
+                patch.object(state, "_runtime_gate", return_value={"status": "green", "exit_code": 0, "summary": "ok"}),
+                patch.object(state, "_tool_presence", return_value={"present": True, "path": "/usr/bin/tool"}),
+                patch.object(
+                    state,
+                    "inspect_rsvg_build_dependency",
+                    return_value={
+                        "required": True,
+                        "status": "ok",
+                        "summary": "legacy wrapper ready",
+                        "legacy_path": str(repo / "build/rescue/tool-compat/bin/rsvg"),
+                        "compat_path": "/usr/bin/rsvg-convert",
+                        "legacy_source": "project_local_wrapper",
+                        "error_code": None,
+                        "hint_package": "librsvg2-bin",
+                    },
+                ),
+                patch.object(state, "detect_live_build_stale_state", return_value={"present": False, "needs_sudo_clean": False}),
+                patch.object(state, "_temp_runtime_bundle", return_value={"status": "ok", "files_count": 1, "manifest_sha256": "abc"}),
+                patch.object(
+                    state,
+                    "_build_tree",
+                    return_value={"validator_status": "ok", "auto_config_noauto": True, "auto_build_blocked": True, "source_head": "653d41a"},
+                ),
+                patch.object(state, "_dpkg_preflight", return_value={"status": "pre_chroot_ok", "summary": "ok"}),
+                patch.object(state, "read_rescue_iso_latest_logs", return_value={"latest_log_path": "x", "last_80_lines": [], "last_error": None}),
+                patch.object(
+                    state,
+                    "summarize_rescue_iso_artifacts",
+                    return_value={"iso_found": False, "iso_path": None, "iso_abs_path": None, "iso_size_bytes": None, "iso_sha256": None},
+                ),
+                patch.object(state, "_summary_payload", return_value={}),
+            ):
+                payload = state.build_rescue_iso_dashboard_state(repo_root=Path("/opt/setuphelfer"))
+
+        self.assertEqual(payload["preflight_readiness"], "ready_for_build_preflight")
+        self.assertEqual(payload["status"], "yellow")
+        self.assertFalse(payload["usb_write"]["allowed"])
+        self.assertFalse(payload["real_iso_build"]["allowed"])
+
     def test_secret_redaction(self) -> None:
         raw = (
             "API"

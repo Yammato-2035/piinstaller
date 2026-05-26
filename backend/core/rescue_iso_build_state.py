@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import platform
 import re
 import shutil
 import subprocess
@@ -453,6 +454,132 @@ def _backend_sudo_allowed() -> bool:
     return raw in {"1", "true", "yes", "on"}
 
 
+def _normalized_arch(machine: str | None) -> str:
+    value = str(machine or "").strip().lower()
+    if value in {"x86_64", "amd64"}:
+        return "amd64"
+    if value in {"i386", "i486", "i586", "i686"}:
+        return "i386"
+    if value in {"aarch64", "arm64"}:
+        return "arm64"
+    if value.startswith("arm"):
+        return "armhf"
+    return value or "unknown"
+
+
+def build_rescue_target_architecture_matrix() -> dict[str, Any]:
+    host_machine = platform.machine()
+    host_arch = _normalized_arch(host_machine)
+    targets = [
+        {
+            "target": "amd64",
+            "label": "x86_64 / AMD64 / Intel 64",
+            "expected_boot": "BIOS/UEFI",
+            "bootloader_family": "syslinux/grub",
+            "likely_format": "iso",
+            "status": "primary_candidate",
+            "reason": "Primärer x86-Rescue-ISO-Kandidat; noch kein finaler Build-/Boot-Nachweis.",
+        },
+        {
+            "target": "i386",
+            "label": "32-bit x86",
+            "expected_boot": "BIOS/limited UEFI",
+            "bootloader_family": "syslinux/grub (legacy focus)",
+            "likely_format": "iso",
+            "status": "review_required",
+            "reason": (
+                "i386-Unterstützung ist möglich, aber moderne UEFI-/Treiber-/Browser-/Paketlage ist eingeschränkt. "
+                "Separates Build-Ziel, nicht automatisch durch amd64 abgedeckt."
+            ),
+        },
+        {
+            "target": "arm64",
+            "label": "ARM 64-bit",
+            "expected_boot": "board_specific / UEFI teilweise",
+            "bootloader_family": "board_firmware_or_uefi",
+            "likely_format": "image",
+            "status": "deferred",
+            "reason": "ARM benötigt separate Kernel-/Firmware-/Bootloader-/Image-Strategie. Nicht mit x86-ISO gleichsetzen.",
+        },
+        {
+            "target": "armhf",
+            "label": "ARM 32-bit",
+            "expected_boot": "board_specific",
+            "bootloader_family": "board_firmware",
+            "likely_format": "image",
+            "status": "deferred",
+            "reason": "Nur sinnvoll für ausgewählte ältere Raspberry-Pi-/ARM-Geräte. Hoher Wartungsaufwand.",
+        },
+    ]
+    return {
+        "host_arch": {"machine": host_machine, "normalized": host_arch},
+        "supported_targets": [],
+        "candidate_targets": [item for item in targets if item["status"] in {"primary_candidate", "review_required"}],
+        "deferred_targets": [item for item in targets if item["status"] == "deferred"],
+        "bootloader_notes": [
+            "amd64/i386 nutzen die x86-Bootloader-Schiene aus live-build (syslinux/grub).",
+            "arm64/armhf brauchen board- oder firmware-spezifische Bootpfade und bleiben getrennte Image-Tracks.",
+        ],
+        "format_notes": [
+            "x86-Ziele werden als ISO-Kandidaten betrachtet.",
+            "ARM-Ziele werden als Image-Kandidaten betrachtet und nicht als normales x86-ISO behandelt.",
+        ],
+        "blockers": [
+            "Kein Ziel ist final green ohne Build- und Boot-Evidence.",
+            "USB-Write bleibt separat blockiert.",
+            "Der echte ISO-Build bleibt ein separater Operator-Schritt.",
+        ],
+        "next_required_tests": [
+            "amd64 Build-Preflight und spaeter BIOS/UEFI-Bootnachweis",
+            "i386 separates Build-Ziel mit BIOS-/UEFI-Review",
+            "arm64 separates Provisioning-/Image-Konzept",
+        ],
+    }
+
+
+def _preflight_readiness(state: dict[str, Any]) -> str:
+    path_status = str(state.get("path_status") or "unknown")
+    runtime_gate = str(((state.get("repo") or {}).get("runtime_gate")) or "unknown")
+    stale = state.get("stale_state") or {}
+    build_tree = state.get("build_tree") or {}
+    bundle = state.get("temp_runtime_bundle") or {}
+    dpkg_preflight = state.get("dpkg_preflight") or {}
+    tools = state.get("tools") or {}
+    rsvg_preflight = state.get("rsvg_preflight") or {}
+    dpkg_status = str(dpkg_preflight.get("status") or "unknown")
+    rsvg_status = str(rsvg_preflight.get("status") or "unknown")
+    rsvg_error = str(rsvg_preflight.get("error_code") or "")
+
+    if path_status == "blocked" or runtime_gate == "red" or stale.get("needs_sudo_clean"):
+        return "blocked"
+    if stale.get("present") or path_status == "review_required":
+        return "review_required"
+    if rsvg_status == "blocked":
+        return "blocked"
+    if rsvg_error == "blocked_legacy_rsvg_command_missing" or rsvg_status == "review_required":
+        return "review_required"
+    if any(not item.get("present") for item in tools.values() if isinstance(item, dict)):
+        return "blocked"
+    if bundle.get("status") != "ok":
+        return "blocked" if bundle.get("status") == "blocked" else "review_required"
+    if build_tree.get("validator_status") != "ok":
+        return "blocked" if build_tree.get("validator_status") == "blocked" else "review_required"
+    if not build_tree.get("auto_config_noauto") or not build_tree.get("auto_build_blocked"):
+        return "blocked"
+    if dpkg_status in {
+        "unsafe_auto_config",
+        "unsafe_auto_clean",
+        "forbidden_package",
+        "dangerous_path_override",
+        "chroot_dpkg_missing",
+        "chroot_start_stop_daemon_missing",
+    }:
+        return "blocked"
+    if dpkg_status not in {"ok", "pre_chroot_ok"}:
+        return "review_required"
+    return "ready_for_build_preflight"
+
+
 def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
     runtime_root = Path(str(state.get("runtime_path") or _repo_root()))
     runtime_gate = str(((state.get("repo") or {}).get("runtime_gate")) or "unknown")
@@ -479,6 +606,15 @@ def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
         return {
             "type": "build_dependency_required",
             "label": str(rsvg_preflight.get("summary") or "RSVG-Build-Abhaengigkeit fehlt."),
+            "commands": list(rsvg_preflight.get("commands") or []),
+        }
+    if str(rsvg_preflight.get("error_code") or "") == "blocked_legacy_rsvg_command_missing":
+        return {
+            "type": "prepare_project_local_rsvg_wrapper",
+            "label": str(
+                rsvg_preflight.get("summary")
+                or "live-build erwartet den Legacy-Befehl 'rsvg'; projektlokale Kompatibilitaet vorbereiten."
+            ),
             "commands": list(rsvg_preflight.get("commands") or []),
         }
     if stale.get("needs_sudo_clean"):
@@ -577,9 +713,12 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
     tools = {name: _tool_presence(name) for name in _TOOL_NAMES}
     rsvg_preflight = inspect_rsvg_build_dependency(repo_root=runtime_root)
     tools["rsvg"] = {
-        "present": (not bool(rsvg_preflight.get("required"))) or bool(rsvg_preflight.get("legacy_path")),
+        "present": (not bool(rsvg_preflight.get("required")))
+        or bool(rsvg_preflight.get("compat_path"))
+        or bool(rsvg_preflight.get("legacy_path")),
         "path": rsvg_preflight.get("legacy_path"),
         "compat_path": rsvg_preflight.get("compat_path"),
+        "legacy_source": rsvg_preflight.get("legacy_source"),
         "required": bool(rsvg_preflight.get("required")),
         "hint_package": rsvg_preflight.get("hint_package"),
         "summary": rsvg_preflight.get("summary"),
@@ -592,13 +731,27 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
     artifacts = summarize_rescue_iso_artifacts(repo_root=repo)
     summary = _summary_payload(runtime_root)
     iso_build = _status_from_summary(summary, artifacts, logs)
+    target_architecture_matrix = build_rescue_target_architecture_matrix()
     dpkg_status = str(dpkg_preflight.get("status") or "unknown")
+    preflight_readiness = _preflight_readiness(
+        {
+            "path_status": paths["path_status"],
+            "repo": {"runtime_gate": runtime_gate["status"]},
+            "tools": tools,
+            "rsvg_preflight": rsvg_preflight,
+            "stale_state": stale_state,
+            "build_tree": build_tree,
+            "temp_runtime_bundle": temp_bundle,
+            "dpkg_preflight": dpkg_preflight,
+        }
+    )
 
     if (
         paths["path_status"] == "blocked"
         or runtime_gate["status"] == "red"
         or build_tree["validator_status"] == "blocked"
         or str(rsvg_preflight.get("status") or "") == "blocked"
+        or str(rsvg_preflight.get("error_code") or "") == "blocked_legacy_rsvg_command_missing"
         or dpkg_status in {
             "unsafe_auto_config",
             "unsafe_auto_clean",
@@ -615,6 +768,8 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
         overall = "red"
     elif iso_build["status"] == "success" and runtime_gate["status"] == "green":
         overall = "green"
+    elif preflight_readiness == "ready_for_build_preflight":
+        overall = "yellow"
     elif any(not tool["present"] for tool in tools.values()):
         overall = "red"
     elif stale_state["present"] or temp_bundle["status"] in {"review_required", "unknown"} or build_tree["validator_status"] in {
@@ -643,7 +798,7 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
             summary_text = "sudo clean erforderlich wegen stale root-owned Build-State"
         elif stale_state["present"]:
             summary_text = "stale Build-State erkannt"
-        elif str(rsvg_preflight.get("status") or "") == "blocked":
+        elif str(rsvg_preflight.get("status") or "") in {"blocked", "review_required"}:
             summary_text = str(rsvg_preflight.get("summary") or "RSVG-Build-Abhaengigkeit fehlt")
         elif dpkg_status not in {"ok", "pre_chroot_ok", "unknown"}:
             summary_text = dpkg_preflight.get("summary") or "DPKG-Preflight blockiert den Build"
@@ -651,6 +806,8 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
             summary_text = "DPKG-Preflight noch nicht ausgeführt"
         elif iso_build["status"] == "success":
             summary_text = "ISO-Artefakt vorhanden"
+        elif preflight_readiness == "ready_for_build_preflight":
+            summary_text = "Kontrollierter Rescue-ISO-Build ist fuer einen separaten Build-Preflight vorbereitet."
         elif runtime_gate["status"] != "green":
             summary_text = runtime_gate.get("summary") or "Runtime-Gate nicht grün"
         else:
@@ -681,11 +838,17 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
         },
         "tools": tools,
         "rsvg_preflight": rsvg_preflight,
+        "preflight_readiness": preflight_readiness,
         "build_tree": build_tree,
         "stale_state": stale_state,
+        "target_architecture_matrix": target_architecture_matrix,
         "temp_runtime_bundle": temp_bundle,
         "dpkg_preflight": dpkg_preflight,
         "iso_build": iso_build,
+        "real_iso_build": {
+            "allowed": False,
+            "status": "not_started",
+        },
         "usb_write": {
             "allowed": False,
             "status": "blocked",

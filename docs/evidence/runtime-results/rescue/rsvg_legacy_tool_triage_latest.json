@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-05-26T18:39:04+00:00",
+  "commit": "e2921cd",
+  "project_version": "1.7.2",
+  "live_build_files_checked": [
+    "/usr/lib/live/build/lb_binary_syslinux",
+    "/usr/share/live/build"
+  ],
+  "live_build_uses_rsvg": true,
+  "live_build_uses_rsvg_convert": false,
+  "rsvg_convert_path": "/usr/bin/rsvg-convert",
+  "rsvg_path": null,
+  "package_provider": {
+    "dpkg_provider": "librsvg2-bin: /usr/bin/rsvg-convert",
+    "package_files": [
+      "/usr/bin/rsvg-convert",
+      "/usr/share/man/man1/rsvg-convert.1.gz"
+    ]
+  },
+  "conclusion": "live_build_legacy_rsvg_required",
+  "evidence_excerpt": {
+    "check_package": "Check_package chroot/usr/bin/rsvg librsvg2-bin",
+    "host_check": "if [ ! -e /usr/bin/rsvg ]",
+    "conversion_call": "rsvg --format png --height 480 --width 640"
+  },
+  "no_system_changes_executed": true
+}

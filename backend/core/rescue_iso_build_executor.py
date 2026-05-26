@@ -342,9 +342,10 @@ def _toolcheck_details() -> dict[str, Any]:
     details = {name: {"present": bool(shutil.which(name)), "path": shutil.which(name)} for name in _TOOLCHECK_NAMES}
     rsvg = inspect_rsvg_build_dependency()
     details["rsvg"] = {
-        "present": (not bool(rsvg.get("required"))) or bool(rsvg.get("legacy_path")),
+        "present": (not bool(rsvg.get("required"))) or bool(rsvg.get("compat_path")) or bool(rsvg.get("legacy_path")),
         "path": rsvg.get("legacy_path"),
         "compat_path": rsvg.get("compat_path"),
+        "legacy_source": rsvg.get("legacy_source"),
         "required": bool(rsvg.get("required")),
         "hint_package": rsvg.get("hint_package"),
         "summary": rsvg.get("summary"),
@@ -445,13 +446,26 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
     if step_name == "toolcheck":
         details = {"tools": _toolcheck_details()}
         missing = [name for name, item in (details["tools"] or {}).items() if not item.get("present")]
-        status = "ok" if not missing else "blocked"
+        rsvg = inspect_rsvg_build_dependency()
+        rsvg_error = str(rsvg.get("error_code") or "")
+        if rsvg_error == "blocked_legacy_rsvg_command_missing":
+            status = "review_required"
+            errors = [rsvg_error]
+            exit_code = 18
+        elif rsvg_error == "review_required_rsvg_convert_not_in_path":
+            status = "review_required"
+            errors = [rsvg_error]
+            exit_code = 19
+        else:
+            status = "ok" if not missing else "blocked"
+            errors = [] if not missing else ["blocked_build_tools_missing", f"missing_tools:{', '.join(missing)}"]
+            exit_code = 0 if not missing else 10
         action = _set_result(
             action,
             status=status,
-            exit_code=0 if not missing else 10,
+            exit_code=exit_code,
             details=details,
-            errors=[] if not missing else ["blocked_build_tools_missing", f"missing_tools:{', '.join(missing)}"],
+            errors=errors,
         )
         return _finish(repo, runtime_root, action, log_lines)
 
@@ -589,6 +603,8 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
     if step_name == "prebuild_check":
         state = build_rescue_iso_dashboard_state(repo_root=runtime_root)
         missing = [name for name, item in (state.get("tools") or {}).items() if not item.get("present")]
+        rsvg_preflight = state.get("rsvg_preflight") or {}
+        rsvg_error = str(rsvg_preflight.get("error_code") or "")
         dpkg_preflight = state.get("dpkg_preflight") or {}
         dpkg_status = str(dpkg_preflight.get("status") or "unknown")
         if ((state.get("repo") or {}).get("runtime_gate")) != "green":
@@ -603,6 +619,22 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
             )
         elif (state.get("stale_state") or {}).get("present"):
             action = _set_result(action, status="review_required", exit_code=11, details=state, errors=["stale_state_detected"])
+        elif rsvg_error == "blocked_legacy_rsvg_command_missing":
+            action = _set_result(
+                action,
+                status="review_required",
+                exit_code=18,
+                details=state,
+                errors=["blocked_legacy_rsvg_command_missing"],
+            )
+        elif rsvg_error == "review_required_rsvg_convert_not_in_path":
+            action = _set_result(
+                action,
+                status="review_required",
+                exit_code=19,
+                details=state,
+                errors=["review_required_rsvg_convert_not_in_path"],
+            )
         elif missing:
             action = _set_result(
                 action,

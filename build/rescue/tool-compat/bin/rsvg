@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+args=()
+input_file=""
+output_file=""
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --format|--height|--width)
+      if [ "$#" -lt 2 ]; then
+        echo "rsvg wrapper: missing value for $1" >&2
+        exit 2
+      fi
+      args+=("$1" "$2")
+      shift 2
+      ;;
+    --version)
+      exec rsvg-convert --version
+      ;;
+    --help)
+      exec rsvg-convert --help
+      ;;
+    --*)
+      args+=("$1")
+      shift
+      ;;
+    *)
+      if [ -z "$input_file" ]; then
+        input_file="$1"
+      elif [ -z "$output_file" ]; then
+        output_file="$1"
+      else
+        args+=("$1")
+      fi
+      shift
+      ;;
+  esac
+done
+
+if [ -z "$input_file" ] || [ -z "$output_file" ]; then
+  echo "rsvg wrapper: expected input and output path" >&2
+  exit 2
+fi
+
+exec rsvg-convert "${args[@]}" --output "$output_file" "$input_file"

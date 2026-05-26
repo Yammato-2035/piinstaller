@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-05-26T18:34:00+00:00",
+  "commit": "e2921cd",
+  "project_version": "1.7.2",
+  "backend_checks": [
+    {
+      "command": "python3 -m py_compile backend/core/dev_dashboard.py backend/app.py backend/core/rescue_iso_operator_commands.py backend/core/rescue_iso_build_state.py backend/core/rescue_iso_build_executor.py",
+      "status": "passed"
+    },
+    {
+      "command": "backend/venv/bin/python3 -m unittest backend.tests.test_rescue_iso_build_dashboard_state_v1 backend.tests.test_notification_dashboard_api_v1 backend.tests.test_rescue_iso_rsvg_preflight_v1 -v",
+      "status": "passed",
+      "tests_run": 35
+    }
+  ],
+  "frontend_checks": [
+    {
+      "command": "npm --prefix frontend run build",
+      "status": "passed",
+      "warnings": [
+        "Vite chunk-size warning for large production bundle"
+      ]
+    }
+  ],
+  "no_iso_build_started": true,
+  "no_usb_write_started": true
+}

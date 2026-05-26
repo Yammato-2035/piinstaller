@@ -1,0 +1,42 @@
+{
+  "checked_at": "2026-05-26T18:39:04+00:00",
+  "commit": "e2921cd",
+  "project_version": "1.7.2",
+  "runtime_gate_exit": 0,
+  "status": "ready_for_build_preflight",
+  "dashboard_status": "yellow",
+  "summary": "Kontrollierter Rescue-ISO-Build ist fuer einen separaten Build-Preflight vorbereitet.",
+  "rsvg_preflight": {
+    "status": "ok",
+    "legacy_source": "project_local_wrapper",
+    "legacy_path": "/home/volker/piinstaller/build/rescue/tool-compat/bin/rsvg",
+    "compat_path": "/usr/bin/rsvg-convert",
+    "error_code": null,
+    "warning": "Kein globaler /usr/bin/rsvg-Symlink; Operator-Build muss PATH explizit um den Wrapper erweitern."
+  },
+  "preflight_readiness": "ready_for_build_preflight",
+  "cleanup_status": {
+    "present": false,
+    "needs_sudo_clean": false
+  },
+  "target_architecture_matrix_status": "present",
+  "usb_write": {
+    "allowed": false,
+    "status": "blocked",
+    "reason": "separate gate required"
+  },
+  "real_iso_build": {
+    "allowed": false,
+    "status": "not_started"
+  },
+  "next_operator_action": {
+    "type": "operator_sudo_required",
+    "commands": [
+      "cd \"/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live\"",
+      "export PATH=\"/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH\"",
+      "./auto/config",
+      "sudo env PATH=\"/home/volker/piinstaller/build/rescue/tool-compat/bin:$PATH\" lb build noauto"
+    ]
+  },
+  "no_real_build_started_by_cursor": true
+}

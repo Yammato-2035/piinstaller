@@ -7,6 +7,18 @@ import { toneClass } from '../../pages/devDashboardFilters'
 type ToolEntry = {
   present?: boolean
   path?: string | null
+  compat_path?: string | null
+  legacy_source?: string | null
+}
+
+type RescueTargetEntry = {
+  target: string
+  label: string
+  expected_boot: string
+  bootloader_family: string
+  likely_format: string
+  status: string
+  reason: string
 }
 
 type RescueIsoState = {
@@ -20,6 +32,7 @@ type RescueIsoState = {
   temp_runtime_bundle_path?: string
   path_mode?: string
   path_status?: string
+  preflight_readiness?: string
   path_errors?: string[]
   path_warnings?: string[]
   repo?: {
@@ -59,6 +72,10 @@ type RescueIsoState = {
     iso_size_bytes?: number | null
     iso_sha256?: string | null
   }
+  real_iso_build?: {
+    allowed?: boolean
+    status?: string
+  }
   usb_write?: {
     allowed?: boolean
     status?: string
@@ -81,6 +98,17 @@ type RescueIsoState = {
     restore_allowed?: boolean
     backup_allowed?: boolean
     usb_write_allowed?: boolean
+  }
+  target_architecture_matrix?: {
+    host_arch?: {
+      machine?: string
+      normalized?: string
+    }
+    candidate_targets?: RescueTargetEntry[]
+    deferred_targets?: RescueTargetEntry[]
+    bootloader_notes?: string[]
+    format_notes?: string[]
+    blockers?: string[]
   }
 }
 
@@ -207,9 +235,12 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
   const logs = data?.logs?.last_80_lines || []
   const lastErr = data?.iso_build?.last_error || data?.logs?.last_error || data?.summary
   const pathStatus = String(data?.path_status || 'unknown')
+  const preflightReadiness = String(data?.preflight_readiness || 'unknown')
   const pathWarnings = [...(data?.path_warnings || []), ...(data?.path_errors || [])]
   const buildPathUnderOpt = String(data?.build_tree_path || '').startsWith('/opt/')
   const toolRows = Object.entries(data?.tools || {})
+  const archCandidates = data?.target_architecture_matrix?.candidate_targets || []
+  const archDeferred = data?.target_architecture_matrix?.deferred_targets || []
   const nextCommands = useMemo(
     () => (data?.next_operator_action?.commands || []).join('\n'),
     [data?.next_operator_action?.commands],
@@ -313,7 +344,9 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
           <FlagRow label={t('devDashboard.rescueIso.runtimeGate')} value={String(data?.repo?.runtime_gate || 'unknown')} />
           <FlagRow label="HEAD" value={String(data?.repo?.head || '—')} />
           <FlagRow label={t('devDashboard.runtimeWorkspace.gitBranch')} value={String(data?.repo?.branch || '—')} />
+          <FlagRow label={t('devDashboard.rescueIso.preflightReadiness')} value={preflightReadiness} />
           <FlagRow label={t('devDashboard.rescueIso.isoBuild')} value={String(data?.iso_build?.status || 'not_started')} />
+          <FlagRow label={t('devDashboard.rescueIso.realIsoBuild')} value={String(data?.real_iso_build?.status || 'not_started')} />
           <FlagRow label={t('devDashboard.rescueIso.pathStatus')} value={pathStatus} />
         </div>
 
@@ -372,6 +405,50 @@ export function RescueBuildPanel({ refreshSec = 12 }: { refreshSec?: number }) {
             value={data?.temp_runtime_bundle?.manifest_sha256 ? String(data.temp_runtime_bundle.manifest_sha256).slice(0, 16) : '—'}
           />
         </div>
+      </div>
+
+      <div className={sectionClass}>
+        <p className="text-xs font-semibold text-slate-100">{t('devDashboard.rescueIso.targetArchitectureMatrix')}</p>
+        <FlagRow
+          label={t('devDashboard.rescueIso.hostArch')}
+          value={String(data?.target_architecture_matrix?.host_arch?.normalized || data?.target_architecture_matrix?.host_arch?.machine || 'unknown')}
+        />
+        <div className="grid lg:grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-slate-200">{t('devDashboard.rescueIso.candidateTargets')}</p>
+            {archCandidates.map((entry) => (
+              <div key={entry.target} className="rounded border border-slate-700/70 bg-slate-900/40 p-2 text-xs space-y-1">
+                <FlagRow label={entry.target} value={entry.status} />
+                <FlagRow label={t('devDashboard.rescueIso.expectedBoot')} value={entry.expected_boot} />
+                <FlagRow label={t('devDashboard.rescueIso.bootloaderFamily')} value={entry.bootloader_family} />
+                <FlagRow label={t('devDashboard.rescueIso.likelyFormat')} value={entry.likely_format} />
+                <div className="text-slate-300">{entry.label}</div>
+                <div className="text-slate-400">{entry.reason}</div>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-slate-200">{t('devDashboard.rescueIso.deferredTargets')}</p>
+            {archDeferred.map((entry) => (
+              <div key={entry.target} className="rounded border border-slate-700/70 bg-slate-900/40 p-2 text-xs space-y-1">
+                <FlagRow label={entry.target} value={entry.status} />
+                <FlagRow label={t('devDashboard.rescueIso.expectedBoot')} value={entry.expected_boot} />
+                <FlagRow label={t('devDashboard.rescueIso.bootloaderFamily')} value={entry.bootloader_family} />
+                <FlagRow label={t('devDashboard.rescueIso.likelyFormat')} value={entry.likely_format} />
+                <div className="text-slate-300">{entry.label}</div>
+                <div className="text-slate-400">{entry.reason}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {data?.target_architecture_matrix?.blockers?.length ? (
+          <div className="text-xs text-amber-100 space-y-1">
+            <p className="font-semibold">{t('devDashboard.rescueIso.architectureBlockers')}</p>
+            {data.target_architecture_matrix.blockers.map((item) => (
+              <div key={item}>{item}</div>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div
