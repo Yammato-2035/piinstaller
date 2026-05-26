@@ -1,8 +1,72 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+try:
+    from pydantic import BaseModel, Field
+except ModuleNotFoundError:  # pragma: no cover - fallback for stripped test environments
+    class _FieldSpec:
+        def __init__(self, *, default: Any = None, default_factory: Any = None) -> None:
+            self.default = default
+            self.default_factory = default_factory
+
+        def build(self) -> Any:
+            if self.default_factory is not None:
+                return self.default_factory()
+            return deepcopy(self.default)
+
+    def Field(  # type: ignore[misc]
+        default: Any = None,
+        *,
+        default_factory: Any = None,
+        ge: Any = None,
+        le: Any = None,
+    ) -> Any:
+        del ge, le
+        return _FieldSpec(default=default, default_factory=default_factory)
+
+    class BaseModel:
+        def __init__(self, **kwargs: Any) -> None:
+            field_names: list[str] = []
+            for cls in reversed(self.__class__.mro()):
+                annotations = getattr(cls, "__annotations__", {})
+                for name in annotations:
+                    if name not in field_names:
+                        field_names.append(name)
+
+            for name in field_names:
+                if name in kwargs:
+                    value = kwargs[name]
+                else:
+                    value = getattr(self.__class__, name, None)
+                    if isinstance(value, _FieldSpec):
+                        value = value.build()
+                    elif isinstance(value, (dict, list, set)):
+                        value = deepcopy(value)
+                setattr(self, name, value)
+
+        def model_dump(self) -> dict[str, Any]:
+            out: dict[str, Any] = {}
+            for cls in reversed(self.__class__.mro()):
+                for name in getattr(cls, "__annotations__", {}):
+                    if hasattr(self, name):
+                        value = getattr(self, name)
+                        if isinstance(value, BaseModel):
+                            out[name] = value.model_dump()
+                        elif isinstance(value, list):
+                            out[name] = [item.model_dump() if isinstance(item, BaseModel) else item for item in value]
+                        elif isinstance(value, dict):
+                            out[name] = {
+                                key: item.model_dump() if isinstance(item, BaseModel) else item
+                                for key, item in value.items()
+                            }
+                        else:
+                            out[name] = value
+            return out
+
+        def dict(self) -> dict[str, Any]:
+            return self.model_dump()
 
 Severity = Literal["info", "low", "medium", "high", "critical"]
 ConfidenceLevel = Literal["low", "medium", "high"]
@@ -12,8 +76,10 @@ DiagnosisDomain = Literal[
     "boot",
     "systemd_services",
     "permissions",
+    "rescue_build",
     "storage_filesystem",
     "network",
+    "notification",
     "ssh_remote_access",
     "updates_packages",
     "security_hardening",

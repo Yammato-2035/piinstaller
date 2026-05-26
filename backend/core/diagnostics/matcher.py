@@ -14,6 +14,8 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
     details_diag = (signals.get("details.diagnosis_id") or signals.get("diagnosis_id") or "").strip().upper()
     stderr = (signals.get("stderr") or "").strip().lower()
     summary = (signals.get("summary") or "").strip().lower()
+    classification = (signals.get("classification") or "").strip().lower()
+    email_status = (signals.get("email.status") or signals.get("email_status") or "").strip().lower()
     unreadable_sources = (signals.get("unreadable_sources") or "").strip().lower()
     owner_mode = (signals.get("mount_owner_mode") or signals.get("owner_mode") or "").strip().lower()
     probe_err = (signals.get("target_probe_error") or "").strip().lower()
@@ -96,13 +98,52 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
         hits.append("RESCUE-BUILD-GATE-001")
     if "use controlled gate before running lb build" in stderr or "use controlled gate before running lb build" in summary:
         hits.append("RESCUE-BUILD-GATE-001")
-    if signals.get("target_architecture") == "amd64" and (
+    if code == "blocked_build_tools_missing" or details_diag == "RESCUE-BUILD-TOOL-001":
+        hits.append("RESCUE-BUILD-TOOL-001")
+    if (
+        "rsvg-convert fehlt" in stderr
+        or "rsvg-convert fehlt" in summary
+        or "librsvg2-bin fehlt" in stderr
+        or "librsvg2-bin fehlt" in summary
+    ):
+        hits.append("RESCUE-BUILD-TOOL-001")
+    if code == "blocked_legacy_rsvg_command_missing" or details_diag == "RESCUE-BUILD-RSVG-001":
+        hits.append("RESCUE-BUILD-RSVG-001")
+    if (
+        "live-build erwartet /usr/bin/rsvg" in stderr
+        or "live-build erwartet /usr/bin/rsvg" in summary
+        or "rsvg-convert vorhanden, aber rsvg fehlt" in stderr
+        or "rsvg-convert vorhanden, aber rsvg fehlt" in summary
+    ):
+        hits.append("RESCUE-BUILD-RSVG-001")
+    requested_architecture = (signals.get("requested_architecture") or signals.get("target_architecture") or "").strip().lower()
+    architecture_track_status = (signals.get("architecture_track_status") or signals.get("target_architecture_status") or "").strip().lower()
+    if requested_architecture == "amd64" and (
         signals.get("i386_covered") == "false"
         or signals.get("arm64_covered") == "false"
         or signals.get("armhf_covered") == "false"
-        or signals.get("architecture_track_status") == "review_required"
+        or architecture_track_status == "review_required"
     ):
         hits.append("RESCUE-BUILD-ARCH-001")
+    if requested_architecture == "i386" and architecture_track_status == "review_required":
+        hits.append("RESCUE-BUILD-ARCH-001")
+    if requested_architecture in {"arm64", "armhf"} and architecture_track_status == "deferred":
+        hits.append("RESCUE-BUILD-ARCH-001")
+    if "i386 requested but status review_required" in summary or "i386 requested but status review_required" in stderr:
+        hits.append("RESCUE-BUILD-ARCH-001")
+    if "arm64 requested but deferred" in summary or "arm64 requested but deferred" in stderr:
+        hits.append("RESCUE-BUILD-ARCH-001")
+    if "armhf requested but deferred" in summary or "armhf requested but deferred" in stderr:
+        hits.append("RESCUE-BUILD-ARCH-001")
+    if (
+        code == "notification.email.provider_limit_exceeded"
+        or classification == "notification.email.provider_limit_exceeded"
+        or details_diag == "NOTIFICATION-EMAIL-PROVIDER-001"
+        or email_status == "provider_limit"
+    ):
+        hits.append("NOTIFICATION-EMAIL-PROVIDER-001")
+    if "554 5.7.0 outgoing message limit exceeded" in stderr or "554 5.7.0 outgoing message limit exceeded" in summary:
+        hits.append("NOTIFICATION-EMAIL-PROVIDER-001")
 
     sc_ids = (signals.get("service_conflict_ids") or "").upper()
     for token in (
@@ -177,8 +218,12 @@ def _pattern_matches(question: str) -> list[str]:
         hits.append("RESCUE-BUILD-ROOT-001")
     if "lb build" in question and "gate" in question:
         hits.append("RESCUE-BUILD-GATE-001")
+    if "rsvg" in question and ("fehlt" in question or "missing" in question):
+        hits.extend(["RESCUE-BUILD-TOOL-001", "RESCUE-BUILD-RSVG-001"])
     if "rescue" in question and "architektur" in question:
         hits.append("RESCUE-BUILD-ARCH-001")
+    if "provider limit" in question or "554 5.7.0" in question:
+        hits.append("NOTIFICATION-EMAIL-PROVIDER-001")
     return hits
 
 

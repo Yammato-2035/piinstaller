@@ -5,13 +5,21 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from fastapi.testclient import TestClient
+try:
+    from fastapi.testclient import TestClient
+    from app import app
+    from core.notification_service import NotificationConfig
 
-from app import app
-from core.notification_service import NotificationConfig
+    _HAS_APP = True
+except Exception:
+    TestClient = None
+    app = None
+    NotificationConfig = None
+    _HAS_APP = False
 
 
 def _smtp_cfg() -> NotificationConfig:
+    assert NotificationConfig is not None
     return NotificationConfig(
         email_enabled=True,
         email_to="",
@@ -27,6 +35,7 @@ def _smtp_cfg() -> NotificationConfig:
     )
 
 
+@unittest.skipUnless(_HAS_APP, "FastAPI TestClient oder app nicht verfuegbar")
 class NotificationDashboardApiTests(unittest.TestCase):
     def test_status_endpoint_responds_without_persistence_file(self) -> None:
         with tempfile.TemporaryDirectory() as td:

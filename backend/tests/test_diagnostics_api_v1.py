@@ -47,6 +47,22 @@ class TestDiagnosticsApiV1(unittest.TestCase):
         self.assertEqual(payload["primary_diagnosis"]["id"], "UI-NO-BACKEND-015")
         self.assertIn("messages", payload)
 
+    def test_analyze_maps_notification_provider_limit(self):
+        r = self.client.post(
+            "/api/diagnostics/analyze",
+            json={
+                "question": "Notification email failed after a rescue event",
+                "signals": {
+                    "classification": "notification.email.provider_limit_exceeded",
+                    "email_status": "provider_limit",
+                    "stderr": "554 5.7.0 outgoing message limit exceeded",
+                },
+            },
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        payload = r.json()
+        self.assertEqual(payload["primary_diagnosis"]["id"], "NOTIFICATION-EMAIL-PROVIDER-001")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -161,7 +161,7 @@ class TestDevDashboardRoadmapRegistryApi(unittest.TestCase):
         self.assertEqual(response.status_code, 200, response.text)
         body = response.json()
         prompt = body.get("prompt") or {}
-        self.assertEqual(prompt.get("id"), "DIAGNOSTICS_TEST_TRACK")
+        self.assertEqual(prompt.get("id"), "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD")
         self.assertTrue(body.get("read_only"))
         self.assertFalse(body.get("execution_allowed"))
 
@@ -195,7 +195,7 @@ class TestDevDashboardRoadmapRegistryBundle(unittest.TestCase):
         self.assertIn(bundle.get("status"), ("success", "review_required"))
         self.assertTrue(bundle.get("read_only"))
         self.assertFalse(bundle.get("execution_allowed"))
-        self.assertEqual((bundle.get("recommended_prompt") or {}).get("id"), "DIAGNOSTICS_TEST_TRACK")
+        self.assertEqual((bundle.get("recommended_prompt") or {}).get("id"), "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD")
 
 
 if __name__ == "__main__":

@@ -34,6 +34,19 @@ Restore end-to-end remains consciously deferred while no bootable rescue medium 
 
 Diagnostics already has catalog, API, and structure pieces. It would be fully green only with real error-case tracks, UI evaluation, and a trustworthy evidence matrix.
 
+## Mandatory closure rule for future runs
+
+Every future Cursor run must close with an evidence-backed statement of:
+
+1. which dashboard area became more transparent or better explained
+2. which new diagnosis, matcher, or test case was learned
+3. which next prompt now applies according to the registry, and why
+4. which evidence files carry that progress
+5. which actions were explicitly **not** executed
+6. what remains `blocked`, `deferred`, or only `partial_green`
+
+Repeated errors must become diagnostics candidates with error text, error code, cause, matcher, recommendation, dashboard area, evidence link, and test case. `green` is allowed only when tests or runtime/hardware proof carry it; no fake green.
+
 ## How the next prompt is computed
 
 Selection prioritizes:

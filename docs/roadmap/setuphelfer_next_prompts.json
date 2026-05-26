@@ -1,16 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-26T20:44:08Z",
+  "generated_at": "2026-05-26T21:45:29Z",
   "project_version": "1.7.2",
-  "source_commit": "826b5dd",
+  "source_commit": "9ad7477",
   "selection_policy": [
     "Priorität 1: Fehlender Nachweis, der mehrere Bereiche blockiert, zuerst.",
     "Priorität 2: Wiederkehrende Unklarheit im Dashboard zuerst transparent machen.",
-    "Priorität 3: Gefährliche Runtime-Arbeit ohne Gate immer hinter Safety-/Gate-Arbeit einsortieren.",
-    "Priorität 4: Wenn Architektur steht, aber Evidence fehlt, ist die Teststrecke der nächste sinnvolle Prompt.",
-    "Priorität 5: Keine Marketing-, Cloudserver- oder HostPilot-Arbeit vor Recovery-Core-Grün, außer reine Doku/Planung."
+    "Priorität 3: Safety-/Gate-Arbeit bleibt vor riskanter Runtime-Arbeit.",
+    "Priorität 4: Wenn Diagnostics neue Fehler belastbar gelernt hat, folgt der nächste echte technische Blocker.",
+    "Priorität 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
+    "Priorität 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise künstlich grün gefärbt."
   ],
-  "selected_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+  "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -123,9 +124,9 @@
       "title_de": "Diagnostics Evidence Test Track",
       "title_en": "Diagnostics evidence test track",
       "scope": "Diagnostik-Katalog, UI-Auswertung, reale Fehlerfälle und Evidence-Matrix als reproduzierbare Teststrecke.",
-      "status": "recommended_next",
-      "reason_de": "Diagnostik ist teilweise vorhanden, aber echte Fehlerfälle, UI-Auswertung und Evidence fehlen. Dieser Nachweis verbessert zugleich Diagnostics, Dashboard-Transparenz und die Qualität zukünftiger Next Prompts.",
-      "reason_en": "Diagnostics is partially present, but real error cases, UI evaluation, and evidence are still missing. This proof improves diagnostics, dashboard transparency, and the quality of future next prompts.",
+      "status": "completed",
+      "reason_de": "Diagnostik-Teststrecke, neue Rescue-/Notification-Mappings, Dashboard-Teilfortschritt und Closure-Regeln wurden dokumentiert und mit Tests/Evidence verknüpft.",
+      "reason_en": "The diagnostics test track, new rescue/notification mappings, dashboard sub-progress, and closure rules were documented and linked to tests/evidence.",
       "prompt_text": "Baue eine reproduzierbare Diagnostics-Teststrecke auf, die echte Fehlerfälle, UI-Auswertung, Evidence-Matrix und klar dokumentierte Next Steps zusammenführt. Keine Runtime-Ausführung ohne Gate, keine Execute-Funktionen, keine künstliche Ampel-Grünfärbung.",
       "blocked_by": [],
       "unlocks": [
@@ -136,7 +137,8 @@
       "expected_outputs": [
         "Diagnostics-Evidence-Matrix",
         "UI-Auswertung mit echten Fehlerfällen",
-        "Aktualisierte KB-/FAQ-/Dashboard-Texte"
+        "Aktualisierte KB-/FAQ-/Dashboard-Texte",
+        "Abschlussregel für künftige Cursor-Läufe"
       ],
       "safety_rules": [
         "Keine Runtime-Tests gegen Port 8000 bei rotem Phase-0-Gate.",
@@ -181,9 +183,9 @@
       "title_de": "Rescue Stick Real Build Gate",
       "title_en": "Rescue stick real build gate",
       "scope": "Echter Rescue-Buildpfad, Operator-Policy, Artefakt- und Boot-Nachweis.",
-      "status": "blocked",
-      "reason_de": "Erst sinnvoll, wenn Build-Emulation/Evidence vollständig und eine Bootmedium-Testumgebung verfügbar ist.",
-      "reason_en": "Only meaningful once build emulation/evidence is complete and a boot-medium test environment exists.",
+      "status": "obsolete",
+      "reason_de": "Der frühere Sammelprompt wurde durch präzisere Folgeprompts für echten Operator-Terminal-Build und sudoers-Allowlist-Design ersetzt.",
+      "reason_en": "The former umbrella prompt was replaced by more precise follow-up prompts for the real operator terminal build and the sudoers allowlist design.",
       "prompt_text": "Bereite den echten Rescue-Buildpfad nur im Rahmen dokumentierter Gates vor und trenne Operator-Policy, Artefakt-Verify und Boot-Nachweis sauber.",
       "blocked_by": [
         "Kein echter ISO-/Boot-Nachweis",
@@ -412,6 +414,136 @@
       ],
       "created_at": "2026-05-26",
       "updated_at": "2026-05-26"
+    },
+    {
+      "id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "category": "rescue",
+      "title_de": "Rescue ISO Manual Operator Terminal Build",
+      "title_en": "Rescue ISO manual operator terminal build",
+      "scope": "Echten kontrollierten Rescue-ISO-Build ausschließlich aus einem realen Operator-Terminal mit sauberem Root-/TTY-Rahmen anstoßen und dokumentieren.",
+      "status": "recommended_next",
+      "reason_de": "Diagnostics hat die wiederholten Build-Fehler jetzt sauber gelernt. Der nächste technische Blocker ist der echte kontrollierte Operator-Build in einem Terminal mit gültigen sudo-Rechten und belastbarer Evidence.",
+      "reason_en": "Diagnostics has now learned the repeated build failures cleanly. The next technical blocker is the real controlled operator build in a terminal with valid elevated rights and trustworthy evidence.",
+      "prompt_text": "Führe den dokumentierten kontrollierten Rescue-ISO-Build nur in einem echten Operator-Terminal aus, sammle Artefakt-/Log-/Gate-Evidence und halte USB-Write, Restore und Hardwaretests weiterhin strikt getrennt.",
+      "blocked_by": [],
+      "unlocks": [
+        "Echten kontrollierten Rescue-Build-Nachweis",
+        "Aktualisierte Artefakt-/Log-Evidence",
+        "Klarere Trennung zwischen Operator-Policy und Build-Ergebnis"
+      ],
+      "expected_outputs": [
+        "Operator-Terminal-Runbook-Evidence",
+        "Aktualisierte controlled build result files",
+        "Ehrlicher Abschlussbericht mit Dashboard-Fortschritt, Diagnostics-Lernfortschritt und Next-Prompt-Entscheidung"
+      ],
+      "safety_rules": [
+        "Kein Backend-Restart.",
+        "Kein Deploy.",
+        "Kein USB-Write.",
+        "Keine Passwortweitergabe über stdin.",
+        "Kein Askpass-Hack und kein breites NOPASSWD."
+      ],
+      "allowed_paths": [
+        "docs/evidence/runtime-results/rescue/",
+        "docs/knowledge-base/recovery/",
+        "docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md",
+        "scripts/rescue-live/",
+        "backend/core/rescue_iso_build_state.py",
+        "backend/tests/"
+      ],
+      "forbidden_actions": [
+        "password_stdin",
+        "askpass_hack",
+        "broad_nopasswd",
+        "usb_write",
+        "restore_start"
+      ],
+      "tests": [
+        "backend.tests.test_rescue_iso_build_dashboard_state_v1",
+        "backend.tests.test_rescue_iso_build_result_classification_v1",
+        "backend.tests.test_diagnostics_rescue_build_mapping_v1"
+      ],
+      "documentation_targets": [
+        "docs/faq/rescue_iso_build_faq.md",
+        "docs/knowledge-base/recovery/RESCUE_ISO_BUILD_AND_VM_VALIDATION.md",
+        "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json"
+      ],
+      "non_goals": [
+        "Kein USB-Write",
+        "Kein Restore",
+        "Kein Hardwaretest",
+        "Kein sudoers-Massenrecht"
+      ],
+      "created_at": "2026-05-26",
+      "updated_at": "2026-05-26"
+    },
+    {
+      "id": "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN",
+      "category": "rescue",
+      "title_de": "Rescue ISO sudoers allowlist policy design",
+      "title_en": "Rescue ISO sudoers allowlist policy design",
+      "scope": "Eng begrenzte, dokumentierte Root-/sudoers-Allowlist als Alternativpfad zum manuellen Operator-Terminal bewerten.",
+      "status": "available",
+      "reason_de": "Falls ein echter Operator-Terminal-Run nicht sofort möglich ist, bleibt eine eng begrenzte sudoers-Allowlist-Policy die dokumentierte Alternative. Sie ist aber bewusst nur der zweite Schritt nach der direkten Operator-Terminal-Option.",
+      "reason_en": "If a real operator terminal run is not immediately possible, a narrowly scoped sudoers allowlist policy remains the documented alternative. It is intentionally the second choice after the direct operator terminal option.",
+      "prompt_text": "Entwirf ausschließlich eine eng begrenzte, dokumentierte sudoers-Allowlist-Policy für den freigegebenen Rescue-Wrapper. Keine Umsetzung, kein breites NOPASSWD, kein Askpass, kein Passwort über stdin.",
+      "blocked_by": [
+        "Echter Operator-Terminal-Build ist der bevorzugte Nachweis"
+      ],
+      "unlocks": [
+        "Alternativer dokumentierter Root-Pfad",
+        "Saubere Policy-Diskussion ohne Build-Bypass"
+      ],
+      "expected_outputs": [
+        "Policy-Design ohne Umsetzung",
+        "Explizite Verbotsliste gegen breite Rechte",
+        "Aktualisierte Entscheidung in der Next-Prompt-Registry"
+      ],
+      "safety_rules": [
+        "Kein sudo aus Cursor ausführen.",
+        "Kein breites NOPASSWD.",
+        "Kein Askpass.",
+        "Keine Passwortweitergabe über stdin."
+      ],
+      "allowed_paths": [
+        "docs/architecture/RESCUE_OPERATOR_POLICY.md",
+        "docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md",
+        "docs/roadmap/",
+        "docs/evidence/roadmap/"
+      ],
+      "forbidden_actions": [
+        "broad_nopasswd",
+        "askpass_hack",
+        "password_stdin",
+        "runtime_execute"
+      ],
+      "tests": [
+        "Nur statische Policy-/Registry-Tests"
+      ],
+      "documentation_targets": [
+        "docs/architecture/RESCUE_OPERATOR_POLICY.md",
+        "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json"
+      ],
+      "non_goals": [
+        "Keine Policy-Anwendung",
+        "Kein echter Build",
+        "Kein sudoers-Massenrecht"
+      ],
+      "created_at": "2026-05-26",
+      "updated_at": "2026-05-26"
     }
-  ]
+  ],
+  "global_closure_rules": {
+    "rule_ref": "docs/developer/CURSOR_WORK_RULES.md",
+    "mandatory_sections": [
+      "dashboard_progress",
+      "diagnostics_learning_progress",
+      "evidence_files",
+      "next_prompt_decision",
+      "not_executed_actions",
+      "remaining_blocked_or_deferred"
+    ],
+    "no_fake_green": true,
+    "repeated_errors_become_diagnostics": true
+  }
 }

@@ -4,6 +4,11 @@
 
 Weil `librsvg2-bin` auf dem Host `rsvg-convert` liefert, das verwendete `live-build`-Skript `lb_binary_syslinux` aber explizit `/usr/bin/rsvg` erwartet und `rsvg --format png ...` aufruft.
 
+Diagnostisch sind das deshalb zwei verschiedene Fälle:
+
+- `RESCUE-BUILD-TOOL-001`: Host-Abhängigkeit fehlt (`rsvg-convert` / `librsvg2-bin`)
+- `RESCUE-BUILD-RSVG-001`: Legacy-`rsvg` wird zusätzlich erwartet, obwohl `rsvg-convert` schon da ist
+
 ## Reicht `rsvg-convert` allein?
 
 Nicht für den aktuellen `syslinux`-Theme-Pfad von `live-build`. Es reicht aber aus, um einen kontrollierten projektlokalen Kompatibilitätswrapper zu speisen.
@@ -33,6 +38,10 @@ Weil der Wrapper in einer Umgebung ohne echtes Terminal und ohne dokumentierte `
 ## Was ist jetzt die kurzfristig sichere Loesung?
 
 Den Wrapper aus einem echten Operator-Terminal mit gueltigen `sudo`-Rechten starten. Alternativ kann der Operator eine eng begrenzte sudo-Allowlist fuer genau diesen dokumentierten Wrapper vorbereiten. Setuphelfer installiert dabei **keine** Policy automatisch.
+
+## Warum ist nach dem Diagnostics-Testtrack jetzt ein Operator-Terminal-Prompt der naechste Schritt?
+
+Weil die wiederholten Rescue-Build-Fehler jetzt diagnostisch klassifiziert und dokumentiert sind. Der naechste technische Blocker ist damit nicht mehr "Was ist eigentlich kaputt?", sondern der echte kontrollierte Operator-Build in einem Terminal mit sauberem Root-/Policy-Rahmen.
 
 ## Was ist ausdruecklich nicht erlaubt?
 

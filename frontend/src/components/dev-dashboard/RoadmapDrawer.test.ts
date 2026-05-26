@@ -15,6 +15,22 @@ const messages: Record<string, string> = {
   'devDashboard.roadmap.recommendedPrompt': 'Empfohlener nächster Prompt',
   'devDashboard.roadmap.restoreDeferredTitle': 'Restore zurückgestellt',
   'devDashboard.roadmap.diagnosticsPartialTitle': 'Diagnostik teilweise vorhanden',
+  'devDashboard.roadmap.diagnosticsProgressTitle': 'Diagnostics-Fortschritt',
+  'devDashboard.roadmap.diagnosticsProgressSubtitle': 'Teilbereiche, gelernte Fehler und Evidence für die reproduzierbare Teststrecke.',
+  'devDashboard.roadmap.nextTestFocus': 'Nächster Testfokus',
+  'devDashboard.roadmap.learnedDiagnostics': 'Gelernte Diagnosecodes',
+  'devDashboard.roadmap.diagnosticsProgress.catalog_status': 'Katalog',
+  'devDashboard.roadmap.diagnosticsProgress.matcher_status': 'Matcher',
+  'devDashboard.roadmap.diagnosticsProgress.api_status': 'API',
+  'devDashboard.roadmap.diagnosticsProgress.ui_status': 'UI',
+  'devDashboard.roadmap.diagnosticsProgress.evidence_status': 'Evidence',
+  'devDashboard.roadmap.diagnosticsProgress.test_track_status': 'Teststrecke',
+  'devDashboard.roadmap.diagnosticsProgress.rescue_build_diagnostics_status': 'Rescue Build Diagnostics',
+  'devDashboard.roadmap.diagnosticsProgress.backup_diagnostics_status': 'Backup Diagnostics',
+  'devDashboard.roadmap.diagnosticsProgress.restore_diagnostics_status': 'Restore Diagnostics',
+  'devDashboard.roadmap.diagnosticsProgress.runtime_diagnostics_status': 'Runtime / Deploy Diagnostics',
+  'devDashboard.roadmap.diagnosticsProgress.notification_diagnostics_status': 'Notification Diagnostics',
+  'devDashboard.roadmap.diagnosticsProgress.architecture_diagnostics_status': 'Architecture Diagnostics',
   'devDashboard.roadmap.showPrompt': 'Prompt anzeigen',
   'devDashboard.roadmap.copyPrompt': 'Prompt kopieren',
   'devDashboard.roadmap.exportPrompt': 'Prompt als Text exportieren',
@@ -128,6 +144,26 @@ const dashboard = {
         notes: [],
         authoritative_evidence: ['docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json'],
         next_prompt_id: 'DIAGNOSTICS_TEST_TRACK',
+        diagnostics_progress: {
+          catalog_status: 'partial_green',
+          matcher_status: 'partial_green',
+          api_status: 'partial_green',
+          ui_status: 'partial_green',
+          evidence_status: 'partial_green',
+          test_track_status: 'partial_green',
+          rescue_build_diagnostics_status: 'partial_green',
+          backup_diagnostics_status: 'yellow',
+          restore_diagnostics_status: 'deferred',
+          runtime_diagnostics_status: 'yellow',
+          notification_diagnostics_status: 'partial_green',
+          architecture_diagnostics_status: 'partial_green',
+          learned_error_codes: ['RESCUE-BUILD-ROOT-001', 'NOTIFICATION-EMAIL-PROVIDER-001'],
+          next_test_focus: 'RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD',
+          evidence_files: [
+            'docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json',
+            'docs/evidence/diagnostics/DIAGNOSTICS_UI_EVALUATION_LATEST.json',
+          ],
+        },
         milestones: [],
       },
       {
@@ -182,6 +218,15 @@ describe('RoadmapDrawer', () => {
     expect(html).toContain('kein bootfähiges Rettungsmedium')
     expect(html).toContain('Diagnostik teilweise vorhanden')
     expect(html).toContain('Evidence-Matrix fehlen')
+  })
+
+  it('renders diagnostics progress with learned codes and evidence', () => {
+    const html = renderToStaticMarkup(React.createElement(RoadmapDrawer, { dashboard, t, apiReachable: false }))
+    expect(html).toContain('Diagnostics-Fortschritt')
+    expect(html).toContain('Rescue Build Diagnostics')
+    expect(html).toContain('RESCUE-BUILD-ROOT-001')
+    expect(html).toContain('RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD')
+    expect(html).toContain('DIAGNOSTICS_TEST_TRACK_LATEST.json')
   })
 
   it('renders future test tracks without execute actions', () => {

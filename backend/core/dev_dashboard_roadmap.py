@@ -122,6 +122,188 @@ def _relative(path: Path, repo: Path) -> str:
         return str(path)
 
 
+def _safe_read_text_rel(repo: Path, relative_path: str) -> str:
+    text, _err = _read_text_file(repo / relative_path)
+    return text or ""
+
+
+def _status_from_flags(*, complete: bool, partial: bool, deferred: bool = False) -> str:
+    if complete:
+        return "partial_green"
+    if deferred:
+        return "deferred"
+    return "yellow" if partial else "yellow"
+
+
+def _build_diagnostics_progress(repo: Path, prompts: list[dict[str, Any]]) -> dict[str, Any]:
+    from core.diagnostics.registry import get_catalog
+
+    catalog_ids = {item.id for item in get_catalog()}
+    rescue_required = {
+        "RESCUE-BUILD-ROOT-001",
+        "RESCUE-BUILD-GATE-001",
+        "RESCUE-BUILD-TOOL-001",
+        "RESCUE-BUILD-RSVG-001",
+        "RESCUE-BUILD-ARCH-001",
+    }
+    notification_required = {"NOTIFICATION-EMAIL-PROVIDER-001"}
+
+    evidence_files = [
+        "docs/evidence/diagnostics/GLOBAL_CURSOR_RULES_INTEGRATION_LATEST.json",
+        "docs/evidence/diagnostics/DIAGNOSTICS_SOURCE_AUDIT_LATEST.md",
+        "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json",
+        "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json",
+        "docs/evidence/diagnostics/DIAGNOSTICS_TEST_RESULTS_LATEST.json",
+        "docs/evidence/diagnostics/DIAGNOSTICS_UI_EVALUATION_LATEST.json",
+    ]
+    existing_evidence = [path for path in evidence_files if (repo / path).is_file()]
+    test_track_paths = [
+        "docs/diagnostics/DIAGNOSTICS_TEST_TRACK_DE.md",
+        "docs/diagnostics/DIAGNOSTICS_TEST_TRACK_EN.md",
+        "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json",
+    ]
+    existing_track_paths = [path for path in test_track_paths if (repo / path).is_file()]
+    docs_paths = [
+        "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+        "docs/knowledge-base/dev-dashboard/ROADMAP_AND_NEXT_PROMPT_REGISTRY.md",
+        "docs/dev-dashboard/ROADMAP_REGISTRY_DE.md",
+        "docs/dev-dashboard/ROADMAP_REGISTRY_EN.md",
+        "docs/faq/dev_dashboard_roadmap_faq.md",
+        "docs/developer/CURSOR_WORK_RULES.md",
+    ]
+    existing_docs = [path for path in docs_paths if (repo / path).is_file()]
+
+    ui_text = _safe_read_text_rel(repo, "frontend/src/components/dev-dashboard/RoadmapDrawer.tsx")
+    ui_has_progress_panel = "dev-dashboard-roadmap-diagnostics-progress" in ui_text
+    next_prompt_id = next((str(prompt.get("id") or "") for prompt in prompts if str(prompt.get("status") or "") == "recommended_next"), "")
+
+    rescue_complete = rescue_required.issubset(catalog_ids)
+    rescue_partial = bool(rescue_required & catalog_ids)
+    notification_complete = notification_required.issubset(catalog_ids)
+    notification_partial = bool(notification_required & catalog_ids)
+    catalog_complete = rescue_complete and notification_complete
+    catalog_partial = bool(catalog_ids)
+    matcher_complete = rescue_complete and notification_complete and (repo / "backend/tests/test_diagnostics_rescue_build_mapping_v1.py").is_file()
+    matcher_partial = rescue_partial or notification_partial
+    api_complete = (repo / "backend/api/routes/diagnostics.py").is_file() and (repo / "backend/tests/test_diagnostics_api_v1.py").is_file()
+    ui_complete = ui_has_progress_panel
+    evidence_complete = len(existing_evidence) >= 5
+    evidence_partial = bool(existing_evidence)
+    track_complete = len(existing_track_paths) == len(test_track_paths)
+    track_partial = bool(existing_track_paths)
+
+    backup_cases = {"BACKUP-MANIFEST-001", "BACKUP-HASH-003", "STORAGE-PROTECTION-001", "VERIFY-STAGING-038"}
+    restore_cases = {"RESTORE-PATH-004", "RESTORE-PARTIAL-005", "RESTORE-RUNTIME-006", "RESTORE-TMPFS-007"}
+    runtime_cases = {"SYSTEMD-START-009", "UI-NO-BACKEND-015", "SERVICE-CONFLICT-033", "SERVICE-CONFLICT-036"}
+    architecture_cases = {"RESCUE-BUILD-ARCH-001"}
+
+    learned_error_codes = [
+        "RESCUE-BUILD-ROOT-001",
+        "RESCUE-BUILD-GATE-001",
+        "RESCUE-BUILD-TOOL-001",
+        "RESCUE-BUILD-RSVG-001",
+        "RESCUE-BUILD-ARCH-001",
+        "NOTIFICATION-EMAIL-PROVIDER-001",
+    ]
+    learned_error_examples = [
+        {
+            "code": "RESCUE-BUILD-ROOT-001",
+            "error_text": "blocked_requires_operator_sudo_policy / sudo: a terminal is required / sudo: Ein Passwort ist notwendig",
+            "evidence": [
+                "docs/evidence/runtime-results/rescue/rescue_iso_operator_sudo_policy_triage_latest.json",
+                "docs/evidence/runtime-results/rescue/rescue_operator_policy_gate_decision_latest.json",
+            ],
+        },
+        {
+            "code": "RESCUE-BUILD-GATE-001",
+            "error_text": "Use controlled gate before running lb build / exit 20",
+            "evidence": [
+                "docs/evidence/runtime-results/rescue/rescue_iso_controlled_gate_test_results_latest.json",
+                "docs/evidence/runtime-results/rescue/rescue_iso_controlled_build_contract_latest.json",
+            ],
+        },
+        {
+            "code": "RESCUE-BUILD-TOOL-001",
+            "error_text": "blocked_build_tools_missing / rsvg-convert fehlt / librsvg2-bin fehlt",
+            "evidence": [
+                "docs/evidence/runtime-results/rescue/rsvg_host_dependency_readiness_latest.json",
+                "docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md",
+            ],
+        },
+        {
+            "code": "RESCUE-BUILD-RSVG-001",
+            "error_text": "blocked_legacy_rsvg_command_missing / live-build erwartet /usr/bin/rsvg",
+            "evidence": [
+                "docs/evidence/runtime-results/rescue/rsvg_legacy_tool_triage_latest.json",
+                "docs/evidence/runtime-results/rescue/rsvg_project_local_wrapper_validation_latest.json",
+            ],
+        },
+        {
+            "code": "RESCUE-BUILD-ARCH-001",
+            "error_text": "i386 requested but status review_required / arm64|armhf requested but deferred",
+            "evidence": [
+                "docs/evidence/runtime-results/rescue/rescue_target_architecture_matrix_latest.json",
+                "docs/architecture/RESCUE_TARGET_ARCHITECTURE_MATRIX.md",
+            ],
+        },
+        {
+            "code": "NOTIFICATION-EMAIL-PROVIDER-001",
+            "error_text": "notification.email.provider_limit_exceeded / 554 5.7.0 outgoing message limit exceeded",
+            "evidence": [
+                "docs/evidence/dev-dashboard/NOTIFICATION_MODULE_INTEGRATION_RESULT.md",
+                "docs/evidence/runtime-results/notifications/notification_events.jsonl",
+            ],
+        },
+    ]
+
+    return {
+        "catalog_status": _status_from_flags(complete=catalog_complete, partial=catalog_partial),
+        "matcher_status": _status_from_flags(complete=matcher_complete, partial=matcher_partial),
+        "api_status": _status_from_flags(complete=api_complete, partial=(repo / "backend/api/routes/diagnostics.py").is_file()),
+        "ui_status": _status_from_flags(complete=ui_complete, partial=("RoadmapDrawer" in ui_text)),
+        "evidence_status": _status_from_flags(complete=evidence_complete, partial=evidence_partial),
+        "test_track_status": _status_from_flags(complete=track_complete, partial=track_partial),
+        "rescue_build_diagnostics_status": _status_from_flags(
+            complete=rescue_complete and matcher_complete and track_partial,
+            partial=rescue_partial,
+        ),
+        "backup_diagnostics_status": _status_from_flags(
+            complete=backup_cases.issubset(catalog_ids) and track_partial,
+            partial=bool(backup_cases & catalog_ids),
+        ),
+        "restore_diagnostics_status": _status_from_flags(
+            complete=False,
+            partial=bool(restore_cases & catalog_ids),
+            deferred=True,
+        ),
+        "runtime_diagnostics_status": _status_from_flags(
+            complete=False,
+            partial=bool(runtime_cases & catalog_ids),
+        ),
+        "notification_diagnostics_status": _status_from_flags(
+            complete=notification_complete and matcher_complete,
+            partial=notification_partial,
+        ),
+        "architecture_diagnostics_status": _status_from_flags(
+            complete=architecture_cases.issubset(catalog_ids) and track_partial,
+            partial=bool(architecture_cases & catalog_ids),
+        ),
+        "learned_error_codes": learned_error_codes,
+        "learned_error_examples": learned_error_examples,
+        "evidence_files": existing_evidence,
+        "documentation_files": existing_docs,
+        "next_test_focus": next_prompt_id or "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+        "missing_segments": [
+            segment
+            for segment in (
+                None if backup_cases.issubset(catalog_ids) and track_partial else "backup_diagnostics_reproducible_matrix",
+                None if runtime_cases.issubset(catalog_ids) else "runtime_deploy_specific_catalog_codes",
+            )
+            if segment
+        ],
+    }
+
+
 def _build_runtime_overlay(dashboard_context: dict[str, Any] | None) -> dict[str, Any]:
     if not isinstance(dashboard_context, dict):
         return {"available": False, "source": "none"}
@@ -402,6 +584,11 @@ def load_roadmap_registry_bundle(
     decisions = _flatten_decisions(areas)
     recommended_prompt = _select_recommended_prompt(prompts)
     runtime_overlay = _build_runtime_overlay(dashboard_context)
+    diagnostics_progress = _build_diagnostics_progress(repo, prompts)
+    for area in areas:
+        if str(area.get("id") or "") == "diagnostics":
+            area["diagnostics_progress"] = diagnostics_progress
+            break
     compatibility = _build_compatibility_tabs(areas)
     summary = _build_summary(areas, prompts, recommended_prompt)
 
@@ -429,6 +616,7 @@ def load_roadmap_registry_bundle(
             "read_only": True,
             "execution_allowed": False,
             "runtime_overlay": runtime_overlay,
+            "diagnostics_progress": diagnostics_progress,
             "summary": summary,
             "recommended_prompt": recommended_prompt,
             "next_prompts": prompts,

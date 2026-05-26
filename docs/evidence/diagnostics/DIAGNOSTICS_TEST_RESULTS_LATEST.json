@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-05-26T21:51:40Z",
+  "project_version": "1.7.2",
+  "source_commit": "9ad7477",
+  "status": "partial_green",
+  "no_fake_green": true,
+  "summary": "Die lokale Diagnostics-Teststrecke ist reproduzierbar belegt. Alle geforderten statischen, Backend- und Frontend-Pruefungen liefen erfolgreich; API-nahe FastAPI-Surfaces wurden in dieser Umgebung sauber als skipped statt als false green behandelt.",
+  "commands": [
+    {
+      "command": "python3 -m py_compile backend/core/dev_dashboard.py backend/core/dev_dashboard_roadmap.py backend/app.py",
+      "status": "passed",
+      "notes": []
+    },
+    {
+      "command": "PYTHONPATH=backend python3 -m unittest backend.tests.test_dev_dashboard_roadmap_registry_v1 backend.tests.test_dev_dashboard_v1 backend.tests.test_diagnostics_api_v1 backend.tests.test_rescue_iso_build_dashboard_state_v1 backend.tests.test_rescue_iso_rsvg_preflight_v1 backend.tests.test_rescue_iso_build_result_classification_v1 backend.tests.test_notification_dashboard_api_v1 -v",
+      "status": "passed",
+      "tests_run": 89,
+      "skipped": 25,
+      "notes": [
+        "FastAPI/TestClient war in der lokalen Umgebung nicht installiert; die betroffenen API-Tests wurden deshalb explizit geskippt.",
+        "Rescue-RSVG-Prebuild-Executor-Surface wurde bei fehlenden FastAPI-Abhaengigkeiten ebenfalls sauber geskippt."
+      ]
+    },
+    {
+      "command": "PYTHONPATH=backend python3 -m unittest backend.tests.test_diagnostics_rescue_build_mapping_v1 backend.tests.test_diagnostics_test_track_v1 backend.tests.test_dev_dashboard_diagnostics_progress_v1 -v",
+      "status": "passed",
+      "tests_run": 11,
+      "skipped": 0,
+      "notes": []
+    },
+    {
+      "command": "npm run test -- src/components/dev-dashboard/RoadmapDrawer.test.ts",
+      "status": "passed",
+      "tests_run": 4,
+      "skipped": 0,
+      "notes": []
+    },
+    {
+      "command": "npm run build",
+      "status": "passed",
+      "notes": [
+        "Build erfolgreich; Vite meldete nur die bestehende Chunk-Size-Warnung."
+      ]
+    }
+  ],
+  "validated_requirements": [
+    "blocked_requires_operator_sudo_policy -> RESCUE-BUILD-ROOT-001",
+    "Use controlled gate before running lb build -> RESCUE-BUILD-GATE-001",
+    "blocked_build_tools_missing -> RESCUE-BUILD-TOOL-001",
+    "blocked_legacy_rsvg_command_missing -> RESCUE-BUILD-RSVG-001",
+    "arm64 deferred / i386 review_required -> RESCUE-BUILD-ARCH-001",
+    "notification.email.provider_limit_exceeded -> NOTIFICATION-EMAIL-PROVIDER-001",
+    "Diagnostics overall bleibt non-green",
+    "Restore bleibt deferred",
+    "USB-Write bleibt blocked",
+    "Next Prompt zeigt auf RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+    "RoadmapDrawer rendert Diagnostics-Fortschritt ohne Execute-Buttons"
+  ],
+  "environment_constraints": [
+    "FastAPI ist in dieser lokalen Testumgebung nicht installiert.",
+    "Runtime-/Port-8000-Abnahmen wurden wegen Phase-0-Einschraenkung nicht als Teil dieser Test-Evidence behauptet."
+  ]
+}

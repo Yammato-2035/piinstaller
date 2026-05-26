@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-05-26T21:45:29Z",
+  "project_version": "1.7.2",
+  "source_commit": "9ad7477",
+  "updated_files": [
+    "docs/developer/CURSOR_WORK_RULES.md",
+    "docs/dev-dashboard/ROADMAP_REGISTRY_DE.md",
+    "docs/dev-dashboard/ROADMAP_REGISTRY_EN.md",
+    "docs/knowledge-base/dev-dashboard/ROADMAP_AND_NEXT_PROMPT_REGISTRY.md",
+    "docs/faq/dev_dashboard_roadmap_faq.md",
+    "docs/roadmap/setuphelfer_next_prompts.json",
+    "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json"
+  ],
+  "inserted_rule_sections": [
+    "Mandatory Dashboard, Diagnostics and Next-Prompt Closure Rule",
+    "mandatory closure rule for future runs",
+    "closure discipline",
+    "closing-report requirements in prompt registry"
+  ],
+  "rule_status": "implemented",
+  "remaining_gaps": [
+    "Closure rule is documented and mirrored in registries, but not hard-enforced by code generation."
+  ],
+  "next_required_action": "Keep future prompt entries and roadmap updates aligned with the mandatory closure rule."
+}

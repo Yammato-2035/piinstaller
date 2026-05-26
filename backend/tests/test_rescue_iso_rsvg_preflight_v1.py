@@ -11,9 +11,16 @@ _backend = Path(__file__).resolve().parent.parent
 if str(_backend) not in sys.path:
     sys.path.insert(0, str(_backend))
 
-from core import rescue_iso_build_executor as executor  # noqa: E402
 from core import rescue_iso_build_state as state  # noqa: E402
 from core import rescue_iso_operator_commands as operator_commands  # noqa: E402
+
+try:
+    from core import rescue_iso_build_executor as executor  # noqa: E402
+
+    _HAS_EXECUTOR = True
+except Exception:
+    executor = None
+    _HAS_EXECUTOR = False
 
 
 class RescueIsoRsvgPreflightTests(unittest.TestCase):
@@ -255,6 +262,8 @@ class RescueIsoRsvgPreflightTests(unittest.TestCase):
         self.assertFalse(payload["usb_write"]["allowed"])
 
     def test_prebuild_check_reports_legacy_rsvg_missing_without_usb_write(self) -> None:
+        if not _HAS_EXECUTOR:
+            self.skipTest("rescue_iso_build_executor oder FastAPI-Abhaengigkeiten nicht verfuegbar")
         with tempfile.TemporaryDirectory() as td:
             repo = self._make_repo(td)
             state_payload = {

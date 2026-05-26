@@ -35,6 +35,23 @@ Vor **jedem** produktiven Testlauf, **jedem** Prompt oder Operator-Schritt, der 
 
 ---
 
+## Mandatory Dashboard, Diagnostics and Next-Prompt Closure Rule
+
+Jeder künftige Cursor-Lauf muss im Abschlussbericht eindeutig und nachweisbar beantworten:
+
+1. **Dashboard-Fortschritt:** Welcher Developer-Dashboard-Bereich wurde sichtbarer, besser erklärbar oder ist von `red` auf `yellow` / `partial_green` / `green` gegangen?
+2. **Diagnostik-Lernfortschritt:** Welche neue Diagnose, welcher neue Fehlercode, welcher neue Matcher oder welcher neue Testfall wurde aus dem Lauf gelernt?
+3. **Next-Prompt-Entscheidung:** Was ist der nächste Prompt laut Registry, warum genau dieser, und was blockiert Alternativen?
+4. **Evidence-Verknüpfung:** Welche Evidence-Dateien tragen die Aussage? Kein Bereich darf ohne belastbare Evidence künstlich auf `green` gesetzt werden.
+5. **Kein Fake-Green:** `green` ist nur erlaubt, wenn Tests, Runtime-Smokes oder Hardware-/E2E-Nachweise den Status fachlich tragen. Sonst sind ehrlichere Zustände wie `partial_green`, `yellow`, `blocked`, `deferred` oder `review_required` zu verwenden.
+6. **Fehler werden zur Diagnostik:** Jeder wiederholbare Fehler ist als Diagnosekandidat zu behandeln, inklusive Fehlertext, Fehlercode, Ursache, Matcher, Empfehlung, Dashboard-Bereich, Evidence-Link und Testfall.
+7. **Roadmap aktualisieren:** Neue Erkenntnisse muessen gegen Roadmap, Next-Prompt-Registry und Blocker-Liste gespiegelt werden.
+8. **Nicht ausgeführte Aktionen offen nennen:** Der Abschlussbericht muss ausdrücklich dokumentieren, was nicht ausgeführt wurde und was weiterhin `blocked` oder `deferred` bleibt.
+
+Diese Closure-Regel gilt zusätzlich zu allen Runtime-/Safety-Gates. Sie erlaubt keine neuen Runtime-Aktionen und ersetzt keine echten Tests.
+
+---
+
 ## Abschnitt 1 – Vorprüfung vor jeder Änderung
 
 Vor Bearbeitung eines **Moduls** (oder eines klar abgegrenzten Bereichs) ist Folgendes **zu prüfen und im Bericht zu dokumentieren** (siehe [CHANGE_REPORT_TEMPLATE.md](./CHANGE_REPORT_TEMPLATE.md)):

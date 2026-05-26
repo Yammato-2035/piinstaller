@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-26T20:44:08Z",
+  "generated_at": "2026-05-26T21:45:29Z",
   "project_version": "1.7.2",
-  "source_commit": "826b5dd",
+  "source_commit": "9ad7477",
   "source_audit_ref": "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md",
   "authoritative_sources": [
     "docs/evidence/release-gates/backup_restore_release_gate.json",
@@ -14,7 +14,12 @@
     "docs/roadmap/ROADMAP_2026.md",
     "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json",
     "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json",
-    "docs/testing/HARDWARE_TEST_MATRIX.md"
+    "docs/testing/HARDWARE_TEST_MATRIX.md",
+    "docs/evidence/diagnostics/DIAGNOSTICS_SOURCE_AUDIT_LATEST.md",
+    "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json",
+    "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json",
+    "docs/evidence/diagnostics/DIAGNOSTICS_UI_EVALUATION_LATEST.json",
+    "docs/evidence/diagnostics/GLOBAL_CURSOR_RULES_INTEGRATION_LATEST.json"
   ],
   "areas": [
     {
@@ -585,8 +590,8 @@
       "id": "diagnostics",
       "title_de": "Diagnostics",
       "title_en": "Diagnostics",
-      "description_de": "Diagnostik besitzt bereits Katalog-/API-/Strukturanteile, benötigt aber weitere echte Fehlerfälle, UI-Auswertung, Evidence-Matrix und reproduzierbare Teststrecken, bevor sie als vollständig nutzbar gelten darf.",
-      "description_en": "Diagnostics already has catalog, API, and structural pieces, but it still needs more real error cases, UI evaluation, an evidence matrix, and reproducible test tracks before it can be considered fully usable.",
+      "description_de": "Diagnostik besitzt jetzt einen erweiterten Katalog, reproduzierbare Rescue-/Notification-Mappings, echte Fehlerfälle in der dokumentierten Teststrecke und sichtbare Dashboard-Teilfortschritte. Vollständig grün ist der Bereich trotzdem noch nicht, weil die vollständige reproduzierbare Matrix und weitere Runtime-/Backup-/Restore-Nachweise fehlen.",
+      "description_en": "Diagnostics now has an expanded catalog, reproducible rescue/notification mappings, a documented test track, and visible dashboard sub-progress. The area is still not fully green because the full reproducible matrix and broader runtime/backup/restore proof are still missing.",
       "status": "partial_green",
       "priority": "P1",
       "owner": "Setuphelfer Diagnostics",
@@ -595,8 +600,10 @@
       "completed_at": null,
       "evidence_level": "unit_tested",
       "authoritative_evidence": [
-        "docs/dev-dashboard/modules/diagnostics.json",
-        "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json",
+        "docs/evidence/diagnostics/DIAGNOSTICS_SOURCE_AUDIT_LATEST.md",
+        "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json",
+        "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json",
+        "docs/evidence/diagnostics/DIAGNOSTICS_UI_EVALUATION_LATEST.json",
         "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md"
       ],
       "milestones": [
@@ -605,12 +612,13 @@
           "title_de": "Diagnostik-Katalog, UI-Auswertung und Evidence-Teststrecke",
           "title_en": "Diagnostics catalog, UI evaluation, and evidence test track",
           "status": "partial_green",
-          "progress_percent": 55,
+          "progress_percent": 82,
           "planned_start": "2026-05-14",
           "planned_end": null,
           "completed_at": null,
           "evidence_links": [
-            "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json"
+            "docs/evidence/diagnostics/DIAGNOSTICS_SOURCE_AUDIT_LATEST.md",
+            "docs/evidence/diagnostics/DIAGNOSTICS_UI_EVALUATION_LATEST.json"
           ],
           "tasks": [
             {
@@ -618,70 +626,179 @@
               "title_de": "Diagnosecodes und Mapping strukturiert halten",
               "title_en": "Keep diagnostic codes and mapping structured",
               "status": "partial_green",
-              "progress_percent": 70,
+              "progress_percent": 88,
               "evidence_links": [
-                "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json"
+                "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json"
               ],
               "blocker_refs": [],
-              "next_action_de": "Weitere echte Fehlerfälle auf denselben Mapping-Rahmen aufsetzen.",
-              "next_action_en": "Add more real error cases on top of the same mapping framework."
+              "next_action_de": "Weitere Backup-/Runtime-Fälle an denselben Mapping-Rahmen anbinden.",
+              "next_action_en": "Attach more backup/runtime cases to the same mapping framework."
             },
             {
               "id": "diagnostics-ui-evaluation",
               "title_de": "UI-Auswertung und Evidence-Matrix ergänzen",
               "title_en": "Add UI evaluation and an evidence matrix",
-              "status": "yellow",
-              "progress_percent": 35,
+              "status": "partial_green",
+              "progress_percent": 74,
               "evidence_links": [
-                "docs/dev-dashboard/modules/diagnostics.json"
+                "docs/evidence/diagnostics/DIAGNOSTICS_UI_EVALUATION_LATEST.json"
               ],
               "blocker_refs": [
-                "diagnostics-real-error-track-missing"
+                "diagnostics-full-green-blocked-by-matrix"
               ],
-              "next_action_de": "Dashboard-Zustände, leere States und echte Fehlerfälle systematisch belegen.",
-              "next_action_en": "Document dashboard states, empty states, and real error cases systematically."
+              "next_action_de": "Weitere Runtime-/Backup-Fälle im gleichen Grid nachziehen, ohne Fake-Green.",
+              "next_action_en": "Pull additional runtime/backup cases into the same grid without fake green."
             },
             {
-              "id": "diagnostics-reproducible-test-track",
-              "title_de": "Reproduzierbare Diagnostics-Teststrecke definieren",
-              "title_en": "Define a reproducible diagnostics test track",
-              "status": "yellow",
-              "progress_percent": 25,
+              "id": "diagnostics-closure-rules",
+              "title_de": "Globalregeln für Abschlussberichte verankern",
+              "title_en": "Anchor the global closing-report rules",
+              "status": "partial_green",
+              "progress_percent": 80,
               "evidence_links": [
-                "docs/knowledge-base/diagnostics/TEST_SCENARIO_CATALOG.md"
+                "docs/evidence/diagnostics/GLOBAL_CURSOR_RULES_INTEGRATION_LATEST.json"
               ],
-              "blocker_refs": [
-                "diagnostics-real-error-track-missing"
-              ],
-              "next_action_de": "Nächsten Prompt auf reale Fehlerfälle, UI-Auswertung und neue Evidence ausrichten.",
-              "next_action_en": "Align the next prompt with real error cases, UI evaluation, and new evidence."
+              "blocker_refs": [],
+              "next_action_de": "Neue Prompt-Einträge und Auswahlentscheidungen an die Closure-Regel koppeln.",
+              "next_action_en": "Keep new prompt entries and selection decisions aligned with the closure rule."
             }
           ],
           "blockers": [
             {
-              "id": "diagnostics-real-error-track-missing",
+              "id": "diagnostics-full-green-blocked-by-matrix",
               "area_id": "diagnostics",
-              "title_de": "Echte Fehlerfall-Teststrecke fehlt",
-              "title_en": "Real error-case test track is missing",
-              "description_de": "Diagnostik ist strukturell vorhanden, aber noch nicht durch reproduzierbare reale Fehlerfälle und UI-Evidence abgesichert.",
-              "description_en": "Diagnostics is structurally present, but it is not yet backed by reproducible real error cases and UI evidence.",
+              "title_de": "Diagnostics Full-Green bleibt bis zur vollständigen reproduzierbaren Matrix blockiert",
+              "title_en": "Diagnostics full green stays blocked until the full reproducible matrix exists",
+              "description_de": "Diagnostics darf nicht grün werden, solange nicht alle relevanten Rescue-/Backup-/Restore-/Runtime-/Notification-/Architecture-Fälle reproduzierbar beschrieben und mit belastbarer Evidence belegt sind.",
+              "description_en": "Diagnostics must not turn green until all relevant rescue/backup/restore/runtime/notification/architecture cases are reproducibly described and backed by trustworthy evidence.",
               "severity": "medium",
               "status": "yellow",
-              "first_seen": "2026-05-14",
+              "first_seen": "2026-05-26",
               "last_seen": "2026-05-26",
               "resolved_at": null,
               "resolution_de": null,
               "resolution_en": null,
               "evidence_links": [
-                "docs/dev-dashboard/modules/diagnostics.json",
-                "docs/knowledge-base/diagnostics/TEST_SCENARIO_CATALOG.md"
+                "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json"
               ]
             }
           ],
           "decision_refs": [
+            "diagnostics-not-fully-green-yet",
+            "diagnostics-closure-rule-required"
+          ],
+          "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
+        },
+        {
+          "id": "diagnostics-rescue-build-mapped",
+          "title_de": "Rescue Build Diagnostics mapped",
+          "title_en": "Rescue build diagnostics mapped",
+          "status": "partial_green",
+          "progress_percent": 87,
+          "planned_start": "2026-05-26",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json",
+            "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md"
+          ],
+          "tasks": [
+            {
+              "id": "diagnostics-rescue-build-root-gate",
+              "title_de": "Root-/Gate-Blocker in Diagnosecodes überführen",
+              "title_en": "Translate root/gate blockers into diagnostic codes",
+              "status": "partial_green",
+              "progress_percent": 92,
+              "evidence_links": [
+                "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Beim nächsten echten Operator-Lauf gegen dieselben Codes prüfen.",
+              "next_action_en": "Check the next real operator run against the same codes."
+            },
+            {
+              "id": "diagnostics-rescue-build-toolchain",
+              "title_de": "Toolchain-/Legacy-rsvg-Fälle separat klassifizieren",
+              "title_en": "Classify toolchain and legacy-rsvg cases separately",
+              "status": "partial_green",
+              "progress_percent": 85,
+              "evidence_links": [
+                "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Toolchain- und Wrapper-Evidence beim nächsten Buildversuch direkt mitführen.",
+              "next_action_en": "Carry toolchain and wrapper evidence directly into the next build attempt."
+            },
+            {
+              "id": "diagnostics-notification-provider-limit",
+              "title_de": "Provider-Limit als Notification-Diagnose spiegeln",
+              "title_en": "Mirror the provider limit as a notification diagnosis",
+              "status": "partial_green",
+              "progress_percent": 83,
+              "evidence_links": [
+                "docs/evidence/dev-dashboard/NOTIFICATION_MODULE_INTEGRATION_RESULT.md",
+                "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Persistierte Notification-Ereignisse weiter gegen denselben Diagnosecode prüfen.",
+              "next_action_en": "Keep checking persisted notification events against the same diagnosis code."
+            }
+          ],
+          "blockers": [],
+          "decision_refs": [
             "diagnostics-not-fully-green-yet"
           ],
-          "next_prompt_id": "DIAGNOSTICS_TEST_TRACK"
+          "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
+        },
+        {
+          "id": "diagnostics-test-track-defined",
+          "title_de": "Diagnostics Test Track defined",
+          "title_en": "Diagnostics test track defined",
+          "status": "partial_green",
+          "progress_percent": 80,
+          "planned_start": "2026-05-26",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json",
+            "docs/diagnostics/DIAGNOSTICS_TEST_TRACK_DE.md",
+            "docs/diagnostics/DIAGNOSTICS_TEST_TRACK_EN.md"
+          ],
+          "tasks": [
+            {
+              "id": "diagnostics-track-rescue-backup-restore-runtime",
+              "title_de": "Rescue-/Backup-/Restore-/Runtime-Fälle in eine Teststrecke bündeln",
+              "title_en": "Bundle rescue/backup/restore/runtime cases into a test track",
+              "status": "partial_green",
+              "progress_percent": 82,
+              "evidence_links": [
+                "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json"
+              ],
+              "blocker_refs": [
+                "diagnostics-full-green-blocked-by-matrix"
+              ],
+              "next_action_de": "Noch fehlende Runtime-/Deploy-Codes später gesondert katalogisieren.",
+              "next_action_en": "Catalog missing runtime/deploy codes separately later."
+            },
+            {
+              "id": "diagnostics-track-next-prompt-shift",
+              "title_de": "Nächsten Prompt nach Diagnostics auf Operator-Build drehen",
+              "title_en": "Shift the next prompt from diagnostics to the operator build",
+              "status": "partial_green",
+              "progress_percent": 78,
+              "evidence_links": [
+                "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Echten Operator-Terminal-Build als nächsten technischen Blocker behandeln.",
+              "next_action_en": "Treat the real operator terminal build as the next technical blocker."
+            }
+          ],
+          "blockers": [],
+          "decision_refs": [
+            "diagnostics-closure-rule-required"
+          ],
+          "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
         }
       ],
       "blockers": [],
@@ -691,20 +808,60 @@
           "area_id": "diagnostics",
           "title_de": "Diagnostik bleibt vorerst teilgrün",
           "title_en": "Diagnostics remains only partially green for now",
-          "decision_de": "Diagnostik besitzt bereits Katalog-/API-/Strukturanteile, benötigt aber weitere echte Fehlerfälle, UI-Auswertung, Evidence-Matrix und reproduzierbare Teststrecken, bevor sie als vollständig nutzbar gelten darf.",
-          "decision_en": "Diagnostics already has catalog, API, and structural pieces, but it still needs more real error cases, UI evaluation, an evidence matrix, and reproducible test tracks before it can be considered fully usable.",
-          "reason_de": "Ein grüner Status ohne reale Fehlerfälle und Dashboard-Evidence wäre nicht belastbar.",
-          "reason_en": "A green status without real error cases and dashboard evidence would not be trustworthy.",
+          "decision_de": "Diagnostik besitzt jetzt einen erweiterten Katalog, neue Matcher, eine dokumentierte Teststrecke und eine sichtbare Dashboard-Auswertung. Vollständig grün wird der Bereich trotzdem erst mit einer vollständigen reproduzierbaren Matrix und weiterem Laufzeit-/Hardware-Nachweis.",
+          "decision_en": "Diagnostics now has an expanded catalog, new matchers, a documented test track, and visible dashboard evaluation. The area still becomes fully green only with a full reproducible matrix and further runtime/hardware proof.",
+          "reason_de": "Kein Fake-Green: neue Codes und Tests reichen für Teilfortschritt, aber noch nicht für eine komplette grüne Abnahme.",
+          "reason_en": "No fake green: new codes and tests are enough for partial progress, but not yet for complete green acceptance.",
           "decided_at": "2026-05-26",
           "decided_by": "Setuphelfer Diagnostics",
           "evidence_links": [
-            "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json"
+            "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json",
+            "docs/evidence/diagnostics/DIAGNOSTICS_UI_EVALUATION_LATEST.json"
+          ]
+        },
+        {
+          "id": "diagnostics-closure-rule-required",
+          "area_id": "diagnostics",
+          "title_de": "Abschlussberichte müssen Dashboard, Diagnostik, Evidence und Next Prompt schließen",
+          "title_en": "Closing reports must cover dashboard, diagnostics, evidence, and the next prompt",
+          "decision_de": "Künftige Läufe müssen Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien, Next-Prompt-Entscheidung und ausdrücklich nicht ausgeführte Aktionen offen nennen.",
+          "decision_en": "Future runs must explicitly report dashboard progress, diagnostics learning progress, evidence files, the next prompt decision, and the actions that were not executed.",
+          "reason_de": "Wiederkehrende Fehler und Ampeln ohne Evidence müssen aus der Abschlusskommunikation verschwinden.",
+          "reason_en": "Repeated errors and status colors without evidence must disappear from closing communication.",
+          "decided_at": "2026-05-26",
+          "decided_by": "Setuphelfer Development Dashboard",
+          "evidence_links": [
+            "docs/developer/CURSOR_WORK_RULES.md",
+            "docs/evidence/diagnostics/GLOBAL_CURSOR_RULES_INTEGRATION_LATEST.json"
           ]
         }
       ],
-      "notes": [],
-      "next_prompt_id": "DIAGNOSTICS_TEST_TRACK",
-      "next_recommended_action": "Echte Fehlerfälle, UI-Auswertung und Evidence-Matrix als nächste belastbare Teststrecke priorisieren."
+      "notes": [
+        {
+          "id": "diagnostics-note-errors-become-diagnostics",
+          "area_id": "diagnostics",
+          "text_de": "Wiederholbare Fehler werden künftig nicht nur dokumentiert, sondern als Diagnosekandidaten mit Matcher, Evidence und Testfall nachgezogen.",
+          "text_en": "Repeated errors are no longer only documented; they are promoted into diagnosis candidates with matcher, evidence, and test coverage.",
+          "created_at": "2026-05-26",
+          "author": "Cursor",
+          "evidence_links": [
+            "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json"
+          ]
+        },
+        {
+          "id": "diagnostics-note-restore-stays-deferred",
+          "area_id": "diagnostics",
+          "text_de": "Restore-Diagnostik ist sichtbar, aber echte Restore-E2E-Ausführung bleibt wegen fehlendem Rettungsmedium und Testziel weiterhin zurückgestellt.",
+          "text_en": "Restore diagnostics is visible, but real restore E2E execution remains deferred because the rescue medium and test target are still missing.",
+          "created_at": "2026-05-26",
+          "author": "Cursor",
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json"
+          ]
+        }
+      ],
+      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "next_recommended_action": "Die Diagnostik hat die Build-Fehler gelernt; der nächste technische Blocker ist jetzt der echte kontrollierte Operator-Build in einem Terminal."
     },
     {
       "id": "dev-dashboard",

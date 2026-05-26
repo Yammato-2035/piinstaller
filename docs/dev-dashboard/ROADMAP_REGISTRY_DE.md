@@ -34,6 +34,19 @@ Restore-End-to-End bleibt bewusst zurückgestellt, solange kein bootfähiges Ret
 
 Diagnostics hat bereits Katalog-, API- und Strukturanteile. Vollständig grün wäre es aber erst mit echten Fehlerfall-Teststrecken, UI-Auswertung und einer belastbaren Evidence-Matrix.
 
+## Verbindliche Abschlussregel für künftige Läufe
+
+Jeder künftige Cursor-Lauf muss im Abschlussbericht sichtbar und mit Evidence beantworten:
+
+1. welcher Dashboard-Bereich transparenter oder besser belegbar wurde
+2. welche neue Diagnose / welcher neue Matcher / welcher neue Testfall gelernt wurde
+3. welcher Next Prompt jetzt laut Registry gilt und warum
+4. welche Evidence-Dateien den Fortschritt tragen
+5. was ausdrücklich **nicht** ausgeführt wurde
+6. was weiterhin `blocked`, `deferred` oder nur `partial_green` bleibt
+
+Fehler dürfen nicht folgenlos bleiben: Wiederholbare Fehler sind künftig Diagnosekandidaten mit Fehlertext, Fehlercode, Ursache, Matcher, Empfehlung, Dashboard-Bereich, Evidence-Link und Testfall. `green` ist nur mit belastbaren Tests oder Runtime-/Hardware-Nachweisen zulässig; kein Fake-Green.
+
 ## Wie der Next Prompt berechnet wird
 
 Die Auswahl priorisiert:

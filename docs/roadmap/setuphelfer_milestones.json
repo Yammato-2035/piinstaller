@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-26T20:44:08Z",
+  "generated_at": "2026-05-26T21:45:29Z",
   "project_version": "1.7.2",
-  "source_commit": "826b5dd",
+  "source_commit": "9ad7477",
   "milestones": [
     {
       "id": "runtime-phase0-gate",
@@ -122,21 +122,67 @@
       "title_de": "Diagnostik-Katalog, UI-Auswertung und Evidence-Teststrecke",
       "title_en": "Diagnostics catalog, UI evaluation, and evidence test track",
       "status": "partial_green",
-      "progress_percent": 55,
-      "next_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+      "progress_percent": 82,
+      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
       "evidence_links": [
-        "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json"
+        "docs/evidence/diagnostics/DIAGNOSTICS_SOURCE_AUDIT_LATEST.md",
+        "docs/evidence/diagnostics/DIAGNOSTICS_UI_EVALUATION_LATEST.json"
       ],
       "task_ids": [
         "diagnostics-code-mapping",
         "diagnostics-ui-evaluation",
-        "diagnostics-reproducible-test-track"
+        "diagnostics-closure-rules"
       ],
       "blocker_ids": [
-        "diagnostics-real-error-track-missing"
+        "diagnostics-full-green-blocked-by-matrix"
       ],
       "decision_refs": [
+        "diagnostics-not-fully-green-yet",
+        "diagnostics-closure-rule-required"
+      ]
+    },
+    {
+      "id": "diagnostics-rescue-build-mapped",
+      "area_id": "diagnostics",
+      "title_de": "Rescue Build Diagnostics mapped",
+      "title_en": "Rescue build diagnostics mapped",
+      "status": "partial_green",
+      "progress_percent": 87,
+      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "evidence_links": [
+        "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json",
+        "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md"
+      ],
+      "task_ids": [
+        "diagnostics-rescue-build-root-gate",
+        "diagnostics-rescue-build-toolchain",
+        "diagnostics-notification-provider-limit"
+      ],
+      "blocker_ids": [],
+      "decision_refs": [
         "diagnostics-not-fully-green-yet"
+      ]
+    },
+    {
+      "id": "diagnostics-test-track-defined",
+      "area_id": "diagnostics",
+      "title_de": "Diagnostics Test Track defined",
+      "title_en": "Diagnostics test track defined",
+      "status": "partial_green",
+      "progress_percent": 80,
+      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "evidence_links": [
+        "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json",
+        "docs/diagnostics/DIAGNOSTICS_TEST_TRACK_DE.md",
+        "docs/diagnostics/DIAGNOSTICS_TEST_TRACK_EN.md"
+      ],
+      "task_ids": [
+        "diagnostics-track-rescue-backup-restore-runtime",
+        "diagnostics-track-next-prompt-shift"
+      ],
+      "blocker_ids": [],
+      "decision_refs": [
+        "diagnostics-closure-rule-required"
       ]
     },
     {

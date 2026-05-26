@@ -81,9 +81,29 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
 
   const restoreArea = useMemo(() => areas.find((row) => String(row.id) === 'restore') || null, [areas])
   const diagnosticsArea = useMemo(() => areas.find((row) => String(row.id) === 'diagnostics') || null, [areas])
+  const diagnosticsProgress = ((diagnosticsArea?.diagnostics_progress as JsonRow) || (roadmap.diagnostics_progress as JsonRow) || {}) as JsonRow
   const rows = useMemo(() => buildTreeRows(areas), [areas])
   const promptUnlocks = Array.isArray(recommendedPrompt?.unlocks) ? (recommendedPrompt?.unlocks as string[]) : []
   const promptBlockers = Array.isArray(recommendedPrompt?.blocked_by) ? (recommendedPrompt?.blocked_by as string[]) : []
+  const diagnosticsProgressKeys = [
+    'catalog_status',
+    'matcher_status',
+    'api_status',
+    'ui_status',
+    'evidence_status',
+    'test_track_status',
+    'rescue_build_diagnostics_status',
+    'backup_diagnostics_status',
+    'restore_diagnostics_status',
+    'runtime_diagnostics_status',
+    'notification_diagnostics_status',
+    'architecture_diagnostics_status',
+  ]
+  const diagnosticsProgressItems = diagnosticsProgressKeys
+    .map((key) => ({ key, status: String(diagnosticsProgress[key] || 'unknown') }))
+    .filter((item) => item.status !== 'unknown')
+  const learnedCodes = Array.isArray(diagnosticsProgress.learned_error_codes) ? (diagnosticsProgress.learned_error_codes as string[]) : []
+  const evidenceFiles = Array.isArray(diagnosticsProgress.evidence_files) ? (diagnosticsProgress.evidence_files as string[]) : []
 
   const promptById = useMemo(() => {
     const map = new Map<string, JsonRow>()
@@ -241,6 +261,52 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
         <div className={`rounded-lg p-3 ${toneForStatus(String(diagnosticsArea.status || 'partial_green'))}`} data-testid="dev-dashboard-roadmap-diagnostics-hint">
           <div className="text-sm font-semibold">{t('devDashboard.roadmap.diagnosticsPartialTitle')}</div>
           <p className="mt-1 text-xs">{localizedReason(asRows(diagnosticsArea.decisions)[0] || diagnosticsArea)}</p>
+        </div>
+      ) : null}
+
+      {diagnosticsProgressItems.length ? (
+        <div className="rounded-xl border border-cyan-700/40 bg-cyan-950/15 p-4" data-testid="dev-dashboard-roadmap-diagnostics-progress">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-white">{t('devDashboard.roadmap.diagnosticsProgressTitle')}</div>
+              <p className="mt-1 text-xs text-slate-300">{t('devDashboard.roadmap.diagnosticsProgressSubtitle')}</p>
+            </div>
+            <div className="text-xs text-slate-300">
+              {t('devDashboard.roadmap.nextTestFocus')}: {String(diagnosticsProgress.next_test_focus || t('devDashboard.noData'))}
+            </div>
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {diagnosticsProgressItems.map((item) => (
+              <div key={item.key} className="rounded-lg border border-slate-700/60 bg-slate-950/40 p-3">
+                <div className="text-[11px] uppercase tracking-wide text-slate-400">
+                  {t(`devDashboard.roadmap.diagnosticsProgress.${item.key}`)}
+                </div>
+                <div className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-xs ${toneForStatus(item.status)}`}>{item.status}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-slate-400">{t('devDashboard.roadmap.learnedDiagnostics')}</div>
+              <ul className="mt-1 space-y-1 text-xs text-slate-200">
+                {learnedCodes.length ? learnedCodes.map((entry) => <li key={entry}>- {entry}</li>) : <li>- {t('devDashboard.noData')}</li>}
+              </ul>
+            </div>
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-slate-400">{t('devDashboard.roadmap.evidence')}</div>
+              <ul className="mt-1 space-y-1 text-xs text-slate-200">
+                {evidenceFiles.length ? (
+                  evidenceFiles.map((entry) => (
+                    <li key={entry}>
+                      <code>{entry}</code>
+                    </li>
+                  ))
+                ) : (
+                  <li>- {t('devDashboard.noData')}</li>
+                )}
+              </ul>
+            </div>
+          </div>
         </div>
       ) : null}
 

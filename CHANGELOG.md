@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added (Diagnostics test track and global Cursor closure rules)
+- **Diagnostics / Teststrecke:** Reproduzierbare Diagnostics-Teststrecke fuer Rescue-Build-, Backup-, Restore-, Runtime-/Deploy-, Notification- und Architektur-Faelle mit Evidence-Dateien, DE/EN-Doku und gezielten Backend-Tests.
+- **Diagnostics / Mapping:** Neue Diagnosecodes `RESCUE-BUILD-TOOL-001`, `RESCUE-BUILD-RSVG-001` und `NOTIFICATION-EMAIL-PROVIDER-001`; Rescue-/Provider-Limit-Fehler werden jetzt als wiederverwendbare Diagnosekandidaten dokumentiert und getestet.
+- **Developer Dashboard:** `diagnostics_progress` zerlegt Diagnostics in Teilbereiche (Katalog, Matcher, API, UI, Evidence, Teststrecke sowie Rescue-/Backup-/Restore-/Runtime-/Notification-/Architecture-Teilstatus) und zeigt gelernte Fehler sowie Evidence sichtbar an.
+- **Globalregeln:** Zentrale Dokumente und die Next-Prompt-Registry erzwingen jetzt fuer künftige Cursor-Läufe einen ehrlichen Abschluss mit Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Verknüpfung, Next-Prompt-Entscheidung und explizit nicht ausgeführten Aktionen.
+
 ### Added (Dev Dashboard roadmap and next prompt registry)
 - **Development Dashboard / Roadmap:** Neue read-only Roadmap-/Meilenstein-Registry mit Bereichen, Milestones, Aufgaben, Blockern, Entscheidungen, Notizen, Evidence-Links und sichtbarer Restore-/Diagnostics-Begründung.
 - **Next Prompt Registry:** Prüfbare Prompt-Registry mit Auswahlregel, `recommended_next`, Plain-Text-Export und STRICT-MODE-Template; keine Execute-Buttons und keine Runtime-Aktionen aus der Roadmap.

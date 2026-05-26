@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-26T20:44:08Z",
+  "generated_at": "2026-05-26T21:45:29Z",
   "project_version": "1.7.2",
-  "source_commit": "826b5dd",
+  "source_commit": "9ad7477",
   "status": "yellow",
   "roadmap_path": "docs/roadmap/setuphelfer_roadmap.json",
   "schema_path": "docs/roadmap/setuphelfer_roadmap.schema.json",
@@ -10,16 +10,16 @@
   "next_prompts_path": "docs/roadmap/setuphelfer_next_prompts.json",
   "source_audit_ref": "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md",
   "status_counts": {
-    "blocked": 3,
-    "deferred": 3,
-    "green": 0,
     "partial_green": 3,
-    "red": 0,
+    "blocked": 3,
+    "deferred": 2,
+    "yellow": 4,
     "unknown": 1,
-    "yellow": 3,
+    "green": 0,
+    "red": 0,
     "deprecated": 0
   },
-  "recommended_next_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+  "recommended_next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
   "review_required_areas": [
     "hostpilot-serverguide"
   ],
@@ -28,6 +28,9 @@
     "docs/evidence/release-gates/apt_update_delivery_gap.json",
     "docs/dev-dashboard/modules/backup-restore.json",
     "docs/dev-dashboard/modules/diagnostics.json",
-    "docs/dev-dashboard/modules/rescue-stick.json"
+    "docs/dev-dashboard/modules/rescue-stick.json",
+    "docs/roadmap/MASTER_ROADMAP_2026_2030.md",
+    "docs/roadmap/ROADMAP_2026.md",
+    "docs/evidence/runtime-results/rescue/rescue_build_diagnostics_mapping_latest.json"
   ]
 }

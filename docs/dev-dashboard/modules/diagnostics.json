@@ -3,24 +3,71 @@
   "title": "Diagnostics & Diagnose",
   "area": "diagnostics",
   "status": "yellow",
-  "summary": "Assistant-API und Evidence-Modelle im Aufbau; vollständige HW-Abnahme offen.",
-  "last_updated": "2026-05-14",
+  "summary": "Diagnostics-Katalog, Rescue-/Notification-Mappings und Dashboard-Teilfortschritt sind sichtbar; vollständige reproduzierbare Matrix bleibt offen.",
+  "last_updated": "2026-05-26",
   "commits": [],
-  "current_focus": "Matcher, Evidence-Mapping, UI-Panels",
-  "next_steps": ["Seed-Cases erweitern", "i18n-Konsistenz prüfen"],
-  "blockers": ["HW-Abnahme Diagnostics-UI und Matcher-Regression offen"],
-  "evidence_files": [],
-  "prompt_files": [],
-  "report_files": [],
-  "docs": ["docs/diagnostics-notes.md"],
-  "faq": [],
-  "knowledge_base": ["docs/knowledge-base/diagnostics/"],
-  "diagnostics": ["backend/core/diagnostics/"],
-  "i18n": ["frontend/src/locales/de.json"],
-  "tests": ["backend/tests/test_diagnostics_api_v1.py"],
+  "current_focus": "diagnostics_progress, Rescue-Build-Mapping, Notification provider_limit, Teststrecke",
+  "next_steps": [
+    "Echten Operator-Terminal-Build gegen dieselben Diagnosecodes spiegeln",
+    "Fehlende Runtime-/Deploy-Codes separat katalogisieren"
+  ],
+  "blockers": [
+    "Diagnostics full green blocked until complete reproducible matrix exists",
+    "Restore diagnostics remain deferred until rescue medium and safe target exist"
+  ],
+  "evidence_files": [
+    "docs/evidence/diagnostics/DIAGNOSTICS_SOURCE_AUDIT_LATEST.md",
+    "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json",
+    "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json",
+    "docs/evidence/diagnostics/DIAGNOSTICS_UI_EVALUATION_LATEST.json"
+  ],
+  "prompt_files": [
+    "docs/roadmap/setuphelfer_next_prompts.json",
+    "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json"
+  ],
+  "report_files": [
+    "docs/diagnostics/DIAGNOSTICS_TEST_TRACK_DE.md",
+    "docs/diagnostics/DIAGNOSTICS_TEST_TRACK_EN.md"
+  ],
+  "docs": [
+    "docs/diagnostics-notes.md",
+    "docs/diagnostics/DIAGNOSTICS_TEST_TRACK_DE.md"
+  ],
+  "faq": [
+    "docs/faq/dev_dashboard_roadmap_faq.md",
+    "docs/faq/rescue_iso_build_faq.md"
+  ],
+  "knowledge_base": [
+    "docs/knowledge-base/diagnostics/",
+    "docs/knowledge-base/dev-dashboard/"
+  ],
+  "diagnostics": [
+    "backend/core/diagnostics/"
+  ],
+  "i18n": [
+    "frontend/src/locales/de.json",
+    "frontend/src/locales/en.json"
+  ],
+  "tests": [
+    "backend/tests/test_diagnostics_api_v1.py",
+    "backend/tests/test_diagnostics_rescue_build_mapping_v1.py",
+    "backend/tests/test_diagnostics_test_track_v1.py",
+    "backend/tests/test_dev_dashboard_diagnostics_progress_v1.py",
+    "frontend/src/components/dev-dashboard/RoadmapDrawer.test.ts"
+  ],
   "children": [],
   "artifacts": [
-    {"path": "docs/knowledge-base/diagnostics/DIAGNOSIS_ARCHITECTURE.md", "kind": "kb"},
-    {"path": "docs/diagnostics-notes.md", "kind": "doc"}
+    {
+      "path": "docs/knowledge-base/diagnostics/DIAGNOSIS_ARCHITECTURE.md",
+      "kind": "kb"
+    },
+    {
+      "path": "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+      "kind": "kb"
+    },
+    {
+      "path": "docs/diagnostics/DIAGNOSTICS_TEST_TRACK_DE.md",
+      "kind": "doc"
+    }
   ]
 }

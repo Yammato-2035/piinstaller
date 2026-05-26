@@ -1,17 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-26T20:44:08Z",
+  "generated_at": "2026-05-26T21:45:29Z",
   "project_version": "1.7.2",
-  "source_commit": "826b5dd",
+  "source_commit": "9ad7477",
   "registry_path": "docs/roadmap/setuphelfer_next_prompts.json",
-  "selected_prompt_id": "DIAGNOSTICS_TEST_TRACK",
+  "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
   "prompt_status_counts": {
-    "available": 4,
-    "blocked": 1,
-    "completed": 1,
+    "completed": 2,
+    "available": 5,
+    "obsolete": 1,
     "deferred": 1,
-    "obsolete": 0,
-    "recommended_next": 1
+    "recommended_next": 1,
+    "blocked": 0
   },
   "selection_policy_ref": "docs/roadmap/setuphelfer_next_prompts.json",
   "read_only": true,

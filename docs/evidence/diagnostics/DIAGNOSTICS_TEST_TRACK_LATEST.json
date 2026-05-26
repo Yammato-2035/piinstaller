@@ -1,0 +1,329 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-05-26T21:45:29Z",
+  "project_version": "1.7.2",
+  "source_commit": "9ad7477",
+  "overall_status": "partial_green",
+  "no_fake_green": true,
+  "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+  "tracks": [
+    {
+      "id": "rescue_build_diagnostics",
+      "title_de": "Rescue Build Diagnostics",
+      "title_en": "Rescue build diagnostics",
+      "status": "partial_green",
+      "cases": [
+        {
+          "id": "rescue-root-001",
+          "input_fixture_or_excerpt": "blocked_requires_operator_sudo_policy / sudo: a terminal is required / sudo: Ein Passwort ist notwendig",
+          "expected_diagnostic_code": "RESCUE-BUILD-ROOT-001",
+          "severity": "high",
+          "recommended_action": "manual_operator_terminal_or_documented_allowlist",
+          "dashboard_area": "diagnostics",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rescue_iso_operator_sudo_policy_triage_latest.json",
+          "status": "partial_green"
+        },
+        {
+          "id": "rescue-gate-001",
+          "input_fixture_or_excerpt": "Use controlled gate before running lb build / exit 20",
+          "expected_diagnostic_code": "RESCUE-BUILD-GATE-001",
+          "severity": "medium",
+          "recommended_action": "use_controlled_rescue_build_gate",
+          "dashboard_area": "diagnostics",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rescue_iso_controlled_gate_test_results_latest.json",
+          "status": "partial_green"
+        },
+        {
+          "id": "rescue-tool-001",
+          "input_fixture_or_excerpt": "blocked_build_tools_missing / rsvg-convert fehlt / librsvg2-bin fehlt",
+          "expected_diagnostic_code": "RESCUE-BUILD-TOOL-001",
+          "severity": "medium",
+          "recommended_action": "install_documented_host_dependency",
+          "dashboard_area": "diagnostics",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rsvg_host_dependency_readiness_latest.json",
+          "status": "partial_green"
+        },
+        {
+          "id": "rescue-rsvg-001",
+          "input_fixture_or_excerpt": "blocked_legacy_rsvg_command_missing / live-build erwartet /usr/bin/rsvg",
+          "expected_diagnostic_code": "RESCUE-BUILD-RSVG-001",
+          "severity": "medium",
+          "recommended_action": "use_project_local_rsvg_wrapper",
+          "dashboard_area": "diagnostics",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rsvg_legacy_tool_triage_latest.json",
+          "status": "partial_green"
+        },
+        {
+          "id": "rescue-arch-001",
+          "input_fixture_or_excerpt": "i386 requested but status review_required / arm64 requested but deferred / armhf requested but deferred",
+          "expected_diagnostic_code": "RESCUE-BUILD-ARCH-001",
+          "severity": "medium",
+          "recommended_action": "plan_architectures_separately",
+          "dashboard_area": "diagnostics",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rescue_target_architecture_matrix_latest.json",
+          "status": "partial_green"
+        }
+      ]
+    },
+    {
+      "id": "backup_diagnostics",
+      "title_de": "Backup Diagnostics",
+      "title_en": "Backup diagnostics",
+      "status": "yellow",
+      "cases": [
+        {
+          "id": "backup-target-path-not-writable",
+          "input_fixture_or_excerpt": "backup.target_not_writable / target path not writable",
+          "expected_diagnostic_code": "backup.target_not_writable",
+          "severity": "high",
+          "recommended_action": "verify_safe_external_target",
+          "dashboard_area": "backup-br001",
+          "evidence_file": "docs/evidence/release-gates/backup_restore_release_gate.json",
+          "status": "yellow"
+        },
+        {
+          "id": "backup-write-guard-blocked",
+          "input_fixture_or_excerpt": "storage protection blocks write target",
+          "expected_diagnostic_code": "STORAGE-PROTECTION-001",
+          "severity": "critical",
+          "recommended_action": "use_allowlisted_external_target",
+          "dashboard_area": "backup-br001",
+          "evidence_file": "docs/evidence/backup-restore/BR-001_target_permission_diagnostics_fix_2026-05-12.md",
+          "status": "yellow"
+        },
+        {
+          "id": "backup-package-activity-blocked",
+          "input_fixture_or_excerpt": "package activity blocks backup",
+          "expected_diagnostic_code": "backup.package_activity_blocked",
+          "severity": "medium",
+          "recommended_action": "wait_for_package_activity_to_finish",
+          "dashboard_area": "backup-br001",
+          "evidence_file": "docs/evidence/release-gates/backup_restore_release_gate.json",
+          "status": "yellow"
+        },
+        {
+          "id": "backup-tar-warning-classified",
+          "input_fixture_or_excerpt": "tar warning classified without fake success",
+          "expected_diagnostic_code": "backup.tar_warning_classified",
+          "severity": "medium",
+          "recommended_action": "inspect_tar_warning_before_success",
+          "dashboard_area": "backup-br001",
+          "evidence_file": "docs/evidence/runtime-results/br001_tar_exit1_forensics_2026-05-16.json",
+          "status": "yellow"
+        },
+        {
+          "id": "backup-manifest-missing",
+          "input_fixture_or_excerpt": "MANIFEST.json missing",
+          "expected_diagnostic_code": "BACKUP-MANIFEST-001",
+          "severity": "critical",
+          "recommended_action": "recreate_backup",
+          "dashboard_area": "backup-br001",
+          "evidence_file": "docs/evidence/release-gates/backup_restore_release_gate.json",
+          "status": "yellow"
+        },
+        {
+          "id": "backup-sha256-mismatch",
+          "input_fixture_or_excerpt": "sha256 mismatch between manifest and extracted data",
+          "expected_diagnostic_code": "BACKUP-HASH-003",
+          "severity": "high",
+          "recommended_action": "create_new_full_backup",
+          "dashboard_area": "verify",
+          "evidence_file": "docs/evidence/release-gates/backup_restore_release_gate.json",
+          "status": "yellow"
+        }
+      ]
+    },
+    {
+      "id": "restore_diagnostics",
+      "title_de": "Restore Diagnostics",
+      "title_en": "Restore diagnostics",
+      "status": "deferred",
+      "cases": [
+        {
+          "id": "restore-no-boot-medium",
+          "input_fixture_or_excerpt": "restore deferred because no boot medium",
+          "expected_diagnostic_code": "restore.deferred_no_boot_medium",
+          "severity": "critical",
+          "recommended_action": "prepare_rescue_medium_first",
+          "dashboard_area": "restore",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json",
+          "status": "deferred"
+        },
+        {
+          "id": "restore-path-containment",
+          "input_fixture_or_excerpt": "path containment violation",
+          "expected_diagnostic_code": "RESTORE-PATH-004",
+          "severity": "critical",
+          "recommended_action": "keep_restore_target_in_safe_scope",
+          "dashboard_area": "restore",
+          "evidence_file": "docs/knowledge-base/FULL_RESTORE_BOOT_TEST.md",
+          "status": "deferred"
+        },
+        {
+          "id": "restore-target-unsafe",
+          "input_fixture_or_excerpt": "target unsafe",
+          "expected_diagnostic_code": "restore.target_unsafe",
+          "severity": "critical",
+          "recommended_action": "use_non_production_target_only",
+          "dashboard_area": "restore",
+          "evidence_file": "docs/knowledge-base/RESTORE_ISOLATED_TEST_FROM_BACKUP.md",
+          "status": "deferred"
+        },
+        {
+          "id": "restore-missing-verified-backup",
+          "input_fixture_or_excerpt": "missing verified backup",
+          "expected_diagnostic_code": "restore.missing_verified_backup",
+          "severity": "high",
+          "recommended_action": "complete_br001_and_verify_first",
+          "dashboard_area": "restore",
+          "evidence_file": "docs/evidence/release-gates/backup_restore_release_gate.json",
+          "status": "deferred"
+        },
+        {
+          "id": "restore-preview-only",
+          "input_fixture_or_excerpt": "restore preview only",
+          "expected_diagnostic_code": "restore.preview_only",
+          "severity": "low",
+          "recommended_action": "keep_preview_mode_until_safe_target_exists",
+          "dashboard_area": "restore",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json",
+          "status": "deferred"
+        }
+      ]
+    },
+    {
+      "id": "runtime_deploy_diagnostics",
+      "title_de": "Runtime / Deploy Diagnostics",
+      "title_en": "Runtime / deploy diagnostics",
+      "status": "yellow",
+      "cases": [
+        {
+          "id": "runtime-drift",
+          "input_fixture_or_excerpt": "deploy_drift yellow / runtime gate mismatch",
+          "expected_diagnostic_code": "runtime.deploy_drift_detected",
+          "severity": "medium",
+          "recommended_action": "separate_non_blocking_drift_from_red_gate",
+          "dashboard_area": "runtime-governance",
+          "evidence_file": "docs/evidence/diagnostics/DIAGNOSTICS_SOURCE_AUDIT_LATEST.md",
+          "status": "yellow"
+        },
+        {
+          "id": "runtime-backend-version-mismatch",
+          "input_fixture_or_excerpt": "backend version mismatch",
+          "expected_diagnostic_code": "blocked_runtime_outdated",
+          "severity": "critical",
+          "recommended_action": "run_phase0_runtime_gate",
+          "dashboard_area": "runtime-governance",
+          "evidence_file": "docs/dev-dashboard/PHASE0_RUNTIME_GATE.md",
+          "status": "yellow"
+        },
+        {
+          "id": "runtime-service-inactive",
+          "input_fixture_or_excerpt": "setuphelfer-backend.service inactive",
+          "expected_diagnostic_code": "SYSTEMD-START-009",
+          "severity": "high",
+          "recommended_action": "investigate_service_state_before_runtime_claims",
+          "dashboard_area": "runtime-governance",
+          "evidence_file": "docs/dev-dashboard/PHASE0_RUNTIME_GATE.md",
+          "status": "yellow"
+        },
+        {
+          "id": "runtime-manifest-mismatch",
+          "input_fixture_or_excerpt": "deploy manifest mismatch",
+          "expected_diagnostic_code": "runtime.deploy_manifest_mismatch",
+          "severity": "medium",
+          "recommended_action": "repair_manifest_before_runtime_acceptance",
+          "dashboard_area": "runtime-governance",
+          "evidence_file": "docs/dev-dashboard/PHASE0_RUNTIME_GATE.md",
+          "status": "yellow"
+        }
+      ]
+    },
+    {
+      "id": "notification_diagnostics",
+      "title_de": "Notification Diagnostics",
+      "title_en": "Notification diagnostics",
+      "status": "partial_green",
+      "cases": [
+        {
+          "id": "notification-provider-limit",
+          "input_fixture_or_excerpt": "notification.email.provider_limit_exceeded / 554 5.7.0 outgoing message limit exceeded",
+          "expected_diagnostic_code": "NOTIFICATION-EMAIL-PROVIDER-001",
+          "severity": "medium",
+          "recommended_action": "check_smtp_provider_limit_or_wait",
+          "dashboard_area": "diagnostics",
+          "evidence_file": "docs/evidence/dev-dashboard/NOTIFICATION_MODULE_INTEGRATION_RESULT.md",
+          "status": "partial_green"
+        },
+        {
+          "id": "notification-email-sent",
+          "input_fixture_or_excerpt": "test email sent",
+          "expected_diagnostic_code": "notification.email.sent",
+          "severity": "info",
+          "recommended_action": "keep_mail_status_separate_from_dashboard_state",
+          "dashboard_area": "dev-dashboard",
+          "evidence_file": "docs/evidence/dev-dashboard/NOTIFICATION_MODULE_INTEGRATION_RESULT.md",
+          "status": "partial_green"
+        },
+        {
+          "id": "notification-dashboard-green-email-yellow",
+          "input_fixture_or_excerpt": "dashboard status green but email provider_limit remains yellow",
+          "expected_diagnostic_code": "notification.dashboard_green_email_provider_limit",
+          "severity": "medium",
+          "recommended_action": "do_not_fake_green_email_delivery",
+          "dashboard_area": "dev-dashboard",
+          "evidence_file": "docs/evidence/dev-dashboard/NOTIFICATION_MODULE_INTEGRATION_RESULT.md",
+          "status": "partial_green"
+        }
+      ]
+    },
+    {
+      "id": "architecture_diagnostics",
+      "title_de": "Architecture Diagnostics",
+      "title_en": "Architecture diagnostics",
+      "status": "partial_green",
+      "cases": [
+        {
+          "id": "arch-amd64-current-track",
+          "input_fixture_or_excerpt": "amd64 current track",
+          "expected_diagnostic_code": "RESCUE-BUILD-ARCH-001",
+          "severity": "medium",
+          "recommended_action": "treat_only_amd64_as_current_iso_track",
+          "dashboard_area": "diagnostics",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rescue_target_architecture_matrix_latest.json",
+          "status": "partial_green"
+        },
+        {
+          "id": "arch-i386-review-required",
+          "input_fixture_or_excerpt": "i386 review_required",
+          "expected_diagnostic_code": "RESCUE-BUILD-ARCH-001",
+          "severity": "medium",
+          "recommended_action": "plan_separate_i386_track",
+          "dashboard_area": "diagnostics",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rescue_target_architecture_matrix_latest.json",
+          "status": "partial_green"
+        },
+        {
+          "id": "arch-arm64-deferred",
+          "input_fixture_or_excerpt": "arm64 deferred",
+          "expected_diagnostic_code": "RESCUE-BUILD-ARCH-001",
+          "severity": "medium",
+          "recommended_action": "keep_arm64_as_separate_image_track",
+          "dashboard_area": "diagnostics",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rescue_target_architecture_matrix_latest.json",
+          "status": "partial_green"
+        },
+        {
+          "id": "arch-armhf-deferred",
+          "input_fixture_or_excerpt": "armhf deferred",
+          "expected_diagnostic_code": "RESCUE-BUILD-ARCH-001",
+          "severity": "medium",
+          "recommended_action": "keep_armhf_as_separate_legacy_track",
+          "dashboard_area": "diagnostics",
+          "evidence_file": "docs/evidence/runtime-results/rescue/rescue_target_architecture_matrix_latest.json",
+          "status": "partial_green"
+        }
+      ]
+    }
+  ]
+}

@@ -1,34 +1,42 @@
 {
-  "generated_at": "2026-05-26T23:01:30+02:00",
+  "schema_version": 1,
+  "generated_at": "2026-05-26T21:51:40Z",
   "project_version": "1.7.2",
-  "source_commit": "826b5dd",
-  "runtime_gate_result": "green",
-  "commands": [
+  "source_commit": "9ad7477",
+  "status": "partial_green",
+  "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+  "summary": "Die read-only Roadmap-/Next-Prompt-Registry ist lokal validiert. Dateibasierte Registry-Pruefungen und Bundle-Aufbereitung sind gruen; FastAPI-basierte Endpoint-Tests bleiben in dieser Umgebung mangels FastAPI/TestClient geskippt.",
+  "checks": [
     {
-      "command": "python3 -m py_compile backend/core/dev_dashboard.py backend/core/dev_dashboard_roadmap.py backend/app.py",
+      "name": "roadmap_json_schema_valid",
       "status": "passed"
     },
     {
-      "command": "PYTHONPATH=backend python3 -m pytest backend/tests/test_dev_dashboard_roadmap_registry_v1.py backend/tests/test_dev_dashboard_v1.py -q",
-      "status": "review_required",
-      "detail": "pytest ist in dieser Umgebung nicht installiert (`No module named pytest`)."
+      "name": "diagnostics_area_present_not_blind_green",
+      "status": "passed"
     },
     {
-      "command": "PYTHONPATH=backend python3 -m unittest backend.tests.test_dev_dashboard_roadmap_registry_v1 backend.tests.test_dev_dashboard_v1",
-      "status": "passed",
-      "tests_run": 46,
-      "tests_skipped": 16
+      "name": "restore_area_present_not_green_with_reason",
+      "status": "passed"
     },
     {
-      "command": "npm run test -- src/components/dev-dashboard/RoadmapDrawer.test.ts",
-      "status": "passed",
-      "tests_run": 3
+      "name": "next_prompt_registry_has_single_recommended_or_fallback",
+      "status": "passed"
     },
     {
-      "command": "npm run build",
-      "status": "passed",
-      "detail": "Vite Build erfolgreich; Chunk-Size-Warnung vorhanden, aber kein Build-Fehler."
+      "name": "bundle_loads_and_selects_recommended_prompt",
+      "status": "passed"
+    },
+    {
+      "name": "roadmap_api_fastapi_surface",
+      "status": "skipped",
+      "reason": "FastAPI TestClient oder app nicht verfuegbar"
     }
   ],
-  "overall_status": "partial_green"
+  "assertions": [
+    "Diagnostics bleibt yellow/partial_green und nicht green.",
+    "Restore bleibt deferred.",
+    "Der empfohlene Next Prompt ist RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD.",
+    "Gefaehrliche Tokens bleiben in der Next-Prompt-Registry auf erlaubte Safety-Felder begrenzt."
+  ]
 }

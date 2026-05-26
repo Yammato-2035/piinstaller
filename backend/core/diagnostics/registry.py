@@ -211,7 +211,7 @@ DIAGNOSTIC_CATALOG: list[DiagnosticCase] = [
     ),
     DiagnosticCase(
         id="RESCUE-BUILD-ROOT-001",
-        domain="systemd_services",
+        domain="rescue_build",
         title_de="Rescue-ISO-Build benötigt kontrollierte Root-Ausführung",
         title_en="Rescue ISO build requires controlled root execution",
         summary_de="Der kontrollierte Rescue-ISO-Build wurde nicht wegen Toolchain oder rsvg blockiert, sondern weil keine sichere Root-Ausführung verfügbar war.",
@@ -242,7 +242,7 @@ DIAGNOSTIC_CATALOG: list[DiagnosticCase] = [
     ),
     DiagnosticCase(
         id="RESCUE-BUILD-GATE-001",
-        domain="app_setuphelfer_runtime",
+        domain="rescue_build",
         title_de="Direkter lb build wurde durch kontrolliertes Build-Gate blockiert",
         title_en="Direct lb build was blocked by the controlled build gate",
         summary_de="Der direkte lb-build-Aufruf wurde absichtlich vom kontrollierten `auto/build`-Gate mit Exit 20 gestoppt.",
@@ -268,12 +268,72 @@ DIAGNOSTIC_CATALOG: list[DiagnosticCase] = [
         status_mapping={"blocked_controlled_build_gate_required": "warning"},
     ),
     DiagnosticCase(
+        id="RESCUE-BUILD-TOOL-001",
+        domain="rescue_build",
+        title_de="Host-Build-Abhängigkeit für SVG-Konvertierung fehlt oder ist unvollständig",
+        title_en="Host build dependency for SVG conversion is missing or incomplete",
+        summary_de="Der Rescue-Build scheitert bereits vor dem eigentlichen ISO-Lauf, weil `rsvg-convert` oder das dokumentierte Host-Paket `librsvg2-bin` fehlen.",
+        summary_en="The rescue build fails before the actual ISO run because `rsvg-convert` or the documented host package `librsvg2-bin` is missing.",
+        severity="medium",
+        confidence="high",
+        detection_sources=["api_result", "log_pattern", "manual_test"],
+        root_causes=[
+            "Host-Paket `librsvg2-bin` ist nicht installiert",
+            "`rsvg-convert` fehlt im Build-Host-Kontext",
+        ],
+        recommended_actions=[
+            _a(
+                "install-documented-rsvg-tooling",
+                1,
+                "Installiere die dokumentierte Host-Build-Abhängigkeit `librsvg2-bin`. Setuphelfer installiert sie nicht automatisch.",
+                "Install the documented host build dependency `librsvg2-bin`. Setuphelfer does not install it automatically.",
+            )
+        ],
+        related_docs=[
+            "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+            "docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md",
+        ],
+        related_faq=["docs/faq/rescue_iso_build_faq.md"],
+        tags=["rescue_build", "host_dependency", "svg", "rsvg_convert"],
+        status_mapping={"blocked_build_tools_missing": "warning"},
+    ),
+    DiagnosticCase(
+        id="RESCUE-BUILD-RSVG-001",
+        domain="rescue_build",
+        title_de="Legacy-rsvg-Erwartung durch live-build erkannt",
+        title_en="Legacy rsvg expectation detected from live-build",
+        summary_de="`rsvg-convert` ist zwar vorhanden, aber live-build erwartet den Legacy-Befehl `rsvg`; dafür ist ein projektlokaler Kompatibilitätswrapper erforderlich.",
+        summary_en="`rsvg-convert` is present, but live-build expects the legacy `rsvg` command; this requires a project-local compatibility wrapper.",
+        severity="medium",
+        confidence="high",
+        detection_sources=["api_result", "log_pattern", "manual_test"],
+        root_causes=[
+            "live-build referenziert weiterhin `/usr/bin/rsvg`",
+            "Nur `rsvg-convert` ist vorhanden, aber kein projektlokaler Wrapper",
+        ],
+        recommended_actions=[
+            _a(
+                "use-project-local-rsvg-wrapper",
+                1,
+                "Nutze den projektlokalen `rsvg`-Kompatibilitätswrapper. Kein globaler Symlink nach `/usr/bin/rsvg`.",
+                "Use the project-local `rsvg` compatibility wrapper. Do not create a global symlink at `/usr/bin/rsvg`.",
+            )
+        ],
+        related_docs=[
+            "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+            "docs/knowledge-base/recovery/RESCUE_ISO_CONTROLLED_BUILD_GATE.md",
+        ],
+        related_faq=["docs/faq/rescue_iso_build_faq.md"],
+        tags=["rescue_build", "compatibility", "legacy_rsvg", "live_build"],
+        status_mapping={"blocked_legacy_rsvg_command_missing": "warning"},
+    ),
+    DiagnosticCase(
         id="RESCUE-BUILD-ARCH-001",
-        domain="app_setuphelfer_runtime",
-        title_de="Zielarchitektur nicht durch aktuellen Build abgedeckt",
-        title_en="Target architecture is not covered by the current build track",
-        summary_de="Der aktuelle Rescue-Build-Pfad deckt nur `amd64` als aktiven x86-Track ab; `i386`, `arm64` und `armhf` bleiben getrennte Pfade.",
-        summary_en="The current rescue build path only covers `amd64` as the active x86 track; `i386`, `arm64`, and `armhf` remain separate tracks.",
+        domain="rescue_build",
+        title_de="Zielarchitektur nicht durch aktuellen Rescue-Build abgedeckt",
+        title_en="Target architecture is not covered by the current rescue build track",
+        summary_de="Der aktuelle Rescue-Build-Pfad deckt nur `amd64` als aktiven x86-Track ab; `i386` bleibt ein separater Review-Track und `arm64`/`armhf` bleiben getrennte ARM-Pfade.",
+        summary_en="The current rescue build path only covers `amd64` as the active x86 track; `i386` remains a separate review track and `arm64`/`armhf` remain separate ARM tracks.",
         severity="medium",
         confidence="high",
         detection_sources=["api_result", "manual_test"],
@@ -293,6 +353,39 @@ DIAGNOSTIC_CATALOG: list[DiagnosticCase] = [
         ],
         related_faq=["docs/faq/rescue_iso_build_faq.md"],
         tags=["rescue_build", "architecture", "amd64", "i386", "arm64", "armhf"],
+    ),
+    DiagnosticCase(
+        id="NOTIFICATION-EMAIL-PROVIDER-001",
+        domain="notification",
+        title_de="E-Mail-Benachrichtigung durch Provider-Limit blockiert",
+        title_en="Email notification is blocked by a provider limit",
+        summary_de="Die Dashboard-Benachrichtigung ist sichtbar, aber der SMTP-Provider verweigert die E-Mail wegen eines Versandlimits.",
+        summary_en="The dashboard notification is visible, but the SMTP provider rejects the email because of an outgoing message limit.",
+        severity="medium",
+        confidence="high",
+        detection_sources=["api_result", "log_pattern", "manual_test"],
+        root_causes=[
+            "SMTP-Provider-Limit überschritten",
+            "Kontingent oder Versandwartezeit des Providers aktiv",
+        ],
+        recommended_actions=[
+            _a(
+                "check-provider-limit",
+                1,
+                "SMTP-Provider-Limit prüfen, Wartezeit einhalten oder Provider-/Kontingentkonfiguration anpassen. Dashboard-Status darf grün bleiben, während E-Mail `provider_limit` bleibt.",
+                "Check the SMTP provider limit, wait as required, or adjust provider/quota settings. The dashboard status may stay green while email remains `provider_limit`.",
+            )
+        ],
+        related_docs=[
+            "docs/knowledge-base/dev-dashboard/NOTIFICATIONS.md",
+            "docs/evidence/dev-dashboard/NOTIFICATION_MODULE_INTEGRATION_RESULT.md",
+        ],
+        related_faq=["docs/faq/notifications_de.md", "docs/faq/notifications_en.md"],
+        tags=["notification", "email", "provider_limit"],
+        status_mapping={
+            "notification.email.provider_limit_exceeded": "warning",
+            "provider_limit": "warning",
+        },
     ),
 ]
 

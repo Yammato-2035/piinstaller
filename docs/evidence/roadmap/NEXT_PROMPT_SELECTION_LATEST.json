@@ -1,18 +1,30 @@
 {
-  "selected_prompt_id": "DIAGNOSTICS_TEST_TRACK",
-  "selected_at": "2026-05-26T20:44:08Z",
-  "reason": "Diagnostics is partially implemented, but real error cases, UI evaluation, and a reproducible evidence track are still missing. That gap weakens dashboard clarity and blocks more precise follow-up prompts across rescue and governance work.",
+  "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+  "selected_at": "2026-05-26T21:45:29Z",
+  "reason": "Diagnostics now has explicit rescue-build, provider-limit, architecture, UI, and evidence tracking. The next meaningful technical blocker is the real controlled rescue build from a documented operator terminal.",
   "blocked_by": [],
   "unlocks": [
-    "Belastbare Diagnostics-Evidence",
-    "Klarere Dashboard-Begründungen",
-    "Bessere Auswahl des nächsten Prompts"
+    "Belastbaren Operator-Terminal-Build-Nachweis",
+    "Aktualisierte Artefakt-/Log-Evidence",
+    "Klarere Trennung zwischen Policy- und Build-Blockern"
   ],
   "alternative_prompts": [
+    "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN",
     "BR001_EXTERNAL_EVIDENCE",
-    "PACKAGE_UPDATE_GATE",
-    "MONOLITH_BOUNDARY_FOLLOWUP",
     "TERMINAL_A_READONLY"
+  ],
+  "alternative_prompt_details": {
+    "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN": "Bleibt die dokumentierte Alternative, falls der echte Operator-Terminal-Lauf organisatorisch noch nicht möglich ist.",
+    "BR001_EXTERNAL_EVIDENCE": "Bleibt wichtig, blockiert aber den jetzigen Rescue-Build-Root-Blocker nicht direkter als der Operator-Terminal-Prompt.",
+    "TERMINAL_A_READONLY": "Wurde vom Diagnostics-Fortschrittsgrid teilweise absorbiert und ist deshalb kein vorrangiger nächster Prompt mehr."
+  },
+  "mandatory_closure_sections": [
+    "dashboard_progress",
+    "diagnostics_learning_progress",
+    "evidence_files",
+    "next_prompt_decision",
+    "not_executed_actions",
+    "remaining_blocked_or_deferred"
   ],
   "source_roadmap_version": "1.0"
 }

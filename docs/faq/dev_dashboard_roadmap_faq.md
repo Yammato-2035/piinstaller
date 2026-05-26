@@ -16,6 +16,19 @@ Weil kein geeignetes bootfähiges Rettungsmedium und kein nicht-produktives Ziel
 
 Weil echte Fehlerfälle, UI-Auswertung und eine belastbare Evidence-Matrix noch fehlen.
 
+## Was muss künftig jeder Abschlussbericht enthalten?
+
+Mindestens:
+
+- Dashboard-Fortschritt
+- Diagnostics-Lernfortschritt
+- konkrete Evidence-Dateien
+- die Next-Prompt-Entscheidung laut Registry
+- ausdrücklich nicht ausgeführte Aktionen
+- verbleibende `blocked`-/`deferred`-Bereiche
+
+Ohne diese Punkte bleibt der Lauf fachlich unvollständig dokumentiert.
+
 ## Wie wird der nächste Prompt ausgewählt?
 
 Der Algorithmus priorisiert fehlende Nachweise, wiederkehrende Dashboard-Unklarheiten, Safety-/Gate-Arbeit und vorhandene Architektur ohne ausreichende Evidence.
@@ -34,6 +47,10 @@ Nein. Die Registry ist Anzeige, Dokumentation und Prompt-Vorbereitung. Sie start
 ## Wie werden Evidence-Links genutzt?
 
 Sie zeigen auf die Quellen, die einen Status fachlich tragen. Ohne belastbare Evidence gibt es kein künstliches Grün.
+
+## Was passiert mit wiederholbaren Fehlern?
+
+Sie werden künftig als Diagnosekandidaten behandelt: mit Fehlertext, Fehlercode, Ursache, Matcher, Empfehlung, Dashboard-Bereich, Evidence-Link und Testfall.
 
 ## Wofür sind Notizen gedacht?
 
