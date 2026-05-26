@@ -9,6 +9,7 @@ import { CockpitBackupTargetPanel } from '../components/dev-dashboard/CockpitBac
 import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel'
 import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
+import { NotificationPanel } from '../components/dev-dashboard/NotificationPanel'
 import { DeployDriftPanel } from '../components/dev-dashboard/DeployDriftPanel'
 import { SafeTestModePanel } from '../components/dev-dashboard/SafeTestModePanel'
 import { UpdateStatusCard } from '../components/dev-dashboard/UpdateStatusCard'
@@ -182,6 +183,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       <RescueStickBoard dashboard={mon.dashboard} />
       <UpdateStatusCard refreshSec={Math.max(mon.refreshSec, 15)} />
       <DeployStatusPanel refreshSec={Math.max(mon.refreshSec, 10)} />
+      <NotificationPanel refreshSec={Math.max(mon.refreshSec, 10)} />
       <RescueBuildPanel refreshSec={mon.refreshSec} />
       <CockpitBackupTargetPanel refreshSec={mon.refreshSec} />
       <CockpitBackupProgressPanel refreshSec={mon.refreshSec} />

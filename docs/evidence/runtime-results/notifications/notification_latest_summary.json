@@ -1,0 +1,35 @@
+{
+  "status": "green",
+  "generated_at": "2026-05-26T03:27:57.222722+00:00",
+  "event_count": 3,
+  "last_event": {
+    "event_id": "682bc8f5a3ed4bb4973873641f2abb4c",
+    "created_at": "2026-05-26T03:27:57.222722+00:00",
+    "severity": "warning",
+    "area": "dev_dashboard",
+    "event_type": "notification_test_dashboard",
+    "title": "Dashboard-Testereignis",
+    "message": "Dashboard notification smoke test",
+    "technical_summary": "Manual dashboard notification smoke test event",
+    "evidence_paths": [],
+    "dashboard_visible": true,
+    "email_requested": false,
+    "email_status": "disabled",
+    "email_error": null,
+    "acknowledged": false,
+    "email_recipient_masked": "v***@googlemail.com",
+    "email_error_class": null
+  },
+  "dashboard": {
+    "status": "green",
+    "visible_event_count": 3
+  },
+  "email": {
+    "status": "ready",
+    "configured": true,
+    "enabled": true,
+    "recipient_masked": "v***@googlemail.com"
+  },
+  "events_path": "docs/evidence/runtime-results/notifications/notification_events.jsonl",
+  "summary_path": "docs/evidence/runtime-results/notifications/notification_latest_summary.json"
+}

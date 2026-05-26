@@ -1,0 +1,32 @@
+{
+  "phase": "rescue_usb_write_gate",
+  "status": "usb_write_aborted_build_failed",
+  "build_status": "iso_build_failed",
+  "lb_exit": 127,
+  "build_error": "/usr/bin/env: 'rsvg': No such file or directory",
+  "build_log_path": "build/rescue/logs/controlled-iso-build/latest.log",
+  "iso_path": null,
+  "iso_abs_path": null,
+  "iso_size": null,
+  "iso_sha256": null,
+  "candidate_devices": [],
+  "selected_device": null,
+  "system_disks": [],
+  "usb_write_allowed": false,
+  "dd_allowed": false,
+  "operator_confirm_1": false,
+  "operator_confirm_2": false,
+  "dd_exit": null,
+  "usb_sha256": null,
+  "usb_verify_status": "not_attempted",
+  "errors": [
+    "iso_build_failed",
+    "iso_missing",
+    "usb_phase_not_started"
+  ],
+  "warnings": [
+    "usb_write_blocked_until_iso_exists",
+    "no_device_selected",
+    "operator_confirmations_not_provided"
+  ]
+}

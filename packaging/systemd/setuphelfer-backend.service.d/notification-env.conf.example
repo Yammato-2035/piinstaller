@@ -1,10 +1,14 @@
 # Operator: installieren nach /etc/systemd/system/setuphelfer-backend.service.d/notification-env.conf
-# und SMTP-Variablen in /etc/setuphelfer/notification.env (640, root:setuphelfer).
+# notification.env: root:setuphelfer, Modus 660 (Gruppe setuphelfer darf schreiben).
+# Kein sudo aus dem Backend (NoNewPrivileges=true) — Schreiben nur über ReadWritePaths + 660.
 #
 #   sudo cp packaging/systemd/setuphelfer-backend.service.d/notification-env.conf.example \
 #     /etc/systemd/system/setuphelfer-backend.service.d/notification-env.conf
+#   sudo chmod 660 /etc/setuphelfer/notification.env
+#   sudo chown root:setuphelfer /etc/setuphelfer/notification.env
 #   sudo systemctl daemon-reload
 #   sudo systemctl restart setuphelfer-backend.service
 
 [Service]
+ReadWritePaths=/etc/setuphelfer
 EnvironmentFile=-/etc/setuphelfer/notification.env

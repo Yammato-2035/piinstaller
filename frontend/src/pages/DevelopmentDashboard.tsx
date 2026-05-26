@@ -25,6 +25,7 @@ import { RoadmapDrawer } from '../components/dev-dashboard/RoadmapDrawer'
 import { AIExportPanel } from '../components/dev-dashboard/AIExportPanel'
 import { StandaloneModeBanner } from '../components/dev-dashboard/StandaloneModeBanner'
 import { UpdateStatusCard } from '../components/dev-dashboard/UpdateStatusCard'
+import { NotificationPanel } from '../components/dev-dashboard/NotificationPanel'
 import { getApiBaseLabel, loadDevDashboard } from '../lib/devDashboard/loadDevDashboard'
 import type { DevDashboardCapabilities, DevDashboardDataSource } from '../lib/devDashboard/types'
 
@@ -198,6 +199,7 @@ const DevelopmentDashboard: React.FC = () => {
               <UpdateStatusCard refreshSec={30} />
               <DeployStatusPanel refreshSec={15} />
               <PackageGatePanel dashboard={dashboard} t={t} />
+              <NotificationPanel refreshSec={15} />
               <RescueStickBoard dashboard={dashboard} />
               <RescueBuildPanel refreshSec={12} />
               <ReleaseGatePanel dashboard={dashboard} t={t} />

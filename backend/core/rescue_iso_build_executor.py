@@ -17,6 +17,7 @@ from core.rescue_iso_build_state import (
     redact_rescue_log_text,
     summarize_rescue_iso_artifacts,
 )
+from core.notification_state import sync_rescue_failure_notification
 from core.rescue_iso_operator_commands import (
     build_operator_build_commands,
     build_sudo_clean_commands,
@@ -215,6 +216,7 @@ def _finish(action_root: Path, runtime_root: Path, action: dict[str, Any], log_l
     _write_logs(action_root, str(action["action_id"]), log_lines)
     _persist_action(action_root, action)
     _write_summary(action_root, runtime_root, action)
+    sync_rescue_failure_notification(workspace_root=action_root, notification_dir=action_root)
     return action
 
 

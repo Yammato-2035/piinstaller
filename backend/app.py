@@ -4127,6 +4127,16 @@ class DevDashboardDeployRequest(BaseModel):
     operator_confirm: bool = False
 
 
+class DevDashboardNotificationTestDashboardRequest(BaseModel):
+    severity: str = "warning"
+    area: str = "dev_dashboard"
+    message: str = "Dashboard notification smoke test"
+
+
+class DevDashboardNotificationTestEmailRequest(BaseModel):
+    message: str = "Setuphelfer notification email smoke test"
+
+
 @app.get("/api/dev-dashboard/rescue-iso/status")
 async def dev_dashboard_rescue_iso_status():
     from core.rescue_iso_build_state import build_rescue_iso_dashboard_state, rescue_iso_status_api_code
@@ -4184,6 +4194,110 @@ async def dev_dashboard_rescue_iso_operator_commands_build(body: dict[str, Any] 
         return {"code": "DEV_DASHBOARD_RESCUE_ISO_OPERATOR_REQUIRED", **payload}
     except Exception:
         logger.exception("dev_dashboard_rescue_iso_operator_commands_build failed")
+        raise
+
+
+@app.get("/api/dev-dashboard/notifications/status")
+async def dev_dashboard_notifications_status():
+    from core.notification_state import build_notification_summary
+
+    try:
+        payload = build_notification_summary()
+        return {"code": "DEV_DASHBOARD_NOTIFICATIONS_STATUS_OK", **payload}
+    except Exception:
+        logger.exception("dev_dashboard_notifications_status failed")
+        raise
+
+
+@app.get("/api/dev-dashboard/notifications/events")
+async def dev_dashboard_notifications_events(limit: int = 50):
+    from core.notification_state import list_notification_events
+
+    try:
+        payload = list_notification_events(limit=limit)
+        return {"code": "DEV_DASHBOARD_NOTIFICATIONS_EVENTS_OK", **payload}
+    except Exception:
+        logger.exception("dev_dashboard_notifications_events failed")
+        raise
+
+
+@app.post("/api/dev-dashboard/notifications/test-dashboard")
+async def dev_dashboard_notifications_test_dashboard(body: DevDashboardNotificationTestDashboardRequest):
+    from core.notification_state import emit_notification_event
+
+    try:
+        event = emit_notification_event(
+            {
+                "severity": body.severity,
+                "area": body.area,
+                "event_type": "notification_test_dashboard",
+                "title": "Dashboard-Testereignis",
+                "message": body.message,
+                "technical_summary": "Manual dashboard notification smoke test event",
+                "evidence_paths": [],
+                "dashboard_visible": True,
+                "email_requested": False,
+                "email_status": "disabled",
+                "email_error": None,
+                "acknowledged": False,
+            }
+        )
+        return {
+            "code": "DEV_DASHBOARD_NOTIFICATION_TEST_EVENT_CREATED",
+            "status": "created",
+            "event": event,
+        }
+    except Exception:
+        logger.exception("dev_dashboard_notifications_test_dashboard failed")
+        raise
+
+
+@app.post("/api/dev-dashboard/notifications/test-email")
+async def dev_dashboard_notifications_test_email(body: DevDashboardNotificationTestEmailRequest):
+    from core.notification_email import send_email_for_event
+    from core.notification_events import coerce_notification_event
+
+    try:
+        event = coerce_notification_event(
+            {
+                "severity": "info",
+                "area": "dev_dashboard",
+                "event_type": "notification_test_email",
+                "title": "Test-E-Mail",
+                "message": body.message,
+                "technical_summary": "Manual notification email smoke test",
+                "evidence_paths": [],
+                "dashboard_visible": False,
+                "email_requested": True,
+                "email_status": "not_configured",
+                "email_error": None,
+                "acknowledged": False,
+            }
+        )
+        result = send_email_for_event(event)
+        email_status = str(result.get("email_status") or "failed")
+        if email_status == "sent":
+            code = "DEV_DASHBOARD_NOTIFICATION_EMAIL_SENT"
+            status = "sent"
+        elif email_status == "not_configured":
+            code = "DEV_DASHBOARD_NOTIFICATION_EMAIL_NOT_CONFIGURED"
+            status = "not_configured"
+        elif email_status == "disabled":
+            code = "DEV_DASHBOARD_NOTIFICATION_EMAIL_NOT_CONFIGURED"
+            status = "disabled"
+        else:
+            code = "DEV_DASHBOARD_NOTIFICATION_EMAIL_FAILED"
+            status = "failed"
+        return {
+            "code": code,
+            "status": status,
+            "email_status": email_status,
+            "email_error": result.get("email_error"),
+            "email_error_class": result.get("email_error_class"),
+            "email_recipient_masked": result.get("email_recipient_masked"),
+        }
+    except Exception:
+        logger.exception("dev_dashboard_notifications_test_email failed")
         raise
 
 

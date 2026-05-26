@@ -1,128 +1,99 @@
 {
   "schema_version": 2,
   "phase": "controlled_rescue_iso_build",
-  "updated_at": "2026-05-25T19:45:53.477483+00:00",
-  "status": "operator_required",
-  "last_action_id": "4ad910e3bafc42e08dfd1422897d9cfe",
-  "last_step": "build_iso_operator_required",
-  "last_action_status": "operator_required",
-  "last_exit_code": 12,
-  "last_error": "Kontrollierter Rescue-ISO-Build bereit zur Prüfung",
+  "updated_at": "2026-05-25T20:09:00+00:00",
+  "status": "failed",
+  "last_action_id": "operator-lb-build-20260525T2001",
+  "last_step": "operator_lb_build_noauto",
+  "last_action_status": "failed",
+  "last_exit_code": 127,
+  "last_error": "/usr/bin/env: 'rsvg': No such file or directory",
+  "primary_error": "/usr/bin/env: 'rsvg': No such file or directory",
   "latest_log_path": "build/rescue/logs/controlled-iso-build/latest.log",
-  "action_log_path": "build/rescue/logs/controlled-iso-build/actions/4ad910e3bafc42e08dfd1422897d9cfe.log",
-  "action_status_path": "build/rescue/logs/controlled-iso-build/actions/4ad910e3bafc42e08dfd1422897d9cfe.json",
   "iso_found": false,
   "iso_path": null,
   "iso_abs_path": null,
   "iso_size_bytes": null,
   "iso_sha256": null,
+  "usb_write_started": false,
+  "usb_target": null,
+  "operator_confirm_1": false,
+  "operator_confirm_2": false,
+  "dd_executed": false,
+  "usb_verify_executed": false,
+  "dashboard_status_after_failure": "red",
+  "next_required_action": "fix_missing_rsvg_or_remove_rsvg_dependency",
   "usb_write_allowed": false,
   "dd_allowed": false,
-  "warnings": [],
-  "errors": [],
+  "no_fake_green": true,
+  "warnings": [
+    "scan_review_required_secret_hits",
+    "scan_review_required_cdn_hits",
+    "usb_phase_blocked_until_successful_iso_exists"
+  ],
+  "errors": [
+    "lb_exit_127",
+    "iso_missing",
+    "usb_write_not_attempted"
+  ],
   "details": {
-    "status": "operator_required",
-    "warning": "Nur ausführen, wenn Pfad exakt geprüft wurde.",
     "runtime_path": "/opt/setuphelfer",
     "workspace_path": "/home/volker/piinstaller",
-    "path_mode": "workspace_build_runtime_opt",
-    "path_status": "ok",
     "build_root": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
-    "commands": [
-      "cd \"/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live\"",
-      "./auto/config",
-      "sudo lb build noauto"
-    ],
-    "warnings": [
-      "Nur ausführen, wenn Pfad exakt geprüft wurde.",
-      "USB-Schreiben, dd, mkfs und Partition-Write bleiben verboten."
-    ],
-    "errors": []
+    "lb_exit": 127,
+    "failure_reason": "/usr/bin/env: 'rsvg': No such file or directory",
+    "scan_status": "review_required",
+    "scan_secret_hits_count": 8,
+    "scan_cdn_hits_count": 1,
+    "usb_write_blocked": true
   },
   "dashboard_state": {
-    "status": "green",
-    "summary": "Kontrollierter Rescue-ISO-Build bereit zur Prüfung",
-    "generated_at": "2026-05-25T19:45:53.474031+00:00",
-    "repo_root": "/home/volker/piinstaller",
-    "runtime_repo_root": "/opt/setuphelfer",
+    "status": "red",
+    "summary": "sudo clean erforderlich wegen stale root-owned Build-State",
     "runtime_path": "/opt/setuphelfer",
     "workspace_path": "/home/volker/piinstaller",
-    "build_tree_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
-    "temp_runtime_bundle_path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime",
-    "logs_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build",
-    "summary_path": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
     "path_mode": "workspace_build_runtime_opt",
     "path_status": "ok",
-    "path_errors": [],
-    "path_warnings": [],
     "repo": {
-      "head": "62e81c6",
+      "head": "fe36af0",
       "branch": "main",
       "runtime_gate": "green",
       "runtime_gate_exit": 0,
       "runtime_gate_summary": "ok"
     },
-    "tools": {
-      "lb": {
-        "present": true,
-        "path": "/usr/bin/lb"
-      },
-      "xorriso": {
-        "present": true,
-        "path": "/usr/bin/xorriso"
-      },
-      "mksquashfs": {
-        "present": true,
-        "path": "/usr/bin/mksquashfs"
-      }
-    },
     "build_tree": {
       "path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
-      "exists": true,
       "validator_status": "ok",
-      "auto_config_noauto": true,
-      "auto_build_blocked": true,
-      "missing_paths": [],
-      "manifest_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/evidence/build-tree-manifest.json",
-      "source_head": "62e81c6"
-    },
-    "stale_state": {
-      "present": false,
-      "root_owned_stage_files": [],
-      "skipped_live_build_stages": [],
-      "needs_sudo_clean": false,
-      "indicators": [],
-      "stage_marker_present": false,
-      "debootstrap_log_path": null,
-      "latest_log_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build/latest.log"
+      "source_head": "fe36af0"
     },
     "temp_runtime_bundle": {
-      "path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime",
       "status": "ok",
-      "files_count": 2784,
-      "manifest_sha256": "5621c2ba0e38b479933a379b66329abef7dc6d33cd134a284b087ad4b53256c5",
-      "manifest_path": "/home/volker/piinstaller/build/rescue/temp-runtime/setuphelfer-rescue-runtime/MANIFEST.json",
-      "source_head": "62e81c6",
-      "error": null
+      "source_head": "fe36af0"
     },
     "dpkg_preflight": {
       "status": "pre_chroot_ok",
       "last_exit_code": 0,
-      "summary": "Preflight ok vor chroot-Erzeugung",
-      "chroot_status": "missing",
-      "issues": [],
-      "dangerous_matches": [],
-      "forbidden_package_matches": [],
-      "json_path": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+      "summary": "Preflight ok vor chroot-Erzeugung"
+    },
+    "stale_state": {
+      "present": true,
+      "needs_sudo_clean": true,
+      "indicators": [
+        "chroot_package-lists.install stale"
+      ],
+      "root_owned_stage_files_sample": [
+        "build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_package-lists.install",
+        "build/rescue/live-build/setuphelfer-rescue-live/chroot",
+        "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/bin",
+        "build/rescue/live-build/setuphelfer-rescue-live/chroot/root"
+      ]
     },
     "iso_build": {
-      "status": "not_started",
-      "last_exit_code": null,
-      "last_error": null,
+      "status": "failed",
+      "last_exit_code": 127,
+      "last_error": "/usr/bin/env: 'rsvg': No such file or directory",
       "iso_found": false,
       "iso_path": null,
-      "iso_abs_path": null,
-      "iso_size_bytes": null,
       "iso_sha256": null
     },
     "usb_write": {
@@ -132,39 +103,14 @@
     },
     "logs": {
       "latest_log_path": "/home/volker/piinstaller/build/rescue/logs/controlled-iso-build/latest.log",
-      "last_80_lines": [
-        "[2026-05-25T19:45:53.339967+00:00] STEP: build_iso_operator_required",
-        "[2026-05-25T19:45:53.339973+00:00] RUNTIME_PATH: /opt/setuphelfer",
-        "[2026-05-25T19:45:53.339977+00:00] WORKSPACE_PATH: /home/volker/piinstaller",
-        "[2026-05-25T19:45:53.339980+00:00] PATH_STATUS: ok"
-      ],
-      "last_error": null
+      "last_error": "/usr/bin/env: 'rsvg': No such file or directory"
     },
-    "forbidden_actions": {
-      "dd_allowed": false,
-      "mkfs_allowed": false,
-      "parted_write_allowed": false,
-      "restore_allowed": false,
-      "backup_allowed": false,
-      "usb_write_allowed": false
-    },
-    "evidence_sources": [
-      "docs/evidence/rescue/RESCUE_CONTROLLED_ISO_BUILD_RESULT.md",
-      "docs/evidence/rescue/RESCUE_BIG_STEP_STATUS_PLAN.md",
-      "docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md",
-      "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
-      "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json",
-      "docs/evidence/runtime-results/rescue/controlled_usb_write_latest_summary.json",
-      "build/rescue/logs/controlled-iso-build/latest.log"
-    ],
-    "no_fake_green": true,
     "next_operator_action": {
-      "type": "operator_sudo_required",
-      "label": "DPKG-Preflight ist grün; der echte Build bleibt ein separater Operator-Sudo-Schritt.",
+      "type": "sudo_clean_required",
+      "label": "Stale root-owned Build-State erkannt; Operator-Sudo-Clean erforderlich.",
       "commands": [
         "cd \"/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live\"",
-        "./auto/config",
-        "sudo lb build noauto"
+        "sudo rm -rf .build chroot cache binary local config/includes.chroot/opt/setuphelfer-rescue config/includes.chroot/opt/setuphelfer-rescue.old.*"
       ]
     }
   }

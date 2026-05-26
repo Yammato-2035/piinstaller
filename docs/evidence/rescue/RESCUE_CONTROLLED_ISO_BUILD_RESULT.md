@@ -1,8 +1,106 @@
 # Rescue Controlled ISO Build — Result
 
-**Datum:** 2026-05-25 (STRICT MODE – Controlled Rescue ISO Build Execution via Dashboard Path)
-**Git HEAD:** `887ace6`
-**Gesamtstatus:** **ISO_BUILD_FAILED** → **Kein ISO erzeugt**
+**Datum:** 2026-05-25 (STRICT MODE – Controlled Rescue ISO Build + USB Write Gate + First Boot Prep)
+**Git HEAD:** `fe36af0`
+**Gesamtstatus:** **ISO_BUILD_FAILED** → **Kein ISO erzeugt, USB-Write nicht freigegeben**
+
+---
+
+## Neuester Lauf (fe36af0)
+
+### Vorbedingungen
+
+| Feld | Wert |
+|------|------|
+| Workspace HEAD vor Build | `fe36af0` |
+| Runtime-Gate | Exit **0** |
+| `workspace_path` | `/home/volker/piinstaller` |
+| `runtime_path` | `/opt/setuphelfer` |
+| `build_tree_path` | `/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live` |
+| `detect_stale_state` | **ok** (`needs_sudo_clean = false`) |
+| `prepare_bundle` | **ok** |
+| `validate_bundle` | **ok** |
+| `prepare_tree` | **ok** |
+| `validate_tree` | **ok** |
+| `dpkg_preflight` | **ok** / `pre_chroot_ok` |
+| `usb_write.allowed` vor Build | **false** |
+
+### Operator-Build-Befehl
+
+```bash
+cd "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live"
+./auto/config
+sudo lb build noauto
+```
+
+### Build-Ergebnis
+
+| Feld | Wert |
+|------|------|
+| `LB_EXIT` | **127** |
+| ISO gefunden | **nein** |
+| ISO-Pfad | `null` |
+| ISO-Groesse | `null` |
+| ISO-SHA256 | `null` |
+| USB-Write | **nicht ausgefuehrt** |
+| USB-Verifikation | **nicht ausgefuehrt** |
+
+### Primaere Fehlerursache
+
+Der Operator-Lauf endete mit folgendem Fehler:
+
+```text
+/usr/bin/env: 'rsvg': No such file or directory
+LB_EXIT=127
+```
+
+Damit wurde kein `.iso` erzeugt; die USB-Phase blieb deshalb gemaess Gate-Regel blockiert.
+
+### Scan / Summary / Safety
+
+- `scan_iso` → **review_required**
+  - `iso_found = false`
+  - `secret_hits` und `cdn_hits` wurden als heuristische Review-Hits gemeldet
+  - kein echter Secret-Wert wurde fuer den USB-Entscheid ausgewertet
+- `summarize` → **ok**
+  - Dashboard-/Summary-Stand danach: **red**
+  - `next_operator_action.type = sudo_clean_required`
+- `stale_state.needs_sudo_clean = true` nach dem Root-Build
+- keine `.iso`
+- keine `.img`
+- keine `.qcow2`
+
+### Bewertung
+
+Der kontrollierte Prebuild-Pfad blieb korrekt und reproduzierbar. Der echte Root-Build scheiterte jedoch mit `LB_EXIT=127`, erzeugte keine ISO und hinterliess root-owned Buildreste. Deshalb blieb:
+
+- Controlled ISO Build: **red**
+- Rescue ISO Artifact: **red**
+- USB Write: **blocked / not attempted**
+- Live Boot: **pending**
+
+### Notification-Follow-up
+
+Der Failure wurde zusaetzlich in den neuen Notification-Contract uebernommen:
+
+- Eventtyp: `rescue_iso_build_failed`
+- Titel: `Rescue ISO Build fehlgeschlagen`
+- technische Kerndaten:
+  - `LB_EXIT=127`
+  - `primary_error=/usr/bin/env: 'rsvg': No such file or directory`
+  - `iso_found=false`
+  - `usb_write_started=false`
+  - `next_required_action=fix_missing_rsvg_or_remove_rsvg_dependency`
+
+Wichtig:
+
+- lokal wurde die Event-Persistenz erfolgreich verifiziert
+- die produktive Runtime ist inzwischen ebenfalls verifiziert:
+  - `GET /api/dev-dashboard/notifications/status` -> `200`
+  - `GET /api/dev-dashboard/notifications/events` -> `200`
+  - Rescue-Failure-Event wurde unter `/var/lib/setuphelfer/notifications/notification_events.jsonl` persistiert
+- der Dashboard-Pfad fuer dieses Failure-Event ist damit produktiv **green**
+- der produktive E-Mail-Versand fuer dieses konkrete Failure-Event ist aktuell **failed**, weil der SMTP-Provider mit `554 5.7.0 ... limit on the number of allowed outgoing messages was exceeded` antwortete
 
 ---
 
