@@ -64,6 +64,14 @@ Dashboard funktioniert, aber SMTP ist nicht vollstaendig konfiguriert.
 
 Es gab einen echten Sendeversuch, aber SMTP/Auth/TLS/Netzwerk oder ein Provider-Limit ist fehlgeschlagen.
 
+Typischer produktiver Sonderfall:
+
+- `classification=notification.email.provider_limit_exceeded`
+- `email_error=554 5.7.0 outgoing message limit exceeded`
+- `next_action=check_smtp_provider_limit_or_wait`
+- Dashboard bleibt **green**, E-Mail bleibt **yellow/provider_limit**
+- kein automatischer Retry
+
 ### `email_status=sent`
 
 Der Versand wurde erfolgreich abgeschlossen.

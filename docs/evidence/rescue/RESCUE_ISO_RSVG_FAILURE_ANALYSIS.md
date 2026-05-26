@@ -1,96 +1,85 @@
 # Rescue ISO rsvg Failure Analysis
 
-**Datum:** 2026-05-25  
-**Git HEAD:** `fe36af0`  
-**Status:** `ANALYZED_NOT_FIXED`
+**Datum:** 2026-05-26
+**Git HEAD vor Fix-Commit:** `3adfc13`
+**Status:** `PREBUILD_HARDENED_PENDING_REBUILD`
 
 ## Exakter Fehler
 
-Der echte Operator-Build endete mit:
+Der letzte echte Operator-Build endete mit:
 
 ```text
 /usr/bin/env: 'rsvg': No such file or directory
 LB_EXIT=127
 ```
 
-## Ausloesender Build-Schritt
+## Build-Phase
 
-Der `rsvg`-Aufruf stammt nicht aus einem Setuphelfer-Backend-, Frontend- oder Rescue-Skript. Die relevante Stelle liegt in der installierten `live-build`-Toolchain des Hosts:
+Der Aufruf kommt aus der `live-build`-Phase:
 
 - `/usr/lib/live/build/lb_binary_syslinux`
 
-Dort wird fuer das Syslinux/Isolinux-Bootmenue aus `splash.svg.in` ein PNG-Bootsplash erzeugt:
+Diese Phase erzeugt fuer das Syslinux/Isolinux-Bootmenue aus:
 
 - `config/bootloaders/isolinux/splash.svg.in`
-- `binary/isolinux/splash.svg.in`
 
-Die `live-build`-Logik erzeugt zuerst `splash.svg` und ruft anschliessend `rsvg --format png --height 480 --width 640 ...` auf.
+eine temporaere `splash.svg` und ruft anschliessend `rsvg --format png --height 480 --width 640 ...` fuer `splash.png` auf.
 
-## Welche Datei / welcher Hook loest den Aufruf aus
+## Belastbare Ursache
 
-Ausloeser ist die `live-build`-Phase `lb_binary_syslinux` beim Bearbeiten des Bootloader-Themes `live-build`.
+Belastbare Befunde aus dem aktuellen Stand:
 
-Belastbare Befunde:
-
-- im Build-Tree existiert `config/bootloaders/isolinux/splash.svg.in`
-- im installierten Host-Skript `/usr/lib/live/build/lb_binary_syslinux` ist der `rsvg`-Aufruf explizit enthalten
-- dasselbe Host-Skript prueft fuer das Theme `live-build` explizit auf `rsvg` bzw. `librsvg2-bin`
-
-Damit ist der `rsvg`-Aufruf eindeutig der Bootloader-Splash-Konvertierung von `live-build` zuzuordnen, nicht Tauri, nicht dem Dashboard und nicht einem Setuphelfer-Hook.
-
-## Host-Tool vorhanden?
-
-Geprueft:
-
+- im kontrollierten Build-Tree liegt `config/bootloaders/isolinux/splash.svg.in`
+- `/usr/lib/live/build/lb_binary_syslinux` enthaelt sowohl den expliziten `rsvg`-Aufruf als auch den Paket-Hinweis `librsvg2-bin`
 - `command -v rsvg` -> **kein Treffer**
 - `command -v rsvg-convert` -> **kein Treffer**
+- `LB_BUILD_WITH_CHROOT` ist in `/usr/share/live/build/functions/defaults.sh` standardmaessig auf `true` gesetzt; der Build-Tree ueberschreibt das nicht
 
-Damit ist mindestens klar: Auf dem Host ist derzeit weder `rsvg` noch `rsvg-convert` verfuegbar.
+Damit ist der Fehler eindeutig ein `live-build`-Bootloader-/Binary-Stage-Thema und **keine** Rescue-Live-Image-Runtime-Abhaengigkeit des finalen Systems.
 
-## Chroot-Tool vorhanden?
+## rsvg oder rsvg-convert?
 
-Nicht belastbar nachgewiesen.
+Der aktuelle `live-build`-Schritt erwartet den Legacy-Befehl:
 
-Ohne neuen instrumentierten Build darf nicht behauptet werden, ob `rsvg` nur auf dem Host fehlt, nur im chroot fehlt oder in beiden Kontexten fehlt.
+- `rsvg`
 
-Belastbar ist nur:
+Geprueft wurde:
 
-- `live-build` erwartet fuer diesen Schritt `rsvg`
-- der reale Build brach genau an einem `rsvg`-Aufruf ab
-- Host-`rsvg` ist definitiv nicht vorhanden
+- `rsvg` fehlt
+- `rsvg-convert` fehlt ebenfalls
 
-## Benoetigtes Paket
+Damit ist fuer den aktuellen Host bereits vor dem Build sichtbar, dass die benoetigte Build-Abhaengigkeit fehlt.
 
-Die installierte `live-build`-Implementierung verweist selbst auf:
+## Minimaler Fix
 
-- `librsvg2-bin`
+Umgesetzt wurde **kein** Paketinstallations-Schritt, sondern eine minimale Vorab-Haertung:
 
-Dieses Paket stellt den von `live-build` erwarteten `rsvg`-Befehl bereit.
+1. Dashboard/Executor erkennen jetzt die fehlende RSVG-Build-Abhaengigkeit **vor** `lb build`.
+2. Der Status wird als `blocked_build_tools_missing` eingeordnet.
+3. `next_operator_action` nennt nur den Operator-Hinweis:
 
-Wichtig:
+```bash
+sudo apt install librsvg2-bin
+```
 
-- Es wurde **kein** `apt install` ausgefuehrt.
-- Diese Analyse dokumentiert nur den Befund.
+4. Der Build bleibt blockiert, bis diese Abhaengigkeit verfuegbar ist.
 
-## Alternative ohne Paketinstallation
+## Warum dieser Fix minimal und korrekt ist
 
-Moegliche Fix-Richtungen, **noch nicht ausgefuehrt**:
+- kein `apt install` in diesem Lauf
+- kein `lb build` in diesem Lauf
+- keine Aenderung an USB-/Write-Gates
+- kein spekulativer Wechsel der Paketliste im Live-Image
+- die reale Failure-Ursache wird jetzt frueh sichtbar, statt erst spaet mit `LB_EXIT=127`
 
-1. `live-build` so konfigurieren, dass die `splash.svg.in`-zu-`splash.png`-Konvertierung nicht mehr gebraucht wird.
-2. Das Bootloader-Theme `live-build` ersetzen oder anpassen.
-3. Ein fertiges PNG bereitstellen und die SVG-basierte Generierung aus dem Buildpfad entfernen.
-4. Theme-/Bootsplash-Erzeugung fuer den Rescue-Build deaktivieren, falls das Release-Gate das zulaesst.
+## Einordnung der Abhaengigkeit
 
-## Fazit
+- **Typ:** Build-Abhaengigkeit der `live-build`-Toolchain
+- **Nicht:** Laufzeitabhaengigkeit der spaeteren Rescue-ISO
+- **Paket-Hinweis aus `live-build`:** `librsvg2-bin`
 
-Der aktuelle Failure ist kein unspezifischer "SVG-Fehler", sondern ein konkreter `live-build`-Bootloader-Schritt:
+## Naechster erlaubter Operator-Schritt
 
-- Datei-/Theme-Pfad: `config/bootloaders/isolinux/splash.svg.in`
-- Toolchain-Schritt: `/usr/lib/live/build/lb_binary_syslinux`
-- benoetigtes Tool: `rsvg` aus `librsvg2-bin`
-
-Der naechste erlaubte Schritt ist deshalb:
-
-- **`fix_missing_rsvg_or_remove_rsvg_dependency`**
-
-Kein neuer ISO-Build wurde fuer diese Analyse gestartet.
+- Build-Abhaengigkeit bereitstellen oder Build-Host entsprechend vorbereiten
+- danach Dashboard-Preflight erneut pruefen
+- **kein** ISO-Build in diesem Analyse-/Fix-Lauf

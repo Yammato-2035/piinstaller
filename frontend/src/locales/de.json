@@ -2837,6 +2837,8 @@
   "devDashboard.notifications.acknowledged": "Bestaetigt",
   "devDashboard.notifications.emailError": "E-Mail-Fehler",
   "devDashboard.notifications.emailHint": "Test-E-Mail derzeit nicht moeglich: {{status}}",
+  "devDashboard.notifications.emailProviderLimitHint": "Dashboard-Benachrichtigung gespeichert; E-Mail-Anbieterlimit erreicht. Kein erneuter automatischer Versand.",
+  "devDashboard.notifications.emailProviderLimitReached": "E-Mail-Anbieterlimit erreicht; Versandlimit ueberschritten",
   "devDashboard.notifications.dashboardTestCreated": "Dashboard-Testereignis erzeugt",
   "devDashboard.notifications.dashboardTestFailed": "Dashboard-Testereignis konnte nicht erzeugt werden",
   "devDashboard.notifications.emailTestSent": "Test-E-Mail gesendet",
@@ -2848,9 +2850,15 @@
   "devDashboard.notifications.emailStatus.queued": "In Warteschlange",
   "devDashboard.notifications.emailStatus.disabled": "Deaktiviert",
   "devDashboard.notifications.emailStatus.ready": "Bereit",
+  "devDashboard.notifications.emailStatus.providerLimit": "Gelb: Anbieterlimit erreicht",
   "devDashboard.notifications.rescueBuildFailed": "Rescue ISO Build fehlgeschlagen",
   "devDashboard.notifications.noIsoCreated": "Keine ISO erzeugt",
   "devDashboard.notifications.usbWriteNotStarted": "USB-Schreiben nicht gestartet",
   "devDashboard.notifications.nextRequiredAction": "Naechste erforderliche Aktion",
-  "devDashboard.notifications.smtpNotConfigured": "SMTP nicht konfiguriert"
+  "devDashboard.notifications.smtpNotConfigured": "SMTP nicht konfiguriert",
+  "devDashboard.notifications.nextAction.check_smtp_provider_limit_or_wait": "Warten oder SMTP-Anbieter pruefen",
+  "devDashboard.notifications.rsvgDependencyMissing": "RSVG-Build-Abhaengigkeit fehlt",
+  "devDashboard.notifications.checkBuildDependency": "Build-Abhaengigkeit pruefen",
+  "devDashboard.notifications.emailDeliveryFailed": "E-Mail konnte nicht zugestellt werden",
+  "devDashboard.notifications.noAutomaticRetry": "Kein erneuter automatischer Versand"
 }

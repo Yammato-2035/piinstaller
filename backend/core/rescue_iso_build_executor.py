@@ -20,6 +20,7 @@ from core.rescue_iso_build_state import (
 from core.notification_state import sync_rescue_failure_notification
 from core.rescue_iso_operator_commands import (
     build_operator_build_commands,
+    inspect_rsvg_build_dependency,
     build_sudo_clean_commands,
     resolve_rescue_iso_paths,
 )
@@ -338,7 +339,18 @@ def _safe_remove(path: Path) -> None:
 
 
 def _toolcheck_details() -> dict[str, Any]:
-    return {name: {"present": bool(shutil.which(name)), "path": shutil.which(name)} for name in _TOOLCHECK_NAMES}
+    details = {name: {"present": bool(shutil.which(name)), "path": shutil.which(name)} for name in _TOOLCHECK_NAMES}
+    rsvg = inspect_rsvg_build_dependency()
+    details["rsvg"] = {
+        "present": (not bool(rsvg.get("required"))) or bool(rsvg.get("legacy_path")),
+        "path": rsvg.get("legacy_path"),
+        "compat_path": rsvg.get("compat_path"),
+        "required": bool(rsvg.get("required")),
+        "hint_package": rsvg.get("hint_package"),
+        "summary": rsvg.get("summary"),
+        "error_code": rsvg.get("error_code"),
+    }
+    return details
 
 
 def _scan_runtime_for_artifact_policy(repo: Path) -> dict[str, Any]:
@@ -439,7 +451,7 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
             status=status,
             exit_code=0 if not missing else 10,
             details=details,
-            errors=[] if not missing else [f"missing_tools:{', '.join(missing)}"],
+            errors=[] if not missing else ["blocked_build_tools_missing", f"missing_tools:{', '.join(missing)}"],
         )
         return _finish(repo, runtime_root, action, log_lines)
 
@@ -592,7 +604,13 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
         elif (state.get("stale_state") or {}).get("present"):
             action = _set_result(action, status="review_required", exit_code=11, details=state, errors=["stale_state_detected"])
         elif missing:
-            action = _set_result(action, status="blocked", exit_code=10, details=state, errors=[f"missing_tools:{', '.join(missing)}"])
+            action = _set_result(
+                action,
+                status="blocked",
+                exit_code=10,
+                details=state,
+                errors=["blocked_build_tools_missing", f"missing_tools:{', '.join(missing)}"],
+            )
         elif (state.get("temp_runtime_bundle") or {}).get("status") != "ok":
             action = _set_result(action, status="blocked", exit_code=10, details=state, errors=["bundle_not_ready"])
         elif (state.get("build_tree") or {}).get("validator_status") != "ok":
@@ -620,7 +638,15 @@ def run_rescue_iso_step(step: str, operator_confirm: bool = False) -> dict[str, 
 
     if step_name == "build_iso_operator_required":
         details = build_operator_build_commands(repo_root=runtime_root)
-        action = _set_result(action, status="operator_required", exit_code=12, details=details)
+        blocked = str(details.get("status") or "") == "blocked"
+        action = _set_result(
+            action,
+            status="blocked" if blocked else "operator_required",
+            exit_code=10 if blocked else 12,
+            details=details,
+            errors=list(details.get("errors") or []),
+            warnings=list(details.get("warnings") or []),
+        )
         return _finish(repo, runtime_root, action, log_lines)
 
     if step_name == "build_iso_with_sudo":

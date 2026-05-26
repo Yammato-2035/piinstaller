@@ -1,10 +1,10 @@
 {
   "status": "green",
-  "generated_at": "2026-05-26T03:27:57.222722+00:00",
-  "event_count": 3,
+  "generated_at": "2026-05-26T03:35:08.434884+00:00",
+  "event_count": 2,
   "last_event": {
-    "event_id": "682bc8f5a3ed4bb4973873641f2abb4c",
-    "created_at": "2026-05-26T03:27:57.222722+00:00",
+    "event_id": "e28b026ec15848a4b8f6c900bf4e74ed",
+    "created_at": "2026-05-26T03:35:08.434884+00:00",
     "severity": "warning",
     "area": "dev_dashboard",
     "event_type": "notification_test_dashboard",
@@ -22,14 +22,27 @@
   },
   "dashboard": {
     "status": "green",
-    "visible_event_count": 3
+    "visible_event_count": 2
   },
   "email": {
-    "status": "ready",
+    "status": "provider_limit",
     "configured": true,
     "enabled": true,
-    "recipient_masked": "v***@googlemail.com"
+    "recipient_masked": "v***@googlemail.com",
+    "last_delivery_status": "failed",
+    "last_delivery_event_type": "rescue_iso_build_failed",
+    "severity": "yellow",
+    "classification": "notification.email.provider_limit_exceeded",
+    "next_action": "check_smtp_provider_limit_or_wait"
   },
   "events_path": "docs/evidence/runtime-results/notifications/notification_events.jsonl",
-  "summary_path": "docs/evidence/runtime-results/notifications/notification_latest_summary.json"
+  "summary_path": "docs/evidence/runtime-results/notifications/notification_latest_summary.json",
+  "latest_runtime_test_email_smoke": {
+    "code": "DEV_DASHBOARD_NOTIFICATION_EMAIL_SENT",
+    "status": "sent",
+    "email_status": "sent",
+    "email_error": null,
+    "classification": null,
+    "next_action": null
+  }
 }

@@ -125,6 +125,10 @@ def coerce_notification_event(event: dict[str, Any]) -> dict[str, Any]:
         body["email_recipient_masked"] = _sanitize_text(event.get("email_recipient_masked")) or None
     if "email_error_class" in event:
         body["email_error_class"] = _sanitize_text(event.get("email_error_class")) or None
+    if "classification" in event:
+        body["classification"] = _sanitize_text(event.get("classification")) or None
+    if "next_action" in event:
+        body["next_action"] = _sanitize_text(event.get("next_action")) or None
     validate_notification_event(body)
     return body
 

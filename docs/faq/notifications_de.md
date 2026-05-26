@@ -12,6 +12,8 @@ SMTP-/Empfaenger-Konfiguration ist nicht vollstaendig genug fuer einen echten Ve
 
 Ein echter Versand wurde versucht, ist aber fehlgeschlagen. Details stehen redigiert in `email_error`.
 
+Wenn der Provider mit `554 5.7.0` wegen Versandlimit blockiert, lautet die Klassifikation `notification.email.provider_limit_exceeded`. Dann bleibt das Dashboard gruen sichtbar, aber der E-Mail-Pfad ist gelb und `next_action=check_smtp_provider_limit_or_wait`.
+
 ## Wo finde ich die Event-Historie?
 
 - lokal im Workspace:

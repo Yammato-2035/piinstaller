@@ -2837,6 +2837,8 @@
   "devDashboard.notifications.acknowledged": "Acknowledged",
   "devDashboard.notifications.emailError": "Email error",
   "devDashboard.notifications.emailHint": "Test email currently not available: {{status}}",
+  "devDashboard.notifications.emailProviderLimitHint": "Dashboard notification stored; email provider limit reached. No automatic resend will be attempted.",
+  "devDashboard.notifications.emailProviderLimitReached": "Email provider limit reached; sending limit exceeded",
   "devDashboard.notifications.dashboardTestCreated": "Dashboard test event created",
   "devDashboard.notifications.dashboardTestFailed": "Dashboard test event could not be created",
   "devDashboard.notifications.emailTestSent": "Test email sent",
@@ -2848,9 +2850,15 @@
   "devDashboard.notifications.emailStatus.queued": "Queued",
   "devDashboard.notifications.emailStatus.disabled": "Disabled",
   "devDashboard.notifications.emailStatus.ready": "Ready",
+  "devDashboard.notifications.emailStatus.providerLimit": "Yellow: provider limit reached",
   "devDashboard.notifications.rescueBuildFailed": "Rescue ISO build failed",
   "devDashboard.notifications.noIsoCreated": "No ISO created",
   "devDashboard.notifications.usbWriteNotStarted": "USB write not started",
   "devDashboard.notifications.nextRequiredAction": "Next required action",
-  "devDashboard.notifications.smtpNotConfigured": "SMTP not configured"
+  "devDashboard.notifications.smtpNotConfigured": "SMTP not configured",
+  "devDashboard.notifications.nextAction.check_smtp_provider_limit_or_wait": "Wait or check the SMTP provider",
+  "devDashboard.notifications.rsvgDependencyMissing": "RSVG build dependency missing",
+  "devDashboard.notifications.checkBuildDependency": "Check build dependency",
+  "devDashboard.notifications.emailDeliveryFailed": "Email could not be delivered",
+  "devDashboard.notifications.noAutomaticRetry": "No automatic resend"
 }

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -10,6 +11,8 @@ _BUILD_TREE_REL = Path("build/rescue/live-build/setuphelfer-rescue-live")
 _TEMP_BUNDLE_REL = Path("build/rescue/temp-runtime/setuphelfer-rescue-runtime")
 _LOG_ROOT_REL = Path("build/rescue/logs/controlled-iso-build")
 _SUMMARY_REL = Path("docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json")
+_LIVE_BUILD_SYSLINUX = Path("/usr/lib/live/build/lb_binary_syslinux")
+_RSVG_INSTALL_COMMAND = "sudo apt install librsvg2-bin"
 
 
 def _repo_root() -> Path:
@@ -84,6 +87,60 @@ def _allowed_workspace_roots(runtime_root: Path) -> tuple[Path, ...]:
         seen.add(key)
         unique.append(root)
     return tuple(unique)
+
+
+def inspect_rsvg_build_dependency(*, repo_root: Path | None = None) -> dict[str, Any]:
+    paths = resolve_rescue_iso_paths(repo_root=repo_root)
+    build_root = Path(paths["build_tree_path"]).resolve(strict=False)
+    splash_template = build_root / "config/bootloaders/isolinux/splash.svg.in"
+    legacy_rsvg = shutil.which("rsvg")
+    compat_rsvg = shutil.which("rsvg-convert")
+    live_build_script = _LIVE_BUILD_SYSLINUX.resolve(strict=False)
+    try:
+        live_build_text = live_build_script.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        live_build_text = ""
+    live_build_uses_rsvg = "rsvg --format png" in live_build_text or "/usr/bin/rsvg" in live_build_text
+    required = splash_template.is_file() and live_build_uses_rsvg
+    status = "ok"
+    summary = "Keine zusätzliche rsvg-Build-Abhängigkeit erkannt."
+    error_code = None
+    commands: list[str] = []
+    warnings: list[str] = []
+
+    if required and not legacy_rsvg:
+        status = "blocked"
+        error_code = "blocked_build_tools_missing"
+        commands = [_RSVG_INSTALL_COMMAND]
+        if compat_rsvg:
+            summary = (
+                "live-build erwartet den Legacy-Befehl 'rsvg' fuer die splash.svg.in-zu-splash.png-"
+                "Konvertierung; vorhanden ist nur rsvg-convert."
+            )
+            warnings.append("rsvg-convert allein wird vom aktuellen lb_binary_syslinux nicht direkt aufgerufen.")
+        else:
+            summary = (
+                "live-build erwartet 'rsvg' fuer die splash.svg.in-zu-splash.png-Konvertierung; "
+                "auf dem Host ist weder rsvg noch rsvg-convert vorhanden."
+            )
+
+    return {
+        "required": required,
+        "status": status,
+        "summary": summary,
+        "command_name": "rsvg",
+        "legacy_path": legacy_rsvg,
+        "compat_command_name": "rsvg-convert",
+        "compat_path": compat_rsvg,
+        "hint_package": "librsvg2-bin",
+        "install_command": _RSVG_INSTALL_COMMAND,
+        "commands": commands,
+        "error_code": error_code,
+        "warnings": warnings,
+        "splash_template_path": str(splash_template),
+        "live_build_script_path": str(live_build_script),
+        "live_build_uses_rsvg": live_build_uses_rsvg,
+    }
 
 
 def resolve_rescue_iso_paths(*, repo_root: Path | None = None) -> dict[str, Any]:
@@ -189,11 +246,12 @@ def build_sudo_clean_commands(*, repo_root: Path | None = None) -> dict[str, Any
 def build_operator_build_commands(*, repo_root: Path | None = None) -> dict[str, Any]:
     paths = resolve_rescue_iso_paths(repo_root=repo_root)
     build_root = Path(paths["build_tree_path"]).resolve(strict=False)
+    rsvg = inspect_rsvg_build_dependency(repo_root=repo_root)
     commands: list[str] = []
     warnings: list[str] = []
     errors = list(paths.get("errors") or [])
     warnings.extend(str(item) for item in (paths.get("warnings") or []))
-    if paths.get("path_status") == "ok":
+    if paths.get("path_status") == "ok" and rsvg.get("status") != "blocked":
         commands = [
             f'cd "{build_root}"',
             "./auto/config",
@@ -206,15 +264,31 @@ def build_operator_build_commands(*, repo_root: Path | None = None) -> dict[str,
             ]
         )
     else:
-        warnings.append("Pfadprüfung fehlgeschlagen; keine Kommandos erzeugt.")
+        if rsvg.get("status") == "blocked":
+            commands = list(rsvg.get("commands") or [])
+            warnings.extend(str(item) for item in (rsvg.get("warnings") or []))
+            errors.extend(
+                [
+                    str(rsvg.get("error_code") or "blocked_build_tools_missing"),
+                    "missing_tools:rsvg",
+                ]
+            )
+            warnings.append("Build bleibt blockiert, bis die benoetigte rsvg-Abhaengigkeit verfuegbar ist.")
+        else:
+            warnings.append("Pfadprüfung fehlgeschlagen; keine Kommandos erzeugt.")
     return {
-        "status": "operator_required" if commands else "blocked",
-        "warning": "Nur ausführen, wenn Pfad exakt geprüft wurde.",
+        "status": "operator_required" if commands and rsvg.get("status") != "blocked" else ("blocked" if rsvg.get("status") == "blocked" else ("operator_required" if commands else "blocked")),
+        "warning": (
+            "Nur ausführen, wenn Pfad exakt geprüft wurde."
+            if rsvg.get("status") != "blocked"
+            else "Vor dem Build fehlt die benoetigte rsvg-Build-Abhaengigkeit."
+        ),
         "runtime_path": str(paths["runtime_path"]),
         "workspace_path": str(paths["workspace_path"]),
         "path_mode": str(paths["path_mode"]),
         "path_status": str(paths["path_status"]),
         "build_root": str(build_root),
+        "rsvg_preflight": rsvg,
         "commands": commands,
         "warnings": warnings,
         "errors": errors,

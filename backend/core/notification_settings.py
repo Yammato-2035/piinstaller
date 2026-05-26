@@ -98,6 +98,18 @@ def classify_smtp_error(error: str | None) -> str | None:
         return None
     low = error.lower()
     if (
+        "554" in low
+        and "5.7.0" in low
+        and (
+            "limit on the number of allowed outgoing messages was exceeded" in low
+            or "outgoing message limit exceeded" in low
+            or "sending limit exceeded" in low
+            or "rate limit" in low
+            or "quota" in low
+        )
+    ):
+        return "notification.email.provider_limit_exceeded"
+    if (
         "535" in low
         or "badcredentials" in low
         or "username and" in low

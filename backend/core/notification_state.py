@@ -16,6 +16,7 @@ from core.notification_events import (
     rescue_failure_source_key,
     rescue_summary_indicates_failure,
 )
+from core.notification_settings import classify_smtp_error
 
 _LOCK = threading.Lock()
 _NOTIFICATION_DIR_REL = Path("docs/evidence/runtime-results/notifications")
@@ -75,6 +76,21 @@ def _append_event(path: Path, event: dict[str, Any]) -> None:
         handle.write(json.dumps(event, ensure_ascii=False) + "\n")
 
 
+def _normalize_historical_event(event: dict[str, Any]) -> dict[str, Any]:
+    body = dict(event)
+    email_error = str(body.get("email_error") or "")
+    derived = classify_smtp_error(email_error)
+    current = str(body.get("classification") or body.get("email_error_class") or "").strip() or None
+    if derived == "notification.email.provider_limit_exceeded":
+        body["email_error_class"] = derived
+        body["classification"] = derived
+        body["next_action"] = str(body.get("next_action") or "check_smtp_provider_limit_or_wait")
+        body["email_error"] = "554 5.7.0 outgoing message limit exceeded"
+    elif current and not body.get("classification"):
+        body["classification"] = current
+    return body
+
+
 def _read_events(notification_dir: Path | None = None) -> list[dict[str, Any]]:
     path = _events_path(notification_dir)
     if not path.is_file():
@@ -91,7 +107,7 @@ def _read_events(notification_dir: Path | None = None) -> list[dict[str, Any]]:
                 except json.JSONDecodeError:
                     continue
                 if isinstance(item, dict):
-                    events.append(item)
+                    events.append(_normalize_historical_event(item))
     except OSError:
         return []
     events.sort(key=lambda item: str(item.get("created_at") or ""), reverse=True)
@@ -119,6 +135,50 @@ def _summary_status(events: list[dict[str, Any]], email: dict[str, Any]) -> str:
     return "gray"
 
 
+def _effective_email_summary(events: list[dict[str, Any]], base_email: dict[str, Any]) -> dict[str, Any]:
+    email = dict(base_email)
+    status = str(base_email.get("status") or "unknown")
+    severity = "green" if status == "ready" else ("yellow" if status == "not_configured" else "gray")
+    classification = None
+    next_action = None
+    relevant = next(
+        (
+            item
+            for item in events
+            if item.get("email_requested") or str(item.get("email_status") or "") not in {"", "disabled"}
+        ),
+        None,
+    )
+    if relevant is not None:
+        event_status = str(relevant.get("email_status") or status)
+        classification = relevant.get("classification") or relevant.get("email_error_class")
+        next_action = relevant.get("next_action")
+        if event_status == "sent":
+            status = "sent"
+            severity = "green"
+        elif event_status == "not_configured":
+            status = "not_configured"
+            severity = "yellow"
+        elif event_status == "failed" and classification == "notification.email.provider_limit_exceeded":
+            status = "provider_limit"
+            severity = "yellow"
+            next_action = str(next_action or "check_smtp_provider_limit_or_wait")
+        elif event_status == "failed":
+            status = "failed"
+            severity = "yellow"
+            next_action = str(next_action or "inspect_smtp_error")
+        elif event_status == "disabled":
+            status = "disabled"
+            severity = "gray"
+        email["last_delivery_status"] = event_status
+        email["last_delivery_event_type"] = relevant.get("event_type")
+    email["status"] = status
+    email["severity"] = severity
+    email["classification"] = classification
+    email["next_action"] = next_action
+    return email
+
+
 def _build_notification_summary(
     workspace_root: Path,
     notification_dir: Path,
@@ -128,7 +188,7 @@ def _build_notification_summary(
     if sync_rescue:
         sync_rescue_failure_notification(workspace_root=workspace_root, notification_dir=notification_dir)
     events = _read_events(notification_dir)
-    email = current_email_status()
+    email = _effective_email_summary(events, current_email_status())
     latest = events[0] if events else None
     return {
         "status": _summary_status(events, email),
@@ -183,7 +243,7 @@ def list_notification_events(
     notif_dir = _notification_dir(notification_dir)
     sync_rescue_failure_notification(workspace_root=ws_root, notification_dir=notif_dir)
     events = _read_events(notif_dir)[: max(1, int(limit or 50))]
-    email = current_email_status()
+    email = _effective_email_summary(_read_events(notif_dir), current_email_status())
     return {
         "status": _summary_status(events, email),
         "event_count": len(_read_events(notif_dir)),

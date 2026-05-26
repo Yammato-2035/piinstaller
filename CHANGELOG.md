@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Fixed (Rescue ISO rsvg preflight and notification email provider-limit hardening)
+- **Version:** Patch-Bump auf `1.7.2` in `config/version.json`, `frontend/package.json`, `frontend/src-tauri/tauri.conf.json`, `frontend/src-tauri/Cargo.toml` und Root-`package.json`.
+- **Rescue ISO:** Der Dashboard-/Executor-Prebuild klassifiziert die fehlende `rsvg`-Build-Abhaengigkeit jetzt vor `lb build`, blockiert den Build mit `blocked_build_tools_missing` und zeigt nur den Operator-Hinweis `sudo apt install librsvg2-bin` an; kein automatisches `apt`, kein ISO-Build.
+- **Notifications / E-Mail:** SMTP-Provider-Limit `554 5.7.0` wird jetzt als `notification.email.provider_limit_exceeded` behandelt, mit `email_status=failed`, `next_action=check_smtp_provider_limit_or_wait`, gelbem Email-Status und redigierter Fehlermeldung `554 5.7.0 outgoing message limit exceeded`.
+- **Dashboard / i18n / Doku:** Notification-Panel, Runbooks, FAQ, KB, Evidence und Statusmatrix bilden den Provider-Limit-Fall explizit als Dashboard `green` plus Email `yellow/provider_limit` ab; kein Fake-`sent`, kein automatischer Retry.
+
 ### Added (Rescue Phase C.4 — restore preview handoff planning)
 - **`rescue/restore_preview_orchestrator.py`**, **`core/restore_profiles.py`**, **`core/backup_before_write_gate.py`**: restore preview plan only (`execution_allowed: false`).
 - Profile `offline-full-restore-preview`; references canonical `modules.rescue_restore_dryrun` and `modules.backup_verify`.

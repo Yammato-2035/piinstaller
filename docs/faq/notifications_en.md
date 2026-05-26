@@ -12,6 +12,8 @@ SMTP or recipient configuration is incomplete, so no real email send was possibl
 
 An actual send attempt happened, but SMTP/Auth/TLS/network delivery failed. Details are stored in redacted form in `email_error`.
 
+If the provider blocks delivery with `554 5.7.0` because of a sending limit, the classification is `notification.email.provider_limit_exceeded`. In that case the dashboard stays green/visible, but the email path remains yellow and `next_action=check_smtp_provider_limit_or_wait`.
+
 ## Where is the event history stored?
 
 - locally in the workspace:

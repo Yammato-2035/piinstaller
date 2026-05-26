@@ -18,6 +18,7 @@ from typing import Any
 
 from core.rescue_iso_operator_commands import (
     build_operator_build_commands,
+    inspect_rsvg_build_dependency,
     build_sudo_clean_commands,
     resolve_rescue_iso_paths,
 )
@@ -457,6 +458,7 @@ def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
     runtime_gate = str(((state.get("repo") or {}).get("runtime_gate")) or "unknown")
     path_status = str(state.get("path_status") or "unknown")
     tools = state.get("tools") or {}
+    rsvg_preflight = state.get("rsvg_preflight") or {}
     stale = state.get("stale_state") or {}
     build_tree = state.get("build_tree") or {}
     bundle = state.get("temp_runtime_bundle") or {}
@@ -473,6 +475,12 @@ def build_next_operator_action(state: dict[str, Any]) -> dict[str, Any]:
         }
 
     missing_tools = [name for name, item in tools.items() if isinstance(item, dict) and not item.get("present")]
+    if str(rsvg_preflight.get("status") or "") == "blocked":
+        return {
+            "type": "build_dependency_required",
+            "label": str(rsvg_preflight.get("summary") or "RSVG-Build-Abhaengigkeit fehlt."),
+            "commands": list(rsvg_preflight.get("commands") or []),
+        }
     if stale.get("needs_sudo_clean"):
         cmds = build_sudo_clean_commands(repo_root=runtime_root)
         return {
@@ -567,6 +575,15 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
     gate_repo = runtime_root if {"WORKSPACE_MISSING", "WORKSPACE_NOT_GIT_REPO", "WORKSPACE_GIT_TOPLEVEL_MISMATCH"} & path_errors else repo
     runtime_gate = _runtime_gate(gate_repo)
     tools = {name: _tool_presence(name) for name in _TOOL_NAMES}
+    rsvg_preflight = inspect_rsvg_build_dependency(repo_root=runtime_root)
+    tools["rsvg"] = {
+        "present": (not bool(rsvg_preflight.get("required"))) or bool(rsvg_preflight.get("legacy_path")),
+        "path": rsvg_preflight.get("legacy_path"),
+        "compat_path": rsvg_preflight.get("compat_path"),
+        "required": bool(rsvg_preflight.get("required")),
+        "hint_package": rsvg_preflight.get("hint_package"),
+        "summary": rsvg_preflight.get("summary"),
+    }
     build_tree = _build_tree(repo)
     stale_state = detect_live_build_stale_state(repo_root=repo)
     temp_bundle = _temp_runtime_bundle(repo)
@@ -581,6 +598,7 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
         paths["path_status"] == "blocked"
         or runtime_gate["status"] == "red"
         or build_tree["validator_status"] == "blocked"
+        or str(rsvg_preflight.get("status") or "") == "blocked"
         or dpkg_status in {
             "unsafe_auto_config",
             "unsafe_auto_clean",
@@ -625,6 +643,8 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
             summary_text = "sudo clean erforderlich wegen stale root-owned Build-State"
         elif stale_state["present"]:
             summary_text = "stale Build-State erkannt"
+        elif str(rsvg_preflight.get("status") or "") == "blocked":
+            summary_text = str(rsvg_preflight.get("summary") or "RSVG-Build-Abhaengigkeit fehlt")
         elif dpkg_status not in {"ok", "pre_chroot_ok", "unknown"}:
             summary_text = dpkg_preflight.get("summary") or "DPKG-Preflight blockiert den Build"
         elif dpkg_status == "unknown":
@@ -660,6 +680,7 @@ def build_rescue_iso_dashboard_state(*, repo_root: Path | None = None) -> dict[s
             "runtime_gate_summary": runtime_gate.get("summary"),
         },
         "tools": tools,
+        "rsvg_preflight": rsvg_preflight,
         "build_tree": build_tree,
         "stale_state": stale_state,
         "temp_runtime_bundle": temp_bundle,

@@ -9,6 +9,10 @@ from core.notification_events import _sanitize_text
 from core.notification_service import NotificationConfig, mask_email_address
 from core.notification_settings import classify_smtp_error, load_effective_notification_config
 
+_PROVIDER_LIMIT_CLASSIFICATION = "notification.email.provider_limit_exceeded"
+_PROVIDER_LIMIT_NEXT_ACTION = "check_smtp_provider_limit_or_wait"
+_PROVIDER_LIMIT_ERROR = "554 5.7.0 outgoing message limit exceeded"
+
 
 def _smtp_send(cfg: NotificationConfig, msg: EmailMessage, smtp_send: Any | None = None) -> None:
     if smtp_send is not None:
@@ -87,6 +91,8 @@ def send_email_for_event(event: dict[str, Any], smtp_send: Any | None = None) ->
     body["email_recipient_masked"] = recipient
     body["email_error"] = None
     body["email_error_class"] = None
+    body["classification"] = None
+    body["next_action"] = None
 
     if not bool(body.get("email_requested", True)):
         body["email_status"] = "disabled"
@@ -110,7 +116,13 @@ def send_email_for_event(event: dict[str, Any], smtp_send: Any | None = None) ->
         return body
     except Exception as exc:
         error = _sanitize_text(str(exc))[:300]
+        error_class = classify_smtp_error(error)
+        if error_class == _PROVIDER_LIMIT_CLASSIFICATION:
+            error = _PROVIDER_LIMIT_ERROR
         body["email_status"] = "failed"
         body["email_error"] = error
-        body["email_error_class"] = classify_smtp_error(error)
+        body["email_error_class"] = error_class
+        body["classification"] = error_class
+        if error_class == _PROVIDER_LIMIT_CLASSIFICATION:
+            body["next_action"] = _PROVIDER_LIMIT_NEXT_ACTION
         return body

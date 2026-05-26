@@ -4,6 +4,31 @@
 **Git HEAD:** `fe36af0`
 **Gesamtstatus:** **ISO_BUILD_FAILED** → **Kein ISO erzeugt, USB-Write nicht freigegeben**
 
+## Aktueller Fix-Stand (2026-05-26, Version 1.7.2)
+
+- vorheriger Notification-Basisstand: Commit `3adfc13`
+- der historische Build-Fehler `LB_EXIT=127` bleibt als letzter echter Build-Befund bestehen
+- neuer Dashboard-/Executor-Stand blockiert den Build jetzt **vorher** mit `blocked_build_tools_missing`, wenn `rsvg` fuer den Bootloader-Splash fehlt
+- neuer `next_operator_action.type`: `build_dependency_required`
+- neuer Operator-Hinweis vor jedem erneuten Buildversuch:
+
+```bash
+sudo apt install librsvg2-bin
+```
+
+Wichtig:
+
+- in diesem Fix-Lauf wurde **kein** neuer ISO-Build gestartet
+- es wurde **kein** USB-Write gestartet
+- der echte Buildstatus bleibt deshalb bis zu einem spaeteren erneuten Build **rot**
+- produktiver 1.7.2-Runtime-Smoke:
+  - `GET /api/dev-dashboard/rescue-iso/status` -> `status=red`
+  - `rsvg_preflight.status=blocked`
+  - `rsvg_preflight.error_code=blocked_build_tools_missing`
+  - `next_operator_action.type=build_dependency_required`
+  - `usb_write.allowed=false`
+  - root-owned Altzustand bleibt sichtbar (`needs_sudo_clean=true`)
+
 ---
 
 ## Neuester Lauf (fe36af0)
@@ -100,7 +125,10 @@ Wichtig:
   - `GET /api/dev-dashboard/notifications/events` -> `200`
   - Rescue-Failure-Event wurde unter `/var/lib/setuphelfer/notifications/notification_events.jsonl` persistiert
 - der Dashboard-Pfad fuer dieses Failure-Event ist damit produktiv **green**
-- der produktive E-Mail-Versand fuer dieses konkrete Failure-Event ist aktuell **failed**, weil der SMTP-Provider mit `554 5.7.0 ... limit on the number of allowed outgoing messages was exceeded` antwortete
+- der produktive E-Mail-Versand fuer dieses konkrete Failure-Event ist aktuell **failed**, klassifiziert als `notification.email.provider_limit_exceeded`
+- sichtbarer, redigierter Fehlertext: `554 5.7.0 outgoing message limit exceeded`
+- `next_action = check_smtp_provider_limit_or_wait`
+- kein Fake-`sent`, kein automatischer Retry
 
 ---
 

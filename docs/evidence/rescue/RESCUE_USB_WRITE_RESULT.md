@@ -4,6 +4,14 @@
 **Git HEAD:** `fe36af0`
 **Status:** `USB_WRITE_ABORTED_BUILD_FAILED`
 
+## Aktueller Fix-Stand (2026-05-26, Version 1.7.2)
+
+- der letzte echte Build-Befund bleibt `LB_EXIT=127`
+- neuer Dashboard-/Executor-Stand blockiert einen erneuten Build bereits vorher mit `blocked_build_tools_missing`, falls `rsvg` fehlt
+- dadurch bleibt USB-Write weiterhin **nicht gestartet / blocked**
+- in diesem Fix-Lauf wurde **kein** USB-Write ausgefuehrt
+- produktiver Runtime-Smoke bestaetigt weiter: `usb_write.allowed=false`
+
 ## Ausgangslage
 
 Der Strict-Mode-Lauf erlaubte USB-Schreiben nur nach:
@@ -62,7 +70,7 @@ Diese Fakten werden im Rescue-Notification-Event referenziert; die produktive Ru
 - `GET /api/dev-dashboard/notifications/events` -> `200`
 - produktive Persistenzpfade: `/var/lib/setuphelfer/notifications/notification_events.jsonl` und `/var/lib/setuphelfer/notifications/notification_latest_summary.json`
 
-Der Dashboard-Pfad ist damit fuer den geblockten USB-Folgekontext produktiv verifiziert. Der produktive E-Mail-Versand bleibt aktuell gelb, weil der SMTP-Provider echte Sendungen derzeit mit `554 5.7.0 ... limit on the number of allowed outgoing messages was exceeded` ablehnt.
+Der Dashboard-Pfad ist damit fuer den geblockten USB-Folgekontext produktiv verifiziert. Der produktive E-Mail-Versand bleibt aktuell gelb, klassifiziert als `notification.email.provider_limit_exceeded`, mit `email_error=554 5.7.0 outgoing message limit exceeded` und `next_action=check_smtp_provider_limit_or_wait`.
 
 ## Verbotene Aktionen weiterhin nicht ausgefuehrt
 

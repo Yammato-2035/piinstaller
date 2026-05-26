@@ -1,7 +1,9 @@
 # Notification Module Integration Result
 
 **Datum:** 2026-05-26  
-**Status:** `runtime_verified_dashboard_green_email_quota_blocked`
+**Status:** `runtime_verified_dashboard_green_email_provider_limit_classified`
+
+Vorheriger Notification-Basisstand: Commit `3adfc13`.
 
 ## Ziel
 
@@ -102,7 +104,7 @@ Belastbar verifizierter Befund **nach** erfolgreichem Helper-Deploy:
 - `GET /api/dev-dashboard/notifications/status` -> `200`, `code=DEV_DASHBOARD_NOTIFICATIONS_STATUS_OK`
 - `GET /api/dev-dashboard/notifications/events` -> `200`, `code=DEV_DASHBOARD_NOTIFICATIONS_EVENTS_OK`
 - `POST /api/dev-dashboard/notifications/test-dashboard` -> `200`, `code=DEV_DASHBOARD_NOTIFICATION_TEST_EVENT_CREATED`
-- `POST /api/dev-dashboard/notifications/test-email` -> `200`, `code=DEV_DASHBOARD_NOTIFICATION_EMAIL_FAILED`
+- `POST /api/dev-dashboard/notifications/test-email` -> im aktuellen 1.7.2-Runtime-Smoke `200`, `code=DEV_DASHBOARD_NOTIFICATION_EMAIL_SENT`
 - produktive Persistenz wurde unter `/var/lib/setuphelfer/notifications/` angelegt
 - produktiver Event-Stand nach Smoke:
   - `event_count = 2`
@@ -111,9 +113,14 @@ Belastbar verifizierter Befund **nach** erfolgreichem Helper-Deploy:
   - `rescue_iso_build_failed.email_status = failed`
   - `notification_test_dashboard.email_status = disabled`
 - produktiver E-Mail-Befund:
-  - SMTP ist konfiguriert (`email.status = ready`)
-  - echter Versandversuch wurde ausgefuehrt
-  - aktueller Provider-Fehler: `554 5.7.0 ... limit on the number of allowed outgoing messages was exceeded`
+  - SMTP ist konfiguriert
+  - Dashboard bleibt `green`
+  - `email.status = provider_limit`
+  - `classification = notification.email.provider_limit_exceeded`
+  - `email_status = failed`
+  - `email_error = 554 5.7.0 outgoing message limit exceeded`
+  - `next_action = check_smtp_provider_limit_or_wait`
+  - separater aktueller Test-Mail-Smoke (`POST /api/dev-dashboard/notifications/test-email`) antwortete spaeter mit `status=sent`; die Provider-Limit-Klassifikation bleibt trotzdem fuer das persistierte Rescue-Failure-Event sichtbar und wird nicht gruen-gerechnet
 
 ## Bewertung
 
@@ -129,7 +136,8 @@ Aktueller ehrlicher Zwischenstand:
 - Produktive Dashboard-Sichtbarkeit: **green**
 - Produktive Event-Persistenz: **green**
 - Produktive E-Mail-Konfiguration: **green**
-- Produktive E-Mail-Zustellung: **yellow** (`smtp_send_failed` wegen Provider-Limit, kein Fake-Gruen)
+- Produktive E-Mail-Zustellung im Dashboard-Status: **yellow** (`notification.email.provider_limit_exceeded`, kein Fake-Gruen, kein automatischer Retry)
+- Separater aktueller Test-Mail-Smoke: **sent**
 
 ## Nicht ausgefuehrte verbotene Aktionen
 
@@ -142,4 +150,4 @@ Aktueller ehrlicher Zwischenstand:
 - kein Backup
 - kein Restore
 - kein Verify Deep
-- kein `apt install` / `apt upgrade`
+- kein direkt von Cursor ausgefuehrtes `apt install` / `apt upgrade`

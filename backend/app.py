@@ -4276,6 +4276,8 @@ async def dev_dashboard_notifications_test_email(body: DevDashboardNotificationT
         )
         result = send_email_for_event(event)
         email_status = str(result.get("email_status") or "failed")
+        classification = result.get("classification") or result.get("email_error_class")
+        next_action = result.get("next_action")
         if email_status == "sent":
             code = "DEV_DASHBOARD_NOTIFICATION_EMAIL_SENT"
             status = "sent"
@@ -4285,6 +4287,9 @@ async def dev_dashboard_notifications_test_email(body: DevDashboardNotificationT
         elif email_status == "disabled":
             code = "DEV_DASHBOARD_NOTIFICATION_EMAIL_NOT_CONFIGURED"
             status = "disabled"
+        elif classification == "notification.email.provider_limit_exceeded":
+            code = "DEV_DASHBOARD_NOTIFICATION_EMAIL_PROVIDER_LIMIT"
+            status = "failed"
         else:
             code = "DEV_DASHBOARD_NOTIFICATION_EMAIL_FAILED"
             status = "failed"
@@ -4294,6 +4299,8 @@ async def dev_dashboard_notifications_test_email(body: DevDashboardNotificationT
             "email_status": email_status,
             "email_error": result.get("email_error"),
             "email_error_class": result.get("email_error_class"),
+            "classification": classification,
+            "next_action": next_action,
             "email_recipient_masked": result.get("email_recipient_masked"),
         }
     except Exception:

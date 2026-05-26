@@ -18,6 +18,9 @@ type NotificationEvent = {
   dashboard_visible?: boolean
   email_status?: string
   email_error?: string | null
+  email_error_class?: string | null
+  classification?: string | null
+  next_action?: string | null
   acknowledged?: boolean
 }
 
@@ -30,6 +33,11 @@ type NotificationSummary = {
     configured?: boolean
     enabled?: boolean
     recipient_masked?: string | null
+    severity?: string
+    classification?: string | null
+    next_action?: string | null
+    last_delivery_status?: string
+    last_delivery_event_type?: string | null
   }
   dashboard?: {
     status?: string
@@ -55,6 +63,8 @@ function statusLabel(status: string | undefined, t: (key: string) => string): st
       return t('devDashboard.notifications.emailStatus.disabled')
     case 'ready':
       return t('devDashboard.notifications.emailStatus.ready')
+    case 'provider_limit':
+      return t('devDashboard.notifications.emailStatus.providerLimit')
     default:
       return status || '—'
   }
@@ -126,6 +136,8 @@ export function NotificationPanel({ refreshSec = 15 }: { refreshSec?: number }) 
       const body = await res.json()
       if (body?.email_status === 'sent') {
         toast.success(t('devDashboard.notifications.emailTestSent'))
+      } else if (body?.classification === 'notification.email.provider_limit_exceeded') {
+        toast.error(t('devDashboard.notifications.emailProviderLimitReached'))
       } else if (body?.email_status === 'not_configured' || body?.email_status === 'disabled') {
         toast.error(t('devDashboard.notifications.emailStatus.notConfigured'))
       } else {
@@ -141,7 +153,8 @@ export function NotificationPanel({ refreshSec = 15 }: { refreshSec?: number }) 
 
   const overall = String(summary?.status || 'gray')
   const emailStatus = String(summary?.email?.status || 'unknown')
-  const emailReady = emailStatus === 'ready'
+  const emailConfigured = Boolean(summary?.email?.configured && summary?.email?.enabled)
+  const emailNextAction = summary?.email?.next_action
 
   return (
     <section className={`rounded-xl border p-4 space-y-3 ${toneClass(overall)}`} data-testid="notification-panel">
@@ -194,16 +207,24 @@ export function NotificationPanel({ refreshSec = 15 }: { refreshSec?: number }) 
               type="button"
               className="rounded-md border border-slate-700 bg-slate-900/70 px-2.5 py-1.5 text-xs text-slate-100 hover:border-slate-500 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1"
               onClick={() => void triggerEmailTest()}
-              disabled={busy !== null || !emailReady}
-              title={!emailReady ? statusLabel(emailStatus, t) : undefined}
+              disabled={busy !== null || !emailConfigured}
+              title={!emailConfigured ? statusLabel(emailStatus, t) : undefined}
             >
               <Mail size={12} />
               {t('devDashboard.notifications.sendTestEmail')}
             </button>
           </div>
-          {!emailReady ? (
+          {!emailConfigured ? (
             <p className="text-xs text-amber-200">
               {t('devDashboard.notifications.emailHint', { status: statusLabel(emailStatus, t) })}
+            </p>
+          ) : summary?.email?.classification === 'notification.email.provider_limit_exceeded' ? (
+            <p className="text-xs text-amber-200">{t('devDashboard.notifications.emailProviderLimitHint')}</p>
+          ) : emailNextAction ? (
+            <p className="text-xs text-amber-200">
+              {t(`devDashboard.notifications.nextAction.${emailNextAction}`, {
+                defaultValue: String(emailNextAction),
+              })}
             </p>
           ) : null}
         </div>
@@ -239,6 +260,18 @@ export function NotificationPanel({ refreshSec = 15 }: { refreshSec?: number }) 
                 {event.email_error ? (
                   <p className="text-xs text-rose-200">
                     {t('devDashboard.notifications.emailError')}: {event.email_error}
+                  </p>
+                ) : null}
+                {event.classification === 'notification.email.provider_limit_exceeded' ? (
+                  <p className="text-xs text-amber-200">
+                    {t('devDashboard.notifications.emailProviderLimitReached')}
+                  </p>
+                ) : null}
+                {event.next_action ? (
+                  <p className="text-[11px] text-amber-200">
+                    {t(`devDashboard.notifications.nextAction.${event.next_action}`, {
+                      defaultValue: String(event.next_action),
+                    })}
                   </p>
                 ) : null}
                 {event.technical_summary ? <p className="text-[11px] text-slate-400">{event.technical_summary}</p> : null}

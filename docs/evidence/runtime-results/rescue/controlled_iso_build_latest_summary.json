@@ -113,5 +113,30 @@
         "sudo rm -rf .build chroot cache binary local config/includes.chroot/opt/setuphelfer-rescue config/includes.chroot/opt/setuphelfer-rescue.old.*"
       ]
     }
+  },
+  "current_fix_verification_2026_05_26": {
+    "base_notification_commit": "3adfc13",
+    "runtime_gate_exit": 0,
+    "services": {
+      "setuphelfer-backend.service": "active",
+      "setuphelfer.service": "active"
+    },
+    "project_version": "1.7.2",
+    "backend_runtime_path": "/opt/setuphelfer/backend",
+    "no_new_iso_build_executed": true,
+    "rsvg_preflight": {
+      "status": "blocked",
+      "error_code": "blocked_build_tools_missing",
+      "summary": "live-build erwartet 'rsvg' fuer die splash.svg.in-zu-splash.png-Konvertierung; auf dem Host ist weder rsvg noch rsvg-convert vorhanden.",
+      "hint_package": "librsvg2-bin",
+      "install_command": "sudo apt install librsvg2-bin"
+    },
+    "current_dashboard_state": {
+      "status": "red",
+      "summary": "sudo clean erforderlich wegen stale root-owned Build-State",
+      "iso_build_status": "not_started",
+      "usb_write_allowed": false,
+      "next_operator_action_type": "build_dependency_required"
+    }
   }
 }

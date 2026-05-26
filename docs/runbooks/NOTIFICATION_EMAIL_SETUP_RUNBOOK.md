@@ -98,8 +98,11 @@ sudo systemctl restart setuphelfer-backend.service
 ### Provider-Limit / Versandkontingent erreicht
 
 - `email_status=failed`
-- `email_error` auf Provider-Hinweise wie `554 5.7.0` oder `limit on the number of allowed outgoing messages was exceeded` pruefen
-- nach Provider-Window erneut testen; Dashboard-Events bleiben davon unabhaengig sichtbar
+- `classification=notification.email.provider_limit_exceeded`
+- `email_error=554 5.7.0 outgoing message limit exceeded`
+- `next_action=check_smtp_provider_limit_or_wait`
+- Dashboard bleibt sichtbar/verifiziert; nur der E-Mail-Pfad ist gelb
+- kein automatischer Retry-Loop; nach Provider-Window erneut testen oder Provider-Kontingent pruefen
 
 ### Event erzeugt, aber keine Mail
 
