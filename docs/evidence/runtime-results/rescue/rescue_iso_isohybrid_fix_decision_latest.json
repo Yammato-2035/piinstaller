@@ -1,0 +1,20 @@
+{
+  "decision": "A_add_binary_package_list",
+  "rejected": {
+    "B_path_wrapper_only": "Host has isohybrid; failure is inside chroot",
+    "C_disable_isohybrid": "Rescue stick needs iso-hybrid boot path",
+    "D_apt_install_in_cursor": "Forbidden by strict mode"
+  },
+  "implementation": [
+    "setuphelfer.list.binary with syslinux-utils",
+    "validate-controlled-live-build-tree.sh requires list.binary",
+    "run-controlled-iso-build-with-logging.sh preflight before lb build",
+    "RESCUE-BUILD-ISOHYBRID-001 diagnostics + matcher",
+    "Runbook/FAQ: operator may still install syslinux-utils on host; chroot fix is package list"
+  ],
+  "operator_retry_steps": [
+    "./scripts/rescue-live/prepare-controlled-live-build-tree.sh",
+    "cd build/rescue/live-build/setuphelfer-rescue-live && ./auto/clean",
+    "scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build"
+  ]
+}

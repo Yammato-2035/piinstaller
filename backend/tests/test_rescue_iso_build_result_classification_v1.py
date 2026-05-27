@@ -11,6 +11,8 @@ if str(_backend) not in sys.path:
 from core.rescue_iso_controlled_build_gate import (  # noqa: E402
     CONTROLLED_GATE_ERROR_CODE,
     CONTROLLED_GATE_NEXT_ACTION,
+    ISOHYBRID_ERROR_CODE,
+    ISOHYBRID_NEXT_ACTION,
     analyze_auto_build_gate,
     build_controlled_build_contract,
     build_controlled_operator_build_plan,
@@ -19,6 +21,17 @@ from core.rescue_iso_controlled_build_gate import (  # noqa: E402
 
 
 class RescueIsoBuildResultClassificationTests(unittest.TestCase):
+    def test_isohybrid_not_found_maps_to_isohybrid_error(self) -> None:
+        result = classify_rescue_iso_build_attempt(
+            run_data={"exit_code": 127},
+            result_data={"exit_code": 127, "iso_created": False, "usb_write_performed": False},
+            combined_log_text="231515 extents written (452 MB)\nbinary.sh: 5: isohybrid: not found\n",
+        )
+        self.assertEqual(result["result_status"], "failed")
+        self.assertEqual(result["error_code"], ISOHYBRID_ERROR_CODE)
+        self.assertEqual(result["next_action"], ISOHYBRID_NEXT_ACTION)
+        self.assertFalse(result["iso_created"])
+
     def test_controlled_gate_message_maps_to_blocked_gate_error(self) -> None:
         result = classify_rescue_iso_build_attempt(
             run_data={

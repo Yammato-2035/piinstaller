@@ -607,7 +607,6 @@
           "next_prompt_id": "RESCUE_REAL_BUILD_GATE"
         }
       ],
-      "blockers": [],
       "decisions": [
         {
           "id": "rescue-no-green-without-real-boot",
@@ -626,7 +625,31 @@
           ]
         }
       ],
+      "blockers": [
+        {
+          "id": "RESCUE-BUILD-ISOHYBRID-001",
+          "title_de": "isohybrid fehlt in Binary-Chroot",
+          "title_en": "isohybrid missing in binary chroot",
+          "status": "open",
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/rescue_iso_isohybrid_failure_latest.json",
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_ISOHYBRID_FAILURE.md"
+          ]
+        }
+      ],
       "notes": [
+        {
+          "id": "rescue-isohybrid-binary-stage-2026-05-27",
+          "area_id": "rescue-stick",
+          "text_de": "Operator-Build: genisoimage OK, dann Exit 127 isohybrid im Chroot. Fix: setuphelfer.list.binary + syslinux-utils; RSVG/bootlogo resolved.",
+          "text_en": "Operator build: genisoimage OK, then exit 127 isohybrid in chroot. Fix: setuphelfer.list.binary + syslinux-utils; RSVG/bootlogo resolved.",
+          "created_at": "2026-05-27",
+          "author": "Cursor",
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_ISOHYBRID_FAILURE.md",
+            "docs/evidence/roadmap/roadmap_rescue_iso_isohybrid_delta_latest.json"
+          ]
+        },
         {
           "id": "rescue-manual-operator-policy-block-2026-05-27",
           "area_id": "rescue-stick",
@@ -640,8 +663,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
-      "next_recommended_action": "Wrapper im echten Operator-Terminal (TTY + sudo -v) wiederholen; kein USB-Write, kein Boot-Test in diesem Schritt."
+      "next_prompt_id": "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX",
+      "next_recommended_action": "prepare-controlled-live-build-tree.sh, auto/clean, kontrollierter Build-Retry nach isohybrid/syslinux-utils-Fix; kein USB-Write, kein Boot-Test."
     },
     {
       "id": "diagnostics",

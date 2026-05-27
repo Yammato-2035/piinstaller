@@ -116,6 +116,13 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
         or "rsvg-convert vorhanden, aber rsvg fehlt" in summary
     ):
         hits.append("RESCUE-BUILD-RSVG-001")
+    if (
+        code == "RESCUE-BUILD-ISOHYBRID-001"
+        or details_diag == "RESCUE-BUILD-ISOHYBRID-001"
+        or "isohybrid: not found" in stderr
+        or "isohybrid: not found" in summary
+    ):
+        hits.append("RESCUE-BUILD-ISOHYBRID-001")
     requested_architecture = (signals.get("requested_architecture") or signals.get("target_architecture") or "").strip().lower()
     architecture_track_status = (signals.get("architecture_track_status") or signals.get("target_architecture_status") or "").strip().lower()
     if requested_architecture == "amd64" and (

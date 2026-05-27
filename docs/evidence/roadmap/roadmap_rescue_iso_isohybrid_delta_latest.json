@@ -1,0 +1,21 @@
+{
+  "updated_at": "2026-05-27T23:30:00Z",
+  "rescue_iso_build_track_status": "yellow_blocked",
+  "resolved_blockers": [
+    "RESCUE-BUILD-RSVG-001",
+    "RESCUE-BUILD-BOOTLOGO-001"
+  ],
+  "active_blocker": "RESCUE-BUILD-ISOHYBRID-001",
+  "fix_committed": [
+    "config/package-lists/setuphelfer.list.binary with syslinux-utils",
+    "wrapper preflight exit 31",
+    "diagnostics RESCUE-BUILD-ISOHYBRID-001"
+  ],
+  "operator_action_required": [
+    "./scripts/rescue-live/prepare-controlled-live-build-tree.sh",
+    "cd build/rescue/live-build/setuphelfer-rescue-live && ./auto/clean",
+    "run-controlled-iso-build-with-logging.sh --operator-confirm-build from operator terminal"
+  ],
+  "must_not_mark_green": "ISO hybrid step failed; no boot proof",
+  "recommended_next_prompt_id": "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX"
+}

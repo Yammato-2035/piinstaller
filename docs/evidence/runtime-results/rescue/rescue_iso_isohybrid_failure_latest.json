@@ -1,0 +1,25 @@
+{
+  "classification": "build_failed",
+  "error_code": "RESCUE-BUILD-ISOHYBRID-001",
+  "lb_exit": 127,
+  "wrapper_exit": 127,
+  "failing_command": "isohybrid",
+  "failing_context": "chroot/binary.sh (live-build lb_binary_iso post-genisoimage)",
+  "log_line": "binary.sh: 5: isohybrid: not found",
+  "iso_extents_written": true,
+  "iso_extents_line": "231515 extents written (452 MB)",
+  "iso_artifact_present": true,
+  "iso_artifact_path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/binary.hybrid.iso",
+  "iso_artifact_size_bytes": 474142720,
+  "isohybrid_step_completed": false,
+  "usb_write": false,
+  "restore_started": false,
+  "hardware_test_started": false,
+  "previous_blockers_resolved": [
+    "RESCUE-BUILD-RSVG-001",
+    "RESCUE-BUILD-BOOTLOGO-001"
+  ],
+  "root_cause": "live-build Install_package for iso-hybrid pulls package 'syslinux' into chroot; Debian Bookworm provides isohybrid only in syslinux-utils",
+  "rescue_status_recommendation": "yellow",
+  "must_not_mark_green_reason": "ISO post-processing (isohybrid) failed; no boot/USB-hybrid proof; artifact unverified for release"
+}

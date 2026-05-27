@@ -144,6 +144,7 @@ def _build_diagnostics_progress(repo: Path, prompts: list[dict[str, Any]]) -> di
         "RESCUE-BUILD-GATE-001",
         "RESCUE-BUILD-TOOL-001",
         "RESCUE-BUILD-RSVG-001",
+        "RESCUE-BUILD-ISOHYBRID-001",
         "RESCUE-BUILD-ARCH-001",
     }
     notification_required = {"NOTIFICATION-EMAIL-PROVIDER-001"}
@@ -202,6 +203,7 @@ def _build_diagnostics_progress(repo: Path, prompts: list[dict[str, Any]]) -> di
         "RESCUE-BUILD-GATE-001",
         "RESCUE-BUILD-TOOL-001",
         "RESCUE-BUILD-RSVG-001",
+        "RESCUE-BUILD-ISOHYBRID-001",
         "RESCUE-BUILD-ARCH-001",
         "NOTIFICATION-EMAIL-PROVIDER-001",
     ]
@@ -236,6 +238,14 @@ def _build_diagnostics_progress(repo: Path, prompts: list[dict[str, Any]]) -> di
             "evidence": [
                 "docs/evidence/runtime-results/rescue/rsvg_legacy_tool_triage_latest.json",
                 "docs/evidence/runtime-results/rescue/rsvg_project_local_wrapper_validation_latest.json",
+            ],
+        },
+        {
+            "code": "RESCUE-BUILD-ISOHYBRID-001",
+            "error_text": "binary.sh: isohybrid: not found / LB_EXIT=127 after genisoimage",
+            "evidence": [
+                "docs/evidence/runtime-results/rescue/rescue_iso_isohybrid_failure_latest.json",
+                "docs/evidence/runtime-results/rescue/RESCUE_ISO_ISOHYBRID_FAILURE.md",
             ],
         },
         {

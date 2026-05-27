@@ -1,0 +1,12 @@
+{
+  "host_isohybrid_present": true,
+  "host_isohybrid_path": "/usr/bin/isohybrid",
+  "dpkg_owner": "syslinux-utils",
+  "syslinux_utils_available": "installed",
+  "isolinux_installed": "yes",
+  "config_mentions_syslinux_utils_before_fix": false,
+  "chroot_binary_list_installed": ["genisoimage", "libmagic-mgc", "libmagic1", "syslinux"],
+  "chroot_missing": ["syslinux-utils"],
+  "recommended_fix_type": "add_binary_package_list",
+  "recommended_fix_detail": "Add config/package-lists/setuphelfer.list.binary containing syslinux-utils for lb binary stage"
+}

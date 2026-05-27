@@ -12,6 +12,9 @@ CONTROLLED_GATE_CATEGORY = "safety_gate"
 CONTROLLED_ROOT_POLICY_ERROR_CODE = "blocked_requires_operator_sudo_policy"
 CONTROLLED_ROOT_POLICY_NEXT_ACTION = "manual_operator_terminal_required"
 CONTROLLED_ROOT_POLICY_CATEGORY = "operator_policy"
+ISOHYBRID_ERROR_CODE = "RESCUE-BUILD-ISOHYBRID-001"
+ISOHYBRID_NEXT_ACTION = "prepare_binary_package_list_and_retry"
+ISOHYBRID_CATEGORY = "binary_stage_toolchain"
 
 WORKING_DIRECTORY_REL = "build/rescue/live-build/setuphelfer-rescue-live"
 PATH_PREFIX_REL = "build/rescue/tool-compat/bin"
@@ -246,6 +249,28 @@ def classify_rescue_iso_build_attempt(
             ),
             "gate_message_found": True,
             "direct_lb_build_blocked": True,
+            "iso_created": False,
+            "usb_write_performed": usb_write_performed,
+            "exit_code": exit_code,
+            "command": run_body.get("command"),
+            "started_at": run_body.get("started_at"),
+            "finished_at": result_body.get("finished_at") or run_body.get("finished_at"),
+        }
+
+    isohybrid_missing = "isohybrid: not found" in combined_log
+    if (isohybrid_missing or result_error_code == ISOHYBRID_ERROR_CODE) and not iso_created:
+        return {
+            "attempted": attempted,
+            "result_status": "failed",
+            "error_code": ISOHYBRID_ERROR_CODE,
+            "category": ISOHYBRID_CATEGORY,
+            "next_action": ISOHYBRID_NEXT_ACTION,
+            "summary": (
+                "Die ISO wurde bis genisoimage erzeugt, aber der isohybrid-Schritt im Binary-Chroot "
+                "fehlte (syslinux-utils in setuphelfer.list.binary erforderlich)."
+            ),
+            "gate_message_found": False,
+            "direct_lb_build_blocked": False,
             "iso_created": False,
             "usb_write_performed": usb_write_performed,
             "exit_code": exit_code,

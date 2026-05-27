@@ -1,23 +1,20 @@
 {
-  "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
-  "selected_at": "2026-05-27T22:50:00Z",
-  "reason": "Manual operator ISO build attempt ended operator_policy_blocked (exit 30, no TTY in agent shell). Re-run wrapper with --operator-confirm-build from real operator terminal after sudo -v. No ISO artifact; rescue stays blocked.",
+  "selected_prompt_id": "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX",
+  "selected_at": "2026-05-27T23:30:00Z",
+  "reason": "Operator build passed rsvg/bootlogo; failed at isohybrid in binary chroot (LB_EXIT=127). Repo fix: setuphelfer.list.binary + syslinux-utils. Operator must prepare tree, auto/clean, retry — no apt install in agent run.",
   "blocked_by": [
-    "operator_terminal_no_tty",
-    "blocked_requires_operator_sudo_policy"
+    "RESCUE-BUILD-ISOHYBRID-001",
+    "no_boot_usb_proof"
   ],
   "unlocks": [
-    "ISO artifact evidence",
-    "Rescue partial_green at most (no full green without boot)"
+    "Completed hybrid ISO artifact",
+    "Updated controlled_iso_build summary with iso_found",
+    "Rescue at most partial_green"
   ],
   "alternative_prompts": [
-    "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN",
+    "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
     "RESCUE_ISO_BUILD_FAILURE_TRIAGE"
   ],
-  "alternative_prompt_details": {
-    "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN": "If interactive operator sudo is not available and allowlisted sudo -n is required.",
-    "RESCUE_ISO_BUILD_FAILURE_TRIAGE": "Only after a build was started and failed technically — not applicable to policy-only block."
-  },
   "mandatory_closure_sections": [
     "dashboard_progress",
     "diagnostics_learning_progress",
@@ -26,6 +23,5 @@
     "not_executed_actions",
     "remaining_blocked_or_deferred"
   ],
-  "source_roadmap_version": "1.0",
-  "source_commit": "11e27b6"
+  "source_roadmap_version": "1.0"
 }

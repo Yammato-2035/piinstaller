@@ -14,8 +14,9 @@ Schritt-für-Schritt-Anleitung für einen **kontrollierten** Debian-Live-ISO-Bui
 2. **Toolcheck:** `docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md` — `lb`, `xorriso`, `mksquashfs`, `grub-mkrescue` vorhanden
 3. **RSVG-Preflight:** Dashboard-/Executor-Status darf **nicht** `blocked_build_tools_missing` fuer `rsvg` melden
 4. **Temp-Bundle:** Validator Exit **0**
-5. **Build-Tree:** `validate-controlled-live-build-tree.sh` Exit **0**
-6. **Operator-Freigabe** schriftlich (Issue/Ticket/E-Mail)
+5. **Build-Tree:** `validate-controlled-live-build-tree.sh` Exit **0** (inkl. `config/package-lists/setuphelfer.list.binary` mit **`syslinux-utils`**)
+6. **Binary-Stage / isohybrid:** Preflight im Wrapper prüft `setuphelfer.list.binary`; bei Fehlen Exit **31** (`RESCUE-BUILD-ISOHYBRID-001`). Host-`isohybrid` optional (`syslinux-utils`); entscheidend ist das Chroot-Paket.
+7. **Operator-Freigabe** schriftlich (Issue/Ticket/E-Mail)
 7. **Operator-Policy-Gate:** Safe Root-Ausführung ist dokumentiert:
    - kurzfristig bevorzugt: echtes Operator-Terminal mit `sudo`
    - alternativ: eng begrenzte sudo-Allowlist für genau den dokumentierten Wrapper
@@ -68,6 +69,15 @@ sudo apt install librsvg2-bin
 ```
 
 Dieser Hinweis wird **nur angezeigt**, nicht automatisch ausgefuehrt.
+
+Bei **`RESCUE-BUILD-ISOHYBRID-001`** (`isohybrid: not found`, oft nach `extents written`):
+
+1. `./scripts/rescue-live/prepare-controlled-live-build-tree.sh`
+2. `cd build/rescue/live-build/setuphelfer-rescue-live && ./auto/clean`
+3. Build-Retry (Operator-Terminal, siehe oben)
+4. Optional Host (nur manuell): `sudo apt install syslinux-utils` — Setuphelfer installiert nicht automatisch
+
+Evidence: `docs/evidence/runtime-results/rescue/RESCUE_ISO_ISOHYBRID_FAILURE.md`
 
 ## Bevorzugter Operator-Pfad (nach Operator-Freigabe)
 

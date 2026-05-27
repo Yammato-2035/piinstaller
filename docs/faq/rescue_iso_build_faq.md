@@ -28,6 +28,15 @@ cd build/rescue/live-build/setuphelfer-rescue-live
 
 Bei root-eigenen Resten ggf. `sudo rm -rf binary chroot cache .build local` im Build-Verzeichnis.
 
+## Warum `isohybrid: not found` nach „extents written“ (LB_EXIT=127)?
+
+`lb_binary_iso` erzeugt zuerst die ISO per `genisoimage`, führt danach **`binary.sh` im Binary-Chroot** aus und ruft dort `isohybrid` auf. Live-build installiert für `iso-hybrid` oft nur das Paket **`syslinux`** — auf Debian/Ubuntu liegt **`isohybrid`** in **`syslinux-utils`**.
+
+- Diagnose: **`RESCUE-BUILD-ISOHYBRID-001`**
+- Fix im Repo: `prepare-controlled-live-build-tree.sh` legt `config/package-lists/setuphelfer.list.binary` mit `syslinux-utils` an
+- Operator: Tree vorbereiten, `./auto/clean`, Build-Retry — **kein** automatisches `apt install` durch Setuphelfer
+- Optional auf dem Build-Host (bewusst, manuell): `sudo apt install syslinux-utils` (hilft nur für Host-Debugging; der Lauf scheitert im **Chroot**)
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.

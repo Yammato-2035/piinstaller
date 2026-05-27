@@ -11,7 +11,7 @@
     "Priorität 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorität 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise künstlich grün gefärbt."
   ],
-  "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+  "selected_prompt_id": "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -489,14 +489,66 @@
       "updated_at": "2026-05-26"
     },
     {
+      "id": "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX",
+      "category": "rescue",
+      "title_de": "Rescue ISO Retry nach isohybrid/syslinux-utils-Fix",
+      "title_en": "Rescue ISO retry after isohybrid/syslinux-utils fix",
+      "scope": "Build-Tree mit setuphelfer.list.binary aktualisieren, auto/clean, kontrollierten Operator-Build wiederholen und Evidence aktualisieren.",
+      "status": "recommended_next",
+      "reason_de": "2026-05-27: Build bis genisoimage, dann isohybrid: not found (LB_EXIT=127). Repo-Fix committed; Operator-Retry erforderlich.",
+      "reason_en": "2026-05-27: build reached genisoimage then isohybrid: not found (LB_EXIT=127). Repo fix committed; operator retry required.",
+      "prompt_text": "Aktualisiere den controlled live-build-Tree (prepare), führe auto/clean aus und starte den dokumentierten Wrapper-Build nur im Operator-Terminal. Dokumentiere Log/Summary/ISO-Pfad. Kein USB-Write, kein Boot-Test, kein apt install durch den Agenten.",
+      "blocked_by": [
+        "RESCUE-BUILD-ISOHYBRID-001",
+        "no_hybrid_iso_proof"
+      ],
+      "unlocks": [
+        "Vollständige Hybrid-ISO",
+        "Aktualisierte controlled_iso_build_latest_summary.json"
+      ],
+      "expected_outputs": [
+        "controlled_iso_build_latest_summary.json mit iso_found oder klarem Folgefehler",
+        "Evidence-Update rescue_iso_isohybrid_retry_latest.json"
+      ],
+      "safety_rules": [
+        "Kein USB-Write",
+        "Kein Restore",
+        "Kein apt install im Agent-Lauf"
+      ],
+      "allowed_paths": [
+        "scripts/rescue-live/",
+        "build/rescue/live-build/setuphelfer-rescue-live/",
+        "docs/evidence/runtime-results/rescue/"
+      ],
+      "forbidden_actions": [
+        "usb_write",
+        "restore_start",
+        "apt_install_automatic"
+      ],
+      "tests": [
+        "backend.tests.test_rescue_iso_build_result_classification_v1",
+        "backend.tests.test_diagnostics_rescue_build_mapping_v1"
+      ],
+      "documentation_targets": [
+        "docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md",
+        "docs/faq/rescue_iso_build_faq.md"
+      ],
+      "non_goals": [
+        "Kein Boot-/VM-Test",
+        "Kein full-green Rescue"
+      ],
+      "created_at": "2026-05-27",
+      "updated_at": "2026-05-27"
+    },
+    {
       "id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
       "category": "rescue",
       "title_de": "Rescue ISO Manual Operator Terminal Build",
       "title_en": "Rescue ISO manual operator terminal build",
       "scope": "Echten kontrollierten Rescue-ISO-Build ausschließlich aus einem realen Operator-Terminal mit sauberem Root-/TTY-Rahmen anstoßen und dokumentieren.",
-      "status": "recommended_next",
-      "reason_de": "2026-05-27: Agent-Lauf Exit 30 (kein TTY). Operator muss Wrapper im echten Terminal nach sudo -v wiederholen. Phase-0 weiter grün; kein ISO.",
-      "reason_en": "2026-05-27: agent run exit 30 (no TTY). Operator must retry wrapper in a real terminal after sudo -v. Phase 0 still green; no ISO.",
+      "status": "available",
+      "reason_de": "Basis-Prompt für ersten echten Operator-Build; nach isohybrid-Fix ist RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX bevorzugt.",
+      "reason_en": "Base prompt for first real operator build; after isohybrid fix prefer RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX.",
       "prompt_text": "Führe den dokumentierten kontrollierten Rescue-ISO-Build nur in einem echten Operator-Terminal aus, sammle Artefakt-/Log-/Gate-Evidence und halte USB-Write, Restore und Hardwaretests weiterhin strikt getrennt.",
       "blocked_by": [
         "operator_terminal_no_tty",

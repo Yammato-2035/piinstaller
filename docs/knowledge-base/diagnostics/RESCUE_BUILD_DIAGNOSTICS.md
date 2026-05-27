@@ -64,6 +64,23 @@ Diese Diagnose-Notiz trennt die aktuellen Rescue-Build-Blocker sauber voneinande
   - projektlokalen `rsvg`-Kompatibilitätswrapper verwenden
   - **kein** globaler Symlink nach `/usr/bin/rsvg`
 
+## RESCUE-BUILD-ISOHYBRID-001
+
+- Titel DE: `isohybrid fehlt in der live-build Binary-Stage`
+- Titel EN: `isohybrid missing in live-build binary stage`
+- Typische Signale:
+  - `binary.sh: …: isohybrid: not found`
+  - `LB_EXIT=127` nach `extents written` / genisoimage
+  - `RESCUE-BUILD-ISOHYBRID-001` im Wrapper-Preflight (Exit **31**)
+- Bedeutung:
+  - Die Roh-ISO kann bereits unter `chroot/binary.hybrid.iso` liegen; der Hybrid-Schritt ist trotzdem fehlgeschlagen.
+  - Live-build installiert für `iso-hybrid` oft nur `syslinux`; `isohybrid` liegt auf Debian in **`syslinux-utils`**.
+- Empfehlung:
+  - `prepare-controlled-live-build-tree.sh` (legt `setuphelfer.list.binary` an)
+  - `./auto/clean` im Build-Verzeichnis
+  - Build-Retry im Operator-Terminal
+  - optional manuell auf dem Host: `sudo apt install syslinux-utils` (kein Auto-Install durch Setuphelfer)
+
 ## RESCUE-BUILD-ARCH-001
 
 - Titel DE: `Zielarchitektur nicht durch aktuellen Build abgedeckt`

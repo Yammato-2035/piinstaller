@@ -16,6 +16,7 @@ fail_cdn() { echo "CDN: $*" >&2; exit 13; }
 fail_token() { echo "FORBIDDEN_TOKEN: $*" >&2; exit 14; }
 
 REQ=(
+  config/package-lists/setuphelfer.list.binary
   config/package-lists/setuphelfer.list.chroot
   config/archives/debian-security.list.chroot
   config/archives/debian-security.list.binary
@@ -41,6 +42,9 @@ for rel in "${REQ[@]}"; do
   [[ -e "$BUILD_ROOT/$rel" ]] || fail_missing "$rel"
 done
 [[ -x "$BUILD_ROOT/config/includes.chroot/usr/local/bin/rsvg" ]] || fail_missing "usr/local/bin/rsvg not executable"
+if ! grep -qx 'syslinux-utils' "$BUILD_ROOT/config/package-lists/setuphelfer.list.binary" 2>/dev/null; then
+  fail_missing "setuphelfer.list.binary must list syslinux-utils (isohybrid for lb binary stage)"
+fi
 
 if ! grep -q 'Use controlled gate before running lb build' "$BUILD_ROOT/auto/build"; then
   fail_missing "auto/build gate message"

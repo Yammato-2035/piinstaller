@@ -53,6 +53,15 @@ class DiagnosticsRescueBuildMappingTests(unittest.TestCase):
         )
         self.assertIn("RESCUE-BUILD-RSVG-001", ids)
 
+    def test_isohybrid_missing_maps_to_isohybrid_case(self) -> None:
+        ids = self._ids(
+            {
+                "code": "RESCUE-BUILD-ISOHYBRID-001",
+                "stderr": "binary.sh: 5: isohybrid: not found",
+            }
+        )
+        self.assertIn("RESCUE-BUILD-ISOHYBRID-001", ids)
+
     def test_deferred_architecture_track_maps_to_arch_case(self) -> None:
         ids = self._ids(
             {

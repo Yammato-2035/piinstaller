@@ -7,6 +7,13 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO isohybrid binary-stage dependency)
+- **Failure:** Operator build Exit **127** — `binary.sh: isohybrid: not found` after `extents written` (~452 MB); partial `chroot/binary.hybrid.iso` without hybrid step.
+- **Fix:** `config/package-lists/setuphelfer.list.binary` with **`syslinux-utils`**; wrapper preflight Exit **31** (`RESCUE-BUILD-ISOHYBRID-001`); diagnostics/matcher/classification.
+- **Evidence:** `rescue_iso_isohybrid_failure_latest.json`, `RESCUE_ISO_ISOHYBRID_FAILURE.md`, roadmap delta.
+- **Nächster Schritt:** Operator — `prepare-controlled-live-build-tree.sh`, `./auto/clean`, Build-Retry (kein apt install im Agent-Lauf).
+- **Nicht ausgeführt:** USB-Write, Restore, Boot-/VM-/Hardwaretest.
+
 ### Changed (Rescue ISO manual operator build — policy blocked in agent shell)
 - **Wrapper:** `run-controlled-iso-build-with-logging.sh --operator-confirm-build` ? Exit **30** in Agent-Umgebung (kein TTY, kein `sudo -n`); **kein** `lb build`, **kein** ISO.
 - **Evidence:** `RESCUE_ISO_MANUAL_OPERATOR_BUILD_CLASSIFICATION.md`, `controlled_iso_build_latest_summary.json`.

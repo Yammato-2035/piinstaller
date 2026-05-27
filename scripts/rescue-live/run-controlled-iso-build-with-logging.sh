@@ -14,6 +14,9 @@ SUMMARY_JSON="${SUMMARY_DIR}/controlled_iso_build_latest_summary.json"
 POLICY_BLOCK_EXIT=30
 POLICY_BLOCK_CODE="blocked_requires_operator_sudo_policy"
 POLICY_BLOCK_HINT="Run this command from an operator terminal with sudo privileges or install the documented allowlisted policy."
+ISOHYBRID_PREFLIGHT_EXIT=31
+ISOHYBRID_PREFLIGHT_CODE="RESCUE-BUILD-ISOHYBRID-001"
+ISOHYBRID_PREFLIGHT_HINT="Run scripts/rescue-live/prepare-controlled-live-build-tree.sh (adds config/package-lists/setuphelfer.list.binary with syslinux-utils). Optional host: sudo apt install syslinux-utils."
 
 POLICY_GUARD_STATUS="unknown"
 POLICY_EXECUTION_MODE="none"
@@ -39,8 +42,27 @@ USB write, dd, mkfs, parted: FORBIDDEN in this script.
 EOF
 }
 
+binary_stage_preflight_ok() {
+  local blist="${BUILD_ROOT}/config/package-lists/setuphelfer.list.binary"
+  if [[ ! -f "$blist" ]]; then
+    echo "${ISOHYBRID_PREFLIGHT_CODE}: missing ${blist}"
+    echo "${ISOHYBRID_PREFLIGHT_HINT}"
+    return 1
+  fi
+  if ! grep -qx 'syslinux-utils' "$blist"; then
+    echo "${ISOHYBRID_PREFLIGHT_CODE}: ${blist} must contain syslinux-utils (isohybrid in lb binary chroot)"
+    echo "${ISOHYBRID_PREFLIGHT_HINT}"
+    return 1
+  fi
+  if ! command -v isohybrid >/dev/null 2>&1; then
+    echo "WARN: host isohybrid not in PATH; binary stage uses chroot package list (syslinux-utils)."
+  fi
+  return 0
+}
+
 preview_gates() {
   echo "=== Rescue ISO build gate preview ==="
+  binary_stage_preflight_ok || echo "WARN: binary-stage preflight would block build"
   "${REPO_ROOT}/scripts/check-runtime-deploy-gate.sh" || true
   "${REPO_ROOT}/scripts/rescue-live/validate-temp-runtime-bundle.sh" \
     "${REPO_ROOT}/build/rescue/temp-runtime/setuphelfer-rescue-runtime" 2>/dev/null || echo "WARN: temp bundle validator not ready"
@@ -190,6 +212,16 @@ if ! policy_guard_ok; then
 fi
 echo "POLICY_GUARD_STATUS=${POLICY_GUARD_STATUS}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
 echo "POLICY_EXECUTION_MODE=${POLICY_EXECUTION_MODE}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+if ! binary_stage_preflight_ok; then
+  echo "${ISOHYBRID_PREFLIGHT_HINT}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+  LB_EXIT="${ISOHYBRID_PREFLIGHT_EXIT}"
+  ERROR_CODE="${ISOHYBRID_PREFLIGHT_CODE}"
+  NEXT_ACTION="prepare_binary_package_list_and_retry"
+  ENDED_AT="$(date -Is)"
+  echo "LB_EXIT=${LB_EXIT}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+  write_summary "${STARTED_AT}" "${ENDED_AT}" "${LB_EXIT}" "${LATEST_LOG}" "${ERROR_CODE}" "${NEXT_ACTION}" "${BUILD_STARTED}"
+  exit "${LB_EXIT}"
+fi
 cd "${BUILD_ROOT}"
 env PATH="${PATH_PREFIX}:${PATH}" ./auto/config 2>&1 | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
 BUILD_STARTED=true
@@ -202,6 +234,10 @@ fi
 LB_EXIT=$?
 set -e
 ENDED_AT="$(date -Is)"
+if [[ -z "$ERROR_CODE" ]] && grep -q 'isohybrid: not found' "${LATEST_LOG}" 2>/dev/null; then
+  ERROR_CODE="${ISOHYBRID_PREFLIGHT_CODE}"
+  NEXT_ACTION="prepare_binary_package_list_and_retry"
+fi
 echo "LB_EXIT=${LB_EXIT}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
 write_summary "${STARTED_AT}" "${ENDED_AT}" "${LB_EXIT}" "${LATEST_LOG}" "${ERROR_CODE}" "${NEXT_ACTION}" "${BUILD_STARTED}"
 exit "${LB_EXIT}"

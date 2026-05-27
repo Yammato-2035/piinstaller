@@ -328,6 +328,37 @@ DIAGNOSTIC_CATALOG: list[DiagnosticCase] = [
         status_mapping={"blocked_legacy_rsvg_command_missing": "warning"},
     ),
     DiagnosticCase(
+        id="RESCUE-BUILD-ISOHYBRID-001",
+        domain="rescue_build",
+        title_de="isohybrid fehlt in der live-build Binary-Stage",
+        title_en="isohybrid missing in live-build binary stage",
+        summary_de="Nach genisoimage scheitert `binary.sh` mit `isohybrid: not found`. Debian liefert `isohybrid` in `syslinux-utils`; die Binary-Paketliste muss es für den Chroot enthalten.",
+        summary_en="After genisoimage, `binary.sh` fails with `isohybrid: not found`. Debian ships `isohybrid` in `syslinux-utils`; the binary package list must include it for the chroot.",
+        severity="medium",
+        confidence="high",
+        detection_sources=["api_result", "log_pattern", "manual_test"],
+        root_causes=[
+            "live-build iso-hybrid installiert nur `syslinux`, nicht `syslinux-utils`",
+            "Fehlende `config/package-lists/setuphelfer.list.binary` mit `syslinux-utils`",
+        ],
+        recommended_actions=[
+            _a(
+                "add-syslinux-utils-binary-package-list",
+                1,
+                "Führe `prepare-controlled-live-build-tree.sh` aus (legt `setuphelfer.list.binary` mit `syslinux-utils` an), dann `./auto/clean` und Build-Retry. Optional auf dem Host: `sudo apt install syslinux-utils` — Setuphelfer installiert nicht automatisch.",
+                "Run `prepare-controlled-live-build-tree.sh` (creates `setuphelfer.list.binary` with `syslinux-utils`), then `./auto/clean` and retry the build. Optional on host: `sudo apt install syslinux-utils` — Setuphelfer does not install automatically.",
+            )
+        ],
+        related_docs=[
+            "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_ISOHYBRID_FAILURE.md",
+            "docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md",
+        ],
+        related_faq=["docs/faq/rescue_iso_build_faq.md"],
+        tags=["rescue_build", "syslinux", "isohybrid", "binary_stage"],
+        status_mapping={"RESCUE-BUILD-ISOHYBRID-001": "warning"},
+    ),
+    DiagnosticCase(
         id="RESCUE-BUILD-ARCH-001",
         domain="rescue_build",
         title_de="Zielarchitektur nicht durch aktuellen Rescue-Build abgedeckt",

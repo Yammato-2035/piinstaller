@@ -129,6 +129,12 @@ python3-venv
 python3-pip
 EOF
 
+# lb_binary_iso runs isohybrid inside the binary-stage chroot; Debian provides isohybrid in
+# syslinux-utils, not in the default live-build iso-hybrid package pull (syslinux only).
+write_text_file "${BUILD_ROOT}/config/package-lists/setuphelfer.list.binary" 0644 <<'EOF'
+syslinux-utils
+EOF
+
 write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/network/20-wired.network" 0644 <<'EOF'
 [Match]
 Name=en*
