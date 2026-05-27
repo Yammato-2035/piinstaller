@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-05-27T20:02:00Z",
+  "head": "5af715a",
+  "target_commit_frontend": "5af715a",
+  "deploy_helper": {
+    "attempted": true,
+    "started": false,
+    "reason": "sudo_password_required_in_agent_environment",
+    "unit_status_after_attempt": "inactive",
+    "last_successful_job_id": "deploy-20260527T193740Z-19726",
+    "last_successful_head_before": "3a4fc75",
+    "last_successful_ended_at": "2026-05-27T19:37:53Z"
+  },
+  "runtime_gate": {
+    "before": { "exit_code": 0, "note": "check-runtime-deploy-gate.sh before deploy attempt" },
+    "after": { "exit_code": 0, "note": "unchanged; no deploy executed" }
+  },
+  "live_api": {
+    "checked": true,
+    "project_version": "1.7.2",
+    "backend_runtime_path": "/opt/setuphelfer/backend",
+    "deploy_drift_status": "green",
+    "runtime_gate_passed": true,
+    "runtime_gate_status": "green",
+    "release_gate_status": "rot",
+    "roadmap_areas_count": 13,
+    "roadmap_api_status": "success"
+  },
+  "frontend_runtime_sync": {
+    "opt_bundle": "/opt/setuphelfer/frontend/dist/assets/index-BHWcW-03.js",
+    "opt_bundle_mtime": "2026-05-27T21:37:49+0200",
+    "workspace_bundle": "/home/volker/piinstaller/frontend/dist/assets/index-DIHtW0mB.js",
+    "markers_in_opt": {
+      "greenVisibility.readyTitle": false,
+      "dev-dashboard-ready-stable": false,
+      "roadmap.dataSource": false,
+      "dev-dashboard-roadmap-panel": true
+    },
+    "markers_in_workspace_dist": {
+      "greenVisibility.readyTitle": true,
+      "dev-dashboard-ready-stable": true,
+      "roadmap.dataSource": true
+    },
+    "commit_5af715a_synced_to_opt": false
+  },
+  "cockpit_visibility_live": {
+    "roadmap_drawer_in_governance_cockpit": false,
+    "ready_stable_section": false,
+    "roadmap_data_api_available": true,
+    "note": "Bundle-Analyse: 5af715a-Cockpit-Strings fehlen in /opt; letzter Helper-Deploy war 3a4fc75."
+  },
+  "fachliche_changes": false,
+  "open_risks": [
+    "operator_must_run_sudo_systemctl_start_setuphelfer_deploy_helper",
+    "live_cockpit_ui_stale_until_frontend_deploy"
+  ],
+  "next_prompt": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
+}
