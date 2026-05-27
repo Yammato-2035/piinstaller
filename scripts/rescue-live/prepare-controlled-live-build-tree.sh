@@ -57,6 +57,18 @@ move_to_trash() {
   mv "$source" "$target"
 }
 
+# lb_binary_syslinux always unpacks ${_TARGET}/bootlogo via cpio (Debian live-build theme
+# ships splash.svg.in only). Without this seed archive, lb exits 2 after rsvg succeeds.
+create_minimal_bootlogo_cpio() {
+  local target="$1"
+  local tmp
+  tmp="$(mktemp -d)"
+  printf '%s\n' 'gfxboot seed for Setuphelfer controlled ISO build' > "${tmp}/.gfxboot-seed"
+  (cd "$tmp" && find . -print0 | cpio -o --null --quiet) > "${target}.tmp"
+  mv -f "${target}.tmp" "$target"
+  rm -rf "$tmp"
+}
+
 SOURCE_HEAD="$(git_workspace rev-parse --short HEAD 2>/dev/null || echo unknown)"
 
 die() { echo "ERROR: $*" >&2; exit 1; }
@@ -98,6 +110,8 @@ for module in ldlinux.c32 libcom32.c32 libutil.c32 libmenu.c32; do
     copy_host_file "$module_path" "${BOOTLOADER_DIR}/${module}" 0644
   fi
 done
+
+create_minimal_bootlogo_cpio "${BOOTLOADER_DIR}/bootlogo"
 
 write_text_file "${BUILD_ROOT}/config/package-lists/setuphelfer.list.chroot" 0644 <<'EOF'
 systemd

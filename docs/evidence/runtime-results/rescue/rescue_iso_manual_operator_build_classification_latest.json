@@ -1,23 +1,16 @@
 {
-  "wrapper_exit_code": 127,
+  "wrapper_exit_code": 2,
   "build_started": true,
   "iso_artifact_present": false,
-  "iso_artifact_path": "",
-  "sha256_present": false,
-  "manifest_present": false,
-  "usb_write": false,
-  "restore_started": false,
-  "hardware_test_started": false,
-  "boot_vm_test_started": false,
   "classification": "build_failed",
-  "failure_class": "legacy_rsvg_command_missing_in_chroot",
-  "diagnostic_code": "RESCUE-BUILD-RSVG-001",
+  "failure_class": "bootlogo_missing_and_or_nested_isolinux_tmp",
+  "diagnostic_code": "RESCUE-BUILD-ISO-BOOTLOGO-001",
+  "error_line": "/usr/lib/live/build/lb_binary_syslinux: 365: cannot open binary/isolinux/bootlogo: No such file",
+  "notes": [
+    "rsvg step passed (no exit 127)",
+    "binary/isolinux/isolinux.tmp/ nested layout suggests incomplete auto/clean",
+    "fix: prepare seeds config/bootloaders/isolinux/bootlogo; full auto/clean before rebuild"
+  ],
   "rescue_status_recommendation": "yellow",
-  "must_not_mark_green_reason": "Build failed in chroot syslinux/rsvg step; no ISO; no boot proof",
-  "error_line": "/usr/bin/env: 'rsvg': No such file or directory",
-  "policy_context": {
-    "execution_mode": "manual_operator_terminal",
-    "is_tty": true
-  },
-  "fix": "Install rsvg compat into chroot via includes.chroot/usr/local/bin/rsvg; re-run prepare-controlled-live-build-tree.sh and auto/clean before rebuild"
+  "must_not_mark_green_reason": "No ISO; lb_binary_syslinux failed before artifact"
 }

@@ -15,6 +15,19 @@ Nicht für den aktuellen `syslinux`-Theme-Pfad von `live-build`. Es reicht aber 
 
 **Wichtig:** Der Host-`PATH`-Wrapper unter `build/rescue/tool-compat/bin/rsvg` reicht **nicht** — `lb build` ruft `rsvg` **im Chroot** auf. Der Wrapper muss unter `config/includes.chroot/usr/local/bin/rsvg` liegen (setzt `prepare-controlled-live-build-tree.sh`). Fehlerbild: `/usr/bin/env: 'rsvg': No such file or directory`, `LB_EXIT=127`.
 
+## Warum `cannot open binary/isolinux/bootlogo` (LB_EXIT=2)?
+
+`lb_binary_syslinux` erwartet eine `bootlogo`-cpio-Datei im isolinux-Zielverzeichnis. Das Debian-`live-build`-Theme liefert nur `splash.svg.in` — kein fertiges `bootlogo`. `prepare-controlled-live-build-tree.sh` legt deshalb ein minimales Seed-`bootlogo` unter `config/bootloaders/isolinux/bootlogo` an.
+
+**Zusätzlich:** Wenn `binary/isolinux/` von einem abgebrochenen Lauf noch existiert, landet `isolinux.tmp` als Unterordner (`binary/isolinux/isolinux.tmp/`) — dann wird `splash.svg.in` nicht verarbeitet. Vor erneutem Build:
+
+```bash
+cd build/rescue/live-build/setuphelfer-rescue-live
+./auto/clean
+```
+
+Bei root-eigenen Resten ggf. `sudo rm -rf binary chroot cache .build local` im Build-Verzeichnis.
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.

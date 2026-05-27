@@ -28,6 +28,8 @@ REQ=(
   config/includes.chroot/etc/systemd/network/20-wired.network
   config/includes.chroot/etc/systemd/network/25-ethernet-alt.network
   config/hooks/normal/010-enable-setuphelfer-services.hook.chroot
+  config/bootloaders/isolinux/bootlogo
+  config/bootloaders/isolinux/splash.svg.in
   auto/config
   auto/build
   auto/clean
