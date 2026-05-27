@@ -145,7 +145,20 @@ def build_runtime_gate(
 
     dd_status = str(deploy_drift.get("status") or "unknown").lower()
     manifest_match = deploy_drift.get("manifest_match")
-    checks.append({"id": "deploy_drift_status", "ok": dd_status == "green", "value": dd_status})
+    drift_suggestions = deploy_drift.get("suggested_actions") or []
+    drift_action_set = (
+        {str(item).strip() for item in drift_suggestions if str(item).strip()}
+        if isinstance(drift_suggestions, list)
+        else set()
+    )
+    non_actionable_drift = dd_status == "yellow" and drift_action_set.issubset({"none"})
+    checks.append(
+        {
+            "id": "deploy_drift_status",
+            "ok": dd_status == "green" or non_actionable_drift,
+            "value": dd_status,
+        }
+    )
     if dd_status == "yellow":
         sug = deploy_drift.get("suggested_actions") or []
         if isinstance(sug, list) and "deploy_backend_files" in sug:
@@ -168,7 +181,24 @@ def build_runtime_gate(
     checks.append({"id": "setuphelfer_backend_service", "ok": svc_active, "value": svc})
 
     cons_st = str(consistency.get("status") or "unknown")
-    checks.append({"id": "consistency_status", "ok": cons_st == "green", "value": cons_st})
+    cons_warnings = consistency.get("warnings") or []
+    warning_set = (
+        {str(item).strip() for item in cons_warnings if str(item).strip()}
+        if isinstance(cons_warnings, list)
+        else set()
+    )
+    non_blocking_consistency = (
+        cons_st == "yellow"
+        and warning_set.issubset({"workspace_dirty", "workspace_unpushed"})
+        and (dd_status == "green" or non_actionable_drift)
+    )
+    checks.append(
+        {
+            "id": "consistency_status",
+            "ok": cons_st == "green" or non_blocking_consistency,
+            "value": cons_st,
+        }
+    )
 
     passed = not blockers and all(c.get("ok") for c in checks if c.get("ok") is not None)
     # gray drift without explicit allow → not passed

@@ -2,6 +2,7 @@
 
 import json
 import os
+import subprocess
 import sys
 import tempfile
 import time
@@ -176,6 +177,37 @@ class TestDevDashboardCore(unittest.TestCase):
         self.assertEqual(out["status"], "yellow")
         self.assertEqual(out["missing_runtime_files"], ["probe.txt"])
         self.assertIn("deploy_backend_files", out["suggested_actions"])
+
+    @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("packaging/helpers/probe-starter.py",))
+    def test_deploy_drift_green_when_workspace_dirty_but_runtime_matches_head(self) -> None:
+        with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
+            with tempfile.TemporaryDirectory() as td:
+                ws = Path(td) / "w"
+                rt = Path(td) / "r"
+                ws.mkdir()
+                rt.mkdir()
+                (ws / "packaging" / "helpers").mkdir(parents=True)
+                (rt / "packaging" / "helpers").mkdir(parents=True)
+                deployed = "runtime-and-head\n"
+                dirty = "runtime-and-head\nlocal-only\n"
+                starter = ws / "packaging" / "helpers" / "probe-starter.py"
+                runtime_starter = rt / "packaging" / "helpers" / "probe-starter.py"
+                starter.write_text(deployed, encoding="utf-8")
+                runtime_starter.write_text(deployed, encoding="utf-8")
+                subprocess.run(["git", "-C", str(ws), "init", "-q"], check=True)
+                subprocess.run(["git", "-C", str(ws), "config", "user.email", "test@example.com"], check=True)
+                subprocess.run(["git", "-C", str(ws), "config", "user.name", "Test"], check=True)
+                subprocess.run(["git", "-C", str(ws), "add", "."], check=True)
+                subprocess.run(["git", "-C", str(ws), "commit", "-qm", "head"], check=True)
+                starter.write_text(dirty, encoding="utf-8")
+                out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        self.assertEqual(out["status"], "green")
+        self.assertEqual(out["differing_files_count"], 0)
+        self.assertEqual(out["suggested_actions"], ["none"])
+        rows = out.get("checked_files") or []
+        self.assertEqual(len(rows), 1)
+        self.assertTrue(rows[0].get("matches"))
+        self.assertEqual(rows[0].get("reason"), "workspace_dirty_runtime_matches_head")
 
     @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("backend/probe.py",))
     def test_deploy_drift_yellow_content_mismatch(self) -> None:
@@ -373,7 +405,22 @@ class TestDevDashboardApiV1(unittest.TestCase):
 
 
 class TestDevDashboardCockpit(unittest.TestCase):
-    def test_safe_mode_locked_when_runtime_gate_fails(self):
+    def test_runtime_gate_allows_yellow_drift_without_actionable_suggestions(self) -> None:
+        from core.dev_dashboard_cockpit import build_runtime_gate
+
+        rg = build_runtime_gate(
+            consistency={"status": "green", "backend_workspace_match": True, "warnings": []},
+            deploy_drift={"status": "yellow", "suggested_actions": ["none"], "manifest_match": True},
+            runtime={"backend_runtime_path": "/opt/setuphelfer/backend"},
+            workspace={"workspace_version": "1.7.2"},
+            install_profile="opt",
+            app_edition="release",
+        )
+        self.assertTrue(rg.get("passed"))
+        self.assertEqual(rg.get("status"), "green")
+        self.assertEqual(rg.get("blockers"), [])
+
+    def test_safe_mode_locked_when_runtime_gate_fails(self) -> None:
         from core.dev_dashboard_cockpit import build_runtime_gate, build_safe_test_mode
 
         rg = build_runtime_gate(

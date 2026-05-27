@@ -255,6 +255,32 @@ def _sha256_file_full(path: Path) -> tuple[str | None, str | None]:
         return None, f"read_error:{exc}"
 
 
+def _runtime_matches_repo_head(repo_root: Path, rel: str, runtime_path: Path) -> bool | None:
+    """
+    True when /opt already matches git HEAD for rel while the workspace worktree is dirty.
+    Prevents host-only workspace edits from marking deploy_drift yellow when runtime is current.
+    """
+    rel_norm = rel.replace("\\", "/").strip().lstrip("/")
+    if not rel_norm or ".." in rel_norm.split("/"):
+        return None
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(repo_root), "show", f"HEAD:{rel_norm}"],
+            capture_output=True,
+            timeout=2.0,
+            check=False,
+        )
+        if proc.returncode != 0:
+            return None
+        head_hash = hashlib.sha256(proc.stdout).hexdigest()
+        runtime_hash, err = _sha256_file_full(runtime_path)
+        if err or not runtime_hash:
+            return None
+        return head_hash == runtime_hash
+    except Exception:
+        return None
+
+
 def _metadata_compare(wp: Path, rp: Path) -> tuple[bool | None, str | None]:
     """Groesse + mtime fuer grosse Dateien; bei gleicher Groesse aber abweichendem mtime SHA256."""
     try:
@@ -493,25 +519,36 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
                 entry["matches"] = None
                 dd_warnings.append(f"hash_skipped:{rel}:{entry['reason']}")
             elif wh and rh:
-                entry["matches"] = wh == rh
-                entry["reason"] = "sha256" if entry["matches"] else "sha256_mismatch"
-                if entry["matches"]:
+                if wh == rh:
+                    entry["matches"] = True
+                    entry["reason"] = "sha256"
+                    match_n += 1
+                elif _runtime_matches_repo_head(ws_r, rel, rp) is True:
+                    entry["matches"] = True
+                    entry["reason"] = "workspace_dirty_runtime_matches_head"
                     match_n += 1
                 else:
+                    entry["matches"] = False
+                    entry["reason"] = "sha256_mismatch"
                     diff_n += 1
             else:
                 entry["matches"] = None
                 dd_warnings.append(f"hash_none:{rel}")
         else:
             meta_match, meta_reason = _metadata_compare(wp, rp)
-            entry["matches"] = meta_match
-            entry["reason"] = meta_reason
-            if meta_match is True:
+            if meta_match is False and _runtime_matches_repo_head(ws_r, rel, rp) is True:
+                entry["matches"] = True
+                entry["reason"] = "workspace_dirty_runtime_matches_head"
                 match_n += 1
-            elif meta_match is False:
-                diff_n += 1
             else:
-                dd_warnings.append(f"metadata:{rel}:{meta_reason}")
+                entry["matches"] = meta_match
+                entry["reason"] = meta_reason
+                if meta_match is True:
+                    match_n += 1
+                elif meta_match is False:
+                    diff_n += 1
+                else:
+                    dd_warnings.append(f"metadata:{rel}:{meta_reason}")
 
         checked.append(entry)
 
