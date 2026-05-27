@@ -31,8 +31,13 @@ Cursor- und Operator-Läufe sollen **vollständig** nachvollziehbar sein — nic
 | `backend/venv/bin/python3` | 34 passed, 0 skipped — **grün** |
 | System-`python3` | 23 passed, 11 skipped — **gelb** (kein Produktfehler) |
 
+## Lokales Cockpit vs. `/opt`
+
+- Dev-Cockpit: Vite-Port aus dem Terminal (**3001**, ggf. **3002**), URL `http://127.0.0.1:<port>/?window=cockpit` — **nicht** fest 5173 (5173 nur bei `dev:tauri`).
+- Live-API unter `/opt`: `GET /api/dev-dashboard/manual-command-runs` erst nach Deploy-Helper-Sync (Gate Exit 0).
+
 ## Roadmap
 
 - Prompt `TERMINAL_A_READONLY`: **completed**
-- Nächster empfohlener Prompt: `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD`
-- Vor Rescue-Build: Cockpit-/Roadmap-UI unter `/opt` per Deploy-Helper prüfen
+- Gate rot (Exit 14): nächster Prompt `RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC`
+- Danach Gate grün: `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD`

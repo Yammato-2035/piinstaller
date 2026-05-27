@@ -7,6 +7,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Runtime deploy drift documentation and cockpit port clarity)
+- **Phase-0-Gate:** Exit **14** (`deploy_drift_backend_files`) dokumentiert — Workspace `backend/app.py` / Command-Run-API vor `/opt`; Behebung nur per Operator Deploy-Helper (`DEPLOY_HELPER_SYNC_FREIGEGEBEN`).
+- **Cockpit-Dev-URL:** Doku korrigiert — Vite `dev:cockpit` nutzt **3001** (Fallback z.?B. **3002**), nicht fest **5173** (nur `dev:tauri`).
+- **Roadmap:** Nächster Prompt bei rotem Gate `RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC`; Rescue-ISO-Build bleibt bis Gate Exit **0** blockiert.
+
 ### Changed (Roadmap command logging completion)
 - **TERMINAL_A_READONLY** auf `completed` gesetzt; neuer grüner Milestone `dev-dashboard-command-logging-readonly`; System-Python-API-Tests separat **gelb** dokumentiert.
 - **Nächster Prompt** bleibt `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD` mit Hinweis auf Live-Deploy-Check der Cockpit-UI vor dem Build.

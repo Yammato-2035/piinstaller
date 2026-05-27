@@ -1,0 +1,62 @@
+{
+  "branch": "main",
+  "head": "84eb309",
+  "runtime_gate_exit": 14,
+  "runtime_gate_blocked_static_analysis_only": true,
+  "blockers": ["deploy_drift_backend_files"],
+  "dirty_files": [
+    "VERSION",
+    "build/rescue/live-build/setuphelfer-rescue-live/README_SETUPHELFER_RESCUE_LIVE.md",
+    "ckb-next",
+    "docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT.json",
+    "docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_DE.md",
+    "docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_EN.md",
+    "docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md",
+    "docs/evidence/rescue/RESCUE_LIVE_PACKAGE_LIST_DECISION.md",
+    "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+    "docs/evidence/runtime-results/handoff/rescue_stick_readonly_build_emulation_manifest.json",
+    "docs/evidence/runtime-results/handoff/rescue_stick_readonly_build_final_gate.json",
+    "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json",
+    "frontend/src/lib/sudoUserMessages.ts",
+    "frontend/src/pages/Documentation.tsx",
+    "frontend/src/pages/RaspberryPiConfig.tsx",
+    "packaging/helpers/setuphelfer-backup-starter.py",
+    "docs/evidence/dev-dashboard/RESCUE_ISO_EXECUTOR_DASHBOARD_IST_ANALYSIS.md",
+    "docs/evidence/dev-dashboard/RESCUE_ISO_EXECUTOR_RUNTIME_GATE_FIX.md",
+    "docs/evidence/runtime-results/BR-001-full-root-or-profile-2026-05-17.json",
+    "frontend/public/dev-dashboard.snapshot.json",
+    "packaging/systemd/setuphelfer-backup@.service.d/backup-target.conf.example"
+  ],
+  "drift_relevant_files": [
+    "backend/app.py",
+    "backend/core/dev_dashboard_manual_command_runs.py",
+    "frontend/dist (bundle under /opt vs workspace build)"
+  ],
+  "unrelated_dirty_files": [
+    "VERSION",
+    "ckb-next",
+    "build/rescue/live-build/setuphelfer-rescue-live/README_SETUPHELFER_RESCUE_LIVE.md",
+    "docs/evidence/lab-acceptance/*",
+    "docs/evidence/rescue/*",
+    "docs/evidence/runtime-results/handoff/*",
+    "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json",
+    "frontend/src/lib/sudoUserMessages.ts",
+    "frontend/src/pages/Documentation.tsx",
+    "frontend/src/pages/RaspberryPiConfig.tsx",
+    "docs/evidence/runtime-results/BR-001-full-root-or-profile-2026-05-17.json",
+    ".cursor/rules/*"
+  ],
+  "suspected_root_cause": "Workspace HEAD 84eb309 (5786eb3 manual-command-runs API) not deployed to /opt/setuphelfer; backend/app.py differs by size/mtime; dev_dashboard_manual_command_runs.py missing under /opt",
+  "recommended_resolution": "Operator issues DEPLOY_HELPER_SYNC_FREIGEGEBEN then starts setuphelfer-deploy-helper.service to sync backend files and frontend bundle; re-run check-runtime-deploy-gate.sh until exit 0",
+  "may_deploy_helper_fix": true,
+  "must_not_touch": [
+    "scripts/runtime_deploy_gate_eval.py exit code semantics",
+    "unrelated dirty rescue/lab/ckb-next/VERSION files",
+    "packaging/helpers/setuphelfer-backup-starter.py without explicit operator decision"
+  ],
+  "cockpit_url_current": "http://127.0.0.1:3002/?window=cockpit",
+  "port_5173_status": "not_listening",
+  "port_3001_status": "listening_other_process",
+  "port_3002_status": "listening_vite_cockpit",
+  "safe_test_mode": "LOCKED"
+}

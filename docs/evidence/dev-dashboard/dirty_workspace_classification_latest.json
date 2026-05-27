@@ -1,0 +1,53 @@
+{
+  "head": "84eb309",
+  "categories": {
+    "dev_dashboard_roadmap_evidence": [
+      "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_AUDIT.md",
+      "docs/evidence/dev-dashboard/runtime_deploy_drift_cleanup_audit_latest.json",
+      "docs/evidence/dev-dashboard/DIRTY_WORKSPACE_CLASSIFICATION.md",
+      "docs/evidence/dev-dashboard/dirty_workspace_classification_latest.json",
+      "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_SUMMARY.md",
+      "docs/evidence/dev-dashboard/runtime_deploy_drift_cleanup_summary_latest.json",
+      "docs/evidence/roadmap/ROADMAP_RUNTIME_DRIFT_DELTA.md",
+      "docs/evidence/roadmap/roadmap_runtime_drift_delta_latest.json",
+      "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json",
+      "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.md",
+      "docs/roadmap/setuphelfer_roadmap.json",
+      "docs/roadmap/setuphelfer_next_prompts.json",
+      "docs/dev-dashboard/README.md",
+      "docs/faq/dev_dashboard_faq.md",
+      "docs/knowledge-base/dev-dashboard/MANUAL_COMMAND_RUN_LOGGING.md",
+      "CHANGELOG.md"
+    ],
+    "runtime_deploy_gate_relevant_do_not_commit_blindly": [
+      "packaging/helpers/setuphelfer-backup-starter.py",
+      "backend/app.py (committed; /opt stale)",
+      "backend/core/dev_dashboard_manual_command_runs.py (committed; missing in /opt)"
+    ],
+    "unrelated_do_not_touch": [
+      "VERSION",
+      "ckb-next",
+      "build/rescue/live-build/setuphelfer-rescue-live/README_SETUPHELFER_RESCUE_LIVE.md",
+      "docs/evidence/lab-acceptance/",
+      "docs/evidence/rescue/",
+      "docs/evidence/runtime-results/handoff/",
+      "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json",
+      "frontend/src/lib/sudoUserMessages.ts",
+      "frontend/src/pages/Documentation.tsx",
+      "frontend/src/pages/RaspberryPiConfig.tsx",
+      "docs/evidence/runtime-results/BR-001-full-root-or-profile-2026-05-17.json",
+      ".cursor/rules/"
+    ],
+    "operator_only_risky": [
+      "packaging/helpers/setuphelfer-backup-starter.py",
+      "packaging/systemd/setuphelfer-backup@.service.d/backup-target.conf.example",
+      "setuphelfer-deploy-helper.service",
+      "setuphelfer-backend.service restart"
+    ],
+    "generated_do_not_commit": [
+      "frontend/dist/",
+      "node_modules/",
+      "frontend/public/dev-dashboard.snapshot.json"
+    ]
+  }
+}

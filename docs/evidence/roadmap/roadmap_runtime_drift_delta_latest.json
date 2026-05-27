@@ -1,0 +1,40 @@
+{
+  "head": "84eb309",
+  "changes": [
+    {
+      "area": "runtime-governance",
+      "field": "runtime_phase0_gate",
+      "from": "partial_green_assumed",
+      "to": "blocked_exit_14_deploy_drift_backend_files"
+    },
+    {
+      "area": "runtime-governance",
+      "field": "safe_test_mode",
+      "to": "LOCKED"
+    },
+    {
+      "area": "dev-dashboard",
+      "field": "cockpit_live_under_opt",
+      "to": "yellow_open"
+    },
+    {
+      "area": "prompts",
+      "field": "selected_prompt_id",
+      "from": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "to": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC"
+    },
+    {
+      "area": "rescue",
+      "field": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "to": "recommended_but_blocked_by_runtime_gate"
+    }
+  ],
+  "unchanged_green": [
+    "TERMINAL_A_READONLY_completed",
+    "dev-dashboard-command-logging-readonly",
+    "dashboard-api-tests-venv"
+  ],
+  "unchanged_yellow": [
+    "dashboard-api-tests-system-python"
+  ]
+}

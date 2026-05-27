@@ -41,6 +41,19 @@ Ein dokumentierter manueller Lauf (Operator/Cursor) mit `commands[]`, `safety_cl
 
 Ja — Status **completed** in der Prompt-Registry (5786eb3). Read-only Command Runs über JSON-Evidence und `GET /api/dev-dashboard/manual-command-runs`, ohne Shell aus dem UI.
 
+## Welche URL hat das Development Control Center lokal?
+
+Der Port kommt vom **laufenden Vite-Prozess**, nicht aus einer festen Konstante:
+
+- `npm run dev:cockpit` → Standard **3001**; bei belegtem Port Fallback (z. B. **3002**). Die Zeile `Local: http://127.0.0.1:…` im Terminal ist maßgeblich.
+- `npm run dev:tauri` → **5173** (`--strictPort`).
+- Cockpit-Pfad: `/?window=cockpit` (Beispiel: `http://127.0.0.1:3002/?window=cockpit`).
+- Backend-API bleibt **8000**.
+
 ## Warum ist http://127.0.0.1:5173 nicht erreichbar?
 
-Port **5173** ist nur aktiv, wenn der Vite-Dev-Server läuft (`npm --prefix frontend run dev` oder `npm run dev:cockpit`). Produktiv: gebautes Frontend über Setuphelfer-Backend (Port **8000**) oder Tauri — nicht 5173 ohne laufenden Dev-Server.
+Port **5173** lauscht nur, wenn **Tauri/Vite** mit `dev:tauri` (oder vergleichbar) dort startet. Das Browser-Cockpit (`dev:cockpit`) nutzt **3001/3002**, nicht 5173. Produktiv: gebautes Frontend über Setuphelfer-Backend (**8000**) unter `/opt/setuphelfer`.
+
+## Warum ist das Phase-0-Gate rot (Exit 14)?
+
+`deploy_drift_backend_files`: Workspace-Backend (z. B. `backend/app.py` nach `5786eb3`) weicht von `/opt/setuphelfer` ab. Behebung: Deploy-Helper-Sync durch den Operator, dann `./scripts/check-runtime-deploy-gate.sh` → Exit **0**. Kein Fake-Green in der Roadmap.

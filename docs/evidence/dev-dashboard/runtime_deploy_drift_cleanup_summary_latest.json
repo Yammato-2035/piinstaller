@@ -1,0 +1,55 @@
+{
+  "branch": "main",
+  "head_before": "84eb309",
+  "head_after": "84eb309",
+  "phase0_gate_before": {
+    "exit_code": 14,
+    "status": "blocked"
+  },
+  "phase0_gate_after": {
+    "exit_code": 14,
+    "status": "blocked"
+  },
+  "safe_test_mode": "LOCKED",
+  "drift_root_cause": "Workspace backend ahead of /opt after 5786eb3 manual-command-runs; backend/app.py size/mtime mismatch; dev_dashboard_manual_command_runs.py missing under /opt",
+  "files_classified": [
+    "docs/evidence/dev-dashboard/DIRTY_WORKSPACE_CLASSIFICATION.md",
+    "docs/evidence/dev-dashboard/dirty_workspace_classification_latest.json"
+  ],
+  "cockpit_url_current": "http://127.0.0.1:3002/?window=cockpit",
+  "port_5173_status": "not_listening",
+  "port_3001_status": "listening",
+  "port_3002_status": "listening",
+  "port_8000_status": "listening",
+  "deploy_helper_sync": "not_performed",
+  "roadmap_delta": [
+    "runtime-governance yellow + deploy-drift blocker",
+    "dev-dashboard cockpit-live-opt milestone yellow",
+    "selected_prompt RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC",
+    "RESCUE_ISO deferred until gate green"
+  ],
+  "tests": [
+    {
+      "name": "npm --prefix frontend run build",
+      "passed": true
+    },
+    {
+      "name": "npm --prefix frontend run test -- --run",
+      "passed": true,
+      "files": 10,
+      "tests": 44
+    },
+    {
+      "name": "backend/venv unittest dev_dashboard",
+      "passed": true,
+      "tests": 40
+    },
+    {
+      "name": "json.tool roadmap files",
+      "passed": true
+    }
+  ],
+  "next_prompt": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC",
+  "next_prompt_after_gate_green": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+  "runtime_gate_blocked_static_analysis_only": true
+}

@@ -17,7 +17,8 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 
 - `docs/roadmap/setuphelfer_roadmap.json`, `setuphelfer_next_prompts.json`
 - `TERMINAL_A_READONLY` = **completed** (2026-05-27)
-- Nächster Prompt: **RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD**
+- Nächster Prompt (Gate rot): **RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC** — danach **RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD**
+- Phase-0-Gate aktuell: Exit **14** (`deploy_drift_backend_files`) bis Workspace nach `/opt` synchronisiert ist
 
 ## Manuelle Kommandoläufe (read-only)
 
@@ -28,10 +29,18 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 
 ## Dev-Server (Vite) vs. Produktion
 
-| URL | Voraussetzung |
-|-----|----------------|
-| `http://127.0.0.1:5173/?window=cockpit` | `npm --prefix frontend run dev` (oder `dev:cockpit`) muss laufen |
-| Setuphelfer über Backend | gebautes `frontend/dist` unter `/opt/setuphelfer` |
+Der **Vite-Port ist dynamisch** — nicht fest **5173** für das Browser-Cockpit.
+
+| Modus | Standard-Port | Hinweis |
+|-------|---------------|---------|
+| `npm run dev:cockpit` | **3001** (`vite.config.ts`) | Wenn 3001 belegt ist, weicht Vite z. B. auf **3002** aus — Port im Terminal lesen |
+| `npm run dev:tauri` / Tauri | **5173** (`--strictPort`) | Nur wenn dieser Dev-Server läuft |
+| Produktion | Backend **8000** | `frontend/dist` unter `/opt/setuphelfer` |
+
+**Beispiel (aktuell lokal):** `http://127.0.0.1:3002/?window=cockpit`  
+**Backend-API:** `http://127.0.0.1:8000`
+
+Falsch als feste Annahme: `http://127.0.0.1:5173/?window=cockpit` ohne laufenden Tauri/Vite auf 5173.
 
 ## Phase-0-Gate (Pflicht vor Runtime-Arbeit)
 

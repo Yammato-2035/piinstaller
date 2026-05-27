@@ -1,22 +1,22 @@
 {
-  "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
-  "selected_at": "2026-05-27T22:25:00Z",
-  "reason": "TERMINAL_A_READONLY completed (read-only command logging, 5786eb3). Diagnostics partial. Recovery blocked until real rescue ISO operator build. Verify cockpit UI under /opt before build if deploy drift.",
+  "selected_prompt_id": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC",
+  "selected_at": "2026-05-27T23:45:00Z",
+  "reason": "Phase-0-Gate Exit 14 (deploy_drift_backend_files): workspace backend ahead of /opt after 5786eb3/84eb309. safe_test_mode LOCKED. Rescue ISO build deferred until gate exit 0 and operator deploy-helper sync.",
   "blocked_by": [],
   "unlocks": [
-    "Belastbaren Operator-Terminal-Build-Nachweis",
-    "Aktualisierte Artefakt-/Log-Evidence",
-    "Klarere Trennung zwischen Policy- und Build-Blockern"
+    "Phase-0-Gate Exit 0",
+    "Live GET /api/dev-dashboard/manual-command-runs under /opt",
+    "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
   ],
   "alternative_prompts": [
+    "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
     "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN",
-    "BR001_EXTERNAL_EVIDENCE",
-    "TERMINAL_A_READONLY"
+    "BR001_EXTERNAL_EVIDENCE"
   ],
   "alternative_prompt_details": {
-    "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN": "Bleibt die dokumentierte Alternative, falls der echte Operator-Terminal-Lauf organisatorisch noch nicht möglich ist.",
-    "BR001_EXTERNAL_EVIDENCE": "Bleibt wichtig, blockiert aber den jetzigen Rescue-Build-Root-Blocker nicht direkter als der Operator-Terminal-Prompt.",
-    "TERMINAL_A_READONLY": "Completed 2026-05-27 — read-only command-run logging; not a next prompt."
+    "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD": "Deferred until runtime gate green; then recommended next.",
+    "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN": "Policy alternative if operator terminal build not yet possible.",
+    "BR001_EXTERNAL_EVIDENCE": "Important but not the immediate deploy-drift blocker."
   },
   "mandatory_closure_sections": [
     "dashboard_progress",
@@ -26,5 +26,7 @@
     "not_executed_actions",
     "remaining_blocked_or_deferred"
   ],
-  "source_roadmap_version": "1.0"
+  "source_roadmap_version": "1.0",
+  "source_commit": "84eb309",
+  "after_gate_green_recommended_prompt": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
 }
