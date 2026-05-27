@@ -23,19 +23,49 @@ async function fetchWithTimeout(path: string, init?: RequestInit): Promise<Respo
   }
 }
 
+function mergeRoadmapIntoDashboard(
+  dashboard: DashboardPayload,
+  roadmapBundle: Record<string, unknown> | null,
+): DashboardPayload {
+  const embedded = (dashboard?.roadmap as Record<string, unknown>) || {}
+  const embeddedAreas = Array.isArray(embedded.areas) ? embedded.areas.length : 0
+  if (embeddedAreas > 0) {
+    return {
+      ...dashboard,
+      roadmap_data_source: 'live_api',
+    }
+  }
+  const fromBundle = (roadmapBundle?.roadmap as Record<string, unknown>) || roadmapBundle
+  if (fromBundle && typeof fromBundle === 'object') {
+    return {
+      ...dashboard,
+      roadmap: fromBundle,
+      roadmap_data_source: 'live_api',
+    }
+  }
+  return {
+    ...dashboard,
+    roadmap_data_source: embeddedAreas > 0 ? 'live_api' : 'unavailable',
+  }
+}
+
 async function tryRuntimeApi(statusQuery: string): Promise<DevDashboardLoadResult | null> {
   try {
-    const [r1, r2, r3] = await Promise.all([
+    const roadmapQuery = statusQuery ? `?${statusQuery}` : ''
+    const [r1, r2, r3, r4] = await Promise.all([
       fetchWithTimeout(`${API_STATUS_PATH}?${statusQuery}`),
       fetchWithTimeout('/api/dev-dashboard/modules'),
       fetchWithTimeout('/api/dev-dashboard/evidence-index'),
+      fetchWithTimeout(`/api/dev-dashboard/roadmap${roadmapQuery}`),
     ])
     if (!r1.ok) return null
     const d1 = await r1.json().catch(() => ({}))
     const d2 = await r2.json().catch(() => ({}))
     const d3 = await r3.json().catch(() => ({}))
-    const dashboard = (d1?.dashboard as DashboardPayload) ?? null
-    if (!dashboard) return null
+    const d4 = r4.ok ? await r4.json().catch(() => null) : null
+    const base = (d1?.dashboard as DashboardPayload) ?? null
+    if (!base) return null
+    const dashboard = mergeRoadmapIntoDashboard(base, d4 && typeof d4 === 'object' ? (d4 as Record<string, unknown>) : null)
     return {
       source: 'runtime_api',
       dashboard: { ...dashboard, data_source: 'runtime_api', standalone_mode: false },

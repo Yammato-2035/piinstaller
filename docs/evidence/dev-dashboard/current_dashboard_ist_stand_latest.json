@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-05-27T20:00:00Z",
+  "branch": "main",
+  "head": "20a8303",
+  "version": {
+    "config_version_json": "1.7.2",
+    "api_project_version": "1.7.2",
+    "release_stage": "internal_testing"
+  },
+  "runtime_gate": {
+    "checked": true,
+    "exit_code": 0,
+    "script": "./scripts/check-runtime-deploy-gate.sh",
+    "result": "OK"
+  },
+  "live_api": {
+    "checked": true,
+    "available": true,
+    "backend_runtime_path": "/opt/setuphelfer/backend",
+    "install_profile": "opt",
+    "deploy_drift_status": "green",
+    "runtime_gate_passed": true,
+    "runtime_gate_status": "green",
+    "safe_test_mode_locked": false,
+    "release_gate_status": "rot",
+    "roadmap_areas_count": 13,
+    "rescue_iso_status": "yellow",
+    "usb_write_allowed": false
+  },
+  "workspace": {
+    "git_dirty": true,
+    "notable_dirty_paths": [
+      "packaging/helpers/setuphelfer-backup-starter.py",
+      "frontend/src/pages/DevelopmentDashboard.tsx"
+    ],
+    "frontend_built_locally": true
+  },
+  "services": {
+    "setuphelfer_backend": "active",
+    "setuphelfer_deploy_helper": "inactive"
+  },
+  "runtime_gate_blocked_static_analysis_only": false
+}

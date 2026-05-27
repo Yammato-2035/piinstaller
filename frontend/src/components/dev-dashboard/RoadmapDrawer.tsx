@@ -70,6 +70,9 @@ function fallbackItems(roadmap: JsonRow): JsonRow[] {
 
 export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDrawerProps) {
   const roadmap = (dashboard?.roadmap as JsonRow) || {}
+  const roadmapDataSource = String(
+    dashboard?.roadmap_data_source || dashboard?.data_source || (apiReachable ? 'live_api' : 'snapshot'),
+  )
   const areas = asRows(roadmap.areas)
   const summary = (roadmap.summary as JsonRow) || {}
   const statusCounts = (summary.status_counts as Record<string, number>) || {}
@@ -189,12 +192,26 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
     }
   }
 
+  const dataSourceBanner = (
+    <p className="text-[11px] text-slate-400 mt-1" data-testid="dev-dashboard-roadmap-data-source">
+      {t('devDashboard.roadmap.dataSource')}: <span className="font-mono text-slate-300">{roadmapDataSource}</span>
+      {!apiReachable ? (
+        <span className="ml-2 text-amber-300/90">({t('devDashboard.roadmap.offlineHint')})</span>
+      ) : null}
+    </p>
+  )
+
   if (areas.length === 0) {
     const items = fallbackItems(roadmap)
     return (
       <section className="rounded-xl border border-violet-700/40 bg-violet-950/15 p-4" data-testid="dev-dashboard-roadmap-panel">
         <h2 className="text-base font-semibold text-white">{t('devDashboard.roadmap.title')}</h2>
-        <p className="text-xs text-slate-400 mt-1">{String(roadmap.validation_warnings || t('devDashboard.roadmap.noHistory'))}</p>
+        {dataSourceBanner}
+        <p className="text-xs text-slate-400 mt-1">
+          {items.length
+            ? t('devDashboard.roadmap.partialSnapshot')
+            : String(roadmap.validation_warnings || t('devDashboard.roadmap.unavailable'))}
+        </p>
         <ul className="mt-4 space-y-2 text-xs">
           {items.length ? (
             items.slice(0, 12).map((item, index) => (
@@ -217,6 +234,7 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
         <div>
           <h2 className="text-base font-semibold text-white">{t('devDashboard.roadmap.title')}</h2>
           <p className="text-xs text-slate-300 mt-1">{t('devDashboard.roadmap.subtitle')}</p>
+          {dataSourceBanner}
         </div>
         <div className="text-xs text-slate-400">
           {t('devDashboard.roadmap.runtimeOverlay')}: {String(runtimeOverlay.runtime_gate_status || t('devDashboard.standalone.unavailable'))}

@@ -5,6 +5,7 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 | Oberfläche | Zweck | Einstieg |
 |----------|--------|---------|
 | **Development Cockpit** (inline) | Modulboard, Roadmap, Detail-Panels | `?page=dev-dashboard` oder Sidebar (Browser-Fallback) |
+| **Governance Cockpit** (`CockpitApp`) | Governance-Matrix, Roadmap-Registry (ab 2026-05-27), Gate-Panels | Separater Build/Einstieg — Roadmap erst nach Frontend-Deploy live unter `/opt` |
 | **Development Control Center** (extern) | Live-Governance, 16-Bereiche-Matrix, Timeline | Tauri-Fenster `cockpit` oder `?window=cockpit` |
 
 ## Runtime vs. Standalone

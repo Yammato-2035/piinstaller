@@ -73,8 +73,18 @@ function buildRoadmapFromScan(scan: WorkspaceScanResult, matrixText?: string): R
       evidence_refs: Array.isArray(mod.evidence_files) ? mod.evidence_files : [],
     })
   }
+  const flatItems = [...tabs.created, ...tabs.in_progress, ...tabs.planned, ...tabs.blocked]
+  const areas = flatItems.map((item, index) => ({
+    id: `standalone-matrix-${index}`,
+    title_de: String(item.title || item.id || 'Eintrag'),
+    title_en: String(item.title || item.id || 'entry'),
+    status: String(item.status || 'unknown'),
+    milestones: [],
+    source: String(item.source || 'snapshot'),
+  }))
   return {
     tabs,
+    areas,
     counts: Object.fromEntries(Object.entries(tabs).map(([k, v]) => [k, v.length])),
     changed_to_green: {
       available: false,
@@ -84,6 +94,8 @@ function buildRoadmapFromScan(scan: WorkspaceScanResult, matrixText?: string): R
     green_without_evidence: [],
     missing_matrix_entries: scan.matrix?.exists ? [] : ['docs/roadmap/STATUS_MATRIX.md'],
     warnings: scan.warnings || [],
+    read_only: true,
+    data_source_note: 'snapshot_or_workspace',
   }
 }
 
@@ -249,6 +261,7 @@ export function buildStandaloneDashboardFromScan(
     },
     tests_evidence: buildTestsEvidence(scan),
     roadmap: buildRoadmapFromScan(scan, opts?.matrixText),
+    roadmap_data_source: source === 'snapshot' ? 'snapshot' : 'workspace',
     structure_health: buildStructureHealth(scan, runtimeGate),
     warnings: [
       ...(scan.warnings || []),

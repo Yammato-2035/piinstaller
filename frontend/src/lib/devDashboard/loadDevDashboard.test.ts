@@ -29,6 +29,14 @@ describe('loadDevDashboard', () => {
       if (path.includes('/modules')) {
         return { ok: true, json: async () => ({ modules: [] }) } as Response
       }
+      if (path.includes('/roadmap')) {
+        return {
+          ok: true,
+          json: async () => ({
+            roadmap: { areas: [{ id: 'diagnostics', title_de: 'Diagnostik', status: 'yellow', milestones: [] }] },
+          }),
+        } as Response
+      }
       return { ok: true, json: async () => ({}) } as Response
     })
 
@@ -36,6 +44,9 @@ describe('loadDevDashboard', () => {
     expect(result.source).toBe('runtime_api')
     expect(result.apiReachable).toBe(true)
     expect(result.capabilities.runtimeTests).toBe(true)
+    const roadmap = result.dashboard?.roadmap as Record<string, unknown>
+    expect(Array.isArray(roadmap?.areas)).toBe(true)
+    expect((roadmap?.areas as unknown[]).length).toBeGreaterThan(0)
   })
 
   it('falls back to unavailable when api and tauri and snapshot fail', async () => {

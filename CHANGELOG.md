@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Fixed (Dev Dashboard roadmap visibility in governance cockpit)
+- **Roadmap UI:** `ExternalDevelopmentControlCenter` bindet jetzt `RoadmapDrawer` ein (vorher nur Governance-Matrix trotz API-Daten); Datenquellen-Banner und Snapshot-`areas[]` aus STATUS_MATRIX.
+- **Green visibility:** `ReadyStableSection` und OK-Badges für belegte grüne Gates — ohne Änderung der Backend-Statuslogik.
+
 ### Added (Diagnostics test track and global Cursor closure rules)
 - **Diagnostics / Teststrecke:** Reproduzierbare Diagnostics-Teststrecke fuer Rescue-Build-, Backup-, Restore-, Runtime-/Deploy-, Notification- und Architektur-Faelle mit Evidence-Dateien, DE/EN-Doku und gezielten Backend-Tests.
 - **Diagnostics / Mapping:** Neue Diagnosecodes `RESCUE-BUILD-TOOL-001`, `RESCUE-BUILD-RSVG-001` und `NOTIFICATION-EMAIL-PROVIDER-001`; Rescue-/Provider-Limit-Fehler werden jetzt als wiederverwendbare Diagnosekandidaten dokumentiert und getestet.

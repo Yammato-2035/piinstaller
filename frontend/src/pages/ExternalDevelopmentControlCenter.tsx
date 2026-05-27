@@ -11,6 +11,8 @@ import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
 import { NotificationPanel } from '../components/dev-dashboard/NotificationPanel'
 import { DeployDriftPanel } from '../components/dev-dashboard/DeployDriftPanel'
+import { RoadmapDrawer } from '../components/dev-dashboard/RoadmapDrawer'
+import { ReadyStableSection } from '../components/dev-dashboard/ReadyStableSection'
 import { SafeTestModePanel } from '../components/dev-dashboard/SafeTestModePanel'
 import { UpdateStatusCard } from '../components/dev-dashboard/UpdateStatusCard'
 import { writeCockpitRefreshSec } from '../lib/devDashboard/cockpitWindow'
@@ -258,12 +260,18 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
             <GovernanceMatrixGrid areas={mon.areas} t={t} />
           </section>
 
+          {mon.dashboard ? <ReadyStableSection dashboard={mon.dashboard} t={t} /> : null}
+
           {mon.viewMode === 'operations' && mon.dashboard ? (
             <section className="space-y-4" data-testid="cockpit-operations-panels">
               <RuntimeGatePanel dashboard={mon.dashboard} t={t} />
               <SafeTestModePanel dashboard={mon.dashboard} t={t} />
               <DeployDriftPanel dashboard={mon.dashboard} t={t} />
             </section>
+          ) : null}
+
+          {mon.dashboard ? (
+            <RoadmapDrawer dashboard={mon.dashboard} t={t} apiReachable={mon.apiReachable} />
           ) : null}
         </>
       )}

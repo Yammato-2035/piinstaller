@@ -1,0 +1,104 @@
+{
+  "generated_at": "2026-05-27T20:00:00Z",
+  "candidates": [
+    {
+      "area": "runtime_gate",
+      "current": "green",
+      "missing_proof": "none — Gate Exit 0, API passed true",
+      "effort": "low",
+      "risk": "low",
+      "allowed_now": true,
+      "recommendation": "Nur Darstellung verbessern (ReadyStableSection, OK-Badge) — erledigt im Workspace-Fix"
+    },
+    {
+      "area": "deploy_drift",
+      "current": "green",
+      "missing_proof": "none — manifest match, helper deploy abgenommen",
+      "effort": "low",
+      "risk": "low",
+      "allowed_now": true,
+      "recommendation": "Im Dashboard hervorheben + Evidence-Link DEPLOY_DRIFT_SINGLE_FILE_FIX.md"
+    },
+    {
+      "area": "documentation",
+      "current": "yellow",
+      "missing_proof": "Doku/Evidence-Sync für neue Roadmap-FAQ",
+      "effort": "low",
+      "risk": "low",
+      "allowed_now": true,
+      "recommendation": "FAQ/KB ergänzen (kein Ampel-Upgrade)"
+    },
+    {
+      "area": "i18n",
+      "current": "yellow",
+      "missing_proof": "de/en Keys für Roadmap-Datenquelle",
+      "effort": "low",
+      "risk": "low",
+      "allowed_now": true,
+      "recommendation": "Keys synchron halten — erledigt im Fix"
+    },
+    {
+      "area": "roadmap",
+      "current": "partial",
+      "missing_proof": "UI-Einbindung Cockpit + optional Frontend-Deploy",
+      "effort": "low",
+      "risk": "low",
+      "allowed_now": true,
+      "recommendation": "RoadmapDrawer im Cockpit — Code-Fix; Live-Sichtbarkeit nach Frontend-Deploy"
+    },
+    {
+      "area": "diagnostics",
+      "current": "yellow",
+      "missing_proof": "Echte Fehlerfall-Teststrecke + HW",
+      "effort": "medium",
+      "risk": "medium",
+      "allowed_now": false,
+      "recommendation": "Fortschritt anzeigen, nicht auf green setzen"
+    },
+    {
+      "area": "rescue_iso",
+      "current": "yellow",
+      "missing_proof": "ISO-Artefakt, Boot, RSVG-Build-Deps",
+      "effort": "high",
+      "risk": "forbidden_now",
+      "allowed_now": false,
+      "recommendation": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD — kein Fake-Green"
+    },
+    {
+      "area": "backup",
+      "current": "red",
+      "missing_proof": "BR-001-OFFLINE HW E2E",
+      "effort": "high",
+      "risk": "forbidden_now",
+      "allowed_now": false,
+      "recommendation": "Nicht grün ohne BR-001-Nachweis"
+    },
+    {
+      "area": "restore",
+      "current": "red",
+      "missing_proof": "Restore-Evidence HW",
+      "effort": "high",
+      "risk": "forbidden_now",
+      "allowed_now": false,
+      "recommendation": "Deferred — Matrix dokumentiert"
+    },
+    {
+      "area": "packaging",
+      "current": "red",
+      "missing_proof": "Installationsabnahme deb/rpm",
+      "effort": "high",
+      "risk": "forbidden_now",
+      "allowed_now": false,
+      "recommendation": "Readiness anzeigen, install_test_passed=false belassen"
+    },
+    {
+      "area": "release_readiness",
+      "current": "red",
+      "missing_proof": "CI/E2E/Legal Gates",
+      "effort": "high",
+      "risk": "forbidden_now",
+      "allowed_now": false,
+      "recommendation": "release_gate_status rot belassen"
+    }
+  ]
+}

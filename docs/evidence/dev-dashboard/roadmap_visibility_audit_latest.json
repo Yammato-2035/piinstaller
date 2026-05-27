@@ -1,0 +1,29 @@
+{
+  "roadmap_visibility_status": "not_visible",
+  "runtime_gate_status": "green",
+  "live_api_checked": true,
+  "workspace_checked": true,
+  "frontend_has_roadmap_component": true,
+  "backend_provides_roadmap_data": true,
+  "snapshot_provides_roadmap_data": "partial",
+  "i18n_present": true,
+  "suspected_root_cause": "ExternalDevelopmentControlCenter (CockpitApp) renderte kein RoadmapDrawer; Governance-Matrix ersetzt Roadmap optisch. DevelopmentDashboard hat Roadmap nur unter Sidebar overview/roadmap — leicht übersehen. Offline-Snapshot lieferte tabs ohne areas[].",
+  "evidence": [
+    "frontend/src/pages/ExternalDevelopmentControlCenter.tsx — vor Fix ohne RoadmapDrawer",
+    "frontend/src/CockpitApp.tsx — nur ExternalDevelopmentControlCenter",
+    "frontend/src/pages/DevelopmentDashboard.tsx — RoadmapDrawer nur bei section overview|roadmap",
+    "GET /api/dev-dashboard/status — roadmap.areas length 13 (Live)",
+    "frontend/src/lib/devDashboard/loadDevDashboard.ts — lädt Status; Roadmap-Fallback ergänzt",
+    "frontend/src/components/dev-dashboard/RoadmapDrawer.tsx"
+  ],
+  "recommended_minimal_fix": "RoadmapDrawer in ExternalDevelopmentControlCenter einbinden; Datenquellen-Banner; Snapshot areas[] aus STATUS_MATRIX; ReadyStableSection für belegte grüne Gates.",
+  "must_not_do": [
+    "roadmap_status_faken",
+    "gates_auf_gruen_setzen_ohne_evidence",
+    "backend_restart",
+    "deploy",
+    "sudo"
+  ],
+  "visibility_after_fix": "visible",
+  "fix_applied_in_workspace": true
+}

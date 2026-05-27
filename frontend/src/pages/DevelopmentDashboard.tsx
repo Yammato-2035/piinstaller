@@ -22,6 +22,7 @@ import { StructuralHealthPanel } from '../components/dev-dashboard/StructuralHea
 import { CommitHygienePanel } from '../components/dev-dashboard/CommitHygienePanel'
 import { DocsConsistencyPanel } from '../components/dev-dashboard/DocsConsistencyPanel'
 import { RoadmapDrawer } from '../components/dev-dashboard/RoadmapDrawer'
+import { ReadyStableSection } from '../components/dev-dashboard/ReadyStableSection'
 import { AIExportPanel } from '../components/dev-dashboard/AIExportPanel'
 import { StandaloneModeBanner } from '../components/dev-dashboard/StandaloneModeBanner'
 import { UpdateStatusCard } from '../components/dev-dashboard/UpdateStatusCard'
@@ -174,6 +175,7 @@ const DevelopmentDashboard: React.FC = () => {
               label={t('devDashboard.runtimeGate.title')}
               value={runtimeGateLabel}
               tone={!apiReachable || rg.passed === false ? 'red' : String(rg.status || 'gray')}
+              emphasizeOk={apiReachable && rg.passed === true}
               testId="dev-dashboard-runtime-gate-summary"
             />
             <StatusCard
@@ -189,6 +191,10 @@ const DevelopmentDashboard: React.FC = () => {
               testId="dev-dashboard-structure-health-summary"
             />
           </div>
+
+          {(section === 'overview' || section === 'gates') && dashboard ? (
+            <ReadyStableSection dashboard={dashboard} t={t} />
+          ) : null}
 
           {(section === 'overview' || section === 'gates') && (
             <>

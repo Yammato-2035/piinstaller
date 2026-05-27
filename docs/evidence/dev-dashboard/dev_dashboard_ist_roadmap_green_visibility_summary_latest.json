@@ -1,0 +1,49 @@
+{
+  "branch": "main",
+  "head_before": "20a8303",
+  "head_after": "pending_commit",
+  "version": "1.7.2",
+  "runtime_gate": {
+    "checked": true,
+    "status": "OK",
+    "exit_code": 0
+  },
+  "live_api": {
+    "checked": true,
+    "available": true,
+    "notes": [
+      "roadmap.areas=13 in /api/dev-dashboard/status",
+      "deploy_drift=green, runtime_gate.passed=true"
+    ]
+  },
+  "roadmap": {
+    "visibility_before": "not_visible",
+    "root_cause": "CockpitApp ohne RoadmapDrawer; Governance-Matrix statt Registry-Roadmap",
+    "fix_applied": true,
+    "visibility_after": "visible_after_frontend_deploy",
+    "data_source": "live_api"
+  },
+  "green_visibility": {
+    "changed": true,
+    "status_logic_changed": false,
+    "areas_improved": ["runtime_gate", "deploy_drift", "ready_stable_section"]
+  },
+  "low_effort_green_candidates": [
+    "runtime_gate",
+    "deploy_drift",
+    "documentation",
+    "i18n",
+    "roadmap_ui"
+  ],
+  "tests": [
+    "npm --prefix frontend run build — OK",
+    "npm --prefix frontend run test -- --run — 44 passed",
+    "PYTHONPATH=backend python3 -m unittest backend.tests.test_dev_dashboard_v1 — OK"
+  ],
+  "blocked_items": [
+    "frontend_deploy_to_opt_required_for_live_cockpit_roadmap",
+    "rescue_iso_build",
+    "backup_restore_hw"
+  ],
+  "next_prompt_recommendation": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
+}
