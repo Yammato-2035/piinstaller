@@ -8,6 +8,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BUILD_ROOT="${REPO_ROOT}/build/rescue/live-build/setuphelfer-rescue-live"
 BUNDLE_SRC="${REPO_ROOT}/build/rescue/temp-runtime/setuphelfer-rescue-runtime"
 BUNDLE_DST="${BUILD_ROOT}/config/includes.chroot/opt/setuphelfer-rescue"
+RSVG_COMPAT="${REPO_ROOT}/build/rescue/tool-compat/bin/rsvg"
+RSVG_CHROOT="${BUILD_ROOT}/config/includes.chroot/usr/local/bin/rsvg"
 BOOTLOADER_DIR="${BUILD_ROOT}/config/bootloaders/isolinux"
 BOOTLOADER_TEMPLATE_ROOT="/usr/share/live/build/bootloaders/isolinux"
 TRASH_ROOT="${REPO_ROOT}/build/rescue/.trash"
@@ -61,12 +63,14 @@ die() { echo "ERROR: $*" >&2; exit 1; }
 
 [[ -d "$BUNDLE_SRC" ]] || die "temp runtime bundle missing — run create-temp-runtime-bundle.sh first"
 [[ -f "$BUNDLE_SRC/MANIFEST.json" ]] || die "bundle MANIFEST.json missing"
+[[ -x "$RSVG_COMPAT" ]] || die "rsvg compat wrapper missing: $RSVG_COMPAT"
 
 mkdir -p \
   "${BUILD_ROOT}/config/package-lists" \
   "${BUILD_ROOT}/config/archives" \
   "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system" \
   "${BUILD_ROOT}/config/includes.chroot/etc/systemd/network" \
+  "${BUILD_ROOT}/config/includes.chroot/usr/local/bin" \
   "${BUILD_ROOT}/config/hooks/normal" \
   "${BOOTLOADER_DIR}" \
   "${BUILD_ROOT}/auto" \
@@ -84,6 +88,8 @@ copy_host_file "${BOOTLOADER_TEMPLATE_ROOT}/live.cfg.in" "${BOOTLOADER_DIR}/live
 copy_host_file "${BOOTLOADER_TEMPLATE_ROOT}/menu.cfg" "${BOOTLOADER_DIR}/menu.cfg" 0644
 copy_host_file "${BOOTLOADER_TEMPLATE_ROOT}/splash.svg.in" "${BOOTLOADER_DIR}/splash.svg.in" 0644
 copy_host_file "${BOOTLOADER_TEMPLATE_ROOT}/stdmenu.cfg" "${BOOTLOADER_DIR}/stdmenu.cfg" 0644
+copy_host_file "$RSVG_COMPAT" "$RSVG_CHROOT" 0755
+
 copy_host_file "$HOST_ISOLINUX_BIN" "${BOOTLOADER_DIR}/isolinux.bin" 0644
 copy_host_file "$HOST_VESAMENU_C32" "${BOOTLOADER_DIR}/vesamenu.c32" 0644
 for module in ldlinux.c32 libcom32.c32 libutil.c32 libmenu.c32; do
@@ -267,7 +273,8 @@ write_text_file "${BUILD_ROOT}/README_SETUPHELFER_RESCUE_LIVE.md" 0644 <<EOF
 ## Vorbereitung (bereits erledigt durch prepare-controlled-live-build-tree.sh)
 
 1. Temp-Runtime-Bundle unter \`config/includes.chroot/opt/setuphelfer-rescue/\`
-2. Paketliste, systemd-networkd, local-only Services, Hooks
+2. Legacy-\`rsvg\`-Compat unter \`config/includes.chroot/usr/local/bin/rsvg\` (rsvg-convert)
+3. Paketliste, systemd-networkd, local-only Services, Hooks
 
 ## ISO-Build (NUR nach Operator-Freigabe)
 

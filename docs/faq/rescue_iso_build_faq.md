@@ -13,6 +13,8 @@ Diagnostisch sind das deshalb zwei verschiedene Fälle:
 
 Nicht für den aktuellen `syslinux`-Theme-Pfad von `live-build`. Es reicht aber aus, um einen kontrollierten projektlokalen Kompatibilitätswrapper zu speisen.
 
+**Wichtig:** Der Host-`PATH`-Wrapper unter `build/rescue/tool-compat/bin/rsvg` reicht **nicht** — `lb build` ruft `rsvg` **im Chroot** auf. Der Wrapper muss unter `config/includes.chroot/usr/local/bin/rsvg` liegen (setzt `prepare-controlled-live-build-tree.sh`). Fehlerbild: `/usr/bin/env: 'rsvg': No such file or directory`, `LB_EXIT=127`.
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.

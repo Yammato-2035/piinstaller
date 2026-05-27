@@ -19,6 +19,7 @@ REQ=(
   config/package-lists/setuphelfer.list.chroot
   config/archives/debian-security.list.chroot
   config/archives/debian-security.list.binary
+  config/includes.chroot/usr/local/bin/rsvg
   config/includes.chroot/opt/setuphelfer-rescue/MANIFEST.json
   config/includes.chroot/opt/setuphelfer-rescue/scripts/rescue-live/start-backend-localonly.sh
   config/includes.chroot/opt/setuphelfer-rescue/scripts/rescue-live/start-ui-localonly.sh
@@ -37,6 +38,7 @@ REQ=(
 for rel in "${REQ[@]}"; do
   [[ -e "$BUILD_ROOT/$rel" ]] || fail_missing "$rel"
 done
+[[ -x "$BUILD_ROOT/config/includes.chroot/usr/local/bin/rsvg" ]] || fail_missing "usr/local/bin/rsvg not executable"
 
 if ! grep -q 'Use controlled gate before running lb build' "$BUILD_ROOT/auto/build"; then
   fail_missing "auto/build gate message"
