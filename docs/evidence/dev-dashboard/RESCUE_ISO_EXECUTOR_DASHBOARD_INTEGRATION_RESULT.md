@@ -347,3 +347,50 @@ Nach dem letzten Helper-Deploy `deploy-20260525T193756Z-954998` wurde die produk
 ### Bewertung
 
 Der Rescue-ISO-Executor ist fuer den read-only/prebuild-Pfad produktiv **gruen**. Der echte ISO-Build bleibt weiterhin ein separater Operator-Sudo-Schritt ausserhalb dieses Strict-Mode-Laufs; deshalb wird kein ISO-Erfolg vorgetaeuscht.
+
+## Zweiter echter ISO-Build-Versuch (fe36af0)
+
+Nach `fe36af0` wurde der echte Build erneut kontrolliert gestartet, diesmal im Lauf "Controlled Rescue ISO Build + USB Write Gate + First Boot Prep".
+
+### Vor dem Build
+
+- Runtime-Gate: **Exit 0**
+- `detect_stale_state` vor dem Build: **ok**, `needs_sudo_clean = false`
+- `prepare_bundle`, `validate_bundle`, `prepare_tree`, `validate_tree`: **ok**
+- `dpkg_preflight`: **ok** / `pre_chroot_ok`
+- Dashboard-Befehl blieb korrekt:
+  - `cd "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live"`
+  - `./auto/config`
+  - `sudo lb build noauto`
+
+### Ergebnis
+
+- `LB_EXIT = 127`
+- keine `.iso`
+- primaerer Fehler:
+
+```text
+/usr/bin/env: 'rsvg': No such file or directory
+LB_EXIT=127
+```
+
+- `scan_iso` → **review_required**
+  - `iso_found = false`
+  - heuristische `secret_hits` und `cdn_hits`
+- `summarize` → **ok**
+- Dashboard danach:
+  - `status = red`
+  - `next_operator_action.type = sudo_clean_required`
+  - `stale_state.needs_sudo_clean = true`
+  - `usb_write.allowed = false`
+
+### Bewertung
+
+Der Executor-/Dashboard-Pfad bleibt fuer Prepare-/Validate-Schritte verifiziert. Der zweite echte Build war jedoch erneut **fehlgeschlagen**; deshalb blieb die USB-Phase strikt blockiert und wurde nicht gestartet.
+
+## Nachtrag: Deploy-Drift-False-Positive (`2c7e9ee`, 2026-05-27)
+
+- Bekannter Blocker **nicht** `runtime_file_outdated` am Packaging-Helper, sondern `workspace_dirty_uncommitted` mit Dashboard-False-Positive.
+- Nach Code-Fix und Helper-Deploy zu `/opt` soll `operator_policy_gate` nicht mehr allein wegen dieses Drifts blockieren; `usb_write.allowed` bleibt **false**.
+- Evidence: `docs/evidence/dev-dashboard/DEPLOY_DRIFT_SINGLE_FILE_FIX.md`
+- Naechster enger Prompt nach gruenem internen Gate: `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD`

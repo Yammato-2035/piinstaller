@@ -150,3 +150,10 @@ Der finale Phase-0-Lauf liefert:
 
 Die Architektur fuer den sicheren, kontrollierten Deploy ist umgesetzt, produktiv installiert und gegen die laufende Runtime erfolgreich abgenommen.
 Deploy-Gate, Deploy-/Update-API und Cockpit-UI sind fuer diesen Scope **gruen**; automatische Updates, Paketmanager-Aktionen und verbotene Schreibpfade bleiben weiterhin ausgeschlossen.
+
+## Nachtrag: Single-File-Deploy-Drift (`2c7e9ee`, 2026-05-27)
+
+- **Problem:** `packaging/helpers/setuphelfer-backup-starter.py` wirkte gelb, obwohl `/opt` mit `git HEAD` uebereinstimmte (uncommitteter Workspace-Drift).
+- **Fix:** `backend/core/dev_dashboard.py` + `dev_dashboard_cockpit.py` (siehe `DEPLOY_DRIFT_SINGLE_FILE_FIX.md`).
+- **Vor Deploy:** Live-API `runtime_gate.exit_code = 14`, zusaetzlich `dev_dashboard.py` noch nicht in `/opt`.
+- **Naechster Schritt:** `sudo systemctl start setuphelfer-deploy-helper.service`, danach Gate Exit `0` und `deploy_drift.status = green` erwartet.

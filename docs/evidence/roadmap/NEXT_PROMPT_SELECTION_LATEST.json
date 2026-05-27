@@ -1,8 +1,10 @@
 {
   "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
-  "selected_at": "2026-05-26T21:45:29Z",
-  "reason": "Diagnostics now has explicit rescue-build, provider-limit, architecture, UI, and evidence tracking. The next meaningful technical blocker is the real controlled rescue build from a documented operator terminal.",
-  "blocked_by": [],
+  "selected_at": "2026-05-27T12:00:00Z",
+  "reason": "Deploy-drift false positive on setuphelfer-backup-starter.py is fixed in code (2c7e9ee). After one controlled deploy-helper run to /opt, the next step is the documented operator terminal rescue ISO build.",
+  "blocked_by": [
+    "runtime_deploy_helper_pending_for_2c7e9ee"
+  ],
   "unlocks": [
     "Belastbaren Operator-Terminal-Build-Nachweis",
     "Aktualisierte Artefakt-/Log-Evidence",
