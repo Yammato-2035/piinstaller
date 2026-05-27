@@ -1,10 +1,8 @@
 {
   "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
-  "selected_at": "2026-05-27T12:00:00Z",
-  "reason": "Deploy-drift false positive on setuphelfer-backup-starter.py is fixed in code (2c7e9ee). After one controlled deploy-helper run to /opt, the next step is the documented operator terminal rescue ISO build.",
-  "blocked_by": [
-    "runtime_deploy_helper_pending_for_2c7e9ee"
-  ],
+  "selected_at": "2026-05-27T18:00:00Z",
+  "reason": "Deploy drift and runtime gate are green after helper deploy (2c7e9ee/3a4fc75). Rescue ISO status is yellow for build/policy reasons only. Next: documented operator terminal controlled ISO build.",
+  "blocked_by": [],
   "unlocks": [
     "Belastbaren Operator-Terminal-Build-Nachweis",
     "Aktualisierte Artefakt-/Log-Evidence",

@@ -156,4 +156,4 @@ Deploy-Gate, Deploy-/Update-API und Cockpit-UI sind fuer diesen Scope **gruen**;
 - **Problem:** `packaging/helpers/setuphelfer-backup-starter.py` wirkte gelb, obwohl `/opt` mit `git HEAD` uebereinstimmte (uncommitteter Workspace-Drift).
 - **Fix:** `backend/core/dev_dashboard.py` + `dev_dashboard_cockpit.py` (siehe `DEPLOY_DRIFT_SINGLE_FILE_FIX.md`).
 - **Vor Deploy:** Live-API `runtime_gate.exit_code = 14`, zusaetzlich `dev_dashboard.py` noch nicht in `/opt`.
-- **Naechster Schritt:** `sudo systemctl start setuphelfer-deploy-helper.service`, danach Gate Exit `0` und `deploy_drift.status = green` erwartet.
+- **Abnahme 2026-05-27:** Helper-Deploy durch Operator; Gate Exit `0`, `deploy_drift.status = green`, `deploy/status` = success.

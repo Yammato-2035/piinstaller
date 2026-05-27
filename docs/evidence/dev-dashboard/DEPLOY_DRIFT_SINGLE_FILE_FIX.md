@@ -83,3 +83,19 @@ curl -s http://127.0.0.1:8000/api/dev-dashboard/rescue-iso/status | jq '.status,
 
 - `GET /api/dev-dashboard/deploy/status`: `runtime_gate.exit_code` = **14**, `deploy_drift.status` = **yellow**
 - `GET /api/dev-dashboard/rescue-iso/status`: `status` = **red**, `usb_write.allowed` = **false**
+
+## Runtime-Abnahme (nach `setuphelfer-deploy-helper.service`, Operator 2026-05-27)
+
+| Check | Ergebnis |
+|-------|----------|
+| `./scripts/check-runtime-deploy-gate.sh` | **Exit 0** — OK (Version, Pfad, deploy_drift/Manifest) |
+| `deploy/status` → `runtime_gate.exit_code` | **0** |
+| `deploy/status` → `deploy_drift.status` | **green** |
+| `deploy/status` → `status` | **success** |
+| `rescue-iso/status` → `status` | **yellow** (nicht mehr rot wegen Deploy-Drift) |
+| `rescue-iso/status` → `operator_policy_gate` | **review_required**, `blocked_reasons` = `[]` |
+| `rescue-iso/status` → `usb_write.allowed` | **false** |
+
+**Fazit:** Deploy-Drift-Auftrag **abgenommen**. Rescue bleibt gelb aus Build-/Policy-Gründen (`next_operator_action`: `operator_policy_required`), nicht wegen des Packaging-Helper-False-Positives.
+
+**Nächster Prompt:** `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD`
