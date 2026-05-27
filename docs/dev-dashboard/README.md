@@ -13,6 +13,20 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 - **Runtime-API** (`source=runtime_api`): Backend unter `/opt/setuphelfer`, Endpunkte `/api/dev-dashboard/*`. Gates und Drift beziehen sich auf die produktive Installation.
 - **Standalone** (API offline): Workspace-Scan (Tauri) oder Snapshot (`frontend/public/dev-dashboard.snapshot.json`). **Safe Test Mode bleibt LOCKED** — keine Runtime-Tests, kein Backup/Restore.
 
+## Manuelle Kommandoläufe (read-only)
+
+- Evidence: `docs/evidence/dev-dashboard/manual_command_runs/*.json`
+- API: `GET /api/dev-dashboard/manual-command-runs`
+- UI: Developer Dashboard → **Struktur** → Panel „Manuelle Kommandoläufe“
+- **Keine** Shell-Ausführung aus dem Dashboard
+
+## Dev-Server (Vite) vs. Produktion
+
+| URL | Voraussetzung |
+|-----|----------------|
+| `http://127.0.0.1:5173/?window=cockpit` | `npm --prefix frontend run dev` (oder `dev:cockpit`) muss laufen |
+| Setuphelfer über Backend | gebautes `frontend/dist` unter `/opt/setuphelfer` |
+
 ## Phase-0-Gate (Pflicht vor Runtime-Arbeit)
 
 ```bash

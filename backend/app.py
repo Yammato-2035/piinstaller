@@ -4102,6 +4102,14 @@ async def dev_dashboard_evidence_index():
     return dev_dashboard_core.build_evidence_index()
 
 
+@app.get("/api/dev-dashboard/manual-command-runs")
+async def dev_dashboard_manual_command_runs():
+    """Read-only: strukturierte manuelle Kommandoläufe aus Evidence-JSON (keine Shell-Ausführung)."""
+    from core.dev_dashboard_manual_command_runs import build_manual_command_runs_index
+
+    return build_manual_command_runs_index()
+
+
 @app.get("/api/dev-dashboard/roadmap")
 async def dev_dashboard_roadmap(
     frontend_build_version: str | None = Query(default=None),

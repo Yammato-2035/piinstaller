@@ -1,0 +1,23 @@
+{
+  "branch": "main",
+  "head_before": "40cde4e",
+  "runtime_gate": { "exit_code": 0, "status": "ok" },
+  "api_test_skip_cause": "system_python3_missing_fastapi",
+  "backend_tests": {
+    "dev_dashboard_v1_venv": { "passed": 34, "skipped": 0, "failed": 0 },
+    "dev_dashboard_v1_system_python3": { "passed": 23, "skipped": 11, "failed": 0 },
+    "manual_command_runs_v1_venv": { "passed": true }
+  },
+  "frontend_tests": { "vitest": "44 passed", "build": "ok" },
+  "readonly_logging": {
+    "evidence_dir": "docs/evidence/dev-dashboard/manual_command_runs",
+    "api_route": "GET /api/dev-dashboard/manual-command-runs",
+    "execute_routes": false
+  },
+  "vite_5173_note": "not_listening_unless_npm_run_dev",
+  "open_risks": [
+    "frontend_and_backend_deploy_required_for_live_panel_under_opt",
+    "uncommitted_roadmap_cockpit_ux_still_in_workspace"
+  ],
+  "next_prompt": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
+}

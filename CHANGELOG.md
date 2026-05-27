@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added (Dev Dashboard read-only manual command run logging)
+- **Evidence:** Schema und JSON-Ablage unter `docs/evidence/dev-dashboard/manual_command_runs/` für vollständige Operator-/Cursor-Kommandonachweise (kein Chat-only).
+- **API:** `GET /api/dev-dashboard/manual-command-runs` — read-only, keine Execute-Route.
+- **UI:** Panel „Manuelle Kommandoläufe“ im Developer Dashboard (Struktur).
+- **Triage:** `DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md` — 11 API-Test-Skips nur bei System-`python3` ohne `fastapi`; `backend/venv/bin/python3` läuft grün.
+
 ### Fixed (Dev Dashboard roadmap visibility in governance cockpit)
 - **Roadmap UI:** `ExternalDevelopmentControlCenter` bindet jetzt `RoadmapDrawer` ein (vorher nur Governance-Matrix trotz API-Daten); Datenquellen-Banner und Snapshot-`areas[]` aus STATUS_MATRIX.
 - **Green visibility:** `ReadyStableSection` und OK-Badges für belegte grüne Gates — ohne Änderung der Backend-Statuslogik.

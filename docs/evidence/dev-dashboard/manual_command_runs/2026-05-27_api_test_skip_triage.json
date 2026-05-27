@@ -1,0 +1,54 @@
+{
+  "run_id": "2026-05-27-api-test-skip-triage",
+  "created_at": "2026-05-27T20:15:00Z",
+  "operator": "cursor-agent",
+  "branch": "main",
+  "head": "40cde4e",
+  "phase0_gate": {
+    "command": "./scripts/check-runtime-deploy-gate.sh",
+    "exit_code": 0,
+    "status": "ok"
+  },
+  "commands": [
+    {
+      "command": "PYTHONPATH=backend python3 -m unittest backend.tests.test_dev_dashboard_v1 -v",
+      "purpose": "Reproduce API test skips with system python3",
+      "exit_code": 0,
+      "stdout_excerpt": "OK (skipped=11)",
+      "stderr_excerpt": "",
+      "full_log_path": "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md",
+      "safety_class": "read_only",
+      "notes": "Full triage in linked evidence markdown."
+    },
+    {
+      "command": "PYTHONPATH=backend backend/venv/bin/python3 -m unittest backend.tests.test_dev_dashboard_v1 -v",
+      "purpose": "API tests with venv interpreter",
+      "exit_code": 0,
+      "stdout_excerpt": "Ran 34 tests ... OK",
+      "stderr_excerpt": "",
+      "full_log_path": "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md",
+      "safety_class": "read_only",
+      "notes": "0 skipped with backend/venv/bin/python3"
+    }
+  ],
+  "artifacts": [
+    "docs/evidence/dev-dashboard/dev_dashboard_api_test_skip_triage_latest.json"
+  ],
+  "tests": [
+    {
+      "interpreter": "/usr/bin/python3",
+      "skipped": 11,
+      "passed": 23
+    },
+    {
+      "interpreter": "backend/venv/bin/python3",
+      "skipped": 0,
+      "passed": 34
+    }
+  ],
+  "not_executed": ["deploy", "backup", "restore", "sudo"],
+  "summary": {
+    "status": "ok",
+    "reason": "API skip root cause documented; venv interpreter runs full API suite."
+  }
+}

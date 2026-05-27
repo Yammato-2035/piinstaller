@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ManualCommandRun",
+  "type": "object",
+  "required": ["run_id", "created_at", "commands", "summary"],
+  "properties": {
+    "run_id": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "operator": { "type": "string" },
+    "branch": { "type": "string" },
+    "head": { "type": "string" },
+    "phase0_gate": {
+      "type": "object",
+      "properties": {
+        "command": { "type": "string" },
+        "exit_code": { "type": ["integer", "null"] },
+        "status": { "type": "string" }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["command", "safety_class"],
+        "properties": {
+          "command": { "type": "string" },
+          "purpose": { "type": "string" },
+          "started_at": { "type": "string" },
+          "completed_at": { "type": "string" },
+          "exit_code": { "type": ["integer", "null"] },
+          "stdout_excerpt": { "type": "string" },
+          "stderr_excerpt": { "type": "string" },
+          "full_log_path": { "type": "string" },
+          "safety_class": { "enum": ["read_only", "operator_action", "forbidden"] },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "artifacts": { "type": "array" },
+    "tests": { "type": "array" },
+    "not_executed": { "type": "array", "items": { "type": "string" } },
+    "summary": {
+      "type": "object",
+      "required": ["status", "reason"],
+      "properties": {
+        "status": { "enum": ["ok", "yellow", "blocked"] },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

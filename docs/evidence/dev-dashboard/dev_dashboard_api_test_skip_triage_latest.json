@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-05-27T20:15:00Z",
+  "head": "40cde4e",
+  "root_cause": "system_python3_missing_fastapi",
+  "system_python3": {
+    "fastapi": "missing",
+    "testclient": "missing",
+    "app_import": "missing",
+    "unittest_skipped": 11,
+    "unittest_passed": 23
+  },
+  "backend_venv_python3": {
+    "path": "backend/venv/bin/python3",
+    "fastapi_version": "0.135.1",
+    "testclient": "ok",
+    "app_import": "ok",
+    "unittest_skipped": 0,
+    "unittest_passed": 34
+  },
+  "recommended_command": "PYTHONPATH=backend backend/venv/bin/python3 -m unittest backend.tests.test_dev_dashboard_v1 -v",
+  "api_test_status": "green_with_venv_yellow_with_system_python_only"
+}
