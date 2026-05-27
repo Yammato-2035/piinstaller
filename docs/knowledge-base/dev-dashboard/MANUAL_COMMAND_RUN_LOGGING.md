@@ -26,4 +26,13 @@ Cursor- und Operator-Läufe sollen **vollständig** nachvollziehbar sein — nic
 
 ## API-Tests
 
-`backend/venv/bin/python3` verwenden — System-Python ohne `fastapi` skippt 11 API-Tests (siehe `DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md`).
+| Interpreter | Ergebnis |
+|-------------|----------|
+| `backend/venv/bin/python3` | 34 passed, 0 skipped — **grün** |
+| System-`python3` | 23 passed, 11 skipped — **gelb** (kein Produktfehler) |
+
+## Roadmap
+
+- Prompt `TERMINAL_A_READONLY`: **completed**
+- Nächster empfohlener Prompt: `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD`
+- Vor Rescue-Build: Cockpit-/Roadmap-UI unter `/opt` per Deploy-Helper prüfen

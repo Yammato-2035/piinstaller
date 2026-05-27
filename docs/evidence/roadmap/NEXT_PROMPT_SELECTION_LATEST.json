@@ -1,7 +1,7 @@
 {
   "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
-  "selected_at": "2026-05-27T18:00:00Z",
-  "reason": "Deploy drift and runtime gate are green after helper deploy (2c7e9ee/3a4fc75). Rescue ISO status is yellow for build/policy reasons only. Next: documented operator terminal controlled ISO build.",
+  "selected_at": "2026-05-27T22:25:00Z",
+  "reason": "TERMINAL_A_READONLY completed (read-only command logging, 5786eb3). Diagnostics partial. Recovery blocked until real rescue ISO operator build. Verify cockpit UI under /opt before build if deploy drift.",
   "blocked_by": [],
   "unlocks": [
     "Belastbaren Operator-Terminal-Build-Nachweis",
@@ -16,7 +16,7 @@
   "alternative_prompt_details": {
     "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN": "Bleibt die dokumentierte Alternative, falls der echte Operator-Terminal-Lauf organisatorisch noch nicht möglich ist.",
     "BR001_EXTERNAL_EVIDENCE": "Bleibt wichtig, blockiert aber den jetzigen Rescue-Build-Root-Blocker nicht direkter als der Operator-Terminal-Prompt.",
-    "TERMINAL_A_READONLY": "Wurde vom Diagnostics-Fortschrittsgrid teilweise absorbiert und ist deshalb kein vorrangiger nächster Prompt mehr."
+    "TERMINAL_A_READONLY": "Completed 2026-05-27 — read-only command-run logging; not a next prompt."
   },
   "mandatory_closure_sections": [
     "dashboard_progress",

@@ -204,7 +204,11 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
   if (areas.length === 0) {
     const items = fallbackItems(roadmap)
     return (
-      <section className="rounded-xl border border-violet-700/40 bg-violet-950/15 p-4" data-testid="dev-dashboard-roadmap-panel">
+      <section
+        id="dev-dashboard-roadmap-panel"
+        className="rounded-xl border border-violet-700/40 bg-violet-950/15 p-4"
+        data-testid="dev-dashboard-roadmap-panel"
+      >
         <h2 className="text-base font-semibold text-white">{t('devDashboard.roadmap.title')}</h2>
         {dataSourceBanner}
         <p className="text-xs text-slate-400 mt-1">
@@ -229,7 +233,11 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
   }
 
   return (
-    <section className="space-y-4 rounded-xl border border-violet-700/40 bg-violet-950/15 p-4" data-testid="dev-dashboard-roadmap-panel">
+    <section
+      id="dev-dashboard-roadmap-panel"
+      className="space-y-4 rounded-xl border border-violet-700/40 bg-violet-950/15 p-4"
+      data-testid="dev-dashboard-roadmap-panel"
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-base font-semibold text-white">{t('devDashboard.roadmap.title')}</h2>

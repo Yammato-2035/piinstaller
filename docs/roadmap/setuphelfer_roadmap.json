@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-26T21:45:29Z",
+  "generated_at": "2026-05-27T22:25:00Z",
   "project_version": "1.7.2",
-  "source_commit": "9ad7477",
+  "source_commit": "5786eb3",
   "source_audit_ref": "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md",
   "authoritative_sources": [
     "docs/evidence/release-gates/backup_restore_release_gate.json",
@@ -19,7 +19,10 @@
     "docs/evidence/diagnostics/RESCUE_BUILD_DIAGNOSTICS_MAPPING_LATEST.json",
     "docs/evidence/diagnostics/DIAGNOSTICS_TEST_TRACK_LATEST.json",
     "docs/evidence/diagnostics/DIAGNOSTICS_UI_EVALUATION_LATEST.json",
-    "docs/evidence/diagnostics/GLOBAL_CURSOR_RULES_INTEGRATION_LATEST.json"
+    "docs/evidence/diagnostics/GLOBAL_CURSOR_RULES_INTEGRATION_LATEST.json",
+    "docs/evidence/dev-dashboard/DEV_DASHBOARD_READONLY_COMMAND_LOGGING_SUMMARY.md",
+    "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md",
+    "docs/evidence/dev-dashboard/manual_command_runs/manual_command_run.schema.json"
   ],
   "areas": [
     {
@@ -867,8 +870,8 @@
       "id": "dev-dashboard",
       "title_de": "Dev Dashboard",
       "title_en": "Dev Dashboard",
-      "description_de": "Das Dashboard ist produktiv als read-only Cockpit vorhanden. Die neue Roadmap-/Next-Prompt-Registry ist implementiert, aber noch nicht als produktiv grün verifiziert.",
-      "description_en": "The dashboard exists as a production read-only cockpit. The new roadmap/next-prompt registry is implemented, but not yet proven green in production.",
+      "description_de": "Read-only Cockpit mit Roadmap-Registry und Command-Run-Logging (5786eb3). API-Tests mit backend/venv grün; System-Python ohne fastapi bleibt gelb (11 skipped). Vor Rescue-ISO-Build: Cockpit-/Roadmap-UI unter /opt per Deploy-Helper prüfen, falls noch alt.",
+      "description_en": "Read-only cockpit with roadmap registry and command-run logging (5786eb3). API tests green with backend/venv; system Python without fastapi stays yellow (11 skipped). Before rescue ISO build: verify cockpit/roadmap UI under /opt via deploy helper if stale.",
       "status": "partial_green",
       "priority": "P1",
       "owner": "Setuphelfer Dashboard",
@@ -878,9 +881,73 @@
       "evidence_level": "static_analysis",
       "authoritative_evidence": [
         "docs/evidence/dev-dashboard/PROJECT_OVERVIEW_DASHBOARD_INTEGRATION_RESULT.md",
-        "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md"
+        "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md",
+        "docs/evidence/dev-dashboard/DEV_DASHBOARD_READONLY_COMMAND_LOGGING_SUMMARY.md",
+        "docs/evidence/dev-dashboard/dev_dashboard_readonly_command_logging_summary_latest.json",
+        "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md"
       ],
       "milestones": [
+        {
+          "id": "dev-dashboard-command-logging-readonly",
+          "title_de": "Read-only Command-Run-Logging",
+          "title_en": "Read-only command-run logging",
+          "status": "green",
+          "progress_percent": 100,
+          "planned_start": "2026-05-27",
+          "planned_end": "2026-05-27",
+          "completed_at": "2026-05-27",
+          "evidence_links": [
+            "docs/evidence/dev-dashboard/DEV_DASHBOARD_READONLY_COMMAND_LOGGING_SUMMARY.md",
+            "docs/evidence/dev-dashboard/manual_command_runs/manual_command_run.schema.json",
+            "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md"
+          ],
+          "tasks": [
+            {
+              "id": "dashboard-command-logging-api-ui",
+              "title_de": "GET-API, Evidence-JSON und Dashboard-Panel (read-only)",
+              "title_en": "GET API, evidence JSON, and dashboard panel (read-only)",
+              "status": "green",
+              "progress_percent": 100,
+              "evidence_links": [
+                "docs/evidence/dev-dashboard/DEV_DASHBOARD_READONLY_COMMAND_LOGGING_SUMMARY.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Keine Execute-Route hinzufügen.",
+              "next_action_en": "Do not add execute routes."
+            },
+            {
+              "id": "dashboard-api-tests-venv",
+              "title_de": "Dev-Dashboard-API-Tests mit backend/venv",
+              "title_en": "Dev dashboard API tests with backend/venv",
+              "status": "green",
+              "progress_percent": 100,
+              "evidence_links": [
+                "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "CI/Operator immer backend/venv/bin/python3 verwenden.",
+              "next_action_en": "Always use backend/venv/bin/python3 in CI/operator runs."
+            },
+            {
+              "id": "dashboard-api-tests-system-python",
+              "title_de": "System-Python ohne fastapi (11 API-Tests skipped)",
+              "title_en": "System Python without fastapi (11 API tests skipped)",
+              "status": "yellow",
+              "progress_percent": 100,
+              "evidence_links": [
+                "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md"
+              ],
+              "blocker_refs": [
+                "system-python-missing-fastapi"
+              ],
+              "next_action_de": "Nicht als Produktfehler werten; optional separates venv in CI dokumentieren.",
+              "next_action_en": "Not a production defect; optionally document venv in CI only."
+            }
+          ],
+          "blockers": [],
+          "decision_refs": [],
+          "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
+        },
         {
           "id": "dev-dashboard-roadmap-registry",
           "title_de": "Roadmap-Registry und Next-Prompt-Export",
@@ -923,14 +990,26 @@
           ],
           "blockers": [],
           "decision_refs": [],
-          "next_prompt_id": "TERMINAL_A_READONLY"
+          "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
         }
       ],
       "blockers": [],
       "decisions": [],
-      "notes": [],
-      "next_prompt_id": "TERMINAL_A_READONLY",
-      "next_recommended_action": "Read-only Roadmap- und Prompt-Nutzung festigen und manuelle Kommando-Protokollierung ergänzen."
+      "notes": [
+        {
+          "id": "dev-dashboard-live-deploy-before-rescue",
+          "area_id": "dev-dashboard",
+          "text_de": "Vor RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD: Deploy-Helper prüfen, ob Cockpit-Roadmap- und Command-Logging-UI unter /opt aktuell sind (Hard-Reload / Bundle-Check).",
+          "text_en": "Before RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD: verify deploy helper synced cockpit roadmap and command-logging UI under /opt (hard reload / bundle check).",
+          "created_at": "2026-05-27",
+          "author": "Cursor",
+          "evidence_links": [
+            "docs/evidence/dev-dashboard/DEV_DASHBOARD_COCKPIT_ROADMAP_LIVE_DEPLOY_SYNC.md"
+          ]
+        }
+      ],
+      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "next_recommended_action": "Command-Logging abgeschlossen; nächster Schritt: kontrollierter Rescue-ISO-Operator-Build im Terminal (kein Dashboard-Execute)."
     },
     {
       "id": "packaging-update",

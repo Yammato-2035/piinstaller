@@ -1,0 +1,10 @@
+{
+  "head": "5786eb3",
+  "evidence_sources_verified": true,
+  "frontend_build_ok": true,
+  "frontend_vitest": { "passed": 44, "skipped": 0 },
+  "backend_venv": { "test_dev_dashboard_v1": { "passed": 34, "skipped": 0 }, "manual_command_runs_v1": "ok" },
+  "backend_system_python3": { "test_dev_dashboard_v1": { "passed": 23, "skipped": 11 } },
+  "execute_routes": false,
+  "phase0_gate_exit_code": 14
+}

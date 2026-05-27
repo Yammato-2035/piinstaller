@@ -1,0 +1,10 @@
+{
+  "review_status": "approve_commit",
+  "files": [
+    "frontend/src/pages/ExternalDevelopmentControlCenter.tsx",
+    "frontend/src/components/dev-dashboard/RoadmapDrawer.tsx"
+  ],
+  "changes_status_logic": false,
+  "fake_green": false,
+  "recommendation": "commit_with_roadmap_completion"
+}

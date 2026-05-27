@@ -119,6 +119,16 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
           {viewBtn('operations', t('devDashboard.governance.view.operations'))}
           {viewBtn('compact', t('devDashboard.governance.view.compact'))}
           {viewBtn('timeline', t('devDashboard.governance.view.timeline'))}
+          <button
+            type="button"
+            className="px-3 py-1.5 rounded-md text-xs font-medium border border-violet-600/60 text-violet-100 hover:bg-violet-950/40"
+            data-testid="cockpit-scroll-roadmap"
+            onClick={() => {
+              document.getElementById('dev-dashboard-roadmap-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }}
+          >
+            {t('devDashboard.nav.roadmap')}
+          </button>
           <label className="text-xs text-slate-400 flex items-center gap-1">
             {t('devDashboard.governance.refreshSec')}
             <select
@@ -180,6 +190,13 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
             </li>
           ))}
         </ul>
+      ) : null}
+
+      {mon.viewMode !== 'timeline' && mon.dashboard ? (
+        <>
+          {mon.dashboard ? <ReadyStableSection dashboard={mon.dashboard} t={t} /> : null}
+          <RoadmapDrawer dashboard={mon.dashboard} t={t} apiReachable={mon.apiReachable} />
+        </>
       ) : null}
 
       <RescueStickBoard dashboard={mon.dashboard} />
@@ -260,18 +277,12 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
             <GovernanceMatrixGrid areas={mon.areas} t={t} />
           </section>
 
-          {mon.dashboard ? <ReadyStableSection dashboard={mon.dashboard} t={t} /> : null}
-
           {mon.viewMode === 'operations' && mon.dashboard ? (
             <section className="space-y-4" data-testid="cockpit-operations-panels">
               <RuntimeGatePanel dashboard={mon.dashboard} t={t} />
               <SafeTestModePanel dashboard={mon.dashboard} t={t} />
               <DeployDriftPanel dashboard={mon.dashboard} t={t} />
             </section>
-          ) : null}
-
-          {mon.dashboard ? (
-            <RoadmapDrawer dashboard={mon.dashboard} t={t} apiReachable={mon.apiReachable} />
           ) : null}
         </>
       )}

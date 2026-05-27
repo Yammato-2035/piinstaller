@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Roadmap command logging completion)
+- **TERMINAL_A_READONLY** auf `completed` gesetzt; neuer grüner Milestone `dev-dashboard-command-logging-readonly`; System-Python-API-Tests separat **gelb** dokumentiert.
+- **Nächster Prompt** bleibt `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD` mit Hinweis auf Live-Deploy-Check der Cockpit-UI vor dem Build.
+
 ### Added (Dev Dashboard read-only manual command run logging)
 - **Evidence:** Schema und JSON-Ablage unter `docs/evidence/dev-dashboard/manual_command_runs/` für vollständige Operator-/Cursor-Kommandonachweise (kein Chat-only).
 - **API:** `GET /api/dev-dashboard/manual-command-runs` — read-only, keine Execute-Route.

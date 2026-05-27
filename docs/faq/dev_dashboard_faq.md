@@ -37,6 +37,10 @@ Ein dokumentierter manueller Lauf (Operator/Cursor) mit `commands[]`, `safety_cl
 
 `python3` ohne `fastapi` skippt `TestDevDashboardApiV1` (11 Tests). Mit `backend/venv/bin/python3` laufen alle 34 Tests. Siehe `docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md`.
 
+## Ist TERMINAL_A_READONLY erledigt?
+
+Ja — Status **completed** in der Prompt-Registry (5786eb3). Read-only Command Runs über JSON-Evidence und `GET /api/dev-dashboard/manual-command-runs`, ohne Shell aus dem UI.
+
 ## Warum ist http://127.0.0.1:5173 nicht erreichbar?
 
 Port **5173** ist nur aktiv, wenn der Vite-Dev-Server läuft (`npm --prefix frontend run dev` oder `npm run dev:cockpit`). Produktiv: gebautes Frontend über Setuphelfer-Backend (Port **8000**) oder Tauri — nicht 5173 ohne laufenden Dev-Server.

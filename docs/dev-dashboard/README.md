@@ -13,6 +13,12 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 - **Runtime-API** (`source=runtime_api`): Backend unter `/opt/setuphelfer`, Endpunkte `/api/dev-dashboard/*`. Gates und Drift beziehen sich auf die produktive Installation.
 - **Standalone** (API offline): Workspace-Scan (Tauri) oder Snapshot (`frontend/public/dev-dashboard.snapshot.json`). **Safe Test Mode bleibt LOCKED** — keine Runtime-Tests, kein Backup/Restore.
 
+## Roadmap-Registry
+
+- `docs/roadmap/setuphelfer_roadmap.json`, `setuphelfer_next_prompts.json`
+- `TERMINAL_A_READONLY` = **completed** (2026-05-27)
+- Nächster Prompt: **RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD**
+
 ## Manuelle Kommandoläufe (read-only)
 
 - Evidence: `docs/evidence/dev-dashboard/manual_command_runs/*.json`

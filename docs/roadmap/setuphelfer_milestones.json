@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-26T21:45:29Z",
+  "generated_at": "2026-05-27T22:25:00Z",
   "project_version": "1.7.2",
   "source_commit": "9ad7477",
   "milestones": [
@@ -186,13 +186,35 @@
       ]
     },
     {
+      "id": "dev-dashboard-command-logging-readonly",
+      "area_id": "dev-dashboard",
+      "title_de": "Read-only Command-Run-Logging",
+      "title_en": "Read-only command-run logging",
+      "status": "green",
+      "progress_percent": 100,
+      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "evidence_links": [
+        "docs/evidence/dev-dashboard/DEV_DASHBOARD_READONLY_COMMAND_LOGGING_SUMMARY.md",
+        "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md"
+      ],
+      "task_ids": [
+        "dashboard-command-logging-api-ui",
+        "dashboard-api-tests-venv",
+        "dashboard-api-tests-system-python"
+      ],
+      "blocker_ids": [
+        "system-python-missing-fastapi"
+      ],
+      "decision_refs": []
+    },
+    {
       "id": "dev-dashboard-roadmap-registry",
       "area_id": "dev-dashboard",
       "title_de": "Roadmap-Registry und Next-Prompt-Export",
       "title_en": "Roadmap registry and next-prompt export",
       "status": "partial_green",
       "progress_percent": 80,
-      "next_prompt_id": "TERMINAL_A_READONLY",
+      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
       "evidence_links": [
         "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md"
       ],

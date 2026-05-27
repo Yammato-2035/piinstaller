@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-26T21:45:29Z",
+  "generated_at": "2026-05-27T22:25:00Z",
   "project_version": "1.7.2",
-  "source_commit": "9ad7477",
+  "source_commit": "5786eb3",
   "selection_policy": [
     "Priorität 1: Fehlender Nachweis, der mehrere Bereiche blockiert, zuerst.",
     "Priorität 2: Wiederkehrende Unklarheit im Dashboard zuerst transparent machen.",
@@ -76,10 +76,10 @@
       "title_de": "Dev Dashboard Read-only Terminal / Command Runs",
       "title_en": "Dev dashboard read-only terminal / command runs",
       "scope": "Sichere Protokollierung manueller Kommandos und read-only Terminaldarstellung im Dashboard.",
-      "status": "available",
-      "reason_de": "Nach der Registry ist ein read-only Terminalpfad sinnvoll, damit manuelle Prüfkommandos nachvollziehbar dokumentiert werden.",
-      "reason_en": "After the registry, a read-only terminal path makes sense so manual verification commands are documented.",
-      "prompt_text": "Erweitere das Dashboard um eine read-only Ansicht für manuelle Kommandoläufe, ohne irgendeine Shell-Aktion direkt aus dem UI auszulösen.",
+      "status": "completed",
+      "reason_de": "Read-only Command-Run-Evidence, GET-API und Dashboard-Panel sind implementiert und mit backend/venv getestet (5786eb3). Keine Execute-Route. System-Python-API-Tests bleiben separat gelb dokumentiert.",
+      "reason_en": "Read-only command-run evidence, GET API, and dashboard panel are implemented and tested with backend/venv (5786eb3). No execute route. System-Python API tests remain documented as yellow separately.",
+      "prompt_text": "Abgeschlossen: read-only manuelle Kommandoläufe unter docs/evidence/dev-dashboard/manual_command_runs/ und GET /api/dev-dashboard/manual-command-runs — keine Shell aus dem UI.",
       "blocked_by": [],
       "unlocks": [
         "Saubere Dokumentation manueller Checks",
@@ -108,7 +108,10 @@
         "Frontend-Render-/Static-Tests"
       ],
       "documentation_targets": [
-        "docs/dev-dashboard/ROADMAP_REGISTRY_DE.md"
+        "docs/dev-dashboard/ROADMAP_REGISTRY_DE.md",
+        "docs/evidence/dev-dashboard/DEV_DASHBOARD_READONLY_COMMAND_LOGGING_SUMMARY.md",
+        "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md",
+        "docs/knowledge-base/dev-dashboard/MANUAL_COMMAND_RUN_LOGGING.md"
       ],
       "non_goals": [
         "Keine Terminal-Steuerung",
@@ -116,7 +119,13 @@
         "Keine Operator-Eskalation aus dem Dashboard"
       ],
       "created_at": "2026-05-26",
-      "updated_at": "2026-05-26"
+      "updated_at": "2026-05-27",
+      "completed_at": "2026-05-27",
+      "completion_evidence": [
+        "docs/evidence/dev-dashboard/DEV_DASHBOARD_READONLY_COMMAND_LOGGING_SUMMARY.md",
+        "docs/evidence/dev-dashboard/dev_dashboard_readonly_command_logging_summary_latest.json",
+        "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md"
+      ]
     },
     {
       "id": "DIAGNOSTICS_TEST_TRACK",

@@ -1,0 +1,42 @@
+{
+  "updated_prompts": ["TERMINAL_A_READONLY"],
+  "updated_areas": ["dev-dashboard"],
+  "updated_milestones": ["dev-dashboard-command-logging-readonly", "dev-dashboard-roadmap-registry"],
+  "status_before": {
+    "TERMINAL_A_READONLY": "available",
+    "dev-dashboard.next_prompt_id": "TERMINAL_A_READONLY"
+  },
+  "status_after": {
+    "TERMINAL_A_READONLY": "completed",
+    "dev-dashboard-command-logging-readonly": "green",
+    "dashboard-api-tests-system-python": "yellow",
+    "dev-dashboard.next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
+  },
+  "green_changes": [
+    "dev-dashboard-command-logging-readonly",
+    "dashboard-command-logging-api-ui",
+    "dashboard-api-tests-venv"
+  ],
+  "yellow_kept": [
+    "dashboard-api-tests-system-python",
+    "dev-dashboard area partial_green",
+    "backup",
+    "rescue-stick",
+    "packaging-update"
+  ],
+  "blocked_kept": ["backup-br001-offline", "verify", "rescue-iso-artifact"],
+  "recommended_next_prompt_before": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+  "recommended_next_prompt_after": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+  "area_status_counts": {
+    "partial_green": 3,
+    "blocked": 3,
+    "deferred": 2,
+    "yellow": 4,
+    "unknown": 1
+  },
+  "fake_green_prevention": [
+    "dev-dashboard area remains partial_green",
+    "system-python api tests documented yellow",
+    "no recovery gates set to green"
+  ]
+}
