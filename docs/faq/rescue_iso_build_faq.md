@@ -35,6 +35,8 @@ Weil `auto/build` im kontrollierten Live-Build-Tree absichtlich nur das Safety-G
 
 Weil der Wrapper in einer Umgebung ohne echtes Terminal und ohne dokumentierte `sudo -n`-Policy lief. Das ist **kein** `rsvg`-, Toolchain- oder `live-build`-Konfigurationsfehler, sondern ein eigener Root-/Operator-Policy-Blocker.
 
+**Stand 2026-05-27 (Manual Operator Prompt):** Cursor/Agent-Shell ohne TTY → Exit **30**, `build_started=false`, kein ISO. Evidence: `docs/evidence/runtime-results/rescue/RESCUE_ISO_MANUAL_OPERATOR_BUILD_CLASSIFICATION.md`. Wiederholung nur im **echten Operator-Terminal** nach `sudo -v` (kein `sudo -S`, kein Askpass).
+
 ## Was ist jetzt die kurzfristig sichere Loesung?
 
 Den Wrapper aus einem echten Operator-Terminal mit gueltigen `sudo`-Rechten starten. Alternativ kann der Operator eine eng begrenzte sudo-Allowlist fuer genau diesen dokumentierten Wrapper vorbereiten. Setuphelfer installiert dabei **keine** Policy automatisch.

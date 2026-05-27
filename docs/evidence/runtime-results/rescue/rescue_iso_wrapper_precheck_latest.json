@@ -1,0 +1,14 @@
+{
+  "wrapper_path": "scripts/rescue-live/run-controlled-iso-build-with-logging.sh",
+  "wrapper_executable": true,
+  "runbook": "docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md",
+  "policy_guard_present": true,
+  "policy_block_code": "blocked_requires_operator_sudo_policy",
+  "policy_block_exit": 30,
+  "logging_latest": "build/rescue/logs/controlled-iso-build/latest.log",
+  "summary_json": "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+  "usb_write_allowed": false,
+  "dd_in_wrapper": false,
+  "requires_flag": "--operator-confirm-build",
+  "precheck_ok": true
+}

@@ -1,21 +1,22 @@
 {
   "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
-  "selected_at": "2026-05-27T22:45:00Z",
-  "reason": "Phase-0-Gate Exit 0; deploy_drift green; safe_test_mode UNLOCKED; manual-command-runs and roadmap APIs live under /opt. Drift-cleanup prompt completed. Next: controlled rescue ISO operator terminal build.",
-  "blocked_by": [],
+  "selected_at": "2026-05-27T22:50:00Z",
+  "reason": "Manual operator ISO build attempt ended operator_policy_blocked (exit 30, no TTY in agent shell). Re-run wrapper with --operator-confirm-build from real operator terminal after sudo -v. No ISO artifact; rescue stays blocked.",
+  "blocked_by": [
+    "operator_terminal_no_tty",
+    "blocked_requires_operator_sudo_policy"
+  ],
   "unlocks": [
-    "Operator-Terminal-Build-Evidence",
-    "Rescue-Artefakt-/Log-Nachweis"
+    "ISO artifact evidence",
+    "Rescue partial_green at most (no full green without boot)"
   ],
   "alternative_prompts": [
     "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN",
-    "BR001_EXTERNAL_EVIDENCE",
-    "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC"
+    "RESCUE_ISO_BUILD_FAILURE_TRIAGE"
   ],
   "alternative_prompt_details": {
-    "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN": "Policy fallback if terminal build not yet possible.",
-    "BR001_EXTERNAL_EVIDENCE": "Important parallel track, not the immediate rescue-build blocker.",
-    "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC": "Completed 2026-05-27 — gate green, /opt synced."
+    "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN": "If interactive operator sudo is not available and allowlisted sudo -n is required.",
+    "RESCUE_ISO_BUILD_FAILURE_TRIAGE": "Only after a build was started and failed technically — not applicable to policy-only block."
   },
   "mandatory_closure_sections": [
     "dashboard_progress",
@@ -26,5 +27,5 @@
     "remaining_blocked_or_deferred"
   ],
   "source_roadmap_version": "1.0",
-  "source_commit": "21af233"
+  "source_commit": "11e27b6"
 }

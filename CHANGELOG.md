@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO manual operator build — policy blocked in agent shell)
+- **Wrapper:** `run-controlled-iso-build-with-logging.sh --operator-confirm-build` ? Exit **30** in Agent-Umgebung (kein TTY, kein `sudo -n`); **kein** `lb build`, **kein** ISO.
+- **Evidence:** `RESCUE_ISO_MANUAL_OPERATOR_BUILD_CLASSIFICATION.md`, `controlled_iso_build_latest_summary.json`.
+- **Roadmap:** Rescue bleibt **blocked**; nächster Schritt: gleicher Prompt im **echten Operator-Terminal** nach `sudo -v` (Alternative: `RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN`).
+- **Nicht ausgeführt:** USB-Write, Restore, Verify Deep, Hardware-/Boot-/VM-Test.
+
 ### Changed (Deploy-helper sync verification and runtime gate green)
 - **Phase-0-Gate:** Exit **0** — `/opt` synchron mit Workspace (`backend/app.py`, `dev_dashboard_manual_command_runs.py`); `deploy_drift` green, `safe_test_mode` UNLOCKED.
 - **Live-API:** `GET /api/dev-dashboard/manual-command-runs` und `/roadmap` HTTP **200** unter `/opt`.

@@ -1,0 +1,17 @@
+{
+  "head": "11e27b6",
+  "classification": "operator_policy_blocked",
+  "diagnostics_expectations": {
+    "operator_policy_blocked": true,
+    "build_failed": false,
+    "artifact_present": false,
+    "usb_write": false
+  },
+  "unittest_modules": [
+    "backend.tests.test_rescue_iso_build_dashboard_state_v1",
+    "backend.tests.test_rescue_iso_build_result_classification_v1",
+    "backend.tests.test_diagnostics_rescue_build_mapping_v1"
+  ],
+  "unittest_result": "32 tests OK",
+  "controlled_gate_signal_recognized": true
+}

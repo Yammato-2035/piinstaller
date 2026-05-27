@@ -39,6 +39,17 @@ Schritt-für-Schritt-Anleitung für einen **kontrollierten** Debian-Live-ISO-Bui
 build/rescue/live-build/setuphelfer-rescue-live/
 ```
 
+## Operator-Terminal (Pflicht für echten Build)
+
+```bash
+cd /home/volker/piinstaller
+sudo -v   # interaktiv, gleiche Shell — kein Passwort über stdin
+scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build
+echo "wrapper_exit=$?"
+```
+
+**Nicht** aus Cursor-Agent-Shells ohne TTY: Policy-Guard blockiert mit Exit **30** (`blocked_requires_operator_sudo_policy`). Evidence 2026-05-27: `RESCUE_ISO_MANUAL_OPERATOR_BUILD_CLASSIFICATION.md`.
+
 ## Dashboard-Primärweg
 
 1. `GET /api/dev-dashboard/rescue-iso/status` oder Cockpit-Panel **Rettungsstick ISO-Build**

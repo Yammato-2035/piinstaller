@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-27T22:45:00Z",
+  "generated_at": "2026-05-27T22:50:00Z",
   "project_version": "1.7.2",
-  "source_commit": "21af233",
+  "source_commit": "11e27b6",
   "selection_policy": [
     "Priorität 1: Fehlender Nachweis, der mehrere Bereiche blockiert, zuerst.",
     "Priorität 2: Wiederkehrende Unklarheit im Dashboard zuerst transparent machen.",
@@ -495,10 +495,13 @@
       "title_en": "Rescue ISO manual operator terminal build",
       "scope": "Echten kontrollierten Rescue-ISO-Build ausschließlich aus einem realen Operator-Terminal mit sauberem Root-/TTY-Rahmen anstoßen und dokumentieren.",
       "status": "recommended_next",
-      "reason_de": "Phase-0-Gate grün; deploy_drift bereinigt. Nächster technischer Blocker: echter kontrollierter Operator-Terminal-Build.",
-      "reason_en": "Phase 0 gate green; deploy_drift cleared. Next technical blocker: real controlled operator terminal build.",
+      "reason_de": "2026-05-27: Agent-Lauf Exit 30 (kein TTY). Operator muss Wrapper im echten Terminal nach sudo -v wiederholen. Phase-0 weiter grün; kein ISO.",
+      "reason_en": "2026-05-27: agent run exit 30 (no TTY). Operator must retry wrapper in a real terminal after sudo -v. Phase 0 still green; no ISO.",
       "prompt_text": "Führe den dokumentierten kontrollierten Rescue-ISO-Build nur in einem echten Operator-Terminal aus, sammle Artefakt-/Log-/Gate-Evidence und halte USB-Write, Restore und Hardwaretests weiterhin strikt getrennt.",
-      "blocked_by": [],
+      "blocked_by": [
+        "operator_terminal_no_tty",
+        "blocked_requires_operator_sudo_policy"
+      ],
       "unlocks": [
         "Echten kontrollierten Rescue-Build-Nachweis",
         "Aktualisierte Artefakt-/Log-Evidence",

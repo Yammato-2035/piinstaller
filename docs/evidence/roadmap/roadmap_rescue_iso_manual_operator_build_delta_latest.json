@@ -1,0 +1,12 @@
+{
+  "head": "11e27b6",
+  "classification": "operator_policy_blocked",
+  "rescue_area_status_before": "blocked",
+  "rescue_area_status_after": "blocked",
+  "verify_area_status": "blocked",
+  "runtime_gate_exit": 0,
+  "new_blockers": ["operator_terminal_no_tty_in_agent_shell"],
+  "resolved_blockers": [],
+  "recommended_next_prompt": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+  "alternative_next_prompt": "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN"
+}

@@ -1,0 +1,13 @@
+{
+  "tty_present": false,
+  "tty_stdin": false,
+  "tty_stdout": false,
+  "operator_user": "gabriel",
+  "groups": ["gabriel", "sudo", "users", "vboxusers", "setuphelfer", "workspace", "piinstaller"],
+  "sudo_v_attempted": false,
+  "sudo_v_note": "Not run in agent shell — interactive password would violate no-stdin policy",
+  "sudo_noninteractive_ready": false,
+  "allowed_to_build": false,
+  "forbidden_methods_used": [],
+  "stop_reason": "no_tty_agent_environment"
+}

@@ -1,0 +1,23 @@
+{
+  "branch": "main",
+  "head": "11e27b6",
+  "runtime_gate": {
+    "passed": true,
+    "status": "green",
+    "script_exit": 0,
+    "deploy_drift_status": "green",
+    "manifest_match": true
+  },
+  "safe_test_mode": "UNLOCKED",
+  "deploy_drift": "green",
+  "recommended_prompt": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+  "rescue_status_before": "blocked",
+  "verify_status_before": "blocked",
+  "verify_green_scope": "subsystem",
+  "verify_green_scope_note": "runtime_gate/consistency green is Phase-0 subsystem readiness; roadmap verify area and BR-004/BR-005 remain blocked — not BR-001 Verify Deep green",
+  "hardware_status_before": "gray_or_blocked",
+  "hardware_status_note": "HW-Stick tests open per rescue-stick module; not counted as green",
+  "release_gate_status": "rot",
+  "allowed_to_continue": true,
+  "stop_reason": null
+}
