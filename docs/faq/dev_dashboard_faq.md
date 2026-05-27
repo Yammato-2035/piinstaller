@@ -54,6 +54,12 @@ Der Port kommt vom **laufenden Vite-Prozess**, nicht aus einer festen Konstante:
 
 Port **5173** lauscht nur, wenn **Tauri/Vite** mit `dev:tauri` (oder vergleichbar) dort startet. Das Browser-Cockpit (`dev:cockpit`) nutzt **3001/3002**, nicht 5173. Produktiv: gebautes Frontend über Setuphelfer-Backend (**8000**) unter `/opt/setuphelfer`.
 
-## Warum ist das Phase-0-Gate rot (Exit 14)?
+## Phase-0-Gate und Deploy-Helper
 
-`deploy_drift_backend_files`: Workspace-Backend (z. B. `backend/app.py` nach `5786eb3`) weicht von `/opt/setuphelfer` ab. Behebung: Deploy-Helper-Sync durch den Operator, dann `./scripts/check-runtime-deploy-gate.sh` → Exit **0**. Kein Fake-Green in der Roadmap.
+Stand **2026-05-27**: Gate Exit **0**, `deploy_drift` green, `safe_test_mode` **UNLOCKED**. `/opt` enthält `manual-command-runs` und aktuelles `backend/app.py`.
+
+Bei erneutem Drift (Exit **14**): nur `setuphelfer-deploy-helper.service` nach Operator-Freigabe — kein manuelles Kopieren nach `/opt`.
+
+## Warum konnte der Agent den Deploy-Helper nicht starten?
+
+`sudo systemctl start setuphelfer-deploy-helper.service` benötigt ein TTY-Passwort. Der Operator kann den Helper lokal starten; ein bereits synchrones `/opt` liefert trotzdem Gate **0**.

@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-27T23:45:00Z",
+  "generated_at": "2026-05-27T22:45:00Z",
   "project_version": "1.7.2",
-  "source_commit": "84eb309",
+  "source_commit": "21af233",
   "selection_policy": [
     "Priorität 1: Fehlender Nachweis, der mehrere Bereiche blockiert, zuerst.",
     "Priorität 2: Wiederkehrende Unklarheit im Dashboard zuerst transparent machen.",
@@ -11,7 +11,7 @@
     "Priorität 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorität 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise künstlich grün gefärbt."
   ],
-  "selected_prompt_id": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC",
+  "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -133,9 +133,9 @@
       "title_de": "Runtime Deploy-Drift bereinigen und Cockpit-Live-Sync",
       "title_en": "Runtime deploy drift cleanup and cockpit live sync",
       "scope": "Phase-0-Gate Exit 14 (deploy_drift_backend_files) dokumentieren und durch Operator Deploy-Helper beheben; Cockpit-Dev-Port-Doku korrigieren; keine Rescue-/Backup-Aktionen.",
-      "status": "selected",
-      "reason_de": "Workspace 84eb309 liegt vor /opt (backend/app.py, manual-command-runs fehlt unter /opt). Gate blockiert safe_test_mode und Rescue-ISO-Build.",
-      "reason_en": "Workspace 84eb309 is ahead of /opt (backend/app.py; manual-command-runs missing under /opt). Gate blocks safe_test_mode and rescue ISO build.",
+      "status": "completed",
+      "reason_de": "Gate Exit 0, deploy_drift green, /opt synchron (app.py SHA, manual-command-runs, Bundle). Cockpit-Port-Doku korrigiert. Abgeschlossen 2026-05-27.",
+      "reason_en": "Gate exit 0, deploy_drift green, /opt synced (app.py SHA, manual-command-runs, bundle). Cockpit port docs corrected. Completed 2026-05-27.",
       "prompt_text": "Analysiere Deploy-Drift read-only, aktualisiere Roadmap/Evidence ehrlich (Gate rot), korrigiere Cockpit-URL-Annahmen (Vite 3001/3002). Deploy-Helper nur nach Operator-Freigabe DEPLOY_HELPER_SYNC_FREIGEGEBEN.",
       "blocked_by": [],
       "unlocks": [
@@ -183,7 +183,13 @@
         "Kein apt install"
       ],
       "created_at": "2026-05-27",
-      "updated_at": "2026-05-27"
+      "updated_at": "2026-05-27",
+      "completed_at": "2026-05-27",
+      "completion_evidence": [
+        "docs/evidence/dev-dashboard/DEPLOY_HELPER_SYNC_RESULT.md",
+        "docs/evidence/dev-dashboard/deploy_helper_sync_result_latest.json",
+        "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_SUMMARY.md"
+      ]
     },
     {
       "id": "DIAGNOSTICS_TEST_TRACK",
@@ -488,14 +494,11 @@
       "title_de": "Rescue ISO Manual Operator Terminal Build",
       "title_en": "Rescue ISO manual operator terminal build",
       "scope": "Echten kontrollierten Rescue-ISO-Build ausschließlich aus einem realen Operator-Terminal mit sauberem Root-/TTY-Rahmen anstoßen und dokumentieren.",
-      "status": "deferred",
-      "reason_de": "Weiterhin der nächste Recovery-Schritt nach grünem Phase-0-Gate. Aktuell blockiert durch deploy_drift_backend_files (Exit 14).",
-      "reason_en": "Still the next recovery step after a green phase 0 gate. Currently blocked by deploy_drift_backend_files (exit 14).",
+      "status": "recommended_next",
+      "reason_de": "Phase-0-Gate grün; deploy_drift bereinigt. Nächster technischer Blocker: echter kontrollierter Operator-Terminal-Build.",
+      "reason_en": "Phase 0 gate green; deploy_drift cleared. Next technical blocker: real controlled operator terminal build.",
       "prompt_text": "Führe den dokumentierten kontrollierten Rescue-ISO-Build nur in einem echten Operator-Terminal aus, sammle Artefakt-/Log-/Gate-Evidence und halte USB-Write, Restore und Hardwaretests weiterhin strikt getrennt.",
-      "blocked_by": [
-        "deploy_drift_backend_files",
-        "runtime_phase0_gate"
-      ],
+      "blocked_by": [],
       "unlocks": [
         "Echten kontrollierten Rescue-Build-Nachweis",
         "Aktualisierte Artefakt-/Log-Evidence",

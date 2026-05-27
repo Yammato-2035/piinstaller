@@ -1,0 +1,59 @@
+{
+  "branch": "main",
+  "head": "21af233",
+  "operator_freigabe": "DEPLOY_HELPER_SYNC_FREIGEGEBEN",
+  "runtime_gate_before": {
+    "exit_code": 0,
+    "status": "green",
+    "note": "Expected exit 14 from prior audit was already cleared before this run; /opt matched workspace"
+  },
+  "deploy_helper": {
+    "command": "sudo systemctl start setuphelfer-deploy-helper.service",
+    "executed": false,
+    "failure": "sudo_password_required_no_tty",
+    "service_active_after": "inactive"
+  },
+  "runtime_gate_after": {
+    "exit_code": 0,
+    "status": "green"
+  },
+  "safe_test_mode_before": "UNLOCKED",
+  "safe_test_mode_after": "UNLOCKED",
+  "deploy_drift_before": {
+    "status": "green",
+    "suggested_actions": ["none"]
+  },
+  "deploy_drift_after": {
+    "status": "green",
+    "suggested_actions": ["none"]
+  },
+  "drift_files_verified": [
+    {
+      "path": "backend/app.py",
+      "workspace_sha256": "171d4037cfcd302a8293197db71aa571c1c5617f870767dd1dd69f8727c8efb6",
+      "opt_sha256": "171d4037cfcd302a8293197db71aa571c1c5617f870767dd1dd69f8727c8efb6",
+      "matches": true
+    },
+    {
+      "path": "backend/core/dev_dashboard_manual_command_runs.py",
+      "opt_present": true
+    }
+  ],
+  "api_checks": {
+    "version_http": 200,
+    "project_version": "1.7.2",
+    "backend_runtime_path": "/opt/setuphelfer/backend",
+    "manual_command_runs_http": 200,
+    "roadmap_http": 200,
+    "runtime_gate_passed": true,
+    "deploy_drift_status": "green",
+    "safe_test_mode": "UNLOCKED"
+  },
+  "frontend_bundle": {
+    "path": "/opt/setuphelfer/frontend/dist/assets/index-CtMitZ58.js",
+    "mtime": "2026-05-27T22:41",
+    "strings_found": ["manualCommandRuns", "readyTitle", "Roadmap"]
+  },
+  "cockpit_dev_url_example": "http://127.0.0.1:3002/?window=cockpit",
+  "sync_outcome": "already_synced_gate_green_agent_deploy_helper_not_started_sudo"
+}

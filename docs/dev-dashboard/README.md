@@ -17,8 +17,8 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 
 - `docs/roadmap/setuphelfer_roadmap.json`, `setuphelfer_next_prompts.json`
 - `TERMINAL_A_READONLY` = **completed** (2026-05-27)
-- Nächster Prompt (Gate rot): **RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC** — danach **RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD**
-- Phase-0-Gate aktuell: Exit **14** (`deploy_drift_backend_files`) bis Workspace nach `/opt` synchronisiert ist
+- Phase-0-Gate: Exit **0** (`deploy_drift` green, `safe_test_mode` UNLOCKED) — Stand 2026-05-27
+- Nächster Prompt: **RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD**
 
 ## Manuelle Kommandoläufe (read-only)
 

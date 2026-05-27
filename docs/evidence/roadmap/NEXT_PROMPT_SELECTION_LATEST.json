@@ -1,22 +1,21 @@
 {
-  "selected_prompt_id": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC",
-  "selected_at": "2026-05-27T23:45:00Z",
-  "reason": "Phase-0-Gate Exit 14 (deploy_drift_backend_files): workspace backend ahead of /opt after 5786eb3/84eb309. safe_test_mode LOCKED. Rescue ISO build deferred until gate exit 0 and operator deploy-helper sync.",
+  "selected_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+  "selected_at": "2026-05-27T22:45:00Z",
+  "reason": "Phase-0-Gate Exit 0; deploy_drift green; safe_test_mode UNLOCKED; manual-command-runs and roadmap APIs live under /opt. Drift-cleanup prompt completed. Next: controlled rescue ISO operator terminal build.",
   "blocked_by": [],
   "unlocks": [
-    "Phase-0-Gate Exit 0",
-    "Live GET /api/dev-dashboard/manual-command-runs under /opt",
-    "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
+    "Operator-Terminal-Build-Evidence",
+    "Rescue-Artefakt-/Log-Nachweis"
   ],
   "alternative_prompts": [
-    "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
     "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN",
-    "BR001_EXTERNAL_EVIDENCE"
+    "BR001_EXTERNAL_EVIDENCE",
+    "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC"
   ],
   "alternative_prompt_details": {
-    "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD": "Deferred until runtime gate green; then recommended next.",
-    "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN": "Policy alternative if operator terminal build not yet possible.",
-    "BR001_EXTERNAL_EVIDENCE": "Important but not the immediate deploy-drift blocker."
+    "RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN": "Policy fallback if terminal build not yet possible.",
+    "BR001_EXTERNAL_EVIDENCE": "Important parallel track, not the immediate rescue-build blocker.",
+    "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC": "Completed 2026-05-27 — gate green, /opt synced."
   },
   "mandatory_closure_sections": [
     "dashboard_progress",
@@ -27,6 +26,5 @@
     "remaining_blocked_or_deferred"
   ],
   "source_roadmap_version": "1.0",
-  "source_commit": "84eb309",
-  "after_gate_green_recommended_prompt": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
+  "source_commit": "21af233"
 }

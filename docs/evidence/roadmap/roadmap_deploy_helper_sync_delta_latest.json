@@ -1,0 +1,27 @@
+{
+  "head": "21af233",
+  "gate_exit": 0,
+  "changes": [
+    {
+      "id": "runtime-phase0-gate",
+      "status": "green"
+    },
+    {
+      "id": "deploy-drift-backend-files",
+      "status": "resolved",
+      "resolved_at": "2026-05-27"
+    },
+    {
+      "id": "dev-dashboard-cockpit-live-opt",
+      "status": "green"
+    },
+    {
+      "prompt": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC",
+      "status": "completed"
+    },
+    {
+      "prompt": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "status": "recommended_next"
+    }
+  ]
+}

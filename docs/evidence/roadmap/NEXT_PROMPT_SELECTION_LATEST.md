@@ -1,21 +1,16 @@
 # Next Prompt Selection (Latest)
 
-**Selected:** `RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC`  
-**At:** 2026-05-27T23:45:00Z · **HEAD:** `84eb309`
+**Selected:** `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD`  
+**At:** 2026-05-27 · **HEAD:** `21af233`
 
 ## Reason
 
-- `./scripts/check-runtime-deploy-gate.sh` → **Exit 14** (`deploy_drift_backend_files`)
-- `safe_test_mode` = **LOCKED**
-- Workspace `backend/app.py` / `dev_dashboard_manual_command_runs.py` not synced to `/opt`
-- Cockpit dev URL: use Vite terminal port (e.g. **3002**), not fixed **5173**
+Phase-0-Gate **Exit 0**, `deploy_drift` **green**, `safe_test_mode` **UNLOCKED**. Live APIs: `manual-command-runs`, `roadmap`. `/opt` bundle contains command-logging UI strings.
 
-## Deferred
+`RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC` → **completed**.
 
-`RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD` — blocked by `deploy_drift_backend_files` and `runtime_phase0_gate` until gate **Exit 0**.
+## Note on deploy-helper
 
-## After operator deploy-helper sync
-
-Recommended next: `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD`
+Agent could not start `setuphelfer-deploy-helper.service` (sudo password). Drift was already cleared; gate verified green without manual `/opt` copy.
 
 JSON: `NEXT_PROMPT_SELECTION_LATEST.json`

@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Deploy-helper sync verification and runtime gate green)
+- **Phase-0-Gate:** Exit **0** — `/opt` synchron mit Workspace (`backend/app.py`, `dev_dashboard_manual_command_runs.py`); `deploy_drift` green, `safe_test_mode` UNLOCKED.
+- **Live-API:** `GET /api/dev-dashboard/manual-command-runs` und `/roadmap` HTTP **200** unter `/opt`.
+- **Deploy-Helper:** Agent konnte `setuphelfer-deploy-helper.service` nicht starten (sudo); Drift war zum Prüfzeitpunkt bereits behoben. Evidence: `DEPLOY_HELPER_SYNC_RESULT.md`.
+- **Roadmap:** `RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC` **completed**; nächster Prompt **`RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD`**.
+
 ### Changed (Runtime deploy drift documentation and cockpit port clarity)
 - **Phase-0-Gate:** Exit **14** (`deploy_drift_backend_files`) dokumentiert — Workspace `backend/app.py` / Command-Run-API vor `/opt`; Behebung nur per Operator Deploy-Helper (`DEPLOY_HELPER_SYNC_FREIGEGEBEN`).
 - **Cockpit-Dev-URL:** Doku korrigiert — Vite `dev:cockpit` nutzt **3001** (Fallback z.?B. **3002**), nicht fest **5173** (nur `dev:tauri`).

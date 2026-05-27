@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-27T23:45:00Z",
+  "generated_at": "2026-05-27T22:45:00Z",
   "project_version": "1.7.2",
-  "source_commit": "84eb309",
+  "source_commit": "21af233",
   "source_audit_ref": "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md",
   "authoritative_sources": [
     "docs/evidence/release-gates/backup_restore_release_gate.json",
@@ -25,16 +25,18 @@
     "docs/evidence/dev-dashboard/manual_command_runs/manual_command_run.schema.json",
     "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_AUDIT.md",
     "docs/evidence/dev-dashboard/runtime_deploy_drift_cleanup_audit_latest.json",
-    "docs/evidence/roadmap/ROADMAP_RUNTIME_DRIFT_DELTA.md"
+    "docs/evidence/roadmap/ROADMAP_RUNTIME_DRIFT_DELTA.md",
+    "docs/evidence/dev-dashboard/DEPLOY_HELPER_SYNC_RESULT.md",
+    "docs/evidence/dev-dashboard/deploy_helper_sync_result_latest.json"
   ],
   "areas": [
     {
       "id": "runtime-governance",
       "title_de": "Runtime / Governance",
       "title_en": "Runtime / Governance",
-      "description_de": "Phase-0-Gate ist aktuell blockiert (Exit 14, deploy_drift_backend_files): Workspace-Backend liegt vor /opt. Safe Test Mode LOCKED bis Deploy-Helper-Sync. Script und API-Version bleiben implementiert.",
-      "description_en": "Phase 0 gate is currently blocked (exit 14, deploy_drift_backend_files): workspace backend is ahead of /opt. Safe test mode LOCKED until deploy-helper sync. Script and API version checks remain implemented.",
-      "status": "yellow",
+      "description_de": "Phase-0-Gate grün (Exit 0, deploy_drift green, safe_test_mode UNLOCKED). Recovery-Release-Gate bleibt separat rot — kein Fake-Green für BR-001/Rescue.",
+      "description_en": "Phase 0 gate green (exit 0, deploy_drift green, safe_test_mode UNLOCKED). Recovery release gate stays red separately — no fake green for BR-001/rescue.",
+      "status": "partial_green",
       "priority": "P0",
       "owner": "Setuphelfer Core",
       "planned_start": "2026-05-15",
@@ -51,14 +53,15 @@
           "id": "runtime-phase0-gate",
           "title_de": "Phase-0-Gate und Runtime-Overlay",
           "title_en": "Phase 0 gate and runtime overlay",
-          "status": "yellow",
-          "progress_percent": 70,
+          "status": "green",
+          "progress_percent": 100,
           "planned_start": "2026-05-15",
-          "planned_end": null,
-          "completed_at": null,
+          "planned_end": "2026-05-27",
+          "completed_at": "2026-05-27",
           "evidence_links": [
             "scripts/check-runtime-deploy-gate.sh",
-            "docs/dev-dashboard/PHASE0_RUNTIME_GATE.md"
+            "docs/dev-dashboard/PHASE0_RUNTIME_GATE.md",
+            "docs/evidence/dev-dashboard/DEPLOY_HELPER_SYNC_RESULT.md"
           ],
           "tasks": [
             {
@@ -72,24 +75,23 @@
                 "docs/evidence/dev-dashboard/PROJECT_OVERVIEW_DASHBOARD_INTEGRATION_RESULT.md"
               ],
               "blocker_refs": [],
-              "next_action_de": "Gate erneut prüfen nach Deploy-Helper-Sync (Operator).",
-              "next_action_en": "Re-check the gate after deploy-helper sync (operator)."
+              "next_action_de": "Bei neuem Workspace-Commit erneut Gate + Deploy-Helper.",
+              "next_action_en": "On new workspace commits, re-run gate and deploy helper."
             },
             {
               "id": "runtime-deploy-drift-opt-sync",
               "title_de": "Workspace → /opt Backend-Deploy (Deploy-Helper)",
               "title_en": "Workspace → /opt backend deploy (deploy helper)",
-              "status": "yellow",
-              "progress_percent": 0,
+              "status": "green",
+              "progress_percent": 100,
               "evidence_links": [
-                "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_AUDIT.md",
+                "docs/evidence/dev-dashboard/DEPLOY_HELPER_SYNC_RESULT.md",
+                "docs/evidence/dev-dashboard/deploy_helper_sync_result_latest.json",
                 "scripts/check-runtime-deploy-gate.sh"
               ],
-              "blocker_refs": [
-                "deploy-drift-backend-files"
-              ],
-              "next_action_de": "Operator: DEPLOY_HELPER_SYNC_FREIGEGEBEN, dann setuphelfer-deploy-helper.service; Gate Exit 0 erwarten.",
-              "next_action_en": "Operator: DEPLOY_HELPER_SYNC_FREIGEGEBEN, then setuphelfer-deploy-helper.service; expect gate exit 0."
+              "blocker_refs": [],
+              "next_action_de": "Kein erneuter Sync nötig bis neuer Workspace-Drift.",
+              "next_action_en": "No resync needed until new workspace drift."
             },
             {
               "id": "runtime-roadmap-overlay",
@@ -113,18 +115,19 @@
               "area_id": "runtime-governance",
               "title_de": "Deploy-Drift Backend-Dateien (/opt hinter Workspace)",
               "title_en": "Deploy drift backend files (/opt behind workspace)",
-              "description_de": "check-runtime-deploy-gate.sh Exit 14: backend/app.py (und fehlendes manual-command-runs-Modul unter /opt) weicht vom Workspace 84eb309 ab.",
-              "description_en": "check-runtime-deploy-gate.sh exit 14: backend/app.py (and missing manual-command-runs module under /opt) differs from workspace 84eb309.",
+              "description_de": "Behoben: backend/app.py und manual-command-runs unter /opt; Gate Exit 0 (2026-05-27).",
+              "description_en": "Resolved: backend/app.py and manual-command-runs under /opt; gate exit 0 (2026-05-27).",
               "severity": "high",
-              "status": "red",
+              "status": "resolved",
               "first_seen": "2026-05-27",
               "last_seen": "2026-05-27",
-              "resolved_at": null,
-              "resolution_de": null,
-              "resolution_en": null,
+              "resolved_at": "2026-05-27",
+              "resolution_de": "/opt mit Workspace synchron; deploy_drift green.",
+              "resolution_en": "/opt synced with workspace; deploy_drift green.",
               "evidence_links": [
                 "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_AUDIT.md",
-                "docs/evidence/dev-dashboard/runtime_deploy_drift_cleanup_audit_latest.json"
+                "docs/evidence/dev-dashboard/DEPLOY_HELPER_SYNC_RESULT.md",
+                "docs/evidence/dev-dashboard/deploy_helper_sync_result_latest.json"
               ]
             },
             {
@@ -149,29 +152,10 @@
           "decision_refs": [
             "runtime-phase0-before-runtime-tests"
           ],
-          "next_prompt_id": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC"
+          "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
         }
       ],
-      "blockers": [
-        {
-          "id": "deploy-drift-backend-files",
-          "area_id": "runtime-governance",
-          "title_de": "Phase-0 blockiert durch Backend-Deploy-Drift",
-          "title_en": "Phase 0 blocked by backend deploy drift",
-          "description_de": "safe_test_mode=LOCKED; keine Runtime-Funktionstests gegen 8000 bis Gate Exit 0.",
-          "description_en": "safe_test_mode=LOCKED; no runtime functional tests against 8000 until gate exit 0.",
-          "severity": "high",
-          "status": "red",
-          "first_seen": "2026-05-27",
-          "last_seen": "2026-05-27",
-          "resolved_at": null,
-          "resolution_de": null,
-          "resolution_en": null,
-          "evidence_links": [
-            "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_AUDIT.md"
-          ]
-        }
-      ],
+      "blockers": [],
       "decisions": [
         {
           "id": "runtime-phase0-before-runtime-tests",
@@ -202,8 +186,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC",
-      "next_recommended_action": "Deploy-Helper-Sync durch Operator, dann Gate Exit 0; erst danach Rescue-ISO-Operator-Build."
+      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "next_recommended_action": "Kontrollierter Rescue-ISO-Operator-Build im Terminal (kein Dashboard-Execute, kein USB-Write)."
     },
     {
       "id": "backup-br001",
@@ -927,8 +911,8 @@
       "id": "dev-dashboard",
       "title_de": "Dev Dashboard",
       "title_en": "Dev Dashboard",
-      "description_de": "Command-Run-Logging und Roadmap-Registry im Workspace grün (5786eb3/84eb309). Cockpit/API unter /opt gelb bis Deploy-Helper-Sync (Gate Exit 14). API-Tests venv grün; System-Python 11 skipped gelb.",
-      "description_en": "Command-run logging and roadmap registry green in workspace (5786eb3/84eb309). Cockpit/API under /opt yellow until deploy-helper sync (gate exit 14). Venv API tests green; system Python 11 skipped yellow.",
+      "description_de": "Command-Run-Logging und Cockpit live unter /opt grün (Gate 0, APIs 200, Bundle index-CtMitZ58.js). API-Tests venv grün; System-Python 11 skipped gelb.",
+      "description_en": "Command-run logging and cockpit live under /opt green (gate 0, APIs 200, bundle index-CtMitZ58.js). Venv API tests green; system Python 11 skipped yellow.",
       "status": "partial_green",
       "priority": "P1",
       "owner": "Setuphelfer Dashboard",
@@ -1003,40 +987,39 @@
           ],
           "blockers": [],
           "decision_refs": [],
-          "next_prompt_id": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC"
+          "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
         },
         {
           "id": "dev-dashboard-cockpit-live-opt",
           "title_de": "Cockpit live unter /opt (Deploy + Bundle)",
           "title_en": "Cockpit live under /opt (deploy + bundle)",
-          "status": "yellow",
-          "progress_percent": 20,
+          "status": "green",
+          "progress_percent": 100,
           "planned_start": "2026-05-27",
-          "planned_end": null,
-          "completed_at": null,
+          "planned_end": "2026-05-27",
+          "completed_at": "2026-05-27",
           "evidence_links": [
-            "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_AUDIT.md"
+            "docs/evidence/dev-dashboard/DEPLOY_HELPER_SYNC_RESULT.md",
+            "docs/evidence/dev-dashboard/deploy_helper_sync_result_latest.json"
           ],
           "tasks": [
             {
               "id": "cockpit-live-manual-command-runs-api",
               "title_de": "GET manual-command-runs unter /opt nach Deploy",
               "title_en": "GET manual-command-runs under /opt after deploy",
-              "status": "yellow",
-              "progress_percent": 0,
+              "status": "green",
+              "progress_percent": 100,
               "evidence_links": [
-                "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_AUDIT.md"
+                "docs/evidence/dev-dashboard/DEPLOY_HELPER_SYNC_RESULT.md"
               ],
-              "blocker_refs": [
-                "deploy-drift-backend-files"
-              ],
-              "next_action_de": "Deploy-Helper; kein Dashboard-Execute.",
-              "next_action_en": "Deploy helper; no dashboard execute."
+              "blocker_refs": [],
+              "next_action_de": "Hard-Reload im Browser bei UI-Zweifeln.",
+              "next_action_en": "Hard reload in browser if UI unclear."
             }
           ],
           "blockers": [],
           "decision_refs": [],
-          "next_prompt_id": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC"
+          "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
         },
         {
           "id": "dev-dashboard-roadmap-registry",
@@ -1080,45 +1063,26 @@
           ],
           "blockers": [],
           "decision_refs": [],
-          "next_prompt_id": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC"
+          "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
         }
       ],
-      "blockers": [
-        {
-          "id": "deploy-drift-backend-files",
-          "area_id": "dev-dashboard",
-          "title_de": "Live-Cockpit-API blockiert durch /opt-Drift",
-          "title_en": "Live cockpit API blocked by /opt drift",
-          "description_de": "manual-command-runs-Modul fehlt unter /opt; Phase-0 Exit 14.",
-          "description_en": "manual-command-runs module missing under /opt; phase 0 exit 14.",
-          "severity": "high",
-          "status": "red",
-          "first_seen": "2026-05-27",
-          "last_seen": "2026-05-27",
-          "resolved_at": null,
-          "resolution_de": null,
-          "resolution_en": null,
-          "evidence_links": [
-            "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_AUDIT.md"
-          ]
-        }
-      ],
+      "blockers": [],
       "decisions": [],
       "notes": [
         {
           "id": "dev-dashboard-live-deploy-before-rescue",
           "area_id": "dev-dashboard",
-          "text_de": "Vor RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD: Deploy-Helper prüfen, ob Cockpit-Roadmap- und Command-Logging-UI unter /opt aktuell sind (Hard-Reload / Bundle-Check).",
-          "text_en": "Before RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD: verify deploy helper synced cockpit roadmap and command-logging UI under /opt (hard reload / bundle check).",
+          "text_de": "Cockpit-/Command-Logging unter /opt verifiziert (2026-05-27): Gate 0, APIs 200, Bundle-Strings vorhanden. Nächster Schritt: Rescue-ISO Operator-Terminal-Build.",
+          "text_en": "Cockpit/command logging under /opt verified (2026-05-27): gate 0, APIs 200, bundle strings present. Next: rescue ISO operator terminal build.",
           "created_at": "2026-05-27",
           "author": "Cursor",
           "evidence_links": [
-            "docs/evidence/dev-dashboard/DEV_DASHBOARD_COCKPIT_ROADMAP_LIVE_DEPLOY_SYNC.md"
+            "docs/evidence/dev-dashboard/DEPLOY_HELPER_SYNC_RESULT.md"
           ]
         }
       ],
-      "next_prompt_id": "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC",
-      "next_recommended_action": "Zuerst Deploy-Helper-Sync und Gate Exit 0; Dev-Cockpit lokal nutzt Vite-Port aus Terminal (z. B. 3002), nicht fest 5173."
+      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
+      "next_recommended_action": "Rescue-ISO Manual Operator Terminal Build — kein Dashboard-Execute; Dev-Cockpit-Port dynamisch aus Vite-Terminal."
     },
     {
       "id": "packaging-update",
