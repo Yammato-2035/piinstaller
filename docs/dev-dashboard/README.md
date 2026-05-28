@@ -18,7 +18,8 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 - `systemd active` und `:8000 LISTEN` sind notwendige, aber nicht hinreichende Signale.
 - Pflicht fuer "backend_ok": `/health` **und** `/api/version` muessen HTTP 200 liefern.
 - Bei aktivem Service + offenem Port + HTTP-Timeout gilt `backend_hanging` (harter Fehler).
-- Das Runtime-Gate meldet diesen Fall explizit als `backend_hanging_active_port_but_http_timeout` (Exit 17).
+- Das Runtime-Gate meldet Hang als `backend_hanging_active_port_but_http_timeout` (Exit **17**) oder `backend_version_endpoint_timeout` (Exit **18**).
+- Watchdog-Timer nur als Beispiel-Dateien (`ENABLE_RESTART=0`); siehe `docs/architecture/BACKEND_WATCHDOG_MVP_DECISION.md`.
 - Das Control Center zeigt in diesem Zustand einen roten Backend-Fail-State statt leerer Oberflaeche.
 
 ## Roadmap-Registry

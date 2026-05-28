@@ -11,9 +11,34 @@ import hashlib
 import json
 import os
 import subprocess
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, TypeVar
+
+_T = TypeVar("_T")
+
+_DASHBOARD_SECTION_TIMEOUT_SEC = float(os.environ.get("SETUPHELFER_DASHBOARD_SECTION_TIMEOUT_SEC", "12"))
+_DEPLOY_DRIFT_TIMEOUT_SEC = float(os.environ.get("SETUPHELFER_DEPLOY_DRIFT_TIMEOUT_SEC", "8"))
+_COCKPIT_ENRICH_TIMEOUT_SEC = float(os.environ.get("SETUPHELFER_COCKPIT_ENRICH_TIMEOUT_SEC", "10"))
+
+
+def _bounded_section(
+    fn: Callable[[], _T],
+    *,
+    timeout_sec: float,
+    default: _T,
+    warning_key: str,
+    warnings: list[str],
+) -> _T:
+    """Isoliert langsame Dashboard-Abschnitte; bei Timeout degraded statt Worker-Blockade."""
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        fut = pool.submit(fn)
+        try:
+            return fut.result(timeout=timeout_sec)
+        except FuturesTimeoutError:
+            warnings.append(warning_key)
+            return default
 
 UTC = timezone.utc
 
@@ -1006,7 +1031,25 @@ def build_dashboard_status(
             runtime_install_root = Path("/opt/setuphelfer")
 
     ws_for_drift = _effective_workspace_root(repo)
-    deploy_drift = _compute_deploy_drift(workspace_root=ws_for_drift, runtime_root=runtime_install_root)
+    deploy_drift = _bounded_section(
+        lambda: _compute_deploy_drift(workspace_root=ws_for_drift, runtime_root=runtime_install_root),
+        timeout_sec=_DEPLOY_DRIFT_TIMEOUT_SEC,
+        default={
+            "status": "gray",
+            "workspace_root": str(ws_for_drift),
+            "runtime_root": str(runtime_install_root),
+            "checked_files": [],
+            "matching_files_count": 0,
+            "differing_files_count": 0,
+            "missing_runtime_files": [],
+            "missing_workspace_files": [],
+            "warnings": ["deploy_drift_section_timeout"],
+            "suggested_actions": ["none"],
+            **_default_manifest_drift_slice(),
+        },
+        warning_key="section_timeout_or_unavailable:deploy_drift",
+        warnings=warnings,
+    )
 
     gate_path = repo / "docs" / "evidence" / "release-gates" / "backup_restore_release_gate.json"
     gate, gerr = _safe_read_json(gate_path)
@@ -1050,12 +1093,19 @@ def build_dashboard_status(
         "warnings": warnings,
         "errors": errors,
     }
-    try:
+    def _enrich() -> None:
         from core.dev_dashboard_cockpit import enrich_dashboard_cockpit
 
         enrich_dashboard_cockpit(body, repo_root=repo)
-    except Exception as exc:  # noqa: BLE001
-        warnings.append(f"cockpit_enrich:{exc}")
+
+    _bounded_section(
+        _enrich,
+        timeout_sec=_COCKPIT_ENRICH_TIMEOUT_SEC,
+        default=None,
+        warning_key="section_timeout_or_unavailable:cockpit_enrich",
+        warnings=warnings,
+    )
+    if "updated_at" not in body:
         body["updated_at"] = generated
     return body
 

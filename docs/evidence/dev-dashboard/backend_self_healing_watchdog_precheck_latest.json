@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-05-28T18:50:00Z",
+  "branch": "main",
+  "head_short": "98070d4",
+  "head_oneline": "98070d4 Harden backend startup availability and dashboard offline state",
+  "runtime_gate_blocked_static_analysis_only": true,
+  "runtime_gate_exit_before": 14,
+  "runtime_gate_exit_after_work": 14,
+  "runtime_gate_code": "deploy_backend_files_recommended",
+  "backend_hanging_at_precheck": false,
+  "notes": "Gate Exit 14 (deploy_drift evaluator), nicht Exit 17. HTTP /health und /api/version erreichbar; Rescue/Backup/Restore weiter blockiert bis Exit 0."
+}

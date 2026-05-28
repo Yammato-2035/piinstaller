@@ -13,7 +13,16 @@ ss -ltnp | grep ':8000' || true
 curl -sS -m 5 http://127.0.0.1:8000/health || true
 curl -sS -m 5 http://127.0.0.1:8000/api/version || true
 ./scripts/check-runtime-deploy-gate.sh || true
+echo "Gate exit: $?"
 ```
+
+### Gate-Exit-Codes (Auszug)
+
+| Exit | Code |
+|------|------|
+| 17 | `backend_hanging_active_port_but_http_timeout` (`/health` timeout, Port offen) |
+| 18 | `backend_version_endpoint_timeout` (`/health` OK, `/api/version` timeout) |
+| 14 | deploy_drift — Backend-Dateien deployen (kein Hang) |
 
 ## Hang-Intervention (Operator, privilegiert)
 
@@ -29,6 +38,13 @@ curl -sS -m 5 http://127.0.0.1:8000/api/version
 
 - Wenn `/health` + `/api/version` 200 und Gate Exit 0: Runtime wieder verfuegbar.
 - Bei weiterem Timeout: als `backend_hanging` klassifizieren und Watchdog-MVP priorisieren.
+
+## Optionaler Healthcheck-Timer (nicht standardmaessig aktiv)
+
+- Skript: `scripts/healthcheck/setuphelfer-backend-healthcheck.sh`
+- Beispiel-Units: `packaging/systemd/setuphelfer-backend-healthcheck.{service,timer}.example`
+- Default: `ENABLE_RESTART=0` (nur melden). Restart nur mit Operator-Freigabe und `ENABLE_RESTART=1`.
+- **Nicht** automatisch `systemctl enable` ohne Freigabe.
 
 ## Wichtig
 

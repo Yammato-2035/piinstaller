@@ -9,6 +9,7 @@ import {
 import { buildStandaloneMetaPrompt } from './buildStandalonePrompt'
 import { API_STATUS_PATH, STANDALONE_SNAPSHOT_PATH } from './constants'
 import { invokeTauriWorkspaceScan, isTauriRuntime } from './isTauri'
+import { probeBackendStartup } from './probeBackendStartup'
 import type { DevDashboardLoadResult, WorkspaceScanResult } from './types'
 
 const API_PROBE_MS = 3500
@@ -127,6 +128,45 @@ async function loadTauriScan(): Promise<WorkspaceScanResult | null> {
 }
 
 export async function loadDevDashboard(statusQuery: string): Promise<DevDashboardLoadResult> {
+  const startup = await probeBackendStartup()
+  if (startup.state !== 'backend_ok') {
+    const offlineReason =
+      startup.offlineReason ||
+      (startup.state === 'backend_degraded' ? 'backend_version_unavailable' : 'backend_api_unreachable')
+    let scan = await loadTauriScan()
+    let source: DevDashboardLoadResult['source'] = 'standalone_workspace'
+    if (!scan) {
+      scan = await loadSnapshot()
+      source = scan ? 'snapshot' : 'unavailable'
+    }
+    if (!scan) {
+      const dashboard = buildMinimalUnavailableDashboard(offlineReason)
+      return {
+        source: 'unavailable',
+        dashboard,
+        modules: [],
+        evidenceIndex: null,
+        apiReachable: false,
+        offlineReason,
+        metaPrompt: buildStandaloneMetaPrompt(dashboard, '(unavailable)'),
+        capabilities: capabilitiesForSource('unavailable'),
+      }
+    }
+    const matrixText = typeof scan.matrix?.text === 'string' ? scan.matrix.text : undefined
+    const dashboard = buildStandaloneDashboardFromScan(scan, source, { matrixText, offlineReason })
+    return {
+      source,
+      dashboard,
+      modules: modulesFromScan(scan),
+      evidenceIndex: { status: 'standalone', gates: scan.evidence_files },
+      apiReachable: false,
+      offlineReason,
+      workspaceRoot: scan.workspace_root,
+      metaPrompt: buildStandaloneMetaPrompt(dashboard, scan.workspace_root),
+      capabilities: capabilitiesForSource(source),
+    }
+  }
+
   const runtime = await tryRuntimeApi(statusQuery)
   if (runtime.result) return runtime.result
 

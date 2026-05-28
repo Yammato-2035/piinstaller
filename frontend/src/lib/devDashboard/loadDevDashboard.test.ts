@@ -23,6 +23,9 @@ describe('loadDevDashboard', () => {
   it('uses runtime_api when status endpoint returns 200', async () => {
     const dashboard = { backend_running: true, runtime_gate: { passed: true, status: 'green' } }
     vi.mocked(fetchApi).mockImplementation(async (path: string) => {
+      if (path === '/health' || path === '/api/version') {
+        return { ok: true, json: async () => ({ status: 'ok' }) } as Response
+      }
       if (path.includes('/status')) {
         return { ok: true, json: async () => ({ dashboard }) } as Response
       }
@@ -50,7 +53,12 @@ describe('loadDevDashboard', () => {
   })
 
   it('falls back to unavailable when api and tauri and snapshot fail', async () => {
-    vi.mocked(fetchApi).mockRejectedValue(new Error('offline'))
+    vi.mocked(fetchApi).mockImplementation(async (path: string) => {
+      if (path === '/health' || path === '/api/version') {
+        throw new Error('offline')
+      }
+      throw new Error('offline')
+    })
     const result = await loadDevDashboard('')
     expect(result.apiReachable).toBe(false)
     expect(result.source).toBe('unavailable')
@@ -62,7 +70,12 @@ describe('loadDevDashboard', () => {
   })
 
   it('classifies api timeout as backend hanging timeout', async () => {
-    vi.mocked(fetchApi).mockRejectedValue(Object.assign(new Error('timeout'), { name: 'AbortError' }))
+    vi.mocked(fetchApi).mockImplementation(async (path: string) => {
+      if (path === '/health' || path === '/api/version') {
+        throw Object.assign(new Error('timeout'), { name: 'AbortError' })
+      }
+      throw Object.assign(new Error('timeout'), { name: 'AbortError' })
+    })
     const result = await loadDevDashboard('')
     expect(result.apiReachable).toBe(false)
     expect(result.source).toBe('unavailable')

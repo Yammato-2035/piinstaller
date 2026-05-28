@@ -3990,59 +3990,18 @@ async def get_system_network(request: Request):
 @app.get("/api/version")
 async def get_version():
     """Gibt zentrale Projektversion, Stage, Track und Laufzeit-Metadaten zurück (Versions-Gate)."""
-    from core.versioning import api_version_error_code, load_project_version, version_config_path
+    from core.liveness import build_version_api_payload
 
-    vf = version_config_path()
-    try:
-        info = load_project_version()
-    except Exception as exc:  # noqa: BLE001 — bewusst: Diagnose statt generischem 500
-        code = api_version_error_code(exc)
-        return JSONResponse(
-            status_code=503,
-            content={
-                "status": "error",
-                "code": code,
-                "detail": str(exc),
-                "version_config_path": str(vf),
-                "blocked_update_required": True,
-            },
-        )
-
-    build_time = (os.environ.get("SETUPHELFER_BUILD_TIME") or "").strip() or None
-    repo_root = Path(__file__).resolve().parent.parent
-    git_commit: str | None = None
-    try:
-        proc = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
-            capture_output=True,
-            text=True,
-            timeout=0.35,
-            check=False,
-        )
-        if proc.returncode == 0:
-            h = (proc.stdout or "").strip()
-            if h:
-                git_commit = h[:64]
-    except Exception:
-        pass
-
-    payload: dict[str, Any] = {
-        "status": "success",
-        "project_version": info.project_version,
-        # Alias für ältere UI / Banner, die nur `version` erwarten (gleicher Wert wie project_version).
-        "version": info.project_version,
-        "release_stage": info.release_stage,
-        "version_track": info.version_track,
-        "version_source_of_truth": True,
-        "install_profile": get_install_profile(),
-        "app_edition": get_app_edition(),
-        "backend_runtime_path": str(get_backend_runtime_dir().resolve()),
-    }
-    if build_time:
-        payload["build_time"] = build_time
-    if git_commit:
-        payload["git_commit"] = git_commit
-    return payload
+    runtime_path = str(get_backend_runtime_dir().resolve())
+    built = build_version_api_payload(
+        runtime_path=runtime_path,
+        install_profile=get_install_profile(),
+        app_edition=get_app_edition(),
+    )
+    if built.get("_error"):
+        body = built["body"]
+        return JSONResponse(status_code=int(built.get("status_code") or 503), content=body)
+    return built["body"]
 
 
 @app.get("/api/dev-dashboard/status")
@@ -4059,8 +4018,8 @@ async def dev_dashboard_status(
     """Read-only: Development Cockpit Gesamtstatus (kein Backup/Restore)."""
     from core import dev_dashboard as dev_dashboard_core
 
-    try:
-        for jid in list(BACKUP_JOBS.keys()):
+    def _build_sync() -> dict[str, Any]:
+        for jid in list(BACKUP_JOBS.keys())[:32]:
             _sync_stale_runner_job_from_systemd(jid)
         running: list[dict[str, Any]] = []
         for _job_id, job in BACKUP_JOBS.items():
@@ -4069,13 +4028,36 @@ async def dev_dashboard_status(
                 running.append(_job_snapshot(job))
         pkg = _detect_active_package_operations()
         fe_ver = (frontend_build_version or "").strip() or None
-        body = dev_dashboard_core.build_dashboard_status(
+        return dev_dashboard_core.build_dashboard_status(
             running_jobs=running,
             package_activity=pkg,
             frontend_build_version=fe_ver,
             frontend_runtime_source=frontend_runtime_source,
         )
+
+    total_timeout = float(os.environ.get("SETUPHELFER_DASHBOARD_STATUS_TIMEOUT_SEC", "50"))
+    try:
+        body = await asyncio.wait_for(asyncio.to_thread(_build_sync), timeout=total_timeout)
         return {"status": "success", "dashboard": body}
+    except asyncio.TimeoutError:
+        logger.warning("dev_dashboard_status: Gesamt-Timeout nach %.1fs", total_timeout)
+        from datetime import datetime, timezone
+
+        now = datetime.now(timezone.utc).isoformat()
+        degraded = {
+            "generated_at": now,
+            "updated_at": now,
+            "backend_running": True,
+            "warnings": ["section_timeout_or_unavailable:dashboard_status"],
+            "errors": [],
+            "deploy_drift": {"status": "gray", "warnings": ["dashboard_status_timeout"]},
+            "runtime_gate": {
+                "passed": False,
+                "status": "gray",
+                "warnings": ["dashboard_status_timeout"],
+            },
+        }
+        return {"status": "degraded", "warning": "dashboard_status_timeout", "dashboard": degraded}
     except Exception:
         logger.exception("dev_dashboard_status failed")
         raise
@@ -6564,21 +6546,9 @@ def get_security_config():
 @app.get("/health")
 async def health_check():
     """Leichtgewichtiger Liveness-Endpunkt ohne Dashboard-/Dateiscans."""
-    from core.versioning import get_project_version
+    from core.liveness import build_health_payload
 
-    version = "unknown"
-    try:
-        version = get_project_version()
-    except Exception:
-        # Health bleibt liveness-orientiert; Versionsfehler dürfen kein Timeout erzeugen.
-        pass
-    return {
-        "status": "ok",
-        "service": "setuphelfer-backend",
-        "version": version,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "runtime_path": str(get_backend_runtime_dir().resolve()),
-    }
+    return build_health_payload(runtime_path=str(get_backend_runtime_dir().resolve()))
 
 @app.get("/api/status")
 async def get_status(request: Request):

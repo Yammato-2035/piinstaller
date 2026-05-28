@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-05-28T18:50:00Z",
+  "sections": {
+    "deploy_drift": {
+      "timeout_sec": 8,
+      "on_timeout": "gray + section_timeout_or_unavailable:deploy_drift"
+    },
+    "cockpit_enrich": {
+      "timeout_sec": 10,
+      "on_timeout": "warning section_timeout_or_unavailable:cockpit_enrich"
+    },
+    "dashboard_status_route": {
+      "timeout_sec": 50,
+      "on_timeout": "HTTP 200 degraded dashboard_status_timeout"
+    }
+  },
+  "health_version_isolated": true,
+  "global_lock_removed": true,
+  "risk_level": "low",
+  "follow_up": [
+    "Optional: per-section timeouts fuer roadmap/tests_evidence in cockpit",
+    "Multi-worker Uvicorn in Produktion evaluieren (Operator-Entscheid)"
+  ]
+}

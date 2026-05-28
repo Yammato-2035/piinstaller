@@ -109,3 +109,19 @@ Bei `backend_hanging` ist das Runtime-Gate blockiert; Weiterarbeit wuerde Fake-G
 
 Runbook ausfuehren: `systemctl status`, `journalctl`, kontrollierter `restart`, danach `/health`, `/api/version` und Runtime-Gate erneut pruefen.  
 Siehe `docs/operations/BACKEND_RUNTIME_RECOVERY_RUNBOOK.md`.
+
+## Was macht `/health`?
+
+Leichtgewichtiger Liveness-Endpunkt (`core.liveness`): Status, Service-Name, gecachte Version, Timestamp, Runtime-Pfad — **ohne** Dashboard, Git, Deploy-Drift oder Mount-Checks.
+
+## Was ist Gate Exit 18?
+
+`backend_version_endpoint_timeout`: `/health` antwortet, `/api/version` timeoutet bei offenem Port — getrennt von Exit 17 (Health-Timeout).
+
+## Was macht der Healthcheck-Timer?
+
+Optionaler systemd-Timer (nur Beispiel-Dateien unter `packaging/systemd/`). Ruft `scripts/healthcheck/setuphelfer-backend-healthcheck.sh` auf. Default `ENABLE_RESTART=0` (nur melden).
+
+## Warum ist der Timer nicht automatisch aktiv?
+
+Blinder Restart kann Jobs beschaedigen; Aktivierung nur mit Operator-Freigabe. Kein Rescue/Backup aus dem Healthcheck.

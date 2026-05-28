@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-05-28T18:50:00Z",
+  "mvp_variant": "B_healthcheck_timer_plus_C_frontend_gate",
+  "systemd_watchdog_sd_notify": "deferred",
+  "watchdog_active": false,
+  "enable_restart_default": false,
+  "files": [
+    "scripts/healthcheck/setuphelfer-backend-healthcheck.sh",
+    "packaging/systemd/setuphelfer-backend-healthcheck.service.example",
+    "packaging/systemd/setuphelfer-backend-healthcheck.timer.example",
+    "frontend/src/lib/devDashboard/probeBackendStartup.ts"
+  ],
+  "why_restart_on_failure_insufficient": "Hang leaves process running without exit code",
+  "why_port_listen_insufficient": "Worker may be blocked while socket accepts",
+  "why_no_rescue_backup_from_watchdog": "Phase 0 and operator approval required",
+  "why_timer_not_auto_enabled": "Risk of restart during jobs; ENABLE_RESTART=0 default"
+}

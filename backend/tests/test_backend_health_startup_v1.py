@@ -38,12 +38,18 @@ class TestBackendHealthStartupV1(unittest.TestCase):
         self.assertIn("version", data)
 
     def test_health_does_not_require_project_version_loader(self) -> None:
-        with patch("core.versioning.get_project_version", side_effect=RuntimeError("slow_version_loader")):
+        with patch("core.liveness._read_version_file_fast", return_value=None):
             r = self.client.get("/health")
         self.assertEqual(r.status_code, 200, r.text)
         data = r.json()
         self.assertEqual(data.get("status"), "ok")
         self.assertEqual(data.get("version"), "unknown")
+
+    def test_version_omits_git_commit_unless_opt_in(self) -> None:
+        with patch("core.liveness._git_head_optional", return_value=None):
+            r = self.client.get("/api/version")
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertNotIn("git_commit", r.json())
 
     def test_version_endpoint_stays_available_without_dashboard_routes(self) -> None:
         with patch("core.dev_dashboard.build_dashboard_status", side_effect=RuntimeError("must_not_be_called")):

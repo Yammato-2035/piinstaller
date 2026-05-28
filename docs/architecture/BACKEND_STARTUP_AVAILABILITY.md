@@ -31,6 +31,9 @@ Backend-Verfuegbarkeit ist eine harte Voraussetzung fuer Runtime-Gate, Developer
 
 - Port offen reicht **nicht** als Lebenszeichen.
 - `systemd active` reicht **nicht** als Lebenszeichen.
-- `/health` muss leichtgewichtig sein (keine Dateiscans, keine Roadmap-/Drift-Berechnung).
-- `/api/version` muss robust und schnell sein, unabhaengig von optionalen Dashboard-/Evidence-Dateien.
+- `/health` und `/api/version` laufen ueber `backend/core/liveness.py` (kein Dashboard-Import).
+- Dev-Dashboard schwere Abschnitte (`deploy_drift`, `cockpit_enrich`) mit Thread-Timeout isoliert.
+- Runtime-Gate: Exit **17** (Health-Timeout), **18** (Version-Timeout bei Health OK).
 - `backend_hanging` blockiert Runtime-Gate und Runtime-nahe Operationen hart.
+
+Siehe auch `BACKEND_WATCHDOG_MVP_DECISION.md`.

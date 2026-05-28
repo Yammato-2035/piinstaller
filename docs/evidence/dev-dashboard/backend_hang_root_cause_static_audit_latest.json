@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-05-28T18:50:00Z",
+  "potential_blocking_imports": [
+    "backend/app.py: schwere Module (backup, rescue, package) beim Import — nicht im /health-Pfad",
+    "backend/core/dev_dashboard.py: deploy_manifest, subprocess git beim Import von Pfaden"
+  ],
+  "potential_blocking_startup_hooks": [
+    "backend/app.py:_app_lifespan — _load_or_init_config, OLED-Autostart (ensure_display_telemetry_autostart), init_remote_db"
+  ],
+  "potential_blocking_health_path": [],
+  "potential_blocking_version_path": [
+    "legacy: subprocess git rev-parse in get_version (entfernt zugunsten core.liveness, Git opt-in SETUPHELFER_VERSION_INCLUDE_GIT=1)"
+  ],
+  "potential_blocking_dashboard_path": [
+    "GET /api/dev-dashboard/status: BACKUP_JOBS systemd sync pro Job",
+    "_compute_deploy_drift: git show HEAD + SHA256 groesser Dateien",
+    "enrich_dashboard_cockpit: roadmap, structure_health, evidence scans",
+    "dev_dashboard_status vorher synchron im Event-Loop — blockierte andere Requests bei Single-Worker"
+  ],
+  "subprocess_without_timeout": [
+    "backend/app.py: diverse systemctl/git ohne Timeout in Backup/Rescue-Pfaden (nicht /health)",
+    "dev_dashboard._runtime_matches_repo_head: git show timeout 2s"
+  ],
+  "filesystem_scans_without_budget": [
+    "build_evidence_index: os.walk max 400",
+    "deploy_drift: manifest file list mit Hash-Budget 384KiB pro Datei",
+    "cockpit roadmap/structure: JSON/MD reads unter docs/"
+  ],
+  "risk_level": "medium",
+  "recommendations": [
+    "/health und /api/version ueber core.liveness ohne Dashboard",
+    "Dashboard deploy_drift und cockpit_enrich mit Thread-Timeout isolieren",
+    "dev_dashboard_status via asyncio.to_thread + Gesamt-Timeout",
+    "Runtime-Gate Exit 17/18 fuer Hang vs Version-Timeout",
+    "Healthcheck-Timer nur als Beispiel, ENABLE_RESTART=0 default",
+    "Operator-Restart bei persistentem Hang; kein Auto-Rescue"
+  ]
+}

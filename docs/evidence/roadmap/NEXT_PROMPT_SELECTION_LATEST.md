@@ -2,7 +2,7 @@
 
 **Selected:** `BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF`
 
-**Warum:** Backend-Startup-Availability ist gehaertet, aber Runtime bleibt blockiert (Service aktiv + Port offen + HTTP-Timeout). Restart/Journals brauchen ein privilegiertes Operator-Terminal; im Agent-Kontext sind keine sudo/restart-Aktionen erlaubt.
+**Warum:** Liveness/Watchdog-MVP im Workspace; Runtime-Gate weiter Exit **14** (deploy_drift). Operator: Deploy-Helper/sync nach `/opt`; Restart nur bei Gate Exit **17/18** (Hang).
 
 **Available next:** `BACKEND_RUNTIME_RECOVERY_GATE`, `BACKEND_WATCHDOG_IMPLEMENTATION_MVP`, `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE`
 

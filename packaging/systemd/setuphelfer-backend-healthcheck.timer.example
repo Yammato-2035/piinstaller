@@ -1,0 +1,14 @@
+# Beispiel-Timer — nicht enable/start ohne Operator-Freigabe.
+# OnFailure=restart ist bewusst NICHT gesetzt (Hang ≠ crash).
+
+[Unit]
+Description=Periodic Setuphelfer backend health probe
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=3min
+AccuracySec=30s
+Unit=setuphelfer-backend-healthcheck.service
+
+[Install]
+WantedBy=timers.target

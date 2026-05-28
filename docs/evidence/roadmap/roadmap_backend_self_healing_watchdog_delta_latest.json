@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-05-28T18:50:00Z",
+  "backend_startup_availability": "partial_green",
+  "backend_watchdog_mvp": "yellow",
+  "watchdog_active": false,
+  "runtime_gate_exit": 14,
+  "runtime_status": "blocked",
+  "recommended_next": "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
+  "recommended_next_note": "Deploy-Drift (Exit 14) zuerst; Restart nur bei Exit 17/18",
+  "after_runtime_green": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+  "no_fake_green": true
+}

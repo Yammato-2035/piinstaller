@@ -1,0 +1,14 @@
+# Beispiel — NICHT automatisch installieren/aktivieren.
+# Kopie nach /etc/systemd/system/ nur mit Operator-Freigabe.
+#
+# Environment=ENABLE_RESTART=0  (Default: nur melden)
+# Environment=ENABLE_RESTART=1  (nur wenn bewusst gewuenscht)
+
+[Unit]
+Description=Setuphelfer backend /health probe (read-only)
+After=setuphelfer-backend.service
+
+[Service]
+Type=oneshot
+Environment=ENABLE_RESTART=0
+ExecStart=/opt/setuphelfer/scripts/healthcheck/setuphelfer-backend-healthcheck.sh

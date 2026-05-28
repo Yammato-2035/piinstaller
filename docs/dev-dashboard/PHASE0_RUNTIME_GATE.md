@@ -35,7 +35,8 @@ Vor dem ersten Schritt, der einen der folgenden Bereiche **gegen die echte Runti
 - `12`: `project_version` Mismatch
 - `13`: `backend_runtime_path` unplausibel
 - `14`/`15`/`16`: deploy_drift/Manifest-Blocker
-- `17`: **`backend_hanging_active_port_but_http_timeout`** (Port offen, Service aktiv, aber HTTP timeoutet)
+- `17`: **`backend_hanging_active_port_but_http_timeout`** (Port offen, Service aktiv, `/health` timeoutet)
+- `18`: **`backend_version_endpoint_timeout`** (`/health` OK, `/api/version` timeoutet bei offenem Port)
 - `20`: deploy_drift unklar/gray oder Dashboard-Status nicht auswertbar
 
 ## Bei Fehlschlag

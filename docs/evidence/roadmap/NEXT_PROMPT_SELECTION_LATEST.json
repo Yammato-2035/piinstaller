@@ -1,11 +1,10 @@
 {
   "selected_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
   "selected_at": "2026-05-28T04:05:00Z",
-  "reason": "Backend startup availability hardening is implemented, but runtime remains blocked with active service + open port + HTTP timeouts. Operator restart handoff is required before rescue-related work.",
+  "reason": "Watchdog-MVP and liveness hardening landed in workspace; runtime gate still Exit 14 (deploy_drift). Operator deploy/sync to /opt before rescue; restart only if hang recurs (Exit 17/18).",
   "blocked_by": [
-    "backend_hanging_active_port_but_http_timeout",
-    "operator_privileged_terminal_required",
-    "unapproved_background_task_detected"
+    "deploy_drift_backend_files",
+    "runtime_gate_exit_14"
   ],
   "unlocks": [
     "operator_restart_result_ingest",

@@ -11,6 +11,7 @@
 #  15  deploy_drift: restart_backend_manual empfohlen (ohne deploy_backend_files)
 #  16  Deploy-Manifest-Mismatch (manifest_match false)
 #  17  backend_hanging_active_port_but_http_timeout
+#  18  backend_version_endpoint_timeout (/health OK, /api/version timeout)
 #  20  deploy_drift gray ohne RUNTIME_GATE_ALLOW_DEPLOY_DRIFT_GRAY=1 / Dashboard fehlt / unklar
 #
 # Umgebung (optional):
@@ -117,7 +118,15 @@ for ((attempt = 1; attempt <= API_RETRIES; attempt++)); do
   fi
 done
 
-if [[ "$port_8000_open" -eq 1 ]] && { [[ "$health_kind" == "timeout" ]] || [[ "$http_kind" == "timeout" ]]; }; then
+if [[ "$port_8000_open" -eq 1 ]] && [[ "$health_code" == "200" ]] && [[ "$http_kind" == "timeout" ]]; then
+  log "check-runtime-deploy-gate: backend_version_endpoint_timeout (health=ok api_version=$http_kind)"
+  exit 18
+fi
+if [[ "$port_8000_open" -eq 1 ]] && [[ "$health_kind" == "timeout" ]]; then
+  log "check-runtime-deploy-gate: backend_hanging_active_port_but_http_timeout (health=$health_kind api_version=$http_kind)"
+  exit 17
+fi
+if [[ "$port_8000_open" -eq 1 ]] && [[ "$http_kind" == "timeout" ]]; then
   log "check-runtime-deploy-gate: backend_hanging_active_port_but_http_timeout (health=$health_kind api_version=$http_kind)"
   exit 17
 fi

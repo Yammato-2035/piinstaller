@@ -34,8 +34,8 @@
       "id": "runtime-governance",
       "title_de": "Runtime / Governance",
       "title_en": "Runtime / Governance",
-      "description_de": "Runtime derzeit blockiert: backend_hanging (Service aktiv + Port offen, aber HTTP Timeout). Kein Fake-Green fuer BR-001/Rescue.",
-      "description_en": "Runtime currently blocked: backend_hanging (service active + port open, but HTTP timeout). No fake green for BR-001/rescue.",
+      "description_de": "Runtime blockiert: Gate Exit 14 (deploy_drift). Hang-Erkennung/Watchdog-MVP im Code (partial_green); HTTP /health+/api/version erreichbar. Kein Fake-Green fuer BR-001/Rescue.",
+      "description_en": "Runtime blocked: gate exit 14 (deploy_drift). Hang detection/watchdog MVP in code (partial_green); HTTP /health+/api/version reachable. No fake green for BR-001/rescue.",
       "status": "blocked",
       "priority": "P0",
       "owner": "Setuphelfer Core",
@@ -153,18 +153,19 @@
               "area_id": "runtime-governance",
               "title_de": "Backend-Hang trotz aktivem Service und offenem Port",
               "title_en": "Backend hanging despite active service and open port",
-              "description_de": "setuphelfer-backend.service ist aktiv und :8000 lauscht, aber /health und /api/version timeouten.",
-              "description_en": "setuphelfer-backend.service is active and :8000 listens, but /health and /api/version timeout.",
-              "severity": "critical",
-              "status": "blocked",
+              "description_de": "Mitigation umgesetzt (liveness, Gate 17/18, Dashboard-Timeouts). Bei erneutem Hang: Operator-Restart. Aktuell kein Live-Hang (Gate 14 = deploy_drift).",
+              "description_en": "Mitigation implemented (liveness, gate 17/18, dashboard timeouts). On recurrence: operator restart. No live hang currently (gate 14 = deploy_drift).",
+              "severity": "high",
+              "status": "mitigated",
               "first_seen": "2026-05-28",
               "last_seen": "2026-05-28",
               "resolved_at": null,
-              "resolution_de": null,
-              "resolution_en": null,
+              "resolution_de": "Code-Haertung + Watchdog-MVP-Dateien; Watchdog nicht aktiv.",
+              "resolution_en": "Code hardening + watchdog MVP files; watchdog not active.",
               "evidence_links": [
-                "docs/evidence/dev-dashboard/BACKEND_CURRENT_AVAILABILITY_AUDIT.md",
-                "docs/evidence/dev-dashboard/backend_current_availability_audit_latest.json"
+                "docs/evidence/dev-dashboard/BACKEND_HANG_ROOT_CAUSE_STATIC_AUDIT.md",
+                "docs/evidence/dev-dashboard/backend_hang_root_cause_static_audit_latest.json",
+                "docs/architecture/BACKEND_WATCHDOG_MVP_DECISION.md"
               ]
             }
           ],
