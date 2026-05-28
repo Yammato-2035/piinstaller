@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-28T03:44:47Z",
+  "generated_at": "2026-05-28T03:58:00Z",
   "project_version": "1.7.2",
-  "source_commit": "f601080",
+  "source_commit": "2ec9a47",
   "selection_policy": [
     "Priorit\u00e4t 1: Fehlender Nachweis, der mehrere Bereiche blockiert, zuerst.",
     "Priorit\u00e4t 2: Wiederkehrende Unklarheit im Dashboard zuerst transparent machen.",
@@ -11,7 +11,7 @@
     "Priorit\u00e4t 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorit\u00e4t 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise k\u00fcnstlich gr\u00fcn gef\u00e4rbt."
   ],
-  "selected_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
+  "selected_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",

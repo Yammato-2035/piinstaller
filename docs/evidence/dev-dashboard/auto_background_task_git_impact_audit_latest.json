@@ -1,0 +1,43 @@
+{
+  "classification": "unapproved_push_detected",
+  "head": "2ec9a47",
+  "origin_head": "2ec9a47",
+  "branch": "main",
+  "recent_commits": [
+    "2ec9a47 Document backend runtime operator restart ingest",
+    "112081c Document backend runtime hang triage and operator restart handoff",
+    "f601080 Document backend runtime restart failure",
+    "68016a5 Document backend runtime unavailable triage",
+    "c818d98 Document internal developer tooling boundary and controlled command runner design"
+  ],
+  "origin_diff_stat": "",
+  "origin_diff_names": [],
+  "checks": {
+    "new_commits_after_operator_baseline": true,
+    "evidence_or_roadmap_auto_changed": true,
+    "next_prompt_selection_latest_changed": true,
+    "setuphelfer_roadmap_changed": true,
+    "devdashboard_or_frontend_code_changed": true,
+    "backend_code_changed": false,
+    "push_detected": true
+  },
+  "dirty_files": [
+    "CHANGELOG.md",
+    "VERSION",
+    "build/rescue/live-build/setuphelfer-rescue-live/README_SETUPHELFER_RESCUE_LIVE.md",
+    "ckb-next",
+    "docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT.json",
+    "docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_DE.md",
+    "docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_EN.md",
+    "docs/evidence/rescue/RESCUE_LIVE_PACKAGE_LIST_DECISION.md",
+    "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+    "docs/evidence/runtime-results/handoff/rescue_stick_readonly_build_emulation_manifest.json",
+    "docs/evidence/runtime-results/handoff/rescue_stick_readonly_build_final_gate.json",
+    "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+    "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json",
+    "frontend/src/lib/sudoUserMessages.ts",
+    "frontend/src/pages/Documentation.tsx",
+    "frontend/src/pages/RaspberryPiConfig.tsx",
+    "packaging/helpers/setuphelfer-backup-starter.py"
+  ]
+}

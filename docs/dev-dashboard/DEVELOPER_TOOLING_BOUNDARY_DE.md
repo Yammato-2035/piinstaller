@@ -24,3 +24,9 @@ Das Developer Dashboard ist ein internes Entwicklungs-, Governance- und Evidence
 - Kein `sudo` aus dem Dashboard-Runner
 - Kein `apt install`/`upgrade`, kein `dd`, `mkfs`, `parted write`
 - Keine Restore-/Backup-/USB-Write-Ausführung aus dem Developer Dashboard
+
+## Cursor-Ausfuehrungsregel (verbindlich)
+
+Cursor darf keine Background-Tasks, Auto-Efficiency-Ketten, Ingest-Jobs, Commit-/Push-Ketten oder spaetere Statusmeldungen ankuendigen oder starten.  
+Jeder Lauf endet synchron mit vollstaendigem Schlussbericht.  
+Wenn Operatorrechte noetig sind, wird nur ein Operator-Handoff erstellt, ohne Hintergrundausfuehrung.

@@ -79,3 +79,8 @@ Bei erneutem Drift (Exit **14**): nur `setuphelfer-deploy-helper.service` nach O
 ## Warum konnte der Agent den Deploy-Helper nicht starten?
 
 `sudo systemctl start setuphelfer-deploy-helper.service` benötigt ein TTY-Passwort. Der Operator kann den Helper lokal starten; ein bereits synchrones `/opt` liefert trotzdem Gate **0**.
+
+## Duerfen Cursor-Laeufe Background-Tasks oder Auto-Ketten starten?
+
+Nein. Keine Background-Tasks, keine Auto-Efficiency-/Ingest-Ketten und keine automatischen Commit-/Push-Ketten.  
+Jeder Lauf endet synchron mit Schlussbericht. Falls Operatorrechte noetig sind, wird nur ein Operator-Handoff dokumentiert.

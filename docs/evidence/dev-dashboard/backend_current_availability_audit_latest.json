@@ -1,0 +1,26 @@
+{
+  "classification": "backend_hanging",
+  "runtime_gate_check": {
+    "command": "./scripts/check-runtime-deploy-gate.sh || true",
+    "result": "check-runtime-deploy-gate: /api/version HTTP 000000"
+  },
+  "service": {
+    "name": "setuphelfer-backend.service",
+    "is_active": "active",
+    "status_summary": "active (running), uvicorn worker on 127.0.0.1:8000"
+  },
+  "port_8000": {
+    "listening": true,
+    "raw": "LISTEN 343 2048 127.0.0.1:8000 0.0.0.0:*"
+  },
+  "http_probes": {
+    "/api/version": "timeout",
+    "/health": "timeout",
+    "/api/dev-dashboard/status": "timeout",
+    "/api/dev-dashboard/roadmap": "timeout"
+  },
+  "operator_actions_required": [
+    "manual privileged journal inspection",
+    "manual operator restart handoff execution"
+  ]
+}

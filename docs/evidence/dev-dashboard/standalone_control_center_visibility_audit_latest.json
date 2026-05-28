@@ -1,0 +1,38 @@
+{
+  "classification": "backend_dependency_too_strong",
+  "snapshot": {
+    "path": "frontend/public/dev-dashboard.snapshot.json",
+    "exists": true,
+    "valid_json": true,
+    "contains_modules": true,
+    "contains_roadmap_areas": true,
+    "contains_prompt_runtime_docs_evidence": true
+  },
+  "standalone_loader": {
+    "file": "frontend/src/lib/devDashboard/loadDevDashboard.ts",
+    "fallback_chain": [
+      "runtime_api",
+      "tauri_scan",
+      "snapshot",
+      "unavailable"
+    ],
+    "banner_exists": true
+  },
+  "i18n": {
+    "de_keys_present": true,
+    "en_keys_present": true
+  },
+  "routing_or_tab_bug_detected": false,
+  "frontend_tests": {
+    "build_passed": true,
+    "vitest_files_passed": 10,
+    "vitest_tests_passed": 44,
+    "vitest_failures": 0
+  },
+  "environment_findings": {
+    "backend_api_probe_state": "timeout_on_all_endpoints",
+    "frontend_3001_probe": "unreachable_during_audit"
+  },
+  "fix_applied": false,
+  "fix_reason": "No isolated low-risk frontend-only root cause proven; runtime/backend availability is primary blocker."
+}

@@ -163,3 +163,11 @@ Im Repository ist in [.github/workflows/ci.yml](../../.github/workflows/ci.yml) 
 ## Stand dieser Regeln
 
 Diese Datei beschreibt **Prozess- und Qualitätsregeln**. Sie ersetzt keine Code-Review-Entscheidung und **erzwingt** Verhalten nicht technisch (außer durch Teamdisziplin und PR-Review). Ergänzungen: per PR mit Changelog-Eintrag gemäß VERSIONING.md.
+
+---
+
+## Pflichtregel: Keine Background-/Auto-Ketten durch Cursor
+
+Cursor darf **keine** Background-Tasks, Auto-Efficiency-Ketten, Ingest-Jobs, Commit-/Push-Ketten oder spaetere Statusmeldungen ankuendigen oder starten.  
+Jeder Lauf endet **synchron** mit vollstaendigem Schlussbericht.  
+Wenn eine Aktion Operatorrechte benoetigt, wird ein **Operator-Handoff** erstellt, aber **keine** Hintergrundausfuehrung gestartet.

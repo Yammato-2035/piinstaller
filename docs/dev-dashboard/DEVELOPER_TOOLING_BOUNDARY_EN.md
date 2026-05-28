@@ -24,3 +24,9 @@ The Developer Dashboard is an internal development, governance, and evidence too
 - No `sudo` execution from the dashboard runner
 - No `apt install`/`upgrade`, no `dd`, `mkfs`, `parted write`
 - No restore/backup/USB-write execution from the Developer Dashboard
+
+## Cursor Execution Rule (mandatory)
+
+Cursor must not announce or start background tasks, auto-efficiency chains, ingest jobs, commit/push chains, or delayed follow-up status runs.  
+Each run must end synchronously with a complete final report.  
+If operator privileges are required, Cursor may only create an operator handoff and must not start background execution.
