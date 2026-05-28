@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-05-28T03:25:00Z",
+  "restart_authorized": true,
+  "authorization_token": "BACKEND_RESTART_FREIGEGEBEN",
+  "branch": "main",
+  "head": "68016a5",
+  "service_before": "active_running",
+  "port_8000_before": "listening",
+  "api_before": "timeout",
+  "runtime_gate_before_exit": 11
+}

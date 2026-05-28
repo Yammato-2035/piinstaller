@@ -1,11 +1,11 @@
 # Next Prompt Selection (Latest)
 
-**Selected:** `BACKEND_RUNTIME_RECOVERY_GATE`
+**Selected:** `BACKEND_RUNTIME_HANG_TRIAGE`
 
-**Warum:** Runtime-Gate ist blockiert (`/api/version HTTP 000000`). Backend ist laut systemd aktiv und Port 8000 lauscht, aber API-Endpunkte antworten nicht (Timeout).
+**Warum:** Autorisierter Restart war im Agent-Kontext nicht ausführbar (sudo braucht TTY/Passwort). Backend bleibt aktiv/listening, API bleibt timeout.
 
-**Available next:** `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE`
+**Available next:** `BACKEND_RUNTIME_RECOVERY_GATE`
 
-**Nicht:** Restart ohne Freigabe `BACKEND_RESTART_FREIGEGEBEN`, kein Rescue-/Backup-/Restore-Run.
+**Nicht:** weiterer Restart im Agent ohne passenden Operator-Terminal-Kontext; kein Rescue-/Backup-/Restore-Run.
 
 Siehe `NEXT_PROMPT_SELECTION_LATEST.json`.

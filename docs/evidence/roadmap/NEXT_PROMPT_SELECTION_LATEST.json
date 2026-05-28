@@ -1,19 +1,20 @@
 {
-  "selected_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
-  "selected_at": "2026-05-28T03:15:00Z",
-  "reason": "Runtime gate remains blocked (/api/version HTTP 000000). Backend service appears active and port 8000 listens, but API endpoints time out. Restart requires explicit operator approval token.",
+  "selected_prompt_id": "BACKEND_RUNTIME_HANG_TRIAGE",
+  "selected_at": "2026-05-28T03:36:00Z",
+  "reason": "Authorized restart could not be executed in agent context (sudo requires TTY/password). Backend remains active/listening on 8000, but /api/version and /health still time out.",
   "blocked_by": [
     "runtime_gate_blocked",
-    "backend_api_unresponsive"
+    "backend_api_hang_suspected",
+    "restart_blocked_by_tty_policy_in_agent_context"
   ],
   "unlocks": [
-    "Runtime gate green",
-    "Safe runtime API checks",
-    "Rescue follow-up prompts"
+    "Root-cause isolation for backend hang",
+    "Operator-terminal restart and validation",
+    "Recovery gate progression"
   ],
   "alternative_prompts": [
-    "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
-    "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP"
+    "BACKEND_RUNTIME_RECOVERY_GATE",
+    "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
   ],
   "mandatory_closure_sections": [
     "dashboard_progress",

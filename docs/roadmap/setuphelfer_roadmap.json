@@ -186,8 +186,8 @@
           ]
         }
       ],
-      "next_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
-      "next_recommended_action": "Backend-Runtime-Recovery zuerst: /api/version wiederherstellen, dann erst Rescue-/Runtime-Folgepfade fortsetzen."
+      "next_prompt_id": "BACKEND_RUNTIME_HANG_TRIAGE",
+      "next_recommended_action": "Backend läuft/listening, aber API timeoutet; Hang-Triage zuerst, danach Recovery-/Rescue-Folgepfade."
     },
     {
       "id": "backup-br001",
@@ -1187,8 +1187,8 @@
           ]
         }
       ],
-      "next_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
-      "next_recommended_action": "Runtime-Gate ist blockiert; zuerst Backend-Unreachability triagieren und ggf. mit Operator-Freigabe restarten."
+      "next_prompt_id": "BACKEND_RUNTIME_HANG_TRIAGE",
+      "next_recommended_action": "Autorisierter Restart scheiterte im Agent-Kontext (sudo TTY). Nächster Schritt: Backend-Hang-Triage im Operator-Terminal."
     },
     {
       "id": "packaging-update",

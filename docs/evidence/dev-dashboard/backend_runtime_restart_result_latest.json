@@ -1,0 +1,15 @@
+{
+  "restart_authorized": true,
+  "service_before": "active_running",
+  "port_8000_before": "listening",
+  "api_before": "timeout",
+  "service_after": "active_running",
+  "port_8000_after": "listening",
+  "api_after": "timeout",
+  "runtime_gate_after_exit": 11,
+  "classification": "new_error",
+  "restart_executed": false,
+  "restart_error": "sudo requires tty/password in agent context",
+  "journal_excerpt_available": false,
+  "next_action": "BACKEND_RUNTIME_HANG_TRIAGE"
+}

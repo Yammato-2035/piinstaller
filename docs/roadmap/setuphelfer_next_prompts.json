@@ -11,7 +11,7 @@
     "Priorität 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorität 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise künstlich grün gefärbt."
   ],
-  "selected_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
+  "selected_prompt_id": "BACKEND_RUNTIME_HANG_TRIAGE",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -263,9 +263,9 @@
       "title_de": "Backend Runtime Recovery Gate",
       "title_en": "Backend runtime recovery gate",
       "scope": "Backend-Unerreichbarkeit bei aktivem Service triagieren, Service/Port/Journal auswerten und nur mit Operator-Freigabe neu starten.",
-      "status": "recommended_next",
-      "reason_de": "Runtime-Gate blockiert: /api/version HTTP 000000. Service läuft, Port 8000 lauscht, aber API antwortet nicht.",
-      "reason_en": "Runtime gate blocked: /api/version HTTP 000000. Service is running, port 8000 listens, but API does not respond.",
+      "status": "available",
+      "reason_de": "Basis-Recovery-Triage abgeschlossen; autorisierter Restart war im Agent-Kontext nicht ausführbar (sudo TTY/Passwort).",
+      "reason_en": "Base recovery triage completed; authorized restart could not run in agent context (sudo TTY/password).",
       "prompt_text": "Führe lesende Runtime-Triage durch, klassifiziere den Ausfall und starte den Backend-Service nur mit BACKEND_RESTART_FREIGEGEBEN neu.",
       "blocked_by": [
         "runtime_gate_blocked",
@@ -305,6 +305,62 @@
       ],
       "documentation_targets": [
         "docs/evidence/dev-dashboard/BACKEND_RUNTIME_RECOVERY_GATE_TRIAGE.md",
+        "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json"
+      ],
+      "non_goals": [
+        "Kein Hardwaretest",
+        "Kein USB-Write",
+        "Kein Rescue-Build"
+      ],
+      "created_at": "2026-05-28",
+      "updated_at": "2026-05-28"
+    },
+    {
+      "id": "BACKEND_RUNTIME_HANG_TRIAGE",
+      "category": "runtime_governance",
+      "title_de": "Backend Runtime Hang Triage",
+      "title_en": "Backend runtime hang triage",
+      "scope": "Wenn Service aktiv/listening bleibt, aber API-Endpunkte timeouten: Hang-Ursache eingrenzen und Operator-Terminal-Intervention vorbereiten.",
+      "status": "recommended_next",
+      "reason_de": "Nach autorisiertem Restart-Versuch bleibt Backend auf 8000 ohne HTTP-Antwort; im Agent konnte sudo mangels TTY nicht ausführen.",
+      "reason_en": "After authorized restart attempt, backend remains on 8000 without HTTP response; sudo could not execute in agent context due to missing TTY.",
+      "prompt_text": "Führe Hang-Triage mit Fokus auf Worker-Blockade, interne Deadlocks und Operator-Terminal-Restart mit sichtbaren Logs durch, ohne Rescue/Backup/Restore-Aktionen.",
+      "blocked_by": [
+        "backend_api_hang_suspected",
+        "agent_sudo_tty_policy"
+      ],
+      "unlocks": [
+        "Recovery gate decision with concrete root cause",
+        "Safe runtime gate recovery path"
+      ],
+      "expected_outputs": [
+        "Hang triage evidence",
+        "Operator-terminal restart transcript",
+        "Updated gate status and next prompt"
+      ],
+      "safety_rules": [
+        "Kein Rescue/Backup/Restore.",
+        "Kein Deploy.",
+        "Kein apt install."
+      ],
+      "allowed_paths": [
+        "docs/evidence/dev-dashboard/",
+        "docs/evidence/roadmap/",
+        "docs/roadmap/",
+        "scripts/"
+      ],
+      "forbidden_actions": [
+        "rescue_iso_build",
+        "backup_start",
+        "restore_start",
+        "deploy_without_approval"
+      ],
+      "tests": [
+        "backend.tests.test_dev_dashboard_v1",
+        "backend.tests.test_dev_dashboard_manual_command_runs_v1"
+      ],
+      "documentation_targets": [
+        "docs/evidence/dev-dashboard/BACKEND_RUNTIME_RESTART_RESULT.md",
         "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json"
       ],
       "non_goals": [
