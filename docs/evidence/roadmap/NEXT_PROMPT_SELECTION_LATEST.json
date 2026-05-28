@@ -1,21 +1,19 @@
 {
-  "selected_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
-  "selected_at": "2026-05-28T04:05:00Z",
-  "reason": "Watchdog-MVP and liveness hardening landed in workspace; runtime gate still Exit 14 (deploy_drift). Operator deploy/sync to /opt before rescue; restart only if hang recurs (Exit 17/18).",
+  "selected_prompt_id": "DEPLOY_DRIFT_TRIAGE_AFTER_WATCHDOG",
+  "selected_at": "2026-05-28T19:02:00Z",
+  "reason": "DEPLOY_HELPER_SYNC_FREIGEGEBEN gesetzt, aber Agent-sudo blockiert (TTY/Passwort). Deploy-Helper nicht gestartet; Gate bleibt Exit 14. Operator muss setuphelfer-deploy-helper.service im privilegierten Terminal starten.",
   "blocked_by": [
-    "deploy_drift_backend_files",
-    "runtime_gate_exit_14"
+    "deploy_helper_blocked_by_sudo_tty",
+    "runtime_gate_exit_14",
+    "deploy_drift_backend_files"
   ],
   "unlocks": [
-    "operator_restart_result_ingest",
-    "runtime_gate_recovery_decision_after_operator_logs",
-    "standalone_visibility_recheck_after_runtime_stabilization",
-    "backend_watchdog_implementation_mvp"
+    "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
   ],
   "alternative_prompts": [
-    "BACKEND_RUNTIME_RECOVERY_GATE",
+    "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
     "BACKEND_WATCHDOG_IMPLEMENTATION_MVP",
-    "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
+    "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC"
   ],
   "mandatory_closure_sections": [
     "dashboard_progress",

@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-05-28T19:00:00Z",
+  "branch": "main",
+  "head_short": "2bf64b7",
+  "head_oneline": "2bf64b7 Implement backend startup hang detection and watchdog MVP design",
+  "operator_authorized": true,
+  "authorization_code": "DEPLOY_HELPER_SYNC_FREIGEGEBEN",
+  "gate_before_exit": 14,
+  "gate_before_code": "deploy_backend_files_recommended",
+  "expected_after": "deploy_sync_recovered_runtime"
+}

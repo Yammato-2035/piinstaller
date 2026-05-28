@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-05-28T19:02:00Z",
+  "branch": "main",
+  "head": "2bf64b7",
+  "operator_authorized": true,
+  "authorization_code": "DEPLOY_HELPER_SYNC_FREIGEGEBEN",
+  "deploy_helper_attempted": true,
+  "deploy_helper_result": "deploy_helper_blocked_by_sudo_tty",
+  "deploy_helper_detail": "sudo: ein Terminal ist erforderlich, um das Passwort zu lesen",
+  "gate_before": 14,
+  "gate_after": 14,
+  "classification": "deploy_helper_blocked_by_sudo_tty",
+  "health_after": "not_retested_live_after_deploy",
+  "api_version_after": "not_retested_live_after_deploy",
+  "dev_dashboard_after": "not_retested_live_after_deploy",
+  "frontend_bundle_checked": false,
+  "frontend_bundle_note": "skipped_deploy_not_completed",
+  "watchdog_timer_activated": false,
+  "rescue_started": false,
+  "backup_started": false,
+  "restore_started": false,
+  "next_prompt": "DEPLOY_DRIFT_TRIAGE_AFTER_WATCHDOG"
+}

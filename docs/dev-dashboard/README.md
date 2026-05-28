@@ -20,6 +20,7 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 - Bei aktivem Service + offenem Port + HTTP-Timeout gilt `backend_hanging` (harter Fehler).
 - Das Runtime-Gate meldet Hang als `backend_hanging_active_port_but_http_timeout` (Exit **17**) oder `backend_version_endpoint_timeout` (Exit **18**).
 - Watchdog-Timer nur als Beispiel-Dateien (`ENABLE_RESTART=0`); siehe `docs/architecture/BACKEND_WATCHDOG_MVP_DECISION.md`.
+- Nach Watchdog-Hardening: Workspace → `/opt` nur via `setuphelfer-deploy-helper.service` (Operator-Terminal bei Agent-sudo-Block); Evidence `DEPLOY_SYNC_AFTER_WATCHDOG_OPERATOR_HANDOFF.md`.
 - Das Control Center zeigt in diesem Zustand einen roten Backend-Fail-State statt leerer Oberflaeche.
 
 ## Roadmap-Registry

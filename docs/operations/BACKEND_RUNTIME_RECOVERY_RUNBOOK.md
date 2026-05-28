@@ -46,7 +46,18 @@ curl -sS -m 5 http://127.0.0.1:8000/api/version
 - Default: `ENABLE_RESTART=0` (nur melden). Restart nur mit Operator-Freigabe und `ENABLE_RESTART=1`.
 - **Nicht** automatisch `systemctl enable` ohne Freigabe.
 
+## Deploy nach Code-Hardening (Watchdog/Liveness)
+
+```bash
+cd /home/volker/piinstaller
+sudo systemctl start setuphelfer-deploy-helper.service
+journalctl -u setuphelfer-deploy-helper.service -n 120 --no-pager
+./scripts/check-runtime-deploy-gate.sh
+```
+
+Agent ohne interaktives sudo: Handoff `docs/evidence/dev-dashboard/DEPLOY_SYNC_AFTER_WATCHDOG_OPERATOR_HANDOFF.md`.
+
 ## Wichtig
 
-- Dieses Runbook fuehrt keinen Deploy aus.
+- Deploy nur ueber Deploy-Helper, kein manuelles `cp` nach `/opt`.
 - Rescue/Backup/Restore bleiben blockiert, bis Gate wieder gruen ist.

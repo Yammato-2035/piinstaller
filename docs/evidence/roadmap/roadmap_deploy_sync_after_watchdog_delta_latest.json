@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-05-28T19:02:00Z",
+  "deploy_sync_attempted": true,
+  "deploy_sync_completed": false,
+  "deploy_helper_blocked_by_sudo_tty": true,
+  "runtime_gate_exit_before": 14,
+  "runtime_gate_exit_after": 14,
+  "runtime_status": "blocked",
+  "recommended_next_prompt": "DEPLOY_DRIFT_TRIAGE_AFTER_WATCHDOG",
+  "after_gate_zero": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+  "no_fake_green": true
+}
