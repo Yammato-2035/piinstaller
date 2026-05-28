@@ -1,11 +1,9 @@
 # Next Prompt Selection (Latest)
 
-**Selected:** `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE`
+**Selected:** `RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT`
 
-**Warum:** Operator-Terminal Ground Truth: `./scripts/check-runtime-deploy-gate.sh` → OK (Exit 0). Read-only Agent-Verify: health/version 200, deploy_drift green, `safe_test_mode` UNLOCKED, `core/liveness.py` in `/opt`. Kein Rescue in diesem Ingest-Lauf.
+**Warum:** Chroot-Cleanup-Fehler (`RESCUE-BUILD-CHROOT-CLEANUP-001`) analysiert; Runtime-Gate grün. Operator muss Mount-Cleanup unter BUILD_TREE per Handoff ausführen — kein Agent-sudo, kein Build-Retry in diesem Lauf.
 
-**Available next:** `BACKEND_RUNTIME_RECOVERY_GATE`, `BACKEND_WATCHDOG_IMPLEMENTATION_MVP`, `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE`
-
-**Regel:** Erst nach Operator-Handoff + belastbarem Runtime-Postcheck darf ein Rescue- oder Recovery-Folgeprompt empfohlen werden.
+**Nach erfolgreichem Cleanup + Retry:** `RESCUE_ISO_ARTIFACT_VERIFY` oder `RESCUE_ISO_BUILD_FAILURE_TRIAGE`.
 
 Siehe `NEXT_PROMPT_SELECTION_LATEST.json`.

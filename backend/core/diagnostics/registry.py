@@ -359,6 +359,38 @@ DIAGNOSTIC_CATALOG: list[DiagnosticCase] = [
         status_mapping={"RESCUE-BUILD-ISOHYBRID-001": "warning"},
     ),
     DiagnosticCase(
+        id="RESCUE-BUILD-CHROOT-CLEANUP-001",
+        domain="rescue_build",
+        title_de="Chroot-/Mount-Cleanup im live-build-Baum fehlgeschlagen",
+        title_en="Chroot/mount cleanup failed in live-build tree",
+        summary_de="live-build konnte `chroot/proc` nicht entfernen (Vorgang nicht zulässig) und scheiterte danach mit fehlendem `/usr/bin/env` im beschädigten Chroot (LB_EXIT=1). Ursache: veraltete Pseudo-FS-Mounts oder unvollständiges Cleanup — nicht isohybrid.",
+        summary_en="live-build could not remove `chroot/proc` (operation not permitted) and then failed with missing `/usr/bin/env` in a broken chroot (LB_EXIT=1). Cause: stale pseudo-fs mounts or incomplete cleanup — not isohybrid.",
+        severity="high",
+        confidence="high",
+        detection_sources=["api_result", "log_pattern", "manual_test"],
+        root_causes=[
+            "proc/sys/dev noch unter chroot gemountet während lb clean/rm",
+            "Beschädigter Chroot-Rest ohne vollständiges Debian-Root",
+            "rm auf gemounteten Pseudo-Dateisystemen",
+        ],
+        recommended_actions=[
+            _a(
+                "unmount-build-tree-only",
+                1,
+                "findmnt unter BUILD_TREE prüfen; nur Mountpoints unter dem Build-Tree tiefste zuerst umounten; kein rm -rf solange Mounts aktiv sind; danach lb clean/auto/clean und Tree neu vorbereiten.",
+                "Check findmnt under BUILD_TREE; unmount only deepest paths under the build tree first; no rm -rf while mounts are active; then lb clean/auto/clean and re-prepare the tree.",
+            )
+        ],
+        related_docs=[
+            "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_CLEANUP_FAILURE.md",
+            "docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md",
+        ],
+        related_faq=["docs/faq/rescue_iso_build_faq.md"],
+        tags=["rescue_build", "chroot", "proc", "cleanup", "live_build"],
+        status_mapping={"RESCUE-BUILD-CHROOT-CLEANUP-001": "warning"},
+    ),
+    DiagnosticCase(
         id="RESCUE-BUILD-ARCH-001",
         domain="rescue_build",
         title_de="Zielarchitektur nicht durch aktuellen Rescue-Build abgedeckt",

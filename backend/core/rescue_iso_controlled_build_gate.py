@@ -15,6 +15,9 @@ CONTROLLED_ROOT_POLICY_CATEGORY = "operator_policy"
 ISOHYBRID_ERROR_CODE = "RESCUE-BUILD-ISOHYBRID-001"
 ISOHYBRID_NEXT_ACTION = "prepare_binary_package_list_and_retry"
 ISOHYBRID_CATEGORY = "binary_stage_toolchain"
+CHROOT_CLEANUP_ERROR_CODE = "RESCUE-BUILD-CHROOT-CLEANUP-001"
+CHROOT_CLEANUP_NEXT_ACTION = "unmount_build_tree_and_clean_chroot"
+CHROOT_CLEANUP_CATEGORY = "live_build_cleanup"
 
 WORKING_DIRECTORY_REL = "build/rescue/live-build/setuphelfer-rescue-live"
 PATH_PREFIX_REL = "build/rescue/tool-compat/bin"
@@ -249,6 +252,38 @@ def classify_rescue_iso_build_attempt(
             ),
             "gate_message_found": True,
             "direct_lb_build_blocked": True,
+            "iso_created": False,
+            "usb_write_performed": usb_write_performed,
+            "exit_code": exit_code,
+            "command": run_body.get("command"),
+            "started_at": run_body.get("started_at"),
+            "finished_at": result_body.get("finished_at") or run_body.get("finished_at"),
+        }
+
+    chroot_cleanup_failure = (
+        "chroot/proc" in combined_log
+        and (
+            "Vorgang nicht zulässig" in combined_log
+            or "Operation not permitted" in combined_log
+        )
+    ) or (
+        "chroot: failed to run command" in combined_log
+        and "/usr/bin/env" in combined_log
+    )
+    if (chroot_cleanup_failure or result_error_code == CHROOT_CLEANUP_ERROR_CODE) and not iso_created:
+        return {
+            "attempted": attempted,
+            "result_status": "failed",
+            "error_code": CHROOT_CLEANUP_ERROR_CODE,
+            "category": CHROOT_CLEANUP_CATEGORY,
+            "next_action": CHROOT_CLEANUP_NEXT_ACTION,
+            "summary": (
+                "live-build konnte den Chroot nicht sauber bereinigen (proc/Operation not permitted) "
+                "oder der Chroot ist beschädigt (/usr/bin/env fehlt). Zuerst Mounts unter BUILD_TREE lösen, "
+                "dann Tree bereinigen — nicht als isohybrid-Fehler behandeln."
+            ),
+            "gate_message_found": False,
+            "direct_lb_build_blocked": False,
             "iso_created": False,
             "usb_write_performed": usb_write_performed,
             "exit_code": exit_code,

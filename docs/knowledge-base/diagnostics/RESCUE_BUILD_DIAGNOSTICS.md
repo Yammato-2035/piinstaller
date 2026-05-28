@@ -81,6 +81,20 @@ Diese Diagnose-Notiz trennt die aktuellen Rescue-Build-Blocker sauber voneinande
   - Build-Retry im Operator-Terminal
   - optional manuell auf dem Host: `sudo apt install syslinux-utils` (kein Auto-Install durch Setuphelfer)
 
+## RESCUE-BUILD-CHROOT-CLEANUP-001
+
+- Titel DE: `Chroot-/Mount-Cleanup im live-build-Baum fehlgeschlagen`
+- Titel EN: `Chroot/mount cleanup failed in live-build tree`
+- Typische Signale:
+  - `rm: … chroot/proc/… … Vorgang nicht zulässig` / `Operation not permitted`
+  - `chroot: failed to run command '/usr/bin/env': No such file or directory`
+  - `LB_EXIT=1` nach „Begin unmounting filesystems“
+- Bedeutung:
+  - **Nicht** isohybrid — der Chroot ist beschädigt oder Pseudo-FS war noch gemountet.
+- Empfehlung:
+  - `findmnt -R` nur unter BUILD_TREE; umount tiefste zuerst; kein `rm -rf` bei aktiven Mounts
+  - `lb clean` / `./auto/clean`, Tree neu vorbereiten, dann Build-Retry (Operator-Terminal)
+
 ## RESCUE-BUILD-ARCH-001
 
 - Titel DE: `Zielarchitektur nicht durch aktuellen Build abgedeckt`

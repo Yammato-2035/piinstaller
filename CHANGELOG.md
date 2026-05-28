@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO chroot cleanup failure triage — RESCUE-BUILD-CHROOT-CLEANUP-001)
+- **Klassifikation:** Build-Abbruch durch `chroot/proc` + fehlendes `/usr/bin/env` — nicht isohybrid.
+- **Diagnostics:** Neuer Code `RESCUE-BUILD-CHROOT-CLEANUP-001` in Registry, Matcher und `classify_rescue_iso_build_attempt`.
+- **Operator-Handoff:** Mount-Cleanup nur unter BUILD_TREE; kein Agent-sudo, kein Build-Retry in diesem Lauf.
+- **Roadmap:** Rescue bleibt blocked; Next Prompt `RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT`.
+
 ### Changed (Operator deploy sync ingest after watchdog — runtime green)
 - **Ground Truth:** Operator-Terminal: Deploy-Helper + Gate Exit **0**; Agent read-only bestätigt (health/version, deploy_drift green, `liveness.py` in `/opt`).
 - **Next Prompt:** `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE` (kein Rescue in diesem Lauf).

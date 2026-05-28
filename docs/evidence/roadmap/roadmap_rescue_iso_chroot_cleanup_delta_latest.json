@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-05-28T20:00:00Z",
+  "RESCUE-BUILD-RSVG-001": "resolved",
+  "RESCUE-BUILD-BOOTLOGO-001": "resolved",
+  "RESCUE-BUILD-ISOHYBRID-001": "fix_committed_pending_retry",
+  "RESCUE-BUILD-CHROOT-CLEANUP-001": "open",
+  "rescue_area_status": "blocked",
+  "rescue_full_green": false,
+  "recommended_next_prompt": "RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT",
+  "runtime_gate_exit": 0
+}

@@ -9,6 +9,8 @@ if str(_backend) not in sys.path:
     sys.path.insert(0, str(_backend))
 
 from core.rescue_iso_controlled_build_gate import (  # noqa: E402
+    CHROOT_CLEANUP_ERROR_CODE,
+    CHROOT_CLEANUP_NEXT_ACTION,
     CONTROLLED_GATE_ERROR_CODE,
     CONTROLLED_GATE_NEXT_ACTION,
     ISOHYBRID_ERROR_CODE,
@@ -21,6 +23,22 @@ from core.rescue_iso_controlled_build_gate import (  # noqa: E402
 
 
 class RescueIsoBuildResultClassificationTests(unittest.TestCase):
+    def test_chroot_cleanup_maps_not_to_isohybrid(self) -> None:
+        log = (
+            "rm: das Entfernen von 'chroot/proc/1/status' ist nicht möglich: Vorgang nicht zulässig\n"
+            "P: Begin unmounting filesystems...\n"
+            "chroot: failed to run command '/usr/bin/env': No such file or directory\n"
+            "LB_EXIT=1\n"
+        )
+        result = classify_rescue_iso_build_attempt(
+            run_data={"exit_code": 1},
+            result_data={"exit_code": 1, "iso_created": False, "usb_write_performed": False},
+            combined_log_text=log,
+        )
+        self.assertEqual(result["error_code"], CHROOT_CLEANUP_ERROR_CODE)
+        self.assertEqual(result["next_action"], CHROOT_CLEANUP_NEXT_ACTION)
+        self.assertNotEqual(result["error_code"], ISOHYBRID_ERROR_CODE)
+
     def test_isohybrid_not_found_maps_to_isohybrid_error(self) -> None:
         result = classify_rescue_iso_build_attempt(
             run_data={"exit_code": 127},

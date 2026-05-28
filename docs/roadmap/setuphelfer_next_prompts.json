@@ -11,7 +11,7 @@
     "Priorit\u00e4t 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorit\u00e4t 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise k\u00fcnstlich gr\u00fcn gef\u00e4rbt."
   ],
-  "selected_prompt_id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+  "selected_prompt_id": "RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -623,6 +623,30 @@
       "non_goals": [
         "Kein Boot-/VM-Test",
         "Kein full-green Rescue"
+      ],
+      "created_at": "2026-05-28",
+      "updated_at": "2026-05-28"
+    },
+    {
+      "id": "RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT",
+      "category": "rescue",
+      "title_de": "Rescue ISO Chroot-Mount-Cleanup (Operator)",
+      "title_en": "Rescue ISO chroot mount cleanup (operator)",
+      "scope": "Sicheres umount/rm nur unter BUILD_TREE, Tree neu vorbereiten, Build-Retry nur bei grünen Preconditions.",
+      "status": "available",
+      "reason_de": "Triage abgeschlossen; Agent-sudo blockiert. Operator muss Cleanup und optional Retry im echten Terminal ausführen.",
+      "reason_en": "Triage done; agent sudo blocked. Operator must run cleanup and optional retry in real terminal.",
+      "prompt_text": "Führe Mount-Cleanup-Handoff aus, ingest Operator-Ausgabe, klassifiziere Retry-Ergebnis. Kein Agent-sudo, kein USB-Write.",
+      "blocked_by": [
+        "RESCUE-BUILD-CHROOT-CLEANUP-001",
+        "operator_sudo_required"
+      ],
+      "unlocks": [
+        "RESCUE_ISO_BUILD_FAILURE_TRIAGE",
+        "RESCUE_ISO_ARTIFACT_VERIFY"
+      ],
+      "documentation_targets": [
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_MOUNT_CLEANUP_OPERATOR_HANDOFF.md"
       ],
       "created_at": "2026-05-28",
       "updated_at": "2026-05-28"

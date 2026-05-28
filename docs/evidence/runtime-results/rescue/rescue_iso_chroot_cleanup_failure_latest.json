@@ -1,0 +1,18 @@
+{
+  "classification": "build_failed",
+  "error_code": "RESCUE-BUILD-CHROOT-CLEANUP-001",
+  "lb_exit": 1,
+  "wrapper_exit": 1,
+  "symptoms": [
+    "chroot/proc removal denied (Vorgang nicht zulässig)",
+    "chroot /usr/bin/env missing",
+    "LB_EXIT=1"
+  ],
+  "likely_cause": "stale mounted pseudo filesystems and incomplete live-build cleanup during prior build abort",
+  "not_isohybrid": true,
+  "build_retry_allowed": false,
+  "findmnt_under_build_tree_now": [],
+  "chroot_env_exists": false,
+  "chroot_proc_dir_exists": true,
+  "iso_artifact_present": false
+}

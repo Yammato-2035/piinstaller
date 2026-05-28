@@ -1,0 +1,9 @@
+{
+  "generated_at": "2026-05-28T20:00:00Z",
+  "operator_cleanup_output_provided": false,
+  "cleanup_executed_by_agent": false,
+  "cleanup_success": false,
+  "cleanup_note": "Agent ohne sudo; Operator-Handoff erstellt",
+  "findmnt_after_agent_readonly": "no_mounts_under_build_tree",
+  "chroot_partial_remains": true
+}

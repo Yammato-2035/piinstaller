@@ -123,6 +123,23 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
         or "isohybrid: not found" in summary
     ):
         hits.append("RESCUE-BUILD-ISOHYBRID-001")
+    if (
+        code == "RESCUE-BUILD-CHROOT-CLEANUP-001"
+        or details_diag == "RESCUE-BUILD-CHROOT-CLEANUP-001"
+        or "chroot/proc" in stderr
+        or "chroot/proc" in summary
+        or "Vorgang nicht zulässig" in stderr
+        or "Operation not permitted" in stderr
+        or (
+            "chroot: failed to run command" in stderr
+            and "/usr/bin/env" in stderr
+        )
+        or (
+            "chroot: failed to run command" in summary
+            and "/usr/bin/env" in summary
+        )
+    ):
+        hits.append("RESCUE-BUILD-CHROOT-CLEANUP-001")
     requested_architecture = (signals.get("requested_architecture") or signals.get("target_architecture") or "").strip().lower()
     architecture_track_status = (signals.get("architecture_track_status") or signals.get("target_architecture_status") or "").strip().lower()
     if requested_architecture == "amd64" and (

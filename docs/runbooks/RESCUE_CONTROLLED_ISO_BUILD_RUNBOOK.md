@@ -40,6 +40,18 @@ Schritt-für-Schritt-Anleitung für einen **kontrollierten** Debian-Live-ISO-Bui
 build/rescue/live-build/setuphelfer-rescue-live/
 ```
 
+## Chroot-/Mount-Cleanup (RESCUE-BUILD-CHROOT-CLEANUP-001)
+
+Wenn der letzte Lauf mit `chroot/proc` + „Vorgang nicht zulässig“ und fehlendem `/usr/bin/env` endet:
+
+1. **Nur** Mountpoints unter `BUILD_TREE` mit `findmnt -R` prüfen.
+2. Tiefste zuerst `umount` — **kein** `rm -rf` auf `chroot` bei aktiven Mounts.
+3. `sudo lb clean --purge`, `./auto/clean`, dann ggf. `sudo rm -rf binary chroot cache .build local`.
+4. `prepare-controlled-live-build-tree.sh` erneut.
+5. Erst dann Build-Retry.
+
+Vollständige Befehle: `docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_MOUNT_CLEANUP_OPERATOR_HANDOFF.md`.
+
 ## Operator-Terminal (Pflicht für echten Build)
 
 ```bash

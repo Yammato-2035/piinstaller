@@ -53,6 +53,18 @@ class DiagnosticsRescueBuildMappingTests(unittest.TestCase):
         )
         self.assertIn("RESCUE-BUILD-RSVG-001", ids)
 
+    def test_chroot_cleanup_failure_maps_to_chroot_case(self) -> None:
+        ids = self._ids(
+            {
+                "code": "RESCUE-BUILD-CHROOT-CLEANUP-001",
+                "stderr": (
+                    "rm: das Entfernen von 'chroot/proc/1/net/tcp' ist nicht möglich: Vorgang nicht zulässig\n"
+                    "chroot: failed to run command '/usr/bin/env': No such file or directory\n"
+                ),
+            }
+        )
+        self.assertIn("RESCUE-BUILD-CHROOT-CLEANUP-001", ids)
+
     def test_isohybrid_missing_maps_to_isohybrid_case(self) -> None:
         ids = self._ids(
             {

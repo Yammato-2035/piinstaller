@@ -1,0 +1,17 @@
+{
+  "build_tree": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+  "mounts_detected": [],
+  "findmnt_note": "2026-05-28 read-only: no mounts under BUILD_TREE; stale proc directory remains",
+  "allowed_unmount_prefix": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+  "forbidden_if_outside_prefix": true,
+  "cleanup_requires_operator_sudo": true,
+  "planned_commands": [
+    "cd BUILD_TREE && sudo lb clean --purge",
+    "sudo ./auto/clean",
+    "findmnt -R BUILD_TREE -rn -o TARGET | sort -r | umount only under prefix",
+    "sudo rm -rf binary chroot cache .build local (only after zero mounts)",
+    "./scripts/rescue-live/prepare-controlled-live-build-tree.sh"
+  ],
+  "build_retry_allowed_before_cleanup": false,
+  "agent_may_not_sudo": true
+}

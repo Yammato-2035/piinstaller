@@ -28,6 +28,20 @@ cd build/rescue/live-build/setuphelfer-rescue-live
 
 Bei root-eigenen Resten ggf. `sudo rm -rf binary chroot cache .build local` im Build-Verzeichnis.
 
+## Warum `rm: chroot/proc ... Vorgang nicht zulässig` und danach `/usr/bin/env` fehlt (LB_EXIT=1)?
+
+Das ist **`RESCUE-BUILD-CHROOT-CLEANUP-001`**, nicht isohybrid:
+
+- live-build versuchte `chroot/proc` zu löschen, während proc noch gemountet war oder der Chroot bereits halb zerstört ist.
+- Danach fehlt `/usr/bin/env` im Chroot — der Baum ist unvollständig.
+
+**Vorgehen:**
+
+1. `findmnt -R build/rescue/live-build/setuphelfer-rescue-live` — nur Mounts **unter** dem Build-Tree.
+2. Tiefste Mounts zuerst `umount` (ggf. `umount -l`), **kein** `rm -rf` solange Mounts aktiv sind.
+3. `lb clean` / `./auto/clean`, dann `sudo rm -rf binary chroot cache .build local` nur ohne Mounts.
+4. `prepare-controlled-live-build-tree.sh`, dann kontrollierter Build-Retry im Operator-Terminal.
+
 ## Warum `isohybrid: not found` nach „extents written“ (LB_EXIT=127)?
 
 `lb_binary_iso` erzeugt zuerst die ISO per `genisoimage`, führt danach **`binary.sh` im Binary-Chroot** aus und ruft dort `isohybrid` auf. Live-build installiert für `iso-hybrid` oft nur das Paket **`syslinux`** — auf Debian/Ubuntu liegt **`isohybrid`** in **`syslinux-utils`**.

@@ -650,10 +650,20 @@
           "id": "RESCUE-BUILD-ISOHYBRID-001",
           "title_de": "isohybrid fehlt in Binary-Chroot",
           "title_en": "isohybrid missing in binary chroot",
-          "status": "open",
+          "status": "fix_committed",
           "evidence_links": [
             "docs/evidence/runtime-results/rescue/rescue_iso_isohybrid_failure_latest.json",
             "docs/evidence/runtime-results/rescue/RESCUE_ISO_ISOHYBRID_FAILURE.md"
+          ]
+        },
+        {
+          "id": "RESCUE-BUILD-CHROOT-CLEANUP-001",
+          "title_de": "Chroot-/Mount-Cleanup vor Build-Retry",
+          "title_en": "Chroot/mount cleanup before build retry",
+          "status": "open",
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_CLEANUP_FAILURE.md",
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_MOUNT_CLEANUP_OPERATOR_HANDOFF.md"
           ]
         }
       ],
@@ -683,8 +693,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX",
-      "next_recommended_action": "prepare-controlled-live-build-tree.sh, auto/clean, kontrollierter Build-Retry nach isohybrid/syslinux-utils-Fix; kein USB-Write, kein Boot-Test."
+      "next_prompt_id": "RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT",
+      "next_recommended_action": "Operator: Mount-Cleanup nur unter BUILD_TREE, Tree neu vorbereiten, dann kontrollierter Build-Retry; kein USB-Write, kein Boot-Test, kein full-green."
     },
     {
       "id": "diagnostics",

@@ -1,26 +1,21 @@
 {
-  "selected_prompt_id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
-  "selected_at": "2026-05-28T19:53:00Z",
-  "reason": "Operator-Deploy Ground Truth: Gate Exit 0, deploy_drift green, liveness in /opt, API health/version OK. Agent deploy_helper_blocked_by_sudo_tty resolved by operator.",
-  "blocked_by": [],
+  "selected_prompt_id": "RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT",
+  "selected_at": "2026-05-28T20:00:00Z",
+  "reason": "RESCUE-BUILD-CHROOT-CLEANUP-001 triaged; runtime gate green; build tree needs operator sudo cleanup before retry. Not classified as isohybrid.",
+  "blocked_by": [
+    "RESCUE-BUILD-CHROOT-CLEANUP-001",
+    "operator_sudo_required_for_build_tree_cleanup"
+  ],
   "unlocks": [
-    "rescue_iso_chroot_cleanup",
-    "runtime_smoke_after_watchdog"
+    "RESCUE_ISO_BUILD_FAILURE_TRIAGE",
+    "RESCUE_ISO_ARTIFACT_VERIFY",
+    "RESCUE_ISO_VM_BOOT_VALIDATION_PREP"
   ],
   "alternative_prompts": [
-    "BACKEND_WATCHDOG_IMPLEMENTATION_MVP",
-    "DEPLOY_DRIFT_TRIAGE_AFTER_WATCHDOG",
-    "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF"
+    "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX",
+    "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
   ],
-  "mandatory_closure_sections": [
-    "dashboard_progress",
-    "diagnostics_learning_progress",
-    "evidence_files",
-    "next_prompt_decision",
-    "not_executed_actions",
-    "remaining_blocked_or_deferred"
-  ],
-  "source_roadmap_version": "1.0",
-  "runtime_gate_blocked_static_analysis_only": false,
-  "operator_deploy_sync_ingest_ref": "docs/evidence/dev-dashboard/OPERATOR_DEPLOY_SYNC_RESULT_AFTER_WATCHDOG.md"
+  "runtime_gate_exit": 0,
+  "rescue_full_green": false,
+  "source_roadmap_version": "1.0"
 }

@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-05-28T20:00:00Z",
+  "branch": "main",
+  "head_short": "5242605",
+  "runtime_gate_exit": 0,
+  "deploy_drift": "green",
+  "safe_test_mode": "UNLOCKED",
+  "build_tree": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+  "build_tree_exists": true,
+  "gate_ok": true
+}
