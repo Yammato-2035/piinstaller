@@ -11,7 +11,7 @@
     "Priorität 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorität 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise künstlich grün gefärbt."
   ],
-  "selected_prompt_id": "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX",
+  "selected_prompt_id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -190,6 +190,126 @@
         "docs/evidence/dev-dashboard/deploy_helper_sync_result_latest.json",
         "docs/evidence/dev-dashboard/RUNTIME_DEPLOY_DRIFT_CLEANUP_SUMMARY.md"
       ]
+    },
+    {
+      "id": "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP",
+      "category": "dev_dashboard",
+      "title_de": "Dev Dashboard Controlled Command Runs MVP",
+      "title_en": "Dev dashboard controlled command runs MVP",
+      "scope": "Interne, allowlist-basierte Controlled Command Runs als sichere Tooling-Schicht designen und in MVP-Stufen planen (ohne freie Shell, ohne sudo-Ausführung).",
+      "status": "available",
+      "reason_de": "Boundary-Audit, Schema, Allowlist-Design und MVP-Plan liegen vor. Aufgrund des offenen Rescue-Chroot-Cleanup-Blockers ist der Prompt aktuell nicht recommended_next.",
+      "reason_en": "Boundary audit, schema, allowlist design, and MVP plan are available. Because the rescue chroot cleanup blocker is still open, this prompt is not recommended next right now.",
+      "prompt_text": "Implementiere den Controlled Command Runner stufenweise ab MVP-1 (read-only Listen-APIs), halte die Sicherheitsgrenze strikt ein und füge keine freie Command-Ausführung hinzu.",
+      "blocked_by": [
+        "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE has priority"
+      ],
+      "recommended_after": [
+        "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+        "Rescue build track stabilized"
+      ],
+      "unlocks": [
+        "Reproduzierbare interne Entwicklerläufe",
+        "Bessere stdout/stderr-Evidence",
+        "Saubere Roadmap-Delta-Vorschläge"
+      ],
+      "expected_outputs": [
+        "Controlled command allowlist + APIs",
+        "Run evidence JSON with separated logs",
+        "No free-shell guarantee"
+      ],
+      "safety_rules": [
+        "Kein sudo aus Dashboard.",
+        "Keine freie Shell-Eingabe.",
+        "Keine Backup/Restore/USB/apt Ausführung."
+      ],
+      "allowed_paths": [
+        "docs/dev-dashboard/",
+        "docs/architecture/",
+        "docs/evidence/dev-dashboard/",
+        "docs/roadmap/",
+        "backend/core/dev_dashboard*.py",
+        "backend/app.py",
+        "backend/tests/"
+      ],
+      "forbidden_actions": [
+        "shell_execute",
+        "free_command_input",
+        "sudo_execute",
+        "apt_install",
+        "dd",
+        "mkfs",
+        "parted_write"
+      ],
+      "tests": [
+        "backend.tests.test_dev_dashboard_manual_command_runs_v1",
+        "JSON schema validation"
+      ],
+      "documentation_targets": [
+        "docs/dev-dashboard/CONTROLLED_COMMAND_RUNNER_DESIGN_DE.md",
+        "docs/dev-dashboard/CONTROLLED_COMMAND_ALLOWLIST_DE.md",
+        "docs/evidence/dev-dashboard/controlled_command_runs/controlled_command_run.schema.json"
+      ],
+      "non_goals": [
+        "Kein User-Facing-Feature",
+        "Kein freies Terminal"
+      ],
+      "created_at": "2026-05-28",
+      "updated_at": "2026-05-28"
+    },
+    {
+      "id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+      "category": "rescue",
+      "title_de": "Rescue ISO Chroot-/Mount-Cleanup Failure Triage",
+      "title_en": "Rescue ISO chroot/mount cleanup failure triage",
+      "scope": "Root-cause-Analyse und sichere Operator-Handoff-Anleitung für fehlgeschlagenes Chroot-/Mount-Cleanup im kontrollierten Rescue-Build.",
+      "status": "recommended_next",
+      "reason_de": "Aktueller technischer Blocker im Rescue-Track. Ohne sauberes Cleanup bleiben Folge-Builds unzuverlässig.",
+      "reason_en": "Current technical blocker in rescue track. Without clean cleanup, follow-up builds remain unreliable.",
+      "prompt_text": "Analysiere Chroot-/Mount-Reste read-only, dokumentiere sichere Operator-Cleanup-Schritte und aktualisiere Evidence/Roadmap ohne Build-/USB-/Restore-Ausführung.",
+      "blocked_by": [
+        "root-owned build leftovers",
+        "mounted chroot paths"
+      ],
+      "unlocks": [
+        "Saubere Build-Umgebung für nächsten Operator-Retry"
+      ],
+      "expected_outputs": [
+        "Cleanup triage evidence",
+        "Operator handoff checklist",
+        "Updated next prompt decision"
+      ],
+      "safety_rules": [
+        "Kein USB-Write",
+        "Kein Restore",
+        "Kein apt install",
+        "Kein Build-Start im Agent-Lauf"
+      ],
+      "allowed_paths": [
+        "docs/evidence/runtime-results/rescue/",
+        "docs/evidence/roadmap/",
+        "docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md",
+        "scripts/rescue-live/"
+      ],
+      "forbidden_actions": [
+        "rescue_iso_build",
+        "usb_write",
+        "restore_start",
+        "apt_install"
+      ],
+      "tests": [
+        "bash -n scripts/rescue-live/*.sh"
+      ],
+      "documentation_targets": [
+        "docs/evidence/runtime-results/rescue/",
+        "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json"
+      ],
+      "non_goals": [
+        "Kein Boot-/VM-Test",
+        "Kein full-green Rescue"
+      ],
+      "created_at": "2026-05-28",
+      "updated_at": "2026-05-28"
     },
     {
       "id": "DIAGNOSTICS_TEST_TRACK",

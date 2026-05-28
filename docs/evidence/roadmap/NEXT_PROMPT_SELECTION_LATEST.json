@@ -1,19 +1,19 @@
 {
-  "selected_prompt_id": "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX",
-  "selected_at": "2026-05-27T23:30:00Z",
-  "reason": "Operator build passed rsvg/bootlogo; failed at isohybrid in binary chroot (LB_EXIT=127). Repo fix: setuphelfer.list.binary + syslinux-utils. Operator must prepare tree, auto/clean, retry — no apt install in agent run.",
+  "selected_prompt_id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+  "selected_at": "2026-05-28T02:58:00Z",
+  "reason": "Rescue chroot/mount cleanup remains the active technical blocker. Controlled command runner design is available but not prioritized ahead of rescue stabilization.",
   "blocked_by": [
-    "RESCUE-BUILD-ISOHYBRID-001",
+    "rescue_chroot_cleanup_open",
     "no_boot_usb_proof"
   ],
   "unlocks": [
-    "Completed hybrid ISO artifact",
-    "Updated controlled_iso_build summary with iso_found",
-    "Rescue at most partial_green"
+    "Sauberer Rescue-Operator-Retry nach Cleanup",
+    "Stabilere Build-Evidence",
+    "Danach Controlled Command Runner MVP umsetzbar"
   ],
   "alternative_prompts": [
-    "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
-    "RESCUE_ISO_BUILD_FAILURE_TRIAGE"
+    "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP",
+    "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX"
   ],
   "mandatory_closure_sections": [
     "dashboard_progress",
@@ -23,5 +23,6 @@
     "not_executed_actions",
     "remaining_blocked_or_deferred"
   ],
-  "source_roadmap_version": "1.0"
+  "source_roadmap_version": "1.0",
+  "runtime_gate_blocked_static_analysis_only": true
 }

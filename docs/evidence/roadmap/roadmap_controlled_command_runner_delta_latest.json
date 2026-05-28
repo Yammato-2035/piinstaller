@@ -1,0 +1,13 @@
+{
+  "updated_at": "2026-05-28T02:55:00Z",
+  "area_id": "developer-tooling-controlled-command-runs",
+  "status": "yellow",
+  "progress_percent": 25,
+  "internal_tooling": true,
+  "user_facing": false,
+  "release_feature": false,
+  "terminal_a_readonly_status": "completed",
+  "new_prompt_available": "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP",
+  "recommended_next_prompt": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+  "reason": "Rescue chroot/mount cleanup remains the active technical blocker; controlled command runner track is prepared but not prioritized next."
+}

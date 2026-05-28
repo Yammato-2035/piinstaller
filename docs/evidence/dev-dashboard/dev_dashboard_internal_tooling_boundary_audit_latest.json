@@ -1,0 +1,25 @@
+{
+  "developer_dashboard_user_facing": false,
+  "product_feature": false,
+  "internal_tooling_only": true,
+  "existing_manual_command_logging": true,
+  "existing_execute_routes": [
+    "/api/dev-dashboard/rescue-iso/step",
+    "/api/dev-dashboard/rescue-iso/operator-commands/sudo-clean",
+    "/api/dev-dashboard/rescue-iso/operator-commands/build"
+  ],
+  "dangerous_ui_controls_found": [],
+  "risk_findings": [
+    "Rescue-bezogene POST-Routen können als generischer Execute-Pfad missverstanden werden.",
+    "Ohne explizite Tooling-Boundary besteht Produktfeature-Verwechslungsrisiko."
+  ],
+  "recommended_boundary_rules": [
+    "Developer Dashboard ist internes Tooling und kein Endnutzerfeature.",
+    "Keine freie Shell, keine freie Command-Eingabe, keine Terminal-Emulation mit Eingabe.",
+    "Kein sudo aus Dashboard-Ausführung.",
+    "Controlled Runner nur über allowlist command_id+argv.",
+    "forbidden-Kommandos niemals ausführen.",
+    "Jeder Lauf erzeugt versionierte Evidence inklusive stdout/stderr-Logs.",
+    "Roadmap-Statusänderungen nur evidence-basiert und reviewed."
+  ]
+}

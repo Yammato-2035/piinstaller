@@ -947,9 +947,12 @@
       "id": "dev-dashboard",
       "title_de": "Dev Dashboard",
       "title_en": "Dev Dashboard",
-      "description_de": "Command-Run-Logging und Cockpit live unter /opt grün (Gate 0, APIs 200, Bundle index-CtMitZ58.js). API-Tests venv grün; System-Python 11 skipped gelb.",
-      "description_en": "Command-run logging and cockpit live under /opt green (gate 0, APIs 200, bundle index-CtMitZ58.js). Venv API tests green; system Python 11 skipped yellow.",
+      "description_de": "Internes Developer-/Governance-Tooling (nicht user-facing Produktfeature): read-only Command-Run-Logging ist abgeschlossen, Controlled Command Runner ist als sicherer Allowlist-Track in Vorbereitung.",
+      "description_en": "Internal developer/governance tooling (not a user-facing product feature): read-only command-run logging is completed, and controlled command runner is in safe allowlist-track preparation.",
       "status": "partial_green",
+      "internal_tooling": true,
+      "user_facing": false,
+      "release_feature": false,
       "priority": "P1",
       "owner": "Setuphelfer Dashboard",
       "planned_start": "2026-05-24",
@@ -1100,6 +1103,73 @@
           "blockers": [],
           "decision_refs": [],
           "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD"
+        },
+        {
+          "id": "dev-dashboard-controlled-command-runs",
+          "title_de": "Controlled Command Runs (internes Tooling)",
+          "title_en": "Controlled command runs (internal tooling)",
+          "status": "yellow",
+          "progress_percent": 25,
+          "planned_start": "2026-05-28",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/evidence/dev-dashboard/DEV_DASHBOARD_INTERNAL_TOOLING_BOUNDARY_AUDIT.md",
+            "docs/evidence/dev-dashboard/controlled_command_runner_mvp_decision_latest.json",
+            "docs/evidence/dev-dashboard/controlled_command_runs/controlled_command_run.schema.json"
+          ],
+          "tasks": [
+            {
+              "id": "controlled-command-runs-boundary-mvp0",
+              "title_de": "Boundary, Schema, Allowlist und MVP-Plan dokumentieren",
+              "title_en": "Document boundary, schema, allowlist, and MVP plan",
+              "status": "green",
+              "progress_percent": 100,
+              "evidence_links": [
+                "docs/dev-dashboard/DEVELOPER_TOOLING_BOUNDARY_DE.md",
+                "docs/dev-dashboard/CONTROLLED_COMMAND_RUNNER_DESIGN_DE.md",
+                "docs/dev-dashboard/controlled_command_allowlist.example.json"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "MVP-1 read-only Listen-APIs implementieren.",
+              "next_action_en": "Implement MVP-1 read-only listing APIs."
+            },
+            {
+              "id": "controlled-command-runs-exec-mvp2",
+              "title_de": "Sichere Ausführung nur für allowlist read_only/test_only",
+              "title_en": "Safe execution only for allowlist read_only/test_only",
+              "status": "yellow",
+              "progress_percent": 0,
+              "evidence_links": [],
+              "blocker_refs": [
+                "rescue-chroot-cleanup-open"
+              ],
+              "next_action_de": "Erst nach Rescue-Stabilisierung priorisieren.",
+              "next_action_en": "Prioritize only after rescue stabilization."
+            }
+          ],
+          "blockers": [
+            {
+              "id": "rescue-chroot-cleanup-open",
+              "area_id": "dev-dashboard",
+              "title_de": "Rescue Chroot-Cleanup noch offen",
+              "title_en": "Rescue chroot cleanup still open",
+              "description_de": "Rescue-Blocker bleibt vor Dashboard-Runner-Execution priorisiert.",
+              "description_en": "Rescue blocker remains prioritized ahead of dashboard runner execution.",
+              "severity": "medium",
+              "status": "blocked",
+              "first_seen": "2026-05-28",
+              "last_seen": "2026-05-28",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/evidence/roadmap/roadmap_controlled_command_runner_delta_latest.json"
+              ]
+            }
+          ],
+          "decision_refs": [],
+          "next_prompt_id": "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP"
         }
       ],
       "blockers": [],
@@ -1117,8 +1187,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
-      "next_recommended_action": "Rescue-ISO Manual Operator Terminal Build — kein Dashboard-Execute; Dev-Cockpit-Port dynamisch aus Vite-Terminal."
+      "next_prompt_id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+      "next_recommended_action": "Rescue Chroot-/Mount-Cleanup zuerst triagieren; Controlled Command Runner bleibt verfügbar, aber nicht als nächster Schritt."
     },
     {
       "id": "packaging-update",

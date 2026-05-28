@@ -1,0 +1,61 @@
+[
+  {
+    "command_id": "runtime_gate",
+    "title_de": "Runtime-Gate prüfen",
+    "title_en": "Check runtime gate",
+    "argv": ["./scripts/check-runtime-deploy-gate.sh"],
+    "working_directory": "repo_root",
+    "safety_class": "read_only",
+    "requires_gate_green": false,
+    "allowed_when_gate_red": true,
+    "timeout_seconds": 60,
+    "output_policy": {
+      "store_stdout": true,
+      "store_stderr": true,
+      "max_excerpt_chars": 4000
+    },
+    "forbidden_patterns": [],
+    "classification_rules": []
+  },
+  {
+    "command_id": "backend_dev_dashboard_tests",
+    "title_de": "Backend Dev-Dashboard Tests",
+    "title_en": "Backend dev dashboard tests",
+    "argv": ["backend/venv/bin/python3", "-m", "unittest", "backend.tests.test_dev_dashboard_manual_command_runs_v1", "-v"],
+    "working_directory": "repo_root",
+    "safety_class": "test_only",
+    "requires_gate_green": false,
+    "allowed_when_gate_red": true,
+    "timeout_seconds": 300,
+    "output_policy": {
+      "store_stdout": true,
+      "store_stderr": true,
+      "max_excerpt_chars": 4000
+    },
+    "forbidden_patterns": [],
+    "classification_rules": []
+  },
+  {
+    "command_id": "rescue_iso_operator_build_handoff",
+    "title_de": "Rescue-ISO Operator-Build (Handoff)",
+    "title_en": "Rescue ISO operator build (handoff)",
+    "argv": ["scripts/rescue-live/run-controlled-iso-build-with-logging.sh", "--operator-confirm-build"],
+    "working_directory": "repo_root",
+    "safety_class": "operator_handoff",
+    "requires_gate_green": true,
+    "allowed_when_gate_red": false,
+    "timeout_seconds": 0,
+    "output_policy": {
+      "store_stdout": false,
+      "store_stderr": false,
+      "max_excerpt_chars": 0
+    },
+    "forbidden_patterns": [],
+    "classification_rules": [
+      {
+        "result": "handoff_required",
+        "reason": "Must run in operator terminal, not from dashboard runtime."
+      }
+    ]
+  }
+]

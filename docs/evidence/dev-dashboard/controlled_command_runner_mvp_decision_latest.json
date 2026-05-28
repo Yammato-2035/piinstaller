@@ -1,0 +1,17 @@
+{
+  "decision": "mvp0_documentation_only",
+  "date": "2026-05-28",
+  "internal_tooling_only": true,
+  "user_facing": false,
+  "release_feature": false,
+  "runtime_gate_blocked_static_analysis_only": true,
+  "mvp_stages": [
+    "MVP-0",
+    "MVP-1",
+    "MVP-2",
+    "MVP-3",
+    "MVP-4"
+  ],
+  "selected_now": "MVP-0",
+  "reason": "Boundary, schema, allowlist and governance first; no execute rollout while rescue blocker is active."
+}

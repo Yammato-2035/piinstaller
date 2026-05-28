@@ -1,0 +1,77 @@
+{
+  "run_id": "ccr-2026-05-28T02-45-00Z",
+  "runbook_id": "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP",
+  "created_at": "2026-05-28T02:45:00Z",
+  "created_by": "cursor",
+  "branch": "main",
+  "head": "703bebf",
+  "runtime_gate": {
+    "checked": true,
+    "exit_code": 11,
+    "status": "blocked"
+  },
+  "mode": "mixed",
+  "commands": [
+    {
+      "command_id": "git_status_short",
+      "label_de": "Git-Status kurz",
+      "label_en": "Git status short",
+      "argv": ["git", "status", "--short"],
+      "shell": false,
+      "working_directory": "repo_root",
+      "safety_class": "read_only",
+      "allowed": true,
+      "requires_gate_green": false,
+      "requires_operator_terminal": false,
+      "started_at": "2026-05-28T02:45:01Z",
+      "completed_at": "2026-05-28T02:45:01Z",
+      "exit_code": 0,
+      "stdout_log": "docs/evidence/dev-dashboard/controlled_command_runs/logs/ccr-2026-05-28/git_status_short.stdout.log",
+      "stderr_log": "docs/evidence/dev-dashboard/controlled_command_runs/logs/ccr-2026-05-28/git_status_short.stderr.log",
+      "stdout_excerpt": " M docs/roadmap/setuphelfer_roadmap.json",
+      "stderr_excerpt": "",
+      "classification": "ok",
+      "evidence_links": [],
+      "notes": ""
+    },
+    {
+      "command_id": "rescue_iso_operator_build_handoff",
+      "label_de": "Rescue-Build Operator-Handoff",
+      "label_en": "Rescue build operator handoff",
+      "argv": ["scripts/rescue-live/run-controlled-iso-build-with-logging.sh", "--operator-confirm-build"],
+      "shell": false,
+      "working_directory": "repo_root",
+      "safety_class": "operator_handoff",
+      "allowed": false,
+      "requires_gate_green": true,
+      "requires_operator_terminal": true,
+      "started_at": "",
+      "completed_at": "",
+      "exit_code": null,
+      "stdout_log": "",
+      "stderr_log": "",
+      "stdout_excerpt": "",
+      "stderr_excerpt": "",
+      "classification": "handoff_required",
+      "evidence_links": [],
+      "notes": "Nicht ausgeführt: Operator-Terminal erforderlich."
+    }
+  ],
+  "artifacts": [
+    "docs/evidence/dev-dashboard/dev_dashboard_internal_tooling_boundary_audit_latest.json"
+  ],
+  "roadmap_delta": {
+    "status_before": {},
+    "status_after": {},
+    "new_blockers": [],
+    "resolved_blockers": [],
+    "recommended_next_prompt": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
+  },
+  "not_executed": [
+    "rescue_iso_operator_build_handoff"
+  ],
+  "summary": {
+    "status": "yellow",
+    "reason": "Runtime-Gate blockiert weiterführende Laufklassen; nur read-only statische Schritte ausgeführt."
+  }
+}

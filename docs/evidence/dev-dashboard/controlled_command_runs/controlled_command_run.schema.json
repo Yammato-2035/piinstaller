@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Controlled Command Run",
+  "type": "object",
+  "required": [
+    "run_id",
+    "created_at",
+    "created_by",
+    "branch",
+    "head",
+    "runtime_gate",
+    "mode",
+    "commands",
+    "summary"
+  ],
+  "properties": {
+    "run_id": { "type": "string" },
+    "runbook_id": { "type": "string" },
+    "created_at": { "type": "string" },
+    "created_by": { "type": "string" },
+    "branch": { "type": "string" },
+    "head": { "type": "string" },
+    "runtime_gate": {
+      "type": "object",
+      "required": ["checked", "status"],
+      "properties": {
+        "checked": { "type": "boolean" },
+        "exit_code": { "type": ["integer", "null"] },
+        "status": { "enum": ["green", "blocked", "unknown"] }
+      }
+    },
+    "mode": {
+      "enum": ["read_only", "test_only", "evidence_only", "operator_handoff", "mixed"]
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "command_id",
+          "argv",
+          "shell",
+          "working_directory",
+          "safety_class",
+          "allowed"
+        ],
+        "properties": {
+          "command_id": { "type": "string" },
+          "label_de": { "type": "string" },
+          "label_en": { "type": "string" },
+          "argv": { "type": "array", "items": { "type": "string" } },
+          "shell": { "type": "boolean" },
+          "working_directory": { "type": "string" },
+          "safety_class": {
+            "enum": ["read_only", "test_only", "evidence_only", "operator_handoff", "forbidden"]
+          },
+          "allowed": { "type": "boolean" },
+          "requires_gate_green": { "type": "boolean" },
+          "requires_operator_terminal": { "type": "boolean" },
+          "started_at": { "type": "string" },
+          "completed_at": { "type": "string" },
+          "exit_code": { "type": ["integer", "null"] },
+          "stdout_log": { "type": "string" },
+          "stderr_log": { "type": "string" },
+          "stdout_excerpt": { "type": "string" },
+          "stderr_excerpt": { "type": "string" },
+          "classification": { "type": "string" },
+          "evidence_links": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "artifacts": { "type": "array", "items": { "type": "string" } },
+    "roadmap_delta": {
+      "type": "object",
+      "properties": {
+        "status_before": { "type": "object" },
+        "status_after": { "type": "object" },
+        "new_blockers": { "type": "array", "items": { "type": "string" } },
+        "resolved_blockers": { "type": "array", "items": { "type": "string" } },
+        "recommended_next_prompt": { "type": "string" }
+      }
+    },
+    "not_executed": { "type": "array", "items": { "type": "string" } },
+    "summary": {
+      "type": "object",
+      "required": ["status", "reason"],
+      "properties": {
+        "status": { "enum": ["ok", "yellow", "blocked"] },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

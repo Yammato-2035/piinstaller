@@ -29,6 +29,22 @@ Nachweise gehören als strukturierte JSON-Datei unter `docs/evidence/dev-dashboa
 
 Sicherheitsgrenze: read-only Observability. Es gibt **keine** Execute-Buttons, kein Terminal, kein `sudo` aus der UI — nur `GET /api/dev-dashboard/manual-command-runs`.
 
+## Ist das Developer Dashboard ein Produktfeature für normale Nutzer?
+
+Nein. Es ist internes Developer-/Operator-/Governance-Tooling und nicht Teil normaler Nutzerflows.
+
+## Darf das Developer Dashboard ein freies Terminal bereitstellen?
+
+Nein. Keine freie Shell, keine freie Kommandoeingabe, keine Terminal-Emulation mit Eingabe.
+
+## Was ist der geplante Controlled Command Runner?
+
+Ein streng allowlist-basierter interner Runner mit Safety-Klassen, Exit-Code-Auswertung, stdout/stderr-Logs und Evidence-Dateien. Kein freier Command-String, kein sudo aus dem Dashboard, keine gefährlichen Systemaktionen.
+
+## Dürfen damit Operator-Aktionen ersetzt werden?
+
+Nein. Operator-Handoffs sind erlaubt, aber echte Operator-Terminal-Aktionen bleiben getrennt und manuell.
+
 ## Was ist ein read-only Command Run?
 
 Ein dokumentierter manueller Lauf (Operator/Cursor) mit `commands[]`, `safety_class` und `summary.status` — importiert aus JSON, nicht live ausgeführt.
