@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-05-28T19:53:00Z",
+  "classification": "operator_deploy_success_gate_green",
+  "runtime_gate_exit": 0,
+  "runtime_status": "green",
+  "deploy_drift": "green",
+  "backend_startup_availability": "active_in_runtime",
+  "safe_test_mode": "UNLOCKED",
+  "deploy_helper_blocked_by_sudo_tty": "resolved_by_operator",
+  "recommended_next_prompt": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+  "rescue_started": false,
+  "no_fake_green": true
+}

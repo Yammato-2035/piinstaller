@@ -1,19 +1,16 @@
 {
-  "selected_prompt_id": "DEPLOY_DRIFT_TRIAGE_AFTER_WATCHDOG",
-  "selected_at": "2026-05-28T19:02:00Z",
-  "reason": "DEPLOY_HELPER_SYNC_FREIGEGEBEN gesetzt, aber Agent-sudo blockiert (TTY/Passwort). Deploy-Helper nicht gestartet; Gate bleibt Exit 14. Operator muss setuphelfer-deploy-helper.service im privilegierten Terminal starten.",
-  "blocked_by": [
-    "deploy_helper_blocked_by_sudo_tty",
-    "runtime_gate_exit_14",
-    "deploy_drift_backend_files"
-  ],
+  "selected_prompt_id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+  "selected_at": "2026-05-28T19:53:00Z",
+  "reason": "Operator-Deploy Ground Truth: Gate Exit 0, deploy_drift green, liveness in /opt, API health/version OK. Agent deploy_helper_blocked_by_sudo_tty resolved by operator.",
+  "blocked_by": [],
   "unlocks": [
-    "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
+    "rescue_iso_chroot_cleanup",
+    "runtime_smoke_after_watchdog"
   ],
   "alternative_prompts": [
-    "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
     "BACKEND_WATCHDOG_IMPLEMENTATION_MVP",
-    "RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC"
+    "DEPLOY_DRIFT_TRIAGE_AFTER_WATCHDOG",
+    "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF"
   ],
   "mandatory_closure_sections": [
     "dashboard_progress",
@@ -24,5 +21,6 @@
     "remaining_blocked_or_deferred"
   ],
   "source_roadmap_version": "1.0",
-  "runtime_gate_blocked_static_analysis_only": true
+  "runtime_gate_blocked_static_analysis_only": false,
+  "operator_deploy_sync_ingest_ref": "docs/evidence/dev-dashboard/OPERATOR_DEPLOY_SYNC_RESULT_AFTER_WATCHDOG.md"
 }

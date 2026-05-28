@@ -55,7 +55,7 @@ journalctl -u setuphelfer-deploy-helper.service -n 120 --no-pager
 ./scripts/check-runtime-deploy-gate.sh
 ```
 
-Agent ohne interaktives sudo: Handoff `docs/evidence/dev-dashboard/DEPLOY_SYNC_AFTER_WATCHDOG_OPERATOR_HANDOFF.md`.
+Agent ohne interaktives sudo: Handoff `docs/evidence/dev-dashboard/DEPLOY_SYNC_AFTER_WATCHDOG_OPERATOR_HANDOFF.md`. Nach Operator-Deploy: Ergebnis ingest `OPERATOR_DEPLOY_SYNC_RESULT_AFTER_WATCHDOG.md` — **Cursor startet Deploy-Helper nicht erneut**.
 
 ## Wichtig
 
