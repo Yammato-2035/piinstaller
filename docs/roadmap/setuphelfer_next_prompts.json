@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-27T22:50:00Z",
+  "generated_at": "2026-05-28T03:52:00Z",
   "project_version": "1.7.2",
-  "source_commit": "11e27b6",
+  "source_commit": "f601080",
   "selection_policy": [
     "Priorität 1: Fehlender Nachweis, der mehrere Bereiche blockiert, zuerst.",
     "Priorität 2: Wiederkehrende Unklarheit im Dashboard zuerst transparent machen.",
@@ -11,7 +11,7 @@
     "Priorität 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorität 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise künstlich grün gefärbt."
   ],
-  "selected_prompt_id": "BACKEND_RUNTIME_HANG_TRIAGE",
+  "selected_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -367,6 +367,110 @@
         "Kein Hardwaretest",
         "Kein USB-Write",
         "Kein Rescue-Build"
+      ],
+      "created_at": "2026-05-28",
+      "updated_at": "2026-05-28"
+    },
+    {
+      "id": "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
+      "category": "runtime_governance",
+      "title_de": "Backend Runtime Operator Restart Handoff",
+      "title_en": "Backend runtime operator restart handoff",
+      "scope": "Manuelle Operator-Anleitung fuer privilegierte Diagnose, Restart und Ergebnisprotokoll im echten Terminal.",
+      "status": "available",
+      "reason_de": "Read-only Hang-Triage liegt vor; Restart/Journals mit sudo muessen im Operator-Terminal erfolgen.",
+      "reason_en": "Read-only hang triage is available; restart/journal with sudo must run in an operator terminal.",
+      "prompt_text": "Fuehre keinen Agent-Restart aus. Erstelle/verwende stattdessen einen klaren Operator-Handoff mit sudo status/journal/restart und HTTP-Postcheck.",
+      "blocked_by": [
+        "operator_terminal_execution_required"
+      ],
+      "unlocks": [
+        "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST"
+      ],
+      "expected_outputs": [
+        "Operator-terminal transcript",
+        "Post-restart HTTP evidence",
+        "Restart outcome classification"
+      ],
+      "safety_rules": [
+        "Kein sudo aus Agent-Kontext.",
+        "Kein Restart durch Agent.",
+        "Kein kill/pkill."
+      ],
+      "allowed_paths": [
+        "docs/evidence/dev-dashboard/",
+        "docs/evidence/roadmap/",
+        "docs/roadmap/"
+      ],
+      "forbidden_actions": [
+        "agent_sudo_restart",
+        "kill_process",
+        "rescue_iso_build",
+        "backup_start",
+        "restore_start"
+      ],
+      "tests": [
+        "backend.tests.test_dev_dashboard_v1",
+        "backend.tests.test_dev_dashboard_manual_command_runs_v1"
+      ],
+      "documentation_targets": [
+        "docs/evidence/dev-dashboard/BACKEND_RUNTIME_OPERATOR_HANDOFF.md",
+        "docs/evidence/dev-dashboard/backend_runtime_operator_handoff_latest.json"
+      ],
+      "non_goals": [
+        "Kein automatischer Runtime-Eingriff durch Agent"
+      ],
+      "created_at": "2026-05-28",
+      "updated_at": "2026-05-28"
+    },
+    {
+      "id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
+      "category": "runtime_governance",
+      "title_de": "Backend Runtime Operator Restart Result Ingest",
+      "title_en": "Backend runtime operator restart result ingest",
+      "scope": "Operator-Terminal-Ergebnisse nach manuellem Restart auswerten, klassifizieren und Gate-/Roadmap-Status aktualisieren.",
+      "status": "recommended_next",
+      "reason_de": "Operator-Handoff ist dokumentiert; als naechster Schritt wird das reale Restart-Ergebnis zur Runtime-Entscheidung benoetigt.",
+      "reason_en": "Operator handoff is documented; the next step is ingesting the real restart outcome for runtime decisions.",
+      "prompt_text": "Nimm Operator-Restart-Ergebnisse auf, klassifiziere recovered/still-hanging/restart-failed und aktualisiere Next Prompt sowie Evidence ohne neue Agent-Runtime-Eingriffe.",
+      "blocked_by": [
+        "awaiting_operator_restart_transcript"
+      ],
+      "unlocks": [
+        "runtime_gate_recovery_decision",
+        "follow_up_prompt_selection"
+      ],
+      "expected_outputs": [
+        "Restart result evidence",
+        "Updated runtime gate classification",
+        "Updated roadmap next prompt"
+      ],
+      "safety_rules": [
+        "Kein weiterer Restart im Agent-Kontext.",
+        "Kein sudo aus Agent-Kontext."
+      ],
+      "allowed_paths": [
+        "docs/evidence/dev-dashboard/",
+        "docs/evidence/roadmap/",
+        "docs/roadmap/"
+      ],
+      "forbidden_actions": [
+        "agent_runtime_restart",
+        "rescue_iso_build",
+        "backup_start",
+        "restore_start",
+        "deploy_without_approval"
+      ],
+      "tests": [
+        "backend.tests.test_dev_dashboard_v1",
+        "backend.tests.test_dev_dashboard_manual_command_runs_v1"
+      ],
+      "documentation_targets": [
+        "docs/evidence/dev-dashboard/BACKEND_RUNTIME_RESTART_RESULT.md",
+        "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json"
+      ],
+      "non_goals": [
+        "Kein neuer Runtime-Restart durch Agent"
       ],
       "created_at": "2026-05-28",
       "updated_at": "2026-05-28"

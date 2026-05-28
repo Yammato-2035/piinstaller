@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-27T22:45:00Z",
+  "generated_at": "2026-05-28T03:53:00Z",
   "project_version": "1.7.2",
-  "source_commit": "11e27b6",
+  "source_commit": "f601080",
   "source_audit_ref": "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md",
   "authoritative_sources": [
     "docs/evidence/release-gates/backup_restore_release_gate.json",
@@ -186,8 +186,8 @@
           ]
         }
       ],
-      "next_prompt_id": "BACKEND_RUNTIME_HANG_TRIAGE",
-      "next_recommended_action": "Backend läuft/listening, aber API timeoutet; Hang-Triage zuerst, danach Recovery-/Rescue-Folgepfade."
+      "next_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
+      "next_recommended_action": "Operator-Restart-Handoff liegt vor; jetzt Restart-Ergebnis aus echtem Terminal ingestieren und Runtime-Gate darauf basierend entscheiden."
     },
     {
       "id": "backup-br001",
@@ -1187,8 +1187,8 @@
           ]
         }
       ],
-      "next_prompt_id": "BACKEND_RUNTIME_HANG_TRIAGE",
-      "next_recommended_action": "Autorisierter Restart scheiterte im Agent-Kontext (sudo TTY). Nächster Schritt: Backend-Hang-Triage im Operator-Terminal."
+      "next_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
+      "next_recommended_action": "Read-only Hang-Triage abgeschlossen und Operator-Handoff dokumentiert; naechster Schritt ist die Ergebnisaufnahme des manuellen Operator-Restarts."
     },
     {
       "id": "packaging-update",

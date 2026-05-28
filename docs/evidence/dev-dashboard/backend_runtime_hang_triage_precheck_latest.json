@@ -1,0 +1,28 @@
+{
+  "artifact": "backend_runtime_hang_triage_precheck",
+  "generated_at": "2026-05-28T03:40:00Z",
+  "branch": "main",
+  "source_commit": "f601080",
+  "strict_mode": true,
+  "constraints": {
+    "sudo_used": false,
+    "restart_attempted_by_agent": false,
+    "kill_used": false,
+    "deploy_actions": false,
+    "backup_restore_rescue_actions": false
+  },
+  "phase0_gate": {
+    "check_runtime_deploy_gate": {
+      "executed": true,
+      "exit_code": 11,
+      "result": "api_version_unreachable_http_000000"
+    },
+    "check_backend_version_gate": {
+      "executed": true,
+      "exit_code": 11,
+      "result": "api_version_unreachable_timeout"
+    },
+    "overall": "blocked_runtime_outdated_or_unreachable"
+  },
+  "next_step": "run_read_only_hang_triage"
+}

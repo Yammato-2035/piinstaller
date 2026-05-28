@@ -1,0 +1,77 @@
+{
+  "artifact": "backend_runtime_hang_triage",
+  "generated_at": "2026-05-28T03:44:00Z",
+  "branch": "main",
+  "source_commit": "f601080",
+  "service": "setuphelfer-backend.service",
+  "strict_mode": true,
+  "constraints": {
+    "sudo_used": false,
+    "restart_attempted_by_agent": false,
+    "kill_used": false,
+    "deploy_actions": false,
+    "backup_restore_rescue_actions": false
+  },
+  "systemd": {
+    "is_active": "active",
+    "active_state": "active",
+    "sub_state": "running",
+    "main_pid": 138932,
+    "exec_main_start_timestamp": "Wed 2026-05-27 22:41:20 CEST",
+    "memory_current_bytes": 323084288,
+    "cpu_usage_nsec": 11503211392000,
+    "tasks_current": 8,
+    "restart_policy": "on-failure",
+    "nrestarts": 0
+  },
+  "socket_8000": {
+    "listening": true,
+    "local_address": "127.0.0.1:8000",
+    "recv_q": 2049,
+    "send_q": 2048
+  },
+  "process": {
+    "pid": 138932,
+    "command": "/opt/setuphelfer/backend/venv/bin/python3 -m uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1",
+    "threads": 8,
+    "status_state": "R",
+    "proc_stack_readable": false,
+    "proc_fd_readable": false
+  },
+  "http_probes": [
+    {
+      "path": "/api/version",
+      "curl_exit": 28,
+      "result": "timeout_after_tcp_connect_or_wait",
+      "time_real_seconds": 3.0
+    },
+    {
+      "path": "/health",
+      "curl_exit": 28,
+      "result": "connection_timeout",
+      "time_real_seconds": 3.0
+    },
+    {
+      "path": "/docs",
+      "curl_exit": 28,
+      "result": "connection_timeout",
+      "time_real_seconds": 3.0
+    },
+    {
+      "path": "/openapi.json",
+      "curl_exit": 28,
+      "result": "timeout_after_tcp_connect_or_wait",
+      "time_real_seconds": 3.0
+    }
+  ],
+  "classification": {
+    "primary": "backend_runtime_hang_accept_queue_saturation",
+    "secondary": [
+      "backend_api_hang_suspected",
+      "runtime_service_active_but_http_unresponsive",
+      "operator_privileged_diagnostics_required"
+    ],
+    "confidence": "high"
+  },
+  "recommended_next_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST"
+}

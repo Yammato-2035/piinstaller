@@ -1,0 +1,24 @@
+{
+  "artifact": "roadmap_backend_runtime_hang_triage_delta",
+  "generated_at": "2026-05-28T03:50:00Z",
+  "branch": "main",
+  "source_commit": "f601080",
+  "input_prompt_id": "BACKEND_RUNTIME_HANG_TRIAGE",
+  "result": {
+    "runtime_status": "blocked",
+    "rescue_status": "blocked",
+    "hang_classification": "backend_runtime_hang_accept_queue_saturation",
+    "operator_handoff_available": true
+  },
+  "next_prompt_decision": {
+    "selected_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
+    "alternative_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
+    "reason": "Operator-Handoff liegt vor; naechster Schritt ist die Ergebnisaufnahme aus dem manuellen Restart-Terminal."
+  },
+  "changed_files": [
+    "docs/roadmap/setuphelfer_roadmap.json",
+    "docs/roadmap/setuphelfer_next_prompts.json",
+    "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json",
+    "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.md"
+  ]
+}

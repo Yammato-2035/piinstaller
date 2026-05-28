@@ -1,0 +1,28 @@
+{
+  "artifact": "backend_runtime_operator_handoff",
+  "generated_at": "2026-05-28T03:47:00Z",
+  "branch": "main",
+  "source_commit": "f601080",
+  "handoff_type": "manual_operator_terminal_required",
+  "agent_execution": {
+    "sudo_used": false,
+    "restart_attempted_by_agent": false,
+    "kill_used": false
+  },
+  "operator_required_steps": [
+    "sudo_preauth",
+    "service_status_pre",
+    "journal_pre",
+    "optional_proc_privileged_inspection",
+    "controlled_restart",
+    "service_status_post",
+    "http_validation_post",
+    "journal_post"
+  ],
+  "expected_result_classes": [
+    "recovered_after_operator_restart",
+    "still_hanging_after_operator_restart",
+    "restart_failed_with_privileged_error"
+  ],
+  "recommended_next_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST"
+}

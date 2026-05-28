@@ -1,20 +1,20 @@
 {
-  "selected_prompt_id": "BACKEND_RUNTIME_HANG_TRIAGE",
-  "selected_at": "2026-05-28T03:36:00Z",
-  "reason": "Authorized restart could not be executed in agent context (sudo requires TTY/password). Backend remains active/listening on 8000, but /api/version and /health still time out.",
+  "selected_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
+  "selected_at": "2026-05-28T03:51:00Z",
+  "reason": "Read-only hang triage completed: service is active/listening on 8000 with persistent HTTP timeouts and saturated accept queue; operator restart handoff is documented, so next step is ingesting operator restart results.",
   "blocked_by": [
     "runtime_gate_blocked",
     "backend_api_hang_suspected",
-    "restart_blocked_by_tty_policy_in_agent_context"
+    "operator_terminal_execution_required"
   ],
   "unlocks": [
-    "Root-cause isolation for backend hang",
-    "Operator-terminal restart and validation",
-    "Recovery gate progression"
+    "Operator restart result classification",
+    "Runtime gate recovery decision",
+    "Follow-up prompt branching with evidence"
   ],
   "alternative_prompts": [
-    "BACKEND_RUNTIME_RECOVERY_GATE",
-    "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
+    "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
+    "BACKEND_RUNTIME_RECOVERY_GATE"
   ],
   "mandatory_closure_sections": [
     "dashboard_progress",
