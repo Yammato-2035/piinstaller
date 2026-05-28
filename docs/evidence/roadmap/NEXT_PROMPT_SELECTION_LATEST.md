@@ -1,11 +1,11 @@
 # Next Prompt Selection (Latest)
 
-**Selected:** `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE`
+**Selected:** `BACKEND_RUNTIME_RECOVERY_GATE`
 
-**Warum:** Rescue-Chroot-/Mount-Cleanup ist aktuell der technische Blocker. Der Controlled Command Runner ist als interner Tooling-Track verfügbar, aber nicht der nächste operative Schritt.
+**Warum:** Runtime-Gate ist blockiert (`/api/version HTTP 000000`). Backend ist laut systemd aktiv und Port 8000 lauscht, aber API-Endpunkte antworten nicht (Timeout).
 
-**Available next:** `DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP`
+**Available next:** `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE`
 
-**Nicht:** USB-Write, Restore, Boot-/VM-Test, freie Shell-Ausführung.
+**Nicht:** Restart ohne Freigabe `BACKEND_RESTART_FREIGEGEBEN`, kein Rescue-/Backup-/Restore-Run.
 
 Siehe `NEXT_PROMPT_SELECTION_LATEST.json`.

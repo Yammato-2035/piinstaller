@@ -1,0 +1,12 @@
+{
+  "updated_at": "2026-05-28T03:15:00Z",
+  "runtime_gate_status": "blocked",
+  "runtime_gate_http_probe": "000000",
+  "backend_service_state": "active_running",
+  "backend_port_8000_listening": true,
+  "backend_api_responding": false,
+  "classification": "backend_unknown_failure",
+  "restart_executed": false,
+  "operator_approval_present": false,
+  "recommended_next_prompt": "BACKEND_RUNTIME_RECOVERY_GATE"
+}

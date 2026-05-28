@@ -186,8 +186,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD",
-      "next_recommended_action": "Kontrollierter Rescue-ISO-Operator-Build im Terminal (kein Dashboard-Execute, kein USB-Write)."
+      "next_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
+      "next_recommended_action": "Backend-Runtime-Recovery zuerst: /api/version wiederherstellen, dann erst Rescue-/Runtime-Folgepfade fortsetzen."
     },
     {
       "id": "backup-br001",
@@ -1187,8 +1187,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
-      "next_recommended_action": "Rescue Chroot-/Mount-Cleanup zuerst triagieren; Controlled Command Runner bleibt verfügbar, aber nicht als nächster Schritt."
+      "next_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
+      "next_recommended_action": "Runtime-Gate ist blockiert; zuerst Backend-Unreachability triagieren und ggf. mit Operator-Freigabe restarten."
     },
     {
       "id": "packaging-update",

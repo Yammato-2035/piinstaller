@@ -1,19 +1,19 @@
 {
-  "selected_prompt_id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
-  "selected_at": "2026-05-28T02:58:00Z",
-  "reason": "Rescue chroot/mount cleanup remains the active technical blocker. Controlled command runner design is available but not prioritized ahead of rescue stabilization.",
+  "selected_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
+  "selected_at": "2026-05-28T03:15:00Z",
+  "reason": "Runtime gate remains blocked (/api/version HTTP 000000). Backend service appears active and port 8000 listens, but API endpoints time out. Restart requires explicit operator approval token.",
   "blocked_by": [
-    "rescue_chroot_cleanup_open",
-    "no_boot_usb_proof"
+    "runtime_gate_blocked",
+    "backend_api_unresponsive"
   ],
   "unlocks": [
-    "Sauberer Rescue-Operator-Retry nach Cleanup",
-    "Stabilere Build-Evidence",
-    "Danach Controlled Command Runner MVP umsetzbar"
+    "Runtime gate green",
+    "Safe runtime API checks",
+    "Rescue follow-up prompts"
   ],
   "alternative_prompts": [
-    "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP",
-    "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX"
+    "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+    "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP"
   ],
   "mandatory_closure_sections": [
     "dashboard_progress",

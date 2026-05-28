@@ -11,7 +11,7 @@
     "Priorität 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorität 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise künstlich grün gefärbt."
   ],
-  "selected_prompt_id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+  "selected_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -258,12 +258,70 @@
       "updated_at": "2026-05-28"
     },
     {
+      "id": "BACKEND_RUNTIME_RECOVERY_GATE",
+      "category": "runtime_governance",
+      "title_de": "Backend Runtime Recovery Gate",
+      "title_en": "Backend runtime recovery gate",
+      "scope": "Backend-Unerreichbarkeit bei aktivem Service triagieren, Service/Port/Journal auswerten und nur mit Operator-Freigabe neu starten.",
+      "status": "recommended_next",
+      "reason_de": "Runtime-Gate blockiert: /api/version HTTP 000000. Service läuft, Port 8000 lauscht, aber API antwortet nicht.",
+      "reason_en": "Runtime gate blocked: /api/version HTTP 000000. Service is running, port 8000 listens, but API does not respond.",
+      "prompt_text": "Führe lesende Runtime-Triage durch, klassifiziere den Ausfall und starte den Backend-Service nur mit BACKEND_RESTART_FREIGEGEBEN neu.",
+      "blocked_by": [
+        "runtime_gate_blocked",
+        "backend_api_unresponsive"
+      ],
+      "unlocks": [
+        "Runtime gate recovery",
+        "Safe test mode re-evaluation",
+        "Rescue follow-up prompts"
+      ],
+      "expected_outputs": [
+        "Backend runtime recovery triage evidence",
+        "Service/port/journal classification",
+        "Updated next prompt selection"
+      ],
+      "safety_rules": [
+        "Kein Restart ohne BACKEND_RESTART_FREIGEGEBEN.",
+        "Kein Rescue/Backup/Restore während rotem Gate.",
+        "Kein Deploy ohne separate Freigabe."
+      ],
+      "allowed_paths": [
+        "docs/evidence/dev-dashboard/",
+        "docs/evidence/roadmap/",
+        "docs/roadmap/",
+        "CHANGELOG.md"
+      ],
+      "forbidden_actions": [
+        "rescue_iso_build",
+        "backup_start",
+        "restore_start",
+        "deploy_without_approval",
+        "apt_install"
+      ],
+      "tests": [
+        "backend.tests.test_dev_dashboard_v1",
+        "backend.tests.test_dev_dashboard_manual_command_runs_v1"
+      ],
+      "documentation_targets": [
+        "docs/evidence/dev-dashboard/BACKEND_RUNTIME_RECOVERY_GATE_TRIAGE.md",
+        "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json"
+      ],
+      "non_goals": [
+        "Kein Hardwaretest",
+        "Kein USB-Write",
+        "Kein Rescue-Build"
+      ],
+      "created_at": "2026-05-28",
+      "updated_at": "2026-05-28"
+    },
+    {
       "id": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
       "category": "rescue",
       "title_de": "Rescue ISO Chroot-/Mount-Cleanup Failure Triage",
       "title_en": "Rescue ISO chroot/mount cleanup failure triage",
       "scope": "Root-cause-Analyse und sichere Operator-Handoff-Anleitung für fehlgeschlagenes Chroot-/Mount-Cleanup im kontrollierten Rescue-Build.",
-      "status": "recommended_next",
+      "status": "available",
       "reason_de": "Aktueller technischer Blocker im Rescue-Track. Ohne sauberes Cleanup bleiben Folge-Builds unzuverlässig.",
       "reason_en": "Current technical blocker in rescue track. Without clean cleanup, follow-up builds remain unreliable.",
       "prompt_text": "Analysiere Chroot-/Mount-Reste read-only, dokumentiere sichere Operator-Cleanup-Schritte und aktualisiere Evidence/Roadmap ohne Build-/USB-/Restore-Ausführung.",
@@ -614,7 +672,7 @@
       "title_de": "Rescue ISO Retry nach isohybrid/syslinux-utils-Fix",
       "title_en": "Rescue ISO retry after isohybrid/syslinux-utils fix",
       "scope": "Build-Tree mit setuphelfer.list.binary aktualisieren, auto/clean, kontrollierten Operator-Build wiederholen und Evidence aktualisieren.",
-      "status": "recommended_next",
+      "status": "available",
       "reason_de": "2026-05-27: Build bis genisoimage, dann isohybrid: not found (LB_EXIT=127). Repo-Fix committed; Operator-Retry erforderlich.",
       "reason_en": "2026-05-27: build reached genisoimage then isohybrid: not found (LB_EXIT=127). Repo fix committed; operator retry required.",
       "prompt_text": "Aktualisiere den controlled live-build-Tree (prepare), führe auto/clean aus und starte den dokumentierten Wrapper-Build nur im Operator-Terminal. Dokumentiere Log/Summary/ISO-Pfad. Kein USB-Write, kein Boot-Test, kein apt install durch den Agenten.",

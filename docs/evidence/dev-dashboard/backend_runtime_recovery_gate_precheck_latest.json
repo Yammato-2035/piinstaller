@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-05-28T03:05:00Z",
+  "branch": "main",
+  "head": "c818d98",
+  "last_commit": "c818d98 Document internal developer tooling boundary and controlled command runner design",
+  "runtime_gate_exit_code": 11,
+  "runtime_gate_http_probe": "000000",
+  "runtime_gate_status": "blocked",
+  "runtime_gate_blocked_static_analysis_only": true
+}

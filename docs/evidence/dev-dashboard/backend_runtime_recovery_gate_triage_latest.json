@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-05-28T03:10:00Z",
+  "service_status": {
+    "setuphelfer_backend_service": "active_running",
+    "setuphelfer_service": "active_running"
+  },
+  "backend_pid": 138932,
+  "backend_cmdline": "/opt/setuphelfer/backend/venv/bin/python3 -m uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1",
+  "ports": {
+    "8000_listening": true,
+    "3001_listening": true,
+    "3002_listening": true,
+    "port_8000_process_visible": false
+  },
+  "http_probe": {
+    "api_version_3s": "timeout",
+    "health_3s": "timeout",
+    "api_version_10s": "timeout",
+    "health_10s": "timeout"
+  },
+  "journal_access": {
+    "backend_journal_visible": false,
+    "setuphelfer_journal_visible": false,
+    "note": "Current user cannot read full journal entries."
+  },
+  "classification": "backend_unknown_failure",
+  "restart_executed": false,
+  "operator_approval_present": false,
+  "operator_approval_token_required": "BACKEND_RESTART_FREIGEGEBEN"
+}
