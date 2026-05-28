@@ -73,5 +73,8 @@
     ],
     "confidence": "high"
   },
-  "recommended_next_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST"
+  "recommended_next_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
+  "post_ingest_status": "historical_pre_recovery_triage",
+  "superseded_by": "docs/evidence/dev-dashboard/backend_runtime_restart_result_latest.json",
+  "updated_at": "2026-05-28T03:45:20Z"
 }

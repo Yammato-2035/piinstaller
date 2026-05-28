@@ -1,0 +1,36 @@
+{
+  "artifact": "roadmap_backend_runtime_operator_restart_ingest_delta",
+  "generated_at": "2026-05-28T03:44:47Z",
+  "branch": "main",
+  "source_commit": "f601080",
+  "input_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
+  "operator_truth": {
+    "journal_write_event_failed_missing_path": "/home/setuphelfer/.cache/piinstaller/logs/piinstaller.debug.jsonl",
+    "service_active": true,
+    "service_main_pid": 138932,
+    "api_version_success": true,
+    "project_version": "1.7.2",
+    "backend_runtime_path": "/opt/setuphelfer/backend",
+    "operator_gate_failure_reason": "wrong_cwd_file_not_found"
+  },
+  "agent_repo_cwd_gate": {
+    "command": "./scripts/check-runtime-deploy-gate.sh",
+    "exit_code": 11,
+    "output": "check-runtime-deploy-gate: /api/version HTTP 000000"
+  },
+  "decision": {
+    "selected_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
+    "rescue_prompt_if_gate_green": "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE",
+    "reason": "Gate mismatch requires backend recovery reconciliation before switching to rescue track."
+  },
+  "changed_files": [
+    "docs/evidence/dev-dashboard/BACKEND_RUNTIME_RESTART_RESULT.md",
+    "docs/evidence/dev-dashboard/backend_runtime_restart_result_latest.json",
+    "docs/evidence/roadmap/ROADMAP_BACKEND_RUNTIME_RESTART_DELTA.md",
+    "docs/evidence/roadmap/roadmap_backend_runtime_restart_delta_latest.json",
+    "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.md",
+    "docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json",
+    "docs/roadmap/setuphelfer_next_prompts.json",
+    "docs/roadmap/setuphelfer_roadmap.json"
+  ]
+}

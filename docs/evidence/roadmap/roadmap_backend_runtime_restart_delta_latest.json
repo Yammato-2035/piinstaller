@@ -1,12 +1,25 @@
 {
-  "updated_at": "2026-05-28T03:35:00Z",
+  "updated_at": "2026-05-28T03:44:47Z",
   "restart_authorized": true,
-  "restart_executed": false,
-  "restart_block_reason": "sudo_tty_password_required_in_agent_context",
-  "runtime_gate_after": "blocked",
+  "restart_executed": true,
+  "restart_block_reason": "none_operator_restart_completed",
+  "runtime_gate_after": "mismatch_operator_ok_agent_http_000000",
   "service_after": "active_running",
   "port_8000_after": "listening",
-  "api_after": "timeout",
-  "classification": "new_error",
-  "recommended_next_prompt": "BACKEND_RUNTIME_HANG_TRIAGE"
+  "api_after": "operator_success",
+  "classification": "operator_recovered_with_agent_gate_mismatch",
+  "recommended_next_prompt": "BACKEND_RUNTIME_RECOVERY_GATE",
+  "operator_ingest_truth": {
+    "journal_write_event_failed_missing_path": "/home/setuphelfer/.cache/piinstaller/logs/piinstaller.debug.jsonl",
+    "service_main_pid": 138932,
+    "systemctl_is_active": "active",
+    "api_version_success": true,
+    "project_version": "1.7.2",
+    "backend_runtime_path": "/opt/setuphelfer/backend",
+    "operator_gate_failure_reason": "wrong_cwd"
+  },
+  "agent_repo_cwd_gate": {
+    "exit_code": 11,
+    "output": "/api/version HTTP 000000"
+  }
 }

@@ -1,17 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-28T03:52:00Z",
+  "generated_at": "2026-05-28T03:44:47Z",
   "project_version": "1.7.2",
   "source_commit": "f601080",
   "selection_policy": [
-    "Priorität 1: Fehlender Nachweis, der mehrere Bereiche blockiert, zuerst.",
-    "Priorität 2: Wiederkehrende Unklarheit im Dashboard zuerst transparent machen.",
-    "Priorität 3: Safety-/Gate-Arbeit bleibt vor riskanter Runtime-Arbeit.",
-    "Priorität 4: Wenn Diagnostics neue Fehler belastbar gelernt hat, folgt der nächste echte technische Blocker.",
-    "Priorität 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
-    "Priorität 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise künstlich grün gefärbt."
+    "Priorit\u00e4t 1: Fehlender Nachweis, der mehrere Bereiche blockiert, zuerst.",
+    "Priorit\u00e4t 2: Wiederkehrende Unklarheit im Dashboard zuerst transparent machen.",
+    "Priorit\u00e4t 3: Safety-/Gate-Arbeit bleibt vor riskanter Runtime-Arbeit.",
+    "Priorit\u00e4t 4: Wenn Diagnostics neue Fehler belastbar gelernt hat, folgt der n\u00e4chste echte technische Blocker.",
+    "Priorit\u00e4t 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
+    "Priorit\u00e4t 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise k\u00fcnstlich gr\u00fcn gef\u00e4rbt."
   ],
-  "selected_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
+  "selected_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -20,9 +20,9 @@
       "title_en": "Dev Dashboard roadmap and next prompt registry",
       "scope": "Roadmap-Datenmodell, read-only API, Dashboard-Roadmap-Tab, Prompt-Export, Doku und Tests.",
       "status": "completed",
-      "reason_de": "Die belastbare Registry wurde implementiert, damit wiederholte Feststellungen in konkrete nächste Schritte übersetzt werden.",
+      "reason_de": "Die belastbare Registry wurde implementiert, damit wiederholte Feststellungen in konkrete n\u00e4chste Schritte \u00fcbersetzt werden.",
       "reason_en": "The trustworthy registry was implemented so repeated findings are translated into concrete next steps.",
-      "prompt_text": "Pflege das Datenmodell, die read-only API, die Dashboard-Anzeige und die Evidence-Dokumentation für Roadmap und Next Prompt weiter, ohne Execute-Funktionen hinzuzufügen.",
+      "prompt_text": "Pflege das Datenmodell, die read-only API, die Dashboard-Anzeige und die Evidence-Dokumentation f\u00fcr Roadmap und Next Prompt weiter, ohne Execute-Funktionen hinzuzuf\u00fcgen.",
       "blocked_by": [],
       "unlocks": [
         "TERMINAL_A_READONLY",
@@ -34,8 +34,8 @@
         "Ehrlicher Abschlussbericht mit empfohlenem Next Prompt"
       ],
       "safety_rules": [
-        "Keine Runtime-Aktion aus der Roadmap heraus ausführen.",
-        "Keine Status künstlich auf grün setzen."
+        "Keine Runtime-Aktion aus der Roadmap heraus ausf\u00fchren.",
+        "Keine Status k\u00fcnstlich auf gr\u00fcn setzen."
       ],
       "allowed_paths": [
         "backend/core/dev_dashboard*.py",
@@ -65,7 +65,7 @@
         "Kein Backup",
         "Kein Restore",
         "Kein Deploy",
-        "Keine Hardwareausführung"
+        "Keine Hardwareausf\u00fchrung"
       ],
       "created_at": "2026-05-26",
       "updated_at": "2026-05-26"
@@ -79,7 +79,7 @@
       "status": "completed",
       "reason_de": "Read-only Command-Run-Evidence, GET-API und Dashboard-Panel sind implementiert und mit backend/venv getestet (5786eb3). Keine Execute-Route. System-Python-API-Tests bleiben separat gelb dokumentiert.",
       "reason_en": "Read-only command-run evidence, GET API, and dashboard panel are implemented and tested with backend/venv (5786eb3). No execute route. System-Python API tests remain documented as yellow separately.",
-      "prompt_text": "Abgeschlossen: read-only manuelle Kommandoläufe unter docs/evidence/dev-dashboard/manual_command_runs/ und GET /api/dev-dashboard/manual-command-runs — keine Shell aus dem UI.",
+      "prompt_text": "Abgeschlossen: read-only manuelle Kommandol\u00e4ufe unter docs/evidence/dev-dashboard/manual_command_runs/ und GET /api/dev-dashboard/manual-command-runs \u2014 keine Shell aus dem UI.",
       "blocked_by": [],
       "unlocks": [
         "Saubere Dokumentation manueller Checks",
@@ -91,7 +91,7 @@
         "Keine Execute-Buttons"
       ],
       "safety_rules": [
-        "Keine Shell-Ausführung aus dem Dashboard.",
+        "Keine Shell-Ausf\u00fchrung aus dem Dashboard.",
         "Nur Anzeige, Export und Protokollierung."
       ],
       "allowed_paths": [
@@ -104,7 +104,7 @@
         "sudo"
       ],
       "tests": [
-        "Backend-API-Tests für read-only Antwortformen",
+        "Backend-API-Tests f\u00fcr read-only Antwortformen",
         "Frontend-Render-/Static-Tests"
       ],
       "documentation_targets": [
@@ -115,7 +115,7 @@
       ],
       "non_goals": [
         "Keine Terminal-Steuerung",
-        "Keine Befehlsausführung",
+        "Keine Befehlsausf\u00fchrung",
         "Keine Operator-Eskalation aus dem Dashboard"
       ],
       "created_at": "2026-05-26",
@@ -146,12 +146,12 @@
       "expected_outputs": [
         "RUNTIME_DEPLOY_DRIFT_CLEANUP_* Evidence",
         "Roadmap/NEXT_PROMPT ehrlich aktualisiert",
-        "Cockpit-Port-Doku ohne feste 5173-Annahme für dev:cockpit"
+        "Cockpit-Port-Doku ohne feste 5173-Annahme f\u00fcr dev:cockpit"
       ],
       "safety_rules": [
         "Kein automatischer Deploy ohne DEPLOY_HELPER_SYNC_FREIGEGEBEN.",
         "Kein Backup/Restore/Rescue-ISO-Build.",
-        "Keine Fake-Green-Gate-Änderungen."
+        "Keine Fake-Green-Gate-\u00c4nderungen."
       ],
       "allowed_paths": [
         "docs/evidence/dev-dashboard/",
@@ -196,11 +196,11 @@
       "category": "dev_dashboard",
       "title_de": "Dev Dashboard Controlled Command Runs MVP",
       "title_en": "Dev dashboard controlled command runs MVP",
-      "scope": "Interne, allowlist-basierte Controlled Command Runs als sichere Tooling-Schicht designen und in MVP-Stufen planen (ohne freie Shell, ohne sudo-Ausführung).",
+      "scope": "Interne, allowlist-basierte Controlled Command Runs als sichere Tooling-Schicht designen und in MVP-Stufen planen (ohne freie Shell, ohne sudo-Ausf\u00fchrung).",
       "status": "available",
       "reason_de": "Boundary-Audit, Schema, Allowlist-Design und MVP-Plan liegen vor. Aufgrund des offenen Rescue-Chroot-Cleanup-Blockers ist der Prompt aktuell nicht recommended_next.",
       "reason_en": "Boundary audit, schema, allowlist design, and MVP plan are available. Because the rescue chroot cleanup blocker is still open, this prompt is not recommended next right now.",
-      "prompt_text": "Implementiere den Controlled Command Runner stufenweise ab MVP-1 (read-only Listen-APIs), halte die Sicherheitsgrenze strikt ein und füge keine freie Command-Ausführung hinzu.",
+      "prompt_text": "Implementiere den Controlled Command Runner stufenweise ab MVP-1 (read-only Listen-APIs), halte die Sicherheitsgrenze strikt ein und f\u00fcge keine freie Command-Ausf\u00fchrung hinzu.",
       "blocked_by": [
         "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE has priority"
       ],
@@ -209,9 +209,9 @@
         "Rescue build track stabilized"
       ],
       "unlocks": [
-        "Reproduzierbare interne Entwicklerläufe",
+        "Reproduzierbare interne Entwicklerl\u00e4ufe",
         "Bessere stdout/stderr-Evidence",
-        "Saubere Roadmap-Delta-Vorschläge"
+        "Saubere Roadmap-Delta-Vorschl\u00e4ge"
       ],
       "expected_outputs": [
         "Controlled command allowlist + APIs",
@@ -221,7 +221,7 @@
       "safety_rules": [
         "Kein sudo aus Dashboard.",
         "Keine freie Shell-Eingabe.",
-        "Keine Backup/Restore/USB/apt Ausführung."
+        "Keine Backup/Restore/USB/apt Ausf\u00fchrung."
       ],
       "allowed_paths": [
         "docs/dev-dashboard/",
@@ -263,10 +263,10 @@
       "title_de": "Backend Runtime Recovery Gate",
       "title_en": "Backend runtime recovery gate",
       "scope": "Backend-Unerreichbarkeit bei aktivem Service triagieren, Service/Port/Journal auswerten und nur mit Operator-Freigabe neu starten.",
-      "status": "available",
-      "reason_de": "Basis-Recovery-Triage abgeschlossen; autorisierter Restart war im Agent-Kontext nicht ausführbar (sudo TTY/Passwort).",
+      "status": "recommended_next",
+      "reason_de": "Operator-Output zeigt Recovery (Service aktiv, /api/version success), waehrend der Agent-Gate-Rerun aus Repo-CWD HTTP 000000 meldet; als naechstes folgt die konsolidierte Recovery-Gate-Entscheidung.",
       "reason_en": "Base recovery triage completed; authorized restart could not run in agent context (sudo TTY/password).",
-      "prompt_text": "Führe lesende Runtime-Triage durch, klassifiziere den Ausfall und starte den Backend-Service nur mit BACKEND_RESTART_FREIGEGEBEN neu.",
+      "prompt_text": "F\u00fchre lesende Runtime-Triage durch, klassifiziere den Ausfall und starte den Backend-Service nur mit BACKEND_RESTART_FREIGEGEBEN neu.",
       "blocked_by": [
         "runtime_gate_blocked",
         "backend_api_unresponsive"
@@ -283,7 +283,7 @@
       ],
       "safety_rules": [
         "Kein Restart ohne BACKEND_RESTART_FREIGEGEBEN.",
-        "Kein Rescue/Backup/Restore während rotem Gate.",
+        "Kein Rescue/Backup/Restore w\u00e4hrend rotem Gate.",
         "Kein Deploy ohne separate Freigabe."
       ],
       "allowed_paths": [
@@ -322,9 +322,9 @@
       "title_en": "Backend runtime hang triage",
       "scope": "Wenn Service aktiv/listening bleibt, aber API-Endpunkte timeouten: Hang-Ursache eingrenzen und Operator-Terminal-Intervention vorbereiten.",
       "status": "recommended_next",
-      "reason_de": "Nach autorisiertem Restart-Versuch bleibt Backend auf 8000 ohne HTTP-Antwort; im Agent konnte sudo mangels TTY nicht ausführen.",
+      "reason_de": "Nach autorisiertem Restart-Versuch bleibt Backend auf 8000 ohne HTTP-Antwort; im Agent konnte sudo mangels TTY nicht ausf\u00fchren.",
       "reason_en": "After authorized restart attempt, backend remains on 8000 without HTTP response; sudo could not execute in agent context due to missing TTY.",
-      "prompt_text": "Führe Hang-Triage mit Fokus auf Worker-Blockade, interne Deadlocks und Operator-Terminal-Restart mit sichtbaren Logs durch, ohne Rescue/Backup/Restore-Aktionen.",
+      "prompt_text": "F\u00fchre Hang-Triage mit Fokus auf Worker-Blockade, interne Deadlocks und Operator-Terminal-Restart mit sichtbaren Logs durch, ohne Rescue/Backup/Restore-Aktionen.",
       "blocked_by": [
         "backend_api_hang_suspected",
         "agent_sudo_tty_policy"
@@ -429,8 +429,8 @@
       "title_de": "Backend Runtime Operator Restart Result Ingest",
       "title_en": "Backend runtime operator restart result ingest",
       "scope": "Operator-Terminal-Ergebnisse nach manuellem Restart auswerten, klassifizieren und Gate-/Roadmap-Status aktualisieren.",
-      "status": "recommended_next",
-      "reason_de": "Operator-Handoff ist dokumentiert; als naechster Schritt wird das reale Restart-Ergebnis zur Runtime-Entscheidung benoetigt.",
+      "status": "completed",
+      "reason_de": "Operator-Restart-Ergebnis wurde aufgenommen; Ground-Truth und Agent-Gate-Rerun sind dokumentiert.",
       "reason_en": "Operator handoff is documented; the next step is ingesting the real restart outcome for runtime decisions.",
       "prompt_text": "Nimm Operator-Restart-Ergebnisse auf, klassifiziere recovered/still-hanging/restart-failed und aktualisiere Next Prompt sowie Evidence ohne neue Agent-Runtime-Eingriffe.",
       "blocked_by": [
@@ -480,17 +480,17 @@
       "category": "rescue",
       "title_de": "Rescue ISO Chroot-/Mount-Cleanup Failure Triage",
       "title_en": "Rescue ISO chroot/mount cleanup failure triage",
-      "scope": "Root-cause-Analyse und sichere Operator-Handoff-Anleitung für fehlgeschlagenes Chroot-/Mount-Cleanup im kontrollierten Rescue-Build.",
+      "scope": "Root-cause-Analyse und sichere Operator-Handoff-Anleitung f\u00fcr fehlgeschlagenes Chroot-/Mount-Cleanup im kontrollierten Rescue-Build.",
       "status": "available",
-      "reason_de": "Aktueller technischer Blocker im Rescue-Track. Ohne sauberes Cleanup bleiben Folge-Builds unzuverlässig.",
+      "reason_de": "Aktueller technischer Blocker im Rescue-Track. Ohne sauberes Cleanup bleiben Folge-Builds unzuverl\u00e4ssig.",
       "reason_en": "Current technical blocker in rescue track. Without clean cleanup, follow-up builds remain unreliable.",
-      "prompt_text": "Analysiere Chroot-/Mount-Reste read-only, dokumentiere sichere Operator-Cleanup-Schritte und aktualisiere Evidence/Roadmap ohne Build-/USB-/Restore-Ausführung.",
+      "prompt_text": "Analysiere Chroot-/Mount-Reste read-only, dokumentiere sichere Operator-Cleanup-Schritte und aktualisiere Evidence/Roadmap ohne Build-/USB-/Restore-Ausf\u00fchrung.",
       "blocked_by": [
         "root-owned build leftovers",
         "mounted chroot paths"
       ],
       "unlocks": [
-        "Saubere Build-Umgebung für nächsten Operator-Retry"
+        "Saubere Build-Umgebung f\u00fcr n\u00e4chsten Operator-Retry"
       ],
       "expected_outputs": [
         "Cleanup triage evidence",
@@ -534,26 +534,26 @@
       "category": "diagnostics",
       "title_de": "Diagnostics Evidence Test Track",
       "title_en": "Diagnostics evidence test track",
-      "scope": "Diagnostik-Katalog, UI-Auswertung, reale Fehlerfälle und Evidence-Matrix als reproduzierbare Teststrecke.",
+      "scope": "Diagnostik-Katalog, UI-Auswertung, reale Fehlerf\u00e4lle und Evidence-Matrix als reproduzierbare Teststrecke.",
       "status": "completed",
-      "reason_de": "Diagnostik-Teststrecke, neue Rescue-/Notification-Mappings, Dashboard-Teilfortschritt und Closure-Regeln wurden dokumentiert und mit Tests/Evidence verknüpft.",
+      "reason_de": "Diagnostik-Teststrecke, neue Rescue-/Notification-Mappings, Dashboard-Teilfortschritt und Closure-Regeln wurden dokumentiert und mit Tests/Evidence verkn\u00fcpft.",
       "reason_en": "The diagnostics test track, new rescue/notification mappings, dashboard sub-progress, and closure rules were documented and linked to tests/evidence.",
-      "prompt_text": "Baue eine reproduzierbare Diagnostics-Teststrecke auf, die echte Fehlerfälle, UI-Auswertung, Evidence-Matrix und klar dokumentierte Next Steps zusammenführt. Keine Runtime-Ausführung ohne Gate, keine Execute-Funktionen, keine künstliche Ampel-Grünfärbung.",
+      "prompt_text": "Baue eine reproduzierbare Diagnostics-Teststrecke auf, die echte Fehlerf\u00e4lle, UI-Auswertung, Evidence-Matrix und klar dokumentierte Next Steps zusammenf\u00fchrt. Keine Runtime-Ausf\u00fchrung ohne Gate, keine Execute-Funktionen, keine k\u00fcnstliche Ampel-Gr\u00fcnf\u00e4rbung.",
       "blocked_by": [],
       "unlocks": [
         "Belastbare Diagnostics-Evidence",
-        "Klarere Dashboard-Begründungen",
-        "Bessere Auswahl des nächsten Prompts"
+        "Klarere Dashboard-Begr\u00fcndungen",
+        "Bessere Auswahl des n\u00e4chsten Prompts"
       ],
       "expected_outputs": [
         "Diagnostics-Evidence-Matrix",
-        "UI-Auswertung mit echten Fehlerfällen",
+        "UI-Auswertung mit echten Fehlerf\u00e4llen",
         "Aktualisierte KB-/FAQ-/Dashboard-Texte",
-        "Abschlussregel für künftige Cursor-Läufe"
+        "Abschlussregel f\u00fcr k\u00fcnftige Cursor-L\u00e4ufe"
       ],
       "safety_rules": [
         "Keine Runtime-Tests gegen Port 8000 bei rotem Phase-0-Gate.",
-        "Keine Rescue-, Backup- oder Restore-Ausführung."
+        "Keine Rescue-, Backup- oder Restore-Ausf\u00fchrung."
       ],
       "allowed_paths": [
         "backend/core/diagnostics/",
@@ -595,12 +595,12 @@
       "title_en": "Rescue stick real build gate",
       "scope": "Echter Rescue-Buildpfad, Operator-Policy, Artefakt- und Boot-Nachweis.",
       "status": "obsolete",
-      "reason_de": "Der frühere Sammelprompt wurde durch präzisere Folgeprompts für echten Operator-Terminal-Build und sudoers-Allowlist-Design ersetzt.",
+      "reason_de": "Der fr\u00fchere Sammelprompt wurde durch pr\u00e4zisere Folgeprompts f\u00fcr echten Operator-Terminal-Build und sudoers-Allowlist-Design ersetzt.",
       "reason_en": "The former umbrella prompt was replaced by more precise follow-up prompts for the real operator terminal build and the sudoers allowlist design.",
       "prompt_text": "Bereite den echten Rescue-Buildpfad nur im Rahmen dokumentierter Gates vor und trenne Operator-Policy, Artefakt-Verify und Boot-Nachweis sauber.",
       "blocked_by": [
         "Kein echter ISO-/Boot-Nachweis",
-        "Operator-/Build-/Boot-Track noch nicht vollständig belegt"
+        "Operator-/Build-/Boot-Track noch nicht vollst\u00e4ndig belegt"
       ],
       "unlocks": [
         "Rescue-Boot-Test",
@@ -608,7 +608,7 @@
       ],
       "expected_outputs": [
         "Dokumentierte Build-/Boot-Gates",
-        "Neue Evidence nur für den echten Rescue-Pfad"
+        "Neue Evidence nur f\u00fcr den echten Rescue-Pfad"
       ],
       "safety_rules": [
         "Keine direkten Runtime-Aktionen aus dem Dashboard.",
@@ -633,7 +633,7 @@
       ],
       "non_goals": [
         "Kein ungated Rescue-Build",
-        "Keine automatische Root-Ausführung"
+        "Keine automatische Root-Ausf\u00fchrung"
       ],
       "created_at": "2026-05-26",
       "updated_at": "2026-05-26"
@@ -643,22 +643,22 @@
       "category": "restore",
       "title_de": "Restore End-to-End Preparation",
       "title_en": "Restore end-to-end preparation",
-      "scope": "Sichere Vorbedingungen für Restore-E2E, ohne Restore-Ausführung.",
+      "scope": "Sichere Vorbedingungen f\u00fcr Restore-E2E, ohne Restore-Ausf\u00fchrung.",
       "status": "deferred",
-      "reason_de": "Benötigt bootfähiges Rettungsmedium, nicht-produktives Zielsystem und verifiziertes Backup.",
+      "reason_de": "Ben\u00f6tigt bootf\u00e4higes Rettungsmedium, nicht-produktives Zielsystem und verifiziertes Backup.",
       "reason_en": "Requires a bootable rescue medium, a non-production target system, and a verified backup.",
-      "prompt_text": "Dokumentiere und überprüfe ausschließlich die Vorbedingungen für Restore-E2E, ohne einen Restore zu starten oder Zielsysteme zu verändern.",
+      "prompt_text": "Dokumentiere und \u00fcberpr\u00fcfe ausschlie\u00dflich die Vorbedingungen f\u00fcr Restore-E2E, ohne einen Restore zu starten oder Zielsysteme zu ver\u00e4ndern.",
       "blocked_by": [
-        "Kein bootfähiges Rettungsmedium",
+        "Kein bootf\u00e4higes Rettungsmedium",
         "Kein nicht-produktives Zielsystem",
-        "BR-001-OFFLINE noch nicht grün"
+        "BR-001-OFFLINE noch nicht gr\u00fcn"
       ],
       "unlocks": [
-        "Spätere Restore-E2E-Abnahme"
+        "Sp\u00e4tere Restore-E2E-Abnahme"
       ],
       "expected_outputs": [
         "Klare Restore-Vorbedingungen",
-        "Sicherheitsbegründung für Deferred-Status"
+        "Sicherheitsbegr\u00fcndung f\u00fcr Deferred-Status"
       ],
       "safety_rules": [
         "Kein Restore starten.",
@@ -674,7 +674,7 @@
         "mount_write"
       ],
       "tests": [
-        "Nur statische/API-Tests ohne Restore-Ausführung"
+        "Nur statische/API-Tests ohne Restore-Ausf\u00fchrung"
       ],
       "documentation_targets": [
         "docs/faq/dev_dashboard_roadmap_faq.md"
@@ -691,9 +691,9 @@
       "category": "backup",
       "title_de": "BR-001 External Backup Evidence Completion",
       "title_en": "BR-001 external backup evidence completion",
-      "scope": "Belastbare Evidence-Kette für BR-001-OFFLINE, getrennt von BR-001-LIVE.",
+      "scope": "Belastbare Evidence-Kette f\u00fcr BR-001-OFFLINE, getrennt von BR-001-LIVE.",
       "status": "available",
-      "reason_de": "BR-001-OFFLINE blockiert Backup, Verify und Restore. Die Evidence-Lücke ist klar benannt und kann vorbereitet bzw. sauber vervollständigt werden, ohne Live-Experimente als Ersatz zu zählen.",
+      "reason_de": "BR-001-OFFLINE blockiert Backup, Verify und Restore. Die Evidence-L\u00fccke ist klar benannt und kann vorbereitet bzw. sauber vervollst\u00e4ndigt werden, ohne Live-Experimente als Ersatz zu z\u00e4hlen.",
       "reason_en": "BR-001-OFFLINE blocks backup, verify, and restore. The evidence gap is clearly named and can be prepared or completed cleanly without counting live experiments as a substitute.",
       "prompt_text": "Arbeite die fehlende BR-001-OFFLINE-Evidence-Kette nach: externes Ziel, Manifest, SHA256, Verify und klare Trennung von BR-001-LIVE. Keine Fake-Green-Entscheidung.",
       "blocked_by": [],
@@ -704,11 +704,11 @@
       ],
       "expected_outputs": [
         "Aktualisierte BR-001-Evidence",
-        "Saubere Release-Gate-Begründung"
+        "Saubere Release-Gate-Begr\u00fcndung"
       ],
       "safety_rules": [
         "BR-001-LIVE nicht als Release-Gate verwenden.",
-        "Kein künstliches Grün ohne vollständige Nachweise."
+        "Kein k\u00fcnstliches Gr\u00fcn ohne vollst\u00e4ndige Nachweise."
       ],
       "allowed_paths": [
         "docs/evidence/release-gates/",
@@ -727,7 +727,7 @@
       ],
       "non_goals": [
         "BR-001-LIVE nicht aufwerten",
-        "Keine ungated Runtime-Ausführung"
+        "Keine ungated Runtime-Ausf\u00fchrung"
       ],
       "created_at": "2026-05-26",
       "updated_at": "2026-05-26"
@@ -739,17 +739,17 @@
       "title_en": "Module boundary hardening follow-up",
       "scope": "Kleine Folgearbeiten aus Boundary-Audit und Zielstruktur.",
       "status": "available",
-      "reason_de": "Die Audit- und Zielstruktur ist dokumentiert; ein vorsichtiger Follow-up-Prompt ist verfügbar, darf aber Recovery-Core nicht verdrängen.",
+      "reason_de": "Die Audit- und Zielstruktur ist dokumentiert; ein vorsichtiger Follow-up-Prompt ist verf\u00fcgbar, darf aber Recovery-Core nicht verdr\u00e4ngen.",
       "reason_en": "The audit and target structure are documented; a careful follow-up prompt is available, but it must not displace recovery core.",
-      "prompt_text": "Leite kleine, reviewbare Folgearbeiten aus Boundary-Audit und Zielstruktur ab. Keine großen Refactors, keine riskanten Verschiebungen im Recovery-Kern.",
+      "prompt_text": "Leite kleine, reviewbare Folgearbeiten aus Boundary-Audit und Zielstruktur ab. Keine gro\u00dfen Refactors, keine riskanten Verschiebungen im Recovery-Kern.",
       "blocked_by": [],
       "unlocks": [
         "Kleinere modulare Entkopplungen",
-        "Weniger Risiko für spätere Rescue-/Backup-Arbeit"
+        "Weniger Risiko f\u00fcr sp\u00e4tere Rescue-/Backup-Arbeit"
       ],
       "expected_outputs": [
         "Konkreter Boundary-Follow-up-Plan",
-        "Fokussierte Code- oder Doku-Härtungen"
+        "Fokussierte Code- oder Doku-H\u00e4rtungen"
       ],
       "safety_rules": [
         "Kein Big-Bang-Refactor.",
@@ -771,7 +771,7 @@
         "docs/roadmap/MONOLITH_REFACTOR_PLAN.md"
       ],
       "non_goals": [
-        "Kein großer Umbau",
+        "Kein gro\u00dfer Umbau",
         "Keine Recovery-Core-Regression"
       ],
       "created_at": "2026-05-26",
@@ -786,19 +786,19 @@
       "status": "available",
       "reason_de": "Packaging-Readiness ist sichtbar, aber die produktionsreife Update-Kette bleibt offen und sollte nicht mit read-only Status verwechselt werden.",
       "reason_en": "Packaging readiness is visible, but the production-ready update chain remains open and must not be confused with read-only status visibility.",
-      "prompt_text": "Härte das Package-/Update-Gate dokumentarisch und technisch ab, ohne automatische Paketaktionen, ohne apt-Ausführung und ohne Deploy.",
+      "prompt_text": "H\u00e4rte das Package-/Update-Gate dokumentarisch und technisch ab, ohne automatische Paketaktionen, ohne apt-Ausf\u00fchrung und ohne Deploy.",
       "blocked_by": [],
       "unlocks": [
         "Sauberere Packaging-Aussagen im Dashboard",
         "Weniger Verwechslung zwischen Statussichtbarkeit und Update-Freigabe"
       ],
       "expected_outputs": [
-        "Geklärte Update-Grenzen",
+        "Gekl\u00e4rte Update-Grenzen",
         "Verbesserte Packaging-Dokumentation",
         "Read-only Gate-Konsistenz"
       ],
       "safety_rules": [
-        "Keine apt-Ausführung.",
+        "Keine apt-Ausf\u00fchrung.",
         "Keine automatischen Paketupdates."
       ],
       "allowed_paths": [
@@ -835,13 +835,13 @@
       "status": "available",
       "reason_de": "2026-05-27: Build bis genisoimage, dann isohybrid: not found (LB_EXIT=127). Repo-Fix committed; Operator-Retry erforderlich.",
       "reason_en": "2026-05-27: build reached genisoimage then isohybrid: not found (LB_EXIT=127). Repo fix committed; operator retry required.",
-      "prompt_text": "Aktualisiere den controlled live-build-Tree (prepare), führe auto/clean aus und starte den dokumentierten Wrapper-Build nur im Operator-Terminal. Dokumentiere Log/Summary/ISO-Pfad. Kein USB-Write, kein Boot-Test, kein apt install durch den Agenten.",
+      "prompt_text": "Aktualisiere den controlled live-build-Tree (prepare), f\u00fchre auto/clean aus und starte den dokumentierten Wrapper-Build nur im Operator-Terminal. Dokumentiere Log/Summary/ISO-Pfad. Kein USB-Write, kein Boot-Test, kein apt install durch den Agenten.",
       "blocked_by": [
         "RESCUE-BUILD-ISOHYBRID-001",
         "no_hybrid_iso_proof"
       ],
       "unlocks": [
-        "Vollständige Hybrid-ISO",
+        "Vollst\u00e4ndige Hybrid-ISO",
         "Aktualisierte controlled_iso_build_latest_summary.json"
       ],
       "expected_outputs": [
@@ -883,11 +883,11 @@
       "category": "rescue",
       "title_de": "Rescue ISO Manual Operator Terminal Build",
       "title_en": "Rescue ISO manual operator terminal build",
-      "scope": "Echten kontrollierten Rescue-ISO-Build ausschließlich aus einem realen Operator-Terminal mit sauberem Root-/TTY-Rahmen anstoßen und dokumentieren.",
+      "scope": "Echten kontrollierten Rescue-ISO-Build ausschlie\u00dflich aus einem realen Operator-Terminal mit sauberem Root-/TTY-Rahmen ansto\u00dfen und dokumentieren.",
       "status": "available",
-      "reason_de": "Basis-Prompt für ersten echten Operator-Build; nach isohybrid-Fix ist RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX bevorzugt.",
+      "reason_de": "Basis-Prompt f\u00fcr ersten echten Operator-Build; nach isohybrid-Fix ist RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX bevorzugt.",
       "reason_en": "Base prompt for first real operator build; after isohybrid fix prefer RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX.",
-      "prompt_text": "Führe den dokumentierten kontrollierten Rescue-ISO-Build nur in einem echten Operator-Terminal aus, sammle Artefakt-/Log-/Gate-Evidence und halte USB-Write, Restore und Hardwaretests weiterhin strikt getrennt.",
+      "prompt_text": "F\u00fchre den dokumentierten kontrollierten Rescue-ISO-Build nur in einem echten Operator-Terminal aus, sammle Artefakt-/Log-/Gate-Evidence und halte USB-Write, Restore und Hardwaretests weiterhin strikt getrennt.",
       "blocked_by": [
         "operator_terminal_no_tty",
         "blocked_requires_operator_sudo_policy"
@@ -906,7 +906,7 @@
         "Kein Backend-Restart.",
         "Kein Deploy.",
         "Kein USB-Write.",
-        "Keine Passwortweitergabe über stdin.",
+        "Keine Passwortweitergabe \u00fcber stdin.",
         "Kein Askpass-Hack und kein breites NOPASSWD."
       ],
       "allowed_paths": [
@@ -950,9 +950,9 @@
       "title_en": "Rescue ISO sudoers allowlist policy design",
       "scope": "Eng begrenzte, dokumentierte Root-/sudoers-Allowlist als Alternativpfad zum manuellen Operator-Terminal bewerten.",
       "status": "available",
-      "reason_de": "Falls ein echter Operator-Terminal-Run nicht sofort möglich ist, bleibt eine eng begrenzte sudoers-Allowlist-Policy die dokumentierte Alternative. Sie ist aber bewusst nur der zweite Schritt nach der direkten Operator-Terminal-Option.",
+      "reason_de": "Falls ein echter Operator-Terminal-Run nicht sofort m\u00f6glich ist, bleibt eine eng begrenzte sudoers-Allowlist-Policy die dokumentierte Alternative. Sie ist aber bewusst nur der zweite Schritt nach der direkten Operator-Terminal-Option.",
       "reason_en": "If a real operator terminal run is not immediately possible, a narrowly scoped sudoers allowlist policy remains the documented alternative. It is intentionally the second choice after the direct operator terminal option.",
-      "prompt_text": "Entwirf ausschließlich eine eng begrenzte, dokumentierte sudoers-Allowlist-Policy für den freigegebenen Rescue-Wrapper. Keine Umsetzung, kein breites NOPASSWD, kein Askpass, kein Passwort über stdin.",
+      "prompt_text": "Entwirf ausschlie\u00dflich eine eng begrenzte, dokumentierte sudoers-Allowlist-Policy f\u00fcr den freigegebenen Rescue-Wrapper. Keine Umsetzung, kein breites NOPASSWD, kein Askpass, kein Passwort \u00fcber stdin.",
       "blocked_by": [
         "Echter Operator-Terminal-Build ist der bevorzugte Nachweis"
       ],
@@ -966,10 +966,10 @@
         "Aktualisierte Entscheidung in der Next-Prompt-Registry"
       ],
       "safety_rules": [
-        "Kein sudo aus Cursor ausführen.",
+        "Kein sudo aus Cursor ausf\u00fchren.",
         "Kein breites NOPASSWD.",
         "Kein Askpass.",
-        "Keine Passwortweitergabe über stdin."
+        "Keine Passwortweitergabe \u00fcber stdin."
       ],
       "allowed_paths": [
         "docs/architecture/RESCUE_OPERATOR_POLICY.md",

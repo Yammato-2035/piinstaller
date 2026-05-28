@@ -1,20 +1,20 @@
 {
-  "selected_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
-  "selected_at": "2026-05-28T03:51:00Z",
-  "reason": "Read-only hang triage completed: service is active/listening on 8000 with persistent HTTP timeouts and saturated accept queue; operator restart handoff is documented, so next step is ingesting operator restart results.",
+  "selected_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
+  "selected_at": "2026-05-28T03:44:47Z",
+  "reason": "Operator output is authoritative and shows service active plus /api/version success on /opt backend, while the repo-CWD gate rerun returned HTTP 000000; next step is backend recovery-gate reconciliation with fresh evidence.",
   "blocked_by": [
-    "runtime_gate_blocked",
-    "backend_api_hang_suspected",
-    "operator_terminal_execution_required"
+    "agent_gate_http_000000_after_operator_success",
+    "runtime_state_mismatch_needs_reconciliation"
   ],
   "unlocks": [
-    "Operator restart result classification",
-    "Runtime gate recovery decision",
-    "Follow-up prompt branching with evidence"
+    "final_runtime_gate_recovery_decision",
+    "rescue_prompt_reselection_if_gate_green",
+    "evidence_consistency_across_operator_and_agent_runs"
   ],
   "alternative_prompts": [
-    "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
-    "BACKEND_RUNTIME_RECOVERY_GATE"
+    "BACKEND_RUNTIME_OPERATOR_RESTART_RESULT_INGEST",
+    "BACKEND_RUNTIME_HANG_TRIAGE",
+    "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
   ],
   "mandatory_closure_sections": [
     "dashboard_progress",
@@ -25,5 +25,5 @@
     "remaining_blocked_or_deferred"
   ],
   "source_roadmap_version": "1.0",
-  "runtime_gate_blocked_static_analysis_only": true
+  "runtime_gate_blocked_static_analysis_only": false
 }

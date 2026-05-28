@@ -2,32 +2,27 @@
 
 Datum: 2026-05-28
 
-## Restart-Ausführung
+## Operator-Output (als Wahrheit ingestiert)
 
-- Geplant mit Freigabe `BACKEND_RESTART_FREIGEGEBEN`
-- Ausführung aus Agent-Kontext fehlgeschlagen:
-  - `sudo: ein Terminal ist erforderlich ...`
-  - `sudo: Ein Passwort ist notwendig`
+- Journal meldet mehrfach `write_event failed`, fehlender Pfad: `/home/setuphelfer/.cache/piinstaller/logs/piinstaller.debug.jsonl`
+- `setuphelfer-backend.service`: `active (running)`
+- `MainPID`: `138932`
+- `systemctl is-active`: `active`
+- `curl /api/version`: success JSON mit `project_version=1.7.2` und `backend_runtime_path=/opt/setuphelfer/backend`
+- Voriger Operator-Gate-Fehler war laut Operator nur CWD-bedingt (`Datei oder Verzeichnis nicht gefunden`)
 
-Damit wurde **kein wirksamer Restart** durchgeführt.
+## Agent-Nachpruefung aus Repo-CWD
 
-## Nachher-Zustand
-
-- `setuphelfer-backend.service`: weiter `active (running)`
-- Port `127.0.0.1:8000`: weiter LISTEN
-- Prozess-PID unverändert (`138932`)
-- `/api/version`: weiterhin Timeout
-- `/health`: weiterhin Timeout
-- `/api/dev-dashboard/status`: weiterhin Timeout
-- Runtime-Gate: weiterhin blockiert (`/api/version HTTP 000000`)
+- Ausgefuehrt: `./scripts/check-runtime-deploy-gate.sh` in `/home/volker/piinstaller`
+- Ergebnis: Exit `11` mit `check-runtime-deploy-gate: /api/version HTTP 000000`
 
 ## Klassifikation
 
-- `new_error` (Operator-Policy-/TTY-Block im Agent-Kontext)
-- inhaltlich weiterhin Hang-Symptom: service/listening aber HTTP unresponsive
+- `operator_recovery_confirmed`
+- `agent_followup_gate_mismatch`
+- `runtime_logging_path_missing_for_write_event`
 
-## Nächste Aktion
+## Naechster Prompt
 
-- Kein weiterer Restart ohne neuen Kontext.
-- Nächster Prompt: `BACKEND_RUNTIME_HANG_TRIAGE`
-- Operator soll Restart im echten Terminal (TTY + sudo) ausführen und danach Gate erneut prüfen.
+- Empfohlen: `BACKEND_RUNTIME_RECOVERY_GATE`
+- Falls Recovery-Gate gruen wird (Exit 0): `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE`

@@ -2,17 +2,22 @@
 
 Datum: 2026-05-28
 
-## Ergebnis
+## Ingest-Ergebnis
 
-- Restart war autorisiert, aber im Agent-Kontext nicht ausführbar (sudo TTY/Passwort erforderlich).
-- Backend blieb `active/listening`, API blieb unresponsive (Timeout).
-- Runtime-Gate blieb blockiert (`/api/version HTTP 000000`).
+- Operator-Resultat wurde als Ground-Truth uebernommen: Service aktiv, `/api/version` success, Runtime unter `/opt/setuphelfer/backend`.
+- Journal-Zeilen zu `write_event failed` (fehlender Cache-Log-Pfad) sind als Nebenbefund dokumentiert.
+- Repo-CWD-Gate-Rerun durch Agent liefert weiterhin `HTTP 000000` (Exit 11) und erzeugt eine zu klaerende Mismatch-Lage.
 
-## Klassifikation
+## Delta-Entscheidung
 
-- `new_error` (Restart-Policy-Block im Agent-Kontext)
-- operative Folgekategorie: `restart_no_effect` auf Runtime-Ebene (kein wirksamer Restart möglich, Hang-Symptom unverändert)
+- `recommended_next`: `BACKEND_RUNTIME_RECOVERY_GATE`
+- Rescue-Prompt bleibt konditional: erst nach nachgewiesenem Gate Exit 0 wieder `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE`.
 
-## Next Prompt
+## Geaenderte Artefakte
 
-- empfohlen: `BACKEND_RUNTIME_HANG_TRIAGE`
+- `docs/evidence/dev-dashboard/BACKEND_RUNTIME_RESTART_RESULT.md`
+- `docs/evidence/dev-dashboard/backend_runtime_restart_result_latest.json`
+- `docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.md`
+- `docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json`
+- `docs/roadmap/setuphelfer_next_prompts.json`
+- `docs/roadmap/setuphelfer_roadmap.json`

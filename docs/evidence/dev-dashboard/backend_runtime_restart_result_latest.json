@@ -5,11 +5,29 @@
   "api_before": "timeout",
   "service_after": "active_running",
   "port_8000_after": "listening",
-  "api_after": "timeout",
+  "api_after": "operator_success",
   "runtime_gate_after_exit": 11,
-  "classification": "new_error",
-  "restart_executed": false,
+  "classification": "recovered_by_operator_restart_with_followup_agent_gate_mismatch",
+  "restart_executed": true,
   "restart_error": "sudo requires tty/password in agent context",
   "journal_excerpt_available": false,
-  "next_action": "BACKEND_RUNTIME_HANG_TRIAGE"
+  "next_action": "BACKEND_RUNTIME_HANG_TRIAGE",
+  "updated_at": "2026-05-28T03:44:47Z",
+  "restart_block_reason": null,
+  "runtime_gate_after": "agent_gate_http_000000_after_operator_recovery",
+  "recommended_next_prompt": "BACKEND_RUNTIME_RECOVERY_GATE",
+  "operator_observations": {
+    "journal_write_event_failed_missing_path": "/home/setuphelfer/.cache/piinstaller/logs/piinstaller.debug.jsonl",
+    "service_main_pid": 138932,
+    "systemctl_is_active": "active",
+    "api_version_success": true,
+    "project_version": "1.7.2",
+    "backend_runtime_path": "/opt/setuphelfer/backend",
+    "operator_gate_failure_reason": "Datei oder Verzeichnis nicht gefunden (falsches CWD im Operatorlauf)"
+  },
+  "agent_repo_cwd_gate": {
+    "command": "./scripts/check-runtime-deploy-gate.sh",
+    "exit_code": 11,
+    "output": "check-runtime-deploy-gate: /api/version HTTP 000000"
+  }
 }
