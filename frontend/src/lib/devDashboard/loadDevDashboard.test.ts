@@ -54,9 +54,18 @@ describe('loadDevDashboard', () => {
     const result = await loadDevDashboard('')
     expect(result.apiReachable).toBe(false)
     expect(result.source).toBe('unavailable')
+    expect(result.offlineReason).toBe('backend_api_unreachable')
     expect(result.dashboard).not.toBeNull()
     const rg = result.dashboard?.runtime_gate as Record<string, unknown>
     expect(rg.passed).toBe(false)
     expect(result.metaPrompt).toBeTruthy()
+  })
+
+  it('classifies api timeout as backend hanging timeout', async () => {
+    vi.mocked(fetchApi).mockRejectedValue(Object.assign(new Error('timeout'), { name: 'AbortError' }))
+    const result = await loadDevDashboard('')
+    expect(result.apiReachable).toBe(false)
+    expect(result.source).toBe('unavailable')
+    expect(result.offlineReason).toBe('backend_hanging_timeout')
   })
 })

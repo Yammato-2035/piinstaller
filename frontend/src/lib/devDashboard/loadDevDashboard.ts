@@ -13,6 +13,11 @@ import type { DevDashboardLoadResult, WorkspaceScanResult } from './types'
 
 const API_PROBE_MS = 3500
 
+type RuntimeApiAttempt = {
+  result: DevDashboardLoadResult | null
+  offlineReason: string
+}
+
 async function fetchWithTimeout(path: string, init?: RequestInit): Promise<Response> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), API_PROBE_MS)
@@ -49,33 +54,49 @@ function mergeRoadmapIntoDashboard(
   }
 }
 
-async function tryRuntimeApi(statusQuery: string): Promise<DevDashboardLoadResult | null> {
+async function tryRuntimeApi(statusQuery: string): Promise<RuntimeApiAttempt> {
   try {
     const roadmapQuery = statusQuery ? `?${statusQuery}` : ''
-    const [r1, r2, r3, r4] = await Promise.all([
-      fetchWithTimeout(`${API_STATUS_PATH}?${statusQuery}`),
-      fetchWithTimeout('/api/dev-dashboard/modules'),
-      fetchWithTimeout('/api/dev-dashboard/evidence-index'),
-      fetchWithTimeout(`/api/dev-dashboard/roadmap${roadmapQuery}`),
-    ])
-    if (!r1.ok) return null
+    const r1 = await fetchWithTimeout(`${API_STATUS_PATH}?${statusQuery}`)
+    if (!r1.ok) {
+      return {
+        result: null,
+        offlineReason: `backend_http_non_200:${r1.status}`,
+      }
+    }
     const d1 = await r1.json().catch(() => ({}))
-    const d2 = await r2.json().catch(() => ({}))
-    const d3 = await r3.json().catch(() => ({}))
-    const d4 = r4.ok ? await r4.json().catch(() => null) : null
     const base = (d1?.dashboard as DashboardPayload) ?? null
-    if (!base) return null
+    if (!base) {
+      return {
+        result: null,
+        offlineReason: 'backend_status_payload_invalid',
+      }
+    }
+
+    const r2 = await fetchWithTimeout('/api/dev-dashboard/modules').catch(() => null)
+    const r3 = await fetchWithTimeout('/api/dev-dashboard/evidence-index').catch(() => null)
+    const r4 = await fetchWithTimeout(`/api/dev-dashboard/roadmap${roadmapQuery}`).catch(() => null)
+    const d2 = r2?.ok ? await r2.json().catch(() => ({})) : {}
+    const d3 = r3?.ok ? await r3.json().catch(() => ({})) : {}
+    const d4 = r4?.ok ? await r4.json().catch(() => null) : null
     const dashboard = mergeRoadmapIntoDashboard(base, d4 && typeof d4 === 'object' ? (d4 as Record<string, unknown>) : null)
     return {
-      source: 'runtime_api',
-      dashboard: { ...dashboard, data_source: 'runtime_api', standalone_mode: false },
-      modules: Array.isArray(d2?.modules) ? (d2.modules as ModuleRow[]) : [],
-      evidenceIndex: d3 && typeof d3 === 'object' ? (d3 as Record<string, unknown>) : null,
-      apiReachable: true,
-      capabilities: capabilitiesForSource('runtime_api'),
+      result: {
+        source: 'runtime_api',
+        dashboard: { ...dashboard, data_source: 'runtime_api', standalone_mode: false },
+        modules: Array.isArray(d2?.modules) ? (d2.modules as ModuleRow[]) : [],
+        evidenceIndex: d3 && typeof d3 === 'object' ? (d3 as Record<string, unknown>) : null,
+        apiReachable: true,
+        capabilities: capabilitiesForSource('runtime_api'),
+      },
+      offlineReason: 'none',
     }
-  } catch {
-    return null
+  } catch (err) {
+    const hanging = err instanceof Error && err.name === 'AbortError'
+    return {
+      result: null,
+      offlineReason: hanging ? 'backend_hanging_timeout' : 'backend_api_unreachable',
+    }
   }
 }
 
@@ -107,9 +128,9 @@ async function loadTauriScan(): Promise<WorkspaceScanResult | null> {
 
 export async function loadDevDashboard(statusQuery: string): Promise<DevDashboardLoadResult> {
   const runtime = await tryRuntimeApi(statusQuery)
-  if (runtime) return runtime
+  if (runtime.result) return runtime.result
 
-  const offlineReason = 'backend_api_unreachable'
+  const offlineReason = runtime.offlineReason || 'backend_api_unreachable'
   let scan = await loadTauriScan()
   let source: DevDashboardLoadResult['source'] = 'standalone_workspace'
 

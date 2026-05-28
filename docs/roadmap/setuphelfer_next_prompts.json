@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-28T03:58:00Z",
+  "generated_at": "2026-05-28T04:05:00Z",
   "project_version": "1.7.2",
-  "source_commit": "2ec9a47",
+  "source_commit": "35535e5",
   "selection_policy": [
     "Priorit\u00e4t 1: Fehlender Nachweis, der mehrere Bereiche blockiert, zuerst.",
     "Priorit\u00e4t 2: Wiederkehrende Unklarheit im Dashboard zuerst transparent machen.",
@@ -471,6 +471,60 @@
       ],
       "non_goals": [
         "Kein neuer Runtime-Restart durch Agent"
+      ],
+      "created_at": "2026-05-28",
+      "updated_at": "2026-05-28"
+    },
+    {
+      "id": "BACKEND_WATCHDOG_IMPLEMENTATION_MVP",
+      "category": "runtime_governance",
+      "title_de": "Backend Watchdog Implementation MVP",
+      "title_en": "Backend watchdog implementation MVP",
+      "scope": "MVP-Design/Implementierung fuer Hang-Erkennung und kontrollierte Recovery ausserhalb des reinen Runtime-Gates.",
+      "status": "available",
+      "reason_de": "Backend-Hang wurde als harter Fehler modelliert; mittelfristig ist ein technischer Watchdog noetig.",
+      "reason_en": "Backend hanging is now modeled as a hard failure; a technical watchdog is needed mid-term.",
+      "prompt_text": "Implementiere oder finalisiere einen risikoarmen MVP fuer Hang-Erkennung (Watchdog/Healthcheck-Timer), inklusive Tests und ohne automatische Deploy-/Rescue-Ketten.",
+      "blocked_by": [
+        "backend_hanging_active_port_but_http_timeout"
+      ],
+      "unlocks": [
+        "automated_hang_detection",
+        "faster_operator_recovery"
+      ],
+      "expected_outputs": [
+        "Watchdog design or MVP code",
+        "Recovery integration notes",
+        "Updated runtime evidence"
+      ],
+      "safety_rules": [
+        "Kein Rescue/Backup/Restore",
+        "Kein Deploy ohne Freigabe"
+      ],
+      "allowed_paths": [
+        "docs/architecture/",
+        "docs/operations/",
+        "scripts/",
+        "packaging/systemd/",
+        "backend/"
+      ],
+      "forbidden_actions": [
+        "rescue_iso_build",
+        "backup_start",
+        "restore_start",
+        "usb_write"
+      ],
+      "tests": [
+        "bash -n scripts/check-runtime-deploy-gate.sh",
+        "backend.tests.test_backend_health_startup_v1"
+      ],
+      "documentation_targets": [
+        "docs/architecture/BACKEND_WATCHDOG_AND_RECOVERY.md",
+        "docs/operations/BACKEND_RUNTIME_RECOVERY_RUNBOOK.md"
+      ],
+      "non_goals": [
+        "Kein automatischer Runtime-Deploy",
+        "Kein Operator-Ersatz ohne Freigabe"
       ],
       "created_at": "2026-05-28",
       "updated_at": "2026-05-28"

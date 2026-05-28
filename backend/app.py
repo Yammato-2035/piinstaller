@@ -6563,8 +6563,22 @@ def get_security_config():
 
 @app.get("/health")
 async def health_check():
-    """Health Check"""
-    return {"status": "ok"}
+    """Leichtgewichtiger Liveness-Endpunkt ohne Dashboard-/Dateiscans."""
+    from core.versioning import get_project_version
+
+    version = "unknown"
+    try:
+        version = get_project_version()
+    except Exception:
+        # Health bleibt liveness-orientiert; Versionsfehler dürfen kein Timeout erzeugen.
+        pass
+    return {
+        "status": "ok",
+        "service": "setuphelfer-backend",
+        "version": version,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "runtime_path": str(get_backend_runtime_dir().resolve()),
+    }
 
 @app.get("/api/status")
 async def get_status(request: Request):

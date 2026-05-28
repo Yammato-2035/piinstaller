@@ -13,6 +13,14 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 - **Runtime-API** (`source=runtime_api`): Backend unter `/opt/setuphelfer`, Endpunkte `/api/dev-dashboard/*`. Gates und Drift beziehen sich auf die produktive Installation.
 - **Standalone** (API offline): Workspace-Scan (Tauri) oder Snapshot (`frontend/public/dev-dashboard.snapshot.json`). **Safe Test Mode bleibt LOCKED** — keine Runtime-Tests, kein Backup/Restore.
 
+### Backend-Startup-Verfuegbarkeit (hart)
+
+- `systemd active` und `:8000 LISTEN` sind notwendige, aber nicht hinreichende Signale.
+- Pflicht fuer "backend_ok": `/health` **und** `/api/version` muessen HTTP 200 liefern.
+- Bei aktivem Service + offenem Port + HTTP-Timeout gilt `backend_hanging` (harter Fehler).
+- Das Runtime-Gate meldet diesen Fall explizit als `backend_hanging_active_port_but_http_timeout` (Exit 17).
+- Das Control Center zeigt in diesem Zustand einen roten Backend-Fail-State statt leerer Oberflaeche.
+
 ## Roadmap-Registry
 
 - `docs/roadmap/setuphelfer_roadmap.json`, `setuphelfer_next_prompts.json`

@@ -1,0 +1,21 @@
+{
+  "id": "roadmap_backend_startup_availability_delta",
+  "generated_at": "2026-05-28T04:05:00Z",
+  "source_commit": "35535e5",
+  "runtime_governance": {
+    "status": "blocked",
+    "new_blocker": "backend_hanging_active_port_but_http_timeout"
+  },
+  "standalone_fallback": {
+    "status": "partial_green",
+    "note": "Fallback visibility improved, runtime remains blocked."
+  },
+  "next_prompt": {
+    "selected_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
+    "alternative_prompt_ids": [
+      "BACKEND_RUNTIME_RECOVERY_GATE",
+      "BACKEND_WATCHDOG_IMPLEMENTATION_MVP",
+      "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
+    ]
+  }
+}

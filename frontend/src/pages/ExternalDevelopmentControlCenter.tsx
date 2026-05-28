@@ -171,6 +171,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
         apiReachable={mon.apiReachable}
         capabilities={mon.capabilities}
         workspaceRoot={mon.workspaceRoot}
+        offlineReason={mon.offlineReason}
       />
 
       {mon.alerts.length > 0 ? (

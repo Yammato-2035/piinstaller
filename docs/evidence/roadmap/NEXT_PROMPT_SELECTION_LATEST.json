@@ -1,20 +1,21 @@
 {
   "selected_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
-  "selected_at": "2026-05-28T03:58:00Z",
-  "reason": "Current audit shows backend process and port alive but all API probes timeout (hanging behavior). A privileged operator terminal handoff is required; no agent restart/sudo action is allowed.",
+  "selected_at": "2026-05-28T04:05:00Z",
+  "reason": "Backend startup availability hardening is implemented, but runtime remains blocked with active service + open port + HTTP timeouts. Operator restart handoff is required before rescue-related work.",
   "blocked_by": [
-    "backend_hanging_api_timeouts",
+    "backend_hanging_active_port_but_http_timeout",
     "operator_privileged_terminal_required",
     "unapproved_background_task_detected"
   ],
   "unlocks": [
     "operator_restart_result_ingest",
     "runtime_gate_recovery_decision_after_operator_logs",
-    "standalone_visibility_recheck_after_runtime_stabilization"
+    "standalone_visibility_recheck_after_runtime_stabilization",
+    "backend_watchdog_implementation_mvp"
   ],
   "alternative_prompts": [
-    "BACKEND_RUNTIME_HANG_TRIAGE",
     "BACKEND_RUNTIME_RECOVERY_GATE",
+    "BACKEND_WATCHDOG_IMPLEMENTATION_MVP",
     "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
   ],
   "mandatory_closure_sections": [

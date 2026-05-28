@@ -84,3 +84,28 @@ Bei erneutem Drift (Exit **14**): nur `setuphelfer-deploy-helper.service` nach O
 
 Nein. Keine Background-Tasks, keine Auto-Efficiency-/Ingest-Ketten und keine automatischen Commit-/Push-Ketten.  
 Jeder Lauf endet synchron mit Schlussbericht. Falls Operatorrechte noetig sind, wird nur ein Operator-Handoff dokumentiert.
+
+## Warum reicht "Port 8000 lauscht" nicht?
+
+Weil ein Backend haengen kann: Prozess aktiv, Port offen, aber HTTP-Endpunkte antworten nicht.  
+Erst `/health` und `/api/version` mit HTTP 200 zeigen echte Verfuegbarkeit.
+
+## Was bedeutet Backend-Hang?
+
+`setuphelfer-backend.service` ist aktiv und `:8000` LISTEN, aber `/health` oder `/api/version` laufen in Timeout.  
+Dieser Zustand ist ein harter Blocker (`backend_hanging`), kein tolerierbarer Offline-Fall.
+
+## Warum zeigt das Control Center einen roten Backend-Fehler statt leerer Daten?
+
+Damit der Fehler sichtbar und reparierbar bleibt. Leere Panels ohne klare Ursache fuehren zu Fehlbedienung.  
+Bei Hang/Offline wird der Zustand explizit angezeigt und Snapshot/Fallback klar als nicht-live markiert.
+
+## Warum darf Rescue bei Backend-Hang nicht weiterlaufen?
+
+Rescue/Backup/Restore brauchen eine belastbare Runtime mit funktionierenden API-Gates.  
+Bei `backend_hanging` ist das Runtime-Gate blockiert; Weiterarbeit wuerde Fake-Green und inkonsistente Evidence riskieren.
+
+## Was soll der Operator bei Backend-Hang tun?
+
+Runbook ausfuehren: `systemctl status`, `journalctl`, kontrollierter `restart`, danach `/health`, `/api/version` und Runtime-Gate erneut pruefen.  
+Siehe `docs/operations/BACKEND_RUNTIME_RECOVERY_RUNBOOK.md`.

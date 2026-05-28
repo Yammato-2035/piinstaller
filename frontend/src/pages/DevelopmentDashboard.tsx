@@ -56,6 +56,7 @@ const DevelopmentDashboard: React.FC = () => {
   })
   const [workspaceRoot, setWorkspaceRoot] = useState<string | undefined>()
   const [standaloneMetaPrompt, setStandaloneMetaPrompt] = useState<string | undefined>()
+  const [offlineReason, setOfflineReason] = useState<string | undefined>()
 
   const statusQuery = useMemo(() => {
     const params = new URLSearchParams()
@@ -79,6 +80,7 @@ const DevelopmentDashboard: React.FC = () => {
       setCapabilities(result.capabilities)
       setWorkspaceRoot(result.workspaceRoot)
       setStandaloneMetaPrompt(result.metaPrompt)
+      setOfflineReason(result.offlineReason)
       if (!result.apiReachable && result.source !== 'runtime_api') {
         toast(t('devDashboard.standalone.toastOffline'), { icon: '⚠️', duration: 6000 })
       }
@@ -148,6 +150,7 @@ const DevelopmentDashboard: React.FC = () => {
         apiReachable={apiReachable}
         capabilities={capabilities}
         workspaceRoot={workspaceRoot}
+        offlineReason={offlineReason}
       />
 
       <div className="rounded-lg border border-amber-700/50 bg-amber-950/30 px-4 py-3 text-sm text-amber-100 mb-4">

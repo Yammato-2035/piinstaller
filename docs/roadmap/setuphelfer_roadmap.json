@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-28T03:58:00Z",
+  "generated_at": "2026-05-28T04:05:00Z",
   "project_version": "1.7.2",
-  "source_commit": "2ec9a47",
+  "source_commit": "35535e5",
   "source_audit_ref": "docs/evidence/roadmap/ROADMAP_SOURCE_AUDIT.md",
   "authoritative_sources": [
     "docs/evidence/release-gates/backup_restore_release_gate.json",
@@ -34,9 +34,9 @@
       "id": "runtime-governance",
       "title_de": "Runtime / Governance",
       "title_en": "Runtime / Governance",
-      "description_de": "Phase-0-Gate gr\u00fcn (Exit 0, deploy_drift green, safe_test_mode UNLOCKED). Recovery-Release-Gate bleibt separat rot \u2014 kein Fake-Green f\u00fcr BR-001/Rescue.",
-      "description_en": "Phase 0 gate green (exit 0, deploy_drift green, safe_test_mode UNLOCKED). Recovery release gate stays red separately \u2014 no fake green for BR-001/rescue.",
-      "status": "partial_green",
+      "description_de": "Runtime derzeit blockiert: backend_hanging (Service aktiv + Port offen, aber HTTP Timeout). Kein Fake-Green fuer BR-001/Rescue.",
+      "description_en": "Runtime currently blocked: backend_hanging (service active + port open, but HTTP timeout). No fake green for BR-001/rescue.",
+      "status": "blocked",
       "priority": "P0",
       "owner": "Setuphelfer Core",
       "planned_start": "2026-05-15",
@@ -147,6 +147,25 @@
               "evidence_links": [
                 "docs/evidence/release-gates/backup_restore_release_gate.json"
               ]
+            },
+            {
+              "id": "backend_hanging_active_port_but_http_timeout",
+              "area_id": "runtime-governance",
+              "title_de": "Backend-Hang trotz aktivem Service und offenem Port",
+              "title_en": "Backend hanging despite active service and open port",
+              "description_de": "setuphelfer-backend.service ist aktiv und :8000 lauscht, aber /health und /api/version timeouten.",
+              "description_en": "setuphelfer-backend.service is active and :8000 listens, but /health and /api/version timeout.",
+              "severity": "critical",
+              "status": "blocked",
+              "first_seen": "2026-05-28",
+              "last_seen": "2026-05-28",
+              "resolved_at": null,
+              "resolution_de": null,
+              "resolution_en": null,
+              "evidence_links": [
+                "docs/evidence/dev-dashboard/BACKEND_CURRENT_AVAILABILITY_AUDIT.md",
+                "docs/evidence/dev-dashboard/backend_current_availability_audit_latest.json"
+              ]
             }
           ],
           "decision_refs": [
@@ -186,8 +205,8 @@
           ]
         }
       ],
-      "next_prompt_id": "BACKEND_RUNTIME_RECOVERY_GATE",
-      "next_recommended_action": "Operator-Restart-Output ist ingestiert; als naechstes Recovery-Gate konsolidieren (Operator-success vs Agent-HTTP-000000) und danach Prompt neu waehlen."
+      "next_prompt_id": "BACKEND_RUNTIME_OPERATOR_RESTART_HANDOFF",
+      "next_recommended_action": "Operator-Handoff fuer Backend-Hang ausfuehren, danach /health + /api/version + Runtime-Gate erneut pruefen."
     },
     {
       "id": "backup-br001",

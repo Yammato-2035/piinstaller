@@ -7,6 +7,7 @@ type StandaloneModeBannerProps = {
   apiReachable: boolean
   capabilities: DevDashboardCapabilities
   workspaceRoot?: string
+  offlineReason?: string
 }
 
 export function StandaloneModeBanner({
@@ -14,19 +15,36 @@ export function StandaloneModeBanner({
   apiReachable,
   capabilities,
   workspaceRoot,
+  offlineReason,
 }: StandaloneModeBannerProps) {
   const { t } = useTranslation()
   if (apiReachable && source === 'runtime_api') return null
+  const isBackendHang = String(offlineReason || '').includes('backend_hanging_timeout')
+  const borderClass = isBackendHang ? 'border-red-600/60 bg-red-950/40 text-red-50' : 'border-orange-600/60 bg-orange-950/40 text-orange-50'
+  const titleClass = isBackendHang ? 'text-red-100' : 'text-orange-100'
+  const bodyClass = isBackendHang ? 'text-red-100/90' : 'text-orange-100/90'
+  const mutedClass = isBackendHang ? 'text-red-200/80' : 'text-orange-200/80'
+  const footerClass = isBackendHang ? 'text-red-200/70' : 'text-orange-200/70'
+  const codeClass = isBackendHang ? 'text-red-100' : 'text-orange-100'
+  const reasonText = isBackendHang
+    ? t('devDashboard.standalone.backendHangReason')
+    : t('devDashboard.standalone.backendOfflineReason')
 
   return (
     <div
-      className="rounded-lg border border-orange-600/60 bg-orange-950/40 px-4 py-4 text-sm text-orange-50 mb-4 space-y-3"
+      className={`rounded-lg border px-4 py-4 text-sm mb-4 space-y-3 ${borderClass}`}
       data-testid="dev-dashboard-standalone-banner"
     >
-      <p className="font-semibold text-orange-100">{t('devDashboard.standalone.bannerTitle')}</p>
-      <p className="text-orange-100/90">{t('devDashboard.standalone.bannerBody')}</p>
+      <p className={`font-semibold ${titleClass}`}>
+        {isBackendHang ? t('devDashboard.standalone.backendHangTitle') : t('devDashboard.standalone.bannerTitle')}
+      </p>
+      <p className={bodyClass}>{t('devDashboard.standalone.bannerBody')}</p>
+      <p className="text-xs">
+        {t('devDashboard.standalone.detectedState')}: <strong>{reasonText}</strong>
+      </p>
+      <p className="text-xs">{t('devDashboard.standalone.nextOperatorStep')}</p>
       {workspaceRoot ? (
-        <p className="text-xs font-mono text-orange-200/80">
+        <p className={`text-xs font-mono ${mutedClass}`}>
           {t('devDashboard.standalone.workspaceRoot')}: {workspaceRoot}
         </p>
       ) : null}
@@ -74,8 +92,8 @@ export function StandaloneModeBanner({
           <strong>{t('devDashboard.standalone.locked')}</strong>
         </li>
       </ul>
-      <p className="text-xs text-orange-200/70">
-        {t('devDashboard.standalone.source')}: <code className="text-orange-100">{source}</code>
+      <p className={`text-xs ${footerClass}`}>
+        {t('devDashboard.standalone.source')}: <code className={codeClass}>{source}</code>
       </p>
     </div>
   )

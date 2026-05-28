@@ -47,7 +47,20 @@ tmp_body="$(mktemp)"
 trap 'rm -f "$tmp_body"' EXIT
 
 http_code="000"
-http_code="$(curl -sS -o "$tmp_body" -w '%{http_code}' --connect-timeout 2 --max-time 5 "${BASE_URL}/api/version" || true)"
+set +e
+curl_out="$(curl -sS -o "$tmp_body" -w '%{http_code}' --connect-timeout 2 --max-time 5 "${BASE_URL}/api/version" 2>/dev/null)"
+curl_ec=$?
+set -e
+if [[ "$curl_ec" -eq 0 ]]; then
+  http_code="$curl_out"
+elif [[ "$curl_ec" -eq 28 ]]; then
+  if need_cmd ss && ss -ltn 2>/dev/null | grep -Eq '127\.0\.0\.1:8000|:8000'; then
+    log "check-backend-version-gate: backend_hanging_active_port_but_http_timeout (/api/version)"
+  fi
+  http_code="000"
+else
+  http_code="000"
+fi
 
 if [[ "$http_code" == "000" ]]; then
   log "check-backend-version-gate: /api/version nicht erreichbar"

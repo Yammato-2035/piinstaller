@@ -1,0 +1,12 @@
+{
+  "id": "backend_startup_availability_implementation",
+  "runtime_gate_before": "check-runtime-deploy-gate: /api/version HTTP 000000",
+  "runtime_gate_after": "check-runtime-deploy-gate: backend_hanging_active_port_but_http_timeout (health=timeout api_version=timeout)",
+  "changes": {
+    "health_endpoint_lightweight": true,
+    "runtime_gate_hang_exit_code_17": true,
+    "frontend_hang_fail_state_visible": true,
+    "loader_timeout_classification": "backend_hanging_timeout"
+  },
+  "runtime_gate_blocked_static_analysis_only": true
+}

@@ -28,6 +28,16 @@ Vor dem ersten Schritt, der einen der folgenden Bereiche **gegen die echte Runti
 
 **Umgebungsvariablen** (optional): `scripts/check-backend-version-gate.sh` (`SETUPHELFER_VERSION_URL`, …); `scripts/check-runtime-deploy-gate.sh` (`RUNTIME_GATE_SKIP_DEPLOY_DRIFT`, `RUNTIME_GATE_ALLOW_DEPLOY_DRIFT_GRAY`, …).
 
+## Wichtige Runtime-Gate Exit-Codes
+
+- `10`: Backend-Service inaktiv
+- `11`: API erreichbarkeits-/HTTP-Fehler (`/health` oder `/api/version`)
+- `12`: `project_version` Mismatch
+- `13`: `backend_runtime_path` unplausibel
+- `14`/`15`/`16`: deploy_drift/Manifest-Blocker
+- `17`: **`backend_hanging_active_port_but_http_timeout`** (Port offen, Service aktiv, aber HTTP timeoutet)
+- `20`: deploy_drift unklar/gray oder Dashboard-Status nicht auswertbar
+
 ## Bei Fehlschlag
 
 1. **STOP** — kein Backup, Restore, HW-Test, produktives Verify, Zielpfadtest.

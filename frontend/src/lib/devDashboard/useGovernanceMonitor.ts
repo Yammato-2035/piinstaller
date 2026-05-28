@@ -43,6 +43,7 @@ export function useGovernanceMonitor(statusQuery: string) {
   })
   const [workspaceRoot, setWorkspaceRoot] = useState<string | undefined>()
   const [standaloneMetaPrompt, setStandaloneMetaPrompt] = useState<string | undefined>()
+  const [offlineReason, setOfflineReason] = useState<string | undefined>()
   const [areas, setAreas] = useState<GovernanceAreaStatus[]>([])
   const [alerts, setAlerts] = useState<CockpitAlert[]>([])
   const [timeline, setTimeline] = useState<GovernanceTimelineEvent[]>([])
@@ -63,6 +64,7 @@ export function useGovernanceMonitor(statusQuery: string) {
       setCapabilities(result.capabilities)
       setWorkspaceRoot(result.workspaceRoot)
       setStandaloneMetaPrompt(result.metaPrompt)
+      setOfflineReason(result.offlineReason)
 
       const matrix = buildGovernanceMatrix({
         dashboard: result.dashboard,
@@ -137,6 +139,7 @@ export function useGovernanceMonitor(statusQuery: string) {
     apiReachable,
     capabilities,
     workspaceRoot,
+    offlineReason,
     areas,
     alerts,
     timeline,

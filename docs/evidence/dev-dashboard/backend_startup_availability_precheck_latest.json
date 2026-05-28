@@ -1,0 +1,22 @@
+{
+  "phase": "phase0_precheck",
+  "branch": "main",
+  "head": "35535e5",
+  "head_subject": "Document background automation stop and standalone dashboard audit",
+  "runtime_gate": {
+    "command": "./scripts/check-runtime-deploy-gate.sh || true",
+    "result": "check-runtime-deploy-gate: /api/version HTTP 000000",
+    "blocked": true
+  },
+  "runtime_gate_blocked_static_analysis_only": true,
+  "strict_mode_actions_not_executed": [
+    "rescue",
+    "backup",
+    "restore",
+    "verify_deep",
+    "hardware_test",
+    "usb_write",
+    "deploy",
+    "restart"
+  ]
+}

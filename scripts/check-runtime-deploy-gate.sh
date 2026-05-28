@@ -10,6 +10,7 @@
 #  14  deploy_drift: deploy_backend_files empfohlen
 #  15  deploy_drift: restart_backend_manual empfohlen (ohne deploy_backend_files)
 #  16  Deploy-Manifest-Mismatch (manifest_match false)
+#  17  backend_hanging_active_port_but_http_timeout
 #  20  deploy_drift gray ohne RUNTIME_GATE_ALLOW_DEPLOY_DRIFT_GRAY=1 / Dashboard fehlt / unklar
 #
 # Umgebung (optional):
@@ -30,6 +31,32 @@ EVAL_PY="$REPO_ROOT/scripts/runtime_deploy_gate_eval.py"
 log() { printf '%s\n' "$*" >&2; }
 
 need_cmd() { command -v "$1" >/dev/null 2>&1; }
+
+probe_http_code() {
+  local url="$1"
+  local out_file="$2"
+  local code_var="$3"
+  local kind_var="$4"
+  local curl_out curl_ec
+  set +e
+  curl_out="$(curl -sS -o "$out_file" -w '%{http_code}' --connect-timeout 2 --max-time 8 "$url" 2>/dev/null)"
+  curl_ec=$?
+  set -e
+  if [[ "$curl_ec" -eq 0 ]]; then
+    printf -v "$code_var" '%s' "$curl_out"
+    printf -v "$kind_var" '%s' "ok"
+    return 0
+  fi
+  printf -v "$code_var" '%s' "000"
+  if [[ "$curl_ec" -eq 28 ]]; then
+    printf -v "$kind_var" '%s' "timeout"
+  elif [[ "$curl_ec" -eq 7 ]]; then
+    printf -v "$kind_var" '%s' "unreachable"
+  else
+    printf -v "$kind_var" '%s' "curl_error_${curl_ec}"
+  fi
+  return 0
+}
 
 if ! need_cmd systemctl; then
   log "check-runtime-deploy-gate: systemctl nicht gefunden"
@@ -54,16 +81,34 @@ if [[ ! -f "$EVAL_PY" ]]; then
 fi
 
 tmp_api="$(mktemp)"
+tmp_health="$(mktemp)"
 tmp_dd="$(mktemp)"
-trap 'rm -f "$tmp_api" "$tmp_dd"' EXIT
+trap 'rm -f "$tmp_api" "$tmp_health" "$tmp_dd"' EXIT
 
 # Nach systemctl restart: kurz active/ss, aber Uvicorn noch nicht bereit (curl 7).
 API_RETRIES="${RUNTIME_GATE_API_RETRIES:-8}"
 API_SLEEP="${RUNTIME_GATE_API_SLEEP_SEC:-1}"
 
 http_code="000"
+http_kind="unreachable"
+port_8000_open=0
+if need_cmd ss && ss -ltn 2>/dev/null | grep -Eq '127\.0\.0\.1:8000|:8000'; then
+  port_8000_open=1
+fi
+health_code="000"
+health_kind="unreachable"
 for ((attempt = 1; attempt <= API_RETRIES; attempt++)); do
-  http_code="$(curl -sS -o "$tmp_api" -w '%{http_code}' --connect-timeout 2 --max-time 8 "${BASE_URL}/api/version" 2>/dev/null || echo 000)"
+  probe_http_code "${BASE_URL}/health" "$tmp_health" health_code health_kind
+  if [[ "$health_code" == "200" ]]; then
+    break
+  fi
+  if [[ "$attempt" -lt "$API_RETRIES" ]]; then
+    sleep "$API_SLEEP"
+  fi
+done
+
+for ((attempt = 1; attempt <= API_RETRIES; attempt++)); do
+  probe_http_code "${BASE_URL}/api/version" "$tmp_api" http_code http_kind
   if [[ "$http_code" != "000" ]]; then
     break
   fi
@@ -72,8 +117,17 @@ for ((attempt = 1; attempt <= API_RETRIES; attempt++)); do
   fi
 done
 
+if [[ "$port_8000_open" -eq 1 ]] && { [[ "$health_kind" == "timeout" ]] || [[ "$http_kind" == "timeout" ]]; }; then
+  log "check-runtime-deploy-gate: backend_hanging_active_port_but_http_timeout (health=$health_kind api_version=$http_kind)"
+  exit 17
+fi
+
 if [[ "$http_code" == "000" ]]; then
-  log "check-runtime-deploy-gate: /api/version nicht erreichbar (nach ${API_RETRIES} Versuchen; ggf. Dienst-Log: journalctl -u $SERVICE -n 30)"
+  log "check-runtime-deploy-gate: /api/version nicht erreichbar (${http_kind}; nach ${API_RETRIES} Versuchen; health=${health_kind}; ggf. Dienst-Log: journalctl -u $SERVICE -n 30)"
+  exit 11
+fi
+if [[ "$health_code" != "200" ]]; then
+  log "check-runtime-deploy-gate: /health HTTP ${health_code} (${health_kind})"
   exit 11
 fi
 if [[ "$http_code" != "200" ]]; then
