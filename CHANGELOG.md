@@ -8,7 +8,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ## [Unreleased]
 
 ### Changed (Deploy sync after watchdog — blocked in agent shell)
-- **Operator-Freigabe** `DEPLOY_HELPER_SYNC_FREIGEGEBEN`: `sudo systemctl start setuphelfer-deploy-helper.service` im Agent blockiert (`deploy_helper_blocked_by_sudo_tty`).
+- **Operator-Freigabe** `DEPLOY_HELPER_SYNC_FREIGEGEBEN`: Deploy-Helper im Agent zweimal blockiert (`sudo`/`sudo -n` ? Passwort/TTY, `deploy_helper_blocked_by_sudo_tty`).
 - **Gate:** vorher/nachher Exit **14**; kein Rescue; Next Prompt `DEPLOY_DRIFT_TRIAGE_AFTER_WATCHDOG`.
 - **Evidence:** `DEPLOY_SYNC_AFTER_WATCHDOG_*`, Operator-Handoff.
 

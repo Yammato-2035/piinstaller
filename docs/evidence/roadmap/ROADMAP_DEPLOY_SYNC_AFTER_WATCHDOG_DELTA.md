@@ -1,8 +1,8 @@
 # Roadmap-Delta — Deploy-Sync nach Watchdog
 
-**Datum:** 2026-05-28
+**Datum:** 2026-05-28 (Wiederholung)
 
-Deploy-Helper im Agent-Lauf **nicht** ausgeführt (`deploy_helper_blocked_by_sudo_tty`). Runtime-Gate bleibt Exit **14**.
+Zweiter Agent-Versuch: Deploy-Helper weiterhin `deploy_helper_blocked_by_sudo_tty`. Gate Exit **14** unverändert.
 
 | Feld | Wert |
 |------|------|
