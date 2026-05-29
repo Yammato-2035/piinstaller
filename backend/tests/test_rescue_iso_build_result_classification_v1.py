@@ -15,6 +15,8 @@ from core.rescue_iso_controlled_build_gate import (  # noqa: E402
     CONTROLLED_GATE_NEXT_ACTION,
     ISOHYBRID_ERROR_CODE,
     ISOHYBRID_NEXT_ACTION,
+    ZSYNC_STALE_ERROR_CODE,
+    ZSYNC_STALE_NEXT_ACTION,
     analyze_auto_build_gate,
     build_controlled_build_contract,
     build_controlled_operator_build_plan,
@@ -38,6 +40,22 @@ class RescueIsoBuildResultClassificationTests(unittest.TestCase):
         self.assertEqual(result["error_code"], CHROOT_CLEANUP_ERROR_CODE)
         self.assertEqual(result["next_action"], CHROOT_CLEANUP_NEXT_ACTION)
         self.assertNotEqual(result["error_code"], ISOHYBRID_ERROR_CODE)
+
+    def test_zsync_stale_with_iso_maps_to_zsync_stale_review(self) -> None:
+        log = (
+            "247380 extents written (483 MB)\n"
+            "xz: binary.hybrid.iso.zsync.xz: Die Datei existiert bereits\n"
+            "LB_EXIT=1\n"
+        )
+        result = classify_rescue_iso_build_attempt(
+            run_data={"exit_code": 1},
+            result_data={"exit_code": 1, "iso_created": True, "usb_write_performed": False},
+            combined_log_text=log,
+        )
+        self.assertEqual(result["error_code"], ZSYNC_STALE_ERROR_CODE)
+        self.assertEqual(result["next_action"], ZSYNC_STALE_NEXT_ACTION)
+        self.assertEqual(result["result_status"], "review_required")
+        self.assertTrue(result["iso_created"])
 
     def test_isohybrid_not_found_maps_to_isohybrid_error(self) -> None:
         result = classify_rescue_iso_build_attempt(

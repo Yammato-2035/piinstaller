@@ -541,9 +541,9 @@
       "id": "rescue-stick",
       "title_de": "Rescue Stick",
       "title_en": "Rescue Stick",
-      "description_de": "Read-only Build-/Emulationspfade sind sichtbar, aber realer ISO-/Boot-Nachweis und USB-/Hardware-Freigaben bleiben offen.",
-      "description_en": "Read-only build/emulation paths are visible, but real ISO/boot evidence and USB/hardware approvals remain open.",
-      "status": "blocked",
+      "description_de": "Hybrid-ISO-Artefakt (binary.hybrid.iso) per SHA256/file verifiziert; Boot-/VM-/USB-Nachweis fehlt weiterhin.",
+      "description_en": "Hybrid ISO artifact (binary.hybrid.iso) verified via SHA256/file; boot/VM/USB proof still missing.",
+      "status": "yellow",
       "priority": "P0",
       "owner": "Setuphelfer Rescue",
       "planned_start": "2026-05-20",
@@ -561,8 +561,8 @@
           "id": "rescue-real-build-and-boot",
           "title_de": "Echter Build-, Artefakt- und Boot-Nachweis",
           "title_en": "Real build, artifact, and boot evidence",
-          "status": "blocked",
-          "progress_percent": 35,
+          "status": "partial_green",
+          "progress_percent": 50,
           "planned_start": "2026-05-20",
           "planned_end": null,
           "completed_at": null,
@@ -588,10 +588,11 @@
               "id": "rescue-real-iso-boot-proof",
               "title_de": "Realen ISO-/Boot-Nachweis schlie\u00dfen",
               "title_en": "Close the real ISO/boot proof gap",
-              "status": "blocked",
-              "progress_percent": 15,
+              "status": "partial_green",
+              "progress_percent": 40,
               "evidence_links": [
-                "docs/evidence/runtime-results/rescue/rescue_build_next_steps_matrix_latest.json"
+                "docs/evidence/runtime-results/rescue/RESCUE_ISO_ARTIFACT_VERIFY.md",
+                "docs/evidence/runtime-results/rescue/rescue_iso_artifact_verify_latest.json"
               ],
               "blocker_refs": [
                 "rescue-real-boot-proof-missing"
@@ -650,7 +651,7 @@
           "id": "RESCUE-BUILD-ISOHYBRID-001",
           "title_de": "isohybrid fehlt in Binary-Chroot",
           "title_en": "isohybrid missing in binary chroot",
-          "status": "fix_committed",
+          "status": "resolved",
           "evidence_links": [
             "docs/evidence/runtime-results/rescue/rescue_iso_isohybrid_failure_latest.json",
             "docs/evidence/runtime-results/rescue/RESCUE_ISO_ISOHYBRID_FAILURE.md"
@@ -660,7 +661,7 @@
           "id": "RESCUE-BUILD-CHROOT-CLEANUP-001",
           "title_de": "Chroot-/Mount-Cleanup vor Build-Retry",
           "title_en": "Chroot/mount cleanup before build retry",
-          "status": "open",
+          "status": "inactive",
           "evidence_links": [
             "docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_CLEANUP_FAILURE.md",
             "docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_MOUNT_CLEANUP_OPERATOR_HANDOFF.md"
@@ -693,8 +694,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT",
-      "next_recommended_action": "Operator: Mount-Cleanup nur unter BUILD_TREE, Tree neu vorbereiten, dann kontrollierter Build-Retry; kein USB-Write, kein Boot-Test, kein full-green."
+      "next_prompt_id": "RESCUE_ISO_VM_BOOT_VALIDATION_PREP",
+      "next_recommended_action": "Hybrid-ISO-Artefakt ist verifiziert; als Nächstes VM-/Boot-Validierung vorbereiten (read-only/gated). Kein USB-Write, kein Restore, kein full-green Rescue."
     },
     {
       "id": "diagnostics",

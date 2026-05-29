@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "classified_at": "2026-05-29T13:58:21+02:00",
+  "lb_exit": 1,
+  "iso_created_before_failure": true,
+  "isohybrid_error_seen_again": false,
+  "rsvg_error_seen_again": false,
+  "bootlogo_error_seen_again": false,
+  "chroot_cleanup_error_seen_again": false,
+  "zsync_stale_error_seen": true,
+  "zsync_error": "xz: binary.hybrid.iso.zsync.xz: Die Datei existiert bereits",
+  "classification": "build_succeeded_artifact_present_zsync_stale_after_iso",
+  "build_failure_affects_iso_integrity": "unknown_until_artifact_verify",
+  "artifact_verify_result": "artifact_verified",
+  "next_action": "RESCUE_ISO_VM_BOOT_VALIDATION_PREP"
+}

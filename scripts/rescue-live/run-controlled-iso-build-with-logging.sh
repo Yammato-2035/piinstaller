@@ -16,7 +16,11 @@ POLICY_BLOCK_CODE="blocked_requires_operator_sudo_policy"
 POLICY_BLOCK_HINT="Run this command from an operator terminal with sudo privileges or install the documented allowlisted policy."
 ISOHYBRID_PREFLIGHT_EXIT=31
 ISOHYBRID_PREFLIGHT_CODE="RESCUE-BUILD-ISOHYBRID-001"
-ISOHYBRID_PREFLIGHT_HINT="Run scripts/rescue-live/prepare-controlled-live-build-tree.sh (adds config/package-lists/setuphelfer.list.binary with syslinux-utils). Optional host: sudo apt install syslinux-utils."
+ISOHYBRID_PREFLIGHT_HINT="Run prepare-controlled-live-build-tree.sh (syslinux-utils in setuphelfer.list.chroot). Then full clean (chroot+cache) and rebuild — list.binary alone does not install into the chroot."
+ZSYNC_STALE_EXIT=32
+ZSYNC_STALE_CODE="RESCUE-BUILD-ZSYNC-STALE-001"
+ZSYNC_STALE_HINT="Remove stale binary.hybrid.iso.zsync* in BUILD_TREE or run prepare + ./auto/clean; rescue uses --zsync false."
+RESCUE_ISO_BASENAMES=(binary.hybrid.iso binary.iso)
 
 POLICY_GUARD_STATUS="unknown"
 POLICY_EXECUTION_MODE="none"
@@ -43,14 +47,14 @@ EOF
 }
 
 binary_stage_preflight_ok() {
-  local blist="${BUILD_ROOT}/config/package-lists/setuphelfer.list.binary"
-  if [[ ! -f "$blist" ]]; then
-    echo "${ISOHYBRID_PREFLIGHT_CODE}: missing ${blist}"
+  local clist="${BUILD_ROOT}/config/package-lists/setuphelfer.list.chroot"
+  if [[ ! -f "$clist" ]]; then
+    echo "${ISOHYBRID_PREFLIGHT_CODE}: missing ${clist}"
     echo "${ISOHYBRID_PREFLIGHT_HINT}"
     return 1
   fi
-  if ! grep -qx 'syslinux-utils' "$blist"; then
-    echo "${ISOHYBRID_PREFLIGHT_CODE}: ${blist} must contain syslinux-utils (isohybrid in lb binary chroot)"
+  if ! grep -qx 'syslinux-utils' "$clist"; then
+    echo "${ISOHYBRID_PREFLIGHT_CODE}: ${clist} must contain syslinux-utils (lb_binary_iso runs isohybrid in chroot; list.binary is ISO pool only)"
     echo "${ISOHYBRID_PREFLIGHT_HINT}"
     return 1
   fi
@@ -117,17 +121,32 @@ write_summary() {
   local started_at="$1" ended_at="$2" exit_code="$3" log_file="$4" error_code="$5" next_action="$6" build_started="$7"
   mkdir -p "${SUMMARY_DIR}"
   local iso_found=false iso_path="" iso_size="" sha256=""
-  if iso="$(find "${BUILD_ROOT}" -maxdepth 3 -type f -name '*.iso' 2>/dev/null | head -1)"; then
-    if [[ -n "$iso" && -f "$iso" ]]; then
+  local candidate base
+  for base in "${RESCUE_ISO_BASENAMES[@]}"; do
+    candidate="${BUILD_ROOT}/${base}"
+    if [[ -f "$candidate" ]]; then
       iso_found=true
-      iso_path="$iso"
-      iso_size="$(stat -c '%s' "$iso" 2>/dev/null || echo "")"
-      sha256="$(sha256sum "$iso" 2>/dev/null | awk '{print $1}' || echo "")"
+      iso_path="$candidate"
+      iso_size="$(stat -c '%s' "$candidate" 2>/dev/null || echo "")"
+      sha256="$(sha256sum "$candidate" 2>/dev/null | awk '{print $1}' || echo "")"
+      break
+    fi
+  done
+  if [[ "$iso_found" != true ]]; then
+    if iso="$(find "${BUILD_ROOT}" -maxdepth 3 -type f \( -name '*.iso' -o -name '*.hybrid.iso' \) 2>/dev/null | head -1)"; then
+      if [[ -n "$iso" && -f "$iso" ]]; then
+        iso_found=true
+        iso_path="$iso"
+        iso_size="$(stat -c '%s' "$iso" 2>/dev/null || echo "")"
+        sha256="$(sha256sum "$iso" 2>/dev/null | awk '{print $1}' || echo "")"
+      fi
     fi
   fi
   local status="failed"
   if [[ "$exit_code" -eq 0 && "$iso_found" == true ]]; then
     status="success"
+  elif [[ "$exit_code" -ne 0 && "$iso_found" == true ]]; then
+    status="review_required"
   elif [[ "$exit_code" -eq "${POLICY_BLOCK_EXIT}" ]]; then
     status="blocked"
   elif [[ "$exit_code" -eq 0 ]]; then
@@ -237,6 +256,10 @@ ENDED_AT="$(date -Is)"
 if [[ -z "$ERROR_CODE" ]] && grep -q 'isohybrid: not found' "${LATEST_LOG}" 2>/dev/null; then
   ERROR_CODE="${ISOHYBRID_PREFLIGHT_CODE}"
   NEXT_ACTION="prepare_binary_package_list_and_retry"
+fi
+if [[ -z "$ERROR_CODE" ]] && grep -qE 'xz:.*\.zsync\.xz:.*(existiert bereits|File exists)' "${LATEST_LOG}" 2>/dev/null; then
+  ERROR_CODE="${ZSYNC_STALE_CODE}"
+  NEXT_ACTION="remove_stale_zsync_artifacts_and_retry"
 fi
 echo "LB_EXIT=${LB_EXIT}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
 write_summary "${STARTED_AT}" "${ENDED_AT}" "${LB_EXIT}" "${LATEST_LOG}" "${ERROR_CODE}" "${NEXT_ACTION}" "${BUILD_STARTED}"

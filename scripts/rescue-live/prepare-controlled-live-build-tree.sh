@@ -127,10 +127,12 @@ smartmontools
 python3
 python3-venv
 python3-pip
+syslinux-utils
 EOF
 
-# lb_binary_iso runs isohybrid inside the binary-stage chroot; Debian provides isohybrid in
-# syslinux-utils, not in the default live-build iso-hybrid package pull (syslinux only).
+# lb_binary_iso runs isohybrid inside the live-build chroot (not the host). Debian ships
+# isohybrid in syslinux-utils; lb_binary_iso only auto-installs syslinux (wrong package).
+# *.list.binary is consumed by lb_binary_package-lists (ISO pool only), not the chroot.
 write_text_file "${BUILD_ROOT}/config/package-lists/setuphelfer.list.binary" 0644 <<'EOF'
 syslinux-utils
 EOF
@@ -226,6 +228,7 @@ lb config noauto \
   --distribution bookworm \
   --archive-areas "main" \
   --binary-images iso-hybrid \
+  --zsync false \
   --debian-installer false \
   --security false \
   --firmware-chroot false \
@@ -247,6 +250,7 @@ write_text_file "${BUILD_ROOT}/auto/clean" 0755 <<'EOF'
 set -eu
 # Kein "lb clean" hier: live-build ruft auto/clean selbst auf und wuerde sonst rekursiv enden.
 rm -rf .build chroot cache binary local
+rm -f binary.iso binary.hybrid.iso binary.img binary*.zsync* 2>/dev/null || true
 EOF
 
 if [[ -e "$BUNDLE_DST" ]]; then

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "corrected_at": "2026-05-29T13:58:21+02:00",
+  "iso_found_before": false,
+  "iso_found_after": true,
+  "artifact_status": "partial_green",
+  "dashboard_status": "yellow",
+  "rescue_overall_status": "yellow",
+  "no_full_green": true
+}

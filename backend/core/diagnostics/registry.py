@@ -332,21 +332,22 @@ DIAGNOSTIC_CATALOG: list[DiagnosticCase] = [
         domain="rescue_build",
         title_de="isohybrid fehlt in der live-build Binary-Stage",
         title_en="isohybrid missing in live-build binary stage",
-        summary_de="Nach genisoimage scheitert `binary.sh` mit `isohybrid: not found`. Debian liefert `isohybrid` in `syslinux-utils`; die Binary-Paketliste muss es für den Chroot enthalten.",
-        summary_en="After genisoimage, `binary.sh` fails with `isohybrid: not found`. Debian ships `isohybrid` in `syslinux-utils`; the binary package list must include it for the chroot.",
+        summary_de="Nach genisoimage scheitert `binary.sh` mit `isohybrid: not found`. Debian liefert `isohybrid` in `syslinux-utils`; live-build installiert nur `syslinux` — `syslinux-utils` muss in `setuphelfer.list.chroot` stehen (nicht nur in `list.binary`).",
+        summary_en="After genisoimage, `binary.sh` fails with `isohybrid: not found`. Debian ships `isohybrid` in `syslinux-utils`; live-build only pulls `syslinux` — `syslinux-utils` must be in `setuphelfer.list.chroot` (not only `list.binary`).",
         severity="medium",
         confidence="high",
         detection_sources=["api_result", "log_pattern", "manual_test"],
         root_causes=[
-            "live-build iso-hybrid installiert nur `syslinux`, nicht `syslinux-utils`",
-            "Fehlende `config/package-lists/setuphelfer.list.binary` mit `syslinux-utils`",
+            "live-build `lb_binary_iso` installiert nur `syslinux`, nicht `syslinux-utils`",
+            "`setuphelfer.list.binary` landet nur im ISO-Pool (`lb_binary_package-lists`), nicht im Chroot",
+            "Fehlendes `syslinux-utils` in `config/package-lists/setuphelfer.list.chroot`",
         ],
         recommended_actions=[
             _a(
-                "add-syslinux-utils-binary-package-list",
+                "add-syslinux-utils-chroot-package-list",
                 1,
-                "Führe `prepare-controlled-live-build-tree.sh` aus (legt `setuphelfer.list.binary` mit `syslinux-utils` an), dann `./auto/clean` und Build-Retry. Optional auf dem Host: `sudo apt install syslinux-utils` — Setuphelfer installiert nicht automatisch.",
-                "Run `prepare-controlled-live-build-tree.sh` (creates `setuphelfer.list.binary` with `syslinux-utils`), then `./auto/clean` and retry the build. Optional on host: `sudo apt install syslinux-utils` — Setuphelfer does not install automatically.",
+                "Führe `prepare-controlled-live-build-tree.sh` aus (`syslinux-utils` in `setuphelfer.list.chroot`), dann vollständiges Cleanup (chroot+cache) und Build-Retry. Host-`apt install syslinux-utils` hilft nicht — Setuphelfer installiert nicht automatisch.",
+                "Run `prepare-controlled-live-build-tree.sh` (`syslinux-utils` in `setuphelfer.list.chroot`), then full cleanup (chroot+cache) and retry the build. Host `apt install syslinux-utils` does not help — Setuphelfer does not install automatically.",
             )
         ],
         related_docs=[
@@ -357,6 +358,45 @@ DIAGNOSTIC_CATALOG: list[DiagnosticCase] = [
         related_faq=["docs/faq/rescue_iso_build_faq.md"],
         tags=["rescue_build", "syslinux", "isohybrid", "binary_stage"],
         status_mapping={"RESCUE-BUILD-ISOHYBRID-001": "warning"},
+    ),
+    DiagnosticCase(
+        id="RESCUE-BUILD-ZSYNC-STALE-001",
+        domain="rescue_build",
+        title_de="Veraltete zsync-Artefakte nach Hybrid-ISO",
+        title_en="Stale zsync artifacts after hybrid ISO",
+        summary_de=(
+            "Nach erfolgreicher ISO-Erzeugung scheitert `lb_binary_zsync` mit "
+            "`xz: binary.hybrid.iso.zsync.xz: Die Datei existiert bereits`. "
+            "Das Hybrid-ISO kann trotzdem vorliegen; Rescue setzt `--zsync false`."
+        ),
+        summary_en=(
+            "After ISO creation, `lb_binary_zsync` fails with a stale `.zsync.xz` file. "
+            "The hybrid ISO may still exist; rescue builds use `--zsync false`."
+        ),
+        severity="low",
+        confidence="high",
+        detection_sources=["api_result", "log_pattern", "manual_test"],
+        root_causes=[
+            "Vorheriger Build hinterließ binary.hybrid.iso.zsync.xz",
+            "auto/clean entfernte zsync-Reste nicht (ältere Trees)",
+            "LB_ZSYNC=true (Standard) obwohl Rescue zsync nicht benötigt",
+        ],
+        recommended_actions=[
+            _a(
+                "rescue-zsync-disable-and-clean",
+                1,
+                "prepare-controlled-live-build-tree.sh (`--zsync false`), stale `binary*.zsync*` im BUILD_TREE löschen, ISO-Artefakt per sha256/file prüfen — kein USB-Write.",
+                "Run prepare-controlled-live-build-tree.sh (`--zsync false`), remove stale `binary*.zsync*` in BUILD_TREE, verify ISO via sha256/file — no USB write.",
+            )
+        ],
+        related_docs=[
+            "docs/knowledge-base/diagnostics/RESCUE_BUILD_DIAGNOSTICS.md",
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_ARTIFACT_VERIFY.md",
+            "docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md",
+        ],
+        related_faq=["docs/faq/rescue_iso_build_faq.md"],
+        tags=["rescue_build", "zsync", "binary_stage", "artifact_verify"],
+        status_mapping={"RESCUE-BUILD-ZSYNC-STALE-001": "warning"},
     ),
     DiagnosticCase(
         id="RESCUE-BUILD-CHROOT-CLEANUP-001",

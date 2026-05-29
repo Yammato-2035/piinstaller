@@ -42,8 +42,11 @@ for rel in "${REQ[@]}"; do
   [[ -e "$BUILD_ROOT/$rel" ]] || fail_missing "$rel"
 done
 [[ -x "$BUILD_ROOT/config/includes.chroot/usr/local/bin/rsvg" ]] || fail_missing "usr/local/bin/rsvg not executable"
+if ! grep -qx 'syslinux-utils' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" 2>/dev/null; then
+  fail_missing "setuphelfer.list.chroot must list syslinux-utils (isohybrid runs in lb chroot; list.binary is ISO pool only)"
+fi
 if ! grep -qx 'syslinux-utils' "$BUILD_ROOT/config/package-lists/setuphelfer.list.binary" 2>/dev/null; then
-  fail_missing "setuphelfer.list.binary must list syslinux-utils (isohybrid for lb binary stage)"
+  fail_missing "setuphelfer.list.binary must list syslinux-utils (optional ISO pool mirror)"
 fi
 
 if ! grep -q 'Use controlled gate before running lb build' "$BUILD_ROOT/auto/build"; then
@@ -66,6 +69,12 @@ if ! grep -q -- '--firmware-chroot false' "$BUILD_ROOT/auto/config"; then
 fi
 if ! grep -q -- '--firmware-binary false' "$BUILD_ROOT/auto/config"; then
   fail_missing "auto/config must disable broken firmware contents fetch for binary stage"
+fi
+if ! grep -q -- '--zsync false' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must disable zsync (stale .zsync.xz breaks incremental rebuilds)"
+fi
+if ! grep -q 'binary\*.zsync\*' "$BUILD_ROOT/auto/clean"; then
+  fail_missing "auto/clean must remove binary*.zsync* artifacts at build-tree root"
 fi
 set +e
 "$BUILD_ROOT/auto/build" >/dev/null 2>&1

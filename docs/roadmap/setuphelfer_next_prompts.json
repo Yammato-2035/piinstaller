@@ -11,7 +11,7 @@
     "Priorit\u00e4t 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorit\u00e4t 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise k\u00fcnstlich gr\u00fcn gef\u00e4rbt."
   ],
-  "selected_prompt_id": "RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT",
+  "selected_prompt_id": "RESCUE_ISO_VM_BOOT_VALIDATION_PREP",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -626,6 +626,26 @@
       ],
       "created_at": "2026-05-28",
       "updated_at": "2026-05-28"
+    },
+    {
+      "id": "RESCUE_ISO_VM_BOOT_VALIDATION_PREP",
+      "category": "rescue",
+      "title_de": "Rescue ISO VM-Boot-Validierung vorbereiten",
+      "title_en": "Prepare rescue ISO VM boot validation",
+      "scope": "Gated VM-/Boot-Checkliste nach verifiziertem binary.hybrid.iso; kein USB-Write.",
+      "status": "available",
+      "reason_de": "Hybrid-ISO-Artefakt per SHA256/file verifiziert; Boot-Nachweis fehlt noch.",
+      "reason_en": "Hybrid ISO artifact verified via SHA256/file; boot proof still missing.",
+      "prompt_text": "Bereite read-only/gated VM-Boot-Validierung für binary.hybrid.iso vor. Kein dd/USB, kein Restore, kein full-green.",
+      "blocked_by": ["rescue-real-boot-proof-missing"],
+      "unlocks": ["rescue-real-iso-boot-proof"],
+      "documentation_targets": [
+        "docs/knowledge-base/recovery/RESCUE_ISO_BUILD_AND_VM_VALIDATION.md",
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_ARTIFACT_VERIFY.md"
+      ],
+      "forbidden_actions": ["usb_write", "restore_start", "dd"],
+      "created_at": "2026-05-29",
+      "updated_at": "2026-05-29"
     },
     {
       "id": "RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT",

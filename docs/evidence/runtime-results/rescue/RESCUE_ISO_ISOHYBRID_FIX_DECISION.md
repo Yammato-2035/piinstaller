@@ -1,23 +1,25 @@
-# Rescue ISO isohybrid — Fix Decision
+# Rescue ISO isohybrid — Fix Decision (korrigiert)
 
-**Entscheidung:** **A — Binary-Package-List** (`setuphelfer.list.binary` → `syslinux-utils`)
+**Entscheidung:** **`syslinux-utils` in `setuphelfer.list.chroot`** (Chroot-Paketliste)
 
 ## Begründung
 
-- Fehler in **`chroot/binary.sh`**, nicht auf dem Host.
-- `apt-cache`/`dpkg` auf dem Host zeigen `isohybrid` ∈ **`syslinux-utils`** (installiert).
-- Live-build-Log zeigt im Binary-Stage nur **`syslinux`**, nicht **`syslinux-utils`**.
+- `lb_binary_iso` führt `genisoimage` und `isohybrid` im **live-build-Chroot** aus (`Chroot chroot "sh binary.sh"`).
+- `Check_package chroot/usr/bin/isohybrid syslinux` installiert nur **`syslinux`** — auf Bookworm liegt `isohybrid` in **`syslinux-utils`**.
+- `config/package-lists/*.list.binary` wird von **`lb_binary_package-lists`** nur in den **ISO-APT-Pool** (`binary/pool/…`) geschrieben, **nicht** in den Chroot installiert.
+- Daher schlägt der Build trotz `setuphelfer.list.binary` und sichtbarem `syslinux-utils` in `binary.contents` fehl.
 
-## Nicht gewählt
+## Frühere Annahme (widerrufen)
 
-| Option | Warum nicht |
-|--------|-------------|
-| Host-Wrapper | PATH des Hosts erreicht Chroot-`binary.sh` nicht |
-| isohybrid deaktivieren | `iso-hybrid` Zielbild für Rescue-Stick |
-| `apt install` im Agent-Lauf | Verboten |
+| Annahme | Status |
+|---------|--------|
+| Nur `setuphelfer.list.binary` reicht | **falsch** — Pool ≠ Chroot |
 
-## Operator nach Merge/Prepare
+## Operator
 
-Kein automatisches apt — nur Build-Tree aktualisieren und Retry (siehe `rescue_iso_isohybrid_fix_decision_latest.json`).
+1. `./scripts/rescue-live/prepare-controlled-live-build-tree.sh`
+2. Prüfen: `grep -x syslinux-utils config/package-lists/setuphelfer.list.chroot`
+3. **Vollständiges** Stage-Cleanup (`chroot`, `cache`, `binary`, `.build`, …), dann Build-Retry
+4. Nach Chroot-Phase optional: `test -x chroot/usr/bin/isohybrid` im BUILD_TREE
 
 JSON: `rescue_iso_isohybrid_fix_decision_latest.json`

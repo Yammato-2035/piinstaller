@@ -10,6 +10,7 @@ Kurzreferenz für **Phase 1**: ISO aus Debian-Live-Tooling bauen, unter `build/r
 - Vor dem eigentlichen Build prueft der Wrapper jetzt das Operator-Policy-Gate. Ohne Root, echtes TTY oder dokumentierte `sudo -n`-Allowlist endet der Lauf mit `blocked_requires_operator_sudo_policy` und Exit `30` statt an einer Hintergrund-Passwortabfrage zu haengen.
 - **2026-05-27:** Agent/Cursor-Shell ohne TTY → policy block, kein ISO; Operator-Wiederholung im echten Terminal nach `sudo -v` (Evidence: `RESCUE_ISO_MANUAL_OPERATOR_BUILD_CLASSIFICATION.md`).
 - **2026-05-28:** `RESCUE-BUILD-CHROOT-CLEANUP-001` — `chroot/proc` + fehlendes `/usr/bin/env` (LB_EXIT=1); zuerst Mount-Cleanup nur unter BUILD_TREE, dann Retry (nicht isohybrid). Handoff: `RESCUE_ISO_CHROOT_MOUNT_CLEANUP_OPERATOR_HANDOFF.md`.
+- **2026-05-29:** Hybrid-ISO **`binary.hybrid.iso`** verifiziert (SHA256, `file`, `isoinfo`); `LB_EXIT=1` nur durch stale zsync — Artefakt ≠ Boot-Nachweis. Evidence: `RESCUE_ISO_ARTIFACT_VERIFY.md`. Nächster Schritt: VM-Boot-Prep, kein USB-Write.
 - VM-Sicherheit: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`.
 
 ## Deploy-Doku

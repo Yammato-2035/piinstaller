@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-29T13:58:21+02:00",
+  "branch": "main",
+  "head_short": "82e6a5d",
+  "head_oneline": "82e6a5d Document chroot cleanup note in rescue ISO KB",
+  "runtime_gate_exit": 0,
+  "runtime_gate_ok": true,
+  "deploy_drift": "green",
+  "safe_test_mode": "UNLOCKED",
+  "runtime_gate_blocked_static_analysis_only": false
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-05-29T13:58:21+02:00",
+  "binary_hybrid_iso_detection_in_wrapper": true,
+  "zsync_false_in_prepare": true,
+  "zsync_artifacts_in_auto_clean": true,
+  "zsync_stale_code_in_wrapper": true,
+  "zsync_stale_in_diagnostics_registry": true,
+  "zsync_stale_in_matcher": true,
+  "zsync_stale_in_build_gate": true,
+  "fix_complete": true,
+  "full_build_required_for_verify": false
+}

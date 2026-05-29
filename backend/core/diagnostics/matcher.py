@@ -124,6 +124,13 @@ def _hard_signal_matches(signals: dict[str, str]) -> list[str]:
     ):
         hits.append("RESCUE-BUILD-ISOHYBRID-001")
     if (
+        code == "RESCUE-BUILD-ZSYNC-STALE-001"
+        or details_diag == "RESCUE-BUILD-ZSYNC-STALE-001"
+        or "binary.hybrid.iso.zsync.xz" in stderr
+        or "binary.hybrid.iso.zsync.xz" in summary
+    ):
+        hits.append("RESCUE-BUILD-ZSYNC-STALE-001")
+    if (
         code == "RESCUE-BUILD-CHROOT-CLEANUP-001"
         or details_diag == "RESCUE-BUILD-CHROOT-CLEANUP-001"
         or "chroot/proc" in stderr

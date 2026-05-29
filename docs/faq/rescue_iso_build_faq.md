@@ -47,9 +47,22 @@ Das ist **`RESCUE-BUILD-CHROOT-CLEANUP-001`**, nicht isohybrid:
 `lb_binary_iso` erzeugt zuerst die ISO per `genisoimage`, führt danach **`binary.sh` im Binary-Chroot** aus und ruft dort `isohybrid` auf. Live-build installiert für `iso-hybrid` oft nur das Paket **`syslinux`** — auf Debian/Ubuntu liegt **`isohybrid`** in **`syslinux-utils`**.
 
 - Diagnose: **`RESCUE-BUILD-ISOHYBRID-001`**
-- Fix im Repo: `prepare-controlled-live-build-tree.sh` legt `config/package-lists/setuphelfer.list.binary` mit `syslinux-utils` an
-- Operator: Tree vorbereiten, `./auto/clean`, Build-Retry — **kein** automatisches `apt install` durch Setuphelfer
-- Optional auf dem Build-Host (bewusst, manuell): `sudo apt install syslinux-utils` (hilft nur für Host-Debugging; der Lauf scheitert im **Chroot**)
+- Fix im Repo: `syslinux-utils` in **`setuphelfer.list.chroot`** (entscheidend); `list.binary` allein reicht nicht (nur ISO-APT-Pool)
+- Operator: Tree vorbereiten, vollständiges Cleanup (chroot+cache), Build-Retry — **kein** automatisches `apt install` durch Setuphelfer
+
+## Ist `binary.hybrid.iso` ein gültiges ISO-Artefakt?
+
+Ja. live-build erzeugt für `iso-hybrid` die Datei **`binary.hybrid.iso`** (ohne `.iso`-Suffix). Der kontrollierte Wrapper erkennt diesen Namen explizit.
+
+Artefaktprüfung (sha256, `file`, optional `isoinfo`) ist **nicht** gleich Boot-Nachweis — Rescue bleibt ohne VM/USB/Boot **yellow**, nicht full-green.
+
+## Warum `LB_EXIT=1` mit `binary.hybrid.iso.zsync.xz: Die Datei existiert bereits`?
+
+**`RESCUE-BUILD-ZSYNC-STALE-001`:** Die Hybrid-ISO kann bereits existieren; der Build scheitert danach an veralteten zsync-Resten.
+
+- Rescue-Konfiguration: **`--zsync false`** in `auto/config`
+- Cleanup: `auto/clean` entfernt `binary*.zsync*`
+- ISO trotzdem mit `sha256sum`/`file` prüfen — nicht als „ISO fehlt“ werten
 
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 

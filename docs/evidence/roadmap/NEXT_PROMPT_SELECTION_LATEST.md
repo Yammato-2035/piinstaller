@@ -1,9 +1,9 @@
-# Next Prompt Selection (Latest)
+# Next Prompt Selection
 
-**Selected:** `RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT`
+**selected_prompt_id:** `RESCUE_ISO_VM_BOOT_VALIDATION_PREP`
 
-**Warum:** Chroot-Cleanup-Fehler (`RESCUE-BUILD-CHROOT-CLEANUP-001`) analysiert; Runtime-Gate grün. Operator muss Mount-Cleanup unter BUILD_TREE per Handoff ausführen — kein Agent-sudo, kein Build-Retry in diesem Lauf.
+**Begründung:** Hybrid-ISO (`binary.hybrid.iso`) per SHA256, `file` und `isoinfo` verifiziert. Kein VM-/Boot-/USB-Nachweis — Rescue bleibt **yellow**, nicht full-green.
 
-**Nach erfolgreichem Cleanup + Retry:** `RESCUE_ISO_ARTIFACT_VERIFY` oder `RESCUE_ISO_BUILD_FAILURE_TRIAGE`.
+**Nicht als Nächstes:** USB-Write, Restore, erneuter Full-Build (optional nur zsync-Cleanup für grünen LB_EXIT).
 
-Siehe `NEXT_PROMPT_SELECTION_LATEST.json`.
+JSON: `NEXT_PROMPT_SELECTION_LATEST.json`

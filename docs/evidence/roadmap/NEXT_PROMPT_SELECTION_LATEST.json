@@ -1,21 +1,15 @@
 {
-  "selected_prompt_id": "RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT",
-  "selected_at": "2026-05-28T20:00:00Z",
-  "reason": "RESCUE-BUILD-CHROOT-CLEANUP-001 triaged; runtime gate green; build tree needs operator sudo cleanup before retry. Not classified as isohybrid.",
-  "blocked_by": [
-    "RESCUE-BUILD-CHROOT-CLEANUP-001",
-    "operator_sudo_required_for_build_tree_cleanup"
+  "schema_version": 1,
+  "selected_at": "2026-05-29T13:58:21+02:00",
+  "selected_prompt_id": "RESCUE_ISO_VM_BOOT_VALIDATION_PREP",
+  "reason_de": "Hybrid-ISO-Artefakt per sha256/file/isoinfo verifiziert; kein Boot-/USB-Nachweis.",
+  "reason_en": "Hybrid ISO artifact verified via sha256/file/isoinfo; no boot/USB proof yet.",
+  "alternatives": [
+    "RESCUE_ISO_ARTIFACT_VERIFY_COMPLETION"
   ],
-  "unlocks": [
-    "RESCUE_ISO_BUILD_FAILURE_TRIAGE",
-    "RESCUE_ISO_ARTIFACT_VERIFY",
-    "RESCUE_ISO_VM_BOOT_VALIDATION_PREP"
-  ],
-  "alternative_prompts": [
-    "RESCUE_ISO_OPERATOR_RETRY_CONTROLLED_BUILD_AFTER_ISOHYBRID_FIX",
-    "RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE"
-  ],
-  "runtime_gate_exit": 0,
-  "rescue_full_green": false,
-  "source_roadmap_version": "1.0"
+  "forbidden_next": [
+    "USB_WRITE",
+    "RESTORE_START",
+    "FULL_GREEN_RESCUE"
+  ]
 }

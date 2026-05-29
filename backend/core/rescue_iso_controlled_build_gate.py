@@ -18,6 +18,9 @@ ISOHYBRID_CATEGORY = "binary_stage_toolchain"
 CHROOT_CLEANUP_ERROR_CODE = "RESCUE-BUILD-CHROOT-CLEANUP-001"
 CHROOT_CLEANUP_NEXT_ACTION = "unmount_build_tree_and_clean_chroot"
 CHROOT_CLEANUP_CATEGORY = "live_build_cleanup"
+ZSYNC_STALE_ERROR_CODE = "RESCUE-BUILD-ZSYNC-STALE-001"
+ZSYNC_STALE_NEXT_ACTION = "remove_stale_zsync_artifacts_and_retry"
+ZSYNC_STALE_CATEGORY = "binary_stage_post_iso"
 
 WORKING_DIRECTORY_REL = "build/rescue/live-build/setuphelfer-rescue-live"
 PATH_PREFIX_REL = "build/rescue/tool-compat/bin"
@@ -302,7 +305,7 @@ def classify_rescue_iso_build_attempt(
             "next_action": ISOHYBRID_NEXT_ACTION,
             "summary": (
                 "Die ISO wurde bis genisoimage erzeugt, aber der isohybrid-Schritt im Binary-Chroot "
-                "fehlte (syslinux-utils in setuphelfer.list.binary erforderlich)."
+                "fehlte (syslinux-utils in setuphelfer.list.chroot erforderlich; list.binary reicht nicht)."
             ),
             "gate_message_found": False,
             "direct_lb_build_blocked": False,
@@ -328,6 +331,35 @@ def classify_rescue_iso_build_attempt(
             "gate_message_found": False,
             "direct_lb_build_blocked": False,
             "iso_created": False,
+            "usb_write_performed": usb_write_performed,
+            "exit_code": exit_code,
+            "command": run_body.get("command"),
+            "started_at": run_body.get("started_at"),
+            "finished_at": result_body.get("finished_at") or run_body.get("finished_at"),
+        }
+
+    zsync_stale = (
+        "binary.hybrid.iso.zsync.xz" in combined_log
+        and (
+            "existiert bereits" in combined_log
+            or "file exists" in combined_log.lower()
+        )
+    )
+    if zsync_stale and iso_created:
+        return {
+            "attempted": attempted,
+            "result_status": "review_required",
+            "error_code": ZSYNC_STALE_ERROR_CODE,
+            "category": ZSYNC_STALE_CATEGORY,
+            "next_action": ZSYNC_STALE_NEXT_ACTION,
+            "summary": (
+                "Hybrid-ISO wurde erzeugt; der Build endete mit LB_EXIT!=0 wegen veralteter "
+                "zsync-Artefakte (binary.hybrid.iso.zsync.xz). ISO-Artefakt separat verifizieren; "
+                "Rescue nutzt --zsync false."
+            ),
+            "gate_message_found": False,
+            "direct_lb_build_blocked": False,
+            "iso_created": True,
             "usb_write_performed": usb_write_performed,
             "exit_code": exit_code,
             "command": run_body.get("command"),

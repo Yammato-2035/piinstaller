@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-05-29T13:58:21+02:00",
+  "rescue_stick_status": "yellow",
+  "rescue_iso_build_track": "partial_green",
+  "rescue_iso_artifact": "partial_green",
+  "usb_write": "blocked",
+  "boot_vm_test": "not_started",
+  "restore": "deferred",
+  "resolved_blockers": [
+    "RESCUE-BUILD-ISOHYBRID-001",
+    "RESCUE-BUILD-RSVG-001",
+    "RESCUE-BUILD-BOOTLOGO-001"
+  ],
+  "inactive_blockers": [
+    "RESCUE-BUILD-CHROOT-CLEANUP-001"
+  ],
+  "open_policy_blockers": [
+    "RESCUE-BUILD-ZSYNC-STALE-001"
+  ],
+  "zsync_policy": "disabled_via_zsync_false",
+  "recommended_next_prompt": "RESCUE_ISO_VM_BOOT_VALIDATION_PREP"
+}

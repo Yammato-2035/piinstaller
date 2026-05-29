@@ -14,8 +14,10 @@ Schritt-für-Schritt-Anleitung für einen **kontrollierten** Debian-Live-ISO-Bui
 2. **Toolcheck:** `docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md` — `lb`, `xorriso`, `mksquashfs`, `grub-mkrescue` vorhanden
 3. **RSVG-Preflight:** Dashboard-/Executor-Status darf **nicht** `blocked_build_tools_missing` fuer `rsvg` melden
 4. **Temp-Bundle:** Validator Exit **0**
-5. **Build-Tree:** `validate-controlled-live-build-tree.sh` Exit **0** (inkl. `config/package-lists/setuphelfer.list.binary` mit **`syslinux-utils`**)
-6. **Binary-Stage / isohybrid:** Preflight im Wrapper prüft `setuphelfer.list.binary`; bei Fehlen Exit **31** (`RESCUE-BUILD-ISOHYBRID-001`). Host-`isohybrid` optional (`syslinux-utils`); entscheidend ist das Chroot-Paket.
+5. **Build-Tree:** `validate-controlled-live-build-tree.sh` Exit **0** (inkl. `syslinux-utils` in **`setuphelfer.list.chroot`**, `--zsync false`)
+6. **Binary-Stage / isohybrid:** Preflight prüft `setuphelfer.list.chroot`; Exit **31** bei fehlendem `syslinux-utils` (`RESCUE-BUILD-ISOHYBRID-001`).
+7. **Artefakt:** Erfolgreicher Hybrid-Build liefert **`binary.hybrid.iso`** (nicht nur `*.iso`). Artefaktprüfung ≠ Boot-Nachweis.
+8. **zsync:** Bei `RESCUE-BUILD-ZSYNC-STALE-001` ISO nicht verwerfen — stale `binary*.zsync*` entfernen oder `--zsync false` nutzen.
 7. **Operator-Freigabe** schriftlich (Issue/Ticket/E-Mail)
 7. **Operator-Policy-Gate:** Safe Root-Ausführung ist dokumentiert:
    - kurzfristig bevorzugt: echtes Operator-Terminal mit `sudo`

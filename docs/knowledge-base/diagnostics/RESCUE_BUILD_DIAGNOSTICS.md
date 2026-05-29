@@ -76,10 +76,19 @@ Diese Diagnose-Notiz trennt die aktuellen Rescue-Build-Blocker sauber voneinande
   - Die Roh-ISO kann bereits unter `chroot/binary.hybrid.iso` liegen; der Hybrid-Schritt ist trotzdem fehlgeschlagen.
   - Live-build installiert für `iso-hybrid` oft nur `syslinux`; `isohybrid` liegt auf Debian in **`syslinux-utils`**.
 - Empfehlung:
-  - `prepare-controlled-live-build-tree.sh` (legt `setuphelfer.list.binary` an)
-  - `./auto/clean` im Build-Verzeichnis
-  - Build-Retry im Operator-Terminal
-  - optional manuell auf dem Host: `sudo apt install syslinux-utils` (kein Auto-Install durch Setuphelfer)
+  - `syslinux-utils` in **`setuphelfer.list.chroot`** (nicht nur `list.binary`)
+  - vollständiges Cleanup (chroot+cache), Build-Retry im Operator-Terminal
+
+## RESCUE-BUILD-ZSYNC-STALE-001
+
+- Titel DE: `Veraltete zsync-Artefakte nach Hybrid-ISO`
+- Typische Signale:
+  - `xz: binary.hybrid.iso.zsync.xz: Die Datei existiert bereits`
+  - `LB_EXIT=1` **nach** `extents written` / vorhandener `binary.hybrid.iso`
+- Bedeutung:
+  - Hybrid-ISO kann trotzdem gültig sein — Artefakt separat prüfen (sha256, `file`, `isoinfo`).
+  - Rescue: **`--zsync false`**; `auto/clean` entfernt `binary*.zsync*`.
+- Evidence: `docs/evidence/runtime-results/rescue/RESCUE_ISO_ARTIFACT_VERIFY.md`
 
 ## RESCUE-BUILD-CHROOT-CLEANUP-001
 

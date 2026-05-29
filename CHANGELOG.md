@@ -7,27 +7,32 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
-### Changed (Rescue ISO chroot cleanup failure triage ó RESCUE-BUILD-CHROOT-CLEANUP-001)
-- **Klassifikation:** Build-Abbruch durch `chroot/proc` + fehlendes `/usr/bin/env` ó nicht isohybrid.
+### Fixed (Rescue ISO isohybrid ÔøΩ syslinux-utils must be in chroot list)
+- **Root cause:** `lb_binary_iso` runs `isohybrid` in the live-build **chroot** and only auto-installs `syslinux`; `setuphelfer.list.binary` is handled by `lb_binary_package-lists` (ISO apt pool only), not the chroot.
+- **Fix:** `syslinux-utils` in `setuphelfer.list.chroot`; preflight/validator/diagnostics updated accordingly.
+- **Operator:** `prepare-controlled-live-build-tree.sh`, then **full** clean (chroot + cache) and rebuild ÔøΩ partial binary-only reset is insufficient.
+
+### Changed (Rescue ISO chroot cleanup failure triage ÔøΩ RESCUE-BUILD-CHROOT-CLEANUP-001)
+- **Klassifikation:** Build-Abbruch durch `chroot/proc` + fehlendes `/usr/bin/env` ÔøΩ nicht isohybrid.
 - **Diagnostics:** Neuer Code `RESCUE-BUILD-CHROOT-CLEANUP-001` in Registry, Matcher und `classify_rescue_iso_build_attempt`.
 - **Operator-Handoff:** Mount-Cleanup nur unter BUILD_TREE; kein Agent-sudo, kein Build-Retry in diesem Lauf.
 - **Roadmap:** Rescue bleibt blocked; Next Prompt `RESCUE_ISO_CHROOT_MOUNT_CLEANUP_TROUBLESHOOT`.
 
-### Changed (Operator deploy sync ingest after watchdog ó runtime green)
-- **Ground Truth:** Operator-Terminal: Deploy-Helper + Gate Exit **0**; Agent read-only best‰tigt (health/version, deploy_drift green, `liveness.py` in `/opt`).
+### Changed (Operator deploy sync ingest after watchdog ÔøΩ runtime green)
+- **Ground Truth:** Operator-Terminal: Deploy-Helper + Gate Exit **0**; Agent read-only bestÔøΩtigt (health/version, deploy_drift green, `liveness.py` in `/opt`).
 - **Next Prompt:** `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE` (kein Rescue in diesem Lauf).
 - **Evidence:** `OPERATOR_DEPLOY_SYNC_RESULT_AFTER_WATCHDOG.md`.
 
-### Changed (Deploy sync after watchdog ó blocked in agent shell)
+### Changed (Deploy sync after watchdog ÔøΩ blocked in agent shell)
 - **Operator-Freigabe** `DEPLOY_HELPER_SYNC_FREIGEGEBEN`: Deploy-Helper im Agent zweimal blockiert (`sudo`/`sudo -n` ? Passwort/TTY, `deploy_helper_blocked_by_sudo_tty`).
 - **Gate:** vorher/nachher Exit **14**; kein Rescue; Next Prompt `DEPLOY_DRIFT_TRIAGE_AFTER_WATCHDOG`.
 - **Evidence:** `DEPLOY_SYNC_AFTER_WATCHDOG_*`, Operator-Handoff.
 
 ### Changed (Backend self-healing watchdog MVP and hang isolation)
-- **Liveness:** Neues Modul `backend/core/liveness.py` ó `/health` und `/api/version` ohne Dashboard/Git (Git nur mit `SETUPHELFER_VERSION_INCLUDE_GIT=1`).
-- **Dashboard-Isolation:** Timeouts f¸r `deploy_drift`, `cockpit_enrich`; `dev_dashboard_status` in Thread mit degraded-Fallback.
+- **Liveness:** Neues Modul `backend/core/liveness.py` ÔøΩ `/health` und `/api/version` ohne Dashboard/Git (Git nur mit `SETUPHELFER_VERSION_INCLUDE_GIT=1`).
+- **Dashboard-Isolation:** Timeouts fÔøΩr `deploy_drift`, `cockpit_enrich`; `dev_dashboard_status` in Thread mit degraded-Fallback.
 - **Runtime-Gate:** Exit **18** `backend_version_endpoint_timeout` wenn `/health` OK aber `/api/version` timeoutet.
-- **Watchdog-MVP (Dateien):** `scripts/healthcheck/setuphelfer-backend-healthcheck.sh`, systemd `.example`-Units, `ENABLE_RESTART=0` Default ó **nicht installiert**.
+- **Watchdog-MVP (Dateien):** `scripts/healthcheck/setuphelfer-backend-healthcheck.sh`, systemd `.example`-Units, `ENABLE_RESTART=0` Default ÔøΩ **nicht installiert**.
 - **Frontend:** `probeBackendStartup.ts` klassifiziert `backend_ok|down|hanging|degraded` vor Dashboard-Laden.
 - **Evidence:** Precheck, Root-Cause-Audit, Timeout-Isolation, Watchdog-Decision, Roadmap-Delta.
 
@@ -37,7 +42,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Runtime-Gate:** Hang wird explizit erkannt (`backend_hanging_active_port_but_http_timeout`, Exit **17**) statt unspezifischem `HTTP 000000`.
 - **Control Center Fail-State:** Standalone-Banner zeigt bei Timeout-Hang eine rote Backend-Fehlerkarte mit erkanntem Zustand und Operator-Next-Step statt still leerer Darstellung.
 - **Tests:** Neue Tests `backend/tests/test_backend_health_startup_v1.py` und `frontend/src/components/dev-dashboard/StandaloneModeBanner.test.ts`; bestehende Loader-Tests um Timeout-Klassifikation erweitert.
-- **Architektur/Runbook:** Neue Doku zu Startup-Verfùgbarkeit und Watchdog/Recovery inklusive Operator-Runbook.
+- **Architektur/Runbook:** Neue Doku zu Startup-VerfÔøΩgbarkeit und Watchdog/Recovery inklusive Operator-Runbook.
 
 ### Changed (Strict mode stop of background automation and standalone visibility audit)
 - **Governance stop-audit:** Neue Evidence fuer Background-Task-Stop und Git-Impact (`AUTO_BACKGROUND_TASK_STOP_AUDIT*`, `AUTO_BACKGROUND_TASK_GIT_IMPACT_AUDIT*`) mit Klassifikation `unapproved_push_detected`.
@@ -49,71 +54,71 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Boundary:** Developer Dashboard als internes Tooling dokumentiert (`internal_tooling_only=true`, `user_facing=false`, `release_feature=false`).
 - **Design:** Controlled Command Runner als allowlist-basierter Sicherheitsentwurf spezifiziert (Safety-Klassen, `argv`, getrennte stdout/stderr-Logs, Evidence-First).
 - **Roadmap:** Neuer Track `developer-tooling/controlled-command-runs` auf **yellow** (25%); `TERMINAL_A_READONLY` bleibt **completed**.
-- **Prompt-Entscheidung:** `DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP` ist verfùgbar, aber `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE` bleibt recommended_next.
+- **Prompt-Entscheidung:** `DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP` ist verfÔøΩgbar, aber `RESCUE_ISO_CHROOT_CLEANUP_FAILURE_TRIAGE` bleibt recommended_next.
 - **Nicht umgesetzt:** keine freie Shell, kein Dashboard-sudo, keine freie Command-Execution.
 
 ### Changed (Rescue ISO isohybrid binary-stage dependency)
-- **Failure:** Operator build Exit **127** ù `binary.sh: isohybrid: not found` after `extents written` (~452 MB); partial `chroot/binary.hybrid.iso` without hybrid step.
+- **Failure:** Operator build Exit **127** ÔøΩ `binary.sh: isohybrid: not found` after `extents written` (~452 MB); partial `chroot/binary.hybrid.iso` without hybrid step.
 - **Fix:** `config/package-lists/setuphelfer.list.binary` with **`syslinux-utils`**; wrapper preflight Exit **31** (`RESCUE-BUILD-ISOHYBRID-001`); diagnostics/matcher/classification.
 - **Evidence:** `rescue_iso_isohybrid_failure_latest.json`, `RESCUE_ISO_ISOHYBRID_FAILURE.md`, roadmap delta.
-- **Nùchster Schritt:** Operator ù `prepare-controlled-live-build-tree.sh`, `./auto/clean`, Build-Retry (kein apt install im Agent-Lauf).
-- **Nicht ausgefùhrt:** USB-Write, Restore, Boot-/VM-/Hardwaretest.
+- **NÔøΩchster Schritt:** Operator ÔøΩ `prepare-controlled-live-build-tree.sh`, `./auto/clean`, Build-Retry (kein apt install im Agent-Lauf).
+- **Nicht ausgefÔøΩhrt:** USB-Write, Restore, Boot-/VM-/Hardwaretest.
 
-### Changed (Rescue ISO manual operator build ù policy blocked in agent shell)
+### Changed (Rescue ISO manual operator build ÔøΩ policy blocked in agent shell)
 - **Wrapper:** `run-controlled-iso-build-with-logging.sh --operator-confirm-build` ? Exit **30** in Agent-Umgebung (kein TTY, kein `sudo -n`); **kein** `lb build`, **kein** ISO.
 - **Evidence:** `RESCUE_ISO_MANUAL_OPERATOR_BUILD_CLASSIFICATION.md`, `controlled_iso_build_latest_summary.json`.
-- **Roadmap:** Rescue bleibt **blocked**; nùchster Schritt: gleicher Prompt im **echten Operator-Terminal** nach `sudo -v` (Alternative: `RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN`).
-- **Nicht ausgefùhrt:** USB-Write, Restore, Verify Deep, Hardware-/Boot-/VM-Test.
+- **Roadmap:** Rescue bleibt **blocked**; nÔøΩchster Schritt: gleicher Prompt im **echten Operator-Terminal** nach `sudo -v` (Alternative: `RESCUE_ISO_SUDOERS_ALLOWLIST_POLICY_DESIGN`).
+- **Nicht ausgefÔøΩhrt:** USB-Write, Restore, Verify Deep, Hardware-/Boot-/VM-Test.
 
 ### Changed (Deploy-helper sync verification and runtime gate green)
-- **Phase-0-Gate:** Exit **0** ù `/opt` synchron mit Workspace (`backend/app.py`, `dev_dashboard_manual_command_runs.py`); `deploy_drift` green, `safe_test_mode` UNLOCKED.
+- **Phase-0-Gate:** Exit **0** ÔøΩ `/opt` synchron mit Workspace (`backend/app.py`, `dev_dashboard_manual_command_runs.py`); `deploy_drift` green, `safe_test_mode` UNLOCKED.
 - **Live-API:** `GET /api/dev-dashboard/manual-command-runs` und `/roadmap` HTTP **200** unter `/opt`.
-- **Deploy-Helper:** Agent konnte `setuphelfer-deploy-helper.service` nicht starten (sudo); Drift war zum Prùfzeitpunkt bereits behoben. Evidence: `DEPLOY_HELPER_SYNC_RESULT.md`.
-- **Roadmap:** `RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC` **completed**; nùchster Prompt **`RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD`**.
+- **Deploy-Helper:** Agent konnte `setuphelfer-deploy-helper.service` nicht starten (sudo); Drift war zum PrÔøΩfzeitpunkt bereits behoben. Evidence: `DEPLOY_HELPER_SYNC_RESULT.md`.
+- **Roadmap:** `RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC` **completed**; nÔøΩchster Prompt **`RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD`**.
 
 ### Changed (Runtime deploy drift documentation and cockpit port clarity)
-- **Phase-0-Gate:** Exit **14** (`deploy_drift_backend_files`) dokumentiert ù Workspace `backend/app.py` / Command-Run-API vor `/opt`; Behebung nur per Operator Deploy-Helper (`DEPLOY_HELPER_SYNC_FREIGEGEBEN`).
-- **Cockpit-Dev-URL:** Doku korrigiert ù Vite `dev:cockpit` nutzt **3001** (Fallback z.?B. **3002**), nicht fest **5173** (nur `dev:tauri`).
-- **Roadmap:** Nùchster Prompt bei rotem Gate `RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC`; Rescue-ISO-Build bleibt bis Gate Exit **0** blockiert.
+- **Phase-0-Gate:** Exit **14** (`deploy_drift_backend_files`) dokumentiert ÔøΩ Workspace `backend/app.py` / Command-Run-API vor `/opt`; Behebung nur per Operator Deploy-Helper (`DEPLOY_HELPER_SYNC_FREIGEGEBEN`).
+- **Cockpit-Dev-URL:** Doku korrigiert ÔøΩ Vite `dev:cockpit` nutzt **3001** (Fallback z.?B. **3002**), nicht fest **5173** (nur `dev:tauri`).
+- **Roadmap:** NÔøΩchster Prompt bei rotem Gate `RUNTIME_DEPLOY_DRIFT_CLEANUP_AND_COCKPIT_LIVE_SYNC`; Rescue-ISO-Build bleibt bis Gate Exit **0** blockiert.
 
 ### Changed (Roadmap command logging completion)
-- **TERMINAL_A_READONLY** auf `completed` gesetzt; neuer grùner Milestone `dev-dashboard-command-logging-readonly`; System-Python-API-Tests separat **gelb** dokumentiert.
-- **Nùchster Prompt** bleibt `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD` mit Hinweis auf Live-Deploy-Check der Cockpit-UI vor dem Build.
+- **TERMINAL_A_READONLY** auf `completed` gesetzt; neuer grÔøΩner Milestone `dev-dashboard-command-logging-readonly`; System-Python-API-Tests separat **gelb** dokumentiert.
+- **NÔøΩchster Prompt** bleibt `RESCUE_ISO_MANUAL_OPERATOR_TERMINAL_BUILD` mit Hinweis auf Live-Deploy-Check der Cockpit-UI vor dem Build.
 
 ### Added (Dev Dashboard read-only manual command run logging)
-- **Evidence:** Schema und JSON-Ablage unter `docs/evidence/dev-dashboard/manual_command_runs/` fùr vollstùndige Operator-/Cursor-Kommandonachweise (kein Chat-only).
-- **API:** `GET /api/dev-dashboard/manual-command-runs` ù read-only, keine Execute-Route.
-- **UI:** Panel ùManuelle Kommandolùufeù im Developer Dashboard (Struktur).
-- **Triage:** `DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md` ù 11 API-Test-Skips nur bei System-`python3` ohne `fastapi`; `backend/venv/bin/python3` lùuft grùn.
+- **Evidence:** Schema und JSON-Ablage unter `docs/evidence/dev-dashboard/manual_command_runs/` fÔøΩr vollstÔøΩndige Operator-/Cursor-Kommandonachweise (kein Chat-only).
+- **API:** `GET /api/dev-dashboard/manual-command-runs` ÔøΩ read-only, keine Execute-Route.
+- **UI:** Panel ÔøΩManuelle KommandolÔøΩufeÔøΩ im Developer Dashboard (Struktur).
+- **Triage:** `DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md` ÔøΩ 11 API-Test-Skips nur bei System-`python3` ohne `fastapi`; `backend/venv/bin/python3` lÔøΩuft grÔøΩn.
 
 ### Fixed (Dev Dashboard roadmap visibility in governance cockpit)
 - **Roadmap UI:** `ExternalDevelopmentControlCenter` bindet jetzt `RoadmapDrawer` ein (vorher nur Governance-Matrix trotz API-Daten); Datenquellen-Banner und Snapshot-`areas[]` aus STATUS_MATRIX.
-- **Green visibility:** `ReadyStableSection` und OK-Badges fùr belegte grùne Gates ù ohne ùnderung der Backend-Statuslogik.
+- **Green visibility:** `ReadyStableSection` und OK-Badges fÔøΩr belegte grÔøΩne Gates ÔøΩ ohne ÔøΩnderung der Backend-Statuslogik.
 
 ### Added (Diagnostics test track and global Cursor closure rules)
 - **Diagnostics / Teststrecke:** Reproduzierbare Diagnostics-Teststrecke fuer Rescue-Build-, Backup-, Restore-, Runtime-/Deploy-, Notification- und Architektur-Faelle mit Evidence-Dateien, DE/EN-Doku und gezielten Backend-Tests.
 - **Diagnostics / Mapping:** Neue Diagnosecodes `RESCUE-BUILD-TOOL-001`, `RESCUE-BUILD-RSVG-001` und `NOTIFICATION-EMAIL-PROVIDER-001`; Rescue-/Provider-Limit-Fehler werden jetzt als wiederverwendbare Diagnosekandidaten dokumentiert und getestet.
 - **Developer Dashboard:** `diagnostics_progress` zerlegt Diagnostics in Teilbereiche (Katalog, Matcher, API, UI, Evidence, Teststrecke sowie Rescue-/Backup-/Restore-/Runtime-/Notification-/Architecture-Teilstatus) und zeigt gelernte Fehler sowie Evidence sichtbar an.
-- **Globalregeln:** Zentrale Dokumente und die Next-Prompt-Registry erzwingen jetzt fuer kùnftige Cursor-Lùufe einen ehrlichen Abschluss mit Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Verknùpfung, Next-Prompt-Entscheidung und explizit nicht ausgefùhrten Aktionen.
+- **Globalregeln:** Zentrale Dokumente und die Next-Prompt-Registry erzwingen jetzt fuer kÔøΩnftige Cursor-LÔøΩufe einen ehrlichen Abschluss mit Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-VerknÔøΩpfung, Next-Prompt-Entscheidung und explizit nicht ausgefÔøΩhrten Aktionen.
 
 ### Added (Dev Dashboard roadmap and next prompt registry)
-- **Development Dashboard / Roadmap:** Neue read-only Roadmap-/Meilenstein-Registry mit Bereichen, Milestones, Aufgaben, Blockern, Entscheidungen, Notizen, Evidence-Links und sichtbarer Restore-/Diagnostics-Begrùndung.
-- **Next Prompt Registry:** Prùfbare Prompt-Registry mit Auswahlregel, `recommended_next`, Plain-Text-Export und STRICT-MODE-Template; keine Execute-Buttons und keine Runtime-Aktionen aus der Roadmap.
-- **Backend / API:** Neue read-only Endpunkte unter `/api/dev-dashboard/roadmap*` fùr Bereiche, Milestones, Blocker, Entscheidungen und Prompt-Export.
+- **Development Dashboard / Roadmap:** Neue read-only Roadmap-/Meilenstein-Registry mit Bereichen, Milestones, Aufgaben, Blockern, Entscheidungen, Notizen, Evidence-Links und sichtbarer Restore-/Diagnostics-BegrÔøΩndung.
+- **Next Prompt Registry:** PrÔøΩfbare Prompt-Registry mit Auswahlregel, `recommended_next`, Plain-Text-Export und STRICT-MODE-Template; keine Execute-Buttons und keine Runtime-Aktionen aus der Roadmap.
+- **Backend / API:** Neue read-only Endpunkte unter `/api/dev-dashboard/roadmap*` fÔøΩr Bereiche, Milestones, Blocker, Entscheidungen und Prompt-Export.
 - **Doku / Evidence:** Neue Audit-, Registry-, FAQ- und Knowledge-Base-Dokumente unter `docs/roadmap/`, `docs/dev-dashboard/` und `docs/evidence/roadmap/`.
 
 ### Fixed (Rescue ISO rsvg preflight and notification email provider-limit hardening)
 - **Version:** Patch-Bump auf `1.7.2` in `config/version.json`, `frontend/package.json`, `frontend/src-tauri/tauri.conf.json`, `frontend/src-tauri/Cargo.toml` und Root-`package.json`.
 - **Rescue ISO:** Der Dashboard-/Executor-Prebuild klassifiziert die fehlende `rsvg`-Build-Abhaengigkeit jetzt vor `lb build`, blockiert den Build mit `blocked_build_tools_missing` und zeigt nur den Operator-Hinweis `sudo apt install librsvg2-bin` an; kein automatisches `apt`, kein ISO-Build.
-- **Rescue ISO / Legacy-rsvg:** `rsvg-convert` aus `librsvg2-bin` wird nicht mehr fùlschlich als komplett fehlende Host-Abhùngigkeit behandelt. Wenn `live-build` den Legacy-Befehl `rsvg` erwartet, unterscheidet der Preflight jetzt sauber zwischen `blocked_build_tools_missing` und `blocked_legacy_rsvg_command_missing`; projektlokaler Wrapper-Support unter `build/rescue/tool-compat/bin/rsvg`, kein globaler `/usr/bin/rsvg`-Symlink.
-- **Rescue ISO / Zielarchitekturen:** Dashboard-State und Evidence trennen jetzt Host-Architektur, Kandidaten (`amd64`, `i386`) und separate Deferred-Tracks (`arm64`, `armhf`). Kein Ziel wird ohne Build-/Boot-Evidence als final grùn markiert; USB-Write bleibt blockiert.
-- **Rescue ISO / erster echter amd64-Buildversuch:** Kontrollierter `lb build` fùr `amd64` wurde ausgefùhrt, aber vom vorhandenen `auto/build`-Gate mit Exit `20` bewusst gestoppt; jetzt prùzise als `blocked_controlled_build_gate_required` statt als generischer Live-Build-Konfigurationsfehler klassifiziert, ohne USB-Write, ohne `sudo`-Fallback und ohne zweiten Build-Versuch.
-- **Rescue ISO / gate-konformer Wrapper-Lauf:** Kontrollierter `amd64`-Build ùber `scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build` wurde versucht, aber vor dem eigentlichen ISO-Build durch `sudo` ohne Terminal/Passwort gestoppt; sauber als `blocked_requires_operator_sudo_policy` klassifiziert, ohne unsafe Folgeaktion.
+- **Rescue ISO / Legacy-rsvg:** `rsvg-convert` aus `librsvg2-bin` wird nicht mehr fÔøΩlschlich als komplett fehlende Host-AbhÔøΩngigkeit behandelt. Wenn `live-build` den Legacy-Befehl `rsvg` erwartet, unterscheidet der Preflight jetzt sauber zwischen `blocked_build_tools_missing` und `blocked_legacy_rsvg_command_missing`; projektlokaler Wrapper-Support unter `build/rescue/tool-compat/bin/rsvg`, kein globaler `/usr/bin/rsvg`-Symlink.
+- **Rescue ISO / Zielarchitekturen:** Dashboard-State und Evidence trennen jetzt Host-Architektur, Kandidaten (`amd64`, `i386`) und separate Deferred-Tracks (`arm64`, `armhf`). Kein Ziel wird ohne Build-/Boot-Evidence als final grÔøΩn markiert; USB-Write bleibt blockiert.
+- **Rescue ISO / erster echter amd64-Buildversuch:** Kontrollierter `lb build` fÔøΩr `amd64` wurde ausgefÔøΩhrt, aber vom vorhandenen `auto/build`-Gate mit Exit `20` bewusst gestoppt; jetzt prÔøΩzise als `blocked_controlled_build_gate_required` statt als generischer Live-Build-Konfigurationsfehler klassifiziert, ohne USB-Write, ohne `sudo`-Fallback und ohne zweiten Build-Versuch.
+- **Rescue ISO / gate-konformer Wrapper-Lauf:** Kontrollierter `amd64`-Build ÔøΩber `scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build` wurde versucht, aber vor dem eigentlichen ISO-Build durch `sudo` ohne Terminal/Passwort gestoppt; sauber als `blocked_requires_operator_sudo_policy` klassifiziert, ohne unsafe Folgeaktion.
 - **Rescue ISO / Operator-Policy-Gate:** Der sudo-Blocker wird jetzt als eigenes `operator_policy_gate` im Rescue-Dashboard modelliert; der Wrapper bricht ohne Root, TTY oder dokumentierte Allowlist sauber mit Exit `30` und `blocked_requires_operator_sudo_policy` ab, statt an einer Hintergrund-Passwortabfrage zu haengen. Neue Diagnosecodes: `RESCUE-BUILD-ROOT-001`, `RESCUE-BUILD-GATE-001`, `RESCUE-BUILD-ARCH-001`.
 - **Notifications / E-Mail:** SMTP-Provider-Limit `554 5.7.0` wird jetzt als `notification.email.provider_limit_exceeded` behandelt, mit `email_status=failed`, `next_action=check_smtp_provider_limit_or_wait`, gelbem Email-Status und redigierter Fehlermeldung `554 5.7.0 outgoing message limit exceeded`.
 - **Dashboard / i18n / Doku:** Notification-Panel, Runbooks, FAQ, KB, Evidence und Statusmatrix bilden den Provider-Limit-Fall explizit als Dashboard `green` plus Email `yellow/provider_limit` ab; kein Fake-`sent`, kein automatischer Retry.
 
-### Added (Rescue Phase C.4 ù restore preview handoff planning)
+### Added (Rescue Phase C.4 ÔøΩ restore preview handoff planning)
 - **`rescue/restore_preview_orchestrator.py`**, **`core/restore_profiles.py`**, **`core/backup_before_write_gate.py`**: restore preview plan only (`execution_allowed: false`).
 - Profile `offline-full-restore-preview`; references canonical `modules.rescue_restore_dryrun` and `modules.backup_verify`.
 - Deploy route: `POST /api/deploy/rescue/restore-preview-plan`.
@@ -121,7 +126,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Tests: `test_restore_profiles_offline_preview_v1`, `test_backup_before_write_gate_v1`, `test_rescue_restore_preview_plan_v1`.
 - Evidence: `rescue_phase_c4_restore_preview_handoff_2026-05-20.json`.
 
-### Added (Rescue Phase C.1ùC.3 ù boot context, offline-full profile, backup plan)
+### Added (Rescue Phase C.1ÔøΩC.3 ÔøΩ boot context, offline-full profile, backup plan)
 - **`rescue/boot_context.py`**, **`rescue/backup_orchestrator.py`**: read-only boot context and offline BR-001 backup **plan** only (`execution_allowed: false`).
 - **`core/backup_profiles`**: profile `offline-full`, `get_backup_profile()`, `CANONICAL_BACKUP_RUNNER_MODULE`.
 - Deploy preview routes: `POST /api/deploy/rescue/boot-context/preview`, `POST /api/deploy/rescue/offline-backup-plan`.
@@ -129,7 +134,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Tests: `test_rescue_boot_context_v1`, `test_rescue_offline_backup_plan_v1`, `test_backup_profiles_offline_full_v1`.
 - Evidence: `docs/evidence/runtime-results/rescue_phase_c_boot_context_offline_backup_2026-05-20.json`.
 
-### Added (Core storage/mount facades ù Phase B.1/B.2)
+### Added (Core storage/mount facades ÔøΩ Phase B.1/B.2)
 - **`core.storage_facade`**, **`core.mount_facade`**: read-only inventory/planning; Rescue deploy runners migrated.
 - Docs: `MODULE_FREEZE_REGISTER_2026-05-20.md`, `CORE_STORAGE_MOUNT_FACADES_2026-05-20.md`; extended `check-module-boundaries.sh`.
 - Tests: `test_core_storage_facade_v1`, `test_core_mount_facade_v1`; Evidence `core_storage_mount_facades_2026-05-20.json`.
@@ -147,14 +152,14 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ### Added (Backup pipeline: pigz, telemetry, failure mail, BR-001 stable profile)
 - **Kompression:** `pigz` wenn vorhanden (`SETUPHELFER_BACKUP_COMPRESSION_ENGINE=auto|gzip|pigz`), Fallback gzip mit `compression_fallback_gzip`; explizites `pigz` ohne Binary blockiert mit `backup.compression_unavailable`.
 - **Telemetrie:** Top-Level-Felder in `status.json` / API (`phase`, `written_human`, `compression_engine`, Raten, `last_error_*`, `notification_status`).
-- **E-Mail:** Fehler-Mail bei `backup.failed` wenn `SETUPHELFER_NOTIFY_ON_BACKUP_FAILURE=true`; UI-Schalter ùBei Backup-Fehler E-Mail sendenù.
-- **Profil `full-root-stable`:** BR-001-taugliche Excludes fùr Browser-/User-Caches (dokumentiert).
-- **Development Dashboard:** Phasen, Warnungen (langer gzip-Lauf, stale progress), Fehlerbereich, BR-001-Grùn-Regel.
+- **E-Mail:** Fehler-Mail bei `backup.failed` wenn `SETUPHELFER_NOTIFY_ON_BACKUP_FAILURE=true`; UI-Schalter ÔøΩBei Backup-Fehler E-Mail sendenÔøΩ.
+- **Profil `full-root-stable`:** BR-001-taugliche Excludes fÔøΩr Browser-/User-Caches (dokumentiert).
+- **Development Dashboard:** Phasen, Warnungen (langer gzip-Lauf, stale progress), Fehlerbereich, BR-001-GrÔøΩn-Regel.
 - Doku: `docs/backup/BACKUP_NOTIFICATIONS_{DE,EN}.md`, `docs/backup/BACKUP_PERFORMANCE_{DE,EN}.md`, `docs/knowledge-base/backup/BR001_TAR_LIVE_CACHE_FAILURES.md`.
 
 ### Changed (Update button: manual guidance only, no GUI/apt from backend)
 - **UI / `Dashboard.tsx`:** Buttons heissen nicht mehr "Update starten" / "Run update in terminal", sondern zeigen eine manuelle Anleitung (z. B. "Update-Hinweise anzeigen" / "Show update guide"). Klicks oeffnen das Sicherheits-Modal mit den Befehlen `sudo apt update` / `sudo apt upgrade` und einer **BR-001-Warnung**; kein `__TAURI__.invoke('launch_update_terminal')`-Fallback mehr.
-- **API `POST /api/system/run-update-in-terminal`:** liefert immer `status=manual_required`, `code=updates.manual_terminal_required`, `commands`, `copyable_command`, `blocked_auto_execution=true`, `br001_warning` ù **kein** subprocess, kein `_open_terminal_with_command`, kein `apt`.
+- **API `POST /api/system/run-update-in-terminal`:** liefert immer `status=manual_required`, `code=updates.manual_terminal_required`, `commands`, `copyable_command`, `blocked_auto_execution=true`, `br001_warning` ÔøΩ **kein** subprocess, kein `_open_terminal_with_command`, kein `apt`.
 - Hintergrund: systemd-Backend hat keine grafische Sitzung; automatisches `apt update/upgrade` ist vor BR-001 unsicher (Paketmanager-Locks).
 - Tests: `backend/tests/test_update_button_manual_only_v1.py` (Endpoint ruft `subprocess.Popen` und `_open_terminal_with_command` nicht auf).
 - Evidence: `docs/evidence/runtime-results/update_button_manual_only_2026-05-19.json`.
@@ -165,44 +170,44 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Aeltere Deployments / Diagnose: Vite im Vordergrund per `exec` (Commit **`0a1e4a0`**). Doku/KB/Evidence: `docs/operations/WEB_UI_RUNTIME_SERVICE_{DE,EN}.md`, `docs/knowledge-base/runtime/WEB_UI_SERVICE_INACTIVE_EXIT0.md`, `docs/evidence/runtime-results/web_ui_reload_crash_repair_2026-05-19.json`.
 
 ### Fixed (Backend stability: system status vs. notification settings)
-- **`/api/system/status`:** teure `apt`-Schritte laufen nicht mehr im Uvicorn-Event-Loop (`asyncio.to_thread`); `get_updates_categorized` verzichtet auf `apt-get update` und pro-Paket-`apt-get upgrade -s` (verhindert Minuten-Blockaden bei `workers=1` und falsche ùBackend totù-Symptomatik beim UI-Reload).
+- **`/api/system/status`:** teure `apt`-Schritte laufen nicht mehr im Uvicorn-Event-Loop (`asyncio.to_thread`); `get_updates_categorized` verzichtet auf `apt-get update` und pro-Paket-`apt-get upgrade -s` (verhindert Minuten-Blockaden bei `workers=1` und falsche ÔøΩBackend totÔøΩ-Symptomatik beim UI-Reload).
 - **Benachrichtigungen:** robusteres Lesen von `notification.env` (UTF-8 mit `errors=replace`, keine Exceptions aus dem Parser), defensiver `build_public_settings`, strukturierte Fehler bei Schreibfehlern ohne Exception-Text; API-Handler mit Fallback-JSON.
 - **Paketaktivitaet:** `apt-get` mit `-s` / `--simulate` / `--dry-run` gilt als nicht blockierend.
 - Doku: `docs/operations/BACKUP_NOTIFICATIONS_RUNTIME_{DE,EN}.md`; Evidence: `docs/evidence/runtime-results/notification_settings_backend_crash_repair_2026-05-19.json`.
 
-### Added (Rescue ù sandbox controlled copy & build environment emulation)
+### Added (Rescue ÔøΩ sandbox controlled copy & build environment emulation)
 - Deploy-Runner `runner_rescue_sandbox_controlled_copy.py`: Precheck, Config-/Runtime-Kopie nur unter `build/rescue/sandbox/`, SHA256-Verify, Seal, Final-Gate; Handoffs unter `docs/evidence/runtime-results/handoff/`.
 - Deploy-Runner `runner_rescue_build_environment_emulation.py`: read-only Emulation (Snapshot, Workspace, Outputs-Metadaten, Logs, Overlay), Verify, Seal, Final-Gate; Artefakte unter `build/rescue/emulation/`.
 - API (`/api/deploy`): `POST /rescue/sandbox-copy/{precheck,config,runtime,verify,seal,final-gate}` und `POST /rescue/build-emulation/{environment-snapshot,workspace,outputs,logs,overlay,verify,seal,final-gate}` mit passenden `DEPLOY_RESCUE_*`-Response-Codes.
 - Tests: `test_deploy_runner_rescue_sandbox_controlled_copy_v1.py`, `test_deploy_runner_rescue_build_environment_emulation_v1.py`.
-- Doku/KB/Evidence/i18n: u. a. `DEPLOY_RESCUE_SANDBOX_CONTROLLED_COPY_{DE,EN}.md`, `DEPLOY_RESCUE_BUILD_ENVIRONMENT_EMULATION_{DE,EN}.md`, KB-Artikel und FAQ-Ergùnzungen.
+- Doku/KB/Evidence/i18n: u. a. `DEPLOY_RESCUE_SANDBOX_CONTROLLED_COPY_{DE,EN}.md`, `DEPLOY_RESCUE_BUILD_ENVIRONMENT_EMULATION_{DE,EN}.md`, KB-Artikel und FAQ-ErgÔøΩnzungen.
 
 ### Fixed (Backup API - FIX-9 API consistency, HW pre-06)
-- `GET /api/backup/list` nutzt jetzt eine eigene read-only Validierung mit `resolve_mount_source_for_path` statt der Schreibprùfung aus Create; autofs/systemd-automount wird auf reales Blockdevice aufgelùst.
-- Fehlerantworten von `backup/list` liefern strukturierte Details (`mount_source_seen`, `resolved_source`, `fstype`, `target`, `diagnosis_id`) fùr Evidence/Diagnose.
-- `POST /api/backup/create` (`type=data`) gibt Source-Planung nun auch im Erfolgspfad zurùck (`selected_sources`, `skipped_sources`, `required_sources`, `optional_sources`).
-- `POST /api/backup/restore` (`mode=preview`) ergùnzt PrivateTmp-Kontext (`private_tmp_isolation`, `preview_dir_visibility_note`, `service_private_tmp_hint`).
-- i18n ergùnzt: `backup.messages.preview_private_tmp_hint` (DE/EN).
+- `GET /api/backup/list` nutzt jetzt eine eigene read-only Validierung mit `resolve_mount_source_for_path` statt der SchreibprÔøΩfung aus Create; autofs/systemd-automount wird auf reales Blockdevice aufgelÔøΩst.
+- Fehlerantworten von `backup/list` liefern strukturierte Details (`mount_source_seen`, `resolved_source`, `fstype`, `target`, `diagnosis_id`) fÔøΩr Evidence/Diagnose.
+- `POST /api/backup/create` (`type=data`) gibt Source-Planung nun auch im Erfolgspfad zurÔøΩck (`selected_sources`, `skipped_sources`, `required_sources`, `optional_sources`).
+- `POST /api/backup/restore` (`mode=preview`) ergÔøΩnzt PrivateTmp-Kontext (`private_tmp_isolation`, `preview_dir_visibility_note`, `service_private_tmp_hint`).
+- i18n ergÔøΩnzt: `backup.messages.preview_private_tmp_hint` (DE/EN).
 
 ### Fixed (Backup API - FIX-10 backup/list stability hardening)
-- `/api/backup/list` auf read-only Pfad validiert (ohne Write-Probe), weiterhin harte Blockade fùr `/media` / `/run/media`.
+- `/api/backup/list` auf read-only Pfad validiert (ohne Write-Probe), weiterhin harte Blockade fÔøΩr `/media` / `/run/media`.
 - Validierung und Dateiscan in `asyncio.to_thread + asyncio.wait_for` mit kurzen harten Grenzen (3s/4s), um Worker-Blockade zu reduzieren.
-- Strukturierter Timeout-Code fùr Listen-Endpunkt: `backup.list_timeout` inkl. `details.command`, `details.timeout_seconds`, `details.target`.
-- Dateidatum ohne externe `date`-Subprozesse (reines `datetime.fromtimestamp`), um zusùtzliche Blockadequellen zu entfernen.
-- i18n ergùnzt: `backup.messages.list_timeout` (DE/EN).
+- Strukturierter Timeout-Code fÔøΩr Listen-Endpunkt: `backup.list_timeout` inkl. `details.command`, `details.timeout_seconds`, `details.target`.
+- Dateidatum ohne externe `date`-Subprozesse (reines `datetime.fromtimestamp`), um zusÔøΩtzliche Blockadequellen zu entfernen.
+- i18n ergÔøΩnzt: `backup.messages.list_timeout` (DE/EN).
 
 ### Fixed (Backup API - FIX-11 backup/list decouple via index)
-- `GET /api/backup/list` ist vom direkten Directory-Scan entkoppelt und liest primùr aus einem lokalen Backup-Index (`backup-index.json` im State-Verzeichnis).
-- Erfolgreiche Backup-Lùufe aktualisieren den Index mit Metadaten (`backup_file`, `created_at`, `encrypted`, `size_bytes`, `type`, `target`, `source_summary`, `manifest_present`, `verification_status`, `storage_path`) ohne Secrets.
+- `GET /api/backup/list` ist vom direkten Directory-Scan entkoppelt und liest primÔøΩr aus einem lokalen Backup-Index (`backup-index.json` im State-Verzeichnis).
+- Erfolgreiche Backup-LÔøΩufe aktualisieren den Index mit Metadaten (`backup_file`, `created_at`, `encrypted`, `size_bytes`, `type`, `target`, `source_summary`, `manifest_present`, `verification_status`, `storage_path`) ohne Secrets.
 - Bei fehlendem Index liefert `backup/list` deterministisch `success` mit leerer Liste und `index_available=false` statt Mount-Scan.
-- Optionale Existenzprùfung pro Indexeintrag ist kurz getaktet (`quick_stat`); bei Timeout bleibt der Eintrag sichtbar mit `status=unknown`.
+- Optionale ExistenzprÔøΩfung pro Indexeintrag ist kurz getaktet (`quick_stat`); bei Timeout bleibt der Eintrag sichtbar mit `status=unknown`.
 - `/media` und `/run/media` bleiben sofort blockiert (`backup.path_invalid`, `STORAGE-PROTECTION-005`) ohne Dateisystemscan.
 
 ### Fixed (Backup API - FIX-12 restore enforcement)
-- `POST /api/backup/restore` trennt `mode=preview` und `mode=restore` jetzt strikt; `mode=restore` lùuft nicht mehr durch den Preview-Pfad.
-- API-Vertrag geschùrft: bei `mode=restore` ist `target_dir` Pflicht (`backup.restore_target_missing`), `target_dir="/"` wird hart blockiert.
-- Restore-Ziele werden bei `mode=restore` deterministisch validiert; ungùltige Ziele liefern `backup.restore_target_invalid`, nicht beschreibbare Ziele `backup.restore_not_writable`.
-- Erfolgs-Code fùr echten Restore ergùnzt: `backup.restore_success`; Preview bleibt `backup.restore_preview_ok`.
+- `POST /api/backup/restore` trennt `mode=preview` und `mode=restore` jetzt strikt; `mode=restore` lÔøΩuft nicht mehr durch den Preview-Pfad.
+- API-Vertrag geschÔøΩrft: bei `mode=restore` ist `target_dir` Pflicht (`backup.restore_target_missing`), `target_dir="/"` wird hart blockiert.
+- Restore-Ziele werden bei `mode=restore` deterministisch validiert; ungÔøΩltige Ziele liefern `backup.restore_target_invalid`, nicht beschreibbare Ziele `backup.restore_not_writable`.
+- Erfolgs-Code fÔøΩr echten Restore ergÔøΩnzt: `backup.restore_success`; Preview bleibt `backup.restore_preview_ok`.
 
 ### Fixed (Storage Protection - FIX-8 runtime path verification)
 - Ursache fuer weiterhin auftretendes `STORAGE-PROTECTION-004` im aktiven Backup-Pfad nachgewiesen: Runtime unter `/opt/setuphelfer` war teils nicht synchron und der Backup-Target-Validator nutzte einen abweichenden Mount-Pfad.
@@ -223,30 +228,30 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - `debian/postinst` und `scripts/install-system.sh`: klar geloggt stop/disable von `pi-installer*.service`, Downgrade-Schutz fuer `/opt/setuphelfer` (optional `SETUPHELFER_ALLOW_DOWNGRADE=1`).
 - Doku: `docs/knowledge-base/diagnostics/SERVICE_CONFLICTS.md`, `docs/developer/NAMING_AND_SERVICES.md`, `docs/faq/SERVICE_CONFLICT_FAQ.md`.
 
-### Fixed (Backup API ù FIX-2 sudo gate, HW1 / NoNewPrivileges)
+### Fixed (Backup API ÔøΩ FIX-2 sudo gate, HW1 / NoNewPrivileges)
 - **`POST /api/backup/create`:** kein pauschales `sudo -n true` mehr fuer **`type=data`** und **`target=local`** nach erfolgreicher Zielvalidierung (`_validate_backup_dir` / Allowlist); Zielverzeichnis per **`os.makedirs`** ohne sudo. Bei fehlenden Rechten: **`backup.mkdir_failed`** mit **`PERM-GROUP-008`**. Wenn sudo weiterhin noetig ist (z. B. Full-Backup) und NNP sudo blockiert: neuer API-Code **`backup.sudo_blocked_by_nnp`** mit Detail **`SYSTEMD-NNP-031`**. Tests: `backend/tests/test_backup_create_sudo_gate_v1.py`.
 
 ### Fixed (Backup API - FIX-3 data source scope, HW1)
 - `type=data` nutzt einen nicht-privilegierten Quell-Scope ohne pauschales `/opt`; root-/container-nahe Pfade (z. B. `/opt/containerd`) sind nicht mehr Teil des Data-Backups.
 - Nicht lesbare optionale Quellen werden als `skipped_sources` dokumentiert; nicht lesbare Pflichtquellen liefern strukturiert **`backup.source_permission_denied`** mit Details (`unreadable_sources`, `required_permission`) und `diagnosis_id=BACKUP-SOURCE-PERM-032`.
 - Tar-`Permission denied` im Data-Pfad wird auf denselben strukturierten API-Code gemappt statt nur als Rohfehltext.
-- Tests ergùnzt: `backend/tests/test_backup_data_source_scope_v1.py`.
+- Tests ergÔøΩnzt: `backend/tests/test_backup_data_source_scope_v1.py`.
 
 ### Fixed (Backup Runtime - FIX-4 source trace + path unification, HW1)
-- Runtime-Mismatch behoben: aktiver `type=data`-Pfad nutzt nicht mehr die Altliste `/home /var/www /opt`, sondern ausschlieùlich Source-Planning.
-- Harte Ausschlussregel fùr Data-Backups ergùnzt: gesamter `/opt`-Tree (inkl. `/opt/containerd`) wird in `type=data` nie als `selected_sources` akzeptiert.
-- Strukturierte Trace-Logs vor Tar-Lauf ergùnzt (`backup_type`, `target`, `selected_sources`, `skipped_sources`, `required_sources`, `optional_sources`, `effective_tar_command`).
+- Runtime-Mismatch behoben: aktiver `type=data`-Pfad nutzt nicht mehr die Altliste `/home /var/www /opt`, sondern ausschlieÔøΩlich Source-Planning.
+- Harte Ausschlussregel fÔøΩr Data-Backups ergÔøΩnzt: gesamter `/opt`-Tree (inkl. `/opt/containerd`) wird in `type=data` nie als `selected_sources` akzeptiert.
+- Strukturierte Trace-Logs vor Tar-Lauf ergÔøΩnzt (`backup_type`, `target`, `selected_sources`, `skipped_sources`, `required_sources`, `optional_sources`, `effective_tar_command`).
 - Fehlerdetails bei `backup.source_permission_denied` erweitert um `selected_sources`, `skipped_sources`, `required_sources`, `optional_sources` (weiterhin `diagnosis_id=BACKUP-SOURCE-PERM-032`).
 - Eingebetteter Scheduler-Runner (`_render_backup_runner_script`) auf dieselbe Data-Source-Planung umgestellt, damit API- und Runtime-/Scheduler-Pfad konsistent sind.
 
 ### Fixed (Backup API - FIX-5 data home model, HW1)
-- `type=data` verwendet als Pflichtquelle ausschlieùlich das Home des **effektiven Dienstnutzers** (`pwd.getpwuid(os.geteuid()).pw_dir`) statt implizitem Login-Shell-Kontext.
+- `type=data` verwendet als Pflichtquelle ausschlieÔøΩlich das Home des **effektiven Dienstnutzers** (`pwd.getpwuid(os.geteuid()).pw_dir`) statt implizitem Login-Shell-Kontext.
 - Home-Readchecks behandeln `PermissionError` nun deterministisch als lesbarkeitsbezogenen Source-Fehler; dadurch wird der strukturierte Pfad `backup.source_permission_denied` (`BACKUP-SOURCE-PERM-032`) statt ungemapptem `backup.error` genutzt.
 - Keine automatische Aufnahme fremder Home-Verzeichnisse unter `/home/*`; Data-Backup bleibt strikt service-context-basiert ohne sudo.
 
 ### Added (Backup API - FIX-6 data test source model, HW1)
-- Fùr reproduzierbare HW-Lùufe unterstùtzt `type=data` jetzt explizite Pflichtquellen ùber `SETUPHELFER_DATA_BACKUP_SOURCES` (z. B. `/mnt/setuphelfer/test-data`).
-- Ist die Variable gesetzt, ersetzt sie die Default-Pflichtquelle (Service-Home) vollstùndig; `/home` ist dann keine implizite Voraussetzung fùr HW-Success.
+- FÔøΩr reproduzierbare HW-LÔøΩufe unterstÔøΩtzt `type=data` jetzt explizite Pflichtquellen ÔøΩber `SETUPHELFER_DATA_BACKUP_SOURCES` (z. B. `/mnt/setuphelfer/test-data`).
+- Ist die Variable gesetzt, ersetzt sie die Default-Pflichtquelle (Service-Home) vollstÔøΩndig; `/home` ist dann keine implizite Voraussetzung fÔøΩr HW-Success.
 - Konfigurierte Quellen werden nur unter `/mnt/setuphelfer` akzeptiert (Allowlist), `/opt/*` bleibt weiterhin hart ausgeschlossen.
 
 ### Added (Diagnose-Assistent, Phase DIAG-1 Kern)
@@ -278,11 +283,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - `backend/modules/backup_symlink_safety.py`: Pruefung relativer Symlink-Ziele gegen Pfadflucht aus Restore-/Verify-Wurzel.
 - Verify/Restore: symbolische Tar-Mitglieder erlaubt; `extractall` bevorzugt `filter="tar"`; Manifest `type` / `link_target`; kein `Path.resolve()` auf Symlink-Leafs in der Verifikation.
 
-### Fixed (Backup / Recovery ù file-based engine hardening)
-- `backend/modules/backup_engine.py`: file-based Backup archiviert jetzt Dateien **und** Verzeichnisse rekursiv mit relativen, kollisionsgeschùtzten Archivpfaden; ùberlappende Eingaben werden dedupliziert und im Manifest dokumentiert (`skipped_inputs`).
-- `backend/modules/backup_verify.py`: Verify blockiert unsichere Archiv-Member (Traversal, absolute Pfade, Link-/Sondertypen) und prùft Manifestpfade konsistent zur extrahierten Struktur.
+### Fixed (Backup / Recovery ÔøΩ file-based engine hardening)
+- `backend/modules/backup_engine.py`: file-based Backup archiviert jetzt Dateien **und** Verzeichnisse rekursiv mit relativen, kollisionsgeschÔøΩtzten Archivpfaden; ÔøΩberlappende Eingaben werden dedupliziert und im Manifest dokumentiert (`skipped_inputs`).
+- `backend/modules/backup_verify.py`: Verify blockiert unsichere Archiv-Member (Traversal, absolute Pfade, Link-/Sondertypen) und prÔøΩft Manifestpfade konsistent zur extrahierten Struktur.
 - `backend/modules/restore_engine.py`: Restore entpackt nur sichere Member, blockiert Traversal/Link-/Sondertypen und schreibt `MANIFEST.json` nicht in das Restore-Ziel.
-- `backend/tests/test_backup_recovery_engines.py`: Tests fùr rekursive Verzeichnisarchivierung, relative Pfade, Kollisionsfehler, Restore-Pfadstruktur, Manifest/Archiv-Inkonsistenz und Allowlist-Schutz erweitert.
+- `backend/tests/test_backup_recovery_engines.py`: Tests fÔøΩr rekursive Verzeichnisarchivierung, relative Pfade, Kollisionsfehler, Restore-Pfadstruktur, Manifest/Archiv-Inkonsistenz und Allowlist-Schutz erweitert.
 - Dokumentation aktualisiert: `docs/developer/BACKUP_RECOVERY_ENGINES.md`, `docs/faq-source-notes.md`, `docs/knowledge-base/BACKUP_RECOVERY_FILE_ENGINE_REALITY.md`, `docs/knowledge-base/README.md`.
 
 ### Added (Dokumentation / Wissensbasis)
@@ -290,7 +295,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Wissensbasis erweitert um `docs/knowledge-base/APT_REPOSITORIEN_UND_DOCKER_FAQ.md` und `docs/knowledge-base/CHAT_ZUSAMMENFASSUNG_APT_DOCKER_2026-04.md`.
 
 ### Notes
-- Die File-Engine-Hùrtung verbessert die technische Wiederherstellbarkeit, ersetzt aber keinen echten Full-Recovery-Nachweis mit VM-Reboot und anschlieùendem Hardware-Test.
+- Die File-Engine-HÔøΩrtung verbessert die technische Wiederherstellbarkeit, ersetzt aber keinen echten Full-Recovery-Nachweis mit VM-Reboot und anschlieÔøΩendem Hardware-Test.
 
 
 ---
@@ -299,83 +304,83 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Added
 
-- Deterministischer Restore-Pfad ohne manuelle API-Workarounds; verpflichtendes **Manifest** im Archiv (Fail-Fast bei fehlendem oder ungùltigem `MANIFEST.json`).
-- Zweisprachige Backend-Texte fùr `backup_recovery_i18n` ùber Locale (`SETUPHELFER_LANG` / `LC_MESSAGES` / `LANG` mit Prùfix `de`) sowie ergùnzte Frontend-Keys (`backup.messages.*`, `verify.messages.*`, `restore.messages.*`).
+- Deterministischer Restore-Pfad ohne manuelle API-Workarounds; verpflichtendes **Manifest** im Archiv (Fail-Fast bei fehlendem oder ungÔøΩltigem `MANIFEST.json`).
+- Zweisprachige Backend-Texte fÔøΩr `backup_recovery_i18n` ÔøΩber Locale (`SETUPHELFER_LANG` / `LC_MESSAGES` / `LANG` mit PrÔøΩfix `de`) sowie ergÔøΩnzte Frontend-Keys (`backup.messages.*`, `verify.messages.*`, `restore.messages.*`).
 - Wissensbasis: [docs/knowledge-base/FULL_RESTORE_BOOT_TEST.md](docs/knowledge-base/FULL_RESTORE_BOOT_TEST.md) mit DE/EN-Kurzfassung und Verweis auf den VM-Report.
 
 ### Changed
 
-- **systemd**-Units und Installer-Flow stabilisiert (Speicherlimits, Capabilities, Finalprùfung aktiver Dienste nach `install-system.sh`).
-- Dokumentation zu Backup-/Recovery-Engines und Manifest um deterministisches Verhalten und englische Kurzabschnitte ergùnzt.
+- **systemd**-Units und Installer-Flow stabilisiert (Speicherlimits, Capabilities, FinalprÔøΩfung aktiver Dienste nach `install-system.sh`).
+- Dokumentation zu Backup-/Recovery-Engines und Manifest um deterministisches Verhalten und englische Kurzabschnitte ergÔøΩnzt.
 
 ### Fixed
 
-- Restore-/Boot-Themenkreis in Doku und FAQ konsolidiert; fehlende i18n-Zuordnung fùr u. a. `backup.failed_manifest_missing` / Archiv-Integritùt in der Web-UI.
+- Restore-/Boot-Themenkreis in Doku und FAQ konsolidiert; fehlende i18n-Zuordnung fÔøΩr u. a. `backup.failed_manifest_missing` / Archiv-IntegritÔøΩt in der Web-UI.
 
 ---
 
 ## [1.4.1.0] - 2026-04-07
 
-### Added (Backup / Recovery ù Engines & Doku)
+### Added (Backup / Recovery ÔøΩ Engines & Doku)
 - **Backend:** `backup_engine`, `backup_verify`, `restore_engine`, `backup_crypto` (AES-256-GCM), `recovery_transport`; Hilfen `block_device_allowlist`, `backup_path_allowlist`, `backup_recovery_i18n`.
-- **CLI:** `recovery/main.py` (Recovery-Menù bei unvollstùndigem Root).
-- **Tests:** `backend/tests/test_backup_recovery_engines.py` (Simulation Zerstùrung/Wiederherstellung in `/tmp`).
+- **CLI:** `recovery/main.py` (Recovery-MenÔøΩ bei unvollstÔøΩndigem Root).
+- **Tests:** `backend/tests/test_backup_recovery_engines.py` (Simulation ZerstÔøΩrung/Wiederherstellung in `/tmp`).
 - **Doku:** `docs/developer/BACKUP_RECOVERY_ENGINES.md`; In-App **Backup & Restore** + **FAQ**; i18n-Keys `documentation.backupRestore.*`, `documentation.faq.backupEngines.*`.
-- **Hinweis:** Schlùssel fùr Verschlùsselung werden **nicht** ins Backup geschrieben; Boot-Tests auf echter Hardware weiterhin manuell.
+- **Hinweis:** SchlÔøΩssel fÔøΩr VerschlÔøΩsselung werden **nicht** ins Backup geschrieben; Boot-Tests auf echter Hardware weiterhin manuell.
 
 ---
 
 ## [1.4.0.5] - 2026-04-07
 
-### Changed (Betrieb ù Setuphelfer-Standard, PI_INSTALLER Legacy)
-- **`scripts/deploy-to-opt.sh`:** `mkdir -p` fùr **`STATE_DIR`** vor `chown`; Texte/Titel Setuphelfer; Hinweis zu Unit-Platzhaltern `{{PI_INSTALLER_*}}`.
-- **`scripts/install-system.sh`:** Banner/Fehlertexte Setuphelfer; **`SETUPHELFER_USE_SERVICE_USER`** / **`SETUPHELFER_USER`** mit Fallback auf `PI_INSTALLER_*`; **`chown`/`chmod`** fùr **`STATE_DIR`**; Symlink **`setuphelfer` ? `start-setuphelfer.sh`**; **`profile.d`:** Primùr `SETUPHELFER_*`, `PI_INSTALLER_*` nur als Spiegel aus denselben Werten.
-- **`backend/core/install_paths.py`:** `_env_path_setup_then_legacy` ù explizit SETUPHELFER vor PI_INSTALLER (Bugfix: `get_state_dir` nutzte fùlschlich `_env_path_first`).
-- **`scripts/install-backend-service.sh`**, **`create_installer.sh`:** `SETUPHELFER_*`-Variablen zuerst; **`sudo mkdir -p`** fùr Config/Log/State vor Service-Install.
+### Changed (Betrieb ÔøΩ Setuphelfer-Standard, PI_INSTALLER Legacy)
+- **`scripts/deploy-to-opt.sh`:** `mkdir -p` fÔøΩr **`STATE_DIR`** vor `chown`; Texte/Titel Setuphelfer; Hinweis zu Unit-Platzhaltern `{{PI_INSTALLER_*}}`.
+- **`scripts/install-system.sh`:** Banner/Fehlertexte Setuphelfer; **`SETUPHELFER_USE_SERVICE_USER`** / **`SETUPHELFER_USER`** mit Fallback auf `PI_INSTALLER_*`; **`chown`/`chmod`** fÔøΩr **`STATE_DIR`**; Symlink **`setuphelfer` ? `start-setuphelfer.sh`**; **`profile.d`:** PrimÔøΩr `SETUPHELFER_*`, `PI_INSTALLER_*` nur als Spiegel aus denselben Werten.
+- **`backend/core/install_paths.py`:** `_env_path_setup_then_legacy` ÔøΩ explizit SETUPHELFER vor PI_INSTALLER (Bugfix: `get_state_dir` nutzte fÔøΩlschlich `_env_path_first`).
+- **`scripts/install-backend-service.sh`**, **`create_installer.sh`:** `SETUPHELFER_*`-Variablen zuerst; **`sudo mkdir -p`** fÔøΩr Config/Log/State vor Service-Install.
 - **`scripts/start-setuphelfer.sh`:** **`SETUPHELFER_MODE`** vor **`PI_INSTALLER_MODE`**.
 - **`scripts/uninstall-system.sh`:** Kopfkommentar Setuphelfer.
-- **`docs/architecture/NAMING_AND_SERVICES.md`:** ENV-Reihenfolge prùzisiert.
+- **`docs/architecture/NAMING_AND_SERVICES.md`:** ENV-Reihenfolge prÔøΩzisiert.
 
 ---
 
 ## [1.4.0.4] - 2026-04-07
 
-### Added (Phase F ù Zielsystem-Prùfung)
-- **`scripts/verify-setuphelfer-install.sh`** ù Prùft **systemd** (`setuphelfer-backend` / `setuphelfer`, Legacy `pi-installer*`), **curl** auf `/api/version` und Web-UI :3001, optional **journalctl**; Exit-Code 0/1.
-- **`docs/VERIFY_TARGET_SYSTEM.md`** ù Kurzanleitung und manuelle Kommandos; Verweise in `NAMING_AND_SERVICES.md`, `architecture/README.md`, `SYSTEM_INSTALLATION.md`.
+### Added (Phase F ÔøΩ Zielsystem-PrÔøΩfung)
+- **`scripts/verify-setuphelfer-install.sh`** ÔøΩ PrÔøΩft **systemd** (`setuphelfer-backend` / `setuphelfer`, Legacy `pi-installer*`), **curl** auf `/api/version` und Web-UI :3001, optional **journalctl**; Exit-Code 0/1.
+- **`docs/VERIFY_TARGET_SYSTEM.md`** ÔøΩ Kurzanleitung und manuelle Kommandos; Verweise in `NAMING_AND_SERVICES.md`, `architecture/README.md`, `SYSTEM_INSTALLATION.md`.
 
 ---
 
 ## [1.4.0.3] - 2026-04-07
 
-### Changed (Phase D4 ù Changelog-, Versions- und FAQ-Pflege)
-- **Workflow:** `.cursor/rules/projekt-workflow.mdc` ù einheitliche Quelle **`config/version.json`**, Sync per `sync-version.js`; Changelog-Pflicht; systemd **setuphelfer-backend** in Abschnitt 6.
-- **Doku:** `docs/developer/VERSIONING.md` ù Titel Setuphelfer, Abschnitt **ùRelease-Pflicht fùr Maintainer (Phase D4)ù** (Checkliste: version.json, sync, CHANGELOG.md, In-App-Changelog, FAQ, debian/changelog).
-- **In-App:** FAQ-Eintrag **ùVersion und Changelog ù wo wird was gepflegt?ù** fùr Mitwirkende; Versionsblock **1.4.0.3**.
+### Changed (Phase D4 ÔøΩ Changelog-, Versions- und FAQ-Pflege)
+- **Workflow:** `.cursor/rules/projekt-workflow.mdc` ÔøΩ einheitliche Quelle **`config/version.json`**, Sync per `sync-version.js`; Changelog-Pflicht; systemd **setuphelfer-backend** in Abschnitt 6.
+- **Doku:** `docs/developer/VERSIONING.md` ÔøΩ Titel Setuphelfer, Abschnitt **ÔøΩRelease-Pflicht fÔøΩr Maintainer (Phase D4)ÔøΩ** (Checkliste: version.json, sync, CHANGELOG.md, In-App-Changelog, FAQ, debian/changelog).
+- **In-App:** FAQ-Eintrag **ÔøΩVersion und Changelog ÔøΩ wo wird was gepflegt?ÔøΩ** fÔøΩr Mitwirkende; Versionsblock **1.4.0.3**.
 
 ---
 
 ## [1.4.0.2] - 2026-04-07
 
-### Changed (Architektur & Review ù Phase D3)
-- **Referenz:** `docs/architecture/NAMING_AND_SERVICES.md` ù Produktname, Debian-Source vs. Binary-Paket `setuphelfer`, Pfade, systemd-Units, ENV (`SETUPHELFER_*` / `PI_INSTALLER_*`), Tauri-Binary-Hinweis.
-- **Index:** `docs/architecture/README.md` ù Einstieg in Architektur-Dokumente.
+### Changed (Architektur & Review ÔøΩ Phase D3)
+- **Referenz:** `docs/architecture/NAMING_AND_SERVICES.md` ÔøΩ Produktname, Debian-Source vs. Binary-Paket `setuphelfer`, Pfade, systemd-Units, ENV (`SETUPHELFER_*` / `PI_INSTALLER_*`), Tauri-Binary-Hinweis.
+- **Index:** `docs/architecture/README.md` ÔøΩ Einstieg in Architektur-Dokumente.
 - **Aktualisiert:** `init_flow.md`, `config_flow.md`; Review: `phase1_structure.md`, `phase4_structural_simplification.md`, `repository_consistency_report.md`, `error_backlog_current_state.md` (A-02 eingegrenzt).
 
 ---
 
 ## [1.4.0.1] - 2026-04-07
 
-### Changed (Dokumentation ù Phase D2)
-- **Nutzerdoku:** `docs/START_APPS.md`, `docs/BETRIEB_REPO_VS_SERVICE.md`, `docs/SYSTEM_INSTALLATION.md`, `docs/SD_CARD_IMAGE.md` auf **Setuphelfer**-Pfade und **systemd**-Units (`setuphelfer.service`, `setuphelfer-backend.service`) ausgerichtet; Legacy-Hinweise fùr `pi-installer` &lt; 1.4.0 wo nùtig.
-- **In-App:** `Documentation.tsx` ù FAQ (Starter, Pfade), Versionsblock **1.4.0.1**; **README** ù Kurzverweis auf `/opt/setuphelfer`.
-- **Skripte:** `install-system.sh` ù Zusammenfassung nach Installation (Befehle, systemd, Startmenù); `uninstall-system.sh` ù Entfernen der Symlinks **`setuphelfer*`**, Desktop-Dateien **`setuphelfer*.desktop`**, optionaler User **`setuphelfer`**.
+### Changed (Dokumentation ÔøΩ Phase D2)
+- **Nutzerdoku:** `docs/START_APPS.md`, `docs/BETRIEB_REPO_VS_SERVICE.md`, `docs/SYSTEM_INSTALLATION.md`, `docs/SD_CARD_IMAGE.md` auf **Setuphelfer**-Pfade und **systemd**-Units (`setuphelfer.service`, `setuphelfer-backend.service`) ausgerichtet; Legacy-Hinweise fÔøΩr `pi-installer` &lt; 1.4.0 wo nÔøΩtig.
+- **In-App:** `Documentation.tsx` ÔøΩ FAQ (Starter, Pfade), Versionsblock **1.4.0.1**; **README** ÔøΩ Kurzverweis auf `/opt/setuphelfer`.
+- **Skripte:** `install-system.sh` ÔøΩ Zusammenfassung nach Installation (Befehle, systemd, StartmenÔøΩ); `uninstall-system.sh` ÔøΩ Entfernen der Symlinks **`setuphelfer*`**, Desktop-Dateien **`setuphelfer*.desktop`**, optionaler User **`setuphelfer`**.
 
 ---
 
 ## [1.4.0.0] - 2026-04-08
 
-### Changed (Breaking ù Betrieb)
+### Changed (Breaking ÔøΩ Betrieb)
 - **Produkt-/Service-Name:** Debian-Binarypaket **`setuphelfer`** (ersetzt `pi-installer` &lt; 1.4.0); System-User **`setuphelfer`**; Pfade **`/opt/setuphelfer`**, **`/etc/setuphelfer`**, **`/var/lib/setuphelfer`**, **`/var/log/setuphelfer`**.
 - **systemd:** **`setuphelfer-backend.service`** + **`setuphelfer.service`**; Vorlagen im Repo-Root `setuphelfer*.service`; alte `pi-installer*.service` werden bei Deploy/postinst stillgelegt.
 - **Backend:** zentrale Pfadlogik `backend/core/install_paths.py`; **`_config_path()`** ohne Home-Fallback im Service-Modus; **`PI_INSTALLER_CONFIG_DIR`** / **`SETUPHELFER_*`** wirksam; Backup/Audit/Support-Bundle auf dynamische Pfade.
@@ -385,9 +390,9 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ## [1.3.9.5] - 2026-04-07
 
 ### Fixed
-- **Service-Topologie:** Port **8000** gehùrt nur noch **`pi-installer-backend.service`**. `scripts/start-browser-production.sh` startet kein Uvicorn mehr; bei fehlendem API klare Fehlermeldung und Exit.
+- **Service-Topologie:** Port **8000** gehÔøΩrt nur noch **`pi-installer-backend.service`**. `scripts/start-browser-production.sh` startet kein Uvicorn mehr; bei fehlendem API klare Fehlermeldung und Exit.
 - **systemd:** `pi-installer.service` **`Requires=pi-installer-backend.service`** (DEB + Vorlagen); **`debian/pi-installer-backend.service`** im Paket; `postinst`/`prerm`/`deploy-to-opt.sh`/`install-system.sh`/`create_installer.sh` aktivieren/starten Backend vor Web-UI.
-- **APP_EDITION:** Explizit **`release`** in Unit-Vorlagen (zusùtzlich zu DEB); Pfade **`PI_INSTALLER_*`** per Platzhalter in beiden Vorlagen.
+- **APP_EDITION:** Explizit **`release`** in Unit-Vorlagen (zusÔøΩtzlich zu DEB); Pfade **`PI_INSTALLER_*`** per Platzhalter in beiden Vorlagen.
 - **install-backend-service.sh:** Unter **`/opt/pi-installer`** User **`pi-installer`**, falls vorhanden.
 
 ### Changed
@@ -399,7 +404,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Fixed
 - **Betrieb / systemd:** `pi-installer.service` startet nicht mehr `./start.sh` (Vite-Dev, Schreibzugriffe auf `frontend/node_modules/.vite`). Stattdessen `scripts/start-browser-production.sh` mit `vite preview` auf gebautem `frontend/dist/` und optionalem Vite-Cache unter `/tmp` (`PI_INSTALLER_VITE_CACHE_DIR`).
-- **Deploy:** `scripts/deploy-to-opt.sh` fùhrt `npm run build` aus und schreibt die gleiche `ExecStart`-Zeile.
+- **Deploy:** `scripts/deploy-to-opt.sh` fÔøΩhrt `npm run build` aus und schreibt die gleiche `ExecStart`-Zeile.
 
 ### Changed
 - **Dokumentation:** `docs/BETRIEB_REPO_VS_SERVICE.md` (Repo-Modus vs. Service-Modus); Verweise in `docs/START_APPS.md`, `docs/SYSTEM_INSTALLATION.md`; FAQ und Versionskapitel in der App.
@@ -409,8 +414,8 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ## [1.3.9.3] - 2026-04-07
 
 ### Changed
-- **Backup & Restore:** Ampel auf **Freigabelage Phase 3** ausgerichtet (kein Grùn ohne nachgewiesenen Backup-Lauf; Gelb bei ùKern nicht verifiziertù; Rot bei `sudo_required` bzw. Diagnose/Restore-Vorschau-Risiko); Pflicht-Hinweistext per i18n.
-- **Dokumentation:** `docs/developer/BACKUP_RESTORE_PHASE3_RELEASE_ASSESSMENT.md` ergùnzt/verwendet; Verifikationsnotiz Phase 2D/2E referenziert.
+- **Backup & Restore:** Ampel auf **Freigabelage Phase 3** ausgerichtet (kein GrÔøΩn ohne nachgewiesenen Backup-Lauf; Gelb bei ÔøΩKern nicht verifiziertÔøΩ; Rot bei `sudo_required` bzw. Diagnose/Restore-Vorschau-Risiko); Pflicht-Hinweistext per i18n.
+- **Dokumentation:** `docs/developer/BACKUP_RESTORE_PHASE3_RELEASE_ASSESSMENT.md` ergÔøΩnzt/verwendet; Verifikationsnotiz Phase 2D/2E referenziert.
 
 ### Notes
 - Keine neue Backup-Kernfunktion; keine Produktionsfreigabe behauptet.
@@ -420,11 +425,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ## [1.3.9.2] - 2026-04-03
 
 ### Added
-- **Diagnose (Architektur):** Kanonisches ùbergangsschema `localization_model` (`legacy` \| `key_v1`), i18n-Key-Felder (`title_key`, `user_message_key`, `suggested_action_keys`), `diagnosis_code`, Referenzen (`docs_refs`, ?) in `backend/models/diagnosis.py`; Doku `docs/architecture/diagnosis_localization.md`.
+- **Diagnose (Architektur):** Kanonisches ÔøΩbergangsschema `localization_model` (`legacy` \| `key_v1`), i18n-Key-Felder (`title_key`, `user_message_key`, `suggested_action_keys`), `diagnosis_code`, Referenzen (`docs_refs`, ?) in `backend/models/diagnosis.py`; Doku `docs/architecture/diagnosis_localization.md`.
 - **Backend-Interpreter:** `interpret_v1` auf **v2**; Webserver-Portkonflikt, Backup-Verify-Fehler, System-Backend-unreachable und generischer Fallback liefern **key_v1** + EN-Fallback-Strings; Firewall-Regeln vorerst **legacy** (deutsche Freitexte, `schema_version` 1).
 
 ### Changed
-- **Frontend:** `DiagnosisPanel` wùhlt Texte per Keys oder Legacy; Typen in `types/diagnosis.ts`; `localBackendDiagnosis` / `localDiagnosisFallback` auf **key_v1**; neue Keys unter `diagnosis.codes.*` in `de.json` / `en.json`.
+- **Frontend:** `DiagnosisPanel` wÔøΩhlt Texte per Keys oder Legacy; Typen in `types/diagnosis.ts`; `localBackendDiagnosis` / `localDiagnosisFallback` auf **key_v1**; neue Keys unter `diagnosis.codes.*` in `de.json` / `en.json`.
 - **Version:** Patch `1.3.9.2` (`config/version.json`).
 
 ---
