@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-05-29T16:15:00+02:00",
+  "rescue_iso_artifact_status": "partial_green",
+  "rescue_iso_runtime_integration_status": "partial_green",
+  "keyboard_locale_gate_status": "partial_green",
+  "systemd_enable_gate_status": "partial_green",
+  "rebuild_ingested": true,
+  "validator_exit": 0,
+  "rescue_overall_status": "yellow",
+  "recommended_next_prompt": "RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION"
+}

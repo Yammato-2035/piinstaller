@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_OPERATOR_RUN",
-      "next_recommended_action": "Build-Tree mit DE-Keyboard, systemd-wants und Login-Hinweisen vorbereitet. Operator: RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1, lb build, validate Exit 0, VM user/live. Kein USB, kein full-green."
+      "next_prompt_id": "RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION",
+      "next_recommended_action": "Operator-Rebuild LB_EXIT=0, Validator Exit 0. Nächstes: VM user/live, Setuphelfer-Backend in QEMU prüfen. Kein USB, kein full-green."
     },
     {
       "id": "diagnostics",

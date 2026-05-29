@@ -102,6 +102,17 @@ Policy: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`
 
 **Host vs. VM:** `/opt/setuphelfer-rescue` und Rescue-`systemctl` nur **in der gebooteten ISO-VM** prüfen — nicht auf dem Host unter `/opt/setuphelfer`.
 
+## Rebuild Runtime-Integration erfolgreich (2026-05-29)
+
+Operator-Rebuild mit `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1`: **LB_EXIT=0**, `validate-rescue-iso-squashfs.sh` **Exit 0**.
+
+| ISO | SHA256 (Kurz) | Validator |
+|-----|---------------|-----------|
+| neu (16:01) | `3731d123…` | **0** |
+| alt (13:49) | `03d5aa95…` | 12 |
+
+Evidence: `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_RESULT_INGEST.md`. VM-Funktionstest steht noch aus.
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.

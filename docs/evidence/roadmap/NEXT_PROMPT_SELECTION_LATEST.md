@@ -1,5 +1,5 @@
 # Next Prompt
 
-**selected_prompt_id:** `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_OPERATOR_RUN`
+**selected_prompt_id:** `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION`
 
-Build-Tree: DE-Tastatur, Locale, systemd-wants, Login-Hinweise. Operator-Rebuild mit `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1`, danach `validate-rescue-iso-squashfs.sh` Exit 0.
+Operator-Rebuild: LB_EXIT=0, `validate-rescue-iso-squashfs.sh` Exit 0. VM: user/live, `/opt/setuphelfer-rescue`, systemctl/curl.

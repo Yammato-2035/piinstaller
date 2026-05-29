@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "synced_at": "2026-05-29T16:15:00+02:00",
+  "summary_path": "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+  "lb_exit": 0,
+  "iso_found": true,
+  "iso_sha256": "3731d1230a27ad2a3981c310611e0c6217c8b04e85112cea49559aaf88e4cdb5",
+  "runtime_integration_synced": true,
+  "validator_exit": 0,
+  "artifact_status": "partial_green",
+  "rescue_overall_status": "yellow",
+  "no_full_green": true
+}

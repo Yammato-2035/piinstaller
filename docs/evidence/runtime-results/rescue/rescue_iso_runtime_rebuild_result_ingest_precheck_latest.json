@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-29T16:15:00+02:00",
+  "branch": "main",
+  "head_short": "a203f94",
+  "runtime_gate_exit": 0,
+  "runtime_gate_ok": true,
+  "deploy_drift": "green",
+  "safe_test_mode": "UNLOCKED",
+  "ingest_mode": "operator_rebuild_result_only",
+  "no_rebuild_in_agent": true,
+  "usb_write": false,
+  "restore_started": false,
+  "hardware_test_started": false
+}

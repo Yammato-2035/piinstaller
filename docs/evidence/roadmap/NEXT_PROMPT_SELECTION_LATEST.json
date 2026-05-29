@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "selected_at": "2026-05-29T16:00:00+02:00",
-  "selected_prompt_id": "RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_OPERATOR_RUN",
-  "reason_de": "Runtime-Integration im Build-Tree vorbereitet; ISO-Rebuild nur im Operator-Terminal.",
-  "reason_en": "Runtime integration prepared in build tree; ISO rebuild operator-only.",
+  "selected_at": "2026-05-29T16:15:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION",
+  "reason_de": "Runtime-Integration im ISO (Validator Exit 0); VM-Funktion als Nächstes.",
+  "reason_en": "Runtime integration in ISO (validator exit 0); VM function next.",
   "forbidden_next": ["USB_WRITE", "FULL_GREEN_RESCUE"]
 }
