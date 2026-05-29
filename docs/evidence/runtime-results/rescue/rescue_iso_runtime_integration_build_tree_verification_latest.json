@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-05-29T16:00:00+02:00",
+  "build_tree": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+  "keyboard_file": true,
+  "xkb_layout_de": true,
+  "vconsole_file": true,
+  "keymap_de_latin1": true,
+  "locale_file": true,
+  "lang_de_de_utf8": true,
+  "timezone_file": true,
+  "europe_berlin": true,
+  "systemd_wants_backend": true,
+  "systemd_wants_ui": true,
+  "bootappend_complete": true,
+  "validate_controlled_tree_exit": 11,
+  "validate_controlled_tree_note": "FORBIDDEN binary/live/filesystem.squashfs from prior lb build — clean before validate",
+  "rebuild_ready": true
+}

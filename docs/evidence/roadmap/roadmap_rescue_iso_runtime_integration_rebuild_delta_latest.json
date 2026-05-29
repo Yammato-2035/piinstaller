@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-05-29T16:00:00+02:00",
+  "rescue_iso_runtime_integration_status": "prepared",
+  "rescue_iso_build_tree_de_keyboard": true,
+  "rescue_iso_validator_extended": true,
+  "rebuild_executed": false,
+  "rescue_overall_status": "yellow",
+  "recommended_next_prompt": "RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_OPERATOR_RUN"
+}

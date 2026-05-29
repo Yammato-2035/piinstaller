@@ -85,6 +85,23 @@ Policy: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`
 
 **Kein Setuphelfer (Operator 2026-05-29):** Bundle liegt in der Squashfs unter `/opt/setuphelfer-rescue`, startet aber nicht (Units nicht in `multi-user.target.wants`). Login: **`user`** / Passwort **`live`**. Nach Rebuild mit aktuellem `prepare-controlled-live-build-tree.sh` erneut testen. Evidence: `RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION_RESULT.md`.
 
+## Login, Tastatur und Locale im Rescue-Live
+
+| Thema | Wert |
+|-------|------|
+| Login | **`user`** / Passwort **`live`** |
+| root | an der Konsole **gesperrt** — nicht als Standard-Login |
+| Hostname (Ziel) | `setuphelfer-rescue` (bootappend) |
+| Konsole | `KEYMAP=de-latin1` (`/etc/vconsole.conf`) |
+| X11 | `XKBLAYOUT="de"` (`/etc/default/keyboard`) |
+| Locale | `LANG=de_DE.UTF-8` |
+| Zeitzone | `Europe/Berlin` |
+| Bundle-Pfad | `/opt/setuphelfer-rescue` |
+
+**Squashfs-Validator** (`validate-rescue-iso-squashfs.sh`): Exit **0** nur wenn Bundle, enabled Units, DE-Layout und Login-Hinweis in der ISO sind. Exit **12** = systemd enable fehlt (alte ISO vor Rebuild).
+
+**Host vs. VM:** `/opt/setuphelfer-rescue` und Rescue-`systemctl` nur **in der gebooteten ISO-VM** prüfen — nicht auf dem Host unter `/opt/setuphelfer`.
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.

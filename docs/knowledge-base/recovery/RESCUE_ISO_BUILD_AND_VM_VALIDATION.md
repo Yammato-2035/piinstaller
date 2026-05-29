@@ -16,7 +16,8 @@ Kurzreferenz für **Phase 1**: ISO aus Debian-Live-Tooling bauen, unter `build/r
 - **2026-05-29 (timeout triage):** `-nographic` 600s → **bootloader_seen** (SeaBIOS, iPXE, ISOLINUX); ISO-Inhalt (vmlinuz/initrd/squashfs) auf ISO bestätigt. Nächster Schritt: `RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION`.
 - **2026-05-29 (live boot):** nographic **1200s** → `timeout_after_bootloader` (stdout identisch zu 600s); Kernel/Live nicht auf Serial. Nächster Schritt: `RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN`.
 - **2026-05-29 (visual VM):** Operator-QEMU → **Debian 12**, DHCP, runlevel 2, `debian login:` (`live_system_started`). Root-Login fehlgeschlagen; als Nächstes User `live` + Setuphelfer-Check.
-- **2026-05-29 (funktional):** Operator: **Kein Setuphelfer**. Offline: Bundle in Squashfs, **Units nicht enabled** (`validate-rescue-iso-squashfs.sh` Exit 11). Rebuild mit aktuellem `prepare-controlled-live-build-tree.sh`; Login **`user`** / **`live`**.
+- **2026-05-29 (funktional):** Operator: **Kein Setuphelfer**. Offline: Bundle in Squashfs, **Units nicht enabled** (`validate-rescue-iso-squashfs.sh` Exit 12). Rebuild mit aktuellem `prepare-controlled-live-build-tree.sh`; Login **`user`** / **`live`**.
+- **2026-05-29 (integration rebuild prep):** DE-Tastatur (`de`/`de-latin1`), Locale `de_DE.UTF-8`, Zeitzone `Europe/Berlin`, systemd-wants, MOTD/issue. Rebuild nur mit `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1`. Evidence: `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_RESULT.md`.
 - VM-Sicherheit: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`.
 
 ## Deploy-Doku

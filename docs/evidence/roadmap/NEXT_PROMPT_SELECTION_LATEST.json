@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "selected_at": "2026-05-29T16:35:00+02:00",
-  "selected_prompt_id": "RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD",
-  "reason_de": "Bundle in ISO, aber Dienste nicht enabled — Tree-Fix + Operator-Rebuild, dann Login user/live.",
-  "reason_en": "Bundle in ISO but units not enabled — tree fix + operator rebuild, then user/live login.",
+  "selected_at": "2026-05-29T16:00:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_OPERATOR_RUN",
+  "reason_de": "Runtime-Integration im Build-Tree vorbereitet; ISO-Rebuild nur im Operator-Terminal.",
+  "reason_en": "Runtime integration prepared in build tree; ISO rebuild operator-only.",
   "forbidden_next": ["USB_WRITE", "FULL_GREEN_RESCUE"]
 }

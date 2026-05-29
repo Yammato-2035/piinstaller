@@ -29,6 +29,14 @@ REQ=(
   config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-backend.service
   config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer.service
   config/includes.chroot/etc/live/config.conf.d/10-setuphelfer-rescue.conf
+  config/includes.chroot/etc/default/keyboard
+  config/includes.chroot/etc/vconsole.conf
+  config/includes.chroot/etc/locale.gen
+  config/includes.chroot/etc/default/locale
+  config/includes.chroot/etc/timezone
+  config/includes.chroot/etc/localtime
+  config/includes.chroot/etc/issue
+  config/includes.chroot/etc/motd
   config/includes.chroot/etc/systemd/network/20-wired.network
   config/includes.chroot/etc/systemd/network/25-ethernet-alt.network
   config/hooks/normal/010-enable-setuphelfer-services.hook.chroot
@@ -85,6 +93,27 @@ fi
 if ! grep -q 'username=user' "$BUILD_ROOT/auto/config"; then
   fail_missing "auto/config must set live username via --bootappend-live"
 fi
+if ! grep -q 'keyboard-layouts=de' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must set keyboard-layouts=de in --bootappend-live"
+fi
+if ! grep -q 'locales=de_DE.UTF-8' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must set locales=de_DE.UTF-8 in --bootappend-live"
+fi
+if ! grep -q 'timezone=Europe/Berlin' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must set timezone=Europe/Berlin in --bootappend-live"
+fi
+grep -q 'XKBLAYOUT="de"' "$BUILD_ROOT/config/includes.chroot/etc/default/keyboard" \
+  || fail_missing 'etc/default/keyboard must contain XKBLAYOUT="de"'
+grep -q 'KEYMAP=de-latin1' "$BUILD_ROOT/config/includes.chroot/etc/vconsole.conf" \
+  || fail_missing 'etc/vconsole.conf must contain KEYMAP=de-latin1'
+grep -q 'LANG=de_DE.UTF-8' "$BUILD_ROOT/config/includes.chroot/etc/default/locale" \
+  || fail_missing 'etc/default/locale must contain LANG=de_DE.UTF-8'
+grep -q 'Europe/Berlin' "$BUILD_ROOT/config/includes.chroot/etc/timezone" \
+  || fail_missing 'etc/timezone must contain Europe/Berlin'
+grep -qE 'Login: user|Login: user ' "$BUILD_ROOT/config/includes.chroot/etc/issue" \
+  || fail_missing 'etc/issue must document user login'
+grep -q 'live' "$BUILD_ROOT/config/includes.chroot/etc/issue" \
+  || fail_missing 'etc/issue must document live password'
 [[ -L "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-backend.service" ]] \
   || fail_missing "systemd enable symlink setuphelfer-backend.service"
 [[ -L "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer.service" ]] \

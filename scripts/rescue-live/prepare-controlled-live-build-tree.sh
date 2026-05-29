@@ -128,6 +128,10 @@ python3
 python3-venv
 python3-pip
 syslinux-utils
+console-setup
+keyboard-configuration
+locales
+tzdata
 EOF
 
 # lb_binary_iso runs isohybrid inside the live-build chroot (not the host). Debian ships
@@ -197,11 +201,55 @@ write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/live/config.conf.d/10-
 # Rescue-Live: Nutzer/Hostname per Kernel cmdline (auto/config --bootappend-live).
 # Standard Debian-Live: username=user, Passwort "live" (live-config).
 LIVE_HOSTNAME="setuphelfer-rescue"
+LIVE_USERNAME="user"
+EOF
+
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/default/keyboard" 0644 <<'EOF'
+XKBMODEL="pc105"
+XKBLAYOUT="de"
+XKBVARIANT=""
+XKBOPTIONS=""
+BACKSPACE="guess"
+EOF
+
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/vconsole.conf" 0644 <<'EOF'
+KEYMAP=de-latin1
+EOF
+
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/locale.gen" 0644 <<'EOF'
+de_DE.UTF-8 UTF-8
+en_US.UTF-8 UTF-8
+EOF
+
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/default/locale" 0644 <<'EOF'
+LANG=de_DE.UTF-8
+LANGUAGE=de_DE:de
+LC_ALL=
+EOF
+
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/timezone" 0644 <<'EOF'
+Europe/Berlin
+EOF
+
+# tzdata in chroot provides /usr/share/zoneinfo/Europe/Berlin at image build time.
+ln -sf /usr/share/zoneinfo/Europe/Berlin \
+  "${BUILD_ROOT}/config/includes.chroot/etc/localtime"
+
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/issue" 0644 <<'EOF'
+Setuphelfer Rescue Live
+Login: user  Passwort: live  (root-Konsole ist gesperrt)
+Bundle: /opt/setuphelfer-rescue
+Backend: systemctl status setuphelfer-backend.service
+         curl -sS http://127.0.0.1:8000/api/version
+Tastatur: de (Konsole de-latin1)
 EOF
 
 write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/motd" 0644 <<'EOF'
-Setuphelfer Rescue Live — Bundle: /opt/setuphelfer-rescue
-Login: user / Passwort live (Debian-Live-Standard). Backend: http://127.0.0.1:8000/
+Setuphelfer Rescue Live
+Login: user / Passwort: live
+Pfad: /opt/setuphelfer-rescue
+Backend: systemctl status setuphelfer-backend.service
+         curl -sS http://127.0.0.1:8000/api/version
 EOF
 
 write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer.service" 0644 <<'EOF'
@@ -250,7 +298,7 @@ lb config noauto \
   --firmware-chroot false \
   --firmware-binary false \
   --mode debian \
-  --bootappend-live "boot=live components quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user" \
+  --bootappend-live "boot=live components quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin" \
   --iso-volume "SETUPHELFER_RESCUE" \
   --iso-application "Setuphelfer Rescue Live"
 EOF

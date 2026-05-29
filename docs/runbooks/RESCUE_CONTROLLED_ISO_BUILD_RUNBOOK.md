@@ -61,7 +61,17 @@ Vollständige Befehle: `docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_M
   build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso
 ```
 
-Exit **0** = Bundle + enabled `setuphelfer-*.service` in der Squashfs. Exit **11** = Bundle ohne systemd-Enable (Live startet Setuphelfer nicht).
+| Exit | Bedeutung |
+|------|-----------|
+| **0** | Bundle, enabled Units, DE-Tastatur/Locale/Zeitzone, Login-Hinweis user/live |
+| **11** | Setuphelfer-Bundle/Runtime-Marker fehlt in Squashfs |
+| **12** | systemd-Units nicht in `multi-user.target.wants` |
+| **13** | Keyboard/Locale/Timezone (de / de_DE.UTF-8 / Europe/Berlin) fehlt |
+| **14** | Login-/MOTD-Hinweis user/live fehlt |
+
+**Rebuild-Freigabe:** `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1` im Operator-Terminal setzen, dann `run-controlled-iso-build-with-logging.sh --operator-confirm-build`.
+
+**Login im Live-System:** `user` / `live` — **root** an der Konsole ist gesperrt.
 
 ## Operator-Terminal (Pflicht für echten Build)
 

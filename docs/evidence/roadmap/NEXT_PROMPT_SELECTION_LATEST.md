@@ -1,5 +1,5 @@
 # Next Prompt
 
-**selected_prompt_id:** `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD`
+**selected_prompt_id:** `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_OPERATOR_RUN`
 
-Operator: kein nutzbarer Setuphelfer. Offline: Bundle in Squashfs, Units nicht enabled. Build-Tree-Fix angewendet — ISO neu bauen, dann `user`/`live` testen.
+Build-Tree: DE-Tastatur, Locale, systemd-wants, Login-Hinweise. Operator-Rebuild mit `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1`, danach `validate-rescue-iso-squashfs.sh` Exit 0.

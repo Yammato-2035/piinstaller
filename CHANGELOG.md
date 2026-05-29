@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO runtime integration rebuild — prepared)
+- DE keyboard/locale/timezone in live-build includes; extended squashfs validator (exit 11–14).
+- systemd enable via wants symlinks; login MOTD/issue user/live; operator rebuild required.
+
 ### Changed (Rescue ISO runtime integration — operator finding)
 - Operator: no usable Setuphelfer in live VM; offline: bundle in squashfs but systemd units not enabled.
 - prepare: enable units via wants symlinks, live hostname/user bootappend, squashfs validator script.

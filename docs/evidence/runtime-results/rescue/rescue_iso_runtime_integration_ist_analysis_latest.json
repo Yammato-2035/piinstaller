@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "analyzed_at": "2026-05-29T16:00:00+02:00",
+  "bundle_in_includes_chroot": true,
+  "systemd_units_present": true,
+  "systemd_enable_symlinks_in_tree": true,
+  "systemd_enable_symlinks_in_current_iso": false,
+  "login_hints_in_tree": true,
+  "hostname_bootappend": true,
+  "username_bootappend": true,
+  "keyboard_de_in_tree": true,
+  "locale_de_in_tree": true,
+  "timezone_berlin_in_tree": true,
+  "validator_checks_keyboard_locale": true,
+  "validator_checks_login_motd": true,
+  "current_iso_validator_exit": 12,
+  "gap_summary": "ISO 13:49 built before enable symlinks and DE locale includes"
+}
