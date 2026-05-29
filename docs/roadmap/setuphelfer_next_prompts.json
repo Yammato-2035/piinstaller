@@ -11,7 +11,7 @@
     "Priorit\u00e4t 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorit\u00e4t 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise k\u00fcnstlich gr\u00fcn gef\u00e4rbt."
   ],
-  "selected_prompt_id": "RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN",
+  "selected_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -628,12 +628,26 @@
       "updated_at": "2026-05-28"
     },
     {
+      "id": "RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION",
+      "category": "rescue",
+      "title_de": "Rescue ISO Live-System Funktionsprüfung",
+      "title_en": "Rescue ISO live system functional validation",
+      "scope": "Nach live_system_started: Login live, /opt/setuphelfer-rescue, Backend localhost; kein USB.",
+      "status": "available",
+      "reason_de": "Debian 12 Login-Prompt im VM; Setuphelfer-Runtime noch offen.",
+      "reason_en": "Debian 12 login in VM; Setuphelfer runtime still open.",
+      "prompt_text": "Im Live-VM: User live einloggen, Bundle und start-backend-localonly prüfen.",
+      "forbidden_actions": ["usb_write", "restore_start", "dd"],
+      "created_at": "2026-05-29",
+      "updated_at": "2026-05-29"
+    },
+    {
       "id": "RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN",
       "category": "rescue",
       "title_de": "Rescue ISO visueller VM-Boot (Operator)",
       "title_en": "Rescue ISO visual VM boot (operator)",
       "scope": "Grafisches QEMU ohne Host-Disk; LIVE_BOOT_VISUAL_FREIGEGEBEN; Menü/Kernel/Live beobachten.",
-      "status": "available",
+      "status": "completed",
       "reason_de": "nographic serial zeigt nur ISOLINUX; Kernel/Live vermutlich nur visuell oder nach ENTER.",
       "reason_en": "nographic serial stops at ISOLINUX; kernel/live likely needs visual or ENTER.",
       "prompt_text": "qemu-system-x86_64 -cdrom binary.hybrid.iso -boot d -snapshot -no-reboot; dokumentiere Kernel/Live/Setuphelfer.",

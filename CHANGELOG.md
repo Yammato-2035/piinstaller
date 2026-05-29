@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO visual VM boot — operator)
+- Visual QEMU: Debian 12 to login prompt (`live_system_started`); nographic serial insufficient.
+- Next: live user login and Setuphelfer functional check; rescue stays yellow.
+
 ### Changed (Rescue ISO live system boot validation)
 - nographic 1200s: timeout_after_bootloader (stdout identical to 600s, ISOLINUX only on serial).
 - No kernel/live/setuphelfer on serial; next visual operator smoke.

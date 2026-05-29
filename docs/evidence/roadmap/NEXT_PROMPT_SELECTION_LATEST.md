@@ -1,5 +1,5 @@
 # Next Prompt
 
-**selected_prompt_id:** `RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN`
+**selected_prompt_id:** `RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION`
 
-nographic 1200s stagniert bei ISOLINUX ohne Kernel auf Serial — visueller Smoke erforderlich.
+Visueller VM-Boot: Debian 12, runlevel 2, `debian login:` — Setuphelfer unter `/opt/setuphelfer-rescue` und localhost-Backend als Nächstes.

@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN",
-      "next_recommended_action": "nographic 1200s stagniert bei ISOLINUX (kein Kernel auf Serial); visueller QEMU-Smoke mit LIVE_BOOT_VISUAL_FREIGEGEBEN. Kein USB, kein full-green."
+      "next_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION",
+      "next_recommended_action": "Visueller VM-Boot bis Debian-Login belegt; als Nächstes Login live, /opt/setuphelfer-rescue und Backend localhost prüfen. Kein USB, kein full-green."
     },
     {
       "id": "diagnostics",

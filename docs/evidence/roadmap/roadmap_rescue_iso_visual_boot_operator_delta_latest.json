@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-05-29T16:00:00+02:00",
+  "vm_boot_smoke_status": "partial_green",
+  "vm_live_system_status": "partial_green",
+  "setuphelfer_rescue_runtime_status": "not_verified",
+  "classification": "live_system_started",
+  "rescue_overall_status": "yellow",
+  "recommended_next_prompt": "RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION",
+  "no_full_green": true
+}

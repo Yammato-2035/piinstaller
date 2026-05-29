@@ -81,6 +81,8 @@ Policy: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`
 
 **Live-System 2026-05-29:** **1200s nographic** ergab dieselben 374 Bytes (nur ISOLINUX) — **kein** Kernel/Live auf Serial. Bootloader ≠ Live-System. Nächster Schritt: visueller Operator-Smoke. Evidence: `RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION_RESULT.md`.
 
+**Visueller VM-Boot 2026-05-29:** Grafisches QEMU zeigt **Debian 12** bis **`debian login:`** — Live-System in VM belegt. `root` an der Konsole schlägt fehl; typisch ist User **`live`**. Evidence: `RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RESULT.md`.
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.

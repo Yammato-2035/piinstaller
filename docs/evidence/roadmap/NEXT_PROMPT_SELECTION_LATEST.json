@@ -1,5 +1,8 @@
 {
   "schema_version": 1,
-  "selected_prompt_id": "RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN",
-  "reason_de": "nographic 1200s stagniert bei ISOLINUX; visueller Operator-Smoke n\u00f6tig."
+  "selected_at": "2026-05-29T16:00:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION",
+  "reason_de": "Visueller QEMU-Boot: Debian 12 bis login-Prompt; Setuphelfer-Funktion als Nächstes prüfen.",
+  "reason_en": "Visual QEMU boot reached Debian 12 login; next verify Setuphelfer function.",
+  "forbidden_next": ["USB_WRITE", "FULL_GREEN_RESCUE"]
 }
