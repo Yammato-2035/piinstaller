@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "vm_boot_smoke_status": "partial_green",
+  "vm_boot_timeout_triage_status": "bootloader_seen",
+  "rescue_overall_status": "yellow",
+  "recommended_next_prompt": "RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION"
+}

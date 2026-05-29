@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "mode_a_serial_display_none": {
+    "tested": true,
+    "boot_signal": false,
+    "reason": "empty stdout 120s"
+  },
+  "mode_b_nographic": {
+    "tested": true,
+    "boot_signal": true,
+    "markers": [
+      "SeaBIOS",
+      "iPXE",
+      "ISOLINUX"
+    ]
+  },
+  "mode_c_visual": {
+    "operator_handoff_only": true
+  },
+  "kvm_acceleration": false,
+  "recommended_followup": "nographic_600s_or_visual_operator"
+}

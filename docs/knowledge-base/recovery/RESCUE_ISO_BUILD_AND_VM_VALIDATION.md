@@ -13,6 +13,7 @@ Kurzreferenz für **Phase 1**: ISO aus Debian-Live-Tooling bauen, unter `build/r
 - **2026-05-29:** Hybrid-ISO **`binary.hybrid.iso`** verifiziert (SHA256, `file`, `isoinfo`); `LB_EXIT=1` nur durch stale zsync — Artefakt ≠ Boot-Nachweis. Evidence: `RESCUE_ISO_ARTIFACT_VERIFY.md`. Nächster Schritt: VM-Boot-Prep, kein USB-Write.
 - **2026-05-29 (VM prep):** QEMU 8.2.2 vorhanden; Testplan `RESCUE_ISO_VM_BOOT_TEST_PLAN.md`; Smoke **nicht** ausgeführt (kein `VM_BOOT_SMOKE_FREIGEGEBEN`). Nächster Schritt: `RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN`.
 - **2026-05-29 (VM smoke):** Smoke ausgeführt (kein Host-Disk); **timeout_no_boot_signal** nach 120s, 0 Bytes serial stdout; Exit 124. Nächster Schritt: `RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE`. Rescue bleibt **yellow**.
+- **2026-05-29 (timeout triage):** `-nographic` 600s → **bootloader_seen** (SeaBIOS, iPXE, ISOLINUX); ISO-Inhalt (vmlinuz/initrd/squashfs) auf ISO bestätigt. Nächster Schritt: `RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION`.
 - VM-Sicherheit: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`.
 
 ## Deploy-Doku

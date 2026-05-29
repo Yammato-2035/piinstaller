@@ -1,7 +1,5 @@
-# Next Prompt Selection
+# Next Prompt
 
-**selected_prompt_id:** `RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE`
+**selected_prompt_id:** `RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION`
 
-QEMU-Smoke ohne Host-Disk durchgeführt; nach 120 s keine Serial-Bootsignale. Kein Rescue full-green.
-
-JSON: `NEXT_PROMPT_SELECTION_LATEST.json`
+nographic-600s zeigte ISOLINUX; Kernel/Live noch offen. Kein full-green.

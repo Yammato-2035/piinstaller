@@ -195,6 +195,7 @@ sudo rm -rf .build chroot cache binary local
 - Nur mit **`VM_BOOT_SMOKE_FREIGEGEBEN`** im Operator-Lauf; QEMU ohne `-hda`, ohne Host-Disk, ohne USB.
 - Evidence: `RESCUE_ISO_VM_BOOT_SMOKE_RESULT.md`
 - **Hinweis:** Timeout ohne Serial-Output ist **kein** Boot-Erfolg; TCG ohne KVM kann >120s brauchen.
+- **nographic:** Für verifiziertes `binary.hybrid.iso` liefert `-nographic` (nicht `-display none`) BIOS/ISOLINUX-Signale; siehe `RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE_RESULT.md`.
 
 ## Referenzen
 

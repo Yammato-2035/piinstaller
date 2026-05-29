@@ -14,8 +14,9 @@ def classify_vm_boot_smoke_logs(
     combined = f"{stdout_text}\n{stderr_text}".lower()
     timeout_reached = qemu_exit_code == 124 or "terminating on signal 15" in stderr_text.lower()
 
+    bios_seen = bool(re.search(r"seabios|ipxe", combined, re.I))
     bootloader_seen = bool(
-        re.search(r"isolinux|syslinux|boot:", combined, re.I)
+        re.search(r"isolinux|syslinux|booting from dvd|booting from cd", combined, re.I)
     )
     kernel_started = bool(re.search(r"linux version|kernel", combined, re.I))
     initrd_started = bool(re.search(r"initrd|initial ramdisk", combined, re.I))
@@ -36,16 +37,19 @@ def classify_vm_boot_smoke_logs(
         classification = "kernel_started"
     elif bootloader_seen:
         classification = "bootloader_seen"
+    elif bios_seen and timeout_reached:
+        classification = "bios_seen"
     elif timeout_reached and not stdout_text.strip():
         classification = "timeout_no_boot_signal"
     elif timeout_reached:
-        classification = "timeout_no_boot_signal"
+        classification = "timeout_no_boot_signal_again"
     elif qemu_exit_code not in (None, 0):
         classification = "boot_failed_unknown"
     else:
         classification = "unsafe_or_unknown"
 
     return {
+        "bios_seen": bios_seen,
         "bootloader_seen": bootloader_seen,
         "kernel_started": kernel_started,
         "initrd_started": initrd_started,

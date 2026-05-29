@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE",
-      "next_recommended_action": "VM-Smoke lieferte nach 120s kein Serial-Bootsignal (TCG/kvm); Timeout-Triage: längerer Lauf oder -nographic/KVM — kein USB, kein full-green."
+      "next_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION",
+      "next_recommended_action": "Bootloader (ISOLINUX) in nographic-600s sichtbar; als Nächstes Kernel/Live-Start validieren (längerer Timeout oder visueller Operator-Smoke). Kein USB, kein full-green."
     },
     {
       "id": "diagnostics",

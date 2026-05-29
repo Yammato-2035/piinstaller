@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO VM boot timeout triage)
+- Followup smoke 600s with `-nographic` shows SeaBIOS/iPXE/ISOLINUX (`bootloader_seen`); prior 120s empty stdout was QEMU mode issue, not ISO defect.
+- Next `RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION`; rescue remains yellow.
+
 ### Changed (Rescue ISO VM boot smoke executed)
 - QEMU smoke 120s without host disk: exit 124, 0 bytes serial stdout; classified `timeout_no_boot_signal`.
 - Next `RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE`; rescue remains yellow (no fake boot green).

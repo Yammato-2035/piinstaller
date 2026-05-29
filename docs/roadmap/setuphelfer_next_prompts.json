@@ -11,7 +11,7 @@
     "Priorit\u00e4t 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorit\u00e4t 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise k\u00fcnstlich gr\u00fcn gef\u00e4rbt."
   ],
-  "selected_prompt_id": "RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE",
+  "selected_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -628,12 +628,27 @@
       "updated_at": "2026-05-28"
     },
     {
+      "id": "RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION",
+      "category": "rescue",
+      "title_de": "Rescue ISO Live-System Boot validieren",
+      "title_en": "Validate rescue ISO live system boot",
+      "scope": "Nach bootloader_seen: Kernel/initrd/Live per längerem nographic oder visuellem Operator-Smoke; kein Host-Disk.",
+      "status": "available",
+      "reason_de": "ISOLINUX in VM sichtbar; Kernel/Live noch nicht.",
+      "reason_en": "ISOLINUX visible in VM; kernel/live not yet.",
+      "prompt_text": "Erweitere VM-Boot bis Kernel/Live-Signale (nographic ≥900s oder visual); kein USB.",
+      "blocked_by": ["rescue-real-boot-proof-missing"],
+      "forbidden_actions": ["usb_write", "restore_start", "dd"],
+      "created_at": "2026-05-29",
+      "updated_at": "2026-05-29"
+    },
+    {
       "id": "RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE",
       "category": "rescue",
       "title_de": "Rescue ISO VM-Boot-Timeout Triage",
       "title_en": "Rescue ISO VM boot timeout triage",
       "scope": "QEMU-Smoke ohne Serial-Signal nach 120s; Optionen: längerer Timeout, kvm-Gruppe, -nographic; kein Host-Disk.",
-      "status": "available",
+      "status": "completed",
       "reason_de": "Smoke ausgeführt (Exit 124), 0 Bytes stdout; kein Bootmarker.",
       "reason_en": "Smoke ran (exit 124), 0 bytes stdout; no boot markers.",
       "prompt_text": "Triage timeout_no_boot_signal; dokumentiere nächsten sicheren QEMU-Versuch ohne -hda/USB.",

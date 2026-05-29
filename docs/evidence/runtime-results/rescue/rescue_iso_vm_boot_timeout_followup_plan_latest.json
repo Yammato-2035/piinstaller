@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "profile1": {
+    "timeout": 600,
+    "mode": "nographic",
+    "command_safe": true
+  },
+  "profile2": {
+    "mode": "visual_operator_handoff",
+    "agent_execute": false
+  }
+}

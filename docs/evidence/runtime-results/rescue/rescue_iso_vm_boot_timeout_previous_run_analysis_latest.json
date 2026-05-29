@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "previous_stdout_empty": true,
+  "previous_stderr_only_timeout": true,
+  "boot_markers_in_previous": false,
+  "qemu_exit": 124,
+  "host_disk_violation": false,
+  "usb_violation": false,
+  "interpretation": "timeout_no_boot_signal is not proof of ISO defect; -display none hid serial output"
+}

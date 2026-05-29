@@ -1,10 +1,5 @@
 {
   "schema_version": 1,
-  "selected_at": "2026-05-29T14:47:47+02:00",
-  "selected_prompt_id": "RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE",
-  "reason_de": "QEMU-Smoke 120s ohne Serial-Bootsignal (Exit 124); kein Fake-Boot-Green.",
-  "forbidden_next": [
-    "USB_WRITE",
-    "FULL_GREEN_RESCUE"
-  ]
+  "selected_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION",
+  "reason_de": "nographic 600s zeigte SeaBIOS/iPXE/ISOLINUX; kein Kernel/Live noch."
 }

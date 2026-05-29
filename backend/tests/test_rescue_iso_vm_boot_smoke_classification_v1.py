@@ -33,6 +33,17 @@ class RescueIsoVmBootSmokeClassificationTests(unittest.TestCase):
         self.assertEqual(result["classification"], "bootloader_seen")
         self.assertTrue(result["bootloader_seen"])
 
+    def test_nographic_isolinux_after_timeout(self) -> None:
+        stdout = "SeaBIOS\nBooting from DVD/CD...\nISOLINUX 6.04"
+        result = classify_vm_boot_smoke_logs(
+            stdout_text=stdout,
+            stderr_text="terminating on signal 15 (timeout)",
+            qemu_exit_code=124,
+            timeout_seconds=600,
+        )
+        self.assertEqual(result["classification"], "bootloader_seen")
+        self.assertTrue(result["bios_seen"])
+
 
 if __name__ == "__main__":
     unittest.main()
