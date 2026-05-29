@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO VM boot smoke executed)
+- QEMU smoke 120s without host disk: exit 124, 0 bytes serial stdout; classified `timeout_no_boot_signal`.
+- Next `RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE`; rescue remains yellow (no fake boot green).
+
 ### Changed (Rescue ISO VM boot validation prep)
 - ISO rechecked (SHA256 match); QEMU 8.2.2 tooling preflight; VM boot test plan documented.
 - VM smoke not executed (no VM_BOOT_SMOKE_FREIGEGEBEN); next RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN.

@@ -1,12 +1,10 @@
 {
   "schema_version": 1,
-  "selected_at": "2026-05-29T14:04:15+02:00",
-  "selected_prompt_id": "RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN",
-  "reason_de": "ISO erneut verifiziert; QEMU-Tooling vorhanden; VM-Smoke erfordert Operator-Freigabe VM_BOOT_SMOKE_FREIGEGEBEN.",
-  "reason_en": "ISO re-verified; QEMU tooling present; VM smoke requires operator approval VM_BOOT_SMOKE_FREIGEGEBEN.",
+  "selected_at": "2026-05-29T14:47:47+02:00",
+  "selected_prompt_id": "RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE",
+  "reason_de": "QEMU-Smoke 120s ohne Serial-Bootsignal (Exit 124); kein Fake-Boot-Green.",
   "forbidden_next": [
     "USB_WRITE",
-    "RESTORE_START",
     "FULL_GREEN_RESCUE"
   ]
 }

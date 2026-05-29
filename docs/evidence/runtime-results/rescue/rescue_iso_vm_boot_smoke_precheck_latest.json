@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-29T14:47:47+02:00",
+  "head_short": "33ce69a",
+  "runtime_gate_exit": 0,
+  "runtime_gate_ok": true,
+  "runtime_gate_blocked_static_analysis_only": false
+}

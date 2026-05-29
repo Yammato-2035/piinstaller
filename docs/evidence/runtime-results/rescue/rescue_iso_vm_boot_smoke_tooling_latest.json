@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-29T14:47:47+02:00",
+  "qemu_available": true,
+  "qemu_path": "/usr/bin/qemu-system-x86_64",
+  "kvm_available": true,
+  "user_in_kvm_group": false,
+  "vm_boot_smoke_freigabe_env": "1",
+  "freigabe_set_at_execution": true,
+  "freigabe_reason": "STRICT MODE RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN prompt"
+}

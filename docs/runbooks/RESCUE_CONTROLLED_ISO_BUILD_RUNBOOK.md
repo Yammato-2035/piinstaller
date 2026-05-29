@@ -194,6 +194,7 @@ sudo rm -rf .build chroot cache binary local
 - Policy: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`
 - Nur mit **`VM_BOOT_SMOKE_FREIGEGEBEN`** im Operator-Lauf; QEMU ohne `-hda`, ohne Host-Disk, ohne USB.
 - Evidence: `RESCUE_ISO_VM_BOOT_SMOKE_RESULT.md`
+- **Hinweis:** Timeout ohne Serial-Output ist **kein** Boot-Erfolg; TCG ohne KVM kann >120s brauchen.
 
 ## Referenzen
 

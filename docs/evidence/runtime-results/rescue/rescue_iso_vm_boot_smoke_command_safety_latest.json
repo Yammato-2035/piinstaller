@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-29T14:47:47+02:00",
+  "command_contains_hda": false,
+  "command_contains_drive": false,
+  "command_contains_host_disk": false,
+  "command_contains_usb_passthrough": false,
+  "uses_cdrom_only": true,
+  "iso_path_in_command": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "safety_check": "passed"
+}

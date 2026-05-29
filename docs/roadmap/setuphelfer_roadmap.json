@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN",
-      "next_recommended_action": "VM-Boot-Smoke im Operator-Terminal mit VM_BOOT_SMOKE_FREIGEGEBEN und dokumentiertem QEMU-Plan (kein -hda, kein Host-Disk). Kein USB-Write, kein Restore, kein full-green."
+      "next_prompt_id": "RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE",
+      "next_recommended_action": "VM-Smoke lieferte nach 120s kein Serial-Bootsignal (TCG/kvm); Timeout-Triage: längerer Lauf oder -nographic/KVM — kein USB, kein full-green."
     },
     {
       "id": "diagnostics",

@@ -75,6 +75,8 @@ Artefaktprüfung (sha256, `file`, optional `isoinfo`) ist **nicht** gleich Boot-
 Plan: `docs/evidence/runtime-results/rescue/RESCUE_ISO_VM_BOOT_TEST_PLAN.md`  
 Policy: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`
 
+**Ergebnis 2026-05-29:** Ein 120s-QEMU-Lauf ohne `-hda` endete mit Exit **124** und **0 Bytes** stdout → `timeout_no_boot_signal` (kein Fake-Boot-Green). Ohne KVM/TCG kann längerer Timeout nötig sein. Evidence: `RESCUE_ISO_VM_BOOT_SMOKE_RESULT.md`.
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.

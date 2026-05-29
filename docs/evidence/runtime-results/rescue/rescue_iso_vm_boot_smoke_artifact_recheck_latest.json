@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-29T14:47:47+02:00",
+  "iso_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_present": true,
+  "iso_size_bytes": 507510784,
+  "expected_sha256": "03d5aa95ba5e63f603a13bc7ec8765156aadddf3f8e7b6946c0bb08f9aba31f6",
+  "actual_sha256": "03d5aa95ba5e63f603a13bc7ec8765156aadddf3f8e7b6946c0bb08f9aba31f6",
+  "sha256_match": true
+}
