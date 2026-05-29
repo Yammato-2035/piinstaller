@@ -7,6 +7,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO VM boot validation prep)
+- ISO rechecked (SHA256 match); QEMU 8.2.2 tooling preflight; VM boot test plan documented.
+- VM smoke not executed (no VM_BOOT_SMOKE_FREIGEGEBEN); next RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN.
+- Rescue remains yellow; no USB/restore/hardware test.
+
 ### Fixed (Rescue ISO isohybrid � syslinux-utils must be in chroot list)
 - **Root cause:** `lb_binary_iso` runs `isohybrid` in the live-build **chroot** and only auto-installs `syslinux`; `setuphelfer.list.binary` is handled by `lb_binary_package-lists` (ISO apt pool only), not the chroot.
 - **Fix:** `syslinux-utils` in `setuphelfer.list.chroot`; preflight/validator/diagnostics updated accordingly.
