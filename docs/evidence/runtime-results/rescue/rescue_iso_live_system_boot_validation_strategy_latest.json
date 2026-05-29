@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "profile_a": {
+    "timeout": 1200,
+    "mode": "nographic"
+  },
+  "profile_b": {
+    "mode": "visual_operator_handoff"
+  },
+  "recommendation": "profile_b_when_tcg_stalls_at_isolinux_menu"
+}

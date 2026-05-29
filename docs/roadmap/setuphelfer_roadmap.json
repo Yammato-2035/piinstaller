@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION",
-      "next_recommended_action": "Bootloader (ISOLINUX) in nographic-600s sichtbar; als Nächstes Kernel/Live-Start validieren (längerer Timeout oder visueller Operator-Smoke). Kein USB, kein full-green."
+      "next_prompt_id": "RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN",
+      "next_recommended_action": "nographic 1200s stagniert bei ISOLINUX (kein Kernel auf Serial); visueller QEMU-Smoke mit LIVE_BOOT_VISUAL_FREIGEGEBEN. Kein USB, kein full-green."
     },
     {
       "id": "diagnostics",

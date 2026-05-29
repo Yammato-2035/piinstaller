@@ -196,6 +196,7 @@ sudo rm -rf .build chroot cache binary local
 - Evidence: `RESCUE_ISO_VM_BOOT_SMOKE_RESULT.md`
 - **Hinweis:** Timeout ohne Serial-Output ist **kein** Boot-Erfolg; TCG ohne KVM kann >120s brauchen.
 - **nographic:** Für verifiziertes `binary.hybrid.iso` liefert `-nographic` (nicht `-display none`) BIOS/ISOLINUX-Signale; siehe `RESCUE_ISO_VM_BOOT_TIMEOUT_TRIAGE_RESULT.md`.
+- **Live-System:** 1200s nographic reichte nicht für Kernel/Live auf Serial (`timeout_after_bootloader`); visueller Operator-Smoke als Nächstes — `RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION_RESULT.md`.
 
 ## Referenzen
 

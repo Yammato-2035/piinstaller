@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "vm_live_boot": "partial_green_bootloader_only",
+  "classification": "timeout_after_bootloader",
+  "recommended_next_prompt": "RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN",
+  "rescue_overall_status": "yellow"
+}

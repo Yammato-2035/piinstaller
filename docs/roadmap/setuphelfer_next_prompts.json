@@ -11,7 +11,7 @@
     "Priorit\u00e4t 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorit\u00e4t 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise k\u00fcnstlich gr\u00fcn gef\u00e4rbt."
   ],
-  "selected_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION",
+  "selected_prompt_id": "RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -628,12 +628,26 @@
       "updated_at": "2026-05-28"
     },
     {
+      "id": "RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN",
+      "category": "rescue",
+      "title_de": "Rescue ISO visueller VM-Boot (Operator)",
+      "title_en": "Rescue ISO visual VM boot (operator)",
+      "scope": "Grafisches QEMU ohne Host-Disk; LIVE_BOOT_VISUAL_FREIGEGEBEN; Menü/Kernel/Live beobachten.",
+      "status": "available",
+      "reason_de": "nographic serial zeigt nur ISOLINUX; Kernel/Live vermutlich nur visuell oder nach ENTER.",
+      "reason_en": "nographic serial stops at ISOLINUX; kernel/live likely needs visual or ENTER.",
+      "prompt_text": "qemu-system-x86_64 -cdrom binary.hybrid.iso -boot d -snapshot -no-reboot; dokumentiere Kernel/Live/Setuphelfer.",
+      "forbidden_actions": ["usb_write", "restore_start", "dd", "host_disk_attach"],
+      "created_at": "2026-05-29",
+      "updated_at": "2026-05-29"
+    },
+    {
       "id": "RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION",
       "category": "rescue",
       "title_de": "Rescue ISO Live-System Boot validieren",
       "title_en": "Validate rescue ISO live system boot",
       "scope": "Nach bootloader_seen: Kernel/initrd/Live per längerem nographic oder visuellem Operator-Smoke; kein Host-Disk.",
-      "status": "available",
+      "status": "completed",
       "reason_de": "ISOLINUX in VM sichtbar; Kernel/Live noch nicht.",
       "reason_en": "ISOLINUX visible in VM; kernel/live not yet.",
       "prompt_text": "Erweitere VM-Boot bis Kernel/Live-Signale (nographic ≥900s oder visual); kein USB.",

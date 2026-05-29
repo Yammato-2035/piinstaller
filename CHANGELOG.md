@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO live system boot validation)
+- nographic 1200s: timeout_after_bootloader (stdout identical to 600s, ISOLINUX only on serial).
+- No kernel/live/setuphelfer on serial; next visual operator smoke.
+
 ### Changed (Rescue ISO VM boot timeout triage)
 - Followup smoke 600s with `-nographic` shows SeaBIOS/iPXE/ISOLINUX (`bootloader_seen`); prior 120s empty stdout was QEMU mode issue, not ISO defect.
 - Next `RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION`; rescue remains yellow.

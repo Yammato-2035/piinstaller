@@ -1,5 +1,5 @@
 {
   "schema_version": 1,
-  "selected_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION",
-  "reason_de": "nographic 600s zeigte SeaBIOS/iPXE/ISOLINUX; kein Kernel/Live noch."
+  "selected_prompt_id": "RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN",
+  "reason_de": "nographic 1200s stagniert bei ISOLINUX; visueller Operator-Smoke n\u00f6tig."
 }

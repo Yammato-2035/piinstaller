@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "profile_a_safe": true,
+  "profile_b_safe": true,
+  "forbidden_patterns_absent": true
+}

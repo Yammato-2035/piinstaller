@@ -1,5 +1,5 @@
 # Next Prompt
 
-**selected_prompt_id:** `RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION`
+**selected_prompt_id:** `RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN`
 
-nographic-600s zeigte ISOLINUX; Kernel/Live noch offen. Kein full-green.
+nographic 1200s stagniert bei ISOLINUX ohne Kernel auf Serial — visueller Smoke erforderlich.

@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "iso_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "sha256_match": true,
+  "iso_size_bytes": 507510784,
+  "prior_bootloader_seen": true
+}
