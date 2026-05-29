@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "plan_version": 1,
+  "freigabe_env": "VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1",
+  "qemu_command_safe": true,
+  "forbidden": ["-hda", "-drive", "usb_passthrough", "host_disk", "installation", "restore"],
+  "login_user": "user",
+  "login_password": "live",
+  "checks": [
+    "bootloader",
+    "kernel",
+    "live_system",
+    "login_user_live",
+    "keyboard_de",
+    "locale_de",
+    "timezone_berlin",
+    "bundle_path",
+    "systemd_backend_active",
+    "api_version"
+  ]
+}

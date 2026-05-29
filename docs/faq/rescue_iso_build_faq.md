@@ -113,6 +113,10 @@ Operator-Rebuild mit `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1`: **LB_EXIT=0**, `val
 
 Evidence: `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_RESULT_INGEST.md`. VM-Funktionstest steht noch aus.
 
+## VM-Funktionstest (visuell)
+
+Freigabe: `VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1`. Plan: `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_TEST_PLAN.md`. Prüfungen **nur in der gebooteten VM** — nicht auf dem Host.
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.

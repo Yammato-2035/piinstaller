@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-29T17:00:00+02:00",
+  "branch": "main",
+  "head_short": "ca9147d",
+  "runtime_gate_exit": 0,
+  "runtime_gate_ok": true,
+  "visual_live_functional_freigabe_set": false,
+  "vm_test_executed": false,
+  "usb_write": false,
+  "restore_started": false,
+  "hardware_test_started": false
+}

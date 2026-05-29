@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO visual live functional validation handoff)
+- Test plan and artifact recheck (validator exit 0); VM test awaits VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1.
+- Added visual live functional classification helper and tests.
+
 ### Changed (Rescue ISO runtime integration rebuild — operator success)
 - Operator rebuild LB_EXIT=0; validate-rescue-iso-squashfs exit 0 (bundle, units, DE locale, login hints).
 - Rescue stays yellow; next VM functional validation with user/live.

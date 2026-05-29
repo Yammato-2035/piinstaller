@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION",
-      "next_recommended_action": "Operator-Rebuild LB_EXIT=0, Validator Exit 0. Nächstes: VM user/live, Setuphelfer-Backend in QEMU prüfen. Kein USB, kein full-green."
+      "next_prompt_id": "RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_OPERATOR_RUN",
+      "next_recommended_action": "ISO/Validator grün; VM-Funktionstest mit VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1 und user/live in QEMU. Kein USB, kein full-green."
     },
     {
       "id": "diagnostics",

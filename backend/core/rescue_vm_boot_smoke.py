@@ -134,3 +134,76 @@ def classify_live_system_boot_logs(
         "setuphelfer_ui_seen": setuphelfer_ui_seen,
         "classification": classification,
     }
+
+
+def classify_visual_live_functional_validation(
+    *,
+    visual_vm_test_executed: bool,
+    operator_authorized: bool,
+    login_user_live_success: bool = False,
+    bundle_path_present: bool = False,
+    backend_service_active: bool = False,
+    backend_version_ok: bool = False,
+    backend_health_ok: bool = False,
+    keyboard_de: bool = False,
+    locale_de: bool = False,
+    live_system_started: bool = False,
+    login_prompt_seen: bool = False,
+    bootloader_seen: bool = False,
+    kernel_started: bool = False,
+    hostname_setuphelfer_rescue: bool = False,
+    operator_output_provided: bool = False,
+) -> dict[str, Any]:
+    """Classify visual live-system functional validation from operator checklist."""
+    if not visual_vm_test_executed or not operator_authorized:
+        classification = "visual_live_functional_prepared_not_executed"
+        rescue_runtime = "yellow"
+    elif not operator_output_provided:
+        classification = "operator_visual_output_missing"
+        rescue_runtime = "yellow"
+    elif not live_system_started and not login_prompt_seen:
+        classification = "live_boot_failed"
+        rescue_runtime = "yellow"
+    elif live_system_started and login_prompt_seen and not login_user_live_success:
+        classification = "live_boot_login_failed"
+        rescue_runtime = "yellow"
+    elif login_user_live_success and not bundle_path_present:
+        classification = "live_boot_success_bundle_missing"
+        rescue_runtime = "yellow"
+    elif login_user_live_success and bundle_path_present and not (keyboard_de and locale_de):
+        classification = "live_boot_success_keyboard_locale_failed"
+        rescue_runtime = "yellow"
+    elif (
+        login_user_live_success
+        and bundle_path_present
+        and backend_service_active
+        and (backend_version_ok or backend_health_ok)
+    ):
+        classification = "live_boot_success_login_ok_backend_ok"
+        rescue_runtime = "partial_green"
+    elif login_user_live_success and bundle_path_present and not backend_service_active:
+        classification = "live_boot_success_backend_failed"
+        rescue_runtime = "yellow"
+    else:
+        classification = "unsafe_or_unknown"
+        rescue_runtime = "yellow"
+
+    return {
+        "visual_vm_test_executed": visual_vm_test_executed,
+        "operator_authorized": operator_authorized,
+        "bootloader_seen": bootloader_seen,
+        "kernel_started": kernel_started,
+        "live_system_started": live_system_started,
+        "login_prompt_seen": login_prompt_seen,
+        "login_user_live_success": login_user_live_success,
+        "hostname_setuphelfer_rescue": hostname_setuphelfer_rescue,
+        "keyboard_de": keyboard_de,
+        "locale_de": locale_de,
+        "bundle_path_present": bundle_path_present,
+        "backend_service_active": backend_service_active,
+        "backend_health_ok": backend_health_ok,
+        "backend_version_ok": backend_version_ok,
+        "classification": classification,
+        "rescue_runtime_functional_status": rescue_runtime,
+        "rescue_overall_status": "yellow",
+    }

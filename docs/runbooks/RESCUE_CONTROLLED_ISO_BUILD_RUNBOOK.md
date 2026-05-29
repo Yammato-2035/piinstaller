@@ -73,7 +73,7 @@ Vollständige Befehle: `docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_M
 
 **Login im Live-System:** `user` / `live` — **root** an der Konsole ist gesperrt.
 
-**Nach erfolgreichem Rebuild (2026-05-29):** `validate-rescue-iso-squashfs.sh` Exit **0** bestätigt Bundle, enabled Units, DE-Layout und Login-Hinweise in der Squashfs. VM-Funktionstest ist separater Schritt.
+**Nach erfolgreichem Rebuild (2026-05-29):** `validate-rescue-iso-squashfs.sh` Exit **0** bestätigt Bundle, enabled Units, DE-Layout und Login-Hinweise in der Squashfs. VM-Funktionstest ist separater Schritt mit `VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1` — siehe `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_TEST_PLAN.md`.
 
 ## Operator-Terminal (Pflicht für echten Build)
 

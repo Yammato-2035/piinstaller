@@ -1,5 +1,5 @@
 # Next Prompt
 
-**selected_prompt_id:** `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION`
+**selected_prompt_id:** `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_OPERATOR_RUN`
 
-Operator-Rebuild: LB_EXIT=0, `validate-rescue-iso-squashfs.sh` Exit 0. VM: user/live, `/opt/setuphelfer-rescue`, systemctl/curl.
+`VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1`, QEMU mit neuer ISO, Login user/live, Backend in VM prüfen.

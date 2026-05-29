@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "rechecked_at": "2026-05-29T17:00:00+02:00",
+  "iso_present": true,
+  "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_size_bytes": 509607936,
+  "iso_mtime": "2026-05-29T16:01:45+02:00",
+  "iso_sha256": "3731d1230a27ad2a3981c310611e0c6217c8b04e85112cea49559aaf88e4cdb5",
+  "expected_sha256": "3731d1230a27ad2a3981c310611e0c6217c8b04e85112cea49559aaf88e4cdb5",
+  "sha256_match": true,
+  "validator_exit": 0,
+  "vm_test_allowed": true,
+  "vm_test_executed": false
+}
