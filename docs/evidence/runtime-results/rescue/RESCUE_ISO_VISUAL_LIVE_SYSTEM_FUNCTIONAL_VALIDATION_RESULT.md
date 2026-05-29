@@ -1,31 +1,34 @@
-# Rescue ISO — Visual Live System Functional Validation (Handoff)
+# Rescue ISO — Visual Live System Functional Validation (Operator)
 
-**Klassifikation:** `visual_live_functional_prepared_not_executed`  
-**Grund:** `VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1` nicht gesetzt — kein QEMU-Lauf, keine Operator-Ausgabe.
+**Klassifikation:** `live_boot_success_systemd_init_missing`  
+**Rescue Runtime Functional:** **yellow** — Rescue gesamt: **yellow**
 
-## Bereits belegt (statisch)
+## Operator-Befund (VM, Ground Truth)
 
-| Prüfung | Status |
-|---------|--------|
-| ISO SHA256 | match |
-| Squashfs-Validator | Exit **0** |
-| Bundle / Units / DE-Locale in Image | ja (offline) |
+| Prüfung | Ergebnis |
+|---------|----------|
+| Login user/live | **ja** (Befehle ausgeführt) |
+| `/opt/setuphelfer-rescue` | **ja** („Verzeichnis ist da“) |
+| Keyboard | `KEYMAP=de-latin1` |
+| Locale | `LANG=de_DE.UTF8` (Operator-Transkript) |
+| Timezone | `Europe/Berlin` |
+| Netzwerk | `eth0 does not exist` (Namensgebung: eher `ens3`/`enp*`) |
+| **systemd PID 1** | **nein** — `System has not been booted with systemd as init system` |
+| `systemctl` | fehlgeschlagen (kein D-Bus) |
+| Backend `curl` | **Failed to connect** |
 
-## Noch offen (nur in VM)
+## Interpretation
 
-Login user/live, laufendes `/opt/setuphelfer-rescue`, aktiver Rescue-Backend, `/api/version` im Live-System.
+- **Squashfs-Validator (offline) Exit 0** belegt Bundle, enabled Units und DE-Layout **im Image**.
+- Im **laufenden Live-System** ist **systemd nicht Init** → `multi-user.target.wants`-Units starten nicht → kein Rescue-Backend auf `:8000`.
+- Abweichung Image vs. Runtime — kein Fake-Green.
 
-## Operator — nächster Schritt
+## Nicht geprüft / Host
 
-```bash
-export VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1
-cd /home/volker/piinstaller
-ISO_PATH="build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso"
-qemu-system-x86_64 -m 2048 -smp 2 -cdrom "$ISO_PATH" -boot d -snapshot -no-reboot
-```
+Kein Test auf Host `volker-ROG-Strix` unter `/opt/setuphelfer`.
 
-Nach Login **user**/**live** die Checkliste aus `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_TEST_PLAN.md` ausführen und Ausgabe ingestieren.
+## Nächster Schritt
 
-**Rescue gesamt:** **yellow** (kein USB/Hardware/Restore).
+**`RESCUE_ISO_VM_SYSTEMD_INIT_TRIAGE`** — warum Live ohne systemd als PID 1 bootet; ggf. Build-Tree (`systemd`/`systemd-sysv`, live-boot init).
 
 JSON: `rescue_iso_visual_live_system_functional_validation_result_latest.json`

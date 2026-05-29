@@ -54,5 +54,22 @@ class RescueIsoVisualLiveFunctionalValidationTests(unittest.TestCase):
         self.assertEqual(result["classification"], "live_boot_success_backend_failed")
 
 
+    def test_systemd_init_missing(self) -> None:
+        result = classify_visual_live_functional_validation(
+            visual_vm_test_executed=True,
+            operator_authorized=True,
+            operator_output_provided=True,
+            live_system_started=True,
+            login_prompt_seen=True,
+            login_user_live_success=True,
+            bundle_path_present=True,
+            keyboard_de=True,
+            locale_de=True,
+            systemd_as_init=False,
+            backend_service_active=False,
+        )
+        self.assertEqual(result["classification"], "live_boot_success_systemd_init_missing")
+
+
 if __name__ == "__main__":
     unittest.main()

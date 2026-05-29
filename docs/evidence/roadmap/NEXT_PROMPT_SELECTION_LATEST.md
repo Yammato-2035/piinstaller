@@ -1,5 +1,5 @@
 # Next Prompt
 
-**selected_prompt_id:** `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_OPERATOR_RUN`
+**selected_prompt_id:** `RESCUE_ISO_VM_SYSTEMD_INIT_TRIAGE`
 
-`VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1`, QEMU mit neuer ISO, Login user/live, Backend in VM prüfen.
+VM: user/live OK, `/opt/setuphelfer-rescue` da, DE-Locale OK; **systemd nicht PID 1** → systemctl/curl fehlgeschlagen.

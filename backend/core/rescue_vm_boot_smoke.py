@@ -153,6 +153,7 @@ def classify_visual_live_functional_validation(
     kernel_started: bool = False,
     hostname_setuphelfer_rescue: bool = False,
     operator_output_provided: bool = False,
+    systemd_as_init: bool = True,
 ) -> dict[str, Any]:
     """Classify visual live-system functional validation from operator checklist."""
     if not visual_vm_test_executed or not operator_authorized:
@@ -172,6 +173,9 @@ def classify_visual_live_functional_validation(
         rescue_runtime = "yellow"
     elif login_user_live_success and bundle_path_present and not (keyboard_de and locale_de):
         classification = "live_boot_success_keyboard_locale_failed"
+        rescue_runtime = "yellow"
+    elif login_user_live_success and bundle_path_present and not systemd_as_init:
+        classification = "live_boot_success_systemd_init_missing"
         rescue_runtime = "yellow"
     elif (
         login_user_live_success
@@ -203,6 +207,7 @@ def classify_visual_live_functional_validation(
         "backend_service_active": backend_service_active,
         "backend_health_ok": backend_health_ok,
         "backend_version_ok": backend_version_ok,
+        "systemd_as_init": systemd_as_init,
         "classification": classification,
         "rescue_runtime_functional_status": rescue_runtime,
         "rescue_overall_status": "yellow",

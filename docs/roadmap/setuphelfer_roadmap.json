@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_OPERATOR_RUN",
-      "next_recommended_action": "ISO/Validator grün; VM-Funktionstest mit VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1 und user/live in QEMU. Kein USB, kein full-green."
+      "next_prompt_id": "RESCUE_ISO_VM_SYSTEMD_INIT_TRIAGE",
+      "next_recommended_action": "VM: Login user/live OK, Bundle da, DE-Locale OK; systemd nicht PID 1 → Backend fehlt. Triage Init/Build. Kein USB, kein full-green."
     },
     {
       "id": "diagnostics",

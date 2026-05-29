@@ -117,6 +117,8 @@ Evidence: `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_RESULT_INGEST.md`. VM-Funktion
 
 Freigabe: `VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1`. Plan: `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_TEST_PLAN.md`. Prüfungen **nur in der gebooteten VM** — nicht auf dem Host.
 
+**Operator 2026-05-29:** Login user/live, `/opt/setuphelfer-rescue` vorhanden, DE-Keyboard/Locale/Zeitzone OK. **systemd nicht PID 1** → `systemctl` und `curl :8000` fehlgeschlagen. Klassifikation: `live_boot_success_systemd_init_missing`. Evidence: `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION_RESULT.md`.
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.
