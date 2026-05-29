@@ -597,8 +597,22 @@
               "blocker_refs": [
                 "rescue-real-boot-proof-missing"
               ],
-              "next_action_de": "Echten Operator-/Build-/Boot-Track separat und gated vorbereiten.",
-              "next_action_en": "Prepare the real operator/build/boot track separately and under gates."
+              "next_action_de": "VM-Boot-Smoke mit QEMU-Plan und Operator-Freigabe VM_BOOT_SMOKE_FREIGEGEBEN ausführen.",
+              "next_action_en": "Run VM boot smoke with QEMU plan and operator approval VM_BOOT_SMOKE_FREIGEGEBEN."
+            },
+            {
+              "id": "rescue-vm-boot-validation-prep",
+              "title_de": "VM-Boot-Validierung vorbereitet",
+              "title_en": "VM boot validation prepared",
+              "status": "partial_green",
+              "progress_percent": 30,
+              "evidence_links": [
+                "docs/evidence/runtime-results/rescue/RESCUE_ISO_VM_BOOT_TEST_PLAN.md",
+                "docs/evidence/runtime-results/rescue/rescue_iso_vm_tooling_preflight_latest.json"
+              ],
+              "blocker_refs": ["rescue-real-boot-proof-missing"],
+              "next_action_de": "Operator-Smoke mit serial stdio; Evidence in RESCUE_ISO_VM_BOOT_SMOKE_RESULT.",
+              "next_action_en": "Operator smoke with serial stdio; evidence in RESCUE_ISO_VM_BOOT_SMOKE_RESULT."
             }
           ],
           "blockers": [
@@ -694,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_VM_BOOT_VALIDATION_PREP",
-      "next_recommended_action": "Hybrid-ISO-Artefakt ist verifiziert; als Nächstes VM-/Boot-Validierung vorbereiten (read-only/gated). Kein USB-Write, kein Restore, kein full-green Rescue."
+      "next_prompt_id": "RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN",
+      "next_recommended_action": "VM-Boot-Smoke im Operator-Terminal mit VM_BOOT_SMOKE_FREIGEGEBEN und dokumentiertem QEMU-Plan (kein -hda, kein Host-Disk). Kein USB-Write, kein Restore, kein full-green."
     },
     {
       "id": "diagnostics",

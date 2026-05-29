@@ -1,12 +1,9 @@
 {
   "schema_version": 1,
-  "selected_at": "2026-05-29T13:58:21+02:00",
-  "selected_prompt_id": "RESCUE_ISO_VM_BOOT_VALIDATION_PREP",
-  "reason_de": "Hybrid-ISO-Artefakt per sha256/file/isoinfo verifiziert; kein Boot-/USB-Nachweis.",
-  "reason_en": "Hybrid ISO artifact verified via sha256/file/isoinfo; no boot/USB proof yet.",
-  "alternatives": [
-    "RESCUE_ISO_ARTIFACT_VERIFY_COMPLETION"
-  ],
+  "selected_at": "2026-05-29T14:04:15+02:00",
+  "selected_prompt_id": "RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN",
+  "reason_de": "ISO erneut verifiziert; QEMU-Tooling vorhanden; VM-Smoke erfordert Operator-Freigabe VM_BOOT_SMOKE_FREIGEGEBEN.",
+  "reason_en": "ISO re-verified; QEMU tooling present; VM smoke requires operator approval VM_BOOT_SMOKE_FREIGEGEBEN.",
   "forbidden_next": [
     "USB_WRITE",
     "RESTORE_START",

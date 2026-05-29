@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-29T14:04:15+02:00",
+  "qemu_system_x86_64": "/usr/bin/qemu-system-x86_64",
+  "qemu_system_i386": "/usr/bin/qemu-system-i386",
+  "qemu_version": "8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.16)",
+  "kvm_device": "/dev/kvm",
+  "kvm_available": true,
+  "user_in_kvm_group": false,
+  "user_groups": [
+    "gabriel",
+    "sudo",
+    "users",
+    "vboxusers",
+    "setuphelfer",
+    "workspace",
+    "piinstaller"
+  ],
+  "vbox_manage": "/usr/bin/VBoxManage",
+  "vbox_version": "7.0.16_Ubuntur162802",
+  "qemu_available": true,
+  "vbox_available": true,
+  "vm_boot_test_possible_without_install": true,
+  "kvm_acceleration_likely": false,
+  "requires_operator_decision": true,
+  "recommended_vm_backend": "qemu",
+  "headless_serial_supported": true,
+  "no_install_attempted": true
+}

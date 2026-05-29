@@ -1,9 +1,9 @@
 # Next Prompt Selection
 
-**selected_prompt_id:** `RESCUE_ISO_VM_BOOT_VALIDATION_PREP`
+**selected_prompt_id:** `RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN`
 
-**Begründung:** Hybrid-ISO (`binary.hybrid.iso`) per SHA256, `file` und `isoinfo` verifiziert. Kein VM-/Boot-/USB-Nachweis — Rescue bleibt **yellow**, nicht full-green.
+**Begründung:** ISO erneut SHA256-verifiziert; QEMU 8.2.2 vorhanden; Testplan und Safety-Policy dokumentiert. VM-Smoke erfordert Operator-Freigabe `VM_BOOT_SMOKE_FREIGEGEBEN`.
 
-**Nicht als Nächstes:** USB-Write, Restore, erneuter Full-Build (optional nur zsync-Cleanup für grünen LB_EXIT).
+**Nicht:** USB-Write, Restore, Rescue full-green.
 
 JSON: `NEXT_PROMPT_SELECTION_LATEST.json`

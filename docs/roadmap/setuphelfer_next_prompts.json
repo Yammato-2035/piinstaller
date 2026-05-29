@@ -11,7 +11,7 @@
     "Priorit\u00e4t 5: Jeder Abschlussbericht muss Dashboard-Fortschritt, Diagnostics-Lernfortschritt, Evidence-Dateien und die Next-Prompt-Entscheidung nennen.",
     "Priorit\u00e4t 6: Kein Bereich wird ohne belastbare Tests oder Runtime-/Hardware-Nachweise k\u00fcnstlich gr\u00fcn gef\u00e4rbt."
   ],
-  "selected_prompt_id": "RESCUE_ISO_VM_BOOT_VALIDATION_PREP",
+  "selected_prompt_id": "RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN",
   "prompts": [
     {
       "id": "ROADMAP_B_NEXT",
@@ -628,12 +628,32 @@
       "updated_at": "2026-05-28"
     },
     {
+      "id": "RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN",
+      "category": "rescue",
+      "title_de": "Rescue ISO VM-Boot-Smoke (Operator)",
+      "title_en": "Rescue ISO VM boot smoke (operator)",
+      "scope": "QEMU headless smoke mit VM_BOOT_SMOKE_FREIGEGEBEN; Plan in RESCUE_ISO_VM_BOOT_TEST_PLAN.md; kein Host-Disk.",
+      "status": "available",
+      "reason_de": "Tooling und Testplan bereit; Smoke nur mit expliziter Freigabe im Operator-Terminal.",
+      "reason_en": "Tooling and test plan ready; smoke only with explicit approval in operator terminal.",
+      "prompt_text": "Setze VM_BOOT_SMOKE_FREIGEGEBEN=1 und führe den dokumentierten timeout-QEMU-Befehl aus (kein -hda, kein /dev). Evidence in RESCUE_ISO_VM_BOOT_SMOKE_RESULT.",
+      "blocked_by": ["rescue-real-boot-proof-missing"],
+      "unlocks": ["RESCUE_ISO_LIVE_SYSTEM_BOOT_VALIDATION"],
+      "documentation_targets": [
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_VM_BOOT_TEST_PLAN.md",
+        "docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md"
+      ],
+      "forbidden_actions": ["usb_write", "restore_start", "dd", "host_disk_attach"],
+      "created_at": "2026-05-29",
+      "updated_at": "2026-05-29"
+    },
+    {
       "id": "RESCUE_ISO_VM_BOOT_VALIDATION_PREP",
       "category": "rescue",
       "title_de": "Rescue ISO VM-Boot-Validierung vorbereiten",
       "title_en": "Prepare rescue ISO VM boot validation",
       "scope": "Gated VM-/Boot-Checkliste nach verifiziertem binary.hybrid.iso; kein USB-Write.",
-      "status": "available",
+      "status": "completed",
       "reason_de": "Hybrid-ISO-Artefakt per SHA256/file verifiziert; Boot-Nachweis fehlt noch.",
       "reason_en": "Hybrid ISO artifact verified via SHA256/file; boot proof still missing.",
       "prompt_text": "Bereite read-only/gated VM-Boot-Validierung für binary.hybrid.iso vor. Kein dd/USB, kein Restore, kein full-green.",

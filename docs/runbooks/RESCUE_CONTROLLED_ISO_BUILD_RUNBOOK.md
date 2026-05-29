@@ -187,6 +187,14 @@ sudo rm -rf .build chroot cache binary local
 - Allowlist-Erweiterung
 - Safety-Gate abschwächen
 
+## VM-Boot-Smoke (nach Artefaktprüfung)
+
+- Artefaktprüfung (sha256/file/isoinfo) ist **nicht** Boot-Nachweis.
+- Testplan: `docs/evidence/runtime-results/rescue/RESCUE_ISO_VM_BOOT_TEST_PLAN.md`
+- Policy: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`
+- Nur mit **`VM_BOOT_SMOKE_FREIGEGEBEN`** im Operator-Lauf; QEMU ohne `-hda`, ohne Host-Disk, ohne USB.
+- Evidence: `RESCUE_ISO_VM_BOOT_SMOKE_RESULT.md`
+
 ## Referenzen
 
 - `RESCUE_USB_WRITE_GATE_RUNBOOK.md`

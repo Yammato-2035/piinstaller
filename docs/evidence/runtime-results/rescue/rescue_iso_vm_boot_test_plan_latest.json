@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-05-29T14:04:15+02:00",
+  "iso_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_sha256": "03d5aa95ba5e63f603a13bc7ec8765156aadddf3f8e7b6946c0bb08f9aba31f6",
+  "vm_backend": "qemu-system-x86_64",
+  "ram_mb": 2048,
+  "smp": 2,
+  "boot_mode": "bios_seabios_cdrom",
+  "virtual_disk_image": false,
+  "host_disk_attached": false,
+  "usb_passthrough": false,
+  "network": "none_or_user_net_optional",
+  "timeout_seconds": 120,
+  "operator_freigabe_env": "VM_BOOT_SMOKE_FREIGEGEBEN",
+  "example_command": "timeout 120 qemu-system-x86_64 -m 2048 -smp 2 -cdrom \"$ISO_PATH\" -boot d -snapshot -no-reboot -serial stdio -display none",
+  "forbidden": [
+    "-hda",
+    "-drive file=/dev/",
+    "usb-passthrough",
+    "losetup",
+    "mount -o rw"
+  ],
+  "success_criteria": [
+    "VM boots from ISO",
+    "Bootloader or kernel output on serial",
+    "Live system reaches prompt/UI/setuphelfer entry",
+    "No host disk attached",
+    "No host write access"
+  ],
+  "failure_criteria": [
+    "No bootloader",
+    "Kernel panic",
+    "initramfs hang",
+    "Missing setuphelfer bundle",
+    "ISO not bootable in VM"
+  ]
+}

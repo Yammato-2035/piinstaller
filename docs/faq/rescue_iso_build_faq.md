@@ -64,6 +64,17 @@ Artefaktprüfung (sha256, `file`, optional `isoinfo`) ist **nicht** gleich Boot-
 - Cleanup: `auto/clean` entfernt `binary*.zsync*`
 - ISO trotzdem mit `sha256sum`/`file` prüfen — nicht als „ISO fehlt“ werten
 
+## Ist VM-Boot-Smoke dasselbe wie Artefaktprüfung oder USB-Test?
+
+**Nein.** Drei getrennte Stufen:
+
+1. **Artefakt** — sha256, `file`, `isoinfo` (read-only auf der ISO-Datei)
+2. **VM-Smoke** — QEMU headless mit `-cdrom`, **ohne** `-hda`/Host-Disk; erfordert `VM_BOOT_SMOKE_FREIGEGEBEN`
+3. **USB/Hardware** — separates Gate, weiterhin blockiert
+
+Plan: `docs/evidence/runtime-results/rescue/RESCUE_ISO_VM_BOOT_TEST_PLAN.md`  
+Policy: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.

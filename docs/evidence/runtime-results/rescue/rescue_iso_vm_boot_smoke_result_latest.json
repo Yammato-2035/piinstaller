@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "executed_at": "2026-05-29T14:04:15+02:00",
+  "vm_boot_smoke_executed": false,
+  "operator_freigabe_present": false,
+  "classification": "vm_boot_smoke_prepared_not_executed",
+  "recommended_next_prompt": "RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN",
+  "reason_de": "VM_BOOT_SMOKE_FREIGEGEBEN nicht gesetzt; nur Testplan und Tooling-Preflight."
+}

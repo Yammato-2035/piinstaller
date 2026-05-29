@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-05-29T14:04:15+02:00",
+  "rescue_iso_artifact_status": "partial_green",
+  "vm_boot_validation_status": "prepared",
+  "vm_boot_smoke_status": "not_started",
+  "rescue_overall_status": "yellow",
+  "usb_write": "blocked",
+  "restore": "deferred",
+  "hardware_test": "not_started",
+  "no_full_green": true,
+  "recommended_next_prompt": "RESCUE_ISO_VM_BOOT_SMOKE_OPERATOR_RUN"
+}

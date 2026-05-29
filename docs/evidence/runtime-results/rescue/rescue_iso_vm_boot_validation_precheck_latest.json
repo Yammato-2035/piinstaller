@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-29T14:04:15+02:00",
+  "branch": "main",
+  "head_short": "aa684f3",
+  "runtime_gate_exit": 0,
+  "runtime_gate_ok": true,
+  "deploy_drift": "green",
+  "safe_test_mode": "UNLOCKED",
+  "runtime_gate_blocked_static_analysis_only": false
+}
