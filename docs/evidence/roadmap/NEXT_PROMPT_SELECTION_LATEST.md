@@ -1,5 +1,5 @@
 # Next Prompt
 
-**selected_prompt_id:** `RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION`
+**selected_prompt_id:** `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD`
 
-Visueller VM-Boot: Debian 12, runlevel 2, `debian login:` — Setuphelfer unter `/opt/setuphelfer-rescue` und localhost-Backend als Nächstes.
+Operator: kein nutzbarer Setuphelfer. Offline: Bundle in Squashfs, Units nicht enabled. Build-Tree-Fix angewendet — ISO neu bauen, dann `user`/`live` testen.

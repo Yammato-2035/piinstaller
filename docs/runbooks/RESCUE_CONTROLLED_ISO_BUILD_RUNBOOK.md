@@ -54,6 +54,15 @@ Wenn der letzte Lauf mit `chroot/proc` + „Vorgang nicht zulässig“ und fehle
 
 Vollständige Befehle: `docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_MOUNT_CLEANUP_OPERATOR_HANDOFF.md`.
 
+## Nach dem Build (Squashfs-Integration)
+
+```bash
+./scripts/rescue-live/validate-rescue-iso-squashfs.sh \
+  build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso
+```
+
+Exit **0** = Bundle + enabled `setuphelfer-*.service` in der Squashfs. Exit **11** = Bundle ohne systemd-Enable (Live startet Setuphelfer nicht).
+
 ## Operator-Terminal (Pflicht für echten Build)
 
 ```bash

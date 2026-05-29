@@ -83,6 +83,8 @@ Policy: `docs/developer/RESCUE_VM_TEST_SAFETY_POLICY.md`
 
 **Visueller VM-Boot 2026-05-29:** Grafisches QEMU zeigt **Debian 12** bis **`debian login:`** — Live-System in VM belegt. `root` an der Konsole schlägt fehl; typisch ist User **`live`**. Evidence: `RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RESULT.md`.
 
+**Kein Setuphelfer (Operator 2026-05-29):** Bundle liegt in der Squashfs unter `/opt/setuphelfer-rescue`, startet aber nicht (Units nicht in `multi-user.target.wants`). Login: **`user`** / Passwort **`live`**. Nach Rebuild mit aktuellem `prepare-controlled-live-build-tree.sh` erneut testen. Evidence: `RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION_RESULT.md`.
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.

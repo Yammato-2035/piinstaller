@@ -26,6 +26,9 @@ REQ=(
   config/includes.chroot/opt/setuphelfer-rescue/scripts/rescue-live/start-ui-localonly.sh
   config/includes.chroot/etc/systemd/system/setuphelfer-backend.service
   config/includes.chroot/etc/systemd/system/setuphelfer.service
+  config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-backend.service
+  config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer.service
+  config/includes.chroot/etc/live/config.conf.d/10-setuphelfer-rescue.conf
   config/includes.chroot/etc/systemd/network/20-wired.network
   config/includes.chroot/etc/systemd/network/25-ethernet-alt.network
   config/hooks/normal/010-enable-setuphelfer-services.hook.chroot
@@ -76,6 +79,16 @@ fi
 if ! grep -q 'binary\*.zsync\*' "$BUILD_ROOT/auto/clean"; then
   fail_missing "auto/clean must remove binary*.zsync* artifacts at build-tree root"
 fi
+if ! grep -q 'hostname=setuphelfer-rescue' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must set live hostname via --bootappend-live"
+fi
+if ! grep -q 'username=user' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must set live username via --bootappend-live"
+fi
+[[ -L "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-backend.service" ]] \
+  || fail_missing "systemd enable symlink setuphelfer-backend.service"
+[[ -L "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer.service" ]] \
+  || fail_missing "systemd enable symlink setuphelfer.service"
 set +e
 "$BUILD_ROOT/auto/build" >/dev/null 2>&1
 build_rc=$?

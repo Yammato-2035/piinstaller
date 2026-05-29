@@ -188,6 +188,22 @@ ReadWritePaths=/tmp /run /var/tmp
 WantedBy=multi-user.target
 EOF
 
+SYSTEMD_WANTS="${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/multi-user.target.wants"
+mkdir -p "$SYSTEMD_WANTS"
+ln -sf ../setuphelfer-backend.service "${SYSTEMD_WANTS}/setuphelfer-backend.service"
+ln -sf ../setuphelfer.service "${SYSTEMD_WANTS}/setuphelfer.service"
+
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/live/config.conf.d/10-setuphelfer-rescue.conf" 0644 <<'EOF'
+# Rescue-Live: Nutzer/Hostname per Kernel cmdline (auto/config --bootappend-live).
+# Standard Debian-Live: username=user, Passwort "live" (live-config).
+LIVE_HOSTNAME="setuphelfer-rescue"
+EOF
+
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/motd" 0644 <<'EOF'
+Setuphelfer Rescue Live — Bundle: /opt/setuphelfer-rescue
+Login: user / Passwort live (Debian-Live-Standard). Backend: http://127.0.0.1:8000/
+EOF
+
 write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer.service" 0644 <<'EOF'
 [Unit]
 Description=Setuphelfer Rescue Web UI
@@ -233,7 +249,8 @@ lb config noauto \
   --security false \
   --firmware-chroot false \
   --firmware-binary false \
-  --bootappend-live "boot=live components quiet splash setuphelfer_rescue=1" \
+  --mode debian \
+  --bootappend-live "boot=live components quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user" \
   --iso-volume "SETUPHELFER_RESCUE" \
   --iso-application "Setuphelfer Rescue Live"
 EOF

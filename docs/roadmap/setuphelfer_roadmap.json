@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION",
-      "next_recommended_action": "Visueller VM-Boot bis Debian-Login belegt; als Nächstes Login live, /opt/setuphelfer-rescue und Backend localhost prüfen. Kein USB, kein full-green."
+      "next_prompt_id": "RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD",
+      "next_recommended_action": "Bundle war in ISO, systemd-Units nicht enabled. prepare-Fix + Operator-Rebuild; danach Login user/live und Backend prüfen. Kein USB, kein full-green."
     },
     {
       "id": "diagnostics",

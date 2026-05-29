@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "validated_at": "2026-05-29T16:30:00+02:00",
+  "profile": "visual_operator",
+  "operator_report_de": "Kein Setuphelfer",
+  "classification": "setuphelfer_not_functional",
+  "live_system_started": true,
+  "login_prompt_seen": true,
+  "operator_console_login": "root_failed",
+  "setuphelfer_visible_to_operator": false,
+  "setuphelfer_bundle_in_squashfs": true,
+  "setuphelfer_units_enabled_in_squashfs": false,
+  "validate_rescue_iso_squashfs_exit": 11,
+  "validate_rescue_iso_squashfs_gap": "setuphelfer-backend.service not enabled in squashfs",
+  "setuphelfer_backend_venv_in_squashfs": true,
+  "iso_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "root_cause": "Bundle baked into squashfs but systemd units not enabled; generic Debian login (user/live not documented); no autostart UI",
+  "recommended_next_prompt": "RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD",
+  "rescue_overall_status": "yellow",
+  "rebuild_required": true
+}

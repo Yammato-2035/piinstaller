@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO runtime integration — operator finding)
+- Operator: no usable Setuphelfer in live VM; offline: bundle in squashfs but systemd units not enabled.
+- prepare: enable units via wants symlinks, live hostname/user bootappend, squashfs validator script.
+
 ### Changed (Rescue ISO visual VM boot — operator)
 - Visual QEMU: Debian 12 to login prompt (`live_system_started`); nographic serial insufficient.
 - Next: live user login and Setuphelfer functional check; rescue stays yellow.

@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "selected_at": "2026-05-29T16:00:00+02:00",
-  "selected_prompt_id": "RESCUE_ISO_LIVE_SYSTEM_FUNCTIONAL_VALIDATION",
-  "reason_de": "Visueller QEMU-Boot: Debian 12 bis login-Prompt; Setuphelfer-Funktion als Nächstes prüfen.",
-  "reason_en": "Visual QEMU boot reached Debian 12 login; next verify Setuphelfer function.",
+  "selected_at": "2026-05-29T16:35:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD",
+  "reason_de": "Bundle in ISO, aber Dienste nicht enabled — Tree-Fix + Operator-Rebuild, dann Login user/live.",
+  "reason_en": "Bundle in ISO but units not enabled — tree fix + operator rebuild, then user/live login.",
   "forbidden_next": ["USB_WRITE", "FULL_GREEN_RESCUE"]
 }
