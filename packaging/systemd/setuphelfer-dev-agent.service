@@ -1,0 +1,23 @@
+[Unit]
+Description=Setuphelfer Development Agent
+After=network-online.target setuphelfer-backend.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=setuphelfer
+Group=setuphelfer
+Environment=SETUPHELFER_DEV_AGENT_ENABLED=false
+Environment=SETUPHELFER_DEV_AGENT_MODE=public_rescue
+Environment=SETUPHELFER_DEV_AGENT_AUTO_UPLOAD=false
+Environment=SETUPHELFER_DEV_AGENT_SERVER_URL=http://127.0.0.1:8000
+WorkingDirectory=/opt/setuphelfer
+ExecStart=/opt/setuphelfer/.venv/bin/python -m backend.devserver_agent.cli --send --json
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/setuphelfer/docs/evidence/runtime-results/dev-agent-spool
+
+[Install]
+WantedBy=multi-user.target
