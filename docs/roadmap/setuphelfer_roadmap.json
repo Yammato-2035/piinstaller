@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_VM_SYSTEMD_INIT_TRIAGE",
-      "next_recommended_action": "VM: Login user/live OK, Bundle da, DE-Locale OK; systemd nicht PID 1 → Backend fehlt. Triage Init/Build. Kein USB, kein full-green."
+      "next_prompt_id": "RESCUE_ISO_SYSTEMD_INIT_REBUILD_OPERATOR_RUN",
+      "next_recommended_action": "Ursache: fehlendes init=/lib/systemd/systemd im Bootappend. Fix im Tree; Operator-Rebuild mit RESCUE_SYSTEMD_REBUILD_FREIGEGEBEN=1, dann VM systemctl/curl. Kein USB, kein full-green."
     },
     {
       "id": "diagnostics",

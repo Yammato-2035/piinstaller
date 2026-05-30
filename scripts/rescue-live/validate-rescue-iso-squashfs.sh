@@ -6,6 +6,9 @@
 # Exit 12 = systemd-Enable fehlt
 # Exit 13 = Keyboard/Locale/Timezone fehlt
 # Exit 14 = Login-/MOTD-Hinweis fehlt
+# Exit 15 = systemd-Init-Integration fehlt (Binary oder init= bootappend)
+# Exit 16 = systemd-sysv/init-Symlink fehlt (nur wenn init= bootappend fehlt)
+# Exit 17 = dbus fehlt
 # Exit 20 = Usage
 set -euo pipefail
 
@@ -20,6 +23,9 @@ fail_bundle() { echo "INTEGRATION_GAP: $*" >&2; exit 11; }
 fail_systemd() { echo "SYSTEMD_ENABLE_GAP: $*" >&2; exit 12; }
 fail_locale() { echo "KEYBOARD_LOCALE_GAP: $*" >&2; exit 13; }
 fail_login() { echo "LOGIN_HINT_GAP: $*" >&2; exit 14; }
+fail_init_integration() { echo "SYSTEMD_INIT_GAP: $*" >&2; exit 15; }
+fail_init_symlink() { echo "SYSTEMD_SYSV_INIT_GAP: $*" >&2; exit 16; }
+fail_dbus() { echo "DBUS_GAP: $*" >&2; exit 17; }
 
 command -v unsquashfs >/dev/null || fail_missing "unsquashfs"
 command -v xorriso >/dev/null || fail_missing "xorriso"
@@ -42,6 +48,10 @@ squashfs_grep() {
   unsquashfs -cat "$SQ" "$path" 2>/dev/null | grep -qE "$pattern"
 }
 
+squashfs_list_has() {
+  unsquashfs -ll "$SQ" 2>/dev/null | grep -qF "$1"
+}
+
 # --- Bundle / Runtime (exit 11) ---
 squashfs_path_exists 'opt/setuphelfer-rescue/MANIFEST.json' \
   || fail_bundle "/opt/setuphelfer-rescue/MANIFEST.json missing"
@@ -55,7 +65,47 @@ squashfs_path_exists 'opt/setuphelfer-rescue/frontend/dist/index.html' \
 squashfs_path_exists 'opt/setuphelfer-rescue/scripts/rescue-live/start-backend-localonly.sh' \
   || fail_bundle "start-backend-localonly.sh missing"
 
-# --- systemd (exit 12) ---
+# --- systemd init integration (exit 15/16/17) ---
+_systemd_binary=false
+for _sd in lib/systemd/systemd usr/lib/systemd/systemd; do
+  if squashfs_path_exists "$_sd"; then
+    _systemd_binary=true
+    break
+  fi
+done
+[[ "$_systemd_binary" == true ]] || fail_init_integration "systemd binary missing in squashfs"
+
+_bootappend_init=false
+for _cfg in isolinux/live.cfg ISOLINUX/LIVE.CFG; do
+  xorriso -osirrox on -indev "$ISO" -extract "/${_cfg}" "$WORK/live.cfg" 2>/dev/null || continue
+  if grep -qE 'init=/lib/systemd/systemd|init=/usr/lib/systemd/systemd' "$WORK/live.cfg" 2>/dev/null; then
+    _bootappend_init=true
+    break
+  fi
+done
+if [[ "$_bootappend_init" != true ]]; then
+  WANTS_DIR="$(dirname "$ISO")/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-backend.service"
+  if [[ -L "$WANTS_DIR" ]]; then
+    echo "HINT: Build-Tree hat init= fix, ISO bootappend fehlt init=/lib/systemd/systemd — Rebuild nötig." >&2
+  fi
+  fail_init_integration "isolinux live.cfg missing init=/lib/systemd/systemd bootappend"
+fi
+
+if ! squashfs_path_exists 'usr/bin/dbus-daemon' && ! squashfs_path_exists 'usr/lib/dbus-1/dbus-daemon-launch-helper'; then
+  if ! squashfs_list_has 'usr/share/dbus-1'; then
+    fail_dbus "dbus not present in squashfs"
+  fi
+fi
+
+if [[ "$_bootappend_init" != true ]]; then
+  if ! squashfs_list_has 'sbin/init ->' && ! squashfs_list_has 'usr/sbin/init ->'; then
+    if squashfs_list_has 'usr/sbin/init' && ! squashfs_list_has 'usr/sbin/init ->'; then
+      fail_init_symlink "/usr/sbin/init is not symlinked to systemd (and no init= bootappend)"
+    fi
+  fi
+fi
+
+# --- systemd units (exit 12) ---
 squashfs_path_exists 'etc/systemd/system/setuphelfer-backend.service' \
   || fail_systemd "setuphelfer-backend.service unit missing"
 
@@ -63,12 +113,6 @@ squashfs_path_exists 'etc/systemd/system/setuphelfer.service' \
   || fail_systemd "setuphelfer.service unit missing"
 
 if ! squashfs_path_exists 'etc/systemd/system/multi-user.target.wants/setuphelfer-backend.service'; then
-  WANTS_DIR="$(dirname "$ISO")/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-backend.service"
-  if [[ -L "$WANTS_DIR" ]]; then
-    echo "HINT: Build-Tree hat Enable-Symlink, ISO ist vermutlich VOR prepare/Rebuild gebaut." >&2
-    echo "      ISO: $(stat -c '%y' "$ISO" 2>/dev/null || echo '?')" >&2
-    echo "      Tree: $(stat -c '%y' "$WANTS_DIR" 2>/dev/null || echo '?') — Operator: prepare + lb build erneut." >&2
-  fi
   fail_systemd "setuphelfer-backend.service not enabled (no multi-user.target.wants symlink)"
 fi
 
@@ -117,10 +161,4 @@ if [[ "$_login_ok" != true ]]; then
   fail_login "user/live login hint missing in /etc/issue or /etc/motd"
 fi
 
-if squashfs_grep 'etc/issue' 'root.*gesperrt|root-Konsole'; then
-  : "root not advertised as login"
-elif ! squashfs_grep 'etc/motd' 'root'; then
-  : "ok: no false root login promise"
-fi
-
-echo "OK: rescue ISO squashfs — bundle, enabled units, de keyboard/locale, login hints"
+echo "OK: rescue ISO squashfs — bundle, systemd init, enabled units, de keyboard/locale, login hints"

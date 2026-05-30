@@ -7,6 +7,10 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Changed (Rescue ISO systemd init fix — prepared)
+- Root cause: missing init=/lib/systemd/systemd in bootappend; add dbus; validator exit 15/16/17.
+- Operator rebuild required; rescue stays yellow.
+
 ### Changed (Rescue ISO visual live VM operator result)
 - Operator VM: bundle and DE locale OK; systemd not PID 1; backend/curl failed.
 - Classification live_boot_success_systemd_init_missing; next systemd init triage.

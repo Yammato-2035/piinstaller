@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-05-30T07:30:00+02:00",
+  "branch": "main",
+  "head_short": "f3a9fd2",
+  "runtime_gate_exit": 0,
+  "rebuild_freigabe_set": false,
+  "usb_write": false
+}

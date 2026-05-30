@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "analyzed_at": "2026-05-30T07:30:00+02:00",
+  "systemd_package_in_chroot_list": true,
+  "systemd_sysv_in_chroot_list": true,
+  "dbus_in_chroot_list_after_fix": true,
+  "systemd_binary_in_squashfs": true,
+  "usr_sbin_init_symlink_to_systemd": false,
+  "inittab_sysv_present": true,
+  "bootappend_init_systemd_before_fix": false,
+  "bootappend_init_systemd_after_fix": true,
+  "unit_enable_symlinks_in_image": true,
+  "classification": "bootappend_init_missing",
+  "root_cause": "Kernel bootappend lacked init=/lib/systemd/systemd; /usr/sbin/init was sysv-style despite systemd packages"
+}

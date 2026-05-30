@@ -102,6 +102,15 @@ fi
 if ! grep -q 'timezone=Europe/Berlin' "$BUILD_ROOT/auto/config"; then
   fail_missing "auto/config must set timezone=Europe/Berlin in --bootappend-live"
 fi
+if ! grep -q 'init=/lib/systemd/systemd' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must set init=/lib/systemd/systemd in --bootappend-live"
+fi
+grep -qx 'dbus' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_missing "setuphelfer.list.chroot must list dbus"
+grep -qx 'systemd' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_missing "setuphelfer.list.chroot must list systemd"
+grep -qx 'systemd-sysv' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_missing "setuphelfer.list.chroot must list systemd-sysv"
 grep -q 'XKBLAYOUT="de"' "$BUILD_ROOT/config/includes.chroot/etc/default/keyboard" \
   || fail_missing 'etc/default/keyboard must contain XKBLAYOUT="de"'
 grep -q 'KEYMAP=de-latin1' "$BUILD_ROOT/config/includes.chroot/etc/vconsole.conf" \

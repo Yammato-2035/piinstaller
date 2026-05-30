@@ -116,6 +116,7 @@ create_minimal_bootlogo_cpio "${BOOTLOADER_DIR}/bootlogo"
 write_text_file "${BUILD_ROOT}/config/package-lists/setuphelfer.list.chroot" 0644 <<'EOF'
 systemd
 systemd-sysv
+dbus
 ca-certificates
 curl
 jq
@@ -298,7 +299,7 @@ lb config noauto \
   --firmware-chroot false \
   --firmware-binary false \
   --mode debian \
-  --bootappend-live "boot=live components quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin" \
+  --bootappend-live "boot=live components init=/lib/systemd/systemd quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin" \
   --iso-volume "SETUPHELFER_RESCUE" \
   --iso-application "Setuphelfer Rescue Live"
 EOF

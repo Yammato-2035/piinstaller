@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-05-30T07:30:00+02:00",
+  "systemd_init_fix_status": "prepared",
+  "root_cause": "bootappend_init_missing",
+  "old_iso_validator_exit": 15,
+  "rescue_overall_status": "yellow",
+  "recommended_next_prompt": "RESCUE_ISO_SYSTEMD_INIT_REBUILD_OPERATOR_RUN"
+}

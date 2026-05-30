@@ -1,5 +1,5 @@
 # Next Prompt
 
-**selected_prompt_id:** `RESCUE_ISO_VM_SYSTEMD_INIT_TRIAGE`
+**selected_prompt_id:** `RESCUE_ISO_SYSTEMD_INIT_REBUILD_OPERATOR_RUN`
 
-VM: user/live OK, `/opt/setuphelfer-rescue` da, DE-Locale OK; **systemd nicht PID 1** → systemctl/curl fehlgeschlagen.
+`init=/lib/systemd/systemd` + `dbus` im Build-Tree. Operator-Rebuild, dann VM: `ps -p 1`, `systemctl`, `curl`.

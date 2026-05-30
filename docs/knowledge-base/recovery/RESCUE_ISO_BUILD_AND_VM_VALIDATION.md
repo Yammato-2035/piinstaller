@@ -17,6 +17,7 @@ Kurzreferenz für **Phase 1**: ISO aus Debian-Live-Tooling bauen, unter `build/r
 - **2026-05-29 (live boot):** nographic **1200s** → `timeout_after_bootloader` (stdout identisch zu 600s); Kernel/Live nicht auf Serial. Nächster Schritt: `RESCUE_ISO_VM_VISUAL_BOOT_OPERATOR_RUN`.
 - **2026-05-29 (visual VM):** Operator-QEMU → **Debian 12**, DHCP, runlevel 2, `debian login:` (`live_system_started`). Root-Login fehlgeschlagen; als Nächstes User `live` + Setuphelfer-Check.
 - **2026-05-29 (funktional):** Operator: **Kein Setuphelfer**. Offline: Bundle in Squashfs, **Units nicht enabled** (`validate-rescue-iso-squashfs.sh` Exit 12). Rebuild mit aktuellem `prepare-controlled-live-build-tree.sh`; Login **`user`** / **`live`**.
+- **2026-05-30 (systemd init fix):** Ursache `bootappend_init_missing`; Fix `init=/lib/systemd/systemd` + dbus; Validator Exit 15 auf alter ISO.
 - **2026-05-29 (visual live VM):** user/live, Bundle, DE-Locale OK; **systemd nicht Init** → Backend unreachable. Evidence: `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION_RESULT.md`.
 - **2026-05-29 (visual live handoff):** Testplan + Artefakt-Recheck (SHA256, Validator 0); VM-Test wartet auf `VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1`. Evidence: `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION_RESULT.md`.
 - **2026-05-29 (integration rebuild ingest):** Operator LB_EXIT=0, Validator Exit **0** — Bundle, systemd enable, DE keyboard/locale, login hints in Squashfs. Rescue **yellow** (VM/USB/Restore offen). Evidence: `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_RESULT_INGEST.md`.

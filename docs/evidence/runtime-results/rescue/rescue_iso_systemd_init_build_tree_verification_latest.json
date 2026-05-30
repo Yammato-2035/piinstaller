@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-05-30T07:30:00+02:00",
+  "systemd_in_package_list": true,
+  "systemd_sysv_in_package_list": true,
+  "dbus_in_package_list": true,
+  "init_systemd_in_bootappend": true,
+  "systemd_wants_symlinks": true,
+  "keyboard_de": true,
+  "locale_de": true,
+  "timezone_berlin": true,
+  "old_iso_validator_exit": 15,
+  "rebuild_ready": true
+}
