@@ -4091,6 +4091,24 @@ async def dev_dashboard_evidence_index():
     return dev_dashboard_core.build_evidence_index()
 
 
+@app.get("/api/dev-dashboard/control-center-summary")
+async def dev_dashboard_control_center_summary():
+    """Read-only: Control Center Übersicht (Runtime, Roadmap, Dev-Server, Doku, Diagnostik)."""
+    from core import dev_dashboard as dev_dashboard_core
+    from core.dev_control_center_summary import build_control_center_summary
+
+    def _build() -> dict[str, Any]:
+        dashboard = dev_dashboard_core.build_dashboard_status(running_jobs=[], package_activity=[])
+        return build_control_center_summary(dashboard=dashboard)
+
+    try:
+        body = await asyncio.to_thread(_build)
+        return {"status": "success", "summary": body}
+    except Exception:
+        logger.exception("dev_dashboard_control_center_summary failed")
+        raise
+
+
 @app.get("/api/dev-dashboard/manual-command-runs")
 async def dev_dashboard_manual_command_runs():
     """Read-only: strukturierte manuelle Kommandoläufe aus Evidence-JSON (keine Shell-Ausführung)."""

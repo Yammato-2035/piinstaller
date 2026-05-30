@@ -67,4 +67,21 @@ describe('DevelopmentServerPanelView', () => {
     expect(html).not.toContain('devDashboard.devServer.sshAction.backup')
     expect(html).not.toContain('devDashboard.devServer.sshAction.restore')
   })
+
+  it('shows ssh disabled as safe state', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(DevelopmentServerPanelView, {
+        health: { enabled: true, mode: 'local_lab', ssh_allowed: false, public_uploads_allowed: false, storage_ok: true } as DevServerHealth,
+        summary: { node_count: 1, latest_findings: [{ report_id: 'r1', node_id: 'n1', report_type: 'rescue' }] } as DevServerSummary,
+        nodes: [{ node_id: 'n1', display_name: 'N1', status: 'online', ssh: {} }] as DevServerNode[],
+        busyNode: null,
+        error: null,
+        onRunAction: vi.fn(),
+      }),
+    )
+    expect(html).toContain('dev-server-ssh-safe')
+    expect(html).toContain('devDashboard.devServer.sshDisabledSafe')
+    expect(html).toContain('devDashboard.devServer.publicUploadsDisabledSafe')
+    expect(html).toContain('dev-server-latest-findings')
+  })
 })

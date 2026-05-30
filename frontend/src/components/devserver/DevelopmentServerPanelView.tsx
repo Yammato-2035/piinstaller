@@ -78,6 +78,12 @@ export function DevelopmentServerPanelView({
           <div className="text-slate-200">{health?.mode ?? '—'}</div>
         </div>
         <div className="rounded border border-slate-700 px-2 py-1.5">
+          <span className="text-slate-500">{t('devDashboard.devServer.storageOk')}</span>
+          <div className={health?.storage_ok ? 'text-emerald-300' : 'text-slate-400'} data-testid="dev-server-storage-ok">
+            {health?.storage_ok ? t('devDashboard.greenVisibility.ok') : '—'}
+          </div>
+        </div>
+        <div className="rounded border border-slate-700 px-2 py-1.5">
           <span className="text-slate-500">{t('devDashboard.devServer.nodes')}</span>
           <div className="text-slate-200">{summary?.node_count ?? 0}</div>
         </div>
@@ -89,7 +95,36 @@ export function DevelopmentServerPanelView({
           <span className="text-slate-500">{t('devDashboard.devServer.reports24h')}</span>
           <div className="text-slate-200">{summary?.reports_last_24h ?? 0}</div>
         </div>
+        <div className="rounded border border-slate-700 px-2 py-1.5" data-testid="dev-server-ssh-safe">
+          <span className="text-slate-500">{t('devDashboard.devServer.sshStatus')}</span>
+          <div className={sshAllowed ? 'text-amber-300' : 'text-emerald-300'}>
+            {sshAllowed ? t('devDashboard.devServer.sshEnabled') : t('devDashboard.devServer.sshDisabledSafe')}
+          </div>
+        </div>
+        <div className="rounded border border-slate-700 px-2 py-1.5" data-testid="dev-server-public-uploads">
+          <span className="text-slate-500">{t('devDashboard.devServer.publicUploads')}</span>
+          <div className={health?.public_uploads_allowed ? 'text-amber-300' : 'text-emerald-300'}>
+            {health?.public_uploads_allowed ? t('devDashboard.devServer.publicUploadsEnabled') : t('devDashboard.devServer.publicUploadsDisabledSafe')}
+          </div>
+        </div>
+        <div className="rounded border border-slate-700 px-2 py-1.5">
+          <span className="text-slate-500">{t('devDashboard.devServer.errors')}</span>
+          <div className="text-slate-200">{summary?.error_count ?? 0}</div>
+        </div>
       </div>
+
+      {(summary?.latest_findings?.length ?? 0) > 0 ? (
+        <div className="mb-4 rounded-lg border border-slate-700/60 bg-slate-950/30 p-3" data-testid="dev-server-latest-findings">
+          <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-2">{t('devDashboard.devServer.latestFindings')}</div>
+          <ul className="space-y-1 text-xs text-slate-300">
+            {(summary?.latest_findings || []).slice(0, 5).map((f, i) => (
+              <li key={String(f.report_id || i)} className="font-mono truncate">
+                {String(f.node_id || '—')} · {String(f.report_type || '—')} · {String(f.created_at || '').slice(0, 19)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {!enabled ? (
         <p className="text-xs text-slate-400" data-testid="dev-server-disabled-message">

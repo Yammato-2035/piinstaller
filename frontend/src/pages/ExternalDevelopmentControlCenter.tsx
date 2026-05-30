@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { Activity, Copy, RefreshCw, Terminal } from 'lucide-react'
+import { fetchControlCenterSummary, type ControlCenterSummary } from '../api/devDashboardApi'
 import { StandaloneModeBanner } from '../components/dev-dashboard/StandaloneModeBanner'
 import { RuntimeGatePanel } from '../components/dev-dashboard/RuntimeGatePanel'
 import { CockpitBackupProgressPanel } from '../components/dev-dashboard/CockpitBackupProgressPanel'
@@ -16,6 +17,15 @@ import { RoadmapDrawer } from '../components/dev-dashboard/RoadmapDrawer'
 import { ReadyStableSection } from '../components/dev-dashboard/ReadyStableSection'
 import { SafeTestModePanel } from '../components/dev-dashboard/SafeTestModePanel'
 import { UpdateStatusCard } from '../components/dev-dashboard/UpdateStatusCard'
+import { ControlCenterOverviewHeader } from '../components/dev-dashboard/ControlCenterOverviewHeader'
+import { DocumentationDiagnosticsCard } from '../components/dev-dashboard/DocumentationDiagnosticsCard'
+import { RescueDeveloperPipelineCard } from '../components/dev-dashboard/RescueDeveloperPipelineCard'
+import {
+  ControlCenterEvidenceSection,
+  ControlCenterSectionTabs,
+  type ControlCenterTab,
+} from '../components/dev-dashboard/ControlCenterSectionTabs'
+import { EvidencePanel } from '../components/dev-dashboard/EvidencePanel'
 import { writeCockpitRefreshSec } from '../lib/devDashboard/cockpitWindow'
 import { AREA_LABELS } from '../lib/devDashboard/governanceMatrix'
 import { clearGovernanceHistory } from '../lib/devDashboard/governanceHistory'
@@ -62,6 +72,10 @@ function GovernanceMatrixGrid({ areas, t }: { areas: GovernanceAreaStatus[]; t: 
 
 export const ExternalDevelopmentControlCenter: React.FC = () => {
   const { t } = useTranslation()
+  const [activeTab, setActiveTab] = useState<ControlCenterTab>('overview')
+  const [summary, setSummary] = useState<ControlCenterSummary | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
+
   const statusQuery = useMemo(() => {
     const params = new URLSearchParams()
     const fv =
@@ -72,6 +86,26 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
   }, [])
 
   const mon = useGovernanceMonitor(statusQuery)
+
+  const loadSummary = useCallback(async () => {
+    if (!mon.apiReachable) {
+      setSummary(null)
+      return
+    }
+    setSummaryLoading(true)
+    try {
+      const data = await fetchControlCenterSummary()
+      setSummary(data)
+    } finally {
+      setSummaryLoading(false)
+    }
+  }, [mon.apiReachable])
+
+  useEffect(() => {
+    void loadSummary()
+    const id = window.setInterval(() => void loadSummary(), mon.refreshSec * 1000)
+    return () => window.clearInterval(id)
+  }, [loadSummary, mon.refreshSec])
 
   const viewBtn = (mode: CockpitViewMode, label: string) => (
     <button
@@ -106,6 +140,80 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
     mon.setRefreshSec(sec)
   }
 
+  const refreshAll = () => {
+    void mon.refresh()
+    void loadSummary()
+  }
+
+  const tabContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <>
+            <ControlCenterOverviewHeader summary={summary} loading={summaryLoading} apiReachable={mon.apiReachable} />
+            {mon.dashboard ? <ReadyStableSection dashboard={mon.dashboard} t={t} /> : null}
+            <section className="mb-4">
+              <h2 className="text-sm font-semibold text-slate-300 mb-2">{t('devDashboard.governance.matrixTitle')}</h2>
+              <GovernanceMatrixGrid areas={mon.areas} t={t} />
+            </section>
+            <DocumentationDiagnosticsCard summary={summary} />
+            <RescueDeveloperPipelineCard summary={summary} />
+          </>
+        )
+      case 'roadmap':
+        return mon.dashboard ? (
+          <RoadmapDrawer dashboard={mon.dashboard} t={t} apiReachable={mon.apiReachable} />
+        ) : (
+          <section className="rounded-xl border border-amber-700/40 bg-amber-950/20 p-4" data-testid="roadmap-unavailable">
+            <p className="text-sm text-amber-100">{t('devDashboard.roadmap.unavailable')}</p>
+          </section>
+        )
+      case 'telemetry':
+        return <DevelopmentServerPanel refreshSec={mon.refreshSec} />
+      case 'rescue':
+        return (
+          <>
+            <RescueDeveloperPipelineCard summary={summary} />
+            <RescueStickBoard dashboard={mon.dashboard} />
+            <RescueBuildPanel refreshSec={mon.refreshSec} />
+          </>
+        )
+      case 'documentation':
+        return (
+          <>
+            <DocumentationDiagnosticsCard summary={summary} />
+            {mon.dashboard ? <EvidencePanel dashboard={mon.dashboard} t={t} /> : null}
+          </>
+        )
+      case 'evidence':
+        return (
+          <>
+            <ControlCenterEvidenceSection summary={summary} />
+            {mon.dashboard ? <EvidencePanel dashboard={mon.dashboard} t={t} /> : null}
+          </>
+        )
+      case 'operations':
+        return (
+          <section className="space-y-4" data-testid="cockpit-operations-panels">
+            {mon.dashboard ? (
+              <>
+                <RuntimeGatePanel dashboard={mon.dashboard} t={t} />
+                <SafeTestModePanel dashboard={mon.dashboard} t={t} />
+                <DeployDriftPanel dashboard={mon.dashboard} t={t} />
+              </>
+            ) : null}
+            <UpdateStatusCard refreshSec={Math.max(mon.refreshSec, 15)} />
+            <DeployStatusPanel refreshSec={Math.max(mon.refreshSec, 10)} />
+            <NotificationPanel refreshSec={Math.max(mon.refreshSec, 10)} />
+            <CockpitBackupTargetPanel refreshSec={mon.refreshSec} />
+            <CockpitBackupProgressPanel refreshSec={mon.refreshSec} />
+          </section>
+        )
+      default:
+        return null
+    }
+  }
+
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-5" data-testid="external-development-control-center">
       <header className="flex flex-wrap items-start justify-between gap-4 mb-4 border-b border-slate-700 pb-4">
@@ -124,9 +232,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
             type="button"
             className="px-3 py-1.5 rounded-md text-xs font-medium border border-violet-600/60 text-violet-100 hover:bg-violet-950/40"
             data-testid="cockpit-scroll-roadmap"
-            onClick={() => {
-              document.getElementById('dev-dashboard-roadmap-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }}
+            onClick={() => setActiveTab('roadmap')}
           >
             {t('devDashboard.nav.roadmap')}
           </button>
@@ -148,7 +254,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
           <button
             type="button"
             className="btn-secondary inline-flex items-center gap-1 text-xs"
-            onClick={() => void mon.refresh()}
+            onClick={() => void refreshAll()}
             disabled={mon.loading}
             data-testid="cockpit-refresh"
           >
@@ -194,24 +300,42 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
         </ul>
       ) : null}
 
-      {mon.viewMode !== 'timeline' && mon.dashboard ? (
+      {mon.viewMode === 'timeline' ? (
+        <section className="rounded-xl border border-slate-700 bg-slate-900/50 p-4" data-testid="cockpit-timeline">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-base font-semibold text-white">{t('devDashboard.governance.timeline')}</h2>
+            <button
+              type="button"
+              className="text-xs text-slate-400 hover:text-slate-200"
+              onClick={() => {
+                clearGovernanceHistory()
+                void mon.refresh()
+              }}
+            >
+              {t('devDashboard.governance.clearHistory')}
+            </button>
+          </div>
+          <ul className="space-y-2 max-h-[70vh] overflow-y-auto text-xs">
+            {mon.timeline.length ? (
+              mon.timeline.map((e) => (
+                <li key={e.id} className="border-l-2 border-slate-600 pl-3 py-1">
+                  <span className="text-slate-500">{e.at}</span> — {e.message}
+                </li>
+              ))
+            ) : (
+              <li className="text-slate-400">{t('devDashboard.governance.timelineEmpty')}</li>
+            )}
+          </ul>
+        </section>
+      ) : (
         <>
-          {mon.dashboard ? <ReadyStableSection dashboard={mon.dashboard} t={t} /> : null}
-          <RoadmapDrawer dashboard={mon.dashboard} t={t} apiReachable={mon.apiReachable} />
+          <ControlCenterSectionTabs active={activeTab} onChange={setActiveTab} t={t} />
+          {tabContent()}
         </>
-      ) : null}
+      )}
 
-      <RescueStickBoard dashboard={mon.dashboard} />
-      <UpdateStatusCard refreshSec={Math.max(mon.refreshSec, 15)} />
-      <DeployStatusPanel refreshSec={Math.max(mon.refreshSec, 10)} />
-      <NotificationPanel refreshSec={Math.max(mon.refreshSec, 10)} />
-      <DevelopmentServerPanel refreshSec={mon.refreshSec} />
-      <RescueBuildPanel refreshSec={mon.refreshSec} />
-      <CockpitBackupTargetPanel refreshSec={mon.refreshSec} />
-      <CockpitBackupProgressPanel refreshSec={mon.refreshSec} />
-
-      {(mon.changedToGreen.length > 0 || mon.regressed.length > 0) && (
-        <div className="grid md:grid-cols-2 gap-3 mb-4" data-testid="cockpit-transitions">
+      {(mon.changedToGreen.length > 0 || mon.regressed.length > 0) && mon.viewMode !== 'timeline' ? (
+        <div className="grid md:grid-cols-2 gap-3 mt-4" data-testid="cockpit-transitions">
           <div className="rounded-lg border border-emerald-700/40 bg-emerald-950/20 p-3">
             <h2 className="text-sm font-semibold text-emerald-200 flex items-center gap-1">
               <Activity size={14} />
@@ -244,51 +368,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
             </ul>
           </div>
         </div>
-      )}
-
-      {mon.viewMode === 'timeline' ? (
-        <section className="rounded-xl border border-slate-700 bg-slate-900/50 p-4" data-testid="cockpit-timeline">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-base font-semibold text-white">{t('devDashboard.governance.timeline')}</h2>
-            <button
-              type="button"
-              className="text-xs text-slate-400 hover:text-slate-200"
-              onClick={() => {
-                clearGovernanceHistory()
-                void mon.refresh()
-              }}
-            >
-              {t('devDashboard.governance.clearHistory')}
-            </button>
-          </div>
-          <ul className="space-y-2 max-h-[70vh] overflow-y-auto text-xs">
-            {mon.timeline.length ? (
-              mon.timeline.map((e) => (
-                <li key={e.id} className="border-l-2 border-slate-600 pl-3 py-1">
-                  <span className="text-slate-500">{e.at}</span> — {e.message}
-                </li>
-              ))
-            ) : (
-              <li className="text-slate-400">{t('devDashboard.governance.timelineEmpty')}</li>
-            )}
-          </ul>
-        </section>
-      ) : (
-        <>
-          <section className="mb-4">
-            <h2 className="text-sm font-semibold text-slate-300 mb-2">{t('devDashboard.governance.matrixTitle')}</h2>
-            <GovernanceMatrixGrid areas={mon.areas} t={t} />
-          </section>
-
-          {mon.viewMode === 'operations' && mon.dashboard ? (
-            <section className="space-y-4" data-testid="cockpit-operations-panels">
-              <RuntimeGatePanel dashboard={mon.dashboard} t={t} />
-              <SafeTestModePanel dashboard={mon.dashboard} t={t} />
-              <DeployDriftPanel dashboard={mon.dashboard} t={t} />
-            </section>
-          ) : null}
-        </>
-      )}
+      ) : null}
 
       <p className="text-[11px] text-slate-500 mt-6 border-t border-slate-800 pt-3">
         {t('devDashboard.governance.readOnlyFooter')}
