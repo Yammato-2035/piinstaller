@@ -3,7 +3,8 @@
 **Date:** 2026-05-30
 **Feature commit:** 4b85bd2
 **Version bump commit:** 17c351a (1.7.3.0)
-**Evidence commit:** (pending)
+**Evidence commit:** 89ae576
+**Re-verification:** 2026-05-30 (HEAD 89ae576 unchanged; runtime still 1.7.2 pending redeploy)
 **Branch:** main
 
 ## Runtime acceptance summary

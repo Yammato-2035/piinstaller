@@ -2,7 +2,8 @@
 
 **Date:** 2026-05-30
 **Version bump commit:** 17c351a
-**Branch:** main
+**Evidence commit:** 89ae576
+**Re-verification:** 2026-05-30 — summary HTTP 200 confirmed; `/api/version` still 1.7.2 until redeploy
 
 ## Version bump
 
