@@ -7,7 +7,17 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
-### Changed (Rescue ISO systemd init fix — prepared)
+## [1.7.3.0] — 2026-05-30
+
+### Changed
+- **Version:** Bump auf `1.7.3.0` (Development Server MVP, Rescue Agent MVP, Rescue Developer Profile, Control Center Overview).
+- **Development Server:** Lokaler Lab-Telemetrie-Server runtime-validiert (`local_lab`, ingest-only).
+- **Development Rescue Agent:** Read-only Collector + Dev-Server-Upload MVP.
+- **Rescue Developer Profile:** Developer-Profil mit Agent-Integration und Public-Profile-Guard.
+- **Control Center:** Übersicht mit Roadmap-, Telemetrie-, Doku-/Diagnostik- und Evidence-Summary (`/api/dev-dashboard/control-center-summary`).
+- **Safety:** Keine Public-Telemetrie; Public Uploads und SSH bleiben disabled.
+
+---
 - Root cause: missing init=/lib/systemd/systemd in bootappend; add dbus; validator exit 15/16/17.
 - Operator rebuild required; rescue stays yellow.
 
