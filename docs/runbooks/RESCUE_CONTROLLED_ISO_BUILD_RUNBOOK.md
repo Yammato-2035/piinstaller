@@ -68,8 +68,11 @@ Vollständige Befehle: `docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_M
 | **12** | systemd-Units nicht in `multi-user.target.wants` |
 | **13** | Keyboard/Locale/Timezone (de / de_DE.UTF-8 / Europe/Berlin) fehlt |
 | **14** | Login-/MOTD-Hinweis user/live fehlt |
+| **15** | `init=/lib/systemd/systemd` fehlt in ISOLINUX `live.cfg` (PID 1 nicht systemd) |
+| **16** | `/usr/sbin/init` kein systemd-Symlink (nur wenn init= bootappend fehlt) |
+| **17** | dbus fehlt in Squashfs |
 
-**Rebuild-Freigabe:** `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1` im Operator-Terminal setzen, dann `run-controlled-iso-build-with-logging.sh --operator-confirm-build`.
+**Rebuild-Freigabe:** `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1` oder nach systemd-Fix `RESCUE_SYSTEMD_REBUILD_FREIGEGEBEN=1`.
 
 **Login im Live-System:** `user` / `live` — **root** an der Konsole ist gesperrt.
 

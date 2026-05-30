@@ -117,7 +117,9 @@ Evidence: `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_RESULT_INGEST.md`. VM-Funktion
 
 Freigabe: `VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1`. Plan: `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_TEST_PLAN.md`. Prüfungen **nur in der gebooteten VM** — nicht auf dem Host.
 
-**Operator 2026-05-29:** Login user/live, `/opt/setuphelfer-rescue` vorhanden, DE-Keyboard/Locale/Zeitzone OK. **systemd nicht PID 1** → `systemctl` und `curl :8000` fehlgeschlagen. Klassifikation: `live_boot_success_systemd_init_missing`. Evidence: `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION_RESULT.md`.
+**Operator 2026-05-29:** Login user/live, `/opt/setuphelfer-rescue` vorhanden, DE-Keyboard/Locale/Zeitzone OK. **systemd nicht PID 1** → `systemctl` und `curl :8000` fehlgeschlagen.
+
+**Ursache (2026-05-30):** Bootappend ohne `init=/lib/systemd/systemd`. Fix im Build-Tree; Validator Exit **15** auf alter ISO. Evidence: `RESCUE_ISO_SYSTEMD_INIT_STATIC_ANALYSIS.md`.
 
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
