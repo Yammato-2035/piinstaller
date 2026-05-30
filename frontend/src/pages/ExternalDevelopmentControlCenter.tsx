@@ -10,6 +10,7 @@ import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel
 import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
 import { NotificationPanel } from '../components/dev-dashboard/NotificationPanel'
+import { DevelopmentServerPanel } from '../components/devserver/DevelopmentServerPanel'
 import { DeployDriftPanel } from '../components/dev-dashboard/DeployDriftPanel'
 import { RoadmapDrawer } from '../components/dev-dashboard/RoadmapDrawer'
 import { ReadyStableSection } from '../components/dev-dashboard/ReadyStableSection'
@@ -204,6 +205,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       <UpdateStatusCard refreshSec={Math.max(mon.refreshSec, 15)} />
       <DeployStatusPanel refreshSec={Math.max(mon.refreshSec, 10)} />
       <NotificationPanel refreshSec={Math.max(mon.refreshSec, 10)} />
+      <DevelopmentServerPanel refreshSec={mon.refreshSec} />
       <RescueBuildPanel refreshSec={mon.refreshSec} />
       <CockpitBackupTargetPanel refreshSec={mon.refreshSec} />
       <CockpitBackupProgressPanel refreshSec={mon.refreshSec} />

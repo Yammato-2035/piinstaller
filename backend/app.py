@@ -3101,6 +3101,13 @@ try:
 except Exception:
     logger.exception("Deploy-Plan-Router konnte nicht registriert werden; /api/deploy/plan fehlt dann (404).")
 
+try:
+    from devserver.routers import router as dev_server_router
+
+    app.include_router(dev_server_router)
+except Exception:
+    logger.exception("Dev-Server-Router konnte nicht registriert werden; /api/dev-server/* fehlt dann (404).")
+
 def _is_demo_mode(request: Request) -> bool:
     """Prüft ob X-Demo-Mode Header gesetzt ist (für Screenshot-Dokumentation ohne echte Daten)."""
     return request.headers.get("X-Demo-Mode") == "1"
