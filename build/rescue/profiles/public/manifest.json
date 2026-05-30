@@ -1,0 +1,11 @@
+{
+  "profile_id": "rescue_public",
+  "profile_type": "public",
+  "public_auto_upload": false,
+  "developer_auto_upload": false,
+  "agent_enabled": false,
+  "agent_mode": "public_rescue",
+  "write_actions_allowed": false,
+  "ssh_allowed": false,
+  "requires_local_dev_server": false
+}

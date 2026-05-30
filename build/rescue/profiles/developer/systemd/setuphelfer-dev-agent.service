@@ -1,0 +1,21 @@
+[Unit]
+Description=Setuphelfer Development Agent (Rescue Developer Edition)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=setuphelfer
+Group=setuphelfer
+EnvironmentFile=-/etc/setuphelfer/setuphelfer-dev-agent.env
+EnvironmentFile=-/opt/setuphelfer/config/setuphelfer-dev-agent.env
+WorkingDirectory=/opt/setuphelfer
+ExecStart=/opt/setuphelfer/.venv/bin/python -m backend.devserver_agent.cli --send --json
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/setuphelfer/docs/evidence/runtime-results/dev-agent-spool
+
+[Install]
+WantedBy=multi-user.target

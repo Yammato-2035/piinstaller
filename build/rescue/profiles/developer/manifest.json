@@ -1,0 +1,12 @@
+{
+  "profile_id": "rescue_developer_local_lab",
+  "profile_type": "developer",
+  "public_auto_upload": false,
+  "developer_auto_upload": true,
+  "agent_enabled": true,
+  "agent_mode": "local_lab",
+  "write_actions_allowed": false,
+  "ssh_allowed": false,
+  "requires_local_dev_server": true,
+  "default_server_url": "http://127.0.0.1:8000"
+}

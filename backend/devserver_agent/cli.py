@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import sys
+from pathlib import Path
 from typing import Any
 
 from devserver_agent.client import health_check, post_report, validate_server_health
@@ -13,6 +14,12 @@ from devserver_agent.collector import build_dev_node_from_config, build_dev_repo
 from devserver_agent.config import load_dev_agent_config, validate_server_url
 from devserver_agent.models import resolve_node_identity
 from devserver_agent.redaction_client import enforce_mode_redaction
+from devserver_agent.rescue_profile import (
+    default_developer_profile_root,
+    default_public_profile_root,
+    validate_developer_profile,
+    validate_public_profile_guard,
+)
 from devserver_agent.spool import AgentSpool
 
 EXIT_OK = 0
@@ -148,6 +155,23 @@ def cmd_send(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+EXIT_PROFILE_INVALID = 15
+
+
+def cmd_validate_rescue_profile(args: argparse.Namespace) -> int:
+    dev_root = Path(args.profile_root) if args.profile_root else default_developer_profile_root()
+    pub_root = default_public_profile_root()
+    dev = validate_developer_profile(dev_root)
+    pub = validate_public_profile_guard(pub_root)
+    out = {
+        "code": "DEV_AGENT_RESCUE_PROFILE_OK" if dev["ok"] and pub["ok"] else "DEV_AGENT_RESCUE_PROFILE_FAILED",
+        "developer": dev,
+        "public_guard": pub,
+    }
+    _emit(out, as_json=args.json)
+    return EXIT_OK if dev["ok"] and pub["ok"] else EXIT_PROFILE_INVALID
+
+
 def cmd_spool_list(args: argparse.Namespace) -> int:
     cfg = load_dev_agent_config()
     spool = AgentSpool(cfg.spool_dir)
@@ -185,6 +209,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--display-name")
     p.add_argument("--spool-list", action="store_true")
     p.add_argument("--spool-retry", action="store_true")
+    p.add_argument("--validate-rescue-profile", action="store_true")
+    p.add_argument("--profile-root")
     p.add_argument("--json", action="store_true")
     return p
 
@@ -198,6 +224,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_spool_list(args)
         if args.spool_retry:
             return cmd_spool_retry(args)
+        if args.validate_rescue_profile:
+            return cmd_validate_rescue_profile(args)
         if args.collect_only:
             return cmd_collect(args)
         if args.send:
