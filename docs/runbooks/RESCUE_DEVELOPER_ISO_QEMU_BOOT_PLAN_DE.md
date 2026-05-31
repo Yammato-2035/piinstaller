@@ -38,10 +38,26 @@ Im Gast ist `http://127.0.0.1:8000` der **Gast selbst**, nicht der Host.
 | Hardware / Host lokal | `http://127.0.0.1:8000` |
 | QEMU-Gast → Host (user NAT) | `http://10.0.2.2:8000` |
 
+**Option B (wrapper default):** host `socat` proxy `0.0.0.0:8001` → `127.0.0.1:8000`; Gast-URL `http://10.0.2.2:8001`.
+
+**Option A (Lab-Drop-in):** `scripts/rescue-live/apply-qemu-local-lab-backend-bind-dropin.sh` — siehe `docs/architecture/QEMU_HOST_DEV_SERVER_REACHABILITY_POLICY.md`.
+
 Developer-QEMU-Profil: `build/rescue/profiles/developer-qemu/`
 Agent-Resolver: `--qemu-host-fallback` / `SETUPHELFER_DEV_AGENT_QEMU_HOST_FALLBACK=true`
 
-Wenn `10.0.2.2` fehlschlägt: Host-Firewall prüfen; Backend bindet ggf. nur auf `127.0.0.1` (nächste Stufe: bind hint / Portforward).
+## Agent-Modulpfad (Rescue Runtime)
+
+Bundle: `/opt/setuphelfer-rescue/backend/devserver_agent/cli.py`
+
+```bash
+PYTHONPATH=/opt/setuphelfer-rescue \
+  python3 -m backend.devserver_agent.cli \
+  --mode local_lab \
+  --server http://10.0.2.2:8001 \
+  --send --json
+```
+
+**Nicht:** `PYTHONPATH=/opt/setuphelfer-rescue/backend python3 -m devserver_agent.cli` (ModuleNotFoundError).
 
 ## Remote-Zugriff auf die QEMU-VM
 
@@ -76,6 +92,8 @@ cat /etc/default/keyboard || true
 systemctl status setuphelfer-dev-agent.service --no-pager || true
 cat /etc/setuphelfer/setuphelfer-dev-agent.env || true
 curl -s http://10.0.2.2:8000/api/dev-server/health || true
+PYTHONPATH=/opt/setuphelfer-rescue python3 -m backend.devserver_agent.cli \
+  --mode local_lab --server http://10.0.2.2:8000 --send --json || true
 ```
 
 ## Geplanter QEMU-Befehl (Basis, nicht ausführen in Evidence-Lauf)

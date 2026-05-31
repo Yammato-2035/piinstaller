@@ -278,9 +278,9 @@ if [[ -z "$RUN_ID" ]]; then
   RUN_ID="rescue_developer_iso_$(date -u +%Y%m%d_%H%M%S)"
 fi
 
-if [[ "${RESCUE_BUILD_PROFILE}" == "developer" ]]; then
+if [[ "${RESCUE_BUILD_PROFILE}" == "developer" || "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
   if [[ ! -f "${BUILD_ROOT}/config/includes.chroot/etc/setuphelfer/setuphelfer-dev-agent.env" ]]; then
-    echo "ERROR: developer profile not in build tree — run SETUPHELFER_RESCUE_BUILD_PROFILE=developer prepare-controlled-live-build-tree.sh first" | tee -a "${LATEST_LOG}" 2>/dev/null || true
+    echo "ERROR: ${RESCUE_BUILD_PROFILE} profile not in build tree — run SETUPHELFER_RESCUE_BUILD_PROFILE=${RESCUE_BUILD_PROFILE} prepare-controlled-live-build-tree.sh first" | tee -a "${LATEST_LOG}" 2>/dev/null || true
     exit 33
   fi
 fi

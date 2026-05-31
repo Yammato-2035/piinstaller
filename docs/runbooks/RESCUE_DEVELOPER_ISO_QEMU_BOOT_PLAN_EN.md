@@ -41,6 +41,20 @@ Inside the guest, `http://127.0.0.1:8000` is the **guest itself**, not the host.
 Developer-QEMU profile: `build/rescue/profiles/developer-qemu/`
 Agent resolver: `--qemu-host-fallback` / `SETUPHELFER_DEV_AGENT_QEMU_HOST_FALLBACK=true`
 
+**Option B (wrapper default):** host `socat` proxy `0.0.0.0:8001` → `127.0.0.1:8000`; guest URL `http://10.0.2.2:8001`.
+
+**Option A (lab drop-in):** `scripts/rescue-live/apply-qemu-local-lab-backend-bind-dropin.sh` — see `docs/architecture/QEMU_HOST_DEV_SERVER_REACHABILITY_POLICY.md`.
+
+## Agent module path (rescue runtime)
+
+```bash
+PYTHONPATH=/opt/setuphelfer-rescue \
+  python3 -m backend.devserver_agent.cli \
+  --mode local_lab --server http://10.0.2.2:8000 --send --json
+```
+
+Do **not** use `python3 -m devserver_agent.cli` with `PYTHONPATH=/opt/setuphelfer-rescue/backend` (ModuleNotFoundError).
+
 Wrapper: `scripts/rescue-live/run-qemu-developer-iso-smoke.sh`
 PID file: `docs/evidence/runtime-results/rescue/qemu/<RUN_ID>/qemu_gtk_pid.txt` (never `/qemu_gtk_pid.txt`)
 
@@ -50,7 +64,7 @@ PID file: `docs/evidence/runtime-results/rescue/qemu/<RUN_ID>/qemu_gtk_pid.txt` 
 - No `0.0.0.0`, no public exposure
 - Keyboard: `-k de`, locale `de_DE.UTF-8`
 
-Guest read-only checks include `curl -s http://10.0.2.2:8000/api/dev-server/health`.
+Guest read-only checks include `curl -s http://10.0.2.2:8000/api/dev-server/health` and agent send via `backend.devserver_agent.cli`.
 
 ## Planned QEMU command (baseline, do not execute in evidence-only run)
 

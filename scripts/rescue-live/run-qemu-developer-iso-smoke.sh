@@ -10,10 +10,13 @@ RUN_ID="${1:-qemu_rescue_developer_iso_$(date -u +%Y%m%d_%H%M%S)}"
 EVDIR="${REPO_ROOT}/docs/evidence/runtime-results/rescue/qemu/${RUN_ID}"
 PID_FILE="${EVDIR}/qemu_gtk_pid.txt"
 SERIAL_LOG="${EVDIR}/qemu-serial.log"
-HOST_DEV_URL="${SETUPHELFER_DEV_AGENT_QEMU_HOST_URL:-http://10.0.2.2:8000}"
+HOST_DEV_URL="${SETUPHELFER_DEV_AGENT_QEMU_HOST_URL:-}"
 CONFIRM=false
 REMOTE_VNC=false
 SSH_FORWARD=false
+GUESTFWD_PROXY=true
+LAB_PROXY_PORT="${SETUPHELFER_QEMU_LAB_PROXY_PORT:-8001}"
+USER_SET_HOST_URL=false
 KEYBOARD="${SETUPHELFER_QEMU_KEYBOARD:-de}"
 
 usage() {
@@ -24,6 +27,8 @@ Preview or start controlled QEMU developer ISO smoke (no USB, no host disk).
 
 PID file: ${EVDIR}/qemu_gtk_pid.txt (never /qemu_gtk_pid.txt)
 Host Dev Server URL for guest: ${HOST_DEV_URL}
+Guest lab proxy (Option B): ${GUESTFWD_PROXY} — socat 0.0.0.0:${LAB_PROXY_PORT} → 127.0.0.1:8000
+Guest URL with proxy: http://10.0.2.2:${LAB_PROXY_PORT}
 
 Without --operator-confirm-qemu: print planned command only (exit 20).
 EOF
@@ -43,10 +48,12 @@ while [[ $# -gt 0 ]]; do
     --remote-vnc-local) REMOTE_VNC=true; shift ;;
     --ssh-forward-local) SSH_FORWARD=true; shift ;;
     --keyboard) KEYBOARD="${2:-de}"; shift 2 ;;
-    --host-dev-server-url) HOST_DEV_URL="${2:-}"; shift 2 ;;
+    --host-dev-server-url) HOST_DEV_URL="${2:-}"; USER_SET_HOST_URL=true; shift 2 ;;
+    --no-guestfwd-proxy) GUESTFWD_PROXY=false; shift ;;
+    --no-lab-proxy) GUESTFWD_PROXY=false; shift ;;
     -h|--help) usage; exit 0 ;;
     *)
-      if [[ "$1" == qemu_rescue_developer_iso_* ]]; then RUN_ID="$1"; shift
+      if [[ "$1" == qemu_rescue_developer_* || "$1" == qemu_host_* ]]; then RUN_ID="$1"; shift
       else die "unknown arg: $1"; fi
       ;;
   esac
@@ -57,6 +64,22 @@ done
 
 mkdir -p "$EVDIR"
 
+if [[ "$GUESTFWD_PROXY" == true ]]; then
+  if [[ "$USER_SET_HOST_URL" != true ]]; then
+    HOST_DEV_URL="http://10.0.2.2:${LAB_PROXY_PORT}"
+  fi
+  export SETUPHELFER_QEMU_LAB_PROXY_PID_FILE="${EVDIR}/qemu_lab_proxy.pid"
+  export SETUPHELFER_QEMU_LAB_PROXY_PORT="${LAB_PROXY_PORT}"
+  "${SCRIPT_DIR}/start-qemu-lab-dev-server-proxy.sh"
+else
+  HOST_DEV_URL="${HOST_DEV_URL:-http://10.0.2.2:8000}"
+fi
+
+NIC_OPTS="user,model=virtio-net-pci"
+if [[ "$SSH_FORWARD" == true ]]; then
+  NIC_OPTS="${NIC_OPTS},hostfwd=tcp:127.0.0.1:2222-:22"
+fi
+
 QEMU_ARGS=(
   -m 2048 -smp 2
   -cdrom "$ISO_PATH"
@@ -65,14 +88,11 @@ QEMU_ARGS=(
   -display gtk
   -k "$KEYBOARD"
   -usb -device usb-tablet
-  -nic "user,model=virtio-net-pci"
+  -nic "$NIC_OPTS"
 )
 
 if [[ "$REMOTE_VNC" == true ]]; then
   QEMU_ARGS+=(-vnc 127.0.0.1:1)
-fi
-if [[ "$SSH_FORWARD" == true ]]; then
-  QEMU_ARGS+=(-nic "user,model=virtio-net-pci,hostfwd=tcp:127.0.0.1:2222-:22")
 fi
 
 PLANNED=(timeout 900 qemu-system-x86_64 "${QEMU_ARGS[@]}")
@@ -83,6 +103,7 @@ echo "EVDIR=$EVDIR"
 echo "ISO=$ISO_PATH"
 echo "PID_FILE=$PID_FILE"
 echo "HOST_DEV_URL=$HOST_DEV_URL"
+echo "GUESTFWD_PROXY=$GUESTFWD_PROXY"
 printf 'PLANNED: '; printf '%q ' "${PLANNED[@]}"; echo
 
 write_pid_safe() {
@@ -100,6 +121,14 @@ if [[ "$CONFIRM" != true ]]; then
 fi
 
 command -v qemu-system-x86_64 >/dev/null || die "qemu-system-x86_64 missing"
+
+cleanup_lab_proxy() {
+  if [[ "$GUESTFWD_PROXY" == true ]]; then
+    SETUPHELFER_QEMU_LAB_PROXY_PID_FILE="${EVDIR}/qemu_lab_proxy.pid" \
+      "${SCRIPT_DIR}/stop-qemu-lab-dev-server-proxy.sh" || true
+  fi
+}
+trap cleanup_lab_proxy EXIT
 
 : >"$SERIAL_LOG"
 "${PLANNED[@]}" >"${EVDIR}/qemu-gtk-stdout.log" 2>"${EVDIR}/qemu-gtk-stderr.log" &

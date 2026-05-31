@@ -1,21 +1,20 @@
 [Unit]
 Description=Setuphelfer Development Agent (Rescue Developer QEMU Lab)
-After=network-online.target
+After=network-online.target setuphelfer-backend.service
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=setuphelfer
-Group=setuphelfer
 EnvironmentFile=-/etc/setuphelfer/setuphelfer-dev-agent.env
-EnvironmentFile=-/opt/setuphelfer/config/setuphelfer-dev-agent.env
-WorkingDirectory=/opt/setuphelfer
-ExecStart=/opt/setuphelfer/.venv/bin/python -m backend.devserver_agent.cli --send --json --qemu-host-fallback
+WorkingDirectory=/opt/setuphelfer-rescue/backend
+Environment=PYTHONPATH=/opt/setuphelfer-rescue
+Environment=SETUPHELFER_RESCUE_ROOT=/opt/setuphelfer-rescue
+ExecStart=/usr/bin/python3 -m backend.devserver_agent.cli --send --json --qemu-host-fallback
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/opt/setuphelfer/docs/evidence/runtime-results/dev-agent-spool
+ReadWritePaths=/opt/setuphelfer-rescue/docs/evidence/runtime-results/dev-agent-spool /tmp /run
 
 [Install]
 WantedBy=multi-user.target

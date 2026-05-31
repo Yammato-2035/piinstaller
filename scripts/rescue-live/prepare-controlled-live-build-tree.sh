@@ -288,13 +288,13 @@ systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
 EOF
 
-if [[ "${RESCUE_BUILD_PROFILE}" == "developer" ]]; then
-  [[ -f "${DEV_PROFILE_ROOT}/environment/setuphelfer-dev-agent.env" ]] || die "developer profile env missing"
-  [[ -f "${DEV_PROFILE_ROOT}/manifest.json" ]] || die "developer profile manifest missing"
-  mkdir -p "${BUILD_ROOT}/config/includes.chroot/etc/setuphelfer"
-  copy_host_file "${DEV_PROFILE_ROOT}/environment/setuphelfer-dev-agent.env" \
-    "${BUILD_ROOT}/config/includes.chroot/etc/setuphelfer/setuphelfer-dev-agent.env" 0644
-  write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer-dev-agent.service" 0644 <<'EOF'
+write_rescue_dev_agent_service() {
+  local qemu_fallback="${1:-false}"
+  local exec_start="/usr/bin/python3 -m backend.devserver_agent.cli --send --json"
+  if [[ "$qemu_fallback" == "true" ]]; then
+    exec_start="${exec_start} --qemu-host-fallback"
+  fi
+  write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer-dev-agent.service" 0644 <<EOF
 [Unit]
 Description=Setuphelfer Development Agent (Rescue Developer Edition)
 After=network-online.target setuphelfer-backend.service
@@ -304,9 +304,9 @@ Wants=network-online.target
 Type=oneshot
 EnvironmentFile=-/etc/setuphelfer/setuphelfer-dev-agent.env
 WorkingDirectory=/opt/setuphelfer-rescue/backend
-Environment=PYTHONPATH=/opt/setuphelfer-rescue/backend
+Environment=PYTHONPATH=/opt/setuphelfer-rescue
 Environment=SETUPHELFER_RESCUE_ROOT=/opt/setuphelfer-rescue
-ExecStart=/usr/bin/python3 -m devserver_agent.cli --send --json
+ExecStart=${exec_start}
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
@@ -316,6 +316,9 @@ ReadWritePaths=/opt/setuphelfer-rescue/docs/evidence/runtime-results/dev-agent-s
 [Install]
 WantedBy=multi-user.target
 EOF
+}
+
+write_dev_agent_enable_hook() {
   write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot" 0755 <<'EOF'
 #!/bin/sh
 set -eu
@@ -324,10 +327,33 @@ systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
 systemctl enable setuphelfer-dev-agent.service || true
 EOF
+}
+
+if [[ "${RESCUE_BUILD_PROFILE}" == "developer" || "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
+  if [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
+    DEV_PROFILE_ROOT="${REPO_ROOT}/build/rescue/profiles/developer-qemu"
+  else
+    DEV_PROFILE_ROOT="${REPO_ROOT}/build/rescue/profiles/developer"
+  fi
+  [[ -f "${DEV_PROFILE_ROOT}/environment/setuphelfer-dev-agent.env" ]] || die "profile env missing: ${DEV_PROFILE_ROOT}"
+  [[ -f "${DEV_PROFILE_ROOT}/manifest.json" ]] || die "profile manifest missing: ${DEV_PROFILE_ROOT}"
+  mkdir -p "${BUILD_ROOT}/config/includes.chroot/etc/setuphelfer"
+  copy_host_file "${DEV_PROFILE_ROOT}/environment/setuphelfer-dev-agent.env" \
+    "${BUILD_ROOT}/config/includes.chroot/etc/setuphelfer/setuphelfer-dev-agent.env" 0644
+  if [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
+    write_rescue_dev_agent_service true
+  else
+    write_rescue_dev_agent_service false
+  fi
+  write_dev_agent_enable_hook
+  profile_id="rescue_developer_local_lab"
+  if [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
+    profile_id="rescue_developer_qemu_local_lab"
+  fi
   write_text_file "${BUILD_ROOT}/config/includes.chroot/opt/setuphelfer-rescue/config/rescue-developer-profile.json" 0644 <<EOF
 {
-  "profile_id": "rescue_developer_local_lab",
-  "profile_type": "developer",
+  "profile_id": "${profile_id}",
+  "profile_type": "${RESCUE_BUILD_PROFILE}",
   "agent_enabled": true,
   "agent_mode": "local_lab",
   "developer_auto_upload": true,
@@ -402,7 +428,7 @@ write_text_file "${BUILD_ROOT}/evidence/build-tree-manifest.json" 0644 <<EOF
   "real_iso_build_allowed": false,
   "usb_write_allowed": false,
   "rescue_build_profile": "${RESCUE_BUILD_PROFILE}",
-  "developer_agent_in_tree": $([ "${RESCUE_BUILD_PROFILE}" = "developer" ] && echo true || echo false)
+  "developer_agent_in_tree": $([ "${RESCUE_BUILD_PROFILE}" = "developer" ] || [ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false)
 }
 EOF
 

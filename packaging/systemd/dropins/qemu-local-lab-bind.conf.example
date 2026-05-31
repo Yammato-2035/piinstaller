@@ -1,0 +1,10 @@
+# Lab only — QEMU guest (10.0.2.2) → host dev-server reachability.
+# NOT for production, NOT a release default.
+# Install via: scripts/rescue-live/apply-qemu-local-lab-backend-bind-dropin.sh --operator-confirm
+# Revert via:  scripts/rescue-live/revert-qemu-local-lab-backend-bind-dropin.sh --operator-confirm
+#
+# Public auto-upload remains disabled via dev-server config.
+# SSH remains disabled.
+
+[Service]
+Environment=ALLOW_REMOTE_ACCESS=true

@@ -4,7 +4,7 @@
   "agent_enabled": true,
   "agent_mode": "local_lab",
   "auto_upload": true,
-  "server_url": "http://10.0.2.2:8000",
+  "server_url": "http://10.0.2.2:8001",
   "qemu_host_fallback": true,
   "public_auto_upload": false,
   "developer_auto_upload": true,
@@ -12,7 +12,7 @@
   "write_actions_allowed": false,
   "requires_local_dev_server": true,
   "qemu": {
-    "host_dev_server_url": "http://10.0.2.2:8000",
+    "host_dev_server_url": "http://10.0.2.2:8001",
     "remote_console": {
       "enabled": true,
       "type": "vnc",
