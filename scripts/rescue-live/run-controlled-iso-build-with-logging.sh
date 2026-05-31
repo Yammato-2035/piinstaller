@@ -22,6 +22,9 @@ ISOHYBRID_PREFLIGHT_HINT="Run prepare-controlled-live-build-tree.sh (syslinux-ut
 ZSYNC_STALE_EXIT=32
 ZSYNC_STALE_CODE="RESCUE-BUILD-ZSYNC-STALE-001"
 ZSYNC_STALE_HINT="Remove stale binary.hybrid.iso.zsync* in BUILD_TREE or run prepare + ./auto/clean; rescue uses --zsync false."
+PERMISSION_PREFLIGHT_EXIT=34
+PERMISSION_PREFLIGHT_CODE="rescue_iso_build.permission_denied_dot_build"
+PERMISSION_PREFLIGHT_HINT="Run ./scripts/rescue-live/clean-controlled-live-build-tree.sh --dry-run then sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean"
 RESCUE_ISO_BASENAMES=(binary.hybrid.iso binary.iso)
 
 POLICY_GUARD_STATUS="unknown"
@@ -48,6 +51,28 @@ Log paths:
 
 USB write, dd, mkfs, parted: FORBIDDEN in this script.
 EOF
+}
+
+permission_preflight_ok() {
+  local perm_json
+  perm_json="$(cd "$REPO_ROOT" && BUILD_ROOT="$BUILD_ROOT" PYTHONPATH="${REPO_ROOT}/backend:${REPO_ROOT}" python3 - <<'PY'
+import json
+import os
+from pathlib import Path
+from core.rescue_iso_build_permission_policy import assess_build_tree_permissions
+build_root = Path(os.environ["BUILD_ROOT"])
+print(json.dumps(assess_build_tree_permissions(build_root)))
+PY
+)"
+  local blocked
+  blocked="$(python3 -c "import json,sys; p=json.loads(sys.argv[1]); print('yes' if p.get('operator_fix_required') else 'no')" "$perm_json")"
+  if [[ "$blocked" == "yes" ]]; then
+    echo "${PERMISSION_PREFLIGHT_CODE}: build tree permission preflight blocked"
+    echo "$perm_json" | python3 -m json.tool 2>/dev/null || echo "$perm_json"
+    echo "${PERMISSION_PREFLIGHT_HINT}"
+    return 1
+  fi
+  return 0
 }
 
 binary_stage_preflight_ok() {
@@ -287,6 +312,16 @@ if ! policy_guard_ok; then
 fi
 echo "POLICY_GUARD_STATUS=${POLICY_GUARD_STATUS}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
 echo "POLICY_EXECUTION_MODE=${POLICY_EXECUTION_MODE}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+if ! permission_preflight_ok; then
+  echo "${PERMISSION_PREFLIGHT_HINT}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+  LB_EXIT="${PERMISSION_PREFLIGHT_EXIT}"
+  ERROR_CODE="${PERMISSION_PREFLIGHT_CODE}"
+  NEXT_ACTION="run_clean_controlled_live_build_tree"
+  ENDED_AT="$(date -Is)"
+  echo "LB_EXIT=${LB_EXIT}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+  write_summary "${STARTED_AT}" "${ENDED_AT}" "${LB_EXIT}" "${LATEST_LOG}" "${ERROR_CODE}" "${NEXT_ACTION}" "${BUILD_STARTED}"
+  exit "${LB_EXIT}"
+fi
 if ! binary_stage_preflight_ok; then
   echo "${ISOHYBRID_PREFLIGHT_HINT}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
   LB_EXIT="${ISOHYBRID_PREFLIGHT_EXIT}"

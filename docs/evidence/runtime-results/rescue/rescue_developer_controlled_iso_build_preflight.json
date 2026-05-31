@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-31T09:58:59.144885+00:00",
-  "run_id": "rescue_developer_iso_20260531_095558",
-  "status": "review_required",
+  "generated_at": "2026-05-31T10:09:17.188774+00:00",
+  "run_id": "rescue_developer_iso_20260531_100916",
+  "status": "blocked",
   "runtime_gate_ok": true,
   "backend_version_gate_ok": true,
   "profile_guard_ok": true,
@@ -15,9 +15,45 @@
   "public_telemetry_planned": false,
   "build_entrypoint": "scripts/rescue-live/run-controlled-iso-build-with-logging.sh",
   "build_profile": "developer",
+  "permission_policy": {
+    "build_tree": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
+    "tree_writable": true,
+    "dot_build_writable": false,
+    "dot_build_config_writable": false,
+    "root_owned_count": 60,
+    "root_owned_paths_sample": [
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_checksums",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_chroot",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_disk",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_iso",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_linux-image",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_manifest",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_memtest",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_package-lists",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_rootfs",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_syslinux",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/bootstrap",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/bootstrap_cache.save",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_hacks",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_hooks",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_includes",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_install-packages.install",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_install-packages.live",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_linux-image",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_live-packages"
+    ],
+    "operator_fix_required": true,
+    "recommended_fix": "Run: sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean"
+  },
   "warnings": [
     "developer_profile_marker_missing",
     "prior_artifacts_inventoried:28"
   ],
-  "errors": []
+  "errors": [
+    "dot_build_not_writable",
+    "dot_build_config_not_writable",
+    "root_owned_active_work_areas",
+    "root_owned_top_level_artifacts"
+  ]
 }

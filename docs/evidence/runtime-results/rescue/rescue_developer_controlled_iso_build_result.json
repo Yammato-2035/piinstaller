@@ -1,22 +1,31 @@
 {
-  "generated_at": "2026-05-31T09:59:08+00:00",
+  "generated_at": "2026-05-31T10:12:00+00:00",
   "status": "blocked",
-  "run_id": "rescue_developer_iso_20260531_095558",
-  "build_exit_code": 30,
+  "run_id": "rescue_developer_iso_20260531_100916",
+  "build_exit_code": null,
   "iso_found": false,
   "iso_path": null,
   "iso_sha256": null,
   "profile": "developer",
+  "permission_policy": {
+    "build_tree": "build/rescue/live-build/setuphelfer-rescue-live",
+    "tree_writable": true,
+    "dot_build_writable": false,
+    "root_owned_count": 60,
+    "operator_fix_required": true,
+    "recommended_fix": "sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean",
+    "clean_dry_run_ok": true,
+    "clean_confirm_executed": false,
+    "clean_sudo_required": true,
+    "clean_block_reason": "agent_context_no_sudo_password"
+  },
   "dev_agent": {
     "included_in_build_tree": true,
     "enabled": true,
     "mode": "local_lab",
     "auto_upload": true,
-    "server_url": "http://127.0.0.1:8000",
     "ssh_allowed": false,
-    "write_actions_allowed": false,
-    "env_path_in_tree": "build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/etc/setuphelfer/setuphelfer-dev-agent.env",
-    "systemd_path_in_tree": "build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/etc/systemd/system/setuphelfer-dev-agent.service"
+    "write_actions_allowed": false
   },
   "public_guard": {
     "public_auto_upload": false,
@@ -25,24 +34,25 @@
   },
   "usb": {
     "usb_write_started": false,
-    "dd_executed": false,
-    "target_device": null
+    "dd_executed": false
   },
   "boot": {
     "boot_test_executed": false
   },
   "build_entrypoint": "scripts/rescue-live/run-controlled-iso-build-with-logging.sh",
-  "error_code": "blocked_requires_operator_sudo_policy",
-  "next_action": "manual_operator_terminal_required",
-  "prior_iso_archived_to": "build/rescue/archive/prior-controlled-builds/rescue_developer_iso_20260531_095558",
+  "build_started": false,
+  "error_code": "rescue_iso_build.permission_denied_dot_build",
+  "next_action": "operator_sudo_clean_then_repreflight",
   "build_log_path": "build/rescue/logs/controlled-iso-build/latest.log",
+  "clean_log_path": "build/rescue/logs/controlled-iso-build/clean-latest.log",
   "warnings": [
-    "prior_artifacts_in_tree:28",
-    "root_owned_binary_tree_blocks_auto_clean_without_sudo",
-    "preflight_review_required"
+    "prior_artifacts_inventoried:28",
+    "developer_profile_marker_missing"
   ],
   "errors": [
-    "blocked_requires_operator_sudo_policy",
+    "dot_build_not_writable",
+    "root_owned_active_work_areas",
+    "clean_not_completed",
     "lb_build_not_started"
   ]
 }

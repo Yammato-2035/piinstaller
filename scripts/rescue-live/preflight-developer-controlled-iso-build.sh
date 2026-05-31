@@ -14,10 +14,13 @@ export PYTHONPATH="${REPO_ROOT}/backend:${REPO_ROOT}"
 
 python3 - "$OUT" "$RUN_ID" "$BUILD_ROOT" "$PRIOR_INV" "$REPO_ROOT" <<'PY'
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+from core.rescue_iso_build_permission_policy import assess_build_tree_permissions
 
 out_path = Path(sys.argv[1])
 run_id = sys.argv[2]
@@ -27,6 +30,7 @@ repo = Path(sys.argv[5])
 
 errors: list[str] = []
 warnings: list[str] = []
+permission = assess_build_tree_permissions(build_root)
 
 def run(cmd: list[str]) -> tuple[int, str]:
     proc = subprocess.run(cmd, cwd=repo, capture_output=True, text=True)
@@ -59,9 +63,30 @@ prior_count = 0
 if prior_inv.is_file():
     prior_count = json.loads(prior_inv.read_text(encoding="utf-8")).get("prior_artifact_count", 0)
 
-status = "blocked" if errors else ("review_required" if warnings else "ready")
+if permission["operator_fix_required"]:
+    errors.extend(permission["permission_blockers"])
 if prior_count:
     warnings.append(f"prior_artifacts_inventoried:{prior_count}")
+
+auto_clean = build_root / "auto/clean"
+auto_clean_executable = auto_clean.is_file() and os.access(auto_clean, os.X_OK)
+if auto_clean.is_file() and not auto_clean_executable:
+    warnings.append("auto_clean_not_executable")
+
+permission_policy = {
+    "build_tree": permission["build_tree"],
+    "tree_writable": permission["tree_writable"],
+    "dot_build_writable": permission["dot_build_writable"],
+    "dot_build_config_writable": permission["dot_build_config_writable"],
+    "root_owned_count": permission["root_owned_count"],
+    "root_owned_paths_sample": permission["root_owned_paths_sample"],
+    "operator_fix_required": permission["operator_fix_required"],
+    "recommended_fix": permission["recommended_fix"],
+}
+
+status = "blocked" if errors else ("review_required" if warnings else "ready")
+if not errors and permission["permission_status"] == "review_required":
+    status = "review_required"
 
 body = {
     "generated_at": datetime.now(tz=timezone.utc).isoformat(),
@@ -80,6 +105,7 @@ body = {
     "public_telemetry_planned": False,
     "build_entrypoint": "scripts/rescue-live/run-controlled-iso-build-with-logging.sh",
     "build_profile": "developer",
+    "permission_policy": permission_policy,
     "warnings": warnings,
     "errors": errors,
 }
