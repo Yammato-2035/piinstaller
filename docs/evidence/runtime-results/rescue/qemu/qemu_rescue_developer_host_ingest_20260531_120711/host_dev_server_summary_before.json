@@ -1,0 +1,33 @@
+{
+  "code": "DEV_SERVER_SUMMARY_OK",
+  "enabled": true,
+  "node_count": 2,
+  "online_count": 2,
+  "busy_count": 0,
+  "error_count": 0,
+  "reports_last_24h": 2,
+  "latest_findings": [
+    {
+      "report_id": "report-d83b73c520e842c3",
+      "node_id": "agent-smoke-node",
+      "report_type": "rescue",
+      "created_at": "2026-05-30T18:34:32+00:00",
+      "warnings": [
+        "sensitive_field_present:storage.lsblk.blockdevices[0].serial",
+        "sensitive_field_present:storage.lsblk.blockdevices[0].children[0].uuid",
+        "sensitive_field_present:storage.lsblk.blockdevices[1].serial"
+      ]
+    },
+    {
+      "report_id": "local-smoke-report",
+      "node_id": "local-smoke-node",
+      "report_type": "inventory",
+      "created_at": "2026-05-30T18:24:33+00:00",
+      "warnings": []
+    }
+  ],
+  "open_actions": 0,
+  "blocked_actions": 0,
+  "prompt_candidates_count": 0,
+  "generated_at": "2026-05-31T12:07:11+00:00"
+}

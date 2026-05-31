@@ -102,11 +102,12 @@ Screenshot (lokal, nicht committed):
 
 ## Nächster Schritt
 
-**RESCUE DEVELOPER ISO QEMU BOOT SMOKE WITH HOST DEV SERVER INGEST**
+Host-Ingest-Smoke ausgeführt — **review_required** (`RESCUE_DEVELOPER_ISO_QEMU_HOST_INGEST_RESULT.md`):
 
-URL-Fix implementiert (`server_url.py`, `developer-qemu` Profil, `10.0.2.2`). Ursache `127.0.0.1` im Gast ist behoben/vorbereitet — Agent-Ingest pending bis erneuter QEMU-Smoke mit Host-URL.
+- Server-Verbindung im Gast fehlgeschlagen, Tastatur EN, kein Report
+- **FIX DEV SERVER BIND / QEMU HOST PORT REACHABILITY**, dann ISO-Rebuild mit `developer-qemu`-Profil
 
-Siehe: `docs/evidence/rescue/RESCUE_DEV_AGENT_QEMU_SERVER_URL_FIX.md`
+Siehe auch: `docs/evidence/rescue/RESCUE_DEV_AGENT_QEMU_SERVER_URL_FIX.md`
 
 ## Evidence
 

@@ -67,6 +67,19 @@ Siehe: `docs/evidence/dev-dashboard/CONTROL_CENTER_SUMMARY_SCHEMA_VALIDATION.md`
 
 Runtime HEAD-clean nach Clean Deploy (0 WIP-Matches). Siehe `docs/evidence/runtime-results/deploy/CLEAN_HEAD_DEPLOY_1_7_3_0.md`.
 
+## Rescue Developer ISO QEMU Host Ingest (2026-05-31)
+
+| Field | Value |
+|-------|-------|
+| Run-ID | `qemu_rescue_developer_host_ingest_20260531_120711` |
+| Status | **review_required** |
+| Boot / Login | **yes** (Operator) |
+| Host Dev-Server Report | **no** (2 nodes, 2 reports unchanged) |
+| Gast Server URL | failed (`127.0.0.1` in ISO; `10.0.2.2` not verified) |
+| Keyboard DE | **no** (Operator: EN) |
+| Host bind | `127.0.0.1:8000` only |
+| Evidence | `RESCUE_DEVELOPER_ISO_QEMU_HOST_INGEST_RESULT.md` |
+
 ## Rescue Developer ISO QEMU Boot Smoke (2026-05-31)
 
 | Field | Value |

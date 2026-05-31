@@ -43,10 +43,14 @@ PID write failure → `WRAPPER_WARNING`, not boot failure.
 
 ## QEMU in this run
 
-**Not executed** (code/plan only).
+**Executed** — Host-Ingest-Smoke `qemu_rescue_developer_host_ingest_20260531_120711`: **review_required**.
+
+- Gast-Server-Verbindung fehlgeschlagen (Operator); kein neuer Dev-Server-Report
+- ISO noch ohne eingebautes `server_url.py` / `10.0.2.2`-Env
+- Host-Backend nur `127.0.0.1:8000` → `network_bind_pending`
+
+Siehe: `docs/evidence/rescue/RESCUE_DEVELOPER_ISO_QEMU_HOST_INGEST_RESULT.md`
 
 ## Next step
 
-**RESCUE DEVELOPER ISO QEMU BOOT SMOKE WITH HOST DEV SERVER INGEST**
-
-Use developer-qemu env or `--qemu-host-fallback` and verify `curl http://10.0.2.2:8000/api/dev-server/health` in guest.
+**FIX DEV SERVER BIND / QEMU HOST PORT REACHABILITY** — dann ISO-Rebuild mit `developer-qemu`-Profil und erneuter Ingest-Smoke.
