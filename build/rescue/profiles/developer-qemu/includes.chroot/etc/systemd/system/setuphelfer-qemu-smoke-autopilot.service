@@ -1,0 +1,21 @@
+[Unit]
+Description=Setuphelfer QEMU Smoke Autopilot
+After=multi-user.target network-online.target setuphelfer-rescue-keyboard.service
+Wants=network-online.target
+ConditionPathExists=/opt/setuphelfer-rescue
+ConditionPathExists=/usr/local/sbin/setuphelfer-qemu-smoke-autopilot.sh
+
+[Service]
+Type=oneshot
+Environment=SETUPHELFER_QEMU_SMOKE_AUTOPILOT=true
+Environment=SETUPHELFER_DEV_AGENT_SERVER_URL=http://10.0.2.2:8001
+Environment=SETUPHELFER_DEV_AGENT_QEMU_HOST_FALLBACK=true
+Environment=SETUPHELFER_DEV_AGENT_QEMU_HOST_URL=http://10.0.2.2:8001
+ExecStart=/usr/local/sbin/setuphelfer-qemu-smoke-autopilot.sh
+StandardOutput=journal+console
+StandardError=journal+console
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,4 @@
+#!/bin/sh
+if command -v setxkbmap >/dev/null 2>&1; then
+  setxkbmap -layout de -model pc105 2>/dev/null || setxkbmap de 2>/dev/null || true
+fi

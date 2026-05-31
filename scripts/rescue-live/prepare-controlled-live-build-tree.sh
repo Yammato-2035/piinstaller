@@ -133,6 +133,8 @@ python3-pip
 syslinux-utils
 console-setup
 keyboard-configuration
+kbd
+x11-xkb-utils
 locales
 tzdata
 EOF
@@ -217,6 +219,42 @@ EOF
 
 write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/vconsole.conf" 0644 <<'EOF'
 KEYMAP=de-latin1
+FONT=
+FONT_MAP=
+FONT_UNIMAP=
+EOF
+
+write_text_file "${BUILD_ROOT}/config/preseeds/keyboard.seed.chroot" 0644 <<'EOF'
+keyboard-configuration keyboard-configuration/layoutcode string de
+keyboard-configuration keyboard-configuration/modelcode string pc105
+keyboard-configuration keyboard-configuration/variant select
+keyboard-configuration keyboard-configuration/options code
+keyboard-configuration keyboard-configuration/unsupported config handled
+keyboard-configuration keyboard-configuration/unsupported_layout skip
+keyboard-configuration keyboard-configuration/unsupported_config_options skip
+EOF
+
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/X11/Xsession.d/99-setuphelfer-keyboard-de" 0755 <<'EOF'
+#!/bin/sh
+# Force German X11 layout (QWERTZ) — live-config may lag behind login.
+if command -v setxkbmap >/dev/null 2>&1; then
+  setxkbmap -layout de -model pc105 -option "" 2>/dev/null || setxkbmap de 2>/dev/null || true
+fi
+EOF
+
+write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-keyboard.service" 0644 <<'EOF'
+[Unit]
+Description=Setuphelfer Rescue German keyboard (console + X)
+After=multi-user.target
+ConditionPathExists=/etc/vconsole.conf
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'if command -v loadkeys >/dev/null 2>&1; then loadkeys de-latin1 2>/dev/null || loadkeys de 2>/dev/null || true; fi; if command -v setxkbmap >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then setxkbmap -layout de -model pc105 2>/dev/null || true; fi'
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
 write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/locale.gen" 0644 <<'EOF'
@@ -284,6 +322,7 @@ write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-servic
 #!/bin/sh
 set -eu
 systemctl enable systemd-networkd.service || true
+systemctl enable setuphelfer-rescue-keyboard.service || true
 systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
 EOF
@@ -318,15 +357,41 @@ WantedBy=multi-user.target
 EOF
 }
 
+copy_profile_overlay() {
+  local profile_root="$1"
+  local includes="${profile_root}/includes.chroot"
+  local hooks="${profile_root}/hooks/normal"
+  if [[ -d "$includes" ]]; then
+    rsync -rlpt "${includes}/" "${BUILD_ROOT}/config/includes.chroot/"
+  fi
+  if [[ -d "$hooks" ]]; then
+    mkdir -p "${BUILD_ROOT}/config/hooks/normal"
+    rsync -rlpt "${hooks}/" "${BUILD_ROOT}/config/hooks/normal/"
+  fi
+}
+
 write_dev_agent_enable_hook() {
-  write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot" 0755 <<'EOF'
+  local enable_dev_agent="${1:-true}"
+  if [[ "$enable_dev_agent" == "true" ]]; then
+    write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot" 0755 <<'EOF'
 #!/bin/sh
 set -eu
 systemctl enable systemd-networkd.service || true
+systemctl enable setuphelfer-rescue-keyboard.service || true
 systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
 systemctl enable setuphelfer-dev-agent.service || true
 EOF
+  else
+    write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot" 0755 <<'EOF'
+#!/bin/sh
+set -eu
+systemctl enable systemd-networkd.service || true
+systemctl enable setuphelfer-rescue-keyboard.service || true
+systemctl enable setuphelfer-backend.service || true
+systemctl enable setuphelfer.service || true
+EOF
+  fi
 }
 
 if [[ "${RESCUE_BUILD_PROFILE}" == "developer" || "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
@@ -342,10 +407,12 @@ if [[ "${RESCUE_BUILD_PROFILE}" == "developer" || "${RESCUE_BUILD_PROFILE}" == "
     "${BUILD_ROOT}/config/includes.chroot/etc/setuphelfer/setuphelfer-dev-agent.env" 0644
   if [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
     write_rescue_dev_agent_service true
+    copy_profile_overlay "${DEV_PROFILE_ROOT}"
+    write_dev_agent_enable_hook false
   else
     write_rescue_dev_agent_service false
+    write_dev_agent_enable_hook true
   fi
-  write_dev_agent_enable_hook
   profile_id="rescue_developer_local_lab"
   if [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
     profile_id="rescue_developer_qemu_local_lab"
@@ -364,21 +431,26 @@ if [[ "${RESCUE_BUILD_PROFILE}" == "developer" || "${RESCUE_BUILD_PROFILE}" == "
 EOF
 fi
 
-write_text_file "${BUILD_ROOT}/auto/config" 0755 <<'EOF'
+LIVE_BOOTAPPEND='boot=live components init=/lib/systemd/systemd quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin'
+if [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
+  LIVE_BOOTAPPEND='boot=live components init=/lib/systemd/systemd console=ttyS0,115200n8 quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin'
+fi
+
+write_text_file "${BUILD_ROOT}/auto/config" 0755 <<EOF
 #!/bin/sh
 set -eu
-lb config noauto \
-  --distribution bookworm \
-  --archive-areas "main" \
-  --binary-images iso-hybrid \
-  --zsync false \
-  --debian-installer false \
-  --security false \
-  --firmware-chroot false \
-  --firmware-binary false \
-  --mode debian \
-  --bootappend-live "boot=live components init=/lib/systemd/systemd quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin" \
-  --iso-volume "SETUPHELFER_RESCUE" \
+lb config noauto \\
+  --distribution bookworm \\
+  --archive-areas "main" \\
+  --binary-images iso-hybrid \\
+  --zsync false \\
+  --debian-installer false \\
+  --security false \\
+  --firmware-chroot false \\
+  --firmware-binary false \\
+  --mode debian \\
+  --bootappend-live "${LIVE_BOOTAPPEND}" \\
+  --iso-volume "SETUPHELFER_RESCUE" \\
   --iso-application "Setuphelfer Rescue Live"
 EOF
 
