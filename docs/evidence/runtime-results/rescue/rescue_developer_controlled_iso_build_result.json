@@ -55,9 +55,11 @@
     "target_device": null
   },
   "boot": {
-    "boot_test_executed": false,
+    "boot_test_executed": true,
     "qemu_plan_created": true,
-    "qemu_executed": false
+    "qemu_executed": true,
+    "qemu_run_id": "qemu_rescue_developer_iso_20260531_104633",
+    "qemu_status": "review_required"
   },
   "dry_build_post_controlled": {
     "manifest": "docs/evidence/runtime-results/rescue/rescue_developer_iso_dry_build_manifest_post_controlled_build.json",

@@ -52,7 +52,7 @@
 | **Rescue Developer ISO Dry-Build** | Gelb | Dry-Build Manifest `review_required` — prior ISO artifacts in tree (33), keine neuen Artefakte; Profile/Guard OK | `rescue_developer_iso_dry_build_manifest.json`, `RESCUE_DEVELOPER_ISO_DRY_BUILD_RESULT.md` |
 | **Rescue Developer Controlled ISO Build** | Grün | LB_EXIT=0, ISO+SHA256, developer agent in chroot, public guard OK; permission clean nach 8455e3c | `RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md`, `rescue_developer_controlled_iso_build_result.json` |
 | **Real Developer ISO Build** | Grün | Controlled build success run `103047`; kein USB | `controlled_iso_build_latest_summary.json` |
-| **Live Boot (Developer ISO)** | Gelb/Pending | QEMU-Boot-Plan erstellt; Boot noch nicht ausgeführt | `RESCUE_DEVELOPER_ISO_QEMU_BOOT_PLAN_DE.md` |
+| **Live Boot (Developer ISO)** | Gelb | QEMU smoke `qemu_rescue_developer_iso_20260531_104633`: Boot+Login+`/opt/setuphelfer-rescue` banner OK; serial empty (TCG); Dev-Server report pending (127.0.0.1 guest/host) | `RESCUE_DEVELOPER_ISO_QEMU_BOOT_SMOKE_RESULT.md` |
 | **USB Write** | Rot/Blocked | `usb_write.allowed=false` | Rescue safety gates |
 | **Controlled ISO preparation** | Gelb | Workspace-Pfad bleibt gruen; Prebuild zeigt fehlende RSVG-Build-Abhaengigkeit jetzt vor dem Build sichtbar an, echter Build weiterhin nicht neu ausgefuehrt | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md`, `RESCUE_ISO_RSVG_FAILURE_ANALYSIS.md` |
 | **Rescue USB write gate** | Rot | **blocked** — kein ISO, keine Zielgeraet-Auswahl, keine Doppelbestaetigung, kein `dd`; neuer RSVG-Preflight haelt den Pfad weiterhin vor jedem USB-Folgeversuch an | `RESCUE_USB_WRITE_GATE_RUNBOOK.md`, `RESCUE_USB_WRITE_RESULT.md`, `controlled_usb_write_latest_summary.json` |

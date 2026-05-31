@@ -67,6 +67,18 @@ Siehe: `docs/evidence/dev-dashboard/CONTROL_CENTER_SUMMARY_SCHEMA_VALIDATION.md`
 
 Runtime HEAD-clean nach Clean Deploy (0 WIP-Matches). Siehe `docs/evidence/runtime-results/deploy/CLEAN_HEAD_DEPLOY_1_7_3_0.md`.
 
+## Rescue Developer ISO QEMU Boot Smoke (2026-05-31)
+
+| Field | Value |
+|-------|-------|
+| Run-ID | `qemu_rescue_developer_iso_20260531_104633` |
+| Status | **review_required** |
+| Boot observed | **yes** (GTK window) |
+| Login | **yes** (`user@localhost`) |
+| Rescue runtime banner | `/opt/setuphelfer-rescue` |
+| Dev-Server report | **no** (127.0.0.1 guest/host) |
+| Evidence | `RESCUE_DEVELOPER_ISO_QEMU_BOOT_SMOKE_RESULT.md` |
+
 ## Rescue Developer Controlled ISO Build (finalized 2026-05-31)
 
 | Field | Value |

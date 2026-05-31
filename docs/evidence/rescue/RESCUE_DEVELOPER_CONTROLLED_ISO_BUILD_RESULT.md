@@ -119,7 +119,17 @@ USB, dd, Boot, Backup, Restore, apt, mount: **not executed**
 | ISO + SHA256 + Guards | **YES** |
 | QEMU Boot | **pending** (Plan erstellt) |
 
-**Next prompt:** **RESCUE DEVELOPER ISO QEMU BOOT SMOKE TEST**
+**Next prompt:** **RESCUE DEVELOPER ISO QEMU BOOT SMOKE TEST** → ausgeführt, siehe `RESCUE_DEVELOPER_ISO_QEMU_BOOT_SMOKE_RESULT.md` (review_required)
+
+## QEMU Boot Smoke (2026-05-31)
+
+| Field | Value |
+|-------|-------|
+| Run-ID | `qemu_rescue_developer_iso_20260531_104633` |
+| Boot | **yes** (GTK) |
+| Login | **yes** |
+| Rescue runtime | Banner `/opt/setuphelfer-rescue` |
+| Status | **review_required** (127.0.0.1 guest/host, Agent-Ingest pending) |
 
 ## References
 
