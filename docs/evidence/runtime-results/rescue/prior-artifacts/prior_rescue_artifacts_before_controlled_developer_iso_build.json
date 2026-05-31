@@ -1,0 +1,202 @@
+{
+  "created_at": "2026-05-31T09:55:15.233979+00:00",
+  "items": [
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2026-05-30T06:11:23.780447+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+      "sha256": "1eccf9c09fbf69b5bc7a4cd064371c46650b938770f48cf5f4241ae5355f57db",
+      "size": 509607936
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2026-05-30T06:10:54.640573+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/binary/live/filesystem.squashfs",
+      "sha256": "aff930995d91582870cdebe8481221640cc8c3f35e295695ef593b62ec87bb5c",
+      "size": 432443392
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2026-05-30T06:11:04.498530+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/binary/live/initrd.img",
+      "sha256": "38511630faf22cd19129e25f3c24e6deb4464ca6c17b1adcf86814a7d9287f92",
+      "size": 35665423
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2026-05-30T06:11:04.482530+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/binary/live/vmlinuz",
+      "sha256": "d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98",
+      "size": 8230848
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2026-05-30T06:11:22.094454+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/binary/SHA256SUMS",
+      "sha256": "b57d9ee1166385b394e6b1d90c5cf66084a643bdae5703374c49124f4e2a32b5",
+      "size": 11655
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/cache/bootstrap/usr/lib/systemd/system/initrd-cleanup.service",
+      "sha256": "bb640b249494cc251c9f54b68437a4d69e16f076122898d65a889d7451b312f6",
+      "size": 670
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/cache/bootstrap/usr/lib/systemd/system/initrd-fs.target",
+      "sha256": "b36f3ae8897c45c6487982b08468819084eefc36042bee21a7c95e09a65014ff",
+      "size": 598
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2026-04-27T19:48:55+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/cache/bootstrap/usr/lib/systemd/system/initrd-parse-etc.service",
+      "sha256": "f8004b182fa43d05c664e3d36090e10bb84d44a0533995caf5a23e80e634a85b",
+      "size": 1275
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/cache/bootstrap/usr/lib/systemd/system/initrd-root-device.target",
+      "sha256": "34468c5d32d254b32e92d4ca879af529710b855e5008dcfac9c370eb0c0b5596",
+      "size": 566
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/cache/bootstrap/usr/lib/systemd/system/initrd-root-fs.target",
+      "sha256": "46f23915c1eb438e404c61fff69440b36d0eb9fc637d476190983e08c4899fee",
+      "size": 571
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/cache/bootstrap/usr/lib/systemd/system/initrd-switch-root.service",
+      "sha256": "9b434d46de5e7f77a973b4c85f93d61f15d82d2886ea190e0e0bc78f6dd0912b",
+      "size": 623
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/cache/bootstrap/usr/lib/systemd/system/initrd-switch-root.target",
+      "sha256": "5d9620d86c1e929a8f279d9d0055c2f3983ef7438e9d0856a0b41cdb6c2a87ab",
+      "size": 779
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/cache/bootstrap/usr/lib/systemd/system/initrd.target",
+      "sha256": "58667069b4da13bbefdb9114459f630a8a63ab6ff22a11889c74a2bcd4f31494",
+      "size": 810
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/cache/bootstrap/usr/lib/systemd/system/initrd-udevadm-cleanup-db.service",
+      "sha256": "413c905a055a7d1b05e3227c15e2b157622eef53ef225d2463fe7648f3a976e2",
+      "size": 823
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/cache/bootstrap/usr/lib/systemd/system/initrd-usr-fs.target",
+      "sha256": "0aaa5a7bd3907d25ed349be35a02b7b46e4e042d7058940ee57842065880507d",
+      "size": 571
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2026-05-30T06:10:29.281685+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/boot/initrd.img-6.1.0-49-amd64",
+      "sha256": "38511630faf22cd19129e25f3c24e6deb4464ca6c17b1adcf86814a7d9287f92",
+      "size": 35665423
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2026-05-26T21:29:19+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/boot/vmlinuz-6.1.0-49-amd64",
+      "sha256": "d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98",
+      "size": 8230848
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/lib/systemd/system/initrd-cleanup.service",
+      "sha256": "bb640b249494cc251c9f54b68437a4d69e16f076122898d65a889d7451b312f6",
+      "size": 670
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/lib/systemd/system/initrd-fs.target",
+      "sha256": "b36f3ae8897c45c6487982b08468819084eefc36042bee21a7c95e09a65014ff",
+      "size": 598
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2026-04-27T19:48:55+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/lib/systemd/system/initrd-parse-etc.service",
+      "sha256": "f8004b182fa43d05c664e3d36090e10bb84d44a0533995caf5a23e80e634a85b",
+      "size": 1275
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/lib/systemd/system/initrd-root-device.target",
+      "sha256": "34468c5d32d254b32e92d4ca879af529710b855e5008dcfac9c370eb0c0b5596",
+      "size": 566
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/lib/systemd/system/initrd-root-fs.target",
+      "sha256": "46f23915c1eb438e404c61fff69440b36d0eb9fc637d476190983e08c4899fee",
+      "size": 571
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/lib/systemd/system/initrd-switch-root.service",
+      "sha256": "9b434d46de5e7f77a973b4c85f93d61f15d82d2886ea190e0e0bc78f6dd0912b",
+      "size": 623
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/lib/systemd/system/initrd-switch-root.target",
+      "sha256": "5d9620d86c1e929a8f279d9d0055c2f3983ef7438e9d0856a0b41cdb6c2a87ab",
+      "size": 779
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/lib/systemd/system/initrd.target",
+      "sha256": "58667069b4da13bbefdb9114459f630a8a63ab6ff22a11889c74a2bcd4f31494",
+      "size": 810
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/lib/systemd/system/initrd-udevadm-cleanup-db.service",
+      "sha256": "413c905a055a7d1b05e3227c15e2b157622eef53ef225d2463fe7648f3a976e2",
+      "size": 823
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2025-06-26T14:56:09+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/lib/systemd/system/initrd-usr-fs.target",
+      "sha256": "0aaa5a7bd3907d25ed349be35a02b7b46e4e042d7058940ee57842065880507d",
+      "size": 571
+    },
+    {
+      "classification": "prior_existing_artifact",
+      "mtime": "2023-04-30T10:42:06+00:00",
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/usr/share/man/man4/initrd.4.gz",
+      "sha256": "14fb3bacfe493ab523c12bcf7c788e89d9f3bf6474e6bfd3140eed3b8df2f1ef",
+      "size": 4264
+    }
+  ],
+  "prior_artifact_count": 28
+}

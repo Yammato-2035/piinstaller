@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-05-31T09:58:59.144885+00:00",
+  "run_id": "rescue_developer_iso_20260531_095558",
+  "status": "review_required",
+  "runtime_gate_ok": true,
+  "backend_version_gate_ok": true,
+  "profile_guard_ok": true,
+  "clean_runtime_assumed": true,
+  "developer_profile_in_tree": true,
+  "prior_artifact_inventory": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/prior-artifacts/prior_rescue_artifacts_before_controlled_developer_iso_build.json",
+  "prior_artifact_count": 28,
+  "usb_target_set": false,
+  "dd_planned": false,
+  "mount_planned": false,
+  "public_telemetry_planned": false,
+  "build_entrypoint": "scripts/rescue-live/run-controlled-iso-build-with-logging.sh",
+  "build_profile": "developer",
+  "warnings": [
+    "developer_profile_marker_missing",
+    "prior_artifacts_inventoried:28"
+  ],
+  "errors": []
+}

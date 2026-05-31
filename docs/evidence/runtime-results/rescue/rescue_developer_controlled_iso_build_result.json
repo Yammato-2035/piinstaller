@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-05-31T09:59:08+00:00",
+  "status": "blocked",
+  "run_id": "rescue_developer_iso_20260531_095558",
+  "build_exit_code": 30,
+  "iso_found": false,
+  "iso_path": null,
+  "iso_sha256": null,
+  "profile": "developer",
+  "dev_agent": {
+    "included_in_build_tree": true,
+    "enabled": true,
+    "mode": "local_lab",
+    "auto_upload": true,
+    "server_url": "http://127.0.0.1:8000",
+    "ssh_allowed": false,
+    "write_actions_allowed": false,
+    "env_path_in_tree": "build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/etc/setuphelfer/setuphelfer-dev-agent.env",
+    "systemd_path_in_tree": "build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/etc/systemd/system/setuphelfer-dev-agent.service"
+  },
+  "public_guard": {
+    "public_auto_upload": false,
+    "public_profile_safe": true,
+    "guard_script_exit": 0
+  },
+  "usb": {
+    "usb_write_started": false,
+    "dd_executed": false,
+    "target_device": null
+  },
+  "boot": {
+    "boot_test_executed": false
+  },
+  "build_entrypoint": "scripts/rescue-live/run-controlled-iso-build-with-logging.sh",
+  "error_code": "blocked_requires_operator_sudo_policy",
+  "next_action": "manual_operator_terminal_required",
+  "prior_iso_archived_to": "build/rescue/archive/prior-controlled-builds/rescue_developer_iso_20260531_095558",
+  "build_log_path": "build/rescue/logs/controlled-iso-build/latest.log",
+  "warnings": [
+    "prior_artifacts_in_tree:28",
+    "root_owned_binary_tree_blocks_auto_clean_without_sudo",
+    "preflight_review_required"
+  ],
+  "errors": [
+    "blocked_requires_operator_sudo_policy",
+    "lb_build_not_started"
+  ]
+}

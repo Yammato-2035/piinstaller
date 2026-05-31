@@ -6,6 +6,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BUILD_ROOT="${REPO_ROOT}/build/rescue/live-build/setuphelfer-rescue-live"
+RESCUE_BUILD_PROFILE="${SETUPHELFER_RESCUE_BUILD_PROFILE:-standard}"
+DEV_PROFILE_ROOT="${REPO_ROOT}/build/rescue/profiles/developer"
 BUNDLE_SRC="${REPO_ROOT}/build/rescue/temp-runtime/setuphelfer-rescue-runtime"
 BUNDLE_DST="${BUILD_ROOT}/config/includes.chroot/opt/setuphelfer-rescue"
 RSVG_COMPAT="${REPO_ROOT}/build/rescue/tool-compat/bin/rsvg"
@@ -286,6 +288,56 @@ systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
 EOF
 
+if [[ "${RESCUE_BUILD_PROFILE}" == "developer" ]]; then
+  [[ -f "${DEV_PROFILE_ROOT}/environment/setuphelfer-dev-agent.env" ]] || die "developer profile env missing"
+  [[ -f "${DEV_PROFILE_ROOT}/manifest.json" ]] || die "developer profile manifest missing"
+  mkdir -p "${BUILD_ROOT}/config/includes.chroot/etc/setuphelfer"
+  copy_host_file "${DEV_PROFILE_ROOT}/environment/setuphelfer-dev-agent.env" \
+    "${BUILD_ROOT}/config/includes.chroot/etc/setuphelfer/setuphelfer-dev-agent.env" 0644
+  write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer-dev-agent.service" 0644 <<'EOF'
+[Unit]
+Description=Setuphelfer Development Agent (Rescue Developer Edition)
+After=network-online.target setuphelfer-backend.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/setuphelfer/setuphelfer-dev-agent.env
+WorkingDirectory=/opt/setuphelfer-rescue/backend
+Environment=PYTHONPATH=/opt/setuphelfer-rescue/backend
+Environment=SETUPHELFER_RESCUE_ROOT=/opt/setuphelfer-rescue
+ExecStart=/usr/bin/python3 -m devserver_agent.cli --send --json
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/setuphelfer-rescue/docs/evidence/runtime-results/dev-agent-spool /tmp /run
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot" 0755 <<'EOF'
+#!/bin/sh
+set -eu
+systemctl enable systemd-networkd.service || true
+systemctl enable setuphelfer-backend.service || true
+systemctl enable setuphelfer.service || true
+systemctl enable setuphelfer-dev-agent.service || true
+EOF
+  write_text_file "${BUILD_ROOT}/config/includes.chroot/opt/setuphelfer-rescue/config/rescue-developer-profile.json" 0644 <<EOF
+{
+  "profile_id": "rescue_developer_local_lab",
+  "profile_type": "developer",
+  "agent_enabled": true,
+  "agent_mode": "local_lab",
+  "developer_auto_upload": true,
+  "ssh_allowed": false,
+  "write_actions_allowed": false,
+  "source_head": "${SOURCE_HEAD}"
+}
+EOF
+fi
+
 write_text_file "${BUILD_ROOT}/auto/config" 0755 <<'EOF'
 #!/bin/sh
 set -eu
@@ -348,7 +400,9 @@ write_text_file "${BUILD_ROOT}/evidence/build-tree-manifest.json" 0644 <<EOF
   "bundle_files_count": ${BUNDLE_FILES},
   "bundle_manifest_sha256": "${MANIFEST_SHA}",
   "real_iso_build_allowed": false,
-  "usb_write_allowed": false
+  "usb_write_allowed": false,
+  "rescue_build_profile": "${RESCUE_BUILD_PROFILE}",
+  "developer_agent_in_tree": $([ "${RESCUE_BUILD_PROFILE}" = "developer" ] && echo true || echo false)
 }
 EOF
 
@@ -379,4 +433,5 @@ Siehe \`docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md\`.
 EOF
 
 echo "OK: controlled live build tree at ${BUILD_ROOT}"
+echo "OK: rescue_build_profile=${RESCUE_BUILD_PROFILE}"
 echo "OK: bundle copied to includes.chroot/opt/setuphelfer-rescue (${BUNDLE_FILES} files ref)"

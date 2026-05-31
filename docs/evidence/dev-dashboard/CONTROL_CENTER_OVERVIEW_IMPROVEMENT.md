@@ -109,6 +109,18 @@ PYTHONPATH=backend:. python3 -m backend.devserver_agent.cli --rescue-iso-dry-bui
   --output docs/evidence/runtime-results/rescue/rescue_developer_iso_dry_build_manifest.json --json
 ```
 
+## Rescue Developer Controlled ISO Build
+
+| Field | Value |
+|-------|-------|
+| Run-ID | `rescue_developer_iso_20260531_095558` |
+| Status | **blocked** (exit 30, no ISO) |
+| Developer profile in build tree | **prepared** |
+| Real ISO built | **no** |
+| Blocker | operator sudo policy |
+
+See: `docs/evidence/rescue/RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md`
+
 ## Next prompt
 
-**RESCUE DEVELOPER ISO CONTROLLED BUILD WITH DEV AGENT PROFILE**
+**FIX RESCUE DEVELOPER CONTROLLED ISO BUILD** — operator terminal with sudo required.

@@ -11,6 +11,8 @@ LOG_DIR="${REPO_ROOT}/build/rescue/logs/controlled-iso-build"
 SUMMARY_DIR="${REPO_ROOT}/docs/evidence/runtime-results/rescue"
 LATEST_LOG="${LOG_DIR}/latest.log"
 SUMMARY_JSON="${SUMMARY_DIR}/controlled_iso_build_latest_summary.json"
+RESCUE_BUILD_PROFILE="${SETUPHELFER_RESCUE_BUILD_PROFILE:-standard}"
+RUN_ID=""
 POLICY_BLOCK_EXIT=30
 POLICY_BLOCK_CODE="blocked_requires_operator_sudo_policy"
 POLICY_BLOCK_HINT="Run this command from an operator terminal with sudo privileges or install the documented allowlisted policy."
@@ -31,11 +33,13 @@ POLICY_SUDO_NONINTERACTIVE=false
 
 usage() {
   cat <<EOF
-Usage: $0 [--operator-confirm-build]
+Usage: $0 [--operator-confirm-build] [--profile developer|standard] [--run-id ID]
 
 Without flag: preview gates and log paths only (Exit 20).
 With --operator-confirm-build: run the policy guard first, then ./auto/config
 and the controlled lb build path with the project-local rsvg wrapper in PATH.
+
+Profile developer: Rescue Developer Edition with Development Agent (prepare tree with SETUPHELFER_RESCUE_BUILD_PROFILE=developer first).
 
 Log paths:
   ${LATEST_LOG}
@@ -152,7 +156,7 @@ write_summary() {
   elif [[ "$exit_code" -eq 0 ]]; then
     status="review_required"
   fi
-  python3 - "$SUMMARY_JSON" "$started_at" "$ended_at" "$exit_code" "$iso_found" "$iso_path" "$iso_size" "$sha256" "$status" "$log_file" "$error_code" "$next_action" "$build_started" "$POLICY_GUARD_STATUS" "$POLICY_EXECUTION_MODE" "$POLICY_IS_TTY" "$POLICY_ALREADY_ROOT" "$POLICY_SUDO_NONINTERACTIVE" <<'PY'
+  python3 - "$SUMMARY_JSON" "$started_at" "$ended_at" "$exit_code" "$iso_found" "$iso_path" "$iso_size" "$sha256" "$status" "$log_file" "$error_code" "$next_action" "$build_started" "$POLICY_GUARD_STATUS" "$POLICY_EXECUTION_MODE" "$POLICY_IS_TTY" "$POLICY_ALREADY_ROOT" "$POLICY_SUDO_NONINTERACTIVE" "$RESCUE_BUILD_PROFILE" "$RUN_ID" <<'PY'
 import json, sys
 from pathlib import Path
 out = Path(sys.argv[1])
@@ -162,6 +166,8 @@ iso_found = sys.argv[5] == "true"
 iso_path, iso_size, sha256, status, log_file = sys.argv[6:11]
 error_code, next_action, build_started = sys.argv[11:14]
 policy_guard_status, execution_mode, is_tty, already_root, sudo_noninteractive = sys.argv[14:19]
+rescue_build_profile = sys.argv[19] if len(sys.argv) > 19 else None
+run_id = sys.argv[20] if len(sys.argv) > 20 else None
 log_path = Path(log_file)
 lines = []
 if log_path.is_file():
@@ -190,6 +196,8 @@ body = {
     "last_120_lines": lines,
     "usb_write_allowed": False,
     "dd_executed": False,
+    "rescue_build_profile": rescue_build_profile,
+    "run_id": run_id,
 }
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(body, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -198,10 +206,58 @@ PY
 }
 
 if [[ "${1:-}" != "--operator-confirm-build" ]]; then
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --profile)
+        RESCUE_BUILD_PROFILE="${2:-standard}"
+        shift 2
+        ;;
+      --run-id)
+        RUN_ID="${2:-}"
+        shift 2
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
   usage
   preview_gates
   echo "Build not started — pass --operator-confirm-build for operator-gated build."
+  echo "Profile: ${RESCUE_BUILD_PROFILE}"
   exit 20
+fi
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --operator-confirm-build)
+      shift
+      ;;
+    --profile)
+      RESCUE_BUILD_PROFILE="${2:-standard}"
+      shift 2
+      ;;
+    --run-id)
+      RUN_ID="${2:-}"
+      shift 2
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 2
+      ;;
+  esac
+done
+
+export SETUPHELFER_RESCUE_BUILD_PROFILE="${RESCUE_BUILD_PROFILE}"
+if [[ -z "$RUN_ID" ]]; then
+  RUN_ID="rescue_developer_iso_$(date -u +%Y%m%d_%H%M%S)"
+fi
+
+if [[ "${RESCUE_BUILD_PROFILE}" == "developer" ]]; then
+  if [[ ! -f "${BUILD_ROOT}/config/includes.chroot/etc/setuphelfer/setuphelfer-dev-agent.env" ]]; then
+    echo "ERROR: developer profile not in build tree — run SETUPHELFER_RESCUE_BUILD_PROFILE=developer prepare-controlled-live-build-tree.sh first" | tee -a "${LATEST_LOG}" 2>/dev/null || true
+    exit 33
+  fi
 fi
 
 mkdir -p "${LOG_DIR}"
@@ -212,7 +268,7 @@ ERROR_CODE=""
 NEXT_ACTION=""
 BUILD_STARTED=false
 
-echo "START ${STARTED_AT}" | tee "${LATEST_LOG}" | tee "${STAMPED_LOG}"
+echo "START ${STARTED_AT} profile=${RESCUE_BUILD_PROFILE} run_id=${RUN_ID}" | tee "${LATEST_LOG}" | tee "${STAMPED_LOG}"
 if ! policy_guard_ok; then
   echo "POLICY_GUARD_STATUS=${POLICY_GUARD_STATUS}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
   echo "POLICY_EXECUTION_MODE=${POLICY_EXECUTION_MODE}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"

@@ -50,7 +50,8 @@
 | **Rescue ISO artifact** | Rot | Keine ISO erzeugt; aktueller Lauf endet ohne `.iso`, daher keine SHA256 und kein USB-Follow-up | `controlled_iso_build_latest_summary.json`, `RESCUE_CONTROLLED_ISO_BUILD_RESULT.md` |
 | **Rescue Developer Profile + Dev Agent** | Grün | Developer profile validiert; Public auto-upload blockiert; Guard Exit 0 (`8e07acf`) | `docs/evidence/dev-server/DEV_AGENT_RESCUE_PROFILE_INTEGRATION.md`, `build/rescue/profiles/developer/` |
 | **Rescue Developer ISO Dry-Build** | Gelb | Dry-Build Manifest `review_required` — prior ISO artifacts in tree (33), keine neuen Artefakte; Profile/Guard OK | `rescue_developer_iso_dry_build_manifest.json`, `RESCUE_DEVELOPER_ISO_DRY_BUILD_RESULT.md` |
-| **Real Developer ISO Build** | Rot/Pending | Erst nach Dry-Build Guard + Operator-Prompt | `RESCUE_DEVELOPER_ISO_DRY_BUILD_CONTRACT.md` |
+| **Rescue Developer Controlled ISO Build** | Rot | **blocked** exit 30 — `blocked_requires_operator_sudo_policy`; developer profile in build tree prepared; no new ISO | `RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md`, `rescue_developer_controlled_iso_build_result.json` |
+| **Real Developer ISO Build** | Rot/Pending | Operator sudo terminal required; prior root-owned binary/ needs sudo clean | `RESCUE_DEVELOPER_CONTROLLED_BUILD_ENTRYPOINT_ANALYSIS.md` |
 | **Live Boot (Developer ISO)** | Rot/Pending | Nicht durchgeführt | — |
 | **USB Write** | Rot/Blocked | `usb_write.allowed=false` | Rescue safety gates |
 | **Controlled ISO preparation** | Gelb | Workspace-Pfad bleibt gruen; Prebuild zeigt fehlende RSVG-Build-Abhaengigkeit jetzt vor dem Build sichtbar an, echter Build weiterhin nicht neu ausgefuehrt | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md`, `RESCUE_ISO_RSVG_FAILURE_ANALYSIS.md` |
