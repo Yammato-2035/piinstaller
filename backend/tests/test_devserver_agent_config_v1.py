@@ -51,6 +51,11 @@ class DevAgentConfigTests(unittest.TestCase):
         self.assertTrue(ok)
         self.assertIsNone(err)
 
+    def test_private_lan_10022_allowed(self) -> None:
+        ok, err = validate_server_url("http://10.0.2.2:8000")
+        self.assertTrue(ok)
+        self.assertIsNone(err)
+
 
 if __name__ == "__main__":
     unittest.main()

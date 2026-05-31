@@ -29,7 +29,56 @@ Absolut: `/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-li
 
 SHA256-Datei: `docs/evidence/runtime-results/rescue/rescue_developer_iso_latest.sha256`
 
-## Geplanter QEMU-Befehl (nicht ausführen in Evidence-Lauf)
+## Host Dev Server URL (QEMU User NAT)
+
+Im Gast ist `http://127.0.0.1:8000` der **Gast selbst**, nicht der Host.
+
+| Kontext | URL |
+|---------|-----|
+| Hardware / Host lokal | `http://127.0.0.1:8000` |
+| QEMU-Gast → Host (user NAT) | `http://10.0.2.2:8000` |
+
+Developer-QEMU-Profil: `build/rescue/profiles/developer-qemu/`
+Agent-Resolver: `--qemu-host-fallback` / `SETUPHELFER_DEV_AGENT_QEMU_HOST_FALLBACK=true`
+
+Wenn `10.0.2.2` fehlschlägt: Host-Firewall prüfen; Backend bindet ggf. nur auf `127.0.0.1` (nächste Stufe: bind hint / Portforward).
+
+## Remote-Zugriff auf die QEMU-VM
+
+- Lokale GTK-Konsole (`-display gtk`)
+- Lokaler VNC: `-vnc 127.0.0.1:1` → `127.0.0.1:5901`
+- Optional SSH-Forward: `-nic user,hostfwd=tcp:127.0.0.1:2222-:22` (nur wenn Gast-sshd aktiv)
+- **Kein** `0.0.0.0`, keine LAN-/Internet-Freigabe
+- QEMU-Tastatur: `-k de`
+- Live: `keyboard-layouts=de`, `de_DE.UTF-8`, `Europe/Berlin`
+
+Wrapper (Plan/Start): `scripts/rescue-live/run-qemu-developer-iso-smoke.sh`
+
+```bash
+./scripts/rescue-live/run-qemu-developer-iso-smoke.sh --dry-run
+# PID: docs/evidence/runtime-results/rescue/qemu/<RUN_ID>/qemu_gtk_pid.txt (niemals /qemu_gtk_pid.txt)
+
+qemu-system-x86_64 -m 2048 -smp 2 \
+  -cdrom "$ISO_PATH" \
+  -boot d -snapshot -no-reboot \
+  -serial file:"docs/evidence/runtime-results/rescue/qemu/<RUN_ID>/qemu-serial.log" \
+  -display gtk -k de -vnc 127.0.0.1:1 \
+  -nic user,hostfwd=tcp:127.0.0.1:2222-:22 \
+  -usb -device usb-tablet
+```
+
+Read-only Checks im Gast:
+
+```bash
+ps -p 1 -o comm=
+localectl status || true
+cat /etc/default/keyboard || true
+systemctl status setuphelfer-dev-agent.service --no-pager || true
+cat /etc/setuphelfer/setuphelfer-dev-agent.env || true
+curl -s http://10.0.2.2:8000/api/dev-server/health || true
+```
+
+## Geplanter QEMU-Befehl (Basis, nicht ausführen in Evidence-Lauf)
 
 ```bash
 ISO_PATH="/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso"

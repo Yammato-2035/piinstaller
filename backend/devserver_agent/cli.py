@@ -44,6 +44,10 @@ def _apply_cli_overrides(args: argparse.Namespace) -> None:
         os.environ["SETUPHELFER_DEV_AGENT_MODE"] = args.mode
     if args.server:
         os.environ["SETUPHELFER_DEV_AGENT_SERVER_URL"] = args.server
+    if getattr(args, "qemu_host_fallback", False):
+        os.environ["SETUPHELFER_DEV_AGENT_QEMU_HOST_FALLBACK"] = "true"
+    if getattr(args, "qemu_host_url", None):
+        os.environ["SETUPHELFER_DEV_AGENT_QEMU_HOST_URL"] = args.qemu_host_url
     if args.node_id:
         os.environ["SETUPHELFER_DEV_AGENT_NODE_ID"] = args.node_id
     if args.display_name:
@@ -54,15 +58,62 @@ def _apply_cli_overrides(args: argparse.Namespace) -> None:
             os.environ.setdefault("SETUPHELFER_DEV_AGENT_AUTO_UPLOAD", "true")
 
 
-def cmd_health(args: argparse.Namespace) -> int:
+def _resolve_url_for_run(args: argparse.Namespace, cfg: Any, *, probe: bool = True) -> dict[str, Any]:
+    from devserver_agent.server_url import resolve_dev_server_url
+
+    use_probe = probe and not getattr(args, "no_probe", False)
+    qfb = getattr(args, "qemu_host_fallback", False) or _env_bool_from_os("SETUPHELFER_DEV_AGENT_QEMU_HOST_FALLBACK")
+    return resolve_dev_server_url(
+        cli_server=getattr(args, "server", None),
+        env_server=cfg.server_url,
+        mode=cfg.mode,
+        qemu_host_fallback=qfb if qfb else None,
+        qemu_host_url=getattr(args, "qemu_host_url", None),
+        timeout_seconds=cfg.timeout_seconds,
+        probe=use_probe,
+    )
+
+
+def _env_bool_from_os(name: str) -> bool:
+    raw = os.environ.get(name)
+    return raw is not None and raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def cmd_resolve_server_url(args: argparse.Namespace) -> int:
+    _apply_cli_overrides(args)
     cfg = load_dev_agent_config()
-    url_ok, url_err = validate_server_url(cfg.server_url)
-    if not url_ok:
-        _emit({"code": "DEV_AGENT_URL_BLOCKED", "error": url_err}, as_json=args.json)
+    probe = not getattr(args, "no_probe", False)
+    resolved = _resolve_url_for_run(args, cfg, probe=probe)
+    out = {"code": "DEV_AGENT_SERVER_URL_RESOLVED", **resolved}
+    _emit(out, as_json=args.json)
+    if resolved.get("errors"):
         return EXIT_UPLOAD_FAILED
-    result = health_check(cfg.server_url, timeout=cfg.timeout_seconds)
+    if probe and not resolved.get("selected_url"):
+        return EXIT_SPOOLED
+    return EXIT_OK
+
+
+def cmd_health(args: argparse.Namespace) -> int:
+    _apply_cli_overrides(args)
+    cfg = load_dev_agent_config()
+    resolved = _resolve_url_for_run(args, cfg, probe=True)
+    server_url = resolved.get("selected_url") or cfg.server_url
+    if not server_url:
+        _emit({"code": "DEV_AGENT_URL_UNRESOLVED", **resolved}, as_json=args.json)
+        return EXIT_SPOOLED
+    url_ok, url_err = validate_server_url(server_url)
+    if not url_ok:
+        _emit({"code": "DEV_AGENT_URL_BLOCKED", "error": url_err, "resolution": resolved}, as_json=args.json)
+        return EXIT_UPLOAD_FAILED
+    result = health_check(server_url, timeout=cfg.timeout_seconds)
     validated = validate_server_health(result, cfg.mode)
-    out = {"code": "DEV_AGENT_HEALTH_OK" if validated["ok"] else "DEV_AGENT_HEALTH_FAILED", **result, **validated}
+    out = {
+        "code": "DEV_AGENT_HEALTH_OK" if validated["ok"] else "DEV_AGENT_HEALTH_FAILED",
+        **result,
+        **validated,
+        "server_url": server_url,
+        "resolution": resolved,
+    }
     _emit(out, as_json=args.json)
     return EXIT_OK if validated["ok"] else EXIT_UPLOAD_FAILED
 
@@ -100,11 +151,6 @@ def cmd_send(args: argparse.Namespace) -> int:
         _emit({"code": "DEV_AGENT_UPLOAD_NOT_ALLOWED", "errors": ["auto_upload_disabled"]}, as_json=args.json)
         return EXIT_DISABLED
 
-    url_ok, url_err = validate_server_url(cfg.server_url)
-    if not url_ok:
-        _emit({"code": "DEV_AGENT_URL_BLOCKED", "error": url_err}, as_json=args.json)
-        return EXIT_UPLOAD_FAILED
-
     node_id, display_name = resolve_node_identity(cfg.node_id, cfg.display_name)
     node = build_dev_node_from_config(node_id=node_id, display_name=display_name, mode=cfg.mode)
     report, _payload = build_dev_report_from_collection(
@@ -120,9 +166,22 @@ def cmd_send(args: argparse.Namespace) -> int:
         _emit({"code": "DEV_AGENT_REDACTION_FAILED", "errors": redact_errors}, as_json=args.json)
         return EXIT_REDACTION_FAILED
 
+    resolved = _resolve_url_for_run(args, cfg, probe=True)
+    server_url = resolved.get("selected_url") or cfg.server_url
+    if not server_url:
+        spool = AgentSpool(cfg.spool_dir)
+        spooled = spool.save_spooled_report(node, report, reason="server_url_unresolved")
+        _emit({"code": "DEV_AGENT_SPOOLED", "reason": ["server_url_unresolved"], "resolution": resolved, "spool": spooled}, as_json=args.json)
+        return EXIT_SPOOLED
+
+    url_ok, url_err = validate_server_url(server_url)
+    if not url_ok:
+        _emit({"code": "DEV_AGENT_URL_BLOCKED", "error": url_err, "resolution": resolved}, as_json=args.json)
+        return EXIT_UPLOAD_FAILED
+
     report.setdefault("warnings", []).extend(redact_warnings)
 
-    hc = health_check(cfg.server_url, timeout=cfg.timeout_seconds)
+    hc = health_check(server_url, timeout=cfg.timeout_seconds)
     validated = validate_server_health(hc, cfg.mode)
     if not validated["ok"]:
         spool = AgentSpool(cfg.spool_dir)
@@ -130,11 +189,13 @@ def cmd_send(args: argparse.Namespace) -> int:
         _emit({
             "code": "DEV_AGENT_SPOOLED",
             "reason": validated["errors"],
+            "server_url": server_url,
+            "resolution": resolved,
             "spool": spooled,
         }, as_json=args.json)
         return EXIT_SPOOLED
 
-    upload = post_report(cfg.server_url, node, report, cfg.token, timeout=cfg.timeout_seconds)
+    upload = post_report(server_url, node, report, cfg.token, timeout=cfg.timeout_seconds)
     if not upload.get("ok"):
         err = str(upload.get("error") or "")
         if upload.get("http_status") == 0 or "timed out" in err.lower() or "refused" in err.lower():
@@ -234,6 +295,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--health", action="store_true")
     p.add_argument("--mode", choices=["public_rescue", "beta_opt_in", "local_lab"])
     p.add_argument("--server")
+    p.add_argument("--qemu-host-fallback", action="store_true")
+    p.add_argument("--qemu-host-url")
+    p.add_argument("--resolve-server-url", action="store_true")
+    p.add_argument("--health-probe-candidates", action="store_true")
+    p.add_argument("--no-probe", action="store_true")
     p.add_argument("--node-id")
     p.add_argument("--display-name")
     p.add_argument("--spool-list", action="store_true")
@@ -259,6 +325,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_spool_retry(args)
         if args.validate_rescue_profile:
             return cmd_validate_rescue_profile(args)
+        if args.resolve_server_url:
+            return cmd_resolve_server_url(args)
         if args.rescue_iso_dry_build:
             return cmd_rescue_iso_dry_build(args)
         if args.collect_only:

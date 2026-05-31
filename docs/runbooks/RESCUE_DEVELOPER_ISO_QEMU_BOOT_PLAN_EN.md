@@ -29,7 +29,30 @@ Absolute: `/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-l
 
 SHA256 file: `docs/evidence/runtime-results/rescue/rescue_developer_iso_latest.sha256`
 
-## Planned QEMU command (do not execute in evidence-only run)
+## Host Dev Server URL (QEMU user NAT)
+
+Inside the guest, `http://127.0.0.1:8000` is the **guest itself**, not the host.
+
+| Context | URL |
+|---------|-----|
+| Hardware / host local | `http://127.0.0.1:8000` |
+| QEMU guest → host (user NAT) | `http://10.0.2.2:8000` |
+
+Developer-QEMU profile: `build/rescue/profiles/developer-qemu/`
+Agent resolver: `--qemu-host-fallback` / `SETUPHELFER_DEV_AGENT_QEMU_HOST_FALLBACK=true`
+
+Wrapper: `scripts/rescue-live/run-qemu-developer-iso-smoke.sh`
+PID file: `docs/evidence/runtime-results/rescue/qemu/<RUN_ID>/qemu_gtk_pid.txt` (never `/qemu_gtk_pid.txt`)
+
+## Remote access (local bind only)
+
+- GTK console, local VNC `127.0.0.1:5901`, optional SSH forward `127.0.0.1:2222`
+- No `0.0.0.0`, no public exposure
+- Keyboard: `-k de`, locale `de_DE.UTF-8`
+
+Guest read-only checks include `curl -s http://10.0.2.2:8000/api/dev-server/health`.
+
+## Planned QEMU command (baseline, do not execute in evidence-only run)
 
 ```bash
 ISO_PATH="/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso"

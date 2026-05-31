@@ -1,0 +1,37 @@
+{
+  "profile_id": "rescue_developer_qemu_local_lab",
+  "profile_type": "developer_qemu",
+  "agent_enabled": true,
+  "agent_mode": "local_lab",
+  "auto_upload": true,
+  "server_url": "http://10.0.2.2:8000",
+  "qemu_host_fallback": true,
+  "public_auto_upload": false,
+  "developer_auto_upload": true,
+  "ssh_allowed": false,
+  "write_actions_allowed": false,
+  "requires_local_dev_server": true,
+  "qemu": {
+    "host_dev_server_url": "http://10.0.2.2:8000",
+    "remote_console": {
+      "enabled": true,
+      "type": "vnc",
+      "bind": "127.0.0.1",
+      "display": ":1",
+      "public_exposure": false
+    },
+    "ssh_forward": {
+      "enabled": false,
+      "bind": "127.0.0.1",
+      "host_port": 2222,
+      "guest_port": 22,
+      "requires_guest_sshd": true
+    },
+    "keyboard": {
+      "qemu_keymap": "de",
+      "live_keyboard_layout": "de",
+      "locale": "de_DE.UTF-8",
+      "timezone": "Europe/Berlin"
+    }
+  }
+}

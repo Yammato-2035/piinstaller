@@ -38,6 +38,10 @@ def default_public_profile_root(repo_root: Path | None = None) -> Path:
     return (repo_root or _repo_root()) / "build" / "rescue" / "profiles" / "public"
 
 
+def default_developer_qemu_profile_root(repo_root: Path | None = None) -> Path:
+    return (repo_root or _repo_root()) / "build" / "rescue" / "profiles" / "developer-qemu"
+
+
 def _read_env_file(path: Path) -> dict[str, str]:
     out: dict[str, str] = {}
     if not path.is_file():
@@ -212,4 +216,60 @@ def validate_public_profile_guard(profile_root: str | Path | None) -> dict[str, 
         "manifest": manifest,
         "errors": errors,
         "warnings": warnings,
+    }
+
+
+def validate_developer_qemu_profile(profile_root: str | Path) -> dict[str, Any]:
+    """Validate Rescue Developer QEMU lab overlay (local_lab, 10.0.2.2, keyboard, remote)."""
+    root = Path(profile_root).resolve()
+    base = validate_developer_profile(root)
+    errors = list(base.get("errors") or [])
+    warnings = list(base.get("warnings") or [])
+
+    manifest = base.get("manifest") or {}
+    if manifest.get("profile_type") != "developer_qemu":
+        errors.append("profile_type_not_developer_qemu")
+    if manifest.get("qemu_host_fallback") is not True:
+        errors.append("qemu_host_fallback_not_true")
+
+    env = base.get("environment") or {}
+    server_url = env.get("SETUPHELFER_DEV_AGENT_SERVER_URL", "")
+    if "10.0.2.2" not in server_url:
+        errors.append("env_server_url_not_qemu_host")
+    if env.get("SETUPHELFER_DEV_AGENT_QEMU_HOST_FALLBACK", "").lower() != "true":
+        errors.append("env_qemu_host_fallback_not_true")
+
+    qemu = manifest.get("qemu") if isinstance(manifest.get("qemu"), dict) else {}
+    remote = qemu.get("remote_console") if isinstance(qemu.get("remote_console"), dict) else {}
+    ssh_fwd = qemu.get("ssh_forward") if isinstance(qemu.get("ssh_forward"), dict) else {}
+    keyboard = qemu.get("keyboard") if isinstance(qemu.get("keyboard"), dict) else {}
+
+    if remote.get("public_exposure") is True:
+        errors.append("remote_console_public_exposure")
+    bind = remote.get("bind")
+    if bind is not None and bind != "127.0.0.1":
+        errors.append("remote_console_bind_not_localhost")
+    if "0.0.0.0" in json.dumps(qemu):
+        errors.append("remote_bind_all_interfaces_forbidden")
+
+    if ssh_fwd.get("enabled") is True:
+        errors.append("ssh_forward_must_stay_disabled_until_explicit_enable")
+    if ssh_fwd.get("bind") not in (None, "127.0.0.1"):
+        errors.append("ssh_forward_bind_not_localhost")
+
+    if keyboard.get("qemu_keymap") != "de":
+        errors.append("german_keyboard_qemu_keymap_missing")
+    if keyboard.get("live_keyboard_layout") != "de":
+        errors.append("german_keyboard_live_layout_missing")
+    if keyboard.get("locale") != "de_DE.UTF-8":
+        errors.append("german_keyboard_locale_missing")
+    if keyboard.get("timezone") != "Europe/Berlin":
+        errors.append("german_keyboard_timezone_missing")
+
+    return {
+        **base,
+        "ok": not errors,
+        "errors": errors,
+        "warnings": warnings,
+        "qemu": qemu,
     }
