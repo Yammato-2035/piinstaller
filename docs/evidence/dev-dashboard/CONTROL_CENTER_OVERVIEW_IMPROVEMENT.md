@@ -65,26 +65,36 @@ Siehe: `docs/evidence/dev-dashboard/CONTROL_CENTER_SUMMARY_SCHEMA_VALIDATION.md`
 
 ## Dirty Deploy Audit
 
-Runtime enthält uncommitted WIP (22 SHA256-Matches). ISO Dry-Build **blockiert**.
+Runtime HEAD-clean nach Clean Deploy (0 WIP-Matches). Siehe `docs/evidence/runtime-results/deploy/CLEAN_HEAD_DEPLOY_1_7_3_0.md`.
 
-Siehe: `docs/evidence/runtime-results/deploy/DIRTY_DEPLOY_AUDIT_1_7_3_0.md`
+## Rescue Developer ISO Dry-Build
+
+| Field | Value |
+|-------|-------|
+| Executed | **2026-05-31** |
+| Status | **review_required** (prior ISO artifacts only) |
+| Agent Profile Guard | **OK** (exit 0) |
+| Public Guard | **OK** |
+| Real ISO built | **no** |
+| Manifest | `docs/evidence/runtime-results/rescue/rescue_developer_iso_dry_build_manifest.json` |
 
 ## Safety
 
 - No ISO, backup, restore, SSH, apt
 - Public uploads disabled (correct)
 - SSH disabled (correct)
-- ISO dry-build status remains pending (no fake green)
+- ISO dry-build executed — real ISO build remains **pending**
 
 ## Status rules
 
 | Area | Status |
 |------|--------|
 | Control Center Summary live | **GREEN** |
-| Summary-Schema | **GREEN** (Smoke korrigiert) |
+| Summary-Schema | **GREEN** |
 | Runtime version 1.7.3.0 | **GREEN** |
 | Runtime-Gate full green | **GREEN** |
-| Dirty Deploy (ISO-relevant) | **YELLOW/BLOCKING** |
+| Dirty Deploy (ISO-relevant) | **GREEN** |
+| Rescue Developer ISO Dry-Build | **YELLOW** (review_required — prior artifacts) |
 
 ## Korrekter Smoke-Befehl
 
@@ -93,14 +103,12 @@ curl -s http://127.0.0.1:8000/api/dev-dashboard/control-center-summary | jq '.su
 curl -s http://127.0.0.1:8000/api/dev-dashboard/control-center-summary | jq '.summary.runtime, .summary.roadmap, .summary.dev_server'
 ./scripts/check-runtime-deploy-gate.sh && ./scripts/check-backend-version-gate.sh
 curl -s http://127.0.0.1:8000/api/version | jq .
+PYTHONPATH=backend:. python3 -m backend.devserver_agent.cli --rescue-iso-dry-build \
+  --developer-profile-root build/rescue/profiles/developer \
+  --public-profile-root build/rescue/profiles/public \
+  --output docs/evidence/runtime-results/rescue/rescue_developer_iso_dry_build_manifest.json --json
 ```
 
 ## Next prompt
 
-**FIX CONTROL CENTER SUMMARY SCHEMA / CLEAN DIRTY RUNTIME DEPLOY**
-
-Vor ISO-Dry-Build: WIP stashen oder committen, dann clean redeploy.
-
-Nach clean redeploy + Gates OK:
-
-**RESCUE DEVELOPER ISO DRY-BUILD WITH DEV AGENT PROFILE GUARD**
+**RESCUE DEVELOPER ISO CONTROLLED BUILD WITH DEV AGENT PROFILE**

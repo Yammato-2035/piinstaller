@@ -1,0 +1,62 @@
+{
+  "generated_at": "2026-05-31T09:47:28.789865+00:00",
+  "status": "review_required",
+  "dry_build": true,
+  "real_iso_build": false,
+  "generated_iso": false,
+  "developer_profile": {
+    "profile_id": "rescue_developer_local_lab",
+    "agent_enabled": true,
+    "agent_mode": "local_lab",
+    "auto_upload": true,
+    "server_url": "http://127.0.0.1:8000",
+    "ssh_allowed": false,
+    "write_actions_allowed": false
+  },
+  "public_profile_guard": {
+    "agent_enabled": false,
+    "auto_upload": false,
+    "mode": "public_rescue",
+    "public_upload_safe": true
+  },
+  "systemd": {
+    "service": "setuphelfer-dev-agent.service",
+    "enabled_in_developer_profile": true,
+    "enabled_in_public_profile": false,
+    "exec_start_safe": true,
+    "no_new_privileges": true
+  },
+  "placement_plan": {
+    "environment_target": "/etc/setuphelfer/setuphelfer-dev-agent.env",
+    "systemd_target": "/etc/systemd/system/setuphelfer-dev-agent.service",
+    "spool_target": "/opt/setuphelfer/docs/evidence/runtime-results/dev-agent-spool",
+    "runtime_module_required": "backend.devserver_agent",
+    "source_environment": "/home/volker/piinstaller/build/rescue/profiles/developer/environment/setuphelfer-dev-agent.env",
+    "source_systemd": "/home/volker/piinstaller/build/rescue/profiles/developer/systemd/setuphelfer-dev-agent.service",
+    "packaging_systemd_reference": "packaging/systemd/setuphelfer-dev-agent.service"
+  },
+  "forbidden_artifacts": {
+    "iso": false,
+    "img": false,
+    "squashfs": false,
+    "chroot": false
+  },
+  "artifact_scan": {
+    "prior_artifacts_count": 33,
+    "new_forbidden_count": 0
+  },
+  "profile_validation": {
+    "developer": {
+      "ok": true,
+      "errors": []
+    },
+    "public_guard": {
+      "ok": true,
+      "errors": []
+    }
+  },
+  "warnings": [
+    "prior_iso_artifacts_in_tree:33"
+  ],
+  "errors": []
+}

@@ -14,6 +14,7 @@ from devserver_agent.collector import build_dev_node_from_config, build_dev_repo
 from devserver_agent.config import load_dev_agent_config, validate_server_url
 from devserver_agent.models import resolve_node_identity
 from devserver_agent.redaction_client import enforce_mode_redaction
+from devserver_agent.rescue_iso_dry_build import build_rescue_developer_iso_dry_build_manifest
 from devserver_agent.rescue_profile import (
     default_developer_profile_root,
     default_public_profile_root,
@@ -156,6 +157,34 @@ def cmd_send(args: argparse.Namespace) -> int:
 
 
 EXIT_PROFILE_INVALID = 15
+EXIT_DRY_BUILD_REVIEW = 10
+EXIT_DRY_BUILD_BLOCKED = 20
+
+
+def cmd_rescue_iso_dry_build(args: argparse.Namespace) -> int:
+    dev_root = Path(args.developer_profile_root) if args.developer_profile_root else default_developer_profile_root()
+    pub_root = Path(args.public_profile_root) if args.public_profile_root else default_public_profile_root()
+    output = args.output or str(
+        Path(__file__).resolve().parent.parent.parent
+        / "docs"
+        / "evidence"
+        / "runtime-results"
+        / "rescue"
+        / "rescue_developer_iso_dry_build_manifest.json"
+    )
+    manifest = build_rescue_developer_iso_dry_build_manifest(
+        str(dev_root),
+        str(pub_root),
+        output,
+    )
+    out = {"code": "RESCUE_DEVELOPER_ISO_DRY_BUILD", **manifest}
+    _emit(out, as_json=args.json)
+    status = manifest.get("status", "blocked")
+    if status == "ok":
+        return EXIT_OK
+    if status == "review_required":
+        return EXIT_DRY_BUILD_REVIEW
+    return EXIT_DRY_BUILD_BLOCKED
 
 
 def cmd_validate_rescue_profile(args: argparse.Namespace) -> int:
@@ -210,6 +239,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--spool-list", action="store_true")
     p.add_argument("--spool-retry", action="store_true")
     p.add_argument("--validate-rescue-profile", action="store_true")
+    p.add_argument("--rescue-iso-dry-build", action="store_true")
+    p.add_argument("--developer-profile-root")
+    p.add_argument("--public-profile-root")
+    p.add_argument("--output")
     p.add_argument("--profile-root")
     p.add_argument("--json", action="store_true")
     return p
@@ -226,6 +259,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_spool_retry(args)
         if args.validate_rescue_profile:
             return cmd_validate_rescue_profile(args)
+        if args.rescue_iso_dry_build:
+            return cmd_rescue_iso_dry_build(args)
         if args.collect_only:
             return cmd_collect(args)
         if args.send:
