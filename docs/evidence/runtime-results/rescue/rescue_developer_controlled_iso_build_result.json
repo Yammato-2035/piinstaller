@@ -1,58 +1,78 @@
 {
-  "generated_at": "2026-05-31T10:12:00+00:00",
-  "status": "blocked",
-  "run_id": "rescue_developer_iso_20260531_100916",
-  "build_exit_code": null,
-  "iso_found": false,
-  "iso_path": null,
-  "iso_sha256": null,
+  "generated_at": "2026-05-31T10:40:00+00:00",
+  "status": "success",
+  "run_id": "rescue_developer_iso_20260531_103047",
+  "build_exit_code": 0,
+  "lb_exit": 0,
+  "iso_found": true,
+  "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_path_absolute": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_size_bytes": 509607936,
+  "iso_sha256": "52da3e018ccbef827f8ad9bcccb9439c59e3131c501a21313d490f92a5c04326",
+  "iso_sha256_file": "docs/evidence/runtime-results/rescue/rescue_developer_iso_latest.sha256",
   "profile": "developer",
+  "log_path": "build/rescue/logs/controlled-iso-build/latest.log",
+  "summary_path": "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
   "permission_policy": {
-    "build_tree": "build/rescue/live-build/setuphelfer-rescue-live",
-    "tree_writable": true,
-    "dot_build_writable": false,
-    "root_owned_count": 60,
-    "operator_fix_required": true,
-    "recommended_fix": "sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean",
-    "clean_dry_run_ok": true,
-    "clean_confirm_executed": false,
-    "clean_sudo_required": true,
-    "clean_block_reason": "agent_context_no_sudo_password"
+    "operator_fix_required": false,
+    "dot_build_writable": true,
+    "clean_completed": true,
+    "permission_fix_commit": "8455e3c"
+  },
+  "static_inspection": {
+    "xorriso_available": true,
+    "isoinfo_available": true,
+    "iso_volume_id": "SETUPHELFER_RESCUE",
+    "iso_boot_el_torito": true,
+    "iso_hybrid": true,
+    "agent_paths_on_iso_surface": false,
+    "agent_proof_source": "chroot_and_includes_chroot",
+    "chroot_env_path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/etc/setuphelfer/setuphelfer-dev-agent.env",
+    "chroot_service_path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/etc/systemd/system/setuphelfer-dev-agent.service",
+    "service_enabled_by_hook": true
   },
   "dev_agent": {
-    "included_in_build_tree": true,
+    "build_tree_prepared": true,
+    "service_included": true,
+    "environment_included": true,
     "enabled": true,
     "mode": "local_lab",
     "auto_upload": true,
+    "server_url": "http://127.0.0.1:8000",
     "ssh_allowed": false,
     "write_actions_allowed": false
   },
   "public_guard": {
+    "guard_exit_code": 0,
     "public_auto_upload": false,
     "public_profile_safe": true,
-    "guard_script_exit": 0
+    "token_absent": true,
+    "public_url_absent": true
   },
   "usb": {
     "usb_write_started": false,
-    "dd_executed": false
+    "dd_executed": false,
+    "target_device": null
   },
   "boot": {
-    "boot_test_executed": false
+    "boot_test_executed": false,
+    "qemu_plan_created": true,
+    "qemu_executed": false
   },
-  "build_entrypoint": "scripts/rescue-live/run-controlled-iso-build-with-logging.sh",
-  "build_started": false,
-  "error_code": "rescue_iso_build.permission_denied_dot_build",
-  "next_action": "operator_sudo_clean_then_repreflight",
-  "build_log_path": "build/rescue/logs/controlled-iso-build/latest.log",
-  "clean_log_path": "build/rescue/logs/controlled-iso-build/clean-latest.log",
+  "dry_build_post_controlled": {
+    "manifest": "docs/evidence/runtime-results/rescue/rescue_developer_iso_dry_build_manifest_post_controlled_build.json",
+    "status": "review_required",
+    "reason": "prior_iso_artifacts_in_tree:34",
+    "public_agent_safe": true
+  },
+  "prior_iso_differentiation": {
+    "archived_iso_sha256": "1eccf9c09fbf69b5bc7a4cd064371c46650b938770f48cf5f4241ae5355f57db",
+    "archived_iso_path": "build/rescue/archive/prior-controlled-builds/rescue_developer_iso_20260531_095558/binary.hybrid.iso",
+    "current_iso_is_new": true
+  },
   "warnings": [
-    "prior_artifacts_inventoried:28",
-    "developer_profile_marker_missing"
+    "prior_iso_artifacts_in_tree:34",
+    "iso_agent_files_inside_squashfs_not_enumerated_on_iso_surface"
   ],
-  "errors": [
-    "dot_build_not_writable",
-    "root_owned_active_work_areas",
-    "clean_not_completed",
-    "lb_build_not_started"
-  ]
+  "errors": []
 }

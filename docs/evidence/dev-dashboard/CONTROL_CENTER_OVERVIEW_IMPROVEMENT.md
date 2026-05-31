@@ -67,6 +67,19 @@ Siehe: `docs/evidence/dev-dashboard/CONTROL_CENTER_SUMMARY_SCHEMA_VALIDATION.md`
 
 Runtime HEAD-clean nach Clean Deploy (0 WIP-Matches). Siehe `docs/evidence/runtime-results/deploy/CLEAN_HEAD_DEPLOY_1_7_3_0.md`.
 
+## Rescue Developer Controlled ISO Build (finalized 2026-05-31)
+
+| Field | Value |
+|-------|-------|
+| Run-ID | `rescue_developer_iso_20260531_103047` |
+| LB_EXIT | **0** |
+| Status | **success** |
+| ISO | `build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso` |
+| SHA256 | `52da3e018ccbef827f8ad9bcccb9439c59e3131c501a21313d490f92a5c04326` |
+| Agent / Public Guard | **OK** |
+| QEMU Boot | Plan only — not executed |
+| Evidence | `RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md` |
+
 ## Rescue Developer ISO Dry-Build
 
 | Field | Value |
