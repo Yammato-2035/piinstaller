@@ -2,7 +2,8 @@
 
 **Date:** 2026-05-31  
 **Branch:** main  
-**HEAD:** 8aebf99  
+**HEAD (initial audit):** 8aebf99  
+**HEAD (clean deploy):** 56ff87c  
 **Runtime:** `/opt/setuphelfer`  
 **Workspace:** `/home/volker/piinstaller`  
 
@@ -29,63 +30,55 @@ Prüfen, ob `deploy-to-opt.sh` uncommitted Workspace-WIP nach `/opt` kopiert hat
 
 **Hinweis:** Das Gate prüft nur Manifest-Kerndateien, nicht den gesamten Workspace-Baum.
 
-## WIP-Dateien in `/opt` (SHA256-Match Workspace = Runtime)
+---
 
-### Modified tracked (16 Treffer)
+## Vorher (initial audit, 2026-05-31)
 
-```
-backend/tests/test_rescue_iso_build_dashboard_state_v1.py
-docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT.json
-docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_DE.md
-docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_EN.md
-docs/evidence/rescue/RESCUE_LIVE_PACKAGE_LIST_DECISION.md
-docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json
-docs/evidence/runtime-results/handoff/rescue_stick_readonly_build_emulation_manifest.json
-docs/evidence/runtime-results/handoff/rescue_stick_readonly_build_final_gate.json
-docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json
-docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json
-docs/faq/rescue_iso_build_faq.md
-docs/runbooks/RESCUE_CONTROLLED_ISO_BUILD_RUNBOOK.md
-frontend/src/lib/sudoUserMessages.ts
-frontend/src/pages/Documentation.tsx
-frontend/src/pages/RaspberryPiConfig.tsx
-packaging/helpers/setuphelfer-backup-starter.py
-```
+### WIP-Dateien in `/opt` (SHA256-Match Workspace = Runtime): **22**
 
-### Untracked kritisch (4 Treffer, nicht in HEAD)
+Modified tracked (16) + untracked kritisch (4):
 
 ```
-backend/core/rescue_iso_build_logs.py          ← Rescue-ISO WIP Backend
+backend/core/rescue_iso_build_logs.py
 backend/tests/test_rescue_iso_build_logs_v1.py
 frontend/src/components/dev-dashboard/RescueBuildLogPanel.tsx
 frontend/public/dev-dashboard.snapshot.json
+(+ 16 modified tracked Dateien, siehe Git diff)
 ```
 
-## Kritische Bewertung
+**Bewertung:** Runtime nicht HEAD-clean. ISO Dry-Build **BLOCKED**.
 
-| Datei | In `/opt` | Aktiv in Runtime | Risiko |
-|-------|-----------|------------------|--------|
-| `rescue_iso_build_logs.py` | ja | nein (nicht in `app.py` importiert) | mittel — Datei liegt in Runtime, aber kein API-Hook |
-| `RescueBuildLogPanel.tsx` | ja | nein (nicht importiert) | niedrig — totales Frontend-WIP |
-| `Documentation.tsx` / `RaspberryPiConfig.tsx` | ja | ja (wenn Frontend aus Workspace gebaut) | mittel — UI-Änderungen uncommitted |
-| Evidence/Runbook-Dateien | ja | read-only Referenz | niedrig — kein Code-Pfad |
+---
 
-## Ursache
+## Nachher (clean HEAD deploy, 2026-05-31)
+
+Methode: detached Worktree `/tmp/setuphelfer-clean-deploy` @ `56ff87c`, rsync nach `/opt`, Orphan-WIP aus `/opt` entfernt.
+
+Siehe: `docs/evidence/runtime-results/deploy/CLEAN_HEAD_DEPLOY_1_7_3_0.md`
+
+| Metrik | Result |
+|--------|--------|
+| WIP SHA256-Matches | **0** |
+| Kritische untracked in `/opt` | **ABSENT** (alle 4) |
+| `/opt` entspricht clean HEAD | **JA** (Stichprobe verifiziert) |
+| Workspace dirty | unverändert (43 Einträge) |
+
+**Bewertung:** Runtime HEAD-clean. ISO Dry-Build **FREIGEGEBEN**.
+
+---
+
+## Ursache (unverändert)
 
 `scripts/deploy-to-opt.sh` kopiert den **gesamten Workspace-Baum** (nicht nur committed HEAD). Uncommitted und untracked Dateien im Workspace werden mit deployed.
 
-## Empfehlung
+## Remediation
 
-| Aktion | Status |
-|--------|--------|
-| Rescue ISO Dry-Build freigegeben | **NEIN — BLOCKING** |
-| Grund | Runtime enthält uncommitted WIP (22 Dateien mit SHA256-Match); Runtime ist nicht HEAD-clean |
-| Vor ISO-Dry-Build | Option 1: WIP committen, Option 2: WIP stashen + clean redeploy, Option 3: Dry-Build als `dirty-runtime-blocked` markieren |
+Clean detached Worktree + Deploy daraus. Runbook: `docs/runbooks/CLEAN_HEAD_RUNTIME_DEPLOY_RUNBOOK_DE.md`
 
 ## Status
 
-| Area | Status |
-|------|--------|
-| Manifest-Kern-Drift | **GREEN** |
-| Workspace-Cleanliness vs Runtime | **YELLOW/BLOCKING** |
-| ISO Dry-Build | **BLOCKED** |
+| Area | Vorher | Nachher |
+|------|--------|---------|
+| Manifest-Kern-Drift | GREEN | GREEN |
+| Workspace-Cleanliness vs Runtime | BLOCKING | **GREEN** |
+| ISO Dry-Build | BLOCKED | **FREIGEGEBEN** |
