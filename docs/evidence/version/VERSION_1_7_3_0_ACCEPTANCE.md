@@ -1,9 +1,10 @@
 # Version 1.7.3.0 — Acceptance
 
-**Date:** 2026-05-30
-**Version bump commit:** 17c351a
-**Evidence commit:** 89ae576
-**Re-verification:** 2026-05-30 — summary HTTP 200 confirmed; `/api/version` still 1.7.2 until redeploy
+**Date:** 2026-05-30  
+**Version bump commit:** 17c351a  
+**Evidence commit:** 89ae576  
+**Re-verification:** 2026-05-31 — deploy complete, gates OK, schema validated  
+**HEAD:** 8aebf99  
 
 ## Version bump
 
@@ -33,43 +34,47 @@
 | ControlCenterOverview (frontend) | 4 OK |
 | DevelopmentServerPanel (frontend) | 4 OK |
 
-## Deploy (this run)
+## Deploy
 
 | Step | Result |
 |------|--------|
-| `sudo ./scripts/deploy-to-opt.sh` | **blocked** — `runtime_deploy_blocked_operator_sudo_required` |
-| Backend restart | not performed |
-| Web-UI restart | not performed |
+| `sudo ./scripts/deploy-to-opt.sh` | **completed** |
+| Backend restart | performed |
+| Web-UI restart | performed |
+| Pakete gebaut | SetupHelfer_1.7.3_amd64.deb, SetupHelfer-1.7.3-1.x86_64.rpm, SetupHelfer_1.7.3_amd64.AppImage |
 
-## Runtime (after version commit, before operator redeploy)
+## Runtime (2026-05-31)
 
 | Check | Result |
 |-------|--------|
-| Runtime-Gate | Exit **12** (deploy drift — workspace 1.7.3.0 vs runtime 1.7.2) |
-| Version-Gate | Exit **14** (workspace/api mismatch) |
-| `/api/version` | project_version=**1.7.2** (runtime not yet updated) |
-| `/api/dev-dashboard/control-center-summary` | **HTTP 200** — all sections present |
+| Runtime-Gate | Exit **0** (OK) |
+| Version-Gate | Exit **0** (OK) |
+| `/api/version` | project_version=**1.7.3.0**, version=1.7.3.0 |
+| `/api/dev-dashboard/control-center-summary` | **HTTP 200** — all sections under `.summary` |
 | Dev-Server health | enabled=true, local_lab, storage_ok=true |
 | Dev-Server summary | node_count=2, reports_last_24h=2 |
 | Public uploads | disabled |
 | SSH | disabled |
 
-### Summary sections verified
+### Summary sections verified (`.summary | keys`)
 
 runtime, roadmap, dev_server, rescue_developer, documentation, diagnostics, evidence, next_prompts, warnings, errors
 
-## Operator redeploy required
+### Schema note
 
-```bash
-sudo ./scripts/deploy-to-opt.sh /home/volker/piinstaller
-sudo systemctl restart setuphelfer-backend.service
-sudo systemctl restart setuphelfer.service
-./scripts/check-runtime-deploy-gate.sh
-./scripts/check-backend-version-gate.sh
-curl -s http://127.0.0.1:8000/api/version | jq .
-```
+Sections live under `.summary.*`, not top-level. Smoke `jq '.runtime, .roadmap, .dev_server'` returns null — expected wrapper schema.
 
-Expected after redeploy: `project_version=1.7.3.0`, gates OK.
+See: `docs/evidence/dev-dashboard/CONTROL_CENTER_SUMMARY_SCHEMA_VALIDATION.md`
+
+## Dirty Deploy Audit
+
+| Check | Result |
+|-------|--------|
+| WIP files in `/opt` (SHA256 match) | **22** (16 modified + 4 untracked critical) |
+| Manifest-Kern-Drift | green |
+| ISO Dry-Build freigegeben | **NEIN** |
+
+See: `docs/evidence/runtime-results/deploy/DIRTY_DEPLOY_AUDIT_1_7_3_0.md`
 
 ## Safety
 
@@ -80,16 +85,18 @@ No ISO, backup, restore, SSH, apt. No safety gates weakened.
 | Area | Status |
 |------|--------|
 | Version bump (code) | **GREEN** |
-| Control Center Summary API | **GREEN** (live HTTP 200) |
-| Runtime version alignment | **YELLOW** — deploy required |
-| Overall runtime acceptance | **YELLOW** |
+| Control Center Summary API | **GREEN** (HTTP 200, schema OK) |
+| Runtime version alignment | **GREEN** |
+| Runtime-Gate | **GREEN** |
+| Dirty Deploy (ISO-relevant) | **YELLOW/BLOCKING** |
+| Overall runtime acceptance | **YELLOW** — clean redeploy vor ISO |
 
 ## Next prompt
 
-After operator redeploy + version gate OK:
+**FIX CONTROL CENTER SUMMARY SCHEMA / CLEAN DIRTY RUNTIME DEPLOY**
+
+(WIP stashen/committen → clean redeploy → dann ISO Dry-Build)
+
+After clean redeploy + version gate OK:
 
 **RESCUE DEVELOPER ISO DRY-BUILD WITH DEV AGENT PROFILE GUARD**
-
-Until then:
-
-**FIX VERSION / CONTROL CENTER RUNTIME DEPLOY DRIFT**
