@@ -86,6 +86,17 @@ def main() -> int:
                 print("profile_gate: public_exposure_blocked", file=sys.stderr)
                 return 21
 
+    fe = str(api.get("frontend_build_profile") or "").strip().lower()
+    if fe and fe != profile:
+        rel = frozenset({"release", "production"})
+        lab = frozenset({"developer", "local_lab", "rescue_lab"})
+        if profile in rel and fe in lab:
+            print(f"profile_gate: frontend_profile_mismatch:backend={profile},frontend={fe}", file=sys.stderr)
+            return 22
+        if profile in lab and fe in rel:
+            print(f"profile_gate: frontend_profile_mismatch:backend={profile},frontend={fe}", file=sys.stderr)
+            return 22
+
     if gate_status == "yellow":
         print("profile_gate: yellow_warnings", file=sys.stderr)
         return 0

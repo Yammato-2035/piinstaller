@@ -14,6 +14,10 @@ import {
   fetchQemuSmokeMarkdownReport,
   type DiagnosticExport,
 } from '../../api/devDiagnosticsApi'
+import {
+  devDiagnosticsUiEnabled,
+  fleetSessionsUiEnabled,
+} from '../../config/buildProfile'
 
 const TERMINAL = new Set(['timeout', 'failed', 'success', 'cancelled'])
 const RUNNING = new Set([
@@ -126,6 +130,10 @@ export function LabSessionsPanel({ refreshSec = 15 }: { refreshSec?: number }) {
       setCopyFallback(text)
       setCopyNotice(t('devDashboard.labSessions.copyFallback'))
     }
+  }
+
+  if (!fleetSessionsUiEnabled) {
+    return null
   }
 
   return (
@@ -261,7 +269,7 @@ export function LabSessionsPanel({ refreshSec = 15 }: { refreshSec?: number }) {
                         {t('devDashboard.labSessions.evidence')}: {session.evidence_paths?.join(', ')}
                       </p>
                     ) : null}
-                    {session.run_id ? (
+                    {session.run_id && devDiagnosticsUiEnabled ? (
                       <div className="mt-2 space-y-2" data-testid="lab-session-diagnostics">
                         {diagExport ? (
                           <div className="rounded border border-slate-600 p-2 text-[11px] space-y-1">

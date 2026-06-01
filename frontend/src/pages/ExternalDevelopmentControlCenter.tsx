@@ -33,6 +33,11 @@ import { clearGovernanceHistory } from '../lib/devDashboard/governanceHistory'
 import type { CockpitViewMode, GovernanceAreaStatus, Traffic } from '../lib/devDashboard/governanceTypes'
 import { useGovernanceMonitor } from '../lib/devDashboard/useGovernanceMonitor'
 import { toneClass } from './devDashboardFilters'
+import {
+  devControlUiEnabled,
+  internalLabWarning,
+  buildProfileMeta,
+} from '../config/buildProfile'
 
 function trafficDot(status: Traffic): string {
   if (status === 'green') return 'bg-emerald-500'
@@ -71,9 +76,38 @@ function GovernanceMatrixGrid({ areas, t }: { areas: GovernanceAreaStatus[]; t: 
   )
 }
 
+export const DevControlDisabledPage: React.FC = () => {
+  const { t } = useTranslation()
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center p-8 bg-slate-950"
+      data-testid="dev-control-disabled"
+    >
+      <div className="max-w-lg rounded-xl border border-slate-700 bg-slate-900/80 p-6 text-center">
+        <h1 className="text-lg font-semibold text-white mb-2">
+          {t('devDashboard.profileDisabled.title', 'Development Control nicht verfügbar')}
+        </h1>
+        <p className="text-sm text-slate-400">
+          {t(
+            'devDashboard.profileDisabled.body',
+            'Dieses Build-Profil (release) enthält keine internen Entwicklungsfunktionen.',
+          )}
+        </p>
+        <p className="text-xs text-slate-500 mt-3 font-mono">
+          profile={buildProfileMeta.frontend_build_profile}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export const ExternalDevelopmentControlCenter: React.FC = () => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<ControlCenterTab>('overview')
+
+  if (!devControlUiEnabled) {
+    return <DevControlDisabledPage />
+  }
   const [summary, setSummary] = useState<ControlCenterSummary | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
 
@@ -278,6 +312,16 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
           </button>
         </div>
       </header>
+
+      {internalLabWarning ? (
+        <p
+          className="mb-3 rounded-lg border border-amber-700/50 bg-amber-950/30 px-3 py-2 text-sm text-amber-100"
+          data-testid="internal-lab-warning"
+          role="status"
+        >
+          {internalLabWarning}
+        </p>
+      ) : null}
 
       <StandaloneModeBanner
         source={mon.source}

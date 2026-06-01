@@ -4084,9 +4084,22 @@ async def get_version():
     body.update(profile_gate_audit_route_paths(route_paths))
     mpath = profile_manifest_path(state.manifest_profile)
     body["runtime_manifest_sha256"] = manifest_sha256(mpath)
-    body["frontend_build_profile"] = (
-        os.environ.get("SETUPHELFER_FRONTEND_BUILD_PROFILE") or state.install_profile
+    fe_profile = (os.environ.get("SETUPHELFER_FRONTEND_BUILD_PROFILE") or "").strip()
+    body["frontend_build_profile"] = fe_profile or state.install_profile
+    body["frontend_build_id"] = (os.environ.get("SETUPHELFER_BUILD_ID") or "").strip() or None
+    from core.install_profile import audit_frontend_backend_profile
+
+    body.update(
+        audit_frontend_backend_profile(
+            frontend_build_profile=body["frontend_build_profile"],
+            backend_profile=state.install_profile,
+        )
     )
+    if body.get("frontend_profile_mismatch") and body.get("profile_gate_status") != "red":
+        body["profile_gate_status"] = "red"
+        errs = list(body.get("profile_gate_errors") or [])
+        errs.extend(body.get("frontend_profile_audit_errors") or [])
+        body["profile_gate_errors"] = errs
     body["dev_control_enabled"] = state.dev_control_enabled
     return body
 

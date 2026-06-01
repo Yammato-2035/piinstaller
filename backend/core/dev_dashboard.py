@@ -618,12 +618,40 @@ def _compute_deploy_drift(*, workspace_root: Path, runtime_root: Path) -> dict[s
         "missing_workspace_files": missing_ws,
         "warnings": dd_warnings,
     }
-    return _merge_manifest_into_deploy_drift(
+    merged = _merge_manifest_into_deploy_drift(
         drift_status=drift_status,
         suggested=suggested,
         base=base,
         mf=mf,
     )
+    try:
+        from core.profile_deploy_manifest import enrich_deploy_drift_profile_aware
+
+        route_paths: list[str] = []
+        try:
+            import sys
+
+            mod = sys.modules.get("app")
+            if mod is not None and hasattr(mod, "app"):
+                route_paths = [
+                    getattr(r, "path", "")
+                    for r in mod.app.routes
+                    if getattr(r, "path", None)
+                ]
+        except Exception:
+            pass
+        bind = (os.environ.get("SETUPHELFER_BIND_ADDRESS") or "127.0.0.1").strip()
+        return enrich_deploy_drift_profile_aware(
+            merged,
+            workspace_root=ws_r,
+            runtime_root=rt_r if _safe_is_dir(rt_r) else None,
+            route_paths=route_paths,
+            bind_address=bind,
+        )
+    except Exception as exc:  # noqa: BLE001
+        merged["profile_aware"] = False
+        merged.setdefault("warnings", []).append(f"profile_drift_enrich_failed:{exc}")
+        return merged
 
 
 def _read_workspace_version_info(ws_root: Path) -> tuple[str | None, str | None, str | None]:

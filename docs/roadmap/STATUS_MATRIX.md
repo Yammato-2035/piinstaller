@@ -89,10 +89,11 @@
 | **Proxy Bind Exposure (QEMU lab)** | **Gelb** | `0.0.0.0` nur via QEMU-Smoke + Operator-Confirm; Default `127.0.0.1`; lab-only NDA | `FLEET_SESSION_QEMU_WRAPPER_JSON_FIX_RESULT.md` |
 | **Public Push (Fleet/Dev-Control)** | **Rot/Blocked** | `blocked_public_repository_ndA_risk` | — |
 | **Install Profiles** | **Grün** | `backend/core/install_profile.py`; Default `release`; 5 Profile | `INSTALL_PROFILES_AND_DEPLOY_SCOPES.md` |
-| **Profile-aware Manifests** | **Gelb** | `deploy/manifests/*.json`; Generator `--profile`; Drift-UI-Integration pending | `PROFILE_AWARE_DEPLOY_MANIFEST_RESULT.md` |
-| **Router Profile Gates** | **Grün** | Bedingte Router + Middleware; pytest 12/12 | `PROFILE_ROUTER_GATE_RESULT.md` |
-| **Runtime Profile Deploy Gate** | **Gelb** | `check-runtime-profile-deploy-gate.sh`; Shell-Test OK; Live `/opt` pending | `RUNTIME_PROFILE_DEPLOY_GATE_RESULT.md` |
-| **Frontend Profile Marker** | **Gelb** | Vite defines + `buildProfile.ts`; UI-Gating teilweise pending | `frontend/src/config/buildProfile.ts` |
+| **Profile-aware Manifests** | **Grün** | `deploy/manifests/*.json`; Generator `--profile`; Drift V2 im Dashboard | `PROFILE_DEPLOY_DRIFT_V2_RESULT.md` |
+| **Router Profile Gates** | **Grün** | Bedingte Router + Middleware; pytest 19/19 | `PROFILE_ROUTER_GATE_RESULT.md` |
+| **Runtime Profile Deploy Gate** | **Gelb** | Skript + Shell OK; Live `/opt` pending (sudo Deploy) | `PROFILE_LIVE_RELEASE_ACCEPTANCE_RESULT.md` |
+| **Profile-aware Deploy Drift** | **Grün** | `enrich_deploy_drift_profile_aware`; Gate Exit 16 entkoppelt bei `profile_manifest_match` | `PROFILE_DEPLOY_DRIFT_V2_RESULT.md` |
+| **Frontend Profile Marker** | **Gelb** | UI-Gates release; i18n-Strings noch im Haupt-Bundle | `FRONTEND_PROFILE_BUILD_RESULT.md` |
 | **Release Dev Route Blocker** | **Grün** | Release blockiert Fleet/Dev-Diag/Rescue-Remote/Dev-Dashboard | `test_install_profile_gate_v1.py` |
 | **Local-Lab Dev Route Allowance** | **Grün** | `local_lab` aktiviert Capabilities; kein Public Exposure | oben |
 | **Public Exposure Gate** | **Grün** | Default `public_exposure_allowed=false`; Exit 21 bei 0.0.0.0 | `runtime_profile_deploy_gate_eval.py` |

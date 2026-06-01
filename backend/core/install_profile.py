@@ -233,6 +233,41 @@ def profile_gate_audit_route_paths(route_paths: list[str]) -> dict[str, Any]:
     }
 
 
+def audit_frontend_backend_profile(
+    *,
+    frontend_build_profile: str | None,
+    backend_profile: str | None,
+) -> dict[str, Any]:
+    """Compare frontend build profile marker vs backend capability profile."""
+    fe = (frontend_build_profile or "").strip().lower()
+    be = (backend_profile or "").strip().lower()
+    mismatch = False
+    warnings: list[str] = []
+    errors: list[str] = []
+    if not fe:
+        return {
+            "frontend_profile_mismatch": False,
+            "frontend_profile_audit_warnings": ["frontend_build_profile_unknown"],
+        }
+    if fe == be:
+        return {"frontend_profile_mismatch": False, "frontend_profile_audit_warnings": warnings}
+    release_like = frozenset({"release", "production"})
+    lab_like = frozenset({"developer", "local_lab", "rescue_lab"})
+    if be in release_like and fe in lab_like:
+        mismatch = True
+        errors.append("frontend_profile_mismatch:backend_release_frontend_lab")
+    elif be in lab_like and fe in release_like:
+        mismatch = True
+        warnings.append("frontend_profile_mismatch:backend_lab_frontend_release")
+    elif fe != be:
+        warnings.append(f"frontend_profile_mismatch:{fe}!={be}")
+    return {
+        "frontend_profile_mismatch": mismatch,
+        "frontend_profile_audit_errors": errors,
+        "frontend_profile_audit_warnings": warnings,
+    }
+
+
 def profile_state_to_api_dict(state: InstallProfileState | None = None) -> dict[str, Any]:
     st = state or get_install_profile_state()
     return {

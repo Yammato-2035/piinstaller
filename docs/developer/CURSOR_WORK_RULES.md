@@ -41,8 +41,9 @@ Vor **jedem** produktiven Testlauf, **jedem** Prompt oder Operator-Schritt, der 
 4. **Public Exposure** ist ein **eigener Blocker** (Bind `0.0.0.0` ohne Freigabe → Gate Exit **21**).
 5. **Deploy Drift** profilbezogen bewerten (`deploy/manifests/<profile>.manifest.json`), **nicht** gegen das gesamte Repo.
 6. Optional: **`./scripts/check-runtime-profile-deploy-gate.sh`** nach Basis-Gate.
+7. **Deploy Drift V2:** `deploy_drift.profile_aware` muss `true` sein; `forbidden_paths_present` / `forbidden_api_paths_visible` bei Release = **rot**; Legacy-`manifest_match` allein blockiert nicht, wenn `profile_manifest_match=true`.
 
-Doku: **`docs/architecture/INSTALL_PROFILES_AND_DEPLOY_SCOPES.md`**
+Doku: **`docs/architecture/INSTALL_PROFILES_AND_DEPLOY_SCOPES.md`** · Evidence: **`docs/evidence/deploy-profile/PROFILE_DEPLOY_DRIFT_V2_RESULT.md`**
 
 ---
 

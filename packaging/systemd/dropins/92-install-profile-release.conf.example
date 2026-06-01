@@ -1,0 +1,11 @@
+# Example: release install profile (no Dev/Lab API routes).
+# Install: sudo cp packaging/systemd/dropins/92-install-profile-release.conf.example \
+#   /etc/systemd/system/setuphelfer-backend.service.d/install-profile.conf
+# sudo systemctl daemon-reload && sudo systemctl restart setuphelfer-backend
+
+[Service]
+Environment=SETUPHELFER_INSTALL_PROFILE=release
+Environment=SETUPHELFER_DEV_CONTROL_ENABLED=false
+Environment=SETUPHELFER_FLEET_SESSIONS_ENABLED=false
+Environment=SETUPHELFER_DEV_DIAGNOSTICS_ENABLED=false
+Environment=SETUPHELFER_RESCUE_REMOTE_ENABLED=false

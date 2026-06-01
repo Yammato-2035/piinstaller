@@ -1,0 +1,8 @@
+# Example: local_lab profile (internal Dev routes, no public exposure).
+# Install: sudo cp packaging/systemd/dropins/92-install-profile-local-lab.conf.example \
+#   /etc/systemd/system/setuphelfer-backend.service.d/install-profile.conf
+# sudo systemctl daemon-reload && sudo systemctl restart setuphelfer-backend
+
+[Service]
+Environment=SETUPHELFER_INSTALL_PROFILE=local_lab
+Environment=SETUPHELFER_BIND_ADDRESS=127.0.0.1

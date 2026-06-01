@@ -61,7 +61,11 @@ def evaluate_deploy_drift(dashboard_body: dict[str, Any] | None, *, allow_gray: 
     if not isinstance(dd, dict):
         return 20
     mm = dd.get("manifest_match")
-    if mm is False:
+    profile_aware = dd.get("profile_aware") is True
+    profile_mm = dd.get("profile_manifest_match")
+    if profile_aware and profile_mm is True:
+        pass
+    elif mm is False:
         return 16
     status = str(dd.get("status") or "").lower()
     sug = dd.get("suggested_actions")

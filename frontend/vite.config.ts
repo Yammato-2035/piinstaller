@@ -45,8 +45,18 @@ const frontendBuildProfile =
   process.env.SETUPHELFER_FRONTEND_BUILD_PROFILE ||
   process.env.VITE_SETUPHELFER_FRONTEND_BUILD_PROFILE ||
   'release'
-const devControlUiEnabled =
-  frontendBuildProfile === 'developer' || frontendBuildProfile === 'local_lab'
+const labLike = frontendBuildProfile === 'developer' || frontendBuildProfile === 'local_lab'
+const devControlUiEnabled = labLike
+const devDiagnosticsUiEnabled =
+  labLike || frontendBuildProfile === 'rescue_lab'
+const fleetSessionsUiEnabled =
+  labLike || frontendBuildProfile === 'rescue_lab'
+const rescueRemoteUiEnabled =
+  frontendBuildProfile === 'local_lab' || frontendBuildProfile === 'rescue_lab'
+const buildId =
+  process.env.SETUPHELFER_BUILD_ID ||
+  process.env.VITE_SETUPHELFER_BUILD_ID ||
+  `${Date.now()}`
 
 export default defineConfig({
   cacheDir: viteCacheDir,
@@ -56,6 +66,10 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version || '0.0.0'),
     __SETUPHELFER_FRONTEND_BUILD_PROFILE__: JSON.stringify(frontendBuildProfile),
     __SETUPHELFER_DEV_CONTROL_UI_ENABLED__: devControlUiEnabled,
+    __SETUPHELFER_DEV_DIAGNOSTICS_UI_ENABLED__: devDiagnosticsUiEnabled,
+    __SETUPHELFER_FLEET_SESSIONS_UI_ENABLED__: fleetSessionsUiEnabled,
+    __SETUPHELFER_RESCUE_REMOTE_UI_ENABLED__: rescueRemoteUiEnabled,
+    __SETUPHELFER_BUILD_ID__: JSON.stringify(buildId),
   },
   resolve: {
     alias: isTauriEnv ? {} : { 'tauri-plugin-screenshots-api': path.resolve(__dirname, 'src/lib/tauri-screenshots-stub.ts') },
