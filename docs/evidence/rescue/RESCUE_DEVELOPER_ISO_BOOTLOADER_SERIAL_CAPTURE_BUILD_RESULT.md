@@ -1,7 +1,7 @@
 # Developer Rescue ISO — Bootloader Serial Capture Rebuild
 
-**Stand:** 2026-06-01
-**HEAD:** `ede7784`
+**Stand:** 2026-06-01 (Operator-Terminal-Build)
+**HEAD:** `a503e8e` (Doku vor Build); Build auf gleichem Stand
 **Branch:** `main`
 **Repository:** PUBLIC (`Yammato-2035/piinstaller`)
 **Push allowed:** no
@@ -13,75 +13,54 @@
 | Phase | Ergebnis |
 |-------|----------|
 | Profil-Gate vor Build | **OK** — `install_profile=release`, Exit 0 |
-| Dependency-Preflight | **OK** |
-| Alte ISO dokumentiert | **yes** — SHA `be016f2a…` (vor Commit `2e0216f`) |
-| Clean (`--operator-confirm-clean`) | **blocked** — `sudo` Passwort in Agent-Session |
-| Prepare `developer-qemu` | **OK** |
-| Controlled ISO Build | **blocked** — kein `lb build` ausgeführt |
-| Neue ISO | **nein** — SHA unverändert |
+| Clean (`--operator-confirm-clean`) | **yes** — Operator-Terminal mit sudo |
+| Prepare `developer-qemu` | **yes** — Exit 0 |
+| Controlled ISO Build | **OK** — `LB_EXIT=0`, `status=success` |
+| Neue ISO | **yes** — SHA geändert |
+| QEMU-Smoke-Retry | **`ready_for_qemu_serial_smoke`** |
 
-## Bootloader-Fix-Kontext
+## Operator-Build
 
-Commit **`2e0216f`** (Ancestor von HEAD): QEMU chardev/isa-serial, ISOLINUX `SERIAL`/`TIMEOUT 30`/`DEFAULT live-`, GRUB-Serial-Hook in `prepare-controlled-live-build-tree.sh`. Die vorhandene ISO (`mtime` 2026-06-01 17:28) wurde **vor** diesem Fix gebaut; `strings` auf der ISO zeigt **kein** `SERIAL 0 115200` / `TIMEOUT 30`.
+| Feld | Wert |
+|------|------|
+| Run-ID | `rescue_developer_iso_20260601_bootloader_serial_capture` |
+| Gestartet | 2026-06-01T21:55:36+02:00 |
+| Beendet | 2026-06-01T21:59:21+02:00 |
+| `exit_code` / LB_EXIT | **0** |
+| `execution_mode` | `manual_operator_terminal` |
+| `policy_guard_status` | ready |
+| `build_started` | true |
+| `error_code` | null |
 
-## Profil-Gate (vor Build)
+Vorheriger Blockiert-Lauf (Agent): Exit **30** / **34** — durch Operator-Clean+Build ersetzt.
 
-```json
-{
-  "install_profile": "release",
-  "project_version": "1.7.3.0",
-  "profile_gate_exit": 0
-}
-```
-
-## Build-Versuche
-
-| Run-ID | Policy | Exit | `error_code` | `build_started` |
-|--------|--------|------|--------------|-----------------|
-| `rescue_developer_iso_20260601_bootloader_serial_capture` | blocked (kein TTY) | **30** | `blocked_requires_operator_sudo_policy` | false |
-| `rescue_developer_iso_20260601_bootloader_serial_capture_tty` | ready (pseudo-TTY) | **34** | `rescue_iso_build.permission_denied_dot_build` | false |
-
-**Nächster Operator-Schritt (interaktives Terminal mit sudo):**
-
-```bash
-cd /home/volker/piinstaller
-export SETUPHELFER_RESCUE_BUILD_PROFILE=developer-qemu
-sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean
-./scripts/rescue-live/prepare-controlled-live-build-tree.sh
-./scripts/rescue-live/run-controlled-iso-build-with-logging.sh \
-  --operator-confirm-build \
-  --profile developer-qemu \
-  --run-id rescue_developer_iso_20260601_bootloader_serial_capture
-```
-
-## ISO-Artefakt (unverändert)
+## ISO-Artefakt
 
 | Feld | Wert |
 |------|------|
 | Pfad | `build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso` |
-| Größe | 511705088 B |
-| mtime | 2026-06-01 17:28:49 |
+| Größe | 511705088 B (~488 MiB) |
+| mtime | 2026-06-01 21:59:19 |
 | **old_iso_sha256** | `be016f2adacfc9906b4b92ca8ab0d6b0390ad1e39a1e2cbb1f0a98eb35241a3f` |
-| **new_iso_sha256** | *(kein neuer Build)* — gleich wie oben |
-| **new_iso_differs_from_old** | **no** |
+| **new_iso_sha256** | `5c79e35c35a227bdcb9978c1728d8d6aaeef515938ce13358ca6b994d293829a` |
+| **new_iso_differs_from_old** | **yes** |
 
-## Prepare-Tree (developer-qemu, statisch)
+## Prepare-Tree (developer-qemu)
 
 | Prüfung | Tree |
 |---------|------|
-| ISOLINUX `SERIAL 0 115200` | **yes** (`config/bootloaders/isolinux/isolinux.cfg`) |
+| ISOLINUX `SERIAL 0 115200` | **yes** |
 | `TIMEOUT 30` | **yes** |
 | `DEFAULT live-` / `ONTIMEOUT live-` | **yes** |
-| GRUB Serial-Hook | **yes** (`config/hooks/normal/095-developer-qemu-grub-serial.hook.binary`) |
-| `console=tty0` | **yes** |
-| `console=ttyS0,115200n8` | **yes** |
+| GRUB Serial-Hook | **yes** |
+| `console=tty0` / `ttyS0` | **yes** |
 | `quiet`/`splash` im Developer-Append | **no** |
-| Autopilot/Agent-Marker im Live-Build-Tree | **no** (nur unter `build/rescue/profiles/developer-qemu/`) |
+| Marker-Skripte im Tree/chroot | **yes** (`setuphelfer-qemu-smoke-autopilot.sh`, `setuphelfer-serial-boot-markers.sh`) |
 
 ## Guardrails
 
-Kein QEMU-Lauf, kein USB/dd, kein Backup/Restore, kein apt, kein Push, kein `git add -A` für Build-Artefakte.
+Kein QEMU-Lauf, kein USB/dd, kein Backup/Restore, kein apt, kein Push, keine Build-Artefakte in Git.
 
-## QEMU-Smoke-Retry Status
+## Nächster Schritt
 
-**`blocked`** — ISO-Rebuild nach Bootloader-Fix ausstehend (Operator-sudo erforderlich).
+`QEMU_DEVELOPER_SERIAL_SMOKE_RETRY_AFTER_BOOTLOADER_FIX`
