@@ -1,6 +1,35 @@
 # Live-Abnahme Local-Lab-Profil
 
-**Datum:** 2026-05-31 · **HEAD:** `aac3b88`
+**Datum:** 2026-05-31 · **Evidence final:** nach Operator-sudo · **HEAD:** `eb47fe8`+
+
+## Ergebnis: **grün** (Live + statisch)
+
+| Flag | Wert |
+|------|------|
+| `local_lab_operator_sudo_completed` | **true** |
+| `local_lab_dropin_set` | **true** |
+| `local_lab_api_version_checked` | **true** |
+| `local_lab_install_profile` | **local_lab** |
+| `local_lab_fleet_sessions_enabled` | **true** |
+| `local_lab_rescue_remote_enabled` | **true** |
+| `local_lab_profile_gate_exit` | **0** |
+| `local_lab_profile_gate_status` | **OK** |
+| `dangerous_routes_visible` | **false** (keine rescue-remote shell/arbitrary/ssh; Security-Smoke) |
+| `public_exposure_allowed` | **false** |
+| `public_exposure_result` | **green** (Bind 127.0.0.1) |
+| `remote_shell_disabled` | **true** |
+| `write_runbooks_disabled` | **true** |
+| `arbitrary_command_blocked` | **true** (403 `RESCUE_REMOTE_JOB_BLOCKED`) |
+
+## Operator-Auszug (Live)
+
+```text
+install_profile: "local_lab"
+fleet_sessions_enabled: true
+rescue_remote_enabled: true
+profile_gate: OK
+check-runtime-profile-deploy-gate: OK (profile-aware, dev-dashboard independent)
+```
 
 ## Release-Baseline vor Umschaltung
 
@@ -9,103 +38,40 @@
 | `install_profile` | `release` |
 | Profil-Gate | **Exit 0** |
 
-## Live-Umschaltung (systemd)
+## Live-Umschaltung (systemd, Operator)
 
 | Schritt | Ergebnis |
 |---------|----------|
-| Drop-in `92-install-profile-local-lab.conf.example` | **blocked** — `sudo` Passwort erforderlich (`local_lab_dropin_blocked_sudo_required`) |
-| Runtime bleibt auf | **release** (`/etc/systemd/.../install-profile.conf`) |
+| Drop-in `92-install-profile-local-lab.conf.example` | **gesetzt** |
+| `systemctl restart setuphelfer-backend.service` | **OK** |
+| Profil-Gate | **Exit 0** |
 
-### Operator-Befehle (für Live-Abnahme)
+### Durchgeführte Operator-Befehle
 
 ```bash
-sudo mkdir -p /etc/systemd/system/setuphelfer-backend.service.d
 sudo cp packaging/systemd/dropins/92-install-profile-local-lab.conf.example \
   /etc/systemd/system/setuphelfer-backend.service.d/install-profile.conf
 sudo systemctl daemon-reload
 sudo systemctl restart setuphelfer-backend.service
-sleep 3
-curl -sS http://127.0.0.1:8000/api/version | jq .
 ./scripts/check-runtime-profile-deploy-gate.sh
 ```
 
-Nach Abnahme **empfohlen** zurück auf Release:
+## Nach Abnahme: Release wiederhergestellt
 
-```bash
-sudo cp packaging/systemd/dropins/92-install-profile-release.conf.example \
-  /etc/systemd/system/setuphelfer-backend.service.d/install-profile.conf
-sudo systemctl daemon-reload
-sudo systemctl restart setuphelfer-backend.service
-./scripts/check-runtime-profile-deploy-gate.sh
-```
+Siehe `PROFILE_LIVE_RELEASE_ACCEPTANCE_RESULT.md` — Runtime final: **release**.
 
-## Statische Validierung (TestClient, `SETUPHELFER_INSTALL_PROFILE=local_lab`)
-
-Ausgeführt im Workspace mit `backend/venv` (kein QEMU, kein ISO):
+## Statische Validierung (TestClient, ergänzend)
 
 | Kriterium | Ergebnis |
 |-----------|----------|
 | `install_profile` | `local_lab` |
-| `profile_gate_status` | `green` |
-| `dev_control_enabled` | `true` |
-| `dev_diagnostics_enabled` | `true` |
-| `fleet_sessions_enabled` | `true` |
-| `rescue_remote_enabled` | `true` |
-| `dev_server_enabled` | `true` |
-| `public_exposure_allowed` | `false` |
+| OpenAPI: fleet / dev-diagnostics / rescue-remote | registriert |
+| HTTP-Sonden (TestClient) | fleet, rescue-remote, dev-dashboard, dev-server **200** |
+| Rescue-Remote: `shell` | **403**; read-only Job **200** |
 
-### OpenAPI (registriert)
+## Public Exposure
 
-| Präfix | Routen |
-|--------|--------|
-| `/api/fleet` | 5 |
-| `/api/dev-diagnostics` | 5 |
-| `/api/rescue-remote` | 9 |
-| `/api/dev-server` | 14 |
-| `/api/dev-dashboard` | 35 |
-
-Keine `/api/rescue-remote/*` Routen mit `shell`, `arbitrary`, `ssh`.
-
-### HTTP-Sonden (TestClient)
-
-| Pfad | HTTP |
-|------|------|
-| `/api/fleet/sessions` | 200 |
-| `/api/dev-diagnostics/latest` | 404 (`no_sessions` — erwartbar ohne Lab-Daten) |
-| `/api/rescue-remote/jobs` | 200 |
-| `/api/dev-dashboard/status` | 200 |
-| `/api/dev-server/health` | 200 |
-
-### Rescue-Remote Security Smoke (TestClient)
-
-| Test | Ergebnis |
-|------|----------|
-| Agent register `local_lab` | 200 `RESCUE_REMOTE_AGENT_REGISTERED` |
-| Job `shell` | **403** `RESCUE_REMOTE_JOB_BLOCKED` |
-| Job `collect_network_status` read_only | **200** `RESCUE_REMOTE_JOB_CREATED` |
-| `controlled_write` mode | **422** (Schema erlaubt nur `read_only`/`diagnostic`) |
-| Tokens in Response | nicht exponiert (Register-Response geprüft) |
-
-## Public Exposure (Live, unverändert Release)
-
-- Bind: `127.0.0.1:8000` (ss)
+- Bind: `127.0.0.1:8000`
 - `public_exposure_allowed=false`
-
-## Bewertung
-
-| Ampel | Bereich |
-|-------|---------|
-| **Gelb** | Live systemd-Umschaltung (Operator-sudo ausstehend) |
-| **Grün** | Statische Local-Lab-Logik + Rescue-Remote-Security (TestClient) |
-| **Grün** | Release-Baseline vor Test |
-
-## Profil-Gate (Live, Release aktiv)
-
-`./scripts/check-runtime-profile-deploy-gate.sh` → **Exit 0** (Release)
-
-## Tests
-
-- Profil-Suite: **24/24** (1 Rescue-`test_enabled_in_dev` scheitert ohne `local_lab` env im isolierten Test — bekannt)
-- Shell-Gate: OK
 
 ## Kein QEMU / ISO / USB / Backup / Restore / apt / Push

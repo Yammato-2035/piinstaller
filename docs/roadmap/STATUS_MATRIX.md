@@ -88,7 +88,8 @@
 | **Rescue Guest Report Ingest (QEMU lab)** | **Rot** | Lauf `081222`: `reports_last_24h` unverändert, kein neuer Knoten | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
 | **Proxy Bind Exposure (QEMU lab)** | **Gelb** | `0.0.0.0` nur via QEMU-Smoke + Operator-Confirm; Default `127.0.0.1`; lab-only NDA | `FLEET_SESSION_QEMU_WRAPPER_JSON_FIX_RESULT.md` |
 | **Public Push (Fleet/Dev-Control)** | **Rot/Blocked** | `blocked_public_repository_ndA_risk` | — |
-| **Install Profiles** | **Grün** | `backend/core/install_profile.py`; Default `release`; 5 Profile | `INSTALL_PROFILES_AND_DEPLOY_SCOPES.md` |
+| **Install Profiles** | **Grün** | Release + Local-Lab live abgenommen; Default `release` | `INSTALL_PROFILES_AND_DEPLOY_SCOPES.md` |
+| **Release Profile Live** | **Grün** | Nach Local-Lab wiederhergestellt; Profil-Gate Exit 0 | `PROFILE_LIVE_RELEASE_ACCEPTANCE_RESULT.md` |
 | **Profile-aware Manifests** | **Grün** | `deploy/manifests/*.json`; Generator `--profile`; Drift V2 im Dashboard | `PROFILE_DEPLOY_DRIFT_V2_RESULT.md` |
 | **Router Profile Gates** | **Grün** | Bedingte Router + Middleware; pytest 19/19 | `PROFILE_ROUTER_GATE_RESULT.md` |
 | **Runtime Profile Deploy Gate** | **Grün** | Release-Live Exit 0; Retry nach Restart; unabhängig vom Legacy-Gate | `PROFILE_LIVE_RELEASE_ACCEPTANCE_RESULT.md` |
@@ -100,9 +101,9 @@
 | **Frontend Profile Marker** | **Gelb** | UI-Gates release; i18n-Strings noch im Haupt-Bundle | `FRONTEND_PROFILE_BUILD_RESULT.md` |
 | **Release Dev Route Blocker** | **Grün** | Release blockiert Fleet/Dev-Diag/Rescue-Remote/Dev-Dashboard | `test_install_profile_gate_v1.py` |
 | **Local-Lab Dev Route Allowance** | **Grün** | TestClient: Fleet/Dev-Diag/Rescue-Remote/Dev-Dashboard erreichbar | `PROFILE_LIVE_LOCAL_LAB_ACCEPTANCE_RESULT.md` |
-| **Local-Lab Profile Live** | **Gelb** | systemd-Drop-in: Operator-sudo ausstehend; statische Abnahme grün | oben |
-| **Rescue Remote Local-Lab** | **Grün** | shell 403, read-only Job 200; keine dangerous rescue-remote Pfade | oben |
-| **Runtime Final Profile** | **release** | Live nicht auf local_lab umgeschaltet (sudo) | oben |
+| **Local-Lab Profile Live** | **Grün** | Operator-sudo: Drop-in, `/api/version` local_lab, Profil-Gate Exit 0 | `PROFILE_LIVE_LOCAL_LAB_ACCEPTANCE_RESULT.md` |
+| **Rescue Remote Local-Lab** | **Grün** | Live + TestClient: shell 403, read-only Job 200 | oben |
+| **Runtime Final Profile** | **release** | Nach Abnahme Release-Drop-in wiederhergestellt | oben |
 | **Public Exposure Gate** | **Grün** | Default `public_exposure_allowed=false`; Exit 21 bei 0.0.0.0 | `runtime_profile_deploy_gate_eval.py` |
 | **Public Push** | **Blocked** | `blocked_public_repository_ndA_risk` | Repository visibility public |
 | **Live Boot (Developer ISO)** | Gelb | Neues ISO gebaut; QEMU-Serial-Smoke als Nächstes | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |

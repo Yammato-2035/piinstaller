@@ -46,6 +46,17 @@ Vor **jedem** produktiven Testlauf, **jedem** Prompt oder Operator-Schritt, der 
 
 Doku: **`docs/architecture/INSTALL_PROFILES_AND_DEPLOY_SCOPES.md`** · Evidence: **`docs/evidence/deploy-profile/PROFILE_DEPLOY_DRIFT_V2_RESULT.md`**
 
+**Profil-Gates (Kurzfassung):**
+
+- Für Runtime-Abnahmen ist **`./scripts/check-runtime-profile-deploy-gate.sh`** maßgeblich (unabhängig vom Dev-Dashboard).
+- **`./scripts/check-runtime-deploy-gate.sh`** ist **legacy / non-profile-aware** (`LEGACY_GATE_NON_PROFILE_AWARE`) und darf eine Release-Abnahme **nicht** blockieren, wenn der einzige Fehler `/api/dev-dashboard/status` HTTP 404 ist.
+- Vor jeder Runtime-Aktion: `install_profile` und `manifest_profile` in **`GET /api/version`** prüfen.
+- **Release:** keine aktiven `/api/fleet`, `/api/dev-diagnostics`, `/api/rescue-remote`, `/api/dev-dashboard`, `/api/dev-server` (HTTP 200).
+- **Local-Lab:** Dev-Routen intern erlaubt; **Public Exposure** bleibt blockiert (`public_exposure_allowed=false`).
+- **Public Repository** → Push blockiert (`push_blocked_public_repository_ndA_risk`).
+
+Evidence: **`docs/evidence/deploy-profile/PROFILE_LIVE_RELEASE_ACCEPTANCE_RESULT.md`**, **`PROFILE_LIVE_LOCAL_LAB_ACCEPTANCE_RESULT.md`**.
+
 ---
 
 ## Mandatory Dashboard, Diagnostics and Next-Prompt Closure Rule
