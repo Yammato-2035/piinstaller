@@ -61,16 +61,19 @@
 | **Dev Diagnostic Export UI** | **Gelb** | Copy-Buttons in Source/dist; Browser optional | `DEV_DIAGNOSTIC_EXPORT_DE.md` |
 | **QEMU Smoke 081222 Export** | **Grün** | `serial_empty_boot_unknown`, serial=0, report_new=false | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
 | **Rescue Developer Serial Config** | **Grün** | Prepare `developer-qemu` materialisiert (tty0+ttyS0, kein quiet/splash) | `RESCUE_ISO_SERIAL_BOOT_VISIBILITY_FIX_RESULT.md` |
-| **Rescue Developer ISO Rebuild** | **Grün** | LB_EXIT=0; ISO SHA `be016f2a…` (neu vs. `6a44d1fe…`) | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |
+| **Rescue Developer ISO Rebuild** | **Grün** | Vorheriger Lauf: LB_EXIT=0; ISO SHA `be016f2a…` (vs. `6a44d1fe…`) — **ohne** Commit `2e0216f` Bootloader-Serial | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |
+| **Rescue Developer ISO Rebuild after Bootloader Fix** | **Rot** | Build blockiert: Agent `sudo`/`LB_EXIT=30`; TTY-Versuch `LB_EXIT=34` permission; ISO-SHA unverändert | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_BUILD_RESULT.md` |
+| **Bootloader Serial Static Validation** | **Gelb** | Tree grün (ISOLINUX SERIAL/TIMEOUT/live-); ISO ohne SERIAL/TIMEOUT bis Rebuild | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_STATIC_VALIDATION.md` |
 | **Static ISO Serial Validation** | **Grün** | tty0+ttyS0+loglevel im ISO; Marker gelb (Squashfs), Tree grün | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
-| **Serial Visibility Runtime** | **Rot** | Smoke `160824`: serial=0 trotz neuer ISO; Klasse `serial_empty_boot_unknown` | `QEMU_DEVELOPER_SMOKE_SERIAL_VISIBILITY_RETRY_RESULT.md` |
+| **Serial Visibility Runtime** | **Gelb** | `pending_qemu` — Smoke erst nach Post-`2e0216f` ISO-Rebuild | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_BUILD_RESULT.md` |
 | **Autopilot Serial Markers** | **Grün** | Boot/Autopilot/Agent-Marker im `developer-qemu`-Profil | `RESCUE_DEVELOPER_SERIAL_VISIBILITY_CONTRACT.md` |
 | **Fleet Finish Telemetry** | **Grün** | Finish-Payload: exit_code, serial.path, kvm/acceleration | `FLEET_SESSION_QEMU_FINISH_TELEMETRY_FIX_RESULT.md` |
 | **Serial Visibility (Rescue QEMU)** | **Gelb** | ISO-Cmdline neu; Runtime-Serial noch offen bis Smoke | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
 | **QEMU Serial Device Capture** | **Grün** | Wrapper: chardev+isa-serial Default, prepare_serial_log | `QEMU_SERIAL_CAPTURE_AND_BOOTLOADER_OUTPUT_FIX_RESULT.md` |
 | **Bootloader Serial Output** | **Grün** | ISOLINUX SERIAL/TIMEOUT/live- + GRUB hook (prepare); **ISO rebuild pending** | `RESCUE_BOOTLOADER_SERIAL_OUTPUT_ANALYSIS.md` |
 | **QEMU Smoke Serial Retry** | **Rot** | Lauf `160824` vor Fix; nächster Smoke nach ISO-Rebuild | `QEMU_DEVELOPER_SMOKE_SERIAL_VISIBILITY_RETRY_RESULT.md` |
-| **QEMU Smoke Retry (gesamt)** | **Gelb** | `pending_after_bootloader_serial_rebuild` | `QEMU_SERIAL_CAPTURE_AND_BOOTLOADER_OUTPUT_FIX_RESULT.md` |
+| **QEMU Smoke Retry** | **Blocked** | `blocked` — ISO-Rebuild nach `2e0216f` ausstehend (Operator-sudo) | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_BUILD_RESULT.md` |
+| **QEMU Smoke Retry (gesamt)** | **Rot** | `blocked` bis Post-Bootloader-ISO-Rebuild | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_BUILD_RESULT.md` |
 | **Rescue Remote Security Model** | **Grün** | Phase 1: keine Shell, allowlisted runbooks | `RESCUE_REMOTE_CONTROL_SECURITY_MODEL.md` |
 | **Rescue Remote Agent Stub** | **Grün** | `setuphelfer-rescue-remote-agent.sh` + Backend API | `RESCUE_REMOTE_CONTROL_PHASE1_RESULT.md` |
 | **Rescue Remote Job Queue** | **Grün** | JSONL `build/runtime/rescue-remote/` | oben |
