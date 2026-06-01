@@ -14,6 +14,7 @@ RESULT_JSON="${EVDIR}/qemu_autopilot_result.json"
 HOST_DEV_URL="${SETUPHELFER_DEV_AGENT_QEMU_HOST_URL:-}"
 CONFIRM=false
 REMOTE_VNC=false
+HEADLESS=false
 SSH_FORWARD=false
 GUESTFWD_PROXY=true
 AUTOPILOT=false
@@ -37,13 +38,14 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run) shift ;;
     --operator-confirm-qemu) CONFIRM=true; shift ;;
-    --autopilot) AUTOPILOT=true; TIMEOUT_SECONDS=240; shift ;;
+    --autopilot) AUTOPILOT=true; TIMEOUT_SECONDS=900; HEADLESS=true; shift ;;
     --remote-vnc-local) REMOTE_VNC=true; shift ;;
     --ssh-forward-local) SSH_FORWARD=true; shift ;;
     --keyboard) KEYBOARD="${2:-de}"; shift 2 ;;
     --host-dev-server-url) HOST_DEV_URL="${2:-}"; USER_SET_HOST_URL=true; shift 2 ;;
     --proxy-port) LAB_PROXY_PORT="${2:-8001}"; shift 2 ;;
     --timeout-seconds) TIMEOUT_SECONDS="${2:-240}"; shift 2 ;;
+    --headless) HEADLESS=true; shift ;;
     --no-lab-proxy) GUESTFWD_PROXY=false; shift ;;
     -h|--help) usage; exit 0 ;;
     *)
@@ -80,12 +82,18 @@ QEMU_ARGS=(
   -cdrom "$ISO_PATH"
   -boot d -snapshot -no-reboot
   -serial "file:${SERIAL_LOG}"
-  -display gtk
-  -k "$KEYBOARD"
-  -usb -device usb-tablet -device usb-kbd
+  -monitor none
   -nic "$NIC_OPTS"
 )
-[[ "$REMOTE_VNC" == true ]] && QEMU_ARGS+=(-vnc 127.0.0.1:1)
+
+if [[ "$AUTOPILOT" == true ]] || [[ "$HEADLESS" == true ]]; then
+  # No GTK window — avoids keyboard grab / input freeze; operator must not type.
+  QEMU_ARGS+=(-display none)
+else
+  QEMU_ARGS+=(-display gtk -k "$KEYBOARD" -usb -device usb-tablet)
+fi
+
+[[ "$REMOTE_VNC" == true && "$HEADLESS" != true ]] && QEMU_ARGS+=(-vnc 127.0.0.1:1)
 
 echo "=== QEMU Developer ISO Smoke ==="
 echo "RUN_ID=$RUN_ID AUTOPILOT=$AUTOPILOT TIMEOUT=${TIMEOUT_SECONDS}s"
@@ -111,7 +119,10 @@ timeout "$TIMEOUT_SECONDS" qemu-system-x86_64 "${QEMU_ARGS[@]}" \
   >"${EVDIR}/qemu-gtk-stdout.log" 2>"${EVDIR}/qemu-gtk-stderr.log" &
 QPID=$!
 echo "$QPID" >"$PID_FILE" 2>/dev/null || true
-echo "QEMU pid=$QPID — waiting up to ${TIMEOUT_SECONDS}s (autopilot=$AUTOPILOT)"
+echo "QEMU pid=$QPID — waiting up to ${TIMEOUT_SECONDS}s (autopilot=$AUTOPILOT headless=$HEADLESS)"
+if [[ "$AUTOPILOT" == true ]]; then
+  echo "AUTOPILOT: do not use the QEMU window — smoke runs via systemd; read ${SERIAL_LOG} and ${RESULT_JSON}"
+fi
 
 QEMU_EXIT=0
 wait "$QPID" 2>/dev/null || QEMU_EXIT=$?

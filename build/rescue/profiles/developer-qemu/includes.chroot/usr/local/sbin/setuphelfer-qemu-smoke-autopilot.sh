@@ -8,6 +8,13 @@ export SETUPHELFER_QEMU_SMOKE_RUN_ID="$RUN_ID"
 
 mkdir -p /run/setuphelfer /var/log/setuphelfer 2>/dev/null || true
 
+log_serial() {
+  printf '%s\n' "$*" >/dev/ttyS0 2>/dev/null || true
+  printf '%s\n' "$*"
+}
+
+log_serial "SETUPHELFER_AUTOPILOT_START run_id=${RUN_ID}"
+
 if command -v loadkeys >/dev/null 2>&1; then
   loadkeys de-latin1 2>/dev/null || loadkeys de 2>/dev/null || true
 fi

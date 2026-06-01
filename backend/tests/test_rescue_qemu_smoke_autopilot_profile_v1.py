@@ -52,8 +52,8 @@ class RescueQemuSmokeAutopilotProfileTests(unittest.TestCase):
     def test_wrapper_autopilot_options_and_proxy(self) -> None:
         text = _read(WRAPPER)
         self.assertIn("--autopilot", text)
-        self.assertIn("--timeout-seconds", text)
-        self.assertIn("--proxy-port", text)
+        self.assertIn("--headless", text)
+        self.assertIn("-display none", text)
         self.assertIn("start-qemu-lab-dev-server-proxy.sh", text)
         self.assertIn("parse-qemu-serial-smoke-result.py", text)
         self.assertNotIn("/qemu_gtk_pid.txt", text.replace("${EVDIR}/qemu_gtk_pid.txt", ""))
