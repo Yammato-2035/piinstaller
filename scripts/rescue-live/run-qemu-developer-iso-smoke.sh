@@ -68,19 +68,22 @@ KVM_ENABLED=false
 ACCELERATION="tcg"
 if [[ -r /dev/kvm ]]; then HAS_KVM=true; fi
 
-_fleet_serial_patch_json() {
-  local size=0 exists=false
+_fleet_serial_stats() {
+  FLEET_SERIAL_SIZE_BYTES=0
+  FLEET_SERIAL_EXISTS=false
   if [[ -f "$SERIAL_LOG" ]]; then
-    exists=true
-    size="$(stat -c%s "$SERIAL_LOG" 2>/dev/null || echo 0)"
+    FLEET_SERIAL_EXISTS=true
+    FLEET_SERIAL_SIZE_BYTES="$(stat -c%s "$SERIAL_LOG" 2>/dev/null || echo 0)"
   fi
-  python3 -c "import json; print(json.dumps({'serial':{'path':''${SERIAL_LOG}'','exists':${exists},'size_bytes':${size}}, 'qemu':{'pid':${QPID:-null}}}))"
 }
 
 _fleet_heartbeat_loop() {
   [[ -n "$FLEET_SESSION_ID" ]] || return 0
   while kill -0 "${QPID:-0}" 2>/dev/null; do
-    fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(_fleet_serial_patch_json)" >/dev/null || true
+    _fleet_serial_stats
+    local hb_payload
+    hb_payload="$(fleet_session_heartbeat_payload "" "$SERIAL_LOG" "$FLEET_SERIAL_EXISTS" "$FLEET_SERIAL_SIZE_BYTES" "${QPID:-}" "" "" "" "[]")" || continue
+    fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$hb_payload" >/dev/null || true
     sleep 20
   done
 }
@@ -88,76 +91,36 @@ _fleet_heartbeat_loop() {
 _fleet_finish_session() {
   local final_status="$1"
   [[ -n "$FLEET_SESSION_ID" ]] || return 0
-  local serial_size=0
-  [[ -f "$SERIAL_LOG" ]] && serial_size="$(stat -c%s "$SERIAL_LOG" 2>/dev/null || echo 0)"
+  _fleet_serial_stats
   local guest_seen=false
-  [[ "${DEV_SERVER_REPORT_NEW:-false}" == true ]] && guest_seen=true
+  [[ "${DEV_SERVER_REPORT_NEW:-false}" == "true" ]] && guest_seen=true
   local payload
-  payload="$(python3 - "$final_status" "$QEMU_EXIT" "$guest_seen" "$serial_size" "$DEV_SERVER_REPORT_NEW" <<'PY'
-import json, sys
-final_status, qemu_exit, guest_seen, serial_size, report_new = sys.argv[1:6]
-status = final_status
-findings = []
-if int(qemu_exit) == 124:
-    status = "timeout"
-    findings.append("qemu_timeout_124")
-if serial_size == "0":
-    findings.append("serial_empty")
-if guest_seen != "true":
-    findings.append("guest_report_missing")
-payload = {
-    "status": status,
-    "qemu_exit_code": int(qemu_exit),
-    "guest": {
-        "report_seen": guest_seen == "true",
-        "dev_server_report_new": report_new == "true",
-    },
-    "serial": {"size_bytes": int(serial_size)},
-    "findings": findings,
-    "evidence_paths": [],
-}
-print(json.dumps(payload))
-PY
-)"
+  payload="$(fleet_session_finish_payload "$final_status" "$QEMU_EXIT" "$guest_seen" "$DEV_SERVER_REPORT_NEW" "$FLEET_SERIAL_SIZE_BYTES" "[]")" || return 1
   fleet_session_patch "$FLEET_SESSION_ID" finish "$payload" >/dev/null || true
 }
 
 mkdir -p "$EVDIR"
+export SETUPHELFER_FLEET_JSON_ERROR_LOG="${EVDIR}/fleet_session_json_errors.log"
 
 ISO_REL_EVIDENCE="${ISO_REL}"
-FLEET_CREATE_PAYLOAD="$(python3 - "$RUN_ID" "$ISO_REL_EVIDENCE" "$LAB_PROXY_PORT" "$TIMEOUT_SECONDS" "$AUTOPILOT" "$HAS_KVM" "$EVDIR" <<'PY'
-import json, sys
-run_id, iso_rel, proxy_port, timeout_s, autopilot, has_kvm, evdir = sys.argv[1:8]
-print(json.dumps({
-    "run_id": run_id,
-    "session_id": f"fleet-{run_id}",
-    "session_type": "local_qemu_smoke",
-    "status": "starting",
-    "label": "QEMU Developer ISO Smoke",
-    "host": {"has_kvm": has_kvm == "true", "kvm_enabled": False},
-    "qemu": {
-        "iso_path": iso_rel,
-        "proxy_port": int(proxy_port),
-        "timeout_seconds": int(timeout_s),
-        "acceleration": "unknown",
-    },
-    "evidence_paths": [f"docs/evidence/runtime-results/rescue/qemu/{run_id}"],
-}))
-PY
-)"
+FLEET_CREATE_PAYLOAD="$(fleet_session_create_payload "$RUN_ID" "$ISO_REL_EVIDENCE" "$LAB_PROXY_PORT" "$TIMEOUT_SECONDS" "$HAS_KVM" "local_qemu_smoke" "QEMU Developer ISO Smoke" "docs/evidence/runtime-results/rescue/qemu/${RUN_ID}")"
 FLEET_CREATE_RESP="$(fleet_session_create "$FLEET_CREATE_PAYLOAD" || true)"
-FLEET_SESSION_ID="$(printf '%s' "$FLEET_CREATE_RESP" | python3 -c 'import json,sys; d=json.load(sys.stdin); print((d.get("session") or {}).get("session_id") or d.get("session_id",""))' 2>/dev/null || echo "fleet-${RUN_ID}")"
+FLEET_SESSION_ID="$(fleet_session_parse_id "$FLEET_CREATE_RESP")"
+[[ -n "$FLEET_SESSION_ID" ]] || FLEET_SESSION_ID="fleet-${RUN_ID}"
 echo "Fleet session: ${FLEET_SESSION_ID}"
 
 if [[ "$GUESTFWD_PROXY" == true ]]; then
-  fleet_session_patch "$FLEET_SESSION_ID" heartbeat '{"status":"proxy_starting"}' >/dev/null || true
+  fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(fleet_session_patch_simple "proxy_starting")" >/dev/null || true
   if [[ "$USER_SET_HOST_URL" != true ]]; then
     HOST_DEV_URL="http://10.0.2.2:${LAB_PROXY_PORT}"
   fi
   export SETUPHELFER_QEMU_LAB_PROXY_PID_FILE="${EVDIR}/qemu_lab_proxy.pid"
   export SETUPHELFER_QEMU_LAB_PROXY_PORT="${LAB_PROXY_PORT}"
+  # QEMU slirp guest (10.0.2.2) requires host listener not bound to 127.0.0.1 only — lab LAN bind.
+  export SETUPHELFER_QEMU_LAB_PROXY_BIND="0.0.0.0"
+  export SETUPHELFER_QEMU_LAB_PROXY_OPERATOR_CONFIRM_LAN_BIND="true"
   "${SCRIPT_DIR}/start-qemu-lab-dev-server-proxy.sh"
-  fleet_session_patch "$FLEET_SESSION_ID" heartbeat '{"status":"proxy_ready"}' >/dev/null || true
+  fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(fleet_session_patch_simple "proxy_ready")" >/dev/null || true
 else
   HOST_DEV_URL="${HOST_DEV_URL:-http://10.0.2.2:8000}"
 fi
@@ -177,7 +140,7 @@ else
   echo "QEMU: KVM not available — TCG only (boot may exceed timeout)"
 fi
 
-fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(python3 -c "import json; print(json.dumps({'status':'qemu_starting','host':{'has_kvm':${HAS_KVM},'kvm_enabled':${KVM_ENABLED}},'qemu':{'acceleration':'${ACCELERATION}'}}))")" >/dev/null || true
+fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(fleet_session_heartbeat_payload "qemu_starting" "" "false" "0" "" "$ACCELERATION" "$HAS_KVM" "$KVM_ENABLED" "[]")" >/dev/null || true
 
 QEMU_ARGS=(
   "${QEMU_MACHINE_ARGS[@]}"
@@ -218,13 +181,13 @@ cleanup_lab_proxy() {
 trap cleanup_lab_proxy EXIT
 
 : >"$SERIAL_LOG"
-fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(python3 -c "import json; print(json.dumps({'status':'booting','serial':{'path':'${SERIAL_LOG}'}}))")" >/dev/null || true
+fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(fleet_session_heartbeat_payload "booting" "$SERIAL_LOG" "false" "0" "" "" "" "" "[]")" >/dev/null || true
 timeout "$TIMEOUT_SECONDS" qemu-system-x86_64 "${QEMU_ARGS[@]}" \
   >"${EVDIR}/qemu-gtk-stdout.log" 2>"${EVDIR}/qemu-gtk-stderr.log" &
 QPID=$!
 echo "$QPID" >"$PID_FILE" 2>/dev/null || true
 if [[ "$AUTOPILOT" == true ]]; then
-  fleet_session_patch "$FLEET_SESSION_ID" heartbeat '{"status":"autopilot_waiting"}' >/dev/null || true
+  fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(fleet_session_patch_simple "autopilot_waiting")" >/dev/null || true
 fi
 _fleet_heartbeat_loop &
 FLEET_HB_PID=$!

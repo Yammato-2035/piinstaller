@@ -72,6 +72,10 @@ class RescueRuntimeModulePathTests(unittest.TestCase):
         proxy = _read(_REPO / "scripts/rescue-live/start-qemu-lab-dev-server-proxy.sh")
         self.assertIn("bind=0.0.0.0", proxy)
         self.assertIn("127.0.0.1:8000", proxy)
+        self.assertIn("reusing proxy already listening", proxy)
+        self.assertIn("PROXY_BIND", proxy)
+        self.assertIn("127.0.0.1", proxy)
+        self.assertIn("-enable-kvm", _read(_REPO / "scripts/rescue-live/run-qemu-developer-iso-smoke.sh"))
 
     def test_public_profile_auto_upload_disabled(self) -> None:
         env = _read(_REPO / "build/rescue/profiles/public/environment/setuphelfer-dev-agent.env")

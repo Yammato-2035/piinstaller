@@ -5,6 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PROXY_PORT="${SETUPHELFER_QEMU_LAB_PROXY_PORT:-8001}"
+PROXY_BIND="${SETUPHELFER_QEMU_LAB_PROXY_BIND:-127.0.0.1}"
 TARGET="${SETUPHELFER_QEMU_LAB_PROXY_TARGET:-127.0.0.1:8000}"
 PID_FILE="${SETUPHELFER_QEMU_LAB_PROXY_PID_FILE:-/tmp/setuphelfer-qemu-lab-proxy.pid}"
 LOG_FILE="${SETUPHELFER_QEMU_LAB_PROXY_LOG:-/tmp/setuphelfer-qemu-lab-proxy.log}"
@@ -27,8 +28,11 @@ _proxy_listen_pid() {
 
 _proxy_ok_message() {
   local pid="$1"
-  echo "OK: QEMU lab proxy pid=${pid} listen=0.0.0.0:${PROXY_PORT} target=${TARGET}"
+  echo "OK: QEMU lab proxy pid=${pid} listen=${PROXY_BIND}:${PROXY_PORT} target=${TARGET}"
   echo "Guest URL: http://10.0.2.2:${PROXY_PORT}"
+  if [[ "$PROXY_BIND" == "0.0.0.0" ]]; then
+    echo "WARN: proxy binds 0.0.0.0 (LAN-visible) — lab only; use firewall; not for public exposure"
+  fi
 }
 
 if [[ -f "$PID_FILE" ]]; then
@@ -48,8 +52,15 @@ if _existing="$(_proxy_listen_pid "$PROXY_PORT")"; then
   exit 0
 fi
 
+if [[ "$PROXY_BIND" == "0.0.0.0" ]] && [[ "${SETUPHELFER_QEMU_LAB_PROXY_OPERATOR_CONFIRM_LAN_BIND:-}" != "true" ]]; then
+  echo "ERROR: bind 0.0.0.0 requires SETUPHELFER_QEMU_LAB_PROXY_OPERATOR_CONFIRM_LAN_BIND=true" >&2
+  echo "  For QEMU slirp guest access, run-qemu-developer-iso-smoke.sh sets this automatically." >&2
+  echo "  Manual start: export SETUPHELFER_QEMU_LAB_PROXY_BIND=127.0.0.1 (guest may not reach host)" >&2
+  exit 1
+fi
+
 : >>"$LOG_FILE"
-socat "TCP-LISTEN:${PROXY_PORT},bind=0.0.0.0,reuseaddr,fork" "TCP:${TARGET}" >>"$LOG_FILE" 2>&1 &
+socat "TCP-LISTEN:${PROXY_PORT},bind=${PROXY_BIND},reuseaddr,fork" "TCP:${TARGET}" >>"$LOG_FILE" 2>&1 &
 echo $! >"$PID_FILE"
 sleep 0.5
 if ! kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
