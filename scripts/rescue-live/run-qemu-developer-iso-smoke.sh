@@ -22,17 +22,47 @@ LAB_PROXY_PORT="${SETUPHELFER_QEMU_LAB_PROXY_PORT:-8001}"
 TIMEOUT_SECONDS=900
 USER_SET_HOST_URL=false
 KEYBOARD="${SETUPHELFER_QEMU_KEYBOARD:-de}"
+# chardev+isa-serial (default) or legacy-file (-serial file:)
+SERIAL_BACKEND="${SETUPHELFER_QEMU_SERIAL_BACKEND:-chardev}"
 
 usage() {
   cat <<EOF
 Usage: $0 [RUN_ID] [--operator-confirm-qemu] [--autopilot] [--remote-vnc-local]
        [--host-dev-server-url URL] [--proxy-port N] [--timeout-seconds N]
+       [--serial-backend chardev|legacy-file]
 
 Autopilot: guest smoke runs via systemd — no manual typing in QEMU window.
+Serial: default chardev file + isa-serial (see QEMU_SERIAL_CAPTURE_AND_BOOTLOADER_OUTPUT_CONTRACT.md).
 EOF
 }
 
 die() { echo "ERROR: $*" >&2; exit 1; }
+
+prepare_serial_log() {
+  local serial_dir
+  serial_dir="$(dirname "$SERIAL_LOG")"
+  mkdir -p "$serial_dir"
+  if ! : >"$SERIAL_LOG" 2>/dev/null; then
+    die "serial log not writable: $SERIAL_LOG"
+  fi
+}
+
+append_qemu_serial_capture_args() {
+  case "$SERIAL_BACKEND" in
+    legacy-file)
+      QEMU_ARGS+=(-serial "file:${SERIAL_LOG}")
+      ;;
+    chardev)
+      QEMU_ARGS+=(
+        -chardev "file,id=charserial0,path=${SERIAL_LOG},signal=off"
+        -device "isa-serial,chardev=charserial0"
+      )
+      ;;
+    *)
+      die "unknown --serial-backend: $SERIAL_BACKEND (use chardev or legacy-file)"
+      ;;
+  esac
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -45,6 +75,10 @@ while [[ $# -gt 0 ]]; do
     --host-dev-server-url) HOST_DEV_URL="${2:-}"; USER_SET_HOST_URL=true; shift 2 ;;
     --proxy-port) LAB_PROXY_PORT="${2:-8001}"; shift 2 ;;
     --timeout-seconds) TIMEOUT_SECONDS="${2:-240}"; shift 2 ;;
+    --serial-backend)
+      SERIAL_BACKEND="${2:-chardev}"
+      shift 2
+      ;;
     --headless) HEADLESS=true; shift ;;
     --no-lab-proxy) GUESTFWD_PROXY=false; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -156,10 +190,10 @@ QEMU_ARGS=(
   -m 2048 -smp 2
   -cdrom "$ISO_PATH"
   -boot d -snapshot -no-reboot
-  -serial "file:${SERIAL_LOG}"
   -monitor none
   -nic "$NIC_OPTS"
 )
+append_qemu_serial_capture_args
 
 if [[ "$AUTOPILOT" == true ]] || [[ "$HEADLESS" == true ]]; then
   # No GTK window — avoids keyboard grab / input freeze; operator must not type.
@@ -171,8 +205,9 @@ fi
 [[ "$REMOTE_VNC" == true && "$HEADLESS" != true ]] && QEMU_ARGS+=(-vnc 127.0.0.1:1)
 
 echo "=== QEMU Developer ISO Smoke ==="
-echo "RUN_ID=$RUN_ID AUTOPILOT=$AUTOPILOT TIMEOUT=${TIMEOUT_SECONDS}s"
+echo "RUN_ID=$RUN_ID AUTOPILOT=$AUTOPILOT TIMEOUT=${TIMEOUT_SECONDS}s SERIAL_BACKEND=$SERIAL_BACKEND"
 echo "HOST_DEV_URL=$HOST_DEV_URL PROXY=$GUESTFWD_PROXY"
+echo "SERIAL_LOG=$SERIAL_LOG"
 printf 'CMD: '; printf '%q ' timeout "$TIMEOUT_SECONDS" qemu-system-x86_64 "${QEMU_ARGS[@]}"; echo
 
 if [[ "$CONFIRM" != true ]]; then
@@ -189,8 +224,22 @@ cleanup_lab_proxy() {
 }
 trap cleanup_lab_proxy EXIT
 
-: >"$SERIAL_LOG"
-fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(fleet_session_heartbeat_payload "booting" "$SERIAL_LOG" "false" "0" "" "" "" "" "[]")" >/dev/null || true
+prepare_serial_log
+python3 - "$EVDIR/qemu_serial_capture_meta.json" "$RUN_ID" "$SERIAL_BACKEND" "$SERIAL_LOG" <<'PY'
+import json, sys
+out, run_id, backend, serial_log = sys.argv[1:5]
+json.dump(
+    {
+        "run_id": run_id,
+        "serial_backend": backend,
+        "serial_log": serial_log,
+        "capture": "chardev+isa-serial" if backend == "chardev" else "legacy-serial-file",
+    },
+    open(out, "w", encoding="utf-8"),
+    indent=2,
+)
+PY
+fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(fleet_session_heartbeat_payload "booting" "$SERIAL_LOG" "true" "0" "" "" "" "" "[]")" >/dev/null || true
 timeout "$TIMEOUT_SECONDS" qemu-system-x86_64 "${QEMU_ARGS[@]}" \
   >"${EVDIR}/qemu-gtk-stdout.log" 2>"${EVDIR}/qemu-gtk-stderr.log" &
 QPID=$!

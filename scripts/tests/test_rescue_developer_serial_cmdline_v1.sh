@@ -24,9 +24,9 @@ import re
 import sys
 text = open(sys.argv[1], encoding="utf-8").read()
 m = re.search(
-    r'if \[\[ "\$\{RESCUE_BUILD_PROFILE\}" == "developer-qemu" \]\]; then\n'
-    r"(?:  #.*\n)?  LIVE_BOOTAPPEND='([^']+)'\nfi\n\nwrite_text_file \"\$\{BUILD_ROOT\}/auto/config\"",
+    r"  write_developer_qemu_isolinux_serial_config\n.*?LIVE_BOOTAPPEND='([^']+)'",
     text,
+    re.S,
 )
 if not m:
     raise SystemExit(1)
@@ -56,6 +56,8 @@ done
 grep -q 'FLEET_SERIAL_PATH' "$FLEET_API" || fail "finish payload missing serial path"
 grep -q 'classification_hint_serial_empty_boot_unknown' "$FLEET_API" || fail "finish missing classification hint"
 grep -q 'FLEET_ACCELERATION' "$QEMU_WRAPPER" || fail "wrapper missing acceleration export on finish"
+grep -q 'charserial0' "$QEMU_WRAPPER" || fail "wrapper missing chardev serial capture"
+grep -q 'prepare_serial_log' "$QEMU_WRAPPER" || fail "wrapper missing prepare_serial_log"
 
 bash -n "$PREP" "$FLEET_API" "$QEMU_WRAPPER" "$AUTOPILOT_SH" "$MARKER_SH"
 

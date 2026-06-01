@@ -115,6 +115,42 @@ done
 
 create_minimal_bootlogo_cpio "${BOOTLOADER_DIR}/bootlogo"
 
+# developer-qemu: ISOLINUX serial console + auto-boot (headless QEMU lab; no vesamenu hang).
+write_developer_qemu_isolinux_serial_config() {
+  write_text_file "${BOOTLOADER_DIR}/isolinux.cfg" 0644 <<'EOF'
+# Setuphelfer developer-qemu — serial console + auto-boot (see QEMU_SERIAL_CAPTURE_AND_BOOTLOADER_OUTPUT_CONTRACT.md)
+SERIAL 0 115200
+CONSOLE 0
+PROMPT 0
+TIMEOUT 30
+DEFAULT live-
+ONTIMEOUT live-
+include live.cfg
+include install.cfg
+EOF
+}
+
+# developer-qemu: patch GRUB cfg in binary stage if EFI/grub output exists (iso-hybrid).
+write_developer_qemu_grub_serial_hook() {
+  write_text_file "${BUILD_ROOT}/config/hooks/normal/095-developer-qemu-grub-serial.hook.binary" 0755 <<'EOF'
+#!/bin/sh
+set -eu
+# Prepend serial terminal + short timeout to any grub.cfg produced during lb build.
+GRUB_PREFIX='serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
+terminal_input serial console
+terminal_output serial console
+set timeout=3
+'
+find binary -name 'grub.cfg' 2>/dev/null | while read -r cfg; do
+  [ -f "$cfg" ] || continue
+  if grep -q 'serial --unit=0' "$cfg" 2>/dev/null; then
+    continue
+  fi
+  printf '%s\n' "$GRUB_PREFIX" | cat - "$cfg" > "${cfg}.tmp" && mv "${cfg}.tmp" "$cfg"
+done
+EOF
+}
+
 write_text_file "${BUILD_ROOT}/config/package-lists/setuphelfer.list.chroot" 0644 <<'EOF'
 systemd
 systemd-sysv
@@ -433,6 +469,8 @@ fi
 
 LIVE_BOOTAPPEND='boot=live components init=/lib/systemd/systemd quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin'
 if [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
+  write_developer_qemu_isolinux_serial_config
+  write_developer_qemu_grub_serial_hook
   # QEMU lab: serial + framebuffer, verbose kernel/systemd, no quiet/splash (see RESCUE_DEVELOPER_SERIAL_VISIBILITY_CONTRACT.md)
   LIVE_BOOTAPPEND='boot=live components init=/lib/systemd/systemd console=tty0 console=ttyS0,115200n8 loglevel=7 systemd.log_level=debug systemd.show_status=true ignore_loglevel printk.devkmsg=on setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin'
 fi

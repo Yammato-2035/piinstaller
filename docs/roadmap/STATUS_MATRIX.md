@@ -67,7 +67,10 @@
 | **Autopilot Serial Markers** | **Grün** | Boot/Autopilot/Agent-Marker im `developer-qemu`-Profil | `RESCUE_DEVELOPER_SERIAL_VISIBILITY_CONTRACT.md` |
 | **Fleet Finish Telemetry** | **Grün** | Finish-Payload: exit_code, serial.path, kvm/acceleration | `FLEET_SESSION_QEMU_FINISH_TELEMETRY_FIX_RESULT.md` |
 | **Serial Visibility (Rescue QEMU)** | **Gelb** | ISO-Cmdline neu; Runtime-Serial noch offen bis Smoke | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
-| **QEMU Smoke Serial Retry** | **Rot** | Lauf `160824`: serial 0 B, Exit 124; Export OK, Ingest fehlt | `QEMU_DEVELOPER_SMOKE_SERIAL_VISIBILITY_RETRY_RESULT.md` |
+| **QEMU Serial Device Capture** | **Grün** | Wrapper: chardev+isa-serial Default, prepare_serial_log | `QEMU_SERIAL_CAPTURE_AND_BOOTLOADER_OUTPUT_FIX_RESULT.md` |
+| **Bootloader Serial Output** | **Grün** | ISOLINUX SERIAL/TIMEOUT/live- + GRUB hook (prepare); **ISO rebuild pending** | `RESCUE_BOOTLOADER_SERIAL_OUTPUT_ANALYSIS.md` |
+| **QEMU Smoke Serial Retry** | **Rot** | Lauf `160824` vor Fix; nächster Smoke nach ISO-Rebuild | `QEMU_DEVELOPER_SMOKE_SERIAL_VISIBILITY_RETRY_RESULT.md` |
+| **QEMU Smoke Retry (gesamt)** | **Gelb** | `pending_after_bootloader_serial_rebuild` | `QEMU_SERIAL_CAPTURE_AND_BOOTLOADER_OUTPUT_FIX_RESULT.md` |
 | **Guest Autopilot** | **Rot** | Keine Serial-Marker; Autopilot `failed` | oben |
 | **Devserver Agent (QEMU)** | **Rot** | Kein Agent auf Serial; kein Report | oben |
 | **Devserver Ingest (QEMU lab)** | **Rot** | `report_new=false`, `reports_last_24h` unverändert | oben |
