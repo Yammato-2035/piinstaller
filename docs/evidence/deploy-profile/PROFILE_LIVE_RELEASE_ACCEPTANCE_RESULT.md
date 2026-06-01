@@ -1,21 +1,24 @@
 # Live-Abnahme Release-Profil
 
-**Datum:** 2026-05-31 (aktualisiert)
+**Datum:** 2026-05-31 (HTTP-000-Fix-Lauf)
 
-## Profil-Gate (unabhängig)
+## Ergebnis: **grün**
 
-| Prüfung | Ergebnis |
-|---------|----------|
+| Kriterium | Status |
+|-----------|--------|
+| `/api/version` stabil | **yes** HTTP 200 |
 | `install_profile` | `release` |
-| `/api/dev-dashboard/status` | **404** (korrekt) |
-| `/api/fleet`, `/api/dev-diagnostics` | **404** |
-| Profil-Gate vs. Legacy | **nicht** mehr Exit 20 durch Legacy-Kette |
-| Profil-Gate Exit | **19** — `/api/dev-server` noch HTTP **200** (Override auf Live-Runtime, Redeploy offen) |
+| `manifest_profile` | `release` |
+| Dev-Capabilities | alle **false** |
+| Forbidden-Routen HTTP | alle **404** (inkl. `/api/dev-server/health`) |
+| `check-runtime-profile-deploy-gate.sh` | **Exit 0** |
+| Legacy-Gate | Exit **20** (informational) |
 
-## Legacy-Gate
+## Vorheriger Blocker
 
-- Exit **20** — `LEGACY_GATE_NON_PROFILE_AWARE`, dev-dashboard 404 erwartet im Release
+- HTTP **000** unmittelbar nach Restart (kein Retry)
+- `/api/dev-server/health` **200** vor finalem Deploy von `install_profile.py`
 
-## Nach Redeploy (`install_profile.py` + Restart)
+## Local-Lab
 
-Erwartung: `dev_server_enabled=false`, `/api/dev-server/*` → 404, Profil-Gate Exit **0**
+**pending** — separater Operator-Auftrag (Drop-in `92-install-profile-local-lab.conf.example`).

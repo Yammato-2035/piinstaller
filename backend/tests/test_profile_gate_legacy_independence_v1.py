@@ -9,6 +9,7 @@ from unittest.mock import patch
 from core.install_profile import (
     get_install_profile_state,
     profile_gate_audit_route_paths,
+    should_register_dev_server_router,
 )
 
 
@@ -46,6 +47,7 @@ class ProfileGateLegacyIndependenceTests(unittest.TestCase):
         ):
             st = get_install_profile_state()
             self.assertFalse(st.dev_server_enabled)
+            self.assertFalse(should_register_dev_server_router())
 
 
 if __name__ == "__main__":

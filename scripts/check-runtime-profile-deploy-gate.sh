@@ -30,6 +30,23 @@ WS_VER="${BACKEND_GATE_WORKSPACE_VERSION_JSON:-$REPO_ROOT/config/version.json}"
 
 log() { printf '%s\n' "$*" >&2; }
 
+probe_http_code() {
+  local url="$1"
+  local out_file="$2"
+  local code_var="$3"
+  local curl_out curl_ec
+  set +e
+  curl_out="$(curl -sS -o "$out_file" -w '%{http_code}' --connect-timeout 2 --max-time 12 "$url" 2>/dev/null)"
+  curl_ec=$?
+  set -e
+  if [[ "$curl_ec" -eq 0 ]] && [[ -n "$curl_out" ]]; then
+    printf -v "$code_var" '%s' "${curl_out:0:3}"
+    return 0
+  fi
+  printf -v "$code_var" '%s' "000"
+  return 1
+}
+
 if ! command -v curl >/dev/null 2>&1; then
   log "check-runtime-profile-deploy-gate: curl missing"
   exit 30
@@ -52,17 +69,52 @@ fi
 
 tmp_api="$(mktemp)"
 tmp_oa="$(mktemp)"
-trap 'rm -f "$tmp_api" "$tmp_oa"' EXIT
+tmp_health="$(mktemp)"
+trap 'rm -f "$tmp_api" "$tmp_oa" "$tmp_health"' EXIT
 
-http_code="$(curl -sS -o "$tmp_api" -w '%{http_code}' --connect-timeout 3 --max-time 12 "${BASE_URL}/api/version" 2>/dev/null || echo 000)"
+API_RETRIES="${RUNTIME_GATE_API_RETRIES:-10}"
+API_SLEEP="${RUNTIME_GATE_API_SLEEP_SEC:-1}"
+
+http_code="000"
+health_code="000"
+for ((attempt = 1; attempt <= API_RETRIES; attempt++)); do
+  probe_http_code "${BASE_URL}/health" "$tmp_health" health_code || true
+  if [[ "$health_code" == "200" ]]; then
+    break
+  fi
+  if [[ "$attempt" -lt "$API_RETRIES" ]]; then
+    sleep "$API_SLEEP"
+  fi
+done
+
+for ((attempt = 1; attempt <= API_RETRIES; attempt++)); do
+  probe_http_code "${BASE_URL}/api/version" "$tmp_api" http_code || true
+  if [[ "$http_code" == "200" ]]; then
+    break
+  fi
+  if [[ "$attempt" -lt "$API_RETRIES" ]]; then
+    sleep "$API_SLEEP"
+  fi
+done
+
 if [[ "$http_code" != "200" ]]; then
-  log "check-runtime-profile-deploy-gate: /api/version HTTP $http_code"
+  log "check-runtime-profile-deploy-gate: /api/version HTTP ${http_code} (nach ${API_RETRIES} Versuchen; health=${health_code}; ggf. journalctl -u $SERVICE -n 40)"
   exit 24
 fi
 
-oa_code="$(curl -sS -o "$tmp_oa" -w '%{http_code}' --connect-timeout 3 --max-time 15 "${BASE_URL}/openapi.json" 2>/dev/null || echo 000)"
+oa_code="000"
+for ((attempt = 1; attempt <= API_RETRIES; attempt++)); do
+  probe_http_code "${BASE_URL}/openapi.json" "$tmp_oa" oa_code || true
+  if [[ "$oa_code" == "200" ]]; then
+    break
+  fi
+  if [[ "$attempt" -lt "$API_RETRIES" ]]; then
+    sleep "$API_SLEEP"
+  fi
+done
+
 if [[ "$oa_code" != "200" ]]; then
-  log "check-runtime-profile-deploy-gate: /openapi.json HTTP $oa_code"
+  log "check-runtime-profile-deploy-gate: /openapi.json HTTP ${oa_code} (nach ${API_RETRIES} Versuchen)"
   exit 25
 fi
 

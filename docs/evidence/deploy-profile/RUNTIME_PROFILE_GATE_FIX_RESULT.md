@@ -26,7 +26,8 @@
 - Gesamt Profil-Suite: **23/23** OK
 - Shell-Gate-Test: OK
 
-## Live (Workspace-Gate-Skript, Runtime cea84e6)
+## Live (nach Deploy + install_profile)
 
-- Profil-Gate: Exit **19** (`forbidden_api_path_visible:/api/dev-server`) — korrekte Meldung, Redeploy mit neuem `install_profile.py` nötig
+- Profil-Gate: **Exit 0** (Release, alle Dev-Sonden 404)
 - Legacy-Gate: Exit **20** (dev-dashboard 404) — informational
+- Gate-Retry: `check-runtime-profile-deploy-gate.sh` wartet auf `/health` + `/api/version` (kein falscher HTTP 000 direkt nach Restart)
