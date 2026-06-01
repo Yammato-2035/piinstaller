@@ -3124,6 +3124,15 @@ except Exception:
         "Dev-Diagnostics-Router konnte nicht registriert werden; /api/dev-diagnostics/* fehlt dann (404)."
     )
 
+try:
+    from rescue_remote.routers import router as rescue_remote_router
+
+    app.include_router(rescue_remote_router)
+except Exception:
+    logger.exception(
+        "Rescue-Remote-Router konnte nicht registriert werden; /api/rescue-remote/* fehlt dann (404)."
+    )
+
 def _is_demo_mode(request: Request) -> bool:
     """Prüft ob X-Demo-Mode Header gesetzt ist (für Screenshot-Dokumentation ohne echte Daten)."""
     return request.headers.get("X-Demo-Mode") == "1"

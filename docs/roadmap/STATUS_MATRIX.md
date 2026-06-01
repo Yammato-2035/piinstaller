@@ -71,6 +71,13 @@
 | **Bootloader Serial Output** | **Grün** | ISOLINUX SERIAL/TIMEOUT/live- + GRUB hook (prepare); **ISO rebuild pending** | `RESCUE_BOOTLOADER_SERIAL_OUTPUT_ANALYSIS.md` |
 | **QEMU Smoke Serial Retry** | **Rot** | Lauf `160824` vor Fix; nächster Smoke nach ISO-Rebuild | `QEMU_DEVELOPER_SMOKE_SERIAL_VISIBILITY_RETRY_RESULT.md` |
 | **QEMU Smoke Retry (gesamt)** | **Gelb** | `pending_after_bootloader_serial_rebuild` | `QEMU_SERIAL_CAPTURE_AND_BOOTLOADER_OUTPUT_FIX_RESULT.md` |
+| **Rescue Remote Security Model** | **Grün** | Phase 1: keine Shell, allowlisted runbooks | `RESCUE_REMOTE_CONTROL_SECURITY_MODEL.md` |
+| **Rescue Remote Agent Stub** | **Grün** | `setuphelfer-rescue-remote-agent.sh` + Backend API | `RESCUE_REMOTE_CONTROL_PHASE1_RESULT.md` |
+| **Rescue Remote Job Queue** | **Grün** | JSONL `build/runtime/rescue-remote/` | oben |
+| **Rescue Network Boot Menu Contract** | **Grün** | eth0/WLAN/QEMU-Lab/Pairing Konzept | `RESCUE_NETWORK_BOOT_MENU_CONTRACT.md` |
+| **Rescue Network Menu Stub** | **Grün** | `setuphelfer-rescue-network-menu.sh` | oben |
+| **Remote Shell** | **Disabled** | Keine API-Route | `RESCUE_REMOTE_CONTROL_SECURITY_MODEL.md` |
+| **Remote Write Actions** | **Disabled** | `controlled_write` blockiert Phase 1 | oben |
 | **Guest Autopilot** | **Rot** | Keine Serial-Marker; Autopilot `failed` | oben |
 | **Devserver Agent (QEMU)** | **Rot** | Kein Agent auf Serial; kein Report | oben |
 | **Devserver Ingest (QEMU lab)** | **Rot** | `report_new=false`, `reports_last_24h` unverändert | oben |
