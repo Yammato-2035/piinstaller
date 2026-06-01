@@ -63,13 +63,17 @@
 | **Rescue Developer Serial Config** | **Grün** | Prepare `developer-qemu` materialisiert (tty0+ttyS0, kein quiet/splash) | `RESCUE_ISO_SERIAL_BOOT_VISIBILITY_FIX_RESULT.md` |
 | **Rescue Developer ISO Rebuild** | **Grün** | LB_EXIT=0; ISO SHA `be016f2a…` (neu vs. `6a44d1fe…`) | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |
 | **Static ISO Serial Validation** | **Grün** | tty0+ttyS0+loglevel im ISO; Marker gelb (Squashfs), Tree grün | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
-| **Serial Visibility Runtime** | **Pending** | `pending_qemu` — Runtime erst im Smoke-Lauf | oben |
+| **Serial Visibility Runtime** | **Rot** | Smoke `160824`: serial=0 trotz neuer ISO; Klasse `serial_empty_boot_unknown` | `QEMU_DEVELOPER_SMOKE_SERIAL_VISIBILITY_RETRY_RESULT.md` |
 | **Autopilot Serial Markers** | **Grün** | Boot/Autopilot/Agent-Marker im `developer-qemu`-Profil | `RESCUE_DEVELOPER_SERIAL_VISIBILITY_CONTRACT.md` |
 | **Fleet Finish Telemetry** | **Grün** | Finish-Payload: exit_code, serial.path, kvm/acceleration | `FLEET_SESSION_QEMU_FINISH_TELEMETRY_FIX_RESULT.md` |
 | **Serial Visibility (Rescue QEMU)** | **Gelb** | ISO-Cmdline neu; Runtime-Serial noch offen bis Smoke | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
-| **QEMU Smoke Retry** | **Grün** | `ready_for_qemu_serial_smoke` — neues ISO, statisch validiert | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
+| **QEMU Smoke Serial Retry** | **Rot** | Lauf `160824`: serial 0 B, Exit 124; Export OK, Ingest fehlt | `QEMU_DEVELOPER_SMOKE_SERIAL_VISIBILITY_RETRY_RESULT.md` |
+| **Guest Autopilot** | **Rot** | Keine Serial-Marker; Autopilot `failed` | oben |
+| **Devserver Agent (QEMU)** | **Rot** | Kein Agent auf Serial; kein Report | oben |
+| **Devserver Ingest (QEMU lab)** | **Rot** | `report_new=false`, `reports_last_24h` unverändert | oben |
 | **Public Dev-Control Exposure** | **Grün** | Keine öffentlichen Dev-Control-Hosts in Produkt-Routen; lokal `:8000` | `DEV_DIAGNOSTIC_EXPORT_IST_ANALYSIS.md` |
-| **QEMU Developer Smoke 081222** | **Rot** | Klasse `serial_empty_boot_unknown` + `qemu_wrapper_ok_guest_no_report`; Exit 124, Serial 0 B, kein Ingest; **kein QEMU-Retry** bis Serial/Boot sichtbar | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md`, `FLEET_SESSION_QEMU_RUN_20260601_081222_ANALYSIS.md` |
+| **QEMU Developer Smoke 081222** | **Rot** | Historisch: alte ISO, serial=0 | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
+| **QEMU Developer Smoke 160824** | **Rot** | Neue ISO, serial weiterhin 0 — Capture/Boot-Output-Fix nötig | `QEMU_DEVELOPER_SMOKE_SERIAL_VISIBILITY_RETRY_RESULT.md` |
 | **QEMU Smoke with Session** | **Rot** | Wrapper JSON grün; Gast-Report + Serial offen — `qemu_smoke_next_step_allowed=false` bis Folgefix | oben |
 | **Rescue Guest Report Ingest (QEMU lab)** | **Rot** | Lauf `081222`: `reports_last_24h` unverändert, kein neuer Knoten | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
 | **Proxy Bind Exposure (QEMU lab)** | **Gelb** | `0.0.0.0` nur via QEMU-Smoke + Operator-Confirm; Default `127.0.0.1`; lab-only NDA | `FLEET_SESSION_QEMU_WRAPPER_JSON_FIX_RESULT.md` |
