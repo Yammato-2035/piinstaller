@@ -3115,6 +3115,15 @@ try:
 except Exception:
     logger.exception("Fleet-Session-Router konnte nicht registriert werden; /api/fleet/sessions fehlt dann (404).")
 
+try:
+    from dev_diagnostics.routers import router as dev_diagnostics_router
+
+    app.include_router(dev_diagnostics_router)
+except Exception:
+    logger.exception(
+        "Dev-Diagnostics-Router konnte nicht registriert werden; /api/dev-diagnostics/* fehlt dann (404)."
+    )
+
 def _is_demo_mode(request: Request) -> bool:
     """Prüft ob X-Demo-Mode Header gesetzt ist (für Screenshot-Dokumentation ohne echte Daten)."""
     return request.headers.get("X-Demo-Mode") == "1"
