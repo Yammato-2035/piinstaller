@@ -184,6 +184,7 @@ fleet_session_finish_payload() {
   export FLEET_DEV_SERVER_REPORT_NEW="${4:-false}"
   export FLEET_SERIAL_SIZE="${5:-0}"
   export FLEET_FINDINGS_JSON="${6:-[]}"
+  # Optional: FLEET_SERIAL_PATH, FLEET_SERIAL_EXISTS, FLEET_ACCELERATION, FLEET_KVM_ENABLED, FLEET_HAS_KVM
   python3 <<'PY'
 import json
 import os
@@ -212,22 +213,45 @@ if qemu_exit == 124:
 serial_size = int(os.environ.get("FLEET_SERIAL_SIZE", "0") or "0")
 if serial_size == 0 and "serial_empty" not in findings:
     findings.append("serial_empty")
+    if "classification_hint_serial_empty_boot_unknown" not in findings:
+        findings.append("classification_hint_serial_empty_boot_unknown")
 
 guest_seen = env_bool("FLEET_GUEST_REPORT_SEEN", False)
 if not guest_seen and "guest_report_missing" not in findings:
     findings.append("guest_report_missing")
 
-payload = {
+serial_path = os.environ.get("FLEET_SERIAL_PATH", "").strip()
+serial_exists = env_bool("FLEET_SERIAL_EXISTS", serial_size > 0)
+
+payload: dict = {
     "status": status,
     "qemu_exit_code": qemu_exit,
     "guest": {
         "report_seen": guest_seen,
         "dev_server_report_new": env_bool("FLEET_DEV_SERVER_REPORT_NEW", False),
     },
-    "serial": {"size_bytes": serial_size},
+    "serial": {
+        "path": serial_path,
+        "exists": serial_exists,
+        "size_bytes": serial_size,
+    },
     "findings": findings,
     "evidence_paths": [],
 }
+
+accel = os.environ.get("FLEET_ACCELERATION", "").strip()
+if accel:
+    payload["qemu"] = {"exit_code": qemu_exit, "acceleration": accel}
+else:
+    payload["qemu"] = {"exit_code": qemu_exit}
+
+if os.environ.get("FLEET_KVM_ENABLED") or os.environ.get("FLEET_HAS_KVM"):
+    payload["host"] = {}
+    if os.environ.get("FLEET_KVM_ENABLED"):
+        payload["host"]["kvm_enabled"] = env_bool("FLEET_KVM_ENABLED", False)
+    if os.environ.get("FLEET_HAS_KVM"):
+        payload["host"]["has_kvm"] = env_bool("FLEET_HAS_KVM", False)
+
 print(json.dumps(payload, ensure_ascii=False))
 PY
 }

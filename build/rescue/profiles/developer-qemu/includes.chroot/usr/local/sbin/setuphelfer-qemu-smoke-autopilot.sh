@@ -10,9 +10,11 @@ mkdir -p /run/setuphelfer /var/log/setuphelfer 2>/dev/null || true
 
 log_serial() {
   printf '%s\n' "$*" >/dev/ttyS0 2>/dev/null || true
+  logger -t setuphelfer-autopilot "$*" 2>/dev/null || true
   printf '%s\n' "$*"
 }
 
+log_serial "SETUPHELFER_SYSTEMD_MARKER_START"
 log_serial "SETUPHELFER_AUTOPILOT_START run_id=${RUN_ID}"
 
 if command -v loadkeys >/dev/null 2>&1; then
@@ -29,6 +31,9 @@ export SETUPHELFER_DEV_AGENT_AUTO_UPLOAD=true
 export SETUPHELFER_DEV_AGENT_SERVER_URL="${HOST_URL}"
 export SETUPHELFER_DEV_AGENT_QEMU_HOST_FALLBACK=true
 export SETUPHELFER_DEV_AGENT_QEMU_HOST_URL="${HOST_URL}"
+
+log_serial "SETUPHELFER_DEVSERVER_AGENT_START"
+log_serial "SETUPHELFER_DEVSERVER_AGENT_REPORT_ATTEMPT"
 
 RESULT_JSON="$(python3 - <<'PY'
 import json
@@ -140,6 +145,12 @@ payload = {
 print(json.dumps(payload, ensure_ascii=False))
 PY
 )"
+
+if echo "$RESULT_JSON" | grep -q '"agent_send_ok": true'; then
+  log_serial "SETUPHELFER_DEVSERVER_AGENT_REPORT_ATTEMPT ok"
+else
+  log_serial "SETUPHELFER_DEVSERVER_AGENT_ERROR:agent_send_failed"
+fi
 
 for dest in /run/setuphelfer/qemu-smoke-result.json /var/log/setuphelfer/qemu-smoke-result.json; do
   printf '%s\n' "$RESULT_JSON" >"$dest" 2>/dev/null || true

@@ -1,0 +1,18 @@
+[Unit]
+Description=Setuphelfer serial boot markers (QEMU lab)
+DefaultDependencies=no
+After=local-fs.target
+Before=basic.target
+ConditionPathExists=/usr/local/sbin/setuphelfer-serial-boot-markers.sh
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/setuphelfer-serial-boot-markers.sh early
+StandardOutput=tty
+StandardError=tty
+TTYPath=/dev/ttyS0
+RemainAfterExit=yes
+NoNewPrivileges=true
+
+[Install]
+WantedBy=sysinit.target

@@ -54,6 +54,7 @@ class RescueQemuSmokeAutopilotProfileTests(unittest.TestCase):
         self.assertIn("--autopilot", text)
         self.assertIn("--headless", text)
         self.assertIn("-display none", text)
+        self.assertIn("-enable-kvm", text)
         self.assertIn("start-qemu-lab-dev-server-proxy.sh", text)
         self.assertIn("parse-qemu-serial-smoke-result.py", text)
         self.assertNotIn("/qemu_gtk_pid.txt", text.replace("${EVDIR}/qemu_gtk_pid.txt", ""))
@@ -67,7 +68,16 @@ class RescueQemuSmokeAutopilotProfileTests(unittest.TestCase):
         prep = _read(_REPO / "scripts/rescue-live/prepare-controlled-live-build-tree.sh")
         self.assertIn("copy_profile_overlay", prep)
         self.assertIn("console=ttyS0", prep)
+        self.assertIn("console=tty0", prep)
+        self.assertIn("loglevel=7", prep)
         self.assertIn('write_dev_agent_enable_hook false', prep)
+
+    def test_serial_boot_markers_in_profile(self) -> None:
+        marker = QEMU_PROFILE / "includes.chroot/usr/local/sbin/setuphelfer-serial-boot-markers.sh"
+        self.assertTrue(marker.is_file())
+        self.assertIn("SETUPHELFER_BOOT_MARKER_START", _read(marker))
+        autopilot = _read(AUTOPILOT_SH)
+        self.assertIn("SETUPHELFER_DEVSERVER_AGENT_START", autopilot)
 
     def test_public_profile_auto_upload_disabled(self) -> None:
         env = _read(PUBLIC_PROFILE / "environment/setuphelfer-dev-agent.env")

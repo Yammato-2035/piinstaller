@@ -433,7 +433,8 @@ fi
 
 LIVE_BOOTAPPEND='boot=live components init=/lib/systemd/systemd quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin'
 if [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
-  LIVE_BOOTAPPEND='boot=live components init=/lib/systemd/systemd console=ttyS0,115200n8 quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin'
+  # QEMU lab: serial + framebuffer, verbose kernel/systemd, no quiet/splash (see RESCUE_DEVELOPER_SERIAL_VISIBILITY_CONTRACT.md)
+  LIVE_BOOTAPPEND='boot=live components init=/lib/systemd/systemd console=tty0 console=ttyS0,115200n8 loglevel=7 systemd.log_level=debug systemd.show_status=true ignore_loglevel printk.devkmsg=on setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin'
 fi
 
 write_text_file "${BUILD_ROOT}/auto/config" 0755 <<EOF

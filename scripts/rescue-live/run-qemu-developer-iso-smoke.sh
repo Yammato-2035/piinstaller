@@ -94,8 +94,17 @@ _fleet_finish_session() {
   _fleet_serial_stats
   local guest_seen=false
   [[ "${DEV_SERVER_REPORT_NEW:-false}" == "true" ]] && guest_seen=true
+  local findings_json="[]"
+  if [[ "${FLEET_SERIAL_SIZE_BYTES:-0}" -eq 0 ]]; then
+    findings_json='["serial_empty","classification_hint_serial_empty_boot_unknown"]'
+  fi
+  export FLEET_SERIAL_PATH="${SERIAL_LOG}"
+  export FLEET_SERIAL_EXISTS="${FLEET_SERIAL_EXISTS}"
+  export FLEET_ACCELERATION="${ACCELERATION}"
+  export FLEET_KVM_ENABLED="${KVM_ENABLED}"
+  export FLEET_HAS_KVM="${HAS_KVM}"
   local payload
-  payload="$(fleet_session_finish_payload "$final_status" "$QEMU_EXIT" "$guest_seen" "$DEV_SERVER_REPORT_NEW" "$FLEET_SERIAL_SIZE_BYTES" "[]")" || return 1
+  payload="$(fleet_session_finish_payload "$final_status" "$QEMU_EXIT" "$guest_seen" "$DEV_SERVER_REPORT_NEW" "$FLEET_SERIAL_SIZE_BYTES" "$findings_json")" || return 1
   fleet_session_patch "$FLEET_SESSION_ID" finish "$payload" >/dev/null || true
 }
 

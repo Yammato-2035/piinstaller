@@ -1,3 +1,4 @@
 #!/bin/sh
 set -eu
+systemctl enable setuphelfer-serial-boot-markers.service || true
 systemctl enable setuphelfer-qemu-smoke-autopilot.service || true
