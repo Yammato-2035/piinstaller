@@ -42,9 +42,12 @@ class InstallProfileGateTests(unittest.TestCase):
         with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=True):
             self.assertFalse(path_allowed_for_active_profile("/api/fleet/sessions"))
 
-    def test_release_audit_red_when_fleet_registered(self) -> None:
+    def test_release_audit_red_when_fleet_http_accessible(self) -> None:
         with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=True):
-            audit = profile_gate_audit_route_paths(["/api/fleet/sessions", "/api/version"])
+            audit = profile_gate_audit_route_paths(
+                ["/api/fleet/sessions"],
+                http_accessible_prefixes=["/api/fleet/sessions"],
+            )
             self.assertEqual(audit["profile_gate_status"], "red")
             self.assertTrue(audit["profile_gate_errors"])
 

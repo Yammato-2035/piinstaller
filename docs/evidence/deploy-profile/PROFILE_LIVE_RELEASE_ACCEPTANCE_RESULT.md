@@ -1,29 +1,21 @@
 # Live-Abnahme Release-Profil
 
-**Datum:** 2026-05-31
+**Datum:** 2026-05-31 (aktualisiert)
 
-## Durchführung
+## Profil-Gate (unabhängig)
 
-| Schritt | Ergebnis |
+| Prüfung | Ergebnis |
 |---------|----------|
-| `SETUPHELFER_INSTALL_PROFILE=release` auf `/opt` | **nicht gesetzt** (kein sudo-Deploy) |
-| Deploy Workspace → `/opt` | **blocked** — `deploy_blocked_sudo_required` |
-| OpenAPI Dev-Routen live | **nicht neu geprüft** (Runtime ohne Commit-Deploy) |
+| `install_profile` | `release` |
+| `/api/dev-dashboard/status` | **404** (korrekt) |
+| `/api/fleet`, `/api/dev-diagnostics` | **404** |
+| Profil-Gate vs. Legacy | **nicht** mehr Exit 20 durch Legacy-Kette |
+| Profil-Gate Exit | **19** — `/api/dev-server` noch HTTP **200** (Override auf Live-Runtime, Redeploy offen) |
 
-## Phase-0-Baseline (lesend)
+## Legacy-Gate
 
-- `GET /api/version`: `install_profile=opt` (Legacy), kein Capability-Gate
-- `check-runtime-deploy-gate.sh`: Exit **16** (manifest_match)
-- `check-runtime-profile-deploy-gate.sh`: Exit **16** (Basis-Gate)
+- Exit **20** — `LEGACY_GATE_NON_PROFILE_AWARE`, dev-dashboard 404 erwartet im Release
 
-## Erwartung nach Operator-Deploy
+## Nach Redeploy (`install_profile.py` + Restart)
 
-1. systemd-Drop-in: `SETUPHELFER_INSTALL_PROFILE=release`
-2. `sudo ./scripts/deploy-to-opt.sh`
-3. OpenAPI ohne `/api/fleet`, `/api/dev-diagnostics`, `/api/rescue-remote`, `/api/dev-dashboard`
-4. `check-runtime-profile-deploy-gate.sh` Exit **0**
-
-## Statische Abnahme
-
-- Unit-Tests Release blockiert Dev-Router: **OK**
-- Shell-Gate Release + Fleet-Pfad: Exit **19**
+Erwartung: `dev_server_enabled=false`, `/api/dev-server/*` → 404, Profil-Gate Exit **0**

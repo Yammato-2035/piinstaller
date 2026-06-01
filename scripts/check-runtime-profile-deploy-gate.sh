@@ -1,51 +1,85 @@
 #!/usr/bin/env bash
-# Profile-aware runtime deploy gate (read-only). Runs base gate then profile checks.
+# Profile-aware runtime gate (read-only). Independent of legacy dev-dashboard gate.
+#
+# Does NOT require /api/dev-dashboard/status (404 is correct in release profile).
+# Legacy gate: scripts/check-runtime-deploy-gate.sh (non_profile_aware, dev-dashboard required).
 #
 # Exit codes:
 #   0  OK
-#   17 install_profile_missing
-#   18 profile_manifest_mismatch
-#   19 forbidden_api_path_visible / profile_gate_red
-#   20 required_api_path_missing
-#   21 public_exposure_blocked
-#   30 unknown
-#   (inherits 10-16 from check-runtime-deploy-gate.sh)
+#  10  setuphelfer-backend.service not active
+#  12  project_version mismatch (workspace vs API)
+#  13  backend_runtime_path unexpected
+#  17  install_profile missing or invalid
+#  18  profile_manifest_mismatch
+#  19  forbidden_api_path_visible / profile_gate_red
+#  20  required_api_path_missing
+#  21  public_exposure_blocked
+#  22  frontend_profile_mismatch
+#  24  /api/version failed
+#  25  openapi.json failed (when HTTP probe needs it)
+#  30  unknown
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BASE_GATE="$REPO_ROOT/scripts/check-runtime-deploy-gate.sh"
 EVAL_PY="$REPO_ROOT/scripts/runtime_profile_deploy_gate_eval.py"
+LEGACY_GATE="$REPO_ROOT/scripts/check-runtime-deploy-gate.sh"
 BASE_URL="${SETUPHELFER_VERSION_URL:-http://127.0.0.1:8000}"
+SERVICE="${SETUPHELFER_BACKEND_SERVICE:-setuphelfer-backend.service}"
+WS_VER="${BACKEND_GATE_WORKSPACE_VERSION_JSON:-$REPO_ROOT/config/version.json}"
 
 log() { printf '%s\n' "$*" >&2; }
 
-if [[ ! -x "$BASE_GATE" ]]; then
-  log "check-runtime-profile-deploy-gate: missing $BASE_GATE"
+if ! command -v curl >/dev/null 2>&1; then
+  log "check-runtime-profile-deploy-gate: curl missing"
+  exit 30
+fi
+if ! command -v python3 >/dev/null 2>&1; then
+  log "check-runtime-profile-deploy-gate: python3 missing"
+  exit 30
+fi
+if [[ ! -f "$EVAL_PY" ]]; then
+  log "check-runtime-profile-deploy-gate: missing $EVAL_PY"
   exit 30
 fi
 
-"$BASE_GATE" || ec=$?
-ec=${ec:-0}
-if [[ "$ec" -ne 0 ]]; then
-  log "check-runtime-profile-deploy-gate: base gate failed exit=$ec"
-  exit "$ec"
+if command -v systemctl >/dev/null 2>&1; then
+  if ! systemctl is-active --quiet "$SERVICE" 2>/dev/null; then
+    log "check-runtime-profile-deploy-gate: service $SERVICE not active"
+    exit 10
+  fi
 fi
 
 tmp_api="$(mktemp)"
 tmp_oa="$(mktemp)"
 trap 'rm -f "$tmp_api" "$tmp_oa"' EXIT
 
-curl -fsS "${BASE_URL}/api/version" -o "$tmp_api" 2>/dev/null || {
-  log "check-runtime-profile-deploy-gate: /api/version unreachable"
-  exit 11
-}
+http_code="$(curl -sS -o "$tmp_api" -w '%{http_code}' --connect-timeout 3 --max-time 12 "${BASE_URL}/api/version" 2>/dev/null || echo 000)"
+if [[ "$http_code" != "200" ]]; then
+  log "check-runtime-profile-deploy-gate: /api/version HTTP $http_code"
+  exit 24
+fi
 
-curl -fsS "${BASE_URL}/openapi.json" -o "$tmp_oa" 2>/dev/null || true
+oa_code="$(curl -sS -o "$tmp_oa" -w '%{http_code}' --connect-timeout 3 --max-time 15 "${BASE_URL}/openapi.json" 2>/dev/null || echo 000)"
+if [[ "$oa_code" != "200" ]]; then
+  log "check-runtime-profile-deploy-gate: /openapi.json HTTP $oa_code"
+  exit 25
+fi
 
 bind="${SETUPHELFER_BIND_ADDRESS:-127.0.0.1}"
+if command -v ss >/dev/null 2>&1; then
+  if ss -ltn 2>/dev/null | grep -qE '0\.0\.0\.0:8000|\[::\]:8000'; then
+    bind="0.0.0.0"
+  fi
+fi
+
 set +e
-python3 "$EVAL_PY" --api-version-file "$tmp_api" --openapi-file "$tmp_oa" --bind-address "$bind"
+python3 "$EVAL_PY" \
+  --api-version-file "$tmp_api" \
+  --openapi-file "$tmp_oa" \
+  --base-url "$BASE_URL" \
+  --bind-address "$bind" \
+  --workspace-version-file "$WS_VER"
 pec=$?
 set -e
 
@@ -54,5 +88,15 @@ if [[ "$pec" -ne 0 ]]; then
   exit "$pec"
 fi
 
-log "check-runtime-profile-deploy-gate: OK (base + profile)"
+if [[ -x "$LEGACY_GATE" ]] && [[ "${RUNTIME_PROFILE_GATE_RUN_LEGACY_INFO:-1}" == "1" ]]; then
+  set +e
+  "$LEGACY_GATE" >/dev/null 2>&1
+  legacy_ec=$?
+  set -e
+  if [[ "$legacy_ec" -ne 0 ]]; then
+    log "check-runtime-profile-deploy-gate: legacy_gate_non_profile_aware exit=$legacy_ec (informational only)"
+  fi
+fi
+
+log "check-runtime-profile-deploy-gate: OK (profile-aware, dev-dashboard independent)"
 exit 0

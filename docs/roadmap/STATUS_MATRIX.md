@@ -91,7 +91,9 @@
 | **Install Profiles** | **Grün** | `backend/core/install_profile.py`; Default `release`; 5 Profile | `INSTALL_PROFILES_AND_DEPLOY_SCOPES.md` |
 | **Profile-aware Manifests** | **Grün** | `deploy/manifests/*.json`; Generator `--profile`; Drift V2 im Dashboard | `PROFILE_DEPLOY_DRIFT_V2_RESULT.md` |
 | **Router Profile Gates** | **Grün** | Bedingte Router + Middleware; pytest 19/19 | `PROFILE_ROUTER_GATE_RESULT.md` |
-| **Runtime Profile Deploy Gate** | **Gelb** | Skript + Shell OK; Live `/opt` pending (sudo Deploy) | `PROFILE_LIVE_RELEASE_ACCEPTANCE_RESULT.md` |
+| **Runtime Profile Deploy Gate** | **Gelb** | Eigenständig vom Legacy-Gate; Release-Live Exit 19 bis dev-server Redeploy | `RUNTIME_PROFILE_GATE_FIX_RESULT.md` |
+| **Legacy Runtime Gate** | **Deprecated** | `LEGACY_GATE_NON_PROFILE_AWARE` — erfordert dev-dashboard 200 | `check-runtime-deploy-gate.sh` |
+| **Frontend Bundle Hygiene** | **Gelb** | UI guarded; i18n-Strings im Bundle | `FRONTEND_PROFILE_BUNDLE_HYGIENE_NOTE.md` |
 | **Profile-aware Deploy Drift** | **Grün** | `enrich_deploy_drift_profile_aware`; Gate Exit 16 entkoppelt bei `profile_manifest_match` | `PROFILE_DEPLOY_DRIFT_V2_RESULT.md` |
 | **Frontend Profile Marker** | **Gelb** | UI-Gates release; i18n-Strings noch im Haupt-Bundle | `FRONTEND_PROFILE_BUILD_RESULT.md` |
 | **Release Dev Route Blocker** | **Grün** | Release blockiert Fleet/Dev-Diag/Rescue-Remote/Dev-Dashboard | `test_install_profile_gate_v1.py` |

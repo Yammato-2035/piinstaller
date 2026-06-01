@@ -4075,6 +4075,7 @@ async def get_version():
         body = built["body"]
         return JSONResponse(status_code=int(built.get("status_code") or 503), content=body)
     body = dict(built["body"])
+    body["runtime_install_location"] = get_install_profile()
     body.update(profile_state_to_api_dict(state))
     route_paths = [
         getattr(r, "path", "")

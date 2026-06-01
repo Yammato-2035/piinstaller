@@ -2,21 +2,21 @@
 
 **Datum:** 2026-05-31
 
-## Durchführung
+## Status
 
-| Schritt | Ergebnis |
-|---------|----------|
-| `SETUPHELFER_INSTALL_PROFILE=local_lab` auf `/opt` | **nicht gesetzt** |
-| Deploy + Restart | **blocked** — sudo erforderlich |
+**Nicht umgeschaltet** in diesem Lauf (Release-Profil aktiv auf Live-Runtime).
 
-## Erwartung nach Operator-Deploy
+## Operator-Schritte
 
-- OpenAPI enthält `/api/fleet`, `/api/dev-diagnostics`, `/api/rescue-remote` (read-only)
-- `public_exposure_allowed=false`
-- Bind `127.0.0.1:8000` (kein `0.0.0.0` ohne Operator-Confirm)
-- `check-runtime-profile-deploy-gate.sh` Exit **0** oder **yellow** (Frontend-Mismatch)
+```bash
+sudo cp packaging/systemd/dropins/92-install-profile-local-lab.conf.example \
+  /etc/systemd/system/setuphelfer-backend.service.d/install-profile.conf
+sudo systemctl daemon-reload && sudo systemctl restart setuphelfer-backend
+./scripts/check-runtime-profile-deploy-gate.sh
+```
 
-## Statische Abnahme
+## Erwartung
 
-- Local-Lab registriert Dev-Router (Unit): **OK**
-- Shell-Gate Local-Lab + erforderliche Pfade: **OK**
+- `/api/fleet`, `/api/dev-diagnostics`, `/api/dev-dashboard` HTTP **2xx**
+- Keine Shell-/Write-Routen unter `/api/rescue-remote`
+- Profil-Gate Exit **0**

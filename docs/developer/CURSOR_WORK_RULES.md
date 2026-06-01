@@ -40,7 +40,8 @@ Vor **jedem** produktiven Testlauf, **jedem** Prompt oder Operator-Schritt, der 
 3. **Local-Lab** darf Dev-Routen nur **intern** (127.0.0.1 oder dokumentiert freigegebenes LAN); **`public_exposure_allowed=false`** bleibt Standard.
 4. **Public Exposure** ist ein **eigener Blocker** (Bind `0.0.0.0` ohne Freigabe → Gate Exit **21**).
 5. **Deploy Drift** profilbezogen bewerten (`deploy/manifests/<profile>.manifest.json`), **nicht** gegen das gesamte Repo.
-6. Optional: **`./scripts/check-runtime-profile-deploy-gate.sh`** nach Basis-Gate.
+6. **Profil-Gate (empfohlen für Release/Lab):** **`./scripts/check-runtime-profile-deploy-gate.sh`** — **unabhängig** vom Legacy-Gate; **kein** `/api/dev-dashboard/status` nötig (404 im Release ist korrekt).
+7. **Legacy-Gate:** **`./scripts/check-runtime-deploy-gate.sh`** ist **nicht profilbewusst** (`LEGACY_GATE_NON_PROFILE_AWARE`) und scheitert im Release an dev-dashboard 404 — das ist **kein** Profil-Gate-Fehler.
 7. **Deploy Drift V2:** `deploy_drift.profile_aware` muss `true` sein; `forbidden_paths_present` / `forbidden_api_paths_visible` bei Release = **rot**; Legacy-`manifest_match` allein blockiert nicht, wenn `profile_manifest_match=true`.
 
 Doku: **`docs/architecture/INSTALL_PROFILES_AND_DEPLOY_SCOPES.md`** · Evidence: **`docs/evidence/deploy-profile/PROFILE_DEPLOY_DRIFT_V2_RESULT.md`**

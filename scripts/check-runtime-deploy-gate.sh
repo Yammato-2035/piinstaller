@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Runtime + Deploy Drift Gate (nur lesend). Kein apt, kein Restart, kein Backup.
 #
+# LEGACY_GATE_NON_PROFILE_AWARE: erfordert /api/dev-dashboard/status (HTTP 200).
+# Im Release-Profil ist dev-dashboard 404 korrekt — nutze stattdessen:
+#   ./scripts/check-runtime-profile-deploy-gate.sh
+#
 # Exit-Codes:
 #   0  OK
 #  10  setuphelfer-backend.service nicht aktiv
@@ -169,7 +173,13 @@ for ((attempt = 1; attempt <= API_RETRIES; attempt++)); do
   fi
 done
 if [[ "$http_dd" != "200" ]]; then
-  log "check-runtime-deploy-gate: /api/dev-dashboard/status HTTP $http_dd (oder nicht erreichbar)"
+  log "check-runtime-deploy-gate: LEGACY_GATE_NON_PROFILE_AWARE — /api/dev-dashboard/status HTTP $http_dd"
+  if [[ "$http_dd" == "404" ]] && command -v python3 >/dev/null 2>&1; then
+  prof="$(python3 -c "import json;print(json.load(open('$tmp_api')).get('install_profile',''))" 2>/dev/null || true)"
+  if [[ "$prof" == "release" || "$prof" == "production" ]]; then
+    log "check-runtime-deploy-gate: dev-dashboard 404 erwartet im Profil $prof — Profil-Gate: check-runtime-profile-deploy-gate.sh"
+  fi
+  fi
   exit 20
 fi
 

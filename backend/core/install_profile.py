@@ -32,6 +32,7 @@ REQUIRED_API_PREFIXES_LOCAL_LAB = (
 class InstallProfileState:
     install_profile: str
     app_edition: str
+    raw_install_profile: str | None
     dev_control_enabled: bool
     dev_diagnostics_enabled: bool
     fleet_sessions_enabled: bool
@@ -49,14 +50,20 @@ def _env_truthy(key: str) -> bool:
     return (os.environ.get(key) or "").strip().lower() in ("1", "true", "yes", "on")
 
 
-def _resolve_profile_name() -> tuple[str, str]:
+def _resolve_profile_name() -> tuple[str, str, str | None]:
+    """Return (profile, source, raw_env_value)."""
     raw = (os.environ.get("SETUPHELFER_INSTALL_PROFILE") or "").strip().lower()
     source = "env"
+    raw_value: str | None = raw or None
+    if raw == "opt":
+        return "release", "legacy_profile_opt_mapped_to_release", raw
     if raw in VALID_PROFILES:
-        return raw, source
+        return raw, source, raw_value
+    if raw:
+        return "release", "invalid_profile_fallback_release", raw
     if _env_truthy("PI_INSTALLER_DEV"):
-        return "developer", "pi_installer_dev"
-    return "release", "default"
+        return "developer", "pi_installer_dev", None
+    return "release", "default", None
 
 
 def _capabilities_for_profile(name: str) -> dict[str, bool]:
@@ -114,15 +121,16 @@ def _capabilities_for_profile(name: str) -> dict[str, bool]:
 
 
 def get_install_profile_state() -> InstallProfileState:
-    name, source = _resolve_profile_name()
+    name, source, raw_value = _resolve_profile_name()
     caps = _capabilities_for_profile(name)
     errors: list[str] = []
     warnings: list[str] = []
 
-    if name not in VALID_PROFILES:
-        errors.append(f"invalid_install_profile:{name}")
-        name = "release"
-        caps = _capabilities_for_profile("release")
+    if source == "legacy_profile_opt_mapped_to_release":
+        warnings.append("legacy_profile_opt_mapped_to_release")
+    if source == "invalid_profile_fallback_release" and raw_value:
+        errors.append(f"invalid_install_profile:{raw_value}")
+        warnings.append("invalid_install_profile_fallback_release")
 
     caps = dict(caps)
     env_overrides = (
@@ -134,7 +142,10 @@ def get_install_profile_state() -> InstallProfileState:
     )
     for flag, env_key in env_overrides:
         if _env_truthy(env_key):
-            caps[flag] = True
+            if name in ("release", "production"):
+                warnings.append(f"ignored_dev_capability_override_in_release:{env_key}")
+            else:
+                caps[flag] = True
 
     if _env_truthy("SETUPHELFER_PUBLIC_EXPOSURE_ALLOWED"):
         if not _env_truthy("SETUPHELFER_OPERATOR_CONFIRM_PUBLIC_BIND"):
@@ -155,6 +166,7 @@ def get_install_profile_state() -> InstallProfileState:
     return InstallProfileState(
         install_profile=name,
         app_edition=edition,
+        raw_install_profile=raw_value,
         manifest_profile=name,
         profile_source=source,
         profile_errors=tuple(errors),
@@ -197,23 +209,51 @@ def should_register_dev_server_router() -> bool:
     return get_install_profile_state().dev_server_enabled
 
 
-def profile_gate_audit_route_paths(route_paths: list[str]) -> dict[str, Any]:
-    """Audit registered FastAPI paths vs active profile."""
+def _capability_enabled_for_prefix(prefix: str, state: InstallProfileState) -> bool:
+    if prefix.startswith("/api/fleet"):
+        return state.fleet_sessions_enabled
+    if prefix.startswith("/api/dev-diagnostics"):
+        return state.dev_diagnostics_enabled
+    if prefix.startswith("/api/rescue-remote"):
+        return state.rescue_remote_enabled
+    if prefix.startswith("/api/dev-dashboard"):
+        return state.dev_control_enabled
+    if prefix.startswith("/api/dev-server"):
+        return state.dev_server_enabled
+    return False
+
+
+def profile_gate_audit_route_paths(
+    route_paths: list[str],
+    *,
+    http_accessible_prefixes: list[str] | None = None,
+) -> dict[str, Any]:
+    """Audit API visibility vs active profile (capabilities / HTTP, not OpenAPI alone)."""
     state = get_install_profile_state()
     errors: list[str] = []
     warnings: list[str] = []
     paths = sorted({p for p in route_paths if p})
+    accessible = sorted({p for p in (http_accessible_prefixes or []) if p})
 
-    def _any(prefix: str) -> bool:
+    def _any_registered(prefix: str) -> bool:
         return any(p == prefix or p.startswith(prefix + "/") for p in paths)
+
+    def _any_accessible(prefix: str) -> bool:
+        return any(p == prefix or p.startswith(prefix + "/") for p in accessible)
 
     if state.install_profile in ("release", "production"):
         for prefix in FORBIDDEN_API_PREFIXES_RELEASE:
-            if _any(prefix):
+            if http_accessible_prefixes is not None:
+                if _any_accessible(prefix):
+                    errors.append(f"release_profile_dev_routes_accessible:{prefix}")
+            elif _capability_enabled_for_prefix(prefix, state) and _any_registered(prefix):
                 errors.append(f"release_profile_dev_routes_visible:{prefix}")
     if state.install_profile == "local_lab":
         for prefix in REQUIRED_API_PREFIXES_LOCAL_LAB:
-            if not _any(prefix):
+            if http_accessible_prefixes is not None:
+                if not _any_accessible(prefix):
+                    warnings.append(f"required_api_path_missing:{prefix}")
+            elif not _any_registered(prefix):
                 warnings.append(f"required_api_path_missing:{prefix}")
 
     status = "green"
@@ -272,6 +312,7 @@ def profile_state_to_api_dict(state: InstallProfileState | None = None) -> dict[
     st = state or get_install_profile_state()
     return {
         "install_profile": st.install_profile,
+        "raw_install_profile": st.raw_install_profile,
         "app_edition": st.app_edition,
         "manifest_profile": st.manifest_profile,
         "dev_control_enabled": st.dev_control_enabled,
