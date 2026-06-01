@@ -56,8 +56,11 @@
 | **Fleet Session API Smoke** | **Grün** | create/heartbeat/finish/get/list/summary | `FLEET_SESSION_PHASE1_LOCAL_ACCEPTANCE_RESULT.md` |
 | **Fleet Session QEMU Wrapper JSON Payload** | **Grün** | ENV+Heredoc Payloads; Shell-Test + API smoke OK | `FLEET_SESSION_QEMU_WRAPPER_JSON_FIX_RESULT.md` |
 | **Fleet Session UI (Cockpit)** | **Gelb** | Source OK; dist ohne Lab Sessions | `FLEET_SESSION_PHASE1_LOCAL_ACCEPTANCE_RESULT.md` |
-| **QEMU Smoke with Session** | **Pending** | Retry nach Wrapper-Fix (`qemu_smoke_next_step_allowed=true`) | `RESCUE_QEMU_SMOKE_AUTOPILOT_RESULT.md` |
-| **Proxy Bind Exposure (QEMU lab)** | **Gelb** | `0.0.0.0` nur via QEMU-Smoke + Operator-Confirm; Default `127.0.0.1` | `FLEET_SESSION_QEMU_WRAPPER_JSON_FIX_RESULT.md` |
+| **QEMU Developer Smoke 081222** | **Rot** | Klasse `serial_empty_boot_unknown` + `qemu_wrapper_ok_guest_no_report`; Exit 124, Serial 0 B, kein Ingest; **kein QEMU-Retry** bis Serial/Boot sichtbar | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md`, `FLEET_SESSION_QEMU_RUN_20260601_081222_ANALYSIS.md` |
+| **QEMU Smoke with Session** | **Rot** | Wrapper JSON grün; Gast-Report + Serial offen — `qemu_smoke_next_step_allowed=false` bis Folgefix | oben |
+| **Rescue Guest Report Ingest (QEMU lab)** | **Rot** | Lauf `081222`: `reports_last_24h` unverändert, kein neuer Knoten | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
+| **Serial Visibility (Rescue QEMU)** | **Rot** | `qemu-serial.log` 0 B trotz `console=ttyS0` in ISO-Strings | oben |
+| **Proxy Bind Exposure (QEMU lab)** | **Gelb** | `0.0.0.0` nur via QEMU-Smoke + Operator-Confirm; Default `127.0.0.1`; lab-only NDA | `FLEET_SESSION_QEMU_WRAPPER_JSON_FIX_RESULT.md` |
 | **Public Push (Fleet/Dev-Control)** | **Rot/Blocked** | `blocked_public_repository_ndA_risk` | — |
 | **Live Boot (Developer ISO)** | Gelb | QEMU autopilot implemented; ISO rebuild blocked; no manual guest typing after rebuild | `RESCUE_QEMU_SMOKE_AUTOPILOT_RESULT.md` |
 | **USB Write** | Rot/Blocked | `usb_write.allowed=false` | Rescue safety gates |
