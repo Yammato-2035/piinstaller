@@ -60,11 +60,14 @@
 | **Dev Diagnostic Export Live API** | **Grün** | Live auf `127.0.0.1:8000` (Export `081222`) | `DEV_DIAGNOSTIC_EXPORT_LIVE_ACCEPTANCE_RESULT.md` |
 | **Dev Diagnostic Export UI** | **Gelb** | Copy-Buttons in Source/dist; Browser optional | `DEV_DIAGNOSTIC_EXPORT_DE.md` |
 | **QEMU Smoke 081222 Export** | **Grün** | `serial_empty_boot_unknown`, serial=0, report_new=false | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
-| **Rescue Developer Serial Config** | **Grün** | Prepare `developer-qemu` Cmdline gehärtet; **ISO rebuild pending** | `RESCUE_ISO_SERIAL_BOOT_VISIBILITY_FIX_RESULT.md` |
+| **Rescue Developer Serial Config** | **Grün** | Prepare `developer-qemu` materialisiert (tty0+ttyS0, kein quiet/splash) | `RESCUE_ISO_SERIAL_BOOT_VISIBILITY_FIX_RESULT.md` |
+| **Rescue Developer ISO Rebuild** | **Rot** | Build Exit 30 `blocked_requires_operator_sudo_policy`; Operator sudo clean+build nötig | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |
+| **Static ISO Serial Validation** | **Rot** | Altes ISO noch `quiet splash`; neues Image fehlt | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
+| **Serial Visibility Runtime** | **Pending** | `pending_qemu` nach ISO-Rebuild | oben |
 | **Autopilot Serial Markers** | **Grün** | Boot/Autopilot/Agent-Marker im `developer-qemu`-Profil | `RESCUE_DEVELOPER_SERIAL_VISIBILITY_CONTRACT.md` |
 | **Fleet Finish Telemetry** | **Grün** | Finish-Payload: exit_code, serial.path, kvm/acceleration | `FLEET_SESSION_QEMU_FINISH_TELEMETRY_FIX_RESULT.md` |
 | **Serial Visibility (Rescue QEMU)** | **Gelb** | `fix_prepared` — Config+Marker; **ISO noch stale** (`quiet splash`) | `RESCUE_ISO_SERIAL_BOOT_VISIBILITY_IST_ANALYSIS.md` |
-| **QEMU Smoke Retry** | **Pending** | `pending_after_iso_rebuild` — kein Retry in Serial-Fix-Auftrag | `RESCUE_ISO_SERIAL_BOOT_VISIBILITY_FIX_RESULT.md` |
+| **QEMU Smoke Retry** | **Blocked** | `blocked_until_operator_iso_rebuild` — Tree grün, ISO fehlt | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |
 | **Public Dev-Control Exposure** | **Grün** | Keine öffentlichen Dev-Control-Hosts in Produkt-Routen; lokal `:8000` | `DEV_DIAGNOSTIC_EXPORT_IST_ANALYSIS.md` |
 | **QEMU Developer Smoke 081222** | **Rot** | Klasse `serial_empty_boot_unknown` + `qemu_wrapper_ok_guest_no_report`; Exit 124, Serial 0 B, kein Ingest; **kein QEMU-Retry** bis Serial/Boot sichtbar | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md`, `FLEET_SESSION_QEMU_RUN_20260601_081222_ANALYSIS.md` |
 | **QEMU Smoke with Session** | **Rot** | Wrapper JSON grün; Gast-Report + Serial offen — `qemu_smoke_next_step_allowed=false` bis Folgefix | oben |
