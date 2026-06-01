@@ -607,11 +607,25 @@ def detect_stale_sessions(*, now: datetime | None = None, repo_root: Path | None
 
 
 def fleet_sessions_enabled() -> bool:
+    try:
+        from core.install_profile import get_install_profile_state
+
+        return get_install_profile_state().fleet_sessions_enabled
+    except Exception:
+        pass
     env = os.environ.get("SETUPHELFER_FLEET_SESSIONS_ENABLED", "").strip().lower()
     if env in ("0", "false", "no"):
         return False
     if env in ("1", "true", "yes"):
         return True
+    try:
+        from devserver.config import load_dev_server_config
+
+        cfg = load_dev_server_config()
+        if cfg.enabled and cfg.mode == "local_lab":
+            return True
+    except Exception:
+        pass
     try:
         from core.install_paths import is_dev_mode
 

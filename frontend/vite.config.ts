@@ -41,12 +41,21 @@ const viteCacheDir =
   process.env.PI_INSTALLER_VITE_CACHE_DIR ||
   path.resolve(__dirname, 'node_modules/.vite')
 
+const frontendBuildProfile =
+  process.env.SETUPHELFER_FRONTEND_BUILD_PROFILE ||
+  process.env.VITE_SETUPHELFER_FRONTEND_BUILD_PROFILE ||
+  'release'
+const devControlUiEnabled =
+  frontendBuildProfile === 'developer' || frontendBuildProfile === 'local_lab'
+
 export default defineConfig({
   cacheDir: viteCacheDir,
   base: isTauriProductionBuild ? './' : '/',
   plugins: [react()],
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version || '0.0.0'),
+    __SETUPHELFER_FRONTEND_BUILD_PROFILE__: JSON.stringify(frontendBuildProfile),
+    __SETUPHELFER_DEV_CONTROL_UI_ENABLED__: devControlUiEnabled,
   },
   resolve: {
     alias: isTauriEnv ? {} : { 'tauri-plugin-screenshots-api': path.resolve(__dirname, 'src/lib/tauri-screenshots-stub.ts') },

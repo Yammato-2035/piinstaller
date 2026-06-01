@@ -23,6 +23,7 @@ from core.deploy_manifest import (  # noqa: E402
     build_manifest_data,
     workspace_manifest_path,
 )
+from core.profile_deploy_manifest import build_profile_manifest_data, manifest_sha256  # noqa: E402
 
 
 def main() -> int:
@@ -41,6 +42,12 @@ def main() -> int:
         default=None,
         help=f"Output JSON (default: <repo>/build/deploy/{MANIFEST_BASENAME})",
     )
+    parser.add_argument(
+        "--profile",
+        type=str,
+        default="release",
+        help="Install profile (release, developer, local_lab, rescue_lab, production)",
+    )
     args = parser.parse_args()
     repo = args.repo_root
     if repo is None:
@@ -53,14 +60,21 @@ def main() -> int:
     out = args.output
     if out is None:
         out = workspace_manifest_path(repo)
+    profile = (args.profile or "release").strip().lower()
     try:
         data = build_manifest_data(repo)
+        profile_meta = build_profile_manifest_data(profile, repo)
+        data["install_profile"] = profile
+        data["manifest_profile"] = profile
+        data["profile_manifest"] = profile_meta
     except DeployManifestError as exc:
         print(f"deploy_manifest_error: {exc}", file=sys.stderr)
         return 1
     try:
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        payload = json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+        out.write_text(payload, encoding="utf-8")
+        data["manifest_sha256"] = manifest_sha256(out)
     except OSError as exc:
         print(f"deploy_manifest_error: write_failed:{out}:{exc}", file=sys.stderr)
         return 1

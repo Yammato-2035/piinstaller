@@ -1,0 +1,30 @@
+{
+  "profile": "production",
+  "required_paths": [
+    "backend/app.py",
+    "config/version.json"
+  ],
+  "forbidden_runtime_paths": [
+    "backend/fleet",
+    "backend/dev_diagnostics",
+    "backend/rescue_remote"
+  ],
+  "required_api_paths": [],
+  "forbidden_api_paths": [
+    "/api/fleet",
+    "/api/dev-diagnostics",
+    "/api/rescue-remote",
+    "/api/dev-dashboard",
+    "/api/dev-server"
+  ],
+  "allowed_capabilities": [],
+  "forbidden_capabilities": [
+    "dev_control",
+    "dev_diagnostics",
+    "fleet_sessions",
+    "rescue_remote",
+    "remote_shell",
+    "write_runbooks"
+  ],
+  "public_exposure_allowed": false
+}

@@ -45,6 +45,12 @@ class DevDiagnosticExportError(Exception):
 
 
 def dev_diagnostics_enabled() -> bool:
+    try:
+        from core.install_profile import get_install_profile_state
+
+        return get_install_profile_state().dev_diagnostics_enabled
+    except Exception:
+        pass
     env = os.environ.get("SETUPHELFER_DEV_DIAGNOSTICS_ENABLED", "").strip().lower()
     if env in {"1", "true", "yes", "on"}:
         return True

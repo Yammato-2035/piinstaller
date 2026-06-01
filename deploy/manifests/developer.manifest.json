@@ -1,0 +1,28 @@
+{
+  "profile": "developer",
+  "required_paths": [
+    "backend/fleet",
+    "backend/dev_diagnostics"
+  ],
+  "forbidden_runtime_paths": [],
+  "required_api_paths": [
+    "/api/fleet",
+    "/api/dev-diagnostics",
+    "/api/dev-dashboard"
+  ],
+  "forbidden_api_paths": [
+    "/api/rescue-remote"
+  ],
+  "allowed_capabilities": [
+    "dev_control",
+    "dev_diagnostics",
+    "fleet_sessions"
+  ],
+  "forbidden_capabilities": [
+    "rescue_remote",
+    "remote_shell",
+    "write_runbooks",
+    "public_exposure"
+  ],
+  "public_exposure_allowed": false
+}

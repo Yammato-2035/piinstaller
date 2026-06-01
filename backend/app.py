@@ -249,6 +249,23 @@ async def debug_request_id_middleware(request, call_next):
         reset_request_id(token)
 
 
+@app.middleware("http")
+async def install_profile_route_gate_middleware(request, call_next):
+    """Block Dev/Lab API paths when install profile capability is off (e.g. release)."""
+    from core.install_profile import path_allowed_for_active_profile
+
+    if not path_allowed_for_active_profile(request.url.path):
+        return JSONResponse(
+            status_code=404,
+            content={
+                "status": "error",
+                "code": "PROFILE_ROUTE_BLOCKED",
+                "path": request.url.path,
+            },
+        )
+    return await call_next(request)
+
+
 @app.get("/api/system/status")
 async def system_status():
     """
@@ -3102,36 +3119,53 @@ except Exception:
     logger.exception("Deploy-Plan-Router konnte nicht registriert werden; /api/deploy/plan fehlt dann (404).")
 
 try:
-    from devserver.routers import router as dev_server_router
-
-    app.include_router(dev_server_router)
-except Exception:
-    logger.exception("Dev-Server-Router konnte nicht registriert werden; /api/dev-server/* fehlt dann (404).")
-
-try:
-    from fleet.routers import router as fleet_sessions_router
-
-    app.include_router(fleet_sessions_router)
-except Exception:
-    logger.exception("Fleet-Session-Router konnte nicht registriert werden; /api/fleet/sessions fehlt dann (404).")
-
-try:
-    from dev_diagnostics.routers import router as dev_diagnostics_router
-
-    app.include_router(dev_diagnostics_router)
-except Exception:
-    logger.exception(
-        "Dev-Diagnostics-Router konnte nicht registriert werden; /api/dev-diagnostics/* fehlt dann (404)."
+    from core.install_profile import (
+        should_register_dev_server_router,
+        should_register_dev_diagnostics_router,
+        should_register_fleet_router,
+        should_register_rescue_remote_router,
     )
-
-try:
-    from rescue_remote.routers import router as rescue_remote_router
-
-    app.include_router(rescue_remote_router)
 except Exception:
-    logger.exception(
-        "Rescue-Remote-Router konnte nicht registriert werden; /api/rescue-remote/* fehlt dann (404)."
-    )
+    should_register_dev_server_router = lambda: False  # type: ignore[misc, assignment]
+    should_register_dev_diagnostics_router = lambda: False  # type: ignore[misc, assignment]
+    should_register_fleet_router = lambda: False  # type: ignore[misc, assignment]
+    should_register_rescue_remote_router = lambda: False  # type: ignore[misc, assignment]
+
+if should_register_dev_server_router():
+    try:
+        from devserver.routers import router as dev_server_router
+
+        app.include_router(dev_server_router)
+    except Exception:
+        logger.exception("Dev-Server-Router konnte nicht registriert werden; /api/dev-server/* fehlt dann (404).")
+
+if should_register_fleet_router():
+    try:
+        from fleet.routers import router as fleet_sessions_router
+
+        app.include_router(fleet_sessions_router)
+    except Exception:
+        logger.exception("Fleet-Session-Router konnte nicht registriert werden; /api/fleet/sessions fehlt dann (404).")
+
+if should_register_dev_diagnostics_router():
+    try:
+        from dev_diagnostics.routers import router as dev_diagnostics_router
+
+        app.include_router(dev_diagnostics_router)
+    except Exception:
+        logger.exception(
+            "Dev-Diagnostics-Router konnte nicht registriert werden; /api/dev-diagnostics/* fehlt dann (404)."
+        )
+
+if should_register_rescue_remote_router():
+    try:
+        from rescue_remote.routers import router as rescue_remote_router
+
+        app.include_router(rescue_remote_router)
+    except Exception:
+        logger.exception(
+            "Rescue-Remote-Router konnte nicht registriert werden; /api/rescue-remote/* fehlt dann (404)."
+        )
 
 def _is_demo_mode(request: Request) -> bool:
     """Prüft ob X-Demo-Mode Header gesetzt ist (für Screenshot-Dokumentation ohne echte Daten)."""
@@ -4022,9 +4056,16 @@ async def get_system_network(request: Request):
 @app.get("/api/version")
 async def get_version():
     """Gibt zentrale Projektversion, Stage, Track und Laufzeit-Metadaten zurück (Versions-Gate)."""
+    from core.install_profile import (
+        get_install_profile_state,
+        profile_gate_audit_route_paths,
+        profile_state_to_api_dict,
+    )
     from core.liveness import build_version_api_payload
+    from core.profile_deploy_manifest import manifest_sha256, profile_manifest_path
 
     runtime_path = str(get_backend_runtime_dir().resolve())
+    state = get_install_profile_state()
     built = build_version_api_payload(
         runtime_path=runtime_path,
         install_profile=get_install_profile(),
@@ -4033,7 +4074,21 @@ async def get_version():
     if built.get("_error"):
         body = built["body"]
         return JSONResponse(status_code=int(built.get("status_code") or 503), content=body)
-    return built["body"]
+    body = dict(built["body"])
+    body.update(profile_state_to_api_dict(state))
+    route_paths = [
+        getattr(r, "path", "")
+        for r in app.routes
+        if getattr(r, "path", None)
+    ]
+    body.update(profile_gate_audit_route_paths(route_paths))
+    mpath = profile_manifest_path(state.manifest_profile)
+    body["runtime_manifest_sha256"] = manifest_sha256(mpath)
+    body["frontend_build_profile"] = (
+        os.environ.get("SETUPHELFER_FRONTEND_BUILD_PROFILE") or state.install_profile
+    )
+    body["dev_control_enabled"] = state.dev_control_enabled
+    return body
 
 
 @app.get("/api/dev-dashboard/status")

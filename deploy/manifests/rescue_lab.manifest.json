@@ -1,0 +1,27 @@
+{
+  "profile": "rescue_lab",
+  "required_paths": [
+    "backend/rescue_remote",
+    "scripts/rescue-live"
+  ],
+  "forbidden_runtime_paths": [],
+  "required_api_paths": [
+    "/api/rescue-remote",
+    "/api/fleet",
+    "/api/dev-diagnostics"
+  ],
+  "forbidden_api_paths": [
+    "/api/dev-dashboard"
+  ],
+  "allowed_capabilities": [
+    "rescue_remote_readonly",
+    "fleet_sessions",
+    "dev_diagnostics"
+  ],
+  "forbidden_capabilities": [
+    "dev_control",
+    "remote_shell",
+    "write_runbooks"
+  ],
+  "public_exposure_allowed": false
+}

@@ -1,0 +1,16 @@
+{
+  "profile": "common",
+  "include": [
+    "backend/app.py",
+    "backend/core/versioning.py",
+    "backend/core/install_paths.py",
+    "config/version.json"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "build/**",
+    "docs/evidence/runtime-results/**",
+    ".venv/**"
+  ],
+  "public_exposure_allowed": false
+}

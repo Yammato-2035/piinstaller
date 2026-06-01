@@ -99,6 +99,13 @@ class RescueRemoteError(Exception):
 
 
 def rescue_remote_enabled() -> bool:
+    try:
+        from core.install_profile import get_install_profile_state
+
+        st = get_install_profile_state()
+        return st.rescue_remote_enabled and not st.write_runbooks_enabled
+    except Exception:
+        pass
     env = os.environ.get("SETUPHELFER_RESCUE_REMOTE_ENABLED", "").strip().lower()
     if env in {"1", "true", "yes", "on"}:
         return True

@@ -1,0 +1,30 @@
+{
+  "profile": "local_lab",
+  "required_paths": [
+    "backend/fleet",
+    "backend/dev_diagnostics",
+    "backend/rescue_remote"
+  ],
+  "forbidden_runtime_paths": [],
+  "required_api_paths": [
+    "/api/fleet",
+    "/api/dev-diagnostics",
+    "/api/dev-dashboard",
+    "/api/rescue-remote",
+    "/api/dev-server"
+  ],
+  "forbidden_api_paths": [],
+  "allowed_capabilities": [
+    "dev_control",
+    "dev_diagnostics",
+    "fleet_sessions",
+    "rescue_remote_readonly",
+    "dev_server"
+  ],
+  "forbidden_capabilities": [
+    "remote_shell",
+    "write_runbooks",
+    "public_exposure"
+  ],
+  "public_exposure_allowed": false
+}

@@ -33,6 +33,17 @@ Vor **jedem** produktiven Testlauf, **jedem** Prompt oder Operator-Schritt, der 
 
 **Hinweis:** **`scripts/check-backend-version-gate.sh`** prüft zusätzlich Produktivdateien unter `/opt` und strenge Payload-Regeln. **`scripts/check-runtime-deploy-gate.sh`** wertet danach **`deploy_drift`** über **`/api/dev-dashboard/status`** aus. **Empfohlen:** beide Skripte nacheinander ausführen, wenn das volle Gate gewünscht ist. CI ohne laufenden Dienst: nur **`RUNTIME_GATE_SKIP_DEPLOY_DRIFT=1`** setzen, wenn das **schriftlich** im Auftrag begründet ist.
 
+### Installationsprofil und Profil-Manifest (Pflicht vor Runtime-Tests)
+
+1. **`GET /api/version`**: `install_profile`, `manifest_profile`, `profile_gate_status` prüfen — muss zum Auftrag passen (`release` vs. `local_lab`).
+2. **Release** darf **keine** Dev-/Lab-Routen live haben (`/api/fleet`, `/api/dev-diagnostics`, `/api/rescue-remote`, `/api/dev-dashboard`, `/api/dev-server`).
+3. **Local-Lab** darf Dev-Routen nur **intern** (127.0.0.1 oder dokumentiert freigegebenes LAN); **`public_exposure_allowed=false`** bleibt Standard.
+4. **Public Exposure** ist ein **eigener Blocker** (Bind `0.0.0.0` ohne Freigabe → Gate Exit **21**).
+5. **Deploy Drift** profilbezogen bewerten (`deploy/manifests/<profile>.manifest.json`), **nicht** gegen das gesamte Repo.
+6. Optional: **`./scripts/check-runtime-profile-deploy-gate.sh`** nach Basis-Gate.
+
+Doku: **`docs/architecture/INSTALL_PROFILES_AND_DEPLOY_SCOPES.md`**
+
 ---
 
 ## Mandatory Dashboard, Diagnostics and Next-Prompt Closure Rule
