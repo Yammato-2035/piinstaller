@@ -65,15 +65,16 @@
 | **Rescue Developer ISO Rebuild after Bootloader Fix** | **Grün** | Operator-Build `LB_EXIT=0`; neue SHA `5c79e35c…` (vs. `be016f2a…`); ISOLINUX SERIAL im ISO | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_BUILD_RESULT.md` |
 | **Bootloader Serial Static Validation** | **Grün** | SERIAL/TIMEOUT/live- + tty0/ttyS0 im Tree und ISO; Marker gelb (Squashfs) | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_STATIC_VALIDATION.md` |
 | **Static ISO Serial Validation** | **Grün** | tty0+ttyS0+loglevel im ISO; Marker gelb (Squashfs), Tree grün | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
-| **Serial Visibility Runtime** | **Gelb** | `pending_qemu` — Smoke erst nach Post-`2e0216f` ISO-Rebuild | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_BUILD_RESULT.md` |
+| **Serial Visibility Runtime** | **Grün** | Smoke `202000`: serial **132412** B; ISOLINUX+Kernel+systemd sichtbar | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` |
+| **QEMU Bootloader Serial Smoke** | **Grün** | Ein Lauf; chardev+isa-serial; nicht mehr 0 Bytes | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` |
 | **Autopilot Serial Markers** | **Grün** | Boot/Autopilot/Agent-Marker im `developer-qemu`-Profil | `RESCUE_DEVELOPER_SERIAL_VISIBILITY_CONTRACT.md` |
 | **Fleet Finish Telemetry** | **Grün** | Finish-Payload: exit_code, serial.path, kvm/acceleration | `FLEET_SESSION_QEMU_FINISH_TELEMETRY_FIX_RESULT.md` |
 | **Serial Visibility (Rescue QEMU)** | **Gelb** | ISO-Cmdline neu; Runtime-Serial noch offen bis Smoke | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
 | **QEMU Serial Device Capture** | **Grün** | Wrapper: chardev+isa-serial Default, prepare_serial_log | `QEMU_SERIAL_CAPTURE_AND_BOOTLOADER_OUTPUT_FIX_RESULT.md` |
 | **Bootloader Serial Output** | **Grün** | ISOLINUX SERIAL/TIMEOUT/live- im ISO nach Operator-Rebuild | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_STATIC_VALIDATION.md` |
 | **QEMU Smoke Serial Retry** | **Rot** | Lauf `160824` vor Fix; nächster Smoke nach ISO-Rebuild | `QEMU_DEVELOPER_SMOKE_SERIAL_VISIBILITY_RETRY_RESULT.md` |
-| **QEMU Smoke Retry** | **Gelb** | `ready_for_qemu_serial_smoke` — Post-Bootloader-ISO `5c79e35c…` | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_BUILD_RESULT.md` |
-| **QEMU Smoke Retry (gesamt)** | **Gelb** | `ready_for_qemu_serial_smoke` | `RESCUE_DEVELOPER_ISO_BOOTLOADER_SERIAL_CAPTURE_STATIC_VALIDATION.md` |
+| **QEMU Smoke Retry** | **Grün** | Serial-Capture Mindestziel erfüllt (`202000`) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` |
+| **QEMU Smoke Retry (gesamt)** | **Gelb** | Serial grün; API-Export/Autopilot/Ingest offen (release-Runtime) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` |
 | **Rescue Remote Security Model** | **Grün** | Phase 1: keine Shell, allowlisted runbooks | `RESCUE_REMOTE_CONTROL_SECURITY_MODEL.md` |
 | **Rescue Remote Agent Stub** | **Grün** | `setuphelfer-rescue-remote-agent.sh` + Backend API | `RESCUE_REMOTE_CONTROL_PHASE1_RESULT.md` |
 | **Rescue Remote Job Queue** | **Grün** | JSONL `build/runtime/rescue-remote/` | oben |
@@ -81,8 +82,8 @@
 | **Rescue Network Menu Stub** | **Grün** | `setuphelfer-rescue-network-menu.sh` | oben |
 | **Remote Shell** | **Disabled** | Keine API-Route | `RESCUE_REMOTE_CONTROL_SECURITY_MODEL.md` |
 | **Remote Write Actions** | **Disabled** | `controlled_write` blockiert Phase 1 | oben |
-| **Guest Autopilot** | **Rot** | Keine Serial-Marker; Autopilot `failed` | oben |
-| **Devserver Agent (QEMU)** | **Rot** | Kein Agent auf Serial; kein Report | oben |
+| **Guest Autopilot** | **Gelb** | Boot OK; Units im ISO; Marker/Report fehlen (Timeout+release) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` |
+| **Devserver Agent (QEMU)** | **Rot** | Host `/api/dev-server/*` 404 in release; `report_new=false` | `FLEET_SESSION_QEMU_BOOTLOADER_SERIAL_RESULT.md` |
 | **Devserver Ingest (QEMU lab)** | **Rot** | `report_new=false`, `reports_last_24h` unverändert | oben |
 | **Public Dev-Control Exposure** | **Grün** | Keine öffentlichen Dev-Control-Hosts in Produkt-Routen; lokal `:8000` | `DEV_DIAGNOSTIC_EXPORT_IST_ANALYSIS.md` |
 | **QEMU Developer Smoke 081222** | **Rot** | Historisch: alte ISO, serial=0 | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
