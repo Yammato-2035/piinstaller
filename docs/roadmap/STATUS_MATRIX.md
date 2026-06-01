@@ -56,9 +56,10 @@
 | **Fleet Session API Smoke** | **Grün** | create/heartbeat/finish/get/list/summary | `FLEET_SESSION_PHASE1_LOCAL_ACCEPTANCE_RESULT.md` |
 | **Fleet Session QEMU Wrapper JSON Payload** | **Grün** | ENV+Heredoc Payloads; Shell-Test + API smoke OK | `FLEET_SESSION_QEMU_WRAPPER_JSON_FIX_RESULT.md` |
 | **Fleet Session UI (Cockpit)** | **Gelb** | Source OK; dist ohne Lab Sessions | `FLEET_SESSION_PHASE1_LOCAL_ACCEPTANCE_RESULT.md` |
-| **Dev Diagnostic Export Backend** | **Gelb** | Implementiert + pytest grün; Live unter `/opt` nach Deploy pending | `DEV_DIAGNOSTIC_EXPORT_CONTRACT.md`, `DEV_DIAGNOSTIC_EXPORT_RESULT.md` |
-| **Dev Diagnostic Export UI** | **Gelb** | Lab Sessions Copy-Buttons in Source; dist-Rebuild pending | `DEV_DIAGNOSTIC_EXPORT_DE.md` |
-| **QEMU Smoke 081222 Export** | **Gelb** | Export-Contract deckt 081222 ab; Live-API nach Deploy | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
+| **Dev Diagnostic Export Backend** | **Gelb** | Auf `/opt` kopiert; TestClient grün; **Live :8000 pending Restart** (`deploy_blocked_sudo_required`) | `DEV_DIAGNOSTIC_EXPORT_LIVE_ACCEPTANCE_RESULT.md` |
+| **Dev Diagnostic Export Live API** | **Gelb** | 404 bis `sudo systemctl restart setuphelfer-backend` | oben |
+| **Dev Diagnostic Export UI** | **Gelb** | `dist` nach `/opt` (`index-BMMUHkh5.js`); Browser pending | `DEV_DIAGNOSTIC_EXPORT_DE.md` |
+| **QEMU Smoke 081222 Export** | **Gelb** | TestClient/`081222` Pflichtwerte OK; Live-curl nach Restart | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
 | **QEMU Smoke Retry** | **Blocked** | `blocked_until_serial_visibility_fix` — kein Retry vor Serial-Fix | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
 | **Public Dev-Control Exposure** | **Grün** | Keine öffentlichen Dev-Control-Hosts in Produkt-Routen; lokal `:8000` | `DEV_DIAGNOSTIC_EXPORT_IST_ANALYSIS.md` |
 | **QEMU Developer Smoke 081222** | **Rot** | Klasse `serial_empty_boot_unknown` + `qemu_wrapper_ok_guest_no_report`; Exit 124, Serial 0 B, kein Ingest; **kein QEMU-Retry** bis Serial/Boot sichtbar | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md`, `FLEET_SESSION_QEMU_RUN_20260601_081222_ANALYSIS.md` |

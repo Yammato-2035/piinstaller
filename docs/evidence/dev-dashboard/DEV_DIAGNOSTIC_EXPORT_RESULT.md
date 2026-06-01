@@ -15,9 +15,7 @@
 
 ## Live-API (`127.0.0.1:8000`)
 
-**Pending (2026-06-01):** Produktives Backend unter `/opt` liefert `404` auf `/api/dev-diagnostics/*` — Router noch nicht deployt. Workspace-Export per Python verifiziert (081222).
-
-Nach Operator-Deploy + Backend-Restart:
+**2026-06-01:** Code auf `/opt` deployt (partiell); **Live-API noch 404** bis `sudo systemctl restart setuphelfer-backend.service`. TestClient gegen `/opt`-`app.py`: **grün** für `081222`. Siehe `DEV_DIAGNOSTIC_EXPORT_LIVE_ACCEPTANCE_RESULT.md`.
 
 ```bash
 curl -sS "http://127.0.0.1:8000/api/dev-diagnostics/qemu-smokes/qemu_rescue_developer_autopilot_20260601_081222/export" | jq .
