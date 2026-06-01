@@ -61,20 +61,20 @@
 | **Dev Diagnostic Export UI** | **Gelb** | Copy-Buttons in Source/dist; Browser optional | `DEV_DIAGNOSTIC_EXPORT_DE.md` |
 | **QEMU Smoke 081222 Export** | **Grün** | `serial_empty_boot_unknown`, serial=0, report_new=false | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
 | **Rescue Developer Serial Config** | **Grün** | Prepare `developer-qemu` materialisiert (tty0+ttyS0, kein quiet/splash) | `RESCUE_ISO_SERIAL_BOOT_VISIBILITY_FIX_RESULT.md` |
-| **Rescue Developer ISO Rebuild** | **Rot** | Build Exit 30 `blocked_requires_operator_sudo_policy`; Operator sudo clean+build nötig | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |
-| **Static ISO Serial Validation** | **Rot** | Altes ISO noch `quiet splash`; neues Image fehlt | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
-| **Serial Visibility Runtime** | **Pending** | `pending_qemu` nach ISO-Rebuild | oben |
+| **Rescue Developer ISO Rebuild** | **Grün** | LB_EXIT=0; ISO SHA `be016f2a…` (neu vs. `6a44d1fe…`) | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |
+| **Static ISO Serial Validation** | **Grün** | tty0+ttyS0+loglevel im ISO; Marker gelb (Squashfs), Tree grün | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
+| **Serial Visibility Runtime** | **Pending** | `pending_qemu` — Runtime erst im Smoke-Lauf | oben |
 | **Autopilot Serial Markers** | **Grün** | Boot/Autopilot/Agent-Marker im `developer-qemu`-Profil | `RESCUE_DEVELOPER_SERIAL_VISIBILITY_CONTRACT.md` |
 | **Fleet Finish Telemetry** | **Grün** | Finish-Payload: exit_code, serial.path, kvm/acceleration | `FLEET_SESSION_QEMU_FINISH_TELEMETRY_FIX_RESULT.md` |
-| **Serial Visibility (Rescue QEMU)** | **Gelb** | `fix_prepared` — Config+Marker; **ISO noch stale** (`quiet splash`) | `RESCUE_ISO_SERIAL_BOOT_VISIBILITY_IST_ANALYSIS.md` |
-| **QEMU Smoke Retry** | **Blocked** | `blocked_until_operator_iso_rebuild` — Tree grün, ISO fehlt | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |
+| **Serial Visibility (Rescue QEMU)** | **Gelb** | ISO-Cmdline neu; Runtime-Serial noch offen bis Smoke | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
+| **QEMU Smoke Retry** | **Grün** | `ready_for_qemu_serial_smoke` — neues ISO, statisch validiert | `RESCUE_DEVELOPER_ISO_STATIC_SERIAL_VALIDATION.md` |
 | **Public Dev-Control Exposure** | **Grün** | Keine öffentlichen Dev-Control-Hosts in Produkt-Routen; lokal `:8000` | `DEV_DIAGNOSTIC_EXPORT_IST_ANALYSIS.md` |
 | **QEMU Developer Smoke 081222** | **Rot** | Klasse `serial_empty_boot_unknown` + `qemu_wrapper_ok_guest_no_report`; Exit 124, Serial 0 B, kein Ingest; **kein QEMU-Retry** bis Serial/Boot sichtbar | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md`, `FLEET_SESSION_QEMU_RUN_20260601_081222_ANALYSIS.md` |
 | **QEMU Smoke with Session** | **Rot** | Wrapper JSON grün; Gast-Report + Serial offen — `qemu_smoke_next_step_allowed=false` bis Folgefix | oben |
 | **Rescue Guest Report Ingest (QEMU lab)** | **Rot** | Lauf `081222`: `reports_last_24h` unverändert, kein neuer Knoten | `QEMU_DEVELOPER_SMOKE_20260601_081222_ANALYSIS.md` |
 | **Proxy Bind Exposure (QEMU lab)** | **Gelb** | `0.0.0.0` nur via QEMU-Smoke + Operator-Confirm; Default `127.0.0.1`; lab-only NDA | `FLEET_SESSION_QEMU_WRAPPER_JSON_FIX_RESULT.md` |
 | **Public Push (Fleet/Dev-Control)** | **Rot/Blocked** | `blocked_public_repository_ndA_risk` | — |
-| **Live Boot (Developer ISO)** | Gelb | QEMU autopilot implemented; ISO rebuild blocked; no manual guest typing after rebuild | `RESCUE_QEMU_SMOKE_AUTOPILOT_RESULT.md` |
+| **Live Boot (Developer ISO)** | Gelb | Neues ISO gebaut; QEMU-Serial-Smoke als Nächstes | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |
 | **USB Write** | Rot/Blocked | `usb_write.allowed=false` | Rescue safety gates |
 | **Controlled ISO preparation** | Gelb | Workspace-Pfad bleibt gruen; Prebuild zeigt fehlende RSVG-Build-Abhaengigkeit jetzt vor dem Build sichtbar an, echter Build weiterhin nicht neu ausgefuehrt | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md`, `RESCUE_ISO_RSVG_FAILURE_ANALYSIS.md` |
 | **Rescue USB write gate** | Rot | **blocked** — kein ISO, keine Zielgeraet-Auswahl, keine Doppelbestaetigung, kein `dd`; neuer RSVG-Preflight haelt den Pfad weiterhin vor jedem USB-Folgeversuch an | `RESCUE_USB_WRITE_GATE_RUNBOOK.md`, `RESCUE_USB_WRITE_RESULT.md`, `controlled_usb_write_latest_summary.json` |

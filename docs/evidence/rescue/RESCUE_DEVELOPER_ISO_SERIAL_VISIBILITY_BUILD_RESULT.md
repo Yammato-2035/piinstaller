@@ -1,93 +1,63 @@
 # Developer Rescue ISO — Serial Visibility Build Result
 
-**Stand:** 2026-06-01  
-**HEAD:** `cfc8385`  
+**Stand:** 2026-06-01 (Post-Build-Validierung)
+**HEAD:** `dc87352`
 **Profil:** `developer-qemu`  
 **Run-ID:** `rescue_developer_iso_20260601_serial_visibility`  
-**Repository:** PUBLIC — **Push blocked**
+**Repository:** PUBLIC (`Yammato-2035/piinstaller`) — **Push blocked**
 
 ## Zusammenfassung
 
 | Phase | Ergebnis |
 |-------|----------|
-| Dependency-Preflight | **OK** — `lb`, `xorriso`, `mksquashfs`, `rsvg-convert`, tool-compat `rsvg` |
-| Prepare `developer-qemu` | **OK** — Tree materialisiert |
-| Controlled ISO Build | **BLOCKED** — Exit **30** `blocked_requires_operator_sudo_policy` |
-| Neue ISO | **Nein** — altes Artefakt unverändert |
+| Controlled ISO Build | **OK** — `LB_EXIT=0`, `status=success` |
+| ISO neu gebaut | **yes** — SHA256 geändert |
+| Statische Serial-Validierung | **grün** (Cmdline); Marker im ISO **gelb** (Squashfs) |
+| QEMU-Smoke-Retry | **`ready_for_qemu_serial_smoke`** |
 
-## Dependency-Preflight
+## Build-Summary
 
-| Tool | Status |
-|------|--------|
-| lb | `/usr/bin/lb` |
-| xorriso | OK |
-| mksquashfs | OK |
-| grub-mkrescue | OK |
-| isohybrid | OK |
-| rsvg (host) | fehlt — **OK** via `build/rescue/tool-compat/bin/rsvg` im Build-PATH |
-| rsvg-convert | `/usr/bin/rsvg-convert` (`librsvg2-bin`) |
+| Feld | Wert |
+|------|------|
+| Gestartet | 2026-06-01T17:25:11+02:00 |
+| Beendet | 2026-06-01T17:28:50+02:00 |
+| `exit_code` / LB_EXIT | **0** |
+| `status` | **success** |
+| `error_code` | null |
+| `rescue_build_profile` | **developer-qemu** |
+| `execution_mode` | `manual_operator_terminal` |
+| `build_started` | true |
 
-## Prepare (erfolgreich)
-
-```bash
-export SETUPHELFER_RESCUE_BUILD_PROFILE=developer-qemu
-./scripts/rescue-live/prepare-controlled-live-build-tree.sh
-```
-
-`auto/config` `--bootappend-live` (Auszug):
-
-```
-console=tty0 console=ttyS0,115200n8 loglevel=7 systemd.log_level=debug systemd.show_status=true ignore_loglevel printk.devkmsg=on
-```
-
-- **kein** `quiet` / `splash` in `auto/config`
-- Marker-Skripte im Tree: `SETUPHELFER_BOOT_MARKER_START`, Autopilot-, Agent-Marker
-
-## Altes ISO (vor Build-Versuch)
+## ISO-Artefakt
 
 | Feld | Wert |
 |------|------|
 | Pfad | `build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso` |
 | Größe | 511705088 B (~488 MiB) |
-| SHA256 | `6a44d1fe771299305408f9e74e7b0fa3a2e7f108a7bffb415f5f4f7f46d8baae` |
-| mtime | 2026-06-01 ~07:54 |
+| mtime | 2026-06-01 17:28:49 |
+| **Neue SHA256** | `be016f2adacfc9906b4b92ca8ab0d6b0390ad1e39a1e2cbb1f0a98eb35241a3f` |
+| **Alte SHA256** | `6a44d1fe771299305408f9e74e7b0fa3a2e7f108a7bffb415f5f4f7f46d8baae` |
+| SHA geändert | **yes** |
 
-## Build-Versuch
+## Live-Build-Tree (developer-qemu)
 
-```bash
-./scripts/rescue-live/run-controlled-iso-build-with-logging.sh \
-  --operator-confirm-build \
-  --profile developer-qemu \
-  --run-id rescue_developer_iso_20260601_serial_visibility
+`auto/config` / `binary/isolinux/live.cfg` Boot-Append (Auszug):
+
+```
+console=tty0 console=ttyS0,115200n8 loglevel=7 systemd.log_level=debug systemd.show_status=true ignore_loglevel printk.devkmsg=on
 ```
 
-| Feld | Wert |
-|------|------|
-| `build_exit_code` / LB_EXIT | **30** |
-| `error_code` | `blocked_requires_operator_sudo_policy` |
-| `build_started` | **false** |
-| `policy_is_tty` | false |
-| `policy_sudo_noninteractive` | false |
+- **kein** `quiet` / `splash` im Developer-`--bootappend-live`
+- Marker-Skripte: `config/includes.chroot/usr/local/sbin/setuphelfer-serial-boot-markers.sh`, `setuphelfer-qemu-smoke-autopilot.sh` (auch in `chroot/`)
 
-**Zusätzlich (wenn Policy passiert):** Permission-Preflight würde `rescue_iso_build.permission_denied_dot_build` melden — `binary/`, `chroot/`, `cache/` root-owned vom Lauf 07:54. Operator-Clean mit sudo erforderlich.
+## Vorheriger Blockiert-Lauf (Referenz)
 
-## Operator-Folgekommandos (interaktives Terminal)
-
-```bash
-cd /home/volker/piinstaller
-sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean
-export SETUPHELFER_RESCUE_BUILD_PROFILE=developer-qemu
-./scripts/rescue-live/prepare-controlled-live-build-tree.sh
-./scripts/rescue-live/run-controlled-iso-build-with-logging.sh \
-  --operator-confirm-build \
-  --profile developer-qemu \
-  --run-id rescue_developer_iso_20260601_serial_visibility
-```
-
-## QEMU-Smoke-Retry
-
-**blocked** — kein neues ISO; Retry erst nach erfolgreichem Build + statischer ISO-Validierung.
+Exit **30** `blocked_requires_operator_sudo_policy` (Agent-Session, 16:46) — durch Operator-Build 17:25–17:28 ersetzt.
 
 ## Guardrails
 
-Kein QEMU, USB, Backup, Restore, apt, Push.
+Kein QEMU, USB, Backup, Restore, apt, Push in diesem Auftrag.
+
+## Nächster Schritt
+
+QEMU Developer-Serial-Smoke mit neuem ISO (`run-qemu-developer-iso-smoke.sh` / Fleet-Session), Run-ID neu vergeben.
