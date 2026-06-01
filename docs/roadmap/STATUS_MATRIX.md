@@ -99,7 +99,10 @@
 | **Profile-aware Deploy Drift** | **Grün** | `enrich_deploy_drift_profile_aware`; Gate Exit 16 entkoppelt bei `profile_manifest_match` | `PROFILE_DEPLOY_DRIFT_V2_RESULT.md` |
 | **Frontend Profile Marker** | **Gelb** | UI-Gates release; i18n-Strings noch im Haupt-Bundle | `FRONTEND_PROFILE_BUILD_RESULT.md` |
 | **Release Dev Route Blocker** | **Grün** | Release blockiert Fleet/Dev-Diag/Rescue-Remote/Dev-Dashboard | `test_install_profile_gate_v1.py` |
-| **Local-Lab Dev Route Allowance** | **Grün** | `local_lab` aktiviert Capabilities; kein Public Exposure | oben |
+| **Local-Lab Dev Route Allowance** | **Grün** | TestClient: Fleet/Dev-Diag/Rescue-Remote/Dev-Dashboard erreichbar | `PROFILE_LIVE_LOCAL_LAB_ACCEPTANCE_RESULT.md` |
+| **Local-Lab Profile Live** | **Gelb** | systemd-Drop-in: Operator-sudo ausstehend; statische Abnahme grün | oben |
+| **Rescue Remote Local-Lab** | **Grün** | shell 403, read-only Job 200; keine dangerous rescue-remote Pfade | oben |
+| **Runtime Final Profile** | **release** | Live nicht auf local_lab umgeschaltet (sudo) | oben |
 | **Public Exposure Gate** | **Grün** | Default `public_exposure_allowed=false`; Exit 21 bei 0.0.0.0 | `runtime_profile_deploy_gate_eval.py` |
 | **Public Push** | **Blocked** | `blocked_public_repository_ndA_risk` | Repository visibility public |
 | **Live Boot (Developer ISO)** | Gelb | Neues ISO gebaut; QEMU-Serial-Smoke als Nächstes | `RESCUE_DEVELOPER_ISO_SERIAL_VISIBILITY_BUILD_RESULT.md` |

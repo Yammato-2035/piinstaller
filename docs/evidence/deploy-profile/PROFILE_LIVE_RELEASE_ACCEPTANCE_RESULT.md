@@ -21,4 +21,6 @@
 
 ## Local-Lab
 
-**pending** — separater Operator-Auftrag (Drop-in `92-install-profile-local-lab.conf.example`).
+Statische Abnahme **grün** (TestClient); Live-Drop-in **pending** (sudo). Siehe `PROFILE_LIVE_LOCAL_LAB_ACCEPTANCE_RESULT.md`.
+
+Nach Operator-Umschaltung: Release-Drop-in wiederherstellen empfohlen.
