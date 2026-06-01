@@ -12,6 +12,7 @@ import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
 import { NotificationPanel } from '../components/dev-dashboard/NotificationPanel'
 import { DevelopmentServerPanel } from '../components/devserver/DevelopmentServerPanel'
+import { LabSessionsPanel } from '../components/dev-dashboard/LabSessionsPanel'
 import { DeployDriftPanel } from '../components/dev-dashboard/DeployDriftPanel'
 import { RoadmapDrawer } from '../components/dev-dashboard/RoadmapDrawer'
 import { ReadyStableSection } from '../components/dev-dashboard/ReadyStableSection'
@@ -169,7 +170,12 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
           </section>
         )
       case 'telemetry':
-        return <DevelopmentServerPanel refreshSec={mon.refreshSec} />
+        return (
+          <>
+            <LabSessionsPanel refreshSec={mon.refreshSec} />
+            <DevelopmentServerPanel refreshSec={mon.refreshSec} />
+          </>
+        )
       case 'rescue':
         return (
           <>

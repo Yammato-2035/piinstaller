@@ -52,6 +52,7 @@
 | **Rescue Developer ISO Dry-Build** | Gelb | Dry-Build Manifest `review_required` — prior ISO artifacts in tree (33), keine neuen Artefakte; Profile/Guard OK | `rescue_developer_iso_dry_build_manifest.json`, `RESCUE_DEVELOPER_ISO_DRY_BUILD_RESULT.md` |
 | **Rescue Developer Controlled ISO Build** | Grün | LB_EXIT=0, ISO+SHA256, developer agent in chroot, public guard OK; permission clean nach 8455e3c | `RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md`, `rescue_developer_controlled_iso_build_result.json` |
 | **Real Developer ISO Build** | Grün | Controlled build success run `103047`; kein USB | `controlled_iso_build_latest_summary.json` |
+| **Fleet Session Phase 1 (Lab Sessions UI)** | Gelb | Implementiert im Workspace: `/api/fleet/sessions`, Host-QEMU-Wrapper-Hooks, Cockpit-Kachel; Runtime-Deploy der Fleet-Routen ausstehend | `FLEET_SESSION_PHASE1_RESULT.md`, `DEV_CONTROL_CENTER_FLEET_SESSION_CONTRACT.md` |
 | **Live Boot (Developer ISO)** | Gelb | QEMU autopilot implemented; ISO rebuild blocked; no manual guest typing after rebuild | `RESCUE_QEMU_SMOKE_AUTOPILOT_RESULT.md` |
 | **USB Write** | Rot/Blocked | `usb_write.allowed=false` | Rescue safety gates |
 | **Controlled ISO preparation** | Gelb | Workspace-Pfad bleibt gruen; Prebuild zeigt fehlende RSVG-Build-Abhaengigkeit jetzt vor dem Build sichtbar an, echter Build weiterhin nicht neu ausgefuehrt | `RESCUE_STICK_CONTROLLED_ISO_PREPARATION_GATE.md`, `RESCUE_ISO_RSVG_FAILURE_ANALYSIS.md` |

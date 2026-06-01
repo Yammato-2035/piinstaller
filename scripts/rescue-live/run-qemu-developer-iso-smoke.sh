@@ -59,15 +59,105 @@ done
 [[ -f "$REPO_ROOT/.git/config" || -d "$REPO_ROOT/.git" ]] || die "not repo root"
 [[ -f "$ISO_PATH" ]] || die "ISO missing: $ISO_PATH"
 
+# shellcheck source=scripts/rescue-live/fleet-session-api.sh
+source "${SCRIPT_DIR}/fleet-session-api.sh"
+
+FLEET_SESSION_ID=""
+HAS_KVM=false
+KVM_ENABLED=false
+ACCELERATION="tcg"
+if [[ -r /dev/kvm ]]; then HAS_KVM=true; fi
+
+_fleet_serial_patch_json() {
+  local size=0 exists=false
+  if [[ -f "$SERIAL_LOG" ]]; then
+    exists=true
+    size="$(stat -c%s "$SERIAL_LOG" 2>/dev/null || echo 0)"
+  fi
+  python3 -c "import json; print(json.dumps({'serial':{'path':''${SERIAL_LOG}'','exists':${exists},'size_bytes':${size}}, 'qemu':{'pid':${QPID:-null}}}))"
+}
+
+_fleet_heartbeat_loop() {
+  [[ -n "$FLEET_SESSION_ID" ]] || return 0
+  while kill -0 "${QPID:-0}" 2>/dev/null; do
+    fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(_fleet_serial_patch_json)" >/dev/null || true
+    sleep 20
+  done
+}
+
+_fleet_finish_session() {
+  local final_status="$1"
+  [[ -n "$FLEET_SESSION_ID" ]] || return 0
+  local serial_size=0
+  [[ -f "$SERIAL_LOG" ]] && serial_size="$(stat -c%s "$SERIAL_LOG" 2>/dev/null || echo 0)"
+  local guest_seen=false
+  [[ "${DEV_SERVER_REPORT_NEW:-false}" == true ]] && guest_seen=true
+  local payload
+  payload="$(python3 - "$final_status" "$QEMU_EXIT" "$guest_seen" "$serial_size" "$DEV_SERVER_REPORT_NEW" <<'PY'
+import json, sys
+final_status, qemu_exit, guest_seen, serial_size, report_new = sys.argv[1:6]
+status = final_status
+findings = []
+if int(qemu_exit) == 124:
+    status = "timeout"
+    findings.append("qemu_timeout_124")
+if serial_size == "0":
+    findings.append("serial_empty")
+if guest_seen != "true":
+    findings.append("guest_report_missing")
+payload = {
+    "status": status,
+    "qemu_exit_code": int(qemu_exit),
+    "guest": {
+        "report_seen": guest_seen == "true",
+        "dev_server_report_new": report_new == "true",
+    },
+    "serial": {"size_bytes": int(serial_size)},
+    "findings": findings,
+    "evidence_paths": [],
+}
+print(json.dumps(payload))
+PY
+)"
+  fleet_session_patch "$FLEET_SESSION_ID" finish "$payload" >/dev/null || true
+}
+
 mkdir -p "$EVDIR"
 
+ISO_REL_EVIDENCE="${ISO_REL}"
+FLEET_CREATE_PAYLOAD="$(python3 - "$RUN_ID" "$ISO_REL_EVIDENCE" "$LAB_PROXY_PORT" "$TIMEOUT_SECONDS" "$AUTOPILOT" "$HAS_KVM" "$EVDIR" <<'PY'
+import json, sys
+run_id, iso_rel, proxy_port, timeout_s, autopilot, has_kvm, evdir = sys.argv[1:8]
+print(json.dumps({
+    "run_id": run_id,
+    "session_id": f"fleet-{run_id}",
+    "session_type": "local_qemu_smoke",
+    "status": "starting",
+    "label": "QEMU Developer ISO Smoke",
+    "host": {"has_kvm": has_kvm == "true", "kvm_enabled": False},
+    "qemu": {
+        "iso_path": iso_rel,
+        "proxy_port": int(proxy_port),
+        "timeout_seconds": int(timeout_s),
+        "acceleration": "unknown",
+    },
+    "evidence_paths": [f"docs/evidence/runtime-results/rescue/qemu/{run_id}"],
+}))
+PY
+)"
+FLEET_CREATE_RESP="$(fleet_session_create "$FLEET_CREATE_PAYLOAD" || true)"
+FLEET_SESSION_ID="$(printf '%s' "$FLEET_CREATE_RESP" | python3 -c 'import json,sys; d=json.load(sys.stdin); print((d.get("session") or {}).get("session_id") or d.get("session_id",""))' 2>/dev/null || echo "fleet-${RUN_ID}")"
+echo "Fleet session: ${FLEET_SESSION_ID}"
+
 if [[ "$GUESTFWD_PROXY" == true ]]; then
+  fleet_session_patch "$FLEET_SESSION_ID" heartbeat '{"status":"proxy_starting"}' >/dev/null || true
   if [[ "$USER_SET_HOST_URL" != true ]]; then
     HOST_DEV_URL="http://10.0.2.2:${LAB_PROXY_PORT}"
   fi
   export SETUPHELFER_QEMU_LAB_PROXY_PID_FILE="${EVDIR}/qemu_lab_proxy.pid"
   export SETUPHELFER_QEMU_LAB_PROXY_PORT="${LAB_PROXY_PORT}"
   "${SCRIPT_DIR}/start-qemu-lab-dev-server-proxy.sh"
+  fleet_session_patch "$FLEET_SESSION_ID" heartbeat '{"status":"proxy_ready"}' >/dev/null || true
 else
   HOST_DEV_URL="${HOST_DEV_URL:-http://10.0.2.2:8000}"
 fi
@@ -77,7 +167,20 @@ curl -s http://127.0.0.1:8000/api/dev-server/summary >"${EVDIR}/dev_server_summa
 NIC_OPTS="user,model=virtio-net-pci"
 [[ "$SSH_FORWARD" == true ]] && NIC_OPTS="${NIC_OPTS},hostfwd=tcp:127.0.0.1:2222-:22"
 
+QEMU_MACHINE_ARGS=()
+if [[ -r /dev/kvm ]] && [[ "$(uname -m)" == "x86_64" ]]; then
+  QEMU_MACHINE_ARGS=(-enable-kvm -cpu host)
+  KVM_ENABLED=true
+  ACCELERATION="kvm"
+  echo "QEMU: KVM enabled (/dev/kvm)"
+else
+  echo "QEMU: KVM not available — TCG only (boot may exceed timeout)"
+fi
+
+fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(python3 -c "import json; print(json.dumps({'status':'qemu_starting','host':{'has_kvm':${HAS_KVM},'kvm_enabled':${KVM_ENABLED}},'qemu':{'acceleration':'${ACCELERATION}'}}))")" >/dev/null || true
+
 QEMU_ARGS=(
+  "${QEMU_MACHINE_ARGS[@]}"
   -m 2048 -smp 2
   -cdrom "$ISO_PATH"
   -boot d -snapshot -no-reboot
@@ -115,10 +218,16 @@ cleanup_lab_proxy() {
 trap cleanup_lab_proxy EXIT
 
 : >"$SERIAL_LOG"
+fleet_session_patch "$FLEET_SESSION_ID" heartbeat "$(python3 -c "import json; print(json.dumps({'status':'booting','serial':{'path':'${SERIAL_LOG}'}}))")" >/dev/null || true
 timeout "$TIMEOUT_SECONDS" qemu-system-x86_64 "${QEMU_ARGS[@]}" \
   >"${EVDIR}/qemu-gtk-stdout.log" 2>"${EVDIR}/qemu-gtk-stderr.log" &
 QPID=$!
 echo "$QPID" >"$PID_FILE" 2>/dev/null || true
+if [[ "$AUTOPILOT" == true ]]; then
+  fleet_session_patch "$FLEET_SESSION_ID" heartbeat '{"status":"autopilot_waiting"}' >/dev/null || true
+fi
+_fleet_heartbeat_loop &
+FLEET_HB_PID=$!
 echo "QEMU pid=$QPID — waiting up to ${TIMEOUT_SECONDS}s (autopilot=$AUTOPILOT headless=$HEADLESS)"
 if [[ "$AUTOPILOT" == true ]]; then
   echo "AUTOPILOT: do not use the QEMU window — smoke runs via systemd; read ${SERIAL_LOG} and ${RESULT_JSON}"
@@ -126,6 +235,8 @@ fi
 
 QEMU_EXIT=0
 wait "$QPID" 2>/dev/null || QEMU_EXIT=$?
+kill "$FLEET_HB_PID" 2>/dev/null || true
+wait "$FLEET_HB_PID" 2>/dev/null || true
 
 curl -s http://127.0.0.1:8000/api/dev-server/summary >"${EVDIR}/dev_server_summary_after.json" 2>/dev/null || echo '{}' >"${EVDIR}/dev_server_summary_after.json"
 curl -s http://127.0.0.1:8000/api/dev-server/reports >"${EVDIR}/dev_server_reports_after.json" 2>/dev/null || true
@@ -185,6 +296,18 @@ payload = {
 Path(out_path).write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 print(json.dumps({"status": status, "report_new": report_new, "guest_found": guest is not None}))
 PY
+
+DEV_SERVER_REPORT_NEW="$(python3 -c "import json; print('true' if json.load(open('${RESULT_JSON}')).get('dev_server_report_new') else 'false')" 2>/dev/null || echo false)"
+
+FINAL_FLEET_STATUS="failed"
+if [[ "$QEMU_EXIT" -eq 0 ]] && [[ "$DEV_SERVER_REPORT_NEW" == true ]]; then
+  FINAL_FLEET_STATUS="success"
+elif [[ "$QEMU_EXIT" -eq 124 ]]; then
+  FINAL_FLEET_STATUS="timeout"
+elif [[ "$QEMU_EXIT" -eq 0 ]]; then
+  FINAL_FLEET_STATUS="failed"
+fi
+_fleet_finish_session "$FINAL_FLEET_STATUS"
 
 echo "Result: $RESULT_JSON"
 cleanup_lab_proxy
