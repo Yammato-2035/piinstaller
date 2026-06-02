@@ -1,44 +1,37 @@
 # QEMU Guest Agent Smoke — Ergebnis
 
-**Stand:** 2026-06-02  
-**HEAD:** `c70bfe1`  
+**Stand:** 2026-06-02 (Operator-Ingest)  
+**HEAD:** `9607b63`  
+**Run-ID:** `qemu_rescue_developer_autopilot_20260602_202725`  
 **Status:** **`blocked`**
 
-## Zusammenfassung
+## Operator-Smoke durchgeführt
 
 | Feld | Wert |
 |------|------|
-| QEMU gestartet | **no** |
-| Blocker | `qemu_smoke_blocked_by_profile` — `sudo` für `local_lab` im Agent-Kontext nicht verfügbar |
-| ISO-Fingerprint | **ok** |
-| Tooling/KVM | **ok** |
-| release nach Lauf | **unchanged** (`release`, gate green) |
+| local_lab während Smoke | **yes** |
+| Proxy 8001 | **yes** |
+| KVM | **yes** |
+| QEMU Exit | **124** (1200s Timeout) |
+| Serial | **0 Bytes** |
+| guest_found / report_new | **false / false** |
+| release restored | **yes** |
 
-## Guardrails eingehalten
+## Root Cause
 
-Kein ISO-Build, kein lb build, kein QEMU, kein USB/dd, kein Host-Disk-Attach, kein Backup/Restore.
+**`qemu_serial_capture_failure`** — Standard-Profil-ISO ohne `console=ttyS0` (`quiet splash`); Serial-Capture liefert keine Bootmarker.
 
-## Squashfs-Risiken (vor Smoke bestätigt)
+Mitursache: **`guest_agent_autostart_gap`** — Autopilot- und Dev-Agent-Units nicht in `multi-user.target.wants`.
 
-- `devserver_agent` vorhanden; `rescue_agent/` fehlt im Bundle
-- `setuphelfer-dev-agent.service` vorhanden, **nicht** in `multi-user.target.wants`
+## Guardrails
 
-## Operator-Fortsetzung
-
-Im Operator-Terminal (mit `sudo -v`):
-
-```bash
-cd /home/volker/piinstaller
-sudo -v
-./scripts/rescue-live/qemu-guest-agent-smoke-operator.sh
-```
-
-Skript: `local_lab` → QEMU-Autopilot (1200s, kein Host-Disk) → Fleet/Dev-Server-Ingest → **release-Trap**.
-
-JSON: `qemu_guest_agent_smoke_latest.json`
+Kein Host-Disk, kein USB, kein Restore, kein Backup. Kein neuer QEMU in diesem Ingest.
 
 ## Nächster Schritt
 
-Operator-QEMU-Smoke ausführen; danach Evidence-Ingest erneut auswerten.
+ISO mit **`developer-qemu`**-Profil rebuilden (Serial + Autopilot-Enable) oder bootappend/enable fixen — dann erneuter Operator-QEMU-Smoke.
 
-Rescue-Stick bleibt **nicht vollständig grün** ohne Boot-/Agent-/USB-Nachweis.
+Rescue-Stick bleibt **nicht grün** ohne Boot-/Agent-Nachweis.
+
+JSON: `qemu_guest_agent_smoke_latest.json`  
+Details: `QEMU_GUEST_AGENT_FAILURE_CLASSIFICATION.md`
