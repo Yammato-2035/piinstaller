@@ -10,7 +10,7 @@ Schritt-für-Schritt-Anleitung für einen **kontrollierten** Debian-Live-ISO-Bui
 
 ## Voraussetzungen
 
-0. **Precheck (2026-06-02):** `CONTROLLED_RESCUE_ISO_BUILD_PRECHECK_RESULT.md` — Release/Fleet/Ingest ok; Toolchain ok; Cleanup **ok**; Validate Exit **0** nach `dangerous_path_override`-Fix (kein Build in Precheck-Lauf).
+0. **Precheck (2026-06-02):** Cleanup **ok**; Validate Exit **0**; Operator-Build **LB_EXIT=0** — Artefakt ingestiert, `ready_for_qemu_guest_agent_smoke`. Evidence: `CONTROLLED_RESCUE_ISO_BUILD_RESULT.md`.
 1. **Phase 0:** `./scripts/check-runtime-deploy-gate.sh` → Exit **0**
 2. **Toolcheck:** `docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md` — `lb`, `xorriso`, `mksquashfs`, `grub-mkrescue` vorhanden
 3. **RSVG-Preflight:** Dashboard-/Executor-Status darf **nicht** `blocked_build_tools_missing` fuer `rsvg` melden
@@ -45,7 +45,7 @@ build/rescue/live-build/setuphelfer-rescue-live/
 
 ## Chroot-/Mount-Cleanup (RESCUE-BUILD-CHROOT-CLEANUP-001)
 
-**2026-06-02:** Operator-Cleanup **ok**; Validate Exit 14 (`dangerous_path_override`) war False Positive — behoben via eng begrenzte Allowlist in `validate-live-build-dpkg-preflight.sh`. Validate danach Exit **0**. Siehe `RESCUE_ISO_VALIDATE_DANGEROUS_PATH_FIX_RESULT.md`.
+**2026-06-02:** Operator-Build **LB_EXIT=0**; ISO `505989f7…` (511705088 B); Squashfs-Validator Exit **0**. Nächster Schritt: QEMU Guest-Agent-Smoke (kein USB). Evidence: `CONTROLLED_RESCUE_ISO_BUILD_RESULT.md`.
 
 Wenn der letzte Lauf mit `chroot/proc` + „Vorgang nicht zulässig“ und fehlendem `/usr/bin/env` endet:
 
