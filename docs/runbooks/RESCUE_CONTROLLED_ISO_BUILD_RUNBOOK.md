@@ -50,6 +50,8 @@ SETUPHELFER_RESCUE_BUILD_PROFILE=developer-qemu \
 
 **Developer-QEMU-Rebuild (2026-06-02):** Operator-Build `rescue_developer_iso_20260602_214335` — **LB_EXIT=0**, `profile=developer-qemu`, ISO SHA `3ee02b36…`. Serial/Bootappend verifiziert; Autopilot-Unit **nicht** in `multi-user.target.wants` → Smoke **review_required**. Evidence: `DEVELOPER_QEMU_ISO_REBUILD_RESULT.md`.
 
+**Autopilot wants fix (2026-06-03):** Statischer wants-Symlink in Prepare (developer-qemu only); Validator erweitert; ISO-Rebuild erforderlich. Evidence: `DEVELOPER_QEMU_AUTOPILOT_ENABLE_FIX_RESULT.md`.
+
 ## Build-Verzeichnis
 
 ```

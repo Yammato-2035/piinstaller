@@ -151,6 +151,14 @@ done
 EOF
 }
 
+# developer-qemu: static wants symlinks (chroot systemctl enable is unreliable offline; matches backend/service pattern).
+write_developer_qemu_autopilot_wants() {
+  local wants="${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/multi-user.target.wants"
+  mkdir -p "$wants"
+  ln -sf ../setuphelfer-qemu-smoke-autopilot.service "${wants}/setuphelfer-qemu-smoke-autopilot.service"
+  ln -sf ../setuphelfer-serial-boot-markers.service "${wants}/setuphelfer-serial-boot-markers.service"
+}
+
 write_text_file "${BUILD_ROOT}/config/package-lists/setuphelfer.list.chroot" 0644 <<'EOF'
 systemd
 systemd-sysv
@@ -444,6 +452,7 @@ if [[ "${RESCUE_BUILD_PROFILE}" == "developer" || "${RESCUE_BUILD_PROFILE}" == "
   if [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
     write_rescue_dev_agent_service true
     copy_profile_overlay "${DEV_PROFILE_ROOT}"
+    write_developer_qemu_autopilot_wants
     write_dev_agent_enable_hook false
   else
     write_rescue_dev_agent_service false
@@ -542,6 +551,7 @@ write_text_file "${BUILD_ROOT}/evidence/build-tree-manifest.json" 0644 <<EOF
   "developer_agent_in_tree": $([ "${RESCUE_BUILD_PROFILE}" = "developer" ] || [ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false),
   "qemu_serial_console_configured": $([ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false),
   "qemu_smoke_autopilot_hook": $([ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false),
+  "qemu_autopilot_service_wanted": $([ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false),
   "qemu_guest_devserver_endpoint": "http://10.0.2.2:8001"
 }
 EOF

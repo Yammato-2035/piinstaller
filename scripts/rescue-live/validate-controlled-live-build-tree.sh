@@ -204,6 +204,7 @@ PY
 MANIFEST="${BUILD_ROOT}/evidence/build-tree-manifest.json"
 python3 - "$MANIFEST" "$BUILD_ROOT" <<'PY' || fail_missing "developer-qemu profile markers incomplete (see stderr)"
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -232,6 +233,13 @@ if not data.get("qemu_serial_console_configured"):
     errors.append("manifest qemu_serial_console_configured=false")
 if not data.get("qemu_smoke_autopilot_hook"):
     errors.append("manifest qemu_smoke_autopilot_hook=false")
+wants = build_root / "config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-qemu-smoke-autopilot.service"
+if not wants.is_symlink() and not wants.exists():
+    errors.append(f"missing autopilot wants symlink: {wants}")
+elif wants.is_symlink() or wants.exists():
+    target = os.readlink(wants) if wants.is_symlink() else ""
+    if target and target != "../setuphelfer-qemu-smoke-autopilot.service":
+        errors.append(f"autopilot wants symlink target wrong: {target!r}")
 if errors:
     for e in errors:
         print(f"DEVELOPER_QEMU: {e}", file=sys.stderr)

@@ -15,15 +15,14 @@
 | Autopilot enabled/wanted | **no** |
 | Verify-Status | **review_required** |
 
-## Fazit
+## Fazit (historisch ISO `3ee02b36…`)
 
-Der Developer-QEMU-Rebuild war **profiltechnisch erfolgreich** (Log `profile=developer-qemu`, neues ISO, `console=ttyS0` in ISOLINUX). Die **Autopilot-Enable-Lücke** (Hook 090 / `multi-user.target.wants`) besteht weiter — QEMU Guest Agent Smoke würde erneut `guest_agent_autostart_gap` riskieren.
+Der Developer-QEMU-Rebuild war **profiltechnisch erfolgreich** (Log `profile=developer-qemu`, neues ISO, `console=ttyS0` in ISOLINUX). Die **Autopilot-Enable-Lücke** (Hook 090 / `multi-user.target.wants`) bestand in diesem ISO.
 
-**Kein Fake-Green:** Rescue bleibt rot/gelb bis QEMU-Smoke mit Agent-Nachweis.
+**Fix (2026-06-03):** Statischer wants-Symlink — `DEVELOPER_QEMU_AUTOPILOT_ENABLE_FIX_RESULT.md`. **ISO-Rebuild erforderlich**; dieser Verify-Stand bleibt `review_required` bis ersetzt.
 
 ## Nächster Schritt
 
-1. Hook-090-Enable in Chroot nachverfolgen/fixen **oder**
-2. QEMU-Smoke mit explizitem Review der Autostart-Lücke (Operator-Entscheidung)
-
-Empfohlen: Autopilot wants-Symlink fixen, ISO-Rebuild, dann Smoke.
+1. Operator: `sudo clean` → Prepare (developer-qemu) → Build `--profile developer-qemu`
+2. Squashfs-Validator Exit 0 (inkl. Autopilot-wants)
+3. QEMU Guest Agent Smoke Operator Run, NO USB

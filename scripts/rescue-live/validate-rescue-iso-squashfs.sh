@@ -120,6 +120,28 @@ if ! squashfs_path_exists 'etc/systemd/system/multi-user.target.wants/setuphelfe
   fail_systemd "setuphelfer.service not enabled (no multi-user.target.wants symlink)"
 fi
 
+# --- developer-qemu: autopilot enable (exit 12) — detected via serial bootappend in ISO ---
+_developer_qemu_iso=false
+for _cfg in isolinux/live.cfg ISOLINUX/LIVE.CFG; do
+  xorriso -osirrox on -indev "$ISO" -extract "/${_cfg}" "$WORK/live.cfg" 2>/dev/null || continue
+  if grep -q 'console=ttyS0' "$WORK/live.cfg" 2>/dev/null; then
+    _developer_qemu_iso=true
+    break
+  fi
+done
+if [[ "$_developer_qemu_iso" == true ]]; then
+  squashfs_path_exists 'etc/systemd/system/setuphelfer-qemu-smoke-autopilot.service' \
+    || fail_systemd "developer-qemu ISO missing setuphelfer-qemu-smoke-autopilot.service"
+  if ! squashfs_path_exists 'etc/systemd/system/multi-user.target.wants/setuphelfer-qemu-smoke-autopilot.service'; then
+    fail_systemd "setuphelfer-qemu-smoke-autopilot.service not enabled (developer-qemu wants missing)"
+  fi
+  if ! unsquashfs -cat "$SQ" etc/systemd/system/setuphelfer-qemu-smoke-autopilot.service 2>/dev/null \
+    | grep -q '10.0.2.2:8001'; then
+    fail_systemd "autopilot unit missing devserver endpoint http://10.0.2.2:8001"
+  fi
+  echo "OK: developer-qemu autopilot unit enabled in squashfs"
+fi
+
 # --- Keyboard / Locale / Timezone (exit 13) ---
 squashfs_path_exists 'etc/default/keyboard' \
   || fail_locale "/etc/default/keyboard missing"
@@ -161,4 +183,4 @@ if [[ "$_login_ok" != true ]]; then
   fail_login "user/live login hint missing in /etc/issue or /etc/motd"
 fi
 
-echo "OK: rescue ISO squashfs — bundle, systemd init, enabled units, de keyboard/locale, login hints"
+echo "OK: rescue ISO squashfs — bundle, systemd init, enabled units, de keyboard/locale, login hints${_developer_qemu_iso:+, developer-qemu autopilot}"
