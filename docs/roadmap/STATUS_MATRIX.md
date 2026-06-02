@@ -239,5 +239,7 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | Rescue Agent Stub | Gelb | Commit `2e602d0`; Deploy-Sync **blockiert** (`sudo`); `/opt` ohne `rescue_agent/` | `DEPLOY_SYNC_2E602D0_POST_DEPLOY_RESULT.md` |
 | **Deploy-Sync 2e602d0** | **Grün** | Deploy aus Worktree OK; `/opt` mit `app_bootstrap`+`rescue_agent`; Router-Diagnose live; Profil-Gate Exit 0 | `DEPLOY_SYNC_2E602D0_POST_DEPLOY_RESULT.md` |
 | **Fleet Heartbeat Live Smoke** | **Grün** | Nach `/opt`-Script-Sync `55b7bce`: Create+Heartbeat(`running`)+Finish OK; Release-Restore ausstehend | `FLEET_HEARTBEAT_FIX_AFTER_SCRIPT_FIX_RESULT.md` |
-| **Fleet Script 55b7bce in /opt** | **Grün** | Script-Sync (kein volles deploy-to-opt wegen sudo); `${3-}` live | `FLEET_SCRIPT_FIX_55B7BCE_POST_DEPLOY.md` |
+| **Fleet Script 55b7bce in /opt** | **Grün** | `${3-}` live; Fleet-Smoke Create+HB+Finish ok | `FLEET_HEARTBEAT_FIX_AFTER_SCRIPT_FIX_RESULT.md` |
+| **DCC Port Mapping** | **Grün** | 3001=UI, 8000=API, 8080=nginx (kein DCC) | `DCC_PORT_MAPPING_RESULT.md` |
+| **DCC Read-Only Smoke** | **Grün** | `local_lab`: dev-dashboard 200, UI SimpleHTTP :3001 | `DCC_READONLY_SMOKE_AFTER_PORT_MAPPING.md` |
 | Deploy Drift | Rot | Workspace vs `/opt` bei DCC/Rescue-Dateien nicht synchron |

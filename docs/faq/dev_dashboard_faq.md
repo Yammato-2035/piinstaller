@@ -1,5 +1,25 @@
 # Developer Dashboard — FAQ
 
+## Welcher Port ist das Development Control Center?
+
+| Port | Rolle |
+|-----:|--------|
+| **3001** | SetupHelfer-UI / Cockpit (`setuphelfer.service`) |
+| **8000** | Backend-API (`setuphelfer-backend.service`) |
+| **8080** | nginx — **nicht** SetupHelfer |
+
+- UI: http://127.0.0.1:3001/
+- Cockpit: http://127.0.0.1:3001/?window=cockpit
+- API: http://127.0.0.1:8000/api/...
+
+Wenn Port 8080 die Ubuntu/nginx-Default-Seite zeigt, ist das **kein DCC-Bug**. Details: `docs/dev-dashboard/DCC_PORTS_AND_URLS.md`.
+
+## Browser: API-Requests prüfen
+
+1. F12 → **Network**
+2. Erwartung: `http://127.0.0.1:8000/api/...`
+3. **Nicht** `:3001/api/...` (statischer SPA-Server) oder `:8080/api/...` (nginx)
+
 ## Warum war der Roadmap-Bereich nicht sichtbar?
 
 Oft wurde das **Governance-Cockpit** (`CockpitApp`) genutzt statt der Seite **Developer Dashboard** (`dev-dashboard`). Das Cockpit hatte bis 2026-05-27 nur die Governance-Matrix, keinen Roadmap-Registry-Block. Die API lieferte Roadmap-Daten trotzdem.

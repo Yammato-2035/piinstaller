@@ -14,6 +14,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Deploy 2e602d0:** Sauberer Worktree vorbereitet; Deploy blockiert (`sudo`); Evidence unter `docs/evidence/deploy/DEPLOY_SYNC_2E602D0_*`.
 - **Fleet finish Exit-1:** Triage — `fleet_session_patch` `${3:-{}}` korrumpiert JSON; Fix `${3-}`; API Finish unverändert OK.
 - **Fleet smoke after script fix:** `/opt`-Script-Sync `55b7bce`; Create→Heartbeat(`running`)→Finish grün; Release-Restore Operator ausstehend.
+- **DCC ports:** UI :3001, API :8000, :8080 = nginx (not SetupHelfer); docs in `DCC_PORTS_AND_URLS.md`.
 
 ## [1.7.3.0] — 2026-05-30
 

@@ -1,35 +1,38 @@
-# Fleet Heartbeat Fix — Live-Smoke
+# Fleet Heartbeat Fix — Live-Smoke (Gesamtstatus)
 
 **Stand:** 2026-06-02  
-**Status:** **grün** (Smoke nach Script-Sync `55b7bce` auf `/opt`: Create + Heartbeat `running` + Finish OK)
+**Status:** **grün** (neue Session nach Script-Fix; API immer Port **8000**)
 
-| Session | `fleet-manual_fleet_heartbeat_fix_after_script_fix_20260602_164249` |
+## Port-Hinweis
+
+- Fleet- und Dev-Dashboard-API-Smokes: **`http://127.0.0.1:8000`**
+- Browser-Port **8080** (nginx) ist **irrelevant** für Fleet — siehe `DCC_PORT_MAPPING_RESULT.md`
+
+## Root Cause (Exit-1)
+
+`fleet_script_bash_parameter_expansion_corrupts_json_payload` — `${3:-{}}` in `fleet_session_patch` korrumpierte JSON.
+
+**Fix:** Commit `55b7bce` → `payload="${3-}"`  
+**In `/opt`:** **yes** (grep `${3-}` in `/opt/setuphelfer/scripts/rescue-live/fleet-session-api.sh`)
+
+## Sauberer Live-Smoke (belegt)
+
+| Feld | Wert |
+|------|------|
 | Evidence | `FLEET_HEARTBEAT_FIX_AFTER_SCRIPT_FIX_RESULT.md` |
+| Session | `fleet-manual_fleet_heartbeat_fix_after_script_fix_20260602_164249` |
+| Create → Heartbeat(`running`) → Finish | **ok** |
 
-Vorheriger Exit-1: `${3:-{}}` — triagiert in `FLEET_FINISH_EXIT1_TRIAGE_RESULT.md`.
+## Nicht verwenden
 
-## Geplanter Ablauf (nach Deploy + local_lab)
+| Session | Grund |
+|---------|--------|
+| `fleet-manual_fleet_heartbeat_fix_20260602_162012` | Während Exit-1-Triage per direktem `curl` beendet/manipuliert |
 
-1. `RUN_ID=manual_fleet_heartbeat_fix_<UTC>`
-2. `POST /api/fleet/sessions` (create)
-3. `POST .../heartbeat` mit Legacy-Payload `status=running`
-4. Erwartung: kein `FLEET_SESSION_BLOCKED_INVALID_PAYLOAD`; `agent_state=alive`
-5. `POST .../finish`
-6. Evidence unter `docs/evidence/runtime-results/dev-dashboard/`
+## Vor Exit-1-Triage
 
-## Skript
+Geplanter API-Smoke war korrekt gegen **:8000**; Shell-Exit 1 kam vom Wrapper, nicht von der API.
 
-`scripts/rescue-live/fleet-session-api.sh` — Heartbeat neutralisiert `running` → `agent_state=alive`.
+## Release
 
-## Dieser Lauf
-
-| Prüfung | Ergebnis |
-|---------|----------|
-| Live Create/Heartbeat/Finish | **not_run** |
-| `status=running` live behoben | **not_verified** |
-
-## Voraussetzungen
-
-1. Operator-Deploy aus Worktree `2e602d0`
-2. `local_lab` Drop-in + Restart
-3. `./scripts/check-runtime-profile-deploy-gate.sh` Exit 0
+Nach Fleet-/Lab-Arbeit: `release` wiederherstellen — `FLEET_FINISH_EXIT1_RELEASE_PROFILE_HANDOFF.md` (Operator, kein Auto-Switch in Doku-Läufen).
