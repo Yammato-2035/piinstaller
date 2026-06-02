@@ -30,7 +30,8 @@
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |
 | Rescue Stick | Rot | BR-001-OFFLINE Release-Gate; Deploy-Pipelines teilweise; RS-001–008 HW rot | `RESCUE_STICK_TEST_MATRIX.md`, `rescue-stick.json` |
-| Monolith-Audit | Rot | DOMAIN_BOUNDARIES Stub | `docs/architecture/DOMAIN_BOUNDARIES.md` |
+| Monolith-Audit | Gelb | App-Bootstrap extrahiert (`app_bootstrap/`); `app.py` noch ~17k Zeilen; Boundary `review_required` | `docs/evidence/monolith/APP_PY_AFTER_DECOMPOSITION.md`, `docs/architecture/APP_BOOTSTRAP_ARCHITECTURE.md` |
+| **App.py Bootstrap / Decomposition** | **Gelb** | Factory, Middleware-, Router-Registry, Startup-Diagnostik, Dev-Dashboard-Service; **kein** Deploy; Live-Diagnose nach Sync | `docs/evidence/runtime-results/app_decomposition_before_rescue_iso_gate.json`, `docs/evidence/rescue/RESCUE_ISO_BUILD_READINESS_AFTER_APP_DECOMPOSITION.md` |
 | Website-Transparenz | Gelb | Markdown-Basis im Repo | `docs/roadmap/PUBLIC_STATUS_PAGE.md`, `docs/testing/WEBSITE_TRANSPARENCY_TEST_MATRIX.md` |
 | Affiliate / Monetarisierung | Gelb | Policies als Markdown | `docs/monetization/` |
 | Release Gate UG-Start | Rot | Gates nicht grün | `docs/roadmap/RELEASE_READINESS_CHECKLIST.md` |
@@ -52,8 +53,13 @@
 | **Rescue Developer ISO Dry-Build** | Gelb | Dry-Build Manifest `review_required` — prior ISO artifacts in tree (33), keine neuen Artefakte; Profile/Guard OK | `rescue_developer_iso_dry_build_manifest.json`, `RESCUE_DEVELOPER_ISO_DRY_BUILD_RESULT.md` |
 | **Rescue Developer Controlled ISO Build** | Grün | LB_EXIT=0, ISO+SHA256, developer agent in chroot, public guard OK; permission clean nach 8455e3c | `RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md`, `rescue_developer_controlled_iso_build_result.json` |
 | **Real Developer ISO Build** | Grün | Controlled build success run `103047`; kein USB | `controlled_iso_build_latest_summary.json` |
-| **Fleet Session Phase 1 Backend Runtime** | **Gelb** | Workspace-Implementierung + Pytest grün; Runtime-Check in diesem Lauf durch Legacy-Gate blockiert (`runtime_gate_blocked_static_only`) | `FLEET_SESSION_PHASE1_RESULT.md` |
-| **Fleet Session API Smoke** | **Gelb** | create/heartbeat/finish/get/list/summary statisch verifiziert; Live-OpenAPI nach Deploy prüfen | `FLEET_SESSION_PHASE1_RESULT.md` |
+| **Fleet Session Phase 1 Backend Runtime** | **Grün** | Live-Abnahme gegen `/opt` abgeschlossen: `local_lab` aktiv, Fleet-API live erreichbar, manueller Host-Session-Smoke durchgeführt, danach Rückschaltung auf `release` mit Gate grün | `FLEET_SESSION_PHASE1_RESULT.md`, `FLEET_SESSION_PHASE1_LIVE_ACCEPTANCE_RESULT.md` |
+| **Fleet Session API Smoke** | **Grün** | Genau ein manueller Live-Smoke ohne QEMU durchgeführt (create+finish+final read/persistenz), Release-Probes danach korrekt `HTTP 404 PROFILE_ROUTE_BLOCKED` | `FLEET_SESSION_PHASE1_LIVE_ACCEPTANCE_RESULT.md` |
+| **Fleet Session Persistence** | **Grün** | Persistenz des manuellen Runs unter Runtime-Pfad `/opt/setuphelfer/docs/evidence/runtime-results/dev-dashboard/fleet_sessions*.json*` nachgewiesen | `FLEET_SESSION_PHASE1_LIVE_ACCEPTANCE_RESULT.md` |
+| **Fleet Session Timeout Semantics** | **Grün** | Finalstatus `timeout` mit `qemu.exit_code=124` und Finding `qemu_timeout_124` live belegt | `FLEET_SESSION_PHASE1_LIVE_ACCEPTANCE_RESULT.md` |
+| **Fleet Session serial_empty Semantics** | **Grün** | `serial.size_bytes=0` und Finding `serial_empty` live sichtbar | `FLEET_SESSION_PHASE1_LIVE_ACCEPTANCE_RESULT.md` |
+| **Fleet Session guest_report_missing Semantics** | **Grün** | `guest.report_seen=false`, `dev_server_report_new=false` und Finding `guest_report_missing` live sichtbar | `FLEET_SESSION_PHASE1_LIVE_ACCEPTANCE_RESULT.md` |
+| **Fake VM Prevention** | **Grün** | Kein QEMU-Lauf, keine Fake-VM, kein Gast-Knoten ohne Ingest erzeugt | `FLEET_SESSION_PHASE1_LIVE_ACCEPTANCE_RESULT.md` |
 | **Fleet Session QEMU Wrapper JSON Payload** | **Grün** | ENV+Heredoc Payloads; Shell-Test + API smoke OK | `FLEET_SESSION_QEMU_WRAPPER_JSON_FIX_RESULT.md` |
 | **Fleet Session UI (Cockpit)** | **Grün** | Telemetry-Kachel `Lab Sessions` inkl. LED/KVM/Serial/Guest-Status implementiert | `FLEET_SESSION_PHASE1_RESULT.md` |
 | **Dev Diagnostic Export Backend** | **Grün** | Implementiert + pytest; `/api/dev-diagnostics/*` | `DEV_DIAGNOSTIC_EXPORT_RESULT.md` |
@@ -208,3 +214,27 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | P6 Website | Gelb | `WT-*.json`, `PUBLIC_STATUS_PAGE.md` |
 | P7 Affiliate | Gelb | `AT-*.json`, `docs/monetization/` |
 | P8 Release | Rot | `release_readiness_gate.json` |
+
+## Rescue Agent Stub Wave (2026-06-02)
+
+| Bereich | Status | Hinweis |
+|---|---|---|
+| Fleet Heartbeat Contract | Gelb | `agent_state` ergänzt, `status=running` neutralisiert |
+| Rescue Discovery | Gelb | Stub + Tests, kein Live-Netzscan |
+| Rescue Pairing | Gelb | Contract/Stub, keine produktive Freigabe |
+| Rescue E2EE | Gelb | Envelope-Contract/Stub, Produktivkrypto offen |
+| Rescue NFTables | Gelb | Preview/Validator, `apply_allowed=false` |
+| Rescue System Report | Gelb | Builder vorhanden, Safety-Facade-Lücke als review_required |
+| Rescue Dashboard | Gelb | Rescue-Agent-Panel Stub integriert |
+| Rescue Live Menü | Gelb | UI-Preview vorhanden, keine Live-Ausführung |
+
+## DCC Startability Recovery (2026-06-02)
+
+| Bereich | Status | Hinweis |
+|---|---|---|
+| Development Control Center Startability | Gelb | Statische Startfähigkeit belegt; Runtime-Restart/Deploy nicht ausgeführt |
+| Fehlerklassifikation | Gelb | `running_profile_blocked` + `deploy_drift` |
+| Runtime Gate | Gelb | Legacy non-profile-aware Hinweis, Profil-Release blockt Dev-Dashboard erwartbar |
+| Backend Tests | Gelb | `partial` (pytest mit `PYTHONPATH=backend:.` für neue Module erfolgreich) |
+| Rescue Agent Stub | Gelb | Router defensiv, live noch `not_live_due_to_deploy_drift` |
+| Deploy Drift | Rot | Workspace vs `/opt` bei DCC/Rescue-Dateien nicht synchron |

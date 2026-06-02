@@ -1,4 +1,58 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="${1:-$(pwd)}"
+APP_FILE="${ROOT}/backend/app.py"
+
+status="ok"
+warnings=()
+
+if [[ ! -f "${APP_FILE}" ]]; then
+  echo '{"status":"blocked","error":"app.py_missing"}'
+  exit 0
+fi
+
+line_count="$(wc -l < "${APP_FILE}" | tr -d ' ')"
+include_router_count="$(python3 - <<'PY'
+from pathlib import Path
+txt = Path("backend/app.py").read_text(encoding="utf-8", errors="ignore")
+print(txt.count("include_router("))
+PY
+)"
+
+for token in "mkfs" " dd " "lb build" "debootstrap"; do
+  if python3 - <<PY
+from pathlib import Path
+t = Path("${APP_FILE}").read_text(encoding="utf-8", errors="ignore").lower()
+print("1" if "${token}".strip().lower() in t else "0")
+PY
+  then :; fi >/tmp/.boundary_tmp
+  if [[ "$(cat /tmp/.boundary_tmp)" == "1" ]]; then
+    warnings+=("token_in_app:${token}")
+  fi
+done
+rm -f /tmp/.boundary_tmp
+
+if [[ "${include_router_count}" -gt 25 ]]; then
+  warnings+=("app_include_router_still_high:${include_router_count}")
+fi
+if [[ "${line_count}" -gt 3000 ]]; then
+  warnings+=("app_line_count_high:${line_count}")
+fi
+if [[ "${#warnings[@]}" -gt 0 ]]; then
+  status="review_required"
+fi
+
+printf '{"status":"%s","line_count":%s,"include_router_count":%s,"warnings":[' "${status}" "${line_count}" "${include_router_count}"
+for i in "${!warnings[@]}"; do
+  [[ "${i}" -gt 0 ]] && printf ','
+  printf '"%s"' "${warnings[$i]}"
+done
+printf ']}\n'
+exit 0
+
+# Legacy deep scan (optional): scripts/check-module-boundaries-deep.sh
+#!/usr/bin/env bash
 # Warn-only guard: duplicate module patterns before rescue stick growth.
 # Exit 0 = no warnings; 1 = warnings (CI may enable later).
 set -euo pipefail

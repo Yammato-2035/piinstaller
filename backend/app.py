@@ -61,6 +61,11 @@ from modules.backup import with_backup_contract
 from modules.storage_detection import BackupTargetValidationError, validate_backup_target
 from core.packaging_readiness_state import build_packaging_readiness_state
 from core.project_overview_dashboard_state import build_project_overview_dashboard_state
+from app_bootstrap.app_factory import create_app
+from app_bootstrap.middleware_registry import register_middlewares
+from app_bootstrap.router_registry import register_all_routes
+from app_bootstrap.startup_diagnostics import record_router_registry_result
+from app_bootstrap.version_router_diagnostics import inject_router_diagnostics
 
 # Update-Center: Kompatibilitäts-Gate für DEB-Build
 try:
@@ -216,7 +221,7 @@ async def _app_lifespan(app: FastAPI):
 
 
 # Erstelle FastAPI App
-app = FastAPI(
+app = create_app(
     title="SetupHelfer",
     description="Konfigurations-Assistent für Raspberry Pi und Linux",
     version=PI_INSTALLER_VERSION,
@@ -233,7 +238,6 @@ except Exception:
 
 
 # Debug: request_id pro Request (ContextVar), X-Request-ID im Response-Header
-@app.middleware("http")
 async def debug_request_id_middleware(request, call_next):
     token = bind_request_id()
     try:
@@ -249,7 +253,6 @@ async def debug_request_id_middleware(request, call_next):
         reset_request_id(token)
 
 
-@app.middleware("http")
 async def install_profile_route_gate_middleware(request, call_next):
     """Block Dev/Lab API paths when install profile capability is off (e.g. release)."""
     from core.install_profile import path_allowed_for_active_profile
@@ -264,6 +267,12 @@ async def install_profile_route_gate_middleware(request, call_next):
             },
         )
     return await call_next(request)
+
+
+REGISTERED_MIDDLEWARE_COUNT = register_middlewares(
+    app,
+    [debug_request_id_middleware, install_profile_route_gate_middleware],
+)
 
 
 @app.get("/api/system/status")
@@ -3123,48 +3132,39 @@ try:
         should_register_dev_server_router,
         should_register_dev_diagnostics_router,
         should_register_fleet_router,
+        should_register_rescue_agent_router,
         should_register_rescue_remote_router,
     )
 except Exception:
     should_register_dev_server_router = lambda: False  # type: ignore[misc, assignment]
     should_register_dev_diagnostics_router = lambda: False  # type: ignore[misc, assignment]
     should_register_fleet_router = lambda: False  # type: ignore[misc, assignment]
+    should_register_rescue_agent_router = lambda: False  # type: ignore[misc, assignment]
     should_register_rescue_remote_router = lambda: False  # type: ignore[misc, assignment]
 
-if should_register_dev_server_router():
-    try:
-        from devserver.routers import router as dev_server_router
+_profile_ctx = {"install_profile": os.environ.get("SETUPHELFER_INSTALL_PROFILE", "unknown")}
+_optional_routes = register_all_routes(
+    app,
+    _profile_ctx,
+    should_register_dev_server_router=should_register_dev_server_router,
+    should_register_fleet_router=should_register_fleet_router,
+    should_register_dev_diagnostics_router=should_register_dev_diagnostics_router,
+    should_register_rescue_remote_router=should_register_rescue_remote_router,
+    should_register_rescue_agent_router=should_register_rescue_agent_router,
+)
+record_router_registry_result(
+    install_profile=_profile_ctx["install_profile"],
+    backend_runtime_path=str(get_backend_runtime_dir().resolve()),
+    router_registry=_optional_routes.statuses,
+)
 
-        app.include_router(dev_server_router)
-    except Exception:
-        logger.exception("Dev-Server-Router konnte nicht registriert werden; /api/dev-server/* fehlt dann (404).")
-
-if should_register_fleet_router():
-    try:
-        from fleet.routers import router as fleet_sessions_router
-
-        app.include_router(fleet_sessions_router)
-    except Exception:
-        logger.exception("Fleet-Session-Router konnte nicht registriert werden; /api/fleet/sessions fehlt dann (404).")
-
-if should_register_dev_diagnostics_router():
-    try:
-        from dev_diagnostics.routers import router as dev_diagnostics_router
-
-        app.include_router(dev_diagnostics_router)
-    except Exception:
-        logger.exception(
-            "Dev-Diagnostics-Router konnte nicht registriert werden; /api/dev-diagnostics/* fehlt dann (404)."
-        )
-
-if should_register_rescue_remote_router():
-    try:
-        from rescue_remote.routers import router as rescue_remote_router
-
-        app.include_router(rescue_remote_router)
-    except Exception:
-        logger.exception(
-            "Rescue-Remote-Router konnte nicht registriert werden; /api/rescue-remote/* fehlt dann (404)."
+for _status in _optional_routes.statuses:
+    if _status.status == "import_failed":
+        logger.warning(
+            "Optional router import failed: %s (%s) %s",
+            _status.router,
+            _status.prefix,
+            _status.error or "",
         )
 
 def _is_demo_mode(request: Request) -> bool:
@@ -4102,7 +4102,7 @@ async def get_version():
         errs.extend(body.get("frontend_profile_audit_errors") or [])
         body["profile_gate_errors"] = errs
     body["dev_control_enabled"] = state.dev_control_enabled
-    return body
+    return inject_router_diagnostics(body)
 
 
 @app.get("/api/dev-dashboard/status")
@@ -4117,48 +4117,17 @@ async def dev_dashboard_status(
     ),
 ):
     """Read-only: Development Cockpit Gesamtstatus (kein Backup/Restore)."""
-    from core import dev_dashboard as dev_dashboard_core
+    from core.dev_dashboard_status_service import build_dev_dashboard_status
 
-    def _build_sync() -> dict[str, Any]:
-        for jid in list(BACKUP_JOBS.keys())[:32]:
-            _sync_stale_runner_job_from_systemd(jid)
-        running: list[dict[str, Any]] = []
-        for _job_id, job in BACKUP_JOBS.items():
-            status = job.get("status", "")
-            if status in ("queued", "running", "cancel_requested") or not status:
-                running.append(_job_snapshot(job))
-        pkg = _detect_active_package_operations()
-        fe_ver = (frontend_build_version or "").strip() or None
-        return dev_dashboard_core.build_dashboard_status(
-            running_jobs=running,
-            package_activity=pkg,
-            frontend_build_version=fe_ver,
+    try:
+        return await build_dev_dashboard_status(
+            backup_jobs=BACKUP_JOBS,
+            sync_stale_runner_job_from_systemd=_sync_stale_runner_job_from_systemd,
+            job_snapshot=_job_snapshot,
+            detect_active_package_operations=_detect_active_package_operations,
+            frontend_build_version=frontend_build_version,
             frontend_runtime_source=frontend_runtime_source,
         )
-
-    total_timeout = float(os.environ.get("SETUPHELFER_DASHBOARD_STATUS_TIMEOUT_SEC", "50"))
-    try:
-        body = await asyncio.wait_for(asyncio.to_thread(_build_sync), timeout=total_timeout)
-        return {"status": "success", "dashboard": body}
-    except asyncio.TimeoutError:
-        logger.warning("dev_dashboard_status: Gesamt-Timeout nach %.1fs", total_timeout)
-        from datetime import datetime, timezone
-
-        now = datetime.now(timezone.utc).isoformat()
-        degraded = {
-            "generated_at": now,
-            "updated_at": now,
-            "backend_running": True,
-            "warnings": ["section_timeout_or_unavailable:dashboard_status"],
-            "errors": [],
-            "deploy_drift": {"status": "gray", "warnings": ["dashboard_status_timeout"]},
-            "runtime_gate": {
-                "passed": False,
-                "status": "gray",
-                "warnings": ["dashboard_status_timeout"],
-            },
-        }
-        return {"status": "degraded", "warning": "dashboard_status_timeout", "dashboard": degraded}
     except Exception:
         logger.exception("dev_dashboard_status failed")
         raise
