@@ -10,6 +10,7 @@ Schritt-für-Schritt-Anleitung für einen **kontrollierten** Debian-Live-ISO-Bui
 
 ## Voraussetzungen
 
+0. **Precheck (2026-06-02):** `CONTROLLED_RESCUE_ISO_BUILD_PRECHECK_RESULT.md` — Release/Fleet/Ingest ok; Toolchain ok; **Cleanup** erforderlich wenn `binary/`/`chroot/` root-owned Reste vom Prior-Build.
 1. **Phase 0:** `./scripts/check-runtime-deploy-gate.sh` → Exit **0**
 2. **Toolcheck:** `docs/evidence/rescue/RESCUE_CONTROLLED_LIVE_BUILD_TOOL_CHECK.md` — `lb`, `xorriso`, `mksquashfs`, `grub-mkrescue` vorhanden
 3. **RSVG-Preflight:** Dashboard-/Executor-Status darf **nicht** `blocked_build_tools_missing` fuer `rsvg` melden
@@ -63,7 +64,7 @@ Vollständige Befehle: `docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_M
 
 | Exit | Bedeutung |
 |------|-----------|
-| **0** | Bundle, enabled Units, DE-Tastatur/Locale/Zeitzone, Login-Hinweis user/live |
+| **0** | Bundle, enabled Units, DE-Tastatur/Locale/Zeitzone, Login-Hinweis user/live, Konto `user` in `/etc/passwd` |
 | **11** | Setuphelfer-Bundle/Runtime-Marker fehlt in Squashfs |
 | **12** | systemd-Units nicht in `multi-user.target.wants` |
 | **13** | Keyboard/Locale/Timezone (de / de_DE.UTF-8 / Europe/Berlin) fehlt |
@@ -71,8 +72,18 @@ Vollständige Befehle: `docs/evidence/runtime-results/rescue/RESCUE_ISO_CHROOT_M
 | **15** | `init=/lib/systemd/systemd` fehlt in ISOLINUX `live.cfg` (PID 1 nicht systemd) |
 | **16** | `/usr/sbin/init` kein systemd-Symlink (nur wenn init= bootappend fehlt) |
 | **17** | dbus fehlt in Squashfs |
+| **18** | Konto `user` fehlt in Squashfs-`/etc/passwd` (live-config SysV läuft nicht mit `init=/lib/systemd/systemd`) |
 
-**Rebuild-Freigabe:** `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1` oder nach systemd-Fix `RESCUE_SYSTEMD_REBUILD_FREIGEGEBEN=1`.
+**Rebuild-Freigabe:** `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1`, `RESCUE_SYSTEMD_REBUILD_FREIGEGEBEN=1` oder `RESCUE_CHROOT_REBUILD_FREIGEGEBEN=1`.
+
+**Wichtig nach Hook-/Config-Änderungen:** live-build überspringt sonst den Chroot (`skipping binary_rootfs, already done`, Build ~15 s statt ~15–30 min). Mit Rebuild-Freigabe führt der Wrapper `./auto/clean` automatisch aus, wenn Config neuer als `binary/live/filesystem.squashfs` ist. Manuell:
+
+```bash
+cd build/rescue/live-build/setuphelfer-rescue-live
+sudo ./auto/clean
+```
+
+Danach erneut `run-controlled-iso-build-with-logging.sh --operator-confirm-build`. Post-build läuft `validate-rescue-iso-squashfs.sh` — **LB_EXIT=0 allein reicht nicht**, wenn Validator Exit **18** meldet.
 
 **Login im Live-System:** `user` / `live` — **root** an der Konsole ist gesperrt.
 

@@ -2,27 +2,22 @@
 
 **Stand:** 2026-06-02
 
-## Status
+## Precheck (NO BUILD)
 
-**`ready_for_controlled_iso_build_precheck`**
+**Status:** **`review_required`**
 
-| Voraussetzung | Status |
-|---------------|--------|
-| Rescue-Agent Ingest Stub Smoke | **ok** |
-| Release nach Ingest (Trap) | **ok** |
-| profile_gate | **green** |
-| Fleet / DCC (vorher) | **green** |
+Controlled precheck abgeschlossen — siehe `CONTROLLED_RESCUE_ISO_BUILD_PRECHECK_RESULT.md`.
 
-## ISO-Build
+| Bereich | Ergebnis |
+|---------|----------|
+| Dependencies (Fleet/DCC/Ingest) | **ok** |
+| Toolchain | **ok** |
+| Build-Tree | **blocked_by_root_owned_leftovers** |
 
-**not_run / not_approved** — nur Precheck read-only freigegeben.
+## Freigabe
 
-Rescue-Gesamtstatus bleibt **nicht grün** ohne echtes ISO-/Boot-/USB-Artefakt.
-
-## Guards
-
-Kein ISO-Build, QEMU, USB in diesem Lauf.
+**`ready_for_controlled_iso_build_operator_run`** — **noch nicht** (Cleanup erforderlich).
 
 ## Nächster Schritt
 
-Controlled ISO build precheck (NO BUILD).
+Operator: `clean-controlled-live-build-tree.sh --operator-confirm-clean` → prepare → validate → Build mit `--operator-confirm-build`.
