@@ -54,6 +54,8 @@ SETUPHELFER_RESCUE_BUILD_PROFILE=developer-qemu \
 
 **QEMU-Smoke Preflight (2026-06-03):** `qemu-guest-agent-smoke-operator.sh` prüft vor QEMU: `local_lab`, `dev_control_enabled`, Fleet- und Dev-Dashboard-API HTTP 200; Exit 21 bei Block. Prior Guest-Report-Ausfälle bei `release` nicht als Agent-Defekt werten. Evidence: `QEMU_GUEST_AGENT_DEVSERVER_PREFLIGHT_GUARD_RESULT.md`.
 
+**Post-Preflight Smoke Ingest (2026-06-03):** Kein Evidence-Run nach ISO `614cc86e…` / Guard-Commit — Ingest **blocked** (`qemu_operator_smoke_incomplete`). Operator muss Smoke erneut ausführen; Release-Trap ok. Evidence: `QEMU_GUEST_AGENT_SMOKE_AFTER_PREFLIGHT_RESULT.md`.
+
 ## Build-Verzeichnis
 
 ```

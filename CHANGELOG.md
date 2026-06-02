@@ -32,7 +32,8 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Developer QEMU ISO rebuild verify ingest:** LB_EXIT=0, profile=developer-qemu, new ISO SHA `3ee02b36…`, serial bootappend OK; autopilot not in multi-user.target.wants — review_required before QEMU smoke.
 - **Developer QEMU autopilot wants fix:** static wants symlink in prepare (developer-qemu only); validators extended; ready for ISO rebuild operator run.
 - **Developer QEMU ISO rebuild after autopilot fix ingest:** agent build blocked exit 30; ISO unchanged pre-fix SHA; operator terminal required.
-- **Developer QEMU ISO after autopilot success ingest:** operator LB_EXIT=0; ISO SHA `614cc86e…`; autopilot wants verified in squashfs; validator exit 0; devserver preflight guard in qemu-guest-agent-smoke-operator; ready for operator smoke (no build/QEMU in ingest).
+- **Developer QEMU ISO after autopilot success ingest:** operator LB_EXIT=0; ISO SHA `614cc86e…`; autopilot wants verified in squashfs; devserver preflight guard; ready for operator smoke (no build/QEMU in ingest).
+- **QEMU guest agent smoke after preflight ingest:** no post-fix smoke evidence in repo; blocked `qemu_operator_smoke_incomplete`; operator re-run required; release trap verified ok.
 
 ## [1.7.3.0] — 2026-05-30
 
