@@ -3,53 +3,59 @@
 **Stand:** 2026-06-02  
 **Status:** **blocked** (`rescue_agent_ingest_blocked_sudo_required`)
 
-## Durchgeführt
+## Zusammenfassung
 
 | Phase | Ergebnis |
 |-------|----------|
-| 0 — Release-Block vor Ingest | **ok** — alle `/api/rescue-agent/*` → `PROFILE_ROUTE_BLOCKED` |
-| 1 — OpenAPI/Contract read-only | **ok** — siehe `RESCUE_AGENT_INGEST_OPENAPI_CONTRACT_CHECK.md` |
-| 2 — `local_lab` aktivieren | **blocked** — `sudo: Ein Passwort ist notwendig` |
-| 3–7 — Live-Smoke | **not_run** |
-| 8 — Release nach Smoke | **not_run** (Runtime blieb `release`) |
+| 0–1 Release-Baseline | **ok** — `PROFILE_ROUTE_BLOCKED` auf allen Rescue-Agent-Routen |
+| 2 `local_lab` aktivieren | **blocked** (Agent: sudo Passwort; Operator-Terminal: Profil-Toggle ohne curl-Tests) |
+| 3–7 Live-Ingest | **not_run** |
+| 8 Release nach Smoke | Runtime bereits **`release`** (Operator-Toggle zurück) |
 
-## Nicht behauptet
+**Smoke-Dir (Workspace, nicht committed):** `docs/evidence/rescue/rescue_agent_ingest_operator_smoke_20260602_181543/`  
+**Rohlog:** `smoke.log` — Baseline + sudo-Block
 
-- Kein Live-Registration-Stub
-- Kein Live-Report-Ingest
-- Kein Fake-Green
+## Release-Baseline (belegt)
 
-## Contract (read-only belegt)
+| Feld | Wert |
+|------|------|
+| `install_profile` | `release` |
+| `rescue_agent_router_status` | `disabled_by_profile` |
+| `GET /api/rescue-agent/sessions` | 404 `PROFILE_ROUTE_BLOCKED` |
+
+## Operator-Hinweis
+
+Terminal-6 zeigt `local_lab` → `release` Toggle (exit 0), aber **keine** Register/Report-curls. Vollständigen Smoke in interaktivem Terminal mit sudo ausführen (siehe Runbook unten).
+
+## Contract (unverändert)
 
 | Thema | Status |
 |-------|--------|
 | E2EE | `contract_stub_only` |
 | nftables | `preview_only_apply_false` |
-| Write/Apply-Routen | **none** unter `/api/rescue-agent` |
+| Write/Apply unter `/api/rescue-agent` | **none** |
+| Live-API-Body | `session_id`, `agent_id`, `test_mode_allow_unencrypted` |
 
-## Operator — Smoke fortsetzen
+Unit-Referenz: `backend/tests/test_rescue_agent_api_contract_v1.py` (pytest im Smoke-Dir `raw/pytest_contract_reference.log` — **nicht** Live-Smoke).
+
+## Operator-Runbook (vollständiger Smoke)
 
 ```bash
 cd /home/volker/piinstaller
-
-# local_lab
-sudo install -m 0644 packaging/systemd/dropins/92-install-profile-local-lab.conf.example \
-  /etc/systemd/system/setuphelfer-backend.service.d/install-profile.conf
-sudo systemctl daemon-reload && sudo systemctl restart setuphelfer-backend.service
-
-# Negative + Register + Report (siehe STRICT-MODE-Runbook)
-# …
-
-# release zurück
-sudo install -m 0644 packaging/systemd/dropins/92-install-profile-release.conf.example \
-  /etc/systemd/system/setuphelfer-backend.service.d/install-profile.conf
-sudo systemctl daemon-reload && sudo systemctl restart setuphelfer-backend.service
+TS="$(date -u +%Y%m%d_%H%M%S)"
+SMOKE_DIR="docs/evidence/rescue/rescue_agent_ingest_operator_smoke_${TS}"
+RAW_DIR="$SMOKE_DIR/raw"
+mkdir -p "$RAW_DIR"
+LOG="$SMOKE_DIR/smoke.log"
+# … Phasen 1–8 wie STRICT-MODE-Auftrag …
 ```
 
-## API-Body-Hinweis (Contract)
-
-Live-API erwartet `SystemReportBody`: `session_id`, `agent_id`, optional `encrypted_envelope`, `test_mode_allow_unencrypted` — nicht das flache JSON aus älteren Runbook-Entwürfen.
+Nach erfolgreichem Lauf: `rescue_agent_report_ingest_stub_smoke_latest.json` auf `ok` setzen.
 
 ## JSON
 
 `rescue_agent_report_ingest_stub_smoke_latest.json`
+
+## Bewertung
+
+**Kein Fake-Green.** Live-Ingest unbelegt bis Operator-Smoke mit Rohlogs abgeschlossen.

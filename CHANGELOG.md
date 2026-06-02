@@ -18,7 +18,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Release restore after fleet smoke:** blocked at sudo; ingest/ISO precheck remain `blocked_by_release_restore`.
 - **Operator release restore ingest:** `release` live; profile gate green; ingest stub and ISO precheck readiness unlocked (yellow, smoke not run).
 - **Release restore re-ingest:** `release_restore_status=ok`, drift yellow/evidence-only, ingest primary next step.
-- **Rescue agent ingest stub smoke:** blocked at sudo; release block before ingest verified; ISO precheck blocked until smoke completes.
+- **Rescue agent ingest stub smoke:** blocked at sudo; baseline raw log in `rescue_agent_ingest_operator_smoke_20260602_181543`; operator profile toggle without ingest curls.
 
 ## [1.7.3.0] — 2026-05-30
 

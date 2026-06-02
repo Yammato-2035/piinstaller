@@ -6,22 +6,23 @@
 
 **`blocked_by_ingest_smoke_not_completed`**
 
-Ingest-Stub-Smoke: **blocked** (`rescue_agent_ingest_blocked_sudo_required`).
+Rescue-Agent-Ingest Live-Smoke: **blocked** (sudo / Operator-curls fehlen).
 
 ## ISO-Precheck
 
-**Nicht freigegeben** bis Ingest-Smoke ok/review_required-safe **und** `release` nach Smoke belegt.
+**Nicht freigegeben** bis Ingest `ok` oder `review_required-safe` **und** `release` nach Smoke belegt.
 
-## Vorherige Readiness (Deploy 55b7bce)
-
-Release-Restore, Fleet, DCC, Drift yellow — weiterhin gültig als Voraussetzung, aber **Ingest-Lücke** blockiert Precheck-Freigabe.
+| Stufe | Status |
+|-------|--------|
+| Rescue-Agent Ingest Stub | **blocked** |
+| Controlled ISO build precheck | **blocked_by_ingest_smoke_not_completed** |
 
 ## Guards
 
-Kein ISO-Build, kein controlled ISO build in diesem Lauf.
+Kein ISO-Build in diesem Lauf.
 
 ## Nächster Schritt
 
-1. Operator: Rescue-Agent Ingest Stub Smoke abschließen
-2. Release wiederherstellen
+1. Operator-Ingest-Smoke abschließen  
+2. Release verifizieren  
 3. Dann `ready_for_controlled_iso_build_precheck`
