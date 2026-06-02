@@ -238,4 +238,5 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | Backend Tests | Gelb | `partial` (pytest mit `PYTHONPATH=backend:.` für neue Module erfolgreich) |
 | Rescue Agent Stub | Gelb | Commit `2e602d0`; Deploy-Sync **blockiert** (`sudo`); `/opt` ohne `rescue_agent/` | `DEPLOY_SYNC_2E602D0_POST_DEPLOY_RESULT.md` |
 | **Deploy-Sync 2e602d0** | **Grün** | Deploy aus Worktree OK; `/opt` mit `app_bootstrap`+`rescue_agent`; Router-Diagnose live; Profil-Gate Exit 0 | `DEPLOY_SYNC_2E602D0_POST_DEPLOY_RESULT.md` |
+| **Fleet Heartbeat Live Smoke** | **Gelb** | Finish Exit-1 = Script `${3:-{}}` JSON-Korruption (Fix Workspace); API 200 per curl | `FLEET_FINISH_EXIT1_TRIAGE_RESULT.md` |
 | Deploy Drift | Rot | Workspace vs `/opt` bei DCC/Rescue-Dateien nicht synchron |

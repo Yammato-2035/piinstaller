@@ -284,7 +284,10 @@ fleet_session_create() {
 }
 
 fleet_session_patch() {
-  local session_id="$1" action="$2" payload="${3:-{}}"
+  local session_id="$1" action="$2" payload="${3-}"
+  if [[ -z "$payload" ]]; then
+    payload="{}"
+  fi
   local resp
   if ! fleet_validate_json "$payload"; then
     _fleet_log_json_error "wrapper_json_invalid action=${action} session_id=${session_id}"

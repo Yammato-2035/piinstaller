@@ -1,7 +1,9 @@
 # Fleet Heartbeat Fix — Live-Smoke
 
 **Stand:** 2026-06-02  
-**Status:** **blocked** (Deploy nicht erfolgt)
+**Status:** **review_required** (Exit-1 triagiert: Script-Bug `${3:-{}}`; API Finish OK per curl; Fix im Workspace)
+
+**Triage:** `FLEET_FINISH_EXIT1_TRIAGE_RESULT.md`, `fleet_finish_exit1_triage_20260602_162848/`
 
 ## Geplanter Ablauf (nach Deploy + local_lab)
 

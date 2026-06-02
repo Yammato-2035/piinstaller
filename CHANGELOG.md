@@ -12,6 +12,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Evidence:** `docs/evidence/monolith/*`, `app_decomposition_before_rescue_iso_gate.json`; ISO-Readiness Precheck dokumentiert (kein Build in diesem Lauf).
 - **Rescue Agent / Fleet:** Contract-Stubs (`rescue_agent/`), Fleet-Heartbeat `agent_state` vs. `status=running`, DCC `RescueAgentPanel`, Live-Menü-Stub; E2EE `contract_stub_only`, nftables `apply_allowed=false`.
 - **Deploy 2e602d0:** Sauberer Worktree vorbereitet; Deploy blockiert (`sudo`); Evidence unter `docs/evidence/deploy/DEPLOY_SYNC_2E602D0_*`.
+- **Fleet finish Exit-1:** Triage — `fleet_session_patch` `${3:-{}}` korrumpiert JSON; Fix `${3-}`; API Finish unverändert OK.
 
 ## [1.7.3.0] — 2026-05-30
 
