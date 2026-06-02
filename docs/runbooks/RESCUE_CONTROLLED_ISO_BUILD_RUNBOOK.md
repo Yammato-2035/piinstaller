@@ -1,6 +1,6 @@
 # Runbook — Controlled Rescue ISO Build
 
-**Version:** 1.2
+**Version:** 1.3
 **real_iso_build_allowed:** `false` (bis explizite Operator-Freigabe)
 **usb_write_allowed:** `false`
 
@@ -32,10 +32,19 @@ Schritt-für-Schritt-Anleitung für einen **kontrollierten** Debian-Live-ISO-Bui
 ./scripts/rescue-live/create-temp-runtime-bundle.sh
 ./scripts/rescue-live/validate-temp-runtime-bundle.sh \
   build/rescue/temp-runtime/setuphelfer-rescue-runtime
+
+# Standard-Release-ISO (defensiv: quiet splash, kein QEMU-Autopilot):
 ./scripts/rescue-live/prepare-controlled-live-build-tree.sh
+
+# Developer-QEMU-ISO (Serial ttyS0 + Autopilot-Hook 090 — für QEMU Guest-Agent Smoke):
+SETUPHELFER_RESCUE_BUILD_PROFILE=developer-qemu \
+  ./scripts/rescue-live/prepare-controlled-live-build-tree.sh
+
 ./scripts/rescue-live/validate-controlled-live-build-tree.sh \
   build/rescue/live-build/setuphelfer-rescue-live
 ```
+
+**Profil-Hinweis (2026-06-02):** QEMU-Autopilot-Smoke erfordert **developer-qemu**-Profil. Standard-ISO (`quiet splash`, kein `console=ttyS0`, Autopilot nicht enabled) führt zu Serial 0 B / `guest_report_missing`. Evidence: `DEVELOPER_QEMU_PROFILE_FIX_RESULT.md`.
 
 ## Build-Verzeichnis
 

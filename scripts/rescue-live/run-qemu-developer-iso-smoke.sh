@@ -38,6 +38,45 @@ EOF
 
 die() { echo "ERROR: $*" >&2; exit 1; }
 
+assert_developer_qemu_iso_ready() {
+  [[ "$AUTOPILOT" == true ]] || return 0
+  local manifest="${REPO_ROOT}/build/rescue/live-build/setuphelfer-rescue-live/evidence/build-tree-manifest.json"
+  [[ -f "$manifest" ]] || die "autopilot requires prepared build tree manifest: $manifest"
+  python3 - "$manifest" <<'PY' || die "ISO/build-tree not ready for QEMU autopilot (need developer-qemu prepare + rebuild)"
+import json
+import sys
+from pathlib import Path
+
+manifest = Path(sys.argv[1])
+data = json.loads(manifest.read_text(encoding="utf-8"))
+profile = data.get("rescue_build_profile")
+errors = []
+if profile != "developer-qemu":
+    errors.append(f"rescue_build_profile={profile!r} (need developer-qemu)")
+if not data.get("qemu_serial_console_configured"):
+    errors.append("qemu_serial_console_configured=false")
+if not data.get("qemu_smoke_autopilot_hook"):
+    errors.append("qemu_smoke_autopilot_hook=false")
+build_root = manifest.parent.parent
+auto_config = build_root / "auto/config"
+if auto_config.is_file():
+    text = auto_config.read_text(encoding="utf-8")
+    if "console=ttyS0" not in text:
+        errors.append("auto/config missing console=ttyS0")
+    if "quiet splash" in text:
+        errors.append("auto/config still has quiet splash (standard profile)")
+else:
+    errors.append(f"missing {auto_config}")
+hook = build_root / "config/hooks/normal/090-enable-qemu-smoke-autopilot.hook.chroot"
+if not hook.is_file():
+    errors.append(f"missing {hook}")
+if errors:
+    print("QEMU_AUTOPILOT_ISO_PROFILE_MISMATCH:", "; ".join(errors), file=sys.stderr)
+    sys.exit(1)
+print("OK: developer-qemu build tree ready for autopilot smoke")
+PY
+}
+
 prepare_serial_log() {
   local serial_dir
   serial_dir="$(dirname "$SERIAL_LOG")"
@@ -214,6 +253,8 @@ if [[ "$CONFIRM" != true ]]; then
   echo "DRY-RUN: pass --operator-confirm-qemu"
   exit 20
 fi
+
+assert_developer_qemu_iso_ready
 
 command -v qemu-system-x86_64 >/dev/null || die "qemu-system-x86_64 missing"
 

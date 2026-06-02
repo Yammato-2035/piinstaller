@@ -539,7 +539,10 @@ write_text_file "${BUILD_ROOT}/evidence/build-tree-manifest.json" 0644 <<EOF
   "real_iso_build_allowed": false,
   "usb_write_allowed": false,
   "rescue_build_profile": "${RESCUE_BUILD_PROFILE}",
-  "developer_agent_in_tree": $([ "${RESCUE_BUILD_PROFILE}" = "developer" ] || [ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false)
+  "developer_agent_in_tree": $([ "${RESCUE_BUILD_PROFILE}" = "developer" ] || [ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false),
+  "qemu_serial_console_configured": $([ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false),
+  "qemu_smoke_autopilot_hook": $([ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false),
+  "qemu_guest_devserver_endpoint": "http://10.0.2.2:8001"
 }
 EOF
 

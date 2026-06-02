@@ -27,6 +27,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Controlled rescue ISO build ingest:** operator LB_EXIT=0; ISO SHA `505989f7…` verified; squashfs validator exit 0; ready for QEMU guest-agent smoke (no build/QEMU/USB in ingest run).
 - **QEMU guest agent smoke:** blocked in agent session (sudo/local_lab); operator handoff script prepared; no QEMU executed.
 - **QEMU guest agent operator smoke ingest:** run 20260602_202725 blocked — serial empty, timeout 124, guest_report_missing; root cause serial capture failure on standard-profile ISO.
+- **Developer QEMU profile fix (no build):** `developer-qemu` Prepare materializes `console=ttyS0`, Hook 090, autopilot preflight guard; standard ISO unchanged; validate exit 11 (stale root-owned binary/); review_required until operator rebuild.
 
 ## [1.7.3.0] — 2026-05-30
 

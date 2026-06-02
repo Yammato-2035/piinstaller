@@ -1,5 +1,6 @@
 #!/bin/sh
 set -eu
 systemctl enable systemd-networkd.service || true
+systemctl enable setuphelfer-rescue-keyboard.service || true
 systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true

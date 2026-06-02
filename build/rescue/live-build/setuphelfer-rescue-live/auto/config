@@ -4,10 +4,12 @@ lb config noauto \
   --distribution bookworm \
   --archive-areas "main" \
   --binary-images iso-hybrid \
+  --zsync false \
   --debian-installer false \
   --security false \
   --firmware-chroot false \
   --firmware-binary false \
-  --bootappend-live "boot=live components quiet splash setuphelfer_rescue=1" \
+  --mode debian \
+  --bootappend-live "boot=live components init=/lib/systemd/systemd console=tty0 console=ttyS0,115200n8 loglevel=7 systemd.log_level=debug systemd.show_status=true ignore_loglevel printk.devkmsg=on setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin" \
   --iso-volume "SETUPHELFER_RESCUE" \
   --iso-application "Setuphelfer Rescue Live"

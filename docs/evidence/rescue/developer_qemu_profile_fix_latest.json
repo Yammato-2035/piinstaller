@@ -1,0 +1,30 @@
+{
+  "task": "developer_qemu_profile_fix",
+  "status": "review_required",
+  "status_note": "prepare_exit=0; validate_exit=11 due to root-owned stale binary/live/filesystem.squashfs from prior standard ISO build; operator sudo ./auto/clean required before validate 0",
+  "root_cause_previous": "qemu_serial_capture_failure",
+  "secondary_causes": [
+    "guest_agent_autostart_gap",
+    "profile_mismatch_standard_iso_vs_developer_qemu_smoke"
+  ],
+  "fix_variant": "A_developer_qemu_profile",
+  "console_ttyS0_configured": true,
+  "systemd_init_preserved": true,
+  "qemu_autopilot_service_enabled": true,
+  "qemu_autopilot_enable_mechanism": "hook_090_chroot_build",
+  "dev_agent_service_enabled": false,
+  "dev_agent_enable_note": "developer-qemu uses autopilot unit instead of separate dev-agent enable",
+  "devserver_endpoint": "http://10.0.2.2:8001",
+  "rescue_agent_module_required": false,
+  "rescue_agent_module_included": false,
+  "prepare_exit": 0,
+  "validate_exit": 11,
+  "validate_blocker": "stale_root_owned_binary_artifacts",
+  "no_iso_build": true,
+  "no_qemu": true,
+  "no_usb": true,
+  "no_host_disk": true,
+  "no_backup": true,
+  "no_restore": true,
+  "next_recommended_action": "developer_qemu_iso_rebuild_operator_run_with_sudo_auto_clean_first"
+}

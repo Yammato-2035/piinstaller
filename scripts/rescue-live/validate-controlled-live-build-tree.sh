@@ -201,5 +201,43 @@ PY
 
 "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/validate-live-build-dpkg-preflight.sh" "$BUILD_ROOT"
 
+MANIFEST="${BUILD_ROOT}/evidence/build-tree-manifest.json"
+python3 - "$MANIFEST" "$BUILD_ROOT" <<'PY' || fail_missing "developer-qemu profile markers incomplete (see stderr)"
+import json
+import sys
+from pathlib import Path
+
+manifest = Path(sys.argv[1])
+build_root = Path(sys.argv[2])
+if not manifest.is_file():
+    sys.exit(0)
+data = json.loads(manifest.read_text(encoding="utf-8"))
+if data.get("rescue_build_profile") != "developer-qemu":
+    sys.exit(0)
+
+errors = []
+auto = (build_root / "auto/config").read_text(encoding="utf-8") if (build_root / "auto/config").is_file() else ""
+if "console=ttyS0" not in auto:
+    errors.append("auto/config missing console=ttyS0")
+if "quiet splash" in auto:
+    errors.append("auto/config has quiet splash (not developer-qemu)")
+if not (build_root / "config/hooks/normal/090-enable-qemu-smoke-autopilot.hook.chroot").is_file():
+    errors.append("missing 090-enable-qemu-smoke-autopilot.hook.chroot")
+if not (build_root / "config/includes.chroot/usr/local/sbin/setuphelfer-qemu-smoke-autopilot.sh").is_file():
+    errors.append("missing setuphelfer-qemu-smoke-autopilot.sh")
+isolinux = build_root / "config/bootloaders/isolinux/isolinux.cfg"
+if isolinux.is_file() and "SERIAL 0" not in isolinux.read_text(encoding="utf-8"):
+    errors.append("isolinux.cfg missing SERIAL 0 (developer-qemu)")
+if not data.get("qemu_serial_console_configured"):
+    errors.append("manifest qemu_serial_console_configured=false")
+if not data.get("qemu_smoke_autopilot_hook"):
+    errors.append("manifest qemu_smoke_autopilot_hook=false")
+if errors:
+    for e in errors:
+        print(f"DEVELOPER_QEMU: {e}", file=sys.stderr)
+    sys.exit(1)
+print("OK: developer-qemu profile markers present")
+PY
+
 echo "OK: controlled live build tree validation passed"
 exit 0

@@ -49,7 +49,7 @@
 | **Controlled ISO build prep (live-build tree)** | Grün | Tree + Bundle Validator Exit 0 | `RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md` |
 | **Controlled ISO build precheck (no build)** | Grün | Cleanup ok; Validate Exit 0; Operator-Build freigegeben | `controlled_iso_build_precheck_latest.json` |
 | **Controlled ISO build (2026-06-02)** | Gelb | LB_EXIT=0; Artefakt ok; Squashfs-Validator 0; **kein Boot/USB** | `CONTROLLED_RESCUE_ISO_BUILD_RESULT.md` |
-| **QEMU Guest Agent Smoke** | Rot | Operator-Autopilot blocked: Serial 0 B, Exit 124; Standard-ISO Profil-Mismatch; guest_report_missing | `QEMU_GUEST_AGENT_FAILURE_CLASSIFICATION.md`, `qemu_guest_agent_smoke_latest.json` |
+| **QEMU Guest Agent Smoke** | Rot | Operator-Autopilot blocked: Serial 0 B, Exit 124; Standard-ISO Profil-Mismatch; guest_report_missing; **Fix vorbereitet** (developer-qemu Prepare, kein Rebuild) | `QEMU_GUEST_AGENT_FAILURE_CLASSIFICATION.md`, `DEVELOPER_QEMU_PROFILE_FIX_RESULT.md` |
 | **Controlled ISO build execution** | Grün | Developer controlled build `rescue_developer_iso_20260531_103047` — LB_EXIT=0, summary success, permission clean after 8455e3c | `RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md`, `controlled_iso_build_latest_summary.json` |
 | **Rescue ISO artifact** | Grün | Developer ISO `binary.hybrid.iso` (509607936 B), SHA256 `52da3e018ccb…`; unterscheidet sich von archivierter Prior-ISO | `rescue_developer_iso_latest.sha256`, `rescue_developer_controlled_iso_build_result.json` |
 | **Rescue Developer Profile + Dev Agent** | Grün | Developer profile validiert; Public auto-upload blockiert; Guard Exit 0 (`8e07acf`) | `docs/evidence/dev-server/DEV_AGENT_RESCUE_PROFILE_INTEGRATION.md`, `build/rescue/profiles/developer/` |

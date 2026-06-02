@@ -1,5 +1,6 @@
 systemd
 systemd-sysv
+dbus
 ca-certificates
 curl
 jq
@@ -11,3 +12,10 @@ smartmontools
 python3
 python3-venv
 python3-pip
+syslinux-utils
+console-setup
+keyboard-configuration
+kbd
+x11-xkb-utils
+locales
+tzdata
