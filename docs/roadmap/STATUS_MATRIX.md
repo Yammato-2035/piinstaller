@@ -242,4 +242,7 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | **Fleet Script 55b7bce in /opt** | **Grün** | `${3-}` live; Fleet-Smoke Create+HB+Finish ok | `FLEET_HEARTBEAT_FIX_AFTER_SCRIPT_FIX_RESULT.md` |
 | **DCC Port Mapping** | **Grün** | 3001=UI, 8000=API, 8080=nginx (kein DCC) | `DCC_PORT_MAPPING_RESULT.md` |
 | **DCC Read-Only Smoke** | **Grün** | `local_lab`: dev-dashboard 200, UI SimpleHTTP :3001 | `DCC_READONLY_SMOKE_AFTER_PORT_MAPPING.md` |
+| **Release-Profil nach Fleet-Smoke** | **Rot** | Restore **blocked** (`sudo`); Runtime noch `local_lab` | `RELEASE_PROFILE_RESTORE_AFTER_FLEET_SMOKE_RESULT.md` |
+| **Rescue-Agent Ingest Stub** | **Rot** | `blocked_by_release_restore` | `RESCUE_AGENT_INGEST_STUB_SMOKE_READINESS.md` |
+| **ISO Precheck** | **Rot** | `blocked_by_release_restore` (kein Build) | `RESCUE_ISO_BUILD_READINESS_AFTER_DEPLOY_55B7BCE.md` |
 | Deploy Drift | Rot | Workspace vs `/opt` bei DCC/Rescue-Dateien nicht synchron |

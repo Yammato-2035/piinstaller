@@ -26,3 +26,12 @@
 ## 8080 ausgeschlossen
 
 **yes** — kein SetupHelfer-DCC-Fehler auf Port 8080.
+
+## Nach Fleet-Smoke (Release-Pfad)
+
+| Kontext | DCC-API |
+|---------|---------|
+| `local_lab` (aktuell) | 200 — **ok** |
+| `release` (Ziel nach Restore) | 404 `PROFILE_ROUTE_BLOCKED` — **blocked_by_profile_expected**, kein Fehler |
+
+Port-Mapping bleibt **green** (3001 UI, 8000 API, 8080 nginx).

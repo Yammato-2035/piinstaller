@@ -29,6 +29,15 @@
 
 `fleet_script_bash_parameter_expansion_corrupts_json_payload` → **resolved** in `55b7bce`, live nach `/opt`-Script-Sync.
 
+## Einordnung (final)
+
+| Thema | Status |
+|-------|--------|
+| Fleet Heartbeat Fix | **green / ok** |
+| Root Cause | **resolved_in_55b7bce** |
+| Weitere Fleet-Session | **nicht nötig** |
+| Release-Restore | Operator ausstehend (sudo) |
+
 ## Guards
 
 Kein ISO, QEMU, USB, Backup, Restore, Fake-VM.

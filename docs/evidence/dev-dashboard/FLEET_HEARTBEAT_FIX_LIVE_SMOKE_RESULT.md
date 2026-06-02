@@ -35,4 +35,11 @@ Geplanter API-Smoke war korrekt gegen **:8000**; Shell-Exit 1 kam vom Wrapper, n
 
 ## Release
 
-Nach Fleet-/Lab-Arbeit: `release` wiederherstellen — `FLEET_FINISH_EXIT1_RELEASE_PROFILE_HANDOFF.md` (Operator, kein Auto-Switch in Doku-Läufen).
+Nach Fleet-/Lab-Arbeit: `release` wiederherstellen — **ausstehend** (`RELEASE_PROFILE_RESTORE_AFTER_FLEET_SMOKE_RESULT.md`: **blocked**, sudo).
+
+| API unter `release` | Bewertung |
+|---------------------|-----------|
+| `/api/dev-dashboard/status` | `blocked_by_profile_expected` — kein Fehler |
+| `/api/fleet/sessions` | `blocked_by_profile_expected` — kein Fehler |
+
+Keine weitere Fleet-Session erforderlich.
