@@ -22,6 +22,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Rescue ingest profile guard:** operator curls hit PROFILE_ROUTE_BLOCKED in release; use guarded script with trap in Terminal 6.
 - **Rescue agent operator smoke ok:** session rescue-c73a719c; ingest stub green; ISO precheck ready (no build).
 - **Controlled ISO build precheck (no build):** review_required; root-owned build-tree leftovers; cleanup handoff before operator run.
+- **Rescue ISO build-tree cleanup:** operator clean ok; validate exit 14 blocks operator build until PYTHONPATH override reviewed.
 
 ## [1.7.3.0] — 2026-05-30
 

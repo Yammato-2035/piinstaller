@@ -245,5 +245,5 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | **Release-Profil nach Fleet-Smoke** | **Grün** | Operator-Restore `release`; Profil-Gate Exit 0 | `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md` |
 | **Runtime-Code-Drift** | **Gelb** | Backend/Rescue/Fleet-Skript match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |
 | **Rescue-Agent Ingest Stub** | **Grün** | Operator-Smoke ok (`…182452`); Register+Report+Trap release | `RESCUE_AGENT_OPERATOR_SMOKE_INGEST.md` |
-| **ISO Precheck** | **Gelb** | Precheck **review_required** — Cleanup vor Operator-Build | `CONTROLLED_RESCUE_ISO_BUILD_PRECHECK_RESULT.md` |
+| **ISO Precheck** | **Gelb** | Cleanup **ok**; Validate Exit 14 blockiert Operator-Build | `RESCUE_ISO_BUILD_TREE_CLEANUP_RESULT.md` |
 | Deploy Drift | Gelb | Evidence-only HEAD; Backend/Rescue/Fleet match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |

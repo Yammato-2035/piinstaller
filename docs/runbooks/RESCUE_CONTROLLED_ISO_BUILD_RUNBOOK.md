@@ -45,6 +45,8 @@ build/rescue/live-build/setuphelfer-rescue-live/
 
 ## Chroot-/Mount-Cleanup (RESCUE-BUILD-CHROOT-CLEANUP-001)
 
+**2026-06-02:** Operator-Cleanup **ok** (13 Pfade, Prior-ISO entfernt). Validate danach Exit 14 (`dangerous_path_override`) — siehe `RESCUE_ISO_BUILD_TREE_CLEANUP_RESULT.md`.
+
 Wenn der letzte Lauf mit `chroot/proc` + „Vorgang nicht zulässig“ und fehlendem `/usr/bin/env` endet:
 
 1. **Nur** Mountpoints unter `BUILD_TREE` mit `findmnt -R` prüfen.
