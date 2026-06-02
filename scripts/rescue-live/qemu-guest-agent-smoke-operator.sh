@@ -26,6 +26,41 @@ restore_release() {
 
 trap restore_release EXIT
 
+abort_preflight() {
+  echo "ABORT: $1" | tee -a "$LOG"
+  exit "${2:-21}"
+}
+
+assert_devserver_preflight_ok() {
+  local version_json profile dev_ctrl fleet_code dash_code
+  if ! version_json="$(curl -sS -f http://127.0.0.1:8000/api/version 2>/dev/null)"; then
+    abort_preflight "blocked_devserver_not_enabled: GET /api/version failed" 21
+  fi
+  profile="$(echo "$version_json" | jq -r '.install_profile // empty')"
+  dev_ctrl="$(echo "$version_json" | jq -r '.dev_control_enabled // false')"
+  if [[ "$profile" == "release" ]]; then
+    abort_preflight "blocked_profile_route_blocked: install_profile=release (need local_lab before QEMU smoke)" 21
+  fi
+  if [[ "$profile" != "local_lab" ]]; then
+    abort_preflight "blocked_devserver_not_enabled: install_profile=${profile:-unknown}" 21
+  fi
+  if [[ "$dev_ctrl" != "true" ]]; then
+    abort_preflight "blocked_devserver_not_enabled: dev_control_enabled=${dev_ctrl}" 21
+  fi
+  fleet_code="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/api/fleet/sessions)"
+  if [[ "$fleet_code" != "200" ]]; then
+    abort_preflight "blocked_fleet_api_unavailable: GET /api/fleet/sessions HTTP ${fleet_code}" 21
+  fi
+  dash_code="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/api/dev-dashboard/status)"
+  if [[ "$dash_code" != "200" ]]; then
+    abort_preflight "blocked_fleet_api_unavailable: GET /api/dev-dashboard/status HTTP ${dash_code}" 21
+  fi
+  if command -v ss >/dev/null 2>&1 && ss -ltn 2>/dev/null | grep -q ':8001 '; then
+    echo "WARN: port 8001 already listening — smoke proxy must reuse or free it" | tee -a "$LOG"
+  fi
+  echo "DEVSERVER_PREFLIGHT_OK profile=local_lab dev_control=true fleet_http=200 dashboard_http=200" | tee -a "$LOG"
+}
+
 mkdir -p "$(dirname "$LOG")"
 {
   echo "task=qemu_guest_agent_smoke_operator_guarded"
@@ -73,7 +108,7 @@ if [[ "$PROFILE" != "local_lab" ]]; then
   echo "ABORT: install_profile=$PROFILE (need local_lab)" | tee -a "$LOG"
   exit 11
 fi
-echo "PROFILE_GUARD_OK local_lab" | tee -a "$LOG"
+assert_devserver_preflight_ok
 
 echo "=== QEMU SMOKE (autopilot, no host disk, no USB) ===" | tee -a "$LOG"
 scripts/rescue-live/run-qemu-developer-iso-smoke.sh "$RUN_ID" \

@@ -50,7 +50,9 @@ SETUPHELFER_RESCUE_BUILD_PROFILE=developer-qemu \
 
 **Developer-QEMU-Rebuild (2026-06-02):** Operator-Build `rescue_developer_iso_20260602_214335` — **LB_EXIT=0**, `profile=developer-qemu`, ISO SHA `3ee02b36…`. Serial/Bootappend verifiziert; Autopilot-Unit **nicht** in `multi-user.target.wants` → Smoke **review_required**. Evidence: `DEVELOPER_QEMU_ISO_REBUILD_RESULT.md`.
 
-**Autopilot wants fix (2026-06-03):** Statischer wants-Symlink in Prepare (developer-qemu only); Validator erweitert; **ISO-Rebuild Operator ausstehend** (Agent Exit 30). Evidence: `DEVELOPER_QEMU_AUTOPILOT_ENABLE_FIX_RESULT.md`, `DEVELOPER_QEMU_ISO_REBUILD_AFTER_AUTOPILOT_RESULT.md`.
+**Autopilot wants fix (2026-06-03):** Statischer wants-Symlink in Prepare (developer-qemu only); Validator erweitert. Operator-Rebuild `rescue_developer_iso_20260602_220129` — **LB_EXIT=0**, ISO SHA `614cc86e…`, Autopilot wants in Squashfs verifiziert → **ready_for_qemu_guest_agent_smoke_operator_run**. Evidence: `DEVELOPER_QEMU_ISO_AFTER_AUTOPILOT_SUCCESS_INGEST_RESULT.md`.
+
+**QEMU-Smoke Preflight (2026-06-03):** `qemu-guest-agent-smoke-operator.sh` prüft vor QEMU: `local_lab`, `dev_control_enabled`, Fleet- und Dev-Dashboard-API HTTP 200; Exit 21 bei Block. Prior Guest-Report-Ausfälle bei `release` nicht als Agent-Defekt werten. Evidence: `QEMU_GUEST_AGENT_DEVSERVER_PREFLIGHT_GUARD_RESULT.md`.
 
 ## Build-Verzeichnis
 
