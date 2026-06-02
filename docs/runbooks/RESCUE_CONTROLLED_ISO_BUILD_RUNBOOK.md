@@ -1,6 +1,6 @@
 # Runbook — Controlled Rescue ISO Build
 
-**Version:** 1.3
+**Version:** 1.4
 **real_iso_build_allowed:** `false` (bis explizite Operator-Freigabe)
 **usb_write_allowed:** `false`
 
@@ -45,6 +45,8 @@ SETUPHELFER_RESCUE_BUILD_PROFILE=developer-qemu \
 ```
 
 **Profil-Hinweis (2026-06-02):** QEMU-Autopilot-Smoke erfordert **developer-qemu**-Profil. Standard-ISO (`quiet splash`, kein `console=ttyS0`, Autopilot nicht enabled) führt zu Serial 0 B / `guest_report_missing`. Evidence: `DEVELOPER_QEMU_PROFILE_FIX_RESULT.md`.
+
+**Rebuild-Blocker (2026-06-02):** Versuch `rescue_developer_iso_20260602_212524` — **LB_EXIT=34**, `profile=standard` (Mismatch). Vor Build: `sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean`. Build nur mit `--profile developer-qemu` (Log-Zeile `profile=developer-qemu` prüfen; bei `profile=standard` STOP). Evidence: `DEVELOPER_QEMU_REBUILD_OPERATOR_HANDOFF.md`.
 
 ## Build-Verzeichnis
 
@@ -104,8 +106,12 @@ Danach erneut `run-controlled-iso-build-with-logging.sh --operator-confirm-build
 
 ```bash
 cd /home/volker/piinstaller
+sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean
 sudo -v   # interaktiv, gleiche Shell — kein Passwort über stdin
-scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build
+scripts/rescue-live/run-controlled-iso-build-with-logging.sh \
+  --operator-confirm-build \
+  --profile developer-qemu
+# Erste Log-Zeile MUSS profile=developer-qemu enthalten — sonst abbrechen
 echo "wrapper_exit=$?"
 ```
 

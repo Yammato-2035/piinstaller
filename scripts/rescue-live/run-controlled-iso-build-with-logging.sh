@@ -36,13 +36,19 @@ POLICY_SUDO_NONINTERACTIVE=false
 
 usage() {
   cat <<EOF
-Usage: $0 [--operator-confirm-build] [--profile developer|standard] [--run-id ID]
+Usage: $0 [--operator-confirm-build] [--profile standard|developer|developer-qemu] [--run-id ID]
 
 Without flag: preview gates and log paths only (Exit 20).
 With --operator-confirm-build: run the policy guard first, then ./auto/config
 and the controlled lb build path with the project-local rsvg wrapper in PATH.
 
-Profile developer: Rescue Developer Edition with Development Agent (prepare tree with SETUPHELFER_RESCUE_BUILD_PROFILE=developer first).
+Profiles:
+  standard       — release rescue ISO (defensive bootappend)
+  developer      — dev agent enabled in tree
+  developer-qemu — serial ttyS0 + QEMU autopilot hook (prepare with same profile first)
+
+Set profile via --profile or SETUPHELFER_RESCUE_BUILD_PROFILE before invoking.
+If build log shows profile=standard but you need developer-qemu: STOP and re-run with --profile developer-qemu.
 
 Log paths:
   ${LATEST_LOG}
