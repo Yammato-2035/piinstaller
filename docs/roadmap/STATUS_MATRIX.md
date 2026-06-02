@@ -244,6 +244,6 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | **DCC Read-Only Smoke** | **Grün** | `local_lab`: dev-dashboard 200, UI SimpleHTTP :3001 | `DCC_READONLY_SMOKE_AFTER_PORT_MAPPING.md` |
 | **Release-Profil nach Fleet-Smoke** | **Grün** | Operator-Restore `release`; Profil-Gate Exit 0 | `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md` |
 | **Runtime-Code-Drift** | **Gelb** | Backend/Rescue/Fleet-Skript match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |
-| **Rescue-Agent Ingest Stub** | **Rot** | Blocked: curls in release; guarded script pending Terminal 6 | `RESCUE_AGENT_REPORT_INGEST_STUB_SMOKE_RESULT.md` |
-| **ISO Precheck** | **Rot** | `blocked_by_ingest_smoke_not_completed` | `RESCUE_ISO_BUILD_READINESS_AFTER_INGEST_STUB_SMOKE.md` |
+| **Rescue-Agent Ingest Stub** | **Grün** | Operator-Smoke ok (`…182452`); Register+Report+Trap release | `RESCUE_AGENT_OPERATOR_SMOKE_INGEST.md` |
+| **ISO Precheck** | **Gelb** | `ready_for_controlled_iso_build_precheck` (read-only, kein Build) | `RESCUE_ISO_BUILD_READINESS_AFTER_INGEST_STUB_SMOKE.md` |
 | Deploy Drift | Gelb | Evidence-only HEAD; Backend/Rescue/Fleet match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |

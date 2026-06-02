@@ -4,16 +4,25 @@
 
 ## Status
 
-**`blocked_by_ingest_smoke_not_completed`**
+**`ready_for_controlled_iso_build_precheck`**
 
-Ingest: **blocked** — Register/Report lief fälschlich unter `release`; guarded Script noch nicht erfolgreich.
+| Voraussetzung | Status |
+|---------------|--------|
+| Rescue-Agent Ingest Stub Smoke | **ok** |
+| Release nach Ingest (Trap) | **ok** |
+| profile_gate | **green** |
+| Fleet / DCC (vorher) | **green** |
 
-## ISO-Precheck
+## ISO-Build
 
-Nicht freigegeben bis Ingest `ok` + `release_restored_after=true` belegt.
+**not_run / not_approved** — nur Precheck read-only freigegeben.
+
+Rescue-Gesamtstatus bleibt **nicht grün** ohne echtes ISO-/Boot-/USB-Artefakt.
+
+## Guards
+
+Kein ISO-Build, QEMU, USB in diesem Lauf.
 
 ## Nächster Schritt
 
-1. `./scripts/rescue-live/rescue-agent-ingest-stub-smoke-operator.sh` in Terminal 6  
-2. Cursor-Ingest mit `smoke.log` + JSON  
-3. Dann `ready_for_controlled_iso_build_precheck`
+Controlled ISO build precheck (NO BUILD).
