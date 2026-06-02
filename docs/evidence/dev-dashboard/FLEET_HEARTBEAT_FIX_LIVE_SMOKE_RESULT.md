@@ -35,11 +35,11 @@ Geplanter API-Smoke war korrekt gegen **:8000**; Shell-Exit 1 kam vom Wrapper, n
 
 ## Release
 
-Nach Fleet-/Lab-Arbeit: `release` wiederherstellen — **ausstehend** (`RELEASE_PROFILE_RESTORE_AFTER_FLEET_SMOKE_RESULT.md`: **blocked**, sudo).
+**Wiederhergestellt:** `release_restore_status=ok` (Operator-Ingest `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md`). `local_lab` war nur für Fleet-/DCC-Smoke nötig.
 
 | API unter `release` | Bewertung |
 |---------------------|-----------|
-| `/api/dev-dashboard/status` | `blocked_by_profile_expected` — kein Fehler |
-| `/api/fleet/sessions` | `blocked_by_profile_expected` — kein Fehler |
+| `/api/dev-dashboard/status` | 404 `PROFILE_ROUTE_BLOCKED` — **erwartbar** |
+| `/api/fleet/sessions` | 404 `PROFILE_ROUTE_BLOCKED` — **erwartbar** |
 
 Keine weitere Fleet-Session erforderlich.

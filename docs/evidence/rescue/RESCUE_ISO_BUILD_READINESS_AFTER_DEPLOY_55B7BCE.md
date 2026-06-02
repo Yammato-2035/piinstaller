@@ -5,26 +5,26 @@
 | Kriterium | Status |
 |-----------|--------|
 | Fleet-Script-Fix in `/opt` | **ok** |
-| Fleet Heartbeat Live Smoke | **ok** (neue Session) |
-| Release-Profil wiederhergestellt | **blocked** (`release_restore_blocked_sudo_required`) |
-| Runtime noch `local_lab` | **ja** |
+| Fleet Heartbeat Live Smoke | **ok** |
+| Release-Profil wiederhergestellt | **ok** |
+| Profile gate | **green** |
 | DCC-Port-Mapping | **green** |
-| Deploy-Drift (legacy gate) | Exit 0 beim letzten Lauf unter `local_lab` |
+| Runtime-Code-Drift | **yellow** (4 nicht-kritische UI/Script-Dateien) |
 
-## ISO-Precheck
-
-**`blocked_by_release_restore`**
+## Freigaben
 
 | Stufe | Status |
 |-------|--------|
-| Rescue-Agent Ingest Stub | `blocked_by_release_restore` |
-| Controlled ISO build precheck | `blocked_by_release_restore` |
+| Rescue-Agent Ingest Stub | **`ready_for_rescue_agent_ingest_stub_smoke`** |
+| Controlled ISO build precheck | **`ready_for_controlled_iso_build_precheck`** (read-only, **kein Build**) |
 
-Erst nach Operator-Release-Restore + `check-runtime-profile-deploy-gate.sh` Exit 0 unter **release**:
+## Weiterhin nicht grün
 
-→ `ready_for_rescue_agent_ingest_stub_smoke` (ggf. kurz `local_lab` nur für Ingest)  
-→ `ready_for_controlled_iso_build_precheck`
+- Rescue-Gesamtstatus ohne echtes ISO-/Boot-/USB-Artefakt
+- E2EE: **contract_stub_only**
+- nftables: **preview_only_apply_false**
+- Rescue-Agent: Stub/Contract
 
-Rescue bleibt **nicht grün** ohne echten ISO-/Boot-/USB-Nachweis. E2EE: contract_stub_only. nftables: preview_only_apply_false.
+## Nicht in diesem Lauf
 
-Nicht: ISO gebaut, USB bereit.
+Kein ISO-Build, kein controlled ISO build, kein QEMU/USB.

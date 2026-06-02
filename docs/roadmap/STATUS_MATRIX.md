@@ -242,7 +242,8 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | **Fleet Script 55b7bce in /opt** | **Grün** | `${3-}` live; Fleet-Smoke Create+HB+Finish ok | `FLEET_HEARTBEAT_FIX_AFTER_SCRIPT_FIX_RESULT.md` |
 | **DCC Port Mapping** | **Grün** | 3001=UI, 8000=API, 8080=nginx (kein DCC) | `DCC_PORT_MAPPING_RESULT.md` |
 | **DCC Read-Only Smoke** | **Grün** | `local_lab`: dev-dashboard 200, UI SimpleHTTP :3001 | `DCC_READONLY_SMOKE_AFTER_PORT_MAPPING.md` |
-| **Release-Profil nach Fleet-Smoke** | **Rot** | Restore **blocked** (`sudo`); Runtime noch `local_lab` | `RELEASE_PROFILE_RESTORE_AFTER_FLEET_SMOKE_RESULT.md` |
-| **Rescue-Agent Ingest Stub** | **Rot** | `blocked_by_release_restore` | `RESCUE_AGENT_INGEST_STUB_SMOKE_READINESS.md` |
-| **ISO Precheck** | **Rot** | `blocked_by_release_restore` (kein Build) | `RESCUE_ISO_BUILD_READINESS_AFTER_DEPLOY_55B7BCE.md` |
-| Deploy Drift | Rot | Workspace vs `/opt` bei DCC/Rescue-Dateien nicht synchron |
+| **Release-Profil nach Fleet-Smoke** | **Grün** | Operator-Restore `release`; Profil-Gate Exit 0 | `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md` |
+| **Runtime-Code-Drift** | **Gelb** | Backend/Rescue/Fleet-Skript match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |
+| **Rescue-Agent Ingest Stub** | **Gelb** | `ready_for_rescue_agent_ingest_stub_smoke` (Smoke noch nicht gelaufen) | `RESCUE_AGENT_INGEST_STUB_SMOKE_READINESS.md` |
+| **ISO Precheck** | **Gelb** | `ready_for_controlled_iso_build_precheck` (read-only, kein Build) | `RESCUE_ISO_BUILD_READINESS_AFTER_DEPLOY_55B7BCE.md` |
+| Deploy Drift | Gelb | Evidence-only HEAD; Backend/Rescue/Fleet match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |

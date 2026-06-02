@@ -32,6 +32,6 @@
 | Kontext | DCC-API |
 |---------|---------|
 | `local_lab` (aktuell) | 200 — **ok** |
-| `release` (Ziel nach Restore) | 404 `PROFILE_ROUTE_BLOCKED` — **blocked_by_profile_expected**, kein Fehler |
+| `release` (nach Operator-Restore) | 404 `PROFILE_ROUTE_BLOCKED` — **belegt**, kein Fehler |
 
-Port-Mapping bleibt **green** (3001 UI, 8000 API, 8080 nginx).
+Port-Mapping bleibt **green** (3001 UI, 8000 API, 8080 nginx). Fleet-Smoke **green**; Release-Restore **ok**.

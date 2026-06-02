@@ -36,7 +36,8 @@
 | Fleet Heartbeat Fix | **green / ok** |
 | Root Cause | **resolved_in_55b7bce** |
 | Weitere Fleet-Session | **nicht nötig** |
-| Release-Restore | Operator ausstehend (sudo) |
+| Release-Restore | **ok** (Operator-Ingest 2026-06-02) |
+| DCC-Port-Mapping | **green** |
 
 ## Guards
 
