@@ -244,6 +244,6 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | **DCC Read-Only Smoke** | **Grün** | `local_lab`: dev-dashboard 200, UI SimpleHTTP :3001 | `DCC_READONLY_SMOKE_AFTER_PORT_MAPPING.md` |
 | **Release-Profil nach Fleet-Smoke** | **Grün** | Operator-Restore `release`; Profil-Gate Exit 0 | `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md` |
 | **Runtime-Code-Drift** | **Gelb** | Backend/Rescue/Fleet-Skript match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |
-| **Rescue-Agent Ingest Stub** | **Gelb** | `ready_for_rescue_agent_ingest_stub_smoke` (Smoke noch nicht gelaufen) | `RESCUE_AGENT_INGEST_STUB_SMOKE_READINESS.md` |
-| **ISO Precheck** | **Gelb** | Folgeschritt nach Ingest; read-only precheck freigegeben, kein Build | `RESCUE_ISO_BUILD_READINESS_AFTER_DEPLOY_55B7BCE.md` |
+| **Rescue-Agent Ingest Stub** | **Rot** | Live-Smoke **blocked** (sudo); release-Block Phase 0 ok | `RESCUE_AGENT_REPORT_INGEST_STUB_SMOKE_RESULT.md` |
+| **ISO Precheck** | **Rot** | `blocked_by_ingest_smoke_not_completed` | `RESCUE_ISO_BUILD_READINESS_AFTER_INGEST_STUB_SMOKE.md` |
 | Deploy Drift | Gelb | Evidence-only HEAD; Backend/Rescue/Fleet match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |

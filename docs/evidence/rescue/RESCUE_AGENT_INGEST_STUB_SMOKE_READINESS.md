@@ -1,30 +1,25 @@
 # Rescue-Agent Report-Ingest — Stub-Smoke Readiness
 
 **Stand:** 2026-06-02  
-**Status:** **`ready_for_rescue_agent_ingest_stub_smoke`**
+**Status:** **`blocked`** (`rescue_agent_ingest_blocked_sudo_required`)
 
-## Voraussetzungen
+## Vor Ingest (erfüllt)
 
 | Kriterium | Status |
 |-----------|--------|
-| `release_restore_status=ok` | **yes** |
-| Fleet-Smoke green | **yes** (Session `…164249`) |
+| Release-Restore ok | **yes** |
+| Fleet-Smoke green | **yes** |
 | DCC-Port-Mapping green | **yes** |
-| `profile_gate_status=green` | **yes** |
-| Runtime-Code-Drift nicht rot | **yes** (`runtime_code_drift_yellow`) |
-| Rescue-Agent-Router unter `release` | **`disabled_by_profile`** (5 Router) |
-| `55b7bce` in `/opt` | **yes** |
+| profile_gate green | **yes** |
+| Runtime-Drift nicht rot | **yes** |
+| Release blockiert Rescue-Agent | **belegt** (Phase 0) |
 
-## Ingest-Lauf (noch nicht ausgeführt)
+## Live-Smoke
 
-Stub-Ingest-Smoke **nicht** in diesem Lauf gestartet.
+**Nicht abgeschlossen** — Phase 2 sudo blockiert.
 
-Für den Smoke-Lauf: **`local_lab` gesondert aktivieren** (Operator), da Router unter `release` blockiert sind.
+Nach Operator-Smoke erneut bewerten → `ready_for_rescue_agent_ingest_stub_smoke` nur wenn Smoke **ok** oder **review_required-safe**.
 
 ## Nächster Schritt
 
-1. Operator: kurz `local_lab` für Ingest-Smoke
-2. Report-Ingest Stub Smoke ausführen
-3. `release` wiederherstellen
-
-Evidence: `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md`, `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md`
+Operator: `local_lab` → Ingest-Smoke → `release` restore.
