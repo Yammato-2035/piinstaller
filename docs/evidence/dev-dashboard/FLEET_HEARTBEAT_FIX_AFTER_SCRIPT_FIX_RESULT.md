@@ -36,8 +36,9 @@
 | Fleet Heartbeat Fix | **green / ok** |
 | Root Cause | **resolved_in_55b7bce** |
 | Weitere Fleet-Session | **nicht nötig** |
-| Release-Restore | **ok** (Operator-Ingest 2026-06-02) |
+| Release-Restore | **ok** (`release_restore_blocked_sudo_required=resolved`) |
 | DCC-Port-Mapping | **green** |
+| Weitere Fleet-Session | **nicht nötig** |
 
 ## Guards
 

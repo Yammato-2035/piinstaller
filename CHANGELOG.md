@@ -17,6 +17,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **DCC ports:** UI :3001, API :8000, :8080 = nginx (not SetupHelfer); docs in `DCC_PORTS_AND_URLS.md`.
 - **Release restore after fleet smoke:** blocked at sudo; ingest/ISO precheck remain `blocked_by_release_restore`.
 - **Operator release restore ingest:** `release` live; profile gate green; ingest stub and ISO precheck readiness unlocked (yellow, smoke not run).
+- **Release restore re-ingest:** `release_restore_status=ok`, drift yellow/evidence-only, ingest primary next step.
 
 ## [1.7.3.0] — 2026-05-30
 

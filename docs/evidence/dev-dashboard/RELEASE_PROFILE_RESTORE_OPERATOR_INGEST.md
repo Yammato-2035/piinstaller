@@ -1,8 +1,16 @@
 # Release-Profil Restore — Operator-Ingest
 
-**Ingest-Zeitpunkt:** 2026-06-02 (UTC, nach Operator-Restore)  
-**HEAD (Workspace):** `9438901`  
+**Ingest-Zeitpunkt:** 2026-06-02T18:03:05Z (read-only Verifikation)  
+**HEAD (Workspace):** `050d119`  
 **Branch:** `main`
+
+## Bewertung
+
+| Feld | Wert |
+|------|------|
+| **`release_restore_status`** | **ok** |
+| **`release_restore_blocked_sudo_required`** | **resolved** |
+| **`local_lab_open_after_smoke`** | **false** |
 
 ## Services
 
@@ -15,8 +23,8 @@
 
 | Skript | Exit | Anmerkung |
 |--------|------|-----------|
-| `check-runtime-profile-deploy-gate.sh` | **0** | Profil-Gate grün |
-| `check-runtime-deploy-gate.sh` | **20** | Legacy, erwartbar unter `release` (Dev-Dashboard 404) |
+| `check-runtime-profile-deploy-gate.sh` | **0** | `profile_gate: OK`; legacy exit 20 informational only |
+| `check-runtime-deploy-gate.sh` | **20** | Legacy non-profile-aware; Dev-Dashboard 404 erwartbar |
 
 ## Runtime (`/api/version`)
 
@@ -28,20 +36,22 @@
 | `backend_runtime_path` | `/opt/setuphelfer/backend` |
 | `rescue_agent_router_status` | `disabled_by_profile` |
 | `startup_diagnostics_status` | `ok` |
+| `router_registry_summary` | `registered=0`, `disabled_by_profile=5`, `import_failed=0` |
 
 ## API (Port 8000)
 
-| Endpoint | HTTP | Code / Anmerkung |
-|----------|------|------------------|
-| `/api/version` | **200** | Profil `release` |
-| `/api/dev-dashboard/status` | **404** | `PROFILE_ROUTE_BLOCKED` — erwartbar |
-| `/api/fleet/sessions` | **404** | `PROFILE_ROUTE_BLOCKED` — erwartbar |
+| Endpoint | HTTP | Ergebnis |
+|----------|------|----------|
+| `/api/version` | **200** | Profil `release`, Gate grün |
+| `/api/dev-dashboard/status` | **404** | `PROFILE_ROUTE_BLOCKED` — **expected_profile_block** |
+| `/api/fleet/sessions` | **404** | `PROFILE_ROUTE_BLOCKED` — **expected_profile_block** |
 
-## Vorheriger Blocker
+## DCC-Port-Mapping (unverändert gültig)
 
-`release_restore_blocked_sudo_required` — durch Operator-Restore aufgehoben.
+- UI/Cockpit: http://127.0.0.1:3001/?window=cockpit
+- API: http://127.0.0.1:8000/api/...
+- **8080** = nginx, nicht SetupHelfer
 
-## Fleet / DCC (unverändert gültig)
+## Fleet-Smoke (unverändert gültig)
 
-- Fleet-Smoke **grün** (Session `…164249`, Fix `55b7bce` in `/opt`)
-- DCC-Port-Mapping **grün** (3001 UI, 8000 API, 8080 nginx)
+Session `fleet-manual_fleet_heartbeat_fix_after_script_fix_20260602_164249` — Create → Heartbeat(`running`) → Finish OK. Fix `55b7bce` in `/opt`.

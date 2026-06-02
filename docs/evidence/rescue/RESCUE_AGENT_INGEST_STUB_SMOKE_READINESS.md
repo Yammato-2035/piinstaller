@@ -8,22 +8,23 @@
 | Kriterium | Status |
 |-----------|--------|
 | `release_restore_status=ok` | **yes** |
-| Fleet-Smoke grün | **yes** (`…164249`) |
-| DCC-Port-Mapping grün | **yes** |
+| Fleet-Smoke green | **yes** (Session `…164249`) |
+| DCC-Port-Mapping green | **yes** |
 | `profile_gate_status=green` | **yes** |
-| Runtime-Code-Drift nicht rot | **yes** (yellow, 4 UI/Build-Hilfsdateien) |
+| Runtime-Code-Drift nicht rot | **yes** (`runtime_code_drift_yellow`) |
+| Rescue-Agent-Router unter `release` | **`disabled_by_profile`** (5 Router) |
 | `55b7bce` in `/opt` | **yes** |
 
-## Unter release
+## Ingest-Lauf (noch nicht ausgeführt)
 
-- Rescue-Agent-Router: **`disabled_by_profile`** (erwartbar).
-- Stub-Ingest-Smoke: **Profil `local_lab` nur für den Smoke-Lauf** separat aktivieren (Operator), nicht in diesem Ingest-Dokument.
+Stub-Ingest-Smoke **nicht** in diesem Lauf gestartet.
 
-## Nicht ausgeführt
+Für den Smoke-Lauf: **`local_lab` gesondert aktivieren** (Operator), da Router unter `release` blockiert sind.
 
-Report-Ingest Stub Smoke — **noch nicht** gestartet (nur Freigabe).
+## Nächster Schritt
 
-## Evidence
+1. Operator: kurz `local_lab` für Ingest-Smoke
+2. Report-Ingest Stub Smoke ausführen
+3. `release` wiederherstellen
 
-- `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md`
-- `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md`
+Evidence: `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md`, `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md`
