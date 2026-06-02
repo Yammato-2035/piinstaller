@@ -1,44 +1,79 @@
-# Fleet Session Phase 1 — Ist-Analyse
+# Fleet Session Phase 1 — IST-Analyse
 
-**Datum:** 2026-06-01  
-**HEAD (Analyse):** a6ee74d  
-**Branch:** main
+**Datum:** 2026-06-02
+**HEAD (Analyse):** `ea548fa`
+**Branch:** `main`
 
-## Knoten & Reports (Development Server)
+## Scope und Ausgangspunkt
 
-| Aspekt | Ort |
-|--------|-----|
-| Knoten-Persistenz | `backend/devserver/storage.py` → `{storage_root}/nodes/*.json` |
-| Reports / Ingest | `backend/devserver/ingest.py`, `POST /api/dev-server/ingest/report` |
-| API | `backend/devserver/routers.py` (`/api/dev-server/*`) |
-| UI | `frontend/src/components/devserver/DevelopmentServerPanel.tsx` (Tab Telemetry) |
+Ziel der Analyse war die Sichtbarkeit laufender Host-Lab-Sessions (QEMU/Smoke), auch wenn kein Gast-Report ingestet wird.
+Der Legacy-Runtime-Gate liefert in `release` weiterhin Exit 20 (`/api/dev-dashboard/status` 404), daher wurde diese Analyse als **statisch** durchgeführt.
 
-Knoten erscheinen **nur nach Ingest** oder manueller Lab-Registrierung — nicht beim QEMU-Start.
-
-## QEMU-Smoke & Evidence
+## Wo Knoten aktuell gespeichert werden
 
 | Aspekt | Ort |
 |--------|-----|
-| Wrapper | `scripts/rescue-live/run-qemu-developer-iso-smoke.sh` |
-| Evidence | `docs/evidence/runtime-results/rescue/qemu/<run_id>/` |
-| Ergebnis-JSON | `qemu_autopilot_result.json` |
-| Serial | `qemu-serial.log` (oft 0 B mit `quiet splash`) |
+| Persistenz der Development-Server-Knoten | `backend/devserver/storage.py` (`nodes/*.json`) |
+| Ingest-Pfad für Gast-Reports | `backend/devserver/ingest.py`, `POST /api/dev-server/ingest/report` |
+| Dev-Server-API | `backend/devserver/routers.py` |
+| Knoten-UI | `frontend/src/components/devserver/DevelopmentServerPanel.tsx` |
 
-## Development Dashboard API
+Aktueller Effekt: Neue VM-Knoten erscheinen erst nach erfolgreichem Ingest.
 
-- `GET /api/dev-dashboard/control-center-summary` — aggregiert u. a. `dev_server`
-- Cockpit: `frontend/src/pages/ExternalDevelopmentControlCenter.tsx`
+## Wo Session-/Heartbeat-Strukturen existieren
 
-## Session / Heartbeat vor Phase 1
+| Aspekt | Ort |
+|--------|-----|
+| Session-State-Core | `backend/core/fleet_session_state.py` |
+| Fleet-API-Router | `backend/fleet/routers.py` |
+| Fleet-Payload-Schemas | `backend/fleet/schemas.py` |
+| Wrapper-API/Fallback | `scripts/rescue-live/fleet-session-api.sh` |
+| Wrapper-Instrumentierung | `scripts/rescue-live/run-qemu-developer-iso-smoke.sh` |
 
-- **Keine** Fleet-Session-API
-- **Kein** Host-Heartbeat für QEMU-Läufe im UI
-- Roadmap: `docs/architecture/DEV_CONTROL_CENTER_FLEET_OBSERVABILITY_ROADMAP.md`
+Es existieren bereits:
+- Session-Create/Heartbeat/Finish
+- JSONL- und Latest-Persistenz
+- Stale-/Timeout-Regeln
+- JSONL-Fallback bei nicht erreichbarer API
 
-## Lücke (Problem)
+## Welche API das Dashboard nutzt
 
-Wenn QEMU timeoutet (`exit 124`), Serial leer bleibt und kein Gast-Report ingestet wird, zeigt das Development Server Panel **keine neue VM** — das Dashboard ist blind für den laufenden/fehlgeschlagenen Host-Lauf.
+| UI-Bereich | API |
+|-----------|-----|
+| Dev Control Center Summary | `GET /api/dev-dashboard/control-center-summary` |
+| Lab Sessions Kachel | `GET /api/fleet/sessions`, `GET /api/fleet/sessions/summary` |
+| Diagnostics in Session-Detail | `GET /api/dev-diagnostics/qemu-smokes/{run_id}/...` |
 
-## Phase-1-Ziel
+## Welche UI-Komponente Lab-Knoten zeigt
 
-Host-Session über `GET/POST /api/fleet/sessions*` + Kachel **Lab Sessions** (Telemetry-Tab), unabhängig vom Gast-Ingest.
+- Seite: `frontend/src/pages/ExternalDevelopmentControlCenter.tsx`
+- Kachel: `frontend/src/components/dev-dashboard/LabSessionsPanel.tsx`
+- API-Client: `frontend/src/api/fleetSessionsApi.ts`
+
+## Wo QEMU-Smoke-Läufe Evidence erzeugen
+
+- Laufverzeichnis: `docs/evidence/runtime-results/rescue/qemu/<run_id>/`
+- Kernartefakte:
+  - `qemu-serial.log`
+  - `qemu_autopilot_result.json`
+  - `dev_server_summary_before.json`
+  - `dev_server_summary_after.json`
+  - `dev_server_reports_after.json`
+
+## Gap / Problemzusammenfassung
+
+Vor Phase 1 war die Hostlauf-Sichtbarkeit im Control Center nicht robust, wenn:
+- QEMU timeoutet,
+- Serial leer bleibt,
+- kein Gast-Report ingestet wird.
+
+Dann blieb der Dev-Server-Knotenstand unverändert und das Dashboard wirkte „blind“.
+
+## Phase-1 Sollbild (kurz)
+
+Hostseitige Session muss sofort sichtbar sein:
+- `starting` / `booting` / `autopilot_waiting`
+- Heartbeat + Alter/Stale
+- `timeout` / `failed` / `success`
+- `guest_report_seen=false` explizit sichtbar
+- klare Trennung: **Host-Session** vs. **Guest-Node**

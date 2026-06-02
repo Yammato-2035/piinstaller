@@ -1,62 +1,69 @@
 # Fleet Session Phase 1 — Result
 
-**Datum:** 2026-06-01  
-**HEAD (Implementierung):** a6ee74d (Basis) + Fleet-Session-Commit (siehe `git log -1`)  
-**Branch:** main
+**Datum:** 2026-06-02
+**HEAD vor Umsetzung:** `ea548fa`
+**Branch:** `main`
 
-## Runtime-Gate
+## Runtime-Gate / Testmodus
 
 | Check | Ergebnis |
 |-------|----------|
-| `check-runtime-deploy-gate.sh` | OK |
-| `check-backend-version-gate.sh` | OK |
-| `setuphelfer-backend.service` | active |
+| `scripts/check-runtime-deploy-gate.sh` | **Exit 20** (`LEGACY_GATE_NON_PROFILE_AWARE`) |
+| `setuphelfer-backend.service` | `active` |
+| `setuphelfer.service` | `active` |
 
-Runtime-Tests gegen Port 8000 für **neue** `/api/fleet/*` Routen: **nicht auf produktiver Runtime** (OpenAPI listet keine Fleet-Pfade — Deploy ausstehend, kein Backend-Restart in diesem Auftrag).
+Bewertung für diesen Auftrag: **`runtime_gate_blocked_static_only`**.
+Daher nur statische Verifikation, keine Runtime-Smokes gegen Port 8000.
 
-Statische Tests: **14 passed** (`test_fleet_session_state_v1`, `test_fleet_session_api_v1`).
+## Phase-1 Implementierungsstand
 
-## Implementiert
+| Bereich | Ergebnis |
+|--------|----------|
+| Session-Contract | vorhanden (`local_qemu_smoke`, Status/Severity, Pflichtfelder) |
+| Backend-State | vorhanden (`create/update/heartbeat/finish/list/get/summary/stale`) |
+| Persistenz | vorhanden (`fleet_sessions.jsonl`, `fleet_sessions_latest.json`) |
+| Read-only API + Wrapper-Write | vorhanden (`/api/fleet/sessions*`) |
+| Wrapper-Instrumentierung | vorhanden (create, heartbeat loop, finish, fallback) |
+| UI-Kachel „Lab Sessions“ | vorhanden (Telemetry-Tab, LED/Status/KVM/Serial/Guest) |
 
-| Komponente | Pfad |
-|----------|------|
-| State engine | `backend/core/fleet_session_state.py` |
-| API router | `backend/fleet/routers.py`, `backend/fleet/schemas.py` |
-| App registration | `backend/app.py` |
-| QEMU wrapper hooks | `scripts/rescue-live/run-qemu-developer-iso-smoke.sh`, `fleet-session-api.sh` |
-| UI | `frontend/src/components/dev-dashboard/LabSessionsPanel.tsx` |
-| API client | `frontend/src/api/fleetSessionsApi.ts` |
-| Cockpit | `ExternalDevelopmentControlCenter.tsx` (Tab Telemetry) |
-| Contract | `docs/architecture/DEV_CONTROL_CENTER_FLEET_SESSION_CONTRACT.md` |
-| FAQ DE/EN | `docs/dev-dashboard/DEV_CONTROL_CENTER_FLEET_SESSIONS_*.md` |
+## Verifiziert (statisch)
 
-## Abnahme (logisch)
+- `qemu_exit_code=124` wird als `timeout` klassifiziert.
+- `serial_size_bytes=0` wird als `serial_empty` Warning sichtbar (kein Auto-Fail).
+- `guest_report_seen=false` bleibt sichtbar (`guest_report_missing`).
+- Keine Control-Routen (`execute/start/stop/revive/control/ssh/remote`) im Fleet-Router.
+- Host-Session ist vom Guest-Node konzeptionell getrennt.
 
-- Host-Session bei QEMU-Start: **ja** (POST create + Heartbeat-Loop)
-- Timeout 124 → `status=timeout`, Finding `qemu_timeout_124`: **ja** (finish)
-- `serial_empty` bei 0 B: **ja** (warning, kein Fake-Fail)
-- `guest_report_missing`: **ja** (Finding)
-- Keine Fake-VM als Gast-Knoten: **ja** (UI-Hinweis Host ≠ Guest)
-- Kein ISO/USB/Backup/Restore/SSH/Remote: **ja**
+## Tests
 
-## QEMU in diesem Auftrag
+| Test | Ergebnis |
+|------|----------|
+| `pytest tests/test_fleet_session_state_v1.py tests/test_fleet_session_api_v1.py -q` | **14 passed** |
+| `bash -n scripts/rescue-live/run-qemu-developer-iso-smoke.sh` | **OK** |
+| `frontend npm run typecheck` | **nicht möglich** (`Missing script: typecheck`) |
 
-**Nicht ausgeführt** (STRICT MODE).
+## Scope / Guardrails
+
+- Kein ISO-Build
+- Kein QEMU-Lauf
+- Kein USB/dd/mount/mkfs
+- Kein Backup/Restore
+- Kein SSH-/Remote-Control
+- Kein apt install/upgrade
+- Kein Backend-Restart ohne Operator-Freigabe
 
 ## NDA / Push
 
 | Feld | Wert |
 |------|------|
-| Repository visibility | **public** (`Yammato-2035/piinstaller`) |
-| Push erlaubt | **no** — `blocked_public_repository_ndA_risk` |
-| Development Server public exposure | unknown (Operator-Netz) |
-| Development Control Center public exposure | unknown |
-| Wurde gepusht | **no** |
+| Repository visibility | `PUBLIC` (`Yammato-2035/piinstaller`) |
+| Push allowed | **no** |
+| Push durchgeführt | **no** |
+| NDA risk | `blocked_public_repository_ndA_risk` |
 
-Lokaler Commit vorbereitet; Push nur nach Operator-Freigabe / privatem Ziel-Repo.
+## Nächster sinnvoller Schritt
 
-## Nächster Schritt
-
-1. Fleet-Routen nach `/opt/setuphelfer` deployen (mit Operator-Freigabe Restart).
-2. QEMU-Smoke headless mit KVM — Session in Tab **Telemetry → Lab Sessions** prüfen.
-3. Optional: ISO mit `console=ttyS0` ohne `quiet` neu bauen (Serial-Diagnose).
+Operator-Freigabe für Runtime-Deploy + Backend-Restart, danach eine gezielte Live-Abnahme:
+1. `GET /api/fleet/sessions`/`summary` in OpenAPI sichtbar
+2. ein manueller QEMU-Smoke-Lauf (separater Auftrag) erscheint als Host-Session vor Guest-Ingest
+3. Timeout-/serial_empty-Fall in UI verifizieren

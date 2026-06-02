@@ -52,10 +52,10 @@
 | **Rescue Developer ISO Dry-Build** | Gelb | Dry-Build Manifest `review_required` — prior ISO artifacts in tree (33), keine neuen Artefakte; Profile/Guard OK | `rescue_developer_iso_dry_build_manifest.json`, `RESCUE_DEVELOPER_ISO_DRY_BUILD_RESULT.md` |
 | **Rescue Developer Controlled ISO Build** | Grün | LB_EXIT=0, ISO+SHA256, developer agent in chroot, public guard OK; permission clean nach 8455e3c | `RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md`, `rescue_developer_controlled_iso_build_result.json` |
 | **Real Developer ISO Build** | Grün | Controlled build success run `103047`; kein USB | `controlled_iso_build_latest_summary.json` |
-| **Fleet Session Phase 1 Backend Runtime** | **Grün** | API live auf `:8000`, OpenAPI + curl-Smoke OK | `FLEET_SESSION_PHASE1_LOCAL_ACCEPTANCE_RESULT.md` |
-| **Fleet Session API Smoke** | **Grün** | create/heartbeat/finish/get/list/summary | `FLEET_SESSION_PHASE1_LOCAL_ACCEPTANCE_RESULT.md` |
+| **Fleet Session Phase 1 Backend Runtime** | **Gelb** | Workspace-Implementierung + Pytest grün; Runtime-Check in diesem Lauf durch Legacy-Gate blockiert (`runtime_gate_blocked_static_only`) | `FLEET_SESSION_PHASE1_RESULT.md` |
+| **Fleet Session API Smoke** | **Gelb** | create/heartbeat/finish/get/list/summary statisch verifiziert; Live-OpenAPI nach Deploy prüfen | `FLEET_SESSION_PHASE1_RESULT.md` |
 | **Fleet Session QEMU Wrapper JSON Payload** | **Grün** | ENV+Heredoc Payloads; Shell-Test + API smoke OK | `FLEET_SESSION_QEMU_WRAPPER_JSON_FIX_RESULT.md` |
-| **Fleet Session UI (Cockpit)** | **Gelb** | Source OK; dist ohne Lab Sessions | `FLEET_SESSION_PHASE1_LOCAL_ACCEPTANCE_RESULT.md` |
+| **Fleet Session UI (Cockpit)** | **Grün** | Telemetry-Kachel `Lab Sessions` inkl. LED/KVM/Serial/Guest-Status implementiert | `FLEET_SESSION_PHASE1_RESULT.md` |
 | **Dev Diagnostic Export Backend** | **Grün** | Implementiert + pytest; `/api/dev-diagnostics/*` | `DEV_DIAGNOSTIC_EXPORT_RESULT.md` |
 | **Dev Diagnostic Export Live API** | **Grün** | Live auf `127.0.0.1:8000` (Export `081222`) | `DEV_DIAGNOSTIC_EXPORT_LIVE_ACCEPTANCE_RESULT.md` |
 | **Dev Diagnostic Export UI** | **Gelb** | Copy-Buttons in Source/dist; Browser optional | `DEV_DIAGNOSTIC_EXPORT_DE.md` |
