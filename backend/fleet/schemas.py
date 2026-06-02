@@ -26,6 +26,7 @@ class FleetSessionWriteBody(BaseModel):
 
 class FleetSessionPatchBody(BaseModel):
     status: str | None = None
+    agent_state: str | None = None
     severity: str | None = None
     host: dict[str, Any] | None = None
     qemu: dict[str, Any] | None = None

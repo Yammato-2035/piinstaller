@@ -10,6 +10,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ### Changed
 - **App bootstrap:** `app_bootstrap` (Factory, Middleware-, Router-Registry, Startup-Diagnostik); Dev-Dashboard-Status in `core.dev_dashboard_status_service`; Safety-Facade; Boundary-Skript JSON-Modus.
 - **Evidence:** `docs/evidence/monolith/*`, `app_decomposition_before_rescue_iso_gate.json`; ISO-Readiness Precheck dokumentiert (kein Build in diesem Lauf).
+- **Rescue Agent / Fleet:** Contract-Stubs (`rescue_agent/`), Fleet-Heartbeat `agent_state` vs. `status=running`, DCC `RescueAgentPanel`, Live-Menü-Stub; E2EE `contract_stub_only`, nftables `apply_allowed=false`.
 
 ## [1.7.3.0] — 2026-05-30
 

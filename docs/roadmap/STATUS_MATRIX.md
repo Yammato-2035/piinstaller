@@ -236,5 +236,5 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | Fehlerklassifikation | Gelb | `running_profile_blocked` + `deploy_drift` |
 | Runtime Gate | Gelb | Legacy non-profile-aware Hinweis, Profil-Release blockt Dev-Dashboard erwartbar |
 | Backend Tests | Gelb | `partial` (pytest mit `PYTHONPATH=backend:.` für neue Module erfolgreich) |
-| Rescue Agent Stub | Gelb | Router defensiv, live noch `not_live_due_to_deploy_drift` |
+| Rescue Agent Stub | Gelb | Commit-Prep grün (32 pytest); live nach Operator-Deploy-Sync; E2EE stub, nftables preview-only | `RESCUE_AGENT_FLEET_COMMIT_PREP_RESULT.md` |
 | Deploy Drift | Rot | Workspace vs `/opt` bei DCC/Rescue-Dateien nicht synchron |

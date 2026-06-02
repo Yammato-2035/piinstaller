@@ -18,6 +18,7 @@ import {
   devDiagnosticsUiEnabled,
   fleetSessionsUiEnabled,
 } from '../../config/buildProfile'
+import { RescueAgentPanel } from './RescueAgentPanel'
 
 const TERMINAL = new Set(['timeout', 'failed', 'success', 'cancelled'])
 const RUNNING = new Set([
@@ -137,6 +138,7 @@ export function LabSessionsPanel({ refreshSec = 15 }: { refreshSec?: number }) {
   }
 
   return (
+    <>
     <section
       className="rounded-xl border border-slate-700 bg-slate-900/50 p-4 mb-4"
       data-testid="lab-sessions-panel"
@@ -405,5 +407,7 @@ export function LabSessionsPanel({ refreshSec = 15 }: { refreshSec?: number }) {
         </ul>
       )}
     </section>
+    <RescueAgentPanel />
+    </>
   )
 }

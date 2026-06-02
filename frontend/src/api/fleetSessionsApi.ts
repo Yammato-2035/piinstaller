@@ -70,6 +70,16 @@ export type FleetSessionSummary = {
   generated_at?: string
 }
 
+export type RescueAgentSession = {
+  session_id: string
+  agent_id: string
+  registration_status: 'pending' | 'accepted' | 'rejected' | 'expired' | string
+  last_heartbeat_at?: string | null
+  agent_state?: string
+  report_received?: boolean
+  operator_label?: string
+}
+
 export async function fetchFleetSessions(includeFinished = true): Promise<FleetSession[]> {
   try {
     const q = includeFinished ? 'true' : 'false'
@@ -89,5 +99,16 @@ export async function fetchFleetSessionSummary(): Promise<FleetSessionSummary | 
     return (await res.json()) as FleetSessionSummary
   } catch {
     return null
+  }
+}
+
+export async function fetchRescueAgentSessions(): Promise<RescueAgentSession[]> {
+  try {
+    const res = await fetchApi('/api/rescue-agent/sessions')
+    if (!res.ok) return []
+    const body = (await res.json()) as { sessions?: RescueAgentSession[] }
+    return body.sessions ?? []
+  } catch {
+    return []
   }
 }

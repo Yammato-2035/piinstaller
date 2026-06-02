@@ -15,6 +15,7 @@ VALID_PROFILES = frozenset({"release", "developer", "local_lab", "rescue_lab", "
 
 FORBIDDEN_API_PREFIXES_RELEASE = (
     "/api/fleet",
+    "/api/rescue-agent",
     "/api/dev-diagnostics",
     "/api/rescue-remote",
     "/api/dev-dashboard",
@@ -181,6 +182,8 @@ def path_allowed_for_active_profile(path: str) -> bool:
     state = get_install_profile_state()
     if p.startswith("/api/fleet") and not state.fleet_sessions_enabled:
         return False
+    if p.startswith("/api/rescue-agent") and not state.rescue_remote_enabled:
+        return False
     if p.startswith("/api/dev-diagnostics") and not state.dev_diagnostics_enabled:
         return False
     if p.startswith("/api/rescue-remote") and not state.rescue_remote_enabled:
@@ -205,6 +208,11 @@ def should_register_rescue_remote_router() -> bool:
     return st.rescue_remote_enabled and not st.write_runbooks_enabled
 
 
+def should_register_rescue_agent_router() -> bool:
+    st = get_install_profile_state()
+    return st.rescue_remote_enabled and not st.write_runbooks_enabled
+
+
 def should_register_dev_server_router() -> bool:
     return get_install_profile_state().dev_server_enabled
 
@@ -212,6 +220,8 @@ def should_register_dev_server_router() -> bool:
 def _capability_enabled_for_prefix(prefix: str, state: InstallProfileState) -> bool:
     if prefix.startswith("/api/fleet"):
         return state.fleet_sessions_enabled
+    if prefix.startswith("/api/rescue-agent"):
+        return state.rescue_remote_enabled
     if prefix.startswith("/api/dev-diagnostics"):
         return state.dev_diagnostics_enabled
     if prefix.startswith("/api/rescue-remote"):

@@ -40,6 +40,7 @@ STATUSES = frozenset(
 TERMINAL_STATUSES = frozenset({"timeout", "failed", "success", "cancelled"})
 RUNNING_STATUSES = STATUSES - TERMINAL_STATUSES - frozenset({"unknown", "queued"})
 SEVERITIES = frozenset({"info", "warning", "error"})
+AGENT_STATES = frozenset({"alive", "booting", "checking", "degraded", "stalled", "finished"})
 
 FORBIDDEN_ROUTE_FRAGMENTS = (
     "/execute",
@@ -193,6 +194,7 @@ def _default_session_shell(
             "stalled": False,
             "stall_reason": "",
         },
+        "agent_state": "booting",
         "evidence_paths": [],
         "findings": [],
         "errors": [],
@@ -264,6 +266,11 @@ def _validate_payload(payload: dict[str, Any], repo: Path, *, partial: bool = Fa
     for block in ("host", "qemu", "guest", "serial", "heartbeat"):
         if block in payload and isinstance(payload[block], dict):
             cleaned[block] = payload[block]
+    if "agent_state" in payload:
+        state = str(payload.get("agent_state") or "").strip().lower()
+        if state not in AGENT_STATES:
+            raise FleetSessionError("FLEET_SESSION_BLOCKED_INVALID_PAYLOAD", ["invalid_agent_state"])
+        cleaned["agent_state"] = state
 
     if "evidence_paths" in payload and isinstance(payload["evidence_paths"], list):
         cleaned["evidence_paths"] = _sanitize_evidence_paths(payload["evidence_paths"], repo)
@@ -463,6 +470,11 @@ def heartbeat_fleet_session(
     hb_patch = {"heartbeat": {"last_heartbeat_at": now}}
     session = _deep_merge(session, hb_patch)
     if patch:
+        hb_status = str(patch.get("status") or "").strip().lower()
+        if hb_status == "running":
+            patch = dict(patch)
+            patch.pop("status", None)
+            patch.setdefault("agent_state", "alive")
         cleaned = _validate_payload(patch, repo, partial=True)
         session = _deep_merge(session, cleaned)
     _apply_serial_observation(session)

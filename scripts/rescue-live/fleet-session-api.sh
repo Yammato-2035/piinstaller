@@ -140,7 +140,10 @@ def env_int(name: str, default=None):
 payload: dict = {}
 status = os.environ.get("FLEET_HB_STATUS", "").strip()
 if status:
-    payload["status"] = status
+    if status.lower() == "running":
+        payload["agent_state"] = "alive"
+    else:
+        payload["status"] = status
 
 accel = os.environ.get("FLEET_ACCELERATION", "").strip()
 if accel:
