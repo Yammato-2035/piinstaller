@@ -23,6 +23,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Rescue agent operator smoke ok:** session rescue-c73a719c; ingest stub green; ISO precheck ready (no build).
 - **Controlled ISO build precheck (no build):** review_required; root-owned build-tree leftovers; cleanup handoff before operator run.
 - **Rescue ISO build-tree cleanup:** operator clean ok; validate exit 14 blocks operator build until PYTHONPATH override reviewed.
+- **Rescue ISO validate dangerous_path fix:** narrow allowlist for `PYTHONPATH=/opt/setuphelfer-rescue` in dev-agent service; validate exit 0; precheck ready for operator build (no ISO build in this run).
 
 ## [1.7.3.0] — 2026-05-30
 

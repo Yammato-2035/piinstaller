@@ -119,6 +119,21 @@ fail() {
   finish
 }
 
+# /opt/setuphelfer-rescue is allowed only as Live ISO runtime PYTHONPATH in
+# setuphelfer-dev-agent.service (systemd Environment= line). Every other
+# /opt/... usage and PATH override remains blocked.
+is_allowed_dangerous_path_match() {
+  local match="$1"
+  case "$match" in
+    *setuphelfer-dev-agent.service:*:Environment=PYTHONPATH=/opt/setuphelfer-rescue)
+      return 0
+      ;;
+  esac
+  return 1
+}
+
+DANGEROUS_PATH_PATTERN='(^|[^A-Z_])PATH=|export PATH=|env -i|dpkg|start-stop-daemon'
+
 [[ -d "$BUILD_ROOT" ]] || fail "missing_build_tree" 10 "Build-Tree fehlt" "$BUILD_ROOT"
 [[ -f "$AUTO_CONFIG" ]] || fail "unsafe_auto_config" 11 "auto/config fehlt" "$AUTO_CONFIG"
 [[ -f "$AUTO_BUILD" ]] || fail "unsafe_auto_config" 11 "auto/build fehlt" "$AUTO_BUILD"
@@ -145,11 +160,14 @@ for scan_root in "${SCAN_GLOBS[@]}"; do
   [[ -e "$scan_root" ]] || continue
   while IFS= read -r match; do
     [[ -n "$match" ]] || continue
+    if is_allowed_dangerous_path_match "$match"; then
+      continue
+    fi
     DANGEROUS_MATCHES+=("$match")
     if [[ "${#DANGEROUS_MATCHES[@]}" -ge 50 ]]; then
       break
     fi
-  done < <(grep -RInE 'PATH=|export PATH|env -i|dpkg|start-stop-daemon' "$scan_root" 2>/dev/null || true)
+  done < <(grep -RInE "$DANGEROUS_PATH_PATTERN" "$scan_root" 2>/dev/null || true)
   if [[ "${#DANGEROUS_MATCHES[@]}" -ge 50 ]]; then
     break
   fi
