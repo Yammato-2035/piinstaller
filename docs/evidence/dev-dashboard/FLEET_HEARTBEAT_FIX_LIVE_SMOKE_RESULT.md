@@ -1,9 +1,12 @@
 # Fleet Heartbeat Fix — Live-Smoke
 
 **Stand:** 2026-06-02  
-**Status:** **review_required** (Exit-1 triagiert: Script-Bug `${3:-{}}`; API Finish OK per curl; Fix im Workspace)
+**Status:** **grün** (Smoke nach Script-Sync `55b7bce` auf `/opt`: Create + Heartbeat `running` + Finish OK)
 
-**Triage:** `FLEET_FINISH_EXIT1_TRIAGE_RESULT.md`, `fleet_finish_exit1_triage_20260602_162848/`
+| Session | `fleet-manual_fleet_heartbeat_fix_after_script_fix_20260602_164249` |
+| Evidence | `FLEET_HEARTBEAT_FIX_AFTER_SCRIPT_FIX_RESULT.md` |
+
+Vorheriger Exit-1: `${3:-{}}` — triagiert in `FLEET_FINISH_EXIT1_TRIAGE_RESULT.md`.
 
 ## Geplanter Ablauf (nach Deploy + local_lab)
 
