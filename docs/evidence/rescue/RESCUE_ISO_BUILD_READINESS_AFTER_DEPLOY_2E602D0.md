@@ -11,15 +11,15 @@
 | Router Registry / Startup Diagnostics | ok (Code) |
 | Core Facades | ok |
 | Rescue-Agent/Fleet (committed) | stub_ok |
-| Deploy nach `/opt` | **blocked** (`sudo`) |
-| Deploy-Drift | **red** |
-| Runtime-Gate live | **yellow** (release + legacy dashboard) |
-| DCC-Smoke | **blocked** |
-| Fleet Heartbeat live | **blocked** |
+| Deploy nach `/opt` | **ok** |
+| Deploy-Drift (Code in `/opt`) | **ok** (Module live) |
+| Runtime-Gate live | **yellow** (legacy gate exit 20; profil-Gate **0**) |
+| DCC-Smoke | **blocked_by_profile_expected** |
+| Fleet Heartbeat live | **blocked** (Profil `release`) |
 
 ## ISO-Precheck-Gesamtstatus
 
-**`blocked_by_deploy_drift`**
+**`review_required`** (Deploy ok; Fleet-Live + optional DCC unter `local_lab` ausstehend)
 
 Erst nach erfolgreichem `deploy-to-opt.sh` + Restart + grünem Drift-Gate + optional Fleet-Live-Smoke:
 

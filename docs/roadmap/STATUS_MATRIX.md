@@ -237,5 +237,5 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | Runtime Gate | Gelb | Legacy non-profile-aware Hinweis, Profil-Release blockt Dev-Dashboard erwartbar |
 | Backend Tests | Gelb | `partial` (pytest mit `PYTHONPATH=backend:.` für neue Module erfolgreich) |
 | Rescue Agent Stub | Gelb | Commit `2e602d0`; Deploy-Sync **blockiert** (`sudo`); `/opt` ohne `rescue_agent/` | `DEPLOY_SYNC_2E602D0_POST_DEPLOY_RESULT.md` |
-| **Deploy-Sync 2e602d0** | **Rot** | Worktree sauber; Pre-Deploy 55 pytest OK; Operator-`sudo deploy-to-opt` ausstehend | `docs/evidence/deploy/DEPLOY_SYNC_2E602D0_SOURCE_VERIFICATION.md` |
+| **Deploy-Sync 2e602d0** | **Grün** | Deploy aus Worktree OK; `/opt` mit `app_bootstrap`+`rescue_agent`; Router-Diagnose live; Profil-Gate Exit 0 | `DEPLOY_SYNC_2E602D0_POST_DEPLOY_RESULT.md` |
 | Deploy Drift | Rot | Workspace vs `/opt` bei DCC/Rescue-Dateien nicht synchron |
