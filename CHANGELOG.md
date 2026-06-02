@@ -25,6 +25,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Rescue ISO build-tree cleanup:** operator clean ok; validate exit 14 blocks operator build until PYTHONPATH override reviewed.
 - **Rescue ISO validate dangerous_path fix:** narrow allowlist for `PYTHONPATH=/opt/setuphelfer-rescue` in dev-agent service; validate exit 0; precheck ready for operator build (no ISO build in this run).
 - **Controlled rescue ISO build ingest:** operator LB_EXIT=0; ISO SHA `505989f7…` verified; squashfs validator exit 0; ready for QEMU guest-agent smoke (no build/QEMU/USB in ingest run).
+- **QEMU guest agent smoke:** blocked in agent session (sudo/local_lab); operator handoff script prepared; no QEMU executed.
 
 ## [1.7.3.0] — 2026-05-30
 

@@ -1,0 +1,42 @@
+{
+  "task": "qemu_guest_agent_smoke_no_usb",
+  "status": "blocked",
+  "block_reason": "qemu_smoke_blocked_by_profile_sudo_required",
+  "head": "c70bfe1",
+  "run_id": null,
+  "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_sha256": "505989f7d348265c08e8baeaa2971f81aa855224223859ae8d536b984dafaf52",
+  "qemu_started": false,
+  "qemu_exit": null,
+  "serial_size_bytes": 0,
+  "bootloader_seen": false,
+  "kernel_seen": false,
+  "systemd_seen": false,
+  "live_system_seen": false,
+  "setuphelfer_runtime_seen": false,
+  "dev_agent_autostart_seen": false,
+  "fleet_session_seen": false,
+  "rescue_agent_session_seen": false,
+  "guest_report_seen": false,
+  "known_risks": {
+    "rescue_agent_module_missing_or_unconfirmed": true,
+    "dev_agent_not_enabled_or_unconfirmed": true
+  },
+  "findings": [
+    "local_lab_switch_failed_sudo_password_required",
+    "fleet_and_devserver_routes_profile_route_blocked_in_release",
+    "dev_agent_not_in_multi_user_target_wants",
+    "rescue_agent_module_absent_from_temp_bundle"
+  ],
+  "release_restored_after": true,
+  "release_never_left": true,
+  "operator_script": "scripts/rescue-live/qemu-guest-agent-smoke-operator.sh",
+  "no_host_disk": true,
+  "no_usb": true,
+  "no_backup": true,
+  "no_restore": true,
+  "no_dd": true,
+  "no_qemu_host_disk_attach": true,
+  "no_new_build_in_this_run": true,
+  "next_recommended_action": "qemu_guest_agent_smoke_operator_terminal"
+}

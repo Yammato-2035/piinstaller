@@ -45,7 +45,7 @@ build/rescue/live-build/setuphelfer-rescue-live/
 
 ## Chroot-/Mount-Cleanup (RESCUE-BUILD-CHROOT-CLEANUP-001)
 
-**2026-06-02:** Operator-Build **LB_EXIT=0**; ISO `505989f7…` (511705088 B); Squashfs-Validator Exit **0**. Nächster Schritt: QEMU Guest-Agent-Smoke (kein USB). Evidence: `CONTROLLED_RESCUE_ISO_BUILD_RESULT.md`.
+**2026-06-02:** Operator-Build **LB_EXIT=0**; Artefakt ingest **ok** (`ready_for_qemu_guest_agent_smoke`). QEMU Guest-Agent-Smoke im Agent **blocked** (`sudo`/`local_lab`) — Operator-Skript: `qemu-guest-agent-smoke-operator.sh`. Evidence: `QEMU_GUEST_AGENT_SMOKE_RESULT.md`.
 
 Wenn der letzte Lauf mit `chroot/proc` + „Vorgang nicht zulässig“ und fehlendem `/usr/bin/env` endet:
 
