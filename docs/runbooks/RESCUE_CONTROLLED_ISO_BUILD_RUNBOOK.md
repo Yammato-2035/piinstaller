@@ -48,6 +48,8 @@ SETUPHELFER_RESCUE_BUILD_PROFILE=developer-qemu \
 
 **Rebuild-Blocker (2026-06-02):** Versuch `rescue_developer_iso_20260602_212524` — **LB_EXIT=34**, `profile=standard` (Mismatch). Vor Build: `sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean`. Build nur mit `--profile developer-qemu` (Log-Zeile `profile=developer-qemu` prüfen; bei `profile=standard` STOP). Evidence: `DEVELOPER_QEMU_REBUILD_OPERATOR_HANDOFF.md`.
 
+**Developer-QEMU-Rebuild (2026-06-02):** Operator-Build `rescue_developer_iso_20260602_214335` — **LB_EXIT=0**, `profile=developer-qemu`, ISO SHA `3ee02b36…`. Serial/Bootappend verifiziert; Autopilot-Unit **nicht** in `multi-user.target.wants` → Smoke **review_required**. Evidence: `DEVELOPER_QEMU_ISO_REBUILD_RESULT.md`.
+
 ## Build-Verzeichnis
 
 ```
