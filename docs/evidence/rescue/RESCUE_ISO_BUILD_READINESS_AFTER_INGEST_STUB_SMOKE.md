@@ -6,23 +6,14 @@
 
 **`blocked_by_ingest_smoke_not_completed`**
 
-Rescue-Agent-Ingest Live-Smoke: **blocked** (sudo / Operator-curls fehlen).
+Ingest: **blocked** — Register/Report lief fälschlich unter `release`; guarded Script noch nicht erfolgreich.
 
 ## ISO-Precheck
 
-**Nicht freigegeben** bis Ingest `ok` oder `review_required-safe` **und** `release` nach Smoke belegt.
-
-| Stufe | Status |
-|-------|--------|
-| Rescue-Agent Ingest Stub | **blocked** |
-| Controlled ISO build precheck | **blocked_by_ingest_smoke_not_completed** |
-
-## Guards
-
-Kein ISO-Build in diesem Lauf.
+Nicht freigegeben bis Ingest `ok` + `release_restored_after=true` belegt.
 
 ## Nächster Schritt
 
-1. Operator-Ingest-Smoke abschließen  
-2. Release verifizieren  
+1. `./scripts/rescue-live/rescue-agent-ingest-stub-smoke-operator.sh` in Terminal 6  
+2. Cursor-Ingest mit `smoke.log` + JSON  
 3. Dann `ready_for_controlled_iso_build_precheck`
