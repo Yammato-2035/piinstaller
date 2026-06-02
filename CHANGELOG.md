@@ -31,6 +31,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Developer QEMU rebuild blocker ingest:** LB_EXIT=34 on `profile=standard` attempt; root-owned cleanup + `--profile developer-qemu` handoff; prepare/validate ok; operator sudo clean pending.
 - **Developer QEMU ISO rebuild verify ingest:** LB_EXIT=0, profile=developer-qemu, new ISO SHA `3ee02b36…`, serial bootappend OK; autopilot not in multi-user.target.wants — review_required before QEMU smoke.
 - **Developer QEMU autopilot wants fix:** static wants symlink in prepare (developer-qemu only); validators extended; ready for ISO rebuild operator run.
+- **Developer QEMU ISO rebuild after autopilot fix ingest:** agent build blocked exit 30; ISO unchanged pre-fix SHA; operator terminal required.
 
 ## [1.7.3.0] — 2026-05-30
 
