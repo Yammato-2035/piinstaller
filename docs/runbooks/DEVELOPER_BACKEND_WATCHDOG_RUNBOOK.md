@@ -13,6 +13,8 @@ test -f /opt/setuphelfer/scripts/dev-dashboard/check-backend-health.sh
 
 Evidence: `docs/evidence/dev-dashboard/DEVELOPER_BACKEND_WATCHDOG_DEPLOY_LIVE_RESULT.md`
 
+Nach local_lab-Smoke **release wiederherstellen** vor QEMU/Produktionspfaden. Unter release muss `GET /api/dev-dashboard/backend-health` → **404 PROFILE_ROUTE_BLOCKED** (nicht HTTP 200).
+
 ## Einmaliger Healthcheck (ohne sudo)
 
 ```bash

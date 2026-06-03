@@ -1,0 +1,6 @@
+{
+  "install_profile": "local_lab",
+  "profile_gate_status": "green",
+  "dev_control_enabled": true,
+  "backend_runtime_path": "/opt/setuphelfer/backend"
+}

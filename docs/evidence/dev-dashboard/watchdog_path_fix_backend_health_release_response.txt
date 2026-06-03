@@ -1,0 +1,8 @@
+# Release gating verification (code-level, 2026-06-03)
+# Live curl under release not executed in agent session (sudo); runtime was local_lab.
+# TestClient with SETUPHELFER_INSTALL_PROFILE=release:
+
+HTTP/1.1 404 Not Found
+Content-Type: application/json
+
+{"status":"error","code":"PROFILE_ROUTE_BLOCKED","path":"/api/dev-dashboard/backend-health"}
