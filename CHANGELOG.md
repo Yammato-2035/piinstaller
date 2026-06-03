@@ -36,6 +36,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **QEMU guest agent smoke after preflight ingest:** no post-fix smoke evidence in repo; blocked `qemu_operator_smoke_incomplete`; operator re-run required; release trap verified ok.
 - **DCC report freshness:** scan repo evidence (Jun 2026 reports first); default limit 5; filters; separate agent uploads from completion reports.
 - **DCC report freshness deploy live:** deploy blocked in agent session (sudo); operator deploy+local_lab smoke pending; release unchanged.
+- **Backend recovery after DCC deploy:** daemon-reload gap after deploy caused brief :8000 down; recovered; recent-evidence API live (Jun 2026 top-5); release trap pending operator.
 
 ## [1.7.3.0] — 2026-05-30
 

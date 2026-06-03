@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+date: Wed, 03 Jun 2026 06:44:48 GMT
+server: uvicorn
+content-length: 4983
+content-type: application/json
+x-request-id: 066eacc0-a7e1-4b57-bef7-a7e06ccfff8d
+x-content-type-options: nosniff
+x-frame-options: DENY
+referrer-policy: strict-origin-when-cross-origin
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'
+permissions-policy: geolocation=(), microphone=(), camera=()
+
