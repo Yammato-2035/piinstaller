@@ -23,6 +23,14 @@ cat docs/evidence/dev-dashboard/backend_health_latest.json | python3 -m json.too
 
 Exit-Codes: `0` ok, `1` warning, `2` blocked.
 
+### Evidence-Pfade
+
+- Standard: `$REPO_ROOT/docs/evidence/dev-dashboard/` (Repo-Root aus Skriptpfad oder `SETUPHELFER_REPO_ROOT`).
+- Override: `SETUPHELFER_HEALTH_EVIDENCE_DIR=/pfad/zum/verzeichnis`.
+- Dateien werden mit **`chmod 664`** geschrieben (Backend-User `setuphelfer` muss lesen können).
+
+Wenn die API `permission denied` meldet: Healthcheck erneut ausführen oder `chmod 664` auf `backend_health_latest.json` unter `/opt/setuphelfer/docs/evidence/dev-dashboard/`.
+
 ## Timer installieren (optional, nur bei Bedarf)
 
 **Nicht** automatisch aktivieren. Pfade und User im Service-Beispiel anpassen.

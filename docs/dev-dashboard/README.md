@@ -46,6 +46,7 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 - Runtime-Recovery nach Deploy/Release-Restart: `docs/evidence/dev-dashboard/BACKEND_DOWN_AFTER_RELEASE_RESTART_RESULT.md` (Pflicht: `daemon-reload` vor Restart wenn Units geändert)
 - **Developer Backend Watchdog:** `./scripts/dev-dashboard/check-backend-health.sh` (read-only, Evidence); DCC-Panel unter local_lab; API `GET /api/dev-dashboard/backend-health`; Runbook `docs/runbooks/DEVELOPER_BACKEND_WATCHDOG_RUNBOOK.md`
 - Live unter `/opt`: erfordert `sudo ./scripts/deploy-to-opt.sh` — Evidence `DEVELOPER_BACKEND_WATCHDOG_DEPLOY_LIVE_RESULT.md`
+- Evidence muss für User `setuphelfer` lesbar sein (`chmod 664`); API liefert `searched_paths` — `BACKEND_WATCHDOG_EVIDENCE_PATH_FIX_RESULT.md`
 
 ## Dev-Server (Vite) vs. Produktion
 

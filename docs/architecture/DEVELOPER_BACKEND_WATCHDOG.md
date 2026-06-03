@@ -33,6 +33,11 @@ Ein Backend-Prozess kann seinen eigenen Totalausfall nicht zuverlässig melden. 
 - `expected_profile_blocks` (release: 404 `PROFILE_ROUTE_BLOCKED` = erwartet)
 - `overall_status`, `failure_classification`, `recommended_operator_action`
 - `last_ok_at`, `last_failure_at`
+- `repo_root`, `evidence_dir`, `latest_path`, `history_path`, `script_path`, `cwd` (im Evidence-JSON)
+
+## Evidence-Lesbarkeit
+
+Healthcheck setzt **`chmod 664`** auf Evidence-Dateien (setgid-Gruppe `setuphelfer`). Ohne Gruppen-Leserecht meldet die API fälschlich `unknown` (Backend-User kann `600`-Dateien des Operators nicht lesen). Loader liefert `searched_paths` und unterscheidet `permission_denied`.
 
 ## Verwandte Dokumente
 

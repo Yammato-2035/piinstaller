@@ -6,11 +6,21 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-EVIDENCE_DIR="$REPO_ROOT/docs/evidence/dev-dashboard"
+SCRIPT_PATH="$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")"
+if [[ -n "${SETUPHELFER_REPO_ROOT:-}" ]]; then
+  REPO_ROOT="$(cd "$SETUPHELFER_REPO_ROOT" && pwd)"
+else
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+fi
+if [[ -n "${SETUPHELFER_HEALTH_EVIDENCE_DIR:-}" ]]; then
+  EVIDENCE_DIR="$(cd "$SETUPHELFER_HEALTH_EVIDENCE_DIR" && pwd)"
+else
+  EVIDENCE_DIR="$REPO_ROOT/docs/evidence/dev-dashboard"
+fi
 LATEST_JSON="$EVIDENCE_DIR/backend_health_latest.json"
 HISTORY_JSONL="$EVIDENCE_DIR/backend_health_history.jsonl"
 TMP_JSON="$(mktemp "$EVIDENCE_DIR/.backend_health_latest.XXXXXX.json")"
+CWD="$(pwd)"
 
 API_BASE="${SETUPHELFER_API_BASE:-http://127.0.0.1:8000}"
 WEB_BASE="${SETUPHELFER_WEB_BASE:-http://127.0.0.1:3001}"
@@ -191,6 +201,7 @@ export api_version_http install_profile profile_gate_status dev_control_enabled
 export dev_dashboard_http fleet_http recent_http web_http
 export expected_profile_blocks overall_status failure_classification recommended_operator_action
 export last_ok_at last_failure_at API_BASE
+export REPO_ROOT EVIDENCE_DIR LATEST_JSON HISTORY_JSONL SCRIPT_PATH CWD
 
 python3 - <<'PY' >"$TMP_JSON"
 import json, os
@@ -217,12 +228,20 @@ doc = {
     "last_ok_at": os.environ["last_ok_at"] or None,
     "last_failure_at": os.environ["last_failure_at"] or None,
     "api_base": os.environ["API_BASE"],
+    "repo_root": os.environ["REPO_ROOT"],
+    "evidence_dir": os.environ["EVIDENCE_DIR"],
+    "latest_path": os.environ["LATEST_JSON"],
+    "history_path": os.environ["HISTORY_JSONL"],
+    "script_path": os.environ["SCRIPT_PATH"],
+    "cwd": os.environ["CWD"],
 }
 print(json.dumps(doc, indent=2, ensure_ascii=False))
 PY
 
 mv -f "$TMP_JSON" "$LATEST_JSON"
+chmod 664 "$LATEST_JSON" 2>/dev/null || chmod 644 "$LATEST_JSON" 2>/dev/null || true
 python3 -c "import json; print(json.dumps(json.load(open('$LATEST_JSON')), separators=(',',':')))" >>"$HISTORY_JSONL"
+chmod 664 "$HISTORY_JSONL" 2>/dev/null || chmod 644 "$HISTORY_JSONL" 2>/dev/null || true
 
 exit_code=0
 if [[ "$overall_status" == "blocked" ]]; then
