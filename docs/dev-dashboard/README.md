@@ -33,9 +33,16 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 ## Manuelle Kommandoläufe (read-only)
 
 - Evidence: `docs/evidence/dev-dashboard/manual_command_runs/*.json`
-- API: `GET /api/dev-dashboard/manual-command-runs`
+- API: `GET /api/dev-dashboard/manual-command-runs` (Default `limit=5`)
 - UI: Developer Dashboard → **Struktur** → Panel „Manuelle Kommandoläufe“
 - **Keine** Shell-Ausführung aus dem Dashboard
+
+## Repo-Evidence-Berichte (2026-06-03)
+
+- API: `GET /api/dev-dashboard/recent-evidence` — Abschlussberichte aus `docs/evidence/*` (Sortierung: embedded `**Datum:**`, Default 5, Filter)
+- UI: Panel „Evidence-Berichte & Testläufe“ (Cockpit + Development Dashboard)
+- **Nicht** verwechseln mit Dev-Server **Agent-Uploads** (`latest_findings` in Development Server Panel)
+- KB: `docs/knowledge-base/dev-dashboard/DCC_REPORT_FRESHNESS_AND_FILTERS.md`
 
 ## Dev-Server (Vite) vs. Produktion
 
