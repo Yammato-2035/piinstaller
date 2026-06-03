@@ -246,7 +246,7 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | **Fleet Script 55b7bce in /opt** | **Grün** | `${3-}` live; Fleet-Smoke Create+HB+Finish ok | `FLEET_HEARTBEAT_FIX_AFTER_SCRIPT_FIX_RESULT.md` |
 | **DCC Port Mapping** | **Grün** | 3001=UI, 8000=API, 8080=nginx (kein DCC) | `DCC_PORT_MAPPING_RESULT.md` |
 | **DCC Read-Only Smoke** | **Grün** | `local_lab`: dev-dashboard 200, UI SimpleHTTP :3001 | `DCC_READONLY_SMOKE_AFTER_PORT_MAPPING.md` |
-| **DCC Report Freshness** | **Grün** | Repo-Evidence-Feed (Jun 2026 zuerst); Default 5 + Filter; Agent-Uploads getrennt | `DCC_REPORT_FRESHNESS_AND_TEST_FILTER_RESULT.md` |
+| **DCC Report Freshness** | **Gelb** | Fix im Repo grün; **Live unter `/opt` ausstehend** (Deploy blocked agent sudo) | `DCC_REPORT_FRESHNESS_DEPLOY_LIVE_RESULT.md` |
 | **Release-Profil nach Fleet-Smoke** | **Grün** | Operator-Restore `release`; Profil-Gate Exit 0 | `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md` |
 | **Runtime-Code-Drift** | **Gelb** | Backend/Rescue/Fleet-Skript match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |
 | **Rescue-Agent Ingest Stub** | **Grün** | Operator-Smoke ok (`…182452`); Register+Report+Trap release | `RESCUE_AGENT_OPERATOR_SMOKE_INGEST.md` |
