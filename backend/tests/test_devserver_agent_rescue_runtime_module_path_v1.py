@@ -10,13 +10,13 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[2]
 
 FORBIDDEN_RESCUE_CLI = re.compile(
-    r"PYTHONPATH=/opt/setuphelfer-rescue/backend[^\n]*\n[^\n]*"
-    r"python3\s+-m\s+devserver_agent\.cli",
+    r"PYTHONPATH=/opt/setuphelfer-rescue(?![/:])[^\n]*\n[^\n]*"
+    r"(python3\s+-m\s+backend\.devserver_agent\.cli|python3\s+-m\s+devserver_agent\.cli)",
     re.MULTILINE,
 )
-WRONG_EXEC = re.compile(r"ExecStart=.*\s-m\s+devserver_agent\.cli\b")
-CORRECT_EXEC = re.compile(r"ExecStart=.*\s-m\s+backend\.devserver_agent\.cli\b")
-CORRECT_PYTHONPATH = "PYTHONPATH=/opt/setuphelfer-rescue"
+WRONG_EXEC = re.compile(r"ExecStart=.*\s-m\s+backend\.devserver_agent\.cli\b")
+CORRECT_EXEC = re.compile(r"ExecStart=.*\s-m\s+devserver_agent\.cli\b")
+CORRECT_PYTHONPATH = "PYTHONPATH=/opt/setuphelfer-rescue/backend"
 
 
 def _read(path: Path) -> str:
@@ -28,7 +28,15 @@ class RescueRuntimeModulePathTests(unittest.TestCase):
         text = _read(_REPO / "scripts/rescue-live/prepare-controlled-live-build-tree.sh")
         self.assertIn("backend.devserver_agent.cli", text)
         self.assertIn(CORRECT_PYTHONPATH, text)
-        self.assertNotRegex(text, r"-m devserver_agent\.cli")
+
+    def test_developer_qemu_autopilot_script(self) -> None:
+        text = _read(
+            _REPO
+            / "build/rescue/profiles/developer-qemu/includes.chroot/usr/local/sbin/setuphelfer-qemu-smoke-autopilot.sh"
+        )
+        self.assertIn(CORRECT_PYTHONPATH, text)
+        self.assertIn("devserver_agent.cli", text)
+        self.assertNotRegex(text, FORBIDDEN_RESCUE_CLI)
 
     def test_developer_qemu_profile_systemd(self) -> None:
         svc = _REPO / "build/rescue/profiles/developer-qemu/systemd/setuphelfer-dev-agent.service"
@@ -62,15 +70,16 @@ class RescueRuntimeModulePathTests(unittest.TestCase):
             "docs/runbooks/RESCUE_DEVELOPER_ISO_QEMU_BOOT_PLAN_EN.md",
         ):
             text = _read(_REPO / name)
-            self.assertIn("backend.devserver_agent.cli", text)
-            self.assertIn("PYTHONPATH=/opt/setuphelfer-rescue", text)
+            self.assertIn("devserver_agent.cli", text)
+            self.assertIn("PYTHONPATH=/opt/setuphelfer-rescue/backend", text)
 
     def test_qemu_wrapper_has_lab_proxy(self) -> None:
         text = _read(_REPO / "scripts/rescue-live/run-qemu-developer-iso-smoke.sh")
         self.assertIn("start-qemu-lab-dev-server-proxy.sh", text)
         self.assertIn("LAB_PROXY_PORT", text)
         proxy = _read(_REPO / "scripts/rescue-live/start-qemu-lab-dev-server-proxy.sh")
-        self.assertIn("bind=0.0.0.0", proxy)
+        self.assertIn("PROXY_BIND", proxy)
+        self.assertIn("bind=${PROXY_BIND}", proxy)
         self.assertIn("127.0.0.1:8000", proxy)
         self.assertIn("reusing proxy already listening", proxy)
         self.assertIn("PROXY_BIND", proxy)

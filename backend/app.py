@@ -2899,6 +2899,13 @@ def _get_allowed_hosts() -> list[str]:
     """Erlaubte Host-Header. Bei ALLOW_REMOTE_ACCESS=true können weitere Hosts über PI_INSTALLER_ALLOWED_HOSTS ergänzt werden.
     „testserver“: Starlette/FastAPI TestClient (httpx) sendet Host: testserver — sonst schlagen pytest-Integrationstests mit 400 fehl."""
     default = ["localhost", "127.0.0.1", "pi-installer.local", "testserver"]
+    try:
+        from core.install_profile import get_install_profile_state
+
+        if get_install_profile_state().install_profile == "local_lab":
+            default = default + ["10.0.2.2"]
+    except Exception:
+        pass
     if os.environ.get("ALLOW_REMOTE_ACCESS", "").strip().lower() in ("true", "1", "yes"):
         extra = os.environ.get("PI_INSTALLER_ALLOWED_HOSTS", "").strip()
         if extra:

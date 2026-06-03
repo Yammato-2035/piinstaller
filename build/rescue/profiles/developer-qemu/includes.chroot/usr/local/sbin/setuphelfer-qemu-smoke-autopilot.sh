@@ -3,6 +3,10 @@
 set -u
 
 RUN_ID="${SETUPHELFER_QEMU_SMOKE_RUN_ID:-qemu_smoke_$(date -u +%Y%m%d_%H%M%S)}"
+if [[ -r /proc/cmdline ]]; then
+  _rid="$(sed -n 's/.*setuphelfer_qemu_run_id=\([^[:space:]]*\).*/\1/p' /proc/cmdline | head -1)"
+  [[ -n "$_rid" ]] && RUN_ID="$_rid"
+fi
 HOST_URL="${SETUPHELFER_DEV_AGENT_SERVER_URL:-http://10.0.2.2:8001}"
 export SETUPHELFER_QEMU_SMOKE_RUN_ID="$RUN_ID"
 
@@ -24,7 +28,7 @@ if command -v setxkbmap >/dev/null 2>&1; then
   setxkbmap -layout de -model pc105 2>/dev/null || true
 fi
 
-export PYTHONPATH=/opt/setuphelfer-rescue
+export PYTHONPATH=/opt/setuphelfer-rescue/backend:/opt/setuphelfer-rescue
 export SETUPHELFER_DEV_AGENT_ENABLED=true
 export SETUPHELFER_DEV_AGENT_MODE=local_lab
 export SETUPHELFER_DEV_AGENT_AUTO_UPLOAD=true
@@ -75,21 +79,32 @@ if kb.is_file():
 
 host_health_ok = False
 host_health_raw = ""
-rc, out = run(["curl", "-sS", "-m", "8", f"{host_url.rstrip('/')}/api/dev-server/health"])
-host_health_raw = out
-if rc == 0:
-    try:
-        json.loads(out)
-        host_health_ok = True
-    except json.JSONDecodeError:
-        warnings.append("host_health_not_json")
-else:
-    warnings.append("host_health_curl_failed")
+_health_paths = ("/api/dev-server/health", "/api/version")
+for _hp in _health_paths:
+    _url = f"{host_url.rstrip('/')}{_hp}"
+    rc, out = run([
+        "curl", "-sS", "-m", "8",
+        "-H", "Host: 127.0.0.1:8000",
+        _url,
+    ])
+    host_health_raw = out
+    if rc == 0:
+        try:
+            json.loads(out)
+            host_health_ok = True
+            break
+        except json.JSONDecodeError:
+            continue
+if not host_health_ok:
+    warnings.append("host_health_not_json")
 
 agent_send_ok = False
 agent_send_raw = ""
+_python = os.environ.get("SETUPHELFER_RESCUE_PYTHON", "/opt/setuphelfer-rescue/backend/venv/bin/python3")
+if not Path(_python).is_file():
+    _python = "python3"
 rc, out = run([
-    "python3", "-m", "backend.devserver_agent.cli",
+    _python, "-m", "devserver_agent.cli",
     "--mode", "local_lab",
     "--server", host_url,
     "--qemu-host-fallback",

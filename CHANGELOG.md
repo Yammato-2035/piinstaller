@@ -46,6 +46,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Runtime port registry live verify:** Operator-Deploy `2406e68` ingested; ports 8000/3001/8080/8001+guest URL live; release `PROFILE_ROUTE_BLOCKED` ok; watchdog ok; QEMU readiness `ok` (no QEMU in run).
 - **QEMU guest agent smoke after port registry:** Operator run `20260603_111427`; preflight+ISO ok; autopilot started; blocked on `devserver_agent` ModuleNotFoundError and proxy Invalid Host header; no new QEMU in ingest.
 - **Rescue stick fleet agent contract (static):** Heartbeat `running` fix; rescue_agent discovery/pairing/E2EE/nftables/report stubs; DCC panel + live menu stub; boot branding precheck review_required; 32 pytest + 54 vitest; no ISO/USB/QEMU.
+- **Developer QEMU devserver agent report fix:** PYTHONPATH `/opt/setuphelfer-rescue/backend`; `-m devserver_agent.cli`; lab Host header + local_lab TrustedHost `10.0.2.2`; squashfs validator import checks; old ISO exit 21 expected; rebuild before QEMU smoke.
 
 ## [1.7.3.0] — 2026-05-30
 

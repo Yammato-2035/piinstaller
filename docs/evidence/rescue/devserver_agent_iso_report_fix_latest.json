@@ -1,0 +1,24 @@
+{
+  "task": "devserver_agent_iso_report_fix",
+  "status": "fix_ready_for_rebuild",
+  "head": "4ed40fd",
+  "primary_previous_failure": "autopilot_network_or_api_report_failed",
+  "fixed_items": {
+    "devserver_agent_import_path": true,
+    "rescue_bundle_includes_devserver_agent": true,
+    "autopilot_module_call_corrected": true,
+    "pythonpath_corrected": true,
+    "proxy_invalid_host_header_mitigated": true,
+    "validator_import_check_added": true
+  },
+  "old_iso_still_failing_expected": true,
+  "requires_iso_rebuild": true,
+  "ready_for_developer_qemu_iso_rebuild_operator_run": true,
+  "ready_for_qemu_smoke": false,
+  "no_iso_build": true,
+  "no_qemu": true,
+  "no_usb": true,
+  "no_backup": true,
+  "no_restore": true,
+  "next_recommended_action": "developer_qemu_iso_rebuild_operator_run"
+}

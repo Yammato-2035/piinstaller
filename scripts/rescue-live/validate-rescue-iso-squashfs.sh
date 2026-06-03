@@ -26,6 +26,9 @@ fail_login() { echo "LOGIN_HINT_GAP: $*" >&2; exit 14; }
 fail_init_integration() { echo "SYSTEMD_INIT_GAP: $*" >&2; exit 15; }
 fail_init_symlink() { echo "SYSTEMD_SYSV_INIT_GAP: $*" >&2; exit 16; }
 fail_dbus() { echo "DBUS_GAP: $*" >&2; exit 17; }
+fail_agent_import() { echo "RESCUE-QEMU-AGENT-IMPORT-001: $*" >&2; exit 18; }
+fail_proxy_host() { echo "RESCUE-QEMU-PROXY-HOST-001: $*" >&2; exit 19; }
+fail_autopilot_call() { echo "RESCUE-QEMU-AUTOPILOT-CALL-001: $*" >&2; exit 21; }
 
 command -v unsquashfs >/dev/null || fail_missing "unsquashfs"
 command -v xorriso >/dev/null || fail_missing "xorriso"
@@ -138,6 +141,33 @@ if [[ "$_developer_qemu_iso" == true ]]; then
   if ! unsquashfs -cat "$SQ" etc/systemd/system/setuphelfer-qemu-smoke-autopilot.service 2>/dev/null \
     | grep -q '10.0.2.2:8001'; then
     fail_systemd "autopilot unit missing devserver endpoint http://10.0.2.2:8001"
+  fi
+  squashfs_path_exists 'opt/setuphelfer-rescue/backend/devserver_agent/cli.py' \
+    || fail_agent_import "devserver_agent package missing in squashfs (opt/setuphelfer-rescue/backend/devserver_agent/cli.py)"
+  squashfs_path_exists 'opt/setuphelfer-rescue/backend/devserver_agent/__init__.py' \
+    || fail_agent_import "devserver_agent __init__ missing in squashfs"
+  _ap_sh='usr/local/sbin/setuphelfer-qemu-smoke-autopilot.sh'
+  if squashfs_path_exists "$_ap_sh"; then
+    _ap_text="$(unsquashfs -cat "$SQ" "$_ap_sh" 2>/dev/null || true)"
+    if ! grep -q 'PYTHONPATH=/opt/setuphelfer-rescue/backend' <<< "$_ap_text"; then
+      fail_autopilot_call "autopilot missing PYTHONPATH=/opt/setuphelfer-rescue/backend"
+    fi
+    if grep -qE 'python3[[:space:]]+-m[[:space:]]+backend\.devserver_agent\.cli' <<< "$_ap_text" \
+      && ! grep -q 'PYTHONPATH=/opt/setuphelfer-rescue/backend' <<< "$_ap_text"; then
+      fail_autopilot_call "backend.devserver_agent.cli without backend on PYTHONPATH"
+    fi
+    if grep -qE 'python3[[:space:]]+-m[[:space:]]+devserver_agent\.cli' <<< "$_ap_text" \
+      && ! grep -q 'PYTHONPATH=/opt/setuphelfer-rescue/backend' <<< "$_ap_text"; then
+      fail_autopilot_call "devserver_agent.cli without backend on PYTHONPATH"
+    fi
+    if ! grep -qE '(python3[[:space:]]+-m[[:space:]]+devserver_agent\.cli|backend/venv/bin/python3[[:space:]]+-m[[:space:]]+devserver_agent\.cli)' <<< "$_ap_text"; then
+      fail_autopilot_call "autopilot must invoke devserver_agent.cli with rescue venv or python3"
+    fi
+    if ! grep -q 'Host: 127.0.0.1:8000' <<< "$_ap_text"; then
+      fail_proxy_host "autopilot health curl missing lab Host header override"
+    fi
+  else
+    fail_autopilot_call "setuphelfer-qemu-smoke-autopilot.sh missing in squashfs"
   fi
   echo "OK: developer-qemu autopilot unit enabled in squashfs"
 fi

@@ -30,9 +30,10 @@ class RescueQemuSmokeAutopilotProfileTests(unittest.TestCase):
 
     def test_autopilot_script_module_path_and_url(self) -> None:
         text = _read(AUTOPILOT_SH)
-        self.assertIn("PYTHONPATH=/opt/setuphelfer-rescue", text)
-        self.assertIn("backend.devserver_agent.cli", text)
+        self.assertIn("PYTHONPATH=/opt/setuphelfer-rescue/backend", text)
+        self.assertIn("devserver_agent.cli", text)
         self.assertIn("http://10.0.2.2:8001", text)
+        self.assertIn("Host: 127.0.0.1:8000", text)
         self.assertIn("SETUPHELFER_QEMU_SMOKE_RESULT_JSON_BEGIN", text)
 
     def test_autopilot_script_no_dangerous_commands(self) -> None:

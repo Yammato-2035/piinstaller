@@ -387,7 +387,7 @@ Wants=network-online.target
 Type=oneshot
 EnvironmentFile=-/etc/setuphelfer/setuphelfer-dev-agent.env
 WorkingDirectory=/opt/setuphelfer-rescue/backend
-Environment=PYTHONPATH=/opt/setuphelfer-rescue
+Environment=PYTHONPATH=/opt/setuphelfer-rescue/backend:/opt/setuphelfer-rescue
 Environment=SETUPHELFER_RESCUE_ROOT=/opt/setuphelfer-rescue
 ExecStart=${exec_start}
 NoNewPrivileges=true
