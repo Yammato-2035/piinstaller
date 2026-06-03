@@ -49,7 +49,7 @@
 | **Controlled ISO build prep (live-build tree)** | Grün | Tree + Bundle Validator Exit 0 | `RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md` |
 | **Controlled ISO build precheck (no build)** | Grün | Cleanup ok; Validate Exit 0; Operator-Build freigegeben | `controlled_iso_build_precheck_latest.json` |
 | **Controlled ISO build (2026-06-02)** | Gelb | LB_EXIT=0; Artefakt ok; Squashfs-Validator 0; **kein Boot/USB** | `CONTROLLED_RESCUE_ISO_BUILD_RESULT.md` |
-| **QEMU Guest Agent Smoke** | Rot | Run `212528`: Fix live+ISO ok; ModuleNotFound/Invalid Host **weg**; **`agent_send_failed`**, no guest report | `QEMU_212528_INGEST_RESULT.md` |
+| **QEMU Guest Agent Smoke** | Rot | Run `212528`: import/host ok; **`agent_send_failed`** — fix prepared (dev_server profile sync + POST Host header + serial markers) | `QEMU_GUEST_REPORT_PAYLOAD_TRIAGE_RESULT.md` |
 | **DCC unter release** | Grün (expected) | Dev-Routen `PROFILE_ROUTE_BLOCKED`; Ports ok — kein Portfehler | `DCC_PROFILE_STATUS_TRIAGE.md` |
 | **Developer QEMU ISO Rebuild** | Grün | Operator `rescue_developer_iso_20260602_220129` LB_EXIT=0; SHA `614cc86e…`; Autopilot wants in Squashfs; ready for smoke | `DEVELOPER_QEMU_ISO_AFTER_AUTOPILOT_SUCCESS_INGEST_RESULT.md` |
 | **Controlled ISO build execution** | Grün | Developer controlled build `rescue_developer_iso_20260531_103047` — LB_EXIT=0, summary success, permission clean after 8455e3c | `RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md`, `controlled_iso_build_latest_summary.json` |

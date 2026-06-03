@@ -135,6 +135,95 @@ def cmd_collect(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _build_send_payload(args: argparse.Namespace, cfg: Any) -> tuple[dict[str, Any], dict[str, Any], list[str], list[str]]:
+    node_id, display_name = resolve_node_identity(cfg.node_id, cfg.display_name)
+    node = build_dev_node_from_config(node_id=node_id, display_name=display_name, mode=cfg.mode)
+    report, _payload = build_dev_report_from_collection(
+        node_id=node_id,
+        mode=cfg.mode,
+        collect_hardware=cfg.collect_hardware,
+        collect_storage=cfg.collect_storage,
+        collect_boot=cfg.collect_boot,
+    )
+    report, redact_warnings, redact_errors = enforce_mode_redaction(cfg.mode, report)
+    if redact_warnings:
+        report.setdefault("warnings", []).extend(redact_warnings)
+    return node, report, redact_warnings, redact_errors
+
+
+def cmd_print_payload(args: argparse.Namespace) -> int:
+    _apply_cli_overrides(args)
+    cfg = load_dev_agent_config()
+    node, report, _, redact_errors = _build_send_payload(args, cfg)
+    if redact_errors:
+        _emit({"code": "DEV_AGENT_REDACTION_FAILED", "errors": redact_errors}, as_json=args.json)
+        return EXIT_REDACTION_FAILED
+    resolved = _resolve_url_for_run(args, cfg, probe=False)
+    server_url = resolved.get("selected_url") or cfg.server_url
+    from devserver_agent.client import INGEST_PATH, lab_proxy_host_header_for_url
+
+    summary = {
+        "run_id": os.environ.get("SETUPHELFER_QEMU_SMOKE_RUN_ID"),
+        "session_id": (
+            f"fleet-{os.environ['SETUPHELFER_QEMU_SMOKE_RUN_ID']}"
+            if os.environ.get("SETUPHELFER_QEMU_SMOKE_RUN_ID")
+            else None
+        ),
+        "node_id": node.get("node_id"),
+        "report_id": report.get("report_id"),
+        "report_type": report.get("report_type"),
+        "lab_mode": report.get("lab_mode"),
+        "host_dev_url": server_url,
+    }
+    _emit(
+        {
+            "code": "DEV_AGENT_PRINT_PAYLOAD_OK",
+            "method": "POST",
+            "route": INGEST_PATH,
+            "url": f"{(server_url or '').rstrip('/')}{INGEST_PATH}" if server_url else None,
+            "host_header": lab_proxy_host_header_for_url(server_url or ""),
+            "payload_summary": summary,
+            "node": node,
+            "report": report,
+            "resolution": resolved,
+        },
+        as_json=args.json,
+    )
+    return EXIT_OK
+
+
+def cmd_dry_run(args: argparse.Namespace) -> int:
+    _apply_cli_overrides(args)
+    cfg = load_dev_agent_config()
+    if not cfg.enabled:
+        _emit({"code": "DEV_AGENT_DISABLED", "errors": ["agent_disabled"]}, as_json=args.json)
+        return EXIT_DISABLED
+    node, report, _, redact_errors = _build_send_payload(args, cfg)
+    if redact_errors:
+        _emit({"code": "DEV_AGENT_REDACTION_FAILED", "errors": redact_errors}, as_json=args.json)
+        return EXIT_REDACTION_FAILED
+    resolved = _resolve_url_for_run(args, cfg, probe=False)
+    server_url = resolved.get("selected_url") or cfg.server_url
+    from devserver_agent.client import INGEST_PATH, lab_proxy_host_header_for_url
+
+    _emit(
+        {
+            "code": "DEV_AGENT_DRY_RUN_OK",
+            "network": False,
+            "method": "POST",
+            "route": INGEST_PATH,
+            "url": f"{(server_url or '').rstrip('/')}{INGEST_PATH}" if server_url else None,
+            "host_header": lab_proxy_host_header_for_url(server_url or ""),
+            "node_id": node.get("node_id"),
+            "report_id": report.get("report_id"),
+            "run_id": os.environ.get("SETUPHELFER_QEMU_SMOKE_RUN_ID"),
+            "resolution": resolved,
+        },
+        as_json=args.json,
+    )
+    return EXIT_OK
+
+
 def cmd_send(args: argparse.Namespace) -> int:
     _apply_cli_overrides(args)
     cfg = load_dev_agent_config()
@@ -152,16 +241,7 @@ def cmd_send(args: argparse.Namespace) -> int:
         return EXIT_DISABLED
 
     node_id, display_name = resolve_node_identity(cfg.node_id, cfg.display_name)
-    node = build_dev_node_from_config(node_id=node_id, display_name=display_name, mode=cfg.mode)
-    report, _payload = build_dev_report_from_collection(
-        node_id=node_id,
-        mode=cfg.mode,
-        collect_hardware=cfg.collect_hardware,
-        collect_storage=cfg.collect_storage,
-        collect_boot=cfg.collect_boot,
-    )
-
-    report, redact_warnings, redact_errors = enforce_mode_redaction(cfg.mode, report)
+    node, report, redact_warnings, redact_errors = _build_send_payload(args, cfg)
     if redact_errors:
         _emit({"code": "DEV_AGENT_REDACTION_FAILED", "errors": redact_errors}, as_json=args.json)
         return EXIT_REDACTION_FAILED
@@ -292,6 +372,8 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Setuphelfer Development Agent")
     p.add_argument("--collect-only", action="store_true")
     p.add_argument("--send", action="store_true")
+    p.add_argument("--print-payload", action="store_true")
+    p.add_argument("--dry-run", action="store_true")
     p.add_argument("--health", action="store_true")
     p.add_argument("--mode", choices=["public_rescue", "beta_opt_in", "local_lab"])
     p.add_argument("--server")
@@ -331,6 +413,10 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_rescue_iso_dry_build(args)
         if args.collect_only:
             return cmd_collect(args)
+        if getattr(args, "print_payload", False):
+            return cmd_print_payload(args)
+        if getattr(args, "dry_run", False):
+            return cmd_dry_run(args)
         if args.send:
             return cmd_send(args)
         return cmd_collect(args)

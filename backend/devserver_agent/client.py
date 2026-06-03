@@ -7,11 +7,21 @@ import logging
 import urllib.error
 import urllib.request
 from typing import Any
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
 INGEST_PATH = "/api/dev-server/ingest/report"
 HEALTH_PATH = "/api/dev-server/health"
+LAB_PROXY_HOST_HEADER = "127.0.0.1:8000"
+
+
+def lab_proxy_host_header_for_url(url: str) -> str | None:
+    """QEMU user-NAT proxy (10.0.2.2:8001) must present the backend Host header."""
+    host = (urlparse((url or "").strip()).hostname or "").lower()
+    if host == "10.0.2.2":
+        return LAB_PROXY_HOST_HEADER
+    return None
 
 
 def _request_json(
@@ -21,8 +31,12 @@ def _request_json(
     body: dict[str, Any] | None = None,
     token: str | None = None,
     timeout: float = 5.0,
+    host_header: str | None = None,
 ) -> tuple[int, dict[str, Any] | None, str | None]:
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    effective_host = host_header or lab_proxy_host_header_for_url(url)
+    if effective_host:
+        headers["Host"] = effective_host
     if token:
         headers["X-Dev-Server-Token"] = token
     data = None
@@ -48,14 +62,15 @@ def _request_json(
         return 0, None, str(exc)
 
 
-def health_check(server_url: str, *, timeout: float = 5.0) -> dict[str, Any]:
+def health_check(server_url: str, *, timeout: float = 5.0, host_header: str | None = None) -> dict[str, Any]:
     url = server_url.rstrip("/") + HEALTH_PATH
-    status, body, err = _request_json(url, timeout=timeout)
+    status, body, err = _request_json(url, timeout=timeout, host_header=host_header)
     return {
         "ok": status == 200 and body is not None,
         "http_status": status,
         "health": body or {},
         "error": err,
+        "host_header": host_header or lab_proxy_host_header_for_url(server_url),
     }
 
 
@@ -80,10 +95,19 @@ def post_report(
     token: str | None = None,
     *,
     timeout: float = 5.0,
+    host_header: str | None = None,
 ) -> dict[str, Any]:
     url = server_url.rstrip("/") + INGEST_PATH
     body = {"node": node, "report": report}
-    status, parsed, err = _request_json(url, method="POST", body=body, token=token, timeout=timeout)
+    effective_host = host_header or lab_proxy_host_header_for_url(server_url)
+    status, parsed, err = _request_json(
+        url,
+        method="POST",
+        body=body,
+        token=token,
+        timeout=timeout,
+        host_header=effective_host,
+    )
     if err:
         logger.warning("dev_agent upload failed: %s", err[:200] if err else "unknown")
         return {
@@ -92,6 +116,9 @@ def post_report(
             "code": "DEV_AGENT_UPLOAD_FAILED",
             "error": err,
             "response": None,
+            "url": url,
+            "method": "POST",
+            "host_header": effective_host,
         }
     if status == 200 and isinstance(parsed, dict):
         return {
@@ -100,6 +127,9 @@ def post_report(
             "code": parsed.get("code", "DEV_SERVER_REPORT_ACCEPTED"),
             "response": parsed,
             "error": None,
+            "url": url,
+            "method": "POST",
+            "host_header": effective_host,
         }
     detail = parsed.get("detail") if isinstance(parsed, dict) else parsed
     if isinstance(detail, dict):
@@ -109,6 +139,9 @@ def post_report(
             "code": detail.get("code", "DEV_AGENT_UPLOAD_BLOCKED"),
             "response": detail,
             "error": ",".join(detail.get("errors") or []) or "upload_blocked",
+            "url": url,
+            "method": "POST",
+            "host_header": effective_host,
         }
     return {
         "ok": False,
@@ -116,4 +149,7 @@ def post_report(
         "code": "DEV_AGENT_UPLOAD_FAILED",
         "response": parsed,
         "error": str(detail) if detail else f"http_{status}",
+        "url": url,
+        "method": "POST",
+        "host_header": effective_host,
     }

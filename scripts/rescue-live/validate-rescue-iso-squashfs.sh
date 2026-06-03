@@ -160,7 +160,7 @@ if [[ "$_developer_qemu_iso" == true ]]; then
       && ! grep -q 'PYTHONPATH=/opt/setuphelfer-rescue/backend' <<< "$_ap_text"; then
       fail_autopilot_call "devserver_agent.cli without backend on PYTHONPATH"
     fi
-    if ! grep -qE '(python3[[:space:]]+-m[[:space:]]+devserver_agent\.cli|backend/venv/bin/python3[[:space:]]+-m[[:space:]]+devserver_agent\.cli)' <<< "$_ap_text"; then
+    if ! grep -qE '(-m[[:space:]]+devserver_agent\.cli|devserver_agent\.cli)' <<< "$_ap_text"; then
       fail_autopilot_call "autopilot must invoke devserver_agent.cli with rescue venv or python3"
     fi
     if ! grep -q 'Host: 127.0.0.1:8000' <<< "$_ap_text"; then

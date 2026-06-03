@@ -51,10 +51,33 @@ class DevServerConfig:
         return self.enabled and self.accept_public_uploads
 
 
+def _profile_dev_server_defaults() -> tuple[bool | None, DevServerMode | None, bool | None]:
+    """Align Dev Server runtime config with install profile when env omits explicit values."""
+    try:
+        from core.install_profile import get_install_profile_state
+
+        st = get_install_profile_state()
+    except Exception:
+        return None, None, None
+    if not st.dev_server_enabled:
+        return None, None, None
+    enabled: bool | None = None
+    mode: DevServerMode | None = None
+    require_token: bool | None = None
+    if os.environ.get("SETUPHELFER_DEV_SERVER_ENABLED") is None:
+        enabled = True
+    if os.environ.get("SETUPHELFER_DEV_SERVER_MODE") is None:
+        mode = "local_lab"
+    if st.install_profile == "local_lab" and os.environ.get("SETUPHELFER_DEV_SERVER_REQUIRE_TOKEN") is None:
+        require_token = False
+    return enabled, mode, require_token
+
+
 def load_dev_server_config(*, repo_root: Path | None = None) -> DevServerConfig:
     root = repo_root or _repo_root()
-    enabled = _env_bool("SETUPHELFER_DEV_SERVER_ENABLED", False)
-    mode_raw = (os.environ.get("SETUPHELFER_DEV_SERVER_MODE") or "disabled").strip().lower()
+    profile_enabled, profile_mode, profile_require_token = _profile_dev_server_defaults()
+    enabled = _env_bool("SETUPHELFER_DEV_SERVER_ENABLED", profile_enabled if profile_enabled is not None else False)
+    mode_raw = (os.environ.get("SETUPHELFER_DEV_SERVER_MODE") or (profile_mode or "disabled")).strip().lower()
     mode: DevServerMode = "local_lab" if mode_raw == "local_lab" else "disabled"
     if mode not in _VALID_MODES:
         mode = "disabled"
@@ -69,7 +92,8 @@ def load_dev_server_config(*, repo_root: Path | None = None) -> DevServerConfig:
     if not storage_root.is_absolute():
         storage_root = (root / storage_root).resolve()
 
-    require_token = _env_bool("SETUPHELFER_DEV_SERVER_REQUIRE_TOKEN", True)
+    require_token_default = profile_require_token if profile_require_token is not None else True
+    require_token = _env_bool("SETUPHELFER_DEV_SERVER_REQUIRE_TOKEN", require_token_default)
     token_env = (os.environ.get("SETUPHELFER_DEV_SERVER_TOKEN_ENV") or "SETUPHELFER_DEV_SERVER_TOKEN").strip()
     auth_token_value: str | None = None
     if require_token:

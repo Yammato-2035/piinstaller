@@ -8,6 +8,11 @@ import sys
 from pathlib import Path
 
 MARKER = re.compile(
+    r"SETUPHELFER_QEMU_SMOKE_RESULT_JSON_BEGIN\s*\n(.*?)\nSETUPHELFER_QEMU_SMOKE_RESULT_JSON_END",
+    re.DOTALL,
+)
+# Legacy single-line capture (systemd may interleave ANSI — prefer multi-line block above)
+MARKER_LEGACY = re.compile(
     r"SETUPHELFER_QEMU_SMOKE_RESULT_JSON_BEGIN\s+(\{.*?\})\s+SETUPHELFER_QEMU_SMOKE_RESULT_JSON_END",
     re.DOTALL,
 )
@@ -18,6 +23,8 @@ def parse_serial_log(path: Path) -> dict | None:
         return None
     text = path.read_text(encoding="utf-8", errors="replace")
     matches = MARKER.findall(text)
+    if not matches:
+        matches = MARKER_LEGACY.findall(text)
     if not matches:
         return None
     try:

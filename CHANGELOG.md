@@ -48,7 +48,8 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Rescue stick fleet agent contract (static):** Heartbeat `running` fix; rescue_agent discovery/pairing/E2EE/nftables/report stubs; DCC panel + live menu stub; boot branding precheck review_required; 32 pytest + 54 vitest; no ISO/USB/QEMU.
 - **Developer QEMU devserver agent report fix:** PYTHONPATH `/opt/setuphelfer-rescue/backend`; `-m devserver_agent.cli`; lab Host header + local_lab TrustedHost `10.0.2.2`; squashfs validator import checks; old ISO exit 21 expected; rebuild before QEMU smoke.
 - **Devserver agent fix rebuild+QEMU verify (blocked):** STRICT-Lauf Phase 1 Deploy `exit=1` (sudo); Evidence `DEVSERVER_AGENT_FIX_REBUILD_QEMU_*`.
-- **QEMU 212528 guest report ingest:** Operator deploy+ISO rebuild; Run `212528` — import/host-header fixed; **`agent_send_failed`** remains; DCC release expected disabled; USB blocked.
+- **QEMU 212528 guest report ingest:** Operator deploy+ISO rebuild; **`agent_send_failed`** remains; DCC release expected disabled; USB blocked.
+- **Guest report payload fix (prepared):** Dev-Server enabled under local_lab profile sync; POST proxy Host header; serial HTTP markers; validator regex; CLI `--dry-run`/`--print-payload`; no QEMU/ISO in triage run.
 
 ## [1.7.3.0] — 2026-05-30
 

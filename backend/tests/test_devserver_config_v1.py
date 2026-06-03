@@ -31,6 +31,13 @@ class DevServerConfigTests(unittest.TestCase):
         self.assertTrue(cfg.enabled)
         self.assertEqual(cfg.mode, "local_lab")
 
+    def test_local_lab_profile_sync_when_env_omitted(self) -> None:
+        with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "local_lab"}, clear=True):
+            cfg = load_dev_server_config()
+        self.assertTrue(cfg.enabled)
+        self.assertEqual(cfg.mode, "local_lab")
+        self.assertFalse(cfg.require_token)
+
     def test_public_uploads_default_false(self) -> None:
         with patch.dict(os.environ, {"SETUPHELFER_DEV_SERVER_ENABLED": "true"}, clear=True):
             cfg = load_dev_server_config()
