@@ -49,7 +49,7 @@
 | **Controlled ISO build prep (live-build tree)** | Grün | Tree + Bundle Validator Exit 0 | `RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md` |
 | **Controlled ISO build precheck (no build)** | Grün | Cleanup ok; Validate Exit 0; Operator-Build freigegeben | `controlled_iso_build_precheck_latest.json` |
 | **Controlled ISO build (2026-06-02)** | Gelb | LB_EXIT=0; Artefakt ok; Squashfs-Validator 0; **kein Boot/USB** | `CONTROLLED_RESCUE_ISO_BUILD_RESULT.md` |
-| **QEMU Guest Agent Smoke** | Rot | ISO developer-qemu verifiziert; Preflight-Guard ok; **Post-ISO-Smoke fehlt** im Evidence-Baum — Ingest blocked; Operator re-run nötig | `QEMU_GUEST_AGENT_SMOKE_AFTER_PREFLIGHT_RESULT.md` |
+| **QEMU Guest Agent Smoke** | Rot | Run `20260603_111427`: Preflight+ISO ok; Autopilot startet; **guest report missing** — `devserver_agent` Import + Proxy Host-Header | `QEMU_GUEST_AGENT_AFTER_REGISTRY_INGEST_RESULT.md` |
 | **Developer QEMU ISO Rebuild** | Grün | Operator `rescue_developer_iso_20260602_220129` LB_EXIT=0; SHA `614cc86e…`; Autopilot wants in Squashfs; ready for smoke | `DEVELOPER_QEMU_ISO_AFTER_AUTOPILOT_SUCCESS_INGEST_RESULT.md` |
 | **Controlled ISO build execution** | Grün | Developer controlled build `rescue_developer_iso_20260531_103047` — LB_EXIT=0, summary success, permission clean after 8455e3c | `RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md`, `controlled_iso_build_latest_summary.json` |
 | **Rescue ISO artifact** | Grün | Developer ISO `binary.hybrid.iso` (509607936 B), SHA256 `52da3e018ccb…`; unterscheidet sich von archivierter Prior-ISO | `rescue_developer_iso_latest.sha256`, `rescue_developer_controlled_iso_build_result.json` |

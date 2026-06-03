@@ -44,6 +44,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Watchdog live ingest:** Operator deploy ok; /opt healthcheck exit 0; local_lab API 200 with /opt source_path; release gating verified (PROFILE_ROUTE_BLOCKED); release restore pending before QEMU.
 - **Runtime port/profile registry:** `config/runtime_ports.json`; `/api/version` exposes `runtime_ports` and `canonical_urls`; healthcheck/QEMU scripts read registry; DCC release page clarifies ports vs profile block.
 - **Runtime port registry live verify:** Operator-Deploy `2406e68` ingested; ports 8000/3001/8080/8001+guest URL live; release `PROFILE_ROUTE_BLOCKED` ok; watchdog ok; QEMU readiness `ok` (no QEMU in run).
+- **QEMU guest agent smoke after port registry:** Operator run `20260603_111427`; preflight+ISO ok; autopilot started; blocked on `devserver_agent` ModuleNotFoundError and proxy Invalid Host header; no new QEMU in ingest.
 
 ## [1.7.3.0] — 2026-05-30
 
