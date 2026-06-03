@@ -1,48 +1,60 @@
-# Rescue Agent Contract Result (Strict Static Pass)
+# Rescue Agent Contract Result — Rescue Stick Fleet Wave
 
-**Commit-Prep:** 2026-06-02 — pytest 32 (rescue_agent+fleet heartbeat), Frontend 54 Vitest; kein Deploy.
+**Datum:** 2026-06-03  
+**HEAD:** `2ca3a70`  
+**Branch:** `main`  
+**Modus:** statisch (Runtime-Gate legacy informational unter `release`)
 
 ## Phase-0 Gate
 
-- Runtime-Gate: `check-runtime-deploy-gate: LEGACY_GATE_NON_PROFILE_AWARE`
-- Entscheidung: `runtime_gate_blocked_static_analysis_only`
-- Keine Runtime-Smokes auf Port 8000 in diesem Lauf
+| Check | Ergebnis |
+|-------|----------|
+| `check-runtime-deploy-gate.sh` | Exit 20 — `LEGACY_GATE_NON_PROFILE_AWARE` (dev-dashboard 404 unter release, erwartet) |
+| Entscheidung | **`runtime_gate_blocked_static_analysis_only`** — keine Runtime-Smokes auf :8000 |
+| `setuphelfer-backend.service` | active |
+| `setuphelfer.service` | active |
+| Public Repo | PUBLIC — **NDA risk:** keine Secrets/PII in Evidence |
 
-## Ergebnis
+## Heartbeat-Fix (Phase 1)
 
-- Fleet Heartbeat Contract: `implemented` (`agent_state`, running-neutralisierung)
-- Rescue Discovery: `implemented_stub`
-- Pairing: `implemented_stub`
-- E2EE: `contract_stub`
-- nftables: `preview_only` (`apply_allowed=false`)
-- System Report: `implemented_stub`
-- API Contract: `implemented_stub`
-- Router-Startability-Härtung: `implemented`
-  - `rescue_agent_router_status` + `rescue_agent_router_error` in `/api/version`
-  - kein Backend-Startabbruch bei optionalem Router-Importfehler
+| Bereich | Status |
+|---------|--------|
+| Backend `heartbeat_fleet_session` | `status=running` → ignoriert, `agent_state=alive` |
+| Shell `fleet_session_heartbeat_payload` | `running` → nur `agent_state`, kein invalid status |
+| Tests | 6 unittest + Shell-Payload inkl. `running` — **OK** |
+| Create → Heartbeat → Finish | unittest flow OK, kein Fake-Gast |
 
-## Sicherheits- und Scope-Guards
+## Rescue Agent Module (Phasen 2–8)
 
-- Kein ISO-Build: yes
-- Kein QEMU: yes
-- Kein USB/dd: yes
-- Kein Backup: yes
-- Kein Restore: yes
-- Kein apt install/upgrade: yes
-- Kein Push: yes
+| Modul | Status |
+|-------|--------|
+| Discovery | **implemented_stub** (`backend/rescue_agent/discovery.py`) |
+| Pairing/Registration | **implemented_stub** |
+| E2EE Envelope | **contract_stub** (kein Produktions-Krypto) |
+| nftables Policy | **preview_only**, `apply_allowed=false` |
+| System Report | **implemented_stub** (Core-Facades wenn vorhanden) |
+| API Routes | **implemented_stub** (local_lab gating, release block) |
+| Dashboard | **implemented_stub** (`RescueAgentPanel`) |
+| Live Setup Menu | **stub** (`RescueLiveSetupMenu.tsx`) |
+| Boot Menu Branding | **review_required** (SVG→PNG Dependency) |
 
-## Startability-Befund (DCC)
+## Tests (Phase 13)
 
-- Laufende Runtime:
-  - `/api/version` antwortet `200`
-  - `/api/dev-dashboard/status` in `release` korrekt `404 PROFILE_ROUTE_BLOCKED`
-- Runtime-Python nachgewiesen:
-  - `/opt/setuphelfer/backend/venv/bin/python3`
-  - fastapi/pydantic vorhanden
-- Backend-Import mit Runtime-Python gegen Workspace-Code:
-  - `APP_IMPORT_OK`
-  - Rescue-Agent-Module importierbar
-- Deploy-Drift bleibt:
-  - `/opt/setuphelfer/backend/rescue_agent` fehlt
-  - `backend/app.py` und weitere Kerndateien differieren
-  - neue `/api/version`-Routerdiagnosefelder daher live noch nicht sichtbar
+| Suite | Ergebnis |
+|-------|----------|
+| Backend pytest (7 Dateien, 32 Tests) | **32 passed** |
+| Fleet/rescue shell payloads | **OK** |
+| Frontend Vitest | **54 passed** |
+| Frontend typecheck | **frontend_typecheck_missing_script** |
+
+## Nicht ausgeführt
+
+Kein ISO-Build · Kein lb build · Kein QEMU · Kein USB/dd · Kein Backup · Kein Restore · Kein apt · Kein Deploy · Kein Push
+
+## Nächster Schritt (nur Vorschlag)
+
+1. `local_lab` Live-Smoke: Create → Heartbeat → Finish → Rescue Session im DCC  
+2. Rescue-Agent-Report-Ingest live testen  
+3. `devserver_agent` ISO-Packaging fix (siehe `QEMU_GUEST_AGENT_AFTER_REGISTRY_NEXT_PROMPT.md`)  
+4. Kontrollierter ISO-Build  
+5. USB-Write nur mit Operator-Doppelbestätigung

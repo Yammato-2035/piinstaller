@@ -223,7 +223,8 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 
 | Bereich | Status | Hinweis |
 |---|---|---|
-| Fleet Heartbeat Contract | Gelb | `agent_state` ergänzt, `status=running` neutralisiert |
+| Fleet Heartbeat Contract | **Grün** | `status=running` neutralisiert; `agent_state`; Shell+Backend+32 pytest (2026-06-03) | `RESCUE_AGENT_CONTRACT_RESULT.md` |
+| Rescue Agent Stub Wave | **Gelb** | Contract/Stub live im Repo; Deploy `/opt` drift; E2EE/nftables preview only | `RESCUE_AGENT_CONTRACT_RESULT.md` |
 | Rescue Discovery | Gelb | Stub + Tests, kein Live-Netzscan |
 | Rescue Pairing | Gelb | Contract/Stub, keine produktive Freigabe |
 | Rescue E2EE | Gelb | Envelope-Contract/Stub, Produktivkrypto offen |

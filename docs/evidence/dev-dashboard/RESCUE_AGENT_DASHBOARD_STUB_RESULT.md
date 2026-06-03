@@ -1,14 +1,29 @@
 # Rescue Agent Dashboard Stub Result
 
-- Panel erstellt: `frontend/src/components/dev-dashboard/RescueAgentPanel.tsx`
-- Integration: `LabSessionsPanel` rendert zusätzlich Rescue-Agent-Panel
-- API-Anbindung: `GET /api/rescue-agent/sessions`
-- Keine Fake-VM-Erzeugung, Anzeige basiert auf Rescue-Agent-Session-Stubs
-- Standortdarstellung bleibt auf `operator_label/site_hint` beschränkt
-- Startability-Update:
-  - Frontend Build: OK
-  - Frontend Tests: OK
-  - Panel-Status: `enabled` (kein temporäres Feature-Flagging nötig)
-  - Bei Backend-Profil `release` bleibt Rescue-Agent effektiv `disabled_by_profile`
-  - Live-Runtime zeigt Routerdiagnosefelder aktuell noch nicht (`not_live_due_to_deploy_drift`)
-- Status: `implemented_stub_review_required`
+**Datum:** 2026-06-03  
+**HEAD:** `2ca3a70`
+
+## Implementierung
+
+| Element | Status |
+|---------|--------|
+| `RescueAgentPanel.tsx` | erweitert (Status-Flags: pending_pairing, paired, heartbeat_seen, e2ee_*, firewall_policy_ready, timeout) |
+| Integration | `LabSessionsPanel` |
+| API | `GET /api/rescue-agent/sessions` (local_lab) |
+| Fake-VM | **nein** |
+| Standort | nur `operator_label` / `site_hint` |
+
+## Tests
+
+- Frontend build: nicht erzwungen (Projektstandard: Vitest)
+- Frontend Vitest: **54 passed**
+- Typecheck-Script: fehlt (`frontend_typecheck_missing_script`)
+
+## Runtime
+
+Unter **release**: Rescue-Agent-Routen blockiert (`PROFILE_ROUTE_BLOCKED`).  
+Panel zeigt leere Liste — erwartet ohne local_lab.
+
+## Status
+
+**implemented_stub** — Live-Sichtbarkeit nach Deploy + local_lab ausstehend.

@@ -32,4 +32,9 @@ validate "create" "$create"
 echo "$hb" | grep -qE '\btrue\b' || fail "missing JSON true"
 echo "$hb" | grep -q "NameError" && fail "NameError in output" || true
 
+# status=running must map to agent_state alive, not invalid fleet status
+hb_running="$(fleet_session_heartbeat_payload "running" "" "false" "0" "" "" "" "" "[]")"
+validate "heartbeat_running" "$hb_running"
+python3 -c "import json,sys; d=json.loads(sys.argv[1]); assert d.get('agent_state')=='alive'; assert 'status' not in d" "$hb_running" || fail "running maps to agent_state alive"
+
 ok "all fleet session shell payload tests passed"
