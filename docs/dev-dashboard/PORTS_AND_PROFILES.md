@@ -2,7 +2,8 @@
 
 **Stand:** 2026-06-03  
 **Maschinenlesbar:** `config/runtime_ports.json`  
-**Live unter release:** `GET /api/version` → `runtime_ports`, `canonical_urls`, `profile_capabilities`
+**Live unter release:** `GET /api/version` → `runtime_ports`, `canonical_urls`, `profile_capabilities`  
+**Live-Verifikation (Operator-Deploy `2406e68`):** `docs/evidence/dev-dashboard/RUNTIME_PORTS_REGISTRY_DEPLOY_INGEST_RESULT.md`, Readiness `runtime_ports_registry_qemu_readiness_latest.json` (`status=ok`, QEMU nicht ausgeführt)
 
 ## Port-Tabelle
 

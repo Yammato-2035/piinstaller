@@ -250,7 +250,7 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | **Backend Recovery After DCC Deploy** | **Grün** | daemon-reload gap nach Deploy; recovered; API :8000 wieder 200 | `BACKEND_RECOVERY_AFTER_DCC_DEPLOY_RESULT.md` |
 | **Backend Recovery After Release Restart** | **Grün** | :8000 down nach Reload/Restart-Race; release green; DCC-Route blockiert erwartungsgemäß | `BACKEND_DOWN_AFTER_RELEASE_RESTART_RESULT.md` |
 | **Developer Backend Watchdog** | **Gelb** | Live ok (/opt path, local_lab API); release restore ausstehend | `BACKEND_WATCHDOG_PATH_FIX_LIVE_INGEST_RESULT.md` |
-| **Runtime Ports & Profiles Registry** | **Grün** | `config/runtime_ports.json` + `/api/version` fields; 8000≠DCC, 8080 nginx | `PORTS_AND_PROFILES_RESULT.md` |
+| **Runtime Ports & Profiles Registry** | **Grün** | Live `/opt` ingest ok; `runtime_ports`+`canonical_urls` in `/api/version`; release gating+watchdog ok; QEMU nicht gelaufen | `RUNTIME_PORTS_REGISTRY_DEPLOY_INGEST_RESULT.md` |
 | **Release-Profil nach Fleet-Smoke** | **Grün** | Operator-Restore `release`; Profil-Gate Exit 0 | `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md` |
 | **Runtime-Code-Drift** | **Gelb** | Backend/Rescue/Fleet-Skript match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |
 | **Rescue-Agent Ingest Stub** | **Grün** | Operator-Smoke ok (`…182452`); Register+Report+Trap release | `RESCUE_AGENT_OPERATOR_SMOKE_INGEST.md` |

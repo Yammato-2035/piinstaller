@@ -6,7 +6,7 @@ Kurzfassung; Details: [docs/dev-dashboard/PORTS_AND_PROFILES.md](../../dev-dashb
 - **UI/DCC:** `127.0.0.1:3001/?window=cockpit`
 - **8080:** nginx, nicht DCC
 - **QEMU:** Host-Proxy `8001`, Gast `http://10.0.2.2:8001`
-- **Registry:** `config/runtime_ports.json`, auch in `/api/version` unter release
+- **Registry:** `config/runtime_ports.json`, auch in `/api/version` unter release (live verifiziert 2026-06-03, Evidence `RUNTIME_PORTS_REGISTRY_DEPLOY_INGEST_RESULT.md`)
 
 **release:** Dev-Routen blockiert (`PROFILE_ROUTE_BLOCKED`), `/api/version` bleibt 200.  
 **local_lab:** Dev-Routen 200.

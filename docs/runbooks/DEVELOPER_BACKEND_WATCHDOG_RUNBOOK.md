@@ -15,7 +15,7 @@ Evidence: `docs/evidence/dev-dashboard/DEVELOPER_BACKEND_WATCHDOG_DEPLOY_LIVE_RE
 
 Nach local_lab-Smoke **release wiederherstellen** vor QEMU/Produktionspfaden. Unter release muss `GET /api/dev-dashboard/backend-health` → **404 PROFILE_ROUTE_BLOCKED** (nicht HTTP 200).
 
-**Ports:** API `:8000`, UI/DCC `:3001`, nginx `:8080` (nicht DCC). `curl: (7) on :8000` = Backend down, nicht Profilblock. Siehe `docs/dev-dashboard/PORTS_AND_PROFILES.md`.
+**Ports:** API `:8000`, UI/DCC `:3001`, nginx `:8080` (nicht DCC), QEMU-Proxy `:8001`, Gast `http://10.0.2.2:8001`. Registry: `config/runtime_ports.json`; Healthcheck setzt `runtime_ports_source` aus `/opt`. `curl: (7) on :8000` = Backend down, nicht Profilblock. Siehe `docs/dev-dashboard/PORTS_AND_PROFILES.md`, Live-Ingest `RUNTIME_PORTS_REGISTRY_DEPLOY_INGEST_RESULT.md`.
 
 ## Einmaliger Healthcheck (ohne sudo)
 
