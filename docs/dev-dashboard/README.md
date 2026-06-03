@@ -47,6 +47,7 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 - **Developer Backend Watchdog:** `./scripts/dev-dashboard/check-backend-health.sh` (read-only, Evidence); DCC-Panel unter local_lab; API `GET /api/dev-dashboard/backend-health`; Runbook `docs/runbooks/DEVELOPER_BACKEND_WATCHDOG_RUNBOOK.md`
 - Live unter `/opt`: erfordert `sudo ./scripts/deploy-to-opt.sh` — Evidence `DEVELOPER_BACKEND_WATCHDOG_DEPLOY_LIVE_RESULT.md`
 - Evidence muss für User `setuphelfer` lesbar sein (`chmod 664`); API liefert `searched_paths` — `BACKEND_WATCHDOG_EVIDENCE_PATH_FIX_RESULT.md`
+- **Ports & Profile (zentral):** [PORTS_AND_PROFILES.md](./PORTS_AND_PROFILES.md), `config/runtime_ports.json`, auch in `/api/version` unter release
 - Live-Ingest: `backend_watchdog_path_fix_live_ingest_latest.json`; QEMU erst nach release restore
 
 ## Dev-Server (Vite) vs. Produktion

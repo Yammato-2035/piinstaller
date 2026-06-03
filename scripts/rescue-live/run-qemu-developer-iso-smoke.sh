@@ -4,6 +4,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# shellcheck source=../lib/runtime-ports.sh
+source "$SCRIPT_DIR/../lib/runtime-ports.sh"
+API_BASE="$(runtime_ports_read api_base)"
+GUEST_DEV_URL_DEFAULT="$(runtime_ports_read guest_devserver_url)"
 ISO_REL="build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso"
 ISO_PATH="${REPO_ROOT}/${ISO_REL}"
 RUN_ID="${1:-qemu_rescue_developer_iso_$(date -u +%Y%m%d_%H%M%S)}"
@@ -18,7 +22,7 @@ HEADLESS=false
 SSH_FORWARD=false
 GUESTFWD_PROXY=true
 AUTOPILOT=false
-LAB_PROXY_PORT="${SETUPHELFER_QEMU_LAB_PROXY_PORT:-8001}"
+LAB_PROXY_PORT="${SETUPHELFER_QEMU_LAB_PROXY_PORT:-$(runtime_ports_read lab_proxy_port)}"
 TIMEOUT_SECONDS=900
 USER_SET_HOST_URL=false
 KEYBOARD="${SETUPHELFER_QEMU_KEYBOARD:-de}"
@@ -207,7 +211,7 @@ else
   HOST_DEV_URL="${HOST_DEV_URL:-http://10.0.2.2:8000}"
 fi
 
-curl -s http://127.0.0.1:8000/api/dev-server/summary >"${EVDIR}/dev_server_summary_before.json" 2>/dev/null || echo '{}' >"${EVDIR}/dev_server_summary_before.json"
+curl -s "${API_BASE}/api/dev-server/summary" >"${EVDIR}/dev_server_summary_before.json" 2>/dev/null || echo '{}' >"${EVDIR}/dev_server_summary_before.json"
 
 NIC_OPTS="user,model=virtio-net-pci"
 [[ "$SSH_FORWARD" == true ]] && NIC_OPTS="${NIC_OPTS},hostfwd=tcp:127.0.0.1:2222-:22"
@@ -300,8 +304,8 @@ wait "$QPID" 2>/dev/null || QEMU_EXIT=$?
 kill "$FLEET_HB_PID" 2>/dev/null || true
 wait "$FLEET_HB_PID" 2>/dev/null || true
 
-curl -s http://127.0.0.1:8000/api/dev-server/summary >"${EVDIR}/dev_server_summary_after.json" 2>/dev/null || echo '{}' >"${EVDIR}/dev_server_summary_after.json"
-curl -s http://127.0.0.1:8000/api/dev-server/reports >"${EVDIR}/dev_server_reports_after.json" 2>/dev/null || true
+curl -s "${API_BASE}/api/dev-server/summary" >"${EVDIR}/dev_server_summary_after.json" 2>/dev/null || echo '{}' >"${EVDIR}/dev_server_summary_after.json"
+curl -s "${API_BASE}/api/dev-server/reports" >"${EVDIR}/dev_server_reports_after.json" 2>/dev/null || true
 
 GUEST_JSON=""
 if [[ -f "$SERIAL_LOG" ]]; then

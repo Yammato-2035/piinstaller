@@ -97,6 +97,22 @@ export const DevControlDisabledPage: React.FC = () => {
         <p className="text-xs text-slate-500 mt-3 font-mono">
           profile={buildProfileMeta.frontend_build_profile}
         </p>
+        <div className="mt-4 text-left text-xs text-slate-400 space-y-2 border-t border-slate-700 pt-4">
+          <p>
+            {t(
+              'devDashboard.profileDisabled.portHint',
+              'Dies ist kein Portfehler. Die API läuft auf :8000, das Cockpit auf :3001. Interne Dev-Routen sind im release-Profil blockiert (404 PROFILE_ROUTE_BLOCKED), nicht „Backend down“.',
+            )}
+          </p>
+          <ul className="font-mono text-slate-500 list-disc pl-4 space-y-1">
+            <li>API: 127.0.0.1:8000</li>
+            <li>UI/DCC: 127.0.0.1:3001</li>
+            <li>nginx: 127.0.0.1:8080 — nicht SetupHelfer-DCC</li>
+          </ul>
+          <p className="text-slate-500">
+            {t('devDashboard.profileDisabled.docsHint', 'Siehe docs/dev-dashboard/PORTS_AND_PROFILES.md')}
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -5,6 +5,10 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."
+# shellcheck source=../lib/runtime-ports.sh
+source "$(dirname "$0")/../lib/runtime-ports.sh"
+API_BASE="$(runtime_ports_read api_base)"
+LAB_PROXY_PORT="$(runtime_ports_read lab_proxy_port)"
 
 RUN_ID="qemu_rescue_developer_autopilot_$(date -u +%Y%m%d_%H%M%S)"
 ISO_PATH="build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso"
@@ -19,7 +23,7 @@ restore_release() {
   sudo systemctl daemon-reload
   sudo systemctl restart setuphelfer-backend.service
   ./scripts/check-runtime-profile-deploy-gate.sh | tee -a "$LOG" || true
-  curl -sS http://127.0.0.1:8000/api/version \
+  curl -sS "${API_BASE}/api/version" \
     | jq '{install_profile, profile_gate_status, dev_control_enabled, backend_runtime_path}' \
     | tee -a "$LOG" || true
 }
@@ -33,7 +37,7 @@ abort_preflight() {
 
 assert_devserver_preflight_ok() {
   local version_json profile dev_ctrl fleet_code dash_code
-  if ! version_json="$(curl -sS -f http://127.0.0.1:8000/api/version 2>/dev/null)"; then
+  if ! version_json="$(curl -sS -f "${API_BASE}/api/version" 2>/dev/null)"; then
     abort_preflight "blocked_devserver_not_enabled: GET /api/version failed" 21
   fi
   profile="$(echo "$version_json" | jq -r '.install_profile // empty')"
@@ -47,16 +51,16 @@ assert_devserver_preflight_ok() {
   if [[ "$dev_ctrl" != "true" ]]; then
     abort_preflight "blocked_devserver_not_enabled: dev_control_enabled=${dev_ctrl}" 21
   fi
-  fleet_code="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/api/fleet/sessions)"
+  fleet_code="$(curl -sS -o /dev/null -w '%{http_code}' "${API_BASE}/api/fleet/sessions")"
   if [[ "$fleet_code" != "200" ]]; then
     abort_preflight "blocked_fleet_api_unavailable: GET /api/fleet/sessions HTTP ${fleet_code}" 21
   fi
-  dash_code="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/api/dev-dashboard/status)"
+  dash_code="$(curl -sS -o /dev/null -w '%{http_code}' "${API_BASE}/api/dev-dashboard/status")"
   if [[ "$dash_code" != "200" ]]; then
     abort_preflight "blocked_fleet_api_unavailable: GET /api/dev-dashboard/status HTTP ${dash_code}" 21
   fi
-  if command -v ss >/dev/null 2>&1 && ss -ltn 2>/dev/null | grep -q ':8001 '; then
-    echo "WARN: port 8001 already listening — smoke proxy must reuse or free it" | tee -a "$LOG"
+  if command -v ss >/dev/null 2>&1 && ss -ltn 2>/dev/null | grep -q ":${LAB_PROXY_PORT} "; then
+    echo "WARN: port ${LAB_PROXY_PORT} already listening — smoke proxy must reuse or free it" | tee -a "$LOG"
   fi
   echo "DEVSERVER_PREFLIGHT_OK profile=local_lab dev_control=true fleet_http=200 dashboard_http=200" | tee -a "$LOG"
 }
@@ -103,7 +107,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart setuphelfer-backend.service
 sleep 2
 
-PROFILE="$(curl -sS http://127.0.0.1:8000/api/version | jq -r '.install_profile // "unknown"')"
+PROFILE="$(curl -sS "${API_BASE}/api/version" | jq -r '.install_profile // "unknown"')"
 if [[ "$PROFILE" != "local_lab" ]]; then
   echo "ABORT: install_profile=$PROFILE (need local_lab)" | tee -a "$LOG"
   exit 11

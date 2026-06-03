@@ -4102,6 +4102,14 @@ async def get_version():
         errs.extend(body.get("frontend_profile_audit_errors") or [])
         body["profile_gate_errors"] = errs
     body["dev_control_enabled"] = state.dev_control_enabled
+    from core.runtime_ports import version_api_port_fields
+
+    body.update(
+        version_api_port_fields(
+            install_profile=state.install_profile,
+            dev_control_enabled=state.dev_control_enabled,
+        )
+    )
     return inject_router_diagnostics(body)
 
 

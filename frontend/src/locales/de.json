@@ -444,6 +444,8 @@
   "devDashboard.standalone.backendHangReason": "backend_hanging (Port offen, HTTP Timeout)",
   "devDashboard.standalone.backendOfflineReason": "backend_down_or_unreachable",
   "devDashboard.standalone.nextOperatorStep": "Naechster Schritt: /health und /api/version pruefen, dann Operator-Restart-Handoff verwenden.",
+  "devDashboard.profileDisabled.portHint": "Dies ist kein Portfehler. Die API läuft auf :8000, das Cockpit auf :3001. Interne Dev-Routen sind im release-Profil blockiert (404 PROFILE_ROUTE_BLOCKED), nicht „Backend down“.",
+  "devDashboard.profileDisabled.docsHint": "Siehe docs/dev-dashboard/PORTS_AND_PROFILES.md",
   "devDashboard.governance.title": "Development Control Center",
   "devDashboard.governance.subtitle": "Live-Governance auf zweitem Monitor — read-only, keine Deploy-/Backup-Aktionen.",
   "devDashboard.governance.matrixTitle": "Governance-Matrix (16 Bereiche)",

@@ -22,8 +22,12 @@ HISTORY_JSONL="$EVIDENCE_DIR/backend_health_history.jsonl"
 TMP_JSON="$(mktemp "$EVIDENCE_DIR/.backend_health_latest.XXXXXX.json")"
 CWD="$(pwd)"
 
-API_BASE="${SETUPHELFER_API_BASE:-http://127.0.0.1:8000}"
-WEB_BASE="${SETUPHELFER_WEB_BASE:-http://127.0.0.1:3001}"
+# Port registry (config/runtime_ports.json)
+# shellcheck source=../lib/runtime-ports.sh
+source "$SCRIPT_DIR/../lib/runtime-ports.sh"
+RUNTIME_PORTS_SOURCE="$(runtime_ports_read source)"
+API_BASE="${SETUPHELFER_API_BASE:-$(runtime_ports_read api_base)}"
+WEB_BASE="${SETUPHELFER_WEB_BASE:-$(runtime_ports_read web_base)}"
 CURL_MAX="${SETUPHELFER_HEALTH_CURL_MAX_TIME:-5}"
 HEAD="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
 GENERATED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
@@ -200,7 +204,7 @@ export GENERATED_AT HEAD backend_active frontend_active port_8000 port_3001
 export api_version_http install_profile profile_gate_status dev_control_enabled
 export dev_dashboard_http fleet_http recent_http web_http
 export expected_profile_blocks overall_status failure_classification recommended_operator_action
-export last_ok_at last_failure_at API_BASE
+export last_ok_at last_failure_at API_BASE RUNTIME_PORTS_SOURCE
 export REPO_ROOT EVIDENCE_DIR LATEST_JSON HISTORY_JSONL SCRIPT_PATH CWD
 
 python3 - <<'PY' >"$TMP_JSON"
@@ -228,6 +232,7 @@ doc = {
     "last_ok_at": os.environ["last_ok_at"] or None,
     "last_failure_at": os.environ["last_failure_at"] or None,
     "api_base": os.environ["API_BASE"],
+    "runtime_ports_source": os.environ.get("RUNTIME_PORTS_SOURCE", "unknown"),
     "repo_root": os.environ["REPO_ROOT"],
     "evidence_dir": os.environ["EVIDENCE_DIR"],
     "latest_path": os.environ["LATEST_JSON"],

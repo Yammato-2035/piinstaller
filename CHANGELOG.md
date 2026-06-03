@@ -42,6 +42,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Watchdog deploy live verify:** drift confirmed; agent deploy blocked (sudo); workspace healthcheck ok; operator deploy + local_lab API smoke pending.
 - **Watchdog evidence path fix:** healthcheck writes chmod 664 + path metadata; loader searches /opt first with `searched_paths`; root cause was permission_denied on 600 evidence file (not missing path).
 - **Watchdog live ingest:** Operator deploy ok; /opt healthcheck exit 0; local_lab API 200 with /opt source_path; release gating verified (PROFILE_ROUTE_BLOCKED); release restore pending before QEMU.
+- **Runtime port/profile registry:** `config/runtime_ports.json`; `/api/version` exposes `runtime_ports` and `canonical_urls`; healthcheck/QEMU scripts read registry; DCC release page clarifies ports vs profile block.
 
 ## [1.7.3.0] — 2026-05-30
 
