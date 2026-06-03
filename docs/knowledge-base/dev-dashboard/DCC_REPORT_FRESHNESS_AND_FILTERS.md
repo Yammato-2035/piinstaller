@@ -10,3 +10,4 @@
 - Fix committed (`aa52071` / `e3d7da9`); **Live unter `/opt` erfordert** `sudo ./scripts/deploy-to-opt.sh`.
 - Agent-Deploy-Versuch: **blocked** (sudo password) — siehe `DCC_REPORT_FRESHNESS_DEPLOY_LIVE_RESULT.md`.
 - Nach Operator-Deploy: kurz `curl (7)` + `daemon-reload` Warnung → Recovery → API live unter `local_lab`; siehe `BACKEND_RECOVERY_AFTER_DCC_DEPLOY_RESULT.md`, `DCC_REPORT_FRESHNESS_API_LIVE_AFTER_RECOVERY.md`.
+- Nach **Release-Restart** (`daemon-reload` + restart): erneut kurz `:8000` down → recovered unter **release**; Gates grün; `recent-evidence` → `PROFILE_ROUTE_BLOCKED`; siehe `BACKEND_DOWN_AFTER_RELEASE_RESTART_RESULT.md`.

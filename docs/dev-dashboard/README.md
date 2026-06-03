@@ -43,6 +43,7 @@ Setuphelfer bietet zwei eng verzahnte Oberflächen für Entwickler:
 - UI: Panel „Evidence-Berichte & Testläufe“ (Cockpit + Development Dashboard)
 - **Nicht** verwechseln mit Dev-Server **Agent-Uploads** (`latest_findings` in Development Server Panel)
 - KB: `docs/knowledge-base/dev-dashboard/DCC_REPORT_FRESHNESS_AND_FILTERS.md`
+- Runtime-Recovery nach Deploy/Release-Restart: `docs/evidence/dev-dashboard/BACKEND_DOWN_AFTER_RELEASE_RESTART_RESULT.md` (Pflicht: `daemon-reload` vor Restart wenn Units geändert)
 
 ## Dev-Server (Vite) vs. Produktion
 

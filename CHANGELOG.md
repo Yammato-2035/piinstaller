@@ -37,6 +37,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **DCC report freshness:** scan repo evidence (Jun 2026 reports first); default limit 5; filters; separate agent uploads from completion reports.
 - **DCC report freshness deploy live:** deploy blocked in agent session (sudo); operator deploy+local_lab smoke pending; release unchanged.
 - **Backend recovery after DCC deploy:** daemon-reload gap after deploy caused brief :8000 down; recovered; recent-evidence API live (Jun 2026 top-5); release trap pending operator.
+- **Backend recovery after release restart:** Operator `daemon-reload` + backend restart; transient :8000 down; recovered under `release` (profile gate green, `PROFILE_ROUTE_BLOCKED` on recent-evidence); QEMU smoke unlocked (not run).
 
 ## [1.7.3.0] — 2026-05-30
 
