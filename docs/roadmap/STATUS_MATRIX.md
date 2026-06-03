@@ -249,7 +249,7 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | **DCC Report Freshness** | **Grün** | Live API `recent-evidence` OK (Jun 2026 top-5, limit 5); Agent-Uploads getrennt beschriftet | `DCC_REPORT_FRESHNESS_API_LIVE_AFTER_RECOVERY.md` |
 | **Backend Recovery After DCC Deploy** | **Grün** | daemon-reload gap nach Deploy; recovered; API :8000 wieder 200 | `BACKEND_RECOVERY_AFTER_DCC_DEPLOY_RESULT.md` |
 | **Backend Recovery After Release Restart** | **Grün** | :8000 down nach Reload/Restart-Race; release green; DCC-Route blockiert erwartungsgemäß | `BACKEND_DOWN_AFTER_RELEASE_RESTART_RESULT.md` |
-| **Developer Backend Watchdog** | **Grün** | Externer Healthcheck + DCC-Panel + Deploy-Retry; Timer optional (nicht auto-aktiv) | `DEVELOPER_BACKEND_WATCHDOG_RESULT.md` |
+| **Developer Backend Watchdog** | **Gelb** | Workspace ok; `/opt` Deploy ausstehend (Agent sudo blockiert) | `DEVELOPER_BACKEND_WATCHDOG_DEPLOY_LIVE_RESULT.md` |
 | **Release-Profil nach Fleet-Smoke** | **Grün** | Operator-Restore `release`; Profil-Gate Exit 0 | `RELEASE_PROFILE_RESTORE_OPERATOR_INGEST.md` |
 | **Runtime-Code-Drift** | **Gelb** | Backend/Rescue/Fleet-Skript match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |
 | **Rescue-Agent Ingest Stub** | **Grün** | Operator-Smoke ok (`…182452`); Register+Report+Trap release | `RESCUE_AGENT_OPERATOR_SMOKE_INGEST.md` |

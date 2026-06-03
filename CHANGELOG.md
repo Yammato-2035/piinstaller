@@ -39,6 +39,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Backend recovery after DCC deploy:** daemon-reload gap after deploy caused brief :8000 down; recovered; recent-evidence API live (Jun 2026 top-5); release trap pending operator.
 - **Backend recovery after release restart:** Operator `daemon-reload` + backend restart; transient :8000 down; recovered under `release` (profile gate green, `PROFILE_ROUTE_BLOCKED` on recent-evidence); QEMU smoke unlocked (not run).
 - **Developer backend watchdog:** external `check-backend-health.sh`, evidence JSON/JSONL, DCC health panel, read-only API `/api/dev-dashboard/backend-health` (local_lab); deploy retry 15×2s on `/api/version`; optional systemd timer examples (not auto-enabled).
+- **Watchdog deploy live verify:** drift confirmed; agent deploy blocked (sudo); workspace healthcheck ok; operator deploy + local_lab API smoke pending.
 
 ## [1.7.3.0] — 2026-05-30
 

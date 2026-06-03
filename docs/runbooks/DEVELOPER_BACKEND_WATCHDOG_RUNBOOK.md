@@ -2,6 +2,17 @@
 
 **Zielgruppe:** Operator / Entwickler (nicht Produktions-Autopilot)
 
+## Deploy nach `/opt` (Operator, sudo)
+
+```bash
+cd /home/volker/piinstaller
+sudo ./scripts/deploy-to-opt.sh /home/volker/piinstaller
+test -f /opt/setuphelfer/scripts/dev-dashboard/check-backend-health.sh
+/opt/setuphelfer/scripts/dev-dashboard/check-backend-health.sh
+```
+
+Evidence: `docs/evidence/dev-dashboard/DEVELOPER_BACKEND_WATCHDOG_DEPLOY_LIVE_RESULT.md`
+
 ## Einmaliger Healthcheck (ohne sudo)
 
 ```bash
