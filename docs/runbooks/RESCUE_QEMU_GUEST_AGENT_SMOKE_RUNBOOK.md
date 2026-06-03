@@ -36,7 +36,7 @@ Skript setzt `local_lab`, startet Proxy, QEMU (KVM, kein Host-Disk, kein USB), w
 | Symptom | Ursache | Evidence |
 |---------|---------|----------|
 | Serial 0 B | Standard-ISO / kein ttyS0 | ältere Runs |
-| Autopilot startet, kein Report | `ModuleNotFoundError: devserver_agent`, Proxy „Invalid Host header“ | `DEVSERVER_AGENT_ISO_REPORT_FIX_RESULT.md` — **ISO-Rebuild + Validator 0 vor Re-Smoke** |
+| Autopilot startet, kein Report | `ModuleNotFoundError: devserver_agent`, Proxy „Invalid Host header“ | Fix `886a098`: **Deploy `/opt` + ISO-Rebuild + Validator 0** vor Re-Smoke (`DEVSERVER_AGENT_FIX_REBUILD_QEMU_RESULT.md`) |
 | `guest_found=false`, exit 124 | Autopilot endete, VM lief bis Timeout | run `…111427` |
 
 ## Nach Smoke
