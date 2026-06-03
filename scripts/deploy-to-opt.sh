@@ -30,20 +30,24 @@ safe_chown_tree() {
 
 wait_for_backend_api() {
   if ! command -v curl >/dev/null 2>&1; then
+    warn "curl fehlt — Backend-API-Verifikation übersprungen."
     return 0
   fi
   local code="000"
   local attempt
-  for attempt in 1 2 3 4 5 6 7 8 9 10; do
+  info "Warte auf /api/version (max. 15×2s)…"
+  for attempt in $(seq 1 15); do
     code="$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 2 --max-time 5 http://127.0.0.1:8000/api/version 2>/dev/null || echo 000)"
     if [ "$code" = "200" ]; then
-      ok "Backend-API antwortet wieder auf /api/version"
+      ok "Backend-API antwortet wieder auf /api/version (Versuch $attempt/15)"
       return 0
     fi
-    sleep 1
+    sleep 2
   done
-  warn "Backend-API antwortet nach Service-Restart noch nicht stabil (letzter HTTP-Code: $code)."
-  return 0
+  err "Backend-API antwortet nach Service-Restart nicht (letzter HTTP-Code: $code)."
+  warn "Prüfe: journalctl -u setuphelfer-backend.service -n 200 --no-pager"
+  warn "Hinweis: nach Unit-/Drop-in-Änderungen immer systemctl daemon-reload vor restart."
+  return 1
 }
 
 write_backend_workspace_dropin() {
@@ -279,7 +283,7 @@ else
   systemctl start setuphelfer.service
 fi
 ok "Services gestartet (setuphelfer-backend, setuphelfer)"
-wait_for_backend_api
+wait_for_backend_api || exit 1
 
 # Startmenü-Einträge (Anwendungen)
 if [ -f "$INSTALL_DIR/scripts/install-desktop-entries.sh" ]; then

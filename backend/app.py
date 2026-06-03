@@ -4182,6 +4182,24 @@ async def dev_dashboard_manual_command_runs(
     return build_manual_command_runs_index(max_runs=limit)
 
 
+@app.get("/api/dev-dashboard/backend-health")
+async def dev_dashboard_backend_health(
+    history_limit: int = Query(default=20, ge=0, le=20),
+    stale_after_seconds: int = Query(default=180, ge=30, le=3600),
+):
+    """Read-only: externer Developer-Healthcheck aus Evidence-JSON (kein Probe aus dem Backend)."""
+    from core.dev_dashboard_backend_health import load_backend_health_snapshot
+    from core.dev_dashboard_status_service import build_dcc_profile_block_response
+
+    blocked = build_dcc_profile_block_response()
+    if blocked:
+        return JSONResponse(status_code=404, content=blocked)
+    return load_backend_health_snapshot(
+        stale_after_seconds=stale_after_seconds,
+        history_limit=history_limit,
+    )
+
+
 @app.get("/api/dev-dashboard/recent-evidence")
 async def dev_dashboard_recent_evidence(
     limit: int = Query(default=5, ge=1, le=50),

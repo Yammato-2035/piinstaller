@@ -19,6 +19,7 @@ import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
 import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel'
 import { RecommendedActionsPanel } from '../components/dev-dashboard/RecommendedActionsPanel'
 import { StructuralHealthPanel } from '../components/dev-dashboard/StructuralHealthPanel'
+import { BackendHealthPanel } from '../components/dev-dashboard/BackendHealthPanel'
 import { CommitHygienePanel } from '../components/dev-dashboard/CommitHygienePanel'
 import { DocsConsistencyPanel } from '../components/dev-dashboard/DocsConsistencyPanel'
 import { RoadmapDrawer } from '../components/dev-dashboard/RoadmapDrawer'
@@ -203,6 +204,7 @@ const DevelopmentDashboard: React.FC = () => {
 
           {(section === 'overview' || section === 'gates') && (
             <>
+              <BackendHealthPanel dashboard={dashboard} t={t} />
               <RuntimeGatePanel dashboard={dashboard} t={t} />
               <SafeTestModePanel dashboard={dashboard} t={t} />
               <RuntimeWorkspacePanel dashboard={dashboard} t={t} apiBaseDisplay={apiBaseDisplay} />

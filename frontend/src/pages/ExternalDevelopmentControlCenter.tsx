@@ -5,6 +5,7 @@ import { Activity, Copy, RefreshCw, Terminal } from 'lucide-react'
 import { fetchControlCenterSummary, type ControlCenterSummary } from '../api/devDashboardApi'
 import { StandaloneModeBanner } from '../components/dev-dashboard/StandaloneModeBanner'
 import { RuntimeGatePanel } from '../components/dev-dashboard/RuntimeGatePanel'
+import { BackendHealthPanel } from '../components/dev-dashboard/BackendHealthPanel'
 import { CockpitBackupProgressPanel } from '../components/dev-dashboard/CockpitBackupProgressPanel'
 import { CockpitBackupTargetPanel } from '../components/dev-dashboard/CockpitBackupTargetPanel'
 import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel'
@@ -237,6 +238,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
           <section className="space-y-4" data-testid="cockpit-operations-panels">
             {mon.dashboard ? (
               <>
+                <BackendHealthPanel dashboard={mon.dashboard} t={t} />
                 <RuntimeGatePanel dashboard={mon.dashboard} t={t} />
                 <SafeTestModePanel dashboard={mon.dashboard} t={t} />
                 <DeployDriftPanel dashboard={mon.dashboard} t={t} />

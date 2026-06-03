@@ -1,0 +1,21 @@
+# Developer-only read-only healthcheck — NICHT automatisch aktivieren.
+# Install/enable nur mit Operator-Freigabe (siehe docs/runbooks/DEVELOPER_BACKEND_WATCHDOG_RUNBOOK.md).
+#
+# Schreibt Evidence im Workspace:
+#   docs/evidence/dev-dashboard/backend_health_latest.json
+
+[Unit]
+Description=Setuphelfer developer backend healthcheck (read-only, no restart)
+After=network-online.target setuphelfer-backend.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=volker
+Group=volker
+WorkingDirectory=/home/volker/piinstaller
+ExecStart=/home/volker/piinstaller/scripts/dev-dashboard/check-backend-health.sh
+# Kein Restart — nur Evidence schreiben
+
+[Install]
+WantedBy=multi-user.target
