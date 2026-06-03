@@ -1,5 +1,6 @@
 import React from 'react'
 import type { ControlCenterSummary } from '../../api/devDashboardApi'
+import { RecentEvidenceFeedPanel, type EvidenceItem } from './RecentEvidenceFeedPanel'
 
 export type ControlCenterTab =
   | 'overview'
@@ -52,25 +53,25 @@ export function ControlCenterSectionTabs({ active, onChange, t }: Props) {
   )
 }
 
-export function ControlCenterEvidenceSection({ summary }: { summary: ControlCenterSummary | null }) {
+export function ControlCenterEvidenceSection({
+  summary,
+  t,
+}: {
+  summary: ControlCenterSummary | null
+  t: (key: string, opts?: Record<string, unknown>) => string
+}) {
   const evidence = (summary?.evidence as Record<string, unknown>) || {}
-  const recent = (evidence.recent_files as Array<Record<string, unknown>>) || []
+  const recentReports = (evidence.recent_reports as Array<Record<string, unknown>>) || []
+  const recentTests = (evidence.recent_tests as Array<Record<string, unknown>>) || []
 
   return (
-    <section className="rounded-xl border border-slate-700 bg-slate-900/50 p-4 mb-4" data-testid="control-center-evidence-section">
-      <h2 className="text-base font-semibold text-white">Evidence</h2>
-      <p className="text-xs text-slate-400 mt-1">Read-only index — newest files first</p>
-      <ul className="mt-3 space-y-1 text-xs font-mono text-slate-300 max-h-96 overflow-y-auto">
-        {recent.length ? (
-          recent.map((f) => (
-            <li key={String(f.path)} className="truncate">
-              <span className="text-slate-500">{String(f.mtime_iso || '').slice(0, 19)}</span> — {String(f.path || '—')}
-            </li>
-          ))
-        ) : (
-          <li className="text-slate-500">—</li>
-        )}
-      </ul>
-    </section>
+    <div data-testid="control-center-evidence-section">
+      <RecentEvidenceFeedPanel
+        t={t}
+        mode="both"
+        initialReports={recentReports as EvidenceItem[]}
+        initialTests={recentTests as EvidenceItem[]}
+      />
+    </div>
   )
 }

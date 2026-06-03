@@ -115,7 +115,8 @@ export function DevelopmentServerPanelView({
 
       {(summary?.latest_findings?.length ?? 0) > 0 ? (
         <div className="mb-4 rounded-lg border border-slate-700/60 bg-slate-950/30 p-3" data-testid="dev-server-latest-findings">
-          <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-2">{t('devDashboard.devServer.latestFindings')}</div>
+          <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-1">{t('devDashboard.devServer.latestFindings')}</div>
+          <p className="text-[10px] text-slate-500 mb-2">{t('devDashboard.devServer.latestFindingsAgentNote')}</p>
           <ul className="space-y-1 text-xs text-slate-300">
             {(summary?.latest_findings || []).slice(0, 5).map((f, i) => (
               <li key={String(f.report_id || i)} className="font-mono truncate">

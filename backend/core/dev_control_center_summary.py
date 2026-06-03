@@ -161,6 +161,16 @@ def build_dev_server_section() -> dict[str, Any]:
         if not storage_ok and config.enabled:
             errors.append("storage_not_writable")
 
+        agent_findings = [
+            {
+                "report_id": r.get("report_id"),
+                "node_id": r.get("node_id"),
+                "report_type": r.get("report_type"),
+                "created_at": r.get("created_at"),
+                "source": "dev_server_agent_upload",
+            }
+            for r in reports[:5]
+        ]
         return {
             "status": "available",
             "enabled": config.enabled,
@@ -173,15 +183,8 @@ def build_dev_server_section() -> dict[str, Any]:
             "busy_count": busy,
             "error_count": err_n,
             "reports_last_24h": storage.reports_last_24h_count() if config.enabled else 0,
-            "latest_findings": [
-                {
-                    "report_id": r.get("report_id"),
-                    "node_id": r.get("node_id"),
-                    "report_type": r.get("report_type"),
-                    "created_at": r.get("created_at"),
-                }
-                for r in reports[:5]
-            ],
+            "latest_findings": agent_findings,
+            "latest_findings_note": "agent_uploads_not_repo_evidence",
             "latest_report": latest_report,
             "agent_last_report": latest_agent,
             "agent_status": "report_available" if latest_agent else ("no_reports" if config.enabled else "disabled"),
@@ -334,28 +337,52 @@ def build_roadmap_section(
 
 def build_evidence_section(repo_root: Path | None = None) -> dict[str, Any]:
     repo = repo_root or _repo_root()
+    warnings: list[str] = []
     try:
-        from core import dev_dashboard as dd
+        from core.dev_dashboard_recent_evidence import build_recent_evidence_for_summary
 
-        index = dd.build_evidence_index(repo_root=repo, max_files=80)
-        buckets = index.get("buckets") or []
-        recent: list[dict[str, Any]] = []
-        for bucket in buckets:
-            for f in (bucket.get("files") or [])[:8]:
-                recent.append({
-                    "path": f.get("path"),
-                    "mtime_iso": f.get("mtime_iso"),
-                    "bucket": bucket.get("root"),
-                })
-        recent.sort(key=lambda x: str(x.get("mtime_iso") or ""), reverse=True)
+        feed = build_recent_evidence_for_summary(repo)
+        recent_reports = list(feed.get("recent_reports") or [])
+        recent_tests = list(feed.get("recent_tests") or [])
+        warnings.extend(feed.get("warnings") or [])
+
+        # Legacy file index (mtime-only); capped — not used as primary "reports" source.
+        recent_files: list[dict[str, Any]] = []
+        try:
+            from core import dev_dashboard as dd
+
+            index = dd.build_evidence_index(repo_root=repo, max_files=120)
+            for bucket in index.get("buckets") or []:
+                for f in (bucket.get("files") or []):
+                    recent_files.append({
+                        "path": f.get("path"),
+                        "mtime_iso": f.get("mtime_iso"),
+                        "bucket": bucket.get("root"),
+                    })
+            recent_files.sort(key=lambda x: str(x.get("mtime_iso") or ""), reverse=True)
+            warnings.extend(index.get("warnings") or [])
+        except Exception as exc:  # noqa: BLE001
+            warnings.append(f"evidence_index_legacy:{exc}")
+
         return {
-            "status": "available" if buckets else "unknown",
-            "bucket_count": len(buckets),
-            "recent_files": recent[:20],
-            "warnings": list(index.get("warnings") or []),
+            "status": "available" if recent_reports else "unknown",
+            "bucket_count": len({r.get("category") for r in recent_reports}),
+            "recent_reports": recent_reports,
+            "recent_tests": recent_tests,
+            "report_filters": feed.get("report_filters") or {},
+            "default_limit": feed.get("default_limit") or 5,
+            "total_report_count": feed.get("total_reports_unfiltered") or 0,
+            "recent_files": recent_files[:5],
+            "warnings": warnings,
         }
     except Exception as exc:  # noqa: BLE001
-        return {"status": "not_available", "recent_files": [], "warnings": [f"evidence_index_error:{exc}"]}
+        return {
+            "status": "not_available",
+            "recent_reports": [],
+            "recent_tests": [],
+            "recent_files": [],
+            "warnings": [f"evidence_feed_error:{exc}"],
+        }
 
 
 def build_runtime_section(dashboard: dict[str, Any] | None) -> dict[str, Any]:

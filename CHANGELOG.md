@@ -34,6 +34,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Developer QEMU ISO rebuild after autopilot fix ingest:** agent build blocked exit 30; ISO unchanged pre-fix SHA; operator terminal required.
 - **Developer QEMU ISO after autopilot success ingest:** operator LB_EXIT=0; ISO SHA `614cc86e…`; autopilot wants verified in squashfs; devserver preflight guard; ready for operator smoke (no build/QEMU in ingest).
 - **QEMU guest agent smoke after preflight ingest:** no post-fix smoke evidence in repo; blocked `qemu_operator_smoke_incomplete`; operator re-run required; release trap verified ok.
+- **DCC report freshness:** scan repo evidence (Jun 2026 reports first); default limit 5; filters; separate agent uploads from completion reports.
 
 ## [1.7.3.0] — 2026-05-30
 

@@ -228,7 +228,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       case 'evidence':
         return (
           <>
-            <ControlCenterEvidenceSection summary={summary} />
+            <ControlCenterEvidenceSection summary={summary} t={t} />
             {mon.dashboard ? <EvidencePanel dashboard={mon.dashboard} t={t} /> : null}
           </>
         )

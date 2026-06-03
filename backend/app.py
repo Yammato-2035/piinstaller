@@ -4173,11 +4173,33 @@ async def dev_dashboard_control_center_summary():
 
 
 @app.get("/api/dev-dashboard/manual-command-runs")
-async def dev_dashboard_manual_command_runs():
+async def dev_dashboard_manual_command_runs(
+    limit: int = Query(default=5, ge=1, le=50),
+):
     """Read-only: strukturierte manuelle Kommandoläufe aus Evidence-JSON (keine Shell-Ausführung)."""
     from core.dev_dashboard_manual_command_runs import build_manual_command_runs_index
 
-    return build_manual_command_runs_index()
+    return build_manual_command_runs_index(max_runs=limit)
+
+
+@app.get("/api/dev-dashboard/recent-evidence")
+async def dev_dashboard_recent_evidence(
+    limit: int = Query(default=5, ge=1, le=50),
+    category: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    search: str | None = Query(default=None),
+    time_range: str | None = Query(default="all"),
+):
+    """Read-only: neueste Repo-Evidence-Berichte und Testläufe (kein Shell, kein Execute)."""
+    from core.dev_dashboard_recent_evidence import build_recent_evidence_feed
+
+    return build_recent_evidence_feed(
+        limit=limit,
+        category=category,
+        status=status,
+        search=search,
+        time_range=time_range,
+    )
 
 
 @app.get("/api/dev-dashboard/roadmap")

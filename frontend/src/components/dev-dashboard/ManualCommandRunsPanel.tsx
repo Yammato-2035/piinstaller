@@ -75,7 +75,10 @@ export function ManualCommandRunsPanel({ t }: CockpitPanelProps) {
     void load()
   }, [load])
 
-  const runs = data?.runs ?? []
+  const [showAll, setShowAll] = useState(false)
+  const allRuns = data?.runs ?? []
+  const displayLimit = showAll ? 20 : 5
+  const runs = allRuns.slice(0, displayLimit)
   const overall = String(data?.overall_status || 'gray')
 
   return (
@@ -109,15 +112,24 @@ export function ManualCommandRunsPanel({ t }: CockpitPanelProps) {
       {!loading && !error ? (
         <>
           <p className={`text-xs mt-2 inline-block rounded px-2 py-0.5 border ${toneClass(overall)}`}>
-            {t('devDashboard.manualCommandRuns.overall')}: {overall} ({runs.length})
+            {t('devDashboard.manualCommandRuns.overall')}: {overall} ({runs.length}/{allRuns.length})
           </p>
+          {allRuns.length > 5 ? (
+            <button
+              type="button"
+              className="text-[11px] text-violet-300 hover:underline mt-1"
+              onClick={() => setShowAll((v) => !v)}
+            >
+              {showAll ? t('devDashboard.recentEvidence.showFive') : t('devDashboard.recentEvidence.showMore')}
+            </button>
+          ) : null}
           {data?.runs_dir ? (
             <p className="text-[11px] text-slate-500 mt-1 font-mono">{data.runs_dir}</p>
           ) : null}
           {runs.length === 0 ? (
             <p className="text-sm text-slate-400 mt-3">{t('devDashboard.manualCommandRuns.empty')}</p>
           ) : (
-            <ul className="mt-3 space-y-3 max-h-[480px] overflow-y-auto">
+            <ul className="mt-3 space-y-3">
               {runs.map((run) => (
                 <li
                   key={String(run.run_id || run.source_file)}

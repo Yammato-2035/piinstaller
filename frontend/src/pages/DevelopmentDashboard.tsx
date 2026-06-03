@@ -24,6 +24,7 @@ import { DocsConsistencyPanel } from '../components/dev-dashboard/DocsConsistenc
 import { RoadmapDrawer } from '../components/dev-dashboard/RoadmapDrawer'
 import { ReadyStableSection } from '../components/dev-dashboard/ReadyStableSection'
 import { ManualCommandRunsPanel } from '../components/dev-dashboard/ManualCommandRunsPanel'
+import { RecentEvidenceFeedPanel } from '../components/dev-dashboard/RecentEvidenceFeedPanel'
 import { AIExportPanel } from '../components/dev-dashboard/AIExportPanel'
 import { StandaloneModeBanner } from '../components/dev-dashboard/StandaloneModeBanner'
 import { UpdateStatusCard } from '../components/dev-dashboard/UpdateStatusCard'
@@ -221,6 +222,7 @@ const DevelopmentDashboard: React.FC = () => {
             <>
               <StructuralHealthPanel dashboard={dashboard} t={t} />
               <EvidencePanel dashboard={dashboard} t={t} />
+              <RecentEvidenceFeedPanel t={t} />
               <ManualCommandRunsPanel dashboard={dashboard} t={t} />
               <CommitHygienePanel dashboard={dashboard} t={t} />
               <DocsConsistencyPanel dashboard={dashboard} t={t} />

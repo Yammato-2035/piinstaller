@@ -115,7 +115,7 @@ def _normalize_run(data: dict[str, Any], *, source_file: str) -> dict[str, Any]:
 def build_manual_command_runs_index(
     repo_root: Path | None = None,
     *,
-    max_runs: int = 40,
+    max_runs: int = 5,
 ) -> dict[str, Any]:
     repo = repo_root or _repo_root()
     base = _runs_dir(repo)
