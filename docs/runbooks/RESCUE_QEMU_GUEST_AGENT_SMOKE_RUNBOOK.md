@@ -36,7 +36,7 @@ Skript setzt `local_lab`, startet Proxy, QEMU (KVM, kein Host-Disk, kein USB), w
 | Symptom | Ursache | Evidence |
 |---------|---------|----------|
 | Serial 0 B | Standard-ISO / kein ttyS0 | ältere Runs |
-| Autopilot startet, kein Report | `agent_send_failed` nach Import/Host-Fix | Dev-Server unter `local_lab` muss enabled sein; POST braucht `Host: 127.0.0.1:8000` — `QEMU_GUEST_REPORT_PAYLOAD_TRIAGE_RESULT.md` |
+| Autopilot startet, kein Report | `agent_send_failed` — Fix `ddd502e` deploy+ISO-Rebuild; Serial `SEND_HTTP_STATUS` | `PAYLOAD_FIX_REBUILD_QEMU_RESULT.md` |
 | DCC „nicht verfügbar“ unter release | Profil-Gate, kein Portfehler | `DCC_PROFILE_STATUS_TRIAGE.md` |
 | `guest_found=false`, exit 124 | Autopilot endete, VM lief bis Timeout | run `…111427` |
 

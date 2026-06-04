@@ -1,0 +1,46 @@
+{
+  "install_profile": "release",
+  "profile_gate_status": "green",
+  "dev_control_enabled": false,
+  "backend_runtime_path": "/opt/setuphelfer/backend",
+  "runtime_ports": {
+    "backend_api": {
+      "host": "127.0.0.1",
+      "port": 8000,
+      "base_url": "http://127.0.0.1:8000",
+      "purpose": "FastAPI backend and all API routes"
+    },
+    "frontend_ui": {
+      "host": "127.0.0.1",
+      "port": 3001,
+      "base_url": "http://127.0.0.1:3001",
+      "purpose": "SetupHelfer web UI and Development Cockpit window"
+    },
+    "nginx_default": {
+      "host": "127.0.0.1",
+      "port": 8080,
+      "base_url": "http://127.0.0.1:8080",
+      "purpose": "nginx/default site, not SetupHelfer DCC"
+    },
+    "qemu_lab_proxy_host": {
+      "host": "127.0.0.1",
+      "port": 8001,
+      "base_url": "http://127.0.0.1:8001",
+      "purpose": "Host-side QEMU lab proxy to backend API"
+    },
+    "qemu_guest_devserver": {
+      "host": "10.0.2.2",
+      "port": 8001,
+      "base_url": "http://10.0.2.2:8001",
+      "purpose": "Guest-side URL for rescue ISO agent to reach host devserver"
+    }
+  },
+  "canonical_urls": {
+    "dcc": "http://127.0.0.1:3001/?window=cockpit",
+    "main_ui": "http://127.0.0.1:3001/",
+    "api_version": "http://127.0.0.1:8000/api/version",
+    "backend_health": "http://127.0.0.1:8000/api/dev-dashboard/backend-health",
+    "fleet_sessions": "http://127.0.0.1:8000/api/fleet/sessions",
+    "rescue_agent_sessions": "http://127.0.0.1:8000/api/rescue-agent/sessions"
+  }
+}

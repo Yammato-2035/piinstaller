@@ -1,0 +1,5 @@
+{
+  "install_profile": "release",
+  "profile_gate_status": "green",
+  "dev_control_enabled": false
+}

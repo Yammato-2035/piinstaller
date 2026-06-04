@@ -50,6 +50,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Devserver agent fix rebuild+QEMU verify (blocked):** STRICT-Lauf Phase 1 Deploy `exit=1` (sudo); Evidence `DEVSERVER_AGENT_FIX_REBUILD_QEMU_*`.
 - **QEMU 212528 guest report ingest:** Operator deploy+ISO rebuild; **`agent_send_failed`** remains; DCC release expected disabled; USB blocked.
 - **Guest report payload fix (prepared):** Dev-Server enabled under local_lab profile sync; POST proxy Host header; serial HTTP markers; validator regex; CLI `--dry-run`/`--print-payload`; no QEMU/ISO in triage run.
+- **Payload fix rebuild+QEMU verify (blocked):** sudo required for deploy, clean, ISO build, QEMU; partial opt backend sync only.
 
 ## [1.7.3.0] — 2026-05-30
 
