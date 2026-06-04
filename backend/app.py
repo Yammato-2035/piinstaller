@@ -4063,16 +4063,18 @@ async def get_system_network(request: Request):
 @app.get("/api/version")
 async def get_version():
     """Gibt zentrale Projektversion, Stage, Track und Laufzeit-Metadaten zurück (Versions-Gate)."""
-    from core.install_profile import (
-        get_install_profile_state,
-        profile_gate_audit_route_paths,
-        profile_state_to_api_dict,
-    )
+    from core.install_profile import audit_frontend_backend_profile
     from core.liveness import build_version_api_payload
     from core.profile_deploy_manifest import manifest_sha256, profile_manifest_path
+    from runtime_governance.service import (
+        build_runtime_snapshot_parts,
+        materialize_install_profile_state,
+        resolve_runtime_governance_bundle,
+    )
 
     runtime_path = str(get_backend_runtime_dir().resolve())
-    state = get_install_profile_state()
+    bundle = resolve_runtime_governance_bundle()
+    state = materialize_install_profile_state()
     built = build_version_api_payload(
         runtime_path=runtime_path,
         install_profile=get_install_profile(),
@@ -4083,20 +4085,21 @@ async def get_version():
         return JSONResponse(status_code=int(built.get("status_code") or 503), content=body)
     body = dict(built["body"])
     body["runtime_install_location"] = get_install_profile()
-    body.update(profile_state_to_api_dict(state))
     route_paths = [
         getattr(r, "path", "")
         for r in app.routes
         if getattr(r, "path", None)
     ]
-    body.update(profile_gate_audit_route_paths(route_paths))
+    snapshot = build_runtime_snapshot_parts(bundle, route_paths)
+    body.update(snapshot.profile_api_dict)
+    body.update(snapshot.profile_gate_audit)
+    body["dev_control_enabled"] = snapshot.dev_control_enabled
+    body.update(snapshot.runtime_ports_fields)
     mpath = profile_manifest_path(state.manifest_profile)
     body["runtime_manifest_sha256"] = manifest_sha256(mpath)
     fe_profile = (os.environ.get("SETUPHELFER_FRONTEND_BUILD_PROFILE") or "").strip()
     body["frontend_build_profile"] = fe_profile or state.install_profile
     body["frontend_build_id"] = (os.environ.get("SETUPHELFER_BUILD_ID") or "").strip() or None
-    from core.install_profile import audit_frontend_backend_profile
-
     body.update(
         audit_frontend_backend_profile(
             frontend_build_profile=body["frontend_build_profile"],
@@ -4108,15 +4111,6 @@ async def get_version():
         errs = list(body.get("profile_gate_errors") or [])
         errs.extend(body.get("frontend_profile_audit_errors") or [])
         body["profile_gate_errors"] = errs
-    body["dev_control_enabled"] = state.dev_control_enabled
-    from core.runtime_ports import version_api_port_fields
-
-    body.update(
-        version_api_port_fields(
-            install_profile=state.install_profile,
-            dev_control_enabled=state.dev_control_enabled,
-        )
-    )
     return inject_router_diagnostics(body)
 
 

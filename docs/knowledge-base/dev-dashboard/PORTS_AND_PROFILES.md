@@ -11,4 +11,6 @@ Kurzfassung; Details: [docs/dev-dashboard/PORTS_AND_PROFILES.md](../../dev-dashb
 **release:** Dev-Routen blockiert (`PROFILE_ROUTE_BLOCKED`), `/api/version` bleibt 200.  
 **local_lab:** Dev-Routen 200.
 
+**Canonical policy source (2026-06-04):** `backend/runtime_governance/` — `install_profile.py` und `devserver/config.py` delegieren dorthin.
+
 **Connection refused auf :8000** = Backend nicht erreichbar, nicht Profilblock.

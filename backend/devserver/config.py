@@ -52,25 +52,21 @@ class DevServerConfig:
 
 
 def _profile_dev_server_defaults() -> tuple[bool | None, DevServerMode | None, bool | None]:
-    """Align Dev Server runtime config with install profile when env omits explicit values."""
+    """Align Dev Server runtime config with runtime_governance policy."""
     try:
-        from core.install_profile import get_install_profile_state
+        from runtime_governance.devserver_policy import build_devserver_policy
+        from runtime_governance.service import resolve_runtime_governance_bundle
 
-        st = get_install_profile_state()
+        bundle = resolve_runtime_governance_bundle()
+        if not bundle.capabilities.dev_server_enabled:
+            return None, None, None
+        policy = build_devserver_policy(bundle.profile, bundle.capabilities)
     except Exception:
         return None, None, None
-    if not st.dev_server_enabled:
-        return None, None, None
-    enabled: bool | None = None
     mode: DevServerMode | None = None
-    require_token: bool | None = None
-    if os.environ.get("SETUPHELFER_DEV_SERVER_ENABLED") is None:
-        enabled = True
-    if os.environ.get("SETUPHELFER_DEV_SERVER_MODE") is None:
+    if policy.mode_default == "local_lab":
         mode = "local_lab"
-    if st.install_profile == "local_lab" and os.environ.get("SETUPHELFER_DEV_SERVER_REQUIRE_TOKEN") is None:
-        require_token = False
-    return enabled, mode, require_token
+    return policy.enabled_default, mode, policy.require_token_default
 
 
 def load_dev_server_config(*, repo_root: Path | None = None) -> DevServerConfig:

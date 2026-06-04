@@ -8,6 +8,12 @@
 2. Zuerst Evidence und Domänenbeschreibung (`DOMAIN_BOUNDARIES.md`, `dangerous_couplings.json`).  
 3. Backup/Restore/Safety zuletzt anfassen – höchstes Risiko.
 
+## Erledigt (2026-06-04)
+
+| Schritt | Thema | Modul |
+|---------|-------|-------|
+| 0 | **Runtime Governance** (Profil, dev_control, Devserver, Route-Gate, Version-Snapshot) | `backend/runtime_governance/` — Evidence `RUNTIME_GOVERNANCE_*`, Architektur `RUNTIME_GOVERNANCE_MODULE_BOUNDARY.md` |
+
 ## Geplante Reihenfolge (nach Audit)
 
 | Reihenfolge | Thema | Abhängigkeit |

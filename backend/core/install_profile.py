@@ -68,153 +68,61 @@ def _resolve_profile_name() -> tuple[str, str, str | None]:
 
 
 def _capabilities_for_profile(name: str) -> dict[str, bool]:
-    if name == "release":
-        return {
-            "dev_control_enabled": False,
-            "dev_diagnostics_enabled": False,
-            "fleet_sessions_enabled": False,
-            "rescue_remote_enabled": False,
-            "write_runbooks_enabled": False,
-            "dev_server_enabled": False,
-            "public_exposure_allowed": False,
-        }
-    if name == "developer":
-        return {
-            "dev_control_enabled": True,
-            "dev_diagnostics_enabled": True,
-            "fleet_sessions_enabled": True,
-            "rescue_remote_enabled": False,
-            "write_runbooks_enabled": False,
-            "dev_server_enabled": True,
-            "public_exposure_allowed": False,
-        }
-    if name == "local_lab":
-        return {
-            "dev_control_enabled": True,
-            "dev_diagnostics_enabled": True,
-            "fleet_sessions_enabled": True,
-            "rescue_remote_enabled": True,
-            "write_runbooks_enabled": False,
-            "dev_server_enabled": True,
-            "public_exposure_allowed": False,
-        }
-    if name == "rescue_lab":
-        return {
-            "dev_control_enabled": False,
-            "dev_diagnostics_enabled": True,
-            "fleet_sessions_enabled": True,
-            "rescue_remote_enabled": True,
-            "write_runbooks_enabled": False,
-            "dev_server_enabled": True,
-            "public_exposure_allowed": False,
-        }
-    if name == "production":
-        return {
-            "dev_control_enabled": False,
-            "dev_diagnostics_enabled": False,
-            "fleet_sessions_enabled": False,
-            "rescue_remote_enabled": False,
-            "write_runbooks_enabled": False,
-            "dev_server_enabled": False,
-            "public_exposure_allowed": False,
-        }
-    return _capabilities_for_profile("release")
+    """Legacy helper — delegates to runtime_governance.profile_policy."""
+    from runtime_governance.profile_policy import _base_capabilities_for_profile_name
+
+    return _base_capabilities_for_profile_name(name)
 
 
 def get_install_profile_state() -> InstallProfileState:
-    name, source, raw_value = _resolve_profile_name()
-    caps = _capabilities_for_profile(name)
-    errors: list[str] = []
-    warnings: list[str] = []
+    """Delegates to runtime_governance (canonical policy source)."""
+    from runtime_governance.service import materialize_install_profile_state
 
-    if source == "legacy_profile_opt_mapped_to_release":
-        warnings.append("legacy_profile_opt_mapped_to_release")
-    if source == "invalid_profile_fallback_release" and raw_value:
-        errors.append(f"invalid_install_profile:{raw_value}")
-        warnings.append("invalid_install_profile_fallback_release")
-
-    caps = dict(caps)
-    env_overrides = (
-        ("dev_control_enabled", "SETUPHELFER_DEV_CONTROL_ENABLED"),
-        ("dev_diagnostics_enabled", "SETUPHELFER_DEV_DIAGNOSTICS_ENABLED"),
-        ("fleet_sessions_enabled", "SETUPHELFER_FLEET_SESSIONS_ENABLED"),
-        ("rescue_remote_enabled", "SETUPHELFER_RESCUE_REMOTE_ENABLED"),
-        ("dev_server_enabled", "SETUPHELFER_DEV_SERVER_ENABLED"),
-    )
-    for flag, env_key in env_overrides:
-        if _env_truthy(env_key):
-            if name in ("release", "production"):
-                warnings.append(f"ignored_dev_capability_override_in_release:{env_key}")
-            else:
-                caps[flag] = True
-
-    if _env_truthy("SETUPHELFER_PUBLIC_EXPOSURE_ALLOWED"):
-        if not _env_truthy("SETUPHELFER_OPERATOR_CONFIRM_PUBLIC_BIND"):
-            errors.append("public_exposure_requires_operator_confirm")
-            caps = {**caps, "public_exposure_allowed": False}
-        else:
-            caps = {**caps, "public_exposure_allowed": True}
-
-    caps["write_runbooks_enabled"] = False  # Phase 1 hard block
-
-    if caps.get("public_exposure_allowed"):
-        warnings.append("public_exposure_only_with_operator_confirm")
-
-    edition = (os.environ.get("APP_EDITION") or "release").strip().lower()
-    if edition not in ("repo", "release"):
-        edition = "release"
-
-    return InstallProfileState(
-        install_profile=name,
-        app_edition=edition,
-        raw_install_profile=raw_value,
-        manifest_profile=name,
-        profile_source=source,
-        profile_errors=tuple(errors),
-        profile_warnings=tuple(warnings),
-        **caps,
-    )
+    return materialize_install_profile_state()
 
 
 def path_allowed_for_active_profile(path: str) -> bool:
     """HTTP gate: block Dev/Lab API prefixes when capability off."""
-    p = path.split("?")[0].rstrip("/") or "/"
-    state = get_install_profile_state()
-    if p.startswith("/api/fleet") and not state.fleet_sessions_enabled:
-        return False
-    if p.startswith("/api/rescue-agent") and not state.rescue_remote_enabled:
-        return False
-    if p.startswith("/api/dev-diagnostics") and not state.dev_diagnostics_enabled:
-        return False
-    if p.startswith("/api/rescue-remote") and not state.rescue_remote_enabled:
-        return False
-    if p.startswith("/api/dev-dashboard") and not state.dev_control_enabled:
-        return False
-    if p.startswith("/api/dev-server") and not state.dev_server_enabled:
-        return False
-    return True
+    from runtime_governance.route_exposure import decide_route_exposure
+    from runtime_governance.service import resolve_runtime_governance_bundle
+
+    bundle = resolve_runtime_governance_bundle()
+    return decide_route_exposure(path, bundle.capabilities).allowed
 
 
 def should_register_fleet_router() -> bool:
-    return get_install_profile_state().fleet_sessions_enabled
+    from runtime_governance.route_exposure import should_register_fleet_router as _reg
+    from runtime_governance.service import resolve_runtime_governance_bundle
+
+    return _reg(resolve_runtime_governance_bundle().capabilities)
 
 
 def should_register_dev_diagnostics_router() -> bool:
-    return get_install_profile_state().dev_diagnostics_enabled
+    from runtime_governance.route_exposure import should_register_dev_diagnostics_router as _reg
+    from runtime_governance.service import resolve_runtime_governance_bundle
+
+    return _reg(resolve_runtime_governance_bundle().capabilities)
 
 
 def should_register_rescue_remote_router() -> bool:
-    st = get_install_profile_state()
-    return st.rescue_remote_enabled and not st.write_runbooks_enabled
+    from runtime_governance.route_exposure import should_register_rescue_remote_router as _reg
+    from runtime_governance.service import resolve_runtime_governance_bundle
+
+    return _reg(resolve_runtime_governance_bundle().capabilities)
 
 
 def should_register_rescue_agent_router() -> bool:
-    st = get_install_profile_state()
-    return st.rescue_remote_enabled and not st.write_runbooks_enabled
+    from runtime_governance.route_exposure import should_register_rescue_agent_router as _reg
+    from runtime_governance.service import resolve_runtime_governance_bundle
+
+    return _reg(resolve_runtime_governance_bundle().capabilities)
 
 
 def should_register_dev_server_router() -> bool:
-    return get_install_profile_state().dev_server_enabled
+    from runtime_governance.route_exposure import should_register_dev_server_router as _reg
+    from runtime_governance.service import resolve_runtime_governance_bundle
+
+    return _reg(resolve_runtime_governance_bundle().capabilities)
 
 
 def _capability_enabled_for_prefix(prefix: str, state: InstallProfileState) -> bool:

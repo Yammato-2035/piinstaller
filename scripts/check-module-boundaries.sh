@@ -39,6 +39,12 @@ fi
 if [[ "${line_count}" -gt 3000 ]]; then
   warnings+=("app_line_count_high:${line_count}")
 fi
+
+if [[ -d "${ROOT}/backend/runtime_governance" ]]; then
+  if rg -l 'backend\.app|from app import|import app' "${ROOT}/backend/runtime_governance" --glob '*.py' 2>/dev/null | grep -q .; then
+    warnings+=("runtime_governance_imports_app")
+  fi
+fi
 if [[ "${#warnings[@]}" -gt 0 ]]; then
   status="review_required"
 fi
