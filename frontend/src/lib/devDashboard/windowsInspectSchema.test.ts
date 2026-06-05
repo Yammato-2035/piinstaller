@@ -19,11 +19,11 @@ describe('windows inspect schema artifacts', () => {
     const catalog = JSON.parse(
       readFileSync(resolve(repoRoot, 'docs/evidence/windows-rescue/windows_inspect_diagnostic_codes.json'), 'utf8'),
     )
-    expect(catalog.codes.length).toBeGreaterThanOrEqual(21)
+    expect(catalog.codes.length).toBeGreaterThanOrEqual(30)
     for (const entry of catalog.codes) {
       expect(entry.write_action_allowed).toBe(false)
     }
-    const bitlockerCodes = catalog.codes.filter((c: { code: string }) => c.code.startsWith('WIN-BITLOCKER-'))
+    const bitlockerCodes = catalog.codes.filter((c: { code: string }) => /^WIN-BITLOCKER-00[1-6]$/.test(c.code))
     expect(bitlockerCodes.length).toBe(6)
   })
 
@@ -50,5 +50,15 @@ describe('windows inspect schema artifacts', () => {
     for (const key of forbidden) {
       expect(json).not.toContain(`"${key}"`)
     }
+  })
+
+  it('operator readonly sample validates structure', () => {
+    const sample = JSON.parse(
+      readFileSync(resolve(repoRoot, 'docs/evidence/windows-rescue/windows_inspect_operator_readonly_sample.json'), 'utf8'),
+    )
+    expect(sample.schema_version).toBe(2)
+    expect(sample.hardware.nvme_devices.length).toBe(2)
+    expect(sample.bitlocker.access_allowed).toBe(false)
+    expect(sample.backup_selection.dry_run_only).toBe(true)
   })
 })

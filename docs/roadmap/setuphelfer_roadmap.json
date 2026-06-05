@@ -1015,9 +1015,13 @@
           "id": "windows11-readonly-detection",
           "title_de": "Read-only Erkennung (GPT/UEFI/NTFS/BitLocker)",
           "title_en": "Read-only detection",
-          "status": "planned",
-          "progress_percent": 10,
-          "evidence_links": ["docs/evidence/windows-rescue/windows_inspect_diagnostic_codes.json"],
+          "status": "yellow",
+          "progress_percent": 40,
+          "evidence_links": [
+            "docs/evidence/windows-rescue/windows_inspect_diagnostic_codes.json",
+            "scripts/windows-rescue/plan-windows-readonly-inspect.sh",
+            "docs/evidence/windows-rescue/WINDOWS11_RESCUE_OPERATOR_READONLY_SCAN_HANDOFF.md"
+          ],
           "tasks": []
         },
         {
@@ -1070,10 +1074,11 @@
           "title_de": "Telemetrie-Zustellung (ACK-Pflicht, Store-and-forward)",
           "title_en": "Telemetry delivery (ACK required, store-and-forward)",
           "status": "yellow",
-          "progress_percent": 25,
+          "progress_percent": 50,
           "evidence_links": [
             "docs/evidence/windows-rescue/windows_rescue_telemetry.schema.json",
-            "docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md"
+            "docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md",
+            "backend/core/windows_rescue_inspect.py"
           ],
           "tasks": [
             "Telemetrie-Schema anlegen",
@@ -1109,8 +1114,8 @@
           "evidence_links": ["docs/knowledge-base/windows-rescue/BITLOCKER_READONLY_POLICY.md"]
         }
       ],
-      "next_prompt_id": "WINDOWS11_RESCUE_INSPECT_MVP_OPERATOR_READONLY_SCAN",
-      "next_recommended_action": "MVP: Read-only BitLocker-Prüfung + Operator-Scan-Stub; Telemetrie nur mit Server-ACK als grün."
+      "next_prompt_id": "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
+      "next_recommended_action": "Echter Operator-Readonly-Lauf am Windows-11-Laptop (Rescue-Stick): Plan-Skript, BitLocker, Telemetrie-ACK."
     },
     {
       "id": "dev-dashboard",

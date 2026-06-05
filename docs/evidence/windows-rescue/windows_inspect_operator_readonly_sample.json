@@ -1,0 +1,136 @@
+{
+  "schema_version": 2,
+  "run_id": "win-inspect-operator-readonly-20260605",
+  "generated_at": "2026-06-05T15:00:00+02:00",
+  "source": "setuphelfer_rescue_inspect",
+  "safety": {
+    "mode": "read_only",
+    "write_actions_allowed": false,
+    "cloud_upload_allowed": false,
+    "bitlocker_access_allowed": false
+  },
+  "host": {
+    "detected_os_family": "windows",
+    "edition": "Windows 11 Pro",
+    "build": "26100.1",
+    "insider_or_beta_hint": "suspected_insider_channel",
+    "computer_name": null
+  },
+  "hardware": {
+    "cpu_vendor": "AMD",
+    "cpu_model": "Ryzen 7",
+    "gpu_vendor": "NVIDIA",
+    "gpu_model": "GeForce RTX",
+    "memory_bytes": 34359738368,
+    "nvme_devices": [
+      { "name": "nvme0n1", "size_bytes": 2000398934016, "model": "NVMe SSD 2TB" },
+      { "name": "nvme1n1", "size_bytes": 2000398934016, "model": "NVMe SSD 2TB" }
+    ],
+    "target_profile": "2x2TB_NVMe_AMD_Ryzen_NVIDIA"
+  },
+  "storage": {
+    "disks": [
+      { "name": "nvme0n1", "type": "disk", "size_bytes": 2000398934016, "pttype": "gpt" },
+      { "name": "nvme1n1", "type": "disk", "size_bytes": 2000398934016, "pttype": "gpt" }
+    ],
+    "partitions": [
+      { "name": "nvme0n1p1", "type": "part", "fstype": "vfat", "size_bytes": 272629760, "role_hint": "efi" },
+      { "name": "nvme0n1p3", "type": "part", "fstype": "ntfs", "size_bytes": 1999124516864, "role_hint": "windows_os" },
+      { "name": "nvme1n1p1", "type": "part", "fstype": "ntfs", "size_bytes": 1999124516864, "role_hint": "windows_data" }
+    ],
+    "filesystem_hints": ["vfat", "ntfs", "ntfs"],
+    "efi_candidates": [{ "name": "nvme0n1p1", "fstype": "vfat" }],
+    "windows_candidates": [
+      { "name": "nvme0n1p3", "fstype": "ntfs", "role_hint": "windows_os" },
+      { "name": "nvme1n1p1", "fstype": "ntfs", "role_hint": "windows_data" }
+    ],
+    "linux_candidates": []
+  },
+  "bitlocker": {
+    "status": "unknown",
+    "confidence": "low",
+    "access_allowed": false,
+    "blocking_reason": "WIN-BITLOCKER-UNKNOWN"
+  },
+  "windows_health": {
+    "explorer_shell_status": "unknown_blocked",
+    "winlogon_shell_hint": null,
+    "user_profile_presence": false,
+    "registry_available": false,
+    "eventlog_available": false,
+    "boot_config_hint": "plan_only"
+  },
+  "backup_selection": {
+    "dry_run_only": true,
+    "selected_paths": [],
+    "candidate_user_dirs": [],
+    "excluded_paths": [
+      "AppData/Local/Google/Chrome/User Data",
+      "System Volume Information",
+      "pagefile.sys",
+      "hiberfil.sys"
+    ],
+    "cloud_policy": "dry_run_no_credentials",
+    "backup_verified": false,
+    "manifest_hash": null
+  },
+  "telemetry": {
+    "required": true,
+    "local_report_hash": null,
+    "server_ack_required": true,
+    "ack_status": "queued_local",
+    "hash_match": null
+  },
+  "repartition_readiness": {
+    "blocked": true,
+    "reasons": [
+      "backup_manifest_verified",
+      "telemetry_acknowledged",
+      "hash_match",
+      "operator_confirmation",
+      "target_disk_plan_reviewed"
+    ],
+    "blocked_until": {
+      "backup_manifest_verified": false,
+      "telemetry_acknowledged": false,
+      "hash_match": false,
+      "operator_confirmation": false,
+      "target_disk_plan_reviewed": false
+    }
+  },
+  "dualboot_readiness": {
+    "planning_only": true,
+    "target": "Windows 11 Pro stable + Linux Mint",
+    "bootloader_strategy": "planning_only",
+    "windows_update_resilience_required": true,
+    "blockers": ["WIN-DUALBOOT-001", "WIN-REPARTITION-001", "WIN-BOOTLOADER-001"]
+  },
+  "readonly_mount_plan": [],
+  "blocked_reasons": [
+    "bitlocker_unknown_blocks_file_access",
+    "dual_nvme_layout_requires_operator_review"
+  ],
+  "required_operator_actions": [
+    "VERIFY_BITLOCKER_BEFORE_READONLY_MOUNT",
+    "REVIEW_2X2TB_NVME_LAYOUT"
+  ],
+  "diagnostics": {
+    "codes": [
+      "WIN-STORAGE-001",
+      "WIN-STORAGE-002",
+      "WIN-STORAGE-003",
+      "WIN-BITLOCKER-UNKNOWN",
+      "WIN-SHELL-001",
+      "WIN-BACKUP-001",
+      "WIN-TELEMETRY-001",
+      "WIN-REPARTITION-001",
+      "WIN-DUALBOOT-001",
+      "WIN-BOOTLOADER-001"
+    ],
+    "severity": "warning",
+    "recommended_actions": [
+      "VERIFY_BITLOCKER_BEFORE_READONLY_MOUNT",
+      "REVIEW_2X2TB_NVME_LAYOUT"
+    ]
+  }
+}

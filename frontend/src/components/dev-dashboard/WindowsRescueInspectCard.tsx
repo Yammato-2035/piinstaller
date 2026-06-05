@@ -1,61 +1,32 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  evaluateInspectCompletion,
-  isRepartitionBlocked,
-  type BitLockerInspectState,
-  type TelemetryTransportState,
-} from '../../lib/devDashboard/windowsRescueTelemetry'
+import { buildCardViewModel, buildCardViewModelFromSample, type WindowsRescueCardViewModel } from '../../lib/devDashboard/windowsRescueInspectReport'
 
 export type WindowsRescueInspectCardProps = {
-  bitlocker?: BitLockerInspectState
-  telemetry?: TelemetryTransportState
-  inspectReportCreated?: boolean
-  backupVerified?: boolean
-  privacyLevel?: string
-  containsPersonalData?: boolean
+  viewModel?: WindowsRescueCardViewModel
+  useSampleReport?: boolean
   planningOnly?: boolean
 }
 
-const DEFAULT_BITLOCKER: BitLockerInspectState = {
-  bitlocker_active: 'unknown',
-  device_encryption_active: 'unknown',
-  volume_lock_status: 'unknown',
-  recovery_key_required: 'unknown',
-  windows_partition_encrypted: null,
-  data_partition_encrypted: null,
-  user_profiles_accessible: null,
-}
-
-const DEFAULT_TELEMETRY: TelemetryTransportState = {
-  telemetry_status: 'not_created',
-  server_ack_id: null,
-  server_ack_at: null,
-  payload_hash_sha256: null,
-  server_confirmed_hash_sha256: null,
-  retry_count: 0,
-  last_error: null,
-  queue_depth: 0,
-}
-
 export const WindowsRescueInspectCard: React.FC<WindowsRescueInspectCardProps> = ({
-  bitlocker = DEFAULT_BITLOCKER,
-  telemetry = DEFAULT_TELEMETRY,
-  inspectReportCreated = false,
-  backupVerified = false,
-  privacyLevel = 'diagnostic_metadata',
-  containsPersonalData = false,
+  viewModel,
+  useSampleReport = true,
   planningOnly = true,
 }) => {
   const { t } = useTranslation()
-  const completion = useMemo(
-    () => evaluateInspectCompletion(inspectReportCreated, telemetry),
-    [inspectReportCreated, telemetry],
-  )
-  const repartitionBlocked = useMemo(
-    () => isRepartitionBlocked(backupVerified, telemetry, bitlocker),
-    [backupVerified, telemetry, bitlocker],
-  )
+  const vm = useMemo(() => {
+    if (viewModel) return viewModel
+    if (useSampleReport) return buildCardViewModelFromSample()
+    return buildCardViewModel(null)
+  }, [viewModel, useSampleReport])
+
+  if (!vm.report && !useSampleReport) {
+    return (
+      <section className="rounded-xl border border-amber-800/40 bg-amber-950/10 p-4" data-testid="windows-rescue-inspect-card">
+        <p className="text-xs text-amber-200">{t('devDashboard.windowsRescue.noReport', 'no_windows_inspect_report_available')}</p>
+      </section>
+    )
+  }
 
   return (
     <section
@@ -67,55 +38,67 @@ export const WindowsRescueInspectCard: React.FC<WindowsRescueInspectCardProps> =
       </h2>
       {planningOnly ? (
         <p className="text-xs text-slate-400 mt-1">
-          {t('devDashboard.windowsRescue.planningOnly', 'Planungs-/Schema-Vorschau — kein HW-Lauf')}
+          {t('devDashboard.windowsRescue.sampleReport', 'Operator-Readonly-Sample — kein HW-Lauf')}
         </p>
       ) : null}
 
-      <div className="mt-3 grid gap-3 md:grid-cols-2 text-xs">
+      <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3 text-xs">
         <div className="rounded border border-slate-700 bg-slate-950/50 p-3" data-testid="windows-rescue-bitlocker">
           <div className="font-semibold text-cyan-200">{t('devDashboard.windowsRescue.bitlocker', 'BitLocker')}</div>
           <ul className="mt-2 space-y-1 text-slate-300 font-mono">
-            <li>active: {bitlocker.bitlocker_active}</li>
-            <li>device_encryption: {bitlocker.device_encryption_active}</li>
-            <li>volume: {bitlocker.volume_lock_status}</li>
-            <li>recovery_key: {bitlocker.recovery_key_required}</li>
+            <li>status: {vm.report?.bitlocker?.status ?? 'unknown'}</li>
+            <li>access: {String(vm.report?.bitlocker?.access_allowed ?? false)}</li>
+            <li>volume: {vm.bitlocker.volume_lock_status}</li>
+            <li>block: {vm.report?.bitlocker?.blocking_reason ?? '—'}</li>
           </ul>
         </div>
 
         <div className="rounded border border-slate-700 bg-slate-950/50 p-3" data-testid="windows-rescue-telemetry">
           <div className="font-semibold text-cyan-200">{t('devDashboard.windowsRescue.telemetry', 'Telemetrie')}</div>
           <ul className="mt-2 space-y-1 text-slate-300 font-mono">
-            <li>status: {telemetry.telemetry_status}</li>
-            <li>queue: {telemetry.queue_depth ?? 0}</li>
-            <li>ack_id: {telemetry.server_ack_id ?? '—'}</li>
-            <li>ack_at: {telemetry.server_ack_at ?? '—'}</li>
+            <li>status: {vm.telemetry.telemetry_status}</li>
+            <li>queue: {vm.telemetry.queue_depth ?? 0}</li>
+            <li>ack_id: {vm.telemetry.server_ack_id ?? '—'}</li>
             <li>
               hash_match:{' '}
-              {telemetry.payload_hash_sha256 && telemetry.server_confirmed_hash_sha256
-                ? String(telemetry.payload_hash_sha256 === telemetry.server_confirmed_hash_sha256)
+              {vm.telemetry.payload_hash_sha256 && vm.telemetry.server_confirmed_hash_sha256
+                ? String(vm.telemetry.payload_hash_sha256 === vm.telemetry.server_confirmed_hash_sha256)
                 : '—'}
             </li>
-            {telemetry.last_error ? <li className="text-amber-300">error: {telemetry.last_error}</li> : null}
           </ul>
         </div>
 
-        <div className="rounded border border-slate-700 bg-slate-950/50 p-3">
-          <div className="font-semibold text-cyan-200">{t('devDashboard.windowsRescue.privacy', 'Privacy')}</div>
-          <ul className="mt-2 space-y-1 text-slate-300 font-mono">
-            <li>level: {privacyLevel}</li>
-            <li>personal_data: {String(containsPersonalData)}</li>
-          </ul>
+        <div className="rounded border border-slate-700 bg-slate-950/50 p-3" data-testid="windows-rescue-hardware">
+          <div className="font-semibold text-cyan-200">{t('devDashboard.windowsRescue.hardware', 'Hardware')}</div>
+          <p className="mt-2 text-slate-300 font-mono">{vm.hardwareSummary}</p>
+        </div>
+
+        <div className="rounded border border-slate-700 bg-slate-950/50 p-3" data-testid="windows-rescue-health">
+          <div className="font-semibold text-cyan-200">{t('devDashboard.windowsRescue.windowsHealth', 'Windows-Health')}</div>
+          <p className="mt-2 text-slate-300 font-mono">{vm.windowsHealthSummary}</p>
+        </div>
+
+        <div className="rounded border border-slate-700 bg-slate-950/50 p-3" data-testid="windows-rescue-backup">
+          <div className="font-semibold text-cyan-200">{t('devDashboard.windowsRescue.backup', 'Backup-Auswahl')}</div>
+          <p className="mt-2 text-slate-300 font-mono">{vm.backupSummary}</p>
         </div>
 
         <div className="rounded border border-slate-700 bg-slate-950/50 p-3">
           <div className="font-semibold text-cyan-200">{t('devDashboard.windowsRescue.completion', 'Abschluss')}</div>
           <ul className="mt-2 space-y-1 text-slate-300 font-mono">
-            <li data-testid="windows-rescue-completion-ampel">ampel: {completion.ampel}</li>
-            <li>classification: {completion.classification}</li>
-            <li>repartition_blocked: {String(repartitionBlocked)}</li>
+            <li data-testid="windows-rescue-completion-ampel">ampel: {vm.completion.ampel}</li>
+            <li>repartition: {vm.repartitionBlocked ? 'blocked' : 'unblocked'}</li>
+            <li>dualboot: {vm.dualbootPlanningOnly ? 'planning_only' : '—'}</li>
           </ul>
         </div>
       </div>
+
+      <details className="mt-3">
+        <summary className="cursor-pointer text-[11px] text-slate-400">
+          {t('devDashboard.windowsRescue.rawJson', 'Roh-JSON')}
+        </summary>
+        <pre className="mt-2 max-h-48 overflow-auto rounded bg-slate-950 p-2 text-[10px] text-slate-400">{vm.rawJson}</pre>
+      </details>
 
       <p className="mt-3 text-[11px] text-slate-500">
         {t(

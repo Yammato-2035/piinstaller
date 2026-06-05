@@ -226,6 +226,126 @@
       "write_action_allowed": false
     },
     {
+      "code": "WIN-HW-001",
+      "severity": "warning",
+      "evidence_source": "hardware_scan",
+      "explanation_de": "Hardware-Inventar unvollständig.",
+      "explanation_en": "Hardware inventory incomplete.",
+      "recommended_next_action_de": "CPU/GPU/NVMe read-only erneut erfassen.",
+      "recommended_next_action_en": "Re-collect CPU/GPU/NVMe read-only.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-STORAGE-001",
+      "severity": "info",
+      "evidence_source": "partition_scan",
+      "explanation_de": "NVMe-Layout erkannt.",
+      "explanation_en": "NVMe layout detected.",
+      "recommended_next_action_de": "Partitionen klassifizieren; kein Schreibzugriff.",
+      "recommended_next_action_en": "Classify partitions; no write access.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-STORAGE-002",
+      "severity": "info",
+      "evidence_source": "partition_scan",
+      "explanation_de": "Windows-Kandidatenpartition erkannt.",
+      "explanation_en": "Windows candidate partition detected.",
+      "recommended_next_action_de": "BitLocker vor Dateizugriff prüfen.",
+      "recommended_next_action_en": "Check BitLocker before file access.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-STORAGE-003",
+      "severity": "warning",
+      "evidence_source": "partition_scan",
+      "explanation_de": "Dual-NVMe-Layout erfordert Operator-Review (z. B. 2×2 TB).",
+      "explanation_en": "Dual NVMe layout requires operator review (e.g. 2×2 TB).",
+      "recommended_next_action_de": "Zielplatte für Dualboot/Backup manuell bestätigen.",
+      "recommended_next_action_en": "Manually confirm target disk for dualboot/backup.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-BITLOCKER-UNKNOWN",
+      "severity": "warning",
+      "evidence_source": "bitlocker_metadata",
+      "explanation_de": "BitLocker-Status unbekannt — Dateizugriff blockiert.",
+      "explanation_en": "BitLocker state unknown — file access blocked.",
+      "recommended_next_action_de": "Read-only BitLocker-Prüfung vor jedem Zugriff.",
+      "recommended_next_action_en": "Read-only BitLocker check before any access.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-BITLOCKER-LOCKED",
+      "severity": "critical",
+      "evidence_source": "bitlocker_metadata",
+      "explanation_de": "BitLocker locked — Dateizugriff und Backup blockiert.",
+      "explanation_en": "BitLocker locked — file access and backup blocked.",
+      "recommended_next_action_de": "Recovery-Key-Handoff; kein Unlock aus Rescue.",
+      "recommended_next_action_en": "Recovery key handoff; no unlock from rescue.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-PROFILE-001",
+      "severity": "info",
+      "evidence_source": "offline_registry",
+      "explanation_de": "Benutzerprofile erkannt (nur Metadaten).",
+      "explanation_en": "User profiles detected (metadata only).",
+      "recommended_next_action_de": "Backup-Auswahl Dry-Run vorbereiten.",
+      "recommended_next_action_en": "Prepare backup selection dry-run.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-BACKUP-001",
+      "severity": "info",
+      "evidence_source": "backup_plan",
+      "explanation_de": "Cloud-/Datei-Backup nur Dry-Run in diesem MVP.",
+      "explanation_en": "Cloud/file backup dry-run only in this MVP.",
+      "recommended_next_action_de": "Kein Upload ohne Operator-Freigabe.",
+      "recommended_next_action_en": "No upload without operator approval.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-TELEMETRY-001",
+      "severity": "warning",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Telemetrie-Server-ACK erforderlich.",
+      "explanation_en": "Telemetry server ACK required.",
+      "recommended_next_action_de": "Report senden; kein Grün ohne ACK.",
+      "recommended_next_action_en": "Send report; no green without ACK.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-TELEMETRY-002",
+      "severity": "critical",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Telemetrie-Hash-Mismatch blockiert grünen Abschluss.",
+      "explanation_en": "Telemetry hash mismatch blocks green completion.",
+      "recommended_next_action_de": "Integrität prüfen und erneut senden.",
+      "recommended_next_action_en": "Verify integrity and resend.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-REPARTITION-001",
+      "severity": "warning",
+      "evidence_source": "partition_plan",
+      "explanation_de": "Repartition blockiert bis Backup verifiziert und Telemetrie ACK.",
+      "explanation_en": "Repartition blocked until backup verified and telemetry ACK.",
+      "recommended_next_action_de": "Backup + Telemetrie-ACK + Operator-Freigabe abwarten.",
+      "recommended_next_action_en": "Wait for backup + telemetry ACK + operator approval.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-BOOTLOADER-001",
+      "severity": "info",
+      "evidence_source": "boot_plan",
+      "explanation_de": "Bootloader-/Update-Resilienz für Dualboot erforderlich (nur Planung).",
+      "explanation_en": "Bootloader/update resilience required for dualboot (planning only).",
+      "recommended_next_action_de": "Windows-11-Pro-stable + Linux-Mint-Plan dokumentieren.",
+      "recommended_next_action_en": "Document Windows 11 Pro stable + Linux Mint plan.",
+      "write_action_allowed": false
+    },
+    {
       "code": "TELEMETRY-NETWORK-001",
       "severity": "warning",
       "evidence_source": "telemetry_transport",
