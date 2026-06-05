@@ -36,6 +36,7 @@
 | `/api/fleet/*` | **404** `PROFILE_ROUTE_BLOCKED` |
 | `/api/rescue-agent/*` | **404** `PROFILE_ROUTE_BLOCKED` |
 | DCC UI | Meldung „Development Control nicht verfügbar“ — **erwartet**, kein Crash |
+| DCC Live-Akzeptanz | `release` gilt als erwartbarer Sicherheitszustand; funktional grün erst nach `local_lab` live geprüft |
 
 ### local_lab
 
@@ -47,6 +48,7 @@
 | `/api/dev-dashboard/backend-health` | **HTTP 200** |
 | `/api/fleet/sessions` | **HTTP 200** |
 | `/api/rescue-agent/sessions` | **HTTP 200** (wenn Router aktiv) |
+| DCC Live-Akzeptanz | Cockpit muss Evidence sichtbar machen: `dcc_live_acceptance_latest.json` + `/api/dev-dashboard/*` 200 |
 
 ## Typische Fehlinterpretationen
 

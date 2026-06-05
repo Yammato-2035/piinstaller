@@ -9,7 +9,8 @@ Kurzfassung; Details: [docs/dev-dashboard/PORTS_AND_PROFILES.md](../../dev-dashb
 - **Registry:** `config/runtime_ports.json`, auch in `/api/version` unter release (live verifiziert 2026-06-03, Evidence `RUNTIME_PORTS_REGISTRY_DEPLOY_INGEST_RESULT.md`)
 
 **release:** Dev-Routen blockiert (`PROFILE_ROUTE_BLOCKED`), `/api/version` bleibt 200.  
-**local_lab:** Dev-Routen 200.
+DCC ist unter `release` bewusst gesperrt (disabled page als erwartbarer Sicherheitszustand; kein Funktionsnachweis).
+**local_lab:** Dev-Routen 200 und DCC live-funktional erst nach Smoke/HTTP 200 unter `local_lab` gültig.
 
 **Canonical policy source (2026-06-04):** `backend/runtime_governance/` — `install_profile.py` und `devserver/config.py` delegieren dorthin.
 

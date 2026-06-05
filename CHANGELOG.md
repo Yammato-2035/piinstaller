@@ -15,6 +15,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Fleet finish Exit-1:** Triage — `fleet_session_patch` `${3:-{}}` korrumpiert JSON; Fix `${3-}`; API Finish unverändert OK.
 - **Fleet smoke after script fix:** `/opt`-Script-Sync `55b7bce`; Create→Heartbeat(`running`)→Finish grün; Release-Restore Operator ausstehend.
 - **DCC ports:** UI :3001, API :8000, :8080 = nginx (not SetupHelfer); docs in `DCC_PORTS_AND_URLS.md`.
+- **DCC Live Acceptance (profilgetrennt):** `release` erwartbar ohne DCC-Funktionsnachweis (disabled page fachlich klar, keine Port- oder Backend-Down-Interpretation); `local_lab` Profilwechsel in Agent-Session wegen `sudo` Passwortblockiert — DCC-Funktionsnachweis ausstehend. Evidence: `DCC_LIVE_ACCEPTANCE_RELEASE_BASELINE.md`, `DCC_DISABLED_PAGE_RELEASE_MESSAGE_REVIEW.md`, `DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md`.
 - **Release restore after fleet smoke:** blocked at sudo; ingest/ISO precheck remain `blocked_by_release_restore`.
 - **Operator release restore ingest:** `release` live; profile gate green; ingest stub and ISO precheck readiness unlocked (yellow, smoke not run).
 - **Release restore re-ingest:** `release_restore_status=ok`, drift yellow/evidence-only, ingest primary next step.

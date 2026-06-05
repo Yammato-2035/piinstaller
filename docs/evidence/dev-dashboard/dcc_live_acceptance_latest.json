@@ -1,0 +1,28 @@
+{
+  "task": "dcc_live_acceptance",
+  "status": "dcc_profile_switch_blocked",
+  "head": "c36b707",
+  "release_baseline_ok": true,
+  "release_message_clear": true,
+  "port_8000_backend_ok": true,
+  "port_3001_frontend_ok": true,
+  "port_8080_nginx_not_dcc_confirmed": true,
+  "local_lab_enabled": false,
+  "local_lab_dev_control_enabled": false,
+  "dev_dashboard_status_http": null,
+  "backend_health_http": null,
+  "recent_evidence_http": null,
+  "fleet_sessions_http": null,
+  "dcc_frontend_http": null,
+  "dcc_live_ok": false,
+  "release_restored_after": true,
+  "no_port_confusion": true,
+  "no_backend_down_confusion": true,
+  "no_qemu": true,
+  "no_iso_build": true,
+  "no_usb": true,
+  "no_backup": true,
+  "no_restore": true,
+  "next_recommended_action": "fix_dcc_local_lab_live_if_failed_or_continue_qemu_glibc_track_if_ok"
+}
+
