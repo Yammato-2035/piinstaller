@@ -9,13 +9,13 @@ describe('rescueStickUsbGate', () => {
     expect(status.windows_inspect_executable).toBe(false)
   })
 
-  it('blocks windows inspect with UEFI and USB blockers', () => {
+  it('blocks windows inspect with operator and UEFI blockers', () => {
     const vm = buildRescueStickGateViewModel()
     expect(vm.windowsInspectExecutable).toBe(false)
     expect(vm.uefiBootReady).toBe(false)
+    expect(vm.blockers).toContain('BLOCKED_BY_OPERATOR_CONFIRMATION')
+    expect(vm.blockers).toContain('BLOCKED_REQUIRES_OPERATOR_SUDO_POLICY')
     expect(vm.blockers).toContain('RESCUE_ISO_UEFI_X64_NOT_READY')
-    expect(vm.blockers).toContain('RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11')
-    expect(vm.blockers).toContain('RESCUE_STICK_NOT_WRITTEN')
-    expect(vm.blockers).toContain('RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET')
+    expect(vm.blockers).toContain('WINDOWS_INSPECT_BLOCKED_BY_RESCUE_UEFI_BOOT')
   })
 })

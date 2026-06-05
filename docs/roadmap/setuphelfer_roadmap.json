@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN",
-      "next_recommended_action": "UEFI-x64-Fix vorbereitet. Operator: Rebuild + validate-rescue-iso-uefi-boot grün, dann UEFI-Patch falls live-build 3.0, dann MSI-Boot, erst dann USB/Windows-Inspect. Kein Agent-dd."
+      "next_prompt_id": "RESCUE_ISO_UEFI_X64_FAILURE_TRIAGE",
+      "next_recommended_action": "Operator-Run blockiert (sudo/Freigabe). Kanonische ISO weiter isolinux-only Exit 34. Operator: clean+rebuild+sudo patch laut RESULT-Handoff."
     },
     {
       "id": "diagnostics",

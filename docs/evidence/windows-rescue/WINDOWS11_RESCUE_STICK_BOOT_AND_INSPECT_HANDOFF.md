@@ -1,6 +1,6 @@
 # Windows 11 — Rescue-Stick Boot + Read-only Inspect
 
-**BLOCKIERT (2026-06-05):** `RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11` — aktuelle ISO ist nur BIOS/ISOLINUX-hybrid; MSI W11 UEFI-Boot fehlgeschlagen. Windows-Inspect erst nach `RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN` + Validator grün + bestätigtem UEFI-Boot.
+**BLOCKIERT (2026-06-05):** Operator-Run `RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN` — Agent ohne sudo/Freigabe; UEFI-Validator Exit **34** auf kanonischer ISO. Siehe `RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RESULT.md`. Windows-Inspect erst nach Validator grün + USB + MSI-UEFI-Boot.
 
 **Voraussetzung:** UEFI-x64-fähige Setuphelfer-ISO (`validate-rescue-iso-uefi-boot.sh` Exit 0), dann USB-Stick geschrieben (Operator-Handoff)
 **Zielgerät:** Windows-11-Pro-Laptop (2×2 TB NVMe, AMD, NVIDIA) — **nicht** der Developer-Laptop als Ersatz

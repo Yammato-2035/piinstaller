@@ -1,28 +1,45 @@
 {
   "schema_version": 2,
-  "classified_at": "2026-06-05T20:50:00+02:00",
+  "classified_at": "2026-06-05T21:10:00+02:00",
   "iso_status": "iso_bios_hybrid_bootable_only",
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
   "iso_size_bytes": 511705088,
   "iso_sha256": "1899f5cabf9d40c9581805def9a765557a2168fc11ac181b0f71bfc0b1ff0691",
+  "iso_sha256_new": null,
   "iso_file_type": "ISO 9660 CD-ROM filesystem data (DOS/MBR boot sector) SETUPHELFER_RESCUE (bootable)",
   "iso_verified": true,
   "iso_validator": "scripts/rescue-live/validate-rescue-iso-squashfs.sh",
   "iso_validator_exit_code": 0,
-  "iso_validator_note": "squashfs bundle, systemd init, enabled units — read-only check 2026-06-05",
+  "iso_validator_note": "squashfs bundle, systemd init — unveränderte kanonische ISO",
   "uefi_boot_ready": false,
   "uefi_validator": "scripts/rescue-live/validate-rescue-iso-uefi-boot.sh",
   "uefi_validator_exit_code": 34,
-  "uefi_validator_note": "isolinux-only hybrid ISO — no EFI El Torito, no /EFI/BOOT/BOOTX64.EFI",
+  "uefi_validator_note": "Operator-Run blockiert — ISO unverändert, UEFI-x64 weiter fehlend",
   "uefi_baseline_evidence": "docs/evidence/runtime-results/rescue/rescue_iso_uefi_boot_baseline_latest.json",
+  "operator_run_status": "blocked_by_operator_confirmation",
   "iso_boot_proven_on_target": false,
   "iso_boot_proven_vm": "partial",
   "target_uefi_boot_validated": false,
   "msi_uefi_boot_failed_confirmed": true,
+  "msi_laptop_booted_from_stick": false,
   "usb_stick_written": "unknown",
   "target_laptop_booted_from_stick": false,
   "windows_inspect_executable": false,
   "blockers": [
+    {
+      "id": "BLOCKED_BY_OPERATOR_CONFIRMATION",
+      "severity": "critical",
+      "status": "blocked",
+      "description_de": "RESCUE_UEFI_REBUILD_FREIGEGEBEN=1 nicht gesetzt — kein kontrollierter Rebuild im Agent-Lauf.",
+      "description_en": "RESCUE_UEFI_REBUILD_FREIGEBEBEN=1 not set — no controlled rebuild in agent run."
+    },
+    {
+      "id": "BLOCKED_REQUIRES_OPERATOR_SUDO_POLICY",
+      "severity": "critical",
+      "status": "blocked",
+      "description_de": "sudo -n nicht verfügbar; kanonische ISO und Build-Artefakte root-owned.",
+      "description_en": "sudo -n unavailable; canonical ISO and build artifacts root-owned."
+    },
     {
       "id": "RESCUE_ISO_UEFI_X64_NOT_READY",
       "severity": "critical",
@@ -36,44 +53,35 @@
       "severity": "critical",
       "status": "blocked",
       "code": "RESCUE-UEFI-004",
-      "description_de": "MSI W11 UEFI-Bootversuch (Secure Boot off) mit aktueller ISO fehlgeschlagen.",
-      "description_en": "MSI W11 UEFI boot attempt (Secure Boot off) failed with current ISO."
+      "description_de": "MSI W11 UEFI-Bootversuch mit aktueller ISO fehlgeschlagen.",
+      "description_en": "MSI W11 UEFI boot attempt failed with current ISO."
     },
     {
       "id": "RESCUE_STICK_NOT_WRITTEN",
       "severity": "critical",
       "status": "blocked",
-      "description_de": "Windows-Inspect am Zielgerät unmöglich ohne bootfähigen Setuphelfer-Rettungsstick (USB noch nicht geschrieben).",
-      "description_en": "Windows inspect on target impossible without bootable Setuphelfer rescue stick (USB not written)."
-    },
-    {
-      "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
-      "severity": "critical",
-      "status": "blocked",
-      "description_de": "W11-Laptop noch nicht vom Rescue-USB gebootet (UEFI-Pfad fehlt).",
-      "description_en": "W11 laptop not yet booted from rescue USB (UEFI path missing)."
+      "description_de": "USB noch nicht geschrieben.",
+      "description_en": "USB not written."
     },
     {
       "id": "WINDOWS_INSPECT_BLOCKED_BY_RESCUE_UEFI_BOOT",
       "severity": "critical",
       "status": "blocked",
       "code": "RESCUE-UEFI-005",
-      "description_de": "Windows-Inspect upstream blockiert bis UEFI-x64-ISO rebuild + Validator grün + MSI-Boot bestätigt.",
-      "description_en": "Windows inspect upstream blocked until UEFI-x64 ISO rebuild + validator green + MSI boot confirmed."
+      "description_de": "Windows-Inspect blockiert bis UEFI-Validator grün + USB + MSI-Boot.",
+      "description_en": "Windows inspect blocked until UEFI validator green + USB + MSI boot."
     }
   ],
   "upstream_blocks": [
     "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
-    "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING",
     "RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11"
   ],
-  "next_operator_step_de": "Prepare → Rebuild → UEFI-Patch falls nötig → validate-rescue-iso-uefi-boot grün → erst dann USB/MSI-Boot.",
-  "next_operator_step_en": "Prepare → rebuild → UEFI patch if needed → validate-rescue-iso-uefi-boot green → then USB/MSI boot.",
-  "next_prompt_id": "RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN",
+  "next_operator_step_de": "Operator-Terminal: RESCUE_UEFI_REBUILD_FREIGEGEBEN=1, sudo clean, rebuild, sudo patch, UEFI-Validator grün.",
+  "next_operator_step_en": "Operator terminal: RESCUE_UEFI_REBUILD_FREIGEGEBEN=1, sudo clean, rebuild, sudo patch, UEFI validator green.",
+  "next_prompt_id": "RESCUE_ISO_UEFI_X64_FAILURE_TRIAGE",
   "handoff_docs": [
     "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_HANDOFF.md",
-    "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md",
-    "docs/evidence/windows-rescue/WINDOWS11_RESCUE_STICK_BOOT_AND_INSPECT_HANDOFF.md"
+    "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RESULT.md"
   ],
   "agent_usb_write_executed": false,
   "agent_iso_rebuild_executed": false,

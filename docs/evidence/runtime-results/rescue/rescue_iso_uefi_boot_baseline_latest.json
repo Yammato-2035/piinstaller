@@ -1,9 +1,14 @@
 {
   "schema_version": 1,
-  "classified_at": "2026-06-05T20:50:00+02:00",
+  "classified_at": "2026-06-05T21:10:00+02:00",
+  "operator_run_id": "RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN",
+  "operator_run_status": "blocked_by_operator_confirmation",
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
   "iso_sha256": "1899f5cabf9d40c9581805def9a765557a2168fc11ac181b0f71bfc0b1ff0691",
+  "iso_sha256_new": null,
   "iso_size_bytes": 511705088,
+  "iso_owner": "root:workspace",
+  "iso_agent_writable": false,
   "validator": "scripts/rescue-live/validate-rescue-iso-uefi-boot.sh",
   "validator_exit_code": 34,
   "uefi_boot_ready": false,
@@ -13,7 +18,9 @@
     "efi_boot_files_missing",
     "isolinux_only_iso",
     "msi_uefi_boot_failed_confirmed",
-    "windows_inspect_blocked_by_rescue_uefi_boot"
+    "windows_inspect_blocked_by_rescue_uefi_boot",
+    "blocked_by_operator_confirmation",
+    "blocked_requires_operator_sudo_policy"
   ],
   "errors": [
     {"id": "isolinux_only_iso", "code": "RESCUE-UEFI-003"},
@@ -28,16 +35,22 @@
     "efi_boot_files": false,
     "bootx64_efi_path": null
   },
-  "msi_target": {
-    "platform": "MSI laptop Windows 11 UEFI Secure Boot off",
-    "uefi_boot_attempt": "failed",
-    "confirmed_at": "2026-06-05"
+  "build_tree": {
+    "prepare_exit_code": 0,
+    "validate_exit_code": 11,
+    "validate_note": "stale root-owned binary/live/filesystem.squashfs — operator clean required"
   },
-  "fix_prepared": {
-    "prepare_script": "scripts/rescue-live/prepare-controlled-live-build-tree.sh",
-    "post_patch_script": "scripts/rescue-live/patch-rescue-iso-uefi-x64.sh",
-    "operator_handoff": "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_HANDOFF.md"
+  "operator_gates": {
+    "RESCUE_UEFI_REBUILD_FREIGEGEBEN": false,
+    "RESCUE_SYSTEMD_REBUILD_FREIGEGEBEN": false,
+    "sudo_noninteractive": false
   },
-  "agent_build_executed": false,
-  "agent_patch_executed": false
+  "agent_actions": {
+    "iso_rebuild_executed": false,
+    "uefi_patch_canonical_executed": false,
+    "uefi_patch_agent_copy_attempted": true,
+    "uefi_patch_agent_copy_exit_code": 1,
+    "usb_write_executed": false
+  },
+  "result_doc": "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RESULT.md"
 }

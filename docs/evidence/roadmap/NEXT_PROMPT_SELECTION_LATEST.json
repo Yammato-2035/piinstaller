@@ -1,20 +1,20 @@
 {
   "schema_version": 2,
-  "selected_at": "2026-06-05T20:55:00+02:00",
-  "selected_prompt_id": "RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN",
-  "reason_de": "MSI W11 UEFI-Boot mit aktueller ISO fehlgeschlagen (isolinux-only). UEFI-x64-Fix vorbereitet; Rebuild+Validator vor USB/Windows-Inspect.",
-  "reason_en": "MSI W11 UEFI boot failed with current ISO (isolinux-only). UEFI-x64 fix prepared; rebuild+validator before USB/Windows inspect.",
+  "selected_at": "2026-06-05T21:10:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_UEFI_X64_FAILURE_TRIAGE",
+  "reason_de": "Operator-Run blockiert (kein RESCUE_UEFI_REBUILD_FREIGEGEBEN=1, kein sudo -n, root-owned ISO). UEFI-Validator weiter Exit 34 auf kanonischer ISO.",
+  "reason_en": "Operator run blocked (no RESCUE_UEFI_REBUILD_FREIGEBEBEN=1, no sudo -n, root-owned ISO). UEFI validator still exit 34 on canonical ISO.",
   "completed_tracks": [],
   "tracks": [
     {
       "id": "rescue_iso_uefi_x64_rebuild",
-      "status": "recommended_next",
+      "status": "blocked",
       "priority": "P0",
-      "classification": "iso_bios_hybrid_bootable_only",
-      "next_step": "Operator: prepare → rebuild → patch (live-build 3.0) → validate-rescue-iso-uefi-boot grün.",
+      "classification": "blocked_by_operator_confirmation",
+      "next_step": "Operator sudo + RESCUE_UEFI_REBUILD_FREIGEGEBEN=1 → clean → rebuild → sudo patch → validator grün.",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/rescue_iso_uefi_boot_baseline_latest.json",
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_HANDOFF.md"
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RESULT.md",
+        "docs/evidence/runtime-results/rescue/rescue_iso_uefi_boot_baseline_latest.json"
       ]
     },
     {
@@ -22,7 +22,7 @@
       "status": "blocked_upstream",
       "blocked_by": [
         "RESCUE_ISO_UEFI_X64_NOT_READY",
-        "RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11"
+        "BLOCKED_REQUIRES_OPERATOR_SUDO_POLICY"
       ]
     },
     {
@@ -30,24 +30,21 @@
       "status": "blocked_upstream",
       "blocked_by": [
         "RESCUE_ISO_UEFI_X64_NOT_READY",
-        "RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11",
         "WINDOWS_INSPECT_BLOCKED_BY_RESCUE_UEFI_BOOT"
       ]
     }
   ],
   "forbidden_next": [
     "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
-    "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING",
     "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
     "WINDOWS11_REPARTITION_EXECUTION",
     "DUALBOOT_INSTALL_EXECUTION",
-    "BOOTLOADER_WRITE_EXECUTION",
     "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP",
     "MONOLITH_BOUNDARY_FOLLOWUP",
     "PACKAGE_UPDATE_GATE"
   ],
   "governance_rules": {
     "roadmap_first": "docs/developer/CURSOR_WORK_RULES.md",
-    "selection_rule": "No USB write or Windows inspect until UEFI-x64 ISO validator is green."
+    "selection_rule": "No USB or Windows inspect until canonical ISO passes validate-rescue-iso-uefi-boot.sh."
   }
 }

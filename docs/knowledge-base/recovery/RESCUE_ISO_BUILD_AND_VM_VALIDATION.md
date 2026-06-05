@@ -37,6 +37,7 @@ Kurzreferenz für **Phase 1**: ISO aus Debian-Live-Tooling bauen, unter `build/r
 - **2026-05-29 (visual live handoff):** Testplan + Artefakt-Recheck (SHA256, Validator 0); VM-Test wartet auf `VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1`. Evidence: `RESCUE_ISO_VISUAL_LIVE_SYSTEM_FUNCTIONAL_VALIDATION_RESULT.md`.
 - **2026-05-29 (integration rebuild ingest):** Operator LB_EXIT=0, Validator Exit **0** — Bundle, systemd enable, DE keyboard/locale, login hints in Squashfs. Rescue **yellow** (VM/USB/Restore offen). Evidence: `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_RESULT_INGEST.md`.
 - **2026-05-29 (integration rebuild prep):** DE-Tastatur (`de`/`de-latin1`), Locale `de_DE.UTF-8`, Zeitzone `Europe/Berlin`, systemd-wants, MOTD/issue. Rebuild nur mit `RESCUE_RUNTIME_REBUILD_FREIGEGEBEN=1`. Evidence: `RESCUE_ISO_RUNTIME_INTEGRATION_REBUILD_RESULT.md`.
+- **2026-06-05 (UEFI-x64 Operator-Run blockiert):** Agent-Lauf `RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN` — kein `RESCUE_UEFI_REBUILD_FREIGEGEBEN=1`, kein `sudo -n`, root-owned ISO/Build-Artefakte; Validator Exit **34** unverändert. Evidence: `RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RESULT.md`. Next: Operator sudo clean+rebuild+patch.
 - **2026-06-05 (UEFI-x64 boot gap):** Aktuelle Hybrid-ISO nur ISOLINUX/BIOS (`RESCUE-UEFI-003`); MSI W11 UEFI-Boot fehlgeschlagen. Fix: `prepare-controlled-live-build-tree.sh` + `patch-rescue-iso-uefi-x64.sh` + `validate-rescue-iso-uefi-boot.sh`. Operator-Handoff: `RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_HANDOFF.md`. USB/Windows-Inspect blockiert bis Validator grün.
 
 ## Deploy-Doku
