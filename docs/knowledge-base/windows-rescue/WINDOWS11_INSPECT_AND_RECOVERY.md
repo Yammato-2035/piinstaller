@@ -26,9 +26,9 @@ Rettungsstick read-only: Windows-11-Pro-Laptop (inkl. Beta/Insider) untersuchen,
 
 Roadmap: `windows-laptop-rescue-inspect` — Next Prompt: `WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN`
 
-Handoff: `docs/evidence/windows-rescue/WINDOWS11_RESCUE_OPERATOR_READONLY_SCAN_HANDOFF.md`  
-Mount-Plan: `scripts/windows-rescue/plan-windows-readonly-inspect.sh`  
-Backend-Stub: `backend/core/windows_rescue_inspect.py`
+Handoff (Stub): `docs/evidence/windows-rescue/WINDOWS11_RESCUE_OPERATOR_READONLY_SCAN_HANDOFF.md`  
+Operator HW Run: `docs/evidence/windows-rescue/WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN.md`  
+Status: `docs/evidence/windows-rescue/operator_hardware_run_status_latest.json`
 
 ## Abgrenzung
 

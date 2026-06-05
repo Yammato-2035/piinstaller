@@ -136,6 +136,26 @@
       "write_action_allowed": false
     },
     {
+      "code": "WIN-SHELL-003",
+      "severity": "warning",
+      "evidence_source": "filesystem",
+      "explanation_de": "Explorer-Pfad nicht prüfbar (BitLocker/Mount).",
+      "explanation_en": "Explorer path not checkable (BitLocker/mount).",
+      "recommended_next_action_de": "BitLocker klären, dann read-only Mount.",
+      "recommended_next_action_en": "Clarify BitLocker, then read-only mount.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-PROFILE-002",
+      "severity": "warning",
+      "evidence_source": "offline_registry",
+      "explanation_de": "Benutzerprofilzugriff durch BitLocker blockiert.",
+      "explanation_en": "User profile access blocked by BitLocker.",
+      "recommended_next_action_de": "Kein Profil-Inventar ohne BitLocker-OK.",
+      "recommended_next_action_en": "No profile inventory without BitLocker OK.",
+      "write_action_allowed": false
+    },
+    {
       "code": "WIN-BOOT-001",
       "severity": "warning",
       "evidence_source": "efi_scan",

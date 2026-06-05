@@ -1,11 +1,28 @@
 import type { BitLockerInspectState, TelemetryTransportState } from './windowsRescueTelemetry'
 import { evaluateInspectCompletion, isRepartitionBlocked } from './windowsRescueTelemetry'
+import operatorStatus from '../../../../docs/evidence/windows-rescue/operator_hardware_run_status_latest.json'
 import operatorSample from '../../../../docs/evidence/windows-rescue/windows_inspect_operator_readonly_sample.json'
 
-export type WindowsInspectOperatorReport = typeof operatorSample
+export type OperatorHardwareRunStatus = typeof operatorStatus
+export type WindowsInspectOperatorReport = typeof operatorSample & {
+  data_classification?: string
+  source?: string
+}
+
+export function loadOperatorHardwareRunStatus(): OperatorHardwareRunStatus {
+  return operatorStatus as OperatorHardwareRunStatus
+}
 
 export function loadOperatorReadonlySample(): WindowsInspectOperatorReport {
   return operatorSample as WindowsInspectOperatorReport
+}
+
+export type OperatorHardwareRunDisplay = 'missing' | 'available' | 'ingested'
+
+export function operatorHardwareRunDisplay(status: OperatorHardwareRunStatus): OperatorHardwareRunDisplay {
+  if (status.status === 'operator_hardware_run_ingested' && status.real_laptop_data_present) return 'ingested'
+  if (status.status === 'awaiting_operator_hardware_run') return 'missing'
+  return 'available'
 }
 
 function mapBitlockerStatus(status: string | undefined): BitLockerInspectState {
@@ -23,14 +40,14 @@ function mapBitlockerStatus(status: string | undefined): BitLockerInspectState {
   }
 }
 
-function mapTelemetry(report: WindowsInspectOperatorReport): TelemetryTransportState {
+function mapTelemetryFromReport(report: WindowsInspectOperatorReport): TelemetryTransportState {
   const tel = report.telemetry
   const ack = String(tel?.ack_status || 'not_created')
   const localHash = tel?.local_report_hash || null
   const hashMatch = tel?.hash_match
   return {
     telemetry_status: ack as TelemetryTransportState['telemetry_status'],
-    server_ack_id: ack === 'acknowledged' ? 'sample-ack' : null,
+    server_ack_id: tel?.server_ack_id ?? (ack === 'acknowledged' ? 'sample-ack' : null),
     server_ack_at: ack === 'acknowledged' ? report.generated_at : null,
     payload_hash_sha256: localHash,
     server_confirmed_hash_sha256: hashMatch === true ? localHash : hashMatch === false ? 'mismatch' : null,
@@ -40,9 +57,27 @@ function mapTelemetry(report: WindowsInspectOperatorReport): TelemetryTransportS
   }
 }
 
+function mapTelemetryFromStatus(status: OperatorHardwareRunStatus): TelemetryTransportState {
+  const ack = status.telemetry_ack_present ? 'acknowledged' : 'not_created'
+  return {
+    telemetry_status: ack as TelemetryTransportState['telemetry_status'],
+    server_ack_id: status.telemetry_ack_present ? 'operator-ack' : null,
+    server_ack_at: null,
+    payload_hash_sha256: null,
+    server_confirmed_hash_sha256: status.hash_match ? 'matched' : null,
+    retry_count: 0,
+    last_error: null,
+    queue_depth: 0,
+  }
+}
+
 export type WindowsRescueCardViewModel = {
+  operatorRun: OperatorHardwareRunDisplay
+  operatorStatus: OperatorHardwareRunStatus
   report: WindowsInspectOperatorReport | null
+  sampleReport: WindowsInspectOperatorReport
   bitlocker: BitLockerInspectState
+  bitlockerDisplay: string
   telemetry: TelemetryTransportState
   inspectReportCreated: boolean
   backupVerified: boolean
@@ -55,74 +90,73 @@ export type WindowsRescueCardViewModel = {
   rawJson: string
 }
 
-export function buildCardViewModel(report: WindowsInspectOperatorReport | null): WindowsRescueCardViewModel {
-  if (!report) {
-    return {
-      report: null,
-      bitlocker: mapBitlockerStatus('unknown'),
-      telemetry: {
-        telemetry_status: 'not_created',
-        server_ack_id: null,
-        server_ack_at: null,
-        payload_hash_sha256: null,
-        server_confirmed_hash_sha256: null,
-        retry_count: 0,
-        last_error: null,
-        queue_depth: 0,
-      },
-      inspectReportCreated: false,
-      backupVerified: false,
-      hardwareSummary: '—',
-      windowsHealthSummary: 'no_windows_inspect_report_available',
-      backupSummary: '—',
-      repartitionBlocked: true,
-      dualbootPlanningOnly: true,
-      completion: evaluateInspectCompletion(false, {
-        telemetry_status: 'not_created',
-        server_ack_id: null,
-        server_ack_at: null,
-        payload_hash_sha256: null,
-        server_confirmed_hash_sha256: null,
-        retry_count: 0,
-        last_error: null,
-      }),
-      rawJson: '{}',
-    }
-  }
+export function buildCardViewModelFromOperatorStatus(
+  status: OperatorHardwareRunStatus = loadOperatorHardwareRunStatus(),
+  sample: WindowsInspectOperatorReport = loadOperatorReadonlySample(),
+): WindowsRescueCardViewModel {
+  const operatorRun = operatorHardwareRunDisplay(status)
+  const report =
+    operatorRun === 'ingested' && status.real_laptop_data_present
+      ? sample
+      : null
 
-  const bitlocker = mapBitlockerStatus(report.bitlocker?.status)
-  const telemetry = mapTelemetry(report)
-  const backupVerified = report.backup_selection?.backup_verified === true
-  const completion = evaluateInspectCompletion(true, telemetry)
-  const repartitionBlocked = isRepartitionBlocked(backupVerified, telemetry, bitlocker)
+  const bitlockerDisplay = status.bitlocker_status_known
+    ? report?.bitlocker?.status ?? 'unknown'
+    : 'unknown'
+  const bitlocker = mapBitlockerStatus(bitlockerDisplay)
 
-  const hw = report.hardware
+  const telemetry =
+    report != null ? mapTelemetryFromReport(report) : mapTelemetryFromStatus(status)
+  const inspectReportCreated = operatorRun === 'ingested'
+  const backupVerified = report?.backup_selection?.backup_verified === true
+  const completion =
+    operatorRun === 'ingested' && report
+      ? evaluateInspectCompletion(true, telemetry)
+      : {
+          ampel: status.completion_ampel as 'green' | 'yellow' | 'red',
+          classification: status.completion_classification,
+        }
+
+  const repartitionBlocked =
+    operatorRun !== 'ingested' ||
+    isRepartitionBlocked(backupVerified, telemetry, bitlocker) ||
+    status.completion_ampel !== 'green'
+
+  const hw = report?.hardware ?? sample.hardware
   const hardwareSummary = [hw?.cpu_vendor, hw?.gpu_vendor, `${(hw?.nvme_devices?.length ?? 0)}× NVMe`]
     .filter(Boolean)
     .join(' / ')
 
-  const wh = report.windows_health
-  const windowsHealthSummary = `explorer: ${wh?.explorer_shell_status ?? '—'}; registry: ${String(wh?.registry_available ?? '—')}`
+  const wh = report?.windows_health ?? sample.windows_health
+  const windowsHealthSummary =
+    operatorRun === 'ingested'
+      ? `explorer: ${wh?.explorer_shell_status ?? '—'}; registry: ${String(wh?.registry_available ?? '—')}`
+      : `awaiting_operator_run; file_access: ${String(status.windows_file_access_allowed)}`
 
-  const cand = report.backup_selection?.candidate_user_dirs?.length ?? 0
-  const backupSummary = `dry_run; candidates: ${cand}; selected: ${report.backup_selection?.selected_paths?.length ?? 0}`
+  const cand = (report ?? sample).backup_selection?.candidate_user_dirs?.length ?? 0
+  const backupSummary = `dry_run only; candidates: ${cand}`
 
   return {
+    operatorRun,
+    operatorStatus: status,
     report,
+    sampleReport: sample,
     bitlocker,
+    bitlockerDisplay,
     telemetry,
-    inspectReportCreated: true,
+    inspectReportCreated,
     backupVerified,
     hardwareSummary,
     windowsHealthSummary,
     backupSummary,
     repartitionBlocked,
-    dualbootPlanningOnly: report.dualboot_readiness?.planning_only !== false,
+    dualbootPlanningOnly: true,
     completion,
-    rawJson: JSON.stringify(report, null, 2),
+    rawJson: JSON.stringify(report ?? status, null, 2),
   }
 }
 
+/** @deprecated use buildCardViewModelFromOperatorStatus */
 export function buildCardViewModelFromSample(): WindowsRescueCardViewModel {
-  return buildCardViewModel(loadOperatorReadonlySample())
+  return buildCardViewModelFromOperatorStatus()
 }

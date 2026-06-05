@@ -1114,8 +1114,8 @@
           "evidence_links": ["docs/knowledge-base/windows-rescue/BITLOCKER_READONLY_POLICY.md"]
         }
       ],
-      "next_prompt_id": "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
-      "next_recommended_action": "Echter Operator-Readonly-Lauf am Windows-11-Laptop (Rescue-Stick): Plan-Skript, BitLocker, Telemetrie-ACK."
+      "next_prompt_id": "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING",
+      "next_recommended_action": "Rescue-Stick am W11-Laptop booten; Plan-Skript + Ingest + Telemetrie-ACK (Handoff)."
     },
     {
       "id": "dev-dashboard",

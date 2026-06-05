@@ -69,4 +69,6 @@ Backup/file data uses separate backup/cloud process.
 
 Schema: `docs/evidence/windows-rescue/windows_rescue_telemetry.schema.json`
 
-Operator stub: `backend/core/windows_rescue_inspect.py` builds telemetry envelope from inspect report (no file contents).
+Operator ingest: `ingest_operator_hardware_run()` reads `operator_windows_readonly_plan_latest.json`; without plan → `awaiting_operator_hardware_run`. Green only with ACK + hash match.
+
+Hard telemetry statuses: `not_created`, `queued_local`, `sent_no_ack`, `acknowledged`, `hash_mismatch`, `failed`.

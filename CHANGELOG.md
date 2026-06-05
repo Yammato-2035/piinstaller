@@ -24,6 +24,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Windows Laptop Rescue Inspect:** Neuer P1-Track `windows-laptop-rescue-inspect` mit Schema, Diagnosekatalog (17 Codes), KB und MVP-Plan (read-only, kein NTFS-write). Next Prompt: `WINDOWS11_RESCUE_INSPECT_MVP`.
 - **Windows Rescue Telemetry + BitLocker:** Telemetrie-Schema, Server-Vertrag, Store-and-forward-Konzept; BitLocker-Codes 001–006; DCC `WindowsRescueInspectCard`; kein Grün ohne Server-ACK. Next Prompt: `WINDOWS11_RESCUE_INSPECT_MVP_OPERATOR_READONLY_SCAN`.
 - **Windows Rescue Operator Readonly Scan Stub:** Mount-Plan-Skript, Backend-Report-Stub, Operator-Sample, DCC-Report-Karte, Handoff-Checkliste. Next Prompt: `WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN`.
+- **Windows Rescue Operator HW Run (Modus B):** Handoff + Ingest-Pipeline + awaiting-Status; kein Sample als echte Evidence; Next Prompt: `WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING`.
 - **DCC Roadmap Filter:** Kurzüberblick, Top-Blocker, Filter-Tabs und Roh-JSON nur aufklappbar (`roadmapFilter.ts`, `RoadmapDrawer.tsx`).
 - **Release restore after fleet smoke:** blocked at sudo; ingest/ISO precheck remain `blocked_by_release_restore`.
 - **Operator release restore ingest:** `release` live; profile gate green; ingest stub and ISO precheck readiness unlocked (yellow, smoke not run).

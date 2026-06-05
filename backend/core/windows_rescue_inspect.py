@@ -83,8 +83,12 @@ def classify_diagnostic_codes(report: dict[str, Any]) -> list[str]:
         codes.append("WIN-SHELL-001")
     if windows_health.get("registry_available") is False:
         codes.append("WIN-SHELL-002")
+    if shell_status in ("path_not_checkable", "not_scanned") and not bitlocker.get("access_allowed"):
+        codes.append("WIN-SHELL-003")
     if windows_health.get("user_profile_presence"):
         codes.append("WIN-PROFILE-001")
+    if windows_health.get("user_profile_presence") is False and not bitlocker.get("access_allowed"):
+        codes.append("WIN-PROFILE-002")
 
     backup = report.get("backup_selection") if isinstance(report.get("backup_selection"), dict) else {}
     if backup.get("dry_run_only") is True:
@@ -134,6 +138,8 @@ def build_telemetry_envelope(
     hash_match: bool | None = None
     if server_confirmed_hash_sha256 is not None:
         hash_match = server_confirmed_hash_sha256 == report_hash
+        if ack_status == "acknowledged" and hash_match is False:
+            ack_status = "hash_mismatch"
     privacy_blocked, privacy_error = privacy_guard_blocks(
         {
             "contains_personal_data": False,
@@ -224,9 +230,210 @@ def evaluate_completion(report: dict[str, Any], envelope: dict[str, Any]) -> dic
         return {"ampel": "red", "classification": "privacy_guard_blocked"}
     if ack == "acknowledged" and ack_id and hash_match:
         return {"ampel": "green", "classification": "inspect_and_telemetry_acknowledged"}
-    if transport.get("hash_match") is False:
+    if ack in ("hash_mismatch",) or transport.get("hash_match") is False:
         return {"ampel": "red", "classification": "telemetry_hash_mismatch"}
+    if ack in ("sent_no_ack", "sending", "sent_unconfirmed", "queued_local", "not_created", "failed"):
+        return {"ampel": "yellow", "classification": "telemetry_not_delivered"}
     return {"ampel": "yellow", "classification": "telemetry_not_delivered"}
+
+
+OPERATOR_PLAN_REL = "docs/evidence/windows-rescue/operator_windows_readonly_plan_latest.json"
+REPORT_LATEST_REL = "docs/evidence/windows-rescue/windows_inspect_report_latest.json"
+ENVELOPE_LATEST_REL = "docs/evidence/windows-rescue/windows_rescue_telemetry_envelope_latest.json"
+STATUS_LATEST_REL = "docs/evidence/windows-rescue/operator_hardware_run_status_latest.json"
+ACK_LATEST_REL = "docs/evidence/windows-rescue/operator_telemetry_ack_latest.json"
+
+
+def _repartition_gate() -> dict[str, Any]:
+    return {
+        "blocked": True,
+        "reasons": [
+            "bitlocker_clarified",
+            "important_data_inventoried",
+            "cloud_backup_plan_confirmed",
+            "real_backup_successful",
+            "telemetry_acknowledged",
+            "hash_match_true",
+            "operator_approval",
+            "target_nvme_partition_plan_reviewed",
+            "windows11_pro_stable_install_medium_available",
+            "linux_mint_target_version_set",
+            "bootmanager_strategy_reviewed",
+        ],
+        "blocked_until": {
+            "bitlocker_clarified": False,
+            "important_data_inventoried": False,
+            "cloud_backup_plan_confirmed": False,
+            "real_backup_successful": False,
+            "telemetry_acknowledged": False,
+            "hash_match": False,
+            "operator_confirmation": False,
+            "target_disk_plan_reviewed": False,
+            "windows11_pro_stable_medium_available": False,
+            "linux_mint_target_version_set": False,
+            "bootmanager_strategy_reviewed": False,
+        },
+        "bootmanager_notes": [
+            "Windows updates must not permanently break boot chain.",
+            "Strategy must be Windows-update-resilient.",
+            "Document UEFI boot order before any future write track.",
+            "No bootloader write in this track.",
+        ],
+    }
+
+
+def _dualboot_gate() -> dict[str, Any]:
+    return {
+        "planning_only": True,
+        "target": "Windows 11 Pro stable + Linux Mint (~1 TB)",
+        "bootloader_strategy": "planning_only",
+        "windows_update_resilience_required": True,
+        "linux_mint_size_hint_bytes": 1099511627776,
+        "blockers": ["WIN-DUALBOOT-001", "WIN-REPARTITION-001", "WIN-BOOTLOADER-001"],
+    }
+
+
+def normalize_telemetry_status(raw: str | None) -> str:
+    val = str(raw or "not_created").strip().lower()
+    aliases = {"queued": "queued_local", "queue": "queued_local"}
+    val = aliases.get(val, val)
+    allowed = {
+        "not_created",
+        "queued_local",
+        "sent_no_ack",
+        "acknowledged",
+        "hash_mismatch",
+        "failed",
+        "sending",
+        "sent_unconfirmed",
+    }
+    return val if val in allowed else "not_created"
+
+
+def _write_json(path: Path, body: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(body, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def build_awaiting_operator_status() -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "updated_at": utc_now_iso(),
+        "status": "awaiting_operator_hardware_run",
+        "operator_mode": "B",
+        "real_laptop_data_present": False,
+        "sample_used_as_evidence": False,
+        "bitlocker_status_known": False,
+        "windows_file_access_allowed": False,
+        "telemetry_ack_present": False,
+        "hash_match": False,
+        "completion_ampel": "yellow",
+        "completion_classification": "awaiting_operator_hardware_run",
+        "next_prompt_id": "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING",
+    }
+
+
+def ingest_operator_hardware_run(
+    repo_root: Path | str,
+    *,
+    plan_path: Path | str | None = None,
+    ack_path: Path | str | None = None,
+    write_outputs: bool = False,
+) -> dict[str, Any]:
+    root = Path(repo_root)
+    plan_file = Path(plan_path) if plan_path else root / OPERATOR_PLAN_REL
+
+    if not plan_file.is_file():
+        status = build_awaiting_operator_status()
+        if write_outputs:
+            _write_json(root / STATUS_LATEST_REL, status)
+        return {"ingest_status": "awaiting_operator_hardware_run", "operator_status": status}
+
+    plan = json.loads(plan_file.read_text(encoding="utf-8"))
+    hw_plan = plan.get("hardware") if isinstance(plan.get("hardware"), dict) else {}
+    overrides = {
+        "cpu_vendor": hw_plan.get("cpu_vendor"),
+        "cpu_model": hw_plan.get("cpu_model"),
+        "gpu_vendor": hw_plan.get("gpu_vendor"),
+        "gpu_model": hw_plan.get("gpu_model"),
+        "memory_bytes": hw_plan.get("memory_bytes"),
+        "edition": "Windows 11 Pro",
+        "insider_or_beta_hint": "suspected_insider_channel",
+    }
+    run_id = f"win-operator-{utc_now_iso().replace(':', '').replace('-', '')[:15]}"
+    report = build_inspect_report_from_plan(
+        plan,
+        run_id=run_id,
+        hardware_overrides=overrides,
+        source="operator_hardware_readonly_run",
+        data_classification="operator_hardware_readonly_run",
+    )
+
+    ack_payload: dict[str, Any] | None = None
+    ack_file = Path(ack_path) if ack_path else root / ACK_LATEST_REL
+    if ack_file.is_file():
+        ack_payload = json.loads(ack_file.read_text(encoding="utf-8"))
+
+    ack_status = "not_created"
+    server_ack_id = None
+    server_hash = None
+    if ack_payload:
+        ack_status = normalize_telemetry_status(str(ack_payload.get("status") or "acknowledged"))
+        server_ack_id = ack_payload.get("ack_id") or ack_payload.get("server_ack_id")
+        server_hash = ack_payload.get("payload_hash_sha256")
+
+    envelope = build_telemetry_envelope(
+        report,
+        run_id=run_id,
+        device_session_id=f"devsess-{run_id[-12:]}",
+        ack_status=ack_status,
+        server_ack_id=str(server_ack_id) if server_ack_id else None,
+        server_confirmed_hash_sha256=str(server_hash) if server_hash else None,
+    )
+    completion = evaluate_completion(report, envelope)
+
+    tel = report.setdefault("telemetry", {})
+    if isinstance(tel, dict):
+        tel["ack_status"] = envelope["telemetry_transport"]["status"]
+        tel["hash_match"] = envelope["telemetry_transport"].get("hash_match")
+        tel["server_ack_id"] = envelope["telemetry_transport"].get("server_ack_id")
+
+    bitlocker_known = str(report.get("bitlocker", {}).get("status") or "unknown") != "unknown"
+    next_prompt = "WINDOWS11_RESCUE_TELEMETRY_ACK_REQUIRED"
+    if completion["ampel"] == "green":
+        next_prompt = "WINDOWS11_RESCUE_CLOUD_BACKUP_SELECTION_DRY_RUN"
+    elif not bitlocker_known:
+        next_prompt = "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING"
+
+    operator_status = {
+        "schema_version": 1,
+        "updated_at": utc_now_iso(),
+        "status": "operator_hardware_run_ingested",
+        "operator_mode": "A",
+        "real_laptop_data_present": True,
+        "sample_used_as_evidence": False,
+        "bitlocker_status_known": bitlocker_known,
+        "windows_file_access_allowed": report.get("safety", {}).get("bitlocker_access_allowed") is True,
+        "telemetry_ack_present": ack_status == "acknowledged" and bool(server_ack_id),
+        "hash_match": envelope["telemetry_transport"].get("hash_match") is True,
+        "completion_ampel": completion["ampel"],
+        "completion_classification": completion["classification"],
+        "next_prompt_id": next_prompt,
+        "run_id": run_id,
+    }
+
+    result = {
+        "ingest_status": "ok",
+        "report": report,
+        "telemetry_envelope": envelope,
+        "completion": completion,
+        "operator_status": operator_status,
+    }
+    if write_outputs:
+        _write_json(root / REPORT_LATEST_REL, report)
+        _write_json(root / ENVELOPE_LATEST_REL, envelope)
+        _write_json(root / STATUS_LATEST_REL, operator_status)
+    return result
 
 
 def build_inspect_report_from_plan(
@@ -234,21 +441,33 @@ def build_inspect_report_from_plan(
     *,
     run_id: str = "win-inspect-plan-stub",
     hardware_overrides: dict[str, Any] | None = None,
+    source: str = "setuphelfer_rescue_inspect",
+    data_classification: str = "plan_stub",
 ) -> dict[str, Any]:
     """Build a structured inspect report from a read-only mount plan (no mounts executed)."""
     hw = hardware_overrides or {}
+    hw_plan = plan.get("hardware") if isinstance(plan.get("hardware"), dict) else {}
     bitlocker_raw = plan.get("bitlocker") if isinstance(plan.get("bitlocker"), dict) else {}
     bitlocker_eval = evaluate_bitlocker_access(bitlocker_raw)
     access_allowed = bitlocker_eval["access_allowed"]
     nvme_devices = plan.get("nvme_devices") if isinstance(plan.get("nvme_devices"), list) else []
+    if not nvme_devices and isinstance(hw_plan.get("nvme_devices"), list):
+        nvme_devices = hw_plan["nvme_devices"]
 
+    health_hints = plan.get("windows_health_hints") if isinstance(plan.get("windows_health_hints"), dict) else {}
     windows_health: dict[str, Any] = {
-        "explorer_shell_status": "unknown_blocked" if not access_allowed else "not_scanned",
-        "winlogon_shell_hint": None if not access_allowed else "explorer.exe_expected",
-        "user_profile_presence": False if not access_allowed else None,
-        "registry_available": False if not access_allowed else None,
-        "eventlog_available": False if not access_allowed else None,
+        "explorer_shell_status": health_hints.get("explorer_shell_status")
+        or ("unknown_blocked" if not access_allowed else "not_scanned"),
+        "winlogon_shell_hint": health_hints.get("winlogon_shell_hint")
+        if access_allowed
+        else None,
+        "user_profile_presence": health_hints.get("user_profile_presence")
+        if access_allowed
+        else False,
+        "registry_available": health_hints.get("registry_available") if access_allowed else False,
+        "eventlog_available": health_hints.get("eventlog_available") if access_allowed else False,
         "boot_config_hint": "plan_only",
+        "shell_registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\Shell",
     }
 
     backup_selection: dict[str, Any] = {
@@ -270,7 +489,8 @@ def build_inspect_report_from_plan(
         "schema_version": 2,
         "run_id": run_id,
         "generated_at": utc_now_iso(),
-        "source": "setuphelfer_rescue_inspect",
+        "source": source,
+        "data_classification": data_classification,
         "safety": {
             "mode": "read_only",
             "write_actions_allowed": False,
@@ -285,12 +505,13 @@ def build_inspect_report_from_plan(
             "computer_name": None,
         },
         "hardware": {
-            "cpu_vendor": hw.get("cpu_vendor", "AMD"),
-            "cpu_model": hw.get("cpu_model", "Ryzen"),
-            "gpu_vendor": hw.get("gpu_vendor", "NVIDIA"),
-            "gpu_model": hw.get("gpu_model"),
-            "memory_bytes": hw.get("memory_bytes"),
+            "cpu_vendor": hw.get("cpu_vendor") or hw_plan.get("cpu_vendor") or "AMD",
+            "cpu_model": hw.get("cpu_model") or hw_plan.get("cpu_model") or "Ryzen",
+            "gpu_vendor": hw.get("gpu_vendor") or hw_plan.get("gpu_vendor") or "NVIDIA",
+            "gpu_model": hw.get("gpu_model") or hw_plan.get("gpu_model"),
+            "memory_bytes": hw.get("memory_bytes") or hw_plan.get("memory_bytes"),
             "nvme_devices": nvme_devices,
+            "rescue_hostname": hw_plan.get("rescue_hostname"),
             "target_profile": plan.get("hardware_hints", {}).get("target_profile")
             if isinstance(plan.get("hardware_hints"), dict)
             else "2x2TB_NVMe_AMD_Ryzen_NVIDIA",
@@ -316,30 +537,8 @@ def build_inspect_report_from_plan(
             "ack_status": "not_created",
             "hash_match": None,
         },
-        "repartition_readiness": {
-            "blocked": True,
-            "reasons": [
-                "backup_manifest_verified",
-                "telemetry_acknowledged",
-                "hash_match",
-                "operator_confirmation",
-                "target_disk_plan_reviewed",
-            ],
-            "blocked_until": {
-                "backup_manifest_verified": False,
-                "telemetry_acknowledged": False,
-                "hash_match": False,
-                "operator_confirmation": False,
-                "target_disk_plan_reviewed": False,
-            },
-        },
-        "dualboot_readiness": {
-            "planning_only": True,
-            "target": "Windows 11 Pro stable + Linux Mint",
-            "bootloader_strategy": "planning_only",
-            "windows_update_resilience_required": True,
-            "blockers": ["WIN-DUALBOOT-001", "WIN-REPARTITION-001"],
-        },
+        "repartition_readiness": _repartition_gate(),
+        "dualboot_readiness": _dualboot_gate(),
         "readonly_mount_plan": plan.get("readonly_mount_plan") or [],
         "blocked_reasons": plan.get("blocked_reasons") or [],
         "required_operator_actions": plan.get("required_operator_actions") or [],
@@ -357,7 +556,10 @@ def load_operator_readonly_sample(repo_root: Path | str | None = None) -> dict[s
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[2]
     sample_path = root / "docs/evidence/windows-rescue/windows_inspect_operator_readonly_sample.json"
     if sample_path.is_file():
-        return json.loads(sample_path.read_text(encoding="utf-8"))
+        report = json.loads(sample_path.read_text(encoding="utf-8"))
+        report.setdefault("data_classification", "sample_only_not_operator_evidence")
+        report.setdefault("source", "setuphelfer_rescue_inspect_sample")
+        return report
     return build_inspect_report_from_plan(
         {
             "bitlocker": {"status": "unknown", "confidence": "low"},
@@ -388,13 +590,21 @@ def build_inspect_report_from_sample(repo_root: Path | str | None = None) -> dic
 
 
 __all__ = [
+    "ACK_LATEST_REL",
+    "ENVELOPE_LATEST_REL",
+    "OPERATOR_PLAN_REL",
+    "REPORT_LATEST_REL",
+    "STATUS_LATEST_REL",
+    "build_awaiting_operator_status",
     "build_inspect_report_from_plan",
     "build_inspect_report_from_sample",
     "build_telemetry_envelope",
     "classify_diagnostic_codes",
     "evaluate_bitlocker_access",
     "evaluate_completion",
+    "ingest_operator_hardware_run",
     "load_operator_readonly_sample",
+    "normalize_telemetry_status",
     "privacy_guard_blocks",
     "sha256_canonical_json",
 ]

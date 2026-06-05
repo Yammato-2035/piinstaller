@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -97,6 +99,35 @@ class WindowsRescueInspectTests(unittest.TestCase):
         blob = str(report).lower()
         self.assertNotIn("file_content", blob)
         self.assertNotIn("password", blob)
+        self.assertEqual(report.get("data_classification"), "sample_only_not_operator_evidence")
+
+    def test_ingest_without_plan_returns_awaiting(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            result = wri.ingest_operator_hardware_run(root, write_outputs=True)
+            self.assertEqual(result["ingest_status"], "awaiting_operator_hardware_run")
+            self.assertEqual(result["operator_status"]["status"], "awaiting_operator_hardware_run")
+            self.assertFalse(result["operator_status"]["real_laptop_data_present"])
+
+    def test_ingest_with_plan_marks_operator_source(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            plan = {
+                "source": "plan_windows_readonly_inspect",
+                "bitlocker": {"status": "unknown", "confidence": "low"},
+                "nvme_devices": [{"name": "nvme0n1"}, {"name": "nvme1n1"}],
+                "windows_candidates": [{"name": "nvme0n1p3", "fstype": "ntfs"}],
+                "hardware": {"cpu_vendor": "AMD", "gpu_vendor": "NVIDIA"},
+                "blocked_reasons": ["bitlocker_unknown_blocks_file_access"],
+                "required_operator_actions": ["VERIFY_BITLOCKER_BEFORE_READONLY_MOUNT"],
+            }
+            plan_path = root / "plan.json"
+            plan_path.write_text(json.dumps(plan), encoding="utf-8")
+            result = wri.ingest_operator_hardware_run(root, plan_path=plan_path, write_outputs=False)
+            self.assertEqual(result["ingest_status"], "ok")
+            self.assertEqual(result["report"]["source"], "operator_hardware_readonly_run")
+            self.assertFalse(result["report"]["safety"]["bitlocker_access_allowed"])
+            self.assertEqual(result["completion"]["ampel"], "yellow")
 
 
 if __name__ == "__main__":

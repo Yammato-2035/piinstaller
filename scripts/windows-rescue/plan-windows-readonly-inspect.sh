@@ -44,6 +44,75 @@ def run_lines(cmd: list[str]) -> tuple[str, list[str], str | None]:
 lsblk_status, lsblk, lsblk_err = run_json(["lsblk", "-J", "-b", "-o", "NAME,TYPE,SIZE,FSTYPE,PTTYPE,PARTTYPE,MOUNTPOINT,UUID,MODEL,TRAN"])
 blkid_status, blkid_lines, blkid_err = run_lines(["blkid"])
 
+def read_text(path: str) -> str | None:
+    try:
+        with open(path, encoding="utf-8", errors="ignore") as fh:
+            return fh.read()
+    except OSError:
+        return None
+
+def detect_cpu() -> dict:
+    status, data, err = run_json(["lscpu", "-J"])
+    if status == "ok" and isinstance(data, dict):
+        cpus = data.get("lscpu") or []
+        vendor = model = None
+        if isinstance(cpus, list):
+            for row in cpus:
+                if not isinstance(row, dict):
+                    continue
+                field = str(row.get("field") or "").lower()
+                val = row.get("data")
+                if field == "vendor id:":
+                    vendor = val
+                if field in ("model name:", "model:"):
+                    model = val
+        return {"vendor": vendor, "model": model, "source": "lscpu"}
+    cpuinfo = read_text("/proc/cpuinfo") or ""
+    vendor = "AMD" if "amd" in cpuinfo.lower() else ("AuthenticAMD" if "AuthenticAMD" in cpuinfo else None)
+    for line in cpuinfo.splitlines():
+        if line.lower().startswith("model name"):
+            return {"vendor": vendor, "model": line.split(":", 1)[-1].strip(), "source": "proc_cpuinfo"}
+    return {"vendor": vendor, "model": None, "source": "unknown" if not cpuinfo else "proc_cpuinfo"}
+
+def detect_memory_bytes() -> int | None:
+    meminfo = read_text("/proc/meminfo") or ""
+    for line in meminfo.splitlines():
+        if line.startswith("MemTotal:"):
+            parts = line.split()
+            if len(parts) >= 2 and parts[1].isdigit():
+                return int(parts[1]) * 1024
+    return None
+
+def detect_gpu() -> dict:
+    status, lines, _ = run_lines(["lspci"])
+    vendor = model = None
+    if status == "ok":
+        for line in lines:
+            low = line.lower()
+            if "vga" in low or "3d" in low or "display" in low:
+                if "nvidia" in low:
+                    vendor = "NVIDIA"
+                elif "amd" in low or "ati" in low:
+                    vendor = "AMD"
+                model = line.split(":", 2)[-1].strip()[:120]
+                break
+    if shutil.which("nvidia-smi"):
+        proc = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            capture_output=True,
+            text=True,
+        )
+        if proc.returncode == 0 and (proc.stdout or "").strip():
+            vendor = vendor or "NVIDIA"
+            model = (proc.stdout or "").strip().splitlines()[0][:120]
+    return {"vendor": vendor, "model": model}
+
+import socket
+hostname = socket.gethostname()
+cpu_info = detect_cpu()
+gpu_info = detect_gpu()
+memory_bytes = detect_memory_bytes()
+
 nvme_devices: list[dict] = []
 blockdevices: list[dict] = []
 partitions: list[dict] = []
@@ -151,6 +220,15 @@ body = {
         "dual_nvme_detected": dual_nvme,
         "target_profile": "2x2TB_NVMe_AMD_Ryzen_NVIDIA",
     },
+    "hardware": {
+        "rescue_hostname": hostname,
+        "cpu_vendor": cpu_info.get("vendor"),
+        "cpu_model": cpu_info.get("model"),
+        "gpu_vendor": gpu_info.get("vendor"),
+        "gpu_model": gpu_info.get("model"),
+        "memory_bytes": memory_bytes,
+        "nvme_devices": nvme_devices,
+    },
     "blockdevices": blockdevices,
     "nvme_devices": nvme_devices,
     "partitions": partitions,
@@ -166,6 +244,7 @@ body = {
     "readonly_mount_plan": mount_plan,
     "blocked_reasons": blocked_reasons,
     "required_operator_actions": required_operator_actions,
+    "next_operator_actions": required_operator_actions,
     "forbidden": [
         "mount_without_operator_context",
         "ntfsfix",
