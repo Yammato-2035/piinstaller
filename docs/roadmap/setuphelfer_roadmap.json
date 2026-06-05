@@ -1104,32 +1104,32 @@
               "id": "cockpit-dcc-frontend-gating-profile-desync",
               "title_de": "DCC-Frontend-Gating: keine release-disabled Seite bei /api/dev-dashboard/status=200",
               "title_en": "DCC frontend gating: no release-disabled page when /api/dev-dashboard/status=200",
-              "status": "yellow",
-              "progress_percent": 80,
+              "status": "partial_green",
+              "progress_percent": 90,
               "commit_ref": "4fb72ee",
               "evidence_links": [
                 "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_RESULT.md",
-                "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md",
-                "docs/evidence/dev-dashboard/dcc_frontend_profile_desync_latest.json",
-                "docs/evidence/dev-dashboard/dcc_frontend_profile_desync_live_acceptance_latest.json"
+                "docs/evidence/dev-dashboard/DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md",
+                "docs/evidence/dev-dashboard/dcc_live_acceptance_after_fallback_latest.json"
               ],
-              "blocker_refs": ["sudo_password_required"],
-              "next_action_de": "Operator: deploy-to-opt, local_lab aktivieren, Browser-DCC prüfen, release restore; erst dann grün.",
-              "next_action_en": "Operator: deploy-to-opt, enable local_lab, verify browser DCC, release restore; green only after that."
+              "blocker_refs": ["release_restore_pending_for_full_green"],
+              "next_action_de": "local_lab live: Status 200 + Operator-DCC sichtbar; release restore für voll grün.",
+              "next_action_en": "local_lab live: status 200 + operator DCC visible; release restore for full green."
             },
             {
               "id": "cockpit-dcc-blank-screen-fail-safe",
               "title_de": "DCC Blank Screen: Fail-safe Boot-Diagnose + ErrorBoundary",
               "title_en": "DCC blank screen: fail-safe boot diagnostics + ErrorBoundary",
-              "status": "yellow",
-              "progress_percent": 75,
+              "status": "partial_green",
+              "progress_percent": 90,
               "evidence_links": [
                 "docs/evidence/dev-dashboard/DCC_BLANK_SCREEN_TRIAGE_RESULT.md",
-                "docs/evidence/dev-dashboard/dcc_blank_screen_triage_latest.json"
+                "docs/evidence/dev-dashboard/DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md",
+                "docs/evidence/dev-dashboard/dcc_live_acceptance_after_fallback_latest.json"
               ],
-              "blocker_refs": ["deploy_and_local_lab_smoke_pending"],
-              "next_action_de": "Deploy; Browser muss Diagnosepanel zeigen; unter local_lab DCC oder klaren Fehler — nie leer.",
-              "next_action_en": "Deploy; browser must show diagnostics panel; under local_lab DCC or clear error — never blank."
+              "blocker_refs": ["release_restore_pending_for_full_green"],
+              "next_action_de": "blank_dcc_screen resolved; release restore dokumentieren, dann Runtime-Governance.",
+              "next_action_en": "blank_dcc_screen resolved; document release restore, then runtime governance."
             }
           ],
           "blockers": [],
@@ -1245,7 +1245,7 @@
             }
           ],
           "decision_refs": [],
-          "next_prompt_id": "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP"
+          "next_prompt_id": "DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_CONFIRMATION"
         }
       ],
       "blockers": [],

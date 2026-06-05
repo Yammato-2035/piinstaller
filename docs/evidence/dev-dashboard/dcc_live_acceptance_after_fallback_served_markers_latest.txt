@@ -1,0 +1,5 @@
+dcc-boot-diagnostics
+DCC_BOOT_DIAGNOSTICS_V1
+dcc-cockpit-shell
+dev-control-disabled
+PROFILE_ROUTE_BLOCKED

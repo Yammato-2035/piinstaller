@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "task": "dcc_live_acceptance_after_fallback_ingest",
+  "generated_at": "2026-06-05T12:00:00+02:00",
+  "head": "199d3c6",
+  "run_type": "ingest_acceptance_no_repair",
+  "operator_observation": {
+    "dcc_visible": true,
+    "boot_fallback_diagnostics_visible": true,
+    "blank_screen_current": false
+  },
+  "bundle": {
+    "opt_markers": [
+      "DCC_BOOT_DIAGNOSTICS_V1",
+      "dcc-boot-diagnostics",
+      "dcc-cockpit-shell",
+      "dev-control-disabled",
+      "PROFILE_ROUTE_BLOCKED"
+    ],
+    "served_asset": "assets/index-FgGYQFBB.js",
+    "served_markers_match_opt": true,
+    "stale_or_wrong_bundle": false
+  },
+  "api": {
+    "install_profile": "local_lab",
+    "dev_control_enabled": true,
+    "profile_gate_status": "green",
+    "dev_dashboard_status_http": 200,
+    "fleet_sessions_http": 200,
+    "recent_evidence_http": 200,
+    "ui_cockpit_http": 200
+  },
+  "classification": {
+    "status": "partial_green",
+    "classification": "dcc_live_visible_after_deploy",
+    "blank_dcc_screen": "resolved",
+    "frontend_gating_desync_primary": false,
+    "port_confusion_excluded": true
+  },
+  "release_restore": {
+    "performed": false,
+    "blocks_full_green": true
+  },
+  "recommended_next_prompt_id": "DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_CONFIRMATION",
+  "recommended_after_release_restore": "RUNTIME_GOVERNANCE_LIVE_VALIDATION"
+}

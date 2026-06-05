@@ -46,9 +46,9 @@ Fix (Workspace `4fb72ee`): `decideDccVisibility()` — Source-of-truth `/api/dev
 | Stufe | Status |
 |-------|--------|
 | Code-Fix | committed (`4fb72ee`) |
-| Deploy `/opt` | ausstehend (`sudo_password_required`) |
-| local_lab Browser-Smoke | ausstehend |
-| DCC grün | **nein** — erst nach Deploy + live Smoke + release restore |
+| Deploy `/opt` | **erledigt** (`199d3c6` Fail-safe + Gating) |
+| local_lab Browser-Smoke | **partial_green** — Operator: DCC + Diagnose sichtbar; API Status 200 |
+| DCC voll grün | **ausstehend** — release restore nach local_lab noch dokumentieren |
 
 Evidence: `DCC_FRONTEND_PROFILE_DESYNC_RESULT.md`, `DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md`
 
@@ -85,4 +85,14 @@ Symptom: `http://127.0.0.1:3001/?window=cockpit` lädt (HTTP 200), aber kein nut
 
 Fix: `DccBootDiagnosticsPanel` + `DccErrorBoundary` + `dccBootState` (Marker `DCC_BOOT_DIAGNOSTICS_V1`).
 
-Evidence: `DCC_BLANK_SCREEN_TRIAGE_RESULT.md`, `dcc_blank_screen_triage_latest.json`
+**Stand 2026-06-05 (deployed bundle):** `blank_dcc_screen` **resolved** — Marker in `/opt` + served JS; Operator meldet DCC und Boot-Diagnose sichtbar. Weitere Blank-Screen-Reparatur **beenden**.
+
+Evidence: `DCC_BLANK_SCREEN_TRIAGE_RESULT.md`, `DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`
+
+## Falsche Next-Prompt-Auswahl
+
+**Klassifikation:** `wrong_next_prompt_selection`
+
+Ursache: `DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP` als `next_prompt_id` obwohl `reason_de` in `setuphelfer_next_prompts.json` explizit „nicht recommended_next“ (Rescue-Chroot-Cleanup Vorrang) sagt.
+
+Pflicht: Selection-Logik darf Prompts mit `deferred` / niedrigerer Priorität nicht wählen, solange DCC-/Runtime-/Rescue-Blocker aktiv sind.

@@ -14,6 +14,14 @@ Kurzreferenz für Knowledge-Base-First-Triage. Details in verlinkter Evidence.
 | `frontend_gating_build_time_desync` | DCC Disabled-Page trotz Statusroute 200 | Stale Build-Time-Marker / Cache | `expected_release_profile_block` |
 | `fix_lifecycle_incomplete` | Fix „umgesetzt“, aber HEAD/Deploy/Smoke fehlen | Uncommitted oder nicht nach `/opt` | Fake-Green |
 | `blank_dcc_screen` | Cockpit HTTP 200, Browser ohne nutzbaren Inhalt | Renderfehler, stale Bundle, fehlende Fail-safe-UI | release-Block, Portfehler |
+| `wrong_next_prompt_selection` | Next-Prompt widerspricht eigenem `reason_de`/Priorität | Controlled Runner vor DCC/Rescue | Governance-Fix in Selection |
+
+### `blank_dcc_screen` — Auflösungsstand
+
+**status:** `resolved_for_current_deployed_bundle`  
+**evidence:** Bundle-Marker (`DCC_BOOT_DIAGNOSTICS_V1`, `dcc-boot-diagnostics`, …) + Operator-sichtbares DCC/Fallback  
+**previous causes:** stale bundle, frontend gating desync, missing fail-safe diagnostics  
+**remaining:** release restore für voll grün; siehe `DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`
 
 ## Pflicht vor neuem Fix
 
