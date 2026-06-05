@@ -1,74 +1,79 @@
-# Rescue USB Write — Operator Handoff (Windows Inspect upstream)
+# Rescue USB Write — Operator Handoff (Windows Inspect)
 
-**Track:** `rescue-stick` → `windows-laptop-rescue-inspect`  
-**Status:** ISO validiert, **USB noch nicht geschrieben**  
+**Status:** `uefi_x64_iso_ready_for_usb_operator_write`  
+**Classification:** `uefi_x64_iso_ready_for_usb_operator_write`  
 **Agent/Cursor:** **kein** automatisches `dd`
 
-## ISO (read-only verifiziert)
+## ISO (UEFI-x64 validiert)
 
 | Feld | Wert |
 |------|------|
 | Pfad | `build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso` |
-| Größe | ~488 MiB |
-| SHA256 | `1899f5cabf9d40c9581805def9a765557a2168fc11ac181b0f71bfc0b1ff0691` |
-| Typ | bootable hybrid ISO (`SETUPHELFER_RESCUE`) |
-| Validator | `scripts/rescue-live/validate-rescue-iso-squashfs.sh` → Exit **0** (2026-06-05) |
+| Größe | ~533 MiB (558891008 Bytes) |
+| SHA256 | `09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879` |
+| UEFI Validator | Exit **0** — BIOS + EFI El Torito + BOOTX64 + efi.img |
+| Erneuter UEFI-Patch | **nicht** ausführen, solange SHA256/Validator unverändert |
+
+## Geräte — kritische Unterscheidung
+
+| Gerät (Beispiel) | Größe | Rolle | Aktion |
+|------------------|-------|-------|--------|
+| `sda` | ~931G HGST USB | Backup-Disk | **NIEMALS** überschreiben |
+| `sdb` | ~59G Ultra Line / INTENSO | möglicher Zielstick | **nur nach erneuter Prüfung** |
+| `nvme0n1` / `nvme1n1` | interne NVMe | System | **NIEMALS** überschreiben |
+
+Vor `dd`: `lsblk` **mit** und **ohne** Stick vergleichen. Nur die neu erschienene externe USB-Disk ist Kandidat.
 
 ## Warnung
 
-Der USB-Stick wird **vollständig überschrieben**. Alle Daten auf dem Stick gehen verloren.
+```text
+Dieser Vorgang löscht den Zielstick vollständig.
+Nicht ausführen, wenn TARGET nicht eindeutig der USB-Stick ist.
+```
 
-## Schritt 1 — Zielgerät identifizieren
-
-**Vor** dem Einstecken:
+## Operator-Kommandoblock
 
 ```bash
+cd /home/volker/piinstaller
+
+ISO=build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso
+
+sha256sum "$ISO"
+./scripts/rescue-live/validate-rescue-iso-uefi-boot.sh "$ISO"
+
 lsblk -o NAME,SIZE,MODEL,SERIAL,TRAN,TYPE,MOUNTPOINTS
-```
 
-USB-Stick einstecken, **erneut**:
+# Zielgerät manuell festlegen, Beispiel:
+# TARGET=/dev/sdb
+# ACHTUNG: TARGET muss der USB-Stick sein, nicht /dev/sda Backup, nicht NVMe.
 
-```bash
-lsblk -o NAME,SIZE,MODEL,SERIAL,TYPE,MOUNTPOINTS
-```
+echo "TARGET=$TARGET"
+lsblk "$TARGET"
 
-Nur die **neu erschienene** externe Disk ist Kandidat. Bei Zweifel: **abbrechen**.
+# Alle Partitionen des Zielsticks aushängen:
+sudo umount "${TARGET}"?* 2>/dev/null || true
 
-## Schritt 2 — Platzhalter ersetzen
+# ISO schreiben:
+sudo dd if="$ISO" of="$TARGET" bs=16M status=progress conv=fsync
 
-```bash
-ISO_PATH="/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso"
-USB_DEV="/dev/REPLACE_WITH_CONFIRMED_USB_DEVICE"
-```
-
-- `USB_DEV` muss **extern/USB** sein — **niemals** interne NVMe/Systemplatten.
-- Pfad auf dem **Operator-Rechner**, der den Stick schreibt (Developer-Maschine oder dedizierter Build-Host).
-
-## Schritt 3 — Schreiben (nur Operator)
-
-```bash
-sudo dd if="$ISO_PATH" of="$USB_DEV" bs=4M status=progress conv=fsync
 sync
+
+# Nachkontrolle:
+sudo blockdev --rereadpt "$TARGET" || true
+lsblk -o NAME,SIZE,MODEL,SERIAL,TRAN,TYPE,MOUNTPOINTS "$TARGET"
+sudo eject "$TARGET" || true
 ```
 
-**Nicht** aus Cursor/Agent ausführen.
+## Nach USB-Write
 
-## Schritt 4 — Nachprüfung
-
-```bash
-sync
-sudo eject "$USB_DEV" 2>/dev/null || true
-```
-
-Stick abziehen, wieder einstecken. Optional SHA256 des Stick-Anfangs nicht nötig — Boot-Test ist Pflicht.
-
-## Schritt 5 — Boot am Windows-11-Laptop
-
-Siehe: `docs/evidence/windows-rescue/WINDOWS11_RESCUE_STICK_BOOT_AND_INSPECT_HANDOFF.md`
+1. Stick am **MSI/Windows-11-Laptop** einstecken
+2. UEFI-Bootmenü → USB/UEFI wählen (Secure Boot für Test aus)
+3. Boot-Ergebnis dokumentieren
+4. Erst dann: `docs/evidence/windows-rescue/WINDOWS11_RESCUE_STICK_BOOT_AND_INSPECT_HANDOFF.md`
 
 ## Blocker bis erledigt
 
 - `RESCUE_STICK_NOT_WRITTEN`
 - `RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET`
 
-Erst danach: Windows read-only Inspect + Telemetrie.
+**Next Prompt nach erfolgreichem MSI-Boot:** `WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN`

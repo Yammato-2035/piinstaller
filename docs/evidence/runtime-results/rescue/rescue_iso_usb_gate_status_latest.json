@@ -1,61 +1,65 @@
 {
-  "schema_version": 4,
-  "classified_at": "2026-06-05T23:25:00+02:00",
-  "iso_status": "iso_bios_hybrid_bootable_only",
+  "schema_version": 5,
+  "classified_at": "2026-06-06T00:00:00+02:00",
+  "classification": "uefi_x64_iso_ready_for_usb_operator_write",
+  "iso_status": "uefi_x64_boot_ready",
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
-  "iso_size_bytes": 521142272,
-  "iso_sha256": "d008fb5ed4fbc0836a08d489434930bbbe3141b9b164b6a101a6eb438d11f94a",
-  "iso_sha256_new": null,
+  "iso_size_bytes": 558891008,
+  "iso_sha256": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
+  "iso_sha256_build_pre_patch": "d008fb5ed4fbc0836a08d489434930bbbe3141b9b164b6a101a6eb438d11f94a",
   "iso_verified": true,
-  "uefi_boot_ready": false,
-  "uefi_validator_exit_code": 34,
-  "uefi_validator_codes": ["RESCUE-UEFI-003", "RESCUE-UEFI-002", "RESCUE-UEFI-001"],
-  "uefi_patch_failure_code": "RESCUE-UEFI-PATCH-XORRISO-001",
-  "uefi_patch_root_causes": [
-    "append_partition_relative_path_not_host_absolute",
-    "esp_mkfs_vfat_C_32768_exceeds_eltorito_65535_block_limit"
-  ],
-  "uefi_patch_workspace_fix_verified_agent": {
-    "test_iso_path": "/tmp/setuphelfer-rescue-uefi-patch-test2.iso",
-    "validator_exit_code": 0,
-    "note": "Agent test only — canonical ISO not patched in-place"
+  "uefi_boot_ready": true,
+  "uefi_validator": "scripts/rescue-live/validate-rescue-iso-uefi-boot.sh",
+  "uefi_validator_exit_code": 0,
+  "uefi_signals": {
+    "bios_eltorito": true,
+    "efi_eltorito": true,
+    "bootx64_efi": true,
+    "boot_grub_efi_img": true
   },
-  "operator_run_status": "xorriso_fix_ready_awaiting_operator_in_place_patch",
+  "usb_write_status": "operator_required",
   "usb_stick_written": "no",
+  "windows_inspect_status": "blocked_until_usb_boot",
   "windows_inspect_executable": false,
+  "msi_uefi_previous_failure": "resolved_by_uefi_patch_pending_retest",
+  "target_uefi_boot_validated": false,
+  "msi_laptop_booted_from_stick": false,
+  "target_laptop_booted_from_stick": false,
   "blockers": [
-    {
-      "id": "RESCUE_ISO_UEFI_X64_NOT_READY",
-      "severity": "critical",
-      "status": "blocked",
-      "codes": ["RESCUE-UEFI-001", "RESCUE-UEFI-002", "RESCUE-UEFI-003"]
-    },
-    {
-      "id": "RESCUE_UEFI_XORRISO_PATCH_FAILURE",
-      "severity": "critical",
-      "status": "fix_in_workspace",
-      "code": "RESCUE-UEFI-PATCH-XORRISO-001",
-      "description_de": "xorriso append_partition + ESP-Größe — Skript-Fix verifiziert, Operator --in-place ausstehend."
-    },
     {
       "id": "RESCUE_STICK_NOT_WRITTEN",
       "severity": "critical",
-      "status": "blocked"
+      "status": "blocked",
+      "description_de": "UEFI-ISO bereit — USB-Write nur durch Operator."
     },
     {
-      "id": "WINDOWS_INSPECT_BLOCKED_BY_RESCUE_UEFI_BOOT",
+      "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
+      "severity": "critical",
+      "status": "blocked",
+      "description_de": "MSI/Windows-11-Laptop muss vom Stick booten, bevor Windows-Inspect."
+    },
+    {
+      "id": "WINDOWS_INSPECT_BLOCKED_UNTIL_USB_BOOT",
       "severity": "critical",
       "status": "blocked",
       "code": "RESCUE-UEFI-005"
     }
   ],
-  "next_operator_step_de": "sudo patch-rescue-iso-uefi-x64.sh --in-place, Validator Exit 0.",
-  "next_prompt_id": "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
+  "resolved_blockers": [
+    "RESCUE_ISO_UEFI_X64_NOT_READY",
+    "RESCUE_UEFI_XORRISO_PATCH_FAILURE",
+    "RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11"
+  ],
+  "next_operator_step_de": "USB-Stick schreiben (dd), am MSI-Laptop UEFI booten, dann Windows-Inspect read-only.",
+  "next_operator_step_en": "Write USB stick (dd), UEFI boot on MSI laptop, then read-only Windows inspect.",
+  "next_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
   "parallel_prompt_id": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE",
   "handoff_docs": [
-    "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_OPERATOR_HANDOFF.md",
-    "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_FAILURE_TRIAGE.md"
+    "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md",
+    "docs/evidence/windows-rescue/WINDOWS11_RESCUE_STICK_BOOT_AND_INSPECT_HANDOFF.md",
+    "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_OPERATOR_RESULT.md"
   ],
   "agent_usb_write_executed": false,
-  "agent_canonical_iso_patched": false
+  "agent_uefi_patch_executed": false,
+  "operator_uefi_patch_validated": true
 }

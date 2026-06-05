@@ -1,40 +1,47 @@
 {
-  "schema_version": 4,
-  "selected_at": "2026-06-05T23:25:00+02:00",
-  "selected_prompt_id": "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
+  "schema_version": 5,
+  "selected_at": "2026-06-06T00:00:00+02:00",
+  "selected_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
   "parallel_prompt_id": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE",
-  "reason_de": "xorriso-Patch-Fix verifiziert (append_partition absolut + ESP 16 MiB). Canonical ISO root-owned — Operator sudo --in-place + Validator Exit 0.",
-  "reason_en": "xorriso patch fix verified (absolute append_partition + 16 MiB ESP). Canonical ISO root-owned — operator sudo in-place + validator exit 0.",
+  "reason_de": "Kanonische ISO UEFI-x64 validiert (Validator Exit 0, SHA256 09b9482a…). Nächster Engpass: Operator USB-Write + MSI-Boot. DCC-Capability-Smoke parallel vorbereitet.",
+  "reason_en": "Canonical ISO UEFI-x64 validated (validator exit 0). Next: operator USB write + MSI boot. DCC capability smoke prepared in parallel.",
   "tracks": [
     {
-      "id": "rescue_iso_uefi_xorriso_patch",
+      "id": "rescue_usb_write",
       "status": "yellow",
       "priority": "P0",
-      "classification": "fix_verified_awaiting_operator_in_place",
-      "next_step": "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
+      "classification": "uefi_x64_iso_ready_for_usb_operator_write",
+      "next_step": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_FAILURE_TRIAGE.md",
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_OPERATOR_HANDOFF.md"
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_OPERATOR_RESULT.md",
+        "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md"
       ]
+    },
+    {
+      "id": "windows_laptop_rescue_inspect",
+      "status": "blocked_upstream",
+      "blocked_by": ["RESCUE_STICK_NOT_WRITTEN", "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET"],
+      "next_step_after_usb_boot": "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN"
     },
     {
       "id": "developer_dcc_capability",
       "status": "yellow",
       "priority": "P1",
-      "next_step": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE"
-    },
-    {
-      "id": "windows_laptop_rescue_inspect",
-      "status": "blocked_upstream",
-      "blocked_by": ["RESCUE_ISO_UEFI_X64_NOT_READY", "RESCUE_STICK_NOT_WRITTEN"]
+      "classification": "operator_smoke_prepared",
+      "next_step": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE",
+      "evidence": [
+        "docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE_HANDOFF.md"
+      ]
     }
   ],
   "forbidden_next": [
-    "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
+    "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
     "BACKEND_RESTART_WITHOUT_OPERATOR_APPROVAL"
   ],
   "governance_rules": {
-    "uefi_validator_exit_0_before_usb": true,
-    "canonical_iso_operator_sudo_in_place_only": true
+    "no_repatch_while_validator_exit_0": true,
+    "no_agent_usb_dd": true,
+    "dcc_tokens_not_in_repo": true,
+    "rescue_telemetry_separate_from_dcc": true
   }
 }

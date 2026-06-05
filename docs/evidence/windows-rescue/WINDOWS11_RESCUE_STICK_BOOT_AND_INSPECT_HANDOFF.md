@@ -1,63 +1,78 @@
 # Windows 11 — Rescue-Stick Boot + Read-only Inspect
 
-**BLOCKIERT (2026-06-05):** Operator-Run `RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN` — Agent ohne sudo/Freigabe; UEFI-Validator Exit **34** auf kanonischer ISO. Siehe `RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RESULT.md`. Windows-Inspect erst nach Validator grün + USB + MSI-UEFI-Boot.
+**Status:** `blocked_until_usb_boot`  
+**UEFI-ISO:** Validator Exit **0** (SHA256 `09b9482a…`) — UEFI-Blocker behoben  
+**Nächster Engpass:** USB-Write + MSI-Laptop-Boot
 
-**Voraussetzung:** UEFI-x64-fähige Setuphelfer-ISO (`validate-rescue-iso-uefi-boot.sh` Exit 0), dann USB-Stick geschrieben (Operator-Handoff)
-**Zielgerät:** Windows-11-Pro-Laptop (2×2 TB NVMe, AMD, NVIDIA) — **nicht** der Developer-Laptop als Ersatz
+## Voraussetzungen (Checkliste)
 
-## 1. Vorbereitung
+- [x] UEFI-x64-ISO gepatcht und validiert (`validate-rescue-iso-uefi-boot.sh` Exit 0)
+- [ ] USB-Stick geschrieben (`RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md`)
+- [ ] MSI/Windows-11-Laptop vom Stick gebootet
+- [ ] Telemetrie-ACK nach Inspect
 
-- [ ] ISO auf USB geschrieben (`RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md`)
-- [ ] Windows-Laptop herunterfahren
-- [ ] Rescue-USB einstecken
-- [ ] Netzwerk für Telemetrie später prüfen
+## 1. USB vorbereiten (Operator, Developer-Maschine)
 
-## 2. Boot
+Siehe: `docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md`
 
-1. UEFI-Bootmenü öffnen (Hersteller-Taste, z. B. F12/F2/Esc)
-2. **USB / UEFI: Setuphelfer** wählen
-3. **Keine** Windows-Reparatur, **kein** Installationsassistent auf Platte
+**Nicht** `sda` (Backup), **nicht** NVMe.
 
-## 3. Nach dem Boot (Rescue-Linux)
+## 2. Boot am MSI/Windows-11-Laptop
 
-- Kein Partitionieren, kein NTFS-Write, kein BitLocker-Unlock
-- Netzwerk prüfen (Telemetrie-ACK später Pflicht)
+1. Stick einstecken, Laptop herunterfahren/neu starten
+2. UEFI-Bootmenü (Hersteller-Taste)
+3. **Secure Boot** für diesen Test **aus**
+4. **USB / UEFI: Setuphelfer** wählen — keine Windows-Reparatur auf Platte
 
-## 4. Read-only Inspect
+### Boot-Ergebnis dokumentieren
+
+| Frage | ja/nein |
+|-------|---------|
+| GRUB/Bootmenü sichtbar? | |
+| Linux startet? | |
+| Login möglich? | |
+| Netzwerk vorhanden? | |
+| Telemetrieserver erreichbar? | |
+
+Bei erneutem UEFI-Fehler: **nicht** Windows-Inspect — Triage `RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11`.
+
+## 3. Read-only Inspect (erst nach erfolgreichem Boot)
+
+- BitLocker-Status zuerst — **unknown** → kein Dateizugriff
+- Kein NTFS-Schreiben, kein Partitionieren, kein BitLocker-Unlock
+- Nur read-only Plan:
 
 ```bash
-cd /path/to/setuphelfer-on-stick-or-mount
 bash scripts/windows-rescue/plan-windows-readonly-inspect.sh \
   docs/evidence/windows-rescue/operator_windows_readonly_plan_latest.json
 bash scripts/windows-rescue/ingest-operator-hardware-run.sh
 ```
 
-## 5. BitLocker zuerst
+## 4. Telemetrie
 
-- Status **unknown** → kein Dateizugriff
-- Erst bei `not_detected` / sicher read-only zugänglich: Registry/Explorer-Hinweise
+- Envelope senden (`/api/rescue/telemetry/v1/ingest`)
+- **ACK + Hash-Match** dokumentieren
+- Ohne ACK: Status **gelb**, kein Fake-Green
+- Telemetrie unabhängig vom DCC-Gate (`RESCUE_TELEMETRY_INGEST_ENABLED=1`)
 
-## 6. Telemetrie
+## 5. Evidence (Developer-Maschine)
 
-- Report senden, **ACK + Hash-Match** dokumentieren
-- Ohne ACK: **gelb**, kein Grün
-
-## 7. Evidence ins Workspace (Developer-Maschine)
-
-JSON-Dateien kopieren — **keine** Secrets, **keine** Dateiinhalte:
+JSON ins Workspace kopieren — **keine** Secrets, **keine** Dateiinhalte:
 
 - `operator_windows_readonly_plan_latest.json`
 - `windows_inspect_report_latest.json`
 - `windows_rescue_telemetry_envelope_latest.json`
-- optional `operator_telemetry_ack_latest.json`
 
 ## Verboten
 
-Reparatur, Cloud-Backup mit Credentials, Repartition, Dualboot-Install, Bootloader-Schreiben
+Reparatur, Repartition, Dualboot-Install, Bootloader-Schreiben auf Windows-Platten
 
-## Upstream-Blocker (solange offen)
+## Upstream-Blocker (aktuell)
 
-| ID | Bedeutung |
-|----|-----------|
-| `RESCUE_STICK_NOT_WRITTEN` | Kein USB |
-| `RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET` | W11 nicht vom Stick gebootet |
+| ID | Status |
+|----|--------|
+| `RESCUE_ISO_UEFI_X64_NOT_READY` | **behoben** |
+| `RESCUE_STICK_NOT_WRITTEN` | offen |
+| `RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET` | offen |
+
+**Next Prompt:** `RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT` → danach `WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN`

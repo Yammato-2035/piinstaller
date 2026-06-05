@@ -49,3 +49,8 @@ Niemals Token-Wert ausgeben.
 - Core: `backend/core/developer_capability.py`
 - Route-Gate: `path_allowed_for_active_profile()` + Middleware in `backend/app.py`
 - Telemetrie bleibt in `route_exposure.py` vom DCC-Gate getrennt
+
+## Operator-Smoke
+
+Handoff: `docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE_HANDOFF.md`  
+Lokale Env-Datei (Platzhalter): `/etc/setuphelfer/developer.env` — **kein echter Token im Repo**

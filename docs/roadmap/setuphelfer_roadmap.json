@@ -706,6 +706,7 @@
             "docs/evidence/runtime-results/rescue/RESCUE_ISO_MANUAL_OPERATOR_BUILD_CLASSIFICATION.md",
             "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
           ]
+        },
         {
           "id": "rescue-uefi-xorriso-patch-append-host-path-2026-06-05",
           "area_id": "rescue-stick",
@@ -716,10 +717,21 @@
           "evidence_links": [
             "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_FAILURE_TRIAGE.md"
           ]
+        },
+        {
+          "id": "rescue-uefi-patch-operator-success-2026-06-06",
+          "area_id": "rescue-stick",
+          "text_de": "Operator-Patch --in-place: Validator Exit 0, SHA256 09b9482a… — uefi_x64_iso_ready_for_usb_operator_write.",
+          "text_en": "Operator in-place patch: validator exit 0 — uefi_x64_iso_ready_for_usb_operator_write.",
+          "created_at": "2026-06-06",
+          "author": "Cursor",
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_OPERATOR_RESULT.md"
+          ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
-      "next_recommended_action": "ISO gebaut (LB_EXIT=0), isolinux-only Exit 34. Operator: sudo patch --in-place, UEFI-Validator Exit 0, dann USB-Write-Prompt."
+      "next_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
+      "next_recommended_action": "UEFI-ISO validiert — Operator schreibt USB (dd), bootet MSI W11, dann Windows-Inspect read-only."
     },
     {
       "id": "diagnostics",
