@@ -1099,6 +1099,20 @@
               "blocker_refs": [],
               "next_action_de": "Hard-Reload im Browser bei UI-Zweifeln.",
               "next_action_en": "Hard reload in browser if UI unclear."
+            },
+            {
+              "id": "cockpit-dcc-frontend-gating-profile-desync",
+              "title_de": "DCC-Frontend-Gating: keine release-disabled Seite bei /api/dev-dashboard/status=200",
+              "title_en": "DCC frontend gating: no release-disabled page when /api/dev-dashboard/status=200",
+              "status": "yellow",
+              "progress_percent": 70,
+              "evidence_links": [
+                "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_RESULT.md",
+                "docs/evidence/dev-dashboard/dcc_frontend_profile_desync_latest.json"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Operator-Check: local_lab so herstellen, dass /api/dev-dashboard/status HTTP 200 liefert; Browser darf dann die profileDisabled-Seite nicht anzeigen.",
+              "next_action_en": "Operator check: use local_lab so /api/dev-dashboard/status returns HTTP 200; browser must not show the profileDisabled page."
             }
           ],
           "blockers": [],

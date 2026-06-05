@@ -33,9 +33,11 @@ import { AREA_LABELS } from '../lib/devDashboard/governanceMatrix'
 import { clearGovernanceHistory } from '../lib/devDashboard/governanceHistory'
 import type { CockpitViewMode, GovernanceAreaStatus, Traffic } from '../lib/devDashboard/governanceTypes'
 import { useGovernanceMonitor } from '../lib/devDashboard/useGovernanceMonitor'
+import { API_STATUS_PATH } from '../lib/devDashboard/constants'
+import { buildFullApiUrl, decideDccVisibility, extractDccPortsFromVersion } from '../lib/devDashboard/dccGate'
+import { fetchApi, getApiBase } from '../api'
 import { toneClass } from './devDashboardFilters'
 import {
-  devControlUiEnabled,
   internalLabWarning,
   buildProfileMeta,
 } from '../config/buildProfile'
@@ -77,41 +79,81 @@ function GovernanceMatrixGrid({ areas, t }: { areas: GovernanceAreaStatus[]; t: 
   )
 }
 
-export const DevControlDisabledPage: React.FC = () => {
+type DevControlDisabledDebug = {
+  lastVersionUrl?: string
+  lastVersionHttpStatus?: number
+  lastDevDashboardStatusUrl?: string
+  lastDevDashboardStatusHttpStatus?: number
+  lastDevDashboardStatusCode?: string | null
+  versionPayload?: {
+    install_profile?: string | null
+    runtime_ports?: unknown
+  } | null
+}
+
+export const DevControlDisabledPage: React.FC<{
+  debug: DevControlDisabledDebug
+  onRetry: () => void
+  retryDisabled?: boolean
+}> = ({ debug, onRetry, retryDisabled }) => {
   const { t } = useTranslation()
+  const ports = extractDccPortsFromVersion((debug.versionPayload as any) ?? null)
+  const profile = debug.versionPayload?.install_profile ?? buildProfileMeta.frontend_build_profile
+
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-8 bg-slate-950"
-      data-testid="dev-control-disabled"
-    >
+    <div className="min-h-screen flex items-center justify-center p-8 bg-slate-950" data-testid="dev-control-disabled">
       <div className="max-w-lg rounded-xl border border-slate-700 bg-slate-900/80 p-6 text-center">
-        <h1 className="text-lg font-semibold text-white mb-2">
-          {t('devDashboard.profileDisabled.title', 'Development Control nicht verfügbar')}
-        </h1>
+        <h1 className="text-lg font-semibold text-white mb-2">{t('devDashboard.profileDisabled.title', 'Development Control nicht verfügbar')}</h1>
+
         <p className="text-sm text-slate-400">
-          {t(
-            'devDashboard.profileDisabled.body',
-            'Dieses Build-Profil (release) enthält keine internen Entwicklungsfunktionen.',
-          )}
+          {t('devDashboard.profileDisabled.body', 'Dieses Build-Profil ({{profile}}) enthält keine internen Entwicklungsfunktionen.', {
+            profile,
+          })}
         </p>
-        <p className="text-xs text-slate-500 mt-3 font-mono">
-          profile={buildProfileMeta.frontend_build_profile}
-        </p>
+
+        <p className="text-xs text-slate-500 mt-3 font-mono">profile={profile}</p>
+
         <div className="mt-4 text-left text-xs text-slate-400 space-y-2 border-t border-slate-700 pt-4">
-          <p>
-            {t(
-              'devDashboard.profileDisabled.portHint',
-              'Dies ist kein Portfehler. Die API läuft auf :8000, das Cockpit auf :3001. Interne Dev-Routen sind im release-Profil blockiert (404 PROFILE_ROUTE_BLOCKED), nicht „Backend down“.',
-            )}
-          </p>
+          <p>{t('devDashboard.profileDisabled.portHint', 'Dies ist kein Portfehler. Interne Dev-Routen sind blockiert (siehe Debug-Status), nicht „Backend down“.')}</p>
+
           <ul className="font-mono text-slate-500 list-disc pl-4 space-y-1">
-            <li>API: 127.0.0.1:8000</li>
-            <li>UI/DCC: 127.0.0.1:3001</li>
-            <li>nginx: 127.0.0.1:8080 — nicht SetupHelfer-DCC</li>
+            <li>API: {ports.api}</li>
+            <li>UI/DCC: {ports.ui}</li>
+            <li>nginx/default: {ports.nginx}</li>
+            {ports.qemu_host_proxy ? <li>QEMU host proxy: {ports.qemu_host_proxy}</li> : null}
+            {ports.qemu_guest_devserver ? <li>QEMU guest devserver: {ports.qemu_guest_devserver}</li> : null}
           </ul>
-          <p className="text-slate-500">
-            {t('devDashboard.profileDisabled.docsHint', 'Siehe docs/dev-dashboard/PORTS_AND_PROFILES.md')}
-          </p>
+
+          <div className="space-y-1">
+            <p className="text-slate-500">
+              {t('devDashboard.profileDisabled.lastVersion', 'GET {{url}} => HTTP {{code}}', {
+                url: debug.lastVersionUrl ?? '/api/version',
+                code: debug.lastVersionHttpStatus ?? '—',
+              })}
+            </p>
+            <p className="text-slate-500">
+              {t('devDashboard.profileDisabled.lastDccStatus', 'GET {{url}} => HTTP {{code}} (backend code={{bcode}})', {
+                url: debug.lastDevDashboardStatusUrl ?? API_STATUS_PATH,
+                code: debug.lastDevDashboardStatusHttpStatus ?? '—',
+                bcode: debug.lastDevDashboardStatusCode ?? '—',
+              })}
+            </p>
+            <p className="text-slate-400">{t('devDashboard.profileDisabled.gatingErrorHint', 'Wenn /api/dev-dashboard/status HTTP 200 liefert, ist dies ein Frontend-Gating-Fehler.')}</p>
+          </div>
+
+          <p className="text-slate-500">{t('devDashboard.profileDisabled.docsHint', 'Siehe docs/dev-dashboard/PORTS_AND_PROFILES.md')}</p>
+        </div>
+
+        <div className="mt-5">
+          <button
+            type="button"
+            className="btn-secondary inline-flex items-center gap-2 text-xs"
+            onClick={onRetry}
+            disabled={retryDisabled}
+            data-testid="dev-control-disabled-retry"
+          >
+            {t('devDashboard.profileDisabled.retry', 'DCC-Status erneut prüfen')}
+          </button>
         </div>
       </div>
     </div>
@@ -122,9 +164,15 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<ControlCenterTab>('overview')
 
-  if (!devControlUiEnabled) {
-    return <DevControlDisabledPage />
-  }
+  // Used to bust any potential caching layers for `/api/dev-dashboard/status`.
+  const [statusT, setStatusT] = useState(() => Date.now())
+  const [gate, setGate] = useState<
+    | { kind: 'loading' }
+    | { kind: 'allowed' }
+    | { kind: 'disabled'; debug: DevControlDisabledDebug }
+    | { kind: 'error' }
+  >({ kind: 'loading' })
+
   const [summary, setSummary] = useState<ControlCenterSummary | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
 
@@ -134,10 +182,79 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       typeof __APP_VERSION__ !== 'undefined' && String(__APP_VERSION__).trim() ? String(__APP_VERSION__).trim() : ''
     if (fv) params.set('frontend_build_version', fv)
     params.set('frontend_runtime_source', import.meta.env.DEV ? 'dev' : 'build')
+    params.set('t', String(statusT))
     return params.toString()
-  }, [])
+  }, [statusT])
 
   const mon = useGovernanceMonitor(statusQuery)
+
+  const retryGate = () => setStatusT(Date.now())
+
+  useEffect(() => {
+    let cancelled = false
+    const run = async () => {
+      setGate({ kind: 'loading' })
+
+      const apiBase = getApiBase()
+      const lastVersionUrl = buildFullApiUrl(apiBase, '/api/version')
+      const lastDevDashboardStatusUrl = buildFullApiUrl(apiBase, `${API_STATUS_PATH}?${statusQuery}`)
+
+      let versionPayload: any = null
+      let versionHttpStatus = 0
+      try {
+        const r = await fetchApi('/api/version', { cache: 'no-store' })
+        versionHttpStatus = r.status
+        if (r.ok) versionPayload = await r.json().catch(() => null)
+      } catch {
+        versionHttpStatus = 0
+      }
+
+      let statusHttpStatus = 0
+      let statusCode: string | null = null
+      try {
+        const r = await fetchApi(`${API_STATUS_PATH}?${statusQuery}`, { cache: 'no-store' })
+        statusHttpStatus = r.status
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}))
+          statusCode = typeof body?.code === 'string' ? body.code : null
+        }
+      } catch {
+        statusHttpStatus = 0
+      }
+
+      const decision = decideDccVisibility(
+        {
+          dev_control_enabled: versionPayload?.dev_control_enabled,
+          install_profile: versionPayload?.install_profile,
+          runtime_ports: versionPayload?.runtime_ports,
+        },
+        statusHttpStatus ? { httpStatus: statusHttpStatus, code: statusCode } : null,
+      )
+
+      if (cancelled) return
+      if (decision.kind === 'allowed') {
+        setGate({ kind: 'allowed' })
+      } else if (decision.kind === 'disabled') {
+        setGate({
+          kind: 'disabled',
+          debug: {
+            lastVersionUrl,
+            lastVersionHttpStatus: versionHttpStatus,
+            lastDevDashboardStatusUrl,
+            lastDevDashboardStatusHttpStatus: statusHttpStatus,
+            lastDevDashboardStatusCode: statusCode,
+            versionPayload,
+          },
+        })
+      } else {
+        setGate({ kind: 'error' })
+      }
+    }
+    void run()
+    return () => {
+      cancelled = true
+    }
+  }, [statusQuery])
 
   const loadSummary = useCallback(async () => {
     if (!mon.apiReachable) {
@@ -270,6 +387,41 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       default:
         return null
     }
+  }
+
+  if (gate.kind === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8 bg-slate-950" data-testid="dev-control-gate-loading">
+        <div className="text-sm text-slate-300">{t('devDashboard.profileDisabled.gateLoading', 'Pruefe DCC-Status…')}</div>
+      </div>
+    )
+  }
+
+  if (gate.kind === 'disabled') {
+    return <DevControlDisabledPage debug={gate.debug} onRetry={retryGate} />
+  }
+
+  if (gate.kind === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8 bg-slate-950" data-testid="dev-control-gate-error">
+        <div className="max-w-lg rounded-xl border border-slate-700 bg-slate-900/80 p-6 text-center">
+          <h1 className="text-lg font-semibold text-white mb-2">{t('devDashboard.profileDisabled.title', 'Development Control nicht verfügbar')}</h1>
+          <p className="text-sm text-slate-400">
+            {t('devDashboard.profileDisabled.errorBody', 'DCC-Verfügbarkeit ist inkonsistent (bitte erneut prüfen).')}
+          </p>
+          <div className="mt-4">
+            <button
+              type="button"
+              className="btn-secondary inline-flex items-center gap-2 text-xs"
+              onClick={retryGate}
+              data-testid="dev-control-gate-error-retry"
+            >
+              {t('devDashboard.profileDisabled.retry', 'DCC-Status erneut prüfen')}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "task": "dcc_frontend_profile_desync",
+  "generated_at": "2026-06-05T00:00:00+02:00",
+  "head": "5efff70",
+  "branch": "main",
+  "phase0_runtime_truth": {
+    "api_version": {
+      "http_status": 200,
+      "install_profile": "release",
+      "profile_gate_status": "green",
+      "dev_control_enabled": false,
+      "backend_runtime_path": "/opt/setuphelfer/backend"
+    },
+    "dcc_status": {
+      "http_status": 404,
+      "code": "PROFILE_ROUTE_BLOCKED"
+    },
+    "ui_cockpit": {
+      "http_status": 200,
+      "url": "http://127.0.0.1:3001/?window=cockpit"
+    },
+    "nginx_default": {
+      "http_status": 200,
+      "url": "http://127.0.0.1:8080/"
+    }
+  },
+  "fix": {
+    "source_of_truth": "/api/dev-dashboard/status",
+    "cache_strategy": "cache:no-store",
+    "query_param": "?t=<Date.now()>",
+    "frontend_change_files": [
+      "frontend/src/pages/ExternalDevelopmentControlCenter.tsx",
+      "frontend/src/lib/devDashboard/loadDevDashboard.ts",
+      "frontend/src/lib/devDashboard/dccGate.ts"
+    ]
+  },
+  "tests": {
+    "frontend_build": "ok",
+    "vitest_run": "ok",
+    "unit_tests": ["frontend/src/lib/devDashboard/dccGate.test.ts"]
+  },
+  "status": "yellow",
+  "next_operator_check": "When runtime /api/version reports local_lab and /api/dev-dashboard/status returns HTTP 200, the frontend must show DCC and must not show the release-disabled page."
+}
+

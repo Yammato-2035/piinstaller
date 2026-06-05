@@ -35,7 +35,7 @@
 | `/api/dev-dashboard/*` | **404** `PROFILE_ROUTE_BLOCKED` |
 | `/api/fleet/*` | **404** `PROFILE_ROUTE_BLOCKED` |
 | `/api/rescue-agent/*` | **404** `PROFILE_ROUTE_BLOCKED` |
-| DCC UI | Meldung „Development Control nicht verfügbar“ — **erwartet**, kein Crash |
+| DCC UI | Meldung „Development Control nicht verfügbar“ — **erwartet**, wenn `/api/dev-dashboard/status` 404 `PROFILE_ROUTE_BLOCKED` liefert (Frontend-Gating basiert jetzt auf der Status-Route). |
 | DCC Live-Akzeptanz | `release` gilt als erwartbarer Sicherheitszustand; funktional grün erst nach `local_lab` live geprüft |
 
 ### local_lab
@@ -57,7 +57,7 @@
 | `curl: (7) … port 8000` | **Backend down** oder Restart-Race — **nicht** „falscher DCC-Port“ |
 | HTTP **404** `PROFILE_ROUTE_BLOCKED` | **Erwartet** unter release für Dev-Routen |
 | `curl -I :8080` zeigt nginx | **Nicht** SetupHelfer — falscher Port |
-| DCC „nicht verfügbar“ bei release | **Profil**, kein Portfehler |
+| DCC „nicht verfügbar“ bei release | **Profil** (kein Portfehler) — aber: Wenn `/api/dev-dashboard/status` HTTP 200 liefert, darf die Disabled-Page nicht angezeigt werden (Frontend-Gating-Fix). |
 | Healthcheck-JSON `install_profile=release` | Snapshot beim Probe — API-Profil vor jedem Call prüfen |
 
 ## Siehe auch

@@ -23,7 +23,8 @@ async function fetchWithTimeout(path: string, init?: RequestInit): Promise<Respo
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), API_PROBE_MS)
   try {
-    return await fetchApi(path, { ...init, signal: ctrl.signal })
+    // Force fresh data for dev-dashboard status/gates to avoid stale cache snapshots.
+    return await fetchApi(path, { cache: 'no-store', ...(init ?? {}), signal: ctrl.signal })
   } finally {
     clearTimeout(timer)
   }

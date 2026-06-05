@@ -59,6 +59,18 @@ Evidence: **`docs/evidence/deploy-profile/PROFILE_LIVE_RELEASE_ACCEPTANCE_RESULT
 
 ---
 
+## DCC-Frontend-Gating Triage (Pflicht bei DCC-Problemen)
+
+Bei jeder DCC/Development-Control-Seitenanomalie (z. B. „Disabled-Page trotz local_lab“) gilt:
+
+1. Ports/Zuordnung festlegen: `8080` ist nie SetupHelfer-DCC, `3001` ist UI/Cockpit, `8000` ist API.
+2. `GET /api/version` und `GET /api/dev-dashboard/status` (HTTP-Code + `code`) gegenzpruefen.
+3. **Source-of-truth:** Wenn `/api/dev-dashboard/status` HTTP 200 liefert, darf das Frontend die Disabled-Page nicht anzeigen. (Frontend-Gating-Desync / stale Cache / State ist dann die einzig plausible Kategorie.)
+4. Disabled-Page ist serverseitig erwartet, wenn `/api/dev-dashboard/status` HTTP 404 `PROFILE_ROUTE_BLOCKED` liefert (oder wenn `/api/version` `dev_control_enabled=false` liefert und die Status-Route blockiert ist).
+5. Debug-/Evidence-Anker mussen mindestens `dev-dashboard/status`-URL, HTTP-Codes, backend `code` und Ports aus `runtime_ports` dokumentieren.
+
+---
+
 ## Roadmap-First-Regel (verbindlich)
 
 Jeder Lauf, der eine neue technische Entwicklungsrichtung, einen Folgeprompt, eine Architekturentscheidung, einen Refaktor-Schritt, einen Rescue-/QEMU-/Backup-/Restore-Schritt oder eine neue Fehlerbehebungsstrategie empfiehlt, muss diese Empfehlung in der Roadmap-/Status-/Next-Prompt-Struktur dokumentieren.

@@ -20,6 +20,18 @@ Wenn Port 8080 die Ubuntu/nginx-Default-Seite zeigt, ist das **kein DCC-Bug**. D
 2. Erwartung: `http://127.0.0.1:8000/api/...`
 3. **Nicht** `:3001/api/...` (statischer SPA-Server) oder `:8080/api/...` (nginx)
 
+## DCC zeigt „nicht verfügbar“ obwohl /api/dev-dashboard/status HTTP 200 liefert
+
+Seit dem Frontend-Gating-Fix gilt:
+
+- Die Disabled-Page darf nur dann angezeigt werden, wenn `GET /api/dev-dashboard/status` **404** liefert mit `code=PROFILE_ROUTE_BLOCKED` (oder wenn `/api/version` `dev_control_enabled=false` meldet und die Status-Route ebenfalls blockiert ist).
+- Wenn `GET /api/dev-dashboard/status` **HTTP 200** liefert, muss DCC sichtbar sein — die „release-disabled“-Seite ist dann ein **Frontend-Gating-Desync** bzw. Cache-/State-Problem.
+
+Pflicht-Prüfung im Browser:
+
+1. `F12 → Network` und `GET /api/dev-dashboard/status` Status/Response-Code prüfen.
+2. Falls der Server 200 liefert, hart neu laden oder im Disabled-Bereich den Retry-Button „DCC-Status erneut prüfen“ nutzen (keine Runtime-Aktion).
+
 ## Warum war der Roadmap-Bereich nicht sichtbar?
 
 Oft wurde das **Governance-Cockpit** (`CockpitApp`) genutzt statt der Seite **Developer Dashboard** (`dev-dashboard`). Das Cockpit hatte bis 2026-05-27 nur die Governance-Matrix, keinen Roadmap-Registry-Block. Die API lieferte Roadmap-Daten trotzdem.
