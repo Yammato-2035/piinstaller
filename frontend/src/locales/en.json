@@ -88,6 +88,8 @@
   "devDashboard.windowsRescue.awaitingOperator": "Operator hardware run pending — sample ≠ real evidence",
   "devDashboard.windowsRescue.operatorRun": "Operator run",
   "devDashboard.windowsRescue.sampleOnly": "Planning sample (not real evidence)",
+  "devDashboard.windowsRescue.stickGate": "Rescue stick (upstream)",
+  "devDashboard.windowsRescue.stickGateRaw": "Raw JSON stick gate",
   "devDashboard.rescueIso.title": "Rescue stick ISO build",
   "devDashboard.rescueIso.subtitle": "Controlled rescue ISO build with executor, logs, and operator gates",
   "devDashboard.rescueIso.overallStatus": "Overall status",

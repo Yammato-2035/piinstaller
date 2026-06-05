@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "classified_at": "2026-06-05T17:00:00+02:00",
+  "iso_status": "iso_bootable_ready_for_usb_operator_write",
+  "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_size_bytes": 511705088,
+  "iso_sha256": "1899f5cabf9d40c9581805def9a765557a2168fc11ac181b0f71bfc0b1ff0691",
+  "iso_file_type": "ISO 9660 CD-ROM filesystem data (DOS/MBR boot sector) SETUPHELFER_RESCUE (bootable)",
+  "iso_verified": true,
+  "iso_validator": "scripts/rescue-live/validate-rescue-iso-squashfs.sh",
+  "iso_validator_exit_code": 0,
+  "iso_validator_note": "squashfs bundle, systemd init, enabled units — read-only check 2026-06-05",
+  "iso_boot_proven_on_target": false,
+  "iso_boot_proven_vm": "partial",
+  "usb_stick_written": "unknown",
+  "target_laptop_booted_from_stick": false,
+  "windows_inspect_executable": false,
+  "blockers": [
+    {
+      "id": "RESCUE_STICK_NOT_WRITTEN",
+      "severity": "critical",
+      "status": "blocked",
+      "description_de": "Windows-Inspect am Zielgerät unmöglich ohne bootfähigen Setuphelfer-Rettungsstick (USB noch nicht geschrieben).",
+      "description_en": "Windows inspect on target impossible without bootable Setuphelfer rescue stick (USB not written)."
+    },
+    {
+      "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
+      "severity": "critical",
+      "status": "blocked",
+      "description_de": "W11-Laptop noch nicht vom Rescue-USB gebootet.",
+      "description_en": "W11 laptop not yet booted from rescue USB."
+    }
+  ],
+  "upstream_blocks": [
+    "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
+    "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING"
+  ],
+  "next_operator_step_de": "USB-Stick im Operator-Terminal schreiben (dd-Handoff), dann am W11-Laptop booten.",
+  "next_operator_step_en": "Write USB stick in operator terminal (dd handoff), then boot W11 laptop.",
+  "next_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
+  "handoff_docs": [
+    "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md",
+    "docs/evidence/windows-rescue/WINDOWS11_RESCUE_STICK_BOOT_AND_INSPECT_HANDOFF.md"
+  ],
+  "agent_usb_write_executed": false
+}

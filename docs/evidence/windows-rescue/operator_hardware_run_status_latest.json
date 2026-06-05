@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-06-05T16:30:00+02:00",
+  "updated_at": "2026-06-05T17:00:00+02:00",
   "status": "awaiting_operator_hardware_run",
   "operator_mode": "B",
   "real_laptop_data_present": false,
@@ -10,17 +10,22 @@
   "telemetry_ack_present": false,
   "hash_match": false,
   "completion_ampel": "yellow",
-  "completion_classification": "awaiting_operator_hardware_run",
-  "next_prompt_id": "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING",
+  "completion_classification": "blocked_by_rescue_stick_not_written",
+  "upstream_blockers": [
+    "RESCUE_STICK_NOT_WRITTEN",
+    "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET"
+  ],
+  "next_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
   "expected_hardware_profile": "2x2TB_NVMe_AMD_Ryzen_NVIDIA_W11Pro_Insider",
   "dualboot_target": "Windows 11 Pro stable + Linux Mint (~1 TB)",
   "artifacts": {
     "operator_plan": "docs/evidence/windows-rescue/operator_windows_readonly_plan_latest.json",
     "inspect_report": "docs/evidence/windows-rescue/windows_inspect_report_latest.json",
-    "telemetry_envelope": "docs/evidence/windows-rescue/windows_rescue_telemetry_envelope_latest.json"
+    "telemetry_envelope": "docs/evidence/windows-rescue/windows_rescue_telemetry_envelope_latest.json",
+    "usb_gate_status": "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"
   },
   "operator_commands": [
-    "bash scripts/windows-rescue/plan-windows-readonly-inspect.sh docs/evidence/windows-rescue/operator_windows_readonly_plan_latest.json",
-    "bash scripts/windows-rescue/ingest-operator-hardware-run.sh"
+    "See docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md",
+    "Then docs/evidence/windows-rescue/WINDOWS11_RESCUE_STICK_BOOT_AND_INSPECT_HANDOFF.md"
   ]
 }

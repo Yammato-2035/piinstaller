@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { buildCardViewModelFromOperatorStatus } from '../../lib/devDashboard/windowsRescueInspectReport'
+import { buildRescueStickGateViewModel } from '../../lib/devDashboard/rescueStickUsbGate'
 
 export type WindowsRescueInspectCardProps = {
   planningOnly?: boolean
@@ -9,6 +10,7 @@ export type WindowsRescueInspectCardProps = {
 export const WindowsRescueInspectCard: React.FC<WindowsRescueInspectCardProps> = ({ planningOnly = true }) => {
   const { t } = useTranslation()
   const vm = useMemo(() => buildCardViewModelFromOperatorStatus(), [])
+  const gate = useMemo(() => buildRescueStickGateViewModel(), [])
 
   return (
     <section
@@ -25,6 +27,19 @@ export const WindowsRescueInspectCard: React.FC<WindowsRescueInspectCardProps> =
       ) : null}
 
       <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3 text-xs">
+        <div className="rounded border border-amber-800/50 bg-amber-950/20 p-3 md:col-span-2 lg:col-span-3" data-testid="windows-rescue-stick-gate">
+          <div className="font-semibold text-amber-200">{t('devDashboard.windowsRescue.stickGate', 'Rescue-Stick (upstream)')}</div>
+          <ul className="mt-2 grid gap-1 sm:grid-cols-2 text-slate-300 font-mono">
+            <li>iso: {gate.isoStatus}</li>
+            <li>verified: {String(gate.isoVerified)}</li>
+            <li>usb_written: {gate.usbWritten}</li>
+            <li>target_boot: {String(gate.targetBooted)}</li>
+            <li>inspect_ok: {String(gate.windowsInspectExecutable)}</li>
+            <li className="text-amber-300">blocker: {gate.blockers.join(', ')}</li>
+          </ul>
+          <p className="mt-2 text-[10px] text-slate-400">{gate.nextOperatorStep}</p>
+        </div>
+
         <div className="rounded border border-slate-700 bg-slate-950/50 p-3" data-testid="windows-rescue-operator-run">
           <div className="font-semibold text-cyan-200">{t('devDashboard.windowsRescue.operatorRun', 'Operator-Lauf')}</div>
           <ul className="mt-2 space-y-1 text-slate-300 font-mono">
@@ -84,6 +99,13 @@ export const WindowsRescueInspectCard: React.FC<WindowsRescueInspectCardProps> =
       </div>
 
       <details className="mt-3">
+        <summary className="cursor-pointer text-[11px] text-slate-400">
+          {t('devDashboard.windowsRescue.stickGateRaw', 'Roh-JSON Stick-Gate')}
+        </summary>
+        <pre className="mt-2 max-h-32 overflow-auto rounded bg-slate-950 p-2 text-[10px] text-slate-400">{gate.rawJson}</pre>
+      </details>
+
+      <details className="mt-2">
         <summary className="cursor-pointer text-[11px] text-slate-400">
           {t('devDashboard.windowsRescue.rawJson', 'Roh-JSON (Status / kein Sample als Evidence)')}
         </summary>

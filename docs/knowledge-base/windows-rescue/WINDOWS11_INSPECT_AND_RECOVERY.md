@@ -28,7 +28,8 @@ Roadmap: `windows-laptop-rescue-inspect` — Next Prompt: `WINDOWS11_RESCUE_OPER
 
 Handoff (Stub): `docs/evidence/windows-rescue/WINDOWS11_RESCUE_OPERATOR_READONLY_SCAN_HANDOFF.md`  
 Operator HW Run: `docs/evidence/windows-rescue/WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN.md`  
-Status: `docs/evidence/windows-rescue/operator_hardware_run_status_latest.json`
+Status: `docs/evidence/windows-rescue/operator_hardware_run_status_latest.json`  
+Upstream: `docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json` — **RESCUE_STICK_NOT_WRITTEN** blockiert Inspect bis USB + W11-Boot.
 
 ## Abgrenzung
 

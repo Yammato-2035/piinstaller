@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_SYSTEMD_INIT_REBUILD_OPERATOR_RUN",
-      "next_recommended_action": "Ursache: fehlendes init=/lib/systemd/systemd im Bootappend. Fix im Tree; Operator-Rebuild mit RESCUE_SYSTEMD_REBUILD_FREIGEGEBEN=1, dann VM systemctl/curl. Kein USB, kein full-green."
+      "next_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
+      "next_recommended_action": "Hybrid-ISO validiert (Validator Exit 0). Operator: USB dd-Handoff, W11-Boot, dann Windows-Inspect. Kein Agent-dd."
     },
     {
       "id": "diagnostics",
@@ -1092,6 +1092,32 @@
       ],
       "blockers": [
         {
+          "id": "RESCUE_STICK_NOT_WRITTEN",
+          "area_id": "windows-laptop-rescue-inspect",
+          "title_de": "Kein bootfähiger Rettungsstick (USB nicht geschrieben)",
+          "title_en": "No bootable rescue stick (USB not written)",
+          "description_de": "Windows-Inspect am Zielgerät unmöglich ohne Setuphelfer-USB vom W11-Laptop gebootet.",
+          "description_en": "Windows inspect on target impossible without Setuphelfer USB booted on W11 laptop.",
+          "severity": "critical",
+          "status": "blocked",
+          "first_seen": "2026-06-05",
+          "last_seen": "2026-06-05",
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json",
+            "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md"
+          ]
+        },
+        {
+          "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
+          "area_id": "windows-laptop-rescue-inspect",
+          "title_de": "W11-Laptop nicht vom Rescue-USB gebootet",
+          "title_en": "W11 laptop not booted from rescue USB",
+          "severity": "critical",
+          "status": "blocked",
+          "first_seen": "2026-06-05",
+          "last_seen": "2026-06-05"
+        },
+        {
           "id": "windows-inspect-hw-not-run",
           "area_id": "windows-laptop-rescue-inspect",
           "title_de": "Kein echter Windows-Laptop-HW-Inspect-Lauf",
@@ -1114,8 +1140,8 @@
           "evidence_links": ["docs/knowledge-base/windows-rescue/BITLOCKER_READONLY_POLICY.md"]
         }
       ],
-      "next_prompt_id": "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING",
-      "next_recommended_action": "Rescue-Stick am W11-Laptop booten; Plan-Skript + Ingest + Telemetrie-ACK (Handoff)."
+      "next_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
+      "next_recommended_action": "ISO validiert — Operator schreibt USB (dd-Handoff), bootet W11-Laptop, dann Windows-Inspect."
     },
     {
       "id": "dev-dashboard",
