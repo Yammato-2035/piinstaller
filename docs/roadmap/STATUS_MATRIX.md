@@ -49,10 +49,12 @@
 | **Controlled ISO build prep (live-build tree)** | Grün | Tree + Bundle Validator Exit 0 | `RESCUE_CONTROLLED_ISO_BUILD_PREP_RESULT.md` |
 | **Controlled ISO build precheck (no build)** | Grün | Cleanup ok; Validate Exit 0; Operator-Build freigegeben | `controlled_iso_build_precheck_latest.json` |
 | **Controlled ISO build (2026-06-02)** | Gelb | LB_EXIT=0; Artefakt ok; Squashfs-Validator 0; **kein Boot/USB** | `CONTROLLED_RESCUE_ISO_BUILD_RESULT.md` |
-| **QEMU Guest Agent Smoke** | Rot | Run `143148`: SEND-Marker ok; **GLIBC_2.38** Gast-venv; kein Guest-Report | `QEMU_143148_FAILURE_CLASSIFICATION.md` |
-| **Runtime Governance** | Gelb | Extrahiert nach `backend/runtime_governance/`; Parity ok; Live-Validierung ausstehend | `RUNTIME_GOVERNANCE_DELEGATION_RESULT.md` |
+| **QEMU Guest Agent Smoke** | Rot / blocked | `guest_rescue_venv_glibc_mismatch` — Run `143148`: SEND ok; **GLIBC_2.38** Gast-venv; kein Guest-Report | `QEMU_143148_FAILURE_CLASSIFICATION.md`, `RESCUE_QEMU_RECURRENT_FAILURES.md` |
+| **Runtime Governance** | Gelb | `ready_for_operator_deploy_validation` — nach Deploy release/local_lab-Parity live prüfen | `RUNTIME_GOVERNANCE_DELEGATION_RESULT.md` |
 | **DCC unter release** | Grün (expected) | Dev-Routen `PROFILE_ROUTE_BLOCKED`; Ports ok — kein Portfehler | `DCC_LIVE_ACCEPTANCE_RELEASE_BASELINE.md` |
-| **DCC unter local_lab live** | Gelb | local_lab Profilwechsel in Agent-Session wegen sudo blockiert; DCC-Funktionsnachweis ausstehend | `DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md` |
+| **DCC unter local_lab live** | Gelb / blocked | `blocked_by_operator_sudo` — local_lab Live-Smoke ausstehend; DCC erst grün wenn HTTP 200 auf Dev-Routen + release restored | `DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md`, `dcc_live_acceptance_latest.json` |
+| **Roadmap-First / KB-First Governance** | Gelb | Regeln in `CURSOR_WORK_RULES.md` + `.cursor/rules/200_ROADMAP_KB_FIRST.md`; Known-Error-Triage-Template; recurrent-errors KB | `PROJECT_RULES_ROADMAP_KB_FIRST_RESULT.md`, `project_rules_roadmap_kb_first_latest.json` |
+| **Known Error Triage (Evidence)** | Gelb | `new_governance_required` — Pflicht: KB-Suche vor jedem Fix | `KNOWN_RECURRENT_ERRORS.md`, `known_error_triage.schema.json` |
 | **Developer QEMU ISO Rebuild** | Grün | Operator `rescue_developer_iso_20260602_220129` LB_EXIT=0; SHA `614cc86e…`; Autopilot wants in Squashfs; ready for smoke | `DEVELOPER_QEMU_ISO_AFTER_AUTOPILOT_SUCCESS_INGEST_RESULT.md` |
 | **Controlled ISO build execution** | Grün | Developer controlled build `rescue_developer_iso_20260531_103047` — LB_EXIT=0, summary success, permission clean after 8455e3c | `RESCUE_DEVELOPER_CONTROLLED_ISO_BUILD_RESULT.md`, `controlled_iso_build_latest_summary.json` |
 | **Rescue ISO artifact** | Grün | Developer ISO `binary.hybrid.iso` (509607936 B), SHA256 `52da3e018ccb…`; unterscheidet sich von archivierter Prior-ISO | `rescue_developer_iso_latest.sha256`, `rescue_developer_controlled_iso_build_result.json` |

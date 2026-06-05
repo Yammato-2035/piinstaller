@@ -16,15 +16,19 @@
 
 ## Geplante Reihenfolge (nach Audit)
 
-| Reihenfolge | Thema | Abhängigkeit |
-|-------------|-------|----------------|
-| 1 | API-Routen nach Domänen clustern (Dokumentation) | `api_domain_mapping.json` |
-| 2 | Evidence-/Report-Generierung entkoppeln | niedriges Risiko |
-| 3 | Rescue-ISO-Pipeline von Kern-Backup trennen | mittel |
-| 4 | UI ↔ API Contract stabilisieren | mittel |
-| 5 | Storage-Erkennung zentralisieren | mittel-hoch |
+| Reihenfolge | Thema | Status | Abhängigkeit |
+|-------------|-------|--------|----------------|
+| — | DCC Live Acceptance (`local_lab`) | `blocked_by_operator_sudo` | Operator-Smoke vor weiterer Monolith-Arbeit |
+| — | Runtime Governance Live Validation | `ready_for_operator_deploy_validation` | Deploy + release/local_lab-Parity |
+| — | QEMU GLIBC / Rescue-venv Fix | `blocked` (`guest_rescue_venv_glibc_mismatch`) | Bookworm-kompatible Python-Laufzeit |
+| 1 | API-Routen nach Domänen clustern (Dokumentation) | `deferred_until_live_validation` | `api_domain_mapping.json` |
+| 2 | Evidence-/Report-Generierung entkoppeln | `deferred_until_live_validation` | DCC + Runtime-Governance live |
+| 3 | Devserver-Agent / Guest-Report-Ingest Boundary | `deferred_until_live_validation` | QEMU GLIBC-Fix |
+| 4 | Rescue-ISO-Pipeline von Kern-Backup trennen | mittel | nach Live-Validierung |
+| 5 | UI ↔ API Contract stabilisieren | mittel | nach Live-Validierung |
+| 6 | Storage-Erkennung zentralisieren | mittel-hoch | nach Live-Validierung |
 
-*Diese Reihenfolge wird nach Abschluss von Prompt 5 konkretisiert.*
+*Nächster Monolith-Bereich erst nach DCC/Runtime-Governance-Liveprüfung und GLIBC-Track.*
 
 ## Explizit später
 

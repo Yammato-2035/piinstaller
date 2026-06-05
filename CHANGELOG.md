@@ -8,6 +8,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ## [Unreleased]
 
 ### Changed
+- **Governance:** Roadmap-First- und Knowledge-Base-First-Regeln in `CURSOR_WORK_RULES.md`, `.cursor/rules/200_ROADMAP_KB_FIRST.md`; Known-Error-Triage-Template + Schema; KB für wiederkehrende Fehler (DCC/Ports, QEMU/GLIBC, stale ISO); Next-Prompt-Registry mit 5 Tracks aktualisiert.
 - **App bootstrap:** `app_bootstrap` (Factory, Middleware-, Router-Registry, Startup-Diagnostik); Dev-Dashboard-Status in `core.dev_dashboard_status_service`; Safety-Facade; Boundary-Skript JSON-Modus.
 - **Evidence:** `docs/evidence/monolith/*`, `app_decomposition_before_rescue_iso_gate.json`; ISO-Readiness Precheck dokumentiert (kein Build in diesem Lauf).
 - **Rescue Agent / Fleet:** Contract-Stubs (`rescue_agent/`), Fleet-Heartbeat `agent_state` vs. `status=running`, DCC `RescueAgentPanel`, Live-Menü-Stub; E2EE `contract_stub_only`, nftables `apply_allowed=false`.

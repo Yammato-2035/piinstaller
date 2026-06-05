@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KnownErrorTriage",
+  "type": "object",
+  "required": [
+    "task",
+    "error_text",
+    "component",
+    "classification",
+    "same_failed_fix_path_repeated",
+    "kb_updated",
+    "roadmap_updated"
+  ],
+  "properties": {
+    "task": {
+      "type": "string",
+      "const": "known_error_triage"
+    },
+    "error_text": {
+      "type": "string"
+    },
+    "component": {
+      "type": "string"
+    },
+    "current_run_id": {
+      "type": "string"
+    },
+    "current_head": {
+      "type": "string"
+    },
+    "matches_found": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string" },
+          "evidence_path": { "type": "string" },
+          "classification": { "type": "string" },
+          "fix_summary": { "type": "string" },
+          "result": { "type": "string" }
+        }
+      }
+    },
+    "previous_fix_status": {
+      "type": "string",
+      "enum": [
+        "missing",
+        "not_deployed",
+        "not_in_artifact",
+        "incomplete",
+        "wrong_root_cause",
+        "new_secondary_cause",
+        "no_prior_match",
+        "unknown"
+      ]
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "known_error_fix_missing",
+        "known_error_fix_not_deployed",
+        "known_error_fix_not_in_artifact",
+        "known_error_fix_incomplete",
+        "known_error_wrong_root_cause",
+        "known_error_new_secondary_cause",
+        "new_error",
+        "review_required"
+      ]
+    },
+    "same_failed_fix_path_repeated": {
+      "type": "boolean"
+    },
+    "kb_updated": {
+      "type": "boolean"
+    },
+    "roadmap_updated": {
+      "type": "boolean"
+    },
+    "next_action": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

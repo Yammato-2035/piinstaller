@@ -59,6 +59,48 @@ Evidence: **`docs/evidence/deploy-profile/PROFILE_LIVE_RELEASE_ACCEPTANCE_RESULT
 
 ---
 
+## Roadmap-First-Regel (verbindlich)
+
+Jeder Lauf, der eine neue technische Entwicklungsrichtung, einen Folgeprompt, eine Architekturentscheidung, einen Refaktor-Schritt, einen Rescue-/QEMU-/Backup-/Restore-Schritt oder eine neue Fehlerbehebungsstrategie empfiehlt, muss diese Empfehlung in der Roadmap-/Status-/Next-Prompt-Struktur dokumentieren.
+
+**Pflicht:**
+
+1. Empfehlung im Abschlussbericht nennen.
+2. Passenden Roadmap-Bereich aktualisieren oder begründen, warum keiner existiert.
+3. `docs/roadmap/STATUS_MATRIX.md` oder zuständige Registry aktualisieren.
+4. `docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json` oder zuständige Next-Prompt-Datei aktualisieren.
+5. Evidence-Datei zum Lauf verlinken.
+6. Status nicht künstlich auf `green` setzen.
+7. Blocker, Deferred-Status und Review-Required-Zustände ehrlich eintragen.
+8. Wenn ein Vorschlag nicht in die Roadmap übernommen wird, muss der Grund dokumentiert werden.
+
+**Kein technischer Folgeprompt gilt als vollständig**, solange Roadmap/Status/Next-Prompt nicht aktualisiert oder bewusst begründet ausgelassen wurde.
+
+Maßgebliche Dateien: `docs/roadmap/STATUS_MATRIX.md`, `docs/roadmap/MONOLITH_REFACTOR_PLAN.md`, `docs/evidence/roadmap/NEXT_PROMPT_SELECTION_LATEST.json`, `docs/knowledge-base/dev-dashboard/ROADMAP_AND_NEXT_PROMPT_REGISTRY.md` (falls vorhanden).
+
+---
+
+## Knowledge-Base-First-Fehlersuche (verbindlich)
+
+Bei jedem Fehler, Blocker oder wiederkehrenden Symptom muss **vor einer neuen Korrektur** zuerst geprüft werden, ob der Fehler bereits bekannt ist.
+
+**Pflichtablauf:**
+
+1. Fehlertext, Exit-Code, HTTP-Code, Logmarker und betroffene Komponente extrahieren.
+2. In Knowledge Base, Evidence, Diagnostics, Roadmap und früheren Abschlussberichten nach gleichen oder ähnlichen Fehlern suchen.
+3. Frühere Fehlerklasse feststellen: gleicher Fehler / ähnlicher Fehler / Folgefehler / neuer Fehler.
+4. Frühere Korrektur prüfen: Was wurde geändert? Welche Evidence belegte den Fix? War der Fix live deployed? Im ISO/Squashfs/Bundle enthalten? Unter dem richtigen Profil getestet? Wurde der gleiche falsche Lösungsweg wiederholt?
+5. Entscheidung treffen: `known_error_fix_missing` | `known_error_fix_not_deployed` | `known_error_fix_not_in_artifact` | `known_error_fix_incomplete` | `known_error_wrong_root_cause` | `known_error_new_secondary_cause` | `new_error`
+6. Erst danach darf ein neuer Fix geplant oder umgesetzt werden.
+7. Wenn ein früherer Fix falsch oder unvollständig war, muss das ausdrücklich dokumentiert werden.
+8. Die Knowledge Base muss nach dem Lauf aktualisiert werden.
+
+**Ein Fehler darf nicht erneut mit demselben Lösungsweg bearbeitet werden**, wenn dieser Lösungsweg bereits fehlgeschlagen ist oder nicht abschließend nachgewiesen wurde.
+
+Vorlage: `docs/diagnostics/KNOWN_ERROR_TRIAGE_TEMPLATE.md` · Schema: `docs/diagnostics/known_error_triage.schema.json` · KB: `docs/knowledge-base/diagnostics/KNOWN_RECURRENT_ERRORS.md`
+
+---
+
 ## Mandatory Dashboard, Diagnostics and Next-Prompt Closure Rule
 
 Jeder künftige Cursor-Lauf muss im Abschlussbericht eindeutig und nachweisbar beantworten:
@@ -69,8 +111,28 @@ Jeder künftige Cursor-Lauf muss im Abschlussbericht eindeutig und nachweisbar b
 4. **Evidence-Verknüpfung:** Welche Evidence-Dateien tragen die Aussage? Kein Bereich darf ohne belastbare Evidence künstlich auf `green` gesetzt werden.
 5. **Kein Fake-Green:** `green` ist nur erlaubt, wenn Tests, Runtime-Smokes oder Hardware-/E2E-Nachweise den Status fachlich tragen. Sonst sind ehrlichere Zustände wie `partial_green`, `yellow`, `blocked`, `deferred` oder `review_required` zu verwenden.
 6. **Fehler werden zur Diagnostik:** Jeder wiederholbare Fehler ist als Diagnosekandidat zu behandeln, inklusive Fehlertext, Fehlercode, Ursache, Matcher, Empfehlung, Dashboard-Bereich, Evidence-Link und Testfall.
-7. **Roadmap aktualisieren:** Neue Erkenntnisse muessen gegen Roadmap, Next-Prompt-Registry und Blocker-Liste gespiegelt werden.
+7. **Roadmap aktualisieren:** Neue Erkenntnisse müssen gegen Roadmap, Next-Prompt-Registry und Blocker-Liste gespiegelt werden (siehe Roadmap-First-Regel).
 8. **Nicht ausgeführte Aktionen offen nennen:** Der Abschlussbericht muss ausdrücklich dokumentieren, was nicht ausgeführt wurde und was weiterhin `blocked` oder `deferred` bleibt.
+
+### Pflichtfelder Abschlussbericht — Roadmap / Direction
+
+| Feld | Wert |
+|------|------|
+| Roadmap updated | yes / no |
+| Status matrix updated | yes / no |
+| Next prompt updated | yes / no |
+| If no | Grund |
+
+### Pflichtfelder Abschlussbericht — Known Error Triage
+
+| Feld | Wert |
+|------|------|
+| Known-error search performed | yes / no |
+| Prior matching errors found | yes / no |
+| Previous fix reviewed | yes / no |
+| Previous fix status | missing / not_deployed / not_in_artifact / incomplete / wrong_root_cause / new_secondary_cause / no_prior_match |
+| Same failed fix path repeated | yes / no |
+| KB updated | yes / no |
 
 Diese Closure-Regel gilt zusätzlich zu allen Runtime-/Safety-Gates. Sie erlaubt keine neuen Runtime-Aktionen und ersetzt keine echten Tests.
 

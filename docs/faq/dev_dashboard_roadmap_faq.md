@@ -26,8 +26,18 @@ Mindestens:
 - die Next-Prompt-Entscheidung laut Registry
 - ausdrücklich nicht ausgeführte Aktionen
 - verbleibende `blocked`-/`deferred`-Bereiche
+- **Roadmap / Direction:** Roadmap updated, Status matrix updated, Next prompt updated (oder Grund wenn nein)
+- **Known Error Triage:** KB-Suche durchgeführt, frühere Fixes geprüft, Klassifikation, KB updated
 
 Ohne diese Punkte bleibt der Lauf fachlich unvollständig dokumentiert.
+
+## Roadmap-First-Regel
+
+Jede technische Folgeempfehlung muss in `STATUS_MATRIX.md` und `NEXT_PROMPT_SELECTION_LATEST.json` landen — nicht nur im Chat. Siehe `docs/developer/CURSOR_WORK_RULES.md`.
+
+## Knowledge-Base-First-Fehlersuche
+
+Vor jedem Fix: `docs/knowledge-base/diagnostics/KNOWN_RECURRENT_ERRORS.md` und Evidence durchsuchen. Vorlage: `docs/diagnostics/KNOWN_ERROR_TRIAGE_TEMPLATE.md`. Gleichen fehlgeschlagenen Lösungsweg nicht wiederholen.
 
 ## Wie wird der nächste Prompt ausgewählt?
 

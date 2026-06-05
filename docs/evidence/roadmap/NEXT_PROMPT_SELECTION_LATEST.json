@@ -1,8 +1,65 @@
 {
-  "schema_version": 1,
-  "selected_at": "2026-05-30T07:30:00+02:00",
-  "selected_prompt_id": "RESCUE_ISO_SYSTEMD_INIT_REBUILD_OPERATOR_RUN",
-  "reason_de": "init=/lib/systemd/systemd im Build-Tree; Rebuild und VM-Retest ausstehend.",
-  "reason_en": "init=/lib/systemd/systemd in build tree; rebuild and VM retest pending.",
-  "forbidden_next": ["USB_WRITE", "FULL_GREEN_RESCUE"]
+  "schema_version": 2,
+  "selected_at": "2026-06-05T12:00:00+02:00",
+  "selected_prompt_id": "OPERATOR_DCC_LOCAL_LAB_AND_RUNTIME_GOVERNANCE_LIVE_VALIDATION",
+  "reason_de": "Roadmap-First-Governance verankert. DCC local_lab Live-Acceptance und Runtime-Governance-Parity blockieren weitere Tracks. QEMU GLIBC-Fix danach.",
+  "reason_en": "Roadmap-first governance in place. DCC local_lab live acceptance and runtime governance parity block further tracks. QEMU GLIBC fix after.",
+  "tracks": [
+    {
+      "id": "dcc_live_acceptance",
+      "status": "blocked_by_operator_sudo",
+      "classification": "expected_release_profile_block",
+      "next_step": "Operator-local_lab-Smoke ausführen; DCC erst grün wenn local_lab live HTTP 200 auf Dev-Routen liefert und release danach wiederhergestellt ist.",
+      "evidence": [
+        "docs/evidence/dev-dashboard/DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md",
+        "docs/knowledge-base/dev-dashboard/DCC_PROFILE_AND_PORT_ERRORS.md"
+      ]
+    },
+    {
+      "id": "runtime_governance_live_validation",
+      "status": "ready_for_operator_deploy_validation",
+      "next_step": "Nach Deploy release/local_lab-Parity live prüfen.",
+      "evidence": [
+        "docs/evidence/monolith/RUNTIME_GOVERNANCE_DELEGATION_RESULT.md"
+      ]
+    },
+    {
+      "id": "qemu_guest_report_glibc_fix",
+      "status": "blocked",
+      "classification": "guest_rescue_venv_glibc_mismatch",
+      "next_step": "Rescue-Bundle auf Bookworm-kompatible Python-Laufzeit umstellen: system-python3 oder chroot-venv; danach ISO-Rebuild und QEMU-Smoke.",
+      "evidence": [
+        "docs/evidence/rescue/QEMU_143148_FAILURE_CLASSIFICATION.md",
+        "docs/knowledge-base/recovery/RESCUE_QEMU_RECURRENT_FAILURES.md"
+      ]
+    },
+    {
+      "id": "known_error_triage_governance",
+      "status": "new_governance_required",
+      "next_step": "Known-error search before every fix.",
+      "evidence": [
+        "docs/diagnostics/KNOWN_ERROR_TRIAGE_TEMPLATE.md",
+        "docs/knowledge-base/diagnostics/KNOWN_RECURRENT_ERRORS.md"
+      ]
+    },
+    {
+      "id": "monolith_next_split",
+      "status": "deferred_until_live_validation",
+      "next_step": "Nächster Bereich erst nach DCC/Runtime-Governance-Liveprüfung: Devserver-Agent / Guest-Report-Ingest Boundary oder Evidence/Run-Result-Pipeline.",
+      "evidence": [
+        "docs/roadmap/MONOLITH_REFACTOR_PLAN.md"
+      ]
+    }
+  ],
+  "forbidden_next": [
+    "USB_WRITE",
+    "FULL_GREEN_RESCUE",
+    "FULL_GREEN_DCC_WITHOUT_LOCAL_LAB_LIVE",
+    "MONOLITH_SPLIT_BEFORE_LIVE_VALIDATION"
+  ],
+  "governance_rules": {
+    "roadmap_first": "docs/developer/CURSOR_WORK_RULES.md",
+    "kb_first": "docs/knowledge-base/diagnostics/KNOWN_RECURRENT_ERRORS.md",
+    "cursor_rule": ".cursor/rules/200_ROADMAP_KB_FIRST.md"
+  }
 }
