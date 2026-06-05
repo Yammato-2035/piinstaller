@@ -1,20 +1,22 @@
 {
-  "schema_version": 6,
-  "selected_at": "2026-06-06T12:00:00+02:00",
-  "selected_prompt_id": "DEVELOPER_DCC_AND_TELEMETRY_OPERATOR_SMOKE",
+  "schema_version": 7,
+  "selected_at": "2026-06-06T23:50:00+02:00",
+  "selected_prompt_id": "DEVELOPER_DCC_TELEMETRY_DEPLOY_OPERATOR_RUN",
   "parallel_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
-  "reason_de": "DCC-Capability-Status, Telemetrie-Health-Sichtbarkeit und kompakte DCC-Statusleiste im Workspace vorbereitet. Operator-Smoke auf /opt-Runtime ausstehend (Deploy/Restart nur mit Freigabe).",
-  "reason_en": "DCC capability-status, telemetry health visibility, and compact DCC status bar prepared in workspace. Operator smoke on /opt runtime pending (deploy/restart with approval only).",
+  "reason_de": "Rescue-ISO UEFI-ready (SHA256 09b9482a…), aber DCC+Telemetrie-Live-Smoke blockiert: /opt ohne developer_capability + rescue_telemetry Router. Operator-Deploy und lokale Token-Konfiguration vor USB-Write.",
+  "reason_en": "Rescue ISO UEFI-ready but DCC+telemetry live smoke blocked: /opt missing developer_capability and rescue_telemetry router. Operator deploy and local token config required before USB write.",
   "tracks": [
     {
-      "id": "developer_dcc_capability",
-      "status": "yellow",
-      "priority": "P1",
-      "classification": "operator_smoke_prepared",
-      "next_step": "DEVELOPER_DCC_AND_TELEMETRY_OPERATOR_SMOKE",
+      "id": "developer_dcc_telemetry_deploy",
+      "status": "red",
+      "priority": "P0",
+      "classification": "opt_runtime_deploy_drift",
+      "next_step": "DEVELOPER_DCC_TELEMETRY_DEPLOY_OPERATOR_RUN",
       "evidence": [
-        "docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE_HANDOFF.md",
-        "docs/evidence/dev-dashboard/RESCUE_TELEMETRY_INGEST_OPERATOR_SMOKE_HANDOFF.md"
+        "docs/evidence/dev-dashboard/DEVELOPER_DCC_TELEMETRY_DEPLOY_OPERATOR_HANDOFF.md",
+        "docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_LOCAL_CONFIG_OPERATOR_HANDOFF.md",
+        "docs/evidence/dev-dashboard/DEVELOPER_DCC_AND_TELEMETRY_OPERATOR_SMOKE_RESULT.md",
+        "docs/evidence/dev-dashboard/developer_dcc_and_telemetry_operator_smoke_latest.json"
       ]
     },
     {
@@ -22,6 +24,7 @@
       "status": "yellow",
       "priority": "P0",
       "classification": "uefi_x64_iso_ready_for_usb_operator_write",
+      "blocked_by": ["DEVELOPER_DCC_TELEMETRY_LIVE_SMOKE_PENDING"],
       "next_step": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
       "evidence": [
         "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md"
@@ -29,12 +32,14 @@
     }
   ],
   "forbidden_next": [
+    "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT_WITHOUT_DCC_TELEMETRY_SMOKE",
     "BACKEND_RESTART_WITHOUT_OPERATOR_APPROVAL",
     "DEPLOY_WITHOUT_OPERATOR_APPROVAL"
   ],
   "governance_rules": {
+    "iso_uefi_sha256": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
     "dcc_tokens_not_in_repo": true,
     "rescue_telemetry_separate_from_dcc": true,
-    "capability_status_no_secrets": true
+    "no_usb_write_before_dcc_telemetry_smoke": true
   }
 }

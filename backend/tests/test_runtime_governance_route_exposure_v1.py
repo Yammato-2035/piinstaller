@@ -55,3 +55,11 @@ def test_release_allows_rescue_telemetry_not_dcc():
         assert dcc.allowed is True
         assert path_allowed_for_active_profile("/api/dev-dashboard/status") is False
         assert path_allowed_for_active_profile("/api/dev-dashboard/capability-status") is True
+
+
+def test_release_capability_status_never_profile_blocked_at_exposure_layer():
+    with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=False):
+        bundle = resolve_runtime_governance_bundle()
+        d = decide_route_exposure("/api/dev-dashboard/capability-status", bundle.capabilities)
+        assert d.allowed is True
+        assert path_allowed_for_active_profile("/api/dev-dashboard/capability-status") is True

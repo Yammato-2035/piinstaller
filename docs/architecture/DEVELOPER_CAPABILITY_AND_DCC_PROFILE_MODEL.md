@@ -68,3 +68,6 @@ RESCUE_TELEMETRY_INGEST_ENABLED=1
 
 - `docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE_HANDOFF.md`
 - `docs/evidence/dev-dashboard/RESCUE_TELEMETRY_INGEST_OPERATOR_SMOKE_HANDOFF.md`
+- `docs/evidence/dev-dashboard/DEVELOPER_DCC_TELEMETRY_DEPLOY_OPERATOR_HANDOFF.md` — **Pflicht vor Live-Smoke**
+- `docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_LOCAL_CONFIG_OPERATOR_HANDOFF.md`
+- Ergebnis: `docs/evidence/dev-dashboard/DEVELOPER_DCC_AND_TELEMETRY_OPERATOR_SMOKE_RESULT.md`

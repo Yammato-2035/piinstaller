@@ -46,7 +46,9 @@ Health-Antwort (Auszug, keine Secrets):
 }
 ```
 
-Diagnose parallel: `GET /api/dev-dashboard/capability-status` (DCC-Gate, ohne Secrets).
+Diagnose parallel: `GET /api/dev-dashboard/capability-status` (DCC-Gate, ohne Secrets). Muss unter Release **HTTP 200** liefern, auch wenn DCC-Routen blockiert sind.
+
+Deploy-Drift: Wenn Live `/opt` noch altes `route_exposure` ohne `developer_capability.py` hat, liefert `capability-status` fälschlich `PROFILE_ROUTE_BLOCKED` — siehe `docs/evidence/dev-dashboard/DEVELOPER_DCC_TELEMETRY_DEPLOY_OPERATOR_HANDOFF.md`.
 
 ## Authentifizierung
 

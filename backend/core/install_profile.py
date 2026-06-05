@@ -94,6 +94,9 @@ def path_allowed_for_active_profile(
     from runtime_governance.service import resolve_runtime_governance_bundle
 
     bundle = resolve_runtime_governance_bundle()
+    path_base = path.split("?")[0].rstrip("/") or "/"
+    if path_base == "/api/dev-dashboard/capability-status":
+        return True
     decision = decide_route_exposure(path, bundle.capabilities)
     if not decision.allowed:
         return False

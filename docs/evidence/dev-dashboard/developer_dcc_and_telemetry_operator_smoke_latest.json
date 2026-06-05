@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-06-06T23:45:00+02:00",
+  "status": "blocked_awaiting_operator_deploy_and_config",
+  "workspace_head": "efd3966",
+  "live_runtime_path": "/opt/setuphelfer/backend",
+  "deploy_drift": {
+    "developer_capability_py_on_opt": false,
+    "rescue_telemetry_router_on_opt": false,
+    "route_exposure_matches_workspace": false
+  },
+  "local_config": {
+    "dcc_developer_token_file_present": false,
+    "developer_env_present": false,
+    "systemd_dropin_documented": true
+  },
+  "api_smoke": {
+    "version": {
+      "http_status": 200,
+      "install_profile": "release",
+      "dev_control_enabled": false,
+      "backend_runtime_path": "/opt/setuphelfer/backend"
+    },
+    "dev_dashboard_status_no_token": {
+      "http_status": 404,
+      "code": "PROFILE_ROUTE_BLOCKED",
+      "expected": true
+    },
+    "dev_dashboard_capability_status": {
+      "http_status": 404,
+      "code": "PROFILE_ROUTE_BLOCKED",
+      "expected_http_status": 200,
+      "pass": false,
+      "root_cause": "opt_runtime_not_deployed_old_route_gating"
+    },
+    "rescue_telemetry_health": {
+      "http_status": 404,
+      "body_hint": "Not Found",
+      "expected_http_status": 200,
+      "pass": false,
+      "root_cause": "rescue_telemetry_router_missing_on_opt"
+    },
+    "dev_dashboard_status_with_token": {
+      "executed": false,
+      "reason": "no_token_file"
+    }
+  },
+  "frontend": {
+    "ui_3001_checked": false,
+    "note": "awaiting_deploy_and_operator_smoke"
+  },
+  "secrets_in_repo": false,
+  "next_prompt": "DEVELOPER_DCC_TELEMETRY_DEPLOY_OPERATOR_RUN",
+  "handoffs": [
+    "docs/evidence/dev-dashboard/DEVELOPER_DCC_TELEMETRY_DEPLOY_OPERATOR_HANDOFF.md",
+    "docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_LOCAL_CONFIG_OPERATOR_HANDOFF.md"
+  ],
+  "iso_gate": {
+    "uefi_ready": true,
+    "sha256": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
+    "usb_write_blocked_until_dcc_telemetry_smoke": true
+  }
+}
