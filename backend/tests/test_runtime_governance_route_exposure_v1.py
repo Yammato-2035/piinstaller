@@ -27,6 +27,19 @@ def test_local_lab_allows_fleet():
         assert path_allowed_for_active_profile("/api/fleet/sessions") is True
 
 
+def test_local_lab_dcc_requires_developer_capability_token():
+    with patch.dict(
+        os.environ,
+        {"SETUPHELFER_INSTALL_PROFILE": "local_lab", "DCC_DEVELOPER_TOKEN": "lab-token"},
+        clear=False,
+    ):
+        assert path_allowed_for_active_profile("/api/dev-dashboard/status") is False
+        assert path_allowed_for_active_profile(
+            "/api/dev-dashboard/status",
+            request_headers={"Authorization": "Bearer lab-token"},
+        ) is True
+
+
 def test_release_allows_rescue_telemetry_not_dcc():
     with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=False):
         bundle = resolve_runtime_governance_bundle()

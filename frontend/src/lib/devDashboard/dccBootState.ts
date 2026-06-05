@@ -78,6 +78,19 @@ export function classifyDccBootState(
     }
   }
 
+  if (
+    statusHttp === 404 &&
+    (statusCode === 'DEVELOPER_CAPABILITY_REQUIRED' ||
+      statusCode === 'DEVELOPER_CAPABILITY_NOT_CONFIGURED')
+  ) {
+    return {
+      state: 'profile_blocked_release',
+      shouldShowDcc: false,
+      dccExpectedVisible: false,
+      reason: statusCode,
+    }
+  }
+
   if (statusHttp === 200) {
     return { state: 'dcc_active', shouldShowDcc: true, dccExpectedVisible: true, reason: 'status_200' }
   }

@@ -15,6 +15,15 @@ UEFI_ERROR_CODES = {
     "isolinux_only_iso": "RESCUE-UEFI-003",
     "msi_uefi_boot_failed_confirmed": "RESCUE-UEFI-004",
     "windows_inspect_blocked_by_rescue_uefi_boot": "RESCUE-UEFI-005",
+    "bios_boot_missing": "RESCUE-UEFI-006",
+    "bootx64_without_eltorito": "RESCUE-UEFI-007",
+}
+
+PATCH_ERROR_CODES = {
+    "esp_size_invalid": "RESCUE-UEFI-PATCH-ESP-SIZE-001",
+    "mkfs_vfat_failed": "RESCUE-UEFI-PATCH-MKFS-001",
+    "grub_mkstandalone_failed": "RESCUE-UEFI-PATCH-GRUB-001",
+    "xorriso_failed": "RESCUE-UEFI-PATCH-XORRISO-001",
 }
 
 ISO_CLASSIFICATIONS = (
@@ -111,6 +120,11 @@ def classify_uefi_iso(signals: UefiIsoSignals) -> dict[str, Any]:
         )
         return _result("isolinux_only_iso", errors, tags, signals)
 
+    if signals.has_bootx64_efi and not signals.has_efi_eltorito:
+        errors.extend(["bootx64_without_eltorito", "efi_eltorito_entry_missing"])
+        tags.extend(["bootx64_without_eltorito", "uefi_boot_path_missing"])
+        return _result("bootx64_without_eltorito", errors, tags, signals)
+
     if not signals.has_bootx64_efi:
         errors.append("efi_boot_files_missing")
         tags.append("efi_boot_files_missing")
@@ -118,6 +132,10 @@ def classify_uefi_iso(signals: UefiIsoSignals) -> dict[str, Any]:
     if not signals.has_efi_eltorito:
         errors.append("efi_eltorito_entry_missing")
         tags.append("uefi_boot_path_missing")
+
+    if not signals.has_bios_boot and signals.has_efi_eltorito and signals.has_bootx64_efi:
+        errors.append("bios_boot_missing")
+        tags.append("bios_boot_missing")
 
     if errors:
         return _result("uefi_boot_incomplete", errors, tags, signals)

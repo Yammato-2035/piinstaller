@@ -30,6 +30,22 @@ class RescueIsoUefiClassifyTests(unittest.TestCase):
         self.assertIn("RESCUE-UEFI-002", codes)
         self.assertIn("RESCUE-UEFI-001", codes)
 
+    def test_bootx64_without_eltorito(self) -> None:
+        signals = UefiIsoSignals(
+            iso_exists=True,
+            sha256="abc",
+            has_bios_boot=True,
+            has_efi_eltorito=False,
+            has_bootx64_efi=True,
+            xorriso_report_excerpt="-b '/isolinux/isolinux.bin'",
+        )
+        result = classify_uefi_iso(signals)
+        self.assertFalse(result["uefi_boot_ready"])
+        self.assertEqual(result["status"], "bootx64_without_eltorito")
+        codes = {e["code"] for e in result["errors"]}
+        self.assertIn("RESCUE-UEFI-007", codes)
+        self.assertIn("RESCUE-UEFI-002", codes)
+
     def test_uefi_ready_iso(self) -> None:
         signals = UefiIsoSignals(
             iso_exists=True,

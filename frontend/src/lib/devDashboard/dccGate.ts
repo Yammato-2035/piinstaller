@@ -3,6 +3,9 @@ export const DCC_BUNDLE_FIX_MARKER = 'DCC_BOOT_DIAGNOSTICS_V1' as const
 
 export type DccGateVersionInfo = {
   dev_control_enabled?: boolean | null
+  dcc_allowed?: boolean | null
+  developer_capability_available?: boolean | null
+  developer_capability_valid?: boolean | null
   install_profile?: string | null
   runtime_ports?: {
     backend_api?: { host?: string | null; port?: number | null }
@@ -21,7 +24,14 @@ export type DccGateStatusInfo = {
 
 export type DccGateDecision =
   | { kind: 'allowed' }
-  | { kind: 'disabled'; disabledReason: 'profile_route_blocked' | 'dev_control_disabled_and_status_blocked' }
+  | {
+      kind: 'disabled'
+      disabledReason:
+        | 'profile_route_blocked'
+        | 'developer_capability_required'
+        | 'developer_capability_not_configured'
+        | 'dev_control_disabled_and_status_blocked'
+    }
   | { kind: 'error'; errorReason: 'inconsistent_or_unknown' }
 
 /**
@@ -42,6 +52,18 @@ export function decideDccVisibility(version: DccGateVersionInfo, status: DccGate
 
   if (status.httpStatus === 404 && status.code === 'PROFILE_ROUTE_BLOCKED') {
     return { kind: 'disabled', disabledReason: 'profile_route_blocked' }
+  }
+
+  if (status.httpStatus === 404 && status.code === 'DEVELOPER_CAPABILITY_REQUIRED') {
+    return { kind: 'disabled', disabledReason: 'developer_capability_required' }
+  }
+
+  if (status.httpStatus === 404 && status.code === 'DEVELOPER_CAPABILITY_NOT_CONFIGURED') {
+    return { kind: 'disabled', disabledReason: 'developer_capability_not_configured' }
+  }
+
+  if (version.dcc_allowed === false && version.dev_control_enabled === true) {
+    return { kind: 'disabled', disabledReason: 'developer_capability_required' }
   }
 
   if (version.dev_control_enabled === false) {

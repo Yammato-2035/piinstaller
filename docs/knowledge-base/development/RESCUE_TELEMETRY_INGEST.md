@@ -9,8 +9,10 @@ Rettungsstick-Telemetrie (Windows-Inspect-Metadaten) wird über **`/api/rescue/t
 | Pfad | `/api/dev-dashboard/*`, `/api/dev-server/*` | `/api/rescue/telemetry/*` |
 | Release-Profil | blockiert (`PROFILE_ROUTE_BLOCKED`) | **erlaubt** |
 | Aktivierung | Install-Profil `local_lab` / `developer` | `RESCUE_TELEMETRY_INGEST_ENABLED=1` |
-| DCC für Empfang nötig? | ja (Dev-Server) | **nein** |
-| DCC darf anzeigen? | ja | ja (read-only aus `received/` / `acks/`) |
+| DCC für Empfang nötig? | ja (Dev-Server + `DCC_DEVELOPER_TOKEN`) | **nein** |
+| DCC darf anzeigen? | ja (nur bei `dcc_allowed`) | ja (read-only aus `received/` / `acks/`) |
+
+Token-Strennung: `DCC_DEVELOPER_TOKEN` ≠ `RESCUE_TELEMETRY_INGEST_TOKEN` — siehe `docs/architecture/DEVELOPER_CAPABILITY_AND_DCC_PROFILE_MODEL.md`.
 
 Vertrag: `docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md`
 

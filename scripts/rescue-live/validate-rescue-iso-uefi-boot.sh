@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 # Read-only: prüft UEFI-x64-Bootfähigkeit einer Rescue-Hybrid-ISO.
-# Exit 0  = UEFI-x64-ready (BIOS + EFI El Torito + BOOTX64.EFI)
+#
+# Exit  0 = UEFI-x64-ready (BIOS + EFI El Torito + BOOTX64.EFI)
 # Exit 30 = Usage
 # Exit 31 = ISO fehlt
 # Exit 32 = RESCUE-UEFI-001 efi_boot_files_missing
 # Exit 33 = RESCUE-UEFI-002 efi_eltorito_entry_missing
-# Exit 34 = RESCUE-UEFI-003 isolinux_only_iso
-# Exit 35 = RESCUE-UEFI-004 msi_uefi_boot_failed_confirmed (optional --require-target-boot)
-# Exit 36 = RESCUE-UEFI-005 windows_inspect_blocked_by_rescue_uefi_boot (optional --emit-inspect-blocker)
+# Exit 34 = RESCUE-UEFI-003 isolinux_only_iso (BIOS-only, alle UEFI-Signale fehlen)
+# Exit 35 = RESCUE-UEFI-004 msi_uefi_boot_failed_confirmed (--require-target-boot)
+# Exit 36 = RESCUE-UEFI-005 windows_inspect_blocked (--emit-inspect-blocker)
+# Exit 37 = RESCUE-UEFI-006 bios_boot_missing (UEFI-Pfad teilweise, BIOS-Boot fehlt)
+# Exit 38 = RESCUE-UEFI-007 bootx64_without_eltorito (BOOTX64.EFI ohne EFI-El-Torito)
 set -euo pipefail
 
 ISO=""
@@ -18,12 +21,14 @@ usage() {
   cat <<EOF
 Usage: $0 [--require-target-boot] [--emit-inspect-blocker] /path/to/binary.hybrid.iso
 
-Checks:
-  - ISO exists, SHA256 printable
-  - xorriso El Torito report contains BIOS boot (isolinux)
-  - xorriso El Torito report contains EFI alt-boot or EFI image
-  - /EFI/BOOT/BOOTX64.EFI present on ISO (or in EFI El Torito image)
-  - does not classify isolinux-only ISO as UEFI-ready
+Classification (first matching failure wins after ISO-exists check):
+  31  ISO missing
+  34  isolinux_only_iso — BIOS hybrid, no UEFI files and no EFI El Torito
+  38  bootx64_without_eltorito — /EFI/BOOT/BOOTX64.EFI present, EFI El Torito missing
+  32  efi_boot_files_missing — no BOOTX64.EFI (partial UEFI path possible)
+  33  efi_eltorito_entry_missing — EFI El Torito missing (no BOOTX64 on ISO tree)
+  37  bios_boot_missing — UEFI signals present, isolinux BIOS boot missing
+  0   full green — BIOS + EFI El Torito + BOOTX64.EFI
 EOF
   exit 30
 }
@@ -84,6 +89,7 @@ if [[ "$_has_bootx64" != true ]]; then
   done
 fi
 
+# 1) Classic isolinux-only hybrid (pre-patch build output)
 if [[ "$_has_bios" == true && "$_has_efi_eltorito" != true && "$_has_bootx64" != true ]]; then
   echo "RESCUE-UEFI-003: isolinux_only_iso (BIOS hybrid without UEFI path)" >&2
   echo "RESCUE-UEFI-002: efi_eltorito_entry_missing" >&2
@@ -91,14 +97,32 @@ if [[ "$_has_bios" == true && "$_has_efi_eltorito" != true && "$_has_bootx64" !=
   exit 34
 fi
 
+# 2) BOOTX64 on ISO tree but no EFI El Torito (incomplete patch)
+if [[ "$_has_bootx64" == true && "$_has_efi_eltorito" != true ]]; then
+  echo "RESCUE-UEFI-007: bootx64_without_eltorito (/EFI/BOOT/BOOTX64.EFI present, EFI El Torito missing)" >&2
+  echo "RESCUE-UEFI-002: efi_eltorito_entry_missing" >&2
+  exit 38
+fi
+
+# 3) No BOOTX64 (may have partial UEFI metadata)
 if [[ "$_has_bootx64" != true ]]; then
   echo "RESCUE-UEFI-001: efi_boot_files_missing (/EFI/BOOT/BOOTX64.EFI absent)" >&2
+  if [[ "$_has_efi_eltorito" != true ]]; then
+    echo "RESCUE-UEFI-002: efi_eltorito_entry_missing" >&2
+  fi
   exit 32
 fi
 
+# 4) BOOTX64 present but EFI El Torito still missing
 if [[ "$_has_efi_eltorito" != true ]]; then
   echo "RESCUE-UEFI-002: efi_eltorito_entry_missing" >&2
   exit 33
+fi
+
+# 5) UEFI path present but BIOS/isolinux boot missing
+if [[ "$_has_bios" != true ]]; then
+  echo "RESCUE-UEFI-006: bios_boot_missing (UEFI path present, isolinux BIOS boot missing)" >&2
+  exit 37
 fi
 
 if [[ "$REQUIRE_TARGET_BOOT" == true ]]; then

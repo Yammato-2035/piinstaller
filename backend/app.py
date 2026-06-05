@@ -255,16 +255,24 @@ async def debug_request_id_middleware(request, call_next):
 
 async def install_profile_route_gate_middleware(request, call_next):
     """Block Dev/Lab API paths when install profile capability is off (e.g. release)."""
+    from core.developer_capability import developer_capability_block_payload, is_dcc_route_allowed
     from core.install_profile import path_allowed_for_active_profile
+    from runtime_governance.service import resolve_runtime_governance_bundle
 
-    if not path_allowed_for_active_profile(request.url.path):
+    path = request.url.path
+    headers = {k: v for k, v in request.headers.items()}
+    if not path_allowed_for_active_profile(path, request_headers=headers):
+        bundle = resolve_runtime_governance_bundle()
+        _allowed, block_code = is_dcc_route_allowed(
+            path=path,
+            install_profile=bundle.profile.name,
+            dev_control_enabled=bundle.capabilities.dev_control_enabled,
+            request_headers=headers,
+        )
+        code = block_code or "PROFILE_ROUTE_BLOCKED"
         return JSONResponse(
             status_code=404,
-            content={
-                "status": "error",
-                "code": "PROFILE_ROUTE_BLOCKED",
-                "path": request.url.path,
-            },
+            content=developer_capability_block_payload(path, code),
         )
     return await call_next(request)
 
@@ -4121,6 +4129,14 @@ async def get_version():
         errs = list(body.get("profile_gate_errors") or [])
         errs.extend(body.get("frontend_profile_audit_errors") or [])
         body["profile_gate_errors"] = errs
+    from core.developer_capability import developer_capability_status_for_api
+
+    body.update(
+        developer_capability_status_for_api(
+            install_profile=state.install_profile,
+            dev_control_enabled=state.dev_control_enabled,
+        )
+    )
     return inject_router_diagnostics(body)
 
 

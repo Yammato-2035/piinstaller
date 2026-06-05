@@ -1,52 +1,47 @@
 {
-  "schema_version": 2,
-  "selected_at": "2026-06-05T22:45:00+02:00",
-  "selected_prompt_id": "RESCUE_TELEMETRY_INGEST_OPERATOR_SMOKE",
-  "reason_de": "Separater Ingest-Vertrag implementiert und getestet (DCC blockiert, /api/rescue/telemetry erlaubt). Nächster Schritt: Operator aktiviert RESCUE_TELEMETRY_INGEST_ENABLED=1 am laufenden Backend (Restart-Freigabe) und führt Live-Smoke aus.",
-  "reason_en": "Separate ingest contract implemented and tested (DCC blocked, /api/rescue/telemetry allowed). Next: operator enables RESCUE_TELEMETRY_INGEST_ENABLED=1 on running backend (restart approval) and runs live smoke.",
-  "completed_tracks": [
-    "RESCUE_TELEMETRY_INGEST_SEPARATE_FROM_DCC"
-  ],
+  "schema_version": 3,
+  "selected_at": "2026-06-05T23:15:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
+  "parallel_prompt_id": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE",
+  "reason_de": "UEFI-Patch-Skript repariert (mkfs.vfat 16 MiB ESP). Operator muss sudo --in-place Patch + Validator Exit 0 ausführen. DCC-Capability-Modell statisch implementiert — Runtime-Smoke separat.",
+  "reason_en": "UEFI patch script fixed (16 MiB ESP via mkfs.vfat -C). Operator must run sudo in-place patch and UEFI validator exit 0. DCC capability model implemented statically — runtime smoke separate.",
   "tracks": [
     {
-      "id": "rescue_telemetry_ingest",
+      "id": "rescue_iso_uefi_patch",
       "status": "yellow",
-      "priority": "P1",
-      "classification": "awaiting_operator_backend_restart",
-      "next_step": "RESCUE_TELEMETRY_INGEST_OPERATOR_SMOKE — env + systemd drop-in oder Restart-Freigabe.",
+      "priority": "P0",
+      "classification": "patch_script_fixed_awaiting_operator",
+      "next_step": "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
       "evidence": [
-        "docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md",
-        "docs/knowledge-base/development/RESCUE_TELEMETRY_INGEST.md",
-        "backend/tests/test_rescue_telemetry_ingest_v1.py"
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_FAILURE_TRIAGE.md",
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_OPERATOR_HANDOFF.md"
       ]
     },
     {
-      "id": "rescue_iso_uefi_x64_rebuild",
-      "status": "blocked",
-      "priority": "P0",
-      "classification": "blocked_by_operator_confirmation",
-      "next_step": "RESCUE_ISO_UEFI_X64_FAILURE_TRIAGE — Operator sudo + RESCUE_UEFI_REBUILD_FREIGEGEBEN=1.",
+      "id": "developer_dcc_capability",
+      "status": "yellow",
+      "priority": "P1",
+      "classification": "partial_green_awaiting_runtime_smoke",
+      "next_step": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RESULT.md"
+        "docs/architecture/DEVELOPER_CAPABILITY_AND_DCC_PROFILE_MODEL.md",
+        "docs/evidence/dev-dashboard/DEVELOPER_CAPABILITY_DCC_MODEL_RESULT.md"
       ]
     },
     {
       "id": "windows_laptop_rescue_inspect",
       "status": "blocked_upstream",
-      "blocked_by": [
-        "RESCUE_ISO_UEFI_X64_NOT_READY"
-      ]
+      "blocked_by": ["RESCUE_ISO_UEFI_X64_NOT_READY", "RESCUE_STICK_NOT_WRITTEN"]
     }
   ],
   "forbidden_next": [
-    "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
     "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
-    "WINDOWS11_REPARTITION_EXECUTION",
-    "DUALBOOT_INSTALL_EXECUTION",
+    "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
     "BACKEND_RESTART_WITHOUT_OPERATOR_APPROVAL"
   ],
   "governance_rules": {
-    "roadmap_first": "docs/developer/CURSOR_WORK_RULES.md",
-    "selection_rule": "Telemetry ingest code complete; live smoke requires operator env + backend restart approval."
+    "uefi_validator_exit_0_required_before_usb": true,
+    "dcc_token_not_in_repo_or_evidence": true,
+    "rescue_telemetry_separate_from_dcc": true
   }
 }

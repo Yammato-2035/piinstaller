@@ -706,10 +706,21 @@
             "docs/evidence/runtime-results/rescue/RESCUE_ISO_MANUAL_OPERATOR_BUILD_CLASSIFICATION.md",
             "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
           ]
+        {
+          "id": "rescue-uefi-patch-mkfs-esp-size-2026-06-05",
+          "area_id": "rescue-stick",
+          "text_de": "UEFI-Patch scheiterte an mkfs.vfat auf 4 MiB ESP. Fix: mkfs.vfat -C 32768 (16 MiB). Operator-Patch ausstehend.",
+          "text_en": "UEFI patch failed on mkfs.vfat with 4 MiB ESP. Fix: mkfs.vfat -C 32768 (16 MiB). Operator patch pending.",
+          "created_at": "2026-06-05",
+          "author": "Cursor",
+          "evidence_links": [
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_FAILURE_TRIAGE.md",
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_OPERATOR_HANDOFF.md"
+          ]
         }
       ],
-      "next_prompt_id": "RESCUE_ISO_UEFI_X64_FAILURE_TRIAGE",
-      "next_recommended_action": "Operator-Run blockiert (sudo/Freigabe). Kanonische ISO weiter isolinux-only Exit 34. Operator: clean+rebuild+sudo patch laut RESULT-Handoff."
+      "next_prompt_id": "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
+      "next_recommended_action": "ISO gebaut (LB_EXIT=0), isolinux-only Exit 34. Operator: sudo patch --in-place, UEFI-Validator Exit 0, dann USB-Write-Prompt."
     },
     {
       "id": "diagnostics",
@@ -1172,6 +1183,36 @@
         "docs/evidence/dev-dashboard/DEV_DASHBOARD_API_TEST_SKIP_TRIAGE.md"
       ],
       "milestones": [
+        {
+          "id": "dev-dashboard-developer-capability-token",
+          "title_de": "Developer-Capability-Token für DCC",
+          "title_en": "Developer capability token for DCC",
+          "status": "yellow",
+          "progress_percent": 70,
+          "planned_start": "2026-06-05",
+          "planned_end": null,
+          "completed_at": null,
+          "evidence_links": [
+            "docs/architecture/DEVELOPER_CAPABILITY_AND_DCC_PROFILE_MODEL.md",
+            "docs/evidence/dev-dashboard/DEVELOPER_CAPABILITY_DCC_MODEL_RESULT.md",
+            "backend/tests/test_developer_capability_v1.py"
+          ],
+          "tasks": [
+            {
+              "id": "dcc-capability-core-and-gate",
+              "title_de": "Core-Modul + Route-Gate + /api/version Felder",
+              "title_en": "Core module + route gate + /api/version fields",
+              "status": "green",
+              "progress_percent": 100,
+              "evidence_links": [
+                "docs/evidence/dev-dashboard/DEVELOPER_CAPABILITY_DCC_MODEL_RESULT.md"
+              ],
+              "blocker_refs": [],
+              "next_action_de": "Runtime-Smoke mit Operator-Token.",
+              "next_action_en": "Runtime smoke with operator token."
+            }
+          ]
+        },
         {
           "id": "dev-dashboard-command-logging-readonly",
           "title_de": "Read-only Command-Run-Logging",

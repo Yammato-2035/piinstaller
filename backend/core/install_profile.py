@@ -84,13 +84,28 @@ def get_install_profile_state() -> InstallProfileState:
     return materialize_install_profile_state()
 
 
-def path_allowed_for_active_profile(path: str) -> bool:
+def path_allowed_for_active_profile(
+    path: str,
+    request_headers: dict[str, str] | None = None,
+) -> bool:
     """HTTP gate: block Dev/Lab API prefixes when capability off."""
+    from core.developer_capability import is_dcc_route_allowed
     from runtime_governance.route_exposure import decide_route_exposure
     from runtime_governance.service import resolve_runtime_governance_bundle
 
     bundle = resolve_runtime_governance_bundle()
-    return decide_route_exposure(path, bundle.capabilities).allowed
+    decision = decide_route_exposure(path, bundle.capabilities)
+    if not decision.allowed:
+        return False
+    if path.split("?")[0].startswith("/api/dev-dashboard"):
+        allowed, _code = is_dcc_route_allowed(
+            path=path,
+            install_profile=bundle.profile.name,
+            dev_control_enabled=bundle.capabilities.dev_control_enabled,
+            request_headers=request_headers,
+        )
+        return allowed
+    return True
 
 
 def should_register_fleet_router() -> bool:

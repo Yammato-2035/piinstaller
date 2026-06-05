@@ -21,6 +21,24 @@ describe('dccGate decideDccVisibility', () => {
     })
   })
 
+  it('disables on 404 DEVELOPER_CAPABILITY_REQUIRED', () => {
+    const version = { dev_control_enabled: true, install_profile: 'developer', dcc_allowed: false }
+    const status = { httpStatus: 404 as const, code: 'DEVELOPER_CAPABILITY_REQUIRED' }
+    expect(decideDccVisibility(version, status)).toEqual({
+      kind: 'disabled',
+      disabledReason: 'developer_capability_required',
+    })
+  })
+
+  it('disables when version reports dcc_allowed=false on developer profile', () => {
+    const version = { dev_control_enabled: true, install_profile: 'developer', dcc_allowed: false }
+    const status = { httpStatus: 404 as const, code: 'DEVELOPER_CAPABILITY_NOT_CONFIGURED' }
+    expect(decideDccVisibility(version, status)).toEqual({
+      kind: 'disabled',
+      disabledReason: 'developer_capability_not_configured',
+    })
+  })
+
   it('disables when dev_control_enabled=false and status is blocked (non-200)', () => {
     const version = { dev_control_enabled: false, install_profile: 'release' }
     const status = { httpStatus: 403 as const, code: 'SOME_OTHER' }
