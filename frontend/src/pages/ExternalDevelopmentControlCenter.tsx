@@ -35,7 +35,7 @@ import { clearGovernanceHistory } from '../lib/devDashboard/governanceHistory'
 import type { CockpitViewMode, GovernanceAreaStatus, Traffic } from '../lib/devDashboard/governanceTypes'
 import { useGovernanceMonitor } from '../lib/devDashboard/useGovernanceMonitor'
 import { API_STATUS_PATH } from '../lib/devDashboard/constants'
-import { buildFullApiUrl, extractDccPortsFromVersion } from '../lib/devDashboard/dccGate'
+import { buildFullApiUrl, extractDccPortsFromVersion, type DccGateVersionInfo } from '../lib/devDashboard/dccGate'
 import {
   classifyDccBootState,
   hasDccBundleMarkers,
@@ -52,6 +52,16 @@ import {
   buildId,
   frontendBuildProfile,
 } from '../config/buildProfile'
+import { DccCompactStatusBar } from '../components/dev-dashboard/DccCompactStatusBar'
+import {
+  fetchDccLiveStatus,
+  type DccLiveStatusSnapshot,
+} from '../lib/devDashboard/dccLiveStatus'
+import {
+  fetchDccApi,
+  readStoredDccDeveloperToken,
+  writeStoredDccDeveloperToken,
+} from '../lib/devDashboard/dccDeveloperToken'
 
 function trafficDot(status: Traffic): string {
   if (status === 'green') return 'bg-emerald-500'
@@ -100,31 +110,60 @@ type DevControlDisabledDebug = {
     install_profile?: string | null
     runtime_ports?: unknown
   } | null
+  liveStatus?: DccLiveStatusSnapshot | null
 }
 
 export const DevControlDisabledPage: React.FC<{
   debug: DevControlDisabledDebug
   onRetry: () => void
   retryDisabled?: boolean
-}> = ({ debug, onRetry, retryDisabled }) => {
+  onTokenSaved?: () => void
+}> = ({ debug, onRetry, retryDisabled, onTokenSaved }) => {
   const { t } = useTranslation()
+  const [tokenDraft, setTokenDraft] = useState(() => readStoredDccDeveloperToken() ?? '')
   const ports = extractDccPortsFromVersion((debug.versionPayload as any) ?? null)
   const profile = debug.versionPayload?.install_profile ?? buildProfileMeta.frontend_build_profile
+  const cap = debug.liveStatus?.capability ?? null
+  const blockReason =
+    debug.lastDevDashboardStatusCode ??
+    cap?.reason ??
+    'PROFILE_ROUTE_BLOCKED'
+  const telemetryReachable = (debug.liveStatus?.telemetryHttp ?? 0) === 200
+
+  const saveToken = () => {
+    writeStoredDccDeveloperToken(tokenDraft.trim() || null)
+    onTokenSaved?.()
+    onRetry()
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 bg-slate-950" data-testid="dev-control-disabled">
-      <div className="max-w-lg rounded-xl border border-slate-700 bg-slate-900/80 p-6 text-center">
-        <h1 className="text-lg font-semibold text-white mb-2">{t('devDashboard.profileDisabled.title', 'Development Control nicht verfügbar')}</h1>
+    <div className="min-h-screen flex flex-col items-center justify-start p-8 bg-slate-950" data-testid="dev-control-disabled">
+      <div className="max-w-3xl w-full">
+        <DccCompactStatusBar
+          live={debug.liveStatus ?? null}
+          statusHttp={debug.lastDevDashboardStatusHttpStatus ?? 0}
+          versionPayload={(debug.versionPayload as any) ?? null}
+        />
+
+        <div className="rounded-xl border border-slate-700 bg-slate-900/80 p-6 text-center">
+        <h1 className="text-lg font-semibold text-white mb-2">
+          {t('devDashboard.profileDisabled.blockedTitle', 'DCC blockiert')}
+        </h1>
 
         <p className="text-sm text-slate-400">
-          {t('devDashboard.profileDisabled.body', 'Dieses Build-Profil ({{profile}}) enthält keine internen Entwicklungsfunktionen.', {
-            profile,
-          })}
+          {t('devDashboard.profileDisabled.blockedBody', 'Grund: {{reason}}', { reason: blockReason })}
         </p>
 
         <p className="text-xs text-slate-500 mt-3 font-mono">profile={profile}</p>
 
         <div className="mt-4 text-left text-xs text-slate-400 space-y-2 border-t border-slate-700 pt-4">
+          <p>
+            {t(
+              'devDashboard.profileDisabled.telemetryReachable',
+              'Telemetrie-Health: {{state}}',
+              { state: telemetryReachable ? 'erreichbar' : 'nicht erreichbar' },
+            )}
+          </p>
           <p>{t('devDashboard.profileDisabled.portHint', 'Dies ist kein Portfehler. Interne Dev-Routen sind blockiert (siehe Debug-Status), nicht „Backend down“.')}</p>
 
           <ul className="font-mono text-slate-500 list-disc pl-4 space-y-1">
@@ -152,6 +191,37 @@ export const DevControlDisabledPage: React.FC<{
             <p className="text-slate-400">{t('devDashboard.profileDisabled.gatingErrorHint', 'Wenn /api/dev-dashboard/status HTTP 200 liefert, ist dies ein Frontend-Gating-Fehler.')}</p>
           </div>
 
+          <div className="rounded border border-slate-700 bg-slate-950/40 p-3 space-y-2" data-testid="dcc-operator-token-hint">
+            <p className="text-slate-300 font-semibold">
+              {t('devDashboard.profileDisabled.operatorAction', 'Nächste lokale Operator-Aktion')}
+            </p>
+            <ol className="list-decimal pl-4 space-y-1 text-slate-400">
+              <li>{t('devDashboard.profileDisabled.operatorEnv', 'Optional /etc/setuphelfer/developer.env: DCC_DEVELOPER_ENABLED=1')}</li>
+              <li>{t('devDashboard.profileDisabled.operatorTokenFile', 'Token-Datei /etc/setuphelfer/dcc_developer.token (nicht ins Repo)')}</li>
+              <li>{t('devDashboard.profileDisabled.operatorHeader', 'Header X-Setuphelfer-Developer-Token oder unten lokal speichern')}</li>
+              <li>{t('devDashboard.profileDisabled.operatorRestart', 'Backend-Restart nur mit Operator-Freigabe nach Konfigurationsänderung')}</li>
+            </ol>
+            <label className="block text-left text-slate-400">
+              <span className="text-[10px] uppercase tracking-wide">{t('devDashboard.profileDisabled.localToken', 'Lokaler DCC-Token (nur Browser)')}</span>
+              <input
+                type="password"
+                autoComplete="off"
+                className="mt-1 w-full rounded border border-slate-600 bg-slate-900 px-2 py-1 text-slate-200 font-mono text-xs"
+                value={tokenDraft}
+                onChange={(e) => setTokenDraft(e.target.value)}
+                data-testid="dcc-local-token-input"
+              />
+            </label>
+            <button
+              type="button"
+              className="btn-secondary text-xs"
+              onClick={saveToken}
+              data-testid="dcc-local-token-save"
+            >
+              {t('devDashboard.profileDisabled.saveTokenRetry', 'Token speichern & erneut prüfen')}
+            </button>
+          </div>
+
           <p className="text-slate-500">{t('devDashboard.profileDisabled.docsHint', 'Siehe docs/dev-dashboard/PORTS_AND_PROFILES.md')}</p>
         </div>
 
@@ -165,6 +235,7 @@ export const DevControlDisabledPage: React.FC<{
           >
             {t('devDashboard.profileDisabled.retry', 'DCC-Status erneut prüfen')}
           </button>
+        </div>
         </div>
       </div>
     </div>
@@ -185,6 +256,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
     reason: 'probe_pending',
   })
   const [gateLoading, setGateLoading] = useState(true)
+  const [liveStatus, setLiveStatus] = useState<DccLiveStatusSnapshot | null>(null)
   const bundleMarkers = useMemo(() => hasDccBundleMarkers(), [])
 
   const [summary, setSummary] = useState<ControlCenterSummary | null>(null)
@@ -235,7 +307,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       let statusCode: string | null = null
       let statusFetchFailed = false
       try {
-        const r = await fetchApi(`${API_STATUS_PATH}?${statusQuery}`, { cache: 'no-store' })
+        const r = await fetchDccApi(`${API_STATUS_PATH}?${statusQuery}`, { cache: 'no-store' })
         statusHttpStatus = r.status
         if (!r.ok) {
           const body = await r.json().catch(() => ({}))
@@ -245,6 +317,9 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
         statusHttpStatus = 0
         statusFetchFailed = true
       }
+
+      const versionInfo = versionPayload as DccGateVersionInfo | null
+      const live = await fetchDccLiveStatus(versionInfo)
 
       const probe: DccBootProbeResult = {
         versionHttp: versionHttpStatus,
@@ -267,6 +342,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
 
       if (cancelled) return
       setBootProbe(probe)
+      setLiveStatus(live)
       setBootClassification(classifyDccBootState(probe, bundleMarkers.ok))
       setGateLoading(false)
     }
@@ -418,6 +494,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
         lastDevDashboardStatusHttpStatus: bootProbe.statusHttp,
         lastDevDashboardStatusCode: bootProbe.statusCode,
         versionPayload: bootProbe.versionPayload,
+        liveStatus,
       }
     : null
 
@@ -501,6 +578,11 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
 
     return (
     <div className="max-w-[1600px] mx-auto px-4 py-5" data-testid="external-development-control-center">
+      <DccCompactStatusBar
+        live={liveStatus}
+        statusHttp={bootProbe?.statusHttp ?? 0}
+        versionPayload={(bootProbe?.versionPayload as DccGateVersionInfo | null) ?? null}
+      />
       <header className="flex flex-wrap items-start justify-between gap-4 mb-4 border-b border-slate-700 pb-4">
         <div>
           <h1 className="text-xl font-semibold text-white flex items-center gap-2">

@@ -97,28 +97,90 @@ def is_rescue_telemetry_ingest_enabled() -> bool:
     return load_rescue_telemetry_ingest_config().enabled
 
 
+def _runtime_status_path(cfg: RescueTelemetryIngestConfig) -> Path:
+    return cfg.storage_root / "runtime_status.json"
+
+
+def _read_runtime_status(cfg: RescueTelemetryIngestConfig) -> dict[str, Any]:
+    path = _runtime_status_path(cfg)
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _write_runtime_status(cfg: RescueTelemetryIngestConfig, patch: dict[str, Any]) -> None:
+    current = _read_runtime_status(cfg)
+    current.update(patch)
+    _write_json_atomic(_runtime_status_path(cfg), current)
+
+
+def _scan_latest_ack(cfg: RescueTelemetryIngestConfig) -> tuple[str | None, str | None]:
+    if not cfg.ack_dir.is_dir():
+        return None, None
+    latest_path: Path | None = None
+    latest_mtime = 0.0
+    for path in cfg.ack_dir.glob("*.json"):
+        if not path.is_file():
+            continue
+        mtime = path.stat().st_mtime
+        if mtime >= latest_mtime:
+            latest_mtime = mtime
+            latest_path = path
+    if latest_path is None:
+        return None, None
+    try:
+        body = json.loads(latest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return latest_path.stem, None
+    if isinstance(body, dict):
+        return str(body.get("ack_id") or latest_path.stem), str(body.get("received_at") or "") or None
+    return latest_path.stem, None
+
+
 def build_health_payload(*, config: RescueTelemetryIngestConfig | None = None) -> dict[str, Any]:
     cfg = config or load_rescue_telemetry_ingest_config()
     storage_ok = False
     queue_depth = 0
+    queue_available = False
     if cfg.storage_root.exists() or _ensure_storage_dirs(cfg):
         storage_ok = cfg.storage_root.is_dir()
+        queue_available = cfg.queue_dir.is_dir() or storage_ok
         if cfg.queue_dir.is_dir():
             queue_depth = sum(1 for p in cfg.queue_dir.glob("*.json") if p.is_file())
+    runtime = _read_runtime_status(cfg)
+    last_ack_id, scanned_at = _scan_latest_ack(cfg)
+    last_ingest_at = runtime.get("last_ingest_at") or scanned_at
+    last_ack_id = runtime.get("last_ack_id") or last_ack_id
+    last_error_code = runtime.get("last_error_code")
+    if not cfg.enabled and not last_error_code:
+        last_error_code = TELEMETRY_ERROR_CODES["disabled"]
     warnings: list[str] = []
     if cfg.enabled and cfg.hmac_required and not cfg.ingest_token_configured:
         warnings.append("token_required_for_hmac_but_not_configured")
     return {
+        "status": "ok",
         "service": "rescue_telemetry_ingest",
         "enabled": cfg.enabled,
+        "ingest_enabled": cfg.enabled,
         "ingest_path": "/api/rescue/telemetry/v1/ingest",
         "health_path": "/api/rescue/telemetry/health",
+        "profile_gate_independent": True,
         "dcc_required": False,
         "profile_route_blocked_for_dcc_only": True,
         "auth_modes": ["bearer_token", "hmac_sha256_optional"],
         "mtls_documented": True,
         "storage_ok": storage_ok,
+        "queue_available": queue_available,
+        "queue_path_configured": bool(str(cfg.queue_dir)),
         "queue_depth": queue_depth,
+        "last_ingest_at": last_ingest_at,
+        "last_ack_id": last_ack_id,
+        "last_error_code": last_error_code,
+        "secrets_exposed": False,
         "warnings": warnings,
         "checked_at": utc_now_iso(),
     }
@@ -240,6 +302,7 @@ def process_telemetry_ingest(
 ) -> dict[str, Any]:
     cfg = config or load_rescue_telemetry_ingest_config()
     if not cfg.enabled:
+        _write_runtime_status(cfg, {"last_error_code": TELEMETRY_ERROR_CODES["disabled"]})
         return {
             "http_status": 503,
             "body": {
@@ -251,6 +314,7 @@ def process_telemetry_ingest(
 
     ok_auth, auth_code = verify_ingest_auth(headers=headers, body_bytes=body_bytes, config=cfg)
     if not ok_auth:
+        _write_runtime_status(cfg, {"last_error_code": auth_code})
         return {
             "http_status": 401,
             "body": {"status": "error", "code": auth_code, "message": "Telemetry ingest authentication failed."},
@@ -258,6 +322,7 @@ def process_telemetry_ingest(
 
     valid, schema_code = validate_envelope(payload)
     if not valid:
+        _write_runtime_status(cfg, {"last_error_code": schema_code})
         return {
             "http_status": 422,
             "body": {"status": "error", "code": schema_code, "message": "Invalid telemetry envelope."},
@@ -269,6 +334,7 @@ def process_telemetry_ingest(
         headers.get("x-setuphelfer-payload-hash") or headers.get("X-Setuphelfer-Payload-Hash") or ""
     ).strip().lower()
     if not declared_hash or declared_hash != server_hash:
+        _write_runtime_status(cfg, {"last_error_code": TELEMETRY_ERROR_CODES["hash_mismatch"]})
         return {
             "http_status": 409,
             "body": {
@@ -279,6 +345,7 @@ def process_telemetry_ingest(
             },
         }
     if client_hash and client_hash != server_hash:
+        _write_runtime_status(cfg, {"last_error_code": TELEMETRY_ERROR_CODES["hash_mismatch"]})
         return {
             "http_status": 409,
             "body": {
@@ -345,4 +412,12 @@ def process_telemetry_ingest(
         "hash_match": True,
     }
     _write_json_atomic(ack_path, ack_body)
+    _write_runtime_status(
+        cfg,
+        {
+            "last_ingest_at": received_at,
+            "last_ack_id": ack_id,
+            "last_error_code": None,
+        },
+    )
     return {"http_status": 200, "body": ack_body}

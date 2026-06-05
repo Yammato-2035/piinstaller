@@ -20,8 +20,9 @@ def decide_route_exposure(path: str, capabilities: RuntimeCapabilities) -> Route
         return RouteExposureDecision(False, "PROFILE_ROUTE_BLOCKED")
     if p.startswith("/api/rescue-remote") and not capabilities.rescue_remote_enabled:
         return RouteExposureDecision(False, "PROFILE_ROUTE_BLOCKED")
-    if p.startswith("/api/dev-dashboard") and not capabilities.dev_control_enabled:
-        return RouteExposureDecision(False, "PROFILE_ROUTE_BLOCKED")
+    if p.startswith("/api/dev-dashboard"):
+        # DCC access is enforced by developer_capability (token + profile), not dev_control alone.
+        return RouteExposureDecision(True, None)
     if p.startswith("/api/dev-server") and not capabilities.dev_server_enabled:
         return RouteExposureDecision(False, "PROFILE_ROUTE_BLOCKED")
     return RouteExposureDecision(True, None)

@@ -1,11 +1,22 @@
 {
-  "schema_version": 5,
-  "selected_at": "2026-06-06T00:00:00+02:00",
-  "selected_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
-  "parallel_prompt_id": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE",
-  "reason_de": "Kanonische ISO UEFI-x64 validiert (Validator Exit 0, SHA256 09b9482a…). Nächster Engpass: Operator USB-Write + MSI-Boot. DCC-Capability-Smoke parallel vorbereitet.",
-  "reason_en": "Canonical ISO UEFI-x64 validated (validator exit 0). Next: operator USB write + MSI boot. DCC capability smoke prepared in parallel.",
+  "schema_version": 6,
+  "selected_at": "2026-06-06T12:00:00+02:00",
+  "selected_prompt_id": "DEVELOPER_DCC_AND_TELEMETRY_OPERATOR_SMOKE",
+  "parallel_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
+  "reason_de": "DCC-Capability-Status, Telemetrie-Health-Sichtbarkeit und kompakte DCC-Statusleiste im Workspace vorbereitet. Operator-Smoke auf /opt-Runtime ausstehend (Deploy/Restart nur mit Freigabe).",
+  "reason_en": "DCC capability-status, telemetry health visibility, and compact DCC status bar prepared in workspace. Operator smoke on /opt runtime pending (deploy/restart with approval only).",
   "tracks": [
+    {
+      "id": "developer_dcc_capability",
+      "status": "yellow",
+      "priority": "P1",
+      "classification": "operator_smoke_prepared",
+      "next_step": "DEVELOPER_DCC_AND_TELEMETRY_OPERATOR_SMOKE",
+      "evidence": [
+        "docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE_HANDOFF.md",
+        "docs/evidence/dev-dashboard/RESCUE_TELEMETRY_INGEST_OPERATOR_SMOKE_HANDOFF.md"
+      ]
+    },
     {
       "id": "rescue_usb_write",
       "status": "yellow",
@@ -13,35 +24,17 @@
       "classification": "uefi_x64_iso_ready_for_usb_operator_write",
       "next_step": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_OPERATOR_RESULT.md",
         "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md"
-      ]
-    },
-    {
-      "id": "windows_laptop_rescue_inspect",
-      "status": "blocked_upstream",
-      "blocked_by": ["RESCUE_STICK_NOT_WRITTEN", "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET"],
-      "next_step_after_usb_boot": "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN"
-    },
-    {
-      "id": "developer_dcc_capability",
-      "status": "yellow",
-      "priority": "P1",
-      "classification": "operator_smoke_prepared",
-      "next_step": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE",
-      "evidence": [
-        "docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE_HANDOFF.md"
       ]
     }
   ],
   "forbidden_next": [
-    "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
-    "BACKEND_RESTART_WITHOUT_OPERATOR_APPROVAL"
+    "BACKEND_RESTART_WITHOUT_OPERATOR_APPROVAL",
+    "DEPLOY_WITHOUT_OPERATOR_APPROVAL"
   ],
   "governance_rules": {
-    "no_repatch_while_validator_exit_0": true,
-    "no_agent_usb_dd": true,
     "dcc_tokens_not_in_repo": true,
-    "rescue_telemetry_separate_from_dcc": true
+    "rescue_telemetry_separate_from_dcc": true,
+    "capability_status_no_secrets": true
   }
 }

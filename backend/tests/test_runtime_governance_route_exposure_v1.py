@@ -52,5 +52,6 @@ def test_release_allows_rescue_telemetry_not_dcc():
             assert d.block_code is None
             assert path_allowed_for_active_profile(path) is True
         dcc = decide_route_exposure("/api/dev-dashboard/status", bundle.capabilities)
-        assert dcc.allowed is False
-        assert dcc.block_code == "PROFILE_ROUTE_BLOCKED"
+        assert dcc.allowed is True
+        assert path_allowed_for_active_profile("/api/dev-dashboard/status") is False
+        assert path_allowed_for_active_profile("/api/dev-dashboard/capability-status") is True

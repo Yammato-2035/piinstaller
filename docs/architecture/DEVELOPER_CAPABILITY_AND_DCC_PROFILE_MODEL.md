@@ -4,53 +4,67 @@
 
 | Profile | DCC API | DCC UI | Telemetrie `/api/rescue/telemetry/*` |
 |---------|---------|--------|--------------------------------------|
-| `release` | blockiert (`PROFILE_ROUTE_BLOCKED`) | Disabled-Seite | separat erreichbar (eigene Ingest-Policy) |
-| `production` | wie release | Disabled | separat |
-| `developer` | nur mit gültiger Developer-Capability | sichtbar bei `dcc_allowed=true` | separat |
+| `release` | blockiert ohne lokale Developer-Capability | Disabled-Seite mit Diagnose | separat erreichbar |
+| `production` | wie release | wie release | separat |
+| `developer` | mit gültiger Developer-Capability | sichtbar bei `dcc_allowed=true` | separat |
 | `local_lab` | wie developer | wie developer | separat |
+
+## Sichtbarkeitsmodell
+
+DCC darf sichtbar sein, wenn:
+
+1. `install_profile` in `developer`, `local_lab` **und** `dev_control_enabled=true` **und** gültiges Token **oder**
+2. `install_profile` == `release` **und** lokale Developer-Capability gültig ist
+
+Lokale Developer-Capability gültig, wenn:
+
+- `DCC_DEVELOPER_ENABLED=1` (Release-Override)
+- gültiger Token per Header oder lokaler Datei
+- optional `DCC_ALLOWED_HOSTNAME` stimmt mit `socket.gethostname()` überein
+- kein Secret in API/Frontend/Evidence
 
 ## Token-Trennung
 
-| Token | Zweck | DCC | Backup/Restore/USB/Deploy |
-|-------|-------|-----|------------------------------|
-| `DCC_DEVELOPER_TOKEN` | DCC-Freischaltung | ja | **nein** |
-| `RESCUE_TELEMETRY_INGEST_TOKEN` | Telemetrie-Ingest | **nein** | **nein** |
+| Token | Zweck | DCC | Telemetrie |
+|-------|-------|-----|------------|
+| `DCC_DEVELOPER_TOKEN` / Datei | DCC-Freischaltung | ja | **nein** |
+| `RESCUE_TELEMETRY_INGEST_TOKEN` | Telemetrie-Ingest | **nein** | ja |
 
 Quellen DCC-Token (Priorität):
 
 1. Environment `DCC_DEVELOPER_TOKEN`
-2. Datei `/etc/setuphelfer/developer.dcc.token`
-3. Header `X-Setuphelfer-Developer-Token` oder `Authorization: Bearer …`
+2. Datei aus `DCC_DEVELOPER_TOKEN_FILE` oder `/etc/setuphelfer/dcc_developer.token` (Legacy: `developer.dcc.token`)
+3. Request-Header `X-Setuphelfer-Developer-Token` oder `Authorization: Bearer …`
 
-Kein Token im Repo, in Evidence oder in URLs.
+Empfohlene lokale Konfiguration (Platzhalter, nicht committen):
 
-## API-Felder (`/api/version`)
+```bash
+# /etc/setuphelfer/developer.env
+DCC_DEVELOPER_ENABLED=1
+DCC_DEVELOPER_TOKEN_FILE=/etc/setuphelfer/dcc_developer.token
+DCC_ALLOWED_HOSTNAME=volker-ROG-Strix
+RESCUE_TELEMETRY_INGEST_ENABLED=1
+```
 
-- `developer_capability_available`
-- `developer_capability_valid` (false ohne Request-Token)
-- `developer_capability_source`
-- `dcc_profile_allowed`
-- `dcc_allowed`
-- `internal_dev_mode` (= `dcc_allowed`)
-- `rescue_telemetry_separate_from_dcc`
+## Diagnose-Endpunkt
 
-Niemals Token-Wert ausgeben.
+`GET /api/dev-dashboard/capability-status` — read-only, auch bei blockiertem DCC, **ohne Secrets**.
 
 ## Block-Codes
 
 | Code | Bedeutung |
 |------|-----------|
-| `PROFILE_ROUTE_BLOCKED` | Release/Production oder `dev_control_enabled=false` |
-| `DEVELOPER_CAPABILITY_NOT_CONFIGURED` | Profil erlaubt DCC, kein Token konfiguriert |
-| `DEVELOPER_CAPABILITY_REQUIRED` | Token konfiguriert, Request ohne/ungültiges Token |
+| `PROFILE_ROUTE_BLOCKED` | Release ohne `DCC_DEVELOPER_ENABLED` oder Lab ohne `dev_control` |
+| `DEVELOPER_CAPABILITY_NOT_CONFIGURED` | DCC-Pfad offen, kein Token konfiguriert |
+| `DEVELOPER_CAPABILITY_REQUIRED` | Token fehlt/ungültig oder Hostname-Binding |
 
 ## Implementierung
 
 - Core: `backend/core/developer_capability.py`
-- Route-Gate: `path_allowed_for_active_profile()` + Middleware in `backend/app.py`
-- Telemetrie bleibt in `route_exposure.py` vom DCC-Gate getrennt
+- Telemetrie: `route_exposure.py` — `/api/rescue/telemetry/*` vom DCC-Gate getrennt
+- Frontend: `DccCompactStatusBar`, blockierte Diagnose-Seite
 
 ## Operator-Smoke
 
-Handoff: `docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE_HANDOFF.md`  
-Lokale Env-Datei (Platzhalter): `/etc/setuphelfer/developer.env` — **kein echter Token im Repo**
+- `docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE_HANDOFF.md`
+- `docs/evidence/dev-dashboard/RESCUE_TELEMETRY_INGEST_OPERATOR_SMOKE_HANDOFF.md`

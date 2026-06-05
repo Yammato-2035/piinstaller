@@ -136,16 +136,24 @@ class RescueTelemetryIngestHttpTests(unittest.TestCase):
         }
 
     def test_release_profile_blocks_dcc_not_telemetry_health(self) -> None:
-        with tempfile.TemporaryDirectory() as td, patch.dict(os.environ, self._client_env(td), clear=False):
+        with tempfile.TemporaryDirectory() as td, patch.dict(
+            os.environ, self._client_env(td, enabled="0"), clear=False
+        ):
             client = TestClient(fastapi_app, base_url="http://localhost")
             dcc = client.get("/api/dev-dashboard/status")
             self.assertEqual(dcc.status_code, 404)
             self.assertEqual(dcc.json().get("code"), "PROFILE_ROUTE_BLOCKED")
+            cap = client.get("/api/dev-dashboard/capability-status")
+            self.assertEqual(cap.status_code, 200)
+            self.assertIn("reason", cap.json())
             health = client.get("/api/rescue/telemetry/health")
             self.assertEqual(health.status_code, 200)
             body = health.json()
             self.assertEqual(body["service"], "rescue_telemetry_ingest")
             self.assertFalse(body["dcc_required"])
+            self.assertTrue(body["profile_gate_independent"])
+            self.assertFalse(body["secrets_exposed"])
+            self.assertEqual(body["last_error_code"], "TELEMETRY-DISABLED-001")
 
     def test_release_allows_telemetry_paths_in_gate(self) -> None:
         with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=False):

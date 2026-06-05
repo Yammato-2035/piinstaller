@@ -4140,6 +4140,22 @@ async def get_version():
     return inject_router_diagnostics(body)
 
 
+@app.get("/api/dev-dashboard/capability-status")
+async def dev_dashboard_capability_status(request: Request):
+    """Read-only DCC gate diagnosis — no secrets, reachable when DCC routes are blocked."""
+    from core.developer_capability import build_capability_status_payload
+    from core.install_profile import get_install_profile_state
+
+    state = get_install_profile_state()
+    headers = {k: v for k, v in request.headers.items()}
+    return build_capability_status_payload(
+        install_profile=state.install_profile,
+        dev_control_enabled=state.dev_control_enabled,
+        backend_runtime_path=str(get_backend_runtime_dir().resolve()),
+        request_headers=headers,
+    )
+
+
 @app.get("/api/dev-dashboard/status")
 async def dev_dashboard_status(
     frontend_build_version: str | None = Query(

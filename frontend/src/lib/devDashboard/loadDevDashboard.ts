@@ -1,4 +1,5 @@
 import { fetchApi, getApiBase, getDefaultApiBase, usesViteDevProxy } from '../../api'
+import { fetchDccApi } from './dccDeveloperToken'
 import type { DashboardPayload, ModuleRow } from '../../pages/DevDashboardBody'
 import {
   buildMinimalUnavailableDashboard,
@@ -23,8 +24,8 @@ async function fetchWithTimeout(path: string, init?: RequestInit): Promise<Respo
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), API_PROBE_MS)
   try {
-    // Force fresh data for dev-dashboard status/gates to avoid stale cache snapshots.
-    return await fetchApi(path, { cache: 'no-store', ...(init ?? {}), signal: ctrl.signal })
+    const fetcher = path.startsWith('/api/dev-dashboard') ? fetchDccApi : fetchApi
+    return await fetcher(path, { cache: 'no-store', ...(init ?? {}), signal: ctrl.signal })
   } finally {
     clearTimeout(timer)
   }

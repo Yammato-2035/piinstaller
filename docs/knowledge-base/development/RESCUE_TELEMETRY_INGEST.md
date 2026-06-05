@@ -29,8 +29,24 @@ Keine Token-Werte in Evidence oder Git committen.
 
 ## Endpunkte
 
-- `GET /api/rescue/telemetry/health` — Status, Queue-Tiefe, Warnungen
+- `GET /api/rescue/telemetry/health` — Status, Ingest-Policy, Queue, letzter ACK/Fehler (`profile_gate_independent: true`)
 - `POST /api/rescue/telemetry/v1/ingest` — Envelope mit ACK + Hash-Match
+
+Health-Antwort (Auszug, keine Secrets):
+
+```json
+{
+  "status": "ok",
+  "ingest_enabled": false,
+  "profile_gate_independent": true,
+  "queue_available": true,
+  "last_ack_id": null,
+  "last_error_code": "TELEMETRY-DISABLED-001",
+  "secrets_exposed": false
+}
+```
+
+Diagnose parallel: `GET /api/dev-dashboard/capability-status` (DCC-Gate, ohne Secrets).
 
 ## Authentifizierung
 
