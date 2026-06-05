@@ -3,22 +3,47 @@ from __future__ import annotations
 import asyncio
 import os
 from datetime import datetime, timezone
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 from core.install_profile import get_install_profile_state
 
 
-def build_dcc_profile_block_response() -> dict[str, Any] | None:
+def build_dcc_profile_block_response(
+    *,
+    request_headers: Mapping[str, str] | None = None,
+    path: str = "/api/dev-dashboard/status",
+) -> dict[str, Any] | None:
+    """Return block payload when DCC handler must refuse, else None.
+
+    Uses the same developer capability gate as middleware (not dev_control alone).
+    """
+    from core.developer_capability import is_dcc_route_allowed
+
     state = get_install_profile_state()
-    if not state.dev_control_enabled:
-        return {
-            "status": "error",
-            "code": "PROFILE_ROUTE_BLOCKED",
-            "profile": state.install_profile,
-            "message": "Development Dashboard is blocked in release profile",
-            "required_profile": "local_lab",
-        }
-    return None
+    allowed, block_code = is_dcc_route_allowed(
+        path=path,
+        install_profile=state.install_profile,
+        dev_control_enabled=state.dev_control_enabled,
+        request_headers=request_headers,
+    )
+    if allowed:
+        return None
+
+    if block_code == "DEVELOPER_CAPABILITY_REQUIRED":
+        message = "Valid developer capability token required."
+    elif block_code == "DEVELOPER_CAPABILITY_NOT_CONFIGURED":
+        message = "Developer capability is not configured on this host."
+    else:
+        message = "Development Dashboard is blocked for this install profile."
+
+    return {
+        "status": "error",
+        "code": block_code or "PROFILE_ROUTE_BLOCKED",
+        "profile": state.install_profile,
+        "message": message,
+        "developer_capability_gate": True,
+        "rescue_telemetry_separate_from_dcc": True,
+    }
 
 
 async def build_dev_dashboard_status(
@@ -29,10 +54,11 @@ async def build_dev_dashboard_status(
     detect_active_package_operations: Callable[[], dict[str, Any]],
     frontend_build_version: str | None,
     frontend_runtime_source: str | None,
+    request_headers: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     from core import dev_dashboard as dev_dashboard_core
 
-    blocked = build_dcc_profile_block_response()
+    blocked = build_dcc_profile_block_response(request_headers=request_headers)
     if blocked:
         return blocked
 
@@ -69,4 +95,3 @@ async def build_dev_dashboard_status(
             "runtime_gate": {"passed": False, "status": "gray", "warnings": ["dashboard_status_timeout"]},
         }
         return {"status": "degraded", "warning": "dashboard_status_timeout", "dashboard": degraded}
-

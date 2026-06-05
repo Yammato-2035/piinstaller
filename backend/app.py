@@ -4158,6 +4158,7 @@ async def dev_dashboard_capability_status(request: Request):
 
 @app.get("/api/dev-dashboard/status")
 async def dev_dashboard_status(
+    request: Request,
     frontend_build_version: str | None = Query(
         default=None,
         description="Optional: Frontend-Build-Version (__APP_VERSION__), fuer Runtime-vs-Workspace-Konsistenz.",
@@ -4170,6 +4171,7 @@ async def dev_dashboard_status(
     """Read-only: Development Cockpit Gesamtstatus (kein Backup/Restore)."""
     from core.dev_dashboard_status_service import build_dev_dashboard_status
 
+    headers = {k: v for k, v in request.headers.items()}
     try:
         return await build_dev_dashboard_status(
             backup_jobs=BACKUP_JOBS,
@@ -4178,6 +4180,7 @@ async def dev_dashboard_status(
             detect_active_package_operations=_detect_active_package_operations,
             frontend_build_version=frontend_build_version,
             frontend_runtime_source=frontend_runtime_source,
+            request_headers=headers,
         )
     except Exception:
         logger.exception("dev_dashboard_status failed")
@@ -4235,6 +4238,7 @@ async def dev_dashboard_manual_command_runs(
 
 @app.get("/api/dev-dashboard/backend-health")
 async def dev_dashboard_backend_health(
+    request: Request,
     history_limit: int = Query(default=20, ge=0, le=20),
     stale_after_seconds: int = Query(default=180, ge=30, le=3600),
 ):
@@ -4242,7 +4246,11 @@ async def dev_dashboard_backend_health(
     from core.dev_dashboard_backend_health import load_backend_health_snapshot
     from core.dev_dashboard_status_service import build_dcc_profile_block_response
 
-    blocked = build_dcc_profile_block_response()
+    headers = {k: v for k, v in request.headers.items()}
+    blocked = build_dcc_profile_block_response(
+        request_headers=headers,
+        path="/api/dev-dashboard/backend-health",
+    )
     if blocked:
         return JSONResponse(status_code=404, content=blocked)
     return load_backend_health_snapshot(

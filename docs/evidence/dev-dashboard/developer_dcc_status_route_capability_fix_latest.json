@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-06-07T00:00:00+02:00",
+  "status": "workspace_fix_verified_awaiting_operator_deploy",
+  "issue": "capability-status accepted valid token but /api/dev-dashboard/status returned PROFILE_ROUTE_BLOCKED with required_profile=local_lab",
+  "root_cause": "build_dcc_profile_block_response() checked dev_control_enabled only, bypassing developer_capability gate after middleware allowed the request",
+  "fix": {
+    "files": [
+      "backend/core/dev_dashboard_status_service.py",
+      "backend/app.py"
+    ],
+    "behavior": "build_dcc_profile_block_response delegates to is_dcc_route_allowed; release with valid X-Setuphelfer-Developer-Token returns HTTP 200 status payload"
+  },
+  "routes_with_internal_profile_check": {
+    "uses_central_capability_gate_now": [
+      "/api/dev-dashboard/status",
+      "/api/dev-dashboard/backend-health"
+    ],
+    "middleware_only_no_duplicate_check": [
+      "/api/dev-dashboard/modules",
+      "/api/dev-dashboard/modules/{module_id}",
+      "/api/dev-dashboard/evidence-index",
+      "/api/dev-dashboard/control-center-summary",
+      "/api/dev-dashboard/manual-command-runs",
+      "/api/dev-dashboard/recent-evidence",
+      "/api/dev-dashboard/roadmap",
+      "/api/dev-dashboard/roadmap/*",
+      "/api/dev-dashboard/rescue-build/status",
+      "/api/dev-dashboard/rescue-iso/*",
+      "/api/dev-dashboard/notifications/*",
+      "/api/dev-dashboard/deploy/*",
+      "/api/dev-dashboard/update/status",
+      "/api/dev-dashboard/packaging/readiness",
+      "/api/dev-dashboard/project-overview",
+      "/api/dev-dashboard/actions/*",
+      "/api/dev-dashboard/prompt-findings",
+      "/api/dev-dashboard/cursor-meta-prompt"
+    ],
+    "always_allowed_diagnostic": [
+      "/api/dev-dashboard/capability-status"
+    ]
+  },
+  "tests": {
+    "pytest_module": "backend/tests/test_dev_dashboard_status_service_v1.py",
+    "passed": 31,
+    "cases": [
+      "release_without_token_blocked",
+      "release_with_valid_token_status_200",
+      "capability_status_dcc_visible_with_token",
+      "telemetry_health_200_independent"
+    ]
+  },
+  "secrets_in_output": false,
+  "next_prompt": "DEVELOPER_DCC_FULL_ROUTE_CAPABILITY_AUDIT",
+  "operator_followup": [
+    "Deploy workspace fix to /opt",
+    "Backend restart if not via deploy-to-opt.sh",
+    "Repeat DCC+telemetry smoke with local token"
+  ]
+}
