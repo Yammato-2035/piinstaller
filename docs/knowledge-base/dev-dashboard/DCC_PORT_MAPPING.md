@@ -25,6 +25,7 @@ Der SPA-Server auf 3001 proxyt **kein** `/api` zum Backend. Das Frontend nutzt d
 - Die Disabled-Page ist an `GET /api/dev-dashboard/status` gebunden (source-of-truth).
 - Wenn `/api/dev-dashboard/status` HTTP 200 liefert, muss DCC angezeigt werden — `install_profile`-Snaps von `/api/version` duerfen das nicht blockieren.
 - Status-Requests werden mit `cache: no-store` und Query-Param `?t=<Date.now()>` ausgefuehrt, um stale Snapshots zu vermeiden.
+- Fix committed in `4fb72ee`; Produktions-Bundle unter `/opt` muss per `deploy-to-opt.sh` aktualisiert werden, bevor Browser-Smoke gilt.
 
 ## Kein Bug
 

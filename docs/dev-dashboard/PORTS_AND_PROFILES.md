@@ -36,7 +36,7 @@
 | `/api/fleet/*` | **404** `PROFILE_ROUTE_BLOCKED` |
 | `/api/rescue-agent/*` | **404** `PROFILE_ROUTE_BLOCKED` |
 | DCC UI | Meldung „Development Control nicht verfügbar“ — **erwartet**, wenn `/api/dev-dashboard/status` 404 `PROFILE_ROUTE_BLOCKED` liefert (Frontend-Gating basiert jetzt auf der Status-Route). |
-| DCC Live-Akzeptanz | `release` gilt als erwartbarer Sicherheitszustand; funktional grün erst nach `local_lab` live geprüft |
+| DCC Live-Akzeptanz | `release` gilt als erwartbarer Sicherheitszustand; funktional grün erst nach `local_lab` live geprüft (Commit `4fb72ee` — Deploy + Browser-Smoke ausstehend) |
 
 ### local_lab
 

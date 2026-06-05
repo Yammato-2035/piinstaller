@@ -11,6 +11,8 @@ Kurzreferenz für Knowledge-Base-First-Triage. Details in verlinkter Evidence.
 | `agent_send_failed` | QEMU-Gast sendet keinen Report | Mehrstufig — siehe Rescue-QEMU-KB | Einzelursache ohne Historie |
 | `guest_rescue_venv_glibc_mismatch` | `GLIBC_2.38 not found` im Gast-venv | Host-venv in Bookworm-Live | Import/Host-Header |
 | `known_error_fix_not_in_artifact` | Fix im Workspace, altes ISO/Squashfs | Artefakt nicht rebuilt | Deploy-only-Fix |
+| `frontend_gating_build_time_desync` | DCC Disabled-Page trotz Statusroute 200 | Stale Build-Time-Marker / Cache | `expected_release_profile_block` |
+| `fix_lifecycle_incomplete` | Fix „umgesetzt“, aber HEAD/Deploy/Smoke fehlen | Uncommitted oder nicht nach `/opt` | Fake-Green |
 
 ## Pflicht vor neuem Fix
 

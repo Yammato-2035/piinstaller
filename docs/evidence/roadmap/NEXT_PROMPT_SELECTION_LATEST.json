@@ -1,18 +1,29 @@
 {
   "schema_version": 2,
-  "selected_at": "2026-06-05T12:00:00+02:00",
-  "selected_prompt_id": "OPERATOR_DCC_LOCAL_LAB_AND_RUNTIME_GOVERNANCE_LIVE_VALIDATION",
-  "reason_de": "Roadmap-First-Governance verankert. DCC local_lab Live-Acceptance und Runtime-Governance-Parity blockieren weitere Tracks. QEMU GLIBC-Fix danach.",
-  "reason_en": "Roadmap-first governance in place. DCC local_lab live acceptance and runtime governance parity block further tracks. QEMU GLIBC fix after.",
+  "selected_at": "2026-06-05T10:55:00+02:00",
+  "selected_prompt_id": "OPERATOR_DCC_DEPLOY_AND_LOCAL_LAB_LIVE_ACCEPTANCE",
+  "reason_de": "DCC Frontend-Gating-Fix committed (4fb72ee), aber Deploy und local_lab Browser-Smoke blockiert an sudo. Kein Monolith-Split vor live grünem DCC.",
+  "reason_en": "DCC frontend gating fix committed (4fb72ee), but deploy and local_lab browser smoke blocked on sudo. No monolith split before live green DCC.",
   "tracks": [
+    {
+      "id": "dcc_frontend_profile_desync_deploy_and_live",
+      "status": "review_required",
+      "classification": "fix_lifecycle_incomplete",
+      "commit": "4fb72ee",
+      "next_step": "sudo deploy-to-opt; local_lab Profil; /api/dev-dashboard/status HTTP 200; Browser DCC sichtbar; release restore.",
+      "evidence": [
+        "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md",
+        "docs/evidence/dev-dashboard/dcc_frontend_profile_desync_live_acceptance_latest.json",
+        "docs/knowledge-base/dev-dashboard/DCC_PROFILE_AND_PORT_ERRORS.md"
+      ]
+    },
     {
       "id": "dcc_live_acceptance",
       "status": "blocked_by_operator_sudo",
       "classification": "expected_release_profile_block",
-      "next_step": "Operator-local_lab-Smoke ausführen; DCC erst grün wenn local_lab live HTTP 200 auf Dev-Routen liefert und release danach wiederhergestellt ist.",
+      "next_step": "Nach Deploy: local_lab-Smoke; DCC erst grün wenn HTTP 200 + Browser + release restored.",
       "evidence": [
-        "docs/evidence/dev-dashboard/DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md",
-        "docs/knowledge-base/dev-dashboard/DCC_PROFILE_AND_PORT_ERRORS.md"
+        "docs/evidence/dev-dashboard/DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md"
       ]
     },
     {
@@ -27,25 +38,15 @@
       "id": "qemu_guest_report_glibc_fix",
       "status": "blocked",
       "classification": "guest_rescue_venv_glibc_mismatch",
-      "next_step": "Rescue-Bundle auf Bookworm-kompatible Python-Laufzeit umstellen: system-python3 oder chroot-venv; danach ISO-Rebuild und QEMU-Smoke.",
+      "next_step": "Erst nach DCC live grün: Rescue-Bundle Bookworm-venv; ISO-Rebuild; QEMU-Smoke.",
       "evidence": [
-        "docs/evidence/rescue/QEMU_143148_FAILURE_CLASSIFICATION.md",
-        "docs/knowledge-base/recovery/RESCUE_QEMU_RECURRENT_FAILURES.md"
-      ]
-    },
-    {
-      "id": "known_error_triage_governance",
-      "status": "new_governance_required",
-      "next_step": "Known-error search before every fix.",
-      "evidence": [
-        "docs/diagnostics/KNOWN_ERROR_TRIAGE_TEMPLATE.md",
-        "docs/knowledge-base/diagnostics/KNOWN_RECURRENT_ERRORS.md"
+        "docs/evidence/rescue/QEMU_143148_FAILURE_CLASSIFICATION.md"
       ]
     },
     {
       "id": "monolith_next_split",
       "status": "deferred_until_live_validation",
-      "next_step": "Nächster Bereich erst nach DCC/Runtime-Governance-Liveprüfung: Devserver-Agent / Guest-Report-Ingest Boundary oder Evidence/Run-Result-Pipeline.",
+      "next_step": "Kein Split vor DCC local_lab Browser-Smoke grün.",
       "evidence": [
         "docs/roadmap/MONOLITH_REFACTOR_PLAN.md"
       ]

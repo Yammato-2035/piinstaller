@@ -31,6 +31,7 @@ Pflicht-Prüfung im Browser:
 
 1. `F12 → Network` und `GET /api/dev-dashboard/status` Status/Response-Code prüfen.
 2. Falls der Server 200 liefert, hart neu laden oder im Disabled-Bereich den Retry-Button „DCC-Status erneut prüfen“ nutzen (keine Runtime-Aktion).
+3. Wenn der Fix im Repo committed ist, aber `/opt` noch ein älteres `frontend/dist` ausliefert: **Deploy** (`deploy-to-opt.sh`) ist Pflicht — sonst bleibt die alte Disabled-Page-Logik aktiv (kein Fake-Green). Stand: Commit `4fb72ee`, Live-Acceptance ausstehend — `DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md`.
 
 ## Warum war der Roadmap-Bereich nicht sichtbar?
 

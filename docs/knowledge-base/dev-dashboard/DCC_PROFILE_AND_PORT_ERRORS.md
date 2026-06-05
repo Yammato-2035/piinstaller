@@ -33,9 +33,36 @@ Evidence: `DCC_LIVE_ACCEPTANCE_RELEASE_BASELINE.md`, `dcc_live_acceptance_latest
 Symptom: DCC oder API über `:8080` erwartet.  
 `:8080` = nginx/Ubuntu-Default, nicht SetupHelfer-DCC.
 
+## Frontend Profile Desync (Build-Time-Gating)
+
+**Klassifikation:** `frontend_gating_build_time_desync`
+
+Symptom: Disabled-Page „profile=release“ im Browser, obwohl `/api/dev-dashboard/status` HTTP 200 liefert (local_lab).
+
+Ursache (historisch): `ExternalDevelopmentControlCenter.tsx` nutzte Build-Time-Marker `devControlUiEnabled` statt Statusroute.
+
+Fix (Workspace `4fb72ee`): `decideDccVisibility()` — Source-of-truth `/api/dev-dashboard/status`; `cache: no-store`; Retry nur Refetch.
+
+| Stufe | Status |
+|-------|--------|
+| Code-Fix | committed (`4fb72ee`) |
+| Deploy `/opt` | ausstehend (`sudo_password_required`) |
+| local_lab Browser-Smoke | ausstehend |
+| DCC grün | **nein** — erst nach Deploy + live Smoke + release restore |
+
+Evidence: `DCC_FRONTEND_PROFILE_DESYNC_RESULT.md`, `DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md`
+
+## Fix nicht committed / nicht deployed / nicht live geprüft
+
+**Klassifikation:** `fix_lifecycle_incomplete`
+
+Früherer Lauf: Fix im Workspace, `HEAD` unverändert (`5efff70`), kein belastbarer Abschluss.
+
+Aktuell: Commit nachgeholt; Deploy und local_lab Live-Acceptance blockiert an Operator-`sudo`.
+
 ## `local_lab` Live-Smoke blockiert
 
 **Status:** `dcc_profile_switch_blocked` wenn sudo in Agent-Session fehlt.  
 **Kein Fake-Green** für DCC.
 
-Operator-Handoff: `DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md`
+Operator-Handoff: `DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md`, `DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md`

@@ -1105,14 +1105,17 @@
               "title_de": "DCC-Frontend-Gating: keine release-disabled Seite bei /api/dev-dashboard/status=200",
               "title_en": "DCC frontend gating: no release-disabled page when /api/dev-dashboard/status=200",
               "status": "yellow",
-              "progress_percent": 70,
+              "progress_percent": 80,
+              "commit_ref": "4fb72ee",
               "evidence_links": [
                 "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_RESULT.md",
-                "docs/evidence/dev-dashboard/dcc_frontend_profile_desync_latest.json"
+                "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md",
+                "docs/evidence/dev-dashboard/dcc_frontend_profile_desync_latest.json",
+                "docs/evidence/dev-dashboard/dcc_frontend_profile_desync_live_acceptance_latest.json"
               ],
-              "blocker_refs": [],
-              "next_action_de": "Operator-Check: local_lab so herstellen, dass /api/dev-dashboard/status HTTP 200 liefert; Browser darf dann die profileDisabled-Seite nicht anzeigen.",
-              "next_action_en": "Operator check: use local_lab so /api/dev-dashboard/status returns HTTP 200; browser must not show the profileDisabled page."
+              "blocker_refs": ["sudo_password_required"],
+              "next_action_de": "Operator: deploy-to-opt, local_lab aktivieren, Browser-DCC prüfen, release restore; erst dann grün.",
+              "next_action_en": "Operator: deploy-to-opt, enable local_lab, verify browser DCC, release restore; green only after that."
             }
           ],
           "blockers": [],

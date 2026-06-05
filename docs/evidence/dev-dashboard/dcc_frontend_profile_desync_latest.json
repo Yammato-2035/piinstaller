@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "task": "dcc_frontend_profile_desync",
-  "generated_at": "2026-06-05T00:00:00+02:00",
-  "head": "5efff70",
+  "generated_at": "2026-06-05T10:55:00+02:00",
+  "head": "4fb72ee",
   "branch": "main",
   "phase0_runtime_truth": {
     "api_version": {
@@ -40,7 +40,19 @@
     "vitest_run": "ok",
     "unit_tests": ["frontend/src/lib/devDashboard/dccGate.test.ts"]
   },
-  "status": "yellow",
-  "next_operator_check": "When runtime /api/version reports local_lab and /api/dev-dashboard/status returns HTTP 200, the frontend must show DCC and must not show the release-disabled page."
+  "commit": {
+    "performed": true,
+    "hash": "4fb72ee",
+    "push": false,
+    "fix_was_uncommitted_before": true
+  },
+  "deploy": {
+    "performed": false,
+    "blocked_reason": "sudo_password_required"
+  },
+  "status": "review_required",
+  "ampel": "yellow",
+  "live_acceptance_evidence": "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md",
+  "next_operator_check": "Deploy 4fb72ee to /opt, switch local_lab, verify /api/dev-dashboard/status HTTP 200 and browser DCC visible, then release restore."
 }
 

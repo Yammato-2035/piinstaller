@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "task": "dcc_frontend_profile_desync_live_acceptance",
+  "generated_at": "2026-06-05T10:55:00+02:00",
+  "head_before": "5efff70",
+  "head_after": "4fb72ee",
+  "branch": "main",
+  "commit": {
+    "performed": true,
+    "hash": "4fb72ee",
+    "message": "Fix DCC frontend profile desync",
+    "push": false,
+    "fix_was_uncommitted_before": true
+  },
+  "deploy": {
+    "performed": false,
+    "blocked_reason": "sudo_password_required",
+    "opt_frontend_dist_age": "2026-06-04",
+    "workspace_frontend_dist_age": "2026-06-05"
+  },
+  "phase0": {
+    "known_error": true,
+    "prior_fix_incomplete": "uncommitted_and_not_deployed",
+    "port_confusion_excluded": true,
+    "profile_gate_exit": 0
+  },
+  "release_baseline": {
+    "install_profile": "release",
+    "dev_control_enabled": false,
+    "api_dev_dashboard_status": { "http_status": 404, "code": "PROFILE_ROUTE_BLOCKED" },
+    "api_fleet_sessions": { "http_status": 404, "code": "PROFILE_ROUTE_BLOCKED" },
+    "ui_cockpit": { "http_status": 200, "url": "http://127.0.0.1:3001/?window=cockpit" }
+  },
+  "local_lab_acceptance": {
+    "profile_switch": false,
+    "blocked_reason": "sudo_password_required",
+    "api_dev_dashboard_status_http": null,
+    "browser_dcc_visible": null,
+    "frontend_gating_bug_still_open": null
+  },
+  "release_restore": {
+    "performed": false,
+    "reason": "local_lab_not_run"
+  },
+  "tests": {
+    "frontend_build": "ok",
+    "vitest_run": "58/58 ok",
+    "backend_pytest": "not_run_no_backend_change"
+  },
+  "status": "review_required",
+  "ampel": "yellow",
+  "forbidden_claims": [
+    "dcc_green_without_local_lab_browser_smoke",
+    "monolith_split_before_live_validation"
+  ],
+  "operator_handoff": "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md"
+}
