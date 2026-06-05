@@ -22,6 +22,9 @@ FORBIDDEN_API_PREFIXES_RELEASE = (
     "/api/dev-server",
 )
 
+# Rescue stick telemetry — always HTTP-accessible; ingest activation via RESCUE_TELEMETRY_INGEST_ENABLED.
+RESCUE_TELEMETRY_API_PREFIX = "/api/rescue/telemetry"
+
 REQUIRED_API_PREFIXES_LOCAL_LAB = (
     "/api/fleet",
     "/api/dev-diagnostics",

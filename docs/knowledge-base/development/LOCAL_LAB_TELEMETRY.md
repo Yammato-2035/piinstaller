@@ -4,6 +4,8 @@
 
 Lab telemetry collects structured reports from developer-owned test systems **only** when the Development Server is enabled in `local_lab` mode.
 
+**Rescue-Stick-Telemetrie** (Windows Inspect, Release-tauglich) nutzt einen **separaten** Kanal — siehe `docs/knowledge-base/development/RESCUE_TELEMETRY_INGEST.md` (`/api/rescue/telemetry/*`, nicht DCC).
+
 ## Data flow
 
 1. Rescue stick developer edition or lab agent sends `POST /api/dev-server/ingest/report`

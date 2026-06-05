@@ -1,36 +1,40 @@
 {
   "schema_version": 2,
-  "selected_at": "2026-06-05T21:10:00+02:00",
-  "selected_prompt_id": "RESCUE_ISO_UEFI_X64_FAILURE_TRIAGE",
-  "reason_de": "Operator-Run blockiert (kein RESCUE_UEFI_REBUILD_FREIGEGEBEN=1, kein sudo -n, root-owned ISO). UEFI-Validator weiter Exit 34 auf kanonischer ISO.",
-  "reason_en": "Operator run blocked (no RESCUE_UEFI_REBUILD_FREIGEBEBEN=1, no sudo -n, root-owned ISO). UEFI validator still exit 34 on canonical ISO.",
-  "completed_tracks": [],
+  "selected_at": "2026-06-05T22:45:00+02:00",
+  "selected_prompt_id": "RESCUE_TELEMETRY_INGEST_OPERATOR_SMOKE",
+  "reason_de": "Separater Ingest-Vertrag implementiert und getestet (DCC blockiert, /api/rescue/telemetry erlaubt). Nächster Schritt: Operator aktiviert RESCUE_TELEMETRY_INGEST_ENABLED=1 am laufenden Backend (Restart-Freigabe) und führt Live-Smoke aus.",
+  "reason_en": "Separate ingest contract implemented and tested (DCC blocked, /api/rescue/telemetry allowed). Next: operator enables RESCUE_TELEMETRY_INGEST_ENABLED=1 on running backend (restart approval) and runs live smoke.",
+  "completed_tracks": [
+    "RESCUE_TELEMETRY_INGEST_SEPARATE_FROM_DCC"
+  ],
   "tracks": [
+    {
+      "id": "rescue_telemetry_ingest",
+      "status": "yellow",
+      "priority": "P1",
+      "classification": "awaiting_operator_backend_restart",
+      "next_step": "RESCUE_TELEMETRY_INGEST_OPERATOR_SMOKE — env + systemd drop-in oder Restart-Freigabe.",
+      "evidence": [
+        "docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md",
+        "docs/knowledge-base/development/RESCUE_TELEMETRY_INGEST.md",
+        "backend/tests/test_rescue_telemetry_ingest_v1.py"
+      ]
+    },
     {
       "id": "rescue_iso_uefi_x64_rebuild",
       "status": "blocked",
       "priority": "P0",
       "classification": "blocked_by_operator_confirmation",
-      "next_step": "Operator sudo + RESCUE_UEFI_REBUILD_FREIGEGEBEN=1 → clean → rebuild → sudo patch → validator grün.",
+      "next_step": "RESCUE_ISO_UEFI_X64_FAILURE_TRIAGE — Operator sudo + RESCUE_UEFI_REBUILD_FREIGEGEBEN=1.",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RESULT.md",
-        "docs/evidence/runtime-results/rescue/rescue_iso_uefi_boot_baseline_latest.json"
-      ]
-    },
-    {
-      "id": "rescue_stick_usb_for_windows_inspect",
-      "status": "blocked_upstream",
-      "blocked_by": [
-        "RESCUE_ISO_UEFI_X64_NOT_READY",
-        "BLOCKED_REQUIRES_OPERATOR_SUDO_POLICY"
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RESULT.md"
       ]
     },
     {
       "id": "windows_laptop_rescue_inspect",
       "status": "blocked_upstream",
       "blocked_by": [
-        "RESCUE_ISO_UEFI_X64_NOT_READY",
-        "WINDOWS_INSPECT_BLOCKED_BY_RESCUE_UEFI_BOOT"
+        "RESCUE_ISO_UEFI_X64_NOT_READY"
       ]
     }
   ],
@@ -39,12 +43,10 @@
     "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
     "WINDOWS11_REPARTITION_EXECUTION",
     "DUALBOOT_INSTALL_EXECUTION",
-    "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP",
-    "MONOLITH_BOUNDARY_FOLLOWUP",
-    "PACKAGE_UPDATE_GATE"
+    "BACKEND_RESTART_WITHOUT_OPERATOR_APPROVAL"
   ],
   "governance_rules": {
     "roadmap_first": "docs/developer/CURSOR_WORK_RULES.md",
-    "selection_rule": "No USB or Windows inspect until canonical ISO passes validate-rescue-iso-uefi-boot.sh."
+    "selection_rule": "Telemetry ingest code complete; live smoke requires operator env + backend restart approval."
   }
 }

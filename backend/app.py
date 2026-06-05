@@ -3036,6 +3036,16 @@ except ImportError:
     pass
 
 try:
+    from rescue_telemetry.routers import router as rescue_telemetry_router
+
+    app.include_router(rescue_telemetry_router)
+except Exception:
+    logger.exception(
+        "Rescue-Telemetry-Router konnte nicht registriert werden; "
+        "/api/rescue/telemetry/* fehlt dann (404)."
+    )
+
+try:
     from api.routes.diagnostics import router as diagnostics_router
     app.include_router(diagnostics_router)
 except ImportError:

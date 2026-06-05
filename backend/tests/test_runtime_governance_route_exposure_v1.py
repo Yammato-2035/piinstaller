@@ -25,3 +25,19 @@ def test_local_lab_allows_fleet():
         d = decide_route_exposure("/api/fleet/sessions", bundle.capabilities)
         assert d.allowed is True
         assert path_allowed_for_active_profile("/api/fleet/sessions") is True
+
+
+def test_release_allows_rescue_telemetry_not_dcc():
+    with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=False):
+        bundle = resolve_runtime_governance_bundle()
+        for path in (
+            "/api/rescue/telemetry/health",
+            "/api/rescue/telemetry/v1/ingest",
+        ):
+            d = decide_route_exposure(path, bundle.capabilities)
+            assert d.allowed is True
+            assert d.block_code is None
+            assert path_allowed_for_active_profile(path) is True
+        dcc = decide_route_exposure("/api/dev-dashboard/status", bundle.capabilities)
+        assert dcc.allowed is False
+        assert dcc.block_code == "PROFILE_ROUTE_BLOCKED"

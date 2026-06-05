@@ -1074,19 +1074,24 @@
           "title_de": "Telemetrie-Zustellung (ACK-Pflicht, Store-and-forward)",
           "title_en": "Telemetry delivery (ACK required, store-and-forward)",
           "status": "yellow",
-          "progress_percent": 50,
+          "progress_percent": 75,
           "evidence_links": [
             "docs/evidence/windows-rescue/windows_rescue_telemetry.schema.json",
             "docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md",
-            "backend/core/windows_rescue_inspect.py"
+            "docs/knowledge-base/development/RESCUE_TELEMETRY_INGEST.md",
+            "docs/evidence/dev-dashboard/RESCUE_TELEMETRY_WOL_DEVSERVER_CHECK.md",
+            "backend/core/rescue_telemetry_ingest.py",
+            "backend/rescue_telemetry/routers.py",
+            "backend/tests/test_rescue_telemetry_ingest_v1.py"
           ],
           "tasks": [
             "Telemetrie-Schema anlegen",
             "Telemetrieserver-API-Vertrag dokumentieren",
             "Queue-/Retry-Modell dokumentieren",
-            "DCC-Status für Telemetrie-Zustand modellieren",
+            "Separater Ingest /api/rescue/telemetry/v1/ingest (nicht DCC)",
+            "PROFILE_ROUTE_BLOCKED nur DCC — Tests grün",
             "Privacy-Guard definieren",
-            "Tests für ACK/Hash/Queue/Privacy-Blocker vorbereiten"
+            "Operator-Smoke mit RESCUE_TELEMETRY_INGEST_ENABLED=1 (Backend-Restart Freigabe)"
           ]
         }
       ],
