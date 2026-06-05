@@ -1104,32 +1104,33 @@
               "id": "cockpit-dcc-frontend-gating-profile-desync",
               "title_de": "DCC-Frontend-Gating: keine release-disabled Seite bei /api/dev-dashboard/status=200",
               "title_en": "DCC frontend gating: no release-disabled page when /api/dev-dashboard/status=200",
-              "status": "partial_green",
-              "progress_percent": 90,
+              "status": "green",
+              "progress_percent": 100,
               "commit_ref": "4fb72ee",
               "evidence_links": [
                 "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_RESULT.md",
                 "docs/evidence/dev-dashboard/DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md",
-                "docs/evidence/dev-dashboard/dcc_live_acceptance_after_fallback_latest.json"
+                "docs/evidence/dev-dashboard/DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md",
+                "docs/evidence/dev-dashboard/dcc_release_restore_after_fallback_latest.json"
               ],
-              "blocker_refs": ["release_restore_pending_for_full_green"],
-              "next_action_de": "local_lab live: Status 200 + Operator-DCC sichtbar; release restore für voll grün.",
-              "next_action_en": "local_lab live: status 200 + operator DCC visible; release restore for full green."
+              "blocker_refs": [],
+              "next_action_de": "Abgeschlossen. Nächster Track: RUNTIME_GOVERNANCE_LIVE_VALIDATION.",
+              "next_action_en": "Complete. Next track: RUNTIME_GOVERNANCE_LIVE_VALIDATION."
             },
             {
               "id": "cockpit-dcc-blank-screen-fail-safe",
               "title_de": "DCC Blank Screen: Fail-safe Boot-Diagnose + ErrorBoundary",
               "title_en": "DCC blank screen: fail-safe boot diagnostics + ErrorBoundary",
-              "status": "partial_green",
-              "progress_percent": 90,
+              "status": "green",
+              "progress_percent": 100,
               "evidence_links": [
                 "docs/evidence/dev-dashboard/DCC_BLANK_SCREEN_TRIAGE_RESULT.md",
-                "docs/evidence/dev-dashboard/DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md",
-                "docs/evidence/dev-dashboard/dcc_live_acceptance_after_fallback_latest.json"
+                "docs/evidence/dev-dashboard/DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md",
+                "docs/evidence/dev-dashboard/dcc_release_restore_after_fallback_latest.json"
               ],
-              "blocker_refs": ["release_restore_pending_for_full_green"],
-              "next_action_de": "blank_dcc_screen resolved; release restore dokumentieren, dann Runtime-Governance.",
-              "next_action_en": "blank_dcc_screen resolved; document release restore, then runtime governance."
+              "blocker_refs": [],
+              "next_action_de": "blank_dcc_screen resolved; DCC-Live-Acceptance abgeschlossen.",
+              "next_action_en": "blank_dcc_screen resolved; DCC live acceptance complete."
             }
           ],
           "blockers": [],
@@ -1245,7 +1246,7 @@
             }
           ],
           "decision_refs": [],
-          "next_prompt_id": "DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_CONFIRMATION"
+          "next_prompt_id": "RUNTIME_GOVERNANCE_LIVE_VALIDATION"
         }
       ],
       "blockers": [],

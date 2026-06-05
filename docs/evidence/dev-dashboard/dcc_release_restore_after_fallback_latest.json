@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "task": "dcc_release_restore_after_fallback_ingest",
+  "generated_at": "2026-06-05T12:30:00+02:00",
+  "head": "a82b5f3",
+  "run_type": "ingest_acceptance_no_repair",
+  "release_restore": {
+    "confirmed": true,
+    "install_profile": "release",
+    "dev_control_enabled": false,
+    "profile_gate_status": "green"
+  },
+  "api_after_restore": {
+    "dev_dashboard_status": { "http_status": 404, "code": "PROFILE_ROUTE_BLOCKED" },
+    "fleet_sessions": { "http_status": 404, "code": "PROFILE_ROUTE_BLOCKED" },
+    "recent_evidence": { "http_status": 404, "code": "PROFILE_ROUTE_BLOCKED" },
+    "ui_cockpit_http": 200
+  },
+  "bundle": {
+    "served_asset": "assets/index-FgGYQFBB.js",
+    "markers": [
+      "DCC_BOOT_DIAGNOSTICS_V1",
+      "dcc-boot-diagnostics",
+      "dcc-cockpit-shell",
+      "dev-control-disabled",
+      "PROFILE_ROUTE_BLOCKED"
+    ]
+  },
+  "operator_browser": {
+    "blank": false,
+    "disabled_page_visible": true,
+    "boot_diagnostics_visible": true
+  },
+  "prior_local_lab_smoke": {
+    "confirmed": true,
+    "evidence": "docs/evidence/dev-dashboard/DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md"
+  },
+  "classification": {
+    "status": "green",
+    "classification": "dcc_live_acceptance_complete",
+    "blank_dcc_screen": "resolved",
+    "release_profile_block_expected": "confirmed"
+  },
+  "recommended_next_prompt_id": "RUNTIME_GOVERNANCE_LIVE_VALIDATION"
+}

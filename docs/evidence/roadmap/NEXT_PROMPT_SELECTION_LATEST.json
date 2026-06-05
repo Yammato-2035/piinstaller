@@ -1,52 +1,56 @@
 {
   "schema_version": 2,
-  "selected_at": "2026-06-05T12:00:00+02:00",
-  "selected_prompt_id": "DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_CONFIRMATION",
-  "reason_de": "DCC live sichtbar nach Deploy (Operator + Bundle-Marker); blank_dcc_screen resolved. Release restore fehlt noch für voll grün. Controlled Command Runner nicht recommended_next (Rescue-Chroot-Cleanup Vorrang).",
-  "reason_en": "DCC live visible after deploy (operator + bundle markers); blank_dcc_screen resolved. Release restore pending for full green. Controlled command runner not recommended_next.",
-  "recommended_after_release_restore": "RUNTIME_GOVERNANCE_LIVE_VALIDATION",
-  "deferred_after_runtime_governance": "MONOLITH_BOUNDARY_FOLLOWUP",
-  "tracks": [
+  "selected_at": "2026-06-05T12:30:00+02:00",
+  "selected_prompt_id": "RUNTIME_GOVERNANCE_LIVE_VALIDATION",
+  "reason_de": "DCC Live Acceptance abgeschlossen: local_lab HTTP 200 + Operator-DCC sichtbar; release restore mit PROFILE_ROUTE_BLOCKED; Disabled+Diagnose unter release; blank_dcc_screen resolved.",
+  "reason_en": "DCC live acceptance complete: local_lab HTTP 200, release restore confirmed, blank_dcc_screen resolved.",
+  "completed_tracks": [
     {
       "id": "dcc_live_acceptance_after_fallback",
-      "status": "partial_green",
-      "classification": "dcc_live_visible_after_deploy",
-      "blank_dcc_screen": "resolved",
-      "next_step": "Operator: release restore dokumentieren; danach RUNTIME_GOVERNANCE_LIVE_VALIDATION.",
+      "status": "green",
+      "classification": "dcc_live_acceptance_complete",
       "evidence": [
         "docs/evidence/dev-dashboard/DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md",
-        "docs/evidence/dev-dashboard/dcc_live_acceptance_after_fallback_latest.json"
+        "docs/evidence/dev-dashboard/DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md"
       ]
     },
     {
+      "id": "dcc_blank_screen_fail_safe",
+      "status": "green",
+      "blank_dcc_screen": "resolved"
+    },
+    {
+      "id": "DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_CONFIRMATION",
+      "status": "completed"
+    }
+  ],
+  "tracks": [
+    {
       "id": "runtime_governance_live_validation",
-      "status": "ready_after_release_restore",
-      "next_step": "Nach release restore: release/local_lab-Parity live prüfen.",
+      "status": "recommended_next",
+      "next_step": "release/local_lab-Parity und Runtime-Governance live prüfen.",
       "evidence": ["docs/evidence/monolith/RUNTIME_GOVERNANCE_DELEGATION_RESULT.md"]
     },
     {
       "id": "monolith_boundary_followup",
-      "status": "deferred_until_runtime_governance",
-      "next_step": "Erst nach DCC grün + Runtime-Governance.",
+      "status": "deferred_after_runtime_governance",
+      "next_step": "Erst nach RUNTIME_GOVERNANCE_LIVE_VALIDATION.",
       "evidence": ["docs/roadmap/MONOLITH_REFACTOR_PLAN.md"]
     },
     {
       "id": "dev_dashboard_controlled_command_runs_mvp",
       "status": "deferred_not_recommended_next",
-      "classification": "wrong_next_prompt_selection_risk",
-      "reason": "setuphelfer_next_prompts.json reason_de: Rescue-Chroot-Cleanup-Blocker — nicht recommended_next solange DCC/Runtime/Rescue offen.",
-      "evidence": ["docs/roadmap/setuphelfer_next_prompts.json"]
+      "reason": "Zurückgestellt bis DCC/Runtime/Rescue stabil."
     }
   ],
   "forbidden_next": [
     "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP",
-    "MONOLITH_SPLIT_BEFORE_LIVE_VALIDATION",
-    "FULL_GREEN_DCC_WITHOUT_RELEASE_RESTORE",
-    "USB_WRITE"
+    "blank_dcc_screen_unresolved",
+    "MONOLITH_SPLIT_BEFORE_RUNTIME_GOVERNANCE"
   ],
   "governance_rules": {
     "roadmap_first": "docs/developer/CURSOR_WORK_RULES.md",
     "kb_first": "docs/knowledge-base/diagnostics/KNOWN_RECURRENT_ERRORS.md",
-    "selection_rule": "Do not select prompts whose reason says deferred or lower priority than active DCC/Runtime/Rescue blockers."
+    "selection_rule": "Do not select Controlled Command Runner while higher-priority blockers remain."
   }
 }

@@ -18,10 +18,15 @@ Kurzreferenz für Knowledge-Base-First-Triage. Details in verlinkter Evidence.
 
 ### `blank_dcc_screen` — Auflösungsstand
 
-**status:** `resolved_for_current_deployed_bundle`  
-**evidence:** Bundle-Marker (`DCC_BOOT_DIAGNOSTICS_V1`, `dcc-boot-diagnostics`, …) + Operator-sichtbares DCC/Fallback  
+**status:** `resolved`  
+**evidence:** `/opt` + served JS Marker; local_lab Status HTTP 200; release restore `PROFILE_ROUTE_BLOCKED`; Browser Disabled+Diagnose, nicht leer  
 **previous causes:** stale bundle, frontend gating desync, missing fail-safe diagnostics  
-**remaining:** release restore für voll grün; siehe `DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`
+**track:** beendet — siehe `DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`
+
+### `release_profile_block_expected` — Auflösungsstand
+
+**status:** `confirmed`  
+**rule:** release blockiert interne Dev-Routen mit 404 `PROFILE_ROUTE_BLOCKED`; kein Backend-down, kein Portfehler
 
 ## Pflicht vor neuem Fix
 

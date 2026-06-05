@@ -48,7 +48,7 @@ Fix (Workspace `4fb72ee`): `decideDccVisibility()` — Source-of-truth `/api/dev
 | Code-Fix | committed (`4fb72ee`) |
 | Deploy `/opt` | **erledigt** (`199d3c6` Fail-safe + Gating) |
 | local_lab Browser-Smoke | **partial_green** — Operator: DCC + Diagnose sichtbar; API Status 200 |
-| DCC voll grün | **ausstehend** — release restore nach local_lab noch dokumentieren |
+| DCC voll grün | **ja** — local_lab + release restore live belegt (`DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`) |
 
 Evidence: `DCC_FRONTEND_PROFILE_DESYNC_RESULT.md`, `DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md`
 
@@ -85,9 +85,20 @@ Symptom: `http://127.0.0.1:3001/?window=cockpit` lädt (HTTP 200), aber kein nut
 
 Fix: `DccBootDiagnosticsPanel` + `DccErrorBoundary` + `dccBootState` (Marker `DCC_BOOT_DIAGNOSTICS_V1`).
 
-**Stand 2026-06-05 (deployed bundle):** `blank_dcc_screen` **resolved** — Marker in `/opt` + served JS; Operator meldet DCC und Boot-Diagnose sichtbar. Weitere Blank-Screen-Reparatur **beenden**.
+**Stand 2026-06-05 (deployed bundle + release restore):** `blank_dcc_screen` **resolved** — local_lab DCC sichtbar; release: Disabled-Page + Diagnosepanel, nicht leer. Track **beendet**.
 
-Evidence: `DCC_BLANK_SCREEN_TRIAGE_RESULT.md`, `DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`
+Evidence: `DCC_BLANK_SCREEN_TRIAGE_RESULT.md`, `DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`
+
+## Release-Profilblock erwartet
+
+**Klassifikation:** `release_profile_block_expected` — **confirmed**
+
+| Regel | Inhalt |
+|-------|--------|
+| release blockiert Dev-Routen | HTTP 404 `PROFILE_ROUTE_BLOCKED` |
+| Kein Backend-down | `:8000` antwortet |
+| Kein Portfehler | DCC `:3001`, nginx `:8080` nicht DCC |
+| UI unter release | Disabled-Page + Boot-Diagnose, **nicht leer** |
 
 ## Falsche Next-Prompt-Auswahl
 
@@ -96,3 +107,5 @@ Evidence: `DCC_BLANK_SCREEN_TRIAGE_RESULT.md`, `DCC_LIVE_ACCEPTANCE_AFTER_FALLBA
 Ursache: `DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP` als `next_prompt_id` obwohl `reason_de` in `setuphelfer_next_prompts.json` explizit „nicht recommended_next“ (Rescue-Chroot-Cleanup Vorrang) sagt.
 
 Pflicht: Selection-Logik darf Prompts mit `deferred` / niedrigerer Priorität nicht wählen, solange DCC-/Runtime-/Rescue-Blocker aktiv sind.
+
+**Stand:** `fixed_or_mitigated` — `RUNTIME_GOVERNANCE_LIVE_VALIDATION` ist nächster Prompt; Controlled Command Runner forbidden.

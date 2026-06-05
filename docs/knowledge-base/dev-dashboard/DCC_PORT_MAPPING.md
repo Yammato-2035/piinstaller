@@ -27,7 +27,7 @@ Der SPA-Server auf 3001 proxyt **kein** `/api` zum Backend. Das Frontend nutzt d
 - Status-Requests werden mit `cache: no-store` und Query-Param `?t=<Date.now()>` ausgefuehrt, um stale Snapshots zu vermeiden.
 - Fix committed in `4fb72ee`; Produktions-Bundle unter `/opt` muss per `deploy-to-opt.sh` aktualisiert werden, bevor Browser-Smoke gilt.
 - Blank-Screen-Fail-safe: Marker `DCC_BOOT_DIAGNOSTICS_V1` im Bundle; Diagnosepanel `dcc-boot-diagnostics` immer sichtbar.
-- Live-Ingest 2026-06-05: `/opt` + served `index-FgGYQFBB.js` enthalten alle Marker; Operator: DCC + Diagnose sichtbar (`blank_dcc_screen` resolved).
+- Live-Ingest 2026-06-05: `/opt` + served `index-FgGYQFBB.js` enthalten alle Marker; local_lab + release restore belegt; `blank_dcc_screen` resolved; DCC **grün**.
 
 ## Kein Bug
 
