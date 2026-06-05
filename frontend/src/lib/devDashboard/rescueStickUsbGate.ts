@@ -9,6 +9,7 @@ export function loadRescueIsoUsbGateStatus(): RescueIsoUsbGateStatus {
 export type RescueStickGateViewModel = {
   isoStatus: string
   isoVerified: boolean
+  uefiBootReady: boolean
   isoBootProven: string
   usbWritten: string
   targetBooted: boolean
@@ -24,6 +25,7 @@ export function buildRescueStickGateViewModel(
   return {
     isoStatus: status.iso_status,
     isoVerified: status.iso_verified === true,
+    uefiBootReady: status.uefi_boot_ready === true,
     isoBootProven: status.target_laptop_booted_from_stick
       ? 'target_yes'
       : status.iso_boot_proven_vm === 'partial'

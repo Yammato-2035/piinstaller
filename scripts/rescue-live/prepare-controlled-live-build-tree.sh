@@ -14,6 +14,7 @@ RSVG_COMPAT="${REPO_ROOT}/build/rescue/tool-compat/bin/rsvg"
 RSVG_CHROOT="${BUILD_ROOT}/config/includes.chroot/usr/local/bin/rsvg"
 BOOTLOADER_DIR="${BUILD_ROOT}/config/bootloaders/isolinux"
 BOOTLOADER_TEMPLATE_ROOT="/usr/share/live/build/bootloaders/isolinux"
+GRUB_EFI_DIR="${BUILD_ROOT}/config/bootloaders/grub-efi"
 TRASH_ROOT="${REPO_ROOT}/build/rescue/.trash"
 
 git_workspace() {
@@ -87,6 +88,7 @@ mkdir -p \
   "${BUILD_ROOT}/config/includes.chroot/usr/local/bin" \
   "${BUILD_ROOT}/config/hooks/normal" \
   "${BOOTLOADER_DIR}" \
+  "${GRUB_EFI_DIR}" \
   "${BUILD_ROOT}/auto" \
   "${BUILD_ROOT}/evidence"
 
@@ -114,6 +116,20 @@ for module in ldlinux.c32 libcom32.c32 libutil.c32 libmenu.c32; do
 done
 
 create_minimal_bootlogo_cpio "${BOOTLOADER_DIR}/bootlogo"
+
+write_text_file "${GRUB_EFI_DIR}/setuphelfer-grub-efi-note.txt" 0644 <<'EOF'
+# Setuphelfer Rescue — UEFI-x64 boot (grub-efi-amd64)
+#
+# live-build >= bookworm: auto/config sets --bootloaders syslinux,grub-efi when supported.
+# live-build 3.0 (Ubuntu): no grub-efi stage — operator runs after lb build:
+#   scripts/rescue-live/patch-rescue-iso-uefi-x64.sh --in-place binary.hybrid.iso
+#   scripts/rescue-live/validate-rescue-iso-uefi-boot.sh binary.hybrid.iso
+#
+# Required ISO markers after successful UEFI enablement:
+#   /EFI/BOOT/BOOTX64.EFI
+#   xorriso -report_el_torito shows EFI alt-boot (boot/grub/efi.img)
+# init=/lib/systemd/systemd remains in --bootappend-live and UEFI grub.cfg.
+EOF
 
 # developer-qemu: ISOLINUX serial console + auto-boot (headless QEMU lab; no vesamenu hang).
 write_developer_qemu_isolinux_serial_config() {
@@ -188,6 +204,8 @@ EOF
 # *.list.binary is consumed by lb_binary_package-lists (ISO pool only), not the chroot.
 write_text_file "${BUILD_ROOT}/config/package-lists/setuphelfer.list.binary" 0644 <<'EOF'
 syslinux-utils
+grub-efi-amd64-bin
+grub-common
 EOF
 
 write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/network/20-wired.network" 0644 <<'EOF'
@@ -487,9 +505,8 @@ fi
 write_text_file "${BUILD_ROOT}/auto/config" 0755 <<EOF
 #!/bin/sh
 set -eu
-lb config noauto \\
-  --distribution bookworm \\
-  --archive-areas "main" \\
+LB_COMMON="--distribution bookworm \\
+  --archive-areas main \\
   --binary-images iso-hybrid \\
   --zsync false \\
   --debian-installer false \\
@@ -497,9 +514,14 @@ lb config noauto \\
   --firmware-chroot false \\
   --firmware-binary false \\
   --mode debian \\
-  --bootappend-live "${LIVE_BOOTAPPEND}" \\
-  --iso-volume "SETUPHELFER_RESCUE" \\
-  --iso-application "Setuphelfer Rescue Live"
+  --bootappend-live ${LIVE_BOOTAPPEND@Q} \\
+  --iso-volume SETUPHELFER_RESCUE \\
+  --iso-application Setuphelfer Rescue Live"
+if lb config --help 2>/dev/null | grep -q '\-\-bootloaders'; then
+  eval "lb config noauto \${LB_COMMON} --bootloaders syslinux,grub-efi"
+else
+  eval "lb config noauto \${LB_COMMON}"
+fi
 EOF
 
 write_text_file "${BUILD_ROOT}/auto/build" 0755 <<'EOF'
@@ -552,7 +574,11 @@ write_text_file "${BUILD_ROOT}/evidence/build-tree-manifest.json" 0644 <<EOF
   "qemu_serial_console_configured": $([ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false),
   "qemu_smoke_autopilot_hook": $([ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false),
   "qemu_autopilot_service_wanted": $([ "${RESCUE_BUILD_PROFILE}" = "developer-qemu" ] && echo true || echo false),
-  "qemu_guest_devserver_endpoint": "http://10.0.2.2:8001"
+  "qemu_guest_devserver_endpoint": "http://10.0.2.2:8001",
+  "uefi_x64_boot_configured": true,
+  "uefi_boot_method": "live-build-grub-efi-or-post-patch",
+  "uefi_post_patch_script": "scripts/rescue-live/patch-rescue-iso-uefi-x64.sh",
+  "uefi_validator_script": "scripts/rescue-live/validate-rescue-iso-uefi-boot.sh"
 }
 EOF
 
@@ -569,6 +595,16 @@ write_text_file "${BUILD_ROOT}/README_SETUPHELFER_RESCUE_LIVE.md" 0644 <<EOF
 1. Temp-Runtime-Bundle unter \`config/includes.chroot/opt/setuphelfer-rescue/\`
 2. Legacy-\`rsvg\`-Compat unter \`config/includes.chroot/usr/local/bin/rsvg\` (rsvg-convert)
 3. Paketliste, systemd-networkd, local-only Services, Hooks
+4. UEFI-x64: \`grub-efi-amd64-bin\` in \`setuphelfer.list.binary\`; \`auto/config\` nutzt \`--bootloaders syslinux,grub-efi\` wenn live-build es unterstützt
+
+## UEFI-x64 nach Build (Pflicht vor USB/MSI-Test)
+
+Wenn \`validate-rescue-iso-uefi-boot.sh\` auf der ISO rot ist (live-build 3.0 / nur ISOLINUX):
+
+\`\`\`bash
+./scripts/rescue-live/patch-rescue-iso-uefi-x64.sh --in-place binary.hybrid.iso
+./scripts/rescue-live/validate-rescue-iso-uefi-boot.sh binary.hybrid.iso
+\`\`\`
 
 ## ISO-Build (NUR nach Operator-Freigabe)
 

@@ -1,7 +1,7 @@
 {
-  "schema_version": 1,
-  "classified_at": "2026-06-05T17:00:00+02:00",
-  "iso_status": "iso_bootable_ready_for_usb_operator_write",
+  "schema_version": 2,
+  "classified_at": "2026-06-05T20:50:00+02:00",
+  "iso_status": "iso_bios_hybrid_bootable_only",
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
   "iso_size_bytes": 511705088,
   "iso_sha256": "1899f5cabf9d40c9581805def9a765557a2168fc11ac181b0f71bfc0b1ff0691",
@@ -10,12 +10,35 @@
   "iso_validator": "scripts/rescue-live/validate-rescue-iso-squashfs.sh",
   "iso_validator_exit_code": 0,
   "iso_validator_note": "squashfs bundle, systemd init, enabled units — read-only check 2026-06-05",
+  "uefi_boot_ready": false,
+  "uefi_validator": "scripts/rescue-live/validate-rescue-iso-uefi-boot.sh",
+  "uefi_validator_exit_code": 34,
+  "uefi_validator_note": "isolinux-only hybrid ISO — no EFI El Torito, no /EFI/BOOT/BOOTX64.EFI",
+  "uefi_baseline_evidence": "docs/evidence/runtime-results/rescue/rescue_iso_uefi_boot_baseline_latest.json",
   "iso_boot_proven_on_target": false,
   "iso_boot_proven_vm": "partial",
+  "target_uefi_boot_validated": false,
+  "msi_uefi_boot_failed_confirmed": true,
   "usb_stick_written": "unknown",
   "target_laptop_booted_from_stick": false,
   "windows_inspect_executable": false,
   "blockers": [
+    {
+      "id": "RESCUE_ISO_UEFI_X64_NOT_READY",
+      "severity": "critical",
+      "status": "blocked",
+      "codes": ["RESCUE-UEFI-001", "RESCUE-UEFI-002", "RESCUE-UEFI-003"],
+      "description_de": "Rescue-ISO ist nur BIOS/ISOLINUX-hybrid bootfähig — kein UEFI-x64-Bootpfad.",
+      "description_en": "Rescue ISO is BIOS/ISOLINUX hybrid bootable only — no UEFI-x64 boot path."
+    },
+    {
+      "id": "RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11",
+      "severity": "critical",
+      "status": "blocked",
+      "code": "RESCUE-UEFI-004",
+      "description_de": "MSI W11 UEFI-Bootversuch (Secure Boot off) mit aktueller ISO fehlgeschlagen.",
+      "description_en": "MSI W11 UEFI boot attempt (Secure Boot off) failed with current ISO."
+    },
     {
       "id": "RESCUE_STICK_NOT_WRITTEN",
       "severity": "critical",
@@ -27,20 +50,32 @@
       "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
       "severity": "critical",
       "status": "blocked",
-      "description_de": "W11-Laptop noch nicht vom Rescue-USB gebootet.",
-      "description_en": "W11 laptop not yet booted from rescue USB."
+      "description_de": "W11-Laptop noch nicht vom Rescue-USB gebootet (UEFI-Pfad fehlt).",
+      "description_en": "W11 laptop not yet booted from rescue USB (UEFI path missing)."
+    },
+    {
+      "id": "WINDOWS_INSPECT_BLOCKED_BY_RESCUE_UEFI_BOOT",
+      "severity": "critical",
+      "status": "blocked",
+      "code": "RESCUE-UEFI-005",
+      "description_de": "Windows-Inspect upstream blockiert bis UEFI-x64-ISO rebuild + Validator grün + MSI-Boot bestätigt.",
+      "description_en": "Windows inspect upstream blocked until UEFI-x64 ISO rebuild + validator green + MSI boot confirmed."
     }
   ],
   "upstream_blocks": [
     "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
-    "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING"
+    "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING",
+    "RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11"
   ],
-  "next_operator_step_de": "USB-Stick im Operator-Terminal schreiben (dd-Handoff), dann am W11-Laptop booten.",
-  "next_operator_step_en": "Write USB stick in operator terminal (dd handoff), then boot W11 laptop.",
-  "next_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
+  "next_operator_step_de": "Prepare → Rebuild → UEFI-Patch falls nötig → validate-rescue-iso-uefi-boot grün → erst dann USB/MSI-Boot.",
+  "next_operator_step_en": "Prepare → rebuild → UEFI patch if needed → validate-rescue-iso-uefi-boot green → then USB/MSI boot.",
+  "next_prompt_id": "RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN",
   "handoff_docs": [
+    "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_HANDOFF.md",
     "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md",
     "docs/evidence/windows-rescue/WINDOWS11_RESCUE_STICK_BOOT_AND_INSPECT_HANDOFF.md"
   ],
-  "agent_usb_write_executed": false
+  "agent_usb_write_executed": false,
+  "agent_iso_rebuild_executed": false,
+  "agent_uefi_patch_executed": false
 }

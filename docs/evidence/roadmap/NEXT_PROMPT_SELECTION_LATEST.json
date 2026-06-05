@@ -1,31 +1,44 @@
 {
   "schema_version": 2,
-  "selected_at": "2026-06-05T17:05:00+02:00",
-  "selected_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
-  "reason_de": "Windows-Inspect upstream blockiert: ISO validiert, USB nicht geschrieben, W11 nicht vom Stick gebootet. Vorrang vor Windows-HW-Inspect.",
-  "reason_en": "Windows inspect upstream blocked: ISO verified, USB not written, W11 not booted from stick. Priority over Windows HW inspect.",
+  "selected_at": "2026-06-05T20:55:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN",
+  "reason_de": "MSI W11 UEFI-Boot mit aktueller ISO fehlgeschlagen (isolinux-only). UEFI-x64-Fix vorbereitet; Rebuild+Validator vor USB/Windows-Inspect.",
+  "reason_en": "MSI W11 UEFI boot failed with current ISO (isolinux-only). UEFI-x64 fix prepared; rebuild+validator before USB/Windows inspect.",
   "completed_tracks": [],
   "tracks": [
     {
-      "id": "rescue_stick_usb_for_windows_inspect",
+      "id": "rescue_iso_uefi_x64_rebuild",
       "status": "recommended_next",
       "priority": "P0",
-      "classification": "iso_bootable_ready_for_usb_operator_write",
-      "next_step": "Operator dd-Handoff → USB → W11 boot → dann Windows inspect.",
+      "classification": "iso_bios_hybrid_bootable_only",
+      "next_step": "Operator: prepare → rebuild → patch (live-build 3.0) → validate-rescue-iso-uefi-boot grün.",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json",
-        "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md"
+        "docs/evidence/runtime-results/rescue/rescue_iso_uefi_boot_baseline_latest.json",
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_HANDOFF.md"
+      ]
+    },
+    {
+      "id": "rescue_stick_usb_for_windows_inspect",
+      "status": "blocked_upstream",
+      "blocked_by": [
+        "RESCUE_ISO_UEFI_X64_NOT_READY",
+        "RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11"
       ]
     },
     {
       "id": "windows_laptop_rescue_inspect",
       "status": "blocked_upstream",
-      "blocked_by": ["RESCUE_STICK_NOT_WRITTEN", "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET"]
+      "blocked_by": [
+        "RESCUE_ISO_UEFI_X64_NOT_READY",
+        "RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11",
+        "WINDOWS_INSPECT_BLOCKED_BY_RESCUE_UEFI_BOOT"
+      ]
     }
   ],
   "forbidden_next": [
     "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
     "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING",
+    "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
     "WINDOWS11_REPARTITION_EXECUTION",
     "DUALBOOT_INSTALL_EXECUTION",
     "BOOTLOADER_WRITE_EXECUTION",
@@ -35,6 +48,6 @@
   ],
   "governance_rules": {
     "roadmap_first": "docs/developer/CURSOR_WORK_RULES.md",
-    "selection_rule": "No Windows inspect on target without rescue USB boot."
+    "selection_rule": "No USB write or Windows inspect until UEFI-x64 ISO validator is green."
   }
 }

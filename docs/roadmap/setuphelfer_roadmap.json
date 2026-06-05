@@ -708,8 +708,8 @@
           ]
         }
       ],
-      "next_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
-      "next_recommended_action": "Hybrid-ISO validiert (Validator Exit 0). Operator: USB dd-Handoff, W11-Boot, dann Windows-Inspect. Kein Agent-dd."
+      "next_prompt_id": "RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_RUN",
+      "next_recommended_action": "UEFI-x64-Fix vorbereitet. Operator: Rebuild + validate-rescue-iso-uefi-boot grün, dann UEFI-Patch falls live-build 3.0, dann MSI-Boot, erst dann USB/Windows-Inspect. Kein Agent-dd."
     },
     {
       "id": "diagnostics",

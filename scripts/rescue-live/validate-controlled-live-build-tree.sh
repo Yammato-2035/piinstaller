@@ -42,6 +42,7 @@ REQ=(
   config/hooks/normal/010-enable-setuphelfer-services.hook.chroot
   config/bootloaders/isolinux/bootlogo
   config/bootloaders/isolinux/splash.svg.in
+  config/bootloaders/grub-efi/setuphelfer-grub-efi-note.txt
   auto/config
   auto/build
   auto/clean
@@ -59,7 +60,16 @@ fi
 if ! grep -qx 'syslinux-utils' "$BUILD_ROOT/config/package-lists/setuphelfer.list.binary" 2>/dev/null; then
   fail_missing "setuphelfer.list.binary must list syslinux-utils (optional ISO pool mirror)"
 fi
-
+grep -qx 'grub-efi-amd64-bin' "$BUILD_ROOT/config/package-lists/setuphelfer.list.binary" \
+  || fail_missing "setuphelfer.list.binary must list grub-efi-amd64-bin (UEFI-x64 ISO pool)"
+grep -qx 'grub-common' "$BUILD_ROOT/config/package-lists/setuphelfer.list.binary" \
+  || fail_missing "setuphelfer.list.binary must list grub-common (UEFI-x64 ISO pool)"
+if ! grep -q 'init=/lib/systemd/systemd' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must set init=/lib/systemd/systemd in --bootappend-live"
+fi
+if ! grep -qE 'bootloaders syslinux,grub-efi|LB_COMMON' "$BUILD_ROOT/auto/config"; then
+  fail_missing "auto/config must configure UEFI-x64 bootloaders or LB_COMMON eval wrapper"
+fi
 if ! grep -q 'Use controlled gate before running lb build' "$BUILD_ROOT/auto/build"; then
   fail_missing "auto/build gate message"
 fi
@@ -101,9 +111,6 @@ if ! grep -q 'locales=de_DE.UTF-8' "$BUILD_ROOT/auto/config"; then
 fi
 if ! grep -q 'timezone=Europe/Berlin' "$BUILD_ROOT/auto/config"; then
   fail_missing "auto/config must set timezone=Europe/Berlin in --bootappend-live"
-fi
-if ! grep -q 'init=/lib/systemd/systemd' "$BUILD_ROOT/auto/config"; then
-  fail_missing "auto/config must set init=/lib/systemd/systemd in --bootappend-live"
 fi
 grep -qx 'dbus' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list dbus"

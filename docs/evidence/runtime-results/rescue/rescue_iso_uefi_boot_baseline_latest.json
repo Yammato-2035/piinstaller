@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "classified_at": "2026-06-05T20:50:00+02:00",
+  "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_sha256": "1899f5cabf9d40c9581805def9a765557a2168fc11ac181b0f71bfc0b1ff0691",
+  "iso_size_bytes": 511705088,
+  "validator": "scripts/rescue-live/validate-rescue-iso-uefi-boot.sh",
+  "validator_exit_code": 34,
+  "uefi_boot_ready": false,
+  "classifications": [
+    "iso_bios_hybrid_bootable_only",
+    "uefi_boot_path_missing",
+    "efi_boot_files_missing",
+    "isolinux_only_iso",
+    "msi_uefi_boot_failed_confirmed",
+    "windows_inspect_blocked_by_rescue_uefi_boot"
+  ],
+  "errors": [
+    {"id": "isolinux_only_iso", "code": "RESCUE-UEFI-003"},
+    {"id": "efi_eltorito_entry_missing", "code": "RESCUE-UEFI-002"},
+    {"id": "efi_boot_files_missing", "code": "RESCUE-UEFI-001"},
+    {"id": "msi_uefi_boot_failed_confirmed", "code": "RESCUE-UEFI-004"},
+    {"id": "windows_inspect_blocked_by_rescue_uefi_boot", "code": "RESCUE-UEFI-005"}
+  ],
+  "xorriso_baseline": {
+    "bios_boot": "/isolinux/isolinux.bin",
+    "efi_eltorito": false,
+    "efi_boot_files": false,
+    "bootx64_efi_path": null
+  },
+  "msi_target": {
+    "platform": "MSI laptop Windows 11 UEFI Secure Boot off",
+    "uefi_boot_attempt": "failed",
+    "confirmed_at": "2026-06-05"
+  },
+  "fix_prepared": {
+    "prepare_script": "scripts/rescue-live/prepare-controlled-live-build-tree.sh",
+    "post_patch_script": "scripts/rescue-live/patch-rescue-iso-uefi-x64.sh",
+    "operator_handoff": "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_X64_REBUILD_OPERATOR_HANDOFF.md"
+  },
+  "agent_build_executed": false,
+  "agent_patch_executed": false
+}
