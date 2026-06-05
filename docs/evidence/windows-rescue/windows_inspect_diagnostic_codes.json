@@ -25,23 +25,75 @@
     },
     {
       "code": "WIN-BITLOCKER-001",
-      "severity": "warning",
+      "severity": "info",
       "evidence_source": "bitlocker_metadata",
-      "explanation_de": "BitLocker erkannt und gesperrt.",
-      "explanation_en": "BitLocker detected and locked.",
-      "recommended_next_action_de": "Recovery-Key-Status dokumentieren; ohne Key keine Datei-/Registry-Analyse.",
-      "recommended_next_action_en": "Document recovery key status; no file/registry analysis without key.",
-      "write_action_allowed": false
+      "explanation_de": "BitLocker nicht aktiv; Dateizugriff read-only möglich.",
+      "explanation_en": "BitLocker not active; read-only file access possible.",
+      "recommended_next_action_de": "Weiter mit Inspect; BitLocker-Status vor jedem Dateizugriff erneut prüfen.",
+      "recommended_next_action_en": "Continue inspect; re-check BitLocker before each file access.",
+      "write_action_allowed": false,
+      "repair_action_allowed": false,
+      "partition_action_allowed": false
     },
     {
       "code": "WIN-BITLOCKER-002",
       "severity": "critical",
       "evidence_source": "bitlocker_metadata",
-      "explanation_de": "BitLocker Recovery Key erforderlich.",
-      "explanation_en": "BitLocker recovery key required.",
-      "recommended_next_action_de": "Operator liefert Recovery Key; niemals im Repo speichern.",
-      "recommended_next_action_en": "Operator provides recovery key; never store in repo.",
-      "write_action_allowed": false
+      "explanation_de": "BitLocker aktiv, Volume locked — keine Dateisicherung, keine Registry aus geschütztem Volume.",
+      "explanation_en": "BitLocker active, volume locked — no backup, no registry from protected volume.",
+      "recommended_next_action_de": "Recovery-Key-Handoff anzeigen; Operator liefert Key lokal.",
+      "recommended_next_action_en": "Show recovery key handoff; operator provides key locally.",
+      "write_action_allowed": false,
+      "repair_action_allowed": false,
+      "partition_action_allowed": false
+    },
+    {
+      "code": "WIN-BITLOCKER-003",
+      "severity": "warning",
+      "evidence_source": "bitlocker_metadata",
+      "explanation_de": "Device Encryption aktiv oder Verdacht.",
+      "explanation_en": "Device encryption active or suspected.",
+      "recommended_next_action_de": "Verschlüsselungsstatus dokumentieren; kein Dateizugriff ohne Klärung.",
+      "recommended_next_action_en": "Document encryption status; no file access until clarified.",
+      "write_action_allowed": false,
+      "repair_action_allowed": false,
+      "partition_action_allowed": false
+    },
+    {
+      "code": "WIN-BITLOCKER-004",
+      "severity": "critical",
+      "evidence_source": "bitlocker_metadata",
+      "explanation_de": "Recovery-Key erforderlich.",
+      "explanation_en": "Recovery key required.",
+      "recommended_next_action_de": "Operator liefert Recovery Key; niemals im Repo oder Telemetrie speichern.",
+      "recommended_next_action_en": "Operator provides recovery key; never store in repo or telemetry.",
+      "write_action_allowed": false,
+      "repair_action_allowed": false,
+      "partition_action_allowed": false
+    },
+    {
+      "code": "WIN-BITLOCKER-005",
+      "severity": "warning",
+      "evidence_source": "bitlocker_metadata",
+      "explanation_de": "BitLocker-Status unklar — Dateizugriff blockiert.",
+      "explanation_en": "BitLocker status unclear — file access blocked.",
+      "recommended_next_action_de": "Read-only BitLocker-Prüfung wiederholen; nicht annehmen dass inaktiv.",
+      "recommended_next_action_en": "Repeat read-only BitLocker check; do not assume inactive.",
+      "write_action_allowed": false,
+      "repair_action_allowed": false,
+      "partition_action_allowed": false
+    },
+    {
+      "code": "WIN-BITLOCKER-006",
+      "severity": "warning",
+      "evidence_source": "bitlocker_metadata",
+      "explanation_de": "BitLocker suspended — riskanter Zwischenzustand.",
+      "explanation_en": "BitLocker suspended — risky intermediate state.",
+      "recommended_next_action_de": "Kein Dateizugriff; Status dokumentieren und Operator informieren.",
+      "recommended_next_action_en": "No file access; document status and inform operator.",
+      "write_action_allowed": false,
+      "repair_action_allowed": false,
+      "partition_action_allowed": false
     },
     {
       "code": "WIN-EXPLORER-001",
@@ -171,6 +223,96 @@
       "explanation_en": "Windows beta/Insider build detected or suspected.",
       "recommended_next_action_de": "Reparatur nur als Vorschlag; Migration stable planen.",
       "recommended_next_action_en": "Repair as suggestion only; plan stable migration.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "TELEMETRY-NETWORK-001",
+      "severity": "warning",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Telemetrieserver nicht erreichbar.",
+      "explanation_en": "Telemetry server unreachable.",
+      "recommended_next_action_de": "Lokale verschlüsselte Queue; Retry oder Netzwerk prüfen.",
+      "recommended_next_action_en": "Local encrypted queue; retry or check network.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "TELEMETRY-AUTH-001",
+      "severity": "critical",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Telemetrie-Authentifizierung fehlt oder ungültig.",
+      "explanation_en": "Telemetry authentication missing or invalid.",
+      "recommended_next_action_de": "Operator konfiguriert Auth außerhalb des Repos.",
+      "recommended_next_action_en": "Operator configures auth outside repo.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "TELEMETRY-SCHEMA-001",
+      "severity": "critical",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Telemetrie-Payload ungültig.",
+      "explanation_en": "Telemetry payload invalid.",
+      "recommended_next_action_de": "Schema validieren; kein Upload bis gültig.",
+      "recommended_next_action_en": "Validate schema; no upload until valid.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "TELEMETRY-ACK-001",
+      "severity": "warning",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Serverantwort ohne gültige Quittung.",
+      "explanation_en": "Server response without valid acknowledgement.",
+      "recommended_next_action_de": "Status gelb; Retry mit ACK-Pflicht.",
+      "recommended_next_action_en": "Status yellow; retry with ACK requirement.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "TELEMETRY-HASH-001",
+      "severity": "critical",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Server bestätigt anderen Payload-Hash.",
+      "explanation_en": "Server confirmed different payload hash.",
+      "recommended_next_action_de": "Status rot; Integrität prüfen, erneut senden.",
+      "recommended_next_action_en": "Status red; verify integrity, resend.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "TELEMETRY-QUEUE-001",
+      "severity": "info",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Lokale Telemetrie-Queue angelegt.",
+      "explanation_en": "Local telemetry queue created.",
+      "recommended_next_action_de": "Warteschlange im DCC anzeigen; spätere Nachübertragung.",
+      "recommended_next_action_en": "Show queue in DCC; deferred re-upload.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "TELEMETRY-QUEUE-002",
+      "severity": "warning",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Queue-Retry erforderlich.",
+      "explanation_en": "Queue retry required.",
+      "recommended_next_action_de": "Manuelle oder geplante Nachübertragung.",
+      "recommended_next_action_en": "Manual or scheduled re-upload.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "TELEMETRY-PRIVACY-001",
+      "severity": "critical",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Payload enthält zu viele personenbezogene Daten.",
+      "explanation_en": "Payload contains too much personal data.",
+      "recommended_next_action_de": "Privacy-Guard blockiert; nur diagnostic_metadata.",
+      "recommended_next_action_en": "Privacy guard blocks; diagnostic_metadata only.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "TELEMETRY-CONSENT-001",
+      "severity": "warning",
+      "evidence_source": "telemetry_transport",
+      "explanation_de": "Operatorfreigabe für erweiterte Daten fehlt.",
+      "explanation_en": "Operator consent for extended data missing.",
+      "recommended_next_action_de": "Freigabe einholen oder Payload reduzieren.",
+      "recommended_next_action_en": "Obtain consent or reduce payload.",
       "write_action_allowed": false
     }
   ]

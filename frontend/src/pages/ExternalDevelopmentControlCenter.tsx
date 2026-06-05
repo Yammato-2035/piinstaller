@@ -11,6 +11,7 @@ import { CockpitBackupTargetPanel } from '../components/dev-dashboard/CockpitBac
 import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel'
 import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
+import { WindowsRescueInspectCard } from '../components/dev-dashboard/WindowsRescueInspectCard'
 import { NotificationPanel } from '../components/dev-dashboard/NotificationPanel'
 import { DevelopmentServerPanel } from '../components/devserver/DevelopmentServerPanel'
 import { LabSessionsPanel } from '../components/dev-dashboard/LabSessionsPanel'
@@ -366,6 +367,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       case 'rescue':
         return (
           <>
+            <WindowsRescueInspectCard planningOnly />
             <RescueDeveloperPipelineCard summary={summary} />
             <RescueStickBoard dashboard={mon.dashboard} />
             <RescueBuildPanel refreshSec={mon.refreshSec} />

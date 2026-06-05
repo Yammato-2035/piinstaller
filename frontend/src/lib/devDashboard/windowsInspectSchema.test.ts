@@ -19,9 +19,36 @@ describe('windows inspect schema artifacts', () => {
     const catalog = JSON.parse(
       readFileSync(resolve(repoRoot, 'docs/evidence/windows-rescue/windows_inspect_diagnostic_codes.json'), 'utf8'),
     )
-    expect(catalog.codes.length).toBeGreaterThanOrEqual(17)
+    expect(catalog.codes.length).toBeGreaterThanOrEqual(21)
     for (const entry of catalog.codes) {
       expect(entry.write_action_allowed).toBe(false)
+    }
+    const bitlockerCodes = catalog.codes.filter((c: { code: string }) => c.code.startsWith('WIN-BITLOCKER-'))
+    expect(bitlockerCodes.length).toBe(6)
+  })
+
+  it('telemetry schema sample has required envelope fields', () => {
+    const sample = JSON.parse(
+      readFileSync(resolve(repoRoot, 'docs/evidence/windows-rescue/windows_rescue_telemetry_sample.json'), 'utf8'),
+    )
+    expect(sample.schema_version).toBe('1.0.0')
+    expect(sample.source).toBe('rescue_stick')
+    expect(sample.payload_kind).toBe('windows_rescue_inspect')
+    expect(sample.privacy_level).toBe('diagnostic_metadata')
+    expect(sample.contains_personal_data).toBe(false)
+    expect(sample.telemetry_transport.status).toBe('queued_local')
+    const json = JSON.stringify(sample)
+    expect(json).not.toMatch(/password|file_content|private_key/i)
+  })
+
+  it('telemetry sample has no file contents or secrets', () => {
+    const sample = JSON.parse(
+      readFileSync(resolve(repoRoot, 'docs/evidence/windows-rescue/windows_rescue_telemetry_sample.json'), 'utf8'),
+    )
+    const forbidden = ['file_content', 'document_content', 'cookie', 'token', 'password', 'ssh_key']
+    const json = JSON.stringify(sample).toLowerCase()
+    for (const key of forbidden) {
+      expect(json).not.toContain(`"${key}"`)
     }
   })
 })

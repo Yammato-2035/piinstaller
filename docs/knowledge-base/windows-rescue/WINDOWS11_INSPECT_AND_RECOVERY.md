@@ -10,20 +10,22 @@ Rettungsstick read-only: Windows-11-Pro-Laptop (inkl. Beta/Insider) untersuchen,
 |-------|------|
 | Mount-Modus | read-only |
 | `write_actions_allowed` | `false` |
-| BitLocker locked | nicht brutal mounten; Recovery Key nur Operator-seitig |
+| BitLocker | vor jedem Dateizugriff prüfen; unknown/locked → blockiert |
+| Telemetrie | nur `diagnostic_metadata`; Server-ACK + Hash-Pflicht; kein Grün ohne ACK |
 | Cloud-Upload | Dry-Run/Manifest nur; keine Credentials im Repo |
-| Dualboot/Partitionierung | Planung nur |
+| Dualboot/Partitionierung | blockiert bis Backup verifiziert **und** Telemetrie acknowledged |
 
 ## Schema & Codes
 
 - `docs/evidence/windows-rescue/windows_inspect.schema.json`
+- `docs/evidence/windows-rescue/windows_rescue_telemetry.schema.json`
 - `docs/evidence/windows-rescue/windows_inspect_diagnostic_codes.json`
-- `docs/evidence/windows-rescue/windows_inspect_sample.json`
+- `docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md`
 
 ## Track
 
-Roadmap: `windows-laptop-rescue-inspect` — Next Prompt: `WINDOWS11_RESCUE_INSPECT_MVP`
+Roadmap: `windows-laptop-rescue-inspect` — Next Prompt: `WINDOWS11_RESCUE_INSPECT_MVP_OPERATOR_READONLY_SCAN`
 
 ## Abgrenzung
 
-Nicht vermischen mit: Restore-E2E, USB-Write, Backup-Release-Gate, Monolith-Split, Controlled Command Runner.
+Telemetrie ≠ Dateisicherung. Nicht vermischen mit: Restore-E2E, USB-Write, Repartition-Execution, Controlled Command Runner.

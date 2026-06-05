@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "win-inspect-20260605-001",
+  "device_session_id": "devsess-example-001",
+  "created_at": "2026-06-05T13:30:00+02:00",
+  "source": "rescue_stick",
+  "payload_kind": "windows_rescue_inspect",
+  "payload_hash_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "payload_size_bytes": 4096,
+  "privacy_level": "diagnostic_metadata",
+  "contains_personal_data": false,
+  "operator_consent_state": "not_required_for_diagnostic_metadata",
+  "system": {
+    "windows_detected": true,
+    "windows_version": "11 Pro 26100",
+    "windows_channel": "unknown",
+    "bitlocker_status": "unknown",
+    "device_encryption_status": "unknown",
+    "bitlocker_volume_lock_status": "unknown",
+    "recovery_key_required": "unknown",
+    "secure_boot_status": "enabled",
+    "tpm_hint": "present_readonly"
+  },
+  "hardware": {
+    "cpu_vendor": "AMD",
+    "gpu_vendor": "NVIDIA",
+    "nvme_count": 2,
+    "memory_bytes": 17179869184
+  },
+  "diagnostics": {
+    "codes": ["WIN-BITLOCKER-005", "WIN-INSPECT-001"],
+    "severity": "warning",
+    "recommended_actions": ["VERIFY_BITLOCKER_BEFORE_FILE_ACCESS"]
+  },
+  "backup": {
+    "selection_created": false,
+    "backup_verified": false,
+    "cloud_target_configured": false,
+    "manifest_hash": null
+  },
+  "dualboot": {
+    "planning_only": true,
+    "repartition_blocked_until_backup_verified": true,
+    "windows_boot_manager_fallback": true
+  },
+  "telemetry_transport": {
+    "status": "queued_local",
+    "endpoint_configured": false,
+    "server_ack_id": null,
+    "server_ack_at": null,
+    "payload_hash_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "server_confirmed_hash_sha256": null,
+    "retry_count": 1,
+    "last_error": "TELEMETRY-NETWORK-001",
+    "next_retry_at": "2026-06-05T14:00:00+02:00",
+    "queue_path_concept": "/var/lib/setuphelfer-rescue/telemetry-queue/"
+  }
+}

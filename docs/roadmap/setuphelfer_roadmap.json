@@ -1064,6 +1064,25 @@
           "progress_percent": 0,
           "evidence_links": ["docs/roadmap/WINDOWS_LAPTOP_RESCUE_INSPECT_PLAN.md"],
           "tasks": []
+        },
+        {
+          "id": "windows-rescue-telemetry-delivery",
+          "title_de": "Telemetrie-Zustellung (ACK-Pflicht, Store-and-forward)",
+          "title_en": "Telemetry delivery (ACK required, store-and-forward)",
+          "status": "yellow",
+          "progress_percent": 25,
+          "evidence_links": [
+            "docs/evidence/windows-rescue/windows_rescue_telemetry.schema.json",
+            "docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md"
+          ],
+          "tasks": [
+            "Telemetrie-Schema anlegen",
+            "Telemetrieserver-API-Vertrag dokumentieren",
+            "Queue-/Retry-Modell dokumentieren",
+            "DCC-Status für Telemetrie-Zustand modellieren",
+            "Privacy-Guard definieren",
+            "Tests für ACK/Hash/Queue/Privacy-Blocker vorbereiten"
+          ]
         }
       ],
       "blockers": [
@@ -1090,8 +1109,8 @@
           "evidence_links": ["docs/knowledge-base/windows-rescue/BITLOCKER_READONLY_POLICY.md"]
         }
       ],
-      "next_prompt_id": "WINDOWS11_RESCUE_INSPECT_MVP",
-      "next_recommended_action": "MVP: Mount-Plan + Offline-Inventar-Stub + Dashboard-Panel (read-only)."
+      "next_prompt_id": "WINDOWS11_RESCUE_INSPECT_MVP_OPERATOR_READONLY_SCAN",
+      "next_recommended_action": "MVP: Read-only BitLocker-Prüfung + Operator-Scan-Stub; Telemetrie nur mit Server-ACK als grün."
     },
     {
       "id": "dev-dashboard",

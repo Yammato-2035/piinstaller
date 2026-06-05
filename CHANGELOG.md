@@ -22,6 +22,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **DCC Live Acceptance (Ingest):** Nach Operator-Deploy `199d3c6` Bundle-Marker in `/opt` + served JS; Operator: DCC und Boot-Diagnose sichtbar; `blank_dcc_screen` resolved; `partial_green` (release restore ausstehend). Evidence: `DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`.
 - **DCC Release Restore (Ingest):** `release` wiederhergestellt; Dev-Routen 404 `PROFILE_ROUTE_BLOCKED`; Operator: Disabled-Page + Boot-Diagnose unter release; DCC **grün**. Evidence: `DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`.
 - **Windows Laptop Rescue Inspect:** Neuer P1-Track `windows-laptop-rescue-inspect` mit Schema, Diagnosekatalog (17 Codes), KB und MVP-Plan (read-only, kein NTFS-write). Next Prompt: `WINDOWS11_RESCUE_INSPECT_MVP`.
+- **Windows Rescue Telemetry + BitLocker:** Telemetrie-Schema, Server-Vertrag, Store-and-forward-Konzept; BitLocker-Codes 001–006; DCC `WindowsRescueInspectCard`; kein Grün ohne Server-ACK. Next Prompt: `WINDOWS11_RESCUE_INSPECT_MVP_OPERATOR_READONLY_SCAN`.
 - **DCC Roadmap Filter:** Kurzüberblick, Top-Blocker, Filter-Tabs und Roh-JSON nur aufklappbar (`roadmapFilter.ts`, `RoadmapDrawer.tsx`).
 - **Release restore after fleet smoke:** blocked at sudo; ingest/ISO precheck remain `blocked_by_release_restore`.
 - **Operator release restore ingest:** `release` live; profile gate green; ingest stub and ISO precheck readiness unlocked (yellow, smoke not run).

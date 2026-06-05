@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "selected_at": "2026-06-05T13:00:00+02:00",
-  "selected_prompt_id": "WINDOWS11_RESCUE_INSPECT_MVP",
-  "reason_de": "Nutzer braucht Windows-11-Pro-Laptop-Rettungsstick (read-only Inspect). DCC grün abgeschlossen. Controlled Command Runner und Monolith zurückgestellt.",
-  "reason_en": "User needs Windows 11 Pro laptop rescue stick read-only inspect. DCC green complete. Controlled runner and monolith deferred.",
+  "selected_at": "2026-06-05T14:00:00+02:00",
+  "selected_prompt_id": "WINDOWS11_RESCUE_INSPECT_MVP_OPERATOR_READONLY_SCAN",
+  "reason_de": "BitLocker-Erkennung und Telemetrie-Pflicht (ACK, Store-and-forward) modelliert. Nächster Schritt: Operator-read-only-Scan auf echtem Windows-Laptop.",
+  "reason_en": "BitLocker detection and telemetry delivery (ACK, store-and-forward) modeled. Next: operator read-only scan on real Windows laptop.",
   "completed_tracks": [
     {
       "id": "dcc_live_acceptance",
@@ -13,6 +13,11 @@
     {
       "id": "blank_dcc_screen",
       "status": "resolved"
+    },
+    {
+      "id": "windows_rescue_telemetry_modeling",
+      "status": "yellow",
+      "classification": "schema_and_contract_documented"
     }
   ],
   "tracks": [
@@ -20,11 +25,12 @@
       "id": "windows_laptop_rescue_inspect",
       "status": "recommended_next",
       "priority": "P1",
-      "classification": "windows11_rescue_inspect_mvp",
-      "next_step": "Read-only Mount-Plan, Offline-Inventar-Stub, Dashboard-Panel.",
+      "classification": "windows11_rescue_inspect_mvp_operator_readonly_scan",
+      "next_step": "Read-only BitLocker-Prüfung vor Dateizugriff; Inspect-Stub auf HW; Telemetrie mit ACK.",
       "evidence": [
-        "docs/roadmap/WINDOWS_LAPTOP_RESCUE_INSPECT_PLAN.md",
-        "docs/evidence/windows-rescue/WINDOWS11_RESCUE_INSPECT_MVP_PLAN.md"
+        "docs/evidence/windows-rescue/windows_rescue_telemetry.schema.json",
+        "docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md",
+        "docs/roadmap/WINDOWS_LAPTOP_RESCUE_INSPECT_PLAN.md"
       ]
     },
     {
@@ -42,10 +48,12 @@
     {
       "id": "dev_dashboard_controlled_command_runs_mvp",
       "status": "forbidden_not_recommended_next",
-      "reason": "Internes Tooling; reason_de sagt nicht recommended_next; Rescue-Chroot-Cleanup Vorrang."
+      "reason": "Internes Tooling; Rescue-Chroot-Cleanup Vorrang."
     }
   ],
   "forbidden_next": [
+    "WINDOWS11_REPARTITION_EXECUTION",
+    "DUALBOOT_INSTALL_EXECUTION",
     "DEV_DASHBOARD_CONTROLLED_COMMAND_RUNS_MVP",
     "MONOLITH_BOUNDARY_FOLLOWUP",
     "PACKAGE_UPDATE_GATE",

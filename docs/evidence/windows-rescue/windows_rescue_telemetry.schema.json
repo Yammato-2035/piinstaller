@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://setuphelfer.local/schemas/windows_rescue_telemetry.schema.json",
+  "title": "Windows Rescue Telemetry Envelope",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "device_session_id",
+    "created_at",
+    "source",
+    "payload_kind",
+    "privacy_level",
+    "contains_personal_data",
+    "operator_consent_state",
+    "telemetry_transport"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "device_session_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "const": "rescue_stick" },
+    "payload_kind": { "type": "string", "const": "windows_rescue_inspect" },
+    "payload_hash_sha256": { "type": ["string", "null"] },
+    "payload_size_bytes": { "type": ["integer", "null"], "minimum": 0 },
+    "privacy_level": { "type": "string", "enum": ["diagnostic_metadata"] },
+    "contains_personal_data": { "type": "boolean" },
+    "operator_consent_state": {
+      "type": "string",
+      "enum": ["not_required_for_diagnostic_metadata", "required", "granted", "denied"]
+    },
+    "system": {
+      "type": "object",
+      "properties": {
+        "windows_detected": { "type": "boolean" },
+        "windows_version": { "type": ["string", "null"] },
+        "windows_channel": { "type": "string" },
+        "bitlocker_status": { "type": "string" },
+        "device_encryption_status": { "type": "string" },
+        "bitlocker_volume_lock_status": {
+          "type": "string",
+          "enum": ["unlocked", "locked", "suspended", "unknown"]
+        },
+        "recovery_key_required": { "type": "string", "enum": ["yes", "no", "unknown"] },
+        "secure_boot_status": { "type": ["string", "null"] },
+        "tpm_hint": { "type": ["string", "null"] }
+      }
+    },
+    "hardware": {
+      "type": "object",
+      "properties": {
+        "cpu_vendor": { "type": ["string", "null"] },
+        "gpu_vendor": { "type": ["string", "null"] },
+        "nvme_count": { "type": ["integer", "null"] },
+        "memory_bytes": { "type": ["integer", "null"] }
+      }
+    },
+    "diagnostics": {
+      "type": "object",
+      "properties": {
+        "codes": { "type": "array", "items": { "type": "string" } },
+        "severity": { "type": "string" },
+        "recommended_actions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "backup": {
+      "type": "object",
+      "properties": {
+        "selection_created": { "type": "boolean" },
+        "backup_verified": { "type": "boolean" },
+        "cloud_target_configured": { "type": "boolean" },
+        "manifest_hash": { "type": ["string", "null"] }
+      }
+    },
+    "dualboot": {
+      "type": "object",
+      "properties": {
+        "planning_only": { "type": "boolean" },
+        "repartition_blocked_until_backup_verified": { "type": "boolean" },
+        "windows_boot_manager_fallback": { "type": "boolean" }
+      }
+    },
+    "telemetry_transport": {
+      "type": "object",
+      "required": ["status", "retry_count"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "not_created",
+            "queued_local",
+            "sending",
+            "sent_unconfirmed",
+            "acknowledged",
+            "failed_retryable",
+            "failed_final",
+            "blocked_no_network",
+            "blocked_missing_consent",
+            "blocked_policy"
+          ]
+        },
+        "endpoint_configured": { "type": "boolean" },
+        "server_ack_id": { "type": ["string", "null"] },
+        "server_ack_at": { "type": ["string", "null"] },
+        "payload_hash_sha256": { "type": ["string", "null"] },
+        "server_confirmed_hash_sha256": { "type": ["string", "null"] },
+        "retry_count": { "type": "integer", "minimum": 0 },
+        "last_error": { "type": ["string", "null"] },
+        "next_retry_at": { "type": ["string", "null"] },
+        "queue_path_concept": { "type": "string" }
+      }
+    }
+  }
+}
