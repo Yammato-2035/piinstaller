@@ -1,16 +1,16 @@
 {
-  "schema_version": 3,
-  "selected_at": "2026-06-05T23:15:00+02:00",
+  "schema_version": 4,
+  "selected_at": "2026-06-05T23:25:00+02:00",
   "selected_prompt_id": "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
   "parallel_prompt_id": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE",
-  "reason_de": "UEFI-Patch-Skript repariert (mkfs.vfat 16 MiB ESP). Operator muss sudo --in-place Patch + Validator Exit 0 ausführen. DCC-Capability-Modell statisch implementiert — Runtime-Smoke separat.",
-  "reason_en": "UEFI patch script fixed (16 MiB ESP via mkfs.vfat -C). Operator must run sudo in-place patch and UEFI validator exit 0. DCC capability model implemented statically — runtime smoke separate.",
+  "reason_de": "xorriso-Patch-Fix verifiziert (append_partition absolut + ESP 16 MiB). Canonical ISO root-owned — Operator sudo --in-place + Validator Exit 0.",
+  "reason_en": "xorriso patch fix verified (absolute append_partition + 16 MiB ESP). Canonical ISO root-owned — operator sudo in-place + validator exit 0.",
   "tracks": [
     {
-      "id": "rescue_iso_uefi_patch",
+      "id": "rescue_iso_uefi_xorriso_patch",
       "status": "yellow",
       "priority": "P0",
-      "classification": "patch_script_fixed_awaiting_operator",
+      "classification": "fix_verified_awaiting_operator_in_place",
       "next_step": "RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN",
       "evidence": [
         "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_FAILURE_TRIAGE.md",
@@ -21,12 +21,7 @@
       "id": "developer_dcc_capability",
       "status": "yellow",
       "priority": "P1",
-      "classification": "partial_green_awaiting_runtime_smoke",
-      "next_step": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE",
-      "evidence": [
-        "docs/architecture/DEVELOPER_CAPABILITY_AND_DCC_PROFILE_MODEL.md",
-        "docs/evidence/dev-dashboard/DEVELOPER_CAPABILITY_DCC_MODEL_RESULT.md"
-      ]
+      "next_step": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE"
     },
     {
       "id": "windows_laptop_rescue_inspect",
@@ -36,12 +31,10 @@
   ],
   "forbidden_next": [
     "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
-    "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
     "BACKEND_RESTART_WITHOUT_OPERATOR_APPROVAL"
   ],
   "governance_rules": {
-    "uefi_validator_exit_0_required_before_usb": true,
-    "dcc_token_not_in_repo_or_evidence": true,
-    "rescue_telemetry_separate_from_dcc": true
+    "uefi_validator_exit_0_before_usb": true,
+    "canonical_iso_operator_sudo_in_place_only": true
   }
 }

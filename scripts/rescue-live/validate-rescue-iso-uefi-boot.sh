@@ -77,6 +77,7 @@ if grep -qiE "append_partition.*0xef|appended_part_as_gpt" "$REPORT"; then
 fi
 
 _has_bootx64=false
+_has_efi_img=false
 if xorriso -osirrox on -indev "$ISO" -find /EFI/BOOT -name BOOTX64.EFI 2>/dev/null | grep -q .; then
   _has_bootx64=true
 fi
@@ -87,6 +88,9 @@ if [[ "$_has_bootx64" != true ]]; then
       break
     fi
   done
+fi
+if xorriso -osirrox on -indev "$ISO" -find /boot/grub/efi.img 2>/dev/null | grep -q .; then
+  _has_efi_img=true
 fi
 
 # 1) Classic isolinux-only hybrid (pre-patch build output)
@@ -135,5 +139,5 @@ if [[ "$EMIT_INSPECT_BLOCKER" == true ]]; then
   exit 36
 fi
 
-echo "OK: rescue ISO UEFI-x64 — BIOS=${_has_bios} EFI_ELTORITO=${_has_efi_eltorito} BOOTX64=${_has_bootx64} SHA256=${SHA256}"
+echo "OK: rescue ISO UEFI-x64 — BIOS=${_has_bios} EFI_ELTORITO=${_has_efi_eltorito} BOOTX64=${_has_bootx64} EFI_IMG=${_has_efi_img} SHA256=${SHA256}"
 exit 0

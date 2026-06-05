@@ -707,15 +707,14 @@
             "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
           ]
         {
-          "id": "rescue-uefi-patch-mkfs-esp-size-2026-06-05",
+          "id": "rescue-uefi-xorriso-patch-append-host-path-2026-06-05",
           "area_id": "rescue-stick",
-          "text_de": "UEFI-Patch scheiterte an mkfs.vfat auf 4 MiB ESP. Fix: mkfs.vfat -C 32768 (16 MiB). Operator-Patch ausstehend.",
-          "text_en": "UEFI patch failed on mkfs.vfat with 4 MiB ESP. Fix: mkfs.vfat -C 32768 (16 MiB). Operator patch pending.",
+          "text_de": "xorriso-Patch: append_partition brauchte absoluten Host-Pfad; ESP -C 32768 = 32 MiB > El-Torito-65535-Block-Limit. Fix: -C 16384 + readlink -f für append.",
+          "text_en": "xorriso patch: append_partition needed absolute host path; ESP -C 32768 = 32 MiB > El-Torito 65535 block limit. Fix: -C 16384 + readlink -f for append.",
           "created_at": "2026-06-05",
           "author": "Cursor",
           "evidence_links": [
-            "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_FAILURE_TRIAGE.md",
-            "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_OPERATOR_HANDOFF.md"
+            "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_FAILURE_TRIAGE.md"
           ]
         }
       ],

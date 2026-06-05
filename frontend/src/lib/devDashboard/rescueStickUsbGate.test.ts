@@ -14,7 +14,7 @@ describe('rescueStickUsbGate', () => {
     expect(vm.windowsInspectExecutable).toBe(false)
     expect(vm.uefiBootReady).toBe(false)
     expect(vm.blockers).toContain('RESCUE_ISO_UEFI_X64_NOT_READY')
-    expect(vm.blockers).toContain('RESCUE_UEFI_PATCH_MKFS_FAILURE')
+    expect(vm.blockers).toContain('RESCUE_UEFI_XORRISO_PATCH_FAILURE')
     expect(vm.blockers).toContain('WINDOWS_INSPECT_BLOCKED_BY_RESCUE_UEFI_BOOT')
   })
 })

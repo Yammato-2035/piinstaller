@@ -22,9 +22,14 @@ IN_PLACE=false
 PLAN_ONLY=false
 DRY_RUN=false
 
-# FAT ESP image: mkfs.vfat -F 16 fails on 4 MiB (too small). Use 16 MiB via -C (32768 × 512 B).
-ESP_SECTOR_COUNT=32768
-ESP_SIZE_BYTES=$((ESP_SECTOR_COUNT * 512))
+# mkfs.vfat -C count on Debian bookworm: file size = count × 1024 bytes (16 MiB => 16384).
+# El Torito -e limit: boot image ≤ 65535 × 512 bytes (~32 MiB − 512 B).
+ESP_SIZE_MIB=16
+ESP_SECTOR_COUNT=16384
+ESP_SIZE_BYTES=16777216
+ESP_MAX_BYTES=$((65535 * 512))
+ISO_EFI_IMG_PATH="boot/grub/efi.img"
+ISO_BOOTX64_PATH="EFI/BOOT/BOOTX64.EFI"
 
 usage() {
   cat <<EOF
@@ -60,6 +65,32 @@ fail_grub() {
 fail_xorriso() {
   echo "RESCUE-UEFI-PATCH-XORRISO-001: $*" >&2
   exit 44
+}
+
+debug_esp_paths() {
+  local host_esp="$1"
+  local staging_esp="$2"
+  echo "UEFI_PATCH_DEBUG: ESP_HOST=$host_esp"
+  echo "UEFI_PATCH_DEBUG: ESP_HOST_ABS=$(readlink -f "$host_esp" 2>/dev/null || echo missing)"
+  echo "UEFI_PATCH_DEBUG: ESP_STAGING=$staging_esp"
+  ls -lh "$host_esp" "$staging_esp" 2>/dev/null || true
+  stat "$host_esp" 2>/dev/null || true
+  du -h "$host_esp" 2>/dev/null || true
+  echo "UEFI_PATCH_DEBUG: XORRISO_E_ISO_PATH=${ISO_EFI_IMG_PATH}"
+  echo "UEFI_PATCH_DEBUG: XORRISO_APPEND_HOST=$(readlink -f "$host_esp" 2>/dev/null || echo missing)"
+}
+
+resolve_isohybrid_mbr() {
+  for candidate in \
+    /usr/lib/ISOLINUX/isohdpfx.bin \
+    /usr/lib/syslinux/isohdpfx.bin \
+    /usr/share/syslinux/isohdpfx.bin; do
+    if [[ -f "$candidate" ]]; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+  return 1
 }
 
 while [[ $# -gt 0 ]]; do
@@ -110,19 +141,22 @@ if [[ "$PLAN_ONLY" == true ]]; then
   python3 - <<PY
 import json
 print(json.dumps({
-    "schema_version": 1,
+    "schema_version": 2,
     "mode": "plan_only",
     "iso_in": ${ISO_IN@Q},
     "iso_out": ${ISO_OUT@Q},
     "in_place": bool(int("${IN_PLACE_FLAG}")),
     "iso_sha256_in": ${ISO_SHA256_IN@Q},
     "iso_size_bytes_in": int(${ISO_SIZE_IN:-0}),
+    "esp_size_mib": ${ESP_SIZE_MIB},
     "esp_sector_count": ${ESP_SECTOR_COUNT},
     "esp_size_bytes": ${ESP_SIZE_BYTES},
-    "esp_create_method": "mkfs.vfat -C",
-    "bootx64_path": "/EFI/BOOT/BOOTX64.EFI",
-    "efi_img_path": "boot/grub/efi.img",
-    "eltorito_efi_entry": "-eltorito-alt-boot -e boot/grub/efi.img",
+    "esp_create_method": "mkfs.vfat -C count=16384 (16 MiB on Debian bookworm)",
+    "esp_host_path": "\$WORKDIR/efi.img",
+    "iso_internal_bootx64": "/EFI/BOOT/BOOTX64.EFI",
+    "iso_internal_efi_img": "${ISO_EFI_IMG_PATH}",
+    "xorriso_e_arg": "${ISO_EFI_IMG_PATH}",
+    "xorriso_append_partition_arg": "absolute host path to \$WORKDIR/efi.img",
     "devices_touched": False,
     "usb_write": False,
 }, indent=2))
@@ -134,7 +168,9 @@ WORK="$(mktemp -d)"
 STAGING="${WORK}/staging"
 GRUB_CFG="${WORK}/grub.cfg"
 BOOTX64="${WORK}/BOOTX64.EFI"
-cleanup() { rm -rf "$WORK"; }
+ESP_HOST="${WORK}/efi.img"
+STAGING_EFI="${STAGING}/${ISO_EFI_IMG_PATH}"
+cleanup() { rm -rf "$WORK" 2>/dev/null || true; }
 trap cleanup EXIT
 
 mkdir -p "$STAGING"
@@ -183,38 +219,69 @@ mkdir -p "$STAGING/EFI/BOOT" "$STAGING/boot/grub"
 install -m 0644 "$BOOTX64" "$STAGING/EFI/BOOT/BOOTX64.EFI"
 install -m 0644 "$GRUB_CFG" "$STAGING/boot/grub/grub.cfg"
 
-EFI_IMG="$STAGING/boot/grub/efi.img"
-rm -f "$EFI_IMG"
-if ! mkfs.vfat -C "$EFI_IMG" "$ESP_SECTOR_COUNT" -n EFIBOOT >/dev/null 2>&1; then
+rm -f "$ESP_HOST"
+if ! mkfs.vfat -C "$ESP_HOST" "$ESP_SECTOR_COUNT" -n EFIBOOT >/dev/null 2>&1; then
   fail_mkfs
 fi
-ACTUAL_ESP_SIZE="$(stat -c '%s' "$EFI_IMG" 2>/dev/null || echo 0)"
-if [[ "$ACTUAL_ESP_SIZE" -lt "$ESP_SIZE_BYTES" ]]; then
+[[ -s "$ESP_HOST" ]] || fail_mkfs
+ESP_IMG_ABS="$(readlink -f "$ESP_HOST")"
+[[ -r "$ESP_IMG_ABS" ]] || fail_xorriso "ESP host image not readable: ${ESP_IMG_ABS}"
+
+ACTUAL_ESP_SIZE="$(stat -c '%s' "$ESP_HOST" 2>/dev/null || echo 0)"
+if [[ "$ACTUAL_ESP_SIZE" -lt 4194304 ]]; then
   fail_esp_size
 fi
-MTOOLS_SKIP_CHECK=1 mmd -i "$EFI_IMG" ::EFI ::EFI/BOOT
-MTOOLS_SKIP_CHECK=1 mcopy -i "$EFI_IMG" "$BOOTX64" ::EFI/BOOT/BOOTX64.EFI
+if [[ "$ACTUAL_ESP_SIZE" -gt "$ESP_MAX_BYTES" ]]; then
+  fail_xorriso "ESP image ${ACTUAL_ESP_SIZE} bytes exceeds El Torito limit ${ESP_MAX_BYTES}"
+fi
+
+MTOOLS_SKIP_CHECK=1 mmd -i "$ESP_HOST" ::EFI ::EFI/BOOT
+MTOOLS_SKIP_CHECK=1 mcopy -i "$ESP_HOST" "$BOOTX64" ::EFI/BOOT/BOOTX64.EFI
+
+install -m 0644 "$ESP_HOST" "$STAGING_EFI"
+[[ -s "$STAGING_EFI" ]] || fail_xorriso "staging efi.img missing after copy"
+
+debug_esp_paths "$ESP_HOST" "$STAGING_EFI"
 
 VOL="$(xorriso -indev "$ISO_IN" -report_el_torito as_mkisofs 2>/dev/null | sed -n "s/^-V '\(.*\)'/\1/p" | head -1)"
 [[ -n "$VOL" ]] || VOL="SETUPHELFER_RESCUE"
 
-xorriso -as mkisofs \
-  -iso-level 3 \
-  -full-iso9660-filenames \
-  -volid "$VOL" \
-  -J -joliet-long \
-  -output "$ISO_OUT" \
-  -eltorito-boot isolinux/isolinux.bin \
-  -eltorito-catalog isolinux/boot.cat \
-  -no-emul-boot -boot-load-size 4 -boot-info-table \
-  -eltorito-alt-boot \
-  -e boot/grub/efi.img \
-  -no-emul-boot \
-  -append_partition 2 0xef boot/grub/efi.img \
-  -appended_part_as_gpt \
-  -isohybrid-gpt-basdat \
-  "$STAGING" \
-  || fail_xorriso "xorriso mkisofs failed"
+ISOHYBRID_MBR=""
+if ISOHYBRID_MBR="$(resolve_isohybrid_mbr)"; then
+  :
+else
+  echo "UEFI_PATCH_DEBUG: isohybrid-mbr template not found — continuing without -isohybrid-mbr" >&2
+fi
+
+XORRISO_LOG="${WORK}/xorriso-mkisofs.log"
+XORRISO_ARGS=(
+  -as mkisofs
+  -iso-level 3
+  -full-iso9660-filenames
+  -volid "$VOL"
+  -J -joliet-long -r
+  -output "$ISO_OUT"
+  -eltorito-boot isolinux/isolinux.bin
+  -eltorito-catalog isolinux/boot.cat
+  -no-emul-boot
+  -boot-load-size 4
+  -boot-info-table
+  -eltorito-alt-boot
+  -e "$ISO_EFI_IMG_PATH"
+  -no-emul-boot
+  -isohybrid-gpt-basdat
+  -append_partition 2 0xef "$ESP_IMG_ABS"
+)
+
+if [[ -n "$ISOHYBRID_MBR" ]]; then
+  XORRISO_ARGS+=( -isohybrid-mbr "$ISOHYBRID_MBR" -partition_offset 16 )
+fi
+
+echo "UEFI_PATCH_DEBUG: xorriso ${XORRISO_ARGS[*]} $STAGING"
+if ! xorriso "${XORRISO_ARGS[@]}" "$STAGING" >"$XORRISO_LOG" 2>&1; then
+  tail -40 "$XORRISO_LOG" >&2 || true
+  fail_xorriso "xorriso mkisofs failed esp_bytes=${ACTUAL_ESP_SIZE} append=${ESP_IMG_ABS} e=${ISO_EFI_IMG_PATH}"
+fi
 
 isohybrid "$ISO_OUT" 2>/dev/null || true
 
@@ -229,4 +296,6 @@ echo "ISO_OUT=${ISO_OUT}"
 echo "ISO_SHA256=${SHA256}"
 echo "ISO_SHA256_BEFORE=${ISO_SHA256_IN}"
 echo "ESP_SIZE_BYTES=${ESP_SIZE_BYTES}"
+echo "ESP_APPEND_HOST=${ESP_IMG_ABS}"
+echo "EFI_ELTORITO_ISO_PATH=${ISO_EFI_IMG_PATH}"
 echo "NEXT: ${SCRIPT_DIR}/validate-rescue-iso-uefi-boot.sh ${ISO_OUT}"

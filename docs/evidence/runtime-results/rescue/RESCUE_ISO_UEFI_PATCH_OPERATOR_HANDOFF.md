@@ -1,14 +1,13 @@
 # RESCUE ISO UEFI Patch — Operator Handoff
 
-**Status:** `awaiting_operator_patch_and_validate`  
-**Next Prompt nach Validator Exit 0:** `RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT`
+**Status:** `awaiting_operator_in_place_patch`  
+**Root cause fixed in workspace:** xorriso `-append_partition` absolute host path + ESP 16 MiB (`mkfs.vfat -C 16384`)
 
 ## Voraussetzungen
 
-- ISO vorhanden nach Controlled Build (`LB_EXIT=0`)
-- Patch-Skript-Fix im Workspace (16 MiB ESP via `mkfs.vfat -C`)
-- Operator-Terminal mit `sudo` (ISO ist root-owned)
-- **Kein** USB-Write in diesem Schritt, bis UEFI-Validator Exit 0
+- Controlled Build `LB_EXIT=0`, ISO vorhanden (root-owned)
+- Operator-Terminal mit `sudo`
+- **Kein USB-Write** in diesem Schritt
 
 ## Operator-Befehle
 
@@ -22,8 +21,6 @@ sha256sum "$ISO"
 file "$ISO"
 
 ./scripts/rescue-live/validate-rescue-iso-uefi-boot.sh "$ISO" || true
-
-# Plan-Vorschau (read-only, kein sudo nötig):
 ./scripts/rescue-live/patch-rescue-iso-uefi-x64.sh --plan-only "$ISO"
 
 sudo ./scripts/rescue-live/patch-rescue-iso-uefi-x64.sh --in-place "$ISO"
@@ -33,6 +30,7 @@ sha256sum "$ISO"
 file "$ISO"
 xorriso -indev "$ISO" -report_el_torito as_mkisofs
 xorriso -indev "$ISO" -find /EFI/BOOT/BOOTX64.EFI -type f -print 2>/dev/null || true
+xorriso -indev "$ISO" -find /boot/grub/efi.img -type f -print 2>/dev/null || true
 ```
 
 ## Erfolgskriterien
@@ -41,18 +39,24 @@ xorriso -indev "$ISO" -find /EFI/BOOT/BOOTX64.EFI -type f -print 2>/dev/null || 
 |-------|-----------|
 | Patch Exit | **0** |
 | UEFI Validator Exit | **0** |
+| `-e` Ziel | ISO-intern `boot/grub/efi.img` |
+| `-append_partition` Ziel | absoluter Host-Pfad `$WORK/efi.img` (Debug: `ESP_APPEND_HOST=`) |
 | BOOTX64.EFI | vorhanden |
-| EFI El Torito | im xorriso-Report sichtbar |
-| BIOS/isolinux | weiterhin im Report |
-| USB geschrieben | **nein** (nächster Prompt) |
+| BIOS El Torito | isolinux weiter im Report |
+| USB | **nicht** geschrieben |
 
-## Bei Fehlschlag
+## Entscheidung
 
-| Exit / Code | Aktion |
-|-------------|--------|
-| 41 `RESCUE-UEFI-PATCH-ESP-SIZE-001` | ESP-Konstanten prüfen, Skript-Version |
-| 42 `RESCUE-UEFI-PATCH-MKFS-001` | `mkfs.vfat`, `mtools` auf Host |
-| 43 `RESCUE-UEFI-PATCH-GRUB-001` | `grub-mkstandalone` |
-| 44 `RESCUE-UEFI-PATCH-XORRISO-001` | xorriso extract/repack Log |
+| Validator | Next Prompt |
+|-----------|-------------|
+| Exit **0** | `RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT` |
+| Exit ≠ **0** | `RESCUE_UEFI_XORRISO_PATCH_FAILURE_TRIAGE_CONTINUATION` |
 
-**Next Prompt bei Validator ≠ 0:** `RESCUE_ISO_UEFI_PATCH_OPERATOR_RUN` (Retry/Triage)
+## Fehlercodes
+
+| Code | Bedeutung |
+|------|-----------|
+| `RESCUE-UEFI-PATCH-XORRISO-001` | xorriso extract/repack |
+| `RESCUE-UEFI-PATCH-ESP-SIZE-001` | ESP zu klein / El-Torito-Limit |
+| `RESCUE-UEFI-PATCH-MKFS-001` | mkfs.vfat |
+| `RESCUE-UEFI-PATCH-GRUB-001` | grub-mkstandalone |
