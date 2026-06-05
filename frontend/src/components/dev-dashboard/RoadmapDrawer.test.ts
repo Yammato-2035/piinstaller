@@ -54,6 +54,12 @@ const messages: Record<string, string> = {
   'devDashboard.roadmap.linkedNextPrompt': 'Verknüpfter Next Prompt',
   'devDashboard.roadmap.noLinkedPrompt': 'Kein verknüpfter Prompt',
   'devDashboard.roadmap.none': 'Keine',
+  'devDashboard.roadmap.compactTitle': 'Roadmap-Kurzüberblick',
+  'devDashboard.roadmap.topBlockers': 'Top-Blocker',
+  'devDashboard.roadmap.windowsTrack': 'Windows-Rescue-Track',
+  'devDashboard.roadmap.rawJsonTitle': 'Roh-JSON (aufklappbar)',
+  'devDashboard.roadmap.filter.all': 'Alle',
+  'devDashboard.roadmap.filter.windows': 'Windows',
   'devDashboard.noData': 'Keine Daten',
   'devDashboard.standalone.unavailable': 'UNAVAILABLE',
 }
@@ -235,5 +241,13 @@ describe('RoadmapDrawer', () => {
     expect(html).toContain('Raspberry Pi 5')
     expect(html).not.toContain('Backup starten')
     expect(html).not.toContain('Restore ausführen')
+  })
+
+  it('renders compact summary and raw JSON collapsed by default', () => {
+    const html = renderToStaticMarkup(React.createElement(RoadmapDrawer, { dashboard, t, apiReachable: false }))
+    expect(html).toContain('data-testid="dev-dashboard-roadmap-compact-summary"')
+    expect(html).toContain('data-testid="dev-dashboard-roadmap-filters"')
+    expect(html).toContain('data-testid="dev-dashboard-roadmap-raw-json"')
+    expect(html).toContain('Roh-JSON (aufklappbar)')
   })
 })

@@ -989,6 +989,111 @@
       "next_recommended_action": "Die Diagnostik hat die Build-Fehler gelernt; der n\u00e4chste technische Blocker ist jetzt der echte kontrollierte Operator-Build in einem Terminal."
     },
     {
+      "id": "windows-laptop-rescue-inspect",
+      "title_de": "Windows-Laptop-Rettungsstick / Inspect",
+      "title_en": "Windows laptop rescue stick / inspect",
+      "description_de": "Read-only Inspect eines Windows-11-Pro-Laptops (Beta/Insider): Systemdaten, Fehlerindikatoren, Backup-Dry-Run, Dualboot-Planung — keine Reparatur, kein NTFS-Schreiben.",
+      "description_en": "Read-only inspect of a Windows 11 Pro laptop (beta/insider): system data, fault indicators, backup dry-run, dualboot planning — no repair, no NTFS writes.",
+      "status": "yellow",
+      "priority": "P1",
+      "release_feature": true,
+      "user_facing": true,
+      "internal_tooling": false,
+      "owner": "Setuphelfer Rescue",
+      "planned_start": "2026-06-05",
+      "planned_end": null,
+      "completed_at": null,
+      "evidence_level": "planning_only",
+      "authoritative_evidence": [
+        "docs/roadmap/WINDOWS_LAPTOP_RESCUE_INSPECT_PLAN.md",
+        "docs/evidence/windows-rescue/WINDOWS11_RESCUE_INSPECT_MVP_PLAN.md",
+        "docs/evidence/windows-rescue/windows_inspect.schema.json",
+        "docs/knowledge-base/windows-rescue/WINDOWS11_INSPECT_AND_RECOVERY.md"
+      ],
+      "milestones": [
+        {
+          "id": "windows11-readonly-detection",
+          "title_de": "Read-only Erkennung (GPT/UEFI/NTFS/BitLocker)",
+          "title_en": "Read-only detection",
+          "status": "planned",
+          "progress_percent": 10,
+          "evidence_links": ["docs/evidence/windows-rescue/windows_inspect_diagnostic_codes.json"],
+          "tasks": []
+        },
+        {
+          "id": "windows11-system-inventory",
+          "title_de": "System-Inventar (Offline-Registry, Profile, Boot)",
+          "title_en": "System inventory",
+          "status": "planned",
+          "progress_percent": 5,
+          "evidence_links": ["docs/evidence/windows-rescue/windows_inspect_sample.json"],
+          "tasks": []
+        },
+        {
+          "id": "windows11-fault-detection",
+          "title_de": "Fehlererkennung (Explorer/Shell/Logs)",
+          "title_en": "Fault detection",
+          "status": "planned",
+          "progress_percent": 5,
+          "evidence_links": ["docs/knowledge-base/windows-rescue/WINDOWS_EXPLORER_SHELL_FAILURES.md"],
+          "tasks": []
+        },
+        {
+          "id": "windows11-guided-remediation-suggestions",
+          "title_de": "Geführte Lösungsvorschläge (Codes only)",
+          "title_en": "Guided remediation suggestions",
+          "status": "planned",
+          "progress_percent": 0,
+          "evidence_links": ["docs/evidence/windows-rescue/windows_inspect_diagnostic_codes.json"],
+          "tasks": []
+        },
+        {
+          "id": "windows11-selective-cloud-backup-planning",
+          "title_de": "Selektives Backup/Cloud (Dry-Run)",
+          "title_en": "Selective backup/cloud dry-run",
+          "status": "planned",
+          "progress_percent": 0,
+          "evidence_links": ["docs/knowledge-base/windows-rescue/BITLOCKER_READONLY_POLICY.md"],
+          "tasks": []
+        },
+        {
+          "id": "windows11-dualboot-preparation",
+          "title_de": "Dualboot-Vorbereitung (Plan only)",
+          "title_en": "Dualboot preparation plan only",
+          "status": "planned",
+          "progress_percent": 0,
+          "evidence_links": ["docs/roadmap/WINDOWS_LAPTOP_RESCUE_INSPECT_PLAN.md"],
+          "tasks": []
+        }
+      ],
+      "blockers": [
+        {
+          "id": "windows-inspect-hw-not-run",
+          "area_id": "windows-laptop-rescue-inspect",
+          "title_de": "Kein echter Windows-Laptop-HW-Inspect-Lauf",
+          "title_en": "No real Windows laptop HW inspect run",
+          "severity": "medium",
+          "status": "blocked",
+          "first_seen": "2026-06-05",
+          "last_seen": "2026-06-05"
+        }
+      ],
+      "decisions": [],
+      "notes": [
+        {
+          "id": "windows-inspect-readonly-only",
+          "area_id": "windows-laptop-rescue-inspect",
+          "text_de": "Alle Windows-Laufwerke nur read-only; keine Reparaturbefehle aus Rescue.",
+          "text_en": "All Windows volumes read-only only; no repair commands from rescue.",
+          "created_at": "2026-06-05",
+          "author": "Cursor",
+          "evidence_links": ["docs/knowledge-base/windows-rescue/BITLOCKER_READONLY_POLICY.md"]
+        }
+      ],
+      "next_prompt_id": "WINDOWS11_RESCUE_INSPECT_MVP",
+      "next_recommended_action": "MVP: Mount-Plan + Offline-Inventar-Stub + Dashboard-Panel (read-only)."
+    },
+    {
       "id": "dev-dashboard",
       "title_de": "Dev Dashboard",
       "title_en": "Dev Dashboard",

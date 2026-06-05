@@ -2,13 +2,30 @@ import React, { useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { Copy, Download, Eye } from 'lucide-react'
 import { fetchApi } from '../../api'
+import {
+  buildCompactSummary,
+  buildFilteredTreeRows,
+  type JsonRow,
+  type RoadmapFilterId,
+} from '../../lib/devDashboard/roadmapFilter'
 import type { CockpitPanelProps } from './types'
 
 type RoadmapDrawerProps = CockpitPanelProps & {
   apiReachable?: boolean
 }
 
-type JsonRow = Record<string, unknown>
+const FILTER_OPTIONS: RoadmapFilterId[] = [
+  'all',
+  'red',
+  'yellow',
+  'green',
+  'rescue',
+  'windows',
+  'backup',
+  'restore',
+  'dcc',
+  'runtime',
+]
 
 function asRows(value: unknown): JsonRow[] {
   return Array.isArray(value) ? (value as JsonRow[]) : []
@@ -44,20 +61,6 @@ function displayRange(row: JsonRow): string {
   return '—'
 }
 
-function buildTreeRows(areas: JsonRow[]): Array<{ key: string; level: number; row: JsonRow; kind: 'area' | 'milestone' | 'task' }> {
-  const rows: Array<{ key: string; level: number; row: JsonRow; kind: 'area' | 'milestone' | 'task' }> = []
-  for (const area of areas) {
-    rows.push({ key: `area-${String(area.id)}`, level: 0, row: area, kind: 'area' })
-    for (const milestone of asRows(area.milestones)) {
-      rows.push({ key: `milestone-${String(milestone.id)}`, level: 1, row: milestone, kind: 'milestone' })
-      for (const task of asRows(milestone.tasks)) {
-        rows.push({ key: `task-${String(task.id)}`, level: 2, row: task, kind: 'task' })
-      }
-    }
-  }
-  return rows
-}
-
 function fallbackItems(roadmap: JsonRow): JsonRow[] {
   const tabs = (roadmap.tabs as Record<string, JsonRow[]>) || {}
   return [
@@ -81,11 +84,13 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
   const runtimeOverlay = (roadmap.runtime_overlay as JsonRow) || {}
   const [promptText, setPromptText] = useState('')
   const [loadingPrompt, setLoadingPrompt] = useState(false)
+  const [activeFilter, setActiveFilter] = useState<RoadmapFilterId>('all')
+  const compact = useMemo(() => buildCompactSummary(roadmap), [roadmap])
 
   const restoreArea = useMemo(() => areas.find((row) => String(row.id) === 'restore') || null, [areas])
   const diagnosticsArea = useMemo(() => areas.find((row) => String(row.id) === 'diagnostics') || null, [areas])
   const diagnosticsProgress = ((diagnosticsArea?.diagnostics_progress as JsonRow) || (roadmap.diagnostics_progress as JsonRow) || {}) as JsonRow
-  const rows = useMemo(() => buildTreeRows(areas), [areas])
+  const rows = useMemo(() => buildFilteredTreeRows(areas, activeFilter), [areas, activeFilter])
   const promptUnlocks = Array.isArray(recommendedPrompt?.unlocks) ? (recommendedPrompt?.unlocks as string[]) : []
   const promptBlockers = Array.isArray(recommendedPrompt?.blocked_by) ? (recommendedPrompt?.blocked_by as string[]) : []
   const diagnosticsProgressKeys = [
@@ -247,6 +252,66 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
         <div className="text-xs text-slate-400">
           {t('devDashboard.roadmap.runtimeOverlay')}: {String(runtimeOverlay.runtime_gate_status || t('devDashboard.standalone.unavailable'))}
         </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-700/60 bg-slate-950/50 p-4" data-testid="dev-dashboard-roadmap-compact-summary">
+        <div className="text-sm font-semibold text-white">{t('devDashboard.roadmap.compactTitle', 'Roadmap-Kurzüberblick')}</div>
+        <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4 text-xs">
+          <div>
+            <div className="text-slate-500">{t('devDashboard.roadmap.overallStatus')}</div>
+            <div className="text-slate-100 font-medium">{compact.overallStatus}</div>
+          </div>
+          <div>
+            <div className="text-slate-500">{t('devDashboard.roadmap.runtimeOverlay')}</div>
+            <div className="text-slate-100 font-medium">{compact.runtimeGateStatus}</div>
+          </div>
+          <div>
+            <div className="text-slate-500">{t('devDashboard.roadmap.recommendedPrompt')}</div>
+            <div className="text-slate-100 font-medium">{compact.recommendedPromptTitle}</div>
+          </div>
+          <div>
+            <div className="text-slate-500">{t('devDashboard.roadmap.windowsTrack', 'Windows-Rescue-Track')}</div>
+            <div className="text-slate-100 font-medium">{compact.windowsTrackPresent ? 'present' : '—'}</div>
+          </div>
+        </div>
+        <div className="mt-3">
+          <div className="text-[11px] uppercase tracking-wide text-slate-500">{t('devDashboard.roadmap.topBlockers', 'Top-Blocker')}</div>
+          <ul className="mt-1 space-y-1 text-xs text-slate-200">
+            {compact.topBlockers.length ? (
+              compact.topBlockers.map((b) => (
+                <li key={b.id}>
+                  <span className="text-amber-300/90">[{b.severity}]</span> {b.title}{' '}
+                  <span className="text-slate-500">({b.areaId})</span>
+                </li>
+              ))
+            ) : (
+              <li>{t('devDashboard.roadmap.none')}</li>
+            )}
+          </ul>
+        </div>
+        {compact.warnings.length ? (
+          <div className="mt-3 text-xs text-amber-200/90">
+            {t('devDashboard.roadmap.warnings', 'Warnungen')}: {compact.warnings.join(' · ')}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="flex flex-wrap gap-2" data-testid="dev-dashboard-roadmap-filters">
+        {FILTER_OPTIONS.map((filterId) => (
+          <button
+            key={filterId}
+            type="button"
+            className={`px-2.5 py-1 rounded-md text-xs border ${
+              activeFilter === filterId
+                ? 'border-violet-500/70 bg-violet-950/50 text-violet-100'
+                : 'border-slate-600 text-slate-300 hover:bg-slate-800/50'
+            }`}
+            onClick={() => setActiveFilter(filterId)}
+            data-testid={`dev-dashboard-roadmap-filter-${filterId}`}
+          >
+            {t(`devDashboard.roadmap.filter.${filterId}`, filterId)}
+          </button>
+        ))}
       </div>
 
       <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6" data-testid="dev-dashboard-roadmap-summary">
@@ -449,12 +514,65 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
         </table>
       </div>
 
+      <details className="rounded-xl border border-slate-700/60 bg-slate-950/40" data-testid="dev-dashboard-roadmap-raw-json">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-slate-200">
+          {t('devDashboard.roadmap.rawJsonTitle', 'Roh-JSON (aufklappbar)')}
+        </summary>
+        <div className="border-t border-slate-800 px-4 py-3">
+          <div className="flex flex-wrap gap-2 mb-2">
+            <button
+              type="button"
+              className="btn-secondary text-xs inline-flex items-center gap-1"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(JSON.stringify(roadmap, null, 2))
+                  toast.success(t('devDashboard.roadmap.copyPromptSuccess'))
+                } catch {
+                  toast.error(t('devDashboard.noData'))
+                }
+              }}
+              data-testid="dev-dashboard-roadmap-copy-raw-json"
+            >
+              <Copy size={14} />
+              {t('devDashboard.roadmap.copyRawJson', 'JSON kopieren')}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary text-xs inline-flex items-center gap-1"
+              onClick={() => {
+                const blob = new Blob([JSON.stringify(roadmap, null, 2)], { type: 'application/json' })
+                const url = URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = 'roadmap-export.json'
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+                URL.revokeObjectURL(url)
+                toast.success(t('devDashboard.roadmap.exportPromptSuccess'))
+              }}
+              data-testid="dev-dashboard-roadmap-export-raw-json"
+            >
+              <Download size={14} />
+              {t('devDashboard.roadmap.exportRawJson', 'JSON exportieren')}
+            </button>
+          </div>
+          <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded border border-slate-700 bg-slate-950/80 p-3 text-[10px] text-slate-300">
+            {JSON.stringify(roadmap, null, 2)}
+          </pre>
+        </div>
+      </details>
+
       <div className="space-y-3" data-testid="dev-dashboard-roadmap-details">
         {areas.map((area) => {
           const areaStatus = String(area.status || 'unknown')
           const areaPrompt = promptById.get(String(area.next_prompt_id || ''))
+          const openByDefault =
+            String(area.id) === 'windows-laptop-rescue-inspect' ||
+            String(area.id) === 'restore' ||
+            String(area.id) === 'diagnostics'
           return (
-            <details key={String(area.id)} className="rounded-xl border border-slate-700/60 bg-slate-900/40" open={String(area.id) === 'restore' || String(area.id) === 'diagnostics'}>
+            <details key={String(area.id)} className="rounded-xl border border-slate-700/60 bg-slate-900/40" open={openByDefault}>
               <summary className="cursor-pointer list-none px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>

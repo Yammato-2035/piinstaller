@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "catalog": "windows_rescue_inspect_mvp",
+  "write_actions_allowed_default": false,
+  "codes": [
+    {
+      "code": "WIN-INSPECT-001",
+      "severity": "info",
+      "evidence_source": "partition_scan",
+      "explanation_de": "Windows-Installation erkannt (NTFS + Windows-Verzeichnis).",
+      "explanation_en": "Windows installation detected.",
+      "recommended_next_action_de": "System-Inventar und Fehlerindikatoren erfassen.",
+      "recommended_next_action_en": "Collect system inventory and fault indicators.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-INSPECT-002",
+      "severity": "critical",
+      "evidence_source": "mount_plan",
+      "explanation_de": "Windows-Partition nicht sicher read-only mountbar.",
+      "explanation_en": "Windows partition not safely mountable read-only.",
+      "recommended_next_action_de": "Mount-Plan prüfen; kein Schreibzugriff erzwingen.",
+      "recommended_next_action_en": "Review mount plan; do not force write access.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-BITLOCKER-001",
+      "severity": "warning",
+      "evidence_source": "bitlocker_metadata",
+      "explanation_de": "BitLocker erkannt und gesperrt.",
+      "explanation_en": "BitLocker detected and locked.",
+      "recommended_next_action_de": "Recovery-Key-Status dokumentieren; ohne Key keine Datei-/Registry-Analyse.",
+      "recommended_next_action_en": "Document recovery key status; no file/registry analysis without key.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-BITLOCKER-002",
+      "severity": "critical",
+      "evidence_source": "bitlocker_metadata",
+      "explanation_de": "BitLocker Recovery Key erforderlich.",
+      "explanation_en": "BitLocker recovery key required.",
+      "recommended_next_action_de": "Operator liefert Recovery Key; niemals im Repo speichern.",
+      "recommended_next_action_en": "Operator provides recovery key; never store in repo.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-EXPLORER-001",
+      "severity": "critical",
+      "evidence_source": "filesystem",
+      "explanation_de": "explorer.exe fehlt unter Windows-Verzeichnis.",
+      "explanation_en": "explorer.exe missing under Windows directory.",
+      "recommended_next_action_de": "Daten zuerst sichern; Offline-SFC/DISM nur als Vorschlag.",
+      "recommended_next_action_en": "Back up data first; offline SFC/DISM as suggestion only.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-EXPLORER-002",
+      "severity": "warning",
+      "evidence_source": "filesystem",
+      "explanation_de": "explorer.exe nicht lesbar (BitLocker/NTFS/Permission).",
+      "explanation_en": "explorer.exe not readable.",
+      "recommended_next_action_de": "Mount-/BitLocker-Status prüfen.",
+      "recommended_next_action_en": "Check mount/BitLocker status.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-SHELL-001",
+      "severity": "warning",
+      "evidence_source": "offline_registry",
+      "explanation_de": "Winlogon Shell-Wert fehlt oder verdächtig.",
+      "explanation_en": "Winlogon Shell value missing or suspicious.",
+      "recommended_next_action_de": "Registry-Befund dokumentieren; keine automatische Reparatur.",
+      "recommended_next_action_en": "Document registry finding; no automatic repair.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-SHELL-002",
+      "severity": "warning",
+      "evidence_source": "offline_registry",
+      "explanation_de": "Userinit-Wert fehlt oder verdächtig.",
+      "explanation_en": "Userinit value missing or suspicious.",
+      "recommended_next_action_de": "Shell-Startkette prüfen; WinRE-Vorschlag.",
+      "recommended_next_action_en": "Review shell startup chain; suggest WinRE.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-BOOT-001",
+      "severity": "warning",
+      "evidence_source": "efi_scan",
+      "explanation_de": "EFI-Systempartition fehlt oder nicht lesbar.",
+      "explanation_en": "EFI system partition missing or unreadable.",
+      "recommended_next_action_de": "Boot-Struktur dokumentieren; BCD/EFI prüfen.",
+      "recommended_next_action_en": "Document boot structure; check BCD/EFI.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-BOOT-002",
+      "severity": "warning",
+      "evidence_source": "bcd_scan",
+      "explanation_de": "BCD fehlt oder nicht lesbar.",
+      "explanation_en": "BCD missing or unreadable.",
+      "recommended_next_action_de": "WinRE/BCD-Offline-Analyse vorschlagen.",
+      "recommended_next_action_en": "Suggest WinRE/BCD offline analysis.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-WINRE-001",
+      "severity": "warning",
+      "evidence_source": "winre_scan",
+      "explanation_de": "WinRE oder reagent.xml fehlt.",
+      "explanation_en": "WinRE or reagent.xml missing.",
+      "recommended_next_action_de": "WinRE-Wiederherstellungsumgebung prüfen.",
+      "recommended_next_action_en": "Check WinRE recovery environment.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-UPDATE-001",
+      "severity": "info",
+      "evidence_source": "pending_ops",
+      "explanation_de": "Hinweis auf ausstehendes Update/Rollback.",
+      "explanation_en": "Pending update/rollback hint detected.",
+      "recommended_next_action_de": "Setup/Panther/CBS-Logs indexieren.",
+      "recommended_next_action_en": "Index Setup/Panther/CBS logs.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-NTFS-001",
+      "severity": "critical",
+      "evidence_source": "ntfs_metadata",
+      "explanation_de": "NTFS dirty oder unsicherer Zustand.",
+      "explanation_en": "NTFS dirty or unsafe state.",
+      "recommended_next_action_de": "Kein chkdsk /f aus Rescue; Datenrettung priorisieren.",
+      "recommended_next_action_en": "No chkdsk /f from rescue; prioritize data recovery.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-DUALBOOT-001",
+      "severity": "info",
+      "evidence_source": "partition_plan",
+      "explanation_de": "Dualboot-Planung erfordert zuerst Backup.",
+      "explanation_en": "Dualboot planning requires backup first.",
+      "recommended_next_action_de": "Nur Planungsbericht; keine Partitionierung.",
+      "recommended_next_action_en": "Planning report only; no partitioning.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-CLOUD-001",
+      "severity": "info",
+      "evidence_source": "backup_plan",
+      "explanation_de": "Cloud-Backup nur Dry-Run/Export in diesem MVP.",
+      "explanation_en": "Cloud backup dry-run/export only in this MVP.",
+      "recommended_next_action_de": "Manifest erzeugen; Upload erst nach Operator-Freigabe.",
+      "recommended_next_action_en": "Generate manifest; upload only after operator approval.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-CLOUD-002",
+      "severity": "info",
+      "evidence_source": "backup_plan",
+      "explanation_de": "Cloud-Zugangsdaten nicht konfiguriert (absichtlich).",
+      "explanation_en": "Cloud credentials not configured (by design).",
+      "recommended_next_action_de": "Provider-Auswahl und Freigabe separat.",
+      "recommended_next_action_en": "Provider selection and approval separately.",
+      "write_action_allowed": false
+    },
+    {
+      "code": "WIN-BETA-001",
+      "severity": "warning",
+      "evidence_source": "offline_registry",
+      "explanation_de": "Windows Beta/Insider-Build erkannt oder vermutet.",
+      "explanation_en": "Windows beta/Insider build detected or suspected.",
+      "recommended_next_action_de": "Reparatur nur als Vorschlag; Migration stable planen.",
+      "recommended_next_action_en": "Repair as suggestion only; plan stable migration.",
+      "write_action_allowed": false
+    }
+  ]
+}

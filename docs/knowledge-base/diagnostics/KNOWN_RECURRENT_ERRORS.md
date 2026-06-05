@@ -28,6 +28,11 @@ Kurzreferenz für Knowledge-Base-First-Triage. Details in verlinkter Evidence.
 **status:** `confirmed`  
 **rule:** release blockiert interne Dev-Routen mit 404 `PROFILE_ROUTE_BLOCKED`; kein Backend-down, kein Portfehler
 
+### `wrong_next_prompt_selection` — Auflösungsstand
+
+**status:** `fixed_or_mitigated`  
+**rule:** Controlled Command Runner nicht wählen, solange DCC/Windows-Rescue/Runtime höhere Priorität haben; Next: `WINDOWS11_RESCUE_INSPECT_MVP`
+
 ## Pflicht vor neuem Fix
 
 1. Frühere Evidence suchen (`docs/evidence/`, diese KB, `RESCUE_QEMU_RECURRENT_FAILURES.md`).

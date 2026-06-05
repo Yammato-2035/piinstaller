@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-06-05T12:00:00+02:00",
+  "source": "setuphelfer_rescue_inspect",
+  "safety": {
+    "mode": "read_only",
+    "write_actions_allowed": false,
+    "bitlocker_locked": null,
+    "cloud_upload_allowed": false
+  },
+  "host": {
+    "detected_os_family": "windows",
+    "edition": "Windows 11 Pro",
+    "build": "26100.1",
+    "insider_or_beta_hint": "suspected_insider_channel",
+    "computer_name": "LAPTOP-EXAMPLE"
+  },
+  "storage": {
+    "disks": [{ "id": 0, "size_bytes": 512110190592, "partition_style": "GPT" }],
+    "partitions": [
+      { "disk_id": 0, "number": 1, "type": "EFI", "size_bytes": 272629760, "mount_readonly": true },
+      { "disk_id": 0, "number": 3, "type": "NTFS", "size_bytes": 510027366400, "mount_readonly": true, "label": "OS" }
+    ],
+    "efi_partition": { "disk_id": 0, "number": 1 },
+    "windows_partition": { "disk_id": 0, "number": 3, "mount_point": "/mnt/windows_ro" },
+    "bitlocker": []
+  },
+  "windows_paths": {
+    "windows_dir": "C:\\Windows",
+    "system32_dir": "C:\\Windows\\System32",
+    "explorer_exe": {
+      "path": "C:\\Windows\\explorer.exe",
+      "exists": true,
+      "size": 4915200,
+      "diagnostic_code": null
+    }
+  },
+  "registry_findings": {
+    "software_hive_readable": true,
+    "system_hive_readable": true,
+    "winlogon_shell": "explorer.exe",
+    "winlogon_userinit": "C:\\Windows\\system32\\userinit.exe,",
+    "profile_list": ["S-1-5-21-example"]
+  },
+  "boot_findings": {
+    "efi_present": true,
+    "bcd_present": true,
+    "winre_present": true,
+    "reagent_xml_present": true
+  },
+  "logs": {
+    "cbs_log_present": true,
+    "dism_log_present": true,
+    "setupact_log_present": false,
+    "event_logs_present": ["System.evtx", "Application.evtx"]
+  },
+  "findings": [
+    {
+      "code": "WIN-INSPECT-001",
+      "severity": "info",
+      "evidence_source": "partition_scan",
+      "explanation_de": "Windows-Installation erkannt.",
+      "explanation_en": "Windows installation detected."
+    },
+    {
+      "code": "WIN-BETA-001",
+      "severity": "warning",
+      "evidence_source": "offline_registry",
+      "explanation_de": "Insider/Beta-Hinweis im Build-String.",
+      "explanation_en": "Insider/beta hint in build string."
+    }
+  ],
+  "recommended_actions": [
+    {
+      "code": "BACKUP_FIRST",
+      "title_de": "Benutzerdaten zuerst auf externes Ziel sichern (Dry-Run-Manifest).",
+      "title_en": "Back up user data to external target first (dry-run manifest).",
+      "write_action_allowed": false
+    }
+  ],
+  "backup_selection": {
+    "dry_run_only": true,
+    "selected_paths": ["C:\\Users\\Example\\Documents"],
+    "excluded_paths": [
+      "C:\\Users\\Example\\AppData\\Local\\Google\\Chrome\\User Data",
+      "C:\\System Volume Information",
+      "C:\\pagefile.sys",
+      "C:\\hiberfil.sys"
+    ],
+    "estimated_size_bytes": 1073741824,
+    "manifest_path": null
+  },
+  "dualboot_readiness": {
+    "status": "planning_only",
+    "blockers": ["WIN-DUALBOOT-001", "backup_not_completed"],
+    "notes": ["Keine Partitionierung in diesem Track.", "Linux Mint Dualboot nur Planungsbericht."]
+  }
+}

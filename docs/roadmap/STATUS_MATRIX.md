@@ -55,6 +55,8 @@
 | **DCC unter local_lab live** | **Grün** | local_lab API 200 + Operator-DCC sichtbar; release restore belegt | `DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`, `DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md` |
 | **DCC Frontend Profile Desync (Gating)** | **Grün** | Gating deployed; local_lab + release restore live belegt | `DCC_FRONTEND_PROFILE_DESYNC_RESULT.md`, `DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md` |
 | **DCC Blank Screen Fail-Safe** | **Grün** | `blank_dcc_screen` resolved; local_lab + release Disabled+Diagnose sichtbar | `DCC_BLANK_SCREEN_TRIAGE_RESULT.md`, `DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md` |
+| **Windows Laptop Rescue Inspect** | Gelb | P1 Track `windows-laptop-rescue-inspect`; Schema+Codes+KB; read-only MVP planning | `WINDOWS_LAPTOP_RESCUE_INSPECT_PLAN.md`, `windows_inspect.schema.json` |
+| **DCC Roadmap Output Filter** | Gelb | Kurzüberblick+Filter+Roh-JSON collapsible; kein ungefilterter Dump in Hauptansicht | `RoadmapDrawer.tsx`, `roadmapFilter.ts` |
 | **Roadmap-First / KB-First Governance** | Gelb | Regeln in `CURSOR_WORK_RULES.md` + `.cursor/rules/200_ROADMAP_KB_FIRST.md`; Known-Error-Triage-Template; recurrent-errors KB | `PROJECT_RULES_ROADMAP_KB_FIRST_RESULT.md`, `project_rules_roadmap_kb_first_latest.json` |
 | **Known Error Triage (Evidence)** | Gelb | `new_governance_required` — Pflicht: KB-Suche vor jedem Fix | `KNOWN_RECURRENT_ERRORS.md`, `known_error_triage.schema.json` |
 | **Developer QEMU ISO Rebuild** | Grün | Operator `rescue_developer_iso_20260602_220129` LB_EXIT=0; SHA `614cc86e…`; Autopilot wants in Squashfs; ready for smoke | `DEVELOPER_QEMU_ISO_AFTER_AUTOPILOT_SUCCESS_INGEST_RESULT.md` |
