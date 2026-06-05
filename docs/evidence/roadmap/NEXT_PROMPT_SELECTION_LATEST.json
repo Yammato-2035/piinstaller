@@ -1,45 +1,32 @@
 {
-  "schema_version": 7,
-  "selected_at": "2026-06-06T23:50:00+02:00",
-  "selected_prompt_id": "DEVELOPER_DCC_FULL_ROUTE_CAPABILITY_AUDIT",
-  "parallel_prompt_id": "DEVELOPER_DCC_TELEMETRY_DEPLOY_OPERATOR_RUN",
-  "reason_de": "Status-Route nutzte dev_control-only Block statt Capability-Gate — Fix im Workspace. Operator-Deploy + Smoke vor USB-Write; danach Full-Route-Audit.",
-  "reason_en": "Rescue ISO UEFI-ready but DCC+telemetry live smoke blocked: /opt missing developer_capability and rescue_telemetry router. Operator deploy and local token config required before USB write.",
+  "schema_version": 8,
+  "selected_at": "2026-06-07T00:55:00+02:00",
+  "selected_prompt_id": "RESCUE_USB_BOOT_AND_WINDOWS_INSPECT_OPERATOR_RUN",
+  "parallel_prompt_id": "DEVELOPER_DCC_FULL_ROUTE_CAPABILITY_AUDIT",
+  "reason_de": "DCC deploy_drift Gate-Trennung + compact-status implementiert. Rescue-ISO UEFI-ready; USB-Stick/Mount erkennbar; MSI/W11-Boot und Windows-Inspect als nächster Operator-Lauf.",
+  "reason_en": "DCC deploy drift gate split and compact status implemented. Rescue ISO UEFI-ready; USB mount detectable; MSI/W11 boot and Windows inspect next operator run.",
   "tracks": [
     {
-      "id": "developer_dcc_telemetry_deploy",
-      "status": "red",
+      "id": "rescue_usb_boot_windows_inspect",
+      "status": "yellow",
       "priority": "P0",
-      "classification": "opt_runtime_deploy_drift",
-      "next_step": "DEVELOPER_DCC_TELEMETRY_DEPLOY_OPERATOR_RUN",
+      "classification": "uefi_iso_ready_usb_mount_detectable",
+      "next_step": "RESCUE_USB_BOOT_AND_WINDOWS_INSPECT_OPERATOR_RUN",
       "evidence": [
-        "docs/evidence/dev-dashboard/DEVELOPER_DCC_TELEMETRY_DEPLOY_OPERATOR_HANDOFF.md",
-        "docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_LOCAL_CONFIG_OPERATOR_HANDOFF.md",
-        "docs/evidence/dev-dashboard/DEVELOPER_DCC_AND_TELEMETRY_OPERATOR_SMOKE_RESULT.md",
-        "docs/evidence/dev-dashboard/developer_dcc_and_telemetry_operator_smoke_latest.json"
+        "docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_GATE_AND_COMPACT_STATUS_FIX_RESULT.md",
+        "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"
       ]
     },
     {
-      "id": "rescue_usb_write",
+      "id": "developer_dcc_full_route_audit",
       "status": "yellow",
-      "priority": "P0",
-      "classification": "uefi_x64_iso_ready_for_usb_operator_write",
-      "blocked_by": ["DEVELOPER_DCC_TELEMETRY_LIVE_SMOKE_PENDING"],
-      "next_step": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
-      "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md"
-      ]
+      "priority": "P2",
+      "next_step": "DEVELOPER_DCC_FULL_ROUTE_CAPABILITY_AUDIT"
     }
   ],
-  "forbidden_next": [
-    "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT_WITHOUT_DCC_TELEMETRY_SMOKE",
-    "BACKEND_RESTART_WITHOUT_OPERATOR_APPROVAL",
-    "DEPLOY_WITHOUT_OPERATOR_APPROVAL"
-  ],
   "governance_rules": {
-    "iso_uefi_sha256": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
-    "dcc_tokens_not_in_repo": true,
-    "rescue_telemetry_separate_from_dcc": true,
-    "no_usb_write_before_dcc_telemetry_smoke": true
+    "developer_capability_exempt_from_profile_exposure_drift": true,
+    "dcc_compact_status_default_ui": true,
+    "no_secrets_in_dcc": true
   }
 }

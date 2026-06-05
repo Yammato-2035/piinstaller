@@ -4156,6 +4156,18 @@ async def dev_dashboard_capability_status(request: Request):
     )
 
 
+@app.get("/api/dev-dashboard/compact-status")
+async def dev_dashboard_compact_status(request: Request):
+    """Compact operator summary — no full dashboard payload, no secrets."""
+    from core.dev_dashboard_compact_status import build_compact_dcc_status
+
+    headers = {k: v for k, v in request.headers.items()}
+    return build_compact_dcc_status(
+        request_headers=headers,
+        backend_runtime_path=str(get_backend_runtime_dir().resolve()),
+    )
+
+
 @app.get("/api/dev-dashboard/status")
 async def dev_dashboard_status(
     request: Request,

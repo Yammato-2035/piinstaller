@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-06-07T00:55:00+02:00",
+  "status": "workspace_fix_verified",
+  "issues_resolved": [
+    "deploy_drift_red_due_to_forbidden_api_paths_visible_dev_dashboard",
+    "dcc_ui_full_status_payload_as_primary_view"
+  ],
+  "gate_model": {
+    "deploy_drift": "file_manifest_runtime_sync",
+    "profile_exposure": "unauthorized_dev_api_visibility",
+    "developer_capability_exposure": "local_dcc_allowed_with_token_config"
+  },
+  "endpoints_added": [
+    "/api/dev-dashboard/compact-status"
+  ],
+  "tests": {
+    "backend_pytest_passed": 36,
+    "frontend_vitest": [
+      "dccCompactStatus",
+      "dccCompactOverviewPanel",
+      "dccGate",
+      "rescueStickUsbGate"
+    ]
+  },
+  "secrets_in_repo_or_evidence": false,
+  "next_prompt": "RESCUE_USB_BOOT_AND_WINDOWS_INSPECT_OPERATOR_RUN"
+}

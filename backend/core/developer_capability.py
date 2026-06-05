@@ -17,6 +17,7 @@ DCC_TOKEN_FILE_DEFAULT = Path("/etc/setuphelfer/dcc_developer.token")
 DCC_TOKEN_FILE_LEGACY = Path("/etc/setuphelfer/developer.dcc.token")
 DCC_HEADER = "x-setuphelfer-developer-token"
 CAPABILITY_STATUS_PATH = "/api/dev-dashboard/capability-status"
+COMPACT_STATUS_PATH = "/api/dev-dashboard/compact-status"
 
 RELEASE_LIKE_PROFILES = frozenset({"release", "production"})
 LAB_PROFILES = frozenset({"developer", "local_lab"})
@@ -215,7 +216,7 @@ def is_dcc_route_allowed(
     """Return (allowed, block_code)."""
     if not path.startswith("/api/dev-dashboard"):
         return True, None
-    if _path_base(path) == CAPABILITY_STATUS_PATH:
+    if _path_base(path) in (CAPABILITY_STATUS_PATH, COMPACT_STATUS_PATH):
         return True, None
 
     assessment = assess_developer_capability(
@@ -285,6 +286,31 @@ def build_capability_status_payload(
         "dcc_developer_enabled": bool(assessment["dcc_developer_enabled"]),
         "backend_runtime_path": backend_runtime_path,
         "rescue_telemetry_separate_from_dcc": True,
+    }
+
+
+def developer_capability_host_exemption_summary() -> dict[str, Any]:
+    """Host-level DCC exemption for deploy drift (no request token, no secrets)."""
+    from core.install_profile import get_install_profile_state
+
+    state = get_install_profile_state()
+    assessment = assess_developer_capability(
+        install_profile=state.install_profile,
+        dev_control_enabled=state.dev_control_enabled,
+        request_headers=None,
+    )
+    locally_allowed = bool(
+        assessment.get("dcc_route_open")
+        and assessment.get("developer_capability_configured")
+    )
+    return {
+        "status": "allowed" if locally_allowed else "inactive",
+        "locally_allowed_on_host": locally_allowed,
+        "dcc_developer_enabled": bool(assessment.get("dcc_developer_enabled")),
+        "developer_capability_configured": bool(assessment.get("developer_capability_configured")),
+        "machine_binding_checked": bool(assessment.get("machine_binding_checked")),
+        "machine_binding_ok": bool(assessment.get("machine_binding_ok")),
+        "install_profile": state.install_profile,
     }
 
 

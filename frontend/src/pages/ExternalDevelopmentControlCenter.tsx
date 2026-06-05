@@ -53,6 +53,11 @@ import {
   frontendBuildProfile,
 } from '../config/buildProfile'
 import { DccCompactStatusBar } from '../components/dev-dashboard/DccCompactStatusBar'
+import { DccCompactOverviewPanel } from '../components/dev-dashboard/DccCompactOverviewPanel'
+import {
+  fetchDccCompactStatus,
+  type DccCompactStatus,
+} from '../lib/devDashboard/dccCompactStatus'
 import {
   fetchDccLiveStatus,
   type DccLiveStatusSnapshot,
@@ -257,6 +262,8 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
   })
   const [gateLoading, setGateLoading] = useState(true)
   const [liveStatus, setLiveStatus] = useState<DccLiveStatusSnapshot | null>(null)
+  const [compactStatus, setCompactStatus] = useState<DccCompactStatus | null>(null)
+  const [compactLoading, setCompactLoading] = useState(false)
   const bundleMarkers = useMemo(() => hasDccBundleMarkers(), [])
 
   const [summary, setSummary] = useState<ControlCenterSummary | null>(null)
@@ -320,6 +327,13 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
 
       const versionInfo = versionPayload as DccGateVersionInfo | null
       const live = await fetchDccLiveStatus(versionInfo)
+      let compact: DccCompactStatus | null = null
+      if (statusHttpStatus === 200) {
+        setCompactLoading(true)
+        const compactResp = await fetchDccCompactStatus()
+        compact = compactResp.body
+        setCompactLoading(false)
+      }
 
       const probe: DccBootProbeResult = {
         versionHttp: versionHttpStatus,
@@ -343,6 +357,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       if (cancelled) return
       setBootProbe(probe)
       setLiveStatus(live)
+      setCompactStatus(compact)
       setBootClassification(classifyDccBootState(probe, bundleMarkers.ok))
       setGateLoading(false)
     }
@@ -578,6 +593,15 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
 
     return (
     <div className="max-w-[1600px] mx-auto px-4 py-5" data-testid="external-development-control-center">
+      <DccCompactOverviewPanel
+        compact={compactStatus}
+        loading={compactLoading}
+        rawDetailsJson={
+          compactStatus
+            ? JSON.stringify({ compact: compactStatus, live: liveStatus }, null, 2)
+            : null
+        }
+      />
       <DccCompactStatusBar
         live={liveStatus}
         statusHttp={bootProbe?.statusHttp ?? 0}

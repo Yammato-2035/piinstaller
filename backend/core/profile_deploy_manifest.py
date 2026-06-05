@@ -11,6 +11,8 @@ from typing import Any
 
 UTC = timezone.utc
 
+DEVELOPER_CAPABILITY_EXEMPT_API_PREFIXES = frozenset({"/api/dev-dashboard"})
+
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parent.parent.parent
@@ -138,15 +140,27 @@ def enrich_deploy_drift_profile_aware(
     paths = route_paths or []
     gate_audit = profile_gate_audit_route_paths(paths)
     forbidden_api_visible: list[str] = []
+    profile_exposure_forbidden_api: list[str] = []
+    developer_capability_exempt_api: list[str] = []
     required_api_missing: list[str] = []
+
+    from core.developer_capability import developer_capability_host_exemption_summary
+
+    cap_host = developer_capability_host_exemption_summary()
+    developer_cap_locally_allowed = bool(cap_host.get("locally_allowed_on_host"))
 
     def _any_api(prefix: str) -> bool:
         return any(p == prefix or p.startswith(prefix + "/") for p in paths)
 
     for prefix in forbidden_api:
         pfx = str(prefix).rstrip("/")
+        if pfx in DEVELOPER_CAPABILITY_EXEMPT_API_PREFIXES and developer_cap_locally_allowed:
+            if _any_api(pfx):
+                developer_capability_exempt_api.append(pfx)
+            continue
         if _any_api(pfx):
             forbidden_api_visible.append(pfx)
+            profile_exposure_forbidden_api.append(pfx)
     for prefix in required_api:
         pfx = str(prefix).rstrip("/")
         if not _any_api(pfx):
@@ -173,12 +187,15 @@ def enrich_deploy_drift_profile_aware(
     )
 
     profile_status = "green"
+    profile_exposure_status = "green"
     suggested: list[str] = list(base.get("suggested_actions") or [])
     if forbidden_present:
         profile_status = "red"
+        profile_exposure_status = "red"
         suggested.append("remove_forbidden_runtime_paths")
-    if forbidden_api_visible or gate_audit.get("profile_gate_errors"):
+    if profile_exposure_forbidden_api or gate_audit.get("profile_gate_errors"):
         profile_status = "red"
+        profile_exposure_status = "red"
         suggested.append("disable_dev_api_routes")
     if required_missing:
         profile_status = _merge_profile_drift_status(profile_status, "yellow")
@@ -206,6 +223,10 @@ def enrich_deploy_drift_profile_aware(
     else:
         manifest_match_out = base.get("manifest_match")
 
+    developer_capability_exposure_status = "allowed" if developer_cap_locally_allowed else "inactive"
+    if developer_capability_exempt_api:
+        developer_capability_exposure_status = "allowed"
+
     out = {
         **base,
         "status": final_status,
@@ -221,6 +242,19 @@ def enrich_deploy_drift_profile_aware(
         "forbidden_paths_present": forbidden_present,
         "required_api_paths_missing": required_api_missing,
         "forbidden_api_paths_visible": forbidden_api_visible,
+        "profile_exposure": {
+            "status": profile_exposure_status,
+            "forbidden_api_paths_visible": profile_exposure_forbidden_api,
+            "forbidden_paths_present": forbidden_present,
+        },
+        "developer_capability_exposure": {
+            "status": developer_capability_exposure_status,
+            "locally_allowed_on_host": developer_cap_locally_allowed,
+            "exempt_api_prefixes": developer_capability_exempt_api,
+            "dcc_routes_registered": bool(developer_capability_exempt_api),
+        },
+        "profile_exposure_status": profile_exposure_status,
+        "developer_capability_exposure_status": developer_capability_exposure_status,
         "public_exposure_status": public_status,
         "profile_gate_status": gate_audit.get("profile_gate_status"),
         "profile_gate_errors": gate_audit.get("profile_gate_errors", []),
