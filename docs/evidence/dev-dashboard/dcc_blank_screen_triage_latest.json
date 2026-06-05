@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "task": "dcc_blank_screen_triage",
+  "generated_at": "2026-06-05T11:10:00+02:00",
+  "head_before": "5608916",
+  "branch": "main",
+  "known_errors": {
+    "frontend_gating_desync": true,
+    "profile_block_expected_but_misread_as_down": true,
+    "known_operator_port_confusion": true,
+    "fix_not_deployed": true,
+    "stale_frontend_bundle": true,
+    "blank_dcc_screen": "new_entry_this_run"
+  },
+  "phase1_release_baseline": {
+    "install_profile": "release",
+    "dev_control_enabled": false,
+    "api_dev_dashboard_status": { "http_status": 404, "code": "PROFILE_ROUTE_BLOCKED" },
+    "ui_cockpit_http": 200,
+    "port_confusion_excluded": true
+  },
+  "fix": {
+    "files": [
+      "frontend/src/lib/devDashboard/dccBootState.ts",
+      "frontend/src/components/dev-dashboard/DccBootDiagnosticsPanel.tsx",
+      "frontend/src/components/dev-dashboard/DccErrorBoundary.tsx",
+      "frontend/src/pages/ExternalDevelopmentControlCenter.tsx",
+      "frontend/src/lib/devDashboard/dccGate.ts"
+    ],
+    "bundle_marker": "DCC_BOOT_DIAGNOSTICS_V1",
+    "boot_states": [
+      "dcc_active",
+      "profile_blocked_release",
+      "api_unreachable",
+      "api_error",
+      "frontend_runtime_error",
+      "stale_or_wrong_bundle",
+      "unknown_dcc_boot_failure"
+    ]
+  },
+  "tests": {
+    "frontend_build": "ok",
+    "vitest": "67/67 ok"
+  },
+  "deploy": { "performed": false, "reason": "pending_commit_and_operator_sudo" },
+  "local_lab_acceptance": { "performed": false },
+  "status": "yellow",
+  "ampel_rule": "blocked_if_browser_blank; yellow_if_diagnostics_visible; green_if_local_lab_dcc_and_release_restore"
+}

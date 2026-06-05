@@ -66,3 +66,23 @@ Aktuell: Commit nachgeholt; Deploy und local_lab Live-Acceptance blockiert an Op
 **Kein Fake-Green** für DCC.
 
 Operator-Handoff: `DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md`, `DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md`
+
+## Blank DCC Screen (leerer Browser)
+
+**Klassifikation:** `blank_dcc_screen`
+
+Symptom: `http://127.0.0.1:3001/?window=cockpit` lädt (HTTP 200), aber kein nutzbarer Inhalt — weder DCC noch klare Fehlermeldung.
+
+| Ursache | Klassifikation |
+|---------|----------------|
+| Altes Bundle ohne Diagnose-Marker | `stale_or_wrong_frontend_bundle` |
+| release + Status 404 | `expected_release_profile_block` (Disabled-Page + Diagnose erwartet) |
+| React-Renderfehler | `frontend_runtime_error` (ErrorBoundary) |
+| API nicht erreichbar | `api_unreachable` |
+| Unklassifiziert | `unknown_dcc_boot_failure` (Fallback-Panel) |
+
+**Regel:** DCC darf **nie** leer bleiben. `blank_dcc_screen_unresolved` blockiert Monolith-Aufteilung.
+
+Fix: `DccBootDiagnosticsPanel` + `DccErrorBoundary` + `dccBootState` (Marker `DCC_BOOT_DIAGNOSTICS_V1`).
+
+Evidence: `DCC_BLANK_SCREEN_TRIAGE_RESULT.md`, `dcc_blank_screen_triage_latest.json`

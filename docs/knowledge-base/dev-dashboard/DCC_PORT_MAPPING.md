@@ -26,6 +26,7 @@ Der SPA-Server auf 3001 proxyt **kein** `/api` zum Backend. Das Frontend nutzt d
 - Wenn `/api/dev-dashboard/status` HTTP 200 liefert, muss DCC angezeigt werden — `install_profile`-Snaps von `/api/version` duerfen das nicht blockieren.
 - Status-Requests werden mit `cache: no-store` und Query-Param `?t=<Date.now()>` ausgefuehrt, um stale Snapshots zu vermeiden.
 - Fix committed in `4fb72ee`; Produktions-Bundle unter `/opt` muss per `deploy-to-opt.sh` aktualisiert werden, bevor Browser-Smoke gilt.
+- Blank-Screen-Fail-safe: Marker `DCC_BOOT_DIAGNOSTICS_V1` im Bundle; Diagnosepanel `dcc-boot-diagnostics` immer sichtbar.
 
 ## Kein Bug
 

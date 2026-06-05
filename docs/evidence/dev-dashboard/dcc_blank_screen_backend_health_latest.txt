@@ -1,0 +1,12 @@
+HTTP/1.1 404 Not Found
+date: Fri, 05 Jun 2026 09:07:05 GMT
+server: uvicorn
+content-length: 92
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+referrer-policy: strict-origin-when-cross-origin
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'
+permissions-policy: geolocation=(), microphone=(), camera=()
+
+{"status":"error","code":"PROFILE_ROUTE_BLOCKED","path":"/api/dev-dashboard/backend-health"}

@@ -1,0 +1,6 @@
+=== DIST MARKERS (compact) ===
+DCC_BOOT_DIAGNOSTICS_V1: /opt=0 workspace=2 (index-yLjo-8mq.js after fail-safe build)
+dcc-boot-diagnostics: /opt=0 workspace=2
+dev-dashboard/status: /opt=4 workspace=4
+DCC-Status erneut prüfen: /opt=2 workspace=2 (i18n, may vary by locale bundling)
+Note: /opt predates fail-safe commit; deploy required for DCC_BOOT_DIAGNOSTICS_V1 on production :3001

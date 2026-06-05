@@ -69,6 +69,7 @@ Bei jeder DCC/Development-Control-Seitenanomalie (z. B. „Disabled-Page trotz l
 4. Disabled-Page ist serverseitig erwartet, wenn `/api/dev-dashboard/status` HTTP 404 `PROFILE_ROUTE_BLOCKED` liefert (oder wenn `/api/version` `dev_control_enabled=false` liefert und die Status-Route blockiert ist).
 5. Debug-/Evidence-Anker mussen mindestens `dev-dashboard/status`-URL, HTTP-Codes, backend `code` und Ports aus `runtime_ports` dokumentieren.
 6. **Fix-Lifecycle:** Code-Fix ohne Commit = `blocked`; Commit ohne Deploy nach `/opt` = `review_required`; Deploy ohne local_lab-Browser-Smoke = `yellow`; erst local_lab HTTP 200 + DCC sichtbar + release restore = `green`. Evidence: `DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md`.
+7. **Blank Screen:** Leerer Cockpit-Browser = `blank_dcc_screen` / `blank_dcc_screen_unresolved` — blockiert Monolith-Aufteilung. Fail-safe: Boot-Diagnosepanel immer sichtbar. Evidence: `DCC_BLANK_SCREEN_TRIAGE_RESULT.md`.
 
 ---
 

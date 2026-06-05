@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { decideDccVisibility } from './dccGate'
+import { decideDccVisibility, DCC_BUNDLE_FIX_MARKER } from './dccGate'
 
 describe('dccGate decideDccVisibility', () => {
+  it('exports bundle marker for production dist grep', () => {
+    expect(DCC_BUNDLE_FIX_MARKER).toBe('DCC_BOOT_DIAGNOSTICS_V1')
+  })
+
   it('allows DCC when /api/dev-dashboard/status is 200 even if /api/version is stale release', () => {
     const version = { dev_control_enabled: false, install_profile: 'release' }
     const status = { httpStatus: 200 as const, code: null }

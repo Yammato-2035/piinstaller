@@ -70,6 +70,7 @@ export default defineConfig({
     __SETUPHELFER_FLEET_SESSIONS_UI_ENABLED__: fleetSessionsUiEnabled,
     __SETUPHELFER_RESCUE_REMOTE_UI_ENABLED__: rescueRemoteUiEnabled,
     __SETUPHELFER_BUILD_ID__: JSON.stringify(buildId),
+    __DCC_BOOT_DIAGNOSTICS_V1__: JSON.stringify('DCC_BOOT_DIAGNOSTICS_V1'),
   },
   resolve: {
     alias: isTauriEnv ? {} : { 'tauri-plugin-screenshots-api': path.resolve(__dirname, 'src/lib/tauri-screenshots-stub.ts') },

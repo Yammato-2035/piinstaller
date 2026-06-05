@@ -13,6 +13,7 @@ Kurzreferenz für Knowledge-Base-First-Triage. Details in verlinkter Evidence.
 | `known_error_fix_not_in_artifact` | Fix im Workspace, altes ISO/Squashfs | Artefakt nicht rebuilt | Deploy-only-Fix |
 | `frontend_gating_build_time_desync` | DCC Disabled-Page trotz Statusroute 200 | Stale Build-Time-Marker / Cache | `expected_release_profile_block` |
 | `fix_lifecycle_incomplete` | Fix „umgesetzt“, aber HEAD/Deploy/Smoke fehlen | Uncommitted oder nicht nach `/opt` | Fake-Green |
+| `blank_dcc_screen` | Cockpit HTTP 200, Browser ohne nutzbaren Inhalt | Renderfehler, stale Bundle, fehlende Fail-safe-UI | release-Block, Portfehler |
 
 ## Pflicht vor neuem Fix
 

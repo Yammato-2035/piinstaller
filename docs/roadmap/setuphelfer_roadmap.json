@@ -1116,6 +1116,20 @@
               "blocker_refs": ["sudo_password_required"],
               "next_action_de": "Operator: deploy-to-opt, local_lab aktivieren, Browser-DCC prüfen, release restore; erst dann grün.",
               "next_action_en": "Operator: deploy-to-opt, enable local_lab, verify browser DCC, release restore; green only after that."
+            },
+            {
+              "id": "cockpit-dcc-blank-screen-fail-safe",
+              "title_de": "DCC Blank Screen: Fail-safe Boot-Diagnose + ErrorBoundary",
+              "title_en": "DCC blank screen: fail-safe boot diagnostics + ErrorBoundary",
+              "status": "yellow",
+              "progress_percent": 75,
+              "evidence_links": [
+                "docs/evidence/dev-dashboard/DCC_BLANK_SCREEN_TRIAGE_RESULT.md",
+                "docs/evidence/dev-dashboard/dcc_blank_screen_triage_latest.json"
+              ],
+              "blocker_refs": ["deploy_and_local_lab_smoke_pending"],
+              "next_action_de": "Deploy; Browser muss Diagnosepanel zeigen; unter local_lab DCC oder klaren Fehler — nie leer.",
+              "next_action_en": "Deploy; browser must show diagnostics panel; under local_lab DCC or clear error — never blank."
             }
           ],
           "blockers": [],

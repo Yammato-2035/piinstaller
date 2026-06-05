@@ -1,3 +1,6 @@
+/** Runtime marker — must appear in production bundle for deploy verification. */
+export const DCC_BUNDLE_FIX_MARKER = 'DCC_BOOT_DIAGNOSTICS_V1' as const
+
 export type DccGateVersionInfo = {
   dev_control_enabled?: boolean | null
   install_profile?: string | null

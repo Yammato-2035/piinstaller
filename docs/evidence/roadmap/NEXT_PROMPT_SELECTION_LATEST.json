@@ -1,62 +1,41 @@
 {
   "schema_version": 2,
-  "selected_at": "2026-06-05T10:55:00+02:00",
-  "selected_prompt_id": "OPERATOR_DCC_DEPLOY_AND_LOCAL_LAB_LIVE_ACCEPTANCE",
-  "reason_de": "DCC Frontend-Gating-Fix committed (4fb72ee), aber Deploy und local_lab Browser-Smoke blockiert an sudo. Kein Monolith-Split vor live grünem DCC.",
-  "reason_en": "DCC frontend gating fix committed (4fb72ee), but deploy and local_lab browser smoke blocked on sudo. No monolith split before live green DCC.",
+  "selected_at": "2026-06-05T11:10:00+02:00",
+  "selected_prompt_id": "OPERATOR_DCC_BLANK_SCREEN_DEPLOY_AND_LOCAL_LAB_VALIDATION",
+  "reason_de": "Fail-safe Diagnose-UI committed; Deploy + local_lab Browser-Smoke ausstehend. blank_dcc_screen_unresolved blockiert Monolith-Split.",
+  "reason_en": "Fail-safe diagnostics UI committed; deploy and local_lab browser smoke pending. blank_dcc_screen_unresolved blocks monolith split.",
   "tracks": [
     {
-      "id": "dcc_frontend_profile_desync_deploy_and_live",
-      "status": "review_required",
-      "classification": "fix_lifecycle_incomplete",
-      "commit": "4fb72ee",
-      "next_step": "sudo deploy-to-opt; local_lab Profil; /api/dev-dashboard/status HTTP 200; Browser DCC sichtbar; release restore.",
+      "id": "dcc_blank_screen_fail_safe",
+      "status": "yellow",
+      "classification": "blank_dcc_screen",
+      "next_step": "deploy-to-opt; grep DCC_BOOT_DIAGNOSTICS_V1 in /opt; local_lab; Browser zeigt Diagnosepanel + DCC oder klaren Fehler; release restore.",
       "evidence": [
-        "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md",
-        "docs/evidence/dev-dashboard/dcc_frontend_profile_desync_live_acceptance_latest.json",
+        "docs/evidence/dev-dashboard/DCC_BLANK_SCREEN_TRIAGE_RESULT.md",
         "docs/knowledge-base/dev-dashboard/DCC_PROFILE_AND_PORT_ERRORS.md"
       ]
     },
     {
-      "id": "dcc_live_acceptance",
-      "status": "blocked_by_operator_sudo",
-      "classification": "expected_release_profile_block",
-      "next_step": "Nach Deploy: local_lab-Smoke; DCC erst grün wenn HTTP 200 + Browser + release restored.",
+      "id": "dcc_frontend_profile_desync_deploy_and_live",
+      "status": "review_required",
+      "commit": "4fb72ee",
+      "next_step": "Gleicher Operator-Lauf: local_lab HTTP 200 + kein falsches release-Disabled.",
       "evidence": [
-        "docs/evidence/dev-dashboard/DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md"
-      ]
-    },
-    {
-      "id": "runtime_governance_live_validation",
-      "status": "ready_for_operator_deploy_validation",
-      "next_step": "Nach Deploy release/local_lab-Parity live prüfen.",
-      "evidence": [
-        "docs/evidence/monolith/RUNTIME_GOVERNANCE_DELEGATION_RESULT.md"
-      ]
-    },
-    {
-      "id": "qemu_guest_report_glibc_fix",
-      "status": "blocked",
-      "classification": "guest_rescue_venv_glibc_mismatch",
-      "next_step": "Erst nach DCC live grün: Rescue-Bundle Bookworm-venv; ISO-Rebuild; QEMU-Smoke.",
-      "evidence": [
-        "docs/evidence/rescue/QEMU_143148_FAILURE_CLASSIFICATION.md"
+        "docs/evidence/dev-dashboard/DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md"
       ]
     },
     {
       "id": "monolith_next_split",
       "status": "deferred_until_live_validation",
-      "next_step": "Kein Split vor DCC local_lab Browser-Smoke grün.",
-      "evidence": [
-        "docs/roadmap/MONOLITH_REFACTOR_PLAN.md"
-      ]
+      "next_step": "Kein Split bei blank_dcc_screen_unresolved.",
+      "evidence": ["docs/roadmap/MONOLITH_REFACTOR_PLAN.md"]
     }
   ],
   "forbidden_next": [
-    "USB_WRITE",
-    "FULL_GREEN_RESCUE",
+    "MONOLITH_SPLIT_BEFORE_LIVE_VALIDATION",
     "FULL_GREEN_DCC_WITHOUT_LOCAL_LAB_LIVE",
-    "MONOLITH_SPLIT_BEFORE_LIVE_VALIDATION"
+    "USB_WRITE",
+    "FULL_GREEN_RESCUE"
   ],
   "governance_rules": {
     "roadmap_first": "docs/developer/CURSOR_WORK_RULES.md",

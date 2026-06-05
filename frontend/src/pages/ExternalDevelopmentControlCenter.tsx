@@ -34,12 +34,22 @@ import { clearGovernanceHistory } from '../lib/devDashboard/governanceHistory'
 import type { CockpitViewMode, GovernanceAreaStatus, Traffic } from '../lib/devDashboard/governanceTypes'
 import { useGovernanceMonitor } from '../lib/devDashboard/useGovernanceMonitor'
 import { API_STATUS_PATH } from '../lib/devDashboard/constants'
-import { buildFullApiUrl, decideDccVisibility, extractDccPortsFromVersion } from '../lib/devDashboard/dccGate'
-import { fetchApi, getApiBase } from '../api'
+import { buildFullApiUrl, extractDccPortsFromVersion } from '../lib/devDashboard/dccGate'
+import {
+  classifyDccBootState,
+  hasDccBundleMarkers,
+  type DccBootClassification,
+  type DccBootProbeResult,
+} from '../lib/devDashboard/dccBootState'
+import { DccBootDiagnosticsPanel } from '../components/dev-dashboard/DccBootDiagnosticsPanel'
+import { DccErrorBoundary } from '../components/dev-dashboard/DccErrorBoundary'
+import { fetchApi, getApiBase, getDefaultApiBase } from '../api'
 import { toneClass } from './devDashboardFilters'
 import {
   internalLabWarning,
   buildProfileMeta,
+  buildId,
+  frontendBuildProfile,
 } from '../config/buildProfile'
 
 function trafficDot(status: Traffic): string {
@@ -166,12 +176,15 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
 
   // Used to bust any potential caching layers for `/api/dev-dashboard/status`.
   const [statusT, setStatusT] = useState(() => Date.now())
-  const [gate, setGate] = useState<
-    | { kind: 'loading' }
-    | { kind: 'allowed' }
-    | { kind: 'disabled'; debug: DevControlDisabledDebug }
-    | { kind: 'error' }
-  >({ kind: 'loading' })
+  const [bootProbe, setBootProbe] = useState<DccBootProbeResult | null>(null)
+  const [bootClassification, setBootClassification] = useState<DccBootClassification>({
+    state: 'boot_loading',
+    shouldShowDcc: false,
+    dccExpectedVisible: false,
+    reason: 'probe_pending',
+  })
+  const [gateLoading, setGateLoading] = useState(true)
+  const bundleMarkers = useMemo(() => hasDccBundleMarkers(), [])
 
   const [summary, setSummary] = useState<ControlCenterSummary | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
@@ -193,24 +206,33 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
   useEffect(() => {
     let cancelled = false
     const run = async () => {
-      setGate({ kind: 'loading' })
+      setGateLoading(true)
+      if (!bundleMarkers.ok) {
+        setBootProbe(null)
+        setBootClassification(classifyDccBootState(null, false))
+        setGateLoading(false)
+        return
+      }
 
       const apiBase = getApiBase()
       const lastVersionUrl = buildFullApiUrl(apiBase, '/api/version')
       const lastDevDashboardStatusUrl = buildFullApiUrl(apiBase, `${API_STATUS_PATH}?${statusQuery}`)
 
-      let versionPayload: any = null
+      let versionPayload: Record<string, unknown> | null = null
       let versionHttpStatus = 0
+      let versionFetchFailed = false
       try {
         const r = await fetchApi('/api/version', { cache: 'no-store' })
         versionHttpStatus = r.status
-        if (r.ok) versionPayload = await r.json().catch(() => null)
+        if (r.ok) versionPayload = (await r.json().catch(() => null)) as Record<string, unknown> | null
       } catch {
         versionHttpStatus = 0
+        versionFetchFailed = true
       }
 
       let statusHttpStatus = 0
       let statusCode: string | null = null
+      let statusFetchFailed = false
       try {
         const r = await fetchApi(`${API_STATUS_PATH}?${statusQuery}`, { cache: 'no-store' })
         statusHttpStatus = r.status
@@ -220,41 +242,38 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
         }
       } catch {
         statusHttpStatus = 0
+        statusFetchFailed = true
       }
 
-      const decision = decideDccVisibility(
-        {
-          dev_control_enabled: versionPayload?.dev_control_enabled,
-          install_profile: versionPayload?.install_profile,
-          runtime_ports: versionPayload?.runtime_ports,
-        },
-        statusHttpStatus ? { httpStatus: statusHttpStatus, code: statusCode } : null,
-      )
+      const probe: DccBootProbeResult = {
+        versionHttp: versionHttpStatus,
+        statusHttp: statusHttpStatus,
+        statusCode,
+        versionPayload,
+        versionFetchFailed,
+        statusFetchFailed,
+        versionUrl: lastVersionUrl,
+        statusUrl: lastDevDashboardStatusUrl,
+        loadedUrl: typeof window !== 'undefined' ? window.location.href : '',
+        apiBaseUrl: apiBase || getDefaultApiBase() || 'http://127.0.0.1:8000',
+        buildVersion:
+          typeof __APP_VERSION__ !== 'undefined' && String(__APP_VERSION__).trim()
+            ? String(__APP_VERSION__).trim()
+            : buildProfileMeta.project_version ?? 'unknown',
+        buildId: buildId || 'unknown',
+        frontendBuildProfile,
+      }
 
       if (cancelled) return
-      if (decision.kind === 'allowed') {
-        setGate({ kind: 'allowed' })
-      } else if (decision.kind === 'disabled') {
-        setGate({
-          kind: 'disabled',
-          debug: {
-            lastVersionUrl,
-            lastVersionHttpStatus: versionHttpStatus,
-            lastDevDashboardStatusUrl,
-            lastDevDashboardStatusHttpStatus: statusHttpStatus,
-            lastDevDashboardStatusCode: statusCode,
-            versionPayload,
-          },
-        })
-      } else {
-        setGate({ kind: 'error' })
-      }
+      setBootProbe(probe)
+      setBootClassification(classifyDccBootState(probe, bundleMarkers.ok))
+      setGateLoading(false)
     }
     void run()
     return () => {
       cancelled = true
     }
-  }, [statusQuery])
+  }, [statusQuery, bundleMarkers.ok])
 
   const loadSummary = useCallback(async () => {
     if (!mon.apiReachable) {
@@ -389,42 +408,96 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
     }
   }
 
-  if (gate.kind === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-8 bg-slate-950" data-testid="dev-control-gate-loading">
-        <div className="text-sm text-slate-300">{t('devDashboard.profileDisabled.gateLoading', 'Pruefe DCC-Status…')}</div>
+  const disabledDebug: DevControlDisabledDebug | null = bootProbe
+    ? {
+        lastVersionUrl: bootProbe.versionUrl,
+        lastVersionHttpStatus: bootProbe.versionHttp,
+        lastDevDashboardStatusUrl: bootProbe.statusUrl,
+        lastDevDashboardStatusHttpStatus: bootProbe.statusHttp,
+        lastDevDashboardStatusCode: bootProbe.statusCode,
+        versionPayload: bootProbe.versionPayload,
+      }
+    : null
+
+  const renderBlockedShell = (testId: string, title: string, body: string) => (
+    <div className="flex items-center justify-center p-8" data-testid={testId}>
+      <div className="max-w-lg rounded-xl border border-slate-700 bg-slate-900/80 p-6 text-center">
+        <h1 className="text-lg font-semibold text-white mb-2">{title}</h1>
+        <p className="text-sm text-slate-400">{body}</p>
       </div>
-    )
-  }
+    </div>
+  )
 
-  if (gate.kind === 'disabled') {
-    return <DevControlDisabledPage debug={gate.debug} onRetry={retryGate} />
-  }
+  const renderMainContent = () => {
+    const state = bootClassification.state
 
-  if (gate.kind === 'error') {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-8 bg-slate-950" data-testid="dev-control-gate-error">
-        <div className="max-w-lg rounded-xl border border-slate-700 bg-slate-900/80 p-6 text-center">
-          <h1 className="text-lg font-semibold text-white mb-2">{t('devDashboard.profileDisabled.title', 'Development Control nicht verfügbar')}</h1>
-          <p className="text-sm text-slate-400">
-            {t('devDashboard.profileDisabled.errorBody', 'DCC-Verfügbarkeit ist inkonsistent (bitte erneut prüfen).')}
-          </p>
-          <div className="mt-4">
-            <button
-              type="button"
-              className="btn-secondary inline-flex items-center gap-2 text-xs"
-              onClick={retryGate}
-              data-testid="dev-control-gate-error-retry"
-            >
-              {t('devDashboard.profileDisabled.retry', 'DCC-Status erneut prüfen')}
-            </button>
+    if (state === 'stale_or_wrong_bundle') {
+      return renderBlockedShell(
+        'dcc-stale-bundle',
+        t('devDashboard.bootDiagnostics.state.staleBundle', 'stale_or_wrong_bundle'),
+        t(
+          'devDashboard.bootDiagnostics.staleBundleBody',
+          'Das ausgelieferte Frontend-Bundle enthält nicht den erwarteten DCC-Diagnose-Marker. Deploy nach /opt prüfen.',
+        ),
+      )
+    }
+
+    if (state === 'boot_loading' || gateLoading) {
+      return (
+        <div className="flex items-center justify-center p-8" data-testid="dev-control-gate-loading">
+          <div className="text-sm text-slate-300">
+            {t('devDashboard.profileDisabled.gateLoading', 'Prüfe DCC-Status…')}
           </div>
         </div>
-      </div>
-    )
-  }
+      )
+    }
 
-  return (
+    if (state === 'profile_blocked_release' && disabledDebug) {
+      return <DevControlDisabledPage debug={disabledDebug} onRetry={retryGate} retryDisabled={gateLoading} />
+    }
+
+    if (state === 'api_unreachable') {
+      return renderBlockedShell(
+        'dcc-api-unreachable',
+        t('devDashboard.bootDiagnostics.state.apiUnreachable', 'api_unreachable'),
+        t(
+          'devDashboard.bootDiagnostics.apiUnreachableBody',
+          'Backend/API unter :8000 nicht erreichbar. Dies ist kein Portfehler an :3001 — API-Base und Netzwerk prüfen.',
+        ),
+      )
+    }
+
+    if (state === 'api_error') {
+      return renderBlockedShell(
+        'dcc-api-error',
+        t('devDashboard.bootDiagnostics.state.apiError', 'api_error'),
+        t(
+          'devDashboard.bootDiagnostics.apiErrorBody',
+          'Die Statusroute lieferte einen unerwarteten HTTP-Code. Siehe Boot-Diagnose oben.',
+        ),
+      )
+    }
+
+    if (state === 'unknown_dcc_boot_failure') {
+      return renderBlockedShell(
+        'dcc-unknown-boot-failure',
+        t('devDashboard.bootDiagnostics.state.unknown', 'unknown_dcc_boot_failure'),
+        t(
+          'devDashboard.bootDiagnostics.unknownBody',
+          'DCC-Boot konnte nicht klassifiziert werden. Debugdaten oben — kein leerer Zustand.',
+        ),
+      )
+    }
+
+    if (!bootClassification.shouldShowDcc) {
+      return renderBlockedShell(
+        'dcc-boot-blocked-fallback',
+        t('devDashboard.profileDisabled.title', 'Development Control nicht verfügbar'),
+        t('devDashboard.profileDisabled.errorBody', 'DCC-Verfügbarkeit ist inkonsistent (bitte erneut prüfen).'),
+      )
+    }
+
+    return (
     <div className="max-w-[1600px] mx-auto px-4 py-5" data-testid="external-development-control-center">
       <header className="flex flex-wrap items-start justify-between gap-4 mb-4 border-b border-slate-700 pb-4">
         <div>
@@ -593,6 +666,21 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       <p className="text-[11px] text-slate-500 mt-6 border-t border-slate-800 pt-3">
         {t('devDashboard.governance.readOnlyFooter')}
       </p>
+    </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100" data-testid="dcc-cockpit-shell">
+      <DccBootDiagnosticsPanel
+        classification={bootClassification}
+        probe={bootProbe}
+        onRetry={retryGate}
+        retryDisabled={gateLoading}
+      />
+      <DccErrorBoundary probe={bootProbe} baseClassification={bootClassification} onRetry={retryGate}>
+        {renderMainContent()}
+      </DccErrorBoundary>
     </div>
   )
 }
