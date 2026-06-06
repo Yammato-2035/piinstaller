@@ -9,6 +9,7 @@ from typing import Any, Mapping
 
 from core.install_profile import get_install_profile_state
 from core.rescue_telemetry_ingest import build_health_payload
+from core.rescue_telemetry_lan_proxy import build_compact_telemetry_lan_proxy_status
 
 
 def _repo_root() -> Path:
@@ -185,6 +186,7 @@ def build_compact_dcc_status(
             "target_boot_validated": gate.get("target_laptop_booted_from_stick") is True,
             "windows_inspect_executable": gate.get("windows_inspect_executable") is True,
             "usb_operator": usb_operator,
+            "telemetry_lan_proxy": build_compact_telemetry_lan_proxy_status(),
         },
         "blockers": blockers,
         "next_operator_action": str(next_action),

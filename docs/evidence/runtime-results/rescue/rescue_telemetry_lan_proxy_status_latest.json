@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-06-06T20:17:16.965829+00:00",
+  "running": true,
+  "pid": 1442449,
+  "bind_host": "192.168.178.140",
+  "bind_port": 8001,
+  "upstream": "http://127.0.0.1:8000",
+  "health_url": "http://192.168.178.140:8001/api/rescue/telemetry/health",
+  "ingest_url": "http://192.168.178.140:8001/api/rescue/telemetry/v1/ingest",
+  "backend_health_ok": true,
+  "lan_health_ok": true,
+  "allowed_paths": [
+    "/api/rescue/telemetry/health",
+    "/api/rescue/telemetry/v1/ingest"
+  ],
+  "allowed_paths_only": true,
+  "blockers": [],
+  "error_code": null,
+  "secrets_exposed": false
+}

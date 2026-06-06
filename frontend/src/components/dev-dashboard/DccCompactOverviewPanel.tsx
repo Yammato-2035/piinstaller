@@ -19,6 +19,21 @@ export const DccCompactOverviewPanel: React.FC<DccCompactOverviewPanelProps> = (
   const driftTone = deployDriftTone(compact?.deploy_drift_status)
   const telemetryTone = compact?.telemetry?.health_ok ? 'green' : 'red'
   const dccTone = compact?.dcc_visible ? 'green' : 'yellow'
+  const proxy = compact?.rescue?.telemetry_lan_proxy
+  const proxyTone = !compact?.telemetry?.health_ok
+    ? 'red'
+    : proxy?.running && proxy?.lan_health_ok
+      ? 'green'
+      : proxy?.running
+        ? 'red'
+        : 'yellow'
+  const proxyValue = !compact?.telemetry?.health_ok
+    ? 'Backend kaputt'
+    : proxy?.running && proxy?.lan_health_ok
+      ? 'LAN ok'
+      : proxy?.running
+        ? 'LAN fehlgeschlagen'
+        : 'nicht gestartet'
 
   const tiles = [
     {
@@ -49,6 +64,11 @@ export const DccCompactOverviewPanel: React.FC<DccCompactOverviewPanelProps> = (
       label: t('devDashboard.compact.telemetry', 'Telemetrie'),
       value: compact?.telemetry?.ingest_enabled ? 'ingest on' : 'ingest off',
       tone: telemetryTone,
+    },
+    {
+      label: t('devDashboard.compact.rescueTelemetryLan', 'Rescue Telemetrie LAN'),
+      value: proxyValue,
+      tone: proxyTone,
     },
     {
       label: t('devDashboard.compact.rescueIso', 'Rescue-ISO'),

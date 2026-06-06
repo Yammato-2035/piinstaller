@@ -48,6 +48,21 @@ export type DccCompactStatus = {
       blockers?: string[]
       next_step?: string
     }
+    telemetry_lan_proxy?: {
+      configured?: boolean
+      running?: boolean
+      bind_host?: string | null
+      bind_port?: number
+      health_url?: string | null
+      ingest_url?: string | null
+      backend_local_health_ok?: boolean
+      lan_health_ok?: boolean
+      allowed_paths_only?: boolean
+      allowed_paths?: string[]
+      next_step?: string
+      blockers?: string[]
+      secrets_exposed?: boolean
+    }
   }
   blockers?: string[]
   next_operator_action?: string

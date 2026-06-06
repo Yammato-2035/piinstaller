@@ -11,6 +11,7 @@ import { CockpitBackupTargetPanel } from '../components/dev-dashboard/CockpitBac
 import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel'
 import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RescueUsbOperatorToolbox } from '../components/dev-dashboard/RescueUsbOperatorToolbox'
+import { RescueTelemetryLanProxyToolbox } from '../components/dev-dashboard/RescueTelemetryLanProxyToolbox'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
 import { WindowsRescueInspectCard } from '../components/dev-dashboard/WindowsRescueInspectCard'
 import { NotificationPanel } from '../components/dev-dashboard/NotificationPanel'
@@ -495,6 +496,10 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
             <RescueUsbOperatorToolbox
               compactUsbOperator={compactStatus?.rescue?.usb_operator}
               developerCapabilityValid={compactStatus?.developer_capability?.valid}
+              dccVisible={compactStatus?.dcc_visible}
+            />
+            <RescueTelemetryLanProxyToolbox
+              telemetryLanProxy={compactStatus?.rescue?.telemetry_lan_proxy}
               dccVisible={compactStatus?.dcc_visible}
             />
             <RescueDeveloperPipelineCard summary={summary} />

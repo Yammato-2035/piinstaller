@@ -52,6 +52,10 @@ class CompactStatusCoreTests(unittest.TestCase):
         usb_op = rescue.get("usb_operator") or {}
         self.assertIn("usb_detected", usb_op)
         self.assertIn("destructive_write_allowed", usb_op)
+        proxy = rescue.get("telemetry_lan_proxy") or {}
+        self.assertTrue(proxy.get("configured"))
+        self.assertIn("health_url", proxy)
+        self.assertFalse(proxy.get("secrets_exposed"))
 
     def test_compact_includes_dev_server_when_capability_allows(self) -> None:
         with patch.dict(

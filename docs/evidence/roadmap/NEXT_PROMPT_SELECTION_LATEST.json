@@ -1,23 +1,26 @@
 {
-  "schema_version": 23,
-  "selected_at": "2026-06-07T06:00:00+02:00",
-  "selected_prompt_id": "RESCUE_USB_MSI_PHYSICAL_BOOT_NETWORK_TELEMETRY_OPERATOR_INGEST",
-  "reason_de": "LAN-Telemetrie-Proxy vorbereitet (192.168.178.140:8001→127.0.0.1:8000); MSI physischer Boot + Telemetrie-Ingest ausstehend; kein Fake-Green.",
+  "schema_version": 24,
+  "selected_at": "2026-06-07T22:17:00+02:00",
+  "selected_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
+  "reason_de": "Developer-LAN-Telemetrie-Proxy läuft (192.168.178.140:8001, allowlist-only); MSI physischer Boot + Live-Telemetrie ausstehend; kein Fake-Green.",
   "tracks": [
     {
       "id": "rescue_msi_uefi_boot_network_telemetry",
       "status": "yellow",
       "priority": "P0",
-      "next_step": "RESCUE_USB_MSI_PHYSICAL_BOOT_NETWORK_TELEMETRY_OPERATOR_INGEST",
+      "next_step": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_MSI_TELEMETRY_LAN_REACHABILITY_PREP_RESULT.md",
-        "docs/evidence/runtime-results/rescue/RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RESULT.md",
+        "docs/evidence/runtime-results/rescue/RESCUE_MSI_TELEMETRY_LAN_PROXY_FINALIZATION_RESULT.md",
+        "docs/evidence/runtime-results/rescue/rescue_telemetry_lan_proxy_status_latest.json",
         "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"
       ]
     }
   ],
   "governance_rules": {
     "no_secrets_in_evidence": true,
-    "no_fake_green": true
+    "no_fake_green": true,
+    "developer_lan_telemetry_proxy_ready": true,
+    "target_network_telemetry_validated": false,
+    "windows_inspect_executable": false
   }
 }
