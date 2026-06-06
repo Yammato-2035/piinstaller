@@ -44,7 +44,7 @@ bluetooth hci0: firmware: failed to load intel/ibt-17-16-1.sfi (-2)
 | Paketliste | `firmware-iwlwifi`, `firmware-intel-sound`, `wireless-regdb`, `network-manager` |
 | Serial-Marker-Unit | `ConditionVirtualization=qemu`, Journal-Logging statt `TTYPath` |
 | Validator | prüft Firmware-Pakete + `wireless-regdb` + QEMU-only Serial-Marker (developer-qemu) |
-| Intel BT | über **`firmware-intel-sound`** (Debian non-free-firmware, enthält `intel/ibt-*` — nicht geraten) |
+| Intel BT | über **`firmware-iwlwifi`** (`intel/ibt-*` in non-free-firmware); `firmware-intel-sound` nur Intel-Sound-DSP |
 
 **Nächster Operator-Schritt:** `sudo clean` + controlled ISO rebuild (`RESCUE_MSI_FIRMWARE_REBUILD_FREIGEGEBEN=1`), Stick neu schreiben, MSI erneut booten.
 

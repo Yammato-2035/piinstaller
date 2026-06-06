@@ -1,8 +1,18 @@
 # Rescue Live — Paketlisten-Entscheidung
 
-**Datum:** 2026-06-06 (MSI-Firmware-Erweiterung)
-**Git HEAD:** `345187b` → Rebuild-Commit erwartet
+**Datum:** 2026-06-06 (MSI-Firmware + non-free-firmware Archive-Areas)  
+**Git HEAD:** `4f3ca39` → Fix-Commit `1.7.4.3`  
 **Pfad:** `build/rescue/live-build/setuphelfer-rescue-live/config/package-lists/setuphelfer.list.chroot`
+
+## Archive-Areas (live-build)
+
+Debian Bookworm Firmware-Pakete liegen in **`non-free-firmware`**. Controlled Build nutzt:
+
+```text
+--archive-areas main contrib non-free-firmware
+```
+
+Ohne diese Areas schlägt `lb build` mit `E: Unable to locate package firmware-iwlwifi` fehl (`LB_EXIT=123`).
 
 ## Aktiv (minimal, konservativ)
 
@@ -21,10 +31,20 @@
 | python3 | Backend-Runtime |
 | python3-venv | venv im Bundle |
 | python3-pip | Pip-Fallback (minimal) |
-| firmware-iwlwifi | Intel WLAN (MSI i7 — iwlwifi-9000-…) |
-| firmware-intel-sound | Intel BT SFI (`intel/ibt-*`) |
+| firmware-iwlwifi | Intel WLAN (`iwlwifi-9000-…ucode`) **und** Intel BT SFI (`intel/ibt-17-16-1.sfi`) |
+| firmware-intel-sound | Intel Sound-DSP-Firmware (nicht primäre BT-Quelle) |
 | wireless-regdb | WLAN-Regulatory-Domain |
 | network-manager | Rescue-WLAN-Menü (`nmcli`) |
+
+## Firmware-Zuordnung (MSI i7)
+
+| Datei / Symptom | Paket | Komponente |
+|-----------------|-------|------------|
+| `iwlwifi-9000-pu-b0-jf-b0-*.ucode` | `firmware-iwlwifi` | `non-free-firmware` |
+| `intel/ibt-17-16-1.sfi` | **`firmware-iwlwifi`** | `non-free-firmware` |
+| Intel Sound-DSP | `firmware-intel-sound` | `non-free-firmware` |
+
+**Korrektur:** Intel-Bluetooth-Dateien wie `intel/ibt-17-16-1.sfi` werden über **`firmware-iwlwifi`** bereitgestellt, nicht über `firmware-intel-sound`.
 
 ## Bewusst NICHT aktiv (optional_later)
 
@@ -40,7 +60,7 @@
 ## Netzwerk-Strategie
 
 - **systemd-networkd** mit DHCP auf `en*` und `eth*`
-- **WLAN:** `network-manager` + `firmware-iwlwifi` (MSI-Hardware-Pfad; kein apt zur Laufzeit)
+- **WLAN:** `network-manager` + `firmware-iwlwifi` + `wireless-regdb` (MSI-Hardware-Pfad; kein apt zur Laufzeit)
 
 ## Setuphelfer-Dienste
 
@@ -51,4 +71,4 @@
 
 ## apt in diesem Auftrag
 
-**Nicht ausgeführt.** Pakete werden erst innerhalb eines explizit freigegebenen `lb build` in chroot installiert.
+**Nicht auf dem Host ausgeführt.** Pakete werden innerhalb des freigegebenen `lb build` in chroot installiert.

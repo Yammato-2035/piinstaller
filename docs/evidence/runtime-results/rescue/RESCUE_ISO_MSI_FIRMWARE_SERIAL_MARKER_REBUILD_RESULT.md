@@ -58,7 +58,7 @@ wireless-regdb
 network-manager
 ```
 
-Intel Bluetooth: **`firmware-intel-sound`** (Debian non-free-firmware, `intel/ibt-*`). Kein separates Raten-Paket. Host-`dpkg -L` hier nicht verfügbar (Pakete nicht installiert) — Abdeckung über Debian-Paketbeschreibung + lb-chroot-Install beim ISO-Build.
+Intel Bluetooth: **`firmware-iwlwifi`** liefert `intel/ibt-*` (korrigiert; `firmware-intel-sound` nur Sound-DSP).
 
 ## Phase 4 — Serial-Boot-Marker
 
@@ -146,6 +146,10 @@ Danach: **`RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD`**
 ## Nicht ausgeführt
 
 USB-dd, MSI erneut gebootet, Windows-Inspect, apt auf Host, Push, Deploy
+
+## Follow-up (2026-06-06)
+
+Operator-Rebuild mit `1.7.4.2` scheiterte mit **`LB_EXIT=123`** — Paketnamen korrekt, aber live-build nur **`main`**. Fix in **`1.7.4.3`**: Archive-Areas `main contrib non-free-firmware`. Intel-BT (`intel/ibt-*`) über **`firmware-iwlwifi`**, nicht `firmware-intel-sound`. Siehe `RESCUE_ISO_NON_FREE_FIRMWARE_COMPONENT_FIX_RESULT.md`.
 
 ## Secrets
 

@@ -14,6 +14,9 @@ fail_forbidden() { echo "FORBIDDEN: $*" >&2; exit 11; }
 fail_secret() { echo "SECRET: $*" >&2; exit 12; }
 fail_cdn() { echo "CDN: $*" >&2; exit 13; }
 fail_token() { echo "FORBIDDEN_TOKEN: $*" >&2; exit 14; }
+fail_firmware_apt() { echo "RESCUE-ISO-FIRMWARE-APT-COMPONENT-001: $*" >&2; exit 10; }
+fail_firmware_pkg() { echo "RESCUE-ISO-FIRMWARE-PACKAGE-LIST-001: $*" >&2; exit 10; }
+fail_networkmanager() { echo "RESCUE-ISO-NETWORKMANAGER-MISSING-001: $*" >&2; exit 10; }
 
 REQ=(
   config/package-lists/setuphelfer.list.binary
@@ -119,13 +122,22 @@ grep -qx 'systemd' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
 grep -qx 'systemd-sysv' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list systemd-sysv"
 grep -qx 'firmware-iwlwifi' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
-  || fail_missing "setuphelfer.list.chroot must list firmware-iwlwifi (MSI Intel WiFi)"
+  || fail_firmware_pkg "setuphelfer.list.chroot must list firmware-iwlwifi (MSI Intel WiFi/BT ibt via non-free-firmware)"
 grep -qx 'firmware-intel-sound' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
-  || fail_missing "setuphelfer.list.chroot must list firmware-intel-sound (Intel BT ibt firmware)"
+  || fail_firmware_pkg "setuphelfer.list.chroot must list firmware-intel-sound (Intel sound DSP)"
 grep -qx 'network-manager' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
-  || fail_missing "setuphelfer.list.chroot must list network-manager (rescue WLAN menu)"
+  || fail_networkmanager "setuphelfer.list.chroot must list network-manager (rescue WLAN menu / nmcli)"
 grep -qx 'wireless-regdb' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
-  || fail_missing "setuphelfer.list.chroot must list wireless-regdb (WLAN regulatory domain)"
+  || fail_firmware_pkg "setuphelfer.list.chroot must list wireless-regdb (WLAN regulatory domain)"
+if grep -qx 'firmware-iwlwifi' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  && ! grep -q 'non-free-firmware' "$BUILD_ROOT/auto/config"; then
+  fail_firmware_apt "firmware packages listed but auto/config archive-areas missing non-free-firmware"
+fi
+if ! grep -qE 'archive-areas main contrib non-free-firmware' "$BUILD_ROOT/auto/config"; then
+  fail_firmware_apt "auto/config must set --archive-areas main contrib non-free-firmware"
+fi
+grep -q 'non-free-firmware' "$BUILD_ROOT/config/archives/debian-security.list.chroot" \
+  || fail_firmware_apt "debian-security.list.chroot must include non-free-firmware component"
 grep -q 'XKBLAYOUT="de"' "$BUILD_ROOT/config/includes.chroot/etc/default/keyboard" \
   || fail_missing 'etc/default/keyboard must contain XKBLAYOUT="de"'
 grep -q 'KEYMAP=de-latin1' "$BUILD_ROOT/config/includes.chroot/etc/vconsole.conf" \

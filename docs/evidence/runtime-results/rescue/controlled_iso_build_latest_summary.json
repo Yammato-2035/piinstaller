@@ -1,37 +1,54 @@
 {
-  "controlled_iso_build_summary_schema_version": 1,
-  "started_at": "2026-06-06T15:22:08+02:00",
-  "ended_at": "2026-06-06T15:22:08+02:00",
+  "controlled_iso_build_summary_schema_version": 2,
+  "started_at": "2026-06-06T15:28:57+02:00",
+  "ended_at": "2026-06-06T15:28:57+02:00",
   "exit_code": 30,
-  "status": "review_required",
-  "iso_found": true,
-  "iso_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
-  "iso_size": 558891008,
-  "sha256": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
+  "status": "blocked_fix_applied_workspace",
+  "iso_found": false,
+  "iso_path": null,
+  "iso_size": null,
+  "sha256": null,
+  "iso_sha256_previous": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
+  "iso_sha256_new": null,
   "error_code": "blocked_requires_operator_sudo_policy",
-  "next_action": "manual_operator_terminal_required",
+  "next_action": "operator_sudo_rebuild_after_non_free_firmware_fix",
   "policy_guard_status": "blocked",
   "execution_mode": "blocked_requires_operator_sudo_policy",
   "build_started": false,
   "no_build_executed": true,
+  "workspace_version": "1.7.4.3",
+  "archive_areas_fix": "main contrib non-free-firmware",
+  "prior_operator_failure": {
+    "started_at": "2026-06-06T15:24:30+02:00",
+    "ended_at": "2026-06-06T15:25:38+02:00",
+    "exit_code": 123,
+    "failure_code": "RESCUE-ISO-FIRMWARE-APT-COMPONENT-001",
+    "apt_errors": [
+      "E: Unable to locate package firmware-iwlwifi",
+      "E: Unable to locate package firmware-intel-sound"
+    ]
+  },
+  "build_tree_validate_after_fix": {
+    "prepare_ok": true,
+    "validate_exit_code": 0,
+    "non_free_firmware_in_auto_config": true
+  },
+  "uefi_validator_exit_code": null,
   "policy_context": {
     "is_tty": false,
     "already_root": false,
     "sudo_noninteractive": false
   },
   "last_120_lines": [
-    "START 2026-06-06T15:22:08+02:00 profile=standard run_id=rescue_developer_iso_20260606_132208",
+    "START 2026-06-06T15:28:57+02:00 profile=standard run_id=rescue_developer_iso_20260606_132857",
     "POLICY_GUARD_STATUS=blocked",
-    "POLICY_EXECUTION_MODE=blocked_requires_operator_sudo_policy",
-    "POLICY_IS_TTY=false",
-    "POLICY_ALREADY_ROOT=false",
-    "POLICY_SUDO_NONINTERACTIVE=false",
     "blocked_requires_operator_sudo_policy",
-    "Run this command from an operator terminal with sudo privileges or install the documented allowlisted policy.",
     "LB_EXIT=30"
   ],
   "usb_write_allowed": false,
   "dd_executed": false,
+  "msi_retest_executed": false,
+  "windows_inspect_executed": false,
   "rescue_build_profile": "standard",
-  "run_id": "rescue_developer_iso_20260606_132208"
+  "run_id": "rescue_developer_iso_20260606_132857"
 }

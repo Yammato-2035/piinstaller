@@ -1,17 +1,16 @@
 {
-  "schema_version": 13,
-  "selected_at": "2026-06-06T15:22:00+02:00",
+  "schema_version": 14,
+  "selected_at": "2026-06-06T15:29:00+02:00",
   "selected_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION",
   "parallel_prompt_id": null,
-  "reason_de": "MSI-Firmware-Fix im Workspace (1.7.4.2) committed; ISO-Rebuild blockiert durch sudo/ stale binary — Operator clean+build, dann USB-Rewrite.",
-  "reason_en": "MSI firmware fix in workspace (1.7.4.2) committed; ISO rebuild blocked by sudo/stale binary — operator clean+build, then USB rewrite.",
+  "reason_de": "non-free-firmware Archive-Areas-Fix committed (1.7.4.3); Build-Tree-Validator grün — Operator sudo rebuild + Squashfs-Nachweis ausstehend.",
+  "reason_en": "non-free-firmware archive-areas fix committed (1.7.4.3); build-tree validator green — operator sudo rebuild and squashfs proof pending.",
   "tracks": [
     {
       "id": "development_server_local_capability",
       "status": "green",
       "priority": "P1",
-      "next_step": null,
-      "completed_prompt": "DEVELOPMENT_SERVER_LOCAL_CAPABILITY_BACKEND_RESTART_OPERATOR_RUN"
+      "next_step": null
     },
     {
       "id": "rescue_msi_firmware_iso_rebuild",
@@ -19,8 +18,8 @@
       "priority": "P0",
       "next_step": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_MSI_FIRMWARE_SERIAL_MARKER_REBUILD_RESULT.md",
-        "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_NON_FREE_FIRMWARE_COMPONENT_FIX_RESULT.md",
+        "docs/evidence/runtime-results/rescue/rescue_iso_msi_firmware_rebuild_failure_latest.json"
       ]
     }
   ],

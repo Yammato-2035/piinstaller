@@ -1,6 +1,6 @@
 {
   "name": "pi-installer",
-  "version": "1.7.4.2",
+  "version": "1.7.4.3",
   "private": true,
   "description": "Raspberry Pi Installer – Backend, Frontend (Tauri), Skripte",
   "scripts": {

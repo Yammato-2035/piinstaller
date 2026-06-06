@@ -35,6 +35,21 @@ class RescueDeveloperSerialVisibilityTests(unittest.TestCase):
         self.assertIn("loglevel=7", append)
         self.assertIn("systemd.log_level=debug", append)
 
+    def test_prepare_archive_areas_include_non_free_firmware(self) -> None:
+        text = _read(PREP)
+        self.assertIn(
+            "--archive-areas main contrib non-free-firmware",
+            text,
+            "prepare must enable non-free-firmware for iwlwifi firmware packages",
+        )
+
+    def test_validate_requires_non_free_firmware_archive_areas(self) -> None:
+        validate = _REPO / "scripts/rescue-live/validate-controlled-live-build-tree.sh"
+        text = _read(validate)
+        self.assertIn("non-free-firmware", text)
+        self.assertIn("RESCUE-ISO-FIRMWARE-APT-COMPONENT-001", text)
+        self.assertIn("RESCUE-ISO-NETWORKMANAGER-MISSING-001", text)
+
     def test_controlled_build_msi_firmware_packages_in_prepare(self) -> None:
         text = _read(PREP)
         for pkg in (

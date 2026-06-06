@@ -23,7 +23,6 @@ FORBIDDEN_PACKAGES=(
   gparted
   testdisk
   ntfs-3g
-  network-manager
   avahi-daemon
   nginx
   openssh-server
