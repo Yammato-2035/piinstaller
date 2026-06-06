@@ -1,7 +1,7 @@
 {
-  "schema_version": 17,
-  "classified_at": "2026-06-07T05:00:00+02:00",
-  "classification": "dev_preflight_ok_msi_physical_boot_pending",
+  "schema_version": 18,
+  "classified_at": "2026-06-07T06:00:00+02:00",
+  "classification": "msi_telemetry_lan_handoff_prepared_physical_boot_pending",
   "iso_created": true,
   "iso_uefi_validated": true,
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
@@ -14,45 +14,51 @@
   "usb_block_readback_sha256": "9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a",
   "usb_mount_boot_artifacts_verified": true,
   "usb_stick_device": "/dev/sdb",
-  "usb_stick_device_model": "Ultra Line",
-  "usb_stick_device_serial": "24111412110212",
   "target_laptop_booted_from_stick": false,
   "target_network_telemetry_validated": false,
   "windows_inspect_executable": false,
   "workspace_version": "1.7.4.5",
-  "developer_laptop_preflight": {
-    "checked_at": "2026-06-07T05:00:00+02:00",
-    "telemetry_health_ok": true,
-    "dev_server_health_ok": true,
-    "developer_token_present": true,
-    "lan_ip": "192.168.178.140",
-    "backend_listen": "127.0.0.1:8000",
-    "msi_telemetry_reachability_note_de": "Backend nur localhost — LAN-Erreichbarkeit vom MSI vor Telemetrie-Test prüfen"
+  "runtime_version_api": "1.7.4.1",
+  "runtime_deploy_drift": "RUNTIME_DEPLOY_DRIFT_1_7_4_5_PENDING",
+  "developer_laptop_lan_ip": "192.168.178.140",
+  "telemetry_reachability": {
+    "backend_bind": "127.0.0.1:8000",
+    "telemetry_health_local_ok": true,
+    "telemetry_health_lan_8000_ok": false,
+    "telemetry_health_lan_8001_ok": false,
+    "proxy_prepared": true,
+    "proxy_script": "scripts/rescue-live/start-qemu-lab-dev-server-proxy.sh",
+    "proxy_bind_recommended": "192.168.178.140:8001",
+    "msi_telemetry_url": "http://192.168.178.140:8001/api/rescue/telemetry/health",
+    "proxy_started_in_this_run": false
   },
-  "msi_operator_run": {
-    "physical_boot_executed": false,
-    "physical_boot_executed_in_cursor": false,
-    "awaiting_operator_ingest": true,
-    "previous_msi_result_iso_sha256": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
-    "previous_msi_result_not_valid_for_new_iso": true
+  "evidence_correction": {
+    "commit_452fdc8_title_misleading": true,
+    "note_de": "Commit-Titel suggerierte MSI-Validierung; tatsächlich nur Developer-Preflight"
   },
   "resolved_blockers": [
     "RESCUE_USB_REWRITE_REQUIRED_AFTER_NEW_ISO",
-    "RESCUE_STICK_NOT_WRITTEN",
-    "RESCUE_USB_BLOCK_READBACK_SHA256_PENDING"
+    "RESCUE_USB_BLOCK_READBACK_SHA256_PENDING",
+    "RESCUE_MSI_TELEMETRY_LAN_UNREACHABLE_WITHOUT_PROXY"
   ],
   "blockers": [
+    {
+      "id": "RUNTIME_DEPLOY_DRIFT_1_7_4_5_PENDING",
+      "severity": "warning",
+      "status": "blocked",
+      "description_de": "Workspace 1.7.4.5 vs Runtime 1.7.4.1 — DCC/Gate-Anzeige kann veralten"
+    },
+    {
+      "id": "RESCUE_MSI_TELEMETRY_PROXY_OPERATOR_START_PENDING",
+      "severity": "warning",
+      "status": "blocked",
+      "description_de": "Vor MSI-Boot: start-qemu-lab-dev-server-proxy.sh mit LAN-Bind starten"
+    },
     {
       "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
       "severity": "critical",
       "status": "blocked",
-      "description_de": "MSI UEFI-Boot mit neuem ISO 9ef1b330… noch nicht physisch validiert"
-    },
-    {
-      "id": "RESCUE_MSI_PHYSICAL_BOOT_OPERATOR_PENDING",
-      "severity": "critical",
-      "status": "blocked",
-      "description_de": "Cursor kann MSI-Boot nicht ausführen — Operator vor Ort erforderlich"
+      "description_de": "Physischer MSI-Boot mit ISO 9ef1b330… ausstehend"
     },
     {
       "id": "RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED",
@@ -66,5 +72,5 @@
       "code": "RESCUE-UEFI-005"
     }
   ],
-  "next_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN"
+  "next_prompt_id": "RESCUE_USB_MSI_PHYSICAL_BOOT_NETWORK_TELEMETRY_OPERATOR_INGEST"
 }

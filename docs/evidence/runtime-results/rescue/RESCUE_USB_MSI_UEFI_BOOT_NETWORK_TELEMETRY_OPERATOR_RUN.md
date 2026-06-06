@@ -26,6 +26,27 @@
 - `NetworkManager` + `/usr/bin/nmcli` vorhanden
 - `setuphelfer-serial-boot-markers.service`: `ConditionVirtualization=qemu` (kein `TTYPath` auf Hardware)
 
+## Telemetrie zum Developer-Laptop (LAN-Proxy — vor MSI-Boot starten)
+
+Backend lauscht nur auf `127.0.0.1:8000`. MSI erreicht Telemetrie über temporären Proxy:
+
+```bash
+# Developer-Laptop — vor MSI-Boot:
+cd /home/volker/piinstaller
+export SETUPHELFER_QEMU_LAB_PROXY_BIND=192.168.178.140
+export SETUPHELFER_QEMU_LAB_PROXY_PORT=8001
+./scripts/rescue-live/start-qemu-lab-dev-server-proxy.sh
+curl -sS http://192.168.178.140:8001/api/rescue/telemetry/health | jq .
+
+# MSI Live-System (nach WLAN):
+curl -sS http://192.168.178.140:8001/api/rescue/telemetry/health
+
+# Nach Test:
+./scripts/rescue-live/stop-qemu-lab-dev-server-proxy.sh
+```
+
+Details: `RESCUE_MSI_TELEMETRY_LAN_REACHABILITY_PREP_RESULT.md`
+
 ## Operator-Test auf MSI-Laptop
 
 ### Hardware (erwartet)

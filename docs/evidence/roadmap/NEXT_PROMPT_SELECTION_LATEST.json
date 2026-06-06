@@ -1,17 +1,18 @@
 {
-  "schema_version": 22,
-  "selected_at": "2026-06-07T05:00:00+02:00",
-  "selected_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "reason_de": "Developer-Preflight grün (Telemetrie-Ingest ok); MSI physischer UEFI-Boot mit neuem ISO ausstehend — kein Fake-Green.",
+  "schema_version": 23,
+  "selected_at": "2026-06-07T06:00:00+02:00",
+  "selected_prompt_id": "RESCUE_USB_MSI_PHYSICAL_BOOT_NETWORK_TELEMETRY_OPERATOR_INGEST",
+  "reason_de": "LAN-Telemetrie-Proxy vorbereitet (192.168.178.140:8001→127.0.0.1:8000); MSI physischer Boot + Telemetrie-Ingest ausstehend; kein Fake-Green.",
   "tracks": [
     {
       "id": "rescue_msi_uefi_boot_network_telemetry",
       "status": "yellow",
       "priority": "P0",
-      "next_step": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
+      "next_step": "RESCUE_USB_MSI_PHYSICAL_BOOT_NETWORK_TELEMETRY_OPERATOR_INGEST",
       "evidence": [
+        "docs/evidence/runtime-results/rescue/RESCUE_MSI_TELEMETRY_LAN_REACHABILITY_PREP_RESULT.md",
         "docs/evidence/runtime-results/rescue/RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RESULT.md",
-        "docs/evidence/runtime-results/rescue/RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN.md"
+        "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"
       ]
     }
   ],

@@ -1,75 +1,55 @@
 # RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RESULT
 
 **Datum:** 2026-06-07  
-**Prompt:** `RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN`  
-**HEAD:** `2346f26` · **Version (Workspace):** `1.7.4.5`  
+**Prompts:** `RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN` → `RESCUE_MSI_TELEMETRY_LAN_REACHABILITY_AND_OPERATOR_HANDOFF_FIX`  
+**HEAD:** `452fdc8` · **Version (Workspace):** `1.7.4.5`  
 **Stick-ISO SHA256:** `9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a`
 
-## Ergebnis (dieser Lauf)
+## Korrektur: missverständlicher Commit-Titel
 
-**MSI-Physischer-Boot nicht in Cursor ausgeführt** — erfordert Operator vor Ort am MSI-Laptop.  
-Developer-Laptop-Preflight **grün** (Telemetrie-Ingest bereit). Gate-Felder für MSI-Boot/Netzwerk bleiben **false** (kein Fake-Green).
+Commit **`452fdc8`** („Record MSI rescue USB boot network telemetry validation“) war **missverständlich**:
+
+- Es wurde **kein** physischer MSI-Boot durchgeführt
+- Es wurde **kein** MSI-Netzwerk validiert
+- Es wurde **keine** MSI-Telemetrie validiert
+- Dokumentiert wurde nur **Developer-Laptop-Preflight** (Telemetrie-Ingest lokal ok)
+
+Dieser Status bleibt bis zum Operator-Ingest nach physischem MSI-Boot unverändert.
+
+## Ergebnis (kumuliert, ehrlich)
 
 | Phase | Status |
 |-------|--------|
-| Phase 0 Developer-Laptop Preflight | **grün** (read-only) |
-| Phase 1 MSI UEFI-Boot | **ausstehend** (physisch) |
-| Phase 2 Live-System-Checks | **ausstehend** |
-| Phase 3 Netzwerk | **ausstehend** |
-| Phase 4 Telemetrie | **ausstehend** |
+| Developer-Preflight | **grün** (Telemetrie `/health` ok) |
+| LAN-Telemetrie-Pfad | **vorbereitet** — siehe `RESCUE_MSI_TELEMETRY_LAN_REACHABILITY_PREP_RESULT.md` |
+| MSI physischer UEFI-Boot (neues ISO) | **ausstehend** |
+| MSI Netzwerk/nmcli | **ausstehend** |
+| MSI Telemetrie zum Dev-Laptop | **ausstehend** (Proxy `:8001` vor Test starten) |
 
-## Phase 0 — Developer-Laptop Preflight
-
-| Check | Ergebnis |
-|-------|----------|
-| HEAD | `2346f26` |
-| Workspace-Version | `1.7.4.5` |
-| Runtime `/api/version` | `1.7.4.1` (Drift — kein Deploy in diesem Lauf) |
-| `/api/rescue/telemetry/health` | **ok**, `ingest_enabled=true`, `queue_depth=0` |
-| `/api/dev-server/health` | **ok**, `mode=local_lab` |
-| Developer-Token | vorhanden (`TOKEN_LEN=64`, nicht geloggt) |
-| DCC compact-status | `telemetry.health_ok=true`; Gate-Daten in DCC teils **stale** (alte ISO-Prefix `09b9482a…`) |
-| USB `/dev/sdb` | Ultra Line, `sdb1` 592M, unmounted |
-
-### Telemetrie-Hinweis für MSI → Developer
+## LAN-Telemetrie (MSI → Developer)
 
 ```text
-Developer-Laptop LAN-IP: 192.168.178.140 (Stand Preflight)
-Backend lauscht aktuell nur auf 127.0.0.1:8000
-→ MSI im Live-System erreicht http://192.168.178.140:8000 nur wenn Backend/nginx auf LAN gebunden ist
-→ Operator: vor MSI-Test prüfen ob Port 8000 auf LAN erreichbar (oder Rescue-Agent-Spool lokal)
+Problem:  Backend nur 127.0.0.1:8000 — MSI kann 192.168.178.140:8000 nicht erreichen
+Lösung:  Temporärer socat-Proxy auf 192.168.178.140:8001 → 127.0.0.1:8000
+Skript:   scripts/rescue-live/start-qemu-lab-dev-server-proxy.sh
+MSI-URL:  http://192.168.178.140:8001/api/rescue/telemetry/health
 ```
 
-## Phase 1–4 — MSI Operator (ausstehend)
-
-**Vorheriger MSI-Lauf (2026-06-06, altes Stick-ISO `09b9482a…`)** — nicht als Nachweis für neues ISO zählen:
-
-- UEFI-Boot partial_success, iwlwifi/BT firmware missing, Serial-Marker FAILED
-- Siehe `RESCUE_USB_MSI_UEFI_BOOT_OPERATOR_RESULT.md`
-
-**Neuer Lauf mit ISO `9ef1b330…` erfordert:**
-
-1. Stick auswerfen, MSI herunterfahren, Secure Boot aus
-2. UEFI → USB UEFI-Medium
-3. Live-System: Befehle aus `RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN.md`
-4. Ergebnisse hier nachführen (Operator-Ingest)
-
-### Operator-Checkliste (noch offen)
+## Runtime-Drift (DCC/Gate-Anzeige)
 
 ```text
-UEFI-Bootmenü sichtbar:           [ ]
-USB-Stick als UEFI-Medium sichtbar: [ ]
-GRUB/Bootmenü sichtbar:           [ ]
-Live-System startet:              [ ]
-Login/Shell erreichbar:           [ ]
-NetworkManager aktiv:             [ ]
-nmcli / WLAN sichtbar:            [ ]
-iwlwifi-9000 / ibt-17-16-1 OK:    [ ]
-Serial-Marker nicht failed:       [ ]
-Netzwerk + Telemetrie OK:         [ ]
+RUNTIME_DEPLOY_DRIFT_1_7_4_5_PENDING
+Workspace 1.7.4.5 vs Runtime API 1.7.4.1
+→ DCC compact-status zeigt teils veraltete Rescue-Gate-Felder (09b9482a…, target_boot_validated=true)
+→ Gate-JSON in rescue_iso_usb_gate_status_latest.json ist maßgeblich (false/false/false)
 ```
 
-## Gate (ehrlich — unverändert für MSI)
+## Vorheriger MSI-Lauf (nicht gültig für neues ISO)
+
+2026-06-06, Stick `09b9482a…` — partial UEFI boot, Firmware fehlend, Serial-Marker FAILED.  
+Siehe `RESCUE_USB_MSI_UEFI_BOOT_OPERATOR_RESULT.md`.
+
+## Gate (kein Fake-Green)
 
 ```text
 iso_uefi_validated: true
@@ -80,22 +60,10 @@ target_network_telemetry_validated: false
 windows_inspect_executable: false
 ```
 
-## Aktive Blocker
-
-- `RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET` (neues ISO `9ef1b330…`)
-- `RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED`
-- `WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED`
-
 ## Next Prompt
 
-**`RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN`** (wiederholen nach physischem MSI-Boot + Operator-Ingest)
-
-Alternativen nach Ergebnis:
-
-- Boot + Netzwerk + Telemetrie grün → `WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN`
-- Boot grün, Netzwerk rot → `RESCUE_USB_MSI_NETWORK_TELEMETRY_FAILURE_TRIAGE`
-- Boot scheitert → `RESCUE_USB_UEFI_BOOT_FAILURE_MSI_TRIAGE`
+**`RESCUE_USB_MSI_PHYSICAL_BOOT_NETWORK_TELEMETRY_OPERATOR_INGEST`**
 
 ## Nicht ausgeführt
 
-dd, USB-Schreiben, MSI-Retest (physisch), Windows-Inspect, Backup, Restore, Deploy, Push.
+dd, USB-Schreiben, MSI-Retest (physisch), Windows-Inspect, Deploy, Push.
