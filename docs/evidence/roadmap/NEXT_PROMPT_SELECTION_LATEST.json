@@ -1,18 +1,18 @@
 {
-  "schema_version": 17,
-  "selected_at": "2026-06-07T00:30:00+02:00",
-  "selected_prompt_id": "RESCUE_ISO_UEFI_NETWORKMANAGER_REBUILD_OPERATOR_COMPLETION",
-  "reason_de": "Workspace-Fix 1.7.4.5: --initsystem systemd, NM-Hook, UEFI Post-Patch im Build-Wrapper, Serial-Marker QEMU-only. ISO-Rebuild + clean ausstehend.",
+  "schema_version": 18,
+  "selected_at": "2026-06-07T01:00:00+02:00",
+  "selected_prompt_id": "RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD",
+  "reason_de": "ISO post-patch vollständig validiert: UEFI Exit 0, BOOTX64/efi.img/isolinux, NM/nmcli, Firmware, Serial-Marker QEMU-only. USB-Rewrite ausstehend.",
   "tracks": [
     {
       "id": "rescue_msi_firmware_iso_rebuild",
-      "status": "yellow",
+      "status": "green",
       "priority": "P0",
-      "next_step": "RESCUE_ISO_UEFI_NETWORKMANAGER_REBUILD_OPERATOR_COMPLETION",
+      "next_step": "RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_AND_NETWORKMANAGER_FIX_RESULT.md",
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_VALIDATOR_FAILURE_TRIAGE.md",
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_NETWORKMANAGER_MISSING_AFTER_REBUILD.md"
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_POST_PATCH_FULL_VALIDATION_RESULT.md",
+        "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+        "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"
       ]
     }
   ],
