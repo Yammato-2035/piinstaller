@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-06-06T15:32:00+02:00",
+  "prompt_id": "RESCUE_ISO_PARENT_ARCHIVE_AREAS_AND_CHROOT_APT_SOURCE_FIX",
+  "failure_code": "RESCUE-ISO-PARENT-ARCHIVE-AREAS-001",
+  "lb_exit": 123,
+  "root_cause": "bookworm main repository lacks non-free-firmware in effective chroot apt sources",
+  "prior_fix_head": "2a36003",
+  "prior_fix_insufficient": true,
+  "iso_created": false,
+  "usb_write_allowed": false,
+  "windows_inspect_allowed": false,
+  "observed_chroot_sources_list": [
+    "deb http://ftp.debian.org/debian/ bookworm main",
+    "deb http://security.debian.org/ bookworm-security main contrib non-free-firmware"
+  ],
+  "build_log_signals": {
+    "bookworm_main_only": true,
+    "bookworm_security_non_free_firmware": true,
+    "bookworm_non_free_firmware_missing": true
+  },
+  "apt_errors": [
+    "E: Unable to locate package firmware-iwlwifi",
+    "E: Unable to locate package firmware-intel-sound"
+  ],
+  "contributing_causes": [
+    "unquoted --archive-areas in auto/config (shell passes only main to lb config)",
+    "missing explicit config/archives/debian.list.chroot parent mirror lines",
+    "missing --parent-archive-areas in lb config",
+    "stale chroot/etc/apt/sources.list from prior main-only build"
+  ],
+  "usb_stick_status": "stale_pre_fix_iso_written",
+  "next_fix_version": "1.7.4.4"
+}

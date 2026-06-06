@@ -9,10 +9,11 @@
 Debian Bookworm Firmware-Pakete liegen in **`non-free-firmware`**. Controlled Build nutzt:
 
 ```text
---archive-areas main contrib non-free-firmware
+--archive-areas 'main contrib non-free-firmware'
+config/archives/debian.list.chroot  → Parent-Mirror (Pflicht, nicht nur Security)
 ```
 
-Ohne diese Areas schlägt `lb build` mit `E: Unable to locate package firmware-iwlwifi` fehl (`LB_EXIT=123`).
+**Häufiger Fehler:** Unquoted `--archive-areas main contrib non-free-firmware` — Shell übergibt nur `main` an `lb config`; Parent-`sources.list` bleibt `main`-only trotz Security-Listen.
 
 ## Aktiv (minimal, konservativ)
 

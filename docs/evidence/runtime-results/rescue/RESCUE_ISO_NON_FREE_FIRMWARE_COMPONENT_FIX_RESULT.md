@@ -98,6 +98,10 @@ unsquashfs -ll "$SQUASH" | grep -E 'iwlwifi-9000|intel/ibt-17-16-1|NetworkManage
 
 Danach bei Erfolg: `RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD`
 
+## Follow-up Parent-Archive-Areas (1.7.4.4)
+
+Fix `2a36003` unzureichend — Parent `bookworm` blieb main-only. Siehe `RESCUE_ISO_PARENT_ARCHIVE_AREAS_FIX_RESULT.md`.
+
 ## Nicht ausgeführt
 
 USB-dd, MSI-Retest, Windows-Inspect, apt auf Host, Deploy, Push

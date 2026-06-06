@@ -230,12 +230,22 @@ DHCP=yes
 IPv6AcceptRA=yes
 EOF
 
+write_text_file "${BUILD_ROOT}/config/archives/debian.list.chroot" 0644 <<'EOF'
+deb http://deb.debian.org/debian bookworm main contrib non-free-firmware
+deb http://deb.debian.org/debian bookworm-updates main contrib non-free-firmware
+EOF
+
+write_text_file "${BUILD_ROOT}/config/archives/debian.list.binary" 0644 <<'EOF'
+deb http://deb.debian.org/debian bookworm main contrib non-free-firmware
+deb http://deb.debian.org/debian bookworm-updates main contrib non-free-firmware
+EOF
+
 write_text_file "${BUILD_ROOT}/config/archives/debian-security.list.chroot" 0644 <<'EOF'
-deb http://security.debian.org/ bookworm-security main contrib non-free-firmware
+deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
 EOF
 
 write_text_file "${BUILD_ROOT}/config/archives/debian-security.list.binary" 0644 <<'EOF'
-deb http://security.debian.org/ bookworm-security main contrib non-free-firmware
+deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
 EOF
 
 write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer-backend.service" 0644 <<'EOF'
@@ -510,7 +520,8 @@ write_text_file "${BUILD_ROOT}/auto/config" 0755 <<EOF
 #!/bin/sh
 set -eu
 LB_COMMON="--distribution bookworm \\
-  --archive-areas main contrib non-free-firmware \\
+  --archive-areas 'main contrib non-free-firmware' \\
+  --parent-archive-areas 'main contrib non-free-firmware' \\
   --binary-images iso-hybrid \\
   --zsync false \\
   --debian-installer false \\

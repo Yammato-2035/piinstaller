@@ -37,16 +37,31 @@ class RescueDeveloperSerialVisibilityTests(unittest.TestCase):
 
     def test_prepare_archive_areas_include_non_free_firmware(self) -> None:
         text = _read(PREP)
-        self.assertIn(
-            "--archive-areas main contrib non-free-firmware",
+        self.assertRegex(
             text,
-            "prepare must enable non-free-firmware for iwlwifi firmware packages",
+            r"--archive-areas 'main contrib non-free-firmware'",
+            "archive-areas must be a single quoted lb config argument",
         )
+        self.assertRegex(
+            text,
+            r"--parent-archive-areas 'main contrib non-free-firmware'",
+            "parent-archive-areas must be a single quoted lb config argument",
+        )
+
+    def test_prepare_parent_debian_archive_lists(self) -> None:
+        text = _read(PREP)
+        self.assertIn("config/archives/debian.list.chroot", text)
+        self.assertIn("bookworm main contrib non-free-firmware", text)
+        self.assertIn("bookworm-updates main contrib non-free-firmware", text)
 
     def test_validate_requires_non_free_firmware_archive_areas(self) -> None:
         validate = _REPO / "scripts/rescue-live/validate-controlled-live-build-tree.sh"
         text = _read(validate)
-        self.assertIn("non-free-firmware", text)
+        self.assertIn("debian.list.chroot", text)
+        self.assertIn("parent-archive-areas", text)
+        self.assertIn("RESCUE-ISO-PARENT-ARCHIVE-AREAS-001", text)
+        self.assertIn("RESCUE-ISO-CHROOT-SOURCES-NONFREE-FIRMWARE-MISSING-001", text)
+        self.assertIn("RESCUE-ISO-FIRMWARE-APT-SOURCE-INCOMPLETE-001", text)
         self.assertIn("RESCUE-ISO-FIRMWARE-APT-COMPONENT-001", text)
         self.assertIn("RESCUE-ISO-NETWORKMANAGER-MISSING-001", text)
 

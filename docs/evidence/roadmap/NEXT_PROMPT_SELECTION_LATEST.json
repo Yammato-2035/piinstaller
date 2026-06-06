@@ -1,25 +1,16 @@
 {
-  "schema_version": 14,
-  "selected_at": "2026-06-06T15:29:00+02:00",
+  "schema_version": 15,
+  "selected_at": "2026-06-06T15:32:00+02:00",
   "selected_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION",
-  "parallel_prompt_id": null,
-  "reason_de": "non-free-firmware Archive-Areas-Fix committed (1.7.4.3); Build-Tree-Validator grün — Operator sudo rebuild + Squashfs-Nachweis ausstehend.",
-  "reason_en": "non-free-firmware archive-areas fix committed (1.7.4.3); build-tree validator green — operator sudo rebuild and squashfs proof pending.",
+  "reason_de": "Parent archive areas + explizite debian.list + Validator (1.7.4.4) committed; Operator sudo clean+rebuild + Squashfs-Nachweis ausstehend.",
   "tracks": [
-    {
-      "id": "development_server_local_capability",
-      "status": "green",
-      "priority": "P1",
-      "next_step": null
-    },
     {
       "id": "rescue_msi_firmware_iso_rebuild",
       "status": "yellow",
       "priority": "P0",
       "next_step": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_NON_FREE_FIRMWARE_COMPONENT_FIX_RESULT.md",
-        "docs/evidence/runtime-results/rescue/rescue_iso_msi_firmware_rebuild_failure_latest.json"
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_PARENT_ARCHIVE_AREAS_FIX_RESULT.md"
       ]
     }
   ],

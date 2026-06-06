@@ -17,10 +17,15 @@ fail_token() { echo "FORBIDDEN_TOKEN: $*" >&2; exit 14; }
 fail_firmware_apt() { echo "RESCUE-ISO-FIRMWARE-APT-COMPONENT-001: $*" >&2; exit 10; }
 fail_firmware_pkg() { echo "RESCUE-ISO-FIRMWARE-PACKAGE-LIST-001: $*" >&2; exit 10; }
 fail_networkmanager() { echo "RESCUE-ISO-NETWORKMANAGER-MISSING-001: $*" >&2; exit 10; }
+fail_parent_archive() { echo "RESCUE-ISO-PARENT-ARCHIVE-AREAS-001: $*" >&2; exit 10; }
+fail_chroot_sources() { echo "RESCUE-ISO-CHROOT-SOURCES-NONFREE-FIRMWARE-MISSING-001: $*" >&2; exit 10; }
+fail_firmware_source_incomplete() { echo "RESCUE-ISO-FIRMWARE-APT-SOURCE-INCOMPLETE-001: $*" >&2; exit 10; }
 
 REQ=(
   config/package-lists/setuphelfer.list.binary
   config/package-lists/setuphelfer.list.chroot
+  config/archives/debian.list.chroot
+  config/archives/debian.list.binary
   config/archives/debian-security.list.chroot
   config/archives/debian-security.list.binary
   config/includes.chroot/usr/local/bin/rsvg
@@ -131,13 +136,77 @@ grep -qx 'wireless-regdb' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chr
   || fail_firmware_pkg "setuphelfer.list.chroot must list wireless-regdb (WLAN regulatory domain)"
 if grep -qx 'firmware-iwlwifi' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   && ! grep -q 'non-free-firmware' "$BUILD_ROOT/auto/config"; then
-  fail_firmware_apt "firmware packages listed but auto/config archive-areas missing non-free-firmware"
+  fail_firmware_source_incomplete "firmware packages listed but auto/config missing non-free-firmware archive areas"
 fi
-if ! grep -qE 'archive-areas main contrib non-free-firmware' "$BUILD_ROOT/auto/config"; then
-  fail_firmware_apt "auto/config must set --archive-areas main contrib non-free-firmware"
+if ! grep -qE "archive-areas 'main contrib non-free-firmware'|archive-areas \"main contrib non-free-firmware\"" "$BUILD_ROOT/auto/config"; then
+  fail_firmware_apt "auto/config must quote --archive-areas 'main contrib non-free-firmware' (unquoted words break lb config)"
 fi
-grep -q 'non-free-firmware' "$BUILD_ROOT/config/archives/debian-security.list.chroot" \
-  || fail_firmware_apt "debian-security.list.chroot must include non-free-firmware component"
+if ! grep -qE "parent-archive-areas 'main contrib non-free-firmware'|parent-archive-areas \"main contrib non-free-firmware\"" "$BUILD_ROOT/auto/config"; then
+  fail_parent_archive "auto/config must quote --parent-archive-areas 'main contrib non-free-firmware'"
+fi
+if [[ -f "$BUILD_ROOT/config/common" ]]; then
+  if grep -qE 'LB_PARENT_ARCHIVE_AREAS="main"' "$BUILD_ROOT/config/common" \
+    && ! grep -q 'non-free-firmware' "$BUILD_ROOT/config/common"; then
+    fail_parent_archive "config/common stale: LB_PARENT_ARCHIVE_AREAS main-only (clean + prepare required)"
+  fi
+  if grep -qE 'LB_ARCHIVE_AREAS="main"' "$BUILD_ROOT/config/common" \
+    && ! grep -q 'non-free-firmware' "$BUILD_ROOT/config/common"; then
+    fail_firmware_apt "config/common stale: LB_ARCHIVE_AREAS main-only (clean + prepare required)"
+  fi
+fi
+CHROOT_SOURCES="$BUILD_ROOT/chroot/etc/apt/sources.list"
+if [[ -f "$CHROOT_SOURCES" ]]; then
+  if grep -Eq 'bookworm main$|bookworm main[[:space:]]*$' "$CHROOT_SOURCES" \
+    && ! grep -q 'non-free-firmware' "$CHROOT_SOURCES"; then
+    fail_chroot_sources "stale chroot/etc/apt/sources.list is bookworm main-only — sudo clean required before rebuild"
+  fi
+fi
+grep -q 'bookworm main contrib non-free-firmware' "$BUILD_ROOT/config/archives/debian.list.chroot" \
+  || fail_parent_archive "debian.list.chroot must include bookworm main contrib non-free-firmware"
+grep -q 'bookworm-updates main contrib non-free-firmware' "$BUILD_ROOT/config/archives/debian.list.chroot" \
+  || fail_firmware_source_incomplete "debian.list.chroot must include bookworm-updates main contrib non-free-firmware"
+if grep -Eq 'bookworm main$|bookworm main[[:space:]]*$' "$BUILD_ROOT/config/archives/debian.list.chroot" 2>/dev/null; then
+  fail_parent_archive "debian.list.chroot parent mirror line is main-only"
+fi
+grep -q 'bookworm-security main contrib non-free-firmware' "$BUILD_ROOT/config/archives/debian-security.list.chroot" \
+  || fail_firmware_source_incomplete "debian-security.list.chroot must include bookworm-security main contrib non-free-firmware"
+grep -q 'non-free-firmware' "$BUILD_ROOT/config/archives/debian.list.binary" \
+  || fail_parent_archive "debian.list.binary must include non-free-firmware for parent mirror"
+grep -q 'non-free-firmware' "$BUILD_ROOT/config/archives/debian-security.list.binary" \
+  || fail_firmware_source_incomplete "debian-security.list.binary must include non-free-firmware component"
+python3 - "$BUILD_ROOT" <<'PY' || exit 10
+import sys
+from pathlib import Path
+
+build_root = Path(sys.argv[1])
+errors: list[str] = []
+auto = (build_root / "auto/config").read_text(encoding="utf-8") if (build_root / "auto/config").is_file() else ""
+parent = (build_root / "config/archives/debian.list.chroot").read_text(encoding="utf-8") if (build_root / "config/archives/debian.list.chroot").is_file() else ""
+security = (build_root / "config/archives/debian-security.list.chroot").read_text(encoding="utf-8") if (build_root / "config/archives/debian-security.list.chroot").is_file() else ""
+
+required_auto = (
+    "archive-areas 'main contrib non-free-firmware'",
+    "parent-archive-areas 'main contrib non-free-firmware'",
+)
+for token in required_auto:
+    if token not in auto and token.replace("'", '"') not in auto:
+        errors.append(f"auto/config missing {token}")
+
+if "bookworm main contrib non-free-firmware" not in parent:
+    errors.append("RESCUE-ISO-PARENT-ARCHIVE-AREAS-001: parent debian.list.chroot lacks bookworm non-free-firmware")
+if "bookworm-updates main contrib non-free-firmware" not in parent:
+    errors.append("RESCUE-ISO-FIRMWARE-APT-SOURCE-INCOMPLETE-001: parent debian.list.chroot lacks bookworm-updates non-free-firmware")
+if "non-free-firmware" in security and "bookworm main contrib non-free-firmware" not in parent:
+    errors.append("RESCUE-ISO-FIRMWARE-APT-SOURCE-INCOMPLETE-001: security has non-free-firmware but parent mirror does not")
+if "bookworm-security main contrib non-free-firmware" not in security:
+    errors.append("RESCUE-ISO-FIRMWARE-APT-SOURCE-INCOMPLETE-001: security list incomplete")
+
+for err in errors:
+    print(err, file=sys.stderr)
+if errors:
+    sys.exit(1)
+print("OK: apt archive areas complete for firmware packages")
+PY
 grep -q 'XKBLAYOUT="de"' "$BUILD_ROOT/config/includes.chroot/etc/default/keyboard" \
   || fail_missing 'etc/default/keyboard must contain XKBLAYOUT="de"'
 grep -q 'KEYMAP=de-latin1' "$BUILD_ROOT/config/includes.chroot/etc/vconsole.conf" \

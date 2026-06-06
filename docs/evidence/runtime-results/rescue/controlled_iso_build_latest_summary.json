@@ -1,54 +1,27 @@
 {
-  "controlled_iso_build_summary_schema_version": 2,
-  "started_at": "2026-06-06T15:28:57+02:00",
-  "ended_at": "2026-06-06T15:28:57+02:00",
-  "exit_code": 30,
-  "status": "blocked_fix_applied_workspace",
+  "controlled_iso_build_summary_schema_version": 3,
+  "started_at": "2026-06-06T15:32:00+02:00",
+  "ended_at": "2026-06-06T15:32:00+02:00",
+  "exit_code": null,
+  "status": "fix_applied_rebuild_pending_operator_sudo",
   "iso_found": false,
-  "iso_path": null,
-  "iso_size": null,
-  "sha256": null,
   "iso_sha256_previous": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
   "iso_sha256_new": null,
-  "error_code": "blocked_requires_operator_sudo_policy",
-  "next_action": "operator_sudo_rebuild_after_non_free_firmware_fix",
-  "policy_guard_status": "blocked",
-  "execution_mode": "blocked_requires_operator_sudo_policy",
-  "build_started": false,
-  "no_build_executed": true,
-  "workspace_version": "1.7.4.3",
-  "archive_areas_fix": "main contrib non-free-firmware",
+  "workspace_version": "1.7.4.4",
+  "archive_areas": "main contrib non-free-firmware",
+  "parent_archive_areas": "main contrib non-free-firmware",
   "prior_operator_failure": {
-    "started_at": "2026-06-06T15:24:30+02:00",
-    "ended_at": "2026-06-06T15:25:38+02:00",
-    "exit_code": 123,
-    "failure_code": "RESCUE-ISO-FIRMWARE-APT-COMPONENT-001",
-    "apt_errors": [
-      "E: Unable to locate package firmware-iwlwifi",
-      "E: Unable to locate package firmware-intel-sound"
-    ]
+    "lb_exit": 123,
+    "failure_code": "RESCUE-ISO-PARENT-ARCHIVE-AREAS-001"
   },
-  "build_tree_validate_after_fix": {
+  "build_tree_after_fix": {
     "prepare_ok": true,
-    "validate_exit_code": 0,
-    "non_free_firmware_in_auto_config": true
+    "validate_without_clean": "RESCUE-ISO-CHROOT-SOURCES-NONFREE-FIRMWARE-MISSING-001",
+    "validate_expected_after_clean": "exit_0"
   },
-  "uefi_validator_exit_code": null,
-  "policy_context": {
-    "is_tty": false,
-    "already_root": false,
-    "sudo_noninteractive": false
-  },
-  "last_120_lines": [
-    "START 2026-06-06T15:28:57+02:00 profile=standard run_id=rescue_developer_iso_20260606_132857",
-    "POLICY_GUARD_STATUS=blocked",
-    "blocked_requires_operator_sudo_policy",
-    "LB_EXIT=30"
-  ],
-  "usb_write_allowed": false,
-  "dd_executed": false,
+  "agent_sudo_clean": false,
+  "agent_iso_rebuild": false,
+  "usb_write_executed": false,
   "msi_retest_executed": false,
-  "windows_inspect_executed": false,
-  "rescue_build_profile": "standard",
-  "run_id": "rescue_developer_iso_20260606_132857"
+  "windows_inspect_executed": false
 }

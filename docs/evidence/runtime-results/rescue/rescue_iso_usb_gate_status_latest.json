@@ -1,69 +1,32 @@
 {
-  "schema_version": 9,
-  "classified_at": "2026-06-06T15:29:00+02:00",
-  "classification": "non_free_firmware_fix_ready_iso_rebuild_pending",
-  "iso_status": "rebuild_pending_after_archive_areas_fix",
-  "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "schema_version": 10,
+  "classified_at": "2026-06-06T15:32:00+02:00",
+  "classification": "parent_archive_areas_fix_ready_rebuild_pending",
+  "workspace_version": "1.7.4.4",
   "iso_sha256": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
   "iso_sha256_new": null,
-  "iso_rebuild_executed": false,
-  "iso_rebuild_last_lb_exit": 30,
-  "iso_rebuild_prior_lb_exit": 123,
-  "iso_rebuild_prior_failure_code": "RESCUE-ISO-FIRMWARE-APT-COMPONENT-001",
-  "archive_areas_required": "main contrib non-free-firmware",
-  "archive_areas_fix_applied": true,
-  "build_tree_validate_exit_code": 0,
-  "uefi_validator_exit_code": null,
-  "uefi_validator_exit_code_previous": 0,
-  "workspace_version": "1.7.4.3",
-  "live_runtime_version": "1.7.4.1",
-  "msi_uefi_boot_status": "partial_success",
-  "target_laptop_booted_from_stick": true,
-  "windows_inspect_executable": false,
+  "archive_areas": "main contrib non-free-firmware",
+  "parent_archive_areas": "main contrib non-free-firmware",
   "usb_stick_written": "yes_stale_pre_fix_iso",
-  "usb_restick_after_rebuild_required": true,
-  "firmware_packages_in_build_tree": {
-    "firmware-iwlwifi": true,
-    "firmware-intel-sound": true,
-    "wireless-regdb": true,
-    "network-manager": true
-  },
-  "intel_bt_firmware_source_package": "firmware-iwlwifi",
-  "squashfs_firmware_verified": false,
-  "blockers": [
-    {
-      "id": "RESCUE_ISO_REBUILD_OPERATOR_SUDO_REQUIRED",
-      "severity": "critical",
-      "status": "blocked",
-      "description_de": "Archive-Areas-Fix im Workspace; Operator sudo rebuild ausstehend."
-    },
-    {
-      "id": "RESCUE_ISO_INTEL_WIFI_BT_FIRMWARE_MISSING",
-      "severity": "critical",
-      "status": "fix_in_workspace_iso_rebuild_pending",
-      "description_de": "Firmware-Pakete in Paketliste + non-free-firmware; Squashfs-Nachweis ausstehend."
-    },
-    {
-      "id": "RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED",
-      "severity": "critical",
-      "status": "blocked"
-    },
-    {
-      "id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED",
-      "severity": "critical",
-      "status": "blocked",
-      "code": "RESCUE-UEFI-005"
-    }
-  ],
+  "usb_restick_required": true,
+  "msi_uefi_boot_status": "partial_success",
+  "windows_inspect_executable": false,
   "resolved_blockers": [
     "RESCUE-ISO-FIRMWARE-APT-COMPONENT-001"
   ],
-  "next_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION",
-  "next_prompt_after_iso_success": "RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD",
-  "handoff_docs": [
-    "docs/evidence/runtime-results/rescue/RESCUE_ISO_NON_FREE_FIRMWARE_COMPONENT_FIX_RESULT.md",
-    "docs/evidence/runtime-results/rescue/RESCUE_ISO_NON_FREE_FIRMWARE_COMPONENT_FAILURE.md"
+  "blockers": [
+    {
+      "id": "RESCUE-ISO-PARENT-ARCHIVE-AREAS-001",
+      "status": "fix_in_workspace_clean_rebuild_pending"
+    },
+    {
+      "id": "RESCUE_ISO_REBUILD_OPERATOR_SUDO_REQUIRED",
+      "status": "blocked"
+    },
+    {
+      "id": "RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED",
+      "status": "blocked"
+    }
   ],
-  "agent_iso_rebuild_executed": false,
-  "operator_iso_rebuild_required": true
+  "next_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION"
 }
