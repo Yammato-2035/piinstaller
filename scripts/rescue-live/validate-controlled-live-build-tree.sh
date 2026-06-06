@@ -132,6 +132,11 @@ grep -qx 'firmware-intel-sound' "$BUILD_ROOT/config/package-lists/setuphelfer.li
   || fail_firmware_pkg "setuphelfer.list.chroot must list firmware-intel-sound (Intel sound DSP)"
 grep -qx 'network-manager' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_networkmanager "setuphelfer.list.chroot must list network-manager (rescue WLAN menu / nmcli)"
+grep -qx 'wpasupplicant' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_networkmanager "setuphelfer.list.chroot must list wpasupplicant (WLAN supplicant for NetworkManager)"
+if ! grep -qE '\-\-initsystem systemd' "$BUILD_ROOT/auto/config"; then
+  fail_networkmanager "auto/config must set --initsystem systemd (live-config-sysvinit removes network-manager)"
+fi
 grep -qx 'wireless-regdb' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_firmware_pkg "setuphelfer.list.chroot must list wireless-regdb (WLAN regulatory domain)"
 if grep -qx 'firmware-iwlwifi' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
@@ -296,6 +301,24 @@ print(f"OK: build-tree-manifest source_head={m.get('source_head')}")
 PY
 
 "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/validate-live-build-dpkg-preflight.sh" "$BUILD_ROOT"
+
+marker_svc="$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-serial-boot-markers.service"
+if [[ -f "$marker_svc" ]]; then
+  if ! grep -q 'ConditionVirtualization=qemu' "$marker_svc"; then
+    echo "RESCUE-ISO-SERIAL-MARKER-001: serial-boot-markers.service missing ConditionVirtualization=qemu" >&2
+    exit 12
+  fi
+  if grep -q 'TTYPath=/dev/ttyS0' "$marker_svc"; then
+    echo "RESCUE-ISO-SERIAL-MARKER-001: serial-boot-markers.service must not use TTYPath=/dev/ttyS0 on hardware" >&2
+    exit 12
+  fi
+else
+  echo "RESCUE-ISO-SERIAL-MARKER-001: missing setuphelfer-serial-boot-markers.service in chroot overlay" >&2
+  exit 12
+fi
+if [[ ! -f "$BUILD_ROOT/config/hooks/normal/015-ensure-network-manager.hook.chroot" ]]; then
+  fail_networkmanager "missing 015-ensure-network-manager.hook.chroot (NM safety net after live-packages)"
+fi
 
 MANIFEST="${BUILD_ROOT}/evidence/build-tree-manifest.json"
 python3 - "$MANIFEST" "$BUILD_ROOT" <<'PY' || fail_missing "developer-qemu profile markers incomplete (see stderr)"

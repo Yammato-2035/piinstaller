@@ -1,51 +1,48 @@
 {
-  "schema_version": 11,
-  "classified_at": "2026-06-06T20:50:00+02:00",
-  "classification": "iso_firmware_rebuild_success_uefi_nm_validation_blocked",
+  "schema_version": 12,
+  "classified_at": "2026-06-07T00:30:00+02:00",
+  "classification": "workspace_fix_applied_iso_rebuild_pending",
   "iso_created": true,
   "iso_uefi_validated": false,
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
   "iso_sha256": "dc35138768ee659273ac0949a26b468d911a9dac3ca2e0c854b01481609041f8",
   "iso_sha256_previous_stick": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
-  "squashfs_validated": true,
+  "squashfs_validated": false,
   "uefi_validator_exit_code": 34,
   "usb_stick_written": false,
   "usb_stick_written_stale_pre_rebuild_iso": true,
   "target_laptop_booted_from_stick": false,
   "windows_inspect_executable": false,
-  "workspace_version": "1.7.4.4",
+  "workspace_version": "1.7.4.5",
   "firmware_validation": {
     "iwlwifi_9000_ucode_present": true,
     "iwlwifi_9000_jf_b0_37_present": false,
     "intel_ibt_17_16_1_sfi_present": true,
     "wireless_regdb_present": true,
     "network_manager_functional": false,
-    "nmcli_present": false
+    "nmcli_present": false,
+    "note_de": "NM/UEFI-Fixes im Workspace; alte ISO unverändert bis Operator-Rebuild"
   },
   "resolved_blockers": [
     "RESCUE_ISO_INTEL_WIFI_BT_FIRMWARE_MISSING",
     "RESCUE-ISO-PARENT-ARCHIVE-AREAS-001",
-    "RESCUE-ISO-FIRMWARE-APT-COMPONENT-001"
+    "RESCUE-ISO-FIRMWARE-APT-COMPONENT-001",
+    "RESCUE_ISO_UEFI_VALIDATOR_FAILURE_TRIAGE",
+    "RESCUE_ISO_NETWORKMANAGER_MISSING_AFTER_REBUILD",
+    "RESCUE_SERIAL_BOOT_MARKERS_HARDWARE_INCOMPATIBLE"
   ],
   "blockers": [
     {
-      "id": "RESCUE_ISO_UEFI_VALIDATOR_FAILURE",
+      "id": "RESCUE_ISO_REBUILD_OPERATOR_REQUIRED",
       "severity": "critical",
       "status": "blocked",
-      "uefi_exit": 34,
-      "code": "RESCUE-UEFI-003"
+      "description_de": "Workspace-Fix 1.7.4.5; Operator-clean + ISO-Rebuild für UEFI/NM/SquashFS-Verifikation"
     },
     {
-      "id": "RESCUE_ISO_NETWORKMANAGER_MISSING_AFTER_REBUILD",
-      "severity": "critical",
-      "status": "blocked",
-      "description_de": "network-manager im Build-Log installiert, im SquashFS fehlen nmcli und NetworkManager.service"
-    },
-    {
-      "id": "RESCUE_SERIAL_BOOT_MARKERS_HARDWARE_INCOMPATIBLE",
+      "id": "RESCUE_ISO_STALE_BINARY_ARTIFACTS",
       "severity": "warning",
       "status": "blocked",
-      "description_de": "SquashFS enthält noch alte TTYPath-Unit ohne ConditionVirtualization=qemu"
+      "description_de": "validate-controlled-live-build-tree Exit 11 FORBIDDEN filesystem.squashfs bis clean"
     },
     {
       "id": "RESCUE_USB_REWRITE_REQUIRED_AFTER_ISO_REBUILD",
@@ -69,6 +66,6 @@
       "code": "RESCUE-UEFI-005"
     }
   ],
-  "next_prompt_id": "RESCUE_ISO_UEFI_VALIDATOR_FAILURE_TRIAGE",
-  "alternate_next_after_uefi_and_nm_fix": "RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD"
+  "next_prompt_id": "RESCUE_ISO_UEFI_NETWORKMANAGER_REBUILD_OPERATOR_COMPLETION",
+  "alternate_next_after_iso_green": "RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD"
 }

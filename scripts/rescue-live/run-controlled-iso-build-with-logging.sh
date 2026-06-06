@@ -350,6 +350,44 @@ fi
 LB_EXIT=$?
 set -e
 ENDED_AT="$(date -Is)"
+UEFI_PATCH_APPLIED=false
+UEFI_VALIDATOR_EXIT=""
+ISO_CANDIDATE="${BUILD_ROOT}/binary.hybrid.iso"
+if [[ "$LB_EXIT" -eq 0 && -f "$ISO_CANDIDATE" ]]; then
+  UEFI_VALIDATOR="${REPO_ROOT}/scripts/rescue-live/validate-rescue-iso-uefi-boot.sh"
+  UEFI_PATCH="${REPO_ROOT}/scripts/rescue-live/patch-rescue-iso-uefi-x64.sh"
+  if [[ -x "$UEFI_VALIDATOR" && -x "$UEFI_PATCH" ]]; then
+    set +e
+    "$UEFI_VALIDATOR" "$ISO_CANDIDATE" >>"${LATEST_LOG}" 2>&1
+    UEFI_VALIDATOR_EXIT=$?
+    set -e
+    if [[ "$UEFI_VALIDATOR_EXIT" -ne 0 ]]; then
+      echo "UEFI_POST_PATCH: validate exit=${UEFI_VALIDATOR_EXIT}; running patch-rescue-iso-uefi-x64.sh --in-place" \
+        | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+      set +e
+      if [[ "${POLICY_ALREADY_ROOT}" == true ]]; then
+        "$UEFI_PATCH" --in-place "$ISO_CANDIDATE" >>"${LATEST_LOG}" 2>&1
+      else
+        sudo "$UEFI_PATCH" --in-place "$ISO_CANDIDATE" >>"${LATEST_LOG}" 2>&1
+      fi
+      patch_rc=$?
+      set -e
+      if [[ "$patch_rc" -eq 0 ]]; then
+        UEFI_PATCH_APPLIED=true
+        set +e
+        "$UEFI_VALIDATOR" "$ISO_CANDIDATE" >>"${LATEST_LOG}" 2>&1
+        UEFI_VALIDATOR_EXIT=$?
+        set -e
+        echo "UEFI_POST_PATCH: patch_rc=${patch_rc} validate_exit=${UEFI_VALIDATOR_EXIT}" \
+          | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+      else
+        echo "UEFI_POST_PATCH: patch failed rc=${patch_rc}" | tee -a "${LATEST_LOG}" | tee -a "${STAMPED_LOG}"
+        ERROR_CODE="${ERROR_CODE:-RESCUE-UEFI-PATCH-FAILED}"
+        NEXT_ACTION="${NEXT_ACTION:-manual_uefi_patch_required}"
+      fi
+    fi
+  fi
+fi
 if [[ -z "$ERROR_CODE" ]] && grep -q 'isohybrid: not found' "${LATEST_LOG}" 2>/dev/null; then
   ERROR_CODE="${ISOHYBRID_PREFLIGHT_CODE}"
   NEXT_ACTION="prepare_binary_package_list_and_retry"

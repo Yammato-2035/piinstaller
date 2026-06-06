@@ -64,6 +64,8 @@ class RescueDeveloperSerialVisibilityTests(unittest.TestCase):
         self.assertIn("RESCUE-ISO-FIRMWARE-APT-SOURCE-INCOMPLETE-001", text)
         self.assertIn("RESCUE-ISO-FIRMWARE-APT-COMPONENT-001", text)
         self.assertIn("RESCUE-ISO-NETWORKMANAGER-MISSING-001", text)
+        self.assertIn("RESCUE-ISO-SERIAL-MARKER-001", text)
+        self.assertIn("--initsystem systemd", text)
 
     def test_controlled_build_msi_firmware_packages_in_prepare(self) -> None:
         text = _read(PREP)
@@ -72,8 +74,24 @@ class RescueDeveloperSerialVisibilityTests(unittest.TestCase):
             "firmware-intel-sound",
             "wireless-regdb",
             "network-manager",
+            "wpasupplicant",
         ):
             self.assertIn(pkg, text, f"prepare must list {pkg} for MSI rescue WLAN/BT")
+
+    def test_prepare_initsystem_systemd(self) -> None:
+        text = _read(PREP)
+        self.assertIn("--initsystem systemd \\", text)
+
+    def test_prepare_serial_marker_unit_in_tree(self) -> None:
+        text = _read(PREP)
+        self.assertIn("write_rescue_serial_boot_markers_service", text)
+        self.assertIn("ConditionVirtualization=qemu", text)
+        self.assertNotIn("TTYPath=/dev/ttyS0", text.split("write_rescue_serial_boot_markers_service")[1].split("EOF")[0])
+
+    def test_prepare_network_manager_safety_hook(self) -> None:
+        text = _read(PREP)
+        self.assertIn("015-ensure-network-manager.hook.chroot", text)
+        self.assertIn("systemctl enable NetworkManager.service", text)
 
     def test_validate_checks_msi_firmware_packages(self) -> None:
         validate = _REPO / "scripts/rescue-live/validate-controlled-live-build-tree.sh"

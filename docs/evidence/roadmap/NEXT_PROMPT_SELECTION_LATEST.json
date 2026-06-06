@@ -1,18 +1,18 @@
 {
-  "schema_version": 16,
-  "selected_at": "2026-06-06T20:50:00+02:00",
-  "selected_prompt_id": "RESCUE_ISO_UEFI_VALIDATOR_FAILURE_TRIAGE",
-  "parallel_prompt_id": "RESCUE_ISO_NETWORKMANAGER_MISSING_AFTER_REBUILD",
-  "reason_de": "ISO-Build LB_EXIT=0 und Firmware im SquashFS grün; UEFI Exit 34 und nmcli/NetworkManager im SquashFS fehlen — kein USB-Rewrite.",
+  "schema_version": 17,
+  "selected_at": "2026-06-07T00:30:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_UEFI_NETWORKMANAGER_REBUILD_OPERATOR_COMPLETION",
+  "reason_de": "Workspace-Fix 1.7.4.5: --initsystem systemd, NM-Hook, UEFI Post-Patch im Build-Wrapper, Serial-Marker QEMU-only. ISO-Rebuild + clean ausstehend.",
   "tracks": [
     {
       "id": "rescue_msi_firmware_iso_rebuild",
       "status": "yellow",
       "priority": "P0",
-      "next_step": "RESCUE_ISO_UEFI_VALIDATOR_FAILURE_TRIAGE",
+      "next_step": "RESCUE_ISO_UEFI_NETWORKMANAGER_REBUILD_OPERATOR_COMPLETION",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_BUILD_SUCCESS_VALIDATION_RESULT.md",
-        "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_AND_NETWORKMANAGER_FIX_RESULT.md",
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_VALIDATOR_FAILURE_TRIAGE.md",
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_NETWORKMANAGER_MISSING_AFTER_REBUILD.md"
       ]
     }
   ],

@@ -175,6 +175,31 @@ write_developer_qemu_autopilot_wants() {
   ln -sf ../setuphelfer-serial-boot-markers.service "${wants}/setuphelfer-serial-boot-markers.service"
 }
 
+# QEMU-only serial markers — written for all profiles so stale TTYPath units cannot survive prepare.
+write_rescue_serial_boot_markers_service() {
+  write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer-serial-boot-markers.service" 0644 <<'EOF'
+[Unit]
+Description=Setuphelfer serial boot markers (QEMU lab)
+DefaultDependencies=no
+After=local-fs.target
+Before=basic.target
+ConditionPathExists=/usr/local/sbin/setuphelfer-serial-boot-markers.sh
+# QEMU lab only — real hardware (MSI rescue stick) has no usable ttyS0 for TTYPath.
+ConditionVirtualization=qemu
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/setuphelfer-serial-boot-markers.sh early
+StandardOutput=journal
+StandardError=journal
+RemainAfterExit=yes
+NoNewPrivileges=true
+
+[Install]
+WantedBy=sysinit.target
+EOF
+}
+
 write_text_file "${BUILD_ROOT}/config/package-lists/setuphelfer.list.chroot" 0644 <<'EOF'
 systemd
 systemd-sysv
@@ -201,6 +226,7 @@ firmware-iwlwifi
 firmware-intel-sound
 wireless-regdb
 network-manager
+wpasupplicant
 EOF
 
 # lb_binary_iso runs isohybrid inside the live-build chroot (not the host). Debian ships
@@ -394,10 +420,21 @@ ReadWritePaths=/tmp /run /var/tmp
 WantedBy=multi-user.target
 EOF
 
+write_text_file "${BUILD_ROOT}/config/hooks/normal/015-ensure-network-manager.hook.chroot" 0755 <<'EOF'
+#!/bin/sh
+set -eu
+# lb_chroot_live-packages with sysvinit removes network-manager; --initsystem systemd prevents that.
+# Re-install if a stale chroot or live-build regression stripped NM before squashfs.
+if ! command -v nmcli >/dev/null 2>&1; then
+  apt-get install -y --no-install-recommends network-manager wpasupplicant wireless-regdb
+fi
+systemctl enable NetworkManager.service || true
+EOF
+
 write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot" 0755 <<'EOF'
 #!/bin/sh
 set -eu
-systemctl enable systemd-networkd.service || true
+systemctl enable NetworkManager.service || true
 systemctl enable setuphelfer-rescue-keyboard.service || true
 systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
@@ -452,7 +489,7 @@ write_dev_agent_enable_hook() {
     write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot" 0755 <<'EOF'
 #!/bin/sh
 set -eu
-systemctl enable systemd-networkd.service || true
+systemctl enable NetworkManager.service || true
 systemctl enable setuphelfer-rescue-keyboard.service || true
 systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
@@ -462,7 +499,7 @@ EOF
     write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-services.hook.chroot" 0755 <<'EOF'
 #!/bin/sh
 set -eu
-systemctl enable systemd-networkd.service || true
+systemctl enable NetworkManager.service || true
 systemctl enable setuphelfer-rescue-keyboard.service || true
 systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
@@ -508,6 +545,12 @@ if [[ "${RESCUE_BUILD_PROFILE}" == "developer" || "${RESCUE_BUILD_PROFILE}" == "
 EOF
 fi
 
+write_rescue_serial_boot_markers_service
+SERIAL_MARKER_WANTS="${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-serial-boot-markers.service"
+if [[ "${RESCUE_BUILD_PROFILE}" != "developer-qemu" ]]; then
+  rm -f "$SERIAL_MARKER_WANTS"
+fi
+
 LIVE_BOOTAPPEND='boot=live components init=/lib/systemd/systemd quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin'
 if [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]]; then
   write_developer_qemu_isolinux_serial_config
@@ -520,6 +563,7 @@ write_text_file "${BUILD_ROOT}/auto/config" 0755 <<EOF
 #!/bin/sh
 set -eu
 LB_COMMON="--distribution bookworm \\
+  --initsystem systemd \\
   --archive-areas 'main contrib non-free-firmware' \\
   --parent-archive-areas 'main contrib non-free-firmware' \\
   --binary-images iso-hybrid \\
