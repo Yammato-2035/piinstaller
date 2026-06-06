@@ -197,6 +197,10 @@ kbd
 x11-xkb-utils
 locales
 tzdata
+firmware-iwlwifi
+firmware-intel-sound
+wireless-regdb
+network-manager
 EOF
 
 # lb_binary_iso runs isohybrid inside the live-build chroot (not the host). Debian ships

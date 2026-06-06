@@ -1,37 +1,31 @@
 {
-  "schema_version": 10,
-  "selected_at": "2026-06-06T15:05:00+02:00",
-  "selected_prompt_id": "DEVELOPMENT_SERVER_LOCAL_CAPABILITY_DEPLOY_OPERATOR_RUN",
-  "parallel_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_SERIAL_MARKER_REBUILD_OPERATOR_RUN",
-  "reason_de": "Workspace-Fix 1.7.4.1 für Dev-Server/Capability-Gate validiert; Live /opt noch 1.7.4.0 ohne dev_server-Routen — Deploy + Backend-Neustart durch Operator.",
-  "reason_en": "Workspace fix 1.7.4.1 validated; live /opt still 1.7.4.0 without dev_server routes — operator deploy + backend restart required.",
+  "schema_version": 13,
+  "selected_at": "2026-06-06T15:22:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION",
+  "parallel_prompt_id": null,
+  "reason_de": "MSI-Firmware-Fix im Workspace (1.7.4.2) committed; ISO-Rebuild blockiert durch sudo/ stale binary — Operator clean+build, dann USB-Rewrite.",
+  "reason_en": "MSI firmware fix in workspace (1.7.4.2) committed; ISO rebuild blocked by sudo/stale binary — operator clean+build, then USB rewrite.",
   "tracks": [
     {
       "id": "development_server_local_capability",
-      "status": "yellow",
-      "priority": "P0",
-      "next_step": "DEVELOPMENT_SERVER_LOCAL_CAPABILITY_DEPLOY_OPERATOR_RUN",
-      "evidence": [
-        "docs/evidence/dev-dashboard/DEVELOPMENT_SERVER_LOCAL_CAPABILITY_GATE_RESTPHASEN_TEST_AUDIT.md",
-        "docs/evidence/dev-dashboard/development_server_local_capability_gate_restphasen_latest.json",
-        "docs/evidence/dev-dashboard/DEVELOPMENT_SERVER_LOCAL_CAPABILITY_GATE_FIX_RESULT.md"
-      ]
+      "status": "green",
+      "priority": "P1",
+      "next_step": null,
+      "completed_prompt": "DEVELOPMENT_SERVER_LOCAL_CAPABILITY_BACKEND_RESTART_OPERATOR_RUN"
     },
     {
       "id": "rescue_msi_firmware_iso_rebuild",
       "status": "yellow",
       "priority": "P0",
-      "next_step": "RESCUE_ISO_MSI_FIRMWARE_SERIAL_MARKER_REBUILD_OPERATOR_RUN",
+      "next_step": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_USB_MSI_BOOT_FIRMWARE_AND_SERIAL_MARKER_TRIAGE.md",
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_MSI_FIRMWARE_SERIAL_MARKER_REBUILD_RESULT.md",
         "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"
       ]
     }
   ],
   "governance_rules": {
-    "no_automatic_dd": true,
     "no_secrets_in_evidence": true,
-    "no_local_lab_workaround": true,
     "no_fake_green": true
   }
 }

@@ -59,6 +59,10 @@ grep -q 'FLEET_ACCELERATION' "$QEMU_WRAPPER" || fail "wrapper missing accelerati
 grep -q 'charserial0' "$QEMU_WRAPPER" || fail "wrapper missing chardev serial capture"
 grep -q 'prepare_serial_log' "$QEMU_WRAPPER" || fail "wrapper missing prepare_serial_log"
 
+SVC="${PROFILE}/includes.chroot/etc/systemd/system/setuphelfer-serial-boot-markers.service"
+grep -q 'ConditionVirtualization=qemu' "$SVC" || fail "serial markers service must be QEMU-only"
+grep -q 'TTYPath=/dev/ttyS0' "$SVC" && fail "serial markers must not hard-require ttyS0 TTYPath on hardware"
+
 bash -n "$PREP" "$FLEET_API" "$QEMU_WRAPPER" "$AUTOPILOT_SH" "$MARKER_SH"
 
 echo "OK: rescue developer serial cmdline v1"

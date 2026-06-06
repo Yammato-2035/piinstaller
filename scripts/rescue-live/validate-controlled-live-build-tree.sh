@@ -118,6 +118,14 @@ grep -qx 'systemd' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list systemd"
 grep -qx 'systemd-sysv' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list systemd-sysv"
+grep -qx 'firmware-iwlwifi' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_missing "setuphelfer.list.chroot must list firmware-iwlwifi (MSI Intel WiFi)"
+grep -qx 'firmware-intel-sound' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_missing "setuphelfer.list.chroot must list firmware-intel-sound (Intel BT ibt firmware)"
+grep -qx 'network-manager' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_missing "setuphelfer.list.chroot must list network-manager (rescue WLAN menu)"
+grep -qx 'wireless-regdb' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_missing "setuphelfer.list.chroot must list wireless-regdb (WLAN regulatory domain)"
 grep -q 'XKBLAYOUT="de"' "$BUILD_ROOT/config/includes.chroot/etc/default/keyboard" \
   || fail_missing 'etc/default/keyboard must contain XKBLAYOUT="de"'
 grep -q 'KEYMAP=de-latin1' "$BUILD_ROOT/config/includes.chroot/etc/vconsole.conf" \
@@ -247,6 +255,17 @@ elif wants.is_symlink() or wants.exists():
     target = os.readlink(wants) if wants.is_symlink() else ""
     if target and target != "../setuphelfer-qemu-smoke-autopilot.service":
         errors.append(f"autopilot wants symlink target wrong: {target!r}")
+marker_svc = build_root / "config/includes.chroot/etc/systemd/system/setuphelfer-serial-boot-markers.service"
+if marker_svc.is_file():
+    marker_text = marker_svc.read_text(encoding="utf-8")
+    if "ConditionVirtualization=qemu" not in marker_text:
+        errors.append("serial-boot-markers.service missing ConditionVirtualization=qemu")
+    if "TTYPath=/dev/ttyS0" in marker_text:
+        errors.append("serial-boot-markers.service must not use TTYPath=/dev/ttyS0 on hardware")
+    if "StandardOutput=tty" in marker_text:
+        errors.append("serial-boot-markers.service must not force StandardOutput=tty")
+else:
+    errors.append("missing setuphelfer-serial-boot-markers.service in chroot overlay")
 if errors:
     for e in errors:
         print(f"DEVELOPER_QEMU: {e}", file=sys.stderr)

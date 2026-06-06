@@ -22,7 +22,8 @@ class RescueDeveloperSerialVisibilityTests(unittest.TestCase):
         text = _read(PREP)
         m = re.search(
             r'if \[\[ "\$\{RESCUE_BUILD_PROFILE\}" == "developer-qemu" \]\]; then\n'
-            r"(?:  #.*\n)?  LIVE_BOOTAPPEND='([^']+)'\nfi\n\nwrite_text_file \"\$\{BUILD_ROOT\}/auto/config\"",
+            r"(?:.*\n)*?"
+            r"  LIVE_BOOTAPPEND='([^']+)'\nfi\n\nwrite_text_file \"\$\{BUILD_ROOT\}/auto/config\"",
             text,
         )
         self.assertIsNotNone(m, "developer-qemu LIVE_BOOTAPPEND block")
@@ -34,12 +35,31 @@ class RescueDeveloperSerialVisibilityTests(unittest.TestCase):
         self.assertIn("loglevel=7", append)
         self.assertIn("systemd.log_level=debug", append)
 
+    def test_controlled_build_msi_firmware_packages_in_prepare(self) -> None:
+        text = _read(PREP)
+        for pkg in (
+            "firmware-iwlwifi",
+            "firmware-intel-sound",
+            "wireless-regdb",
+            "network-manager",
+        ):
+            self.assertIn(pkg, text, f"prepare must list {pkg} for MSI rescue WLAN/BT")
+
+    def test_validate_checks_msi_firmware_packages(self) -> None:
+        validate = _REPO / "scripts/rescue-live/validate-controlled-live-build-tree.sh"
+        text = _read(validate)
+        for pkg in ("firmware-iwlwifi", "firmware-intel-sound", "wireless-regdb", "network-manager"):
+            self.assertIn(f"'{pkg}'", text, f"validator must grep {pkg}")
+
     def test_serial_marker_scripts_exist(self) -> None:
         marker = QEMU_PROFILE / "includes.chroot/usr/local/sbin/setuphelfer-serial-boot-markers.sh"
         svc = QEMU_PROFILE / "includes.chroot/etc/systemd/system/setuphelfer-serial-boot-markers.service"
         self.assertTrue(marker.is_file())
         self.assertTrue(svc.is_file())
+        svc_text = _read(svc)
         self.assertIn("SETUPHELFER_BOOT_MARKER_START", _read(marker))
+        self.assertIn("ConditionVirtualization=qemu", svc_text)
+        self.assertNotIn("TTYPath=/dev/ttyS0", svc_text)
 
     def test_autopilot_serial_markers(self) -> None:
         text = _read(

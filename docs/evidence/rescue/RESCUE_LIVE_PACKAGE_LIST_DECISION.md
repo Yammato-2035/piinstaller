@@ -1,7 +1,7 @@
 # Rescue Live — Paketlisten-Entscheidung
 
-**Datum:** 2026-05-24
-**Git HEAD:** `0d211fc`
+**Datum:** 2026-06-06 (MSI-Firmware-Erweiterung)
+**Git HEAD:** `345187b` → Rebuild-Commit erwartet
 **Pfad:** `build/rescue/live-build/setuphelfer-rescue-live/config/package-lists/setuphelfer.list.chroot`
 
 ## Aktiv (minimal, konservativ)
@@ -16,18 +16,20 @@
 | iproute2 | `ip`, Routing |
 | iputils-ping | Netzwerk-Diagnose |
 | net-tools | Legacy-Netzwerk-Tools |
-| util-linux | Basis-Utilities |
-| lsblk | Blockgeräte read-only |
+| util-linux | Basis-Utilities inkl. `lsblk` |
 | smartmontools | SMART read-only |
 | python3 | Backend-Runtime |
 | python3-venv | venv im Bundle |
 | python3-pip | Pip-Fallback (minimal) |
+| firmware-iwlwifi | Intel WLAN (MSI i7 — iwlwifi-9000-…) |
+| firmware-intel-sound | Intel BT SFI (`intel/ibt-*`) |
+| wireless-regdb | WLAN-Regulatory-Domain |
+| network-manager | Rescue-WLAN-Menü (`nmcli`) |
 
 ## Bewusst NICHT aktiv (optional_later)
 
 | Paket | Grund |
 |-------|-------|
-| network-manager | Phase 1 nutzt **systemd-networkd** |
 | avahi-daemon | Kein mDNS-Zwang |
 | nginx | UI über lokalen Python/static server |
 | parted | **Kein Schreib-Gate** — Partition-Write blockiert |
@@ -38,7 +40,7 @@
 ## Netzwerk-Strategie
 
 - **systemd-networkd** mit DHCP auf `en*` und `eth*`
-- **WLAN:** nicht automatisch — optional_later, keine Passwörter/Secrets im Image
+- **WLAN:** `network-manager` + `firmware-iwlwifi` (MSI-Hardware-Pfad; kein apt zur Laufzeit)
 
 ## Setuphelfer-Dienste
 

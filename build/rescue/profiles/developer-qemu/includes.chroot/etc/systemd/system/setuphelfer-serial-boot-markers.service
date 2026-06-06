@@ -4,13 +4,14 @@ DefaultDependencies=no
 After=local-fs.target
 Before=basic.target
 ConditionPathExists=/usr/local/sbin/setuphelfer-serial-boot-markers.sh
+# QEMU lab only — real hardware (MSI rescue stick) has no usable ttyS0 for TTYPath.
+ConditionVirtualization=qemu
 
 [Service]
 Type=oneshot
 ExecStart=/usr/local/sbin/setuphelfer-serial-boot-markers.sh early
-StandardOutput=tty
-StandardError=tty
-TTYPath=/dev/ttyS0
+StandardOutput=journal
+StandardError=journal
 RemainAfterExit=yes
 NoNewPrivileges=true
 

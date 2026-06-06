@@ -1,65 +1,111 @@
 {
-  "schema_version": 5,
-  "classified_at": "2026-06-06T00:00:00+02:00",
-  "classification": "uefi_x64_iso_ready_for_usb_operator_write",
-  "iso_status": "uefi_x64_boot_ready",
+  "schema_version": 8,
+  "classified_at": "2026-06-06T15:22:00+02:00",
+  "classification": "msi_firmware_fix_workspace_ready_iso_rebuild_pending",
+  "iso_status": "uefi_x64_boot_ready_hardware_gaps_pending_firmware_rebuild",
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
   "iso_size_bytes": 558891008,
   "iso_sha256": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
-  "iso_sha256_build_pre_patch": "d008fb5ed4fbc0836a08d489434930bbbe3141b9b164b6a101a6eb438d11f94a",
+  "iso_sha256_previous": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
+  "iso_sha256_new": null,
+  "iso_rebuild_executed": false,
+  "iso_rebuild_blocked_reason": "blocked_requires_operator_sudo_policy",
   "iso_verified": true,
   "uefi_boot_ready": true,
   "uefi_validator": "scripts/rescue-live/validate-rescue-iso-uefi-boot.sh",
-  "uefi_validator_exit_code": 0,
+  "uefi_validator_exit_code": null,
+  "uefi_validator_exit_code_previous": 0,
   "uefi_signals": {
     "bios_eltorito": true,
     "efi_eltorito": true,
     "bootx64_efi": true,
     "boot_grub_efi_img": true
   },
-  "usb_write_status": "operator_required",
-  "usb_stick_written": "no",
-  "windows_inspect_status": "blocked_until_usb_boot",
+  "usb_write_status": "operator_completed_stale_iso",
+  "usb_stick_written": "yes",
+  "usb_restick_after_rebuild_required": true,
+  "usb_write_device": "/dev/sdb",
+  "usb_write_model": "Ultra Line",
+  "usb_write_serial": "24111412110212",
+  "usb_write_bytes": 558891008,
+  "usb_write_sha256_verified": true,
+  "usb_partition_probe_warning": "recursive_partition_warning_after_isohybrid_write",
+  "msi_uefi_boot_status": "partial_success",
+  "msi_laptop_booted_from_stick": true,
+  "target_laptop_booted_from_stick": true,
+  "target_uefi_boot_validated": true,
+  "target_live_system_partial": true,
+  "target_network_validated": false,
+  "target_telemetry_validated": false,
+  "msi_boot_observations": {
+    "uefi_menu_entry_visible": true,
+    "grub_or_rescue_started": true,
+    "intel_wifi_firmware_missing": true,
+    "intel_bt_firmware_missing": true,
+    "serial_boot_markers_service_failed": true,
+    "graphics_observed": true
+  },
+  "windows_inspect_status": "blocked_until_live_network_validated",
   "windows_inspect_executable": false,
-  "msi_uefi_previous_failure": "resolved_by_uefi_patch_pending_retest",
-  "target_uefi_boot_validated": false,
-  "msi_laptop_booted_from_stick": false,
-  "target_laptop_booted_from_stick": false,
+  "workspace_version": "1.7.4.2",
+  "live_runtime_version": "1.7.4.1",
+  "firmware_packages_in_build_tree": {
+    "firmware-iwlwifi": true,
+    "firmware-intel-sound": true,
+    "wireless-regdb": true,
+    "network-manager": true
+  },
+  "serial_markers_hardware_safe": true,
+  "serial_markers_fix": "ConditionVirtualization=qemu",
+  "network_manager_in_build_tree": true,
+  "nmcli_via_network_manager_package": true,
+  "intel_bt_firmware_coverage": "firmware-intel-sound_debian_package_not_host_verified",
   "blockers": [
     {
-      "id": "RESCUE_STICK_NOT_WRITTEN",
+      "id": "RESCUE_ISO_INTEL_WIFI_BT_FIRMWARE_MISSING",
       "severity": "critical",
-      "status": "blocked",
-      "description_de": "UEFI-ISO bereit — USB-Write nur durch Operator."
+      "status": "fix_in_workspace_iso_rebuild_pending",
+      "description_de": "Paketliste erweitert; ISO-Rebuild + Squashfs-Nachweis ausstehend."
     },
     {
-      "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
-      "severity": "critical",
-      "status": "blocked",
-      "description_de": "MSI/Windows-11-Laptop muss vom Stick booten, bevor Windows-Inspect."
+      "id": "RESCUE_SERIAL_BOOT_MARKERS_HARDWARE_INCOMPATIBLE",
+      "severity": "warning",
+      "status": "fix_in_workspace_iso_rebuild_pending",
+      "description_de": "QEMU-only Condition im Workspace; wirksam nach ISO-Rebuild."
     },
     {
-      "id": "WINDOWS_INSPECT_BLOCKED_UNTIL_USB_BOOT",
+      "id": "RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED",
+      "severity": "critical",
+      "status": "blocked",
+      "description_de": "Netzwerk/Telemetrie auf MSI noch nicht bestätigt."
+    },
+    {
+      "id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED",
       "severity": "critical",
       "status": "blocked",
       "code": "RESCUE-UEFI-005"
+    },
+    {
+      "id": "RESCUE_ISO_REBUILD_OPERATOR_SUDO_REQUIRED",
+      "severity": "critical",
+      "status": "blocked",
+      "description_de": "Stale root-owned binary/ + Policy-Gate LB_EXIT=30 — Operator sudo clean+build."
     }
   ],
   "resolved_blockers": [
+    "RESCUE_STICK_NOT_WRITTEN",
     "RESCUE_ISO_UEFI_X64_NOT_READY",
-    "RESCUE_UEFI_XORRISO_PATCH_FAILURE",
+    "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
     "RESCUE_USB_UEFI_BOOT_FAILURE_MSI_WINDOWS11"
   ],
-  "next_operator_step_de": "USB-Stick schreiben (dd), am MSI-Laptop UEFI booten, dann Windows-Inspect read-only.",
-  "next_operator_step_en": "Write USB stick (dd), UEFI boot on MSI laptop, then read-only Windows inspect.",
-  "next_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
-  "parallel_prompt_id": "DEVELOPER_DCC_CAPABILITY_OPERATOR_SMOKE",
+  "next_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION",
+  "next_prompt_after_iso_success": "RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD",
+  "alternate_next_prompt_on_build_failure": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_FAILURE_TRIAGE",
   "handoff_docs": [
-    "docs/evidence/runtime-results/rescue/RESCUE_USB_WRITE_OPERATOR_HANDOFF_FOR_WINDOWS_INSPECT.md",
-    "docs/evidence/windows-rescue/WINDOWS11_RESCUE_STICK_BOOT_AND_INSPECT_HANDOFF.md",
-    "docs/evidence/runtime-results/rescue/RESCUE_ISO_UEFI_PATCH_OPERATOR_RESULT.md"
+    "docs/evidence/runtime-results/rescue/RESCUE_ISO_MSI_FIRMWARE_SERIAL_MARKER_REBUILD_RESULT.md",
+    "docs/evidence/runtime-results/rescue/RESCUE_USB_MSI_BOOT_FIRMWARE_AND_SERIAL_MARKER_TRIAGE.md"
   ],
   "agent_usb_write_executed": false,
-  "agent_uefi_patch_executed": false,
-  "operator_uefi_patch_validated": true
+  "agent_iso_rebuild_executed": false,
+  "operator_iso_rebuild_required": true
 }
