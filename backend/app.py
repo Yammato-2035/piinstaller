@@ -4429,6 +4429,12 @@ class DevDashboardRescueIsoStepRequest(BaseModel):
     operator_confirm: bool = False
 
 
+class DevDashboardRescueUsbSelectionRequest(BaseModel):
+    selected_device: str
+    operator_confirmations: dict[str, bool] = {}
+    confirmation_phrase: str = ""
+
+
 class DevDashboardDeployRequest(BaseModel):
     operator_confirm: bool = False
 
@@ -4500,6 +4506,60 @@ async def dev_dashboard_rescue_iso_operator_commands_build(body: dict[str, Any] 
         return {"code": "DEV_DASHBOARD_RESCUE_ISO_OPERATOR_REQUIRED", **payload}
     except Exception:
         logger.exception("dev_dashboard_rescue_iso_operator_commands_build failed")
+        raise
+
+
+@app.get("/api/dev-dashboard/rescue-usb/candidates")
+async def dev_dashboard_rescue_usb_candidates():
+    """Read-only USB candidates for operator selection (Developer Toolbox)."""
+    from core.rescue_usb_operator_selection import build_usb_candidates_payload
+
+    try:
+        return build_usb_candidates_payload()
+    except Exception:
+        logger.exception("dev_dashboard_rescue_usb_candidates failed")
+        raise
+
+
+@app.get("/api/dev-dashboard/rescue-usb/selection")
+async def dev_dashboard_rescue_usb_selection_get():
+    from core.rescue_usb_operator_selection import EVIDENCE_REL, load_operator_selection_evidence
+
+    evidence = load_operator_selection_evidence()
+    return {
+        "status": "ok",
+        "evidence_present": evidence is not None,
+        "evidence_path": EVIDENCE_REL,
+        "selection": evidence,
+        "dd_execution_allowed": False,
+        "secrets_exposed": False,
+    }
+
+
+@app.post("/api/dev-dashboard/rescue-usb/selection")
+async def dev_dashboard_rescue_usb_selection_post(body: DevDashboardRescueUsbSelectionRequest):
+    from core.rescue_usb_operator_selection import evaluate_operator_submission, save_operator_selection_evidence
+
+    try:
+        record = evaluate_operator_submission(
+            selected_device=body.selected_device,
+            operator_confirmations=body.operator_confirmations,
+            confirmation_phrase=body.confirmation_phrase,
+        )
+        path = save_operator_selection_evidence(record)
+        return {
+            "status": "ok",
+            "code": "RESCUE_USB_OPERATOR_SELECTION_SAVED",
+            "evidence_path": EVIDENCE_REL,
+            "write_allowed": record.get("write_allowed"),
+            "generated_dd_command": record.get("generated_dd_command"),
+            "blockers": record.get("blockers"),
+            "selection": record,
+            "dd_execution_allowed": False,
+            "secrets_exposed": False,
+        }
+    except Exception:
+        logger.exception("dev_dashboard_rescue_usb_selection_post failed")
         raise
 
 

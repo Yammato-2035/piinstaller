@@ -63,6 +63,15 @@ export const DccCompactOverviewPanel: React.FC<DccCompactOverviewPanelProps> = (
       tone: compact?.rescue?.usb_mount_detected ? 'green' : 'yellow',
     },
     {
+      label: t('devDashboard.compact.usbSelection', 'USB-Auswahl'),
+      value: compact?.rescue?.usb_operator?.operator_selection_present
+        ? compact?.rescue?.usb_operator?.destructive_write_allowed
+          ? 'freigegeben'
+          : 'offen'
+        : 'fehlt',
+      tone: compact?.rescue?.usb_operator?.destructive_write_allowed ? 'green' : 'yellow',
+    },
+    {
       label: t('devDashboard.compact.targetBoot', 'MSI/W11 Boot'),
       value: compact?.rescue?.target_boot_validated ? 'bestätigt' : 'offen',
       tone: compact?.rescue?.target_boot_validated ? 'green' : 'red',

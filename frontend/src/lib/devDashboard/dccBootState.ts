@@ -6,6 +6,7 @@ import {
 
 export type DccBootState =
   | 'dcc_active'
+  | 'dcc_token_required'
   | 'profile_blocked_release'
   | 'api_unreachable'
   | 'api_error'
@@ -83,6 +84,15 @@ export function classifyDccBootState(
     (statusCode === 'DEVELOPER_CAPABILITY_REQUIRED' ||
       statusCode === 'DEVELOPER_CAPABILITY_NOT_CONFIGURED')
   ) {
+    const configured = versionPayload?.developer_capability_configured === true
+    if (statusCode === 'DEVELOPER_CAPABILITY_REQUIRED' && configured) {
+      return {
+        state: 'dcc_token_required',
+        shouldShowDcc: true,
+        dccExpectedVisible: true,
+        reason: statusCode,
+      }
+    }
     return {
       state: 'profile_blocked_release',
       shouldShowDcc: false,

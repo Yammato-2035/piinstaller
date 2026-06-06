@@ -81,13 +81,23 @@ class DeployRuntimeVerifyTests(unittest.TestCase):
         self.assertFalse(out["ok"])
         self.assertIn("/api/dev-dashboard/compact-status", out["missing_paths"])
 
-    def test_verify_openapi_paths_ok_when_route_registered(self) -> None:
-        payload = {"paths": {"/api/dev-dashboard/compact-status": {"get": {}}}}
+    def test_openapi_paths_requires_rescue_usb_routes(self) -> None:
+        payload = {
+            "paths": {
+                "/api/dev-dashboard/compact-status": {"get": {}},
+                "/api/dev-dashboard/capability-status": {"get": {}},
+                "/api/dev-dashboard/rescue-usb/candidates": {"get": {}},
+                "/api/dev-dashboard/rescue-usb/selection": {"get": {}, "post": {}},
+            }
+        }
         with patch("urllib.request.urlopen") as mock_open:
             mock_open.return_value.__enter__.return_value.read.return_value = json.dumps(payload).encode()
             out = drv.verify_openapi_paths(base_url="http://127.0.0.1:8000")
         self.assertTrue(out["ok"])
         self.assertEqual(out["missing_paths"], [])
+
+    def test_manifest_includes_rescue_usb_operator_module(self) -> None:
+        self.assertIn("backend/core/rescue_usb_operator_selection.py", dm.DEPLOY_MANIFEST_REL_PATHS)
 
     def test_run_post_rsync_verify_combines_checks(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -102,7 +112,11 @@ class DeployRuntimeVerifyTests(unittest.TestCase):
                 p.write_bytes(b"x\n")
             app = rt / "backend" / "app.py"
             app.write_text(
-                '@app.get("/api/dev-dashboard/compact-status")\nfrom core.dev_dashboard_compact_status import build_compact_dcc_status\n',
+                '@app.get("/api/dev-dashboard/compact-status")\n'
+                'from core.dev_dashboard_compact_status import build_compact_dcc_status\n'
+                '@app.get("/api/dev-dashboard/rescue-usb/candidates")\n'
+                'from core.rescue_usb_operator_selection import build_usb_candidates_payload\n'
+                '@app.get("/api/dev-dashboard/rescue-usb/selection")\n',
                 encoding="utf-8",
             )
             out = drv.run_post_rsync_verify(workspace_root=ws, runtime_root=rt)

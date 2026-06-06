@@ -31,6 +31,16 @@ export type DccCompactStatus = {
     usb_mount_detected?: boolean
     usb_mount_path?: string | null
     target_boot_validated?: boolean
+    usb_operator?: {
+      usb_detected?: boolean
+      old_rescue_stick_detected?: boolean
+      operator_selection_present?: boolean
+      operator_selection_device?: string | null
+      destructive_write_allowed?: boolean
+      dd_execution_allowed?: boolean
+      blockers?: string[]
+      next_step?: string
+    }
   }
   blockers?: string[]
   next_operator_action?: string

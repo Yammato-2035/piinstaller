@@ -102,6 +102,22 @@ def build_compact_dcc_status(
         if isinstance(item, dict) and item.get("id"):
             blockers.append(str(item["id"]))
 
+    usb_operator: dict[str, Any] = {}
+    try:
+        from core.rescue_usb_operator_selection import (
+            build_compact_usb_operator_summary,
+            build_operator_gate_blockers,
+            load_operator_selection_evidence,
+        )
+
+        usb_operator = build_compact_usb_operator_summary()
+        evidence = load_operator_selection_evidence()
+        for code in build_operator_gate_blockers(evidence):
+            if code not in blockers:
+                blockers.append(code)
+    except Exception:
+        usb_operator = {"usb_detected": False, "operator_selection_present": False, "destructive_write_allowed": False}
+
     exposure: dict[str, Any] = {}
     try:
         exposure = _deploy_exposure_summary()
@@ -144,6 +160,7 @@ def build_compact_dcc_status(
             "usb_mount_path": usb_mount.get("mount_path"),
             "target_boot_validated": gate.get("target_laptop_booted_from_stick") is True,
             "windows_inspect_executable": gate.get("windows_inspect_executable") is True,
+            "usb_operator": usb_operator,
         },
         "blockers": blockers,
         "next_operator_action": str(next_action),

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-06-07T09:15:00Z",
+  "workspace_head_short": "pending_commit",
+  "runtime_project_version": "1.7.3.1",
+  "target_project_version": "1.7.4.0",
+  "root_cause_primary": "not_deployed",
+  "root_cause_classification": {
+    "not_deployed": true,
+    "token_file_missing": false,
+    "browser_token_missing": "possible_until_localStorage_set",
+    "header_not_sent": "fixed_via_fetchDccApi",
+    "rescue_usb_not_in_allowlist": false,
+    "frontend_bundle_old": "until_deploy_frontend",
+    "opt_not_sync": true,
+    "openapi_missing_rescue_usb": true
+  },
+  "live_checks": {
+    "token_len": 64,
+    "capability_without_token_http": 200,
+    "capability_with_token_dcc_visible": true,
+    "rescue_usb_candidates_with_token_http": 404,
+    "telemetry_health_http": 200,
+    "openapi_rescue_usb_registered": false
+  },
+  "fix_applied": [
+    "version_bump_1.7.4.0",
+    "deploy_manifest_rescue_usb_paths",
+    "deploy_runtime_verify_openapi_rescue_usb",
+    "dcc_token_required_compact_shell",
+    "always_fetch_compact_status"
+  ],
+  "deploy_required": true,
+  "deploy_executed_in_session": false,
+  "next_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
+  "secrets_exposed": false
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "selected_device": null,
+  "selected_model": null,
+  "selected_serial": null,
+  "selected_size": null,
+  "previous_label": null,
+  "previous_fstype": null,
+  "previous_mountpoints": [],
+  "iso_path": null,
+  "iso_sha256": null,
+  "operator_confirmations": {},
+  "confirmation_phrase_matched": false,
+  "write_allowed": false,
+  "generated_dd_command": null,
+  "created_at": null,
+  "secrets_exposed": false,
+  "dd_execution_allowed": false,
+  "blockers": [
+    "RESCUE_USB_OPERATOR_SELECTION_REQUIRED",
+    "RESCUE_USB_DESTRUCTIVE_WRITE_NOT_CONFIRMED"
+  ]
+}

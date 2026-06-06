@@ -340,13 +340,33 @@ def _controlled_iso_build(repo: Path, iso_artifact: dict[str, Any]) -> dict[str,
 
 
 def _usb_write_gate() -> dict[str, Any]:
+    summary = "USB write blocked — separate operator gate required"
+    write_allowed = False
+    selection_device = None
+    generated_dd_command = None
+    try:
+        from core.rescue_usb_operator_selection import load_operator_selection_evidence
+
+        evidence = load_operator_selection_evidence()
+        if evidence:
+            write_allowed = evidence.get("write_allowed") is True
+            selection_device = evidence.get("selected_device")
+            generated_dd_command = evidence.get("generated_dd_command")
+            if write_allowed:
+                summary = (
+                    "Operator selection complete — copy generated dd command manually; DCC does not execute dd."
+                )
+    except Exception:
+        pass
     return {
-        "status": "red",
-        "usb_write_allowed": False,
+        "status": "green" if write_allowed else "red",
+        "usb_write_allowed": write_allowed,
         "dd_allowed": False,
         "mkfs_allowed": False,
         "parted_write_allowed": False,
-        "summary": "USB write blocked — separate operator gate required",
+        "operator_selection_device": selection_device,
+        "generated_dd_command": generated_dd_command,
+        "summary": summary,
     }
 
 

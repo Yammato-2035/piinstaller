@@ -82,4 +82,21 @@ describe('dccBootState', () => {
   it('classifies null probe as boot_loading when bundle ok', () => {
     expect(classifyDccBootState(null, true)).toMatchObject({ state: 'boot_loading' })
   })
+
+  it('shows compact shell when capability configured but browser token missing', () => {
+    expect(
+      classifyDccBootState(
+        probe({
+          statusHttp: 404,
+          statusCode: 'DEVELOPER_CAPABILITY_REQUIRED',
+          versionPayload: {
+            install_profile: 'release',
+            dev_control_enabled: false,
+            developer_capability_configured: true,
+          },
+        }),
+        true,
+      ),
+    ).toMatchObject({ state: 'dcc_token_required', shouldShowDcc: true })
+  })
 })

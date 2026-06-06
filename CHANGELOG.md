@@ -7,6 +7,16 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Added
+
+- **DCC Developer Toolbox — USB Operator Selection:** Read-only USB-Geräteliste, Pflicht-Checkboxen, Textphrase, Evidence (`usb_operator_selection_latest.json`), Operator-`dd`-Befehl ohne Ausführung; Blocker `RESCUE_USB_OPERATOR_SELECTION_REQUIRED` u.a.
+- **DCC Sichtbarkeit:** `dcc_token_required`-Modus — Compact-Cockpit + Token-Banner wenn Capability konfiguriert, Browser-Token fehlt.
+
+### Changed
+
+- **Version 1.7.4.0:** Funktionsänderung (3. Stelle); Cargo/Tauri semver **1.7.4**.
+- **Deploy-Verifikation:** Manifest/OpenAPI-Pflicht für `rescue-usb/candidates` und `rescue-usb/selection`.
+
 ---
 
 ## [1.7.3.1] — 2026-06-05

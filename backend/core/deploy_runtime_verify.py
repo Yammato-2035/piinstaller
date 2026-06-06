@@ -21,6 +21,7 @@ from core.deploy_manifest import DEPLOY_MANIFEST_REL_PATHS
 DEPLOY_RUNTIME_EXTRA_BACKEND_PATHS: tuple[str, ...] = (
     "backend/core/dev_dashboard_compact_status.py",
     "backend/core/developer_capability.py",
+    "backend/core/rescue_usb_operator_selection.py",
     "backend/core/dev_dashboard_status_service.py",
     "backend/core/profile_deploy_manifest.py",
     "backend/core/rescue_telemetry_ingest.py",
@@ -36,10 +37,15 @@ DEPLOY_RUNTIME_CRITICAL_REL_PATHS: tuple[str, ...] = tuple(
 
 DEPLOY_OPENAPI_REQUIRED_PATHS: tuple[str, ...] = (
     "/api/dev-dashboard/compact-status",
+    "/api/dev-dashboard/capability-status",
+    "/api/dev-dashboard/rescue-usb/candidates",
+    "/api/dev-dashboard/rescue-usb/selection",
 )
 
 APP_ROUTE_MARKERS: tuple[tuple[str, str], ...] = (
     ("/api/dev-dashboard/compact-status", "dev_dashboard_compact_status"),
+    ("/api/dev-dashboard/rescue-usb/candidates", "rescue_usb_operator_selection"),
+    ("/api/dev-dashboard/rescue-usb/selection", "rescue_usb_operator_selection"),
 )
 
 

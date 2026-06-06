@@ -10,6 +10,7 @@ import { CockpitBackupProgressPanel } from '../components/dev-dashboard/CockpitB
 import { CockpitBackupTargetPanel } from '../components/dev-dashboard/CockpitBackupTargetPanel'
 import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel'
 import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
+import { RescueUsbOperatorToolbox } from '../components/dev-dashboard/RescueUsbOperatorToolbox'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
 import { WindowsRescueInspectCard } from '../components/dev-dashboard/WindowsRescueInspectCard'
 import { NotificationPanel } from '../components/dev-dashboard/NotificationPanel'
@@ -116,6 +117,40 @@ type DevControlDisabledDebug = {
     runtime_ports?: unknown
   } | null
   liveStatus?: DccLiveStatusSnapshot | null
+}
+
+export const DccLocalTokenInline: React.FC<{ onSaved?: () => void }> = ({ onSaved }) => {
+  const { t } = useTranslation()
+  const [tokenDraft, setTokenDraft] = useState(() => readStoredDccDeveloperToken() ?? '')
+  const saveToken = () => {
+    writeStoredDccDeveloperToken(tokenDraft.trim() || null)
+    onSaved?.()
+  }
+  return (
+    <div className="mt-3 flex flex-wrap items-end gap-2" data-testid="dcc-local-token-inline">
+      <label className="block text-left text-slate-300 text-xs flex-1 min-w-[200px]">
+        <span className="text-[10px] uppercase tracking-wide">
+          {t('devDashboard.profileDisabled.localToken', 'Lokaler DCC-Token (nur Browser)')}
+        </span>
+        <input
+          type="password"
+          autoComplete="off"
+          className="mt-1 w-full rounded border border-slate-600 bg-slate-950 px-2 py-1 text-xs text-white"
+          value={tokenDraft}
+          onChange={(e) => setTokenDraft(e.target.value)}
+          data-testid="dcc-local-token-input"
+        />
+      </label>
+      <button
+        type="button"
+        className="rounded bg-violet-700/80 px-3 py-1.5 text-xs text-white"
+        onClick={saveToken}
+        data-testid="dcc-local-token-save"
+      >
+        {t('devDashboard.profileDisabled.saveToken', 'Token speichern')}
+      </button>
+    </div>
+  )
 }
 
 export const DevControlDisabledPage: React.FC<{
@@ -328,12 +363,10 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       const versionInfo = versionPayload as DccGateVersionInfo | null
       const live = await fetchDccLiveStatus(versionInfo)
       let compact: DccCompactStatus | null = null
-      if (statusHttpStatus === 200) {
-        setCompactLoading(true)
-        const compactResp = await fetchDccCompactStatus()
-        compact = compactResp.body
-        setCompactLoading(false)
-      }
+      setCompactLoading(true)
+      const compactResp = await fetchDccCompactStatus()
+      compact = compactResp.body
+      setCompactLoading(false)
 
       const probe: DccBootProbeResult = {
         versionHttp: versionHttpStatus,
@@ -459,6 +492,11 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
         return (
           <>
             <WindowsRescueInspectCard planningOnly />
+            <RescueUsbOperatorToolbox
+              compactUsbOperator={compactStatus?.rescue?.usb_operator}
+              developerCapabilityValid={compactStatus?.developer_capability?.valid}
+              dccVisible={compactStatus?.dcc_visible}
+            />
             <RescueDeveloperPipelineCard summary={summary} />
             <RescueStickBoard dashboard={mon.dashboard} />
             <RescueBuildPanel refreshSec={mon.refreshSec} />
@@ -550,6 +588,8 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       return <DevControlDisabledPage debug={disabledDebug} onRetry={retryGate} retryDisabled={gateLoading} />
     }
 
+    const tokenRequired = state === 'dcc_token_required'
+
     if (state === 'api_unreachable') {
       return renderBlockedShell(
         'dcc-api-unreachable',
@@ -593,6 +633,23 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
 
     return (
     <div className="max-w-[1600px] mx-auto px-4 py-5" data-testid="external-development-control-center">
+      {tokenRequired ? (
+        <div
+          className="mb-4 rounded-xl border border-amber-700/50 bg-amber-950/25 p-4"
+          data-testid="dcc-token-required-banner"
+        >
+          <p className="text-sm font-semibold text-amber-100">
+            {t('devDashboard.tokenRequired.title', 'Developer-Token erforderlich')}
+          </p>
+          <p className="mt-1 text-xs text-amber-200/90">
+            {t(
+              'devDashboard.tokenRequired.body',
+              'Lokalen DCC-Token speichern (Header X-Setuphelfer-Developer-Token), dann erneut laden. USB-Toolbox und Status-Routen bleiben ohne Token blockiert.',
+            )}
+          </p>
+          <DccLocalTokenInline onSaved={retryGate} />
+        </div>
+      ) : null}
       <DccCompactOverviewPanel
         compact={compactStatus}
         loading={compactLoading}

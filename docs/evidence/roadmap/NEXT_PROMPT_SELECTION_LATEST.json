@@ -1,32 +1,25 @@
 {
-  "schema_version": 8,
-  "selected_at": "2026-06-07T00:55:00+02:00",
-  "selected_prompt_id": "RESCUE_USB_BOOT_AND_WINDOWS_INSPECT_OPERATOR_RUN",
-  "parallel_prompt_id": "DEVELOPER_DCC_FULL_ROUTE_CAPABILITY_AUDIT",
-  "reason_de": "DCC deploy_drift Gate-Trennung + compact-status implementiert. Rescue-ISO UEFI-ready; USB-Stick/Mount erkennbar; MSI/W11-Boot und Windows-Inspect als nächster Operator-Lauf.",
-  "reason_en": "DCC deploy drift gate split and compact status implemented. Rescue ISO UEFI-ready; USB mount detectable; MSI/W11 boot and Windows inspect next operator run.",
+  "schema_version": 9,
+  "selected_at": "2026-06-07T09:20:00+02:00",
+  "selected_prompt_id": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
+  "parallel_prompt_id": "DEVELOPER_DCC_USB_TOOLBOX_VISIBILITY_ROUTE_GATE_AND_VERSION_FIX",
+  "reason_de": "USB Operator Selection im Workspace; nach Deploy 1.7.4.0 und Token-Freigabe manueller Stick-Write (kein dd aus DCC).",
+  "reason_en": "USB operator selection in workspace; after deploy 1.7.4.0 and token approval manual stick write (no dd from DCC).",
   "tracks": [
     {
-      "id": "rescue_usb_boot_windows_inspect",
+      "id": "rescue_usb_operator_write",
       "status": "yellow",
       "priority": "P0",
-      "classification": "uefi_iso_ready_usb_mount_detectable",
-      "next_step": "RESCUE_USB_BOOT_AND_WINDOWS_INSPECT_OPERATOR_RUN",
+      "next_step": "RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT",
       "evidence": [
-        "docs/evidence/dev-dashboard/DEVELOPER_DCC_CAPABILITY_GATE_AND_COMPACT_STATUS_FIX_RESULT.md",
-        "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"
+        "docs/evidence/dev-dashboard/DEVELOPER_DCC_USB_TOOLBOX_VISIBILITY_ROUTE_GATE_AND_VERSION_FIX_RESULT.md",
+        "docs/evidence/runtime-results/rescue/usb_operator_selection_latest.json"
       ]
-    },
-    {
-      "id": "developer_dcc_full_route_audit",
-      "status": "yellow",
-      "priority": "P2",
-      "next_step": "DEVELOPER_DCC_FULL_ROUTE_CAPABILITY_AUDIT"
     }
   ],
   "governance_rules": {
-    "developer_capability_exempt_from_profile_exposure_drift": true,
+    "no_automatic_dd": true,
     "dcc_compact_status_default_ui": true,
-    "no_secrets_in_dcc": true
+    "no_secrets_in_evidence": true
   }
 }

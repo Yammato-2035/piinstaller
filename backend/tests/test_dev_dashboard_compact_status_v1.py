@@ -45,6 +45,10 @@ class CompactStatusCoreTests(unittest.TestCase):
         self.assertNotIn("hidden-token-value", dumped)
         self.assertTrue(body.get("compact"))
         self.assertTrue(body.get("dcc_visible"))
+        rescue = body.get("rescue") or {}
+        usb_op = rescue.get("usb_operator") or {}
+        self.assertIn("usb_detected", usb_op)
+        self.assertIn("destructive_write_allowed", usb_op)
 
 
 @unittest.skipUnless(_HAS_TC, "FastAPI TestClient nicht verfügbar")
