@@ -93,8 +93,11 @@ Prüfung: `runtime_gate.passed` true und `deploy_drift.status` green in `/api/de
 
 ```bash
 sudo ./scripts/deploy-to-opt.sh /home/volker/piinstaller
-sudo systemctl restart setuphelfer-backend.service
 ```
+
+Das Skript startet Backend und Web-UI neu und führt Post-Deploy-Verifikation aus. Allgemeine Doku: [RUNTIME_OPT_DEPLOY_FAQ_DE.md](../faq/RUNTIME_OPT_DEPLOY_FAQ_DE.md), KB [DEPLOY_TO_OPT_RUNTIME_SYNC.md](../knowledge-base/deploy/DEPLOY_TO_OPT_RUNTIME_SYNC.md).
+
+**DCC-/Dev-Server-spezifische Notizen (intern):** [internal/README.md](./internal/README.md)
 
 Manifest erzeugen (Workspace):
 

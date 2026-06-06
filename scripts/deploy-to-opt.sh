@@ -50,6 +50,29 @@ wait_for_backend_api() {
   return 1
 }
 
+run_deploy_runtime_verify() {
+  local phase="$1"
+  local verify_py="$SOURCE_DIR/backend/tools/verify_deploy_to_opt.py"
+  local py="python3"
+  if [ -x "$SOURCE_DIR/backend/venv/bin/python3" ]; then
+    py="$SOURCE_DIR/backend/venv/bin/python3"
+  elif [ -x "$INSTALL_DIR/backend/venv/bin/python3" ]; then
+    py="$INSTALL_DIR/backend/venv/bin/python3"
+  fi
+  if [ ! -f "$verify_py" ]; then
+    warn "Deploy-Verifikation übersprungen (verify_deploy_to_opt.py fehlt in Quelle)."
+    return 0
+  fi
+  info "Deploy-Verifikation ($phase): kritische Backend-Dateien und Routen…"
+  if "$py" "$verify_py" --workspace "$SOURCE_DIR" --runtime "$INSTALL_DIR" --phase "$phase" --base-url "http://127.0.0.1:8000"; then
+    ok "Deploy-Verifikation ($phase) bestanden"
+    return 0
+  fi
+  err "Deploy-Verifikation ($phase) fehlgeschlagen — neue Backend-Module oder OpenAPI-Routen fehlen in /opt."
+  err "Prüfe Quelle: $SOURCE_DIR (git HEAD, uncommitted Dateien) und journalctl -u setuphelfer-backend.service"
+  return 1
+}
+
 write_backend_workspace_dropin() {
   local ws_root="$1"
   local dropin_dir="$SYSTEMD_DIR/setuphelfer-backend.service.d"
@@ -154,6 +177,7 @@ rsync -a --exclude='.git' \
 find "$INSTALL_DIR" -type f -name "*.sh" -exec chmod +x {} \;
 find "$INSTALL_DIR/scripts" -maxdepth 1 -type f -name "serve-frontend-production.py" -exec chmod +x {} \; 2>/dev/null || true
 ok "Dateien kopiert"
+run_deploy_runtime_verify post-rsync || exit 1
 
 # Backend Venv (als root anlegen, dann chown – Service braucht keine Schreibrechte in venv außer pip cache)
 info "Backend Virtual Environment..."
@@ -284,6 +308,7 @@ else
 fi
 ok "Services gestartet (setuphelfer-backend, setuphelfer)"
 wait_for_backend_api || exit 1
+run_deploy_runtime_verify post-restart || exit 1
 
 # Startmenü-Einträge (Anwendungen)
 if [ -f "$INSTALL_DIR/scripts/install-desktop-entries.sh" ]; then

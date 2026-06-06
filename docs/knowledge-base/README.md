@@ -60,6 +60,8 @@ Neue Themen: eigene Datei unter `knowledge-base/` oder Abschnitt in der APT-FAQ 
 | [recovery/RESCUE_SANDBOX_CONTROLLED_COPY.md](recovery/RESCUE_SANDBOX_CONTROLLED_COPY.md) | **Rescue Sandbox Controlled Copy:** Ausfuehrung der Copy-Plaene nur unter `build/rescue/sandbox/`, SHA256-Verify, Seal, Final-Gate; kein ISO/Build |
 | [recovery/RESCUE_BUILD_ENVIRONMENT_EMULATION.md](recovery/RESCUE_BUILD_ENVIRONMENT_EMULATION.md) | **Rescue Build Environment Emulation:** Debian-Live-Build-Umgebung simuliert (Snapshot, Workspace, Outputs-Metadaten, Logs, Overlay); kein live-build/ISO |
 | [deploy/DEPLOY_PLAN.md](deploy/DEPLOY_PLAN.md) | **Deploy-Plan:** Neuaufsetzen ohne nutzbares Backup — nur Analyse, keine Installation/Schreibzugriffe |
+| [deploy/DEPLOY_TO_OPT_RUNTIME_SYNC.md](deploy/DEPLOY_TO_OPT_RUNTIME_SYNC.md) | **Betrieb:** Workspace → `/opt/setuphelfer` via `deploy-to-opt.sh`; fehlende Backend-Module, Post-Deploy-Verify, Manifest-Whitelist (ohne DCC/Dev-Server) |
+| [CHAT_ZUSAMMENFASSUNG_DEPLOY_TO_OPT_2026-06.md](CHAT_ZUSAMMENFASSUNG_DEPLOY_TO_OPT_2026-06.md) | **Session-Protokoll:** Deploy-to-opt Runtime-Sync-Fix (Verlauf + Verweise) |
 | [deploy/DEPLOY_EXECUTE_PREP.md](deploy/DEPLOY_EXECUTE_PREP.md) | **Deploy Execute Prep:** Session-/Token-/Plan-/Profil-Bindung mit NO-OP-Readiness, ohne Installation |
 | [deploy/DEPLOY_PREVIEW.md](deploy/DEPLOY_PREVIEW.md) | **Deploy Preview:** Sessiongebundene Deploy-Simulation ohne Schreib-/Installationsaktionen |
 | [deploy/DEPLOY_SOURCE_REGISTRY.md](deploy/DEPLOY_SOURCE_REGISTRY.md) | **Deploy Source Registry:** Quellenkatalog mit Metadaten- und Kompatibilitätsbewertung ohne Downloads/Installationen |

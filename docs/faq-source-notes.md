@@ -269,4 +269,14 @@
 - **Panda-Bilder (Kontext):** `frontend/src/assets/pandas/*.png` (z. B. backup, cloud, install) – ergänzen zu `PandaCompanion` / Strips.
 - **Nutzerdoku:** `docs/user/GUIDED_UX_AND_COMPANION.md`; in-App **Dokumentation** → Dashboard + FAQ (Erfahrungslevel, Begleiter, Einsteigerpfad).
 
+## Runtime /opt — Fehlende Backend-Dateien nach Deploy
+
+- Thema: Neue API-Route liefert 404, obwohl Code im Workspace committed ist; `/opt/setuphelfer` fehlt Modul oder weicht per SHA256 ab.
+- Problem: Produktive Runtime läuft aus `/opt`, nicht aus dem Workspace.
+- Ursache: Deploy nicht ausgeführt oder veraltete Quelle; **nicht** rsync-Exclude auf `backend/core`. Zusätzlich: Deploy-Manifest-Whitelist unvollständig, keine Post-Deploy-Verifikation.
+- Lösung: `deploy-to-opt.sh` mit Post-Verify; `verify_deploy_to_opt.py`; erweiterte `DEPLOY_MANIFEST_REL_PATHS`.
+- FAQ-Kandidat: ja → `docs/faq/RUNTIME_OPT_DEPLOY_FAQ_DE.md`
+- KB: `docs/knowledge-base/deploy/DEPLOY_TO_OPT_RUNTIME_SYNC.md`
+- DCC/Dev-Server-Details: **nicht** in FAQ/KB — `docs/dev-dashboard/internal/`
+
 
