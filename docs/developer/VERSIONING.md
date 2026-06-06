@@ -4,24 +4,44 @@
 
 ## Versionsnummer (X.Y.Z.W)
 
-Die Versionsnummer folgt dem Schema **X.Y.Z.W**:
+Die Versionsnummer folgt dem Schema **X.Y.Z.W** (vier Stellen):
 
-| Teil | Bedeutung | Erhöhung bei |
-|------|-----------|--------------|
-| **X** | Hauptversion | Gravierende Änderungen, inkompatible Umbrüche |
-| **Y** | Nebenversion | Größere Releases, strategische Erweiterungen |
-| **Z** | Neue Features | **Wird erhöht, wenn ein neues Feature hinzukommt** (z. B. neuer Bereich wie Kino/Streaming, neue Hauptfunktion). W wird auf 0 gesetzt. |
-| **W** | Patch | Bugfixes, kleine Ergänzungen, UI-Anpassungen, Dokumentation (ohne neues Feature) |
+| Stelle | Bedeutung | Erhöhung bei |
+|--------|-----------|--------------|
+| **X** (1.) | Hauptversion / öffentliches Release | Erst nach abgeschlossener Betatestphase und öffentlichem Release |
+| **Y** (2.) | Neuer Bereich / strategische Erweiterung | Neuer Produktbereich oder große thematische Erweiterung |
+| **Z** (3.) | Funktionsversion | Neue oder geänderte Funktionsversion (Feature, größere fachliche Erweiterung); **W → 0** |
+| **W** (4.) | Patch | Fehlerbehebung, kleine Ergänzungen, UI-/Doku-Korrekturen ohne neue Funktionsversion |
+
+### Kurzregel (verbindlich)
+
+- **Fehlerbehebung** → **W** erhöhen (z. B. `1.7.3.0` → `1.7.3.1`)
+- **Neue/geänderte Funktionsversion** → **Z** erhöhen, W auf 0 (z. B. `1.7.3.1` → `1.7.4.0`)
+- **Neuer Bereich** → **Y** erhöhen (z. B. `1.7.4.0` → `1.8.0.0`)
+- **Öffentliches Release nach Betatest** → **X** erhöhen (selten; gesondert abstimmen)
 
 ## Wann wird die Version erhöht?
 
-Die Versionsnummer wird **bei jeder Änderung** angepasst:
+Die Versionsnummer wird **bei jeder inhaltlich relevanten Änderung** angepasst:
 
-- **Bugfix** → W erhöhen (z. B. 1.0.1.3 → 1.0.1.4)
-- **Ergänzung** (kleine neue Option, neues Feld, neuer Hinweis, ohne neues Feature) → W erhöhen
-- **Neues Feature** (neuer Bereich, neue Hauptfunktion, z. B. Kino/Streaming) → **Z erhöhen, W auf 0 setzen** (z. B. 1.0.1.17 → 1.0.2.0)
+- **Bugfix** → W erhöhen (z. B. 1.7.3.0 → 1.7.3.1)
+- **Ergänzung** (kleine neue Option, neues Feld, neuer Hinweis, ohne neue Funktionsversion) → W erhöhen
+- **Neues Feature / geänderte Funktionsversion** → **Z erhöhen, W auf 0 setzen** (z. B. 1.7.3.1 → 1.7.4.0)
+- **Neuer Bereich** → Y erhöhen, Z und W auf 0
 - **Dokumentations- oder Texte-Anpassung** (sofern inhaltlich relevant) → W erhöhen
 - **Reine Refactorings ohne sichtbare Änderung** → optional W erhöhen, um den Stand nachvollziehbar zu machen
+
+### Gate (Pflicht)
+
+Nach jedem Versionsbump müssen alle abgeleiteten Quellen konsistent sein:
+
+```bash
+cd frontend && node sync-version.js
+python3 backend/tools/check_version_consistency.py --repo-root .
+./scripts/check-backend-version-gate.sh   # nach Deploy: auch /opt + /api/version
+```
+
+Inkonsistenz (z. B. `frontend/package.json` ≠ `config/version.json`) blockiert das Backend-Version-Gate (Exit **17** Workspace, **18** Runtime).
 
 So bleibt jeder Stand (z. B. aus Git) einer konkreten Version zugeordnet.
 
@@ -35,10 +55,11 @@ So bleibt jeder Stand (z. B. aus Git) einer konkreten Version zugeordnet.
 - **Einzige Quelle der Wahrheit:** `config/version.json` im Projektroot (Feld `version`, z. B. `"1.3.8.0"`). Nur diese Datei anpassen – alle anderen werden daraus abgeleitet.
 - **Backend:** Liest die Version aus `config/version.json` (Fallback: `VERSION`) für z. B. `/api/version`.
 - **Frontend:** `frontend/package.json` → Feld `version` (wird von `sync-version.js` aus `config/version.json` geschrieben).
+- **Frontend lock:** `frontend/package-lock.json` → Root-Paket `version` (ebenfalls via `sync-version.js`).
 - **Tauri (Desktop-App):** `frontend/src-tauri/tauri.conf.json` und `Cargo.toml` (wird von `sync-version.js` geschrieben; nur X.Y.Z für Semver).
 - **VERSION:** Wird von `sync-version.js` aus `config/version.json` mitgeschrieben (für Skripte und Abwärtskompatibilität).
 
-**Synchronisation:** Das Skript `frontend/sync-version.js` liest **nur** `config/version.json` und schreibt die Version nach `package.json`, `tauri.conf.json`, `Cargo.toml` und `VERSION`. Es wird bei **`npm run prebuild`** ausgeführt (z. B. vor `npm run build`). Manuell: `cd frontend && node sync-version.js`.
+**Synchronisation:** Das Skript `frontend/sync-version.js` liest **nur** `config/version.json` und schreibt die Version nach `package.json`, `package-lock.json` (Root-Paket), `tauri.conf.json`, `Cargo.toml` und `VERSION`. Es wird bei **`npm run prebuild`** ausgeführt (z. B. vor `npm run build`). Manuell: `cd frontend && node sync-version.js`.
 
 **Nach einer Änderung (Versionsbump):**
 

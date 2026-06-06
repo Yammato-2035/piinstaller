@@ -238,11 +238,14 @@ Aktuell **keine** zusätzliche erzwungene Lint-Regel „keine Literal-Strings“
 
 ### Richtlinie Versionen (Kurzfassung; Details in VERSIONING.md)
 
-| Stufe | Wann |
+| Stelle | Wann |
 |--------|------|
-| **Patch (W)** | Kleine Bugfixes, kleine i18n-/Doku-/Diagnosekorrekturen, Prozess-/Doku-Ergänzungen ohne neues Feature. |
-| **Minor (Z)** | Neue Funktionen, neue Diagnosepfade mit Nutzerwirkung, größere Modulverbesserungen (Schema: Z↑, W→0). |
-| **Major (X/Y)** | Inkompatible oder strukturelle Brüche (selten; gesondert abstimmen). |
+| **W (4.) Patch** | Fehlerbehebung, kleine Korrekturen ohne neue Funktionsversion |
+| **Z (3.) Funktionsversion** | Neue oder geänderte Funktionsversion; W → 0 |
+| **Y (2.) Bereich** | Neuer Produktbereich / strategische Erweiterung |
+| **X (1.) Release** | Erst nach Betatestphase und öffentlichem Release |
+
+**Nach Bump:** `cd frontend && node sync-version.js` → `python3 backend/tools/check_version_consistency.py --repo-root .` → Gate `./scripts/check-backend-version-gate.sh` (Exit **17**/ **18** bei Drift).
 
 **Nicht angepasst** → im Bericht **explizit begründen** (z. B. „reine interne Refactor, kein Changelog laut Team“ – nur wenn so vereinbart).
 

@@ -3,7 +3,10 @@
 # Exit: 0 grün | 10 Dienst inaktiv | 11 /api/version nicht erreichbar |
 #       12 /api/version HTTP != 200 | 13 Produktiv-config ungültig |
 #       14 Workspace/API project_version drift | 15 Produktivdateien fehlen |
-#       16 API-Payload ungültig (Pflichtfelder / status) | 20 unklar
+#       16 API-Payload ungültig (Pflichtfelder / status) |
+#       17 Workspace-Versionsquellen inkonsistent (package.json, Tauri, lock) |
+#       18 Runtime-/opt-Versionsquellen inkonsistent zum Workspace |
+#       20 unklar
 
 set -euo pipefail
 
@@ -132,6 +135,43 @@ api_pv="$(python3 -c "import json; d=json.load(open('$tmp_body',encoding='utf-8'
 if [[ -n "$ws_pv" && -n "$api_pv" && "$ws_pv" != "$api_pv" ]]; then
   log "check-backend-version-gate: Drift workspace project_version=$ws_pv api=$api_pv"
   exit 14
+fi
+
+CONSISTENCY_PY="$REPO_ROOT/backend/tools/check_version_consistency.py"
+if [[ -f "$CONSISTENCY_PY" ]]; then
+  set +e
+  ws_consistency="$(python3 "$CONSISTENCY_PY" --repo-root "$REPO_ROOT" --json 2>/dev/null)"
+  ws_consistency_ec=$?
+  set -e
+  if [[ "$ws_consistency_ec" -ne 0 ]]; then
+    log "check-backend-version-gate: Workspace-Versionsquellen inkonsistent zu config/version.json ($ws_pv)"
+    if [[ -n "$ws_consistency" ]]; then
+      python3 -c "import json,sys; d=json.loads(sys.argv[1]); print('\n'.join(d.get('mismatches') or []))" "$ws_consistency" 2>/dev/null | while read -r line; do
+        [[ -n "$line" ]] && log "  $line"
+      done
+    fi
+    exit 17
+  fi
+
+  if [[ -d "$OPT_ROOT" ]]; then
+    set +e
+    rt_consistency="$(python3 "$CONSISTENCY_PY" \
+      --repo-root "$REPO_ROOT" \
+      --runtime-root "$OPT_ROOT" \
+      --api-project-version "$api_pv" \
+      --json 2>/dev/null)"
+    rt_consistency_ec=$?
+    set -e
+    if [[ "$rt_consistency_ec" -ne 0 ]]; then
+      log "check-backend-version-gate: Runtime-Versionsquellen inkonsistent (Workspace=$ws_pv, /opt oder API)"
+      if [[ -n "$rt_consistency" ]]; then
+        python3 -c "import json,sys; d=json.loads(sys.argv[1]); print('\n'.join(d.get('mismatches') or []))" "$rt_consistency" 2>/dev/null | while read -r line; do
+          [[ -n "$line" ]] && log "  $line"
+        done
+      fi
+      exit 18
+    fi
+  fi
 fi
 
 if ! grep -q "/api/version" "$OPT_APP" 2>/dev/null; then

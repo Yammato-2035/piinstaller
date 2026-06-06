@@ -1,0 +1,39 @@
+---
+description: Verbindliche Versionsregel X.Y.Z.W und Konsistenz-Gate
+alwaysApply: true
+---
+
+# Versionspolitik (Setuphelfer)
+
+**Source of Truth:** nur `config/version.json` (`project_version`). Danach immer `cd frontend && node sync-version.js`.
+
+## Erhöhungsregeln (X.Y.Z.W)
+
+| Stelle | Wann |
+|--------|------|
+| **W (4.)** | Fehlerbehebung / Patch |
+| **Z (3.)** | Neue oder geänderte Funktionsversion (W → 0) |
+| **Y (2.)** | Neuer Bereich |
+| **X (1.)** | Öffentliches Release nach Betatestphase |
+
+## Konsistenz (Pflicht)
+
+Abgeleitete Dateien müssen zum Canonical passen:
+
+- `VERSION`, `package.json`, `frontend/package.json`, `frontend/package-lock.json`
+- Tauri/Cargo: Semver **X.Y.Z** aus den ersten drei Stellen (z. B. `1.7.3.1` → `1.7.3`)
+
+Prüfung:
+
+```bash
+python3 backend/tools/check_version_consistency.py --repo-root .
+./scripts/check-backend-version-gate.sh
+```
+
+Exit **17** = Workspace-Drift, **18** = `/opt` oder API drift.
+
+## Deploy
+
+`deploy-to-opt.sh` / `verify_deploy_to_opt.py` (`post-restart`) prüfen Runtime-Versionskonsistenz. Deploy nicht als erfolgreich werten, wenn Gate rot.
+
+Details: `docs/developer/VERSIONING.md`

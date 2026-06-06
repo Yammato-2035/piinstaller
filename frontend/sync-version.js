@@ -86,6 +86,27 @@ try {
 } catch (e) {
   console.warn('[sync-version] root package.json:', e.message);
 }
+try {
+  const lockPath = path.join(__dirname, 'package-lock.json');
+  if (fs.existsSync(lockPath)) {
+    const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+    let lockChanged = false;
+    if (lock.version !== v) {
+      lock.version = v;
+      lockChanged = true;
+    }
+    if (lock.packages && lock.packages[''] && lock.packages[''].version !== v) {
+      lock.packages[''].version = v;
+      lockChanged = true;
+    }
+    if (lockChanged) {
+      fs.writeFileSync(lockPath, JSON.stringify(lock, null, 2) + '\n');
+      changed = true;
+    }
+  }
+} catch (e) {
+  console.warn('[sync-version] package-lock.json:', e.message);
+}
 if (changed) {
   console.log('[sync-version] version ->', v);
 }

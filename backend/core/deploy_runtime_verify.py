@@ -181,9 +181,40 @@ def run_post_rsync_verify(*, workspace_root: Path, runtime_root: Path) -> dict[s
     return {"phase": "post_rsync", "ok": ok, "files": files, "app_routes": routes}
 
 
-def run_post_restart_verify(*, base_url: str) -> dict[str, Any]:
+def run_post_restart_verify(
+    *,
+    base_url: str,
+    workspace_root: Path | None = None,
+    runtime_root: Path | None = None,
+) -> dict[str, Any]:
     openapi = verify_openapi_paths(base_url=base_url)
-    return {"phase": "post_restart", "ok": bool(openapi.get("ok")), "openapi": openapi}
+    version_check: dict[str, Any] | None = None
+    if workspace_root is not None and runtime_root is not None:
+        from core.version_consistency import check_runtime_consistency
+
+        api_pv: str | None = None
+        try:
+            url = base_url.rstrip("/") + "/api/version"
+            with urllib.request.urlopen(url, timeout=8) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            if isinstance(data, dict):
+                api_pv = str(data.get("project_version") or "").strip() or None
+        except Exception:
+            api_pv = None
+        version_check = check_runtime_consistency(
+            workspace_root=workspace_root,
+            runtime_root=runtime_root,
+            api_project_version=api_pv,
+        )
+    ok = bool(openapi.get("ok"))
+    if version_check is not None:
+        ok = ok and bool(version_check.get("ok"))
+    return {
+        "phase": "post_restart",
+        "ok": ok,
+        "openapi": openapi,
+        "version_consistency": version_check,
+    }
 
 
 def run_verify(
@@ -200,7 +231,11 @@ def run_verify(
     if phase_norm == "post_restart":
         if not base_url:
             return False, {"phase": "post_restart", "ok": False, "error": "base_url_required"}
-        report = run_post_restart_verify(base_url=base_url)
+        report = run_post_restart_verify(
+            base_url=base_url,
+            workspace_root=workspace_root,
+            runtime_root=runtime_root,
+        )
         return bool(report.get("ok")), report
     if phase_norm == "all":
         rsync_ok, rsync_report = run_verify(

@@ -63,6 +63,9 @@ def main() -> int:
                 print("  openapi_missing_paths:", ", ".join(openapi["missing_paths"]))
             if openapi.get("error"):
                 print("  openapi_error:", openapi["error"])
+            version = block.get("version_consistency") or {}
+            if version.get("mismatches"):
+                print("  version_mismatches:", ", ".join(version["mismatches"]))
 
     return 0 if ok else 1
 

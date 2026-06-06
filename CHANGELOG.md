@@ -7,7 +7,18 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+---
+
+## [1.7.3.1] — 2026-06-05
+
+### Fixed (Patch W — Fehlerbehebungen nach 1.7.3.0)
+
+- **Deploy-to-opt:** Post-Deploy-Verifikation (kritische Backend-Module, OpenAPI-Routen); erweiterte Deploy-Manifest-Whitelist; KB/FAQ + interne DCC-Sammlung.
+- **DCC:** Developer-Capability-Gate für `/status`; deploy_drift-Profil-Trennung; Compact-Status-Route und UI.
+- **Version policy:** Konsistenz-Gate (`version_consistency.py`, Exit 17/18); `sync-version.js` synchronisiert auch `package-lock.json`.
+
 ### Changed
+
 - **Governance:** Roadmap-First- und Knowledge-Base-First-Regeln in `CURSOR_WORK_RULES.md`, `.cursor/rules/200_ROADMAP_KB_FIRST.md`; Known-Error-Triage-Template + Schema; KB für wiederkehrende Fehler (DCC/Ports, QEMU/GLIBC, stale ISO); Next-Prompt-Registry mit 5 Tracks aktualisiert.
 - **App bootstrap:** `app_bootstrap` (Factory, Middleware-, Router-Registry, Startup-Diagnostik); Dev-Dashboard-Status in `core.dev_dashboard_status_service`; Safety-Facade; Boundary-Skript JSON-Modus.
 - **Evidence:** `docs/evidence/monolith/*`, `app_decomposition_before_rescue_iso_gate.json`; ISO-Readiness Precheck dokumentiert (kein Build in diesem Lauf).

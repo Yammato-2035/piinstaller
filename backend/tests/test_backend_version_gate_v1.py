@@ -99,6 +99,23 @@ class BackendVersionGateV1Tests(unittest.TestCase):
         r = subprocess.run(["bash", "-n", str(sh)], capture_output=True, text=True, check=False)
         self.assertEqual(r.returncode, 0, msg=(r.stderr or r.stdout or "").strip())
 
+    def test_backend_version_gate_shell_syntax(self) -> None:
+        import subprocess
+
+        root = _backend.parent
+        sh = root / "scripts" / "check-backend-version-gate.sh"
+        r = subprocess.run(["bash", "-n", str(sh)], capture_output=True, text=True, check=False)
+        self.assertEqual(r.returncode, 0, msg=(r.stderr or r.stdout or "").strip())
+
+    def test_version_consistency_module_import(self) -> None:
+        from core.version_consistency import check_workspace_consistency, semver_triple
+
+        self.assertEqual(semver_triple("1.7.3.1"), "1.7.3")
+        root = _backend.parent
+        out = check_workspace_consistency(root)
+        self.assertIn("ok", out)
+        self.assertEqual(out.get("canonical"), "1.7.3.1")
+
 
 if __name__ == "__main__":
     unittest.main()
