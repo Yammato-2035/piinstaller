@@ -37,7 +37,7 @@ Backend/API/Frontend melden `1.7.3.1`, Tauri-Build und Bundle heißen weiter `1.
 - `backend/core/version_projection.py`
 - `scripts/check-packaging-version-gate.sh` (Exit 19 bei unbekannter Version)
 - `scripts/rename-tauri-bundle-artifacts.sh`
-- `frontend/sync-version.js` → `setuphelferProjectVersion`, deb-changelog-Hinweis
+- `frontend/sync-version.js` → Resource `resources/setuphelfer-version.json` + deb-changelog-Hinweis (kein Top-Level-Feld in tauri.conf)
 - `tauri:build:projected` npm-Script
 
 ## Tests

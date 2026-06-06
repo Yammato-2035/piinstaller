@@ -47,16 +47,43 @@ try {
       tauri.version = vCargo;
       tauriChanged = true;
     }
-    if (tauri.setuphelferProjectVersion !== v) {
-      tauri.setuphelferProjectVersion = v;
+    if (Object.prototype.hasOwnProperty.call(tauri, 'setuphelferProjectVersion')) {
+      delete tauri.setuphelferProjectVersion;
       tauriChanged = true;
     }
     if (tauri.bundle && typeof tauri.bundle === 'object') {
       if (!tauri.bundle.linux) tauri.bundle.linux = {};
       if (!tauri.bundle.linux.deb) tauri.bundle.linux.deb = {};
-      const changelog = `SetupHelfer ${v} (Cargo/Tauri semver ${vCargo}; patch W=${patchComponent})`;
-      if (tauri.bundle.linux.deb.changelog !== changelog) {
-        tauri.bundle.linux.deb.changelog = changelog;
+      const debChangelogPath = path.join(__dirname, 'src-tauri', 'deb-changelog.txt');
+      const debChangelogRel = 'deb-changelog.txt';
+      const debChangelogText =
+        `SetupHelfer (${v}) — project version; Cargo/Tauri semver ${vCargo}; patch W=${patchComponent}.\n\n` +
+        `See resources/setuphelfer-version.json for canonical version metadata.\n`;
+      try {
+        if (!fs.existsSync(debChangelogPath) || fs.readFileSync(debChangelogPath, 'utf8') !== debChangelogText) {
+          fs.writeFileSync(debChangelogPath, debChangelogText);
+          changed = true;
+        }
+      } catch (e) {
+        console.warn('[sync-version] deb-changelog.txt:', e.message);
+      }
+      if (tauri.bundle.linux.deb.changelog !== debChangelogRel) {
+        tauri.bundle.linux.deb.changelog = debChangelogRel;
+        tauriChanged = true;
+      }
+      // Inline-Text war falsch — Tauri erwartet einen Dateipfad.
+      if (
+        tauri.bundle.linux.deb.changelog &&
+        tauri.bundle.linux.deb.changelog.includes('SetupHelfer ')
+      ) {
+        tauri.bundle.linux.deb.changelog = debChangelogRel;
+        tauriChanged = true;
+      }
+      const resourceRel = 'resources/setuphelfer-version.json';
+      const resources = Array.isArray(tauri.bundle.resources) ? tauri.bundle.resources.slice() : [];
+      if (!resources.includes(resourceRel)) {
+        resources.push(resourceRel);
+        tauri.bundle.resources = resources;
         tauriChanged = true;
       }
     }
@@ -67,6 +94,24 @@ try {
   }
 } catch (e) {
   console.warn('[sync-version] tauri.conf.json:', e.message);
+}
+const resourceDir = path.join(__dirname, 'src-tauri', 'resources');
+const resourcePath = path.join(resourceDir, 'setuphelfer-version.json');
+try {
+  fs.mkdirSync(resourceDir, { recursive: true });
+  const resourcePayload = {
+    project_version: v,
+    semver_package_version: vCargo,
+    patch_component: patchComponent,
+  };
+  const resourceText = JSON.stringify(resourcePayload, null, 2) + '\n';
+  const currentResource = fs.existsSync(resourcePath) ? fs.readFileSync(resourcePath, 'utf8') : '';
+  if (currentResource !== resourceText) {
+    fs.writeFileSync(resourcePath, resourceText);
+    changed = true;
+  }
+} catch (e) {
+  console.warn('[sync-version] setuphelfer-version.json:', e.message);
 }
 try {
   if (fs.existsSync(cargoPath)) {

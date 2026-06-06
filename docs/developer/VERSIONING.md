@@ -81,7 +81,7 @@ So bleibt jeder Stand (z. B. aus Git) einer konkreten Version zugeordnet.
 - **Backend:** Liest die Version aus `config/version.json` (Fallback: `VERSION`) für z. B. `/api/version`.
 - **Frontend:** `frontend/package.json` → Feld `version` (wird von `sync-version.js` aus `config/version.json` geschrieben).
 - **Frontend lock:** `frontend/package-lock.json` → Root-Paket `version` (ebenfalls via `sync-version.js`).
-- **Tauri (Desktop-App):** `frontend/src-tauri/tauri.conf.json` und `Cargo.toml` (wird von `sync-version.js` geschrieben; nur X.Y.Z für Semver).
+- **Tauri-App (Resource):** `frontend/src-tauri/resources/setuphelfer-version.json` (via `bundle.resources`, **nicht** als Top-Level-Feld in `tauri.conf.json`)
 - **VERSION:** Wird von `sync-version.js` aus `config/version.json` mitgeschrieben (für Skripte und Abwärtskompatibilität).
 
 **Synchronisation:** Das Skript `frontend/sync-version.js` liest **nur** `config/version.json` und schreibt die Version nach `package.json`, `package-lock.json` (Root-Paket), `tauri.conf.json`, `Cargo.toml` und `VERSION`. Es wird bei **`npm run prebuild`** ausgeführt (z. B. vor `npm run build`). Manuell: `cd frontend && node sync-version.js`.

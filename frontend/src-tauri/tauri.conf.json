@@ -36,7 +36,9 @@
       "icons/icon.png",
       "icons/icon.ico"
     ],
-    "resources": [],
+    "resources": [
+      "resources/setuphelfer-version.json"
+    ],
     "externalBin": [],
     "copyright": "",
     "category": "Utility",
@@ -45,9 +47,8 @@
     "linux": {
       "deb": {
         "depends": [],
-        "changelog": "SetupHelfer 1.7.3.1 (Cargo/Tauri semver 1.7.3; patch W=1)"
+        "changelog": "deb-changelog.txt"
       }
     }
-  },
-  "setuphelferProjectVersion": "1.7.3.1"
+  }
 }
