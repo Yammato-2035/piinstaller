@@ -1,30 +1,25 @@
 {
-  "schema_version": 14,
-  "classified_at": "2026-06-07T02:00:00+02:00",
-  "classification": "usb_rewrite_preflight_ok_dd_blocked_sudo",
+  "schema_version": 15,
+  "classified_at": "2026-06-07T03:00:00+02:00",
+  "classification": "usb_written_boot_artifacts_verified_block_readback_pending",
   "iso_created": true,
   "iso_uefi_validated": true,
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
   "iso_sha256": "9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a",
+  "iso_size_bytes": 620756992,
   "iso_sha256_previous_stick": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
   "squashfs_validated": true,
   "uefi_validator_exit_code": 0,
-  "usb_stick_written": false,
+  "usb_stick_written": true,
   "usb_write_sha256_verified": false,
   "usb_block_readback_sha256": null,
-  "usb_stick_device_candidate": "/dev/sdb",
+  "usb_mount_boot_artifacts_verified": true,
+  "usb_write_verification_method": "operator_dd_exact_byte_count_and_boot_artifact_cmp",
+  "operator_dd_bytes_copied": 620756992,
+  "usb_stick_device": "/dev/sdb",
   "usb_stick_device_model": "Ultra Line",
   "usb_stick_device_serial": "24111412110212",
-  "usb_stick_written_stale_pre_rebuild_iso": true,
-  "usb_write_attempt": {
-    "attempted_at": "2026-06-07T02:00:00+02:00",
-    "dd_executed": false,
-    "dd_exit_code": 1,
-    "dd_block_reason": "sudo_password_required_in_agent_environment",
-    "target_device": "/dev/sdb",
-    "preflight_unmount_ok": true,
-    "final_device_check_ok": true
-  },
+  "usb_stick_partition_size": "592M",
   "target_laptop_booted_from_stick": false,
   "windows_inspect_executable": false,
   "workspace_version": "1.7.4.5",
@@ -35,26 +30,24 @@
     "network_manager_functional": true,
     "nmcli_present": true
   },
+  "usb_boot_artifacts_on_stick": {
+    "bootx64_efi": true,
+    "efi_img": true,
+    "isolinux_bin": true,
+    "boot_artifact_cmp_identical_to_iso": true
+  },
   "resolved_blockers": [
-    "RESCUE_ISO_INTEL_WIFI_BT_FIRMWARE_MISSING",
-    "RESCUE_SERIAL_BOOT_MARKERS_HARDWARE_INCOMPATIBLE",
-    "RESCUE_UEFI_BOOT_ARTIFACTS_MISSING",
-    "RESCUE_NETWORKMANAGER_MISSING",
-    "RESCUE_ISO_UEFI_VALIDATOR_FAILURE",
-    "RESCUE_ISO_POST_PATCH_FULL_VALIDATION"
+    "RESCUE_USB_REWRITE_REQUIRED_AFTER_NEW_ISO",
+    "RESCUE_STICK_NOT_WRITTEN",
+    "RESCUE_USB_REWRITE_DD_BLOCKED_SUDO",
+    "RESCUE_USB_REWRITE_OPERATOR_SUDO_COMPLETION"
   ],
   "blockers": [
     {
-      "id": "RESCUE_USB_REWRITE_DD_BLOCKED_SUDO",
-      "severity": "critical",
+      "id": "RESCUE_USB_BLOCK_READBACK_SHA256_PENDING",
+      "severity": "warning",
       "status": "blocked",
-      "description_de": "Preflight grün; dd scheiterte an sudo-Passwort im Agent — Operator-Terminal erforderlich"
-    },
-    {
-      "id": "RESCUE_USB_REWRITE_REQUIRED_AFTER_NEW_ISO",
-      "severity": "critical",
-      "status": "blocked",
-      "description_de": "Stick /dev/sdb noch alt (533M, 09b9482a…); neues ISO 9ef1b330…"
+      "description_de": "Block-Readback SHA256 nicht im Agent messbar (sudo); dd-Bytecount + Boot-cmp belegt Write"
     },
     {
       "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
@@ -73,5 +66,5 @@
       "code": "RESCUE-UEFI-005"
     }
   ],
-  "next_prompt_id": "RESCUE_USB_REWRITE_OPERATOR_SUDO_COMPLETION"
+  "next_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN"
 }

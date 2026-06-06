@@ -1,14 +1,14 @@
 {
-  "schema_version": 19,
-  "selected_at": "2026-06-07T02:00:00+02:00",
-  "selected_prompt_id": "RESCUE_USB_REWRITE_OPERATOR_SUDO_COMPLETION",
-  "reason_de": "ISO vollständig validiert; USB-Preflight/Unmount/Final-Check grün; dd blockiert (sudo-Passwort im Agent). Operator-Terminal: dd + Readback + Mount-Check.",
+  "schema_version": 20,
+  "selected_at": "2026-06-07T03:00:00+02:00",
+  "selected_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
+  "reason_de": "Operator-dd 620756992 Bytes auf /dev/sdb; sdb1=592M; Bootartefakte byte-identisch zur ISO. Block-Readback SHA im Agent offen (sudo). MSI-UEFI-Boot + Netzwerk-Telemetrie als nächster Schritt.",
   "tracks": [
     {
       "id": "rescue_msi_firmware_usb_rewrite",
       "status": "yellow",
       "priority": "P0",
-      "next_step": "RESCUE_USB_REWRITE_OPERATOR_SUDO_COMPLETION",
+      "next_step": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
       "evidence": [
         "docs/evidence/runtime-results/rescue/RESCUE_USB_REWRITE_AFTER_MSI_FIRMWARE_REBUILD_RESULT.md",
         "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"

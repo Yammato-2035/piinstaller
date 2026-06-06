@@ -1,91 +1,106 @@
 # RESCUE_USB_REWRITE_AFTER_MSI_FIRMWARE_REBUILD_RESULT
 
 **Datum:** 2026-06-07  
-**Prompt:** `RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD`  
-**HEAD:** `ca3187f`  
-**Version:** `1.7.4.5`
+**Prompt:** `RESCUE_USB_REWRITE_READBACK_AND_GATE_COMPLETION` (nach Operator-dd)  
+**HEAD:** `5c6d5fe` · **Version:** `1.7.4.5`
 
 ## Ergebnis
 
-**dd nicht ausgeführt** — Agent-Umgebung (`gabriel`) hat kein passwortloses `sudo` (`sudo -n` → Passwort erforderlich).  
-Stick trägt weiterhin altes Image (533M, SHA `09b9482a…`).
+**USB-Write vom Operator bestätigt; Read-only-Verifikation teilweise grün.**
 
-## Phase 0 — Preflight (grün)
+| Prüfung | Ergebnis |
+|---------|----------|
+| Preflight `/dev/sdb` | Ultra Line, 59G, USB, Serial `24111412110212` ✓ |
+| `/dev/sdb1` Größe | **592M** (vorher 533M — neues ISO) ✓ |
+| Operator-`dd` (Terminal) | **620756992 Bytes** kopiert (= ISO-Größe) ✓ |
+| Block-Readback SHA256 | **Nicht ausgeführt** (Agent: `sudo` Passwort erforderlich; `/dev/sdb` nur root/disk) |
+| Boot-Artefakte ro-Mount | **OK** — alle drei Pfade `present` |
+| Boot-Artefakt `cmp` ISO↔Stick | **byte-identisch** (`BOOTX64.EFI`, `efi.img`, `isolinux.bin`) |
 
-| Check | Ergebnis |
-|-------|----------|
-| ISO SHA256 | `9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a` ✓ |
-| ISO Größe | 592 MiB (620756992 bytes) |
-| `/dev/sdb` Modell | Ultra Line |
-| `/dev/sdb` Größe | 59G |
-| `/dev/sdb` Transport | usb |
-| `/dev/sdb` Serial | `24111412110212` |
-| `/dev/sda` | HGST Backup — **nicht verwendet** |
-| `/dev/nvme*` | **nicht verwendet** |
-
-## Phase 1 — USB Operator Selection
+## ISO
 
 | Feld | Wert |
 |------|------|
-| `selected_device` | `/dev/sdb` ✓ |
-| `write_allowed` | `true` ✓ |
-| `dd_execution_allowed` | `false` (DCC-Gate; dieser Prompt ist Operator-Freigabe) |
-| `iso_sha256` in Selection | `09b9482a…` (**alt** — Gerätefreigabe akzeptiert; neues ISO in Write-Evidence) |
+| Pfad | `build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso` |
+| Größe | 620756992 bytes (592 MiB) |
+| SHA256 | `9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a` |
 
-## Phase 2–3 — Unmount / Final Check (grün)
+## Zielgerät
 
-- `/dev/sdb1` erfolgreich unmounted (`udisksctl unmount -b /dev/sdb1`)
-- Kein Mountpoint auf `sdb1` vor dd-Versuch
-- Final check: Ultra Line, 59G, usb ✓
+| Feld | Wert |
+|------|------|
+| Device | `/dev/sdb` |
+| Modell | Ultra Line |
+| Serial | `24111412110212` |
+| Transport | usb |
+| Partition | `/dev/sdb1` 592M iso9660 `SETUPHELFER_RESCUE` |
+| Nicht verwendet | `/dev/sda` (HGST Backup), `/dev/nvme*` |
 
-## Phase 4 — dd
+## Operator-dd (Terminal-Ingest)
 
 ```text
-DD_RC=1
-Grund: sudo: Ein Passwort ist notwendig (kein interaktives Terminal im Agent)
+148+0 Datensätze ein
+148+0 Datensätze aus
+620756992 Bytes (621 MB, 592 MiB) kopiert
+lsblk: sdb1 592M (nach dd; vorher 533M)
 ```
 
-**Nicht ausgeführt:** `sudo dd if=… of=/dev/sdb bs=4M status=progress conv=fsync`
-
-## Phase 5–6 — Readback / Mount
-
-**Nicht ausgeführt** (dd fehlgeschlagen).
-
-## Gate (ehrlich)
+## Readback SHA256
 
 ```text
-iso_uefi_validated: true (ISO weiterhin validiert)
-usb_stick_written: false
+Agent-Versuch: sudo python3 block-read auf /dev/sdb → Passwort erforderlich
+Erwartet: 9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a
+Tatsächlich gemessen: nicht ausgeführt
+```
+
+**Sekundäre Verifikation (ohne Block-Readback):**
+
+- `dd`-Bytecount Operator = ISO-Größe (620756992)
+- Boot-Dateien auf Stick byte-identisch zur ISO (xorriso-Extract vs. ro-Mount)
+
+## Bootartefakte (ro-Mount 2026-06-07)
+
+```text
+BOOTX64.EFI=present  (cmp ISO=identical)
+efi.img=present      (cmp ISO=identical)
+isolinux.bin=present (cmp ISO=identical)
+```
+
+## Gate (ehrlich — kein Fake-Green für Block-Readback)
+
+```text
+iso_uefi_validated: true
+usb_stick_written: yes
 usb_write_sha256_verified: false
+usb_block_readback_sha256: null
+usb_mount_boot_artifacts_verified: true
+usb_write_verification_method: operator_dd_exact_byte_count_and_boot_artifact_cmp
 target_laptop_booted_from_stick: false
 windows_inspect_executable: false
 ```
 
-## Operator-Completion (interaktives Terminal)
+## Resolved Blocker
+
+- `RESCUE_USB_REWRITE_REQUIRED_AFTER_NEW_ISO`
+- `RESCUE_STICK_NOT_WRITTEN`
+- `RESCUE_USB_REWRITE_DD_BLOCKED_SUDO`
+
+## Aktive Blocker
+
+- `RESCUE_USB_BLOCK_READBACK_SHA256_PENDING` (optional Operator-One-Liner mit sudo)
+- `RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET`
+- `RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED`
+- `WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED`
+
+## Optional: Block-Readback abschließen
 
 ```bash
 cd /home/volker/piinstaller
-
-ISO=build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso
-TARGET=/dev/sdb
-EXPECTED_SHA=9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a
-
-sha256sum "$ISO"   # muss EXPECTED_SHA sein
-lsblk -o NAME,SIZE,MODEL,SERIAL,TRAN,FSTYPE,LABEL,MOUNTPOINTS /dev/sda /dev/sdb
-
-udisksctl unmount -b /dev/sdb1 2>/dev/null || true
-umount /media/gabriel/SETUPHELFER_RESCUE 2>/dev/null || true
-sync
-
-sudo dd if="$ISO" of="$TARGET" bs=4M status=progress conv=fsync
-sync
-sudo partprobe "$TARGET" || true
-
-ISO_SIZE=$(stat -c '%s' "$ISO")
-sudo python3 - <<PY
+ISO_SIZE=620756992
+sudo python3 - <<'PY'
 import hashlib
 from pathlib import Path
-size = int("$ISO_SIZE")
+size = 620756992
 h = hashlib.sha256()
 remaining = size
 with Path("/dev/sdb").open("rb", buffering=0) as f:
@@ -95,19 +110,17 @@ with Path("/dev/sdb").open("rb", buffering=0) as f:
         h.update(chunk); remaining -= len(chunk)
 print(h.hexdigest())
 PY
-
-udisksctl mount -b /dev/sdb1 --options ro
-MOUNT=$(lsblk -nr -o MOUNTPOINTS /dev/sdb1 | head -n1)
-find "$MOUNT" -maxdepth 4 -type f | grep -E 'EFI/BOOT/BOOTX64\.EFI|boot/grub/efi\.img|isolinux/isolinux\.bin'
-udisksctl unmount -b /dev/sdb1
+# Erwartet: 9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a
 ```
 
 ## Next Prompt
 
-**`RESCUE_USB_REWRITE_OPERATOR_SUDO_COMPLETION`** — dd + Readback + Mount-Check im Operator-Terminal, danach Evidence/Gate erneut aktualisieren.
+**`RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN`**
 
-Alternativ nach erfolgreichem manuellen dd: **`RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN`**
+(Boot-Artefakte und Write-Bytecount belegt; MSI-UEFI-Boot als nächster Validierungsschritt.)
+
+Bei Readback-Abweichung: **`RESCUE_USB_REWRITE_READBACK_HASH_MISMATCH_TRIAGE`**
 
 ## Nicht ausgeführt
 
-MSI-Retest, Windows-Inspect, Backup, Restore, Deploy, Push, Host-apt.
+Erneutes dd, MSI-Retest (dieser Lauf), Windows-Inspect, Backup, Restore, Deploy, Push.
