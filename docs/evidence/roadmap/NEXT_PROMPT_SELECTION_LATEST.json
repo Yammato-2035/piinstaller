@@ -1,16 +1,18 @@
 {
-  "schema_version": 15,
-  "selected_at": "2026-06-06T15:32:00+02:00",
-  "selected_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION",
-  "reason_de": "Parent archive areas + explizite debian.list + Validator (1.7.4.4) committed; Operator sudo clean+rebuild + Squashfs-Nachweis ausstehend.",
+  "schema_version": 16,
+  "selected_at": "2026-06-06T20:50:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_UEFI_VALIDATOR_FAILURE_TRIAGE",
+  "parallel_prompt_id": "RESCUE_ISO_NETWORKMANAGER_MISSING_AFTER_REBUILD",
+  "reason_de": "ISO-Build LB_EXIT=0 und Firmware im SquashFS grün; UEFI Exit 34 und nmcli/NetworkManager im SquashFS fehlen — kein USB-Rewrite.",
   "tracks": [
     {
       "id": "rescue_msi_firmware_iso_rebuild",
       "status": "yellow",
       "priority": "P0",
-      "next_step": "RESCUE_ISO_MSI_FIRMWARE_REBUILD_OPERATOR_SUDO_COMPLETION",
+      "next_step": "RESCUE_ISO_UEFI_VALIDATOR_FAILURE_TRIAGE",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_PARENT_ARCHIVE_AREAS_FIX_RESULT.md"
+        "docs/evidence/runtime-results/rescue/RESCUE_ISO_BUILD_SUCCESS_VALIDATION_RESULT.md",
+        "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
       ]
     }
   ],

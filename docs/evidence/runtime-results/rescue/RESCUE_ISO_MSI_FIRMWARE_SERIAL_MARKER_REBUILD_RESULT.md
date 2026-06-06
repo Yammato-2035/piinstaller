@@ -151,6 +151,10 @@ USB-dd, MSI erneut gebootet, Windows-Inspect, apt auf Host, Push, Deploy
 
 Operator-Rebuild mit `1.7.4.2` scheiterte mit **`LB_EXIT=123`** — Paketnamen korrekt, aber live-build nur **`main`**. Fix in **`1.7.4.3`**: Archive-Areas `main contrib non-free-firmware`. Intel-BT (`intel/ibt-*`) über **`firmware-iwlwifi`**, nicht `firmware-intel-sound`. Siehe `RESCUE_ISO_NON_FREE_FIRMWARE_COMPONENT_FIX_RESULT.md`.
 
+## Follow-up Build-Validierung (1.7.4.4, SHA `dc351387…`)
+
+LB_EXIT=0 · iwlwifi-9000 + ibt-17-16-1 im SquashFS ✓ · UEFI Exit 34 ✗ · nmcli fehlt ✗ · Details: `RESCUE_ISO_BUILD_SUCCESS_VALIDATION_RESULT.md`
+
 ## Secrets
 
 Keine Token-Werte in dieser Datei.

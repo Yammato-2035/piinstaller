@@ -5,7 +5,7 @@
 
 ## Ergebnis
 
-**Workspace-Fix grün, ISO-Rebuild ausstehend (Operator sudo clean + build).** Validator erkennt stale main-only chroot und fehlende Parent-Archive-Areas.
+**Build LB_EXIT=0 (2026-06-06), Firmware im SquashFS grün.** UEFI-Validator Exit **34**, NetworkManager/nmcli im SquashFS **fehlend** — siehe `RESCUE_ISO_BUILD_SUCCESS_VALIDATION_RESULT.md`. USB-Rewrite **noch nicht** freigegeben.
 
 ## Git / Version
 
