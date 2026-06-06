@@ -1,7 +1,7 @@
 {
-  "schema_version": 19,
-  "classified_at": "2026-06-07T22:17:00+02:00",
-  "classification": "developer_lan_telemetry_proxy_ready_msi_boot_pending",
+  "schema_version": 20,
+  "classified_at": "2026-06-07T22:21:00+02:00",
+  "classification": "developer_preflight_green_msi_physical_operator_pending",
   "iso_created": true,
   "iso_uefi_validated": true,
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
@@ -14,6 +14,8 @@
   "usb_block_readback_sha256": "9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a",
   "usb_mount_boot_artifacts_verified": true,
   "usb_stick_device": "/dev/sdb",
+  "usb_stick_model": "Ultra Line",
+  "usb_stick_serial": "24111412110212",
   "target_laptop_booted_from_stick": false,
   "target_network_telemetry_validated": false,
   "windows_inspect_executable": false,
@@ -23,6 +25,30 @@
   "runtime_version_api": "1.7.4.1",
   "runtime_deploy_drift": "RUNTIME_DEPLOY_DRIFT_1_7_4_6_PENDING",
   "developer_laptop_lan_ip": "192.168.178.140",
+  "msi_hardware_expected": {
+    "cpu": "Intel Core i7",
+    "gpu": "NVIDIA GeForce",
+    "wlan_firmware": "iwlwifi-9000",
+    "bt_firmware": "intel/ibt-17-16-1.sfi"
+  },
+  "operator_run_phase0": {
+    "completed_at": "2026-06-07T22:21:00+02:00",
+    "proxy_running": true,
+    "lan_health_http": 200,
+    "blocked_paths_verified": {
+      "/api/version": 404,
+      "/openapi.json": 404,
+      "/api/dev-dashboard/status": 404
+    }
+  },
+  "operator_run_msi": {
+    "physical_boot_executed": false,
+    "network_validated": false,
+    "telemetry_health_from_msi_http": null,
+    "telemetry_ingest_from_msi_http": null,
+    "ack_id": null,
+    "agent_note_de": "Physischer MSI-Boot kann nur vom Operator am Gerät ausgeführt werden — kein Fake-Green."
+  },
   "telemetry_reachability": {
     "backend_bind": "127.0.0.1:8000",
     "telemetry_health_local_ok": true,
@@ -35,11 +61,8 @@
     "msi_telemetry_health_url": "http://192.168.178.140:8001/api/rescue/telemetry/health",
     "msi_telemetry_ingest_url": "http://192.168.178.140:8001/api/rescue/telemetry/v1/ingest",
     "proxy_started_in_smoke": true,
-    "blocked_paths_verified": [
-      "/api/version",
-      "/openapi.json",
-      "/api/dev-dashboard/status"
-    ]
+    "last_ingest_at": null,
+    "last_ack_id": null
   },
   "resolved_blockers": [
     "RESCUE_USB_REWRITE_REQUIRED_AFTER_NEW_ISO",
@@ -52,13 +75,13 @@
       "id": "RUNTIME_DEPLOY_DRIFT_1_7_4_6_PENDING",
       "severity": "warning",
       "status": "blocked",
-      "description_de": "Workspace 1.7.4.6 vs Runtime 1.7.4.1 — DCC/Gate-Anzeige kann veralten"
+      "description_de": "Workspace 1.7.4.6 vs Runtime 1.7.4.1"
     },
     {
       "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
       "severity": "critical",
       "status": "blocked",
-      "description_de": "Physischer MSI-Boot mit ISO 9ef1b330… ausstehend"
+      "description_de": "Physischer MSI-Boot mit ISO 9ef1b330… — Operator ausstehend"
     },
     {
       "id": "RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED",
@@ -74,5 +97,5 @@
     }
   ],
   "next_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "next_operator_step_de": "MSI vom Stick booten; im Live-System curl auf developer_lan_telemetry_proxy_url; Telemetrie-Ingest senden."
+  "next_operator_step_de": "MSI physisch booten; Netzwerk prüfen; curl health + Ingest senden; Ergebnisse ingestieren."
 }
