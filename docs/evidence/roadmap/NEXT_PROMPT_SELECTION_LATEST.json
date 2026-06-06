@@ -1,17 +1,16 @@
 {
-  "schema_version": 18,
-  "selected_at": "2026-06-07T01:00:00+02:00",
-  "selected_prompt_id": "RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD",
-  "reason_de": "ISO post-patch vollständig validiert: UEFI Exit 0, BOOTX64/efi.img/isolinux, NM/nmcli, Firmware, Serial-Marker QEMU-only. USB-Rewrite ausstehend.",
+  "schema_version": 19,
+  "selected_at": "2026-06-07T02:00:00+02:00",
+  "selected_prompt_id": "RESCUE_USB_REWRITE_OPERATOR_SUDO_COMPLETION",
+  "reason_de": "ISO vollständig validiert; USB-Preflight/Unmount/Final-Check grün; dd blockiert (sudo-Passwort im Agent). Operator-Terminal: dd + Readback + Mount-Check.",
   "tracks": [
     {
-      "id": "rescue_msi_firmware_iso_rebuild",
-      "status": "green",
+      "id": "rescue_msi_firmware_usb_rewrite",
+      "status": "yellow",
       "priority": "P0",
-      "next_step": "RESCUE_USB_REWRITE_OPERATOR_AFTER_MSI_FIRMWARE_REBUILD",
+      "next_step": "RESCUE_USB_REWRITE_OPERATOR_SUDO_COMPLETION",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_POST_PATCH_FULL_VALIDATION_RESULT.md",
-        "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json",
+        "docs/evidence/runtime-results/rescue/RESCUE_USB_REWRITE_AFTER_MSI_FIRMWARE_REBUILD_RESULT.md",
         "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"
       ]
     }
