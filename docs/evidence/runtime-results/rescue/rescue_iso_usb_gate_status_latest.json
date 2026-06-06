@@ -1,7 +1,7 @@
 {
-  "schema_version": 15,
-  "classified_at": "2026-06-07T03:00:00+02:00",
-  "classification": "usb_written_boot_artifacts_verified_block_readback_pending",
+  "schema_version": 16,
+  "classified_at": "2026-06-07T04:00:00+02:00",
+  "classification": "usb_write_fully_verified_msi_boot_pending",
   "iso_created": true,
   "iso_uefi_validated": true,
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
@@ -11,16 +11,17 @@
   "squashfs_validated": true,
   "uefi_validator_exit_code": 0,
   "usb_stick_written": true,
-  "usb_write_sha256_verified": false,
-  "usb_block_readback_sha256": null,
+  "usb_write_sha256_verified": true,
+  "usb_block_readback_sha256": "9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a",
+  "usb_block_readback_verified_at": "2026-06-07T04:00:00+02:00",
+  "usb_block_readback_source": "operator_ingest",
   "usb_mount_boot_artifacts_verified": true,
-  "usb_write_verification_method": "operator_dd_exact_byte_count_and_boot_artifact_cmp",
-  "operator_dd_bytes_copied": 620756992,
   "usb_stick_device": "/dev/sdb",
   "usb_stick_device_model": "Ultra Line",
   "usb_stick_device_serial": "24111412110212",
   "usb_stick_partition_size": "592M",
   "target_laptop_booted_from_stick": false,
+  "target_network_telemetry_validated": false,
   "windows_inspect_executable": false,
   "workspace_version": "1.7.4.5",
   "firmware_validation": {
@@ -40,30 +41,29 @@
     "RESCUE_USB_REWRITE_REQUIRED_AFTER_NEW_ISO",
     "RESCUE_STICK_NOT_WRITTEN",
     "RESCUE_USB_REWRITE_DD_BLOCKED_SUDO",
-    "RESCUE_USB_REWRITE_OPERATOR_SUDO_COMPLETION"
+    "RESCUE_USB_BLOCK_READBACK_SHA256_PENDING",
+    "RESCUE_USB_REWRITE_OPERATOR_SUDO_COMPLETION",
+    "RESCUE_USB_REWRITE_READBACK_AND_GATE_COMPLETION"
   ],
   "blockers": [
     {
-      "id": "RESCUE_USB_BLOCK_READBACK_SHA256_PENDING",
-      "severity": "warning",
-      "status": "blocked",
-      "description_de": "Block-Readback SHA256 nicht im Agent messbar (sudo); dd-Bytecount + Boot-cmp belegt Write"
-    },
-    {
       "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
       "severity": "critical",
-      "status": "blocked"
+      "status": "blocked",
+      "description_de": "MSI-Laptop UEFI-Boot vom Stick noch nicht validiert"
     },
     {
       "id": "RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED",
       "severity": "critical",
-      "status": "blocked"
+      "status": "blocked",
+      "description_de": "WLAN/Netzwerk/Telemetrie auf MSI-Hardware noch nicht validiert"
     },
     {
       "id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED",
       "severity": "critical",
       "status": "blocked",
-      "code": "RESCUE-UEFI-005"
+      "code": "RESCUE-UEFI-005",
+      "description_de": "Windows-Inspect gesperrt bis Live-Netzwerk/Telemetrie grün"
     }
   ],
   "next_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN"
