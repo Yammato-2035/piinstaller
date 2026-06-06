@@ -1,69 +1,69 @@
 {
-  "schema_version": 16,
-  "classified_at": "2026-06-07T04:00:00+02:00",
-  "classification": "usb_write_fully_verified_msi_boot_pending",
+  "schema_version": 17,
+  "classified_at": "2026-06-07T05:00:00+02:00",
+  "classification": "dev_preflight_ok_msi_physical_boot_pending",
   "iso_created": true,
   "iso_uefi_validated": true,
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
   "iso_sha256": "9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a",
   "iso_size_bytes": 620756992,
-  "iso_sha256_previous_stick": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
   "squashfs_validated": true,
   "uefi_validator_exit_code": 0,
   "usb_stick_written": true,
   "usb_write_sha256_verified": true,
   "usb_block_readback_sha256": "9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a",
-  "usb_block_readback_verified_at": "2026-06-07T04:00:00+02:00",
-  "usb_block_readback_source": "operator_ingest",
   "usb_mount_boot_artifacts_verified": true,
   "usb_stick_device": "/dev/sdb",
   "usb_stick_device_model": "Ultra Line",
   "usb_stick_device_serial": "24111412110212",
-  "usb_stick_partition_size": "592M",
   "target_laptop_booted_from_stick": false,
   "target_network_telemetry_validated": false,
   "windows_inspect_executable": false,
   "workspace_version": "1.7.4.5",
-  "firmware_validation": {
-    "iwlwifi_9000_ucode_present": true,
-    "intel_ibt_17_16_1_sfi_present": true,
-    "wireless_regdb_present": true,
-    "network_manager_functional": true,
-    "nmcli_present": true
+  "developer_laptop_preflight": {
+    "checked_at": "2026-06-07T05:00:00+02:00",
+    "telemetry_health_ok": true,
+    "dev_server_health_ok": true,
+    "developer_token_present": true,
+    "lan_ip": "192.168.178.140",
+    "backend_listen": "127.0.0.1:8000",
+    "msi_telemetry_reachability_note_de": "Backend nur localhost — LAN-Erreichbarkeit vom MSI vor Telemetrie-Test prüfen"
   },
-  "usb_boot_artifacts_on_stick": {
-    "bootx64_efi": true,
-    "efi_img": true,
-    "isolinux_bin": true,
-    "boot_artifact_cmp_identical_to_iso": true
+  "msi_operator_run": {
+    "physical_boot_executed": false,
+    "physical_boot_executed_in_cursor": false,
+    "awaiting_operator_ingest": true,
+    "previous_msi_result_iso_sha256": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
+    "previous_msi_result_not_valid_for_new_iso": true
   },
   "resolved_blockers": [
     "RESCUE_USB_REWRITE_REQUIRED_AFTER_NEW_ISO",
     "RESCUE_STICK_NOT_WRITTEN",
-    "RESCUE_USB_REWRITE_DD_BLOCKED_SUDO",
-    "RESCUE_USB_BLOCK_READBACK_SHA256_PENDING",
-    "RESCUE_USB_REWRITE_OPERATOR_SUDO_COMPLETION",
-    "RESCUE_USB_REWRITE_READBACK_AND_GATE_COMPLETION"
+    "RESCUE_USB_BLOCK_READBACK_SHA256_PENDING"
   ],
   "blockers": [
     {
       "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
       "severity": "critical",
       "status": "blocked",
-      "description_de": "MSI-Laptop UEFI-Boot vom Stick noch nicht validiert"
+      "description_de": "MSI UEFI-Boot mit neuem ISO 9ef1b330… noch nicht physisch validiert"
+    },
+    {
+      "id": "RESCUE_MSI_PHYSICAL_BOOT_OPERATOR_PENDING",
+      "severity": "critical",
+      "status": "blocked",
+      "description_de": "Cursor kann MSI-Boot nicht ausführen — Operator vor Ort erforderlich"
     },
     {
       "id": "RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED",
       "severity": "critical",
-      "status": "blocked",
-      "description_de": "WLAN/Netzwerk/Telemetrie auf MSI-Hardware noch nicht validiert"
+      "status": "blocked"
     },
     {
       "id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED",
       "severity": "critical",
       "status": "blocked",
-      "code": "RESCUE-UEFI-005",
-      "description_de": "Windows-Inspect gesperrt bis Live-Netzwerk/Telemetrie grün"
+      "code": "RESCUE-UEFI-005"
     }
   ],
   "next_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN"

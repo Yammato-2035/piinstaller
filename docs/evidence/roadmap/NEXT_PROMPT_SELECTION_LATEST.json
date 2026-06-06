@@ -1,17 +1,16 @@
 {
-  "schema_version": 21,
-  "selected_at": "2026-06-07T04:00:00+02:00",
+  "schema_version": 22,
+  "selected_at": "2026-06-07T05:00:00+02:00",
   "selected_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "reason_de": "USB-Write vollständig verifiziert (Block-Readback SHA = ISO SHA). MSI-UEFI-Boot, WLAN/NetworkManager und Telemetrie auf Zielhardware als nächster Operator-Schritt.",
+  "reason_de": "Developer-Preflight grün (Telemetrie-Ingest ok); MSI physischer UEFI-Boot mit neuem ISO ausstehend — kein Fake-Green.",
   "tracks": [
     {
-      "id": "rescue_msi_firmware_usb_rewrite",
-      "status": "green",
+      "id": "rescue_msi_uefi_boot_network_telemetry",
+      "status": "yellow",
       "priority": "P0",
       "next_step": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_USB_REWRITE_AFTER_MSI_FIRMWARE_REBUILD_RESULT.md",
-        "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json",
+        "docs/evidence/runtime-results/rescue/RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RESULT.md",
         "docs/evidence/runtime-results/rescue/RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN.md"
       ]
     }
