@@ -17,6 +17,25 @@ def build_devserver_policy(
     capabilities: RuntimeCapabilities,
 ) -> DevServerPolicy:
     if not capabilities.dev_server_enabled:
+        try:
+            from core.developer_capability import is_dev_server_host_locally_allowed
+
+            if is_dev_server_host_locally_allowed(
+                install_profile=profile.name,
+                dev_control_enabled=capabilities.dev_control_enabled,
+            ):
+                enabled: bool | None = None
+                mode: str | None = None
+                require_token: bool | None = None
+                if _env_unset("SETUPHELFER_DEV_SERVER_ENABLED"):
+                    enabled = True
+                if _env_unset("SETUPHELFER_DEV_SERVER_MODE"):
+                    mode = "local_lab"
+                if _env_unset("SETUPHELFER_DEV_SERVER_REQUIRE_TOKEN"):
+                    require_token = True
+                return DevServerPolicy(enabled, mode, require_token)
+        except Exception:
+            pass
         return DevServerPolicy(None, None, None)
     enabled: bool | None = None
     mode: str | None = None

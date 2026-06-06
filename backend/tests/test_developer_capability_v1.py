@@ -127,6 +127,31 @@ class DeveloperCapabilityTests(unittest.TestCase):
             self.assertTrue(st["developer_capability_valid"])
             self.assertTrue(st["dcc_allowed"])
 
+    def test_release_dev_server_locally_allowed_with_developer_enabled(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "DCC_DEVELOPER_ENABLED": "1",
+                "DCC_DEVELOPER_TOKEN": "dev-laptop",
+            },
+            clear=False,
+        ):
+            from core.developer_capability import is_dev_server_host_locally_allowed
+
+            self.assertTrue(
+                is_dev_server_host_locally_allowed(
+                    install_profile="release",
+                    dev_control_enabled=False,
+                )
+            )
+            payload = build_capability_status_payload(
+                install_profile="release",
+                dev_control_enabled=False,
+                backend_runtime_path="/opt/setuphelfer/backend",
+                request_headers={"X-Setuphelfer-Developer-Token": "dev-laptop"},
+            )
+            self.assertTrue(payload["dev_server_locally_allowed"])
+
 
 if __name__ == "__main__":
     unittest.main()

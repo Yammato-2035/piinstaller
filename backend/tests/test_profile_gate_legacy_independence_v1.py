@@ -36,7 +36,7 @@ class ProfileGateLegacyIndependenceTests(unittest.TestCase):
             )
             self.assertEqual(audit["profile_gate_status"], "red")
 
-    def test_release_ignores_dev_server_override(self) -> None:
+    def test_release_ignores_dev_server_env_override_without_developer_capability(self) -> None:
         with patch.dict(
             os.environ,
             {
@@ -48,6 +48,25 @@ class ProfileGateLegacyIndependenceTests(unittest.TestCase):
             st = get_install_profile_state()
             self.assertFalse(st.dev_server_enabled)
             self.assertFalse(should_register_dev_server_router())
+
+    def test_release_dev_server_allowed_with_developer_capability(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "SETUPHELFER_INSTALL_PROFILE": "release",
+                "DCC_DEVELOPER_ENABLED": "1",
+                "DCC_DEVELOPER_TOKEN": "dev-host-token",
+            },
+            clear=True,
+        ):
+            from core.developer_capability import is_dev_server_host_locally_allowed
+            from devserver.config import load_dev_server_config
+
+            self.assertTrue(is_dev_server_host_locally_allowed())
+            self.assertTrue(should_register_dev_server_router())
+            cfg = load_dev_server_config()
+            self.assertTrue(cfg.enabled)
+            self.assertEqual(cfg.mode, "local_lab")
 
 
 if __name__ == "__main__":

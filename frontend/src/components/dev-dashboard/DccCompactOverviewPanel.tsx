@@ -76,6 +76,15 @@ export const DccCompactOverviewPanel: React.FC<DccCompactOverviewPanelProps> = (
       value: compact?.rescue?.target_boot_validated ? 'bestätigt' : 'offen',
       tone: compact?.rescue?.target_boot_validated ? 'green' : 'red',
     },
+    {
+      label: t('devDashboard.compact.devServer', 'Dev-Server'),
+      value: compact?.dev_server?.enabled
+        ? String(compact.dev_server.mode || 'on')
+        : compact?.dev_server?.host_locally_allowed
+          ? 'capability ok'
+          : 'deaktiviert',
+      tone: compact?.dev_server?.enabled ? 'green' : compact?.dev_server?.host_locally_allowed ? 'yellow' : 'gray',
+    },
   ]
 
   return (

@@ -31,10 +31,25 @@ class DevServerProfileSyncTests(unittest.TestCase):
         self.assertEqual(cfg.mode, "local_lab")
         self.assertFalse(cfg.require_token)
 
-    def test_release_profile_stays_disabled(self) -> None:
+    def test_release_profile_stays_disabled_without_developer_capability(self) -> None:
         with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=True):
             cfg = load_dev_server_config()
         self.assertFalse(cfg.enabled)
+
+    def test_release_profile_enables_dev_server_with_developer_capability(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "SETUPHELFER_INSTALL_PROFILE": "release",
+                "DCC_DEVELOPER_ENABLED": "1",
+                "DCC_DEVELOPER_TOKEN": "dev-laptop",
+            },
+            clear=True,
+        ):
+            cfg = load_dev_server_config()
+        self.assertTrue(cfg.enabled)
+        self.assertEqual(cfg.mode, "local_lab")
+        self.assertTrue(cfg.require_token)
 
 
 class DevAgentProxyHostHeaderTests(unittest.TestCase):

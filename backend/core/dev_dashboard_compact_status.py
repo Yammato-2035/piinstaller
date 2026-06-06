@@ -35,8 +35,11 @@ def _detect_usb_rescue_mount() -> dict[str, Any]:
     )
     for raw in candidates:
         p = Path(raw)
-        if p.is_dir():
-            return {"detected": True, "mount_path": raw, "source": "filesystem"}
+        try:
+            if p.is_dir():
+                return {"detected": True, "mount_path": raw, "source": "filesystem"}
+        except OSError:
+            continue
     return {"detected": False, "mount_path": None, "source": "none"}
 
 
@@ -130,6 +133,26 @@ def build_compact_dcc_status(
         or "Rescue-Gate und Deploy-Drift prüfen."
     )
 
+    dev_server: dict[str, Any] = {"enabled": False, "mode": "disabled", "host_locally_allowed": False}
+    try:
+        from core.developer_capability import is_dev_server_host_locally_allowed
+        from devserver.config import load_dev_server_config
+
+        cfg = load_dev_server_config()
+        host_allowed = is_dev_server_host_locally_allowed(
+            install_profile=state.install_profile,
+            dev_control_enabled=state.dev_control_enabled,
+        )
+        dev_server = {
+            "enabled": bool(cfg.enabled),
+            "mode": str(cfg.mode or "disabled"),
+            "host_locally_allowed": host_allowed,
+            "routes_available": bool(cfg.enabled or host_allowed),
+            "require_token": bool(cfg.require_token),
+        }
+    except Exception:
+        pass
+
     return {
         "status": "ok",
         "compact": True,
@@ -152,6 +175,7 @@ def build_compact_dcc_status(
             "profile_gate_independent": bool(telemetry.get("profile_gate_independent")),
             "last_error_code": telemetry.get("last_error_code"),
         },
+        "dev_server": dev_server,
         "rescue": {
             "iso_uefi_validated": gate.get("uefi_boot_ready") is True and gate.get("iso_verified") is True,
             "iso_sha256_prefix": str(gate.get("iso_sha256") or "")[:16] or None,

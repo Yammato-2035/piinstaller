@@ -25,6 +25,13 @@ export type DccCompactStatus = {
     ingest_enabled?: boolean
     last_error_code?: string | null
   }
+  dev_server?: {
+    enabled?: boolean
+    mode?: string
+    host_locally_allowed?: boolean
+    routes_available?: boolean
+    require_token?: boolean
+  }
   rescue?: {
     iso_uefi_validated?: boolean
     usb_written?: string

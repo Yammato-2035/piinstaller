@@ -286,7 +286,34 @@ def build_capability_status_payload(
         "dcc_developer_enabled": bool(assessment["dcc_developer_enabled"]),
         "backend_runtime_path": backend_runtime_path,
         "rescue_telemetry_separate_from_dcc": True,
+        "dev_server_locally_allowed": is_dev_server_host_locally_allowed(
+            install_profile=profile,
+            dev_control_enabled=dev_control_enabled,
+        ),
     }
+
+
+def is_dev_server_host_locally_allowed(
+    *,
+    install_profile: str | None = None,
+    dev_control_enabled: bool | None = None,
+) -> bool:
+    """Host-level Dev Server allowance (no request token, no secrets)."""
+    if install_profile is None or dev_control_enabled is None:
+        from core.install_profile import get_install_profile_state
+
+        state = get_install_profile_state()
+        install_profile = state.install_profile
+        dev_control_enabled = state.dev_control_enabled
+    profile = (install_profile or "release").strip().lower()
+    if profile in LAB_PROFILES and dev_control_enabled:
+        return True
+    assessment = assess_developer_capability(
+        install_profile=profile,
+        dev_control_enabled=bool(dev_control_enabled),
+        request_headers=None,
+    )
+    return bool(assessment.get("dcc_route_open") and assessment.get("developer_capability_configured"))
 
 
 def developer_capability_host_exemption_summary() -> dict[str, Any]:

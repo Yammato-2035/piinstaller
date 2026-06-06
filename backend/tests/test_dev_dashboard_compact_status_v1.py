@@ -12,7 +12,10 @@ _backend = Path(__file__).resolve().parent.parent
 if str(_backend) not in sys.path:
     sys.path.insert(0, str(_backend))
 
-from core.dev_dashboard_compact_status import build_compact_dcc_status  # noqa: E402
+from core.dev_dashboard_compact_status import (  # noqa: E402
+    _detect_usb_rescue_mount,
+    build_compact_dcc_status,
+)
 
 try:
     from fastapi.testclient import TestClient
@@ -49,6 +52,40 @@ class CompactStatusCoreTests(unittest.TestCase):
         usb_op = rescue.get("usb_operator") or {}
         self.assertIn("usb_detected", usb_op)
         self.assertIn("destructive_write_allowed", usb_op)
+
+    def test_compact_includes_dev_server_when_capability_allows(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "SETUPHELFER_INSTALL_PROFILE": "release",
+                "DCC_DEVELOPER_ENABLED": "1",
+                "DCC_DEVELOPER_TOKEN": "hidden-token-value",
+            },
+            clear=False,
+        ):
+            body = build_compact_dcc_status(
+                request_headers={"X-Setuphelfer-Developer-Token": "hidden-token-value"},
+                backend_runtime_path="/opt/setuphelfer/backend",
+            )
+        dev = body.get("dev_server") or {}
+        self.assertTrue(dev.get("host_locally_allowed"))
+        self.assertTrue(dev.get("enabled"))
+        self.assertEqual(dev.get("mode"), "local_lab")
+
+    def test_detect_usb_mount_skips_inaccessible_paths(self) -> None:
+        class _BlockedPath:
+            def __init__(self, raw: str) -> None:
+                self._raw = raw
+
+            def is_dir(self) -> bool:
+                if "volker" in self._raw:
+                    raise PermissionError(13, "Permission denied")
+                return False
+
+        with patch("core.dev_dashboard_compact_status.Path", side_effect=_BlockedPath):
+            result = _detect_usb_rescue_mount()
+        self.assertFalse(result["detected"])
+        self.assertIsNone(result["mount_path"])
 
 
 @unittest.skipUnless(_HAS_TC, "FastAPI TestClient nicht verfügbar")

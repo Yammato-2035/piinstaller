@@ -147,6 +147,12 @@ def build_dev_server_section() -> dict[str, Any]:
         config = load_dev_server_config()
         storage = DevServerStorage(config.storage_root)
         storage_ok = storage.storage_ok()
+        try:
+            from core.developer_capability import is_dev_server_host_locally_allowed
+
+            host_locally_allowed = is_dev_server_host_locally_allowed()
+        except Exception:
+            host_locally_allowed = False
         nodes = storage.list_nodes() if config.enabled else []
         reports = storage.list_reports(limit=50) if config.enabled else []
 
@@ -175,6 +181,8 @@ def build_dev_server_section() -> dict[str, Any]:
             "status": "available",
             "enabled": config.enabled,
             "mode": config.mode,
+            "host_locally_allowed": host_locally_allowed,
+            "capability_gated": not config.enabled and host_locally_allowed,
             "storage_ok": storage_ok,
             "ssh_allowed": config.ssh_allowed,
             "public_uploads_allowed": config.public_uploads_allowed,

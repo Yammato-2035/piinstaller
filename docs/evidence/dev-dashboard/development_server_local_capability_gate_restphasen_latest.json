@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "audited_at": "2026-06-06T15:00:00+02:00",
+  "prompt_id": "DEVELOPMENT_SERVER_LOCAL_CAPABILITY_GATE_RESTPHASEN_TEST_AUDIT",
+  "classification": "deploy_required",
+  "status": "workspace_validated_live_pending_deploy",
+  "git": {
+    "head_short": "13b91ff",
+    "branch": "main",
+    "working_tree": "dirty",
+    "fix_committed": false,
+    "unrelated_changes_present": true
+  },
+  "version": {
+    "workspace_project_version": "1.7.4.1",
+    "live_project_version": "1.7.4.0",
+    "version_policy_drift": false,
+    "check_version_consistency_ok": true,
+    "frontend_package_json": "1.7.4.1",
+    "frontend_package_lock": "1.7.4.1",
+    "root_package_json": "1.7.4.1",
+    "cargo_tauri_semver": "1.7.4",
+    "tauri_resource_project_version": "1.7.4.1"
+  },
+  "deploy": {
+    "deploy_executed_in_audit": false,
+    "verify_deploy_to_opt_ok": false,
+    "sha256_mismatch_count": 10,
+    "version_mismatch_fields": [
+      "runtime/config/version.json",
+      "api/project_version"
+    ],
+    "backend_restart_executed": false
+  },
+  "token": {
+    "configured": true,
+    "length_chars": 64,
+    "valid_with_curl": true,
+    "value_logged": false
+  },
+  "api_without_token": {
+    "dev_dashboard_status_http": 404,
+    "dev_dashboard_status_code": "DEVELOPER_CAPABILITY_REQUIRED",
+    "compact_status_http": 200,
+    "compact_has_dev_server_field": false,
+    "dev_server_health_http": 404,
+    "telemetry_health_http": 200
+  },
+  "api_with_token": {
+    "capability_status": {
+      "dcc_visible": true,
+      "reason": "DEVELOPER_CAPABILITY_VALID",
+      "developer_capability_configured": true,
+      "developer_capability_valid": true,
+      "dcc_developer_enabled": true,
+      "dev_server_locally_allowed_field_present": false
+    },
+    "compact_status": {
+      "status": "ok",
+      "dcc_visible": true,
+      "dev_server_field_present": false,
+      "telemetry_health_ok": true,
+      "telemetry_ingest_enabled": true
+    },
+    "dev_server_health_http": 404,
+    "dev_server_health_code": "PROFILE_ROUTE_BLOCKED"
+  },
+  "workspace_simulation_with_token": {
+    "dev_server_locally_allowed": true,
+    "compact_dev_server": {
+      "enabled": true,
+      "mode": "local_lab",
+      "host_locally_allowed": true,
+      "routes_available": true,
+      "require_token": true
+    },
+    "router_register": true,
+    "load_dev_server_config_enabled": true
+  },
+  "openapi_live": {
+    "dev_server_routes_registered": false,
+    "dev_dashboard_routes_registered": true,
+    "rescue_telemetry_routes_registered": true
+  },
+  "tests": {
+    "check_version_consistency": "pass",
+    "py_compile": "pass",
+    "backend_unittest_selected": "pass_40_ok_3_skipped",
+    "route_exposure_pytest_style": "pass_7",
+    "test_development_server_capability_gate_v1": "TEST_COVERAGE_GAP",
+    "frontend_dcc_tests": "pass_19",
+    "frontend_devserver_tests": "pass_4",
+    "frontend_compact_tests": "pass_3",
+    "frontend_build": "pass_1.7.4.1"
+  },
+  "live_error_classification": [
+    {
+      "code": "DEVSERVER-CAPABILITY-001",
+      "applies": true,
+      "note": "Token valid, DCC visible, dev_server disabled/missing in compact on live"
+    },
+    {
+      "code": "DEVSERVER-CAPABILITY-003",
+      "applies": true,
+      "note": "OpenAPI lists zero /api/dev-server routes on live"
+    },
+    {
+      "code": "DEVSERVER-CAPABILITY-006",
+      "applies": true,
+      "note": "/opt not synced with workspace 1.7.4.1 fix files"
+    }
+  ],
+  "blockers": [
+    "DEPLOY_REQUIRED_1_7_4_1",
+    "DEVSERVER-CAPABILITY-006",
+    "RESCUE_ISO_INTEL_WIFI_BT_FIRMWARE_MISSING",
+    "RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED"
+  ],
+  "next_prompt_id": "DEVELOPMENT_SERVER_LOCAL_CAPABILITY_DEPLOY_OPERATOR_RUN",
+  "parallel_next_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_SERIAL_MARKER_REBUILD_OPERATOR_RUN",
+  "handoff_docs": [
+    "docs/evidence/dev-dashboard/DEVELOPMENT_SERVER_LOCAL_CAPABILITY_GATE_RESTPHASEN_TEST_AUDIT.md",
+    "docs/evidence/dev-dashboard/DEVELOPMENT_SERVER_LOCAL_CAPABILITY_GATE_FIX_RESULT.md"
+  ]
+}

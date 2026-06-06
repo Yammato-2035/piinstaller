@@ -1199,13 +1199,15 @@
           "title_de": "Developer-Capability-Token für DCC",
           "title_en": "Developer capability token for DCC",
           "status": "yellow",
-          "progress_percent": 70,
+          "progress_percent": 85,
           "planned_start": "2026-06-05",
           "planned_end": null,
           "completed_at": null,
           "evidence_links": [
             "docs/architecture/DEVELOPER_CAPABILITY_AND_DCC_PROFILE_MODEL.md",
             "docs/evidence/dev-dashboard/DEVELOPER_CAPABILITY_DCC_MODEL_RESULT.md",
+            "docs/evidence/dev-dashboard/DEVELOPMENT_SERVER_LOCAL_CAPABILITY_GATE_FIX_RESULT.md",
+            "docs/evidence/dev-dashboard/DEVELOPMENT_SERVER_LOCAL_CAPABILITY_GATE_RESTPHASEN_TEST_AUDIT.md",
             "backend/tests/test_developer_capability_v1.py"
           ],
           "tasks": [

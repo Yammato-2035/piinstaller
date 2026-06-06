@@ -11,7 +11,7 @@ from typing import Any
 
 UTC = timezone.utc
 
-DEVELOPER_CAPABILITY_EXEMPT_API_PREFIXES = frozenset({"/api/dev-dashboard"})
+DEVELOPER_CAPABILITY_EXEMPT_API_PREFIXES = frozenset({"/api/dev-dashboard", "/api/dev-server"})
 
 
 def repo_root() -> Path:

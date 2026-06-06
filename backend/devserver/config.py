@@ -58,9 +58,13 @@ def _profile_dev_server_defaults() -> tuple[bool | None, DevServerMode | None, b
         from runtime_governance.service import resolve_runtime_governance_bundle
 
         bundle = resolve_runtime_governance_bundle()
-        if not bundle.capabilities.dev_server_enabled:
-            return None, None, None
         policy = build_devserver_policy(bundle.profile, bundle.capabilities)
+        if (
+            policy.enabled_default is None
+            and policy.mode_default is None
+            and policy.require_token_default is None
+        ):
+            return None, None, None
     except Exception:
         return None, None, None
     mode: DevServerMode | None = None

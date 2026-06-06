@@ -9,6 +9,8 @@
 | `developer` | mit gültiger Developer-Capability | sichtbar bei `dcc_allowed=true` | separat |
 | `local_lab` | wie developer | wie developer | separat |
 
+**Development Server auf Release:** nur wenn Host-Capability konfiguriert ist (`DCC_DEVELOPER_ENABLED` + Token-Datei/Env). DCC-Token allein reicht nicht für fremde Rechner ohne Host-Konfiguration.
+
 ## Sichtbarkeitsmodell
 
 DCC darf sichtbar sein, wenn:

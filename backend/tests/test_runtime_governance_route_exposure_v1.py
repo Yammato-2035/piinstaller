@@ -63,3 +63,27 @@ def test_release_capability_status_never_profile_blocked_at_exposure_layer():
         d = decide_route_exposure("/api/dev-dashboard/capability-status", bundle.capabilities)
         assert d.allowed is True
         assert path_allowed_for_active_profile("/api/dev-dashboard/capability-status") is True
+
+
+def test_release_dev_server_blocked_without_developer_capability():
+    with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=True):
+        bundle = resolve_runtime_governance_bundle()
+        d = decide_route_exposure("/api/dev-server/health", bundle.capabilities)
+        assert d.allowed is False
+        assert path_allowed_for_active_profile("/api/dev-server/health") is False
+
+
+def test_release_dev_server_allowed_with_developer_capability_on_host():
+    with patch.dict(
+        os.environ,
+        {
+            "SETUPHELFER_INSTALL_PROFILE": "release",
+            "DCC_DEVELOPER_ENABLED": "1",
+            "DCC_DEVELOPER_TOKEN": "dev-host-token",
+        },
+        clear=True,
+    ):
+        bundle = resolve_runtime_governance_bundle()
+        d = decide_route_exposure("/api/dev-server/health", bundle.capabilities)
+        assert d.allowed is True
+        assert path_allowed_for_active_profile("/api/dev-server/health") is True

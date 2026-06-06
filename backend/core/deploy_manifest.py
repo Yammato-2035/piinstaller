@@ -30,6 +30,10 @@ DEPLOY_MANIFEST_REL_PATHS: tuple[str, ...] = (
     "backend/core/dev_dashboard_compact_status.py",
     "backend/core/dev_dashboard_status_service.py",
     "backend/core/developer_capability.py",
+    "backend/core/dev_control_center_summary.py",
+    "backend/runtime_governance/devserver_policy.py",
+    "backend/runtime_governance/route_exposure.py",
+    "backend/devserver/config.py",
     "backend/core/rescue_usb_operator_selection.py",
     "backend/core/profile_deploy_manifest.py",
     "backend/core/rescue_telemetry_ingest.py",
@@ -42,6 +46,7 @@ DEPLOY_MANIFEST_REL_PATHS: tuple[str, ...] = (
     "frontend/src/components/ApiRuntimeConsistencyBanner.tsx",
     "frontend/src/components/dev-dashboard/RescueUsbOperatorToolbox.tsx",
     "frontend/src/lib/devDashboard/rescueUsbOperatorToolbox.ts",
+    "frontend/src/components/dev-dashboard/DccCompactOverviewPanel.tsx",
     "frontend/src/pages/DevDashboardBody.tsx",
 )
 
