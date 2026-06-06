@@ -6,6 +6,7 @@
 #       16 API-Payload ungültig (Pflichtfelder / status) |
 #       17 Workspace-Versionsquellen inkonsistent (package.json, Tauri, lock) |
 #       18 Runtime-/opt-Versionsquellen inkonsistent zum Workspace |
+#       19 Packaging-Artefakt-Version nicht zuordenbar |
 #       20 unklar
 
 set -euo pipefail
@@ -180,4 +181,15 @@ if ! grep -q "/api/version" "$OPT_APP" 2>/dev/null; then
 fi
 
 log "check-backend-version-gate: OK (HTTP 200, Versionsfelder ok, config konsistent)"
+
+if [[ -x "$REPO_ROOT/scripts/check-packaging-version-gate.sh" ]]; then
+  set +e
+  "$REPO_ROOT/scripts/check-packaging-version-gate.sh"
+  pkg_rc=$?
+  set -e
+  if [[ "$pkg_rc" -eq 19 ]]; then
+    exit 19
+  fi
+fi
+
 exit 0

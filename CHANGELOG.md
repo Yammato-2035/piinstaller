@@ -16,6 +16,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Deploy-to-opt:** Post-Deploy-Verifikation (kritische Backend-Module, OpenAPI-Routen); erweiterte Deploy-Manifest-Whitelist; KB/FAQ + interne DCC-Sammlung.
 - **DCC:** Developer-Capability-Gate für `/status`; deploy_drift-Profil-Trennung; Compact-Status-Route und UI.
 - **Version policy:** Konsistenz-Gate (`version_consistency.py`, Exit 17/18); `sync-version.js` synchronisiert auch `package-lock.json`.
+- **Packaging projection:** `version_projection.py` — Cargo/Tauri semver X.Y.Z vs. Projektversion X.Y.Z.W; Packaging-Gate + `rename-tauri-bundle-artifacts.sh`.
 
 ### Changed
 

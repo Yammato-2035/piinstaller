@@ -28,12 +28,15 @@ Prüfung:
 ```bash
 python3 backend/tools/check_version_consistency.py --repo-root .
 ./scripts/check-backend-version-gate.sh
+./scripts/check-packaging-version-gate.sh
 ```
 
-Exit **17** = Workspace-Drift, **18** = `/opt` oder API drift.
+Exit **17** = Workspace-Drift, **18** = `/opt` oder API drift, **19** = Packaging-Artefakt nicht zuordenbar.
 
-## Deploy
+## Packaging / Tauri
 
-`deploy-to-opt.sh` / `verify_deploy_to_opt.py` (`post-restart`) prüfen Runtime-Versionskonsistenz. Deploy nicht als erfolgreich werten, wenn Gate rot.
+- `semver_package_version` = erste drei Stellen von `project_version` (Cargo/Tauri).
+- `Compiling pi-installer v1.7.3` bei Projektversion `1.7.3.1` ist **korrekte Projektion**, kein Versionsfehler.
+- Sichtbare Bundle-Namen mit **voller Projektversion:** `npm run tauri:build:projected`.
 
-Details: `docs/developer/VERSIONING.md`
+Details: `docs/developer/VERSIONING.md` (Abschnitt Versionsebenen Packaging)

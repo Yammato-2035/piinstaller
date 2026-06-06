@@ -43,6 +43,31 @@ python3 backend/tools/check_version_consistency.py --repo-root .
 
 Inkonsistenz (z. B. `frontend/package.json` ≠ `config/version.json`) blockiert das Backend-Version-Gate (Exit **17** Workspace, **18** Runtime).
 
+## Versionsebenen (Packaging)
+
+| Ebene | Feld / Beispiel | Zweck |
+|--------|-----------------|--------|
+| **setuphelfer_project_version** | `config/version.json` → `1.7.3.1` | API, Backend, Frontend npm, Operator-Anzeige |
+| **semver_package_version** | Tauri/Cargo → `1.7.3` | **Technische Pflicht:** Rust/Cargo akzeptieren kein viertes numerisches Segment als Semver |
+| **deb_upstream_version** | `1.7.3.1` | Debian-Upstream-Version (volle Projektversion) |
+| **deb_package_revision** | `1` | Debian-Revisionsnummer (`1.7.3.1-1`) |
+| **rpm_version / rpm_release** | `1.7.3.1` / `1` | RPM-Dateiname `SetupHelfer-1.7.3.1-1.x86_64.rpm` |
+
+### Mapping-Regel (verbindlich)
+
+Bei Projektversion **X.Y.Z.W**:
+
+1. **Cargo/Tauri compile:** `Compiling pi-installer vX.Y.Z` — **erwartet**, kein Fehler.
+2. **Tauri-Bundle (Default):** Dateinamen mit **X.Y.Z** (z. B. `SetupHelfer_1.7.3_amd64.deb`).
+3. **Soll-Artefakte (Operator):** Dateinamen mit **X.Y.Z.W** nach Rename:
+   ```bash
+   cd frontend && npm run tauri:build:projected
+   # oder: npm run tauri:build && ../scripts/rename-tauri-bundle-artifacts.sh
+   ```
+4. **Gate:** `./scripts/check-packaging-version-gate.sh` — semver-only bei W>0 → **Warnung**; unbekannte Version → Exit **19**.
+
+Implementierung: `backend/core/version_projection.py`, `backend/tools/check_packaging_version_gate.py`.
+
 So bleibt jeder Stand (z. B. aus Git) einer konkreten Version zugeordnet.
 
 ### Eine Version pro Bereich / pro Änderung
@@ -52,7 +77,7 @@ So bleibt jeder Stand (z. B. aus Git) einer konkreten Version zugeordnet.
 
 ## Wo wird die Version geführt?
 
-- **Einzige Quelle der Wahrheit:** `config/version.json` im Projektroot (Feld `version`, z. B. `"1.3.8.0"`). Nur diese Datei anpassen – alle anderen werden daraus abgeleitet.
+- **Einzige Quelle der Wahrheit:** `config/version.json` im Projektroot (Feld **`project_version`**, z. B. `"1.7.3.1"`). Nur diese Datei anpassen – alle anderen werden daraus abgeleitet.
 - **Backend:** Liest die Version aus `config/version.json` (Fallback: `VERSION`) für z. B. `/api/version`.
 - **Frontend:** `frontend/package.json` → Feld `version` (wird von `sync-version.js` aus `config/version.json` geschrieben).
 - **Frontend lock:** `frontend/package-lock.json` → Root-Paket `version` (ebenfalls via `sync-version.js`).

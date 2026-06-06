@@ -245,7 +245,7 @@ Aktuell **keine** zusätzliche erzwungene Lint-Regel „keine Literal-Strings“
 | **Y (2.) Bereich** | Neuer Produktbereich / strategische Erweiterung |
 | **X (1.) Release** | Erst nach Betatestphase und öffentlichem Release |
 
-**Nach Bump:** `cd frontend && node sync-version.js` → `python3 backend/tools/check_version_consistency.py --repo-root .` → Gate `./scripts/check-backend-version-gate.sh` (Exit **17**/ **18** bei Drift).
+**Nach Bump:** `cd frontend && node sync-version.js` → `python3 backend/tools/check_version_consistency.py --repo-root .` → Gate `./scripts/check-backend-version-gate.sh` (Exit **17**/ **18** bei Drift; **19** bei unzuordenbarem Packaging-Artefakt). Packaging semver-Projektion (Cargo `v1.7.3` bei Projekt `1.7.3.1`): `./scripts/check-packaging-version-gate.sh` — Warnung, kein Fehler.
 
 **Nicht angepasst** → im Bericht **explizit begründen** (z. B. „reine interne Refactor, kein Changelog laut Team“ – nur wenn so vereinbart).
 

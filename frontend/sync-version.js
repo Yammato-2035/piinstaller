@@ -26,6 +26,8 @@ try {
 }
 // Für Cargo.toml: nur major.minor.patch (Tauri/Cargo verlangt gültiges Semver)
 const vCargo = v.replace(/^(\d+\.\d+\.\d+).*$/, '$1');
+const vParts = v.split('.');
+const patchComponent = vParts.length >= 4 ? parseInt(vParts[3], 10) : 0;
 let changed = false;
 try {
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
@@ -40,8 +42,25 @@ try {
 try {
   if (fs.existsSync(tauriPath)) {
     const tauri = JSON.parse(fs.readFileSync(tauriPath, 'utf8'));
+    let tauriChanged = false;
     if (tauri.version !== vCargo) {
       tauri.version = vCargo;
+      tauriChanged = true;
+    }
+    if (tauri.setuphelferProjectVersion !== v) {
+      tauri.setuphelferProjectVersion = v;
+      tauriChanged = true;
+    }
+    if (tauri.bundle && typeof tauri.bundle === 'object') {
+      if (!tauri.bundle.linux) tauri.bundle.linux = {};
+      if (!tauri.bundle.linux.deb) tauri.bundle.linux.deb = {};
+      const changelog = `SetupHelfer ${v} (Cargo/Tauri semver ${vCargo}; patch W=${patchComponent})`;
+      if (tauri.bundle.linux.deb.changelog !== changelog) {
+        tauri.bundle.linux.deb.changelog = changelog;
+        tauriChanged = true;
+      }
+    }
+    if (tauriChanged) {
       fs.writeFileSync(tauriPath, JSON.stringify(tauri, null, 2) + '\n');
       changed = true;
     }
@@ -108,5 +127,5 @@ try {
   console.warn('[sync-version] package-lock.json:', e.message);
 }
 if (changed) {
-  console.log('[sync-version] version ->', v);
+  console.log('[sync-version] project_version ->', v, '| semver_package_version ->', vCargo);
 }

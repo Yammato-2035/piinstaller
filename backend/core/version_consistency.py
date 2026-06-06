@@ -11,6 +11,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from core.version_projection import build_version_projection
+
 VERSION_JSON_REL = "config/version.json"
 VERSION_TXT_REL = "VERSION"
 ROOT_PACKAGE_REL = "package.json"
@@ -24,10 +26,15 @@ _CARGO_VERSION_RE = re.compile(r'^version\s*=\s*"([^"]+)"', re.MULTILINE)
 
 def semver_triple(project_version: str) -> str:
     """1.7.3.1 -> 1.7.3 (Tauri/Cargo Semver)."""
-    parts = str(project_version or "").strip().split(".")
-    if len(parts) >= 3:
-        return ".".join(parts[:3])
-    return str(project_version or "").strip()
+    try:
+        from core.version_projection import build_version_projection
+
+        return build_version_projection(project_version).semver_package_version
+    except ValueError:
+        parts = str(project_version or "").strip().split(".")
+        if len(parts) >= 3:
+            return ".".join(parts[:3])
+        return str(project_version or "").strip()
 
 
 def _read_json(path: Path) -> dict[str, Any] | None:
@@ -125,11 +132,19 @@ def check_workspace_consistency(repo_root: Path) -> dict[str, Any]:
     if not canonical:
         mismatches.append("config/version.json:project_version_missing")
 
+    projection = None
+    if canonical:
+        try:
+            projection = build_version_projection(canonical).to_public_dict()
+        except ValueError:
+            mismatches.append("config/version.json:invalid_project_version_format")
+
     return {
         "ok": not mismatches,
         "scope": "workspace",
         "canonical": canonical,
         "tauri_semver_expected": tauri_expected,
+        "version_projection": projection,
         "sources": {k: v for k, v in sources.items() if k not in ("canonical", "tauri_semver_expected")},
         "mismatches": mismatches,
     }

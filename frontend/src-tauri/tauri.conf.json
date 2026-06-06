@@ -44,8 +44,10 @@
     "longDescription": "SetupHelfer als eigenständige Desktop-Anwendung. Verbindet sich mit dem Backend (Standard: http://localhost:8000).",
     "linux": {
       "deb": {
-        "depends": []
+        "depends": [],
+        "changelog": "SetupHelfer 1.7.3.1 (Cargo/Tauri semver 1.7.3; patch W=1)"
       }
     }
-  }
+  },
+  "setuphelferProjectVersion": "1.7.3.1"
 }
