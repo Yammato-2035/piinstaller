@@ -1,13 +1,13 @@
 {
-  "selected_at": "2026-06-07T11:49:57+02:00",
-  "next_prompt_id": "RESCUE_MSI_BOOT_START_ASSISTANT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "reason_de": "USB-Stick /dev/sdb mit Start-Assistant-ISO 1.7.7.0 geschrieben; Readback-SHA256 Match; Bootartefakte und Branding auf Stick verifiziert. MSI-Boot mit Startassistent/WLAN/Telemetrie als Nächstes.",
+  "selected_at": "2026-06-07T12:05:00+02:00",
+  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITER_IMPLEMENTATION",
+  "reason_de": "MSI bootet nicht trotz Readback-Match; ISO besteht deep-UEFI-Validator (El-Torito+Hybrid+efi.img). Wahrscheinliche Ursache: isohybrid ISO9660 auf MSI. FAT32-ESP-Writer als Fix-Pfad; Operator soll Boot-Fehlermodus dokumentieren.",
   "prerequisites": [
-    "MSI-Laptop von Stick booten (UEFI bevorzugt: Setuphelfer Rettung starten oder Netzwerk-Assistent)",
-    "Telemetrie-LAN-Proxy 192.168.178.140:8001 erreichbar halten",
-    "Start-Assistant-Wizard read-only smoke (keine Schreibaktionen)",
-    "Telemetrie-Health + Ingest-ACK dokumentieren"
+    "Operator dokumentiert UEFI_MENU_NOT_VISIBLE vs UEFI_ENTRY_VISIBLE_BUT_BOOT_FAILS vs GRUB_VISIBLE_BUT_LINUX_FAILS",
+    "write-rescue-usb-fat32-esp.sh Prototyp implementieren (plan-only bisher)",
+    "Kein erneutes dd mit gleicher ISO"
   ],
-  "follow_up_prompt_id": "RESCUE_TARGET_NETWORK_TELEMETRY_VALIDATION",
-  "superseded_prompt_id": "RESCUE_USB_REWRITE_AFTER_START_ASSISTANT_ISO_OPERATOR_RUN"
+  "follow_up_prompt_id": "RESCUE_MSI_BOOT_START_ASSISTANT_NETWORK_TELEMETRY_OPERATOR_RUN",
+  "superseded_prompt_id": "RESCUE_MSI_BOOT_START_ASSISTANT_NETWORK_TELEMETRY_OPERATOR_RUN",
+  "alternate_prompt_id": "RESCUE_MSI_BOOT_MODE_OPERATOR_TRIAGE"
 }

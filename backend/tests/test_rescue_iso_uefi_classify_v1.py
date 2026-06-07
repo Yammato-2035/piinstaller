@@ -53,12 +53,51 @@ class RescueIsoUefiClassifyTests(unittest.TestCase):
             has_bios_boot=True,
             has_efi_eltorito=True,
             has_bootx64_efi=True,
+            has_plain_eltorito_uefi=True,
+            has_boot_catalog=True,
+            has_hybrid_usb_layout=True,
+            efi_img_bootable_fat=True,
             xorriso_report_excerpt="-e boot/grub/efi.img",
         )
         result = classify_uefi_iso(signals)
         self.assertTrue(result["uefi_boot_ready"])
         self.assertEqual(result["status"], "uefi_x64_boot_ready")
         self.assertEqual(result["errors"], [])
+
+    def test_files_present_but_no_plain_uefi_entry_fails_deep(self) -> None:
+        signals = UefiIsoSignals(
+            iso_exists=True,
+            sha256="abc",
+            has_bios_boot=True,
+            has_efi_eltorito=True,
+            has_bootx64_efi=True,
+            has_plain_eltorito_uefi=False,
+            has_boot_catalog=False,
+            has_hybrid_usb_layout=True,
+            efi_img_bootable_fat=True,
+            xorriso_report_excerpt="-e boot/grub/efi.img",
+        )
+        result = classify_uefi_iso(signals)
+        self.assertFalse(result["uefi_boot_ready"])
+        codes = {e["code"] for e in result["errors"]}
+        self.assertIn("RESCUE-UEFI-008", codes)
+
+    def test_hybrid_layout_incomplete_fails_deep(self) -> None:
+        signals = UefiIsoSignals(
+            iso_exists=True,
+            sha256="abc",
+            has_bios_boot=True,
+            has_efi_eltorito=True,
+            has_bootx64_efi=True,
+            has_plain_eltorito_uefi=True,
+            has_boot_catalog=True,
+            has_hybrid_usb_layout=False,
+            efi_img_bootable_fat=True,
+        )
+        result = classify_uefi_iso(signals)
+        self.assertFalse(result["uefi_boot_ready"])
+        codes = {e["code"] for e in result["errors"]}
+        self.assertIn("RESCUE-UEFI-009", codes)
 
     @patch("core.rescue_iso_uefi_classify._xorriso_find", return_value=False)
     @patch("core.rescue_iso_uefi_classify._xorriso_report")
