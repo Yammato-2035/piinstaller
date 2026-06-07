@@ -106,6 +106,26 @@ Kernänderungen 1.7.8.x:
 - **1.7.8.1:** GPT-Name vs. FAT-Label getrennt
 - **1.7.8.2:** FAT-safe rsync, `sudo blkid -p` nach mkfs
 - **1.7.8.3:** `sudo blkid -p` im Verify, stale iso9660-Warnung, `wipefs` vor sgdisk
+- **1.7.8.4:** GRUB `search --no-floppy --label SETUPHELFER --set=root` (kein `--file` squashfs)
+
+## GRUB-Fix 1.7.8.4 — Recopy ohne mkfs
+
+MSI: GRUB startet, `/live/vmlinuz not found` — Root-Search in grub.cfg falsch.
+
+**Operator (nur Recopy):**
+
+```bash
+cd /home/volker/piinstaller
+./scripts/rescue-live/build-fat32-esp-usb-layout.sh \
+  --iso build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso \
+  --output-dir build/rescue/fat32-esp-staging
+MNT=$(mktemp -d)
+sudo mount /dev/sdb1 "$MNT"
+sudo rsync -r --delete --info=progress2 --no-owner --no-group --no-perms \
+  --omit-dir-times --exclude='.sqtmp/' build/rescue/fat32-esp-staging/ "$MNT/"
+sync && sudo umount "$MNT" && rmdir "$MNT"
+./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh --target /dev/sdb
+```
 
 ## Gate-Status (ehrlich)
 
@@ -120,7 +140,7 @@ Kernänderungen 1.7.8.x:
 
 ## Nächster Prompt
 
-`RESCUE_USB_FAT32_ESP_VERIFY_AND_MSI_BOOT_HANDOFF` — Verify Exit 0 mit 1.7.8.3, optional stale iso9660 bereinigen, MSI-Boot.
+`RESCUE_USB_FAT32_ESP_GRUB_FIXED_RECOPY_OPERATOR_RUN` — Staging 1.7.8.4 recopy, Verify, MSI-Boot.
 
 ## Nicht ausgeführt
 

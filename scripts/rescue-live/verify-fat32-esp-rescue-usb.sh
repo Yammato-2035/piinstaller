@@ -157,6 +157,36 @@ else
   fail "grub.cfg missing required menu entry" 24
 fi
 
+GRUB_CHECK="$(python3 - <<PY
+import json
+from pathlib import Path
+from core.rescue_fat32_esp_usb_verify import validate_fat32_esp_grub_cfg_file
+
+result = validate_fat32_esp_grub_cfg_file(
+    Path(${MOUNT@Q}) / "boot/grub/grub.cfg",
+    mount_root=Path(${MOUNT@Q}),
+)
+print(json.dumps(result))
+PY
+)"
+
+GRUB_OK="$(python3 - <<PY
+import json
+print("yes" if json.loads(${GRUB_CHECK@Q}).get("ok") else "no")
+PY
+)"
+
+if [[ "$GRUB_OK" != "yes" ]]; then
+  python3 - <<PY
+import json, sys
+r = json.loads(${GRUB_CHECK@Q})
+for code in r.get("errors") or []:
+    print(f"RESCUE-FAT32-VERIFY: {code}", file=sys.stderr)
+sys.exit(29)
+PY
+fi
+echo "OK: grub.cfg FAT root search and kernel/initrd paths"
+
 SQ_SIZE="$(stat -c '%s' "$MOUNT/live/filesystem.squashfs" 2>/dev/null || echo 0)"
 echo "filesystem.squashfs size_bytes=${SQ_SIZE}"
 [[ "$SQ_SIZE" -gt 100000000 ]] || fail "filesystem.squashfs size implausible" 26

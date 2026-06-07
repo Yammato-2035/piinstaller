@@ -36,9 +36,8 @@ class RescueFat32EspUsbTests(unittest.TestCase):
         self.assertIn("setuphelfer_start_assistant=1", params.base_append)
         self.assertIn("setuphelfer_network_onboarding=1", params.labels["setuphelfer-rescue-network"])
 
-    def test_generate_grub_cfg_required_menus(self) -> None:
-        params = fat32.parse_live_cfg_boot_params(SAMPLE_LIVE_CFG)
-        cfg = fat32.generate_grub_cfg(params)
+    def test_generate_fat32_esp_grub_cfg_required_menus(self) -> None:
+        cfg = fat32.generate_fat32_esp_grub_cfg()
         for title in (
             "Setuphelfer Rettung starten",
             "Netzwerk-Assistent",
@@ -51,6 +50,45 @@ class RescueFat32EspUsbTests(unittest.TestCase):
             self.assertIn(title.split()[0], cfg)
         self.assertIn("linux /live/vmlinuz", cfg)
         self.assertIn("initrd /live/initrd.img", cfg)
+        self.assertIn(f"search --no-floppy --label {fat32.FAT_VOLUME_LABEL} --set=root", cfg)
+        self.assertNotIn(f"--label {fat32.GPT_PARTITION_NAME}", cfg)
+        self.assertNotIn("search --set=root --file", cfg)
+        self.assertIn("pci=noaer", cfg)
+        self.assertIn("nomodeset", cfg)
+        self.assertIn("nouveau.modeset=0", cfg)
+
+    def test_generate_grub_cfg_required_menus(self) -> None:
+        params = fat32.parse_live_cfg_boot_params(SAMPLE_LIVE_CFG)
+        cfg = fat32.generate_grub_cfg(params)
+        self.assertIn("linux /live/vmlinuz", cfg)
+
+    def test_fat32_esp_grub_cfg_staging_paths(self) -> None:
+        from core.rescue_fat32_esp_usb_verify import validate_fat32_esp_grub_cfg
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "live").mkdir(parents=True)
+            (root / "live" / "vmlinuz").write_bytes(b"kernel")
+            (root / "live" / "initrd.img").write_bytes(b"initrd")
+            cfg = fat32.generate_fat32_esp_grub_cfg()
+            result = validate_fat32_esp_grub_cfg(cfg, mount_root=root)
+            self.assertTrue(result["ok"], result["errors"])
+            self.assertEqual(result["boot_menu_entries"], 5)
+
+    def test_fat32_esp_grub_verify_fails_missing_kernel(self) -> None:
+        from core.rescue_fat32_esp_usb_verify import (
+            GRUB_ERROR_KERNEL,
+            validate_fat32_esp_grub_cfg,
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "live").mkdir()
+            (root / "live" / "initrd.img").write_bytes(b"x")
+            cfg = fat32.generate_fat32_esp_grub_cfg()
+            result = validate_fat32_esp_grub_cfg(cfg, mount_root=root)
+            self.assertFalse(result["ok"])
+            self.assertIn(GRUB_ERROR_KERNEL, result["errors"])
 
     def test_validate_blocks_nvme_and_sda(self) -> None:
         with patch.object(fat32, "list_classified_devices", return_value=[]):
@@ -209,6 +247,25 @@ class RescueFat32EspUsbTests(unittest.TestCase):
         self.assertNotIn("rsync -a", cmd)
         self.assertIn("--no-owner", cmd)
         self.assertIn(".sqtmp", cmd)
+
+    def test_write_plan_includes_wipefs(self) -> None:
+        iso = Path("/tmp/fake-rescue.iso")
+        with patch.object(Path, "is_file", return_value=True):
+            with patch.object(fat32, "sha256_file", return_value="abc"):
+                with patch.object(
+                    fat32,
+                    "validate_fat32_write_target",
+                    return_value={"blocked": False, "blockers": []},
+                ):
+                    with patch.object(fat32, "extract_iso_files", side_effect=OSError("skip")):
+                        plan = fat32.build_write_plan(
+                            iso_path=iso,
+                            target_device="/dev/sdb",
+                            dry_run=True,
+                        )
+        blob = " ".join(plan["destructive_actions"])
+        self.assertIn("wipefs", blob)
+        self.assertIn("iso9660", plan["signature_wipe"]["repair_stale_iso9660"])
 
 
 if __name__ == "__main__":

@@ -6,6 +6,8 @@ import re
 import subprocess
 from typing import Any, Callable, Mapping, Sequence
 
+from pathlib import Path
+
 from core.rescue_fat32_esp_usb_writer import (
     EFI_PARTTYPE_UUID,
     FAT_VOLUME_LABEL,
@@ -16,6 +18,17 @@ Runner = Callable[..., Any]
 
 STALE_PARENT_ISO9660_WARN = "RESCUE-FAT32-WARN-STALE-PARENT-ISO9660-SIGNATURE"
 STALE_PARENT_ISO9660_REPAIR = "sudo wipefs -a -t iso9660 {target}"
+
+GRUB_ERROR_ROOT = "RESCUE-FAT32-GRUB-ROOT-001"
+GRUB_ERROR_KERNEL = "RESCUE-FAT32-GRUB-KERNEL-PATH-001"
+GRUB_ERROR_INITRD = "RESCUE-FAT32-GRUB-INITRD-PATH-001"
+
+_ACTIVE_GRUB_SEARCH_RE = re.compile(
+    r"^\s*search\b(?:(?!^\s*#).)*$",
+    re.I | re.M,
+)
+_GRUB_LINUX_RE = re.compile(r"^\s*linux\s+(\S+)", re.I | re.M)
+_GRUB_INITRD_RE = re.compile(r"^\s*initrd\s+(\S+)", re.I | re.M)
 
 
 def _run(cmd: list[str], *, runner: Runner | None = None, timeout: int = 30) -> subprocess.CompletedProcess[str]:
@@ -210,3 +223,102 @@ def lsblk_field(device: str, field: str, *, runner: Runner | None = None) -> str
     if proc.returncode != 0:
         return ""
     return (proc.stdout or "").strip().splitlines()[0] if (proc.stdout or "").strip() else ""
+
+
+def _grub_active_lines(grub_text: str) -> list[str]:
+    active: list[str] = []
+    for raw in grub_text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        active.append(line)
+    return active
+
+
+def _grub_path_to_rel(grub_path: str) -> str:
+    path = grub_path.strip()
+    if path.startswith("("):
+        # (hd0,gpt1)/live/vmlinuz -> live/vmlinuz
+        _, _, rest = path.partition(")")
+        path = rest or path
+    return path.lstrip("/")
+
+
+def validate_fat32_esp_grub_cfg(
+    grub_text: str,
+    *,
+    mount_root: Path | None = None,
+    fat_label: str = FAT_VOLUME_LABEL,
+) -> dict[str, Any]:
+    """Validate FAT32 ESP grub.cfg root search and kernel/initrd paths."""
+    errors: list[str] = []
+    active = _grub_active_lines(grub_text)
+    active_blob = "\n".join(active)
+
+    required_search = f"search --no-floppy --label {fat_label} --set=root"
+    if required_search not in active_blob:
+        errors.append(GRUB_ERROR_ROOT)
+
+    forbidden_tokens = ("loopback", "iso-scan", "findiso", "search --set=root --file")
+    for token in forbidden_tokens:
+        if token in active_blob:
+            errors.append(GRUB_ERROR_ROOT)
+
+    for line in active:
+        if line.startswith("search") and GPT_PARTITION_NAME in line:
+            errors.append(GRUB_ERROR_ROOT)
+
+    linux_paths = [m.group(1) for m in _GRUB_LINUX_RE.finditer("\n".join(active))]
+    initrd_paths = [m.group(1) for m in _GRUB_INITRD_RE.finditer("\n".join(active))]
+
+    if not linux_paths:
+        errors.append(GRUB_ERROR_KERNEL)
+    if not initrd_paths:
+        errors.append(GRUB_ERROR_INITRD)
+
+    boot_entries = len(linux_paths)
+    if boot_entries != len(initrd_paths):
+        errors.append(GRUB_ERROR_INITRD)
+
+    for lp in linux_paths:
+        rel = _grub_path_to_rel(lp)
+        if rel != "live/vmlinuz":
+            errors.append(GRUB_ERROR_KERNEL)
+        elif mount_root is not None and not (mount_root / rel).is_file():
+            errors.append(GRUB_ERROR_KERNEL)
+
+    for ip in initrd_paths:
+        rel = _grub_path_to_rel(ip)
+        if rel != "live/initrd.img":
+            errors.append(GRUB_ERROR_INITRD)
+        elif mount_root is not None and not (mount_root / rel).is_file():
+            errors.append(GRUB_ERROR_INITRD)
+
+    return {
+        "ok": not errors,
+        "errors": sorted(set(errors)),
+        "linux_paths": linux_paths,
+        "initrd_paths": initrd_paths,
+        "boot_menu_entries": boot_entries,
+    }
+
+
+def validate_fat32_esp_grub_cfg_file(
+    grub_cfg_path: Path,
+    *,
+    mount_root: Path | None = None,
+) -> dict[str, Any]:
+    if not grub_cfg_path.is_file():
+        return {
+            "ok": False,
+            "errors": [GRUB_ERROR_ROOT, GRUB_ERROR_KERNEL, GRUB_ERROR_INITRD],
+            "linux_paths": [],
+            "initrd_paths": [],
+            "boot_menu_entries": 0,
+        }
+    root = mount_root if mount_root is not None else grub_cfg_path.parent.parent.parent
+    return validate_fat32_esp_grub_cfg(
+        grub_cfg_path.read_text(encoding="utf-8", errors="replace"),
+        mount_root=root,
+    )
+

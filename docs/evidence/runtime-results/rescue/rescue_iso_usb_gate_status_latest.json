@@ -2,7 +2,8 @@
   "schema_version": 30,
   "classified_at": "2026-06-07T13:00:00+02:00",
   "classification": "fat32_esp_write_blocked_sudo_agent_session",
-  "workspace_version": "1.7.8.2",
+  "workspace_version": "1.7.8.4",
+  "fat32_esp_grub_root_fix_version": "1.7.8.4",
   "iso_sha256_current_in_tree": "3fe6628a1316b2ceaa2850748e47a2e9c8984266a92d541e7d2aa29f80d2dbf7",
   "iso_post_build_validated": true,
   "iso_uefi_validated": true,
@@ -45,5 +46,5 @@
     {"id": "RESCUE_MSI_UEFI_BOOT_NOT_VALIDATED", "status": "blocked"},
     {"id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED", "status": "blocked", "code": "RESCUE-UEFI-005"}
   ],
-  "next_prompt_id": "RESCUE_USB_FAT32_ESP_VERIFY_AND_MSI_BOOT_HANDOFF"
+  "next_prompt_id": "RESCUE_USB_FAT32_ESP_GRUB_FIXED_RECOPY_OPERATOR_RUN"
 }

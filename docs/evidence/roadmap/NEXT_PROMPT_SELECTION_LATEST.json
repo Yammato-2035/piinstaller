@@ -1,12 +1,13 @@
 {
-  "selected_at": "2026-06-07T18:00:00+02:00",
-  "next_prompt_id": "RESCUE_USB_FAT32_ESP_VERIFY_AND_MSI_BOOT_HANDOFF",
-  "reason_de": "Verify-Fix 1.7.8.3: sudo blkid -p auf Partition, stale parent iso9660 nur Warnung. Operator: Verify Exit 0, optional wipefs -t iso9660, MSI-Boot.",
+  "selected_at": "2026-06-07T20:00:00+02:00",
+  "next_prompt_id": "RESCUE_USB_FAT32_ESP_GRUB_FIXED_RECOPY_OPERATOR_RUN",
+  "reason_de": "GRUB root/search Fix 1.7.8.4: search --label SETUPHELFER statt --file squashfs. Operator: Staging recopy ohne mkfs, Verify, MSI-Boot.",
   "prerequisites": [
-    "verify-fat32-esp-rescue-usb.sh Exit 0 auf /dev/sdb",
-    "Optional: sudo wipefs -a -t iso9660 /dev/sdb bei Warnung",
-    "MSI UEFI-Boot-Test"
+    "build/rescue/fat32-esp-staging mit neuer grub.cfg (1.7.8.4)",
+    "FAT32-ESP /dev/sdb1 bereits vorhanden",
+    "Nur rsync recopy, kein sgdisk/mkfs",
+    "verify-fat32-esp-rescue-usb.sh Exit 0 inkl. GRUB checks"
   ],
-  "follow_up_prompt_id": "RESCUE_MSI_BOOT_FAT32_ESP_START_ASSISTANT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "superseded_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_COMPLETION_AFTER_RSYNC_FIX"
+  "follow_up_prompt_id": "RESCUE_USB_FAT32_ESP_VERIFY_AND_MSI_BOOT_HANDOFF",
+  "superseded_prompt_id": "RESCUE_USB_FAT32_ESP_VERIFY_AND_MSI_BOOT_HANDOFF"
 }

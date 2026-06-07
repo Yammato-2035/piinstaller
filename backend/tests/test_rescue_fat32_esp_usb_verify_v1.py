@@ -120,5 +120,15 @@ class RescueFat32EspUsbVerifyTests(unittest.TestCase):
         self.assertIn("iso9660", plan["signature_wipe"]["repair_stale_iso9660"])
 
 
+    def test_grub_validate_rejects_iso_file_search(self) -> None:
+        bad = (
+            "search --set=root --file /live/filesystem.squashfs\n"
+            "menuentry \"x\" { linux /live/vmlinuz boot=live\n initrd /live/initrd.img }\n"
+        )
+        result = verify.validate_fat32_esp_grub_cfg(bad)
+        self.assertFalse(result["ok"])
+        self.assertIn(verify.GRUB_ERROR_ROOT, result["errors"])
+
+
 if __name__ == "__main__":
     unittest.main()

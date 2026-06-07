@@ -132,8 +132,55 @@ def _menu_append(params: LiveBootParams, label: str, fallback: str) -> str:
     return params.labels.get(label, fallback)
 
 
+def generate_fat32_esp_grub_cfg(*, fat_label: str = FAT_VOLUME_LABEL) -> str:
+    """GRUB menu for FAT32 ESP USB — root via FAT volume label, not ISO9660."""
+    assert_valid_fat_volume_label(fat_label)
+
+    def entry(title: str, append: str) -> str:
+        return (
+            f'menuentry "{title}" {{\n'
+            f"  linux /live/vmlinuz {append}\n"
+            f"  initrd /live/initrd.img\n"
+            f"}}\n"
+        )
+
+    lines = [
+        "set timeout=10",
+        "set default=0",
+        f"search --no-floppy --label {fat_label} --set=root",
+        'if [ -z "$root" ]; then',
+        "  set root=($cmdpath)",
+        "fi",
+        "",
+        entry(
+            "Setuphelfer Rettung starten",
+            "boot=live components quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1",
+        ),
+        entry(
+            "Setuphelfer Rettung starten - Netzwerk-Assistent",
+            "boot=live components setuphelfer.network=1 quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1",
+        ),
+        entry(
+            "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus",
+            "boot=live components pci=noaer nouveau.modeset=0 nomodeset quiet setuphelfer_rescue=1 setuphelfer_msi_compat=1",
+        ),
+        entry(
+            "Setuphelfer Diagnosemodus",
+            "boot=live components systemd.unit=multi-user.target setuphelfer_rescue=1 setuphelfer_diagnose=1",
+        ),
+        entry(
+            "Setuphelfer RAM-Modus / toram + Media-Check",
+            "boot=live components toram setuphelfer.media_check=1 quiet setuphelfer_rescue=1",
+        ),
+        'menuentry "Neustart" { reboot }',
+        'menuentry "Herunterfahren" { halt }',
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def generate_grub_cfg(params: LiveBootParams) -> str:
-    """GRUB menu for FAT32 ESP — parameters aligned with isolinux live.cfg."""
+    """Legacy ISO-derived GRUB generator — prefer generate_fat32_esp_grub_cfg for FAT32 ESP."""
     base = params.base_append or (
         "boot=live config boot=live components init=/lib/systemd/systemd quiet splash "
         "setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user "
@@ -258,7 +305,7 @@ def extract_iso_files(
         tmp_live_cfg.unlink(missing_ok=True)
 
     params = parse_live_cfg_boot_params(live_cfg_text)
-    grub_cfg = generate_grub_cfg(params)
+    grub_cfg = generate_fat32_esp_grub_cfg()
     (output_dir / "boot" / "grub").mkdir(parents=True, exist_ok=True)
     (output_dir / "boot" / "grub" / "grub.cfg").write_text(grub_cfg, encoding="utf-8")
 
