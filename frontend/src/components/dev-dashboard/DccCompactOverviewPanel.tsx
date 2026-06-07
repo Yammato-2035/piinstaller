@@ -20,6 +20,7 @@ export const DccCompactOverviewPanel: React.FC<DccCompactOverviewPanelProps> = (
   const telemetryTone = compact?.telemetry?.health_ok ? 'green' : 'red'
   const dccTone = compact?.dcc_visible ? 'green' : 'yellow'
   const proxy = compact?.rescue?.telemetry_lan_proxy
+  const netTel = compact?.rescue?.network_telemetry
   const proxyTone = !compact?.telemetry?.health_ok
     ? 'red'
     : proxy?.running && proxy?.lan_health_ok
@@ -69,6 +70,25 @@ export const DccCompactOverviewPanel: React.FC<DccCompactOverviewPanelProps> = (
       label: t('devDashboard.compact.rescueTelemetryLan', 'Rescue Telemetrie LAN'),
       value: proxyValue,
       tone: proxyTone,
+    },
+    {
+      label: t('devDashboard.compact.rescueNetworkTelemetry', 'Rescue Netzwerk & Telemetrie'),
+      value: netTel?.telemetry_ingest_ack
+        ? 'Ingest ACK'
+        : netTel?.telemetry_health_reached
+          ? 'Health ok'
+          : netTel?.wlan_connected
+            ? 'WLAN ok'
+            : netTel?.proxy_ready
+              ? 'Proxy bereit'
+              : 'offen',
+      tone: netTel?.telemetry_ingest_ack
+        ? 'green'
+        : netTel?.telemetry_health_reached
+          ? 'yellow'
+          : netTel?.proxy_ready
+            ? 'yellow'
+            : 'red',
     },
     {
       label: t('devDashboard.compact.rescueIso', 'Rescue-ISO'),

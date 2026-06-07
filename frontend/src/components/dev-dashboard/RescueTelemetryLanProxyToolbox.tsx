@@ -62,6 +62,16 @@ export const RescueTelemetryLanProxyToolbox: React.FC<RescueTelemetryLanProxyToo
         )}
       </p>
 
+      <div className="mt-4 rounded border border-slate-700 bg-slate-950/50 p-3">
+        <div className="text-xs font-semibold text-cyan-200">MSI Live-Befehle</div>
+        <pre className="mt-2 overflow-x-auto text-[11px] text-slate-200" data-testid="rescue-network-onboarding-cmd">
+          sudo setuphelfer-rescue-network-onboarding{'\n'}
+          sudo setuphelfer-rescue-media-check{'\n'}
+          sudo setuphelfer-rescue-telemetry-push{'\n'}
+          sudo setuphelfer-rescue-task-pull
+        </pre>
+      </div>
+
       <div className="mt-3 grid gap-2 text-xs md:grid-cols-2">
         <div className="rounded border border-slate-700 bg-slate-950/50 p-3">
           <div className="font-semibold text-cyan-200">{t('devDashboard.rescueTelemetryLan.status', 'Status')}</div>

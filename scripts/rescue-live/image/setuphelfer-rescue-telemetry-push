@@ -1,0 +1,122 @@
+#!/bin/bash
+# Collect rescue diagnostics and POST to telemetry ingest (with local spool on failure).
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+INGEST_URL="${SETUPHELFER_RESCUE_TELEMETRY_URL}/api/rescue/telemetry/v1/ingest"
+SPOOL_DIR="${SETUPHELFER_RESCUE_STATE_DIR}/telemetry-spool"
+ACK_RUN="${SETUPHELFER_RESCUE_STATE_DIR}/telemetry-last-ack.json"
+ACK_TMP="/tmp/setuphelfer-rescue-telemetry-last-ack.json"
+PAYLOAD_TMP="$(mktemp /tmp/setuphelfer-rescue-telemetry-payload.XXXXXX.json)"
+
+setuphelfer_rescue_ensure_state_dir
+mkdir -p "$SPOOL_DIR"
+
+_onboarding='{}'
+_media='{}'
+[[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/network-onboarding.json" ]] && _onboarding="$(cat "${SETUPHELFER_RESCUE_STATE_DIR}/network-onboarding.json")"
+[[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/media-check.json" ]] && _media="$(cat "${SETUPHELFER_RESCUE_STATE_DIR}/media-check.json")"
+
+_kernel_log="$(journalctl -k -b --no-pager 2>/dev/null | grep -Ei 'iwlwifi|firmware|bluetooth|btintel|pcie|ACPI|squashfs|loop0|usb|reset|I/O error' | tail -120 || true)"
+_nm_log="$(journalctl -u NetworkManager -b --no-pager 2>/dev/null | tail -80 || true)"
+_lspci="$(lspci 2>/dev/null || true)"
+_lsusb="$(lsusb 2>/dev/null || true)"
+_lsblk="$(lsblk -J 2>/dev/null || echo '{}')"
+_rfkill="$(rfkill list 2>/dev/null || true)"
+_nmcli_general="$(nmcli general status 2>/dev/null || true)"
+_nmcli_dev="$(nmcli device status 2>/dev/null || true)"
+
+python3 - <<PY >"$PAYLOAD_TMP"
+import json, os, subprocess
+from datetime import datetime, timezone
+
+def sh(cmd):
+    try:
+        return subprocess.check_output(cmd, shell=True, text=True, stderr=subprocess.DEVNULL).strip()
+    except Exception:
+        return ""
+
+boot_id = sh("tr -d '\\n' < /proc/sys/kernel/random/boot_id") or "unknown"
+payload = {
+    "schema_version": 1,
+    "source": "rescue_stick",
+    "payload_kind": "rescue_boot_network_telemetry",
+    "boot_id": boot_id,
+    "machine_hint": "msi",
+    "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "iso_sha256": os.environ.get("SETUPHELFER_RESCUE_ISO_SHA256", ""),
+    "network": {
+        "ip_addr_json": json.loads(sh("ip -j addr") or "[]"),
+        "route_json": json.loads(sh("ip -j route") or "[]"),
+        "nmcli_general": $(python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' <<<"$_nmcli_general"),
+        "nmcli_device": $(python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' <<<"$_nmcli_dev"),
+        "rfkill": $(python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' <<<"$_rfkill"),
+    },
+    "hardware": {
+        "uname": sh("uname -a"),
+        "cmdline": sh("tr '\\0' ' ' < /proc/cmdline"),
+        "lspci": $(python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' <<<"$_lspci"),
+        "lsusb": $(python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' <<<"$_lsusb"),
+        "lsblk": json.loads("""$(echo "$_lsblk" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')"""),
+    },
+    "kernel_warnings": {
+        "filtered_dmesg": $(python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' <<<"$_kernel_log"),
+        "networkmanager_journal": $(python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' <<<"$_nm_log"),
+    },
+    "media_check": json.loads("""$(echo "$_media" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')"""),
+    "network_onboarding": json.loads("""$(echo "$_onboarding" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')"""),
+    "operator_notes": [],
+}
+import hashlib
+body = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+payload["payload_hash_sha256"] = hashlib.sha256(body).hexdigest()
+print(json.dumps(payload, indent=2, ensure_ascii=False))
+PY
+
+_hash="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["payload_hash_sha256"])' "$PAYLOAD_TMP")"
+_http_code=0
+_response=""
+if command -v curl >/dev/null 2>&1; then
+  _response="$(curl -sS -w '\n%{http_code}' -X POST "$INGEST_URL" \
+    -H 'Content-Type: application/json' \
+    -H "X-Setuphelfer-Payload-Hash: $_hash" \
+    --data-binary @"$PAYLOAD_TMP" 2>/dev/null || echo -e '\n000')"
+  _http_code="$(echo "$_response" | tail -1)"
+  _response="$(echo "$_response" | sed '$d')"
+else
+  _http_code="000"
+  _response='{"error":"RESCUE_LIVE_HTTP_CLIENT_MISSING"}'
+fi
+
+if [[ "$_http_code" == "200" ]]; then
+  setuphelfer_rescue_write_json "$ACK_RUN" <<EOF
+{
+  "sent_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "http_status": $_http_code,
+  "response": $(echo "$_response" | python3 -c 'import json,sys; print(json.dumps(json.load(sys.stdin)))' 2>/dev/null || echo 'null'),
+  "payload_hash_sha256": "$_hash",
+  "secrets_exposed": false
+}
+EOF
+  cp -f "$ACK_RUN" "$ACK_TMP" 2>/dev/null || true
+  rm -f "$PAYLOAD_TMP"
+  exit 0
+fi
+
+_spool="${SPOOL_DIR}/$(date +%s)-$(setuphelfer_rescue_boot_id).json"
+cp -f "$PAYLOAD_TMP" "$_spool"
+rm -f "$PAYLOAD_TMP"
+setuphelfer_rescue_write_json "$ACK_RUN" <<EOF
+{
+  "sent_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "http_status": $_http_code,
+  "spooled": true,
+  "spool_path": "$_spool",
+  "payload_hash_sha256": "$_hash",
+  "secrets_exposed": false
+}
+EOF
+cp -f "$ACK_RUN" "$ACK_TMP" 2>/dev/null || true
+exit 15

@@ -1,101 +1,87 @@
 {
-  "schema_version": 20,
-  "classified_at": "2026-06-07T22:21:00+02:00",
-  "classification": "developer_preflight_green_msi_physical_operator_pending",
+  "schema_version": 21,
+  "classified_at": "2026-06-07T23:30:00+02:00",
+  "classification": "rescue_network_onboarding_telemetry_push_task_pull_implemented_rebuild_pending",
   "iso_created": true,
   "iso_uefi_validated": true,
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
   "iso_sha256": "9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a",
   "iso_size_bytes": 620756992,
-  "squashfs_validated": true,
-  "uefi_validator_exit_code": 0,
   "usb_stick_written": true,
   "usb_write_sha256_verified": true,
-  "usb_block_readback_sha256": "9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a",
-  "usb_mount_boot_artifacts_verified": true,
   "usb_stick_device": "/dev/sdb",
   "usb_stick_model": "Ultra Line",
   "usb_stick_serial": "24111412110212",
-  "target_laptop_booted_from_stick": false,
-  "target_network_telemetry_validated": false,
-  "windows_inspect_executable": false,
+  "target_laptop_booted_from_stick": true,
+  "target_live_media_runtime_stable": false,
+  "target_network_onboarding_available": true,
+  "target_network_link_established": false,
+  "target_network_ip": null,
+  "target_default_route_present": false,
+  "target_telemetry_health_reached": false,
+  "target_telemetry_ingest_ack": false,
   "developer_lan_telemetry_proxy_ready": true,
   "developer_lan_telemetry_proxy_url": "http://192.168.178.140:8001/api/rescue/telemetry/health",
-  "workspace_version": "1.7.4.6",
+  "controlled_task_pull_available": true,
+  "windows_inspect_executable": false,
+  "workspace_version": "1.7.5.0",
   "runtime_version_api": "1.7.4.1",
-  "runtime_deploy_drift": "RUNTIME_DEPLOY_DRIFT_1_7_4_6_PENDING",
-  "developer_laptop_lan_ip": "192.168.178.140",
-  "msi_hardware_expected": {
-    "cpu": "Intel Core i7",
-    "gpu": "NVIDIA GeForce",
-    "wlan_firmware": "iwlwifi-9000",
-    "bt_firmware": "intel/ibt-17-16-1.sfi"
+  "msi_network_onboarding_last_error": "RESCUE_WIFI_SCAN_NOT_TRIGGERED",
+  "msi_operator_findings": {
+    "boot_from_stick_ok": true,
+    "networkmanager_active": true,
+    "wifi_scan_after_reboot": false,
+    "password_prompt": false,
+    "pcie_corrected_errors": true,
+    "acpi_vrtc_errors": true,
+    "historical_wifi_ip": "192.168.178.96"
   },
-  "operator_run_phase0": {
-    "completed_at": "2026-06-07T22:21:00+02:00",
-    "proxy_running": true,
-    "lan_health_http": 200,
-    "blocked_paths_verified": {
-      "/api/version": 404,
-      "/openapi.json": 404,
-      "/api/dev-dashboard/status": 404
-    }
-  },
-  "operator_run_msi": {
-    "physical_boot_executed": false,
-    "network_validated": false,
-    "telemetry_health_from_msi_http": null,
-    "telemetry_ingest_from_msi_http": null,
-    "ack_id": null,
-    "agent_note_de": "Physischer MSI-Boot kann nur vom Operator am Gerät ausgeführt werden — kein Fake-Green."
-  },
-  "telemetry_reachability": {
-    "backend_bind": "127.0.0.1:8000",
-    "telemetry_health_local_ok": true,
-    "telemetry_health_lan_8000_ok": false,
-    "telemetry_health_lan_8001_ok": true,
-    "proxy_prepared": true,
-    "proxy_script": "scripts/rescue-live/start-rescue-telemetry-lan-proxy.sh",
-    "proxy_type": "rescue_telemetry_lan_proxy_allowlist",
-    "proxy_bind": "192.168.178.140:8001",
-    "msi_telemetry_health_url": "http://192.168.178.140:8001/api/rescue/telemetry/health",
-    "msi_telemetry_ingest_url": "http://192.168.178.140:8001/api/rescue/telemetry/v1/ingest",
-    "proxy_started_in_smoke": true,
-    "last_ingest_at": null,
-    "last_ack_id": null
-  },
-  "resolved_blockers": [
-    "RESCUE_USB_REWRITE_REQUIRED_AFTER_NEW_ISO",
-    "RESCUE_USB_BLOCK_READBACK_SHA256_PENDING",
-    "RESCUE_MSI_TELEMETRY_LAN_UNREACHABLE_WITHOUT_PROXY",
-    "RESCUE_MSI_TELEMETRY_PROXY_OPERATOR_START_PENDING"
-  ],
   "blockers": [
     {
-      "id": "RUNTIME_DEPLOY_DRIFT_1_7_4_6_PENDING",
+      "id": "RESCUE_NETWORK_ONBOARDING_REQUIRED",
+      "severity": "critical",
+      "status": "blocked",
+      "description_de": "Robustes WLAN-Onboarding fehlte auf deployedem Stick — Fix in 1.7.5.0 Workspace, Rebuild ausstehend"
+    },
+    {
+      "id": "RESCUE_WIFI_SCAN_NOT_TRIGGERED",
+      "severity": "critical",
+      "status": "blocked"
+    },
+    {
+      "id": "RESCUE_WIFI_PASSWORD_PROMPT_MISSING",
+      "severity": "critical",
+      "status": "blocked"
+    },
+    {
+      "id": "RESCUE_TELEMETRY_PUSH_NOT_AUTOMATED",
       "severity": "warning",
-      "status": "blocked",
-      "description_de": "Workspace 1.7.4.6 vs Runtime 1.7.4.1"
+      "status": "resolved_in_workspace",
+      "description_de": "setuphelfer-rescue-telemetry-push implementiert — ISO-Rebuild nötig"
     },
     {
-      "id": "RESCUE_USB_BOOT_NOT_VALIDATED_ON_TARGET",
+      "id": "RESCUE_TARGET_TELEMETRY_HEALTH_NOT_REACHED",
       "severity": "critical",
-      "status": "blocked",
-      "description_de": "Physischer MSI-Boot mit ISO 9ef1b330… — Operator ausstehend"
+      "status": "blocked"
     },
     {
-      "id": "RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED",
+      "id": "RESCUE_TARGET_TELEMETRY_INGEST_ACK_MISSING",
       "severity": "critical",
-      "status": "blocked",
-      "description_de": "Telemetrie vom MSI-Live-System noch nicht bestätigt"
+      "status": "blocked"
     },
     {
       "id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED",
       "severity": "critical",
       "status": "blocked",
       "code": "RESCUE-UEFI-005"
+    },
+    {
+      "id": "RESCUE_ISO_REBUILD_REQUIRED_FOR_NETWORK_ONBOARDING",
+      "severity": "critical",
+      "status": "blocked",
+      "description_de": "Neue Scripts/Services erst nach ISO-Rebuild auf Stick"
     }
   ],
-  "next_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "next_operator_step_de": "MSI physisch booten; Netzwerk prüfen; curl health + Ingest senden; Ergebnisse ingestieren."
+  "next_prompt_id": "RESCUE_ISO_NETWORK_ONBOARDING_REBUILD_AND_USB_REWRITE_OPERATOR_RUN",
+  "next_operator_step_de": "ISO mit 1.7.5.0 rebuilden, Stick neu schreiben, MSI: network-onboarding + telemetry-push."
 }

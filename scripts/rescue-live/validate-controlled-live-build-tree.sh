@@ -316,6 +316,25 @@ else
   echo "RESCUE-ISO-SERIAL-MARKER-001: missing setuphelfer-serial-boot-markers.service in chroot overlay" >&2
   exit 12
 fi
+grep -qx 'rfkill' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_networkmanager "setuphelfer.list.chroot must list rfkill"
+grep -qx 'iputils-ping' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_missing "setuphelfer.list.chroot must list iputils-ping"
+grep -qx 'pciutils' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_missing "setuphelfer.list.chroot must list pciutils"
+grep -qx 'usbutils' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_missing "setuphelfer.list.chroot must list usbutils"
+grep -qx 'iw' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
+  || fail_networkmanager "setuphelfer.list.chroot must list iw"
+for _script in setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-telemetry-push setuphelfer-rescue-task-pull; do
+  [[ -x "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/${_script}" ]] \
+    || fail_missing "usr/local/sbin/${_script} missing or not executable"
+done
+[[ -f "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-network-onboarding.service" ]] \
+  || fail_missing "setuphelfer-rescue-network-onboarding.service missing"
+if [[ ! -f "$BUILD_ROOT/config/hooks/normal/020-setuphelfer-rescue-boot-menu.hook.binary" ]]; then
+  fail_missing "missing 020-setuphelfer-rescue-boot-menu.hook.binary"
+fi
 if [[ ! -f "$BUILD_ROOT/config/hooks/normal/015-ensure-network-manager.hook.chroot" ]]; then
   fail_networkmanager "missing 015-ensure-network-manager.hook.chroot (NM safety net after live-packages)"
 fi

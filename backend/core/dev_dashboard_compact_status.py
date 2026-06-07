@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from core.install_profile import get_install_profile_state
+from core.rescue_network_telemetry_gate import build_compact_network_telemetry_status
 from core.rescue_telemetry_ingest import build_health_payload
 from core.rescue_telemetry_lan_proxy import build_compact_telemetry_lan_proxy_status
 
@@ -187,6 +188,7 @@ def build_compact_dcc_status(
             "windows_inspect_executable": gate.get("windows_inspect_executable") is True,
             "usb_operator": usb_operator,
             "telemetry_lan_proxy": build_compact_telemetry_lan_proxy_status(),
+            "network_telemetry": build_compact_network_telemetry_status(),
         },
         "blockers": blockers,
         "next_operator_action": str(next_action),

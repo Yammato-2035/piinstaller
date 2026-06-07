@@ -22,6 +22,7 @@ from core.rescue_telemetry_lan_proxy import (  # noqa: E402
     build_compact_telemetry_lan_proxy_status,
     build_status_payload,
     detect_lan_ip,
+    effective_allowed_routes,
     is_path_allowed,
     is_port_free,
     read_pid_file,
@@ -82,10 +83,16 @@ class RescueTelemetryLanProxyAllowlistTests(unittest.TestCase):
         self.assertFalse(is_path_allowed("GET", "/api/version"))
         self.assertFalse(is_path_allowed("GET", "/openapi.json"))
         self.assertFalse(is_path_allowed("GET", "/api/dev-dashboard/status"))
+        self.assertTrue(is_path_allowed("GET", "/api/rescue/telemetry/v1/tasks/next"))
+        with patch.dict(os.environ, {"SETUPHELFER_RESCUE_TELEMETRY_TASK_PULL_ENABLED": "0"}, clear=False):
+            from core.rescue_telemetry_lan_proxy import effective_allowed_routes as _routes
+
+            self.assertNotIn(("GET", "/api/rescue/telemetry/v1/tasks/next"), _routes())
         self.assertFalse(is_path_allowed("POST", "/api/rescue/telemetry/v1/ingest/extra"))
 
     def test_allowed_routes_set_size(self) -> None:
         self.assertEqual(len(ALLOWED_ROUTES), 4)
+        self.assertIn(("GET", "/api/rescue/telemetry/v1/tasks/next"), effective_allowed_routes())
 
 
 class RescueTelemetryLanProxyStatusTests(unittest.TestCase):

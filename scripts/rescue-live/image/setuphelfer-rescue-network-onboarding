@@ -1,0 +1,127 @@
+#!/bin/bash
+# Rescue live network onboarding — WLAN scan/connect without password logging.
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+MODE="${1:---interactive}"
+OUT_RUN="${SETUPHELFER_RESCUE_STATE_DIR}/network-onboarding.json"
+OUT_TMP="/tmp/setuphelfer-rescue-network-onboarding.json"
+TELEMETRY_HEALTH_URL="${SETUPHELFER_RESCUE_TELEMETRY_URL}/api/rescue/telemetry/health"
+WIFI_CONNECTED=false
+DEFAULT_ROUTE=false
+TELEMETRY_OK=false
+ERROR_CODE=""
+EXIT_CODE=0
+INTERACTIVE=false
+
+setuphelfer_rescue_ensure_state_dir
+
+if ! setuphelfer_rescue_is_live; then
+  ERROR_CODE="NOT_RESCUE_LIVE"
+  EXIT_CODE=16
+elif [[ "$MODE" == "--boot-trigger" || "$MODE" == "--non-interactive" ]]; then
+  if [[ "$MODE" == "--non-interactive" ]]; then
+    INTERACTIVE=false
+  elif setuphelfer_rescue_is_qemu && [[ "${SETUPHELFER_RESCUE_NETWORK_ONBOARDING_FORCE:-}" != "1" ]]; then
+    ERROR_CODE="SKIPPED_QEMU_LAB"
+    EXIT_CODE=0
+  elif ! setuphelfer_rescue_has_interactive_tty; then
+    ERROR_CODE="SKIPPED_NO_TTY"
+    EXIT_CODE=0
+  else
+    INTERACTIVE=true
+  fi
+else
+  INTERACTIVE=true
+fi
+
+nm_active=false
+if systemctl is-active --quiet NetworkManager 2>/dev/null; then
+  nm_active=true
+else
+  ERROR_CODE="NETWORKMANAGER_NOT_RUNNING"
+  EXIT_CODE=10
+fi
+
+if [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" && "$ERROR_CODE" != "SKIPPED_NO_TTY" && "$nm_active" == true ]]; then
+  nmcli radio wifi on 2>/dev/null || true
+  rfkill unblock wifi 2>/dev/null || true
+  nmcli device wifi rescan 2>/dev/null || true
+  sleep 2
+
+  if nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:connected$' >/dev/null; then
+    WIFI_CONNECTED=true
+  elif nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:' >/dev/null; then
+    if [[ "$INTERACTIVE" == true ]]; then
+      if command -v nmtui-connect >/dev/null 2>&1 && [[ -t 0 ]]; then
+        nmtui-connect || true
+      else
+        mapfile -t _ssids < <(nmcli -t -f SSID,BARS,SECURITY device wifi list 2>/dev/null | awk -F: '$1 != "--" && $1 != "" {print $1}' | sort -u | head -20)
+        if [[ "${#_ssids[@]}" -eq 0 ]]; then
+          ERROR_CODE="WIFI_SCAN_FAILED"
+          EXIT_CODE=12
+        else
+          _pick="${_ssids[0]}"
+          if command -v whiptail >/dev/null 2>&1; then
+            _pick="$(whiptail --title "Setuphelfer WLAN" --menu "SSID wählen" 20 70 12 \
+              $(for i in "${!_ssids[@]}"; do echo "$((i+1))" "${_ssids[$i]}"; done) 3>&1 1>&2 2>&3)" || _pick=""
+          fi
+          if [[ -n "$_pick" ]]; then
+            # Password via nmcli --ask (never logged).
+            HISTFILE=/dev/null nmcli --ask dev wifi connect "$_pick" >/dev/null 2>&1 || {
+              ERROR_CODE="WIFI_CONNECT_FAILED"
+              EXIT_CODE=13
+            }
+          fi
+        fi
+      fi
+      nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:connected$' >/dev/null && WIFI_CONNECTED=true
+    else
+      if ! nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:' >/dev/null; then
+        ERROR_CODE="WIFI_DEVICE_NOT_FOUND"
+        EXIT_CODE=11
+      fi
+    fi
+  else
+    ERROR_CODE="WIFI_DEVICE_NOT_FOUND"
+    EXIT_CODE=11
+  fi
+
+  ip route show default 2>/dev/null | grep -q . && DEFAULT_ROUTE=true || {
+    if [[ "$EXIT_CODE" -eq 0 ]]; then
+      ERROR_CODE="DEFAULT_ROUTE_MISSING"
+      EXIT_CODE=14
+    fi
+  }
+
+  if curl -fsS --max-time 5 "$TELEMETRY_HEALTH_URL" >/dev/null 2>&1; then
+    TELEMETRY_OK=true
+  elif [[ "$EXIT_CODE" -eq 0 && "$WIFI_CONNECTED" == true ]]; then
+    ERROR_CODE="TELEMETRY_HEALTH_UNREACHABLE"
+    EXIT_CODE=15
+  fi
+fi
+
+_ip_json="$(ip -j addr 2>/dev/null || echo '[]')"
+_route_json="$(ip -j route 2>/dev/null || echo '[]')"
+
+setuphelfer_rescue_write_json "$OUT_RUN" <<EOF
+{
+  "checked_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "mode": "$MODE",
+  "networkmanager_active": $nm_active,
+  "wifi_connected": $WIFI_CONNECTED,
+  "default_route_present": $DEFAULT_ROUTE,
+  "telemetry_health_ok": $TELEMETRY_OK,
+  "telemetry_health_url": "$TELEMETRY_HEALTH_URL",
+  "error_code": $( [[ -n "$ERROR_CODE" ]] && printf '"%s"' "$ERROR_CODE" || printf 'null' ),
+  "ip_addr": $_ip_json,
+  "ip_route": $_route_json,
+  "secrets_exposed": false
+}
+EOF
+cp -f "$OUT_RUN" "$OUT_TMP" 2>/dev/null || true
+touch "${SETUPHELFER_RESCUE_STATE_DIR}/network-onboarding.done" 2>/dev/null || true
+exit "$EXIT_CODE"

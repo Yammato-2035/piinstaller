@@ -74,7 +74,8 @@ describe('RescueTelemetryLanProxyToolbox', () => {
       }),
     )
     expect(html).toContain('data-testid="rescue-telemetry-lan-proxy-toolbox"')
-    expect(html).toContain('start-rescue-telemetry-lan-proxy.sh')
+    expect(html).toContain('setuphelfer-rescue-network-onboarding')
+    expect(html).toContain('setuphelfer-rescue-telemetry-push')
     expect(html).toContain('status-rescue-telemetry-lan-proxy.sh')
     expect(html).toContain('stop-rescue-telemetry-lan-proxy.sh')
     expect(html).toContain('192.168.178.140:8001/api/rescue/telemetry/health')

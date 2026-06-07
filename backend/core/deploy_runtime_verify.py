@@ -25,6 +25,9 @@ DEPLOY_RUNTIME_EXTRA_BACKEND_PATHS: tuple[str, ...] = (
     "backend/core/dev_dashboard_status_service.py",
     "backend/core/profile_deploy_manifest.py",
     "backend/core/rescue_telemetry_ingest.py",
+    "backend/core/rescue_telemetry_lan_proxy.py",
+    "backend/core/rescue_telemetry_tasks.py",
+    "backend/core/rescue_network_telemetry_gate.py",
     "backend/rescue_telemetry/__init__.py",
     "backend/rescue_telemetry/routers.py",
 )

@@ -33,6 +33,26 @@ ALLOWED_ROUTES: frozenset[tuple[str, str]] = frozenset(
     }
 )
 
+TASK_PULL_ROUTES: frozenset[tuple[str, str]] = frozenset(
+    {
+        ("GET", "/api/rescue/telemetry/v1/tasks/next"),
+        ("POST", "/api/rescue/telemetry/v1/tasks/result"),
+        ("OPTIONS", "/api/rescue/telemetry/v1/tasks/next"),
+        ("OPTIONS", "/api/rescue/telemetry/v1/tasks/result"),
+    }
+)
+
+
+def effective_allowed_routes() -> frozenset[tuple[str, str]]:
+    routes = set(ALLOWED_ROUTES)
+    if os.environ.get("SETUPHELFER_RESCUE_TELEMETRY_TASK_PULL_ENABLED", "1").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }:
+        routes.update(TASK_PULL_ROUTES)
+    return frozenset(routes)
+
 FORWARD_REQUEST_HEADERS = frozenset(
     {
         "content-type",
@@ -104,7 +124,7 @@ def is_path_allowed(method: str, path: str) -> bool:
     normalized = path.split("?", 1)[0]
     if not normalized.startswith("/"):
         normalized = f"/{normalized}"
-    return (method.upper(), normalized) in ALLOWED_ROUTES
+    return (method.upper(), normalized) in effective_allowed_routes()
 
 
 def health_url(bind_host: str, port: int) -> str:
@@ -203,7 +223,7 @@ def build_status_payload(
         "ingest_url": ingest_url(host, port) if bind_host else None,
         "backend_health_ok": backend_health_ok,
         "lan_health_ok": lan_health_ok,
-        "allowed_paths": sorted({path for _method, path in ALLOWED_ROUTES}),
+        "allowed_paths": sorted({path for _method, path in effective_allowed_routes()}),
         "allowed_paths_only": True,
         "blockers": blockers or [],
         "error_code": error_code,
@@ -241,7 +261,7 @@ def build_compact_telemetry_lan_proxy_status() -> dict[str, Any]:
         "backend_local_health_ok": backend_ok,
         "lan_health_ok": lan_ok,
         "allowed_paths_only": True,
-        "allowed_paths": sorted({path for _method, path in ALLOWED_ROUTES}),
+        "allowed_paths": sorted({path for _method, path in effective_allowed_routes()}),
         "next_step": next_step,
         "blockers": blockers,
         "secrets_exposed": False,

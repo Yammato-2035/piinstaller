@@ -1,19 +1,17 @@
 {
-  "schema_version": 25,
-  "selected_at": "2026-06-07T22:21:00+02:00",
-  "selected_prompt_id": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "reason_de": "Developer-Preflight grün (Proxy :8001, allowlist-only); MSI physischer Boot + Live-Telemetrie vom Operator ausstehend — kein Fake-Green.",
+  "schema_version": 26,
+  "selected_at": "2026-06-07T23:30:00+02:00",
+  "selected_prompt_id": "RESCUE_ISO_NETWORK_ONBOARDING_REBUILD_AND_USB_REWRITE_OPERATOR_RUN",
+  "reason_de": "Network-Onboarding, Telemetry-Push und Controlled Task Pull im Workspace (1.7.5.0); MSI bootet, WLAN-Onboarding fehlte auf altem Stick — ISO-Rebuild + USB-Rewrite vor Retest.",
   "tracks": [
     {
-      "id": "rescue_msi_uefi_boot_network_telemetry",
+      "id": "rescue_network_onboarding_telemetry",
       "status": "yellow",
       "priority": "P0",
-      "next_step": "RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RUN",
-      "phase0_complete": true,
-      "msi_physical_pending": true,
+      "next_step": "RESCUE_ISO_NETWORK_ONBOARDING_REBUILD_AND_USB_REWRITE_OPERATOR_RUN",
       "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_USB_MSI_UEFI_BOOT_NETWORK_TELEMETRY_OPERATOR_RESULT.md",
-        "docs/evidence/runtime-results/rescue/rescue_telemetry_lan_proxy_status_latest.json",
+        "docs/evidence/runtime-results/rescue/RESCUE_MSI_NETWORK_ONBOARDING_FAILURE_TRIAGE.md",
+        "docs/evidence/runtime-results/rescue/RESCUE_NETWORK_ONBOARDING_TELEMETRY_PUSH_TASK_PULL_RESULT.md",
         "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json"
       ]
     }
@@ -21,13 +19,7 @@
   "governance_rules": {
     "no_secrets_in_evidence": true,
     "no_fake_green": true,
-    "developer_lan_telemetry_proxy_ready": true,
-    "target_laptop_booted_from_stick": false,
-    "target_network_telemetry_validated": false,
-    "windows_inspect_executable": false
-  },
-  "next_on_success": "WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN",
-  "next_on_boot_failure": "RESCUE_USB_UEFI_BOOT_FAILURE_MSI_TRIAGE",
-  "next_on_network_failure": "RESCUE_MSI_NETWORK_TELEMETRY_FAILURE_TRIAGE",
-  "next_on_firmware_failure": "RESCUE_MSI_FIRMWARE_RUNTIME_GAP_TRIAGE"
+    "windows_inspect_executable": false,
+    "target_telemetry_ingest_ack": false
+  }
 }

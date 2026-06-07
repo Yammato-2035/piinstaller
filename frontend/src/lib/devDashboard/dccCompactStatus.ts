@@ -63,6 +63,23 @@ export type DccCompactStatus = {
       blockers?: string[]
       secrets_exposed?: boolean
     }
+    network_telemetry?: {
+      status_tone?: string
+      proxy_ready?: boolean
+      proxy_health_url?: string | null
+      msi_ip?: string | null
+      wlan_connected?: boolean
+      telemetry_health_reached?: boolean
+      telemetry_ingest_ack?: boolean
+      controlled_task_pull_available?: boolean
+      last_task_id?: string | null
+      last_task_result?: string | null
+      last_error_code?: string | null
+      windows_inspect_executable?: boolean
+      blockers?: string[]
+      next_step?: string
+      secrets_exposed?: boolean
+    }
   }
   blockers?: string[]
   next_operator_action?: string

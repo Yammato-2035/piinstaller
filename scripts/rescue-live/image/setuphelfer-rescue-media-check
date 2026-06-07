@@ -1,0 +1,47 @@
+#!/bin/bash
+# SquashFS read stability check for rescue live medium.
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+SQUASHFS="${SETUPHELFER_RESCUE_SQUASHFS:-/run/live/medium/live/filesystem.squashfs}"
+OUT_RUN="${SETUPHELFER_RESCUE_STATE_DIR}/media-check.json"
+OUT_TMP="/tmp/setuphelfer-rescue-media-check.json"
+ERROR_CODE=""
+LIVE_STABLE=false
+READ_OK=false
+
+setuphelfer_rescue_ensure_state_dir
+
+if ! setuphelfer_rescue_is_live; then
+  ERROR_CODE="NOT_RESCUE_LIVE"
+else
+  if [[ ! -r "$SQUASHFS" ]]; then
+    ERROR_CODE="SQUASHFS_PATH_MISSING"
+  elif dd if="$SQUASHFS" of=/dev/null bs=4M status=none 2>/dev/null; then
+    READ_OK=true
+    LIVE_STABLE=true
+    ERROR_CODE=""
+  else
+    ERROR_CODE="SQUASHFS_READ_IO_ERROR"
+    LIVE_STABLE=false
+  fi
+fi
+
+setuphelfer_rescue_write_json "$OUT_RUN" <<EOF
+{
+  "checked_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "squashfs_path": "$SQUASHFS",
+  "squashfs_read_ok": $READ_OK,
+  "live_media_runtime_stable": $LIVE_STABLE,
+  "error_code": $( [[ -n "$ERROR_CODE" ]] && printf '"%s"' "$ERROR_CODE" || printf 'null' ),
+  "secrets_exposed": false
+}
+EOF
+cp -f "$OUT_RUN" "$OUT_TMP" 2>/dev/null || true
+
+if [[ "$READ_OK" == true ]]; then
+  exit 0
+fi
+exit 16

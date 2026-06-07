@@ -38,6 +38,14 @@ REQUIRED_ENVELOPE_KEYS = (
     "operator_consent_state",
 )
 
+BOOT_NETWORK_REQUIRED_KEYS = (
+    "schema_version",
+    "source",
+    "payload_kind",
+    "boot_id",
+    "timestamp",
+)
+
 
 @dataclass(frozen=True)
 class RescueTelemetryIngestConfig:
@@ -233,15 +241,37 @@ def verify_ingest_auth(
     return False, TELEMETRY_ERROR_CODES["auth_invalid"]
 
 
+def validate_boot_network_envelope(payload: dict[str, Any]) -> tuple[bool, str | None]:
+    if not isinstance(payload, dict):
+        return False, TELEMETRY_ERROR_CODES["schema_invalid"]
+    for key in BOOT_NETWORK_REQUIRED_KEYS:
+        if key not in payload:
+            return False, TELEMETRY_ERROR_CODES["schema_invalid"]
+    if payload.get("source") != "rescue_stick":
+        return False, TELEMETRY_ERROR_CODES["schema_invalid"]
+    if payload.get("payload_kind") != "rescue_boot_network_telemetry":
+        return False, TELEMETRY_ERROR_CODES["schema_invalid"]
+    schema_version = payload.get("schema_version")
+    if schema_version not in (1, "1", "1.0", "1.0.0"):
+        return False, TELEMETRY_ERROR_CODES["schema_invalid"]
+    blocked, err = privacy_guard_blocks(payload)
+    if blocked:
+        return False, err or TELEMETRY_ERROR_CODES["privacy"]
+    return True, None
+
+
 def validate_envelope(payload: dict[str, Any]) -> tuple[bool, str | None]:
     if not isinstance(payload, dict):
         return False, TELEMETRY_ERROR_CODES["schema_invalid"]
+    payload_kind = payload.get("payload_kind")
+    if payload_kind == "rescue_boot_network_telemetry":
+        return validate_boot_network_envelope(payload)
     for key in REQUIRED_ENVELOPE_KEYS:
         if key not in payload:
             return False, TELEMETRY_ERROR_CODES["schema_invalid"]
     if payload.get("source") != "rescue_stick":
         return False, TELEMETRY_ERROR_CODES["schema_invalid"]
-    if payload.get("payload_kind") != "windows_rescue_inspect":
+    if payload_kind != "windows_rescue_inspect":
         return False, TELEMETRY_ERROR_CODES["schema_invalid"]
     if payload.get("privacy_level") != "diagnostic_metadata":
         return False, TELEMETRY_ERROR_CODES["schema_invalid"]
