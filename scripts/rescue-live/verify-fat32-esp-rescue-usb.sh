@@ -195,6 +195,34 @@ PY
 fi
 echo "OK: grub.cfg FAT root search and kernel/initrd paths"
 
+BOOTX64_CHECK="$(python3 - <<PY
+import json
+from pathlib import Path
+from core.rescue_fat32_esp_usb_verify import validate_fat32_esp_bootx64_on_mount
+
+mount = Path(${MOUNT@Q})
+result = validate_fat32_esp_bootx64_on_mount(mount)
+print(json.dumps(result))
+PY
+)"
+
+BOOTX64_OK="$(python3 - <<PY
+import json
+print("yes" if json.loads(${BOOTX64_CHECK@Q}).get("ok") else "no")
+PY
+)"
+
+if [[ "$BOOTX64_OK" != "yes" ]]; then
+  python3 - <<PY
+import json, sys
+r = json.loads(${BOOTX64_CHECK@Q})
+for code in r.get("errors") or []:
+    print(f"RESCUE-FAT32-VERIFY: {code}", file=sys.stderr)
+sys.exit(30)
+PY
+fi
+echo "OK: standalone BOOTX64.EFI (grub_mkstandalone, differs from ISO)"
+
 SQ_SIZE="$(stat -c '%s' "$MOUNT/live/filesystem.squashfs" 2>/dev/null || echo 0)"
 echo "filesystem.squashfs size_bytes=${SQ_SIZE}"
 [[ "$SQ_SIZE" -gt 100000000 ]] || fail "filesystem.squashfs size implausible" 26

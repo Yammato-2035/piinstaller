@@ -35,6 +35,14 @@ FAT_RSYNC_EXCLUDE = ".sqtmp/"
 FAT_RSYNC_OPTIONS = (
     "-r --delete --info=progress2 --no-owner --no-group --no-perms --omit-dir-times"
 )
+BOOTX64_SOURCE_MKSTANDALONE = "grub_mkstandalone"
+BOOTX64_MKSTANDALONE_MODULES = (
+    "part_gpt fat search search_fs_uuid search_label normal linux gzio configfile boot"
+)
+BOOTX64_ERROR_MKSTANDALONE_MISSING = "RESCUE-FAT32-BOOTX64-MKSTANDALONE-MISSING"
+BOOTX64_ERROR_ISO_COPIED = "RESCUE-FAT32-BOOTX64-ISO-COPIED-001"
+BOOTX64_ERROR_STANDALONE_MISSING = "RESCUE-FAT32-BOOTX64-STANDALONE-MISSING-001"
+BOOTX64_ERROR_PARTITION_MODULES = "RESCUE-FAT32-GRUB-PARTITION-MODULES-MISSING-001"
 MIN_USB_BYTES = 2 * 1024 * 1024 * 1024  # 2 GiB
 ESP_SIZE_MIB_DEFAULT = 4096
 
@@ -130,6 +138,137 @@ def parse_live_cfg_boot_params(live_cfg_text: str) -> LiveBootParams:
 
 def _menu_append(params: LiveBootParams, label: str, fallback: str) -> str:
     return params.labels.get(label, fallback)
+
+
+def generate_fat32_esp_embedded_bootstrap_cfg(*, fat_label: str = FAT_VOLUME_LABEL) -> str:
+    """Minimal GRUB bootstrap embedded in BOOTX64.EFI for FAT32 ESP (GPT+FAT modules)."""
+    assert_valid_fat_volume_label(fat_label)
+    return f"""set timeout=5
+set default=0
+
+insmod part_gpt
+insmod fat
+insmod search
+insmod search_fs_uuid
+insmod search_label
+insmod normal
+insmod linux
+insmod gzio
+insmod configfile
+
+search --no-floppy --label {fat_label} --set=root
+
+if [ -n "$root" ]; then
+    set prefix=($root)/boot/grub
+    if [ -f ($root)/boot/grub/grub.cfg ]; then
+        configfile ($root)/boot/grub/grub.cfg
+    fi
+fi
+
+menuentry "Setuphelfer Rettung starten (embedded fallback)" {{
+    search --no-floppy --label {fat_label} --set=root
+    linux ($root)/live/vmlinuz boot=live components quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1
+    initrd ($root)/live/initrd.img
+}}
+
+menuentry "Setuphelfer MSI/NVIDIA kompatibel (embedded fallback)" {{
+    search --no-floppy --label {fat_label} --set=root
+    linux ($root)/live/vmlinuz boot=live components pci=noaer nouveau.modeset=0 nomodeset quiet setuphelfer_rescue=1 setuphelfer_msi_compat=1
+    initrd ($root)/live/initrd.img
+}}
+"""
+
+
+def grub_mkstandalone_tooling() -> dict[str, Any]:
+    """Report host GRUB EFI tooling availability (no apt install)."""
+    tools = ("grub-mkstandalone", "grub-mkimage")
+    available: dict[str, bool] = {}
+    for tool in tools:
+        proc = _run(["bash", "-lc", f"command -v {tool}"])
+        available[tool] = proc.returncode == 0
+    ok = available.get("grub-mkstandalone", False)
+    hint = None
+    if not ok:
+        hint = "sudo apt install grub-efi-amd64-bin grub-common"
+    return {
+        "available": ok,
+        "tools": available,
+        "operator_hint": hint,
+        "modules_requested": list(BOOTX64_MKSTANDALONE_MODULES.split()),
+    }
+
+
+def build_fat32_esp_bootx64_efi(
+    output_path: Path,
+    *,
+    fat_label: str = FAT_VOLUME_LABEL,
+    runner: Runner | None = None,
+) -> dict[str, Any]:
+    """Build standalone BOOTX64.EFI for FAT32 ESP — not ISO El-Torito copy."""
+    tooling = grub_mkstandalone_tooling()
+    if not tooling["available"]:
+        raise FileNotFoundError(BOOTX64_ERROR_MKSTANDALONE_MISSING)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    embed_cfg = generate_fat32_esp_embedded_bootstrap_cfg(fat_label=fat_label)
+    tmp_dir = output_path.parent / ".bootx64.build"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    embed_path = tmp_dir / "embedded_grub.cfg"
+    embed_path.write_text(embed_cfg, encoding="utf-8")
+
+    cmd = [
+        "grub-mkstandalone",
+        "--format=x86_64-efi",
+        f"--output={output_path}",
+        "--locales=",
+        "--fonts=",
+        f"--modules={BOOTX64_MKSTANDALONE_MODULES}",
+        f"boot/grub/grub.cfg={embed_path}",
+    ]
+    proc = _run(cmd, runner=runner, timeout=180)
+    if proc.returncode != 0 or not output_path.is_file() or output_path.stat().st_size < 100_000:
+        detail = (proc.stderr or proc.stdout or "grub-mkstandalone failed").strip()
+        raise OSError(f"{BOOTX64_ERROR_MKSTANDALONE_MISSING}: {detail}")
+
+    embed_path.unlink(missing_ok=True)
+    if tmp_dir.exists() and not any(tmp_dir.iterdir()):
+        tmp_dir.rmdir()
+
+    meta = {
+        "bootx64_source": BOOTX64_SOURCE_MKSTANDALONE,
+        "bootx64_embedded_bootstrap": True,
+        "bootx64_iso_copied": False,
+        "label": fat_label,
+        "modules_requested": tooling["modules_requested"],
+        "output_path": str(output_path),
+        "output_size": output_path.stat().st_size,
+        "sha256": sha256_file(output_path),
+        "secrets_exposed": False,
+    }
+    return meta
+
+
+def extract_iso_bootx64_sha256(iso_path: Path, *, runner: Runner | None = None) -> str | None:
+    tmp = iso_path.parent / ".bootx64.iso.extract.tmp"
+    proc = _run(
+        [
+            "xorriso",
+            "-osirrox",
+            "on",
+            "-indev",
+            str(iso_path),
+            "-extract",
+            "/EFI/BOOT/BOOTX64.EFI",
+            str(tmp),
+        ],
+        runner=runner,
+    )
+    if proc.returncode != 0 or not tmp.is_file():
+        tmp.unlink(missing_ok=True)
+        return None
+    digest = sha256_file(tmp)
+    tmp.unlink(missing_ok=True)
+    return digest
 
 
 def fat32_esp_grub_root_block(
@@ -372,7 +511,6 @@ def extract_iso_files(
     (output_dir / "boot" / "grub" / "grub.cfg").write_text(grub_cfg, encoding="utf-8")
 
     extract_list = [
-        ("/EFI/BOOT/BOOTX64.EFI", "EFI/BOOT/BOOTX64.EFI"),
         (live_paths["vmlinuz"], "live/vmlinuz"),
         (live_paths["initrd"], "live/initrd.img"),
         (live_paths["squashfs"], "live/filesystem.squashfs"),
@@ -404,6 +542,21 @@ def extract_iso_files(
                 "sha256": sha256_file(dest),
             }
         )
+
+    bootx64_path = output_dir / "EFI/BOOT/BOOTX64.EFI"
+    bootx64_meta = build_fat32_esp_bootx64_efi(bootx64_path, runner=runner)
+    files_meta.append(
+        {
+            "iso_path": None,
+            "staging_path": "EFI/BOOT/BOOTX64.EFI",
+            "size_bytes": bootx64_meta["output_size"],
+            "sha256": bootx64_meta["sha256"],
+            "bootx64_source": bootx64_meta["bootx64_source"],
+        }
+    )
+    iso_bootx64_sha256 = extract_iso_bootx64_sha256(iso_path, runner=runner)
+    if iso_bootx64_sha256 and iso_bootx64_sha256 == bootx64_meta["sha256"]:
+        raise OSError(BOOTX64_ERROR_ISO_COPIED)
 
     setup_dir = output_dir / "setuphelfer" / "rescue"
     setup_dir.mkdir(parents=True, exist_ok=True)
@@ -451,6 +604,15 @@ def extract_iso_files(
         "iso_path": str(iso_path),
         "iso_sha256": sha256_file(iso_path) if iso_path.is_file() else None,
         "writer_mode": "fat32_esp",
+        "bootx64_source": bootx64_meta["bootx64_source"],
+        "bootx64_embedded_bootstrap": True,
+        "bootx64_iso_copied": False,
+        "bootx64_modules_requested": bootx64_meta["modules_requested"],
+        "bootx64_sha256": bootx64_meta["sha256"],
+        "iso_bootx64_sha256": iso_bootx64_sha256,
+        "bootx64_differs_from_iso": bool(
+            iso_bootx64_sha256 and iso_bootx64_sha256 != bootx64_meta["sha256"]
+        ),
         "files": files_meta,
         "secrets_exposed": False,
     }
@@ -471,12 +633,17 @@ def extract_iso_files(
         raise FileNotFoundError(f"staging incomplete: {missing}")
 
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "staging_root": str(output_dir),
         "iso_path": str(iso_path),
         "iso_sha256": evidence_payload["iso_sha256"],
         "live_cfg_parsed": bool(params.base_append or params.labels),
         "grub_menu_entries": 7,
+        "bootx64_source": bootx64_meta["bootx64_source"],
+        "bootx64_embedded_bootstrap": True,
+        "bootx64_iso_copied": False,
+        "bootx64_sha256": bootx64_meta["sha256"],
+        "iso_bootx64_sha256": iso_bootx64_sha256,
         "files": files_meta,
         "required_paths_present": required,
         "secrets_exposed": False,

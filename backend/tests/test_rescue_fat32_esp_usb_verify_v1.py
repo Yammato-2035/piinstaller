@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -138,6 +139,43 @@ class RescueFat32EspUsbVerifyTests(unittest.TestCase):
         cfg = patch_grub_cfg_for_fat_uuid(generate_fat32_esp_grub_cfg(), uuid)
         result = verify.validate_fat32_esp_grub_cfg(cfg, expected_fat_uuid=uuid)
         self.assertTrue(result["ok"], result["errors"])
+
+    def test_bootx64_verify_fails_iso_copied(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "EFI/BOOT").mkdir(parents=True)
+            (root / "EFI/BOOT/BOOTX64.EFI").write_bytes(b"x")
+            (root / "setuphelfer/rescue").mkdir(parents=True)
+            evidence = {
+                "bootx64_source": "grub_mkstandalone",
+                "bootx64_iso_copied": False,
+                "bootx64_sha256": "same",
+                "iso_bootx64_sha256": "same",
+            }
+            (root / "setuphelfer/rescue/evidence.json").write_text(
+                __import__("json").dumps(evidence), encoding="utf-8"
+            )
+            result = verify.validate_fat32_esp_bootx64_on_mount(root)
+            self.assertFalse(result["ok"])
+            self.assertIn(verify.BOOTX64_ERROR_ISO_COPIED, result["errors"])
+
+    def test_bootx64_verify_ok_standalone(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "EFI/BOOT").mkdir(parents=True)
+            (root / "EFI/BOOT/BOOTX64.EFI").write_bytes(b"x")
+            (root / "setuphelfer/rescue").mkdir(parents=True)
+            evidence = {
+                "bootx64_source": "grub_mkstandalone",
+                "bootx64_iso_copied": False,
+                "bootx64_sha256": "standalone",
+                "iso_bootx64_sha256": "iso",
+            }
+            (root / "setuphelfer/rescue/evidence.json").write_text(
+                __import__("json").dumps(evidence), encoding="utf-8"
+            )
+            result = verify.validate_fat32_esp_bootx64_on_mount(root)
+            self.assertTrue(result["ok"], result["errors"])
 
     def test_grub_validate_rejects_iso_file_search(self) -> None:
         bad = (

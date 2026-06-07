@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 from typing import Any, Callable, Mapping, Sequence
@@ -22,6 +23,17 @@ STALE_PARENT_ISO9660_REPAIR = "sudo wipefs -a -t iso9660 {target}"
 GRUB_ERROR_ROOT = "RESCUE-FAT32-GRUB-ROOT-001"
 GRUB_ERROR_KERNEL = "RESCUE-FAT32-GRUB-KERNEL-PATH-001"
 GRUB_ERROR_INITRD = "RESCUE-FAT32-GRUB-INITRD-PATH-001"
+BOOTX64_ERROR_ISO_COPIED = "RESCUE-FAT32-BOOTX64-ISO-COPIED-001"
+BOOTX64_ERROR_STANDALONE_MISSING = "RESCUE-FAT32-BOOTX64-STANDALONE-MISSING-001"
+BOOTX64_ERROR_PARTITION_MODULES = "RESCUE-FAT32-GRUB-PARTITION-MODULES-MISSING-001"
+
+_EMBEDDED_BOOTSTRAP_TOKENS = (
+    "insmod part_gpt",
+    "insmod fat",
+    "insmod search_label",
+    "insmod configfile",
+    "search --no-floppy --label",
+)
 
 _GRUB_LINUX_RE = re.compile(r"^\s*linux\s+(\S+)", re.I | re.M)
 _GRUB_INITRD_RE = re.compile(r"^\s*initrd\s+(\S+)", re.I | re.M)
@@ -339,4 +351,64 @@ def validate_fat32_esp_grub_cfg_file(
         mount_root=root,
         expected_fat_uuid=expected_fat_uuid,
     )
+
+
+def _load_staging_evidence(mount_root: Path) -> dict[str, Any]:
+    path = mount_root / "setuphelfer/rescue/evidence.json"
+    if not path.is_file():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def validate_fat32_esp_bootx64_on_mount(
+    mount_root: Path,
+    *,
+    iso_bootx64_sha256: str | None = None,
+) -> dict[str, Any]:
+    """Verify standalone BOOTX64 on real USB/staging — not blind ISO copy."""
+    errors: list[str] = []
+    boot_path = mount_root / "EFI/BOOT/BOOTX64.EFI"
+    if not boot_path.is_file():
+        errors.append(BOOTX64_ERROR_STANDALONE_MISSING)
+        return {"ok": False, "errors": errors}
+
+    evidence = _load_staging_evidence(mount_root)
+    source = evidence.get("bootx64_source")
+    if source != "grub_mkstandalone":
+        errors.append(BOOTX64_ERROR_STANDALONE_MISSING)
+    if evidence.get("bootx64_iso_copied") is True:
+        errors.append(BOOTX64_ERROR_ISO_COPIED)
+
+    usb_sha = evidence.get("bootx64_sha256")
+    if not usb_sha:
+        from core.rescue_fat32_esp_usb_writer import sha256_file
+
+        usb_sha = sha256_file(boot_path)
+
+    iso_sha = iso_bootx64_sha256 or evidence.get("iso_bootx64_sha256")
+    if iso_sha and usb_sha == iso_sha:
+        errors.append(BOOTX64_ERROR_ISO_COPIED)
+
+    bootstrap_cfg = ""
+    try:
+        from core.rescue_fat32_esp_usb_writer import generate_fat32_esp_embedded_bootstrap_cfg
+
+        bootstrap_cfg = generate_fat32_esp_embedded_bootstrap_cfg()
+    except Exception:
+        pass
+    for token in _EMBEDDED_BOOTSTRAP_TOKENS:
+        if bootstrap_cfg and token not in bootstrap_cfg:
+            errors.append(BOOTX64_ERROR_PARTITION_MODULES)
+
+    return {
+        "ok": not errors,
+        "errors": sorted(set(errors)),
+        "bootx64_source": source,
+        "bootx64_sha256": usb_sha,
+        "iso_bootx64_sha256": iso_sha,
+        "bootx64_differs_from_iso": bool(iso_sha and usb_sha and iso_sha != usb_sha),
+    }
 

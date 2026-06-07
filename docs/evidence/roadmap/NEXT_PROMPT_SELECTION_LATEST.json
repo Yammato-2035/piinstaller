@@ -1,14 +1,15 @@
 {
-  "selected_at": "2026-06-07T22:00:00+02:00",
-  "next_prompt_id": "RESCUE_MSI_BOOT_CLEAN_FAT32_ESP_START_ASSISTANT_TELEMETRY_RUN",
-  "reason_de": "Full rebuild 1.7.8.5: GRUB FAT-UUID patch bereit. Operator muss ISO+USB im sudo-Terminal neu bauen, Verify Exit 0, dann MSI-Boot.",
+  "selected_at": "2026-06-07T23:00:00+02:00",
+  "next_prompt_id": "RESCUE_USB_FAT32_ESP_BOOTX64_FIXED_RECOPY_OPERATOR_RUN",
+  "reason_de": "Standalone GRUB BOOTX64 1.7.8.6 mit part_gpt/fat. Operator: Staging recopy auf /dev/sdb1, Verify, MSI-Boot.",
   "prerequisites": [
-    "Interaktives sudo-Terminal",
-    "RESCUE_FULL_REBUILD_FAT32_ESP_FREIGEGEBEN=1",
-    "patch-fat32-esp-grub-for-uuid.sh nach mkfs",
-    "verify-fat32-esp-rescue-usb.sh Exit 0 inkl. fs-uuid",
+    "grub-mkstandalone verfügbar",
+    "bootx64_source=grub_mkstandalone im evidence.json",
+    "BOOTX64 SHA256 != ISO BOOTX64",
+    "verify-fat32-esp-rescue-usb.sh Exit 0",
     "/dev/sdb Ultra Line Serial 24111412110212"
   ],
-  "follow_up_prompt_id": "RESCUE_MSI_GRUB_INTERACTIVE_ROOT_DISCOVERY",
-  "superseded_prompt_id": "RESCUE_USB_FAT32_ESP_GRUB_FIXED_RECOPY_OPERATOR_RUN"
+  "follow_up_prompt_id": "RESCUE_MSI_BOOT_CLEAN_FAT32_ESP_START_ASSISTANT_TELEMETRY_RUN",
+  "fallback_prompt_id": "RESCUE_HOST_GRUB_EFI_TOOLING_INSTALL_OPERATOR_RUN",
+  "superseded_prompt_id": "RESCUE_MSI_BOOT_CLEAN_FAT32_ESP_START_ASSISTANT_TELEMETRY_RUN"
 }

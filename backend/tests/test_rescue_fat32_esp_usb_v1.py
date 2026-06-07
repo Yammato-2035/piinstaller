@@ -253,6 +253,36 @@ class RescueFat32EspUsbTests(unittest.TestCase):
         self.assertIn("wipefs --no-act", manual)
         self.assertIn("wipefs -a", manual)
 
+    def test_embedded_bootstrap_has_partition_modules(self) -> None:
+        cfg = fat32.generate_fat32_esp_embedded_bootstrap_cfg()
+        for token in (
+            "insmod part_gpt",
+            "insmod fat",
+            "insmod search_label",
+            "insmod configfile",
+            "search --no-floppy --label SETUPHELFER",
+        ):
+            self.assertIn(token, cfg)
+
+    def test_build_bootx64_not_iso_copy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "EFI/BOOT/BOOTX64.EFI"
+            iso_sha = "8656837e2f3ac643ca86931bf5419885bcfc0cbdfe75b087382c768b04fc81db"
+
+            def runner(cmd: list[str], timeout: int = 120) -> object:
+                if cmd[0] == "grub-mkstandalone":
+                    out.parent.mkdir(parents=True, exist_ok=True)
+                    out.write_bytes(b"\x00" * 400_000)
+                    return type("P", (), {"returncode": 0, "stdout": "", "stderr": ""})()
+                return type("P", (), {"returncode": 1, "stdout": "", "stderr": ""})()
+
+            with patch.object(fat32, "grub_mkstandalone_tooling", return_value={"available": True, "modules_requested": ["part_gpt"]}):
+                with patch.object(fat32, "sha256_file", return_value="deadbeef" * 8):
+                    meta = fat32.build_fat32_esp_bootx64_efi(out, runner=runner)
+            self.assertEqual(meta["bootx64_source"], "grub_mkstandalone")
+            self.assertFalse(meta["bootx64_iso_copied"])
+            self.assertNotEqual(meta["sha256"], iso_sha)
+
     def test_fat32_staging_rsync_command(self) -> None:
         cmd = fat32.fat32_staging_rsync_command(staging="/staging", mount="/mnt", sudo=False)
         self.assertNotIn("rsync -a", cmd)
