@@ -22,6 +22,20 @@ type CompactUsbOperator = {
   dd_execution_allowed?: boolean
   blockers?: string[]
   next_step?: string
+  usb_writer_modes?: {
+    iso_hybrid_dd?: { available?: boolean; current_boot_failed_on_msi?: boolean; recommended_for_msi?: boolean }
+    fat32_esp?: {
+      available?: boolean
+      implemented?: boolean
+      dry_run_available?: boolean
+      write_allowed?: boolean
+      operator_terminal_required?: boolean
+      recommended_for_msi?: boolean
+      confirm_phrase?: string
+      operator_commands?: Record<string, string>
+      verify_command?: string
+    }
+  }
 }
 
 export type RescueUsbOperatorToolboxProps = {
@@ -269,7 +283,7 @@ export const RescueUsbOperatorToolbox: React.FC<RescueUsbOperatorToolboxProps> =
         <div className="mt-4 rounded border border-emerald-800/40 bg-emerald-950/20 p-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-200">
             <ShieldAlert className="h-4 w-4" />
-            {t('devDashboard.rescueUsb.operatorCommand', 'Operator-Befehl (manuell im Terminal)')}
+            {t('devDashboard.rescueUsb.operatorCommand', 'Operator-Befehl ISO/dd (manuell im Terminal)')}
           </div>
           <pre className="mt-2 overflow-x-auto text-[11px] text-slate-200">{selection.generated_dd_command}</pre>
           <button
@@ -280,6 +294,30 @@ export const RescueUsbOperatorToolbox: React.FC<RescueUsbOperatorToolboxProps> =
             <ClipboardCopy className="h-3 w-3" />
             {t('common.copy', 'Kopieren')}
           </button>
+        </div>
+      ) : null}
+
+      {compactUsbOperator?.usb_writer_modes?.fat32_esp?.implemented ? (
+        <div className="mt-4 rounded border border-cyan-800/40 bg-cyan-950/20 p-3">
+          <div className="text-xs font-semibold text-cyan-200">
+            {t('devDashboard.rescueUsb.fat32Title', 'FAT32-ESP-Writer (MSI-empfohlen bei Boot-Problemen)')}
+          </div>
+          <p className="mt-1 text-[11px] text-slate-400">
+            {t(
+              'devDashboard.rescueUsb.fat32Notice',
+              'Kein automatisches Schreiben. Dry-run und Terminal-Befehle für Operator — DCC führt nichts aus.',
+            )}
+          </p>
+          <ul className="mt-2 space-y-1 text-[11px] font-mono text-slate-300">
+            <li>fat32_esp.recommended_for_msi: {String(compactUsbOperator.usb_writer_modes.fat32_esp.recommended_for_msi ?? false)}</li>
+            <li>write_allowed: {String(compactUsbOperator.usb_writer_modes.fat32_esp.write_allowed ?? false)}</li>
+          </ul>
+          {Object.entries(compactUsbOperator.usb_writer_modes.fat32_esp.operator_commands ?? {}).map(([key, cmd]) => (
+            <div key={key} className="mt-3">
+              <div className="text-[10px] uppercase text-slate-500">{key}</div>
+              <pre className="mt-1 overflow-x-auto text-[10px] text-slate-200">{cmd}</pre>
+            </div>
+          ))}
         </div>
       ) : null}
 

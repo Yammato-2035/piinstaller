@@ -109,6 +109,7 @@ def build_compact_dcc_status(
 
     usb_operator: dict[str, Any] = {}
     try:
+        from core.rescue_fat32_esp_usb_writer import build_compact_usb_writer_modes_summary
         from core.rescue_usb_operator_selection import (
             build_compact_usb_operator_summary,
             build_operator_gate_blockers,
@@ -116,12 +117,15 @@ def build_compact_dcc_status(
         )
 
         usb_operator = build_compact_usb_operator_summary()
+        usb_writer_modes = build_compact_usb_writer_modes_summary()
+        usb_operator["usb_writer_modes"] = usb_writer_modes
         evidence = load_operator_selection_evidence()
         for code in build_operator_gate_blockers(evidence):
             if code not in blockers:
                 blockers.append(code)
     except Exception:
         usb_operator = {"usb_detected": False, "operator_selection_present": False, "destructive_write_allowed": False}
+        usb_writer_modes = {}
 
     exposure: dict[str, Any] = {}
     try:
@@ -187,6 +191,7 @@ def build_compact_dcc_status(
             "target_boot_validated": gate.get("target_laptop_booted_from_stick") is True,
             "windows_inspect_executable": gate.get("windows_inspect_executable") is True,
             "usb_operator": usb_operator,
+            "usb_writer_modes": usb_operator.get("usb_writer_modes") or {},
             "telemetry_lan_proxy": build_compact_telemetry_lan_proxy_status(),
             "network_telemetry": build_compact_network_telemetry_status(),
         },

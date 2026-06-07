@@ -35,6 +35,7 @@ DEPLOY_MANIFEST_REL_PATHS: tuple[str, ...] = (
     "backend/runtime_governance/route_exposure.py",
     "backend/devserver/config.py",
     "backend/core/rescue_usb_operator_selection.py",
+    "backend/core/rescue_fat32_esp_usb_writer.py",
     "backend/core/profile_deploy_manifest.py",
     "backend/core/rescue_telemetry_ingest.py",
     "backend/core/rescue_telemetry_lan_proxy.py",

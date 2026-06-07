@@ -1,13 +1,14 @@
 {
-  "selected_at": "2026-06-07T12:05:00+02:00",
-  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITER_IMPLEMENTATION",
-  "reason_de": "MSI bootet nicht trotz Readback-Match; ISO besteht deep-UEFI-Validator (El-Torito+Hybrid+efi.img). Wahrscheinliche Ursache: isohybrid ISO9660 auf MSI. FAT32-ESP-Writer als Fix-Pfad; Operator soll Boot-Fehlermodus dokumentieren.",
+  "selected_at": "2026-06-07T12:30:00+02:00",
+  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_RUN",
+  "reason_de": "FAT32-ESP-Writer 1.7.8.0 implementiert; Staging und Dry-run grün. Operator muss FAT32-Stick schreiben, verifizieren und MSI-Boot testen.",
   "prerequisites": [
-    "Operator dokumentiert UEFI_MENU_NOT_VISIBLE vs UEFI_ENTRY_VISIBLE_BUT_BOOT_FAILS vs GRUB_VISIBLE_BUT_LINUX_FAILS",
-    "write-rescue-usb-fat32-esp.sh Prototyp implementieren (plan-only bisher)",
-    "Kein erneutes dd mit gleicher ISO"
+    "USB Operator Selection mit write_allowed in DCC",
+    "build-fat32-esp-usb-layout.sh ausführen",
+    "write-fat32-esp-rescue-usb.sh mit Confirm-Phrase (Operator-Terminal)",
+    "verify-fat32-esp-rescue-usb.sh read-only",
+    "MSI UEFI-Boot testen"
   ],
   "follow_up_prompt_id": "RESCUE_MSI_BOOT_START_ASSISTANT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "superseded_prompt_id": "RESCUE_MSI_BOOT_START_ASSISTANT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "alternate_prompt_id": "RESCUE_MSI_BOOT_MODE_OPERATOR_TRIAGE"
+  "superseded_prompt_id": "RESCUE_USB_FAT32_ESP_WRITER_IMPLEMENTATION"
 }

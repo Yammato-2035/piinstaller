@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "validated_at": "2026-06-07T12:30:00+02:00",
+  "prompt_id": "RESCUE_USB_FAT32_ESP_WRITER_IMPLEMENTATION",
+  "workspace_version": "1.7.8.0",
+  "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_sha256": "3fe6628a1316b2ceaa2850748e47a2e9c8984266a92d541e7d2aa29f80d2dbf7",
+  "staging_dir": "build/rescue/fat32-esp-staging",
+  "dry_run_target": "/dev/sdb",
+  "build_layout_exit": 0,
+  "writer_dry_run_exit": 0,
+  "write_executed": false,
+  "device_write_performed": false,
+  "grub_menu_entries": 7,
+  "unit_tests_passed": 14,
+  "secrets_exposed": false,
+  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_RUN"
+}
