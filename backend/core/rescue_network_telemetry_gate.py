@@ -56,6 +56,10 @@ def derive_network_telemetry_gate(gate: dict[str, Any] | None = None) -> dict[st
     onboarding_available = gate.get("target_network_onboarding_available")
     if onboarding_available is None:
         onboarding_available = True
+    start_assistant_autostart = gate.get("start_assistant_autostart_validated") is True
+    network_telemetry_validated = gate.get("target_network_telemetry_validated")
+    if network_telemetry_validated is None:
+        network_telemetry_validated = booted and link and health_reached and ingest_ack
     blockers: list[str] = []
     if not onboarding_available:
         blockers.append("RESCUE_NETWORK_ONBOARDING_REQUIRED")
@@ -66,6 +70,8 @@ def derive_network_telemetry_gate(gate: dict[str, Any] | None = None) -> dict[st
         blockers.append("RESCUE_TARGET_TELEMETRY_HEALTH_NOT_REACHED")
     if health_reached and not ingest_ack:
         blockers.append("RESCUE_TARGET_TELEMETRY_INGEST_ACK_MISSING")
+    if booted and not start_assistant_autostart:
+        blockers.append("RESCUE_START_ASSISTANT_AUTOSTART_NOT_VALIDATED")
     if gate.get("target_live_media_runtime_stable") is False:
         blockers.append("RESCUE_TARGET_LIVE_MEDIA_SQUASHFS_IO_ERROR")
     if not tasks.get("controlled_task_pull_available"):
@@ -91,11 +97,15 @@ def derive_network_telemetry_gate(gate: dict[str, Any] | None = None) -> dict[st
         "target_default_route_present": gate.get("target_default_route_present") is True,
         "target_telemetry_health_reached": health_reached,
         "target_telemetry_ingest_ack": ingest_ack,
+        "target_network_telemetry_validated": network_telemetry_validated,
+        "start_assistant_autostart_validated": start_assistant_autostart,
         "developer_lan_telemetry_proxy_ready": proxy.get("running") and proxy.get("lan_health_ok"),
         "controlled_task_pull_available": tasks.get("controlled_task_pull_available"),
         "windows_inspect_executable": windows_inspect,
         "blockers": blockers,
-        "last_error_code": gate.get("msi_network_onboarding_last_error"),
+        "last_error_code": gate.get("last_error_code") or gate.get("msi_network_onboarding_last_error"),
+        "last_ack_id": gate.get("last_ack_id"),
+        "last_ingest_at": gate.get("last_ingest_at"),
     }
 
 
@@ -112,8 +122,21 @@ def build_compact_network_telemetry_status() -> dict[str, Any]:
         tone = "yellow"
     elif derived.get("developer_lan_telemetry_proxy_ready"):
         tone = "yellow"
+    last_ack_id = derived.get("last_ack_id") or health.get("last_ack_id")
+    last_ingest_at = derived.get("last_ingest_at") or health.get("last_ingest_at")
+    next_step = gate.get("next_operator_step_de") or gate.get("next_operator_step_en")
+    if not next_step:
+        if derived.get("target_network_telemetry_validated") and not derived.get("start_assistant_autostart_validated"):
+            next_step = "ISO rebuild + USB recopy; MSI-Boot: Startassistent auf tty1 prüfen"
+        elif derived.get("developer_lan_telemetry_proxy_ready"):
+            next_step = "MSI: setuphelfer-rescue-network-onboarding; setuphelfer-rescue-telemetry-push"
+        else:
+            next_step = "Developer: LAN-Proxy starten"
     return {
         "status_tone": tone,
+        "target_laptop_booted_from_stick": derived.get("target_laptop_booted_from_stick"),
+        "target_network_telemetry_validated": derived.get("target_network_telemetry_validated"),
+        "start_assistant_autostart_validated": derived.get("start_assistant_autostart_validated"),
         "proxy_ready": bool(proxy.get("running") and proxy.get("lan_health_ok")),
         "proxy_health_url": proxy.get("health_url"),
         "msi_ip": derived.get("target_network_ip"),
@@ -123,13 +146,11 @@ def build_compact_network_telemetry_status() -> dict[str, Any]:
         "controlled_task_pull_available": tasks.get("controlled_task_pull_available"),
         "last_task_id": tasks.get("last_task_id"),
         "last_task_result": tasks.get("last_task_result"),
+        "last_ack_id": last_ack_id,
+        "last_ingest_at": last_ingest_at,
         "last_error_code": derived.get("last_error_code") or health.get("last_error_code"),
         "windows_inspect_executable": derived.get("windows_inspect_executable"),
         "blockers": derived.get("blockers") or [],
-        "next_step": (
-            "MSI: setuphelfer-rescue-network-onboarding; setuphelfer-rescue-telemetry-push"
-            if derived.get("developer_lan_telemetry_proxy_ready")
-            else "Developer: LAN-Proxy starten"
-        ),
+        "next_step": next_step,
         "secrets_exposed": False,
     }

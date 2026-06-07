@@ -74,7 +74,9 @@ export const DccCompactOverviewPanel: React.FC<DccCompactOverviewPanelProps> = (
     {
       label: t('devDashboard.compact.rescueNetworkTelemetry', 'Rescue Netzwerk & Telemetrie'),
       value: netTel?.telemetry_ingest_ack
-        ? 'Ingest ACK'
+        ? netTel?.last_ack_id
+          ? `ACK ${String(netTel.last_ack_id).slice(0, 12)}…`
+          : 'Ingest ACK'
         : netTel?.telemetry_health_reached
           ? 'Health ok'
           : netTel?.wlan_connected
@@ -89,6 +91,19 @@ export const DccCompactOverviewPanel: React.FC<DccCompactOverviewPanelProps> = (
           : netTel?.proxy_ready
             ? 'yellow'
             : 'red',
+    },
+    {
+      label: t('devDashboard.compact.rescueAutostart', 'Startassistent Autostart'),
+      value: compact?.rescue?.start_assistant_autostart_validated
+        ? 'tty1 ok'
+        : compact?.rescue?.target_network_telemetry_validated
+          ? 'Rebuild nötig'
+          : 'offen',
+      tone: compact?.rescue?.start_assistant_autostart_validated
+        ? 'green'
+        : compact?.rescue?.target_network_telemetry_validated
+          ? 'yellow'
+          : 'red',
     },
     {
       label: t('devDashboard.compact.rescueIso', 'Rescue-ISO'),
@@ -169,8 +184,14 @@ export const DccCompactOverviewPanel: React.FC<DccCompactOverviewPanelProps> = (
       ) : null}
 
       <p className="mt-3 text-xs text-cyan-200/90 font-mono" data-testid="dcc-compact-next-action">
-        {compact?.next_operator_action ?? t('devDashboard.compact.noAction', 'Keine Operator-Aktion hinterlegt.')}
+        {netTel?.next_step ?? compact?.next_operator_action ?? t('devDashboard.compact.noAction', 'Keine Operator-Aktion hinterlegt.')}
       </p>
+      {netTel?.last_ingest_at ? (
+        <p className="mt-1 text-[11px] text-slate-400 font-mono" data-testid="dcc-compact-telemetry-ingest">
+          Ingest: {netTel.last_ingest_at}
+          {netTel.last_ack_id ? ` · ACK ${netTel.last_ack_id}` : ''}
+        </p>
+      ) : null}
 
       {rawDetailsJson ? (
         <details className="mt-3" data-testid="dcc-compact-raw-details">

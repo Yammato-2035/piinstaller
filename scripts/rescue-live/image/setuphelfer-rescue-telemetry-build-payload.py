@@ -78,6 +78,7 @@ def boot_mode_hint() -> dict[str, Any]:
         "efi_boot": os.path.isdir("/sys/firmware/efi"),
         "setuphelfer_rescue": "setuphelfer_rescue=1" in cmdline,
         "setuphelfer_network_onboarding": "setuphelfer_network_onboarding=1" in cmdline,
+        "setuphelfer_start_assistant": "setuphelfer_start_assistant=1" in cmdline,
         "setuphelfer_msi_compat": "pci=noaer" in cmdline,
         "setuphelfer_diagnose": "setuphelfer_diagnose=1" in cmdline,
     }

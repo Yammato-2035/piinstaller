@@ -91,6 +91,30 @@ class RescueStartAssistantTests(unittest.TestCase):
         self.assertIn("--passwordbox", text)
         self.assertIn("_entries[_idx]", text)
 
+    def test_start_assistant_service_unit_autostart_fields(self) -> None:
+        prepare = (REPO / "scripts" / "rescue-live" / "prepare-controlled-live-build-tree.sh").read_text(encoding="utf-8")
+        self.assertIn("ConditionKernelCommandLine=setuphelfer_start_assistant=1", prepare)
+        self.assertIn("TTYPath=/dev/tty1", prepare)
+        self.assertIn("StandardInput=tty", prepare)
+        self.assertIn("StandardOutput=tty", prepare)
+        self.assertIn("Environment=TERM=linux", prepare)
+        self.assertIn("TTYVTDisallocate=yes", prepare)
+        self.assertIn("getty@tty1.service.d/setuphelfer-rescue.conf", prepare)
+
+    def test_start_assistant_writes_status_path(self) -> None:
+        text = (IMAGE / "setuphelfer-rescue-start-assistant").read_text(encoding="utf-8")
+        self.assertIn("setuphelfer_rescue_start_assistant_status_path", text)
+        self.assertIn("setuphelfer_rescue_write_start_assistant_status", text)
+        self.assertIn("setuphelfer_rescue_cmdline_has_start_assistant", text)
+        self.assertIn("setuphelfer_rescue_show_start_assistant_fallback", text)
+        common = (IMAGE / "setuphelfer-rescue-common.sh").read_text(encoding="utf-8")
+        self.assertIn("start-assistant-status.json", common)
+
+    def test_start_assistant_status_has_no_password_fields(self) -> None:
+        text = (IMAGE / "setuphelfer-rescue-start-assistant").read_text(encoding="utf-8")
+        self.assertNotIn("password", text.lower().replace("passwordbox", ""))
+        self.assertIn('"secrets_exposed": false', text)
+
 
 if __name__ == "__main__":
     unittest.main()

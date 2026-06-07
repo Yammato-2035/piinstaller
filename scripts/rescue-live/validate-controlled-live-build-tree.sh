@@ -345,6 +345,23 @@ if [[ -f "$_hook" ]]; then
     || fail_missing "setuphelfer-rescue-start-assistant missing"
   [[ -f "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-start-assistant.service" ]] \
     || fail_missing "setuphelfer-rescue-start-assistant.service missing"
+  grep -q 'ConditionKernelCommandLine=setuphelfer_start_assistant=1' \
+    "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-start-assistant.service" \
+    || fail_missing "start-assistant.service missing ConditionKernelCommandLine"
+  grep -q 'TTYPath=/dev/tty1' \
+    "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-start-assistant.service" \
+    || fail_missing "start-assistant.service missing TTYPath=/dev/tty1"
+  grep -q 'StandardInput=tty' \
+    "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-start-assistant.service" \
+    || fail_missing "start-assistant.service missing StandardInput=tty"
+  grep -q 'StandardOutput=tty' \
+    "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-start-assistant.service" \
+    || fail_missing "start-assistant.service missing StandardOutput=tty"
+  grep -q 'Environment=TERM=linux' \
+    "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-start-assistant.service" \
+    || fail_missing "start-assistant.service missing TERM=linux"
+  [[ -f "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/getty@tty1.service.d/setuphelfer-rescue.conf" ]] \
+    || fail_missing "getty@tty1 rescue drop-in missing"
   python3 -m py_compile "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-disk-discovery.py" \
     || fail_missing "setuphelfer-rescue-disk-discovery.py py_compile failed"
   python3 -m py_compile "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-plan-builder.py" \

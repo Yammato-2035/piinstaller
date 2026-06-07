@@ -56,6 +56,10 @@ class CompactStatusCoreTests(unittest.TestCase):
         self.assertTrue(proxy.get("configured"))
         self.assertIn("health_url", proxy)
         self.assertFalse(proxy.get("secrets_exposed"))
+        net_tel = rescue.get("network_telemetry") or {}
+        self.assertIn("last_ack_id", net_tel)
+        self.assertIn("last_ingest_at", net_tel)
+        self.assertIn("start_assistant_autostart_validated", net_tel)
 
     def test_compact_includes_dev_server_when_capability_allows(self) -> None:
         with patch.dict(

@@ -40,6 +40,46 @@ setuphelfer_rescue_has_interactive_tty() {
   [[ -t 0 && -t 1 ]] && [[ "${SETUPHELFER_RESCUE_FORCE_HEADLESS:-}" != "1" ]]
 }
 
+setuphelfer_rescue_cmdline_has_start_assistant() {
+  grep -Eq '(^| )setuphelfer_start_assistant=1( |$)' /proc/cmdline 2>/dev/null
+}
+
+setuphelfer_rescue_start_assistant_status_path() {
+  printf '%s/start-assistant-status.json' "$SETUPHELFER_RESCUE_STATE_DIR"
+}
+
+setuphelfer_rescue_write_start_assistant_status() {
+  setuphelfer_rescue_write_json "$(setuphelfer_rescue_start_assistant_status_path)"
+}
+
+setuphelfer_rescue_prepare_tty1() {
+  local attempt
+  for attempt in $(seq 1 45); do
+    [[ -c /dev/tty1 ]] || { sleep 1; continue; }
+    chvt 1 2>/dev/null || true
+    if [[ -w /dev/tty1 ]]; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+setuphelfer_rescue_show_start_assistant_fallback() {
+  setuphelfer_rescue_show_branding
+  cat <<'EOF'
+
+Setuphelfer Startassistent — manueller Fallback
+
+Der Assistent konnte nicht automatisch starten. Bitte manuell ausführen:
+
+  sudo setuphelfer-rescue-start-assistant
+  sudo setuphelfer-rescue-network-onboarding
+  sudo setuphelfer-rescue-telemetry-push
+
+EOF
+}
+
 setuphelfer_rescue_write_json() {
   local dest="$1"
   local tmp

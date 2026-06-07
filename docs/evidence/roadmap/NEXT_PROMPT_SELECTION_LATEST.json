@@ -1,15 +1,15 @@
 {
-  "selected_at": "2026-06-07T23:00:00+02:00",
-  "next_prompt_id": "RESCUE_USB_FAT32_ESP_BOOTX64_FIXED_RECOPY_OPERATOR_RUN",
-  "reason_de": "Standalone GRUB BOOTX64 1.7.8.6 mit part_gpt/fat. Operator: Staging recopy auf /dev/sdb1, Verify, MSI-Boot.",
+  "selected_at": "2026-06-07T16:00:00+02:00",
+  "next_prompt_id": "RESCUE_ISO_START_ASSISTANT_AUTOSTART_REBUILD_AND_USB_RECOPY_OPERATOR_RUN",
+  "reason_de": "MSI-Boot und Telemetrie-ACK ingestiert (rti-e5aa1b9979b346f8). Startassistent-Autostart-Fix in 1.7.9.0 — ISO rebuild + USB recopy für tty1-Validierung.",
   "prerequisites": [
-    "grub-mkstandalone verfügbar",
-    "bootx64_source=grub_mkstandalone im evidence.json",
-    "BOOTX64 SHA256 != ISO BOOTX64",
-    "verify-fat32-esp-rescue-usb.sh Exit 0",
-    "/dev/sdb Ultra Line Serial 24111412110212"
+    "target_laptop_booted_from_stick=true",
+    "target_network_telemetry_validated=true",
+    "last_ack_id=rti-e5aa1b9979b346f8",
+    "start_assistant_autostart_validated=false",
+    "Workspace 1.7.9.0 mit Autostart-Fix committed"
   ],
-  "follow_up_prompt_id": "RESCUE_MSI_BOOT_CLEAN_FAT32_ESP_START_ASSISTANT_TELEMETRY_RUN",
-  "fallback_prompt_id": "RESCUE_HOST_GRUB_EFI_TOOLING_INSTALL_OPERATOR_RUN",
-  "superseded_prompt_id": "RESCUE_MSI_BOOT_CLEAN_FAT32_ESP_START_ASSISTANT_TELEMETRY_RUN"
+  "follow_up_prompt_id": "RESCUE_MSI_START_ASSISTANT_AUTOSTART_VALIDATION_OPERATOR_RUN",
+  "fallback_prompt_id": "RESCUE_START_ASSISTANT_AUTOSTART_TTY1_DEBUG_OPERATOR_RUN",
+  "superseded_prompt_id": "RESCUE_MSI_BOOT_AND_TELEMETRY_ACK_INGEST_START_ASSISTANT_AUTOSTART_FIX"
 }

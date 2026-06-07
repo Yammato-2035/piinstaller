@@ -338,26 +338,40 @@ Unit=setuphelfer-rescue-telemetry-retry.service
 WantedBy=timers.target
 EOF
 
+  mkdir -p "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/getty@tty1.service.d"
+  write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/getty@tty1.service.d/setuphelfer-rescue.conf" 0644 <<'EOF'
+[Unit]
+# Reserve tty1 for the start assistant when the kernel cmdline requests it.
+ConditionKernelCommandLine=!setuphelfer_start_assistant=1
+EOF
+
   write_text_file "${systemd_dir}/setuphelfer-rescue-start-assistant.service" 0644 <<'EOF'
 [Unit]
 Description=Setuphelfer Rescue Start Assistant
-After=setuphelfer-rescue-media-check.service
+After=systemd-user-sessions.service NetworkManager.service setuphelfer-rescue-media-check.service
+Wants=NetworkManager.service
+Before=getty@tty1.service
+Conflicts=getty@tty1.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-start-assistant
 ConditionVirtualization=!container
 # QEMU lab uses autopilot instead of interactive assistant on serial.
 ConditionVirtualization=!qemu
+ConditionKernelCommandLine=setuphelfer_start_assistant=1
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 TimeoutStartSec=3600
+Environment=TERM=linux
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 45); do [ -c /dev/tty1 ] && chvt 1 2>/dev/null && exit 0; sleep 1; done; exit 0'
 ExecStart=/usr/local/sbin/setuphelfer-rescue-start-assistant --boot-trigger
 StandardInput=tty
-StandardOutput=journal
+StandardOutput=tty
 StandardError=journal
 TTYPath=/dev/tty1
 TTYReset=yes
 TTYVHangup=yes
+TTYVTDisallocate=yes
 
 [Install]
 WantedBy=multi-user.target

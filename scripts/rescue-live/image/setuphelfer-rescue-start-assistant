@@ -7,11 +7,13 @@ source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
 MODE="${1:---interactive}"
 STATE_DIR="$SETUPHELFER_RESCUE_STATE_DIR"
+STATUS_JSON="$(setuphelfer_rescue_start_assistant_status_path)"
 MEDIA_JSON="${STATE_DIR}/media-check.json"
 NETWORK_JSON="${STATE_DIR}/network-onboarding.json"
 DISK_JSON="${STATE_DIR}/disk-discovery.json"
 PLAN_JSON="${STATE_DIR}/action-plan.json"
 WIZARD_JSON="$(setuphelfer_rescue_wizard_state_path)"
+ACK_JSON="${STATE_DIR}/telemetry-last-ack.json"
 
 setuphelfer_rescue_ensure_state_dir
 setuphelfer_rescue_load_network_env || true
@@ -23,6 +25,46 @@ _media_stable=false
 _network_ok=false
 _telemetry_ok=false
 _expert_mode=false
+_last_ack_id=""
+_last_error_code=""
+_exit_code=0
+_autostart=false
+_tty1_prepared=false
+
+_status_write() {
+  local phase="${1:-$_wizard_step}"
+  setuphelfer_rescue_write_start_assistant_status <<EOF
+{
+  "schema_version": 1,
+  "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "phase": "$phase",
+  "mode": "$MODE",
+  "autostart": $_autostart,
+  "cmdline_start_assistant": $(setuphelfer_rescue_cmdline_has_start_assistant && echo true || echo false),
+  "tty1_prepared": $_tty1_prepared,
+  "media_ok": $( [[ "$_media_stable" == true ]] && echo true || echo false ),
+  "network_ok": $( [[ "$_network_ok" == true ]] && echo true || echo false ),
+  "telemetry_ok": $( [[ "$_telemetry_ok" == true ]] && echo true || echo false ),
+  "last_ack_id": $( [[ -n "$_last_ack_id" ]] && printf '"%s"' "$_last_ack_id" || printf 'null' ),
+  "last_error_code": $( [[ -n "$_last_error_code" ]] && printf '"%s"' "$_last_error_code" || printf 'null' ),
+  "exit_code": $_exit_code,
+  "secrets_exposed": false
+}
+EOF
+}
+
+_on_exit() {
+  local rc=$?
+  if [[ "$rc" -ne 0 && "$_exit_code" -eq 0 ]]; then
+    _exit_code="$rc"
+    _last_error_code="ASSISTANT_EXIT_${rc}"
+  fi
+  _status_write "exit"
+  if [[ "$_exit_code" -ne 0 && "$MODE" == "--boot-trigger" ]]; then
+    setuphelfer_rescue_show_start_assistant_fallback >/dev/tty1 2>/dev/null || setuphelfer_rescue_show_start_assistant_fallback
+  fi
+}
+trap _on_exit EXIT
 
 _wizard_write_state() {
   setuphelfer_rescue_write_json "$WIZARD_JSON" <<EOF
@@ -44,6 +86,7 @@ EOF
 
 _step_welcome() {
   _wizard_step="welcome"
+  _status_write
   if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
     whiptail --title "Setuphelfer Rettungsstick" --msgbox "$(setuphelfer_rescue_show_branding)
 
@@ -66,46 +109,84 @@ OK = weiter" 22 78 3>&1 1>&2 2>&3 || return 1
 
 _step_media() {
   _wizard_step="media_check"
+  _status_write
   "${SCRIPT_DIR}/setuphelfer-rescue-media-check" || true
   if [[ -f "$MEDIA_JSON" ]]; then
     _media_stable="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("live_media_runtime_stable", False))' "$MEDIA_JSON" 2>/dev/null || echo false)"
   fi
   if [[ "$_media_stable" != true ]]; then
-    whiptail --title "Live-Medium" --msgbox "WARNUNG: Live-Medium nicht stabil.
+    if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
+      whiptail --title "Live-Medium" --msgbox "WARNUNG: Live-Medium nicht stabil.
 
 Empfehlung:
  • Boot-Menü: Start in RAM / Media-Check
  • USB-Stick neu schreiben
  • Keine Reparatur/Installation ausführen" 16 70 3>&1 1>&2 2>&3 || true
+    fi
   fi
   _wizard_write_state
 }
 
 _step_network() {
   _wizard_step="network"
+  _status_write
   local _rc=0
-  "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --interactive || _rc=$?
+  if [[ "$MODE" == "--boot-trigger" ]]; then
+    "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --non-interactive || _rc=$?
+    if [[ -f "$NETWORK_JSON" ]]; then
+      _network_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("default_route_present") and (d.get("wifi_connected") or d.get("config_source") in ("ethernet_connected","already_connected","prepared_env","known_nm_profile","interactive_menu")))' "$NETWORK_JSON" 2>/dev/null || echo false)"
+    fi
+    if [[ "$_network_ok" != true ]]; then
+      "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --interactive || _rc=$?
+    fi
+  else
+    "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --interactive || _rc=$?
+  fi
   if [[ -f "$NETWORK_JSON" ]]; then
-    _network_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("default_route_present") and (d.get("wifi_connected") or d.get("config_source")=="ethernet_connected"))' "$NETWORK_JSON" 2>/dev/null || echo false)"
+    _network_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("default_route_present") and (d.get("wifi_connected") or d.get("config_source") in ("ethernet_connected","already_connected","prepared_env","known_nm_profile","interactive_menu")))' "$NETWORK_JSON" 2>/dev/null || echo false)"
   fi
   if [[ "$_rc" -eq 20 ]]; then
-    whiptail --title "Netzwerk" --msgbox "Offline-Modus. Telemetrie wird bei Verbindung automatisch nachgesendet (Spool)." 10 60 3>&1 1>&2 2>&3 || true
+    if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
+      whiptail --title "Netzwerk" --msgbox "Offline-Modus. Telemetrie wird bei Verbindung automatisch nachgesendet (Spool)." 10 60 3>&1 1>&2 2>&3 || true
+    fi
   fi
   _wizard_write_state
 }
 
 _step_telemetry() {
   _wizard_step="telemetry"
+  _status_write
+  local _health_ok=false
+  if ip route show default 2>/dev/null | grep -q .; then
+    curl -fsS --max-time 10 "${SETUPHELFER_RESCUE_TELEMETRY_HEALTH_URL}" >/dev/null 2>&1 && _health_ok=true
+  fi
+  if [[ "$_health_ok" != true && "$_network_ok" == true ]]; then
+    _last_error_code="TELEMETRY_HEALTH_UNREACHABLE"
+  fi
   "${SCRIPT_DIR}/setuphelfer-rescue-telemetry-push" || true
   systemctl start setuphelfer-rescue-telemetry-retry.timer 2>/dev/null || true
-  if [[ -f "${STATE_DIR}/telemetry-last-ack.json" ]]; then
-    _telemetry_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("http_status")==200)' "${STATE_DIR}/telemetry-last-ack.json" 2>/dev/null || echo false)"
+  if [[ -f "$ACK_JSON" ]]; then
+    _telemetry_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("http_status")==200)' "$ACK_JSON" 2>/dev/null || echo false)"
+    _last_ack_id="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("ack_id") or d.get("response",{}).get("ack_id") or "")' "$ACK_JSON" 2>/dev/null || echo "")"
   fi
+  if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
+    if [[ "$_telemetry_ok" == true && -n "$_last_ack_id" ]]; then
+      whiptail --title "Telemetrie" --msgbox "Telemetrie erfolgreich gesendet.
+
+ACK-ID: $_last_ack_id" 12 70 3>&1 1>&2 2>&3 || true
+    elif [[ "$_network_ok" != true ]]; then
+      whiptail --title "Telemetrie" --msgbox "Kein Netzwerk — Telemetrie wird gespoolt und später nachgesendet." 10 60 3>&1 1>&2 2>&3 || true
+    else
+      whiptail --title "Telemetrie" --msgbox "Telemetrie noch nicht bestätigt. Retry-Timer aktiv." 10 60 3>&1 1>&2 2>&3 || true
+    fi
+  fi
+  _status_write
   _wizard_write_state
 }
 
 _step_disks() {
   _wizard_step="disk_discovery"
+  _status_write
   export SETUPHELFER_MEDIA_STABLE="$([[ "$_media_stable" == true ]] && echo 1 || echo 0)"
   python3 "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery.py" "$DISK_JSON" || true
   _wizard_write_state
@@ -113,16 +194,20 @@ _step_disks() {
 
 _step_recommendation() {
   _wizard_step="recommendation"
+  _status_write
   local _rec="diagnostics_only"
   if [[ -f "$DISK_JSON" ]]; then
     _rec="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("recommendation",{}).get("recommended_next_action","diagnostics_only"))' "$DISK_JSON" 2>/dev/null || echo diagnostics_only)"
   fi
-  whiptail --title "Empfehlung" --msgbox "Nächster empfohlener Schritt:\n\n$_rec\n\nBei Fehlern auf der Platte: zuerst Backup." 12 70 3>&1 1>&2 2>&3 || true
+  if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
+    whiptail --title "Empfehlung" --msgbox "Nächster empfohlener Schritt:\n\n$_rec\n\nBei Fehlern auf der Platte: zuerst Backup." 12 70 3>&1 1>&2 2>&3 || true
+  fi
   _wizard_write_state
 }
 
 _main_menu() {
   _wizard_step="main_menu"
+  _status_write
   local _choice
   while true; do
     _choice="$(whiptail --title "Setuphelfer Rettungsstick" --menu "Was möchten Sie tun?" 20 78 12 \
@@ -158,13 +243,34 @@ _main_menu() {
 }
 
 if [[ "$MODE" == "--boot-trigger" ]]; then
-  if ! setuphelfer_rescue_has_interactive_tty; then
+  _autostart=true
+  if ! setuphelfer_rescue_cmdline_has_start_assistant; then
+    _exit_code=0
     exit 0
+  fi
+  if setuphelfer_rescue_prepare_tty1; then
+    _tty1_prepared=true
+  fi
+  if [[ -c /dev/tty1 ]]; then
+    exec </dev/tty1 >/dev/tty1 2>&1
+  fi
+  for _wait in $(seq 1 30); do
+    if setuphelfer_rescue_has_interactive_tty; then
+      break
+    fi
+    sleep 1
+  done
+  if ! setuphelfer_rescue_has_interactive_tty; then
+    _last_error_code="TTY_NOT_READY"
+    _exit_code=31
+    exit 31
   fi
 fi
 
 if ! command -v whiptail >/dev/null 2>&1; then
   echo "whiptail fehlt — Startassistent benötigt dialog/whiptail" >&2
+  _last_error_code="WHIPTAIL_MISSING"
+  _exit_code=30
   exit 30
 fi
 
@@ -176,4 +282,5 @@ _step_disks
 _step_recommendation
 _main_menu
 _wizard_write_state
+_status_write "completed"
 exit 0

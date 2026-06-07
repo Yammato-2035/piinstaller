@@ -189,6 +189,8 @@ def build_compact_dcc_status(
             "usb_mount_detected": usb_mount.get("detected"),
             "usb_mount_path": usb_mount.get("mount_path"),
             "target_boot_validated": gate.get("target_laptop_booted_from_stick") is True,
+            "start_assistant_autostart_validated": gate.get("start_assistant_autostart_validated") is True,
+            "target_network_telemetry_validated": gate.get("target_network_telemetry_validated") is True,
             "windows_inspect_executable": gate.get("windows_inspect_executable") is True,
             "usb_operator": usb_operator,
             "usb_writer_modes": usb_operator.get("usb_writer_modes") or {},

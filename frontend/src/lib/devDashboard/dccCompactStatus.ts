@@ -38,6 +38,8 @@ export type DccCompactStatus = {
     usb_mount_detected?: boolean
     usb_mount_path?: string | null
     target_boot_validated?: boolean
+    start_assistant_autostart_validated?: boolean
+    target_network_telemetry_validated?: boolean
     usb_operator?: {
       usb_detected?: boolean
       old_rescue_stick_detected?: boolean
@@ -65,6 +67,9 @@ export type DccCompactStatus = {
     }
     network_telemetry?: {
       status_tone?: string
+      target_laptop_booted_from_stick?: boolean
+      target_network_telemetry_validated?: boolean
+      start_assistant_autostart_validated?: boolean
       proxy_ready?: boolean
       proxy_health_url?: string | null
       msi_ip?: string | null
@@ -74,6 +79,8 @@ export type DccCompactStatus = {
       controlled_task_pull_available?: boolean
       last_task_id?: string | null
       last_task_result?: string | null
+      last_ack_id?: string | null
+      last_ingest_at?: string | null
       last_error_code?: string | null
       windows_inspect_executable?: boolean
       blockers?: string[]
