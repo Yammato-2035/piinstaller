@@ -1,13 +1,13 @@
 {
-  "selected_at": "2026-06-07T11:46:45+02:00",
-  "next_prompt_id": "RESCUE_USB_REWRITE_AFTER_START_ASSISTANT_ISO_OPERATOR_RUN",
-  "reason_de": "Start-Assistant-ISO 1.7.7.0 post-build validiert (LB_EXIT=0, UEFI OK, Boot-Menü/Branding/SquashFS grün). USB-Rewrite-Handoff freigegeben — Operator-dd ausstehend.",
+  "selected_at": "2026-06-07T11:49:57+02:00",
+  "next_prompt_id": "RESCUE_MSI_BOOT_START_ASSISTANT_NETWORK_TELEMETRY_OPERATOR_RUN",
+  "reason_de": "USB-Stick /dev/sdb mit Start-Assistant-ISO 1.7.7.0 geschrieben; Readback-SHA256 Match; Bootartefakte und Branding auf Stick verifiziert. MSI-Boot mit Startassistent/WLAN/Telemetrie als Nächstes.",
   "prerequisites": [
-    "ISO SHA256 3fe6628a1316b2ceaa2850748e47a2e9c8984266a92d541e7d2aa29f80d2dbf7 bestätigen",
-    "Zielstick /dev/sdb verifizieren (nicht /dev/sda)",
-    "udisksctl unmount + dd + sync",
-    "Block-Readback SHA256 gegen ISO"
+    "MSI-Laptop von Stick booten (UEFI bevorzugt: Setuphelfer Rettung starten oder Netzwerk-Assistent)",
+    "Telemetrie-LAN-Proxy 192.168.178.140:8001 erreichbar halten",
+    "Start-Assistant-Wizard read-only smoke (keine Schreibaktionen)",
+    "Telemetrie-Health + Ingest-ACK dokumentieren"
   ],
-  "follow_up_prompt_id": "RESCUE_MSI_BOOT_START_ASSISTANT_TELEMETRY_VALIDATION",
-  "superseded_prompt_id": "RESCUE_START_ASSISTANT_ISO_REBUILD_OPERATOR_COMPLETION"
+  "follow_up_prompt_id": "RESCUE_TARGET_NETWORK_TELEMETRY_VALIDATION",
+  "superseded_prompt_id": "RESCUE_USB_REWRITE_AFTER_START_ASSISTANT_ISO_OPERATOR_RUN"
 }
