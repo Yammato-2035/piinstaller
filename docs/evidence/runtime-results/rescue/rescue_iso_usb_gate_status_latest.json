@@ -1,23 +1,32 @@
 {
-  "schema_version": 21,
-  "classified_at": "2026-06-07T23:30:00+02:00",
-  "classification": "rescue_network_onboarding_telemetry_push_task_pull_implemented_rebuild_pending",
+  "schema_version": 22,
+  "classified_at": "2026-06-07T09:00:00+02:00",
+  "classification": "iso_network_onboarding_post_build_validated_usb_rewrite_handoff_ready",
   "iso_created": true,
   "iso_uefi_validated": true,
+  "iso_post_build_validated": true,
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
-  "iso_sha256": "9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a",
-  "iso_size_bytes": 620756992,
+  "iso_sha256": "86cba7eb550bcdb0562a414f79d78db58c908d5d743d474365eda0bcb638e5fc",
+  "iso_sha256_previous_on_stick": "9ef1b330c6ec774dfa1966c2f87c3c3ef31b3adf421f64fa2375c90408f21f3a",
+  "iso_size_bytes": 683671552,
+  "squashfs_validated": true,
+  "uefi_validator_exit_code": 0,
+  "uefi_post_patch_validate_exit_code": 0,
+  "lb_exit": 0,
+  "network_onboarding_scripts_in_squashfs": true,
+  "nmcli_in_squashfs": true,
   "usb_stick_written": true,
-  "usb_write_sha256_verified": true,
+  "usb_stick_matches_current_iso": false,
+  "usb_write_sha256_verified": false,
+  "usb_rewrite_handoff_ready": true,
   "usb_stick_device": "/dev/sdb",
   "usb_stick_model": "Ultra Line",
   "usb_stick_serial": "24111412110212",
   "target_laptop_booted_from_stick": true,
   "target_live_media_runtime_stable": false,
   "target_network_onboarding_available": true,
+  "target_network_onboarding_in_current_iso": true,
   "target_network_link_established": false,
-  "target_network_ip": null,
-  "target_default_route_present": false,
   "target_telemetry_health_reached": false,
   "target_telemetry_ingest_ack": false,
   "developer_lan_telemetry_proxy_ready": true,
@@ -26,62 +35,50 @@
   "windows_inspect_executable": false,
   "workspace_version": "1.7.5.0",
   "runtime_version_api": "1.7.4.1",
-  "msi_network_onboarding_last_error": "RESCUE_WIFI_SCAN_NOT_TRIGGERED",
-  "msi_operator_findings": {
-    "boot_from_stick_ok": true,
-    "networkmanager_active": true,
-    "wifi_scan_after_reboot": false,
-    "password_prompt": false,
-    "pcie_corrected_errors": true,
-    "acpi_vrtc_errors": true,
-    "historical_wifi_ip": "192.168.178.96"
-  },
+  "runtime_deploy_drift": "RUNTIME_DEPLOY_DRIFT_1_7_5_0_PENDING",
+  "squashfs_bundle_project_version": "1.7.3.0",
+  "build_source_head": "5668fa8",
+  "warnings": [
+    {
+      "id": "RESCUE_ISO_BOOT_MENU_CUSTOM_ENTRIES_MISSING",
+      "severity": "warning",
+      "description_de": "Extra ISOLINUX-Labels (Network-Onboarding/toram/MSI-compat) fehlen — Default-Boot + manuelle Scripts ok"
+    },
+    {
+      "id": "RUNTIME_BUNDLE_VERSION_DRIFT_IN_SQUASHFS",
+      "severity": "warning",
+      "description_de": "opt/setuphelfer-rescue Bundle 1.7.3.0 im SquashFS; Overlay-Scripts aus 1.7.5.0 Build-Tree"
+    }
+  ],
   "blockers": [
     {
-      "id": "RESCUE_NETWORK_ONBOARDING_REQUIRED",
+      "id": "RESCUE_USB_REWRITE_REQUIRED_FOR_ISO_86CBA7EB",
       "severity": "critical",
       "status": "blocked",
-      "description_de": "Robustes WLAN-Onboarding fehlte auf deployedem Stick — Fix in 1.7.5.0 Workspace, Rebuild ausstehend"
+      "description_de": "Stick enthält noch ISO 9ef1b330… — Rewrite auf 86cba7eb… erforderlich"
     },
     {
-      "id": "RESCUE_WIFI_SCAN_NOT_TRIGGERED",
+      "id": "RESCUE_USB_BLOCK_READBACK_SHA256_PENDING",
       "severity": "critical",
       "status": "blocked"
     },
     {
-      "id": "RESCUE_WIFI_PASSWORD_PROMPT_MISSING",
+      "id": "RESCUE_TARGET_NETWORK_TELEMETRY_NOT_VALIDATED",
       "severity": "critical",
-      "status": "blocked"
-    },
-    {
-      "id": "RESCUE_TELEMETRY_PUSH_NOT_AUTOMATED",
-      "severity": "warning",
-      "status": "resolved_in_workspace",
-      "description_de": "setuphelfer-rescue-telemetry-push implementiert — ISO-Rebuild nötig"
-    },
-    {
-      "id": "RESCUE_TARGET_TELEMETRY_HEALTH_NOT_REACHED",
-      "severity": "critical",
-      "status": "blocked"
-    },
-    {
-      "id": "RESCUE_TARGET_TELEMETRY_INGEST_ACK_MISSING",
-      "severity": "critical",
-      "status": "blocked"
+      "status": "blocked",
+      "description_de": "MSI-Retest mit neuer ISO + Network-Onboarding ausstehend"
     },
     {
       "id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED",
       "severity": "critical",
       "status": "blocked",
       "code": "RESCUE-UEFI-005"
-    },
-    {
-      "id": "RESCUE_ISO_REBUILD_REQUIRED_FOR_NETWORK_ONBOARDING",
-      "severity": "critical",
-      "status": "blocked",
-      "description_de": "Neue Scripts/Services erst nach ISO-Rebuild auf Stick"
     }
   ],
-  "next_prompt_id": "RESCUE_ISO_NETWORK_ONBOARDING_REBUILD_AND_USB_REWRITE_OPERATOR_RUN",
-  "next_operator_step_de": "ISO mit 1.7.5.0 rebuilden, Stick neu schreiben, MSI: network-onboarding + telemetry-push."
+  "resolved_blockers": [
+    "RESCUE_ISO_REBUILD_REQUIRED_FOR_NETWORK_ONBOARDING",
+    "RESCUE_ISO_POST_BUILD_VALIDATION_PENDING"
+  ],
+  "next_prompt_id": "RESCUE_USB_REWRITE_OPERATOR_RUN",
+  "next_operator_step_de": "USB dd mit ISO 86cba7eb…; Readback-SHA256; MSI-Boot; setuphelfer-rescue-network-onboarding + telemetry-push."
 }
