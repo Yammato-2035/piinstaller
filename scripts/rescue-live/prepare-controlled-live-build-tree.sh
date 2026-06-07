@@ -200,23 +200,53 @@ WantedBy=sysinit.target
 EOF
 }
 
+write_rescue_isolinux_branding() {
+  [[ "${RESCUE_BUILD_PROFILE}" == "developer-qemu" ]] && return 0
+  local cfg="${BOOTLOADER_DIR}/isolinux.cfg"
+  [[ -f "$cfg" ]] || return 0
+  if grep -q 'MENU TITLE Setuphelfer Rescue' "$cfg" 2>/dev/null; then
+    return 0
+  fi
+  {
+    echo 'MENU TITLE Setuphelfer Rescue Live'
+    echo 'MENU BACKGROUND /bootlogo'
+    echo '# Setuphelfer branded rescue boot menu (see RESCUE_BOOT_MENU_BRANDING.md)'
+    cat "$cfg"
+  } >"${cfg}.tmp" && mv "${cfg}.tmp" "$cfg"
+}
+
 write_rescue_network_telemetry_overlay() {
   local image_src="${REPO_ROOT}/scripts/rescue-live/image"
   local sbin="${BUILD_ROOT}/config/includes.chroot/usr/local/sbin"
+  local share="${BUILD_ROOT}/config/includes.chroot/usr/share/setuphelfer/rescue"
+  local rescue_cfg="${BUILD_ROOT}/config/includes.chroot/etc/setuphelfer-rescue"
   local systemd_dir="${BUILD_ROOT}/config/includes.chroot/etc/systemd/system"
   local wants="${systemd_dir}/multi-user.target.wants"
-  mkdir -p "$sbin" "$wants"
-  for script in setuphelfer-rescue-common.sh setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-telemetry-push setuphelfer-rescue-task-pull; do
+  local timers="${systemd_dir}/timers.target.wants"
+  mkdir -p "$sbin" "$wants" "$timers" "$share" "$rescue_cfg"
+  for script in setuphelfer-rescue-common.sh setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull; do
     [[ -f "${image_src}/${script}" ]] || die "missing rescue image script: ${script}"
-    copy_host_file "${image_src}/${script}" "${sbin}/${script}" 0755
+    local mode=0755
+    [[ "$script" == *.py ]] && mode=0644
+    copy_host_file "${image_src}/${script}" "${sbin}/${script}" "$mode"
   done
+  copy_host_file "${image_src}/setuphelfer-rescue-boot-branding.txt" "${share}/boot-branding.txt" 0644
+  write_text_file "${rescue_cfg}/network.env.example" 0644 <<'EOF'
+# Operator-local WLAN/telemetry config (copy to network.env on USB under SETUPHELFER_RESCUE_CONFIG/).
+# Never commit real passphrases to git.
+# SETUPHELFER_RESCUE_WIFI_SSID=
+# SETUPHELFER_RESCUE_WIFI_SECURITY=wpa-psk
+# SETUPHELFER_RESCUE_WIFI_PSK_FILE=/path/to/local/psk.txt
+# SETUPHELFER_RESCUE_TELEMETRY_SERVER=http://192.168.178.140:8001
+EOF
   ln -sf setuphelfer-rescue-network-onboarding "${sbin}/setuphelfer-network"
 
   write_text_file "${systemd_dir}/setuphelfer-rescue-network-onboarding.service" 0644 <<'EOF'
 [Unit]
 Description=Setuphelfer Rescue Network Onboarding
 After=NetworkManager.service
-Wants=NetworkManager.service
+Wants=NetworkManager.service network-online.target
+Before=setuphelfer-rescue-telemetry-push.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-network-onboarding
 ConditionPathExists=!/run/setuphelfer-rescue/network-onboarding.done
 
@@ -225,7 +255,6 @@ Type=oneshot
 RemainAfterExit=yes
 TimeoutStartSec=300
 ExecStart=/usr/local/sbin/setuphelfer-rescue-network-onboarding --boot-trigger
-StandardInput=tty
 StandardOutput=journal
 StandardError=journal
 
@@ -255,7 +284,7 @@ EOF
   write_text_file "${systemd_dir}/setuphelfer-rescue-telemetry-push.service" 0644 <<'EOF'
 [Unit]
 Description=Setuphelfer Rescue Telemetry Push
-After=network-online.target setuphelfer-rescue-media-check.service
+After=network-online.target setuphelfer-rescue-network-onboarding.service setuphelfer-rescue-media-check.service
 Wants=network-online.target
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-telemetry-push
 
@@ -268,6 +297,33 @@ StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
+EOF
+
+  write_text_file "${systemd_dir}/setuphelfer-rescue-telemetry-retry.service" 0644 <<'EOF'
+[Unit]
+Description=Setuphelfer Rescue Telemetry Spool Retry
+After=network-online.target
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-telemetry-retry
+
+[Service]
+Type=oneshot
+Environment=SETUPHELFER_RESCUE_SCRIPT_DIR=/usr/local/sbin
+ExecStart=/usr/local/sbin/setuphelfer-rescue-telemetry-retry
+StandardOutput=journal
+StandardError=journal
+EOF
+
+  write_text_file "${systemd_dir}/setuphelfer-rescue-telemetry-retry.timer" 0644 <<'EOF'
+[Unit]
+Description=Setuphelfer Rescue Telemetry Spool Retry Timer
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Unit=setuphelfer-rescue-telemetry-retry.service
+
+[Install]
+WantedBy=timers.target
 EOF
 
   write_text_file "${systemd_dir}/setuphelfer-rescue-task-pull.service" 0644 <<'EOF'
@@ -291,45 +347,97 @@ EOF
   ln -sf ../setuphelfer-rescue-media-check.service "${wants}/setuphelfer-rescue-media-check.service"
   ln -sf ../setuphelfer-rescue-telemetry-push.service "${wants}/setuphelfer-rescue-telemetry-push.service"
   ln -sf ../setuphelfer-rescue-task-pull.service "${wants}/setuphelfer-rescue-task-pull.service"
+  ln -sf ../setuphelfer-rescue-telemetry-retry.timer "${timers}/setuphelfer-rescue-telemetry-retry.timer"
 
   write_text_file "${BUILD_ROOT}/config/hooks/normal/020-setuphelfer-rescue-boot-menu.hook.binary" 0755 <<'EOF'
 #!/bin/sh
 set -eu
-# Append Setuphelfer rescue boot menu labels (ISOLINUX live.cfg).
-for cfg in binary/isolinux/live.cfg binary/boot/grub/grub.cfg; do
-  [ -f "$cfg" ] || continue
-  if grep -q 'setuphelfer-network-onboarding' "$cfg" 2>/dev/null; then
-    continue
-  fi
-  if echo "$cfg" | grep -q isolinux; then
-    cat >>"$cfg" <<'MENU'
+# Setuphelfer branded boot menu — ISOLINUX + GRUB (binary stage after lb build).
+GRUB_APPEND_BASE='boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1'
 
-LABEL setuphelfer-network
-  MENU LABEL Setuphelfer Rescue + Network Onboarding
+patch_isolinux() {
+  cfg="$1"
+  [ -f "$cfg" ] || return 0
+  grep -q 'LABEL setuphelfer-rescue-default' "$cfg" 2>/dev/null && return 0
+  cat >>"$cfg" <<MENU
+
+# Setuphelfer Rescue branded menu
+LABEL setuphelfer-rescue-default
+  MENU LABEL Setuphelfer Rescue starten
   MENU DEFAULT
   LINUX /live/vmlinuz
   INITRD /live/initrd.img
-  APPEND boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_network_onboarding=1
+  APPEND ${GRUB_APPEND_BASE}
 
-LABEL setuphelfer-toram
-  MENU LABEL Setuphelfer Rescue + toram + Media Check
+LABEL setuphelfer-rescue-network
+  MENU LABEL Setuphelfer Rescue mit Netzwerk-Assistent
   LINUX /live/vmlinuz
   INITRD /live/initrd.img
-  APPEND boot=live components toram init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_media_check=1
+  APPEND ${GRUB_APPEND_BASE} setuphelfer_network_onboarding=1
 
-LABEL setuphelfer-msi-compat
-  MENU LABEL Setuphelfer MSI Compatibility (pci=noaer)
+LABEL setuphelfer-rescue-msi-compat
+  MENU LABEL Setuphelfer Rescue MSI-Kompatibilitaetsmodus
   LINUX /live/vmlinuz
   INITRD /live/initrd.img
-  APPEND boot=live components init=/lib/systemd/systemd pci=noaer setuphelfer_rescue=1
+  APPEND ${GRUB_APPEND_BASE} pci=noaer setuphelfer_msi_compat=1
 
-LABEL setuphelfer-debug
-  MENU LABEL Setuphelfer Rescue Debug Shell
+LABEL setuphelfer-rescue-diagnose
+  MENU LABEL Setuphelfer Rescue Diagnosemodus
   LINUX /live/vmlinuz
   INITRD /live/initrd.img
-  APPEND boot=live components init=/lib/systemd/systemd systemd.debug-shell=1 setuphelfer_rescue=1
+  APPEND ${GRUB_APPEND_BASE} setuphelfer_diagnose=1 systemd.log_level=debug
+
+LABEL setuphelfer-rescue-toram
+  MENU LABEL Setuphelfer Rescue toram + Media-Check
+  LINUX /live/vmlinuz
+  INITRD /live/initrd.img
+  APPEND ${GRUB_APPEND_BASE} toram setuphelfer_media_check=1
+
+LABEL setuphelfer-rescue-reboot
+  MENU LABEL Neustart
+  COM32 reboot.c32
+
+LABEL setuphelfer-rescue-poweroff
+  MENU LABEL Herunterfahren
+  COM32 poweroff.c32
 MENU
-  fi
+}
+
+patch_grub() {
+  cfg="$1"
+  [ -f "$cfg" ] || return 0
+  grep -q 'Setuphelfer Rescue starten' "$cfg" 2>/dev/null && return 0
+  cat >>"$cfg" <<'GRUB'
+
+# Setuphelfer Rescue branded entries
+menuentry "Setuphelfer Rescue starten" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1
+  initrd /live/initrd.img
+}
+menuentry "Setuphelfer Rescue mit Netzwerk-Assistent" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_network_onboarding=1
+  initrd /live/initrd.img
+}
+menuentry "Setuphelfer Rescue MSI-Kompatibilitaetsmodus" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 pci=noaer setuphelfer_msi_compat=1
+  initrd /live/initrd.img
+}
+menuentry "Setuphelfer Rescue Diagnosemodus" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_diagnose=1 systemd.log_level=debug
+  initrd /live/initrd.img
+}
+menuentry "Setuphelfer Rescue toram + Media-Check" {
+  linux /live/vmlinuz boot=live components toram init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_media_check=1
+  initrd /live/initrd.img
+}
+GRUB
+}
+
+for cfg in binary/isolinux/live.cfg; do
+  patch_isolinux "$cfg"
+done
+for cfg in binary/boot/grub/grub.cfg binary/grub/grub.cfg; do
+  patch_grub "$cfg"
 done
 EOF
 }
@@ -584,6 +692,7 @@ systemctl enable setuphelfer-rescue-keyboard.service || true
 systemctl enable setuphelfer-rescue-network-onboarding.service || true
 systemctl enable setuphelfer-rescue-media-check.service || true
 systemctl enable setuphelfer-rescue-telemetry-push.service || true
+systemctl enable setuphelfer-rescue-telemetry-retry.timer || true
 systemctl enable setuphelfer-rescue-task-pull.service || true
 systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
@@ -643,6 +752,7 @@ systemctl enable setuphelfer-rescue-keyboard.service || true
 systemctl enable setuphelfer-rescue-network-onboarding.service || true
 systemctl enable setuphelfer-rescue-media-check.service || true
 systemctl enable setuphelfer-rescue-telemetry-push.service || true
+systemctl enable setuphelfer-rescue-telemetry-retry.timer || true
 systemctl enable setuphelfer-rescue-task-pull.service || true
 systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
@@ -657,6 +767,7 @@ systemctl enable setuphelfer-rescue-keyboard.service || true
 systemctl enable setuphelfer-rescue-network-onboarding.service || true
 systemctl enable setuphelfer-rescue-media-check.service || true
 systemctl enable setuphelfer-rescue-telemetry-push.service || true
+systemctl enable setuphelfer-rescue-telemetry-retry.timer || true
 systemctl enable setuphelfer-rescue-task-pull.service || true
 systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
@@ -703,6 +814,7 @@ EOF
 fi
 
 write_rescue_serial_boot_markers_service
+write_rescue_isolinux_branding
 write_rescue_network_telemetry_overlay
 SERIAL_MARKER_WANTS="${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-serial-boot-markers.service"
 if [[ "${RESCUE_BUILD_PROFILE}" != "developer-qemu" ]]; then

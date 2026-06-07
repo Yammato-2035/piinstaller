@@ -1,28 +1,11 @@
 {
-  "schema_version": 27,
-  "selected_at": "2026-06-07T09:00:00+02:00",
-  "selected_prompt_id": "RESCUE_USB_REWRITE_OPERATOR_RUN",
-  "reason_de": "ISO 1.7.5.0 Post-Build grün (86cba7eb…, UEFI+SquashFS+Network-Onboarding); Stick noch auf 9ef1b330… — USB-Rewrite-Handoff freigegeben, kein Agent-dd.",
-  "tracks": [
-    {
-      "id": "rescue_usb_rewrite_msi_telemetry",
-      "status": "yellow",
-      "priority": "P0",
-      "next_step": "RESCUE_USB_REWRITE_OPERATOR_RUN",
-      "evidence": [
-        "docs/evidence/runtime-results/rescue/RESCUE_ISO_NETWORK_ONBOARDING_POST_BUILD_VALIDATION_RESULT.md",
-        "docs/evidence/runtime-results/rescue/RESCUE_USB_REWRITE_OPERATOR_HANDOFF.md",
-        "docs/evidence/runtime-results/rescue/rescue_iso_usb_gate_status_latest.json",
-        "docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
-      ]
-    }
+  "selected_at": "2026-06-07T09:55:00+02:00",
+  "next_prompt_id": "RESCUE_TELEMETRY_AUTOMATION_ISO_REBUILD_OPERATOR_COMPLETION",
+  "reason_de": "Telemetrie-SyntaxError behoben und Boot-Automatisierung im Build-Tree; ISO-Rebuild blockiert durch root-owned stale chroot.",
+  "prerequisites": [
+    "sudo bash scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean",
+    "./scripts/rescue-live/validate-controlled-live-build-tree.sh build/rescue/live-build/setuphelfer-rescue-live",
+    "export RESCUE_NETWORK_AUTOMATION_REBUILD_FREIGEGEBEN=1"
   ],
-  "governance_rules": {
-    "no_secrets_in_evidence": true,
-    "no_fake_green": true,
-    "usb_write_sha256_verified": false,
-    "windows_inspect_executable": false,
-    "iso_post_build_validated": true,
-    "usb_rewrite_handoff_ready": true
-  }
+  "follow_up_prompt_id": "RESCUE_USB_REWRITE_OPERATOR_AFTER_TELEMETRY_AUTOMATION_FIX"
 }

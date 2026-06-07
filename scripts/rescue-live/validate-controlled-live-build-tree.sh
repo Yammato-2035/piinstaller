@@ -326,15 +326,28 @@ grep -qx 'usbutils' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list usbutils"
 grep -qx 'iw' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_networkmanager "setuphelfer.list.chroot must list iw"
-for _script in setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-telemetry-push setuphelfer-rescue-task-pull; do
+for _script in setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull; do
   [[ -x "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/${_script}" ]] \
     || fail_missing "usr/local/sbin/${_script} missing or not executable"
 done
-[[ -f "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-network-onboarding.service" ]] \
-  || fail_missing "setuphelfer-rescue-network-onboarding.service missing"
-if [[ ! -f "$BUILD_ROOT/config/hooks/normal/020-setuphelfer-rescue-boot-menu.hook.binary" ]]; then
+[[ -f "$BUILD_ROOT/config/includes.chroot/usr/share/setuphelfer/rescue/boot-branding.txt" ]] \
+  || fail_missing "usr/share/setuphelfer/rescue/boot-branding.txt missing"
+[[ -f "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-telemetry-retry.timer" ]] \
+  || fail_missing "setuphelfer-rescue-telemetry-retry.timer missing"
+[[ -f "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-telemetry-retry.service" ]] \
+  || fail_missing "setuphelfer-rescue-telemetry-retry.service missing"
+_hook="$BUILD_ROOT/config/hooks/normal/020-setuphelfer-rescue-boot-menu.hook.binary"
+if [[ -f "$_hook" ]]; then
+  grep -q 'Setuphelfer Rescue starten' "$_hook" || fail_missing "boot menu hook missing Setuphelfer Rescue starten entry"
+  grep -q 'MSI-Kompatibilitaetsmodus' "$_hook" || fail_missing "boot menu hook missing MSI compat entry"
+  grep -q 'patch_grub' "$_hook" || fail_missing "boot menu hook missing GRUB patch"
+else
   fail_missing "missing 020-setuphelfer-rescue-boot-menu.hook.binary"
 fi
+python3 -m py_compile "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-telemetry-build-payload.py" \
+  || fail_missing "setuphelfer-rescue-telemetry-build-payload.py py_compile failed"
+[[ -f "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-network-onboarding.service" ]] \
+  || fail_missing "setuphelfer-rescue-network-onboarding.service missing"
 if [[ ! -f "$BUILD_ROOT/config/hooks/normal/015-ensure-network-manager.hook.chroot" ]]; then
   fail_networkmanager "missing 015-ensure-network-manager.hook.chroot (NM safety net after live-packages)"
 fi

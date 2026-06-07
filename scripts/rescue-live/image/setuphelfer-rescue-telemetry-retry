@@ -1,0 +1,47 @@
+#!/bin/bash
+# Retry spooled telemetry payloads when network/health becomes available.
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_load_network_env || true
+setuphelfer_rescue_resolve_telemetry_urls
+
+SPOOL_DIR="${SETUPHELFER_RESCUE_STATE_DIR}/telemetry-spool"
+PUSH="${SCRIPT_DIR}/setuphelfer-rescue-telemetry-push"
+
+setuphelfer_rescue_ensure_state_dir
+[[ -d "$SPOOL_DIR" ]] || exit 0
+
+_health_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "${SETUPHELFER_RESCUE_TELEMETRY_HEALTH_URL}" 2>/dev/null || echo 000)"
+[[ "$_health_code" == "200" ]] || exit 0
+
+_shopt_nullglob=false
+shopt -q nullglob && _shopt_nullglob=true
+shopt -s nullglob
+_spooled=( "$SPOOL_DIR"/*.json )
+$_shopt_nullglob && shopt -s nullglob || shopt -u nullglob
+
+if [[ "${#_spooled[@]}" -eq 0 ]]; then
+  "$PUSH"
+  exit $?
+fi
+
+for _file in "${_spooled[@]}"; do
+  [[ -f "$_file" ]] || continue
+  _hash="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["payload_hash_sha256"])' "$_file" 2>/dev/null || echo "")"
+  [[ -n "$_hash" ]] || continue
+  _http_code="$(curl -sS -o /tmp/setuphelfer-rescue-retry-response.json -w '%{http_code}' --max-time 20 \
+    -X POST "${SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL}" \
+    -H 'Content-Type: application/json' \
+    -H "X-Setuphelfer-Payload-Hash: $_hash" \
+    --data-binary @"$_file" 2>/dev/null || echo 000)"
+  if [[ "$_http_code" == "200" ]]; then
+    rm -f "$_file"
+  fi
+done
+
+# Push fresh payload after draining spool (captures latest state).
+"$PUSH" || true
+exit 0
