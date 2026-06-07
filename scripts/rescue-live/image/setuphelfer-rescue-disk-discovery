@@ -1,0 +1,12 @@
+#!/bin/bash
+# Read-only disk discovery wrapper.
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+OUT="${SETUPHELFER_RESCUE_STATE_DIR}/disk-discovery.json"
+setuphelfer_rescue_ensure_state_dir
+if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/media-check.json" ]]; then
+  export SETUPHELFER_MEDIA_STABLE="$(python3 -c 'import json,sys; print(1 if json.load(open(sys.argv[1])).get("live_media_runtime_stable") else 0)' "${SETUPHELFER_RESCUE_STATE_DIR}/media-check.json")"
+fi
+python3 "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery.py" "$OUT"
+exit 0

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Rescue live network onboarding — WLAN scan/connect without password logging.
-set -euo pipefail
+set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
@@ -15,6 +15,7 @@ ERROR_CODE=""
 EXIT_CODE=0
 INTERACTIVE=false
 CONFIG_SOURCE="none"
+OFFLINE_MODE=false
 
 setuphelfer_rescue_ensure_state_dir
 setuphelfer_rescue_load_network_env || true
@@ -28,8 +29,8 @@ elif [[ "$MODE" == "--boot-trigger" ]]; then
   if setuphelfer_rescue_is_qemu && [[ "${SETUPHELFER_RESCUE_NETWORK_ONBOARDING_FORCE:-}" != "1" ]]; then
     ERROR_CODE="SKIPPED_QEMU_LAB"
     EXIT_CODE=0
-  else
-    INTERACTIVE=false
+  elif grep -Eq 'setuphelfer_network_onboarding=1' /proc/cmdline 2>/dev/null; then
+    INTERACTIVE=true
   fi
 elif [[ "$MODE" == "--non-interactive" ]]; then
   INTERACTIVE=false
@@ -53,12 +54,10 @@ elif [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" ]]; then
 fi
 
 if [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" && "$nm_active" == true ]]; then
-  nmcli radio wifi on 2>/dev/null || true
-  rfkill unblock wifi 2>/dev/null || true
-  nmcli device wifi rescan 2>/dev/null || true
-  sleep 2
-
-  if nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:connected$' >/dev/null; then
+  if nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':ethernet:connected$' >/dev/null; then
+    CONFIG_SOURCE="ethernet_connected"
+    DEFAULT_ROUTE=true
+  elif nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:connected$' >/dev/null; then
     WIFI_CONNECTED=true
     CONFIG_SOURCE="already_connected"
   elif setuphelfer_rescue_wifi_connect_configured; then
@@ -67,22 +66,21 @@ if [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" && "$nm_active" 
   elif setuphelfer_rescue_wifi_connect_known; then
     WIFI_CONNECTED=true
     CONFIG_SOURCE="known_nm_profile"
-  elif nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':ethernet:connected$' >/dev/null; then
-    WIFI_CONNECTED=false
-    CONFIG_SOURCE="ethernet_connected"
-    DEFAULT_ROUTE=true
   elif nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:' >/dev/null; then
-    if [[ "$INTERACTIVE" == true ]] && setuphelfer_rescue_has_interactive_tty; then
-      if setuphelfer_rescue_wifi_scan_and_menu; then
+    if [[ "$INTERACTIVE" == true ]]; then
+      _menu_rc=0
+      setuphelfer_rescue_wifi_scan_and_menu || _menu_rc=$?
+      if [[ "$_menu_rc" -eq 0 ]]; then
         WIFI_CONNECTED=true
         CONFIG_SOURCE="interactive_menu"
+      elif [[ "$_menu_rc" -eq 20 ]]; then
+        OFFLINE_MODE=true
+        ERROR_CODE="OFFLINE_BY_OPERATOR"
+        EXIT_CODE=0
       else
         ERROR_CODE="WIFI_CONNECT_FAILED"
         EXIT_CODE=13
       fi
-    elif [[ "$INTERACTIVE" == true ]]; then
-      ERROR_CODE="WIFI_MENU_REQUIRES_TTY"
-      EXIT_CODE=12
     else
       ERROR_CODE="WIFI_NOT_CONFIGURED"
       EXIT_CODE=20
@@ -93,7 +91,7 @@ if [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" && "$nm_active" 
     EXIT_CODE=11
   fi
 
-  if [[ "$DEFAULT_ROUTE" != true ]]; then
+  if [[ "$DEFAULT_ROUTE" != true && "$OFFLINE_MODE" != true ]]; then
     if setuphelfer_rescue_wait_default_route; then
       DEFAULT_ROUTE=true
     elif [[ "$WIFI_CONNECTED" == true && "$EXIT_CODE" -eq 0 ]]; then
@@ -102,9 +100,11 @@ if [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" && "$nm_active" 
     fi
   fi
 
-  if curl -fsS --max-time 10 "$TELEMETRY_HEALTH_URL" >/dev/null 2>&1; then
-    TELEMETRY_OK=true
-  elif [[ "$DEFAULT_ROUTE" == true && "$EXIT_CODE" -eq 0 ]]; then
+  if [[ "$DEFAULT_ROUTE" == true ]]; then
+    curl -fsS --max-time 10 "$TELEMETRY_HEALTH_URL" >/dev/null 2>&1 && TELEMETRY_OK=true
+  elif [[ "$OFFLINE_MODE" == true ]]; then
+    TELEMETRY_OK=false
+  elif [[ "$EXIT_CODE" -eq 0 ]]; then
     ERROR_CODE="TELEMETRY_HEALTH_UNREACHABLE"
     EXIT_CODE=15
   fi
@@ -118,6 +118,7 @@ setuphelfer_rescue_write_json "$OUT_RUN" <<EOF
   "checked_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "mode": "$MODE",
   "config_source": "$CONFIG_SOURCE",
+  "offline_mode": $OFFLINE_MODE,
   "networkmanager_active": $nm_active,
   "wifi_connected": $WIFI_CONNECTED,
   "default_route_present": $DEFAULT_ROUTE,

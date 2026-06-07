@@ -326,7 +326,7 @@ grep -qx 'usbutils' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list usbutils"
 grep -qx 'iw' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_networkmanager "setuphelfer.list.chroot must list iw"
-for _script in setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull; do
+for _script in setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull setuphelfer-rescue-disk-discovery setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-start-assistant setuphelfer-rescue-plan-builder.py; do
   [[ -x "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/${_script}" ]] \
     || fail_missing "usr/local/sbin/${_script} missing or not executable"
 done
@@ -338,9 +338,17 @@ done
   || fail_missing "setuphelfer-rescue-telemetry-retry.service missing"
 _hook="$BUILD_ROOT/config/hooks/normal/020-setuphelfer-rescue-boot-menu.hook.binary"
 if [[ -f "$_hook" ]]; then
-  grep -q 'Setuphelfer Rescue starten' "$_hook" || fail_missing "boot menu hook missing Setuphelfer Rescue starten entry"
-  grep -q 'MSI-Kompatibilitaetsmodus' "$_hook" || fail_missing "boot menu hook missing MSI compat entry"
-  grep -q 'patch_grub' "$_hook" || fail_missing "boot menu hook missing GRUB patch"
+  grep -q 'Setuphelfer Rettung starten' "$_hook" || fail_missing "boot menu hook missing Setuphelfer Rettung starten entry"
+  grep -q 'label setuphelfer-rescue-default' "$BUILD_ROOT/config/bootloaders/isolinux/live.cfg.in" \
+    || fail_missing "live.cfg.in missing setuphelfer-rescue-default label"
+  grep -q 'setuphelfer-rescue-start-assistant' "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-start-assistant" \
+    || fail_missing "setuphelfer-rescue-start-assistant missing"
+  [[ -f "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-start-assistant.service" ]] \
+    || fail_missing "setuphelfer-rescue-start-assistant.service missing"
+  python3 -m py_compile "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-disk-discovery.py" \
+    || fail_missing "setuphelfer-rescue-disk-discovery.py py_compile failed"
+  python3 -m py_compile "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-plan-builder.py" \
+    || fail_missing "setuphelfer-rescue-plan-builder.py py_compile failed"
 else
   fail_missing "missing 020-setuphelfer-rescue-boot-menu.hook.binary"
 fi

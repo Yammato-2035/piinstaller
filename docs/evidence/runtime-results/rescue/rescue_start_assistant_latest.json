@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "updated_at": null,
+  "workspace_only": true,
+  "iso_built": false,
+  "start_assistant_available_in_workspace": true,
+  "write_actions_allowed": false,
+  "wizard_state_path_on_live": "/run/setuphelfer-rescue/wizard-state.json",
+  "components": {
+    "boot_menu_live_cfg_in": true,
+    "boot_menu_binary_hook": true,
+    "start_assistant_tui": true,
+    "disk_discovery_read_only": true,
+    "plan_builder_read_only": true,
+    "wlan_onboarding_robust": true,
+    "telemetry_automation": true,
+    "media_check_spot_tests": true
+  },
+  "gates": {
+    "target_laptop_booted_from_stick": false,
+    "target_telemetry_ingest_ack": false,
+    "windows_inspect_executable": false,
+    "usb_write_sha256_verified": false
+  }
+}

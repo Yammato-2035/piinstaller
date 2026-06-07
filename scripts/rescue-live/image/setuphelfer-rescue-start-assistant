@@ -1,0 +1,179 @@
+#!/bin/bash
+# Setuphelfer Rescue Start Assistant — guided TUI (read-only plans, no destructive actions).
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+MODE="${1:---interactive}"
+STATE_DIR="$SETUPHELFER_RESCUE_STATE_DIR"
+MEDIA_JSON="${STATE_DIR}/media-check.json"
+NETWORK_JSON="${STATE_DIR}/network-onboarding.json"
+DISK_JSON="${STATE_DIR}/disk-discovery.json"
+PLAN_JSON="${STATE_DIR}/action-plan.json"
+WIZARD_JSON="$(setuphelfer_rescue_wizard_state_path)"
+
+setuphelfer_rescue_ensure_state_dir
+setuphelfer_rescue_load_network_env || true
+setuphelfer_rescue_resolve_telemetry_urls
+
+_wizard_step="welcome"
+_selected_action=""
+_media_stable=false
+_network_ok=false
+_telemetry_ok=false
+_expert_mode=false
+
+_wizard_write_state() {
+  setuphelfer_rescue_write_json "$WIZARD_JSON" <<EOF
+{
+  "schema_version": 1,
+  "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "step": "$_wizard_step",
+  "selected_action": $( [[ -n "$_selected_action" ]] && printf '"%s"' "$_selected_action" || printf 'null' ),
+  "expert_mode": $_expert_mode,
+  "media_check": $( [[ -f "$MEDIA_JSON" ]] && cat "$MEDIA_JSON" || echo 'null' ),
+  "network_onboarding": $( [[ -f "$NETWORK_JSON" ]] && cat "$NETWORK_JSON" || echo 'null' ),
+  "disk_discovery": $( [[ -f "$DISK_JSON" ]] && cat "$DISK_JSON" || echo 'null' ),
+  "action_plan": $( [[ -f "$PLAN_JSON" ]] && cat "$PLAN_JSON" || echo 'null' ),
+  "write_actions_allowed": false,
+  "secrets_exposed": false
+}
+EOF
+}
+
+_step_welcome() {
+  _wizard_step="welcome"
+  if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
+    whiptail --title "Setuphelfer Rettungsstick" --msgbox "$(setuphelfer_rescue_show_branding)
+
+Willkommen beim Setuphelfer Rettungsstick.
+
+Der Assistent führt Sie Schritt für Schritt durch:
+  • Live-Medium prüfen
+  • Netzwerk verbinden
+  • Telemetrie (Diagnose an Entwickler-Server)
+  • Festplatten erkennen (nur lesen)
+  • Sichere Empfehlung / Plan (ohne automatisches Schreiben)
+
+OK = weiter" 22 78 3>&1 1>&2 2>&3 || return 1
+  else
+    setuphelfer_rescue_show_branding
+    echo "Setuphelfer Rettungsstick — Startassistent"
+  fi
+  return 0
+}
+
+_step_media() {
+  _wizard_step="media_check"
+  "${SCRIPT_DIR}/setuphelfer-rescue-media-check" || true
+  if [[ -f "$MEDIA_JSON" ]]; then
+    _media_stable="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("live_media_runtime_stable", False))' "$MEDIA_JSON" 2>/dev/null || echo false)"
+  fi
+  if [[ "$_media_stable" != true ]]; then
+    whiptail --title "Live-Medium" --msgbox "WARNUNG: Live-Medium nicht stabil.
+
+Empfehlung:
+ • Boot-Menü: Start in RAM / Media-Check
+ • USB-Stick neu schreiben
+ • Keine Reparatur/Installation ausführen" 16 70 3>&1 1>&2 2>&3 || true
+  fi
+  _wizard_write_state
+}
+
+_step_network() {
+  _wizard_step="network"
+  local _rc=0
+  "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --interactive || _rc=$?
+  if [[ -f "$NETWORK_JSON" ]]; then
+    _network_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("default_route_present") and (d.get("wifi_connected") or d.get("config_source")=="ethernet_connected"))' "$NETWORK_JSON" 2>/dev/null || echo false)"
+  fi
+  if [[ "$_rc" -eq 20 ]]; then
+    whiptail --title "Netzwerk" --msgbox "Offline-Modus. Telemetrie wird bei Verbindung automatisch nachgesendet (Spool)." 10 60 3>&1 1>&2 2>&3 || true
+  fi
+  _wizard_write_state
+}
+
+_step_telemetry() {
+  _wizard_step="telemetry"
+  "${SCRIPT_DIR}/setuphelfer-rescue-telemetry-push" || true
+  systemctl start setuphelfer-rescue-telemetry-retry.timer 2>/dev/null || true
+  if [[ -f "${STATE_DIR}/telemetry-last-ack.json" ]]; then
+    _telemetry_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("http_status")==200)' "${STATE_DIR}/telemetry-last-ack.json" 2>/dev/null || echo false)"
+  fi
+  _wizard_write_state
+}
+
+_step_disks() {
+  _wizard_step="disk_discovery"
+  export SETUPHELFER_MEDIA_STABLE="$([[ "$_media_stable" == true ]] && echo 1 || echo 0)"
+  python3 "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery.py" "$DISK_JSON" || true
+  _wizard_write_state
+}
+
+_step_recommendation() {
+  _wizard_step="recommendation"
+  local _rec="diagnostics_only"
+  if [[ -f "$DISK_JSON" ]]; then
+    _rec="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("recommendation",{}).get("recommended_next_action","diagnostics_only"))' "$DISK_JSON" 2>/dev/null || echo diagnostics_only)"
+  fi
+  whiptail --title "Empfehlung" --msgbox "Nächster empfohlener Schritt:\n\n$_rec\n\nBei Fehlern auf der Platte: zuerst Backup." 12 70 3>&1 1>&2 2>&3 || true
+  _wizard_write_state
+}
+
+_main_menu() {
+  _wizard_step="main_menu"
+  local _choice
+  while true; do
+    _choice="$(whiptail --title "Setuphelfer Rettungsstick" --menu "Was möchten Sie tun?" 20 78 12 \
+      "backup" "Dateien sichern / Backup erstellen (Plan)" \
+      "restore" "Letztes Backup wiederherstellen (Plan)" \
+      "repair" "Fehler prüfen / Reparaturvorschlag (Plan)" \
+      "install" "System neu installieren (Plan)" \
+      "diagnostics" "Nur Diagnosebericht" \
+      "expert" "Expertenmodus (Shell-Hinweis)" \
+      "quit" "Assistent beenden" 3>&1 1>&2 2>&3)" || break
+    _selected_action="$_choice"
+    case "$_choice" in
+      backup|restore|repair|install|diagnostics)
+        if [[ "$_media_stable" != true && "$_choice" != "diagnostics" ]]; then
+          whiptail --msgbox "Blockiert: Live-Medium nicht stabil." 8 50 3>&1 1>&2 2>&3 || true
+          continue
+        fi
+        if [[ "$_choice" == "repair" || "$_choice" == "install" ]]; then
+          whiptail --msgbox "Hinweis: Zuerst Backup empfohlen. Es wird nur ein Plan erstellt — keine Ausführung." 10 60 3>&1 1>&2 2>&3 || true
+        fi
+        _wizard_write_state
+        python3 "${SCRIPT_DIR}/setuphelfer-rescue-plan-builder.py" "$DISK_JSON" "$WIZARD_JSON" "$PLAN_JSON" || true
+        whiptail --title "Plan" --textbox "$PLAN_JSON" 22 78 3>&1 1>&2 2>&3 || true
+        ;;
+      expert)
+        _expert_mode=true
+        whiptail --msgbox "Expertenmodus: Shell/Tools manuell. Keine automatischen Schreibaktionen." 10 60 3>&1 1>&2 2>&3 || true
+        _wizard_write_state
+        ;;
+      quit) break ;;
+    esac
+  done
+}
+
+if [[ "$MODE" == "--boot-trigger" ]]; then
+  if ! setuphelfer_rescue_has_interactive_tty; then
+    exit 0
+  fi
+fi
+
+if ! command -v whiptail >/dev/null 2>&1; then
+  echo "whiptail fehlt — Startassistent benötigt dialog/whiptail" >&2
+  exit 30
+fi
+
+_step_welcome || exit 0
+_step_media
+_step_network
+_step_telemetry
+_step_disks
+_step_recommendation
+_main_menu
+_wizard_write_state
+exit 0

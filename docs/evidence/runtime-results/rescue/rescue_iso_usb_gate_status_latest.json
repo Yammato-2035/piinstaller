@@ -1,94 +1,38 @@
 {
-  "schema_version": 24,
-  "classified_at": "2026-06-07T10:20:00+02:00",
-  "classification": "telemetry_automation_iso_post_build_validated_usb_rewrite_handoff_ready",
-  "iso_created": true,
-  "iso_uefi_validated": true,
-  "iso_post_build_validated": true,
-  "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
-  "iso_sha256": "80508492a8f3187e79bb700675d81eac3e19f8e5647bb5b4a84febcf6c8b32f0",
-  "iso_sha256_previous": "86cba7eb550bcdb0562a414f79d78db58c908d5d743d474365eda0bcb638e5fc",
-  "iso_sha256_previous_on_stick": "86cba7eb550bcdb0562a414f79d78db58c908d5d743d474365eda0bcb638e5fc",
-  "iso_size_bytes": 683671552,
-  "squashfs_validated": true,
-  "uefi_validator_exit_code": 0,
-  "uefi_post_patch_validate_exit_code": 0,
-  "lb_exit": 0,
-  "telemetry_push_syntax_fixed_in_iso": true,
-  "target_network_onboarding_available": true,
-  "target_telemetry_push_available": true,
-  "target_telemetry_spool_retry_available": true,
-  "branded_boot_menu_available": "partial",
-  "network_onboarding_scripts_in_squashfs": true,
-  "nmcli_in_squashfs": true,
-  "usb_stick_written": true,
-  "usb_stick_matches_current_iso": false,
-  "usb_write_sha256_verified": false,
-  "usb_rewrite_handoff_ready": true,
-  "usb_stick_device": "/dev/sdb",
-  "usb_stick_model": "Ultra Line",
-  "usb_stick_serial": "24111412110212",
-  "target_laptop_booted_from_stick": false,
+  "schema_version": 25,
+  "classified_at": "2026-06-07T14:30:00+02:00",
+  "classification": "start_assistant_productization_workspace_ready_iso_rebuild_blocked",
+  "workspace_version": "1.7.7.0",
+  "iso_sha256_current_in_tree": "80508492a8f3187e79bb700675d81eac3e19f8e5647bb5b4a84febcf6c8b32f0",
+  "iso_rebuild_required": true,
+  "iso_rebuilt_after_1_7_7_0": false,
+  "build_tree_prepare_ok": true,
+  "build_tree_validate_ok": false,
+  "build_tree_validate_blocker": "ROOT_OWNED_STALE_CHROOT",
+  "start_assistant_in_workspace": true,
+  "boot_menu_live_cfg_in_prepared": true,
+  "boot_menu_hook_fixed_isolinux_syntax": true,
+  "wlan_onboarding_robust_in_workspace": true,
+  "telemetry_automation_in_workspace": true,
+  "disk_discovery_read_only_in_workspace": true,
+  "branded_boot_menu_available": "prepared_in_build_tree",
+  "target_network_onboarding_available": false,
+  "target_telemetry_push_available": false,
+  "target_telemetry_spool_retry_available": false,
   "target_live_media_runtime_stable": false,
+  "usb_write_sha256_verified": false,
+  "usb_rewrite_handoff_ready": false,
+  "target_laptop_booted_from_stick": false,
   "target_network_link_established": false,
   "target_telemetry_health_reached": false,
   "target_telemetry_ingest_ack": false,
-  "developer_lan_telemetry_proxy_ready": true,
-  "developer_lan_telemetry_proxy_url": "http://192.168.178.140:8001/api/rescue/telemetry/health",
-  "controlled_task_pull_available": true,
   "windows_inspect_executable": false,
-  "workspace_version": "1.7.6.0",
   "runtime_version_api": "1.7.4.1",
-  "runtime_deploy_drift": "RUNTIME_DEPLOY_DRIFT_1_7_6_0_PENDING",
-  "squashfs_bundle_project_version": "1.7.3.0",
-  "build_source_head": "f91d2f1",
-  "warnings": [
-    {
-      "id": "RESCUE_ISO_BOOT_MENU_CUSTOM_LIVE_CFG_ENTRIES_MISSING",
-      "severity": "warning",
-      "description_de": "Hook 020 hat live.cfg/grub.cfg nicht erweitert; MENU TITLE + systemd-Onboarding ok"
-    },
-    {
-      "id": "RUNTIME_BUNDLE_VERSION_DRIFT_IN_SQUASHFS",
-      "severity": "warning",
-      "description_de": "opt/setuphelfer-rescue Bundle 1.7.3.0; Overlay-Scripts 1.7.6.0"
-    },
-    {
-      "id": "TASK_PULL_INLINE_HEREDOC_REMAINS",
-      "severity": "warning",
-      "description_de": "setuphelfer-rescue-task-pull nutzt noch json.loads triple-quote; Telemetrie-Push separat gefixt"
-    }
-  ],
   "blockers": [
-    {
-      "id": "RESCUE_USB_REWRITE_REQUIRED_AFTER_TELEMETRY_AUTOMATION_FIX",
-      "severity": "critical",
-      "status": "blocked",
-      "description_de": "Stick noch alte ISO 86cba7eb… — Rewrite auf 80508492… erforderlich"
-    },
-    {
-      "id": "RESCUE_USB_BLOCK_READBACK_SHA256_PENDING",
-      "severity": "critical",
-      "status": "blocked"
-    },
-    {
-      "id": "RESCUE_MSI_BOOT_AUTOMATED_TELEMETRY_ACK_PENDING",
-      "severity": "critical",
-      "status": "blocked",
-      "description_de": "Echter MSI-ACK nach USB-Rewrite + automatischem Boot-Flow ausstehend"
-    },
-    {
-      "id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED",
-      "severity": "critical",
-      "status": "blocked",
-      "code": "RESCUE-UEFI-005"
-    }
+    {"id": "RESCUE_ISO_REBUILD_REQUIRED_FOR_START_ASSISTANT_1_7_7_0", "status": "blocked"},
+    {"id": "RESCUE_USB_REWRITE_BLOCKED_UNTIL_ISO_VALIDATED", "status": "blocked"},
+    {"id": "RESCUE_MSI_BOOT_AUTOMATED_TELEMETRY_ACK_PENDING", "status": "blocked"},
+    {"id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED", "status": "blocked", "code": "RESCUE-UEFI-005"}
   ],
-  "resolved_blockers": [
-    "RESCUE_ISO_REBUILD_AFTER_TELEMETRY_FIX",
-    "RESCUE_TELEMETRY_PUSH_SYNTAX_ERROR",
-    "ROOT_OWNED_STALE_CHROOT_BLOCKS_VALIDATE"
-  ],
-  "next_prompt_id": "RESCUE_MSI_BOOT_AUTOMATED_TELEMETRY_ACK_OPERATOR_RUN",
-  "next_operator_step_de": "USB dd ISO 80508492…; Readback-SHA256; Proxy starten; MSI booten — Telemetrie automatisch, kein manuelles curl."
+  "next_prompt_id": "RESCUE_START_ASSISTANT_ISO_REBUILD_OPERATOR_COMPLETION"
 }

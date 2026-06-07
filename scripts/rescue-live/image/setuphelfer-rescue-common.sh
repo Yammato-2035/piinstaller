@@ -147,20 +147,153 @@ setuphelfer_rescue_wifi_connect_known() {
   return 1
 }
 
-setuphelfer_rescue_wifi_scan_and_menu() {
+setuphelfer_rescue_wizard_state_path() {
+  printf '%s/wizard-state.json' "$SETUPHELFER_RESCUE_STATE_DIR"
+}
+
+setuphelfer_rescue_wizard_load_state() {
+  local path
+  path="$(setuphelfer_rescue_wizard_state_path)"
+  [[ -f "$path" ]] || return 1
+  cat "$path"
+}
+
+setuphelfer_rescue_wizard_save_state() {
+  setuphelfer_rescue_write_json "$(setuphelfer_rescue_wizard_state_path)"
+}
+
+setuphelfer_rescue_show_branding() {
+  local branding="/usr/share/setuphelfer/rescue/boot-branding.txt"
+  [[ -f "$branding" ]] && cat "$branding" || echo "Setuphelfer Rettungsstick"
+}
+
+setuphelfer_rescue_wifi_prepare_radio() {
   nmcli radio wifi on 2>/dev/null || true
   rfkill unblock wifi 2>/dev/null || true
-  nmcli device wifi rescan 2>/dev/null || true
-  sleep 2
-  mapfile -t _ssids < <(nmcli -t -f SSID,BARS,SECURITY device wifi list 2>/dev/null | awk -F: '$1 != "--" && $1 != "" {print $1}' | sort -u | head -20)
-  [[ "${#_ssids[@]}" -gt 0 ]] || return 12
-  local _pick="${_ssids[0]}"
-  if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
-    _pick="$(whiptail --title "Setuphelfer WLAN" --menu "SSID wählen (Passwort wird lokal abgefragt, nicht geloggt)" 20 70 12 \
-      $(for i in "${!_ssids[@]}"; do echo "$((i+1))" "${_ssids[$i]}"; done) 3>&1 1>&2 2>&3)" || return 13
+}
+
+setuphelfer_rescue_wifi_scan_list() {
+  local attempt max="${1:-3}"
+  local -n _out=$2
+  _out=()
+  setuphelfer_rescue_wifi_prepare_radio
+  for attempt in $(seq 1 "$max"); do
+    nmcli device wifi rescan 2>/dev/null || true
+    sleep 2
+    mapfile -t _out < <(
+      nmcli -t -f IN-USE,SSID,SECURITY,BARS device wifi list 2>/dev/null \
+        | awk -F: '$2 != "--" && $2 != "" {print $2 "|" $3 "|" $4}' \
+        | sort -u \
+        | head -25
+    )
+    [[ "${#_out[@]}" -gt 0 ]] && return 0
+  done
+  return 12
+}
+
+setuphelfer_rescue_wifi_connect_ssid() {
+  local ssid="$1"
+  local hidden="${2:-0}"
+  local psk="${3:-}"
+  [[ -n "$ssid" ]] || return 13
+  setuphelfer_rescue_wifi_prepare_radio
+  if [[ -n "$psk" ]]; then
+    if [[ "$hidden" == "1" ]]; then
+      nmcli dev wifi connect "$ssid" password "$psk" hidden yes >/dev/null 2>&1
+    else
+      nmcli dev wifi connect "$ssid" password "$psk" >/dev/null 2>&1
+    fi
+  else
+    if [[ "$hidden" == "1" ]]; then
+      HISTFILE=/dev/null nmcli --ask dev wifi connect "$ssid" hidden yes >/dev/null 2>&1
+    else
+      HISTFILE=/dev/null nmcli --ask dev wifi connect "$ssid" >/dev/null 2>&1
+    fi
   fi
-  [[ -n "$_pick" ]] || return 13
-  HISTFILE=/dev/null nmcli --ask dev wifi connect "$_pick" >/dev/null 2>&1
+}
+
+setuphelfer_rescue_wifi_scan_and_menu() {
+  local -a _entries=()
+  local _choice _idx _ssid _sec _bars _menu_args=()
+  local _action _hidden_ssid _psk _rc=0
+
+  if ! setuphelfer_rescue_wifi_scan_list 3 _entries; then
+    if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
+      whiptail --title "Setuphelfer WLAN" --msgbox "Keine WLAN-Netze gefunden.\n\nErneut scannen, verstecktes WLAN oder offline fortfahren." 12 70 3>&1 1>&2 2>&3 || true
+      _action="$(whiptail --title "Setuphelfer WLAN" --menu "Option wählen" 14 70 6 \
+        "rescan" "Erneut scannen" \
+        "hidden" "Verstecktes WLAN eingeben" \
+        "offline" "Offline fortfahren (Telemetrie wird gespoolt)" 3>&1 1>&2 2>&3)" || return 14
+      case "$_action" in
+        rescan) setuphelfer_rescue_wifi_scan_and_menu && return $? ;;
+        hidden)
+          _hidden_ssid="$(whiptail --title "Verstecktes WLAN" --inputbox "SSID eingeben:" 10 60 3>&1 1>&2 2>&3)" || return 14
+          _psk="$(whiptail --title "WLAN-Passwort" --passwordbox "Passwort für $_hidden_ssid (nicht geloggt):" 10 70 3>&1 1>&2 2>&3)" || return 15
+          setuphelfer_rescue_wifi_connect_ssid "$_hidden_ssid" 1 "$_psk" && return 0
+          whiptail --title "Setuphelfer WLAN" --msgbox "Verbindung fehlgeschlagen. Bitte erneut versuchen." 10 60 3>&1 1>&2 2>&3 || true
+          return 13
+          ;;
+        offline) return 20 ;;
+        *) return 14 ;;
+      esac
+    fi
+    return 12
+  fi
+
+  if ! command -v whiptail >/dev/null 2>&1 || ! setuphelfer_rescue_has_interactive_tty; then
+    _ssid="${_entries[0]%%|*}"
+    setuphelfer_rescue_wifi_connect_ssid "$_ssid" 0 ""
+    return $?
+  fi
+
+  _menu_args=()
+  for _idx in "${!_entries[@]}"; do
+    IFS='|' read -r _ssid _sec _bars <<< "${_entries[$_idx]}"
+    _menu_args+=("$((_idx + 1))" "${_ssid} (${_sec:-offen})")
+  done
+  _menu_args+=("H" "Verstecktes WLAN…")
+  _menu_args+=("R" "Erneut scannen")
+  _menu_args+=("O" "Offline fortfahren")
+
+  while true; do
+    _choice="$(whiptail --title "Setuphelfer WLAN" \
+      --menu "Netzwerk wählen (OK bestätigt, Esc = Offline)" 22 78 14 \
+      "${_menu_args[@]}" 3>&1 1>&2 2>&3)" || return 20
+    case "$_choice" in
+      R)
+        setuphelfer_rescue_wifi_scan_list 2 _entries || continue
+        _menu_args=()
+        for _idx in "${!_entries[@]}"; do
+          IFS='|' read -r _ssid _sec _bars <<< "${_entries[$_idx]}"
+          _menu_args+=("$((_idx + 1))" "${_ssid} (${_sec:-offen})")
+        done
+        _menu_args+=("H" "Verstecktes WLAN…")
+        _menu_args+=("R" "Erneut scannen")
+        _menu_args+=("O" "Offline fortfahren")
+        continue
+        ;;
+      O) return 20 ;;
+      H)
+        _hidden_ssid="$(whiptail --title "Verstecktes WLAN" --inputbox "SSID:" 10 60 3>&1 1>&2 2>&3)" || continue
+        _psk="$(whiptail --title "WLAN-Passwort" --passwordbox "Passwort (nicht geloggt):" 10 70 3>&1 1>&2 2>&3)" || continue
+        setuphelfer_rescue_wifi_connect_ssid "$_hidden_ssid" 1 "$_psk" && return 0
+        whiptail --title "Setuphelfer WLAN" --msgbox "Verbindung fehlgeschlagen." 10 50 3>&1 1>&2 2>&3 || true
+        continue
+        ;;
+      *)
+        _idx=$((_choice - 1))
+        if [[ "$_idx" -lt 0 || "$_idx" -ge "${#_entries[@]}" ]]; then
+          continue
+        fi
+        _ssid="${_entries[_idx]%%|*}"
+        _psk="$(whiptail --title "WLAN-Passwort" --passwordbox "Passwort für:\n$_ssid\n(nicht geloggt)" 12 70 3>&1 1>&2 2>&3)" || continue
+        if setuphelfer_rescue_wifi_connect_ssid "$_ssid" 0 "$_psk"; then
+          return 0
+        fi
+        whiptail --title "Setuphelfer WLAN" --msgbox "Verbindung fehlgeschlagen.\nAnderes Netz wählen oder offline fortfahren." 10 60 3>&1 1>&2 2>&3 || true
+        ;;
+    esac
+  done
 }
 
 setuphelfer_rescue_wait_default_route() {

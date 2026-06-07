@@ -1,11 +1,12 @@
 {
-  "selected_at": "2026-06-07T10:20:00+02:00",
-  "next_prompt_id": "RESCUE_MSI_BOOT_AUTOMATED_TELEMETRY_ACK_OPERATOR_RUN",
-  "reason_de": "ISO 1.7.6.0 post-build validiert (80508492…); USB-Rewrite-Handoff bereit; MSI-ACK nach dd+Boot ausstehend.",
+  "selected_at": "2026-06-07T14:30:00+02:00",
+  "next_prompt_id": "RESCUE_START_ASSISTANT_ISO_REBUILD_OPERATOR_COMPLETION",
+  "reason_de": "Start Assistant 1.7.7.0 im Build-Tree; ISO-Rebuild nach sudo clean + validate ausstehend.",
   "prerequisites": [
-    "sudo dd ISO 80508492… auf /dev/sdb",
-    "Block-Readback SHA256 gegen ISO",
-    "SETUPHELFER_RESCUE_TELEMETRY_BIND=192.168.178.140 ./scripts/rescue-live/start-rescue-telemetry-lan-proxy.sh"
+    "sudo bash scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean",
+    "./scripts/rescue-live/prepare-controlled-live-build-tree.sh",
+    "./scripts/rescue-live/validate-controlled-live-build-tree.sh build/rescue/live-build/setuphelfer-rescue-live",
+    "export RESCUE_START_ASSISTANT_REBUILD_FREIGEGEBEN=1"
   ],
-  "usb_rewrite_handoff_doc": "docs/evidence/runtime-results/rescue/RESCUE_USB_REWRITE_AFTER_TELEMETRY_AUTOMATION_HANDOFF.md"
+  "follow_up_prompt_id": "RESCUE_USB_REWRITE_AFTER_START_ASSISTANT_ISO"
 }

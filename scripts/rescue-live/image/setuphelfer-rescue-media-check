@@ -11,8 +11,30 @@ OUT_TMP="/tmp/setuphelfer-rescue-media-check.json"
 ERROR_CODE=""
 LIVE_STABLE=false
 READ_OK=false
+SPOT_CHECKS_OK=true
+SPOT_FAILED=()
 
 setuphelfer_rescue_ensure_state_dir
+
+_spot_read() {
+  local rel="$1"
+  if [[ -r "${SQUASHFS}" ]]; then
+    dd if="$SQUASHFS" of=/dev/null bs=4M status=none 2>/dev/null || { SPOT_CHECKS_OK=false; SPOT_FAILED+=("squashfs_read"); return 1; }
+  fi
+  return 0
+}
+
+_spot_file_in_squash() {
+  local path="$1"
+  if command -v unsquashfs >/dev/null 2>&1 && [[ -f "$SQUASHFS" ]]; then
+    unsquashfs -cat "$SQUASHFS" "$path" >/dev/null 2>&1 || {
+      SPOT_CHECKS_OK=false
+      SPOT_FAILED+=("$path")
+      return 1
+    }
+  fi
+  return 0
+}
 
 if ! setuphelfer_rescue_is_live; then
   ERROR_CODE="NOT_RESCUE_LIVE"
@@ -21,27 +43,47 @@ else
     ERROR_CODE="SQUASHFS_PATH_MISSING"
   elif dd if="$SQUASHFS" of=/dev/null bs=4M status=none 2>/dev/null; then
     READ_OK=true
-    LIVE_STABLE=true
-    ERROR_CODE=""
+    for _p in \
+      usr/bin/nmcli \
+      usr/bin/curl \
+      usr/local/sbin/setuphelfer-rescue-telemetry-push \
+      usr/local/sbin/setuphelfer-rescue-telemetry-build-payload.py \
+      usr/local/sbin/setuphelfer-rescue-network-onboarding \
+      usr/local/sbin/setuphelfer-rescue-start-assistant \
+      usr/share/setuphelfer/rescue/boot-branding.txt; do
+      _spot_file_in_squash "$_p" || true
+    done
+    if [[ "$SPOT_CHECKS_OK" == true ]]; then
+      LIVE_STABLE=true
+      ERROR_CODE=""
+    else
+      ERROR_CODE="SQUASHFS_SPOT_CHECK_FAILED"
+      LIVE_STABLE=false
+    fi
   else
     ERROR_CODE="SQUASHFS_READ_IO_ERROR"
     LIVE_STABLE=false
   fi
 fi
 
+_spot_json="$(printf '%s\n' "${SPOT_FAILED[@]:-}" | python3 -c 'import json,sys; print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')"
+
 setuphelfer_rescue_write_json "$OUT_RUN" <<EOF
 {
   "checked_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "squashfs_path": "$SQUASHFS",
   "squashfs_read_ok": $READ_OK,
+  "spot_checks_ok": $SPOT_CHECKS_OK,
+  "spot_check_failures": $_spot_json,
   "live_media_runtime_stable": $LIVE_STABLE,
+  "operator_hints": $( [[ "$LIVE_STABLE" != true ]] && echo '["toram_boot_recommended","usb_rewrite_recommended","no_repair_or_install"]' || echo '[]' ),
   "error_code": $( [[ -n "$ERROR_CODE" ]] && printf '"%s"' "$ERROR_CODE" || printf 'null' ),
   "secrets_exposed": false
 }
 EOF
 cp -f "$OUT_RUN" "$OUT_TMP" 2>/dev/null || true
 
-if [[ "$READ_OK" == true ]]; then
+if [[ "$READ_OK" == true && "$SPOT_CHECKS_OK" == true ]]; then
   exit 0
 fi
 exit 16

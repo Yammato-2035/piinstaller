@@ -72,8 +72,8 @@ class RescueLiveTelemetryScriptTests(unittest.TestCase):
     def test_boot_menu_hook_branding_markers(self) -> None:
         hook = REPO_ROOT / "scripts" / "rescue-live" / "prepare-controlled-live-build-tree.sh"
         text = hook.read_text(encoding="utf-8")
-        self.assertIn("Setuphelfer Rescue starten", text)
-        self.assertIn("MSI-Kompatibilitaetsmodus", text)
+        self.assertIn("Setuphelfer Rettung starten", text)
+        self.assertIn("MSI/NVIDIA-Kompatibilitaetsmodus", text)
         self.assertIn("patch_grub", text)
 
 
