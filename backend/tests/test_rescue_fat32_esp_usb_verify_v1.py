@@ -1,0 +1,124 @@
+"""Tests for FAT32 ESP USB verify (stale parent iso9660, label detection)."""
+
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+
+_backend = Path(__file__).resolve().parent.parent
+if str(_backend) not in sys.path:
+    sys.path.insert(0, str(_backend))
+
+from core import rescue_fat32_esp_usb_verify as verify  # noqa: E402
+
+EFI = "c12a7328-f81f-11d2-ba4b-00a0c93ec93b"
+
+
+class RescueFat32EspUsbVerifyTests(unittest.TestCase):
+    def test_parse_blkid_label_output(self) -> None:
+        self.assertEqual(verify.parse_blkid_label_output('SETUPHELFER\n'), "SETUPHELFER")
+        self.assertEqual(verify.parse_blkid_label_output('"SETUPHELFER"'), "SETUPHELFER")
+
+    def test_stale_parent_iso9660_partition_label_ok(self) -> None:
+        result = verify.evaluate_verify_probe(
+            parent_pttype="gpt",
+            parent_signature_types=["iso9660", "gpt"],
+            part_parttype=EFI,
+            part_partlabel="SETUPHELFER_RESCUE",
+            part_fstype="vfat",
+            part_fat_label="SETUPHELFER",
+            target_device="/dev/sdb",
+        )
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["exit_code"], 0)
+        self.assertTrue(result["stale_parent_iso9660"])
+        self.assertIn(verify.STALE_PARENT_ISO9660_WARN, result["warnings"])
+        self.assertTrue(any("wipefs -a -t iso9660" in w for w in result["warnings"]))
+
+    def test_partition_label_really_missing_fails(self) -> None:
+        result = verify.evaluate_verify_probe(
+            parent_pttype="gpt",
+            parent_signature_types=[],
+            part_parttype=EFI,
+            part_partlabel="SETUPHELFER_RESCUE",
+            part_fstype="vfat",
+            part_fat_label="",
+            target_device="/dev/sdb",
+        )
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["exit_code"], 22)
+        self.assertEqual(result["errors"][0]["code"], "FAT_LABEL_MISSING")
+
+    def test_parent_iso9660_without_gpt_fails(self) -> None:
+        result = verify.evaluate_verify_probe(
+            parent_pttype="dos",
+            parent_signature_types=["iso9660"],
+            part_parttype=EFI,
+            part_partlabel="SETUPHELFER_RESCUE",
+            part_fstype="vfat",
+            part_fat_label="SETUPHELFER",
+            target_device="/dev/sdb",
+        )
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["errors"][0]["code"], "NO_GPT")
+
+    def test_parent_iso9660_without_vfat_partition_fails(self) -> None:
+        result = verify.evaluate_verify_probe(
+            parent_pttype="gpt",
+            parent_signature_types=["iso9660"],
+            part_parttype=EFI,
+            part_partlabel="SETUPHELFER_RESCUE",
+            part_fstype="iso9660",
+            part_fat_label="",
+            target_device="/dev/sdb",
+        )
+        self.assertFalse(result["ok"])
+        codes = {e["code"] for e in result["errors"]}
+        self.assertIn("NOT_VFAT", codes)
+        self.assertIn("FAT_LABEL_MISSING", codes)
+
+    def test_probe_fat_volume_label_prefers_sudo_blkid(self) -> None:
+        calls: list[list[str]] = []
+
+        def runner(cmd: list[str], timeout: int = 30) -> object:
+            calls.append(cmd)
+            if cmd[:2] == ["sudo", "blkid"]:
+                return type("P", (), {"returncode": 0, "stdout": "SETUPHELFER\n", "stderr": ""})()
+            return type("P", (), {"returncode": 1, "stdout": "", "stderr": ""})()
+
+        label = verify.probe_fat_volume_label("/dev/sdb1", runner=runner)
+        self.assertEqual(label, "SETUPHELFER")
+        self.assertEqual(calls[0][:4], ["sudo", "blkid", "-p", "-s"])
+
+    def test_parse_wipefs_signature_types(self) -> None:
+        sample = "/dev/sdb: offset 0x200 iso9660 CD-ROM\n/dev/sdb: offset 0x0 gpt\n"
+        types = verify.parse_wipefs_signature_types(sample)
+        self.assertIn("iso9660", types)
+        self.assertIn("gpt", types)
+
+    def test_write_plan_includes_wipefs(self) -> None:
+        from core import rescue_fat32_esp_usb_writer as fat32
+        from unittest.mock import patch
+
+        iso = Path("/tmp/fake-rescue.iso")
+        with patch.object(Path, "is_file", return_value=True):
+            with patch.object(fat32, "sha256_file", return_value="abc"):
+                with patch.object(
+                    fat32,
+                    "validate_fat32_write_target",
+                    return_value={"blocked": False, "blockers": []},
+                ):
+                    with patch.object(fat32, "extract_iso_files", side_effect=OSError("skip")):
+                        plan = fat32.build_write_plan(
+                            iso_path=iso,
+                            target_device="/dev/sdb",
+                            dry_run=True,
+                        )
+        blob = " ".join(plan["destructive_actions"])
+        self.assertIn("wipefs", blob)
+        self.assertIn("iso9660", plan["signature_wipe"]["repair_stale_iso9660"])
+
+
+if __name__ == "__main__":
+    unittest.main()

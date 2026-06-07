@@ -30,6 +30,7 @@ GPT_PARTITION_NAME = "SETUPHELFER_RESCUE"
 # FAT/VFAT volume label (mkfs.vfat -n) — max 11 characters.
 FAT_VOLUME_LABEL = "SETUPHELFER"
 FAT_VOLUME_LABEL_MAX_LEN = 11
+EFI_PARTTYPE_UUID = "c12a7328-f81f-11d2-ba4b-00a0c93ec93b"
 FAT_RSYNC_EXCLUDE = ".sqtmp/"
 FAT_RSYNC_OPTIONS = (
     "-r --delete --info=progress2 --no-owner --no-group --no-perms --omit-dir-times"
@@ -539,6 +540,8 @@ def build_write_plan(
         "operator_evidence_path": EVIDENCE_REL,
         "confirm_phrase_required": CONFIRM_PHRASE_FAT32_ESP,
         "destructive_actions": [
+            "wipefs --no-act (log stale signatures on parent device)",
+            "wipefs -a (full rebuild) OR wipefs -a -t iso9660 (repair stale dd signature)",
             "sgdisk --zap-all",
             (
                 f"sgdisk -n 1:0:+{esp_size_mib}MiB -t 1:EF00 "
@@ -546,9 +549,14 @@ def build_write_plan(
             ),
             "partprobe + udevadm settle (after partition)",
             f"mkfs.vfat -F 32 -n {labels['fat_volume_label']}",
-            "verify vfat + fat label (fatlabel/dosfslabel fallback if missing)",
+            "verify vfat + fat label on ${TARGET}1 via blkid -p (sudo)",
             fat32_staging_rsync_command(staging=str(staging), mount="${MNT}", sudo=True),
         ],
+        "signature_wipe": {
+            "probe": "sudo wipefs --no-act ${TARGET}",
+            "full_rebuild": "sudo wipefs -a ${TARGET}",
+            "repair_stale_iso9660": "sudo wipefs -a -t iso9660 ${TARGET}",
+        },
         "staging_copy_command": fat32_staging_rsync_command(
             staging=str(staging), mount="${MNT}", sudo=True
         ),
@@ -587,6 +595,8 @@ def build_operator_terminal_commands(
         f"lsblk -o NAME,SIZE,MODEL,SERIAL,TRAN \"$TARGET\"\n"
         f"udisksctl unmount -b ${{TARGET}}1 2>/dev/null || true\n"
         f"sync\n"
+        f"sudo wipefs --no-act \"$TARGET\" || true\n"
+        f"sudo wipefs -a \"$TARGET\"\n"
         f"sudo sgdisk --zap-all \"$TARGET\"\n"
         f"sudo sgdisk -n 1:0:+4096MiB -t 1:EF00 -c 1:{gpt_name} \"$TARGET\"\n"
         f"sync\n"
@@ -600,7 +610,7 @@ def build_operator_terminal_commands(
         f"sleep 1\n"
         f'FSTYPE=$(lsblk -no FSTYPE "${{TARGET}}1" | head -1)\n'
         f'[[ "$FSTYPE" == "vfat" ]] || {{ echo "ERROR: ${{TARGET}}1 not vfat ($FSTYPE)"; exit 1; }}\n'
-        f'LABEL=$(blkid -p -s LABEL -o value "${{TARGET}}1" 2>/dev/null || true)\n'
+        f'LABEL=$(sudo blkid -p -s LABEL -o value "${{TARGET}}1" 2>/dev/null || true)\n'
         f'if [[ "$LABEL" != "{fat_label}" ]]; then\n'
         f"  sudo fatlabel ${{TARGET}}1 {fat_label} 2>/dev/null || "
         f"sudo dosfslabel ${{TARGET}}1 {fat_label}\n"

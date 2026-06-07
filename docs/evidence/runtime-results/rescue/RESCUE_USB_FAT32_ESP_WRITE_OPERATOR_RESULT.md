@@ -69,7 +69,26 @@ verify_exit=20
 
 Erwartbar — Stick unverändert iso9660/isohybrid.
 
-## Operator — ausstehende Schritte (interaktives Terminal, 1.7.8.2)
+## Verify-Fix 1.7.8.3 (nach Operator-Write mit GPT+vfat)
+
+Operator meldete: `/dev/sdb1` korrekt (`LABEL=SETUPHELFER`), aber Verify `FAT_LABEL=missing`.
+
+**Ursache:** `blkid -p` ohne `sudo` auf Block-Device → leeres Label.  
+**Fix:** `sudo blkid -p` auf **Partition only** (`/dev/sdb1`), stale parent iso9660 nur Warnung.
+
+Verify erneut ausführen:
+
+```bash
+./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh --target /dev/sdb
+```
+
+Bei Warnung `RESCUE-FAT32-WARN-STALE-PARENT-ISO9660-SIGNATURE`:
+
+```bash
+sudo wipefs -a -t iso9660 /dev/sdb
+```
+
+## Operator — Handoff (1.7.8.3)
 
 **Hinweis:** FAT32 speichert keine Unix-Owner/Groups/Permissions — **kein `rsync -a`**.
 
@@ -82,12 +101,11 @@ Vollständiger Handoff: siehe `write_manual` aus:
   --confirm-phrase "WRITE SETUPHELFER FAT32 ESP USB"
 ```
 
-Kernänderungen gegenüber 1.7.8.0:
+Kernänderungen 1.7.8.x:
 
-- Nach `sgdisk`: `partprobe`, `udevadm settle`, Wartezeit
-- Nach `mkfs`: vfat-Check + Label via `blkid -p` / `fatlabel`
-- Copy: `rsync -r --delete --info=progress2 --no-owner --no-group --no-perms --omit-dir-times --exclude='.sqtmp/'`
-- Verify: `blkid -p`, Reparaturhinweis `sudo fatlabel /dev/sdb1 SETUPHELFER`
+- **1.7.8.1:** GPT-Name vs. FAT-Label getrennt
+- **1.7.8.2:** FAT-safe rsync, `sudo blkid -p` nach mkfs
+- **1.7.8.3:** `sudo blkid -p` im Verify, stale iso9660-Warnung, `wipefs` vor sgdisk
 
 ## Gate-Status (ehrlich)
 
@@ -102,7 +120,7 @@ Kernänderungen gegenüber 1.7.8.0:
 
 ## Nächster Prompt
 
-`RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_COMPLETION_AFTER_RSYNC_FIX` — nach rsync/Label-Fix 1.7.8.2 Operator-Write im interaktiven Terminal.
+`RESCUE_USB_FAT32_ESP_VERIFY_AND_MSI_BOOT_HANDOFF` — Verify Exit 0 mit 1.7.8.3, optional stale iso9660 bereinigen, MSI-Boot.
 
 ## Nicht ausgeführt
 

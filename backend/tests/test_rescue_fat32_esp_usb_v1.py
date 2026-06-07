@@ -201,6 +201,8 @@ class RescueFat32EspUsbTests(unittest.TestCase):
         self.assertIn("partprobe", manual)
         self.assertIn("udevadm settle", manual)
         self.assertIn("fatlabel", manual)
+        self.assertIn("wipefs --no-act", manual)
+        self.assertIn("wipefs -a", manual)
 
     def test_fat32_staging_rsync_command(self) -> None:
         cmd = fat32.fat32_staging_rsync_command(staging="/staging", mount="/mnt", sudo=False)

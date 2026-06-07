@@ -5,17 +5,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 export PYTHONPATH="${REPO_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}"
-EXPECTED_FAT_LABEL="$(python3 - <<'PY'
-from core.rescue_fat32_esp_usb_writer import FAT_VOLUME_LABEL
-print(FAT_VOLUME_LABEL)
-PY
-)"
-EXPECTED_GPT_PART_NAME="$(python3 - <<'PY'
-from core.rescue_fat32_esp_usb_writer import GPT_PARTITION_NAME
-print(GPT_PARTITION_NAME)
-PY
-)"
-EFI_PARTTYPE_UUID="c12a7328-f81f-11d2-ba4b-00a0c93ec93b"
 
 TARGET=""
 PART=""
@@ -28,25 +17,6 @@ usage() {
 fail() {
   echo "RESCUE-FAT32-VERIFY: $1" >&2
   exit "${2:-1}"
-}
-
-read_fat_volume_label() {
-  local dev="$1"
-  local label=""
-  label="$(blkid -p -s LABEL -o value "$dev" 2>/dev/null | head -1 || true)"
-  if [[ -n "$label" ]]; then
-    echo "$label"
-    return 0
-  fi
-  if command -v fatlabel >/dev/null 2>&1; then
-    label="$(fatlabel "$dev" 2>/dev/null | head -1 || true)"
-    [[ -n "$label" ]] && echo "$label" && return 0
-  fi
-  if command -v dosfslabel >/dev/null 2>&1; then
-    label="$(dosfslabel "$dev" 2>/dev/null | head -1 || true)"
-    [[ -n "$label" ]] && echo "$label" && return 0
-  fi
-  echo ""
 }
 
 while [[ $# -gt 0 ]]; do
@@ -66,32 +36,77 @@ if [[ -z "$PART" ]]; then
   PART="${TARGET}1"
 fi
 
-sudo udevadm settle --timeout=15 2>/dev/null || udevadm settle --timeout=15 2>/dev/null || true
-
-# GPT check
-PTTYPE="$(lsblk -no PTTYPE "$TARGET" 2>/dev/null | head -1 || true)"
-[[ "$PTTYPE" == "gpt" ]] || fail "no GPT on target (PTTYPE=${PTTYPE:-missing})" 20
-
-PARTTYPE="$(lsblk -no PARTTYPE "$PART" 2>/dev/null | head -1 || true)"
-FSTYPE="$(lsblk -no FSTYPE "$PART" 2>/dev/null | head -1 || true)"
-[[ -n "$PARTTYPE" ]] || fail "no ESP partition found" 21
-echo "PARTTYPE=${PARTTYPE} FSTYPE=${FSTYPE}"
-
-PARTTYPE_LC="$(echo "$PARTTYPE" | tr '[:upper:]' '[:lower:]')"
-if [[ "$PARTTYPE_LC" != *"efi"* && "$PARTTYPE_LC" != *"ef00"* && "$PARTTYPE_LC" != *"${EFI_PARTTYPE_UUID}"* ]]; then
-  fail "partition not EFI System (PARTTYPE=${PARTTYPE})" 21
+# Never use parent device for FAT label — partition only.
+if [[ "$PART" == "$TARGET" ]]; then
+  fail "FAT label must be read from partition device, not parent ${TARGET}" 22
 fi
 
-[[ "$FSTYPE" == "vfat" || "$FSTYPE" == "msdos" ]] || fail "partition not FAT32/vfat (FSTYPE=${FSTYPE})" 22
+sudo udevadm settle --timeout=15 2>/dev/null || udevadm settle --timeout=15 2>/dev/null || true
 
-PARTLABEL="$(lsblk -no PARTLABEL "$PART" 2>/dev/null | head -1 || true)"
-FAT_LABEL="$(read_fat_volume_label "$PART")"
-echo "PARTLABEL=${PARTLABEL:-} FAT_LABEL=${FAT_LABEL:-}"
+EVAL_JSON="$(python3 - <<PY
+import json
+from core.rescue_fat32_esp_usb_verify import (
+    evaluate_verify_probe,
+    lsblk_field,
+    probe_fat_volume_label,
+    probe_parent_signature_types,
+)
 
-[[ "$PARTLABEL" == "$EXPECTED_GPT_PART_NAME" ]] || fail "GPT partition name expected ${EXPECTED_GPT_PART_NAME} got ${PARTLABEL:-missing}" 22
+target = ${TARGET@Q}
+part = ${PART@Q}
 
-if [[ -z "$FAT_LABEL" || "$FAT_LABEL" != "$EXPECTED_FAT_LABEL" ]]; then
-  fail "FAT volume label expected ${EXPECTED_FAT_LABEL} got ${FAT_LABEL:-missing} — repair: sudo fatlabel ${PART} ${EXPECTED_FAT_LABEL}" 22
+parent_pttype = lsblk_field(target, "PTTYPE")
+part_parttype = lsblk_field(part, "PARTTYPE")
+part_partlabel = lsblk_field(part, "PARTLABEL")
+part_fstype = lsblk_field(part, "FSTYPE")
+part_fat_label = probe_fat_volume_label(part)
+parent_sigs = probe_parent_signature_types(target)
+
+print(f"PTTYPE={parent_pttype} PARTTYPE={part_parttype} FSTYPE={part_fstype}", flush=True)
+print(f"PARTLABEL={part_partlabel or ''} FAT_LABEL={part_fat_label or ''}", flush=True)
+
+result = evaluate_verify_probe(
+    parent_pttype=parent_pttype,
+    parent_signature_types=parent_sigs,
+    part_parttype=part_parttype,
+    part_partlabel=part_partlabel,
+    part_fstype=part_fstype,
+    part_fat_label=part_fat_label,
+    target_device=target,
+)
+print(json.dumps(result))
+PY
+)"
+
+# stdout: two probe lines then JSON on last line
+EVAL_LINE="$(echo "$EVAL_JSON" | tail -1)"
+WARNINGS="$(python3 - <<PY
+import json
+r = json.loads(${EVAL_LINE@Q})
+for w in r.get("warnings") or []:
+    print(w)
+PY
+)"
+
+while IFS= read -r warn_line; do
+  [[ -n "$warn_line" ]] && echo "RESCUE-FAT32-VERIFY: ${warn_line}" >&2
+done <<< "$WARNINGS"
+
+VERIFY_OK="$(python3 - <<PY
+import json
+r = json.loads(${EVAL_LINE@Q})
+print("yes" if r.get("ok") else "no")
+PY
+)"
+
+if [[ "$VERIFY_OK" != "yes" ]]; then
+  python3 - <<PY
+import json, sys
+r = json.loads(${EVAL_LINE@Q})
+for err in r.get("errors") or []:
+    print(f"RESCUE-FAT32-VERIFY: {err['message']}", file=sys.stderr)
+sys.exit(int(r.get("exit_code") or 1))
+PY
 fi
 
 MOUNT="$(lsblk -no MOUNTPOINTS "$PART" 2>/dev/null | head -1 || true)"
@@ -130,6 +145,7 @@ check_file "boot/grub/grub.cfg" 24
 check_file "live/vmlinuz" 25
 check_file "live/initrd.img" 25
 check_file "live/filesystem.squashfs" 26
+check_file "setuphelfer/rescue/boot-branding.txt" 26
 
 if [[ -e "$MOUNT/.sqtmp" ]]; then
   fail "staging artifact .sqtmp must not be on USB" 26
@@ -144,6 +160,17 @@ fi
 SQ_SIZE="$(stat -c '%s' "$MOUNT/live/filesystem.squashfs" 2>/dev/null || echo 0)"
 echo "filesystem.squashfs size_bytes=${SQ_SIZE}"
 [[ "$SQ_SIZE" -gt 100000000 ]] || fail "filesystem.squashfs size implausible" 26
+
+EXPECTED_FAT_LABEL="$(python3 - <<'PY'
+from core.rescue_fat32_esp_usb_writer import FAT_VOLUME_LABEL
+print(FAT_VOLUME_LABEL)
+PY
+)"
+EXPECTED_GPT_PART_NAME="$(python3 - <<'PY'
+from core.rescue_fat32_esp_usb_writer import GPT_PARTITION_NAME
+print(GPT_PARTITION_NAME)
+PY
+)"
 
 echo "OK: FAT32 ESP rescue USB verified read-only on ${PART} mount=${MOUNT} fat_label=${EXPECTED_FAT_LABEL} gpt_name=${EXPECTED_GPT_PART_NAME}"
 exit 0
