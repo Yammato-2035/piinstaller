@@ -1,52 +1,56 @@
 {
-  "schema_version": 33,
-  "classified_at": "2026-06-07T16:00:00+02:00",
-  "classification": "msi_boot_telemetry_ack_ingested_start_assistant_autostart_pending",
+  "schema_version": 34,
+  "classified_at": "2026-06-07T16:20:00+02:00",
+  "classification": "start_assistant_autostart_rebuild_blocked_sudo_and_usb_absent",
   "workspace_version": "1.7.9.0",
-  "bootx64_standalone_fix_version": "1.7.8.6",
-  "bootx64_source": "grub_mkstandalone",
-  "bootx64_embedded_bootstrap": true,
-  "fat32_esp_usb_written": true,
-  "fat32_esp_usb_verified": true,
+  "build_tree_prepared_for_1_7_9_0": true,
+  "iso_rebuilt_for_start_assistant_autostart": false,
+  "iso_build_blocked_reason": "blocked_requires_operator_sudo_policy",
+  "iso_build_lb_exit": 30,
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
-  "iso_sha256": "3fe6628a1316b2ceaa2850748e47a2e9c8984266a92d541e7d2aa29f80d2dbf7",
-  "iso_verified": true,
-  "iso_status": "verified",
-  "uefi_boot_ready": true,
-  "iso_uefi_validated": true,
-  "usb_stick_written": true,
-  "usb_write_sha256_verified": true,
+  "iso_sha256": "c70cdcfa329aae9b32909d4cada84dcb0d5b4433a298e7dc1a9b6b2b66631428",
+  "iso_size_bytes": 683671552,
+  "iso_squashfs_has_1_7_9_0_autostart_unit": false,
+  "includes_chroot_has_1_7_9_0_autostart_unit": true,
+  "bootx64_source": "grub_mkstandalone",
+  "fat32_esp_usb_written": true,
+  "fat32_esp_usb_verified": false,
   "usb_target_device": "/dev/sdb",
+  "usb_target_present": false,
   "usb_target_model": "Ultra Line",
   "usb_target_serial": "24111412110212",
+  "cached_fat_uuid_from_prior_staging": "1146-3CA1",
   "target_laptop_booted_from_stick": true,
   "target_boot_stage": "live_console",
-  "target_live_media_runtime_stable": true,
-  "target_network_manual_connected": true,
-  "target_network_link_established": true,
-  "target_network_onboarding_available": true,
-  "target_default_route_present": true,
-  "target_telemetry_health_reached": true,
-  "target_telemetry_ingest_ack": true,
   "target_network_telemetry_validated": true,
   "last_ack_id": "rti-e5aa1b9979b346f8",
   "last_ingest_at": "2026-06-07T13:55:28Z",
   "last_error_code": null,
   "start_assistant_autostart_validated": false,
   "windows_inspect_executable": false,
+  "runtime_api_version_drift": {
+    "workspace": "1.7.9.0",
+    "api": "1.7.8.4",
+    "blocks_iso_build": false
+  },
   "blockers": [
+    {
+      "id": "RESCUE_ISO_REBUILD_BLOCKED_SUDO",
+      "severity": "high",
+      "summary_de": "ISO-Rebuild erfordert interaktives sudo (clean + lb build)."
+    },
+    {
+      "id": "RESCUE_USB_TARGET_SDB_ABSENT",
+      "severity": "high",
+      "summary_de": "/dev/sdb (Ultra Line) nicht angeschlossen — Recopy/Verify nicht möglich."
+    },
     {
       "id": "RESCUE_START_ASSISTANT_AUTOSTART_NOT_VALIDATED",
       "severity": "high",
-      "summary_de": "Startassistent startet nicht automatisch auf tty1; WLAN/Telemetrie manuell nötig."
+      "summary_de": "SquashFS im bestehenden ISO enthält noch nicht die 1.7.9.0 Autostart-Unit."
     }
   ],
-  "resolved_blockers": [
-    "RESCUE_FAT32_ESP_GRUB_ROOT_NOT_FOUND",
-    "RESCUE_BOOTX64_NO_GPT_FAT_MODULE",
-    "RESCUE_MSI_UEFI_BOOT_FAILED"
-  ],
-  "next_operator_step_de": "ISO mit Startassistent-Autostart-Fix neu bauen, Stick recopy, MSI-Boot: Assistent muss auf tty1 erscheinen.",
-  "next_operator_step_en": "Rebuild ISO with start-assistant autostart fix, recopy stick, MSI boot: assistant must appear on tty1.",
-  "next_prompt_id": "RESCUE_ISO_START_ASSISTANT_AUTOSTART_REBUILD_AND_USB_RECOPY_OPERATOR_RUN"
+  "next_operator_step_de": "Interaktives Terminal: sudo clean + ISO rebuild (LB_EXIT=0), Stick /dev/sdb anschließen, Staging recopy, verify-fat32-esp-rescue-usb.sh Exit 0.",
+  "next_operator_step_en": "Interactive terminal: sudo clean + ISO rebuild (LB_EXIT=0), connect /dev/sdb stick, staging recopy, verify-fat32-esp-rescue-usb.sh exit 0.",
+  "next_prompt_id": "RESCUE_START_ASSISTANT_AUTOSTART_REBUILD_FAILURE_TRIAGE"
 }

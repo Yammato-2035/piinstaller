@@ -1,15 +1,14 @@
 {
-  "selected_at": "2026-06-07T16:00:00+02:00",
-  "next_prompt_id": "RESCUE_ISO_START_ASSISTANT_AUTOSTART_REBUILD_AND_USB_RECOPY_OPERATOR_RUN",
-  "reason_de": "MSI-Boot und Telemetrie-ACK ingestiert (rti-e5aa1b9979b346f8). Startassistent-Autostart-Fix in 1.7.9.0 — ISO rebuild + USB recopy für tty1-Validierung.",
+  "selected_at": "2026-06-07T16:20:00+02:00",
+  "next_prompt_id": "RESCUE_START_ASSISTANT_AUTOSTART_REBUILD_FAILURE_TRIAGE",
+  "reason_de": "ISO-Rebuild blockiert (sudo-Policy, LB_EXIT=30). /dev/sdb nicht angeschlossen. Build-tree 1.7.9.0 OK, SquashFS im ISO noch alt.",
   "prerequisites": [
-    "target_laptop_booted_from_stick=true",
-    "target_network_telemetry_validated=true",
-    "last_ack_id=rti-e5aa1b9979b346f8",
-    "start_assistant_autostart_validated=false",
-    "Workspace 1.7.9.0 mit Autostart-Fix committed"
+    "Interaktives sudo für clean + run-controlled-iso-build",
+    "LB_EXIT=0 und neue ISO SHA256",
+    "Ultra Line /dev/sdb Serial 24111412110212 angeschlossen",
+    "verify-fat32-esp-rescue-usb.sh Exit 0"
   ],
   "follow_up_prompt_id": "RESCUE_MSI_START_ASSISTANT_AUTOSTART_VALIDATION_OPERATOR_RUN",
-  "fallback_prompt_id": "RESCUE_START_ASSISTANT_AUTOSTART_TTY1_DEBUG_OPERATOR_RUN",
-  "superseded_prompt_id": "RESCUE_MSI_BOOT_AND_TELEMETRY_ACK_INGEST_START_ASSISTANT_AUTOSTART_FIX"
+  "fallback_prompt_id": "RESCUE_ISO_START_ASSISTANT_AUTOSTART_REBUILD_AND_USB_RECOPY_OPERATOR_RUN",
+  "superseded_prompt_id": "RESCUE_ISO_START_ASSISTANT_AUTOSTART_REBUILD_AND_USB_RECOPY_OPERATOR_RUN"
 }
