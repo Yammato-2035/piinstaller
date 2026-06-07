@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "validated_at": "2026-06-07T11:46:45+02:00",
+  "prompt_id": "RESCUE_START_ASSISTANT_POST_BUILD_VALIDATION_AND_USB_REWRITE_HANDOFF",
+  "workspace_version": "1.7.7.0",
+  "git_head": "745eb2f",
+  "git_branch": "main",
+  "build_summary": {
+    "lb_exit": 0,
+    "uefi_post_patch": {
+      "patch_rc": 0,
+      "validate_exit": 0
+    },
+    "run_id": "rescue_developer_iso_20260607_093924"
+  },
+  "iso": {
+    "path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+    "size_bytes": 683671552,
+    "sha256": "3fe6628a1316b2ceaa2850748e47a2e9c8984266a92d541e7d2aa29f80d2dbf7",
+    "file_type": "ISO 9660 CD-ROM filesystem data (bootable) SETUPHELFER_RESCUE"
+  },
+  "uefi_validation": {
+    "script": "scripts/rescue-live/validate-rescue-iso-uefi-boot.sh",
+    "exit_code": 0,
+    "bios": true,
+    "efi_eltorito": true,
+    "bootx64": true,
+    "efi_img": true
+  },
+  "boot_menu_branding": {
+    "menu_title": "Setuphelfer Rettungsstick",
+    "custom_labels_present": true,
+    "entries_verified": [
+      "Setuphelfer Rettung starten",
+      "Netzwerk-Assistent",
+      "MSI/NVIDIA-Kompatibilitaetsmodus",
+      "Diagnosemodus",
+      "Start in RAM / Media-Check",
+      "Neustart",
+      "Herunterfahren"
+    ],
+    "boot_branding_txt_in_squashfs": true,
+    "isolinux_splash_png": true
+  },
+  "squashfs_components": {
+    "start_assistant": true,
+    "network_onboarding": true,
+    "telemetry_push": true,
+    "telemetry_build_payload_py": true,
+    "media_check": true,
+    "disk_discovery": true,
+    "plan_builder_py": true,
+    "task_pull": true,
+    "common_sh": true,
+    "network_tools": {
+      "nmcli": true,
+      "network_manager_enabled": true,
+      "rfkill": true,
+      "rfkill_path": "/usr/sbin/rfkill",
+      "iw": true,
+      "iw_path": "/usr/sbin/iw",
+      "ping": true,
+      "curl": true,
+      "regulatory_db": true
+    },
+    "firmware": {
+      "iwlwifi_9000": true,
+      "intel_ibt_17_16_1_sfi": true
+    },
+    "systemd_units_enabled": [
+      "setuphelfer-rescue-start-assistant.service",
+      "setuphelfer-rescue-network-onboarding.service",
+      "setuphelfer-rescue-telemetry-push.service",
+      "setuphelfer-rescue-media-check.service",
+      "setuphelfer-rescue-task-pull.service"
+    ],
+    "telemetry_retry_timer": true,
+    "serial_boot_markers_qemu_only": true
+  },
+  "syntax_and_tests": {
+    "bash_n_all_rescue_scripts": true,
+    "python_compile_ok": true,
+    "no_heredoc_json_loads_in_telemetry_push": true,
+    "unit_tests": {
+      "test_rescue_start_assistant_v1": "15/15 OK",
+      "test_rescue_live_telemetry_scripts_v1": "included",
+      "total_passed": 15,
+      "total_failed": 0
+    }
+  },
+  "start_assistant_logic": {
+    "wizard_state_json": true,
+    "write_actions_allowed_false": true,
+    "disk_discovery_read_only": true,
+    "plan_builder_all_plan_types": true,
+    "unstable_media_blocks_execution": true,
+    "beginner_main_menu_present": true
+  },
+  "telemetry_proxy": {
+    "running": true,
+    "bind": "192.168.178.140:8001",
+    "health_http": 200,
+    "blocked_paths_return_404": true,
+    "secrets_exposed": false
+  },
+  "gates": {
+    "iso_post_build_validated": true,
+    "iso_uefi_validated": true,
+    "boot_menu_branding_validated": true,
+    "start_assistant_present_in_iso": true,
+    "network_onboarding_present_in_iso": true,
+    "telemetry_push_present_in_iso": true,
+    "disk_discovery_present_in_iso": true,
+    "plan_builder_present_in_iso": true,
+    "usb_stick_matches_current_iso": false,
+    "usb_stick_written": false,
+    "usb_write_sha256_verified": false,
+    "target_laptop_booted_from_stick": false,
+    "target_network_telemetry_validated": false,
+    "windows_inspect_executable": false,
+    "usb_rewrite_handoff_ready": true
+  },
+  "warnings": [
+    {
+      "id": "RUNTIME_DEPLOY_DRIFT",
+      "detail": "API 1.7.4.1 vs workspace 1.7.7.0"
+    },
+    {
+      "id": "RFKILL_IW_IN_USR_SBIN",
+      "detail": "Present at /usr/sbin, not /usr/bin"
+    }
+  ],
+  "blockers": [],
+  "next_prompt_id": "RESCUE_USB_REWRITE_AFTER_START_ASSISTANT_ISO_OPERATOR_RUN",
+  "dd_executed": false,
+  "push_executed": false
+}
