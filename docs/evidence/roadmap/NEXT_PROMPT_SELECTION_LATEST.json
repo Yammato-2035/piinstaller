@@ -1,14 +1,14 @@
 {
-  "selected_at": "2026-06-07T14:00:00+02:00",
-  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_COMPLETION",
-  "reason_de": "FAT32-ESP-Label-Fix 1.7.8.1: GPT-Name SETUPHELFER_RESCUE, mkfs.vfat -n SETUPHELFER. Operator führt interaktives sudo-Write + Verify aus.",
+  "selected_at": "2026-06-07T16:00:00+02:00",
+  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_COMPLETION_AFTER_RSYNC_FIX",
+  "reason_de": "FAT32-ESP rsync/Label-Fix 1.7.8.2: kein rsync -a, blkid -p + fatlabel-Fallback, .sqtmp ausgeschlossen. Operator führt korrigierten Write + Verify aus.",
   "prerequisites": [
     "Interaktives Terminal mit sudo",
     "lsblk /dev/sdb = Ultra Line Serial 24111412110212",
-    "build/rescue/fat32-esp-staging vorhanden",
-    "sudo mkfs.vfat -F 32 -n SETUPHELFER (nicht SETUPHELFER_RESCUE)",
+    "build/rescue/fat32-esp-staging vorhanden (ohne .sqtmp/)",
+    "FAT-safe rsync mit --no-owner --no-group --no-perms",
     "verify-fat32-esp-rescue-usb.sh Exit 0"
   ],
   "follow_up_prompt_id": "RESCUE_MSI_BOOT_FAT32_ESP_START_ASSISTANT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "superseded_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_NOT_APPLIED_TRIAGE"
+  "superseded_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_COMPLETION"
 }

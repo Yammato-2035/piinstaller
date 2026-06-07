@@ -69,35 +69,25 @@ verify_exit=20
 
 Erwartbar — Stick unverändert iso9660/isohybrid.
 
-## Operator — ausstehende Schritte (interaktives Terminal)
+## Operator — ausstehende Schritte (interaktives Terminal, 1.7.8.2)
+
+**Hinweis:** FAT32 speichert keine Unix-Owner/Groups/Permissions — **kein `rsync -a`**.
+
+Vollständiger Handoff: siehe `write_manual` aus:
 
 ```bash
-cd /home/volker/piinstaller
-STAGING=build/rescue/fat32-esp-staging
-TARGET=/dev/sdb
-
-# Ziel erneut prüfen
-lsblk -o NAME,SIZE,MODEL,SERIAL,TRAN /dev/sda /dev/sdb
-# Erwartung: sdb = Ultra Line, Serial 24111412110212
-
-udisksctl unmount -b /dev/sdb1 2>/dev/null || true
-sync
-
-sudo sgdisk --zap-all "$TARGET"
-sudo sgdisk -n 1:0:+4096MiB -t 1:EF00 -c 1:SETUPHELFER_RESCUE "$TARGET"
-sudo mkfs.vfat -F 32 -n SETUPHELFER ${TARGET}1
-
-MNT=$(mktemp -d)
-sudo mount ${TARGET}1 "$MNT"
-sudo rsync -a "${STAGING}/" "${MNT}/"
-sync
-sudo umount "$MNT"
-rmdir "$MNT"
-
-sync
-sudo partprobe "$TARGET" || true
-./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh --target /dev/sdb
+./scripts/rescue-live/write-fat32-esp-rescue-usb.sh \
+  --iso build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso \
+  --target /dev/sdb --operator-confirm-write \
+  --confirm-phrase "WRITE SETUPHELFER FAT32 ESP USB"
 ```
+
+Kernänderungen gegenüber 1.7.8.0:
+
+- Nach `sgdisk`: `partprobe`, `udevadm settle`, Wartezeit
+- Nach `mkfs`: vfat-Check + Label via `blkid -p` / `fatlabel`
+- Copy: `rsync -r --delete --info=progress2 --no-owner --no-group --no-perms --omit-dir-times --exclude='.sqtmp/'`
+- Verify: `blkid -p`, Reparaturhinweis `sudo fatlabel /dev/sdb1 SETUPHELFER`
 
 ## Gate-Status (ehrlich)
 
@@ -112,7 +102,7 @@ sudo partprobe "$TARGET" || true
 
 ## Nächster Prompt
 
-`RESCUE_USB_FAT32_ESP_WRITE_NOT_APPLIED_TRIAGE` — Operator führt sudo-Schritte im interaktiven Terminal aus, danach erneuter Verify-Lauf.
+`RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_COMPLETION_AFTER_RSYNC_FIX` — nach rsync/Label-Fix 1.7.8.2 Operator-Write im interaktiven Terminal.
 
 ## Nicht ausgeführt
 

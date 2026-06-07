@@ -166,6 +166,48 @@ class RescueFat32EspUsbTests(unittest.TestCase):
         self.assertIn("SETUPHELFER", mkfs_line)
         self.assertNotIn("SETUPHELFER_RESCUE", mkfs_line)
 
+    def test_write_plan_uses_fat_compatible_rsync(self) -> None:
+        iso = Path("/tmp/fake-rescue.iso")
+        with patch.object(Path, "is_file", return_value=True):
+            with patch.object(fat32, "sha256_file", return_value="abc"):
+                with patch.object(fat32, "validate_fat32_write_target", return_value={"blocked": False, "blockers": []}):
+                    with patch.object(fat32, "extract_iso_files", side_effect=OSError("skip")):
+                        plan = fat32.build_write_plan(iso_path=iso, target_device="/dev/sdb", dry_run=True)
+        plan_blob = json.dumps(plan)
+        self.assertNotIn('rsync -a "', plan_blob)
+        self.assertNotIn("rsync -a ${", plan_blob)
+        for opt in ("--no-owner", "--no-group", "--no-perms", "--omit-dir-times"):
+            self.assertIn(opt, plan_blob)
+        self.assertIn(".sqtmp", plan_blob)
+        self.assertEqual(plan["gpt_partition_name"], "SETUPHELFER_RESCUE")
+        self.assertEqual(plan["fat_volume_label"], "SETUPHELFER")
+
+    def test_operator_terminal_commands_fat_rsync_and_labels(self) -> None:
+        cmds = fat32.build_operator_terminal_commands(
+            iso_path=Path("/tmp/fake.iso"),
+            target_device="/dev/sdb",
+            workspace=Path("/tmp/ws"),
+        )
+        manual = cmds["write_manual"]
+        self.assertNotIn("rsync -a \"", manual)
+        self.assertNotIn("rsync -a ${", manual)
+        self.assertIn("--no-owner", manual)
+        self.assertIn("--no-group", manual)
+        self.assertIn("--no-perms", manual)
+        self.assertIn("--omit-dir-times", manual)
+        self.assertIn("--exclude='.sqtmp/'", manual)
+        self.assertIn("mkfs.vfat -F 32 -n SETUPHELFER", manual)
+        self.assertIn("-c 1:SETUPHELFER_RESCUE", manual)
+        self.assertIn("partprobe", manual)
+        self.assertIn("udevadm settle", manual)
+        self.assertIn("fatlabel", manual)
+
+    def test_fat32_staging_rsync_command(self) -> None:
+        cmd = fat32.fat32_staging_rsync_command(staging="/staging", mount="/mnt", sudo=False)
+        self.assertNotIn("rsync -a", cmd)
+        self.assertIn("--no-owner", cmd)
+        self.assertIn(".sqtmp", cmd)
+
 
 if __name__ == "__main__":
     unittest.main()

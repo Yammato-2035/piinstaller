@@ -103,14 +103,19 @@ fi
 
 echo "=== DESTRUCTIVE WRITE PREPARED (operator terminal only) ==="
 echo "Target: ${TARGET}"
-echo "Steps:"
-echo "  1) udisksctl unmount -b ${TARGET}* 2>/dev/null || true"
-echo "  2) sudo sgdisk --zap-all ${TARGET}"
-echo "  3) sudo sgdisk -n 1:0:+${ESP_SIZE_MIB}MiB -t 1:EF00 -c 1:${GPT_PARTITION_NAME} ${TARGET}"
-echo "  4) sudo mkfs.vfat -F 32 -n ${FAT_VOLUME_LABEL} ${TARGET}1"
-echo "  5) mount ESP and rsync ${STAGING_DIR}/ to mountpoint"
-echo "  6) sync && umount"
-echo "  7) ${SCRIPT_DIR}/verify-fat32-esp-rescue-usb.sh --target ${TARGET}"
+echo "NOTE: FAT32 has no Unix owner/group/permissions — use FAT-safe rsync (see write_manual below)."
+echo ""
+python3 - <<PY
+from pathlib import Path
+from core.rescue_fat32_esp_usb_writer import build_operator_terminal_commands
+
+cmds = build_operator_terminal_commands(
+    iso_path=Path(${ISO@Q}),
+    target_device=${TARGET@Q},
+    workspace=Path(${REPO_ROOT@Q}),
+)
+print(cmds["write_manual"])
+PY
 echo ""
 echo "NOTE: This script does NOT execute destructive steps automatically."
 echo "write_executed=false (operator must run steps manually)"

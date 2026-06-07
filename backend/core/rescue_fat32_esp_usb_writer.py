@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import shutil
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -29,6 +30,10 @@ GPT_PARTITION_NAME = "SETUPHELFER_RESCUE"
 # FAT/VFAT volume label (mkfs.vfat -n) — max 11 characters.
 FAT_VOLUME_LABEL = "SETUPHELFER"
 FAT_VOLUME_LABEL_MAX_LEN = 11
+FAT_RSYNC_EXCLUDE = ".sqtmp/"
+FAT_RSYNC_OPTIONS = (
+    "-r --delete --info=progress2 --no-owner --no-group --no-perms --omit-dir-times"
+)
 MIN_USB_BYTES = 2 * 1024 * 1024 * 1024  # 2 GiB
 ESP_SIZE_MIB_DEFAULT = 4096
 
@@ -58,6 +63,15 @@ def fat32_esp_label_spec() -> dict[str, str]:
         "gpt_partition_name": GPT_PARTITION_NAME,
         "fat_volume_label": FAT_VOLUME_LABEL,
     }
+
+
+def fat32_staging_rsync_command(*, staging: str, mount: str, sudo: bool = True) -> str:
+    """FAT32-safe rsync — no owner/group/permission preservation."""
+    prefix = "sudo " if sudo else ""
+    return (
+        f"{prefix}rsync {FAT_RSYNC_OPTIONS} --exclude={FAT_RSYNC_EXCLUDE!r} "
+        f'"{staging}/" "{mount}/"'
+    )
 
 
 @dataclass(frozen=True)
@@ -307,6 +321,9 @@ def extract_iso_files(
                 "sha256": sha256_file(branding_dest),
             }
         )
+    sqtmp = output_dir / ".sqtmp"
+    if sqtmp.exists():
+        shutil.rmtree(sqtmp, ignore_errors=True)
 
     version_path = _workspace_root() / "config" / "version.json"
     version_payload: dict[str, Any] = {"project_version": "unknown"}
@@ -527,9 +544,18 @@ def build_write_plan(
                 f"sgdisk -n 1:0:+{esp_size_mib}MiB -t 1:EF00 "
                 f"-c 1:{labels['gpt_partition_name']}"
             ),
+            "partprobe + udevadm settle (after partition)",
             f"mkfs.vfat -F 32 -n {labels['fat_volume_label']}",
-            "rsync/copy staging to ESP mount",
+            "verify vfat + fat label (fatlabel/dosfslabel fallback if missing)",
+            fat32_staging_rsync_command(staging=str(staging), mount="${MNT}", sudo=True),
         ],
+        "staging_copy_command": fat32_staging_rsync_command(
+            staging=str(staging), mount="${MNT}", sudo=True
+        ),
+        "staging_copy_exclude": [FAT_RSYNC_EXCLUDE],
+        "fat32_copy_note": (
+            "FAT32 stores no Unix owner/group/permissions; do not use rsync -a on ESP."
+        ),
         "write_executed": False,
         "secrets_exposed": False,
     }
@@ -552,20 +578,39 @@ def build_operator_terminal_commands(
     labels = fat32_esp_label_spec()
     gpt_name = labels["gpt_partition_name"]
     fat_label = labels["fat_volume_label"]
+    rsync_cmd = fat32_staging_rsync_command(staging="${STAGING}", mount="$MNT", sudo=True)
     manual_write = (
         f"cd {ws}\n"
         f"STAGING={staging}\n"
         f"TARGET={target_device}\n"
+        f"# FAT32: no Unix owner/group/permissions — use FAT-safe rsync flags on ESP\n"
+        f"lsblk -o NAME,SIZE,MODEL,SERIAL,TRAN \"$TARGET\"\n"
         f"udisksctl unmount -b ${{TARGET}}1 2>/dev/null || true\n"
         f"sync\n"
         f"sudo sgdisk --zap-all \"$TARGET\"\n"
         f"sudo sgdisk -n 1:0:+4096MiB -t 1:EF00 -c 1:{gpt_name} \"$TARGET\"\n"
+        f"sync\n"
+        f"sudo partprobe \"$TARGET\" || true\n"
+        f"sudo udevadm settle --timeout=30 || true\n"
+        f"sleep 2\n"
         f"sudo mkfs.vfat -F 32 -n {fat_label} ${{TARGET}}1\n"
+        f"sync\n"
+        f"sudo partprobe \"$TARGET\" || true\n"
+        f"sudo udevadm settle --timeout=30 || true\n"
+        f"sleep 1\n"
+        f'FSTYPE=$(lsblk -no FSTYPE "${{TARGET}}1" | head -1)\n'
+        f'[[ "$FSTYPE" == "vfat" ]] || {{ echo "ERROR: ${{TARGET}}1 not vfat ($FSTYPE)"; exit 1; }}\n'
+        f'LABEL=$(blkid -p -s LABEL -o value "${{TARGET}}1" 2>/dev/null || true)\n'
+        f'if [[ "$LABEL" != "{fat_label}" ]]; then\n'
+        f"  sudo fatlabel ${{TARGET}}1 {fat_label} 2>/dev/null || "
+        f"sudo dosfslabel ${{TARGET}}1 {fat_label}\n"
+        f"fi\n"
         f"MNT=$(mktemp -d)\n"
         f"sudo mount ${{TARGET}}1 \"$MNT\"\n"
-        f"sudo rsync -a \"{staging}/\" \"$MNT/\"\n"
+        f"{rsync_cmd}\n"
         f"sync && sudo umount \"$MNT\" && rmdir \"$MNT\"\n"
         f"sync && sudo partprobe \"$TARGET\" || true\n"
+        f"sudo udevadm settle --timeout=30 || true\n"
         f"./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh --target {target_device}"
     )
     return {

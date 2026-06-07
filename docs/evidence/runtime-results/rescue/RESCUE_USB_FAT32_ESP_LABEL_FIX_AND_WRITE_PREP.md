@@ -35,7 +35,7 @@ sudo mkfs.vfat -F 32 -n SETUPHELFER ${TARGET}1
 
 MNT=$(mktemp -d)
 sudo mount ${TARGET}1 "$MNT"
-sudo rsync -a "${STAGING}/" "${MNT}/"
+sudo rsync -r --delete --info=progress2 --no-owner --no-group --no-perms --omit-dir-times --exclude='.sqtmp/' "${STAGING}/" "$MNT/"
 sync
 sudo umount "$MNT"
 rmdir "$MNT"
