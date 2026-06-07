@@ -85,7 +85,7 @@ sync
 
 sudo sgdisk --zap-all "$TARGET"
 sudo sgdisk -n 1:0:+4096MiB -t 1:EF00 -c 1:SETUPHELFER_RESCUE "$TARGET"
-sudo mkfs.vfat -F 32 -n SETUPHELFER_RESCUE ${TARGET}1
+sudo mkfs.vfat -F 32 -n SETUPHELFER ${TARGET}1
 
 MNT=$(mktemp -d)
 sudo mount ${TARGET}1 "$MNT"

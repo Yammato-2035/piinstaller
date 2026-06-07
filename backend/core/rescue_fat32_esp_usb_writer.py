@@ -24,7 +24,11 @@ Runner = Callable[..., Any]
 
 CONFIRM_PHRASE_FAT32_ESP = "WRITE SETUPHELFER FAT32 ESP USB"
 DEFAULT_ISO_REL = "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso"
-ESP_LABEL = "SETUPHELFER_RESCUE"
+# GPT partition name (sgdisk -c) — may be longer than FAT volume label.
+GPT_PARTITION_NAME = "SETUPHELFER_RESCUE"
+# FAT/VFAT volume label (mkfs.vfat -n) — max 11 characters.
+FAT_VOLUME_LABEL = "SETUPHELFER"
+FAT_VOLUME_LABEL_MAX_LEN = 11
 MIN_USB_BYTES = 2 * 1024 * 1024 * 1024  # 2 GiB
 ESP_SIZE_MIB_DEFAULT = 4096
 
@@ -38,6 +42,22 @@ FORBIDDEN_TARGET_PATTERNS = (
     re.compile(r"^/dev/sda$"),
     re.compile(r"^/dev/nvme"),
 )
+
+
+def assert_valid_fat_volume_label(label: str) -> None:
+    """FAT/VFAT labels are limited to 11 bytes (mkfs.vfat -n)."""
+    if len(label) > FAT_VOLUME_LABEL_MAX_LEN:
+        raise ValueError(
+            f"FAT volume label too long ({len(label)} > {FAT_VOLUME_LABEL_MAX_LEN}): {label!r}"
+        )
+
+
+def fat32_esp_label_spec() -> dict[str, str]:
+    assert_valid_fat_volume_label(FAT_VOLUME_LABEL)
+    return {
+        "gpt_partition_name": GPT_PARTITION_NAME,
+        "fat_volume_label": FAT_VOLUME_LABEL,
+    }
 
 
 @dataclass(frozen=True)
@@ -456,14 +476,16 @@ def build_write_plan(
         except OSError as exc:
             layout_error = str(exc)
 
+    labels = fat32_esp_label_spec()
     plan = {
-        "schema_version": 1,
+        "schema_version": 2,
         "mode": "dry_run" if dry_run else "write_prepared",
         "writer": "fat32_esp",
         "iso_path": str(iso),
         "iso_sha256": sha256_file(iso) if iso.is_file() else None,
         "target_device": target_device.strip(),
-        "esp_label": ESP_LABEL,
+        "gpt_partition_name": labels["gpt_partition_name"],
+        "fat_volume_label": labels["fat_volume_label"],
         "esp_size_mib": esp_size_mib,
         "partition_layout": {
             "table": "GPT",
@@ -472,7 +494,8 @@ def build_write_plan(
                     "number": 1,
                     "type": "EFI System (EF00)",
                     "fstype": "vfat",
-                    "label": ESP_LABEL,
+                    "gpt_partition_name": labels["gpt_partition_name"],
+                    "fat_volume_label": labels["fat_volume_label"],
                     "size_mib": esp_size_mib,
                     "contents": [
                         "EFI/BOOT/BOOTX64.EFI",
@@ -488,7 +511,7 @@ def build_write_plan(
             "optional_data_partition": {
                 "planned": True,
                 "write_in_v1": False,
-                "label": "SETUPHELFER_DATA",
+                "gpt_partition_name": "SETUPHELFER_DATA",
                 "purpose": "config/logs/telemetry-spool",
             },
         },
@@ -500,11 +523,11 @@ def build_write_plan(
         "confirm_phrase_required": CONFIRM_PHRASE_FAT32_ESP,
         "destructive_actions": [
             "sgdisk --zap-all",
-            "sgdisk --new=1:0:+{esp_size_mib}MiB --typecode=1:EF00 --change-name=1:{label}".format(
-                esp_size_mib=esp_size_mib,
-                label=ESP_LABEL,
+            (
+                f"sgdisk -n 1:0:+{esp_size_mib}MiB -t 1:EF00 "
+                f"-c 1:{labels['gpt_partition_name']}"
             ),
-            "mkfs.vfat -F 32",
+            f"mkfs.vfat -F 32 -n {labels['fat_volume_label']}",
             "rsync/copy staging to ESP mount",
         ],
         "write_executed": False,
@@ -526,6 +549,25 @@ def build_operator_terminal_commands(
     except ValueError:
         pass
     staging = "build/rescue/fat32-esp-staging"
+    labels = fat32_esp_label_spec()
+    gpt_name = labels["gpt_partition_name"]
+    fat_label = labels["fat_volume_label"]
+    manual_write = (
+        f"cd {ws}\n"
+        f"STAGING={staging}\n"
+        f"TARGET={target_device}\n"
+        f"udisksctl unmount -b ${{TARGET}}1 2>/dev/null || true\n"
+        f"sync\n"
+        f"sudo sgdisk --zap-all \"$TARGET\"\n"
+        f"sudo sgdisk -n 1:0:+4096MiB -t 1:EF00 -c 1:{gpt_name} \"$TARGET\"\n"
+        f"sudo mkfs.vfat -F 32 -n {fat_label} ${{TARGET}}1\n"
+        f"MNT=$(mktemp -d)\n"
+        f"sudo mount ${{TARGET}}1 \"$MNT\"\n"
+        f"sudo rsync -a \"{staging}/\" \"$MNT/\"\n"
+        f"sync && sudo umount \"$MNT\" && rmdir \"$MNT\"\n"
+        f"sync && sudo partprobe \"$TARGET\" || true\n"
+        f"./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh --target {target_device}"
+    )
     return {
         "build_layout": (
             f"cd {ws}\n"
@@ -544,6 +586,7 @@ def build_operator_terminal_commands(
             f"--operator-confirm-write "
             f'--confirm-phrase "{CONFIRM_PHRASE_FAT32_ESP}"'
         ),
+        "write_manual": manual_write,
         "verify": (
             f"cd {ws}\n"
             f"./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh --target {target_device}"
@@ -595,6 +638,8 @@ def build_compact_usb_writer_modes_summary(
             "operator_terminal_required": True,
             "recommended_for_msi": msi_boot_failed,
             "confirm_phrase": CONFIRM_PHRASE_FAT32_ESP,
+            "gpt_partition_name": GPT_PARTITION_NAME,
+            "fat_volume_label": FAT_VOLUME_LABEL,
             "operator_commands": commands,
             "verify_command": commands.get("verify"),
         },

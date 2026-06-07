@@ -12,6 +12,8 @@ CONFIRM_WRITE=false
 CONFIRM_PHRASE=""
 ESP_SIZE_MIB=4096
 STAGING_DIR="${REPO_ROOT}/build/rescue/fat32-esp-staging"
+GPT_PARTITION_NAME="SETUPHELFER_RESCUE"
+FAT_VOLUME_LABEL="SETUPHELFER"
 
 usage() {
   cat <<EOF
@@ -104,8 +106,8 @@ echo "Target: ${TARGET}"
 echo "Steps:"
 echo "  1) udisksctl unmount -b ${TARGET}* 2>/dev/null || true"
 echo "  2) sudo sgdisk --zap-all ${TARGET}"
-echo "  3) sudo sgdisk -n 1:0:+${ESP_SIZE_MIB}MiB -t 1:EF00 -c 1:SETUPHELFER_RESCUE ${TARGET}"
-echo "  4) sudo mkfs.vfat -F 32 -n SETUPHELFER_RESCUE ${TARGET}1"
+echo "  3) sudo sgdisk -n 1:0:+${ESP_SIZE_MIB}MiB -t 1:EF00 -c 1:${GPT_PARTITION_NAME} ${TARGET}"
+echo "  4) sudo mkfs.vfat -F 32 -n ${FAT_VOLUME_LABEL} ${TARGET}1"
 echo "  5) mount ESP and rsync ${STAGING_DIR}/ to mountpoint"
 echo "  6) sync && umount"
 echo "  7) ${SCRIPT_DIR}/verify-fat32-esp-rescue-usb.sh --target ${TARGET}"

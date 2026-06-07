@@ -139,6 +139,33 @@ class RescueFat32EspUsbTests(unittest.TestCase):
     def test_required_confirmations_import(self) -> None:
         self.assertEqual(fat32.CONFIRM_PHRASE_FAT32_ESP, "WRITE SETUPHELFER FAT32 ESP USB")
 
+    def test_fat32_label_spec(self) -> None:
+        spec = fat32.fat32_esp_label_spec()
+        self.assertEqual(spec["gpt_partition_name"], "SETUPHELFER_RESCUE")
+        self.assertEqual(spec["fat_volume_label"], "SETUPHELFER")
+        self.assertLessEqual(len(spec["fat_volume_label"]), fat32.FAT_VOLUME_LABEL_MAX_LEN)
+
+    def test_fat_volume_label_max_length_enforced(self) -> None:
+        with self.assertRaises(ValueError):
+            fat32.assert_valid_fat_volume_label("SETUPHELFER_RESCUE")
+        fat32.assert_valid_fat_volume_label("SETUPHELFER")
+
+    def test_build_write_plan_exposes_separate_labels(self) -> None:
+        iso = Path("/tmp/fake-rescue.iso")
+        with patch.object(Path, "is_file", return_value=True):
+            with patch.object(fat32, "sha256_file", return_value="abc"):
+                with patch.object(fat32, "validate_fat32_write_target", return_value={"blocked": False, "blockers": []}):
+                    with patch.object(fat32, "extract_iso_files", side_effect=OSError("skip")):
+                        plan = fat32.build_write_plan(iso_path=iso, target_device="/dev/sdb", dry_run=True)
+        self.assertEqual(plan["gpt_partition_name"], "SETUPHELFER_RESCUE")
+        self.assertEqual(plan["fat_volume_label"], "SETUPHELFER")
+        part0 = plan["partition_layout"]["partitions"][0]
+        self.assertEqual(part0["gpt_partition_name"], "SETUPHELFER_RESCUE")
+        self.assertEqual(part0["fat_volume_label"], "SETUPHELFER")
+        mkfs_line = next(a for a in plan["destructive_actions"] if a.startswith("mkfs.vfat"))
+        self.assertIn("SETUPHELFER", mkfs_line)
+        self.assertNotIn("SETUPHELFER_RESCUE", mkfs_line)
+
 
 if __name__ == "__main__":
     unittest.main()

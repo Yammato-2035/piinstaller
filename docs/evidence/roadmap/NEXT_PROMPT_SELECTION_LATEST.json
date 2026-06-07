@@ -1,13 +1,14 @@
 {
-  "selected_at": "2026-06-07T13:00:00+02:00",
-  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_NOT_APPLIED_TRIAGE",
-  "reason_de": "FAT32-ESP-Write in Agent-Session an sudo blockiert; Stick noch PTTYPE=dos/iso9660. Operator muss sgdisk/mkfs/rsync im interaktiven Terminal ausführen, danach Verify erneut.",
+  "selected_at": "2026-06-07T14:00:00+02:00",
+  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_COMPLETION",
+  "reason_de": "FAT32-ESP-Label-Fix 1.7.8.1: GPT-Name SETUPHELFER_RESCUE, mkfs.vfat -n SETUPHELFER. Operator führt interaktives sudo-Write + Verify aus.",
   "prerequisites": [
     "Interaktives Terminal mit sudo",
     "lsblk /dev/sdb = Ultra Line Serial 24111412110212",
-    "Staging build/rescue/fat32-esp-staging vorhanden",
+    "build/rescue/fat32-esp-staging vorhanden",
+    "sudo mkfs.vfat -F 32 -n SETUPHELFER (nicht SETUPHELFER_RESCUE)",
     "verify-fat32-esp-rescue-usb.sh Exit 0"
   ],
   "follow_up_prompt_id": "RESCUE_MSI_BOOT_FAT32_ESP_START_ASSISTANT_NETWORK_TELEMETRY_OPERATOR_RUN",
-  "superseded_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_RUN"
+  "superseded_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_NOT_APPLIED_TRIAGE"
 }

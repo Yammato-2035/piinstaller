@@ -2,7 +2,7 @@
 
 **Datum:** 2026-06-07  
 **Prompt:** `RESCUE_USB_FAT32_ESP_WRITER_IMPLEMENTATION`  
-**Version:** `1.7.8.0`  
+**Version:** `1.7.8.1` (Label-Fix: GPT-Name vs. FAT-Label getrennt)  
 **HEAD:** vor Commit siehe Abschlussbericht
 
 ## Architekturentscheidung
@@ -13,6 +13,7 @@
 | dd/isohybrid-Modus | **bleibt erhalten** — kein Entfernen |
 | MSI-Bootfehler | Rechtfertigt **alternative Writer-Strategie** FAT32-ESP |
 | Ziel | UEFI-Firmware-kompatibler Stick (GPT + FAT32 ESP + BOOTX64.EFI) |
+| Labels | GPT-Partitionsname `SETUPHELFER_RESCUE`, FAT-Volume-Label `SETUPHELFER` (≤11 Zeichen) |
 | Agent/Cursor | **Keine echte Schreibausführung** auf Blockgeräten |
 
 ## Neue Komponenten
@@ -57,7 +58,12 @@ Developer Toolbox: FAT32-ESP-Befehlsblock bei `fat32_esp.implemented=true`.
 
 ## Nächster Schritt
 
-Operator: `RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_RUN`
+Operator: `RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_COMPLETION` (nach Label-Fix 1.7.8.1)
+
+```bash
+sudo mkfs.vfat -F 32 -n SETUPHELFER ${TARGET}1
+sudo sgdisk -c 1:SETUPHELFER_RESCUE ${TARGET}  # bei Partitionierung: -c in sgdisk -n
+```
 
 ## Nicht ausgeführt
 

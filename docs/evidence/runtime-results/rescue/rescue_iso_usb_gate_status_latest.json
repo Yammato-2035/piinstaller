@@ -2,7 +2,7 @@
   "schema_version": 30,
   "classified_at": "2026-06-07T13:00:00+02:00",
   "classification": "fat32_esp_write_blocked_sudo_agent_session",
-  "workspace_version": "1.7.8.0",
+  "workspace_version": "1.7.8.1",
   "iso_sha256_current_in_tree": "3fe6628a1316b2ceaa2850748e47a2e9c8984266a92d541e7d2aa29f80d2dbf7",
   "iso_post_build_validated": true,
   "iso_uefi_validated": true,
@@ -26,6 +26,9 @@
   "usb_target_device": "/dev/sdb",
   "usb_target_model": "Ultra Line",
   "usb_target_serial": "24111412110212",
+  "fat32_esp_label_fix_version": "1.7.8.1",
+  "fat32_esp_gpt_partition_name": "SETUPHELFER_RESCUE",
+  "fat32_esp_fat_volume_label": "SETUPHELFER",
   "last_operator_run": {
     "prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_RUN",
     "preflight_ok": true,
@@ -41,5 +44,5 @@
     {"id": "RESCUE_MSI_UEFI_BOOT_NOT_VALIDATED", "status": "blocked"},
     {"id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED", "status": "blocked", "code": "RESCUE-UEFI-005"}
   ],
-  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_NOT_APPLIED_TRIAGE"
+  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_COMPLETION"
 }

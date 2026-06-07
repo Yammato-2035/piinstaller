@@ -2,6 +2,20 @@
 # Read-only verification of FAT32 ESP Rescue USB layout.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+export PYTHONPATH="${REPO_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}"
+EXPECTED_FAT_LABEL="$(python3 - <<'PY'
+from core.rescue_fat32_esp_usb_writer import FAT_VOLUME_LABEL
+print(FAT_VOLUME_LABEL)
+PY
+)"
+EXPECTED_GPT_PART_NAME="$(python3 - <<'PY'
+from core.rescue_fat32_esp_usb_writer import GPT_PARTITION_NAME
+print(GPT_PARTITION_NAME)
+PY
+)"
+
 TARGET=""
 PART=""
 MOUNT=""
@@ -42,6 +56,14 @@ FSTYPE="$(lsblk -no FSTYPE "$PART" 2>/dev/null | head -1 || true)"
 echo "PARTTYPE=${PARTTYPE} FSTYPE=${FSTYPE}"
 
 [[ "$FSTYPE" == "vfat" || "$FSTYPE" == "msdos" ]] || fail "partition not FAT32/vfat (FSTYPE=${FSTYPE})" 22
+
+PARTLABEL="$(lsblk -no PARTLABEL "$PART" 2>/dev/null | head -1 || true)"
+BLKID_LABEL="$(blkid -s LABEL -o value "$PART" 2>/dev/null | head -1 || true)"
+echo "PARTLABEL=${PARTLABEL:-} BLKID_LABEL=${BLKID_LABEL:-}"
+[[ "$BLKID_LABEL" == "$EXPECTED_FAT_LABEL" ]] || fail "FAT volume label expected ${EXPECTED_FAT_LABEL} got ${BLKID_LABEL:-missing}" 22
+if [[ -n "$PARTLABEL" && "$PARTLABEL" != "$EXPECTED_GPT_PART_NAME" ]]; then
+  echo "WARN: GPT partition name ${PARTLABEL} != expected ${EXPECTED_GPT_PART_NAME}" >&2
+fi
 
 MOUNT="$(lsblk -no MOUNTPOINTS "$PART" 2>/dev/null | head -1 || true)"
 WAS_MOUNTED=false
@@ -90,5 +112,5 @@ SQ_SIZE="$(stat -c '%s' "$MOUNT/live/filesystem.squashfs" 2>/dev/null || echo 0)
 echo "filesystem.squashfs size_bytes=${SQ_SIZE}"
 [[ "$SQ_SIZE" -gt 100000000 ]] || fail "filesystem.squashfs size implausible" 26
 
-echo "OK: FAT32 ESP rescue USB verified read-only on ${PART} mount=${MOUNT}"
+echo "OK: FAT32 ESP rescue USB verified read-only on ${PART} mount=${MOUNT} fat_label=${EXPECTED_FAT_LABEL} gpt_name=${EXPECTED_GPT_PART_NAME}"
 exit 0
