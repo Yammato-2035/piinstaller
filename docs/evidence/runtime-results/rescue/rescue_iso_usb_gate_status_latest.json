@@ -1,7 +1,7 @@
 {
-  "schema_version": 29,
-  "classified_at": "2026-06-07T12:30:00+02:00",
-  "classification": "fat32_esp_writer_implemented_pending_operator_write",
+  "schema_version": 30,
+  "classified_at": "2026-06-07T13:00:00+02:00",
+  "classification": "fat32_esp_write_blocked_sudo_agent_session",
   "workspace_version": "1.7.8.0",
   "iso_sha256_current_in_tree": "3fe6628a1316b2ceaa2850748e47a2e9c8984266a92d541e7d2aa29f80d2dbf7",
   "iso_post_build_validated": true,
@@ -9,27 +9,37 @@
   "iso_uefi_deep_validated": true,
   "usb_stick_written": true,
   "usb_write_sha256_verified": true,
-  "usb_stick_matches_current_iso": true,
-  "usb_mount_boot_artifacts_verified": true,
-  "iso_hybrid_dd_boot_failed_on_msi": true,
+  "usb_stick_layout": "iso_hybrid_dd_iso9660",
+  "usb_stick_matches_current_iso": false,
   "fat32_esp_writer_available": true,
   "fat32_esp_writer_implemented": true,
   "fat32_esp_staging_built": true,
   "fat32_esp_usb_written": false,
   "fat32_esp_usb_verified": false,
+  "fat32_esp_verify_last_exit": 20,
+  "fat32_esp_verify_last_error": "no GPT on target (PTTYPE=dos)",
   "target_laptop_booted_from_stick": false,
   "target_network_telemetry_validated": false,
   "target_telemetry_ingest_ack": false,
   "windows_inspect_executable": false,
   "msi_boot_handoff_ready": false,
+  "usb_target_device": "/dev/sdb",
+  "usb_target_model": "Ultra Line",
+  "usb_target_serial": "24111412110212",
+  "last_operator_run": {
+    "prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_RUN",
+    "preflight_ok": true,
+    "staging_ok": true,
+    "dry_run_ok": true,
+    "destructive_write_applied": false,
+    "blocker": "RESCUE-FAT32-ESP-WRITE-SUDO_BLOCKED_IN_AGENT_SESSION",
+    "verify_exit": 20
+  },
   "blockers": [
+    {"id": "RESCUE_FAT32_ESP_USB_WRITE_REQUIRED", "status": "pending_operator_sudo_terminal"},
     {"id": "RESCUE_USB_BOOT_FAILURE_AFTER_VALIDATED_READBACK", "status": "blocked"},
-    {"id": "RESCUE_FAT32_ESP_USB_WRITE_REQUIRED", "status": "pending_operator"},
     {"id": "RESCUE_MSI_UEFI_BOOT_NOT_VALIDATED", "status": "blocked"},
     {"id": "WINDOWS_INSPECT_BLOCKED_UNTIL_LIVE_NETWORK_VALIDATED", "status": "blocked", "code": "RESCUE-UEFI-005"}
   ],
-  "resolved_blockers": [
-    {"id": "RESCUE_USB_FAT32_ESP_LAYOUT_PROTOTYPE_PENDING", "status": "resolved", "fix_version": "1.7.8.0"}
-  ],
-  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_OPERATOR_RUN"
+  "next_prompt_id": "RESCUE_USB_FAT32_ESP_WRITE_NOT_APPLIED_TRIAGE"
 }
