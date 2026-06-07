@@ -1,13 +1,14 @@
 {
-  "selected_at": "2026-06-07T20:00:00+02:00",
-  "next_prompt_id": "RESCUE_USB_FAT32_ESP_GRUB_FIXED_RECOPY_OPERATOR_RUN",
-  "reason_de": "GRUB root/search Fix 1.7.8.4: search --label SETUPHELFER statt --file squashfs. Operator: Staging recopy ohne mkfs, Verify, MSI-Boot.",
+  "selected_at": "2026-06-07T22:00:00+02:00",
+  "next_prompt_id": "RESCUE_MSI_BOOT_CLEAN_FAT32_ESP_START_ASSISTANT_TELEMETRY_RUN",
+  "reason_de": "Full rebuild 1.7.8.5: GRUB FAT-UUID patch bereit. Operator muss ISO+USB im sudo-Terminal neu bauen, Verify Exit 0, dann MSI-Boot.",
   "prerequisites": [
-    "build/rescue/fat32-esp-staging mit neuer grub.cfg (1.7.8.4)",
-    "FAT32-ESP /dev/sdb1 bereits vorhanden",
-    "Nur rsync recopy, kein sgdisk/mkfs",
-    "verify-fat32-esp-rescue-usb.sh Exit 0 inkl. GRUB checks"
+    "Interaktives sudo-Terminal",
+    "RESCUE_FULL_REBUILD_FAT32_ESP_FREIGEGEBEN=1",
+    "patch-fat32-esp-grub-for-uuid.sh nach mkfs",
+    "verify-fat32-esp-rescue-usb.sh Exit 0 inkl. fs-uuid",
+    "/dev/sdb Ultra Line Serial 24111412110212"
   ],
-  "follow_up_prompt_id": "RESCUE_USB_FAT32_ESP_VERIFY_AND_MSI_BOOT_HANDOFF",
-  "superseded_prompt_id": "RESCUE_USB_FAT32_ESP_VERIFY_AND_MSI_BOOT_HANDOFF"
+  "follow_up_prompt_id": "RESCUE_MSI_GRUB_INTERACTIVE_ROOT_DISCOVERY",
+  "superseded_prompt_id": "RESCUE_USB_FAT32_ESP_GRUB_FIXED_RECOPY_OPERATOR_RUN"
 }

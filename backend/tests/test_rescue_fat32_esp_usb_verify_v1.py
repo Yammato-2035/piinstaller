@@ -120,6 +120,25 @@ class RescueFat32EspUsbVerifyTests(unittest.TestCase):
         self.assertIn("iso9660", plan["signature_wipe"]["repair_stale_iso9660"])
 
 
+    def test_grub_validate_requires_uuid_on_usb_when_expected(self) -> None:
+        from core.rescue_fat32_esp_usb_writer import generate_fat32_esp_grub_cfg
+
+        cfg_label_only = generate_fat32_esp_grub_cfg()
+        result = verify.validate_fat32_esp_grub_cfg(
+            cfg_label_only,
+            expected_fat_uuid="A1B2-C3D4-E5F6-7890",
+        )
+        self.assertFalse(result["ok"])
+        self.assertIn(verify.GRUB_ERROR_ROOT, result["errors"])
+
+    def test_grub_validate_accepts_uuid_patched_cfg(self) -> None:
+        from core.rescue_fat32_esp_usb_writer import patch_grub_cfg_for_fat_uuid, generate_fat32_esp_grub_cfg
+
+        uuid = "A1B2-C3D4-E5F6-7890"
+        cfg = patch_grub_cfg_for_fat_uuid(generate_fat32_esp_grub_cfg(), uuid)
+        result = verify.validate_fat32_esp_grub_cfg(cfg, expected_fat_uuid=uuid)
+        self.assertTrue(result["ok"], result["errors"])
+
     def test_grub_validate_rejects_iso_file_search(self) -> None:
         bad = (
             "search --set=root --file /live/filesystem.squashfs\n"

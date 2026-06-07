@@ -132,8 +132,68 @@ def _menu_append(params: LiveBootParams, label: str, fallback: str) -> str:
     return params.labels.get(label, fallback)
 
 
-def generate_fat32_esp_grub_cfg(*, fat_label: str = FAT_VOLUME_LABEL) -> str:
-    """GRUB menu for FAT32 ESP USB — root via FAT volume label, not ISO9660."""
+def fat32_esp_grub_root_block(
+    *,
+    fat_uuid: str | None = None,
+    fat_label: str = FAT_VOLUME_LABEL,
+) -> list[str]:
+    """GRUB root discovery for FAT32 ESP — UUID primary after mkfs, label/cmdpath fallback."""
+    assert_valid_fat_volume_label(fat_label)
+    lines: list[str] = []
+    if fat_uuid:
+        uuid = fat_uuid.strip()
+        lines.append(f"search --no-floppy --fs-uuid {uuid} --set=root")
+        lines.append('if [ -z "$root" ]; then')
+        lines.append(f"  search --no-floppy --label {fat_label} --set=root")
+        lines.append("fi")
+    else:
+        lines.append(f"search --no-floppy --label {fat_label} --set=root")
+    lines.append('if [ -z "$root" ]; then')
+    lines.append("  set root=($cmdpath)")
+    lines.append("fi")
+    return lines
+
+
+def patch_grub_cfg_for_fat_uuid(grub_text: str, fat_uuid: str) -> str:
+    """Replace root-search preamble in grub.cfg with UUID-aware FAT32 ESP block."""
+    new_root_lines = fat32_esp_grub_root_block(fat_uuid=fat_uuid)
+    out: list[str] = []
+    i = 0
+    lines = grub_text.splitlines()
+    while i < len(lines):
+        if lines[i].strip() == "set default=0":
+            out.append(lines[i])
+            i += 1
+            while i < len(lines) and lines[i].strip() and not lines[i].strip().startswith("menuentry"):
+                i += 1
+            out.extend(new_root_lines)
+            out.append("")
+            if i < len(lines) and not lines[i].strip():
+                i += 1
+            continue
+        out.append(lines[i])
+        i += 1
+    text = "\n".join(out)
+    if not text.endswith("\n"):
+        text += "\n"
+    return text
+
+
+def patch_staging_grub_for_fat_uuid(staging_dir: Path, fat_uuid: str) -> Path:
+    cfg_path = staging_dir / "boot" / "grub" / "grub.cfg"
+    if not cfg_path.is_file():
+        raise FileNotFoundError(f"grub.cfg missing: {cfg_path}")
+    patched = patch_grub_cfg_for_fat_uuid(cfg_path.read_text(encoding="utf-8"), fat_uuid)
+    cfg_path.write_text(patched, encoding="utf-8")
+    return cfg_path
+
+
+def generate_fat32_esp_grub_cfg(
+    *,
+    fat_label: str = FAT_VOLUME_LABEL,
+    fat_uuid: str | None = None,
+) -> str:
+    """GRUB menu for FAT32 ESP USB — root via FAT UUID/label, not ISO9660."""
     assert_valid_fat_volume_label(fat_label)
 
     def entry(title: str, append: str) -> str:
@@ -147,10 +207,7 @@ def generate_fat32_esp_grub_cfg(*, fat_label: str = FAT_VOLUME_LABEL) -> str:
     lines = [
         "set timeout=10",
         "set default=0",
-        f"search --no-floppy --label {fat_label} --set=root",
-        'if [ -z "$root" ]; then',
-        "  set root=($cmdpath)",
-        "fi",
+        *fat32_esp_grub_root_block(fat_uuid=fat_uuid, fat_label=fat_label),
         "",
         entry(
             "Setuphelfer Rettung starten",
@@ -177,6 +234,11 @@ def generate_fat32_esp_grub_cfg(*, fat_label: str = FAT_VOLUME_LABEL) -> str:
         "",
     ]
     return "\n".join(lines)
+
+
+def generate_fat32_esp_grub_cfg_legacy_label_only(*, fat_label: str = FAT_VOLUME_LABEL) -> str:
+    """Alias kept for tests — staging without UUID uses label-only root block."""
+    return generate_fat32_esp_grub_cfg(fat_label=fat_label, fat_uuid=None)
 
 
 def generate_grub_cfg(params: LiveBootParams) -> str:
@@ -662,6 +724,10 @@ def build_operator_terminal_commands(
         f"  sudo fatlabel ${{TARGET}}1 {fat_label} 2>/dev/null || "
         f"sudo dosfslabel ${{TARGET}}1 {fat_label}\n"
         f"fi\n"
+        f'FAT_UUID=$(sudo blkid -p -s UUID -o value "${{TARGET}}1")\n'
+        f'[[ -n "$FAT_UUID" ]] || {{ echo "ERROR: FAT UUID missing on ${{TARGET}}1"; exit 1; }}\n'
+        f"./scripts/rescue-live/patch-fat32-esp-grub-for-uuid.sh "
+        f'--staging "$STAGING" --fat-uuid "$FAT_UUID"\n'
         f"MNT=$(mktemp -d)\n"
         f"sudo mount ${{TARGET}}1 \"$MNT\"\n"
         f"{rsync_cmd}\n"

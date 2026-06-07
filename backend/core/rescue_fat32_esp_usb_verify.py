@@ -23,10 +23,6 @@ GRUB_ERROR_ROOT = "RESCUE-FAT32-GRUB-ROOT-001"
 GRUB_ERROR_KERNEL = "RESCUE-FAT32-GRUB-KERNEL-PATH-001"
 GRUB_ERROR_INITRD = "RESCUE-FAT32-GRUB-INITRD-PATH-001"
 
-_ACTIVE_GRUB_SEARCH_RE = re.compile(
-    r"^\s*search\b(?:(?!^\s*#).)*$",
-    re.I | re.M,
-)
 _GRUB_LINUX_RE = re.compile(r"^\s*linux\s+(\S+)", re.I | re.M)
 _GRUB_INITRD_RE = re.compile(r"^\s*initrd\s+(\S+)", re.I | re.M)
 
@@ -244,19 +240,39 @@ def _grub_path_to_rel(grub_path: str) -> str:
     return path.lstrip("/")
 
 
+def probe_fat_filesystem_uuid(partition: str, *, runner: Runner | None = None) -> str:
+    for cmd in (
+        ["sudo", "blkid", "-p", "-s", "UUID", "-o", "value", partition],
+        ["blkid", "-p", "-s", "UUID", "-o", "value", partition],
+    ):
+        proc = _run(cmd, runner=runner)
+        uuid = parse_blkid_label_output(proc.stdout or "")
+        if uuid:
+            return uuid
+    return ""
+
+
 def validate_fat32_esp_grub_cfg(
     grub_text: str,
     *,
     mount_root: Path | None = None,
     fat_label: str = FAT_VOLUME_LABEL,
+    expected_fat_uuid: str | None = None,
 ) -> dict[str, Any]:
     """Validate FAT32 ESP grub.cfg root search and kernel/initrd paths."""
     errors: list[str] = []
     active = _grub_active_lines(grub_text)
     active_blob = "\n".join(active)
 
-    required_search = f"search --no-floppy --label {fat_label} --set=root"
-    if required_search not in active_blob:
+    uuid = (expected_fat_uuid or "").strip()
+    if uuid:
+        if f"search --no-floppy --fs-uuid {uuid}" not in active_blob:
+            errors.append(GRUB_ERROR_ROOT)
+    label_search = f"search --no-floppy --label {fat_label} --set=root"
+    if uuid:
+        if label_search not in active_blob:
+            errors.append(GRUB_ERROR_ROOT)
+    elif label_search not in active_blob:
         errors.append(GRUB_ERROR_ROOT)
 
     forbidden_tokens = ("loopback", "iso-scan", "findiso", "search --set=root --file")
@@ -307,6 +323,7 @@ def validate_fat32_esp_grub_cfg_file(
     grub_cfg_path: Path,
     *,
     mount_root: Path | None = None,
+    expected_fat_uuid: str | None = None,
 ) -> dict[str, Any]:
     if not grub_cfg_path.is_file():
         return {
@@ -320,5 +337,6 @@ def validate_fat32_esp_grub_cfg_file(
     return validate_fat32_esp_grub_cfg(
         grub_cfg_path.read_text(encoding="utf-8", errors="replace"),
         mount_root=root,
+        expected_fat_uuid=expected_fat_uuid,
     )
 

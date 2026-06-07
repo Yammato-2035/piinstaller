@@ -7,8 +7,9 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 ISO=""
 OUTPUT_DIR=""
+FAT_UUID=""
 usage() {
-  echo "Usage: $0 --iso PATH --output-dir DIR" >&2
+  echo "Usage: $0 --iso PATH --output-dir DIR [--fat-uuid UUID]" >&2
   exit 20
 }
 
@@ -16,6 +17,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --iso) ISO="$2"; shift 2 ;;
     --output-dir) OUTPUT_DIR="$2"; shift 2 ;;
+    --fat-uuid) FAT_UUID="$2"; shift 2 ;;
     -h|--help) usage ;;
     *) echo "Unknown arg: $1" >&2; usage ;;
   esac
@@ -30,15 +32,19 @@ import json
 import sys
 from pathlib import Path
 
-from core.rescue_fat32_esp_usb_writer import extract_iso_files
+from core.rescue_fat32_esp_usb_writer import extract_iso_files, patch_staging_grub_for_fat_uuid
 
 iso = Path(${ISO@Q})
 out = Path(${OUTPUT_DIR@Q})
+fat_uuid = ${FAT_UUID@Q}
 try:
     result = extract_iso_files(iso, out)
 except OSError as exc:
     print(f"ERROR: {exc}", file=sys.stderr)
     raise SystemExit(22) from exc
+if fat_uuid:
+    patch_staging_grub_for_fat_uuid(out, fat_uuid)
+    result["grub_patched_fat_uuid"] = fat_uuid
 print(json.dumps(result, indent=2))
 print(f"OK: FAT32 ESP staging at {out}")
 PY

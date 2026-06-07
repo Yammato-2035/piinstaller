@@ -62,6 +62,17 @@ class RescueFat32EspUsbTests(unittest.TestCase):
         cfg = fat32.generate_grub_cfg(params)
         self.assertIn("linux /live/vmlinuz", cfg)
 
+    def test_generate_fat32_esp_grub_cfg_with_uuid(self) -> None:
+        cfg = fat32.generate_fat32_esp_grub_cfg(fat_uuid="ABCD-1234")
+        self.assertIn("search --no-floppy --fs-uuid ABCD-1234 --set=root", cfg)
+        self.assertIn(f"search --no-floppy --label {fat32.FAT_VOLUME_LABEL} --set=root", cfg)
+
+    def test_patch_grub_cfg_for_fat_uuid(self) -> None:
+        base = fat32.generate_fat32_esp_grub_cfg()
+        patched = fat32.patch_grub_cfg_for_fat_uuid(base, "A1B2-C3D4-E5F6-7890")
+        self.assertIn("search --no-floppy --fs-uuid A1B2-C3D4-E5F6-7890 --set=root", patched)
+        self.assertIn("linux /live/vmlinuz", patched)
+
     def test_fat32_esp_grub_cfg_staging_paths(self) -> None:
         from core.rescue_fat32_esp_usb_verify import validate_fat32_esp_grub_cfg
 

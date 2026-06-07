@@ -160,12 +160,20 @@ fi
 GRUB_CHECK="$(python3 - <<PY
 import json
 from pathlib import Path
-from core.rescue_fat32_esp_usb_verify import validate_fat32_esp_grub_cfg_file
-
-result = validate_fat32_esp_grub_cfg_file(
-    Path(${MOUNT@Q}) / "boot/grub/grub.cfg",
-    mount_root=Path(${MOUNT@Q}),
+from core.rescue_fat32_esp_usb_verify import (
+    probe_fat_filesystem_uuid,
+    validate_fat32_esp_grub_cfg_file,
 )
+
+mount = Path(${MOUNT@Q})
+part = ${PART@Q}
+fat_uuid = probe_fat_filesystem_uuid(part)
+result = validate_fat32_esp_grub_cfg_file(
+    mount / "boot/grub/grub.cfg",
+    mount_root=mount,
+    expected_fat_uuid=fat_uuid or None,
+)
+result["fat_uuid"] = fat_uuid or None
 print(json.dumps(result))
 PY
 )"
