@@ -252,6 +252,119 @@ class Fat32EspWriterExecutionModeTests(unittest.TestCase):
         )
         self.assertEqual(result["rs001_status"], "red")
         self.assertIn("hardware boot", result["rs001_reason"].lower())
+        self.assertIn("verified", result["rs001_reason"].lower())
+
+    def test_finalize_evidence_writes_result_and_latest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            evidence_root = ws / "docs/evidence/runtime-results/rescue"
+            evidence_dir = evidence_root / "fat32_esp_write_test"
+            evidence_dir.mkdir(parents=True)
+            (evidence_dir / "pre_lsblk.txt").write_text("pre\n", encoding="utf-8")
+            (evidence_dir / "post_lsblk.txt").write_text("post\n", encoding="utf-8")
+            iso = ws / "fake.iso"
+            iso.write_bytes(b"iso")
+            out = fat32.finalize_fat32_esp_write_evidence(
+                evidence_dir=evidence_dir,
+                evidence_root=evidence_root,
+                repo_root=ws,
+                iso_path=iso,
+                target_device="/dev/sdb",
+                started_at="2026-06-08T22:05:11Z",
+                write_executed=True,
+                write_status="success",
+                verify_status="success",
+                fat_uuid="C9C8-394A",
+            )
+            result = out["result"]
+            self.assertTrue((evidence_dir / "result.json").is_file())
+            self.assertTrue((evidence_root / "fat32_esp_write_latest.json").is_file())
+            self.assertEqual(result["write_status"], "success")
+            self.assertEqual(result["verify_status"], "success")
+            self.assertTrue(result["write_executed"])
+            self.assertEqual(out["evidence_status"], "complete")
+
+    def test_rs001_md_has_no_template_placeholders(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            evidence_root = ws / "docs/evidence/runtime-results/rescue"
+            evidence_dir = evidence_root / "fat32_esp_write_test"
+            evidence_dir.mkdir(parents=True)
+            iso = ws / "fake.iso"
+            iso.write_bytes(b"iso")
+            fat32.finalize_fat32_esp_write_evidence(
+                evidence_dir=evidence_dir,
+                evidence_root=evidence_root,
+                repo_root=ws,
+                iso_path=iso,
+                target_device="/dev/sdb",
+                started_at="2026-06-08T22:05:11Z",
+                write_executed=True,
+                write_status="success",
+                verify_status="success",
+                fat_uuid="C9C8-394A",
+            )
+            md_path = ws / fat32.RS001_FAT32_ESP_MD_REL
+            md = md_path.read_text(encoding="utf-8")
+            for forbidden in ("{result.get", "{evidence_dir}", "{latest}"):
+                self.assertNotIn(forbidden, md)
+            self.assertIn("/dev/sdb", md)
+            self.assertIn("success", md)
+
+    def test_report_failure_keeps_write_success(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            evidence_root = ws / "docs/evidence/runtime-results/rescue"
+            evidence_dir = evidence_root / "fat32_esp_write_test"
+            evidence_dir.mkdir(parents=True)
+            iso = ws / "fake.iso"
+            iso.write_bytes(b"iso")
+
+            real_write = Path.write_text
+
+            def boom(self: Path, *args, **kwargs):  # type: ignore[no-untyped-def]
+                if self.name == "RS_001_FAT32_ESP_WRITE_RESULT.md":
+                    raise OSError("md write blocked")
+                return real_write(self, *args, **kwargs)
+
+            with patch.object(Path, "write_text", boom):
+                out = fat32.finalize_fat32_esp_write_evidence(
+                    evidence_dir=evidence_dir,
+                    evidence_root=evidence_root,
+                    repo_root=ws,
+                    iso_path=iso,
+                    target_device="/dev/sdb",
+                    started_at="2026-06-08T22:05:11Z",
+                    write_executed=True,
+                    write_status="success",
+                    verify_status="success",
+                )
+            self.assertEqual(out["result"]["write_status"], "success")
+            self.assertEqual(out["result"]["verify_status"], "success")
+            self.assertEqual(out["evidence_status"], "review_required")
+            self.assertTrue((evidence_dir / "evidence_errors.log").is_file())
+
+    def test_rebuild_from_existing_evidence_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            evidence_root = ws / "docs/evidence/runtime-results/rescue"
+            evidence_dir = evidence_root / "fat32_esp_write_20260608_220511"
+            evidence_dir.mkdir(parents=True)
+            (evidence_dir / "verify.log").write_text(
+                "OK: FAT32 ESP rescue USB verified read-only\n",
+                encoding="utf-8",
+            )
+            (evidence_dir / "write_steps.log").write_text("FAT_UUID=C9C8-394A\n", encoding="utf-8")
+            (evidence_dir / "result.json").write_text(
+                '{"target_device":"/dev/sdb","write_status":"success","verify_status":"success","write_executed":"true"}',
+                encoding="utf-8",
+            )
+            out = fat32.rebuild_fat32_esp_evidence_reports(evidence_dir, evidence_root=evidence_root, repo_root=ws)
+            result = out["result"]
+            self.assertTrue(result["write_executed"])
+            self.assertEqual(result["fat_uuid"], "C9C8-394A")
+            md = (ws / fat32.RS001_FAT32_ESP_MD_REL).read_text(encoding="utf-8")
+            self.assertNotIn("{result.get", md)
 
 
 if __name__ == "__main__":

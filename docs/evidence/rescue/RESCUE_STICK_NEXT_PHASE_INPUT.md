@@ -214,7 +214,7 @@ git status --short
 
 **Explizit aus v1 ausklammern:** Pi-Rescue, Provisioning, Restore-Write, Partitions-Write, Secure Boot, FR/Swahili, grafischer Wizard, ddrescue.
 
-**Härtester Blocker (nach Phase 2):** Operator-HW-Boot fehlt — Handoff validiert; **Operator muss FAT32-ESP mit `--execute-write` schreiben + MSI booten** und `fat32_esp_write_latest.json` + `verify.log` + `RS_001_HW_BOOT_OPERATOR_RESULT.md` liefern. RS-001 bleibt rot bis echter HW-Boot.
+**Härtester Blocker (nach Phase 2):** Operator-HW-Boot fehlt — **FAT32-ESP-Write auf `/dev/sdb` erfolgreich** (`fat32_esp_write_20260608_220511`, verify success); nächster Schritt: **physischer UEFI-Boot auf MSI/Referenzhardware** dokumentieren. RS-001 bleibt rot bis Setuphelfer-Menü/TUI auf HW sichtbar.
 
 **Phase-2-Ergebnis:** `docs/evidence/rescue/RS_001_HW_BOOT_PHASE2_RESULT.md`  
 **Operator-Template:** `docs/evidence/rescue/RS_001_HW_BOOT_OPERATOR_RESULT_TEMPLATE.md`  

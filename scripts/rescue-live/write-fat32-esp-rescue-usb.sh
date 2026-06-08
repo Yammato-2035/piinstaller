@@ -93,101 +93,54 @@ record_post_state() {
   cp "${EVIDENCE_DIR}/post_lsblk.txt" "${EVIDENCE_DIR}/post_blkid.txt"
 }
 
-write_rs001_result_md() {
-  python3 - <<PY
-import json
-from datetime import datetime, timezone
-from pathlib import Path
-
-evidence_dir = Path(${EVIDENCE_DIR@Q})
-result_path = evidence_dir / "result.json"
-latest = Path(${EVIDENCE_ROOT@Q}) / "fat32_esp_write_latest.json"
-md_path = Path(${REPO_ROOT@Q}) / "docs/evidence/rescue/RS_001_FAT32_ESP_WRITE_RESULT.md"
-result = json.loads(result_path.read_text(encoding="utf-8")) if result_path.is_file() else {}
-now = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-lines = [
-    "# RS-001 FAT32-ESP USB Write Result",
-    "",
-    f"**Updated:** {now}",
-    f"**Evidence dir:** `{evidence_dir}`",
-    "",
-    "## Summary",
-    "",
-    f"| Field | Value |",
-    f"|-------|-------|",
-    f"| target_device | `{result.get('target_device', '')}` |",
-    f"| target_partition | `{result.get('target_partition', '')}` |",
-    f"| write_executed | `{result.get('write_executed')}` |",
-    f"| write_status | `{result.get('write_status', '')}` |",
-    f"| verify_status | `{result.get('verify_status', '')}` |",
-    f"| fat_uuid | `{result.get('fat_uuid', '')}` |",
-    f"| rs001_status | `{result.get('rs001_status', 'red')}` |",
-    "",
-    f"**rs001_reason:** {result.get('rs001_reason', '')}",
-    "",
-    "## Artifacts",
-    "",
-    f"- `{evidence_dir}/plan.json`",
-    f"- `{evidence_dir}/write_steps.log`",
-    f"- `{evidence_dir}/verify.log`",
-    f"- `{latest}`",
-    "",
-    "## Hardware boot",
-    "",
-    "RS-001 remains **red** until operator documents UEFI boot to Setuphelfer menu/TUI on reference hardware.",
-    "",
-]
-md_path.parent.mkdir(parents=True, exist_ok=True)
-md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-PY
-}
-
-write_result_json() {
+finalize_write_evidence() {
   local write_status="$1"
   local verify_status="$2"
   local write_executed="$3"
-  python3 - <<PY
+  export PYTHONPATH="${REPO_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}"
+  FAT32_EVIDENCE_DIR="$EVIDENCE_DIR" \
+  FAT32_EVIDENCE_ROOT="$EVIDENCE_ROOT" \
+  FAT32_REPO_ROOT="$REPO_ROOT" \
+  FAT32_ISO="$ISO" \
+  FAT32_TARGET="$TARGET" \
+  FAT32_STARTED_AT="$STARTED_AT" \
+  FAT32_WRITE_STATUS="$write_status" \
+  FAT32_VERIFY_STATUS="$verify_status" \
+  FAT32_WRITE_EXECUTED="$write_executed" \
+  FAT32_FAILED_STEP="${FAILED_STEP:-}" \
+  FAT32_FAT_UUID="${FAT_UUID:-}" \
+  python3 - <<'PY'
 import json
-from datetime import datetime, timezone
+import os
 from pathlib import Path
-from core.rescue_fat32_esp_usb_writer import (
-    build_fat32_esp_write_result,
-    partition_path_for_target,
-    sha256_file,
-)
 
-iso = Path(${ISO@Q})
-pre = {}
-post = {}
-for label, fname in (("pre_state", "pre_lsblk.txt"), ("post_state", "post_lsblk.txt")):
-    p = Path(${EVIDENCE_DIR@Q}) / fname
-    if p.is_file():
-        if label == "pre_state":
-            pre["lsblk"] = p.read_text(encoding="utf-8", errors="replace")
-        else:
-            post["lsblk"] = p.read_text(encoding="utf-8", errors="replace")
+from core.rescue_fat32_esp_usb_writer import finalize_fat32_esp_write_evidence
 
-result = build_fat32_esp_write_result(
-    target_device=${TARGET@Q},
-    iso_path=iso,
-    iso_sha256=sha256_file(iso) if iso.is_file() else None,
-    started_at=${STARTED_AT@Q},
-    completed_at=datetime.now(tz=timezone.utc).isoformat(),
-    write_executed=${write_executed@Q},
-    write_status=${write_status@Q},
-    failed_step=${FAILED_STEP@Q} or None,
-    fat_uuid=${FAT_UUID@Q} or None,
-    pre_state=pre,
-    post_state=post,
-    verify_status=${verify_status@Q},
-    evidence_dir=${EVIDENCE_DIR@Q},
+def _bool_env(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in ("1", "true", "yes")
+
+out = finalize_fat32_esp_write_evidence(
+    evidence_dir=Path(os.environ["FAT32_EVIDENCE_DIR"]),
+    evidence_root=Path(os.environ["FAT32_EVIDENCE_ROOT"]),
+    repo_root=Path(os.environ["FAT32_REPO_ROOT"]),
+    iso_path=Path(os.environ["FAT32_ISO"]),
+    target_device=os.environ["FAT32_TARGET"],
+    started_at=os.environ["FAT32_STARTED_AT"],
+    write_executed=_bool_env("FAT32_WRITE_EXECUTED"),
+    write_status=os.environ["FAT32_WRITE_STATUS"],
+    verify_status=os.environ["FAT32_VERIFY_STATUS"],
+    failed_step=os.environ.get("FAT32_FAILED_STEP") or None,
+    fat_uuid=os.environ.get("FAT32_FAT_UUID") or None,
 )
-out_dir = Path(${EVIDENCE_DIR@Q})
-out_dir.mkdir(parents=True, exist_ok=True)
-(out_dir / "result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-latest = Path(${EVIDENCE_ROOT@Q}) / "fat32_esp_write_latest.json"
-latest.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-print(json.dumps({"write_status": result["write_status"], "verify_status": result["verify_status"]}))
+print(
+    json.dumps(
+        {
+            "write_status": out["result"]["write_status"],
+            "verify_status": out["result"]["verify_status"],
+            "evidence_status": out["evidence_status"],
+        }
+    )
+)
 PY
 }
 
@@ -429,8 +382,14 @@ else
   fi
 fi
 
-write_result_json "$WRITE_STATUS" "$VERIFY_STATUS" "$([[ "$WRITE_STATUS" == success ]] && echo true || echo false)"
-write_rs001_result_md
+EVIDENCE_STATUS="complete"
+if ! FINALIZE_JSON="$(finalize_write_evidence "$WRITE_STATUS" "$VERIFY_STATUS" "$([[ "$WRITE_STATUS" == success ]] && echo true || echo false)")"; then
+  EVIDENCE_STATUS="review_required"
+  echo "WARN: evidence report generation failed — write/verify status preserved" >&2
+  echo "evidence_status=${EVIDENCE_STATUS}" >&2
+elif [[ -n "$FINALIZE_JSON" ]]; then
+  EVIDENCE_STATUS="$(python3 -c "import json,sys; print(json.loads(sys.argv[1]).get('evidence_status','complete'))" "$FINALIZE_JSON")"
+fi
 
 if [[ "$WRITE_STATUS" != "success" ]]; then
   echo "ERROR: FAT32 ESP write failed at step: ${FAILED_STEP:-unknown}" >&2

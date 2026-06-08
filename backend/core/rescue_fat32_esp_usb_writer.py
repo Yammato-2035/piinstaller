@@ -575,6 +575,81 @@ def validate_fat32_execute_write_gates(
     }
 
 
+RS001_FAT32_ESP_MD_REL = "docs/evidence/rescue/RS_001_FAT32_ESP_WRITE_RESULT.md"
+FAT32_ESP_WRITE_LATEST_NAME = "fat32_esp_write_latest.json"
+
+
+def _rs001_reason_for_result(*, write_status: str, verify_status: str) -> str:
+    if write_status == "success" and verify_status == "success":
+        return "USB written and verified, hardware boot not yet proven"
+    if write_status == "success":
+        return "USB written but verify incomplete, hardware boot not yet proven"
+    return "USB write not completed, hardware boot not yet proven"
+
+
+def load_evidence_state_snippets(evidence_dir: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    pre: dict[str, Any] = {}
+    post: dict[str, Any] = {}
+    pre_path = evidence_dir / "pre_lsblk.txt"
+    post_path = evidence_dir / "post_lsblk.txt"
+    if pre_path.is_file():
+        pre["lsblk"] = pre_path.read_text(encoding="utf-8", errors="replace")
+    if post_path.is_file():
+        post["lsblk"] = post_path.read_text(encoding="utf-8", errors="replace")
+    return pre, post
+
+
+def render_rs001_fat32_esp_write_result_md(
+    result: Mapping[str, Any],
+    *,
+    evidence_dir: Path,
+    evidence_root: Path,
+) -> str:
+    """Render operator-facing markdown — no shell/Python template placeholders."""
+    latest_path = evidence_root / FAT32_ESP_WRITE_LATEST_NAME
+    lines = [
+        "# RS-001 FAT32-ESP USB Write Result",
+        "",
+        f"**Updated:** {result.get('completed_at') or result.get('started_at') or 'unknown'}",
+        f"**Evidence dir:** `{evidence_dir}`",
+        "",
+        "## Summary",
+        "",
+        "| Field | Value |",
+        "|-------|-------|",
+        f"| target_device | `{result.get('target_device', '')}` |",
+        f"| target_partition | `{result.get('target_partition', '')}` |",
+        f"| write_executed | `{result.get('write_executed')}` |",
+        f"| write_status | `{result.get('write_status', '')}` |",
+        f"| verify_status | `{result.get('verify_status', '')}` |",
+        f"| evidence_status | `{result.get('evidence_status', '')}` |",
+        f"| fat_uuid | `{result.get('fat_uuid', '')}` |",
+        f"| rs001_status | `{result.get('rs001_status', 'red')}` |",
+        "",
+        f"**rs001_reason:** {result.get('rs001_reason', '')}",
+        "",
+        "## Operator assessment",
+        "",
+        f"- USB write: **{result.get('write_status', 'unknown')}**",
+        f"- USB verify: **{result.get('verify_status', 'unknown')}**",
+        f"- RS-001: **{result.get('rs001_status', 'red')}** / hardware boot not yet proven",
+        "- Next: physical UEFI boot on MSI/reference hardware",
+        "",
+        "## Artifacts",
+        "",
+        f"- `{evidence_dir / 'plan.json'}`",
+        f"- `{evidence_dir / 'write_steps.log'}`",
+        f"- `{evidence_dir / 'verify.log'}`",
+        f"- `{latest_path}`",
+        "",
+        "## Hardware boot",
+        "",
+        "RS-001 remains **red** until operator documents UEFI boot to Setuphelfer menu/TUI on reference hardware.",
+        "",
+    ]
+    return "\n".join(lines) + "\n"
+
+
 def build_fat32_esp_write_result(
     *,
     target_device: str,
@@ -590,29 +665,260 @@ def build_fat32_esp_write_result(
     post_state: Mapping[str, Any] | None,
     verify_status: str,
     evidence_dir: str | None = None,
+    evidence_status: str = "complete",
+    evidence_errors: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     partition = partition_path_for_target(target_device.strip(), 1)
+    iso_resolved = iso_path.resolve()
     return {
         "schema_version": 1,
         "writer": "fat32_esp",
         "target_device": target_device.strip(),
         "target_partition": partition,
-        "iso_path": str(iso_path),
+        "iso_path": str(iso_resolved),
         "iso_sha256": iso_sha256,
         "started_at": started_at,
         "completed_at": completed_at,
-        "write_executed": write_executed,
+        "write_executed": bool(write_executed),
         "write_status": write_status,
         "failed_step": failed_step,
         "fat_uuid": fat_uuid,
         "pre_state": dict(pre_state or {}),
         "post_state": dict(post_state or {}),
         "verify_status": verify_status,
+        "evidence_status": evidence_status,
+        "evidence_errors": list(evidence_errors or []),
         "rs001_status": "red",
-        "rs001_reason": "USB written but hardware boot not yet proven",
+        "rs001_reason": _rs001_reason_for_result(
+            write_status=write_status,
+            verify_status=verify_status,
+        ),
         "evidence_dir": evidence_dir,
         "secrets_exposed": False,
     }
+
+
+def persist_fat32_esp_write_evidence(
+    result: Mapping[str, Any],
+    *,
+    evidence_dir: Path,
+    evidence_root: Path,
+    repo_root: Path,
+    write_latest: bool = True,
+    write_md: bool = True,
+) -> list[str]:
+    """Write result.json, optional latest symlink file and RS-001 markdown."""
+    errors: list[str] = []
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    result_path = evidence_dir / "result.json"
+    try:
+        result_path.write_text(
+            json.dumps(dict(result), indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+    except OSError as exc:
+        errors.append(f"result_json:{exc}")
+
+    if write_latest:
+        latest_path = evidence_root / FAT32_ESP_WRITE_LATEST_NAME
+        try:
+            latest_path.parent.mkdir(parents=True, exist_ok=True)
+            latest_path.write_text(
+                json.dumps(dict(result), indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+        except OSError as exc:
+            errors.append(f"latest_json:{exc}")
+
+    if write_md:
+        md_path = repo_root / RS001_FAT32_ESP_MD_REL
+        try:
+            md_path.parent.mkdir(parents=True, exist_ok=True)
+            md_text = render_rs001_fat32_esp_write_result_md(
+                result,
+                evidence_dir=evidence_dir,
+                evidence_root=evidence_root,
+            )
+            md_path.write_text(md_text, encoding="utf-8")
+        except OSError as exc:
+            errors.append(f"rs001_md:{exc}")
+
+    return errors
+
+
+def finalize_fat32_esp_write_evidence(
+    *,
+    evidence_dir: Path,
+    evidence_root: Path,
+    repo_root: Path,
+    iso_path: Path,
+    target_device: str,
+    started_at: str,
+    write_executed: bool,
+    write_status: str,
+    verify_status: str,
+    failed_step: str | None = None,
+    fat_uuid: str | None = None,
+    write_latest: bool = True,
+    write_md: bool = True,
+) -> dict[str, Any]:
+    """Build and persist post-write evidence; never downgrades write_status on report errors."""
+    pre_state, post_state = load_evidence_state_snippets(evidence_dir)
+    completed_at = datetime.now(tz=timezone.utc).isoformat()
+    iso_sha = sha256_file(iso_path) if iso_path.is_file() else None
+    base_result = build_fat32_esp_write_result(
+        target_device=target_device,
+        iso_path=iso_path,
+        iso_sha256=iso_sha,
+        started_at=started_at,
+        completed_at=completed_at,
+        write_executed=write_executed,
+        write_status=write_status,
+        failed_step=failed_step,
+        fat_uuid=fat_uuid,
+        pre_state=pre_state,
+        post_state=post_state,
+        verify_status=verify_status,
+        evidence_dir=str(evidence_dir.resolve()),
+        evidence_status="complete",
+    )
+    persist_errors = persist_fat32_esp_write_evidence(
+        base_result,
+        evidence_dir=evidence_dir,
+        evidence_root=evidence_root,
+        repo_root=repo_root,
+        write_latest=write_latest,
+        write_md=write_md,
+    )
+    if persist_errors:
+        base_result = build_fat32_esp_write_result(
+            target_device=target_device,
+            iso_path=iso_path,
+            iso_sha256=iso_sha,
+            started_at=started_at,
+            completed_at=completed_at,
+            write_executed=write_executed,
+            write_status=write_status,
+            failed_step=failed_step,
+            fat_uuid=fat_uuid,
+            pre_state=pre_state,
+            post_state=post_state,
+            verify_status=verify_status,
+            evidence_dir=str(evidence_dir.resolve()),
+            evidence_status="review_required",
+            evidence_errors=persist_errors,
+        )
+        extra = persist_fat32_esp_write_evidence(
+            base_result,
+            evidence_dir=evidence_dir,
+            evidence_root=evidence_root,
+            repo_root=repo_root,
+            write_latest=write_latest,
+            write_md=False,
+        )
+        err_log = evidence_dir / "evidence_errors.log"
+        err_log.write_text("\n".join(persist_errors + extra) + "\n", encoding="utf-8")
+        if extra:
+            base_result["evidence_errors"] = list(base_result.get("evidence_errors") or []) + extra
+
+    return {
+        "result": base_result,
+        "evidence_status": base_result.get("evidence_status"),
+        "evidence_errors": list(base_result.get("evidence_errors") or []),
+        "secrets_exposed": False,
+    }
+
+
+def rebuild_fat32_esp_evidence_reports(
+    evidence_dir: Path,
+    *,
+    evidence_root: Path | None = None,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    """Rebuild result/latest/md from an existing evidence run directory."""
+    ws = repo_root or _workspace_root()
+    root = evidence_root or (ws / "docs/evidence/runtime-results/rescue")
+    result_path = evidence_dir / "result.json"
+    pre_state, post_state = load_evidence_state_snippets(evidence_dir)
+
+    if result_path.is_file():
+        try:
+            existing = json.loads(result_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            existing = {}
+    else:
+        existing = {}
+
+    write_steps = evidence_dir / "write_steps.log"
+    verify_log = evidence_dir / "verify.log"
+    fat_uuid = existing.get("fat_uuid")
+    if not fat_uuid and write_steps.is_file():
+        for line in write_steps.read_text(encoding="utf-8", errors="replace").splitlines():
+            if line.startswith("FAT_UUID="):
+                fat_uuid = line.split("=", 1)[1].strip()
+                break
+
+    write_status = existing.get("write_status") or (
+        "success" if verify_log.is_file() and "OK: FAT32 ESP rescue USB verified" in verify_log.read_text(encoding="utf-8", errors="replace") else "unknown"
+    )
+    verify_status = existing.get("verify_status") or (
+        "success" if verify_log.is_file() and "OK: FAT32 ESP rescue USB verified" in verify_log.read_text(encoding="utf-8", errors="replace") else "not_run"
+    )
+
+    run_id = evidence_dir.name
+    started_at = existing.get("started_at") or ""
+    if not started_at and run_id.startswith("fat32_esp_write_"):
+        stamp = run_id.removeprefix("fat32_esp_write_")
+        if len(stamp) == 15 and stamp[8] == "_":
+            started_at = f"{stamp[0:4]}-{stamp[4:6]}-{stamp[6:8]}T{stamp[9:11]}:{stamp[11:13]}:{stamp[13:15]}Z"
+
+    iso_path = Path(existing.get("iso_path") or (ws / DEFAULT_ISO_REL))
+    if not iso_path.is_absolute():
+        iso_path = (ws / iso_path).resolve()
+
+    result = build_fat32_esp_write_result(
+        target_device=str(existing.get("target_device") or "/dev/sdb"),
+        iso_path=iso_path,
+        iso_sha256=existing.get("iso_sha256") or (sha256_file(iso_path) if iso_path.is_file() else None),
+        started_at=started_at,
+        completed_at=existing.get("completed_at") or datetime.now(tz=timezone.utc).isoformat(),
+        write_executed=bool(existing.get("write_executed", True)),
+        write_status=str(write_status),
+        failed_step=existing.get("failed_step"),
+        fat_uuid=fat_uuid,
+        pre_state=pre_state or existing.get("pre_state") or {},
+        post_state=post_state or existing.get("post_state") or {},
+        verify_status=str(verify_status),
+        evidence_dir=str(evidence_dir.resolve()),
+        evidence_status="complete",
+    )
+    errors = persist_fat32_esp_write_evidence(
+        result,
+        evidence_dir=evidence_dir,
+        evidence_root=root,
+        repo_root=ws,
+    )
+    if errors:
+        result = build_fat32_esp_write_result(
+            target_device=result["target_device"],
+            iso_path=iso_path,
+            iso_sha256=result.get("iso_sha256"),
+            started_at=result["started_at"],
+            completed_at=result["completed_at"],
+            write_executed=result["write_executed"],
+            write_status=result["write_status"],
+            failed_step=result.get("failed_step"),
+            fat_uuid=result.get("fat_uuid"),
+            pre_state=result.get("pre_state") or {},
+            post_state=result.get("post_state") or {},
+            verify_status=result["verify_status"],
+            evidence_dir=result.get("evidence_dir"),
+            evidence_status="review_required",
+            evidence_errors=errors,
+        )
+        (evidence_dir / "evidence_errors.log").write_text("\n".join(errors) + "\n", encoding="utf-8")
+
+    return {"result": result, "evidence_errors": errors, "secrets_exposed": False}
 
 
 def sha256_file(path: Path) -> str:

@@ -1,47 +1,38 @@
 # RS-001 FAT32-ESP USB Write Result
 
-**Status:** Template — wird nach erstem Operator-`--execute-write`-Lauf automatisch aktualisiert.
-
----
+**Updated:** 2026-06-08T22:05:41.028426+00:00
+**Evidence dir:** `docs/evidence/runtime-results/rescue/fat32_esp_write_20260608_220511`
 
 ## Summary
 
 | Field | Value |
 |-------|-------|
-| target_device | *(pending operator run)* |
-| write_executed | `false` |
-| write_status | `not_run` |
-| verify_status | `not_run` |
+| target_device | `/dev/sdb` |
+| target_partition | `/dev/sdb1` |
+| write_executed | `True` |
+| write_status | `success` |
+| verify_status | `success` |
+| evidence_status | `complete` |
+| fat_uuid | `C9C8-394A` |
 | rs001_status | `red` |
 
-**rs001_reason:** USB written but hardware boot not yet proven
+**rs001_reason:** USB written and verified, hardware boot not yet proven
 
----
+## Operator assessment
 
-## Operator command (destructive — Cursor must not run)
+- USB write: **success**
+- USB verify: **success**
+- RS-001: **red** / hardware boot not yet proven
+- Next: physical UEFI boot on MSI/reference hardware
 
-```bash
-export USB_DEVICE=/dev/sdb
+## Artifacts
 
-./scripts/rescue-live/write-fat32-esp-rescue-usb.sh \
-  --iso build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso \
-  --target "$USB_DEVICE" \
-  --operator-confirm-write \
-  --confirm-phrase "WRITE SETUPHELFER FAT32 ESP USB" \
-  --execute-write
-
-./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh --target "$USB_DEVICE"
-```
-
----
-
-## Artifacts (after run)
-
-- `docs/evidence/runtime-results/rescue/fat32_esp_write_<timestamp>/`
+- `docs/evidence/runtime-results/rescue/fat32_esp_write_20260608_220511/plan.json`
+- `docs/evidence/runtime-results/rescue/fat32_esp_write_20260608_220511/write_steps.log`
+- `docs/evidence/runtime-results/rescue/fat32_esp_write_20260608_220511/verify.log`
 - `docs/evidence/runtime-results/rescue/fat32_esp_write_latest.json`
-
----
 
 ## Hardware boot
 
 RS-001 remains **red** until operator documents UEFI boot to Setuphelfer menu/TUI on reference hardware.
+
