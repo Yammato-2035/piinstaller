@@ -6,7 +6,9 @@ metadata:
   project_version: "1.7.9.0"
   analysis_mode: read_only_no_runtime_actions
   rs001_phase1_date: "2026-06-08"
+  rs001_phase2_date: "2026-06-08"
   rs001_phase1_iso_sha256: "c9de3751f7fafe51c836d112bac99331c06252a01430b41f2a50b432ca63f194"
+  rs001_operator_hw_boot: "awaiting_operator_fat32_esp"
 
 capabilities:
   boot:
@@ -19,7 +21,8 @@ capabilities:
         - scripts/rescue-live/validate-rescue-iso-uefi-boot.sh
       gaps:
         - HW-UEFI-Boot MSI wahrscheinlich isohybrid-Layout (0x17 statt FAT-ESP 0xEF)
-        - RS-001 rot bis Operator-HW-Test (Handoff RS_001_HW_BOOT_OPERATOR_HANDOFF.md)
+        - RS-001 rot — Operator FAT32-ESP-Lauf ausstehend (Template RS_001_HW_BOOT_OPERATOR_RESULT_TEMPLATE.md)
+        - Kein Fake-Green bis RS_001_HW_BOOT_OPERATOR_RESULT.md vom Operator
     x86_64_legacy:
       status: partial
       evidence:

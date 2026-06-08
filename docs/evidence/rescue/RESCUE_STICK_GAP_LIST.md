@@ -6,7 +6,7 @@ Prioritäten: **P0** = zwingend v1 · **P1** = wichtig v1 · **P2** = v1.1 · **
 
 | Bereich | Soll-Funktion | IST-Status | Beleg | Risiko | Priorität | Empfohlene Phase |
 |---------|---------------|------------|-------|--------|-----------|------------------|
-| Boot | x86_64 UEFI HW-Boot | partial (ISO audit grün, HW offen) | `RS_001_BOOT_ARTIFACT_AUDIT.md`, `RS_001_HW_BOOT_OPERATOR_HANDOFF.md` | MSI isohybrid — FAT32-ESP empfohlen | P0 | Operator HW-Boot (FAT32-ESP) |
+| Boot | x86_64 UEFI HW-Boot | partial (Handoff+Template bereit, HW offen) | `RS_001_HW_BOOT_PHASE2_RESULT.md`, `RS_001_HW_BOOT_OPERATOR_RESULT_TEMPLATE.md` | Operator-Lauf ausstehend | P0 | Operator FAT32-ESP + MSI-Boot |
 | Boot | x86_64 Legacy BIOS HW | partial (QEMU only) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` | Ältere BIOS-Geräte | P1 | Phase 1 |
 | Boot | RS-001…RS-008 grün | missing (alle rot) | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` | Kein Release-Nachweis | P0 | Phase 1–3 |
 | Boot | ARM64 Rescue-Image | planned/deferred | `RESCUE_TARGET_ARCHITECTURES.md` | Keine ARM-Laptops/Pi | P3 | v2 |

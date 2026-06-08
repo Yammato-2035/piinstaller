@@ -214,9 +214,11 @@ git status --short
 
 **Explizit aus v1 ausklammern:** Pi-Rescue, Provisioning, Restore-Write, Partitions-Write, Secure Boot, FR/Swahili, grafischer Wizard, ddrescue.
 
-**Härtester Blocker (nach Phase 1):** Operator-HW-Boot fehlt — ISO audit grün, Ursache wahrscheinlich MSI+isohybrid; **nächster Schritt: FAT32-ESP-Write + UEFI-Test** (`RS_001_HW_BOOT_OPERATOR_HANDOFF.md`). RS-001 bleibt rot bis Operator-Ergebnis.
+**Härtester Blocker (nach Phase 2):** Operator-HW-Boot fehlt — Handoff validiert, Template bereit; **Operator muss FAT32-ESP schreiben + MSI booten** und `RS_001_HW_BOOT_OPERATOR_RESULT.md` liefern. RS-001 bleibt rot.
 
-**Phase-1-Ergebnis:** `docs/evidence/rescue/RS_001_HW_BOOT_PHASE1_RESULT.md`
+**Phase-2-Ergebnis:** `docs/evidence/rescue/RS_001_HW_BOOT_PHASE2_RESULT.md`  
+**Operator-Template:** `docs/evidence/rescue/RS_001_HW_BOOT_OPERATOR_RESULT_TEMPLATE.md`  
+**Nächster Prompt nach Operator-Rückmeldung:** `RESCUE_RS001_OPERATOR_RESULT_INGEST`
 
 ---
 
