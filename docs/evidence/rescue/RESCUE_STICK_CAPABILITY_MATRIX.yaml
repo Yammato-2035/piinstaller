@@ -1,0 +1,522 @@
+metadata:
+  head: "669adb7"
+  branch: main
+  analysis_date: "2026-06-08"
+  gate_status: "exit_12_profile_gate_project_version_mismatch_1.7.8.4_vs_1.7.9.0"
+  project_version: "1.7.9.0"
+  analysis_mode: read_only_no_runtime_actions
+  rs001_phase1_date: "2026-06-08"
+  rs001_phase1_iso_sha256: "c9de3751f7fafe51c836d112bac99331c06252a01430b41f2a50b432ca63f194"
+
+capabilities:
+  boot:
+    x86_64_uefi:
+      status: partial
+      evidence:
+        - build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso
+        - docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json
+        - docs/evidence/rescue/RS_001_BOOT_ARTIFACT_AUDIT.md
+        - scripts/rescue-live/validate-rescue-iso-uefi-boot.sh
+      gaps:
+        - HW-UEFI-Boot MSI wahrscheinlich isohybrid-Layout (0x17 statt FAT-ESP 0xEF)
+        - RS-001 rot bis Operator-HW-Test (Handoff RS_001_HW_BOOT_OPERATOR_HANDOFF.md)
+    x86_64_legacy:
+      status: partial
+      evidence:
+        - build/rescue/live-build/setuphelfer-rescue-live/auto/config
+        - docs/evidence/rescue/QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md
+      gaps:
+        - Kein HW-Legacy-BIOS-Nachweis
+        - docs/rescue/SETUPHELFER_RESCUE_STICK_ARCHITECTURE_DE.md markiert Legacy als später
+    ia32_uefi:
+      status: planned
+      evidence:
+        - docs/knowledge-base/recovery/RESCUE_TARGET_ARCHITECTURES.md
+        - docs/evidence/runtime-results/rescue/rescue_target_architecture_matrix_latest.json
+      gaps:
+        - Kein i386-Build-Tree
+        - review_required ohne Build-Skripte
+    arm64_uefi:
+      status: planned
+      evidence:
+        - docs/knowledge-base/recovery/RESCUE_TARGET_ARCHITECTURES.md
+        - backend/core/rescue_iso_build_state.py
+      gaps:
+        - deferred_targets arm64
+        - Kein /live/arm64/ Layout
+    raspberry_pi_3bplus:
+      status: missing
+      evidence:
+        - docs/knowledge-base/recovery/RESCUE_TARGET_ARCHITECTURES.md
+        - backend/deploy/runner_rescue_live_hardware_matrix.py
+      gaps:
+        - Kein Rescue-Image
+        - Kein USB-Boot/microSD-Shim-Konzept
+        - USB-Boot Pi3B+ nicht voraussetzbar
+    raspberry_pi_4:
+      status: missing
+      evidence:
+        - docs/architecture/PROJECT_SUMMARY.md
+      gaps:
+        - Pi als Installationsziel ja, als Rescue-Bootmedium nein
+    raspberry_pi_5:
+      status: missing
+      evidence:
+        - docs/architecture/PROJECT_SUMMARY.md
+      gaps:
+        - Kein arm64-Rescue-Image-Track
+    secure_boot:
+      status: planned
+      evidence:
+        - docs/rescue/SETUPHELFER_RESCUE_STICK_ARCHITECTURE_DE.md
+        - backend/deploy/runner_rescue_iso_test_matrix.py
+      gaps:
+        - review_required überall
+        - Keine Shim-Signierung
+
+  discovery:
+    disks:
+      status: partial
+      evidence:
+        - scripts/rescue-live/image/setuphelfer-rescue-disk-discovery.py
+        - apps/partitionshelfer/core/disk_scanner.py
+      gaps:
+        - RS-004 rot bis HW-Abnahme
+    filesystems:
+      status: partial
+      evidence:
+        - backend/modules/rescue_readonly_analyze.py
+        - apps/partitionshelfer/core/manifest_layout_preview.py
+      gaps:
+        - Kein vollständiger FS-Reparaturpfad auf Stick
+    os_detection:
+      status: partial
+      evidence:
+        - backend/rescue_agent/system_report.py
+        - backend/core/diagnostics/models.py
+      gaps:
+        - boot_mode often unknown
+    boot_mode:
+      status: partial
+      evidence:
+        - backend/core/rescue_iso_uefi_classify.py
+        - docs/rescue/BOOT_COMPATIBILITY_LIMITATIONS.md
+      gaps:
+        - Keine automatische Boot-Reparatur im MVP
+    cpu_architecture:
+      status: present
+      evidence:
+        - backend/core/rescue_iso_build_state.py
+        - docs/evidence/runtime-results/rescue/rescue_target_architecture_matrix_latest.json
+      gaps: []
+    hardware_class:
+      status: partial
+      evidence:
+        - backend/deploy/runner_rescue_live_hardware_matrix.py
+        - backend/modules/rescue_target_assessment.py
+      gaps:
+        - Matrix nicht vollständig befüllt
+
+  backup_restore_verify:
+    file_level_backup:
+      status: present
+      evidence:
+        - backend/modules/backup_engine.py
+        - backend/tools/backup_runner.py
+      gaps:
+        - HW-E2E auf Stick nicht grün
+    block_level_backup:
+      status: partial
+      evidence:
+        - backend/modules/backup_engine.py
+      gaps:
+        - dd allowlisted, kein ddrescue
+        - BR-001-OFFLINE rot
+    ddrescue:
+      status: missing
+      evidence: []
+      gaps:
+        - Kein Treffer im gesamten Repo
+    pigz:
+      status: present
+      evidence:
+        - backend/core/backup_archive_options.py
+      gaps:
+        - Optional, HW-Full-Root failed in Evidence
+    manifest:
+      status: present
+      evidence:
+        - backend/modules/backup_engine.py
+      gaps: []
+    backup_verify:
+      status: partial
+      evidence:
+        - backend/modules/backup_verify.py
+        - docs/evidence/backup-restore/BR-001.json
+      gaps:
+        - Data-Backup verify deep ok, Full-Root nicht
+        - RS-007 rot
+    restore:
+      status: partial
+      evidence:
+        - backend/modules/restore_engine.py
+        - backend/modules/rescue_restore_execute.py
+        - backend/modules/rescue_restore_gate.py
+      gaps:
+        - Default preview only
+        - Kein HW-Restore-Nachweis
+    restore_verify:
+      status: partial
+      evidence:
+        - backend/rescue/post_restore_validation.py
+      gaps:
+        - BR-010 Template, nicht ausgeführt
+
+  partition_manager:
+    guided_preview:
+      status: present
+      evidence:
+        - apps/partitionshelfer/core/manifest_layout_preview.py
+        - frontend/src/pages/PartitionManager.tsx
+        - docs/evidence/partitions/PARTITIONS_FINALIZATION_IST_ANALYSIS.md
+      gaps:
+        - Nur read-only
+    destructive_confirmation:
+      status: partial
+      evidence:
+        - apps/partitionshelfer/core/safety_checks.py
+        - backend/deploy/final_confirmation.py
+      gaps:
+        - Queue apply stub, keine echte Bestätigung mit Write
+    backup_first_gate:
+      status: present
+      evidence:
+        - backend/core/backup_before_write_gate.py
+        - apps/partitionshelfer/core/restore_handoff_contract.py
+      gaps:
+        - Nur Gate-Logik, kein Write-Pfad aktiv
+    apply_queue:
+      status: planned
+      evidence:
+        - backend/api/routes/partitions.py
+      gaps:
+        - Phase-2-Stub, write_allowed=false
+    filesystem_repair:
+      status: missing
+      evidence:
+        - apps/partitionshelfer/README.md
+      gaps:
+        - mkfs/fsck apply bewusst blockiert
+    resize:
+      status: missing
+      evidence:
+        - docs/evidence/partitions/PARTITIONS_FINALIZATION_IST_ANALYSIS.md
+      gaps:
+        - Kein Resize-Apply
+    dual_boot:
+      status: missing
+      evidence:
+        - docs/architecture/RESCUE_STICK_PARTITION_HANDOFF.md
+      gaps:
+        - Nur Doku-Vorbereitung
+
+  provisioning:
+    debian:
+      status: partial
+      evidence:
+        - build/rescue/live-build/setuphelfer-rescue-live/
+        - packaging/debian/
+      gaps:
+        - Rescue-Live ja, Debian-Neuinstallation vom Stick nein
+    ubuntu_server:
+      status: missing
+      evidence:
+        - docs/architecture/RESCUE_STICK_PARTITION_HANDOFF.md
+      gaps:
+        - Kein autoinstall/cloud-init Flow
+    linux_mint_cinnamon:
+      status: missing
+      evidence:
+        - docs/architecture/RESCUE_STICK_PARTITION_HANDOFF.md
+      gaps:
+        - Explizit blocked
+    linux_mint_xfce:
+      status: missing
+      evidence:
+        - docs/architecture/RESCUE_STICK_PARTITION_HANDOFF.md
+      gaps:
+        - Explizit blocked
+    raspberry_pi_os_32_lite:
+      status: missing
+      evidence:
+        - docs/SD_CARD_IMAGE.md
+      gaps:
+        - Hauptprodukt-Pi-Image geplant, nicht Rescue-Stick
+    raspberry_pi_os_64_lite:
+      status: missing
+      evidence:
+        - docs/SD_CARD_IMAGE.md
+      gaps:
+        - Kein Rescue-Provisioning
+    raspberry_pi_os_desktop:
+      status: missing
+      evidence: []
+      gaps:
+        - Nicht im Rescue-Scope
+    pi3bplus_sd_fallback:
+      status: missing
+      evidence: []
+      gaps:
+        - Kein microSD-Bootshim-Konzept dokumentiert
+    manifest_download:
+      status: missing
+      evidence:
+        - backend/deploy/runner_rescue_stick_component_inventory.py
+      gaps:
+        - provisioning_layer missing
+    checksum_verification:
+      status: partial
+      evidence:
+        - controlled_iso_build_latest_summary.json
+        - backend/modules/backup_verify.py
+      gaps:
+        - Nur eigene Artefakte, kein Distro-ISO-Cache
+    offline_cache:
+      status: missing
+      evidence: []
+      gaps:
+        - Kein Offline-Provisioning-Cache
+
+  network:
+    ethernet:
+      status: present
+      evidence:
+        - scripts/rescue-live/image/setuphelfer-rescue-network-onboarding
+        - build/rescue/live-build/.../setuphelfer.list.chroot
+      gaps:
+        - MSI-HW-Retest ausstehend
+    wlan_scan:
+      status: present
+      evidence:
+        - scripts/rescue-live/image/setuphelfer-rescue-common.sh
+      gaps:
+        - HW-Retest ausstehend
+    wlan_connect:
+      status: present
+      evidence:
+        - scripts/rescue-live/image/setuphelfer-rescue-common.sh
+        - scripts/tests/test_rescue_network_menu_no_secret_logging_v1.sh
+      gaps: []
+    hidden_ssid:
+      status: present
+      evidence:
+        - scripts/rescue-live/image/setuphelfer-rescue-common.sh
+      gaps: []
+    rfkill:
+      status: present
+      evidence:
+        - scripts/rescue-live/image/setuphelfer-rescue-common.sh
+        - setuphelfer.list.chroot
+      gaps: []
+    firmware_detection:
+      status: partial
+      evidence:
+        - build/rescue/live-build/.../setuphelfer.list.chroot
+        - docs/evidence/runtime-results/rescue/RESCUE_ISO_NON_FREE_FIRMWARE_COMPONENT_FIX_RESULT.md
+      gaps:
+        - HW-Firmware-Fälle nicht vollständig abgedeckt
+    captive_portal:
+      status: planned
+      evidence:
+        - backend/deploy/runner_rescue_stick_readonly_build_emulation.py
+      gaps:
+        - optional_later
+    usb_tethering:
+      status: unclear
+      evidence: []
+      gaps:
+        - Kein dediziertes Modul gefunden
+    internet_test:
+      status: partial
+      evidence:
+        - scripts/rescue-live/image/setuphelfer-rescue-network-onboarding
+        - backend/core/rescue_network_telemetry_gate.py
+      gaps:
+        - MSI-Retest offen
+    download_resume:
+      status: missing
+      evidence: []
+      gaps:
+        - Nur Telemetrie-Retry-Timer, kein Download-Resume
+
+  i18n:
+    language_selection:
+      status: missing
+      evidence:
+        - scripts/rescue-live/image/setuphelfer-rescue-start-assistant
+      gaps:
+        - Keine Sprachwahl beim Stick-Start
+    german:
+      status: present
+      evidence:
+        - scripts/rescue-live/validate-rescue-iso-squashfs.sh
+        - frontend/src/locales/de.json
+      gaps: []
+    english:
+      status: partial
+      evidence:
+        - frontend/src/locales/en.json
+        - backend/core/diagnostics/registry.py
+      gaps:
+        - Rescue-TUI nicht EN
+    french:
+      status: missing
+      evidence: []
+      gaps:
+        - Grep leer
+    swahili:
+      status: missing
+      evidence: []
+      gaps:
+        - Grep leer
+    locale:
+      status: partial
+      evidence:
+        - scripts/rescue-live/prepare-controlled-live-build-tree.sh
+      gaps:
+        - Fest de_DE.UTF-8 im ISO
+    keyboard:
+      status: partial
+      evidence:
+        - scripts/rescue-live/validate-rescue-iso-squashfs.sh
+      gaps:
+        - Fest DE-Layout, keine Auswahl
+    timezone:
+      status: partial
+      evidence:
+        - scripts/rescue-live/validate-rescue-iso-squashfs.sh
+      gaps:
+        - Fest Europe/Berlin
+    wifi_country:
+      status: unclear
+      evidence: []
+      gaps:
+        - Regulatory-Domain nicht explizit im Rescue-Flow
+
+  ui:
+    graphical_wizard:
+      status: planned
+      evidence:
+        - docs/rescue-stick/RESCUE_START_ASSISTANT_WIZARD_STATE.md
+        - /run/setuphelfer-rescue/wizard-state.json (Schema)
+      gaps:
+        - Keine GUI-Implementierung
+    tui_fallback:
+      status: present
+      evidence:
+        - scripts/rescue-live/image/setuphelfer-rescue-start-assistant
+        - docs/knowledge-base/rescue/RESCUE_START_ASSISTANT_OVERVIEW.md
+      gaps:
+        - Nur Deutsch
+    safe_graphics:
+      status: unclear
+      evidence: []
+      gaps:
+        - Kein dedizierter Safe-Graphics-Modus auf Stick dokumentiert
+    expert_mode:
+      status: present
+      evidence:
+        - scripts/rescue-live/image/setuphelfer-rescue-start-assistant
+      gaps: []
+    panda_guidance:
+      status: partial
+      evidence:
+        - frontend/src/components/companions/PandaCompanion.tsx
+      gaps:
+        - Nur Desktop-Frontend, nicht Rescue-TUI
+
+  telemetry_privacy:
+    local_telemetry_server:
+      status: partial
+      evidence:
+        - backend/core/rescue_telemetry_lan_proxy.py
+        - backend/rescue_telemetry/routers.py
+      gaps:
+        - LAN-Proxy Developer-Kontext, nicht Public-Default
+    opt_in:
+      status: partial
+      evidence:
+        - docs/architecture/SETUPHELFER_DEVELOPMENT_SERVER_MVP.md
+      gaps:
+        - public_rescue blockiert Auto-Upload
+    anonymous_events:
+      status: partial
+      evidence:
+        - docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md
+        - backend/core/rescue_telemetry_ingest.py
+      gaps:
+        - Zone-A-Taxonomie nicht explizit
+    pseudonymous_beta:
+      status: partial
+      evidence:
+        - docs/architecture/SETUPHELFER_DEVELOPMENT_SERVER_MVP.md
+        - backend/devserver_agent/redaction_client.py
+      gaps:
+        - beta_opt_in nicht im Rescue-TUI
+    support_case_mode:
+      status: partial
+      evidence:
+        - backend/rescue_agent/routers.py
+      gaps:
+        - Pairing-Pflicht, nicht vollständig HW-getestet
+    anonymization_pipeline:
+      status: partial
+      evidence:
+        - backend/devserver_agent/redaction_client.py
+      gaps:
+        - Keine K-Anonymität/Mindestgruppenlogik dokumentiert
+    field_allowlist:
+      status: partial
+      evidence:
+        - docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md
+      gaps:
+        - Nicht durchgängig für alle Kanäle
+    deletion_policy:
+      status: unclear
+      evidence: []
+      gaps:
+        - Löschfristen nicht als Rescue-Stick-Policy dokumentiert
+    knowledgebase_extraction:
+      status: planned
+      evidence:
+        - docs/architecture/SETUPHELFER_DEVELOPMENT_SERVER_MVP.md
+      gaps:
+        - FAQ/KB-Generator später
+
+  knowledgebase:
+    error_codes:
+      status: present
+      evidence:
+        - backend/core/diagnostics/registry.py
+        - docs/faq/RESCUE_FAQ.md
+        - docs/evidence/windows-rescue/windows_inspect_diagnostic_codes.json
+      gaps: []
+    hardware_matrix:
+      status: partial
+      evidence:
+        - backend/deploy/runner_rescue_live_hardware_matrix.py
+      gaps:
+        - Nicht vollständig befüllt
+    diagnosis_rules:
+      status: present
+      evidence:
+        - backend/core/diagnostics/registry.py
+        - docs/knowledge-base/diagnostics/DIAGNOSIS_ARCHITECTURE.md
+      gaps:
+        - Nicht alle Rescue-Fälle regelbasiert
+    beta_feedback_loop:
+      status: planned
+      evidence:
+        - docs/architecture/SETUPHELFER_DEVELOPMENT_SERVER_MVP.md
+      gaps:
+        - Kein automatisierter KB-Übernahme-Pfad
