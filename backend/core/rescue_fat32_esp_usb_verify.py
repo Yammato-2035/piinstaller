@@ -13,12 +13,19 @@ from core.rescue_fat32_esp_usb_writer import (
     EFI_PARTTYPE_UUID,
     FAT_VOLUME_LABEL,
     GPT_PARTITION_NAME,
+    partition_path_for_target,
 )
 
 Runner = Callable[..., Any]
 
 STALE_PARENT_ISO9660_WARN = "RESCUE-FAT32-WARN-STALE-PARENT-ISO9660-SIGNATURE"
 STALE_PARENT_ISO9660_REPAIR = "sudo wipefs -a -t iso9660 {target}"
+STRUCTURAL_LAYOUT_INVALID = (
+    "structural layout invalid — do not repair label only"
+)
+STRUCTURAL_RERUN_EXECUTE = (
+    "rerun FAT32-ESP writer with --execute-write after safety approval"
+)
 
 GRUB_ERROR_ROOT = "RESCUE-FAT32-GRUB-ROOT-001"
 GRUB_ERROR_KERNEL = "RESCUE-FAT32-GRUB-KERNEL-PATH-001"
@@ -80,6 +87,22 @@ def partition_is_efi_system(parttype: str) -> bool:
     )
 
 
+def structural_layout_valid(
+    *,
+    parent_pttype: str | None,
+    part_parttype: str | None,
+    part_fstype: str | None,
+) -> bool:
+    """True when GPT + EFI system partition + vfat/msdos — label repair may apply."""
+    if (parent_pttype or "").lower() != "gpt":
+        return False
+    if not part_parttype or not partition_is_efi_system(part_parttype):
+        return False
+    if (part_fstype or "").lower() not in ("vfat", "msdos"):
+        return False
+    return True
+
+
 def detect_stale_parent_iso9660(
     *,
     parent_pttype: str | None,
@@ -100,11 +123,18 @@ def evaluate_verify_probe(
     part_fstype: str | None,
     part_fat_label: str | None,
     target_device: str = "/dev/sdb",
+    partition_device: str | None = None,
 ) -> dict[str, Any]:
     """Pure evaluation of block-layer probes (unit-testable)."""
     errors: list[dict[str, Any]] = []
     warnings: list[str] = []
     sig_types = list(parent_signature_types or [])
+    part_dev = partition_device or partition_path_for_target(target_device, 1)
+    layout_ok = structural_layout_valid(
+        parent_pttype=parent_pttype,
+        part_parttype=part_parttype,
+        part_fstype=part_fstype,
+    )
 
     if (parent_pttype or "").lower() != "gpt":
         errors.append(
@@ -155,28 +185,32 @@ def evaluate_verify_probe(
         )
 
     label = (part_fat_label or "").strip()
-    if not label:
+    if layout_ok and not label:
         errors.append(
             {
                 "code": "FAT_LABEL_MISSING",
                 "message": (
                     f"FAT volume label expected {FAT_VOLUME_LABEL} got missing "
-                    f"— repair: sudo fatlabel {target_device}1 {FAT_VOLUME_LABEL}"
+                    f"— repair: sudo fatlabel {part_dev} {FAT_VOLUME_LABEL}"
                 ),
                 "exit_code": 22,
             }
         )
-    elif label != FAT_VOLUME_LABEL:
+    elif layout_ok and label != FAT_VOLUME_LABEL:
         errors.append(
             {
                 "code": "FAT_LABEL_MISMATCH",
                 "message": (
                     f"FAT volume label expected {FAT_VOLUME_LABEL} got {label} "
-                    f"— repair: sudo fatlabel {target_device}1 {FAT_VOLUME_LABEL}"
+                    f"— repair: sudo fatlabel {part_dev} {FAT_VOLUME_LABEL}"
                 ),
                 "exit_code": 22,
             }
         )
+
+    if not layout_ok:
+        warnings.append(f"RESCUE-FAT32-VERIFY: {STRUCTURAL_LAYOUT_INVALID}")
+        warnings.append(f"RESCUE-FAT32-VERIFY: {STRUCTURAL_RERUN_EXECUTE}")
 
     label_errors = [e for e in errors if e["code"].startswith("FAT_LABEL")]
     if detect_stale_parent_iso9660(parent_pttype=parent_pttype, parent_signature_types=sig_types):
@@ -195,6 +229,8 @@ def evaluate_verify_probe(
             parent_pttype=parent_pttype,
             parent_signature_types=sig_types,
         ),
+        "structural_layout_valid": layout_ok,
+        "partition_device": part_dev,
     }
 
 

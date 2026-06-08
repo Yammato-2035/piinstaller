@@ -33,7 +33,11 @@ done
 [[ "$TARGET" != /dev/nvme* ]] || fail "forbidden nvme target" 27
 
 if [[ -z "$PART" ]]; then
-  PART="${TARGET}1"
+  PART="$(python3 - <<PY
+from core.rescue_fat32_esp_usb_writer import partition_path_for_target
+print(partition_path_for_target(${TARGET@Q}, 1))
+PY
+)"
 fi
 
 # Never use parent device for FAT label — partition only.

@@ -214,7 +214,7 @@ git status --short
 
 **Explizit aus v1 ausklammern:** Pi-Rescue, Provisioning, Restore-Write, Partitions-Write, Secure Boot, FR/Swahili, grafischer Wizard, ddrescue.
 
-**Härtester Blocker (nach Phase 2):** Operator-HW-Boot fehlt — Handoff validiert, Template bereit; **Operator muss FAT32-ESP schreiben + MSI booten** und `RS_001_HW_BOOT_OPERATOR_RESULT.md` liefern. RS-001 bleibt rot.
+**Härtester Blocker (nach Phase 2):** Operator-HW-Boot fehlt — Handoff validiert; **Operator muss FAT32-ESP mit `--execute-write` schreiben + MSI booten** und `fat32_esp_write_latest.json` + `verify.log` + `RS_001_HW_BOOT_OPERATOR_RESULT.md` liefern. RS-001 bleibt rot bis echter HW-Boot.
 
 **Phase-2-Ergebnis:** `docs/evidence/rescue/RS_001_HW_BOOT_PHASE2_RESULT.md`  
 **Operator-Template:** `docs/evidence/rescue/RS_001_HW_BOOT_OPERATOR_RESULT_TEMPLATE.md`  

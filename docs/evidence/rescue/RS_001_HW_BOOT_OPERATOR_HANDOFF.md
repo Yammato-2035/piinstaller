@@ -117,14 +117,45 @@ cd /home/volker/piinstaller
   --dry-run
 ```
 
-### Destructive Write (Operator only)
+### Plan ohne Write (nur Vorbereitung)
 
 ```bash
+export USB_DEVICE=/dev/sdb   # bewusst setzen — nie blind kopieren
+
 ./scripts/rescue-live/write-fat32-esp-rescue-usb.sh \
   --iso build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso \
-  --target <USB_DEVICE> \
+  --target "$USB_DEVICE" \
   --operator-confirm-write \
   --confirm-phrase "WRITE SETUPHELFER FAT32 ESP USB"
+```
+
+Ohne `--execute-write`: nur Plan + `write_manual`; `write_executed=false`; **kein** destruktiver Write.
+
+### Destructive Write (Operator-Terminal only)
+
+```bash
+export USB_DEVICE=/dev/sdb   # bewusst setzen
+
+./scripts/rescue-live/write-fat32-esp-rescue-usb.sh \
+  --iso build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso \
+  --target "$USB_DEVICE" \
+  --operator-confirm-write \
+  --confirm-phrase "WRITE SETUPHELFER FAT32 ESP USB" \
+  --execute-write
+```
+
+**Wichtig:**
+
+- `--execute-write` ist **destruktiv** (wipefs, sgdisk, mkfs, rsync).
+- Die Bestätigungsphrase allein reicht **nicht** mehr — `--execute-write` ist zusätzlich Pflicht.
+- **Cursor/DCC führt diesen Befehl nicht aus** — nur der Operator im physischen Terminal.
+- Evidence: `docs/evidence/runtime-results/rescue/fat32_esp_write_<timestamp>/` + `fat32_esp_write_latest.json`
+- RS-001 bleibt **rot**, bis HW-Boot bis Setuphelfer-Menü/TUI nachgewiesen ist.
+
+Verify nach Write:
+
+```bash
+./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh --target "$USB_DEVICE"
 ```
 
 **Erwartung nach Write:**

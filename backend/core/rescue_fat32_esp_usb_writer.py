@@ -57,6 +57,33 @@ FORBIDDEN_TARGET_PATTERNS = (
     re.compile(r"^/dev/nvme"),
 )
 
+STAGING_REQUIRED_PATHS = (
+    "EFI/BOOT/BOOTX64.EFI",
+    "boot/grub/grub.cfg",
+    "live/vmlinuz",
+    "live/initrd.img",
+    "live/filesystem.squashfs",
+)
+
+FAT32_ESP_EXECUTION_STEP_IDS: tuple[str, ...] = (
+    "wipefs_probe",
+    "wipefs_full",
+    "sgdisk_zap",
+    "sgdisk_create_esp",
+    "partprobe",
+    "udev_settle",
+    "mkfs_vfat",
+    "partprobe_after_mkfs",
+    "udev_settle_after_mkfs",
+    "blkid_fat_uuid",
+    "patch_grub_uuid",
+    "mount_esp",
+    "rsync_staging",
+    "sync",
+    "umount_esp",
+    "verify_fat32_esp",
+)
+
 
 def assert_valid_fat_volume_label(label: str) -> None:
     """FAT/VFAT labels are limited to 11 bytes (mkfs.vfat -n)."""
@@ -446,6 +473,146 @@ def generate_grub_cfg(params: LiveBootParams) -> str:
         "",
     ]
     return "\n".join(lines)
+
+
+def partition_path_for_target(target_device: str, part_number: int = 1) -> str:
+    """Map parent block device to partition path (sdX→sdX1, nvme→p1, mmcblk→p1)."""
+    dev = (target_device or "").rstrip("/")
+    if not dev.startswith("/dev/"):
+        raise ValueError(f"not a block device path: {target_device!r}")
+    if part_number < 1:
+        raise ValueError(f"invalid partition number: {part_number}")
+    if re.search(r"mmcblk\d+$", dev):
+        return f"{dev}p{part_number}"
+    if re.search(r"nvme\d+n\d+$", dev):
+        return f"{dev}p{part_number}"
+    return f"{dev}{part_number}"
+
+
+def staging_required_paths_ok(staging_dir: Path) -> tuple[bool, list[str]]:
+    missing = [rel for rel in STAGING_REQUIRED_PATHS if not (staging_dir / rel).is_file()]
+    return not missing, missing
+
+
+def validate_fat32_execute_write_gates(
+    *,
+    target_device: str,
+    iso_path: Path,
+    staging_dir: Path,
+    operator_evidence: Mapping[str, Any] | None,
+    confirm_phrase: str | None,
+    execute_write: bool,
+    confirm_write: bool,
+    expected_iso_sha256: str | None = None,
+    runner: Runner | None = None,
+) -> dict[str, Any]:
+    """All gates required before --execute-write may run destructive steps."""
+    safety = validate_fat32_write_target(
+        target_device,
+        operator_evidence=operator_evidence,
+        confirm_phrase=confirm_phrase,
+        dry_run=False,
+        runner=runner,
+    )
+    blockers: list[str] = list(safety.get("blockers") or [])
+    errors: list[str] = list(safety.get("errors") or [])
+
+    if not confirm_write:
+        blockers.append("OPERATOR_CONFIRM_WRITE_MISSING")
+    if not execute_write:
+        blockers.append("EXECUTE_WRITE_FLAG_MISSING")
+    if confirm_phrase != CONFIRM_PHRASE_FAT32_ESP:
+        if "CONFIRM_PHRASE_MISMATCH" not in blockers:
+            blockers.append("CONFIRM_PHRASE_MISMATCH")
+
+    iso = iso_path.resolve()
+    actual_sha: str | None = None
+    if not iso.is_file():
+        blockers.append("ISO_MISSING")
+        errors.append("iso_missing")
+    else:
+        actual_sha = sha256_file(iso)
+        if expected_iso_sha256 and actual_sha != expected_iso_sha256.strip().lower():
+            blockers.append("ISO_SHA256_MISMATCH")
+            errors.append("iso_sha256_mismatch")
+
+    staging_ok, staging_missing = staging_required_paths_ok(staging_dir)
+    if not staging_ok:
+        blockers.append("STAGING_INCOMPLETE")
+        errors.append(f"staging_missing:{','.join(staging_missing)}")
+
+    classified = {d.id: d for d in list_classified_devices(runner=runner)}
+    cd = classified.get(target_device.strip())
+    if cd is not None:
+        if cd.mountpoints:
+            blockers.append("TARGET_DEVICE_MOUNTED")
+            errors.append("target_device_mounted")
+        for part in cd.partitions:
+            if part.mountpoints:
+                blockers.append("TARGET_PARTITION_MOUNTED")
+                errors.append("target_partition_mounted")
+                break
+
+    blockers = sorted(set(blockers))
+    partition = partition_path_for_target(target_device.strip(), 1)
+    return {
+        "target_device": target_device.strip(),
+        "target_partition": partition,
+        "execute_write": execute_write,
+        "confirm_write": confirm_write,
+        "blocked": bool(blockers),
+        "blockers": blockers,
+        "errors": errors,
+        "write_allowed": not blockers,
+        "iso_path": str(iso),
+        "iso_sha256": actual_sha,
+        "expected_iso_sha256": expected_iso_sha256,
+        "staging_dir": str(staging_dir),
+        "staging_complete": staging_ok,
+        "staging_missing": staging_missing,
+        "execution_step_ids": list(FAT32_ESP_EXECUTION_STEP_IDS),
+        "secrets_exposed": False,
+    }
+
+
+def build_fat32_esp_write_result(
+    *,
+    target_device: str,
+    iso_path: Path,
+    iso_sha256: str | None,
+    started_at: str,
+    completed_at: str | None,
+    write_executed: bool,
+    write_status: str,
+    failed_step: str | None,
+    fat_uuid: str | None,
+    pre_state: Mapping[str, Any] | None,
+    post_state: Mapping[str, Any] | None,
+    verify_status: str,
+    evidence_dir: str | None = None,
+) -> dict[str, Any]:
+    partition = partition_path_for_target(target_device.strip(), 1)
+    return {
+        "schema_version": 1,
+        "writer": "fat32_esp",
+        "target_device": target_device.strip(),
+        "target_partition": partition,
+        "iso_path": str(iso_path),
+        "iso_sha256": iso_sha256,
+        "started_at": started_at,
+        "completed_at": completed_at,
+        "write_executed": write_executed,
+        "write_status": write_status,
+        "failed_step": failed_step,
+        "fat_uuid": fat_uuid,
+        "pre_state": dict(pre_state or {}),
+        "post_state": dict(post_state or {}),
+        "verify_status": verify_status,
+        "rs001_status": "red",
+        "rs001_reason": "USB written but hardware boot not yet proven",
+        "evidence_dir": evidence_dir,
+        "secrets_exposed": False,
+    }
 
 
 def sha256_file(path: Path) -> str:
@@ -919,9 +1086,17 @@ def build_operator_terminal_commands(
             f"./scripts/rescue-live/write-fat32-esp-rescue-usb.sh "
             f'--iso "{rel_iso}" --target {target_device} '
             f"--operator-confirm-write "
-            f'--confirm-phrase "{CONFIRM_PHRASE_FAT32_ESP}"'
+            f'--confirm-phrase "{CONFIRM_PHRASE_FAT32_ESP}" '
+            f"--execute-write"
         ),
         "write_manual": manual_write,
+        "write_prepared": (
+            f"cd {ws}\n"
+            f"./scripts/rescue-live/write-fat32-esp-rescue-usb.sh "
+            f'--iso "{rel_iso}" --target {target_device} '
+            f"--operator-confirm-write "
+            f'--confirm-phrase "{CONFIRM_PHRASE_FAT32_ESP}"'
+        ),
         "verify": (
             f"cd {ws}\n"
             f"./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh --target {target_device}"

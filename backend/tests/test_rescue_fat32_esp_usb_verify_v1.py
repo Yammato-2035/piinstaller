@@ -77,7 +77,8 @@ class RescueFat32EspUsbVerifyTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         codes = {e["code"] for e in result["errors"]}
         self.assertIn("NOT_VFAT", codes)
-        self.assertIn("FAT_LABEL_MISSING", codes)
+        self.assertNotIn("FAT_LABEL_MISSING", codes)
+        self.assertFalse(result["structural_layout_valid"])
 
     def test_probe_fat_volume_label_prefers_sudo_blkid(self) -> None:
         calls: list[list[str]] = []
