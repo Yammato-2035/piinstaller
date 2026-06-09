@@ -326,7 +326,7 @@ grep -qx 'usbutils' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list usbutils"
 grep -qx 'iw' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_networkmanager "setuphelfer.list.chroot must list iw"
-for _script in setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull setuphelfer-rescue-disk-discovery setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-start-assistant setuphelfer-rescue-plan-builder.py; do
+for _script in setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-live-medium-check.py setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull setuphelfer-rescue-disk-discovery setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-start-assistant setuphelfer-rescue-plan-builder.py; do
   [[ -x "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/${_script}" ]] \
     || fail_missing "usr/local/sbin/${_script} missing or not executable"
 done

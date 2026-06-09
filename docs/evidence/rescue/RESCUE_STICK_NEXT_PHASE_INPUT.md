@@ -214,7 +214,7 @@ git status --short
 
 **Explizit aus v1 ausklammern:** Pi-Rescue, Provisioning, Restore-Write, Partitions-Write, Secure Boot, FR/Swahili, grafischer Wizard, ddrescue.
 
-**Härtester Blocker (nach Phase 2):** Operator-HW-Boot fehlt — **FAT32-ESP-Write auf `/dev/sdb` erfolgreich** (`fat32_esp_write_20260608_220511`, verify success); nächster Schritt: **physischer UEFI-Boot auf MSI/Referenzhardware** dokumentieren. RS-001 bleibt rot bis Setuphelfer-Menü/TUI auf HW sichtbar.
+**Härtester Blocker (Phase 3):** RS-001 **gelb** — HW bootet bis Setuphelfer-Dialog, aber **„Live-Medium nicht stabil“** blockiert. Workspace-Fix in `setuphelfer-rescue-live-medium-check.py`; nächster Schritt: **Squashfs mit Fix auf Stick** (ISO-Rebuild) + **Operator-Retest** ohne Warnung (`RS_001_LIVE_MEDIUM_RETEST_HANDOFF.md`). RS-001 grün erst ohne Live-Medium-Warnung.
 
 **Phase-2-Ergebnis:** `docs/evidence/rescue/RS_001_HW_BOOT_PHASE2_RESULT.md`  
 **Operator-Template:** `docs/evidence/rescue/RS_001_HW_BOOT_OPERATOR_RESULT_TEMPLATE.md`  

@@ -8,7 +8,9 @@ metadata:
   rs001_phase1_date: "2026-06-08"
   rs001_phase2_date: "2026-06-08"
   rs001_phase1_iso_sha256: "c9de3751f7fafe51c836d112bac99331c06252a01430b41f2a50b432ca63f194"
-  rs001_operator_hw_boot: "awaiting_operator_fat32_esp"
+  rs001_operator_hw_boot: "yellow_hw_boot_live_medium_warning"
+  rs001_status: yellow
+  rs001_live_medium_check_fix_head: "pending_commit"
 
 capabilities:
   boot:
@@ -16,13 +18,14 @@ capabilities:
       status: partial
       evidence:
         - build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso
-        - docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json
-        - docs/evidence/rescue/RS_001_BOOT_ARTIFACT_AUDIT.md
+        - docs/evidence/runtime-results/rescue/fat32_esp_write_latest.json
+        - docs/evidence/rescue/RS_001_PHYSICAL_BOOT_RESULT.md
+        - docs/evidence/rescue/RS_001_LIVE_MEDIUM_CHECK_ANALYSIS.md
         - scripts/rescue-live/validate-rescue-iso-uefi-boot.sh
       gaps:
-        - HW-UEFI-Boot MSI wahrscheinlich isohybrid-Layout (0x17 statt FAT-ESP 0xEF)
-        - RS-001 rot — Operator FAT32-ESP-Lauf ausstehend (Template RS_001_HW_BOOT_OPERATOR_RESULT_TEMPLATE.md)
-        - Kein Fake-Green bis RS_001_HW_BOOT_OPERATOR_RESULT.md vom Operator
+        - RS-001 gelb — HW boot + GRUB + Dialog OK; Live-Medium-Warnung blockiert
+        - Squashfs auf Stick enthält alten media-check bis ISO-Rebuild
+        - Kein Fake-Green bis Retest ohne Live-Medium-Warnung
     x86_64_legacy:
       status: partial
       evidence:

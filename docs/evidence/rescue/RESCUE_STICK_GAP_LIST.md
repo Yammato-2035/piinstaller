@@ -6,7 +6,8 @@ Prioritäten: **P0** = zwingend v1 · **P1** = wichtig v1 · **P2** = v1.1 · **
 
 | Bereich | Soll-Funktion | IST-Status | Beleg | Risiko | Priorität | Empfohlene Phase |
 |---------|---------------|------------|-------|--------|-----------|------------------|
-| Boot | x86_64 UEFI HW-Boot | partial (Handoff+Template bereit, HW offen) | `RS_001_HW_BOOT_PHASE2_RESULT.md`, `RS_001_HW_BOOT_OPERATOR_RESULT_TEMPLATE.md` | Operator-Lauf ausstehend | P0 | Operator FAT32-ESP + MSI-Boot |
+| Boot | x86_64 UEFI HW-Boot | partial (gelb: Boot+Dialog OK, Live-Medium-Warnung) | `RS_001_PHYSICAL_BOOT_RESULT.md`, `fat32_esp_write_latest.json` | Live-medium false negative auf FAT32-ESP | P0 | Squashfs-Fix + Operator-Retest |
+| Boot | Live-Medium-Stabilität FAT32-ESP | partial (Fix Workspace) | `RS_001_LIVE_MEDIUM_CHECK_ANALYSIS.md` | Alter Check nur `/run/live/medium` | P0 | ISO-Rebuild + Retest |
 | Boot | x86_64 Legacy BIOS HW | partial (QEMU only) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` | Ältere BIOS-Geräte | P1 | Phase 1 |
 | Boot | RS-001…RS-008 grün | missing (alle rot) | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` | Kein Release-Nachweis | P0 | Phase 1–3 |
 | Boot | ARM64 Rescue-Image | planned/deferred | `RESCUE_TARGET_ARCHITECTURES.md` | Keine ARM-Laptops/Pi | P3 | v2 |

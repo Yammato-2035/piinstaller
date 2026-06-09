@@ -236,7 +236,7 @@ write_rescue_network_telemetry_overlay() {
   local wants="${systemd_dir}/multi-user.target.wants"
   local timers="${systemd_dir}/timers.target.wants"
   mkdir -p "$sbin" "$wants" "$timers" "$share" "$rescue_cfg"
-  for script in setuphelfer-rescue-common.sh setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull setuphelfer-rescue-disk-discovery setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-start-assistant setuphelfer-rescue-plan-builder.py; do
+  for script in setuphelfer-rescue-common.sh setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-live-medium-check.py setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull setuphelfer-rescue-disk-discovery setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-start-assistant setuphelfer-rescue-plan-builder.py; do
     [[ -f "${image_src}/${script}" ]] || die "missing rescue image script: ${script}"
     local mode=0755
     [[ "$script" == *.py ]] && mode=0644

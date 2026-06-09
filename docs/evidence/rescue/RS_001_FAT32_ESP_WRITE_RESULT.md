@@ -22,8 +22,10 @@
 
 - USB write: **success**
 - USB verify: **success**
-- RS-001: **red** / hardware boot not yet proven
-- Next: physical UEFI boot on MSI/reference hardware
+- Physical boot: **reached** (UEFI → GRUB → Setuphelfer dialog)
+- Live-medium warning: **yes** (“Live-Medium nicht stabil”)
+- RS-001: **yellow** / hardware boot OK but live-medium check blocks
+- Next: retest after squashfs fix (`RS_001_LIVE_MEDIUM_RETEST_HANDOFF.md`)
 
 ## Artifacts
 
