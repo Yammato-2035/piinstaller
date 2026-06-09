@@ -89,6 +89,26 @@ setuphelfer_rescue_write_json() {
   chmod 0640 "$dest" 2>/dev/null || true
 }
 
+setuphelfer_rescue_fat_esp_mount() {
+  local candidate
+  for candidate in /run/live/medium /lib/live/mount/medium /media/*/SETUPHELFER; do
+    if [[ -d "$candidate/setuphelfer" || -d "$candidate/EFI" ]]; then
+      printf '%s' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+setuphelfer_rescue_mirror_evidence_file() {
+  local src="$1" rel="$2" base dst_dir
+  [[ -f "$src" ]] || return 0
+  base="$(setuphelfer_rescue_fat_esp_mount)" || return 0
+  dst_dir="$(dirname "${base}/${rel}")"
+  mkdir -p "$dst_dir" 2>/dev/null || return 0
+  cp -f "$src" "${base}/${rel}" 2>/dev/null || true
+}
+
 setuphelfer_rescue_payload_hash() {
   python3 - <<'PY'
 import json, hashlib, sys

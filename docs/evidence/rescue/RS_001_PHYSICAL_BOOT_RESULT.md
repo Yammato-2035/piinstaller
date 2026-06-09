@@ -1,7 +1,7 @@
 # RS-001 Physical Boot Result
 
 **Updated:** 2026-06-09  
-**HEAD:** `27b0829`  
+**HEAD:** `17ac7f7` (HW-Retest) → Fix `1.7.10.1`  
 **RS-001 status:** **yellow**
 
 ---
@@ -18,18 +18,25 @@
 
 ---
 
-## Hardware observation — React retest (2026-06-09)
+## Hardware observation — React retest (2026-06-09, Operator)
 
 | Field | Value |
 |-------|-------|
-| UEFI Boot Path | **not observed** (Agent-Lauf) |
-| GRUB visible | **not observed** |
-| React Rescue Shell visible | **not observed** |
-| Old whiptail dialog | **not observed** (neuer Payload nicht gebootet) |
-| Live-Medium warning | **not observed** |
-| Operator hardware test executed | **no** |
+| UEFI Boot Path | **reached** |
+| GRUB visible | **reached** |
+| Live system | **reached** |
+| React Rescue Shell launcher visible | **yes** |
+| React UI URL visible | `http://127.0.0.1:8765/rescue.html` |
+| Graphical React menu visible | **no** |
+| Old whiptail dialog | **no** |
+| Live-Medium warning | not visible in photo / verify from operator notes |
+| Network onboarding failed | **yes** |
+| systemd-networkd-wait-online failed | **yes** |
+| telemetry-push failed | **yes** |
+| Operator hardware test executed | **yes** |
+| Photo evidence | `IMG_31CF232F-F82B-4EF4-AAF7-4176D1539492.jpeg` |
 
-**Reason:** Hardware-Retest erfordert physischen UEFI-Cold-Boot durch Operator. Agent hat nur read-only Stick-Verify durchgeführt.
+**Reason:** React shell reached but no browser/kiosk menu; optional network/telemetry services still fail during boot.
 
 ---
 
@@ -60,6 +67,7 @@ Superseded by React-SquashFS payload update — **neuer Retest ausstehend**.
 
 ## Assessment
 
-- **Not green:** React Rescue Shell auf Hardware nicht belegt.
-- **Not red:** Stick layout + SquashFS-Hash verifiziert; UEFI-Pfad zuvor (alter Payload) erreicht.
-- **Next:** Operator Hardware-Retest → `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` aktualisieren.
+- **Not green:** Grafisches React-Hauptmenü auf Hardware nicht sichtbar (nur URL auf tty1).
+- **Not red:** UEFI→GRUB→Live→React-Launcher erreicht; alter whiptail-Blocker weg.
+- **Fix (1.7.10.1):** Launcher Fallback-TUI + offline-first units — **Rebuild/Payload-Update ausstehend**.
+- **Next:** SquashFS repack + Payload-Update + HW-Retest (nutzbares Menü, keine Boot-Fail-Units).

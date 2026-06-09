@@ -215,6 +215,67 @@ write_rescue_isolinux_branding() {
   } >"${cfg}.tmp" && mv "${cfg}.tmp" "$cfg"
 }
 
+write_rescue_graphical_assets_overlay() {
+  local stage_script="${REPO_ROOT}/scripts/rescue-live/stage-rescue-graphical-assets.sh"
+  [[ -f "$stage_script" ]] || die "missing stage-rescue-graphical-assets.sh"
+  chmod +x "$stage_script"
+  bash "$stage_script"
+}
+
+write_rescue_react_shell_overlay() {
+  local image_src="${REPO_ROOT}/scripts/rescue-live/image"
+  local ui_src="${REPO_ROOT}/build/rescue/ui"
+  local sbin="${BUILD_ROOT}/config/includes.chroot/usr/local/sbin"
+  local share="${BUILD_ROOT}/config/includes.chroot/usr/share/setuphelfer/rescue"
+  local systemd_dir="${BUILD_ROOT}/config/includes.chroot/etc/systemd/system"
+  local wants="${systemd_dir}/multi-user.target.wants"
+  local rescue_backend="${BUILD_ROOT}/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue"
+  local project_version
+  project_version="$(python3 -c "import json; print(json.load(open('${REPO_ROOT}/config/version.json'))['project_version'])")"
+
+  [[ -d "$ui_src" && -f "${ui_src}/rescue.html" ]] \
+    || die "build/rescue/ui missing — run scripts/rescue-live/build-rescue-react-ui.sh first"
+
+  mkdir -p "$sbin" "$share/ui" "$wants" "$rescue_backend"
+  cp -a "${ui_src}/." "${share}/ui/"
+
+  for script in setuphelfer-rescue-ui-launch setuphelfer-rescue-state-write setuphelfer-rescue-evidence-spool-sync setuphelfer-rescue-start-assistant; do
+    copy_host_file "${image_src}/${script}" "${sbin}/${script}" 0755
+  done
+
+  for unit in setuphelfer-rescue-ui.service setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service; do
+    copy_host_file "${image_src}/systemd/${unit}" "${systemd_dir}/${unit}" 0644
+    ln -sf "../${unit}" "${wants}/${unit}"
+  done
+
+  for mod in rescue_boot_status.py rescue_state.py rescue_evidence_spool.py rescue_machine_profile.py rescue_offline_first_policy.py; do
+    copy_host_file "${REPO_ROOT}/backend/rescue/${mod}" "${rescue_backend}/${mod}" 0644
+  done
+  write_text_file "${rescue_backend}/__init__.py" 0644 <<'EOF'
+"""Setuphelfer rescue runtime modules (live image)."""
+EOF
+
+  for loc in de en; do
+    if [[ -f "${REPO_ROOT}/frontend/src/rescue/i18n/${loc}.json" ]]; then
+      mkdir -p "${BUILD_ROOT}/config/includes.chroot/opt/setuphelfer-rescue/i18n"
+      copy_host_file "${REPO_ROOT}/frontend/src/rescue/i18n/${loc}.json" \
+        "${BUILD_ROOT}/config/includes.chroot/opt/setuphelfer-rescue/i18n/${loc}.json" 0644
+    fi
+  done
+
+  write_text_file "${BUILD_ROOT}/config/includes.chroot/opt/setuphelfer-rescue/VERSION" 0644 <<EOF
+${project_version}
+EOF
+
+  write_text_file "${BUILD_ROOT}/config/hooks/normal/011-enable-setuphelfer-rescue-react-shell.hook.chroot" 0755 <<'EOF'
+#!/bin/sh
+set -eu
+systemctl enable setuphelfer-rescue-evidence-spool.service || true
+systemctl enable setuphelfer-rescue-state.service || true
+systemctl enable setuphelfer-rescue-ui.service || true
+EOF
+}
+
 write_rescue_boot_menu_templates() {
   local image_src="${REPO_ROOT}/scripts/rescue-live/image"
   local snippet="${image_src}/setuphelfer-rescue-boot-menu-snippet.cfg"
@@ -255,23 +316,20 @@ EOF
 
   write_text_file "${systemd_dir}/setuphelfer-rescue-network-onboarding.service" 0644 <<'EOF'
 [Unit]
-Description=Setuphelfer Rescue Network Onboarding
+Description=Setuphelfer Rescue Network Onboarding (user-triggered)
 After=NetworkManager.service
-Wants=NetworkManager.service network-online.target
-Before=setuphelfer-rescue-telemetry-push.service
+Wants=NetworkManager.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-network-onboarding
-ConditionPathExists=!/run/setuphelfer-rescue/network-onboarding.done
+ConditionPathExists=/run/setuphelfer-rescue/network-user-requested
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 TimeoutStartSec=300
-ExecStart=/usr/local/sbin/setuphelfer-rescue-network-onboarding --boot-trigger
+ExecStart=/usr/local/sbin/setuphelfer-rescue-network-onboarding --interactive
+SuccessExitStatus=0
 StandardOutput=journal
 StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
 EOF
 
   write_text_file "${systemd_dir}/setuphelfer-rescue-media-check.service" 0644 <<'EOF'
@@ -295,20 +353,18 @@ EOF
 
   write_text_file "${systemd_dir}/setuphelfer-rescue-telemetry-push.service" 0644 <<'EOF'
 [Unit]
-Description=Setuphelfer Rescue Telemetry Push
-After=network-online.target setuphelfer-rescue-network-onboarding.service setuphelfer-rescue-media-check.service
-Wants=network-online.target
+Description=Setuphelfer Rescue Telemetry Push (opt-in only)
+After=setuphelfer-rescue-media-check.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-telemetry-push
+ConditionPathExists=/run/setuphelfer-rescue/telemetry-opt-in
 
 [Service]
 Type=oneshot
 Environment=SETUPHELFER_RESCUE_SCRIPT_DIR=/usr/local/sbin
 ExecStart=/usr/local/sbin/setuphelfer-rescue-telemetry-push
+SuccessExitStatus=0
 StandardOutput=journal
 StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
 EOF
 
   write_text_file "${systemd_dir}/setuphelfer-rescue-telemetry-retry.service" 0644 <<'EOF'
@@ -394,12 +450,20 @@ StandardError=journal
 WantedBy=multi-user.target
 EOF
 
-  ln -sf ../setuphelfer-rescue-network-onboarding.service "${wants}/setuphelfer-rescue-network-onboarding.service"
   ln -sf ../setuphelfer-rescue-media-check.service "${wants}/setuphelfer-rescue-media-check.service"
-  ln -sf ../setuphelfer-rescue-telemetry-push.service "${wants}/setuphelfer-rescue-telemetry-push.service"
   ln -sf ../setuphelfer-rescue-task-pull.service "${wants}/setuphelfer-rescue-task-pull.service"
-  ln -sf ../setuphelfer-rescue-telemetry-retry.timer "${timers}/setuphelfer-rescue-telemetry-retry.timer"
   ln -sf ../setuphelfer-rescue-start-assistant.service "${wants}/setuphelfer-rescue-start-assistant.service"
+
+  write_text_file "${share}/offline-first-boot.marker" 0644 <<'EOF'
+setuphelfer rescue offline-first boot policy active
+EOF
+  mkdir -p "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/systemd-networkd-wait-online.service.d"
+  write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/systemd-networkd-wait-online.service.d/10-setuphelfer-rescue.conf" 0644 <<'EOF'
+[Service]
+ExecStart=
+ExecStart=/bin/true
+TimeoutStartSec=1
+EOF
 
   write_text_file "${BUILD_ROOT}/config/hooks/normal/020-setuphelfer-rescue-boot-menu.hook.binary" 0755 <<'EOF'
 #!/bin/sh
@@ -734,10 +798,7 @@ write_text_file "${BUILD_ROOT}/config/hooks/normal/010-enable-setuphelfer-servic
 set -eu
 systemctl enable NetworkManager.service || true
 systemctl enable setuphelfer-rescue-keyboard.service || true
-systemctl enable setuphelfer-rescue-network-onboarding.service || true
 systemctl enable setuphelfer-rescue-media-check.service || true
-systemctl enable setuphelfer-rescue-telemetry-push.service || true
-systemctl enable setuphelfer-rescue-telemetry-retry.timer || true
 systemctl enable setuphelfer-rescue-start-assistant.service || true
 systemctl enable setuphelfer-rescue-task-pull.service || true
 systemctl enable setuphelfer-backend.service || true
@@ -795,10 +856,7 @@ write_dev_agent_enable_hook() {
 set -eu
 systemctl enable NetworkManager.service || true
 systemctl enable setuphelfer-rescue-keyboard.service || true
-systemctl enable setuphelfer-rescue-network-onboarding.service || true
 systemctl enable setuphelfer-rescue-media-check.service || true
-systemctl enable setuphelfer-rescue-telemetry-push.service || true
-systemctl enable setuphelfer-rescue-telemetry-retry.timer || true
 systemctl enable setuphelfer-rescue-start-assistant.service || true
 systemctl enable setuphelfer-rescue-task-pull.service || true
 systemctl enable setuphelfer-backend.service || true
@@ -811,10 +869,7 @@ EOF
 set -eu
 systemctl enable NetworkManager.service || true
 systemctl enable setuphelfer-rescue-keyboard.service || true
-systemctl enable setuphelfer-rescue-network-onboarding.service || true
 systemctl enable setuphelfer-rescue-media-check.service || true
-systemctl enable setuphelfer-rescue-telemetry-push.service || true
-systemctl enable setuphelfer-rescue-telemetry-retry.timer || true
 systemctl enable setuphelfer-rescue-start-assistant.service || true
 systemctl enable setuphelfer-rescue-task-pull.service || true
 systemctl enable setuphelfer-backend.service || true
@@ -865,6 +920,9 @@ write_rescue_serial_boot_markers_service
 write_rescue_boot_menu_templates
 write_rescue_isolinux_branding
 write_rescue_network_telemetry_overlay
+"${REPO_ROOT}/scripts/rescue-live/build-rescue-react-ui.sh"
+write_rescue_graphical_assets_overlay
+write_rescue_react_shell_overlay
 SERIAL_MARKER_WANTS="${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-serial-boot-markers.service"
 if [[ "${RESCUE_BUILD_PROFILE}" != "developer-qemu" ]]; then
   rm -f "$SERIAL_MARKER_WANTS"

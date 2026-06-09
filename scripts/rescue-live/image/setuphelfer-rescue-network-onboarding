@@ -29,6 +29,22 @@ elif [[ "$MODE" == "--boot-trigger" ]]; then
   if setuphelfer_rescue_is_qemu && [[ "${SETUPHELFER_RESCUE_NETWORK_ONBOARDING_FORCE:-}" != "1" ]]; then
     ERROR_CODE="SKIPPED_QEMU_LAB"
     EXIT_CODE=0
+  elif ! grep -Eq 'setuphelfer_network_onboarding=1' /proc/cmdline 2>/dev/null; then
+    ERROR_CODE="SKIPPED_BOOT_WAIT_USER"
+    EXIT_CODE=0
+    setuphelfer_rescue_write_json "$OUT_RUN" <<EOF
+{
+  "checked_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "mode": "$MODE",
+  "status": "skipped",
+  "reason": "network_onboarding_waits_for_user_action",
+  "exit_code": 0,
+  "secrets_exposed": false
+}
+EOF
+    cp -f "$OUT_RUN" "$OUT_TMP" 2>/dev/null || true
+    touch "${SETUPHELFER_RESCUE_STATE_DIR}/network-onboarding.done" 2>/dev/null || true
+    exit 0
   elif grep -Eq 'setuphelfer_network_onboarding=1' /proc/cmdline 2>/dev/null; then
     INTERACTIVE=true
   fi
@@ -133,9 +149,5 @@ setuphelfer_rescue_write_json "$OUT_RUN" <<EOF
 EOF
 cp -f "$OUT_RUN" "$OUT_TMP" 2>/dev/null || true
 touch "${SETUPHELFER_RESCUE_STATE_DIR}/network-onboarding.done" 2>/dev/null || true
-
-if [[ "$DEFAULT_ROUTE" == true && "$TELEMETRY_OK" == true && "$MODE" == "--boot-trigger" ]]; then
-  systemctl start setuphelfer-rescue-telemetry-push.service 2>/dev/null || true
-fi
 
 exit "$EXIT_CODE"

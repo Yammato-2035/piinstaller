@@ -1,6 +1,6 @@
 #!/bin/bash
 # Collect rescue diagnostics and POST to telemetry ingest (with local spool on failure).
-set -euo pipefail
+set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
@@ -18,6 +18,21 @@ BUILDER="${SCRIPT_DIR}/setuphelfer-rescue-telemetry-build-payload.py"
 
 setuphelfer_rescue_ensure_state_dir
 mkdir -p "$SPOOL_DIR"
+
+if [[ "${SETUPHELFER_RESCUE_TELEMETRY_OPT_IN:-}" != "1" ]] \
+  && ! grep -Eq 'setuphelfer_telemetry_opt_in=1' /proc/cmdline 2>/dev/null \
+  && [[ ! -f /run/setuphelfer-rescue/telemetry-opt-in ]]; then
+  setuphelfer_rescue_write_json "$ACK_RUN" <<EOF
+{
+  "status": "skipped",
+  "reason": "telemetry_disabled_or_no_consent",
+  "exit_code": 0,
+  "secrets_exposed": false
+}
+EOF
+  cp -f "$ACK_RUN" "$ACK_TMP" 2>/dev/null || true
+  exit 0
+fi
 
 export SETUPHELFER_RESCUE_ISO_SHA256="$(setuphelfer_rescue_iso_sha256)"
 

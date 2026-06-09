@@ -18,16 +18,23 @@ ready_for_operator_retest: true
 
 ---
 
-## Operator-Befund (React Retest)
+## Operator-Befund (React Retest 2026-06-09)
 
 ```text
-UEFI: not_observed (agent run)
-GRUB: not_observed
-Old whiptail dialog: not_observed
-React rescue shell visible: not_observed
-Live-Medium warning: not_observed
-Hardware retest executed: no
+UEFI: reached
+GRUB: reached
+Live system: reached
+React Rescue Shell launcher visible: yes
+React UI URL visible: http://127.0.0.1:8765/rescue.html
+Graphical React menu visible: no
+Old whiptail blocker: no
+Live-Medium warning: not visible in photo
+Network onboarding failed: yes
+systemd-networkd-wait-online failed: yes
+telemetry-push failed: yes
+Hardware retest executed: yes
 RS-001 status: yellow
+Reason: React shell reached but no browser/kiosk menu; optional network/telemetry services still fail during boot
 ```
 
 ---
@@ -46,12 +53,13 @@ Live-Medium warning: yes
 
 ## Blocker für grün
 
-React Rescue Shell muss auf **echter Hardware** nach UEFI→GRUB→Live sichtbar sein — noch nicht belegt.
+Nutzbares **grafisches** React-Hauptmenü (Kiosk/Browser) muss auf Hardware sichtbar sein — **nicht** nur URL auf Konsole.
 
 ---
 
 ## RS-001
 
 | Status | yellow |
-| Reason | Payload mit React Shell auf Stick; HW-Retest ausstehend |
-| Next | Operator cold-boot + Evidence aktualisieren |
+| Reason | Launcher exposes URL only; optional boot services fail |
+| Fix | `1.7.10.1` launcher + offline-first units (workspace only) |
+| Next | Rebuild SquashFS, payload update, hardware retest |

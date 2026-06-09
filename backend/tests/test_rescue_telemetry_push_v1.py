@@ -26,11 +26,12 @@ class RescueTelemetryPushTests(unittest.TestCase):
         text = ui.read_text(encoding="utf-8")
         self.assertNotIn("telemetry-push", text)
 
-    def test_legacy_telemetry_unit_documented_as_optional_blocker(self) -> None:
+    def test_telemetry_not_enabled_at_boot_in_hook(self) -> None:
         text = PREPARE.read_text(encoding="utf-8")
         self.assertIn("setuphelfer-rescue-telemetry-push.service", text)
-        # Foundation documents migration away from boot-time telemetry — legacy still in prepare tree.
-        self.assertIn("network-online.target", text)
+        hook_section = text.split("010-enable-setuphelfer-services.hook.chroot", 1)[1]
+        self.assertNotIn("systemctl enable setuphelfer-rescue-telemetry-push.service", hook_section)
+        self.assertNotIn("systemctl enable setuphelfer-rescue-network-onboarding.service", hook_section)
 
 
 if __name__ == "__main__":

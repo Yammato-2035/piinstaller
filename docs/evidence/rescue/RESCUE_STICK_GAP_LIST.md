@@ -1,13 +1,13 @@
 # Setuphelfer Rettungsstick — Gap-Liste
 
-**Analyse-Datum:** 2026-06-09 · **HEAD:** `27b0829` · **Branch:** `main`
+**Analyse-Datum:** 2026-06-09 · **HEAD:** `17ac7f7` · **Branch:** `main` · **Fix:** `1.7.10.1`
 
 Prioritäten: **P0** = zwingend v1 · **P1** = wichtig v1 · **P2** = v1.1 · **P3** = v2/später
 
 | Bereich | Soll-Funktion | IST-Status | Beleg | Risiko | Priorität | Empfohlene Phase |
 |---------|---------------|------------|-------|--------|-----------|------------------|
-| Boot | x86_64 UEFI HW-Boot | partial (gelb: Payload OK, React-HW-Retest ausstehend) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Kein Cold-Boot-Befund nach React-Payload | P0 | Operator UEFI-Retest |
-| Boot | Rescue React Shell offline-first | partial (im Stick-SquashFS, HW unbewiesen) | `RS_001_REACT_RESCUE_SQUASHFS_CONTENT_CHECK.md` | Browser/Kiosk fehlt im Image | P0 | Operator HW-Retest |
+| Boot | x86_64 UEFI HW-Boot | partial (gelb: UEFI→GRUB→Live OK, kein grafisches Menü) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Launcher nur URL; optional services fail | P0 | SquashFS rebuild + HW-Retest |
+| Boot | Rescue React Shell offline-first | partial (Launcher erreicht, Kiosk fehlt) | `RS_001_REACT_UI_LAUNCHER_ANALYSIS.md` | Kein Browser im Image; Fix 1.7.10.1 nicht auf Stick | P0 | Payload-Update nach Rebuild |
 | Boot | Live-Medium-Stabilität FAT32-ESP | partial (Fix im Payload, Retest offen) | `RS_001_PHYSICAL_BOOT_RESULT.md` | Alter whiptail-Befund superseded | P0 | Operator HW-Retest |
 | Boot | x86_64 Legacy BIOS HW | partial (QEMU only) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` | Ältere BIOS-Geräte | P1 | Phase 1 |
 | Boot | RS-001…RS-008 grün | missing (alle rot) | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` | Kein Release-Nachweis | P0 | Phase 1–3 |
@@ -59,5 +59,5 @@ Prioritäten: **P0** = zwingend v1 · **P1** = wichtig v1 · **P2** = v1.1 · **
 | Tests | QEMU→HW Parität | partial | Standard-ISO ohne ttyS0 — Serial leer | Falscher Grün-Eindruck | P0 | Operator HW-Boot |
 | Tests | ISO-Rebuild nach Workspace-Änderungen | partial | Build Exit 20 (sudo) | Drift 1.7.9.0 vs. Runtime 1.7.8.4 | P1 | Operator-Rebuild optional |
 | Ops | USB-Write reproduzierbar | partial | Handoff RS_001_HW_BOOT_OPERATOR_HANDOFF.md | Operator-Pflicht | P0 | Operator FAT32-ESP |
-| Tests | RS-001 Evidence | rot | RS-1.json Template | Kein HW-Nachweis | P0 | Operator nach Handoff |
+| Tests | RS-001 Evidence | partial (gelb) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | HW-Retest: URL ja, Menü nein | P0 | Rebuild + Retest für green |
 | Ops | FAT32-ESP als Standard-Writer | partial | `rescue_fat32_esp_usb_writer.py` | isohybrid-Probleme | P2 | v1.1 |

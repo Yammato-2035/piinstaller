@@ -1,8 +1,8 @@
 [Unit]
 Description=Setuphelfer Rescue React Shell (offline-first)
-After=local-fs.target
-Conflicts=rescue-start-assistant-getty@tty1.service
+After=local-fs.target setuphelfer-rescue-state.service
 ConditionPathExists=/usr/share/setuphelfer/rescue/ui/rescue.html
+ConditionKernelCommandLine=!setuphelfer_start_assistant=1
 
 [Service]
 Type=simple

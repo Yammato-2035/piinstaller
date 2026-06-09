@@ -1,0 +1,164 @@
+#!/bin/bash
+# Setuphelfer Rescue React shell launcher — offline-first, honest status reporting.
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+set +e
+
+UI_ROOT="/usr/share/setuphelfer/rescue/ui"
+HTML="${UI_ROOT}/rescue.html"
+PORT="${SETUPHELFER_RESCUE_UI_PORT:-8765}"
+UI_URL="http://127.0.0.1:${PORT}/rescue.html"
+STATUS_RUN="/run/setuphelfer/rescue-ui-status.json"
+LOG_RUN="/run/setuphelfer/rescue-ui-launch.log"
+SRV_PID=""
+
+mkdir -p /run/setuphelfer "$(dirname "$LOG_RUN")" 2>/dev/null || true
+exec > >(tee -a "$LOG_RUN") 2>&1
+
+write_status() {
+  local display_mode="$1" status="$2" reason="$3" browser_candidate="${4:-}" browser_started="${5:-false}" menu_visible="${6:-false}" server_started="${7:-false}"
+  local payload
+  payload="$(python3 - <<PY
+import json
+print(json.dumps({
+    "schema_version": 1,
+    "ui_url": ${UI_URL@Q},
+    "server_started": ${server_started@Q} == "true",
+    "browser_candidate": ${browser_candidate@Q},
+    "browser_started": ${browser_started@Q} == "true",
+    "display_mode": ${display_mode@Q},
+    "menu_visible": ${menu_visible@Q} == "true",
+    "status": ${status@Q},
+    "reason": ${reason@Q},
+    "network_required": False,
+    "telemetry_required": False,
+    "rescue_ui": {
+        "server_status": "started" if ${server_started@Q} == "true" else "failed",
+        "url": ${UI_URL@Q},
+        "display_mode": ${display_mode@Q},
+        "menu_visible": ${menu_visible@Q} == "true",
+        "status": ${status@Q},
+        "reason": ${reason@Q},
+    },
+    "secrets_exposed": False,
+}, indent=2))
+PY
+)"
+  printf '%s\n' "$payload" >"$STATUS_RUN"
+  setuphelfer_rescue_mirror_evidence_file "$STATUS_RUN" "setuphelfer/evidence/boot/rescue-ui-status.json" 2>/dev/null || true
+  setuphelfer_rescue_mirror_evidence_file "$LOG_RUN" "setuphelfer/logs/boot/rescue-ui-launch.log" 2>/dev/null || true
+}
+
+cleanup() {
+  [[ -n "$SRV_PID" ]] && kill "$SRV_PID" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+[[ -f "$HTML" ]] || {
+  write_status "failed" "failed" "missing_rescue_html" "" false false false
+  echo "missing rescue UI: $HTML" >&2
+  exit 2
+}
+
+cd "$UI_ROOT"
+python3 -m http.server "$PORT" --bind 127.0.0.1 >>"$LOG_RUN" 2>&1 &
+SRV_PID=$!
+sleep 1
+if ! kill -0 "$SRV_PID" 2>/dev/null; then
+  write_status "failed" "failed" "http_server_failed" "" false false false
+  exit 3
+fi
+
+GRAPHICAL_BROWSER=""
+TEXT_BROWSER=""
+for candidate in chromium chromium-browser firefox-esr firefox; do
+  if command -v "$candidate" >/dev/null 2>&1; then
+    GRAPHICAL_BROWSER="$candidate"
+    break
+  fi
+done
+for candidate in w3m links links2 lynx; do
+  if command -v "$candidate" >/dev/null 2>&1; then
+    TEXT_BROWSER="$candidate"
+    break
+  fi
+done
+
+if [[ -n "$GRAPHICAL_BROWSER" ]]; then
+  write_status "kiosk" "ready" "graphical_browser_starting" "$GRAPHICAL_BROWSER" true true true
+  if [[ -c /dev/tty1 ]]; then chvt 1 2>/dev/null || true; fi
+  exec "$GRAPHICAL_BROWSER" --kiosk --app="$UI_URL"
+fi
+
+run_fallback_tui() {
+  local tty="/dev/tty1"
+  [[ -c "$tty" ]] || tty="/dev/tty"
+  {
+    echo ""
+    echo "Setuphelfer Rettungsstick"
+    echo ""
+    echo "Die grafische Oberfläche konnte nicht automatisch geöffnet werden."
+    echo ""
+    echo "Lokale UI:"
+    echo "$UI_URL"
+    echo ""
+    echo "Auswahl:"
+    echo "1. Status anzeigen"
+    echo "2. Logs auf Stick schreiben"
+    echo "3. Netzwerk verbinden"
+    echo "4. Herunterfahren"
+    echo "5. Neustart"
+    echo ""
+  } >"$tty" 2>/dev/null || true
+
+  if command -v whiptail >/dev/null 2>&1 && [[ -r "$tty" ]]; then
+    while true; do
+      _choice="$(whiptail --backtitle "Setuphelfer" --title "Rettungsstick" --menu "Grafische UI nicht verfügbar.\n${UI_URL}" 18 72 6 \
+        "1" "Status anzeigen" \
+        "2" "Logs auf Stick schreiben" \
+        "3" "Netzwerk verbinden" \
+        "4" "Herunterfahren" \
+        "5" "Neustart" 3>&1 1>"$tty" 2>&3)" || break
+      case "$_choice" in
+        1) whiptail --msgbox "$(cat "$STATUS_RUN" 2>/dev/null || echo status_missing)" 16 72 3>&1 1>"$tty" 2>&3 || true ;;
+        2) write_status "fallback_tui" "review_required" "logs_refreshed" "${TEXT_BROWSER:-}" false true true
+           setuphelfer_rescue_mirror_evidence_file "$LOG_RUN" "setuphelfer/logs/boot/rescue-ui-launch.log" 2>/dev/null || true
+           whiptail --msgbox "Logs unter setuphelfer/logs/boot/ auf dem Stick (best effort)." 8 60 3>&1 1>"$tty" 2>&3 || true ;;
+        3) touch /run/setuphelfer-rescue/network-user-requested 2>/dev/null || true
+           "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --interactive || true ;;
+        4) systemctl poweroff || true; break ;;
+        5) systemctl reboot || true; break ;;
+      esac
+    done
+    return 0
+  fi
+
+  while true; do
+    echo -n "Auswahl [1-5]: " >"$tty"
+    read -r _choice <"$tty" || break
+    case "$_choice" in
+      1) cat "$STATUS_RUN" >"$tty" 2>/dev/null || true ;;
+      2) setuphelfer_rescue_mirror_evidence_file "$LOG_RUN" "setuphelfer/logs/boot/rescue-ui-launch.log" 2>/dev/null || true ;;
+      3) touch /run/setuphelfer-rescue/network-user-requested 2>/dev/null || true
+         "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --interactive || true ;;
+      4) systemctl poweroff || true; break ;;
+      5) systemctl reboot || true; break ;;
+      *) echo "Ungültige Auswahl" >"$tty" ;;
+    esac
+  done
+}
+
+if [[ -n "$TEXT_BROWSER" ]]; then
+  write_status "fallback_tui" "review_required" "no_graphical_browser_using_text_browser" "$TEXT_BROWSER" false false true
+  if [[ -c /dev/tty1 ]]; then chvt 1 2>/dev/null || true; fi
+  exec "$TEXT_BROWSER" -g "$UI_URL"
+fi
+
+write_status "fallback_tui" "review_required" "no_graphical_browser_available_or_not_started" "" false true true
+run_fallback_tui
+write_status "url_only" "review_required" "no_graphical_browser_available_or_not_started" "" false false true
+wait "$SRV_PID" 2>/dev/null || true
+exit 0

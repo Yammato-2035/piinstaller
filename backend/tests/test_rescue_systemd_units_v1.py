@@ -27,6 +27,12 @@ class RescueSystemdUnitsTests(unittest.TestCase):
         hits = payload.script_has_forbidden_destructive_commands(UPDATE_SCRIPT.read_text(encoding="utf-8"))
         self.assertEqual(hits, [])
 
+    def test_network_onboarding_unit_not_boot_autostart(self) -> None:
+        prepare = (REPO / "scripts/rescue-live/prepare-controlled-live-build-tree.sh").read_text(encoding="utf-8")
+        block = prepare.split("Description=Setuphelfer Rescue Network Onboarding", 1)[1].split("EOF", 1)[0]
+        self.assertIn("network-user-requested", block)
+        self.assertNotIn("--boot-trigger", block)
+
 
 if __name__ == "__main__":
     unittest.main()
