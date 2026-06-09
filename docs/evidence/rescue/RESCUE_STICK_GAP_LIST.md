@@ -1,13 +1,13 @@
 # Setuphelfer Rettungsstick — Gap-Liste
 
-**Analyse-Datum:** 2026-06-09 · **HEAD:** `17ac7f7` · **Branch:** `main` · **Fix:** `1.7.10.1`
+**Analyse-Datum:** 2026-06-09 · **HEAD:** `dad1db5` · **Branch:** `main` · **Fix:** `1.7.10.1`
 
 Prioritäten: **P0** = zwingend v1 · **P1** = wichtig v1 · **P2** = v1.1 · **P3** = v2/später
 
 | Bereich | Soll-Funktion | IST-Status | Beleg | Risiko | Priorität | Empfohlene Phase |
 |---------|---------------|------------|-------|--------|-----------|------------------|
 | Boot | x86_64 UEFI HW-Boot | partial (gelb: UEFI→GRUB→Live OK, kein grafisches Menü) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Launcher nur URL; optional services fail | P0 | SquashFS rebuild + HW-Retest |
-| Boot | Rescue React Shell offline-first | partial (Launcher erreicht, Kiosk fehlt) | `RS_001_REACT_UI_LAUNCHER_ANALYSIS.md` | Kein Browser im Image; Fix 1.7.10.1 nicht auf Stick | P0 | Payload-Update nach Rebuild |
+| Boot | Rescue React Shell offline-first | partial (SquashFS 1.7.10.1 bereit, Stick-Update ausstehend) | `RS_001_REACT_SHELL_LAUNCHER_SQUASHFS_CONTENT_CHECK.md` | Operator sudo für Payload-Update | P0 | Payload-Update + HW-Retest |
 | Boot | Live-Medium-Stabilität FAT32-ESP | partial (Fix im Payload, Retest offen) | `RS_001_PHYSICAL_BOOT_RESULT.md` | Alter whiptail-Befund superseded | P0 | Operator HW-Retest |
 | Boot | x86_64 Legacy BIOS HW | partial (QEMU only) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` | Ältere BIOS-Geräte | P1 | Phase 1 |
 | Boot | RS-001…RS-008 grün | missing (alle rot) | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` | Kein Release-Nachweis | P0 | Phase 1–3 |

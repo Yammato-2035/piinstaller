@@ -1,5 +1,5 @@
 metadata:
-  head: "17ac7f7"
+  head: "dad1db5"
   rescue_react_shell_foundation: true
   rescue_react_shell_squashfs_repacked: true
   rescue_ui_mode_target: react
@@ -28,7 +28,9 @@ metadata:
   rs001_react_hardware_retest_observed: true
   rs001_react_graphical_menu_observed: false
   rs001_launcher_fix_version: "1.7.10.1"
+  rs001_launcher_fix_squashfs_sha256: "0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc"
   rs001_launcher_fix_on_stick: false
+  rs001_payload_update_1_7_10_1: blocked_operator_sudo_required
 
 capabilities:
   boot:
