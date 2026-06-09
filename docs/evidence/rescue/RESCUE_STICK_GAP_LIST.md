@@ -1,14 +1,14 @@
 # Setuphelfer Rettungsstick — Gap-Liste
 
-**Analyse-Datum:** 2026-06-09 · **HEAD:** `6f3c783` · **Branch:** `main`
+**Analyse-Datum:** 2026-06-09 · **HEAD:** `27b0829` · **Branch:** `main`
 
 Prioritäten: **P0** = zwingend v1 · **P1** = wichtig v1 · **P2** = v1.1 · **P3** = v2/später
 
 | Bereich | Soll-Funktion | IST-Status | Beleg | Risiko | Priorität | Empfohlene Phase |
 |---------|---------------|------------|-------|--------|-----------|------------------|
-| Boot | x86_64 UEFI HW-Boot | partial (gelb: Boot+Dialog OK, Live-Medium-Warnung) | `RS_001_PHYSICAL_BOOT_RESULT.md`, `RS_001_FAT32_ESP_PAYLOAD_UPDATE_RESULT.md` | Stick hat noch alte Squashfs | P0 | Payload-Update + Operator-Retest |
-| Boot | Rescue React Shell offline-first | partial (Foundation Workspace) | `RS_001_RESCUE_UI_ARCHITECTURE_ANALYSIS.md` | Alter whiptail-Flow blockiert UX | P0 | SquashFS rebuild + HW retest |
-| Boot | Live-Medium-Stabilität FAT32-ESP | partial (Hash OK, alter UI-Flow) | `RS_001_PHYSICAL_BOOT_RESULT.md` | UX + optional services | P0 | React shell on stick + retest |
+| Boot | x86_64 UEFI HW-Boot | partial (gelb: Payload OK, React-HW-Retest ausstehend) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Kein Cold-Boot-Befund nach React-Payload | P0 | Operator UEFI-Retest |
+| Boot | Rescue React Shell offline-first | partial (im Stick-SquashFS, HW unbewiesen) | `RS_001_REACT_RESCUE_SQUASHFS_CONTENT_CHECK.md` | Browser/Kiosk fehlt im Image | P0 | Operator HW-Retest |
+| Boot | Live-Medium-Stabilität FAT32-ESP | partial (Fix im Payload, Retest offen) | `RS_001_PHYSICAL_BOOT_RESULT.md` | Alter whiptail-Befund superseded | P0 | Operator HW-Retest |
 | Boot | x86_64 Legacy BIOS HW | partial (QEMU only) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` | Ältere BIOS-Geräte | P1 | Phase 1 |
 | Boot | RS-001…RS-008 grün | missing (alle rot) | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` | Kein Release-Nachweis | P0 | Phase 1–3 |
 | Boot | ARM64 Rescue-Image | planned/deferred | `RESCUE_TARGET_ARCHITECTURES.md` | Keine ARM-Laptops/Pi | P3 | v2 |

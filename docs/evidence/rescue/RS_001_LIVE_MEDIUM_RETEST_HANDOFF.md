@@ -1,42 +1,43 @@
-# RS-001 Live-Medium Retest — Operator Handoff
+# RS-001 Live Medium Retest Handoff — React Rescue Shell
 
-**Date:** 2026-06-09  
-**RS-001:** yellow  
-**ready_for_operator_retest:** **true**
+**Datum:** 2026-06-09  
+**RS-001:** **yellow**  
+**Ready for operator retest:** **true**
 
----
+## Payload-Stand (verifiziert)
 
-## Voraussetzungen erfüllt
+```text
+Version: 1.7.10.0
+SquashFS SHA256: a54aae1d902523cf08b37105b1f6001e048d610b57210520ea2e1a649b3fe820
+payload_update_status: success
+verify_status: success
+```
 
-| Check | Status |
-|-------|--------|
-| SquashFS-Hash auf Stick | `ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a` |
-| `.sqtmp` entfernt | **ja** |
-| Verify mit `--expected-squashfs-sha256` | **success** |
-| Live-Medium-Fix im SquashFS | **ja** |
+## Operator-Checkliste (Hardware)
 
----
+1. Rechner vollständig herunterfahren
+2. Stick `/dev/sdb` (SETUPHELFER) einstecken
+3. UEFI-Bootmenü → USB/Setuphelfer
+4. GRUB → „Setuphelfer Rettung starten“
+5. Beobachten: **kein** whiptail-OK-Dialog, **keine** Live-Medium-Warnung
+6. Erwartung: React Rescue Shell / Setuphelfer-Branding auf tty1
+7. **Nichts** starten (kein Backup/Restore/Repair/Install)
 
-## Hardware-Retest (MSI/Referenzhardware)
+## Erfolgskriterium (RS-001 green)
 
-1. UEFI-Bootmenü zeigt Stick (`/dev/sdb`, UUID `C9C8-394A`)
-2. GRUB erscheint
-3. „Setuphelfer Rettung starten“ startet
-4. **Keine** Warnung „Live-Medium nicht stabil“
-5. Setuphelfer-Menü/TUI erscheint
-6. Optional: `cat /run/setuphelfer-rescue/media-check.json` → `live_media_runtime_stable: true`
-7. **Keine** Reparatur/Installation starten
+```text
+React Rescue Hauptmenü sichtbar
+Setuphelfer Logo/Branding sichtbar
+kein whiptail-Blocker
+keine Live-Medium-Warnung
+Netzwerk/Telemetrie blockieren nicht vor Menü
+```
 
----
+## Bei Fehlschlag
 
-## RS-001 grün nur wenn
+Logs sammeln (Phase-4-Befehle in Strict-Mode-Prompt) → `SETUPHELFER/setuphelfer/evidence/boot/rs001-react-shell-bootlogs.tgz`
 
-Setuphelfer-Menü/TUI **ohne** Live-Medium-Warnung erreicht wird.
+## Dokumentation nach Retest
 
----
-
-## Evidence liefern
-
-- Screenshot/Foto Bootmenü + TUI
-- `media-check.json` Inhalt
-- `docs/evidence/rescue/RS_001_PHYSICAL_BOOT_RESULT.md` aktualisieren
+- `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md`
+- `RS_001_PHYSICAL_BOOT_RESULT.md`

@@ -1,29 +1,48 @@
 # RS-001 Physical Boot Result
 
 **Updated:** 2026-06-09  
-**HEAD (analysis):** `0bbe01b`  
+**HEAD:** `27b0829`  
 **RS-001 status:** **yellow**
 
 ---
 
-## Hardware observation (operator Phase 3 retest)
+## Payload-Stand (aktuell)
 
 | Field | Value |
 |-------|-------|
-| UEFI | reached |
-| GRUB | reached |
-| Old dialog visible | **yes** (whiptail OK / start-assistant) |
-| Modern rescue shell visible | **no** |
-| Only OK dialog | yes |
-| Live-Medium warning | yes (legacy flow; squashfs fix on stick) |
-| Network/WLAN wizard before failure | no (wizard after OK) |
-| Message „Keine WLAN-Netze gefunden“ | yes |
-| systemd-networkd-wait-online failed | yes |
-| setuphelfer-rescue-telemetry-push failed | yes |
-| User-facing flow quality | **failed** |
-| Repair/install allowed | **no** |
+| Version | `1.7.10.0` |
+| SquashFS on stick | `a54aae1d902523cf08b37105b1f6001e048d610b57210520ea2e1a649b3fe820` |
+| React Rescue Shell in SquashFS | **yes** (repack verified) |
+| Payload update | **success** |
+| Verify hash gate | **success** |
 
-**Reason:** Old text UI and optional network/telemetry services break offline-first boot flow.
+---
+
+## Hardware observation — React retest (2026-06-09)
+
+| Field | Value |
+|-------|-------|
+| UEFI Boot Path | **not observed** (Agent-Lauf) |
+| GRUB visible | **not observed** |
+| React Rescue Shell visible | **not observed** |
+| Old whiptail dialog | **not observed** (neuer Payload nicht gebootet) |
+| Live-Medium warning | **not observed** |
+| Operator hardware test executed | **no** |
+
+**Reason:** Hardware-Retest erfordert physischen UEFI-Cold-Boot durch Operator. Agent hat nur read-only Stick-Verify durchgeführt.
+
+---
+
+## Prior observation (pre-React payload, 2026-06-09 Phase 3)
+
+| Field | Value |
+|-------|-------|
+| UEFI / GRUB | reached |
+| Old whiptail dialog | yes |
+| Live-Medium warning | yes |
+| React shell | no (alter SquashFS) |
+
+Superseded by React-SquashFS payload update — **neuer Retest ausstehend**.
 
 ---
 
@@ -32,15 +51,15 @@
 | Field | Value |
 |-------|-------|
 | Device | `/dev/sdb` |
+| Model / Serial | Ultra Line / `24111412110686` |
 | FAT label | `SETUPHELFER` |
 | GPT partition name | `SETUPHELFER_RESCUE` |
-| FAT UUID | `C9C8-394A` |
-| SquashFS hash (verified) | `ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a` |
+| SquashFS hash (verified read-only) | `a54aae1d902523cf08b37105b1f6001e048d610b57210520ea2e1a649b3fe820` |
 
 ---
 
 ## Assessment
 
-- **Not green:** UX flow unusable; optional services surface as failures before calm main menu.
-- **Not red:** UEFI → GRUB → dialog path proven; payload hash verified on stick.
-- **Next:** Rebuild squashfs with React Rescue Shell foundation; hardware retest for new UI.
+- **Not green:** React Rescue Shell auf Hardware nicht belegt.
+- **Not red:** Stick layout + SquashFS-Hash verifiziert; UEFI-Pfad zuvor (alter Payload) erreicht.
+- **Next:** Operator Hardware-Retest → `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` aktualisieren.

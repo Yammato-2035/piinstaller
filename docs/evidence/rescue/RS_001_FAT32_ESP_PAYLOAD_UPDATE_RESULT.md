@@ -1,36 +1,33 @@
-# RS-001 FAT32 ESP Live Payload Update — Result
+# RS-001 FAT32 ESP Payload Update — React Rescue Shell
 
-**Datum:** 2026-06-09 (Staging-Cleanup abgeschlossen)  
-**Version:** `1.7.9.5`  
-**RS-001:** yellow — **ready_for_operator_retest: true**
+**Datum:** 2026-06-09  
+**Status:** **success**
 
----
-
-## Zusammenfassung
+## Ergebnis
 
 | Feld | Wert |
 |------|------|
-| SquashFS auf Stick | **ac95ebc3…** (neu, verifiziert) |
-| Payload kopiert | **ja** |
-| Metadata geschrieben | **ja** |
-| `.sqtmp` entfernt | **ja** |
-| Verify mit Hash-Gate | **success** |
-| Hardware-Retest | **freigegeben** |
+| `payload_update_status` | **success** |
+| `verify_status` | **success** |
+| `stick_squashfs_hash_ok` | **true** |
+| `staging_artifacts_cleaned` | **true** |
+| `ready_for_operator_retest` | **true** |
+| `old_squashfs_sha256` | `ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a` |
+| `new_squashfs_sha256` | `a54aae1d902523cf08b37105b1f6001e048d610b57210520ea2e1a649b3fe820` |
+| Target | `/dev/sdb` / `/dev/sdb1` |
+| Evidence | `fat32_esp_payload_update_20260609_211218` |
 
----
+## Vorbereitung
 
-## Verlauf
+| Schritt | Status |
+|---------|--------|
+| React UI Build | **success** |
+| SquashFS Repack (`1.7.10.0`) | **success** |
+| Unit-Tests | **ok** |
 
-1. Lauf `fat32_esp_payload_update_20260609_165459`: SquashFS + Metadata OK, Verify failed wegen `.sqtmp`.
-2. Staging-Cleanup: nur `/media/gabriel/SETUPHELFER/.sqtmp` entfernt (kein Re-Copy).
-3. Verify erneut: `OK: filesystem.squashfs sha256 matches expected`, Exit 0.
-
----
-
-## Operator — Hardware-Retest
+## RS-001
 
 ```text
-UEFI → GRUB → Setuphelfer-TUI ohne "Live-Medium nicht stabil"
+RS-001: yellow
+Reason: payload updated; hardware retest pending
 ```
-
-Evidence nach Retest: `docs/evidence/rescue/RS_001_PHYSICAL_BOOT_RESULT.md`

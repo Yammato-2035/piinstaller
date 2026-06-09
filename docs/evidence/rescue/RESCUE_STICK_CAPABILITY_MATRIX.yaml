@@ -1,27 +1,31 @@
 metadata:
-  head: "0bbe01b"
+  head: "27b0829"
   rescue_react_shell_foundation: true
+  rescue_react_shell_squashfs_repacked: true
   rescue_ui_mode_target: react
   branch: main
   analysis_date: "2026-06-09"
-  gate_status: "exit_20_legacy_dev_dashboard_404_non_blocking"
-  project_version: "1.7.9.3"
+  gate_status: "exit_0_profile_gate_non_blocking"
+  project_version: "1.7.10.0"
+  squashfs_repack_sha256: "a54aae1d902523cf08b37105b1f6001e048d610b57210520ea2e1a649b3fe820"
+  fat32_payload_update: success
+  rs001_react_hardware_retest: not_observed
   analysis_mode: rescue_payload_update_handoff
   rs001_phase1_date: "2026-06-08"
   rs001_phase2_date: "2026-06-09"
   rs001_phase1_iso_sha256: "c9de3751f7fafe51c836d112bac99331c06252a01430b41f2a50b432ca63f194"
-  rs001_operator_hw_boot: "yellow_hw_boot_live_medium_warning_pending_payload_update"
+  rs001_operator_hw_boot: yellow_react_payload_hw_retest_pending
   rs001_status: yellow
   rs001_live_medium_check_fix_head: "6f3c783"
-  rs001_squashfs_repack_sha256: "ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a"
-  rs001_stick_squashfs_sha256: "921c3e23bfbeb99a6295b80be5f8b5d40b55994019b0e614fef633138c6bdfe7"
   rs001_payload_update_script: "scripts/rescue-live/update-fat32-esp-live-payload.sh"
-  rs001_ready_for_operator_retest: false
-  rs001_react_shell_on_stick: false
+  rs001_ready_for_operator_retest: true
+  rs001_react_shell_on_stick: true
+  rs001_stick_squashfs_sha256: "a54aae1d902523cf08b37105b1f6001e048d610b57210520ea2e1a649b3fe820"
   rs001_false_success_corrected: true
   rs001_payload_update_status: success
   rs001_staging_cleanup_date: "2026-06-09"
-  rs001_stick_squashfs_sha256: "ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a"
+  rs001_react_hardware_retest_date: "2026-06-09"
+  rs001_react_hardware_retest_observed: false
 
 capabilities:
   boot:
