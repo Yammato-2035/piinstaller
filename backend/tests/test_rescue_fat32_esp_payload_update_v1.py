@@ -124,6 +124,48 @@ class RescueFat32EspPayloadUpdateTests(unittest.TestCase):
         text = SCRIPT.read_text(encoding="utf-8")
         self.assertTrue(payload.script_uses_sudo_for_root_owned_mount_writes(text))
 
+    def test_script_removes_sqtmp_before_verify(self) -> None:
+        text = SCRIPT.read_text(encoding="utf-8")
+        self.assertTrue(payload.script_removes_sqtmp_before_verify(text))
+        self.assertIn('cleanup_sqtmp', text)
+
+    def test_success_requires_all_step_flags(self) -> None:
+        new_sha = "ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a"
+        flags = payload.derive_payload_step_flags(
+            payload_copied=True,
+            metadata_written=True,
+            staging_artifacts_cleaned=True,
+            stick_hash_ok=True,
+            verify_status="success",
+        )
+        self.assertTrue(flags["ready_for_operator_retest"])
+        status = payload.resolve_payload_update_status_from_steps(
+            payload_copied=True,
+            metadata_written=True,
+            staging_artifacts_cleaned=True,
+            stick_hash_ok=True,
+            verify_status="success",
+        )
+        self.assertEqual(status, "success")
+
+    def test_sqtmp_not_cleaned_is_not_success(self) -> None:
+        flags = payload.derive_payload_step_flags(
+            payload_copied=True,
+            metadata_written=True,
+            staging_artifacts_cleaned=False,
+            stick_hash_ok=True,
+            verify_status="failed",
+        )
+        self.assertFalse(flags["ready_for_operator_retest"])
+        status = payload.resolve_payload_update_status_from_steps(
+            payload_copied=True,
+            metadata_written=True,
+            staging_artifacts_cleaned=False,
+            stick_hash_ok=True,
+            verify_status="failed",
+        )
+        self.assertEqual(status, "failed")
+
     def test_stick_hash_mismatch_not_success(self) -> None:
         gate = payload.evaluate_stick_squashfs_hash(
             actual_sha256="921c3e23bfbeb99a6295b80be5f8b5d40b55994019b0e614fef633138c6bdfe7",

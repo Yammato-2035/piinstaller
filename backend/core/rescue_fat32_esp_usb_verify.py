@@ -252,6 +252,11 @@ def probe_fat_volume_label(partition: str, *, runner: Runner | None = None) -> s
         label = parse_blkid_label_output(proc.stdout or "")
         if label:
             return label
+
+    proc = _run(["lsblk", "-no", "LABEL", partition], runner=runner)
+    label = parse_blkid_label_output(proc.stdout or "")
+    if label:
+        return label
     return ""
 
 

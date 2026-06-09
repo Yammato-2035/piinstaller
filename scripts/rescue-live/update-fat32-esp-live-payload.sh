@@ -21,6 +21,9 @@ STICK_SHA_AFTER=""
 UPDATE_STATUS="failed"
 VERIFY_STATUS="not_run"
 PAYLOAD_EXECUTED=false
+PAYLOAD_COPIED=false
+METADATA_WRITTEN=false
+STAGING_CLEANED=false
 usage() {
   cat <<EOF
 Usage: $0 --target /dev/sdX --new-squashfs PATH [options]
@@ -89,6 +92,9 @@ write_result_json() {
   FAT32_STICK_SHA="$stick_sha" \
   FAT32_FAILED_STEP="${FAILED_STEP:-}" \
   FAT32_WRITE_ERRORS="${WRITE_ERRORS_DETECTED}" \
+  FAT32_PAYLOAD_COPIED="${PAYLOAD_COPIED}" \
+  FAT32_METADATA_WRITTEN="${METADATA_WRITTEN}" \
+  FAT32_STAGING_CLEANED="${STAGING_CLEANED}" \
   python3 - <<'PY'
 import json
 import os
@@ -113,6 +119,9 @@ result = build_payload_update_result(
     evidence_dir=os.environ["FAT32_EVIDENCE_DIR"],
     failed_step=os.environ.get("FAT32_FAILED_STEP") or None,
     write_errors_detected=_bool("FAT32_WRITE_ERRORS"),
+    payload_copied=_bool("FAT32_PAYLOAD_COPIED"),
+    metadata_written=_bool("FAT32_METADATA_WRITTEN"),
+    staging_artifacts_cleaned=_bool("FAT32_STAGING_CLEANED"),
 )
 out_dir = Path(os.environ["FAT32_EVIDENCE_DIR"])
 out_dir.mkdir(parents=True, exist_ok=True)
@@ -191,6 +200,18 @@ PY
   run_step "cp_evidence_json" sudo cp -f "${meta_tmp}/evidence.json" "$evidence_path" || return 1
   run_step "cp_version_json" sudo cp -f "${meta_tmp}/version.json" "$version_path" || return 1
   rm -rf "$meta_tmp"
+  PAYLOAD_COPIED=true
+  METADATA_WRITTEN=true
+
+  run_step "cleanup_sqtmp" sudo rm -rf "$tmp_dir" || return 1
+  if [[ -d "$tmp_dir" || -e "$tmp_dir" ]]; then
+    FAILED_STEP="cleanup_sqtmp"
+    WRITE_ERRORS_DETECTED=true
+    echo "FAILED: .sqtmp still present after cleanup" | tee -a "${EVIDENCE_DIR}/copy.log" >&2
+    return 1
+  fi
+  STAGING_CLEANED=true
+  echo "OK: staging artifacts cleaned" | tee -a "${EVIDENCE_DIR}/copy.log"
 
   python3 - <<PY >"${EVIDENCE_DIR}/old_payload_hashes.json"
 import json
@@ -204,7 +225,6 @@ PY
   sync
   sudo umount "$MNT"
   MNT=""
-  sudo rmdir "$tmp_dir" 2>/dev/null || true
 
   if ! "${SCRIPT_DIR}/verify-fat32-esp-rescue-usb.sh" --target "$TARGET" --partition "$PART_DEV" \
     --expected-squashfs-sha256 "$new_sha_expected" \
@@ -354,10 +374,16 @@ else
   if [[ "$FAILED_STEP" == "verify_fat32_esp" ]]; then
     VERIFY_STATUS="failed"
     UPDATE_STATUS="failed"
-  elif [[ -n "$STICK_SHA_AFTER" && "$STICK_SHA_AFTER" == "$NEW_SHA" ]]; then
-    UPDATE_STATUS="review_required"
-    VERIFY_STATUS="review_required"
+  elif [[ "$PAYLOAD_COPIED" == true && "$METADATA_WRITTEN" == true && "$STICK_SHA_AFTER" == "$NEW_SHA" ]]; then
     PAYLOAD_EXECUTED=true
+    if [[ "$STAGING_CLEANED" != true ]]; then
+      UPDATE_STATUS="failed"
+      VERIFY_STATUS="failed"
+      [[ -z "$FAILED_STEP" ]] && FAILED_STEP="cleanup_sqtmp"
+    else
+      UPDATE_STATUS="review_required"
+      VERIFY_STATUS="review_required"
+    fi
   else
     UPDATE_STATUS="failed"
     if [[ "$VERIFY_STATUS" == "not_run" ]]; then

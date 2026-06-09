@@ -29,7 +29,7 @@ flowchart TD
 | Phase | Ziel | Dauer-Schätzung | Freigabe-Kriterium |
 |-------|------|-----------------|-------------------|
 | **0** | Reproduzierbare Baseline | 1 Prompt | Gate dokumentiert, Version konsistent, fremde Changes isoliert |
-| **1** | Physisches UEFI-Boot | **False-Success fixiert — Rerun pending** | RS-001 grün nach fixiertem Payload-Update + Hash-Verify + Retest |
+| **1** | Physisches UEFI-Boot | **Payload+Verify grün — HW-Retest pending** | RS-001 grün nach Operator-Boot ohne Live-Medium-Warnung |
 | **2** | Netzwerk + Telemetrie auf gleicher HW | 1 Prompt | Onboarding OK, ACK, kein Secret-Leak |
 | **3** | Start Assistant read-only E2E | 1–2 Prompts | RS-002…007 grün (ohne Restore-Write) |
 | **4** | BR-001-OFFLINE | 2+ Prompts | Full-Root extern, SHA256, Verify Deep |

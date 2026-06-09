@@ -13,6 +13,8 @@
   "payload_copied": true,
   "metadata_written": true,
   "staging_artifacts_cleaned": true,
+  "started_at": "2026-06-09T16:54:59Z",
+  "completed_at": "2026-06-09T20:00:30Z",
   "payload_update_executed": true,
   "payload_update_status": "success",
   "failed_step": null,
@@ -22,9 +24,6 @@
   "rs001_reason": "payload updated; hardware retest pending",
   "ready_for_operator_retest": true,
   "evidence_dir": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260609_165459",
-  "staging_cleanup_evidence": "docs/evidence/runtime-results/rescue/fat32_esp_staging_cleanup_latest.json",
-  "correction_note": "initial run failed verify due to leftover .sqtmp; cleaned and re-verified",
-  "secrets_exposed": false,
-  "no_fake_green": true,
-  "project_version": "1.7.9.5"
+  "correction_note": "initial verify failed on .sqtmp; staging cleaned and verify re-run success",
+  "secrets_exposed": false
 }

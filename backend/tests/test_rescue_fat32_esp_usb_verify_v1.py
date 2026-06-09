@@ -80,6 +80,28 @@ class RescueFat32EspUsbVerifyTests(unittest.TestCase):
         self.assertNotIn("FAT_LABEL_MISSING", codes)
         self.assertFalse(result["structural_layout_valid"])
 
+    def test_probe_fat_volume_label_falls_back_to_lsblk(self) -> None:
+        def runner(cmd: list[str], **_: object) -> object:
+            import subprocess
+
+            class P:
+                stdout = ""
+                returncode = 1
+
+            if cmd[:2] == ["lsblk", "-no"] and cmd[2] == "LABEL":
+                P.stdout = "SETUPHELFER\n"
+                P.returncode = 0
+            return P
+
+        label = verify.probe_fat_volume_label("/dev/sdb1", runner=runner)
+        self.assertEqual(label, "SETUPHELFER")
+
+    def test_verify_script_rejects_sqtmp_on_mount(self) -> None:
+        script = Path(__file__).resolve().parents[2] / "scripts/rescue-live/verify-fat32-esp-rescue-usb.sh"
+        text = script.read_text(encoding="utf-8")
+        self.assertIn(".sqtmp", text)
+        self.assertIn("must not be on USB", text)
+
     def test_probe_fat_volume_label_prefers_sudo_blkid(self) -> None:
         calls: list[list[str]] = []
 

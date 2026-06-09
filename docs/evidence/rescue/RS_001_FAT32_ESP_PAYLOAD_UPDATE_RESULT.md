@@ -1,9 +1,8 @@
 # RS-001 FAT32 ESP Live Payload Update — Result
 
-**Datum:** 2026-06-09 (aktualisiert nach False-Success-Fix)  
-**Git HEAD:** `aeee57c` → Fix-Lauf pending  
-**Version:** `1.7.9.4`  
-**RS-001:** yellow — **kein Fake-Green**
+**Datum:** 2026-06-09 (Staging-Cleanup abgeschlossen)  
+**Version:** `1.7.9.5`  
+**RS-001:** yellow — **ready_for_operator_retest: true**
 
 ---
 
@@ -11,51 +10,27 @@
 
 | Feld | Wert |
 |------|------|
-| Operator-Payload-Update (`20260609_165016`) | **failed** (false success korrigiert) |
-| Stick SquashFS (forensic) | **alt** `921c3e23…` |
-| Repack-Artefakt | `ac95ebc3…` (Fix enthalten) |
-| `ready_for_operator_retest` | **false** |
-| Skript-Fix | `update-fat32-esp-live-payload.sh` + Verify-Hash-Gate |
+| SquashFS auf Stick | **ac95ebc3…** (neu, verifiziert) |
+| Payload kopiert | **ja** |
+| Metadata geschrieben | **ja** |
+| `.sqtmp` entfernt | **ja** |
+| Verify mit Hash-Gate | **success** |
+| Hardware-Retest | **freigegeben** |
 
 ---
 
-## False-Success-Vorfall
+## Verlauf
 
-Der Lauf `fat32_esp_payload_update_20260609_165016` meldete fälschlich Erfolg. Analyse:  
-`docs/evidence/rescue/RS_001_FAT32_ESP_PAYLOAD_UPDATE_FAILURE_ANALYSIS.md`
-
-**Ursachen:**
-
-- Root-owned FAT-Mount: `mkdir`/`cp`/`mv` ohne `sudo`
-- `python | tee` maskierte `PermissionError` bei `evidence.json`
-- Verify prüfte keinen SquashFS-Hash
+1. Lauf `fat32_esp_payload_update_20260609_165459`: SquashFS + Metadata OK, Verify failed wegen `.sqtmp`.
+2. Staging-Cleanup: nur `/media/gabriel/SETUPHELFER/.sqtmp` entfernt (kein Re-Copy).
+3. Verify erneut: `OK: filesystem.squashfs sha256 matches expected`, Exit 0.
 
 ---
 
-## Operator — nächster Schritt (nach Skript-Fix)
+## Operator — Hardware-Retest
 
-```bash
-export USB_DEVICE=/dev/sdb
-NEW_SQUASHFS="/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.7.9.3"
-
-./scripts/rescue-live/update-fat32-esp-live-payload.sh \
-  --target "$USB_DEVICE" \
-  --new-squashfs "$NEW_SQUASHFS" \
-  --operator-confirm-update \
-  --confirm-phrase "UPDATE SETUPHELFER FAT32 ESP LIVE PAYLOAD" \
-  --execute-update
-
-./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh \
-  --target "$USB_DEVICE" \
-  --expected-squashfs-sha256 ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a
+```text
+UEFI → GRUB → Setuphelfer-TUI ohne "Live-Medium nicht stabil"
 ```
 
-**Erst danach** Hardware-Retest gemäß `RS_001_LIVE_MEDIUM_RETEST_HANDOFF.md`.
-
----
-
-## Evidence
-
-- `docs/evidence/runtime-results/rescue/fat32_esp_payload_update_latest.json`
-- `docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260609_165016/`
-- `docs/evidence/rescue/RS_001_FAT32_ESP_PAYLOAD_UPDATE_FAILURE_ANALYSIS.md`
+Evidence nach Retest: `docs/evidence/rescue/RS_001_PHYSICAL_BOOT_RESULT.md`

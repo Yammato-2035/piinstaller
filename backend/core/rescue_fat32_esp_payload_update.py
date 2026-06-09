@@ -233,7 +233,11 @@ def resolve_payload_update_rs001_reason(
     write_errors_detected: bool,
     stick_hash_ok: bool | None,
 ) -> str:
-    if payload_update_status == "success" and verify_status == "success" and stick_hash_ok is not False:
+    if (
+        payload_update_status == "success"
+        and verify_status == "success"
+        and stick_hash_ok is not False
+    ):
         return "payload updated; hardware retest pending"
     if payload_update_status == "review_required":
         return "squashfs updated but metadata evidence failed; hardware retest blocked until metadata fixed"
@@ -242,6 +246,58 @@ def resolve_payload_update_rs001_reason(
     if verify_status in ("failed", "review_required"):
         return "payload update verify failed or incomplete; hardware retest not allowed"
     return "payload update status unclear; hardware retest not allowed"
+
+
+def derive_payload_step_flags(
+    *,
+    payload_copied: bool,
+    metadata_written: bool,
+    staging_artifacts_cleaned: bool,
+    stick_hash_ok: bool | None,
+    verify_status: str,
+) -> dict[str, Any]:
+    ready = (
+        payload_copied
+        and metadata_written
+        and staging_artifacts_cleaned
+        and stick_hash_ok is True
+        and verify_status == "success"
+    )
+    return {
+        "payload_copied": payload_copied,
+        "metadata_written": metadata_written,
+        "staging_artifacts_cleaned": staging_artifacts_cleaned,
+        "ready_for_operator_retest": ready,
+    }
+
+
+def resolve_payload_update_status_from_steps(
+    *,
+    payload_copied: bool,
+    metadata_written: bool,
+    staging_artifacts_cleaned: bool,
+    stick_hash_ok: bool | None,
+    verify_status: str,
+) -> str:
+    flags = derive_payload_step_flags(
+        payload_copied=payload_copied,
+        metadata_written=metadata_written,
+        staging_artifacts_cleaned=staging_artifacts_cleaned,
+        stick_hash_ok=stick_hash_ok,
+        verify_status=verify_status,
+    )
+    if flags["ready_for_operator_retest"]:
+        return "success"
+    if payload_copied and stick_hash_ok and metadata_written and not staging_artifacts_cleaned:
+        return "failed"
+    if payload_copied and stick_hash_ok and metadata_written:
+        return "review_required"
+    return "failed"
+
+
+def script_removes_sqtmp_before_verify(script_text: str) -> bool:
+    lowered = script_text.lower()
+    return 'sudo rm -rf "$tmp_dir"' in lowered or 'sudo rm -rf "$mnt/.sqtmp"' in lowered
 
 
 def build_payload_update_result(
@@ -258,6 +314,9 @@ def build_payload_update_result(
     evidence_dir: str | None = None,
     failed_step: str | None = None,
     write_errors_detected: bool = False,
+    payload_copied: bool = False,
+    metadata_written: bool = False,
+    staging_artifacts_cleaned: bool = False,
 ) -> dict[str, Any]:
     part = partition_path_for_target(target_device.strip(), 1)
     hash_gate = evaluate_stick_squashfs_hash(
@@ -265,6 +324,13 @@ def build_payload_update_result(
         expected_sha256=new_squashfs_sha256,
     )
     stick_hash_ok = hash_gate["ok"] if hash_gate.get("checked") else None
+    step_flags = derive_payload_step_flags(
+        payload_copied=payload_copied,
+        metadata_written=metadata_written,
+        staging_artifacts_cleaned=staging_artifacts_cleaned,
+        stick_hash_ok=stick_hash_ok,
+        verify_status=verify_status,
+    )
     return {
         "schema_version": 1,
         "operation": "fat32_esp_live_payload_update",
@@ -284,6 +350,10 @@ def build_payload_update_result(
         "failed_step": failed_step,
         "verify_status": verify_status,
         "write_errors_detected": write_errors_detected,
+        "payload_copied": step_flags["payload_copied"],
+        "metadata_written": step_flags["metadata_written"],
+        "staging_artifacts_cleaned": step_flags["staging_artifacts_cleaned"],
+        "ready_for_operator_retest": step_flags["ready_for_operator_retest"],
         "rs001_status": "yellow",
         "rs001_reason": resolve_payload_update_rs001_reason(
             payload_update_status=payload_update_status,
