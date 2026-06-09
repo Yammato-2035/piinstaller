@@ -1,6 +1,6 @@
 # Setuphelfer Rettungsstick — Input für mehrphasigen Umsetzungs-Prompt
 
-**Analyse-Datum:** 2026-06-08 · **HEAD:** `669adb7` · **Basis:** `RESCUE_STICK_IST_ANALYSIS.md`, `RESCUE_STICK_CAPABILITY_MATRIX.yaml`, `RESCUE_STICK_GAP_LIST.md`
+**Analyse-Datum:** 2026-06-09 · **HEAD:** `6f3c783` · **Basis:** `RESCUE_STICK_IST_ANALYSIS.md`, `RESCUE_STICK_CAPABILITY_MATRIX.yaml`, `RESCUE_STICK_GAP_LIST.md`
 
 > Diese Datei ist **kein** Umsetzungs-Prompt. Sie liefert strukturierte Eingaben für die Prompt-Generierung.
 
@@ -29,7 +29,7 @@ flowchart TD
 | Phase | Ziel | Dauer-Schätzung | Freigabe-Kriterium |
 |-------|------|-----------------|-------------------|
 | **0** | Reproduzierbare Baseline | 1 Prompt | Gate dokumentiert, Version konsistent, fremde Changes isoliert |
-| **1** | Physisches UEFI-Boot | **Artefakt+Handoff erledigt** | RS-001 grün nach Operator-Lauf (`RS_001_HW_BOOT_OPERATOR_HANDOFF.md`) |
+| **1** | Physisches UEFI-Boot | **Payload-Update-Handoff erledigt** | RS-001 grün nach Squashfs-Update + Retest (`RS_001_LIVE_MEDIUM_RETEST_HANDOFF.md`) |
 | **2** | Netzwerk + Telemetrie auf gleicher HW | 1 Prompt | Onboarding OK, ACK, kein Secret-Leak |
 | **3** | Start Assistant read-only E2E | 1–2 Prompts | RS-002…007 grün (ohne Restore-Write) |
 | **4** | BR-001-OFFLINE | 2+ Prompts | Full-Root extern, SHA256, Verify Deep |

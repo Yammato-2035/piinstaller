@@ -1,5 +1,28 @@
 # Rescue Controlled ISO Build — Result
 
+## Neuester Lauf (2026-06-09, RS-001 SquashFS-Update)
+
+| Feld | Wert |
+|------|------|
+| Git HEAD | `6f3c783` |
+| Version | `1.7.9.3` |
+| `build_status` | **blocked** |
+| Exit | 30 `blocked_requires_operator_sudo_policy` |
+| ISO neu gebaut | **nein** (`no_build_executed: true`) |
+| Vorhandenes ISO | `binary.hybrid.iso` (SHA256 unverändert) |
+| SquashFS Repack-Fallback | `build/rescue/filesystem.squashfs.repacked-1.7.9.3` |
+| Repack SHA256 | `ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a` |
+| `contains_live_medium_fix` | **true** |
+| `contains_setuphelfer_rescue_live_medium_check_py` | **true** |
+| `no_fake_green` | **true** |
+| USB Payload-Update | **nicht ausgeführt** (Agent ohne sudo-TTY) |
+
+Evidence: `docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json`
+
+Operator: Controlled Build im Terminal mit sudo, oder Repack-SquashFS für `update-fat32-esp-live-payload.sh`.
+
+---
+
 **Datum:** 2026-05-25 (STRICT MODE – Controlled Rescue ISO Build + USB Write Gate + First Boot Prep)
 **Git HEAD:** `fe36af0`
 **Gesamtstatus:** **ISO_BUILD_FAILED** → **Kein ISO erzeugt, USB-Write nicht freigegeben**

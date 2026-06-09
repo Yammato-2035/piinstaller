@@ -1,16 +1,20 @@
 metadata:
-  head: "669adb7"
+  head: "6f3c783"
   branch: main
-  analysis_date: "2026-06-08"
-  gate_status: "exit_12_profile_gate_project_version_mismatch_1.7.8.4_vs_1.7.9.0"
-  project_version: "1.7.9.0"
-  analysis_mode: read_only_no_runtime_actions
+  analysis_date: "2026-06-09"
+  gate_status: "exit_20_legacy_dev_dashboard_404_non_blocking"
+  project_version: "1.7.9.3"
+  analysis_mode: rescue_payload_update_handoff
   rs001_phase1_date: "2026-06-08"
-  rs001_phase2_date: "2026-06-08"
+  rs001_phase2_date: "2026-06-09"
   rs001_phase1_iso_sha256: "c9de3751f7fafe51c836d112bac99331c06252a01430b41f2a50b432ca63f194"
-  rs001_operator_hw_boot: "yellow_hw_boot_live_medium_warning"
+  rs001_operator_hw_boot: "yellow_hw_boot_live_medium_warning_pending_payload_update"
   rs001_status: yellow
-  rs001_live_medium_check_fix_head: "pending_commit"
+  rs001_live_medium_check_fix_head: "6f3c783"
+  rs001_squashfs_repack_sha256: "ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a"
+  rs001_stick_squashfs_sha256: "921c3e23bfbeb99a6295b80be5f8b5d40b55994019b0e614fef633138c6bdfe7"
+  rs001_payload_update_script: "scripts/rescue-live/update-fat32-esp-live-payload.sh"
+  rs001_ready_for_operator_retest: true
 
 capabilities:
   boot:
@@ -23,8 +27,9 @@ capabilities:
         - docs/evidence/rescue/RS_001_LIVE_MEDIUM_CHECK_ANALYSIS.md
         - scripts/rescue-live/validate-rescue-iso-uefi-boot.sh
       gaps:
-        - RS-001 gelb — HW boot + GRUB + Dialog OK; Live-Medium-Warnung blockiert
-        - Squashfs auf Stick enthält alten media-check bis ISO-Rebuild
+        - RS-001 gelb — HW boot + GRUB + Dialog OK; Live-Medium-Warnung bis Payload-Update+Retest
+        - Stick-Squashfs noch alt (921c3e23); Repack-Artefakt mit Fix bereit (ac95ebc3)
+        - Operator muss update-fat32-esp-live-payload.sh --execute-update ausführen
         - Kein Fake-Green bis Retest ohne Live-Medium-Warnung
     x86_64_legacy:
       status: partial
