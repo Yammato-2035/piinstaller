@@ -14,7 +14,9 @@ metadata:
   rs001_squashfs_repack_sha256: "ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a"
   rs001_stick_squashfs_sha256: "921c3e23bfbeb99a6295b80be5f8b5d40b55994019b0e614fef633138c6bdfe7"
   rs001_payload_update_script: "scripts/rescue-live/update-fat32-esp-live-payload.sh"
-  rs001_ready_for_operator_retest: true
+  rs001_ready_for_operator_retest: false
+  rs001_false_success_corrected: true
+  rs001_payload_update_status: failed
 
 capabilities:
   boot:
@@ -29,7 +31,8 @@ capabilities:
       gaps:
         - RS-001 gelb — HW boot + GRUB + Dialog OK; Live-Medium-Warnung bis Payload-Update+Retest
         - Stick-Squashfs noch alt (921c3e23); Repack-Artefakt mit Fix bereit (ac95ebc3)
-        - Operator muss update-fat32-esp-live-payload.sh --execute-update ausführen
+        - False-Success korrigiert — erneuter Payload-Update mit fixiertem Skript nötig
+        - Verify muss --expected-squashfs-sha256 prüfen
         - Kein Fake-Green bis Retest ohne Live-Medium-Warnung
     x86_64_legacy:
       status: partial

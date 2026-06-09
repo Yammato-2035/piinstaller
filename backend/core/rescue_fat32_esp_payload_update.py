@@ -200,11 +200,56 @@ def build_updated_stick_evidence(
     return out
 
 
+def evaluate_stick_squashfs_hash(
+    *,
+    actual_sha256: str | None,
+    expected_sha256: str | None,
+) -> dict[str, Any]:
+    """Compare on-stick squashfs hash to expected new artifact hash."""
+    expected = (expected_sha256 or "").strip().lower()
+    actual = (actual_sha256 or "").strip().lower() or None
+    if not expected:
+        return {
+            "checked": False,
+            "ok": False,
+            "actual_sha256": actual,
+            "expected_sha256": expected_sha256,
+            "error_code": "EXPECTED_HASH_MISSING",
+        }
+    ok = bool(actual) and actual == expected
+    return {
+        "checked": True,
+        "ok": ok,
+        "actual_sha256": actual,
+        "expected_sha256": expected,
+        "error_code": None if ok else "SQUASHFS_HASH_MISMATCH",
+    }
+
+
+def resolve_payload_update_rs001_reason(
+    *,
+    payload_update_status: str,
+    verify_status: str,
+    write_errors_detected: bool,
+    stick_hash_ok: bool | None,
+) -> str:
+    if payload_update_status == "success" and verify_status == "success" and stick_hash_ok is not False:
+        return "payload updated; hardware retest pending"
+    if payload_update_status == "review_required":
+        return "squashfs updated but metadata evidence failed; hardware retest blocked until metadata fixed"
+    if write_errors_detected or payload_update_status == "failed":
+        return "payload update failed or unverified; hardware retest not allowed"
+    if verify_status in ("failed", "review_required"):
+        return "payload update verify failed or incomplete; hardware retest not allowed"
+    return "payload update status unclear; hardware retest not allowed"
+
+
 def build_payload_update_result(
     *,
     target_device: str,
     old_squashfs_sha256: str | None,
     new_squashfs_sha256: str | None,
+    stick_squashfs_sha256: str | None = None,
     started_at: str,
     completed_at: str | None,
     payload_update_executed: bool,
@@ -212,8 +257,14 @@ def build_payload_update_result(
     verify_status: str,
     evidence_dir: str | None = None,
     failed_step: str | None = None,
+    write_errors_detected: bool = False,
 ) -> dict[str, Any]:
     part = partition_path_for_target(target_device.strip(), 1)
+    hash_gate = evaluate_stick_squashfs_hash(
+        actual_sha256=stick_squashfs_sha256,
+        expected_sha256=new_squashfs_sha256,
+    )
+    stick_hash_ok = hash_gate["ok"] if hash_gate.get("checked") else None
     return {
         "schema_version": 1,
         "operation": "fat32_esp_live_payload_update",
@@ -224,17 +275,36 @@ def build_payload_update_result(
         "filesystem_reformatted": False,
         "old_squashfs_sha256": old_squashfs_sha256,
         "new_squashfs_sha256": new_squashfs_sha256,
+        "stick_squashfs_sha256": stick_squashfs_sha256,
+        "stick_squashfs_hash_ok": stick_hash_ok,
         "started_at": started_at,
         "completed_at": completed_at,
         "payload_update_executed": payload_update_executed,
         "payload_update_status": payload_update_status,
         "failed_step": failed_step,
         "verify_status": verify_status,
+        "write_errors_detected": write_errors_detected,
         "rs001_status": "yellow",
-        "rs001_reason": "payload updated; hardware retest pending",
+        "rs001_reason": resolve_payload_update_rs001_reason(
+            payload_update_status=payload_update_status,
+            verify_status=verify_status,
+            write_errors_detected=write_errors_detected,
+            stick_hash_ok=stick_hash_ok,
+        ),
         "evidence_dir": evidence_dir,
         "secrets_exposed": False,
     }
+
+
+def script_uses_sudo_for_root_owned_mount_writes(script_text: str) -> bool:
+    """True when squashfs copy steps on mount use sudo."""
+    lowered = script_text.lower()
+    required = (
+        'sudo mkdir -p "$tmp_dir"',
+        'sudo cp -f "$new_sq" "$new_tmp"',
+        'sudo mv -f "$new_tmp" "$old_sq_path"',
+    )
+    return all(token in lowered for token in required)
 
 
 def squashfs_contains_live_medium_fix(squashfs_path: Path) -> dict[str, Any]:

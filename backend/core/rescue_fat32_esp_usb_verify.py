@@ -448,3 +448,27 @@ def validate_fat32_esp_bootx64_on_mount(
         "bootx64_differs_from_iso": bool(iso_sha and usb_sha and iso_sha != usb_sha),
     }
 
+
+def evaluate_expected_squashfs_sha256(
+    *,
+    actual_sha256: str | None,
+    expected_sha256: str | None,
+) -> dict[str, Any]:
+    """Optional post-layout gate: on-stick squashfs must match expected hash."""
+    expected = (expected_sha256 or "").strip().lower()
+    if not expected:
+        return {"checked": False, "ok": True, "actual_sha256": actual_sha256, "expected_sha256": None}
+    actual = (actual_sha256 or "").strip().lower() or None
+    ok = bool(actual) and actual == expected
+    return {
+        "checked": True,
+        "ok": ok,
+        "actual_sha256": actual,
+        "expected_sha256": expected,
+        "message": (
+            None
+            if ok
+            else f"squashfs hash mismatch expected={expected} actual={actual or 'missing'}"
+        ),
+    }
+

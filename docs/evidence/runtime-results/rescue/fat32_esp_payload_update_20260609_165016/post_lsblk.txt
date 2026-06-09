@@ -1,0 +1,4 @@
+=== post_lsblk.txt ===
+NAME   PATH      SIZE MODEL      SERIAL         TRAN TYPE FSTYPE LABEL       PARTTYPENAME MOUNTPOINTS
+sdb    /dev/sdb   59G Ultra Line 24111412110686 usb  disk                                 
+└─sdb1 /dev/sdb1   4G                                part vfat   SETUPHELFER EFI System   

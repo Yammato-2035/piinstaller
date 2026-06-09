@@ -16,7 +16,11 @@ MNT=""
 EVIDENCE_DIR=""
 STARTED_AT=""
 FAILED_STEP=""
-
+WRITE_ERRORS_DETECTED=false
+STICK_SHA_AFTER=""
+UPDATE_STATUS="failed"
+VERIFY_STATUS="not_run"
+PAYLOAD_EXECUTED=false
 usage() {
   cat <<EOF
 Usage: $0 --target /dev/sdX --new-squashfs PATH [options]
@@ -47,6 +51,7 @@ cleanup_mount() {
   if [[ -n "${MNT:-}" && -d "${MNT:-}" ]]; then
     sudo umount "$MNT" 2>/dev/null || true
     rmdir "$MNT" 2>/dev/null || true
+    MNT=""
   fi
 }
 
@@ -56,8 +61,22 @@ record_file() {
   { echo "=== $(basename "$dest") ==="; "$@"; } >"$dest" 2>&1 || true
 }
 
+run_step() {
+  local desc="$1"
+  shift
+  echo "STEP: ${desc}" | tee -a "${EVIDENCE_DIR}/copy.log"
+  if ! "$@" >>"${EVIDENCE_DIR}/copy.log" 2>&1; then
+    FAILED_STEP="$desc"
+    WRITE_ERRORS_DETECTED=true
+    echo "FAILED: ${desc} (exit $?)" | tee -a "${EVIDENCE_DIR}/copy.log" >&2
+    return 1
+  fi
+  echo "OK: ${desc}" | tee -a "${EVIDENCE_DIR}/copy.log"
+  return 0
+}
+
 write_result_json() {
-  local status="$1" verify_status="$2" executed="$3" old_sha="$4" new_sha="$5"
+  local status="$1" verify_status="$2" executed="$3" old_sha="$4" new_sha="$5" stick_sha="$6"
   export PYTHONPATH="${REPO_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}"
   FAT32_EVIDENCE_DIR="$EVIDENCE_DIR" \
   FAT32_TARGET="$TARGET" \
@@ -67,7 +86,9 @@ write_result_json() {
   FAT32_EXECUTED="$executed" \
   FAT32_OLD_SHA="$old_sha" \
   FAT32_NEW_SHA="$new_sha" \
+  FAT32_STICK_SHA="$stick_sha" \
   FAT32_FAILED_STEP="${FAILED_STEP:-}" \
+  FAT32_WRITE_ERRORS="${WRITE_ERRORS_DETECTED}" \
   python3 - <<'PY'
 import json
 import os
@@ -83,6 +104,7 @@ result = build_payload_update_result(
     target_device=os.environ["FAT32_TARGET"],
     old_squashfs_sha256=os.environ.get("FAT32_OLD_SHA") or None,
     new_squashfs_sha256=os.environ.get("FAT32_NEW_SHA") or None,
+    stick_squashfs_sha256=os.environ.get("FAT32_STICK_SHA") or None,
     started_at=os.environ["FAT32_STARTED_AT"],
     completed_at=datetime.now(tz=timezone.utc).isoformat(),
     payload_update_executed=_bool("FAT32_EXECUTED"),
@@ -90,6 +112,7 @@ result = build_payload_update_result(
     verify_status=os.environ["FAT32_VERIFY_STATUS"],
     evidence_dir=os.environ["FAT32_EVIDENCE_DIR"],
     failed_step=os.environ.get("FAT32_FAILED_STEP") or None,
+    write_errors_detected=_bool("FAT32_WRITE_ERRORS"),
 )
 out_dir = Path(os.environ["FAT32_EVIDENCE_DIR"])
 out_dir.mkdir(parents=True, exist_ok=True)
@@ -102,13 +125,15 @@ PY
 
 execute_payload_update() {
   local new_sq="$1"
+  local new_sha_expected="$2"
   local old_sq_path="${MNT}/live/filesystem.squashfs"
   local tmp_dir="${MNT}/.sqtmp"
   local new_tmp="${tmp_dir}/filesystem.squashfs.new"
   local evidence_path="${MNT}/setuphelfer/rescue/evidence.json"
   local version_path="${MNT}/setuphelfer/rescue/version.json"
+  local meta_tmp
+  meta_tmp="$(mktemp -d)"
 
-  mkdir -p "$tmp_dir"
   OLD_SHA="$(python3 - <<PY
 from core.rescue_fat32_esp_usb_writer import sha256_file
 from pathlib import Path
@@ -118,41 +143,54 @@ PY
 )"
   echo "OLD_SQUASHFS_SHA256=${OLD_SHA}" | tee -a "${EVIDENCE_DIR}/copy.log"
 
-  cp -f "$new_sq" "$new_tmp"
+  run_step "mkdir_sqtmp" sudo mkdir -p "$tmp_dir" || return 1
+  run_step "cp_squashfs_new" sudo cp -f "$new_sq" "$new_tmp" || return 1
   sync
-  mv -f "$new_tmp" "$old_sq_path"
+  run_step "mv_squashfs_atomic" sudo mv -f "$new_tmp" "$old_sq_path" || return 1
   sync
 
-  NEW_SHA="$(python3 - <<PY
-from pathlib import Path
-from core.rescue_fat32_esp_usb_writer import sha256_file
-print(sha256_file(Path(${new_sq@Q})))
-PY
-)"
-  echo "NEW_SQUASHFS_SHA256=${NEW_SHA}" | tee -a "${EVIDENCE_DIR}/copy.log"
+  STICK_SHA_AFTER="$(sha256sum "$old_sq_path" | awk '{print $1}')"
+  echo "STICK_SQUASHFS_SHA256_AFTER=${STICK_SHA_AFTER}" | tee -a "${EVIDENCE_DIR}/copy.log"
+  if [[ "$STICK_SHA_AFTER" != "$new_sha_expected" ]]; then
+    FAILED_STEP="squashfs_hash_mismatch"
+    WRITE_ERRORS_DETECTED=true
+    echo "FAILED: squashfs hash mismatch expected=${new_sha_expected} actual=${STICK_SHA_AFTER}" \
+      | tee -a "${EVIDENCE_DIR}/copy.log" >&2
+    return 1
+  fi
 
-  python3 - <<PY | tee -a "${EVIDENCE_DIR}/copy.log"
+  if ! python3 - <<PY >>"${EVIDENCE_DIR}/copy.log" 2>&1
 import json
 from pathlib import Path
 from core.rescue_fat32_esp_payload_update import build_updated_stick_evidence
 
 mount = Path(${MNT@Q})
+meta = Path(${meta_tmp@Q})
 evidence_path = mount / "setuphelfer/rescue/evidence.json"
 version_path = mount / "setuphelfer/rescue/version.json"
 existing = json.loads(evidence_path.read_text(encoding="utf-8")) if evidence_path.is_file() else {}
 version_payload = json.loads(version_path.read_text(encoding="utf-8")) if version_path.is_file() else {}
-project_version = version_payload.get("project_version", "1.7.9.3")
+project_version = version_payload.get("project_version", "1.7.9.4")
 updated = build_updated_stick_evidence(
     medium_evidence=existing,
     new_squashfs=Path(${new_sq@Q}),
     project_version=project_version,
 )
-evidence_path.write_text(json.dumps(updated, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+(meta / "evidence.json").write_text(json.dumps(updated, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 version_payload["project_version"] = project_version
 version_payload["payload_updated_at"] = updated.get("payload_updated_at")
-version_path.write_text(json.dumps(version_payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-print(json.dumps({"evidence_updated": True, "new_sha256": updated["files"][-1]["sha256"] if updated.get("files") else None}))
+(meta / "version.json").write_text(json.dumps(version_payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+print(json.dumps({"evidence_prepared": True, "new_sha256": updated["files"][-1]["sha256"] if updated.get("files") else None}))
 PY
+  then
+    FAILED_STEP="metadata_prepare"
+    WRITE_ERRORS_DETECTED=true
+    return 1
+  fi
+
+  run_step "cp_evidence_json" sudo cp -f "${meta_tmp}/evidence.json" "$evidence_path" || return 1
+  run_step "cp_version_json" sudo cp -f "${meta_tmp}/version.json" "$version_path" || return 1
+  rm -rf "$meta_tmp"
 
   python3 - <<PY >"${EVIDENCE_DIR}/old_payload_hashes.json"
 import json
@@ -160,20 +198,23 @@ print(json.dumps({"live/filesystem.squashfs": ${OLD_SHA@Q}}, indent=2))
 PY
   python3 - <<PY >"${EVIDENCE_DIR}/new_payload_hashes.json"
 import json
-print(json.dumps({"live/filesystem.squashfs": ${NEW_SHA@Q}}, indent=2))
+print(json.dumps({"live/filesystem.squashfs": ${STICK_SHA_AFTER@Q}}, indent=2))
 PY
 
   sync
   sudo umount "$MNT"
   MNT=""
-  rmdir "${tmp_dir}" 2>/dev/null || true
+  sudo rmdir "$tmp_dir" 2>/dev/null || true
 
   if ! "${SCRIPT_DIR}/verify-fat32-esp-rescue-usb.sh" --target "$TARGET" --partition "$PART_DEV" \
+    --expected-squashfs-sha256 "$new_sha_expected" \
     >"${EVIDENCE_DIR}/verify.log" 2>&1; then
     FAILED_STEP="verify_fat32_esp"
+    WRITE_ERRORS_DETECTED=true
     return 1
   fi
-  echo "OK: verify" | tee -a "${EVIDENCE_DIR}/copy.log"
+  echo "OK: verify with expected squashfs hash" | tee -a "${EVIDENCE_DIR}/copy.log"
+  return 0
 }
 
 while [[ $# -gt 0 ]]; do
@@ -295,8 +336,6 @@ MNT="$(mktemp -d)"
 trap cleanup_mount EXIT
 sudo mount "$PART_DEV" "$MNT"
 
-UPDATE_STATUS="failed"
-VERIFY_STATUS="not_run"
 OLD_SHA=""
 NEW_SHA="$(python3 - <<PY
 from core.rescue_fat32_esp_usb_writer import sha256_file
@@ -305,24 +344,37 @@ print(sha256_file(Path(${NEW_SQUASHFS@Q})))
 PY
 )"
 
-if execute_payload_update "$NEW_SQUASHFS"; then
+if execute_payload_update "$NEW_SQUASHFS" "$NEW_SHA"; then
   UPDATE_STATUS="success"
   VERIFY_STATUS="success"
+  PAYLOAD_EXECUTED=true
   OLD_SHA="$(python3 -c "import json; print(json.load(open('${EVIDENCE_DIR}/old_payload_hashes.json')).get('live/filesystem.squashfs',''))")"
 else
+  PAYLOAD_EXECUTED=false
   if [[ "$FAILED_STEP" == "verify_fat32_esp" ]]; then
     VERIFY_STATUS="failed"
+    UPDATE_STATUS="failed"
+  elif [[ -n "$STICK_SHA_AFTER" && "$STICK_SHA_AFTER" == "$NEW_SHA" ]]; then
+    UPDATE_STATUS="review_required"
+    VERIFY_STATUS="review_required"
+    PAYLOAD_EXECUTED=true
+  else
+    UPDATE_STATUS="failed"
+    if [[ "$VERIFY_STATUS" == "not_run" ]]; then
+      VERIFY_STATUS="review_required"
+    fi
   fi
 fi
 
-write_result_json "$UPDATE_STATUS" "$VERIFY_STATUS" "$([[ "$UPDATE_STATUS" == success ]] && echo true || echo false)" "$OLD_SHA" "$NEW_SHA"
+write_result_json "$UPDATE_STATUS" "$VERIFY_STATUS" "$PAYLOAD_EXECUTED" "$OLD_SHA" "$NEW_SHA" "$STICK_SHA_AFTER"
 
 record_file "${EVIDENCE_DIR}/post_lsblk.txt" lsblk -o NAME,PATH,SIZE,MODEL,SERIAL,TRAN,TYPE,FSTYPE,LABEL,PARTTYPENAME,MOUNTPOINTS "$TARGET"
 cp "${EVIDENCE_DIR}/post_lsblk.txt" "${EVIDENCE_DIR}/post_blkid.txt"
 sudo blkid -p "$PART_DEV" >>"${EVIDENCE_DIR}/post_blkid.txt" 2>&1 || true
 
 if [[ "$UPDATE_STATUS" != "success" ]]; then
-  die "payload update failed at: ${FAILED_STEP:-unknown}" 29
+  echo "ERROR: payload update failed at: ${FAILED_STEP:-unknown}" >&2
+  exit 29
 fi
 
 echo "OK: FAT32 ESP payload update complete — evidence: ${EVIDENCE_DIR}"

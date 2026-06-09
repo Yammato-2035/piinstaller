@@ -10,6 +10,8 @@
   "new_squashfs_sha256": "ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a",
   "stick_squashfs_sha256": "921c3e23bfbeb99a6295b80be5f8b5d40b55994019b0e614fef633138c6bdfe7",
   "stick_squashfs_hash_ok": false,
+  "started_at": "2026-06-09T16:50:16Z",
+  "completed_at": "2026-06-09T16:50:23.152813+00:00",
   "payload_update_executed": false,
   "payload_update_status": "failed",
   "failed_step": "copy_or_metadata_write",
@@ -18,9 +20,7 @@
   "rs001_status": "yellow",
   "rs001_reason": "payload update failed or unverified; hardware retest not allowed",
   "evidence_dir": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260609_165016",
-  "ready_for_operator_retest": false,
-  "no_fake_green": true,
-  "git_head": "aeee57c",
-  "project_version": "1.7.9.4",
-  "next_action": "rerun payload update with fixed script and expected squashfs hash gate"
+  "secrets_exposed": false,
+  "corrected_at": "2026-06-09T19:30:00Z",
+  "correction_note": "false success retracted — root-owned mount writes failed without sudo; stick squashfs unchanged"
 }

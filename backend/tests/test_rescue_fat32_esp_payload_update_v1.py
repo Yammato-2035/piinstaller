@@ -120,11 +120,71 @@ class RescueFat32EspPayloadUpdateTests(unittest.TestCase):
         text = SCRIPT.read_text(encoding="utf-8")
         self.assertIn("verify-fat32-esp-rescue-usb.sh", text)
 
+    def test_script_uses_sudo_for_mount_writes(self) -> None:
+        text = SCRIPT.read_text(encoding="utf-8")
+        self.assertTrue(payload.script_uses_sudo_for_root_owned_mount_writes(text))
+
+    def test_stick_hash_mismatch_not_success(self) -> None:
+        gate = payload.evaluate_stick_squashfs_hash(
+            actual_sha256="921c3e23bfbeb99a6295b80be5f8b5d40b55994019b0e614fef633138c6bdfe7",
+            expected_sha256="ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a",
+        )
+        self.assertFalse(gate["ok"])
+        result = payload.build_payload_update_result(
+            target_device="/dev/sdb",
+            old_squashfs_sha256="921c3e23",
+            new_squashfs_sha256="ac95ebc3",
+            stick_squashfs_sha256="921c3e23",
+            started_at="2026-06-09T00:00:00Z",
+            completed_at="2026-06-09T00:01:00Z",
+            payload_update_executed=False,
+            payload_update_status="failed",
+            verify_status="review_required",
+            write_errors_detected=True,
+            failed_step="copy_or_metadata_write",
+        )
+        self.assertEqual(result["stick_squashfs_hash_ok"], False)
+        self.assertIn("not allowed", result["rs001_reason"])
+
+    def test_success_requires_matching_stick_hash(self) -> None:
+        new_sha = "ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a"
+        result = payload.build_payload_update_result(
+            target_device="/dev/sdb",
+            old_squashfs_sha256="921c3e23",
+            new_squashfs_sha256=new_sha,
+            stick_squashfs_sha256=new_sha,
+            started_at="2026-06-09T00:00:00Z",
+            completed_at="2026-06-09T00:01:00Z",
+            payload_update_executed=True,
+            payload_update_status="success",
+            verify_status="success",
+        )
+        self.assertTrue(result["stick_squashfs_hash_ok"])
+        self.assertIn("hardware retest pending", result["rs001_reason"])
+
+    def test_metadata_failure_review_required(self) -> None:
+        new_sha = "ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a"
+        result = payload.build_payload_update_result(
+            target_device="/dev/sdb",
+            old_squashfs_sha256="921c3e23bfbeb99a6295b80be5f8b5d40b55994019b0e614fef633138c6bdfe7",
+            new_squashfs_sha256=new_sha,
+            stick_squashfs_sha256=new_sha,
+            started_at="2026-06-09T00:00:00Z",
+            completed_at="2026-06-09T00:01:00Z",
+            payload_update_executed=True,
+            payload_update_status="review_required",
+            verify_status="review_required",
+            write_errors_detected=True,
+            failed_step="metadata_write",
+        )
+        self.assertIn("metadata evidence failed", result["rs001_reason"])
+
     def test_result_keeps_rs001_yellow(self) -> None:
         result = payload.build_payload_update_result(
             target_device="/dev/sdb",
             old_squashfs_sha256="aaa",
             new_squashfs_sha256="bbb",
+            stick_squashfs_sha256="bbb",
             started_at="2026-06-09T00:00:00Z",
             completed_at="2026-06-09T00:01:00Z",
             payload_update_executed=True,

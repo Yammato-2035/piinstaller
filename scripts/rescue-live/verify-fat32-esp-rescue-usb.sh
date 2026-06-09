@@ -9,6 +9,7 @@ export PYTHONPATH="${REPO_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}"
 TARGET=""
 PART=""
 MOUNT=""
+EXPECTED_SQ_SHA=""
 usage() {
   echo "Usage: $0 --target /dev/sdX [--partition /dev/sdX1]" >&2
   exit 20
@@ -23,6 +24,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --target) TARGET="$2"; shift 2 ;;
     --partition) PART="$2"; shift 2 ;;
+    --expected-squashfs-sha256) EXPECTED_SQ_SHA="$2"; shift 2 ;;
     -h|--help) usage ;;
     *) echo "Unknown arg: $1" >&2; usage ;;
   esac
@@ -230,6 +232,37 @@ echo "OK: standalone BOOTX64.EFI (grub_mkstandalone, differs from ISO)"
 SQ_SIZE="$(stat -c '%s' "$MOUNT/live/filesystem.squashfs" 2>/dev/null || echo 0)"
 echo "filesystem.squashfs size_bytes=${SQ_SIZE}"
 [[ "$SQ_SIZE" -gt 100000000 ]] || fail "filesystem.squashfs size implausible" 26
+
+if [[ -n "$EXPECTED_SQ_SHA" ]]; then
+  SQ_SHA="$(sha256sum "$MOUNT/live/filesystem.squashfs" | awk '{print $1}')"
+  SQ_HASH_CHECK="$(python3 - <<PY
+import json
+from core.rescue_fat32_esp_usb_verify import evaluate_expected_squashfs_sha256
+
+print(json.dumps(evaluate_expected_squashfs_sha256(
+    actual_sha256=${SQ_SHA@Q},
+    expected_sha256=${EXPECTED_SQ_SHA@Q},
+)))
+PY
+)"
+  SQ_HASH_OK="$(python3 - <<PY
+import json
+print("yes" if json.loads(${SQ_HASH_CHECK@Q}).get("ok") else "no")
+PY
+)"
+  if [[ "$SQ_HASH_OK" != "yes" ]]; then
+    python3 - <<PY
+import json, sys
+r = json.loads(${SQ_HASH_CHECK@Q})
+msg = r.get("message") or "squashfs hash mismatch"
+print(f"RESCUE-FAT32-VERIFY: {msg}", file=sys.stderr)
+print(f"RESCUE-FAT32-VERIFY: expected={r.get('expected_sha256')}", file=sys.stderr)
+print(f"RESCUE-FAT32-VERIFY: actual={r.get('actual_sha256')}", file=sys.stderr)
+sys.exit(31)
+PY
+  fi
+  echo "OK: filesystem.squashfs sha256 matches expected"
+fi
 
 EXPECTED_FAT_LABEL="$(python3 - <<'PY'
 from core.rescue_fat32_esp_usb_writer import FAT_VOLUME_LABEL

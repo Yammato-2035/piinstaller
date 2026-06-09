@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "operation": "fat32_esp_live_payload_update",
+  "mode": "execute",
+  "target_device": "/dev/sdb",
+  "target_partition": "/dev/sdb1",
+  "new_squashfs": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.7.9.3",
+  "new_squashfs_sha256": "ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a",
+  "payload_paths": [
+    "live/filesystem.squashfs"
+  ],
+  "atomic_squashfs": ".sqtmp/filesystem.squashfs.new \u2192 live/filesystem.squashfs",
+  "safety": {
+    "target_device": "/dev/sdb",
+    "target_partition": "/dev/sdb1",
+    "blocked": false,
+    "blockers": [],
+    "write_allowed": true,
+    "partition_rewritten": false,
+    "filesystem_reformatted": false,
+    "secrets_exposed": false
+  },
+  "blocked": false,
+  "blockers": [],
+  "payload_update_executed": false,
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "secrets_exposed": false
+}

@@ -178,6 +178,39 @@ class RescueFat32EspUsbVerifyTests(unittest.TestCase):
             result = verify.validate_fat32_esp_bootx64_on_mount(root)
             self.assertTrue(result["ok"], result["errors"])
 
+    def test_expected_squashfs_hash_match_ok(self) -> None:
+        expected = "ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a"
+        result = verify.evaluate_expected_squashfs_sha256(
+            actual_sha256=expected,
+            expected_sha256=expected,
+        )
+        self.assertTrue(result["checked"])
+        self.assertTrue(result["ok"])
+        self.assertIsNone(result["message"])
+
+    def test_expected_squashfs_hash_mismatch_fails(self) -> None:
+        result = verify.evaluate_expected_squashfs_sha256(
+            actual_sha256="921c3e23bfbeb99a6295b80be5f8b5d40b55994019b0e614fef633138c6bdfe7",
+            expected_sha256="ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a",
+        )
+        self.assertTrue(result["checked"])
+        self.assertFalse(result["ok"])
+        self.assertIn("hash mismatch", result["message"] or "")
+
+    def test_expected_squashfs_hash_omitted_skips_gate(self) -> None:
+        result = verify.evaluate_expected_squashfs_sha256(
+            actual_sha256="anything",
+            expected_sha256=None,
+        )
+        self.assertFalse(result["checked"])
+        self.assertTrue(result["ok"])
+
+    def test_verify_script_supports_expected_hash_flag(self) -> None:
+        script = Path(__file__).resolve().parents[2] / "scripts/rescue-live/verify-fat32-esp-rescue-usb.sh"
+        text = script.read_text(encoding="utf-8")
+        self.assertIn("--expected-squashfs-sha256", text)
+        self.assertIn("evaluate_expected_squashfs_sha256", text)
+
     def test_grub_validate_rejects_iso_file_search(self) -> None:
         bad = (
             "search --set=root --file /live/filesystem.squashfs\n"
