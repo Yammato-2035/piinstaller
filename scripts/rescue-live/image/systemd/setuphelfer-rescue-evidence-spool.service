@@ -1,0 +1,13 @@
+[Unit]
+Description=Setuphelfer Rescue evidence spool (best effort)
+After=local-fs.target
+Before=setuphelfer-rescue-ui.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/setuphelfer-rescue-evidence-spool-sync
+SuccessExitStatus=0
+
+[Install]
+WantedBy=multi-user.target

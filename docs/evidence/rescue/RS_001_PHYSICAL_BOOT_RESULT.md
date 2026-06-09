@@ -1,24 +1,29 @@
 # RS-001 Physical Boot Result
 
-**Updated:** 2026-06-08  
-**HEAD (analysis):** `158b9da`  
+**Updated:** 2026-06-09  
+**HEAD (analysis):** `0bbe01b`  
 **RS-001 status:** **yellow**
 
 ---
 
-## Hardware observation (operator)
+## Hardware observation (operator Phase 3 retest)
 
 | Field | Value |
 |-------|-------|
-| USB Write | success |
-| USB Verify | success |
-| UEFI Boot Path | reached |
-| GRUB visible | yes |
-| Setuphelfer dialog visible | yes |
-| Warning | **Live-Medium nicht stabil** |
+| UEFI | reached |
+| GRUB | reached |
+| Old dialog visible | **yes** (whiptail OK / start-assistant) |
+| Modern rescue shell visible | **no** |
+| Only OK dialog | yes |
+| Live-Medium warning | yes (legacy flow; squashfs fix on stick) |
+| Network/WLAN wizard before failure | no (wizard after OK) |
+| Message „Keine WLAN-Netze gefunden“ | yes |
+| systemd-networkd-wait-online failed | yes |
+| setuphelfer-rescue-telemetry-push failed | yes |
+| User-facing flow quality | **failed** |
 | Repair/install allowed | **no** |
 
-**Reason:** Physical boot reaches Setuphelfer warning dialog, but live-medium stability check blocks operation.
+**Reason:** Old text UI and optional network/telemetry services break offline-first boot flow.
 
 ---
 
@@ -30,12 +35,12 @@
 | FAT label | `SETUPHELFER` |
 | GPT partition name | `SETUPHELFER_RESCUE` |
 | FAT UUID | `C9C8-394A` |
-| Evidence run | `fat32_esp_write_20260608_220511` |
+| SquashFS hash (verified) | `ac95ebc3bdc4693da56d51cda1bb3f5fd36dc68d18b2ff1e8f76aad30a85f00a` |
 
 ---
 
 ## Assessment
 
-- **Not green:** Warning dialog still appears; repair/install correctly blocked.
-- **Not red:** UEFI → GRUB → Setuphelfer TUI path is proven on reference hardware.
-- **Next:** Operator retest after live-medium check fix is baked into squashfs (see `RS_001_LIVE_MEDIUM_RETEST_HANDOFF.md`).
+- **Not green:** UX flow unusable; optional services surface as failures before calm main menu.
+- **Not red:** UEFI → GRUB → dialog path proven; payload hash verified on stick.
+- **Next:** Rebuild squashfs with React Rescue Shell foundation; hardware retest for new UI.

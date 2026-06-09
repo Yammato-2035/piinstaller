@@ -1,0 +1,20 @@
+[Unit]
+Description=Setuphelfer Rescue React Shell (offline-first)
+After=local-fs.target
+Conflicts=rescue-start-assistant-getty@tty1.service
+ConditionPathExists=/usr/share/setuphelfer/rescue/ui/rescue.html
+
+[Service]
+Type=simple
+Environment=TERM=linux
+ExecStart=/usr/local/sbin/setuphelfer-rescue-ui-launch
+Restart=on-failure
+RestartSec=3
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+
+[Install]
+WantedBy=multi-user.target

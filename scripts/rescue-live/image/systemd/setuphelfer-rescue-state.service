@@ -1,0 +1,13 @@
+[Unit]
+Description=Setuphelfer Rescue boot state snapshot
+After=local-fs.target setuphelfer-rescue-media-check.service
+Before=setuphelfer-rescue-ui.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/setuphelfer-rescue-state-write
+SuccessExitStatus=0
+
+[Install]
+WantedBy=multi-user.target

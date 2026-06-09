@@ -1,0 +1,23 @@
+{
+  "title": "Setuphelfer Rescue Stick",
+  "subtitle": "Analyze first. Backup second. Act safely.",
+  "hint": "Nothing is repaired or installed unless you explicitly confirm.",
+  "menuPrompt": "What would you like to do?",
+  "actions": {
+    "safe_check": "Recommended: Check system safely",
+    "backup_find": "Rescue data / Find backup",
+    "network": "Connect network",
+    "export_logs": "Export logs & diagnostics",
+    "media_ram": "Media check / Boot to RAM",
+    "advanced": "Advanced options",
+    "power": "Reboot / Power off"
+  },
+  "status": {
+    "medium": "Medium",
+    "network": "Network",
+    "telemetry": "Telemetry",
+    "optional": "optional",
+    "off": "off"
+  },
+  "lang": "Language"
+}

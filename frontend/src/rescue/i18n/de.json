@@ -1,0 +1,23 @@
+{
+  "title": "Setuphelfer Rettungsstick",
+  "subtitle": "Erst analysieren. Dann sichern. Dann handeln.",
+  "hint": "Es wird nichts repariert oder installiert, solange du es nicht ausdrücklich bestätigst.",
+  "menuPrompt": "Was möchtest du tun?",
+  "actions": {
+    "safe_check": "Empfohlen: System sicher prüfen",
+    "backup_find": "Daten retten / Backup finden",
+    "network": "Netzwerk verbinden",
+    "export_logs": "Logs & Diagnose exportieren",
+    "media_ram": "Media-Check / Start in RAM",
+    "advanced": "Erweiterte Optionen",
+    "power": "Neustart / Ausschalten"
+  },
+  "status": {
+    "medium": "Medium",
+    "network": "Netzwerk",
+    "telemetry": "Telemetrie",
+    "optional": "optional",
+    "off": "aus"
+  },
+  "lang": "Sprache"
+}
