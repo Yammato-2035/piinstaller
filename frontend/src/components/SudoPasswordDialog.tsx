@@ -15,6 +15,8 @@ import { sudoSaveErrorToast } from '../lib/sudoUserMessages'
 
 interface SudoPasswordDialogProps {
   onPasswordSaved: () => void
+  /** Partitionshelfer o.ä.: kein Vollbild-Overlay beim ersten Besuch */
+  deferAutoPrompt?: boolean
 }
 
 const FAST_RETRIES = 3
@@ -69,7 +71,7 @@ function sleep(ms: number, signal: AbortSignal): Promise<void> {
   })
 }
 
-const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved }) => {
+const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved, deferAutoPrompt = false }) => {
   const { t } = useTranslation()
   const [show, setShow] = useState(false)
   const [password, setPassword] = useState('')
@@ -92,6 +94,11 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
 
       const finishNeedPassword = () => {
         if (!mountedRef.current || abort.signal.aborted) return
+        if (deferAutoPrompt) {
+          setChecking(false)
+          onPasswordSaved()
+          return
+        }
         setShow(true)
         setChecking(false)
       }
@@ -160,7 +167,7 @@ const SudoPasswordDialog: React.FC<SudoPasswordDialogProps> = ({ onPasswordSaved
       abort.abort()
       mountedRef.current = false
     }
-  }, [onPasswordSaved, t])
+  }, [deferAutoPrompt, onPasswordSaved, t])
 
   const handleSave = async () => {
     if (!password.trim()) {

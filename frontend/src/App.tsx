@@ -129,6 +129,9 @@ type Theme = 'light' | 'dark' | 'system'
 const isDsiRadioView = () =>
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'dsi-radio'
 
+const isPartitionsDeepLink = () =>
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('page') === 'partitions'
+
 function getInitialPage(): Page {
   if (typeof window === 'undefined') return 'dashboard'
   const p = new URLSearchParams(window.location.search).get('page')
@@ -272,6 +275,7 @@ function App() {
     return (saved as Theme) || 'system'
   })
   const [firstRunDone, setFirstRunDone] = useState(() => {
+    if (isPartitionsDeepLink()) return true
     if (themeShot === 'experience') return false
     if (themeShot === 'start' || themeShot === 'webserver' || themeShot === 'error' || themeShot === 'dashboard') {
       return true
@@ -649,7 +653,7 @@ function App() {
       <AppDocumentTitle dsiRadioView={dsiRadioView} />
       {showBootSplash ? <BootSplash /> : null}
       <div className="flex h-screen max-h-screen flex-col overflow-hidden bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-        {!firstRunDone && (
+        {!firstRunDone && currentPage !== 'partitions' && (
           <FirstRunWizard
             initialStep={themeShot === 'experience' ? 2 : 1}
             onComplete={(level) => {
@@ -661,7 +665,10 @@ function App() {
           />
         )}
         {!isThemeScreenshotCapture() ? (
-          <SudoPasswordDialog onPasswordSaved={handleSudoPasswordSaved} />
+          <SudoPasswordDialog
+            deferAutoPrompt={currentPage === 'partitions'}
+            onPasswordSaved={handleSudoPasswordSaved}
+          />
         ) : null}
         <RunningBackupModal />
         <MainStatusBarProvider>
