@@ -1,11 +1,11 @@
 # RS-001 React Rescue Hardware Retest — Ergebnis
 
-**Datum:** 2026-06-09  
-**HEAD (Stick-Payload):** `27b0829` / SquashFS `a54aae1d…`  
-**HEAD (Fix):** `17ac7f7` → `1.7.10.1`  
-**Version auf Stick:** `1.7.10.0`  
+**Datum:** 2026-06-10  
+**Commit (Workspace):** `bc75f89`  
+**Version:** `1.7.10.1`  
+**SquashFS SHA256 (Stick):** `0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc`  
 **RS-001 Status:** **yellow**  
-**Lauf-Status:** **Hardware-Retest durchgeführt — grafisches Menü fehlt**
+**Lauf-Status:** **Phase 0 bestanden — Operator-Hardware-Retest ausstehend**
 
 ---
 
@@ -16,63 +16,85 @@
 | `payload_update_status` | **success** |
 | `verify_status` | **success** |
 | `stick_squashfs_hash_ok` | **true** |
-| `expected_squashfs_sha256` | `a54aae1d902523cf08b37105b1f6001e048d610b57210520ea2e1a649b3fe820` |
+| `staging_artifacts_cleaned` | **true** |
+| `expected_squashfs_sha256` | `0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc` |
+| `ready_for_operator_retest` | **true** |
+| Read-only Verify (Agent, 2026-06-10) | **success** — Hash auf `/dev/sdb1` stimmt |
+
+Evidence: `docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260609_214051`
 
 ---
 
-## Phase 1 — Operator-Hardwaretest (durchgeführt)
+## Phase 1 — Operator-Hardwaretest (1.7.10.1, **nicht ausgeführt**)
 
 | Feld | Wert |
 |------|------|
-| UEFI | **reached** |
-| GRUB | **reached** |
-| Live system | **reached** |
-| React Rescue Shell launcher visible | **yes** |
-| React UI URL visible | `http://127.0.0.1:8765/rescue.html` |
-| Graphical React menu visible | **no** |
-| Old whiptail blocker | **no** |
-| Live-Medium warning | not visible in photo |
-| Network onboarding failed | **yes** |
-| systemd-networkd-wait-online failed | **yes** |
-| telemetry-push failed | **yes** |
-| Photo | `IMG_31CF232F-F82B-4EF4-AAF7-4176D1539492.jpeg` |
+| Hardware | MSI / Referenzhardware (Operator) |
+| UEFI USB visible | **pending** |
+| GRUB visible | **pending** |
+| Kernel starts | **pending** |
+| Live system starts | **pending** |
+| Old whiptail/OK dialog | **pending** |
+| Only URL printed | **pending** |
+| Usable menu visible | **pending** |
+| Menu mode | **pending** (`kiosk` \| `browser` \| `fallback_tui`) |
+| Live-Medium warning | **pending** |
+| Network failed before menu | **pending** |
+| Telemetry failed before menu | **pending** |
+| wait-online failed before menu | **pending** |
+| Repair/install/backup/restore started | **no** (Auftrag: nicht starten) |
+| Evidence on USB | **no** (`setuphelfer/evidence/boot/` leer / nicht vorhanden) |
+| Operator hardware test executed | **no** (1.7.10.1-Payload) |
 
-Konsolen-Auszug (Operator):
-
-```text
-Setuphelfer - React Rescue Shell
-UI: http://127.0.0.1:8765/rescue.html
-```
+**Operator-Schritte:** siehe `RS_001_LIVE_MEDIUM_RETEST_HANDOFF.md` Schritt 2.
 
 ---
 
-## Phase 2 — Klassifikation
+## Vorheriger Retest (superseded — alter SquashFS `a54aae1d…`, 1.7.10.0)
+
+| Feld | Wert |
+|------|------|
+| UEFI / GRUB / Live | **reached** |
+| React Rescue Shell launcher | **yes** |
+| Only URL printed | **yes** (`http://127.0.0.1:8765/rescue.html`) |
+| Graphical React menu | **no** |
+| Network / wait-online / telemetry failed | **yes** (vor Menü) |
+| Photo | `IMG_31CF232F-F82B-4EF4-AAF7-4176D1539492.jpeg` |
+| RS-001 damals | **yellow** |
+
+Dieser Befund gilt **nicht** für Payload `0b303d3…` — neuer Retest erforderlich.
+
+---
+
+## Phase 5 — Klassifikation
 
 ```text
 RS-001: yellow
-Reason: React shell reached but no browser/kiosk menu; optional network/telemetry services still fail during boot
+Reason: Payload 1.7.10.1 verified on stick; operator hardware retest not yet executed
 ```
 
-**Nicht grün** — nutzbares grafisches Hauptmenü nicht sichtbar.
+**Nicht grün** — kein nutzbares Menü auf Hardware mit 1.7.10.1 beobachtet.
 
 ---
 
-## Phase 3 — Workspace-Fix (1.7.10.1, nicht auf Stick)
+## SquashFS-Inhalt (verifiziert vor Payload-Update)
 
-| Änderung | Ziel |
-|----------|------|
-| Launcher Browser-Erkennung + Fallback-TUI | Kein Fake-Success bei URL-only |
-| `rescue-ui-status.json` Evidence | `review_required` bei fehlendem Kiosk |
-| Network onboarding Boot-Skip | Nur nach Nutzerwahl „Netzwerk verbinden“ |
-| Telemetry default skipped | Kein Hard-Fail ohne Opt-in |
-| `systemd-networkd-wait-online` Drop-in | Nicht im kritischen Bootpfad |
+| Merkmal | Wert |
+|---------|------|
+| React Rescue Shell | yes |
+| Launcher Fix | yes |
+| Fallback TUI | yes |
+| Network-Onboarding vor Menü | no |
+| Telemetry vor Menü | no |
+| wait-online Bootblocker | no |
 
-**Retest ready:** nein (SquashFS-Rebuild + Payload-Update erforderlich)
+Quelle: `RS_001_REACT_SHELL_LAUNCHER_SQUASHFS_CONTENT_CHECK.md`
 
 ---
 
 ## Next
 
-1. Controlled build / repack SquashFS mit `1.7.10.1`
-2. Payload-Update + Verify Hash
-3. Hardware-Retest: **nutzbares Setuphelfer-Menü** (Kiosk oder Fallback-TUI), keine rohen systemd-Failed-Units
+1. Operator: Phase-1-Hardwaretest auf MSI/Referenzhardware (kein Backup/Restore/Repair)
+2. Erfolg = Kiosk/Browser-Menü **oder** bedienbare Fallback-TUI — **nicht** nur URL
+3. Evidence auf Stick (`setuphelfer/evidence/boot/`) und Repo aktualisieren
+4. RS-001 erst **green** setzen, wenn nutzbares Menü dokumentiert ist
