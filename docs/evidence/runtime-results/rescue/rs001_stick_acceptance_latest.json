@@ -1,0 +1,215 @@
+{
+  "acceptance_status": "review_required",
+  "target_device": "/dev/sdb",
+  "target_partition": "/dev/sdb1",
+  "fat32_layout_ok": true,
+  "squashfs_hash_ok": true,
+  "squashfs_content_ok": true,
+  "grub_branding_contract_ok": false,
+  "react_launcher_contract_ok": false,
+  "fallback_tui_contract_ok": false,
+  "network_menu_contract_ok": false,
+  "qemu_smoke": "not_run",
+  "hardware_retest_allowed": false,
+  "rs001_status": "yellow",
+  "levels": {
+    "level_1_fat32_hash": "ok",
+    "level_2_squashfs_content": "ok",
+    "level_3_launcher_fallback": "review_required",
+    "level_4_grub_branding": "review_required",
+    "level_5_qemu_smoke": "not_run"
+  },
+  "exit_code": 20,
+  "warnings": [
+    "workspace_passes_contract_but_stick_squashfs_outdated_rebuild_required",
+    "no_operator_logs_on_stick_esp_readback"
+  ],
+  "errors": [
+    "GRUB_THEME_TXT_MISSING",
+    "GRUB_BACKGROUND_PNG_MISSING",
+    "GRUB_CFG_THEME_NOT_REFERENCED",
+    "GRUB_CFG_GFX_MODULES_MISSING",
+    "BOOTX64_GFX_MODULES_MISSING:gfxterm,png,all_video,efi_gop",
+    "fallback_safe_mode_text",
+    "status_summary_not_raw",
+    "network_safe_wrapper",
+    "network_set_plus_e",
+    "common_safe_wrapper",
+    "common_nmcli_check",
+    "common_tty_override",
+    "return_to_menu_field"
+  ],
+  "details": {
+    "squashfs_content": {
+      "content_ok": true,
+      "version_in_squashfs": "1.7.10.1",
+      "verify": {
+        "squashfs_path": "/media/gabriel/SETUPHELFER/live/filesystem.squashfs",
+        "unsquashfs_ok": true,
+        "checks": {
+          "react_ui_html": true,
+          "rescue_ui_manifest": true,
+          "ui_launcher": true,
+          "ui_service": true,
+          "state_service": true,
+          "evidence_spool_service": true,
+          "offline_first_policy": true,
+          "evidence_spool_module": true,
+          "machine_profile_module": true,
+          "boot_status_module": true
+        },
+        "contains_react_rescue_shell": true,
+        "contains_rescue_ui_manifest": true,
+        "contains_offline_first_policy": true,
+        "contains_evidence_spool": true,
+        "contains_machine_profile": true,
+        "network_required_before_menu": false,
+        "telemetry_required_before_menu": false,
+        "no_fake_green": true,
+        "secrets_exposed": false,
+        "contains_rescue_ui_launcher_fix": true,
+        "contains_fallback_tui": true,
+        "contains_network_boot_skip": true,
+        "contains_telemetry_default_skipped": true,
+        "contains_wait_online_neutralization": true,
+        "network_boot_autostart": false,
+        "telemetry_boot_autostart": false
+      },
+      "errors": []
+    },
+    "grub_branding": {
+      "branding_ok": false,
+      "theme_dir_exists": false,
+      "theme_txt_exists": false,
+      "background_exists": false,
+      "grub_references_theme": false,
+      "grub_loads_gfx": false,
+      "errors": [
+        "GRUB_THEME_TXT_MISSING",
+        "GRUB_BACKGROUND_PNG_MISSING",
+        "GRUB_CFG_THEME_NOT_REFERENCED",
+        "GRUB_CFG_GFX_MODULES_MISSING",
+        "BOOTX64_GFX_MODULES_MISSING:gfxterm,png,all_video,efi_gop"
+      ]
+    },
+    "squashfs_contracts": {
+      "launcher": {
+        "checks": {
+          "writes_status_json": true,
+          "has_fallback_tui": true,
+          "review_when_no_browser": true,
+          "no_url_only_green": true,
+          "rescue_ui_status_path": true,
+          "fallback_tui_branded": true,
+          "fallback_safe_mode_text": false,
+          "fallback_required_menu": true,
+          "status_summary_not_raw": false,
+          "network_safe_wrapper": false,
+          "no_restore_backup_repair": true
+        },
+        "contract_ok": false,
+        "errors": [
+          "fallback_safe_mode_text",
+          "status_summary_not_raw",
+          "network_safe_wrapper"
+        ]
+      },
+      "network": {
+        "checks": {
+          "network_set_plus_e": false,
+          "network_non_fatal_interactive": true,
+          "common_safe_wrapper": false,
+          "common_nmcli_check": false,
+          "common_tty_override": false,
+          "return_to_menu_field": false,
+          "skipped_boot_wait_user": true
+        },
+        "contract_ok": false,
+        "errors": [
+          "network_set_plus_e",
+          "common_safe_wrapper",
+          "common_nmcli_check",
+          "common_tty_override",
+          "return_to_menu_field"
+        ]
+      },
+      "launcher_contract_ok": false,
+      "fallback_tui_contract_ok": false,
+      "network_menu_contract_ok": false,
+      "errors": [
+        "fallback_safe_mode_text",
+        "status_summary_not_raw",
+        "network_safe_wrapper",
+        "network_set_plus_e",
+        "common_safe_wrapper",
+        "common_nmcli_check",
+        "common_tty_override",
+        "return_to_menu_field"
+      ]
+    },
+    "workspace_contract": {
+      "launcher": {
+        "checks": {
+          "writes_status_json": true,
+          "has_fallback_tui": true,
+          "review_when_no_browser": true,
+          "no_url_only_green": true,
+          "rescue_ui_status_path": true,
+          "fallback_tui_branded": true,
+          "fallback_safe_mode_text": true,
+          "fallback_required_menu": true,
+          "status_summary_not_raw": true,
+          "network_safe_wrapper": true,
+          "no_restore_backup_repair": true
+        },
+        "contract_ok": true,
+        "errors": []
+      },
+      "network": {
+        "checks": {
+          "network_set_plus_e": true,
+          "network_non_fatal_interactive": true,
+          "common_safe_wrapper": true,
+          "common_nmcli_check": true,
+          "common_tty_override": true,
+          "return_to_menu_field": true,
+          "skipped_boot_wait_user": true
+        },
+        "contract_ok": true,
+        "errors": []
+      },
+      "fallback_status": {
+        "payload": {
+          "schema_version": 1,
+          "rescue_ui": {
+            "server_status": "started",
+            "url": "http://127.0.0.1:8765/rescue.html",
+            "display_mode": "fallback_tui",
+            "menu_visible": true,
+            "status": "review_required",
+            "reason": "no_graphical_browser_available_or_not_started"
+          },
+          "ui_url": "http://127.0.0.1:8765/rescue.html",
+          "server_started": true,
+          "browser_candidate": "",
+          "browser_started": false,
+          "display_mode": "fallback_tui",
+          "menu_visible": true,
+          "status": "review_required",
+          "reason": "no_graphical_browser_available_or_not_started",
+          "network_required": false,
+          "telemetry_required": false,
+          "secrets_exposed": false
+        },
+        "contract_ok": true,
+        "errors": []
+      },
+      "contract_ok": true
+    },
+    "stick_logs_on_esp": {
+      "logs_files": [],
+      "evidence_files": [],
+      "logs_present": false
+    }
+  }
+}

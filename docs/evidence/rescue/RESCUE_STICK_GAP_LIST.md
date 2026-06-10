@@ -1,14 +1,13 @@
 # Setuphelfer Rettungsstick — Gap-Liste
 
-**Analyse-Datum:** 2026-06-10 · **HEAD:** Fix `1.7.10.2` · **Branch:** `main`
+**Analyse-Datum:** 2026-06-10 · **HEAD:** Fix `1.7.11.0` · **Branch:** `main`
 
 Prioritäten: **P0** = zwingend v1 · **P1** = wichtig v1 · **P2** = v1.1 · **P3** = v2/später
 
 | Bereich | Soll-Funktion | IST-Status | Beleg | Risiko | Priorität | Empfohlene Phase |
 |---------|---------------|------------|-------|--------|-----------|------------------|
-| Boot | x86_64 UEFI HW-Boot | partial (gelb: Fallback-TUI OK, GRUB-Theme/React/Netzwerk offen) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Netzwerk-Crash; kein GRUB-Theme | P0 | Rebuild 1.7.10.2 + ESP + Retest |
-| Boot | Rescue React Shell offline-first | partial (Fallback OK; Kiosk blockiert) | `RS_001_REACT_UI_LAUNCHER_ANALYSIS.md` | Kein Browser im SquashFS | P0 | Browser-Plan + Rebuild |
-| Boot | GRUB Branding FAT32-ESP | partial (Theme fehlt auf Stick) | `RS_001_GRUB_BRANDING_ANALYSIS.md` | ESP ohne themes/setuphelfer | P0 | ESP-Theme-Update + Retest |
+| Boot | RS-001 Stick Acceptance | partial (L1–2 ok, L3–4 review) | `RS_001_STICK_ACCEPTANCE_RESULT.md` | Hardware blockiert | P0 | Rebuild + Acceptance grün |
+| Boot | x86_64 UEFI HW-Boot | partial (gelb; Acceptance vor HW) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Netzwerk-Crash; kein GRUB-Theme | P0 | Acceptance ok → HW-Retest |
 | Boot | x86_64 Legacy BIOS HW | partial (QEMU only) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` | Ältere BIOS-Geräte | P1 | Phase 1 |
 | Boot | RS-001…RS-008 grün | missing (alle rot) | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` | Kein Release-Nachweis | P0 | Phase 1–3 |
 | Boot | ARM64 Rescue-Image | planned/deferred | `RESCUE_TARGET_ARCHITECTURES.md` | Keine ARM-Laptops/Pi | P3 | v2 |

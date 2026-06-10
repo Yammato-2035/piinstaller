@@ -29,7 +29,7 @@ flowchart TD
 | Phase | Ziel | Dauer-Schätzung | Freigabe-Kriterium |
 |-------|------|-----------------|-------------------|
 | **0** | Reproduzierbare Baseline | 1 Prompt | Gate dokumentiert, Version konsistent, fremde Changes isoliert |
-| **1** | Physisches UEFI-Boot | **HW-Retest 1.7.10.1: Fallback-TUI partial; Fix 1.7.10.2 pending rebuild** | RS-001 grün: Fallback ohne Crash + GRUB-Branding; React optional später |
+| **1** | Stick Acceptance + UEFI-Boot | **Acceptance L1–2 ok; L3–4 review; HW blockiert** | RS-001 grün erst nach Level 6 HW-Retest |
 | **2** | Netzwerk + Telemetrie auf gleicher HW | 1 Prompt | Onboarding OK, ACK, kein Secret-Leak |
 | **3** | Start Assistant read-only E2E | 1–2 Prompts | RS-002…007 grün (ohne Restore-Write) |
 | **4** | BR-001-OFFLINE | 2+ Prompts | Full-Root extern, SHA256, Verify Deep |
@@ -214,7 +214,7 @@ git status --short
 
 **Explizit aus v1 ausklammern:** Pi-Rescue, Provisioning, Restore-Write, Partitions-Write, Secure Boot, FR/Swahili, grafischer Wizard, ddrescue.
 
-**Härtester Blocker (Phase 1):** RS-001 **gelb** — Fallback-TUI erreicht (Status/Logs OK), aber **GRUB ohne Theme**, **React/Kiosk blockiert** (kein Browser), **Netzwerk-Crash**. Fix `1.7.10.2` im Workspace. Nächster Schritt: **SquashFS-Rebuild + GRUB-Theme auf ESP + Verify + Hardware-Retest**.
+**Härtester Blocker (Phase 1):** RS-001 **gelb** — **Stick Acceptance** Level 3–4 `review_required` (GRUB-Branding + veraltetes SquashFS auf Stick). Hardware-Retest **blockiert** bis `check-rs001-stick-acceptance.sh` → `acceptance_status=ok`. Tool: `scripts/rescue-live/check-rs001-stick-acceptance.sh`.
 
 **Phase-2-Ergebnis:** `docs/evidence/rescue/RS_001_HW_BOOT_PHASE2_RESULT.md`  
 **Operator-Template:** `docs/evidence/rescue/RS_001_HW_BOOT_OPERATOR_RESULT_TEMPLATE.md`  
