@@ -1,14 +1,14 @@
 # Setuphelfer Rettungsstick — Gap-Liste
 
-**Analyse-Datum:** 2026-06-10 · **HEAD:** `bc75f89` · **Branch:** `main` · **Fix:** `1.7.10.1`
+**Analyse-Datum:** 2026-06-10 · **HEAD:** Fix `1.7.10.2` · **Branch:** `main`
 
 Prioritäten: **P0** = zwingend v1 · **P1** = wichtig v1 · **P2** = v1.1 · **P3** = v2/später
 
 | Bereich | Soll-Funktion | IST-Status | Beleg | Risiko | Priorität | Empfohlene Phase |
 |---------|---------------|------------|-------|--------|-----------|------------------|
-| Boot | x86_64 UEFI HW-Boot | partial (gelb: Payload verified, HW-Retest 1.7.10.1 pending) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Vorheriger Retest URL-only (alter Payload) | P0 | Operator Phase-1-Boot |
-| Boot | Rescue React Shell offline-first | partial (1.7.10.1 auf Stick, Retest pending) | `RS_001_REACT_SHELL_LAUNCHER_SQUASHFS_CONTENT_CHECK.md` | Menü auf HW noch nicht beobachtet | P0 | Operator HW-Retest |
-| Boot | Live-Medium-Stabilität FAT32-ESP | partial (Fix im Payload, Retest offen) | `RS_001_PHYSICAL_BOOT_RESULT.md` | Kein Retest mit 0b303d3… | P0 | Operator HW-Retest |
+| Boot | x86_64 UEFI HW-Boot | partial (gelb: Fallback-TUI OK, GRUB-Theme/React/Netzwerk offen) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Netzwerk-Crash; kein GRUB-Theme | P0 | Rebuild 1.7.10.2 + ESP + Retest |
+| Boot | Rescue React Shell offline-first | partial (Fallback OK; Kiosk blockiert) | `RS_001_REACT_UI_LAUNCHER_ANALYSIS.md` | Kein Browser im SquashFS | P0 | Browser-Plan + Rebuild |
+| Boot | GRUB Branding FAT32-ESP | partial (Theme fehlt auf Stick) | `RS_001_GRUB_BRANDING_ANALYSIS.md` | ESP ohne themes/setuphelfer | P0 | ESP-Theme-Update + Retest |
 | Boot | x86_64 Legacy BIOS HW | partial (QEMU only) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` | Ältere BIOS-Geräte | P1 | Phase 1 |
 | Boot | RS-001…RS-008 grün | missing (alle rot) | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` | Kein Release-Nachweis | P0 | Phase 1–3 |
 | Boot | ARM64 Rescue-Image | planned/deferred | `RESCUE_TARGET_ARCHITECTURES.md` | Keine ARM-Laptops/Pi | P3 | v2 |
@@ -59,5 +59,5 @@ Prioritäten: **P0** = zwingend v1 · **P1** = wichtig v1 · **P2** = v1.1 · **
 | Tests | QEMU→HW Parität | partial | Standard-ISO ohne ttyS0 — Serial leer | Falscher Grün-Eindruck | P0 | Operator HW-Boot |
 | Tests | ISO-Rebuild nach Workspace-Änderungen | partial | Build Exit 20 (sudo) | Drift 1.7.9.0 vs. Runtime 1.7.8.4 | P1 | Operator-Rebuild optional |
 | Ops | USB-Write reproduzierbar | partial | Handoff RS_001_HW_BOOT_OPERATOR_HANDOFF.md | Operator-Pflicht | P0 | Operator FAT32-ESP |
-| Tests | RS-001 Evidence | partial (gelb) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Payload OK; HW-Retest 1.7.10.1 pending | P0 | Operator Boot + Menü-Nachweis |
+| Tests | RS-001 Evidence | partial (gelb) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Fallback partial; network crash | P0 | Rebuild + Retest |
 | Ops | FAT32-ESP als Standard-Writer | partial | `rescue_fat32_esp_usb_writer.py` | isohybrid-Probleme | P2 | v1.1 |

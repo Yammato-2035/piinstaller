@@ -37,7 +37,121 @@ setuphelfer_rescue_is_qemu() {
 }
 
 setuphelfer_rescue_has_interactive_tty() {
+  if [[ -n "${SETUPHELFER_RESCUE_TTY:-}" && -c "${SETUPHELFER_RESCUE_TTY}" && -w "${SETUPHELFER_RESCUE_TTY}" ]]; then
+    return 0
+  fi
   [[ -t 0 && -t 1 ]] && [[ "${SETUPHELFER_RESCUE_FORCE_HEADLESS:-}" != "1" ]]
+}
+
+setuphelfer_rescue_whiptail_tty() {
+  if [[ -n "${SETUPHELFER_RESCUE_TTY:-}" && -c "${SETUPHELFER_RESCUE_TTY}" ]]; then
+    printf '%s' "$SETUPHELFER_RESCUE_TTY"
+    return 0
+  fi
+  if [[ -c /dev/tty1 && -w /dev/tty1 ]]; then
+    printf '%s' "/dev/tty1"
+    return 0
+  fi
+  printf '%s' "/dev/tty"
+}
+
+setuphelfer_rescue_summarize_ui_status() {
+  local status_file="${1:-/run/setuphelfer/rescue-ui-status.json}"
+  python3 - <<PY
+import json
+import sys
+from pathlib import Path
+
+path = Path(${status_file@Q})
+if not path.is_file():
+    print("Status: noch nicht verfügbar.")
+    raise SystemExit(0)
+try:
+    data = json.loads(path.read_text(encoding="utf-8"))
+except json.JSONDecodeError:
+    print("Status: Datei konnte nicht gelesen werden.")
+    raise SystemExit(0)
+
+mode = data.get("display_mode") or "unbekannt"
+visible = "ja" if data.get("menu_visible") else "nein"
+reason = data.get("reason") or "—"
+browser = data.get("browser_candidate") or "keiner"
+started = "ja" if data.get("browser_started") else "nein"
+server = "ja" if data.get("server_started") else "nein"
+url = data.get("ui_url") or "—"
+
+lines = [
+    "Setuphelfer Rettungsstick — Kurzstatus",
+    "",
+    f"Anzeigemodus: {mode}",
+    f"Menü sichtbar: {visible}",
+    f"UI-Server läuft: {server}",
+    f"Browser-Kandidat: {browser}",
+    f"Browser gestartet: {started}",
+    f"Hinweis: {reason}",
+    "",
+    f"Lokale UI: {url}",
+]
+print("\\n".join(lines))
+PY
+}
+
+setuphelfer_rescue_network_result_message() {
+  local rc="${1:-0}"
+  local json="${SETUPHELFER_RESCUE_STATE_DIR}/network-onboarding.json"
+  python3 - <<PY
+import json
+import sys
+from pathlib import Path
+
+rc = int(${rc@Q})
+path = Path(${json@Q})
+data = {}
+if path.is_file():
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        pass
+
+code = data.get("error_code") or ""
+if code == "NMCLI_MISSING":
+    print("NetworkManager (nmcli) ist nicht verfügbar.\\n\\nOffline-Modus — du kannst das Notmenü weiter nutzen.")
+elif code == "WIFI_DEVICE_NOT_FOUND":
+    print("Keine WLAN-Hardware erkannt.\\n\\nEthernet prüfen oder offline fortfahren.")
+elif code == "OFFLINE_BY_OPERATOR":
+    print("Offline gewählt. Netzwerk bleibt optional.")
+elif code == "WIFI_CONNECT_FAILED":
+    print("WLAN-Verbindung fehlgeschlagen.\\n\\nBitte erneut versuchen oder offline fortfahren.")
+elif code == "NETWORKMANAGER_NOT_RUNNING":
+    print("NetworkManager konnte nicht gestartet werden.\\n\\nOffline-Modus möglich.")
+elif data.get("default_route_present"):
+    print("Netzwerk verbunden.")
+elif rc == 0:
+    print("Netzwerk-Aktion beendet. Kein Fehler — zurück im Notmenü.")
+else:
+    print("Netzwerk-Aktion beendet (Prüfung empfohlen).\\n\\nOffline-Modus weiter möglich.")
+PY
+}
+
+setuphelfer_rescue_run_network_interactive() {
+  local tty="${1:-$(setuphelfer_rescue_whiptail_tty)}"
+  local net_script
+  net_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/setuphelfer-rescue-network-onboarding"
+  export SETUPHELFER_RESCUE_TTY="$tty"
+  touch /run/setuphelfer-rescue/network-user-requested 2>/dev/null || true
+  local rc=0
+  set +e
+  "$net_script" --interactive
+  rc=$?
+  set +e
+  local msg
+  msg="$(setuphelfer_rescue_network_result_message "$rc")"
+  if command -v whiptail >/dev/null 2>&1 && [[ -c "$tty" ]]; then
+    whiptail --title "Setuphelfer Netzwerk" --msgbox "$msg" 16 72 3>&1 1>"$tty" 2>&3 || true
+  else
+    printf '%s\n' "$msg" >"$tty" 2>/dev/null || true
+  fi
+  return 0
 }
 
 setuphelfer_rescue_cmdline_has_start_assistant() {
@@ -276,21 +390,27 @@ setuphelfer_rescue_wifi_scan_and_menu() {
   local -a _entries=()
   local _choice _idx _ssid _sec _bars _menu_args=()
   local _action _hidden_ssid _psk _rc=0
+  local _wt
+  _wt="$(setuphelfer_rescue_whiptail_tty)"
+
+  if ! command -v nmcli >/dev/null 2>&1; then
+    return 21
+  fi
 
   if ! setuphelfer_rescue_wifi_scan_list 3 _entries; then
     if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
-      whiptail --title "Setuphelfer WLAN" --msgbox "Keine WLAN-Netze gefunden.\n\nErneut scannen, verstecktes WLAN oder offline fortfahren." 12 70 3>&1 1>&2 2>&3 || true
+      whiptail --title "Setuphelfer WLAN" --msgbox "Keine WLAN-Netze gefunden.\n\nErneut scannen, verstecktes WLAN oder offline fortfahren." 12 70 3>&1 1>"$_wt" 2>&3 || true
       _action="$(whiptail --title "Setuphelfer WLAN" --menu "Option wählen" 14 70 6 \
         "rescan" "Erneut scannen" \
         "hidden" "Verstecktes WLAN eingeben" \
-        "offline" "Offline fortfahren (Telemetrie wird gespoolt)" 3>&1 1>&2 2>&3)" || return 14
+        "offline" "Offline fortfahren (Telemetrie wird gespoolt)" 3>&1 1>"$_wt" 2>&3)" || return 14
       case "$_action" in
         rescan) setuphelfer_rescue_wifi_scan_and_menu && return $? ;;
         hidden)
-          _hidden_ssid="$(whiptail --title "Verstecktes WLAN" --inputbox "SSID eingeben:" 10 60 3>&1 1>&2 2>&3)" || return 14
-          _psk="$(whiptail --title "WLAN-Passwort" --passwordbox "Passwort für $_hidden_ssid (nicht geloggt):" 10 70 3>&1 1>&2 2>&3)" || return 15
+          _hidden_ssid="$(whiptail --title "Verstecktes WLAN" --inputbox "SSID eingeben:" 10 60 3>&1 1>"$_wt" 2>&3)" || return 14
+          _psk="$(whiptail --title "WLAN-Passwort" --passwordbox "Passwort für $_hidden_ssid (nicht geloggt):" 10 70 3>&1 1>"$_wt" 2>&3)" || return 15
           setuphelfer_rescue_wifi_connect_ssid "$_hidden_ssid" 1 "$_psk" && return 0
-          whiptail --title "Setuphelfer WLAN" --msgbox "Verbindung fehlgeschlagen. Bitte erneut versuchen." 10 60 3>&1 1>&2 2>&3 || true
+          whiptail --title "Setuphelfer WLAN" --msgbox "Verbindung fehlgeschlagen. Bitte erneut versuchen." 10 60 3>&1 1>"$_wt" 2>&3 || true
           return 13
           ;;
         offline) return 20 ;;
@@ -318,7 +438,7 @@ setuphelfer_rescue_wifi_scan_and_menu() {
   while true; do
     _choice="$(whiptail --title "Setuphelfer WLAN" \
       --menu "Netzwerk wählen (OK bestätigt, Esc = Offline)" 22 78 14 \
-      "${_menu_args[@]}" 3>&1 1>&2 2>&3)" || return 20
+      "${_menu_args[@]}" 3>&1 1>"$_wt" 2>&3)" || return 20
     case "$_choice" in
       R)
         setuphelfer_rescue_wifi_scan_list 2 _entries || continue
@@ -334,10 +454,10 @@ setuphelfer_rescue_wifi_scan_and_menu() {
         ;;
       O) return 20 ;;
       H)
-        _hidden_ssid="$(whiptail --title "Verstecktes WLAN" --inputbox "SSID:" 10 60 3>&1 1>&2 2>&3)" || continue
-        _psk="$(whiptail --title "WLAN-Passwort" --passwordbox "Passwort (nicht geloggt):" 10 70 3>&1 1>&2 2>&3)" || continue
+        _hidden_ssid="$(whiptail --title "Verstecktes WLAN" --inputbox "SSID:" 10 60 3>&1 1>"$_wt" 2>&3)" || continue
+        _psk="$(whiptail --title "WLAN-Passwort" --passwordbox "Passwort (nicht geloggt):" 10 70 3>&1 1>"$_wt" 2>&3)" || continue
         setuphelfer_rescue_wifi_connect_ssid "$_hidden_ssid" 1 "$_psk" && return 0
-        whiptail --title "Setuphelfer WLAN" --msgbox "Verbindung fehlgeschlagen." 10 50 3>&1 1>&2 2>&3 || true
+        whiptail --title "Setuphelfer WLAN" --msgbox "Verbindung fehlgeschlagen." 10 50 3>&1 1>"$_wt" 2>&3 || true
         continue
         ;;
       *)
@@ -346,11 +466,11 @@ setuphelfer_rescue_wifi_scan_and_menu() {
           continue
         fi
         _ssid="${_entries[_idx]%%|*}"
-        _psk="$(whiptail --title "WLAN-Passwort" --passwordbox "Passwort für:\n$_ssid\n(nicht geloggt)" 12 70 3>&1 1>&2 2>&3)" || continue
+        _psk="$(whiptail --title "WLAN-Passwort" --passwordbox "Passwort für:\n$_ssid\n(nicht geloggt)" 12 70 3>&1 1>"$_wt" 2>&3)" || continue
         if setuphelfer_rescue_wifi_connect_ssid "$_ssid" 0 "$_psk"; then
           return 0
         fi
-        whiptail --title "Setuphelfer WLAN" --msgbox "Verbindung fehlgeschlagen.\nAnderes Netz wählen oder offline fortfahren." 10 60 3>&1 1>&2 2>&3 || true
+        whiptail --title "Setuphelfer WLAN" --msgbox "Verbindung fehlgeschlagen.\nAnderes Netz wählen oder offline fortfahren." 10 60 3>&1 1>"$_wt" 2>&3 || true
         ;;
     esac
   done

@@ -1,0 +1,9 @@
+{
+  "generated_at": "2026-06-07T14:00:00Z",
+  "project_version": "1.7.9.0",
+  "release_stage": "internal_testing",
+  "schema_version": 1,
+  "version_source_of_truth": true,
+  "version_track": "setuphelfer_identifier_unification",
+  "payload_updated_at": "2026-06-09T21:41:27.294911+00:00"
+}

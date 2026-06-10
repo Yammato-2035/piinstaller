@@ -86,6 +86,18 @@ def launcher_does_not_claim_success_on_url_only(script_text: str) -> bool:
     )
 
 
+def squashfs_package_list_has_graphical_browser(package_list_text: str) -> bool:
+    browsers = ("chromium", "firefox", "firefox-esr", "xorg", "wayland", "cage", "weston")
+    lowered = package_list_text.lower()
+    return any(b in lowered for b in browsers)
+
+
+def react_kiosk_blocked_reason(package_list_text: str) -> str:
+    if squashfs_package_list_has_graphical_browser(package_list_text):
+        return "browser_packages_present_launcher_or_display_issue"
+    return "blocked_missing_browser_or_display_runtime"
+
+
 def unit_has_no_network_online_hard_dependency(unit_text: str) -> bool:
     return "Requires=network-online.target" not in unit_text
 

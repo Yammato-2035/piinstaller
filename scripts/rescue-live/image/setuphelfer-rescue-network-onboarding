@@ -4,6 +4,7 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+set +e
 
 MODE="${1:---interactive}"
 OUT_RUN="${SETUPHELFER_RESCUE_STATE_DIR}/network-onboarding.json"
@@ -54,6 +55,24 @@ else
   INTERACTIVE=true
 fi
 
+if [[ "$INTERACTIVE" == true ]] && ! command -v nmcli >/dev/null 2>&1; then
+  ERROR_CODE="NMCLI_MISSING"
+  EXIT_CODE=0
+  setuphelfer_rescue_write_json "$OUT_RUN" <<EOF
+{
+  "checked_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "mode": "$MODE",
+  "status": "skipped",
+  "reason": "nmcli_not_available",
+  "return_to_menu": true,
+  "exit_code": 0,
+  "secrets_exposed": false
+}
+EOF
+  cp -f "$OUT_RUN" "$OUT_TMP" 2>/dev/null || true
+  exit 0
+fi
+
 nm_active=false
 if systemctl is-active --quiet NetworkManager 2>/dev/null; then
   nm_active=true
@@ -70,10 +89,10 @@ elif [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" ]]; then
 fi
 
 if [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" && "$nm_active" == true ]]; then
-  if nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':ethernet:connected$' >/dev/null; then
+  if nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':ethernet:connected$' >/dev/null || false; then
     CONFIG_SOURCE="ethernet_connected"
     DEFAULT_ROUTE=true
-  elif nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:connected$' >/dev/null; then
+  elif nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:connected$' >/dev/null || false; then
     WIFI_CONNECTED=true
     CONFIG_SOURCE="already_connected"
   elif setuphelfer_rescue_wifi_connect_configured; then
@@ -82,13 +101,16 @@ if [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" && "$nm_active" 
   elif setuphelfer_rescue_wifi_connect_known; then
     WIFI_CONNECTED=true
     CONFIG_SOURCE="known_nm_profile"
-  elif nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:' >/dev/null; then
+  elif nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:' >/dev/null || false; then
     if [[ "$INTERACTIVE" == true ]]; then
       _menu_rc=0
       setuphelfer_rescue_wifi_scan_and_menu || _menu_rc=$?
       if [[ "$_menu_rc" -eq 0 ]]; then
         WIFI_CONNECTED=true
         CONFIG_SOURCE="interactive_menu"
+      elif [[ "$_menu_rc" -eq 21 ]]; then
+        ERROR_CODE="NMCLI_MISSING"
+        EXIT_CODE=0
       elif [[ "$_menu_rc" -eq 20 ]]; then
         OFFLINE_MODE=true
         ERROR_CODE="OFFLINE_BY_OPERATOR"
@@ -101,7 +123,7 @@ if [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" && "$nm_active" 
       ERROR_CODE="WIFI_NOT_CONFIGURED"
       EXIT_CODE=20
     fi
-    nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:connected$' >/dev/null && WIFI_CONNECTED=true
+    nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':wifi:connected$' >/dev/null || false && WIFI_CONNECTED=true
   else
     ERROR_CODE="WIFI_DEVICE_NOT_FOUND"
     EXIT_CODE=11
@@ -142,6 +164,7 @@ setuphelfer_rescue_write_json "$OUT_RUN" <<EOF
   "telemetry_health_url": "$TELEMETRY_HEALTH_URL",
   "wifi_ssid_configured": $( [[ -n "$SETUPHELFER_RESCUE_WIFI_SSID" ]] && echo true || echo false ),
   "error_code": $( [[ -n "$ERROR_CODE" ]] && printf '"%s"' "$ERROR_CODE" || printf 'null' ),
+  "return_to_menu": $( [[ "$INTERACTIVE" == true ]] && echo true || echo false ),
   "ip_addr": $_ip_json,
   "ip_route": $_route_json,
   "secrets_exposed": false
@@ -149,5 +172,13 @@ setuphelfer_rescue_write_json "$OUT_RUN" <<EOF
 EOF
 cp -f "$OUT_RUN" "$OUT_TMP" 2>/dev/null || true
 touch "${SETUPHELFER_RESCUE_STATE_DIR}/network-onboarding.done" 2>/dev/null || true
+
+if [[ "$INTERACTIVE" == true && "$MODE" != "--boot-trigger" ]]; then
+  case "$ERROR_CODE" in
+    OFFLINE_BY_OPERATOR|NMCLI_MISSING|NETWORKMANAGER_NOT_RUNNING|WIFI_DEVICE_NOT_FOUND|WIFI_NOT_CONFIGURED|WIFI_CONNECT_FAILED|DEFAULT_ROUTE_MISSING|TELEMETRY_HEALTH_UNREACHABLE|"")
+      EXIT_CODE=0
+      ;;
+  esac
+fi
 
 exit "$EXIT_CODE"

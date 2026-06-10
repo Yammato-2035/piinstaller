@@ -96,57 +96,93 @@ fi
 run_fallback_tui() {
   local tty="/dev/tty1"
   [[ -c "$tty" ]] || tty="/dev/tty"
-  {
-    echo ""
-    echo "Setuphelfer Rettungsstick"
-    echo ""
-    echo "Die grafische Oberfläche konnte nicht automatisch geöffnet werden."
-    echo ""
-    echo "Lokale UI:"
-    echo "$UI_URL"
-    echo ""
-    echo "Auswahl:"
-    echo "1. Status anzeigen"
-    echo "2. Logs auf Stick schreiben"
-    echo "3. Netzwerk verbinden"
-    echo "4. Herunterfahren"
-    echo "5. Neustart"
-    echo ""
-  } >"$tty" 2>/dev/null || true
+  export SETUPHELFER_RESCUE_TTY="$tty"
 
   if command -v whiptail >/dev/null 2>&1 && [[ -r "$tty" ]]; then
     while true; do
-      _choice="$(whiptail --backtitle "Setuphelfer" --title "Rettungsstick" --menu "Grafische UI nicht verfügbar.\n${UI_URL}" 18 72 6 \
+      _choice="$(whiptail --backtitle "Setuphelfer" --title "Setuphelfer Rettungsstick" --menu \
+        "Grafische Oberfläche nicht verfügbar.\nDer Rettungsstick läuft im sicheren Notmenü.\n\nLokale UI:\n${UI_URL}" 20 74 7 \
         "1" "Status anzeigen" \
-        "2" "Logs auf Stick schreiben" \
+        "2" "Logs & Diagnose auf Stick schreiben" \
         "3" "Netzwerk verbinden" \
-        "4" "Herunterfahren" \
-        "5" "Neustart" 3>&1 1>"$tty" 2>&3)" || break
+        "4" "Neustart" \
+        "5" "Ausschalten" 3>&1 1>"$tty" 2>&3)" || break
       case "$_choice" in
-        1) whiptail --msgbox "$(cat "$STATUS_RUN" 2>/dev/null || echo status_missing)" 16 72 3>&1 1>"$tty" 2>&3 || true ;;
-        2) write_status "fallback_tui" "review_required" "logs_refreshed" "${TEXT_BROWSER:-}" false true true
-           setuphelfer_rescue_mirror_evidence_file "$LOG_RUN" "setuphelfer/logs/boot/rescue-ui-launch.log" 2>/dev/null || true
-           whiptail --msgbox "Logs unter setuphelfer/logs/boot/ auf dem Stick (best effort)." 8 60 3>&1 1>"$tty" 2>&3 || true ;;
-        3) touch /run/setuphelfer-rescue/network-user-requested 2>/dev/null || true
-           "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --interactive || true ;;
-        4) systemctl poweroff || true; break ;;
-        5) systemctl reboot || true; break ;;
+        1)
+          _summary="$(setuphelfer_rescue_summarize_ui_status "$STATUS_RUN")"
+          whiptail --title "Status" --msgbox "$_summary" 18 72 3>&1 1>"$tty" 2>&3 || true
+          if whiptail --title "Status" --yesno "Technische Details (JSON) anzeigen?" 8 60 3>&1 1>"$tty" 2>&3; then
+            whiptail --title "Details" --scrolltext --textbox "$STATUS_RUN" 20 74 3>&1 1>"$tty" 2>&3 || true
+          fi
+          ;;
+        2)
+          write_status "fallback_tui" "review_required" "logs_refreshed" "" false true true
+          setuphelfer_rescue_mirror_evidence_file "$LOG_RUN" "setuphelfer/logs/boot/rescue-ui-launch.log" 2>/dev/null || true
+          setuphelfer_rescue_mirror_evidence_file "$STATUS_RUN" "setuphelfer/evidence/boot/rescue-ui-status.json" 2>/dev/null || true
+          if setuphelfer_rescue_fat_esp_mount >/dev/null 2>&1; then
+            whiptail --title "Logs" --msgbox "Logs unter setuphelfer/logs/boot/ und setuphelfer/evidence/boot/ auf dem Stick geschrieben (best effort)." 10 68 3>&1 1>"$tty" 2>&3 || true
+          else
+            whiptail --title "Logs" --msgbox "Log-Export vorbereitet. Stick-Pfad nicht gemountet — erneut versuchen, wenn der Stick erreichbar ist." 10 68 3>&1 1>"$tty" 2>&3 || true
+          fi
+          ;;
+        3)
+          setuphelfer_rescue_run_network_interactive "$tty" || true
+          ;;
+        4)
+          systemctl reboot || true
+          break
+          ;;
+        5)
+          systemctl poweroff || true
+          break
+          ;;
       esac
     done
     return 0
   fi
 
+  {
+    echo ""
+    echo "Setuphelfer Rettungsstick"
+    echo ""
+    echo "Grafische Oberfläche nicht verfügbar."
+    echo "Der Rettungsstick läuft im sicheren Notmenü."
+    echo ""
+    echo "Lokale UI: $UI_URL"
+    echo ""
+    echo "1. Status anzeigen"
+    echo "2. Logs & Diagnose auf Stick schreiben"
+    echo "3. Netzwerk verbinden"
+    echo "4. Neustart"
+    echo "5. Ausschalten"
+    echo ""
+  } >"$tty" 2>/dev/null || true
+
   while true; do
     echo -n "Auswahl [1-5]: " >"$tty"
     read -r _choice <"$tty" || break
     case "$_choice" in
-      1) cat "$STATUS_RUN" >"$tty" 2>/dev/null || true ;;
-      2) setuphelfer_rescue_mirror_evidence_file "$LOG_RUN" "setuphelfer/logs/boot/rescue-ui-launch.log" 2>/dev/null || true ;;
-      3) touch /run/setuphelfer-rescue/network-user-requested 2>/dev/null || true
-         "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --interactive || true ;;
-      4) systemctl poweroff || true; break ;;
-      5) systemctl reboot || true; break ;;
-      *) echo "Ungültige Auswahl" >"$tty" ;;
+      1)
+        setuphelfer_rescue_summarize_ui_status "$STATUS_RUN" >"$tty" 2>/dev/null || true
+        ;;
+      2)
+        setuphelfer_rescue_mirror_evidence_file "$LOG_RUN" "setuphelfer/logs/boot/rescue-ui-launch.log" 2>/dev/null || true
+        echo "Logs exportiert (best effort)." >"$tty"
+        ;;
+      3)
+        setuphelfer_rescue_run_network_interactive "$tty" || true
+        ;;
+      4)
+        systemctl reboot || true
+        break
+        ;;
+      5)
+        systemctl poweroff || true
+        break
+        ;;
+      *)
+        echo "Ungültige Auswahl" >"$tty"
+        ;;
     esac
   done
 }

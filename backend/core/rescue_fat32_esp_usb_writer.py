@@ -20,6 +20,7 @@ from core.rescue_usb_operator_selection import (
     load_operator_selection_evidence,
 )
 from core.safe_device import list_classified_devices
+from rescue.rescue_grub_branding import generate_grub_cfg_branding_lines, stage_grub_theme_to_fat32_staging
 
 Runner = Callable[..., Any]
 
@@ -37,7 +38,8 @@ FAT_RSYNC_OPTIONS = (
 )
 BOOTX64_SOURCE_MKSTANDALONE = "grub_mkstandalone"
 BOOTX64_MKSTANDALONE_MODULES = (
-    "part_gpt fat search search_fs_uuid search_label normal linux gzio configfile boot"
+    "part_gpt fat search search_fs_uuid search_label normal linux gzio configfile boot "
+    "gfxterm png all_video efi_gop"
 )
 BOOTX64_ERROR_MKSTANDALONE_MISSING = "RESCUE-FAT32-BOOTX64-MKSTANDALONE-MISSING"
 BOOTX64_ERROR_ISO_COPIED = "RESCUE-FAT32-BOOTX64-ISO-COPIED-001"
@@ -374,6 +376,8 @@ def generate_fat32_esp_grub_cfg(
         "set timeout=10",
         "set default=0",
         *fat32_esp_grub_root_block(fat_uuid=fat_uuid, fat_label=fat_label),
+        "",
+        *generate_grub_cfg_branding_lines(),
         "",
         entry(
             "Setuphelfer Rettung starten",
@@ -982,6 +986,7 @@ def extract_iso_files(
     grub_cfg = generate_fat32_esp_grub_cfg()
     (output_dir / "boot" / "grub").mkdir(parents=True, exist_ok=True)
     (output_dir / "boot" / "grub" / "grub.cfg").write_text(grub_cfg, encoding="utf-8")
+    theme_meta = stage_grub_theme_to_fat32_staging(output_dir, _workspace_root())
 
     extract_list = [
         (live_paths["vmlinuz"], "live/vmlinuz"),
@@ -1081,6 +1086,7 @@ def extract_iso_files(
         "bootx64_embedded_bootstrap": True,
         "bootx64_iso_copied": False,
         "bootx64_modules_requested": bootx64_meta["modules_requested"],
+        "grub_theme_staged": theme_meta,
         "bootx64_sha256": bootx64_meta["sha256"],
         "iso_bootx64_sha256": iso_bootx64_sha256,
         "bootx64_differs_from_iso": bool(

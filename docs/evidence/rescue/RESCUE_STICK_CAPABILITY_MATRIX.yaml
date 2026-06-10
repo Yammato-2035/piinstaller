@@ -1,37 +1,29 @@
 metadata:
-  head: "bc75f89"
+  head: "4aed483"
   rescue_react_shell_foundation: true
   rescue_react_shell_squashfs_repacked: true
   rescue_ui_mode_target: react
   branch: main
   analysis_date: "2026-06-10"
   gate_status: "version_drift_non_blocking_rescue_static_work"
-  project_version: "1.7.10.1"
+  project_version: "1.7.10.2"
   squashfs_repack_sha256: "0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc"
   fat32_payload_update: success
-  rs001_react_hardware_retest: pending_operator_1_7_10_1
-  analysis_mode: rescue_operator_hardware_retest_handoff
-  rs001_phase1_date: "2026-06-08"
-  rs001_phase2_date: "2026-06-09"
-  rs001_phase1_iso_sha256: "c9de3751f7fafe51c836d112bac99331c06252a01430b41f2a50b432ca63f194"
-  rs001_operator_hw_boot: yellow_payload_verified_hw_retest_pending
+  rs001_react_hardware_retest: fallback_tui_partial_network_crash
+  analysis_mode: rescue_fallback_branding_network_fix
+  rs001_operator_hw_boot: yellow_fallback_tui_no_grub_theme_no_react_network_crash
   rs001_status: yellow
-  rs001_live_medium_check_fix_head: "6f3c783"
-  rs001_payload_update_script: "scripts/rescue-live/update-fat32-esp-live-payload.sh"
-  rs001_ready_for_operator_retest: true
+  rs001_ready_for_operator_retest: false
   rs001_react_shell_on_stick: true
   rs001_stick_squashfs_sha256: "0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc"
-  rs001_false_success_corrected: true
-  rs001_payload_update_status: success
-  rs001_staging_cleanup_date: "2026-06-09"
-  rs001_react_hardware_retest_date: "2026-06-09"
-  rs001_react_hardware_retest_observed: true
-  rs001_react_hardware_retest_1_7_10_1_observed: false
+  rs001_react_hardware_retest_1_7_10_1_observed: true
   rs001_react_graphical_menu_observed: false
-  rs001_prior_retest_url_only: true
-  rs001_launcher_fix_version: "1.7.10.1"
-  rs001_launcher_fix_squashfs_sha256: "0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc"
-  rs001_launcher_fix_on_stick: true
+  rs001_fallback_tui_observed: true
+  rs001_fallback_tui_status_works: true
+  rs001_fallback_tui_logs_work: true
+  rs001_fallback_tui_network_crashes: true
+  rs001_grub_theme_on_esp: false
+  rs001_launcher_fix_version: "1.7.10.2"
   rs001_payload_update_1_7_10_1: success
   rs001_verify_hash_gate: success
 
@@ -46,11 +38,9 @@ capabilities:
         - docs/evidence/rescue/RS_001_LIVE_MEDIUM_CHECK_ANALYSIS.md
         - scripts/rescue-live/validate-rescue-iso-uefi-boot.sh
       gaps:
-        - RS-001 gelb — Payload 1.7.10.1 auf Stick verified; Operator-HW-Retest ausstehend
-        - Vorheriger Retest (1.7.10.0): URL-only, keine failed-Units-Fixes auf altem Payload
-        - Erfolg = nutzbares Menü (Kiosk oder Fallback-TUI), nicht nur URL
-        - Kein Fake-Green bis Operator Phase-1-Boot mit 0b303d3… dokumentiert
-        - Evidence on USB noch leer (setuphelfer/evidence/boot/)
+        - RS-001 gelb — Fallback-TUI OK; GRUB-Theme fehlt auf ESP; React blockiert; Netzwerk-Crash
+        - Fix 1.7.10.2 im Workspace — Rebuild + ESP-Theme-Update + Retest ausstehend
+        - Kein Fake-Green bis nutzbares Menü ohne Netzwerk-Crash + GRUB-Branding
     x86_64_legacy:
       status: partial
       evidence:

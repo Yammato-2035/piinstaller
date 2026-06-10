@@ -1,0 +1,60 @@
+{
+  "built_at": "2026-06-08T21:56:25.015870+00:00",
+  "iso_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_sha256": "c9de3751f7fafe51c836d112bac99331c06252a01430b41f2a50b432ca63f194",
+  "writer_mode": "fat32_esp",
+  "bootx64_source": "grub_mkstandalone",
+  "bootx64_embedded_bootstrap": true,
+  "bootx64_iso_copied": false,
+  "bootx64_modules_requested": [
+    "part_gpt",
+    "fat",
+    "search",
+    "search_fs_uuid",
+    "search_label",
+    "normal",
+    "linux",
+    "gzio",
+    "configfile",
+    "boot"
+  ],
+  "bootx64_sha256": "1f1bb10cec710fefd10f628060d3d961d4a47dfa0ec655c967059336e3f6a4c7",
+  "iso_bootx64_sha256": "8656837e2f3ac643ca86931bf5419885bcfc0cbdfe75b087382c768b04fc81db",
+  "bootx64_differs_from_iso": true,
+  "files": [
+    {
+      "iso_path": "/live/vmlinuz",
+      "staging_path": "live/vmlinuz",
+      "size_bytes": 8230848,
+      "sha256": "d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98"
+    },
+    {
+      "iso_path": "/live/initrd.img",
+      "staging_path": "live/initrd.img",
+      "size_bytes": 38688971,
+      "sha256": "dc6a0b99c2495ccf9aed3ebfd9e4411146385b37cc0a6c9c25a9739d9d6b5743"
+    },
+    {
+      "iso_path": "/live/filesystem.squashfs",
+      "staging_path": "live/filesystem.squashfs",
+      "size_bytes": 556601344,
+      "sha256": "0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc"
+    },
+    {
+      "iso_path": null,
+      "staging_path": "EFI/BOOT/BOOTX64.EFI",
+      "size_bytes": 3657728,
+      "sha256": "1f1bb10cec710fefd10f628060d3d961d4a47dfa0ec655c967059336e3f6a4c7",
+      "bootx64_source": "grub_mkstandalone"
+    },
+    {
+      "iso_path": "squashfs:usr/share/setuphelfer/rescue/boot-branding.txt",
+      "staging_path": "setuphelfer/rescue/boot-branding.txt",
+      "size_bytes": 372,
+      "sha256": "305c54df578d9f44ff2c24dc7998da1b3e12d62971aafc7c2e3fc96a86631591"
+    }
+  ],
+  "secrets_exposed": false,
+  "payload_updated_at": "2026-06-09T21:41:27.294911+00:00",
+  "project_version": "1.7.9.0"
+}
