@@ -99,13 +99,23 @@ const PartitionSafetyStatusPanel: React.FC<Props> = ({
         ? t('partitionSafety.secureBadge.review')
         : t('partitionSafety.secureBadge.blocked')
 
+  const cockpitRows: Array<{ key: string; label: string; level: StatusLevel }> = [
+    { key: 'smart', label: t('partitionSafety.items.smart'), level: smartLevel },
+    { key: 'boot', label: t('partitionSafety.items.bootable'), level: systemDiskLevel === 'blocked' ? 'blocked' : evaluation ? 'ok' : 'warning' },
+    { key: 'role', label: t('partitionWorkbench.cockpit.diskRole'), level: systemDiskLevel },
+    { key: 'write', label: t('partitionSafety.items.writeAllowed'), level: 'blocked' },
+    { key: 'hardstops', label: t('partitionSafety.items.hardstops'), level: hardstopLevel },
+    { key: 'restore', label: t('partitionSafety.items.restoreHandoff'), level: handoffLevel },
+  ]
+
   return (
     <aside
-      className={`${MOCKUP_SECTION} flex flex-col gap-5 min-h-0 xl:sticky xl:top-4 border-teal-500/30`}
+      className={`${MOCKUP_SECTION} flex flex-col gap-4 min-h-0 border-teal-500/30`}
       data-testid="partition-safety-status-panel"
     >
-      <div className="flex items-start justify-between gap-2">
-        <h2 className="text-base font-black text-teal-200 flex items-center gap-2 uppercase tracking-wide">
+      <div className="border-b border-teal-500/25 pb-3">
+        <div className="flex items-start justify-between gap-2">
+        <h2 className="text-base font-black text-teal-200 flex items-center gap-2 uppercase tracking-[0.18em]">
           <ShieldCheck className="w-5 h-5" />
           {t('partitionSafety.title')}
         </h2>
@@ -118,10 +128,32 @@ const PartitionSafetyStatusPanel: React.FC<Props> = ({
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
+        </div>
+        <p className="text-xs text-slate-500 mt-1">{t('partitionWorkbench.cockpit.subtitle')}</p>
+      </div>
+
+      <div className="space-y-2" data-testid="partition-safety-cockpit-rows">
+        {cockpitRows.map((row) => {
+          const tone = statusLevelToTone(row.level)
+          const styles = MOCKUP_STATUS[tone]
+          return (
+            <div
+              key={row.key}
+              className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 ${styles.card}`}
+              data-testid={`partition-cockpit-row-${row.key}`}
+            >
+              <span className={`text-xs font-bold uppercase tracking-wide ${styles.text}`}>{row.label}</span>
+              <span className={`flex items-center gap-1.5 text-sm font-bold ${styles.text}`}>
+                {levelIcon[row.level]}
+                {t(`partitionSafety.level.${row.level}`)}
+              </span>
+            </div>
+          )
+        })}
       </div>
 
       <div
-        className={`rounded-2xl border px-5 py-7 text-center shadow-lg ${MOCKUP_RISK_BADGE[risk] ?? MOCKUP_RISK_BADGE.yellow}`}
+        className={`rounded-lg border px-5 py-6 text-center shadow-lg ${MOCKUP_RISK_BADGE[risk] ?? MOCKUP_RISK_BADGE.yellow}`}
         data-testid="partition-secure-badge"
       >
         <p className="text-3xl sm:text-4xl font-black tracking-wider">{secureLabel}</p>

@@ -53,17 +53,21 @@ const PartitionGraphicLayout: React.FC<Props> = ({
   const total = disk.size_bytes || 1
   const activePart = hovered ?? selectedPartition
 
+  const legendRoles: PartitionVisualRole[] = ['efi', 'root', 'home', 'swap', 'other']
+
   return (
     <section className="space-y-5" data-testid="partition-graphic-layout">
       <div className="flex flex-wrap items-end justify-between gap-2">
-        <h3 className="text-lg font-bold text-slate-100">{t('partitionManager.layoutPreview.title')}</h3>
+        <h3 className="text-xl font-black text-slate-100 uppercase tracking-wide">
+          {t('partitionManager.layoutPreview.title')}
+        </h3>
         {isExpert && (
           <span className="text-[11px] text-slate-500 font-mono">/dev/{disk.name}</span>
         )}
       </div>
 
       <div
-        className="flex h-28 sm:h-32 lg:h-36 rounded-2xl overflow-hidden border-2 border-slate-600/50 shadow-inner"
+        className="flex h-36 sm:h-44 lg:h-52 rounded-lg overflow-hidden border-2 border-slate-600/50 shadow-inner"
         role="img"
         aria-label={t('partitionManager.layoutPreview.title')}
       >
@@ -113,9 +117,29 @@ const PartitionGraphicLayout: React.FC<Props> = ({
         })}
       </div>
 
+      <div className="flex flex-wrap gap-3 text-[11px]" data-testid="partition-graphic-legend">
+        {legendRoles.map((role) => (
+          <span key={role} className="inline-flex items-center gap-1.5 text-slate-400">
+            <span
+              className="w-3 h-3 rounded-sm border border-slate-600/50"
+              style={{ background: PARTITION_ROLE_COLORS[role] }}
+            />
+            {t(`partitionManager.layoutPreview.roles.${role === 'data' ? 'data' : role}`)}
+          </span>
+        ))}
+        <span className="inline-flex items-center gap-1.5 text-slate-400">
+          <span className="w-3 h-3 rounded-sm border border-slate-600/50 bg-[#2196F3]" />
+          NTFS
+        </span>
+        <span className="inline-flex items-center gap-1.5 text-slate-400">
+          <span className="w-3 h-3 rounded-sm border border-slate-600/50 bg-[#9E9E9E]" />
+          Recovery
+        </span>
+      </div>
+
       {activePart && (
         <div
-          className="rounded-xl border border-sky-500/35 bg-sky-950/25 px-4 py-3 flex flex-wrap gap-x-6 gap-y-1 text-sm"
+          className="rounded-lg border border-sky-500/35 bg-sky-950/25 px-4 py-3 flex flex-wrap gap-x-6 gap-y-1 text-sm"
           data-testid="partition-graphic-hover-detail"
         >
           <span className="font-bold text-sky-100">
@@ -129,6 +153,10 @@ const PartitionGraphicLayout: React.FC<Props> = ({
               FS: <strong>{activePart.fstype}</strong>
             </span>
           )}
+          <span className="text-slate-300">
+            {t('partitionWorkbench.graphic.role')}:{' '}
+            <strong>{t(roleLabelKey(classifyPartitionVisualRole(activePart), activePart))}</strong>
+          </span>
           {activePart.is_mounted && activePart.used_percent > 0 && (
             <span className="text-slate-300">
               {t('partition.partition.used')}: <strong>{activePart.used_percent}%</strong>

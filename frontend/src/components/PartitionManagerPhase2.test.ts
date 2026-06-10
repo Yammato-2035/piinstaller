@@ -6,6 +6,9 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import i18n from '../i18n'
 import PartitionOverviewCards from './PartitionOverviewCards'
+import PartitionDeviceSidebar from './partitions/PartitionDeviceSidebar'
+import PartitionWorkbenchShell from './partitions/PartitionWorkbenchShell'
+import PartitionHardstopCenter from './partitions/PartitionHardstopCenter'
 import PartitionGraphicLayout from './PartitionGraphicLayout'
 import PartitionSafetyStatusPanel from './PartitionSafetyStatusPanel'
 import PartitionHardstopPanel from './PartitionHardstopPanel'
@@ -275,12 +278,66 @@ describe('PartitionManager Phase 2.1 UI', () => {
     expect(html).not.toContain('Sicheres Backupziel')
   })
 
-  it('PartitionManager nutzt Tool-Shell und ausklappbare Details', () => {
+  it('PartitionManager nutzt Workbench-Shell und Expertenmodus', () => {
     const src = readFileSync(resolve(__dirname, '../pages/PartitionManager.tsx'), 'utf8')
-    expect(src).toContain('partition-manager-three-column')
-    expect(src).toContain('xl:grid-cols-12')
-    expect(src).toContain('PartitionToolShell')
-    expect(src).toContain('partition-toggle-technical-details')
+    expect(src).toContain('partition-workbench-layout')
+    expect(src).toContain('PartitionWorkbenchShell')
+    expect(src).toContain('PartitionDeviceSidebar')
+    expect(src).toContain('PartitionExpertModePanel')
+    expect(src).not.toContain('PartitionToolShell')
+  })
+
+  it('Workbench Device-Sidebar zeigt Datenträger', () => {
+    const html = wrap(
+      React.createElement(PartitionDeviceSidebar, {
+        disks: [sampleDisk],
+        selectedDiskName: 'sda',
+        onSelectDisk: vi.fn(),
+        loadState: { kind: 'ok' },
+      }),
+    )
+    expect(html).toContain('partition-device-sidebar')
+    expect(html).toContain('partition-sidebar-disk-sda')
+  })
+
+  it('Workbench Shell zeigt Header und Read-only', () => {
+    const html = wrap(
+      React.createElement(PartitionWorkbenchShell, {
+        children: React.createElement('div', { 'data-testid': 'child' }),
+      }),
+    )
+    expect(html).toContain('partition-workbench-shell')
+    expect(html).toContain('partition-workbench-readonly')
+    expect(html).toContain('partition-workbench-title')
+  })
+
+  it('Hardstop Center zeigt Blockade', () => {
+    const html = wrap(
+      React.createElement(PartitionHardstopCenter, {
+        disk: sampleDisk,
+        hardstops: hardstopBlocked.evaluation.hardstops,
+        warnings: [],
+      }),
+    )
+    expect(html).toContain('partition-hardstop-center')
+    expect(html).toContain('partition-hardstop-center-target_is_system_disk')
+  })
+
+  it('Sidebar zeigt API-Fehler statt stiller Leere', () => {
+    const html = wrap(
+      React.createElement(PartitionDeviceSidebar, {
+        disks: [],
+        selectedDiskName: null,
+        onSelectDisk: vi.fn(),
+        loadState: {
+          kind: 'error',
+          message: 'Backend nicht erreichbar',
+          hint: 'API-Basis: http://127.0.0.1:8000',
+        },
+      }),
+    )
+    expect(html).toContain('partition-sidebar-error')
+    expect(html).toContain('Backend nicht erreichbar')
   })
 
   it('PartitionManager enthält keine Schreib-UI-Aufrufe', () => {
