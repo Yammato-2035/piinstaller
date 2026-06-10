@@ -157,6 +157,68 @@ def _has_rescue_structure(parts: list[dict[str, Any]]) -> bool:
     return has_efi and (has_iso or has_squash_hint)
 
 
+def _is_external_user_mount(mountpoint: str) -> bool:
+    mp = (mountpoint or "").strip().lower()
+    if not mp:
+        return False
+    return mp.startswith(("/media/", "/run/media/"))
+
+
+def _has_swap_partition(parts: list[dict[str, Any]]) -> bool:
+    return any(_part_field(p, "fstype") == "swap" for p in parts)
+
+
+def _has_full_linux_system_layout(parts: list[dict[str, Any]]) -> bool:
+    """True nur bei erkennbarem Linux-System-Layout, nicht bei einer Daten-/Backup-Partition."""
+    if any(_part_field(p, "mountpoint") == "/" for p in parts):
+        return True
+    if any(
+        _part_field(p, "mountpoint") in ("/boot", "/boot/efi", "/efi") or p.get("is_system_critical")
+        for p in parts
+    ):
+        return True
+    has_efi = any(_is_efi_partition(p) for p in parts)
+    has_linux = any(_is_linux_fs_partition(p) for p in parts)
+    if not (has_efi and has_linux):
+        return False
+    # Offline-Install: EFI + Root-Partitionstyp oder EFI + Swap + Linux-FS
+    if _has_swap_partition(parts):
+        return True
+    root_gpt = any("linux root" in _part_field(p, "parttypename") for p in parts)
+    if root_gpt:
+        return True
+    # EFI + mehrere Linux-relevante Partitionen (typ. / + /home oder / + swap)
+    linux_parts = [p for p in parts if _is_linux_fs_partition(p) or _part_field(p, "fstype") == "swap"]
+    return len(linux_parts) >= 2
+
+
+def _looks_like_external_backup_target(disk: dict[str, Any], parts: list[dict[str, Any]]) -> bool:
+    """USB/externe Platte mit Nutzer-Mount und ohne System-Layout."""
+    removable = _is_removable(disk)
+    transport = _infer_transport(disk)
+    if not removable and transport != "usb":
+        return False
+    if _has_full_linux_system_layout(parts):
+        return False
+    has_external_mount = any(_is_external_user_mount(_part_field(p, "mountpoint")) for p in parts)
+    if not has_external_mount:
+        return False
+    has_data_fs = any(
+        _part_field(p, "fstype") in ("ext4", "ext3", "btrfs", "xfs", "exfat", "ntfs", "vfat")
+        for p in parts
+    )
+    return has_data_fs
+
+
+def _backup_label_hint(parts: list[dict[str, Any]]) -> bool:
+    for p in parts:
+        label = _part_field(p, "label")
+        mp = _part_field(p, "mountpoint")
+        if "backup" in label or "backup" in mp:
+            return True
+    return False
+
+
 def _collect_filesystem_hints(parts: list[dict[str, Any]]) -> list[str]:
     hints: list[str] = []
     for p in parts:
@@ -246,6 +308,12 @@ def classify_disk_storage_role(
         role = "rescue_stick"
         confidence = "high" if _has_setuphelfer_rescue_markers(disk, parts) else "medium"
         evidence.append("rescue_stick_markers_detected")
+    elif _looks_like_external_backup_target(disk, parts):
+        role = "backup_target"
+        confidence = "high" if _backup_label_hint(parts) else "medium"
+        evidence.append("external_usb_backup_mount_detected")
+        if _backup_label_hint(parts):
+            evidence.append("backup_label_or_mount_hint")
     elif has_live_root or (has_linux_boot and has_linux_fs and has_efi):
         role = "linux_system_disk"
         confidence = "high" if has_live_root else "medium"
@@ -265,13 +333,14 @@ def classify_disk_storage_role(
         confidence = "medium"
         evidence.append("ntfs_without_efi")
     elif has_linux_fs and not has_live_root:
-        if has_efi or has_linux_gpt:
+        if _has_full_linux_system_layout(parts):
             role = "linux_system_disk"
             confidence = "medium"
-            evidence.append("offline_linux_system_candidate")
+            evidence.append("offline_linux_system_layout_detected")
         else:
             role = "external_data_disk" if removable else "internal_data_disk"
-            confidence = "low"
+            confidence = "medium" if removable else "low"
+            evidence.append("linux_data_without_system_layout")
     elif removable:
         mounted_external = any(
             (_part_field(p, "mountpoint") or "").startswith(("/media/", "/run/media/", "/mnt/"))
@@ -310,7 +379,7 @@ def classify_disk_storage_role(
         "transport": transport,
         "removable": removable,
         "filesystem_hints": fs_hints,
-        "classification_source": "storage_role_classification_v1",
+        "classification_source": "storage_role_classification_v2",
     }
 
 

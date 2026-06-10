@@ -148,3 +148,40 @@ def test_windows_system_disk_find_by_target():
     found = find_classification_for_target([disk], "/dev/nvme1n1p2")
     assert found is not None
     assert found["role"] == "windows_system_disk"
+
+
+def test_usb_ext4_backup_hdd_not_linux_system_disk():
+    """HGST USB Backup — eine ext4-Partition unter /media/…/Backup, kein System."""
+    disk = {
+        "name": "sda",
+        "size_bytes": 1_000_204_886_016,
+        "size_human": "931.5 GB",
+        "vendor": "SABRENT",
+        "model": "HGST HTS721010A9E630",
+        "display_name": "HGST HTS721010A9E630",
+        "tran": "usb",
+        "removable": True,
+        "partitions": [
+            {
+                "name": "sda1",
+                "size_bytes": 1_000_204_886_016,
+                "fstype": "ext4",
+                "mountpoint": "/media/gabriel/Backup",
+                "label": "Backup",
+                "parttypename": "Linux filesystem",
+                "is_system_critical": False,
+                "children": [],
+            }
+        ],
+    }
+    r = classify_disk_storage_role(disk)
+    assert r["role"] == "backup_target"
+    assert r["role"] != "linux_system_disk"
+    assert r["write_allowed"] is False
+    assert r["risk_level"] in ("yellow", "green")
+    assert "external_usb_backup_mount_detected" in r["evidence"]
+    assert "backup_label_or_mount_hint" in r["evidence"]
+
+    ctx = build_partition_hardstop_context(target_device="/dev/sda", storage_classification=r)
+    ev = evaluate_partition_hardstops(ctx)
+    assert "partition.hardstop.target_is_linux_system_disk" not in ev["codes"]

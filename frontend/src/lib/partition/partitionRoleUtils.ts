@@ -82,6 +82,9 @@ export function diskRoleLabel(disk: DiskInfo, lang: 'de' | 'en'): string {
 
 export function detectOsHint(disk: DiskInfo): string | null {
   const backend = getBackendStorageRole(disk)
+  if (backend?.role === 'backup_target' || backend?.role === 'external_data_disk') {
+    return null
+  }
   if (backend?.role === 'windows_system_disk') return 'windows'
   if (backend?.role === 'linux_system_disk') {
     const parts = flattenPartitions(disk.partitions)
