@@ -1,37 +1,46 @@
-# RS-001 HW-Boot Phase 3 — Ergebnis
+# RS-001 HW-Boot Phase 3 — Level 6 Ergebnis
 
 **Datum:** 2026-06-10  
-**HEAD:** `4aed483` → Fix `1.7.10.2`  
+**HEAD:** `01ffba3`  
 **Branch:** `main`  
-**Version (Stick):** `1.7.10.1`
+**Version (Stick):** `1.7.11.0`
 
 ---
 
-## Operator-Befund (Hardware-Retest 1.7.10.1)
+## Phase 0 — Acceptance Gate
 
 ```text
-Commit: bc75f89
-Version: 1.7.10.1
-SquashFS SHA256: 0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc
-Payload Update: success
-Verify Hash Gate: success
-Hardware: MSI / Referenzhardware
+acceptance_status=ok
+hardware_retest_allowed=true
+exit_code=0
+SquashFS SHA256: a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d
+```
 
-UEFI: reached
-GRUB: reached
-GRUB logo/theme visible: no
-React/Kiosk UI visible: no
-Fallback TUI visible: yes
-Fallback TUI status action: works
-Fallback TUI log export action: works
-Fallback TUI network action: crashes
-Old whiptail blocker: no
-Live-Medium warning: not visible in current screenshots
-network/telemetry/wait-online failed units in beginner flow: not visible in current screenshots
+---
+
+## Operator-Befund Level 6 (1.7.11.0) — ausstehend
+
+```text
+Hardware: MSI / Referenzhardware — pending
+UEFI USB visible: pending
+GRUB visible: pending
+GRUB branding/theme visible: pending
+Kernel: pending
+Live system: pending
+React/Kiosk visible: pending
+Fallback-TUI visible: pending
+Only URL printed: pending
+Status action: pending
+Log export action: pending
+Network action: pending
+Network returns to menu: pending
+Live-Medium warning: pending
+Failed units before menu: pending
+Evidence on USB: no (pre-retest)
 
 RS-001 status: yellow
-Reason: fallback menu reached, but branding missing, React not visible, network action crashes
-Next: rebuild/update SquashFS 1.7.10.2; update GRUB theme on ESP; verify; hardware retest
+Reason: operator hardware retest level 6 not executed in this agent run
+Next: operator boot checklist in RS_001_LIVE_MEDIUM_RETEST_HANDOFF.md
 ```
 
 ---
@@ -39,5 +48,5 @@ Next: rebuild/update SquashFS 1.7.10.2; update GRUB theme on ESP; verify; hardwa
 ## RS-001
 
 | Status | yellow |
-| Reason | Partial fallback success; GRUB/React gaps; network crash |
-| Fix | `1.7.10.2` workspace (not on stick yet) |
+| Reason | Acceptance ok; hardware level 6 pending |
+| Prior baseline | 1.7.10.1: Fallback OK, GRUB no theme, network crash |

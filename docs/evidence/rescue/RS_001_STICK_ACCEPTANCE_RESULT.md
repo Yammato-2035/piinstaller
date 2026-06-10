@@ -1,7 +1,7 @@
 # RS-001 Stick Acceptance — Ergebnis
 
 **Datum:** 2026-06-10  
-**HEAD:** `0cb32b0` (+ Materialization-Lauf)  
+**HEAD:** `01ffba3`  
 **Version:** `1.7.11.0`  
 **Stick:** `/dev/sdb1` (SETUPHELFER, Ultra Line)  
 **Expected SquashFS SHA256:** `a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d`
@@ -56,6 +56,7 @@
 
 ## Nächster Schritt
 
-**Hardware-Retest Level 6** auf Referenzhardware (MSI) — RS-001 bleibt yellow bis erfolgreicher Operator-Befund.
+**Hardware-Retest Level 6** auf Referenzhardware (MSI) — **Operator ausstehend** (2026-06-10 Agent-Lauf: Phase 0 ok, Phase 1 nicht ausführbar). RS-001 bleibt yellow bis erfolgreicher Operator-Befund.
 
-Evidence JSON: `docs/evidence/runtime-results/rescue/rs001_stick_acceptance_latest.json`
+Evidence JSON: `docs/evidence/runtime-results/rescue/rs001_stick_acceptance_latest.json`  
+Level-6 USB readback: `docs/evidence/runtime-results/rescue/rs001_level6_hardware_retest_from_usb/`

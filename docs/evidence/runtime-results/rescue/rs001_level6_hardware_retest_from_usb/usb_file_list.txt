@@ -1,0 +1,3 @@
+/media/gabriel/SETUPHELFER/setuphelfer/rescue/boot-branding.txt
+/media/gabriel/SETUPHELFER/setuphelfer/rescue/evidence.json
+/media/gabriel/SETUPHELFER/setuphelfer/rescue/version.json

@@ -1,7 +1,8 @@
 # RS-001 Physical Boot Result
 
 **Updated:** 2026-06-10  
-**HEAD (Evidence):** `4aed483` → Fix `1.7.10.2`  
+**HEAD:** `01ffba3`  
+**Version:** `1.7.11.0`  
 **RS-001 status:** **yellow**
 
 ---
@@ -10,33 +11,44 @@
 
 | Field | Value |
 |-------|-------|
-| Version | `1.7.10.1` |
-| SquashFS on stick | `0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc` |
+| Version | `1.7.11.0` |
+| SquashFS on stick | `a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d` |
+| Stick Acceptance | **ok** (L1–4) |
+| Hardware Retest Allowed | **true** |
 | Payload update | **success** |
+| GRUB branding update | **success** |
 | Verify hash gate | **success** |
 
 ---
 
-## Hardware observation — 1.7.10.1 retest (2026-06-10, Operator)
+## Level 6 Hardware observation — 1.7.11.0 (pending)
 
 | Field | Value |
 |-------|-------|
-| UEFI Boot Path | **reached** |
-| GRUB visible | **reached** |
-| GRUB logo/theme visible | **no** |
-| Kernel / Live system | **reached** |
-| React/Kiosk UI visible | **no** |
-| Fallback TUI visible | **yes** |
-| Fallback TUI status action | **works** |
-| Fallback TUI log export action | **works** |
-| Fallback TUI network action | **crashes** |
-| Old whiptail dialog | **no** |
-| Live-Medium warning | **not visible** in screenshots |
-| network/telemetry/wait-online failed in beginner flow | **not visible** in screenshots |
-| Operator hardware test executed | **yes** |
-| Photo evidence | `A2F275B8-…`, `B4095FA5-…`, `448589D2-…` |
+| Operator hardware test executed | **no** (this run) |
+| UEFI Boot Path | **pending** |
+| GRUB visible | **pending** |
+| GRUB logo/theme visible | **pending** |
+| Kernel / Live system | **pending** |
+| React/Kiosk UI visible | **pending** |
+| Fallback TUI visible | **pending** |
+| Status / Log export / Network | **pending** |
+| Evidence on USB | **no** (pre-retest readback) |
 
-**Reason:** Fallback-TUI erreicht; GRUB ohne Theme; React/Kiosk blockiert (kein Browser/Display im SquashFS); Netzwerk-Menü stürzt ab.
+**Reason:** Phase 0 passed; physical boot requires operator on MSI hardware.
+
+---
+
+## Prior observation — 1.7.10.1 retest (2026-06-10)
+
+| Field | Value |
+|-------|-------|
+| UEFI / GRUB / Live | **reached** |
+| GRUB theme | **no** |
+| Fallback TUI | **yes** (Status/Logs OK) |
+| Network | **crashes** |
+| React/Kiosk | **no** |
+| Photo evidence | `A2F275B8-…`, `B4095FA5-…`, `448589D2-…` |
 
 ---
 
@@ -46,13 +58,13 @@
 |-------|-------|
 | Device | `/dev/sdb` |
 | FAT label | `SETUPHELFER` |
-| GRUB theme on ESP | **no** |
-| SquashFS hash | `0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc` |
+| GRUB theme on ESP (host verify) | **yes** |
+| SquashFS hash | `a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d` |
 
 ---
 
 ## Assessment
 
-- **Not green:** Kein nutzbares React-Menü; Netzwerk-Crash; GRUB ohne Branding.
-- **Partial success:** Fallback-TUI sichtbar; Status + Log-Export funktionieren.
-- **Fix 1.7.10.2:** GRUB-Staging, Fallback-TUI, Netzwerk crash-safe — **Rebuild/ESP-Update ausstehend**.
+- **Not green:** Level 6 hardware retest with 1.7.11.0 not yet executed.
+- **Ready:** Stick acceptance ok; operator may boot.
+- **Next:** Operator Phase 1 → USB log export → status decision.

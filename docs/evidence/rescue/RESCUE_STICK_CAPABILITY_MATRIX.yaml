@@ -20,7 +20,9 @@ metadata:
   analysis_mode: rescue_stick_acceptance_materialized_1_7_11_0
   rs001_operator_hw_boot: yellow_pending_level_6_retest
   rs001_status: yellow
+  rs001_level6_hardware_retest: pending_operator
   rs001_ready_for_operator_retest: true
+  rs001_level6_executed: false
   rs001_react_shell_on_stick: true
   rs001_stick_squashfs_sha256: "a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d"
   rs001_react_hardware_retest_1_7_10_1_observed: true
@@ -45,9 +47,8 @@ capabilities:
         - docs/evidence/rescue/RS_001_LIVE_MEDIUM_CHECK_ANALYSIS.md
         - scripts/rescue-live/validate-rescue-iso-uefi-boot.sh
       gaps:
-        - RS-001 gelb — Stick Acceptance Level 1–4 ok; Hardware-Retest Level 6 ausstehend
-        - Hardware-Retest freigegeben (acceptance_status=ok)
-        - SquashFS 1.7.11.0 materialisiert auf Stick
+        - RS-001 gelb — Stick Acceptance L1–4 ok; Level 6 HW-Retest Operator ausstehend
+        - Kein Fake-Green ohne dokumentierten Hardware-Befund 1.7.11.0
     x86_64_legacy:
       status: partial
       evidence:
