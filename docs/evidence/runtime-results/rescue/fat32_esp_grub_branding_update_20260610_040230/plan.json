@@ -1,0 +1,29 @@
+{
+  "target_device": "/dev/sdb",
+  "target_partition": "/dev/sdb1",
+  "confirm_phrase_expected": "UPDATE SETUPHELFER FAT32 ESP GRUB BRANDING",
+  "grub_paths": [
+    "boot/grub/grub.cfg",
+    "boot/grub/themes/setuphelfer/theme.txt",
+    "boot/grub/themes/setuphelfer/setuphelfer-boot-menu-de.png",
+    "EFI/BOOT/BOOTX64.EFI",
+    "setuphelfer/rescue/evidence.json",
+    "setuphelfer/rescue/boot-branding.txt"
+  ],
+  "safety": {
+    "target_device": "/dev/sdb",
+    "target_partition": "/dev/sdb1",
+    "blocked": false,
+    "blockers": [],
+    "write_allowed": true,
+    "partition_rewritten": false,
+    "filesystem_reformatted": false,
+    "secrets_exposed": false
+  },
+  "blocked": false,
+  "blockers": [],
+  "grub_branding_update_executed": false,
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "secrets_exposed": false
+}

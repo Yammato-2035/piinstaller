@@ -1,61 +1,49 @@
-# RS-001 Live Medium Retest Handoff — React Launcher Fix 1.7.10.1
+# RS-001 Live Medium Retest Handoff — 1.7.11.0
 
-**Datum:** 2026-06-09  
-**HEAD:** `dad1db5`  
+**Datum:** 2026-06-10  
+**Version:** `1.7.11.0`  
 **RS-001:** **yellow**  
-**Ready for operator retest:** **false** (Payload-Update mit sudo ausstehend)
+**Stick Acceptance:** **ok**  
+**Ready for operator hardware retest:** **true**
 
-## SquashFS (Workspace, bereit)
+## Stick-Stand
 
 ```text
-Version: 1.7.10.1
-SquashFS: build/rescue/filesystem.squashfs.repacked-1.7.10.1
-SHA256: 0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc
-Alter Stick-Hash: a54aae1d902523cf08b37105b1f6001e048d610b57210520ea2e1a649b3fe820
+Version (SquashFS): 1.7.11.0
+SquashFS SHA256: a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d
+Acceptance: ok (Level 1–4)
+GRUB Branding: ok
 ```
 
-## Schritt 1 — Payload auf Stick (Operator, sudo)
+## Acceptance erneut prüfen (optional vor Boot)
 
 ```bash
 cd /home/volker/piinstaller
 
-./scripts/rescue-live/update-fat32-esp-live-payload.sh \
+./scripts/rescue-live/check-rs001-stick-acceptance.sh \
   --target /dev/sdb \
-  --new-squashfs build/rescue/filesystem.squashfs.repacked-1.7.10.1 \
-  --operator-confirm-update \
-  --confirm-phrase "UPDATE SETUPHELFER FAT32 ESP LIVE PAYLOAD" \
-  --execute-update
-
-./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh \
-  --target /dev/sdb \
-  --expected-squashfs-sha256 0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc
+  --expected-squashfs-sha256 a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d
 ```
 
-Erwartung: `payload_update_status=success`, `verify_status=success`, kein `.sqtmp` auf Stick.
+Erwartung: `acceptance_status=ok`, `hardware_retest_allowed=true`
 
-## Schritt 2 — Hardware-Retest
+## Hardware-Retest Level 6 (Operator)
 
 1. Rechner vollständig herunterfahren
 2. Stick `/dev/sdb` (SETUPHELFER) einstecken
-3. UEFI → USB/Setuphelfer → GRUB „Setuphelfer Rettung starten“
-4. **Nichts** starten (kein Backup/Restore/Repair/Install)
+3. UEFI → USB → GRUB mit Setuphelfer-Theme
+4. „Setuphelfer Rettung starten“ wählen
+5. **Kein** Backup/Restore/Repair/Install starten
 
 ## Erfolgskriterium (RS-001 green)
 
 ```text
-Nutzbares Setuphelfer-Menü sichtbar (Kiosk-Browser ODER Fallback-TUI mit Auswahlmenü)
-NICHT nur URL auf Konsole
-Keine rohen failed-Units: network-onboarding, wait-online, telemetry-push im Anfängerflow
-Kein whiptail-Blocker
+Nutzbares Setuphelfer-Menü (Kiosk ODER Fallback-TUI mit Auswahl)
+Netzwerk verbinden crasht nicht — Rückkehr ins Menü
+GRUB mit Logo/Theme sichtbar
+Keine rohen failed-Units im Anfängerflow
 ```
 
-## Bei Teil-Erfolg (yellow bleibt)
+## Nach Retest
 
-- Nur URL sichtbar → Launcher/Kiosk weiter prüfen
-- Fallback-TUI sichtbar aber kein grafisches Menü → yellow (review_required), dokumentieren
-
-## Dokumentation nach Retest
-
-- `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md`
-- `RS_001_PHYSICAL_BOOT_RESULT.md`
-- Evidence: `/run/setuphelfer/rescue-ui-status.json` oder Stick-Spiegel `setuphelfer/evidence/boot/`
+Evidence: `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md`, Stick-Logs von ESP exportieren.

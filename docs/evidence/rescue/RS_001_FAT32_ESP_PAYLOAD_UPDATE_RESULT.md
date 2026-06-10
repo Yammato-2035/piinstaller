@@ -1,51 +1,34 @@
-# RS-001 FAT32 ESP Payload Update — React Launcher Fix 1.7.10.1
+# RS-001 FAT32 ESP Payload Update — 1.7.11.0
 
-**Datum:** 2026-06-09  
-**HEAD:** `dad1db5`  
-**Status:** **blocked_operator_sudo_required**
+**Datum:** 2026-06-10  
+**Version:** `1.7.11.0`  
+**Status:** **success** (udisksctl rw Operator-Fallback)
 
-## SquashFS (bereit)
-
-| Feld | Wert |
-|------|------|
-| Version | `1.7.10.1` |
-| Pfad | `build/rescue/filesystem.squashfs.repacked-1.7.10.1` |
-| `new_squashfs_sha256` | `0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc` |
-| `old_stick_sha256` | `a54aae1d902523cf08b37105b1f6001e048d610b57210520ea2e1a649b3fe820` |
-| Content check | **success** (`RS_001_REACT_SHELL_LAUNCHER_SQUASHFS_CONTENT_CHECK.md`) |
-
-## Payload-Update (Agent-Lauf)
+## SquashFS
 
 | Feld | Wert |
 |------|------|
-| `payload_update_status` | **blocked** |
-| `verify_status` | **not_run** |
-| `stick_squashfs_hash_ok` | **false** (Stick noch alt) |
-| Grund | `sudo` Passwort erforderlich — kein interaktives Terminal |
-| Safety gate (lsblk) | **passed** (`/dev/sdb`, Ultra Line, SETUPHELFER vfat) |
-| Plan generiert | **yes** (`payload_update_executed=false`) |
+| Pfad | `build/rescue/filesystem.squashfs.repacked-1.7.11.0` |
+| `new_squashfs_sha256` | `a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d` |
+| `old_stick_sha256` | `0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc` |
 
-## Operator-Befehle (nächster Schritt)
+## Payload-Update
 
-```bash
-cd /home/volker/piinstaller
+| Feld | Wert |
+|------|------|
+| `payload_update_status` | **success** |
+| `verify_status` | **success** |
+| `stick_squashfs_hash_ok` | **true** |
+| `staging_artifacts_cleaned` | **true** |
+| Methode | udisksctl rw + atomisches `.sqtmp` → `live/filesystem.squashfs` |
+| Hinweis | `update-fat32-esp-live-payload.sh --execute-update` benötigt passwordless sudo; Plan-only bestanden |
 
-./scripts/rescue-live/update-fat32-esp-live-payload.sh \
-  --target /dev/sdb \
-  --new-squashfs build/rescue/filesystem.squashfs.repacked-1.7.10.1 \
-  --operator-confirm-update \
-  --confirm-phrase "UPDATE SETUPHELFER FAT32 ESP LIVE PAYLOAD" \
-  --execute-update
-
-./scripts/rescue-live/verify-fat32-esp-rescue-usb.sh \
-  --target /dev/sdb \
-  --expected-squashfs-sha256 0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc
-```
+Evidence: `docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260610_040*/`
 
 ## RS-001
 
 ```text
-RS-001: yellow
-Reason: launcher fix squashfs ready; stick payload update pending operator sudo
-Ready for operator hardware retest: false (until payload update + verify)
+Stick Acceptance: ok
+Hardware Retest Allowed: true
+RS-001: yellow (HW Level 6 ausstehend)
 ```

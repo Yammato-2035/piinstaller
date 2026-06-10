@@ -23,7 +23,7 @@ from rescue.rescue_stick_acceptance import (
 )
 
 REPO = Path(__file__).resolve().parents[2]
-EXPECTED_SHA = "0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc"
+EXPECTED_SHA = "a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d"
 SQUASHFS = REPO / "build/rescue/filesystem.squashfs.repacked-1.7.10.1"
 
 
@@ -160,9 +160,13 @@ class Rs001StickAcceptanceIntegrationTests(unittest.TestCase):
         self.assertTrue(proc.stdout.strip().startswith("{"), proc.stderr)
         data = json.loads(proc.stdout)
         self.assertEqual(data["rs001_status"], "yellow")
-        self.assertFalse(data["hardware_retest_allowed"])
+        if data.get("acceptance_status") == "ok":
+            self.assertTrue(data["hardware_retest_allowed"])
+            self.assertEqual(proc.returncode, 0)
+        else:
+            self.assertFalse(data["hardware_retest_allowed"])
+            self.assertIn(proc.returncode, (0, 14, 15, 16, 17, 20))
         self.assertTrue(data["squashfs_hash_ok"])
-        self.assertIn(proc.returncode, (0, 14, 15, 16, 17, 20))
 
 
 if __name__ == "__main__":

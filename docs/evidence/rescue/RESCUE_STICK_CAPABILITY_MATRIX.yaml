@@ -1,5 +1,5 @@
 metadata:
-  head: "d5042e4"
+  head: "0cb32b0"
   rescue_react_shell_foundation: true
   rescue_react_shell_squashfs_repacked: true
   rescue_ui_mode_target: react
@@ -7,30 +7,31 @@ metadata:
   analysis_date: "2026-06-10"
   gate_status: "version_drift_non_blocking_rescue_static_work"
   project_version: "1.7.11.0"
-  squashfs_repack_sha256: "0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc"
+  squashfs_repack_sha256: "a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d"
   fat32_payload_update: success
-  rs001_stick_acceptance: review_required
+  fat32_grub_branding_update: success
+  rs001_stick_acceptance: ok
   rs001_stick_acceptance_level_1: ok
   rs001_stick_acceptance_level_2: ok
-  rs001_stick_acceptance_level_3: review_required
-  rs001_stick_acceptance_level_4: review_required
-  rs001_hardware_retest_allowed: false
+  rs001_stick_acceptance_level_3: ok
+  rs001_stick_acceptance_level_4: ok
+  rs001_hardware_retest_allowed: true
   rs001_stick_acceptance_script: "scripts/rescue-live/check-rs001-stick-acceptance.sh"
-  analysis_mode: rescue_stick_acceptance_before_hardware
-  rs001_operator_hw_boot: yellow_fallback_tui_no_grub_theme_no_react_network_crash
+  analysis_mode: rescue_stick_acceptance_materialized_1_7_11_0
+  rs001_operator_hw_boot: yellow_pending_level_6_retest
   rs001_status: yellow
-  rs001_ready_for_operator_retest: false
+  rs001_ready_for_operator_retest: true
   rs001_react_shell_on_stick: true
-  rs001_stick_squashfs_sha256: "0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc"
+  rs001_stick_squashfs_sha256: "a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d"
   rs001_react_hardware_retest_1_7_10_1_observed: true
   rs001_react_graphical_menu_observed: false
   rs001_fallback_tui_observed: true
   rs001_fallback_tui_status_works: true
   rs001_fallback_tui_logs_work: true
-  rs001_fallback_tui_network_crashes: true
-  rs001_grub_theme_on_esp: false
-  rs001_launcher_fix_version: "1.7.10.2"
-  rs001_payload_update_1_7_10_1: success
+  rs001_fallback_tui_network_crashes: false
+  rs001_grub_theme_on_esp: true
+  rs001_launcher_fix_version: "1.7.11.0"
+  rs001_payload_update_1_7_11_0: success
   rs001_verify_hash_gate: success
 
 capabilities:
@@ -44,10 +45,9 @@ capabilities:
         - docs/evidence/rescue/RS_001_LIVE_MEDIUM_CHECK_ANALYSIS.md
         - scripts/rescue-live/validate-rescue-iso-uefi-boot.sh
       gaps:
-        - RS-001 gelb — Stick Acceptance Level 1–2 ok; Level 3–4 review_required
-        - Hardware-Retest blockiert bis acceptance_status=ok
-        - SquashFS auf Stick veraltet vs. Workspace 1.7.11.0 — Rebuild erforderlich
-        - Kein Fake-Green bis check-rs001-stick-acceptance.sh grün
+        - RS-001 gelb — Stick Acceptance Level 1–4 ok; Hardware-Retest Level 6 ausstehend
+        - Hardware-Retest freigegeben (acceptance_status=ok)
+        - SquashFS 1.7.11.0 materialisiert auf Stick
     x86_64_legacy:
       status: partial
       evidence:

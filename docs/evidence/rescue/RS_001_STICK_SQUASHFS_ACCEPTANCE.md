@@ -1,34 +1,26 @@
-# RS-001 Stick SquashFS Acceptance
+# RS-001 Stick SquashFS Acceptance — 1.7.11.0
 
 **Datum:** 2026-06-10  
-**SquashFS SHA256:** `0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc`  
-**Version im SquashFS:** `1.7.10.1`
+**Artifact:** `build/rescue/filesystem.squashfs.repacked-1.7.11.0`  
+**SHA256:** `a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d`
 
----
+## Content Contract
 
-## Level 2 — Ergebnis
+| Prüfung | Ergebnis |
+|---------|----------|
+| Version in SquashFS | **1.7.11.0** |
+| React UI | yes |
+| Launcher | yes |
+| Fallback-TUI | yes |
+| Fallback Safe-Mode Text | yes |
+| Status Summary nicht roh | yes |
+| Network safe wrapper | yes |
+| Network set +e | yes |
+| Common nmcli check | yes |
+| TTY override | yes |
+| return_to_menu | yes |
+| Telemetry default skipped | yes |
+| wait-online neutralisiert | yes |
+| Network-Onboarding nicht vor Menü | yes |
 
-| Prüfung | Stick |
-|---------|-------|
-| `squashfs_content_ok` | **yes** |
-| React Rescue Shell | **yes** |
-| `rescue.html` | **yes** |
-| Launcher Fix (1.7.10.1 baseline) | **yes** |
-| Fallback TUI vorhanden | **yes** |
-| Network boot-skip | **yes** |
-| Telemetry default skipped | **yes** |
-| wait-online neutralized | **yes** |
-| Network/telemetry Boot-Autostart | **no** |
-
----
-
-## Level 3 — Contract Delta (Stick vs. Workspace)
-
-| Contract | Stick 1.7.10.1 | Workspace 1.7.11.0 |
-|----------|----------------|---------------------|
-| crash-safe network wrapper | **no** | **yes** |
-| Status-Kurzfassung | **no** | **yes** |
-| sicherer Notmodus-Text | **no** | **yes** |
-| `return_to_menu` in network JSON | **no** | **yes** |
-
-**Level 2:** ok · **Level 3 auf Stick:** review_required (Rebuild erforderlich)
+Build-Modus: `squashfs_repack` (kein controlled lb build)

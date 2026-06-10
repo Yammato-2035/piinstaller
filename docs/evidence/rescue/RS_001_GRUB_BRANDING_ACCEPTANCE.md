@@ -1,34 +1,19 @@
-# RS-001 GRUB Branding Acceptance
+# RS-001 GRUB Branding Acceptance — 1.7.11.0
 
 **Datum:** 2026-06-10  
-**Stick:** `/dev/sdb1`
+**Stick:** `/dev/sdb1`  
+**Update-Skript:** `scripts/rescue-live/update-fat32-esp-grub-branding.sh`
 
----
+## Level 4 Contract
 
-## Ergebnis
+| Prüfung | Ergebnis |
+|---------|----------|
+| `boot/grub/themes/setuphelfer/theme.txt` | **ok** |
+| Background PNG | **ok** |
+| `grub.cfg` Theme-Referenz | **ok** |
+| `grub.cfg` gfxterm/png | **ok** |
+| BOOTX64 modules in evidence.json | **ok** (gfxterm,png,all_video,efi_gop) |
 
-| Prüfung | Wert |
-|---------|------|
-| `grub_branding_contract_ok` | **false** |
-| Theme-Verzeichnis auf ESP | **fehlt** |
-| `theme.txt` | **fehlt** |
-| Background PNG | **fehlt** |
-| `grub.cfg` Theme-Referenz | **fehlt** |
-| gfx-Module in `grub.cfg` | **fehlt** |
-| BOOTX64 gfx-Module | **fehlen** (`gfxterm`, `png`, `all_video`, `efi_gop`) |
+Evidence: `docs/evidence/runtime-results/rescue/fat32_esp_grub_branding_update_20260610_040230/result.json`
 
----
-
-## Hardware-Korrelation
-
-Hardware-Befund „GRUB ohne Logo“ wird durch Level-4-Acceptance **vor** Retest reproduziert.
-
----
-
-## Fix (Workspace, nicht auf Stick)
-
-- `stage_grub_theme_to_fat32_staging()` in FAT32-Writer
-- `generate_grub_cfg_branding_lines()` in `grub.cfg`
-- Erweiterte BOOTX64-Module
-
-**Freigabe:** ESP-Theme-Update + Acceptance Level 4 grün
+RS-001 bleibt **yellow** — Branding allein reicht nicht für green.

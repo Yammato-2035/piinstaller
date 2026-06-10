@@ -1,0 +1,20 @@
+{
+  "grub_branding_update_schema_version": 1,
+  "target_device": "/dev/sdb",
+  "started_at": "2026-06-10T04:02:30Z",
+  "completed_at": "2026-06-10T04:02:31.892525+00:00",
+  "grub_branding_update_executed": true,
+  "grub_branding_update_status": "success",
+  "verify_status": "success",
+  "branding_ok": true,
+  "errors": [],
+  "bootx64_sha256": "e33e13e75890694b442ac280460feaf06ec64cbdb6515975f51a3db421e529f4",
+  "grub_cfg_sha256": "99c872a114e098eecb70d69e65c367093995e1a541e033c469fc684690a2af21",
+  "evidence_dir": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_grub_branding_update_20260610_040230",
+  "failed_step": null,
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "secrets_exposed": false,
+  "no_fake_green": true,
+  "rs001_status": "yellow"
+}

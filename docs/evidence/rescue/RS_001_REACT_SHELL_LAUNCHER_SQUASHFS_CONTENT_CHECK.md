@@ -1,43 +1,16 @@
-# RS-001 React Shell Launcher — SquashFS Content Check
+# RS-001 React Shell / Launcher SquashFS Content Check — 1.7.11.0
 
-**Datum:** 2026-06-09  
-**Version:** `1.7.10.1`  
-**SquashFS:** `build/rescue/filesystem.squashfs.repacked-1.7.10.1`  
-**SHA256:** `0b303d3ab563f4aeaa354813dcbf46e8fb934a3f23d4705251129f80f2ac51dc`  
-**Quelle:** `filesystem.squashfs.repacked-1.7.10.0` (`a54aae1d…`)
+**Datum:** 2026-06-10  
+**SquashFS:** `filesystem.squashfs.repacked-1.7.11.0`  
+**SHA256:** `a3e58964ffffe032fd7e543e5e28bd64156981347647a0ba9208101cb9d7726d`
 
-## Pflichtbefund
+## Manifest
 
-| Prüfung | Ergebnis |
-|---------|----------|
-| Version | **1.7.10.1** |
-| React UI vorhanden | **yes** |
-| rescue.html vorhanden | **yes** |
-| setuphelfer-rescue-ui-launch vorhanden | **yes** |
-| fallback_tui vorhanden | **yes** |
-| rescue-ui-status.json write path | **yes** (`/run/setuphelfer/rescue-ui-status.json`) |
-| network-onboarding boot-skip | **yes** (`SKIPPED_BOOT_WAIT_USER`) |
-| telemetry default skipped | **yes** (`telemetry_disabled_or_no_consent`) |
-| wait-online nicht Boot-Blocker | **yes** (Drop-in `ExecStart=/bin/true`) |
-| network/telemetry Boot-Autostart | **no** (wants-Symlinks entfernt) |
-| browser/kiosk hard dependency | **no** |
-| no_fake_green | **yes** |
+- `rescue-ui-manifest.json` version: **1.7.11.0**
+- `offline_first`: **true**
+- `network_required`: **false**
+- `telemetry_required`: **false**
 
-## Verify-Report (Auszug)
+## Launcher / Fallback / Network Contracts (on-stick)
 
-```json
-{
-  "contains_react_rescue_shell": true,
-  "contains_rescue_ui_launcher_fix": true,
-  "contains_fallback_tui": true,
-  "contains_network_boot_skip": true,
-  "contains_telemetry_default_skipped": true,
-  "contains_wait_online_neutralization": true,
-  "network_boot_autostart": false,
-  "telemetry_boot_autostart": false
-}
-```
-
-## Stick-Status
-
-Payload-Update auf `/dev/sdb` **ausstehend** (Agent: `sudo` Passwort erforderlich — Operator-Aktion).
+Alle Checks **ok** — siehe `check-rs001-stick-acceptance.sh` Level 3 Details.

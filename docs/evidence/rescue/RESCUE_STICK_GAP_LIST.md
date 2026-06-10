@@ -6,8 +6,8 @@ Prioritäten: **P0** = zwingend v1 · **P1** = wichtig v1 · **P2** = v1.1 · **
 
 | Bereich | Soll-Funktion | IST-Status | Beleg | Risiko | Priorität | Empfohlene Phase |
 |---------|---------------|------------|-------|--------|-----------|------------------|
-| Boot | RS-001 Stick Acceptance | partial (L1–2 ok, L3–4 review) | `RS_001_STICK_ACCEPTANCE_RESULT.md` | Hardware blockiert | P0 | Rebuild + Acceptance grün |
-| Boot | x86_64 UEFI HW-Boot | partial (gelb; Acceptance vor HW) | `RS_001_REACT_RESCUE_HARDWARE_RETEST_RESULT.md` | Netzwerk-Crash; kein GRUB-Theme | P0 | Acceptance ok → HW-Retest |
+| Boot | RS-001 Stick Acceptance | ok (L1–4; HW Level 6 ausstehend) | `RS_001_STICK_ACCEPTANCE_RESULT.md` | Kein Fake-Green bis HW-Retest | P0 | Hardware-Retest Level 6 |
+| Boot | x86_64 UEFI HW-Boot | partial (gelb; Acceptance ok) | `RS_001_LIVE_MEDIUM_RETEST_HANDOFF.md` | MSI-Retest mit 1.7.11.0 offen | P0 | HW-Retest Level 6 |
 | Boot | x86_64 Legacy BIOS HW | partial (QEMU only) | `QEMU_DEVELOPER_BOOTLOADER_SERIAL_SMOKE_RESULT.md` | Ältere BIOS-Geräte | P1 | Phase 1 |
 | Boot | RS-001…RS-008 grün | missing (alle rot) | `docs/testing/RESCUE_STICK_TEST_MATRIX.md` | Kein Release-Nachweis | P0 | Phase 1–3 |
 | Boot | ARM64 Rescue-Image | planned/deferred | `RESCUE_TARGET_ARCHITECTURES.md` | Keine ARM-Laptops/Pi | P3 | v2 |
