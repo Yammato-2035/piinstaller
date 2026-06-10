@@ -119,7 +119,8 @@ describe('PartitionManager Phase 2.1 UI', () => {
       }),
     )
     expect(html).toContain('partition-overview-cards')
-    expect(html).toContain('Samsung 980 Pro')
+    expect(html).toContain('980 Pro')
+    expect(html).toContain('Samsung')
     expect(html).toContain('partition-disk-card-sda')
   })
 
@@ -245,10 +246,41 @@ describe('PartitionManager Phase 2.1 UI', () => {
     expect(html).not.toContain('overflow-x-auto')
   })
 
-  it('PartitionManager nutzt 3-Spalten-Grid', () => {
+  it('zeigt Windows-Systemkarte mit Backend-Klassifikation', () => {
+    const windowsDisk: DiskInfo = {
+      ...sampleDisk,
+      name: 'nvme1n1',
+      display_name: 'Samsung 980 Pro',
+      storage_role: {
+        device: '/dev/nvme1n1',
+        role: 'windows_system_disk',
+        confidence: 'high',
+        evidence: ['efi_partition_detected', 'ntfs_partition_detected'],
+        write_allowed: false,
+        risk_level: 'red',
+        ui_label_de: 'Windows-Systemlaufwerk',
+        ui_label_en: 'Windows system disk',
+        transport: 'nvme',
+      },
+    }
+    const html = wrap(
+      React.createElement(PartitionOverviewCards, {
+        disks: [windowsDisk],
+        selectedDiskName: 'nvme1n1',
+        onSelectDisk: vi.fn(),
+      }),
+    )
+    expect(html).toContain('Windows-Systemlaufwerk')
+    expect(html).toContain('data-storage-role="windows_system_disk"')
+    expect(html).not.toContain('Sicheres Backupziel')
+  })
+
+  it('PartitionManager nutzt Tool-Shell und ausklappbare Details', () => {
     const src = readFileSync(resolve(__dirname, '../pages/PartitionManager.tsx'), 'utf8')
     expect(src).toContain('partition-manager-three-column')
     expect(src).toContain('xl:grid-cols-12')
+    expect(src).toContain('PartitionToolShell')
+    expect(src).toContain('partition-toggle-technical-details')
   })
 
   it('PartitionManager enthält keine Schreib-UI-Aufrufe', () => {

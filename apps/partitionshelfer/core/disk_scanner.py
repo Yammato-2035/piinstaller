@@ -147,6 +147,8 @@ class Disk:
     size_bytes: int
     vendor: Optional[str]
     model: Optional[str]
+    tran: Optional[str] = None
+    removable: bool = False
     partitions: list = field(default_factory=list)
 
     @property
@@ -219,7 +221,7 @@ def scan_all_disks() -> list[Disk]:
         [
             "lsblk", "--json", "--bytes",
             "--output",
-            "NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT,LABEL,UUID,PARTTYPENAME,VENDOR,MODEL"
+            "NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT,LABEL,UUID,PARTTYPENAME,VENDOR,MODEL,TRAN,RM"
         ],
         capture_output=True, text=True, timeout=10
     )
@@ -231,11 +233,18 @@ def scan_all_disks() -> list[Disk]:
         if dev.get("type") != "disk":
             continue
 
+        rm_raw = dev.get("rm")
+        removable = rm_raw is True or rm_raw == 1 or str(rm_raw).strip() == "1"
+        tran = dev.get("tran")
+        if isinstance(tran, str) and tran.strip().lower() == "usb":
+            removable = True
         disk = Disk(
             name=dev["name"],
             size_bytes=dev.get("size") or 0,
             vendor=dev.get("vendor"),
             model=dev.get("model"),
+            tran=tran if isinstance(tran, str) else None,
+            removable=removable,
         )
 
         # Partitionen (children) verarbeiten

@@ -187,17 +187,67 @@ def evaluate_partition_hardstops(context: dict[str, Any]) -> dict[str, Any]:
             "Zielidentität unbekannt – kein Write-Kontext.",
         )
 
+    storage_role = str(classification.get("storage_role") or classification.get("role") or "").strip()
+    role_confidence = str(classification.get("confidence") or "").strip().lower()
+    evidence = classification.get("evidence") or []
+    if not isinstance(evidence, list):
+        evidence = []
+
     is_system = bool(
         classification.get("system_disk")
         or classification.get("system_disk_candidate")
         or classification.get("is_system_disk")
         or str(classification.get("target_classification") or "").lower()
-        in ("system", "system_disk", "boot_disk")
+        in ("system", "system_disk", "boot_disk", "linux_system_disk", "windows_system_disk")
+        or storage_role in ("linux_system_disk", "windows_system_disk", "mixed_system_disk")
     )
-    if target and is_system:
+    if target and storage_role == "windows_system_disk":
+        _stop(
+            "partition.hardstop.target_is_windows_system_disk",
+            "Ziel ist als Windows-Systemlaufwerk klassifiziert.",
+        )
+    elif target and storage_role == "linux_system_disk":
+        _stop(
+            "partition.hardstop.target_is_linux_system_disk",
+            "Ziel ist als Linux-Systemlaufwerk klassifiziert.",
+        )
+    elif target and is_system:
         _stop(
             "partition.hardstop.target_is_system_disk",
             "Ziel ist als Systemdisk klassifiziert.",
+        )
+
+    if target and storage_role == "rescue_stick":
+        _stop(
+            "partition.hardstop.target_is_rescue_stick",
+            "Ziel ist als Rettungsstick klassifiziert — Schreibzugriffe blockiert.",
+        )
+
+    if target and storage_role == "mixed_system_disk":
+        _stop(
+            "partition.hardstop.target_contains_os_partitions",
+            "Ziel enthält gemischte Betriebssystem-Partitionen.",
+        )
+
+    if target and (
+        storage_role == "unknown_disk"
+        or role_confidence == "low"
+        or bool(classification.get("role_uncertain"))
+    ):
+        _warn(
+            "partition.hardstop.target_role_uncertain",
+            "Datenträgerrolle unsicher — manuelle Prüfung erforderlich.",
+        )
+
+    if target and "efi_partition_detected" in evidence and storage_role not in (
+        "linux_system_disk",
+        "windows_system_disk",
+        "rescue_stick",
+        "mixed_system_disk",
+    ):
+        _warn(
+            "partition.hardstop.target_contains_boot_partitions",
+            "EFI/Boot-Partitionen erkannt — Vorsicht bei Zielauswahl.",
         )
 
     if smart_status in ("failing", "critical"):

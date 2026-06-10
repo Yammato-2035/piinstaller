@@ -33,6 +33,32 @@ export interface FsInfo {
   farbe: string
 }
 
+export type StorageRoleId =
+  | 'linux_system_disk'
+  | 'windows_system_disk'
+  | 'mixed_system_disk'
+  | 'backup_target'
+  | 'backup_source'
+  | 'rescue_stick'
+  | 'external_data_disk'
+  | 'internal_data_disk'
+  | 'unknown_disk'
+
+export interface StorageRoleInfo {
+  device: string
+  role: StorageRoleId
+  confidence: 'high' | 'medium' | 'low'
+  evidence: string[]
+  write_allowed: boolean
+  risk_level: 'green' | 'yellow' | 'red'
+  ui_label_de: string
+  ui_label_en: string
+  transport?: string
+  removable?: boolean
+  filesystem_hints?: string[]
+  classification_source?: string
+}
+
 export interface DiskInfo {
   name: string
   size_bytes: number
@@ -40,11 +66,15 @@ export interface DiskInfo {
   vendor: string | null
   model: string | null
   display_name: string
+  tran?: string | null
+  removable?: boolean
   partitions: PartitionInfo[]
+  storage_role?: StorageRoleInfo
 }
 
 export interface DiskScanResult {
   disks: DiskInfo[]
+  storage_roles?: StorageRoleInfo[]
   scanned_at: string
 }
 

@@ -20,6 +20,10 @@ from core.partition_storage_facade import (
     build_partition_target_safety_context,
     read_backup_manifest_readonly,
 )
+from core.storage_role_classification import (
+    classify_scan_disks,
+    find_classification_for_target,
+)
 
 _PARTITIONS_APP = Path(__file__).resolve().parents[3] / "apps" / "partitionshelfer"
 
@@ -117,16 +121,21 @@ def _partition_to_dict(part: Partition) -> dict[str, Any]:
     }
 
 
-def _disk_to_dict(disk: Disk) -> dict[str, Any]:
-    return {
+def _disk_to_dict(disk: Disk, *, storage_role: dict[str, Any] | None = None) -> dict[str, Any]:
+    base = {
         "name": disk.name,
         "size_bytes": disk.size_bytes,
         "size_human": disk.size_human,
         "vendor": disk.vendor,
         "model": disk.model,
         "display_name": disk.display_name,
+        "tran": getattr(disk, "tran", None),
+        "removable": bool(getattr(disk, "removable", False)),
         "partitions": [_partition_to_dict(p) for p in disk.partitions],
     }
+    if storage_role:
+        base["storage_role"] = storage_role
+    return base
 
 
 def _warnung_to_dict(w) -> dict[str, Any]:
@@ -158,8 +167,29 @@ async def get_partition_scan() -> dict[str, Any]:
         disks = scan_all_disks()
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Scan fehlgeschlagen: {exc}") from exc
+    disk_dicts = [_disk_to_dict(d) for d in disks]
+    roles = classify_scan_disks(disk_dicts)
+    merged = [
+        _disk_to_dict(d, storage_role=role)
+        for d, role in zip(disks, roles, strict=True)
+    ]
     return {
-        "disks": [_disk_to_dict(d) for d in disks],
+        "disks": merged,
+        "storage_roles": roles,
+        "scanned_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@partition_router.get("/storage-roles")
+async def get_storage_roles() -> dict[str, Any]:
+    try:
+        disks = scan_all_disks()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Scan fehlgeschlagen: {exc}") from exc
+    disk_dicts = [_disk_to_dict(d) for d in disks]
+    roles = classify_scan_disks(disk_dicts)
+    return {
+        "devices": roles,
         "scanned_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -272,6 +302,18 @@ async def get_hardstop_preview(
     )
     facade_class = safety_ctx.get("storage_classification") or {}
     storage_classification = {**facade_class, **storage_classification}
+
+    try:
+        scanned = [_disk_to_dict(d) for d in scan_all_disks()]
+        auto_role = find_classification_for_target(
+            scanned,
+            target_device,
+            backup_source_device=backup_source_device,
+        )
+        if auto_role:
+            storage_classification = {**auto_role, **storage_classification}
+    except Exception:
+        pass
 
     ctx = build_partition_hardstop_context(
         target_device=target_device,
