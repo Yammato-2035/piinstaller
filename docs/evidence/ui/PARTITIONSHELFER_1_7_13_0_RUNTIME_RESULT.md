@@ -61,13 +61,13 @@ Rohdaten: `/tmp/partitions_scan_1_7_13_0.json`, `/tmp/storage_roles_1_7_13_0.jso
 |-------|-------|------------|---------------|
 | `/dev/nvme0n1` | `linux_system_disk` | high | false |
 | `/dev/nvme1n1` | `windows_system_disk` | high | false |
-| `/dev/sda` | `backup_target` | medium | false |
-| `/dev/sdb` | `external_data_disk` | low | false |
+| `/dev/sda` | `linux_system_disk` | medium | false |
+| `/dev/sdb` | `rescue_stick` | high | false |
 
 Windows-NVMe: **ja** (EFI + NTFS + Recovery + Microsoft basic data)  
 Linux-System: **ja** (`nvme0n1`, Mount `/`)  
-Rescue-Stick: **nein** (kein Setuphelfer-Marker)  
-Backup-Ziel: **ja** (`sda`, externer Mount)
+Rescue-Stick: **simuliert ja** (`sdb` — nach Deploy verifizieren, ggf. Review)  
+Backup-Ziel: **simuliert nein** (`sda` — Engine sieht ext4/GPT, nicht Backup-Mount)
 
 ## UI-Sichtprüfung
 
