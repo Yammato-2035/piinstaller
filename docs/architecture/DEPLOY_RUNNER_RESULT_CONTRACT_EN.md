@@ -55,7 +55,7 @@ Required field (`bool`). `true` for plan/template/static analysis only — separ
 
 | Phase | Use |
 |-------|-----|
-| **C.3 API facade** | Routes return `RunnerResult.to_dict()` |
+| **C.3 API facade** | **complete** — `get_runner_empty_result()` returns `RunnerResult.to_dict()` |
 | **C.4 Risk gate** | Policy + `no_execution_performed` before execution |
 | **C.5 migration** | `normalize_legacy_runner_result()` per runner incrementally |
 

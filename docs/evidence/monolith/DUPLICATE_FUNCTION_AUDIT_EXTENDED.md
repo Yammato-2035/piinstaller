@@ -239,4 +239,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 **C.2 (erledigt):** `runner_result_contract.py` — einheitliches `RunnerResult`-Schema, Legacy-Normalizer.
 
-**Nächster Schritt:** C.3 API Facade; C.5 schrittweise Runner-Migration.
+**C.3 (erledigt):** `runner_api_facade.py` — read-only Catalog/Summary/Empty-Result.
+
+**Nächster Schritt:** C.4 Risk Gate; C.5 schrittweise Runner-Migration.

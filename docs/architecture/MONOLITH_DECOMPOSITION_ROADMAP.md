@@ -1,8 +1,8 @@
 # Monolith Decomposition Roadmap
 
-**Datum:** 2026-06-10 (aktualisiert nach Deploy Runner Result Contract C.2)  
-**HEAD:** `0494001`+ (C.1 Registry) → C.2 Result Contract  
-**Status:** C.1 + **C.2** erledigt; 115 Runner noch **nicht** migriert/ausgeführt
+**Datum:** 2026-06-10 (aktualisiert nach Deploy Runner API Facade C.3)  
+**HEAD:** `86676cb`+ (C.2 Contract) → C.3 API Facade  
+**Status:** C.1–C.3 erledigt; 112 direkte Runner-Imports in `routes.py` noch offen
 
 ## Strategie
 
@@ -38,12 +38,14 @@
 | 115 `runner_*.py` inventarisieren | **erledigt** | `deploy/runner_registry.py` |
 | Statische Klassifikation | **erledigt** | Heuristiken + Evidence-Export |
 | Result Contract | **erledigt** (C.2) | `runner_result_contract.py` |
-| Runner refaktorieren / Lazy-Import | **offen** | C.3–C.5 |
-| `routes.py` Handler gruppieren | **offen** | nach C.3 Facade |
+| API Facade read-only | **erledigt** (C.3) | `runner_api_facade.py` + 5 GET-Routen |
+| Runner refaktorieren / Lazy-Import | **offen** | C.5 |
+| `routes.py` Import-Entlastung | **teilweise** | 112 Imports bleiben |
 
 **C.1 geliefert:** Metadaten (category, risk_level, execution_policy), Boundary-Warnungen, Tests — **keine** Runner-Ausführung.  
 **C.2 geliefert:** `RunnerResult`, Validator, Legacy-Normalizer, Empty-Results — **keine** Runner-Ausführung.  
-**Nächste Schritte:** C.3 API Facade → C.4 Risk Gate → C.5 Migration  
+**C.3 geliefert:** read-only GET `/api/deploy/runners/*` — keine Runner-Ausführung.  
+**Nächste Schritte:** C.4 Risk Gate → C.5 Migration  
 **Evidence:** `docs/evidence/deploy-runner/`, `docs/architecture/DEPLOY_RUNNER_REGISTRY.md`  
 **Aufwand Rest:** L–XL
 
@@ -203,7 +205,7 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 2. **B1** — Storage Safety Facade — Duplikat-Risiko senken
 3. **C1** — `BackupRestore.tsx` zerlegen — größter Frontend-Monolith
 4. **D1** — DCC Status Facade — Deploy-Drift-Transparenz
-5. **C.3** — Runner API Facade (C.1 + C.2 **erledigt**)
+5. **C.4** — Runner Risk Gate (C.1–C.3 **erledigt**)
 6. **C3** — DCC Frontend-Slice
 7. **B2** — Rescue USB Writer Pipeline
 8. **E1** — i18n Namespaces
@@ -243,4 +245,13 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 | Pattern-Audit + Boundary C.2 | **erledigt** |
 | Runner-Migration | **nicht** in C.2 |
 
-**Nächster Schritt:** C.3 Deploy Runner API Facade
+## Update: Phase C.3 Deploy Runner API Facade (2026-06-10)
+
+| Lieferung | Status |
+|-----------|--------|
+| `runner_api_facade.py` | **erledigt** |
+| 5 read-only GET-Routen | **erledigt** |
+| 112 Legacy Runner-Imports | **unverändert** |
+| Runner-Ausführung | **keine** |
+
+**Nächster Schritt:** C.4 Runner Risk Gate

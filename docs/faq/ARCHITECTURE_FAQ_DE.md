@@ -71,9 +71,13 @@ Einheitliches Ergebnisschema (`RunnerResult`) mit 6 Statuswerten, `warnings`/`er
 
 Größtes Risiko-Cluster (~37k Zeilen). C.1 + C.2 liefern Metadaten und Result-Contract. C.3–C.5: API Facade, Risk Gate, schrittweise Migration.
 
+## Was ist die Deploy Runner API Facade (C.3)?
+
+Read-only Schicht `runner_api_facade.py` + **5 GET-Routen** unter `/api/deploy/runners/*`. Listet Registry/Contract — **keine** Runner-Ausführung. Die 112 direkten Runner-Imports in `routes.py` bleiben vorerst.
+
 ## Nächster Schritt?
 
-Phase **C.3** Deploy Runner API Facade.
+Phase **C.4** Runner Risk Gate.
 
 ## Weiterlesen
 
@@ -82,3 +86,4 @@ Phase **C.3** Deploy Runner API Facade.
 - `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4.md`
 - `docs/architecture/DEPLOY_RUNNER_REGISTRY.md`
 - `docs/architecture/DEPLOY_RUNNER_RESULT_CONTRACT.md`
+- `docs/architecture/DEPLOY_RUNNER_API_FACADE.md`

@@ -55,7 +55,7 @@ Pflichtfeld (`bool`). `true` wenn nur Plan, Template oder statische Analyse — 
 
 | Phase | Nutzung |
 |-------|---------|
-| **C.3 API Facade** | Routen liefern `RunnerResult.to_dict()` |
+| **C.3 API Facade** | **erledigt** — `get_runner_empty_result()` liefert `RunnerResult.to_dict()` |
 | **C.4 Risk Gate** | Policy + `no_execution_performed` vor Ausführung |
 | **C.5 Migration** | `normalize_legacy_runner_result()` pro Runner schrittweise |
 

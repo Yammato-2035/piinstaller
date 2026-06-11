@@ -314,6 +314,13 @@ from deploy.runner_rescue_runtime_bundle_manifest import (
     build_rescue_runtime_bundle_seal,
     check_rescue_runtime_bundle_consistency,
 )
+from deploy.runner_api_facade import (
+    build_runner_catalog,
+    build_runner_catalog_summary,
+    build_runner_policy_warnings,
+    get_runner_empty_result,
+    get_runner_registry_entry,
+)
 
 router = APIRouter(prefix="/api/deploy", tags=["deploy-plan"])
 
@@ -5001,3 +5008,31 @@ async def post_deploy_rescue_runtime_bundle_consistency_check(body: DeployRescue
         "warnings": list(res.get("warnings") or []),
         "errors": list(res.get("errors") or []),
     }
+
+
+# --- Phase C.3: read-only runner API facade (no runner imports, no execution) ---
+
+
+@router.get("/runners/catalog")
+async def get_deploy_runners_catalog() -> dict[str, Any]:
+    return build_runner_catalog()
+
+
+@router.get("/runners/summary")
+async def get_deploy_runners_summary() -> dict[str, Any]:
+    return build_runner_catalog_summary()
+
+
+@router.get("/runners/policy-warnings")
+async def get_deploy_runners_policy_warnings() -> dict[str, Any]:
+    return build_runner_policy_warnings()
+
+
+@router.get("/runners/{runner_id}")
+async def get_deploy_runner_registry_entry(runner_id: str) -> dict[str, Any]:
+    return get_runner_registry_entry(runner_id)
+
+
+@router.get("/runners/{runner_id}/empty-result")
+async def get_deploy_runner_empty_result(runner_id: str) -> dict[str, Any]:
+    return get_runner_empty_result(runner_id)

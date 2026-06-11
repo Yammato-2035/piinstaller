@@ -92,7 +92,7 @@ safe_device    fat32_writer      manifest/drift
 ## Empfohlene Entkopplungs-Hebel
 
 1. **Router-Extraktion** aus `app.py` → `api/routes/{domain}.py` (Partitions-Vorbild)
-2. **Deploy-Runner-Registry** — **C.1 erledigt** (`runner_registry.py`); C.3 Facade für `routes.py` offen
+2. **Deploy-Runner-Registry** — C.1–C.3 erledigt; `routes.py` Fan-In CRITICAL bis C.5
 3. **Domain-Facades** in `core/{domain}_facade.py` — nur Facades von außen importierbar
 4. **Frontend Feature-Slices** — `features/backup/`, `features/rescue/` statt Page-Monolithen
 5. **Event-Bus light** für DCC-Status statt direkter Cross-Imports
@@ -125,7 +125,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **C.2 (erledigt):** Result Contract — `runner_result_contract.py`, keine `routes.py`-Entkopplung yet.
 
-**Nächster Schritt:** C.3 Runner API Facade → C.4 Risk Gate → C.5 Migration
+**C.3 (erledigt):** read-only API Facade — 112 direkte Imports in `routes.py` unverändert.
+
+**Nächster Schritt:** C.4 Risk Gate → C.5 Migration
 
 ---
 

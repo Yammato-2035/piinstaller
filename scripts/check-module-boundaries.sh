@@ -215,6 +215,47 @@ for p in runners:
 PY
 )
 
+# Phase C.3: runner API facade warnings (warn-only)
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  warnings+=("${line}")
+done < <(python3 - "${ROOT}" <<'PY'
+import ast
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+deploy = root / "backend" / "deploy"
+facade_mod = deploy / "runner_api_facade.py"
+routes_mod = deploy / "routes.py"
+allowed_facade_imports = {"deploy.runner_registry", "deploy.runner_result_contract"}
+
+if not facade_mod.is_file():
+    print("runner_api_facade_missing:backend/deploy/runner_api_facade.py")
+    raise SystemExit
+
+tree = ast.parse(facade_mod.read_text(encoding="utf-8", errors="replace"))
+for node in ast.walk(tree):
+    if isinstance(node, ast.ImportFrom) and node.module:
+        if node.module.startswith("deploy.runner_") and node.module not in allowed_facade_imports:
+            print(f"runner_api_facade_imports_runner_module:{node.module}")
+
+if routes_mod.is_file():
+    text = routes_mod.read_text(encoding="utf-8", errors="replace")
+    if "runner_api_facade" not in text:
+        print("runner_api_route_without_contract:backend/deploy/routes.py")
+    for m in re.finditer(r'@router\.(get|post|put|patch|delete)\("(/runners[^"]*)"\)', text):
+        verb, path = m.group(1), m.group(2)
+        if verb != "get":
+            print(f"runner_api_route_unsafe_verb_or_name:{verb}:{path}")
+        lower = path.lower()
+        for frag in ("execute", "apply", "install", "write", "delete"):
+            if frag in lower:
+                print(f"runner_api_route_unsafe_verb_or_name:{verb}:{path}")
+PY
+)
+
 if [[ "${#warnings[@]}" -gt 0 ]]; then
   status="review_required"
 fi

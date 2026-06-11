@@ -1,0 +1,765 @@
+8:from deploy.cache_execute import create_deploy_cache_session, execute_deploy_cache
+9:from deploy.execute import create_deploy_session, execute_deploy
+20:from deploy.write_plan import generate_deploy_write_plan
+21:from deploy.write_execute import create_deploy_write_session, execute_deploy_write_dryrun
+23:from deploy.write_harness import create_deploy_write_harness_session, execute_deploy_write_harness
+24:from deploy.real_write_guard import create_real_write_guard_session, check_real_write_guard
+25:from deploy.real_write_prototype import execute_deploy_real_write_prototype
+27:from deploy.runner_handoff import execute_runner_dryrun_handoff
+42:from deploy.runner_install_plan import build_runner_install_plan
+43:from deploy.runner_install_validator import validate_runner_installation_dryrun
+44:from deploy.runner_package_blueprint import build_runner_package_blueprint
+45:from deploy.runner_install_consistency import validate_runner_install_consistency
+46:from deploy.runner_release_readiness import build_runner_release_readiness_matrix
+47:from deploy.runner_lab_readiness_plan import build_runner_lab_readiness_unblock_plan
+48:from deploy.runner_sudoers_runtime_test_plan import build_runner_sudoers_runtime_test_plan
+49:from deploy.runner_privileged_validation_test_plan import build_runner_privileged_validation_test_plan
+50:from deploy.runner_real_write_hardware_e2e_test_plan import build_runner_real_write_hardware_e2e_test_plan
+51:from deploy.runner_failure_injection_hardware_test_plan import build_runner_failure_injection_hardware_test_plan
+52:from deploy.runner_device_reenumeration_test_plan import build_runner_device_reenumeration_test_plan
+53:from deploy.runner_hotplug_race_test_plan import build_runner_hotplug_race_test_plan
+54:from deploy.runner_rollback_runtime_test_plan import build_runner_rollback_runtime_test_plan
+55:from deploy.runner_lab_readiness_status import build_runner_lab_readiness_status
+56:from deploy.runner_runtime_runbook_bundle import build_runner_runtime_runbook_bundle
+57:from deploy.runner_runtime_runbook_export import build_runner_runtime_runbook_export_package
+58:from deploy.runner_runtime_result_validator import validate_runner_runtime_result_bundle
+59:from deploy.runner_lab_acceptance_aggregator import build_runner_lab_acceptance_summary
+60:from deploy.runner_lab_acceptance_report_export import build_runner_lab_acceptance_report_export
+61:from deploy.runner_lab_phase_consolidation import build_runner_lab_phase_consolidation
+62:from deploy.runner_next_phase_gate import evaluate_runner_next_phase_gate
+63:from deploy.runner_manual_runtime_precheck import build_runner_manual_runtime_precheck
+118:    execute_laptop_live_probe_readonly,
+126:from deploy.runner_setuphelfer_safe_rewrite_plan import build_setuphelfer_safe_rewrite_plan
+127:from deploy.runner_setuphelfer_controlled_rewrite_apply import apply_setuphelfer_controlled_rewrite
+129:    apply_setuphelfer_identifier_cleanup_cycle,
+135:    apply_setuphelfer_identifier_hotspot_cleanup_cycle,
+140:    apply_runtime_identifier_elimination,
+155:from deploy.runner_runtime_identifier_patch_bump_apply import (
+156:    apply_runtime_identifier_patch_bump,
+194:    execute_rescue_sandbox_config_copy,
+195:    execute_rescue_sandbox_runtime_copy,
+224:from deploy.runner_rescue_iso_build_execution import build_rescue_iso_build_precheck, execute_rescue_iso_build
+225:from deploy.runner_rescue_vm_test_orchestrator import build_rescue_vm_test_plan, execute_rescue_vm_boot_validation
+229:    execute_rescue_iso_live_runtime_probe,
+235:    execute_rescue_storage_discovery,
+240:    execute_readonly_mount_validation,
+249:    execute_rescue_evidence_export,
+258:    execute_rescue_recovery_target_validation,
+263:    execute_rescue_backup_discovery,
+264:    execute_rescue_backup_verify,
+269:    execute_rescue_restore_preview,
+396:    write_plan: dict[str, Any] = Field(default_factory=dict)
+401:    write_session_id: str = Field(..., min_length=6)
+406:    write_plan: dict[str, Any] = Field(default_factory=dict)
+410:    write_execute_result: dict[str, Any] = Field(default_factory=dict)
+411:    write_plan: dict[str, Any] = Field(default_factory=dict)
+438:    write_session_result: dict[str, Any] = Field(default_factory=dict)
+439:    write_execute_result: dict[str, Any] = Field(default_factory=dict)
+440:    write_plan: dict[str, Any] = Field(default_factory=dict)
+443:    write_harness_result: dict[str, Any] = Field(default_factory=dict)
+447:    real_write_guard_id: str = Field(..., min_length=6)
+452:    write_plan: dict[str, Any] = Field(default_factory=dict)
+453:    write_harness_result: dict[str, Any] = Field(default_factory=dict)
+460:    write_harness_result: dict[str, Any] = Field(default_factory=dict)
+462:    real_write_guard_result: dict[str, Any] = Field(default_factory=dict)
+476:    write_harness_result: dict[str, Any] = Field(default_factory=dict)
+477:    real_write_guard_result: dict[str, Any] = Field(default_factory=dict)
+486:    real_write_guard_result: dict[str, Any] = Field(default_factory=dict)
+489:    write_plan: dict[str, Any] = Field(default_factory=dict)
+490:    write_execute_result: dict[str, Any] = Field(default_factory=dict)
+494:    allowed_runner_path: str = "/opt/setuphelfer/backend/tools/deploy_write_runner.py"
+514:    runner_path: str = "/opt/setuphelfer/backend/tools/deploy_write_runner.py"
+535:    runner_binary_path: str = "/opt/setuphelfer/backend/tools/deploy_write_runner.py"
+547:    install_plan: dict[str, Any] = Field(default_factory=dict)
+553:    package_type: str = "manual_install_bundle"
+560:    install_plan: dict[str, Any] = Field(default_factory=dict)
+561:    install_validation: dict[str, Any] = Field(default_factory=dict)
+644:    real_write_guard_report: dict[str, Any] = Field(default_factory=dict)
+650:    explicit_overwrite: bool = False
+664:    explicit_overwrite: bool = False
+669:    explicit_overwrite: bool = False
+674:    explicit_overwrite: bool = False
+678:    explicit_overwrite: bool = False
+682:    explicit_overwrite: bool = False
+686:    explicit_overwrite: bool = False
+690:    explicit_overwrite: bool = False
+694:    explicit_overwrite: bool = False
+698:    explicit_overwrite: bool = False
+702:    explicit_overwrite: bool = False
+706:    explicit_overwrite: bool = False
+710:    explicit_overwrite: bool = False
+714:    explicit_overwrite: bool = False
+718:    explicit_overwrite: bool = False
+722:    explicit_overwrite: bool = False
+726:    explicit_overwrite: bool = False
+730:    explicit_overwrite: bool = False
+734:    explicit_overwrite: bool = False
+738:    explicit_overwrite: bool = False
+742:    explicit_overwrite: bool = False
+746:    explicit_overwrite: bool = False
+750:    explicit_overwrite: bool = False
+754:    explicit_overwrite: bool = False
+758:    explicit_overwrite: bool = False
+762:    explicit_overwrite: bool = False
+766:    explicit_overwrite: bool = False
+770:    explicit_overwrite: bool = False
+782:    explicit_overwrite: bool = False
+786:    explicit_overwrite: bool = False
+790:    explicit_overwrite: bool = False
+794:    explicit_overwrite: bool = False
+798:    explicit_overwrite: bool = False
+802:    explicit_overwrite: bool = False
+805:class DeploySetuphelferSafeRewritePlanRequest(BaseModel):
+806:    explicit_overwrite: bool = False
+809:class DeploySetuphelferControlledRewriteApplyRequest(BaseModel):
+810:    explicit_overwrite: bool = False
+815:    explicit_overwrite: bool = False
+819:    explicit_overwrite: bool = False
+823:    explicit_overwrite: bool = False
+827:    explicit_overwrite: bool = False
+831:    explicit_overwrite: bool = False
+835:    explicit_overwrite: bool = False
+839:    explicit_overwrite: bool = False
+843:    explicit_overwrite: bool = False
+847:    explicit_overwrite: bool = False
+851:    explicit_overwrite: bool = False
+855:    explicit_overwrite: bool = False
+859:    explicit_overwrite: bool = False
+863:    explicit_overwrite: bool = False
+867:    explicit_overwrite: bool = False
+871:    explicit_overwrite: bool = False
+872:    explicit_apply_patch_bump: bool = False
+876:    explicit_overwrite: bool = False
+880:    explicit_overwrite: bool = False
+884:    explicit_overwrite: bool = False
+888:    explicit_overwrite: bool = False
+892:    explicit_overwrite: bool = False
+896:    explicit_overwrite: bool = False
+900:    explicit_overwrite: bool = False
+906:    explicit_overwrite: bool = False
+911:    explicit_overwrite: bool = False
+912:    explicit_execute_live_probe: bool = False
+918:    explicit_overwrite: bool = False
+921:class DeployRescueHandoffOverwriteRequest(BaseModel):
+922:    explicit_overwrite: bool = False
+926:    explicit_overwrite: bool = False
+931:    explicit_overwrite: bool = False
+932:    explicit_execute_iso_build: bool = False
+938:    explicit_overwrite: bool = False
+939:    explicit_execute_vm_boot: bool = False
+943:    explicit_overwrite: bool = False
+945:    explicit_execute_iso_live_runtime_probe: bool = False
+950:    explicit_overwrite: bool = False
+952:    explicit_execute_storage_discovery: bool = False
+956:    explicit_overwrite: bool = False
+958:    explicit_execute_readonly_mount: bool = False
+994:    explicit_overwrite: bool = False
+996:    explicit_execute_evidence_export: bool = False
+1001:    explicit_overwrite: bool = False
+1006:    explicit_overwrite: bool = False
+1008:    explicit_execute_recovery_target_validation: bool = False
+1013:    explicit_overwrite: bool = False
+1015:    explicit_execute_backup_discovery: bool = False
+1016:    explicit_execute_backup_verify: bool = False
+1021:    explicit_overwrite: bool = False
+1023:    explicit_execute_restore_preview: bool = False
+1113:DeploySetuphelferSafeRewritePlanRequest.model_rebuild()
+1114:DeploySetuphelferControlledRewriteApplyRequest.model_rebuild()
+1140:DeployRescueHandoffOverwriteRequest.model_rebuild()
+1157:@router.post("/plan")
+1180:@router.post("/session")
+1185:@router.post("/execute")
+1186:async def post_deploy_execute(body: DeployExecuteRequest) -> dict[str, Any]:
+1187:    return execute_deploy(body.model_dump())
+1190:@router.post("/preview")
+1195:@router.get("/sources")
+1206:@router.post("/source/evaluate")
+1257:@router.post("/cache/plan")
+1280:@router.post("/cache/session")
+1285:@router.post("/cache/execute")
+1286:async def post_deploy_cache_execute(body: DeployCacheExecuteRequest) -> dict[str, Any]:
+1287:    return execute_deploy_cache(body.model_dump())
+1290:@router.post("/image/inspect")
+1295:@router.post("/write/plan")
+1296:async def post_deploy_write_plan(body: DeployWritePlanRequest) -> dict[str, Any]:
+1297:    plan = generate_deploy_write_plan(
+1320:@router.post("/write/session")
+1321:async def post_deploy_write_session(body: DeployWriteSessionRequest) -> dict[str, Any]:
+1322:    return create_deploy_write_session(body.model_dump())
+1325:@router.post("/write/execute")
+1326:async def post_deploy_write_execute(body: DeployWriteExecuteRequest) -> dict[str, Any]:
+1327:    return execute_deploy_write_dryrun(body.model_dump())
+1330:@router.post("/write/prototype")
+1331:async def post_deploy_write_prototype(body: DeployRealWritePrototypeRequest) -> dict[str, Any]:
+1332:    return execute_deploy_real_write_prototype(body.model_dump())
+1335:@router.post("/final-confirmation/session")
+1340:@router.post("/final-confirmation/check")
+1345:@router.post("/write/harness/session")
+1346:async def post_deploy_write_harness_session(body: DeployWriteHarnessSessionRequest) -> dict[str, Any]:
+1347:    return create_deploy_write_harness_session(body.model_dump())
+1350:@router.post("/write/harness/execute")
+1351:async def post_deploy_write_harness_execute(body: DeployWriteHarnessExecuteRequest) -> dict[str, Any]:
+1352:    return execute_deploy_write_harness(body.model_dump())
+1355:@router.post("/real-write/session")
+1356:async def post_deploy_real_write_session(body: DeployRealWriteGuardSessionRequest) -> dict[str, Any]:
+1357:    return create_real_write_guard_session(body.model_dump())
+1360:@router.post("/real-write/check")
+1361:async def post_deploy_real_write_check(body: DeployRealWriteGuardCheckRequest) -> dict[str, Any]:
+1362:    return check_real_write_guard(body.model_dump())
+1365:@router.post("/hardware-gate/report")
+1377:@router.post("/hardware-gate/operator-protocol")
+1383:@router.post("/runner/handoff")
+1385:    return execute_runner_dryrun_handoff(body.model_dump())
+1388:@router.post("/runner/audit/sudoers")
+1397:@router.post("/runner/audit/environment")
+1403:@router.post("/runner/audit/path")
+1408:@router.post("/runner/audit/jobdir")
+1414:@router.post("/runner/sandbox/policy")
+1423:@router.post("/runner/sandbox/environment")
+1428:@router.post("/runner/sandbox/stdio")
+1433:@router.post("/runner/sandbox/timeout")
+1444:@router.post("/runner/sandbox/privileges")
+1449:@router.post("/runner/sandbox/recovery")
+1454:@router.post("/runner/install/plan")
+1455:async def post_deploy_runner_install_plan(body: DeployRunnerInstallPlanRequest) -> dict[str, Any]:
+1456:    plan = build_runner_install_plan(**body.model_dump())
+1471:@router.post("/runner/install/validate")
+1472:async def post_deploy_runner_install_validate(body: DeployRunnerInstallValidateRequest) -> dict[str, Any]:
+1473:    validation = validate_runner_installation_dryrun(
+1474:        install_plan=body.install_plan or {},
+1492:@router.post("/runner/package/blueprint")
+1509:@router.post("/runner/install/consistency")
+1510:async def post_deploy_runner_install_consistency(body: DeployRunnerInstallConsistencyRequest) -> dict[str, Any]:
+1511:    consistency = validate_runner_install_consistency(
+1512:        install_plan=body.install_plan or {},
+1513:        install_validation=body.install_validation or {},
+1530:@router.post("/runner/release/readiness")
+1553:@router.post("/runner/lab-readiness/unblock-plan")
+1570:@router.post("/runner/sudoers/runtime-test-plan")
+1588:@router.post("/runner/privileged-validation/test-plan")
+1606:@router.post("/runner/real-write-hardware-e2e/test-plan")
+1607:async def post_deploy_runner_real_write_hardware_e2e_test_plan(body: DeployRunnerRealWriteHardwareE2ETestPlanRequest) -> dict[str, Any]:
+1609:    plan = build_runner_real_write_hardware_e2e_test_plan()
+1624:@router.post("/runner/failure-injection-hardware/test-plan")
+1642:@router.post("/runner/device-reenumeration/test-plan")
+1660:@router.post("/runner/hotplug-race/test-plan")
+1678:@router.post("/runner/rollback-runtime/test-plan")
+1696:@router.post("/runner/lab-readiness/status")
+1716:@router.post("/runner/runtime-runbook/bundle")
+1734:@router.post("/runner/runtime-runbook/export")
+1751:@router.post("/runner/runtime-results/validate")
+1771:@router.post("/runner/lab-readiness/acceptance")
+1790:@router.post("/runner/lab-readiness/acceptance/export")
+1807:@router.post("/runner/lab-phase/consolidation")
+1825:@router.post("/runner/next-phase/gate")
+1845:@router.post("/runner/manual-runtime/precheck")
+1852:        real_write_guard_report=body.real_write_guard_report or None,
+1869:@router.post("/runner/manual-runtime/result-template")
+1873:        explicit_overwrite=bool(body.explicit_overwrite),
+1889:@router.post("/runner/manual-runtime/result-check")
+1906:@router.post("/runner/manual-runtime/result-bundle-check")
+1923:@router.post("/runner/manual-runtime/result-validator-handoff")
+1928:        explicit_overwrite=bool(body.explicit_overwrite),
+1944:@router.post("/runner/manual-runtime/result-validator-dryrun-from-handoff")
+1950:        explicit_overwrite=bool(body.explicit_overwrite),
+1966:@router.post("/runner/manual-runtime/result-validator-report-seal")
+1972:        explicit_overwrite=bool(body.explicit_overwrite),
+1988:@router.post("/runner/manual-runtime/result-validator-seal-index")
+1992:    idx = build_validator_report_seal_index(explicit_overwrite=bool(body.explicit_overwrite))
+2007:@router.post("/runner/manual-runtime/result-validator-seal-consistency-audit")
+2011:    aud = run_validator_seal_consistency_audit(explicit_overwrite=bool(body.explicit_overwrite))
+2026:@router.post("/runner/manual-runtime/evidence-timeline")
+2030:    tl = build_manual_runtime_evidence_timeline(explicit_overwrite=bool(body.explicit_overwrite))
+2045:@router.post("/runner/manual-runtime/evidence-final-snapshot")
+2049:    snap = build_manual_runtime_evidence_final_snapshot(explicit_overwrite=bool(body.explicit_overwrite))
+2064:@router.post("/runner/manual-runtime/final-acceptance")
+2068:    acc = evaluate_manual_runtime_final_acceptance(explicit_overwrite=bool(body.explicit_overwrite))
+2083:@router.post("/runner/manual-runtime/final-export-package")
+2087:    pkg = build_manual_runtime_final_export_package(explicit_overwrite=bool(body.explicit_overwrite))
+2102:@router.post("/runner/manual-runtime/failure-injection-matrix")
+2106:    matrix = build_manual_runtime_failure_injection_matrix(explicit_overwrite=bool(body.explicit_overwrite))
+2121:@router.post("/runner/manual-runtime/failure-execution-preview")
+2125:    preview = build_manual_runtime_failure_execution_preview(explicit_overwrite=bool(body.explicit_overwrite))
+2140:@router.post("/runner/manual-runtime/failure-operator-checklists")
+2144:    ch = build_manual_runtime_failure_operator_checklists(explicit_overwrite=bool(body.explicit_overwrite))
+2159:@router.post("/runner/manual-runtime/failure-test-sessions")
+2163:    sess = build_manual_runtime_failure_test_sessions(explicit_overwrite=bool(body.explicit_overwrite))
+2178:@router.post("/runner/manual-runtime/failure-test-results")
+2182:    cap = capture_manual_runtime_failure_test_results(explicit_overwrite=bool(body.explicit_overwrite))
+2197:@router.post("/runner/manual-runtime/failure-result-evaluation")
+2201:    ev = evaluate_manual_runtime_failure_results(explicit_overwrite=bool(body.explicit_overwrite))
+2216:@router.post("/runner/manual-runtime/failure-readiness-gate")
+2220:    rd = evaluate_manual_runtime_failure_readiness(explicit_overwrite=bool(body.explicit_overwrite))
+2235:@router.post("/runner/manual-runtime/laptop-failure-run-selection")
+2239:    sel = select_manual_laptop_failure_test_runs(explicit_overwrite=bool(body.explicit_overwrite))
+2254:@router.post("/runner/manual-runtime/laptop-failure-operator-runorder")
+2258:    ro = build_manual_laptop_failure_operator_runorder(explicit_overwrite=bool(body.explicit_overwrite))
+2273:@router.post("/runner/manual-runtime/laptop-failure-execution-log-template")
+2277:    tpl = build_manual_laptop_failure_execution_log_template(explicit_overwrite=bool(body.explicit_overwrite))
+2292:@router.post("/runner/manual-runtime/laptop-failure-execution-log-validation")
+2296:    val = validate_manual_laptop_failure_execution_log(explicit_overwrite=bool(body.explicit_overwrite))
+2311:@router.post("/runner/manual-runtime/laptop-failure-test-summary")
+2315:    sm = build_manual_laptop_failure_test_summary(explicit_overwrite=bool(body.explicit_overwrite))
+2330:@router.post("/runner/manual-runtime/laptop-failure-final-report")
+2334:    rep = build_manual_laptop_failure_final_report(explicit_overwrite=bool(body.explicit_overwrite))
+2349:@router.post("/runner/manual-runtime/laptop-failure-final-export-package")
+2353:    pkg = build_manual_laptop_failure_final_export_package(explicit_overwrite=bool(body.explicit_overwrite))
+2368:@router.post("/runner/manual-runtime/laptop-failure-evidence-timeline")
+2372:    tl = build_manual_laptop_failure_evidence_timeline(explicit_overwrite=bool(body.explicit_overwrite))
+2387:@router.post("/runner/manual-runtime/laptop-failure-final-snapshot")
+2391:    snap = build_manual_laptop_failure_final_snapshot(explicit_overwrite=bool(body.explicit_overwrite))
+2406:@router.post("/runner/manual-runtime/laptop-failure-final-acceptance")
+2410:    acc = evaluate_manual_laptop_failure_final_acceptance(explicit_overwrite=bool(body.explicit_overwrite))
+2425:@router.post("/runner/manual-runtime/laptop-failure-finalized-export-package")
+2429:    pkg = build_manual_laptop_failure_finalized_export_package(explicit_overwrite=bool(body.explicit_overwrite))
+2444:@router.post("/version-governance/state")
+2457:        explicit_overwrite=bool(body.explicit_overwrite),
+2473:@router.post("/version-source-of-truth-check")
+2477:    chk = check_version_source_of_truth_consistency(explicit_overwrite=bool(body.explicit_overwrite))
+2492:@router.post("/legacy-identifier-inventory")
+2496:    inv = build_legacy_identifier_inventory(explicit_overwrite=bool(body.explicit_overwrite))
+2511:@router.post("/setuphelfer-runtime-identifier-migration")
+2515:    plan = build_runtime_identifier_migration_plan(explicit_overwrite=bool(body.explicit_overwrite))
+2530:@router.post("/setuphelfer-identifier-consistency-check")
+2534:    chk = check_setuphelfer_identifier_consistency(explicit_overwrite=bool(body.explicit_overwrite))
+2549:@router.post("/legacy-identifier-cleanup-classification")
+2553:    res = classify_active_legacy_identifiers(explicit_overwrite=bool(body.explicit_overwrite))
+2568:@router.post("/setuphelfer-safe-rewrite-plan")
+2569:async def post_deploy_setuphelfer_safe_rewrite_plan(
+2570:    body: DeploySetuphelferSafeRewritePlanRequest,
+2572:    res = build_setuphelfer_safe_rewrite_plan(explicit_overwrite=bool(body.explicit_overwrite))
+2581:        "setuphelfer_safe_rewrite_plan": res,
+2587:@router.post("/setuphelfer-controlled-rewrite-apply")
+2588:async def post_deploy_setuphelfer_controlled_rewrite_apply(
+2589:    body: DeploySetuphelferControlledRewriteApplyRequest,
+2591:    res = apply_setuphelfer_controlled_rewrite(
+2592:        explicit_overwrite=bool(body.explicit_overwrite),
+2595:    st = str(res.get("apply_status") or "blocked")
+2603:        "setuphelfer_controlled_rewrite_apply": res,
+2609:@router.post("/setuphelfer-identifier-cleanup-cycle-plan")
+2613:    res = build_setuphelfer_identifier_cleanup_cycle(explicit_overwrite=bool(body.explicit_overwrite))
+2628:@router.post("/setuphelfer-identifier-cleanup-cycle-apply")
+2629:async def post_deploy_setuphelfer_identifier_cleanup_cycle_apply(
+2632:    res = apply_setuphelfer_identifier_cleanup_cycle(explicit_overwrite=bool(body.explicit_overwrite))
+2633:    st = str(res.get("cycle_apply_status") or "blocked")
+2641:        "setuphelfer_identifier_cleanup_cycle_apply": res,
+2647:@router.post("/setuphelfer-identifier-cleanup-cycle-postcheck")
+2651:    res = build_setuphelfer_identifier_cleanup_cycle_postcheck(explicit_overwrite=bool(body.explicit_overwrite))
+2666:@router.post("/legacy-identifier-hotspot-analysis")
+2670:    res = build_legacy_identifier_hotspot_analysis(explicit_overwrite=bool(body.explicit_overwrite))
+2685:@router.post("/setuphelfer-identifier-hotspot-cleanup-cycle-plan")
+2689:    res = build_setuphelfer_identifier_hotspot_cleanup_cycle(explicit_overwrite=bool(body.explicit_overwrite))
+2704:@router.post("/setuphelfer-identifier-hotspot-cleanup-cycle-apply")
+2705:async def post_deploy_setuphelfer_identifier_hotspot_cleanup_cycle_apply(
+2708:    res = apply_setuphelfer_identifier_hotspot_cleanup_cycle(explicit_overwrite=bool(body.explicit_overwrite))
+2709:    st = str(res.get("hotspot_cleanup_cycle_apply_status") or "blocked")
+2717:        "setuphelfer_identifier_hotspot_cleanup_cycle_apply": res,
+2723:@router.post("/setuphelfer-identifier-hotspot-cleanup-cycle-postcheck")
+2727:    res = build_setuphelfer_identifier_hotspot_cleanup_cycle_postcheck(explicit_overwrite=bool(body.explicit_overwrite))
+2742:@router.post("/runtime-identifier-elimination-targets")
+2746:    res = build_runtime_identifier_elimination_targets(explicit_overwrite=bool(body.explicit_overwrite))
+2761:@router.post("/runtime-identifier-elimination-plan")
+2765:    res = build_runtime_identifier_elimination_plan(explicit_overwrite=bool(body.explicit_overwrite))
+2780:@router.post("/runtime-identifier-elimination-apply")
+2781:async def post_deploy_runtime_identifier_elimination_apply(
+2784:    res = apply_runtime_identifier_elimination(explicit_overwrite=bool(body.explicit_overwrite))
+2785:    st = str(res.get("runtime_identifier_elimination_apply_status") or "blocked")
+2793:        "runtime_identifier_elimination_apply": res,
+2799:@router.post("/runtime-compatibility-alias-validation")
+2803:    res = validate_runtime_compatibility_aliases(explicit_overwrite=bool(body.explicit_overwrite))
+2818:@router.post("/runtime-identifier-elimination-postcheck")
+2822:    res = build_runtime_identifier_elimination_postcheck(explicit_overwrite=bool(body.explicit_overwrite))
+2837:@router.post("/runtime-identifier-zero-state-verification")
+2841:    res = verify_runtime_identifier_zero_state(explicit_overwrite=bool(body.explicit_overwrite))
+2856:@router.post("/runtime-identifier-patch-bump-preparation")
+2860:    res = prepare_runtime_identifier_patch_bump(explicit_overwrite=bool(body.explicit_overwrite))
+2875:@router.post("/runtime-identifier-patch-bump-apply")
+2876:async def post_deploy_runtime_identifier_patch_bump_apply(
+2879:    res = apply_runtime_identifier_patch_bump(
+2880:        explicit_overwrite=bool(body.explicit_overwrite),
+2881:        explicit_apply_patch_bump=bool(body.explicit_apply_patch_bump),
+2883:    st = str(res.get("runtime_identifier_patch_bump_apply_status") or "blocked")
+2891:        "runtime_identifier_patch_bump_apply": res,
+2897:@router.post("/runtime-identifier-patch-bump-postcheck")
+2901:    res = build_runtime_identifier_patch_bump_postcheck(explicit_overwrite=bool(body.explicit_overwrite))
+2916:@router.post("/setuphelfer-branding-guard-check")
+2920:    res = build_setuphelfer_branding_guard_report(explicit_overwrite=bool(body.explicit_overwrite))
+2935:@router.post("/legacy-runtime-compatibility-inventory")
+2939:    res = build_legacy_runtime_compatibility_inventory(explicit_overwrite=bool(body.explicit_overwrite))
+2954:@router.post("/legacy-runtime-coexistence-analysis")
+2958:    res = analyze_legacy_runtime_coexistence(explicit_overwrite=bool(body.explicit_overwrite))
+2973:@router.post("/legacy-runtime-safe-migration-recommendations")
+2977:    res = build_safe_legacy_runtime_migration_recommendations(explicit_overwrite=bool(body.explicit_overwrite))
+2992:@router.post("/legacy-upgrade-path-matrix")
+2996:    res = build_legacy_upgrade_path_matrix(explicit_overwrite=bool(body.explicit_overwrite))
+3011:@router.post("/runner/manual-runtime/laptop-failure-test-execution-readiness-final-gate")
+3016:        explicit_overwrite=bool(body.explicit_overwrite),
+3034:@router.post("/runner/manual-runtime/laptop-live-probe-plan")
+3037:        explicit_overwrite=bool(body.explicit_overwrite),
+3054:@router.post("/runner/manual-runtime/laptop-live-probe-execute-readonly")
+3055:async def post_deploy_laptop_live_probe_execute_readonly(
+3058:    res = execute_laptop_live_probe_readonly(
+3059:        explicit_overwrite=bool(body.explicit_overwrite),
+3060:        explicit_execute_live_probe=bool(body.explicit_execute_live_probe),
+3066:        or res.get("laptop_live_probe_execute_readonly_status")
+3076:        "laptop_live_probe_execute_readonly": res,
+3082:@router.post("/runner/manual-runtime/laptop-live-probe-final-gate")
+3084:    res = build_laptop_live_probe_final_gate(explicit_overwrite=bool(body.explicit_overwrite))
+3099:@router.post("/rescue/live-os-base-decision")
+3100:async def post_deploy_rescue_live_os_base_decision(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3101:    res = build_rescue_live_os_base_decision(explicit_overwrite=bool(body.explicit_overwrite))
+3116:@router.post("/rescue/component-inventory")
+3117:async def post_deploy_rescue_component_inventory(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3118:    res = build_rescue_stick_component_inventory(explicit_overwrite=bool(body.explicit_overwrite))
+3133:@router.post("/rescue/mvp-scope-gate")
+3134:async def post_deploy_rescue_mvp_scope_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3135:    res = build_rescue_mvp_scope_gate(explicit_overwrite=bool(body.explicit_overwrite))
+3150:@router.post("/rescue/debian-live-build-plan")
+3151:async def post_deploy_rescue_debian_live_build_plan(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3152:    res = build_rescue_debian_live_build_plan(explicit_overwrite=bool(body.explicit_overwrite))
+3167:@router.post("/rescue/debian-live/config-structure")
+3168:async def post_deploy_rescue_debian_live_config_structure(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3169:    res = build_debian_live_config_structure(explicit_overwrite=bool(body.explicit_overwrite))
+3184:@router.post("/rescue/debian-live/package-lists")
+3185:async def post_deploy_rescue_debian_live_package_lists(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3186:    res = build_debian_live_package_lists(explicit_overwrite=bool(body.explicit_overwrite))
+3201:@router.post("/rescue/debian-live/includes-chroot")
+3202:async def post_deploy_rescue_debian_live_includes_ch_root(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3203:    res = build_debian_live_includes_ch_root(explicit_overwrite=bool(body.explicit_overwrite))
+3218:@router.post("/rescue/debian-live/bootloader-templates")
+3219:async def post_deploy_rescue_debian_live_bootloader_templates(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3220:    res = build_debian_live_bootloader_templates(explicit_overwrite=bool(body.explicit_overwrite))
+3235:@router.post("/rescue/debian-live/hook-templates")
+3236:async def post_deploy_rescue_debian_live_hook_templates(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3237:    res = build_debian_live_hook_templates(explicit_overwrite=bool(body.explicit_overwrite))
+3252:@router.post("/rescue/debian-live/input-safety")
+3253:async def post_deploy_rescue_debian_live_input_safety(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3254:    res = validate_debian_live_build_inputs_safety(explicit_overwrite=bool(body.explicit_overwrite))
+3269:@router.post("/rescue/debian-live/final-gate")
+3270:async def post_deploy_rescue_debian_live_final_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3271:    res = build_debian_live_build_inputs_final_gate(explicit_overwrite=bool(body.explicit_overwrite))
+3286:@router.post("/rescue/dry-build/stage-graph")
+3287:async def post_deploy_rescue_dry_build_stage_graph(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3288:    res = build_rescue_dry_build_stage_graph(explicit_overwrite=bool(body.explicit_overwrite))
+3303:@router.post("/rescue/dry-build/input-resolution")
+3304:async def post_deploy_rescue_dry_build_input_resolution(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3305:    res = build_rescue_dry_build_input_resolution(explicit_overwrite=bool(body.explicit_overwrite))
+3320:@router.post("/rescue/dry-build/package-resolution")
+3321:async def post_deploy_rescue_dry_build_package_resolution(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3322:    res = build_rescue_package_resolution_plan(explicit_overwrite=bool(body.explicit_overwrite))
+3337:@router.post("/rescue/dry-build/build-order-validation")
+3338:async def post_deploy_rescue_dry_build_build_order_validation(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3339:    res = validate_rescue_build_order(explicit_overwrite=bool(body.explicit_overwrite))
+3354:@router.post("/rescue/dry-build/execution-simulation")
+3355:async def post_deploy_rescue_dry_build_execution_simulation(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3356:    res = simulate_rescue_dry_build_execution(explicit_overwrite=bool(body.explicit_overwrite))
+3371:@router.post("/rescue/dry-build/final-gate")
+3372:async def post_deploy_rescue_dry_build_final_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3373:    res = build_rescue_dry_build_final_gate(explicit_overwrite=bool(body.explicit_overwrite))
+3388:@router.post("/rescue/dry-build/safety-validation")
+3389:async def post_deploy_rescue_dry_build_safety_validation(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3390:    res = validate_rescue_dry_build_safety(explicit_overwrite=bool(body.explicit_overwrite))
+3405:@router.post("/rescue/build-sandbox/root")
+3406:async def post_deploy_rescue_build_sandbox_root(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3407:    res = build_rescue_build_sandbox_root(explicit_overwrite=bool(body.explicit_overwrite))
+3422:@router.post("/rescue/build-sandbox/config-copy-plan")
+3423:async def post_deploy_rescue_build_sandbox_config_copy_plan(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3424:    res = build_rescue_sandbox_config_copy_plan(explicit_overwrite=bool(body.explicit_overwrite))
+3439:@router.post("/rescue/build-sandbox/runtime-copy-plan")
+3440:async def post_deploy_rescue_build_sandbox_runtime_copy_plan(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3441:    res = build_rescue_sandbox_runtime_copy_plan(explicit_overwrite=bool(body.explicit_overwrite))
+3456:@router.post("/rescue/build-sandbox/overlay-workspace-plan")
+3457:async def post_deploy_rescue_build_sandbox_overlay_workspace_plan(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3458:    res = build_rescue_overlay_workspace_plan(explicit_overwrite=bool(body.explicit_overwrite))
+3473:@router.post("/rescue/build-sandbox/cleanup-plan")
+3474:async def post_deploy_rescue_build_sandbox_cleanup_plan(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3475:    res = build_rescue_build_cleanup_plan(explicit_overwrite=bool(body.explicit_overwrite))
+3490:@router.post("/rescue/build-sandbox/safety-validation")
+3491:async def post_deploy_rescue_build_sandbox_safety_validation(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3492:    res = validate_rescue_build_sandbox_safety(explicit_overwrite=bool(body.explicit_overwrite))
+3507:@router.post("/rescue/build-sandbox/final-gate")
+3508:async def post_deploy_rescue_build_sandbox_final_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3509:    res = build_rescue_build_sandbox_final_gate(explicit_overwrite=bool(body.explicit_overwrite))
+3524:@router.post("/rescue/sandbox-copy/precheck")
+3525:async def post_deploy_rescue_sandbox_copy_precheck(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3526:    res = build_rescue_sandbox_copy_execution_precheck(explicit_overwrite=bool(body.explicit_overwrite))
+3541:@router.post("/rescue/sandbox-copy/config")
+3542:async def post_deploy_rescue_sandbox_copy_config(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3543:    res = execute_rescue_sandbox_config_copy(explicit_overwrite=bool(body.explicit_overwrite))
+3558:@router.post("/rescue/sandbox-copy/runtime")
+3559:async def post_deploy_rescue_sandbox_copy_runtime(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3560:    res = execute_rescue_sandbox_runtime_copy(explicit_overwrite=bool(body.explicit_overwrite))
+3575:@router.post("/rescue/sandbox-copy/verify")
+3576:async def post_deploy_rescue_sandbox_copy_verify(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3577:    res = verify_rescue_sandbox_copy_results(explicit_overwrite=bool(body.explicit_overwrite))
+3592:@router.post("/rescue/sandbox-copy/seal")
+3593:async def post_deploy_rescue_sandbox_copy_seal(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3594:    res = build_rescue_sandbox_copy_seal(explicit_overwrite=bool(body.explicit_overwrite))
+3609:@router.post("/rescue/sandbox-copy/final-gate")
+3610:async def post_deploy_rescue_sandbox_copy_final_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3611:    res = build_rescue_sandbox_copy_final_gate(explicit_overwrite=bool(body.explicit_overwrite))
+3626:@router.post("/rescue/build-emulation/environment-snapshot")
+3627:async def post_deploy_rescue_build_emulation_environment_snapshot(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3628:    res = build_rescue_build_environment_snapshot(explicit_overwrite=bool(body.explicit_overwrite))
+3643:@router.post("/rescue/build-emulation/workspace")
+3644:async def post_deploy_rescue_build_emulation_workspace(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3645:    res = build_rescue_simulated_build_workspace(explicit_overwrite=bool(body.explicit_overwrite))
+3660:@router.post("/rescue/build-emulation/outputs")
+3661:async def post_deploy_rescue_build_emulation_outputs(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3662:    res = build_rescue_simulated_build_outputs(explicit_overwrite=bool(body.explicit_overwrite))
+3677:@router.post("/rescue/build-emulation/logs")
+3678:async def post_deploy_rescue_build_emulation_logs(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3679:    res = build_rescue_simulated_build_logs(explicit_overwrite=bool(body.explicit_overwrite))
+3694:@router.post("/rescue/build-emulation/overlay")
+3695:async def post_deploy_rescue_build_emulation_overlay(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3696:    res = build_rescue_overlay_persistence_emulation(explicit_overwrite=bool(body.explicit_overwrite))
+3711:@router.post("/rescue/build-emulation/verify")
+3712:async def post_deploy_rescue_build_emulation_verify(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3713:    res = verify_rescue_build_emulation(explicit_overwrite=bool(body.explicit_overwrite))
+3728:@router.post("/rescue/build-emulation/seal")
+3729:async def post_deploy_rescue_build_emulation_seal(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3730:    res = build_rescue_build_emulation_seal(explicit_overwrite=bool(body.explicit_overwrite))
+3745:@router.post("/rescue/build-emulation/final-gate")
+3746:async def post_deploy_rescue_build_emulation_final_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3747:    res = build_rescue_build_emulation_final_gate(explicit_overwrite=bool(body.explicit_overwrite))
+3762:@router.post("/rescue-stick/build-emulation/workspace-snapshot")
+3764:    body: DeployRescueHandoffOverwriteRequest,
+3766:    res = build_rescue_stick_build_workspace_snapshot(explicit_overwrite=bool(body.explicit_overwrite))
+3781:@router.post("/rescue-stick/build-emulation/debian-live-tree")
+3783:    body: DeployRescueHandoffOverwriteRequest,
+3785:    res = build_rescue_stick_expected_debian_live_tree(explicit_overwrite=bool(body.explicit_overwrite))
+3800:@router.post("/rescue-stick/build-emulation/package-list")
+3802:    body: DeployRescueHandoffOverwriteRequest,
+3804:    res = build_rescue_stick_package_list_preview(explicit_overwrite=bool(body.explicit_overwrite))
+3819:@router.post("/rescue-stick/build-emulation/runtime-bundle")
+3821:    body: DeployRescueHandoffOverwriteRequest,
+3823:    res = build_rescue_stick_runtime_bundle_preview(explicit_overwrite=bool(body.explicit_overwrite))
+3838:@router.post("/rescue-stick/build-emulation/frontend-bundle")
+3840:    body: DeployRescueHandoffOverwriteRequest,
+3842:    res = build_rescue_stick_frontend_bundle_preview(explicit_overwrite=bool(body.explicit_overwrite))
+3857:@router.post("/rescue-stick/build-emulation/systemd-services")
+3859:    body: DeployRescueHandoffOverwriteRequest,
+3861:    res = build_rescue_stick_systemd_service_preview(explicit_overwrite=bool(body.explicit_overwrite))
+3876:@router.post("/rescue-stick/build-emulation/network-webui")
+3878:    body: DeployRescueHandoffOverwriteRequest,
+3880:    res = build_rescue_stick_network_webui_preview(explicit_overwrite=bool(body.explicit_overwrite))
+3895:@router.post("/rescue-stick/build-emulation/evidence-manifest")
+3897:    body: DeployRescueHandoffOverwriteRequest,
+3899:    res = build_rescue_stick_evidence_manifest(explicit_overwrite=bool(body.explicit_overwrite))
+3914:@router.post("/rescue-stick/build-emulation/final-gate")
+3916:    body: DeployRescueHandoffOverwriteRequest,
+3918:    res = build_rescue_stick_readonly_build_final_gate(explicit_overwrite=bool(body.explicit_overwrite))
+3933:@router.post("/rescue-stick/build-emulation/run-all")
+3935:    body: DeployRescueHandoffOverwriteRequest,
+3937:    res = run_rescue_stick_readonly_build_emulation_all(explicit_overwrite=bool(body.explicit_overwrite))
+3952:@router.post("/rescue/iso-test-matrix")
+3953:async def post_deploy_rescue_iso_test_matrix(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3954:    res = build_rescue_iso_test_matrix(explicit_overwrite=bool(body.explicit_overwrite))
+3969:@router.post("/rescue/build-readiness-gate")
+3970:async def post_deploy_rescue_build_readiness_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3971:    res = build_rescue_build_readiness_gate(explicit_overwrite=bool(body.explicit_overwrite))
+3986:@router.post("/rescue/live-build-config")
+3987:async def post_deploy_rescue_live_build_config(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+3988:    res = build_rescue_live_build_config(explicit_overwrite=bool(body.explicit_overwrite))
+4003:@router.post("/rescue/iso-execution-plan")
+4004:async def post_deploy_rescue_iso_execution_plan(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4005:    res = build_rescue_iso_execution_plan(explicit_overwrite=bool(body.explicit_overwrite))
+4020:@router.post("/rescue/iso-build-precheck")
+4023:        explicit_overwrite=bool(body.explicit_overwrite),
+4040:@router.post("/rescue/iso-build-execute")
+4041:async def post_deploy_rescue_iso_build_execute(body: DeployRescueIsoBuildExecuteRequest) -> dict[str, Any]:
+4042:    res = execute_rescue_iso_build(
+4043:        explicit_overwrite=bool(body.explicit_overwrite),
+4044:        explicit_execute_iso_build=bool(body.explicit_execute_iso_build),
+4056:        "rescue_iso_build_execute": res,
+4062:@router.post("/rescue/vm-test-plan")
+4063:async def post_deploy_rescue_vm_test_plan(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4064:    res = build_rescue_vm_test_plan(explicit_overwrite=bool(body.explicit_overwrite))
+4079:@router.post("/rescue/vm-test-execute")
+4080:async def post_deploy_rescue_vm_test_execute(body: DeployRescueVmTestExecuteRequest) -> dict[str, Any]:
+4081:    res = execute_rescue_vm_boot_validation(
+4082:        explicit_overwrite=bool(body.explicit_overwrite),
+4083:        explicit_execute_vm_boot=bool(body.explicit_execute_vm_boot),
+4093:        "rescue_vm_test_execute": res,
+4099:@router.post("/rescue/iso-live-runtime-probe")
+4104:            explicit_overwrite=bool(body.explicit_overwrite),
+4114:    if act == "execute":
+4115:        res = execute_rescue_iso_live_runtime_probe(
+4116:            explicit_overwrite=bool(body.explicit_overwrite),
+4117:            explicit_execute_iso_live_runtime_probe=bool(body.explicit_execute_iso_live_runtime_probe),
+4120:        st = str(res.get("rescue_iso_live_runtime_probe_execute_status") or res.get("rescue_iso_live_runtime_probe_result_status") or "blocked")
+4128:        res = build_rescue_iso_live_runtime_probe_result(explicit_overwrite=bool(body.explicit_overwrite))
+4138:        "rescue_iso_live_runtime_probe": {"error": "INVALID_ACTION", "allowed": ["plan", "execute", "result"]},
+4144:@router.post("/rescue/iso-readiness-gate")
+4145:async def post_deploy_rescue_iso_readiness_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4146:    res = build_rescue_iso_readiness_gate(explicit_overwrite=bool(body.explicit_overwrite))
+4234:@router.post("/rescue/storage-discovery")
+4238:        res = build_rescue_storage_discovery_plan(explicit_overwrite=bool(body.explicit_overwrite))
+4240:    elif act == "execute":
+4241:        res = execute_rescue_storage_discovery(
+4242:            explicit_overwrite=bool(body.explicit_overwrite),
+4243:            explicit_execute_storage_discovery=bool(body.explicit_execute_storage_discovery),
+4247:        res = build_rescue_storage_discovery_result(explicit_overwrite=bool(body.explicit_overwrite))
+4264:@router.post("/rescue/readonly-mount-validation")
+4268:        res = build_readonly_mount_plan(explicit_overwrite=bool(body.explicit_overwrite))
+4270:    elif act == "execute":
+4271:        res = execute_readonly_mount_validation(
+4272:            explicit_overwrite=bool(body.explicit_overwrite),
+4273:            explicit_execute_readonly_mount=bool(body.explicit_execute_readonly_mount),
+4277:        res = build_readonly_mount_result(explicit_overwrite=bool(body.explicit_overwrite))
+4294:@router.post("/rescue/boot-context/preview")
+4316:@router.post("/rescue/offline-backup-plan")
+4336:@router.post("/rescue/restore-preview-plan")
+4364:@router.post("/rescue/efi-boot-analysis")
+4365:async def post_deploy_rescue_efi_boot_analysis(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4366:    res = build_rescue_efi_boot_analysis(explicit_overwrite=bool(body.explicit_overwrite))
+4376:@router.post("/rescue/evidence-export")
+4380:        res = build_rescue_evidence_export_plan(explicit_overwrite=bool(body.explicit_overwrite))
+4382:    elif act == "execute":
+4383:        res = execute_rescue_evidence_export(
+4384:            explicit_overwrite=bool(body.explicit_overwrite),
+4385:            explicit_execute_evidence_export=bool(body.explicit_execute_evidence_export),
+4390:        res = build_rescue_evidence_export_result(explicit_overwrite=bool(body.explicit_overwrite))
+4407:@router.post("/rescue/remote-help-preparation")
+4411:        res = build_rescue_remote_help_plan(explicit_overwrite=bool(body.explicit_overwrite))
+4414:        res = build_rescue_remote_help_result(explicit_overwrite=bool(body.explicit_overwrite))
+4431:@router.post("/rescue/live-hardware-matrix")
+4432:async def post_deploy_rescue_live_hardware_matrix(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4433:    res = build_rescue_live_hardware_matrix(explicit_overwrite=bool(body.explicit_overwrite))
+4443:@router.post("/rescue/live-runtime-safety-gate")
+4444:async def post_deploy_rescue_live_runtime_safety_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4445:    res = build_rescue_live_runtime_safety_gate(explicit_overwrite=bool(body.explicit_overwrite))
+4460:@router.post("/rescue/recovery-scenario-matrix")
+4461:async def post_deploy_rescue_recovery_scenario_matrix(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4462:    res = build_rescue_recovery_scenario_matrix(explicit_overwrite=bool(body.explicit_overwrite))
+4472:@router.post("/rescue/recovery-target-validation")
+4477:            explicit_overwrite=bool(body.explicit_overwrite),
+4481:    elif act == "execute":
+4482:        res = execute_rescue_recovery_target_validation(
+4483:            explicit_overwrite=bool(body.explicit_overwrite),
+4484:            explicit_execute_recovery_target_validation=bool(body.explicit_execute_recovery_target_validation),
+4488:        res = build_rescue_recovery_target_validation_result(explicit_overwrite=bool(body.explicit_overwrite))
+4505:@router.post("/rescue/backup-discovery-verify")
+4510:            explicit_overwrite=bool(body.explicit_overwrite),
+4515:        res = execute_rescue_backup_discovery(
+4516:            explicit_overwrite=bool(body.explicit_overwrite),
+4517:            explicit_execute_backup_discovery=bool(body.explicit_execute_backup_discovery),
+4521:        res = execute_rescue_backup_verify(
+4522:            explicit_overwrite=bool(body.explicit_overwrite),
+4523:            explicit_execute_backup_verify=bool(body.explicit_execute_backup_verify),
+4527:        res = build_rescue_backup_verify_result(explicit_overwrite=bool(body.explicit_overwrite))
+4544:@router.post("/rescue/restore-preview")
+4548:        res = build_rescue_restore_preview_plan(explicit_overwrite=bool(body.explicit_overwrite))
+4550:    elif act == "execute":
+4551:        res = execute_rescue_restore_preview(
+4552:            explicit_overwrite=bool(body.explicit_overwrite),
+4553:            explicit_execute_restore_preview=bool(body.explicit_execute_restore_preview),
+4557:        res = build_rescue_restore_preview_result(explicit_overwrite=bool(body.explicit_overwrite))
+4574:@router.post("/rescue/hardware-recovery-test-chain")
+4575:async def post_deploy_rescue_hardware_recovery_test_chain(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4576:    res = build_rescue_hardware_recovery_test_chain(explicit_overwrite=bool(body.explicit_overwrite))
+4586:@router.post("/rescue/final-recovery-readiness-gate")
+4587:async def post_deploy_rescue_final_recovery_readiness_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4588:    res = build_rescue_final_recovery_readiness_gate(explicit_overwrite=bool(body.explicit_overwrite))
+4598:@router.post("/rescue/manual-recovery-operator-guides")
+4599:async def post_deploy_rescue_manual_recovery_operator_guides(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4600:    res = build_rescue_manual_recovery_operator_guides(explicit_overwrite=bool(body.explicit_overwrite))
+4610:@router.post("/rescue/recovery-evidence-timeline")
+4611:async def post_deploy_rescue_recovery_evidence_timeline(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4612:    res = build_rescue_recovery_evidence_timeline(explicit_overwrite=bool(body.explicit_overwrite))
+4622:@router.post("/rescue/iso-baseline")
+4623:async def post_deploy_rescue_iso_baseline(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4624:    res = build_rescue_iso_baseline(explicit_overwrite=bool(body.explicit_overwrite))
+4634:@router.post("/rescue/iso-filesystem-layout")
+4635:async def post_deploy_rescue_iso_filesystem_layout(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4636:    res = build_rescue_iso_filesystem_layout(explicit_overwrite=bool(body.explicit_overwrite))
+4646:@router.post("/rescue/offline-runtime-validation")
+4647:async def post_deploy_rescue_offline_runtime_validation(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4648:    res = validate_offline_recovery_runtime(explicit_overwrite=bool(body.explicit_overwrite))
+4658:@router.post("/rescue/bootflow-simulation")
+4659:async def post_deploy_rescue_bootflow_simulation(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4660:    res = build_rescue_bootflow_simulation(explicit_overwrite=bool(body.explicit_overwrite))
+4670:@router.post("/rescue/iso-safety-validation")
+4671:async def post_deploy_rescue_iso_safety_validation(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4672:    res = validate_rescue_iso_safety(explicit_overwrite=bool(body.explicit_overwrite))
+4682:@router.post("/rescue/iso-final-readiness-gate")
+4683:async def post_deploy_rescue_iso_final_readiness_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4684:    res = build_rescue_iso_final_readiness_gate(explicit_overwrite=bool(body.explicit_overwrite))
+4694:@router.post("/rescue/iso-build-plan")
+4695:async def post_deploy_rescue_iso_build_plan(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4696:    res = build_rescue_iso_build_plan(explicit_overwrite=bool(body.explicit_overwrite))
+4706:@router.post("/rescue/artifact/rootfs")
+4707:async def post_deploy_rescue_artifact_rootfs(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4708:    res = build_rescue_rootfs_artifact(explicit_overwrite=bool(body.explicit_overwrite))
+4718:@router.post("/rescue/artifact/frontend")
+4719:async def post_deploy_rescue_artifact_frontend(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4720:    res = build_offline_frontend_artifacts(explicit_overwrite=bool(body.explicit_overwrite))
+4730:@router.post("/rescue/artifact/backend")
+4731:async def post_deploy_rescue_artifact_backend(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4732:    res = build_rescue_backend_artifacts(explicit_overwrite=bool(body.explicit_overwrite))
+4742:@router.post("/rescue/artifact/boot-structure")
+4743:async def post_deploy_rescue_artifact_boot_structure(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4744:    res = build_rescue_boot_artifact_structure(explicit_overwrite=bool(body.explicit_overwrite))
+4754:@router.post("/rescue/artifact/overlay-strategy")
+4755:async def post_deploy_rescue_artifact_overlay_strategy(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4756:    res = build_rescue_overlay_persistence_strategy(explicit_overwrite=bool(body.explicit_overwrite))
+4766:@router.post("/rescue/artifact/readiness-gate")
+4767:async def post_deploy_rescue_artifact_readiness_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4768:    res = build_rescue_artifact_readiness_gate(explicit_overwrite=bool(body.explicit_overwrite))
+4778:@router.post("/rescue/pseudo-boot/manifest")
+4779:async def post_deploy_rescue_pseudo_boot_manifest(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4780:    res = build_rescue_pseudo_boot_manifest(explicit_overwrite=bool(body.explicit_overwrite))
+4790:@router.post("/rescue/pseudo-boot/service-startup")
+4791:async def post_deploy_rescue_pseudo_boot_service_startup(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4792:    res = build_rescue_service_startup_simulation(explicit_overwrite=bool(body.explicit_overwrite))
+4802:@router.post("/rescue/pseudo-boot/overlay-strategy")
+4803:async def post_deploy_rescue_pseudo_boot_overlay_strategy(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4804:    res = build_rescue_overlay_boot_strategy(explicit_overwrite=bool(body.explicit_overwrite))
+4814:@router.post("/rescue/pseudo-boot/backend-health")
+4815:async def post_deploy_rescue_pseudo_boot_backend_health(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4816:    res = build_rescue_backend_health_integration(explicit_overwrite=bool(body.explicit_overwrite))
+4826:@router.post("/rescue/pseudo-boot/recovery-ui")
+4827:async def post_deploy_rescue_pseudo_boot_recovery_ui(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4828:    res = build_rescue_recovery_ui_integration(explicit_overwrite=bool(body.explicit_overwrite))
+4838:@router.post("/rescue/pseudo-boot/safety-validation")
+4839:async def post_deploy_rescue_pseudo_boot_safety_validation(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4840:    res = validate_rescue_pseudo_boot_safety(explicit_overwrite=bool(body.explicit_overwrite))
+4850:@router.post("/rescue/pseudo-boot/final-readiness")
+4851:async def post_deploy_rescue_pseudo_boot_final_readiness(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4852:    res = build_rescue_pseudo_boot_final_readiness(explicit_overwrite=bool(body.explicit_overwrite))
+4862:@router.post("/rescue/runtime/root")
+4863:async def post_deploy_rescue_runtime_root(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4864:    res = build_rescue_runtime_root(explicit_overwrite=bool(body.explicit_overwrite))
+4874:@router.post("/rescue/runtime/backend")
+4875:async def post_deploy_rescue_runtime_backend(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4876:    res = build_rescue_backend_runtime_assembly(explicit_overwrite=bool(body.explicit_overwrite))
+4886:@router.post("/rescue/runtime/frontend")
+4887:async def post_deploy_rescue_runtime_frontend(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4888:    res = build_rescue_frontend_runtime_assembly(explicit_overwrite=bool(body.explicit_overwrite))
+4898:@router.post("/rescue/runtime/recovery")
+4899:async def post_deploy_rescue_runtime_recovery(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4900:    res = build_rescue_recovery_runtime_assembly(explicit_overwrite=bool(body.explicit_overwrite))
+4910:@router.post("/rescue/runtime/offline-config")
+4911:async def post_deploy_rescue_runtime_offline_config(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4912:    res = build_rescue_offline_configuration_assembly(explicit_overwrite=bool(body.explicit_overwrite))
+4922:@router.post("/rescue/runtime/startup-scripts")
+4923:async def post_deploy_rescue_runtime_startup_scripts(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4924:    res = build_rescue_startup_script_assembly(explicit_overwrite=bool(body.explicit_overwrite))
+4934:@router.post("/rescue/runtime/final-gate")
+4935:async def post_deploy_rescue_runtime_final_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4936:    res = build_rescue_runtime_assembly_final_gate(explicit_overwrite=bool(body.explicit_overwrite))
+4946:@router.post("/rescue/runtime/safety-validation")
+4947:async def post_deploy_rescue_runtime_safety_validation(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4948:    res = validate_rescue_runtime_assembly_safety(explicit_overwrite=bool(body.explicit_overwrite))
+4958:@router.post("/rescue/runtime-bundle/inventory")
+4959:async def post_deploy_rescue_runtime_bundle_inventory(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4960:    res = build_rescue_runtime_bundle_inventory(explicit_overwrite=bool(body.explicit_overwrite))
+4970:@router.post("/rescue/runtime-bundle/hash-manifest")
+4971:async def post_deploy_rescue_runtime_bundle_hash_manifest(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4972:    res = build_rescue_runtime_bundle_hash_manifest(explicit_overwrite=bool(body.explicit_overwrite))
+4982:@router.post("/rescue/runtime-bundle/seal")
+4983:async def post_deploy_rescue_runtime_bundle_seal(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4984:    res = build_rescue_runtime_bundle_seal(explicit_overwrite=bool(body.explicit_overwrite))
+4994:@router.post("/rescue/runtime-bundle/consistency-check")
+4995:async def post_deploy_rescue_runtime_bundle_consistency_check(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+4996:    res = check_rescue_runtime_bundle_consistency(explicit_overwrite=bool(body.explicit_overwrite))

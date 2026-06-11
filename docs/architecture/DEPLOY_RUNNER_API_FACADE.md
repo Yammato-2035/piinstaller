@@ -1,0 +1,48 @@
+# Deploy Runner API Facade (Phase C.3)
+
+**Modul:** `backend/deploy/runner_api_facade.py`  
+**Facade-Version:** `FACADE_VERSION = 1`
+
+## Warum API Facade?
+
+`routes.py` (~5003 Zeilen) importiert **112** Runner-Module direkt. Dashboard und DCC können Registry/Contract nicht zentral abfragen. C.3 liefert eine **read-only Facade** als Entlastungs- und Integrationspunkt — ohne Runner auszuführen oder zu migrieren.
+
+## Warum read-only?
+
+Deploy-Runner umfassen device-write, destructive und sudo-Pfade. C.3 erlaubt nur **Lesen** von Metadaten und Plan-Results (`no_execution_performed: true`). Ausführung bleibt gesperrt bis **C.4 Risk Gate**.
+
+## Erlaubte Endpunkte
+
+| Methode | Pfad | Facade |
+|---------|------|--------|
+| GET | `/api/deploy/runners/catalog` | `build_runner_catalog()` |
+| GET | `/api/deploy/runners/summary` | `build_runner_catalog_summary()` |
+| GET | `/api/deploy/runners/policy-warnings` | `build_runner_policy_warnings()` |
+| GET | `/api/deploy/runners/{runner_id}` | `get_runner_registry_entry()` |
+| GET | `/api/deploy/runners/{runner_id}/empty-result` | `get_runner_empty_result()` |
+
+## Ausdrücklich verboten (C.3)
+
+- POST `/runners/.../execute`
+- apply / install / write / delete auf Runner-API
+- Import von `runner_*.py` in der Facade
+- Shell, subprocess, Runtime-Schreibzugriffe
+
+## Phasen-Kette
+
+| Phase | Lieferung |
+|-------|-----------|
+| **C.1** | Registry — Metadaten |
+| **C.2** | Result Contract — `RunnerResult` |
+| **C.3** | API Facade — read-only GET (dieses Dokument) |
+| **C.4** | Risk Gate — Laufzeit-Policy |
+| **C.5** | Schrittweise Runner-Migration |
+
+## Tests
+
+`backend/tests/test_deploy_runner_api_facade_v1.py`
+
+## Verweise
+
+- EN: `DEPLOY_RUNNER_API_FACADE_EN.md`
+- Routes-Analyse: `docs/evidence/deploy-runner/DEPLOY_ROUTES_ANALYSIS_C3.md`

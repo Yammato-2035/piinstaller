@@ -88,11 +88,16 @@ Exit **0** mit `status: review_required` — noch keine CI-Blockierung.
 - `validate_registry_result_contract(entry, result)`
 - Details: `docs/architecture/DEPLOY_RUNNER_RESULT_CONTRACT.md`
 
+## API Facade (C.3, erledigt)
+
+- Modul: `backend/deploy/runner_api_facade.py`
+- Read-only GET: `/api/deploy/runners/catalog`, `/summary`, `/policy-warnings`, `/{runner_id}`, `/{runner_id}/empty-result`
+- Details: `docs/architecture/DEPLOY_RUNNER_API_FACADE.md`
+
 ## Nächste Phasen
 
 | Phase | Inhalt |
 |-------|--------|
-| **C.3** | Runner API Facade — zentraler Entry statt 115 Imports |
 | **C.4** | Runner Risk Gate — Laufzeit-Policy durchsetzen |
 | **C.5** | Schrittweise Runner-Migration auf Contract |
 
