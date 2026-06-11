@@ -119,9 +119,13 @@ Beide nutzen nur `runner_api_facade` — **0** direkte `runner_*`-Imports in den
 
 Keine Route verschoben. Inventar, Ownership-Matrix, Zielbild (`routes.py` <500 Zeilen, 0 Runner-Imports), D.7+-Reihenfolge, erweiterter Boundary-Guard.
 
+## Was ist Phase D.7 (Evidence-Slice)?
+
+6 weitere plan-only POST-Routen nach `routes_evidence.py` (12 gesamt). `routes.py`: 4671 Zeilen, 99 Runner-Imports. Keine Rescue-/Execute-/Write-Pfade.
+
 ## Nächster Schritt?
 
-**D.7** — weitere Evidence plan-only Routen.
+**D.8** — diagnostics Router (`routes_diagnostics.py`).
 
 ## Weiterlesen
 

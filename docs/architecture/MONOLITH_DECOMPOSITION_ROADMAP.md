@@ -279,7 +279,7 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 | Imports 109→104 | **erledigt** |
 | Execute | **nein** |
 
-**Nächster Schritt:** D.7 Evidence plan-only Slice
+**Nächster Schritt:** D.8 diagnostics Router
 
 ---
 
@@ -295,7 +295,8 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **D.4** | `routes_evidence.py` — 6 POST plan-only (C.5/C.6) — **erledigt** |
 | **D.5** | `routes_governance.py` — 3 POST C.5 — **erledigt** |
 | **D.6** | Thin-Orchestrator-Target, Guard, D.7+ — **erledigt** |
-| **D.7** | Weitere Evidence plan-only — **nächster Schritt** |
+| **D.7** | Weitere Evidence plan-only — **erledigt** (6 Routen, 12 Evidence gesamt) |
+| **D.8** | diagnostics Router — **nächster Schritt** |
 | **D.6+** | runtime, rescue, backup, restore | später (CRITICAL/HIGH) |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  

@@ -26,3 +26,7 @@ Governance-Router oder weiterer Evidence-Slice.
 ## D.6 (Orchestrator-Target)
 
 Keine weitere Extraktion — Thin-Orchestrator-Ziel dokumentiert (`DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6.md`).
+
+## D.7 (weiterer Evidence-Slice)
+
+6 zusätzliche plan-only POST-Routen — siehe `DEPLOY_EVIDENCE_ROUTER_EXTRACTION_D7.md`. Evidence-Router: 12 Routen gesamt.

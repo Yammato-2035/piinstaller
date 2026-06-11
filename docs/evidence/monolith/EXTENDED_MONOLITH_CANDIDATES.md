@@ -137,6 +137,6 @@
 
 **Phase C.5+C.6 (erledigt):** 9 Routen decoupled, Imports 113→104  
 
-1. **D.7** Evidence plan-only (D.6 Orchestrator Target **erledigt**)
+1. **D.8** diagnostics Router (D.7 Evidence **erledigt** — 12 Routen)
 4. B.2: `app.py` Storage-Hilfen, `inspect_storage.py`
 5. Router-Extraktion `app.py`

@@ -66,15 +66,12 @@ from deploy.runner_manual_runtime_result_bundle_checker import check_manual_runt
 from deploy.runner_manual_runtime_result_validator_handoff_gate import build_manual_runtime_result_validator_handoff
 from deploy.runner_manual_runtime_result_validator_dryrun_from_handoff import run_manual_runtime_result_validator_dryrun_from_handoff
 from deploy.runner_manual_runtime_validator_report_seal import seal_manual_runtime_validator_report
-from deploy.runner_manual_runtime_validator_seal_consistency_audit import run_validator_seal_consistency_audit
 from deploy.runner_manual_runtime_final_acceptance_gate import evaluate_manual_runtime_final_acceptance
 from deploy.runner_manual_runtime_final_export_package import build_manual_runtime_final_export_package
 from deploy.runner_manual_runtime_failure_injection_matrix import build_manual_runtime_failure_injection_matrix
 from deploy.runner_manual_runtime_failure_execution_preview import build_manual_runtime_failure_execution_preview
 from deploy.runner_manual_runtime_failure_operator_checklists import build_manual_runtime_failure_operator_checklists
 from deploy.runner_manual_runtime_failure_test_sessions import build_manual_runtime_failure_test_sessions
-from deploy.runner_manual_runtime_failure_test_result_capture import capture_manual_runtime_failure_test_results
-from deploy.runner_manual_runtime_failure_result_evaluation import evaluate_manual_runtime_failure_results
 from deploy.runner_manual_runtime_failure_readiness_gate import evaluate_manual_runtime_failure_readiness
 from deploy.runner_manual_runtime_laptop_failure_run_selector import select_manual_laptop_failure_test_runs
 from deploy.runner_manual_runtime_laptop_failure_operator_runorder import build_manual_laptop_failure_operator_runorder
@@ -114,7 +111,6 @@ from deploy.runner_laptop_live_probe_execution_handoff import (
     execute_laptop_live_probe_readonly,
 )
 from deploy.runner_setuphelfer_runtime_identifier_migration import build_runtime_identifier_migration_plan
-from deploy.runner_legacy_identifier_cleanup_classifier import classify_active_legacy_identifiers
 from deploy.runner_setuphelfer_safe_rewrite_plan import build_setuphelfer_safe_rewrite_plan
 from deploy.runner_setuphelfer_controlled_rewrite_apply import apply_setuphelfer_controlled_rewrite
 from deploy.runner_setuphelfer_identifier_cleanup_cycle import (
@@ -137,8 +133,6 @@ from deploy.runner_setuphelfer_runtime_identifier_elimination import (
 from deploy.runner_runtime_identifier_zero_state_verification import verify_runtime_identifier_zero_state
 from deploy.runner_setuphelfer_branding_guard import build_setuphelfer_branding_guard_report
 from deploy.runner_legacy_runtime_compatibility_validation import (
-    analyze_legacy_runtime_coexistence,
-    build_legacy_runtime_compatibility_inventory,
     build_legacy_upgrade_path_matrix,
     build_safe_legacy_runtime_migration_recommendations,
 )
@@ -677,10 +671,6 @@ class DeployRunnerManualRuntimeValidatorSealIndexRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
-class DeployRunnerManualRuntimeValidatorSealConsistencyAuditRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
 class DeployRunnerManualRuntimeEvidenceTimelineRequest(BaseModel):
     explicit_overwrite: bool = False
 
@@ -710,14 +700,6 @@ class DeployRunnerManualRuntimeFailureOperatorChecklistsRequest(BaseModel):
 
 
 class DeployRunnerManualRuntimeFailureTestSessionsRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployRunnerManualRuntimeFailureTestResultsRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployRunnerManualRuntimeFailureResultEvaluationRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
@@ -797,10 +779,6 @@ class DeploySetuphelferIdentifierConsistencyCheckRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
-class DeployLegacyIdentifierCleanupClassificationRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
 class DeploySetuphelferSafeRewritePlanRequest(BaseModel):
     explicit_overwrite: bool = False
 
@@ -876,14 +854,6 @@ class DeployRuntimeIdentifierPatchBumpPostcheckRequest(BaseModel):
 
 
 class DeploySetuphelferBrandingGuardCheckRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployLegacyRuntimeCompatibilityInventoryRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployLegacyRuntimeCoexistenceAnalysisRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
@@ -1080,7 +1050,6 @@ DeployRunnerManualRuntimeResultValidatorHandoffRequest.model_rebuild()
 DeployRunnerManualRuntimeResultValidatorDryrunFromHandoffRequest.model_rebuild()
 DeployRunnerManualRuntimeResultValidatorReportSealRequest.model_rebuild()
 DeployRunnerManualRuntimeValidatorSealIndexRequest.model_rebuild()
-DeployRunnerManualRuntimeValidatorSealConsistencyAuditRequest.model_rebuild()
 DeployRunnerManualRuntimeEvidenceTimelineRequest.model_rebuild()
 DeployRunnerManualRuntimeEvidenceFinalSnapshotRequest.model_rebuild()
 DeployRunnerManualRuntimeFinalAcceptanceRequest.model_rebuild()
@@ -1089,8 +1058,6 @@ DeployRunnerManualRuntimeFailureInjectionMatrixRequest.model_rebuild()
 DeployRunnerManualRuntimeFailureExecutionPreviewRequest.model_rebuild()
 DeployRunnerManualRuntimeFailureOperatorChecklistsRequest.model_rebuild()
 DeployRunnerManualRuntimeFailureTestSessionsRequest.model_rebuild()
-DeployRunnerManualRuntimeFailureTestResultsRequest.model_rebuild()
-DeployRunnerManualRuntimeFailureResultEvaluationRequest.model_rebuild()
 DeployRunnerManualRuntimeFailureReadinessGateRequest.model_rebuild()
 DeployRunnerManualRuntimeLaptopFailureRunSelectionRequest.model_rebuild()
 DeployRunnerManualRuntimeLaptopFailureOperatorRunorderRequest.model_rebuild()
@@ -1108,7 +1075,6 @@ DeployVersionSourceOfTruthCheckRequest.model_rebuild()
 DeployLegacyIdentifierInventoryRequest.model_rebuild()
 DeploySetuphelferRuntimeIdentifierMigrationRequest.model_rebuild()
 DeploySetuphelferIdentifierConsistencyCheckRequest.model_rebuild()
-DeployLegacyIdentifierCleanupClassificationRequest.model_rebuild()
 DeploySetuphelferSafeRewritePlanRequest.model_rebuild()
 DeploySetuphelferControlledRewriteApplyRequest.model_rebuild()
 DeploySetuphelferIdentifierCleanupCyclePlanRequest.model_rebuild()
@@ -1128,8 +1094,6 @@ DeployRuntimeIdentifierPatchBumpPreparationRequest.model_rebuild()
 DeployRuntimeIdentifierPatchBumpApplyRequest.model_rebuild()
 DeployRuntimeIdentifierPatchBumpPostcheckRequest.model_rebuild()
 DeploySetuphelferBrandingGuardCheckRequest.model_rebuild()
-DeployLegacyRuntimeCompatibilityInventoryRequest.model_rebuild()
-DeployLegacyRuntimeCoexistenceAnalysisRequest.model_rebuild()
 DeployLegacyRuntimeSafeMigrationRecommendationsRequest.model_rebuild()
 DeployLegacyUpgradePathMatrixRequest.model_rebuild()
 DeployLaptopFailureTestExecutionReadinessFinalGateRequest.model_rebuild()
@@ -1964,25 +1928,6 @@ async def post_deploy_runner_manual_runtime_result_validator_report_seal(
     }
 
 
-@router.post("/runner/manual-runtime/result-validator-seal-consistency-audit")
-async def post_deploy_runner_manual_runtime_validator_seal_consistency_audit(
-    body: DeployRunnerManualRuntimeValidatorSealConsistencyAuditRequest,
-) -> dict[str, Any]:
-    aud = run_validator_seal_consistency_audit(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(aud.get("audit_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_VALIDATOR_SEAL_CONSISTENCY_AUDIT_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_VALIDATOR_SEAL_CONSISTENCY_AUDIT_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_VALIDATOR_SEAL_CONSISTENCY_AUDIT_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "audit": aud,
-        "warnings": list(aud.get("warnings") or []),
-        "errors": list(aud.get("errors") or []),
-    }
-
-
 @router.post("/runner/manual-runtime/final-acceptance")
 async def post_deploy_runner_manual_runtime_final_acceptance(
     body: DeployRunnerManualRuntimeFinalAcceptanceRequest,
@@ -2094,44 +2039,6 @@ async def post_deploy_runner_manual_runtime_failure_test_sessions(
         "sessions": sess,
         "warnings": list(sess.get("warnings") or []),
         "errors": list(sess.get("errors") or []),
-    }
-
-
-@router.post("/runner/manual-runtime/failure-test-results")
-async def post_deploy_runner_manual_runtime_failure_test_results(
-    body: DeployRunnerManualRuntimeFailureTestResultsRequest,
-) -> dict[str, Any]:
-    cap = capture_manual_runtime_failure_test_results(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(cap.get("capture_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_TEST_RESULTS_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_TEST_RESULTS_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_TEST_RESULTS_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "capture": cap,
-        "warnings": list(cap.get("warnings") or []),
-        "errors": list(cap.get("errors") or []),
-    }
-
-
-@router.post("/runner/manual-runtime/failure-result-evaluation")
-async def post_deploy_runner_manual_runtime_failure_result_evaluation(
-    body: DeployRunnerManualRuntimeFailureResultEvaluationRequest,
-) -> dict[str, Any]:
-    ev = evaluate_manual_runtime_failure_results(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(ev.get("evaluation_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_RESULT_EVALUATION_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_RESULT_EVALUATION_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_RESULT_EVALUATION_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "evaluation": ev,
-        "warnings": list(ev.get("warnings") or []),
-        "errors": list(ev.get("errors") or []),
     }
 
 
@@ -2379,25 +2286,6 @@ async def post_deploy_setuphelfer_runtime_identifier_migration(
         "setuphelfer_runtime_identifier_migration": plan,
         "warnings": list(plan.get("warnings") or []),
         "errors": list(plan.get("errors") or []),
-    }
-
-
-@router.post("/legacy-identifier-cleanup-classification")
-async def post_deploy_legacy_identifier_cleanup_classification(
-    body: DeployLegacyIdentifierCleanupClassificationRequest,
-) -> dict[str, Any]:
-    res = classify_active_legacy_identifiers(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("classification_status") or "blocked")
-    code = "DEPLOY_LEGACY_IDENTIFIER_CLEANUP_CLASSIFICATION_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_LEGACY_IDENTIFIER_CLEANUP_CLASSIFICATION_OK"
-    elif st == "review_required":
-        code = "DEPLOY_LEGACY_IDENTIFIER_CLEANUP_CLASSIFICATION_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "legacy_identifier_cleanup_classification": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
     }
 
 
@@ -2744,44 +2632,6 @@ async def post_deploy_setuphelfer_branding_guard_check(
     return {
         "code": code,
         "setuphelfer_branding_guard_check": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
-    }
-
-
-@router.post("/legacy-runtime-compatibility-inventory")
-async def post_deploy_legacy_runtime_compatibility_inventory(
-    body: DeployLegacyRuntimeCompatibilityInventoryRequest,
-) -> dict[str, Any]:
-    res = build_legacy_runtime_compatibility_inventory(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("legacy_runtime_compatibility_inventory_status") or "blocked")
-    code = "DEPLOY_LEGACY_RUNTIME_COMPATIBILITY_INVENTORY_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_LEGACY_RUNTIME_COMPATIBILITY_INVENTORY_OK"
-    elif st == "review_required":
-        code = "DEPLOY_LEGACY_RUNTIME_COMPATIBILITY_INVENTORY_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "legacy_runtime_compatibility_inventory": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
-    }
-
-
-@router.post("/legacy-runtime-coexistence-analysis")
-async def post_deploy_legacy_runtime_coexistence_analysis(
-    body: DeployLegacyRuntimeCoexistenceAnalysisRequest,
-) -> dict[str, Any]:
-    res = analyze_legacy_runtime_coexistence(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("legacy_runtime_coexistence_analysis_status") or "blocked")
-    code = "DEPLOY_LEGACY_RUNTIME_COEXISTENCE_ANALYSIS_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_LEGACY_RUNTIME_COEXISTENCE_ANALYSIS_OK"
-    elif st == "review_required":
-        code = "DEPLOY_LEGACY_RUNTIME_COEXISTENCE_ANALYSIS_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "legacy_runtime_coexistence_analysis": res,
         "warnings": list(res.get("warnings") or []),
         "errors": list(res.get("errors") or []),
     }

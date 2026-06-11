@@ -53,7 +53,19 @@ DECOUPLED_ROUTE_RUNNER_IDS_C6 = frozenset(
     }
 )
 
-DECOUPLED_ROUTE_RUNNER_IDS = DECOUPLED_ROUTE_RUNNER_IDS_C5 | DECOUPLED_ROUTE_RUNNER_IDS_C6
+DECOUPLED_ROUTE_RUNNER_IDS_D7 = frozenset(
+    {
+        "runner_legacy_identifier_cleanup_classifier",
+        "runner_legacy_runtime_compatibility_validation",
+        "runner_manual_runtime_failure_test_result_capture",
+        "runner_manual_runtime_failure_result_evaluation",
+        "runner_manual_runtime_validator_seal_consistency_audit",
+    }
+)
+
+DECOUPLED_ROUTE_RUNNER_IDS = (
+    DECOUPLED_ROUTE_RUNNER_IDS_C5 | DECOUPLED_ROUTE_RUNNER_IDS_C6 | DECOUPLED_ROUTE_RUNNER_IDS_D7
+)
 
 _DEPLOY_ROOT = Path(__file__).resolve().parent
 _UNSAFE_ROUTE_FRAGMENTS = frozenset(

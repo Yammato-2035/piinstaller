@@ -1,4 +1,4 @@
-"""Deploy evidence router extraction Phase D.4 — plan-only, no runner execution."""
+"""Deploy evidence router extraction Phase D.4/D.7 — plan-only, no runner execution."""
 
 from __future__ import annotations
 
@@ -23,13 +23,36 @@ D4_RUNNER_IDS = (
     "runner_manual_runtime_evidence_final_snapshot",
 )
 
-D4_PUBLIC_PATHS = (
-    "/api/deploy/legacy-identifier-inventory",
-    "/api/deploy/legacy-identifier-hotspot-analysis",
-    "/api/deploy/setuphelfer-identifier-consistency-check",
-    "/api/deploy/runner/manual-runtime/result-validator-seal-index",
-    "/api/deploy/runner/manual-runtime/evidence-timeline",
-    "/api/deploy/runner/manual-runtime/evidence-final-snapshot",
+D7_RUNNER_IDS = (
+    "runner_legacy_identifier_cleanup_classifier",
+    "runner_legacy_runtime_compatibility_validation",
+    "runner_manual_runtime_failure_test_result_capture",
+    "runner_manual_runtime_failure_result_evaluation",
+    "runner_manual_runtime_validator_seal_consistency_audit",
+)
+
+D7_PUBLIC_PATHS = (
+    "/api/deploy/legacy-identifier-cleanup-classification",
+    "/api/deploy/legacy-runtime-compatibility-inventory",
+    "/api/deploy/legacy-runtime-coexistence-analysis",
+    "/api/deploy/runner/manual-runtime/failure-test-results",
+    "/api/deploy/runner/manual-runtime/failure-result-evaluation",
+    "/api/deploy/runner/manual-runtime/result-validator-seal-consistency-audit",
+)
+
+ALL_EVIDENCE_PATHS = (
+    "/legacy-identifier-hotspot-analysis",
+    "/legacy-identifier-inventory",
+    "/setuphelfer-identifier-consistency-check",
+    "/runner/manual-runtime/evidence-final-snapshot",
+    "/runner/manual-runtime/evidence-timeline",
+    "/runner/manual-runtime/result-validator-seal-index",
+    "/legacy-identifier-cleanup-classification",
+    "/legacy-runtime-compatibility-inventory",
+    "/legacy-runtime-coexistence-analysis",
+    "/runner/manual-runtime/failure-test-results",
+    "/runner/manual-runtime/failure-result-evaluation",
+    "/runner/manual-runtime/result-validator-seal-consistency-audit",
 )
 
 
@@ -44,15 +67,24 @@ class DeployRoutesEvidenceV1Tests(unittest.TestCase):
                     self.fail(f"unexpected runner import: {node.module}")
 
     def test_evidence_router_route_count(self) -> None:
-        self.assertEqual(len(evidence_router.routes), 6)
+        self.assertEqual(len(evidence_router.routes), 12)
         for route in evidence_router.routes:
             self.assertEqual(route.methods, {"POST"})
 
-    def test_evidence_router_uses_build_plan_only_response(self) -> None:
+    def test_d4_routes_still_present(self) -> None:
         src = (_BACKEND / "deploy" / "routes_evidence.py").read_text(encoding="utf-8")
-        self.assertEqual(src.count("build_plan_only_response("), 6)
         for rid in D4_RUNNER_IDS:
             self.assertIn(f'"{rid}"', src)
+
+    def test_d7_routes_present(self) -> None:
+        src = (_BACKEND / "deploy" / "routes_evidence.py").read_text(encoding="utf-8")
+        for rid in D7_RUNNER_IDS:
+            self.assertIn(f'"{rid}"', src)
+        self.assertEqual(src.count('decoupling_phase="d7"'), 6)
+
+    def test_evidence_router_uses_build_plan_only_response(self) -> None:
+        src = (_BACKEND / "deploy" / "routes_evidence.py").read_text(encoding="utf-8")
+        self.assertEqual(src.count("build_plan_only_response("), 12)
 
     def test_no_execute_apply_write_routes(self) -> None:
         src = (_BACKEND / "deploy" / "routes_evidence.py").read_text(encoding="utf-8")
@@ -63,37 +95,32 @@ class DeployRoutesEvidenceV1Tests(unittest.TestCase):
 
     def test_public_paths_unchanged(self) -> None:
         paths = sorted({route.path for route in evidence_router.routes})
-        self.assertEqual(
-            paths,
-            [
-                "/legacy-identifier-hotspot-analysis",
-                "/legacy-identifier-inventory",
-                "/runner/manual-runtime/evidence-final-snapshot",
-                "/runner/manual-runtime/evidence-timeline",
-                "/runner/manual-runtime/result-validator-seal-index",
-                "/setuphelfer-identifier-consistency-check",
-            ],
-        )
+        self.assertEqual(paths, sorted(ALL_EVIDENCE_PATHS))
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         self.assertIn("include_router(deploy_evidence_router)", routes_src)
 
-    def test_routes_py_no_duplicate_evidence_handlers(self) -> None:
+    def test_routes_py_no_duplicate_d7_handlers(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
-        self.assertNotIn("def post_deploy_legacy_identifier_inventory", routes_src)
-        self.assertNotIn("def post_deploy_runner_manual_runtime_evidence_timeline", routes_src)
-        self.assertNotIn('@router.post("/legacy-identifier-inventory")', routes_src)
+        for path in (
+            "/legacy-identifier-cleanup-classification",
+            "/legacy-runtime-compatibility-inventory",
+            "/legacy-runtime-coexistence-analysis",
+            "/runner/manual-runtime/failure-test-results",
+            "/runner/manual-runtime/failure-result-evaluation",
+            "/runner/manual-runtime/result-validator-seal-consistency-audit",
+        ):
+            self.assertNotIn(f'@router.post("{path}")', routes_src)
 
     def test_allowed_to_execute_stays_false(self) -> None:
         from deploy.runner_api_facade import build_plan_only_response, clear_registry_cache
 
         clear_registry_cache()
-        res = build_plan_only_response(
-            "runner_manual_runtime_evidence_timeline",
-            decoupling_phase="c6",
-        )
-        self.assertFalse(res["allowed_to_execute"])
+        for rid in D7_RUNNER_IDS:
+            res = build_plan_only_response(rid, decoupling_phase="d7")
+            self.assertFalse(res["allowed_to_execute"], rid)
+            self.assertTrue(res["facade_decoupling_d7"])
 
-    def test_runner_import_count_unchanged(self) -> None:
+    def test_runner_import_count_reduced(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", routes_src, flags=re.M))
-        self.assertEqual(count, 103)
+        self.assertEqual(count, 99)

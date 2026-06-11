@@ -431,13 +431,26 @@ else:
         '@router.post("/runner/manual-runtime/result-validator-seal-index")',
         '@router.post("/runner/manual-runtime/evidence-timeline")',
         '@router.post("/runner/manual-runtime/evidence-final-snapshot")',
+        '@router.post("/legacy-identifier-cleanup-classification")',
+        '@router.post("/legacy-runtime-compatibility-inventory")',
+        '@router.post("/legacy-runtime-coexistence-analysis")',
+        '@router.post("/runner/manual-runtime/failure-test-results")',
+        '@router.post("/runner/manual-runtime/failure-result-evaluation")',
+        '@router.post("/runner/manual-runtime/result-validator-seal-consistency-audit")',
     ):
         if ep not in ev:
             print(f"deploy_routes_evidence_path_changed:missing_{ep}")
     if "routes_evidence" not in text or "include_router(deploy_evidence_router)" not in text:
         print("deploy_routes_evidence_not_included:backend/deploy/routes.py")
-    if '@router.post("/legacy-identifier-inventory")' in text:
-        print("deploy_routes_evidence_duplicate_in_routes:backend/deploy/routes.py")
+    for dup in (
+        '@router.post("/legacy-identifier-inventory")',
+        '@router.post("/legacy-identifier-cleanup-classification")',
+        '@router.post("/legacy-runtime-compatibility-inventory")',
+        '@router.post("/runner/manual-runtime/failure-test-results")',
+    ):
+        if dup in text:
+            print("deploy_routes_evidence_duplicate_in_routes:backend/deploy/routes.py")
+            break
 
 # Phase D.5: governance router extraction (warn-only)
 governance_mod = root / "backend" / "deploy" / "routes_governance.py"
@@ -472,11 +485,17 @@ if deploy_routes.is_file():
     dr_runner_imports = len(re.findall(r"^from deploy\.runner_", dr_text, flags=re.M))
     baseline_d6_lines = 4821
     baseline_d6_imports = 103
+    baseline_d7_lines = 4671
+    baseline_d7_imports = 99
     if dr_lines > 2000:
         print(f"deploy_routes_py_too_large:{dr_lines}")
     print(f"deploy_routes_direct_runner_import_count:{dr_runner_imports}")
     if dr_runner_imports > baseline_d6_imports:
         print(f"deploy_routes_new_runner_import_detected:{baseline_d6_imports}_to_{dr_runner_imports}")
+    if dr_runner_imports < baseline_d6_imports:
+        print(f"deploy_routes_direct_runner_import_reduced_d7:{baseline_d6_imports}_to_{dr_runner_imports}")
+    if dr_lines < baseline_d6_lines:
+        print(f"deploy_routes_line_count_reduced_d7:{baseline_d6_lines}_to_{dr_lines}")
     for sub in (
         "routes_registry.py",
         "routes_risk_gate.py",

@@ -20,12 +20,16 @@
 4. **Keine** direkten `runner_*.py`-Imports
 5. **Keine** Businesslogik / Runner-Ausführung
 
+## D.7 Update (erledigt)
+
+6 weitere plan-only POST-Routen nach `routes_evidence.py` (12 gesamt). `routes.py`: 4671 Zeilen, 99 Imports.
+
 ## Zielmetriken
 
-| Metrik | Ist (D.6) | Ziel |
+| Metrik | Ist (D.7) | Ziel |
 |--------|----------:|-----:|
-| `routes.py` Zeilen | 4821 | **< 500** |
-| direkte Runner-Imports | 103 | **0** |
+| `routes.py` Zeilen | 4671 | **< 500** |
+| direkte Runner-Imports | 99 | **0** |
 | Routen direkt in routes.py | 218 | **0–10** Legacy |
 | Subrouter | 4 | **10–14** |
 | Execute-Routen ohne Risk-Gate | offen | **0** (nach Execute-Gate) |
@@ -40,7 +44,7 @@ D.2–D.5 haben sichere Facade-Routen extrahiert. Weitere Moves ohne Guard riski
 |-------|--------|
 | `routes_registry.py` | 5 GET |
 | `routes_risk_gate.py` | 5 GET |
-| `routes_evidence.py` | 6 POST |
+| `routes_evidence.py` | 12 POST |
 | `routes_governance.py` | 3 POST |
 
 Siehe `DEPLOY_ROUTE_EXTRACTION_SEQUENCE_D7_PLUS.md`.

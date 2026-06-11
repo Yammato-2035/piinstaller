@@ -135,9 +135,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **D.5 (erledigt):** `routes_governance.py` (3 POST). Facade nur in Subroutern.
 
-**D.6 (erledigt):** Orchestrator-Ziel + Guard. routes.py bleibt kontrollierter Monolith (4821 Zeilen).
+**D.7 (erledigt):** +6 Evidence plan-only, routes.py 4671/99 Imports.
 
-**Nächster Schritt:** D.7
+**Nächster Schritt:** D.8
 
 ---
 

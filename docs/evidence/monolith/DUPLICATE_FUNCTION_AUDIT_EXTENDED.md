@@ -253,6 +253,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 **D.5 (erledigt):** Governance-Router `routes_governance.py` (3 POST C.5).
 
-**D.6 (erledigt):** Thin-Orchestrator-Target, 4 Subrouter, routes.py 4821/103 Imports.
+**D.7 (erledigt):** +6 Evidence in routes_evidence.py, routes.py 4671/99 Imports.
 
-**Nächster Schritt:** D.7
+**Nächster Schritt:** D.8

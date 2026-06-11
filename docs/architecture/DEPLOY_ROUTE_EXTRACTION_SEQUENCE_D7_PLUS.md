@@ -4,7 +4,7 @@
 
 | Phase | Ziel | Risiko | Erlaubt | Verboten | Tests | Doku |
 |-------|------|--------|---------|----------|-------|------|
-| **D.7** | Weitere Evidence plan-only | LOW–MED | `allowed_plan_only`, Facade | Execute, direct runner | Unit + decoupling | Slice + size |
+| **D.7** | Weitere Evidence plan-only | LOW–MED | `allowed_plan_only`, Facade | Execute, direct runner | Unit + decoupling | Slice + size | **erledigt** — 6 Routen |
 | **D.8** | `routes_diagnostics.py` | MED | test-plan GET/POST plan | hardware execute | Unit + boundary | DE/EN |
 | **D.9** | `routes_notifications.py` | LOW | read/plan (falls Routen existieren) | write | Unit | DE/EN |
 | **D.10** | `routes_versioning.py` | MED–HIGH | plan-only identifier/version | apply/system_change | Unit + OpenAPI | DE/EN |
@@ -23,4 +23,4 @@
 
 ## Nächster Schritt
 
-**D.7** — weitere Evidence-Routen mit klarem Facade-Mapping
+**D.8** — `routes_diagnostics.py`

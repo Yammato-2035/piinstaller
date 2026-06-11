@@ -1,3 +1,3 @@
 # Thin Orchestrator — KB
 
-D.6: no routes moved. 4 sub-routers (19 routes). `routes.py` 4821 lines / 218 routes / 103 imports. Target <500 lines, 0 imports. D.7+ sequential.
+D.7: +6 evidence routes (12 total). `routes.py` 4671 lines / 99 imports. Target <500 lines, 0 imports. Next step D.8.

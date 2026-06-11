@@ -83,4 +83,4 @@ class DeployRoutesRiskGateV1Tests(unittest.TestCase):
     def test_runner_import_count_unchanged(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", routes_src, flags=re.M))
-        self.assertEqual(count, 103)
+        self.assertEqual(count, 99)

@@ -15,6 +15,7 @@ from deploy.runner_api_facade import (
     DECOUPLED_ROUTE_RUNNER_IDS,
     DECOUPLED_ROUTE_RUNNER_IDS_C5,
     DECOUPLED_ROUTE_RUNNER_IDS_C6,
+    DECOUPLED_ROUTE_RUNNER_IDS_D7,
     assert_runner_plan_allowed,
     build_plan_only_response,
     clear_registry_cache,
@@ -39,6 +40,14 @@ class DeployRunnerRoutesDecouplingV1Tests(unittest.TestCase):
             decoupling_phase="c6",
         )
         self.assertTrue(res["facade_decoupling_c6"])
+        self.assertFalse(res["allowed_to_execute"])
+
+    def test_d7_plan_only_response_tag(self) -> None:
+        res = build_plan_only_response(
+            "runner_legacy_identifier_cleanup_classifier",
+            decoupling_phase="d7",
+        )
+        self.assertTrue(res["facade_decoupling_d7"])
         self.assertFalse(res["allowed_to_execute"])
 
     def test_blocked_runner_not_plan_allowed(self) -> None:
@@ -80,10 +89,23 @@ class DeployRunnerRoutesDecouplingV1Tests(unittest.TestCase):
         combined += (_BACKEND / "deploy" / "routes_governance.py").read_text(encoding="utf-8")
         self.assertIn('decoupling_phase="c6"', combined)
 
+    def test_d7_imports_removed_from_routes(self) -> None:
+        routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
+        for needle in (
+            "from deploy.runner_legacy_identifier_cleanup_classifier import",
+            "from deploy.runner_manual_runtime_failure_test_result_capture import",
+            "from deploy.runner_manual_runtime_failure_result_evaluation import",
+            "from deploy.runner_manual_runtime_validator_seal_consistency_audit import",
+        ):
+            self.assertNotIn(needle, routes_src)
+        ev = (_BACKEND / "deploy" / "routes_evidence.py").read_text(encoding="utf-8")
+        self.assertIn('decoupling_phase="d7"', ev)
+        self.assertNotIn("classify_active_legacy_identifiers", routes_src)
+
     def test_direct_import_count_reduced(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", routes_src, flags=re.M))
-        self.assertEqual(count, 103)
+        self.assertEqual(count, 99)
 
     def test_no_new_unsafe_runners_post_routes(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
@@ -96,7 +118,8 @@ class DeployRunnerRoutesDecouplingV1Tests(unittest.TestCase):
     def test_decoupled_runner_ids_count(self) -> None:
         self.assertEqual(len(DECOUPLED_ROUTE_RUNNER_IDS_C5), 4)
         self.assertEqual(len(DECOUPLED_ROUTE_RUNNER_IDS_C6), 5)
-        self.assertEqual(len(DECOUPLED_ROUTE_RUNNER_IDS), 9)
+        self.assertEqual(len(DECOUPLED_ROUTE_RUNNER_IDS_D7), 5)
+        self.assertEqual(len(DECOUPLED_ROUTE_RUNNER_IDS), 14)
 
     def test_all_decoupled_runners_allowed_plan_only(self) -> None:
         entries = build_runner_registry_from_files(root=_BACKEND / "deploy")

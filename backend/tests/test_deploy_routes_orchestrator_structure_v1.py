@@ -45,7 +45,7 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
     def test_subrouter_route_counts(self) -> None:
         self.assertEqual(len(registry_router.routes), 5)
         self.assertEqual(len(risk_gate_router.routes), 5)
-        self.assertEqual(len(evidence_router.routes), 6)
+        self.assertEqual(len(evidence_router.routes), 12)
         self.assertEqual(len(governance_router.routes), 3)
 
     def test_subrouters_no_runner_py_imports(self) -> None:
@@ -81,7 +81,7 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
     def test_routes_py_runner_import_count_documented(self) -> None:
         src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", src, flags=re.M))
-        self.assertEqual(count, 103)
+        self.assertEqual(count, 99)
 
     def test_no_build_plan_only_in_routes_py(self) -> None:
         src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")

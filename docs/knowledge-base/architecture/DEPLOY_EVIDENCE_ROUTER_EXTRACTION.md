@@ -1,5 +1,11 @@
-# Evidence Router D.4 — KB
+# Evidence Router D.4/D.7 — KB
 
-6 POST plan-only Routen nach `routes_evidence.py`. POST bleibt, `allowed_to_execute` false.
+| Phase | Routen in `routes_evidence.py` |
+|-------|-------------------------------|
+| D.4 | 6 POST (C.5/C.6) |
+| D.7 | +6 POST (plan-only) |
+| **gesamt** | **12 POST** |
 
-Nächster Schritt: **D.5** Governance-Router.
+POST bleibt, `allowed_to_execute` false, `facade_decoupling_d7` für D.7-Slice.
+
+Nächster Schritt: **D.8** diagnostics Router.
