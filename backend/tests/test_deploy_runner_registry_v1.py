@@ -32,8 +32,12 @@ class DeployRunnerRegistryV1Tests(unittest.TestCase):
         src = (_BACKEND / "deploy" / "runner_registry.py").read_text(encoding="utf-8")
         self.assertNotIn("importlib.import_module", src)
         tree = ast.parse(src)
+        allowed = {"deploy.runner_registry", "deploy.runner_result_contract"}
         imports_runner_modules = any(
-            isinstance(n, ast.ImportFrom) and n.module and n.module.startswith("deploy.runner_")
+            isinstance(n, ast.ImportFrom)
+            and n.module
+            and n.module.startswith("deploy.runner_")
+            and n.module not in allowed
             for n in ast.walk(tree)
         )
         self.assertFalse(imports_runner_modules)

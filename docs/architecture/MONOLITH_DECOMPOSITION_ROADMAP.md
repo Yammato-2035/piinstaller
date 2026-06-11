@@ -1,8 +1,8 @@
 # Monolith Decomposition Roadmap
 
-**Datum:** 2026-06-10 (aktualisiert nach Deploy Runner Registry C.1)  
-**HEAD:** `d21e460`+ (B.1 Storage Caller) → C.1 Registry  
-**Status:** A.1–A.4 + B.1 erledigt; **C.1 Deploy Runner Registry** (statisch, warn-only); Runner noch nicht refaktoriert
+**Datum:** 2026-06-10 (aktualisiert nach Deploy Runner Result Contract C.2)  
+**HEAD:** `0494001`+ (C.1 Registry) → C.2 Result Contract  
+**Status:** C.1 + **C.2** erledigt; 115 Runner noch **nicht** migriert/ausgeführt
 
 ## Strategie
 
@@ -37,11 +37,13 @@
 |----------|--------|-------|
 | 115 `runner_*.py` inventarisieren | **erledigt** | `deploy/runner_registry.py` |
 | Statische Klassifikation | **erledigt** | Heuristiken + Evidence-Export |
-| Runner refaktorieren / Lazy-Import | **offen** | C.2–C.4 |
+| Result Contract | **erledigt** (C.2) | `runner_result_contract.py` |
+| Runner refaktorieren / Lazy-Import | **offen** | C.3–C.5 |
 | `routes.py` Handler gruppieren | **offen** | nach C.3 Facade |
 
 **C.1 geliefert:** Metadaten (category, risk_level, execution_policy), Boundary-Warnungen, Tests — **keine** Runner-Ausführung.  
-**Nächste Schritte:** C.2 Result Contract → C.3 API Facade → C.4 Risk Gate  
+**C.2 geliefert:** `RunnerResult`, Validator, Legacy-Normalizer, Empty-Results — **keine** Runner-Ausführung.  
+**Nächste Schritte:** C.3 API Facade → C.4 Risk Gate → C.5 Migration  
 **Evidence:** `docs/evidence/deploy-runner/`, `docs/architecture/DEPLOY_RUNNER_REGISTRY.md`  
 **Aufwand Rest:** L–XL
 
@@ -201,7 +203,7 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 2. **B1** — Storage Safety Facade — Duplikat-Risiko senken
 3. **C1** — `BackupRestore.tsx` zerlegen — größter Frontend-Monolith
 4. **D1** — DCC Status Facade — Deploy-Drift-Transparenz
-5. **C.2** — Runner Result Contract (C.1 Registry **erledigt**)
+5. **C.3** — Runner API Facade (C.1 + C.2 **erledigt**)
 6. **C3** — DCC Frontend-Slice
 7. **B2** — Rescue USB Writer Pipeline
 8. **E1** — i18n Namespaces
@@ -231,4 +233,14 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 | Boundary warn-only (registry policy) | **erledigt** |
 | Runner refaktorieren | **nicht** in C.1 |
 
-**Nächster Schritt:** C.2 Runner Result Contract
+## Update: Phase C.2 Deploy Runner Result Contract (2026-06-10)
+
+| Lieferung | Status |
+|-----------|--------|
+| `runner_result_contract.py` | **erledigt** |
+| Validator + Legacy-Normalizer | **erledigt** |
+| Registry-Integration (empty result) | **erledigt** |
+| Pattern-Audit + Boundary C.2 | **erledigt** |
+| Runner-Migration | **nicht** in C.2 |
+
+**Nächster Schritt:** C.3 Deploy Runner API Facade

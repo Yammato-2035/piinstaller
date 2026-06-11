@@ -63,13 +63,17 @@ blkid/Storage-Erkennung in `backup_target_auto_prepare` und `inspect/collector` 
 
 Statisches Inventar und Metadaten für **115** `runner_*.py` unter `backend/deploy/`. Modul: `runner_registry.py`. **Keine** Runner-Ausführung, **kein** Refactoring der Runner selbst.
 
+## Was ist der Runner Result Contract (C.2)?
+
+Einheitliches Ergebnisschema (`RunnerResult`) mit 6 Statuswerten, `warnings`/`errors`, `evidence_paths` und `no_execution_performed`. Modul: `runner_result_contract.py`. Legacy-Dicts werden per `normalize_legacy_runner_result` abbildbar — Runner selbst unverändert.
+
 ## Warum werden Runner nicht sofort refaktoriert?
 
-Größtes Risiko-Cluster (~37k Zeilen). C.1 liefert Überblick, Kategorien, Risikoklassen und Execution Policies. C.2–C.4: Result Contract, API Facade, Risk Gate.
+Größtes Risiko-Cluster (~37k Zeilen). C.1 + C.2 liefern Metadaten und Result-Contract. C.3–C.5: API Facade, Risk Gate, schrittweise Migration.
 
 ## Nächster Schritt?
 
-Phase **C.2** Runner Result Contract; parallel weiter B.2 (`app.py` Storage-Hilfen).
+Phase **C.3** Deploy Runner API Facade.
 
 ## Weiterlesen
 
@@ -77,3 +81,4 @@ Phase **C.2** Runner Result Contract; parallel weiter B.2 (`app.py` Storage-Hilf
 - `docs/architecture/STORAGE_DISCOVERY_INVENTORY.md`
 - `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4.md`
 - `docs/architecture/DEPLOY_RUNNER_REGISTRY.md`
+- `docs/architecture/DEPLOY_RUNNER_RESULT_CONTRACT.md`

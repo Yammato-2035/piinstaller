@@ -77,16 +77,24 @@ Destructive runners get `never_auto`. Sudo without operator policy and device_wr
 - `runner_device_write_without_manual_policy`
 - `runner_sudo_without_operator_policy`
 - `runner_destructive_without_never_auto`
+- **C.2:** `runner_result_unknown_status_token`, `runner_result_no_errors_for_failed_like`, `runner_result_no_evidence_reference`
 
 Exit **0** with `status: review_required` — no CI block yet.
+
+## Result contract (C.2, complete)
+
+- Module: `backend/deploy/runner_result_contract.py`
+- `build_empty_result_for_registry_entry(entry)` — plan template per runner
+- `validate_registry_result_contract(entry, result)`
+- Details: `docs/architecture/DEPLOY_RUNNER_RESULT_CONTRACT_EN.md`
 
 ## Next phases
 
 | Phase | Content |
 |-------|---------|
-| **C.2** | Runner result contract — unified result schema |
 | **C.3** | Runner API facade — central entry instead of 115 imports |
 | **C.4** | Runner risk gate — enforce runtime policy |
+| **C.5** | Incremental runner migration to contract |
 
 ## Tests
 

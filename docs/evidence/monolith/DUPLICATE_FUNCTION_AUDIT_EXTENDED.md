@@ -237,4 +237,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 | Deploy-Runner Duplikat-Cluster (Rescue Build, Evidence) | inventarisiert in `DEPLOY_RUNNER_INVENTORY.md` — **nicht** dedupliziert |
 | Runner-Ausführung / subprocess | unverändert — kein Refactoring in C.1 |
 
-**Nächster Schritt:** C.2 Result Contract; danach Facade statt paralleler Runner-Muster.
+**C.2 (erledigt):** `runner_result_contract.py` — einheitliches `RunnerResult`-Schema, Legacy-Normalizer.
+
+**Nächster Schritt:** C.3 API Facade; C.5 schrittweise Runner-Migration.

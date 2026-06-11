@@ -19,9 +19,13 @@
 
 See `docs/architecture/DEPLOY_RUNNER_REGISTRY_EN.md` — when uncertain, higher risk is chosen.
 
+## Result contract (C.2)
+
+`runner_result_contract.py` — see `DEPLOY_RUNNER_RESULT_CONTRACT_EN.md`
+
 ## Next step
 
-**C.2** Runner result contract
+**C.3** Runner API facade
 
 ## Files
 

@@ -127,12 +127,14 @@
 
 **B.1 (erledigt):** `partition_storage_facade.py`, `backup_target_auto_prepare.py`, `inspect/collector.py`
 
-**Phase C.1 (erledigt):** Deploy Runner Registry — `backend/deploy/runner_registry.py`, Evidence unter `docs/evidence/deploy-runner/`. 115 Runner **noch nicht** refaktoriert.
+**Phase C.1 (erledigt):** Deploy Runner Registry — `runner_registry.py`  
+**Phase C.2 (erledigt):** Result Contract — `runner_result_contract.py`  
+115 Runner **noch nicht** migriert oder ausgeführt.
 
 **Nächste Kandidaten:**
 
-1. **C.2** Runner Result Contract
-2. **C.3** Runner API Facade
-3. **C.4** Runner Risk Gate
+1. **C.3** Deploy Runner API Facade
+2. **C.4** Runner Risk Gate
+3. **C.5** Schrittweise Runner-Migration
 4. B.2: `app.py` Storage-Hilfen, `inspect_storage.py`
 5. Router-Extraktion `app.py`

@@ -152,7 +152,10 @@ from pathlib import Path
 root = Path(sys.argv[1])
 deploy = root / "backend" / "deploy"
 registry_mod = deploy / "runner_registry.py"
-runners = sorted(p for p in deploy.glob("runner_*.py") if p.name != "runner_registry.py")
+runners = sorted(
+    p for p in deploy.glob("runner_*.py")
+    if p.name not in {"runner_registry.py", "runner_result_contract.py"}
+)
 if runners and not registry_mod.is_file():
     print("runner_registry_missing:backend/deploy/runner_registry.py")
     raise SystemExit
@@ -168,6 +171,47 @@ for p in runners:
         print(f"runner_registry_missing:{p.relative_to(root).as_posix()}")
 for w in registry_policy_warnings(entries)[:20]:
     print(w)
+PY
+)
+
+# Phase C.2: runner result contract warnings (warn-only)
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  warnings+=("${line}")
+done < <(python3 - "${ROOT}" <<'PY'
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+deploy = root / "backend" / "deploy"
+contract_mod = deploy / "runner_result_contract.py"
+registry_mod = deploy / "runner_registry.py"
+runners = sorted(
+    p for p in deploy.glob("runner_*.py")
+    if p.name not in {"runner_registry.py", "runner_result_contract.py"}
+)
+if registry_mod.is_file() and not contract_mod.is_file():
+    print("runner_result_contract_missing:backend/deploy/runner_result_contract.py")
+    raise SystemExit
+if not contract_mod.is_file():
+    raise SystemExit
+sys.path.insert(0, str(root / "backend"))
+from deploy.runner_result_contract import scan_runner_file_result_warnings
+
+seen: set[str] = set()
+for p in runners:
+    try:
+        text = p.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    for w in scan_runner_file_result_warnings(p, text):
+        if w not in seen:
+            seen.add(w)
+            print(w)
+        if len(seen) >= 40:
+            break
+    if len(seen) >= 40:
+        break
 PY
 )
 

@@ -123,7 +123,9 @@ Nächste Kandidaten: `app.py`, `inspect_storage.py`.
 
 Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
-**Nächster Schritt:** C.2 Result Contract → C.3 Runner API Facade → C.4 Risk Gate
+**C.2 (erledigt):** Result Contract — `runner_result_contract.py`, keine `routes.py`-Entkopplung yet.
+
+**Nächster Schritt:** C.3 Runner API Facade → C.4 Risk Gate → C.5 Migration
 
 ---
 

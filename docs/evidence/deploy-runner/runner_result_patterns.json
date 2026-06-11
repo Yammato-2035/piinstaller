@@ -1,0 +1,1528 @@
+[
+  {
+    "path": "backend/deploy/runner_device_reenumeration_test_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_failure_injection_hardware_test_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_handoff.py",
+    "status_tokens": [
+      "created",
+      "failed"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": false,
+    "has_status": false,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_hotplug_race_test_plan.py",
+    "status_tokens": [
+      "blocked",
+      "failed",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_install_consistency.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": false,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_install_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": false,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_install_validator.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": false,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_lab_acceptance_aggregator.py",
+    "status_tokens": [
+      "blocked",
+      "failed",
+      "ok",
+      "partial"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_lab_acceptance_report_export.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_lab_phase_consolidation.py",
+    "status_tokens": [
+      "blocked",
+      "implemented",
+      "ok",
+      "planned_only",
+      "review_required",
+      "tested"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_lab_readiness_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_lab_readiness_status.py",
+    "status_tokens": [
+      "not_started",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_laptop_failure_test_execution_readiness_final_gate.py",
+    "status_tokens": [
+      "blocked",
+      "error",
+      "ok",
+      "partial",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_laptop_live_probe_execution_handoff.py",
+    "status_tokens": [
+      "blocked",
+      "error",
+      "ok",
+      "review_required",
+      "skipped"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_legacy_identifier_cleanup_classifier.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_legacy_identifier_hotspot_analysis.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_legacy_identifier_inventory.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_legacy_runtime_compatibility_validation.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_lifecycle.py",
+    "status_tokens": [
+      "created",
+      "failed",
+      "ready"
+    ],
+    "has_errors": false,
+    "has_warnings": false,
+    "has_evidence": false,
+    "has_status": false,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_evidence_final_snapshot.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_evidence_timeline.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_execution_preview.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_injection_matrix.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_operator_checklists.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_readiness_gate.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_result_evaluation.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_test_result_capture.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_test_sessions.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_final_acceptance_gate.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_final_export_package.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_evidence_timeline.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_execution_log_template.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_execution_log_validator.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_final_acceptance_gate.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_final_export_package.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_final_report.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_final_snapshot.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_finalized_export_package.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_operator_runorder.py",
+    "status_tokens": [
+      "blocked",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_run_selector.py",
+    "status_tokens": [
+      "blocked",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_test_summary.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_precheck.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_result_bundle_checker.py",
+    "status_tokens": [
+      "blocked",
+      "failed",
+      "ok",
+      "review_required",
+      "skipped"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_result_edit_checker.py",
+    "status_tokens": [
+      "blocked",
+      "failed",
+      "ok",
+      "review_required",
+      "skipped"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_result_template.py",
+    "status_tokens": [
+      "blocked",
+      "created",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_result_validator_dryrun_from_handoff.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_result_validator_handoff_gate.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_validator_report_seal.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_validator_seal_consistency_audit.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_validator_seal_index.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_next_phase_gate.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": false,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_package_blueprint.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": false,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_permission_boundary.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": false,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_privileged_validation_test_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_real_write_hardware_e2e_test_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_release_readiness.py",
+    "status_tokens": [
+      "blocked",
+      "implemented",
+      "partial",
+      "ready",
+      "review_required",
+      "tested"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_backup_discovery_verify.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "pending",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_build_environment_emulation.py",
+    "status_tokens": [
+      "blocked",
+      "created",
+      "ok",
+      "ready",
+      "review_required",
+      "skipped"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_build_readiness_gate.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_build_sandbox_preparation.py",
+    "status_tokens": [
+      "blocked",
+      "created",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_debian_live_build_inputs.py",
+    "status_tokens": [
+      "blocked",
+      "created",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_debian_live_build_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_dry_build_orchestration.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_efi_boot_analyzer.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_final_recovery_readiness_gate.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_hardware_recovery_test_chain.py",
+    "status_tokens": [
+      "blocked",
+      "error",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_io.py",
+    "status_tokens": [],
+    "has_errors": false,
+    "has_warnings": false,
+    "has_evidence": true,
+    "has_status": false,
+    "returns_dict_like": false
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_artifact_preparation.py",
+    "status_tokens": [
+      "blocked",
+      "created",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_build_execution.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_build_execution_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_live_runtime_probe.py",
+    "status_tokens": [
+      "blocked",
+      "error",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_readiness_gate.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_readiness_pipeline.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_test_matrix.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_live_build_config_generator.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_live_hardware_matrix.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required",
+      "tested"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_live_os_base_decision.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_live_runtime_safety_gate.py",
+    "status_tokens": [
+      "blocked",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_manual_recovery_operator_guides.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_mvp_scope_gate.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_persistent_evidence_export.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_pseudo_boot_integration.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_readonly_mount_orchestrator.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_recovery_evidence_timeline.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_recovery_scenario_matrix.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_recovery_target_validation.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_remote_help_preparation.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_restore_preview_orchestrator.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_runtime_assembly_pipeline.py",
+    "status_tokens": [
+      "blocked",
+      "created",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_runtime_bundle_manifest.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_sandbox_controlled_copy.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "ready",
+      "review_required",
+      "skipped"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_stick_component_inventory.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "partial",
+      "pending"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_stick_readonly_build_emulation.py",
+    "status_tokens": [
+      "blocked",
+      "created",
+      "ok",
+      "ready",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_storage_discovery.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rescue_vm_test_orchestrator.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_rollback_runtime_test_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_runtime_identifier_patch_bump_apply.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_runtime_identifier_patch_bump_preparation.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_runtime_identifier_zero_state_verification.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_runtime_result_validator.py",
+    "status_tokens": [
+      "blocked",
+      "failed",
+      "ok",
+      "review_required",
+      "skipped"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_runtime_runbook_bundle.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_runtime_runbook_export.py",
+    "status_tokens": [
+      "blocked",
+      "failed",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_sandbox.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": false,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_branding_guard.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_controlled_rewrite_apply.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_identifier_cleanup_cycle.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_identifier_consistency_check.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_identifier_hotspot_cleanup_cycle.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_runtime_identifier_elimination.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_runtime_identifier_migration.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_safe_rewrite_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_sudoers_runtime_test_plan.py",
+    "status_tokens": [
+      "blocked",
+      "ok",
+      "review_required"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_version_consistency_check.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_version_governance.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  },
+  {
+    "path": "backend/deploy/runner_version_source_of_truth_check.py",
+    "status_tokens": [
+      "blocked",
+      "ok"
+    ],
+    "has_errors": true,
+    "has_warnings": true,
+    "has_evidence": true,
+    "has_status": true,
+    "returns_dict_like": true
+  }
+]

@@ -297,7 +297,7 @@ def classify_runner_file(
     )
 
 
-_REGISTRY_MODULE_NAME = "runner_registry.py"
+_REGISTRY_MODULE_NAMES = frozenset({"runner_registry.py", "runner_result_contract.py"})
 
 
 def build_runner_registry_from_files(root: str | Path = "backend/deploy") -> list[RunnerRegistryEntry]:
@@ -306,7 +306,7 @@ def build_runner_registry_from_files(root: str | Path = "backend/deploy") -> lis
     repo_root = _repo_root_from_deploy(deploy_root.resolve())
     entries: list[RunnerRegistryEntry] = []
     for p in sorted(deploy_root.glob("runner_*.py")):
-        if not p.is_file() or p.name == _REGISTRY_MODULE_NAME:
+        if not p.is_file() or p.name in _REGISTRY_MODULE_NAMES:
             continue
         entries.append(classify_runner_file(p, repo_root=repo_root))
     return entries
@@ -385,3 +385,17 @@ def registry_policy_warnings(entries: list[RunnerRegistryEntry]) -> list[str]:
         if e.risk_level == RunnerRiskLevel.DESTRUCTIVE and e.execution_policy != RunnerExecutionPolicy.NEVER_AUTO:
             warns.append(f"runner_destructive_without_never_auto:{e.runner_id}")
     return warns
+
+
+def build_empty_result_for_registry_entry(entry: RunnerRegistryEntry) -> Any:
+    """Plan-only empty result for a registry entry (delegates to result contract)."""
+    from deploy.runner_result_contract import build_empty_result_for_registry_entry as _build
+
+    return _build(entry)
+
+
+def validate_registry_result_contract(entry: RunnerRegistryEntry, result: Any) -> Any:
+    """Validate a result dict or RunnerResult against registry + contract."""
+    from deploy.runner_result_contract import validate_registry_result_contract as _validate
+
+    return _validate(entry, result)

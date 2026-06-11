@@ -77,16 +77,24 @@ Destructive Runner erhalten `never_auto`. Sudo ohne Operator-Policy und device_w
 - `runner_device_write_without_manual_policy`
 - `runner_sudo_without_operator_policy`
 - `runner_destructive_without_never_auto`
+- **C.2:** `runner_result_unknown_status_token`, `runner_result_no_errors_for_failed_like`, `runner_result_no_evidence_reference`
 
 Exit **0** mit `status: review_required` — noch keine CI-Blockierung.
+
+## Result Contract (C.2, erledigt)
+
+- Modul: `backend/deploy/runner_result_contract.py`
+- `build_empty_result_for_registry_entry(entry)` — Plan-Template pro Runner
+- `validate_registry_result_contract(entry, result)`
+- Details: `docs/architecture/DEPLOY_RUNNER_RESULT_CONTRACT.md`
 
 ## Nächste Phasen
 
 | Phase | Inhalt |
 |-------|--------|
-| **C.2** | Runner Result Contract — einheitliches Ergebnisschema |
 | **C.3** | Runner API Facade — zentraler Entry statt 115 Imports |
 | **C.4** | Runner Risk Gate — Laufzeit-Policy durchsetzen |
+| **C.5** | Schrittweise Runner-Migration auf Contract |
 
 ## Tests
 

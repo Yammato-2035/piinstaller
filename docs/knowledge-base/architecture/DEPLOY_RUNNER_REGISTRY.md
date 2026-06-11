@@ -19,9 +19,13 @@
 
 Siehe `docs/architecture/DEPLOY_RUNNER_REGISTRY.md` — bei Unsicherheit höheres Risiko.
 
+## Result Contract (C.2)
+
+`runner_result_contract.py` — siehe `DEPLOY_RUNNER_RESULT_CONTRACT.md`
+
 ## Nächster Schritt
 
-**C.2** Runner Result Contract
+**C.3** Runner API Facade
 
 ## Dateien
 

@@ -1,0 +1,329 @@
+{
+  "contract_version": 1,
+  "total_runners": 115,
+  "empty_results_buildable": 115,
+  "validation_failures": 0,
+  "registry_policy_warning_count": 4,
+  "policy_warnings": [
+    "runner_sudo_without_operator_policy:runner_laptop_failure_test_execution_readiness_final_gate",
+    "runner_sudo_without_operator_policy:runner_laptop_live_probe_execution_handoff",
+    "runner_sudo_without_operator_policy:runner_manual_runtime_result_template",
+    "runner_sudo_without_operator_policy:runner_runtime_runbook_export"
+  ],
+  "examples_by_risk": {
+    "local_runtime_change": {
+      "runner_id": "runner_device_reenumeration_test_plan",
+      "status": "skipped",
+      "kind": "unknown",
+      "validation_valid": true,
+      "result": {
+        "runner_id": "runner_device_reenumeration_test_plan",
+        "status": "skipped",
+        "kind": "unknown",
+        "created_at": "2026-06-11T15:43:42Z",
+        "summary": "Plan-only template for runner_device_reenumeration_test_plan; no execution performed (C.2).",
+        "warnings": [
+          {
+            "code": "NO_EXECUTION",
+            "message": "Empty registry template — runner not invoked.",
+            "severity": "info"
+          }
+        ],
+        "errors": [],
+        "evidence_paths": [],
+        "risk_level": "local_runtime_change",
+        "execution_policy": "never_auto",
+        "requires_operator": false,
+        "no_execution_performed": true,
+        "metadata": {
+          "registry_category": "unknown",
+          "registry_path": "/home/volker/piinstaller/backend/deploy/runner_device_reenumeration_test_plan.py"
+        },
+        "contract_version": 1
+      }
+    },
+    "evidence_write": {
+      "runner_id": "runner_handoff",
+      "status": "skipped",
+      "kind": "unknown",
+      "validation_valid": true,
+      "result": {
+        "runner_id": "runner_handoff",
+        "status": "skipped",
+        "kind": "unknown",
+        "created_at": "2026-06-11T15:43:42Z",
+        "summary": "Plan-only template for runner_handoff; no execution performed (C.2).",
+        "warnings": [
+          {
+            "code": "NO_EXECUTION",
+            "message": "Empty registry template — runner not invoked.",
+            "severity": "info"
+          }
+        ],
+        "errors": [],
+        "evidence_paths": [],
+        "risk_level": "evidence_write",
+        "execution_policy": "lab_only",
+        "requires_operator": false,
+        "no_execution_performed": true,
+        "metadata": {
+          "registry_category": "unknown",
+          "registry_path": "/home/volker/piinstaller/backend/deploy/runner_handoff.py"
+        },
+        "contract_version": 1
+      }
+    },
+    "template_write": {
+      "runner_id": "runner_manual_runtime_final_export_package",
+      "status": "skipped",
+      "kind": "template_generation",
+      "validation_valid": true,
+      "result": {
+        "runner_id": "runner_manual_runtime_final_export_package",
+        "status": "skipped",
+        "kind": "template_generation",
+        "created_at": "2026-06-11T15:43:42Z",
+        "summary": "Plan-only template for runner_manual_runtime_final_export_package; no execution performed (C.2).",
+        "warnings": [
+          {
+            "code": "NO_EXECUTION",
+            "message": "Empty registry template — runner not invoked.",
+            "severity": "info"
+          }
+        ],
+        "errors": [],
+        "evidence_paths": [],
+        "risk_level": "template_write",
+        "execution_policy": "never_auto",
+        "requires_operator": true,
+        "no_execution_performed": true,
+        "metadata": {
+          "registry_category": "packaging",
+          "registry_path": "/home/volker/piinstaller/backend/deploy/runner_manual_runtime_final_export_package.py"
+        },
+        "contract_version": 1
+      }
+    },
+    "system_change": {
+      "runner_id": "runner_manual_runtime_result_edit_checker",
+      "status": "skipped",
+      "kind": "readiness_gate",
+      "validation_valid": true,
+      "result": {
+        "runner_id": "runner_manual_runtime_result_edit_checker",
+        "status": "skipped",
+        "kind": "readiness_gate",
+        "created_at": "2026-06-11T15:43:42Z",
+        "summary": "Plan-only template for runner_manual_runtime_result_edit_checker; no execution performed (C.2).",
+        "warnings": [
+          {
+            "code": "NO_EXECUTION",
+            "message": "Empty registry template — runner not invoked.",
+            "severity": "info"
+          }
+        ],
+        "errors": [],
+        "evidence_paths": [],
+        "risk_level": "system_change",
+        "execution_policy": "manual_only",
+        "requires_operator": true,
+        "no_execution_performed": true,
+        "metadata": {
+          "registry_category": "runtime",
+          "registry_path": "/home/volker/piinstaller/backend/deploy/runner_manual_runtime_result_edit_checker.py"
+        },
+        "contract_version": 1
+      }
+    },
+    "read_only": {
+      "runner_id": "runner_next_phase_gate",
+      "status": "skipped",
+      "kind": "readiness_gate",
+      "validation_valid": true,
+      "result": {
+        "runner_id": "runner_next_phase_gate",
+        "status": "skipped",
+        "kind": "readiness_gate",
+        "created_at": "2026-06-11T15:43:42Z",
+        "summary": "Plan-only template for runner_next_phase_gate; no execution performed (C.2).",
+        "warnings": [
+          {
+            "code": "NO_EXECUTION",
+            "message": "Empty registry template — runner not invoked.",
+            "severity": "info"
+          }
+        ],
+        "errors": [],
+        "evidence_paths": [],
+        "risk_level": "read_only",
+        "execution_policy": "never_auto",
+        "requires_operator": false,
+        "no_execution_performed": true,
+        "metadata": {
+          "registry_category": "runtime",
+          "registry_path": "/home/volker/piinstaller/backend/deploy/runner_next_phase_gate.py"
+        },
+        "contract_version": 1
+      }
+    },
+    "destructive": {
+      "runner_id": "runner_rescue_build_readiness_gate",
+      "status": "skipped",
+      "kind": "readiness_gate",
+      "validation_valid": true,
+      "result": {
+        "runner_id": "runner_rescue_build_readiness_gate",
+        "status": "skipped",
+        "kind": "readiness_gate",
+        "created_at": "2026-06-11T15:43:42Z",
+        "summary": "Plan-only template for runner_rescue_build_readiness_gate; no execution performed (C.2).",
+        "warnings": [
+          {
+            "code": "NO_EXECUTION",
+            "message": "Empty registry template — runner not invoked.",
+            "severity": "info"
+          }
+        ],
+        "errors": [],
+        "evidence_paths": [],
+        "risk_level": "destructive",
+        "execution_policy": "never_auto",
+        "requires_operator": true,
+        "no_execution_performed": true,
+        "metadata": {
+          "registry_category": "runtime",
+          "registry_path": "/home/volker/piinstaller/backend/deploy/runner_rescue_build_readiness_gate.py"
+        },
+        "contract_version": 1
+      }
+    }
+  },
+  "empty_result_samples": [
+    {
+      "runner_id": "runner_device_reenumeration_test_plan",
+      "status": "skipped",
+      "kind": "unknown",
+      "created_at": "2026-06-11T15:43:42Z",
+      "summary": "Plan-only template for runner_device_reenumeration_test_plan; no execution performed (C.2).",
+      "warnings": [
+        {
+          "code": "NO_EXECUTION",
+          "message": "Empty registry template — runner not invoked.",
+          "severity": "info"
+        }
+      ],
+      "errors": [],
+      "evidence_paths": [],
+      "risk_level": "local_runtime_change",
+      "execution_policy": "never_auto",
+      "requires_operator": false,
+      "no_execution_performed": true,
+      "metadata": {
+        "registry_category": "unknown",
+        "registry_path": "/home/volker/piinstaller/backend/deploy/runner_device_reenumeration_test_plan.py"
+      },
+      "contract_version": 1
+    },
+    {
+      "runner_id": "runner_failure_injection_hardware_test_plan",
+      "status": "skipped",
+      "kind": "unknown",
+      "created_at": "2026-06-11T15:43:42Z",
+      "summary": "Plan-only template for runner_failure_injection_hardware_test_plan; no execution performed (C.2).",
+      "warnings": [
+        {
+          "code": "NO_EXECUTION",
+          "message": "Empty registry template — runner not invoked.",
+          "severity": "info"
+        }
+      ],
+      "errors": [],
+      "evidence_paths": [],
+      "risk_level": "local_runtime_change",
+      "execution_policy": "never_auto",
+      "requires_operator": false,
+      "no_execution_performed": true,
+      "metadata": {
+        "registry_category": "unknown",
+        "registry_path": "/home/volker/piinstaller/backend/deploy/runner_failure_injection_hardware_test_plan.py"
+      },
+      "contract_version": 1
+    },
+    {
+      "runner_id": "runner_handoff",
+      "status": "skipped",
+      "kind": "unknown",
+      "created_at": "2026-06-11T15:43:42Z",
+      "summary": "Plan-only template for runner_handoff; no execution performed (C.2).",
+      "warnings": [
+        {
+          "code": "NO_EXECUTION",
+          "message": "Empty registry template — runner not invoked.",
+          "severity": "info"
+        }
+      ],
+      "errors": [],
+      "evidence_paths": [],
+      "risk_level": "evidence_write",
+      "execution_policy": "lab_only",
+      "requires_operator": false,
+      "no_execution_performed": true,
+      "metadata": {
+        "registry_category": "unknown",
+        "registry_path": "/home/volker/piinstaller/backend/deploy/runner_handoff.py"
+      },
+      "contract_version": 1
+    },
+    {
+      "runner_id": "runner_hotplug_race_test_plan",
+      "status": "skipped",
+      "kind": "unknown",
+      "created_at": "2026-06-11T15:43:42Z",
+      "summary": "Plan-only template for runner_hotplug_race_test_plan; no execution performed (C.2).",
+      "warnings": [
+        {
+          "code": "NO_EXECUTION",
+          "message": "Empty registry template — runner not invoked.",
+          "severity": "info"
+        }
+      ],
+      "errors": [],
+      "evidence_paths": [],
+      "risk_level": "local_runtime_change",
+      "execution_policy": "never_auto",
+      "requires_operator": false,
+      "no_execution_performed": true,
+      "metadata": {
+        "registry_category": "unknown",
+        "registry_path": "/home/volker/piinstaller/backend/deploy/runner_hotplug_race_test_plan.py"
+      },
+      "contract_version": 1
+    },
+    {
+      "runner_id": "runner_install_consistency",
+      "status": "skipped",
+      "kind": "runtime_operation",
+      "created_at": "2026-06-11T15:43:42Z",
+      "summary": "Plan-only template for runner_install_consistency; no execution performed (C.2).",
+      "warnings": [
+        {
+          "code": "NO_EXECUTION",
+          "message": "Empty registry template — runner not invoked.",
+          "severity": "info"
+        }
+      ],
+      "errors": [],
+      "evidence_paths": [],
+      "risk_level": "local_runtime_change",
+      "execution_policy": "operator_confirmed",
+      "requires_operator": true,
+      "no_execution_performed": true,
+      "metadata": {
+        "registry_category": "deploy",
+        "registry_path": "/home/volker/piinstaller/backend/deploy/runner_install_consistency.py"
+      },
+      "contract_version": 1
+    }
+  ],
+  "no_execution_performed": true
+}
