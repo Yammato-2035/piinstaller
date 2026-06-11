@@ -87,6 +87,11 @@ SAFETY_ALLOW = {
     "backend/safety/write_guard.py",
     "backend/modules/storage_detection.py",
 }
+MIGRATED_SAFETY_CALLERS = {
+    "backend/preflight/backup.py",
+    "backend/modules/backup_engine.py",
+    "backend/modules/restore_engine.py",
+}
 
 patterns = [
     (re.compile(r"subprocess\.(run|Popen)\([^)]*\blsblk\b", re.S), "facade_boundary_lsblk", LSBLK_ALLOW),
@@ -109,7 +114,13 @@ for path in sorted(backend.rglob("*.py")):
         if rel in allow:
             continue
         if rx.search(text):
-            warns.append(f"{label}:{rel}")
+            if rel in MIGRATED_SAFETY_CALLERS and label in {
+                "facade_boundary_safe_device",
+                "facade_boundary_write_guard",
+            }:
+                warns.append(f"facade_boundary_migrated_caller_blocked:{rel}")
+            else:
+                warns.append(f"{label}:{rel}")
 
 for w in warns[:40]:
     print(w)

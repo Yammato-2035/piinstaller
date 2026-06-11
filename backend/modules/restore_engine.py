@@ -18,7 +18,7 @@ from core.backup_recovery_i18n import (
     K_RESTORE_IMAGE_FAILED,
     K_RESTORE_PT_FAILED,
 )
-from core.safe_device import WriteTargetProtectionError, validate_write_target
+from core.safety_facade import WriteTargetProtectionError, validate_write_target
 from modules.backup_symlink_safety import tar_symlink_linkname_allowed
 
 

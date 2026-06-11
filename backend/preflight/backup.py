@@ -8,7 +8,7 @@ from typing import Any
 
 from modules.backup_engine import create_file_backup
 from modules.backup_verify import verify_basic
-from safety.write_guard import evaluate_write_target
+from core.safety_facade import evaluate_preflight_write_target as evaluate_write_target
 
 # In-Memory-Planstore (pro Prozess); keine globale Dauerfreigabe
 _PLAN_STORE: dict[str, dict[str, Any]] = {}

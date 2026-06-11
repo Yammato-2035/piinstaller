@@ -9,9 +9,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from pathlib import Path
+from typing import Any, Callable
 
-from safety.write_guard import evaluate_write_target
+from core.safe_device import WriteTargetProtectionError, validate_write_target as _validate_write_target_legacy
+from safety.write_guard import evaluate_write_target as _evaluate_write_target_legacy
+
+Runner = Callable[..., Any] | None
 
 FACADE_CONTRACT_VERSION = 1
 
@@ -39,11 +43,29 @@ class SafetyDecision:
     facade_version: int = FACADE_CONTRACT_VERSION
 
 
-def validate_backup_target_for_write(path: str, context: str = "live") -> dict[str, Any]:
+def evaluate_preflight_write_target(device: str, inspect_result: dict[str, Any]) -> dict[str, Any]:
+    """Preflight: inspect-basierte Zielbewertung (delegiert write_guard, keine Shell)."""
+    return _evaluate_write_target_legacy(device, inspect_result)
+
+
+def validate_preflight_backup_target(target_device: str, inspect_result: dict[str, Any]) -> dict[str, Any]:
+    """Preflight-Backup-Ziel: gleiche Semantik wie ``evaluate_preflight_write_target``."""
+    return evaluate_preflight_write_target(target_device, inspect_result)
+
+
+def validate_backup_target_for_write(
+    path: str,
+    context: str = "live",
+    *,
+    inspect_result: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Bewertet ein Zielgerät für Backup-Schreiben via bestehendem Write-Guard."""
-    inspect_result = {"storage": {"devices_classified": [], "devices_raw": [], "mountability": []}, "filesystems": {"detected": {}}}
     device = path if path.startswith("/dev/") else f"/dev/{path}"
-    decision = evaluate_write_target(device, inspect_result)
+    ir = inspect_result if isinstance(inspect_result, dict) else {
+        "storage": {"devices_classified": [], "devices_raw": [], "mountability": []},
+        "filesystems": {"detected": {}},
+    }
+    decision = dict(_evaluate_write_target_legacy(device, ir))
     decision["context"] = context
     return decision
 
@@ -52,6 +74,61 @@ def validate_restore_target(path: str, context: str = "rescue") -> dict[str, Any
     decision = validate_backup_target_for_write(path, context=context)
     decision["restore_allowed"] = bool(decision.get("allowed"))
     return decision
+
+
+def validate_restore_target_for_write(
+    target: str | Path,
+    *,
+    runner: Runner = None,
+    context: str | SafetyContext = SafetyContext.RESCUE,
+) -> None:
+    """
+    Restore-Engine Hard-Stop (delegiert safe_device). Wirft ``WriteTargetProtectionError``.
+    """
+    ctx = context.value if isinstance(context, SafetyContext) else str(context)
+    validate_write_target(target, runner=runner, context=ctx)
+
+
+def validate_write_target(
+    target: str | Path,
+    *,
+    runner: Runner = None,
+    context: str | SafetyContext | None = None,
+) -> None:
+    """
+    Engine Hard-Stop vor Schreibzugriff (delegiert safe_device). Wirft ``WriteTargetProtectionError``.
+    """
+    _validate_write_target_legacy(target, runner=runner)
+
+
+def normalize_legacy_safety_result(
+    raw: dict[str, Any],
+    *,
+    context: SafetyContext,
+    target: str,
+) -> SafetyDecision:
+    """Mappt write_guard/safe_device-Dict auf ``SafetyDecision`` ohne Semantikänderung."""
+    reason = str(raw.get("reason_code") or "SAFETY_UNKNOWN_DEVICE")
+    allowed = bool(raw.get("allowed"))
+    return SafetyDecision(
+        context=context,
+        target=target,
+        allowed=allowed,
+        reason_code=reason,
+        risk_level=str(raw.get("risk_level") or ("low" if allowed else "high")),
+        requires_confirmation=bool(raw.get("requires_confirmation")),
+        requires_override=bool(raw.get("requires_override")),
+    )
+
+
+def build_safety_decision_from_legacy_result(
+    raw: dict[str, Any],
+    *,
+    context: SafetyContext,
+    target: str,
+) -> SafetyDecision:
+    """Alias für ``normalize_legacy_safety_result`` (Caller-Migration A.2–A.4)."""
+    return normalize_legacy_safety_result(raw, context=context, target=target)
 
 
 def validate_no_system_disk_write(path: str) -> dict[str, Any]:

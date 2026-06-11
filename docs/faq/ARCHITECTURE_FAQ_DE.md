@@ -1,6 +1,6 @@
 # Architektur-FAQ — Core Facades (DE)
 
-Kurzantworten zu Storage/Mount/Safety-Facades (Phase A.1). Keine Produktwerbung.
+Kurzantworten zu Storage/Mount/Safety-Facades (Phase A.1 + Caller-Migration A.2–A.4). Keine Produktwerbung.
 
 ## Was sind Core Facades?
 
@@ -35,11 +35,32 @@ Nein. `build_readonly_mount_plan` und Validatoren sind **plan-only** / Analyse.
 
 Aktuell **nur Warnungen** in `check-module-boundaries.sh`. CI-Block ist für eine spätere Phase vorgesehen.
 
+## Was wurde in A.2–A.4 migriert?
+
+`preflight/backup.py`, `backup_engine.py` und `restore_engine.py` importieren Safety nur noch über `core.safety_facade`. Fehlercodes und Verhalten sind unverändert (Delegation).
+
+## Warum wird `app.py` nicht sofort zerlegt?
+
+~18k Zeilen, ~213 Routen — Router-Extraktion erfordert eigene Phase B mit OpenAPI-Parität. Safety-Migration der Engines war isolierbar und risikoarm.
+
+## Warum bleibt der Boundary Guard teilweise warn-only?
+
+`app.py`, Deploy-Runner und Storage-Legacy sind noch nicht migriert. Verschärfte Prüfung gilt bereits für die drei migrierten Safety-Caller.
+
+## Ändert sich das Backup- oder Restore-Verhalten?
+
+**Nein** — gleiche `safe_device`/`write_guard`-Logik, nur zentraler Importpfad. Keine neuen Zielpfade, keine abgeschwächten Gates.
+
+## Warum ist das sicherer?
+
+Weniger verstreute Imports → weniger Risiko, dass neue Module eigene Safety-Logik bauen. Boundary Guard erkennt Rückfälle in migrierten Dateien.
+
 ## Nächster Schritt?
 
-Phase A.2: Caller-Migration (z. B. `preflight/backup.py`) — ein Modul pro PR.
+Phase B.1: Storage-Caller (`backup_target_auto_prepare`, `inspect/collector`, `partition_storage_facade`).
 
 ## Weiterlesen
 
 - `docs/knowledge-base/architecture/CORE_FACADES.md`
 - `docs/architecture/STORAGE_DISCOVERY_INVENTORY.md`
+- `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4.md`

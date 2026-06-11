@@ -1,6 +1,6 @@
 # Core Facades — Storage, Mount, Safety (Phase A.1)
 
-**Status:** Facade Freeze A.1  
+**Status:** Facade Freeze A.1 + caller migration A.2–A.4 (safety)  
 **Contract version:** `FACADE_CONTRACT_VERSION = 1`
 
 ## Purpose
@@ -15,7 +15,7 @@ Phase A.1 defines **public contracts** and thin delegation only. Legacy code (`a
 |--------|--------|----------|
 | Storage | `backend/core/storage_facade.py` | `get_block_devices()`, `get_mounts()`, `classify_storage_target()`, `is_external_target()` |
 | Mount | `backend/core/mount_facade.py` | `build_readonly_mount_plan()`, `validate_mount_readonly()`, `validate_source_not_target()`, `validate_not_live_root()` |
-| Safety | `backend/core/safety_facade.py` | `validate_backup_target()`, `validate_restore_target()`, `validate_partition_target()`, `build_safety_decision()` |
+| Safety | `backend/core/safety_facade.py` | `validate_write_target()`, `evaluate_preflight_write_target()`, `validate_backup_target()`, `build_safety_decision()` |
 
 Types: `BlockDeviceInfo`, `MountInfo`, `StorageTargetClassification`, `ReadonlyMountPlan`, `SafetyContext`, `SafetyDecision`.
 
@@ -37,6 +37,11 @@ Types: `BlockDeviceInfo`, `MountInfo`, `StorageTargetClassification`, `ReadonlyM
 - Future facades: `docs/architecture/FUTURE_FACADE_CANDIDATES.md`
 - Tests: `backend/tests/test_*_facade_contracts_v1.py`
 
-## Next migration (A.2)
+## Caller migration (A.2–A.4, done)
 
-Migrate callers incrementally, starting with `preflight/backup.py`, then `backup_engine` / `restore_engine`. One module per PR.
+- `preflight/backup.py`, `backup_engine.py`, `restore_engine.py` → `safety_facade`
+- Details: `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4_EN.md`
+
+## Next migration (B.1)
+
+Storage: `backup_target_auto_prepare.py`, `inspect/collector.py`, `partition_storage_facade.py`.

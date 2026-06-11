@@ -1,0 +1,112 @@
+# Module Coupling Analysis (Extended)
+
+**Datum:** 2026-06-10  
+**HEAD:** `9005c54`
+
+## Fan-In (wer wird am häufigsten referenziert)
+
+| Modul | Fan-In (grep-approx) | Rolle |
+|-------|----------------------|-------|
+| `app.py` / `app` | **470** | Zentraler Hub — alle Domänen |
+| `dev_dashboard` | 32 | DCC-Cluster |
+| `safe_device` | 17 | Storage Safety |
+| `deploy_manifest` | 14 | Deploy Drift |
+| `notification_service` | 11 | Notifications |
+| `backup_engine` | 8 | Backup |
+| `profile_deploy_manifest` | 8 | Profile Gate |
+| `partition_hardstop` | 6 | Partitions Safety |
+| `storage_role_classification` | 3 | Partitions (gut isoliert) |
+
+## Fan-Out (wer importiert am meisten)
+
+| Modul | Imports (ca.) | Bewertung |
+|-------|---------------|-----------|
+| `backend/app.py` | **50+** direkte Imports | CRITICAL — God Object |
+| `backend/deploy/routes.py` | 40+ Runner-Imports | CRITICAL |
+| `frontend/src/pages/BackupRestore.tsx` | 30+ | HIGH |
+| `frontend/src/App.tsx` | 25+ Page-Imports | HIGH (Router-Monolith) |
+
+## Zyklische Abhängigkeiten (beobachtet)
+
+| Zyklus | Beschreibung | Risiko |
+|--------|--------------|--------|
+| `app.py` ↔ `modules/*` | App ruft Module, Module erwarten App-Kontext | HIGH |
+| `dev_dashboard.py` ↔ `deploy_manifest.py` | Status braucht Deploy, Deploy-Runner brauchen DCC-Status | MEDIUM |
+| `core/rescue_*` ↔ `deploy/runner_rescue_*` | Rescue-Core und Deploy-Runner teilen State-Dateien | HIGH |
+| Frontend Pages ↔ `lib/devDashboard/*` ↔ `api.ts` | Bidirektionale Status-Transformation | MEDIUM |
+
+## Domain-Leaks (Cross-Domain-Imports)
+
+| Von | Nach | Leak |
+|-----|------|------|
+| `app.py` | `modules/backup`, `modules/storage_detection`, `core/rescue_*` | Backup + Rescue + Runtime in einer Datei |
+| `deploy/routes.py` | Rescue-Runner, Laptop-Gates, Identifier-Cleanup | Deploy-Orchestrator = Meta-Domäne |
+| `control_center.py` | Monitoring, NAS, Backup-Status | Companion aggregiert alles |
+| `BackupRestore.tsx` | Partition-Hints, Verify, Manifest-UI | Backup-Page kennt Storage |
+| `Dashboard.tsx` | Dev-Dashboard-Links, Backup, Security | Startseite = Router zu allem |
+
+## Direkte Systemzugriffe (Umgehung Core)
+
+| Muster | Vorkommen | Domäne |
+|--------|-----------|--------|
+| `subprocess.run` / `os.system` in `app.py` | Viele | Runtime |
+| `subprocess` in Deploy-Runnern | 115 Dateien | Deployment |
+| Direktes `open()` für Config in Pages | Frontend Settings | Runtime |
+| `pwd`, `psutil` in `app.py` | Systeminfo | Runtime |
+
+**Empfehlung:** `core/system_facade.py` für OS-Zugriffe (teilweise fehlt).
+
+## Kopplungs-Heatmap nach Domäne
+
+```
+                    app.py
+                      │
+    ┌─────────────────┼─────────────────┐
+    │                 │                 │
+ backup          rescue            deploy/routes
+    │                 │                 │
+modules/*      core/rescue_*     runner_* (115)
+    │                 │                 │
+safe_device    fat32_writer      manifest/drift
+```
+
+## Isolierte Module (gutes Vorbild)
+
+| Modul | Fan-In | Bewertung |
+|-------|--------|-----------|
+| `storage_role_classification.py` | 3 | Gut — klare API, Tests |
+| `backend/api/routes/partitions.py` | niedrig | Gut — extrahiert |
+| `partitionApi.ts` | niedrig | Gut — dünner Client |
+| `app_bootstrap/*` | niedrig | Gut — Migration begonnen |
+
+## Kopplungs-Risiko-Zusammenfassung
+
+| Risiko | Ursache |
+|--------|---------|
+| **CRITICAL** | `app.py` als einziger Integrationspunkt für 15+ Domänen |
+| **CRITICAL** | `deploy/routes.py` koppelt Deploy an Rescue, Verify, Governance |
+| **HIGH** | Frontend Pages importieren quer über Domänen-Grenzen |
+| **MEDIUM** | DCC-Status-Cluster ohne klare Facade |
+| **LOW** | Partitionshelfer nach Phase 3.0 Workbench entkoppelt |
+
+## Empfohlene Entkopplungs-Hebel
+
+1. **Router-Extraktion** aus `app.py` → `api/routes/{domain}.py` (Partitions-Vorbild)
+2. **Deploy-Runner-Registry** statt 115 direkter Imports in `routes.py`
+3. **Domain-Facades** in `core/{domain}_facade.py` — nur Facades von außen importierbar
+4. **Frontend Feature-Slices** — `features/backup/`, `features/rescue/` statt Page-Monolithen
+5. **Event-Bus light** für DCC-Status statt direkter Cross-Imports
+
+---
+
+## Update: Facade Caller Migration A.2–A.4 (2026-06-10)
+
+| Kante | Vorher | Nachher |
+|-------|--------|---------|
+| `preflight/backup` → `write_guard` | direkt | über `safety_facade` |
+| `backup_engine` → `safe_device` | direkt | über `safety_facade` |
+| `restore_engine` → `safe_device` | direkt | über `safety_facade` |
+
+`safe_device` Fan-In sinkt für Produkt-Engines; Implementierungskern bleibt in `safe_device.py` + `safety_facade.py`.
+
+Nächste Kandidaten: `partition_storage_facade`, `backup_target_auto_prepare`, `inspect/collector`, `app.py`.

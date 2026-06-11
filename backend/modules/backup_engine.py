@@ -32,7 +32,7 @@ from core.backup_recovery_i18n import (
     K_TAR_FAILED,
     tr,
 )
-from core.safe_device import WriteTargetProtectionError, validate_write_target
+from core.safety_facade import WriteTargetProtectionError, validate_write_target
 from modules.storage_detection import BackupTargetValidationError, validate_backup_target
 
 MANIFEST_NAME = "MANIFEST.json"

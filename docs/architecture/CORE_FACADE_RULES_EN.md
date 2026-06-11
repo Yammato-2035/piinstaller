@@ -1,6 +1,6 @@
 # Core Facade Rules (Phase A.1 — Freeze)
 
-**Status:** ACTIVE (warn phase) — no blocking, no migration in A.1.
+**Status:** ACTIVE — caller migration A.2–A.4 (safety) complete; boundary still warn-only globally.
 
 ## Goal
 
@@ -45,6 +45,18 @@ from core.safety_facade import validate_backup_target, SafetyContext
 | `backend/deploy/runner_*.py` | Test/runbook artifacts | Not product API path |
 | `backend/inspect/collector.py` | Inspect collector | Migrate with inspect refactor |
 
+## Migrated callers (A.2–A.4)
+
+These modules use **only** `core.safety_facade` (no direct `write_guard`/`safe_device` import):
+
+- `backend/preflight/backup.py`
+- `backend/modules/backup_engine.py`
+- `backend/modules/restore_engine.py`
+
+Direct legacy import again in these files → `facade_boundary_migrated_caller_blocked` in the boundary guard.
+
+Details: `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4_EN.md`
+
 ## Safety contexts
 
 `SafetyContext` in `safety_facade.py`:
@@ -70,6 +82,6 @@ Every `validate_*` / `build_safety_decision` call must set context explicitly.
 - No removal of legacy code
 - No moving logic into facades (contracts + thin delegation only)
 
-## Next step (after A.1)
+## Next step (after A.2–A.4)
 
-Phase A.2: caller migration starting with partitions API and `preflight/backup.py` — one module per PR with contract tests.
+Phase B.1 — storage caller migration: `backup_target_auto_prepare.py`, `inspect/collector.py`, `partition_storage_facade.py`.
