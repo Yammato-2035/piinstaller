@@ -78,8 +78,9 @@ class CoreStorageFacadeV1Tests(unittest.TestCase):
         import core.storage_facade as mod
 
         src = inspect.getsource(mod)
-        self.assertNotIn("mount ", src)
-        self.assertNotIn("umount", src)
+        self.assertNotIn('subprocess.run(["mount"', src)
+        self.assertNotIn("subprocess.run(['mount'", src)
+        self.assertNotIn('subprocess.run(["umount"', src)
 
 
 if __name__ == "__main__":

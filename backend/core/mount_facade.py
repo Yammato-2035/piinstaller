@@ -1,5 +1,8 @@
 """
 Core mount facade — read-only mount inventory and plans. No mount/umount execution.
+
+Phase A.1 (Facade Freeze): ``build_readonly_mount_plan`` and ``validate_*`` are the
+canonical public surface for mount planning and safety checks (plan-only).
 """
 
 from __future__ import annotations
@@ -7,11 +10,13 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+from dataclasses import dataclass, field
 from typing import Any, Callable
 
 Runner = Callable[..., subprocess.CompletedProcess[str]] | None
 
 _FACADE_VERSION = 1
+FACADE_CONTRACT_VERSION = 1
 _SOURCE_MODULES = ("core.mount_facade", "core.safe_device (resolve_mount_source_for_path)")
 
 _FORBIDDEN_HOST_MOUNTS = frozenset({"/", "/boot", "/efi"})
@@ -172,4 +177,87 @@ def validate_no_untracked_mount_change(
         "added_mount_keys": added,
         "removed_mount_keys": removed,
         "status": "blocked" if untracked else "ok",
+    }
+
+
+@dataclass(frozen=True)
+class ReadonlyMountPlan:
+    """Public contract: plan-only readonly mount operations (no execution)."""
+
+    mount_root_prefix: str
+    planned_operations: tuple[dict[str, Any], ...] = field(default_factory=tuple)
+    schema_version: int = 1
+    strict_mode: str = "rescue_readonly_mount_plan_only"
+    facade_version: int = FACADE_CONTRACT_VERSION
+
+
+def build_readonly_mount_plan(
+    storage_snapshot: dict[str, Any],
+    *,
+    mount_root_prefix: str = "build/rescue/runtime-mounts/",
+    max_operations: int = 12,
+) -> ReadonlyMountPlan:
+    """
+    Canonical entry: readonly mount plan (plan-only). Wraps ``plan_readonly_source_mount``.
+    """
+    raw = plan_readonly_source_mount(
+        storage_snapshot,
+        mount_root_prefix=mount_root_prefix,
+        max_operations=max_operations,
+    )
+    ops = tuple(raw.get("planned_operations") or [])
+    return ReadonlyMountPlan(
+        mount_root_prefix=str(raw.get("mount_root_prefix") or mount_root_prefix),
+        planned_operations=ops,
+        schema_version=int(raw.get("schema_version") or 1),
+        strict_mode=str(raw.get("strict_mode") or "rescue_readonly_mount_plan_only"),
+    )
+
+
+def validate_mount_readonly(mount_entry: dict[str, Any]) -> dict[str, Any]:
+    """
+    Validate a single mount entry is readonly-safe (analysis only, no remount).
+    """
+    if not isinstance(mount_entry, dict):
+        return {
+            "valid": False,
+            "reason_code": "MOUNT_FACADE_INVALID_ENTRY",
+            "facade_version": FACADE_CONTRACT_VERSION,
+        }
+    opts = str(mount_entry.get("options") or "").lower().split(",")
+    tgt = str(mount_entry.get("target") or mount_entry.get("mountpoint") or "").rstrip("/") or "/"
+    read_only = mount_entry.get("read_only") is True or "ro" in opts
+    blocked = tgt in _FORBIDDEN_HOST_MOUNTS and not read_only
+    return {
+        "valid": read_only and not blocked,
+        "read_only": read_only,
+        "target": tgt,
+        "reason_code": "MOUNT_FACADE_HOST_RW" if blocked else ("MOUNT_FACADE_OK" if read_only else "MOUNT_FACADE_NOT_READONLY"),
+        "facade_version": FACADE_CONTRACT_VERSION,
+    }
+
+
+def validate_source_not_target(*, source: str, target: str) -> dict[str, Any]:
+    """Ensure backup/restore source and target paths/devices do not alias."""
+    s = str(source).strip().rstrip("/")
+    t = str(target).strip().rstrip("/")
+    same = bool(s and t and (s == t or s.startswith(t + "/") or t.startswith(s + "/")))
+    return {
+        "valid": not same,
+        "source": s,
+        "target": t,
+        "reason_code": "MOUNT_FACADE_SOURCE_IS_TARGET" if same else "MOUNT_FACADE_SOURCE_TARGET_OK",
+        "facade_version": FACADE_CONTRACT_VERSION,
+    }
+
+
+def validate_not_live_root(mountpoint: str) -> dict[str, Any]:
+    """Block plans that would mount or write on live system root paths."""
+    mp = str(mountpoint).rstrip("/") or "/"
+    blocked = mp in _FORBIDDEN_HOST_MOUNTS
+    return {
+        "valid": not blocked,
+        "mountpoint": mp,
+        "reason_code": "MOUNT_FACADE_LIVE_ROOT" if blocked else "MOUNT_FACADE_NOT_LIVE_ROOT",
+        "facade_version": FACADE_CONTRACT_VERSION,
     }

@@ -2,23 +2,80 @@
 Core storage facade — read-only inventory for Live and Rescue.
 
 Bundles existing parsers (storage_detection, safe_device adapters). No mounts, no writes.
+
+Phase A.1 (Facade Freeze): ``FACADE_CONTRACT_*`` types and ``get_*`` entry points are the
+canonical public surface. Legacy helpers remain for backward compatibility; new modules
+must use the contract API only (see docs/architecture/CORE_FACADE_RULES.md).
 """
 
 from __future__ import annotations
 
 import json
 import subprocess
-from typing import Any, Callable
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Callable, Literal
 
 from modules.storage_detection import classify_devices, detect_block_devices, detect_filesystems
 
 Runner = Callable[..., subprocess.CompletedProcess[str]] | None
 
 _FACADE_VERSION = 1
+FACADE_CONTRACT_VERSION = 1
 _SOURCE_MODULES = (
     "modules.storage_detection",
     "core.storage_facade",
 )
+
+
+class StorageTargetRole(str, Enum):
+    """Canonical target roles for facade consumers (maps to domain vocabulary)."""
+
+    BACKUP_TARGET = "backup_target"
+    RESTORE_SOURCE = "restore_source"
+    SYSTEM_DISK = "system_disk"
+    EXTERNAL_DATA = "external_data"
+    RESCUE_STICK = "rescue_stick"
+    UNKNOWN = "unknown"
+
+
+@dataclass(frozen=True)
+class BlockDeviceInfo:
+    """Public contract: block device row (read-only inventory)."""
+
+    name: str
+    device_path: str
+    fstype: str | None = None
+    label: str | None = None
+    uuid: str | None = None
+    mountpoint: str | None = None
+    size: str | None = None
+    model: str | None = None
+    transport: str | None = None
+    device_type: str | None = None
+
+
+@dataclass(frozen=True)
+class MountInfo:
+    """Public contract: mount entry (read-only; sourced via mount_facade delegation)."""
+
+    source: str
+    target: str
+    fstype: str | None = None
+    options: str | None = None
+
+
+@dataclass(frozen=True)
+class StorageTargetClassification:
+    """Public contract: classification result for a path or device hint."""
+
+    path_or_device: str
+    role: StorageTargetRole
+    confidence: Literal["high", "medium", "low"] = "low"
+    external: bool = False
+    write_allowed: bool = False
+    evidence: tuple[str, ...] = field(default_factory=tuple)
+    facade_version: int = FACADE_CONTRACT_VERSION
 
 
 def _empty_envelope(*, status: str = "blocked") -> dict[str, Any]:
@@ -258,3 +315,127 @@ def find_candidate_restore_targets(snapshot: dict[str, Any]) -> list[dict[str, A
                 }
             )
     return candidates[:40]
+
+
+def _row_to_block_device(row: dict[str, Any]) -> BlockDeviceInfo:
+    name = str(row.get("name") or "")
+    dev_path = name if name.startswith("/dev/") else f"/dev/{name}" if name else ""
+    return BlockDeviceInfo(
+        name=name,
+        device_path=dev_path,
+        fstype=row.get("fstype"),
+        label=row.get("label"),
+        uuid=row.get("uuid"),
+        mountpoint=row.get("mountpoint"),
+        size=row.get("size"),
+        model=row.get("model"),
+        transport=row.get("tran") or row.get("transport"),
+        device_type=row.get("type"),
+    )
+
+
+def get_block_devices(*, runner: Runner = None, mode: str = "live") -> list[BlockDeviceInfo]:
+    """
+    Canonical entry: block devices (read-only). Delegates to ``build_storage_inventory_snapshot``.
+    """
+    snap = build_storage_inventory_snapshot(runner=runner, mode=mode)
+    rows = snap.get("lsblk_rows") or []
+    return [_row_to_block_device(r) for r in rows if isinstance(r, dict)]
+
+
+def get_mounts(*, runner: Runner = None, target: str = "/") -> list[MountInfo]:
+    """
+    Canonical entry: mount inventory (read-only). Delegates to ``core.mount_facade``.
+    """
+    from core.mount_facade import build_mount_inventory_snapshot
+
+    snap = build_mount_inventory_snapshot(runner=runner, target=target)
+    out: list[MountInfo] = []
+    for m in snap.get("current_mounts") or []:
+        if not isinstance(m, dict):
+            continue
+        out.append(
+            MountInfo(
+                source=str(m.get("source") or ""),
+                target=str(m.get("target") or ""),
+                fstype=m.get("fstype"),
+                options=m.get("options"),
+            )
+        )
+    return out
+
+
+def get_mount_for_path(path: str, *, runner: Runner = None) -> MountInfo | None:
+    """Best-effort longest-prefix match for ``path`` against current mounts."""
+    normalized = str(path).rstrip("/") or "/"
+    best: MountInfo | None = None
+    best_len = -1
+    for m in get_mounts(runner=runner):
+        tgt = m.target.rstrip("/") or "/"
+        if normalized == tgt or normalized.startswith(tgt + "/"):
+            if len(tgt) > best_len:
+                best_len = len(tgt)
+                best = m
+    return best
+
+
+def classify_storage_target(path_or_device: str, *, runner: Runner = None) -> StorageTargetClassification:
+    """
+    Canonical entry: classify a path or device hint (read-only heuristics).
+    Full role mapping migrates to ``storage_role_classification`` in a later phase.
+    """
+    hint = str(path_or_device).strip()
+    snap = build_storage_inventory_snapshot(runner=runner, mode="live")
+    rows = snap.get("lsblk_rows") or []
+    norm = hint.rstrip("/")
+
+    for r in rows:
+        if not isinstance(r, dict):
+            continue
+        name = str(r.get("name") or "")
+        dev = name if name.startswith("/dev/") else f"/dev/{name}"
+        mp = str(r.get("mountpoint") or "")
+        if hint in (name, dev, mp) or (mp and norm.startswith(mp.rstrip("/"))):
+            label = str(r.get("label") or "").lower()
+            tran = str(r.get("tran") or r.get("transport") or "").lower()
+            mp_l = mp.lower()
+            if mp in ("/", "/boot", "/efi"):
+                return StorageTargetClassification(
+                    path_or_device=hint,
+                    role=StorageTargetRole.SYSTEM_DISK,
+                    confidence="high",
+                    external=False,
+                    write_allowed=False,
+                    evidence=("live_root_mount_detected",),
+                )
+            if tran == "usb" or "backup" in label or "/media/" in mp_l or "/run/media/" in mp_l:
+                return StorageTargetClassification(
+                    path_or_device=hint,
+                    role=StorageTargetRole.BACKUP_TARGET,
+                    confidence="medium",
+                    external=True,
+                    write_allowed=False,
+                    evidence=("external_usb_or_backup_hint",),
+                )
+            return StorageTargetClassification(
+                path_or_device=hint,
+                role=StorageTargetRole.EXTERNAL_DATA,
+                confidence="low",
+                external=tran == "usb",
+                write_allowed=False,
+                evidence=("storage_facade_heuristic",),
+            )
+
+    return StorageTargetClassification(
+        path_or_device=hint,
+        role=StorageTargetRole.UNKNOWN,
+        confidence="low",
+        external=False,
+        write_allowed=False,
+        evidence=("no_matching_inventory_row",),
+    )
+
+
+def is_external_target(path_or_device: str, *, runner: Runner = None) -> bool:
+    """True when classification marks target as external (USB/removable heuristic)."""
+    return classify_storage_target(path_or_device, runner=runner).external

@@ -45,6 +45,79 @@ if [[ -d "${ROOT}/backend/runtime_governance" ]]; then
     warnings+=("runtime_governance_imports_app")
   fi
 fi
+
+# Phase A.1: facade boundary warnings (warn-only, no block)
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  warnings+=("${line}")
+done < <(python3 - "${ROOT}" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+backend = root / "backend"
+if not backend.is_dir():
+    raise SystemExit
+
+LSBLK_ALLOW = {
+    "backend/core/storage_facade.py",
+    "backend/core/safe_device.py",
+    "backend/modules/storage_detection.py",
+    "backend/core/device_identity.py",
+    "backend/core/rescue_hardstop.py",
+    "backend/debug/support_bundle.py",
+}
+FINDMNT_ALLOW = {
+    "backend/core/mount_facade.py",
+    "backend/core/safe_device.py",
+    "backend/modules/storage_detection.py",
+    "backend/core/backup_target_auto_prepare.py",
+    "backend/modules/inspect_storage.py",
+    "backend/modules/rescue_restore_execute.py",
+    "backend/core/rescue_hardstop.py",
+}
+BLKID_ALLOW = LSBLK_ALLOW | {
+    "backend/core/rescue_fat32_esp_usb_verify.py",
+    "backend/core/rescue_fat32_esp_usb_writer.py",
+}
+SAFETY_ALLOW = {
+    "backend/core/safety_facade.py",
+    "backend/core/safe_device.py",
+    "backend/safety/write_guard.py",
+    "backend/modules/storage_detection.py",
+}
+
+patterns = [
+    (re.compile(r"subprocess\.(run|Popen)\([^)]*\blsblk\b", re.S), "facade_boundary_lsblk", LSBLK_ALLOW),
+    (re.compile(r"subprocess\.(run|Popen)\([^)]*\bfindmnt\b", re.S), "facade_boundary_findmnt", FINDMNT_ALLOW),
+    (re.compile(r"subprocess\.(run|Popen)\([^)]*\bblkid\b", re.S), "facade_boundary_blkid", BLKID_ALLOW),
+    (re.compile(r"from core\.safe_device import .*validate_write_target|from core import safe_device"), "facade_boundary_safe_device", SAFETY_ALLOW),
+    (re.compile(r"from safety\.write_guard import|from safety import write_guard"), "facade_boundary_write_guard", SAFETY_ALLOW),
+]
+
+warns: list[str] = []
+for path in sorted(backend.rglob("*.py")):
+    rel = path.relative_to(root).as_posix()
+    if "/tests/" in rel or "/venv/" in rel or "/.venv/" in rel:
+        continue
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    for rx, label, allow in patterns:
+        if rel in allow:
+            continue
+        if rx.search(text):
+            warns.append(f"{label}:{rel}")
+
+for w in warns[:40]:
+    print(w)
+if len(warns) > 40:
+    print(f"facade_boundary_truncated:{len(warns) - 40}_more")
+PY
+)
+
 if [[ "${#warnings[@]}" -gt 0 ]]; then
   status="review_required"
 fi
