@@ -24,8 +24,15 @@ from deploy.runner_result_contract import (
     build_empty_result_for_registry_entry,
     validate_registry_result_contract,
 )
+from deploy.runner_risk_gate import (
+    RISK_GATE_VERSION,
+    RunnerRiskDecision,
+    build_risk_gate_summary,
+    evaluate_runner_risk_gate,
+    list_operator_required_runners,
+)
 
-FACADE_VERSION = 1
+FACADE_VERSION = 2
 
 _DEPLOY_ROOT = Path(__file__).resolve().parent
 _UNSAFE_ROUTE_FRAGMENTS = frozenset(
@@ -36,8 +43,13 @@ _READ_ONLY_ROUTE_NAMES = frozenset(
         "/runners/catalog",
         "/runners/summary",
         "/runners/policy-warnings",
+        "/runners/risk-gate/summary",
+        "/runners/risk-gate/operator-required",
+        "/runners/risk-gate/never-auto",
+        "/runners/risk-gate/plan-allowed",
         "/runners/{runner_id}",
         "/runners/{runner_id}/empty-result",
+        "/runners/{runner_id}/risk-gate",
     }
 )
 
@@ -223,6 +235,78 @@ def is_unsafe_runner_route_path(path: str) -> bool:
     """True if path fragment suggests execute/apply/write/install/delete."""
     lower = path.lower()
     return any(fragment in lower for fragment in _UNSAFE_ROUTE_FRAGMENTS)
+
+
+def get_runner_risk_gate_decision(runner_id: str) -> dict[str, Any]:
+    """Read-only risk gate decision for a runner (no execution)."""
+    entries = _entries_list()
+    decision = evaluate_runner_risk_gate(runner_id, entries=entries)
+    status = "ok" if decision.decision == RunnerRiskDecision.ALLOWED_PLAN_ONLY else "review_required"
+    if decision.decision.value.startswith("blocked"):
+        status = "blocked"
+    return facade_response(
+        status=status,
+        code="RUNNER_RISK_GATE_DECISION",
+        data={
+            "facade_version": FACADE_VERSION,
+            "risk_gate_version": RISK_GATE_VERSION,
+            "decision": decision.to_dict(),
+            "allowed_to_execute": decision.allowed_to_execute,
+        },
+        warnings=decision.warnings,
+        errors=decision.errors,
+    )
+
+
+def build_runner_risk_gate_summary() -> dict[str, Any]:
+    """Aggregate risk gate summary for all runners."""
+    entries = _entries_list()
+    summary = build_risk_gate_summary(entries)
+    status = "review_required" if summary.get("never_auto_count", 0) > 0 else "ok"
+    return facade_response(
+        status=status,
+        code="RUNNER_RISK_GATE_SUMMARY",
+        data={"facade_version": FACADE_VERSION, **summary},
+    )
+
+
+def list_runner_operator_required() -> dict[str, Any]:
+    entries = _entries_list()
+    ids = list_operator_required_runners(entries)
+    return facade_response(
+        status="review_required" if ids else "ok",
+        code="RUNNER_OPERATOR_REQUIRED_LIST",
+        data={"total": len(ids), "runner_ids": ids},
+    )
+
+
+def list_runner_never_auto() -> dict[str, Any]:
+    entries = _entries_list()
+    ids = sorted(
+        e.runner_id
+        for e in entries
+        if evaluate_runner_risk_gate(e.runner_id, entries=entries).decision
+        == RunnerRiskDecision.BLOCKED_NEVER_AUTO
+    )
+    return facade_response(
+        status="review_required" if ids else "ok",
+        code="RUNNER_NEVER_AUTO_LIST",
+        data={"total": len(ids), "runner_ids": ids},
+    )
+
+
+def list_runner_plan_allowed() -> dict[str, Any]:
+    entries = _entries_list()
+    ids = sorted(
+        e.runner_id
+        for e in entries
+        if evaluate_runner_risk_gate(e.runner_id, entries=entries).allowed_to_plan
+    )
+    return facade_response(
+        status="ok",
+        code="RUNNER_PLAN_ALLOWED_LIST",
+        data={"total": len(ids), "runner_ids": ids},
+    )
 
 
 def clear_registry_cache() -> None:

@@ -75,9 +75,13 @@ Largest risk cluster (~37k lines). C.1 + C.2 provide metadata and the result con
 
 Read-only layer `runner_api_facade.py` + **5 GET routes** under `/api/deploy/runners/*`. Lists registry/contract — **no** runner execution. The 112 direct runner imports in `routes.py` remain for now.
 
+## What is the deploy runner risk gate (C.4)?
+
+`runner_risk_gate.py` evaluates `risk_level`, `execution_policy`, and optional operator context. **`allowed_to_execute` stays false** — planning decisions only, for C.5.
+
 ## Next step?
 
-Phase **C.4** runner risk gate.
+Phase **C.5** incremental runner migration.
 
 ## Further reading
 
@@ -87,3 +91,4 @@ Phase **C.4** runner risk gate.
 - `docs/architecture/DEPLOY_RUNNER_REGISTRY_EN.md`
 - `docs/architecture/DEPLOY_RUNNER_RESULT_CONTRACT_EN.md`
 - `docs/architecture/DEPLOY_RUNNER_API_FACADE_EN.md`
+- `docs/architecture/DEPLOY_RUNNER_RISK_GATE_EN.md`

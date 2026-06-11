@@ -318,8 +318,13 @@ from deploy.runner_api_facade import (
     build_runner_catalog,
     build_runner_catalog_summary,
     build_runner_policy_warnings,
+    build_runner_risk_gate_summary,
     get_runner_empty_result,
     get_runner_registry_entry,
+    get_runner_risk_gate_decision,
+    list_runner_never_auto,
+    list_runner_operator_required,
+    list_runner_plan_allowed,
 )
 
 router = APIRouter(prefix="/api/deploy", tags=["deploy-plan"])
@@ -5028,6 +5033,26 @@ async def get_deploy_runners_policy_warnings() -> dict[str, Any]:
     return build_runner_policy_warnings()
 
 
+@router.get("/runners/risk-gate/summary")
+async def get_deploy_runners_risk_gate_summary() -> dict[str, Any]:
+    return build_runner_risk_gate_summary()
+
+
+@router.get("/runners/risk-gate/operator-required")
+async def get_deploy_runners_operator_required() -> dict[str, Any]:
+    return list_runner_operator_required()
+
+
+@router.get("/runners/risk-gate/never-auto")
+async def get_deploy_runners_never_auto() -> dict[str, Any]:
+    return list_runner_never_auto()
+
+
+@router.get("/runners/risk-gate/plan-allowed")
+async def get_deploy_runners_plan_allowed() -> dict[str, Any]:
+    return list_runner_plan_allowed()
+
+
 @router.get("/runners/{runner_id}")
 async def get_deploy_runner_registry_entry(runner_id: str) -> dict[str, Any]:
     return get_runner_registry_entry(runner_id)
@@ -5036,3 +5061,8 @@ async def get_deploy_runner_registry_entry(runner_id: str) -> dict[str, Any]:
 @router.get("/runners/{runner_id}/empty-result")
 async def get_deploy_runner_empty_result(runner_id: str) -> dict[str, Any]:
     return get_runner_empty_result(runner_id)
+
+
+@router.get("/runners/{runner_id}/risk-gate")
+async def get_deploy_runner_risk_gate(runner_id: str) -> dict[str, Any]:
+    return get_runner_risk_gate_decision(runner_id)

@@ -127,7 +127,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **C.3 (erledigt):** read-only API Facade — 112 direkte Imports in `routes.py` unverändert.
 
-**Nächster Schritt:** C.4 Risk Gate → C.5 Migration
+**C.4 (erledigt):** Risk Gate — Entscheidungen ohne Execute.
+
+**Nächster Schritt:** C.5 Migration
 
 ---
 

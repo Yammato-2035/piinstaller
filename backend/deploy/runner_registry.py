@@ -297,7 +297,14 @@ def classify_runner_file(
     )
 
 
-_REGISTRY_MODULE_NAMES = frozenset({"runner_registry.py", "runner_result_contract.py"})
+_REGISTRY_MODULE_NAMES = frozenset(
+    {
+        "runner_registry.py",
+        "runner_result_contract.py",
+        "runner_api_facade.py",
+        "runner_risk_gate.py",
+    }
+)
 
 
 def build_runner_registry_from_files(root: str | Path = "backend/deploy") -> list[RunnerRegistryEntry]:

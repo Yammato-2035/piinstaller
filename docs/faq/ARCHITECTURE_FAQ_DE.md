@@ -75,9 +75,13 @@ Größtes Risiko-Cluster (~37k Zeilen). C.1 + C.2 liefern Metadaten und Result-C
 
 Read-only Schicht `runner_api_facade.py` + **5 GET-Routen** unter `/api/deploy/runners/*`. Listet Registry/Contract — **keine** Runner-Ausführung. Die 112 direkten Runner-Imports in `routes.py` bleiben vorerst.
 
+## Was ist das Deploy Runner Risk Gate (C.4)?
+
+`runner_risk_gate.py` wertet `risk_level`, `execution_policy` und optional Operator-Kontext aus. **`allowed_to_execute` bleibt immer false** — nur Planungsentscheidungen für C.5.
+
 ## Nächster Schritt?
 
-Phase **C.4** Runner Risk Gate.
+Phase **C.5** schrittweise Runner-Migration.
 
 ## Weiterlesen
 
@@ -87,3 +91,4 @@ Phase **C.4** Runner Risk Gate.
 - `docs/architecture/DEPLOY_RUNNER_REGISTRY.md`
 - `docs/architecture/DEPLOY_RUNNER_RESULT_CONTRACT.md`
 - `docs/architecture/DEPLOY_RUNNER_API_FACADE.md`
+- `docs/architecture/DEPLOY_RUNNER_RISK_GATE.md`

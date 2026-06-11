@@ -16,9 +16,11 @@ from deploy.runner_api_facade import (
     build_runner_catalog,
     build_runner_catalog_summary,
     build_runner_policy_warnings,
+    build_runner_risk_gate_summary,
     clear_registry_cache,
     get_runner_empty_result,
     get_runner_registry_entry,
+    get_runner_risk_gate_decision,
     is_unsafe_runner_route_path,
     list_runner_registry_entries,
     read_only_runner_route_paths,
@@ -35,7 +37,11 @@ class DeployRunnerApiFacadeV1Tests(unittest.TestCase):
         self.assertNotIn("subprocess", src)
         self.assertNotIn("importlib.import_module", src)
         tree = ast.parse(src)
-        allowed = {"deploy.runner_registry", "deploy.runner_result_contract"}
+        allowed = {
+            "deploy.runner_registry",
+            "deploy.runner_result_contract",
+            "deploy.runner_risk_gate",
+        }
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module:
                 if node.module.startswith("deploy.runner_") and node.module not in allowed:
@@ -90,6 +96,8 @@ class DeployRunnerApiFacadeV1Tests(unittest.TestCase):
             '@router.get("/runners/catalog")',
             '@router.get("/runners/summary")',
             '@router.get("/runners/policy-warnings")',
+            '@router.get("/runners/risk-gate/summary")',
+            '@router.get("/runners/{runner_id}/risk-gate")',
             '@router.get("/runners/{runner_id}")',
             '@router.get("/runners/{runner_id}/empty-result")',
         ):
@@ -98,7 +106,18 @@ class DeployRunnerApiFacadeV1Tests(unittest.TestCase):
         self.assertNotIn('@router.delete("/runners/', routes_src)
 
     def test_facade_version(self) -> None:
-        self.assertEqual(FACADE_VERSION, 1)
+        self.assertEqual(FACADE_VERSION, 2)
+
+    def test_risk_gate_decision_never_executes(self) -> None:
+        cat = build_runner_catalog()
+        runner_id = cat["data"]["catalog"][0]["runner_id"]
+        res = get_runner_risk_gate_decision(runner_id)
+        self.assertFalse(res["data"]["allowed_to_execute"])
+
+    def test_risk_gate_summary(self) -> None:
+        res = build_runner_risk_gate_summary()
+        self.assertIn("by_decision", res["data"])
+        self.assertFalse(res["data"]["allowed_to_execute_in_c4"])
 
 
 if __name__ == "__main__":

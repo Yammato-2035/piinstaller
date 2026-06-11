@@ -28,6 +28,10 @@ Deploy-Runner umfassen device-write, destructive und sudo-Pfade. C.3 erlaubt nur
 - Import von `runner_*.py` in der Facade
 - Shell, subprocess, Runtime-Schreibzugriffe
 
+## Risk Gate (C.4, erledigt)
+
+Zusätzliche GET-Routen `/runners/risk-gate/*` und `/{runner_id}/risk-gate` — siehe `DEPLOY_RUNNER_RISK_GATE.md`.
+
 ## Phasen-Kette
 
 | Phase | Lieferung |
@@ -35,7 +39,7 @@ Deploy-Runner umfassen device-write, destructive und sudo-Pfade. C.3 erlaubt nur
 | **C.1** | Registry — Metadaten |
 | **C.2** | Result Contract — `RunnerResult` |
 | **C.3** | API Facade — read-only GET (dieses Dokument) |
-| **C.4** | Risk Gate — Laufzeit-Policy |
+| **C.4** | Risk Gate — **erledigt**, `allowed_to_execute` immer false |
 | **C.5** | Schrittweise Runner-Migration |
 
 ## Tests

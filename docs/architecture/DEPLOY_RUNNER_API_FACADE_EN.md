@@ -28,6 +28,10 @@ Deploy runners include device-write, destructive, and sudo paths. C.3 allows onl
 - Import of `runner_*.py` in the facade
 - Shell, subprocess, runtime file writes
 
+## Risk gate (C.4, complete)
+
+Additional GET routes `/runners/risk-gate/*` and `/{runner_id}/risk-gate` — see `DEPLOY_RUNNER_RISK_GATE_EN.md`.
+
 ## Phase chain
 
 | Phase | Deliverable |
@@ -35,7 +39,7 @@ Deploy runners include device-write, destructive, and sudo paths. C.3 allows onl
 | **C.1** | Registry — metadata |
 | **C.2** | Result contract — `RunnerResult` |
 | **C.3** | API facade — read-only GET (this document) |
-| **C.4** | Risk gate — runtime policy |
+| **C.4** | Risk gate — **complete**, `allowed_to_execute` always false |
 | **C.5** | Incremental runner migration |
 
 ## Tests

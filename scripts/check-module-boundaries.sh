@@ -154,7 +154,12 @@ deploy = root / "backend" / "deploy"
 registry_mod = deploy / "runner_registry.py"
 runners = sorted(
     p for p in deploy.glob("runner_*.py")
-    if p.name not in {"runner_registry.py", "runner_result_contract.py"}
+    if p.name not in {
+        "runner_registry.py",
+        "runner_result_contract.py",
+        "runner_api_facade.py",
+        "runner_risk_gate.py",
+    }
 )
 if runners and not registry_mod.is_file():
     print("runner_registry_missing:backend/deploy/runner_registry.py")
@@ -188,7 +193,12 @@ contract_mod = deploy / "runner_result_contract.py"
 registry_mod = deploy / "runner_registry.py"
 runners = sorted(
     p for p in deploy.glob("runner_*.py")
-    if p.name not in {"runner_registry.py", "runner_result_contract.py"}
+    if p.name not in {
+        "runner_registry.py",
+        "runner_result_contract.py",
+        "runner_api_facade.py",
+        "runner_risk_gate.py",
+    }
 )
 if registry_mod.is_file() and not contract_mod.is_file():
     print("runner_result_contract_missing:backend/deploy/runner_result_contract.py")
@@ -229,7 +239,11 @@ root = Path(sys.argv[1])
 deploy = root / "backend" / "deploy"
 facade_mod = deploy / "runner_api_facade.py"
 routes_mod = deploy / "routes.py"
-allowed_facade_imports = {"deploy.runner_registry", "deploy.runner_result_contract"}
+allowed_facade_imports = {
+    "deploy.runner_registry",
+    "deploy.runner_result_contract",
+    "deploy.runner_risk_gate",
+}
 
 if not facade_mod.is_file():
     print("runner_api_facade_missing:backend/deploy/runner_api_facade.py")
@@ -253,6 +267,42 @@ if routes_mod.is_file():
         for frag in ("execute", "apply", "install", "write", "delete"):
             if frag in lower:
                 print(f"runner_api_route_unsafe_verb_or_name:{verb}:{path}")
+PY
+)
+
+# Phase C.4: runner risk gate warnings (warn-only)
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  warnings+=("${line}")
+done < <(python3 - "${ROOT}" <<'PY'
+import ast
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+deploy = root / "backend" / "deploy"
+gate_mod = deploy / "runner_risk_gate.py"
+facade_mod = deploy / "runner_api_facade.py"
+allowed = {"deploy.runner_registry", "deploy.runner_result_contract"}
+
+if facade_mod.is_file() and not gate_mod.is_file():
+    print("runner_risk_gate_missing:backend/deploy/runner_risk_gate.py")
+    raise SystemExit
+if not gate_mod.is_file():
+    raise SystemExit
+
+tree = ast.parse(gate_mod.read_text(encoding="utf-8", errors="replace"))
+for node in ast.walk(tree):
+    if isinstance(node, ast.ImportFrom) and node.module:
+        if node.module.startswith("deploy.runner_") and node.module not in allowed:
+            print(f"runner_risk_gate_imports_runner_module:{node.module}")
+
+facade_text = facade_mod.read_text(encoding="utf-8", errors="replace")
+if "runner_risk_gate" not in facade_text:
+    print("runner_api_facade_missing_risk_gate:backend/deploy/runner_api_facade.py")
+gate_src = gate_mod.read_text(encoding="utf-8", errors="replace")
+if "allowed_to_execute = True" in gate_src.replace("_C4_EXECUTE_ALLOWED", ""):
+    print("runner_risk_gate_execute_allowed_true:backend/deploy/runner_risk_gate.py")
 PY
 )
 

@@ -1,8 +1,8 @@
 # Monolith Decomposition Roadmap
 
-**Datum:** 2026-06-10 (aktualisiert nach Deploy Runner API Facade C.3)  
-**HEAD:** `86676cb`+ (C.2 Contract) → C.3 API Facade  
-**Status:** C.1–C.3 erledigt; 112 direkte Runner-Imports in `routes.py` noch offen
+**Datum:** 2026-06-10 (aktualisiert nach Deploy Runner Risk Gate C.4)  
+**HEAD:** `ef20b6a`+ (C.3 Facade) → C.4 Risk Gate  
+**Status:** C.1–C.4 erledigt; 112 Legacy-Imports; Execute weiterhin gesperrt
 
 ## Strategie
 
@@ -205,7 +205,7 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 2. **B1** — Storage Safety Facade — Duplikat-Risiko senken
 3. **C1** — `BackupRestore.tsx` zerlegen — größter Frontend-Monolith
 4. **D1** — DCC Status Facade — Deploy-Drift-Transparenz
-5. **C.4** — Runner Risk Gate (C.1–C.3 **erledigt**)
+5. **C.5** — Runner Migration (C.1–C.4 **erledigt**)
 6. **C3** — DCC Frontend-Slice
 7. **B2** — Rescue USB Writer Pipeline
 8. **E1** — i18n Namespaces
@@ -254,4 +254,13 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 | 112 Legacy Runner-Imports | **unverändert** |
 | Runner-Ausführung | **keine** |
 
-**Nächster Schritt:** C.4 Runner Risk Gate
+## Update: Phase C.4 Deploy Runner Risk Gate (2026-06-10)
+
+| Lieferung | Status |
+|-----------|--------|
+| `runner_risk_gate.py` | **erledigt** |
+| 5 read-only Risk-Gate GET-Routen | **erledigt** |
+| `allowed_to_execute` | **immer false** |
+| Runner-Ausführung | **keine** |
+
+**Nächster Schritt:** C.5 schrittweise Runner-Migration
