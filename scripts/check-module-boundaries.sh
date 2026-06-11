@@ -477,6 +477,39 @@ else:
     if '@router.post("/runner/next-phase/gate")' in text and "build_plan_only_response" in text:
         print("deploy_routes_governance_duplicate_in_routes:backend/deploy/routes.py")
 
+# Phase D.8: diagnostics router extraction (warn-only)
+diagnostics_mod = root / "backend" / "deploy" / "routes_diagnostics.py"
+if not diagnostics_mod.is_file():
+    print("deploy_routes_diagnostics_missing:backend/deploy/routes_diagnostics.py")
+else:
+    dg = diagnostics_mod.read_text(encoding="utf-8", errors="replace")
+    for m in re.findall(r"^from (deploy\.runner_[^\s]+) import", dg, flags=re.M):
+        if m != "deploy.runner_api_facade":
+            print(f"deploy_routes_diagnostics_has_runner_import:{m}")
+    if re.search(r'@router\.post\("[^"]*(execute|apply|write|install|delete)', dg):
+        print("deploy_routes_diagnostics_has_execute_route:backend/deploy/routes_diagnostics.py")
+    if "allowed_to_execute = True" in dg.replace("_C4_EXECUTE_ALLOWED", ""):
+        print("deploy_routes_diagnostics_allowed_execute_true:backend/deploy/routes_diagnostics.py")
+    for ep in (
+        '@router.post("/runner/manual-runtime/failure-injection-matrix")',
+        '@router.post("/runner/manual-runtime/failure-execution-preview")',
+        '@router.post("/runner/manual-runtime/failure-operator-checklists")',
+        '@router.post("/runner/manual-runtime/failure-test-sessions")',
+        '@router.post("/runner/manual-runtime/failure-readiness-gate")',
+        '@router.post("/runtime-identifier-zero-state-verification")',
+    ):
+        if ep not in dg:
+            print(f"deploy_routes_diagnostics_path_changed:missing_{ep}")
+    if "routes_diagnostics" not in text or "include_router(deploy_diagnostics_router)" not in text:
+        print("deploy_routes_diagnostics_not_included:backend/deploy/routes.py")
+    for dup in (
+        '@router.post("/runner/manual-runtime/failure-readiness-gate")',
+        '@router.post("/runtime-identifier-zero-state-verification")',
+    ):
+        if dup in text:
+            print("deploy_routes_diagnostics_duplicate_in_routes:backend/deploy/routes.py")
+            break
+
 # Phase D.6: thin orchestrator guard (warn-only)
 deploy_routes = root / "backend" / "deploy" / "routes.py"
 if deploy_routes.is_file():
@@ -487,6 +520,8 @@ if deploy_routes.is_file():
     baseline_d6_imports = 103
     baseline_d7_lines = 4671
     baseline_d7_imports = 99
+    baseline_d8_lines = 4523
+    baseline_d8_imports = 93
     if dr_lines > 2000:
         print(f"deploy_routes_py_too_large:{dr_lines}")
     print(f"deploy_routes_direct_runner_import_count:{dr_runner_imports}")
@@ -496,11 +531,16 @@ if deploy_routes.is_file():
         print(f"deploy_routes_direct_runner_import_reduced_d7:{baseline_d6_imports}_to_{dr_runner_imports}")
     if dr_lines < baseline_d6_lines:
         print(f"deploy_routes_line_count_reduced_d7:{baseline_d6_lines}_to_{dr_lines}")
+    if dr_runner_imports < baseline_d7_imports:
+        print(f"deploy_routes_direct_runner_import_reduced_d8:{baseline_d7_imports}_to_{dr_runner_imports}")
+    if dr_lines < baseline_d7_lines:
+        print(f"deploy_routes_line_count_reduced_d8:{baseline_d7_lines}_to_{dr_lines}")
     for sub in (
         "routes_registry.py",
         "routes_risk_gate.py",
         "routes_evidence.py",
         "routes_governance.py",
+        "routes_diagnostics.py",
     ):
         if not (root / "backend" / "deploy" / sub).is_file():
             print(f"deploy_routes_subrouter_missing:{sub}")
@@ -512,6 +552,8 @@ if deploy_routes.is_file():
         print("deploy_routes_subrouter_missing:include_evidence")
     if "include_router(deploy_governance_router)" not in dr_text:
         print("deploy_routes_subrouter_missing:include_governance")
+    if "include_router(deploy_diagnostics_router)" not in dr_text:
+        print("deploy_routes_subrouter_missing:include_diagnostics")
     if re.search(r"\bsubprocess\b", dr_text) or re.search(r"\bos\.system\b", dr_text):
         print("deploy_routes_business_logic_new:subprocess_or_os_system")
     if re.search(r'@router\.post\("/runners/[^"]*(execute|apply|write|install|delete)', dr_text):

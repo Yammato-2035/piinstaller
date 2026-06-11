@@ -68,11 +68,6 @@ from deploy.runner_manual_runtime_result_validator_dryrun_from_handoff import ru
 from deploy.runner_manual_runtime_validator_report_seal import seal_manual_runtime_validator_report
 from deploy.runner_manual_runtime_final_acceptance_gate import evaluate_manual_runtime_final_acceptance
 from deploy.runner_manual_runtime_final_export_package import build_manual_runtime_final_export_package
-from deploy.runner_manual_runtime_failure_injection_matrix import build_manual_runtime_failure_injection_matrix
-from deploy.runner_manual_runtime_failure_execution_preview import build_manual_runtime_failure_execution_preview
-from deploy.runner_manual_runtime_failure_operator_checklists import build_manual_runtime_failure_operator_checklists
-from deploy.runner_manual_runtime_failure_test_sessions import build_manual_runtime_failure_test_sessions
-from deploy.runner_manual_runtime_failure_readiness_gate import evaluate_manual_runtime_failure_readiness
 from deploy.runner_manual_runtime_laptop_failure_run_selector import select_manual_laptop_failure_test_runs
 from deploy.runner_manual_runtime_laptop_failure_operator_runorder import build_manual_laptop_failure_operator_runorder
 from deploy.runner_manual_runtime_laptop_failure_execution_log_template import (
@@ -130,7 +125,6 @@ from deploy.runner_setuphelfer_runtime_identifier_elimination import (
     build_runtime_identifier_elimination_targets,
     validate_runtime_compatibility_aliases,
 )
-from deploy.runner_runtime_identifier_zero_state_verification import verify_runtime_identifier_zero_state
 from deploy.runner_setuphelfer_branding_guard import build_setuphelfer_branding_guard_report
 from deploy.runner_legacy_runtime_compatibility_validation import (
     build_legacy_upgrade_path_matrix,
@@ -299,6 +293,7 @@ from deploy.runner_rescue_runtime_bundle_manifest import (
     build_rescue_runtime_bundle_seal,
     check_rescue_runtime_bundle_consistency,
 )
+from deploy.routes_diagnostics import router as deploy_diagnostics_router
 from deploy.routes_evidence import router as deploy_evidence_router
 from deploy.routes_governance import router as deploy_governance_router
 from deploy.routes_registry import router as deploy_registry_router
@@ -309,6 +304,7 @@ router.include_router(deploy_registry_router)
 router.include_router(deploy_risk_gate_router)
 router.include_router(deploy_evidence_router)
 router.include_router(deploy_governance_router)
+router.include_router(deploy_diagnostics_router)
 
 
 class DeployPlanRequest(BaseModel):
@@ -687,26 +683,6 @@ class DeployRunnerManualRuntimeFinalExportPackageRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
-class DeployRunnerManualRuntimeFailureInjectionMatrixRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployRunnerManualRuntimeFailureExecutionPreviewRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployRunnerManualRuntimeFailureOperatorChecklistsRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployRunnerManualRuntimeFailureTestSessionsRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployRunnerManualRuntimeFailureReadinessGateRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
 class DeployRunnerManualRuntimeLaptopFailureRunSelectionRequest(BaseModel):
     explicit_overwrite: bool = False
 
@@ -833,10 +809,6 @@ class DeployRuntimeCompatibilityAliasValidationRequest(BaseModel):
 
 
 class DeployRuntimeIdentifierEliminationPostcheckRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployRuntimeIdentifierZeroStateVerificationRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
@@ -1054,11 +1026,6 @@ DeployRunnerManualRuntimeEvidenceTimelineRequest.model_rebuild()
 DeployRunnerManualRuntimeEvidenceFinalSnapshotRequest.model_rebuild()
 DeployRunnerManualRuntimeFinalAcceptanceRequest.model_rebuild()
 DeployRunnerManualRuntimeFinalExportPackageRequest.model_rebuild()
-DeployRunnerManualRuntimeFailureInjectionMatrixRequest.model_rebuild()
-DeployRunnerManualRuntimeFailureExecutionPreviewRequest.model_rebuild()
-DeployRunnerManualRuntimeFailureOperatorChecklistsRequest.model_rebuild()
-DeployRunnerManualRuntimeFailureTestSessionsRequest.model_rebuild()
-DeployRunnerManualRuntimeFailureReadinessGateRequest.model_rebuild()
 DeployRunnerManualRuntimeLaptopFailureRunSelectionRequest.model_rebuild()
 DeployRunnerManualRuntimeLaptopFailureOperatorRunorderRequest.model_rebuild()
 DeployRunnerManualRuntimeLaptopFailureExecutionLogTemplateRequest.model_rebuild()
@@ -1089,7 +1056,6 @@ DeployRuntimeIdentifierEliminationPlanRequest.model_rebuild()
 DeployRuntimeIdentifierEliminationApplyRequest.model_rebuild()
 DeployRuntimeCompatibilityAliasValidationRequest.model_rebuild()
 DeployRuntimeIdentifierEliminationPostcheckRequest.model_rebuild()
-DeployRuntimeIdentifierZeroStateVerificationRequest.model_rebuild()
 DeployRuntimeIdentifierPatchBumpPreparationRequest.model_rebuild()
 DeployRuntimeIdentifierPatchBumpApplyRequest.model_rebuild()
 DeployRuntimeIdentifierPatchBumpPostcheckRequest.model_rebuild()
@@ -1966,101 +1932,6 @@ async def post_deploy_runner_manual_runtime_final_export_package(
     }
 
 
-@router.post("/runner/manual-runtime/failure-injection-matrix")
-async def post_deploy_runner_manual_runtime_failure_injection_matrix(
-    body: DeployRunnerManualRuntimeFailureInjectionMatrixRequest,
-) -> dict[str, Any]:
-    matrix = build_manual_runtime_failure_injection_matrix(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(matrix.get("matrix_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_INJECTION_MATRIX_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_INJECTION_MATRIX_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_INJECTION_MATRIX_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "matrix": matrix,
-        "warnings": list(matrix.get("warnings") or []),
-        "errors": list(matrix.get("errors") or []),
-    }
-
-
-@router.post("/runner/manual-runtime/failure-execution-preview")
-async def post_deploy_runner_manual_runtime_failure_execution_preview(
-    body: DeployRunnerManualRuntimeFailureExecutionPreviewRequest,
-) -> dict[str, Any]:
-    preview = build_manual_runtime_failure_execution_preview(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(preview.get("preview_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_EXECUTION_PREVIEW_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_EXECUTION_PREVIEW_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_EXECUTION_PREVIEW_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "preview": preview,
-        "warnings": list(preview.get("warnings") or []),
-        "errors": list(preview.get("errors") or []),
-    }
-
-
-@router.post("/runner/manual-runtime/failure-operator-checklists")
-async def post_deploy_runner_manual_runtime_failure_operator_checklists(
-    body: DeployRunnerManualRuntimeFailureOperatorChecklistsRequest,
-) -> dict[str, Any]:
-    ch = build_manual_runtime_failure_operator_checklists(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(ch.get("checklist_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_OPERATOR_CHECKLISTS_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_OPERATOR_CHECKLISTS_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_OPERATOR_CHECKLISTS_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "checklists": ch,
-        "warnings": list(ch.get("warnings") or []),
-        "errors": list(ch.get("errors") or []),
-    }
-
-
-@router.post("/runner/manual-runtime/failure-test-sessions")
-async def post_deploy_runner_manual_runtime_failure_test_sessions(
-    body: DeployRunnerManualRuntimeFailureTestSessionsRequest,
-) -> dict[str, Any]:
-    sess = build_manual_runtime_failure_test_sessions(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(sess.get("sessions_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_TEST_SESSIONS_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_TEST_SESSIONS_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_TEST_SESSIONS_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "sessions": sess,
-        "warnings": list(sess.get("warnings") or []),
-        "errors": list(sess.get("errors") or []),
-    }
-
-
-@router.post("/runner/manual-runtime/failure-readiness-gate")
-async def post_deploy_runner_manual_runtime_failure_readiness_gate(
-    body: DeployRunnerManualRuntimeFailureReadinessGateRequest,
-) -> dict[str, Any]:
-    rd = evaluate_manual_runtime_failure_readiness(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(rd.get("readiness_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_READINESS_GATE_BLOCKED"
-    if st == "ready":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_READINESS_GATE_READY"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_FAILURE_READINESS_GATE_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "readiness": rd,
-        "warnings": list(rd.get("warnings") or []),
-        "errors": list(rd.get("errors") or []),
-    }
-
-
 @router.post("/runner/manual-runtime/laptop-failure-run-selection")
 async def post_deploy_runner_manual_runtime_laptop_failure_run_selection(
     body: DeployRunnerManualRuntimeLaptopFailureRunSelectionRequest,
@@ -2534,25 +2405,6 @@ async def post_deploy_runtime_identifier_elimination_postcheck(
     return {
         "code": code,
         "runtime_identifier_elimination_postcheck": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
-    }
-
-
-@router.post("/runtime-identifier-zero-state-verification")
-async def post_deploy_runtime_identifier_zero_state_verification(
-    body: DeployRuntimeIdentifierZeroStateVerificationRequest,
-) -> dict[str, Any]:
-    res = verify_runtime_identifier_zero_state(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("runtime_identifier_zero_state_verification_status") or "blocked")
-    code = "DEPLOY_RUNTIME_IDENTIFIER_ZERO_STATE_VERIFICATION_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNTIME_IDENTIFIER_ZERO_STATE_VERIFICATION_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNTIME_IDENTIFIER_ZERO_STATE_VERIFICATION_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "runtime_identifier_zero_state_verification": res,
         "warnings": list(res.get("warnings") or []),
         "errors": list(res.get("errors") or []),
     }

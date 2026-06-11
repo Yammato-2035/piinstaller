@@ -135,9 +135,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **D.5 (erledigt):** `routes_governance.py` (3 POST). Facade nur in Subroutern.
 
-**D.7 (erledigt):** +6 Evidence plan-only, routes.py 4671/99 Imports.
+**D.8 (erledigt):** +6 Diagnostics in routes_diagnostics.py, routes.py 4523/93 Imports.
 
-**Nächster Schritt:** D.8
+**Nächster Schritt:** D.9
 
 ---
 

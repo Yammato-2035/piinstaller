@@ -5,7 +5,8 @@
 | Phase | Goal | Risk | Allowed | Forbidden | Tests | Docs |
 |-------|------|------|---------|-----------|-------|------|
 | **D.7** | More evidence plan-only | LOW–MED | `allowed_plan_only`, facade | execute, direct runner | unit + decoupling | slice + size | **done** — 6 routes |
-| **D.8** | `routes_diagnostics.py` | MED | test-plan routes | hardware execute | unit + boundary | DE/EN |
+| **D.8** | `routes_diagnostics.py` | MED | test-plan routes | hardware execute | unit + boundary | DE/EN | **done** — 6 routes |
+| **D.9** | `routes_notifications.py` | LOW | read/plan | write | unit | DE/EN | **next** |
 | **D.9** | `routes_notifications.py` | LOW | read/plan | write | unit | DE/EN |
 | **D.10** | `routes_versioning.py` | MED–HIGH | plan-only identifier/version | apply/system_change | unit | DE/EN |
 | **D.11** | `routes_runtime.py` | HIGH | read-only status/plan | `/execute`, write | unit | DE/EN |
@@ -23,4 +24,4 @@
 
 ## Next step
 
-**D.8** — `routes_diagnostics.py`
+**D.9** — `routes_notifications.py`

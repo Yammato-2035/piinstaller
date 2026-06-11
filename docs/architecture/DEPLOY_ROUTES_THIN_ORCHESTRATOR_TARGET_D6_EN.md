@@ -20,16 +20,16 @@ Long-term `routes.py` should **only**:
 4. **No** direct `runner_*.py` imports
 5. **No** business logic / runner execution
 
-## D.7 update (done)
+## D.8 update (done)
 
-6 additional plan-only POST routes in `routes_evidence.py` (12 total). `routes.py`: 4671 lines, 99 imports.
+5 sub-routers, `routes_diagnostics.py` with 6 POST. `routes.py`: 4523 lines, 93 imports.
 
 ## Target metrics
 
-| Metric | Current (D.7) | Target |
+| Metric | Current (D.8) | Target |
 |--------|--------------:|-------:|
-| `routes.py` lines | 4671 | **< 500** |
-| direct runner imports | 99 | **0** |
+| `routes.py` lines | 4523 | **< 500** |
+| direct runner imports | 93 | **0** |
 | routes directly in routes.py | 218 | **0–10** legacy |
 | sub-routers | 4 | **10–14** |
 | execute routes without risk gate | open | **0** (after execute gate) |

@@ -102,10 +102,32 @@ class DeployRunnerRoutesDecouplingV1Tests(unittest.TestCase):
         self.assertIn('decoupling_phase="d7"', ev)
         self.assertNotIn("classify_active_legacy_identifiers", routes_src)
 
+    def test_d8_imports_removed_from_routes(self) -> None:
+        routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
+        for needle in (
+            "from deploy.runner_manual_runtime_failure_injection_matrix import",
+            "from deploy.runner_manual_runtime_failure_execution_preview import",
+            "from deploy.runner_manual_runtime_failure_operator_checklists import",
+            "from deploy.runner_manual_runtime_failure_test_sessions import",
+            "from deploy.runner_manual_runtime_failure_readiness_gate import",
+            "from deploy.runner_runtime_identifier_zero_state_verification import",
+        ):
+            self.assertNotIn(needle, routes_src)
+        diag = (_BACKEND / "deploy" / "routes_diagnostics.py").read_text(encoding="utf-8")
+        self.assertIn('decoupling_phase="d8"', diag)
+
+    def test_d8_plan_only_response_tag(self) -> None:
+        res = build_plan_only_response(
+            "runner_manual_runtime_failure_readiness_gate",
+            decoupling_phase="d8",
+        )
+        self.assertTrue(res["facade_decoupling_d8"])
+        self.assertFalse(res["allowed_to_execute"])
+
     def test_direct_import_count_reduced(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", routes_src, flags=re.M))
-        self.assertEqual(count, 99)
+        self.assertEqual(count, 93)
 
     def test_no_new_unsafe_runners_post_routes(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")

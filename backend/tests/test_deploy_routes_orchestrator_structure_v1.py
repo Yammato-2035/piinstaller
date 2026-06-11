@@ -12,6 +12,7 @@ _BACKEND = Path(__file__).resolve().parent.parent
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
+from deploy.routes_diagnostics import router as diagnostics_router
 from deploy.routes_evidence import router as evidence_router
 from deploy.routes_governance import router as governance_router
 from deploy.routes_registry import router as registry_router
@@ -22,6 +23,7 @@ SUBROUTER_MODULES = (
     "routes_risk_gate.py",
     "routes_evidence.py",
     "routes_governance.py",
+    "routes_diagnostics.py",
 )
 
 UNSAFE_PATH_FRAGMENTS = ("execute", "apply", "install", "write", "delete")
@@ -39,6 +41,7 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
             "include_router(deploy_risk_gate_router)",
             "include_router(deploy_evidence_router)",
             "include_router(deploy_governance_router)",
+            "include_router(deploy_diagnostics_router)",
         ):
             self.assertIn(needle, src)
 
@@ -47,6 +50,9 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
         self.assertEqual(len(risk_gate_router.routes), 5)
         self.assertEqual(len(evidence_router.routes), 12)
         self.assertEqual(len(governance_router.routes), 3)
+        from deploy.routes_diagnostics import router as diagnostics_router
+
+        self.assertEqual(len(diagnostics_router.routes), 6)
 
     def test_subrouters_no_runner_py_imports(self) -> None:
         for name in SUBROUTER_MODULES:
@@ -58,7 +64,13 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
                         self.fail(f"{name}: unexpected {node.module}")
 
     def test_subrouters_no_unsafe_routes(self) -> None:
-        for router in (registry_router, risk_gate_router, evidence_router, governance_router):
+        for router in (
+            registry_router,
+            risk_gate_router,
+            evidence_router,
+            governance_router,
+            diagnostics_router,
+        ):
             for route in router.routes:
                 pl = route.path.lower()
                 for frag in UNSAFE_PATH_FRAGMENTS:
@@ -81,14 +93,14 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
     def test_routes_py_runner_import_count_documented(self) -> None:
         src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", src, flags=re.M))
-        self.assertEqual(count, 99)
+        self.assertEqual(count, 93)
 
     def test_no_build_plan_only_in_routes_py(self) -> None:
         src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         self.assertNotIn("build_plan_only_response", src)
 
     def test_subrouters_use_facade_only(self) -> None:
-        for name in ("routes_evidence.py", "routes_governance.py"):
+        for name in ("routes_evidence.py", "routes_governance.py", "routes_diagnostics.py"):
             src = (_BACKEND / "deploy" / name).read_text(encoding="utf-8")
             self.assertIn("build_plan_only_response", src)
             self.assertIn("runner_api_facade", src)

@@ -1,3 +1,3 @@
 # Thin Orchestrator — KB
 
-D.7: +6 Evidence-Routen (12 gesamt). `routes.py` 4671 Zeilen / 99 Imports. Ziel <500 Zeilen, 0 Imports. Nächster Schritt D.8.
+D.8: +6 diagnostics in routes_diagnostics.py. `routes.py` 4523 Zeilen / 93 Imports. Nächster Schritt D.9.

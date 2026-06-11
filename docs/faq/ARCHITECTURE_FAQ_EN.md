@@ -123,9 +123,13 @@ No routes moved. Inventory, ownership matrix, target (<500 lines, 0 runner impor
 
 6 additional plan-only POST routes from `routes.py` to `routes_evidence.py` (12 total). No rescue/execute/write paths. `routes.py`: 4671 lines, 99 runner imports.
 
+## What is phase D.8 (diagnostics slice)?
+
+6 plan-only POST routes in new `routes_diagnostics.py`. `routes.py`: 4523 lines, 93 runner imports.
+
 ## Next step?
 
-**D.8** — diagnostics router (`routes_diagnostics.py`).
+**D.9** — notifications router.
 
 ## Further reading
 
