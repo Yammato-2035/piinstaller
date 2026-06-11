@@ -107,9 +107,13 @@ Both use only `runner_api_facade` — **zero** direct `runner_*` imports in hand
 
 5 GET routes moved to `routes_risk_gate.py`. Facade only, `allowed_to_execute` stays false.
 
+## What is phase D.4 (evidence router)?
+
+6 POST plan-only routes moved to `routes_evidence.py`. POST unchanged, `build_plan_only_response`, no runner execution.
+
 ## Next step?
 
-**D.4** evidence router (`routes_evidence.py`).
+**D.5** governance router or further evidence slice.
 
 ## Further reading
 

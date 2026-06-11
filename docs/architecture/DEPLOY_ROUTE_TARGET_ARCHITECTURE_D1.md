@@ -66,6 +66,7 @@ router.include_router(risk_gate_router)
 
 - **D.2** Registry Router Extraction — **erledigt**
 - **D.3** Risk Gate Router Extraction — **erledigt**
-- **D.4** Evidence Router Extraction — **nächster Schritt**
+- **D.4** Evidence Router Extraction — **erledigt**
+- **D.5** Governance Router — **nächster Schritt**
 - **D.4** Evidence Router Extraction
 - **D.5** Governance Router Extraction

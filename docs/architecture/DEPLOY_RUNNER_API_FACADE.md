@@ -50,7 +50,8 @@ Zusätzliche GET-Routen `/runners/risk-gate/*` und `/{runner_id}/risk-gate` — 
 | **D.1** | Route-Domain-Audit — **erledigt**, keine Extraktion |
 | **D.2** | `routes_registry.py` — 5 GET Registry-Routen — **erledigt** |
 | **D.3** | `routes_risk_gate.py` — 5 GET Risk-Gate-Routen — **erledigt** |
-| **D.4** | Evidence Router |
+| **D.4** | `routes_evidence.py` — 6 POST plan-only — **erledigt** |
+| **D.5** | Governance Router — **nächster Schritt** |
 
 Siehe `DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`.
 

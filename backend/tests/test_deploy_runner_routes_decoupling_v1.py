@@ -76,7 +76,8 @@ class DeployRunnerRoutesDecouplingV1Tests(unittest.TestCase):
             "from deploy.runner_manual_runtime_validator_seal_index import",
         ):
             self.assertNotIn(needle, routes_src)
-        self.assertIn('decoupling_phase="c6"', routes_src)
+        combined = routes_src + (_BACKEND / "deploy" / "routes_evidence.py").read_text(encoding="utf-8")
+        self.assertIn('decoupling_phase="c6"', combined)
 
     def test_direct_import_count_reduced(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")

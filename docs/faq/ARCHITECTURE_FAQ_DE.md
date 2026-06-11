@@ -107,9 +107,13 @@ Beide nutzen nur `runner_api_facade` — **0** direkte `runner_*`-Imports in den
 
 5 GET-Routen (`/runners/risk-gate/*`, `/{runner_id}/risk-gate`) nach `routes_risk_gate.py`. Nur Facade, `allowed_to_execute` bleibt false.
 
+## Was ist Phase D.4 (Evidence-Router)?
+
+6 POST plan-only Routen (C.5/C.6 Identifier/Evidence) nach `routes_evidence.py`. POST bleibt, `build_plan_only_response`, kein Runner-Execute.
+
 ## Nächster Schritt?
 
-**D.4** Evidence-Router (`routes_evidence.py`).
+**D.5** Governance-Router oder weiterer Evidence-Slice.
 
 ## Weiterlesen
 

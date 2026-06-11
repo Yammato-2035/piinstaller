@@ -306,12 +306,14 @@ from deploy.runner_rescue_runtime_bundle_manifest import (
     check_rescue_runtime_bundle_consistency,
 )
 from deploy.runner_api_facade import build_plan_only_response
+from deploy.routes_evidence import router as deploy_evidence_router
 from deploy.routes_registry import router as deploy_registry_router
 from deploy.routes_risk_gate import router as deploy_risk_gate_router
 
 router = APIRouter(prefix="/api/deploy", tags=["deploy-plan"])
 router.include_router(deploy_registry_router)
 router.include_router(deploy_risk_gate_router)
+router.include_router(deploy_evidence_router)
 
 
 class DeployPlanRequest(BaseModel):
@@ -1982,24 +1984,6 @@ async def post_deploy_runner_manual_runtime_result_validator_report_seal(
     }
 
 
-@router.post("/runner/manual-runtime/result-validator-seal-index")
-async def post_deploy_runner_manual_runtime_validator_seal_index(
-    body: DeployRunnerManualRuntimeValidatorSealIndexRequest,
-) -> dict[str, Any]:
-    _ = body
-    facade = build_plan_only_response(
-        "runner_manual_runtime_validator_seal_index",
-        response_code="DEPLOY_RUNNER_MANUAL_RUNTIME_VALIDATOR_SEAL_INDEX",
-        decoupling_phase="c6",
-    )
-    return {
-        "code": facade["code"],
-        "index": facade,
-        "warnings": list(facade.get("warnings") or []),
-        "errors": list(facade.get("errors") or []),
-    }
-
-
 @router.post("/runner/manual-runtime/result-validator-seal-consistency-audit")
 async def post_deploy_runner_manual_runtime_validator_seal_consistency_audit(
     body: DeployRunnerManualRuntimeValidatorSealConsistencyAuditRequest,
@@ -2016,42 +2000,6 @@ async def post_deploy_runner_manual_runtime_validator_seal_consistency_audit(
         "audit": aud,
         "warnings": list(aud.get("warnings") or []),
         "errors": list(aud.get("errors") or []),
-    }
-
-
-@router.post("/runner/manual-runtime/evidence-timeline")
-async def post_deploy_runner_manual_runtime_evidence_timeline(
-    body: DeployRunnerManualRuntimeEvidenceTimelineRequest,
-) -> dict[str, Any]:
-    _ = body
-    facade = build_plan_only_response(
-        "runner_manual_runtime_evidence_timeline",
-        response_code="DEPLOY_RUNNER_MANUAL_RUNTIME_EVIDENCE_TIMELINE",
-        decoupling_phase="c6",
-    )
-    return {
-        "code": facade["code"],
-        "timeline": facade,
-        "warnings": list(facade.get("warnings") or []),
-        "errors": list(facade.get("errors") or []),
-    }
-
-
-@router.post("/runner/manual-runtime/evidence-final-snapshot")
-async def post_deploy_runner_manual_runtime_evidence_final_snapshot(
-    body: DeployRunnerManualRuntimeEvidenceFinalSnapshotRequest,
-) -> dict[str, Any]:
-    _ = body
-    facade = build_plan_only_response(
-        "runner_manual_runtime_evidence_final_snapshot",
-        response_code="DEPLOY_RUNNER_MANUAL_RUNTIME_EVIDENCE_FINAL_SNAPSHOT",
-        decoupling_phase="c6",
-    )
-    return {
-        "code": facade["code"],
-        "snapshot": facade,
-        "warnings": list(facade.get("warnings") or []),
-        "errors": list(facade.get("errors") or []),
     }
 
 
@@ -2470,23 +2418,6 @@ async def post_deploy_version_source_of_truth_check(
     }
 
 
-@router.post("/legacy-identifier-inventory")
-async def post_deploy_legacy_identifier_inventory(
-    body: DeployLegacyIdentifierInventoryRequest,
-) -> dict[str, Any]:
-    _ = body
-    facade = build_plan_only_response(
-        "runner_legacy_identifier_inventory",
-        response_code="DEPLOY_LEGACY_IDENTIFIER_INVENTORY",
-    )
-    return {
-        "code": facade["code"],
-        "legacy_identifier_inventory": facade,
-        "warnings": list(facade.get("warnings") or []),
-        "errors": list(facade.get("errors") or []),
-    }
-
-
 @router.post("/setuphelfer-runtime-identifier-migration")
 async def post_deploy_setuphelfer_runtime_identifier_migration(
     body: DeploySetuphelferRuntimeIdentifierMigrationRequest,
@@ -2503,24 +2434,6 @@ async def post_deploy_setuphelfer_runtime_identifier_migration(
         "setuphelfer_runtime_identifier_migration": plan,
         "warnings": list(plan.get("warnings") or []),
         "errors": list(plan.get("errors") or []),
-    }
-
-
-@router.post("/setuphelfer-identifier-consistency-check")
-async def post_deploy_setuphelfer_identifier_consistency_check(
-    body: DeploySetuphelferIdentifierConsistencyCheckRequest,
-) -> dict[str, Any]:
-    _ = body
-    facade = build_plan_only_response(
-        "runner_setuphelfer_identifier_consistency_check",
-        response_code="DEPLOY_SETUPHELFER_IDENTIFIER_CONSISTENCY_CHECK",
-        decoupling_phase="c6",
-    )
-    return {
-        "code": facade["code"],
-        "setuphelfer_identifier_consistency_check": facade,
-        "warnings": list(facade.get("warnings") or []),
-        "errors": list(facade.get("errors") or []),
     }
 
 
@@ -2638,24 +2551,6 @@ async def post_deploy_setuphelfer_identifier_cleanup_cycle_postcheck(
         "setuphelfer_identifier_cleanup_cycle_postcheck": res,
         "warnings": list(res.get("warnings") or []),
         "errors": list(res.get("errors") or []),
-    }
-
-
-@router.post("/legacy-identifier-hotspot-analysis")
-async def post_deploy_legacy_identifier_hotspot_analysis(
-    body: DeployLegacyIdentifierHotspotAnalysisRequest,
-) -> dict[str, Any]:
-    _ = body
-    facade = build_plan_only_response(
-        "runner_legacy_identifier_hotspot_analysis",
-        response_code="DEPLOY_LEGACY_IDENTIFIER_HOTSPOT_ANALYSIS",
-        decoupling_phase="c6",
-    )
-    return {
-        "code": facade["code"],
-        "legacy_identifier_hotspot_analysis": facade,
-        "warnings": list(facade.get("warnings") or []),
-        "errors": list(facade.get("errors") or []),
     }
 
 

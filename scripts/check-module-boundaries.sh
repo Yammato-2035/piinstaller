@@ -410,6 +410,34 @@ else:
         print("deploy_routes_risk_gate_not_included:backend/deploy/routes.py")
     if '@router.get("/runners/risk-gate/summary")' in text:
         print("deploy_routes_risk_gate_duplicate_in_routes:backend/deploy/routes.py")
+
+# Phase D.4: evidence router extraction (warn-only)
+evidence_mod = root / "backend" / "deploy" / "routes_evidence.py"
+if not evidence_mod.is_file():
+    print("deploy_routes_evidence_missing:backend/deploy/routes_evidence.py")
+else:
+    ev = evidence_mod.read_text(encoding="utf-8", errors="replace")
+    for m in re.findall(r"^from (deploy\.runner_[^\s]+) import", ev, flags=re.M):
+        if m != "deploy.runner_api_facade":
+            print(f"deploy_routes_evidence_has_runner_import:{m}")
+    if re.search(r'@router\.post\("[^"]*(execute|apply|write|install|delete)', ev):
+        print("deploy_routes_evidence_has_execute_route:backend/deploy/routes_evidence.py")
+    if "allowed_to_execute = True" in ev.replace("_C4_EXECUTE_ALLOWED", ""):
+        print("deploy_routes_evidence_allowed_execute_true:backend/deploy/routes_evidence.py")
+    for ep in (
+        '@router.post("/legacy-identifier-inventory")',
+        '@router.post("/legacy-identifier-hotspot-analysis")',
+        '@router.post("/setuphelfer-identifier-consistency-check")',
+        '@router.post("/runner/manual-runtime/result-validator-seal-index")',
+        '@router.post("/runner/manual-runtime/evidence-timeline")',
+        '@router.post("/runner/manual-runtime/evidence-final-snapshot")',
+    ):
+        if ep not in ev:
+            print(f"deploy_routes_evidence_path_changed:missing_{ep}")
+    if "routes_evidence" not in text or "include_router(deploy_evidence_router)" not in text:
+        print("deploy_routes_evidence_not_included:backend/deploy/routes.py")
+    if '@router.post("/legacy-identifier-inventory")' in text:
+        print("deploy_routes_evidence_duplicate_in_routes:backend/deploy/routes.py")
 PY
 )
 
