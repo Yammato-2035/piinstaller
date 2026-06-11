@@ -123,13 +123,13 @@ No routes moved. Inventory, ownership matrix, target (<500 lines, 0 runner impor
 
 6 additional plan-only POST routes from `routes.py` to `routes_evidence.py` (12 total). No rescue/execute/write paths. `routes.py`: 4671 lines, 99 runner imports.
 
-## What is phase D.8 (diagnostics slice)?
+## What is phase D.9 (notifications)?
 
-6 plan-only POST routes in new `routes_diagnostics.py`. `routes.py`: 4523 lines, 93 runner imports.
+**no_safe_d9_notifications_slice** — 0 notification routes in `routes.py`. No `routes_notifications.py`. Domain was already empty in D.1.
 
 ## Next step?
 
-**D.9** — notifications router.
+**D.10** — versioning router (`routes_versioning.py`).
 
 ## Further reading
 

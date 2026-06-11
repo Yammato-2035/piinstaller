@@ -253,6 +253,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 **D.5 (erledigt):** Governance-Router `routes_governance.py` (3 POST C.5).
 
-**D.8 (erledigt):** routes_diagnostics.py (6 POST), routes.py 4523/93 Imports.
+**D.9 (übersprungen):** keine Notification-Routen — routes.py unverändert.
 
-**Nächster Schritt:** D.9
+**Nächster Schritt:** D.10

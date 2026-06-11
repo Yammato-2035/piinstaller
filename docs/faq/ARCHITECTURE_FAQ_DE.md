@@ -123,13 +123,13 @@ Keine Route verschoben. Inventar, Ownership-Matrix, Zielbild (`routes.py` <500 Z
 
 6 weitere plan-only POST-Routen nach `routes_evidence.py` (12 gesamt). `routes.py`: 4671 Zeilen, 99 Runner-Imports. Keine Rescue-/Execute-/Write-Pfade.
 
-## Was ist Phase D.8 (Diagnostics-Slice)?
+## Was ist Phase D.9 (Notifications)?
 
-6 plan-only POST-Routen in neuem `routes_diagnostics.py`. `routes.py`: 4523 Zeilen, 93 Runner-Imports.
+**no_safe_d9_notifications_slice** — 0 Notification-Routen in `routes.py`. Kein `routes_notifications.py`. Domäne war bereits in D.1 leer.
 
 ## Nächster Schritt?
 
-**D.9** — notifications Router.
+**D.10** — versioning Router (`routes_versioning.py`).
 
 ## Weiterlesen
 

@@ -20,9 +20,9 @@
 4. **Keine** direkten `runner_*.py`-Imports
 5. **Keine** Businesslogik / Runner-Ausführung
 
-## D.8 Update (erledigt)
+## D.9 Update (no_safe_slice)
 
-5 Subrouter, `routes_diagnostics.py` mit 6 POST. `routes.py`: 4523 Zeilen, 93 Imports.
+Keine Notification-Routen in Deploy-API — `routes_notifications.py` nicht angelegt. `routes.py` unverändert (4523/93).
 
 ## Zielmetriken
 
@@ -46,6 +46,7 @@ D.2–D.5 haben sichere Facade-Routen extrahiert. Weitere Moves ohne Guard riski
 | `routes_risk_gate.py` | 5 GET |
 | `routes_evidence.py` | 12 POST |
 | `routes_diagnostics.py` | 6 POST |
+| `routes_notifications.py` | — (D.9 übersprungen) |
 | `routes_governance.py` | 3 POST |
 
 Siehe `DEPLOY_ROUTE_EXTRACTION_SEQUENCE_D7_PLUS.md`.

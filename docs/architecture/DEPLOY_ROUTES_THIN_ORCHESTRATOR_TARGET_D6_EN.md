@@ -20,9 +20,9 @@ Long-term `routes.py` should **only**:
 4. **No** direct `runner_*.py` imports
 5. **No** business logic / runner execution
 
-## D.8 update (done)
+## D.9 update (no_safe_slice)
 
-5 sub-routers, `routes_diagnostics.py` with 6 POST. `routes.py`: 4523 lines, 93 imports.
+No notification routes in deploy API — `routes_notifications.py` not created. `routes.py` unchanged (4523/93).
 
 ## Target metrics
 

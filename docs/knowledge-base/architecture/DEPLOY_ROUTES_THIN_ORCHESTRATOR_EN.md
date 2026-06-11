@@ -1,3 +1,3 @@
 # Thin Orchestrator — KB
 
-D.8: +6 diagnostics in routes_diagnostics.py. `routes.py` 4523 lines / 93 imports. Next step D.9.
+D.9: no_safe_d9_notifications_slice — no router. Next step D.10.

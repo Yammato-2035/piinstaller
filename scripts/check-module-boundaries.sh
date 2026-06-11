@@ -510,6 +510,26 @@ else:
             print("deploy_routes_diagnostics_duplicate_in_routes:backend/deploy/routes.py")
             break
 
+# Phase D.9: notifications router evaluation (warn-only)
+notifications_mod = root / "backend" / "deploy" / "routes_notifications.py"
+if notifications_mod.is_file():
+    nt = notifications_mod.read_text(encoding="utf-8", errors="replace")
+    for m in re.findall(r"^from (deploy\.runner_[^\s]+) import", nt, flags=re.M):
+        if m != "deploy.runner_api_facade":
+            print(f"deploy_routes_notifications_has_runner_import:{m}")
+    if re.search(r"\b(smtp|send_mail|sendmail|smtplib)\b", nt, flags=re.I):
+        print("deploy_routes_notifications_sends_email:backend/deploy/routes_notifications.py")
+    if re.search(r"\b(emit_event|publish_event|trigger_queue|enqueue)\b", nt, flags=re.I):
+        print("deploy_routes_notifications_emits_event:backend/deploy/routes_notifications.py")
+    if re.search(r"\b(queue\.put|celery|rq\.enqueue)\b", nt, flags=re.I):
+        print("deploy_routes_notifications_triggers_queue:backend/deploy/routes_notifications.py")
+    if re.search(r'@router\.post\("[^"]*(execute|apply|write|install|delete)', nt):
+        print("deploy_routes_notifications_has_execute_route:backend/deploy/routes_notifications.py")
+    if "allowed_to_execute = True" in nt.replace("_C4_EXECUTE_ALLOWED", ""):
+        print("deploy_routes_notifications_allowed_execute_true:backend/deploy/routes_notifications.py")
+else:
+    print("deploy_routes_notifications_skipped_d9:no_safe_slice")
+
 # Phase D.6: thin orchestrator guard (warn-only)
 deploy_routes = root / "backend" / "deploy" / "routes.py"
 if deploy_routes.is_file():

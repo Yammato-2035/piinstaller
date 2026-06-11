@@ -135,9 +135,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **D.5 (erledigt):** `routes_governance.py` (3 POST). Facade nur in Subroutern.
 
-**D.8 (erledigt):** +6 Diagnostics in routes_diagnostics.py, routes.py 4523/93 Imports.
+**D.9 (übersprungen):** no_safe_d9_notifications_slice — 0 Routen, kein Router.
 
-**Nächster Schritt:** D.9
+**Nächster Schritt:** D.10
 
 ---
 
