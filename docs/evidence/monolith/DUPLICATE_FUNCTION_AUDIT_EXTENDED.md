@@ -243,4 +243,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 **C.4 (erledigt):** `runner_risk_gate.py` — Policy-Entscheidungen, Execute gesperrt.
 
-**Nächster Schritt:** C.5 schrittweise Runner-Migration.
+**C.5 (erledigt):** Erster Routes-Decoupling-Slice (4 plan-only).
+
+**Nächster Schritt:** C.6 nächster Slice.

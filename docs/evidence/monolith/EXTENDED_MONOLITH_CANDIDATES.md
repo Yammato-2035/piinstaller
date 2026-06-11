@@ -135,6 +135,8 @@
 
 **Nächste Kandidaten:**
 
-1. **C.5** Schrittweise Runner-Migration
+**Phase C.5 (erledigt):** 4 Routen decoupled, Imports 113→109  
+
+1. **C.6** Nächster Routes-Slice
 4. B.2: `app.py` Storage-Hilfen, `inspect_storage.py`
 5. Router-Extraktion `app.py`

@@ -32,7 +32,17 @@ from deploy.runner_risk_gate import (
     list_operator_required_runners,
 )
 
-FACADE_VERSION = 2
+FACADE_VERSION = 3
+
+# C.5 decoupled routes (plan-only via facade, no direct runner import)
+DECOUPLED_ROUTE_RUNNER_IDS = frozenset(
+    {
+        "runner_next_phase_gate",
+        "runner_version_governance",
+        "runner_version_source_of_truth_check",
+        "runner_legacy_identifier_inventory",
+    }
+)
 
 _DEPLOY_ROOT = Path(__file__).resolve().parent
 _UNSAFE_ROUTE_FRAGMENTS = frozenset(
@@ -307,6 +317,88 @@ def list_runner_plan_allowed() -> dict[str, Any]:
         code="RUNNER_PLAN_ALLOWED_LIST",
         data={"total": len(ids), "runner_ids": ids},
     )
+
+
+def assert_runner_plan_allowed(runner_id: str) -> Any:
+    """Raise ValueError if risk gate disallows plan-only access (no runner execution)."""
+    entries = _entries_list()
+    decision = evaluate_runner_risk_gate(runner_id, entries=entries)
+    if not decision.allowed_to_plan:
+        raise ValueError(
+            f"runner_plan_not_allowed:{runner_id}:{decision.decision.value}"
+        )
+    return decision
+
+
+def build_plan_only_response(
+    runner_id: str,
+    *,
+    response_code: str = "RUNNER_PLAN_ONLY",
+) -> dict[str, Any]:
+    """Plan-only facade response: risk gate + contract empty result, no runner import."""
+    entries = _entries_list()
+    gate_decision = evaluate_runner_risk_gate(runner_id, entries=entries)
+    gate_dict = gate_decision.to_dict()
+
+    if gate_decision.decision == RunnerRiskDecision.BLOCKED_UNKNOWN_RUNNER:
+        return {
+            "status": "blocked",
+            "code": f"{response_code}_BLOCKED",
+            "runner_id": runner_id,
+            "risk_gate": gate_dict,
+            "result": {},
+            "warnings": list(gate_decision.warnings),
+            "errors": list(gate_decision.errors),
+            "allowed_to_execute": False,
+            "facade_decoupling_c5": True,
+        }
+
+    if not gate_decision.allowed_to_plan:
+        status = "blocked" if gate_decision.decision.value.startswith("blocked") else "review_required"
+        suffix = "BLOCKED" if status == "blocked" else "REVIEW_REQUIRED"
+        return {
+            "status": status,
+            "code": f"{response_code}_{suffix}",
+            "runner_id": runner_id,
+            "risk_gate": gate_dict,
+            "result": {},
+            "warnings": list(gate_decision.warnings),
+            "errors": list(gate_decision.errors),
+            "allowed_to_execute": False,
+            "facade_decoupling_c5": True,
+        }
+
+    entry = find_runner_by_id(runner_id, entries)
+    assert entry is not None
+    empty = build_empty_result_for_registry_entry(entry)
+    status = "ok" if gate_decision.decision == RunnerRiskDecision.ALLOWED_PLAN_ONLY else "review_required"
+    suffix = "OK" if status == "ok" else "REVIEW_REQUIRED"
+    return {
+        "status": status,
+        "code": f"{response_code}_{suffix}",
+        "runner_id": runner_id,
+        "risk_gate": gate_dict,
+        "result": empty.to_dict(),
+        "warnings": list(gate_decision.warnings),
+        "errors": [],
+        "allowed_to_execute": False,
+        "facade_decoupling_c5": True,
+    }
+
+
+def build_readonly_runner_response(
+    runner_id: str,
+    *,
+    response_code: str = "RUNNER_READONLY",
+) -> dict[str, Any]:
+    """Plan-only response for read-only / evidence runners (delegates to plan-only gate)."""
+    entries = _entries_list()
+    entry = find_runner_by_id(runner_id, entries)
+    if entry is None:
+        return build_plan_only_response(runner_id, response_code=response_code)
+    if entry.risk_level.value not in {"read_only", "evidence_write"}:
+        return build_plan_only_response(runner_id, response_code=response_code)
+    return build_plan_only_response(runner_id, response_code=response_code)
 
 
 def clear_registry_cache() -> None:

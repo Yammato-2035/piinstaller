@@ -28,6 +28,10 @@ Deploy-Runner umfassen device-write, destructive und sudo-Pfade. C.3 erlaubt nur
 - Import von `runner_*.py` in der Facade
 - Shell, subprocess, Runtime-Schreibzugriffe
 
+## Routes Decoupling (C.5)
+
+`build_plan_only_response`, `assert_runner_plan_allowed` — 4 POST-Routen decoupled. Siehe `DEPLOY_RUNNER_ROUTES_DECOUPLING_C5.md`.
+
 ## Risk Gate (C.4, erledigt)
 
 Zusätzliche GET-Routen `/runners/risk-gate/*` und `/{runner_id}/risk-gate` — siehe `DEPLOY_RUNNER_RISK_GATE.md`.

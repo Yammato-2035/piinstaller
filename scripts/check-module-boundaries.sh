@@ -306,6 +306,44 @@ if "allowed_to_execute = True" in gate_src.replace("_C4_EXECUTE_ALLOWED", ""):
 PY
 )
 
+# Phase C.5: routes decoupling (warn-only)
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  warnings+=("${line}")
+done < <(python3 - "${ROOT}" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+routes = root / "backend" / "deploy" / "routes.py"
+if not routes.is_file():
+    raise SystemExit
+text = routes.read_text(encoding="utf-8", errors="replace")
+imports = re.findall(r"^from deploy\.runner_[^\s]+ import", text, flags=re.M)
+count = len(imports)
+baseline = 113
+print(f"routes_direct_runner_import_count:{count}")
+if count < baseline:
+    print(f"routes_direct_runner_import_reduced:{baseline}_to_{count}")
+
+decoupled = {
+    "runner_next_phase_gate": "/runner/next-phase/gate",
+    "runner_version_governance": "/version-governance/state",
+    "runner_version_source_of_truth_check": "/version-source-of-truth-check",
+    "runner_legacy_identifier_inventory": "/legacy-identifier-inventory",
+}
+for rid, path_fragment in decoupled.items():
+    if f"from deploy.{rid} import" in text:
+        print(f"routes_runner_plan_only_without_facade:{rid}")
+    if path_fragment in text and "build_plan_only_response" not in text:
+        print(f"routes_runner_plan_only_without_facade:route{path_fragment}")
+
+if re.search(r'@router\.post\("/runners/[^"]*(execute|apply|write|install|delete)', text):
+    print("routes_runner_execute_without_risk_gate:unsafe_runners_post")
+PY
+)
+
 if [[ "${#warnings[@]}" -gt 0 ]]; then
   status="review_required"
 fi

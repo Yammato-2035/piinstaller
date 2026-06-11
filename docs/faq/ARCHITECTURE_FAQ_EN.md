@@ -79,9 +79,13 @@ Read-only layer `runner_api_facade.py` + **5 GET routes** under `/api/deploy/run
 
 `runner_risk_gate.py` evaluates `risk_level`, `execution_policy`, and optional operator context. **`allowed_to_execute` stays false** — planning decisions only, for C.5.
 
+## What was decoupled in C.5?
+
+4 plan-only POST routes (version/identifier/next-phase) use `build_plan_only_response` instead of direct runner imports. **113→109** imports. No execute release.
+
 ## Next step?
 
-Phase **C.5** incremental runner migration.
+Phase **C.6** next routes slice.
 
 ## Further reading
 
@@ -92,3 +96,4 @@ Phase **C.5** incremental runner migration.
 - `docs/architecture/DEPLOY_RUNNER_RESULT_CONTRACT_EN.md`
 - `docs/architecture/DEPLOY_RUNNER_API_FACADE_EN.md`
 - `docs/architecture/DEPLOY_RUNNER_RISK_GATE_EN.md`
+- `docs/architecture/DEPLOY_RUNNER_ROUTES_DECOUPLING_C5_EN.md`

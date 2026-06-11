@@ -28,6 +28,10 @@ Deploy runners include device-write, destructive, and sudo paths. C.3 allows onl
 - Import of `runner_*.py` in the facade
 - Shell, subprocess, runtime file writes
 
+## Routes decoupling (C.5)
+
+`build_plan_only_response`, `assert_runner_plan_allowed` — 4 POST routes decoupled. See `DEPLOY_RUNNER_ROUTES_DECOUPLING_C5_EN.md`.
+
 ## Risk gate (C.4, complete)
 
 Additional GET routes `/runners/risk-gate/*` and `/{runner_id}/risk-gate` — see `DEPLOY_RUNNER_RISK_GATE_EN.md`.

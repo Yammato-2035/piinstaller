@@ -106,7 +106,7 @@ class DeployRunnerApiFacadeV1Tests(unittest.TestCase):
         self.assertNotIn('@router.delete("/runners/', routes_src)
 
     def test_facade_version(self) -> None:
-        self.assertEqual(FACADE_VERSION, 2)
+        self.assertEqual(FACADE_VERSION, 3)
 
     def test_risk_gate_decision_never_executes(self) -> None:
         cat = build_runner_catalog()

@@ -59,7 +59,6 @@ from deploy.runner_runtime_result_validator import validate_runner_runtime_resul
 from deploy.runner_lab_acceptance_aggregator import build_runner_lab_acceptance_summary
 from deploy.runner_lab_acceptance_report_export import build_runner_lab_acceptance_report_export
 from deploy.runner_lab_phase_consolidation import build_runner_lab_phase_consolidation
-from deploy.runner_next_phase_gate import evaluate_runner_next_phase_gate
 from deploy.runner_manual_runtime_precheck import build_runner_manual_runtime_precheck
 from deploy.runner_manual_runtime_result_template import create_manual_runtime_result_template
 from deploy.runner_manual_runtime_result_edit_checker import check_manual_runtime_result_file
@@ -117,9 +116,6 @@ from deploy.runner_laptop_live_probe_execution_handoff import (
     build_laptop_live_probe_plan,
     execute_laptop_live_probe_readonly,
 )
-from deploy.runner_version_governance import build_version_governance_state
-from deploy.runner_version_source_of_truth_check import check_version_source_of_truth_consistency
-from deploy.runner_legacy_identifier_inventory import build_legacy_identifier_inventory
 from deploy.runner_setuphelfer_runtime_identifier_migration import build_runtime_identifier_migration_plan
 from deploy.runner_setuphelfer_identifier_consistency_check import check_setuphelfer_identifier_consistency
 from deploy.runner_legacy_identifier_cleanup_classifier import classify_active_legacy_identifiers
@@ -315,6 +311,7 @@ from deploy.runner_rescue_runtime_bundle_manifest import (
     check_rescue_runtime_bundle_consistency,
 )
 from deploy.runner_api_facade import (
+    build_plan_only_response,
     build_runner_catalog,
     build_runner_catalog_summary,
     build_runner_policy_warnings,
@@ -1837,20 +1834,21 @@ async def post_deploy_runner_lab_phase_consolidation(body: DeployRunnerLabPhaseC
 @router.post("/runner/next-phase/gate")
 async def post_deploy_runner_next_phase_gate(body: DeployRunnerNextPhaseGateRequest) -> dict[str, Any]:
     _ = body.placeholder or {}
-    gate = evaluate_runner_next_phase_gate()
-    st = str(gate.get("gate_status") or "hold")
+    facade = build_plan_only_response(
+        "runner_next_phase_gate",
+        response_code="DEPLOY_RUNNER_NEXT_PHASE_GATE",
+    )
+    st = facade["status"]
     code = "DEPLOY_RUNNER_NEXT_PHASE_HOLD"
-    if st == "manual_runtime_allowed":
+    if st == "ok":
         code = "DEPLOY_RUNNER_NEXT_PHASE_MANUAL_RUNTIME_ALLOWED"
-    elif st == "repeat_required":
-        code = "DEPLOY_RUNNER_NEXT_PHASE_REPEAT_REQUIRED"
     elif st == "blocked":
         code = "DEPLOY_RUNNER_NEXT_PHASE_BLOCKED"
     return {
         "code": code,
-        "gate": gate,
-        "warnings": list(gate.get("warnings") or []),
-        "errors": list(gate.get("errors") or []),
+        "gate": facade,
+        "warnings": list(facade.get("warnings") or []),
+        "errors": list(facade.get("errors") or []),
     }
 
 
@@ -2457,28 +2455,17 @@ async def post_deploy_runner_manual_runtime_laptop_failure_finalized_export_pack
 async def post_deploy_version_governance_state(
     body: DeployVersionGovernanceStateRequest,
 ) -> dict[str, Any]:
-    st = build_version_governance_state(
-        previous_version=body.previous_version,
-        strict_mode_phase=body.strict_mode_phase,
-        phase_status=body.phase_status,
-        release_readiness=body.release_readiness,
-        completed_modules=list(body.completed_modules or []),
-        evidence_artifacts=list(body.evidence_artifacts or []),
-        test_status=body.test_status,
-        changes=list(body.changes or []),
-        explicit_overwrite=bool(body.explicit_overwrite),
+    _ = body
+    facade = build_plan_only_response(
+        "runner_version_governance",
+        response_code="DEPLOY_VERSION_GOVERNANCE_STATE",
     )
-    code = "DEPLOY_VERSION_GOVERNANCE_STATE_BLOCKED"
-    state_status = str(st.get("state_status") or "blocked")
-    if state_status == "ok":
-        code = "DEPLOY_VERSION_GOVERNANCE_STATE_OK"
-    elif state_status == "review_required":
-        code = "DEPLOY_VERSION_GOVERNANCE_STATE_REVIEW_REQUIRED"
+    code = facade["code"]
     return {
         "code": code,
-        "version_governance_state": st,
-        "warnings": list(st.get("warnings") or []),
-        "errors": list(st.get("errors") or []),
+        "version_governance_state": facade,
+        "warnings": list(facade.get("warnings") or []),
+        "errors": list(facade.get("errors") or []),
     }
 
 
@@ -2486,18 +2473,16 @@ async def post_deploy_version_governance_state(
 async def post_deploy_version_source_of_truth_check(
     body: DeployVersionSourceOfTruthCheckRequest,
 ) -> dict[str, Any]:
-    chk = check_version_source_of_truth_consistency(explicit_overwrite=bool(body.explicit_overwrite))
-    check_status = str(chk.get("check_status") or "blocked")
-    code = "DEPLOY_VERSION_SOURCE_OF_TRUTH_CHECK_BLOCKED"
-    if check_status == "ok":
-        code = "DEPLOY_VERSION_SOURCE_OF_TRUTH_CHECK_OK"
-    elif check_status == "review_required":
-        code = "DEPLOY_VERSION_SOURCE_OF_TRUTH_CHECK_REVIEW_REQUIRED"
+    _ = body
+    facade = build_plan_only_response(
+        "runner_version_source_of_truth_check",
+        response_code="DEPLOY_VERSION_SOURCE_OF_TRUTH_CHECK",
+    )
     return {
-        "code": code,
-        "version_source_of_truth_check": chk,
-        "warnings": list(chk.get("warnings") or []),
-        "errors": list(chk.get("errors") or []),
+        "code": facade["code"],
+        "version_source_of_truth_check": facade,
+        "warnings": list(facade.get("warnings") or []),
+        "errors": list(facade.get("errors") or []),
     }
 
 
@@ -2505,18 +2490,16 @@ async def post_deploy_version_source_of_truth_check(
 async def post_deploy_legacy_identifier_inventory(
     body: DeployLegacyIdentifierInventoryRequest,
 ) -> dict[str, Any]:
-    inv = build_legacy_identifier_inventory(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(inv.get("inventory_status") or "blocked")
-    code = "DEPLOY_LEGACY_IDENTIFIER_INVENTORY_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_LEGACY_IDENTIFIER_INVENTORY_OK"
-    elif st == "review_required":
-        code = "DEPLOY_LEGACY_IDENTIFIER_INVENTORY_REVIEW_REQUIRED"
+    _ = body
+    facade = build_plan_only_response(
+        "runner_legacy_identifier_inventory",
+        response_code="DEPLOY_LEGACY_IDENTIFIER_INVENTORY",
+    )
     return {
-        "code": code,
-        "legacy_identifier_inventory": inv,
-        "warnings": list(inv.get("warnings") or []),
-        "errors": list(inv.get("errors") or []),
+        "code": facade["code"],
+        "legacy_identifier_inventory": facade,
+        "warnings": list(facade.get("warnings") or []),
+        "errors": list(facade.get("errors") or []),
     }
 
 
