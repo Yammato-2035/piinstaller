@@ -33,13 +33,15 @@ Registry (C.1) klassifiziert Risiko; Result Contract (C.2) strukturiert Ergebnis
 | `/api/deploy/runners/risk-gate/plan-allowed` | `list_runner_plan_allowed()` |
 | `/api/deploy/runners/{runner_id}/risk-gate` | `get_runner_risk_gate_decision()` |
 
+**Router (D.3):** `backend/deploy/routes_risk_gate.py` — Handler aus `routes.py` ausgelagert.
+
 ## Verboten (C.4)
 
 POST execute/apply/install/write/delete — unverändert verboten.
 
 ## Phasen
 
-C.1 Registry → C.2 Contract → C.3 Facade → **C.4 Risk Gate** → C.5/C.6 Routes Decoupling (9 Routen, Execute weiterhin false) → C.7
+C.1 Registry → C.2 Contract → C.3 Facade → **C.4 Risk Gate** → C.5/C.6 Decoupling → **D.3** `routes_risk_gate.py`
 
 ## Tests
 

@@ -305,18 +305,13 @@ from deploy.runner_rescue_runtime_bundle_manifest import (
     build_rescue_runtime_bundle_seal,
     check_rescue_runtime_bundle_consistency,
 )
-from deploy.runner_api_facade import (
-    build_plan_only_response,
-    build_runner_risk_gate_summary,
-    get_runner_risk_gate_decision,
-    list_runner_never_auto,
-    list_runner_operator_required,
-    list_runner_plan_allowed,
-)
+from deploy.runner_api_facade import build_plan_only_response
 from deploy.routes_registry import router as deploy_registry_router
+from deploy.routes_risk_gate import router as deploy_risk_gate_router
 
 router = APIRouter(prefix="/api/deploy", tags=["deploy-plan"])
 router.include_router(deploy_registry_router)
+router.include_router(deploy_risk_gate_router)
 
 
 class DeployPlanRequest(BaseModel):
@@ -4984,30 +4979,3 @@ async def post_deploy_rescue_runtime_bundle_consistency_check(body: DeployRescue
         "errors": list(res.get("errors") or []),
     }
 
-
-# --- Phase C.3/C.4: risk-gate read-only facade (registry → routes_registry.py D.2) ---
-
-
-@router.get("/runners/risk-gate/summary")
-async def get_deploy_runners_risk_gate_summary() -> dict[str, Any]:
-    return build_runner_risk_gate_summary()
-
-
-@router.get("/runners/risk-gate/operator-required")
-async def get_deploy_runners_operator_required() -> dict[str, Any]:
-    return list_runner_operator_required()
-
-
-@router.get("/runners/risk-gate/never-auto")
-async def get_deploy_runners_never_auto() -> dict[str, Any]:
-    return list_runner_never_auto()
-
-
-@router.get("/runners/risk-gate/plan-allowed")
-async def get_deploy_runners_plan_allowed() -> dict[str, Any]:
-    return list_runner_plan_allowed()
-
-
-@router.get("/runners/{runner_id}/risk-gate")
-async def get_deploy_runner_risk_gate(runner_id: str) -> dict[str, Any]:
-    return get_runner_risk_gate_decision(runner_id)

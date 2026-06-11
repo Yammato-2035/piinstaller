@@ -247,4 +247,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 **D.2 (erledigt):** Registry-Router `routes_registry.py` (5 GET).
 
-**Nächster Schritt:** D.3 Risk-Gate-Router
+**D.3 (erledigt):** Risk-Gate-Router `routes_risk_gate.py` (5 GET).
+
+**Nächster Schritt:** D.4 Evidence-Router

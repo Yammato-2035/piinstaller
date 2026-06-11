@@ -103,9 +103,13 @@ Both use only `runner_api_facade` — **zero** direct `runner_*` imports in hand
 
 5 GET routes moved to `routes_registry.py`. Paths unchanged, facade only, no runner execution.
 
+## What is phase D.3 (risk-gate router)?
+
+5 GET routes moved to `routes_risk_gate.py`. Facade only, `allowed_to_execute` stays false.
+
 ## Next step?
 
-**D.3** risk-gate router (`routes_risk_gate.py`).
+**D.4** evidence router (`routes_evidence.py`).
 
 ## Further reading
 

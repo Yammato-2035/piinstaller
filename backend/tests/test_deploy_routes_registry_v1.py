@@ -78,13 +78,14 @@ class DeployRoutesRegistryV1Tests(unittest.TestCase):
         self.assertNotIn("def get_deploy_runners_summary", routes_src)
         self.assertNotIn("def get_deploy_runner_registry_entry", routes_src)
         self.assertNotIn('@router.get("/runners/catalog")', routes_src)
-        self.assertIn('@router.get("/runners/risk-gate/summary")', routes_src)
+        self.assertNotIn('@router.get("/runners/risk-gate/summary")', routes_src)
+        self.assertIn("include_router(deploy_risk_gate_router)", routes_src)
 
     def test_routes_py_registry_facade_imports_trimmed(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         self.assertNotIn("build_runner_catalog", routes_src)
         self.assertNotIn("get_runner_registry_entry", routes_src)
-        self.assertIn("build_runner_risk_gate_summary", routes_src)
+        self.assertNotIn("build_runner_risk_gate_summary", routes_src)
 
     def test_runner_import_count_unchanged(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")

@@ -383,6 +383,33 @@ else:
         print("deploy_routes_registry_not_included:backend/deploy/routes.py")
     if '@router.get("/runners/catalog")' in text:
         print("deploy_routes_registry_duplicate_in_routes:backend/deploy/routes.py")
+
+# Phase D.3: risk-gate router extraction (warn-only)
+risk_gate_mod = root / "backend" / "deploy" / "routes_risk_gate.py"
+if not risk_gate_mod.is_file():
+    print("deploy_routes_risk_gate_missing:backend/deploy/routes_risk_gate.py")
+else:
+    rg = risk_gate_mod.read_text(encoding="utf-8", errors="replace")
+    for m in re.findall(r"^from (deploy\.runner_[^\s]+) import", rg, flags=re.M):
+        if m != "deploy.runner_api_facade":
+            print(f"deploy_routes_risk_gate_has_runner_import:{m}")
+    if re.search(r"@router\.(post|put|delete|patch)\(", rg):
+        print("deploy_routes_risk_gate_has_non_get_route:backend/deploy/routes_risk_gate.py")
+    for ep in (
+        '@router.get("/risk-gate/summary")',
+        '@router.get("/risk-gate/operator-required")',
+        '@router.get("/risk-gate/never-auto")',
+        '@router.get("/risk-gate/plan-allowed")',
+        '@router.get("/{runner_id}/risk-gate")',
+    ):
+        if ep not in rg:
+            print(f"deploy_routes_risk_gate_path_changed:missing_{ep}")
+    if "allowed_to_execute = True" in rg.replace("_C4_EXECUTE_ALLOWED", ""):
+        print("deploy_routes_risk_gate_execute_enabled:backend/deploy/routes_risk_gate.py")
+    if "routes_risk_gate" not in text or "include_router(deploy_risk_gate_router)" not in text:
+        print("deploy_routes_risk_gate_not_included:backend/deploy/routes.py")
+    if '@router.get("/runners/risk-gate/summary")' in text:
+        print("deploy_routes_risk_gate_duplicate_in_routes:backend/deploy/routes.py")
 PY
 )
 

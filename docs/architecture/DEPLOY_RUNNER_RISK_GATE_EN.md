@@ -33,13 +33,15 @@ Registry (C.1) classifies risk; result contract (C.2) structures outcomes; API f
 | `/api/deploy/runners/risk-gate/plan-allowed` | `list_runner_plan_allowed()` |
 | `/api/deploy/runners/{runner_id}/risk-gate` | `get_runner_risk_gate_decision()` |
 
+**Router (D.3):** `backend/deploy/routes_risk_gate.py` — handlers extracted from `routes.py`.
+
 ## Forbidden (C.4)
 
 POST execute/apply/install/write/delete — still forbidden.
 
 ## Phases
 
-C.1 registry → C.2 contract → C.3 facade → **C.4 risk gate** → C.5/C.6 routes decoupling (9 routes, execute still false) → C.7
+C.1 registry → C.2 contract → C.3 facade → **C.4 risk gate** → C.5/C.6 decoupling → **D.3** `routes_risk_gate.py`
 
 ## Tests
 

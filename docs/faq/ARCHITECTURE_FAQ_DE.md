@@ -103,9 +103,13 @@ Beide nutzen nur `runner_api_facade` — **0** direkte `runner_*`-Imports in den
 
 5 GET-Routen (`/runners/catalog`, `/summary`, `/policy-warnings`, `/{runner_id}`, `/{runner_id}/empty-result`) nach `routes_registry.py` ausgelagert. Pfade unverändert, nur Facade, kein Runner-Execute.
 
+## Was ist Phase D.3 (Risk-Gate-Router)?
+
+5 GET-Routen (`/runners/risk-gate/*`, `/{runner_id}/risk-gate`) nach `routes_risk_gate.py`. Nur Facade, `allowed_to_execute` bleibt false.
+
 ## Nächster Schritt?
 
-**D.3** Risk-Gate-Router (`routes_risk_gate.py`).
+**D.4** Evidence-Router (`routes_evidence.py`).
 
 ## Weiterlesen
 

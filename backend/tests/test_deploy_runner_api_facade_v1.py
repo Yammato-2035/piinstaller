@@ -102,11 +102,16 @@ class DeployRunnerApiFacadeV1Tests(unittest.TestCase):
         ):
             self.assertIn(fragment, registry_src)
         self.assertIn("include_router(deploy_registry_router)", routes_src)
+        risk_src = (_BACKEND / "deploy" / "routes_risk_gate.py").read_text(encoding="utf-8")
         for fragment in (
-            '@router.get("/runners/risk-gate/summary")',
-            '@router.get("/runners/{runner_id}/risk-gate")',
+            '@router.get("/risk-gate/summary")',
+            '@router.get("/risk-gate/operator-required")',
+            '@router.get("/risk-gate/never-auto")',
+            '@router.get("/risk-gate/plan-allowed")',
+            '@router.get("/{runner_id}/risk-gate")',
         ):
-            self.assertIn(fragment, routes_src)
+            self.assertIn(fragment, risk_src)
+        self.assertIn("include_router(deploy_risk_gate_router)", routes_src)
         self.assertNotIn('@router.post("/runners/', routes_src)
         self.assertNotIn('@router.delete("/runners/', routes_src)
         self.assertNotIn('@router.post("/catalog")', registry_src)

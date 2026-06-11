@@ -133,7 +133,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **D.2 (erledigt):** `routes_registry.py` entkoppelt (5 GET, Facade-only).
 
-**Nächster Schritt:** D.3
+**D.3 (erledigt):** `routes_risk_gate.py` (5 GET, Facade-only).
+
+**Nächster Schritt:** D.4
 
 ---
 
