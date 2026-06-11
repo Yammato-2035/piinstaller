@@ -56,21 +56,33 @@
 
 Evidence: `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4.md`
 
-Verbleibende Safety-Legacy: `app.py`, `partition_storage_facade.py`, `rescue/orchestrator.py`
+Verbleibende Safety-Legacy: `app.py`, `rescue/orchestrator.py`
 
 ---
 
-## Phase B – Safety-kritische Core-Module (P1)
+## Phase B – Storage / Classification (P1)
 
-### B1: Storage / Classification Facade
+### B1: Storage Caller Migration (**erledigt**)
+
+| Datei | Status |
+|-------|--------|
+| `backup_target_auto_prepare.py` | **migriert** → `storage_facade` + `safety_facade` |
+| `inspect/collector.py` | **migriert** → `storage_facade` + `safety_facade` |
+| `partition_storage_facade.py` | **migriert** → `safety_facade` |
+
+Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
+
+### B2: Verbleibende Storage-Duplikate
 
 | Kandidat | Zielmodul |
 |----------|-----------|
-| `safe_device`, `storage_detection`, `partition_storage_facade` | `core/storage_safety_facade.py` |
+| `app.py` Storage-Hilfen | Router + `storage_facade` |
+| `inspect_storage.py` | `mount_facade` |
+| Deploy Runner Registry | `deploy/registry.py` |
 
-**Contract:** `StorageRole`, `WriteAllowed`, `DeviceRef` — unverändert  
-**Tests:** Bestehende `test_storage_role_*`, `test_safe_device_*`  
-**Aufwand:** M
+**Contract:** unverändert  
+**Tests:** Facade-Contracts + Domain-Tests  
+**Aufwand:** L
 
 ### B2: Rescue USB Writer
 

@@ -45,17 +45,25 @@ from core.safety_facade import validate_backup_target, SafetyContext
 | `backend/deploy/runner_*.py` | Test-/Runbook-Artefakte | Kein Produkt-API-Pfad |
 | `backend/inspect/collector.py` | Inspect-Sammelpunkt | Migriert mit Inspect-Refactor |
 
-## Migrierte Caller (A.2–A.4)
-
-Diese Module nutzen **nur noch** `core.safety_facade` (kein direkter `write_guard`/`safe_device`-Import):
+## Migrierte Caller (A.2–A.4 Safety)
 
 - `backend/preflight/backup.py`
 - `backend/modules/backup_engine.py`
 - `backend/modules/restore_engine.py`
 
-Erneuter direkter Legacy-Import in diesen Dateien → `facade_boundary_migrated_caller_blocked` im Boundary Guard.
+Erneuter direkter Legacy-Import → `facade_boundary_migrated_caller_blocked`.
 
 Details: `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4.md`
+
+## Migrierte Caller (B.1 Storage)
+
+- `backend/core/backup_target_auto_prepare.py` — `storage_facade` + `safety_facade`
+- `backend/inspect/collector.py` — `storage_facade` + `safety_facade`
+- `backend/core/partition_storage_facade.py` — `safety_facade`
+
+Erneuter blkid/lsblk/findmnt außerhalb Facade → `facade_boundary_migrated_storage_blocked`.
+
+Details: `docs/architecture/CORE_FACADE_STORAGE_MIGRATION_B1.md`
 
 ## Safety-Kontexte
 
@@ -82,6 +90,6 @@ Jeder Aufruf von `validate_*` / `build_safety_decision` muss den Kontext explizi
 - Kein Entfernen von Legacy-Code
 - Kein Verschieben von Logik in Facades (nur Contracts + dünne Delegation)
 
-## Nächster Schritt (nach A.2–A.4)
+## Nächster Schritt (nach B.1)
 
-Phase B.1 — Storage Caller Migration: `backup_target_auto_prepare.py`, `inspect/collector.py`, `partition_storage_facade.py`.
+Phase B.2 — `app.py` Storage-Hilfen, `inspect_storage.py`, Deploy Runner Registry.

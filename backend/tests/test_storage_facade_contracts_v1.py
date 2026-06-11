@@ -12,11 +12,15 @@ from core.storage_facade import (
     MountInfo,
     StorageTargetClassification,
     StorageTargetRole,
+    classify_device_from_existing_result,
     classify_storage_target,
+    collect_inspect_storage_bundle,
     get_block_devices,
     get_mount_for_path,
     get_mounts,
+    get_partition_uuid,
     is_external_target,
+    normalize_legacy_storage_result,
 )
 
 
@@ -82,6 +86,36 @@ class StorageFacadeContractsV1Tests(unittest.TestCase):
     def test_contract_functions_have_docstrings(self) -> None:
         for fn in (get_block_devices, get_mounts, classify_storage_target, is_external_target):
             self.assertTrue(inspect.getdoc(fn))
+
+    def test_get_partition_uuid_mocked(self) -> None:
+        proc = mock.MagicMock(returncode=0, stdout="abc-uuid\n")
+        with mock.patch("core.storage_facade.subprocess.run", return_value=proc):
+            self.assertEqual(get_partition_uuid("/dev/sdb1"), "abc-uuid")
+
+    def test_collect_inspect_storage_bundle_mocked(self) -> None:
+        with mock.patch("core.storage_facade.detect_block_devices", return_value=[{"device": "/dev/sdz"}]):
+            with mock.patch("core.storage_facade.classify_devices", return_value=[{"device": "/dev/sdz"}]):
+                with mock.patch("core.storage_facade.detect_filesystems", return_value={}):
+                    bundle = collect_inspect_storage_bundle()
+        self.assertEqual(bundle["devices_raw"], [{"device": "/dev/sdz"}])
+        self.assertIsNone(bundle.get("error"))
+
+    def test_classify_device_from_existing_result(self) -> None:
+        insp = {
+            "storage": {
+                "devices_classified": [
+                    {"device": "/dev/sdz", "category": "backup_candidate", "partitions": []},
+                ],
+            },
+        }
+        out = classify_device_from_existing_result(insp, "/dev/sdz")
+        self.assertEqual(out.role, StorageTargetRole.BACKUP_TARGET)
+
+    def test_normalize_legacy_storage_result(self) -> None:
+        raw = {"storage": {"devices_raw": [{"x": 1}], "devices_classified": []}}
+        norm = normalize_legacy_storage_result(raw)
+        self.assertEqual(norm["facade_version"], FACADE_CONTRACT_VERSION)
+        self.assertEqual(len(norm["devices_raw"]), 1)
 
 
 if __name__ == "__main__":

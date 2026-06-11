@@ -1,6 +1,6 @@
 # Core Facades — Storage, Mount, Safety (Phase A.1)
 
-**Stand:** Facade Freeze A.1 + Caller-Migration A.2–A.4 (Safety)  
+**Stand:** Facade Freeze A.1 + Safety A.2–A.4 + Storage B.1  
 **Contract-Version:** `FACADE_CONTRACT_VERSION = 1`
 
 ## Zweck
@@ -13,7 +13,7 @@ Phase A.1 definiert nur **öffentliche Contracts** und dünne Delegation. Legacy
 
 | Facade | Modul | Haupt-API |
 |--------|-------|-----------|
-| Storage | `backend/core/storage_facade.py` | `get_block_devices()`, `get_mounts()`, `classify_storage_target()`, `is_external_target()` |
+| Storage | `backend/core/storage_facade.py` | `get_block_devices()`, `get_partition_uuid()`, `collect_inspect_storage_bundle()`, `classify_storage_target()` |
 | Mount | `backend/core/mount_facade.py` | `build_readonly_mount_plan()`, `validate_mount_readonly()`, `validate_source_not_target()`, `validate_not_live_root()` |
 | Safety | `backend/core/safety_facade.py` | `validate_write_target()`, `evaluate_preflight_write_target()`, `validate_backup_target()`, `build_safety_decision()` |
 
@@ -42,6 +42,10 @@ Datentypen: `BlockDeviceInfo`, `MountInfo`, `StorageTargetClassification`, `Read
 - `preflight/backup.py`, `backup_engine.py`, `restore_engine.py` → `safety_facade`
 - Details: `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4.md`
 
-## Nächste Migration (B.1)
+## Storage-Migration (B.1, erledigt)
 
-Storage: `backup_target_auto_prepare.py`, `inspect/collector.py`, `partition_storage_facade.py`.
+`backup_target_auto_prepare.py`, `inspect/collector.py`, `partition_storage_facade.py` — siehe `CORE_FACADE_STORAGE_MIGRATION_B1.md`.
+
+## Nächste Migration (B.2)
+
+`app.py` Storage-Hilfen, `inspect_storage.py`, Deploy Runner Registry.

@@ -33,18 +33,12 @@ _advisor_mod = importlib.util.module_from_spec(_advisor_spec)
 _advisor_spec.loader.exec_module(_advisor_mod)
 generate_advice = _advisor_mod.generate_advice
 
-_write_guard_path = Path(__file__).resolve().parent.parent / "safety" / "write_guard.py"
-_write_guard_spec = importlib.util.spec_from_file_location("setuphelfer_write_guard", _write_guard_path)
-if not (_write_guard_spec and _write_guard_spec.loader):
-    raise ImportError("cannot load write_guard")
-_write_guard_mod = importlib.util.module_from_spec(_write_guard_spec)
-_write_guard_spec.loader.exec_module(_write_guard_mod)
-build_write_safety_summary = _write_guard_mod.build_write_safety_summary
+from core.safety_facade import build_write_safety_summary
+from core.storage_facade import collect_inspect_storage_bundle
 
 from modules.inspect_boot import analyze_boot_status
 from modules.inspect_storage import check_mountability, detect_uuid_conflicts
 from modules.rescue_readonly_analyze import _analyze_network
-from modules.storage_detection import classify_devices, detect_block_devices, detect_filesystems
 
 
 def _collect_os_hints(
@@ -115,23 +109,21 @@ def collect_inspect_result() -> InspectResult:
     boot_status: dict[str, Any] = {}
     network_status: dict[str, Any] = {}
 
-    try:
-        devices_raw = detect_block_devices()
-        source_modules.append("modules.storage_detection.detect_block_devices")
-    except Exception as exc:
-        errors.append({"code": "inspect.storage.detect_block_devices_failed", "detail": type(exc).__name__})
-
-    try:
-        devices_classified = classify_devices(devices_raw)
-        source_modules.append("modules.storage_detection.classify_devices")
-    except Exception as exc:
-        errors.append({"code": "inspect.storage.classify_devices_failed", "detail": type(exc).__name__})
-
-    try:
-        filesystems_map = detect_filesystems()
-        source_modules.append("modules.storage_detection.detect_filesystems")
-    except Exception as exc:
-        errors.append({"code": "inspect.storage.detect_filesystems_failed", "detail": type(exc).__name__})
+    storage_bundle = collect_inspect_storage_bundle()
+    devices_raw = storage_bundle.get("devices_raw") or []
+    devices_classified = storage_bundle.get("devices_classified") or []
+    filesystems_map = storage_bundle.get("filesystems_map") or {}
+    bundle_modules = storage_bundle.get("source_modules") or []
+    if isinstance(bundle_modules, list):
+        source_modules.extend(str(m) for m in bundle_modules)
+    bundle_error = storage_bundle.get("error")
+    if isinstance(bundle_error, dict) and bundle_error.get("code"):
+        errors.append(
+            {
+                "code": str(bundle_error.get("code")),
+                "detail": bundle_error.get("detail"),
+            }
+        )
 
     try:
         mountability = check_mountability(read_only=True)

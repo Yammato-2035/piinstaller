@@ -16,12 +16,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Callable
 
-from core.safe_device import (
-    ClassifiedDevice,
+from core.safety_facade import (
     WriteTargetProtectionError,
-    list_classified_devices,
+    inspect_write_target_mount,
     validate_write_target,
 )
+from core.storage_facade import get_partition_uuid, list_classified_devices
 
 RunCmd = Callable[..., dict[str, Any]]
 
@@ -67,24 +67,6 @@ def setuphelfer_backup_dir(label: str) -> Path:
     return _SETUPHELFER_MEDIA_ROOT / sanitize_setuphelfer_label(label)
 
 
-def _partition_uuid(partition_path: str) -> str | None:
-    import subprocess
-
-    try:
-        proc = subprocess.run(
-            ["blkid", "-o", "value", "-s", "UUID", partition_path],
-            capture_output=True,
-            text=True,
-            timeout=15,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    if proc.returncode == 0 and (proc.stdout or "").strip():
-        return (proc.stdout or "").strip()
-    return None
-
-
 def _is_user_session_mount(mp: str) -> bool:
     parts = Path(mp).parts
     if len(parts) >= 3 and parts[1] == "media" and parts[2] != "setuphelfer":
@@ -110,7 +92,7 @@ def discover_external_backup_candidates(*, run: RunCmd | None = None) -> list[Ex
                 continue
             mps = [m for m in (part.mountpoints or []) if m and m not in ("/", "/boot", "/boot/firmware")]
             existing = mps[0] if mps else None
-            uuid = _partition_uuid(part.device_id)
+            uuid = get_partition_uuid(part.device_id)
             out.append(
                 ExternalBackupCandidate(
                     disk_id=dev.id,
@@ -266,8 +248,6 @@ def prepare_setuphelfer_external_target(
 
     if not _target_already_valid(target, run=runner):
         return _failed("validate_write_target nach Vorbereitung fehlgeschlagen", step="validate", candidate=cand)
-
-    from core.safe_device import inspect_write_target_mount
 
     return {
         "status": "ready",

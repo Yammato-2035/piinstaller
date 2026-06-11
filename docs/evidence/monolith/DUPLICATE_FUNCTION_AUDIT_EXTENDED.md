@@ -213,3 +213,16 @@
 | Write Guard / `partition_storage_facade.py` | offen (Phase B.1 Storage) |
 
 Boundary: 3 Safety-Warnungen entfernt. Evidence: `BOUNDARY_WARNINGS_FINAL_PHASE_A2_A4.txt`
+
+---
+
+## Update: Storage Facade Migration B.1 (2026-06-10)
+
+| Cluster | Status |
+|---------|--------|
+| blkid / `backup_target_auto_prepare.py` | **migriert** → `storage_facade.get_partition_uuid` |
+| `storage_detection` / `inspect/collector.py` | **migriert** → `collect_inspect_storage_bundle` |
+| write_guard / `partition_storage_facade.py` | **migriert** → `safety_facade` |
+| lsblk/findmnt / `app.py` | offen (B.2) |
+
+Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`

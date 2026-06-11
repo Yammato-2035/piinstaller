@@ -12,8 +12,10 @@ from pathlib import Path
 from typing import Any, Literal
 
 from core.backup_before_write_gate import evaluate_backup_before_write_requirement
-from core.safe_device import write_safe_prefixes_resolved
-from safety.write_guard import evaluate_write_target
+from core.safety_facade import (
+    evaluate_preflight_write_target as evaluate_write_target,
+    write_safe_prefixes_resolved,
+)
 
 FacadeStatus = Literal["ok", "review_required", "blocked"]
 

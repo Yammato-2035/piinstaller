@@ -55,9 +55,13 @@ Aktuell **nur Warnungen** in `check-module-boundaries.sh`. CI-Block ist für ein
 
 Weniger verstreute Imports → weniger Risiko, dass neue Module eigene Safety-Logik bauen. Boundary Guard erkennt Rückfälle in migrierten Dateien.
 
+## Was wurde in B.1 migriert?
+
+blkid/Storage-Erkennung in `backup_target_auto_prepare` und `inspect/collector` läuft über `storage_facade`. `partition_storage_facade` nutzt `safety_facade` statt direktem `write_guard`.
+
 ## Nächster Schritt?
 
-Phase B.1: Storage-Caller (`backup_target_auto_prepare`, `inspect/collector`, `partition_storage_facade`).
+Phase B.2: `app.py` Storage-Hilfen und `inspect_storage.py`.
 
 ## Weiterlesen
 

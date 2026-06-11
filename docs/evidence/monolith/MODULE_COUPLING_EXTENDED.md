@@ -109,4 +109,14 @@ safe_device    fat32_writer      manifest/drift
 
 `safe_device` Fan-In sinkt für Produkt-Engines; Implementierungskern bleibt in `safe_device.py` + `safety_facade.py`.
 
-Nächste Kandidaten: `partition_storage_facade`, `backup_target_auto_prepare`, `inspect/collector`, `app.py`.
+Nächste Kandidaten: `app.py`, `inspect_storage.py`, Deploy Runner Registry.
+
+---
+
+## Update: Storage Facade Migration B.1 (2026-06-10)
+
+| Kante | Status |
+|-------|--------|
+| `backup_target_auto_prepare` → blkid | über `storage_facade` |
+| `inspect/collector` → `storage_detection` | über `storage_facade` |
+| `partition_storage_facade` → `write_guard` | über `safety_facade` |

@@ -125,10 +125,11 @@
 | `backend/modules/restore_engine.py` | Safety-Imports → `safety_facade` (**erledigt**) |
 | `backend/preflight/backup.py` | Write-Guard → `safety_facade` (**erledigt**) |
 
-**Nächste Kandidaten (Phase B.1):**
+**B.1 (erledigt):** `partition_storage_facade.py`, `backup_target_auto_prepare.py`, `inspect/collector.py`
 
-1. `partition_storage_facade.py`
-2. `backup_target_auto_prepare.py`
-3. `inspect/collector.py`
-4. `app.py` Router-Extraktion
-5. Deploy Runner Registry
+**Nächste Kandidaten (Phase B.2):**
+
+1. `app.py` Storage-Hilfen
+2. `inspect_storage.py`
+3. Deploy Runner Registry
+4. Router-Extraktion `app.py`

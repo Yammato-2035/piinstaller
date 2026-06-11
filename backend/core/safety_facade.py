@@ -12,8 +12,16 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable
 
-from core.safe_device import WriteTargetProtectionError, validate_write_target as _validate_write_target_legacy
-from safety.write_guard import evaluate_write_target as _evaluate_write_target_legacy
+from core.safe_device import (
+    WriteTargetProtectionError,
+    inspect_write_target_mount as _inspect_write_target_mount_legacy,
+    validate_write_target as _validate_write_target_legacy,
+    write_safe_prefixes_resolved as _write_safe_prefixes_resolved_legacy,
+)
+from safety.write_guard import (
+    build_write_safety_summary as _build_write_safety_summary_legacy,
+    evaluate_write_target as _evaluate_write_target_legacy,
+)
 
 Runner = Callable[..., Any] | None
 
@@ -197,4 +205,19 @@ def build_safety_decision_contract(*, target: str, context: SafetyContext) -> Sa
         requires_confirmation=bool(raw.get("requires_confirmation")),
         requires_override=bool(raw.get("requires_override")),
     )
+
+
+def build_write_safety_summary(inspect_result: dict[str, Any]) -> dict[str, Any]:
+    """Inspect collector: write-safety summary (delegates write_guard)."""
+    return _build_write_safety_summary_legacy(inspect_result)
+
+
+def write_safe_prefixes_resolved() -> tuple[Any, ...]:
+    """Resolved write-safe path prefixes (delegates safe_device)."""
+    return _write_safe_prefixes_resolved_legacy()
+
+
+def inspect_write_target_mount(path: str, *, runner: Runner = None) -> dict[str, Any]:
+    """Mount inspection for prepared backup targets (delegates safe_device)."""
+    return _inspect_write_target_mount_legacy(path, runner=runner)
 

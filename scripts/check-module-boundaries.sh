@@ -91,6 +91,12 @@ MIGRATED_SAFETY_CALLERS = {
     "backend/preflight/backup.py",
     "backend/modules/backup_engine.py",
     "backend/modules/restore_engine.py",
+    "backend/core/partition_storage_facade.py",
+    "backend/inspect/collector.py",
+}
+MIGRATED_STORAGE_CALLERS = {
+    "backend/core/backup_target_auto_prepare.py",
+    "backend/inspect/collector.py",
 }
 
 patterns = [
@@ -119,6 +125,12 @@ for path in sorted(backend.rglob("*.py")):
                 "facade_boundary_write_guard",
             }:
                 warns.append(f"facade_boundary_migrated_caller_blocked:{rel}")
+            elif rel in MIGRATED_STORAGE_CALLERS and label in {
+                "facade_boundary_lsblk",
+                "facade_boundary_findmnt",
+                "facade_boundary_blkid",
+            }:
+                warns.append(f"facade_boundary_migrated_storage_blocked:{rel}")
             else:
                 warns.append(f"{label}:{rel}")
 

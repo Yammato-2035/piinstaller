@@ -45,17 +45,25 @@ from core.safety_facade import validate_backup_target, SafetyContext
 | `backend/deploy/runner_*.py` | Test/runbook artifacts | Not product API path |
 | `backend/inspect/collector.py` | Inspect collector | Migrate with inspect refactor |
 
-## Migrated callers (A.2–A.4)
-
-These modules use **only** `core.safety_facade` (no direct `write_guard`/`safe_device` import):
+## Migrated callers (A.2–A.4 safety)
 
 - `backend/preflight/backup.py`
 - `backend/modules/backup_engine.py`
 - `backend/modules/restore_engine.py`
 
-Direct legacy import again in these files → `facade_boundary_migrated_caller_blocked` in the boundary guard.
+Direct legacy import again → `facade_boundary_migrated_caller_blocked`.
 
 Details: `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4_EN.md`
+
+## Migrated callers (B.1 storage)
+
+- `backend/core/backup_target_auto_prepare.py` — `storage_facade` + `safety_facade`
+- `backend/inspect/collector.py` — `storage_facade` + `safety_facade`
+- `backend/core/partition_storage_facade.py` — `safety_facade`
+
+Direct blkid/lsblk/findmnt outside facades → `facade_boundary_migrated_storage_blocked`.
+
+Details: `docs/architecture/CORE_FACADE_STORAGE_MIGRATION_B1_EN.md`
 
 ## Safety contexts
 
@@ -82,6 +90,6 @@ Every `validate_*` / `build_safety_decision` call must set context explicitly.
 - No removal of legacy code
 - No moving logic into facades (contracts + thin delegation only)
 
-## Next step (after A.2–A.4)
+## Next step (after B.1)
 
-Phase B.1 — storage caller migration: `backup_target_auto_prepare.py`, `inspect/collector.py`, `partition_storage_facade.py`.
+Phase B.2 — `app.py` storage helpers, `inspect_storage.py`, deploy runner registry.

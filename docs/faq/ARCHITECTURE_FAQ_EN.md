@@ -55,9 +55,13 @@ Currently **warnings only** in `check-module-boundaries.sh`. CI blocking is plan
 
 Fewer scattered imports → less risk that new modules reimplement safety. The boundary guard detects regressions in migrated files.
 
+## What was migrated in B.1?
+
+blkid/storage discovery in `backup_target_auto_prepare` and `inspect/collector` goes through `storage_facade`. `partition_storage_facade` uses `safety_facade` instead of direct `write_guard`.
+
 ## Next step?
 
-Phase B.1: storage callers (`backup_target_auto_prepare`, `inspect/collector`, `partition_storage_facade`).
+Phase B.2: `app.py` storage helpers and `inspect_storage.py`.
 
 ## Further reading
 

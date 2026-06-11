@@ -439,3 +439,184 @@ def classify_storage_target(path_or_device: str, *, runner: Runner = None) -> St
 def is_external_target(path_or_device: str, *, runner: Runner = None) -> bool:
     """True when classification marks target as external (USB/removable heuristic)."""
     return classify_storage_target(path_or_device, runner=runner).external
+
+
+def get_partition_uuid(partition_path: str, *, runner: Runner = None) -> str | None:
+    """Canonical blkid UUID lookup for a partition path (read-only)."""
+    return get_device_uuid(partition_path, runner=runner)
+
+
+def get_device_uuid(device_path: str, *, runner: Runner = None) -> str | None:
+    """Canonical blkid UUID lookup (read-only)."""
+    run = runner or subprocess.run
+    try:
+        proc = run(
+            ["blkid", "-o", "value", "-s", "UUID", str(device_path)],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode == 0 and (proc.stdout or "").strip():
+        return (proc.stdout or "").strip()
+    return None
+
+
+def get_filesystem_type(device_path: str, *, runner: Runner = None) -> str | None:
+    """Filesystem type from inventory blkid map or detect_filesystems delegation."""
+    dev = str(device_path).strip()
+    try:
+        fs_map = detect_filesystems(runner=runner)
+        meta = fs_map.get(dev) if isinstance(fs_map, dict) else None
+        if isinstance(meta, dict):
+            fst = meta.get("type") or meta.get("fstype")
+            if fst:
+                return str(fst)
+    except Exception:  # noqa: BLE001
+        pass
+    snap = build_storage_inventory_snapshot(runner=runner, mode="live", include_tree_devices=False)
+    blk = snap.get("blkid_by_device") if isinstance(snap.get("blkid_by_device"), dict) else {}
+    meta = blk.get(dev)
+    if isinstance(meta, dict):
+        fst = meta.get("type") or meta.get("fstype")
+        return str(fst) if fst else None
+    return None
+
+
+def list_classified_devices(*, runner: Runner = None) -> list[Any]:
+    """Classified block devices for discovery UIs (delegates safe_device)."""
+    from core.safe_device import list_classified_devices as _list
+
+    return _list(runner=runner)
+
+
+def detect_block_devices_for_inspect(*, runner: Runner = None) -> list[dict[str, Any]]:
+    """Inspect collector: raw block device tree (delegates storage_detection)."""
+    return detect_block_devices(runner=runner)
+
+
+def detect_filesystems_for_inspect(*, runner: Runner = None) -> dict[str, dict[str, str]]:
+    """Inspect collector: blkid map (delegates storage_detection)."""
+    return detect_filesystems(runner=runner)
+
+
+def classify_devices_for_inspect(devices_raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Inspect collector: classified device tree (delegates storage_detection)."""
+    return classify_devices(devices_raw)
+
+
+def collect_inspect_storage_bundle(*, runner: Runner = None) -> dict[str, Any]:
+    """
+    Read-only storage bundle for inspect/collector (no mountability/uuid conflicts).
+    """
+    source_modules: list[str] = []
+    devices_raw: list[dict[str, Any]] = []
+    devices_classified: list[dict[str, Any]] = []
+    filesystems_map: dict[str, dict[str, str]] = {}
+
+    try:
+        devices_raw = detect_block_devices_for_inspect(runner=runner)
+        source_modules.append("core.storage_facade.detect_block_devices_for_inspect")
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "devices_raw": [],
+            "devices_classified": [],
+            "filesystems_map": {},
+            "source_modules": source_modules,
+            "error": {"code": "inspect.storage.detect_block_devices_failed", "detail": type(exc).__name__},
+        }
+
+    try:
+        devices_classified = classify_devices_for_inspect(devices_raw)
+        source_modules.append("core.storage_facade.classify_devices_for_inspect")
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "devices_raw": devices_raw,
+            "devices_classified": [],
+            "filesystems_map": {},
+            "source_modules": source_modules,
+            "error": {"code": "inspect.storage.classify_devices_failed", "detail": type(exc).__name__},
+        }
+
+    try:
+        filesystems_map = detect_filesystems_for_inspect(runner=runner)
+        source_modules.append("core.storage_facade.detect_filesystems_for_inspect")
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "devices_raw": devices_raw,
+            "devices_classified": devices_classified,
+            "filesystems_map": {},
+            "source_modules": source_modules,
+            "error": {"code": "inspect.storage.detect_filesystems_failed", "detail": type(exc).__name__},
+        }
+
+    return {
+        "devices_raw": devices_raw,
+        "devices_classified": devices_classified,
+        "filesystems_map": filesystems_map,
+        "source_modules": source_modules,
+        "error": None,
+    }
+
+
+def classify_device_from_existing_result(
+    inspect_result: dict[str, Any],
+    device: str,
+) -> StorageTargetClassification:
+    """Classify a device using an existing inspect payload (no new scan)."""
+    storage = inspect_result.get("storage") if isinstance(inspect_result, dict) else {}
+    storage = storage if isinstance(storage, dict) else {}
+    classified = storage.get("devices_classified")
+    rows = classified if isinstance(classified, list) else []
+    hint = str(device).strip()
+
+    def walk(nodes: list[Any]) -> StorageTargetClassification | None:
+        for node in nodes:
+            if not isinstance(node, dict):
+                continue
+            dev = str(node.get("device") or "")
+            if dev == hint:
+                cat = str(node.get("category") or "unknown")
+                role = StorageTargetRole.UNKNOWN
+                external = False
+                if cat == "system_disk":
+                    role = StorageTargetRole.SYSTEM_DISK
+                elif cat == "backup_candidate":
+                    role = StorageTargetRole.BACKUP_TARGET
+                    external = True
+                return StorageTargetClassification(
+                    path_or_device=hint,
+                    role=role,
+                    confidence="medium",
+                    external=external,
+                    write_allowed=False,
+                    evidence=(f"inspect_category:{cat}",),
+                )
+            parts = node.get("partitions")
+            if isinstance(parts, list):
+                hit = walk(parts)
+                if hit is not None:
+                    return hit
+        return None
+
+    hit = walk(rows)
+    if hit is not None:
+        return hit
+    return classify_storage_target(hint, runner=None)
+
+
+def normalize_legacy_storage_result(raw: dict[str, Any]) -> dict[str, Any]:
+    """Normalize legacy storage_detection/inspect dict keys for facade consumers."""
+    if not isinstance(raw, dict):
+        return {"facade_version": FACADE_CONTRACT_VERSION, "devices_raw": [], "devices_classified": []}
+    storage = raw.get("storage") if isinstance(raw.get("storage"), dict) else raw
+    filesystems = raw.get("filesystems") if isinstance(raw.get("filesystems"), dict) else {}
+    return {
+        "facade_version": FACADE_CONTRACT_VERSION,
+        "devices_raw": storage.get("devices_raw") or raw.get("devices_raw") or [],
+        "devices_classified": storage.get("devices_classified") or raw.get("devices_classified") or [],
+        "filesystems_detected": filesystems.get("detected") or raw.get("blkid_by_device") or {},
+        "lsblk_rows": raw.get("lsblk_rows") or [],
+    }
