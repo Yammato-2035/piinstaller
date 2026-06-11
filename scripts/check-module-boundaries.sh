@@ -438,6 +438,31 @@ else:
         print("deploy_routes_evidence_not_included:backend/deploy/routes.py")
     if '@router.post("/legacy-identifier-inventory")' in text:
         print("deploy_routes_evidence_duplicate_in_routes:backend/deploy/routes.py")
+
+# Phase D.5: governance router extraction (warn-only)
+governance_mod = root / "backend" / "deploy" / "routes_governance.py"
+if not governance_mod.is_file():
+    print("deploy_routes_governance_missing:backend/deploy/routes_governance.py")
+else:
+    gv = governance_mod.read_text(encoding="utf-8", errors="replace")
+    for m in re.findall(r"^from (deploy\.runner_[^\s]+) import", gv, flags=re.M):
+        if m != "deploy.runner_api_facade":
+            print(f"deploy_routes_governance_has_runner_import:{m}")
+    if re.search(r'@router\.post\("[^"]*(execute|apply|write|install|delete)', gv):
+        print("deploy_routes_governance_has_execute_route:backend/deploy/routes_governance.py")
+    if "allowed_to_execute = True" in gv.replace("_C4_EXECUTE_ALLOWED", ""):
+        print("deploy_routes_governance_allowed_execute_true:backend/deploy/routes_governance.py")
+    for ep in (
+        '@router.post("/runner/next-phase/gate")',
+        '@router.post("/version-governance/state")',
+        '@router.post("/version-source-of-truth-check")',
+    ):
+        if ep not in gv:
+            print(f"deploy_routes_governance_path_changed:missing_{ep}")
+    if "routes_governance" not in text or "include_router(deploy_governance_router)" not in text:
+        print("deploy_routes_governance_not_included:backend/deploy/routes.py")
+    if '@router.post("/runner/next-phase/gate")' in text and "build_plan_only_response" in text:
+        print("deploy_routes_governance_duplicate_in_routes:backend/deploy/routes.py")
 PY
 )
 

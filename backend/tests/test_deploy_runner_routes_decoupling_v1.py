@@ -77,13 +77,13 @@ class DeployRunnerRoutesDecouplingV1Tests(unittest.TestCase):
         ):
             self.assertNotIn(needle, routes_src)
         combined = routes_src + (_BACKEND / "deploy" / "routes_evidence.py").read_text(encoding="utf-8")
+        combined += (_BACKEND / "deploy" / "routes_governance.py").read_text(encoding="utf-8")
         self.assertIn('decoupling_phase="c6"', combined)
 
     def test_direct_import_count_reduced(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", routes_src, flags=re.M))
-        self.assertLessEqual(count, 104)
-        self.assertGreaterEqual(count, 104)
+        self.assertEqual(count, 103)
 
     def test_no_new_unsafe_runners_post_routes(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")

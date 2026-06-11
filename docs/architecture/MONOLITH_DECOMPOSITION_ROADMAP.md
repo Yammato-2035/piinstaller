@@ -279,7 +279,7 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 | Imports 109→104 | **erledigt** |
 | Execute | **nein** |
 
-**Nächster Schritt:** D.5 Governance Router Extraction
+**Nächster Schritt:** D.6 weiterer Governance/Evidence-Slice oder Route Summary Rebuild
 
 ---
 
@@ -292,10 +292,9 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **D.1** | Domain-Audit, Inventar, Zielarchitektur, Risiko | **erledigt** |
 | **D.2** | `routes_registry.py` — 5 GET Facade-Routen | **erledigt** |
 | **D.3** | `routes_risk_gate.py` — 5 GET Risk-Gate-Routen — **erledigt** |
-| **D.4** | Evidence Router |
 | **D.4** | `routes_evidence.py` — 6 POST plan-only (C.5/C.6) — **erledigt** |
-| **D.5** | Governance Router — **nächster Schritt** |
-| **D.5** | `routes_governance.py` — Audit/Sandbox/Install | geplant |
+| **D.5** | `routes_governance.py` — 3 POST C.5 — **erledigt** |
+| **D.6** | weiterer Slice / Route Summary — **nächster Schritt** |
 | **D.6+** | runtime, rescue, backup, restore | später (CRITICAL/HIGH) |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  

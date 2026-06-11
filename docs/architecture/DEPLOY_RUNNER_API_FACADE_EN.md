@@ -51,7 +51,8 @@ Additional GET routes `/runners/risk-gate/*` and `/{runner_id}/risk-gate` — se
 | **D.2** | `routes_registry.py` — 5 GET registry routes — **complete** |
 | **D.3** | `routes_risk_gate.py` — 5 GET risk-gate routes — **complete** |
 | **D.4** | `routes_evidence.py` — 6 POST plan-only — **complete** |
-| **D.5** | Governance router — **next** |
+| **D.5** | `routes_governance.py` — 3 POST C.5 — **complete** |
+| **D.6** | next slice |
 
 See `DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1_EN.md`.
 

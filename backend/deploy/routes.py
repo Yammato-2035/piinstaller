@@ -305,8 +305,8 @@ from deploy.runner_rescue_runtime_bundle_manifest import (
     build_rescue_runtime_bundle_seal,
     check_rescue_runtime_bundle_consistency,
 )
-from deploy.runner_api_facade import build_plan_only_response
 from deploy.routes_evidence import router as deploy_evidence_router
+from deploy.routes_governance import router as deploy_governance_router
 from deploy.routes_registry import router as deploy_registry_router
 from deploy.routes_risk_gate import router as deploy_risk_gate_router
 
@@ -314,6 +314,7 @@ router = APIRouter(prefix="/api/deploy", tags=["deploy-plan"])
 router.include_router(deploy_registry_router)
 router.include_router(deploy_risk_gate_router)
 router.include_router(deploy_evidence_router)
+router.include_router(deploy_governance_router)
 
 
 class DeployPlanRequest(BaseModel):
@@ -1820,27 +1821,6 @@ async def post_deploy_runner_lab_phase_consolidation(body: DeployRunnerLabPhaseC
     }
 
 
-@router.post("/runner/next-phase/gate")
-async def post_deploy_runner_next_phase_gate(body: DeployRunnerNextPhaseGateRequest) -> dict[str, Any]:
-    _ = body.placeholder or {}
-    facade = build_plan_only_response(
-        "runner_next_phase_gate",
-        response_code="DEPLOY_RUNNER_NEXT_PHASE_GATE",
-    )
-    st = facade["status"]
-    code = "DEPLOY_RUNNER_NEXT_PHASE_HOLD"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_NEXT_PHASE_MANUAL_RUNTIME_ALLOWED"
-    elif st == "blocked":
-        code = "DEPLOY_RUNNER_NEXT_PHASE_BLOCKED"
-    return {
-        "code": code,
-        "gate": facade,
-        "warnings": list(facade.get("warnings") or []),
-        "errors": list(facade.get("errors") or []),
-    }
-
-
 @router.post("/runner/manual-runtime/precheck")
 async def post_deploy_runner_manual_runtime_precheck(body: DeployRunnerManualRuntimePrecheckRequest) -> dict[str, Any]:
     precheck = build_runner_manual_runtime_precheck(
@@ -2380,41 +2360,6 @@ async def post_deploy_runner_manual_runtime_laptop_failure_finalized_export_pack
         "finalized_export_package": pkg,
         "warnings": list(pkg.get("warnings") or []),
         "errors": list(pkg.get("errors") or []),
-    }
-
-
-@router.post("/version-governance/state")
-async def post_deploy_version_governance_state(
-    body: DeployVersionGovernanceStateRequest,
-) -> dict[str, Any]:
-    _ = body
-    facade = build_plan_only_response(
-        "runner_version_governance",
-        response_code="DEPLOY_VERSION_GOVERNANCE_STATE",
-    )
-    code = facade["code"]
-    return {
-        "code": code,
-        "version_governance_state": facade,
-        "warnings": list(facade.get("warnings") or []),
-        "errors": list(facade.get("errors") or []),
-    }
-
-
-@router.post("/version-source-of-truth-check")
-async def post_deploy_version_source_of_truth_check(
-    body: DeployVersionSourceOfTruthCheckRequest,
-) -> dict[str, Any]:
-    _ = body
-    facade = build_plan_only_response(
-        "runner_version_source_of_truth_check",
-        response_code="DEPLOY_VERSION_SOURCE_OF_TRUTH_CHECK",
-    )
-    return {
-        "code": facade["code"],
-        "version_source_of_truth_check": facade,
-        "warnings": list(facade.get("warnings") or []),
-        "errors": list(facade.get("errors") or []),
     }
 
 

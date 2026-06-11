@@ -251,4 +251,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 **D.4 (erledigt):** Evidence-Router `routes_evidence.py` (6 POST plan-only).
 
-**Nächster Schritt:** D.5 Governance
+**D.5 (erledigt):** Governance-Router `routes_governance.py` (3 POST C.5).
+
+**Nächster Schritt:** D.6

@@ -111,9 +111,13 @@ Beide nutzen nur `runner_api_facade` — **0** direkte `runner_*`-Imports in den
 
 6 POST plan-only Routen (C.5/C.6 Identifier/Evidence) nach `routes_evidence.py`. POST bleibt, `build_plan_only_response`, kein Runner-Execute.
 
+## Was ist Phase D.5 (Governance-Router)?
+
+3 C.5-Routen (next-phase, version-governance, source-of-truth) nach `routes_governance.py`. Alle 9 decoupled Routen jetzt in Subroutern.
+
 ## Nächster Schritt?
 
-**D.5** Governance-Router oder weiterer Evidence-Slice.
+**D.6** weiterer Slice oder Route-Summary-Rebuild.
 
 ## Weiterlesen
 

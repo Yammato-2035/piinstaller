@@ -36,7 +36,7 @@ Thin orchestrator `routes.py` uses `include_router` — **no URL changes**.
 | **D.2** | registry | zero runner imports, facade-only GET — **complete** |
 | **D.3** | risk_gate | zero runner imports, gate already isolated — **complete** |
 | **D.4** | evidence (6 POST plan-only) | **complete** |
-| **D.5** | governance | audit/sandbox without device-write |
+| **D.5** | governance (3 POST C.5) — **complete** |
 | **D.6+** | runtime, rescue, backup, restore | **last** — CRITICAL/HIGH |
 
 ## Why registry and risk gate first?

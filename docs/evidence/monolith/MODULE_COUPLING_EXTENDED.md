@@ -133,9 +133,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **D.2 (erledigt):** `routes_registry.py` entkoppelt (5 GET, Facade-only).
 
-**D.3 (erledigt):** `routes_risk_gate.py` (5 GET, Facade-only).
+**D.5 (erledigt):** `routes_governance.py` (3 POST). Facade nur in Subroutern.
 
-**Nächster Schritt:** D.4
+**Nächster Schritt:** D.6
 
 ---
 

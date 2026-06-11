@@ -111,9 +111,13 @@ Both use only `runner_api_facade` — **zero** direct `runner_*` imports in hand
 
 6 POST plan-only routes moved to `routes_evidence.py`. POST unchanged, `build_plan_only_response`, no runner execution.
 
+## What is phase D.5 (governance router)?
+
+3 C.5 routes moved to `routes_governance.py`. All 9 decoupled routes now in sub-routers.
+
 ## Next step?
 
-**D.5** governance router or further evidence slice.
+**D.6** further slice or route summary rebuild.
 
 ## Further reading
 
