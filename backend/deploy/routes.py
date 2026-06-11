@@ -66,10 +66,7 @@ from deploy.runner_manual_runtime_result_bundle_checker import check_manual_runt
 from deploy.runner_manual_runtime_result_validator_handoff_gate import build_manual_runtime_result_validator_handoff
 from deploy.runner_manual_runtime_result_validator_dryrun_from_handoff import run_manual_runtime_result_validator_dryrun_from_handoff
 from deploy.runner_manual_runtime_validator_report_seal import seal_manual_runtime_validator_report
-from deploy.runner_manual_runtime_validator_seal_index import build_validator_report_seal_index
 from deploy.runner_manual_runtime_validator_seal_consistency_audit import run_validator_seal_consistency_audit
-from deploy.runner_manual_runtime_evidence_timeline import build_manual_runtime_evidence_timeline
-from deploy.runner_manual_runtime_evidence_final_snapshot import build_manual_runtime_evidence_final_snapshot
 from deploy.runner_manual_runtime_final_acceptance_gate import evaluate_manual_runtime_final_acceptance
 from deploy.runner_manual_runtime_final_export_package import build_manual_runtime_final_export_package
 from deploy.runner_manual_runtime_failure_injection_matrix import build_manual_runtime_failure_injection_matrix
@@ -117,7 +114,6 @@ from deploy.runner_laptop_live_probe_execution_handoff import (
     execute_laptop_live_probe_readonly,
 )
 from deploy.runner_setuphelfer_runtime_identifier_migration import build_runtime_identifier_migration_plan
-from deploy.runner_setuphelfer_identifier_consistency_check import check_setuphelfer_identifier_consistency
 from deploy.runner_legacy_identifier_cleanup_classifier import classify_active_legacy_identifiers
 from deploy.runner_setuphelfer_safe_rewrite_plan import build_setuphelfer_safe_rewrite_plan
 from deploy.runner_setuphelfer_controlled_rewrite_apply import apply_setuphelfer_controlled_rewrite
@@ -126,7 +122,6 @@ from deploy.runner_setuphelfer_identifier_cleanup_cycle import (
     build_setuphelfer_identifier_cleanup_cycle,
     build_setuphelfer_identifier_cleanup_cycle_postcheck,
 )
-from deploy.runner_legacy_identifier_hotspot_analysis import build_legacy_identifier_hotspot_analysis
 from deploy.runner_setuphelfer_identifier_hotspot_cleanup_cycle import (
     apply_setuphelfer_identifier_hotspot_cleanup_cycle,
     build_setuphelfer_identifier_hotspot_cleanup_cycle,
@@ -1999,18 +1994,17 @@ async def post_deploy_runner_manual_runtime_result_validator_report_seal(
 async def post_deploy_runner_manual_runtime_validator_seal_index(
     body: DeployRunnerManualRuntimeValidatorSealIndexRequest,
 ) -> dict[str, Any]:
-    idx = build_validator_report_seal_index(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(idx.get("index_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_VALIDATOR_SEAL_INDEX_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_VALIDATOR_SEAL_INDEX_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_VALIDATOR_SEAL_INDEX_REVIEW_REQUIRED"
+    _ = body
+    facade = build_plan_only_response(
+        "runner_manual_runtime_validator_seal_index",
+        response_code="DEPLOY_RUNNER_MANUAL_RUNTIME_VALIDATOR_SEAL_INDEX",
+        decoupling_phase="c6",
+    )
     return {
-        "code": code,
-        "index": idx,
-        "warnings": list(idx.get("warnings") or []),
-        "errors": list(idx.get("errors") or []),
+        "code": facade["code"],
+        "index": facade,
+        "warnings": list(facade.get("warnings") or []),
+        "errors": list(facade.get("errors") or []),
     }
 
 
@@ -2037,18 +2031,17 @@ async def post_deploy_runner_manual_runtime_validator_seal_consistency_audit(
 async def post_deploy_runner_manual_runtime_evidence_timeline(
     body: DeployRunnerManualRuntimeEvidenceTimelineRequest,
 ) -> dict[str, Any]:
-    tl = build_manual_runtime_evidence_timeline(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(tl.get("timeline_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_EVIDENCE_TIMELINE_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_EVIDENCE_TIMELINE_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_EVIDENCE_TIMELINE_REVIEW_REQUIRED"
+    _ = body
+    facade = build_plan_only_response(
+        "runner_manual_runtime_evidence_timeline",
+        response_code="DEPLOY_RUNNER_MANUAL_RUNTIME_EVIDENCE_TIMELINE",
+        decoupling_phase="c6",
+    )
     return {
-        "code": code,
-        "timeline": tl,
-        "warnings": list(tl.get("warnings") or []),
-        "errors": list(tl.get("errors") or []),
+        "code": facade["code"],
+        "timeline": facade,
+        "warnings": list(facade.get("warnings") or []),
+        "errors": list(facade.get("errors") or []),
     }
 
 
@@ -2056,18 +2049,17 @@ async def post_deploy_runner_manual_runtime_evidence_timeline(
 async def post_deploy_runner_manual_runtime_evidence_final_snapshot(
     body: DeployRunnerManualRuntimeEvidenceFinalSnapshotRequest,
 ) -> dict[str, Any]:
-    snap = build_manual_runtime_evidence_final_snapshot(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(snap.get("snapshot_status") or "blocked")
-    code = "DEPLOY_RUNNER_MANUAL_RUNTIME_EVIDENCE_FINAL_SNAPSHOT_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_EVIDENCE_FINAL_SNAPSHOT_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNNER_MANUAL_RUNTIME_EVIDENCE_FINAL_SNAPSHOT_REVIEW_REQUIRED"
+    _ = body
+    facade = build_plan_only_response(
+        "runner_manual_runtime_evidence_final_snapshot",
+        response_code="DEPLOY_RUNNER_MANUAL_RUNTIME_EVIDENCE_FINAL_SNAPSHOT",
+        decoupling_phase="c6",
+    )
     return {
-        "code": code,
-        "snapshot": snap,
-        "warnings": list(snap.get("warnings") or []),
-        "errors": list(snap.get("errors") or []),
+        "code": facade["code"],
+        "snapshot": facade,
+        "warnings": list(facade.get("warnings") or []),
+        "errors": list(facade.get("errors") or []),
     }
 
 
@@ -2526,18 +2518,17 @@ async def post_deploy_setuphelfer_runtime_identifier_migration(
 async def post_deploy_setuphelfer_identifier_consistency_check(
     body: DeploySetuphelferIdentifierConsistencyCheckRequest,
 ) -> dict[str, Any]:
-    chk = check_setuphelfer_identifier_consistency(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(chk.get("check_status") or "blocked")
-    code = "DEPLOY_SETUPHELFER_IDENTIFIER_CONSISTENCY_CHECK_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_SETUPHELFER_IDENTIFIER_CONSISTENCY_CHECK_OK"
-    elif st == "review_required":
-        code = "DEPLOY_SETUPHELFER_IDENTIFIER_CONSISTENCY_CHECK_REVIEW_REQUIRED"
+    _ = body
+    facade = build_plan_only_response(
+        "runner_setuphelfer_identifier_consistency_check",
+        response_code="DEPLOY_SETUPHELFER_IDENTIFIER_CONSISTENCY_CHECK",
+        decoupling_phase="c6",
+    )
     return {
-        "code": code,
-        "setuphelfer_identifier_consistency_check": chk,
-        "warnings": list(chk.get("warnings") or []),
-        "errors": list(chk.get("errors") or []),
+        "code": facade["code"],
+        "setuphelfer_identifier_consistency_check": facade,
+        "warnings": list(facade.get("warnings") or []),
+        "errors": list(facade.get("errors") or []),
     }
 
 
@@ -2662,18 +2653,17 @@ async def post_deploy_setuphelfer_identifier_cleanup_cycle_postcheck(
 async def post_deploy_legacy_identifier_hotspot_analysis(
     body: DeployLegacyIdentifierHotspotAnalysisRequest,
 ) -> dict[str, Any]:
-    res = build_legacy_identifier_hotspot_analysis(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("analysis_status") or "blocked")
-    code = "DEPLOY_LEGACY_IDENTIFIER_HOTSPOT_ANALYSIS_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_LEGACY_IDENTIFIER_HOTSPOT_ANALYSIS_OK"
-    elif st == "review_required":
-        code = "DEPLOY_LEGACY_IDENTIFIER_HOTSPOT_ANALYSIS_REVIEW_REQUIRED"
+    _ = body
+    facade = build_plan_only_response(
+        "runner_legacy_identifier_hotspot_analysis",
+        response_code="DEPLOY_LEGACY_IDENTIFIER_HOTSPOT_ANALYSIS",
+        decoupling_phase="c6",
+    )
     return {
-        "code": code,
-        "legacy_identifier_hotspot_analysis": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
+        "code": facade["code"],
+        "legacy_identifier_hotspot_analysis": facade,
+        "warnings": list(facade.get("warnings") or []),
+        "errors": list(facade.get("errors") or []),
     }
 
 

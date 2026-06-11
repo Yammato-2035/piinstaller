@@ -129,9 +129,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **C.4 (erledigt):** Risk Gate — Entscheidungen ohne Execute.
 
-**C.5 (erledigt):** 4 Imports aus `routes.py` entfernt.
+**C.5+C.6 (erledigt):** 9 Imports aus `routes.py` entfernt (104 verbleibend).
 
-**Nächster Schritt:** C.6 Slice
+**Nächster Schritt:** C.7
 
 ---
 

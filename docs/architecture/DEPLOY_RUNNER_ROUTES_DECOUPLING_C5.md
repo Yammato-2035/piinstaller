@@ -4,7 +4,7 @@
 
 ## Warum nur ein kleiner Slice?
 
-- 109 von 113 direkten Imports bleiben (Execute, Rescue, Write, Operator-Pfade)
+- Nach C.6: 104 von 113 direkten Imports verbleiben (Execute, Rescue, Write, Operator-Pfade)
 - C.4 verbietet `allowed_to_execute` — keine Execute-Freigabe
 - Response-Kompatibilität nur bei plan-only Gate sicher
 
@@ -18,6 +18,10 @@
 
 `POST /runner/next-phase/gate`, `/version-governance/state`, `/version-source-of-truth-check`, `/legacy-identifier-inventory`
 
-## C.6 / C.7
+## C.6 (erledigt)
 
-Weitere Slices nach `allowed_plan_only`-Liste; Execute-Gate bleibt Zukunftsthema nach vollständiger Migration.
+5 Evidence/Identifier-Routen decoupled — siehe `DEPLOY_RUNNER_ROUTES_DECOUPLING_C6.md`. Imports 109→104.
+
+## C.7
+
+Nächster Slice nach `allowed_plan_only`-Liste; Execute-Gate bleibt Zukunftsthema.

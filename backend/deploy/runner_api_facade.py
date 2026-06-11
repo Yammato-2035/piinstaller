@@ -32,10 +32,9 @@ from deploy.runner_risk_gate import (
     list_operator_required_runners,
 )
 
-FACADE_VERSION = 3
+FACADE_VERSION = 4
 
-# C.5 decoupled routes (plan-only via facade, no direct runner import)
-DECOUPLED_ROUTE_RUNNER_IDS = frozenset(
+DECOUPLED_ROUTE_RUNNER_IDS_C5 = frozenset(
     {
         "runner_next_phase_gate",
         "runner_version_governance",
@@ -43,6 +42,18 @@ DECOUPLED_ROUTE_RUNNER_IDS = frozenset(
         "runner_legacy_identifier_inventory",
     }
 )
+
+DECOUPLED_ROUTE_RUNNER_IDS_C6 = frozenset(
+    {
+        "runner_legacy_identifier_hotspot_analysis",
+        "runner_setuphelfer_identifier_consistency_check",
+        "runner_manual_runtime_evidence_timeline",
+        "runner_manual_runtime_evidence_final_snapshot",
+        "runner_manual_runtime_validator_seal_index",
+    }
+)
+
+DECOUPLED_ROUTE_RUNNER_IDS = DECOUPLED_ROUTE_RUNNER_IDS_C5 | DECOUPLED_ROUTE_RUNNER_IDS_C6
 
 _DEPLOY_ROOT = Path(__file__).resolve().parent
 _UNSAFE_ROUTE_FRAGMENTS = frozenset(
@@ -334,56 +345,60 @@ def build_plan_only_response(
     runner_id: str,
     *,
     response_code: str = "RUNNER_PLAN_ONLY",
+    decoupling_phase: str = "c5",
 ) -> dict[str, Any]:
     """Plan-only facade response: risk gate + contract empty result, no runner import."""
+    phase_tag = f"facade_decoupling_{decoupling_phase}"
     entries = _entries_list()
     gate_decision = evaluate_runner_risk_gate(runner_id, entries=entries)
     gate_dict = gate_decision.to_dict()
 
-    if gate_decision.decision == RunnerRiskDecision.BLOCKED_UNKNOWN_RUNNER:
-        return {
-            "status": "blocked",
-            "code": f"{response_code}_BLOCKED",
-            "runner_id": runner_id,
-            "risk_gate": gate_dict,
-            "result": {},
-            "warnings": list(gate_decision.warnings),
-            "errors": list(gate_decision.errors),
+    def _base(**extra: Any) -> dict[str, Any]:
+        payload: dict[str, Any] = {
             "allowed_to_execute": False,
-            "facade_decoupling_c5": True,
+            phase_tag: True,
         }
+        payload.update(extra)
+        return payload
+
+    if gate_decision.decision == RunnerRiskDecision.BLOCKED_UNKNOWN_RUNNER:
+        return _base(
+            status="blocked",
+            code=f"{response_code}_BLOCKED",
+            runner_id=runner_id,
+            risk_gate=gate_dict,
+            result={},
+            warnings=list(gate_decision.warnings),
+            errors=list(gate_decision.errors),
+        )
 
     if not gate_decision.allowed_to_plan:
         status = "blocked" if gate_decision.decision.value.startswith("blocked") else "review_required"
         suffix = "BLOCKED" if status == "blocked" else "REVIEW_REQUIRED"
-        return {
-            "status": status,
-            "code": f"{response_code}_{suffix}",
-            "runner_id": runner_id,
-            "risk_gate": gate_dict,
-            "result": {},
-            "warnings": list(gate_decision.warnings),
-            "errors": list(gate_decision.errors),
-            "allowed_to_execute": False,
-            "facade_decoupling_c5": True,
-        }
+        return _base(
+            status=status,
+            code=f"{response_code}_{suffix}",
+            runner_id=runner_id,
+            risk_gate=gate_dict,
+            result={},
+            warnings=list(gate_decision.warnings),
+            errors=list(gate_decision.errors),
+        )
 
     entry = find_runner_by_id(runner_id, entries)
     assert entry is not None
     empty = build_empty_result_for_registry_entry(entry)
     status = "ok" if gate_decision.decision == RunnerRiskDecision.ALLOWED_PLAN_ONLY else "review_required"
     suffix = "OK" if status == "ok" else "REVIEW_REQUIRED"
-    return {
-        "status": status,
-        "code": f"{response_code}_{suffix}",
-        "runner_id": runner_id,
-        "risk_gate": gate_dict,
-        "result": empty.to_dict(),
-        "warnings": list(gate_decision.warnings),
-        "errors": [],
-        "allowed_to_execute": False,
-        "facade_decoupling_c5": True,
-    }
+    return _base(
+        status=status,
+        code=f"{response_code}_{suffix}",
+        runner_id=runner_id,
+        risk_gate=gate_dict,
+        result=empty.to_dict(),
+        warnings=list(gate_decision.warnings),
+        errors=[],
+    )
 
 
 def build_readonly_runner_response(

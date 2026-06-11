@@ -79,13 +79,13 @@ Read-only layer `runner_api_facade.py` + **5 GET routes** under `/api/deploy/run
 
 `runner_risk_gate.py` evaluates `risk_level`, `execution_policy`, and optional operator context. **`allowed_to_execute` stays false** — planning decisions only, for C.5.
 
-## What was decoupled in C.5?
+## What was decoupled in C.5/C.6?
 
-4 plan-only POST routes (version/identifier/next-phase) use `build_plan_only_response` instead of direct runner imports. **113→109** imports. No execute release.
+**C.5:** 4 routes (version/identifier/next-phase). **C.6:** 5 evidence/identifier routes. **113→104** imports. `facade_decoupling_c5/c6`, execute still false.
 
 ## Next step?
 
-Phase **C.6** next routes slice.
+Phase **C.7** next slice.
 
 ## Further reading
 

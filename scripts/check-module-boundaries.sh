@@ -322,16 +322,24 @@ if not routes.is_file():
 text = routes.read_text(encoding="utf-8", errors="replace")
 imports = re.findall(r"^from deploy\.runner_[^\s]+ import", text, flags=re.M)
 count = len(imports)
-baseline = 113
+baseline_c5 = 113
+baseline_c6 = 109
 print(f"routes_direct_runner_import_count:{count}")
-if count < baseline:
-    print(f"routes_direct_runner_import_reduced:{baseline}_to_{count}")
+if count < baseline_c5:
+    print(f"routes_direct_runner_import_reduced:{baseline_c5}_to_{count}")
+if count < baseline_c6:
+    print(f"routes_direct_runner_import_reduced_c6:{baseline_c6}_to_{count}")
 
 decoupled = {
     "runner_next_phase_gate": "/runner/next-phase/gate",
     "runner_version_governance": "/version-governance/state",
     "runner_version_source_of_truth_check": "/version-source-of-truth-check",
     "runner_legacy_identifier_inventory": "/legacy-identifier-inventory",
+    "runner_legacy_identifier_hotspot_analysis": "/legacy-identifier-hotspot-analysis",
+    "runner_setuphelfer_identifier_consistency_check": "/setuphelfer-identifier-consistency-check",
+    "runner_manual_runtime_evidence_timeline": "/runner/manual-runtime/evidence-timeline",
+    "runner_manual_runtime_evidence_final_snapshot": "/runner/manual-runtime/evidence-final-snapshot",
+    "runner_manual_runtime_validator_seal_index": "/runner/manual-runtime/result-validator-seal-index",
 }
 for rid, path_fragment in decoupled.items():
     if f"from deploy.{rid} import" in text:

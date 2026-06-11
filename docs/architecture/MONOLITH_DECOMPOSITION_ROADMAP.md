@@ -2,7 +2,7 @@
 
 **Datum:** 2026-06-10 (aktualisiert nach Deploy Runner Risk Gate C.4)  
 **HEAD:** `ef20b6a`+ (C.3 Facade) → C.4 Risk Gate  
-**Status:** C.1–C.5 erledigt; **109** direkte Runner-Imports (von 113); Execute gesperrt
+**Status:** C.1–C.6 erledigt; **104** direkte Runner-Imports (von 113); Execute gesperrt
 
 ## Strategie
 
@@ -40,7 +40,7 @@
 | Result Contract | **erledigt** (C.2) | `runner_result_contract.py` |
 | API Facade read-only | **erledigt** (C.3) | `runner_api_facade.py` + 5 GET-Routen |
 | Runner refaktorieren / Lazy-Import | **offen** | C.5 |
-| `routes.py` Import-Entlastung | **C.5 Slice** | 109 Imports (4 entfernt) |
+| `routes.py` Import-Entlastung | **C.5+C.6** | 104 Imports (9 entfernt) |
 
 **C.1 geliefert:** Metadaten (category, risk_level, execution_policy), Boundary-Warnungen, Tests — **keine** Runner-Ausführung.  
 **C.2 geliefert:** `RunnerResult`, Validator, Legacy-Normalizer, Empty-Results — **keine** Runner-Ausführung.  
@@ -205,7 +205,7 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 2. **B1** — Storage Safety Facade — Duplikat-Risiko senken
 3. **C1** — `BackupRestore.tsx` zerlegen — größter Frontend-Monolith
 4. **D1** — DCC Status Facade — Deploy-Drift-Transparenz
-5. **C.6** — Nächster Routes-Slice (C.5 **erledigt**)
+5. **C.7** — Nächster Routes-Slice (C.6 **erledigt**)
 6. **C3** — DCC Frontend-Slice
 7. **B2** — Rescue USB Writer Pipeline
 8. **E1** — i18n Namespaces
@@ -271,4 +271,12 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 | Imports 113→109 | **erledigt** |
 | Execute-Freigabe | **nein** |
 
-**Nächster Schritt:** C.6 nächster Slice
+## Update: Phase C.6 Routes Decoupling (2026-06-10)
+
+| Lieferung | Status |
+|-----------|--------|
+| 5 evidence/identifier Routen | **erledigt** |
+| Imports 109→104 | **erledigt** |
+| Execute | **nein** |
+
+**Nächster Schritt:** C.7

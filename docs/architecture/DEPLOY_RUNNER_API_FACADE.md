@@ -1,11 +1,11 @@
 # Deploy Runner API Facade (Phase C.3)
 
 **Modul:** `backend/deploy/runner_api_facade.py`  
-**Facade-Version:** `FACADE_VERSION = 1`
+**Facade-Version:** `FACADE_VERSION = 4`
 
 ## Warum API Facade?
 
-`routes.py` (~5003 Zeilen) importiert **112** Runner-Module direkt. Dashboard und DCC können Registry/Contract nicht zentral abfragen. C.3 liefert eine **read-only Facade** als Entlastungs- und Integrationspunkt — ohne Runner auszuführen oder zu migrieren.
+`routes.py` importiert nach C.6 noch **104** Runner-Module direkt (von ursprünglich 113). Dashboard und DCC können Registry/Contract nicht zentral abfragen. C.3 liefert eine **read-only Facade** als Entlastungs- und Integrationspunkt — ohne Runner auszuführen oder zu migrieren.
 
 ## Warum read-only?
 
@@ -28,9 +28,9 @@ Deploy-Runner umfassen device-write, destructive und sudo-Pfade. C.3 erlaubt nur
 - Import von `runner_*.py` in der Facade
 - Shell, subprocess, Runtime-Schreibzugriffe
 
-## Routes Decoupling (C.5)
+## Routes Decoupling (C.5 + C.6)
 
-`build_plan_only_response`, `assert_runner_plan_allowed` — 4 POST-Routen decoupled. Siehe `DEPLOY_RUNNER_ROUTES_DECOUPLING_C5.md`.
+`build_plan_only_response(runner_id, decoupling_phase="c5"|"c6")` — **9** POST-Routen decoupled (4 in C.5, 5 in C.6). Siehe `DEPLOY_RUNNER_ROUTES_DECOUPLING_C5.md` und `DEPLOY_RUNNER_ROUTES_DECOUPLING_C6.md`.
 
 ## Risk Gate (C.4, erledigt)
 
@@ -44,7 +44,9 @@ Zusätzliche GET-Routen `/runners/risk-gate/*` und `/{runner_id}/risk-gate` — 
 | **C.2** | Result Contract — `RunnerResult` |
 | **C.3** | API Facade — read-only GET (dieses Dokument) |
 | **C.4** | Risk Gate — **erledigt**, `allowed_to_execute` immer false |
-| **C.5** | Schrittweise Runner-Migration |
+| **C.5** | Erster Routes-Slice (4 Routen) — **erledigt** |
+| **C.6** | Zweiter Routes-Slice (5 Routen) — **erledigt** |
+| **C.7** | Nächster Slice oder Risk-Gate-Verschärfung |
 
 ## Tests
 

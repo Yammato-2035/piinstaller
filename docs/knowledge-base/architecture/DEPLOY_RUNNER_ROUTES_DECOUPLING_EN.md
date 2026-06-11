@@ -1,5 +1,5 @@
 # Routes Decoupling C.5 — KB
 
-4 imports removed (113→109). Plan-only via `build_plan_only_response`. Execute still false.
+C.5: 4 imports (113→109). C.6: 5 imports (109→104). **9** total decoupled. Execute false.
 
-Next step: **C.6** next slice.
+Next step: **C.7**

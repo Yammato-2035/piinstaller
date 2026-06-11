@@ -39,7 +39,7 @@ POST execute/apply/install/write/delete — unverändert verboten.
 
 ## Phasen
 
-C.1 Registry → C.2 Contract → C.3 Facade → **C.4 Risk Gate** → C.5 Migration
+C.1 Registry → C.2 Contract → C.3 Facade → **C.4 Risk Gate** → C.5/C.6 Routes Decoupling (9 Routen, Execute weiterhin false) → C.7
 
 ## Tests
 
