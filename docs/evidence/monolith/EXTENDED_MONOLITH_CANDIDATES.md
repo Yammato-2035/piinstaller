@@ -58,7 +58,7 @@
 
 | Struktur | Umfang | Hauptdomäne | Risiko | Priorität |
 |----------|--------|-------------|--------|-----------|
-| `backend/deploy/runner_*.py` | 115 Dateien, ~37k Zeilen | Deployment | **CRITICAL** | **P1** |
+| `backend/deploy/runner_*.py` | 115 Dateien, ~37k Zeilen | Deployment | **CRITICAL** | **P1** — Registry C.1 (**nicht refaktoriert**) |
 | `backend/core/dev_dashboard_*.py` | 8+ Dateien | Development Control Center | **HIGH** | **P2** |
 | `backend/core/notification_*.py` | 4 Dateien | Benachrichtigungssystem | **MEDIUM** | **P3** |
 | `backend/core/rescue_*.py` | 25+ Dateien | Rescue | **HIGH** | **P2** |
@@ -107,7 +107,7 @@
 | 1 | `backend/app.py` | 17.857 | Zentraler API-Monolith, höchstes Fan-In, blockiert Testbarkeit |
 | 2 | `backend/deploy/routes.py` | 5.003 | Zweiter API-Monolith, Deploy+Rescue vermischt |
 | 3 | `frontend/src/pages/BackupRestore.tsx` | 3.992 | Größte UI-Monolith-Komponente |
-| 4 | `backend/deploy/runner_*` Cluster | ~37k | 115 Runner ohne einheitliche Facade |
+| 4 | `backend/deploy/runner_*` Cluster | ~37k | 115 Runner — **C.1 Registry** (`runner_registry.py`); Facade/Risk Gate C.3/C.4 offen |
 | 5 | `frontend/src/pages/ControlCenter.tsx` | 2.681 | Companion-Dashboard ohne Modulgrenzen |
 | 6 | `backend/core/rescue_fat32_esp_usb_writer.py` | 1.469 | Safety-kritisch, viele Verantwortungen |
 | 7 | `frontend/src/pages/InspectRun.tsx` | 2.385 | Diagnostics + Rescue + Verify vermischt |
@@ -127,9 +127,12 @@
 
 **B.1 (erledigt):** `partition_storage_facade.py`, `backup_target_auto_prepare.py`, `inspect/collector.py`
 
-**Nächste Kandidaten (Phase B.2):**
+**Phase C.1 (erledigt):** Deploy Runner Registry — `backend/deploy/runner_registry.py`, Evidence unter `docs/evidence/deploy-runner/`. 115 Runner **noch nicht** refaktoriert.
 
-1. `app.py` Storage-Hilfen
-2. `inspect_storage.py`
-3. Deploy Runner Registry
-4. Router-Extraktion `app.py`
+**Nächste Kandidaten:**
+
+1. **C.2** Runner Result Contract
+2. **C.3** Runner API Facade
+3. **C.4** Runner Risk Gate
+4. B.2: `app.py` Storage-Hilfen, `inspect_storage.py`
+5. Router-Extraktion `app.py`

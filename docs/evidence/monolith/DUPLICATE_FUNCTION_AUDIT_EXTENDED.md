@@ -226,3 +226,15 @@ Boundary: 3 Safety-Warnungen entfernt. Evidence: `BOUNDARY_WARNINGS_FINAL_PHASE_
 | lsblk/findmnt / `app.py` | offen (B.2) |
 
 Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
+
+---
+
+## Update: Deploy Runner Registry C.1 (2026-06-10)
+
+| Cluster | Status |
+|---------|--------|
+| 115 `runner_*.py` ohne einheitliche Metadaten | **C.1** — statische Registry `runner_registry.py` |
+| Deploy-Runner Duplikat-Cluster (Rescue Build, Evidence) | inventarisiert in `DEPLOY_RUNNER_INVENTORY.md` — **nicht** dedupliziert |
+| Runner-Ausführung / subprocess | unverändert — kein Refactoring in C.1 |
+
+**Nächster Schritt:** C.2 Result Contract; danach Facade statt paralleler Runner-Muster.

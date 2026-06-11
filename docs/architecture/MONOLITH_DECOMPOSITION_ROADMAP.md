@@ -1,8 +1,8 @@
 # Monolith Decomposition Roadmap
 
-**Datum:** 2026-06-10 (aktualisiert nach Facade Caller A.2–A.4)  
-**HEAD:** `42fb673`+ (siehe Commit `arch(core): migrate backup restore callers to safety facade`)  
-**Status:** Phase A.1 Facade Freeze + **A.2–A.4 Safety-Caller migriert**; Router/Storage-Monolith offen
+**Datum:** 2026-06-10 (aktualisiert nach Deploy Runner Registry C.1)  
+**HEAD:** `d21e460`+ (B.1 Storage Caller) → C.1 Registry  
+**Status:** A.1–A.4 + B.1 erledigt; **C.1 Deploy Runner Registry** (statisch, warn-only); Runner noch nicht refaktoriert
 
 ## Strategie
 
@@ -31,18 +31,19 @@
 **Tests:** Bestehende API-Tests pro Domäne splitten  
 **Aufwand:** L (8–15 PRs)
 
-### A2: `backend/deploy/routes.py` Runner-Registry
+### A2 / C.1: Deploy Runner Registry (**C.1 erledigt**)
 
-| Kandidat | Zielmodul | Zielstruktur |
-|----------|-----------|--------------|
-| 115 `runner_*.py` | `deploy/registry.py` | Lazy-Import-Registry |
-| Route-Handler | `deploy/handlers/` | Gruppiert nach Domäne |
+| Kandidat | Status | Modul |
+|----------|--------|-------|
+| 115 `runner_*.py` inventarisieren | **erledigt** | `deploy/runner_registry.py` |
+| Statische Klassifikation | **erledigt** | Heuristiken + Evidence-Export |
+| Runner refaktorieren / Lazy-Import | **offen** | C.2–C.4 |
+| `routes.py` Handler gruppieren | **offen** | nach C.3 Facade |
 
-**Facade:** `deploy/orchestrator.py` — ein Entry für DCC  
-**Contract:** Runner-Metadaten (id, domain, profile, dry_run)  
-**API-Auswirkung:** Keine  
-**Tests:** Registry-Unit-Tests + Smoke pro Runner-Gruppe  
-**Aufwand:** XL (mehrere Sprints)
+**C.1 geliefert:** Metadaten (category, risk_level, execution_policy), Boundary-Warnungen, Tests — **keine** Runner-Ausführung.  
+**Nächste Schritte:** C.2 Result Contract → C.3 API Facade → C.4 Risk Gate  
+**Evidence:** `docs/evidence/deploy-runner/`, `docs/architecture/DEPLOY_RUNNER_REGISTRY.md`  
+**Aufwand Rest:** L–XL
 
 ---
 
@@ -78,7 +79,7 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 |----------|-----------|
 | `app.py` Storage-Hilfen | Router + `storage_facade` |
 | `inspect_storage.py` | `mount_facade` |
-| Deploy Runner Registry | `deploy/registry.py` |
+| Deploy Runner Registry | `deploy/runner_registry.py` (**C.1**) — Orchestrierung C.3 |
 
 **Contract:** unverändert  
 **Tests:** Facade-Contracts + Domain-Tests  
@@ -200,7 +201,7 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 2. **B1** — Storage Safety Facade — Duplikat-Risiko senken
 3. **C1** — `BackupRestore.tsx` zerlegen — größter Frontend-Monolith
 4. **D1** — DCC Status Facade — Deploy-Drift-Transparenz
-5. **A2** — Deploy Runner Registry — Wartbarkeit
+5. **C.2** — Runner Result Contract (C.1 Registry **erledigt**)
 6. **C3** — DCC Frontend-Slice
 7. **B2** — Rescue USB Writer Pipeline
 8. **E1** — i18n Namespaces
@@ -217,3 +218,17 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 - [ ] OpenAPI-Diff leer
 - [ ] Phase-0-Gates grün nach Deploy
 - [ ] Evidence-Doc für extrahiertes Modul
+
+---
+
+## Update: Phase C.1 Deploy Runner Registry (2026-06-10)
+
+| Lieferung | Status |
+|-----------|--------|
+| `runner_registry.py` — Contracts + Classifier | **erledigt** |
+| Inventar 115 Runner | **erledigt** |
+| `generate-deploy-runner-registry.py` | **erledigt** |
+| Boundary warn-only (registry policy) | **erledigt** |
+| Runner refaktorieren | **nicht** in C.1 |
+
+**Nächster Schritt:** C.2 Runner Result Contract

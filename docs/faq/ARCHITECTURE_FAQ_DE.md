@@ -59,12 +59,21 @@ Weniger verstreute Imports → weniger Risiko, dass neue Module eigene Safety-Lo
 
 blkid/Storage-Erkennung in `backup_target_auto_prepare` und `inspect/collector` läuft über `storage_facade`. `partition_storage_facade` nutzt `safety_facade` statt direktem `write_guard`.
 
+## Was ist die Deploy Runner Registry (C.1)?
+
+Statisches Inventar und Metadaten für **115** `runner_*.py` unter `backend/deploy/`. Modul: `runner_registry.py`. **Keine** Runner-Ausführung, **kein** Refactoring der Runner selbst.
+
+## Warum werden Runner nicht sofort refaktoriert?
+
+Größtes Risiko-Cluster (~37k Zeilen). C.1 liefert Überblick, Kategorien, Risikoklassen und Execution Policies. C.2–C.4: Result Contract, API Facade, Risk Gate.
+
 ## Nächster Schritt?
 
-Phase B.2: `app.py` Storage-Hilfen und `inspect_storage.py`.
+Phase **C.2** Runner Result Contract; parallel weiter B.2 (`app.py` Storage-Hilfen).
 
 ## Weiterlesen
 
 - `docs/knowledge-base/architecture/CORE_FACADES.md`
 - `docs/architecture/STORAGE_DISCOVERY_INVENTORY.md`
 - `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4.md`
+- `docs/architecture/DEPLOY_RUNNER_REGISTRY.md`

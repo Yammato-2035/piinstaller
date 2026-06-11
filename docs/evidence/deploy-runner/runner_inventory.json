@@ -1,0 +1,2403 @@
+[
+  {
+    "path": "backend/deploy/runner_device_reenumeration_test_plan.py",
+    "lines": 154,
+    "functions": [
+      "_manual_step",
+      "_case",
+      "build_runner_device_reenumeration_test_plan"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_failure_injection_hardware_test_plan.py",
+    "lines": 159,
+    "functions": [
+      "_manual_step",
+      "_failure_case",
+      "build_runner_failure_injection_hardware_test_plan"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_handoff.py",
+    "lines": 316,
+    "functions": [
+      "_now",
+      "_safe_job_filename",
+      "_runner_job_path",
+      "_ensure_runner_jobs_dir",
+      "_write_atomic_json",
+      "create_runner_job_handoff",
+      "execute_runner_dryrun_handoff",
+      "cleanup_runner_job_handoff"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.real_write_runner_contract",
+      "deploy.runner_lifecycle",
+      "json",
+      "os",
+      "pathlib",
+      "secrets",
+      "subprocess",
+      "sys",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_hotplug_race_test_plan.py",
+    "lines": 163,
+    "functions": [
+      "_manual_step",
+      "_race_case",
+      "build_runner_hotplug_race_test_plan"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_install_consistency.py",
+    "lines": 171,
+    "functions": [
+      "_norm_dir",
+      "_is_relative",
+      "validate_runner_install_consistency"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_install_plan.py",
+    "lines": 157,
+    "functions": [
+      "_manual_step",
+      "build_runner_install_plan"
+    ],
+    "imports": [
+      "__future__",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_install_validator.py",
+    "lines": 287,
+    "functions": [
+      "_is_world_writable",
+      "_collect_world_writable_ancestors",
+      "_check_runner_binary",
+      "_check_job_directory",
+      "_check_snippet",
+      "_rollback_entry",
+      "_check_rollback",
+      "validate_runner_installation_dryrun"
+    ],
+    "imports": [
+      "__future__",
+      "deploy.runner_permission_boundary",
+      "deploy.runner_sandbox",
+      "pathlib",
+      "stat",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_lab_acceptance_aggregator.py",
+    "lines": 217,
+    "functions": [
+      "_runbook_status_for",
+      "build_runner_lab_acceptance_summary"
+    ],
+    "imports": [
+      "__future__",
+      "deploy.runner_lab_readiness_status",
+      "deploy.runner_release_readiness",
+      "deploy.runner_runtime_runbook_bundle",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_lab_acceptance_report_export.py",
+    "lines": 251,
+    "functions": [
+      "_resolve_safe_target",
+      "_atomic_write",
+      "_report_markdown",
+      "_summary_markdown",
+      "build_runner_lab_acceptance_report_export"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_lab_acceptance_aggregator",
+      "deploy.runner_lab_readiness_status",
+      "deploy.runner_release_readiness",
+      "deploy.runner_runtime_result_validator",
+      "deploy.runner_runtime_runbook_export",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_lab_phase_consolidation.py",
+    "lines": 174,
+    "functions": [
+      "_components",
+      "_artifact_index",
+      "_runtime_open_items",
+      "build_runner_lab_phase_consolidation"
+    ],
+    "imports": [
+      "__future__",
+      "deploy.runner_lab_acceptance_aggregator",
+      "deploy.runner_lab_acceptance_report_export",
+      "deploy.runner_lab_readiness_status",
+      "deploy.runner_release_readiness",
+      "deploy.runner_runtime_result_validator",
+      "deploy.runner_runtime_runbook_export",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_lab_readiness_plan.py",
+    "lines": 169,
+    "functions": [
+      "_gap_item",
+      "_exec_step",
+      "build_runner_lab_readiness_unblock_plan"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_lab_readiness_status.py",
+    "lines": 104,
+    "functions": [
+      "build_runner_lab_readiness_status"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_laptop_failure_test_execution_readiness_final_gate.py",
+    "lines": 662,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json_handoff",
+      "_http_json",
+      "_run_readonly_cmd",
+      "_traffic_light",
+      "_scan_deploy_routes_forbidden_laptop_block",
+      "_repo_component_score",
+      "_count_handoff_json",
+      "_phase2_runorder_steps",
+      "_live_api_probe",
+      "_storage_probe",
+      "_journal_tail",
+      "build_laptop_failure_test_execution_readiness_final_gate",
+      "_write_markdown_reports",
+      "_emit",
+      "step",
+      "one"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "subprocess",
+      "typing",
+      "urllib.error",
+      "urllib.request"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_laptop_live_probe_execution_handoff.py",
+    "lines": 586,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json_handoff",
+      "_http_json",
+      "_validate_live_base_url",
+      "_scan_live_probe_routes_safe",
+      "_readiness_body",
+      "build_laptop_live_probe_plan",
+      "_emit_plan",
+      "_response_legacy_hits",
+      "_setuphelfer_version_hits",
+      "_health_degraded",
+      "execute_laptop_live_probe_readonly",
+      "build_laptop_live_probe_result",
+      "_emit_result",
+      "build_laptop_live_probe_final_gate",
+      "_emit_exec",
+      "_emit_final"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "re",
+      "typing",
+      "urllib.error",
+      "urllib.parse",
+      "urllib.request"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_legacy_identifier_cleanup_classifier.py",
+    "lines": 213,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_is_historical_path",
+      "_is_code_or_config_path",
+      "_is_localstorage_context",
+      "_classify_one",
+      "classify_active_legacy_identifiers",
+      "_ret"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_legacy_identifier_hotspot_analysis.py",
+    "lines": 369,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json_handoff",
+      "_norm_hit",
+      "_hit_key",
+      "_line_preview_for_hit",
+      "_cluster",
+      "_is_comment_line",
+      "_criticality",
+      "_cleanup_priority_rank",
+      "build_legacy_identifier_hotspot_analysis",
+      "_ret"
+    ],
+    "imports": [
+      "__future__",
+      "collections",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_legacy_identifier_inventory.py",
+    "lines": 179,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_classify",
+      "build_legacy_identifier_inventory",
+      "_ret",
+      "_append_token_hits"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_legacy_runtime_compatibility_validation.py",
+    "lines": 617,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json_handoff",
+      "_gate_statuses",
+      "_token_blob",
+      "_classify_legacy_runtime_row",
+      "_append_category",
+      "build_legacy_runtime_compatibility_inventory",
+      "_emit_inv",
+      "analyze_legacy_runtime_coexistence",
+      "_emit_coex",
+      "build_safe_legacy_runtime_migration_recommendations",
+      "_emit_rec",
+      "build_legacy_upgrade_path_matrix",
+      "_emit_matrix"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_lifecycle.py",
+    "lines": 398,
+    "functions": [
+      "_now_iso",
+      "_safe_job_file_stem",
+      "_lock_path",
+      "_ensure_dirs",
+      "build_runner_lifecycle",
+      "transition_runner_state",
+      "_pid_alive",
+      "_parse_iso",
+      "acquire_runner_lock",
+      "_lock_file_stale",
+      "release_runner_lock",
+      "cleanup_stale_runner_locks",
+      "extract_runner_baseline_from_job",
+      "recheck_runner_consistency",
+      "append_runner_audit",
+      "cleanup_expired_runner_locks",
+      "cleanup_expired_runner_jobs",
+      "prepare_audit_rotation",
+      "new_lock_id"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "re",
+      "secrets",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_evidence_final_snapshot.py",
+    "lines": 138,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "build_manual_runtime_evidence_final_snapshot",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_evidence_timeline.py",
+    "lines": 250,
+    "functions": [
+      "_resolve_handoff",
+      "_path_chain_clean",
+      "_atomic_write",
+      "_parse_sort_key",
+      "_event_status_dryrun",
+      "_event_status_seal",
+      "_event_status_index",
+      "_event_status_audit",
+      "build_manual_runtime_evidence_timeline",
+      "fail",
+      "add_event"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_execution_preview.py",
+    "lines": 149,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_build_case",
+      "build_manual_runtime_failure_execution_preview",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_injection_matrix.py",
+    "lines": 161,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "build_manual_runtime_failure_injection_matrix",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_operator_checklists.py",
+    "lines": 153,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_build_checklist",
+      "build_manual_runtime_failure_operator_checklists",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_readiness_gate.py",
+    "lines": 341,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json",
+      "_failure_types_from_cases",
+      "_collect_destructive_true",
+      "_eval_implied_status",
+      "_gather_warnings",
+      "_write_readiness_file",
+      "evaluate_manual_runtime_failure_readiness",
+      "finish"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_result_evaluation.py",
+    "lines": 285,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json",
+      "evaluate_manual_runtime_failure_results",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_test_result_capture.py",
+    "lines": 140,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_result_row_for_session",
+      "capture_manual_runtime_failure_test_results",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_failure_test_sessions.py",
+    "lines": 158,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_build_session",
+      "build_manual_runtime_failure_test_sessions",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_final_acceptance_gate.py",
+    "lines": 163,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "evaluate_manual_runtime_final_acceptance",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_final_export_package.py",
+    "lines": 164,
+    "functions": [
+      "_resolve_handoff",
+      "_rel_posix",
+      "_atomic_write",
+      "build_manual_runtime_final_export_package",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_evidence_timeline.py",
+    "lines": 166,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_parse_timestamp",
+      "_emit",
+      "build_manual_laptop_failure_evidence_timeline"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_execution_log_template.py",
+    "lines": 210,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json",
+      "_emit",
+      "_empty_log_entry",
+      "build_manual_laptop_failure_execution_log_template"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_execution_log_validator.py",
+    "lines": 220,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json",
+      "_non_empty_str",
+      "_emit",
+      "validate_manual_laptop_failure_execution_log"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_final_acceptance_gate.py",
+    "lines": 176,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_canonical_without_snapshot_sha256",
+      "evaluate_manual_laptop_failure_final_acceptance",
+      "_emit"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_final_export_package.py",
+    "lines": 162,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_emit",
+      "build_manual_laptop_failure_final_export_package"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_final_report.py",
+    "lines": 160,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_emit",
+      "build_manual_laptop_failure_final_report"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_final_snapshot.py",
+    "lines": 160,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_canonical_without_snapshot_sha256",
+      "build_manual_laptop_failure_final_snapshot",
+      "_emit"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_finalized_export_package.py",
+    "lines": 170,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "build_manual_laptop_failure_finalized_export_package",
+      "_emit"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_operator_runorder.py",
+    "lines": 245,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json",
+      "_runorder_sort_key",
+      "_emit",
+      "build_manual_laptop_failure_operator_runorder",
+      "_runorder_group_label"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_run_selector.py",
+    "lines": 293,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json",
+      "_sort_key",
+      "select_manual_laptop_failure_test_runs",
+      "_emit"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_laptop_failure_test_summary.py",
+    "lines": 204,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json",
+      "_emit",
+      "build_manual_laptop_failure_test_summary"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_precheck.py",
+    "lines": 178,
+    "functions": [
+      "_check",
+      "build_runner_manual_runtime_precheck"
+    ],
+    "imports": [
+      "__future__",
+      "deploy.runner_lab_phase_consolidation",
+      "deploy.runner_lab_readiness_status",
+      "deploy.runner_next_phase_gate",
+      "deploy.runner_runtime_runbook_bundle",
+      "deploy.runner_runtime_runbook_export",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_result_bundle_checker.py",
+    "lines": 274,
+    "functions": [
+      "_expected_sequence",
+      "_resolve_allowed_result_file",
+      "_try_load_payload",
+      "_bundle_safety_scan",
+      "check_manual_runtime_result_bundle"
+    ],
+    "imports": [
+      "__future__",
+      "deploy.runner_manual_runtime_result_edit_checker",
+      "deploy.runner_runtime_runbook_bundle",
+      "json",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_result_edit_checker.py",
+    "lines": 256,
+    "functions": [
+      "_resolve_allowed_result_file",
+      "_field_status",
+      "_nested",
+      "check_manual_runtime_result_file",
+      "add_evidence_check",
+      "add_safety"
+    ],
+    "imports": [
+      "__future__",
+      "json",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_result_template.py",
+    "lines": 169,
+    "functions": [
+      "_resolve_safe_target",
+      "_atomic_write",
+      "_template_for",
+      "create_manual_runtime_result_template"
+    ],
+    "imports": [
+      "__future__",
+      "deploy.runner_manual_runtime_precheck",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_result_validator_dryrun_from_handoff.py",
+    "lines": 210,
+    "functions": [
+      "_under_handoff",
+      "_resolve_handoff_manifest_read",
+      "_resolve_dryrun_report",
+      "_resolve_runtime_result_data_file",
+      "_atomic_write",
+      "run_manual_runtime_result_validator_dryrun_from_handoff",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_runtime_result_validator",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_result_validator_handoff_gate.py",
+    "lines": 212,
+    "functions": [
+      "_under_handoff",
+      "_resolve_runtime_result_data_file",
+      "_resolve_handoff_manifest_path",
+      "_atomic_write",
+      "build_manual_runtime_result_validator_handoff",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_validator_report_seal.py",
+    "lines": 141,
+    "functions": [
+      "_resolve_handoff_source_report",
+      "_resolve_seal_output",
+      "_atomic_write",
+      "seal_manual_runtime_validator_report",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_validator_seal_consistency_audit.py",
+    "lines": 262,
+    "functions": [
+      "_resolve_under_handoff",
+      "_resolve_under_runtime_results",
+      "_atomic_write",
+      "run_validator_seal_consistency_audit",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_manual_runtime_validator_seal_index.py",
+    "lines": 177,
+    "functions": [
+      "_resolve_handoff_only_rel",
+      "_path_chain_symlink_clean",
+      "_atomic_write",
+      "_try_parse_seal",
+      "build_validator_report_seal_index",
+      "fail"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_next_phase_gate.py",
+    "lines": 119,
+    "functions": [
+      "evaluate_runner_next_phase_gate"
+    ],
+    "imports": [
+      "__future__",
+      "deploy.runner_lab_acceptance_aggregator",
+      "deploy.runner_lab_phase_consolidation",
+      "deploy.runner_runtime_result_validator",
+      "deploy.runner_runtime_runbook_export",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_package_blueprint.py",
+    "lines": 188,
+    "functions": [
+      "_manifest_file",
+      "_manifest_dir",
+      "_rollback_step",
+      "_validation_step",
+      "build_runner_package_blueprint"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_permission_boundary.py",
+    "lines": 243,
+    "functions": [
+      "_is_world_writable",
+      "_collect_world_writable_ancestors",
+      "build_runner_sudoers_policy_example",
+      "audit_runner_environment",
+      "audit_runner_binary_path",
+      "audit_runner_job_directory"
+    ],
+    "imports": [
+      "__future__",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_privileged_validation_test_plan.py",
+    "lines": 128,
+    "functions": [
+      "_manual_step",
+      "build_runner_privileged_validation_test_plan"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_real_write_hardware_e2e_test_plan.py",
+    "lines": 136,
+    "functions": [
+      "_manual_step",
+      "build_runner_real_write_hardware_e2e_test_plan"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_release_readiness.py",
+    "lines": 145,
+    "functions": [
+      "_component_defaults",
+      "_merge_components",
+      "_risk_from_components",
+      "build_runner_release_readiness_matrix"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_backup_discovery_verify.py",
+    "lines": 310,
+    "functions": [
+      "_emit_plan",
+      "_emit_verify",
+      "build_rescue_backup_discovery_plan",
+      "_scan_root_from_plan",
+      "execute_rescue_backup_discovery",
+      "execute_rescue_backup_verify",
+      "build_rescue_backup_verify_result"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "hashlib",
+      "json",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_build_environment_emulation.py",
+    "lines": 634,
+    "functions": [
+      "_rx",
+      "_emit",
+      "_build_path",
+      "_write_build_json",
+      "_file_exists_rel",
+      "_brief_artifact",
+      "build_rescue_build_environment_snapshot",
+      "build_rescue_simulated_build_workspace",
+      "build_rescue_simulated_build_outputs",
+      "build_rescue_simulated_build_logs",
+      "build_rescue_overlay_persistence_emulation",
+      "_scan_forbidden",
+      "_scan_legacy",
+      "verify_rescue_build_emulation",
+      "_sha256_bytes",
+      "build_rescue_build_emulation_seal",
+      "build_rescue_build_emulation_final_gate"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "hashlib",
+      "json",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_build_readiness_gate.py",
+    "lines": 143,
+    "functions": [
+      "_emit",
+      "build_rescue_build_readiness_gate"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_build_sandbox_preparation.py",
+    "lines": 632,
+    "functions": [
+      "_routes_text",
+      "_emit",
+      "_build_path",
+      "_ensure_under_build_rescue",
+      "_guard_build_file",
+      "_write_json_build",
+      "_handoff_exists",
+      "_artifact_exists",
+      "_read_build_json",
+      "_path_blocked_for_runtime",
+      "_is_textish_file",
+      "_sha256_file_short",
+      "build_rescue_build_sandbox_root",
+      "build_rescue_sandbox_config_copy_plan",
+      "build_rescue_sandbox_runtime_copy_plan",
+      "build_rescue_overlay_workspace_plan",
+      "build_rescue_build_cleanup_plan",
+      "_rx",
+      "validate_rescue_build_sandbox_safety",
+      "build_rescue_build_sandbox_final_gate"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "hashlib",
+      "json",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_debian_live_build_inputs.py",
+    "lines": 582,
+    "functions": [
+      "_emit",
+      "_build_path",
+      "_ensure_under_build_rescue",
+      "_guard_build_file",
+      "_write_json_build",
+      "_no_iso_img_under_build_rescue_except_output",
+      "_rx",
+      "build_debian_live_config_structure",
+      "build_debian_live_package_lists",
+      "build_debian_live_includes_ch_root",
+      "build_debian_live_bootloader_templates",
+      "build_debian_live_hook_templates",
+      "validate_debian_live_build_inputs_safety",
+      "build_debian_live_build_inputs_final_gate"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "os",
+      "pathlib",
+      "re",
+      "stat",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_debian_live_build_plan.py",
+    "lines": 120,
+    "functions": [
+      "_emit",
+      "build_rescue_debian_live_build_plan"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_dry_build_orchestration.py",
+    "lines": 701,
+    "functions": [
+      "_routes_text",
+      "_emit",
+      "_build_path",
+      "_ensure_under_build_rescue",
+      "_guard_build_file",
+      "_write_json_build",
+      "_handoff_exists",
+      "_build_file_exists",
+      "_artifact_exists",
+      "_read_build_json",
+      "_CONFIG_MANIFEST",
+      "_PKG_MANIFEST",
+      "_INC_MANIFEST",
+      "_BOOT_MANIFEST",
+      "_HOOK_MANIFEST",
+      "_dry_stages",
+      "build_rescue_dry_build_stage_graph",
+      "build_rescue_dry_build_input_resolution",
+      "_parse_package_list",
+      "build_rescue_package_resolution_plan",
+      "_toposort",
+      "validate_rescue_build_order",
+      "simulate_rescue_dry_build_execution",
+      "_rx",
+      "validate_rescue_dry_build_safety",
+      "build_rescue_dry_build_final_gate",
+      "_stage_num"
+    ],
+    "imports": [
+      "__future__",
+      "collections",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_efi_boot_analyzer.py",
+    "lines": 85,
+    "functions": [
+      "_emit",
+      "build_rescue_efi_boot_analysis"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_final_recovery_readiness_gate.py",
+    "lines": 105,
+    "functions": [
+      "_emit",
+      "build_rescue_final_recovery_readiness_gate"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_hardware_recovery_test_chain.py",
+    "lines": 155,
+    "functions": [
+      "_emit",
+      "_nav",
+      "_read_step",
+      "_final_gate_step",
+      "build_rescue_hardware_recovery_test_chain"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_io.py",
+    "lines": 105,
+    "functions": [
+      "ensure_rescue_workspace_dirs",
+      "resolve_under_build_rescue",
+      "resolve_handoff_path",
+      "atomic_write_text",
+      "load_json_handoff",
+      "guard_handoff_overwrite",
+      "write_json_handoff",
+      "under_build_rescue"
+    ],
+    "imports": [
+      "__future__",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_artifact_preparation.py",
+    "lines": 434,
+    "functions": [
+      "_emit",
+      "_build_path",
+      "_ensure_under_build_rescue",
+      "_no_iso_or_img_under_build_rescue",
+      "_guard_build_file",
+      "build_rescue_rootfs_artifact",
+      "_write_json_build",
+      "build_offline_frontend_artifacts",
+      "build_rescue_backend_artifacts",
+      "_count_rescue_posts",
+      "build_rescue_boot_artifact_structure",
+      "build_rescue_overlay_persistence_strategy",
+      "build_rescue_artifact_readiness_gate"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_build_execution.py",
+    "lines": 281,
+    "functions": [
+      "_emit_pre",
+      "_emit_result",
+      "_forbidden_in_logs",
+      "build_rescue_iso_build_precheck",
+      "execute_rescue_iso_build",
+      "build_rescue_iso_build_result"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "re",
+      "shutil",
+      "subprocess",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_build_execution_plan.py",
+    "lines": 57,
+    "functions": [
+      "_emit",
+      "build_rescue_iso_execution_plan"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_live_runtime_probe.py",
+    "lines": 283,
+    "functions": [
+      "_emit_plan",
+      "_emit_exec",
+      "_emit_eval",
+      "build_rescue_iso_live_runtime_probe_plan",
+      "execute_rescue_iso_live_runtime_probe",
+      "build_rescue_iso_live_runtime_probe_result"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_laptop_live_probe_execution_handoff",
+      "deploy.runner_rescue_io",
+      "json",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_readiness_gate.py",
+    "lines": 119,
+    "functions": [
+      "_emit",
+      "build_rescue_iso_readiness_gate"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_readiness_pipeline.py",
+    "lines": 432,
+    "functions": [
+      "_emit_simple",
+      "_routes_text",
+      "_count_rescue_posts",
+      "build_rescue_iso_baseline",
+      "build_rescue_iso_filesystem_layout",
+      "validate_offline_recovery_runtime",
+      "build_rescue_bootflow_simulation",
+      "validate_rescue_iso_safety",
+      "build_rescue_iso_final_readiness_gate",
+      "build_rescue_iso_build_plan"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "importlib.util",
+      "os",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_iso_test_matrix.py",
+    "lines": 71,
+    "functions": [
+      "_emit",
+      "build_rescue_iso_test_matrix"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_live_build_config_generator.py",
+    "lines": 95,
+    "functions": [
+      "_emit",
+      "build_rescue_live_build_config"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_live_hardware_matrix.py",
+    "lines": 58,
+    "functions": [
+      "_emit",
+      "build_rescue_live_hardware_matrix"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_live_os_base_decision.py",
+    "lines": 150,
+    "functions": [
+      "_emit",
+      "build_rescue_live_os_base_decision"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_live_runtime_safety_gate.py",
+    "lines": 103,
+    "functions": [
+      "_emit",
+      "build_rescue_live_runtime_safety_gate"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_manual_recovery_operator_guides.py",
+    "lines": 95,
+    "functions": [
+      "_emit",
+      "build_rescue_manual_recovery_operator_guides"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_mvp_scope_gate.py",
+    "lines": 115,
+    "functions": [
+      "_emit",
+      "build_rescue_mvp_scope_gate"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_persistent_evidence_export.py",
+    "lines": 185,
+    "functions": [
+      "_emit_plan",
+      "_emit_result",
+      "_export_target_allowed",
+      "build_rescue_evidence_export_plan",
+      "execute_rescue_evidence_export",
+      "build_rescue_evidence_export_result"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "pathlib",
+      "shutil",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_pseudo_boot_integration.py",
+    "lines": 504,
+    "functions": [
+      "_emit",
+      "_build_path",
+      "_ensure_under_build_rescue",
+      "_guard_build_file",
+      "_write_json_build",
+      "_no_iso_or_img_under_build_rescue",
+      "_routes_text",
+      "_app_text",
+      "build_rescue_pseudo_boot_manifest",
+      "build_rescue_service_startup_simulation",
+      "build_rescue_overlay_boot_strategy",
+      "build_rescue_backend_health_integration",
+      "build_rescue_recovery_ui_integration",
+      "validate_rescue_pseudo_boot_safety",
+      "build_rescue_pseudo_boot_final_readiness"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_readonly_mount_orchestrator.py",
+    "lines": 180,
+    "functions": [
+      "_emit_plan",
+      "_emit_result",
+      "_under_runtime_mounts",
+      "build_readonly_mount_plan",
+      "execute_readonly_mount_validation",
+      "build_readonly_mount_result"
+    ],
+    "imports": [
+      "__future__",
+      "core.mount_facade",
+      "core.storage_facade",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "os",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_recovery_evidence_timeline.py",
+    "lines": 87,
+    "functions": [
+      "_emit",
+      "build_rescue_recovery_evidence_timeline"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "hashlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_recovery_scenario_matrix.py",
+    "lines": 156,
+    "functions": [
+      "_emit",
+      "build_rescue_recovery_scenario_matrix"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_recovery_target_validation.py",
+    "lines": 232,
+    "functions": [
+      "_emit_plan",
+      "_emit_result",
+      "build_rescue_recovery_target_validation_plan",
+      "_bad_target",
+      "execute_rescue_recovery_target_validation",
+      "build_rescue_recovery_target_validation_result"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_remote_help_preparation.py",
+    "lines": 94,
+    "functions": [
+      "_emit_plan",
+      "_emit_result",
+      "build_rescue_remote_help_plan",
+      "build_rescue_remote_help_result"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_restore_preview_orchestrator.py",
+    "lines": 184,
+    "functions": [
+      "_emit_plan",
+      "_emit_result",
+      "build_rescue_restore_preview_plan",
+      "execute_rescue_restore_preview",
+      "build_rescue_restore_preview_result"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_runtime_assembly_pipeline.py",
+    "lines": 581,
+    "functions": [
+      "_emit",
+      "_build_path",
+      "_ensure_under_build_rescue",
+      "_guard_build_file",
+      "_write_json_build",
+      "_no_iso_or_img_under_build_rescue",
+      "_routes_text",
+      "_app_text",
+      "build_rescue_runtime_root",
+      "build_rescue_backend_runtime_assembly",
+      "build_rescue_frontend_runtime_assembly",
+      "build_rescue_recovery_runtime_assembly",
+      "build_rescue_offline_configuration_assembly",
+      "build_rescue_startup_script_assembly",
+      "validate_rescue_runtime_assembly_safety",
+      "build_rescue_runtime_assembly_final_gate"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_runtime_bundle_manifest.py",
+    "lines": 497,
+    "functions": [
+      "_emit",
+      "_build_path",
+      "_ensure_under_build_rescue",
+      "_guard_build_file",
+      "_write_json_build",
+      "_canonical_json_bytes",
+      "_sha256_file",
+      "_sha256_bytes",
+      "_runtime_base_path",
+      "_is_expected_runtime_rel",
+      "build_rescue_runtime_bundle_inventory",
+      "build_rescue_runtime_bundle_hash_manifest",
+      "build_rescue_runtime_bundle_seal",
+      "check_rescue_runtime_bundle_consistency"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "hashlib",
+      "json",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_sandbox_controlled_copy.py",
+    "lines": 738,
+    "functions": [
+      "_entry_optional",
+      "_emit",
+      "_build_path",
+      "_repo_path",
+      "_under_sandbox_resolved",
+      "_is_textish_suffix",
+      "_path_blocked",
+      "_sha256_bytes",
+      "_sha256_file",
+      "_atomic_write_bytes",
+      "_looks_binary",
+      "_load_plan",
+      "build_rescue_sandbox_copy_execution_precheck",
+      "_execute_plan_copy",
+      "execute_rescue_sandbox_config_copy",
+      "execute_rescue_sandbox_runtime_copy",
+      "_read_copy_rows",
+      "_verify_plan_rows",
+      "verify_rescue_sandbox_copy_results",
+      "build_rescue_sandbox_copy_seal",
+      "build_rescue_sandbox_copy_final_gate",
+      "_check_entries",
+      "_consume_result"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "hashlib",
+      "json",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_stick_component_inventory.py",
+    "lines": 103,
+    "functions": [
+      "_row",
+      "_emit",
+      "build_rescue_stick_component_inventory"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_stick_readonly_build_emulation.py",
+    "lines": 1002,
+    "functions": [
+      "_utc_now",
+      "_git_short_head",
+      "_git_branch",
+      "_repo_rel",
+      "_emul_path",
+      "_write_emul",
+      "_emit",
+      "_doc_exists",
+      "_load_emul_json",
+      "build_rescue_stick_build_workspace_snapshot",
+      "_tree_entry",
+      "build_rescue_stick_expected_debian_live_tree",
+      "_pkg",
+      "build_rescue_stick_package_list_preview",
+      "_scan_bundle_path",
+      "build_rescue_stick_runtime_bundle_preview",
+      "build_rescue_stick_frontend_bundle_preview",
+      "build_rescue_stick_systemd_service_preview",
+      "build_rescue_stick_network_webui_preview",
+      "_sha256_file",
+      "_scan_forbidden_artifacts",
+      "_scan_forbidden_tokens_in_paths",
+      "build_rescue_stick_evidence_manifest",
+      "build_rescue_stick_readonly_build_final_gate",
+      "run_rescue_stick_readonly_build_emulation_all"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "hashlib",
+      "json",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_storage_discovery.py",
+    "lines": 185,
+    "functions": [
+      "_emit_plan",
+      "_emit_result",
+      "build_rescue_storage_discovery_plan",
+      "execute_rescue_storage_discovery",
+      "build_rescue_storage_discovery_result"
+    ],
+    "imports": [
+      "__future__",
+      "core.storage_facade",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "json",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rescue_vm_test_orchestrator.py",
+    "lines": 205,
+    "functions": [
+      "_emit_plan",
+      "_emit_result",
+      "_default_iso_rel",
+      "build_rescue_vm_test_plan",
+      "execute_rescue_vm_boot_validation",
+      "build_rescue_vm_test_result"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_rescue_io",
+      "shutil",
+      "subprocess",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_rollback_runtime_test_plan.py",
+    "lines": 150,
+    "functions": [
+      "_manual_step",
+      "_rollback_case",
+      "_cleanup_boundary",
+      "build_runner_rollback_runtime_test_plan"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_runtime_identifier_patch_bump_apply.py",
+    "lines": 268,
+    "functions": [
+      "_resolve_handoff",
+      "_resolve_repo",
+      "_atomic_write",
+      "_parse_semver",
+      "_semver_gt",
+      "apply_runtime_identifier_patch_bump",
+      "_emit_apply",
+      "build_runtime_identifier_patch_bump_postcheck",
+      "_emit_post",
+      "_bump_file"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_version_consistency_check",
+      "deploy.runner_version_source_of_truth_check",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_runtime_identifier_patch_bump_preparation.py",
+    "lines": 152,
+    "functions": [
+      "_resolve_handoff",
+      "_resolve_repo",
+      "_atomic_write",
+      "_parse_semver",
+      "_bump_patch",
+      "prepare_runtime_identifier_patch_bump",
+      "_emit"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_runtime_identifier_zero_state_verification.py",
+    "lines": 280,
+    "functions": [
+      "_resolve_handoff",
+      "_resolve_repo",
+      "_atomic_write",
+      "_load_json_handoff",
+      "_load_json_repo",
+      "_allowed_alias_history_context_path",
+      "_token_hits_runtime_contract",
+      "_inventory_runtime_violations",
+      "_hotspot_crit_high",
+      "verify_runtime_identifier_zero_state",
+      "_emit"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_runtime_result_validator.py",
+    "lines": 273,
+    "functions": [
+      "_expected_sequence",
+      "_load_schema_required_fields",
+      "_validate_result_path",
+      "validate_runner_runtime_result_file",
+      "validate_runner_runtime_result_bundle"
+    ],
+    "imports": [
+      "__future__",
+      "deploy.runner_lab_readiness_status",
+      "deploy.runner_runtime_runbook_bundle",
+      "json",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_runtime_runbook_bundle.py",
+    "lines": 227,
+    "functions": [
+      "_seq",
+      "_ack",
+      "_runbook",
+      "build_runner_runtime_runbook_bundle"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_runtime_runbook_export.py",
+    "lines": 302,
+    "functions": [
+      "_resolve_safe_target",
+      "_atomic_write",
+      "_master_doc",
+      "_operator_checklist",
+      "_evidence_template",
+      "_result_schema",
+      "_acceptance_form",
+      "build_runner_runtime_runbook_export_package"
+    ],
+    "imports": [
+      "__future__",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_sandbox.py",
+    "lines": 226,
+    "functions": [
+      "build_sandbox_environment",
+      "build_runner_stdio_policy",
+      "build_runner_timeout_model",
+      "build_runner_privilege_model",
+      "build_runner_recovery_analysis",
+      "build_runner_sandbox_policy"
+    ],
+    "imports": [
+      "__future__",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_branding_guard.py",
+    "lines": 360,
+    "functions": [
+      "_resolve_handoff",
+      "_resolve_repo",
+      "_atomic_write",
+      "_load_json_handoff",
+      "_load_json_repo",
+      "_branding_tool_whitelist",
+      "_allowed_legacy_context",
+      "_is_runtime_path",
+      "_forbidden_hits_in_token",
+      "_max_severity",
+      "_zero_state_gate",
+      "_run_branding_guard_analysis",
+      "check_setuphelfer_branding_guard",
+      "build_setuphelfer_branding_guard_report",
+      "_emit"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "re",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_controlled_rewrite_apply.py",
+    "lines": 248,
+    "functions": [
+      "_resolve_handoff",
+      "_resolve_repo_relative",
+      "_atomic_write",
+      "_is_probably_text_file",
+      "_allowed_target",
+      "_apply_allowed_replacements",
+      "apply_setuphelfer_controlled_rewrite",
+      "_ret"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_setuphelfer_identifier_consistency_check",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_identifier_cleanup_cycle.py",
+    "lines": 456,
+    "functions": [
+      "_changelog_or_history_path",
+      "_resolve_handoff",
+      "_atomic_write",
+      "_in_cycle1_scope",
+      "_resolve_repo_write_target",
+      "_is_probably_text_file",
+      "_apply_allowed_replacements",
+      "_read_inventory_active_count",
+      "build_setuphelfer_identifier_cleanup_cycle",
+      "_plan_ret",
+      "apply_setuphelfer_identifier_cleanup_cycle",
+      "_apply_ret",
+      "build_setuphelfer_identifier_cleanup_cycle_postcheck",
+      "_post_ret"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_legacy_identifier_inventory",
+      "deploy.runner_setuphelfer_identifier_consistency_check",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_identifier_consistency_check.py",
+    "lines": 158,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_allowed_legacy_path",
+      "check_setuphelfer_identifier_consistency",
+      "_ret"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_identifier_hotspot_cleanup_cycle.py",
+    "lines": 564,
+    "functions": [
+      "_changelog_or_history_path",
+      "_resolve_handoff",
+      "_atomic_write",
+      "_in_hotspot_cycle2_scope",
+      "_resolve_repo_write_target",
+      "_is_probably_text_file",
+      "_hotspot_target_sort_key",
+      "_read_hotspot_remaining_count",
+      "_read_inventory_active_count",
+      "_count_critical_high_in_hotspot_body",
+      "_load_json_handoff",
+      "_apply_entry_pairs",
+      "build_setuphelfer_identifier_hotspot_cleanup_cycle",
+      "_plan_ret",
+      "apply_setuphelfer_identifier_hotspot_cleanup_cycle",
+      "_apply_ret",
+      "build_setuphelfer_identifier_hotspot_cleanup_cycle_postcheck",
+      "_post_ret"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_legacy_identifier_hotspot_analysis",
+      "deploy.runner_legacy_identifier_inventory",
+      "deploy.runner_setuphelfer_identifier_consistency_check",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_runtime_identifier_elimination.py",
+    "lines": 803,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json",
+      "_is_test_path",
+      "_is_docs_evidence_history",
+      "_line_preview",
+      "_is_comment_only_line",
+      "_in_elimination_write_scope",
+      "_token_priority_index",
+      "_infer_criticality_from_tokens",
+      "_collect_hotspot_rows",
+      "_collect_postcheck_remaining",
+      "_collect_consistency_blocked",
+      "_dedupe_targets",
+      "_ret",
+      "build_runtime_identifier_elimination_targets",
+      "_alias_entries",
+      "_token_matches_alias",
+      "_compatibility_alias_required_for_token",
+      "build_runtime_identifier_elimination_plan",
+      "_resolve_repo_write",
+      "_is_probably_text_file",
+      "_apply_pairs",
+      "apply_runtime_identifier_elimination",
+      "validate_runtime_compatibility_aliases",
+      "_read_inventory_active_runtime",
+      "_count_crit_high_from_hotspot_analysis",
+      "build_runtime_identifier_elimination_postcheck",
+      "_row_pri"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "deploy.runner_legacy_identifier_hotspot_analysis",
+      "deploy.runner_legacy_identifier_inventory",
+      "deploy.runner_setuphelfer_identifier_consistency_check",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_runtime_identifier_migration.py",
+    "lines": 140,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_write_json",
+      "build_runtime_identifier_migration_plan"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_setuphelfer_safe_rewrite_plan.py",
+    "lines": 207,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_replacement_for_token",
+      "_is_historical_or_evidence_path",
+      "_allowed_rewrite_root",
+      "build_setuphelfer_safe_rewrite_plan",
+      "_ret"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_sudoers_runtime_test_plan.py",
+    "lines": 124,
+    "functions": [
+      "_manual_item",
+      "build_runner_sudoers_runtime_test_plan"
+    ],
+    "imports": [
+      "__future__",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_version_consistency_check.py",
+    "lines": 158,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json",
+      "_parse",
+      "check_version_consistency",
+      "_emit",
+      "_ret"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_version_governance.py",
+    "lines": 235,
+    "functions": [
+      "_resolve_handoff",
+      "_atomic_write",
+      "_parse_version",
+      "_bump",
+      "_classify_bump",
+      "build_version_governance_state",
+      "_write_config_version",
+      "_write_phase_tracking",
+      "_emit"
+    ],
+    "imports": [
+      "__future__",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  },
+  {
+    "path": "backend/deploy/runner_version_source_of_truth_check.py",
+    "lines": 152,
+    "functions": [
+      "_parse",
+      "_resolve_handoff",
+      "_atomic_write",
+      "_load_json",
+      "check_version_source_of_truth_consistency",
+      "_emit",
+      "_ret"
+    ],
+    "imports": [
+      "__future__",
+      "core.versioning",
+      "datetime",
+      "json",
+      "os",
+      "pathlib",
+      "typing"
+    ]
+  }
+]

@@ -92,7 +92,7 @@ safe_device    fat32_writer      manifest/drift
 ## Empfohlene Entkopplungs-Hebel
 
 1. **Router-Extraktion** aus `app.py` → `api/routes/{domain}.py` (Partitions-Vorbild)
-2. **Deploy-Runner-Registry** statt 115 direkter Imports in `routes.py`
+2. **Deploy-Runner-Registry** — **C.1 erledigt** (`runner_registry.py`); C.3 Facade für `routes.py` offen
 3. **Domain-Facades** in `core/{domain}_facade.py` — nur Facades von außen importierbar
 4. **Frontend Feature-Slices** — `features/backup/`, `features/rescue/` statt Page-Monolithen
 5. **Event-Bus light** für DCC-Status statt direkter Cross-Imports
@@ -109,7 +109,21 @@ safe_device    fat32_writer      manifest/drift
 
 `safe_device` Fan-In sinkt für Produkt-Engines; Implementierungskern bleibt in `safe_device.py` + `safety_facade.py`.
 
-Nächste Kandidaten: `app.py`, `inspect_storage.py`, Deploy Runner Registry.
+Nächste Kandidaten: `app.py`, `inspect_storage.py`.
+
+---
+
+## Update: Deploy Runner Registry C.1 (2026-06-10)
+
+| Kante | Status |
+|-------|--------|
+| `deploy/routes.py` → 115 `runner_*` Imports | unverändert (kein Refactoring) |
+| Statische Runner-Metadaten | **neu** — `runner_registry.py` + Boundary warn-only |
+| `routes.py` Fan-In | bleibt CRITICAL bis C.3 API Facade |
+
+Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
+
+**Nächster Schritt:** C.2 Result Contract → C.3 Runner API Facade → C.4 Risk Gate
 
 ---
 

@@ -141,6 +141,36 @@ if len(warns) > 40:
 PY
 )
 
+# Phase C.1: deploy runner registry warnings (warn-only)
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  warnings+=("${line}")
+done < <(python3 - "${ROOT}" <<'PY'
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+deploy = root / "backend" / "deploy"
+registry_mod = deploy / "runner_registry.py"
+runners = sorted(p for p in deploy.glob("runner_*.py") if p.name != "runner_registry.py")
+if runners and not registry_mod.is_file():
+    print("runner_registry_missing:backend/deploy/runner_registry.py")
+    raise SystemExit
+if not registry_mod.is_file():
+    raise SystemExit
+sys.path.insert(0, str(root / "backend"))
+from deploy.runner_registry import build_runner_registry_from_files, registry_policy_warnings
+
+entries = build_runner_registry_from_files(root=deploy)
+ids = {e.runner_id for e in entries}
+for p in runners:
+    if p.stem not in ids:
+        print(f"runner_registry_missing:{p.relative_to(root).as_posix()}")
+for w in registry_policy_warnings(entries)[:20]:
+    print(w)
+PY
+)
+
 if [[ "${#warnings[@]}" -gt 0 ]]; then
   status="review_required"
 fi
