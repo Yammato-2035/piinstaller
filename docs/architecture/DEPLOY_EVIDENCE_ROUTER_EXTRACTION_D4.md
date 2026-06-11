@@ -22,3 +22,7 @@ Governance/Versioning-Decoupled-Routen, direkte Runner-Aufrufe, Execute/Write-Pf
 ## Nächster Schritt D.5
 
 Governance-Router oder weiterer Evidence-Slice.
+
+## D.6 (Orchestrator-Target)
+
+Keine weitere Extraktion — Thin-Orchestrator-Ziel dokumentiert (`DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6.md`).

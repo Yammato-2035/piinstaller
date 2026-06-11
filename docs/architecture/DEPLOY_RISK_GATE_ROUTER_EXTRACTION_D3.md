@@ -22,3 +22,7 @@ Bleibt **false** (C.4). Router führt keine Ausführung ein.
 ## Nächster Schritt D.4
 
 `routes_evidence.py` — Evidence-/Plan-only-POST-Routen (Teilmenge).
+
+## D.6 (Orchestrator-Target)
+
+Keine weitere Extraktion — Thin-Orchestrator-Ziel dokumentiert (`DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6.md`).

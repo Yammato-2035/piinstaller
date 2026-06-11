@@ -68,6 +68,7 @@ router.include_router(risk_gate_router)
 - **D.3** Risk Gate Router Extraction — **erledigt**
 - **D.4** Evidence Router Extraction — **erledigt**
 - **D.5** Governance Router Extraction — **erledigt**
-- **D.6** — **nächster Schritt**
+- **D.6** Orchestrator Target — **erledigt** (Analyse, Guard, D.7+)
+- **D.7+** — siehe `DEPLOY_ROUTE_EXTRACTION_SEQUENCE_D7_PLUS.md`
 - **D.4** Evidence Router Extraction
 - **D.5** Governance Router Extraction

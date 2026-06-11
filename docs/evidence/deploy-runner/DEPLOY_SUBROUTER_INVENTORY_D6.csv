@@ -1,0 +1,20 @@
+module,path,method,tag,domain,runner_id,allowed_to_execute,notes
+routes_registry.py,/api/deploy/catalog,GET,deploy-runners-registry,registry,,false,facade subrouter D.2-D.5
+routes_registry.py,/api/deploy/summary,GET,deploy-runners-registry,registry,,false,facade subrouter D.2-D.5
+routes_registry.py,/api/deploy/policy-warnings,GET,deploy-runners-registry,registry,,false,facade subrouter D.2-D.5
+routes_registry.py,/api/deploy/{runner_id}/empty-result,GET,deploy-runners-registry,registry,,false,facade subrouter D.2-D.5
+routes_registry.py,/api/deploy/{runner_id},GET,deploy-runners-registry,registry,,false,facade subrouter D.2-D.5
+routes_risk_gate.py,/api/deploy/risk-gate/summary,GET,deploy-runners-risk-gate,risk_gate,,false,facade subrouter D.2-D.5
+routes_risk_gate.py,/api/deploy/risk-gate/operator-required,GET,deploy-runners-risk-gate,risk_gate,,false,facade subrouter D.2-D.5
+routes_risk_gate.py,/api/deploy/risk-gate/never-auto,GET,deploy-runners-risk-gate,risk_gate,,false,facade subrouter D.2-D.5
+routes_risk_gate.py,/api/deploy/risk-gate/plan-allowed,GET,deploy-runners-risk-gate,risk_gate,,false,facade subrouter D.2-D.5
+routes_risk_gate.py,/api/deploy/{runner_id}/risk-gate,GET,deploy-runners-risk-gate,risk_gate,,false,facade subrouter D.2-D.5
+routes_evidence.py,/api/deploy/legacy-identifier-inventory,POST,deploy-evidence,evidence,runner_legacy_identifier_inventory,false,facade subrouter D.2-D.5
+routes_evidence.py,/api/deploy/legacy-identifier-hotspot-analysis,POST,deploy-evidence,evidence,runner_legacy_identifier_hotspot_analysis,false,facade subrouter D.2-D.5
+routes_evidence.py,/api/deploy/setuphelfer-identifier-consistency-check,POST,deploy-evidence,evidence,runner_setuphelfer_identifier_consistency_check,false,facade subrouter D.2-D.5
+routes_evidence.py,/api/deploy/runner/manual-runtime/result-validator-seal-index,POST,deploy-evidence,evidence,runner_manual_runtime_validator_seal_index,false,facade subrouter D.2-D.5
+routes_evidence.py,/api/deploy/runner/manual-runtime/evidence-timeline,POST,deploy-evidence,evidence,runner_manual_runtime_evidence_timeline,false,facade subrouter D.2-D.5
+routes_evidence.py,/api/deploy/runner/manual-runtime/evidence-final-snapshot,POST,deploy-evidence,evidence,runner_manual_runtime_evidence_final_snapshot,false,facade subrouter D.2-D.5
+routes_governance.py,/api/deploy/runner/next-phase/gate,POST,deploy-governance,governance,runner_next_phase_gate,false,facade subrouter D.2-D.5
+routes_governance.py,/api/deploy/version-governance/state,POST,deploy-governance,governance,runner_version_governance,false,facade subrouter D.2-D.5
+routes_governance.py,/api/deploy/version-source-of-truth-check,POST,deploy-governance,governance,runner_version_source_of_truth_check,false,facade subrouter D.2-D.5

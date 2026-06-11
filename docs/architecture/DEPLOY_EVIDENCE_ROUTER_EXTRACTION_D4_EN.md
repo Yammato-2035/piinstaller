@@ -22,3 +22,7 @@ Governance/versioning decoupled routes, direct runner calls, execute/write paths
 ## Next step D.5
 
 Governance router or further evidence slice.
+
+## D.6 (orchestrator target)
+
+No further extraction — thin orchestrator target documented (`DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6_EN.md`).

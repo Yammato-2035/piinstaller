@@ -115,9 +115,13 @@ Beide nutzen nur `runner_api_facade` — **0** direkte `runner_*`-Imports in den
 
 3 C.5-Routen (next-phase, version-governance, source-of-truth) nach `routes_governance.py`. Alle 9 decoupled Routen jetzt in Subroutern.
 
+## Was ist Phase D.6 (Thin Orchestrator)?
+
+Keine Route verschoben. Inventar, Ownership-Matrix, Zielbild (`routes.py` <500 Zeilen, 0 Runner-Imports), D.7+-Reihenfolge, erweiterter Boundary-Guard.
+
 ## Nächster Schritt?
 
-**D.6** weiterer Slice oder Route-Summary-Rebuild.
+**D.7** — weitere Evidence plan-only Routen.
 
 ## Weiterlesen
 

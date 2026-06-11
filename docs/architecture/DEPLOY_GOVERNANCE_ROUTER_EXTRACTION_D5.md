@@ -18,3 +18,7 @@ Bleibt **false**. Keine Runner-Ausführung.
 ## Nächster Schritt D.6
 
 Weiterer Evidence/Governance-Slice oder Route-Summary-Rebuild; Execute-Routen unberührt.
+
+## D.6 (Orchestrator-Target, erledigt)
+
+Thin-Orchestrator-Ziel, Guard, Inventar — siehe `DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6.md`. Nächster Schritt **D.7**.

@@ -115,9 +115,13 @@ Both use only `runner_api_facade` — **zero** direct `runner_*` imports in hand
 
 3 C.5 routes moved to `routes_governance.py`. All 9 decoupled routes now in sub-routers.
 
+## What is phase D.6 (thin orchestrator)?
+
+No routes moved. Inventory, ownership matrix, target (<500 lines, 0 runner imports), D.7+ sequence, extended boundary guard.
+
 ## Next step?
 
-**D.6** further slice or route summary rebuild.
+**D.7** — more evidence plan-only routes.
 
 ## Further reading
 

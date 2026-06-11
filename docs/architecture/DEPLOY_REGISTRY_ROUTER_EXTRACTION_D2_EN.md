@@ -26,3 +26,7 @@ Subrouter `prefix="/runners"` under parent `prefix="/api/deploy"` — identical 
 ## Next step D.3
 
 `routes_risk_gate.py` — remaining 5 risk-gate GET routes from `routes.py`.
+
+## D.6 (orchestrator target)
+
+No further extraction — thin orchestrator target documented (`DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6_EN.md`).

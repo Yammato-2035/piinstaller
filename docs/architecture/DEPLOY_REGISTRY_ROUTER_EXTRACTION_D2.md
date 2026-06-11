@@ -23,6 +23,8 @@ Registry-API ist read-only (C.3). Keine POST-Execute-, Write- oder Apply-Routen.
 
 Subrouter `prefix="/runners"` unter Parent `prefix="/api/deploy"` — identische öffentliche URLs.
 
-## Nächster Schritt D.3
+## D.6
+
+Orchestrator-Target dokumentiert — siehe `DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6.md`.
 
 `routes_risk_gate.py` — 5 verbleibende Risk-Gate-GET-Routen aus `routes.py`.

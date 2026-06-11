@@ -463,6 +463,42 @@ else:
         print("deploy_routes_governance_not_included:backend/deploy/routes.py")
     if '@router.post("/runner/next-phase/gate")' in text and "build_plan_only_response" in text:
         print("deploy_routes_governance_duplicate_in_routes:backend/deploy/routes.py")
+
+# Phase D.6: thin orchestrator guard (warn-only)
+deploy_routes = root / "backend" / "deploy" / "routes.py"
+if deploy_routes.is_file():
+    dr_text = deploy_routes.read_text(encoding="utf-8", errors="replace")
+    dr_lines = dr_text.count("\n") + (1 if dr_text and not dr_text.endswith("\n") else 0)
+    dr_runner_imports = len(re.findall(r"^from deploy\.runner_", dr_text, flags=re.M))
+    baseline_d6_lines = 4821
+    baseline_d6_imports = 103
+    if dr_lines > 2000:
+        print(f"deploy_routes_py_too_large:{dr_lines}")
+    print(f"deploy_routes_direct_runner_import_count:{dr_runner_imports}")
+    if dr_runner_imports > baseline_d6_imports:
+        print(f"deploy_routes_new_runner_import_detected:{baseline_d6_imports}_to_{dr_runner_imports}")
+    for sub in (
+        "routes_registry.py",
+        "routes_risk_gate.py",
+        "routes_evidence.py",
+        "routes_governance.py",
+    ):
+        if not (root / "backend" / "deploy" / sub).is_file():
+            print(f"deploy_routes_subrouter_missing:{sub}")
+    if "include_router(deploy_registry_router)" not in dr_text:
+        print("deploy_routes_subrouter_missing:include_registry")
+    if "include_router(deploy_risk_gate_router)" not in dr_text:
+        print("deploy_routes_subrouter_missing:include_risk_gate")
+    if "include_router(deploy_evidence_router)" not in dr_text:
+        print("deploy_routes_subrouter_missing:include_evidence")
+    if "include_router(deploy_governance_router)" not in dr_text:
+        print("deploy_routes_subrouter_missing:include_governance")
+    if re.search(r"\bsubprocess\b", dr_text) or re.search(r"\bos\.system\b", dr_text):
+        print("deploy_routes_business_logic_new:subprocess_or_os_system")
+    if re.search(r'@router\.post\("/runners/[^"]*(execute|apply|write|install|delete)', dr_text):
+        print("deploy_routes_execute_without_risk_gate:unsafe_runners_post")
+    if "build_plan_only_response" in dr_text:
+        print("deploy_routes_business_logic_new:facade_in_main_routes")
 PY
 )
 

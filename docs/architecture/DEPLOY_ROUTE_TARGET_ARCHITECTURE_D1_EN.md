@@ -39,6 +39,10 @@ Thin orchestrator `routes.py` uses `include_router` — **no URL changes**.
 | **D.5** | governance (3 POST C.5) — **complete** |
 | **D.6+** | runtime, rescue, backup, restore | **last** — CRITICAL/HIGH |
 
+## D.6 update
+
+Thin orchestrator target defined — see `DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6_EN.md`. No routes moved in D.6.
+
 ## Why registry and risk gate first?
 
 Already implemented via `runner_api_facade` (C.3/C.4). Extraction is pure `include_router` with no behavior change.

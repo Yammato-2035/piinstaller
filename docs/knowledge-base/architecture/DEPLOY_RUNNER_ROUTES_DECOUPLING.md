@@ -1,7 +1,15 @@
-# Routes Decoupling C.5 — KB
+# Routes Decoupling D.2–D.6 — KB
 
-C.5+C.6: 9 decoupled, 104 Imports verbleibend. Execute false.
+| Phase | Modul | Routen |
+|-------|-------|--------|
+| D.2 | `routes_registry.py` | 5 GET |
+| D.3 | `routes_risk_gate.py` | 5 GET |
+| D.4 | `routes_evidence.py` | 6 POST |
+| D.5 | `routes_governance.py` | 3 POST |
+| D.6 | — (Analyse) | Thin-Orchestrator-Ziel |
 
-**D.1 (Audit):** 237 Routen, 12 Domänen, größte Domain `rescue` (84). Ziel: `routes_registry.py` → `routes_risk_gate.py` → Evidence → Governance.
+`routes.py`: 4821 Zeilen, 218 Routen, 103 Imports. Ziel <500 / 0 Imports.
 
-Nächster Schritt: **D.2** Registry-Extraktion.
+Nächster Schritt: **D.7** Evidence plan-only.
+
+Siehe `DEPLOY_ROUTES_THIN_ORCHESTRATOR.md`.

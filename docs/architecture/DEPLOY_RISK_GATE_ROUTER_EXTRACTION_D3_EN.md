@@ -22,3 +22,7 @@ Stays **false** (C.4). Router introduces no execution.
 ## Next step D.4
 
 `routes_evidence.py` — evidence/plan-only POST routes (subset).
+
+## D.6 (orchestrator target)
+
+No further extraction — thin orchestrator target documented (`DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6_EN.md`).

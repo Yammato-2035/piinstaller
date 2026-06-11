@@ -18,3 +18,7 @@ Stays **false**. No runner execution.
 ## Next step D.6
 
 Further evidence/governance slice or route summary rebuild; execute routes untouched.
+
+## D.6 (orchestrator target, done)
+
+Thin orchestrator target, guard, inventory — see `DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6_EN.md`. Next step **D.7**.
