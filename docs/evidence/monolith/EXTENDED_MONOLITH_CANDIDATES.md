@@ -137,6 +137,6 @@
 
 **Phase C.5+C.6 (erledigt):** 9 Routen decoupled, Imports 113→104  
 
-1. **C.7** Nächster Routes-Slice
+1. **D.3** Risk-Gate-Router-Extraktion (D.2 Registry **erledigt**)
 4. B.2: `app.py` Storage-Hilfen, `inspect_storage.py`
 5. Router-Extraktion `app.py`

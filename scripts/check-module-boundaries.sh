@@ -349,6 +349,40 @@ for rid, path_fragment in decoupled.items():
 
 if re.search(r'@router\.post\("/runners/[^"]*(execute|apply|write|install|delete)', text):
     print("routes_runner_execute_without_risk_gate:unsafe_runners_post")
+
+# Phase D.2: registry router extraction (warn-only)
+registry_mod = root / "backend" / "deploy" / "routes_registry.py"
+if not registry_mod.is_file():
+    print("deploy_routes_registry_missing:backend/deploy/routes_registry.py")
+else:
+    reg = registry_mod.read_text(encoding="utf-8", errors="replace")
+    if re.search(r"^from deploy\.runner_[^\s]+ import", reg, flags=re.M):
+        if "runner_api_facade" not in reg:
+            print("deploy_routes_registry_has_runner_import:backend/deploy/routes_registry.py")
+        for m in re.findall(r"^from (deploy\.runner_[^\s]+) import", reg, flags=re.M):
+            if m != "deploy.runner_api_facade":
+                print(f"deploy_routes_registry_has_runner_import:{m}")
+    if re.search(r"@router\.(post|put|delete|patch)\(", reg):
+        print("deploy_routes_registry_has_non_get_route:backend/deploy/routes_registry.py")
+    expected_paths = (
+        '"/catalog"',
+        '"/summary"',
+        '"/policy-warnings"',
+        '"/{runner_id}"',
+        '"/{runner_id}/empty-result"',
+    )
+    for ep in expected_paths:
+        if f"@router.get({ep})" not in reg.replace(" ", ""):
+            if f'@router.get({ep})' not in reg:
+                pass
+    for ep in ('@router.get("/catalog")', '@router.get("/summary")', '@router.get("/policy-warnings")',
+               '@router.get("/{runner_id}/empty-result")', '@router.get("/{runner_id}")'):
+        if ep not in reg:
+            print(f"deploy_routes_registry_path_changed:missing_{ep}")
+    if "routes_registry" not in text or "include_router(deploy_registry_router)" not in text:
+        print("deploy_routes_registry_not_included:backend/deploy/routes.py")
+    if '@router.get("/runners/catalog")' in text:
+        print("deploy_routes_registry_duplicate_in_routes:backend/deploy/routes.py")
 PY
 )
 

@@ -99,9 +99,13 @@ Beide nutzen nur `runner_api_facade` — **0** direkte `runner_*`-Imports in den
 
 `/execute`, `/write/execute`, `real-write` sind **CRITICAL** — erfordern Operator-Gates und E2E vor physischer Extraktion.
 
+## Was ist Phase D.2 (Registry Router)?
+
+5 GET-Routen (`/runners/catalog`, `/summary`, `/policy-warnings`, `/{runner_id}`, `/{runner_id}/empty-result`) nach `routes_registry.py` ausgelagert. Pfade unverändert, nur Facade, kein Runner-Execute.
+
 ## Nächster Schritt?
 
-**D.2** Registry-Router-Extraktion (`routes_registry.py`).
+**D.3** Risk-Gate-Router (`routes_risk_gate.py`).
 
 ## Weiterlesen
 

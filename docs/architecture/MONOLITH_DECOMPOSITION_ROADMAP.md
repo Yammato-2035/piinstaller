@@ -279,7 +279,7 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 | Imports 109→104 | **erledigt** |
 | Execute | **nein** |
 
-**Nächster Schritt:** D.2 Registry Router Extraction
+**Nächster Schritt:** D.3 Risk Gate Router Extraction
 
 ---
 
@@ -290,7 +290,7 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | Phase | Lieferung | Status |
 |-------|-----------|--------|
 | **D.1** | Domain-Audit, Inventar, Zielarchitektur, Risiko | **erledigt** |
-| **D.2** | `routes_registry.py` — 5 GET Facade-Routen | geplant |
+| **D.2** | `routes_registry.py` — 5 GET Facade-Routen | **erledigt** |
 | **D.3** | `routes_risk_gate.py` — 5 GET Risk-Gate-Routen | geplant |
 | **D.4** | `routes_evidence.py` — Evidence/Plan-only | geplant |
 | **D.5** | `routes_governance.py` — Audit/Sandbox/Install | geplant |

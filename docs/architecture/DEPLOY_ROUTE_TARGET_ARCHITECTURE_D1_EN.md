@@ -33,7 +33,7 @@ Thin orchestrator `routes.py` uses `include_router` — **no URL changes**.
 
 | Phase | Slice | Rationale |
 |-------|-------|-----------|
-| **D.2** | registry | zero runner imports, facade-only GET |
+| **D.2** | registry | zero runner imports, facade-only GET — **complete** |
 | **D.3** | risk_gate | zero runner imports, gate already isolated |
 | **D.4** | evidence (subset) | plan-only / decoupled first |
 | **D.5** | governance | audit/sandbox without device-write |

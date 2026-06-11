@@ -307,19 +307,16 @@ from deploy.runner_rescue_runtime_bundle_manifest import (
 )
 from deploy.runner_api_facade import (
     build_plan_only_response,
-    build_runner_catalog,
-    build_runner_catalog_summary,
-    build_runner_policy_warnings,
     build_runner_risk_gate_summary,
-    get_runner_empty_result,
-    get_runner_registry_entry,
     get_runner_risk_gate_decision,
     list_runner_never_auto,
     list_runner_operator_required,
     list_runner_plan_allowed,
 )
+from deploy.routes_registry import router as deploy_registry_router
 
 router = APIRouter(prefix="/api/deploy", tags=["deploy-plan"])
+router.include_router(deploy_registry_router)
 
 
 class DeployPlanRequest(BaseModel):
@@ -4988,22 +4985,7 @@ async def post_deploy_rescue_runtime_bundle_consistency_check(body: DeployRescue
     }
 
 
-# --- Phase C.3: read-only runner API facade (no runner imports, no execution) ---
-
-
-@router.get("/runners/catalog")
-async def get_deploy_runners_catalog() -> dict[str, Any]:
-    return build_runner_catalog()
-
-
-@router.get("/runners/summary")
-async def get_deploy_runners_summary() -> dict[str, Any]:
-    return build_runner_catalog_summary()
-
-
-@router.get("/runners/policy-warnings")
-async def get_deploy_runners_policy_warnings() -> dict[str, Any]:
-    return build_runner_policy_warnings()
+# --- Phase C.3/C.4: risk-gate read-only facade (registry → routes_registry.py D.2) ---
 
 
 @router.get("/runners/risk-gate/summary")
@@ -5024,16 +5006,6 @@ async def get_deploy_runners_never_auto() -> dict[str, Any]:
 @router.get("/runners/risk-gate/plan-allowed")
 async def get_deploy_runners_plan_allowed() -> dict[str, Any]:
     return list_runner_plan_allowed()
-
-
-@router.get("/runners/{runner_id}")
-async def get_deploy_runner_registry_entry(runner_id: str) -> dict[str, Any]:
-    return get_runner_registry_entry(runner_id)
-
-
-@router.get("/runners/{runner_id}/empty-result")
-async def get_deploy_runner_empty_result(runner_id: str) -> dict[str, Any]:
-    return get_runner_empty_result(runner_id)
 
 
 @router.get("/runners/{runner_id}/risk-gate")

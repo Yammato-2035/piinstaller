@@ -131,7 +131,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **C.5+C.6 (erledigt):** 9 Imports aus `routes.py` entfernt (104 verbleibend).
 
-**Nächster Schritt:** C.7
+**D.2 (erledigt):** `routes_registry.py` entkoppelt (5 GET, Facade-only).
+
+**Nächster Schritt:** D.3
 
 ---
 

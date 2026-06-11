@@ -245,4 +245,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 **C.5+C.6 (erledigt):** 9 plan-only Routen decoupled.
 
-**Nächster Schritt:** C.7
+**D.2 (erledigt):** Registry-Router `routes_registry.py` (5 GET).
+
+**Nächster Schritt:** D.3 Risk-Gate-Router

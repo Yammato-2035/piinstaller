@@ -99,9 +99,13 @@ Both use only `runner_api_facade` — **zero** direct `runner_*` imports in hand
 
 `/execute`, `/write/execute`, `real-write` are **CRITICAL** — need operator gates and E2E before physical extraction.
 
+## What is phase D.2 (registry router)?
+
+5 GET routes moved to `routes_registry.py`. Paths unchanged, facade only, no runner execution.
+
 ## Next step?
 
-**D.2** registry router extraction (`routes_registry.py`).
+**D.3** risk-gate router (`routes_risk_gate.py`).
 
 ## Further reading
 

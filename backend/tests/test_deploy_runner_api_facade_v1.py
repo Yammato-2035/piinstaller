@@ -92,18 +92,24 @@ class DeployRunnerApiFacadeV1Tests(unittest.TestCase):
 
     def test_new_routes_in_routes_py_are_get_only(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
+        registry_src = (_BACKEND / "deploy" / "routes_registry.py").read_text(encoding="utf-8")
         for fragment in (
-            '@router.get("/runners/catalog")',
-            '@router.get("/runners/summary")',
-            '@router.get("/runners/policy-warnings")',
+            '@router.get("/catalog")',
+            '@router.get("/summary")',
+            '@router.get("/policy-warnings")',
+            '@router.get("/{runner_id}")',
+            '@router.get("/{runner_id}/empty-result")',
+        ):
+            self.assertIn(fragment, registry_src)
+        self.assertIn("include_router(deploy_registry_router)", routes_src)
+        for fragment in (
             '@router.get("/runners/risk-gate/summary")',
             '@router.get("/runners/{runner_id}/risk-gate")',
-            '@router.get("/runners/{runner_id}")',
-            '@router.get("/runners/{runner_id}/empty-result")',
         ):
             self.assertIn(fragment, routes_src)
         self.assertNotIn('@router.post("/runners/', routes_src)
         self.assertNotIn('@router.delete("/runners/', routes_src)
+        self.assertNotIn('@router.post("/catalog")', registry_src)
 
     def test_facade_version(self) -> None:
         self.assertEqual(FACADE_VERSION, 4)

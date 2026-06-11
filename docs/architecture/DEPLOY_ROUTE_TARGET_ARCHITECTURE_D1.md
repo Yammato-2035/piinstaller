@@ -46,7 +46,7 @@ router.include_router(risk_gate_router)
 
 | Phase | Slice | Begründung |
 |-------|-------|------------|
-| **D.2** | `routes_registry.py` | 0 Runner-Imports, reine Facade, GET-only |
+| **D.2** | `routes_registry.py` | 0 Runner-Imports, reine Facade, GET-only — **erledigt** |
 | **D.3** | `routes_risk_gate.py` | 0 Runner-Imports, Risk Gate bereits isoliert |
 | **D.4** | `routes_evidence.py` (Teilmenge) | Plan-only / decoupled zuerst; Execute-Routen ausgeschlossen |
 | **D.5** | `routes_governance.py` | Audit/Sandbox ohne device-write |
@@ -64,7 +64,7 @@ router.include_router(risk_gate_router)
 
 ## Nächste Phasen
 
-- **D.2** Registry Router Extraction
-- **D.3** Risk Gate Router Extraction
+- **D.2** Registry Router Extraction — **erledigt**
+- **D.3** Risk Gate Router Extraction — **nächster Schritt**
 - **D.4** Evidence Router Extraction
 - **D.5** Governance Router Extraction
