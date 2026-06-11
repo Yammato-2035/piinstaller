@@ -83,9 +83,25 @@ Read-only Schicht `runner_api_facade.py` + **5 GET-Routen** unter `/api/deploy/r
 
 **C.5:** 4 Routen (Version/Identifier/Next-Phase). **C.6:** 5 Evidence/Identifier-Routen. **113→104** Imports. `facade_decoupling_c5/c6`, Execute weiterhin false.
 
+## Was ist Phase D.1 (Route Domain Audit)?
+
+Vollständige Domänenanalyse von `backend/deploy/routes.py` (**5041 Zeilen, 237 Routen**) ohne Refactoring. Lieferung: Inventar, Domain-Matrix, Zielarchitektur, Extraktionsrisiko. **Keine** Router verschoben, **keine** API geändert.
+
+## Warum Domain-Aufteilung statt Big-Bang?
+
+OpenAPI/DCC-Stabilität, CRITICAL Execute-Routen zuletzt. Inkrementell: Registry → Risk Gate → Evidence → Governance → Runtime/Rescue.
+
+## Warum Registry/Risk Gate zuerst extrahieren (D.2/D.3)?
+
+Beide nutzen nur `runner_api_facade` — **0** direkte `runner_*`-Imports in den Handlern. Niedrigstes Risiko.
+
+## Warum Execute-Routen zuletzt?
+
+`/execute`, `/write/execute`, `real-write` sind **CRITICAL** — erfordern Operator-Gates und E2E vor physischer Extraktion.
+
 ## Nächster Schritt?
 
-Phase **C.7** nächster Slice.
+**D.2** Registry-Router-Extraktion (`routes_registry.py`).
 
 ## Weiterlesen
 
@@ -96,4 +112,5 @@ Phase **C.7** nächster Slice.
 - `docs/architecture/DEPLOY_RUNNER_RESULT_CONTRACT.md`
 - `docs/architecture/DEPLOY_RUNNER_API_FACADE.md`
 - `docs/architecture/DEPLOY_RUNNER_RISK_GATE.md`
+- `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`
 - `docs/architecture/DEPLOY_RUNNER_ROUTES_DECOUPLING_C5.md`

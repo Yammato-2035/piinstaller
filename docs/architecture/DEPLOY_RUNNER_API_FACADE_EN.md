@@ -46,7 +46,11 @@ Additional GET routes `/runners/risk-gate/*` and `/{runner_id}/risk-gate` — se
 | **C.4** | Risk gate — **complete**, `allowed_to_execute` always false |
 | **C.5** | First routes slice (4 routes) — **complete** |
 | **C.6** | Second routes slice (5 routes) — **complete** |
-| **C.7** | Next slice or risk gate hardening |
+| **C.7** | Next plan-only slice |
+| **D.1** | Route domain audit — **complete**, no extraction |
+| **D.2–D.5** | Physical router extraction (registry first) |
+
+See `DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1_EN.md`.
 
 ## Tests
 

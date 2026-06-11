@@ -83,9 +83,25 @@ Read-only layer `runner_api_facade.py` + **5 GET routes** under `/api/deploy/run
 
 **C.5:** 4 routes (version/identifier/next-phase). **C.6:** 5 evidence/identifier routes. **113→104** imports. `facade_decoupling_c5/c6`, execute still false.
 
+## What is phase D.1 (route domain audit)?
+
+Full domain analysis of `backend/deploy/routes.py` (**5041 lines, 237 routes**) with no refactoring. Deliverables: inventory, domain matrix, target architecture, extraction risk. **No** routers moved, **no** API changes.
+
+## Why domain split instead of big-bang?
+
+OpenAPI/DCC stability; CRITICAL execute routes last. Incremental: registry → risk gate → evidence → governance → runtime/rescue.
+
+## Why extract registry/risk gate first (D.2/D.3)?
+
+Both use only `runner_api_facade` — **zero** direct `runner_*` imports in handlers. Lowest risk.
+
+## Why execute routes last?
+
+`/execute`, `/write/execute`, `real-write` are **CRITICAL** — need operator gates and E2E before physical extraction.
+
 ## Next step?
 
-Phase **C.7** next slice.
+**D.2** registry router extraction (`routes_registry.py`).
 
 ## Further reading
 
@@ -97,3 +113,4 @@ Phase **C.7** next slice.
 - `docs/architecture/DEPLOY_RUNNER_API_FACADE_EN.md`
 - `docs/architecture/DEPLOY_RUNNER_RISK_GATE_EN.md`
 - `docs/architecture/DEPLOY_RUNNER_ROUTES_DECOUPLING_C5_EN.md`
+- `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1_EN.md`

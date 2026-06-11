@@ -46,7 +46,11 @@ Zusätzliche GET-Routen `/runners/risk-gate/*` und `/{runner_id}/risk-gate` — 
 | **C.4** | Risk Gate — **erledigt**, `allowed_to_execute` immer false |
 | **C.5** | Erster Routes-Slice (4 Routen) — **erledigt** |
 | **C.6** | Zweiter Routes-Slice (5 Routen) — **erledigt** |
-| **C.7** | Nächster Slice oder Risk-Gate-Verschärfung |
+| **C.7** | Nächster plan-only Slice |
+| **D.1** | Route-Domain-Audit — **erledigt**, keine Extraktion |
+| **D.2–D.5** | Physische Router-Extraktion (Registry zuerst) |
+
+Siehe `DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`.
 
 ## Tests
 

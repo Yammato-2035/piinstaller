@@ -279,4 +279,22 @@ Evidence: `CORE_FACADE_STORAGE_MIGRATION_B1.md`
 | Imports 109→104 | **erledigt** |
 | Execute | **nein** |
 
-**Nächster Schritt:** C.7
+**Nächster Schritt:** D.2 Registry Router Extraction
+
+---
+
+## Deploy Route Extraction (Phase D)
+
+Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-Monolith (**5041 Zeilen, 237 Routen, 104 Runner-Imports**).
+
+| Phase | Lieferung | Status |
+|-------|-----------|--------|
+| **D.1** | Domain-Audit, Inventar, Zielarchitektur, Risiko | **erledigt** |
+| **D.2** | `routes_registry.py` — 5 GET Facade-Routen | geplant |
+| **D.3** | `routes_risk_gate.py` — 5 GET Risk-Gate-Routen | geplant |
+| **D.4** | `routes_evidence.py` — Evidence/Plan-only | geplant |
+| **D.5** | `routes_governance.py` — Audit/Sandbox/Install | geplant |
+| **D.6+** | runtime, rescue, backup, restore | später (CRITICAL/HIGH) |
+
+Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  
+Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`
