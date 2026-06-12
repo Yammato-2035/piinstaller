@@ -36,6 +36,6 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**In progress:** `app.py` router slices (E.7+). **Blocked:** `routes_notifications` (D.9 no_safe_slice).
+**In progress:** `app.py` router slice **E.8** (3 GET, see E.7 audit). **Candidates (E.7):** System Status Facade, Network Info Facade, DCC Status Facade, Dev Dashboard Aggregation Facade. **Blocked:** `routes_notifications` (D.9 no_safe_slice).
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

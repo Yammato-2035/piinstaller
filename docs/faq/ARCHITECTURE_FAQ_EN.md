@@ -155,9 +155,13 @@ Five roadmap registry GET routes in `dev_dashboard_roadmap.py` via `load_roadmap
 
 Two GET routes moved to `dev_dashboard_roadmap.py`. `app.py`: 17,499→17,472 lines.
 
+## What is E.7 (router slice candidate audit)?
+
+Re-scan of all **187** remaining `@app.*` routes — **no extraction**. Result: **3** safe E.8 candidates (backend-health, notifications/status/events); blocked facades for status/network/DCC. See `docs/architecture/APP_ROUTER_SLICE_CANDIDATE_AUDIT_E7_EN.md`.
+
 ## Next step?
 
-**E.7** — next read-only slice.
+**E.8** — extract 3 DCC read-only GETs **or** facade phase F.1 (system/DCC status).
 
 ## Further reading
 

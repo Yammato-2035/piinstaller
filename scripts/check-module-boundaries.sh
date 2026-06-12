@@ -987,6 +987,31 @@ if app_py_path.is_file():
             for ep in eps:
                 if ep not in mt:
                     print(f"app_router_slice_endpoint_missing:{ep}")
+    # Phase E.7: blocked route extraction guards (warn-only)
+    if '@app.get("/api/status")' in ap or '@app.get("/api/status",' in ap:
+        print("app_status_route_requires_system_status_facade:backend/app.py")
+    if re.search(r'@app\.get\("/api/system/network"', ap):
+        print("app_network_route_requires_network_facade:backend/app.py")
+    if re.search(r'@app\.get\("/api/dev-dashboard/status"', ap):
+        print("app_dcc_status_requires_dcc_status_facade:backend/app.py")
+    if re.search(r'@app\.get\("/api/dev-dashboard/roadmap"\)', ap) and "build_dashboard_status" in ap:
+        print("app_roadmap_route_uses_dashboard_aggregation:backend/app.py")
+    blocked_extraction_paths = (
+        "/api/status",
+        "/api/system/network",
+        "/api/dev-dashboard/status",
+        "/api/dev-dashboard/roadmap",
+    )
+    for mod in app_router_modules.values():
+        if not mod.is_file():
+            continue
+        mt = mod.read_text(encoding="utf-8", errors="replace")
+        rel = mod.relative_to(root).as_posix()
+        for bp in blocked_extraction_paths:
+            if f'@router.get("{bp}"' in mt:
+                print(f"app_blocked_route_extraction_attempt:{rel}:{bp}")
+        if "build_dashboard_status" in mt and "dev_dashboard_roadmap.py" in rel:
+            print(f"app_roadmap_route_uses_dashboard_aggregation:{rel}")
 
 if deploy_routes.is_file():
     subrouter_markers = (

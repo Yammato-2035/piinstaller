@@ -1,0 +1,8 @@
+# E.7 Boundary Guard Warnings (WARN-only, extracted)
+
+app_status_route_requires_system_status_facade:backend/app.py
+app_network_route_requires_network_facade:backend/app.py
+app_dcc_status_requires_dcc_status_facade:backend/app.py
+app_roadmap_route_uses_dashboard_aggregation:backend/app.py
+
+# Note: app_blocked_route_extraction_attempt only fires if blocked paths appear in router slices (none at E.7).

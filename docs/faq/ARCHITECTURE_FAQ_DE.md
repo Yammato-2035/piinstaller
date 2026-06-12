@@ -155,9 +155,13 @@ Verbindliches Inventar unter `docs/architecture/MODULE_CATALOG.md` mit Function 
 
 2 GET-Routen (`next-prompts`, `export-next-prompt`) in `dev_dashboard_roadmap.py`. `app.py`: 17.499→17.472 Zeilen.
 
+## Was ist E.7 (Router-Slice Kandidaten-Audit)?
+
+Re-Scan aller **187** verbleibenden `@app.*` Routen — **keine Extraktion**. Ergebnis: **3** sichere E.8-Kandidaten (backend-health, notifications/status/events); blockierte Facades für status/network/DCC. Evidence: `docs/architecture/APP_ROUTER_SLICE_CANDIDATE_AUDIT_E7.md`.
+
 ## Nächster Schritt?
 
-**E.7** — weiterer read-only Slice.
+**E.8** — Extraktion der 3 DCC read-only GETs **oder** Facade-Phase F.1 (System/DCC Status).
 
 ## Weiterlesen
 
