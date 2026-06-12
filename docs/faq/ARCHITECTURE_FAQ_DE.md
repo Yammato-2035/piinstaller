@@ -151,9 +151,13 @@ Verbindliches Inventar unter `docs/architecture/MODULE_CATALOG.md` mit Function 
 
 5 Roadmap-Registry-GETs nach `dev_dashboard_roadmap.py` (areas, milestones, blockers, decisions, next-prompt). Nur `load_roadmap_registry_bundle`. `app.py`: 17.568→17.499 Zeilen.
 
+## Was ist E.6 (Roadmap Next-Prompts)?
+
+2 GET-Routen (`next-prompts`, `export-next-prompt`) in `dev_dashboard_roadmap.py`. `app.py`: 17.499→17.472 Zeilen.
+
 ## Nächster Schritt?
 
-**E.6** — verbleibende Roadmap-GET (`next-prompts`, `export-next-prompt`).
+**E.7** — weiterer read-only Slice.
 
 ## Weiterlesen
 

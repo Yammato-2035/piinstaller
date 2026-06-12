@@ -14,4 +14,4 @@ New module: `api/routes/dev_dashboard_roadmap.py`
 
 ## Next step
 
-**E.6** — remaining roadmap GET routes.
+**E.6** done — see `APP_ROUTER_SLICE_E6_EN.md`. **E.7** — next slice.

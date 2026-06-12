@@ -153,7 +153,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **E.5 (erledigt):** `dev_dashboard_roadmap.py` — 5 GET, app.py 17.568→17.499.
 
-**Nächster Schritt:** E.6
+**E.6 (erledigt):** `dev_dashboard_roadmap.py` +2 Routen, app.py 17.499→17.472.
+
+**Nächster Schritt:** E.7
 
 ---
 

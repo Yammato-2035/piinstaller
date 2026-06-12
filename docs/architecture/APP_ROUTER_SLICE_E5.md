@@ -14,4 +14,4 @@ Neues Modul: `api/routes/dev_dashboard_roadmap.py`
 
 ## Nächster Schritt
 
-**E.6** — verbleibende Roadmap-GET (`next-prompts`, `export-next-prompt`).
+**E.6** erledigt — siehe `APP_ROUTER_SLICE_E6.md`. **E.7** — nächster Slice.

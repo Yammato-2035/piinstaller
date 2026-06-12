@@ -4100,33 +4100,6 @@ async def dev_dashboard_roadmap(
     return bundle
 
 
-@app.get("/api/dev-dashboard/roadmap/next-prompts")
-async def dev_dashboard_roadmap_next_prompts():
-    from core.dev_dashboard_roadmap import load_roadmap_registry_bundle
-
-    bundle = load_roadmap_registry_bundle()
-    return {
-        "status": bundle.get("status"),
-        "read_only": True,
-        "execution_allowed": False,
-        "prompts": bundle.get("next_prompts") or [],
-        "recommended_prompt_id": (bundle.get("recommended_prompt") or {}).get("id"),
-        "warnings": bundle.get("warnings") or [],
-    }
-
-
-@app.get("/api/dev-dashboard/roadmap/export-next-prompt/{prompt_id}")
-async def dev_dashboard_roadmap_export_next_prompt(prompt_id: str):
-    from fastapi.responses import PlainTextResponse
-
-    from core.dev_dashboard_roadmap import export_next_prompt_text
-
-    text, error = export_next_prompt_text(prompt_id)
-    if error:
-        return JSONResponse(status_code=404, content=error)
-    return PlainTextResponse(text or "", media_type="text/plain; charset=utf-8")
-
-
 @app.get("/api/dev-dashboard/rescue-build/status")
 async def dev_dashboard_rescue_build_status():
     """Read-only: Rescue-/ISO-/Live-Build-Gates für Development Dashboard."""

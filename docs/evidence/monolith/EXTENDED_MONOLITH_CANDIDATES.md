@@ -142,6 +142,7 @@
 3. **E.3** app.py Router-Slice — **erledigt** (5 GET)
 4. **E.4** app.py Router-Slice — **erledigt** (5 DCC index GET)
 5. **E.5** app.py Router-Slice — **erledigt** (5 roadmap registry GET)
-6. **E.6** app.py Router-Slice — nächster Schritt
+6. **E.6** app.py Router-Slice — **erledigt** (2 roadmap next-prompt GET)
+7. **E.7** app.py Router-Slice — nächster Schritt
 4. B.2: `app.py` Storage-Hilfen, `inspect_storage.py`
 5. Router-Extraktion `app.py`

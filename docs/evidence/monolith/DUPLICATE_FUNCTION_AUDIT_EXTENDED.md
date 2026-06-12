@@ -287,6 +287,17 @@ Evidence: `APP_ROUTER_SLICE_E5.md`, `BOUNDARY_WARNINGS_E5.txt`
 
 ---
 
+## Update: APP Router Slice E.6 (2026-06-10)
+
+| Cluster | Status |
+|---------|--------|
+| Roadmap next-prompts/export in `app.py` | **extrahiert** → `dev_dashboard_roadmap.py` |
+| Export text | **reuse** `export_next_prompt_text` |
+
+Evidence: `APP_ROUTER_SLICE_E6.md`, `BOUNDARY_WARNINGS_E6.txt`
+
+---
+
 ## Update: Deploy Runner Registry C.1 (2026-06-10)
 
 | Cluster | Status |

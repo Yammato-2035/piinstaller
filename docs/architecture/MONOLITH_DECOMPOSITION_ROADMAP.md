@@ -25,7 +25,7 @@
 | Settings/Status GET | `api/routes/settings.py`, `status.py` | **E.2 erledigt** (5 GET) |
 | Capabilities/Catalog/Logs | `capabilities.py`, `catalog.py`, `health.py` | **E.3 erledigt** (5 GET) |
 | DCC Readonly Indexes | `dev_dashboard_readonly.py` | **E.4 erledigt** (5 GET) |
-| DCC Roadmap Registry | `dev_dashboard_roadmap.py` | **E.5 erledigt** (5 GET) |
+| DCC Roadmap Registry | `dev_dashboard_roadmap.py` | **E.5/E.6 erledigt** (7 GET) |
 | Backup-Routen | `api/routes/backup.py` | offen |
 | User/Security | `api/routes/users.py`, `api/routes/security.py` | bestehend |
 | System-Info | `api/routes/system.py` | offen |
@@ -312,7 +312,8 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **E.3** | app.py Router-Slice — **erledigt** (5 GET) |
 | **E.4** | app.py Router-Slice — **erledigt** (5 DCC index GET) |
 | **E.5** | app.py Router-Slice — **erledigt** (5 roadmap registry GET) |
-| **E.6** | app.py Router-Slice — **nächster Schritt** |
+| **E.6** | app.py Router-Slice — **erledigt** (2 roadmap next-prompt GET) |
+| **E.7** | app.py Router-Slice — **nächster Schritt** |
 | **D.6+** | runtime, rescue, backup, restore | später (CRITICAL/HIGH) |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  

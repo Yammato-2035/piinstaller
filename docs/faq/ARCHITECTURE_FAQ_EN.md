@@ -151,9 +151,13 @@ Five DCC index GET routes in `dev_dashboard_readonly.py` using only `core.dev_da
 
 Five roadmap registry GET routes in `dev_dashboard_roadmap.py` via `load_roadmap_registry_bundle` only.
 
+## What is E.6 (roadmap next-prompts)?
+
+Two GET routes moved to `dev_dashboard_roadmap.py`. `app.py`: 17,499→17,472 lines.
+
 ## Next step?
 
-**E.6** — remaining roadmap GET routes.
+**E.7** — next read-only slice.
 
 ## Further reading
 

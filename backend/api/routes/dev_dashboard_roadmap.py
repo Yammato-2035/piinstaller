@@ -9,8 +9,9 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse, PlainTextResponse
 
-from core.dev_dashboard_roadmap import load_roadmap_registry_bundle
+from core.dev_dashboard_roadmap import export_next_prompt_text, load_roadmap_registry_bundle
 
 router = APIRouter(tags=["dev-dashboard-roadmap"])
 
@@ -55,3 +56,21 @@ async def dev_dashboard_roadmap_next_prompt():
         **_roadmap_readonly_base(bundle),
         "prompt": bundle.get("recommended_prompt"),
     }
+
+
+@router.get("/api/dev-dashboard/roadmap/next-prompts")
+async def dev_dashboard_roadmap_next_prompts():
+    bundle = load_roadmap_registry_bundle()
+    return {
+        **_roadmap_readonly_base(bundle),
+        "prompts": bundle.get("next_prompts") or [],
+        "recommended_prompt_id": (bundle.get("recommended_prompt") or {}).get("id"),
+    }
+
+
+@router.get("/api/dev-dashboard/roadmap/export-next-prompt/{prompt_id}")
+async def dev_dashboard_roadmap_export_next_prompt(prompt_id: str):
+    text, error = export_next_prompt_text(prompt_id)
+    if error:
+        return JSONResponse(status_code=404, content=error)
+    return PlainTextResponse(text or "", media_type="text/plain; charset=utf-8")

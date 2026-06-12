@@ -793,7 +793,7 @@ if backend.is_dir():
     if risk_hits[:5]:
         print(f"duplicate_runner_risk_logic_detected:{len(risk_hits)}")
 
-# Phase E.1–E.5: app.py router slices (warn-only)
+# Phase E.1–E.6: app.py router slices (warn-only)
 app_py_path = root / "backend" / "app.py"
 app_router_modules = {
     "health.py": root / "backend" / "api" / "routes" / "health.py",
@@ -851,6 +851,12 @@ e5_slice_endpoints = {
         '@router.get("/api/dev-dashboard/roadmap/next-prompt")',
     ),
 }
+e6_slice_endpoints = {
+    "dev_dashboard_roadmap.py": (
+        '@router.get("/api/dev-dashboard/roadmap/next-prompts")',
+        '@router.get("/api/dev-dashboard/roadmap/export-next-prompt/{prompt_id}")',
+    ),
+}
 for sub, mod in app_router_modules.items():
     if not mod.is_file():
         print(f"app_router_slice_missing:backend/api/routes/{sub}")
@@ -890,12 +896,14 @@ if app_py_path.is_file():
     baseline_e3_lines = 17699
     baseline_e4_lines = 17617
     baseline_e5_lines = 17568
+    baseline_e6_lines = 17499
     route_decorators = len(re.findall(r"@app\.(get|post|put|delete|patch)\(", ap))
     baseline_e1_routes = 213
     baseline_e2_routes = 209
     baseline_e3_routes = 204
     baseline_e4_routes = 199
     baseline_e5_routes = 194
+    baseline_e6_routes = 189
     if ap_lines > 3000:
         print(f"app_py_too_large:{ap_lines}")
     print(f"app_py_route_count:{route_decorators}")
@@ -921,6 +929,10 @@ if app_py_path.is_file():
         print(f"app_py_route_count_reduced_e5:{baseline_e5_routes}_to_{route_decorators}")
     if ap_lines < baseline_e5_lines:
         print(f"app_py_line_count_reduced_e5:{baseline_e5_lines}_to_{ap_lines}")
+    if route_decorators < baseline_e6_routes:
+        print(f"app_py_route_count_reduced_e6:{baseline_e6_routes}_to_{route_decorators}")
+    if ap_lines < baseline_e6_lines:
+        print(f"app_py_line_count_reduced_e6:{baseline_e6_lines}_to_{ap_lines}")
     if "include_router(health_router)" not in ap or "include_router(version_router)" not in ap:
         print("app_router_slice_e1_not_included:backend/app.py")
     if "include_router(settings_router)" not in ap or "include_router(status_router)" not in ap:
@@ -956,6 +968,8 @@ if app_py_path.is_file():
         '@app.get("/api/dev-dashboard/roadmap/blockers")',
         '@app.get("/api/dev-dashboard/roadmap/decisions")',
         '@app.get("/api/dev-dashboard/roadmap/next-prompt")',
+        '@app.get("/api/dev-dashboard/roadmap/next-prompts")',
+        '@app.get("/api/dev-dashboard/roadmap/export-next-prompt/{prompt_id}")',
     ):
         if dup in ap:
             print(f"app_router_slice_duplicate_in_app:{dup}")
@@ -965,6 +979,7 @@ if app_py_path.is_file():
         **e3_slice_endpoints,
         **e4_slice_endpoints,
         **e5_slice_endpoints,
+        **e6_slice_endpoints,
     }.items():
         mod = app_router_modules.get(sub)
         if mod and mod.is_file():
