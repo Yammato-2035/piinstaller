@@ -143,9 +143,13 @@ Five read-only GET routes in `api/routes/settings.py` and `status.py`. `app.py`:
 
 Five read-only GET routes (logs/tail, self-update/status, apps, DCC capability gates). `app.py`: 17,699→17,617 lines.
 
+## What is E.4 (app.py router slice)?
+
+Five DCC index GET routes in `dev_dashboard_readonly.py` using only `core.dev_dashboard*`. `app.py`: 17,617→17,568 lines.
+
 ## Next step?
 
-**E.4** — next `app.py` router slice (read-only, no subprocess).
+**E.5** — roadmap read-only subroutes.
 
 ## Further reading
 

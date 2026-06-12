@@ -265,6 +265,17 @@ Evidence: `APP_ROUTER_SLICE_E3.md`, `BOUNDARY_WARNINGS_E3.txt`
 
 ---
 
+## Update: APP Router Slice E.4 (2026-06-10)
+
+| Cluster | Status |
+|---------|--------|
+| DCC modules/evidence index in `app.py` | **extrahiert** → `dev_dashboard_readonly.py` |
+| Dateiscanner | **reuse** `core.dev_dashboard*` (kein Router-Duplikat) |
+
+Evidence: `APP_ROUTER_SLICE_E4.md`, `BOUNDARY_WARNINGS_E4.txt`
+
+---
+
 ## Update: Deploy Runner Registry C.1 (2026-06-10)
 
 | Cluster | Status |

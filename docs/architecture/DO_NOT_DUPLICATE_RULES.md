@@ -16,6 +16,7 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 12. **Neue Module** müssen zuerst in [MODULE_CATALOG.md](MODULE_CATALOG.md) als CANDIDATE eingetragen werden.
 13. **Keine neuen `/health`- oder `/api/version`-Handler in `app.py`**, wenn `api/routes/health.py` bzw. `version.py` existieren (E.1+).
 14. **Keine neuen Settings-/Status-GET-Handler in `app.py`**, wenn `api/routes/settings.py` bzw. `status.py` existieren (E.2+).
+15. **Keine neuen DCC-Index-GET in `app.py`**, wenn `dev_dashboard_readonly.py` existiert — Scanner nur in `core.dev_dashboard*` (E.4+).
 
 ## Prüfreihenfolge (Cursor)
 

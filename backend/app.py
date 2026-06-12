@@ -2979,6 +2979,7 @@ except ImportError:
 try:
     from api.routes.capabilities import router as capabilities_router
     from api.routes.catalog import router as catalog_router
+    from api.routes.dev_dashboard_readonly import router as dev_dashboard_readonly_router
     from api.routes.health import router as health_router
     from api.routes.settings import router as settings_router
     from api.routes.status import router as status_router
@@ -2990,6 +2991,7 @@ try:
     app.include_router(status_router)
     app.include_router(capabilities_router)
     app.include_router(catalog_router)
+    app.include_router(dev_dashboard_readonly_router)
 except ImportError:
     pass
 
@@ -4036,27 +4038,6 @@ async def dev_dashboard_status(
         raise
 
 
-@app.get("/api/dev-dashboard/modules")
-async def dev_dashboard_modules():
-    from core import dev_dashboard as dev_dashboard_core
-
-    return dev_dashboard_core.build_modules_list()
-
-
-@app.get("/api/dev-dashboard/modules/{module_id}")
-async def dev_dashboard_module_detail(module_id: str):
-    from core import dev_dashboard as dev_dashboard_core
-
-    return dev_dashboard_core.build_module_detail(module_id)
-
-
-@app.get("/api/dev-dashboard/evidence-index")
-async def dev_dashboard_evidence_index():
-    from core import dev_dashboard as dev_dashboard_core
-
-    return dev_dashboard_core.build_evidence_index()
-
-
 @app.get("/api/dev-dashboard/control-center-summary")
 async def dev_dashboard_control_center_summary():
     """Read-only: Control Center Übersicht (Runtime, Roadmap, Dev-Server, Doku, Diagnostik)."""
@@ -4073,16 +4054,6 @@ async def dev_dashboard_control_center_summary():
     except Exception:
         logger.exception("dev_dashboard_control_center_summary failed")
         raise
-
-
-@app.get("/api/dev-dashboard/manual-command-runs")
-async def dev_dashboard_manual_command_runs(
-    limit: int = Query(default=5, ge=1, le=50),
-):
-    """Read-only: strukturierte manuelle Kommandoläufe aus Evidence-JSON (keine Shell-Ausführung)."""
-    from core.dev_dashboard_manual_command_runs import build_manual_command_runs_index
-
-    return build_manual_command_runs_index(max_runs=limit)
 
 
 @app.get("/api/dev-dashboard/backend-health")
@@ -4105,26 +4076,6 @@ async def dev_dashboard_backend_health(
     return load_backend_health_snapshot(
         stale_after_seconds=stale_after_seconds,
         history_limit=history_limit,
-    )
-
-
-@app.get("/api/dev-dashboard/recent-evidence")
-async def dev_dashboard_recent_evidence(
-    limit: int = Query(default=5, ge=1, le=50),
-    category: str | None = Query(default=None),
-    status: str | None = Query(default=None),
-    search: str | None = Query(default=None),
-    time_range: str | None = Query(default="all"),
-):
-    """Read-only: neueste Repo-Evidence-Berichte und Testläufe (kein Shell, kein Execute)."""
-    from core.dev_dashboard_recent_evidence import build_recent_evidence_feed
-
-    return build_recent_evidence_feed(
-        limit=limit,
-        category=category,
-        status=status,
-        search=search,
-        time_range=time_range,
     )
 
 

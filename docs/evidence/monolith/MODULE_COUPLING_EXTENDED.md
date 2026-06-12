@@ -149,7 +149,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **E.3 (erledigt):** `capabilities.py`, `catalog.py` + Erweiterung health/status — 5 GET, app.py 17.699→17.617.
 
-**Nächster Schritt:** E.4
+**E.4 (erledigt):** `dev_dashboard_readonly.py` — 5 DCC index GET, app.py 17.617→17.568.
+
+**Nächster Schritt:** E.5
 
 ---
 

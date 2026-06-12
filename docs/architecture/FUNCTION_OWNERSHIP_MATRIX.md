@@ -34,6 +34,7 @@
 | Status/Metadata Read API | `api/routes/status.py` | CANONICAL | app (include_router) | Ja |
 | DCC Capability Gate API | `api/routes/capabilities.py` | CANONICAL | app (include_router) | Ja |
 | App Catalog API | `api/routes/catalog.py` | CANONICAL | app (include_router) | Ja |
+| DCC Readonly Index API | `api/routes/dev_dashboard_readonly.py` | CANONICAL | app (include_router) | Ja |
 | Deploy Execute/Rescue Routes | `routes.py` | LEGACY | app | Bis D.15 Execute-Gate |
 | Status / Ampel Mapping | — (verteilt) | PARTIAL | frontend, DCC | PLANNED: zentrales ViewModel |
 | DCC Aggregation | `dev-dashboard` routes in app | PARTIAL | DevelopmentDashboard.tsx | Keine Parallel-Aggregation |

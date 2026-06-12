@@ -143,9 +143,13 @@ Verbindliches Inventar unter `docs/architecture/MODULE_CATALOG.md` mit Function 
 
 5 read-only GET-Routen: logs/tail, self-update/status, apps, dev-dashboard capability/compact-status. `app.py`: 17.699→17.617 Zeilen.
 
+## Was ist E.4 (app.py Router-Slice)?
+
+5 DCC-Index-GETs nach `dev_dashboard_readonly.py` (modules, evidence-index, manual-command-runs, recent-evidence). Nur `core.dev_dashboard*`. `app.py`: 17.617→17.568 Zeilen.
+
 ## Nächster Schritt?
 
-**E.4** — weiterer `app.py` Router-Slice (read-only, ohne subprocess).
+**E.5** — Roadmap read-only Subroutes.
 
 ## Weiterlesen
 

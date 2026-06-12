@@ -793,7 +793,7 @@ if backend.is_dir():
     if risk_hits[:5]:
         print(f"duplicate_runner_risk_logic_detected:{len(risk_hits)}")
 
-# Phase E.1/E.2/E.3: app.py router slices (warn-only)
+# Phase E.1–E.4: app.py router slices (warn-only)
 app_py_path = root / "backend" / "app.py"
 app_router_modules = {
     "health.py": root / "backend" / "api" / "routes" / "health.py",
@@ -802,6 +802,7 @@ app_router_modules = {
     "status.py": root / "backend" / "api" / "routes" / "status.py",
     "capabilities.py": root / "backend" / "api" / "routes" / "capabilities.py",
     "catalog.py": root / "backend" / "api" / "routes" / "catalog.py",
+    "dev_dashboard_readonly.py": root / "backend" / "api" / "routes" / "dev_dashboard_readonly.py",
 }
 e1_slice_endpoints = {
     "health.py": (
@@ -831,6 +832,15 @@ e3_slice_endpoints = {
         '@router.get("/api/dev-dashboard/compact-status")',
     ),
 }
+e4_slice_endpoints = {
+    "dev_dashboard_readonly.py": (
+        '@router.get("/api/dev-dashboard/modules")',
+        '@router.get("/api/dev-dashboard/modules/{module_id}")',
+        '@router.get("/api/dev-dashboard/evidence-index")',
+        '@router.get("/api/dev-dashboard/manual-command-runs")',
+        '@router.get("/api/dev-dashboard/recent-evidence")',
+    ),
+}
 for sub, mod in app_router_modules.items():
     if not mod.is_file():
         print(f"app_router_slice_missing:backend/api/routes/{sub}")
@@ -849,16 +859,20 @@ for mod in app_router_modules.values():
         print(f"app_py_new_safety_duplicate:{rel}")
     if re.search(r"\bfindmnt\b", mt) and "mount_facade" not in mt:
         print(f"app_py_new_mount_duplicate:{rel}")
+    if re.search(r"\bos\.walk\b|\.rglob\(", mt) and "dev_dashboard" not in mt and "core." not in mt:
+        print(f"app_new_file_scanner_without_core_owner:{rel}")
 if app_py_path.is_file():
     ap = app_py_path.read_text(encoding="utf-8", errors="replace")
     ap_lines = ap.count("\n") + (1 if ap and not ap.endswith("\n") else 0)
     baseline_e1_lines = 17857
     baseline_e2_lines = 17779
     baseline_e3_lines = 17699
+    baseline_e4_lines = 17617
     route_decorators = len(re.findall(r"@app\.(get|post|put|delete|patch)\(", ap))
     baseline_e1_routes = 213
     baseline_e2_routes = 209
     baseline_e3_routes = 204
+    baseline_e4_routes = 199
     if ap_lines > 3000:
         print(f"app_py_too_large:{ap_lines}")
     print(f"app_py_route_count:{route_decorators}")
@@ -876,12 +890,18 @@ if app_py_path.is_file():
         print(f"app_py_route_count_reduced_e3:{baseline_e3_routes}_to_{route_decorators}")
     if ap_lines < baseline_e3_lines:
         print(f"app_py_line_count_reduced_e3:{baseline_e3_lines}_to_{ap_lines}")
+    if route_decorators < baseline_e4_routes:
+        print(f"app_py_route_count_reduced_e4:{baseline_e4_routes}_to_{route_decorators}")
+    if ap_lines < baseline_e4_lines:
+        print(f"app_py_line_count_reduced_e4:{baseline_e4_lines}_to_{ap_lines}")
     if "include_router(health_router)" not in ap or "include_router(version_router)" not in ap:
         print("app_router_slice_e1_not_included:backend/app.py")
     if "include_router(settings_router)" not in ap or "include_router(status_router)" not in ap:
         print("app_router_slice_e2_not_included:backend/app.py")
     if "include_router(capabilities_router)" not in ap or "include_router(catalog_router)" not in ap:
         print("app_router_slice_e3_not_included:backend/app.py")
+    if "include_router(dev_dashboard_readonly_router)" not in ap:
+        print("app_router_slice_e4_not_included:backend/app.py")
     for dup in (
         '@app.get("/health")',
         '@app.get("/api/version")',
@@ -897,10 +917,15 @@ if app_py_path.is_file():
         '@app.get("/api/apps")',
         '@app.get("/api/dev-dashboard/capability-status")',
         '@app.get("/api/dev-dashboard/compact-status")',
+        '@app.get("/api/dev-dashboard/modules")',
+        '@app.get("/api/dev-dashboard/modules/{module_id}")',
+        '@app.get("/api/dev-dashboard/evidence-index")',
+        '@app.get("/api/dev-dashboard/manual-command-runs")',
+        '@app.get("/api/dev-dashboard/recent-evidence")',
     ):
         if dup in ap:
             print(f"app_router_slice_duplicate_in_app:{dup}")
-    for sub, eps in {**e1_slice_endpoints, **e2_slice_endpoints, **e3_slice_endpoints}.items():
+    for sub, eps in {**e1_slice_endpoints, **e2_slice_endpoints, **e3_slice_endpoints, **e4_slice_endpoints}.items():
         mod = app_router_modules.get(sub)
         if mod and mod.is_file():
             mt = mod.read_text(encoding="utf-8", errors="replace")

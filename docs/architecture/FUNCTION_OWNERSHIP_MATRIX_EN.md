@@ -2,7 +2,7 @@
 
 Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) — 37 capability rows.
 
-**CANONICAL owners:** … deploy sub-routers, app sub-routers (`health`, `version` E.1; `settings`, `status` E.2; `capabilities`, `catalog` E.3).
+**CANONICAL owners:** … deploy sub-routers, app sub-routers (E.1–E.4 incl. `dev_dashboard_readonly`).
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 
