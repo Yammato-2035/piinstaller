@@ -183,9 +183,13 @@ Analysis only (no refactoring): remaining direct access, traffic-light duplicate
 
 Canonical module `core/system_status_facade.py` — read-only aggregation for system ampel, backend runtime, installation, profile. **No route migration** in G.1. No network diagnostics. See `docs/architecture/SYSTEM_STATUS_FACADE_G1_EN.md`.
 
+## What is G.1b (system status route migration)?
+
+`GET /api/system/status` in `app.py` delegates to `build_system_status()`. No API changes. See `docs/architecture/SYSTEM_STATUS_ROUTE_MIGRATION_G1B_EN.md`.
+
 ## Next step?
 
-**G.1b** — migrate `/api/system/status` to facade. **G.2** — Network Info Facade.
+**G.2** — Network Info Facade.
 
 ## Further reading
 

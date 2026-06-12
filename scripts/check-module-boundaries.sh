@@ -1165,6 +1165,16 @@ if app_py_path.is_file():
     if '@app.get("/api/status")' in ap_g1 or '@app.get("/api/status",' in ap_g1:
         if "system_status_facade" not in ap_g1:
             print("app_status_route_requires_system_status_facade:backend/app.py")
+    sys_status_m = re.search(
+        r'@app\.get\("/api/system/status"\)\s*\nasync def system_status\(\):[\s\S]{0,500}',
+        ap_g1,
+    )
+    if sys_status_m:
+        block = sys_status_m.group(0)
+        if "build_system_status" not in block:
+            print("app_system_status_route_bypasses_facade:backend/app.py")
+        if "_compute_system_status" in block or "APP_SETTINGS" in block:
+            print("app_system_status_route_bypasses_facade:direct_ampel_in_handler")
     if re.search(r"def get_network_info|def _demo_network", ap_g1):
         if "network_info_facade" not in ap_g1:
             print("system_status_new_network_logic_outside_network_facade:backend/app.py")

@@ -288,20 +288,10 @@ async def system_status():
     Zentrale Systemstatus-API.
     Liefert Ampelwerte für Backup, Restore, Security, Updates.
     """
+    from core.system_status_facade import build_system_status
+
     try:
-        # Subprozesse (apt, psutil, …) blockieren nicht den Uvicorn-Event-Loop (workers=1).
-        status = await asyncio.to_thread(_compute_system_status)
-        rs = (APP_SETTINGS.get("backup") or {}).get("realtest_state") or {}
-        payload = dict(status)
-        payload["realtest_state"] = rs
-        return {
-            "status": "success",
-            "api_status": "ok",
-            "message": "",
-            "data": payload,
-            **status,
-            "realtest_state": rs,
-        }
+        return await asyncio.to_thread(build_system_status)
     except Exception as e:
         logger.error(f"Fehler beim Lesen des Systemstatus: {e}", exc_info=True)
         return JSONResponse(

@@ -292,9 +292,9 @@ def build_system_status_sections(
 
 def build_system_status(*, repo_root: Path | None = None) -> dict[str, Any]:
     """
-    Canonical system ampel payload for ``/api/system/status`` (legacy shape preserved in data).
+    Canonical API payload for ``GET /api/system/status`` (exact legacy response shape).
 
-    Returns facade envelope with ampel keys at top level for router migration (G.1b).
+    Delegates ampel computation via legacy adapters; no extra facade envelope keys.
     """
     overview = build_system_status_sections(repo_root=repo_root, include_ampel=True)
     ampel_section = next(
@@ -304,21 +304,15 @@ def build_system_status(*, repo_root: Path | None = None) -> dict[str, Any]:
     data = ampel_section.get("data") if isinstance(ampel_section.get("data"), dict) else {}
     ampel = data.get("ampel") if isinstance(data.get("ampel"), dict) else {}
     rs = data.get("realtest_state") if isinstance(data.get("realtest_state"), dict) else {}
-    normalized = data.get("normalized") if isinstance(data.get("normalized"), dict) else {}
     payload = dict(ampel)
     payload["realtest_state"] = rs
     return {
-        "facade_version": FACADE_VERSION,
         "status": "success",
         "api_status": "ok",
         "message": "",
         "data": payload,
-        "normalized": normalized,
         **ampel,
         "realtest_state": rs,
-        "sections": overview.get("sections") or [],
-        "warnings": overview.get("warnings") or [],
-        "errors": overview.get("errors") or [],
     }
 
 
@@ -349,7 +343,6 @@ def build_system_status_diagnostics() -> dict[str, Any]:
         ],
         "routes_pending_facade_migration": [
             "GET /api/status",
-            "GET /api/system/status",
         ],
         "excluded_g2": [
             "GET /api/system/network",

@@ -167,9 +167,18 @@ class TestSystemStatusFacadeV1(unittest.TestCase):
         self.assertEqual(out["backup"], "green")
         self.assertEqual(out["restore"], "red")
         self.assertEqual(out["realtest_state"]["last_verify_ok"], True)
-        self.assertIn("sections", out)
-        self.assertIn("warnings", out)
-        self.assertIn("errors", out)
+        legacy_keys = {
+            "status",
+            "api_status",
+            "message",
+            "data",
+            "backup",
+            "restore",
+            "security",
+            "updates",
+            "realtest_state",
+        }
+        self.assertEqual(set(out.keys()), legacy_keys)
 
     def test_diagnostics_present(self) -> None:
         from core.system_status_facade import build_system_status_diagnostics
@@ -177,6 +186,7 @@ class TestSystemStatusFacadeV1(unittest.TestCase):
         diag = build_system_status_diagnostics()
         self.assertEqual(diag["facade_version"], 1)
         self.assertIn("GET /api/status", diag["routes_pending_facade_migration"])
+        self.assertNotIn("GET /api/system/status", diag["routes_pending_facade_migration"])
         self.assertFalse(diag["network_diagnostics_allowed"])
         for fn in PUBLIC_FUNCTIONS:
             self.assertIn(fn, diag["public_functions"])

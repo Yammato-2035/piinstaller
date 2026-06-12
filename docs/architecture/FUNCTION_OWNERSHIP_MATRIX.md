@@ -36,7 +36,7 @@
 | App Catalog API | `api/routes/catalog.py` | CANONICAL | app (include_router) | Ja |
 | DCC Readonly Index API | `api/routes/dev_dashboard_readonly.py` | CANONICAL | app (include_router) | Ja — F.4: Facade-Sections |
 | DCC Roadmap Registry API | `api/routes/dev_dashboard_roadmap.py` | CANONICAL | app (include_router) | Ja — Subroutes registry-only (F.3) |
-| System Status (Ampel) | `core.system_status_facade` | CANONICAL (G.1) | `/api/system/status` (G.1b) | Facade only |
+| System Status (Ampel) | `core.system_status_facade` | CANONICAL (G.1/G.1b) | `GET /api/system/status` | Ja — migriert |
 | System Status Legacy | `app.py` `_compute_system_status` | LEGACY | bis G.1b | über Facade-Adapter |
 | Network Info | `app.py` `get_network_info` | PARTIAL | `/api/system/network` | **CANDIDATE:** Network Info Facade (E.7) |
 | DCC Full Status | `core.dcc_status_facade` + `dev_dashboard_status_service` | CANONICAL (F.2) | `/api/dev-dashboard/status` | Ja — migriert |

@@ -38,6 +38,6 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**In progress:** **G.1b** `/api/system/status` migration. **G.1 done:** `system_status_facade` contract.
+**In progress:** **G.2** Network Info Facade. **G.1b done:** `/api/system/status` migrated.
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

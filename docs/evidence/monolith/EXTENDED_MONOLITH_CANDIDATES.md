@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.1 · **Update:** System Status Facade; `/api/status` network bleibt G.2.
+**HEAD:** nach G.1b · **Update:** system status HTTP migriert; `/api/status` network → G.2.
 
 ## Legende
 

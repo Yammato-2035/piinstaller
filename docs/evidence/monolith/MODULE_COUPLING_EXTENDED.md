@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.1 · **Update:** `system_status_facade` für Ampel; `app._compute_system_status` Legacy bis G.1b.
+**HEAD:** nach G.1b · **Update:** `app.py` system_status → facade; `get_status` network noch direkt.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

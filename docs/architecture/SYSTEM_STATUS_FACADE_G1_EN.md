@@ -40,4 +40,4 @@ Legacy ampel `green/yellow/red` via `normalize_legacy_system_status`.
 
 ## Next step
 
-**G.1b** — migrate `/api/system/status` router · **G.2** — Network Info Facade
+**G.1b** — done. **G.2** — Network Info Facade.

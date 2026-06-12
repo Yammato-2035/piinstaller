@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.1 · **Update:** `system_status_facade` Contract; Ampel über Legacy-Adapter.
+**HEAD:** nach G.1b · **Update:** `/api/system/status` über Facade; `_compute_system_status` nur Legacy-Adapter.
 
 ## Zusammenfassung
 

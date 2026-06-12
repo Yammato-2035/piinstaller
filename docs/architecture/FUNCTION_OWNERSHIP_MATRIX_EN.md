@@ -8,7 +8,9 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) â
 
 **G.1 done:** `system_status_facade` canonical module.
 
-**G.1b next:** migrate `/api/system/status`. **G.2:** Network Info Facade.
+**G.1b done:** `/api/system/status` uses `build_system_status()`.
+
+**G.2 next:** Network Info Facade.
 
 **CANDIDATE (E.7):** System Status Facade, Network Info Facade â€” block `/api/status`, `/api/system/network`.
 

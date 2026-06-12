@@ -40,6 +40,6 @@ Legacy-Ampel `green/yellow/red` via `normalize_legacy_system_status`.
 
 ## Nächster Schritt
 
-**G.1b** — Router-Migration `/api/system/status` · **G.2** — Network Info Facade
+**G.1b** — abgeschlossen. **G.2** — Network Info Facade.
 
-Evidence: [SYSTEM_STATUS_AUDIT_G1.md](../evidence/app-monolith/SYSTEM_STATUS_AUDIT_G1.md)
+Evidence: [SYSTEM_STATUS_ROUTE_MIGRATION_G1B.md](SYSTEM_STATUS_ROUTE_MIGRATION_G1B.md)

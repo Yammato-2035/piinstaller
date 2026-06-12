@@ -183,9 +183,13 @@ Reine Analyse ohne Refactoring: verbleibende Direktzugriffe, Ampel-Duplikate, Ro
 
 Kanonisches Modul `core/system_status_facade.py` — read-only Aggregation für Systemampel, Backend-Runtime, Installation, Profil. **Keine Route-Migration** in G.1. Keine Netzwerkdiagnostik. Doku: `docs/architecture/SYSTEM_STATUS_FACADE_G1.md`.
 
+## Was ist G.1b (System Status Router-Migration)?
+
+`GET /api/system/status` in `app.py` delegiert an `build_system_status()`. Keine API-Änderung. Doku: `docs/architecture/SYSTEM_STATUS_ROUTE_MIGRATION_G1B.md`.
+
 ## Nächster Schritt?
 
-**G.1b** — `/api/system/status` auf Facade migrieren. **G.2** — Network Info Facade.
+**G.2** — Network Info Facade.
 
 ## Weiterlesen
 
