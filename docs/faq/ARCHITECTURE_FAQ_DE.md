@@ -195,9 +195,13 @@ Kanonisches Modul `core/network_info_facade.py` — read-only Netzwerk-Info, Dem
 
 `GET /api/status` (network-Block) und `GET /api/system/network` delegieren an `network_info_facade`. Keine API-/Response-Änderung. Doku: `docs/architecture/NETWORK_INFO_ROUTE_MIGRATION_G2B.md`.
 
+## Was ist G.3 (Network Core Cleanup)?
+
+`get_system_info` und `webserver_status` delegieren an `network_info_facade`. Legacy `get_network_info`/`_demo_network` bleiben Implementierung hinter Facade-Adapter. Doku: `docs/architecture/NETWORK_INFO_CORE_CLEANUP_G3.md`.
+
 ## Nächster Schritt?
 
-**G.3** — verbleibende Network-Direktzugriffe in `app.py` oder **H.1** Frontend Status ViewModel Facade.
+**H.1** — Frontend Status ViewModel Facade (`dccStatusViewModel.ts`) **oder** **G.4** — Network Handler Extraction.
 
 ## Weiterlesen
 

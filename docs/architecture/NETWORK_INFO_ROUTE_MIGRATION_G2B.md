@@ -22,4 +22,4 @@
 
 ## Nächster Schritt
 
-**G.3** — verbleibende Direktzugriffe (`get_system_info`, `webserver_status`) oder **H.1** Frontend Status ViewModel
+**G.3 erledigt** — siehe [NETWORK_INFO_CORE_CLEANUP_G3.md](NETWORK_INFO_CORE_CLEANUP_G3.md). **H.1** oder **G.4** als nächstes.

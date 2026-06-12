@@ -1,0 +1,18 @@
+# Boundary Warnings — Phase G.3 (WARN-only)
+
+**HEAD:** fadbac7 (vor Commit) · **Gate:** Exit 0
+
+## G.3 aufgelöst
+
+| Code | Status |
+|------|--------|
+| `app_direct_network_info_usage_outside_legacy` | nicht ausgelöst |
+| `app_direct_demo_network_usage_outside_legacy` | nicht ausgelöst |
+| `network_info_new_network_logic_outside_facade` (app.py Handler) | aufgelöst |
+
+## Verbleibend (erwartet)
+
+| Code | Grund |
+|------|-------|
+| `app_network_route_requires_network_facade` | Route noch in app.py (kein Router-Move) |
+| `app_status_route_requires_system_status_facade` | `/api/status` Top-Level noch nicht system_status_facade |

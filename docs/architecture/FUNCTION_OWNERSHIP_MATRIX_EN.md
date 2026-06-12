@@ -10,9 +10,9 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) â
 
 **G.1b done:** `/api/system/status` uses `build_system_status()`.
 
-**G.2b done:** `GET /api/status` network + `GET /api/system/network` use `network_info_facade`.
+**G.3 done:** all app.py network handlers use `network_info_facade`.
 
-**G.3 next:** remaining direct usages in `get_system_info`, `webserver_status`.
+**Next:** **H.1** frontend status view model or **G.4** network handler extraction.
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 

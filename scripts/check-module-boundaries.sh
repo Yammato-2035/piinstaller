@@ -1216,6 +1216,39 @@ if app_py_path.is_file():
         block = status_m.group(0)
         if re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", block):
             print("app_status_network_block_bypasses_facade:backend/app.py")
+    # Phase G.3: remaining app.py handler cleanup guards (warn-only)
+    sys_info_m = re.search(
+        r'@app\.get\("/api/system-info"\)\s*\nasync def get_system_info\([^)]*\):[\s\S]{0,15000}',
+        ap_g2,
+    )
+    if sys_info_m:
+        block = sys_info_m.group(0)
+        if "network_info_facade" not in block:
+            print("app_system_info_requires_network_facade:backend/app.py")
+        elif re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", block):
+            print("app_direct_demo_network_usage_outside_legacy:backend/app.py:get_system_info")
+    web_m = re.search(
+        r'@app\.get\("/api/webserver/status"\)\s*\nasync def webserver_status\(\):[\s\S]{0,2500}',
+        ap_g2,
+    )
+    if web_m:
+        block = web_m.group(0)
+        if "network_info_facade" not in block:
+            print("app_webserver_status_requires_network_facade:backend/app.py")
+        elif re.search(r"\bget_network_info\s*\(", block):
+            print("app_direct_network_info_usage_outside_legacy:backend/app.py:webserver_status")
+    for line in ap_g2.splitlines():
+        stripped = line.strip()
+        if "_demo_network(" in line and not stripped.startswith("def _demo_network"):
+            print("app_direct_demo_network_usage_outside_legacy:backend/app.py")
+            break
+    else:
+        pass
+    for line in ap_g2.splitlines():
+        stripped = line.strip()
+        if "get_network_info(" in line and not stripped.startswith("def get_network_info"):
+            print("app_direct_network_info_usage_outside_legacy:backend/app.py")
+            break
     for path in sorted(backend.rglob("*.py")):
         rel = path.relative_to(root).as_posix()
         if "/tests/" in rel or "/venv/" in rel or rel.endswith("network_info_facade.py"):

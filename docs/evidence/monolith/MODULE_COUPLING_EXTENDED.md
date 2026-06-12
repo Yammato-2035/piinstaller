@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.2b · **Update:** `get_status`/`get_system_network` → facade; `get_system_info` noch direkt.
+**HEAD:** nach G.3 · **Update:** app.py Handler → facade; nur Legacy-Defs mit subprocess.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

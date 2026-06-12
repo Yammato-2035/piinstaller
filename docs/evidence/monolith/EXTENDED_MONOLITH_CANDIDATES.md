@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.2b · **Update:** Network-Routen migriert; `get_system_info`/`webserver_status` pending G.3.
+**HEAD:** nach G.3 · **Update:** alle app.py Network-Handler über Facade; Legacy nur Implementierung.
 
 ## Legende
 

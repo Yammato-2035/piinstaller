@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.2b · **Update:** HTTP-Routen über Facade; Legacy `get_network_info` bleibt Implementierung.
+**HEAD:** nach G.3 · **Update:** keine Handler-Direktzugriffe mehr; Legacy-Impl. isoliert.
 
 ## Zusammenfassung
 

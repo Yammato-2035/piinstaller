@@ -1,6 +1,6 @@
 # Network Info Facade — Phase G.2 (EN)
 
-**HEAD:** post G.2b · **Status:** CANONICAL_MODULE (FACADE) — routes migrated
+**HEAD:** post G.3 · **Status:** CANONICAL_MODULE (FACADE) — all app.py handlers migrated
 
 ## Purpose
 
@@ -25,9 +25,9 @@ Canonical read-only entry for network discovery — prepares `GET /api/status` a
 - No network write operations
 - No new discovery logic in facade module
 
-## Migrated routes (G.2b)
+## Migrated routes/handlers (G.2b/G.3)
 
-- `GET /api/status` — network block
-- `GET /api/system/network` — full response
+- `GET /api/status`, `GET /api/system/network` (G.2b)
+- `GET /api/system-info`, `GET /api/webserver/status` (G.3)
 
-Doc: [NETWORK_INFO_ROUTE_MIGRATION_G2B_EN.md](NETWORK_INFO_ROUTE_MIGRATION_G2B_EN.md)
+Docs: [NETWORK_INFO_ROUTE_MIGRATION_G2B_EN.md](NETWORK_INFO_ROUTE_MIGRATION_G2B_EN.md), [NETWORK_INFO_CORE_CLEANUP_G3_EN.md](NETWORK_INFO_CORE_CLEANUP_G3_EN.md)

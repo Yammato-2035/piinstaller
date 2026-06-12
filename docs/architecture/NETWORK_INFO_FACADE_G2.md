@@ -1,6 +1,6 @@
 # Network Info Facade — Phase G.2
 
-**HEAD:** nach G.2b · **Status:** CANONICAL_MODULE (FACADE) — Routen migriert
+**HEAD:** nach G.3 · **Status:** CANONICAL_MODULE (FACADE) — alle app.py-Handler migriert
 
 ## Zweck
 
@@ -36,11 +36,11 @@ Kanonischer read-only Einstieg für Netzwerkdiagnostik — Vorbereitung für `GE
 
 | `normalize_legacy_network_info()` | Facade-Status |
 
-## Migrierte Routen (G.2b)
+## Migrierte Routen/Handler (G.2b/G.3)
 
-- `GET /api/status` — network-Block
-- `GET /api/system/network` — vollständige Antwort
+- `GET /api/status`, `GET /api/system/network` (G.2b)
+- `GET /api/system-info`, `GET /api/webserver/status` (G.3)
 
-Doku: [NETWORK_INFO_ROUTE_MIGRATION_G2B.md](NETWORK_INFO_ROUTE_MIGRATION_G2B.md)
+Doku: [NETWORK_INFO_ROUTE_MIGRATION_G2B.md](NETWORK_INFO_ROUTE_MIGRATION_G2B.md), [NETWORK_INFO_CORE_CLEANUP_G3.md](NETWORK_INFO_CORE_CLEANUP_G3.md)
 
 Evidence: [NETWORK_INFO_AUDIT_G2.md](../evidence/app-monolith/NETWORK_INFO_AUDIT_G2.md)

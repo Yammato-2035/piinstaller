@@ -230,6 +230,8 @@ def build_network_info_diagnostics() -> dict[str, Any]:
         "routes_migrated_to_facade": [
             "GET /api/status",
             "GET /api/system/network",
+            "GET /api/system-info",
+            "GET /api/webserver/status",
         ],
         "read_only": True,
         "writes_allowed": False,

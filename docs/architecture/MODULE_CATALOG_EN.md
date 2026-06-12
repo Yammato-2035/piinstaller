@@ -1,6 +1,6 @@
 # Module Catalog (Source of Truth)
 
-**As of:** post G.2b (`network_info_facade` routes migrated) · **No big-bang** — inventory and ownership.
+**As of:** post G.3 (`network_info_facade` fully in app.py handlers) · **No big-bang** — inventory and ownership.
 
 Before new implementation, check this catalog, the [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX_EN.md), and [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES_EN.md).
 
@@ -39,6 +39,6 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**In progress:** **G.3** remaining network direct usages. **G.2b done:** `/api/status` + `/api/system/network` migrated.
+**In progress:** **H.1** / **G.4**. **G.3 done:** all app.py network handlers migrated.
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

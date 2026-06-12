@@ -6593,7 +6593,9 @@ async def get_system_info(request: Request, light: bool = False):
             resp["drivers"] = [{"device": _device_display(p.get("description") or ""), "driver": p.get("driver") or "—"} for p in pci_list]
         except Exception:
             resp["drivers"] = []
-        resp["network"] = _demo_network() if _is_demo_mode(request) else get_network_info()
+        from core.network_info_facade import build_demo_network_info, build_network_info
+
+        resp["network"] = build_demo_network_info() if _is_demo_mode(request) else build_network_info()
         if _is_demo_mode(request):
             resp["is_raspberry_pi"] = True  # Für Screenshots: Pi-spezifische Seiten anzeigen
         resp["app_edition"] = get_app_edition()
@@ -8539,9 +8541,11 @@ def get_website_names():
 @app.get("/api/webserver/status")
 async def webserver_status():
     """Webserver-Status"""
+    from core.network_info_facade import build_network_info
+
     try:
         running = get_running_services()
-        network = get_network_info()
+        network = build_network_info()
         installed = get_installed_apps()
         
         # Prüfe Webserver läuft

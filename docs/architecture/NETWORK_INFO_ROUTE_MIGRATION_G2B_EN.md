@@ -18,4 +18,4 @@
 
 ## Next step
 
-**G.3** — remaining direct usages or **H.1** frontend status view model
+**G.3 done** — see [NETWORK_INFO_CORE_CLEANUP_G3_EN.md](NETWORK_INFO_CORE_CLEANUP_G3_EN.md). **H.1** or **G.4** next.
