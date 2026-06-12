@@ -229,6 +229,18 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 ---
 
+## Update: APP Router Slice E.1 (2026-06-10)
+
+| Cluster | Status |
+|---------|--------|
+| `/health`, `/api/version` in `app.py` | **extrahiert** → `api/routes/health.py`, `version.py` |
+| Liveness payload | **reuse** `core.liveness` (kein Duplikat) |
+| Version gate payload | **reuse** `runtime_governance.service` + `core.liveness` |
+
+Evidence: `docs/evidence/app-monolith/APP_ROUTER_SLICE_E1.md`, `BOUNDARY_WARNINGS_E1.txt`
+
+---
+
 ## Update: Deploy Runner Registry C.1 (2026-06-10)
 
 | Cluster | Status |

@@ -131,9 +131,13 @@ Verbindliches Inventar unter `docs/architecture/MODULE_CATALOG.md` mit Function 
 
 8 read-only/status POST-Routen in `routes_runtime.py` (Lab-Readiness, Runbook, Validation). `routes.py`: 4324→4120 Zeilen, 89→81 Runner-Imports.
 
+## Was ist E.1 (app.py Router-Slice)?
+
+4 read-only GET-Routen nach `api/routes/health.py` und `version.py` extrahiert (`/health`, `/api/init/status`, `/api/logs/path`, `/api/version`). `app.py`: 17.857→17.779 Zeilen. Evidence: `docs/architecture/APP_ROUTER_SLICE_E1.md`.
+
 ## Nächster Schritt?
 
-**E.1** — `app.py` Router-Slice.
+**E.2** — weiterer `app.py` Router-Slice (read-only).
 
 ## Weiterlesen
 

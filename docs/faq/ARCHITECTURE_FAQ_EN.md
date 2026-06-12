@@ -131,9 +131,13 @@ Binding inventory at `docs/architecture/MODULE_CATALOG_EN.md` with function owne
 
 Eight read-only/status POST routes in `routes_runtime.py`. `routes.py`: 4324→4120 lines, 89→81 runner imports.
 
+## What is E.1 (app.py router slice)?
+
+Four read-only GET routes extracted to `api/routes/health.py` and `version.py`. `app.py`: 17,857→17,779 lines. See `docs/architecture/APP_ROUTER_SLICE_E1_EN.md`.
+
 ## Next step?
 
-**E.1** — `app.py` router slice.
+**E.2** — next `app.py` router slice (read-only).
 
 ## Further reading
 

@@ -793,6 +793,71 @@ if backend.is_dir():
     if risk_hits[:5]:
         print(f"duplicate_runner_risk_logic_detected:{len(risk_hits)}")
 
+# Phase E.1: app.py router slice (warn-only)
+app_py_path = root / "backend" / "app.py"
+health_mod = root / "backend" / "api" / "routes" / "health.py"
+version_mod = root / "backend" / "api" / "routes" / "version.py"
+e1_slice_endpoints = {
+    "health.py": (
+        '@router.get("/health")',
+        '@router.get("/api/init/status")',
+        '@router.get("/api/logs/path")',
+    ),
+    "version.py": ('@router.get("/api/version")',),
+}
+if not health_mod.is_file():
+    print("app_router_slice_missing:backend/api/routes/health.py")
+if not version_mod.is_file():
+    print("app_router_slice_missing:backend/api/routes/version.py")
+for mod in (health_mod, version_mod):
+    if not mod.is_file():
+        continue
+    mt = mod.read_text(encoding="utf-8", errors="replace")
+    rel = mod.relative_to(root).as_posix()
+    if re.search(r"\bsubprocess\b", mt) or re.search(r"\bsystemctl\b", mt):
+        print(f"app_py_new_subprocess:{rel}")
+    if re.search(r"\bsudo\b", mt, flags=re.I):
+        print(f"app_router_slice_e1_uses_sudo:{rel}")
+    if re.search(r"\blsblk\b|\bblkid\b", mt) and "storage_facade" not in mt:
+        print(f"app_py_new_storage_duplicate:{rel}")
+    if re.search(r"validate_write_target|write_guard", mt) and "safety_facade" not in mt:
+        print(f"app_py_new_safety_duplicate:{rel}")
+    if re.search(r"\bfindmnt\b|\bmount_facade\b", mt) and "mount_facade" not in mt:
+        if "findmnt" in mt:
+            print(f"app_py_new_mount_duplicate:{rel}")
+if app_py_path.is_file():
+    ap = app_py_path.read_text(encoding="utf-8", errors="replace")
+    ap_lines = ap.count("\n") + (1 if ap and not ap.endswith("\n") else 0)
+    baseline_e1_lines = 17857
+    route_decorators = len(re.findall(r"@app\.(get|post|put|delete|patch)\(", ap))
+    baseline_e1_routes = 213
+    if ap_lines > 3000:
+        print(f"app_py_too_large:{ap_lines}")
+    print(f"app_py_route_count:{route_decorators}")
+    if route_decorators >= baseline_e1_routes:
+        print(f"app_py_route_count_not_reduced:{baseline_e1_routes}_still_{route_decorators}")
+    if ap_lines >= baseline_e1_lines:
+        print(f"app_py_line_count_not_reduced_e1:{baseline_e1_lines}_still_{ap_lines}")
+    else:
+        print(f"app_py_line_count_reduced_e1:{baseline_e1_lines}_to_{ap_lines}")
+    if "include_router(health_router)" not in ap or "include_router(version_router)" not in ap:
+        print("app_router_slice_not_included:backend/app.py")
+    for dup in (
+        '@app.get("/health")',
+        '@app.get("/api/version")',
+        '@app.get("/api/init/status")',
+        '@app.get("/api/logs/path")',
+    ):
+        if dup in ap:
+            print(f"app_router_slice_duplicate_in_app:{dup}")
+    for sub, eps in e1_slice_endpoints.items():
+        mod = health_mod if sub == "health.py" else version_mod
+        if mod.is_file():
+            mt = mod.read_text(encoding="utf-8", errors="replace")
+            for ep in eps:
+                if ep not in mt:
+                    print(f"app_router_slice_endpoint_missing:{ep}")
+
 if deploy_routes.is_file():
     subrouter_markers = (
         "build_plan_only_response",

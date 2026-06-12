@@ -14,6 +14,7 @@ Binding rules against parallel implementations. **No exception** without documen
 10. No UI traffic-light logic without central view model (PLANNED).
 11. No new large i18n files without namespace concept.
 12. New modules must be registered in [MODULE_CATALOG_EN.md](MODULE_CATALOG_EN.md) first.
+13. Do not add new `/health` or `/api/version` handlers in `app.py` when `api/routes/health.py` or `version.py` exist (E.1+).
 
 Check order: Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
 

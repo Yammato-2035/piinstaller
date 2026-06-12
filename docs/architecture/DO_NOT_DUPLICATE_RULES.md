@@ -14,6 +14,7 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 10. **Keine UI-Ampellogik** ohne zentrales ViewModel/Fassade, sobald diese existiert (PLANNED).
 11. **Keine neuen i18n-Großdateien** ohne Namespace-Konzept (`de.json`/`en.json` pro Bereich).
 12. **Neue Module** müssen zuerst in [MODULE_CATALOG.md](MODULE_CATALOG.md) als CANDIDATE eingetragen werden.
+13. **Keine neuen `/health`- oder `/api/version`-Handler in `app.py`**, wenn `api/routes/health.py` bzw. `version.py` existieren (E.1+).
 
 ## Prüfreihenfolge (Cursor)
 

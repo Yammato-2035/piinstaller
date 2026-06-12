@@ -18,12 +18,14 @@
 
 ### A1: `backend/app.py` Router-Extraktion
 
-| Kandidat | Zielmodul | Zielstruktur |
-|----------|-----------|--------------|
-| Backup-Routen | `api/routes/backup.py` | `backend/api/routes/` |
+| Kandidat | Zielmodul | Status |
+|----------|-----------|--------|
+| Health/Init/Logs-Path | `api/routes/health.py` | **E.1 erledigt** (3 GET) |
+| Version API | `api/routes/version.py` | **E.1 erledigt** (1 GET) |
+| Backup-Routen | `api/routes/backup.py` | offen |
 | User/Security | `api/routes/users.py`, `api/routes/security.py` | bestehend |
-| System-Info | `api/routes/system.py` | `core/system_info_service.py` |
-| Settings | `api/routes/settings.py` | `core/settings_facade.py` |
+| System-Info | `api/routes/system.py` | offen |
+| Settings | `api/routes/settings.py` | offen |
 
 **Facade:** `app_bootstrap/router_registry.py` — `register_core_routes()` aktivieren  
 **Contract:** OpenAPI-Subset-Tests pro Router  
@@ -301,7 +303,8 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **M.1** | Modul-Katalog, Function Ownership, Do-Not-Duplicate — **erledigt** |
 | **D.10** | versioning Router — **erledigt** (8 Routen) |
 | **D.11** | runtime Router — **erledigt** (8 Routen) |
-| **E.1** | app.py Router-Slice — **nächster Schritt** |
+| **E.1** | app.py Router-Slice — **erledigt** (4 GET, health+version) |
+| **E.2** | app.py Router-Slice — **nächster Schritt** |
 | **D.6+** | runtime, rescue, backup, restore | später (CRITICAL/HIGH) |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  

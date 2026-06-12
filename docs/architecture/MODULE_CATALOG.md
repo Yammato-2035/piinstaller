@@ -1,6 +1,6 @@
 # Modul-Katalog (Source of Truth)
 
-**Stand:** nach D.9 (`0427de6`) · **Kein Refactoring** — nur Inventar und Ownership.
+**Stand:** nach E.1 (`app.py` Router-Slice) · **Kein Big-Bang** — Inventar und Ownership.
 
 Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX.md) und [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES.md) prüfen.
 
@@ -211,7 +211,9 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 
 | Modul | Status | Nächster Schritt |
 |-------|--------|------------------|
-| `app.py` Router-Slices | **CANDIDATE** | E.1 |
+| `api/routes/health.py` | **CANONICAL_ROUTER** (E.1) | `/health`, `/api/init/status`, `/api/logs/path` |
+| `api/routes/version.py` | **CANONICAL_ROUTER** (E.1) | `/api/version` |
+| `app.py` Router-Slices | **IN_PROGRESS** | E.2+ (209 Routen verbleibend) |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |
 
 ---

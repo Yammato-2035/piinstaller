@@ -143,7 +143,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **D.11 (erledigt):** `routes_runtime.py` — routes.py 81 Runner-Imports.
 
-**Nächster Schritt:** E.1 (Module Reuse Header Pflicht)
+**E.1 (erledigt):** `api/routes/health.py` + `version.py` — 4 GET aus `app.py`, include_router +2.
+
+**Nächster Schritt:** E.2 (read-only app routes)
 
 ---
 

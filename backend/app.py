@@ -2608,18 +2608,6 @@ def _load_or_init_config() -> dict:
     return cfg
 
 
-@app.get("/api/init/status")
-async def init_status():
-    return {
-        "status": "success",
-        "config_path": str(CONFIG_PATH),
-        "device_id": CONFIG_STATE.get("device_id"),
-        "first_run": bool(CONFIG_STATE.get("first_run")),
-        "matched_device": bool(CONFIG_STATE.get("matched_device")),
-        "app_edition": get_app_edition(),
-    }
-
-
 @app.get("/api/settings")
 async def get_settings():
     exp_level = "beginner"
@@ -2860,12 +2848,6 @@ async def api_apply_preset(body: ApplyPresetRequest):
     return {"status": "success", "message": f"Preset '{body.preset}' angewendet.", "config_path": str(CONFIG_PATH)}
 
 
-@app.get("/api/logs/path")
-async def logs_path():
-    """Log-Dateipfad (z.B. für tail -f)."""
-    return {"status": "success", "path": str(LOG_PATH), "exists": LOG_PATH.exists()}
-
-
 @app.get("/api/logs/tail")
 async def logs_tail(lines: int = 200):
     try:
@@ -3063,6 +3045,15 @@ try:
     from api.routes.partitions import partition_router
 
     app.include_router(partition_router, prefix="/api/partitions")
+except ImportError:
+    pass
+
+try:
+    from api.routes.health import router as health_router
+    from api.routes.version import router as version_router
+
+    app.include_router(health_router)
+    app.include_router(version_router)
 except ImportError:
     pass
 
@@ -4076,68 +4067,6 @@ async def get_system_network(request: Request):
         log.error(str(e), data={"step": "system_network"})
         logger.error(f"Fehler beim Abrufen der Netzwerk-Info: {str(e)}", exc_info=True)
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.get("/api/version")
-async def get_version():
-    """Gibt zentrale Projektversion, Stage, Track und Laufzeit-Metadaten zurück (Versions-Gate)."""
-    from core.install_profile import audit_frontend_backend_profile
-    from core.liveness import build_version_api_payload
-    from core.profile_deploy_manifest import manifest_sha256, profile_manifest_path
-    from runtime_governance.service import (
-        build_runtime_snapshot_parts,
-        materialize_install_profile_state,
-        resolve_runtime_governance_bundle,
-    )
-
-    runtime_path = str(get_backend_runtime_dir().resolve())
-    bundle = resolve_runtime_governance_bundle()
-    state = materialize_install_profile_state()
-    built = build_version_api_payload(
-        runtime_path=runtime_path,
-        install_profile=get_install_profile(),
-        app_edition=get_app_edition(),
-    )
-    if built.get("_error"):
-        body = built["body"]
-        return JSONResponse(status_code=int(built.get("status_code") or 503), content=body)
-    body = dict(built["body"])
-    body["runtime_install_location"] = get_install_profile()
-    route_paths = [
-        getattr(r, "path", "")
-        for r in app.routes
-        if getattr(r, "path", None)
-    ]
-    snapshot = build_runtime_snapshot_parts(bundle, route_paths)
-    body.update(snapshot.profile_api_dict)
-    body.update(snapshot.profile_gate_audit)
-    body["dev_control_enabled"] = snapshot.dev_control_enabled
-    body.update(snapshot.runtime_ports_fields)
-    mpath = profile_manifest_path(state.manifest_profile)
-    body["runtime_manifest_sha256"] = manifest_sha256(mpath)
-    fe_profile = (os.environ.get("SETUPHELFER_FRONTEND_BUILD_PROFILE") or "").strip()
-    body["frontend_build_profile"] = fe_profile or state.install_profile
-    body["frontend_build_id"] = (os.environ.get("SETUPHELFER_BUILD_ID") or "").strip() or None
-    body.update(
-        audit_frontend_backend_profile(
-            frontend_build_profile=body["frontend_build_profile"],
-            backend_profile=state.install_profile,
-        )
-    )
-    if body.get("frontend_profile_mismatch") and body.get("profile_gate_status") != "red":
-        body["profile_gate_status"] = "red"
-        errs = list(body.get("profile_gate_errors") or [])
-        errs.extend(body.get("frontend_profile_audit_errors") or [])
-        body["profile_gate_errors"] = errs
-    from core.developer_capability import developer_capability_status_for_api
-
-    body.update(
-        developer_capability_status_for_api(
-            install_profile=state.install_profile,
-            dev_control_enabled=state.dev_control_enabled,
-        )
-    )
-    return inject_router_diagnostics(body)
 
 
 @app.get("/api/dev-dashboard/capability-status")
@@ -6801,13 +6730,6 @@ def get_security_config():
     return config
 
 # ==================== Endpoints ====================
-
-@app.get("/health")
-async def health_check():
-    """Leichtgewichtiger Liveness-Endpunkt ohne Dashboard-/Dateiscans."""
-    from core.liveness import build_health_payload
-
-    return build_health_payload(runtime_path=str(get_backend_runtime_dir().resolve()))
 
 @app.get("/api/status")
 async def get_status(request: Request):
