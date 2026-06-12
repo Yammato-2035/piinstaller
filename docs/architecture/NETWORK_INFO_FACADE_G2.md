@@ -1,6 +1,6 @@
 # Network Info Facade — Phase G.2
 
-**HEAD:** nach G.2 · **Status:** CANONICAL_MODULE (FACADE)
+**HEAD:** nach G.2b · **Status:** CANONICAL_MODULE (FACADE) — Routen migriert
 
 ## Zweck
 
@@ -18,7 +18,7 @@ Kanonischer read-only Einstieg für Netzwerkdiagnostik — Vorbereitung für `GE
 | `build_demo_network_info()` | `app._demo_network` |
 | `build_network_status_section()` | Section-Wrapper |
 | `build_network_info_diagnostics()` | Metadaten |
-| `normalize_legacy_network_info()` | Facade-Status |
+| `build_system_network_response()` | `GET /api/system/network` Payload |
 
 ## Statuswerte
 
@@ -34,8 +34,13 @@ Kanonischer read-only Einstieg für Netzwerkdiagnostik — Vorbereitung für `GE
 
 `backend/tests/test_network_info_facade_v1.py` — 8 Tests
 
-## Nächster Schritt
+| `normalize_legacy_network_info()` | Facade-Status |
 
-**G.2b** — Router-Migration `GET /api/status` + `GET /api/system/network`
+## Migrierte Routen (G.2b)
+
+- `GET /api/status` — network-Block
+- `GET /api/system/network` — vollständige Antwort
+
+Doku: [NETWORK_INFO_ROUTE_MIGRATION_G2B.md](NETWORK_INFO_ROUTE_MIGRATION_G2B.md)
 
 Evidence: [NETWORK_INFO_AUDIT_G2.md](../evidence/app-monolith/NETWORK_INFO_AUDIT_G2.md)

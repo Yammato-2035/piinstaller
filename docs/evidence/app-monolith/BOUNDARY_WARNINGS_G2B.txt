@@ -1,0 +1,27 @@
+# Boundary Warnings — Phase G.2b (WARN-only)
+
+**HEAD:** a1446e2 (vor Commit) · **Gate:** `./scripts/check-module-boundaries.sh` Exit 0
+
+## G.2b aufgelöst
+
+| Code | Status |
+|------|--------|
+| `app_status_network_block_requires_network_facade` | aufgelöst |
+| `app_system_network_route_requires_network_facade` | aufgelöst |
+| `network_info_new_network_logic_outside_facade` (Routen) | aufgelöst |
+| `app_status_network_block_bypasses_facade` | nicht ausgelöst |
+| `app_system_network_route_bypasses_facade` | nicht ausgelöst |
+
+## Verbleibend (erwartet)
+
+| Code | Pfad | Grund |
+|------|------|-------|
+| `app_network_route_requires_network_facade` | `backend/app.py` | Route noch in app.py (kein Router-Move) |
+| `app_status_route_requires_system_status_facade` | `backend/app.py` | `/api/status` Top-Level noch nicht system_status_facade |
+| `network_info_new_network_logic_outside_facade` | `backend/app.py` | `get_system_info`, `webserver_status` → G.3 |
+
+## G.2b Guards aktiv
+
+- `network_info_facade_missing` — nicht ausgelöst
+- `network_info_facade_uses_network_write` — nicht ausgelöst
+- `network_info_new_nmcli_write_detected` — nicht ausgelöst

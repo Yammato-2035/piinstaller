@@ -1210,8 +1210,12 @@ if app_py_path.is_file():
         block = sys_net_m.group(0)
         if "network_info_facade" not in block:
             print("app_system_network_route_requires_network_facade:backend/app.py")
-        if "get_network_info" in block or "_demo_network" in block:
-            print("network_info_new_network_logic_outside_facade:backend/app.py")
+        elif re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", block):
+            print("app_system_network_route_bypasses_facade:backend/app.py")
+    if status_m:
+        block = status_m.group(0)
+        if re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", block):
+            print("app_status_network_block_bypasses_facade:backend/app.py")
     for path in sorted(backend.rglob("*.py")):
         rel = path.relative_to(root).as_posix()
         if "/tests/" in rel or "/venv/" in rel or rel.endswith("network_info_facade.py"):

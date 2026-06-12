@@ -321,8 +321,8 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **F.4** | DCC Delegation Cleanup (ai_prompt + readonly) | **erledigt** |
 | **G.1** | System Status Facade — **erledigt** (`core/system_status_facade.py`) |
 | **G.1b** | `/api/system/status` Router-Migration | **erledigt** |
-| **G.2** | Network Info Facade — **erledigt** (`core/network_info_facade.py`) |
-| **G.2b** | `/api/status` network + `/api/system/network` Router-Migration | **nächster Schritt** |
+| **G.2b** | `/api/status` network + `/api/system/network` Router-Migration | **erledigt** |
+| **G.3** | Network/Core Cleanup (verbleibende Direktzugriffe) | **nächster Schritt** |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  
 Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`  

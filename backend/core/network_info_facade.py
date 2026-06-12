@@ -135,6 +135,13 @@ def _legacy_demo_network() -> dict[str, Any]:
     return info if isinstance(info, dict) else {}
 
 
+def _legacy_detect_frontend_port() -> int:
+    """Legacy adapter: port detection still lives in ``app._detect_frontend_port``."""
+    import app as app_module
+
+    return int(app_module._detect_frontend_port())
+
+
 def build_network_info() -> dict[str, Any]:
     """Canonical network info payload (legacy ``get_network_info`` shape)."""
     return _legacy_get_network_info()
@@ -143,6 +150,39 @@ def build_network_info() -> dict[str, Any]:
 def build_demo_network_info() -> dict[str, Any]:
     """Demo network placeholder (legacy ``_demo_network`` shape)."""
     return _legacy_demo_network()
+
+
+def build_system_network_response(*, use_demo: bool = False) -> dict[str, Any]:
+    """Legacy ``GET /api/system/network`` success payload (G.2b)."""
+    if use_demo:
+        demo = build_demo_network_info()
+        demo_ips = demo.get("ips", []) if isinstance(demo, dict) else []
+        return {
+            "status": "success",
+            "ips": demo_ips,
+            "localhost": "127.0.0.1",
+            "primary_ip": demo_ips[0] if demo_ips else None,
+            "interfaces": [{"name": "demo0", "ip": ip, "source": "demo"} for ip in demo_ips],
+            "warnings": [],
+            "source": "demo",
+            "hostname": demo.get("hostname", "demo-host") if isinstance(demo, dict) else "demo-host",
+            "frontend_port": 3001,
+            "backend_port": 8000,
+        }
+    net_info = build_network_info()
+    frontend_port = _legacy_detect_frontend_port()
+    return {
+        "status": "success",
+        "ips": net_info.get("ips", []),
+        "localhost": net_info.get("localhost", "127.0.0.1"),
+        "primary_ip": net_info.get("primary_ip"),
+        "interfaces": net_info.get("interfaces", []),
+        "warnings": net_info.get("warnings", []),
+        "source": net_info.get("source", "none"),
+        "hostname": net_info.get("hostname", "unknown"),
+        "frontend_port": frontend_port,
+        "backend_port": 8000,
+    }
 
 
 def build_network_status_section(*, use_demo: bool = False) -> dict[str, Any]:
@@ -182,11 +222,12 @@ def build_network_info_diagnostics() -> dict[str, Any]:
             "build_network_info",
             "build_network_status_section",
             "build_demo_network_info",
+            "build_system_network_response",
             "build_network_info_diagnostics",
             "normalize_legacy_network_info",
             "build_unavailable_network_section",
         ],
-        "routes_pending_facade_migration": [
+        "routes_migrated_to_facade": [
             "GET /api/status",
             "GET /api/system/network",
         ],

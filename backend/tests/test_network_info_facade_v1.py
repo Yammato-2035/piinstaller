@@ -18,6 +18,7 @@ PUBLIC_FUNCTIONS = (
     "build_network_info",
     "build_network_status_section",
     "build_demo_network_info",
+    "build_system_network_response",
     "build_network_info_diagnostics",
     "normalize_legacy_network_info",
     "build_unavailable_network_section",
@@ -127,7 +128,7 @@ class TestNetworkInfoFacadeV1(unittest.TestCase):
         diag = facade.build_network_info_diagnostics()
         self.assertEqual(diag["facade_version"], 1)
         self.assertFalse(diag["network_writes_allowed"])
-        self.assertIn("GET /api/status", diag["routes_pending_facade_migration"])
+        self.assertIn("GET /api/status", diag["routes_migrated_to_facade"])
         for fn in PUBLIC_FUNCTIONS:
             self.assertIn(fn, diag["public_functions"])
 

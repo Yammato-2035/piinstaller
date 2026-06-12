@@ -1,6 +1,6 @@
 # Modul-Katalog (Source of Truth)
 
-**Stand:** nach G.2 (`network_info_facade`) · **Kein Big-Bang** — Inventar und Ownership.
+**Stand:** nach G.2b (`network_info_facade` Routen migriert) · **Kein Big-Bang** — Inventar und Ownership.
 
 Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX.md) und [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES.md) prüfen.
 
@@ -236,7 +236,8 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | **Pfad** | `backend/core/network_info_facade.py` |
 | **Status** | **CANONICAL_MODULE** (FACADE, G.2) |
 | **Zweck** | Netzwerk-Info read-only; Demo-Fallback; Normalisierung |
-| **Öffentliche API** | `build_network_info`, `build_demo_network_info`, `build_network_status_section`, `build_network_info_diagnostics`, `normalize_legacy_network_info` |
+| **Öffentliche API** | `build_network_info`, `build_demo_network_info`, `build_system_network_response`, `build_network_status_section`, … |
+| **HTTP migriert (G.2b)** | `GET /api/status` network, `GET /api/system/network` |
 | **Delegiert an** | `app.get_network_info`, `app._demo_network` |
 | **Ausgeschlossen** | Netzwerk-Schreiboperationen, nmcli write |
 | **Tests** | `test_network_info_facade_v1` |
@@ -268,11 +269,11 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | `api/routes/catalog.py` | **CANONICAL_ROUTER** (E.3) | `/api/apps` |
 | `api/routes/dev_dashboard_readonly.py` | **CANONICAL_ROUTER** (E.4/E.8) | DCC modules/evidence + backend-health + notifications read |
 | `api/routes/dev_dashboard_roadmap.py` | **CANONICAL_ROUTER** (E.5/E.6) | roadmap registry + next-prompts/export |
-| `app.py` Router-Slices | **IN_PROGRESS** | G.2b Network Router-Migration |
+| `app.py` Router-Slices | **IN_PROGRESS** | G.3 verbleibende Network-Direktzugriffe |
 | `dcc_status_facade` | **CANONICAL_MODULE** (F.1–F.4) | HTTP-DCC-Leser delegiert |
 | `system_status_facade` | **CANONICAL_MODULE** (G.1/G.1b) | `/api/system/status` migriert |
-| `network_info_facade` | **CANONICAL_MODULE** (G.2) | Contract; G.2b Router |
-| **Network Info Facade** | **CANONICAL_MODULE** (G.2) | ~~CANDIDATE~~ erledigt |
+| `network_info_facade` | **CANONICAL_MODULE** (G.2/G.2b) | HTTP migriert |
+| **Network Info Facade** | **CANONICAL_MODULE** (G.2/G.2b) | ~~CANDIDATE~~ erledigt |
 | **Dev Dashboard Aggregation Facade** | **CANDIDATE** (E.7) | control-center-summary, prompt-findings (nutzt Facade F.2+) |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |
 

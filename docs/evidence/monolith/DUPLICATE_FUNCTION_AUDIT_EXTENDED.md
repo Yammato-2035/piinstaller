@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.2 · **Update:** `network_info_facade` Contract; `get_network_info` Legacy-Adapter.
+**HEAD:** nach G.2b · **Update:** HTTP-Routen über Facade; Legacy `get_network_info` bleibt Implementierung.
 
 ## Zusammenfassung
 

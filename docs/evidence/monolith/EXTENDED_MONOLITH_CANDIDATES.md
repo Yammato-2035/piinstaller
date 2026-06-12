@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.2 · **Update:** `network_info_facade` Contract; Routen noch in `app.py` → G.2b.
+**HEAD:** nach G.2b · **Update:** Network-Routen migriert; `get_system_info`/`webserver_status` pending G.3.
 
 ## Legende
 

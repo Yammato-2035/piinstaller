@@ -191,9 +191,13 @@ Kanonisches Modul `core/system_status_facade.py` — read-only Aggregation für 
 
 Kanonisches Modul `core/network_info_facade.py` — read-only Netzwerk-Info, Demo-Fallback, Legacy-Normalisierung. **Keine Route-Migration** in G.2. Doku: `docs/architecture/NETWORK_INFO_FACADE_G2.md`.
 
+## Was ist G.2b (Network Route Migration)?
+
+`GET /api/status` (network-Block) und `GET /api/system/network` delegieren an `network_info_facade`. Keine API-/Response-Änderung. Doku: `docs/architecture/NETWORK_INFO_ROUTE_MIGRATION_G2B.md`.
+
 ## Nächster Schritt?
 
-**G.2b** — Router-Migration `GET /api/status` network-Block und `GET /api/system/network`.
+**G.3** — verbleibende Network-Direktzugriffe in `app.py` oder **H.1** Frontend Status ViewModel Facade.
 
 ## Weiterlesen
 

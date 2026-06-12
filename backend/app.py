@@ -3957,40 +3957,24 @@ def _detect_frontend_port():
 @app.get("/api/system/network")
 async def get_system_network(request: Request):
     """Netzwerk-Informationen (IP-Adressen, Hostname) für Frontend-Zugriff."""
+    from core.network_info_facade import build_system_network_response
+
     log = get_logger("network", "status")
     log.step_start("system_network")
     try:
-        if _is_demo_mode(request):
-            d = _demo_network()
+        use_demo = _is_demo_mode(request)
+        payload = build_system_network_response(use_demo=use_demo)
+        if use_demo:
             log.step_end("system_network", data={"demo": True})
-            demo_ips = d.get("ips", []) if isinstance(d, dict) else []
-            return {
-                "status": "success",
-                "ips": demo_ips,
-                "localhost": "127.0.0.1",
-                "primary_ip": demo_ips[0] if demo_ips else None,
-                "interfaces": [{"name": "demo0", "ip": ip, "source": "demo"} for ip in demo_ips],
-                "warnings": [],
-                "source": "demo",
-                "hostname": d.get("hostname", "demo-host") if isinstance(d, dict) else "demo-host",
-                "frontend_port": 3001,
-                "backend_port": 8000,
-            }
-        net_info = get_network_info()
-        log.step_end("system_network", data={"hostname": net_info.get("hostname"), "ip_count": len(net_info.get("ips", []))})
-        frontend_port = _detect_frontend_port()
-        return {
-            "status": "success",
-            "ips": net_info.get("ips", []),
-            "localhost": net_info.get("localhost", "127.0.0.1"),
-            "primary_ip": net_info.get("primary_ip"),
-            "interfaces": net_info.get("interfaces", []),
-            "warnings": net_info.get("warnings", []),
-            "source": net_info.get("source", "none"),
-            "hostname": net_info.get("hostname", "unknown"),
-            "frontend_port": frontend_port,
-            "backend_port": 8000,
-        }
+        else:
+            log.step_end(
+                "system_network",
+                data={
+                    "hostname": payload.get("hostname"),
+                    "ip_count": len(payload.get("ips", [])),
+                },
+            )
+        return payload
     except Exception as e:
         log.step_end("system_network", data={"error": str(e)})
         log.error(str(e), data={"step": "system_network"})
@@ -6363,8 +6347,10 @@ def get_security_config():
 @app.get("/api/status")
 async def get_status(request: Request):
     """System-Status abrufen"""
+    from core.network_info_facade import build_demo_network_info, build_network_info
+
     try:
-        net = _demo_network() if _is_demo_mode(request) else get_network_info()
+        net = build_demo_network_info() if _is_demo_mode(request) else build_network_info()
         return {
             "status": "healthy",
             "hostname": net["hostname"],
