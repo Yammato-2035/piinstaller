@@ -199,9 +199,13 @@ Canonical module `core/network_info_facade.py` — read-only network info, demo 
 
 `get_system_info` and `webserver_status` delegate to `network_info_facade`. Legacy `get_network_info`/`_demo_network` remain implementation behind facade adapters. Doc: `docs/architecture/NETWORK_INFO_CORE_CLEANUP_G3_EN.md`.
 
+## What is H.1 (Frontend Status ViewModel)?
+
+Canonical module `frontend/src/viewmodels/statusViewModel.ts` — central status normalization. **No component migration** in H.1. Doc: `docs/architecture/FRONTEND_STATUS_VIEWMODEL_H1_EN.md`.
+
 ## Next step?
 
-**H.1** — frontend status view model facade (`dccStatusViewModel.ts`) **or** **G.4** — network handler extraction.
+**H.2** — incremental component migration **or** **G.4** — network handler extraction.
 
 ## Further reading
 

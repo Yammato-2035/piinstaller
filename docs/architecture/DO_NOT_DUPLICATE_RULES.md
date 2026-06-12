@@ -24,6 +24,8 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 20. **Keine Netzwerkdiagnostik** in System Status Facade — nur `network_info_facade` (G.2+).
 21. **Keine neue Netzwerkstatus-Aggregation** außerhalb `network_info_facade` (G.2+).
 22. **Keine Netzwerk-Schreiboperationen** in Status-Facades — aktive Reparatur nur über späteres eigenes Modul.
+23. **Keine neue Ampel-/Traffic-Light-Normalisierung** außerhalb `frontend/src/viewmodels/statusViewModel.ts` (H.1+).
+24. **UI-Komponenten** dürfen Status nur darstellen — Normalisierung über ViewModel, nicht inline in Komponenten (H.2+).
 
 ## Prüfreihenfolge (Cursor)
 

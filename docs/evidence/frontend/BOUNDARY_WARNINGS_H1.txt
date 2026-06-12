@@ -1,0 +1,20 @@
+# Boundary Warnings — Phase H.1 (WARN-only)
+
+**HEAD:** 0e11c3c (vor Commit) · **Gate:** Exit 0
+
+## H.1 aufgelöst
+
+| Code | Status |
+|------|--------|
+| `dcc_frontend_status_viewmodel_missing` | ersetzt durch `statusViewModel.ts` |
+| `frontend_status_viewmodel_missing` | nicht ausgelöst |
+| `frontend_status_viewmodel_missing_tests` | nicht ausgelöst |
+| `frontend_status_viewmodel_has_api_fetch` | nicht ausgelöst |
+
+## Erwartet bis H.2
+
+| Code | Pfad | Grund |
+|------|------|-------|
+| `frontend_duplicate_traffic_light_mapping` | `trafficLightModel.ts` | Parallel zu ViewModel |
+| `frontend_duplicate_status_kind_mapping` | `dccCompactStatus.ts` | `deployDriftTone` noch lokal |
+| `frontend_component_local_status_mapping` | diverse Komponenten | Inline green/yellow/red |

@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.3 · **Update:** alle app.py Network-Handler über Facade; Legacy nur Implementierung.
+**HEAD:** nach H.1 · **Update:** `statusViewModel` Contract; Frontend-Duplikate pending H.2.
 
 ## Legende
 

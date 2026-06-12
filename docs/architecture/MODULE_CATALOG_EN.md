@@ -1,6 +1,6 @@
 # Module Catalog (Source of Truth)
 
-**As of:** post G.3 (`network_info_facade` fully in app.py handlers) · **No big-bang** — inventory and ownership.
+**As of:** post H.1 (`statusViewModel`) · **No big-bang** — inventory and ownership.
 
 Before new implementation, check this catalog, the [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX_EN.md), and [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES_EN.md).
 
@@ -35,10 +35,11 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 | 23 | dcc_status_facade | `backend/core/dcc_status_facade.py` | CANONICAL_MODULE (F.1–F.4) |
 | 24 | system_status_facade | `backend/core/system_status_facade.py` | CANONICAL_MODULE (G.1) |
 | 25 | network_info_facade | `backend/core/network_info_facade.py` | CANONICAL_MODULE (G.2) |
+| 26 | frontend_status_viewmodel | `frontend/src/viewmodels/statusViewModel.ts` | CANONICAL_MODULE (H.1) |
 | — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4120 lines) |
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**In progress:** **H.1** / **G.4**. **G.3 done:** all app.py network handlers migrated.
+**In progress:** **H.2** component migration. **H.1 done:** `statusViewModel` contract.
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.3 · **Update:** keine Handler-Direktzugriffe mehr; Legacy-Impl. isoliert.
+**HEAD:** nach H.1 · **Update:** Frontend ViewModel kanonisiert; `trafficLightModel` Duplikat bis H.2.
 
 ## Zusammenfassung
 

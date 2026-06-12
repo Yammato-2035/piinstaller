@@ -10,9 +10,9 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) â
 
 **G.1b done:** `/api/system/status` uses `build_system_status()`.
 
-**G.3 done:** all app.py network handlers use `network_info_facade`.
+**H.1 done:** `frontend/src/viewmodels/statusViewModel.ts` canonical view model (contract; no component migration).
 
-**Next:** **H.1** frontend status view model or **G.4** network handler extraction.
+**Next:** **H.2** component migration or **G.4** network handler extraction.
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 

@@ -24,6 +24,8 @@ Binding rules against parallel implementations. **No exception** without documen
 20. No network diagnostics in System Status Facade — use `network_info_facade` only (G.2+).
 21. No new network status aggregation outside `network_info_facade` (G.2+).
 22. No network write operations in status facades — active repair only via dedicated module later.
+23. No new traffic-light/status normalization outside `frontend/src/viewmodels/statusViewModel.ts` (H.1+).
+24. UI components must only render status — normalization via view model, not inline in components (H.2+).
 
 Check order: Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
 

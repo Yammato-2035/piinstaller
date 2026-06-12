@@ -1106,9 +1106,44 @@ if deploy_job.is_file():
     if "build_dashboard_status" in dj and "dcc_status_facade" not in dj:
         print("dcc_deploy_core_cross_coupling:backend/core/deploy_job_state.py")
 frontend_vm = root / "frontend" / "src" / "trafficLight" / "trafficLightModel.ts"
-frontend_dcc_vm = root / "frontend" / "src" / "viewmodels" / "dccStatusViewModel.ts"
-if frontend_vm.is_file() and not frontend_dcc_vm.is_file():
-    print("dcc_frontend_status_viewmodel_missing:frontend/src/viewmodels/dccStatusViewModel.ts")
+frontend_status_vm = root / "frontend" / "src" / "viewmodels" / "statusViewModel.ts"
+frontend_status_vm_test = root / "frontend" / "src" / "viewmodels" / "statusViewModel.test.ts"
+if not frontend_status_vm.is_file():
+    print("frontend_status_viewmodel_missing:frontend/src/viewmodels/statusViewModel.ts")
+else:
+    svm = frontend_status_vm.read_text(encoding="utf-8", errors="replace")
+    if "normalizeStatusKind" not in svm or "buildStatusViewModel" not in svm:
+        print("frontend_status_viewmodel_incomplete:frontend/src/viewmodels/statusViewModel.ts")
+    if re.search(r"\bfetch\s*\(|fetchApi|axios", svm):
+        print("frontend_status_viewmodel_has_api_fetch:frontend/src/viewmodels/statusViewModel.ts")
+if not frontend_status_vm_test.is_file():
+    print("frontend_status_viewmodel_missing_tests:frontend/src/viewmodels/statusViewModel.test.ts")
+if frontend_vm.is_file() and frontend_status_vm.is_file():
+    tl = frontend_vm.read_text(encoding="utf-8", errors="replace")
+    if "LAMP_RANK" in tl and "worstTrafficLightLamp" in tl:
+        print("frontend_duplicate_traffic_light_mapping:frontend/src/trafficLight/trafficLightModel.ts")
+dcc_compact = root / "frontend" / "src" / "lib" / "devDashboard" / "dccCompactStatus.ts"
+if dcc_compact.is_file() and frontend_status_vm.is_file():
+    dc = dcc_compact.read_text(encoding="utf-8", errors="replace")
+    if "deployDriftTone" in dc and "statusViewModel" not in dc:
+        print("frontend_duplicate_status_kind_mapping:frontend/src/lib/devDashboard/dccCompactStatus.ts")
+if frontend_status_vm.is_file():
+    frontend_src = root / "frontend" / "src"
+    local_mapping_hits = 0
+    for path in sorted(frontend_src.rglob("*.ts*")):
+        rel = path.relative_to(root).as_posix()
+        if "/viewmodels/" in rel or "/trafficLight/" in rel or ".test." in rel:
+            continue
+        try:
+            pt = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if re.search(r"===\s*['\"]green['\"]|===\s*['\"]red['\"]|===\s*['\"]yellow['\"]", pt):
+            local_mapping_hits += 1
+            if local_mapping_hits <= 5:
+                print(f"frontend_component_local_status_mapping:{rel}")
+    if local_mapping_hits > 5:
+        print(f"frontend_component_local_status_mapping:count_{local_mapping_hits}")
 
 # Phase F.4: DCC facade delegation guards (warn-only)
 readonly_mod = root / "backend" / "api" / "routes" / "dev_dashboard_readonly.py"

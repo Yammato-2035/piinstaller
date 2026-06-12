@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.3 · **Update:** app.py Handler → facade; nur Legacy-Defs mit subprocess.
+**HEAD:** nach H.1 · **Update:** Frontend Status ViewModel entkoppelt von Backend-Facades.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 
