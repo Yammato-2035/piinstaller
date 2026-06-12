@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** `9005c54` · **Update F.1:** `dcc_status_facade` als Aggregation-Hub — `app.py`/`dev_dashboard` Fan-In entlastet (F.2).
+**HEAD:** `9005c54` · **Update F.2:** `app.py` → `dcc_status_facade` für 6 Aggregations-GETs.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

@@ -167,9 +167,13 @@ Re-Scan aller **187** verbleibenden `@app.*` Routen — **keine Extraktion**. Er
 
 Kanonisches Modul `core/dcc_status_facade.py` — read-only Aggregation-Contract für DCC (overview, roadmap, backend-health, notifications, evidence). **Keine Route-Migration** in F.1. Doku: `docs/architecture/DCC_STATUS_FACADE_F1.md`.
 
+## Was ist F.2 (DCC Router-Migration)?
+
+6 Aggregations-GETs in `app.py` delegieren an `dcc_status_facade` (status via Service, roadmap, control-center-summary, project-overview, prompt-findings, cursor-meta-prompt). Keine API-Änderung. Doku: `docs/architecture/DCC_STATUS_ROUTER_MIGRATION_F2.md`.
+
 ## Nächster Schritt?
 
-**F.2** — Router/`app.py`-Handler delegieren an `dcc_status_facade` (status, roadmap-root).
+**F.3** — DCC Aggregation Audit & Duplicate Status Analysis.
 
 ## Weiterlesen
 

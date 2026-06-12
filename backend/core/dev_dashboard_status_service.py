@@ -56,8 +56,6 @@ async def build_dev_dashboard_status(
     frontend_runtime_source: str | None,
     request_headers: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
-    from core import dev_dashboard as dev_dashboard_core
-
     blocked = build_dcc_profile_block_response(request_headers=request_headers)
     if blocked:
         return blocked
@@ -72,7 +70,9 @@ async def build_dev_dashboard_status(
                 running.append(job_snapshot(job))
         pkg = detect_active_package_operations()
         fe_ver = (frontend_build_version or "").strip() or None
-        return dev_dashboard_core.build_dashboard_status(
+        from core.dcc_status_facade import build_dashboard_status_body
+
+        return build_dashboard_status_body(
             running_jobs=running,
             package_activity=pkg,
             frontend_build_version=fe_ver,

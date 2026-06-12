@@ -60,7 +60,6 @@ from core.backup_recovery_i18n import K_BACKUP_FAILED_MANIFEST_MISSING, K_BACKUP
 from modules.backup import with_backup_contract
 from modules.storage_detection import BackupTargetValidationError, validate_backup_target
 from core.packaging_readiness_state import build_packaging_readiness_state
-from core.project_overview_dashboard_state import build_project_overview_dashboard_state
 from app_bootstrap.app_factory import create_app
 from app_bootstrap.middleware_registry import register_middlewares
 from app_bootstrap.router_registry import register_all_routes
@@ -4043,16 +4042,11 @@ async def dev_dashboard_status(
 @app.get("/api/dev-dashboard/control-center-summary")
 async def dev_dashboard_control_center_summary():
     """Read-only: Control Center Übersicht (Runtime, Roadmap, Dev-Server, Doku, Diagnostik)."""
-    from core import dev_dashboard as dev_dashboard_core
-    from core.dev_control_center_summary import build_control_center_summary
-
-    def _build() -> dict[str, Any]:
-        dashboard = dev_dashboard_core.build_dashboard_status(running_jobs=[], package_activity=[])
-        return build_control_center_summary(dashboard=dashboard)
+    from core.dcc_status_facade import build_dcc_control_center_summary_api
 
     try:
-        body = await asyncio.to_thread(_build)
-        return {"status": "success", "summary": body}
+        body = await asyncio.to_thread(build_dcc_control_center_summary_api)
+        return body
     except Exception:
         logger.exception("dev_dashboard_control_center_summary failed")
         raise
@@ -4063,18 +4057,16 @@ async def dev_dashboard_roadmap(
     frontend_build_version: str | None = Query(default=None),
     frontend_runtime_source: str | None = Query(default=None),
 ):
-    from core import dev_dashboard as dev_dashboard_core
-    from core.dev_dashboard_roadmap import load_roadmap_registry_bundle
+    from core.dcc_status_facade import build_dcc_roadmap_api_bundle
 
     fe_ver = (frontend_build_version or "").strip() or None
-    dashboard = dev_dashboard_core.build_dashboard_status(
+    return build_dcc_roadmap_api_bundle(
+        include_dashboard_context=True,
         running_jobs=[],
         package_activity=[],
         frontend_build_version=fe_ver,
         frontend_runtime_source=frontend_runtime_source,
     )
-    bundle = load_roadmap_registry_bundle(repo_root=dev_dashboard_core._repo_root(), dashboard_context=dashboard)
-    return bundle
 
 
 @app.get("/api/dev-dashboard/rescue-build/status")
@@ -4389,8 +4381,10 @@ async def dev_dashboard_packaging_readiness():
 
 @app.get("/api/dev-dashboard/project-overview")
 async def dev_dashboard_project_overview():
+    from core.dcc_status_facade import build_dcc_project_overview_body
+
     try:
-        body = build_project_overview_dashboard_state()
+        body = build_dcc_project_overview_body()
         return {"code": "DEV_DASHBOARD_PROJECT_OVERVIEW_OK", **body}
     except Exception:
         logger.exception("dev_dashboard_project_overview failed")
@@ -4417,19 +4411,12 @@ async def dev_dashboard_prompt_findings(
     frontend_runtime_source: str | None = Query(default=None),
 ):
     """Read-only: strukturierte Findings fuer KI-Export."""
-    from core import dev_dashboard as dev_dashboard_core
-    from core.dev_dashboard_cockpit import build_prompt_findings
+    from core.dcc_status_facade import build_dcc_prompt_findings_api
 
-    fe_ver = (frontend_build_version or "").strip() or None
-    body = dev_dashboard_core.build_dashboard_status(
-        running_jobs=[],
-        package_activity=[],
-        frontend_build_version=fe_ver,
+    return build_dcc_prompt_findings_api(
+        frontend_build_version=frontend_build_version,
         frontend_runtime_source=frontend_runtime_source,
     )
-    repo = dev_dashboard_core._repo_root()
-    findings = build_prompt_findings(repo, body)
-    return {"status": "success", "findings": findings}
 
 
 @app.get("/api/dev-dashboard/cursor-meta-prompt")
@@ -4438,20 +4425,12 @@ async def dev_dashboard_cursor_meta_prompt(
     frontend_runtime_source: str | None = Query(default=None),
 ):
     """Read-only: Cursor-kompatibler Meta-Prompt aus Cockpit-Findings."""
-    from core import dev_dashboard as dev_dashboard_core
-    from core.dev_dashboard_cockpit import build_cursor_meta_prompt, build_prompt_findings
+    from core.dcc_status_facade import build_dcc_cursor_meta_prompt_api
 
-    fe_ver = (frontend_build_version or "").strip() or None
-    body = dev_dashboard_core.build_dashboard_status(
-        running_jobs=[],
-        package_activity=[],
-        frontend_build_version=fe_ver,
+    return build_dcc_cursor_meta_prompt_api(
+        frontend_build_version=frontend_build_version,
         frontend_runtime_source=frontend_runtime_source,
     )
-    repo = dev_dashboard_core._repo_root()
-    findings = build_prompt_findings(repo, body)
-    meta = build_cursor_meta_prompt(repo, findings)
-    return {"status": "success", **meta}
 
 
 @app.post("/api/ai/prompt/generate")

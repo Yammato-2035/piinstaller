@@ -236,8 +236,8 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | `api/routes/catalog.py` | **CANONICAL_ROUTER** (E.3) | `/api/apps` |
 | `api/routes/dev_dashboard_readonly.py` | **CANONICAL_ROUTER** (E.4/E.8) | DCC modules/evidence + backend-health + notifications read |
 | `api/routes/dev_dashboard_roadmap.py` | **CANONICAL_ROUTER** (E.5/E.6) | roadmap registry + next-prompts/export |
-| `app.py` Router-Slices | **IN_PROGRESS** | F.2 Facade-Router-Migration (status, roadmap-root) |
-| `dcc_status_facade` | **CANONICAL_MODULE** (F.1) | erledigt — Contract + Delegation |
+| `app.py` Router-Slices | **IN_PROGRESS** | F.3 Duplicate Status Audit |
+| `dcc_status_facade` | **CANONICAL_MODULE** (F.1/F.2) | HTTP-Aggregation migriert |
 | **System Status Facade** | **CANDIDATE** (E.7) | blockiert `/api/status`, `/api/system/status` |
 | **Network Info Facade** | **CANDIDATE** (E.7) | blockiert `/api/system/network` |
 | **Dev Dashboard Aggregation Facade** | **CANDIDATE** (E.7) | control-center-summary, prompt-findings (nutzt Facade F.2+) |

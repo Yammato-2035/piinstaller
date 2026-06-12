@@ -48,6 +48,8 @@ class DccStatusFacadeV1Tests(unittest.TestCase):
             "build_dcc_notification_section",
             "build_dcc_evidence_section",
             "build_dcc_facade_diagnostics",
+            "build_dashboard_status_body",
+            "build_dcc_roadmap_api_bundle",
         ):
             self.assertIn(name, diag["public_functions"])
 
@@ -148,7 +150,7 @@ class DccStatusFacadeV1Tests(unittest.TestCase):
         diag = build_dcc_facade_diagnostics()
         self.assertEqual(diag["facade_version"], FACADE_VERSION)
         self.assertIn("delegates_to", diag)
-        self.assertIn("GET /api/dev-dashboard/status", diag["routes_pending_facade_migration"])
+        self.assertEqual(diag["routes_pending_facade_migration"], [])
         self.assertFalse(diag["writes_allowed"])
 
     def test_normalize_roadmap_bundle(self) -> None:

@@ -1015,9 +1015,15 @@ if app_py_path.is_file():
     if re.search(r'@app\.get\("/api/system/network"', ap):
         print("app_network_route_requires_network_facade:backend/app.py")
     if re.search(r'@app\.get\("/api/dev-dashboard/status"', ap):
-        print("app_dcc_status_requires_dcc_status_facade:backend/app.py")
-    if re.search(r'@app\.get\("/api/dev-dashboard/roadmap"\)', ap) and "build_dashboard_status" in ap:
-        print("app_roadmap_route_uses_dashboard_aggregation:backend/app.py")
+        if "dcc_status_facade" not in ap and "build_dev_dashboard_status" not in ap:
+            print("app_dcc_status_requires_dcc_status_facade:backend/app.py")
+    if re.search(r'@app\.get\("/api/dev-dashboard/roadmap"\)', ap):
+        if "build_dcc_roadmap_api_bundle" not in ap and "dcc_status_facade" not in ap:
+            print("app_roadmap_route_uses_dashboard_aggregation:backend/app.py")
+    if "build_dashboard_status" in ap:
+        print("dcc_status_direct_build_dashboard_status_in_app:backend/app.py")
+    if "load_roadmap_registry_bundle" in ap:
+        print("dcc_status_direct_roadmap_bundle_in_app:backend/app.py")
     blocked_extraction_paths = (
         "/api/status",
         "/api/system/network",
@@ -1058,7 +1064,12 @@ else:
             print(f"dcc_status_new_ampel_logic_outside_facade:{rel}")
         if "build_dashboard_status" in rt or "load_roadmap_registry_bundle" in rt:
             if "dcc_status_facade" not in rt:
-                print(f"dcc_status_router_uses_core_aggregation_directly:{rel}")
+                print(f"dcc_status_router_bypasses_facade:{rel}")
+    status_service = root / "backend" / "core" / "dev_dashboard_status_service.py"
+    if status_service.is_file():
+        st = status_service.read_text(encoding="utf-8", errors="replace")
+        if "build_dashboard_status" in st and "dcc_status_facade" not in st:
+            print("dcc_status_direct_build_dashboard_status_in_routes:backend/core/dev_dashboard_status_service.py")
 
 if deploy_routes.is_file():
     subrouter_markers = (

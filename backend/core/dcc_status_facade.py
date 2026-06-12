@@ -335,6 +335,131 @@ def build_dcc_evidence_section(*, max_files: int = 400, repo_root: Path | None =
     return asdict(section)
 
 
+def _dashboard_body_from_overview(overview: dict[str, Any]) -> dict[str, Any]:
+    sections = overview.get("sections") or []
+    if not sections or not isinstance(sections[0], dict):
+        return {}
+    data = sections[0].get("data") or {}
+    dashboard = data.get("dashboard")
+    return dashboard if isinstance(dashboard, dict) else {}
+
+
+def _roadmap_bundle_from_overview(overview: dict[str, Any]) -> dict[str, Any]:
+    sections = overview.get("sections") or []
+    if not sections or not isinstance(sections[0], dict):
+        return {}
+    data = sections[0].get("data") or {}
+    bundle = data.get("bundle")
+    return bundle if isinstance(bundle, dict) else {}
+
+
+def build_dashboard_status_body(
+    *,
+    repo_root: Path | None = None,
+    running_jobs: list[dict[str, Any]] | None = None,
+    package_activity: list[dict[str, Any]] | None = None,
+    frontend_build_version: str | None = None,
+    frontend_runtime_source: str | None = None,
+) -> dict[str, Any]:
+    """Raw ``build_dashboard_status`` body — canonical sync entry for HTTP/cockpit callers."""
+    overview = build_dcc_status_overview(
+        repo_root=repo_root,
+        running_jobs=running_jobs,
+        package_activity=package_activity,
+        frontend_build_version=frontend_build_version,
+        frontend_runtime_source=frontend_runtime_source,
+    )
+    return _dashboard_body_from_overview(overview)
+
+
+def build_dcc_roadmap_api_bundle(
+    *,
+    repo_root: Path | None = None,
+    dashboard_context: dict[str, Any] | None = None,
+    include_dashboard_context: bool = False,
+    running_jobs: list[dict[str, Any]] | None = None,
+    package_activity: list[dict[str, Any]] | None = None,
+    frontend_build_version: str | None = None,
+    frontend_runtime_source: str | None = None,
+) -> dict[str, Any]:
+    """Raw roadmap registry bundle for ``GET /api/dev-dashboard/roadmap`` (legacy API shape)."""
+    overview = build_dcc_roadmap_overview(
+        repo_root=repo_root,
+        dashboard_context=dashboard_context,
+        include_dashboard_context=include_dashboard_context,
+        running_jobs=running_jobs,
+        package_activity=package_activity,
+        frontend_build_version=frontend_build_version,
+        frontend_runtime_source=frontend_runtime_source,
+    )
+    return _roadmap_bundle_from_overview(overview)
+
+
+def build_dcc_control_center_summary_api(
+    *,
+    running_jobs: list[dict[str, Any]] | None = None,
+    package_activity: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """API response for ``GET /api/dev-dashboard/control-center-summary``."""
+    from core.dev_control_center_summary import build_control_center_summary
+
+    dashboard = build_dashboard_status_body(
+        running_jobs=running_jobs or [],
+        package_activity=package_activity or [],
+    )
+    return {"status": "success", "summary": build_control_center_summary(dashboard=dashboard)}
+
+
+def build_dcc_prompt_findings_api(
+    *,
+    frontend_build_version: str | None = None,
+    frontend_runtime_source: str | None = None,
+) -> dict[str, Any]:
+    """API response for ``GET /api/dev-dashboard/prompt-findings``."""
+    from core import dev_dashboard as dev_dashboard_core
+    from core.dev_dashboard_cockpit import build_prompt_findings
+
+    fe_ver = (frontend_build_version or "").strip() or None
+    body = build_dashboard_status_body(
+        running_jobs=[],
+        package_activity=[],
+        frontend_build_version=fe_ver,
+        frontend_runtime_source=frontend_runtime_source,
+    )
+    repo = dev_dashboard_core._repo_root()
+    findings = build_prompt_findings(repo, body)
+    return {"status": "success", "findings": findings}
+
+
+def build_dcc_cursor_meta_prompt_api(
+    *,
+    frontend_build_version: str | None = None,
+    frontend_runtime_source: str | None = None,
+) -> dict[str, Any]:
+    """API response for ``GET /api/dev-dashboard/cursor-meta-prompt``."""
+    from core import dev_dashboard as dev_dashboard_core
+    from core.dev_dashboard_cockpit import build_cursor_meta_prompt, build_prompt_findings
+
+    fe_ver = (frontend_build_version or "").strip() or None
+    body = build_dashboard_status_body(
+        running_jobs=[],
+        package_activity=[],
+        frontend_build_version=fe_ver,
+        frontend_runtime_source=frontend_runtime_source,
+    )
+    repo = dev_dashboard_core._repo_root()
+    findings = build_prompt_findings(repo, body)
+    meta = build_cursor_meta_prompt(repo, findings)
+    return {"status": "success", **meta}
+
+
+def build_dcc_project_overview_body(*, repo_root: Path | None = None) -> dict[str, Any]:
+    """Raw project overview state for ``GET /api/dev-dashboard/project-overview``."""
+    from core.project_overview_dashboard_state import build_project_overview_dashboard_state
+
+    return build_project_overview_dashboard_state(repo_root=repo_root)
+
+
 def build_dcc_facade_diagnostics() -> dict[str, Any]:
     """Lightweight facade diagnostics — no heavy aggregation."""
     return {
@@ -355,15 +480,15 @@ def build_dcc_facade_diagnostics() -> dict[str, Any]:
             "build_dcc_backend_health_section",
             "build_dcc_notification_section",
             "build_dcc_evidence_section",
+            "build_dashboard_status_body",
+            "build_dcc_roadmap_api_bundle",
+            "build_dcc_control_center_summary_api",
+            "build_dcc_prompt_findings_api",
+            "build_dcc_cursor_meta_prompt_api",
+            "build_dcc_project_overview_body",
             "build_dcc_facade_diagnostics",
         ],
-        "routes_pending_facade_migration": [
-            "GET /api/dev-dashboard/status",
-            "GET /api/dev-dashboard/roadmap",
-            "GET /api/dev-dashboard/control-center-summary",
-            "GET /api/dev-dashboard/prompt-findings",
-            "GET /api/dev-dashboard/cursor-meta-prompt",
-        ],
+        "routes_pending_facade_migration": [],
         "profile_gate_owner": "core.dev_dashboard_status_service.build_dcc_profile_block_response",
         "read_only": True,
         "writes_allowed": False,

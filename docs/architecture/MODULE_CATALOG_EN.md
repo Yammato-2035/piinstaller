@@ -37,6 +37,6 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**In progress:** Facade **F.2** (router migration via `dcc_status_facade`). **F.1 done:** `dcc_status_facade` CANONICAL. **Candidates:** System/Network Status Facades.
+**In progress:** **F.3** duplicate status audit. **F.2 done:** 6 DCC aggregation GETs use `dcc_status_facade`.
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

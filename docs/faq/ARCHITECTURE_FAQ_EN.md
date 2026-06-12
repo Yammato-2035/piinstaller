@@ -167,9 +167,13 @@ Three GET routes moved to `dev_dashboard_readonly.py`: backend-health, notificat
 
 Canonical module `core/dcc_status_facade.py` — read-only aggregation contract for DCC sections. **No route migration** in F.1. See `docs/architecture/DCC_STATUS_FACADE_F1_EN.md`.
 
+## What is F.2 (DCC router migration)?
+
+Six aggregation GET routes in `app.py` delegate to `dcc_status_facade`. No API changes. See `docs/architecture/DCC_STATUS_ROUTER_MIGRATION_F2_EN.md`.
+
 ## Next step?
 
-**F.2** — migrate `app.py` handlers to `dcc_status_facade` (status, roadmap root).
+**F.3** — DCC aggregation audit & duplicate status analysis.
 
 ## Further reading
 

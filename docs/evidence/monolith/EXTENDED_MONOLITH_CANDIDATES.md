@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** `9005c54` · **Update F.1:** `core/dcc_status_facade.py` CANONICAL — DCC-Aggregation-Contract, Routen unverändert.
+**HEAD:** `9005c54` · **Update F.2:** 6 DCC-Aggregations-GETs über `dcc_status_facade`; `build_dashboard_status` nur noch Facade + `ai_prompt_generate_stub`.
 
 ## Legende
 
