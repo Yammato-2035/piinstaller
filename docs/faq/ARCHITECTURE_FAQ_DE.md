@@ -163,9 +163,13 @@ Re-Scan aller **187** verbleibenden `@app.*` Routen — **keine Extraktion**. Er
 
 3 GET-Routen nach `dev_dashboard_readonly.py`: backend-health, notifications/status, notifications/events. Nur `core.dev_dashboard_backend_health` und `core.notification_state`. `app.py`: 17.472→17.425 Zeilen.
 
+## Was ist F.1 (DCC Status Facade)?
+
+Kanonisches Modul `core/dcc_status_facade.py` — read-only Aggregation-Contract für DCC (overview, roadmap, backend-health, notifications, evidence). **Keine Route-Migration** in F.1. Doku: `docs/architecture/DCC_STATUS_FACADE_F1.md`.
+
 ## Nächster Schritt?
 
-**F.1** — DCC Status Facade (blockiert `/api/dev-dashboard/status`, roadmap-root).
+**F.2** — Router/`app.py`-Handler delegieren an `dcc_status_facade` (status, roadmap-root).
 
 ## Weiterlesen
 

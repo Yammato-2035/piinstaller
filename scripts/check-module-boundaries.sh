@@ -1035,6 +1035,31 @@ if app_py_path.is_file():
         if "build_dashboard_status" in mt and "dev_dashboard_roadmap.py" in rel:
             print(f"app_roadmap_route_uses_dashboard_aggregation:{rel}")
 
+# Phase F.1: DCC status facade warnings (warn-only)
+dcc_facade_path = root / "backend" / "core" / "dcc_status_facade.py"
+if not dcc_facade_path.is_file():
+    print("dcc_status_facade_missing:backend/core/dcc_status_facade.py")
+else:
+    dcc_mt = dcc_facade_path.read_text(encoding="utf-8", errors="replace")
+    if "FACADE_VERSION" not in dcc_mt or "build_dcc_status_overview" not in dcc_mt:
+        print("dcc_status_facade_incomplete:backend/core/dcc_status_facade.py")
+    if re.search(r"\bsubprocess\b|\bsystemctl\b", dcc_mt):
+        print("dcc_status_facade_uses_subprocess:backend/core/dcc_status_facade.py")
+    for route_mod in sorted((root / "backend" / "api" / "routes").glob("*.py")):
+        rel = route_mod.relative_to(root).as_posix()
+        if rel.endswith("dcc_status_facade.py"):
+            continue
+        rt = route_mod.read_text(encoding="utf-8", errors="replace")
+        if "build_dashboard_status" in rt:
+            print(f"dcc_status_direct_build_dashboard_status_in_routes:{rel}")
+        if re.search(r"def _normalize_ampel|def normalize_ampel", rt):
+            print(f"dcc_status_duplicate_status_mapping:{rel}")
+        if re.search(r'"green"\s*:\s*"red"|ampel_mapping\s*=', rt):
+            print(f"dcc_status_new_ampel_logic_outside_facade:{rel}")
+        if "build_dashboard_status" in rt or "load_roadmap_registry_bundle" in rt:
+            if "dcc_status_facade" not in rt:
+                print(f"dcc_status_router_uses_core_aggregation_directly:{rel}")
+
 if deploy_routes.is_file():
     subrouter_markers = (
         "build_plan_only_response",

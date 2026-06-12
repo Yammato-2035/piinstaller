@@ -6,7 +6,9 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) �
 
 **E.8 done (3 GET):** backend-health, notifications/status, notifications/events in `dev_dashboard_readonly.py`.
 
-**CANDIDATE (E.7 audit):** System Status Facade, Network Info Facade, DCC Status Facade, Dev Dashboard Aggregation Facade — block extraction of `/api/status`, `/api/system/network`, `/api/dev-dashboard/status`, `/api/dev-dashboard/roadmap`.
+**F.1 done:** `core.dcc_status_facade` — CANONICAL DCC status aggregation contract.
+
+**CANDIDATE (E.7):** System Status Facade, Network Info Facade — block `/api/status`, `/api/system/network`.
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 

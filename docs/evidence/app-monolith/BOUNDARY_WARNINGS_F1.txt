@@ -1,0 +1,6 @@
+dcc_status_facade present: backend/core/dcc_status_facade.py
+app_dcc_status_requires_dcc_status_facade:backend/app.py
+app_roadmap_route_uses_dashboard_aggregation:backend/app.py
+dcc_status_router_uses_core_aggregation_directly:backend/api/routes/dev_dashboard_roadmap.py
+
+# Expected until F.2 router migration — roadmap subroutes still call load_roadmap_registry_bundle directly.

@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** `9005c54` · **Update E.8:** Notification-Read-Routen delegieren nur noch an `core.notification_state` (Router, keine Duplikat-Logik).
+**HEAD:** `9005c54` · **Update F.1:** DCC-Status-Mapping zentral in `dcc_status_facade` — keine Router-Duplikate.
 
 ## Zusammenfassung
 

@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** `9005c54` · **Update E.8:** `app.py` Hub entlastet — 3 DCC-GET über `include_router(dev_dashboard_readonly_router)`; `core.notification_state` Fan-In unverändert.
+**HEAD:** `9005c54` · **Update F.1:** `dcc_status_facade` als Aggregation-Hub — `app.py`/`dev_dashboard` Fan-In entlastet (F.2).
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

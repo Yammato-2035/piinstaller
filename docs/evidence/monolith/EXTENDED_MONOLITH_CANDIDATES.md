@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** `9005c54` · **Update E.8:** `app.py` 17.472→17.425 Zeilen, 187→184 Routen; 3 DCC-GET nach `dev_dashboard_readonly.py` (kumulativ 29 extrahierte GET).
+**HEAD:** `9005c54` · **Update F.1:** `core/dcc_status_facade.py` CANONICAL — DCC-Aggregation-Contract, Routen unverändert.
 
 ## Legende
 

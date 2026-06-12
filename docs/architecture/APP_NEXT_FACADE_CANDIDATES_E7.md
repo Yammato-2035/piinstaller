@@ -6,7 +6,7 @@
 
 | Facade | Zweck | betroffene Routen | Risiko | Bewertung | Empfehlung |
 |--------|-------|-------------------|--------|-----------|------------|
-| **DCC Status Facade** | Einheitlicher `build_dashboard_status`-Einstieg; Profil-Gate; keine Duplikation in Routern | `GET /api/dev-dashboard/status`, indirekt roadmap/prompt-findings | CRITICAL | **CRITICAL** | Vor Extraktion von Aggregations-GETs; Core-Owner `core.dev_dashboard` |
+| **DCC Status Facade** | Einheitlicher `build_dashboard_status`-Einstieg; Profil-Gate; keine Duplikation in Routern | `GET /api/dev-dashboard/status`, indirekt roadmap/prompt-findings | CRITICAL | **CRITICAL** | **F.1 erledigt** — F.2 Router-Migration |
 | **System Status Facade** | Ampel-Engine ohne Route-Duplikation | `GET /api/status`, `GET /api/system/status` | HIGH | **HIGH** | `_compute_system_status` aus Monolith heben; subprocess nur in Facade |
 | **Network Info Facade** | IP/Hostname/Interfaces | `GET /api/system/network` | HIGH | **HIGH** | `get_network_info` canonical; Demo-Mode im Facade |
 | **Settings Write Facade** | POST settings, UX, SMTP | `POST /api/settings*`, notifications/test | MEDIUM | **MEDIUM** | GET bereits E.2; Write separat |

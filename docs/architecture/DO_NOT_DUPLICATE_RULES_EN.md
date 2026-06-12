@@ -18,6 +18,8 @@ Binding rules against parallel implementations. **No exception** without documen
 14. Do not add new settings/status GET handlers in `app.py` when `api/routes/settings.py` or `status.py` exist (E.2+).
 15. Do not add DCC index GET handlers in `app.py` when `dev_dashboard_readonly.py` exists — scanners only in `core.dev_dashboard*` (E.4+).
 16. Do not add roadmap registry GET handlers in `app.py` when `dev_dashboard_roadmap.py` exists — parsers only in `core.dev_dashboard_roadmap` (E.5+).
+17. Do not add new DCC status aggregation in routers/`app.py` when `dcc_status_facade` exists — use facade entry points (F.1+).
+18. Do not add new traffic-light/status mapping logic outside `dcc_status_facade` / documented view model (F.1+).
 
 Check order: Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
 
