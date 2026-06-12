@@ -793,10 +793,14 @@ if backend.is_dir():
     if risk_hits[:5]:
         print(f"duplicate_runner_risk_logic_detected:{len(risk_hits)}")
 
-# Phase E.1: app.py router slice (warn-only)
+# Phase E.1/E.2: app.py router slices (warn-only)
 app_py_path = root / "backend" / "app.py"
-health_mod = root / "backend" / "api" / "routes" / "health.py"
-version_mod = root / "backend" / "api" / "routes" / "version.py"
+app_router_modules = {
+    "health.py": root / "backend" / "api" / "routes" / "health.py",
+    "version.py": root / "backend" / "api" / "routes" / "version.py",
+    "settings.py": root / "backend" / "api" / "routes" / "settings.py",
+    "status.py": root / "backend" / "api" / "routes" / "status.py",
+}
 e1_slice_endpoints = {
     "health.py": (
         '@router.get("/health")',
@@ -805,11 +809,21 @@ e1_slice_endpoints = {
     ),
     "version.py": ('@router.get("/api/version")',),
 }
-if not health_mod.is_file():
-    print("app_router_slice_missing:backend/api/routes/health.py")
-if not version_mod.is_file():
-    print("app_router_slice_missing:backend/api/routes/version.py")
-for mod in (health_mod, version_mod):
+e2_slice_endpoints = {
+    "settings.py": (
+        '@router.get("/api/settings")',
+        '@router.get("/api/settings/notifications/email")',
+    ),
+    "status.py": (
+        '@router.get("/api/presets/list")',
+        '@router.get("/api/debug/routes")',
+        '@router.get("/api/user-profile")',
+    ),
+}
+for sub, mod in app_router_modules.items():
+    if not mod.is_file():
+        print(f"app_router_slice_missing:backend/api/routes/{sub}")
+for mod in app_router_modules.values():
     if not mod.is_file():
         continue
     mt = mod.read_text(encoding="utf-8", errors="replace")
@@ -817,20 +831,21 @@ for mod in (health_mod, version_mod):
     if re.search(r"\bsubprocess\b", mt) or re.search(r"\bsystemctl\b", mt):
         print(f"app_py_new_subprocess:{rel}")
     if re.search(r"\bsudo\b", mt, flags=re.I):
-        print(f"app_router_slice_e1_uses_sudo:{rel}")
+        print(f"app_router_slice_uses_sudo:{rel}")
     if re.search(r"\blsblk\b|\bblkid\b", mt) and "storage_facade" not in mt:
         print(f"app_py_new_storage_duplicate:{rel}")
     if re.search(r"validate_write_target|write_guard", mt) and "safety_facade" not in mt:
         print(f"app_py_new_safety_duplicate:{rel}")
-    if re.search(r"\bfindmnt\b|\bmount_facade\b", mt) and "mount_facade" not in mt:
-        if "findmnt" in mt:
-            print(f"app_py_new_mount_duplicate:{rel}")
+    if re.search(r"\bfindmnt\b", mt) and "mount_facade" not in mt:
+        print(f"app_py_new_mount_duplicate:{rel}")
 if app_py_path.is_file():
     ap = app_py_path.read_text(encoding="utf-8", errors="replace")
     ap_lines = ap.count("\n") + (1 if ap and not ap.endswith("\n") else 0)
     baseline_e1_lines = 17857
+    baseline_e2_lines = 17779
     route_decorators = len(re.findall(r"@app\.(get|post|put|delete|patch)\(", ap))
     baseline_e1_routes = 213
+    baseline_e2_routes = 209
     if ap_lines > 3000:
         print(f"app_py_too_large:{ap_lines}")
     print(f"app_py_route_count:{route_decorators}")
@@ -840,19 +855,30 @@ if app_py_path.is_file():
         print(f"app_py_line_count_not_reduced_e1:{baseline_e1_lines}_still_{ap_lines}")
     else:
         print(f"app_py_line_count_reduced_e1:{baseline_e1_lines}_to_{ap_lines}")
+    if route_decorators < baseline_e2_routes:
+        print(f"app_py_route_count_reduced_e2:{baseline_e2_routes}_to_{route_decorators}")
+    if ap_lines < baseline_e2_lines:
+        print(f"app_py_line_count_reduced_e2:{baseline_e2_lines}_to_{ap_lines}")
     if "include_router(health_router)" not in ap or "include_router(version_router)" not in ap:
-        print("app_router_slice_not_included:backend/app.py")
+        print("app_router_slice_e1_not_included:backend/app.py")
+    if "include_router(settings_router)" not in ap or "include_router(status_router)" not in ap:
+        print("app_router_slice_e2_not_included:backend/app.py")
     for dup in (
         '@app.get("/health")',
         '@app.get("/api/version")',
         '@app.get("/api/init/status")',
         '@app.get("/api/logs/path")',
+        '@app.get("/api/settings")',
+        '@app.get("/api/settings/notifications/email")',
+        '@app.get("/api/presets/list")',
+        '@app.get("/api/debug/routes")',
+        '@app.get("/api/user-profile")',
     ):
         if dup in ap:
             print(f"app_router_slice_duplicate_in_app:{dup}")
-    for sub, eps in e1_slice_endpoints.items():
-        mod = health_mod if sub == "health.py" else version_mod
-        if mod.is_file():
+    for sub, eps in {**e1_slice_endpoints, **e2_slice_endpoints}.items():
+        mod = app_router_modules.get(sub)
+        if mod and mod.is_file():
             mt = mod.read_text(encoding="utf-8", errors="replace")
             for ep in eps:
                 if ep not in mt:

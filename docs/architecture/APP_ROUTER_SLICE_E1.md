@@ -36,7 +36,7 @@ Keine neuen Storage-/Safety-/Mount-Implementierungen.
 
 ## Nächster Schritt
 
-**E.2** — weitere read-only Routen (`/api/status`, Settings-GET) nach gleichem Muster.
+**E.2** — erledigt (siehe `APP_ROUTER_SLICE_E2.md`). **E.3** — nächster Slice.
 
 ## Evidence
 

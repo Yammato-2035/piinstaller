@@ -1,6 +1,6 @@
 # Modul-Katalog (Source of Truth)
 
-**Stand:** nach E.1 (`app.py` Router-Slice) · **Kein Big-Bang** — Inventar und Ownership.
+**Stand:** nach E.2 (`app.py` Router-Slices) · **Kein Big-Bang** — Inventar und Ownership.
 
 Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX.md) und [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES.md) prüfen.
 
@@ -213,7 +213,9 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 |-------|--------|------------------|
 | `api/routes/health.py` | **CANONICAL_ROUTER** (E.1) | `/health`, `/api/init/status`, `/api/logs/path` |
 | `api/routes/version.py` | **CANONICAL_ROUTER** (E.1) | `/api/version` |
-| `app.py` Router-Slices | **IN_PROGRESS** | E.2+ (209 Routen verbleibend) |
+| `api/routes/settings.py` | **CANONICAL_ROUTER** (E.2) | `GET /api/settings`, notifications/email |
+| `api/routes/status.py` | **CANONICAL_ROUTER** (E.2) | presets/list, debug/routes, user-profile |
+| `app.py` Router-Slices | **IN_PROGRESS** | E.3+ (204 Routen verbleibend) |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |
 
 ---

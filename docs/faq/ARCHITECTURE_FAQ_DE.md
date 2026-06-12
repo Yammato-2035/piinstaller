@@ -135,9 +135,13 @@ Verbindliches Inventar unter `docs/architecture/MODULE_CATALOG.md` mit Function 
 
 4 read-only GET-Routen nach `api/routes/health.py` und `version.py` extrahiert (`/health`, `/api/init/status`, `/api/logs/path`, `/api/version`). `app.py`: 17.857→17.779 Zeilen. Evidence: `docs/architecture/APP_ROUTER_SLICE_E1.md`.
 
+## Was ist E.2 (app.py Router-Slice)?
+
+5 read-only GET-Routen nach `api/routes/settings.py` und `status.py` (`/api/settings`, notifications/email, presets/list, debug/routes, user-profile). `app.py`: 17.779→17.699 Zeilen.
+
 ## Nächster Schritt?
 
-**E.2** — weiterer `app.py` Router-Slice (read-only).
+**E.3** — weiterer `app.py` Router-Slice (read-only, ohne subprocess).
 
 ## Weiterlesen
 

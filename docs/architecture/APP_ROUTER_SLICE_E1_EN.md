@@ -35,7 +35,7 @@ No new storage/safety/mount implementations.
 
 ## Next step
 
-**E.2** — additional read-only routes using the same pattern.
+**E.2** — done (see `APP_ROUTER_SLICE_E2_EN.md`). **E.3** — next slice.
 
 ## Evidence
 

@@ -2608,27 +2608,6 @@ def _load_or_init_config() -> dict:
     return cfg
 
 
-@app.get("/api/settings")
-async def get_settings():
-    exp_level = "beginner"
-    try:
-        cands = _user_profile_collect_from_disk()
-        if cands:
-            cands.sort(key=lambda x: (x[0], x[1]), reverse=True)
-            lv = str(cands[0][2] or "beginner").lower()
-            if lv in ("beginner", "advanced", "developer"):
-                exp_level = lv
-    except Exception:
-        pass
-    return {
-        "status": "success",
-        "settings": APP_SETTINGS,
-        "config_path": str(CONFIG_PATH),
-        "device_id": CONFIG_STATE.get("device_id"),
-        "experience_level": exp_level,
-    }
-
-
 @app.post("/api/settings")
 async def set_settings(request: Request):
     try:
@@ -2693,25 +2672,6 @@ async def set_user_experience_via_settings(payload: dict = Body(...)):
     Fallback-URL falls Proxys oder alte Clients nur /api/settings/* durchlassen.
     """
     return _update_user_profile_body(payload)
-
-
-@app.get("/api/settings/notifications/email")
-async def get_notification_email_settings():
-    from core.notification_settings import build_public_settings
-
-    try:
-        return {"status": "success", **build_public_settings()}
-    except Exception as exc:
-        logger.exception("get_notification_email_settings failed")
-        return JSONResponse(
-            status_code=200,
-            content={
-                "status": "error",
-                "message": "Benachrichtigungseinstellungen konnten nicht gelesen werden.",
-                "diagnosis_id": "NOTIFY-READ-001",
-                "error_class": type(exc).__name__,
-            },
-        )
 
 
 @app.post("/api/settings/notifications/email")
@@ -2780,21 +2740,6 @@ async def post_notification_email_test():
                 "diagnosis_id": "NOTIFY-TEST-001",
             },
         )
-
-
-@app.get("/api/presets/list")
-async def api_list_presets():
-    """
-    Liefert eine Liste verfügbarer Konfigurations-Presets (Voreinstellungen).
-    """
-    if _list_presets_impl is None:
-        return {"status": "error", "message": "Presets-Modul nicht verfügbar."}
-    try:
-        items = _list_presets_impl()
-    except Exception as e:
-        logger.error("Fehler beim Laden der Presets: %s", e)
-        return {"status": "error", "message": f"Fehler beim Laden der Presets: {str(e)}"}
-    return {"status": "success", "items": items}
 
 
 class ApplyPresetRequest(BaseModel):
@@ -3050,10 +2995,14 @@ except ImportError:
 
 try:
     from api.routes.health import router as health_router
+    from api.routes.settings import router as settings_router
+    from api.routes.status import router as status_router
     from api.routes.version import router as version_router
 
     app.include_router(health_router)
     app.include_router(version_router)
+    app.include_router(settings_router)
+    app.include_router(status_router)
 except ImportError:
     pass
 
@@ -5158,17 +5107,6 @@ async def install_app(request: Request, app_id: str):
     )
 
 
-@app.get("/api/debug/routes")
-async def debug_routes():
-    """Listet alle registrierten API-Pfade (z. B. zum Prüfen ob /api/peripherals/scan geladen ist)."""
-    paths = []
-    for r in app.routes:
-        path = getattr(r, "path", "")
-        if path and "/api/" in path:
-            paths.append(path)
-    return {"paths": sorted(set(paths)), "version": get_pi_installer_version()}
-
-
 BACKUP_ALLOWED_ROOTS = [
     Path("/mnt").resolve(),
     Path("/media").resolve(),
@@ -7200,24 +7138,6 @@ async def list_users(request: Request):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/user-profile")
-async def get_user_profile():
-    """
-    Gibt das Benutzerprofil zurück (Erfahrungslevel etc.).
-    Liest primär neben config.json, sonst Fallback unter ~/.config/pi-installer/.
-    """
-    try:
-        cands = _user_profile_collect_from_disk()
-        if cands:
-            cands.sort(key=lambda x: (x[0], x[1]), reverse=True)
-            updated_at, _mtime, level, _path = cands[0]
-            return {"status": "success", "profile": UserProfile(experience_level=level, updated_at=updated_at).dict()}
-    except Exception as e:
-        logger.error("Fehler beim Lesen von user_profile.json: %s", e, exc_info=True)
-    default = UserProfile(experience_level="beginner", updated_at=_now_iso())
-    return {"status": "success", "profile": default.dict()}
 
 
 def _update_user_profile_body(payload: dict) -> dict:

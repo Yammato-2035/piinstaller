@@ -143,9 +143,11 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **D.11 (erledigt):** `routes_runtime.py` — routes.py 81 Runner-Imports.
 
-**E.1 (erledigt):** `api/routes/health.py` + `version.py` — 4 GET aus `app.py`, include_router +2.
+**E.1 (erledigt):** `api/routes/health.py` + `version.py` — 4 GET.
 
-**Nächster Schritt:** E.2 (read-only app routes)
+**E.2 (erledigt):** `api/routes/settings.py` + `status.py` — 5 GET, app.py 17.779→17.699.
+
+**Nächster Schritt:** E.3 (read-only app routes ohne subprocess)
 
 ---
 

@@ -241,6 +241,18 @@ Evidence: `docs/evidence/app-monolith/APP_ROUTER_SLICE_E1.md`, `BOUNDARY_WARNING
 
 ---
 
+## Update: APP Router Slice E.2 (2026-06-10)
+
+| Cluster | Status |
+|---------|--------|
+| Settings/Status GET in `app.py` | **extrahiert** → `settings.py`, `status.py` |
+| Notification settings read | **reuse** `core.notification_settings` |
+| Presets list | **reuse** `presets` module |
+
+Evidence: `APP_ROUTER_SLICE_E2.md`, `BOUNDARY_WARNINGS_E2.txt`
+
+---
+
 ## Update: Deploy Runner Registry C.1 (2026-06-10)
 
 | Cluster | Status |

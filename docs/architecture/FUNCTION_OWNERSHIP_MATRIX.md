@@ -30,6 +30,8 @@
 | Runtime Readonly Routes | `routes_runtime` | CANONICAL | routes.py orchestrator | Ja |
 | Health Liveness API | `api/routes/health.py` | CANONICAL | app (include_router) | Ja |
 | Version Gate API | `api/routes/version.py` | CANONICAL | app (include_router) | Ja |
+| Settings Read API | `api/routes/settings.py` | CANONICAL | app (include_router) | Ja |
+| Status/Metadata Read API | `api/routes/status.py` | CANONICAL | app (include_router) | Ja |
 | Deploy Execute/Rescue Routes | `routes.py` | LEGACY | app | Bis D.15 Execute-Gate |
 | Status / Ampel Mapping | — (verteilt) | PARTIAL | frontend, DCC | PLANNED: zentrales ViewModel |
 | DCC Aggregation | `dev-dashboard` routes in app | PARTIAL | DevelopmentDashboard.tsx | Keine Parallel-Aggregation |

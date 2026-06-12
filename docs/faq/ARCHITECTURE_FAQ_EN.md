@@ -135,9 +135,13 @@ Eight read-only/status POST routes in `routes_runtime.py`. `routes.py`: 4324→4
 
 Four read-only GET routes extracted to `api/routes/health.py` and `version.py`. `app.py`: 17,857→17,779 lines. See `docs/architecture/APP_ROUTER_SLICE_E1_EN.md`.
 
+## What is E.2 (app.py router slice)?
+
+Five read-only GET routes in `api/routes/settings.py` and `status.py`. `app.py`: 17,779→17,699 lines.
+
 ## Next step?
 
-**E.2** — next `app.py` router slice (read-only).
+**E.3** — next `app.py` router slice (read-only, no subprocess).
 
 ## Further reading
 

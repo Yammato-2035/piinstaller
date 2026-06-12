@@ -137,7 +137,8 @@
 
 **Phase C.5+C.6 (erledigt):** 9 Routen decoupled, Imports 113→104  
 
-1. **E.1** app.py Router-Slice — **erledigt** (4 GET: health, init/status, logs/path, version)
-2. **E.2** app.py Router-Slice — nächster Schritt
+1. **E.1** app.py Router-Slice — **erledigt** (4 GET)
+2. **E.2** app.py Router-Slice — **erledigt** (5 GET: settings, notifications, presets, debug/routes, user-profile)
+3. **E.3** app.py Router-Slice — nächster Schritt
 4. B.2: `app.py` Storage-Hilfen, `inspect_storage.py`
 5. Router-Extraktion `app.py`
