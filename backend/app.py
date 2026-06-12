@@ -4058,29 +4058,6 @@ async def dev_dashboard_control_center_summary():
         raise
 
 
-@app.get("/api/dev-dashboard/backend-health")
-async def dev_dashboard_backend_health(
-    request: Request,
-    history_limit: int = Query(default=20, ge=0, le=20),
-    stale_after_seconds: int = Query(default=180, ge=30, le=3600),
-):
-    """Read-only: externer Developer-Healthcheck aus Evidence-JSON (kein Probe aus dem Backend)."""
-    from core.dev_dashboard_backend_health import load_backend_health_snapshot
-    from core.dev_dashboard_status_service import build_dcc_profile_block_response
-
-    headers = {k: v for k, v in request.headers.items()}
-    blocked = build_dcc_profile_block_response(
-        request_headers=headers,
-        path="/api/dev-dashboard/backend-health",
-    )
-    if blocked:
-        return JSONResponse(status_code=404, content=blocked)
-    return load_backend_health_snapshot(
-        stale_after_seconds=stale_after_seconds,
-        history_limit=history_limit,
-    )
-
-
 @app.get("/api/dev-dashboard/roadmap")
 async def dev_dashboard_roadmap(
     frontend_build_version: str | None = Query(default=None),
@@ -4252,30 +4229,6 @@ async def dev_dashboard_rescue_usb_selection_post(body: DevDashboardRescueUsbSel
         }
     except Exception:
         logger.exception("dev_dashboard_rescue_usb_selection_post failed")
-        raise
-
-
-@app.get("/api/dev-dashboard/notifications/status")
-async def dev_dashboard_notifications_status():
-    from core.notification_state import build_notification_summary
-
-    try:
-        payload = build_notification_summary()
-        return {"code": "DEV_DASHBOARD_NOTIFICATIONS_STATUS_OK", **payload}
-    except Exception:
-        logger.exception("dev_dashboard_notifications_status failed")
-        raise
-
-
-@app.get("/api/dev-dashboard/notifications/events")
-async def dev_dashboard_notifications_events(limit: int = 50):
-    from core.notification_state import list_notification_events
-
-    try:
-        payload = list_notification_events(limit=limit)
-        return {"code": "DEV_DASHBOARD_NOTIFICATIONS_EVENTS_OK", **payload}
-    except Exception:
-        logger.exception("dev_dashboard_notifications_events failed")
         raise
 
 

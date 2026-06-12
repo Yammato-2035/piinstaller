@@ -157,11 +157,15 @@ Verbindliches Inventar unter `docs/architecture/MODULE_CATALOG.md` mit Function 
 
 ## Was ist E.7 (Router-Slice Kandidaten-Audit)?
 
-Re-Scan aller **187** verbleibenden `@app.*` Routen — **keine Extraktion**. Ergebnis: **3** sichere E.8-Kandidaten (backend-health, notifications/status/events); blockierte Facades für status/network/DCC. Evidence: `docs/architecture/APP_ROUTER_SLICE_CANDIDATE_AUDIT_E7.md`.
+Re-Scan aller **187** verbleibenden `@app.*` Routen — **keine Extraktion**. Ergebnis: **3** sichere E.8-Kandidaten. Evidence: `docs/architecture/APP_ROUTER_SLICE_CANDIDATE_AUDIT_E7.md`.
+
+## Was ist E.8 (DCC read-only Router-Slice)?
+
+3 GET-Routen nach `dev_dashboard_readonly.py`: backend-health, notifications/status, notifications/events. Nur `core.dev_dashboard_backend_health` und `core.notification_state`. `app.py`: 17.472→17.425 Zeilen.
 
 ## Nächster Schritt?
 
-**E.8** — Extraktion der 3 DCC read-only GETs **oder** Facade-Phase F.1 (System/DCC Status).
+**F.1** — DCC Status Facade (blockiert `/api/dev-dashboard/status`, roadmap-root).
 
 ## Weiterlesen
 

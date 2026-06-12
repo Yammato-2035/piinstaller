@@ -314,8 +314,8 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **E.5** | app.py Router-Slice — **erledigt** (5 roadmap registry GET) |
 | **E.6** | app.py Router-Slice — **erledigt** (2 roadmap next-prompt GET) |
 | **E.7** | app.py Router-Slice **Kandidaten-Audit** — **erledigt** (187 Routen gescannt, 3 E.8-Kandidaten) |
-| **E.8** | app.py Router-Slice — **nächster Schritt** (3 DCC read-only GET) |
-| **F.1** | System/DCC Status Facades | geplant (blockiert status/network/roadmap-root) |
+| **E.8** | app.py Router-Slice — **erledigt** (3 DCC read-only GET → `dev_dashboard_readonly`) |
+| **F.1** | DCC Status Facade | **nächster Schritt** |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  
 Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`  

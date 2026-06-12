@@ -30,12 +30,12 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 | 18 | status router | `backend/api/routes/status.py` | ROUTER (E.2/E.3) |
 | 19 | capabilities router | `backend/api/routes/capabilities.py` | ROUTER (E.3) |
 | 20 | catalog router | `backend/api/routes/catalog.py` | ROUTER (E.3) |
-| 21 | dev_dashboard_readonly | `backend/api/routes/dev_dashboard_readonly.py` | ROUTER (E.4) |
+| 21 | dev_dashboard_readonly | `backend/api/routes/dev_dashboard_readonly.py` | ROUTER (E.4/E.8) |
 | 22 | dev_dashboard_roadmap | `backend/api/routes/dev_dashboard_roadmap.py` | ROUTER (E.5) |
 | — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4120 lines) |
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**In progress:** `app.py` router slice **E.8** (3 GET, see E.7 audit). **Candidates (E.7):** System Status Facade, Network Info Facade, DCC Status Facade, Dev Dashboard Aggregation Facade. **Blocked:** `routes_notifications` (D.9 no_safe_slice).
+**In progress:** Facade **F.1** (DCC Status). **E.8 done:** 3 GET in `dev_dashboard_readonly`. **Candidates (E.7):** System Status Facade, Network Info Facade, DCC Status Facade, Dev Dashboard Aggregation Facade. **Blocked:** `routes_notifications` (D.9 no_safe_slice).
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

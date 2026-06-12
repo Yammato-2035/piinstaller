@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** `9005c54`
+**HEAD:** `9005c54` · **Update E.8:** `app.py` 17.472→17.425 Zeilen, 187→184 Routen; 3 DCC-GET nach `dev_dashboard_readonly.py` (kumulativ 29 extrahierte GET).
 
 ## Legende
 
@@ -14,7 +14,7 @@
 
 | Datei/Modul | Zeilen | Hauptdomäne | Nebendomänen | Verantwortlichkeiten | Risiko | Priorität |
 |-------------|--------|-------------|--------------|----------------------|--------|-----------|
-| `backend/app.py` | 17.857 | Runtime | Backup, Security, Users, NAS, Web, Mail, Monitoring, Partitions, Settings, i18n-API | FastAPI-App, ~213 Routen, Middleware, Logging, Systeminfo, sudo, Backup-API, User-API, Hardware | **CRITICAL** | **P1** |
+| `backend/app.py` | 17.425 | Runtime | Backup, Security, Users, NAS, Web, Mail, Monitoring, Partitions, Settings, i18n-API | FastAPI-App, ~184 Routen, Middleware, Logging, Systeminfo, sudo, Backup-API, User-API, Hardware | **CRITICAL** | **P1** |
 | `backend/deploy/routes.py` | 5.003 | Deployment | Rescue, DCC, Governance, Verify | ~227 Deploy-Runner-Routen, Orchestrierung, Evidence | **CRITICAL** | **P1** |
 | `backend/modules/control_center.py` | 1.990 | Companion Dashboard | Monitoring, Device Discovery | Steuerzentrale, Status-Aggregation | **HIGH** | **P2** |
 | `backend/tools/backup_runner.py` | 1.583 | Backup | Verify, Diagnostics | CLI-Backup, Tar, Manifest, Evidence | **HIGH** | **P2** |

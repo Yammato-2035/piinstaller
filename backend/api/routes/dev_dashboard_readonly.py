@@ -1,12 +1,13 @@
 """
-Read-only Dev-Dashboard index routes (Phase E.4).
+Read-only Dev-Dashboard index routes (Phase E.4, extended E.8).
 
-Delegates to core.dev_dashboard* — no new file scanners, no shell commands.
+Delegates to core.dev_dashboard* / core.notification_state — no new file scanners, no shell commands.
 """
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
+from fastapi.responses import JSONResponse
 
 router = APIRouter(tags=["dev-dashboard-readonly"])
 
@@ -60,3 +61,52 @@ async def dev_dashboard_recent_evidence(
         search=search,
         time_range=time_range,
     )
+
+
+@router.get("/api/dev-dashboard/backend-health")
+async def dev_dashboard_backend_health(
+    request: Request,
+    history_limit: int = Query(default=20, ge=0, le=20),
+    stale_after_seconds: int = Query(default=180, ge=30, le=3600),
+):
+    """Read-only: externer Developer-Healthcheck aus Evidence-JSON (kein Probe aus dem Backend)."""
+    from core.dev_dashboard_backend_health import load_backend_health_snapshot
+    from core.dev_dashboard_status_service import build_dcc_profile_block_response
+
+    headers = {k: v for k, v in request.headers.items()}
+    blocked = build_dcc_profile_block_response(
+        request_headers=headers,
+        path="/api/dev-dashboard/backend-health",
+    )
+    if blocked:
+        return JSONResponse(status_code=404, content=blocked)
+    return load_backend_health_snapshot(
+        stale_after_seconds=stale_after_seconds,
+        history_limit=history_limit,
+    )
+
+
+@router.get("/api/dev-dashboard/notifications/status")
+async def dev_dashboard_notifications_status():
+    from app import logger
+    from core.notification_state import build_notification_summary
+
+    try:
+        payload = build_notification_summary()
+        return {"code": "DEV_DASHBOARD_NOTIFICATIONS_STATUS_OK", **payload}
+    except Exception:
+        logger.exception("dev_dashboard_notifications_status failed")
+        raise
+
+
+@router.get("/api/dev-dashboard/notifications/events")
+async def dev_dashboard_notifications_events(limit: int = 50):
+    from app import logger
+    from core.notification_state import list_notification_events
+
+    try:
+        payload = list_notification_events(limit=limit)
+        return {"code": "DEV_DASHBOARD_NOTIFICATIONS_EVENTS_OK", **payload}
+    except Exception:
+        logger.exception("dev_dashboard_notifications_events failed")
+        raise

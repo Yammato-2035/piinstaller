@@ -857,6 +857,13 @@ e6_slice_endpoints = {
         '@router.get("/api/dev-dashboard/roadmap/export-next-prompt/{prompt_id}")',
     ),
 }
+e8_slice_endpoints = {
+    "dev_dashboard_readonly.py": (
+        '@router.get("/api/dev-dashboard/backend-health")',
+        '@router.get("/api/dev-dashboard/notifications/status")',
+        '@router.get("/api/dev-dashboard/notifications/events")',
+    ),
+}
 for sub, mod in app_router_modules.items():
     if not mod.is_file():
         print(f"app_router_slice_missing:backend/api/routes/{sub}")
@@ -888,6 +895,11 @@ for mod in app_router_modules.values():
         print(f"app_new_roadmap_parser_without_core_owner:{rel}")
     if "dev_dashboard_roadmap.py" in rel and re.search(r"build_dashboard_status", mt):
         print(f"app_roadmap_router_uses_dashboard_aggregation:{rel}")
+    if rel.endswith("dev_dashboard_readonly.py"):
+        if re.search(r"def build_notification_summary|def list_notification_events", mt):
+            print(f"app_notification_router_new_state_logic:{rel}")
+        if re.search(r"emit_notification_event", mt):
+            print(f"app_notification_router_new_state_logic:{rel}")
 if app_py_path.is_file():
     ap = app_py_path.read_text(encoding="utf-8", errors="replace")
     ap_lines = ap.count("\n") + (1 if ap and not ap.endswith("\n") else 0)
@@ -897,6 +909,7 @@ if app_py_path.is_file():
     baseline_e4_lines = 17617
     baseline_e5_lines = 17568
     baseline_e6_lines = 17499
+    baseline_e7_lines = 17472
     route_decorators = len(re.findall(r"@app\.(get|post|put|delete|patch)\(", ap))
     baseline_e1_routes = 213
     baseline_e2_routes = 209
@@ -904,6 +917,7 @@ if app_py_path.is_file():
     baseline_e4_routes = 199
     baseline_e5_routes = 194
     baseline_e6_routes = 189
+    baseline_e7_routes = 187
     if ap_lines > 3000:
         print(f"app_py_too_large:{ap_lines}")
     print(f"app_py_route_count:{route_decorators}")
@@ -933,6 +947,10 @@ if app_py_path.is_file():
         print(f"app_py_route_count_reduced_e6:{baseline_e6_routes}_to_{route_decorators}")
     if ap_lines < baseline_e6_lines:
         print(f"app_py_line_count_reduced_e6:{baseline_e6_lines}_to_{ap_lines}")
+    if route_decorators < baseline_e7_routes:
+        print(f"app_py_route_count_reduced_e7:{baseline_e7_routes}_to_{route_decorators}")
+    if ap_lines < baseline_e7_lines:
+        print(f"app_py_line_count_reduced_e7:{baseline_e7_lines}_to_{ap_lines}")
     if "include_router(health_router)" not in ap or "include_router(version_router)" not in ap:
         print("app_router_slice_e1_not_included:backend/app.py")
     if "include_router(settings_router)" not in ap or "include_router(status_router)" not in ap:
@@ -970,6 +988,9 @@ if app_py_path.is_file():
         '@app.get("/api/dev-dashboard/roadmap/next-prompt")',
         '@app.get("/api/dev-dashboard/roadmap/next-prompts")',
         '@app.get("/api/dev-dashboard/roadmap/export-next-prompt/{prompt_id}")',
+        '@app.get("/api/dev-dashboard/backend-health")',
+        '@app.get("/api/dev-dashboard/notifications/status")',
+        '@app.get("/api/dev-dashboard/notifications/events")',
     ):
         if dup in ap:
             print(f"app_router_slice_duplicate_in_app:{dup}")
@@ -980,6 +1001,7 @@ if app_py_path.is_file():
         **e4_slice_endpoints,
         **e5_slice_endpoints,
         **e6_slice_endpoints,
+        **e8_slice_endpoints,
     }.items():
         mod = app_router_modules.get(sub)
         if mod and mod.is_file():

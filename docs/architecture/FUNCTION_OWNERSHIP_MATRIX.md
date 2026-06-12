@@ -34,13 +34,13 @@
 | Status/Metadata Read API | `api/routes/status.py` | CANONICAL | app (include_router) | Ja |
 | DCC Capability Gate API | `api/routes/capabilities.py` | CANONICAL | app (include_router) | Ja |
 | App Catalog API | `api/routes/catalog.py` | CANONICAL | app (include_router) | Ja |
-| DCC Readonly Index API | `api/routes/dev_dashboard_readonly.py` | CANONICAL | app (include_router) | Ja |
+| DCC Readonly Index API | `api/routes/dev_dashboard_readonly.py` | CANONICAL | app (include_router) | Ja (8 GET nach E.8) |
 | DCC Roadmap Registry API | `api/routes/dev_dashboard_roadmap.py` | CANONICAL | app (include_router) | Ja |
 | System Status (Ampel) | `app.py` `_compute_system_status` | PARTIAL | `/api/status`, `/api/system/status` | **CANDIDATE:** System Status Facade (E.7) |
 | Network Info | `app.py` `get_network_info` | PARTIAL | `/api/system/network` | **CANDIDATE:** Network Info Facade (E.7) |
 | DCC Full Status | `core.dev_dashboard` via app route | PARTIAL | `/api/dev-dashboard/status` | **CANDIDATE:** DCC Status Facade (E.7) |
-| DCC Backend Health Snapshot | `core.dev_dashboard_backend_health` | CANONICAL | app route (E.8 candidate) | Router in E.8 |
-| Notification State Read | `core.notification_state` | CANONICAL | app route (E.8 candidate) | Router in E.8 |
+| DCC Backend Health Snapshot | `core.dev_dashboard_backend_health` | CANONICAL | `dev_dashboard_readonly` router (E.8) | Ja |
+| Notification State Read | `core.notification_state` | CANONICAL | `dev_dashboard_readonly` router (E.8) | Ja |
 | Deploy Execute/Rescue Routes | `routes.py` | LEGACY | app | Bis D.15 Execute-Gate |
 | Status / Ampel Mapping | — (verteilt) | PARTIAL | frontend, DCC | PLANNED: zentrales ViewModel |
 | DCC Aggregation | `dev-dashboard` routes in app | PARTIAL | DevelopmentDashboard.tsx | Keine Parallel-Aggregation |

@@ -44,4 +44,5 @@ Extend `api/routes/dev_dashboard_readonly.py`:
 
 ## Next step
 
-**E.8** — extract the 3 DCC read-only GETs **or** facade phase for system/DCC status (plan in parallel; do not mix).
+**E.8** — **done** (3 DCC read-only GET → `dev_dashboard_readonly.py`).  
+**F.1** — DCC Status Facade (blocks status/roadmap-root).

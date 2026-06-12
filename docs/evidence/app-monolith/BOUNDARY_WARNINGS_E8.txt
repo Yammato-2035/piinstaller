@@ -1,0 +1,9 @@
+app_py_route_count:184
+app_py_line_count_reduced_e7:17472_to_17425
+app_py_route_count_reduced_e7:187_to_184
+app_status_route_requires_system_status_facade:backend/app.py
+app_network_route_requires_network_facade:backend/app.py
+app_dcc_status_requires_dcc_status_facade:backend/app.py
+app_roadmap_route_uses_dashboard_aggregation:backend/app.py
+
+# app_notification_router_new_state_logic: no trigger (router imports core.notification_state only)

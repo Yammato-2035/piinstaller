@@ -157,11 +157,15 @@ Two GET routes moved to `dev_dashboard_roadmap.py`. `app.py`: 17,499→17,472 li
 
 ## What is E.7 (router slice candidate audit)?
 
-Re-scan of all **187** remaining `@app.*` routes — **no extraction**. Result: **3** safe E.8 candidates (backend-health, notifications/status/events); blocked facades for status/network/DCC. See `docs/architecture/APP_ROUTER_SLICE_CANDIDATE_AUDIT_E7_EN.md`.
+Re-scan of all **187** remaining `@app.*` routes — **no extraction**. Result: **3** safe E.8 candidates.
+
+## What is E.8 (DCC read-only router slice)?
+
+Three GET routes moved to `dev_dashboard_readonly.py`: backend-health, notifications/status, notifications/events. Uses `core.dev_dashboard_backend_health` and `core.notification_state` only. `app.py`: 17,472→17,425 lines.
 
 ## Next step?
 
-**E.8** — extract 3 DCC read-only GETs **or** facade phase F.1 (system/DCC status).
+**F.1** — DCC Status Facade (blocks `/api/dev-dashboard/status`, roadmap root).
 
 ## Further reading
 
