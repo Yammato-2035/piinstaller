@@ -137,6 +137,6 @@
 
 **Phase C.5+C.6 (erledigt):** 9 Routen decoupled, Imports 113→104  
 
-1. **D.11** runtime Router (D.10 versioning **erledigt** — 8 Routen; D.9 Notifications **übersprungen**)
+1. **E.1** app.py Router-Slice (D.11 runtime **erledigt** — 8 Routen)
 4. B.2: `app.py` Storage-Hilfen, `inspect_storage.py`
 5. Router-Extraktion `app.py`

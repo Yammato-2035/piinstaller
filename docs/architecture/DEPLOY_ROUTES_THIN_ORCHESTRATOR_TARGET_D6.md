@@ -28,14 +28,18 @@ Keine Notification-Routen in Deploy-API — `routes_notifications.py` nicht ange
 
 `routes_versioning.py` — 8 plan-only Routen. `routes.py`: **4324** Zeilen, **89** Runner-Imports.
 
+## D.11 Update (runtime)
+
+`routes_runtime.py` — 8 read-only/status Routen. `routes.py`: **4120** Zeilen, **81** Runner-Imports.
+
 ## Zielmetriken
 
-| Metrik | Ist (D.10) | Ziel |
+| Metrik | Ist (D.11) | Ziel |
 |--------|----------:|-----:|
-| `routes.py` Zeilen | 4324 | **< 500** |
-| direkte Runner-Imports | 89 | **0** |
+| `routes.py` Zeilen | 4120 | **< 500** |
+| direkte Runner-Imports | 81 | **0** |
 | Routen direkt in routes.py | 218 | **0–10** Legacy |
-| Subrouter | 6 | **10–14** |
+| Subrouter | 7 | **10–14** |
 | Execute-Routen ohne Risk-Gate | offen | **0** (nach Execute-Gate) |
 
 ## Warum Guard statt Blind-Migration?
@@ -51,6 +55,7 @@ D.2–D.5 haben sichere Facade-Routen extrahiert. Weitere Moves ohne Guard riski
 | `routes_evidence.py` | 12 POST |
 | `routes_diagnostics.py` | 6 POST |
 | `routes_versioning.py` | 8 POST (D.10) |
+| `routes_runtime.py` | 8 POST (D.11) |
 | `routes_notifications.py` | — (D.9 übersprungen) |
 | `routes_governance.py` | 3 POST |
 

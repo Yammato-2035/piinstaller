@@ -259,4 +259,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 **D.10 (erledigt):** `routes_versioning.py` — 8 plan-only Routen, facade_decoupling_d10.
 
-**Nächster Schritt:** D.11 (mit [Module Reuse Header](../../developer/CURSOR_PROMPT_MODULE_REUSE_HEADER.md))
+**D.11 (erledigt):** `routes_runtime.py` — 8 read-only/status Routen.
+
+**Nächster Schritt:** E.1 app.py Router-Slice (mit [Module Reuse Header](../../developer/CURSOR_PROMPT_MODULE_REUSE_HEADER.md))

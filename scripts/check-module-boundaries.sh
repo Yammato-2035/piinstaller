@@ -576,6 +576,51 @@ else:
             print("deploy_routes_versioning_duplicate_in_routes:backend/deploy/routes.py")
             break
 
+# Phase D.11: runtime router (warn-only)
+runtime_mod = root / "backend" / "deploy" / "routes_runtime.py"
+if not runtime_mod.is_file():
+    print("deploy_routes_runtime_missing:backend/deploy/routes_runtime.py")
+else:
+    rt = runtime_mod.read_text(encoding="utf-8", errors="replace")
+    for m in re.findall(r"^from (deploy\.runner_[^\s]+) import", rt, flags=re.M):
+        if m != "deploy.runner_api_facade":
+            print(f"deploy_routes_runtime_has_runner_import:{m}")
+    if re.search(r"\bsystemctl\b", rt):
+        print("deploy_routes_runtime_uses_systemctl:backend/deploy/routes_runtime.py")
+    if re.search(r"\bsudo\b", rt, flags=re.I):
+        print("deploy_routes_runtime_uses_sudo:backend/deploy/routes_runtime.py")
+    if re.search(r'@router\.post\("[^"]*apply', rt):
+        print("deploy_routes_runtime_has_apply_route:backend/deploy/routes_runtime.py")
+    if re.search(r'@router\.post\("[^"]*restart', rt):
+        print("deploy_routes_runtime_has_restart_route:backend/deploy/routes_runtime.py")
+    unsafe_rt = re.findall(r'@router\.post\("([^"]+)"\)', rt)
+    for p in unsafe_rt:
+        pl = p.lower()
+        if any(x in pl for x in ("execute", "apply", "install", "delete", "restart", "deploy-to")):
+            print("deploy_routes_runtime_has_execute_route:backend/deploy/routes_runtime.py")
+            break
+        if "/write" in pl or pl.endswith("-write"):
+            print("deploy_routes_runtime_has_execute_route:backend/deploy/routes_runtime.py")
+            break
+    if "allowed_to_execute = True" in rt.replace("_C4_EXECUTE_ALLOWED", ""):
+        print("deploy_routes_runtime_allowed_execute_true:backend/deploy/routes_runtime.py")
+    for ep in (
+        '@router.post("/runner/lab-readiness/status")',
+        '@router.post("/runner/runtime-runbook/bundle")',
+        '@router.post("/runner/lab-phase/consolidation")',
+    ):
+        if ep not in rt:
+            print(f"deploy_routes_runtime_path_changed:missing_{ep}")
+    if "routes_runtime" not in text or "include_router(deploy_runtime_router)" not in text:
+        print("deploy_routes_runtime_not_included:backend/deploy/routes.py")
+    for dup in (
+        '@router.post("/runner/lab-readiness/status")',
+        '@router.post("/runner/runtime-runbook/bundle")',
+    ):
+        if dup in text:
+            print("deploy_routes_runtime_duplicate_in_routes:backend/deploy/routes.py")
+            break
+
 # Phase D.6: thin orchestrator guard (warn-only)
 deploy_routes = root / "backend" / "deploy" / "routes.py"
 if deploy_routes.is_file():
@@ -590,6 +635,8 @@ if deploy_routes.is_file():
     baseline_d8_imports = 93
     baseline_d10_lines = 4324
     baseline_d10_imports = 89
+    baseline_d11_lines = 4120
+    baseline_d11_imports = 81
     if dr_lines > 2000:
         print(f"deploy_routes_py_too_large:{dr_lines}")
     print(f"deploy_routes_direct_runner_import_count:{dr_runner_imports}")
@@ -610,6 +657,7 @@ if deploy_routes.is_file():
         "routes_governance.py",
         "routes_diagnostics.py",
         "routes_versioning.py",
+        "routes_runtime.py",
     ):
         if not (root / "backend" / "deploy" / sub).is_file():
             print(f"deploy_routes_subrouter_missing:{sub}")
@@ -629,6 +677,12 @@ if deploy_routes.is_file():
         print(f"deploy_routes_direct_runner_import_reduced_d10:{baseline_d10_imports}_to_{dr_runner_imports}")
     if dr_lines < baseline_d10_lines:
         print(f"deploy_routes_line_count_reduced_d10:{baseline_d10_lines}_to_{dr_lines}")
+    if "include_router(deploy_runtime_router)" not in dr_text:
+        print("deploy_routes_subrouter_missing:include_runtime")
+    if dr_runner_imports < baseline_d11_imports:
+        print(f"deploy_routes_direct_runner_import_reduced_d11:{baseline_d11_imports}_to_{dr_runner_imports}")
+    if dr_lines < baseline_d11_lines:
+        print(f"deploy_routes_line_count_reduced_d11:{baseline_d11_lines}_to_{dr_lines}")
     if re.search(r"\bsubprocess\b", dr_text) or re.search(r"\bos\.system\b", dr_text):
         print("deploy_routes_business_logic_new:subprocess_or_os_system")
     if re.search(r'@router\.post\("/runners/[^"]*(execute|apply|write|install|delete)', dr_text):

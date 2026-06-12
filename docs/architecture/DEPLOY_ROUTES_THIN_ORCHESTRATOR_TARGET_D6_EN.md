@@ -26,16 +26,20 @@ No notification routes in deploy API — `routes_notifications.py` not created.
 
 ## D.10 update (versioning)
 
-`routes_versioning.py` — 8 plan-only routes. `routes.py`: **4324** lines, **89** runner imports.
+`routes_versioning.py` — 8 plan-only routes.
+
+## D.11 update (runtime)
+
+`routes_runtime.py` — 8 read-only/status routes. `routes.py`: **4120** lines, **81** runner imports.
 
 ## Target metrics
 
-| Metric | Current (D.10) | Target |
+| Metric | Current (D.11) | Target |
 |--------|---------------:|-------:|
-| `routes.py` lines | 4324 | **< 500** |
-| direct runner imports | 89 | **0** |
+| `routes.py` lines | 4120 | **< 500** |
+| direct runner imports | 81 | **0** |
 | routes directly in routes.py | 218 | **0–10** legacy |
-| sub-routers | 4 | **10–14** |
+| sub-routers | 7 | **10–14** |
 | execute routes without risk gate | open | **0** (after execute gate) |
 
 ## Why guard instead of blind migration?

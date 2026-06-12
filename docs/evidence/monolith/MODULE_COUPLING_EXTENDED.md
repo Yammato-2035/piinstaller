@@ -141,7 +141,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **D.10 (erledigt):** `routes_versioning.py` — 8 Routen, routes.py 89 Runner-Imports.
 
-**Nächster Schritt:** D.11 (Module Reuse Header Pflicht)
+**D.11 (erledigt):** `routes_runtime.py` — routes.py 81 Runner-Imports.
+
+**Nächster Schritt:** E.1 (Module Reuse Header Pflicht)
 
 ---
 

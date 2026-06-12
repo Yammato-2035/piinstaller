@@ -43,8 +43,6 @@ from deploy.runner_install_plan import build_runner_install_plan
 from deploy.runner_install_validator import validate_runner_installation_dryrun
 from deploy.runner_package_blueprint import build_runner_package_blueprint
 from deploy.runner_install_consistency import validate_runner_install_consistency
-from deploy.runner_release_readiness import build_runner_release_readiness_matrix
-from deploy.runner_lab_readiness_plan import build_runner_lab_readiness_unblock_plan
 from deploy.runner_sudoers_runtime_test_plan import build_runner_sudoers_runtime_test_plan
 from deploy.runner_privileged_validation_test_plan import build_runner_privileged_validation_test_plan
 from deploy.runner_real_write_hardware_e2e_test_plan import build_runner_real_write_hardware_e2e_test_plan
@@ -52,13 +50,7 @@ from deploy.runner_failure_injection_hardware_test_plan import build_runner_fail
 from deploy.runner_device_reenumeration_test_plan import build_runner_device_reenumeration_test_plan
 from deploy.runner_hotplug_race_test_plan import build_runner_hotplug_race_test_plan
 from deploy.runner_rollback_runtime_test_plan import build_runner_rollback_runtime_test_plan
-from deploy.runner_lab_readiness_status import build_runner_lab_readiness_status
-from deploy.runner_runtime_runbook_bundle import build_runner_runtime_runbook_bundle
-from deploy.runner_runtime_runbook_export import build_runner_runtime_runbook_export_package
-from deploy.runner_runtime_result_validator import validate_runner_runtime_result_bundle
-from deploy.runner_lab_acceptance_aggregator import build_runner_lab_acceptance_summary
 from deploy.runner_lab_acceptance_report_export import build_runner_lab_acceptance_report_export
-from deploy.runner_lab_phase_consolidation import build_runner_lab_phase_consolidation
 from deploy.runner_manual_runtime_precheck import build_runner_manual_runtime_precheck
 from deploy.runner_manual_runtime_result_template import create_manual_runtime_result_template
 from deploy.runner_manual_runtime_result_edit_checker import check_manual_runtime_result_file
@@ -288,6 +280,7 @@ from deploy.routes_evidence import router as deploy_evidence_router
 from deploy.routes_governance import router as deploy_governance_router
 from deploy.routes_registry import router as deploy_registry_router
 from deploy.routes_risk_gate import router as deploy_risk_gate_router
+from deploy.routes_runtime import router as deploy_runtime_router
 from deploy.routes_versioning import router as deploy_versioning_router
 
 router = APIRouter(prefix="/api/deploy", tags=["deploy-plan"])
@@ -297,6 +290,7 @@ router.include_router(deploy_evidence_router)
 router.include_router(deploy_governance_router)
 router.include_router(deploy_diagnostics_router)
 router.include_router(deploy_versioning_router)
+router.include_router(deploy_runtime_router)
 
 
 class DeployPlanRequest(BaseModel):
@@ -543,18 +537,6 @@ class DeployRunnerInstallConsistencyRequest(BaseModel):
     package_blueprint: dict[str, Any] = Field(default_factory=dict)
 
 
-class DeployRunnerReleaseReadinessRequest(BaseModel):
-    components: list[dict[str, Any]] = Field(default_factory=list)
-    blocking_gaps: list[str] = Field(default_factory=list)
-    non_blocking_gaps: list[str] = Field(default_factory=list)
-    required_evidence: list[str] = Field(default_factory=list)
-    required_next_validations: list[str] = Field(default_factory=list)
-
-
-class DeployRunnerLabReadinessPlanRequest(BaseModel):
-    blocking_gaps: list[str] = Field(default_factory=list)
-
-
 class DeployRunnerSudoersRuntimeTestPlanRequest(BaseModel):
     placeholder: dict[str, Any] = Field(default_factory=dict)
 
@@ -583,34 +565,8 @@ class DeployRunnerRollbackRuntimeTestPlanRequest(BaseModel):
     placeholder: dict[str, Any] = Field(default_factory=dict)
 
 
-class DeployRunnerLabReadinessStatusRequest(BaseModel):
-    design_evidence: dict[str, list[str]] = Field(default_factory=dict)
-    runtime_evidence: dict[str, list[str]] = Field(default_factory=dict)
-
-
-class DeployRunnerRuntimeRunbookBundleRequest(BaseModel):
-    placeholder: dict[str, Any] = Field(default_factory=dict)
-
-
-class DeployRunnerRuntimeRunbookExportRequest(BaseModel):
-    target_files: dict[str, str] = Field(default_factory=dict)
-
-
-class DeployRunnerRuntimeResultsValidateRequest(BaseModel):
-    result_files: list[str] = Field(default_factory=list)
-    acceptance_decision: str = "blocked"
-
-
-class DeployRunnerLabAcceptanceRequest(BaseModel):
-    validated_runtime_results: dict[str, Any] = Field(default_factory=dict)
-
-
 class DeployRunnerLabAcceptanceExportRequest(BaseModel):
     acceptance: dict[str, Any] = Field(default_factory=dict)
-
-
-class DeployRunnerLabPhaseConsolidationRequest(BaseModel):
-    placeholder: dict[str, Any] = Field(default_factory=dict)
 
 
 class DeployRunnerNextPhaseGateRequest(BaseModel):
@@ -957,8 +913,6 @@ DeployRunnerInstallPlanRequest.model_rebuild()
 DeployRunnerInstallValidateRequest.model_rebuild()
 DeployRunnerPackageBlueprintRequest.model_rebuild()
 DeployRunnerInstallConsistencyRequest.model_rebuild()
-DeployRunnerReleaseReadinessRequest.model_rebuild()
-DeployRunnerLabReadinessPlanRequest.model_rebuild()
 DeployRunnerSudoersRuntimeTestPlanRequest.model_rebuild()
 DeployRunnerPrivilegedValidationTestPlanRequest.model_rebuild()
 DeployRunnerRealWriteHardwareE2ETestPlanRequest.model_rebuild()
@@ -966,13 +920,7 @@ DeployRunnerFailureInjectionHardwareTestPlanRequest.model_rebuild()
 DeployRunnerDeviceReenumerationTestPlanRequest.model_rebuild()
 DeployRunnerHotplugRaceTestPlanRequest.model_rebuild()
 DeployRunnerRollbackRuntimeTestPlanRequest.model_rebuild()
-DeployRunnerLabReadinessStatusRequest.model_rebuild()
-DeployRunnerRuntimeRunbookBundleRequest.model_rebuild()
-DeployRunnerRuntimeRunbookExportRequest.model_rebuild()
-DeployRunnerRuntimeResultsValidateRequest.model_rebuild()
-DeployRunnerLabAcceptanceRequest.model_rebuild()
 DeployRunnerLabAcceptanceExportRequest.model_rebuild()
-DeployRunnerLabPhaseConsolidationRequest.model_rebuild()
 DeployRunnerNextPhaseGateRequest.model_rebuild()
 DeployRunnerManualRuntimePrecheckRequest.model_rebuild()
 DeployRunnerManualRuntimeResultTemplateRequest.model_rebuild()
@@ -1408,46 +1356,6 @@ async def post_deploy_runner_install_consistency(body: DeployRunnerInstallConsis
     }
 
 
-@router.post("/runner/release/readiness")
-async def post_deploy_runner_release_readiness(body: DeployRunnerReleaseReadinessRequest) -> dict[str, Any]:
-    readiness = build_runner_release_readiness_matrix(
-        components=body.components or None,
-        blocking_gaps=body.blocking_gaps or None,
-        non_blocking_gaps=body.non_blocking_gaps or None,
-        required_evidence=body.required_evidence or None,
-        required_next_validations=body.required_next_validations or None,
-    )
-    st = str(readiness.get("readiness_status") or "review_required")
-    code = "DEPLOY_RUNNER_RELEASE_REVIEW_REQUIRED"
-    if st == "ready_for_lab":
-        code = "DEPLOY_RUNNER_RELEASE_READY_FOR_LAB"
-    elif st == "blocked":
-        code = "DEPLOY_RUNNER_RELEASE_BLOCKED"
-    return {
-        "code": code,
-        "readiness": readiness,
-        "warnings": list(readiness.get("warnings") or []),
-        "errors": list(readiness.get("errors") or []),
-    }
-
-
-@router.post("/runner/lab-readiness/unblock-plan")
-async def post_deploy_runner_lab_readiness_unblock_plan(body: DeployRunnerLabReadinessPlanRequest) -> dict[str, Any]:
-    plan = build_runner_lab_readiness_unblock_plan(blocking_gaps=body.blocking_gaps or None)
-    st = str(plan.get("plan_status") or "review_required")
-    code = "DEPLOY_RUNNER_LAB_UNBLOCK_PLAN_REVIEW_REQUIRED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_LAB_UNBLOCK_PLAN_OK"
-    elif st == "blocked":
-        code = "DEPLOY_RUNNER_LAB_UNBLOCK_PLAN_BLOCKED"
-    return {
-        "code": code,
-        "plan": plan,
-        "warnings": list(plan.get("warnings") or []),
-        "errors": list(plan.get("errors") or []),
-    }
-
-
 @router.post("/runner/sudoers/runtime-test-plan")
 async def post_deploy_runner_sudoers_runtime_test_plan(body: DeployRunnerSudoersRuntimeTestPlanRequest) -> dict[str, Any]:
     _ = body.placeholder or {}
@@ -1574,100 +1482,6 @@ async def post_deploy_runner_rollback_runtime_test_plan(body: DeployRunnerRollba
     }
 
 
-@router.post("/runner/lab-readiness/status")
-async def post_deploy_runner_lab_readiness_status(body: DeployRunnerLabReadinessStatusRequest) -> dict[str, Any]:
-    status = build_runner_lab_readiness_status(
-        design_evidence=body.design_evidence or None,
-        runtime_evidence=body.runtime_evidence or None,
-    )
-    st = str(status.get("lab_readiness_status") or "review_required")
-    code = "DEPLOY_RUNNER_LAB_READINESS_REVIEW_REQUIRED"
-    if st == "test_design_ready":
-        code = "DEPLOY_RUNNER_LAB_READINESS_TEST_DESIGN_READY"
-    elif st == "runtime_blocked":
-        code = "DEPLOY_RUNNER_LAB_READINESS_RUNTIME_BLOCKED"
-    return {
-        "code": code,
-        "status": status,
-        "warnings": list(status.get("warnings") or []),
-        "errors": list(status.get("errors") or []),
-    }
-
-
-@router.post("/runner/runtime-runbook/bundle")
-async def post_deploy_runner_runtime_runbook_bundle(body: DeployRunnerRuntimeRunbookBundleRequest) -> dict[str, Any]:
-    _ = body.placeholder or {}
-    bundle = build_runner_runtime_runbook_bundle()
-    st = str(bundle.get("bundle_status") or "review_required")
-    code = "DEPLOY_RUNNER_RUNTIME_RUNBOOK_BUNDLE_REVIEW_REQUIRED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_RUNTIME_RUNBOOK_BUNDLE_OK"
-    elif st == "blocked":
-        code = "DEPLOY_RUNNER_RUNTIME_RUNBOOK_BUNDLE_BLOCKED"
-    return {
-        "code": code,
-        "bundle": bundle,
-        "warnings": list(bundle.get("warnings") or []),
-        "errors": list(bundle.get("errors") or []),
-    }
-
-
-@router.post("/runner/runtime-runbook/export")
-async def post_deploy_runner_runtime_runbook_export(body: DeployRunnerRuntimeRunbookExportRequest) -> dict[str, Any]:
-    export = build_runner_runtime_runbook_export_package(target_files=body.target_files or None)
-    st = str(export.get("export_status") or "review_required")
-    code = "DEPLOY_RUNNER_RUNTIME_RUNBOOK_EXPORT_REVIEW_REQUIRED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_RUNTIME_RUNBOOK_EXPORT_OK"
-    elif st == "blocked":
-        code = "DEPLOY_RUNNER_RUNTIME_RUNBOOK_EXPORT_BLOCKED"
-    return {
-        "code": code,
-        "export": export,
-        "warnings": list(export.get("warnings") or []),
-        "errors": list(export.get("errors") or []),
-    }
-
-
-@router.post("/runner/runtime-results/validate")
-async def post_deploy_runner_runtime_results_validate(body: DeployRunnerRuntimeResultsValidateRequest) -> dict[str, Any]:
-    validation = validate_runner_runtime_result_bundle(
-        result_files=body.result_files or [],
-        acceptance_decision=body.acceptance_decision or "blocked",
-    )
-    st = str(validation.get("validation_status") or "review_required")
-    code = "DEPLOY_RUNNER_RUNTIME_RESULTS_VALIDATE_REVIEW_REQUIRED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_RUNTIME_RESULTS_VALIDATE_OK"
-    elif st == "blocked":
-        code = "DEPLOY_RUNNER_RUNTIME_RESULTS_VALIDATE_BLOCKED"
-    return {
-        "code": code,
-        "validation": validation,
-        "warnings": list(validation.get("warnings") or []),
-        "errors": list(validation.get("errors") or []),
-    }
-
-
-@router.post("/runner/lab-readiness/acceptance")
-async def post_deploy_runner_lab_readiness_acceptance(body: DeployRunnerLabAcceptanceRequest) -> dict[str, Any]:
-    acceptance = build_runner_lab_acceptance_summary(
-        validated_runtime_results=body.validated_runtime_results or {},
-    )
-    st = str(acceptance.get("acceptance_status") or "blocked")
-    code = "DEPLOY_RUNNER_LAB_ACCEPTANCE_BLOCKED"
-    if st == "lab_ready_candidate":
-        code = "DEPLOY_RUNNER_LAB_ACCEPTANCE_CANDIDATE"
-    elif st == "repeat_required":
-        code = "DEPLOY_RUNNER_LAB_ACCEPTANCE_REPEAT_REQUIRED"
-    return {
-        "code": code,
-        "acceptance": acceptance,
-        "warnings": list(acceptance.get("warnings") or []),
-        "errors": list(acceptance.get("errors") or []),
-    }
-
-
 @router.post("/runner/lab-readiness/acceptance/export")
 async def post_deploy_runner_lab_readiness_acceptance_export(body: DeployRunnerLabAcceptanceExportRequest) -> dict[str, Any]:
     export = build_runner_lab_acceptance_report_export(acceptance=body.acceptance or {})
@@ -1682,24 +1496,6 @@ async def post_deploy_runner_lab_readiness_acceptance_export(body: DeployRunnerL
         "export": export,
         "warnings": list(export.get("warnings") or []),
         "errors": list(export.get("errors") or []),
-    }
-
-
-@router.post("/runner/lab-phase/consolidation")
-async def post_deploy_runner_lab_phase_consolidation(body: DeployRunnerLabPhaseConsolidationRequest) -> dict[str, Any]:
-    _ = body.placeholder or {}
-    consolidation = build_runner_lab_phase_consolidation()
-    st = str(consolidation.get("consolidation_status") or "review_required")
-    code = "DEPLOY_RUNNER_LAB_PHASE_CONSOLIDATION_REVIEW_REQUIRED"
-    if st == "ok":
-        code = "DEPLOY_RUNNER_LAB_PHASE_CONSOLIDATION_OK"
-    elif st == "blocked":
-        code = "DEPLOY_RUNNER_LAB_PHASE_CONSOLIDATION_BLOCKED"
-    return {
-        "code": code,
-        "consolidation": consolidation,
-        "warnings": list(consolidation.get("warnings") or []),
-        "errors": list(consolidation.get("errors") or []),
     }
 
 

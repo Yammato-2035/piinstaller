@@ -183,15 +183,27 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 
 ---
 
+## 14. routes_runtime
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/deploy/routes_runtime.py` |
+| **Status** | **ROUTER** (D.11) |
+| **Zweck** | 8 POST Runtime-Status/Readiness plan-only |
+| **Tests** | `test_deploy_routes_runtime_v1` |
+| **Doku** | `DEPLOY_RUNTIME_ROUTER_EXTRACTION_D11.md` |
+
+---
+
 ## Referenz: routes.py (Legacy-Orchestrator)
 
 | Feld | Wert |
 |------|------|
 | **Pfad** | `backend/deploy/routes.py` |
 | **Status** | **LEGACY** (Orchestrator + Monolith) |
-| **Zweck** | `include_router` für 6 Subrouter; verbleibende Execute/Rescue/Write-Routen |
-| **Metriken** | ~4324 Zeilen, 89 direkte Runner-Imports |
-| **Migration** | D.11+ sequenziell; Ziel <500 Zeilen (`DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6.md`) |
+| **Zweck** | `include_router` für 7 Subrouter; verbleibende Execute/Rescue/Write-Routen |
+| **Metriken** | ~4120 Zeilen, 81 direkte Runner-Imports |
+| **Migration** | E.1+ sequenziell; Ziel <500 Zeilen (`DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6.md`) |
 
 ---
 
@@ -199,7 +211,7 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 
 | Modul | Status | Nächster Schritt |
 |-------|--------|------------------|
-| `routes_runtime.py` | **CANDIDATE** | D.11 read-only |
+| `app.py` Router-Slices | **CANDIDATE** | E.1 |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |
 
 ---

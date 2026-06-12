@@ -23,10 +23,11 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 | 11 | routes_governance | `backend/deploy/routes_governance.py` | ROUTER (D.5) |
 | 12 | routes_diagnostics | `backend/deploy/routes_diagnostics.py` | ROUTER (D.8) |
 | 13 | routes_versioning | `backend/deploy/routes_versioning.py` | ROUTER (D.10) |
-| — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4324 lines) |
+| 14 | routes_runtime | `backend/deploy/routes_runtime.py` | ROUTER (D.11) |
+| — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4120 lines) |
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**Candidates:** `routes_runtime` (D.11). **Blocked:** `routes_notifications` (D.9 no_safe_slice).
+**Candidates:** `app.py` router slices (E.1). **Blocked:** `routes_notifications` (D.9 no_safe_slice).
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

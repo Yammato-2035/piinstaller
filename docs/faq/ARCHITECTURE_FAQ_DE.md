@@ -127,13 +127,13 @@ Keine Route verschoben. Inventar, Ownership-Matrix, Zielbild (`routes.py` <500 Z
 
 Verbindliches Inventar unter `docs/architecture/MODULE_CATALOG.md` mit Function Ownership Matrix und Do-Not-Duplicate Rules. Cursor muss vor neuer Funktion prüfen, ob ein CANONICAL_MODULE existiert (storage/mount/safety facade, runner stack, deploy sub-router).
 
-## Was ist D.10 (Versioning-Router)?
+## Was ist D.11 (Runtime-Router)?
 
-8 plan-only POST-Routen in `routes_versioning.py` — Identifier/Version ohne Apply/Execute. `routes.py`: 4523→4324 Zeilen, 93→89 Runner-Imports.
+8 read-only/status POST-Routen in `routes_runtime.py` (Lab-Readiness, Runbook, Validation). `routes.py`: 4324→4120 Zeilen, 89→81 Runner-Imports.
 
 ## Nächster Schritt?
 
-**D.11** — Runtime Readonly Router (`routes_runtime.py`).
+**E.1** — `app.py` Router-Slice.
 
 ## Weiterlesen
 

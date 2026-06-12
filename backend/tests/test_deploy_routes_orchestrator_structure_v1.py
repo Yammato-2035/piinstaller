@@ -17,6 +17,7 @@ from deploy.routes_evidence import router as evidence_router
 from deploy.routes_governance import router as governance_router
 from deploy.routes_registry import router as registry_router
 from deploy.routes_risk_gate import router as risk_gate_router
+from deploy.routes_runtime import router as runtime_router
 from deploy.routes_versioning import router as versioning_router
 
 SUBROUTER_MODULES = (
@@ -26,6 +27,7 @@ SUBROUTER_MODULES = (
     "routes_governance.py",
     "routes_diagnostics.py",
     "routes_versioning.py",
+    "routes_runtime.py",
 )
 
 UNSAFE_PATH_FRAGMENTS = ("execute", "apply", "install", "write", "delete")
@@ -45,6 +47,7 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
             "include_router(deploy_governance_router)",
             "include_router(deploy_diagnostics_router)",
             "include_router(deploy_versioning_router)",
+            "include_router(deploy_runtime_router)",
         ):
             self.assertIn(needle, src)
 
@@ -55,6 +58,7 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
         self.assertEqual(len(governance_router.routes), 3)
         self.assertEqual(len(diagnostics_router.routes), 6)
         self.assertEqual(len(versioning_router.routes), 8)
+        self.assertEqual(len(runtime_router.routes), 8)
 
     def test_subrouters_no_runner_py_imports(self) -> None:
         for name in SUBROUTER_MODULES:
@@ -73,6 +77,7 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
             governance_router,
             diagnostics_router,
             versioning_router,
+            runtime_router,
         ):
             for route in router.routes:
                 pl = route.path.lower()
@@ -98,7 +103,7 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
     def test_routes_py_runner_import_count_documented(self) -> None:
         src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", src, flags=re.M))
-        self.assertEqual(count, 89)
+        self.assertEqual(count, 81)
 
     def test_no_build_plan_only_in_routes_py(self) -> None:
         src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
@@ -110,6 +115,7 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
             "routes_governance.py",
             "routes_diagnostics.py",
             "routes_versioning.py",
+            "routes_runtime.py",
         ):
             src = (_BACKEND / "deploy" / name).read_text(encoding="utf-8")
             self.assertIn("build_plan_only_response", src)
