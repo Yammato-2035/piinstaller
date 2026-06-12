@@ -317,7 +317,8 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **E.8** | app.py Router-Slice — **erledigt** (3 DCC read-only GET → `dev_dashboard_readonly`) |
 | **F.1** | DCC Status Facade — **erledigt** (`core/dcc_status_facade.py`) |
 | **F.2** | DCC Router-Migration auf `dcc_status_facade` — **erledigt** (6 GET) |
-| **F.3** | DCC Aggregation Audit & Duplicate Status Analysis | **nächster Schritt** |
+| **F.3** | DCC Aggregation Audit & Duplicate Status Analysis | **erledigt** |
+| **F.4** | ai_prompt_generate_stub + readonly Facade-Sections | **nächster Schritt** |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  
 Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`  

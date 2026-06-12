@@ -34,8 +34,8 @@
 | Status/Metadata Read API | `api/routes/status.py` | CANONICAL | app (include_router) | Ja |
 | DCC Capability Gate API | `api/routes/capabilities.py` | CANONICAL | app (include_router) | Ja |
 | App Catalog API | `api/routes/catalog.py` | CANONICAL | app (include_router) | Ja |
-| DCC Readonly Index API | `api/routes/dev_dashboard_readonly.py` | CANONICAL | app (include_router) | Ja (8 GET nach E.8) |
-| DCC Roadmap Registry API | `api/routes/dev_dashboard_roadmap.py` | CANONICAL | app (include_router) | Ja |
+| DCC Readonly Index API | `api/routes/dev_dashboard_readonly.py` | CANONICAL | app (include_router) | Ja — F.4: Facade-Sections |
+| DCC Roadmap Registry API | `api/routes/dev_dashboard_roadmap.py` | CANONICAL | app (include_router) | Ja — Subroutes registry-only (F.3) |
 | System Status (Ampel) | `app.py` `_compute_system_status` | PARTIAL | `/api/status`, `/api/system/status` | **CANDIDATE:** System Status Facade (E.7) |
 | Network Info | `app.py` `get_network_info` | PARTIAL | `/api/system/network` | **CANDIDATE:** Network Info Facade (E.7) |
 | DCC Full Status | `core.dcc_status_facade` + `dev_dashboard_status_service` | CANONICAL (F.2) | `/api/dev-dashboard/status` | Ja — migriert |
@@ -44,7 +44,10 @@
 | Notification State Read | `core.notification_state` | CANONICAL | `dev_dashboard_readonly` router (E.8) | Ja |
 | Deploy Execute/Rescue Routes | `routes.py` | LEGACY | app | Bis D.15 Execute-Gate |
 | Status / Ampel Mapping | `core.dcc_status_facade` (`build_section_status`) | PARTIAL (F.1) | frontend, DCC | Facade-Vokabular; Roadmap native Werte in data |
-| DCC Aggregation | `core.dcc_status_facade` | CANONICAL (F.2) | app.py DCC GETs | Facade only |
+| DCC Aggregation | `core.dcc_status_facade` | CANONICAL (F.2/F.3) | app.py DCC GETs | Facade only |
+| AI Prompt Generate Stub | `app.py` `ai_prompt_generate_stub` | LEGACY | POST `/api/ai/prompt/generate` | **F.4:** `build_dcc_cursor_meta_prompt_api` |
+| Deploy Runtime Gate | `core.deploy_job_state` | PARTIAL | Deploy-Gates | **F.5:** Facade-Hook statt direktem `build_dashboard_status` |
+| Frontend DCC Status ViewModel | — | MISSING | TrafficLight UI | **F.4+:** `dccStatusViewModel.ts` |
 | Frontend API Clients | `frontend/src/lib/*` | PARTIAL | pages, rescue UI | Wiederverwenden |
 | i18n Namespaces | `frontend/src/**/i18n` | PARTIAL | rescue, main UI | Namespace-Konzept |
 | Notification Events | — | MISSING | — | D.9: keine Deploy-Routen |

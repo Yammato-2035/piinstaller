@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** `9005c54` · **Update F.2:** 6 DCC-Aggregations-GETs über `dcc_status_facade`; `build_dashboard_status` nur noch Facade + `ai_prompt_generate_stub`.
+**HEAD:** `8bb910c` · **Update F.3:** Audit — verbleibend `ai_prompt_generate_stub`, `deploy_job_state`, E.8 readonly; F.4 geplant.
 
 ## Legende
 

@@ -1,6 +1,6 @@
 # DCC Status Facade — Phase F.1 (EN)
 
-**HEAD:** `03fbc09` · **Status:** CANONICAL_MODULE (FACADE)
+**HEAD:** `8bb910c` · **Status:** CANONICAL_MODULE (FACADE)
 
 ## Purpose
 
@@ -39,4 +39,6 @@ Single read-only entry for DCC/dashboard status aggregation — prepares router 
 
 ## Next step
 
-**F.2** — migrate `app.py` handlers (status, roadmap root) to facade.
+**F.3** — audit complete. **F.4** — ai_prompt stub + readonly facade sections.
+
+Evidence: [DCC_AGGREGATION_AUDIT_F3_EN.md](DCC_AGGREGATION_AUDIT_F3_EN.md)

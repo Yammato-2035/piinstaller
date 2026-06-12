@@ -1071,6 +1071,45 @@ else:
         if "build_dashboard_status" in st and "dcc_status_facade" not in st:
             print("dcc_status_direct_build_dashboard_status_in_routes:backend/core/dev_dashboard_status_service.py")
 
+# Phase F.3: DCC aggregation audit guards (warn-only)
+DCC_FACADE_ALLOW = {
+    "backend/core/dcc_status_facade.py",
+    "backend/core/dev_dashboard.py",
+}
+DCC_BUILD_DASHBOARD_ALLOW = DCC_FACADE_ALLOW | {
+    "backend/core/deploy_job_state.py",
+}
+for path in sorted(backend.rglob("*.py")):
+    rel = path.relative_to(root).as_posix()
+    if "/tests/" in rel or "/venv/" in rel or "/.venv/" in rel:
+        continue
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    if "build_dashboard_status" in text and rel not in DCC_BUILD_DASHBOARD_ALLOW:
+        if "build_dashboard_status_body" not in text:
+            print(f"dcc_direct_build_dashboard_status_outside_facade:{rel}")
+    if rel.startswith("backend/api/routes/") and "load_roadmap_registry_bundle" in text:
+        if "dcc_status_facade" not in text:
+            print(f"dcc_direct_roadmap_bundle_in_router:{rel}")
+    if re.search(r"def _normalize_ampel|def normalize_ampel|_LEGACY_STATUS_MAP", text):
+        if rel not in DCC_FACADE_ALLOW and "dev_dashboard_cockpit" not in rel and "project_overview" not in rel:
+            print(f"dcc_duplicate_ampel_status_mapping:{rel}")
+if app_py_path.is_file():
+    ap_f3 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    if re.search(r"def ai_prompt_generate_stub", ap_f3) and "build_dashboard_status" in ap_f3:
+        print("dcc_prompt_generate_uses_dashboard_status:backend/app.py")
+deploy_job = root / "backend" / "core" / "deploy_job_state.py"
+if deploy_job.is_file():
+    dj = deploy_job.read_text(encoding="utf-8", errors="replace")
+    if "build_dashboard_status" in dj and "dcc_status_facade" not in dj:
+        print("dcc_deploy_core_cross_coupling:backend/core/deploy_job_state.py")
+frontend_vm = root / "frontend" / "src" / "trafficLight" / "trafficLightModel.ts"
+frontend_dcc_vm = root / "frontend" / "src" / "viewmodels" / "dccStatusViewModel.ts"
+if frontend_vm.is_file() and not frontend_dcc_vm.is_file():
+    print("dcc_frontend_status_viewmodel_missing:frontend/src/viewmodels/dccStatusViewModel.ts")
+
 if deploy_routes.is_file():
     subrouter_markers = (
         "build_plan_only_response",

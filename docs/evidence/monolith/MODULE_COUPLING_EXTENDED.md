@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** `9005c54` · **Update F.2:** `app.py` → `dcc_status_facade` für 6 Aggregations-GETs.
+**HEAD:** `8bb910c` · **Update F.3:** `deploy_job_state` → `build_dashboard_status` dokumentiert; Facade-Hook F.5; Frontend ViewModel fehlt.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

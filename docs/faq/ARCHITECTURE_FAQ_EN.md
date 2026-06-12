@@ -171,9 +171,13 @@ Canonical module `core/dcc_status_facade.py` — read-only aggregation contract 
 
 Six aggregation GET routes in `app.py` delegate to `dcc_status_facade`. No API changes. See `docs/architecture/DCC_STATUS_ROUTER_MIGRATION_F2_EN.md`.
 
+## What is F.3 (DCC aggregation audit)?
+
+Analysis only (no refactoring): remaining direct access, traffic-light duplicates, roadmap subrouter boundary, ai_prompt stub → facade in F.4, deploy/core coupling. See `docs/architecture/DCC_AGGREGATION_AUDIT_F3_EN.md`.
+
 ## Next step?
 
-**F.3** — DCC aggregation audit & duplicate status analysis.
+**F.4** — `ai_prompt_generate_stub` + readonly router facade sections. See `docs/architecture/DCC_NEXT_MIGRATIONS_F3_EN.md`.
 
 ## Further reading
 

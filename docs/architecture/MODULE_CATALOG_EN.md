@@ -1,6 +1,6 @@
 # Module Catalog (Source of Truth)
 
-**As of:** post E.6 (app.py router slices) · **No big-bang** — inventory and ownership.
+**As of:** post F.3 (DCC aggregation audit) · **No big-bang** — inventory and ownership.
 
 Before new implementation, check this catalog, the [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX_EN.md), and [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES_EN.md).
 
@@ -32,11 +32,11 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 | 20 | catalog router | `backend/api/routes/catalog.py` | ROUTER (E.3) |
 | 21 | dev_dashboard_readonly | `backend/api/routes/dev_dashboard_readonly.py` | ROUTER (E.4/E.8) |
 | 22 | dev_dashboard_roadmap | `backend/api/routes/dev_dashboard_roadmap.py` | ROUTER (E.5) |
-| 23 | dcc_status_facade | `backend/core/dcc_status_facade.py` | CANONICAL_MODULE (F.1) |
+| 23 | dcc_status_facade | `backend/core/dcc_status_facade.py` | CANONICAL_MODULE (F.1/F.2/F.3) |
 | — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4120 lines) |
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**In progress:** **F.3** duplicate status audit. **F.2 done:** 6 DCC aggregation GETs use `dcc_status_facade`.
+**In progress:** **F.4** ai_prompt stub + readonly facade sections. **F.3 done:** audit complete. **F.2 done:** 6 DCC aggregation GETs use `dcc_status_facade`.
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

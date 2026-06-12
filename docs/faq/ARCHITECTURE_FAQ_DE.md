@@ -171,9 +171,13 @@ Kanonisches Modul `core/dcc_status_facade.py` — read-only Aggregation-Contract
 
 6 Aggregations-GETs in `app.py` delegieren an `dcc_status_facade` (status via Service, roadmap, control-center-summary, project-overview, prompt-findings, cursor-meta-prompt). Keine API-Änderung. Doku: `docs/architecture/DCC_STATUS_ROUTER_MIGRATION_F2.md`.
 
+## Was ist F.3 (DCC Aggregation Audit)?
+
+Reine Analyse ohne Refactoring: verbleibende Direktzugriffe, Ampel-Duplikate, Roadmap-Subrouter-Grenze (`boundary_ok_registry_only`), `ai_prompt_generate_stub` → Facade in F.4, Deploy/Core-Coupling. Doku: `docs/architecture/DCC_AGGREGATION_AUDIT_F3.md`.
+
 ## Nächster Schritt?
 
-**F.3** — DCC Aggregation Audit & Duplicate Status Analysis.
+**F.4** — `ai_prompt_generate_stub` + readonly-Router auf Facade-Sections. Siehe `docs/architecture/DCC_NEXT_MIGRATIONS_F3.md`.
 
 ## Weiterlesen
 

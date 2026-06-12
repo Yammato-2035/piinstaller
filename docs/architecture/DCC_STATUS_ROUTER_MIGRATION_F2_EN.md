@@ -1,6 +1,6 @@
 # DCC Status Router Migration — Phase F.2 (EN)
 
-**HEAD:** `3c98105` · **Status:** done
+**HEAD:** `8bb910c` · **Status:** done
 
 ## Migrated routes (6)
 
@@ -21,4 +21,6 @@
 
 ## Next step
 
-**F.3** — DCC aggregation audit & duplicate status analysis
+**F.3** — done (audit). **F.4** — ai_prompt_generate_stub + readonly facade sections.
+
+See [DCC_AGGREGATION_AUDIT_F3_EN.md](DCC_AGGREGATION_AUDIT_F3_EN.md) · [DCC_NEXT_MIGRATIONS_F3_EN.md](DCC_NEXT_MIGRATIONS_F3_EN.md)

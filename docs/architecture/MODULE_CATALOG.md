@@ -1,6 +1,6 @@
 # Modul-Katalog (Source of Truth)
 
-**Stand:** nach F.1 (`dcc_status_facade`) · **Kein Big-Bang** — Inventar und Ownership.
+**Stand:** nach F.3 (DCC Aggregation Audit) · **Kein Big-Bang** — Inventar und Ownership.
 
 Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX.md) und [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES.md) prüfen.
 
@@ -204,11 +204,12 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | **Zweck** | Einheitliche read-only DCC-Statusaggregation; Section-Contracts; Legacy-Normalisierung |
 | **Öffentliche API** | `build_dcc_status_overview`, `build_dcc_roadmap_overview`, `build_dcc_backend_health_section`, `build_dcc_notification_section`, `build_dcc_evidence_section`, `build_dcc_facade_diagnostics`, `build_section_status`, `normalize_legacy_*` |
 | **Delegiert an** | `dev_dashboard`, `dev_dashboard_roadmap`, `dev_dashboard_backend_health`, `notification_state` |
-| **Darf genutzt werden von** | `app.py` (F.2+), DCC-Router, Tests |
+| **Darf genutzt werden von** | `app.py` (F.2 migriert), `dev_dashboard_status_service`, DCC-Router, Tests |
 | **Nicht neu implementieren** | Parallele `build_dashboard_status`-Aufrufe in Routern; neue Ampel-Mapping-Logik außerhalb Facade |
 | **Profil-Gate** | bleibt `core.dev_dashboard_status_service` (nicht duplizieren) |
-| **Tests** | `test_dcc_status_facade_v1` |
-| **Doku DE/EN** | `DCC_STATUS_FACADE_F1.md`, `DCC_STATUS_AGGREGATION_AUDIT_F1.md` |
+| **Tests** | `test_dcc_status_facade_v1`, `test_dcc_status_facade_router_migration_v1` |
+| **Doku DE/EN** | `DCC_STATUS_FACADE_F1.md`, `DCC_AGGREGATION_AUDIT_F3.md` |
+| **F.3 Audit** | Verbleibend: `app.py` ai_prompt, `deploy_job_state`, E.8 readonly; Subrouter `boundary_ok` |
 
 ---
 
@@ -236,8 +237,8 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | `api/routes/catalog.py` | **CANONICAL_ROUTER** (E.3) | `/api/apps` |
 | `api/routes/dev_dashboard_readonly.py` | **CANONICAL_ROUTER** (E.4/E.8) | DCC modules/evidence + backend-health + notifications read |
 | `api/routes/dev_dashboard_roadmap.py` | **CANONICAL_ROUTER** (E.5/E.6) | roadmap registry + next-prompts/export |
-| `app.py` Router-Slices | **IN_PROGRESS** | F.3 Duplicate Status Audit |
-| `dcc_status_facade` | **CANONICAL_MODULE** (F.1/F.2) | HTTP-Aggregation migriert |
+| `app.py` Router-Slices | **IN_PROGRESS** | F.4 ai_prompt + readonly Facade |
+| `dcc_status_facade` | **CANONICAL_MODULE** (F.1/F.2/F.3) | 6 HTTP-GETs migriert; Audit F.3 abgeschlossen |
 | **System Status Facade** | **CANDIDATE** (E.7) | blockiert `/api/status`, `/api/system/status` |
 | **Network Info Facade** | **CANDIDATE** (E.7) | blockiert `/api/system/network` |
 | **Dev Dashboard Aggregation Facade** | **CANDIDATE** (E.7) | control-center-summary, prompt-findings (nutzt Facade F.2+) |

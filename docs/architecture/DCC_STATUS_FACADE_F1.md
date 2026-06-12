@@ -1,6 +1,6 @@
 # DCC Status Facade — Phase F.1
 
-**HEAD:** `03fbc09` · **Status:** CANONICAL_MODULE (FACADE)
+**HEAD:** `8bb910c` · **Status:** CANONICAL_MODULE (FACADE)
 
 ## Zweck
 
@@ -39,6 +39,6 @@ Einheitlicher read-only Einstieg für DCC-/Dashboard-Statusaggregation — Vorbe
 
 ## Nächster Schritt
 
-**F.2** — Router/`app.py`-Handler delegieren an Facade (status, roadmap-root).
+**F.3** — Audit abgeschlossen. **F.4** — `ai_prompt_generate_stub` + readonly Facade-Sections.
 
-Evidence: [DCC_STATUS_AGGREGATION_AUDIT_F1.md](../evidence/app-monolith/DCC_STATUS_AGGREGATION_AUDIT_F1.md)
+Evidence: [DCC_STATUS_AGGREGATION_AUDIT_F1.md](../evidence/app-monolith/DCC_STATUS_AGGREGATION_AUDIT_F1.md) · [DCC_AGGREGATION_AUDIT_F3.md](DCC_AGGREGATION_AUDIT_F3.md)

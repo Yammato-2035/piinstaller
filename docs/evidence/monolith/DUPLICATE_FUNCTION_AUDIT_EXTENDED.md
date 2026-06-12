@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** `9005c54` · **Update F.2:** `app.py` DCC-Aggregation über Facade — ein Mapping-Pfad für HTTP.
+**HEAD:** `8bb910c` · **Update F.3:** Audit abgeschlossen — Ampel-Duplikate in Cockpit/Overview/Frontend dokumentiert; `deploy_job_state` Coupling; Roadmap-Subrouter `boundary_ok`.
 
 ## Zusammenfassung
 
