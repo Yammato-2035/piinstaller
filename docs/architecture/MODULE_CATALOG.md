@@ -1,6 +1,6 @@
 # Modul-Katalog (Source of Truth)
 
-**Stand:** nach F.4 (DCC Delegation Cleanup) · **Kein Big-Bang** — Inventar und Ownership.
+**Stand:** nach G.1 (`system_status_facade`) · **Kein Big-Bang** — Inventar und Ownership.
 
 Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX.md) und [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES.md) prüfen.
 
@@ -214,6 +214,21 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 
 ---
 
+## 16. system_status_facade
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/system_status_facade.py` |
+| **Status** | **CANONICAL_MODULE** (FACADE, G.1) |
+| **Zweck** | Systemstatus-Aggregation für `/api/status` und `/api/system/status` (Vorbereitung) |
+| **Öffentliche API** | `build_system_status`, `build_system_status_sections`, `build_backend_runtime_section`, `build_installation_section`, `build_profile_section`, `build_system_status_diagnostics`, `normalize_legacy_system_status` |
+| **Delegiert an** | `app._compute_system_status`, `app.APP_SETTINGS`, `install_paths`, app version/profile helpers |
+| **Ausgeschlossen G.1** | Netzwerk (`get_network_info`) → G.2 |
+| **Tests** | `test_system_status_facade_v1` |
+| **Doku DE/EN** | `SYSTEM_STATUS_FACADE_G1.md` |
+
+---
+
 ## Referenz: routes.py (Legacy-Orchestrator)
 
 | Feld | Wert |
@@ -238,9 +253,9 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | `api/routes/catalog.py` | **CANONICAL_ROUTER** (E.3) | `/api/apps` |
 | `api/routes/dev_dashboard_readonly.py` | **CANONICAL_ROUTER** (E.4/E.8) | DCC modules/evidence + backend-health + notifications read |
 | `api/routes/dev_dashboard_roadmap.py` | **CANONICAL_ROUTER** (E.5/E.6) | roadmap registry + next-prompts/export |
-| `app.py` Router-Slices | **IN_PROGRESS** | G.1 System Status Facade |
+| `app.py` Router-Slices | **IN_PROGRESS** | G.1b `/api/system/status` Migration |
 | `dcc_status_facade` | **CANONICAL_MODULE** (F.1–F.4) | HTTP-DCC-Leser delegiert |
-| **System Status Facade** | **CANDIDATE** (E.7) | blockiert `/api/status`, `/api/system/status` |
+| `system_status_facade` | **CANONICAL_MODULE** (G.1) | Contract; G.1b Router |
 | **Network Info Facade** | **CANDIDATE** (E.7) | blockiert `/api/system/network` |
 | **Dev Dashboard Aggregation Facade** | **CANDIDATE** (E.7) | control-center-summary, prompt-findings (nutzt Facade F.2+) |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |

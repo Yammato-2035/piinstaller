@@ -6,9 +6,9 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) â
 
 **E.8 done (3 GET):** backend-health, notifications/status, notifications/events in `dev_dashboard_readonly.py`.
 
-**F.4 done:** ai_prompt stub + readonly router use facade API helpers.
+**G.1 done:** `system_status_facade` canonical module.
 
-**G.1 next:** System Status Facade. See `DCC_DELEGATION_CLEANUP_F4_EN.md`.
+**G.1b next:** migrate `/api/system/status`. **G.2:** Network Info Facade.
 
 **CANDIDATE (E.7):** System Status Facade, Network Info Facade â€” block `/api/status`, `/api/system/network`.
 

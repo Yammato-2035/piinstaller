@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach F.4 · **Update:** `app.py` ohne `build_dashboard_status` in HTTP-Handlern; Deploy-Gate noch direkt.
+**HEAD:** nach G.1 · **Update:** `system_status_facade` für Ampel; `app._compute_system_status` Legacy bis G.1b.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

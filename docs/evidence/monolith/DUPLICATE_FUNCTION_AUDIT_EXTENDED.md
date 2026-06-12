@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach F.4 · **Update:** HTTP-DCC vollständig über Facade; `build_dashboard_status` nur noch Core-Owner + `deploy_job_state`.
+**HEAD:** nach G.1 · **Update:** `system_status_facade` Contract; Ampel über Legacy-Adapter.
 
 ## Zusammenfassung
 

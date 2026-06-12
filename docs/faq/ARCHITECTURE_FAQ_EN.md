@@ -179,9 +179,13 @@ Analysis only (no refactoring): remaining direct access, traffic-light duplicate
 
 `ai_prompt_generate_stub` and readonly router endpoints delegate to `dcc_status_facade` API helpers. No API changes. See `docs/architecture/DCC_DELEGATION_CLEANUP_F4_EN.md`.
 
+## What is G.1 (System Status Facade)?
+
+Canonical module `core/system_status_facade.py` — read-only aggregation for system ampel, backend runtime, installation, profile. **No route migration** in G.1. No network diagnostics. See `docs/architecture/SYSTEM_STATUS_FACADE_G1_EN.md`.
+
 ## Next step?
 
-**G.1** — System Status Facade (`GET /api/status`). **G.2** — Network Info Facade.
+**G.1b** — migrate `/api/system/status` to facade. **G.2** — Network Info Facade.
 
 ## Further reading
 

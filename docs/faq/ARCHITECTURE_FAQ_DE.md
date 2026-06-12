@@ -179,9 +179,13 @@ Reine Analyse ohne Refactoring: verbleibende Direktzugriffe, Ampel-Duplikate, Ro
 
 `ai_prompt_generate_stub` und readonly-Router (backend-health, notifications, evidence-index) delegieren an `dcc_status_facade` API-Helper. Keine API-Änderung. Doku: `docs/architecture/DCC_DELEGATION_CLEANUP_F4.md`.
 
+## Was ist G.1 (System Status Facade)?
+
+Kanonisches Modul `core/system_status_facade.py` — read-only Aggregation für Systemampel, Backend-Runtime, Installation, Profil. **Keine Route-Migration** in G.1. Keine Netzwerkdiagnostik. Doku: `docs/architecture/SYSTEM_STATUS_FACADE_G1.md`.
+
 ## Nächster Schritt?
 
-**G.1** — System Status Facade (`GET /api/status`). **G.2** — Network Info Facade.
+**G.1b** — `/api/system/status` auf Facade migrieren. **G.2** — Network Info Facade.
 
 ## Weiterlesen
 

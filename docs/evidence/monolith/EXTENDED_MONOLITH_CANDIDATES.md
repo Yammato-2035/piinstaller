@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** nach F.4 · **Update:** ai_prompt + readonly auf Facade; verbleibend `deploy_job_state` Core-Gate.
+**HEAD:** nach G.1 · **Update:** System Status Facade; `/api/status` network bleibt G.2.
 
 ## Legende
 

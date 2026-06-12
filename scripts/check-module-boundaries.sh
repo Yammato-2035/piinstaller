@@ -1142,6 +1142,33 @@ if app_py_path.is_file():
         if "build_dashboard_status" in block:
             print("dcc_ai_prompt_bypasses_facade:uses_build_dashboard_status")
 
+# Phase G.1: System Status Facade guards (warn-only)
+system_facade_mod = root / "backend" / "core" / "system_status_facade.py"
+if not system_facade_mod.is_file():
+    print("system_status_facade_missing:backend/core/system_status_facade.py")
+else:
+    sf = system_facade_mod.read_text(encoding="utf-8", errors="replace")
+    if "FACADE_VERSION" not in sf or "build_system_status" not in sf:
+        print("system_status_facade_incomplete:backend/core/system_status_facade.py")
+    if re.search(r"^import subprocess|from subprocess|subprocess\.(run|Popen)", sf, re.M):
+        print("system_status_facade_uses_subprocess:backend/core/system_status_facade.py")
+    if re.search(r"run_command\([^)]*systemctl|systemctl is-active|systemctl status", sf):
+        print("system_status_facade_uses_systemctl:backend/core/system_status_facade.py")
+    if re.search(r"\bget_network_info\b|\b_demo_network\b", sf):
+        if "excluded_g2" not in sf:
+            print("system_status_facade_uses_network_probe:backend/core/system_status_facade.py")
+    if re.search(r"def _normalize_ampel|def normalize_ampel|_LEGACY_AMPEL_MAP", sf):
+        if "normalize_legacy_system_status" not in sf:
+            print(f"system_status_duplicate_status_mapping:backend/core/system_status_facade.py")
+if app_py_path.is_file():
+    ap_g1 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    if '@app.get("/api/status")' in ap_g1 or '@app.get("/api/status",' in ap_g1:
+        if "system_status_facade" not in ap_g1:
+            print("app_status_route_requires_system_status_facade:backend/app.py")
+    if re.search(r"def get_network_info|def _demo_network", ap_g1):
+        if "network_info_facade" not in ap_g1:
+            print("system_status_new_network_logic_outside_network_facade:backend/app.py")
+
 if deploy_routes.is_file():
     subrouter_markers = (
         "build_plan_only_response",
