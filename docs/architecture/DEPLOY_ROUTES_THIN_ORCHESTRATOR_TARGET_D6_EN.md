@@ -22,14 +22,18 @@ Long-term `routes.py` should **only**:
 
 ## D.9 update (no_safe_slice)
 
-No notification routes in deploy API — `routes_notifications.py` not created. `routes.py` unchanged (4523/93).
+No notification routes in deploy API — `routes_notifications.py` not created.
+
+## D.10 update (versioning)
+
+`routes_versioning.py` — 8 plan-only routes. `routes.py`: **4324** lines, **89** runner imports.
 
 ## Target metrics
 
-| Metric | Current (D.8) | Target |
-|--------|--------------:|-------:|
-| `routes.py` lines | 4523 | **< 500** |
-| direct runner imports | 93 | **0** |
+| Metric | Current (D.10) | Target |
+|--------|---------------:|-------:|
+| `routes.py` lines | 4324 | **< 500** |
+| direct runner imports | 89 | **0** |
 | routes directly in routes.py | 218 | **0–10** legacy |
 | sub-routers | 4 | **10–14** |
 | execute routes without risk gate | open | **0** (after execute gate) |

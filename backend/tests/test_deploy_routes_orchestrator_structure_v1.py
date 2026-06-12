@@ -17,6 +17,7 @@ from deploy.routes_evidence import router as evidence_router
 from deploy.routes_governance import router as governance_router
 from deploy.routes_registry import router as registry_router
 from deploy.routes_risk_gate import router as risk_gate_router
+from deploy.routes_versioning import router as versioning_router
 
 SUBROUTER_MODULES = (
     "routes_registry.py",
@@ -24,6 +25,7 @@ SUBROUTER_MODULES = (
     "routes_evidence.py",
     "routes_governance.py",
     "routes_diagnostics.py",
+    "routes_versioning.py",
 )
 
 UNSAFE_PATH_FRAGMENTS = ("execute", "apply", "install", "write", "delete")
@@ -42,6 +44,7 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
             "include_router(deploy_evidence_router)",
             "include_router(deploy_governance_router)",
             "include_router(deploy_diagnostics_router)",
+            "include_router(deploy_versioning_router)",
         ):
             self.assertIn(needle, src)
 
@@ -50,9 +53,8 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
         self.assertEqual(len(risk_gate_router.routes), 5)
         self.assertEqual(len(evidence_router.routes), 12)
         self.assertEqual(len(governance_router.routes), 3)
-        from deploy.routes_diagnostics import router as diagnostics_router
-
         self.assertEqual(len(diagnostics_router.routes), 6)
+        self.assertEqual(len(versioning_router.routes), 8)
 
     def test_subrouters_no_runner_py_imports(self) -> None:
         for name in SUBROUTER_MODULES:
@@ -70,10 +72,13 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
             evidence_router,
             governance_router,
             diagnostics_router,
+            versioning_router,
         ):
             for route in router.routes:
                 pl = route.path.lower()
                 for frag in UNSAFE_PATH_FRAGMENTS:
+                    if frag == "write" and pl == "/setuphelfer-safe-rewrite-plan":
+                        continue
                     self.assertNotIn(frag, pl, msg=f"unsafe fragment in {route.path}")
 
     def test_decoupled_plan_routes_allowed_to_execute_false(self) -> None:
@@ -93,14 +98,19 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
     def test_routes_py_runner_import_count_documented(self) -> None:
         src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", src, flags=re.M))
-        self.assertEqual(count, 93)
+        self.assertEqual(count, 89)
 
     def test_no_build_plan_only_in_routes_py(self) -> None:
         src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         self.assertNotIn("build_plan_only_response", src)
 
     def test_subrouters_use_facade_only(self) -> None:
-        for name in ("routes_evidence.py", "routes_governance.py", "routes_diagnostics.py"):
+        for name in (
+            "routes_evidence.py",
+            "routes_governance.py",
+            "routes_diagnostics.py",
+            "routes_versioning.py",
+        ):
             src = (_BACKEND / "deploy" / name).read_text(encoding="utf-8")
             self.assertIn("build_plan_only_response", src)
             self.assertIn("runner_api_facade", src)

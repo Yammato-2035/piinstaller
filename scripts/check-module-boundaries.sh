@@ -530,6 +530,52 @@ if notifications_mod.is_file():
 else:
     print("deploy_routes_notifications_skipped_d9:no_safe_slice")
 
+# Phase D.10: versioning router (warn-only)
+versioning_mod = root / "backend" / "deploy" / "routes_versioning.py"
+if not versioning_mod.is_file():
+    print("deploy_routes_versioning_missing:backend/deploy/routes_versioning.py")
+else:
+    vg = versioning_mod.read_text(encoding="utf-8", errors="replace")
+    for m in re.findall(r"^from (deploy\.runner_[^\s]+) import", vg, flags=re.M):
+        if m != "deploy.runner_api_facade":
+            print(f"deploy_routes_versioning_has_runner_import:{m}")
+    if re.search(r'@router\.post\("[^"]*apply', vg):
+        print("deploy_routes_versioning_has_apply_route:backend/deploy/routes_versioning.py")
+    if re.search(r'@router\.post\("[^"]*rewrite-apply', vg) or re.search(
+        r'@router\.post\("[^"]*controlled-rewrite', vg
+    ):
+        print("deploy_routes_versioning_has_rewrite_route:backend/deploy/routes_versioning.py")
+    unsafe_vg = re.findall(r'@router\.post\("([^"]+)"\)', vg)
+    for p in unsafe_vg:
+        pl = p.lower()
+        if pl == "/setuphelfer-safe-rewrite-plan":
+            continue
+        if any(x in pl for x in ("execute", "apply", "install", "delete")):
+            print("deploy_routes_versioning_has_execute_route:backend/deploy/routes_versioning.py")
+            break
+        if "/write" in pl or pl.endswith("-write"):
+            print("deploy_routes_versioning_has_execute_route:backend/deploy/routes_versioning.py")
+            break
+    if "allowed_to_execute = True" in vg.replace("_C4_EXECUTE_ALLOWED", ""):
+        print("deploy_routes_versioning_allowed_execute_true:backend/deploy/routes_versioning.py")
+    for ep in (
+        '@router.post("/setuphelfer-runtime-identifier-migration")',
+        '@router.post("/setuphelfer-safe-rewrite-plan")',
+        '@router.post("/runtime-identifier-elimination-targets")',
+        '@router.post("/legacy-upgrade-path-matrix")',
+    ):
+        if ep not in vg:
+            print(f"deploy_routes_versioning_path_changed:missing_{ep}")
+    if "routes_versioning" not in text or "include_router(deploy_versioning_router)" not in text:
+        print("deploy_routes_versioning_not_included:backend/deploy/routes.py")
+    for dup in (
+        '@router.post("/setuphelfer-runtime-identifier-migration")',
+        '@router.post("/legacy-upgrade-path-matrix")',
+    ):
+        if dup in text:
+            print("deploy_routes_versioning_duplicate_in_routes:backend/deploy/routes.py")
+            break
+
 # Phase D.6: thin orchestrator guard (warn-only)
 deploy_routes = root / "backend" / "deploy" / "routes.py"
 if deploy_routes.is_file():
@@ -542,6 +588,8 @@ if deploy_routes.is_file():
     baseline_d7_imports = 99
     baseline_d8_lines = 4523
     baseline_d8_imports = 93
+    baseline_d10_lines = 4324
+    baseline_d10_imports = 89
     if dr_lines > 2000:
         print(f"deploy_routes_py_too_large:{dr_lines}")
     print(f"deploy_routes_direct_runner_import_count:{dr_runner_imports}")
@@ -561,6 +609,7 @@ if deploy_routes.is_file():
         "routes_evidence.py",
         "routes_governance.py",
         "routes_diagnostics.py",
+        "routes_versioning.py",
     ):
         if not (root / "backend" / "deploy" / sub).is_file():
             print(f"deploy_routes_subrouter_missing:{sub}")
@@ -574,6 +623,12 @@ if deploy_routes.is_file():
         print("deploy_routes_subrouter_missing:include_governance")
     if "include_router(deploy_diagnostics_router)" not in dr_text:
         print("deploy_routes_subrouter_missing:include_diagnostics")
+    if "include_router(deploy_versioning_router)" not in dr_text:
+        print("deploy_routes_subrouter_missing:include_versioning")
+    if dr_runner_imports < baseline_d10_imports:
+        print(f"deploy_routes_direct_runner_import_reduced_d10:{baseline_d10_imports}_to_{dr_runner_imports}")
+    if dr_lines < baseline_d10_lines:
+        print(f"deploy_routes_line_count_reduced_d10:{baseline_d10_lines}_to_{dr_lines}")
     if re.search(r"\bsubprocess\b", dr_text) or re.search(r"\bos\.system\b", dr_text):
         print("deploy_routes_business_logic_new:subprocess_or_os_system")
     if re.search(r'@router\.post\("/runners/[^"]*(execute|apply|write|install|delete)', dr_text):

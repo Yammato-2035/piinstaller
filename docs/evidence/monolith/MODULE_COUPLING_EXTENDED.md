@@ -139,7 +139,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **M.1 (erledigt):** Modul-Katalog — 12 Pflichtmodule, 30 Ownership-Zeilen, Boundary-Guard WARN-only (duplicate_* checks).
 
-**Nächster Schritt:** D.10 (Module Reuse Header Pflicht)
+**D.10 (erledigt):** `routes_versioning.py` — 8 Routen, routes.py 89 Runner-Imports.
+
+**Nächster Schritt:** D.11 (Module Reuse Header Pflicht)
 
 ---
 

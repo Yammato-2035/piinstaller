@@ -22,10 +22,11 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 | 10 | routes_evidence | `backend/deploy/routes_evidence.py` | ROUTER (D.4/D.7) |
 | 11 | routes_governance | `backend/deploy/routes_governance.py` | ROUTER (D.5) |
 | 12 | routes_diagnostics | `backend/deploy/routes_diagnostics.py` | ROUTER (D.8) |
-| — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4523 lines) |
+| 13 | routes_versioning | `backend/deploy/routes_versioning.py` | ROUTER (D.10) |
+| — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4324 lines) |
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**Candidates:** `routes_versioning` (D.10), `routes_runtime` (D.11). **Blocked:** `routes_notifications` (D.9 no_safe_slice).
+**Candidates:** `routes_runtime` (D.11). **Blocked:** `routes_notifications` (D.9 no_safe_slice).
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

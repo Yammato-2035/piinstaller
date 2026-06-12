@@ -105,8 +105,6 @@ from deploy.runner_laptop_live_probe_execution_handoff import (
     build_laptop_live_probe_plan,
     execute_laptop_live_probe_readonly,
 )
-from deploy.runner_setuphelfer_runtime_identifier_migration import build_runtime_identifier_migration_plan
-from deploy.runner_setuphelfer_safe_rewrite_plan import build_setuphelfer_safe_rewrite_plan
 from deploy.runner_setuphelfer_controlled_rewrite_apply import apply_setuphelfer_controlled_rewrite
 from deploy.runner_setuphelfer_identifier_cleanup_cycle import (
     apply_setuphelfer_identifier_cleanup_cycle,
@@ -120,17 +118,9 @@ from deploy.runner_setuphelfer_identifier_hotspot_cleanup_cycle import (
 )
 from deploy.runner_setuphelfer_runtime_identifier_elimination import (
     apply_runtime_identifier_elimination,
-    build_runtime_identifier_elimination_plan,
     build_runtime_identifier_elimination_postcheck,
-    build_runtime_identifier_elimination_targets,
-    validate_runtime_compatibility_aliases,
 )
 from deploy.runner_setuphelfer_branding_guard import build_setuphelfer_branding_guard_report
-from deploy.runner_legacy_runtime_compatibility_validation import (
-    build_legacy_upgrade_path_matrix,
-    build_safe_legacy_runtime_migration_recommendations,
-)
-from deploy.runner_runtime_identifier_patch_bump_preparation import prepare_runtime_identifier_patch_bump
 from deploy.runner_runtime_identifier_patch_bump_apply import (
     apply_runtime_identifier_patch_bump,
     build_runtime_identifier_patch_bump_postcheck,
@@ -298,6 +288,7 @@ from deploy.routes_evidence import router as deploy_evidence_router
 from deploy.routes_governance import router as deploy_governance_router
 from deploy.routes_registry import router as deploy_registry_router
 from deploy.routes_risk_gate import router as deploy_risk_gate_router
+from deploy.routes_versioning import router as deploy_versioning_router
 
 router = APIRouter(prefix="/api/deploy", tags=["deploy-plan"])
 router.include_router(deploy_registry_router)
@@ -305,6 +296,7 @@ router.include_router(deploy_risk_gate_router)
 router.include_router(deploy_evidence_router)
 router.include_router(deploy_governance_router)
 router.include_router(deploy_diagnostics_router)
+router.include_router(deploy_versioning_router)
 
 
 class DeployPlanRequest(BaseModel):
@@ -747,15 +739,7 @@ class DeployLegacyIdentifierInventoryRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
-class DeploySetuphelferRuntimeIdentifierMigrationRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
 class DeploySetuphelferIdentifierConsistencyCheckRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeploySetuphelferSafeRewritePlanRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
@@ -792,27 +776,11 @@ class DeploySetuphelferIdentifierHotspotCleanupCyclePostcheckRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
-class DeployRuntimeIdentifierEliminationTargetsRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployRuntimeIdentifierEliminationPlanRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
 class DeployRuntimeIdentifierEliminationApplyRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
-class DeployRuntimeCompatibilityAliasValidationRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
 class DeployRuntimeIdentifierEliminationPostcheckRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployRuntimeIdentifierPatchBumpPreparationRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
@@ -826,14 +794,6 @@ class DeployRuntimeIdentifierPatchBumpPostcheckRequest(BaseModel):
 
 
 class DeploySetuphelferBrandingGuardCheckRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployLegacyRuntimeSafeMigrationRecommendationsRequest(BaseModel):
-    explicit_overwrite: bool = False
-
-
-class DeployLegacyUpgradePathMatrixRequest(BaseModel):
     explicit_overwrite: bool = False
 
 
@@ -1040,9 +1000,7 @@ DeployRunnerManualRuntimeLaptopFailureFinalizedExportPackageRequest.model_rebuil
 DeployVersionGovernanceStateRequest.model_rebuild()
 DeployVersionSourceOfTruthCheckRequest.model_rebuild()
 DeployLegacyIdentifierInventoryRequest.model_rebuild()
-DeploySetuphelferRuntimeIdentifierMigrationRequest.model_rebuild()
 DeploySetuphelferIdentifierConsistencyCheckRequest.model_rebuild()
-DeploySetuphelferSafeRewritePlanRequest.model_rebuild()
 DeploySetuphelferControlledRewriteApplyRequest.model_rebuild()
 DeploySetuphelferIdentifierCleanupCyclePlanRequest.model_rebuild()
 DeploySetuphelferIdentifierCleanupCycleApplyRequest.model_rebuild()
@@ -1051,17 +1009,11 @@ DeployLegacyIdentifierHotspotAnalysisRequest.model_rebuild()
 DeploySetuphelferIdentifierHotspotCleanupCyclePlanRequest.model_rebuild()
 DeploySetuphelferIdentifierHotspotCleanupCycleApplyRequest.model_rebuild()
 DeploySetuphelferIdentifierHotspotCleanupCyclePostcheckRequest.model_rebuild()
-DeployRuntimeIdentifierEliminationTargetsRequest.model_rebuild()
-DeployRuntimeIdentifierEliminationPlanRequest.model_rebuild()
 DeployRuntimeIdentifierEliminationApplyRequest.model_rebuild()
-DeployRuntimeCompatibilityAliasValidationRequest.model_rebuild()
 DeployRuntimeIdentifierEliminationPostcheckRequest.model_rebuild()
-DeployRuntimeIdentifierPatchBumpPreparationRequest.model_rebuild()
 DeployRuntimeIdentifierPatchBumpApplyRequest.model_rebuild()
 DeployRuntimeIdentifierPatchBumpPostcheckRequest.model_rebuild()
 DeploySetuphelferBrandingGuardCheckRequest.model_rebuild()
-DeployLegacyRuntimeSafeMigrationRecommendationsRequest.model_rebuild()
-DeployLegacyUpgradePathMatrixRequest.model_rebuild()
 DeployLaptopFailureTestExecutionReadinessFinalGateRequest.model_rebuild()
 DeployLaptopLiveProbePlanRequest.model_rebuild()
 DeployLaptopLiveProbeExecuteReadonlyRequest.model_rebuild()
@@ -2141,44 +2093,6 @@ async def post_deploy_runner_manual_runtime_laptop_failure_finalized_export_pack
     }
 
 
-@router.post("/setuphelfer-runtime-identifier-migration")
-async def post_deploy_setuphelfer_runtime_identifier_migration(
-    body: DeploySetuphelferRuntimeIdentifierMigrationRequest,
-) -> dict[str, Any]:
-    plan = build_runtime_identifier_migration_plan(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(plan.get("migration_status") or "blocked")
-    code = "DEPLOY_SETUPHELFER_RUNTIME_IDENTIFIER_MIGRATION_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_SETUPHELFER_RUNTIME_IDENTIFIER_MIGRATION_OK"
-    elif st == "review_required":
-        code = "DEPLOY_SETUPHELFER_RUNTIME_IDENTIFIER_MIGRATION_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "setuphelfer_runtime_identifier_migration": plan,
-        "warnings": list(plan.get("warnings") or []),
-        "errors": list(plan.get("errors") or []),
-    }
-
-
-@router.post("/setuphelfer-safe-rewrite-plan")
-async def post_deploy_setuphelfer_safe_rewrite_plan(
-    body: DeploySetuphelferSafeRewritePlanRequest,
-) -> dict[str, Any]:
-    res = build_setuphelfer_safe_rewrite_plan(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("plan_status") or "blocked")
-    code = "DEPLOY_SETUPHELFER_SAFE_REWRITE_PLAN_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_SETUPHELFER_SAFE_REWRITE_PLAN_OK"
-    elif st == "review_required":
-        code = "DEPLOY_SETUPHELFER_SAFE_REWRITE_PLAN_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "setuphelfer_safe_rewrite_plan": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
-    }
-
-
 @router.post("/setuphelfer-controlled-rewrite-apply")
 async def post_deploy_setuphelfer_controlled_rewrite_apply(
     body: DeploySetuphelferControlledRewriteApplyRequest,
@@ -2315,44 +2229,6 @@ async def post_deploy_setuphelfer_identifier_hotspot_cleanup_cycle_postcheck(
     }
 
 
-@router.post("/runtime-identifier-elimination-targets")
-async def post_deploy_runtime_identifier_elimination_targets(
-    body: DeployRuntimeIdentifierEliminationTargetsRequest,
-) -> dict[str, Any]:
-    res = build_runtime_identifier_elimination_targets(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("runtime_identifier_elimination_targets_status") or "blocked")
-    code = "DEPLOY_RUNTIME_IDENTIFIER_ELIMINATION_TARGETS_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNTIME_IDENTIFIER_ELIMINATION_TARGETS_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNTIME_IDENTIFIER_ELIMINATION_TARGETS_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "runtime_identifier_elimination_targets": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
-    }
-
-
-@router.post("/runtime-identifier-elimination-plan")
-async def post_deploy_runtime_identifier_elimination_plan(
-    body: DeployRuntimeIdentifierEliminationPlanRequest,
-) -> dict[str, Any]:
-    res = build_runtime_identifier_elimination_plan(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("runtime_identifier_elimination_plan_status") or "blocked")
-    code = "DEPLOY_RUNTIME_IDENTIFIER_ELIMINATION_PLAN_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNTIME_IDENTIFIER_ELIMINATION_PLAN_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNTIME_IDENTIFIER_ELIMINATION_PLAN_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "runtime_identifier_elimination_plan": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
-    }
-
-
 @router.post("/runtime-identifier-elimination-apply")
 async def post_deploy_runtime_identifier_elimination_apply(
     body: DeployRuntimeIdentifierEliminationApplyRequest,
@@ -2372,25 +2248,6 @@ async def post_deploy_runtime_identifier_elimination_apply(
     }
 
 
-@router.post("/runtime-compatibility-alias-validation")
-async def post_deploy_runtime_compatibility_alias_validation(
-    body: DeployRuntimeCompatibilityAliasValidationRequest,
-) -> dict[str, Any]:
-    res = validate_runtime_compatibility_aliases(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("runtime_compatibility_alias_validation_status") or "blocked")
-    code = "DEPLOY_RUNTIME_COMPATIBILITY_ALIAS_VALIDATION_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNTIME_COMPATIBILITY_ALIAS_VALIDATION_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNTIME_COMPATIBILITY_ALIAS_VALIDATION_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "runtime_compatibility_alias_validation": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
-    }
-
-
 @router.post("/runtime-identifier-elimination-postcheck")
 async def post_deploy_runtime_identifier_elimination_postcheck(
     body: DeployRuntimeIdentifierEliminationPostcheckRequest,
@@ -2405,25 +2262,6 @@ async def post_deploy_runtime_identifier_elimination_postcheck(
     return {
         "code": code,
         "runtime_identifier_elimination_postcheck": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
-    }
-
-
-@router.post("/runtime-identifier-patch-bump-preparation")
-async def post_deploy_runtime_identifier_patch_bump_preparation(
-    body: DeployRuntimeIdentifierPatchBumpPreparationRequest,
-) -> dict[str, Any]:
-    res = prepare_runtime_identifier_patch_bump(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("runtime_identifier_patch_bump_preparation_status") or "blocked")
-    code = "DEPLOY_RUNTIME_IDENTIFIER_PATCH_BUMP_PREPARATION_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_RUNTIME_IDENTIFIER_PATCH_BUMP_PREPARATION_OK"
-    elif st == "review_required":
-        code = "DEPLOY_RUNTIME_IDENTIFIER_PATCH_BUMP_PREPARATION_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "runtime_identifier_patch_bump_preparation": res,
         "warnings": list(res.get("warnings") or []),
         "errors": list(res.get("errors") or []),
     }
@@ -2484,44 +2322,6 @@ async def post_deploy_setuphelfer_branding_guard_check(
     return {
         "code": code,
         "setuphelfer_branding_guard_check": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
-    }
-
-
-@router.post("/legacy-runtime-safe-migration-recommendations")
-async def post_deploy_legacy_runtime_safe_migration_recommendations(
-    body: DeployLegacyRuntimeSafeMigrationRecommendationsRequest,
-) -> dict[str, Any]:
-    res = build_safe_legacy_runtime_migration_recommendations(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("legacy_runtime_safe_migration_recommendations_status") or "blocked")
-    code = "DEPLOY_LEGACY_RUNTIME_SAFE_MIGRATION_RECOMMENDATIONS_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_LEGACY_RUNTIME_SAFE_MIGRATION_RECOMMENDATIONS_OK"
-    elif st == "review_required":
-        code = "DEPLOY_LEGACY_RUNTIME_SAFE_MIGRATION_RECOMMENDATIONS_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "legacy_runtime_safe_migration_recommendations": res,
-        "warnings": list(res.get("warnings") or []),
-        "errors": list(res.get("errors") or []),
-    }
-
-
-@router.post("/legacy-upgrade-path-matrix")
-async def post_deploy_legacy_upgrade_path_matrix(
-    body: DeployLegacyUpgradePathMatrixRequest,
-) -> dict[str, Any]:
-    res = build_legacy_upgrade_path_matrix(explicit_overwrite=bool(body.explicit_overwrite))
-    st = str(res.get("legacy_upgrade_path_matrix_status") or "blocked")
-    code = "DEPLOY_LEGACY_UPGRADE_PATH_MATRIX_BLOCKED"
-    if st == "ok":
-        code = "DEPLOY_LEGACY_UPGRADE_PATH_MATRIX_OK"
-    elif st == "review_required":
-        code = "DEPLOY_LEGACY_UPGRADE_PATH_MATRIX_REVIEW_REQUIRED"
-    return {
-        "code": code,
-        "legacy_upgrade_path_matrix": res,
         "warnings": list(res.get("warnings") or []),
         "errors": list(res.get("errors") or []),
     }

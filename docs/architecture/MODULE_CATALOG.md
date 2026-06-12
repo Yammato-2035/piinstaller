@@ -170,15 +170,28 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 
 ---
 
+## 13. routes_versioning
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/deploy/routes_versioning.py` |
+| **Status** | **ROUTER** (D.10) |
+| **Zweck** | 8 POST Versioning/Identifier plan-only |
+| **Öffentliche API** | `build_plan_only_response` via `runner_api_facade` |
+| **Tests** | `test_deploy_routes_versioning_v1` |
+| **Doku** | `DEPLOY_VERSIONING_ROUTER_EXTRACTION_D10.md` |
+
+---
+
 ## Referenz: routes.py (Legacy-Orchestrator)
 
 | Feld | Wert |
 |------|------|
 | **Pfad** | `backend/deploy/routes.py` |
 | **Status** | **LEGACY** (Orchestrator + Monolith) |
-| **Zweck** | `include_router` für 5 Subrouter; verbleibende Execute/Rescue/Write-Routen |
-| **Metriken** | ~4523 Zeilen, 93 direkte Runner-Imports |
-| **Migration** | D.10+ sequenziell; Ziel <500 Zeilen (`DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6.md`) |
+| **Zweck** | `include_router` für 6 Subrouter; verbleibende Execute/Rescue/Write-Routen |
+| **Metriken** | ~4324 Zeilen, 89 direkte Runner-Imports |
+| **Migration** | D.11+ sequenziell; Ziel <500 Zeilen (`DEPLOY_ROUTES_THIN_ORCHESTRATOR_TARGET_D6.md`) |
 
 ---
 
@@ -186,7 +199,6 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 
 | Modul | Status | Nächster Schritt |
 |-------|--------|------------------|
-| `routes_versioning.py` | **CANDIDATE** | D.10 |
 | `routes_runtime.py` | **CANDIDATE** | D.11 read-only |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |
 

@@ -26,6 +26,7 @@
 | Evidence Plan Routes | `routes_evidence` | CANONICAL | routes.py orchestrator | Ja |
 | Governance Plan Routes | `routes_governance` | CANONICAL | routes.py orchestrator | Ja |
 | Diagnostics Plan Routes | `routes_diagnostics` | CANONICAL | routes.py orchestrator | Ja |
+| Versioning Plan Routes | `routes_versioning` | CANONICAL | routes.py orchestrator | Ja |
 | Deploy Execute/Rescue Routes | `routes.py` | LEGACY | app | Bis D.15 Execute-Gate |
 | Status / Ampel Mapping | — (verteilt) | PARTIAL | frontend, DCC | PLANNED: zentrales ViewModel |
 | DCC Aggregation | `dev-dashboard` routes in app | PARTIAL | DevelopmentDashboard.tsx | Keine Parallel-Aggregation |

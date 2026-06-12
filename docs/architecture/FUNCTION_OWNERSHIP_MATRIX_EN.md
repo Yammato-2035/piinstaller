@@ -1,8 +1,8 @@
 # Function Ownership Matrix (EN)
 
-Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) — 27 capability rows.
+Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) — 31 capability rows.
 
-**CANONICAL owners:** `storage_facade`, `mount_facade`, `safety_facade`, `runner_registry`, `runner_result_contract`, `runner_api_facade`, `runner_risk_gate`, deploy sub-routers (`routes_registry` … `routes_diagnostics`).
+**CANONICAL owners:** `storage_facade`, `mount_facade`, `safety_facade`, `runner_registry`, `runner_result_contract`, `runner_api_facade`, `runner_risk_gate`, deploy sub-routers (`routes_registry` … `routes_versioning`).
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 

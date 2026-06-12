@@ -127,9 +127,13 @@ No routes moved. Inventory, ownership matrix, target (<500 lines, 0 runner impor
 
 Binding inventory at `docs/architecture/MODULE_CATALOG_EN.md` with function ownership matrix and do-not-duplicate rules. Cursor must check for CANONICAL modules before new code.
 
+## What is D.10 (versioning router)?
+
+Eight plan-only POST routes in `routes_versioning.py`. `routes.py`: 4523→4324 lines, 93→89 runner imports.
+
 ## Next step?
 
-**D.10** — versioning router (`routes_versioning.py`).
+**D.11** — runtime readonly router (`routes_runtime.py`).
 
 ## Further reading
 

@@ -257,4 +257,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 **M.1 (erledigt):** Modul-Katalog + Function Ownership Matrix + Do-Not-Duplicate Rules — kein Code-Refactoring.
 
-**Nächster Schritt:** D.10 (mit [Module Reuse Header](../../developer/CURSOR_PROMPT_MODULE_REUSE_HEADER.md))
+**D.10 (erledigt):** `routes_versioning.py` — 8 plan-only Routen, facade_decoupling_d10.
+
+**Nächster Schritt:** D.11 (mit [Module Reuse Header](../../developer/CURSOR_PROMPT_MODULE_REUSE_HEADER.md))

@@ -127,7 +127,7 @@ class DeployRunnerRoutesDecouplingV1Tests(unittest.TestCase):
     def test_direct_import_count_reduced(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", routes_src, flags=re.M))
-        self.assertEqual(count, 93)
+        self.assertEqual(count, 89)
 
     def test_no_new_unsafe_runners_post_routes(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
