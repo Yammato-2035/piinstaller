@@ -175,9 +175,13 @@ Six aggregation GET routes in `app.py` delegate to `dcc_status_facade`. No API c
 
 Analysis only (no refactoring): remaining direct access, traffic-light duplicates, roadmap subrouter boundary, ai_prompt stub → facade in F.4, deploy/core coupling. See `docs/architecture/DCC_AGGREGATION_AUDIT_F3_EN.md`.
 
+## What is F.4 (DCC delegation cleanup)?
+
+`ai_prompt_generate_stub` and readonly router endpoints delegate to `dcc_status_facade` API helpers. No API changes. See `docs/architecture/DCC_DELEGATION_CLEANUP_F4_EN.md`.
+
 ## Next step?
 
-**F.4** — `ai_prompt_generate_stub` + readonly router facade sections. See `docs/architecture/DCC_NEXT_MIGRATIONS_F3_EN.md`.
+**G.1** — System Status Facade (`GET /api/status`). **G.2** — Network Info Facade.
 
 ## Further reading
 

@@ -4450,13 +4450,9 @@ async def ai_prompt_generate_stub(body: dict[str, Any] | None = None):
             "error": "confirmation_required",
             "message_key": "devDashboard.aiPrompt.confirmRequired",
         }
-    from core import dev_dashboard as dev_dashboard_core
-    from core.dev_dashboard_cockpit import build_cursor_meta_prompt, build_prompt_findings
+    from core.dcc_status_facade import build_dcc_cursor_meta_prompt_api
 
-    repo = dev_dashboard_core._repo_root()
-    dash = dev_dashboard_core.build_dashboard_status(running_jobs=[], package_activity=[])
-    findings = build_prompt_findings(repo, dash)
-    meta = build_cursor_meta_prompt(repo, findings)
+    meta = build_dcc_cursor_meta_prompt_api()
     return {
         "status": "success",
         "provider": provider,

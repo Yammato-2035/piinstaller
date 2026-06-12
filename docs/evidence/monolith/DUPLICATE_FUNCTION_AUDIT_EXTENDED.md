@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** `8bb910c` · **Update F.3:** Audit abgeschlossen — Ampel-Duplikate in Cockpit/Overview/Frontend dokumentiert; `deploy_job_state` Coupling; Roadmap-Subrouter `boundary_ok`.
+**HEAD:** nach F.4 · **Update:** HTTP-DCC vollständig über Facade; `build_dashboard_status` nur noch Core-Owner + `deploy_job_state`.
 
 ## Zusammenfassung
 

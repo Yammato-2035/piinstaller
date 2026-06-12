@@ -18,7 +18,7 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 14. **Keine neuen Settings-/Status-GET-Handler in `app.py`**, wenn `api/routes/settings.py` bzw. `status.py` existieren (E.2+).
 15. **Keine neuen DCC-Index-GET in `app.py`**, wenn `dev_dashboard_readonly.py` existiert — Scanner nur in `core.dev_dashboard*` (E.4+).
 16. **Keine neuen Roadmap-Registry-GET in `app.py`**, wenn `dev_dashboard_roadmap.py` existiert — Parser nur in `core.dev_dashboard_roadmap` (E.5+).
-17. **Keine neue DCC-Statusaggregation in Routern/`app.py`**, wenn `dcc_status_facade` existiert — `build_dashboard_status` nur über Facade (F.1+).
+17. **Keine neue DCC-Statusaggregation in Routern/`app.py`**, wenn `dcc_status_facade` existiert — HTTP-Leser nur über Facade-API-Helper (F.1–F.4).
 18. **Keine neue Ampel-/Status-Mapping-Logik** außerhalb `dcc_status_facade` / dokumentiertem ViewModel (F.1+).
 
 ## Prüfreihenfolge (Cursor)

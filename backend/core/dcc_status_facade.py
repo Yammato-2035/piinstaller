@@ -453,6 +453,50 @@ def build_dcc_cursor_meta_prompt_api(
     return {"status": "success", **meta}
 
 
+def build_dcc_backend_health_api(
+    *,
+    stale_after_seconds: int = 180,
+    history_limit: int = 20,
+) -> dict[str, Any]:
+    """API response for ``GET /api/dev-dashboard/backend-health`` (legacy snapshot shape)."""
+    section = build_dcc_backend_health_section(
+        stale_after_seconds=stale_after_seconds,
+        history_limit=history_limit,
+    )
+    data = section.get("data") if isinstance(section.get("data"), dict) else {}
+    snapshot = data.get("snapshot")
+    return snapshot if isinstance(snapshot, dict) else {}
+
+
+def build_dcc_notifications_status_api() -> dict[str, Any]:
+    """API response for ``GET /api/dev-dashboard/notifications/status``."""
+    section = build_dcc_notification_section()
+    data = section.get("data") if isinstance(section.get("data"), dict) else {}
+    summary = data.get("summary")
+    payload = summary if isinstance(summary, dict) else {}
+    return {"code": "DEV_DASHBOARD_NOTIFICATIONS_STATUS_OK", **payload}
+
+
+def build_dcc_notifications_events_api(*, limit: int = 50) -> dict[str, Any]:
+    """API response for ``GET /api/dev-dashboard/notifications/events``."""
+    from core.notification_state import list_notification_events
+
+    payload = list_notification_events(limit=limit)
+    return {"code": "DEV_DASHBOARD_NOTIFICATIONS_EVENTS_OK", **payload}
+
+
+def build_dcc_evidence_index_api(
+    *,
+    max_files: int = 400,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    """API response for ``GET /api/dev-dashboard/evidence-index`` (legacy index shape)."""
+    section = build_dcc_evidence_section(max_files=max_files, repo_root=repo_root)
+    data = section.get("data") if isinstance(section.get("data"), dict) else {}
+    index = data.get("index")
+    return index if isinstance(index, dict) else {}
+
+
 def build_dcc_project_overview_body(*, repo_root: Path | None = None) -> dict[str, Any]:
     """Raw project overview state for ``GET /api/dev-dashboard/project-overview``."""
     from core.project_overview_dashboard_state import build_project_overview_dashboard_state
@@ -485,6 +529,10 @@ def build_dcc_facade_diagnostics() -> dict[str, Any]:
             "build_dcc_control_center_summary_api",
             "build_dcc_prompt_findings_api",
             "build_dcc_cursor_meta_prompt_api",
+            "build_dcc_backend_health_api",
+            "build_dcc_notifications_status_api",
+            "build_dcc_notifications_events_api",
+            "build_dcc_evidence_index_api",
             "build_dcc_project_overview_body",
             "build_dcc_facade_diagnostics",
         ],

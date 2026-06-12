@@ -61,11 +61,15 @@ class TestAppRouterSliceE8(unittest.TestCase):
         for rx in FORBIDDEN_PATTERNS:
             self.assertIsNone(rx.search(text), f"router must not match {rx.pattern}")
 
-    def test_delegates_to_core_modules_only(self) -> None:
+    def test_delegates_to_facade_for_e8_routes(self) -> None:
         text = (_backend / "api/routes/dev_dashboard_readonly.py").read_text(encoding="utf-8")
-        self.assertIn("load_backend_health_snapshot", text)
-        self.assertIn("build_notification_summary", text)
-        self.assertIn("list_notification_events", text)
+        self.assertIn("build_dcc_backend_health_api", text)
+        self.assertIn("build_dcc_notifications_status_api", text)
+        self.assertIn("build_dcc_notifications_events_api", text)
+        self.assertIn("dcc_status_facade", text)
+        self.assertNotIn("load_backend_health_snapshot", text)
+        self.assertNotIn("build_notification_summary", text)
+        self.assertNotIn("list_notification_events", text)
         self.assertNotIn("def build_notification_summary", text)
         self.assertNotIn("def list_notification_events", text)
 

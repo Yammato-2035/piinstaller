@@ -45,8 +45,9 @@
 | Deploy Execute/Rescue Routes | `routes.py` | LEGACY | app | Bis D.15 Execute-Gate |
 | Status / Ampel Mapping | `core.dcc_status_facade` (`build_section_status`) | PARTIAL (F.1) | frontend, DCC | Facade-Vokabular; Roadmap native Werte in data |
 | DCC Aggregation | `core.dcc_status_facade` | CANONICAL (F.2/F.3) | app.py DCC GETs | Facade only |
-| AI Prompt Generate Stub | `app.py` `ai_prompt_generate_stub` | LEGACY | POST `/api/ai/prompt/generate` | **F.4:** `build_dcc_cursor_meta_prompt_api` |
-| Deploy Runtime Gate | `core.deploy_job_state` | PARTIAL | Deploy-Gates | **F.5:** Facade-Hook statt direktem `build_dashboard_status` |
+| AI Prompt Generate Stub | `core.dcc_status_facade` | CANONICAL (F.4) | POST `/api/ai/prompt/generate` | Ja — migriert |
+| DCC Readonly E.8/evidence | `core.dcc_status_facade` API helpers | CANONICAL (F.4) | `dev_dashboard_readonly` | Ja — migriert |
+| Deploy Runtime Gate | `core.deploy_job_state` | PARTIAL | Deploy-Gates | **F.5:** Facade-Hook |
 | Frontend DCC Status ViewModel | — | MISSING | TrafficLight UI | **F.4+:** `dccStatusViewModel.ts` |
 | Frontend API Clients | `frontend/src/lib/*` | PARTIAL | pages, rescue UI | Wiederverwenden |
 | i18n Namespaces | `frontend/src/**/i18n` | PARTIAL | rescue, main UI | Namespace-Konzept |

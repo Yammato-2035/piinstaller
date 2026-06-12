@@ -175,9 +175,13 @@ Kanonisches Modul `core/dcc_status_facade.py` — read-only Aggregation-Contract
 
 Reine Analyse ohne Refactoring: verbleibende Direktzugriffe, Ampel-Duplikate, Roadmap-Subrouter-Grenze (`boundary_ok_registry_only`), `ai_prompt_generate_stub` → Facade in F.4, Deploy/Core-Coupling. Doku: `docs/architecture/DCC_AGGREGATION_AUDIT_F3.md`.
 
+## Was ist F.4 (DCC Delegation Cleanup)?
+
+`ai_prompt_generate_stub` und readonly-Router (backend-health, notifications, evidence-index) delegieren an `dcc_status_facade` API-Helper. Keine API-Änderung. Doku: `docs/architecture/DCC_DELEGATION_CLEANUP_F4.md`.
+
 ## Nächster Schritt?
 
-**F.4** — `ai_prompt_generate_stub` + readonly-Router auf Facade-Sections. Siehe `docs/architecture/DCC_NEXT_MIGRATIONS_F3.md`.
+**G.1** — System Status Facade (`GET /api/status`). **G.2** — Network Info Facade.
 
 ## Weiterlesen
 

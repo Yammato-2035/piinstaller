@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** `8bb910c` · **Update F.3:** `deploy_job_state` → `build_dashboard_status` dokumentiert; Facade-Hook F.5; Frontend ViewModel fehlt.
+**HEAD:** nach F.4 · **Update:** `app.py` ohne `build_dashboard_status` in HTTP-Handlern; Deploy-Gate noch direkt.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

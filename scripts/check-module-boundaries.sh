@@ -1110,6 +1110,38 @@ frontend_dcc_vm = root / "frontend" / "src" / "viewmodels" / "dccStatusViewModel
 if frontend_vm.is_file() and not frontend_dcc_vm.is_file():
     print("dcc_frontend_status_viewmodel_missing:frontend/src/viewmodels/dccStatusViewModel.ts")
 
+# Phase F.4: DCC facade delegation guards (warn-only)
+readonly_mod = root / "backend" / "api" / "routes" / "dev_dashboard_readonly.py"
+if readonly_mod.is_file():
+    ro = readonly_mod.read_text(encoding="utf-8", errors="replace")
+    e8_facade_apis = (
+        "build_dcc_backend_health_api",
+        "build_dcc_notifications_status_api",
+        "build_dcc_notifications_events_api",
+        "build_dcc_evidence_index_api",
+    )
+    if "dcc_status_facade" not in ro:
+        print("dcc_readonly_router_bypasses_facade:backend/api/routes/dev_dashboard_readonly.py")
+    for api in e8_facade_apis:
+        if api not in ro:
+            print(f"dcc_readonly_router_bypasses_facade:missing_{api}")
+    if "load_backend_health_snapshot" in ro:
+        print("dcc_backend_health_duplicate_logic:backend/api/routes/dev_dashboard_readonly.py")
+    if "build_notification_summary" in ro or "list_notification_events" in ro:
+        print("dcc_notification_duplicate_logic:backend/api/routes/dev_dashboard_readonly.py")
+    if re.search(r"dev_dashboard_core\.build_evidence_index|build_evidence_index\s*\(", ro):
+        if "build_dcc_evidence_index_api" not in ro:
+            print("dcc_evidence_duplicate_logic:backend/api/routes/dev_dashboard_readonly.py")
+if app_py_path.is_file():
+    ap_f4 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    stub_m = re.search(r"async def ai_prompt_generate_stub[\s\S]{0,900}", ap_f4)
+    if stub_m:
+        block = stub_m.group(0)
+        if "build_dcc_cursor_meta_prompt_api" not in block:
+            print("dcc_ai_prompt_bypasses_facade:backend/app.py")
+        if "build_dashboard_status" in block:
+            print("dcc_ai_prompt_bypasses_facade:uses_build_dashboard_status")
+
 if deploy_routes.is_file():
     subrouter_markers = (
         "build_plan_only_response",

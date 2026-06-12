@@ -6,9 +6,9 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) �
 
 **E.8 done (3 GET):** backend-health, notifications/status, notifications/events in `dev_dashboard_readonly.py`.
 
-**F.3 done:** DCC aggregation audit — remaining direct access documented; roadmap subrouter `boundary_ok_registry_only`.
+**F.4 done:** ai_prompt stub + readonly router use facade API helpers.
 
-**F.4 next:** `ai_prompt_generate_stub` + readonly facade sections. See `DCC_NEXT_MIGRATIONS_F3_EN.md`.
+**G.1 next:** System Status Facade. See `DCC_DELEGATION_CLEANUP_F4_EN.md`.
 
 **CANDIDATE (E.7):** System Status Facade, Network Info Facade — block `/api/status`, `/api/system/network`.
 
