@@ -21,7 +21,9 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 17. **Keine neue DCC-Statusaggregation in Routern/`app.py`**, wenn `dcc_status_facade` existiert — HTTP-Leser nur über Facade-API-Helper (F.1–F.4).
 18. **Keine neue Ampel-/Status-Mapping-Logik** außerhalb `dcc_status_facade` / `system_status_facade` / dokumentiertem ViewModel (F.1+/G.1+).
 19. **Keine neue Systemstatus-Aggregation** außerhalb `system_status_facade` (G.1+).
-20. **Keine Netzwerkdiagnostik** in System Status Facade — nur `network_info_facade` (G.2).
+20. **Keine Netzwerkdiagnostik** in System Status Facade — nur `network_info_facade` (G.2+).
+21. **Keine neue Netzwerkstatus-Aggregation** außerhalb `network_info_facade` (G.2+).
+22. **Keine Netzwerk-Schreiboperationen** in Status-Facades — aktive Reparatur nur über späteres eigenes Modul.
 
 ## Prüfreihenfolge (Cursor)
 

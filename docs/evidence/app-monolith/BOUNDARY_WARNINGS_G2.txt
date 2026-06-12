@@ -1,0 +1,28 @@
+# Boundary Warnings — Phase G.2 (WARN-only)
+
+**HEAD:** 6b27d87 (vor Commit) · **Gate:** `./scripts/check-module-boundaries.sh` Exit 0 (review_required)
+
+## G.2 erwartete Warnungen (Routen noch nicht migriert)
+
+| Code | Pfad | Erwartung |
+|------|------|-----------|
+| `app_status_network_block_requires_network_facade` | `backend/app.py` | G.2b — `GET /api/status` network-Block |
+| `app_system_network_route_requires_network_facade` | `backend/app.py` | G.2b — `GET /api/system/network` |
+| `network_info_new_network_logic_outside_facade` | `backend/app.py` | Legacy `get_network_info`/`_demo_network` bis G.2b |
+| `system_status_new_network_logic_outside_network_facade` | `backend/app.py` | Legacy-Netzwerk in app.py |
+
+## G.2 Guards aktiv (keine Treffer = OK)
+
+- `network_info_facade_missing` — nicht ausgelöst (Modul vorhanden)
+- `network_info_facade_uses_network_write` — nicht ausgelöst
+- `network_info_new_nmcli_write_detected` — nicht ausgelöst
+- `network_info_duplicate_network_mapping` — nicht ausgelöst
+
+## Kontext (bestehend, nicht G.2-spezifisch)
+
+- `app_status_route_requires_system_status_facade:backend/app.py`
+- `app_network_route_requires_network_facade:backend/app.py`
+
+## Bewertung
+
+WARN-only wie spezifiziert. G.2b sollte `app_*_network_*` und `network_info_new_network_logic_outside_facade` für app.py-Routen auflösen; `get_network_info` bleibt Legacy-Implementierung hinter Facade-Adapter.

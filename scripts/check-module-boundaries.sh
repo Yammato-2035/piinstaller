@@ -1179,6 +1179,53 @@ if app_py_path.is_file():
         if "network_info_facade" not in ap_g1:
             print("system_status_new_network_logic_outside_network_facade:backend/app.py")
 
+# Phase G.2: Network Info Facade guards (warn-only)
+network_facade_mod = root / "backend" / "core" / "network_info_facade.py"
+if not network_facade_mod.is_file():
+    print("network_info_facade_missing:backend/core/network_info_facade.py")
+else:
+    nf = network_facade_mod.read_text(encoding="utf-8", errors="replace")
+    if "FACADE_VERSION" not in nf or "build_network_info" not in nf:
+        print("network_info_facade_incomplete:backend/core/network_info_facade.py")
+    if re.search(r"nmcli\s+(con|device)\s+(modify|connect|disconnect|down|up)", nf, re.I):
+        print("network_info_facade_uses_network_write:backend/core/network_info_facade.py")
+    if re.search(r"ip\s+link\s+set|netplan\s+apply", nf, re.I):
+        print("network_info_new_nmcli_write_detected:backend/core/network_info_facade.py")
+    if re.search(r"def _normalize_network|NETWORK_STATUS_MAP\s*=", nf):
+        if "normalize_legacy_network_info" not in nf:
+            print(f"network_info_duplicate_network_mapping:backend/core/network_info_facade.py")
+if app_py_path.is_file():
+    ap_g2 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    status_m = re.search(
+        r'@app\.get\("/api/status"\)\s*\nasync def get_status\([^)]*\):[\s\S]{0,400}',
+        ap_g2,
+    )
+    if status_m and "network_info_facade" not in status_m.group(0):
+        print("app_status_network_block_requires_network_facade:backend/app.py")
+    sys_net_m = re.search(
+        r'@app\.get\("/api/system/network"\)\s*\nasync def get_system_network\([^)]*\):[\s\S]{0,500}',
+        ap_g2,
+    )
+    if sys_net_m:
+        block = sys_net_m.group(0)
+        if "network_info_facade" not in block:
+            print("app_system_network_route_requires_network_facade:backend/app.py")
+        if "get_network_info" in block or "_demo_network" in block:
+            print("network_info_new_network_logic_outside_facade:backend/app.py")
+    for path in sorted(backend.rglob("*.py")):
+        rel = path.relative_to(root).as_posix()
+        if "/tests/" in rel or "/venv/" in rel or rel.endswith("network_info_facade.py"):
+            continue
+        if rel.startswith("backend/api/routes/") or rel == "backend/app.py":
+            try:
+                pt = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            if "get_network_info(" in pt and "network_info_facade" not in pt:
+                if rel == "backend/app.py" and "def get_network_info" in pt:
+                    continue
+                print(f"network_info_new_network_logic_outside_facade:{rel}")
+
 if deploy_routes.is_file():
     subrouter_markers = (
         "build_plan_only_response",

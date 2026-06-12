@@ -187,9 +187,13 @@ Kanonisches Modul `core/system_status_facade.py` — read-only Aggregation für 
 
 `GET /api/system/status` in `app.py` delegiert an `build_system_status()`. Keine API-Änderung. Doku: `docs/architecture/SYSTEM_STATUS_ROUTE_MIGRATION_G1B.md`.
 
+## Was ist G.2 (Network Info Facade)?
+
+Kanonisches Modul `core/network_info_facade.py` — read-only Netzwerk-Info, Demo-Fallback, Legacy-Normalisierung. **Keine Route-Migration** in G.2. Doku: `docs/architecture/NETWORK_INFO_FACADE_G2.md`.
+
 ## Nächster Schritt?
 
-**G.2** — Network Info Facade.
+**G.2b** — Router-Migration `GET /api/status` network-Block und `GET /api/system/network`.
 
 ## Weiterlesen
 

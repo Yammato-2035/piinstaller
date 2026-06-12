@@ -21,7 +21,9 @@ Binding rules against parallel implementations. **No exception** without documen
 17. Do not add new DCC status aggregation in routers/`app.py` when `dcc_status_facade` exists — HTTP readers via facade API helpers only (F.1–F.4).
 18. Do not add new traffic-light/status mapping logic outside `dcc_status_facade` / `system_status_facade` / documented view model (F.1+/G.1+).
 19. Do not add new system status aggregation outside `system_status_facade` (G.1+).
-20. No network diagnostics in System Status Facade — use `network_info_facade` only (G.2).
+20. No network diagnostics in System Status Facade — use `network_info_facade` only (G.2+).
+21. No new network status aggregation outside `network_info_facade` (G.2+).
+22. No network write operations in status facades — active repair only via dedicated module later.
 
 Check order: Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
 

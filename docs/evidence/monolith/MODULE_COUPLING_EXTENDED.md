@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.1b · **Update:** `app.py` system_status → facade; `get_status` network noch direkt.
+**HEAD:** nach G.2 · **Update:** `network_info_facade` Contract; `get_status`/`get_system_network` noch direkt.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

@@ -10,9 +10,11 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) â
 
 **G.1b done:** `/api/system/status` uses `build_system_status()`.
 
-**G.2 next:** Network Info Facade.
+**G.2 done:** `network_info_facade` canonical module (contract; routes unchanged).
 
-**CANDIDATE (E.7):** System Status Facade, Network Info Facade â€” block `/api/status`, `/api/system/network`.
+**G.2b next:** migrate `GET /api/status` network block and `GET /api/system/network`.
+
+**CANDIDATE (E.7):** remaining `/api/status` network block in `app.py`.
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 

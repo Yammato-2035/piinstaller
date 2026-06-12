@@ -8,7 +8,7 @@
 |--------|---------|-------------------|------|--------|----------------|
 | **DCC Status Facade** | Single entry for `build_dashboard_status`; profile gate | `GET /api/dev-dashboard/status`, indirectly roadmap/prompt-findings | CRITICAL | **CRITICAL** | **F.1 done** — F.2 router migration |
 | **System Status Facade** | Traffic-light engine without route duplication | `GET /api/status`, `GET /api/system/status` | HIGH | **HIGH** | **G.1 done** — G.1b router migration |
-| **Network Info Facade** | IP/hostname/interfaces | `GET /api/system/network` | HIGH | **HIGH** | Canonical `get_network_info`; demo mode in facade |
+| **Network Info Facade** | IP/hostname/interfaces | `GET /api/status`, `GET /api/system/network` | HIGH | **HIGH** | **G.2 done** — G.2b router migration |
 | **Settings Write Facade** | POST settings, UX, SMTP | `POST /api/settings*`, notifications/test | MEDIUM | **MEDIUM** | GET already E.2; write path separate |
 | **Dev Dashboard Aggregation Facade** | control-center-summary, prompt-findings, cursor-meta-prompt | 3–4 GET | HIGH | **HIGH** | After DCC Status Facade |
 | **Frontend Status ViewModel Facade** | Unified response shape for UI traffic lights | Frontend `/api/status` consumer | MEDIUM | **MEDIUM** | Optional after System Status Facade |
@@ -16,7 +16,7 @@
 ## Priority
 
 1. **CRITICAL:** DCC Status Facade
-2. **HIGH:** System Status + Network Info
+2. **HIGH:** Network Info (G.2b router migration)
 3. **HIGH:** Dev Dashboard Aggregation
 4. **MEDIUM:** Settings Write, Frontend ViewModel
 

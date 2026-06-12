@@ -38,7 +38,8 @@
 | DCC Roadmap Registry API | `api/routes/dev_dashboard_roadmap.py` | CANONICAL | app (include_router) | Ja — Subroutes registry-only (F.3) |
 | System Status (Ampel) | `core.system_status_facade` | CANONICAL (G.1/G.1b) | `GET /api/system/status` | Ja — migriert |
 | System Status Legacy | `app.py` `_compute_system_status` | LEGACY | bis G.1b | über Facade-Adapter |
-| Network Info | `app.py` `get_network_info` | PARTIAL | `/api/system/network` | **CANDIDATE:** Network Info Facade (E.7) |
+| Network Info | `core.network_info_facade` | CANONICAL (G.2) | Facade-API; G.2b Router | Ja — Contract |
+| Network Info Legacy | `app.py` `get_network_info`, `_demo_network` | LEGACY | bis G.2b | über Facade-Adapter |
 | DCC Full Status | `core.dcc_status_facade` + `dev_dashboard_status_service` | CANONICAL (F.2) | `/api/dev-dashboard/status` | Ja — migriert |
 | DCC Status Aggregation | `core.dcc_status_facade` | CANONICAL | app routes (F.2+) | Keine Parallel-Aggregation in Routern |
 | DCC Backend Health Snapshot | `core.dev_dashboard_backend_health` | CANONICAL | `dev_dashboard_readonly` router (E.8) | Ja |

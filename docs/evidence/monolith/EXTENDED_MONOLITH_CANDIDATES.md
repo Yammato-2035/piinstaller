@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** nach G.1b · **Update:** system status HTTP migriert; `/api/status` network → G.2.
+**HEAD:** nach G.2 · **Update:** `network_info_facade` Contract; Routen noch in `app.py` → G.2b.
 
 ## Legende
 
