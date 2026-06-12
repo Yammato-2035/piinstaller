@@ -139,9 +139,13 @@ Verbindliches Inventar unter `docs/architecture/MODULE_CATALOG.md` mit Function 
 
 5 read-only GET-Routen nach `api/routes/settings.py` und `status.py` (`/api/settings`, notifications/email, presets/list, debug/routes, user-profile). `app.py`: 17.779→17.699 Zeilen.
 
+## Was ist E.3 (app.py Router-Slice)?
+
+5 read-only GET-Routen: logs/tail, self-update/status, apps, dev-dashboard capability/compact-status. `app.py`: 17.699→17.617 Zeilen.
+
 ## Nächster Schritt?
 
-**E.3** — weiterer `app.py` Router-Slice (read-only, ohne subprocess).
+**E.4** — weiterer `app.py` Router-Slice (read-only, ohne subprocess).
 
 ## Weiterlesen
 

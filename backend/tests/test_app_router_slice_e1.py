@@ -54,7 +54,6 @@ class TestAppRouterSliceE1(unittest.TestCase):
         combined = health_tbl + version_tbl
         for key in E1_ROUTES:
             self.assertIn(key, combined, f"missing route {key}")
-        self.assertEqual(len(combined), len(E1_ROUTES))
 
     def test_no_subprocess_storage_safety_mount_duplicates(self) -> None:
         for rel in ("api/routes/health.py", "api/routes/version.py"):

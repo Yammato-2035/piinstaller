@@ -147,7 +147,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **E.2 (erledigt):** `api/routes/settings.py` + `status.py` — 5 GET, app.py 17.779→17.699.
 
-**Nächster Schritt:** E.3 (read-only app routes ohne subprocess)
+**E.3 (erledigt):** `capabilities.py`, `catalog.py` + Erweiterung health/status — 5 GET, app.py 17.699→17.617.
+
+**Nächster Schritt:** E.4
 
 ---
 

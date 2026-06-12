@@ -25,4 +25,4 @@ Uses `core.notification_settings`, `presets`, and existing app helpers via lazy 
 
 ## Next step
 
-**E.3** — more read-only routes without subprocess.
+**E.3** done — see `APP_ROUTER_SLICE_E3_EN.md`. **E.4** — next slice.

@@ -793,13 +793,15 @@ if backend.is_dir():
     if risk_hits[:5]:
         print(f"duplicate_runner_risk_logic_detected:{len(risk_hits)}")
 
-# Phase E.1/E.2: app.py router slices (warn-only)
+# Phase E.1/E.2/E.3: app.py router slices (warn-only)
 app_py_path = root / "backend" / "app.py"
 app_router_modules = {
     "health.py": root / "backend" / "api" / "routes" / "health.py",
     "version.py": root / "backend" / "api" / "routes" / "version.py",
     "settings.py": root / "backend" / "api" / "routes" / "settings.py",
     "status.py": root / "backend" / "api" / "routes" / "status.py",
+    "capabilities.py": root / "backend" / "api" / "routes" / "capabilities.py",
+    "catalog.py": root / "backend" / "api" / "routes" / "catalog.py",
 }
 e1_slice_endpoints = {
     "health.py": (
@@ -818,6 +820,15 @@ e2_slice_endpoints = {
         '@router.get("/api/presets/list")',
         '@router.get("/api/debug/routes")',
         '@router.get("/api/user-profile")',
+    ),
+}
+e3_slice_endpoints = {
+    "health.py": ('@router.get("/api/logs/tail")',),
+    "status.py": ('@router.get("/api/self-update/status")',),
+    "catalog.py": ('@router.get("/api/apps")',),
+    "capabilities.py": (
+        '@router.get("/api/dev-dashboard/capability-status")',
+        '@router.get("/api/dev-dashboard/compact-status")',
     ),
 }
 for sub, mod in app_router_modules.items():
@@ -843,9 +854,11 @@ if app_py_path.is_file():
     ap_lines = ap.count("\n") + (1 if ap and not ap.endswith("\n") else 0)
     baseline_e1_lines = 17857
     baseline_e2_lines = 17779
+    baseline_e3_lines = 17699
     route_decorators = len(re.findall(r"@app\.(get|post|put|delete|patch)\(", ap))
     baseline_e1_routes = 213
     baseline_e2_routes = 209
+    baseline_e3_routes = 204
     if ap_lines > 3000:
         print(f"app_py_too_large:{ap_lines}")
     print(f"app_py_route_count:{route_decorators}")
@@ -859,10 +872,16 @@ if app_py_path.is_file():
         print(f"app_py_route_count_reduced_e2:{baseline_e2_routes}_to_{route_decorators}")
     if ap_lines < baseline_e2_lines:
         print(f"app_py_line_count_reduced_e2:{baseline_e2_lines}_to_{ap_lines}")
+    if route_decorators < baseline_e3_routes:
+        print(f"app_py_route_count_reduced_e3:{baseline_e3_routes}_to_{route_decorators}")
+    if ap_lines < baseline_e3_lines:
+        print(f"app_py_line_count_reduced_e3:{baseline_e3_lines}_to_{ap_lines}")
     if "include_router(health_router)" not in ap or "include_router(version_router)" not in ap:
         print("app_router_slice_e1_not_included:backend/app.py")
     if "include_router(settings_router)" not in ap or "include_router(status_router)" not in ap:
         print("app_router_slice_e2_not_included:backend/app.py")
+    if "include_router(capabilities_router)" not in ap or "include_router(catalog_router)" not in ap:
+        print("app_router_slice_e3_not_included:backend/app.py")
     for dup in (
         '@app.get("/health")',
         '@app.get("/api/version")',
@@ -873,10 +892,15 @@ if app_py_path.is_file():
         '@app.get("/api/presets/list")',
         '@app.get("/api/debug/routes")',
         '@app.get("/api/user-profile")',
+        '@app.get("/api/logs/tail")',
+        '@app.get("/api/self-update/status")',
+        '@app.get("/api/apps")',
+        '@app.get("/api/dev-dashboard/capability-status")',
+        '@app.get("/api/dev-dashboard/compact-status")',
     ):
         if dup in ap:
             print(f"app_router_slice_duplicate_in_app:{dup}")
-    for sub, eps in {**e1_slice_endpoints, **e2_slice_endpoints}.items():
+    for sub, eps in {**e1_slice_endpoints, **e2_slice_endpoints, **e3_slice_endpoints}.items():
         mod = app_router_modules.get(sub)
         if mod and mod.is_file():
             mt = mod.read_text(encoding="utf-8", errors="replace")

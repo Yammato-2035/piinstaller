@@ -2793,23 +2793,6 @@ async def api_apply_preset(body: ApplyPresetRequest):
     return {"status": "success", "message": f"Preset '{body.preset}' angewendet.", "config_path": str(CONFIG_PATH)}
 
 
-@app.get("/api/logs/tail")
-async def logs_tail(lines: int = 200):
-    try:
-        lines = max(10, min(int(lines), 2000))
-    except Exception:
-        lines = 200
-    p = Path(LOG_PATH)
-    if not p.exists():
-        return JSONResponse(status_code=200, content={"status": "error", "message": "Log-Datei nicht gefunden. Backend neu starten (Logging ging zuvor nur auf Konsole).", "path": str(p)})
-    try:
-        # naive tail (file is small due to rotation)
-        txt = p.read_text(encoding="utf-8", errors="ignore")
-        out = "\n".join(txt.splitlines()[-lines:])
-        return {"status": "success", "path": str(p), "lines": lines, "content": out}
-    except Exception as e:
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e), "path": str(p)})
-
 def _get_cors_origins() -> list[str]:
     """Erlaubte CORS-Origins: Standard localhost/LAN; PI_INSTALLER_CORS_ORIGINS kann ergänzen (kommasepariert)."""
     default = [
@@ -2994,6 +2977,8 @@ except ImportError:
     pass
 
 try:
+    from api.routes.capabilities import router as capabilities_router
+    from api.routes.catalog import router as catalog_router
     from api.routes.health import router as health_router
     from api.routes.settings import router as settings_router
     from api.routes.status import router as status_router
@@ -3003,6 +2988,8 @@ try:
     app.include_router(version_router)
     app.include_router(settings_router)
     app.include_router(status_router)
+    app.include_router(capabilities_router)
+    app.include_router(catalog_router)
 except ImportError:
     pass
 
@@ -4018,34 +4005,6 @@ async def get_system_network(request: Request):
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.get("/api/dev-dashboard/capability-status")
-async def dev_dashboard_capability_status(request: Request):
-    """Read-only DCC gate diagnosis — no secrets, reachable when DCC routes are blocked."""
-    from core.developer_capability import build_capability_status_payload
-    from core.install_profile import get_install_profile_state
-
-    state = get_install_profile_state()
-    headers = {k: v for k, v in request.headers.items()}
-    return build_capability_status_payload(
-        install_profile=state.install_profile,
-        dev_control_enabled=state.dev_control_enabled,
-        backend_runtime_path=str(get_backend_runtime_dir().resolve()),
-        request_headers=headers,
-    )
-
-
-@app.get("/api/dev-dashboard/compact-status")
-async def dev_dashboard_compact_status(request: Request):
-    """Compact operator summary — no full dashboard payload, no secrets."""
-    from core.dev_dashboard_compact_status import build_compact_dcc_status
-
-    headers = {k: v for k, v in request.headers.items()}
-    return build_compact_dcc_status(
-        request_headers=headers,
-        backend_runtime_path=str(get_backend_runtime_dir().resolve()),
-    )
-
-
 @app.get("/api/dev-dashboard/status")
 async def dev_dashboard_status(
     request: Request,
@@ -4747,41 +4706,6 @@ def _read_version_from_path(root: Path) -> Optional[str]:
     return None
 
 
-@app.get("/api/self-update/status")
-async def self_update_status():
-    """
-    Status für 'Auf /opt installieren': Quelle (laufendes Repo) vs. Installation in /opt.
-    Wenn die App aus einem Entwicklungsverzeichnis läuft (z. B. /home/volker/piinstaller),
-    kann hier ein Update verfügbar sein (neue Version noch nicht in /opt).
-    """
-    repo_root = Path(__file__).resolve().parent.parent
-    source_version = get_pi_installer_version()
-    source_path = str(repo_root)
-    installed_version = _read_version_from_path(OPT_INSTALL_DIR) if OPT_INSTALL_DIR.exists() else None
-    installed_path = str(OPT_INSTALL_DIR) if OPT_INSTALL_DIR.exists() else None
-
-    # Update verfügbar: Quelle != /opt und (noch nicht installiert oder andere Version)
-    is_source_opt = repo_root.resolve() == OPT_INSTALL_DIR.resolve()
-    update_available = not is_source_opt and (
-        installed_version is None or installed_version != source_version
-    )
-
-    deploy_script = repo_root / "scripts" / "deploy-to-opt.sh"
-    can_run_deploy = deploy_script.is_file()
-
-    return {
-        "status": "success",
-        "source_path": source_path,
-        "source_version": source_version,
-        "installed_path": installed_path,
-        "installed_version": installed_version,
-        "update_available": update_available,
-        "is_running_from_opt": is_source_opt,
-        "can_run_deploy": can_run_deploy,
-        "deploy_script": str(deploy_script),
-    }
-
-
 @app.post("/api/self-update/install")
 async def self_update_install(request: Request):
     """
@@ -4998,12 +4922,6 @@ APPS_CATALOG = [
     {"id": "code-server", "name": "VS Code Server", "description": "VS Code im Browser – Code bearbeiten von überall.", "category": "Entwicklung", "size": "~400 MB"},
     {"id": "node-red", "name": "Node-RED", "description": "Automatisierungen und Flows visuell programmieren.", "category": "Entwicklung", "size": "~150 MB"},
 ]
-
-
-@app.get("/api/apps")
-async def get_apps():
-    """Liste der verfügbaren Apps (App Store Katalog)."""
-    return {"apps": APPS_CATALOG}
 
 
 def _apps_data_dir() -> Path:

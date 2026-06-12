@@ -139,9 +139,13 @@ Four read-only GET routes extracted to `api/routes/health.py` and `version.py`. 
 
 Five read-only GET routes in `api/routes/settings.py` and `status.py`. `app.py`: 17,779→17,699 lines.
 
+## What is E.3 (app.py router slice)?
+
+Five read-only GET routes (logs/tail, self-update/status, apps, DCC capability gates). `app.py`: 17,699→17,617 lines.
+
 ## Next step?
 
-**E.3** — next `app.py` router slice (read-only, no subprocess).
+**E.4** — next `app.py` router slice (read-only, no subprocess).
 
 ## Further reading
 

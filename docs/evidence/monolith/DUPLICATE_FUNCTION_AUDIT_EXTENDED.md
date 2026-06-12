@@ -253,6 +253,18 @@ Evidence: `APP_ROUTER_SLICE_E2.md`, `BOUNDARY_WARNINGS_E2.txt`
 
 ---
 
+## Update: APP Router Slice E.3 (2026-06-10)
+
+| Cluster | Status |
+|---------|--------|
+| DCC capability/compact GET | **extrahiert** → `capabilities.py` |
+| App catalog GET | **extrahiert** → `catalog.py` |
+| logs/tail, self-update/status | **extrahiert** → `health.py`, `status.py` |
+
+Evidence: `APP_ROUTER_SLICE_E3.md`, `BOUNDARY_WARNINGS_E3.txt`
+
+---
+
 ## Update: Deploy Runner Registry C.1 (2026-06-10)
 
 | Cluster | Status |

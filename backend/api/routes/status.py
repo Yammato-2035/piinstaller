@@ -6,6 +6,8 @@ Read-only GET handlers extracted from app.py.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import APIRouter, Request
 
 router = APIRouter(tags=["status"])
@@ -59,3 +61,39 @@ async def get_user_profile():
         logger.error("Fehler beim Lesen von user_profile.json: %s", e, exc_info=True)
     default = UserProfile(experience_level="beginner", updated_at=_now_iso())
     return {"status": "success", "profile": default.dict()}
+
+
+@router.get("/api/self-update/status")
+async def self_update_status():
+    """
+    Status für 'Auf /opt installieren': Quelle (laufendes Repo) vs. Installation in /opt.
+    Wenn die App aus einem Entwicklungsverzeichnis läuft (z. B. /home/volker/piinstaller),
+    kann hier ein Update verfügbar sein (neue Version noch nicht in /opt).
+    """
+    from app import OPT_INSTALL_DIR, _read_version_from_path, get_pi_installer_version
+
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    source_version = get_pi_installer_version()
+    source_path = str(repo_root)
+    installed_version = _read_version_from_path(OPT_INSTALL_DIR) if OPT_INSTALL_DIR.exists() else None
+    installed_path = str(OPT_INSTALL_DIR) if OPT_INSTALL_DIR.exists() else None
+
+    is_source_opt = repo_root.resolve() == OPT_INSTALL_DIR.resolve()
+    update_available = not is_source_opt and (
+        installed_version is None or installed_version != source_version
+    )
+
+    deploy_script = repo_root / "scripts" / "deploy-to-opt.sh"
+    can_run_deploy = deploy_script.is_file()
+
+    return {
+        "status": "success",
+        "source_path": source_path,
+        "source_version": source_version,
+        "installed_path": installed_path,
+        "installed_version": installed_version,
+        "update_available": update_available,
+        "is_running_from_opt": is_source_opt,
+        "can_run_deploy": can_run_deploy,
+        "deploy_script": str(deploy_script),
+    }

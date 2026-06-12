@@ -1,6 +1,6 @@
 # Module Catalog (Source of Truth)
 
-**As of:** post E.2 (app.py router slices) · **No big-bang** — inventory and ownership.
+**As of:** post E.3 (app.py router slices) · **No big-bang** — inventory and ownership.
 
 Before new implementation, check this catalog, the [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX_EN.md), and [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES_EN.md).
 
@@ -27,11 +27,13 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 | 15 | health router | `backend/api/routes/health.py` | ROUTER (E.1) |
 | 16 | version router | `backend/api/routes/version.py` | ROUTER (E.1) |
 | 17 | settings router | `backend/api/routes/settings.py` | ROUTER (E.2) |
-| 18 | status router | `backend/api/routes/status.py` | ROUTER (E.2) |
+| 18 | status router | `backend/api/routes/status.py` | ROUTER (E.2/E.3) |
+| 19 | capabilities router | `backend/api/routes/capabilities.py` | ROUTER (E.3) |
+| 20 | catalog router | `backend/api/routes/catalog.py` | ROUTER (E.3) |
 | — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4120 lines) |
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**In progress:** `app.py` router slices (E.3+). **Blocked:** `routes_notifications` (D.9 no_safe_slice).
+**In progress:** `app.py` router slices (E.4+). **Blocked:** `routes_notifications` (D.9 no_safe_slice).
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

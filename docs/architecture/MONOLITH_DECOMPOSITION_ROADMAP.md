@@ -23,6 +23,7 @@
 | Health/Init/Logs-Path | `api/routes/health.py` | **E.1 erledigt** (3 GET) |
 | Version API | `api/routes/version.py` | **E.1 erledigt** (1 GET) |
 | Settings/Status GET | `api/routes/settings.py`, `status.py` | **E.2 erledigt** (5 GET) |
+| Capabilities/Catalog/Logs | `capabilities.py`, `catalog.py`, `health.py` | **E.3 erledigt** (5 GET) |
 | Backup-Routen | `api/routes/backup.py` | offen |
 | User/Security | `api/routes/users.py`, `api/routes/security.py` | bestehend |
 | System-Info | `api/routes/system.py` | offen |
@@ -306,7 +307,8 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **D.11** | runtime Router — **erledigt** (8 Routen) |
 | **E.1** | app.py Router-Slice — **erledigt** (4 GET, health+version) |
 | **E.2** | app.py Router-Slice — **erledigt** (5 GET, settings+status) |
-| **E.3** | app.py Router-Slice — **nächster Schritt** |
+| **E.3** | app.py Router-Slice — **erledigt** (5 GET) |
+| **E.4** | app.py Router-Slice — **nächster Schritt** |
 | **D.6+** | runtime, rescue, backup, restore | später (CRITICAL/HIGH) |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  

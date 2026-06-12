@@ -6,7 +6,10 @@ Read-only endpoints extracted from app.py — no storage/safety/mount duplicatio
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 
 router = APIRouter(tags=["health"])
 
@@ -40,3 +43,29 @@ async def logs_path():
     from app import LOG_PATH
 
     return {"status": "success", "path": str(LOG_PATH), "exists": LOG_PATH.exists()}
+
+
+@router.get("/api/logs/tail")
+async def logs_tail(lines: int = 200):
+    from app import LOG_PATH
+
+    try:
+        lines = max(10, min(int(lines), 2000))
+    except Exception:
+        lines = 200
+    p = Path(LOG_PATH)
+    if not p.exists():
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": "Log-Datei nicht gefunden. Backend neu starten (Logging ging zuvor nur auf Konsole).",
+                "path": str(p),
+            },
+        )
+    try:
+        txt = p.read_text(encoding="utf-8", errors="ignore")
+        out = "\n".join(txt.splitlines()[-lines:])
+        return {"status": "success", "path": str(p), "lines": lines, "content": out}
+    except Exception as e:
+        return JSONResponse(status_code=200, content={"status": "error", "message": str(e), "path": str(p)})
