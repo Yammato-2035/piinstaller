@@ -263,6 +263,32 @@ Im Repository ist in [.github/workflows/ci.yml](../../.github/workflows/ci.yml) 
 
 ---
 
+## Mandatory Module Reuse Check
+
+Vor **jeder neuen Funktion**, jedem neuen Modul oder jeder neuen Route muss Cursor prüfen:
+
+1. [docs/architecture/MODULE_CATALOG.md](../architecture/MODULE_CATALOG.md)
+2. [docs/architecture/FUNCTION_OWNERSHIP_MATRIX.md](../architecture/FUNCTION_OWNERSHIP_MATRIX.md)
+3. [docs/architecture/DO_NOT_DUPLICATE_RULES.md](../architecture/DO_NOT_DUPLICATE_RULES.md)
+4. [docs/architecture/MONOLITH_DECOMPOSITION_ROADMAP.md](../architecture/MONOLITH_DECOMPOSITION_ROADMAP.md)
+
+**Wenn ein CANONICAL_MODULE existiert:**
+
+- dieses Modul verwenden (Facade/Contract/Router)
+- **keine** parallele Low-Level-Implementierung (lsblk, blkid, findmnt, Write-Check, Runner-Status)
+- **keine** direkten `runner_*.py`-Imports in neuen Routern — nur `runner_api_facade`
+- Abweichung nur mit dokumentierter Ausnahme in Evidence
+
+**Wenn kein Modul existiert:**
+
+- als **CANDIDATE** in `MODULE_CATALOG.md` eintragen (Doku-PR zuerst)
+- keine große Implementierung ohne separaten, freigegebenen Prompt
+- Standardkopf: [CURSOR_PROMPT_MODULE_REUSE_HEADER.md](./CURSOR_PROMPT_MODULE_REUSE_HEADER.md)
+
+**Schutz:** Rettungsstick-, Partitionshelfer-, Diagnoseserver- und UI-Arbeiten dürfen Safety-Gates und Facades **nicht** umgehen.
+
+---
+
 ## Stand dieser Regeln
 
 Diese Datei beschreibt **Prozess- und Qualitätsregeln**. Sie ersetzt keine Code-Review-Entscheidung und **erzwingt** Verhalten nicht technisch (außer durch Teamdisziplin und PR-Review). Ergänzungen: per PR mit Changelog-Eintrag gemäß VERSIONING.md.

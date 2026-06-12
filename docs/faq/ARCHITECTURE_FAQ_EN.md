@@ -123,9 +123,9 @@ No routes moved. Inventory, ownership matrix, target (<500 lines, 0 runner impor
 
 6 additional plan-only POST routes from `routes.py` to `routes_evidence.py` (12 total). No rescue/execute/write paths. `routes.py`: 4671 lines, 99 runner imports.
 
-## What is phase D.9 (notifications)?
+## What is the module catalog?
 
-**no_safe_d9_notifications_slice** — 0 notification routes in `routes.py`. No `routes_notifications.py`. Domain was already empty in D.1.
+Binding inventory at `docs/architecture/MODULE_CATALOG_EN.md` with function ownership matrix and do-not-duplicate rules. Cursor must check for CANONICAL modules before new code.
 
 ## Next step?
 
@@ -133,6 +133,9 @@ No routes moved. Inventory, ownership matrix, target (<500 lines, 0 runner impor
 
 ## Further reading
 
+- `docs/architecture/MODULE_CATALOG_EN.md`
+- `docs/architecture/FUNCTION_OWNERSHIP_MATRIX_EN.md`
+- `docs/architecture/DO_NOT_DUPLICATE_RULES_EN.md`
 - `docs/knowledge-base/architecture/CORE_FACADES_EN.md`
 - `docs/architecture/STORAGE_DISCOVERY_INVENTORY.md`
 - `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4_EN.md`

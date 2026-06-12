@@ -298,8 +298,10 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **D.7** | Weitere Evidence plan-only — **erledigt** (6 Routen, 12 Evidence gesamt) |
 | **D.8** | diagnostics Router — **erledigt** (6 Routen) |
 | **D.9** | notifications Router — **übersprungen** (no_safe_slice) |
+| **M.1** | Modul-Katalog, Function Ownership, Do-Not-Duplicate — **erledigt** |
 | **D.10** | versioning Router — **nächster Schritt** |
 | **D.6+** | runtime, rescue, backup, restore | später (CRITICAL/HIGH) |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  
-Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`
+Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`  
+Modul-Katalog: `docs/architecture/MODULE_CATALOG.md`, `FUNCTION_OWNERSHIP_MATRIX.md`, `DO_NOT_DUPLICATE_RULES.md`

@@ -123,9 +123,9 @@ Keine Route verschoben. Inventar, Ownership-Matrix, Zielbild (`routes.py` <500 Z
 
 6 weitere plan-only POST-Routen nach `routes_evidence.py` (12 gesamt). `routes.py`: 4671 Zeilen, 99 Runner-Imports. Keine Rescue-/Execute-/Write-Pfade.
 
-## Was ist Phase D.9 (Notifications)?
+## Was ist der Modul-Katalog?
 
-**no_safe_d9_notifications_slice** — 0 Notification-Routen in `routes.py`. Kein `routes_notifications.py`. Domäne war bereits in D.1 leer.
+Verbindliches Inventar unter `docs/architecture/MODULE_CATALOG.md` mit Function Ownership Matrix und Do-Not-Duplicate Rules. Cursor muss vor neuer Funktion prüfen, ob ein CANONICAL_MODULE existiert (storage/mount/safety facade, runner stack, deploy sub-router).
 
 ## Nächster Schritt?
 
@@ -133,6 +133,9 @@ Keine Route verschoben. Inventar, Ownership-Matrix, Zielbild (`routes.py` <500 Z
 
 ## Weiterlesen
 
+- `docs/architecture/MODULE_CATALOG.md`
+- `docs/architecture/FUNCTION_OWNERSHIP_MATRIX.md`
+- `docs/architecture/DO_NOT_DUPLICATE_RULES.md`
 - `docs/knowledge-base/architecture/CORE_FACADES.md`
 - `docs/architecture/STORAGE_DISCOVERY_INVENTORY.md`
 - `docs/architecture/CORE_FACADE_CALLER_MIGRATION_A2_A4.md`

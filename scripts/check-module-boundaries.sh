@@ -580,6 +580,120 @@ if deploy_routes.is_file():
         print("deploy_routes_execute_without_risk_gate:unsafe_runners_post")
     if "build_plan_only_response" in dr_text:
         print("deploy_routes_business_logic_new:facade_in_main_routes")
+
+# Phase M.1: module catalog guard (warn-only)
+catalog_docs = (
+    root / "docs" / "architecture" / "MODULE_CATALOG.md",
+    root / "docs" / "architecture" / "FUNCTION_OWNERSHIP_MATRIX.md",
+    root / "docs" / "architecture" / "DO_NOT_DUPLICATE_RULES.md",
+)
+for doc in catalog_docs:
+    if not doc.is_file():
+        print(f"module_catalog_missing:{doc.relative_to(root).as_posix()}")
+
+backend = root / "backend"
+if backend.is_dir():
+    lsblk_allow = {
+        "backend/core/storage_facade.py",
+        "backend/core/safe_device.py",
+        "backend/modules/storage_detection.py",
+        "backend/core/device_identity.py",
+        "backend/core/rescue_hardstop.py",
+        "backend/debug/support_bundle.py",
+    }
+    findmnt_allow = lsblk_allow | {
+        "backend/core/mount_facade.py",
+        "backend/core/backup_target_auto_prepare.py",
+        "backend/modules/inspect_storage.py",
+        "backend/modules/rescue_restore_execute.py",
+    }
+    blkid_allow = lsblk_allow | {
+        "backend/core/rescue_fat32_esp_usb_verify.py",
+        "backend/core/rescue_fat32_esp_usb_writer.py",
+    }
+    safety_allow = {
+        "backend/core/safety_facade.py",
+        "backend/core/safe_device.py",
+        "backend/safety/write_guard.py",
+        "backend/modules/storage_detection.py",
+    }
+    mount_allow = {
+        "backend/core/mount_facade.py",
+        "backend/core/backup_target_auto_prepare.py",
+    }
+    risk_allow = {
+        "backend/deploy/runner_risk_gate.py",
+        "backend/deploy/runner_api_facade.py",
+        "backend/deploy/runner_registry.py",
+    }
+    status_allow = {
+        "backend/deploy/runner_result_contract.py",
+        "backend/deploy/runner_registry.py",
+    }
+    storage_discovery_hits: list[str] = []
+    lsblk_hits: list[str] = []
+    findmnt_hits: list[str] = []
+    blkid_hits: list[str] = []
+    write_val_hits: list[str] = []
+    mount_hits: list[str] = []
+    status_hits: list[str] = []
+    risk_hits: list[str] = []
+    for path in sorted(backend.rglob("*.py")):
+        rel = path.relative_to(root).as_posix()
+        if "/tests/" in rel or "/venv/" in rel or "/.venv/" in rel:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if rel not in lsblk_allow and re.search(r"\blsblk\b", text) and "subprocess" in text:
+            lsblk_hits.append(rel)
+        if rel not in findmnt_allow and re.search(r"\bfindmnt\b", text) and "subprocess" in text:
+            findmnt_hits.append(rel)
+        if rel not in blkid_allow and re.search(r"\bblkid\b", text) and "subprocess" in text:
+            blkid_hits.append(rel)
+        if rel not in safety_allow and "validate_write_target" in text and "safety_facade" not in text:
+            if "from core.safety_facade" not in text and rel != "backend/core/safety_facade.py":
+                write_val_hits.append(rel)
+        if rel not in mount_allow and "build_readonly_mount_plan" in text and rel != "backend/core/mount_facade.py":
+            mount_hits.append(rel)
+        if rel not in status_allow and re.search(r'["\']status["\']\s*:\s*["\']', text) and rel.startswith("backend/deploy/runner_"):
+            if "runner_result_contract" not in text:
+                status_hits.append(rel)
+        if rel not in risk_allow and "allowed_to_execute" in text and rel.startswith("backend/deploy/runner_"):
+            if "runner_risk_gate" not in text and "runner_api_facade" not in text:
+                risk_hits.append(rel)
+        if rel not in lsblk_allow and "collect_inspect_storage_bundle" not in text:
+            if "storage_detection" in rel or ("detect_block_devices" in text and "storage_facade" not in text):
+                if rel not in {"backend/modules/storage_detection.py"}:
+                    storage_discovery_hits.append(rel)
+    if storage_discovery_hits:
+        print(f"duplicate_storage_discovery_detected:{len(storage_discovery_hits)}")
+    if lsblk_hits:
+        print(f"duplicate_lsblk_usage_detected:{len(lsblk_hits)}")
+    if findmnt_hits:
+        print(f"duplicate_findmnt_usage_detected:{len(findmnt_hits)}")
+    if blkid_hits:
+        print(f"duplicate_blkid_usage_detected:{len(blkid_hits)}")
+    if write_val_hits:
+        print(f"duplicate_write_target_validation_detected:{len(write_val_hits)}")
+    if mount_hits:
+        print(f"duplicate_mount_logic_detected:{len(mount_hits)}")
+    if status_hits[:5]:
+        print(f"duplicate_runner_result_status_detected:{len(status_hits)}")
+    if risk_hits[:5]:
+        print(f"duplicate_runner_risk_logic_detected:{len(risk_hits)}")
+
+if deploy_routes.is_file():
+    subrouter_markers = (
+        "build_plan_only_response",
+        'tags=["deploy-evidence"]',
+        'tags=["deploy-governance"]',
+        'tags=["deploy-diagnostics"]',
+    )
+    if any(m in dr_text for m in subrouter_markers):
+        if re.search(r'@router\.(post|get)\("/runners/', dr_text):
+            print("new_runner_route_in_routes_py_detected:runners_path")
 PY
 )
 

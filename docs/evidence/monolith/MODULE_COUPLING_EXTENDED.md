@@ -137,7 +137,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **D.9 (übersprungen):** no_safe_d9_notifications_slice — 0 Routen, kein Router.
 
-**Nächster Schritt:** D.10
+**M.1 (erledigt):** Modul-Katalog — 12 Pflichtmodule, 30 Ownership-Zeilen, Boundary-Guard WARN-only (duplicate_* checks).
+
+**Nächster Schritt:** D.10 (Module Reuse Header Pflicht)
 
 ---
 

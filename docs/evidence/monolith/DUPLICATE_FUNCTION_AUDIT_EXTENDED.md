@@ -255,4 +255,6 @@ Evidence: `BOUNDARY_WARNINGS_AFTER_PHASE_B1.txt`
 
 **D.9 (übersprungen):** keine Notification-Routen — routes.py unverändert.
 
-**Nächster Schritt:** D.10
+**M.1 (erledigt):** Modul-Katalog + Function Ownership Matrix + Do-Not-Duplicate Rules — kein Code-Refactoring.
+
+**Nächster Schritt:** D.10 (mit [Module Reuse Header](../../developer/CURSOR_PROMPT_MODULE_REUSE_HEADER.md))
