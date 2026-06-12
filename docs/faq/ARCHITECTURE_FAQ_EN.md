@@ -147,9 +147,13 @@ Five read-only GET routes (logs/tail, self-update/status, apps, DCC capability g
 
 Five DCC index GET routes in `dev_dashboard_readonly.py` using only `core.dev_dashboard*`. `app.py`: 17,617→17,568 lines.
 
+## What is E.5 (roadmap router slice)?
+
+Five roadmap registry GET routes in `dev_dashboard_roadmap.py` via `load_roadmap_registry_bundle` only.
+
 ## Next step?
 
-**E.5** — roadmap read-only subroutes.
+**E.6** — remaining roadmap GET routes.
 
 ## Further reading
 

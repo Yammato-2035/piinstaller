@@ -17,6 +17,7 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 13. **Keine neuen `/health`- oder `/api/version`-Handler in `app.py`**, wenn `api/routes/health.py` bzw. `version.py` existieren (E.1+).
 14. **Keine neuen Settings-/Status-GET-Handler in `app.py`**, wenn `api/routes/settings.py` bzw. `status.py` existieren (E.2+).
 15. **Keine neuen DCC-Index-GET in `app.py`**, wenn `dev_dashboard_readonly.py` existiert — Scanner nur in `core.dev_dashboard*` (E.4+).
+16. **Keine neuen Roadmap-Registry-GET in `app.py`**, wenn `dev_dashboard_roadmap.py` existiert — Parser nur in `core.dev_dashboard_roadmap` (E.5+).
 
 ## Prüfreihenfolge (Cursor)
 

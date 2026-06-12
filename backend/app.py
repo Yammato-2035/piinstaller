@@ -2980,6 +2980,7 @@ try:
     from api.routes.capabilities import router as capabilities_router
     from api.routes.catalog import router as catalog_router
     from api.routes.dev_dashboard_readonly import router as dev_dashboard_readonly_router
+    from api.routes.dev_dashboard_roadmap import router as dev_dashboard_roadmap_router
     from api.routes.health import router as health_router
     from api.routes.settings import router as settings_router
     from api.routes.status import router as status_router
@@ -2992,6 +2993,7 @@ try:
     app.include_router(capabilities_router)
     app.include_router(catalog_router)
     app.include_router(dev_dashboard_readonly_router)
+    app.include_router(dev_dashboard_roadmap_router)
 except ImportError:
     pass
 
@@ -4096,77 +4098,6 @@ async def dev_dashboard_roadmap(
     )
     bundle = load_roadmap_registry_bundle(repo_root=dev_dashboard_core._repo_root(), dashboard_context=dashboard)
     return bundle
-
-
-@app.get("/api/dev-dashboard/roadmap/areas")
-async def dev_dashboard_roadmap_areas():
-    from core.dev_dashboard_roadmap import load_roadmap_registry_bundle
-
-    bundle = load_roadmap_registry_bundle()
-    return {
-        "status": bundle.get("status"),
-        "read_only": True,
-        "execution_allowed": False,
-        "areas": bundle.get("areas") or [],
-        "warnings": bundle.get("warnings") or [],
-    }
-
-
-@app.get("/api/dev-dashboard/roadmap/milestones")
-async def dev_dashboard_roadmap_milestones():
-    from core.dev_dashboard_roadmap import load_roadmap_registry_bundle
-
-    bundle = load_roadmap_registry_bundle()
-    return {
-        "status": bundle.get("status"),
-        "read_only": True,
-        "execution_allowed": False,
-        "milestones": bundle.get("milestones") or [],
-        "warnings": bundle.get("warnings") or [],
-    }
-
-
-@app.get("/api/dev-dashboard/roadmap/blockers")
-async def dev_dashboard_roadmap_blockers():
-    from core.dev_dashboard_roadmap import load_roadmap_registry_bundle
-
-    bundle = load_roadmap_registry_bundle()
-    return {
-        "status": bundle.get("status"),
-        "read_only": True,
-        "execution_allowed": False,
-        "blockers": bundle.get("blockers") or [],
-        "warnings": bundle.get("warnings") or [],
-    }
-
-
-@app.get("/api/dev-dashboard/roadmap/decisions")
-async def dev_dashboard_roadmap_decisions():
-    from core.dev_dashboard_roadmap import load_roadmap_registry_bundle
-
-    bundle = load_roadmap_registry_bundle()
-    return {
-        "status": bundle.get("status"),
-        "read_only": True,
-        "execution_allowed": False,
-        "decisions": bundle.get("decisions") or [],
-        "warnings": bundle.get("warnings") or [],
-    }
-
-
-@app.get("/api/dev-dashboard/roadmap/next-prompt")
-async def dev_dashboard_roadmap_next_prompt():
-    from core.dev_dashboard_roadmap import load_roadmap_registry_bundle
-
-    bundle = load_roadmap_registry_bundle()
-    prompt = bundle.get("recommended_prompt")
-    return {
-        "status": bundle.get("status"),
-        "read_only": True,
-        "execution_allowed": False,
-        "prompt": prompt,
-        "warnings": bundle.get("warnings") or [],
-    }
 
 
 @app.get("/api/dev-dashboard/roadmap/next-prompts")

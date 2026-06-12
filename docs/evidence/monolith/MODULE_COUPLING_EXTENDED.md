@@ -151,7 +151,9 @@ Evidence: `docs/evidence/deploy-runner/runner_registry.generated.json`
 
 **E.4 (erledigt):** `dev_dashboard_readonly.py` — 5 DCC index GET, app.py 17.617→17.568.
 
-**Nächster Schritt:** E.5
+**E.5 (erledigt):** `dev_dashboard_roadmap.py` — 5 GET, app.py 17.568→17.499.
+
+**Nächster Schritt:** E.6
 
 ---
 

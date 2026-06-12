@@ -147,9 +147,13 @@ Verbindliches Inventar unter `docs/architecture/MODULE_CATALOG.md` mit Function 
 
 5 DCC-Index-GETs nach `dev_dashboard_readonly.py` (modules, evidence-index, manual-command-runs, recent-evidence). Nur `core.dev_dashboard*`. `app.py`: 17.617→17.568 Zeilen.
 
+## Was ist E.5 (Roadmap Router-Slice)?
+
+5 Roadmap-Registry-GETs nach `dev_dashboard_roadmap.py` (areas, milestones, blockers, decisions, next-prompt). Nur `load_roadmap_registry_bundle`. `app.py`: 17.568→17.499 Zeilen.
+
 ## Nächster Schritt?
 
-**E.5** — Roadmap read-only Subroutes.
+**E.6** — verbleibende Roadmap-GET (`next-prompts`, `export-next-prompt`).
 
 ## Weiterlesen
 

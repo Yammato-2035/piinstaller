@@ -17,6 +17,7 @@ Binding rules against parallel implementations. **No exception** without documen
 13. Do not add new `/health` or `/api/version` handlers in `app.py` when `api/routes/health.py` or `version.py` exist (E.1+).
 14. Do not add new settings/status GET handlers in `app.py` when `api/routes/settings.py` or `status.py` exist (E.2+).
 15. Do not add DCC index GET handlers in `app.py` when `dev_dashboard_readonly.py` exists — scanners only in `core.dev_dashboard*` (E.4+).
+16. Do not add roadmap registry GET handlers in `app.py` when `dev_dashboard_roadmap.py` exists — parsers only in `core.dev_dashboard_roadmap` (E.5+).
 
 Check order: Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
 
