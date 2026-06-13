@@ -16,7 +16,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Literal
 
-from modules.storage_detection import classify_devices, detect_block_devices, detect_filesystems
+from core.storage_discovery import discover_block_devices, discover_filesystems
+from modules.storage_detection import classify_devices
 
 Runner = Callable[..., subprocess.CompletedProcess[str]] | None
 
@@ -226,7 +227,7 @@ def build_storage_inventory_snapshot(
     devices_tree: list[dict[str, Any]] = []
     if include_tree_devices:
         try:
-            devices_tree = detect_block_devices(runner=runner)
+            devices_tree = discover_block_devices(runner=runner)
         except Exception as exc:  # noqa: BLE001
             warnings.append(f"STORAGE_FACADE_DETECT_DEVICES:{type(exc).__name__}")
 
@@ -236,7 +237,7 @@ def build_storage_inventory_snapshot(
     blkid_map: dict[str, dict[str, str]] = {}
     blkid_excerpt = ""
     try:
-        blkid_map = detect_filesystems(runner=runner)
+        blkid_map = discover_filesystems(runner=runner)
         blkid_excerpt, blk_warn = _run_blkid_excerpt(runner=runner)
         warnings.extend(blk_warn)
     except Exception as exc:  # noqa: BLE001
@@ -468,7 +469,7 @@ def get_filesystem_type(device_path: str, *, runner: Runner = None) -> str | Non
     """Filesystem type from inventory blkid map or detect_filesystems delegation."""
     dev = str(device_path).strip()
     try:
-        fs_map = detect_filesystems(runner=runner)
+        fs_map = discover_filesystems(runner=runner)
         meta = fs_map.get(dev) if isinstance(fs_map, dict) else None
         if isinstance(meta, dict):
             fst = meta.get("type") or meta.get("fstype")
@@ -494,12 +495,12 @@ def list_classified_devices(*, runner: Runner = None) -> list[Any]:
 
 def detect_block_devices_for_inspect(*, runner: Runner = None) -> list[dict[str, Any]]:
     """Inspect collector: raw block device tree (delegates storage_detection)."""
-    return detect_block_devices(runner=runner)
+    return discover_block_devices(runner=runner)
 
 
 def detect_filesystems_for_inspect(*, runner: Runner = None) -> dict[str, dict[str, str]]:
     """Inspect collector: blkid map (delegates storage_detection)."""
-    return detect_filesystems(runner=runner)
+    return discover_filesystems(runner=runner)
 
 
 def classify_devices_for_inspect(devices_raw: list[dict[str, Any]]) -> list[dict[str, Any]]:

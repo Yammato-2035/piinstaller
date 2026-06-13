@@ -251,7 +251,8 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | **Status** | **CANONICAL_MODULE** (FACADE, G.2) |
 | **Zweck** | Netzwerk-Info read-only; Demo-Fallback; Normalisierung |
 | **Öffentliche API** | `build_network_info`, `detect_frontend_port`, `build_demo_network_info`, `build_system_network_response`, … |
-| **HTTP migriert** | `GET /api/status`, `/api/system/network` (G.4 Router); Network-Block: `/api/system-info` (G.3) |
+| **HTTP migriert** | `GET /api/status`, `/api/system/network` (G.4 Router) |
+| **Network-Block Owner** | `system_info_facade`, `webserver_status_facade` (nicht direkt HTTP) |
 | **Delegiert an** | `network_discovery` (G.8); `app._is_demo_mode` (HTTP) |
 | **Discovery-Owner** | `core/network_discovery.py` — kanonisch seit G.8 |
 | **Ausgeschlossen** | Netzwerk-Schreiboperationen, nmcli write |
@@ -269,9 +270,82 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | **Zweck** | Webserver/CMS/Service-Status read-only für `GET /api/webserver/status` |
 | **Öffentliche API** | `build_webserver_status`, `build_webserver_status_section`, `build_webserver_frontend_section`, `build_webserver_status_diagnostics` |
 | **HTTP migriert** | `GET /api/webserver/status` (G.7) |
-| **Delegiert an** | `network_info_facade` (Network+Port); `app.get_running_services`, `app.run_command`, … |
+| **Delegiert an** | `network_info_facade` (Network+Port); `webserver_service_discovery` (G.11) |
 | **Tests** | `test_webserver_status_facade_v1`, `test_webserver_status_route_migration_g7` |
 | **Doku DE/EN** | `WEBSERVER_STATUS_FACADE_G7.md` |
+
+---
+
+## 17c. system_info_facade
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/system_info_facade.py` |
+| **Status** | **CANONICAL_MODULE** (FACADE, G.6) |
+| **Zweck** | System-Hardware/Runtime/Network read-only für `GET /api/system-info` |
+| **Öffentliche API** | `build_system_info`, `build_system_info_sections`, `build_hardware_section`, `build_runtime_section`, `build_network_section`, `build_system_info_diagnostics` |
+| **HTTP migriert** | `GET /api/system-info` (G.6) |
+| **Delegiert an** | `network_info_facade` (Network); `hardware_discovery` (G.9); `dcc_status_facade` (Sections) |
+| **Tests** | `test_system_info_facade_v1`, `test_system_info_route_migration_g6` |
+| **Doku DE/EN** | `SYSTEM_INFO_FACADE_G6.md` |
+
+---
+
+## 17d. hardware_discovery
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/hardware_discovery.py` |
+| **Status** | **CANONICAL_MODULE** (DISCOVERY, G.9) |
+| **Zweck** | Hardware-/System-Discovery read-only (CPU, RAM, PCI, Sensoren, Pi) |
+| **Öffentliche API** | `discover_cpu_info`, `discover_memory_info`, `discover_mainboard_info`, `discover_pci_info`, `discover_sensor_info`, `discover_raspberry_pi_info`, `build_hardware_discovery_diagnostics` |
+| **Konsument** | `system_info_facade` (G.9); Legacy-Wrapper in `app.py` |
+| **Tests** | `test_hardware_discovery_v1`, `test_system_info_without_app_dependency_g9` |
+| **Doku DE/EN** | `HARDWARE_DISCOVERY_CORE_G9.md` |
+
+---
+
+## 17e. webserver_service_discovery
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/webserver_service_discovery.py` |
+| **Status** | **CANONICAL_MODULE** (DISCOVERY, G.11) |
+| **Zweck** | Webserver/Service/CMS-Discovery read-only |
+| **Öffentliche API** | `discover_running_services`, `discover_frontend_port`, `discover_webserver_stack`, `discover_installed_web_services`, `build_webserver_service_diagnostics` |
+| **Konsument** | `webserver_status_facade` (G.11); Legacy-Wrapper in `app.py` |
+| **Tests** | `test_webserver_service_discovery_v1`, `test_webserver_status_facade_v1` |
+| **Doku DE/EN** | `WEBSERVER_SERVICE_DISCOVERY_G11.md` |
+
+---
+
+## 17f. system_status_core
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/system_status_core.py` |
+| **Status** | **CANONICAL_MODULE** (CORE, G.12) |
+| **Zweck** | Ampel-Berechnung Backup/Restore/Security/Updates |
+| **Öffentliche API** | `build_backup_status`, `build_restore_status`, `build_security_status`, `build_update_status`, `build_overall_status`, `load_backup_realtest_state`, `build_system_status_diagnostics` |
+| **Konsument** | `system_status_facade` (G.12); Legacy-Wrapper `app._compute_system_status` |
+| **Adapter** | Security/Updates via kontrolliertes `import app` im Core (nicht Facade) |
+| **Tests** | `test_system_status_core_v1` |
+| **Doku DE/EN** | `SYSTEM_STATUS_CORE_G12.md` |
+
+---
+
+## 17g. storage_discovery
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/storage_discovery.py` |
+| **Status** | **CANONICAL_MODULE** (DISCOVERY, P.1) |
+| **Zweck** | Kanonischer lsblk/findmnt/blkid-Owner (Delegation) |
+| **Öffentliche API** | `discover_block_devices`, `discover_mounts`, `discover_filesystems`, `discover_partitions`, `discover_storage_roles`, `build_storage_discovery_diagnostics` |
+| **Delegiert an** | `modules.storage_detection`, `core.mount_facade` |
+| **Konsument** | `storage_facade` (sichere Migration P.1) |
+| **Tests** | `test_storage_discovery_v1` |
+| **Matrix** | `STORAGE_DISCOVERY_OWNERSHIP_MATRIX.md` |
 
 ---
 
@@ -314,14 +388,18 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | `api/routes/dev_dashboard_readonly.py` | **CANONICAL_ROUTER** (E.4/E.8) | DCC modules/evidence + backend-health + notifications read |
 | `api/routes/dev_dashboard_roadmap.py` | **CANONICAL_ROUTER** (E.5/E.6) | roadmap registry + next-prompts/export |
 | `api/routes/network.py` | **CANONICAL_ROUTER** (G.4) | `GET /api/status`, `GET /api/system/network` |
-| `app.py` Router-Slices | **IN_PROGRESS** | G.6 / G.7 / G.8 (siehe G.5 Audit) |
+| `app.py` Router-Slices | **IN_PROGRESS** | verbleibende GET-Routen (E.x) |
 | `frontend_status_viewmodel` | **CANONICAL_MODULE** (H.1–H.7 final) | count_10 verbleibend (Domain/Large-Page) |
 | `dcc_status_facade` | **CANONICAL_MODULE** (F.1–F.4) | HTTP-DCC-Leser delegiert |
 | `system_status_facade` | **CANONICAL_MODULE** (G.1/G.1b) | `/api/system/status` migriert |
 | `network_info_facade` | **CANONICAL_MODULE** (G.2–G.5) | Facade + Router; Legacy in `app.py` |
 | **webserver_status_facade** | **CANONICAL_MODULE** (G.7) | `GET /api/webserver/status` — erledigt |
 | **network_discovery** | **CANONICAL_MODULE** (G.8) | Discovery-Owner — erledigt |
-| **system_info_facade** | **CANDIDATE** (G.6) | `GET /api/system-info` — HIGH |
+| **system_info_facade** | **CANONICAL_MODULE** (G.6/G.9) | `GET /api/system-info` — erledigt |
+| **hardware_discovery** | **CANONICAL_MODULE** (G.9) | Facade→app-Zyklus beendet |
+| **webserver_service_discovery** | **CANONICAL_MODULE** (G.11) | Facade→app-Zyklus beendet |
+| **system_status_core** | **CANONICAL_MODULE** (G.12) | Ampel aus Facade extrahiert |
+| **storage_discovery** | **CANONICAL_MODULE** (P.1) | Canonical lsblk/findmnt/blkid — schrittweise Migration |
 | **frontend_runtime_facade** | **CANDIDATE** (G.5) | Port-Erkennung — MEDIUM |
 | **Dev Dashboard Aggregation Facade** | **CANDIDATE** (E.7) | control-center-summary, prompt-findings (nutzt Facade F.2+) |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |

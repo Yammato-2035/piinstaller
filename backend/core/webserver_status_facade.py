@@ -1,8 +1,8 @@
 """
 Webserver Status Facade — canonical read-only aggregation for GET /api/webserver/status.
 
-Phase G.7: contract + delegation only; route response shape unchanged.
-Delegates webserver/service probes to legacy ``app`` helpers.
+Phase G.7/G.11: contract + delegation only; route response shape unchanged.
+Webserver/service discovery via ``webserver_service_discovery`` only (no ``import app``).
 Network and port via ``network_info_facade`` only — no new discovery logic.
 """
 
@@ -12,7 +12,15 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Callable
 
 from core.dcc_status_facade import build_section_status
-from core.network_info_facade import build_network_info, detect_frontend_port
+from core.network_info_facade import build_network_info
+from core.webserver_service_discovery import (
+    check_installed,
+    discover_frontend_port,
+    discover_installed_web_services,
+    discover_running_services,
+    get_website_names,
+    run_command,
+)
 
 WEBSERVER_STATUS_FACADE_VERSION = 1
 
@@ -74,40 +82,6 @@ def _safe_section(
         return build_unavailable_webserver_section(section_id, reason=msg)
 
 
-def _legacy_get_running_services() -> dict[str, bool]:
-    import app as app_module
-
-    running = app_module.get_running_services()
-    return running if isinstance(running, dict) else {}
-
-
-def _legacy_get_installed_apps() -> dict[str, Any]:
-    import app as app_module
-
-    installed = app_module.get_installed_apps()
-    return installed if isinstance(installed, dict) else {}
-
-
-def _legacy_get_website_names() -> list[str]:
-    import app as app_module
-
-    names = app_module.get_website_names()
-    return names if isinstance(names, list) else []
-
-
-def _legacy_run_command(cmd: str) -> dict[str, Any]:
-    import app as app_module
-
-    result = app_module.run_command(cmd)
-    return result if isinstance(result, dict) else {"success": False, "stdout": "", "stderr": ""}
-
-
-def _legacy_check_installed(package: str) -> bool:
-    import app as app_module
-
-    return bool(app_module.check_installed(package))
-
-
 def build_webserver_frontend_section(
     *,
     network: dict[str, Any] | None = None,
@@ -115,7 +89,7 @@ def build_webserver_frontend_section(
 ) -> dict[str, Any]:
     """PI-Installer frontend URL block (legacy ``pi_installer`` shape)."""
     net = network if isinstance(network, dict) else build_network_info()
-    pi_installer_port = port if port is not None else detect_frontend_port()
+    pi_installer_port = port if port is not None else discover_frontend_port()
     effective_port = pi_installer_port or 3001
     ips = net.get("ips") if isinstance(net.get("ips"), list) else []
     if ips:
@@ -127,27 +101,27 @@ def build_webserver_frontend_section(
 
 def build_webserver_status() -> dict[str, Any]:
     """Legacy ``GET /api/webserver/status`` payload (G.7)."""
-    running = _legacy_get_running_services()
+    running = discover_running_services()
     network = build_network_info()
-    installed = _legacy_get_installed_apps()
+    installed = discover_installed_web_services()
 
     nginx_running = running.get("nginx", False)
     apache_running = running.get("apache2", False)
 
     webserver_ports: list[str] = []
-    ports_result = _legacy_run_command("ss -tuln | grep -E ':80|:443|:8000|:8080|:9090|:10000'")
+    ports_result = run_command("ss -tuln | grep -E ':80|:443|:8000|:8080|:9090|:10000'")
     if ports_result.get("success"):
         stdout = ports_result.get("stdout") or ""
         webserver_ports = stdout.strip().split("\n") if stdout.strip() else []
 
-    pi_installer_port = detect_frontend_port()
-    website_names = _legacy_get_website_names()
+    pi_installer_port = discover_frontend_port()
+    website_names = get_website_names()
 
-    cockpit_running = running.get("cockpit", False) or _legacy_check_installed("cockpit")
-    webmin_running = running.get("webmin", False) or _legacy_check_installed("webmin")
+    cockpit_running = running.get("cockpit", False) or check_installed("cockpit")
+    webmin_running = running.get("webmin", False) or check_installed("webmin")
 
-    cockpit_port = _legacy_run_command("ss -tuln | grep ':9090'")
-    webmin_port = _legacy_run_command("ss -tuln | grep ':10000'")
+    cockpit_port = run_command("ss -tuln | grep ':9090'")
+    webmin_port = run_command("ss -tuln | grep ':10000'")
 
     return {
         "pi_installer": build_webserver_frontend_section(network=network, port=pi_installer_port),
@@ -228,14 +202,17 @@ def build_webserver_status_diagnostics() -> dict[str, Any]:
         "facade_module": "core.webserver_status_facade",
         "status_vocabulary": sorted(FACADE_STATUS_VALUES),
         "delegates_to": [
-            "app.get_running_services",
-            "app.get_installed_apps",
-            "app.get_website_names",
-            "app.run_command",
-            "app.check_installed",
+            "webserver_service_discovery.discover_running_services",
+            "webserver_service_discovery.discover_installed_web_services",
+            "webserver_service_discovery.get_website_names",
+            "webserver_service_discovery.run_command",
+            "webserver_service_discovery.check_installed",
+            "webserver_service_discovery.discover_frontend_port",
             "network_info_facade.build_network_info",
             "network_info_facade.detect_frontend_port",
         ],
+        "discovery_via_webserver_service_discovery": True,
+        "facade_imports_app": False,
         "public_functions": [
             "build_webserver_status",
             "build_webserver_status_section",

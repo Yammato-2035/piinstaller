@@ -14,7 +14,19 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) �
 
 **G.8 done:** `network_discovery` canonical; facade app cycle broken.
 
-**Next:** **G.6** System Info Facade.
+**G.6 done:** `system_info_facade` canonical; no `import app` since G.9.
+
+**G.9 done:** `hardware_discovery` canonical; facade→app cycle broken.
+
+**G.11 done:** `webserver_service_discovery` canonical; `webserver_status_facade` no `import app`.
+
+**G.12 done:** `system_status_core` canonical; ampel out of facade.
+
+**P.1 done:** `storage_discovery` canonical; `storage_facade` delegates; `app.py` storage blocks remain.
+
+**D.12 done:** Deploy thin-orchestrator audit + final plan (no execute extraction).
+
+**Next:** G.13 (system_status_facade app sections) · P.2 (`app.py` storage migration) · D.13 (rescue domain router).
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 

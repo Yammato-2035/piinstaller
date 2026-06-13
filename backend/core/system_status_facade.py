@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from core.dcc_status_facade import build_section_status
+from core.system_status_core import build_overall_status, load_backup_realtest_state
 
 FACADE_VERSION = 1
 
@@ -120,18 +121,12 @@ def _result_to_dict(result: SystemStatusFacadeResult) -> dict[str, Any]:
 
 
 def _legacy_compute_ampel_status() -> dict[str, str]:
-    """Legacy adapter: ampel engine still lives in ``app._compute_system_status`` (G.1b)."""
-    import app as app_module
-
-    return app_module._compute_system_status()
+    """Ampel via system_status_core (G.12); no direct ``app._compute_system_status`` in facade."""
+    return build_overall_status()
 
 
 def _legacy_backup_realtest_state() -> dict[str, Any]:
-    import app as app_module
-
-    backup = app_module.APP_SETTINGS.get("backup") if isinstance(app_module.APP_SETTINGS, dict) else {}
-    rs = backup.get("realtest_state") if isinstance(backup, dict) else {}
-    return rs if isinstance(rs, dict) else {}
+    return load_backup_realtest_state()
 
 
 def build_backend_runtime_section() -> dict[str, Any]:
@@ -324,13 +319,15 @@ def build_system_status_diagnostics() -> dict[str, Any]:
         "status_vocabulary": sorted(FACADE_STATUS_VALUES),
         "legacy_ampel_map_keys": sorted(_LEGACY_AMPEL_MAP.keys()),
         "delegates_to": [
-            "app._compute_system_status",
-            "app.APP_SETTINGS.backup.realtest_state",
+            "system_status_core.build_overall_status",
+            "system_status_core.load_backup_realtest_state",
             "app.get_pi_installer_version",
             "app.get_app_edition",
             "app._user_profile_collect_from_disk",
             "core.install_paths.get_backend_runtime_dir",
         ],
+        "ampel_via_system_status_core": True,
+        "facade_ampel_computation": False,
         "public_functions": [
             "build_system_status",
             "build_system_status_sections",

@@ -333,9 +333,13 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **H.7** | Frontend Status Final Safe Slice — **erledigt** (`count_10`) |
 | **G.5** | Network Legacy Elimination Audit — **erledigt** (kein Refactoring) |
 | **G.7** | Webserver Status Facade — **erledigt** (`webserver_status_facade`, G.5-Bypass beseitigt) |
-| **G.6** | System Info Facade | **Kandidat HIGH** |
+| **G.6** | System Info Facade — **erledigt** (`system_info_facade`, G.3-Network delegiert) |
+| **G.9** | Hardware Discovery Core — **erledigt** (`hardware_discovery`, Facade→app-Zyklus beendet) |
 | **G.8** | Network Discovery Core — **erledigt** (`network_discovery`, Facade-Zyklus beendet) |
-| **G.6** | System Info Facade | **nächster Schritt** |
+| **G.11** | Webserver Service Discovery Core — **erledigt** (`webserver_service_discovery`, Facade→app-Zyklus beendet) |
+| **G.12** | System Status Core — **erledigt** (`system_status_core`, Ampel aus Facade) |
+| **P.1** | Storage Discovery Canonical — **erledigt** (`storage_discovery`, `storage_facade`-Delegation; `app.py` offen) |
+| **D.12** | Deploy Thin-Orchestrator Audit — **erledigt** (Audit + Final Plan; keine Execute-Extraktion) |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  
 Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`  

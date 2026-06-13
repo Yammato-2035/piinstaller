@@ -31,7 +31,13 @@ Binding rules against parallel implementations. **No exception** without documen
 27. **No new network GET handlers in `app.py`** when `api/routes/network.py` exists — facade delegation only (G.4+).
 28. **No network discovery implementation outside `network_info_facade` / planned `network_discovery`** — legacy in `app.py` only until G.8 (G.5+).
 29. **No webserver status aggregation outside `webserver_status_facade`** — network/port only via `network_info_facade` (G.7+).
-30. **No network discovery implementation outside `network_discovery`** — `app.py` legacy wrappers only (G.8+).
+30. **No system info aggregation outside `system_info_facade`** — network via `network_info_facade`; hardware via `hardware_discovery` (G.6/G.9+).
+31. **No hardware discovery implementation outside `hardware_discovery`** — `app.py` legacy wrappers only (G.9+).
+32. **No network discovery implementation outside `network_discovery`** — `app.py` legacy wrappers only (G.8+).
+33. **No webserver service discovery outside `webserver_service_discovery`** — `webserver_status_facade` delegates only (G.11+).
+34. **No ampel computation outside `system_status_core`** on the system-status path — facade aggregates only (G.12+).
+35. **No lsblk/findmnt/blkid discovery outside `storage_discovery`** — facades delegate (P.1+); low-level in `storage_detection` / `mount_facade`.
+36. **No direct `detect_block_devices` / `detect_filesystems` from `storage_detection` in new modules** — use `storage_discovery` (P.1+).
 
 Check order: Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
 

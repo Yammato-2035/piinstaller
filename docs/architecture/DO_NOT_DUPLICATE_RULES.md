@@ -31,7 +31,13 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 28. **Keine neuen Network-GET-Handler in `app.py`**, wenn `api/routes/network.py` existiert — nur Facade-Delegation (G.4+).
 29. **Keine Network-Discovery-Implementierung außerhalb `network_info_facade` / geplantem `network_discovery`** — Legacy in `app.py` nur bis G.8 (G.5+).
 30. **Keine Webserver-Status-Aggregation außerhalb `webserver_status_facade`** — Network/Port nur über `network_info_facade` (G.7+).
-31. **Keine Network-Discovery-Implementierung außerhalb `network_discovery`** — `app.py` nur Legacy-Wrapper (G.8+).
+31. **Keine System-Info-Aggregation außerhalb `system_info_facade`** — Network nur über `network_info_facade`; Hardware über `hardware_discovery` (G.6/G.9+).
+32. **Keine Hardware-Discovery-Implementierung außerhalb `hardware_discovery`** — `app.py` nur Legacy-Wrapper (G.9+).
+33. **Keine Network-Discovery-Implementierung außerhalb `network_discovery`** — `app.py` nur Legacy-Wrapper (G.8+).
+34. **Keine Webserver-Service-Discovery außerhalb `webserver_service_discovery`** — `webserver_status_facade` nur Delegation (G.11+).
+35. **Keine Ampel-Berechnung außerhalb `system_status_core`** in System-Status-Pfad — Facade nur Aggregation (G.12+).
+36. **Keine lsblk/findmnt/blkid-Discovery außerhalb `storage_discovery`** — Facades delegieren (P.1+); Low-Level in `storage_detection`/`mount_facade`.
+37. **Keine direkten `detect_block_devices`/`detect_filesystems` aus `storage_detection` in neuen Modulen** — nur über `storage_discovery` (P.1+).
 
 ## Prüfreihenfolge (Cursor)
 

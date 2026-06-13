@@ -207,6 +207,10 @@ Kanonisches Modul `core/network_info_facade.py` — read-only Netzwerk-Info, Dem
 
 Vollständige Bestandsaufnahme — **kein Refactoring**. 3 Legacy-Funktionen in `app.py`; 1 Facade-Bypass in `webserver_status`. Nächste Kandidaten: G.6/G.7/G.8. Doku: `docs/architecture/NETWORK_NEXT_FACADE_CANDIDATES_G5.md`.
 
+## Was ist G.6 (System Info Facade)?
+
+`GET /api/system-info` delegiert vollständig an `system_info_facade`; Network ausschließlich über `network_info_facade`; Status-Sections über `dcc_status_facade`. ~240 Zeilen aus `app.py` extrahiert. Doku: `docs/architecture/SYSTEM_INFO_FACADE_G6.md`.
+
 ## Was ist G.7 (Webserver Status Facade)?
 
 `GET /api/webserver/status` delegiert an `webserver_status_facade`; Network und Port über `network_info_facade`. G.5-Bypass (`_detect_frontend_port` im Handler) beseitigt. Doku: `docs/architecture/WEBSERVER_STATUS_FACADE_G7.md`.
@@ -243,11 +247,29 @@ Kanonisches Modul `frontend/src/viewmodels/statusViewModel.ts` — zentrale Stat
 
 5 Presentation-Libs delegieren an `statusViewModel`. Verbleibend: 10 (Domain + Large-Page). **Kein H.8.** Doku: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H7.md`.
 
-## Nächster Schritt?
+## Was ist G.9 (Hardware Discovery Core)?
+
+Hardware-/System-Discovery aus `app.py` nach `hardware_discovery.py` extrahiert; `system_info_facade` ohne `_legacy_*`/`import app`. Legacy-Wrapper in `app.py` bleiben. Doku: `docs/architecture/HARDWARE_DISCOVERY_CORE_G9.md`.
+
+## Was ist G.11 (Webserver Service Discovery)?
+
+Webserver-/Service-/CMS-Discovery in `webserver_service_discovery.py`; `webserver_status_facade` ohne `import app`. Legacy-Wrapper in `app.py`. Doku: `docs/architecture/WEBSERVER_SERVICE_DISCOVERY_G11.md`.
+
+## Was ist G.12 (System Status Core)?
+
+Ampel-Logik (Backup/Restore/Security/Updates) in `system_status_core.py`; Facade delegiert nur. Security/Updates-Adapter kontrolliert im Core. Doku: `docs/architecture/SYSTEM_STATUS_CORE_G12.md`.
+
+## Was ist P.1 (Storage Discovery Canonical)?
+
+Kanonischer lsblk/findmnt/blkid-Owner `storage_discovery.py`; `storage_facade` delegiert. `app.py`-Storage-Blöcke bewusst offen. Matrix: `docs/architecture/STORAGE_DISCOVERY_OWNERSHIP_MATRIX.md`.
+
+## Was ist D.12 (Deploy Thin-Orchestrator Audit)?
+
+Audit von `deploy/routes.py` (190 Routen, 81 Runner-Imports); Final Plan ohne Execute-Extraktion. Doku: `docs/architecture/DEPLOY_THIN_ORCHESTRATOR_FINAL_PLAN.md`.
 
 ## Nächster Schritt?
 
-**G.6** System Info Facade — siehe Roadmap.
+G.13 (verbleibende `system_status_facade`→app-Sections) · P.2 (`app.py` Storage-Migration) · D.13 (Rescue-Domain-Router).
 
 ## Weiterlesen
 

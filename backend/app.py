@@ -531,97 +531,20 @@ def _merge_backup_realtest_state(**kwargs) -> None:
 def _compute_system_status() -> dict:
     """
     Zentrale Statuslogik gemäß System State Engine.
-    Backup/Restore nur aus persistiertem realtest_state + Dateiprüfung, keine Annahmen.
+    Legacy wrapper → system_status_core (G.12).
     """
-    status = {
-        "backup": "red",
-        "restore": "red",
-        "security": "yellow",
-        "updates": "yellow",
-    }
     try:
-        backup_settings = APP_SETTINGS.get("backup") or {}
-        rs = backup_settings.get("realtest_state") or {}
+        from core.system_status_core import build_overall_status
 
-        # Backup: GRÜN nur bei nachgewiesen erfolgreichem Verify und existierender Datei
-        if rs.get("last_verify_ok") is True:
-            p = rs.get("last_verify_path")
-            if p and Path(str(p)).exists():
-                status["backup"] = "green"
-            else:
-                status["backup"] = "yellow"
-        elif rs.get("last_verify_shallow_ok") is True:
-            status["backup"] = "yellow"
-        elif rs.get("last_verify_ok") is False:
-            status["backup"] = "yellow"
-        else:
-            status["backup"] = "red"
-
-        # Restore: GRÜN nur nach erfolgreichem Sandbox-Preview; GELB bei Dry-Run; ROT sonst
-        if rs.get("last_preview_ok") is True:
-            status["restore"] = "green"
-        elif rs.get("last_dry_run_ok") is True:
-            status["restore"] = "yellow"
-        elif rs.get("last_preview_ok") is False or rs.get("last_dry_run_ok") is False:
-            status["restore"] = "yellow"
-        else:
-            status["restore"] = "red"
-
-        # Security aus realer Konfiguration ableiten (gleiches 5er-Modell wie UI)
-        try:
-            sec = get_security_config() or {}
-            ufw = sec.get("ufw") or {}
-            ssh_cfg = str((sec.get("ssh") or {}).get("config") or "").lower()
-            ufw_status = str(ufw.get("status") or "").lower()
-            ufw_active_effective = bool(ufw.get("active")) or (
-                bool(ufw.get("installed"))
-                and (
-                    "active" in ufw_status
-                    or "aktiv" in ufw_status
-                    or "enabled=yes" in ufw_status
-                    or "via systemctl" in ufw_status
-                    or "wahrscheinlich" in ufw_status
-                )
-            )
-            active_count = (
-                (1 if ufw_active_effective else 0)
-                + (1 if bool((sec.get("fail2ban") or {}).get("running")) else 0)
-                + (1 if bool((sec.get("auto_updates") or {}).get("enabled")) else 0)
-                + (1 if bool((sec.get("ssh_hardening") or {}).get("enabled")) else 0)
-                + (1 if bool((sec.get("audit_logging") or {}).get("enabled")) else 0)
-            )
-            # Kritische Maengel: Firewall nicht installiert oder Root-SSH-Login aktiv.
-            if not bool(ufw.get("installed")):
-                status["security"] = "red"
-            elif "permitrootlogin yes" in ssh_cfg:
-                status["security"] = "red"
-            elif active_count >= 5:
-                status["security"] = "green"
-            elif active_count >= 1:
-                status["security"] = "yellow"
-            else:
-                status["security"] = "red"
-        except Exception:
-            status["security"] = "yellow"
-
-        # Updates anhand Kategorien differenziert bewerten.
-        try:
-            upd = get_updates_categorized()
-            total = int(upd.get("total") or 0)
-            cats = upd.get("categories") or {}
-            sec_cnt = int(cats.get("security") or 0)
-            crit_cnt = int(cats.get("critical") or 0)
-            if total == 0:
-                status["updates"] = "green"
-            elif sec_cnt > 0 or crit_cnt > 0:
-                status["updates"] = "red"
-            else:
-                status["updates"] = "yellow"
-        except Exception:
-            status["updates"] = "yellow"
+        return build_overall_status()
     except Exception as e:
         logger.error(f"Fehler bei Systemstatus-Berechnung: {e}", exc_info=True)
-    return status
+        return {
+            "backup": "red",
+            "restore": "red",
+            "security": "yellow",
+            "updates": "yellow",
+        }
 
 
 class UserProfile(BaseModel):
@@ -5133,84 +5056,10 @@ async def run_command_async(cmd, sudo: bool = False, sudo_password: Optional[str
     return await asyncio.to_thread(run_command, cmd, sudo=sudo, sudo_password=sudo_password, timeout=timeout)
 
 def check_installed(package):
-    """Prüfe ob Paket installiert ist"""
-    # Spezielle Prüfung für bestimmte Pakete
-    if package == "ufw":
-        # UFW spezifisch prüfen
-        result = run_command("which ufw")
-        if result["success"]:
-            return True
-        # Alternativ: dpkg prüfen
-        result = run_command("dpkg -l | grep '^ii' | grep -E '^ii\\s+ufw\\s'")
-        return result["success"] and "ufw" in result.get("stdout", "")
-    
-    if package == "nginx":
-        # Nginx spezifisch prüfen - mehrere Methoden
-        # Methode 1: which nginx
-        result = run_command("which nginx")
-        if result["success"]:
-            return True
-        # Methode 2: dpkg prüfen
-        result = run_command("dpkg -l | grep '^ii' | grep -E '\\snginx\\s'")
-        if result["success"] and "nginx" in result.get("stdout", ""):
-            return True
-        # Methode 3: Prüfe ob nginx-Binary existiert
-        result = run_command("test -f /usr/sbin/nginx || test -f /usr/bin/nginx")
-        if result["success"]:
-            return True
-        # Methode 4: Prüfe ob nginx-Config existiert
-        result = run_command("test -d /etc/nginx")
-        if result["success"]:
-            return True
-        return False
-    
-    if package == "apache2" or package == "apache":
-        # Apache spezifisch prüfen
-        result = run_command("which apache2")
-        if result["success"]:
-            return True
-        result = run_command("dpkg -l | grep '^ii' | grep -E '\\sapache2\\s'")
-        if result["success"] and "apache2" in result.get("stdout", ""):
-            return True
-        result = run_command("test -f /usr/sbin/apache2 || test -d /etc/apache2")
-        if result["success"]:
-            return True
-        return False
-    
-    # Grafana: which, dpkg, Binary-Pfade, systemd-Unit, Snap
-    if package == "grafana":
-        if run_command("which grafana-server 2>/dev/null")["success"]:
-            return True
-        r = run_command("dpkg -l 2>/dev/null | grep -E '^ii\\s+grafana'")
-        if r.get("success") and (r.get("stdout") or "").strip():
-            return True
-        if run_command("test -f /usr/sbin/grafana-server 2>/dev/null")["success"]:
-            return True
-        if run_command("test -f /usr/bin/grafana-server 2>/dev/null")["success"]:
-            return True
-        if run_command("test -f /usr/share/grafana/bin/grafana-server 2>/dev/null")["success"]:
-            return True
-        if run_command("systemctl list-unit-files 2>/dev/null | grep -q 'grafana-server'")["success"]:
-            return True
-        if run_command("systemctl list-units --all 2>/dev/null | grep -q grafana")["success"]:
-            return True
-        if run_command("snap list 2>/dev/null | grep -q grafana")["success"]:
-            return True
-        if run_command("test -f /snap/bin/grafana-server 2>/dev/null")["success"]:
-            return True
-        # Docker-Container (auch wenn kein Zugriff auf Socket)
-        if run_command("docker ps --format '{{.Names}}' 2>/dev/null | grep -q grafana")["success"]:
-            return True
-        if run_command("docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q grafana")["success"]:
-            return True
-        # Port 3000 prüfen (Grafana-Standard-Port)
-        if run_command("ss -tlnp 2>/dev/null | grep -q ':3000 '")["success"] or run_command("netstat -tlnp 2>/dev/null | grep -q ':3000 '")["success"]:
-            return True
-        return False
+    """Legacy wrapper → webserver_service_discovery (G.11)."""
+    from core.webserver_service_discovery import check_installed as _fn
 
-    # Standard-Prüfung
-    result = run_command(f"which {package} || dpkg -l | grep '^ii' | grep -E '\\s{package}\\s'")
-    return result["success"]
+    return _fn(package)
 
 def get_package_version(package):
     """Hole Paket-Version"""
@@ -5231,219 +5080,46 @@ def get_package_version(package):
         return None
 
 def get_cpu_temp():
-    """CPU Temperatur auslesen"""
-    try:
-        # Versuche verschiedene Pfade
-        temp_paths = [
-            '/sys/class/thermal/thermal_0/temp',
-            '/sys/class/thermal/thermal_zone0/temp',
-            '/sys/devices/virtual/thermal/thermal_zone0/temp',
-        ]
-        
-        for path in temp_paths:
-            try:
-                with open(path, 'r') as f:
-                    temp = int(f.read().strip()) / 1000.0
-                    return round(temp, 1)
-            except:
-                continue
-        
-        # Alternative: vcgencmd (Raspberry Pi)
-        result = run_command("vcgencmd measure_temp 2>/dev/null")
-        if result["success"] and result["stdout"]:
-            temp_str = result["stdout"]
-            if "temp=" in temp_str:
-                temp = float(temp_str.split("temp=")[1].split("'")[0])
-                return round(temp, 1)
-        
-        # Alternative: sensors (falls installiert)
-        result = run_command("sensors 2>/dev/null | grep -i temp | head -1")
-        if result["success"] and result["stdout"]:
-            # Parse sensors output
-            parts = result["stdout"].split()
-            for part in parts:
-                if "+" in part and "°C" in part:
-                    temp = float(part.replace("+", "").replace("°C", ""))
-                    return round(temp, 1)
-        
-        return None
-    except:
-        return None
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_cpu_temp as _fn
+
+    return _fn()
+
 
 def get_all_thermal_sensors():
-    """Alle Temperatursensoren (thermal_zone*)"""
-    sensors = []
-    try:
-        base = Path("/sys/class/thermal")
-        if not base.exists():
-            return sensors
-        for zone in sorted(base.glob("thermal_zone*")):
-            try:
-                temp_path = zone / "temp"
-                type_path = zone / "type"
-                if temp_path.exists():
-                    temp = int(temp_path.read_text().strip()) / 1000.0
-                    name = type_path.read_text().strip() if type_path.exists() else zone.name
-                    sensors.append({"name": name, "temperature": round(temp, 1), "zone": zone.name})
-            except Exception:
-                continue
-        if not sensors and run_command("which vcgencmd 2>/dev/null")["success"]:
-            vc = run_command("vcgencmd measure_temp 2>/dev/null")
-            if vc.get("success") and "temp=" in (vc.get("stdout") or ""):
-                t = float((vc["stdout"] or "").split("temp=")[1].split("'")[0])
-                sensors.append({"name": "cpu", "temperature": round(t, 1), "zone": "vcgencmd"})
-        # hwmon Temperatursensoren (Motherboard, GPU, NVMe etc.)
-        hwmon_base = Path("/sys/class/hwmon")
-        if hwmon_base.exists():
-            for hw in sorted(hwmon_base.iterdir()):
-                if not hw.is_dir() or not hw.name.startswith("hwmon"):
-                    continue
-                try:
-                    name_path = hw / "name"
-                    hw_name = name_path.read_text().strip() if name_path.exists() else hw.name
-                    for temp_path in sorted(hw.glob("temp*_input")):
-                        try:
-                            val = int(temp_path.read_text().strip())
-                            temp_c = round(val / 1000.0, 1)
-                            label_path = hw / temp_path.name.replace("_input", "_label")
-                            label = label_path.read_text().strip() if label_path.exists() else temp_path.stem.replace("_input", "")
-                            sensors.append({"name": f"{hw_name} {label}", "temperature": temp_c, "zone": f"{hw.name}/{temp_path.name}"})
-                        except Exception:
-                            continue
-                except Exception:
-                    continue
-    except Exception:
-        pass
-    return sensors
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_all_thermal_sensors as _fn
+
+    return _fn()
+
 
 def get_all_fans():
-    """Alle Lüfter (hwmon fan*_input)"""
-    fans = []
-    try:
-        base = Path("/sys/class/hwmon")
-        if not base.exists():
-            return fans
-        for hw in sorted(base.iterdir()):
-            if not hw.is_dir() or not hw.name.startswith("hwmon"):
-                continue
-            name_path = hw / "name"
-            name = name_path.read_text().strip() if name_path.exists() else hw.name
-            for fan in sorted(hw.glob("fan*_input")):
-                try:
-                    rpm = int(fan.read_text().strip())
-                    fans.append({"name": f"{name} {fan.stem.replace('_input', '')}", "rpm": rpm})
-                except Exception:
-                    continue
-    except Exception:
-        pass
-    return fans
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_all_fans as _fn
+
+    return _fn()
+
 
 def get_all_disks():
-    """Alle gemounteten Laufwerke + NVMe/Block-Geräte mit Nutzung bzw. Größe"""
-    disks = []
-    seen_devices = set()
-    try:
-        for part in psutil.disk_partitions(all=False):
-            try:
-                usage = psutil.disk_usage(part.mountpoint)
-                disks.append({
-                    "device": part.device,
-                    "mountpoint": part.mountpoint,
-                    "fstype": part.fstype,
-                    "total_gb": round(usage.total / (1024**3), 1),
-                    "used_gb": round(usage.used / (1024**3), 1),
-                    "percent": usage.percent,
-                    "label": part.device.rstrip("/").split("/")[-1],
-                })
-                seen_devices.add(part.device)
-            except Exception:
-                continue
-        # NVMe und weitere Block-Geräte (auch ungemountet)
-        block_base = Path("/sys/block")
-        if block_base.exists():
-            for blk in sorted(block_base.iterdir()):
-                if blk.name.startswith("loop") or blk.name.startswith("ram"):
-                    continue
-                dev = f"/dev/{blk.name}"
-                if dev in seen_devices:
-                    continue
-                try:
-                    size_path = blk / "size"
-                    if not size_path.exists():
-                        continue
-                    sectors = int(size_path.read_text().strip())
-                    size_gb = round(sectors * 512 / (1024**3), 1)
-                    if size_gb <= 0:
-                        continue
-                    # Mountpoint und Nutzung für dieses Block-Device ermitteln (z. B. nvme0n1p1)
-                    mountpoint = ""
-                    used_gb = None
-                    percent = None
-                    for p in psutil.disk_partitions(all=True):
-                        if p.device.startswith(dev) or (dev + "1" == p.device or dev + "p1" == p.device):
-                            try:
-                                u = psutil.disk_usage(p.mountpoint)
-                                mountpoint = p.mountpoint
-                                used_gb = round(u.used / (1024**3), 1)
-                                percent = u.percent
-                                break
-                            except Exception:
-                                pass
-                    disks.append({
-                        "device": dev,
-                        "mountpoint": mountpoint,
-                        "fstype": "",
-                        "total_gb": size_gb,
-                        "used_gb": used_gb,
-                        "percent": percent,
-                        "label": blk.name,
-                    })
-                    seen_devices.add(dev)
-                except Exception:
-                    continue
-    except Exception:
-        pass
-    return disks
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_all_disks as _fn
+
+    return _fn()
+
 
 def get_all_displays():
-    """Alle erkannten Displays (xrandr)"""
-    displays = []
-    try:
-        r = run_command("xrandr --query 2>/dev/null")
-        if not r.get("success") or not r.get("stdout"):
-            return displays
-        current = None
-        for line in (r["stdout"] or "").strip().split("\n"):
-            if line.startswith(" ") and "x" in line and "+" in line:
-                parts = line.strip().split()
-                if len(parts) >= 1 and current:
-                    mode = parts[0]
-                    displays.append({"output": current, "mode": mode, "connected": "connected" in line or "*" in line})
-            else:
-                parts = line.split()
-                if len(parts) >= 2:
-                    current = parts[0]
-                    if parts[1] == "connected":
-                        displays.append({"output": current, "mode": parts[2] if len(parts) > 2 else "", "connected": True})
-        if not displays:
-            r2 = run_command("DISPLAY=:0 xrandr --query 2>/dev/null")
-            if r2.get("success") and r2.get("stdout"):
-                for line in (r2["stdout"] or "").strip().split("\n"):
-                    if " connected " in line:
-                        parts = line.split()
-                        if len(parts) >= 1:
-                            displays.append({"output": parts[0], "mode": parts[2] if len(parts) > 2 else "", "connected": True})
-    except Exception:
-        pass
-    return displays
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_all_displays as _fn
+
+    return _fn()
+
 
 def get_fan_speed():
-    """Lüfter-Geschwindigkeit (ein Wert für Abwärtskompatibilität)"""
-    try:
-        fans = get_all_fans()
-        return fans[0]["rpm"] if fans else None
-    except Exception:
-        return None
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_fan_speed as _fn
+
+    return _fn()
+
 
 def is_asus_rog_system():
     """Prüft ob es sich um ein ASUS ROG System handelt"""
@@ -5563,273 +5239,55 @@ def set_asus_fan_profile(profile: str, sudo_password: str = ""):
         return {"success": False, "error": str(e)}
 
 def get_motherboard_info():
-    """Motherboard/Baseboard aus DMI"""
-    info = {}
-    try:
-        for key, path in [("vendor", "board_vendor"), ("name", "board_name"), ("product", "product_name")]:
-            p = Path("/sys/class/dmi/id") / path
-            if p.exists():
-                try:
-                    info[key] = p.read_text().strip()
-                except Exception:
-                    pass
-        if not info:
-            r = run_command("dmidecode -t baseboard 2>/dev/null")
-            if r.get("success") and r.get("stdout"):
-                for line in (r["stdout"] or "").split("\n"):
-                    if "Manufacturer:" in line:
-                        info["vendor"] = line.split(":", 1)[-1].strip()
-                    elif "Product Name:" in line:
-                        info["name"] = line.split(":", 1)[-1].strip()
-    except Exception:
-        pass
-    return info
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_motherboard_info as _fn
+
+    return _fn()
+
 
 def get_ram_info():
-    """RAM-Typ, Geschwindigkeit und Hersteller (DMI/dmidecode). Normalisierte Felder: Type, Size, Speed, Manufacturer."""
-    rams = []
-    try:
-        r = run_command("dmidecode -t memory 2>/dev/null")
-        if r.get("success") and r.get("stdout"):
-            block = {}
-            for line in (r["stdout"] or "").split("\n"):
-                if line.startswith("Memory Device"):
-                    if block.get("Size") and "No Module" not in (block.get("Size") or ""):
-                        _normalize_ram_block(block)
-                        rams.append(block)
-                    block = {}
-                elif ":" in line:
-                    k, v = line.split(":", 1)
-                    block[k.strip()] = v.strip()
-            if block.get("Size") and "No Module" not in (block.get("Size") or ""):
-                _normalize_ram_block(block)
-                rams.append(block)
-        if not rams:
-            for p in Path("/sys/class/dmi/id").glob("*"):
-                if "mem" in p.name.lower():
-                    try:
-                        rams.append({"source": p.name, "value": p.read_text().strip()})
-                    except Exception:
-                        pass
-    except Exception:
-        pass
-    return rams
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_ram_info as _fn
+
+    return _fn()
+
 
 
 def _normalize_ram_block(block: dict) -> None:
-    """Setzt Speed aus dmidecode (Fallback: Configured Clock Speed / Maximum Speed). Type, Size, Manufacturer bleiben unverändert."""
-    if not block:
-        return
-    speed = block.get("Speed") or block.get("Configured Clock Speed") or block.get("Configured Memory Speed") or block.get("Maximum Speed")
-    if speed and str(speed).strip() and str(speed) != "Unknown":
-        block["Speed"] = speed
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import _normalize_ram_block as _fn
+
+    return _fn(block)
+
 
 def get_cpu_name():
-    """CPU- oder Board-Modellname aus /proc/cpuinfo oder Device-Tree (für Raspberry Pi 5/ARM64)."""
-    try:
-        with open("/proc/cpuinfo", "r") as f:
-            for line in f:
-                s = line.strip()
-                if s.startswith("model name"):
-                    return line.split(":", 1)[-1].strip()
-                if s.startswith("Model name"):
-                    return line.split(":", 1)[-1].strip()
-                if s.startswith("Hardware"):
-                    return line.split(":", 1)[-1].strip()
-                if s.startswith("Model") and ":" in line:
-                    # "Model" (Board, z. B. "Raspberry Pi 5 Model B Rev 1.0") – nur wenn noch nichts gefunden
-                    val = line.split(":", 1)[-1].strip()
-                    if val and ("Raspberry" in val or "BCM" in val):
-                        return val
-                if s.startswith("Processor"):
-                    val = line.split(":", 1)[-1].strip()
-                    if val and "aarch64" in val.lower():
-                        return val
-        # Fallback: Device-Tree (Raspberry Pi Board-Name)
-        for path in ("/proc/device-tree/model", "/sys/firmware/devicetree/base/model"):
-            try:
-                if Path(path).exists():
-                    raw = Path(path).read_bytes().decode("utf-8", errors="ignore").rstrip("\x00").strip()
-                    if raw:
-                        return raw
-            except Exception:
-                pass
-        return None
-    except Exception:
-        return None
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_cpu_name as _fn
+
+    return _fn()
+
 
 
 def get_cpu_summary():
-    """Ein CPU-Summary: Name, Kerne, Threads, Cache (L1–L3), Befehlssätze (flags) aus /proc/cpuinfo und lscpu."""
-    out = {"name": None, "cores": None, "threads": None, "cache": None, "flags": None}
-    try:
-        # Aus /proc/cpuinfo (erstes Prozessor-Block)
-        with open("/proc/cpuinfo", "r") as f:
-            content = f.read()
-        blocks = content.strip().split("\n\n")
-        first = blocks[0] if blocks else ""
-        for line in first.split("\n"):
-            line = line.strip()
-            if line.startswith("model name") or line.startswith("Model name"):
-                out["name"] = line.split(":", 1)[-1].strip()
-            elif line.startswith("Hardware") and not out["name"]:
-                out["name"] = line.split(":", 1)[-1].strip()
-            elif line.startswith("Model") and ":" in line and not out["name"]:
-                val = line.split(":", 1)[-1].strip()
-                if val and ("Raspberry" in val or "BCM" in val):
-                    out["name"] = val
-            elif line.startswith("Processor") and not out["name"]:
-                out["name"] = line.split(":", 1)[-1].strip()
-            elif line.startswith("cpu cores"):
-                try:
-                    out["cores"] = int(line.split(":")[-1].strip())
-                except ValueError:
-                    pass
-            elif line.startswith("cache size"):
-                out["cache"] = line.split(":", 1)[-1].strip()
-            elif line.startswith("flags") or line.startswith("Features"):
-                out["flags"] = line.split(":", 1)[-1].strip()
-        # Threads = Anzahl Prozessor-Blöcke
-        out["threads"] = len([b for b in blocks if "processor" in b or "Processor" in b])
-        # lscpu für Kerne (Core(s) per socket × Sockets) sowie L1d/L1i/L2/L3
-        try:
-            r = run_command("lscpu 2>/dev/null")
-            if r.get("success") and r.get("stdout"):
-                cores_per_socket = None
-                sockets = None
-                for line in (r.get("stdout") or "").splitlines():
-                    if "Core(s) per socket:" in line:
-                        try:
-                            cores_per_socket = int(line.split(":")[-1].strip())
-                        except ValueError:
-                            pass
-                    elif "Socket(s):" in line:
-                        try:
-                            sockets = int(line.split(":")[-1].strip())
-                        except ValueError:
-                            pass
-                    elif "L1d cache:" in line or "L1i cache:" in line or "L2 cache:" in line or "L3 cache:" in line:
-                        key, _, val = line.partition(":")
-                        val = val.strip()
-                        if val:
-                            out["cache"] = (out["cache"] or "") + (" · " if out["cache"] else "") + f"{key.strip()}: {val}"
-                if out.get("cores") is None and cores_per_socket is not None and sockets is not None:
-                    out["cores"] = cores_per_socket * sockets
-        except Exception:
-            pass
-        if out["cache"]:
-            out["cache"] = out["cache"].strip()
-        return out
-    except Exception:
-        return out
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_cpu_summary as _fn
+
+    return _fn()
+
 
 
 def get_per_core_usage(per_cpu_percent):
-    """Aus per-logical-CPU-Auslastung die pro physikalischem Kern (max der Threads) berechnen."""
-    if not per_cpu_percent:
-        return [], 0
-    try:
-        proc_to_core = {}
-        with open("/proc/cpuinfo", "r") as f:
-            proc_id = None
-            core_id = None
-            for line in f:
-                if line.strip().startswith("processor"):
-                    proc_id = int(line.split(":")[-1].strip())
-                elif line.strip().startswith("core id"):
-                    core_id = int(line.split(":")[-1].strip())
-                elif line.strip() == "" and proc_id is not None and core_id is not None:
-                    proc_to_core[proc_id] = core_id
-                    proc_id = core_id = None
-            if proc_id is not None and core_id is not None:
-                proc_to_core[proc_id] = core_id
-        from collections import defaultdict
-        core_to_procs = defaultdict(list)
-        for p, c in proc_to_core.items():
-            core_to_procs[c].append(p)
-        if not core_to_procs:
-            return list(per_cpu_percent), len(per_cpu_percent)
-        per_core = []
-        for c in sorted(core_to_procs.keys()):
-            procs = core_to_procs[c]
-            vals = [per_cpu_percent[i] for i in procs if i < len(per_cpu_percent)]
-            per_core.append(max(vals) if vals else 0)
-        return per_core, len(per_core)
-    except Exception:
-        return list(per_cpu_percent), len(per_cpu_percent)
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import get_per_core_usage as _fn
+
+    return _fn(per_cpu_percent)
+
 
 def get_installed_apps():
-    """Erkenne installierte Web-Apps"""
-    apps = {
-        "wordpress": check_installed("wordpress"),
-        "nextcloud": check_installed("nextcloud"),
-        "drupal": check_installed("drupal"),
-        "nginx": check_installed("nginx"),
-        "apache": check_installed("apache2"),
-        "php": check_installed("php") or check_installed("php-fpm") or check_installed("libapache2-mod-php"),
-        "mysql": check_installed("mysql"),
-        "postgresql": check_installed("postgresql"),
-        "docker": check_installed("docker"),
-        "python": check_installed("python3"),
-        "nodejs": check_installed("nodejs"),
-        "git": check_installed("git"),
-        "cursor": False,  # Wird separat geprüft
-        "qtqml": check_installed("qt5-default") or check_installed("qtbase5-dev") or run_command("which qmake 2>/dev/null")["success"] or run_command("dpkg -l 2>/dev/null | grep -q 'qt5'")["success"],
-        "cockpit": check_installed("cockpit"),
-        "webmin": check_installed("webmin"),
-        # NAS
-        "samba": check_installed("samba") or check_installed("samba-common"),
-        "nfs": check_installed("nfs-kernel-server") or check_installed("nfs-common"),
-        "ftp": check_installed("vsftpd") or check_installed("proftpd"),
-        # Home Automation
-        "homeassistant": check_installed("homeassistant") or run_command("docker ps | grep homeassistant")["success"],
-        "openhab": check_installed("openhab"),
-        "nodered": check_installed("node-red") or run_command("npm list -g node-red 2>/dev/null")["success"],
-        # Music Box
-        "mopidy": check_installed("mopidy"),
-        "volumio": check_installed("volumio") or run_command("test -f /opt/volumio/bin/volumio")["success"],
-        "plex": check_installed("plexmediaserver") or run_command("dpkg -l | grep plex")["success"],
-    }
-    
-    # Cursor AI prüfen (kann in verschiedenen Pfaden sein)
-    cursor_paths = [
-        "/usr/bin/cursor",
-        "/usr/local/bin/cursor",
-        "/opt/cursor/cursor",
-        "~/.local/bin/cursor",
-    ]
-    for path in cursor_paths:
-        result = run_command(f"test -f {path} || which cursor")
-        if result["success"]:
-            apps["cursor"] = True
-            break
-    
-    # WordPress Plugins prüfen
-    wp_plugin_paths = [
-        "/var/www/html/wp-content/plugins",
-        "/var/www/wordpress/wp-content/plugins",
-        "~/wordpress/wp-content/plugins",
-    ]
-    for path in wp_plugin_paths:
-        result = run_command(f"test -d {path} && ls {path} 2>/dev/null | head -5")
-        if result["success"] and result["stdout"]:
-            plugins = [p.strip() for p in result["stdout"].split("\n") if p.strip()]
-            apps["wordpress_plugins"] = plugins
-            break
-    
-    # Websites/Apps erkennen (Webroot prüfen)
-    webroots = ["/var/www/html", "/var/www", "/home/*/public_html"]
-    websites = []
-    for root in webroots:
-        result = run_command(f"ls -d {root}/* 2>/dev/null | head -10")
-        if result["success"]:
-            for site in result["stdout"].split("\n"):
-                if site.strip():
-                    websites.append(site.strip())
-    
-    apps["websites"] = websites[:10]  # Erste 10
-    
-    return apps
+    """Legacy wrapper → webserver_service_discovery (G.11)."""
+    from core.webserver_service_discovery import get_installed_apps as _fn
+
+    return _fn()
 
 def get_network_info():
     """Netzwerk-Informationen für UI/API inklusive robuster LAN-Erkennung im Service-Kontext."""
@@ -5838,17 +5296,10 @@ def get_network_info():
     return discover_network_info()
 
 def get_running_services():
-    """Laufen Services"""
-    services = [
-        "nginx", "apache2", "mysql", "mariadb", "postgresql",
-        "docker", "fail2ban", "sshd", "postfix", "dovecot",
-        "mopidy", "grafana-server", "plexmediaserver",
-    ]
-    running = {}
-    for service in services:
-        result = run_command(f"systemctl is-active {service}")
-        running[service] = result["success"]
-    return running
+    """Legacy wrapper → webserver_service_discovery (G.11)."""
+    from core.webserver_service_discovery import get_running_services as _fn
+
+    return _fn()
 
 def _get_installed_packages_list():
     """Detaillierte Liste installierter Pakete"""
@@ -6220,245 +5671,9 @@ def get_security_config():
 @app.get("/api/system-info")
 async def get_system_info(request: Request, light: bool = False):
     """Systeminfo auslesen. light=True: minimaler Satz für Polling (weniger CPU auf Pi). X-Demo-Mode: 1 ersetzt sensible Daten durch Platzhalter."""
-    try:
-        # light-Modus: kurzes interval (0.2s) für aktuelle Werte, ohne 1s zu blockieren. Sonst: 1s.
-        cpu_interval = 0.2 if light else 1
-        per_cpu_percent = psutil.cpu_percent(interval=cpu_interval, percpu=True)
-        cpu_percent = sum(per_cpu_percent) / len(per_cpu_percent) if per_cpu_percent else 0
-        per_core_usage, physical_cores = (([], 0) if light else get_per_core_usage(per_cpu_percent))
-        # Fallback: psutil.cpu_count(logical=False) wenn physical_cores 0 ist
-        if physical_cores == 0:
-            try:
-                physical_cores = psutil.cpu_count(logical=False) or 0
-            except Exception:
-                physical_cores = 0
-        # Weitere Fallback: Bei 0 Kerne (z. B. unter Linux oft None) aus Threads schätzen
-        if physical_cores == 0 and per_cpu_percent:
-            try:
-                physical_cores = max(1, len(per_cpu_percent) // 2)
-            except Exception:
-                pass
-        memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
-        disk_mountpoint = '/'
-        disk_partition = ''
-        for p in psutil.disk_partitions(all=False):
-            if p.mountpoint == '/':
-                disk_partition = p.device.rstrip('/').split('/')[-1] or p.device
-                break
-        
-        # Uptime
-        with open('/proc/uptime', 'r') as f:
-            uptime_seconds = float(f.readline().split()[0])
-            hours = int(uptime_seconds // 3600)
-            minutes = int((uptime_seconds % 3600) // 60)
-            uptime = f"{hours}h {minutes}m"
-        
-        # CPU Temperatur: light nur schneller sysfs-Lese, sonst voller Weg
-        cpu_temp = None
-        temp_debug = None
-        if light:
-            try:
-                with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
-                    cpu_temp = round(int(f.read().strip()) / 1000.0, 1)
-            except Exception:
-                pass
-        else:
-            cpu_temp = get_cpu_temp()
-            try:
-                temp_path = Path("/sys/class/thermal/thermal_zone0/temp")
-                if temp_path.exists():
-                    temp_debug = int(temp_path.read_text().strip()) / 1000.0
-            except Exception:
-                pass
-        fan_speed = None if light else get_fan_speed()
-        
-        fan_debug = None
-        # Linux-Version (light: minimal)
-        os_info = {}
-        try:
-            # /etc/os-release lesen
-            with open('/etc/os-release', 'r') as f:
-                for line in f:
-                    if '=' in line:
-                        key, value = line.strip().split('=', 1)
-                        value = value.strip('"')
-                        os_info[key.lower()] = value
-            
-            # Kernel-Version
-            kernel_result = run_command("uname -r")
-            os_info["kernel"] = kernel_result.get("stdout", "").strip() if kernel_result["success"] else "Unbekannt"
-        except:
-            os_info = {"name": "Unbekannt", "version": "Unbekannt", "kernel": "Unbekannt"}
-        
-        resp = {
-            "os": {
-                "name": os_info.get("pretty_name", os_info.get("name", "Linux")),
-                "version": os_info.get("version_id", os_info.get("version", "")),
-                "kernel": os_info.get("kernel", "Unbekannt"),
-            },
-            "cpu": {
-                "usage": cpu_percent,
-                "per_cpu_usage": per_cpu_percent,
-                "per_core_usage": per_core_usage,
-                "physical_cores": physical_cores,
-                "count": psutil.cpu_count(),
-                "thread_count": psutil.cpu_count(),
-                "temperature": cpu_temp or temp_debug,
-                "fan_speed": fan_speed,
-                "temp_debug": temp_debug,
-            },
-            "memory": {
-                "total": memory.total,
-                "available": memory.available,
-                "percent": memory.percent,
-            },
-            "disk": {
-                "total": disk.total,
-                "used": disk.used,
-                "free": disk.free,
-                "percent": disk.percent,
-                "mountpoint": disk_mountpoint,
-                "partition": disk_partition,
-            },
-            "platform": {
-                "system": os.uname().sysname,
-                "release": os.uname().release,
-            },
-            "uptime": uptime,
-        }
-        if light:
-            # Light-Response: cpu_summary und cpu_name mitliefern, damit Dashboard Kerne/Threads anzeigen kann
-            _cpu_name = get_cpu_name()
-            if _cpu_name:
-                resp["cpu_name"] = _cpu_name
-            _cs = get_cpu_summary()
-            _cs["name"] = _cs.get("name") or _cpu_name
-            if resp.get("cpu", {}).get("physical_cores"):
-                _cs["cores"] = _cs.get("cores") or resp["cpu"]["physical_cores"]
-            if not _cs.get("cores") and resp.get("cpu", {}).get("count"):
-                _cs["cores"] = max(1, resp["cpu"]["count"] // 2)
-            if resp.get("cpu", {}).get("count") is not None:
-                _cs["threads"] = _cs.get("threads") or resp["cpu"]["count"]
-            resp["cpu_summary"] = _cs
-            resp["app_edition"] = get_app_edition()
-            return resp
-        resp["is_raspberry_pi"] = False
-        resp["device_type"] = None
-        try:
-            chassis_path = Path("/sys/class/dmi/id/chassis_type")
-            if chassis_path.exists():
-                try:
-                    ct = chassis_path.read_text().strip()
-                    if ct == "3":
-                        resp["device_type"] = "desktop"
-                    elif ct in ("8", "9", "10", "14"):
-                        resp["device_type"] = "laptop"
-                except Exception:
-                    pass
-        except Exception:
-            pass
-        try:
-            pi_mod = _get_pi_config_module()
-            pi_info = pi_mod.get_system_info()
-            if pi_info.get("status") == "success" and pi_info.get("system_info"):
-                si = pi_info["system_info"]
-                resp["hardware"] = {
-                    "cpus": si.get("cpus") or [],
-                    "gpus": si.get("gpus") or [],
-                }
-                cpu_model = (si.get("cpu_model") or "").lower()
-                gpus = si.get("gpus") or []
-                if "raspberry" in cpu_model or "bcm27" in cpu_model:
-                    resp["is_raspberry_pi"] = True
-                elif gpus and len(gpus) > 0:
-                    if "videocore" in (gpus[0].get("name") or "").lower():
-                        resp["is_raspberry_pi"] = True
-            else:
-                resp["hardware"] = {"cpus": [], "gpus": []}
-        except Exception:
-            resp["hardware"] = {"cpus": [], "gpus": []}
-        # Fallback Pi-Erkennung: Device-Tree-Model prüfen (funktioniert auch wenn Pi-Modul fehlschlägt)
-        if not resp.get("is_raspberry_pi"):
-            for model_path in ("/proc/device-tree/model", "/sys/firmware/devicetree/base/model"):
-                try:
-                    if Path(model_path).exists():
-                        model = Path(model_path).read_bytes().decode("utf-8", errors="ignore").rstrip("\x00").lower()
-                        if "raspberry" in model:
-                            resp["is_raspberry_pi"] = True
-                            break
-                except Exception:
-                    pass
-        # Auf Nicht-Pi immer lspci/nvidia-smi für alle GPUs (iGPU + NVIDIA/AMD), auf Pi bleibt VideoCore vom Modul
-        if not resp.get("is_raspberry_pi"):
-            resp["hardware"]["gpus"] = _get_gpus_for_system_info()
-        cpu_name = get_cpu_name()
-        if cpu_name:
-            resp["cpu_name"] = cpu_name
-        cpu_summary = get_cpu_summary()
-        cpu_summary["name"] = cpu_summary.get("name") or cpu_name
-        # CPU-Kerne: Priorität: cpu_summary["cores"] > physical_cores > Fallback auf threads/2
-        if resp.get("cpu", {}).get("physical_cores") is not None and resp["cpu"]["physical_cores"] > 0:
-            cpu_summary["cores"] = cpu_summary["cores"] or resp["cpu"]["physical_cores"]
-        elif not cpu_summary.get("cores") and resp.get("cpu", {}).get("count"):
-            # Fallback: Wenn keine Kerne gefunden, nimm threads/2 (typisch für Hyperthreading)
-            cpu_summary["cores"] = max(1, resp["cpu"]["count"] // 2)
-        if resp.get("cpu", {}).get("count") is not None:
-            cpu_summary["threads"] = cpu_summary["threads"] or resp["cpu"]["count"]
-        resp["cpu_summary"] = cpu_summary
-        # Ein CPU-Eintrag für Anzeige (keine Liste aller Threads)
-        if not resp.get("hardware", {}).get("cpus") and cpu_name:
-            resp["hardware"]["cpus"] = [{"model": cpu_name, "processor_id": 0}]
-        elif resp.get("hardware", {}).get("cpus") and len(resp["hardware"]["cpus"]) > 1:
-            first_model = (resp["hardware"]["cpus"][0].get("model") or cpu_name or "CPU")
-            resp["hardware"]["cpus"] = [{"model": first_model, "processor_id": 0}]
-        resp["motherboard"] = get_motherboard_info()
-        resp["ram_info"] = get_ram_info()
-        # Hersteller-Treiber-TIP: Was bieten NVIDIA/AMD/Intel-Treiber mehr als integrierte?
-        gpu_names = " ".join([(g.get("name") or g.get("display_name") or "") for g in resp.get("hardware", {}).get("gpus", [])]).lower()
-        cpu_name_lower = (resp.get("cpu_name") or "").lower()
-        tips = []
-        if "nvidia" in gpu_names:
-            tips.append("NVIDIA: Hersteller-Treiber bieten bessere Raytracing-, CUDA- und AI-Unterstützung; bei neueren GPUs oft Open-Source-Kernel + proprietäre Userspace-Komponenten.")
-        if "amd" in gpu_names or "radeon" in gpu_names:
-            tips.append("AMD: Unter Linux meist Open-Source (Mesa/amdgpu) ausreichend; Hersteller-Seite für Profi-Software und neueste Features.")
-        if "intel" in gpu_names or ("intel" in cpu_name_lower and not tips):
-            tips.append("Intel: Mesa-Treiber oft ausreichend; Hersteller für neueste Medien-/Encode-Features.")
-        resp["manufacturer_driver_tip"] = " ".join(tips) if tips else None
-        # Alle Sensoren, Laufwerke, Lüfter, Displays (nach Neustart vollständig sichtbar)
-        try:
-            resp["sensors"] = get_all_thermal_sensors()
-            resp["disks"] = get_all_disks()
-            resp["fans"] = get_all_fans()
-            resp["displays"] = get_all_displays()
-        except Exception:
-            resp["sensors"] = []
-            resp["disks"] = []
-            resp["fans"] = []
-            resp["displays"] = []
-        try:
-            pci_list = _get_pci_with_drivers()
-            def _device_display(description: str) -> str:
-                if not description:
-                    return description or ""
-                d = (description or "").lower()
-                # Nur bei Grafik-Controller kurze Handelsbezeichnung; NVIDIA-Audio nicht bereinigen
-                is_gpu = "vga" in d or "3d" in d or ("display" in d and ("nvidia" in d or "amd" in d or "intel" in d or "radeon" in d))
-                if is_gpu and not ("nvidia" in d and "audio" in d):
-                    return _clean_gpu_description(description)
-                return description
-            resp["drivers"] = [{"device": _device_display(p.get("description") or ""), "driver": p.get("driver") or "—"} for p in pci_list]
-        except Exception:
-            resp["drivers"] = []
-        from core.network_info_facade import build_demo_network_info, build_network_info
+    from core.system_info_facade import build_system_info
 
-        resp["network"] = build_demo_network_info() if _is_demo_mode(request) else build_network_info()
-        if _is_demo_mode(request):
-            resp["is_raspberry_pi"] = True  # Für Screenshots: Pi-spezifische Seiten anzeigen
-        resp["app_edition"] = get_app_edition()
-        return resp
-    except Exception as e:
-        return {"error": str(e)}
+    return build_system_info(light=light, use_demo=_is_demo_mode(request))
 
 
 @app.get("/api/system/asus-rog/fan/profiles")
@@ -8356,44 +7571,10 @@ def get_updates_categorized():
 # ==================== Webserver Endpoints ====================
 
 def get_website_names():
-    """Extrahiere Website-Namen aus Webserver-Konfigurationen"""
-    websites = []
-    
-    # Nginx Konfigurationen
-    nginx_sites = []
-    nginx_result = run_command("find /etc/nginx/sites-enabled /etc/nginx/conf.d -name '*.conf' 2>/dev/null | head -10")
-    if nginx_result["success"]:
-        for conf_file in nginx_result["stdout"].strip().split("\n"):
-            if conf_file.strip():
-                server_name_result = run_command(f"grep -E 'server_name|server_name_' {conf_file} 2>/dev/null | head -5")
-                if server_name_result["success"]:
-                    for line in server_name_result["stdout"].split("\n"):
-                        if "server_name" in line:
-                            # Extrahiere Domain-Namen
-                            parts = line.split()
-                            for part in parts[1:]:
-                                part = part.strip(';')
-                                if part and part not in ['localhost', '_', 'default_server'] and '.' in part:
-                                    nginx_sites.append(part)
-    
-    # Apache Konfigurationen
-    apache_sites = []
-    apache_result = run_command("find /etc/apache2/sites-enabled /etc/apache2/conf-enabled -name '*.conf' 2>/dev/null | head -10")
-    if apache_result["success"]:
-        for conf_file in apache_result["stdout"].strip().split("\n"):
-            if conf_file.strip():
-                server_name_result = run_command(f"grep -E 'ServerName|ServerAlias' {conf_file} 2>/dev/null | head -5")
-                if server_name_result["success"]:
-                    for line in server_name_result["stdout"].split("\n"):
-                        parts = line.split()
-                        if len(parts) >= 2:
-                            domain = parts[1].strip()
-                            if domain and domain not in ['localhost', '*'] and '.' in domain:
-                                apache_sites.append(domain)
-    
-    # Kombiniere und entferne Duplikate
-    all_sites = list(set(nginx_sites + apache_sites))
-    return all_sites[:20]  # Maximal 20
+    """Legacy wrapper → webserver_service_discovery (G.11)."""
+    from core.webserver_service_discovery import get_website_names as _fn
+
+    return _fn()
 
 @app.get("/api/webserver/status")
 async def webserver_status():
@@ -9961,266 +9142,38 @@ async def monitoring_uninstall(request: Request):
 
 # ==================== GPU/System-Info (ohne Pi) ====================
 
-# AMD iGPU Codenamen -> Handelsbezeichnung (Ryzen 7000 etc.)
-_AMD_IGPU_CODENAMES = {
-    "raphael": "AMD Radeon 610M (integriert)",   # Ryzen 7045/7945
-    "phoenix": "AMD Radeon 760M (integriert)",   # Ryzen 7040
-    "phoenix2": "AMD Radeon 760M (integriert)",
-    "renoir": "AMD Radeon Graphics (integriert)",  # Ryzen 4000
-    "cezanne": "AMD Radeon Graphics (integriert)",  # Ryzen 5000
-    "vangogh": "AMD Radeon Graphics (integriert)",
-    "rembrandt": "AMD Radeon 680M (integriert)",
-    "stoney": "AMD Radeon R5/R7 (integriert)",
-}
-
-
 def _clean_gpu_description(desc: str) -> str:
-    """Entfernt technische Bezeichnungen (VGA compatible controller, Audio device, rev xx) und liefert kurze Handelsbezeichnung."""
-    if not (desc or "").strip():
-        return desc or ""
-    s = desc.strip()
-    low = s.lower()
-    # Audio-Geräte sind keine Grafik – leeren String zurück (wird vom Aufrufer gefiltert)
-    if "audio device" in low or (low.startswith("audio ") and "nvidia" in low):
-        return ""
-    # Führende Controller-Typen entfernen (VGA compatible controller, 3D, Display controller – Benutzer braucht sie nicht)
-    if low.startswith("vga ") or low.startswith("vga compatible") or "vga compatible controller:" in low:
-        colon = s.find(":")
-        if colon >= 0:
-            s = s[colon + 1 :].strip()
-            low = s.lower()
-        else:
-            for prefix in ("VGA compatible controller ", "VGA compatible controller: ", "vga compatible controller "):
-                if low.startswith(prefix) or prefix.lower() in low:
-                    start = low.find("vga compatible controller")
-                    end = start + len("vga compatible controller")
-                    if end < len(s) and s[end : end + 1] in (":", " "):
-                        s = s[end + 1 :].lstrip(": ").strip()
-                    low = s.lower()
-                    break
-    else:
-        for prefix in ["3d ", "display controller: ", "display controller:"]:
-            if low.startswith(prefix):
-                s = s[len(prefix):].strip()
-                low = s.lower()
-                break
-    # "(rev xx)" am Ende entfernen
-    if " (rev " in s and ")" in s:
-        idx = s.find(" (rev ")
-        if idx > 0:
-            s = s[:idx].strip()
-    # NVIDIA: Nur Inhalt der eckigen Klammer als Handelsname (z. B. [GeForce RTX 4070 Max-Q / Mobile])
-    if "nvidia" in s.lower() and "[" in s and "]" in s:
-        start = s.find("[")
-        end = s.find("]", start)
-        if start >= 0 and end > start:
-            name = s[start + 1 : end].strip()
-            if name.lower().startswith("geforce") or name.lower().startswith("quadro") or "rtx" in name.lower():
-                return "NVIDIA " + name
-            return "NVIDIA " + name
-    # AMD/ATI: Codenamen (Raphael, Phoenix) -> lesbare Bezeichnung aus Herstellerdaten
-    if "amd" in s.lower() or "ati" in s.lower():
-        s_lower = s.lower()
-        for codename, label in _AMD_IGPU_CODENAMES.items():
-            if codename in s_lower:
-                return label
-        for prefix in ["Advanced Micro Devices, Inc. [AMD/ATI] ", "AMD/ATI ", "AMD "]:
-            if s.startswith(prefix):
-                s = s[len(prefix):].strip()
-                break
-        # Letzte eckige Klammer oft Codename (z. B. [AMD/ATI] Raphael)
-        if "[" in s and "]" in s:
-            bracket = s[s.rfind("[") + 1 : s.rfind("]")].strip()
-            codename = bracket.split()[-1].lower() if bracket else ""
-            if codename in _AMD_IGPU_CODENAMES:
-                return _AMD_IGPU_CODENAMES[codename]
-            if bracket and bracket.lower() not in ("amd/ati", "amd"):
-                return "AMD " + bracket
-        if s and not s.lower().startswith("vga"):
-            return s
-    # Sicherheit: verbliebene technische Präfixe am Anfang entfernen
-    low = s.strip().lower()
-    for strip_prefix in ("vga compatible controller:", "vga compatible controller", "audio device:"):
-        if low.startswith(strip_prefix):
-            s = s[len(strip_prefix):].lstrip(" ").strip()
-            low = s.lower()
-            break
-    # Intel: Nur Grafik-Bezeichnung (UHD Graphics 770, Iris Xe etc.), ohne Chip-Code
-    if "intel" in s.lower():
-        low = s.lower()
-        for marker in ["uhd graphics", "iris xe", "iris graphics", "hd graphics", "iris plus"]:
-            i = low.find(marker)
-            if i >= 0:
-                part = s[i:].strip()
-                return "Intel " + part
-        for prefix in ["Intel Corporation ", "Intel "]:
-            if s.startswith(prefix):
-                s = s[len(prefix):].strip()
-                break
-        return "Intel " + s if s else s
-    return s.strip()
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import _clean_gpu_description as _fn
+
+    return _fn(desc)
+
 
 
 def _shorten_gpu_display_name(name: str, gpu_type: str, memory_mb: Optional[int] = None) -> tuple:
-    """Liefert (display_name, memory_display). Handelsbezeichnung kurz, Speicher in GB (ggf. GDDR)."""
-    name = (name or "").strip()
-    n = name.lower()
-    mem_display = ""
-    if memory_mb is not None and memory_mb > 0:
-        gb = memory_mb / 1024
-        if gb >= 1:
-            mem_display = f"{int(round(gb))} GB"
-            if "nvidia" in n and ("rtx 40" in n or "rtx 30" in n or "geforce rtx" in n):
-                mem_display += " GDDR6"
-            elif "nvidia" in n:
-                mem_display += " GDDR5/GDDR6"
-        else:
-            mem_display = f"{memory_mb} MB"
-    # NVIDIA: Bereits bereinigt (z. B. "NVIDIA GeForce RTX 4070 Max-Q / Mobile") oder aus nvidia-smi – nur Prefix prüfen
-    if "nvidia" in n and ("geforce" in n or "quadro" in n or "rtx" in n):
-        if "corporation" not in n and "vga compatible" not in n and " (rev " not in n and "[" not in name:
-            return (name if name.strip().lower().startswith("nvidia") else "NVIDIA " + name.strip(), mem_display)
-        s = name.replace("NVIDIA Corporation", "").strip()
-        for skip in ["GPU", "Graphics", "NVIDIA "]:
-            if s.startswith(skip):
-                s = s[len(skip):].strip()
-        if "Laptop" in name:
-            s = s.replace(" Laptop GPU", "").replace(" Laptop", "").strip() + " Laptop"
-        elif "Mobile" in name or "Max-Q" in name:
-            s = s.replace(" Mobile", "").replace(" Max-Q", "").strip()
-            if "Max-Q" in name:
-                s += " Max-Q"
-            elif "Mobile" in name:
-                s += " Mobile"
-        if not s.startswith("NVIDIA"):
-            s = "NVIDIA " + s
-        return (s.strip() or name, mem_display)
-    # Intel: z. B. "Intel UHD Graphics 770" / "Intel Iris Xe Graphics"
-    if "intel" in n:
-        for marker in ["uhd graphics", "iris xe", "iris graphics", "hd graphics", "iris plus", "graphics"]:
-            if marker in n:
-                i = n.find(marker)
-                part = name[i:].strip() if i >= 0 else name
-                return ("Intel " + part, mem_display)
-        return (name.split("]")[-1].strip() if "]" in name else name, mem_display)
-    # AMD: integriert (Radeon 610M, 760M, Radeon Graphics) vs. diskret (RX 6800)
-    if "amd" in n or "radeon" in n or "ati" in n:
-        if "radeon graphics" in n or "vega" in n or "610m" in n or "760m" in n or ("radeon" in n and "rx " not in n and "graphics" in n):
-            short = name
-            for prefix in ["Advanced Micro Devices, Inc. [AMD/ATI]", "AMD/ATI", "AMD"]:
-                if short.startswith(prefix):
-                    short = short[len(prefix):].strip()
-            if gpu_type == "integrated" and "integriert" not in short.lower():
-                short = short + " (integriert)" if short else "AMD Radeon (integriert)"
-            return (short or name, mem_display)
-        short = name.split("[")[-1].split("]")[0].strip() if "[" in name else name
-        for prefix in ["Advanced Micro Devices, Inc. [AMD/ATI]", "AMD/ATI", "AMD"]:
-            if short.startswith(prefix):
-                short = short[len(prefix):].strip()
-        return (short or name, mem_display)
-    return (name, mem_display)
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import _shorten_gpu_display_name as _fn
+
+    return _fn(name, gpu_type, memory_mb)
+
 
 
 def _get_gpus_for_system_info():
-    """GPU-Liste für System-Info (Nicht-Pi): Handelsbezeichnung kurz, Speicher in GB. iGPU getrennt, Audio-Geräte nie als Grafik."""
-    gpus = []
-    try:
-        pci_list = _get_pci_with_drivers()
-        seen = set()
-        for item in pci_list:
-            desc = (item.get("description") or "").strip()
-            desc_lower = desc.lower()
-            # Audio-Geräte sind keine Grafikkarten – immer ausblenden (NVIDIA HDMI-Audio, Audio device, etc.)
-            if "audio device" in desc_lower or "high definition audio" in desc_lower or "hdmi audio" in desc_lower or ("audio" in desc_lower and "nvidia" in desc_lower):
-                continue
-            # Nur echte Grafik-Controller: VGA, 3D, Display – kein reines "NVIDIA" (könnte Audio sein)
-            is_vga_3d_display = "vga" in desc_lower or "3d" in desc_lower or "display" in desc_lower
-            is_intel_graphics = "intel" in desc_lower and ("graphics" in desc_lower or "uhd" in desc_lower or "iris" in desc_lower or "vga" in desc_lower)
-            is_amd_radeon = ("radeon" in desc_lower or "amd" in desc_lower or "ati" in desc_lower) and ("graphics" in desc_lower or "vga" in desc_lower or "display" in desc_lower or "raphael" in desc_lower or "phoenix" in desc_lower)
-            is_nvidia_graphics = "nvidia" in desc_lower and (is_vga_3d_display or "geforce" in desc_lower or "quadro" in desc_lower or "rtx" in desc_lower or "gtx" in desc_lower)
-            if not (is_vga_3d_display or is_intel_graphics or is_amd_radeon or is_nvidia_graphics):
-                continue
-            # Typ: integriert (Intel iGPU, AMD Codenamen Raphael/Phoenix, Radeon Graphics) vs. diskret
-            gpu_type = "discrete"
-            if is_intel_graphics:
-                gpu_type = "integrated"
-            elif is_amd_radeon and (
-                "radeon graphics" in desc_lower or "vega" in desc_lower or "610m" in desc_lower or "760m" in desc_lower
-                or ("radeon" in desc_lower and "rx " not in desc_lower)
-                or any(c in desc_lower for c in ("raphael", "phoenix", "renoir", "cezanne", "rembrandt", "vangogh", "stoney"))
-            ):
-                gpu_type = "integrated"
-            # Kurze Handelsbezeichnung (ohne "VGA compatible controller", ohne "rev xx", NVIDIA = Inhalt [...], AMD = Codenamen-Map)
-            clean_name = _clean_gpu_description(desc)
-            if not clean_name or clean_name in seen:
-                continue
-            seen.add(clean_name)
-            gpus.append({"name": clean_name, "memory_mb": None, "driver": item.get("driver"), "gpu_type": gpu_type})
-        if not gpus:
-            r = run_command("lspci 2>/dev/null | grep -iE 'vga|3d|display'")
-            if r.get("success") and r.get("stdout"):
-                for line in (r["stdout"] or "").strip().split("\n"):
-                    line_lower = line.lower()
-                    if line.strip() and "audio" not in line_lower and "audio device" not in line_lower:
-                        raw = line.split(" ", 1)[1] if " " in line else line.strip()
-                        clean_name = _clean_gpu_description(raw)
-                        if clean_name and clean_name not in seen:
-                            seen.add(clean_name)
-                            gpus.append({"name": clean_name.strip(), "memory_mb": None, "gpu_type": "discrete"})
-        # NVIDIA: Name + Speicher aus nvidia-smi (Handelsbezeichnung, Speicher in GB)
-        nv = run_command("nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits 2>/dev/null")
-        if nv.get("success") and nv.get("stdout"):
-            nvidia_in_gpus = [g for g in gpus if "nvidia" in (g.get("name") or "").lower()]
-            for idx, line in enumerate((nv["stdout"] or "").strip().split("\n")):
-                if not line.strip():
-                    continue
-                parts = [p.strip() for p in line.split(",")]
-                if len(parts) >= 2 and idx < len(nvidia_in_gpus):
-                    try:
-                        mem_mb = int(parts[1].strip().split()[0])
-                        nvidia_in_gpus[idx]["memory_mb"] = mem_mb
-                        nvidia_in_gpus[idx]["name"] = parts[0].strip()  # nvidia-smi Name (kürzer als lspci)
-                    except (ValueError, IndexError):
-                        pass
-        # display_name + memory_display für jede GPU
-        for g in gpus:
-            display_name, memory_display = _shorten_gpu_display_name(
-                g.get("name"), g.get("gpu_type", "discrete"), g.get("memory_mb")
-            )
-            g["display_name"] = display_name
-            g["memory_display"] = memory_display
-    except Exception:
-        pass
-    return gpus
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import _get_gpus_for_system_info as _fn
+
+    return _fn()
+
 
 
 # ==================== Peripherie-Scan (Assimilation) ====================
 
 def _get_pci_with_drivers():
-    """lspci -k: PCI-Geräte mit Kernel-Treiber; gibt Liste (address, line, driver) zurück."""
-    result = run_command("/usr/bin/lspci -k 2>/dev/null")
-    if not result.get("success") or not result.get("stdout"):
-        result = run_command("lspci -k 2>/dev/null")
-    if not result.get("success") or not result.get("stdout"):
-        return []
-    lines = (result["stdout"] or "").strip().split("\n")
-    out = []
-    current_addr = ""
-    current_line = ""
-    current_driver = ""
-    for line in lines:
-        if line and not line.startswith("\t"):
-            if current_addr and current_line:
-                out.append({"address": current_addr, "description": current_line, "driver": current_driver or None})
-            parts = line.split(None, 1)
-            current_addr = parts[0] if parts else ""
-            current_line = parts[1] if len(parts) > 1 else ""
-            current_driver = ""
-        elif line.strip().startswith("Kernel driver in use:"):
-            current_driver = line.split(":", 1)[-1].strip()
-    if current_addr and current_line:
-        out.append({"address": current_addr, "description": current_line, "driver": current_driver or None})
-    return out
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import _get_pci_with_drivers as _fn
+
+    return _fn()
+
 
 @app.get("/api/peripherals/scan")
 async def peripherals_scan():
@@ -16386,11 +15339,10 @@ pi_config_module = None
 backup_module = None
 
 def _get_pi_config_module():
-    global pi_config_module
-    if pi_config_module is None:
-        from modules.raspberry_pi_config import RaspberryPiConfigModule
-        pi_config_module = RaspberryPiConfigModule()
-    return pi_config_module
+    """Legacy wrapper → hardware_discovery (G.9)."""
+    from core.hardware_discovery import _get_pi_config_module as _fn
+
+    return _fn()
 
 def _get_backup_module():
     global backup_module

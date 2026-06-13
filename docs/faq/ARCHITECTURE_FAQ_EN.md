@@ -207,6 +207,10 @@ Canonical module `core/network_info_facade.py` — read-only network info, demo 
 
 Full inventory — **no refactoring**. 3 legacy functions in `app.py`; 1 facade bypass in `webserver_status`. Next candidates: G.6/G.7/G.8. Doc: `docs/architecture/NETWORK_NEXT_FACADE_CANDIDATES_G5_EN.md`.
 
+## What is G.6 (System Info Facade)?
+
+`GET /api/system-info` fully delegates to `system_info_facade`; network only via `network_info_facade`; status sections via `dcc_status_facade`. ~240 lines extracted from `app.py`. Doc: `docs/architecture/SYSTEM_INFO_FACADE_G6_EN.md`.
+
 ## What is G.7 (Webserver Status Facade)?
 
 `GET /api/webserver/status` delegates to `webserver_status_facade`; network and port via `network_info_facade`. G.5 bypass removed. Doc: `docs/architecture/WEBSERVER_STATUS_FACADE_G7_EN.md`.
@@ -243,9 +247,29 @@ Canonical module `frontend/src/viewmodels/statusViewModel.ts` — central status
 
 5 presentation libs delegate to `statusViewModel`. Remaining: 10 (domain + large-page). **No H.8.** Doc: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H7_EN.md`.
 
+## What is G.9 (Hardware Discovery Core)?
+
+Hardware/system discovery extracted from `app.py` to `hardware_discovery.py`; `system_info_facade` has no `_legacy_*`/`import app`. Legacy wrappers remain in `app.py`. Doc: `docs/architecture/HARDWARE_DISCOVERY_CORE_G9_EN.md`.
+
+## What is G.11 (Webserver Service Discovery)?
+
+Webserver/service/CMS discovery in `webserver_service_discovery.py`; `webserver_status_facade` without `import app`. Legacy wrappers in `app.py`. Doc: `docs/architecture/WEBSERVER_SERVICE_DISCOVERY_G11_EN.md`.
+
+## What is G.12 (System Status Core)?
+
+Ampel logic (backup/restore/security/updates) in `system_status_core.py`; facade delegates only. Security/update adapters stay in core. Doc: `docs/architecture/SYSTEM_STATUS_CORE_G12_EN.md`.
+
+## What is P.1 (Storage Discovery Canonical)?
+
+Canonical lsblk/findmnt/blkid owner `storage_discovery.py`; `storage_facade` delegates. `app.py` storage blocks intentionally deferred. Matrix: `docs/architecture/STORAGE_DISCOVERY_OWNERSHIP_MATRIX.md`.
+
+## What is D.12 (Deploy Thin-Orchestrator Audit)?
+
+Audit of `deploy/routes.py` (190 routes, 81 runner imports); final plan without execute extraction. Doc: `docs/architecture/DEPLOY_THIN_ORCHESTRATOR_FINAL_PLAN.md`.
+
 ## Next step?
 
-**G.6** System Info Facade — see roadmap.
+G.13 (remaining `system_status_facade`→app sections) · P.2 (`app.py` storage migration) · D.13 (rescue domain router).
 
 ## Further reading
 

@@ -4,9 +4,10 @@
 
 | Funktion / Fähigkeit | Eigentümermodul | Status | Nutzer | Nicht erneut bauen |
 |---|---|---|---|---|
-| Storage Discovery | `storage_facade` | CANONICAL | app, backup, partitions, inspect | Ja |
-| blkid / UUID-Erkennung | `storage_facade` | CANONICAL | storage_facade, safe_device (legacy allow) | Ja |
-| lsblk / Device Tree | `storage_facade` | CANONICAL | storage_facade, storage_detection (partial) | Ja |
+| Storage Discovery (low-level) | `storage_discovery` | CANONICAL (P.1) | `storage_facade`, künftig inspect | Ja — lsblk/findmnt/blkid Owner |
+| Storage Facade (contract) | `storage_facade` | CANONICAL | app, backup, partitions, inspect | delegiert Discovery an P.1 |
+| blkid / UUID-Erkennung | `storage_discovery` → `storage_detection` | CANONICAL (P.1) | storage_facade | Ja |
+| lsblk / Device Tree | `storage_discovery` → `storage_detection` | CANONICAL (P.1) | storage_facade | Ja |
 | findmnt / Mount-Erkennung | `mount_facade` | CANONICAL | mount_facade, backup_target_auto_prepare | Ja |
 | Storage Target Classification | `storage_facade` | CANONICAL | safety_facade, inspect | Ja |
 | Write Target Validation | `safety_facade` | CANONICAL | backup_engine, restore_engine, preflight | Ja |
@@ -36,12 +37,15 @@
 | App Catalog API | `api/routes/catalog.py` | CANONICAL | app (include_router) | Ja |
 | DCC Readonly Index API | `api/routes/dev_dashboard_readonly.py` | CANONICAL | app (include_router) | Ja — F.4: Facade-Sections |
 | DCC Roadmap Registry API | `api/routes/dev_dashboard_roadmap.py` | CANONICAL | app (include_router) | Ja — Subroutes registry-only (F.3) |
-| System Status (Ampel) | `core.system_status_facade` | CANONICAL (G.1/G.1b) | `GET /api/system/status` | Ja — migriert |
-| System Status Legacy | `app.py` `_compute_system_status` | LEGACY | bis G.1b | über Facade-Adapter |
+| System Status (Ampel) | `core.system_status_core` + `core.system_status_facade` | CANONICAL (G.12) | `GET /api/system/status` | Ja — Core + Facade |
+| System Status Legacy | `app.py` `_compute_system_status` | LEGACY_WRAPPER (G.12) | Tests, alte Aufrufer | Wrapper → Core |
 | Network Discovery | `core.network_discovery` | CANONICAL (G.8) | `discover_*`, `detect_frontend_port` | Ja |
 | Network Info | `core.network_info_facade` | CANONICAL (G.2–G.8) | Facade + Router | G.8 Zyklus beendet |
 | Network HTTP (safe GET) | `api/routes/network.py` | CANONICAL_ROUTER (G.4) | `/api/status`, `/api/system/network` | delegiert nur Facade |
-| Webserver Status | `core.webserver_status_facade` | CANONICAL (G.7) | `GET /api/webserver/status` | Ja — Facade only |
+| Webserver Status | `core.webserver_status_facade` | CANONICAL (G.7/G.11) | `GET /api/webserver/status` | Ja — Facade only |
+| Webserver Service Discovery | `core.webserver_service_discovery` | CANONICAL (G.11) | `webserver_status_facade` | Ja — kein `import app` in Facade |
+| System Info | `core.system_info_facade` | CANONICAL (G.6/G.9) | `GET /api/system-info` | Ja — Facade only, no app import |
+| Hardware Discovery | `core.hardware_discovery` | CANONICAL (G.9) | `system_info_facade` consumer | Ja — Discovery owner |
 | Network Info Legacy | `app.py` `get_network_info`, `_demo_network`, `_detect_frontend_port` | LEGACY_WRAPPER (G.8) | dünne Wrapper auf `network_discovery` | keine eigene Logik |
 | DCC Full Status | `core.dcc_status_facade` + `dev_dashboard_status_service` | CANONICAL (F.2) | `/api/dev-dashboard/status` | Ja — migriert |
 | DCC Status Aggregation | `core.dcc_status_facade` | CANONICAL | app routes (F.2+) | Keine Parallel-Aggregation in Routern |

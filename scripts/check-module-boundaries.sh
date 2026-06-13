@@ -61,6 +61,7 @@ if not backend.is_dir():
     raise SystemExit
 
 LSBLK_ALLOW = {
+    "backend/core/storage_discovery.py",
     "backend/core/storage_facade.py",
     "backend/core/safe_device.py",
     "backend/modules/storage_detection.py",
@@ -69,6 +70,7 @@ LSBLK_ALLOW = {
     "backend/debug/support_bundle.py",
 }
 FINDMNT_ALLOW = {
+    "backend/core/storage_discovery.py",
     "backend/core/mount_facade.py",
     "backend/core/safe_device.py",
     "backend/modules/storage_detection.py",
@@ -1389,17 +1391,19 @@ if app_py_path.is_file():
         block = status_m.group(0)
         if re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", block):
             print("app_status_network_block_bypasses_facade:backend/api/routes/network.py")
-    # Phase G.3: remaining app.py handler cleanup guards (warn-only)
+    # Phase G.6: System Info Facade route guards (warn-only)
     sys_info_m = re.search(
-        r'@app\.get\("/api/system-info"\)\s*\nasync def get_system_info\([^)]*\):[\s\S]{0,15000}',
+        r'@app\.get\("/api/system-info"\)\s*\nasync def get_system_info\([^)]*\):[\s\S]{0,500}',
         ap_g2,
     )
     if sys_info_m:
         block = sys_info_m.group(0)
-        if "network_info_facade" not in block:
-            print("app_system_info_requires_network_facade:backend/app.py")
-        elif re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", block):
-            print("app_direct_demo_network_usage_outside_legacy:backend/app.py:get_system_info")
+        if "system_info_facade" not in block:
+            print("system_info_route_requires_facade:backend/app.py")
+        elif re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(|\bbuild_network_info\s*\(|\bbuild_demo_network_info\s*\(", block):
+            print("system_info_direct_network_usage:backend/app.py")
+        if re.search(r"\bpsutil\b|\bget_cpu_temp\s*\(|\bget_motherboard_info\s*\(", block):
+            print("system_info_new_logic_outside_facade:backend/app.py")
     web_m = re.search(
         r'@app\.get\("/api/webserver/status"\)\s*\nasync def webserver_status\([^)]*\):[\s\S]{0,500}',
         ap_g2,
@@ -1482,7 +1486,6 @@ if app_py_path.is_file():
         if "_detect_frontend_port(" in line and not stripped.startswith("def _detect_frontend_port"):
             print("network_direct_usage_outside_facade:backend/app.py:webserver_status_port")
 for candidate in (
-    root / "backend" / "core" / "system_info_facade.py",
     root / "backend" / "core" / "frontend_runtime_facade.py",
     root / "backend" / "core" / "port_detection_facade.py",
 ):
@@ -1503,6 +1506,94 @@ for path in sorted(backend.rglob("*.py")):
             continue
         if "network_discovery" in rel or "get_network_info" in pt:
             print(f"network_new_logic_outside_facade:{rel}")
+
+# Phase G.6: System Info Facade guards (warn-only)
+system_info_facade_path = root / "backend" / "core" / "system_info_facade.py"
+if not system_info_facade_path.is_file():
+    print("system_info_facade_missing:backend/core/system_info_facade.py")
+else:
+    sf = system_info_facade_path.read_text(encoding="utf-8", errors="replace")
+    if "SYSTEM_INFO_FACADE_VERSION" not in sf or "build_system_info" not in sf:
+        print("system_info_facade_incomplete:backend/core/system_info_facade.py")
+    if "network_info_facade" not in sf:
+        print("system_info_facade_bypasses_network_facade:backend/core/system_info_facade.py")
+    if re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(|\bdiscover_network_info\s*\(", sf):
+        print("system_info_direct_network_usage:backend/core/system_info_facade.py")
+    if re.search(r"def _normalize_system|SYSTEM_INFO_STATUS_MAP\s*=", sf):
+        if "build_section_status" not in sf:
+            print("system_info_duplicate_status_mapping:backend/core/system_info_facade.py")
+    for path in sorted(backend.rglob("*.py")):
+        rel = path.relative_to(root).as_posix()
+        if "/tests/" in rel or "/venv/" in rel or rel.endswith("system_info_facade.py"):
+            continue
+        if rel == "backend/app.py":
+            continue
+        try:
+            pt = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if re.search(r'@app\.get\("/api/system-info"\)|@router\.get\("/api/system-info"\)', pt):
+            if "system_info_facade" not in pt and "build_system_info" not in pt:
+                print(f"system_info_new_logic_outside_facade:{rel}")
+
+# Phase G.9: Hardware Discovery Core guards (warn-only)
+hardware_discovery_path = root / "backend" / "core" / "hardware_discovery.py"
+if not hardware_discovery_path.is_file():
+    print("hardware_discovery_core_missing:backend/core/hardware_discovery.py")
+else:
+    hd = hardware_discovery_path.read_text(encoding="utf-8", errors="replace")
+    if "HARDWARE_DISCOVERY_VERSION" not in hd or "discover_cpu_info" not in hd:
+        print("hardware_discovery_core_incomplete:backend/core/hardware_discovery.py")
+    if re.search(r"^\s*(import app|from app\b)", hd, re.MULTILINE):
+        print("hardware_discovery_duplicate_logic:backend/core/hardware_discovery.py")
+system_info_facade_path_g9 = root / "backend" / "core" / "system_info_facade.py"
+if system_info_facade_path_g9.is_file():
+    sf_g9 = system_info_facade_path_g9.read_text(encoding="utf-8", errors="replace")
+    if re.search(r"^\s*(import app|from app\b)", sf_g9, re.MULTILINE):
+        print("system_info_facade_depends_on_app:backend/core/system_info_facade.py")
+    if "_legacy_" in sf_g9:
+        print("system_info_facade_depends_on_app:backend/core/system_info_facade.py")
+    if "hardware_discovery" not in sf_g9:
+        print("system_info_facade_depends_on_app:backend/core/system_info_facade.py")
+if app_py_path.is_file():
+    ap_g9 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    for marker, label in (
+        ("def get_cpu_temp", "get_cpu_temp"),
+        ("def get_cpu_name", "get_cpu_name"),
+        ("def get_motherboard_info", "get_motherboard_info"),
+        ("def _get_pci_with_drivers", "_get_pci_with_drivers"),
+        ("def _get_pi_config_module", "_get_pi_config_module"),
+    ):
+        if marker not in ap_g9:
+            print(f"hardware_legacy_wrapper_missing:backend/app.py:{label}")
+        else:
+            start = ap_g9.index(marker)
+            block = ap_g9[start : start + 250]
+            if "hardware_discovery" not in block:
+                print(f"hardware_legacy_wrapper_missing:backend/app.py:{label}")
+for path in sorted(backend.rglob("*.py")):
+    rel = path.relative_to(root).as_posix()
+    if "/tests/" in rel or "/.venv" in rel or "/venv/" in rel:
+        continue
+    if rel in (
+        "backend/core/hardware_discovery.py",
+        "backend/core/system_info_facade.py",
+        "backend/app.py",
+        "backend/modules/raspberry_pi_config.py",
+        "backend/oled_display_runner.py",
+        "backend/debug/support_bundle.py",
+    ):
+        continue
+    try:
+        pt = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    if re.search(r"\bdmidecode\b|\blspci\s+-k\b|/proc/cpuinfo", pt):
+        if "hardware_discovery" not in pt and "system_info_facade" not in pt:
+            print(f"hardware_new_logic_outside_discovery:{rel}")
+    if re.search(r"\bget_cpu_temp\s*\(|\bget_motherboard_info\s*\(|\b_get_pci_with_drivers\s*\(", pt):
+        if "hardware_discovery" not in pt:
+            print(f"hardware_direct_discovery_usage_outside_facade:{rel}")
 
 # Phase G.7: Webserver Status Facade guards (warn-only)
 webserver_facade_path = root / "backend" / "core" / "webserver_status_facade.py"
@@ -1615,6 +1706,71 @@ for path in sorted(backend.rglob("*.py")):
     if "def discover_network_info" in pt or "def detect_frontend_port" in pt:
         if rel != "backend/core/network_info_facade.py":
             print(f"network_discovery_duplicate_logic:{rel}")
+
+# Phase G.11: Webserver Service Discovery Core guards (warn-only)
+wsd_path = root / "backend" / "core" / "webserver_service_discovery.py"
+if not wsd_path.is_file():
+    print("webserver_service_discovery_core_missing:backend/core/webserver_service_discovery.py")
+else:
+    wsd = wsd_path.read_text(encoding="utf-8", errors="replace")
+    if "WEBSERVER_SERVICE_DISCOVERY_VERSION" not in wsd or "discover_running_services" not in wsd:
+        print("webserver_service_discovery_core_incomplete:backend/core/webserver_service_discovery.py")
+    if re.search(r"^\s*(import app|from app\b)", wsd, re.MULTILINE):
+        print("webserver_service_discovery_depends_on_app:backend/core/webserver_service_discovery.py")
+if webserver_facade_path.is_file():
+    wf_g11 = webserver_facade_path.read_text(encoding="utf-8", errors="replace")
+    if re.search(r"^\s*(import app|from app\b)", wf_g11, re.MULTILINE):
+        print("webserver_status_facade_depends_on_app:backend/core/webserver_status_facade.py")
+    if "_legacy_" in wf_g11:
+        print("webserver_status_facade_depends_on_app:backend/core/webserver_status_facade.py")
+    if "webserver_service_discovery" not in wf_g11:
+        print("webserver_status_facade_depends_on_app:backend/core/webserver_status_facade.py")
+if app_py_path.is_file():
+    ap_g11 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    for marker in ("def check_installed", "def get_installed_apps", "def get_running_services", "def get_website_names"):
+        if marker not in ap_g11:
+            print(f"webserver_legacy_wrapper_missing:backend/app.py:{marker}")
+        else:
+            start = ap_g11.index(marker)
+            block = ap_g11[start : start + 250]
+            if "webserver_service_discovery" not in block:
+                print(f"webserver_legacy_wrapper_missing:backend/app.py:{marker}")
+
+# Phase G.12: System Status Core guards (warn-only)
+ssc_path = root / "backend" / "core" / "system_status_core.py"
+if not ssc_path.is_file():
+    print("system_status_core_missing:backend/core/system_status_core.py")
+else:
+    ssc = ssc_path.read_text(encoding="utf-8", errors="replace")
+    if "SYSTEM_STATUS_CORE_VERSION" not in ssc or "build_overall_status" not in ssc:
+        print("system_status_core_incomplete:backend/core/system_status_core.py")
+if system_facade_mod.is_file():
+    sf_g12 = system_facade_mod.read_text(encoding="utf-8", errors="replace")
+    if re.search(r"build_backup_status|build_security_status|permitrootlogin|last_verify_ok", sf_g12):
+        print("system_status_facade_ampel_computation:backend/core/system_status_facade.py")
+    if "system_status_core" not in sf_g12 or "build_overall_status" not in sf_g12:
+        print("system_status_facade_ampel_outside_core:backend/core/system_status_facade.py")
+if app_py_path.is_file():
+    ap_g12 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    if "def _compute_system_status" in ap_g12:
+        start = ap_g12.index("def _compute_system_status")
+        block = ap_g12[start : start + 350]
+        if "system_status_core" not in block:
+            print("system_status_legacy_wrapper_missing:backend/app.py:_compute_system_status")
+
+# Phase P.1: Storage Discovery Canonical guards (warn-only)
+sd_path = root / "backend" / "core" / "storage_discovery.py"
+if not sd_path.is_file():
+    print("storage_discovery_core_missing:backend/core/storage_discovery.py")
+else:
+    sd = sd_path.read_text(encoding="utf-8", errors="replace")
+    if "STORAGE_DISCOVERY_VERSION" not in sd or "discover_block_devices" not in sd:
+        print("storage_discovery_core_incomplete:backend/core/storage_discovery.py")
+storage_facade_path_p1 = root / "backend" / "core" / "storage_facade.py"
+if storage_facade_path_p1.is_file():
+    sf_p1 = storage_facade_path_p1.read_text(encoding="utf-8", errors="replace")
+    if re.search(r"from modules\.storage_detection import .*detect_block_devices", sf_p1):
+        print("storage_facade_bypasses_storage_discovery:backend/core/storage_facade.py")
 
 if deploy_routes.is_file():
     subrouter_markers = (

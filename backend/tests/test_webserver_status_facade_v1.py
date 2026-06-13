@@ -60,9 +60,19 @@ class TestWebserverStatusFacadeV1(unittest.TestCase):
         text = FACADE_PATH.read_text(encoding="utf-8")
         self.assertIn("network_info_facade", text)
         self.assertIn("build_network_info", text)
-        self.assertIn("detect_frontend_port", text)
+        self.assertIn("webserver_service_discovery", text)
+
+    def test_facade_ast_has_no_app_import(self) -> None:
+        tree = ast.parse(FACADE_PATH.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    self.assertNotEqual(alias.name, "app")
+            if isinstance(node, ast.ImportFrom) and node.module:
+                self.assertFalse(node.module == "app" or node.module.startswith("app."))
 
     def test_build_webserver_status_legacy_shape(self) -> None:
+        import core.webserver_service_discovery as discovery
         import core.webserver_status_facade as facade
 
         fake_network = {"ips": ["10.0.0.8"], "hostname": "host"}
@@ -82,17 +92,17 @@ class TestWebserverStatusFacadeV1(unittest.TestCase):
             "websites": ["/var/www/html/site"],
         }
         with (
-            mock.patch.object(facade, "_legacy_get_running_services", return_value=fake_running),
-            mock.patch.object(facade, "_legacy_get_installed_apps", return_value=fake_installed),
-            mock.patch.object(facade, "_legacy_get_website_names", return_value=["example.com"]),
-            mock.patch.object(facade, "_legacy_check_installed", return_value=False),
+            mock.patch.object(facade, "discover_running_services", return_value=fake_running),
+            mock.patch.object(facade, "discover_installed_web_services", return_value=fake_installed),
+            mock.patch.object(facade, "get_website_names", return_value=["example.com"]),
+            mock.patch.object(facade, "check_installed", return_value=False),
             mock.patch.object(
                 facade,
-                "_legacy_run_command",
+                "run_command",
                 return_value={"success": False, "stdout": "", "stderr": ""},
             ),
             mock.patch.object(facade, "build_network_info", return_value=fake_network),
-            mock.patch.object(facade, "detect_frontend_port", return_value=3001),
+            mock.patch.object(facade, "discover_frontend_port", return_value=3001),
         ):
             out = facade.build_webserver_status()
         self.assertEqual(set(out.keys()), LEGACY_RESPONSE_KEYS)
@@ -123,6 +133,8 @@ class TestWebserverStatusFacadeV1(unittest.TestCase):
         diag = facade.build_webserver_status_diagnostics()
         self.assertEqual(diag["facade_version"], 1)
         self.assertTrue(diag["network_via_network_info_facade"])
+        self.assertTrue(diag.get("discovery_via_webserver_service_discovery"))
+        self.assertFalse(diag.get("facade_imports_app"))
         self.assertIn("GET /api/webserver/status", diag["routes_migrated_to_facade"])
         for fn in PUBLIC_FUNCTIONS:
             self.assertIn(fn, diag["public_functions"])

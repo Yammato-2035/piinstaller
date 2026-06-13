@@ -38,11 +38,16 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 | 26 | network_info_facade | `backend/core/network_info_facade.py` | CANONICAL_MODULE (G.2–G.4) |
 | 27 | frontend_status_viewmodel | `frontend/src/viewmodels/statusViewModel.ts` | CANONICAL_MODULE (H.1–H.7) |
 | 28 | webserver_status_facade | `backend/core/webserver_status_facade.py` | CANONICAL_MODULE (G.7) |
-| 29 | network_discovery | `backend/core/network_discovery.py` | CANONICAL_MODULE (G.8) |
+| 29 | system_info_facade | `backend/core/system_info_facade.py` | CANONICAL_MODULE (G.6) |
+| 30 | hardware_discovery | `backend/core/hardware_discovery.py` | CANONICAL_MODULE (G.9) |
+| 31 | network_discovery | `backend/core/network_discovery.py` | CANONICAL_MODULE (G.8) |
+| 32 | webserver_service_discovery | `backend/core/webserver_service_discovery.py` | CANONICAL_MODULE (G.11) |
+| 33 | system_status_core | `backend/core/system_status_core.py` | CANONICAL_MODULE (G.12) |
+| 34 | storage_discovery | `backend/core/storage_discovery.py` | CANONICAL_MODULE (P.1) |
 | — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4120 lines) |
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**Next:** **G.6** System Info Facade. **G.8 done.**
+**Next:** further `app.py` GET router slices (E.x). **G.6 done.**
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).
