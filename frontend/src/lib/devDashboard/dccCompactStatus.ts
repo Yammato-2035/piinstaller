@@ -1,4 +1,5 @@
 import { fetchDccApi } from './dccDeveloperToken'
+import { dashboardToneFromInput } from '../../viewmodels/statusViewModel'
 
 export type DccCompactStatus = {
   status?: string
@@ -107,9 +108,5 @@ export async function fetchDccCompactStatus(): Promise<{
 }
 
 export function deployDriftTone(status: string | undefined): string {
-  const s = String(status || '').toLowerCase()
-  if (s === 'green') return 'green'
-  if (s === 'yellow') return 'yellow'
-  if (s === 'red') return 'red'
-  return 'gray'
+  return dashboardToneFromInput(status)
 }

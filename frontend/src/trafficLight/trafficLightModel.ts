@@ -12,6 +12,10 @@
  */
 
 import type { DiagnosisRecord } from '../types/diagnosis'
+import {
+  trafficLightLampFromInput,
+  worstTrafficLightLampFromInputs,
+} from '../viewmodels/statusViewModel'
 
 /** Aktive Lampe (Backend-Dashboard nutzt dieselben Literal-Strings). */
 export type TrafficLightLampState = 'green' | 'yellow' | 'red'
@@ -85,17 +89,14 @@ export type AppStoreCopyKey = keyof typeof TRAFFIC_LIGHT_COPY.appStore
 export type BackupCopyKey = keyof typeof TRAFFIC_LIGHT_COPY.backup
 export type MonitoringCopyKey = keyof typeof TRAFFIC_LIGHT_COPY.monitoring
 
-/** LampTriState-Reihenfolge: schlechteste gewinnt. */
-const LAMP_RANK: Record<TrafficLightLampState, number> = { red: 0, yellow: 1, green: 2 }
-
+/** LampTriState-Reihenfolge: schlechteste gewinnt (delegiert an statusViewModel). */
 export function worstTrafficLightLamp(lamps: TrafficLightLampState[]): TrafficLightLampState {
-  if (lamps.length === 0) return 'yellow'
-  return lamps.reduce((a, b) => (LAMP_RANK[a] <= LAMP_RANK[b] ? a : b))
+  return worstTrafficLightLampFromInputs(lamps) as TrafficLightLampState
 }
 
 export function trafficLightStateToLamp(state: TrafficLightState): TrafficLightLampState {
   if (state === 'unknown') return 'yellow'
-  return state
+  return trafficLightLampFromInput(state) as TrafficLightLampState
 }
 
 /** Gleiche Werte wie `AppStoreBeginnerMeta` / `AvailabilityState` – hier dupliziert, um Zyklen mit moduleModel zu vermeiden. */

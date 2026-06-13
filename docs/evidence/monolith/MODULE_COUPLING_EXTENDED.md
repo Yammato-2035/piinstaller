@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach H.1 · **Update:** Frontend Status ViewModel entkoppelt von Backend-Facades.
+**HEAD:** nach H.2 · **Update:** Frontend Utility-Layer an statusViewModel gebunden.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

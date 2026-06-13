@@ -1,5 +1,7 @@
 /** Pure filter helpers for Development Cockpit (unit-tested without jsdom). */
 
+import { dashboardToneFromInput } from '../viewmodels/statusViewModel'
+
 export type FilterKey = 'all' | 'red' | 'yellow' | 'green' | 'gray' | 'backup' | 'rescue' | 'diagnostics' | 'docs'
 
 export type ModuleFilterRow = {
@@ -11,10 +13,10 @@ export type ModuleFilterRow = {
 }
 
 export function toneClass(s: string): string {
-  const x = String(s || '').toLowerCase()
-  if (x === 'green') return 'border-emerald-600/50 bg-emerald-950/30 text-emerald-100'
-  if (x === 'yellow') return 'border-amber-600/50 bg-amber-950/30 text-amber-100'
-  if (x === 'red') return 'border-red-600/50 bg-red-950/30 text-red-100'
+  const tone = dashboardToneFromInput(s)
+  if (tone === 'green') return 'border-emerald-600/50 bg-emerald-950/30 text-emerald-100'
+  if (tone === 'yellow') return 'border-amber-600/50 bg-amber-950/30 text-amber-100'
+  if (tone === 'red') return 'border-red-600/50 bg-red-950/30 text-red-100'
   return 'border-slate-600/50 bg-slate-900/40 text-slate-200'
 }
 

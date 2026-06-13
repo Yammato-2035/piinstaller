@@ -11,7 +11,7 @@
 | **Network Info Facade** | IP/Hostname/Interfaces | `GET /api/status`, `GET /api/system/network` | HIGH | **HIGH** | **G.2b erledigt** — G.3 Cleanup |
 | **Settings Write Facade** | POST settings, UX, SMTP | `POST /api/settings*`, notifications/test | MEDIUM | **MEDIUM** | GET bereits E.2; Write separat |
 | **Dev Dashboard Aggregation Facade** | control-center-summary, prompt-findings, cursor-meta-prompt | 3–4 GET | HIGH | **HIGH** | Nach DCC Status Facade |
-| **Frontend Status ViewModel Facade** | Ein Response-Shape für UI-Ampeln | Frontend Status Consumer | MEDIUM | **MEDIUM** | **H.1 erledigt** — H.2 Komponentenmigration |
+| **Frontend Status ViewModel Facade** | Ein Response-Shape für UI-Ampeln | Frontend Status Consumer | MEDIUM | **MEDIUM** | **H.2 erledigt** — H.3 Komponenten |
 
 ## Priorität
 

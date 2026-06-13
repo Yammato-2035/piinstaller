@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** nach H.1 · **Update:** `statusViewModel` Contract; Frontend-Duplikate pending H.2.
+**HEAD:** nach H.2 · **Update:** Utility-Duplikate reduziert; Komponenten pending H.3.
 
 ## Legende
 

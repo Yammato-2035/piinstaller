@@ -203,9 +203,13 @@ Canonical module `core/network_info_facade.py` — read-only network info, demo 
 
 Canonical module `frontend/src/viewmodels/statusViewModel.ts` — central status normalization. **No component migration** in H.1. Doc: `docs/architecture/FRONTEND_STATUS_VIEWMODEL_H1_EN.md`.
 
+## What is H.2 (Frontend Status Utility Migration)?
+
+`trafficLightModel`, `deployDriftTone`, and `toneClass` delegate to `statusViewModel`. No UI/color change. Doc: `docs/architecture/FRONTEND_STATUS_VIEWMODEL_MIGRATION_H2_EN.md`.
+
 ## Next step?
 
-**H.2** — incremental component migration **or** **G.4** — network handler extraction.
+**H.3** — component migration **or** **G.4** — network handler extraction.
 
 ## Further reading
 

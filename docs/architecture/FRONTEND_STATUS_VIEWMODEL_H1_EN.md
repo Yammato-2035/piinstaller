@@ -24,4 +24,4 @@
 
 ## Next step
 
-**H.2** — incremental component migration
+**H.2 done** — see [FRONTEND_STATUS_VIEWMODEL_MIGRATION_H2_EN.md](FRONTEND_STATUS_VIEWMODEL_MIGRATION_H2_EN.md). **H.3** component migration.

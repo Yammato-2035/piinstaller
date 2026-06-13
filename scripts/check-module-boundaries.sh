@@ -1120,19 +1120,26 @@ if not frontend_status_vm_test.is_file():
     print("frontend_status_viewmodel_missing_tests:frontend/src/viewmodels/statusViewModel.test.ts")
 if frontend_vm.is_file() and frontend_status_vm.is_file():
     tl = frontend_vm.read_text(encoding="utf-8", errors="replace")
-    if "LAMP_RANK" in tl and "worstTrafficLightLamp" in tl:
+    if "statusViewModel" not in tl:
+        print("frontend_traffic_light_bypasses_status_viewmodel:frontend/src/trafficLight/trafficLightModel.ts")
+    elif "LAMP_RANK" in tl:
         print("frontend_duplicate_traffic_light_mapping:frontend/src/trafficLight/trafficLightModel.ts")
 dcc_compact = root / "frontend" / "src" / "lib" / "devDashboard" / "dccCompactStatus.ts"
+dcc_filters = root / "frontend" / "src" / "pages" / "devDashboardFilters.ts"
 if dcc_compact.is_file() and frontend_status_vm.is_file():
     dc = dcc_compact.read_text(encoding="utf-8", errors="replace")
     if "deployDriftTone" in dc and "statusViewModel" not in dc:
-        print("frontend_duplicate_status_kind_mapping:frontend/src/lib/devDashboard/dccCompactStatus.ts")
+        print("frontend_dcc_compact_status_bypasses_status_viewmodel:frontend/src/lib/devDashboard/dccCompactStatus.ts")
+if dcc_filters.is_file() and frontend_status_vm.is_file():
+    df = dcc_filters.read_text(encoding="utf-8", errors="replace")
+    if "toneClass" in df and "statusViewModel" not in df:
+        print("frontend_dev_dashboard_filters_bypasses_status_viewmodel:frontend/src/pages/devDashboardFilters.ts")
 if frontend_status_vm.is_file():
     frontend_src = root / "frontend" / "src"
     local_mapping_hits = 0
     for path in sorted(frontend_src.rglob("*.ts*")):
         rel = path.relative_to(root).as_posix()
-        if "/viewmodels/" in rel or "/trafficLight/" in rel or ".test." in rel:
+        if "/viewmodels/" in rel or ".test." in rel:
             continue
         try:
             pt = path.read_text(encoding="utf-8", errors="ignore")

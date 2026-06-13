@@ -3,9 +3,12 @@ import {
   buildDashboardStatusViewModel,
   buildStatusViewModel,
   buildTrafficLightViewModel,
+  dashboardToneFromInput,
   normalizeStatusKind,
   statusViewModelDiagnostics,
+  trafficLightLampFromInput,
   worstStatusViewModel,
+  worstTrafficLightLampFromInputs,
 } from './statusViewModel'
 
 describe('statusViewModel', () => {
@@ -59,5 +62,24 @@ describe('statusViewModel', () => {
   it('documents no api fetch in viewmodel contract', () => {
     const diag = statusViewModelDiagnostics()
     expect(diag.api_fetches).toBe(false)
+    expect(diag.component_migration).toBe('utility_h2_partial')
+  })
+
+  it('dashboardToneFromInput preserves deploy drift outputs', () => {
+    expect(dashboardToneFromInput('green')).toBe('green')
+    expect(dashboardToneFromInput('yellow')).toBe('yellow')
+    expect(dashboardToneFromInput('red')).toBe('red')
+    expect(dashboardToneFromInput('unknown')).toBe('gray')
+  })
+
+  it('worstTrafficLightLampFromInputs preserves empty→yellow', () => {
+    expect(worstTrafficLightLampFromInputs([])).toBe('yellow')
+    expect(worstTrafficLightLampFromInputs(['green', 'red'])).toBe('red')
+  })
+
+  it('trafficLightLampFromInput maps lamps', () => {
+    expect(trafficLightLampFromInput('green')).toBe('green')
+    expect(trafficLightLampFromInput('red')).toBe('red')
+    expect(trafficLightLampFromInput('unknown')).toBe('yellow')
   })
 })

@@ -139,6 +139,38 @@ export function worstStatusViewModel(models: StatusViewModel[]): StatusViewModel
   )
 }
 
+export type DashboardTone = 'green' | 'yellow' | 'red' | 'gray'
+
+/** Legacy dashboard/deploy tone strings (green/yellow/red/gray). */
+export function dashboardToneFromInput(input: unknown): DashboardTone {
+  const kind = normalizeStatusKind(input)
+  if (kind === 'ok') return 'green'
+  if (kind === 'warning' || kind === 'degraded') return 'yellow'
+  if (kind === 'blocked') return 'red'
+  return 'gray'
+}
+
+export type TrafficLightLampTone = 'green' | 'yellow' | 'red'
+
+/** Legacy traffic-light lamp from normalized kind (unknown/unavailable → yellow). */
+export function trafficLightLampFromKind(kind: StatusKind): TrafficLightLampTone {
+  if (kind === 'ok') return 'green'
+  if (kind === 'warning' || kind === 'degraded') return 'yellow'
+  if (kind === 'blocked') return 'red'
+  return 'yellow'
+}
+
+export function trafficLightLampFromInput(input: unknown): TrafficLightLampTone {
+  return trafficLightLampFromKind(normalizeStatusKind(input))
+}
+
+/** Worst lamp across legacy inputs; empty → yellow (traffic-light convention). */
+export function worstTrafficLightLampFromInputs(inputs: unknown[]): TrafficLightLampTone {
+  if (inputs.length === 0) return 'yellow'
+  const worst = worstStatusViewModel(inputs.map(buildTrafficLightViewModel))
+  return trafficLightLampFromKind(worst.kind)
+}
+
 export function statusViewModelDiagnostics(): Record<string, unknown> {
   return {
     viewmodel_version: VIEWMODEL_VERSION,
@@ -151,6 +183,9 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'buildTrafficLightViewModel',
       'buildDashboardStatusViewModel',
       'worstStatusViewModel',
+      'dashboardToneFromInput',
+      'trafficLightLampFromInput',
+      'worstTrafficLightLampFromInputs',
       'statusViewModelDiagnostics',
     ],
     backend_facade_sources: [
@@ -158,7 +193,7 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'system_status_facade',
       'network_info_facade',
     ],
-    component_migration: 'pending_h2',
+    component_migration: 'utility_h2_partial',
     api_fetches: false,
   }
 }

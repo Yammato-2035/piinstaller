@@ -1,0 +1,19 @@
+# Boundary Warnings — Phase H.2 (WARN-only)
+
+**HEAD:** 257c406 (vor Commit) · **Gate:** Exit 0
+
+## H.2 aufgelöst
+
+| Code | Status |
+|------|--------|
+| `frontend_traffic_light_bypasses_status_viewmodel` | nicht ausgelöst |
+| `frontend_dcc_compact_status_bypasses_status_viewmodel` | nicht ausgelöst |
+| `frontend_dev_dashboard_filters_bypasses_status_viewmodel` | nicht ausgelöst |
+| `frontend_duplicate_traffic_light_mapping` (LAMP_RANK) | nicht ausgelöst |
+| `frontend_duplicate_status_kind_mapping` (deployDriftTone) | nicht ausgelöst |
+
+## Verbleibend (erwartet bis H.3)
+
+| Code | Grund |
+|------|-------|
+| `frontend_component_local_status_mapping` | ~27 Komponenten mit inline Mapping |

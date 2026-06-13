@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach H.1 · **Update:** Frontend ViewModel kanonisiert; `trafficLightModel` Duplikat bis H.2.
+**HEAD:** nach H.2 · **Update:** LAMP_RANK/deployDriftTone/toneClass an ViewModel; derive* bleibt.
 
 ## Zusammenfassung
 
