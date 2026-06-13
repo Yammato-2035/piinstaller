@@ -32,3 +32,11 @@ The current live image has **no browser** and no full display stack (see `docs/e
 ```bash
 setuphelfer-rescue-evidence.py bundle
 ```
+
+## When is browser/kiosk available? (R.4)
+
+**Build config** includes chromium + openbox + xorg (from 1.7.17.0). An **existing** stick without a new ISO build still has no browser.
+
+After ISO rebuild (R.5): kiosk autostart via Openbox; evidence at `rescue-ui/kiosk_report_latest.md`.
+
+Details: `docs/architecture/RESCUE_BROWSER_KIOSK_R4_EN.md`

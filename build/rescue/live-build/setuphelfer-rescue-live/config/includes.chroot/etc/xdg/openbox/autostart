@@ -1,0 +1,4 @@
+#!/bin/bash
+# Openbox autostart — Setuphelfer Rescue Kiosk (Phase R.4 build config).
+/usr/local/sbin/setuphelfer-rescue-kiosk-health 2>/dev/null || true
+/usr/local/sbin/setuphelfer-rescue-kiosk-start 2>/dev/null || /usr/local/sbin/setuphelfer-rescue-ui-launch 2>/dev/null || /usr/local/sbin/setuphelfer-rescue-start-assistant

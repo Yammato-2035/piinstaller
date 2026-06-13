@@ -25,9 +25,23 @@ from core.rescue_persistence import (
     write_rescue_text_evidence,
 )
 
-RESCUE_TEST_MATRIX_VERSION = 3
+RESCUE_TEST_MATRIX_VERSION = 4
 
 MatrixStatus = Literal["green", "yellow", "red", "gray", "blocked", "unknown"]
+
+_PACKAGE_LIST_REL = Path(
+    "build/rescue/live-build/setuphelfer-rescue-live/config/package-lists/setuphelfer.list.chroot"
+)
+_GRUB_THEME_REL = Path(
+    "build/rescue/live-build/setuphelfer-rescue-live/config/includes.binary/boot/grub/themes/setuphelfer"
+)
+_BROWSER_PACKAGES = frozenset({"chromium", "firefox-esr", "firefox", "x-www-browser"})
+_DISPLAY_PACKAGES = frozenset({"xserver-xorg", "xinit", "openbox", "dbus-x11"})
+_KIOSK_SCRIPTS = (
+    "scripts/rescue-live/image/setuphelfer-rescue-kiosk-start",
+    "scripts/rescue-live/image/setuphelfer-rescue-kiosk-health",
+)
+_TELEMETRY_PUSH_REL = Path("scripts/rescue-live/image/setuphelfer-rescue-telemetry-push")
 
 _MATRIX_AREAS = (
     "boot",
@@ -88,6 +102,138 @@ def _read_json(path: Path) -> dict[str, Any]:
         return data if isinstance(data, dict) else {}
     except Exception:
         return {}
+
+
+def _repo_root() -> Path:
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        if (parent / "config" / "version.json").is_file():
+            return parent
+    return here.parents[2]
+
+
+def _read_package_names() -> set[str]:
+    path = _repo_root() / _PACKAGE_LIST_REL
+    if not path.is_file():
+        return set()
+    names: set[str] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        pkg = line.strip().split("#", 1)[0].strip()
+        if pkg:
+            names.add(pkg)
+    return names
+
+
+def _telemetry_push_has_r3_spool(repo: Path) -> bool:
+    push = repo / _TELEMETRY_PUSH_REL
+    if not push.is_file():
+        return False
+    text = push.read_text(encoding="utf-8", errors="replace")
+    return "setuphelfer_rescue_r3_telemetry_spool" in text
+
+
+def build_r4_static_matrix_entries(*, repo_root: Path | None = None) -> list[dict[str, Any]]:
+    """Static/plannable R.4 build-config matrix entries (no runtime required)."""
+    repo = repo_root or _repo_root()
+    packages = _read_package_names()
+    entries: list[dict[str, Any]] = []
+
+    browser_hit = packages & _BROWSER_PACKAGES
+    entries.append(
+        _entry(
+            "R4-BROWSER-PKG-001",
+            "browser_kiosk",
+            "Browser in package-list (build)",
+            "green" if browser_hit else "red",
+            observed=",".join(sorted(browser_hit)) or "none",
+            evidence_path=str(_PACKAGE_LIST_REL),
+            risk="high" if not browser_hit else "low",
+            next_action="chromium in setuphelfer.list.chroot" if not browser_hit else "Rebuild ISO (R.5)",
+        )
+    )
+
+    display_hit = packages & _DISPLAY_PACKAGES
+    display_ok = {"xserver-xorg", "xinit", "openbox"}.issubset(packages)
+    entries.append(
+        _entry(
+            "R4-DISPLAY-PKG-001",
+            "graphical_menu",
+            "Display-Stack in package-list (build)",
+            "green" if display_ok else ("yellow" if display_hit else "red"),
+            observed=",".join(sorted(display_hit)) or "none",
+            evidence_path=str(_PACKAGE_LIST_REL),
+            next_action="xserver-xorg+xinit+openbox ergänzen" if not display_ok else "Rebuild ISO (R.5)",
+        )
+    )
+
+    kiosk_ok = all((repo / rel).is_file() for rel in _KIOSK_SCRIPTS)
+    entries.append(
+        _entry(
+            "R4-KIOSK-001",
+            "browser_kiosk",
+            "Kiosk-Startskripte vorhanden",
+            "green" if kiosk_ok else "red",
+            observed=f"kiosk_scripts={int(kiosk_ok)}",
+            evidence_path="scripts/rescue-live/image/setuphelfer-rescue-kiosk-start",
+            next_action="Kiosk-Skripte ins Image stagen" if not kiosk_ok else "Autostart in openbox prüfen",
+        )
+    )
+
+    theme_dir = repo / _GRUB_THEME_REL
+    theme_txt = theme_dir / "theme.txt"
+    theme_png = theme_dir / "setuphelfer-boot-menu-de.png"
+    theme_ok = theme_txt.is_file() and theme_png.is_file()
+    entries.append(
+        _entry(
+            "R4-GRUB-THEME-001",
+            "bootloader",
+            "GRUB-Theme konfiguriert (Staging)",
+            "green" if theme_ok else "yellow",
+            observed=f"theme.txt={theme_txt.is_file()} png={theme_png.is_file()}",
+            evidence_path=str(_GRUB_THEME_REL),
+            next_action="stage-rescue-graphical-assets.sh ausführen" if not theme_ok else "grub.cfg nach Build prüfen",
+        )
+    )
+
+    manifest = repo / "build/rescue/asset-manifest.json"
+    entries.append(
+        _entry(
+            "R4-GRUB-ASSETS-001",
+            "bootloader",
+            "GRUB-Assets/Manifest vorhanden",
+            "green" if manifest.is_file() else "yellow",
+            observed=f"asset_manifest={manifest.is_file()}",
+            evidence_path=str(manifest) if manifest.is_file() else str(_GRUB_THEME_REL),
+            next_action="stage-rescue-graphical-assets.sh" if not manifest.is_file() else "verify-rescue-grub-theme.sh",
+        )
+    )
+
+    spool_integrated = _telemetry_push_has_r3_spool(repo)
+    entries.append(
+        _entry(
+            "R4-TELEM-SPOOL-INT-001",
+            "telemetry_spool",
+            "Telemetrie-Push nutzt R.3-Spool",
+            "green" if spool_integrated else "red",
+            observed=f"r3_spool_hooks={spool_integrated}",
+            evidence_path=str(_TELEMETRY_PUSH_REL),
+            next_action="setuphelfer_rescue_r3_telemetry_spool einbinden" if not spool_integrated else "Retry nach Netzwerk",
+        )
+    )
+
+    push_present = (repo / _TELEMETRY_PUSH_REL).is_file()
+    entries.append(
+        _entry(
+            "R4-TELEM-PUSH-001",
+            "telemetry_ingest",
+            "Telemetrie-Push-Skript vorhanden",
+            "green" if push_present else "red",
+            observed=f"telemetry_push={push_present}",
+            evidence_path=str(_TELEMETRY_PUSH_REL),
+            next_action="Skript ins sbin stagen" if not push_present else "Ingest nach Boot testen (R.5)",
+        )
+    )
+    return entries
 
 
 def build_rescue_test_matrix_entries(*, runner: Runner = None) -> list[dict[str, Any]]:
@@ -322,6 +468,8 @@ def build_rescue_test_matrix_entries(*, runner: Runner = None) -> list[dict[str,
         )
     )
 
+    entries.extend(build_r4_static_matrix_entries())
+
     reds = [e for e in entries if e.get("status") == "red"]
     entries.append(
         _entry(
@@ -369,7 +517,7 @@ def write_rescue_test_matrix(*, runner: Runner = None) -> dict[str, Any]:
     doc = build_rescue_test_matrix_document(runner=runner)
     json_result = write_rescue_json_evidence("matrix", "rescue_test_matrix_latest.json", doc, runner=runner)
     lines = [
-        f"# Rescue Test Matrix R.3",
+        f"# Rescue Test Matrix R.{RESCUE_TEST_MATRIX_VERSION}",
         f"generated_at: {doc['generated_at']}",
         "",
         "| ID | Area | Status | Observed | Next |",
@@ -411,6 +559,7 @@ def build_rescue_test_matrix_diagnostics() -> dict[str, Any]:
         "status_values": ["green", "yellow", "red", "gray", "blocked", "unknown"],
         "public_functions": [
             "build_rescue_test_matrix_entries",
+            "build_r4_static_matrix_entries",
             "build_rescue_test_matrix_document",
             "write_rescue_test_matrix",
             "build_rescue_test_matrix_diagnostics",

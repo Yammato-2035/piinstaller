@@ -57,9 +57,12 @@ if ip route show default 2>/dev/null | grep -q .; then
   _network_ready=true
 fi
 
+_TELEMETRY_EVENT_ID="$(setuphelfer_rescue_boot_id)-telemetry"
+
 if [[ "$_network_ready" != true ]]; then
   _spool="${SPOOL_DIR}/$(date +%s)-$(setuphelfer_rescue_boot_id).json"
   cp -f "$PAYLOAD_TMP" "$_spool"
+  setuphelfer_rescue_r3_telemetry_spool "$PAYLOAD_TMP" "network_not_ready" "$_TELEMETRY_EVENT_ID"
   setuphelfer_rescue_write_json "$ACK_RUN" <<EOF
 {
   "sent_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
@@ -86,6 +89,7 @@ _health_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "$HEALTH_U
 if [[ "$_health_code" != "200" ]]; then
   _spool="${SPOOL_DIR}/$(date +%s)-$(setuphelfer_rescue_boot_id).json"
   cp -f "$PAYLOAD_TMP" "$_spool"
+  setuphelfer_rescue_r3_telemetry_spool "$PAYLOAD_TMP" "health_unreachable:${_health_code}" "$_TELEMETRY_EVENT_ID"
   setuphelfer_rescue_write_json "$ACK_RUN" <<EOF
 {
   "sent_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
@@ -143,6 +147,7 @@ EOF
 EOF
   cp -f "$ACK_RUN" "$ACK_TMP" 2>/dev/null || true
   rm -f "$PAYLOAD_TMP"
+  setuphelfer_rescue_r3_telemetry_mark_sent "$_TELEMETRY_EVENT_ID" "$_http_code"
   find "$SPOOL_DIR" -type f -name '*.json' -delete 2>/dev/null || true
   exit 0
 fi
@@ -154,6 +159,7 @@ fi
 
 _spool="${SPOOL_DIR}/$(date +%s)-$(setuphelfer_rescue_boot_id).json"
 cp -f "$PAYLOAD_TMP" "$_spool"
+setuphelfer_rescue_r3_telemetry_spool "$PAYLOAD_TMP" "ingest_unreachable:${_http_code}" "$_TELEMETRY_EVENT_ID"
 setuphelfer_rescue_write_json "$ACK_RUN" <<EOF
 {
   "sent_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",

@@ -1,0 +1,75 @@
+#!/bin/bash
+# Setuphelfer Rescue Kiosk health probe — display/browser/React UI readiness (Phase R.4).
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+TIMEOUT_SEC="${SETUPHELFER_RESCUE_KIOSK_PROBE_TIMEOUT:-30}"
+UI_ROOT="/usr/share/setuphelfer/rescue/ui"
+HTML="${UI_ROOT}/rescue.html"
+PORT="${SETUPHELFER_RESCUE_UI_PORT:-8765}"
+UI_URL="http://127.0.0.1:${PORT}/rescue.html"
+
+_write_evidence() {
+  local status="$1" reason="$2"
+  local payload
+  payload="$(python3 - <<PY
+import json
+print(json.dumps({
+    "schema_version": 1,
+    "phase": "R4",
+    "probe": "kiosk-health",
+    "status": ${status@Q},
+    "reason": ${reason@Q},
+    "display": {
+        "x11_socket": __import__("pathlib").Path("/tmp/.X11-unix").exists(),
+        "display_env": __import__("os").environ.get("DISPLAY") or None,
+        "wayland": __import__("os").environ.get("WAYLAND_DISPLAY") or None,
+        "tty1": __import__("pathlib").Path("/dev/tty1").exists(),
+    },
+    "browser_candidates": [b for b in ("chromium","chromium-browser","firefox-esr","firefox") if __import__("shutil").which(b)],
+    "react_ui_html": __import__("pathlib").Path(${HTML@Q}).is_file(),
+    "ui_url": ${UI_URL@Q},
+    "timeout_sec": int(${TIMEOUT_SEC@Q}),
+    "secrets_exposed": False,
+}, indent=2))
+PY
+)"
+  printf '%s\n' "$payload" >/tmp/setuphelfer-rescue-kiosk-health.json 2>/dev/null || true
+  local ev_script="${SCRIPT_DIR}/setuphelfer-rescue-evidence.py"
+  if [[ -f "$ev_script" ]]; then
+    python3 "$ev_script" kiosk-report --file /tmp/setuphelfer-rescue-kiosk-health.json 2>/dev/null || true
+  fi
+}
+
+_browsers=()
+for candidate in chromium chromium-browser firefox-esr firefox; do
+  if command -v "$candidate" >/dev/null 2>&1; then
+    _browsers+=("$candidate")
+  fi
+done
+
+_display_ok=false
+if [[ -n "${DISPLAY:-}" ]] || [[ -d /tmp/.X11-unix ]] || [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+  _display_ok=true
+fi
+
+if [[ ! -f "$HTML" ]]; then
+  _write_evidence "red" "missing_rescue_html"
+  exit 2
+fi
+
+if [[ ${#_browsers[@]} -eq 0 ]]; then
+  _write_evidence "yellow" "browser_missing"
+  exit 3
+fi
+
+if [[ "$_display_ok" != true ]]; then
+  _write_evidence "yellow" "display_stack_not_ready"
+  exit 4
+fi
+
+_write_evidence "green" "kiosk_prerequisites_met"
+exit 0

@@ -173,6 +173,31 @@ setuphelfer_rescue_run_evidence_bundle() {
   fi
 }
 
+setuphelfer_rescue_r3_telemetry_spool() {
+  local payload_file="${1:-}"
+  local reason="${2:-unknown}"
+  local event_id="${3:-}"
+  local ev_script
+  ev_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/setuphelfer-rescue-evidence.py"
+  [[ -f "$payload_file" ]] || return 0
+  [[ -f "$ev_script" ]] || return 0
+  if [[ -n "$event_id" ]]; then
+    python3 "$ev_script" telemetry-spool --payload "$payload_file" --reason "$reason" --event-id "$event_id" 2>/dev/null || true
+  else
+    python3 "$ev_script" telemetry-spool --payload "$payload_file" --reason "$reason" 2>/dev/null || true
+  fi
+}
+
+setuphelfer_rescue_r3_telemetry_mark_sent() {
+  local event_id="${1:-}"
+  local http_status="${2:-200}"
+  local ev_script
+  ev_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/setuphelfer-rescue-evidence.py"
+  [[ -n "$event_id" ]] || return 0
+  [[ -f "$ev_script" ]] || return 0
+  python3 "$ev_script" telemetry-mark-sent --event-id "$event_id" --http-status "$http_status" 2>/dev/null || true
+}
+
 setuphelfer_rescue_cmdline_has_start_assistant() {
   grep -Eq '(^| )setuphelfer_start_assistant=1( |$)' /proc/cmdline 2>/dev/null
 }

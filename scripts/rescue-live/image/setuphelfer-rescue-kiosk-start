@@ -1,0 +1,101 @@
+#!/bin/bash
+# Setuphelfer Rescue Kiosk start — React UI in browser with TUI fallback (Phase R.4).
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+TIMEOUT_SEC="${SETUPHELFER_RESCUE_KIOSK_START_TIMEOUT:-120}"
+UI_LAUNCH="${SCRIPT_DIR}/setuphelfer-rescue-ui-launch"
+KIOSK_HEALTH="${SCRIPT_DIR}/setuphelfer-rescue-kiosk-health"
+LOG_RUN="/run/setuphelfer/rescue-kiosk-start.log"
+
+mkdir -p /run/setuphelfer 2>/dev/null || true
+exec >>"$LOG_RUN" 2>&1
+
+_write_kiosk_evidence() {
+  local status="$1" reason="$2" browser="${3:-}" display_mode="${4:-unknown}"
+  local payload
+  payload="$(python3 - <<PY
+import json
+print(json.dumps({
+    "schema_version": 1,
+    "phase": "R4",
+    "probe": "kiosk-start",
+    "status": ${status@Q},
+    "reason": ${reason@Q},
+    "browser_candidate": ${browser@Q},
+    "display_mode": ${display_mode@Q},
+    "timeout_sec": int(${TIMEOUT_SEC@Q}),
+    "secrets_exposed": False,
+}, indent=2))
+PY
+)"
+  printf '%s\n' "$payload" >/tmp/setuphelfer-rescue-kiosk-start.json 2>/dev/null || true
+  local ev_script="${SCRIPT_DIR}/setuphelfer-rescue-evidence.py"
+  if [[ -f "$ev_script" ]]; then
+    python3 "$ev_script" kiosk-report --file /tmp/setuphelfer-rescue-kiosk-start.json 2>/dev/null || true
+    python3 "$ev_script" matrix 2>/dev/null || true
+  fi
+}
+
+_on_timeout() {
+  _write_kiosk_evidence "yellow" "kiosk_start_timeout" "" "timeout"
+  if [[ -x "$UI_LAUNCH" ]]; then
+    exec "$UI_LAUNCH"
+  fi
+  exit 124
+}
+
+trap _on_timeout ALRM
+
+if [[ -x "$KIOSK_HEALTH" ]]; then
+  if ! "$KIOSK_HEALTH"; then
+    _rc=$?
+    _write_kiosk_evidence "yellow" "kiosk_health_failed_rc_${_rc}" "" "fallback_tui"
+    if [[ -x "$UI_LAUNCH" ]]; then
+      exec "$UI_LAUNCH"
+    fi
+    exit "$_rc"
+  fi
+fi
+
+_browser=""
+for candidate in chromium chromium-browser firefox-esr firefox; do
+  if command -v "$candidate" >/dev/null 2>&1; then
+    _browser="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$_browser" ]]; then
+  _write_kiosk_evidence "yellow" "browser_missing" "" "fallback_tui"
+  if [[ -x "$UI_LAUNCH" ]]; then
+    exec "$UI_LAUNCH"
+  fi
+  exit 3
+fi
+
+if [[ -z "${DISPLAY:-}" && ! -d /tmp/.X11-unix ]]; then
+  if command -v startx >/dev/null 2>&1 && [[ -x /etc/X11/xinit/xinitrc || -f "${HOME:-/root}/.xinitrc" ]]; then
+    _write_kiosk_evidence "yellow" "starting_x_via_startx" "$_browser" "xinit"
+    ( sleep "$TIMEOUT_SEC" && kill -ALRM $$ ) &
+    _alarm_pid=$!
+    trap 'kill "$_alarm_pid" 2>/dev/null || true; _on_timeout' ALRM
+    exec startx /usr/local/sbin/setuphelfer-rescue-kiosk-start -- "$@"
+  fi
+  _write_kiosk_evidence "yellow" "display_not_ready" "$_browser" "fallback_tui"
+  if [[ -x "$UI_LAUNCH" ]]; then
+    exec "$UI_LAUNCH"
+  fi
+  exit 4
+fi
+
+_write_kiosk_evidence "green" "delegating_to_ui_launch" "$_browser" "kiosk"
+if [[ -x "$UI_LAUNCH" ]]; then
+  exec "$UI_LAUNCH"
+fi
+
+_write_kiosk_evidence "red" "ui_launch_missing" "$_browser" "failed"
+exit 5

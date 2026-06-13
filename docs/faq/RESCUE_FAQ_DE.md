@@ -32,3 +32,11 @@ Das aktuelle Live-Image enthält **keinen Browser** und keinen vollständigen Di
 ```bash
 setuphelfer-rescue-evidence.py bundle
 ```
+
+## Wann ist der Browser/Kiosk verfügbar? (R.4)
+
+Die **Build-Konfiguration** enthält chromium + openbox + xorg (ab 1.7.17.0). Auf einem **bestehenden** Stick ohne neuen ISO-Build fehlt der Browser weiterhin.
+
+Nach ISO-Rebuild (R.5): Kiosk-Autostart via Openbox, Evidence unter `rescue-ui/kiosk_report_latest.md`.
+
+Details: `docs/architecture/RESCUE_BROWSER_KIOSK_R4.md`

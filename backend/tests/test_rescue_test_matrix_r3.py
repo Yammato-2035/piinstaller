@@ -32,7 +32,7 @@ class TestRescueTestMatrixR3(unittest.TestCase):
         import core.rescue_test_matrix as tm
 
         doc = tm.build_rescue_test_matrix_document()
-        self.assertEqual(doc["matrix_version"], 3)
+        self.assertEqual(doc["matrix_version"], 4)
         self.assertIn("status_counts", doc)
 
 
