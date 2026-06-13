@@ -223,9 +223,13 @@ Kanonisches Modul `frontend/src/viewmodels/statusViewModel.ts` — zentrale Stat
 
 5 Presentation-/Utility-Dateien delegieren an `statusViewModel` (LampDot, Panda-Ampel, Governance-History, Standalone-Dashboard). Keine UI-Änderung. Doku: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H6.md`.
 
+## Was ist H.7 (Frontend Status — finaler Slice)?
+
+5 Presentation-Libs delegieren an `statusViewModel`. Verbleibend: 10 (Domain + Large-Page). **Kein H.8.** Doku: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H7.md`.
+
 ## Nächster Schritt?
 
-**H.7** — `riskLevels.ts`, toneClass **oder** **G.4** — Network Handler Extraction.
+**G.4** — Network Handler Extraction aus `app.py`.
 
 ## Weiterlesen
 

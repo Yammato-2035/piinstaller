@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach H.6 · **Update:** H.6 Presentation-Helfer; 15 lokale Mappings verbleibend.
+**HEAD:** nach H.7 · **Update:** H.7 final; 10 lokale Mappings (kein weiterer Frontend-Slice).
 
 ## Zusammenfassung
 

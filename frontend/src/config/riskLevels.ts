@@ -4,6 +4,7 @@
  */
 
 import type { TFunction } from 'i18next'
+import { riskLevelLabelKeyForLevel } from '../viewmodels/statusViewModel'
 
 export type RiskLevel = 'green' | 'yellow' | 'red'
 
@@ -70,19 +71,13 @@ const RISK_MAP: Record<string, RiskEntry> = {
   },
 }
 
-function labelKeyForLevel(level: RiskLevel): string {
-  if (level === 'green') return 'risk.label.safe'
-  if (level === 'yellow') return 'risk.label.systemChange'
-  return 'risk.label.danger'
-}
-
 export function getPageRisk(pageId: string | undefined, t: TFunction): PageRiskInfo | null {
   if (!pageId) return null
   const raw = RISK_MAP[pageId]
   if (!raw) return null
   return {
     level: raw.level,
-    label: t(labelKeyForLevel(raw.level)),
+    label: t(riskLevelLabelKeyForLevel(raw.level)),
     warningText: raw.warningKey ? String(t(raw.warningKey)) : undefined,
   }
 }

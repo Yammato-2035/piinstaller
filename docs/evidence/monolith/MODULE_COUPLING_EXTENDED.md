@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach H.6 · **Update:** Lamp/Presentation an ViewModel; count_15 verbleibend.
+**HEAD:** nach H.7 · **Update:** Presentation vollständig migriert; 10 Domain/Large-Page verbleibend.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

@@ -330,7 +330,8 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **H.4** | Frontend Status Component Migration (zweiter 3-Slice) — **erledigt** |
 | **H.5** | Frontend Status Utility Migration (3 Libs) — **erledigt** |
 | **H.6** | Frontend Status Presentation Migration (5 Slice) — **erledigt** |
-| **H.7** | Verbleibende Mappings (count_15) | **nächster Schritt** |
+| **H.7** | Frontend Status Final Safe Slice — **erledigt** (`count_10`) |
+| **G.4** | Network Handler Extraction | **nächster Schritt** |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  
 Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`  

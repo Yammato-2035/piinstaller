@@ -223,9 +223,13 @@ Canonical module `frontend/src/viewmodels/statusViewModel.ts` — central status
 
 5 presentation/utility files delegate to `statusViewModel` (LampDot, panda traffic light, governance history, standalone dashboard). No UI change. Doc: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H6_EN.md`.
 
+## What is H.7 (Frontend Status — final slice)?
+
+5 presentation libs delegate to `statusViewModel`. Remaining: 10 (domain + large-page). **No H.8.** Doc: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H7_EN.md`.
+
 ## Next step?
 
-**H.7** — `riskLevels.ts`, toneClass **or** **G.4** — network handler extraction.
+**G.4** — network handler extraction from `app.py`.
 
 ## Further reading
 

@@ -1,0 +1,18 @@
+# Boundary Warnings — Phase H.7 (WARN-only)
+
+**HEAD vorher:** 2ac97be · **Gate:** Exit 0
+
+## H.7
+
+| Code | Status |
+|------|--------|
+| `frontend_component_status_mapping_reduced_h7:count_10` | ausgelöst (15→10) |
+| `frontend_component_bypasses_status_viewmodel` (H.7-Slice) | nicht ausgelöst |
+| `frontend_presentation_status_mapping_remaining` | nicht ausgelöst |
+| `frontend_domain_status_mapping_requires_domain_facade` | 4 Domain-Dateien |
+
+## Verbleibend
+
+| Code | Count |
+|------|-------|
+| `frontend_component_local_status_mapping` | 10 |

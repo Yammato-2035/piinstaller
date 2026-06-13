@@ -13,6 +13,9 @@
 
 import type { DiagnosisRecord } from '../types/diagnosis'
 import {
+  allTrafficLightLampsGreen,
+  isRedTrafficLightLamp,
+  isYellowTrafficLightLamp,
   trafficLightLampFromInput,
   worstTrafficLightLampFromInputs,
 } from '../viewmodels/statusViewModel'
@@ -146,13 +149,13 @@ export function deriveBackupSafetyTrafficLight(input: {
   if (input.sawSudoRequired) {
     return { lamp: 'red', copyKey: 'runtime_blocked_sudo' }
   }
-  if (fromDx === 'red' || input.hasRestorePreview) {
+  if ((fromDx != null && isRedTrafficLightLamp(fromDx)) || input.hasRestorePreview) {
     return { lamp: 'red', copyKey: 'diagnosis_or_restore_risk' }
   }
   if (!input.hasRealBackupVerification) {
     return { lamp: 'yellow', copyKey: 'core_unverified' }
   }
-  if (fromDx === 'yellow' || input.anyVerifying) {
+  if ((fromDx != null && isYellowTrafficLightLamp(fromDx)) || input.anyVerifying) {
     return { lamp: 'yellow', copyKey: 'verifying_or_unclear' }
   }
   return { lamp: 'green', copyKey: 'verified_calm' }
@@ -183,7 +186,7 @@ export function deriveMonitoringOverallTrafficLight(status: {
     const s = status[k]
     return !s?.installed || s?.running
   })
-  if (anyInstalled && allRunning && lamps.every((l) => l === 'green')) {
+  if (anyInstalled && allRunning && allTrafficLightLampsGreen(lamps)) {
     return { lamp: 'green', copyKey: 'stack_ok' }
   }
   if (!anyInstalled) {

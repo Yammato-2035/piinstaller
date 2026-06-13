@@ -2,7 +2,9 @@
  * Professionelles Tool-Design für Setuphelfer-Werkzeugmodus (Partitionshelfer).
  */
 
-export type ToolStatusTone = 'safe' | 'review' | 'blocked' | 'info' | 'unknown'
+import { toolStatusToneFromRisk, type ToolStatusTone } from '../../viewmodels/statusViewModel'
+
+export type { ToolStatusTone }
 
 export const TOOL_STATUS: Record<
   ToolStatusTone,
@@ -68,8 +70,5 @@ export const TOOL_DISK_ROLE: Record<string, ToolStatusTone> = {
 }
 
 export function riskToTone(risk: string | undefined): ToolStatusTone {
-  if (risk === 'green') return 'safe'
-  if (risk === 'red') return 'blocked'
-  if (risk === 'yellow') return 'review'
-  return 'unknown'
+  return toolStatusToneFromRisk(risk)
 }

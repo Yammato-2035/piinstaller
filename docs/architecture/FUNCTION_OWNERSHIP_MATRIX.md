@@ -50,7 +50,7 @@
 | AI Prompt Generate Stub | `core.dcc_status_facade` | CANONICAL (F.4) | POST `/api/ai/prompt/generate` | Ja — migriert |
 | DCC Readonly E.8/evidence | `core.dcc_status_facade` API helpers | CANONICAL (F.4) | `dev_dashboard_readonly` | Ja — migriert |
 | Deploy Runtime Gate | `core.deploy_job_state` | PARTIAL | Deploy-Gates | **F.5:** Facade-Hook |
-| Frontend Status ViewModel | `frontend/viewmodels/statusViewModel.ts` | CANONICAL (H.1–H.6) | TrafficLight/DCC/Governance/Presentation UI | Ja — H.7 Rest (count_15) |
+| Frontend Status ViewModel | `frontend/viewmodels/statusViewModel.ts` | CANONICAL (H.1–H.7 final) | Gesamtes Frontend-Status-UI | Ja — Domain/Large-Page verbleibend |
 | Frontend API Clients | `frontend/src/lib/*` | PARTIAL | pages, rescue UI | Wiederverwenden |
 | i18n Namespaces | `frontend/src/**/i18n` | PARTIAL | rescue, main UI | Namespace-Konzept |
 | Notification Events | — | MISSING | — | D.9: keine Deploy-Routen |

@@ -26,7 +26,8 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 22. **Keine Netzwerk-Schreiboperationen** in Status-Facades — aktive Reparatur nur über späteres eigenes Modul.
 23. **Keine neue Ampel-/Traffic-Light-Normalisierung** außerhalb `frontend/src/viewmodels/statusViewModel.ts` (H.1+).
 24. **UI-Komponenten** dürfen Status nur darstellen — Normalisierung über ViewModel, nicht inline in Komponenten (H.2+).
-25. **Domain-Status** (Partition/Safety/Backup) bleibt lokal bis Domain-Facade — Guard `frontend_domain_status_mapping_requires_domain_facade` (H.4+).
+26. **Domain-Status** (Partition/Safety/Backup) bleibt lokal bis Domain-Facade — Guard `frontend_domain_status_mapping_requires_domain_facade` (H.4+).
+27. **Frontend-Status-Slices H.3–H.7 abgeschlossen** — verbleibende 10 Mappings nur Domain/Large-Page; kein H.8.
 
 ## Prüfreihenfolge (Cursor)
 

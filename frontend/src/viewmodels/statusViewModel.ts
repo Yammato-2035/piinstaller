@@ -405,6 +405,59 @@ export function worstStandaloneAmpelOverall(currentOverall: string, ampel: strin
   return currentOverall
 }
 
+export type RiskLevelLabelKey = 'risk.label.safe' | 'risk.label.systemChange' | 'risk.label.danger'
+
+/** i18n key for page risk level label (H.7 riskLevels, 1:1). */
+export function riskLevelLabelKeyForLevel(level: unknown): RiskLevelLabelKey {
+  const tone = dashboardToneFromInput(level)
+  if (tone === 'red') return 'risk.label.danger'
+  if (tone === 'yellow') return 'risk.label.systemChange'
+  return 'risk.label.safe'
+}
+
+/** DCC cockpit tone border/background classes (H.7 devDashboardFilters, 1:1 toneClass). */
+export function dashboardToneBorderClass(tone: DashboardTone): string {
+  if (tone === 'green') return 'border-emerald-600/50 bg-emerald-950/30 text-emerald-100'
+  if (tone === 'yellow') return 'border-amber-600/50 bg-amber-950/30 text-amber-100'
+  if (tone === 'red') return 'border-red-600/50 bg-red-950/30 text-red-100'
+  return 'border-slate-600/50 bg-slate-900/40 text-slate-200'
+}
+
+const DASHBOARD_TRAFFIC_FILTER_KEYS: ReadonlySet<string> = new Set(['red', 'yellow', 'green', 'gray'])
+
+export function isDashboardTrafficFilterKey(
+  filter: string,
+): filter is 'red' | 'yellow' | 'green' | 'gray' {
+  return DASHBOARD_TRAFFIC_FILTER_KEYS.has(filter)
+}
+
+/** True when every lamp is green (H.7 trafficLightModel). */
+export function allTrafficLightLampsGreen(lamps: TrafficLightLampTone[]): boolean {
+  return lamps.length > 0 && lamps.every((l) => isGreenTrafficLightLamp(l))
+}
+
+/** Roadmap drawer row shell classes by status token (H.7, 1:1 toneForStatus). */
+export function roadmapDrawerRowToneClass(status: string): string {
+  const s = status.trim().toLowerCase()
+  if (s === 'green') return 'border-emerald-700/50 bg-emerald-950/20 text-emerald-100'
+  if (s === 'partial_green') return 'border-teal-700/50 bg-teal-950/20 text-teal-100'
+  if (s === 'yellow') return 'border-amber-700/50 bg-amber-950/20 text-amber-100'
+  if (s === 'blocked' || s === 'red') return 'border-red-700/50 bg-red-950/20 text-red-100'
+  if (s === 'deferred') return 'border-slate-600 bg-slate-900/50 text-slate-200'
+  return 'border-slate-700 bg-slate-900/40 text-slate-200'
+}
+
+export type ToolStatusTone = 'safe' | 'review' | 'blocked' | 'info' | 'unknown'
+
+/** Partition tool theme tone from risk level string (H.7 setuphelferToolTheme, 1:1). */
+export function toolStatusToneFromRisk(risk: string | undefined): ToolStatusTone {
+  const tone = dashboardToneFromInput(risk)
+  if (tone === 'green') return 'safe'
+  if (tone === 'red') return 'blocked'
+  if (tone === 'yellow') return 'review'
+  return 'unknown'
+}
+
 export function statusViewModelDiagnostics(): Record<string, unknown> {
   return {
     viewmodel_version: VIEWMODEL_VERSION,
@@ -438,6 +491,12 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'lampAreaBorderClass',
       'governanceTrafficTransitionKind',
       'standaloneAmpelFromInput',
+      'riskLevelLabelKeyForLevel',
+      'dashboardToneBorderClass',
+      'isDashboardTrafficFilterKey',
+      'allTrafficLightLampsGreen',
+      'roadmapDrawerRowToneClass',
+      'toolStatusToneFromRisk',
       'statusViewModelDiagnostics',
     ],
     backend_facade_sources: [
@@ -445,7 +504,7 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'system_status_facade',
       'network_info_facade',
     ],
-    component_migration: 'h6_partial',
+    component_migration: 'h7_final',
     api_fetches: false,
   }
 }

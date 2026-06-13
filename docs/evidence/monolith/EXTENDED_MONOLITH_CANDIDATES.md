@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** nach H.6 · **Update:** 5 Presentation-Dateien migriert; count_15 verbleibend.
+**HEAD:** nach H.7 · **Update:** H.7 final; count_10 (Domain/Large-Page only).
 
 ## Legende
 

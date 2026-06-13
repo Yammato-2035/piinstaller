@@ -8,6 +8,7 @@ import {
   type JsonRow,
   type RoadmapFilterId,
 } from '../../lib/devDashboard/roadmapFilter'
+import { roadmapDrawerRowToneClass } from '../../viewmodels/statusViewModel'
 import type { CockpitPanelProps } from './types'
 
 type RoadmapDrawerProps = CockpitPanelProps & {
@@ -41,15 +42,6 @@ function localized(row: JsonRow, base: string): string {
 function localizedReason(row: JsonRow): string {
   const decision = String(row.decision_de || row.reason_de || row.description_de || row.summary || '').trim()
   return decision || '—'
-}
-
-function toneForStatus(status: string): string {
-  if (status === 'green') return 'border-emerald-700/50 bg-emerald-950/20 text-emerald-100'
-  if (status === 'partial_green') return 'border-teal-700/50 bg-teal-950/20 text-teal-100'
-  if (status === 'yellow') return 'border-amber-700/50 bg-amber-950/20 text-amber-100'
-  if (status === 'blocked' || status === 'red') return 'border-red-700/50 bg-red-950/20 text-red-100'
-  if (status === 'deferred') return 'border-slate-600 bg-slate-900/50 text-slate-200'
-  return 'border-slate-700 bg-slate-900/40 text-slate-200'
 }
 
 function displayRange(row: JsonRow): string {
@@ -342,14 +334,14 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
       </div>
 
       {restoreArea ? (
-        <div className={`rounded-lg p-3 ${toneForStatus(String(restoreArea.status || 'deferred'))}`} data-testid="dev-dashboard-roadmap-restore-hint">
+        <div className={`rounded-lg p-3 ${roadmapDrawerRowToneClass(String(restoreArea.status || 'deferred'))}`} data-testid="dev-dashboard-roadmap-restore-hint">
           <div className="text-sm font-semibold">{t('devDashboard.roadmap.restoreDeferredTitle')}</div>
           <p className="mt-1 text-xs">{localizedReason(asRows(restoreArea.decisions)[0] || restoreArea)}</p>
         </div>
       ) : null}
 
       {diagnosticsArea ? (
-        <div className={`rounded-lg p-3 ${toneForStatus(String(diagnosticsArea.status || 'partial_green'))}`} data-testid="dev-dashboard-roadmap-diagnostics-hint">
+        <div className={`rounded-lg p-3 ${roadmapDrawerRowToneClass(String(diagnosticsArea.status || 'partial_green'))}`} data-testid="dev-dashboard-roadmap-diagnostics-hint">
           <div className="text-sm font-semibold">{t('devDashboard.roadmap.diagnosticsPartialTitle')}</div>
           <p className="mt-1 text-xs">{localizedReason(asRows(diagnosticsArea.decisions)[0] || diagnosticsArea)}</p>
         </div>
@@ -372,7 +364,7 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
                 <div className="text-[11px] uppercase tracking-wide text-slate-400">
                   {t(`devDashboard.roadmap.diagnosticsProgress.${item.key}`)}
                 </div>
-                <div className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-xs ${toneForStatus(item.status)}`}>{item.status}</div>
+                <div className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-xs ${roadmapDrawerRowToneClass(item.status)}`}>{item.status}</div>
               </div>
             ))}
           </div>
@@ -497,7 +489,7 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
                     </div>
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`inline-flex rounded-full border px-2 py-0.5 ${toneForStatus(status)}`}>{status}</span>
+                    <span className={`inline-flex rounded-full border px-2 py-0.5 ${roadmapDrawerRowToneClass(status)}`}>{status}</span>
                   </td>
                   <td className="px-3 py-2 text-slate-200">{String(row.progress_percent ?? '—')}%</td>
                   <td className="px-3 py-2 text-slate-200">{String(row.evidence_level || '—')}</td>
@@ -579,7 +571,7 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
                     <div className="font-semibold text-white">{localized(area, 'title')}</div>
                     <div className="text-xs text-slate-400">{String(area.description_de || '')}</div>
                   </div>
-                  <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs ${toneForStatus(areaStatus)}`}>{areaStatus}</span>
+                  <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs ${roadmapDrawerRowToneClass(areaStatus)}`}>{areaStatus}</span>
                 </div>
               </summary>
               <div className="border-t border-slate-800/80 px-4 py-4 space-y-3 text-xs">

@@ -1,6 +1,6 @@
 # Modul-Katalog (Source of Truth)
 
-**Stand:** nach H.6 (`statusViewModel` Presentation-Slice) · **Kein Big-Bang** — Inventar und Ownership.
+**Stand:** nach H.7 (finaler StatusViewModel-Slice, `count_10`) · **Kein Big-Bang** — Inventar und Ownership.
 
 Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX.md) und [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES.md) prüfen.
 
@@ -253,7 +253,7 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | **Status** | **CANONICAL_MODULE** (VIEWMODEL, H.1) |
 | **Zweck** | Frontend Status-Normalisierung, Ampel/Severity/Blocking |
 | **Öffentliche API** | `normalizeStatusKind`, `buildStatusViewModel`, `buildTrafficLightViewModel`, `buildDashboardStatusViewModel` |
-| **Komponenten/Utils (H.3–H.6)** | H.3–H.4: 6 Komponenten · H.5: 3 Libs · H.6: StatusDots, TrafficLight, TrafficLightBadge, governanceHistory, buildStandaloneDashboard |
+| **Komponenten/Utils (H.3–H.7)** | 6 Komponenten · 8 Libs · H.7 final: riskLevels, devDashboardFilters, trafficLightModel, RoadmapDrawer, setuphelferToolTheme |
 | **Tests** | `statusViewModel.test.ts` (Vitest) |
 | **Doku DE/EN** | `FRONTEND_STATUS_VIEWMODEL_H1.md` |
 
@@ -284,7 +284,7 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | `api/routes/dev_dashboard_readonly.py` | **CANONICAL_ROUTER** (E.4/E.8) | DCC modules/evidence + backend-health + notifications read |
 | `api/routes/dev_dashboard_roadmap.py` | **CANONICAL_ROUTER** (E.5/E.6) | roadmap registry + next-prompts/export |
 | `app.py` Router-Slices | **IN_PROGRESS** | H.2 ViewModel-Migration / G.4 |
-| `frontend_status_viewmodel` | **CANONICAL_MODULE** (H.1–H.6) | count_15 verbleibend; H.7 |
+| `frontend_status_viewmodel` | **CANONICAL_MODULE** (H.1–H.7 final) | count_10 verbleibend (Domain/Large-Page); **G.4** |
 | `dcc_status_facade` | **CANONICAL_MODULE** (F.1–F.4) | HTTP-DCC-Leser delegiert |
 | `system_status_facade` | **CANONICAL_MODULE** (G.1/G.1b) | `/api/system/status` migriert |
 | `network_info_facade` | **CANONICAL_MODULE** (G.2–G.3) | app.py-Handler vollständig |

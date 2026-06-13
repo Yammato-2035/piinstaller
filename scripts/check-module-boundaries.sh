@@ -1217,6 +1217,21 @@ for path in presentation_status_remaining:
             if "statusViewModel" not in pt:
                 rel = path.relative_to(root).as_posix()
                 print(f"frontend_presentation_status_mapping_remaining:{rel}")
+if local_mapping_hits < 15:
+    print(f"frontend_component_status_mapping_reduced_h7:count_{local_mapping_hits}")
+h7_migrated = (
+    root / "frontend" / "src" / "config" / "riskLevels.ts",
+    root / "frontend" / "src" / "pages" / "devDashboardFilters.ts",
+    root / "frontend" / "src" / "trafficLight" / "trafficLightModel.ts",
+    root / "frontend" / "src" / "components" / "dev-dashboard" / "RoadmapDrawer.tsx",
+    root / "frontend" / "src" / "lib" / "theme" / "setuphelferToolTheme.ts",
+)
+for path in h7_migrated:
+    if path.is_file():
+        pt = path.read_text(encoding="utf-8", errors="replace")
+        if "statusViewModel" not in pt:
+            rel = path.relative_to(root).as_posix()
+            print(f"frontend_component_bypasses_status_viewmodel:{rel}")
 domain_status_mapping = (
     root / "frontend" / "src" / "components" / "PartitionSafetyStatusPanel.tsx",
     root / "frontend" / "src" / "components" / "partition" / "PartitionSafetyPreviewPanel.tsx",
