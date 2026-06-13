@@ -1,6 +1,11 @@
 import React from "react";
 import type { PandaStatus } from "./pandaTypes";
 import { normalizePandaStatus } from "./pandaUtils";
+import {
+  svgTrafficLightLampBackground,
+  svgTrafficLightLampBoxShadow,
+  type TrafficLightLampTone,
+} from "../../viewmodels/statusViewModel";
 
 /** Farben wie Dashboard TrafficLightDot / AreaLightCard (Emerald / Amber / Red). */
 const LAMP = {
@@ -26,7 +31,7 @@ export interface TrafficLightProps {
   className?: string;
 }
 
-function getActiveLamp(status: PandaStatus): "green" | "yellow" | "red" {
+function getActiveLamp(status: PandaStatus): TrafficLightLampTone {
   switch (status) {
     case "success":
     case "info":
@@ -54,31 +59,22 @@ export const TrafficLight: React.FC<TrafficLightProps> = ({
   const padV = REF.padV * scale;
   const border = Math.max(1, REF.border * scale);
 
-  const lampStyle = (lampColor: "red" | "yellow" | "green"): React.CSSProperties => ({
-    width: lamp,
-    height: lamp,
-    borderRadius: "50%",
-    background:
-      lampColor === "red"
-        ? active === "red"
-          ? LAMP.redOn
-          : LAMP.redDim
-        : lampColor === "yellow"
-          ? active === "yellow"
-            ? LAMP.yellowOn
-            : LAMP.yellowDim
-          : active === "green"
-            ? LAMP.greenOn
-            : LAMP.greenDim,
-    boxShadow:
-      active === lampColor
-        ? lampColor === "green"
-          ? "0 0 10px rgba(52, 211, 153, 0.45)"
-          : lampColor === "yellow"
-            ? "0 0 8px rgba(251, 191, 36, 0.4)"
-            : "0 0 10px rgba(239, 68, 68, 0.5)"
-        : "none",
-  });
+  const lampColors: Record<TrafficLightLampTone, { on: string; dim: string }> = {
+    red: { on: LAMP.redOn, dim: LAMP.redDim },
+    yellow: { on: LAMP.yellowOn, dim: LAMP.yellowDim },
+    green: { on: LAMP.greenOn, dim: LAMP.greenDim },
+  }
+
+  const lampStyle = (position: TrafficLightLampTone): React.CSSProperties => {
+    const colors = lampColors[position]
+    return {
+      width: lamp,
+      height: lamp,
+      borderRadius: "50%",
+      background: svgTrafficLightLampBackground(active, position, colors.on, colors.dim),
+      boxShadow: svgTrafficLightLampBoxShadow(active, position),
+    }
+  };
 
   return (
     <div

@@ -219,9 +219,13 @@ Kanonisches Modul `frontend/src/viewmodels/statusViewModel.ts` — zentrale Stat
 
 3 kleine DCC-Utilities (`governanceMatrix`, `roadmapFilter`, `buildGovernancePrompt`) delegieren Status-Mapping an `statusViewModel`. Keine UI-Änderung. Doku: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H5.md`.
 
+## Was ist H.6 (Frontend Status Presentation Migration)?
+
+5 Presentation-/Utility-Dateien delegieren an `statusViewModel` (LampDot, Panda-Ampel, Governance-History, Standalone-Dashboard). Keine UI-Änderung. Doku: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H6.md`.
+
 ## Nächster Schritt?
 
-**H.6** — Presentation/Domain-Slices **oder** **G.4** — Network Handler Extraction.
+**H.7** — `riskLevels.ts`, toneClass **oder** **G.4** — Network Handler Extraction.
 
 ## Weiterlesen
 

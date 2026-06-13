@@ -272,6 +272,139 @@ export function worstTrafficLightLampFromInputs(inputs: unknown[]): TrafficLight
   return trafficLightLampFromKind(worst.kind)
 }
 
+export function isYellowTrafficLightLamp(lamp: TrafficLightLampTone): boolean {
+  return lamp === 'yellow'
+}
+
+export function isGreenTrafficLightLamp(lamp: TrafficLightLampTone): boolean {
+  return lamp === 'green'
+}
+
+export function isRedTrafficLightLamp(lamp: TrafficLightLampTone): boolean {
+  return lamp === 'red'
+}
+
+/** LampDot glow suffix (H.6 StatusDots, 1:1). */
+export function lampDotGlowSuffix(lamp: TrafficLightLampTone, quiet?: boolean): string {
+  if (quiet || isGreenTrafficLightLamp(lamp)) return ''
+  if (isYellowTrafficLightLamp(lamp)) return ' shadow-[0_0_4px_rgba(251,191,36,0.35)]'
+  return ' shadow-[0_0_8px_rgba(239,68,68,0.55)]'
+}
+
+/** LampDot background Tailwind (H.6 StatusDots, 1:1). */
+export function lampDotBackgroundClass(lamp: TrafficLightLampTone, quiet?: boolean): string {
+  if (isGreenTrafficLightLamp(lamp)) {
+    return `bg-emerald-400${quiet ? '' : ' shadow-[0_0_6px_rgba(52,211,153,0.45)]'}`
+  }
+  if (isYellowTrafficLightLamp(lamp)) return `bg-amber-400${lampDotGlowSuffix(lamp, quiet)}`
+  return `bg-red-500${lampDotGlowSuffix(lamp, quiet)}`
+}
+
+/** LampAreaCard border class (H.6). */
+export function lampAreaBorderClass(lamp: TrafficLightLampTone): string {
+  if (isGreenTrafficLightLamp(lamp)) return 'border-emerald-500/90'
+  if (isYellowTrafficLightLamp(lamp)) return 'border-amber-500/60'
+  return 'border-red-500'
+}
+
+/** LampAreaCard background class (H.6). */
+export function lampAreaBackgroundClass(lamp: TrafficLightLampTone): string {
+  if (isGreenTrafficLightLamp(lamp)) return 'bg-emerald-950/30'
+  if (isYellowTrafficLightLamp(lamp)) return 'bg-amber-950/15'
+  return 'bg-red-950/35'
+}
+
+export type TrafficLightLampPosition = TrafficLightLampTone
+
+export function isActiveTrafficLightPosition(
+  active: TrafficLightLampTone,
+  position: TrafficLightLampPosition,
+): boolean {
+  return active === position
+}
+
+/** SVG panda traffic-light lamp fill (H.6 TrafficLight.tsx, 1:1). */
+export function svgTrafficLightLampBackground(
+  active: TrafficLightLampTone,
+  position: TrafficLightLampPosition,
+  onColor: string,
+  dimColor: string,
+): string {
+  return isActiveTrafficLightPosition(active, position) ? onColor : dimColor
+}
+
+/** SVG panda traffic-light lamp box-shadow (H.6). */
+export function svgTrafficLightLampBoxShadow(
+  active: TrafficLightLampTone,
+  position: TrafficLightLampPosition,
+): string {
+  if (!isActiveTrafficLightPosition(active, position)) return 'none'
+  if (position === 'green') return '0 0 10px rgba(52, 211, 153, 0.45)'
+  if (position === 'yellow') return '0 0 8px rgba(251, 191, 36, 0.4)'
+  return '0 0 10px rgba(239, 68, 68, 0.5)'
+}
+
+export type GovernanceTrafficTransitionKind =
+  | 'recovered'
+  | 'became_green'
+  | 'regressed'
+  | 'became_red'
+  | 'became_yellow'
+
+/** Governance history transition (H.6 governanceHistory, 1:1). */
+export function governanceTrafficTransitionKind(
+  from: GovernanceTraffic | undefined,
+  to: GovernanceTraffic,
+): GovernanceTrafficTransitionKind | null {
+  if (!from || from === to) return null
+  if (isGreenGovernanceTraffic(to) && !isGreenGovernanceTraffic(from)) {
+    if (isRedGovernanceTraffic(from) || isYellowGovernanceTraffic(from)) return 'recovered'
+    return 'became_green'
+  }
+  if (isRedGovernanceTraffic(to) && !isRedGovernanceTraffic(from)) {
+    return isGreenGovernanceTraffic(from) ? 'regressed' : 'became_red'
+  }
+  if (isYellowGovernanceTraffic(to) && isGreenGovernanceTraffic(from)) return 'regressed'
+  if (isYellowGovernanceTraffic(to) && isRedGovernanceTraffic(from)) return 'recovered'
+  return 'became_yellow'
+}
+
+export type StandaloneMatrixCategory = 'created' | 'in_progress' | 'planned' | 'blocked'
+
+/** Standalone dashboard ampel normalization (H.6, 1:1 normalizeAmpel). */
+export function standaloneAmpelFromInput(raw: string | undefined): string {
+  const s = String(raw || '').toLowerCase()
+  const map: Record<string, string> = {
+    grün: 'green',
+    gruen: 'green',
+    green: 'green',
+    gelb: 'yellow',
+    yellow: 'yellow',
+    rot: 'red',
+    red: 'red',
+    gray: 'gray',
+    grey: 'gray',
+    blocked: 'red',
+    failed: 'red',
+  }
+  return map[s] || 'unknown'
+}
+
+/** Matrix row category from normalized ampel (H.6). */
+export function standaloneMatrixCategoryFromAmpel(ampel: string): StandaloneMatrixCategory {
+  if (ampel === 'green') return 'created'
+  if (ampel === 'yellow') return 'in_progress'
+  if (ampel === 'red' || ampel === 'unknown') return 'blocked'
+  return 'planned'
+}
+
+/** Worst tests-evidence overall ampel (H.6). */
+export function worstStandaloneAmpelOverall(currentOverall: string, ampel: string): string {
+  if (ampel === 'red') return 'red'
+  if (ampel === 'yellow' && currentOverall === 'green') return 'yellow'
+  return currentOverall
+}
+
 export function statusViewModelDiagnostics(): Record<string, unknown> {
   return {
     viewmodel_version: VIEWMODEL_VERSION,
@@ -300,6 +433,11 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'governanceDocsTrafficFromTone',
       'roadmapFilterBucketFromStatus',
       'isRoadmapTrafficFilter',
+      'isYellowTrafficLightLamp',
+      'lampDotBackgroundClass',
+      'lampAreaBorderClass',
+      'governanceTrafficTransitionKind',
+      'standaloneAmpelFromInput',
       'statusViewModelDiagnostics',
     ],
     backend_facade_sources: [
@@ -307,7 +445,7 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'system_status_facade',
       'network_info_facade',
     ],
-    component_migration: 'h5_partial',
+    component_migration: 'h6_partial',
     api_fetches: false,
   }
 }

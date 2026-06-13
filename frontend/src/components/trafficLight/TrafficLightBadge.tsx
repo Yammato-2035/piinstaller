@@ -1,5 +1,6 @@
 import React from 'react'
 import { LampDot } from '../companions/StatusDots'
+import { isYellowTrafficLightLamp } from '../../viewmodels/statusViewModel'
 import type { TrafficLightLampState, TrafficLightState } from '../../trafficLight/trafficLightModel'
 import { trafficLightStateToLamp } from '../../trafficLight/trafficLightModel'
 
@@ -24,7 +25,7 @@ export const TrafficLightBadge: React.FC<TrafficLightBadgeProps> = ({
   tone = 'default',
 }) => {
   const lamp: TrafficLightLampState = trafficLightStateToLamp(state)
-  const quiet = state === 'unknown' ? quietUnknown : lamp === 'yellow'
+  const quiet = state === 'unknown' ? quietUnknown : isYellowTrafficLightLamp(lamp)
   const title = detail ? `${label}: ${detail}` : label
   const shell =
     tone === 'onDark'

@@ -1,0 +1,18 @@
+# Boundary Warnings — Phase H.6 (WARN-only)
+
+**HEAD vorher:** efefca4 · **Gate:** Exit 0
+
+## H.6
+
+| Code | Status |
+|------|--------|
+| `frontend_component_status_mapping_reduced_h6:count_15` | ausgelöst (20→15) |
+| `frontend_component_bypasses_status_viewmodel` (H.6-Slice) | nicht ausgelöst |
+| `frontend_presentation_status_mapping_remaining` | `riskLevels.ts` (erwartet) |
+| `frontend_domain_status_mapping_requires_domain_facade` | 5 Domain-Dateien |
+
+## Verbleibend
+
+| Code | Count |
+|------|-------|
+| `frontend_component_local_status_mapping` | 15 |

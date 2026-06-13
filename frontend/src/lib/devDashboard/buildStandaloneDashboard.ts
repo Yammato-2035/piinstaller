@@ -1,24 +1,11 @@
 import type { DashboardPayload, ModuleRow } from '../../pages/DevDashboardBody'
 import { DANGEROUS_TEST_OPS } from './constants'
 import type { DevDashboardCapabilities, DevDashboardDataSource, WorkspaceScanResult } from './types'
-
-function normalizeAmpel(raw: string | undefined): string {
-  const s = String(raw || '').toLowerCase()
-  const map: Record<string, string> = {
-    grün: 'green',
-    gruen: 'green',
-    green: 'green',
-    gelb: 'yellow',
-    yellow: 'yellow',
-    rot: 'red',
-    red: 'red',
-    gray: 'gray',
-    grey: 'gray',
-    blocked: 'red',
-    failed: 'red',
-  }
-  return map[s] || 'unknown'
-}
+import {
+  standaloneAmpelFromInput,
+  standaloneMatrixCategoryFromAmpel,
+  worstStandaloneAmpelOverall,
+} from '../../viewmodels/statusViewModel'
 
 function parseMatrixRows(text: string): Array<Record<string, unknown>> {
   const items: Array<Record<string, unknown>> = []
@@ -26,11 +13,8 @@ function parseMatrixRows(text: string): Array<Record<string, unknown>> {
   for (const line of text.split('\n')) {
     const m = rowRe.exec(line.trim())
     if (!m) continue
-    const ampel = normalizeAmpel(m[2].trim())
-    let category = 'planned'
-    if (ampel === 'green') category = 'created'
-    else if (ampel === 'yellow') category = 'in_progress'
-    else if (ampel === 'red' || ampel === 'unknown') category = 'blocked'
+    const ampel = standaloneAmpelFromInput(m[2].trim())
+    const category = standaloneMatrixCategoryFromAmpel(ampel)
     items.push({
       title: m[1].trim(),
       status: ampel,
@@ -58,12 +42,8 @@ function buildRoadmapFromScan(scan: WorkspaceScanResult, matrixText?: string): R
     }
   }
   for (const mod of scan.modules || []) {
-    const st = normalizeAmpel(String(mod.status || 'gray'))
-    let category = 'in_progress'
-    if (st === 'green') category = 'created'
-    else if (st === 'red') category = 'blocked'
-    else if (st === 'yellow') category = 'in_progress'
-    else category = 'planned'
+    const st = standaloneAmpelFromInput(String(mod.status || 'gray'))
+    const category = standaloneMatrixCategoryFromAmpel(st)
     tabs[category].push({
       title: String(mod.title || mod.id || 'module'),
       status: st,
@@ -104,7 +84,7 @@ function buildTestsEvidence(scan: WorkspaceScanResult): Record<string, unknown> 
   let overall = 'green'
   for (const [name, meta] of Object.entries(scan.evidence_files || {})) {
     const data = meta.data as Record<string, unknown> | undefined
-    const ampel = data ? normalizeAmpel(String(data.ampel || data.status || '')) : 'unknown'
+    const ampel = data ? standaloneAmpelFromInput(String(data.ampel || data.status || '')) : 'unknown'
     files[name] = {
       path: meta.path || `docs/evidence/release-gates/${name}`,
       exists: meta.exists === true,
@@ -112,8 +92,7 @@ function buildTestsEvidence(scan: WorkspaceScanResult): Record<string, unknown> 
       ampel,
       evidence_complete: data?.evidence_complete,
     }
-    if (ampel === 'red') overall = 'red'
-    else if (ampel === 'yellow' && overall === 'green') overall = 'yellow'
+    overall = worstStandaloneAmpelOverall(overall, ampel)
   }
   return { status: overall, files, warnings: [] }
 }
@@ -279,7 +258,7 @@ export function modulesFromScan(scan: WorkspaceScanResult): ModuleRow[] {
     id: String(m.id || m.title || 'module'),
     title: String(m.title || m.id || 'module'),
     area: String(m.area || ''),
-    status: normalizeAmpel(String(m.status || 'gray')),
+    status: standaloneAmpelFromInput(String(m.status || 'gray')),
     summary: String(m.summary || ''),
     next_steps: Array.isArray(m.next_steps) ? (m.next_steps as string[]) : [],
     blockers: Array.isArray(m.blockers) ? (m.blockers as string[]) : [],

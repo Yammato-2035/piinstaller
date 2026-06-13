@@ -8,6 +8,7 @@ import type {
   Traffic,
 } from './governanceTypes'
 import type { DevDashboardDataSource } from './types'
+import { governanceTrafficTransitionKind } from '../../viewmodels/statusViewModel'
 
 const STORAGE_KEY = 'setuphelfer-cockpit-governance-history-v1'
 const MAX_SNAPSHOTS = 120
@@ -40,15 +41,7 @@ export function saveGovernanceHistory(store: GovernanceHistoryStore): void {
 }
 
 function transitionKind(from: Traffic | undefined, to: Traffic): GovernanceTransitionKind | null {
-  if (!from || from === to) return null
-  if (to === 'green' && from !== 'green') {
-    if (from === 'red' || from === 'yellow') return 'recovered'
-    return 'became_green'
-  }
-  if (to === 'red' && from !== 'red') return from === 'green' ? 'regressed' : 'became_red'
-  if (to === 'yellow' && from === 'green') return 'regressed'
-  if (to === 'yellow' && from === 'red') return 'recovered'
-  return 'became_yellow'
+  return governanceTrafficTransitionKind(from, to)
 }
 
 export type HistoryUpdateResult = {

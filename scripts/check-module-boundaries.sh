@@ -1190,6 +1190,33 @@ for path in h5_migrated:
         if "statusViewModel" not in pt:
             rel = path.relative_to(root).as_posix()
             print(f"frontend_component_bypasses_status_viewmodel:{rel}")
+if local_mapping_hits < 20:
+    print(f"frontend_component_status_mapping_reduced_h6:count_{local_mapping_hits}")
+h6_migrated = (
+    root / "frontend" / "src" / "components" / "companions" / "StatusDots.tsx",
+    root / "frontend" / "src" / "components" / "companions" / "TrafficLight.tsx",
+    root / "frontend" / "src" / "components" / "trafficLight" / "TrafficLightBadge.tsx",
+    root / "frontend" / "src" / "lib" / "devDashboard" / "governanceHistory.ts",
+    root / "frontend" / "src" / "lib" / "devDashboard" / "buildStandaloneDashboard.ts",
+)
+for path in h6_migrated:
+    if path.is_file():
+        pt = path.read_text(encoding="utf-8", errors="replace")
+        if "statusViewModel" not in pt:
+            rel = path.relative_to(root).as_posix()
+            print(f"frontend_component_bypasses_status_viewmodel:{rel}")
+presentation_status_remaining = (
+    root / "frontend" / "src" / "config" / "riskLevels.ts",
+    root / "frontend" / "src" / "pages" / "devDashboardFilters.ts",
+    root / "frontend" / "src" / "trafficLight" / "trafficLightModel.ts",
+)
+for path in presentation_status_remaining:
+    if path.is_file():
+        pt = path.read_text(encoding="utf-8", errors="replace")
+        if re.search(r"===\s*['\"]green['\"]|===\s*['\"]red['\"]|===\s*['\"]yellow['\"]", pt):
+            if "statusViewModel" not in pt:
+                rel = path.relative_to(root).as_posix()
+                print(f"frontend_presentation_status_mapping_remaining:{rel}")
 domain_status_mapping = (
     root / "frontend" / "src" / "components" / "PartitionSafetyStatusPanel.tsx",
     root / "frontend" / "src" / "components" / "partition" / "PartitionSafetyPreviewPanel.tsx",
