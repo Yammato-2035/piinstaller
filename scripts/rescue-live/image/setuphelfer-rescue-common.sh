@@ -154,6 +154,25 @@ setuphelfer_rescue_run_network_interactive() {
   return 0
 }
 
+setuphelfer_rescue_record_menu_evidence() {
+  local action="${1:-unknown}"
+  local status="${2:-ok}"
+  local detail="${3:-}"
+  local ev_script
+  ev_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/setuphelfer-rescue-evidence.py"
+  if [[ -f "$ev_script" ]]; then
+    python3 "$ev_script" menu-action --action "$action" --status "$status" --detail "$detail" 2>/dev/null || true
+  fi
+}
+
+setuphelfer_rescue_run_evidence_bundle() {
+  local ev_script
+  ev_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/setuphelfer-rescue-evidence.py"
+  if [[ -f "$ev_script" ]]; then
+    python3 "$ev_script" bundle 2>/dev/null || true
+  fi
+}
+
 setuphelfer_rescue_cmdline_has_start_assistant() {
   grep -Eq '(^| )setuphelfer_start_assistant=1( |$)' /proc/cmdline 2>/dev/null
 }

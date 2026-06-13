@@ -54,6 +54,26 @@ Wenn das Backup als **korrupt** eingestuft wird (`recommend_data_recovery_first`
 
 Ja. Die API liefert nur **Codes**; Texte kommen aus `frontend/src/locales/de.json` und `en.json`.
 
+---
+
+## Was ist der Rescue Start Assistant (1.7.7.0)?
+
+Geführter **TUI-Wizard** auf dem Rettungsstick (`setuphelfer-rescue-start-assistant`), der Anfänger ohne Shell durch sichere Schritte führt:
+
+| Schritt | Inhalt |
+|---------|--------|
+| Live-Medium | SquashFS-Lesetest + Spot-Checks |
+| Netzwerk | WLAN-Menü (Passwort lokal, nicht geloggt) |
+| Telemetrie | Automatischer Push oder Offline-Spool |
+| Festplatten | Read-only Klassifikation (Stick, Backup, System, …) |
+| Aktion | Nur **Pläne** für Backup/Restore/Reparatur/Install — **keine Ausführung** |
+
+Zustand: `/run/setuphelfer-rescue/wizard-state.json` — siehe `docs/rescue-stick/RESCUE_START_ASSISTANT_WIZARD_STATE.md`.
+
+Ausführlich: `docs/knowledge-base/rescue/RESCUE_START_ASSISTANT_OVERVIEW.md`.
+
+**Wichtig:** Schreibende Restore-/Reparatur-/Install-Aktionen bleiben blockiert bis Operator-Freigabe, Bestätigungsphrase und stabiles Live-Medium — unabhängig vom Assistenten-Menü.
+
 ## Was macht Phase 3 (echter Restore)?
 
 - Nur nach erfolgreichem **Dry-Run** (`dryrun_mode=dryrun`, `DRYRUN_OK`) mit zeitlich begrenztem **Token** unter `/tmp/setuphelfer-rescue-dryrun-state/` (Details: `docs/rescue/RESTORE_EXECUTION.md`).
@@ -514,3 +534,22 @@ Mounts would change host state and privilege boundaries; the runner stays on **m
 ### Why is cleanup read-only?
 
 The cleanup plan lists targets and order with `destructive_cleanup: false` — **no** `rm -rf` or similar commands in the runner; execution belongs to a separate controlled step.
+
+---
+
+## Wo liegen Logs und Testmatrix auf dem Stick? (R.3)
+
+Unter **`/setuphelfer-evidence/`** auf dem erkannten Setuphelfer-Rettungsstick:
+
+- `boot/` — Boot-Kontext  
+- `menu/` — Menüaktionen  
+- `matrix/rescue_test_matrix_latest.md` — Ampel-Matrix  
+- `summaries/rescue_evidence_latest.md` — Gesamtpaket  
+
+Falls der Stick nicht sicher beschreibbar ist: Fallback **`/tmp/setuphelfer-evidence/`** mit Warnung.
+
+Details: `docs/architecture/RESCUE_STICK_LOGGING_AND_TESTMATRIX_R3.md`
+
+## Schreibt der Rettungsstick auf meine interne SSD/NVMe? (R.3)
+
+**Nein.** Interne Systemdatenträger bleiben read-only. Evidence wird nur auf dem erkannten Rettungsstick (oder RAM-Fallback) geschrieben.

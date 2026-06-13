@@ -210,6 +210,7 @@ _main_menu() {
   _status_write
   local _choice
   while true; do
+    set +e
     _choice="$(whiptail --title "Setuphelfer Rettungsstick" --menu "Was möchten Sie tun?" 20 78 12 \
       "backup" "Dateien sichern / Backup erstellen (Plan)" \
       "restore" "Letztes Backup wiederherstellen (Plan)" \
@@ -217,27 +218,50 @@ _main_menu() {
       "install" "System neu installieren (Plan)" \
       "diagnostics" "Nur Diagnosebericht" \
       "expert" "Expertenmodus (Shell-Hinweis)" \
-      "quit" "Assistent beenden" 3>&1 1>&2 2>&3)" || break
+      "quit" "Assistent beenden" 3>&1 1>&2 2>&3)"
+    local _menu_rc=$?
+    set -e
+    if [[ "$_menu_rc" -ne 0 ]]; then
+      setuphelfer_rescue_record_menu_evidence "main_menu" "cancelled" "whiptail_exit_${_menu_rc}"
+      break
+    fi
     _selected_action="$_choice"
     case "$_choice" in
       backup|restore|repair|install|diagnostics)
         if [[ "$_media_stable" != true && "$_choice" != "diagnostics" ]]; then
           whiptail --msgbox "Blockiert: Live-Medium nicht stabil." 8 50 3>&1 1>&2 2>&3 || true
+          setuphelfer_rescue_record_menu_evidence "$_choice" "blocked" "live_medium_unstable"
           continue
         fi
         if [[ "$_choice" == "repair" || "$_choice" == "install" ]]; then
           whiptail --msgbox "Hinweis: Zuerst Backup empfohlen. Es wird nur ein Plan erstellt — keine Ausführung." 10 60 3>&1 1>&2 2>&3 || true
         fi
         _wizard_write_state
-        python3 "${SCRIPT_DIR}/setuphelfer-rescue-plan-builder.py" "$DISK_JSON" "$WIZARD_JSON" "$PLAN_JSON" || true
+        set +e
+        python3 "${SCRIPT_DIR}/setuphelfer-rescue-plan-builder.py" "$DISK_JSON" "$WIZARD_JSON" "$PLAN_JSON"
+        local _plan_rc=$?
+        set -e
+        if [[ "$_plan_rc" -ne 0 ]]; then
+          setuphelfer_rescue_record_menu_evidence "$_choice" "error" "plan_builder_exit_${_plan_rc}"
+          whiptail --msgbox "Plan-Erstellung fehlgeschlagen (Code ${_plan_rc}). Zurück zum Menü." 10 60 3>&1 1>&2 2>&3 || true
+          continue
+        fi
+        setuphelfer_rescue_record_menu_evidence "$_choice" "ok" "plan_created"
         whiptail --title "Plan" --textbox "$PLAN_JSON" 22 78 3>&1 1>&2 2>&3 || true
         ;;
       expert)
         _expert_mode=true
         whiptail --msgbox "Expertenmodus: Shell/Tools manuell. Keine automatischen Schreibaktionen." 10 60 3>&1 1>&2 2>&3 || true
+        setuphelfer_rescue_record_menu_evidence "expert" "ok" "hint_only"
         _wizard_write_state
         ;;
-      quit) break ;;
+      quit)
+        setuphelfer_rescue_record_menu_evidence "quit" "ok" ""
+        break
+        ;;
+      *)
+        setuphelfer_rescue_record_menu_evidence "${_choice:-unknown}" "unknown" "unexpected_choice"
+        ;;
     esac
   done
 }
@@ -247,6 +271,9 @@ if [[ "$MODE" == "--boot-trigger" ]]; then
   if ! setuphelfer_rescue_cmdline_has_start_assistant; then
     _exit_code=0
     exit 0
+  fi
+  if [[ -f /usr/share/setuphelfer/rescue/ui/rescue.html && -x /usr/local/sbin/setuphelfer-rescue-ui-launch ]]; then
+    exec /usr/local/sbin/setuphelfer-rescue-ui-launch
   fi
   if setuphelfer_rescue_prepare_tty1; then
     _tty1_prepared=true
@@ -283,4 +310,5 @@ _step_recommendation
 _main_menu
 _wizard_write_state
 _status_write "completed"
+setuphelfer_rescue_run_evidence_bundle
 exit 0
