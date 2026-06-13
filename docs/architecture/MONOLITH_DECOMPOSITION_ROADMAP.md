@@ -331,7 +331,10 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **H.5** | Frontend Status Utility Migration (3 Libs) — **erledigt** |
 | **H.6** | Frontend Status Presentation Migration (5 Slice) — **erledigt** |
 | **H.7** | Frontend Status Final Safe Slice — **erledigt** (`count_10`) |
-| **E.9+** | Weitere `app.py` Router-Slices / blocked network handlers | **nächster Schritt** |
+| **G.5** | Network Legacy Elimination Audit — **erledigt** (kein Refactoring) |
+| **G.6** | System Info Facade | **Kandidat HIGH** |
+| **G.7** | Webserver Status Facade | **Kandidat HIGH** |
+| **G.8** | Network Discovery Core | **Kandidat CRITICAL** |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  
 Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`  

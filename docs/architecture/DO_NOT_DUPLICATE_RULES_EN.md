@@ -29,6 +29,7 @@ Binding rules against parallel implementations. **No exception** without documen
 25. Domain status (partition/safety/backup) stays local until domain facade — guard `frontend_domain_status_mapping_requires_domain_facade` (H.4+).
 26. Frontend status slices H.3–H.7 complete — remaining 10 mappings are domain/large-page only; no H.8.
 27. **No new network GET handlers in `app.py`** when `api/routes/network.py` exists — facade delegation only (G.4+).
+28. **No network discovery implementation outside `network_info_facade` / planned `network_discovery`** — legacy in `app.py` only until G.8 (G.5+).
 
 Check order: Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
 

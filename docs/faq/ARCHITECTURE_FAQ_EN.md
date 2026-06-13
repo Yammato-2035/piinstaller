@@ -199,6 +199,14 @@ Canonical module `core/network_info_facade.py` — read-only network info, demo 
 
 `get_system_info` and `webserver_status` delegate to `network_info_facade`. Legacy `get_network_info`/`_demo_network` remain implementation behind facade adapters. Doc: `docs/architecture/NETWORK_INFO_CORE_CLEANUP_G3_EN.md`.
 
+## What is G.4 (Network Handler Extraction)?
+
+`GET /api/status` and `GET /api/system/network` in `api/routes/network.py`; facade delegation only. Blocked: `system-info`, `webserver/status`. Doc: `docs/architecture/NETWORK_HANDLER_EXTRACTION_G4_EN.md`.
+
+## What is G.5 (Network Legacy Elimination Audit)?
+
+Full inventory — **no refactoring**. 3 legacy functions in `app.py`; 1 facade bypass in `webserver_status`. Next candidates: G.6/G.7/G.8. Doc: `docs/architecture/NETWORK_NEXT_FACADE_CANDIDATES_G5_EN.md`.
+
 ## What is H.1 (Frontend Status ViewModel)?
 
 Canonical module `frontend/src/viewmodels/statusViewModel.ts` — central status normalization. **No component migration** in H.1. Doc: `docs/architecture/FRONTEND_STATUS_VIEWMODEL_H1_EN.md`.
@@ -229,7 +237,7 @@ Canonical module `frontend/src/viewmodels/statusViewModel.ts` — central status
 
 ## Next step?
 
-**E.9+** — further `app.py` router slices (blocked network handlers: `system-info`, `webserver/status`).
+**G.6** System Info Facade, **G.7** Webserver Status Facade, or **G.8** Network Discovery — see `docs/architecture/NETWORK_NEXT_FACADE_CANDIDATES_G5_EN.md`.
 
 ## Further reading
 

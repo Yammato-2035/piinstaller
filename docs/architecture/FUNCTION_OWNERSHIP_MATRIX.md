@@ -38,9 +38,9 @@
 | DCC Roadmap Registry API | `api/routes/dev_dashboard_roadmap.py` | CANONICAL | app (include_router) | Ja — Subroutes registry-only (F.3) |
 | System Status (Ampel) | `core.system_status_facade` | CANONICAL (G.1/G.1b) | `GET /api/system/status` | Ja — migriert |
 | System Status Legacy | `app.py` `_compute_system_status` | LEGACY | bis G.1b | über Facade-Adapter |
-| Network Info | `core.network_info_facade` | CANONICAL (G.2–G.4) | `api/routes/network.py` + blocked app handlers | Ja — Facade + Router |
+| Network Info | `core.network_info_facade` | CANONICAL (G.2–G.5) | Facade + Router; Legacy in app | Audit G.5 |
 | Network HTTP (safe GET) | `api/routes/network.py` | CANONICAL_ROUTER (G.4) | `/api/status`, `/api/system/network` | delegiert nur Facade |
-| Network Info Legacy | `app.py` `get_network_info`, `_demo_network` | LEGACY | bis G.2b | über Facade-Adapter |
+| Network Info Legacy | `app.py` `get_network_info`, `_demo_network`, `_detect_frontend_port` | LEGACY (G.5) | bis G.8 Discovery | Facade-Adapter; 1 Bypass in `webserver_status` |
 | DCC Full Status | `core.dcc_status_facade` + `dev_dashboard_status_service` | CANONICAL (F.2) | `/api/dev-dashboard/status` | Ja — migriert |
 | DCC Status Aggregation | `core.dcc_status_facade` | CANONICAL | app routes (F.2+) | Keine Parallel-Aggregation in Routern |
 | DCC Backend Health Snapshot | `core.dev_dashboard_backend_health` | CANONICAL | `dev_dashboard_readonly` router (E.8) | Ja |

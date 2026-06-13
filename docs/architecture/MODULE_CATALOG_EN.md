@@ -41,6 +41,6 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**Next:** **E.9+** further `app.py` router slices. **G.4 done.** **No further frontend status slices (H.7 final).**
+**Next:** **G.6** / **G.7** / **G.8** — siehe `NETWORK_NEXT_FACADE_CANDIDATES_G5.md`. **G.5 Audit erledigt.**
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

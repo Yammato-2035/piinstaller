@@ -29,6 +29,7 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 26. **Domain-Status** (Partition/Safety/Backup) bleibt lokal bis Domain-Facade — Guard `frontend_domain_status_mapping_requires_domain_facade` (H.4+).
 27. **Frontend-Status-Slices H.3–H.7 abgeschlossen** — verbleibende 10 Mappings nur Domain/Large-Page; kein H.8.
 28. **Keine neuen Network-GET-Handler in `app.py`**, wenn `api/routes/network.py` existiert — nur Facade-Delegation (G.4+).
+29. **Keine Network-Discovery-Implementierung außerhalb `network_info_facade` / geplantem `network_discovery`** — Legacy in `app.py` nur bis G.8 (G.5+).
 
 ## Prüfreihenfolge (Cursor)
 

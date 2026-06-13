@@ -237,8 +237,9 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | **Status** | **CANONICAL_MODULE** (FACADE, G.2) |
 | **Zweck** | Netzwerk-Info read-only; Demo-Fallback; Normalisierung |
 | **Öffentliche API** | `build_network_info`, `build_demo_network_info`, `build_system_network_response`, `build_network_status_section`, … |
-| **HTTP migriert** | `GET /api/status`, `/api/system/network` (G.2b); `GET /api/system-info`, `/api/webserver/status` (G.3) |
-| **Delegiert an** | `app.get_network_info`, `app._demo_network` |
+| **HTTP migriert** | `GET /api/status`, `/api/system/network` (G.4 Router); Facade-Delegation: `/api/system-info`, `/api/webserver/status` (G.3) |
+| **Delegiert an** | `app.get_network_info`, `app._demo_network`, `app._detect_frontend_port` (Legacy — G.5 Audit) |
+| **Legacy-Status G.5** | 3 Implementierungen in `app.py`; Facade→app-Zyklus; siehe `NETWORK_LEGACY_INVENTORY_G5.md` |
 | **Ausgeschlossen** | Netzwerk-Schreiboperationen, nmcli write |
 | **Tests** | `test_network_info_facade_v1` |
 | **Doku DE/EN** | `NETWORK_INFO_FACADE_G2.md` |
@@ -284,12 +285,15 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | `api/routes/dev_dashboard_readonly.py` | **CANONICAL_ROUTER** (E.4/E.8) | DCC modules/evidence + backend-health + notifications read |
 | `api/routes/dev_dashboard_roadmap.py` | **CANONICAL_ROUTER** (E.5/E.6) | roadmap registry + next-prompts/export |
 | `api/routes/network.py` | **CANONICAL_ROUTER** (G.4) | `GET /api/status`, `GET /api/system/network` |
-| `app.py` Router-Slices | **IN_PROGRESS** | E.9+ / blocked network handlers |
+| `app.py` Router-Slices | **IN_PROGRESS** | G.6 / G.7 / G.8 (siehe G.5 Audit) |
 | `frontend_status_viewmodel` | **CANONICAL_MODULE** (H.1–H.7 final) | count_10 verbleibend (Domain/Large-Page) |
 | `dcc_status_facade` | **CANONICAL_MODULE** (F.1–F.4) | HTTP-DCC-Leser delegiert |
 | `system_status_facade` | **CANONICAL_MODULE** (G.1/G.1b) | `/api/system/status` migriert |
-| `network_info_facade` | **CANONICAL_MODULE** (G.2–G.4) | Facade + Router; Legacy in `app.py` |
-| **Network Info Facade** | **CANONICAL_MODULE** (G.2/G.2b) | ~~CANDIDATE~~ erledigt |
+| `network_info_facade` | **CANONICAL_MODULE** (G.2–G.5) | Facade + Router; Legacy in `app.py` |
+| **system_info_facade** | **CANDIDATE** (G.6) | `GET /api/system-info` — HIGH |
+| **webserver_status_facade** | **CANDIDATE** (G.7) | `GET /api/webserver/status` — HIGH |
+| **network_discovery** | **CANDIDATE** (G.8) | Legacy-Elimination — CRITICAL |
+| **frontend_runtime_facade** | **CANDIDATE** (G.5) | Port-Erkennung — MEDIUM |
 | **Dev Dashboard Aggregation Facade** | **CANDIDATE** (E.7) | control-center-summary, prompt-findings (nutzt Facade F.2+) |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |
 

@@ -1462,6 +1462,44 @@ for path in sorted((root / "backend" / "api" / "routes").glob("*.py")):
     if re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", pt) and "network_info_facade" not in pt:
         print(f"network_direct_usage_outside_facade:{rel}")
 
+# Phase G.5: Network legacy elimination audit guards (warn-only)
+G5_LEGACY_FUNCS = (
+    ("def get_network_info", "get_network_info"),
+    ("def _demo_network", "_demo_network"),
+    ("def _detect_frontend_port", "_detect_frontend_port"),
+)
+if app_py_path.is_file():
+    ap_g5 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    for marker, label in G5_LEGACY_FUNCS:
+        if marker in ap_g5:
+            print(f"network_legacy_function_remaining:backend/app.py:{label}")
+    for line in ap_g5.splitlines():
+        stripped = line.strip()
+        if "_detect_frontend_port(" in line and not stripped.startswith("def _detect_frontend_port"):
+            print("network_direct_usage_outside_facade:backend/app.py:webserver_status_port")
+for candidate in (
+    root / "backend" / "core" / "system_info_facade.py",
+    root / "backend" / "core" / "webserver_status_facade.py",
+    root / "backend" / "core" / "frontend_runtime_facade.py",
+    root / "backend" / "core" / "port_detection_facade.py",
+    root / "backend" / "core" / "network_discovery.py",
+):
+    if candidate.is_file():
+        print(f"network_facade_candidate_detected:{candidate.relative_to(root).as_posix()}")
+for path in sorted(backend.rglob("*.py")):
+    rel = path.relative_to(root).as_posix()
+    if "/tests/" in rel or "/venv/" in rel or rel.endswith("network_info_facade.py"):
+        continue
+    if rel == "backend/app.py":
+        continue
+    try:
+        pt = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    if re.search(r"\bip\s+-4\b|\bhostname\s+-I\b", pt) and "network_info_facade" not in pt:
+        if "network_discovery" in rel or "get_network_info" in pt:
+            print(f"network_new_logic_outside_facade:{rel}")
+
 if deploy_routes.is_file():
     subrouter_markers = (
         "build_plan_only_response",

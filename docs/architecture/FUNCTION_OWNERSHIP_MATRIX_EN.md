@@ -12,9 +12,9 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) �
 
 **H.7 final done:** riskLevels, devDashboardFilters, trafficLightModel, RoadmapDrawer, setuphelferToolTheme.
 
-**G.4 done:** `GET /api/status` and `GET /api/system/network` in `api/routes/network.py` (facade only).
+**G.5 done:** legacy audit — 3 functions in `app.py`, 1 facade bypass.
 
-**Next:** **E.9+** further `app.py` router slices. **No H.8.**
+**Next:** **G.6** System Info, **G.7** Webserver, or **G.8** Network Discovery — see `NETWORK_NEXT_FACADE_CANDIDATES_G5.md`.
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 
