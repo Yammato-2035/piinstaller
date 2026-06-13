@@ -215,9 +215,13 @@ Kanonisches Modul `frontend/src/viewmodels/statusViewModel.ts` — zentrale Stat
 
 3 weitere kleine Komponenten (`ReadyStableSection`, `StatusCard`, `RiskWarningCard`) delegieren an `isDashboardGreenStatus`, `isGreenDashboardTone`/`dashboardToneFromInput`, `riskWarningTitleKeyForLevel`. Keine UI-Änderung. Doku: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H4.md`.
 
+## Was ist H.5 (Frontend Status Utility Migration)?
+
+3 kleine DCC-Utilities (`governanceMatrix`, `roadmapFilter`, `buildGovernancePrompt`) delegieren Status-Mapping an `statusViewModel`. Keine UI-Änderung. Doku: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H5.md`.
+
 ## Nächster Schritt?
 
-**H.5** — weitere Komponenten/Libs **oder** **G.4** — Network Handler Extraction.
+**H.6** — Presentation/Domain-Slices **oder** **G.4** — Network Handler Extraction.
 
 ## Weiterlesen
 

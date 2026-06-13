@@ -1177,6 +1177,19 @@ for path in h4_migrated:
         if "statusViewModel" not in pt:
             rel = path.relative_to(root).as_posix()
             print(f"frontend_component_bypasses_status_viewmodel:{rel}")
+if local_mapping_hits < 23:
+    print(f"frontend_component_status_mapping_reduced_h5:count_{local_mapping_hits}")
+h5_migrated = (
+    root / "frontend" / "src" / "lib" / "devDashboard" / "governanceMatrix.ts",
+    root / "frontend" / "src" / "lib" / "devDashboard" / "roadmapFilter.ts",
+    root / "frontend" / "src" / "lib" / "devDashboard" / "buildGovernancePrompt.ts",
+)
+for path in h5_migrated:
+    if path.is_file():
+        pt = path.read_text(encoding="utf-8", errors="replace")
+        if "statusViewModel" not in pt:
+            rel = path.relative_to(root).as_posix()
+            print(f"frontend_component_bypasses_status_viewmodel:{rel}")
 domain_status_mapping = (
     root / "frontend" / "src" / "components" / "PartitionSafetyStatusPanel.tsx",
     root / "frontend" / "src" / "components" / "partition" / "PartitionSafetyPreviewPanel.tsx",

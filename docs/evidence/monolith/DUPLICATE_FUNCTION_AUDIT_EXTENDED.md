@@ -1,7 +1,7 @@
 # Duplicate Function Audit (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach H.4 · **Update:** H.4-Helfer (`isDashboardGreenStatus`, `riskWarningTitleKeyForLevel`); 23 lokale Mappings verbleibend.
+**HEAD:** nach H.5 · **Update:** H.5 Governance-Helfer; 20 lokale Mappings verbleibend.
 
 ## Zusammenfassung
 

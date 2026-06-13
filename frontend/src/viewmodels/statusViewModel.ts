@@ -183,7 +183,66 @@ export function trafficLightLampFromInput(input: unknown): TrafficLightLampTone 
   return trafficLightLampFromKind(normalizeStatusKind(input))
 }
 
-/** Worst lamp across legacy inputs; empty → yellow (traffic-light convention). */
+export type GovernanceTraffic = DashboardTone
+
+/** Governance matrix traffic — only exact green/yellow/red; else gray (H.5, 1:1 normTraffic). */
+export function governanceTrafficFromInput(raw: unknown): GovernanceTraffic {
+  const s = String(raw || 'gray').toLowerCase()
+  if (s === 'green' || s === 'yellow' || s === 'red') return s
+  return 'gray'
+}
+
+/** Worst traffic across governance module statuses (H.5). */
+export function worstGovernanceTrafficFromInputs(tones: GovernanceTraffic[]): GovernanceTraffic {
+  if (tones.length === 0) return 'gray'
+  if (tones.some((t) => t === 'red')) return 'red'
+  if (tones.some((t) => t === 'yellow')) return 'yellow'
+  if (tones.every((t) => t === 'green')) return 'green'
+  return 'yellow'
+}
+
+export function isGreenGovernanceTraffic(tone: GovernanceTraffic): boolean {
+  return tone === 'green'
+}
+
+export function isRedGovernanceTraffic(tone: GovernanceTraffic): boolean {
+  return tone === 'red'
+}
+
+export function isYellowGovernanceTraffic(tone: GovernanceTraffic): boolean {
+  return tone === 'yellow'
+}
+
+/** Evidence area traffic from normalized tests status (H.5). */
+export function governanceEvidenceTrafficFromTone(tone: GovernanceTraffic): 'green' | 'yellow' | 'red' {
+  if (tone === 'green') return 'green'
+  if (tone === 'red') return 'red'
+  return 'yellow'
+}
+
+/** Docs area traffic from structure status (H.5). */
+export function governanceDocsTrafficFromTone(tone: GovernanceTraffic): 'green' | 'yellow' {
+  if (tone === 'green') return 'green'
+  return 'yellow'
+}
+
+export type RoadmapFilterBucket = 'green' | 'yellow' | 'red'
+
+const ROADMAP_TRAFFIC_FILTER_IDS: ReadonlySet<string> = new Set(['green', 'yellow', 'red'])
+
+export function isRoadmapTrafficFilter(filter: string): filter is RoadmapFilterBucket {
+  return ROADMAP_TRAFFIC_FILTER_IDS.has(filter)
+}
+
+/** Roadmap filter bucket — partial_green→green; planned→yellow (H.5). */
+export function roadmapFilterBucketFromStatus(status: string): RoadmapFilterBucket | null {
+  const s = status.trim().toLowerCase()
+  if (s === 'green' || s === 'partial_green') return 'green'
+  if (s === 'yellow' || s === 'planned') return 'yellow'
+  if (s === 'blocked' || s === 'red') return 'red'
+  return null
+}
+
 /** True when runtime/deploy gate status counts as green stable (H.4 ReadyStableSection). */
 export function isDashboardGreenStatus(raw: unknown): boolean {
   return raw === true || dashboardLegacyToneFromInput(raw) === 'green'
@@ -232,6 +291,15 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'isDashboardGreenStatus',
       'isGreenDashboardTone',
       'riskWarningTitleKeyForLevel',
+      'governanceTrafficFromInput',
+      'worstGovernanceTrafficFromInputs',
+      'isGreenGovernanceTraffic',
+      'isRedGovernanceTraffic',
+      'isYellowGovernanceTraffic',
+      'governanceEvidenceTrafficFromTone',
+      'governanceDocsTrafficFromTone',
+      'roadmapFilterBucketFromStatus',
+      'isRoadmapTrafficFilter',
       'statusViewModelDiagnostics',
     ],
     backend_facade_sources: [
@@ -239,7 +307,7 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'system_status_facade',
       'network_info_facade',
     ],
-    component_migration: 'h4_partial',
+    component_migration: 'h5_partial',
     api_fetches: false,
   }
 }

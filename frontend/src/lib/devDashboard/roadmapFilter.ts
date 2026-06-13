@@ -1,3 +1,5 @@
+import { isRoadmapTrafficFilter, roadmapFilterBucketFromStatus } from '../../viewmodels/statusViewModel'
+
 export type RoadmapFilterId =
   | 'all'
   | 'red'
@@ -17,11 +19,7 @@ export function asRows(value: unknown): JsonRow[] {
 }
 
 function statusBucket(status: string): RoadmapFilterId | null {
-  const s = status.toLowerCase()
-  if (s === 'green' || s === 'partial_green') return 'green'
-  if (s === 'yellow' || s === 'planned') return 'yellow'
-  if (s === 'blocked' || s === 'red') return 'red'
-  return null
+  return roadmapFilterBucketFromStatus(status)
 }
 
 function areaTags(areaId: string): Set<RoadmapFilterId> {
@@ -40,7 +38,7 @@ function rowMatchesFilter(row: JsonRow, kind: 'area' | 'milestone' | 'task', fil
   if (filter === 'all') return true
   const status = String(row.status || 'unknown')
   const bucket = statusBucket(status)
-  if (filter === 'green' || filter === 'yellow' || filter === 'red') {
+  if (isRoadmapTrafficFilter(filter)) {
     return bucket === filter
   }
   if (kind === 'area') {

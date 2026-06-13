@@ -1,6 +1,7 @@
 import type { DashboardPayload } from '../../pages/DevDashboardBody'
 import type { GovernanceAreaStatus, GovernanceTimelineEvent } from './governanceTypes'
 import type { DevDashboardDataSource } from './types'
+import { isGreenGovernanceTraffic, isRedGovernanceTraffic, isYellowGovernanceTraffic } from '../../viewmodels/statusViewModel'
 
 function workOrder(areas: GovernanceAreaStatus[]): string[] {
   const steps: string[] = []
@@ -10,11 +11,11 @@ function workOrder(areas: GovernanceAreaStatus[]): string[] {
   const backup = areas.find((a) => a.id === 'backup')
   const restore = areas.find((a) => a.id === 'restore')
 
-  if (runtime?.status !== 'green') steps.push('1. Runtime deploy + API erreichbar machen')
-  if (gates?.status !== 'green') steps.push('2. ./scripts/check-runtime-deploy-gate.sh (Exit 0)')
-  if (evidence?.status !== 'green') steps.push('3. Evidence-Dateien unter docs/evidence/release-gates/ reparieren')
-  if (backup?.status === 'red') steps.push('4. BR-001-OFFLINE Rettungsstick (kein Live-Desktop-Gate-Retry)')
-  if (restore?.status === 'red') steps.push('5. Restore Preview / Sandbox-Gates')
+  if (!runtime || !isGreenGovernanceTraffic(runtime.status)) steps.push('1. Runtime deploy + API erreichbar machen')
+  if (!gates || !isGreenGovernanceTraffic(gates.status)) steps.push('2. ./scripts/check-runtime-deploy-gate.sh (Exit 0)')
+  if (!evidence || !isGreenGovernanceTraffic(evidence.status)) steps.push('3. Evidence-Dateien unter docs/evidence/release-gates/ reparieren')
+  if (backup && isRedGovernanceTraffic(backup.status)) steps.push('4. BR-001-OFFLINE Rettungsstick (kein Live-Desktop-Gate-Retry)')
+  if (restore && isRedGovernanceTraffic(restore.status)) steps.push('5. Restore Preview / Sandbox-Gates')
   if (!steps.length) steps.push('1. Gate grün halten; fokussierte Änderungen mit erneutem Gate-Check')
   return steps
 }
@@ -34,9 +35,9 @@ export function buildGovernanceMetaPrompt(params: {
   const rg = (dashboard?.runtime_gate as Record<string, unknown>) || {}
   const stm = (dashboard?.safe_test_mode as Record<string, unknown>) || {}
 
-  const redAreas = areas.filter((a) => a.status === 'red').map((a) => a.id)
-  const greenAreas = areas.filter((a) => a.status === 'green').map((a) => a.id)
-  const yellowAreas = areas.filter((a) => a.status === 'yellow').map((a) => a.id)
+  const redAreas = areas.filter((a) => isRedGovernanceTraffic(a.status)).map((a) => a.id)
+  const greenAreas = areas.filter((a) => isGreenGovernanceTraffic(a.status)).map((a) => a.id)
+  const yellowAreas = areas.filter((a) => isYellowGovernanceTraffic(a.status)).map((a) => a.id)
 
   const lines = [
     '# Setuphelfer Development Control Center — Governance Meta-Prompt',

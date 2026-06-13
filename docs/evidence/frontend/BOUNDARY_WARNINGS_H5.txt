@@ -1,0 +1,23 @@
+# Boundary Warnings — Phase H.5 (WARN-only)
+
+**HEAD vorher:** 35a2b22 · **Gate:** Exit 0
+
+## H.5
+
+| Code | Status |
+|------|--------|
+| `frontend_component_status_mapping_reduced_h5:count_20` | ausgelöst (23→20) |
+| `frontend_component_bypasses_status_viewmodel` (H.5-Slice) | nicht ausgelöst |
+| `frontend_domain_status_mapping_requires_domain_facade` | 5 Domain-Dateien (erwartet) |
+
+## Verbleibend
+
+| Code | Count |
+|------|-------|
+| `frontend_component_local_status_mapping` | 20 |
+
+## Rohauszug (frontend_*)
+
+frontend_component_local_status_mapping:count_20
+frontend_component_status_mapping_reduced_h5:count_20
+frontend_domain_status_mapping_requires_domain_facade (5 Dateien)

@@ -1,6 +1,13 @@
 import type { DashboardPayload, ModuleRow } from '../../pages/DevDashboardBody'
 import type { CockpitAlert, GovernanceAreaId, GovernanceAreaStatus, Traffic } from './governanceTypes'
 import type { DevDashboardDataSource } from './types'
+import {
+  governanceDocsTrafficFromTone,
+  governanceEvidenceTrafficFromTone,
+  governanceTrafficFromInput,
+  isRedGovernanceTraffic,
+  worstGovernanceTrafficFromInputs,
+} from '../../viewmodels/statusViewModel'
 
 const AREA_LABELS: Record<GovernanceAreaId, string> = {
   runtime: 'devDashboard.governance.area.runtime',
@@ -21,19 +28,10 @@ const AREA_LABELS: Record<GovernanceAreaId, string> = {
   host_pilot: 'devDashboard.governance.area.hostPilot',
 }
 
-function normTraffic(raw: unknown): Traffic {
-  const s = String(raw || 'gray').toLowerCase()
-  if (s === 'green' || s === 'yellow' || s === 'red') return s
-  return 'gray'
-}
-
 function moduleTraffic(modules: ModuleRow[], needle: RegExp): Traffic {
   const hit = modules.filter((m) => needle.test(String(m.id || '') + String(m.area || '') + String(m.title || '')))
   if (!hit.length) return 'gray'
-  if (hit.some((m) => normTraffic(m.status) === 'red')) return 'red'
-  if (hit.some((m) => normTraffic(m.status) === 'yellow')) return 'yellow'
-  if (hit.every((m) => normTraffic(m.status) === 'green')) return 'green'
-  return 'yellow'
+  return worstGovernanceTrafficFromInputs(hit.map((m) => governanceTrafficFromInput(m.status)))
 }
 
 export function buildGovernanceMatrix(params: {
@@ -52,10 +50,10 @@ export function buildGovernanceMatrix(params: {
   const stm = (dashboard?.safe_test_mode as Record<string, unknown>) || {}
 
   const runtimeGatePassed = rg.passed === true
-  const deployStatus = normTraffic(dd.status)
-  const structureStatus = normTraffic(sh.status)
-  const packageStatus = normTraffic(pg.status)
-  const testsStatus = normTraffic(te.status)
+  const deployStatus = governanceTrafficFromInput(dd.status)
+  const structureStatus = governanceTrafficFromInput(sh.status)
+  const packageStatus = governanceTrafficFromInput(pg.status)
+  const testsStatus = governanceTrafficFromInput(te.status)
 
   const mk = (
     id: GovernanceAreaId,
@@ -74,7 +72,7 @@ export function buildGovernanceMatrix(params: {
   const areas: GovernanceAreaStatus[] = [
     mk(
       'runtime',
-      !apiReachable || source !== 'runtime_api' ? 'red' : runtimeGatePassed ? 'green' : normTraffic(rg.status),
+      !apiReachable || source !== 'runtime_api' ? 'red' : runtimeGatePassed ? 'green' : governanceTrafficFromInput(rg.status),
       !apiReachable ? ['backend_api_unreachable'] : ((rg.blockers as string[]) || []),
       !apiReachable
         ? 'Runtime-API starten; check-runtime-deploy-gate.sh'
@@ -85,7 +83,7 @@ export function buildGovernanceMatrix(params: {
       (() => {
         const br001 = (dashboard?.br001_gates as Record<string, unknown>) || {}
         const offlineSide = (br001.offline as Record<string, unknown>) || {}
-        return offlineSide.status != null ? normTraffic(offlineSide.status) : moduleTraffic(modules, /backup/i)
+        return offlineSide.status != null ? governanceTrafficFromInput(offlineSide.status) : moduleTraffic(modules, /backup/i)
       })(),
       [],
       'BR-001-OFFLINE (Rettungsstick) — kein Live-Desktop-Gate',
@@ -98,14 +96,14 @@ export function buildGovernanceMatrix(params: {
     mk('diagnostics', moduleTraffic(modules, /diagnostic/i), []),
     mk(
       'evidence',
-      testsStatus === 'green' ? 'green' : testsStatus === 'red' ? 'red' : 'yellow',
+      governanceEvidenceTrafficFromTone(testsStatus),
       [],
       'docs/evidence/release-gates/*.json',
     ),
     mk('ci', testsStatus, [], 'pytest / CI Evidence'),
     mk(
       'docs',
-      structureStatus === 'green' ? 'green' : 'yellow',
+      governanceDocsTrafficFromTone(structureStatus),
       [],
       'docs/roadmap/STATUS_MATRIX.md',
     ),
@@ -146,7 +144,7 @@ export function buildCockpitAlerts(
     })
   }
   for (const a of areas) {
-    if (a.status === 'red') {
+    if (isRedGovernanceTraffic(a.status)) {
       alerts.push({
         id: `area-red-${a.id}`,
         severity: 'critical',

@@ -10,9 +10,9 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) â
 
 **G.1b done:** `/api/system/status` uses `build_system_status()`.
 
-**H.4 done:** ReadyStableSection, StatusCard, RiskWarningCard (6 components total with H.3).
+**H.5 done:** governanceMatrix, roadmapFilter, buildGovernancePrompt utilities.
 
-**Next:** **H.5** component migration or **G.4** network handler extraction.
+**Next:** **H.6** migration or **G.4** network handler extraction.
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 

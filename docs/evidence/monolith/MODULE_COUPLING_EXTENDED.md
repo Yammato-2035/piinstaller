@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach H.4 · **Update:** 6 Komponenten an ViewModel; count_23 verbleibend.
+**HEAD:** nach H.5 · **Update:** Governance/Roadmap-Utils an ViewModel; count_20 verbleibend.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

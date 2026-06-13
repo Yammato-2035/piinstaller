@@ -66,7 +66,7 @@ describe('statusViewModel', () => {
   it('documents no api fetch in viewmodel contract', () => {
     const diag = statusViewModelDiagnostics()
     expect(diag.api_fetches).toBe(false)
-    expect(diag.component_migration).toBe('h4_partial')
+    expect(diag.component_migration).toBe('h5_partial')
   })
 
   it('dashboardLegacyToneFromInput preserves DCC legacy tokens', () => {
