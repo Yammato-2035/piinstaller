@@ -31,6 +31,7 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 28. **Keine neuen Network-GET-Handler in `app.py`**, wenn `api/routes/network.py` existiert — nur Facade-Delegation (G.4+).
 29. **Keine Network-Discovery-Implementierung außerhalb `network_info_facade` / geplantem `network_discovery`** — Legacy in `app.py` nur bis G.8 (G.5+).
 30. **Keine Webserver-Status-Aggregation außerhalb `webserver_status_facade`** — Network/Port nur über `network_info_facade` (G.7+).
+31. **Keine Network-Discovery-Implementierung außerhalb `network_discovery`** — `app.py` nur Legacy-Wrapper (G.8+).
 
 ## Prüfreihenfolge (Cursor)
 

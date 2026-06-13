@@ -2,8 +2,7 @@
 Network Info Facade — canonical read-only network discovery for HTTP routes.
 
 Phase G.2: contract + delegation only; routes unchanged.
-Delegates to existing ``app.get_network_info`` / ``app._demo_network``.
-No network writes, no nmcli/ip link mutations, no new discovery logic.
+Delegates to ``core.network_discovery`` (G.8). No network writes, no nmcli/ip link mutations.
 """
 
 from __future__ import annotations
@@ -12,6 +11,11 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Callable
 
 from core.dcc_status_facade import build_section_status
+from core.network_discovery import (
+    detect_frontend_port,
+    discover_demo_network,
+    discover_network_info,
+)
 
 FACADE_VERSION = 1
 
@@ -119,42 +123,16 @@ def _safe_section(
         return build_unavailable_network_section(section_id, reason=msg)
 
 
-def _legacy_get_network_info() -> dict[str, Any]:
-    """Legacy adapter: discovery still lives in ``app.get_network_info`` (G.2b)."""
-    import app as app_module
-
-    info = app_module.get_network_info()
-    return info if isinstance(info, dict) else {}
-
-
-def _legacy_demo_network() -> dict[str, Any]:
-    """Legacy adapter: demo placeholder still lives in ``app._demo_network``."""
-    import app as app_module
-
-    info = app_module._demo_network()
-    return info if isinstance(info, dict) else {}
-
-
-def _legacy_detect_frontend_port() -> int:
-    """Legacy adapter: port detection still lives in ``app._detect_frontend_port``."""
-    import app as app_module
-
-    return int(app_module._detect_frontend_port())
-
-
 def build_network_info() -> dict[str, Any]:
     """Canonical network info payload (legacy ``get_network_info`` shape)."""
-    return _legacy_get_network_info()
+    info = discover_network_info()
+    return info if isinstance(info, dict) else {}
 
 
 def build_demo_network_info() -> dict[str, Any]:
     """Demo network placeholder (legacy ``_demo_network`` shape)."""
-    return _legacy_demo_network()
-
-
-def detect_frontend_port() -> int:
-    """Canonical frontend port (legacy ``_detect_frontend_port`` shape, G.7)."""
-    return _legacy_detect_frontend_port()
+    info = discover_demo_network()
+    return info if isinstance(info, dict) else {}
 
 
 def build_api_status_payload(*, use_demo: bool = False) -> dict[str, Any]:
@@ -186,7 +164,7 @@ def build_system_network_response(*, use_demo: bool = False) -> dict[str, Any]:
             "backend_port": 8000,
         }
     net_info = build_network_info()
-    frontend_port = _legacy_detect_frontend_port()
+    frontend_port = detect_frontend_port()
     return {
         "status": "success",
         "ips": net_info.get("ips", []),
@@ -229,10 +207,10 @@ def build_network_info_diagnostics() -> dict[str, Any]:
         "status_vocabulary": sorted(FACADE_STATUS_VALUES),
         "legacy_info_keys": sorted(NETWORK_INFO_KEYS),
         "delegates_to": [
-            "app.get_network_info",
-            "app._demo_network",
+            "network_discovery.discover_network_info",
+            "network_discovery.discover_demo_network",
+            "network_discovery.detect_frontend_port",
             "app._is_demo_mode",
-            "app._detect_frontend_port",
         ],
         "public_functions": [
             "build_network_info",

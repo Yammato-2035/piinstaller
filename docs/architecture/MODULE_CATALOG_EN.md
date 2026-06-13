@@ -38,10 +38,11 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 | 26 | network_info_facade | `backend/core/network_info_facade.py` | CANONICAL_MODULE (G.2–G.4) |
 | 27 | frontend_status_viewmodel | `frontend/src/viewmodels/statusViewModel.ts` | CANONICAL_MODULE (H.1–H.7) |
 | 28 | webserver_status_facade | `backend/core/webserver_status_facade.py` | CANONICAL_MODULE (G.7) |
+| 29 | network_discovery | `backend/core/network_discovery.py` | CANONICAL_MODULE (G.8) |
 | — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4120 lines) |
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**Next:** **G.6** System Info or **G.8** Network Discovery. **G.7 done.**
+**Next:** **G.6** System Info Facade. **G.8 done.**
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

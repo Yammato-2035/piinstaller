@@ -98,7 +98,7 @@ class TestNetworkInfoRouteMigrationG2b(unittest.TestCase):
         }
         with (
             mock.patch.object(facade, "build_network_info", return_value=fake_info),
-            mock.patch.object(facade, "_legacy_detect_frontend_port", return_value=5173),
+            mock.patch.object(facade, "detect_frontend_port", return_value=5173),
         ):
             out = facade.build_system_network_response(use_demo=False)
         self.assertEqual(set(out.keys()), SYSTEM_NETWORK_KEYS)
@@ -122,10 +122,12 @@ class TestNetworkInfoRouteMigrationG2b(unittest.TestCase):
         self.assertEqual(set(payload.keys()), STATUS_TOP_LEVEL_KEYS)
         self.assertEqual(payload["network"], fake)
 
-    def test_get_network_info_remains_legacy_definition(self) -> None:
+    def test_get_network_info_remains_legacy_wrapper(self) -> None:
         text = APP_PY.read_text(encoding="utf-8")
         self.assertIn("def get_network_info", text)
+        self.assertIn("discover_network_info", text)
         self.assertIn("def _demo_network", text)
+        self.assertIn("discover_demo_network", text)
 
     def test_system_network_error_response_unchanged(self) -> None:
         text = NETWORK_ROUTER.read_text(encoding="utf-8")

@@ -12,9 +12,9 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) â
 
 **H.7 final done:** riskLevels, devDashboardFilters, trafficLightModel, RoadmapDrawer, setuphelferToolTheme.
 
-**G.7 done:** `webserver_status_facade` canonical; G.5 bypass removed.
+**G.8 done:** `network_discovery` canonical; facade app cycle broken.
 
-**Next:** **G.6** System Info or **G.8** Network Discovery.
+**Next:** **G.6** System Info Facade.
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 

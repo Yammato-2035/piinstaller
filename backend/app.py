@@ -3121,7 +3121,9 @@ def _is_demo_mode(request: Request) -> bool:
 
 def _demo_network():
     """Platzhalter-Netzwerkdaten für Demo/Screenshot-Modus."""
-    return {"ips": ["192.168.1.100"], "hostname": "raspberrypi"}
+    from core.network_discovery import discover_demo_network
+
+    return discover_demo_network()
 
 
 def _demo_users():
@@ -3941,19 +3943,9 @@ async def get_freenove_detection():
 
 def _detect_frontend_port():
     """Erkennt Frontend-Port: 5173 (Tauri/Vite-Dev) bevorzugt, sonst 3001/3002."""
-    try:
-        r = run_command("ss -tuln 2>/dev/null | grep -E ':5173|:3001|:3002'")
-        if r.get("success") and r.get("stdout"):
-            out = r["stdout"]
-            if ":5173" in out:
-                return 5173
-            if ":3001" in out:
-                return 3001
-            if ":3002" in out:
-                return 3002
-    except Exception:
-        pass
-    return 3001
+    from core.network_discovery import detect_frontend_port as _detect_frontend_port_core
+
+    return _detect_frontend_port_core()
 
 
 @app.get("/api/dev-dashboard/status")
@@ -5839,104 +5831,11 @@ def get_installed_apps():
     
     return apps
 
-def _is_reachable_lan_ip(ip: str) -> bool:
-    """Filtert unbrauchbare Adressen. 0.0.0.0 ist keine erreichbare Adresse im Heimnetz."""
-    if not ip or not ip.strip():
-        return False
-    s = ip.strip().lower()
-    if s in ("0.0.0.0", "127.0.0.1", "::1", "localhost"):
-        return False
-    if s.startswith("127.") or s.startswith("fe80:"):
-        return False
-    if s.startswith("169.254."):
-        return False
-    return True
-
-
 def get_network_info():
     """Netzwerk-Informationen für UI/API inklusive robuster LAN-Erkennung im Service-Kontext."""
-    log = get_logger("network", "detect")
-    log.step_start("get_network_info")
-    t0 = time.perf_counter()
-    try:
-        warnings = []
-        interfaces = []
-        source = "none"
-        ips = []
+    from core.network_discovery import discover_network_info
 
-        # Primärquelle: ip -4 -o addr show scope global (liefert Interface + IPv4 robust im systemd-Kontext)
-        ip_result = run_command(
-            "/usr/sbin/ip -4 -o addr show scope global 2>/dev/null || "
-            "/sbin/ip -4 -o addr show scope global 2>/dev/null || "
-            "ip -4 -o addr show scope global 2>/dev/null"
-        )
-        raw_ip_lines = (ip_result.get("stdout") or "").splitlines() if ip_result.get("success") else []
-        excluded_if_prefixes = ("lo", "docker", "veth", "br-", "virbr", "wg", "tailscale")
-        seen_ips = set()
-
-        for line in raw_ip_lines:
-            m = re.search(r"^\s*\d+:\s+([^\s:]+)\s+inet\s+([0-9.]+)/\d+", line)
-            if not m:
-                continue
-            iface = (m.group(1) or "").split("@", 1)[0]
-            addr = m.group(2) or ""
-            iface_l = iface.lower()
-            if iface_l.startswith(excluded_if_prefixes):
-                continue
-            if not _is_reachable_lan_ip(addr):
-                continue
-            if addr in seen_ips:
-                continue
-            seen_ips.add(addr)
-            ips.append(addr)
-            interfaces.append({"name": iface, "ip": addr, "source": "ip-addr-global"})
-
-        if ips:
-            source = "ip-addr-global"
-
-        # Fallback: hostname -I
-        if not ips:
-            log.decision("source_filter", data={"source": "hostname -I fallback", "filter": "reachable_lan_only"})
-            result = subprocess.run(["hostname", "-I"], capture_output=True, text=True, timeout=5)
-            raw = (result.stdout or "").strip()
-            candidates = [x for x in raw.split() if x] if raw else []
-            for addr in candidates:
-                if not _is_reachable_lan_ip(addr):
-                    continue
-                if addr in seen_ips:
-                    continue
-                seen_ips.add(addr)
-                ips.append(addr)
-                interfaces.append({"name": "unknown", "ip": addr, "source": "hostname-I"})
-            if ips:
-                source = "hostname-I"
-
-        if not ips:
-            warnings.append("Nur lokal erreichbar - keine LAN-IP erkannt")
-            source = "none"
-
-        log.decision(
-            "network_source",
-            data={"source": source, "ip_count": len(ips), "interface_count": len(interfaces)},
-        )
-
-        result = subprocess.run(["hostname"], capture_output=True, text=True, timeout=5)
-        hostname = (result.stdout or "").strip() or "unknown"
-        out = {
-            "ips": ips,
-            "localhost": "127.0.0.1",
-            "primary_ip": ips[0] if ips else None,
-            "interfaces": interfaces,
-            "warnings": warnings,
-            "source": source,
-            "hostname": hostname,
-        }
-        log.apply_noop("get_network_info", data={"reason": "read_only_discovery"})
-        log.step_end("get_network_info", duration_ms=(time.perf_counter() - t0) * 1000, data={"hostname": hostname, "ip_count": len(ips)})
-        return out
-    except Exception as e:
-        log.step_end("get_network_info", duration_ms=(time.perf_counter() - t0) * 1000, data={"error": str(e)})
-        return {"ips": [], "hostname": "unknown"}
+    return discover_network_info()
 
 def get_running_services():
     """Laufen Services"""

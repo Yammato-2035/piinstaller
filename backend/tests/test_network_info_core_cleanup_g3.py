@@ -41,8 +41,12 @@ class TestNetworkInfoCoreCleanupG3(unittest.TestCase):
         for line in text.splitlines():
             stripped = line.strip()
             if "get_network_info(" in line and not stripped.startswith("def get_network_info"):
+                if "discover_network_info" in line:
+                    continue
                 self.fail(f"unexpected get_network_info call: {stripped}")
             if "_demo_network(" in line and not stripped.startswith("def _demo_network"):
+                if "discover_demo_network" in line:
+                    continue
                 self.fail(f"unexpected _demo_network call: {stripped}")
 
     def test_facade_has_no_subprocess_or_writes(self) -> None:
@@ -84,10 +88,11 @@ class TestNetworkInfoCoreCleanupG3(unittest.TestCase):
         )
         self.assertIn("10.0.0.3", pi_installer_url)
 
-    def test_legacy_defs_remain_in_app(self) -> None:
+    def test_legacy_defs_remain_as_wrappers_in_app(self) -> None:
         text = APP_PY.read_text(encoding="utf-8")
         self.assertIn("def get_network_info", text)
         self.assertIn("def _demo_network", text)
+        self.assertIn("network_discovery", text)
 
     def test_diagnostics_lists_g3_routes(self) -> None:
         import core.network_info_facade as facade

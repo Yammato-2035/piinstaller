@@ -229,6 +229,20 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 
 ---
 
+## 17a. network_discovery
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/network_discovery.py` |
+| **Status** | **CANONICAL_MODULE** (G.8) |
+| **Zweck** | Read-only Network-Discovery (ip/hostname/ss) |
+| **Öffentliche API** | `discover_network_info`, `discover_demo_network`, `detect_frontend_port`, `build_network_discovery_diagnostics` |
+| **Legacy-Wrapper** | `app.get_network_info`, `app._demo_network`, `app._detect_frontend_port` |
+| **Tests** | `test_network_discovery_v1`, `test_network_facade_without_app_dependency_g8` |
+| **Doku DE/EN** | `NETWORK_DISCOVERY_CORE_G8.md` |
+
+---
+
 ## 17. network_info_facade
 
 | Feld | Wert |
@@ -238,8 +252,8 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | **Zweck** | Netzwerk-Info read-only; Demo-Fallback; Normalisierung |
 | **Öffentliche API** | `build_network_info`, `detect_frontend_port`, `build_demo_network_info`, `build_system_network_response`, … |
 | **HTTP migriert** | `GET /api/status`, `/api/system/network` (G.4 Router); Network-Block: `/api/system-info` (G.3) |
-| **Delegiert an** | `app.get_network_info`, `app._demo_network`, `app._detect_frontend_port` (Legacy — G.5 Audit) |
-| **Legacy-Status G.5** | 3 Implementierungen in `app.py`; Facade→app-Zyklus; siehe `NETWORK_LEGACY_INVENTORY_G5.md` |
+| **Delegiert an** | `network_discovery` (G.8); `app._is_demo_mode` (HTTP) |
+| **Discovery-Owner** | `core/network_discovery.py` — kanonisch seit G.8 |
 | **Ausgeschlossen** | Netzwerk-Schreiboperationen, nmcli write |
 | **Tests** | `test_network_info_facade_v1` |
 | **Doku DE/EN** | `NETWORK_INFO_FACADE_G2.md` |
@@ -306,8 +320,8 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | `system_status_facade` | **CANONICAL_MODULE** (G.1/G.1b) | `/api/system/status` migriert |
 | `network_info_facade` | **CANONICAL_MODULE** (G.2–G.5) | Facade + Router; Legacy in `app.py` |
 | **webserver_status_facade** | **CANONICAL_MODULE** (G.7) | `GET /api/webserver/status` — erledigt |
+| **network_discovery** | **CANONICAL_MODULE** (G.8) | Discovery-Owner — erledigt |
 | **system_info_facade** | **CANDIDATE** (G.6) | `GET /api/system-info` — HIGH |
-| **network_discovery** | **CANDIDATE** (G.8) | Legacy-Elimination — CRITICAL |
 | **frontend_runtime_facade** | **CANDIDATE** (G.5) | Port-Erkennung — MEDIUM |
 | **Dev Dashboard Aggregation Facade** | **CANDIDATE** (E.7) | control-center-summary, prompt-findings (nutzt Facade F.2+) |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |

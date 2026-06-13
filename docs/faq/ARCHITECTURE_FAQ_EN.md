@@ -211,6 +211,10 @@ Full inventory — **no refactoring**. 3 legacy functions in `app.py`; 1 facade 
 
 `GET /api/webserver/status` delegates to `webserver_status_facade`; network and port via `network_info_facade`. G.5 bypass removed. Doc: `docs/architecture/WEBSERVER_STATUS_FACADE_G7_EN.md`.
 
+## What is G.8 (Network Discovery Core)?
+
+Discovery logic moved from `app.py` to `network_discovery.py`; `network_info_facade` has no lazy `import app`. Legacy wrappers remain in `app.py`. Doc: `docs/architecture/NETWORK_DISCOVERY_CORE_G8_EN.md`.
+
 ## What is H.1 (Frontend Status ViewModel)?
 
 Canonical module `frontend/src/viewmodels/statusViewModel.ts` — central status normalization. **No component migration** in H.1. Doc: `docs/architecture/FRONTEND_STATUS_VIEWMODEL_H1_EN.md`.
@@ -241,7 +245,7 @@ Canonical module `frontend/src/viewmodels/statusViewModel.ts` — central status
 
 ## Next step?
 
-**G.6** System Info Facade **or** **G.8** Network Discovery — see roadmap.
+**G.6** System Info Facade — see roadmap.
 
 ## Further reading
 

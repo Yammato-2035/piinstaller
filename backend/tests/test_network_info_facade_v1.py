@@ -94,7 +94,7 @@ class TestNetworkInfoFacadeV1(unittest.TestCase):
     def test_demo_network_legacy_shape(self) -> None:
         import core.network_info_facade as facade
 
-        with mock.patch.object(facade, "_legacy_demo_network", return_value={"ips": ["192.168.1.100"], "hostname": "raspberrypi"}):
+        with mock.patch.object(facade, "discover_demo_network", return_value={"ips": ["192.168.1.100"], "hostname": "raspberrypi"}):
             out = facade.build_demo_network_info()
         self.assertEqual(out["ips"], ["192.168.1.100"])
         self.assertEqual(out["hostname"], "raspberrypi")
@@ -111,7 +111,7 @@ class TestNetworkInfoFacadeV1(unittest.TestCase):
             "source": "hostname-I",
             "hostname": "pi",
         }
-        with mock.patch.object(facade, "_legacy_get_network_info", return_value=fake):
+        with mock.patch.object(facade, "discover_network_info", return_value=fake):
             out = facade.build_network_info()
         self.assertEqual(out, fake)
 

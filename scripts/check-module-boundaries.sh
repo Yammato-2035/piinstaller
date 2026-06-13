@@ -1413,6 +1413,8 @@ if app_py_path.is_file():
     for line in ap_g2.splitlines():
         stripped = line.strip()
         if "_demo_network(" in line and not stripped.startswith("def _demo_network"):
+            if "discover_demo_network" in line:
+                continue
             print("app_direct_demo_network_usage_outside_legacy:backend/app.py")
             break
     else:
@@ -1420,6 +1422,8 @@ if app_py_path.is_file():
     for line in ap_g2.splitlines():
         stripped = line.strip()
         if "get_network_info(" in line and not stripped.startswith("def get_network_info"):
+            if "discover_network_info" in line:
+                continue
             print("app_direct_network_info_usage_outside_legacy:backend/app.py")
             break
     for path in sorted(backend.rglob("*.py")):
@@ -1481,7 +1485,6 @@ for candidate in (
     root / "backend" / "core" / "system_info_facade.py",
     root / "backend" / "core" / "frontend_runtime_facade.py",
     root / "backend" / "core" / "port_detection_facade.py",
-    root / "backend" / "core" / "network_discovery.py",
 ):
     if candidate.is_file():
         print(f"network_facade_candidate_detected:{candidate.relative_to(root).as_posix()}")
@@ -1496,6 +1499,8 @@ for path in sorted(backend.rglob("*.py")):
     except OSError:
         continue
     if re.search(r"\bip\s+-4\b|\bhostname\s+-I\b", pt) and "network_info_facade" not in pt:
+        if rel == "backend/core/network_discovery.py":
+            continue
         if "network_discovery" in rel or "get_network_info" in pt:
             print(f"network_new_logic_outside_facade:{rel}")
 
@@ -1545,6 +1550,71 @@ for path in sorted(backend.rglob("*.py")):
     if re.search(r'@app\.get\("/api/webserver/status"\)|@router\.get\("/api/webserver/status"\)', pt):
         if "webserver_status_facade" not in pt and "build_webserver_status" not in pt:
             print(f"webserver_status_new_logic_outside_facade:{rel}")
+
+# Phase G.8: Network Discovery Core guards (warn-only)
+discovery_core_path = root / "backend" / "core" / "network_discovery.py"
+if not discovery_core_path.is_file():
+    print("network_discovery_core_missing:backend/core/network_discovery.py")
+else:
+    dc = discovery_core_path.read_text(encoding="utf-8", errors="replace")
+    if "DISCOVERY_VERSION" not in dc or "discover_network_info" not in dc:
+        print("network_discovery_core_incomplete:backend/core/network_discovery.py")
+    if re.search(r"\bimport\s+app\b|\bfrom\s+app\b", dc):
+        print("network_discovery_core_depends_on_app:backend/core/network_discovery.py")
+network_facade_path_g8 = root / "backend" / "core" / "network_info_facade.py"
+if network_facade_path_g8.is_file():
+    nf_g8 = network_facade_path_g8.read_text(encoding="utf-8", errors="replace")
+    if re.search(r"\bimport\s+app\b|\bfrom\s+app\b", nf_g8):
+        print("network_facade_depends_on_app:backend/core/network_info_facade.py")
+    if "network_discovery" not in nf_g8:
+        print("network_facade_depends_on_app:backend/core/network_info_facade.py")
+if app_py_path.is_file():
+    ap_g8 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    for marker, core_fn in (
+        ("def get_network_info", "discover_network_info"),
+        ("def _demo_network", "discover_demo_network"),
+        ("def _detect_frontend_port", "detect_frontend_port"),
+    ):
+        if marker not in ap_g8:
+            print(f"network_legacy_wrapper_missing:backend/app.py:{marker}")
+        else:
+            start = ap_g8.index(marker)
+            block = ap_g8[start : start + 350]
+            if "network_discovery" not in block or core_fn not in block:
+                print(f"network_legacy_wrapper_missing:backend/app.py:{marker}")
+for path in sorted(backend.rglob("*.py")):
+    rel = path.relative_to(root).as_posix()
+    if "/tests/" in rel or "/venv/" in rel:
+        continue
+    if rel in (
+        "backend/core/network_discovery.py",
+        "backend/core/network_info_facade.py",
+        "backend/app.py",
+    ):
+        continue
+    try:
+        pt = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    if re.search(r"\bip\s+-4\b|\bhostname\s+-I\b", pt):
+        if "network_discovery" not in pt and "network_info_facade" not in pt:
+            print(f"network_new_network_logic_outside_discovery:{rel}")
+    if re.search(r"\bdiscover_network_info\s*\(|\bdetect_frontend_port\s*\(", pt):
+        if "network_info_facade" not in pt and "network_discovery" not in pt:
+            print(f"network_direct_discovery_usage_outside_facade:{rel}")
+for path in sorted(backend.rglob("*.py")):
+    rel = path.relative_to(root).as_posix()
+    if rel == "backend/core/network_discovery.py":
+        continue
+    if "/tests/" in rel or "/venv/" in rel:
+        continue
+    try:
+        pt = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    if "def discover_network_info" in pt or "def detect_frontend_port" in pt:
+        if rel != "backend/core/network_info_facade.py":
+            print(f"network_discovery_duplicate_logic:{rel}")
 
 if deploy_routes.is_file():
     subrouter_markers = (
