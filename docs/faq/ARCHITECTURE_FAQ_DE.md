@@ -207,6 +207,10 @@ Kanonisches Modul `core/network_info_facade.py` — read-only Netzwerk-Info, Dem
 
 Vollständige Bestandsaufnahme — **kein Refactoring**. 3 Legacy-Funktionen in `app.py`; 1 Facade-Bypass in `webserver_status`. Nächste Kandidaten: G.6/G.7/G.8. Doku: `docs/architecture/NETWORK_NEXT_FACADE_CANDIDATES_G5.md`.
 
+## Was ist G.7 (Webserver Status Facade)?
+
+`GET /api/webserver/status` delegiert an `webserver_status_facade`; Network und Port über `network_info_facade`. G.5-Bypass (`_detect_frontend_port` im Handler) beseitigt. Doku: `docs/architecture/WEBSERVER_STATUS_FACADE_G7.md`.
+
 ## Was ist H.1 (Frontend Status ViewModel)?
 
 Kanonisches Modul `frontend/src/viewmodels/statusViewModel.ts` — zentrale Status-Normalisierung (StatusKind, Severity, Blocking). **Keine Komponentenmigration** in H.1. Doku: `docs/architecture/FRONTEND_STATUS_VIEWMODEL_H1.md`.
@@ -239,7 +243,7 @@ Kanonisches Modul `frontend/src/viewmodels/statusViewModel.ts` — zentrale Stat
 
 ## Nächster Schritt?
 
-**G.6** System Info Facade, **G.7** Webserver Status Facade oder **G.8** Network Discovery — Priorisierung: `docs/architecture/NETWORK_NEXT_FACADE_CANDIDATES_G5.md`.
+**G.6** System Info Facade **oder** **G.8** Network Discovery — siehe Roadmap.
 
 ## Weiterlesen
 

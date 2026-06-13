@@ -8499,84 +8499,10 @@ def get_website_names():
 @app.get("/api/webserver/status")
 async def webserver_status():
     """Webserver-Status"""
-    from core.network_info_facade import build_network_info
+    from core.webserver_status_facade import build_webserver_status
 
     try:
-        running = get_running_services()
-        network = build_network_info()
-        installed = get_installed_apps()
-        
-        # Prüfe Webserver läuft
-        nginx_running = running.get("nginx", False)
-        apache_running = running.get("apache2", False)
-        
-        # Webserver Ports prüfen
-        webserver_ports = []
-        ports_result = run_command("ss -tuln | grep -E ':80|:443|:8000|:8080|:9090|:10000'")
-        if ports_result["success"]:
-            webserver_ports = ports_result["stdout"].strip().split("\n")
-        
-        # PI-Installer Adresse (Frontend Port: 5173 Tauri/Vite-Dev, sonst 3001/3002)
-        pi_installer_port = _detect_frontend_port()
-        
-        # Website-Namen extrahieren
-        website_names = get_website_names()
-        
-        # Cockpit & Webmin Status
-        cockpit_running = running.get("cockpit", False) or check_installed("cockpit")
-        webmin_running = running.get("webmin", False) or check_installed("webmin")
-        
-        # Prüfe ob Cockpit/Webmin auf Ports laufen
-        cockpit_port = run_command("ss -tuln | grep ':9090'")
-        webmin_port = run_command("ss -tuln | grep ':10000'")
-        
-        return {
-            "pi_installer": {
-                "port": pi_installer_port or 3001,
-                "url": f"http://{network.get('ips', ['localhost'])[0]}:{pi_installer_port or 3001}" if network.get('ips') else f"http://localhost:{pi_installer_port or 3001}",
-            },
-            "website_names": website_names,
-            "nginx": {
-                "installed": installed.get("nginx", False),
-                "running": nginx_running,
-            },
-            "apache": {
-                "installed": installed.get("apache", False),
-                "running": apache_running,
-            },
-            "mysql": {
-                "installed": installed.get("mysql", False),
-                "running": running.get("mysql", False),
-            },
-            "mariadb": {
-                "installed": installed.get("mariadb", False),
-                "running": running.get("mariadb", False),
-            },
-            "php": {
-                "installed": installed.get("php", False),
-            },
-            "cockpit": {
-                "installed": installed.get("cockpit", False),
-                "running": cockpit_running or cockpit_port["success"],
-                "port": 9090 if cockpit_port["success"] else None,
-            },
-            "webmin": {
-                "installed": installed.get("webmin", False),
-                "running": webmin_running or webmin_port["success"],
-                "port": 10000 if webmin_port["success"] else None,
-            },
-            "network": network,
-            "webserver_ports": webserver_ports,
-            "websites": installed.get("websites", []),
-            "installed_cms": {
-                "wordpress": {
-                    "installed": installed.get("wordpress", False),
-                    "plugins": installed.get("wordpress_plugins", []),
-                },
-                "nextcloud": installed.get("nextcloud", False),
-                "drupal": installed.get("drupal", False),
-            }
-        }
+        return build_webserver_status()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

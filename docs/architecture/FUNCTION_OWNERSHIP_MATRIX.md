@@ -40,6 +40,7 @@
 | System Status Legacy | `app.py` `_compute_system_status` | LEGACY | bis G.1b | über Facade-Adapter |
 | Network Info | `core.network_info_facade` | CANONICAL (G.2–G.5) | Facade + Router; Legacy in app | Audit G.5 |
 | Network HTTP (safe GET) | `api/routes/network.py` | CANONICAL_ROUTER (G.4) | `/api/status`, `/api/system/network` | delegiert nur Facade |
+| Webserver Status | `core.webserver_status_facade` | CANONICAL (G.7) | `GET /api/webserver/status` | Ja — Facade only |
 | Network Info Legacy | `app.py` `get_network_info`, `_demo_network`, `_detect_frontend_port` | LEGACY (G.5) | bis G.8 Discovery | Facade-Adapter; 1 Bypass in `webserver_status` |
 | DCC Full Status | `core.dcc_status_facade` + `dev_dashboard_status_service` | CANONICAL (F.2) | `/api/dev-dashboard/status` | Ja — migriert |
 | DCC Status Aggregation | `core.dcc_status_facade` | CANONICAL | app routes (F.2+) | Keine Parallel-Aggregation in Routern |

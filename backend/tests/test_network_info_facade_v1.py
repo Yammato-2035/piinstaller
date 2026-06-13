@@ -18,6 +18,7 @@ PUBLIC_FUNCTIONS = (
     "build_network_info",
     "build_network_status_section",
     "build_demo_network_info",
+    "detect_frontend_port",
     "build_api_status_payload",
     "build_system_network_response",
     "build_network_info_diagnostics",

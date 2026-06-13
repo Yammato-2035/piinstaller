@@ -236,13 +236,28 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | **Pfad** | `backend/core/network_info_facade.py` |
 | **Status** | **CANONICAL_MODULE** (FACADE, G.2) |
 | **Zweck** | Netzwerk-Info read-only; Demo-Fallback; Normalisierung |
-| **Öffentliche API** | `build_network_info`, `build_demo_network_info`, `build_system_network_response`, `build_network_status_section`, … |
-| **HTTP migriert** | `GET /api/status`, `/api/system/network` (G.4 Router); Facade-Delegation: `/api/system-info`, `/api/webserver/status` (G.3) |
+| **Öffentliche API** | `build_network_info`, `detect_frontend_port`, `build_demo_network_info`, `build_system_network_response`, … |
+| **HTTP migriert** | `GET /api/status`, `/api/system/network` (G.4 Router); Network-Block: `/api/system-info` (G.3) |
 | **Delegiert an** | `app.get_network_info`, `app._demo_network`, `app._detect_frontend_port` (Legacy — G.5 Audit) |
 | **Legacy-Status G.5** | 3 Implementierungen in `app.py`; Facade→app-Zyklus; siehe `NETWORK_LEGACY_INVENTORY_G5.md` |
 | **Ausgeschlossen** | Netzwerk-Schreiboperationen, nmcli write |
 | **Tests** | `test_network_info_facade_v1` |
 | **Doku DE/EN** | `NETWORK_INFO_FACADE_G2.md` |
+
+---
+
+## 17b. webserver_status_facade
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/webserver_status_facade.py` |
+| **Status** | **CANONICAL_MODULE** (FACADE, G.7) |
+| **Zweck** | Webserver/CMS/Service-Status read-only für `GET /api/webserver/status` |
+| **Öffentliche API** | `build_webserver_status`, `build_webserver_status_section`, `build_webserver_frontend_section`, `build_webserver_status_diagnostics` |
+| **HTTP migriert** | `GET /api/webserver/status` (G.7) |
+| **Delegiert an** | `network_info_facade` (Network+Port); `app.get_running_services`, `app.run_command`, … |
+| **Tests** | `test_webserver_status_facade_v1`, `test_webserver_status_route_migration_g7` |
+| **Doku DE/EN** | `WEBSERVER_STATUS_FACADE_G7.md` |
 
 ---
 
@@ -290,8 +305,8 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | `dcc_status_facade` | **CANONICAL_MODULE** (F.1–F.4) | HTTP-DCC-Leser delegiert |
 | `system_status_facade` | **CANONICAL_MODULE** (G.1/G.1b) | `/api/system/status` migriert |
 | `network_info_facade` | **CANONICAL_MODULE** (G.2–G.5) | Facade + Router; Legacy in `app.py` |
+| **webserver_status_facade** | **CANONICAL_MODULE** (G.7) | `GET /api/webserver/status` — erledigt |
 | **system_info_facade** | **CANDIDATE** (G.6) | `GET /api/system-info` — HIGH |
-| **webserver_status_facade** | **CANDIDATE** (G.7) | `GET /api/webserver/status` — HIGH |
 | **network_discovery** | **CANDIDATE** (G.8) | Legacy-Elimination — CRITICAL |
 | **frontend_runtime_facade** | **CANDIDATE** (G.5) | Port-Erkennung — MEDIUM |
 | **Dev Dashboard Aggregation Facade** | **CANDIDATE** (E.7) | control-center-summary, prompt-findings (nutzt Facade F.2+) |

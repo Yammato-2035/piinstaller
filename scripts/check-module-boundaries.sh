@@ -1401,14 +1401,14 @@ if app_py_path.is_file():
         elif re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", block):
             print("app_direct_demo_network_usage_outside_legacy:backend/app.py:get_system_info")
     web_m = re.search(
-        r'@app\.get\("/api/webserver/status"\)\s*\nasync def webserver_status\(\):[\s\S]{0,2500}',
+        r'@app\.get\("/api/webserver/status"\)\s*\nasync def webserver_status\([^)]*\):[\s\S]{0,500}',
         ap_g2,
     )
     if web_m:
         block = web_m.group(0)
-        if "network_info_facade" not in block:
-            print("app_webserver_status_requires_network_facade:backend/app.py")
-        elif re.search(r"\bget_network_info\s*\(", block):
+        if "webserver_status_facade" not in block:
+            print("app_webserver_status_requires_webserver_facade:backend/app.py")
+        elif re.search(r"\bget_network_info\s*\(|\bbuild_network_info\s*\(", block):
             print("app_direct_network_info_usage_outside_legacy:backend/app.py:webserver_status")
     for line in ap_g2.splitlines():
         stripped = line.strip()
@@ -1479,7 +1479,6 @@ if app_py_path.is_file():
             print("network_direct_usage_outside_facade:backend/app.py:webserver_status_port")
 for candidate in (
     root / "backend" / "core" / "system_info_facade.py",
-    root / "backend" / "core" / "webserver_status_facade.py",
     root / "backend" / "core" / "frontend_runtime_facade.py",
     root / "backend" / "core" / "port_detection_facade.py",
     root / "backend" / "core" / "network_discovery.py",
@@ -1499,6 +1498,53 @@ for path in sorted(backend.rglob("*.py")):
     if re.search(r"\bip\s+-4\b|\bhostname\s+-I\b", pt) and "network_info_facade" not in pt:
         if "network_discovery" in rel or "get_network_info" in pt:
             print(f"network_new_logic_outside_facade:{rel}")
+
+# Phase G.7: Webserver Status Facade guards (warn-only)
+webserver_facade_path = root / "backend" / "core" / "webserver_status_facade.py"
+if not webserver_facade_path.is_file():
+    print("webserver_status_facade_missing:backend/core/webserver_status_facade.py")
+else:
+    wf = webserver_facade_path.read_text(encoding="utf-8", errors="replace")
+    if "WEBSERVER_STATUS_FACADE_VERSION" not in wf or "build_webserver_status" not in wf:
+        print("webserver_status_facade_incomplete:backend/core/webserver_status_facade.py")
+    if "network_info_facade" not in wf:
+        print("webserver_status_route_requires_facade:backend/core/webserver_status_facade.py")
+    if re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", wf):
+        print("webserver_status_direct_network_usage:backend/core/webserver_status_facade.py")
+    if re.search(r"\b_detect_frontend_port\s*\(", wf):
+        print("webserver_status_direct_port_detection:backend/core/webserver_status_facade.py")
+    if re.search(r"def _normalize_webserver|WEBSERVER_STATUS_MAP\s*=", wf):
+        if "build_section_status" not in wf:
+            print("webserver_status_duplicate_status_mapping:backend/core/webserver_status_facade.py")
+if app_py_path.is_file():
+    ap_g7 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    ws_m = re.search(
+        r'@app\.get\("/api/webserver/status"\)\s*\nasync def webserver_status\([^)]*\):[\s\S]{0,500}',
+        ap_g7,
+    )
+    if ws_m:
+        block = ws_m.group(0)
+        if "webserver_status_facade" not in block:
+            print("webserver_status_route_requires_facade:backend/app.py")
+        if re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(|\bbuild_network_info\s*\(", block):
+            print("webserver_status_direct_network_usage:backend/app.py")
+        if re.search(r"\b_detect_frontend_port\s*\(", block):
+            print("webserver_status_direct_port_detection:backend/app.py")
+        if re.search(r"\brun_command\s*\(|\bget_running_services\s*\(", block):
+            print("webserver_status_new_logic_outside_facade:backend/app.py")
+for path in sorted(backend.rglob("*.py")):
+    rel = path.relative_to(root).as_posix()
+    if "/tests/" in rel or "/venv/" in rel or rel.endswith("webserver_status_facade.py"):
+        continue
+    if rel == "backend/app.py":
+        continue
+    try:
+        pt = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    if re.search(r'@app\.get\("/api/webserver/status"\)|@router\.get\("/api/webserver/status"\)', pt):
+        if "webserver_status_facade" not in pt and "build_webserver_status" not in pt:
+            print(f"webserver_status_new_logic_outside_facade:{rel}")
 
 if deploy_routes.is_file():
     subrouter_markers = (

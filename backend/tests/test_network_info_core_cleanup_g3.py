@@ -30,10 +30,11 @@ class TestNetworkInfoCoreCleanupG3(unittest.TestCase):
     def test_webserver_status_uses_facade(self) -> None:
         text = APP_PY.read_text(encoding="utf-8")
         start = text.index("async def webserver_status")
-        block = text[start : start + 2500]
-        self.assertIn("network_info_facade", block)
-        self.assertIn("build_network_info", block)
+        block = text[start : start + 400]
+        self.assertIn("webserver_status_facade", block)
+        self.assertIn("build_webserver_status", block)
         self.assertNotIn("get_network_info(", block)
+        self.assertNotIn("_detect_frontend_port(", block)
 
     def test_app_py_no_direct_network_calls_outside_legacy_defs(self) -> None:
         text = APP_PY.read_text(encoding="utf-8")

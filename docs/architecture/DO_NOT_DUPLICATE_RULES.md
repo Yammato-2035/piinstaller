@@ -30,6 +30,7 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 27. **Frontend-Status-Slices H.3–H.7 abgeschlossen** — verbleibende 10 Mappings nur Domain/Large-Page; kein H.8.
 28. **Keine neuen Network-GET-Handler in `app.py`**, wenn `api/routes/network.py` existiert — nur Facade-Delegation (G.4+).
 29. **Keine Network-Discovery-Implementierung außerhalb `network_info_facade` / geplantem `network_discovery`** — Legacy in `app.py` nur bis G.8 (G.5+).
+30. **Keine Webserver-Status-Aggregation außerhalb `webserver_status_facade`** — Network/Port nur über `network_info_facade` (G.7+).
 
 ## Prüfreihenfolge (Cursor)
 

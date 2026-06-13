@@ -152,6 +152,11 @@ def build_demo_network_info() -> dict[str, Any]:
     return _legacy_demo_network()
 
 
+def detect_frontend_port() -> int:
+    """Canonical frontend port (legacy ``_detect_frontend_port`` shape, G.7)."""
+    return _legacy_detect_frontend_port()
+
+
 def build_api_status_payload(*, use_demo: bool = False) -> dict[str, Any]:
     """Legacy ``GET /api/status`` payload (G.4)."""
     net = build_demo_network_info() if use_demo else build_network_info()
@@ -233,6 +238,7 @@ def build_network_info_diagnostics() -> dict[str, Any]:
             "build_network_info",
             "build_network_status_section",
             "build_demo_network_info",
+            "detect_frontend_port",
             "build_api_status_payload",
             "build_system_network_response",
             "build_network_info_diagnostics",

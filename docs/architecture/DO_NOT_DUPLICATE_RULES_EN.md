@@ -30,6 +30,7 @@ Binding rules against parallel implementations. **No exception** without documen
 26. Frontend status slices H.3–H.7 complete — remaining 10 mappings are domain/large-page only; no H.8.
 27. **No new network GET handlers in `app.py`** when `api/routes/network.py` exists — facade delegation only (G.4+).
 28. **No network discovery implementation outside `network_info_facade` / planned `network_discovery`** — legacy in `app.py` only until G.8 (G.5+).
+29. **No webserver status aggregation outside `webserver_status_facade`** — network/port only via `network_info_facade` (G.7+).
 
 Check order: Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
 
