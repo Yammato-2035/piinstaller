@@ -40,3 +40,19 @@ setuphelfer-rescue-evidence.py bundle
 After ISO rebuild (R.5): kiosk autostart via Openbox; evidence at `rescue-ui/kiosk_report_latest.md`.
 
 Details: `docs/architecture/RESCUE_BROWSER_KIOSK_R4_EN.md`
+
+## Why is `/setuphelfer-evidence/` missing after the first stick write? (R.6)
+
+The USB writer only places **bootable** files (`EFI/`, `live/`, `setuphelfer/rescue/`). The canonical runtime tree **`/setuphelfer-evidence/`** is created **on first live boot** by `setuphelfer-rescue-boot-evidence-init`.
+
+**Success criterion:** After MSI boot this file must exist:
+
+```
+/setuphelfer-evidence/boot/boot_marker.md
+```
+
+If Linux/TUI starts but this file is missing, the boot persistence hook is not active (old image or write failure).
+
+**RAM fallback:** If the stick is mounted read-only, evidence goes to `/tmp/setuphelfer-evidence/` — the start assistant shows `Evidence: RAM fallback`.
+
+Details: `docs/architecture/RESCUE_BOOT_PERSISTENCE_R6.md`

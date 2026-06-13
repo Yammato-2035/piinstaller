@@ -19,7 +19,7 @@ class TestRescuePersistenceR3(unittest.TestCase):
         import core.rescue_persistence as rp
 
         diag = rp.build_rescue_persistence_diagnostics()
-        self.assertEqual(diag["persistence_version"], 3)
+        self.assertEqual(diag["persistence_version"], 4)
         self.assertIn("detect_rescue_stick_mount", diag["public_functions"])
 
     def test_detect_fallback_when_no_mounts(self) -> None:

@@ -236,6 +236,74 @@ def build_r4_static_matrix_entries(*, repo_root: Path | None = None) -> list[dic
     return entries
 
 
+def build_r6_boot_persistence_matrix_entries(*, runner: Runner = None) -> list[dict[str, Any]]:
+    """R.6 boot-marker and early persistence hook probes."""
+    entries: list[dict[str, Any]] = []
+    tree = ensure_rescue_evidence_tree(runner=runner)
+    evidence_root = Path(str(tree.get("evidence_root") or ""))
+    boot_json = evidence_root / "boot" / "boot_marker.json"
+    boot_md = evidence_root / "boot" / "boot_marker.md"
+    marker_written = boot_json.is_file() and boot_md.is_file()
+    start_assistant = Path("/usr/local/sbin/setuphelfer-rescue-start-assistant").is_file()
+    boot_init = Path("/usr/local/sbin/setuphelfer-rescue-boot-evidence-init").is_file()
+
+    entries.append(
+        _entry(
+            "R6-BOOT-MARKER-001",
+            "stick_persistence",
+            "boot_marker_written",
+            "green" if marker_written else "red",
+            observed=f"json={boot_json.is_file()} md={boot_md.is_file()}",
+            evidence_path=str(boot_md) if boot_md.is_file() else None,
+            risk="high" if not marker_written else "low",
+            next_action="boot-evidence-init beim Start prüfen" if not marker_written else "OK",
+        )
+    )
+    entries.append(
+        _entry(
+            "R6-EVIDENCE-ROOT-001",
+            "stick_persistence",
+            "evidence_root_created",
+            "green" if tree.get("tree_ready") else "red",
+            observed=f"root={tree.get('evidence_root')} dirs={len(tree.get('created_dirs') or [])}",
+            evidence_path=str(evidence_root),
+            next_action="Stick-Mount und Schreibrechte prüfen" if not tree.get("tree_ready") else "OK",
+        )
+    )
+    entries.append(
+        _entry(
+            "R6-TARGET-STICK-001",
+            "stick_persistence",
+            "evidence_target_is_stick",
+            "green" if not tree.get("fallback") else "yellow",
+            observed=str(tree.get("persistence_mode")),
+            risk="medium" if tree.get("fallback") else "low",
+            next_action=tree.get("warning") or "OK",
+        )
+    )
+    entries.append(
+        _entry(
+            "R6-TARGET-RAM-001",
+            "stick_persistence",
+            "evidence_target_is_ram_fallback",
+            "yellow" if tree.get("fallback") else "gray",
+            observed=f"fallback={tree.get('fallback')}",
+            next_action="FAT32 remount rw prüfen" if tree.get("fallback") else "Nicht aktiv",
+        )
+    )
+    entries.append(
+        _entry(
+            "R6-START-ASSIST-001",
+            "tui_menu",
+            "start_assistant_invoked",
+            "green" if start_assistant else "red",
+            observed=f"start_assistant={start_assistant} boot_init={boot_init}",
+            next_action="Start-Assistent und boot-evidence-init stagen" if not start_assistant else "OK",
+        )
+    )
+    return entries
+
+
 def build_rescue_test_matrix_entries(*, runner: Runner = None) -> list[dict[str, Any]]:
     """Build all R.3 matrix entries from read-only probes and state files."""
     entries: list[dict[str, Any]] = []
@@ -469,6 +537,7 @@ def build_rescue_test_matrix_entries(*, runner: Runner = None) -> list[dict[str,
     )
 
     entries.extend(build_r4_static_matrix_entries())
+    entries.extend(build_r6_boot_persistence_matrix_entries(runner=runner))
 
     reds = [e for e in entries if e.get("status") == "red"]
     entries.append(

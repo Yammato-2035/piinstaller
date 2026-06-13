@@ -1,0 +1,20 @@
+#!/bin/bash
+# Early boot evidence bootstrap — creates /setuphelfer-evidence/boot/boot_marker.* (Phase R.6).
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+export PYTHONPATH="/opt/setuphelfer-rescue/backend:/usr/local/lib/setuphelfer:${PYTHONPATH:-}"
+
+_ev_script="${SCRIPT_DIR}/setuphelfer-rescue-evidence.py"
+if [[ ! -f "$_ev_script" ]]; then
+  echo '{"status":"failed","reason":"evidence_script_missing"}'
+  exit 1
+fi
+
+python3 "$_ev_script" boot-init 2>/dev/null || {
+  echo '{"status":"failed","reason":"boot_init_exception"}'
+  exit 2
+}

@@ -297,11 +297,9 @@ write_rescue_network_telemetry_overlay() {
   local wants="${systemd_dir}/multi-user.target.wants"
   local timers="${systemd_dir}/timers.target.wants"
   mkdir -p "$sbin" "$wants" "$timers" "$share" "$rescue_cfg"
-  for script in setuphelfer-rescue-common.sh setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-live-medium-check.py setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull setuphelfer-rescue-disk-discovery setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-start-assistant setuphelfer-rescue-plan-builder.py setuphelfer-rescue-evidence.py setuphelfer-rescue-ui-launch setuphelfer-rescue-kiosk-start setuphelfer-rescue-kiosk-health; do
+  for script in setuphelfer-rescue-common.sh setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-live-medium-check.py setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull setuphelfer-rescue-disk-discovery setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-start-assistant setuphelfer-rescue-boot-evidence-init setuphelfer-rescue-plan-builder.py setuphelfer-rescue-evidence.py setuphelfer-rescue-ui-launch setuphelfer-rescue-kiosk-start setuphelfer-rescue-kiosk-health; do
     [[ -f "${image_src}/${script}" ]] || die "missing rescue image script: ${script}"
-    local mode=0755
-    [[ "$script" == *.py ]] && mode=0644
-    copy_host_file "${image_src}/${script}" "${sbin}/${script}" "$mode"
+    copy_host_file "${image_src}/${script}" "${sbin}/${script}" 0755
   done
   copy_host_file "${image_src}/setuphelfer-rescue-boot-branding.txt" "${share}/boot-branding.txt" 0644
   write_text_file "${rescue_cfg}/network.env.example" 0644 <<'EOF'
@@ -589,6 +587,16 @@ usbutils
 dnsutils
 ethtool
 whiptail
+xserver-xorg
+xinit
+openbox
+chromium
+dbus-x11
+x11-xserver-utils
+unclutter
+fonts-dejavu
+fonts-noto
+wireless-tools
 EOF
 
 # lb_binary_iso runs isohybrid inside the live-build chroot (not the host). Debian ships

@@ -16,7 +16,7 @@ from typing import Any, Callable
 
 from core.storage_discovery import Runner, discover_findmnt_mounts_flat, discover_lsblk_json_tree
 
-RESCUE_PERSISTENCE_VERSION = 3
+RESCUE_PERSISTENCE_VERSION = 4
 
 EVIDENCE_DIR_NAME = "setuphelfer-evidence"
 EVIDENCE_SUBDIRS = (
@@ -34,6 +34,10 @@ EVIDENCE_SUBDIRS = (
 
 _STICK_LABELS = frozenset({"SETUPHELFER", "SETUPHELFER_RESCUE", "SETUPHELFER_RESCUE_LIVE"})
 _LIVE_MEDIUM_PATH = Path("/run/live/medium")
+_LIVE_MEDIUM_CANDIDATES = (
+    Path("/run/live/medium"),
+    Path("/lib/live/mount/medium"),
+)
 _RAM_FALLBACK_ROOT = Path("/tmp/setuphelfer-evidence")
 _WRITABLE_FSTYPES = frozenset({"vfat", "exfat", "ext2", "ext3", "ext4"})
 _READONLY_FSTYPES = frozenset({"iso9660", "udf", "squashfs", "erofs"})
@@ -57,8 +61,10 @@ def _is_plausible_stick_target(target: str) -> bool:
     t = (target or "").rstrip("/")
     if not t:
         return False
-    if t == str(_LIVE_MEDIUM_PATH) or t.startswith(f"{_LIVE_MEDIUM_PATH}/"):
-        return True
+    for live_root in _LIVE_MEDIUM_CANDIDATES:
+        live_s = str(live_root)
+        if t == live_s or t.startswith(f"{live_s}/"):
+            return True
     return bool(_MEDIA_RE.match(t))
 
 
@@ -131,7 +137,10 @@ def detect_rescue_stick_mount(*, runner: Runner = None) -> dict[str, Any]:
             continue
         label = _label_for_mount(target, runner=runner)
         label_ok = not label or label in _STICK_LABELS or "SETUPHELFER" in label
-        live_medium = target == str(_LIVE_MEDIUM_PATH) or target.startswith(f"{_LIVE_MEDIUM_PATH}/")
+        live_medium = any(
+            target == str(p) or target.startswith(f"{p}/")
+            for p in _LIVE_MEDIUM_CANDIDATES
+        )
         media_setuphelfer = bool(_MEDIA_RE.match(target))
         recognized = live_medium or media_setuphelfer or label in _STICK_LABELS
         readonly_fs = fstype in _READONLY_FSTYPES or _mount_options_readonly(options)
@@ -326,6 +335,88 @@ def write_rescue_summary(
     return {"status": "ok", "markdown": md_result, "json": json_result}
 
 
+def _attempt_remount_rw(mount_point: str, *, runner: Runner = None) -> dict[str, Any]:
+    """Best-effort rw remount on recognized rescue stick only (never internal disks)."""
+    mp = (mount_point or "").rstrip("/")
+    if not mp or not _is_plausible_stick_target(mp):
+        return {"attempted": False, "ok": False, "reason": "not_plausible_stick"}
+    cmd = f"mount -o remount,rw {mp}"
+    try:
+        if runner is not None:
+            rc = int(runner(cmd) or 0)
+        else:
+            import subprocess
+
+            rc = subprocess.call(cmd, shell=True)
+        return {"attempted": True, "ok": rc == 0, "mount_point": mp, "exit_code": rc}
+    except Exception as exc:
+        return {"attempted": True, "ok": False, "mount_point": mp, "error": str(exc)}
+
+
+def initialize_boot_evidence_marker(*, runner: Runner = None) -> dict[str, Any]:
+    """Early boot: ensure evidence tree and write boot/boot_marker.* on stick or RAM."""
+    det = detect_rescue_stick_mount(runner=runner)
+    remount: dict[str, Any] = {"attempted": False, "ok": False}
+    if det.get("fallback") and det.get("mount_point"):
+        remount = _attempt_remount_rw(str(det["mount_point"]), runner=runner)
+        if remount.get("ok"):
+            det = detect_rescue_stick_mount(runner=runner)
+
+    tree = ensure_rescue_evidence_tree(runner=runner)
+    boot = collect_boot_context_safe(runner=runner)
+    marker_payload = {
+        "schema_version": 1,
+        "phase": "R6",
+        "written_at": _utc_now(),
+        "boot_marker_written": True,
+        "evidence_root_created": bool(tree.get("tree_ready")),
+        "evidence_target_is_stick": not bool(tree.get("fallback")),
+        "evidence_target_is_ram_fallback": bool(tree.get("fallback")),
+        "persistence_mode": tree.get("persistence_mode"),
+        "mount_point": tree.get("mount_point"),
+        "warning": tree.get("warning"),
+        "remount": remount,
+        "boot": boot,
+    }
+    md_lines = [
+        "# Setuphelfer Boot Marker (R.6)",
+        f"written_at: {marker_payload['written_at']}",
+        f"persistence_mode: {marker_payload.get('persistence_mode')}",
+        f"evidence_root: {tree.get('evidence_root')}",
+        f"fallback: {tree.get('fallback')}",
+        f"warning: {tree.get('warning') or 'none'}",
+        f"boot_marker_written: true",
+    ]
+    json_result = write_rescue_json_evidence("boot", "boot_marker.json", marker_payload, runner=runner)
+    text_result = write_rescue_text_evidence("boot", "boot_marker.md", "\n".join(md_lines), runner=runner)
+    status = "stick" if not tree.get("fallback") else "ram_fallback"
+    if not tree.get("tree_ready"):
+        status = "failed"
+    return {
+        "status": status,
+        "boot_marker_written": True,
+        "evidence_root_created": bool(tree.get("tree_ready")),
+        "evidence_target_is_stick": not bool(tree.get("fallback")),
+        "evidence_target_is_ram_fallback": bool(tree.get("fallback")),
+        "evidence_root": tree.get("evidence_root"),
+        "warning": tree.get("warning"),
+        "json_path": json_result.get("path"),
+        "md_path": text_result.get("path"),
+        "remount": remount,
+        "tree": tree,
+    }
+
+
+def collect_boot_context_safe(*, runner: Runner = None) -> dict[str, Any]:
+    """Lightweight boot context without importing heavy boot_logger at module load."""
+    try:
+        from core.rescue_boot_logger import collect_boot_context
+
+        return collect_boot_context(runner=runner)
+    except Exception as exc:
+        return {"error": str(exc), "kernel": None}
+
+
 def build_rescue_persistence_diagnostics() -> dict[str, Any]:
     return {
         "persistence_version": RESCUE_PERSISTENCE_VERSION,
@@ -335,10 +426,12 @@ def build_rescue_persistence_diagnostics() -> dict[str, Any]:
         "stick_labels": sorted(_STICK_LABELS),
         "ram_fallback_root": str(_RAM_FALLBACK_ROOT),
         "live_medium_path": str(_LIVE_MEDIUM_PATH),
+        "live_medium_candidates": [str(p) for p in _LIVE_MEDIUM_CANDIDATES],
         "public_functions": [
             "detect_rescue_stick_mount",
             "build_rescue_evidence_root",
             "ensure_rescue_evidence_tree",
+            "initialize_boot_evidence_marker",
             "write_rescue_json_evidence",
             "write_rescue_text_evidence",
             "write_rescue_summary",

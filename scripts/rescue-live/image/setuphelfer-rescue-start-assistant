@@ -19,6 +19,22 @@ setuphelfer_rescue_ensure_state_dir
 setuphelfer_rescue_load_network_env || true
 setuphelfer_rescue_resolve_telemetry_urls
 
+_BOOT_EVIDENCE_STATUS="failed"
+_BOOT_EVIDENCE_MODE="unknown"
+if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-boot-evidence-init" ]]; then
+  _boot_init_json="$("${SCRIPT_DIR}/setuphelfer-rescue-boot-evidence-init" 2>/dev/null || true)"
+  if [[ -n "$_boot_init_json" ]]; then
+    _BOOT_EVIDENCE_STATUS="$(python3 -c 'import json,sys; d=json.loads(sys.argv[1]); print(d.get("status","failed"))' "$_boot_init_json" 2>/dev/null || echo failed)"
+    if [[ "$_BOOT_EVIDENCE_STATUS" == "stick" ]]; then
+      _BOOT_EVIDENCE_MODE="Evidence: Stick"
+    elif [[ "$_BOOT_EVIDENCE_STATUS" == "ram_fallback" ]]; then
+      _BOOT_EVIDENCE_MODE="Evidence: RAM fallback"
+    else
+      _BOOT_EVIDENCE_MODE="Evidence: failed"
+    fi
+  fi
+fi
+
 _wizard_step="welcome"
 _selected_action=""
 _media_stable=false
@@ -92,6 +108,8 @@ _step_welcome() {
 
 Willkommen beim Setuphelfer Rettungsstick.
 
+${_BOOT_EVIDENCE_MODE}
+
 Der Assistent führt Sie Schritt für Schritt durch:
   • Live-Medium prüfen
   • Netzwerk verbinden
@@ -103,6 +121,7 @@ OK = weiter" 22 78 3>&1 1>&2 2>&3 || return 1
   else
     setuphelfer_rescue_show_branding
     echo "Setuphelfer Rettungsstick — Startassistent"
+    echo "${_BOOT_EVIDENCE_MODE}"
   fi
   return 0
 }

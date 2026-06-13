@@ -44,6 +44,14 @@ def _cmd_boot(_: argparse.Namespace) -> int:
     return 0 if result.get("status") == "ok" else 1
 
 
+def _cmd_boot_init(_: argparse.Namespace) -> int:
+    from core.rescue_persistence import initialize_boot_evidence_marker
+
+    result = initialize_boot_evidence_marker()
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if result.get("boot_marker_written") else 1
+
+
 def _cmd_menu_action(args: argparse.Namespace) -> int:
     from core.rescue_persistence import write_rescue_json_evidence
 
@@ -119,6 +127,7 @@ def main() -> int:
     sub.add_parser("bundle", help="Write full evidence bundle").set_defaults(func=_cmd_bundle)
     sub.add_parser("matrix", help="Write test matrix").set_defaults(func=_cmd_matrix)
     sub.add_parser("boot", help="Write boot evidence").set_defaults(func=_cmd_boot)
+    sub.add_parser("boot-init", help="Early boot marker + evidence tree (R.6)").set_defaults(func=_cmd_boot_init)
     sub.add_parser("detect", help="Detect stick mount").set_defaults(func=_cmd_persist_detect)
 
     menu_p = sub.add_parser("menu-action", help="Record TUI menu action")

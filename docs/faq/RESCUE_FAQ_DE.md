@@ -40,3 +40,19 @@ Die **Build-Konfiguration** enthält chromium + openbox + xorg (ab 1.7.17.0). Au
 Nach ISO-Rebuild (R.5): Kiosk-Autostart via Openbox, Evidence unter `rescue-ui/kiosk_report_latest.md`.
 
 Details: `docs/architecture/RESCUE_BROWSER_KIOSK_R4.md`
+
+## Warum fehlt `/setuphelfer-evidence/` nach dem ersten Stick-Write? (R.6)
+
+Der USB-Writer legt nur **bootfähige** Dateien ab (`EFI/`, `live/`, `setuphelfer/rescue/`). Der kanonische Runtime-Baum **`/setuphelfer-evidence/`** entsteht **beim ersten Live-Boot** durch `setuphelfer-rescue-boot-evidence-init`.
+
+**Erfolgskriterium:** Nach MSI-Boot muss existieren:
+
+```
+/setuphelfer-evidence/boot/boot_marker.md
+```
+
+Wenn Linux/TUI startet, aber diese Datei fehlt, ist der Boot-Persistence-Hook nicht aktiv (altes Image oder Schreibfehler).
+
+**RAM-Fallback:** Wenn der Stick read-only gemountet ist, schreibt das System nach `/tmp/setuphelfer-evidence/` — der Start-Assistent zeigt dann `Evidence: RAM fallback`.
+
+Details: `docs/architecture/RESCUE_BOOT_PERSISTENCE_R6.md`
