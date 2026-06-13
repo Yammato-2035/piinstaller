@@ -211,9 +211,13 @@ Kanonisches Modul `frontend/src/viewmodels/statusViewModel.ts` — zentrale Stat
 
 3 kleine DCC-Komponenten delegieren Tone-Mapping an `dashboardLegacyToneFromInput`. Keine UI-Änderung. Doku: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H3.md`.
 
+## Was ist H.4 (Frontend Status Component Migration — zweiter Slice)?
+
+3 weitere kleine Komponenten (`ReadyStableSection`, `StatusCard`, `RiskWarningCard`) delegieren an `isDashboardGreenStatus`, `isGreenDashboardTone`/`dashboardToneFromInput`, `riskWarningTitleKeyForLevel`. Keine UI-Änderung. Doku: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H4.md`.
+
 ## Nächster Schritt?
 
-**H.4** — weitere Komponenten **oder** **G.4** — Network Handler Extraction.
+**H.5** — weitere Komponenten/Libs **oder** **G.4** — Network Handler Extraction.
 
 ## Weiterlesen
 

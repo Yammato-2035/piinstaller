@@ -1164,6 +1164,33 @@ for path in h3_migrated:
         if "statusViewModel" not in pt:
             rel = path.relative_to(root).as_posix()
             print(f"frontend_component_bypasses_status_viewmodel:{rel}")
+if local_mapping_hits < 26:
+    print(f"frontend_component_status_mapping_reduced_h4:count_{local_mapping_hits}")
+h4_migrated = (
+    root / "frontend" / "src" / "components" / "dev-dashboard" / "ReadyStableSection.tsx",
+    root / "frontend" / "src" / "components" / "dev-dashboard" / "StatusCard.tsx",
+    root / "frontend" / "src" / "components" / "RiskWarningCard.tsx",
+)
+for path in h4_migrated:
+    if path.is_file():
+        pt = path.read_text(encoding="utf-8", errors="replace")
+        if "statusViewModel" not in pt:
+            rel = path.relative_to(root).as_posix()
+            print(f"frontend_component_bypasses_status_viewmodel:{rel}")
+domain_status_mapping = (
+    root / "frontend" / "src" / "components" / "PartitionSafetyStatusPanel.tsx",
+    root / "frontend" / "src" / "components" / "partition" / "PartitionSafetyPreviewPanel.tsx",
+    root / "frontend" / "src" / "components" / "dev-dashboard" / "CockpitBackupTargetPanel.tsx",
+    root / "frontend" / "src" / "lib" / "partition" / "partitionRoleUtils.ts",
+    root / "frontend" / "src" / "lib" / "theme" / "setuphelferToolTheme.ts",
+)
+for path in domain_status_mapping:
+    if path.is_file():
+        pt = path.read_text(encoding="utf-8", errors="replace")
+        if re.search(r"===\s*['\"]green['\"]|===\s*['\"]red['\"]|===\s*['\"]yellow['\"]", pt):
+            if "statusViewModel" not in pt:
+                rel = path.relative_to(root).as_posix()
+                print(f"frontend_domain_status_mapping_requires_domain_facade:{rel}")
 large_pages = (
     root / "frontend" / "src" / "pages" / "BackupRestore.tsx",
     root / "frontend" / "src" / "pages" / "Dashboard.tsx",

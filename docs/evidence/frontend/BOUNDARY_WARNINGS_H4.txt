@@ -1,0 +1,34 @@
+# Boundary Warnings — Phase H.4 (WARN-only)
+
+**HEAD vorher:** 7e058fb · **Gate:** Exit 0
+
+## H.4
+
+| Code | Status |
+|------|--------|
+| `frontend_component_status_mapping_reduced_h4:count_23` | ausgelöst (26→23) |
+| `frontend_component_bypasses_status_viewmodel` (H.4-Slice) | nicht ausgelöst |
+| `frontend_large_page_status_migration_attempt` | nicht ausgelöst |
+| `frontend_domain_status_mapping_requires_domain_facade` | 5 Domain-Dateien (erwartet) |
+
+## Verbleibend
+
+| Code | Count |
+|------|-------|
+| `frontend_component_local_status_mapping` | 23 |
+
+## Rohauszug (frontend_*)
+
+frontend_component_local_status_mapping:frontend/src/components/PartitionSafetyStatusPanel.tsx
+frontend_component_local_status_mapping:frontend/src/components/companions/StatusDots.tsx
+frontend_component_local_status_mapping:frontend/src/components/companions/TrafficLight.tsx
+frontend_component_local_status_mapping:frontend/src/components/dev-dashboard/CockpitBackupTargetPanel.tsx
+frontend_component_local_status_mapping:frontend/src/components/dev-dashboard/RoadmapDrawer.tsx
+frontend_component_local_status_mapping:count_23
+frontend_component_status_mapping_reduced_h3:count_23
+frontend_component_status_mapping_reduced_h4:count_23
+frontend_domain_status_mapping_requires_domain_facade:frontend/src/components/PartitionSafetyStatusPanel.tsx
+frontend_domain_status_mapping_requires_domain_facade:frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx
+frontend_domain_status_mapping_requires_domain_facade:frontend/src/components/dev-dashboard/CockpitBackupTargetPanel.tsx
+frontend_domain_status_mapping_requires_domain_facade:frontend/src/lib/partition/partitionRoleUtils.ts
+frontend_domain_status_mapping_requires_domain_facade:frontend/src/lib/theme/setuphelferToolTheme.ts

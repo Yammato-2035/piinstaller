@@ -1,4 +1,5 @@
 import { toneClass } from '../../pages/devDashboardFilters'
+import { dashboardToneFromInput, isGreenDashboardTone } from '../../viewmodels/statusViewModel'
 
 type StatusCardProps = {
   label: string
@@ -10,7 +11,7 @@ type StatusCardProps = {
 }
 
 export function StatusCard({ label, value, tone = 'gray', testId, emphasizeOk = false }: StatusCardProps) {
-  const isOk = emphasizeOk && String(tone).toLowerCase() === 'green'
+  const isOk = emphasizeOk && isGreenDashboardTone(dashboardToneFromInput(tone))
   return (
     <div
       className={`rounded-xl border p-4 ${toneClass(tone)}${isOk ? ' ring-2 ring-emerald-500/35 shadow-md shadow-emerald-950/40' : ''}`}

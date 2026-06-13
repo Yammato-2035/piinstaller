@@ -1,5 +1,6 @@
 import type { CockpitPanelProps } from './types'
 import { toneClass } from '../../pages/devDashboardFilters'
+import { isDashboardGreenStatus } from '../../viewmodels/statusViewModel'
 
 type StableItem = {
   id: string
@@ -9,11 +10,6 @@ type StableItem = {
   evidence?: string
 }
 
-function isGreenStatus(raw: unknown): boolean {
-  const s = String(raw || '').toLowerCase()
-  return s === 'green' || raw === true
-}
-
 export function ReadyStableSection({ dashboard, t }: CockpitPanelProps) {
   const rg = (dashboard?.runtime_gate as Record<string, unknown>) || {}
   const dd = (dashboard?.deploy_drift as Record<string, unknown>) || {}
@@ -21,7 +17,7 @@ export function ReadyStableSection({ dashboard, t }: CockpitPanelProps) {
   const dataSource = String(dashboard?.roadmap_data_source || dashboard?.data_source || 'unknown')
 
   const items: StableItem[] = []
-  if (rg.passed === true || isGreenStatus(rg.status)) {
+  if (rg.passed === true || isDashboardGreenStatus(rg.status)) {
     items.push({
       id: 'runtime_gate',
       label: t('devDashboard.runtimeGate.title'),
@@ -30,7 +26,7 @@ export function ReadyStableSection({ dashboard, t }: CockpitPanelProps) {
       evidence: 'scripts/check-runtime-deploy-gate.sh',
     })
   }
-  if (isGreenStatus(dd.status)) {
+  if (isDashboardGreenStatus(dd.status)) {
     items.push({
       id: 'deploy_drift',
       label: t('devDashboard.deployDrift.title'),
@@ -39,7 +35,7 @@ export function ReadyStableSection({ dashboard, t }: CockpitPanelProps) {
       evidence: 'GET /api/dev-dashboard/deploy/status',
     })
   }
-  if (stm.locked === false && isGreenStatus(stm.mode)) {
+  if (stm.locked === false && isDashboardGreenStatus(stm.mode)) {
     items.push({
       id: 'safe_test_mode',
       label: t('devDashboard.safeTestMode.title'),

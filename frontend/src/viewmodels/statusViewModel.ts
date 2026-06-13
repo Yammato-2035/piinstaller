@@ -184,6 +184,29 @@ export function trafficLightLampFromInput(input: unknown): TrafficLightLampTone 
 }
 
 /** Worst lamp across legacy inputs; empty → yellow (traffic-light convention). */
+/** True when runtime/deploy gate status counts as green stable (H.4 ReadyStableSection). */
+export function isDashboardGreenStatus(raw: unknown): boolean {
+  return raw === true || dashboardLegacyToneFromInput(raw) === 'green'
+}
+
+/** True for normalized dashboard green tone (H.4 StatusCard). */
+export function isGreenDashboardTone(tone: DashboardTone): boolean {
+  return tone === 'green'
+}
+
+export type RiskWarningTitleKey =
+  | 'risk.cardTitle.danger'
+  | 'risk.cardTitle.systemChange'
+  | 'risk.cardTitle.note'
+
+/** i18n key for RiskWarningCard default title by risk level (H.4). */
+export function riskWarningTitleKeyForLevel(level: unknown): RiskWarningTitleKey {
+  const tone = dashboardToneFromInput(level)
+  if (tone === 'red') return 'risk.cardTitle.danger'
+  if (tone === 'yellow') return 'risk.cardTitle.systemChange'
+  return 'risk.cardTitle.note'
+}
+
 export function worstTrafficLightLampFromInputs(inputs: unknown[]): TrafficLightLampTone {
   if (inputs.length === 0) return 'yellow'
   const worst = worstStatusViewModel(inputs.map(buildTrafficLightViewModel))
@@ -206,6 +229,9 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'dashboardLegacyToneFromInput',
       'trafficLightLampFromInput',
       'worstTrafficLightLampFromInputs',
+      'isDashboardGreenStatus',
+      'isGreenDashboardTone',
+      'riskWarningTitleKeyForLevel',
       'statusViewModelDiagnostics',
     ],
     backend_facade_sources: [
@@ -213,7 +239,7 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'system_status_facade',
       'network_info_facade',
     ],
-    component_migration: 'h3_partial',
+    component_migration: 'h4_partial',
     api_fetches: false,
   }
 }

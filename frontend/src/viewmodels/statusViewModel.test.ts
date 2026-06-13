@@ -5,7 +5,10 @@ import {
   buildTrafficLightViewModel,
   dashboardToneFromInput,
   dashboardLegacyToneFromInput,
+  isDashboardGreenStatus,
+  isGreenDashboardTone,
   normalizeStatusKind,
+  riskWarningTitleKeyForLevel,
   statusViewModelDiagnostics,
   trafficLightLampFromInput,
   worstStatusViewModel,
@@ -63,7 +66,7 @@ describe('statusViewModel', () => {
   it('documents no api fetch in viewmodel contract', () => {
     const diag = statusViewModelDiagnostics()
     expect(diag.api_fetches).toBe(false)
-    expect(diag.component_migration).toBe('h3_partial')
+    expect(diag.component_migration).toBe('h4_partial')
   })
 
   it('dashboardLegacyToneFromInput preserves DCC legacy tokens', () => {
@@ -90,5 +93,14 @@ describe('statusViewModel', () => {
     expect(trafficLightLampFromInput('green')).toBe('green')
     expect(trafficLightLampFromInput('red')).toBe('red')
     expect(trafficLightLampFromInput('unknown')).toBe('yellow')
+  })
+
+  it('H.4 helpers preserve component slice outputs', () => {
+    expect(isDashboardGreenStatus('green')).toBe(true)
+    expect(isDashboardGreenStatus(true)).toBe(true)
+    expect(isGreenDashboardTone(dashboardToneFromInput('green'))).toBe(true)
+    expect(riskWarningTitleKeyForLevel('red')).toBe('risk.cardTitle.danger')
+    expect(riskWarningTitleKeyForLevel('yellow')).toBe('risk.cardTitle.systemChange')
+    expect(riskWarningTitleKeyForLevel('green')).toBe('risk.cardTitle.note')
   })
 })

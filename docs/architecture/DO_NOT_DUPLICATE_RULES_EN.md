@@ -26,7 +26,6 @@ Binding rules against parallel implementations. **No exception** without documen
 22. No network write operations in status facades — active repair only via dedicated module later.
 23. No new traffic-light/status normalization outside `frontend/src/viewmodels/statusViewModel.ts` (H.1+).
 24. UI components must only render status — normalization via view model, not inline in components (H.2+).
-
-Check order: Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
+25. Domain status (partition/safety/backup) stays local until domain facade — guard `frontend_domain_status_mapping_requires_domain_facade` (H.4+). Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
 
 Enforcement: `scripts/check-module-boundaries.sh` (WARN-only).
