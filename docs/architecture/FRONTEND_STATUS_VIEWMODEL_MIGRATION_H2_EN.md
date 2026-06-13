@@ -17,4 +17,4 @@
 
 ## Next step
 
-**H.3** — component migration **or** **G.4** network handler extraction
+**H.3 done** — 3 components. **H.4** or **G.4**.

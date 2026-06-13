@@ -3,17 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { Bot, Shield } from 'lucide-react'
 import type { ControlCenterSummary } from '../../api/devDashboardApi'
 import { toneClass } from '../../pages/devDashboardFilters'
+import { dashboardLegacyToneFromInput } from '../../viewmodels/statusViewModel'
 
 type Props = {
   summary: ControlCenterSummary | null
 }
 
 function itemTone(status: string): string {
-  if (status === 'green') return 'green'
-  if (status === 'yellow' || status === 'partial_green') return 'yellow'
-  if (status === 'red' || status === 'blocked') return 'red'
-  if (status === 'pending') return 'gray'
-  return 'gray'
+  return dashboardLegacyToneFromInput(status)
 }
 
 export function RescueDeveloperPipelineCard({ summary }: Props) {

@@ -4,6 +4,7 @@ import {
   buildStatusViewModel,
   buildTrafficLightViewModel,
   dashboardToneFromInput,
+  dashboardLegacyToneFromInput,
   normalizeStatusKind,
   statusViewModelDiagnostics,
   trafficLightLampFromInput,
@@ -62,7 +63,15 @@ describe('statusViewModel', () => {
   it('documents no api fetch in viewmodel contract', () => {
     const diag = statusViewModelDiagnostics()
     expect(diag.api_fetches).toBe(false)
-    expect(diag.component_migration).toBe('utility_h2_partial')
+    expect(diag.component_migration).toBe('h3_partial')
+  })
+
+  it('dashboardLegacyToneFromInput preserves DCC legacy tokens', () => {
+    expect(dashboardLegacyToneFromInput('partial_green')).toBe('yellow')
+    expect(dashboardLegacyToneFromInput('pending')).toBe('gray')
+    expect(dashboardLegacyToneFromInput('rot')).toBe('red')
+    expect(dashboardLegacyToneFromInput('operator_action')).toBe('yellow')
+    expect(dashboardLegacyToneFromInput(true)).toBe('green')
   })
 
   it('dashboardToneFromInput preserves deploy drift outputs', () => {

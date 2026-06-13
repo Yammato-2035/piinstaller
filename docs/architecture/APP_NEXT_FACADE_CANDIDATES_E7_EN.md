@@ -11,7 +11,7 @@
 | **Network Info Facade** | IP/hostname/interfaces | `GET /api/status`, `GET /api/system/network` | HIGH | **HIGH** | **G.2b done** — G.3 cleanup |
 | **Settings Write Facade** | POST settings, UX, SMTP | `POST /api/settings*`, notifications/test | MEDIUM | **MEDIUM** | GET already E.2; write path separate |
 | **Dev Dashboard Aggregation Facade** | control-center-summary, prompt-findings, cursor-meta-prompt | 3–4 GET | HIGH | **HIGH** | After DCC Status Facade |
-| **Frontend Status ViewModel Facade** | Unified response shape for UI traffic lights | Frontend status consumers | MEDIUM | **MEDIUM** | **H.2 done** — H.3 components |
+| **Frontend Status ViewModel Facade** | Unified response shape for UI traffic lights | Frontend status consumers | MEDIUM | **MEDIUM** | **H.3 done** — H.4 rest |
 
 ## Priority
 

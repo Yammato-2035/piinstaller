@@ -28,4 +28,4 @@ Vitest 18 Tests (statusViewModel, trafficLightModel, dccCompactStatus, devDashbo
 
 ## Nächster Schritt
 
-**H.3** — Komponentenmigration **oder** **G.4** Network Handler Extraction
+**H.3 erledigt** — 3 Komponenten. **H.4** oder **G.4**.

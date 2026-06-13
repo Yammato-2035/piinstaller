@@ -150,6 +150,25 @@ export function dashboardToneFromInput(input: unknown): DashboardTone {
   return 'gray'
 }
 
+const DASHBOARD_LEGACY_TONE_OVERRIDES: Record<string, DashboardTone> = {
+  partial_green: 'yellow',
+  pending: 'gray',
+  rot: 'red',
+  operator_action: 'yellow',
+  forbidden: 'red',
+  read_only: 'green',
+}
+
+/** DCC/control-center legacy tone tokens with stable 1:1 outputs (H.3). */
+export function dashboardLegacyToneFromInput(input: unknown): DashboardTone {
+  if (input === true) return 'green'
+  const raw = String(input ?? '').trim().toLowerCase()
+  if (!raw) return 'gray'
+  const override = DASHBOARD_LEGACY_TONE_OVERRIDES[raw]
+  if (override) return override
+  return dashboardToneFromInput(input)
+}
+
 export type TrafficLightLampTone = 'green' | 'yellow' | 'red'
 
 /** Legacy traffic-light lamp from normalized kind (unknown/unavailable → yellow). */
@@ -184,6 +203,7 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'buildDashboardStatusViewModel',
       'worstStatusViewModel',
       'dashboardToneFromInput',
+      'dashboardLegacyToneFromInput',
       'trafficLightLampFromInput',
       'worstTrafficLightLampFromInputs',
       'statusViewModelDiagnostics',
@@ -193,7 +213,7 @@ export function statusViewModelDiagnostics(): Record<string, unknown> {
       'system_status_facade',
       'network_info_facade',
     ],
-    component_migration: 'utility_h2_partial',
+    component_migration: 'h3_partial',
     api_fetches: false,
   }
 }

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { fetchApi } from '../../api'
 import { toneClass } from '../../pages/devDashboardFilters'
+import { dashboardLegacyToneFromInput } from '../../viewmodels/statusViewModel'
 import type { CockpitPanelProps } from './types'
 
 type CommandRow = {
@@ -42,9 +43,8 @@ type Payload = {
 }
 
 function safetyTone(safety: string): string {
-  if (safety === 'forbidden') return 'red'
-  if (safety === 'operator_action') return 'yellow'
-  return 'green'
+  const raw = String(safety || 'read_only').trim().toLowerCase()
+  return dashboardLegacyToneFromInput(raw || 'read_only')
 }
 
 export function ManualCommandRunsPanel({ t }: CockpitPanelProps) {

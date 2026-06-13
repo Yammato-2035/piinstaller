@@ -207,9 +207,13 @@ Canonical module `frontend/src/viewmodels/statusViewModel.ts` — central status
 
 `trafficLightModel`, `deployDriftTone`, and `toneClass` delegate to `statusViewModel`. No UI/color change. Doc: `docs/architecture/FRONTEND_STATUS_VIEWMODEL_MIGRATION_H2_EN.md`.
 
+## What is H.3 (Frontend Status Component Migration)?
+
+3 small DCC components delegate tone mapping to `dashboardLegacyToneFromInput`. No UI change. Doc: `docs/architecture/FRONTEND_STATUS_COMPONENT_MIGRATION_H3_EN.md`.
+
 ## Next step?
 
-**H.3** — component migration **or** **G.4** — network handler extraction.
+**H.4** — more components **or** **G.4** — network handler extraction.
 
 ## Further reading
 

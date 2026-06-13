@@ -1,6 +1,6 @@
 # Module Catalog (Source of Truth)
 
-**As of:** post H.2 (`statusViewModel` utility migration) · **No big-bang** — inventory and ownership.
+**As of:** post H.3 (`statusViewModel` 3-component slice) · **No big-bang** — inventory and ownership.
 
 Before new implementation, check this catalog, the [Function Ownership Matrix](FUNCTION_OWNERSHIP_MATRIX_EN.md), and [Do-Not-Duplicate Rules](DO_NOT_DUPLICATE_RULES_EN.md).
 
@@ -40,6 +40,6 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**In progress:** **H.3** component migration. **H.2 done:** trafficLightModel, deployDriftTone, toneClass.
+**In progress:** **H.4** component migration. **H.3 done:** 3 DCC components.
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

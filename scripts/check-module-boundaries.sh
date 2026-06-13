@@ -1151,6 +1151,29 @@ if frontend_status_vm.is_file():
                 print(f"frontend_component_local_status_mapping:{rel}")
     if local_mapping_hits > 5:
         print(f"frontend_component_local_status_mapping:count_{local_mapping_hits}")
+    if local_mapping_hits < 28:
+        print(f"frontend_component_status_mapping_reduced_h3:count_{local_mapping_hits}")
+h3_migrated = (
+    root / "frontend" / "src" / "components" / "dev-dashboard" / "RescueDeveloperPipelineCard.tsx",
+    root / "frontend" / "src" / "components" / "dev-dashboard" / "ControlCenterOverviewHeader.tsx",
+    root / "frontend" / "src" / "components" / "dev-dashboard" / "ManualCommandRunsPanel.tsx",
+)
+for path in h3_migrated:
+    if path.is_file():
+        pt = path.read_text(encoding="utf-8", errors="replace")
+        if "statusViewModel" not in pt:
+            rel = path.relative_to(root).as_posix()
+            print(f"frontend_component_bypasses_status_viewmodel:{rel}")
+large_pages = (
+    root / "frontend" / "src" / "pages" / "BackupRestore.tsx",
+    root / "frontend" / "src" / "pages" / "Dashboard.tsx",
+)
+for path in large_pages:
+    if path.is_file():
+        pt = path.read_text(encoding="utf-8", errors="replace")
+        if "dashboardLegacyToneFromInput" in pt or "buildTrafficLightViewModel" in pt:
+            rel = path.relative_to(root).as_posix()
+            print(f"frontend_large_page_status_migration_attempt:{rel}")
 
 # Phase F.4: DCC facade delegation guards (warn-only)
 readonly_mod = root / "backend" / "api" / "routes" / "dev_dashboard_readonly.py"

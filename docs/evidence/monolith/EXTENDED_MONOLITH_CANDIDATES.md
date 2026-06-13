@@ -1,7 +1,7 @@
 # Extended Monolith Candidates
 
 **Datum:** 2026-06-10  
-**HEAD:** nach H.2 · **Update:** Utility-Duplikate reduziert; Komponenten pending H.3.
+**HEAD:** nach H.3 · **Update:** 3 Komponenten migriert; count_26 verbleibend.
 
 ## Legende
 

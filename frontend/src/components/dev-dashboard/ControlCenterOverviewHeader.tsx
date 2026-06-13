@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { AlertTriangle, CheckCircle2, CircleDot } from 'lucide-react'
 import type { ControlCenterSummary } from '../../api/devDashboardApi'
 import { toneClass } from '../../pages/devDashboardFilters'
+import { dashboardLegacyToneFromInput } from '../../viewmodels/statusViewModel'
 
 type Props = {
   summary: ControlCenterSummary | null
@@ -12,11 +13,7 @@ type Props = {
 
 function trafficFromGate(passed: unknown, status: unknown): string {
   if (passed === true) return 'green'
-  const s = String(status || '').toLowerCase()
-  if (s === 'green') return 'green'
-  if (s === 'yellow' || s === 'partial_green') return 'yellow'
-  if (s === 'red' || s === 'rot') return 'red'
-  return 'gray'
+  return dashboardLegacyToneFromInput(status)
 }
 
 export function ControlCenterOverviewHeader({ summary, loading, apiReachable = true }: Props) {

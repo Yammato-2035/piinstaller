@@ -1,7 +1,7 @@
 # Module Coupling Analysis (Extended)
 
 **Datum:** 2026-06-10  
-**HEAD:** nach H.2 · **Update:** Frontend Utility-Layer an statusViewModel gebunden.
+**HEAD:** nach H.3 · **Update:** DCC-Komponenten an ViewModel; Presentation-CSS lokal.
 
 ## Fan-In (wer wird am häufigsten referenziert)
 

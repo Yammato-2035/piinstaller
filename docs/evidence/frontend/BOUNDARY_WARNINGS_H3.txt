@@ -1,0 +1,17 @@
+# Boundary Warnings — Phase H.3 (WARN-only)
+
+**HEAD:** 733621e (vor Commit) · **Gate:** Exit 0
+
+## H.3
+
+| Code | Status |
+|------|--------|
+| `frontend_component_status_mapping_reduced_h3:count_26` | ausgelöst (28→26) |
+| `frontend_component_bypasses_status_viewmodel` (Slice) | nicht ausgelöst |
+| `frontend_large_page_status_migration_attempt` | nicht ausgelöst |
+
+## Verbleibend
+
+| Code | Count |
+|------|-------|
+| `frontend_component_local_status_mapping` | 26 |

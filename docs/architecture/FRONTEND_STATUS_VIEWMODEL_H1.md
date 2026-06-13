@@ -34,6 +34,6 @@
 
 ## Nächster Schritt
 
-**H.2** — schrittweise Komponentenmigration (`trafficLightModel`, `dccCompactStatus`, `toneClass`)
+**H.3 erledigt** — siehe [FRONTEND_STATUS_COMPONENT_MIGRATION_H3.md](FRONTEND_STATUS_COMPONENT_MIGRATION_H3.md). **H.4** weitere Komponenten.
 
 Evidence: [FRONTEND_STATUS_MAPPING_AUDIT_H1.md](../evidence/frontend/FRONTEND_STATUS_MAPPING_AUDIT_H1.md)
