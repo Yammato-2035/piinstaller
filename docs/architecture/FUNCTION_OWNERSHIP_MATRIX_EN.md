@@ -26,7 +26,7 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) �
 
 **D.12 done:** Deploy thin-orchestrator audit + final plan (no execute extraction).
 
-**Next:** G.13 (system_status_facade app sections) · P.2 (`app.py` storage migration) · D.13 (rescue domain router).
+**Next:** Backup execute monolith · deploy rescue execute routes · `get_security_config` full extract from app.
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 

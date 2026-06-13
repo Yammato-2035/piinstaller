@@ -86,6 +86,34 @@ async def dev_dashboard_backend_health(
     )
 
 
+@router.get("/api/dev-dashboard/status")
+async def dev_dashboard_status(
+    request: Request,
+    frontend_build_version: str | None = Query(
+        default=None,
+        description="Optional: Frontend-Build-Version (__APP_VERSION__), fuer Runtime-vs-Workspace-Konsistenz.",
+    ),
+    frontend_runtime_source: str | None = Query(
+        default=None,
+        description="Optional: dev | build | unknown — steuert frontend_version_matches_backend.",
+    ),
+):
+    """Read-only: Development Cockpit Gesamtstatus (kein Backup/Restore)."""
+    from app import logger
+    from core.dcc_status_facade import build_dcc_dashboard_status_api
+
+    headers = {k: v for k, v in request.headers.items()}
+    try:
+        return await build_dcc_dashboard_status_api(
+            request_headers=headers,
+            frontend_build_version=frontend_build_version,
+            frontend_runtime_source=frontend_runtime_source,
+        )
+    except Exception:
+        logger.exception("dev_dashboard_status failed")
+        raise
+
+
 @router.get("/api/dev-dashboard/notifications/status")
 async def dev_dashboard_notifications_status():
     from app import logger

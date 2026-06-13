@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from core.dcc_status_facade import build_section_status
+from core.system_runtime_info import build_installation_info, build_profile_info, build_runtime_info
 from core.system_status_core import build_overall_status, load_backup_realtest_state
 
 FACADE_VERSION = 1
@@ -131,23 +132,22 @@ def _legacy_backup_realtest_state() -> dict[str, Any]:
 
 def build_backend_runtime_section() -> dict[str, Any]:
     """Backend version and runtime path (read-only, no subprocess)."""
-    from core.install_paths import get_backend_runtime_dir
-
     warnings: list[SystemStatusFacadeWarning] = []
     errors: list[str] = []
 
     def _build() -> SystemStatusSection:
-        runtime_path = str(get_backend_runtime_dir().resolve())
-        version = "unknown"
-        edition = "unknown"
         try:
-            import app as app_module
-
-            version = str(app_module.get_pi_installer_version() or "unknown")
-            edition = str(app_module.get_app_edition() or "unknown")
+            info = build_runtime_info()
+            version = str(info.get("version") or "unknown")
+            edition = str(info.get("edition") or "unknown")
+            runtime_path = str(info.get("runtime_path") or "")
+            status = str(info.get("status_hint") or "unknown")
         except Exception as exc:  # noqa: BLE001
             warnings.append(_warning("backend_runtime_partial", str(exc), "backend_runtime"))
-        status = "ok" if version != "unknown" else "unknown"
+            version = "unknown"
+            edition = "unknown"
+            runtime_path = ""
+            status = "unknown"
         return SystemStatusSection(
             section_id="backend_runtime",
             status=status,
@@ -168,21 +168,9 @@ def build_installation_section(*, repo_root: Path | None = None) -> dict[str, An
     errors: list[str] = []
 
     def _build() -> SystemStatusSection:
-        import app as app_module
-
-        root = repo_root or Path(__file__).resolve().parent.parent.parent
-        source_version = str(app_module.get_pi_installer_version() or "unknown")
-        source_path = str(root)
-        opt_dir = app_module.OPT_INSTALL_DIR
-        installed_version = (
-            app_module._read_version_from_path(opt_dir) if opt_dir.exists() else None
-        )
-        installed_path = str(opt_dir) if opt_dir.exists() else None
-        is_source_opt = root.resolve() == opt_dir.resolve()
-        update_available = not is_source_opt and (
-            installed_version is None or installed_version != source_version
-        )
-        deploy_script = root / "scripts" / "deploy-to-opt.sh"
+        info = build_installation_info(repo_root=repo_root)
+        update_available = bool(info.get("update_available"))
+        is_source_opt = bool(info.get("is_running_from_opt"))
         if update_available:
             section_status = "warning"
         elif is_source_opt:
@@ -193,14 +181,14 @@ def build_installation_section(*, repo_root: Path | None = None) -> dict[str, An
             section_id="installation",
             status=section_status,
             data={
-                "source_path": source_path,
-                "source_version": source_version,
-                "installed_path": installed_path,
-                "installed_version": installed_version,
+                "source_path": info.get("source_path"),
+                "source_version": info.get("source_version"),
+                "installed_path": info.get("installed_path"),
+                "installed_version": info.get("installed_version"),
                 "update_available": update_available,
                 "is_running_from_opt": is_source_opt,
-                "can_run_deploy": deploy_script.is_file(),
-                "deploy_script": str(deploy_script),
+                "can_run_deploy": info.get("can_run_deploy"),
+                "deploy_script": info.get("deploy_script"),
             },
         )
 
@@ -214,22 +202,15 @@ def build_profile_section() -> dict[str, Any]:
     errors: list[str] = []
 
     def _build() -> SystemStatusSection:
-        import app as app_module
-
-        level = "beginner"
-        updated_at = app_module._now_iso()
-        try:
-            cands = app_module._user_profile_collect_from_disk()
-            if cands:
-                cands.sort(key=lambda x: (x[0], x[1]), reverse=True)
-                updated_at, _mtime, level, _path = cands[0]
-        except Exception as exc:  # noqa: BLE001
-            warnings.append(_warning("profile_partial", str(exc), "profile"))
-        profile = app_module.UserProfile(experience_level=level, updated_at=updated_at)
+        info = build_profile_info()
+        profile_data = info.get("profile") if isinstance(info.get("profile"), dict) else {}
+        for w in info.get("warnings") or []:
+            if isinstance(w, str):
+                warnings.append(_warning("profile_partial", w, "profile"))
         return SystemStatusSection(
             section_id="profile",
             status="ok",
-            data={"profile": profile.dict()},
+            data={"profile": profile_data},
         )
 
     section = _safe_section("profile", _build, facade_warnings=warnings, facade_errors=errors)
@@ -321,13 +302,14 @@ def build_system_status_diagnostics() -> dict[str, Any]:
         "delegates_to": [
             "system_status_core.build_overall_status",
             "system_status_core.load_backup_realtest_state",
-            "app.get_pi_installer_version",
-            "app.get_app_edition",
-            "app._user_profile_collect_from_disk",
+            "system_runtime_info.build_runtime_info",
+            "system_runtime_info.build_installation_info",
+            "system_runtime_info.build_profile_info",
             "core.install_paths.get_backend_runtime_dir",
         ],
         "ampel_via_system_status_core": True,
-        "facade_ampel_computation": False,
+        "runtime_via_system_runtime_info": True,
+        "facade_imports_app": False,
         "public_functions": [
             "build_system_status",
             "build_system_status_sections",

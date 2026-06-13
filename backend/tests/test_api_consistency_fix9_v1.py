@@ -12,17 +12,19 @@ if str(_backend) not in sys.path:
 class TestApiConsistencyFix9V1(unittest.TestCase):
     def test_backup_list_uses_dedicated_read_validation(self) -> None:
         app_py = _backend / "app.py"
+        handlers_py = _backend / "core" / "backup_readonly_handlers.py"
         text = app_py.read_text(encoding="utf-8")
-        list_block = text.split('@app.get("/api/backup/list")', 1)[1].split("\n\n@app.post(\"/api/backup/verify\")", 1)[0]
+        list_block = handlers_py.read_text(encoding="utf-8")
+        list_fn = list_block.split("async def list_backups", 1)[1]
         self.assertIn("def _validate_backup_list_dir(", text)
-        self.assertIn('"validation_mode": "read_only"', list_block)
-        self.assertIn("idx = await asyncio.wait_for(asyncio.to_thread(_load_backup_index), timeout=1.0)", list_block)
-        self.assertIn('"index_available": False', list_block)
-        self.assertIn('"message": "Noch kein Backup-Index vorhanden"', list_block)
-        self.assertNotIn("os.scandir(", list_block)
-        self.assertNotIn(".glob(", list_block)
+        self.assertIn('"validation_mode": "read_only"', list_fn)
+        self.assertIn("rt.load_backup_index", list_fn)
+        self.assertIn('"index_available": False', list_fn)
+        self.assertIn('"message": "Noch kein Backup-Index vorhanden"', list_fn)
+        self.assertNotIn("os.scandir(", list_fn)
+        self.assertNotIn(".glob(", list_fn)
         self.assertNotIn("resolve_mount_source_for_path", text)
-        self.assertNotIn("_collect_backups_sync", list_block)
+        self.assertNotIn("_collect_backups_sync", list_fn)
         self.assertIn('"diagnosis_id": diagnosis_id', text)
 
     def test_backup_data_success_returns_source_plan_details(self) -> None:

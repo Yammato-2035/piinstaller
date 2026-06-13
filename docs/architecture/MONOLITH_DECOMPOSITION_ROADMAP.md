@@ -338,8 +338,18 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **G.8** | Network Discovery Core — **erledigt** (`network_discovery`, Facade-Zyklus beendet) |
 | **G.11** | Webserver Service Discovery Core — **erledigt** (`webserver_service_discovery`, Facade→app-Zyklus beendet) |
 | **G.12** | System Status Core — **erledigt** (`system_status_core`, Ampel aus Facade) |
+| **G.13** | System Status Facade Final Decoupling — **erledigt** (`system_runtime_info`, kein `import app`) |
 | **P.1** | Storage Discovery Canonical — **erledigt** (`storage_discovery`, `storage_facade`-Delegation; `app.py` offen) |
+| **P.2** | Storage Migration (sichere Helfer) — **erledigt** (`_lsblk_tree`/`_findmnt_mounts` → `storage_discovery`) |
 | **D.12** | Deploy Thin-Orchestrator Audit — **erledigt** (Audit + Final Plan; keine Execute-Extraktion) |
+| **D.13** | Rescue Domain Router Slice — **erledigt** (4 plan_only → `routes_rescue_readonly.py`) |
+| **E.10** | Control Center Router Slice — **erledigt** (7 readonly GET → `control_center_readonly.py`) |
+| **B.1** | Backup Domain Audit — **erledigt** (Analyse only) |
+| **P.3** | Storage Discovery Finalisierung — **erledigt** (Lookup-Helfer → `storage_discovery`; blkid sudo nur Clone-Callback) |
+| **E.11** | DCC Status Router — **erledigt** (`GET /status` → `dev_dashboard_readonly` + `build_dcc_dashboard_status_api`) |
+| **D.14** | Rescue Domain Batch 2 — **erledigt** (21 plan_only → `routes_rescue_plan.py`) |
+| **B.2** | Backup Readonly Router — **erledigt** (12 GET → `backup_readonly.py`) |
+| **G.14** | System Status Providers — **erledigt** (`system_status_providers`; `system_status_core` ohne `import app`) |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  
 Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`  

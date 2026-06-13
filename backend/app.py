@@ -2234,41 +2234,6 @@ def _do_backup_logic(
     )
 
 
-@app.get("/api/backup/jobs")
-async def backup_jobs_list():
-    """Liste aller Backup-Jobs, insbesondere laufende"""
-    for jid in list(BACKUP_JOBS.keys()):
-        _sync_stale_runner_job_from_systemd(jid)
-    running = []
-    for job_id, job in BACKUP_JOBS.items():
-        status = job.get("status", "")
-        if status in ("queued", "running", "cancel_requested") or not status:
-            running.append(_job_snapshot(job))
-    return with_backup_contract({"status": "success", "jobs": running}, "backup.jobs_list", "success")
-
-
-@app.get("/api/backup/jobs/{job_id}")
-async def backup_job_status(job_id: str):
-    job_id = (job_id or "").strip()
-    if job_id in BACKUP_JOBS:
-        _sync_stale_runner_job_from_systemd(job_id)
-    runner_status = _read_backup_runner_status(job_id)
-    if runner_status:
-        _sync_ram_job_from_runner(job_id)
-    j_ram = BACKUP_JOBS.get(job_id)
-    if j_ram and str(j_ram.get("status") or "") == "error":
-        return with_backup_contract({"status": "success", "job": _job_snapshot(j_ram)}, "backup.job_status", "success")
-    if runner_status:
-        return with_backup_contract({"status": "success", "job": _runner_status_to_job(runner_status)}, "backup.job_status", "success")
-    job = BACKUP_JOBS.get(job_id)
-    if not job:
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract({"status": "error", "message": "Job nicht gefunden"}, "backup.job_not_found", "error"),
-        )
-    return with_backup_contract({"status": "success", "job": _job_snapshot(job)}, "backup.job_status", "success")
-
-
 @app.post("/api/backup/jobs/{job_id}/cancel")
 async def backup_job_cancel(job_id: str):
     job_id = (job_id or "").strip()
@@ -2352,48 +2317,6 @@ async def backup_job_cancel(job_id: str):
         pass
 
     return with_backup_contract({"status": "success", "message": "Abbruch angefordert"}, "backup.cancel_requested", "success")
-
-
-@app.get("/api/backup/jobs/{job_id}/evidence")
-async def backup_job_evidence_get(job_id: str):
-    """Liest vorhandenes Evidence-Manifest (kein Backup-/Restore-Start)."""
-    jid = (job_id or "").strip()
-    if not _BACKUP_JOB_ID_RE.fullmatch(jid):
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract(
-                {
-                    "status": "error",
-                    "message": "Ungültige job_id",
-                    "evidence": {
-                        "evidence_status": "invalid_job_id",
-                        "evidence_dir": None,
-                        "manifest_path": None,
-                        "collected_sources": [],
-                        "permission_denied_sources": [],
-                        "errors": ["invalid_job_id"],
-                    },
-                },
-                "backup.evidence.invalid_job_id",
-                "error",
-                {"job_id": jid},
-            ),
-        )
-    mp_path, manifest = _read_backup_evidence_manifest_disk(jid)
-    ev = _normalize_evidence_api_payload(manifest, mp_path)
-    if ev.get("evidence_status") == "not_available":
-        return with_backup_contract(
-            {"status": "success", "evidence": ev},
-            "backup.evidence.not_available",
-            "info",
-            {"job_id": jid},
-        )
-    return with_backup_contract(
-        {"status": "success", "evidence": ev},
-        "backup.evidence.ok",
-        "success",
-        {"job_id": jid},
-    )
 
 
 @app.post("/api/backup/jobs/{job_id}/evidence")
@@ -2889,8 +2812,10 @@ except ImportError:
     pass
 
 try:
+    from api.routes.backup_readonly import router as backup_readonly_router
     from api.routes.capabilities import router as capabilities_router
     from api.routes.catalog import router as catalog_router
+    from api.routes.control_center_readonly import router as control_center_readonly_router
     from api.routes.dev_dashboard_readonly import router as dev_dashboard_readonly_router
     from api.routes.dev_dashboard_roadmap import router as dev_dashboard_roadmap_router
     from api.routes.health import router as health_router
@@ -2899,6 +2824,7 @@ try:
     from api.routes.status import router as status_router
     from api.routes.version import router as version_router
 
+    app.include_router(backup_readonly_router)
     app.include_router(health_router)
     app.include_router(version_router)
     app.include_router(network_router)
@@ -2906,6 +2832,7 @@ try:
     app.include_router(status_router)
     app.include_router(capabilities_router)
     app.include_router(catalog_router)
+    app.include_router(control_center_readonly_router)
     app.include_router(dev_dashboard_readonly_router)
     app.include_router(dev_dashboard_roadmap_router)
 except ImportError:
@@ -3871,67 +3798,6 @@ def _detect_frontend_port():
     return _detect_frontend_port_core()
 
 
-@app.get("/api/dev-dashboard/status")
-async def dev_dashboard_status(
-    request: Request,
-    frontend_build_version: str | None = Query(
-        default=None,
-        description="Optional: Frontend-Build-Version (__APP_VERSION__), fuer Runtime-vs-Workspace-Konsistenz.",
-    ),
-    frontend_runtime_source: str | None = Query(
-        default=None,
-        description="Optional: dev | build | unknown — steuert frontend_version_matches_backend.",
-    ),
-):
-    """Read-only: Development Cockpit Gesamtstatus (kein Backup/Restore)."""
-    from core.dev_dashboard_status_service import build_dev_dashboard_status
-
-    headers = {k: v for k, v in request.headers.items()}
-    try:
-        return await build_dev_dashboard_status(
-            backup_jobs=BACKUP_JOBS,
-            sync_stale_runner_job_from_systemd=_sync_stale_runner_job_from_systemd,
-            job_snapshot=_job_snapshot,
-            detect_active_package_operations=_detect_active_package_operations,
-            frontend_build_version=frontend_build_version,
-            frontend_runtime_source=frontend_runtime_source,
-            request_headers=headers,
-        )
-    except Exception:
-        logger.exception("dev_dashboard_status failed")
-        raise
-
-
-@app.get("/api/dev-dashboard/control-center-summary")
-async def dev_dashboard_control_center_summary():
-    """Read-only: Control Center Übersicht (Runtime, Roadmap, Dev-Server, Doku, Diagnostik)."""
-    from core.dcc_status_facade import build_dcc_control_center_summary_api
-
-    try:
-        body = await asyncio.to_thread(build_dcc_control_center_summary_api)
-        return body
-    except Exception:
-        logger.exception("dev_dashboard_control_center_summary failed")
-        raise
-
-
-@app.get("/api/dev-dashboard/roadmap")
-async def dev_dashboard_roadmap(
-    frontend_build_version: str | None = Query(default=None),
-    frontend_runtime_source: str | None = Query(default=None),
-):
-    from core.dcc_status_facade import build_dcc_roadmap_api_bundle
-
-    fe_ver = (frontend_build_version or "").strip() or None
-    return build_dcc_roadmap_api_bundle(
-        include_dashboard_context=True,
-        running_jobs=[],
-        package_activity=[],
-        frontend_build_version=fe_ver,
-        frontend_runtime_source=frontend_runtime_source,
-    )
-
-
 @app.get("/api/dev-dashboard/rescue-build/status")
 async def dev_dashboard_rescue_build_status():
     """Read-only: Rescue-/ISO-/Live-Build-Gates für Development Dashboard."""
@@ -4220,38 +4086,7 @@ async def dev_dashboard_deploy_operator_setup_commands(body: dict[str, Any] | No
         raise
 
 
-@app.get("/api/dev-dashboard/update/status")
-async def dev_dashboard_update_status():
-    from core.update_check import build_update_status
 
-    try:
-        body = build_update_status()
-        return {"code": "DEV_DASHBOARD_UPDATE_STATUS_OK", **body}
-    except Exception:
-        logger.exception("dev_dashboard_update_status failed")
-        raise
-
-
-@app.get("/api/dev-dashboard/packaging/readiness")
-async def dev_dashboard_packaging_readiness():
-    try:
-        body = build_packaging_readiness_state()
-        return {"code": "DEV_DASHBOARD_PACKAGING_READINESS_OK", **body}
-    except Exception:
-        logger.exception("dev_dashboard_packaging_readiness failed")
-        raise
-
-
-@app.get("/api/dev-dashboard/project-overview")
-async def dev_dashboard_project_overview():
-    from core.dcc_status_facade import build_dcc_project_overview_body
-
-    try:
-        body = build_dcc_project_overview_body()
-        return {"code": "DEV_DASHBOARD_PROJECT_OVERVIEW_OK", **body}
-    except Exception:
-        logger.exception("dev_dashboard_project_overview failed")
-        raise
 
 
 @app.post("/api/dev-dashboard/actions/restart-backend")
@@ -4268,32 +4103,6 @@ async def dev_dashboard_action_start_backup():
     return dev_dashboard_core.action_placeholder_response("start-backup")
 
 
-@app.get("/api/dev-dashboard/prompt-findings")
-async def dev_dashboard_prompt_findings(
-    frontend_build_version: str | None = Query(default=None),
-    frontend_runtime_source: str | None = Query(default=None),
-):
-    """Read-only: strukturierte Findings fuer KI-Export."""
-    from core.dcc_status_facade import build_dcc_prompt_findings_api
-
-    return build_dcc_prompt_findings_api(
-        frontend_build_version=frontend_build_version,
-        frontend_runtime_source=frontend_runtime_source,
-    )
-
-
-@app.get("/api/dev-dashboard/cursor-meta-prompt")
-async def dev_dashboard_cursor_meta_prompt(
-    frontend_build_version: str | None = Query(default=None),
-    frontend_runtime_source: str | None = Query(default=None),
-):
-    """Read-only: Cursor-kompatibler Meta-Prompt aus Cockpit-Findings."""
-    from core.dcc_status_facade import build_dcc_cursor_meta_prompt_api
-
-    return build_dcc_cursor_meta_prompt_api(
-        frontend_build_version=frontend_build_version,
-        frontend_runtime_source=frontend_runtime_source,
-    )
 
 
 @app.post("/api/ai/prompt/generate")
@@ -9263,54 +9072,6 @@ async def peripherals_scan():
 
 # ==================== Backup & Restore Endpoints ====================
 
-@app.get("/api/backup/status")
-async def backup_status():
-    """Backup-Status abrufen"""
-    try:
-        # Prüfe installierte Backup-Tools
-        data = {
-            "rsync": {
-                "installed": check_installed("rsync"),
-            },
-            "tar": {
-                "installed": check_installed("tar"),
-            },
-            "backup_scripts": {
-                "installed": run_command("test -f /usr/local/bin/pi-backup")["success"],
-            },
-            "backups": [],
-        }
-        return with_backup_contract(
-            {
-                "status": "success",
-                "api_status": "ok",
-                "message": "",
-                "data": data,
-                **data,
-            },
-            "backup.status_ok",
-            "success",
-        )
-    except Exception as e:
-        logger.error(f"Fehler beim Lesen des Backup-Status: {e}", exc_info=True)
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract(
-                {
-                    "status": "error",
-                    "api_status": "error",
-                    "message": str(e),
-                    "data": {},
-                },
-                "backup.status_failed",
-                "error",
-                {"detail": str(e)},
-            ),
-        )
-
-
-# -------------------- Backup Settings + Scheduling --------------------
-
 def _backup_settings_path() -> Path:
     return get_config_dir() / "backup.json"
 
@@ -9985,22 +9746,6 @@ def _apply_backup_schedule(settings: dict, sudo_password: str) -> None:
     run_command("systemctl daemon-reload", sudo=True, sudo_password=sudo_password)
 
 
-@app.get("/api/backup/settings")
-async def backup_get_settings():
-    s = _read_backup_settings()
-    # Timer status (per rule)
-    statuses = {}
-    for r in (s.get("schedules") or []):
-        if not isinstance(r, dict) or not r.get("id"):
-            continue
-        svc = _systemd_timer_name(str(r["id"]))
-        enabled = run_command(f"systemctl is-enabled {svc}.timer 2>/dev/null").get("stdout", "").strip()
-        active = run_command(f"systemctl is-active {svc}.timer 2>/dev/null").get("stdout", "").strip()
-        statuses[str(r["id"])] = {"enabled": enabled, "active": active}
-    s["_timer_status"] = statuses
-    return with_backup_contract({"status": "success", "settings": s}, "backup.settings_loaded", "success")
-
-
 @app.post("/api/backup/settings")
 async def backup_set_settings(request: Request):
     try:
@@ -10205,293 +9950,6 @@ async def backup_cloud_test(request: Request):
         "success" if ok else "error",
         {"http_code": code} if code is not None else None,
     )
-
-
-@app.get("/api/backup/cloud/list")
-async def backup_cloud_list(rule_id: str = ""):
-    """
-    Listet externe Backups im konfigurierten WebDAV-Ziel (Seafile).
-    Nutzt gespeicherte Settings (backup.json unter get_config_dir()).
-    """
-    settings = _read_backup_settings()
-    cloud = settings.get("cloud") or {}
-    if not cloud.get("enabled"):
-        return with_backup_contract(
-            {"status": "success", "backups": [], "message": "Cloud-Upload ist deaktiviert"},
-            "backup.cloud_list_disabled",
-            "info",
-        )
-    provider = cloud.get("provider") or "seafile_webdav"
-    
-    # Versuche Backup-Modul zu verwenden für alle Provider
-    try:
-        backup_mod = _get_backup_module()
-        backup_mod.run_command = run_command
-        
-        # Für WebDAV: Verwende bestehende Logik
-        if provider in ("seafile_webdav", "webdav", "nextcloud_webdav"):
-            pass  # Weiter mit WebDAV-Logik unten
-        # Für S3: Versuche S3-Liste
-        elif provider in ("s3", "s3_compatible"):
-            bucket = cloud.get("bucket") or ""
-            if not bucket:
-                return with_backup_contract(
-                    {"status": "success", "backups": [], "message": "S3-Bucket nicht konfiguriert"},
-                    "backup.cloud_list_s3_unconfigured",
-                    "warning",
-                )
-            # TODO: S3-Liste implementieren
-            return with_backup_contract(
-                {"status": "success", "backups": [], "message": "S3-Liste wird noch nicht unterstützt"},
-                "backup.cloud_list_s3_unsupported",
-                "info",
-            )
-        # Für andere Provider: Noch nicht unterstützt
-        else:
-            return with_backup_contract(
-                {"status": "success", "backups": [], "message": f"Provider '{provider}' wird für Cloud-Liste noch nicht unterstützt"},
-                "backup.cloud_list_provider_unsupported",
-                "info",
-                {"provider": provider},
-            )
-    except Exception as e:
-        logger.error(f"Fehler beim Abrufen der Cloud-Backups: {str(e)}", exc_info=True)
-        # Fallback auf WebDAV
-    
-    # Unterstütze WebDAV-basierte Provider (Fallback)
-    if provider not in ("seafile_webdav", "webdav", "nextcloud_webdav"):
-        return with_backup_contract(
-            {"status": "success", "backups": [], "message": f"Provider '{provider}' wird für Cloud-Liste nicht unterstützt"},
-            "backup.cloud_list_provider_unsupported",
-            "info",
-            {"provider": provider},
-        )
-
-    url = (cloud.get("webdav_url") or "").strip().rstrip("/")
-    user = (cloud.get("username") or "").strip()
-    pw = (cloud.get("password") or "").strip()
-    remote_path = (cloud.get("remote_path") or "").strip().strip("/")
-
-    if not url or not user or not pw:
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract(
-                {"status": "error", "message": "WebDAV URL + Username + Passwort fehlen"},
-                "backup.cloud_list_credentials_missing",
-                "error",
-            ),
-        )
-
-    base = f"{url}/{remote_path}" if remote_path else url
-    # Ensure trailing slash for collection listing
-    if not base.endswith("/"):
-        base = base + "/"
-
-    # PROPFIND Depth:1 to list directory contents
-    cmd = (
-        "curl -sS "
-        f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
-        "-X PROPFIND -H 'Depth: 1' "
-        f"{shlex.quote(base)}"
-    )
-    res = run_command(cmd)
-    if not res.get("success"):
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract(
-                {"status": "error", "message": (res.get("stderr") or res.get("error") or "Request fehlgeschlagen")[:300]},
-                "backup.cloud_list_request_failed",
-                "error",
-            ),
-        )
-
-    xml_text = (res.get("stdout") or "").strip()
-    if not xml_text:
-        return with_backup_contract({"status": "success", "backups": []}, "backup.cloud_list_ok", "success")
-
-    rid = (rule_id or "").strip()
-    backups = []
-    try:
-        # Parse DAV XML. Be tolerant with namespaces.
-        root = ET.fromstring(xml_text)
-        ns_dav = "{DAV:}"
-
-        def _text(el, path):
-            try:
-                n = el.find(path)
-                return (n.text or "").strip() if n is not None else ""
-            except Exception:
-                return ""
-
-        for resp in root.findall(f".//{ns_dav}response"):
-            href = _text(resp, f"{ns_dav}href")
-            if not href:
-                continue
-            # skip directory itself
-            if href.rstrip("/") == base.rstrip("/"):
-                continue
-            # We only care about backup files (inkl. verschlüsselte)
-            name = href.split("/")[-1]
-            if not (name.endswith(".tar.gz") or name.endswith(".tar.gz.gpg") or name.endswith(".tar.gz.enc")):
-                continue
-            if rid and f"-{rid}-" not in name:
-                # only filter those that encode rule id in filename
-                continue
-
-            size = None
-            last_modified = None
-            for propstat in resp.findall(f"{ns_dav}propstat"):
-                prop = propstat.find(f"{ns_dav}prop")
-                if prop is None:
-                    continue
-                cl = prop.find(f"{ns_dav}getcontentlength")
-                lm = prop.find(f"{ns_dav}getlastmodified")
-                if cl is not None and cl.text:
-                    try:
-                        size = int(cl.text.strip())
-                    except Exception:
-                        size = None
-                if lm is not None and lm.text:
-                    last_modified = lm.text.strip()
-            backup_info = {"name": name, "href": href, "size_bytes": size, "last_modified": last_modified}
-            # Markiere verschlüsselte Backups
-            if name.endswith(".gpg") or name.endswith(".enc"):
-                backup_info["encrypted"] = True
-            backup_info["location"] = "Cloud"
-            backups.append(backup_info)
-
-        # sort newest first if possible
-        backups.sort(key=lambda b: (b.get("last_modified") or "", b.get("name") or ""), reverse=True)
-    except Exception:
-        # fallback: if parsing fails, return empty but not error (avoid breaking UI)
-        backups = []
-
-    return with_backup_contract(
-        {"status": "success", "backups": backups, "base_url": base},
-        "backup.cloud_list_ok",
-        "success",
-        {"count": len(backups)},
-    )
-
-
-@app.get("/api/backup/cloud/quota")
-async def backup_cloud_quota():
-    """Gibt verfügbaren Speicherplatz für Cloud-Backups zurück"""
-    try:
-        settings = _read_backup_settings()
-        cloud = settings.get("cloud") or {}
-        if not cloud.get("enabled"):
-            return with_backup_contract(
-                {"status": "success", "quota": None, "message": "Cloud-Upload ist deaktiviert"},
-                "backup.cloud_quota_disabled",
-                "info",
-            )
-        
-        provider = cloud.get("provider") or "seafile_webdav"
-        url = (cloud.get("webdav_url") or "").strip().rstrip("/")
-        user = (cloud.get("username") or "").strip()
-        pw = (cloud.get("password") or "").strip()
-        
-        if not url or not user or not pw:
-            return with_backup_contract(
-                {"status": "success", "quota": None, "message": "Cloud-Settings unvollständig"},
-                "backup.cloud_quota_incomplete_settings",
-                "warning",
-            )
-        
-        # Versuche Quota-Informationen zu erhalten (WebDAV QUOTA Property)
-        # Für Seafile/Nextcloud: PROPFIND mit Quota-Property
-        base = url.rstrip("/")
-        cmd = (
-            "curl -sS "
-            f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
-            "-X PROPFIND -H 'Depth: 0' "
-            f"{shlex.quote(base)}"
-        )
-        res = run_command(cmd)
-        
-        if not res.get("success"):
-            return with_backup_contract(
-                {"status": "success", "quota": None, "message": "Quota-Informationen nicht verfügbar"},
-                "backup.cloud_quota_unavailable",
-                "info",
-            )
-        
-        xml_text = (res.get("stdout") or "").strip()
-        if not xml_text:
-            return with_backup_contract(
-                {"status": "success", "quota": None, "message": "Keine Quota-Informationen"},
-                "backup.cloud_quota_empty_response",
-                "info",
-            )
-        
-        # Parse XML für Quota-Informationen
-        try:
-            root = ET.fromstring(xml_text)
-            ns_dav = "{DAV:}"
-            
-            # Suche nach quota-used und quota-available
-            quota_used = None
-            quota_available = None
-            
-            for propstat in root.findall(f".//{ns_dav}propstat"):
-                prop = propstat.find(f"{ns_dav}prop")
-                if prop is None:
-                    continue
-                
-                # Seafile/Nextcloud verwenden verschiedene Namespaces
-                for ns in ["{DAV:}", "{http://owncloud.org/ns}", "{http://nextcloud.org/ns}"]:
-                    used_el = prop.find(f"{ns}quota-used-bytes")
-                    avail_el = prop.find(f"{ns}quota-available-bytes")
-                    
-                    if used_el is not None and used_el.text:
-                        try:
-                            quota_used = int(used_el.text.strip())
-                        except Exception:
-                            pass
-                    if avail_el is not None and avail_el.text:
-                        try:
-                            quota_available = int(avail_el.text.strip())
-                        except Exception:
-                            pass
-            
-            if quota_used is not None or quota_available is not None:
-                def human(n: int) -> str:
-                    for unit in ["B", "KB", "MB", "GB", "TB"]:
-                        if n < 1024:
-                            return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
-                        n /= 1024
-                    return f"{n:.1f} TB"
-                
-                total = (quota_used or 0) + (quota_available or 0) if quota_available is not None else None
-                
-                return with_backup_contract(
-                    {
-                        "status": "success",
-                        "quota": {
-                            "used_bytes": quota_used,
-                            "available_bytes": quota_available,
-                            "total_bytes": total,
-                            "used_human": human(quota_used) if quota_used is not None else None,
-                            "available_human": human(quota_available) if quota_available is not None else None,
-                            "total_human": human(total) if total else None,
-                            "used_percent": round((quota_used / total * 100), 1) if (quota_used and total and total > 0) else None,
-                        },
-                    },
-                    "backup.cloud_quota_ok",
-                    "success",
-                )
-        except Exception as e:
-            logger.debug(f"Quota-Parsing fehlgeschlagen: {str(e)}")
-        
-        return with_backup_contract(
-            {"status": "success", "quota": None, "message": "Quota-Informationen nicht verfügbar für diesen Provider"},
-            "backup.cloud_quota_provider_unsupported",
-            "info",
-        )
-    except Exception as e:
-        logger.error(f"Fehler beim Abrufen der Cloud-Quota: {str(e)}", exc_info=True)
-        return with_backup_contract({"status": "error", "message": str(e)}, "backup.cloud_quota_failed", "error", {"detail": str(e)})
 
 
 @app.post("/api/backup/cloud/delete")
@@ -10840,150 +10298,6 @@ async def backup_cloud_verify(request: Request):
         "success" if ok else "error",
         {"http_code": code} if code is not None else None,
     )
-
-@app.get("/api/backup/targets")
-async def backup_targets():
-    """Liste sinnvoller Backup-Ziele (z.B. USB-Sticks / gemountete Datenträger)."""
-    try:
-        # lsblk liefert Mountpoints sehr zuverlässig.
-        # Wichtig: Auf manchen Systemen gibt es "MOUNTPOINTS" (Plural) → Liste von Mountpoints.
-        # NOTE: Wir brauchen TYPE/PKNAME, um ungemountete USB-Partitionen zuverlässig zu erkennen.
-        res = run_command("lsblk -J -o NAME,TYPE,PKNAME,LABEL,SIZE,FSTYPE,MOUNTPOINTS,RM,RO,MODEL,TRAN 2>/dev/null")
-        targets = []
-        raw = res.get("stdout", "") if res["success"] else ""
-        if not raw:
-            # Fallback: ältere util-linux Versionen kennen evtl. MOUNTPOINTS nicht
-            res2 = run_command("lsblk -J -o NAME,TYPE,PKNAME,LABEL,SIZE,FSTYPE,MOUNTPOINT,RM,RO,MODEL,TRAN 2>/dev/null")
-            raw = res2.get("stdout", "") if res2["success"] else ""
-
-        if raw:
-            try:
-                data = json.loads(raw or "{}")
-                devices = data.get("blockdevices", []) or []
-
-                system_mounts = {"/", "/boot", "/boot/firmware", "[SWAP]"}
-
-                def add_target(d, mp, extra=None):
-                    payload = {
-                        "name": d.get("name"),
-                        "label": d.get("label"),
-                        "size": d.get("size"),
-                        "fstype": d.get("fstype"),
-                        "mountpoint": mp,
-                        "rm": d.get("rm"),
-                        "model": d.get("model"),
-                        "tran": d.get("tran"),
-                        "device": f"/dev/{d.get('name')}" if d.get("name") else None,
-                        "mounted": bool(mp),
-                    }
-                    if extra:
-                        payload.update(extra)
-                    targets.append(payload)
-
-                def walk(items, disk_ctx=None):
-                    for d in items:
-                        dtype = d.get("type")
-                        if dtype == "disk":
-                            disk_ctx = d
-
-                        name = d.get("name")
-                        mps = d.get("mountpoints")
-                        mp = d.get("mountpoint")
-
-                        # mounted items
-                        if isinstance(mps, list) and mps:
-                            for one in mps:
-                                if one and one not in system_mounts:
-                                    add_target(d, one, {"mounted": True})
-                        elif mp and mp not in system_mounts:
-                            add_target(d, mp, {"mounted": True})
-
-                        # unmounted USB/Removable partitions → anzeigen, damit der Stick "erkannt" wird
-                        if dtype == "part" and disk_ctx and name:
-                            dtran = disk_ctx.get("tran") or d.get("tran")
-                            drm = disk_ctx.get("rm") if disk_ctx.get("rm") is not None else d.get("rm")
-                            is_usb = dtran == "usb"
-                            is_rm = bool(drm)
-                            has_mount = bool(mp) or (isinstance(mps, list) and len(mps) > 0)
-                            if (is_usb or is_rm) and not has_mount:
-                                add_target(d, None, {"mounted": False, "tran": dtran, "rm": drm, "model": disk_ctx.get("model")})
-
-                        if d.get("children"):
-                            walk(d["children"], disk_ctx)
-
-                walk(devices, None)
-            except Exception:
-                # Ignorieren - targets bleibt leer
-                pass
-
-        # Ergänzung: Mounts unter /mnt/pi-installer-usb sicher aufnehmen (auch wenn lsblk nichts liefert)
-        try:
-            for fs in _findmnt_mounts():
-                tgt = (fs.get("target") or "").strip()
-                if tgt.startswith("/mnt/pi-installer-usb/"):
-                    # Doppelte vermeiden
-                    if not any(t.get("mountpoint") == tgt for t in targets):
-                        targets.append({
-                            "name": None,
-                            "label": None,
-                            "size": None,
-                            "fstype": fs.get("fstype"),
-                            "mountpoint": tgt,
-                            "rm": None,
-                            "model": None,
-                            "tran": None,
-                        })
-        except Exception:
-            pass
-
-        # Fallback: typische Pfade (ohne Garantie)
-        common = ["/mnt", "/mnt/pi-installer-usb", "/media", "/run/media"]
-        return with_backup_contract(
-            {"status": "success", "targets": targets, "common_roots": common},
-            "backup.targets_ok",
-            "success",
-            {"count": len(targets)},
-        )
-    except Exception as e:
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract(
-                {
-                    "status": "error",
-                    "message": str(e),
-                    "targets": [],
-                    "common_roots": ["/mnt", "/mnt/pi-installer-usb", "/media", "/run/media"],
-                },
-                "backup.targets_failed",
-                "error",
-                {"detail": str(e)},
-            ),
-        )
-
-@app.get("/api/backup/external-targets")
-async def backup_external_targets_list():
-    """Read-only: externe USB/removable-Kandidaten für /media/setuphelfer/<label>."""
-    try:
-        from core.backup_target_auto_prepare import discover_external_backup_candidates
-
-        items = [c.to_public_dict() for c in discover_external_backup_candidates()]
-        return with_backup_contract(
-            {"status": "success", "candidates": items, "count": len(items)},
-            "backup.external_targets_ok",
-            "success",
-            {"count": len(items)},
-        )
-    except Exception as e:
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract(
-                {"status": "error", "message": str(e), "candidates": []},
-                "backup.external_targets_failed",
-                "error",
-                {"detail": str(e)},
-            ),
-        )
-
 
 @app.post("/api/backup/target-prepare")
 async def backup_target_prepare(request: Request):
@@ -11378,11 +10692,6 @@ def _backup_profiles_list_payload() -> dict[str, Any]:
     )
 
 
-@app.get("/api/backup/profiles")
-async def backup_profiles_list_get():
-    return _backup_profiles_list_payload()
-
-
 @app.post("/api/backup/profiles")
 async def backup_profiles_list_post():
     return _backup_profiles_list_payload()
@@ -11434,154 +10743,58 @@ async def backup_profile_preview(request: Request):
 
 
 def _lsblk_tree() -> dict:
-    """
-    Liefert lsblk JSON (mit MOUNTPOINTS), fallback auf MOUNTPOINT.
-    """
-    res = run_command("lsblk -J -o NAME,TYPE,PKNAME,LABEL,SIZE,FSTYPE,MOUNTPOINTS,RM,RO,MODEL,TRAN 2>/dev/null")
-    raw = res.get("stdout", "") if res["success"] else ""
-    if not raw:
-        res2 = run_command("lsblk -J -o NAME,TYPE,PKNAME,LABEL,SIZE,FSTYPE,MOUNTPOINT,RM,RO,MODEL,TRAN 2>/dev/null")
-        raw = res2.get("stdout", "") if res2["success"] else ""
-    try:
-        return json.loads(raw or "{}")
-    except Exception:
-        return {}
+    """Legacy wrapper → storage_discovery (P.2)."""
+    from core.storage_discovery import discover_lsblk_json_tree
+
+    return discover_lsblk_json_tree()
 
 
 def _flatten_findmnt_filesystems(nodes: Any) -> list[dict[str, Any]]:
-    """
-    Flacht findmnt -J \"filesystems\" rekursiv ab (children-Keys).
-    Ohne Flatten liefert findmnt nur die Wurzelknoten — dann sieht target-check
-    fälschlich nur TARGET=/ und wählt die Root-Partition statt des echten Mounts.
-    """
-    out: list[dict[str, Any]] = []
-    if not isinstance(nodes, list):
-        return out
-    for n in nodes:
-        if not isinstance(n, dict):
-            continue
-        out.append(n)
-        ch = n.get("children")
-        if isinstance(ch, list):
-            out.extend(_flatten_findmnt_filesystems(ch))
-    return out
+    """Legacy wrapper → storage_discovery (P.2)."""
+    from core.storage_discovery import _flatten_findmnt_filesystems as _fn
+
+    return _fn(nodes)
 
 
 def _findmnt_mounts() -> list[dict]:
-    """
-    Liefert Mounts aus findmnt (JSON), inkl. TARGET mit Leerzeichen.
-    """
-    try:
-        res = run_command("findmnt -J -o SOURCE,TARGET,FSTYPE,OPTIONS 2>/dev/null")
-        if not res["success"]:
-            return []
-        data = json.loads(res.get("stdout", "") or "{}")
-        return _flatten_findmnt_filesystems(data.get("filesystems", []) or [])
-    except Exception:
-        return []
+    """Legacy wrapper → storage_discovery (P.2)."""
+    from core.storage_discovery import discover_findmnt_mounts_flat
+
+    return discover_findmnt_mounts_flat()
 
 def _mountpoints_for_disk(disk_dev: str) -> list[str]:
-    """
-    Liefert alle Mountpoints für eine Disk (/dev/sdb) inkl. Partitionen (/dev/sdb1),
-    robust gegen Leerzeichen, via findmnt JSON.
-    """
-    mps: list[str] = []
-    for fs in _findmnt_mounts():
-        src = (fs.get("source") or "").strip()
-        tgt = (fs.get("target") or "").strip()
-        if not src or not tgt:
-            continue
-        if src.startswith(disk_dev):
-            mps.append(tgt)
-    # nested first
-    return sorted(set(mps), key=len, reverse=True)
+    """Legacy wrapper → storage_discovery (P.3)."""
+    from core.storage_discovery import discover_mountpoints_for_disk
+
+    return discover_mountpoints_for_disk(disk_dev)
 
 
 def _find_lsblk_by_mountpoint(mountpoint: str) -> Optional[dict]:
-    """
-    Findet die Partition/Device in lsblk-JSON anhand eines Mountpoints.
-    """
-    mountpoint = (mountpoint or "").strip()
-    if not mountpoint:
-        return None
+    """Legacy wrapper → storage_discovery (P.3)."""
+    from core.storage_discovery import discover_lsblk_node_by_mountpoint
 
-    data = _lsblk_tree()
-    devices = data.get("blockdevices", []) or []
-
-    def matches(d: dict) -> bool:
-        mp = d.get("mountpoint")
-        mps = d.get("mountpoints")
-        if mp and mp == mountpoint:
-            return True
-        if isinstance(mps, list) and mountpoint in mps:
-            return True
-        return False
-
-    def walk(items):
-        for d in items:
-            if matches(d):
-                return d
-            if d.get("children"):
-                found = walk(d["children"])
-                if found:
-                    return found
-        return None
-
-    return walk(devices)
+    return discover_lsblk_node_by_mountpoint(mountpoint)
 
 
 def _find_lsblk_by_name(dev_name: str) -> Optional[dict]:
-    """Findet einen lsblk node anhand NAME (z.B. 'sda1'). dev_name darf auch '/dev/sda1' sein."""
-    dev_name = (dev_name or "").strip()
-    if dev_name.startswith("/dev/"):
-        dev_name = dev_name[5:]
-    if not dev_name:
-        return None
+    """Legacy wrapper → storage_discovery (P.3)."""
+    from core.storage_discovery import discover_lsblk_node_by_name
 
-    data = _lsblk_tree()
-    devices = data.get("blockdevices", []) or []
-
-    def walk(items):
-        for d in items:
-            if d.get("name") == dev_name:
-                return d
-            if d.get("children"):
-                found = walk(d["children"])
-                if found:
-                    return found
-        return None
-
-    return walk(devices)
+    return discover_lsblk_node_by_name(dev_name)
 
 
 def _disk_is_system(disk: dict) -> bool:
-    """
-    True wenn Disk/Children Root/Boot gemountet haben.
-    """
-    bad = {"/", "/boot", "/boot/firmware"}
+    """Legacy wrapper → storage_discovery (P.3)."""
+    from core.storage_discovery import disk_has_system_mount
 
-    def has_bad_mount(d: dict) -> bool:
-        mp = d.get("mountpoint")
-        mps = d.get("mountpoints")
-        if mp in bad:
-            return True
-        if isinstance(mps, list) and any(x in bad for x in mps):
-            return True
-        for c in d.get("children", []) or []:
-            if has_bad_mount(c):
-                return True
-        return False
-
-    return has_bad_mount(disk)
+    return disk_has_system_mount(disk)
 
 
 def _find_disk_by_name(name: str) -> Optional[dict]:
-    data = _lsblk_tree()
-    devices = data.get("blockdevices", []) or []
-    for d in devices:
-        if d.get("name") == name and d.get("type") == "disk":
-            return d
-    return None
+    """Legacy wrapper → storage_discovery (P.3)."""
+    from core.storage_discovery import discover_disk_by_name
+
+    return discover_disk_by_name(name)
 
 
 def _sanitize_label(label: str, max_len: int = 16) -> str:
@@ -11678,16 +10891,20 @@ def _clone_disk_info(sudo_password: Optional[str] = None) -> dict:
         boot_info = {"mountpoint": "/boot/firmware", "device": None}
 
     def _get_fstype(dev_path: str) -> str:
+        from core.storage_discovery import discover_device_fstype
+
         if not dev_path or not dev_path.startswith("/dev/"):
             return ""
-        r = run_command(f"blkid -o value -s TYPE {shlex.quote(dev_path)} 2>/dev/null", timeout=2)
-        if r.get("success") and r.get("stdout"):
-            return (r.get("stdout") or "").strip().lower()
-        if _sudo:
-            r = run_command(f"blkid -o value -s TYPE {shlex.quote(dev_path)} 2>/dev/null", sudo=True, sudo_password=_sudo, timeout=2)
-            if r.get("success") and r.get("stdout"):
-                return (r.get("stdout") or "").strip().lower()
-        return ""
+
+        def _sudo_runner(cmd: str) -> tuple[int, str]:
+            r = run_command(cmd, sudo=True, sudo_password=_sudo, timeout=2)
+            rc = 0 if r.get("success") else int(r.get("returncode") or 1)
+            return rc, (r.get("stdout") or "")
+
+        return discover_device_fstype(
+            dev_path,
+            sudo_runner=_sudo_runner if _sudo else None,
+        )
 
     def walk_for_targets(items, disk_ctx=None):
         for d in items:
@@ -12060,75 +11277,6 @@ async def clone_disk(request: Request):
         return JSONResponse(
             status_code=200,
             content=with_backup_contract({"status": "error", "message": str(e)}, "backup.clone_failed", "error", {"detail": str(e)}),
-        )
-
-
-@app.get("/api/backup/usb/info")
-async def backup_usb_info(mountpoint: str = "", device: str = ""):
-    """Gibt Infos zum ausgewählten USB-Mountpoint zurück (Device, FS, Label, Safety Flags)."""
-    try:
-        node = _find_lsblk_by_mountpoint(mountpoint) if mountpoint else None
-        # Fallback: manchmal ist lsblk nicht synchron / mountpoint kommt nicht zurück -> findmnt SOURCE nutzen
-        if not node and mountpoint:
-            for fs in _findmnt_mounts():
-                tgt = (fs.get("target") or "").strip()
-                src = (fs.get("source") or "").strip()
-                if tgt and src and tgt == mountpoint and src.startswith("/dev/"):
-                    node = _find_lsblk_by_name(src)
-                    break
-        if not node and device:
-            node = _find_lsblk_by_name(device)
-        if not node:
-            return JSONResponse(
-                status_code=200,
-                content=with_backup_contract(
-                    {"status": "error", "message": "USB-Gerät nicht gefunden (Mountpoint/Device)"},
-                    "backup.usb_not_found",
-                    "error",
-                ),
-            )
-
-        name = node.get("name")
-        pk = node.get("pkname")  # parent disk
-        disk_name = pk or (name if node.get("type") == "disk" else None)
-        if not disk_name:
-            return JSONResponse(
-                status_code=200,
-                content=with_backup_contract(
-                    {"status": "error", "message": "Konnte Disk nicht bestimmen"},
-                    "backup.usb_disk_unknown",
-                    "error",
-                ),
-            )
-
-        disk = _find_disk_by_name(disk_name)
-        if not disk:
-            return JSONResponse(
-                status_code=200,
-                content=with_backup_contract({"status": "error", "message": "Disk nicht gefunden"}, "backup.usb_disk_not_found", "error"),
-            )
-
-        info = {
-            "status": "success",
-            "mountpoint": mountpoint or None,
-            "partition": f"/dev/{name}" if name else None,
-            "disk": f"/dev/{disk_name}",
-            "fstype": node.get("fstype"),
-            "label": node.get("label"),
-            "size": node.get("size"),
-            "rm": disk.get("rm"),
-            "ro": node.get("ro") or disk.get("ro"),
-            "tran": disk.get("tran"),
-            "model": disk.get("model"),
-            "is_usb": (disk.get("tran") == "usb"),
-            "is_removable": bool(disk.get("rm")),
-            "is_system_disk": _disk_is_system(disk),
-        }
-        return with_backup_contract(info, "backup.usb_info_ok", "success")
-    except Exception as e:
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract({"status": "error", "message": str(e)}, "backup.usb_info_failed", "error", {"detail": str(e)}),
         )
 
 
@@ -13857,131 +13005,6 @@ async def create_backup(request: Request):
                 {"detail": str(e)},
             ),
         )
-
-@app.get("/api/backup/list")
-async def list_backups(backup_dir: str = "/mnt/setuphelfer/backups"):
-    """Liste aller Backups"""
-    try:
-        logger.info("backup_list start", extra={"action": "backup_list", "backup_dir": str(backup_dir)})
-        details = {}
-        try:
-            backup_dir, details = _validate_backup_list_dir(backup_dir)
-        except Exception as ve:
-            logger.error("backup_list validate_error", extra={"action": "backup_list", "backup_dir": str(backup_dir), "error": str(ve)[:300]})
-            reason = str(ve)
-            diagnosis_id = ""
-            if "STORAGE-PROTECTION-005" in reason:
-                diagnosis_id = "STORAGE-PROTECTION-005"
-            elif "STORAGE-PROTECTION-004" in reason:
-                diagnosis_id = "STORAGE-PROTECTION-004"
-            return JSONResponse(
-                status_code=200,
-                content=with_backup_contract(
-                    {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}", "backups": []},
-                    "backup.path_invalid",
-                    "error",
-                    {
-                        "reason": reason,
-                        "diagnosis_id": diagnosis_id,
-                        "target": details.get("target", backup_dir),
-                        "validation_mode": "read_only",
-                    },
-                ),
-            )
-
-        try:
-            idx = await asyncio.wait_for(asyncio.to_thread(_load_backup_index), timeout=1.0)
-        except TimeoutError:
-            return JSONResponse(
-                status_code=200,
-                content=with_backup_contract(
-                    {
-                        "status": "error",
-                        "message": "Backup-Index konnte nicht rechtzeitig gelesen werden.",
-                        "backups": [],
-                    },
-                    "backup.list_timeout",
-                    "error",
-                    {"path": backup_dir, "phase": "index_read", "timeout_seconds": 1},
-                ),
-            )
-
-        if not idx:
-            return with_backup_contract(
-                {
-                    "status": "success",
-                    "backups": [],
-                    "count": 0,
-                    "path": backup_dir,
-                    "validation_mode": "read_only",
-                    "index_available": False,
-                    "message": "Noch kein Backup-Index vorhanden",
-                },
-                "backup.list_ok",
-                "success",
-            )
-
-        wanted_prefix = backup_dir.rstrip("/") + "/"
-        matched = []
-        for e in idx:
-            bf = str(e.get("backup_file") or "")
-            sp = str(e.get("storage_path") or "")
-            if not bf:
-                continue
-            if not (sp == backup_dir or bf.startswith(wanted_prefix)):
-                continue
-            ext_ok = bf.endswith(".tar.gz") or bf.endswith(".tar.gz.gpg") or bf.endswith(".tar.gz.enc")
-            if not ext_ok:
-                continue
-            row = {
-                "file": bf,
-                "size_bytes": int(e.get("size_bytes") or 0),
-                "date": str(e.get("created_at") or ""),
-                "encrypted": bool(e.get("encrypted")),
-                "location": "Lokal",
-                "status": "unknown",
-                "type": str(e.get("type") or ""),
-            }
-            try:
-                exists = await asyncio.wait_for(asyncio.to_thread(Path(bf).exists), timeout=0.2)
-                row["status"] = "available" if exists else "missing"
-            except TimeoutError:
-                row["status"] = "unknown"
-            matched.append(row)
-
-        logger.info("backup_list index_ok", extra={"action": "backup_list", "count": len(matched), "backup_dir": backup_dir})
-        return with_backup_contract(
-            {
-                "status": "success",
-                "backups": matched,
-                "count": len(matched),
-                "path": backup_dir,
-                "validation_mode": "read_only",
-                "index_available": True,
-            },
-            "backup.list_ok",
-            "success",
-        )
-    except Exception as e:
-        logger.error("Backup-Liste fehlgeschlagen", extra={"action": "backup_list", "error": str(e)[:300]}, exc_info=True)
-        err_code = "backup.list_failed"
-        detail = str(e)[:300]
-        cmd = ""
-        tsec = None
-        if "Command" in detail and "timed out" in detail:
-            err_code = "backup.list_timeout"
-            cmd = detail
-            tsec = 3
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract(
-                {"status": "error", "message": str(e)[:500], "backups": []},
-                err_code,
-                "error",
-                {"detail": detail, "command": cmd, "timeout_seconds": tsec},
-            ),
-        )
-
 
 @app.post("/api/backup/verify")
 async def verify_backup(request: Request):

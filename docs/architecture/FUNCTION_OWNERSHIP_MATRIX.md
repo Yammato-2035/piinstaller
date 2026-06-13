@@ -37,7 +37,8 @@
 | App Catalog API | `api/routes/catalog.py` | CANONICAL | app (include_router) | Ja |
 | DCC Readonly Index API | `api/routes/dev_dashboard_readonly.py` | CANONICAL | app (include_router) | Ja — F.4: Facade-Sections |
 | DCC Roadmap Registry API | `api/routes/dev_dashboard_roadmap.py` | CANONICAL | app (include_router) | Ja — Subroutes registry-only (F.3) |
-| System Status (Ampel) | `core.system_status_core` + `core.system_status_facade` | CANONICAL (G.12) | `GET /api/system/status` | Ja — Core + Facade |
+| System Status (Ampel) | `core.system_status_core` + `core.system_status_facade` | CANONICAL (G.12/G.13) | `GET /api/system/status` | Ja |
+| System Runtime Info | `core.system_runtime_info` | CANONICAL (G.13) | `system_status_facade` | Ja — kein Facade→app |
 | System Status Legacy | `app.py` `_compute_system_status` | LEGACY_WRAPPER (G.12) | Tests, alte Aufrufer | Wrapper → Core |
 | Network Discovery | `core.network_discovery` | CANONICAL (G.8) | `discover_*`, `detect_frontend_port` | Ja |
 | Network Info | `core.network_info_facade` | CANONICAL (G.2–G.8) | Facade + Router | G.8 Zyklus beendet |
@@ -47,8 +48,8 @@
 | System Info | `core.system_info_facade` | CANONICAL (G.6/G.9) | `GET /api/system-info` | Ja — Facade only, no app import |
 | Hardware Discovery | `core.hardware_discovery` | CANONICAL (G.9) | `system_info_facade` consumer | Ja — Discovery owner |
 | Network Info Legacy | `app.py` `get_network_info`, `_demo_network`, `_detect_frontend_port` | LEGACY_WRAPPER (G.8) | dünne Wrapper auf `network_discovery` | keine eigene Logik |
-| DCC Full Status | `core.dcc_status_facade` + `dev_dashboard_status_service` | CANONICAL (F.2) | `/api/dev-dashboard/status` | Ja — migriert |
-| DCC Status Aggregation | `core.dcc_status_facade` | CANONICAL | app routes (F.2+) | Keine Parallel-Aggregation in Routern |
+| DCC Full Status | `core.dcc_status_facade` + `dcc_status_runtime` + `dev_dashboard_status_service` | CANONICAL (E.11) | `dev_dashboard_readonly` `GET /status` | Ja — Router extrahiert |
+| DCC Status Aggregation | `core.dcc_status_facade` | CANONICAL | `dev_dashboard_readonly` (E.11) | Keine Parallel-Aggregation in `app.py` |
 | DCC Backend Health Snapshot | `core.dev_dashboard_backend_health` | CANONICAL | `dev_dashboard_readonly` router (E.8) | Ja |
 | Notification State Read | `core.notification_state` | CANONICAL | `dev_dashboard_readonly` router (E.8) | Ja |
 | Deploy Execute/Rescue Routes | `routes.py` | LEGACY | app | Bis D.15 Execute-Gate |
@@ -61,7 +62,10 @@
 | Frontend API Clients | `frontend/src/lib/*` | PARTIAL | pages, rescue UI | Wiederverwenden |
 | i18n Namespaces | `frontend/src/**/i18n` | PARTIAL | rescue, main UI | Namespace-Konzept |
 | Notification Events | — | MISSING | — | D.9: keine Deploy-Routen |
-| Backup Job State | `backup_engine` + API | PARTIAL | app routes | Kein zweites State-Modell |
+| Backup Job State | `backup_engine` + API | PARTIAL | app routes + `backup_readonly` (B.2) | Kein zweites State-Modell |
+| Backup Readonly GET | `api/routes/backup_readonly.py` + `backup_readonly_handlers` | CANONICAL_SLICE (B.2) | 12 sichere GETs | Execute bleibt in `app.py` |
+| Storage Discovery | `core.storage_discovery` | CANONICAL (P.3) | `app` Legacy-Wrapper | Keine lsblk/findmnt-Logik in `app` |
+| System Status Providers | `core.system_status_providers` | CANONICAL (G.14) | `system_status_core` | Einziger `app`-Import im Ampel-Stack |
 | Restore Preview State | `restore_engine` + API | PARTIAL | app routes | Facades für Safety |
 
 **Status-Legende:** CANONICAL = Source of Truth · PARTIAL = Migration läuft · LEGACY = abbauen · PLANNED = dokumentiert · MISSING = nicht vorhanden

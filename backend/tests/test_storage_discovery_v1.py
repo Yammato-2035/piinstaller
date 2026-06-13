@@ -17,6 +17,11 @@ PUBLIC_FUNCTIONS = (
     "discover_filesystems",
     "discover_partitions",
     "discover_storage_roles",
+    "discover_lsblk_node_by_mountpoint",
+    "discover_lsblk_node_by_name",
+    "discover_disk_by_name",
+    "discover_mountpoints_for_disk",
+    "disk_has_system_mount",
     "build_storage_discovery_diagnostics",
 )
 
@@ -43,6 +48,22 @@ class TestStorageDiscoveryV1(unittest.TestCase):
             parts = discovery.discover_partitions()
         self.assertEqual(len(parts), 1)
         self.assertEqual(parts[0]["device"], "/dev/sda1")
+
+    def test_discover_lsblk_json_tree_returns_dict(self) -> None:
+        import core.storage_discovery as discovery
+
+        with mock.patch.object(discovery, "_run_shell_capture", return_value=(0, '{"blockdevices":[]}')):
+            out = discovery.discover_lsblk_json_tree()
+        self.assertEqual(out, {"blockdevices": []})
+
+    def test_discover_findmnt_mounts_flat(self) -> None:
+        import core.storage_discovery as discovery
+
+        payload = '{"filesystems":[{"target":"/","source":"/dev/sda1"}]}'
+        with mock.patch.object(discovery, "_run_shell_capture", return_value=(0, payload)):
+            mounts = discovery.discover_findmnt_mounts_flat()
+        self.assertEqual(len(mounts), 1)
+        self.assertEqual(mounts[0]["target"], "/")
 
     def test_storage_facade_uses_storage_discovery(self) -> None:
         text = (_BACKEND / "core" / "storage_facade.py").read_text(encoding="utf-8")

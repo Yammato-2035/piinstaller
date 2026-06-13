@@ -339,13 +339,74 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | Feld | Wert |
 |------|------|
 | **Pfad** | `backend/core/storage_discovery.py` |
-| **Status** | **CANONICAL_MODULE** (DISCOVERY, P.1) |
+| **Status** | **CANONICAL_MODULE** (DISCOVERY, P.1/P.3) |
 | **Zweck** | Kanonischer lsblk/findmnt/blkid-Owner (Delegation) |
-| **Öffentliche API** | `discover_block_devices`, `discover_mounts`, `discover_filesystems`, `discover_partitions`, `discover_storage_roles`, `build_storage_discovery_diagnostics` |
+| **Öffentliche API** | `discover_block_devices`, `discover_mounts`, `discover_findmnt_mounts_flat`, `discover_lsblk_json_tree`, `discover_lsblk_node_by_*`, `discover_disk_by_name`, `discover_mountpoints_for_disk`, `discover_device_fstype`, `discover_filesystems`, `discover_partitions`, `discover_storage_roles`, `disk_has_system_mount`, `build_storage_discovery_diagnostics` |
 | **Delegiert an** | `modules.storage_detection`, `core.mount_facade` |
 | **Konsument** | `storage_facade` (sichere Migration P.1) |
 | **Tests** | `test_storage_discovery_v1` |
 | **Matrix** | `STORAGE_DISCOVERY_OWNERSHIP_MATRIX.md` |
+
+---
+
+## 17h. system_runtime_info
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/system_runtime_info.py` |
+| **Status** | **CANONICAL_MODULE** (CORE, G.13) |
+| **Zweck** | Runtime/Installation/Profil read-only für System-Status-Facade |
+| **Öffentliche API** | `build_runtime_info`, `build_installation_info`, `build_profile_info`, `build_runtime_diagnostics` |
+| **Konsument** | `system_status_facade` (G.13) |
+| **Tests** | `test_system_runtime_info_v1` |
+| **Doku DE/EN** | `SYSTEM_STATUS_FINAL_DECOUPLING_G13.md` |
+
+---
+
+## 17i. system_status_providers
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/system_status_providers.py` |
+| **Status** | **CANONICAL_MODULE** (CORE, G.14) |
+| **Zweck** | Provider-Layer für Security/Updates/Realtest-State (einziger `app`-Import im System-Status-Stack) |
+| **Öffentliche API** | `load_backup_realtest_state`, `provide_security_config`, `provide_updates_categorized`, `build_system_status_providers_diagnostics` |
+| **Konsument** | `system_status_core` |
+| **Tests** | `test_system_status_providers_v1` |
+
+---
+
+## 17j. backup_readonly (Router + Handlers)
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/api/routes/backup_readonly.py`, `backend/core/backup_readonly_handlers.py`, `backend/core/backup_readonly_runtime.py` |
+| **Status** | **ROUTER_SLICE** (B.2) |
+| **Zweck** | Sichere Backup-GETs (Status, Settings, Jobs, Targets, List, Cloud list/quota, USB info) |
+| **Konsument** | `app.include_router(backup_readonly_router)` |
+| **Tests** | `test_backup_list_decouple_fix11_v1`, `test_api_consistency_fix9_v1` |
+
+---
+
+## 17k. dcc_status_runtime
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/core/dcc_status_runtime.py` |
+| **Status** | **RUNTIME_ADAPTER** (E.11) |
+| **Zweck** | BACKUP_JOBS / Package-Activity-Adapter für `build_dcc_dashboard_status_api` |
+| **Konsument** | `dcc_status_facade`, `dev_dashboard_readonly` |
+
+---
+
+## 17l. deploy rescue plan router
+
+| Feld | Wert |
+|------|------|
+| **Pfad** | `backend/deploy/routes_rescue_plan.py` |
+| **Status** | **ROUTER_SLICE** (D.14) |
+| **Zweck** | 21 plan-only Rescue-POSTs (debian-live, dry-build, build-sandbox) |
+| **Konsument** | `deploy/routes.py` `include_router` |
 
 ---
 
@@ -399,7 +460,10 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | **hardware_discovery** | **CANONICAL_MODULE** (G.9) | Facade→app-Zyklus beendet |
 | **webserver_service_discovery** | **CANONICAL_MODULE** (G.11) | Facade→app-Zyklus beendet |
 | **system_status_core** | **CANONICAL_MODULE** (G.12) | Ampel aus Facade extrahiert |
-| **storage_discovery** | **CANONICAL_MODULE** (P.1) | Canonical lsblk/findmnt/blkid — schrittweise Migration |
+| **storage_discovery** | **CANONICAL_MODULE** (P.1/P.2) | Canonical lsblk/findmnt/blkid — schrittweise Migration |
+| **system_runtime_info** | **CANONICAL_MODULE** (G.13) | Runtime/installation/profile ohne Facade→app |
+| **control_center_readonly** | **CANONICAL_ROUTER** (E.10) | 7 readonly GET aus `app.py` |
+| **routes_rescue_readonly** | **ROUTER** (D.13) | 4 plan_only rescue POST |
 | **frontend_runtime_facade** | **CANDIDATE** (G.5) | Port-Erkennung — MEDIUM |
 | **Dev Dashboard Aggregation Facade** | **CANDIDATE** (E.7) | control-center-summary, prompt-findings (nutzt Facade F.2+) |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |

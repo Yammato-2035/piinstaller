@@ -1039,7 +1039,6 @@ if app_py_path.is_file():
     if "load_roadmap_registry_bundle" in ap:
         print("dcc_status_direct_roadmap_bundle_in_app:backend/app.py")
     blocked_extraction_paths = (
-        "/api/dev-dashboard/status",
         "/api/dev-dashboard/roadmap",
     )
     for mod in app_router_modules.values():
@@ -1757,6 +1756,59 @@ if app_py_path.is_file():
         block = ap_g12[start : start + 350]
         if "system_status_core" not in block:
             print("system_status_legacy_wrapper_missing:backend/app.py:_compute_system_status")
+
+# Phase G.13: System Runtime Info guards (warn-only)
+sri_path = root / "backend" / "core" / "system_runtime_info.py"
+if not sri_path.is_file():
+    print("system_runtime_info_core_missing:backend/core/system_runtime_info.py")
+else:
+    sri = sri_path.read_text(encoding="utf-8", errors="replace")
+    if "SYSTEM_RUNTIME_INFO_VERSION" not in sri or "build_runtime_info" not in sri:
+        print("system_runtime_info_core_incomplete:backend/core/system_runtime_info.py")
+    if re.search(r"^\s*(import app|from app\b)", sri, re.MULTILINE):
+        print("system_runtime_info_depends_on_app:backend/core/system_runtime_info.py")
+if system_facade_mod.is_file():
+    sf_g13 = system_facade_mod.read_text(encoding="utf-8", errors="replace")
+    if re.search(r"^\s*(import app|from app\b)", sf_g13, re.MULTILINE):
+        print("system_status_facade_depends_on_app:backend/core/system_status_facade.py")
+    if "system_runtime_info" not in sf_g13:
+        print("system_status_facade_depends_on_app:backend/core/system_status_facade.py")
+
+# Phase G.14: System Status Providers guards (warn-only)
+ssp_path = root / "backend" / "core" / "system_status_providers.py"
+if not ssp_path.is_file():
+    print("system_status_providers_missing:backend/core/system_status_providers.py")
+else:
+    ssp = ssp_path.read_text(encoding="utf-8", errors="replace")
+    if "SYSTEM_STATUS_PROVIDER_VERSION" not in ssp or "provide_security_config" not in ssp:
+        print("system_status_providers_incomplete:backend/core/system_status_providers.py")
+if ssc_path.is_file():
+    ssc_g14 = ssc_path.read_text(encoding="utf-8", errors="replace")
+    if re.search(r"^\s*(import app|from app\b)", ssc_g14, re.MULTILINE):
+        print("system_status_core_depends_on_app:backend/core/system_status_core.py")
+    if "system_status_providers" not in ssc_g14:
+        print("system_status_core_missing_providers:backend/core/system_status_core.py")
+
+# Phase E.11: DCC status route facade guards (warn-only)
+dd_ro = root / "backend" / "api" / "routes" / "dev_dashboard_readonly.py"
+if dd_ro.is_file():
+    dd_mt = dd_ro.read_text(encoding="utf-8", errors="replace")
+    if '@router.get("/api/dev-dashboard/status")' in dd_mt:
+        if "build_dcc_dashboard_status_api" not in dd_mt and "dcc_status_facade" not in dd_mt:
+            print("dcc_status_router_bypasses_facade:backend/api/routes/dev_dashboard_readonly.py")
+if app_py_path.is_file():
+    ap_e11 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    if re.search(r'@app\.get\("/api/dev-dashboard/status"\)', ap_e11):
+        print("dcc_status_route_remaining_in_app:backend/app.py")
+
+# Phase B.2: Backup readonly router guards (warn-only)
+br_path = root / "backend" / "api" / "routes" / "backup_readonly.py"
+if not br_path.is_file():
+    print("backup_readonly_router_missing:backend/api/routes/backup_readonly.py")
+else:
+    br = br_path.read_text(encoding="utf-8", errors="replace")
+    if 'router.get("/api/backup/create")' in br or 'router.post("/api/backup/restore")' in br:
+        print("backup_readonly_router_has_write_route:backend/api/routes/backup_readonly.py")
 
 # Phase P.1: Storage Discovery Canonical guards (warn-only)
 sd_path = root / "backend" / "core" / "storage_discovery.py"

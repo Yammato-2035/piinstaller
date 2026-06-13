@@ -38,6 +38,9 @@ Binding rules against parallel implementations. **No exception** without documen
 34. **No ampel computation outside `system_status_core`** on the system-status path — facade aggregates only (G.12+).
 35. **No lsblk/findmnt/blkid discovery outside `storage_discovery`** — facades delegate (P.1+); low-level in `storage_detection` / `mount_facade`.
 36. **No direct `detect_block_devices` / `detect_filesystems` from `storage_detection` in new modules** — use `storage_discovery` (P.1+).
+37. **No `import app` in `system_status_core`** — use `system_status_providers` (G.14+).
+38. **No new `GET /api/dev-dashboard/status` in `app.py`** — `dev_dashboard_readonly` + `build_dcc_dashboard_status_api` (E.11+).
+39. **No new backup readonly GET routes in `app.py`** — `backup_readonly` router (B.2+).
 
 Check order: Module Catalog → Function Ownership Matrix → this file → Monolith Roadmap.
 

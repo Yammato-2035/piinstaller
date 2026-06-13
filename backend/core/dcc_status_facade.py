@@ -497,6 +497,28 @@ def build_dcc_evidence_index_api(
     return index if isinstance(index, dict) else {}
 
 
+async def build_dcc_dashboard_status_api(
+    *,
+    request_headers: dict[str, str] | None = None,
+    frontend_build_version: str | None = None,
+    frontend_runtime_source: str | None = None,
+) -> dict[str, Any]:
+    """Canonical async entry for ``GET /api/dev-dashboard/status`` (Phase E.11)."""
+    from core.dcc_status_runtime import get_dashboard_status_runtime_adapters
+    from core.dev_dashboard_status_service import build_dev_dashboard_status
+
+    jobs, sync, snapshot, pkg = get_dashboard_status_runtime_adapters()
+    return await build_dev_dashboard_status(
+        backup_jobs=jobs,
+        sync_stale_runner_job_from_systemd=sync,
+        job_snapshot=snapshot,
+        detect_active_package_operations=pkg,
+        frontend_build_version=frontend_build_version,
+        frontend_runtime_source=frontend_runtime_source,
+        request_headers=request_headers,
+    )
+
+
 def build_dcc_project_overview_body(*, repo_root: Path | None = None) -> dict[str, Any]:
     """Raw project overview state for ``GET /api/dev-dashboard/project-overview``."""
     from core.project_overview_dashboard_state import build_project_overview_dashboard_state

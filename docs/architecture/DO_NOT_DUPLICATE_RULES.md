@@ -20,6 +20,9 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 16. **Keine neuen Roadmap-Registry-GET in `app.py`**, wenn `dev_dashboard_roadmap.py` existiert — Parser nur in `core.dev_dashboard_roadmap` (E.5+).
 17. **Keine neue DCC-Statusaggregation in Routern/`app.py`**, wenn `dcc_status_facade` existiert — HTTP-Leser nur über Facade-API-Helper (F.1–F.4).
 18. **Keine neue Ampel-/Status-Mapping-Logik** außerhalb `dcc_status_facade` / `system_status_facade` / dokumentiertem ViewModel (F.1+/G.1+).
+19. **Keine lsblk/findmnt/blkid-Discovery in `app.py`** — nur `storage_discovery` (+ dokumentierte Legacy-Wrapper); blkid mit sudo nur über `discover_device_fstype(sudo_runner=…)` am Clone-Callsite (P.3).
+20. **Kein `import app` in `system_status_core`** — Security/Updates/Realtest nur über `system_status_providers` (G.14).
+21. **Keine Backup-GET-Routen neu in `app.py`** — readonly Inventory über `backup_readonly` Router (B.2).
 19. **Keine neue Systemstatus-Aggregation** außerhalb `system_status_facade` (G.1+).
 20. **Keine Netzwerkdiagnostik** in System Status Facade — nur `network_info_facade` (G.2+).
 21. **Keine neue Netzwerkstatus-Aggregation** außerhalb `network_info_facade` (G.2+).
@@ -38,6 +41,8 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 35. **Keine Ampel-Berechnung außerhalb `system_status_core`** in System-Status-Pfad — Facade nur Aggregation (G.12+).
 36. **Keine lsblk/findmnt/blkid-Discovery außerhalb `storage_discovery`** — Facades delegieren (P.1+); Low-Level in `storage_detection`/`mount_facade`.
 37. **Keine direkten `detect_block_devices`/`detect_filesystems` aus `storage_detection` in neuen Modulen** — nur über `storage_discovery` (P.1+).
+38. **Keine System-Status-Facade→app-Imports** — Runtime/Installation/Profil nur über `system_runtime_info` (G.13+).
+39. **Keine inline lsblk/findmnt in `app.py` für Inventar** — delegieren an `storage_discovery` (P.2+).
 
 ## Prüfreihenfolge (Cursor)
 

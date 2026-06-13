@@ -43,7 +43,11 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 | 31 | network_discovery | `backend/core/network_discovery.py` | CANONICAL_MODULE (G.8) |
 | 32 | webserver_service_discovery | `backend/core/webserver_service_discovery.py` | CANONICAL_MODULE (G.11) |
 | 33 | system_status_core | `backend/core/system_status_core.py` | CANONICAL_MODULE (G.12) |
-| 34 | storage_discovery | `backend/core/storage_discovery.py` | CANONICAL_MODULE (P.1) |
+| 34 | storage_discovery | `backend/core/storage_discovery.py` | CANONICAL_MODULE (P.1/P.3) |
+| 35 | system_status_providers | `backend/core/system_status_providers.py` | CANONICAL_MODULE (G.14) |
+| 36 | backup_readonly | `backend/api/routes/backup_readonly.py` | ROUTER_SLICE (B.2) |
+| 37 | dcc_status_runtime | `backend/core/dcc_status_runtime.py` | RUNTIME_ADAPTER (E.11) |
+| 38 | routes_rescue_plan | `backend/deploy/routes_rescue_plan.py` | ROUTER_SLICE (D.14) |
 | — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4120 lines) |
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
