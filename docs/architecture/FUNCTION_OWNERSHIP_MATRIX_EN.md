@@ -12,7 +12,9 @@ Same ownership as [FUNCTION_OWNERSHIP_MATRIX.md](FUNCTION_OWNERSHIP_MATRIX.md) â
 
 **H.7 final done:** riskLevels, devDashboardFilters, trafficLightModel, RoadmapDrawer, setuphelferToolTheme.
 
-**Next:** **G.4** network handler extraction. **No H.8.**
+**G.4 done:** `GET /api/status` and `GET /api/system/network` in `api/routes/network.py` (facade only).
+
+**Next:** **E.9+** further `app.py` router slices. **No H.8.**
 
 **PARTIAL:** `safe_device`, `write_guard`, `storage_detection`, DCC aggregation, frontend clients, backup/restore state.
 

@@ -13,6 +13,7 @@ if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
 APP_PY = _BACKEND / "app.py"
+NETWORK_ROUTER = _BACKEND / "api" / "routes" / "network.py"
 FACADE_PATH = _BACKEND / "core" / "network_info_facade.py"
 
 STATUS_TOP_LEVEL_KEYS = frozenset({"status", "hostname", "version", "network"})
@@ -34,17 +35,16 @@ SYSTEM_NETWORK_KEYS = frozenset(
 
 class TestNetworkInfoRouteMigrationG2b(unittest.TestCase):
     def test_get_status_handler_uses_facade(self) -> None:
-        text = APP_PY.read_text(encoding="utf-8")
+        text = NETWORK_ROUTER.read_text(encoding="utf-8")
         start = text.index("async def get_status")
         block = text[start : start + 500]
         self.assertIn("network_info_facade", block)
-        self.assertIn("build_network_info", block)
-        self.assertIn("build_demo_network_info", block)
+        self.assertIn("build_api_status_payload", block)
         self.assertNotIn("_demo_network(", block)
         self.assertNotIn("get_network_info(", block)
 
     def test_get_system_network_handler_uses_facade(self) -> None:
-        text = APP_PY.read_text(encoding="utf-8")
+        text = NETWORK_ROUTER.read_text(encoding="utf-8")
         start = text.index("async def get_system_network")
         block = text[start : start + 700]
         self.assertIn("network_info_facade", block)
@@ -128,7 +128,7 @@ class TestNetworkInfoRouteMigrationG2b(unittest.TestCase):
         self.assertIn("def _demo_network", text)
 
     def test_system_network_error_response_unchanged(self) -> None:
-        text = APP_PY.read_text(encoding="utf-8")
+        text = NETWORK_ROUTER.read_text(encoding="utf-8")
         start = text.index("async def get_system_network")
         block = text[start : start + 1200]
         self.assertIn('"status": "error"', block)

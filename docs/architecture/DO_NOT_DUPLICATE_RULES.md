@@ -28,6 +28,7 @@ Verbindliche Regeln gegen parallele Implementierungen. **Keine Ausnahme** ohne d
 24. **UI-Komponenten** dürfen Status nur darstellen — Normalisierung über ViewModel, nicht inline in Komponenten (H.2+).
 26. **Domain-Status** (Partition/Safety/Backup) bleibt lokal bis Domain-Facade — Guard `frontend_domain_status_mapping_requires_domain_facade` (H.4+).
 27. **Frontend-Status-Slices H.3–H.7 abgeschlossen** — verbleibende 10 Mappings nur Domain/Large-Page; kein H.8.
+28. **Keine neuen Network-GET-Handler in `app.py`**, wenn `api/routes/network.py` existiert — nur Facade-Delegation (G.4+).
 
 ## Prüfreihenfolge (Cursor)
 

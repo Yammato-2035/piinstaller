@@ -229,7 +229,7 @@ Canonical module `frontend/src/viewmodels/statusViewModel.ts` — central status
 
 ## Next step?
 
-**G.4** — network handler extraction from `app.py`.
+**E.9+** — further `app.py` router slices (blocked network handlers: `system-info`, `webserver/status`).
 
 ## Further reading
 

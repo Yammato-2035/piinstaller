@@ -40,17 +40,17 @@ class TestSystemStatusRouteMigrationG1b(unittest.TestCase):
         self.assertNotIn("_compute_system_status", block)
         self.assertNotIn("APP_SETTINGS", block)
 
-    def test_get_status_unchanged(self) -> None:
-        text = APP_PY.read_text(encoding="utf-8")
-        self.assertIn('@app.get("/api/status")', text)
-        status_start = text.index("async def get_status")
-        block = text[status_start : status_start + 500]
-        self.assertIn("get_network_info", block)
+    def test_get_status_moved_to_network_router(self) -> None:
+        router_text = (_BACKEND / "api" / "routes" / "network.py").read_text(encoding="utf-8")
+        self.assertIn('@router.get("/api/status")', router_text)
+        status_start = router_text.index("async def get_status")
+        block = router_text[status_start : status_start + 500]
+        self.assertIn("build_api_status_payload", block)
         self.assertNotIn("build_system_status", block)
 
-    def test_system_network_unchanged(self) -> None:
-        text = APP_PY.read_text(encoding="utf-8")
-        self.assertIn("/api/system/network", text)
+    def test_system_network_moved_to_network_router(self) -> None:
+        router_text = (_BACKEND / "api" / "routes" / "network.py").read_text(encoding="utf-8")
+        self.assertIn('@router.get("/api/system/network")', router_text)
 
     def test_facade_module_has_no_network_subprocess(self) -> None:
         import ast

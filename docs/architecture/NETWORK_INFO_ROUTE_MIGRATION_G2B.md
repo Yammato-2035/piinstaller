@@ -22,4 +22,4 @@
 
 ## Nächster Schritt
 
-**G.3 erledigt** — siehe [NETWORK_INFO_CORE_CLEANUP_G3.md](NETWORK_INFO_CORE_CLEANUP_G3.md). **H.1** oder **G.4** als nächstes.
+**G.3 erledigt** — siehe [NETWORK_INFO_CORE_CLEANUP_G3.md](NETWORK_INFO_CORE_CLEANUP_G3.md). **G.4 erledigt** — [NETWORK_HANDLER_EXTRACTION_G4.md](NETWORK_HANDLER_EXTRACTION_G4.md).

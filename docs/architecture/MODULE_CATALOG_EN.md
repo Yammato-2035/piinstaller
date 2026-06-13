@@ -32,14 +32,15 @@ Before new implementation, check this catalog, the [Function Ownership Matrix](F
 | 20 | catalog router | `backend/api/routes/catalog.py` | ROUTER (E.3) |
 | 21 | dev_dashboard_readonly | `backend/api/routes/dev_dashboard_readonly.py` | ROUTER (E.4/E.8) |
 | 22 | dev_dashboard_roadmap | `backend/api/routes/dev_dashboard_roadmap.py` | ROUTER (E.5) |
-| 23 | dcc_status_facade | `backend/core/dcc_status_facade.py` | CANONICAL_MODULE (F.1–F.4) |
-| 24 | system_status_facade | `backend/core/system_status_facade.py` | CANONICAL_MODULE (G.1) |
-| 25 | network_info_facade | `backend/core/network_info_facade.py` | CANONICAL_MODULE (G.2) |
-| 26 | frontend_status_viewmodel | `frontend/src/viewmodels/statusViewModel.ts` | CANONICAL_MODULE (H.1) |
+| 23 | network router | `backend/api/routes/network.py` | ROUTER (G.4) |
+| 24 | dcc_status_facade | `backend/core/dcc_status_facade.py` | CANONICAL_MODULE (F.1–F.4) |
+| 25 | system_status_facade | `backend/core/system_status_facade.py` | CANONICAL_MODULE (G.1) |
+| 26 | network_info_facade | `backend/core/network_info_facade.py` | CANONICAL_MODULE (G.2–G.4) |
+| 27 | frontend_status_viewmodel | `frontend/src/viewmodels/statusViewModel.ts` | CANONICAL_MODULE (H.1–H.7) |
 | — | routes.py | `backend/deploy/routes.py` | LEGACY orchestrator (~4120 lines) |
 
 **Key APIs:** storage — `get_block_devices`, `classify_storage_target`; mount — `build_readonly_mount_plan`; safety — `validate_write_target`; deploy — `build_plan_only_response`, `evaluate_runner_risk_gate`.
 
-**Next:** **G.4** network handler extraction. **No further frontend status slices (H.7 final).**
+**Next:** **E.9+** further `app.py` router slices. **G.4 done.** **No further frontend status slices (H.7 final).**
 
 Full DE detail: [MODULE_CATALOG.md](MODULE_CATALOG.md) (synchronized content).

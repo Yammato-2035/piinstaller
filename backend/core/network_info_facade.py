@@ -152,6 +152,17 @@ def build_demo_network_info() -> dict[str, Any]:
     return _legacy_demo_network()
 
 
+def build_api_status_payload(*, use_demo: bool = False) -> dict[str, Any]:
+    """Legacy ``GET /api/status`` payload (G.4)."""
+    net = build_demo_network_info() if use_demo else build_network_info()
+    return {
+        "status": "healthy",
+        "hostname": net["hostname"],
+        "version": "1.0.0",
+        "network": net,
+    }
+
+
 def build_system_network_response(*, use_demo: bool = False) -> dict[str, Any]:
     """Legacy ``GET /api/system/network`` success payload (G.2b)."""
     if use_demo:
@@ -222,6 +233,7 @@ def build_network_info_diagnostics() -> dict[str, Any]:
             "build_network_info",
             "build_network_status_section",
             "build_demo_network_info",
+            "build_api_status_payload",
             "build_system_network_response",
             "build_network_info_diagnostics",
             "normalize_legacy_network_info",
@@ -233,6 +245,11 @@ def build_network_info_diagnostics() -> dict[str, Any]:
             "GET /api/system-info",
             "GET /api/webserver/status",
         ],
+        "routes_extracted_to_network_router": [
+            "GET /api/status",
+            "GET /api/system/network",
+        ],
+        "network_router_module": "api.routes.network",
         "read_only": True,
         "writes_allowed": False,
         "network_writes_allowed": False,

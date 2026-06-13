@@ -323,7 +323,7 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **G.1b** | `/api/system/status` Router-Migration | **erledigt** |
 | **G.2b** | `/api/status` network + `/api/system/network` Router-Migration | **erledigt** |
 | **G.3** | Network/Core Cleanup (`get_system_info`, `webserver_status`) | **erledigt** |
-| **G.4** | Network Handler Extraction (optional Router-Move) | **optional** |
+| **G.4** | Network Handler Extraction — **erledigt** (`api/routes/network.py`, 2 GET) |
 | **H.1** | Frontend Status ViewModel Facade — **erledigt** (`viewmodels/statusViewModel.ts`) |
 | **H.2** | Frontend Status Utility-Migration — **erledigt** |
 | **H.3** | Frontend Status Component Migration (3 Slice) — **erledigt** |
@@ -331,7 +331,7 @@ Nach C.1–C.6 ist `backend/deploy/routes.py` der größte verbleibende Deploy-M
 | **H.5** | Frontend Status Utility Migration (3 Libs) — **erledigt** |
 | **H.6** | Frontend Status Presentation Migration (5 Slice) — **erledigt** |
 | **H.7** | Frontend Status Final Safe Slice — **erledigt** (`count_10`) |
-| **G.4** | Network Handler Extraction | **nächster Schritt** |
+| **E.9+** | Weitere `app.py` Router-Slices / blocked network handlers | **nächster Schritt** |
 
 Evidence: `docs/evidence/deploy-runner/DEPLOY_ROUTE_DOMAIN_AUDIT_D1.md`  
 Architektur: `docs/architecture/DEPLOY_ROUTE_TARGET_ARCHITECTURE_D1.md`  

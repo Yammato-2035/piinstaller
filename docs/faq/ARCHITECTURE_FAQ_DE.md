@@ -229,7 +229,7 @@ Kanonisches Modul `frontend/src/viewmodels/statusViewModel.ts` — zentrale Stat
 
 ## Nächster Schritt?
 
-**G.4** — Network Handler Extraction aus `app.py`.
+**E.9+** — weitere `app.py` Router-Slices (blocked Network-Handler: `system-info`, `webserver/status`).
 
 ## Weiterlesen
 

@@ -804,6 +804,7 @@ app_router_modules = {
     "catalog.py": root / "backend" / "api" / "routes" / "catalog.py",
     "dev_dashboard_readonly.py": root / "backend" / "api" / "routes" / "dev_dashboard_readonly.py",
     "dev_dashboard_roadmap.py": root / "backend" / "api" / "routes" / "dev_dashboard_roadmap.py",
+    "network.py": root / "backend" / "api" / "routes" / "network.py",
 }
 e1_slice_endpoints = {
     "health.py": (
@@ -862,6 +863,12 @@ e8_slice_endpoints = {
         '@router.get("/api/dev-dashboard/backend-health")',
         '@router.get("/api/dev-dashboard/notifications/status")',
         '@router.get("/api/dev-dashboard/notifications/events")',
+    ),
+}
+g4_slice_endpoints = {
+    "network.py": (
+        '@router.get("/api/status")',
+        '@router.get("/api/system/network")',
     ),
 }
 for sub, mod in app_router_modules.items():
@@ -961,6 +968,8 @@ if app_py_path.is_file():
         print("app_router_slice_e4_not_included:backend/app.py")
     if "include_router(dev_dashboard_roadmap_router)" not in ap:
         print("app_router_slice_e5_not_included:backend/app.py")
+    if "include_router(network_router)" not in ap:
+        print("network_router_extraction_g4_not_included:backend/app.py")
     for dup in (
         '@app.get("/health")',
         '@app.get("/api/version")',
@@ -991,6 +1000,8 @@ if app_py_path.is_file():
         '@app.get("/api/dev-dashboard/backend-health")',
         '@app.get("/api/dev-dashboard/notifications/status")',
         '@app.get("/api/dev-dashboard/notifications/events")',
+        '@app.get("/api/status")',
+        '@app.get("/api/system/network")',
     ):
         if dup in ap:
             print(f"app_router_slice_duplicate_in_app:{dup}")
@@ -1002,6 +1013,7 @@ if app_py_path.is_file():
         **e5_slice_endpoints,
         **e6_slice_endpoints,
         **e8_slice_endpoints,
+        **g4_slice_endpoints,
     }.items():
         mod = app_router_modules.get(sub)
         if mod and mod.is_file():
@@ -1011,9 +1023,9 @@ if app_py_path.is_file():
                     print(f"app_router_slice_endpoint_missing:{ep}")
     # Phase E.7: blocked route extraction guards (warn-only)
     if '@app.get("/api/status")' in ap or '@app.get("/api/status",' in ap:
-        print("app_status_route_requires_system_status_facade:backend/app.py")
+        print("app_network_handler_remaining:backend/app.py:status")
     if re.search(r'@app\.get\("/api/system/network"', ap):
-        print("app_network_route_requires_network_facade:backend/app.py")
+        print("app_network_handler_remaining:backend/app.py:system_network")
     if re.search(r'@app\.get\("/api/dev-dashboard/status"', ap):
         if "dcc_status_facade" not in ap and "build_dev_dashboard_status" not in ap:
             print("app_dcc_status_requires_dcc_status_facade:backend/app.py")
@@ -1025,8 +1037,6 @@ if app_py_path.is_file():
     if "load_roadmap_registry_bundle" in ap:
         print("dcc_status_direct_roadmap_bundle_in_app:backend/app.py")
     blocked_extraction_paths = (
-        "/api/status",
-        "/api/system/network",
         "/api/dev-dashboard/status",
         "/api/dev-dashboard/roadmap",
     )
@@ -1343,26 +1353,42 @@ else:
             print(f"network_info_duplicate_network_mapping:backend/core/network_info_facade.py")
 if app_py_path.is_file():
     ap_g2 = app_py_path.read_text(encoding="utf-8", errors="replace")
+    network_router_path = root / "backend" / "api" / "routes" / "network.py"
+    network_router_text = (
+        network_router_path.read_text(encoding="utf-8", errors="replace")
+        if network_router_path.is_file()
+        else ""
+    )
     status_m = re.search(
-        r'@app\.get\("/api/status"\)\s*\nasync def get_status\([^)]*\):[\s\S]{0,400}',
-        ap_g2,
+        r'@router\.get\("/api/status"\)\s*\nasync def get_status\([^)]*\):[\s\S]{0,400}',
+        network_router_text,
     )
+    if not status_m:
+        status_m = re.search(
+            r'@app\.get\("/api/status"\)\s*\nasync def get_status\([^)]*\):[\s\S]{0,400}',
+            ap_g2,
+        )
     if status_m and "network_info_facade" not in status_m.group(0):
-        print("app_status_network_block_requires_network_facade:backend/app.py")
+        print("app_status_network_block_requires_network_facade:backend/api/routes/network.py")
     sys_net_m = re.search(
-        r'@app\.get\("/api/system/network"\)\s*\nasync def get_system_network\([^)]*\):[\s\S]{0,500}',
-        ap_g2,
+        r'@router\.get\("/api/system/network"\)\s*\nasync def get_system_network\([^)]*\):[\s\S]{0,500}',
+        network_router_text,
     )
+    if not sys_net_m:
+        sys_net_m = re.search(
+            r'@app\.get\("/api/system/network"\)\s*\nasync def get_system_network\([^)]*\):[\s\S]{0,500}',
+            ap_g2,
+        )
     if sys_net_m:
         block = sys_net_m.group(0)
         if "network_info_facade" not in block:
-            print("app_system_network_route_requires_network_facade:backend/app.py")
+            print("app_system_network_route_requires_network_facade:backend/api/routes/network.py")
         elif re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", block):
-            print("app_system_network_route_bypasses_facade:backend/app.py")
+            print("app_system_network_route_bypasses_facade:backend/api/routes/network.py")
     if status_m:
         block = status_m.group(0)
         if re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", block):
-            print("app_status_network_block_bypasses_facade:backend/app.py")
+            print("app_status_network_block_bypasses_facade:backend/api/routes/network.py")
     # Phase G.3: remaining app.py handler cleanup guards (warn-only)
     sys_info_m = re.search(
         r'@app\.get\("/api/system-info"\)\s*\nasync def get_system_info\([^)]*\):[\s\S]{0,15000}',
@@ -1409,6 +1435,32 @@ if app_py_path.is_file():
                 if rel == "backend/app.py" and "def get_network_info" in pt:
                     continue
                 print(f"network_info_new_network_logic_outside_facade:{rel}")
+
+# Phase G.4: Network router extraction guards (warn-only)
+network_router_g4 = root / "backend" / "api" / "routes" / "network.py"
+if not network_router_g4.is_file():
+    print("network_router_extraction_g4_missing:backend/api/routes/network.py")
+else:
+    nr_g4 = network_router_g4.read_text(encoding="utf-8", errors="replace")
+    for ep in ('@router.get("/api/status")', '@router.get("/api/system/network")'):
+        if ep not in nr_g4:
+            print(f"network_router_extraction_g4_incomplete:{ep}")
+    if "network_info_facade" not in nr_g4:
+        print("network_router_bypasses_facade:backend/api/routes/network.py")
+    elif re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", nr_g4):
+        print("network_router_bypasses_facade:backend/api/routes/network.py")
+    if re.search(r"\bsubprocess\b", nr_g4):
+        print("network_router_uses_subprocess:backend/api/routes/network.py")
+for path in sorted((root / "backend" / "api" / "routes").glob("*.py")):
+    rel = path.relative_to(root).as_posix()
+    if rel.endswith("network.py"):
+        continue
+    try:
+        pt = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    if re.search(r"\bget_network_info\s*\(|\b_demo_network\s*\(", pt) and "network_info_facade" not in pt:
+        print(f"network_direct_usage_outside_facade:{rel}")
 
 if deploy_routes.is_file():
     subrouter_markers = (

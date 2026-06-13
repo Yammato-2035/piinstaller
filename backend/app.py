@@ -2971,12 +2971,14 @@ try:
     from api.routes.dev_dashboard_readonly import router as dev_dashboard_readonly_router
     from api.routes.dev_dashboard_roadmap import router as dev_dashboard_roadmap_router
     from api.routes.health import router as health_router
+    from api.routes.network import router as network_router
     from api.routes.settings import router as settings_router
     from api.routes.status import router as status_router
     from api.routes.version import router as version_router
 
     app.include_router(health_router)
     app.include_router(version_router)
+    app.include_router(network_router)
     app.include_router(settings_router)
     app.include_router(status_router)
     app.include_router(capabilities_router)
@@ -3952,34 +3954,6 @@ def _detect_frontend_port():
     except Exception:
         pass
     return 3001
-
-
-@app.get("/api/system/network")
-async def get_system_network(request: Request):
-    """Netzwerk-Informationen (IP-Adressen, Hostname) für Frontend-Zugriff."""
-    from core.network_info_facade import build_system_network_response
-
-    log = get_logger("network", "status")
-    log.step_start("system_network")
-    try:
-        use_demo = _is_demo_mode(request)
-        payload = build_system_network_response(use_demo=use_demo)
-        if use_demo:
-            log.step_end("system_network", data={"demo": True})
-        else:
-            log.step_end(
-                "system_network",
-                data={
-                    "hostname": payload.get("hostname"),
-                    "ip_count": len(payload.get("ips", [])),
-                },
-            )
-        return payload
-    except Exception as e:
-        log.step_end("system_network", data={"error": str(e)})
-        log.error(str(e), data={"step": "system_network"})
-        logger.error(f"Fehler beim Abrufen der Netzwerk-Info: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
 @app.get("/api/dev-dashboard/status")
@@ -6343,22 +6317,6 @@ def get_security_config():
     return config
 
 # ==================== Endpoints ====================
-
-@app.get("/api/status")
-async def get_status(request: Request):
-    """System-Status abrufen"""
-    from core.network_info_facade import build_demo_network_info, build_network_info
-
-    try:
-        net = build_demo_network_info() if _is_demo_mode(request) else build_network_info()
-        return {
-            "status": "healthy",
-            "hostname": net["hostname"],
-            "version": "1.0.0",
-            "network": net,
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/system-info")
 async def get_system_info(request: Request, light: bool = False):

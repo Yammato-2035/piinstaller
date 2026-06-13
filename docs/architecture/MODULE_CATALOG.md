@@ -283,11 +283,12 @@ Cursor und Entwickler müssen **vor neuer Implementierung** diesen Katalog, die 
 | `api/routes/catalog.py` | **CANONICAL_ROUTER** (E.3) | `/api/apps` |
 | `api/routes/dev_dashboard_readonly.py` | **CANONICAL_ROUTER** (E.4/E.8) | DCC modules/evidence + backend-health + notifications read |
 | `api/routes/dev_dashboard_roadmap.py` | **CANONICAL_ROUTER** (E.5/E.6) | roadmap registry + next-prompts/export |
-| `app.py` Router-Slices | **IN_PROGRESS** | H.2 ViewModel-Migration / G.4 |
-| `frontend_status_viewmodel` | **CANONICAL_MODULE** (H.1–H.7 final) | count_10 verbleibend (Domain/Large-Page); **G.4** |
+| `api/routes/network.py` | **CANONICAL_ROUTER** (G.4) | `GET /api/status`, `GET /api/system/network` |
+| `app.py` Router-Slices | **IN_PROGRESS** | E.9+ / blocked network handlers |
+| `frontend_status_viewmodel` | **CANONICAL_MODULE** (H.1–H.7 final) | count_10 verbleibend (Domain/Large-Page) |
 | `dcc_status_facade` | **CANONICAL_MODULE** (F.1–F.4) | HTTP-DCC-Leser delegiert |
 | `system_status_facade` | **CANONICAL_MODULE** (G.1/G.1b) | `/api/system/status` migriert |
-| `network_info_facade` | **CANONICAL_MODULE** (G.2–G.3) | app.py-Handler vollständig |
+| `network_info_facade` | **CANONICAL_MODULE** (G.2–G.4) | Facade + Router; Legacy in `app.py` |
 | **Network Info Facade** | **CANONICAL_MODULE** (G.2/G.2b) | ~~CANDIDATE~~ erledigt |
 | **Dev Dashboard Aggregation Facade** | **CANDIDATE** (E.7) | control-center-summary, prompt-findings (nutzt Facade F.2+) |
 | `routes_notifications.py` | **blocked** | D.9 no_safe_slice |

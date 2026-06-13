@@ -21,4 +21,4 @@
 
 ## Nächster Schritt
 
-**H.1** Frontend Status ViewModel Facade oder **G.4** Network Handler Extraction
+Weitere `app.py` Router-Slices — siehe [NETWORK_HANDLER_EXTRACTION_G4.md](NETWORK_HANDLER_EXTRACTION_G4.md).
