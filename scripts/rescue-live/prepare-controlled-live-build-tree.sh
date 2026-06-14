@@ -931,9 +931,22 @@ write_rescue_network_telemetry_overlay
 "${REPO_ROOT}/scripts/rescue-live/build-rescue-react-ui.sh"
 write_rescue_graphical_assets_overlay
 write_rescue_react_shell_overlay
-SERIAL_MARKER_WANTS="${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-serial-boot-markers.service"
+# Purge developer-qemu-only artifacts that a prior developer-qemu prepare may have rsynced
+# into config/includes.chroot. Without this, a stale qemu-smoke-autopilot.service stays enabled
+# and hangs the boot on real hardware (no ttyS0 / no QEMU host 10.0.2.2). See R8C boot triage.
 if [[ "${RESCUE_BUILD_PROFILE}" != "developer-qemu" ]]; then
-  rm -f "$SERIAL_MARKER_WANTS"
+  _chroot="${BUILD_ROOT}/config/includes.chroot"
+  rm -f "${_chroot}/etc/systemd/system/multi-user.target.wants/setuphelfer-serial-boot-markers.service"
+  rm -f "${_chroot}/etc/systemd/system/multi-user.target.wants/setuphelfer-qemu-smoke-autopilot.service"
+  rm -f "${_chroot}/etc/systemd/system/setuphelfer-qemu-smoke-autopilot.service"
+  rm -f "${_chroot}/usr/local/sbin/setuphelfer-qemu-smoke-autopilot.sh"
+  rm -f "${BUILD_ROOT}/config/hooks/normal/090-enable-qemu-smoke-autopilot.hook.chroot"
+  # dev-agent belongs only to developer / developer-qemu profiles, never to standard.
+  if [[ "${RESCUE_BUILD_PROFILE}" != "developer" ]]; then
+    rm -f "${_chroot}/etc/systemd/system/setuphelfer-dev-agent.service"
+    rm -f "${_chroot}/etc/systemd/system/multi-user.target.wants/setuphelfer-dev-agent.service"
+    rm -f "${_chroot}/etc/setuphelfer/setuphelfer-dev-agent.env"
+  fi
 fi
 
 LIVE_BOOTAPPEND='boot=live components init=/lib/systemd/systemd quiet splash setuphelfer_rescue=1 hostname=setuphelfer-rescue username=user user-fullname=Setuphelfer Rescue keyboard-layouts=de locales=de_DE.UTF-8 timezone=Europe/Berlin'

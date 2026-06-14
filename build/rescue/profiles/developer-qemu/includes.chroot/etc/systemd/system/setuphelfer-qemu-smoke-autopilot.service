@@ -4,6 +4,8 @@ After=multi-user.target network-online.target setuphelfer-rescue-keyboard.servic
 Wants=network-online.target
 ConditionPathExists=/opt/setuphelfer-rescue
 ConditionPathExists=/usr/local/sbin/setuphelfer-qemu-smoke-autopilot.sh
+# QEMU lab only — must never start on real hardware (MSI rescue stick): no usable ttyS0 / QEMU host (10.0.2.2).
+ConditionVirtualization=qemu
 
 [Service]
 Type=oneshot

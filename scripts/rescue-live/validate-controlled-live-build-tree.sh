@@ -20,6 +20,7 @@ fail_networkmanager() { echo "RESCUE-ISO-NETWORKMANAGER-MISSING-001: $*" >&2; ex
 fail_parent_archive() { echo "RESCUE-ISO-PARENT-ARCHIVE-AREAS-001: $*" >&2; exit 10; }
 fail_chroot_sources() { echo "RESCUE-ISO-CHROOT-SOURCES-NONFREE-FIRMWARE-MISSING-001: $*" >&2; exit 10; }
 fail_firmware_source_incomplete() { echo "RESCUE-ISO-FIRMWARE-APT-SOURCE-INCOMPLETE-001: $*" >&2; exit 10; }
+fail_invalid_package() { echo "RESCUE-ISO-INVALID-PACKAGE-001: $*" >&2; exit 15; }
 
 REQ=(
   config/package-lists/setuphelfer.list.binary
@@ -122,6 +123,16 @@ if ! grep -q 'timezone=Europe/Berlin' "$BUILD_ROOT/auto/config"; then
 fi
 grep -qx 'dbus' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list dbus"
+_CHROOT_PKG_LIST="$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot"
+grep -qx 'x-www-browser' "$_CHROOT_PKG_LIST" \
+  && fail_invalid_package "setuphelfer.list.chroot must not list x-www-browser (virtual alternative, not installable)"
+if ! grep -qx 'chromium' "$_CHROOT_PKG_LIST" && ! grep -qx 'firefox-esr' "$_CHROOT_PKG_LIST"; then
+  fail_missing "setuphelfer.list.chroot must list chromium or firefox-esr as graphical browser"
+fi
+for _display_pkg in xserver-xorg xinit openbox dbus-x11 x11-xserver-utils; do
+  grep -qx "$_display_pkg" "$_CHROOT_PKG_LIST" \
+    || fail_missing "setuphelfer.list.chroot must list ${_display_pkg} (R.4 display stack)"
+done
 grep -qx 'systemd' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list systemd"
 grep -qx 'systemd-sysv' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
@@ -234,15 +245,25 @@ build_rc=$?
 set -e
 [[ "$build_rc" -eq 20 ]] || fail_missing "auto/build must exit 20 (got $build_rc)"
 
+# Prior lb build leaves root-owned chroot/binary/.build artifacts; validate the prepared
+# config tree, not stale live-build output directories (removed by auto/clean before rebuild).
+LB_ARTIFACT_PRUNE=(
+  -path "$BUILD_ROOT/chroot" -o -path "$BUILD_ROOT/chroot/*"
+  -o -path "$BUILD_ROOT/binary" -o -path "$BUILD_ROOT/binary/*"
+  -o -path "$BUILD_ROOT/.build" -o -path "$BUILD_ROOT/.build/*"
+  -o -path "$BUILD_ROOT/cache" -o -path "$BUILD_ROOT/cache/*"
+  -o -path "$BUILD_ROOT/local" -o -path "$BUILD_ROOT/local/*"
+)
+
 while IFS= read -r -d '' f; do
   fail_forbidden "$f"
-done < <(find "$BUILD_ROOT" -type f \( \
+done < <(find "$BUILD_ROOT" \( "${LB_ARTIFACT_PRUNE[@]}" \) -prune -o -type f \( \
   -name '*.iso' -o -name '*.img' -o -name '*.qcow2' \
   -o -name 'filesystem.squashfs' -o -name 'initrd.img' -o -name 'vmlinuz' \
   -o -name '.env' \
 \) -print0 2>/dev/null)
 
-if find "$BUILD_ROOT" -type d -name node_modules 2>/dev/null | grep -q .; then
+if find "$BUILD_ROOT" \( "${LB_ARTIFACT_PRUNE[@]}" \) -prune -o -type d -name node_modules -print 2>/dev/null | grep -q .; then
   fail_forbidden "node_modules"
 fi
 
@@ -260,6 +281,7 @@ for scan_dir in backend config; do
     | grep -v 'your-app-password' \
     | grep -v 'BEGIN OPENSSH' \
     | grep -v 're.search(r"API_KEY=|SECRET=|PASSWORD=|TOKEN=|PRIVATE KEY"' \
+    | grep -v 're.compile(r"-----BEGIN\[A-Z \]\*PRIVATE KEY-----' \
     | head -1 | grep -q .; then
     fail_secret "pattern in $scan_dir"
   fi
@@ -287,7 +309,7 @@ while IFS= read -r -d '' script; do
       fail_token "$tok in $script"
     fi
   done
-done < <(find "$BUILD_ROOT" -type f \( -name '*.sh' -o -name '*.hook.chroot' -o -path '*/auto/*' \) -print0 2>/dev/null)
+done < <(find "$BUILD_ROOT" \( "${LB_ARTIFACT_PRUNE[@]}" \) -prune -o -type f \( -name '*.sh' -o -name '*.hook.chroot' -o -path '*/auto/*' \) -print0 2>/dev/null)
 
 python3 - "$BUILD_ROOT/evidence/build-tree-manifest.json" <<'PY' || exit 20
 import json, sys
@@ -341,7 +363,7 @@ if [[ -f "$_hook" ]]; then
   grep -q 'Setuphelfer Rettung starten' "$_hook" || fail_missing "boot menu hook missing Setuphelfer Rettung starten entry"
   grep -q 'label setuphelfer-rescue-default' "$BUILD_ROOT/config/bootloaders/isolinux/live.cfg.in" \
     || fail_missing "live.cfg.in missing setuphelfer-rescue-default label"
-  grep -q 'setuphelfer-rescue-start-assistant' "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-start-assistant" \
+  [[ -x "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-start-assistant" ]] \
     || fail_missing "setuphelfer-rescue-start-assistant missing"
   [[ -f "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-start-assistant.service" ]] \
     || fail_missing "setuphelfer-rescue-start-assistant.service missing"
@@ -389,10 +411,32 @@ build_root = Path(sys.argv[2])
 if not manifest.is_file():
     sys.exit(0)
 data = json.loads(manifest.read_text(encoding="utf-8"))
+chroot = build_root / "config/includes.chroot"
 if data.get("rescue_build_profile") != "developer-qemu":
+    # Non-developer-qemu builds must NOT carry the qemu autopilot — it hangs the boot on real
+    # hardware (no ttyS0 / no QEMU host 10.0.2.2). Guards against stale rsync overlay leaks (R8C).
+    leak_errors = []
+    leaks = [
+        chroot / "etc/systemd/system/multi-user.target.wants/setuphelfer-qemu-smoke-autopilot.service",
+        chroot / "etc/systemd/system/setuphelfer-qemu-smoke-autopilot.service",
+        chroot / "usr/local/sbin/setuphelfer-qemu-smoke-autopilot.sh",
+        build_root / "config/hooks/normal/090-enable-qemu-smoke-autopilot.hook.chroot",
+    ]
+    for p in leaks:
+        if p.is_symlink() or p.exists():
+            leak_errors.append(f"stale developer-qemu artifact must be purged: {p}")
+    if leak_errors:
+        for e in leak_errors:
+            print(f"STANDARD_QEMU_LEAK: {e}", file=sys.stderr)
+        sys.exit(1)
+    print("OK: no developer-qemu autopilot leak in build tree")
     sys.exit(0)
 
 errors = []
+autopilot_svc = chroot / "etc/systemd/system/setuphelfer-qemu-smoke-autopilot.service"
+if autopilot_svc.is_file():
+    if "ConditionVirtualization=qemu" not in autopilot_svc.read_text(encoding="utf-8"):
+        errors.append("autopilot service missing ConditionVirtualization=qemu guard")
 auto = (build_root / "auto/config").read_text(encoding="utf-8") if (build_root / "auto/config").is_file() else ""
 if "console=ttyS0" not in auto:
     errors.append("auto/config missing console=ttyS0")

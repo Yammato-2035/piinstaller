@@ -170,6 +170,16 @@ if [[ "$_developer_qemu_iso" == true ]]; then
     fail_autopilot_call "setuphelfer-qemu-smoke-autopilot.sh missing in squashfs"
   fi
   echo "OK: developer-qemu autopilot unit enabled in squashfs"
+else
+  # Non-serial (standard/developer) ISO: the developer-qemu autopilot must NOT leak in.
+  # A stale qemu-smoke-autopilot.service hangs the boot on real hardware (no ttyS0 / no QEMU host). See R8C.
+  if squashfs_path_exists 'usr/local/sbin/setuphelfer-qemu-smoke-autopilot.sh'; then
+    fail_systemd "non-developer-qemu ISO must not contain setuphelfer-qemu-smoke-autopilot.sh (stale developer-qemu artifact, hangs boot on hardware)"
+  fi
+  if squashfs_path_exists 'etc/systemd/system/multi-user.target.wants/setuphelfer-qemu-smoke-autopilot.service'; then
+    fail_systemd "non-developer-qemu ISO must not enable setuphelfer-qemu-smoke-autopilot.service (stale developer-qemu artifact, hangs boot on hardware)"
+  fi
+  echo "OK: no developer-qemu autopilot leak in standard squashfs"
 fi
 
 # --- Keyboard / Locale / Timezone (exit 13) ---
