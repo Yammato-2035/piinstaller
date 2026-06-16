@@ -1,8 +1,7 @@
-"""Backup execute router B.5 — settings, schedule, cloud POST slice."""
+"""Backup execute router B.6 — target-prepare + USB mount/prepare/eject."""
 
 from __future__ import annotations
 
-import re
 import sys
 import unittest
 from pathlib import Path
@@ -25,31 +24,36 @@ def _route_table(router) -> list[tuple[str, str]]:
     return out
 
 
-class TestBackupExecuteRouterB5(unittest.TestCase):
-    def test_b5_routes_subset_present(self) -> None:
+class TestBackupExecuteRouterB6(unittest.TestCase):
+    def test_thirteen_post_routes(self) -> None:
         tbl = _route_table(backup_execute_router)
-        self.assertGreaterEqual(len(tbl), 9)
+        self.assertEqual(len(tbl), 13)
 
-    def test_b5_routes_present(self) -> None:
+    def test_b6_routes_present(self) -> None:
         tbl = _route_table(backup_execute_router)
         for key in (
-            ("POST", "/api/backup/settings"),
-            ("POST", "/api/backup/schedule/run-now"),
-            ("POST", "/api/backup/cloud/test"),
-            ("POST", "/api/backup/cloud/delete"),
-            ("POST", "/api/backup/cloud/verify"),
+            ("POST", "/api/backup/target-prepare"),
+            ("POST", "/api/backup/usb/mount"),
+            ("POST", "/api/backup/usb/prepare"),
+            ("POST", "/api/backup/usb/eject"),
         ):
             self.assertIn(key, tbl)
 
     def test_no_duplicates_in_app(self) -> None:
         app_text = (_backend / "app.py").read_text(encoding="utf-8")
-        self.assertNotIn('@app.post("/api/backup/settings")', app_text)
-        self.assertNotIn('@app.post("/api/backup/cloud/test")', app_text)
+        for dup in (
+            '@app.post("/api/backup/target-prepare")',
+            '@app.post("/api/backup/usb/mount")',
+            '@app.post("/api/backup/usb/prepare")',
+            '@app.post("/api/backup/usb/eject")',
+        ):
+            self.assertNotIn(dup, app_text)
 
     def test_handlers_use_runtime(self) -> None:
         text = (_backend / "core/backup_execute_handlers.py").read_text(encoding="utf-8")
-        self.assertIn("rt.write_backup_settings", text)
-        self.assertIn("rt.run_command_async", text)
+        self.assertIn("rt.mountpoints_for_disk", text)
+        self.assertIn("rt.sanitize_label", text)
+        self.assertIn("rt.find_lsblk_by_name", text)
 
 
 if __name__ == "__main__":

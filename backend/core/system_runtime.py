@@ -40,3 +40,29 @@ def root_mount_device() -> str | None:
 
 def ensure_packagekit_stopped(sudo_password: str) -> None:
     _app()._ensure_packagekit_stopped(sudo_password)
+
+
+def http_exception(**kwargs):
+    from fastapi import HTTPException
+
+    raise HTTPException(**kwargs)
+
+
+def get_cpu_temp():
+    return _app().get_cpu_temp()
+
+
+def get_updates_categorized():
+    return _app().get_updates_categorized()
+
+
+def get_installed_packages_list():
+    return _app()._get_installed_packages_list()
+
+
+def get_security_config():
+    return _app().get_security_config()
+
+
+def list_running_processes():
+    return _app().get_running_processes()

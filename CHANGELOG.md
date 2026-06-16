@@ -9,6 +9,21 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.8.8.0] — 2026-06-16
+
+### Changed
+
+- **Backup Execute B.6:** `target-prepare` und USB mount/prepare/eject POST aus `app.py` extrahiert (13 POST gesamt).
+- **APP Router Slice E.11:** system resources/updates/conflicts + installed-packages/running-processes/security-config GET.
+
+### Added
+
+- Runtime-Adapter: `mountpoints_for_disk`, `sanitize_label` (Backup); System-Inventory-Adapter (E.11).
+- Tests: `test_backup_execute_router_b6_v1.py`, `test_app_router_slice_e11.py`
+- Doku: `BACKUP_EXECUTE_ROUTER_B6.md`, `APP_ROUTER_SLICE_E11.md`
+
+---
+
 ## [1.8.7.0] — 2026-06-16
 
 ### Changed

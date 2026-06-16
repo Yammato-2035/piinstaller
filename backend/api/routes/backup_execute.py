@@ -51,3 +51,23 @@ async def backup_cloud_delete_route(request: Request):
 @router.post("/api/backup/cloud/verify")
 async def backup_cloud_verify_route(request: Request):
     return await handlers.backup_cloud_verify(request)
+
+
+@router.post("/api/backup/target-prepare")
+async def backup_target_prepare_route(request: Request):
+    return await handlers.backup_target_prepare(request)
+
+
+@router.post("/api/backup/usb/mount")
+async def backup_usb_mount_route(request: Request):
+    return await handlers.backup_usb_mount(request)
+
+
+@router.post("/api/backup/usb/prepare")
+async def backup_usb_prepare_route(request: Request):
+    return await handlers.backup_usb_prepare(request)
+
+
+@router.post("/api/backup/usb/eject")
+async def backup_usb_eject_route(request: Request):
+    return await handlers.backup_usb_eject(request)

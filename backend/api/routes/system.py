@@ -30,3 +30,33 @@ async def reboot_system_route(request: Request):
 async def stop_packagekit_route(request: Request):
     return await handlers.stop_packagekit(request)
 
+
+@router.get("/api/system/service-conflicts")
+async def get_service_conflicts_route():
+    return await handlers.get_service_conflicts()
+
+
+@router.get("/api/system/resources")
+async def get_system_resources_route():
+    return await handlers.get_system_resources()
+
+
+@router.get("/api/system/installed-packages")
+async def get_installed_packages_route():
+    return await handlers.get_installed_packages()
+
+
+@router.get("/api/system/running-processes")
+async def get_running_processes_route():
+    return await handlers.get_running_processes_endpoint()
+
+
+@router.get("/api/system/security-config")
+async def get_security_config_route(request: Request):
+    return await handlers.get_security_config_endpoint(request)
+
+
+@router.get("/api/system/updates")
+async def get_system_updates_route():
+    return await handlers.get_system_updates()
+

@@ -83,6 +83,14 @@ def disk_is_system(disk: dict[str, Any]) -> bool:
     return _app()._disk_is_system(disk)
 
 
+def mountpoints_for_disk(disk_dev: str) -> list[str]:
+    return _app()._mountpoints_for_disk(disk_dev)
+
+
+def sanitize_label(label: str, max_len: int = 16) -> str:
+    return _app()._sanitize_label(label, max_len=max_len)
+
+
 def validate_backup_list_dir(backup_dir: str):
     return _app()._validate_backup_list_dir(backup_dir)
 
