@@ -48,7 +48,8 @@
 | **App Router Slices (Control Center)** | **Grün** | **E.9** — 33 `/api/control-center/*` extrahiert | `APP_ROUTER_SLICE_E9.md` |
 | **Backup Readonly Router** | **Grün** | B.2–**B.3** alle Backup-GETs extrahiert (13) | `BACKUP_READONLY_ROUTER_B3.md` |
 | **Backup Execute Router** | **Grün** | **B.4–B.8** — 18 POST, app.py ohne Backup-POST | `BACKUP_EXECUTE_ROUTER_B8.md` |
-| **App Router Slices (System)** | **Gelb** | **E.10–E.12** — 17 system routes | `APP_ROUTER_SLICE_E12.md` |
+| **App Router Slices (System)** | **Gelb** | **E.10–E.13** — 20 system routes, app.py ohne system-POST | `APP_ROUTER_SLICE_E13.md` |
+| **App Router Slices (Security)** | **Gelb** | **E.14** — 8 security routes, app.py ohne security routes | `APP_ROUTER_SLICE_E14.md` |
 | **Telemetry Client Contract** | **Grün** | public-safe + **Set C** Rescue-Client-Preview | `RESCUE_TELEMETRY_CLIENT_C.md` |
 | **Telemetry Internal Server** | **Schwarz** | Handoff only, kein Public-Implementierung | `docs/private-handoff/TELEMETRY_INTERNAL_SERVER_HANDOFF.md` |
 | **Cloudserver Private Handoff** | **Gelb** | Doku + OpenAPI-Stubs; privates Repo pending | `docs/evidence/cloud-private/CLOUDSERVER_PRIVATE_HANDOFF_RESULT.md` |

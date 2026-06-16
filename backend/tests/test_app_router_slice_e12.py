@@ -34,9 +34,9 @@ def _route_table(router) -> list[tuple[str, str]]:
 
 
 class TestAppRouterSliceE12(unittest.TestCase):
-    def test_seventeen_routes_total(self) -> None:
+    def test_seventeen_routes_minimum(self) -> None:
         tbl = _route_table(system_router)
-        self.assertEqual(len(tbl), 17)
+        self.assertGreaterEqual(len(tbl), 17)
 
     def test_e12_routes_present(self) -> None:
         tbl = _route_table(system_router)

@@ -90,3 +90,18 @@ async def set_asus_fan_profile_route(request: Request):
 async def get_asus_rog_detection_route():
     return await handlers.get_asus_rog_detection()
 
+
+@router.post("/api/system/run-update-in-terminal")
+async def run_update_in_terminal_route():
+    return await handlers.run_update_in_terminal()
+
+
+@router.post("/api/system/run-mixer")
+async def run_mixer_route(request: Request):
+    return await handlers.run_mixer(request)
+
+
+@router.post("/api/system/install-mixer-packages")
+async def install_mixer_packages_route(request: Request):
+    return await handlers.install_mixer_packages(request)
+

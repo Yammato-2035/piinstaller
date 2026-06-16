@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import os
 import shutil
+import subprocess
 
 import psutil
 from pathlib import Path
@@ -307,3 +308,133 @@ async def get_asus_rog_detection():
     except Exception as e:
         rt.logger().error(f"Fehler bei ASUS ROG Erkennung: {str(e)}", exc_info=True)
         return rt.json_response(status_code=500, content={"error": str(e)})
+
+
+async def run_update_in_terminal():
+    """Manuelle Update-Anleitung. Backend startet keine grafische Sitzung und kein apt.
+
+    - Kein subprocess, kein Terminal, kein sudo, kein pkexec.
+    - Antwort ist immer `status=manual_required` (HTTP 200).
+    """
+    commands = ["sudo apt update", "sudo apt upgrade"]
+    copyable = " && ".join(commands)
+    return rt.json_response(
+        status_code=200,
+        content={
+            "status": "manual_required",
+            "code": "updates.manual_terminal_required",
+            "message": (
+                "Setuphelfer fuehrt aus Sicherheitsgruenden keine unbeaufsichtigten "
+                "Systemupdates aus. Bitte ein Terminal manuell oeffnen und die "
+                "Befehle ausfuehren — nicht waehrend Backup/Restore/Paketmanager-Vorgang."
+            ),
+            "commands": commands,
+            "copyable_command": copyable,
+            "blocked_auto_execution": True,
+            "reason": "systemd_service_has_no_graphical_session_and_auto_apt_upgrade_is_unsafe",
+            "br001_warning": (
+                "Vor einem BR-001-Backup keine Updates starten — Paketmanager-Locks "
+                "koennen Backups blockieren."
+            ),
+        },
+    )
+
+
+async def run_mixer(request: Request):
+    """Startet einen grafischen Mixer (pavucontrol oder qpwgraph) im Hintergrund.
+    Läuft auf dem Rechner, auf dem das Backend läuft – bei lokalem Zugriff öffnet sich das Fenster dort."""
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        app_name = (data.get("app") or "").strip().lower()
+        if app_name not in ALLOWED_MIXER_APPS:
+            return rt.json_response(
+                status_code=200,
+                content={"status": "error", "message": f"Ungültige App. Erlaubt: {', '.join(ALLOWED_MIXER_APPS)}"}
+            )
+        import shutil
+        path = shutil.which(app_name)
+        if not path:
+            return rt.json_response(
+                status_code=200,
+                content={"status": "error", "message": f"'{app_name}' nicht gefunden. Bitte installieren (z. B. apt install {app_name})."}
+            )
+        # GUI-Apps brauchen DISPLAY (Backend läuft oft ohne Grafik-Umgebung)
+        env = dict(os.environ)
+        if not env.get("DISPLAY"):
+            env["DISPLAY"] = ":0"
+        # GTK-A11y-Warnung unterdrücken (org.a11y.Bus nicht vorhanden)
+        if app_name == "pavucontrol":
+            env["GTK_A11Y"] = "none"
+        subprocess.Popen(
+            [path],
+            start_new_session=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            env=env,
+        )
+        return {"status": "success", "message": f"{app_name} gestartet"}
+    except Exception as e:
+        rt.logger().exception("run-mixer fehlgeschlagen")
+        return rt.json_response(status_code=200, content={"status": "error", "message": str(e)})
+
+
+async def install_mixer_packages(request: Request):
+    """Installiert pavucontrol und qpwgraph (apt-get update, dann apt-get install). Benötigt sudo."""
+    copyable = "sudo apt-get update && sudo apt-get install -y pavucontrol qpwgraph"
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+        sudo_password = (data.get("sudo_password", "") or (rt.sudo_store().get_password() or "") or "").strip()
+        if not sudo_password:
+            return rt.json_response(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": "Sudo-Passwort erforderlich.",
+                    "requires_sudo_password": True,
+                    "copyable_command": copyable,
+                }
+            )
+        if not rt.sudo_store().has_password():
+            rt.sudo_store().store_password(sudo_password)
+        # Schritt 1: apt-get update
+        result_update = rt.run_apt_update(sudo_password)
+        if not result_update.get("success"):
+            err = (result_update.get("stderr") or result_update.get("stdout") or result_update.get("error") or "").strip()
+            if result_update.get("error") == "Command timeout":
+                err = "Zeitüberschreitung beim Paketquellen-Update."
+            elif not err:
+                err = "apt-get update ist fehlgeschlagen (keine Ausgabe)."
+            rt.logger().warning("install-mixer-packages apt-get update fehlgeschlagen: %s", err[:400])
+            return rt.json_response(
+                status_code=200,
+                content={
+                    "status": "error",
+                    "message": f"Paketquellen-Update fehlgeschlagen: {err[:500]}",
+                    "copyable_command": copyable,
+                }
+            )
+        # Schritt 2: apt-get install
+        result_install = rt.run_apt_install_mixer(sudo_password)
+        if result_install.get("success"):
+            return {"status": "success", "message": "pavucontrol und qpwgraph installiert"}
+        err = (result_install.get("stderr") or result_install.get("stdout") or result_install.get("error") or "").strip()
+        if result_install.get("error") == "Command timeout":
+            err = "Zeitüberschreitung bei der Installation."
+        elif not err:
+            err = "apt-get install ist fehlgeschlagen (keine Ausgabe)."
+        rt.logger().warning("install-mixer-packages apt-get install fehlgeschlagen: %s", err[:400])
+        return rt.json_response(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": err[:600],
+                "copyable_command": copyable,
+            }
+        )
+    except Exception as e:
+        rt.logger().exception("install-mixer-packages fehlgeschlagen")
+        return rt.json_response(
+            status_code=200,
+            content={"status": "error", "message": str(e)[:500], "copyable_command": copyable}
+        )

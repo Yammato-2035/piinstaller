@@ -86,3 +86,11 @@ def is_asus_rog_system():
 
 def is_asusctl_available():
     return _app().is_asusctl_available()
+
+
+def run_apt_update(sudo_password: str) -> dict[str, Any]:
+    return _app()._run_apt_update(sudo_password)
+
+
+def run_apt_install_mixer(sudo_password: str) -> dict[str, Any]:
+    return _app()._run_apt_install_mixer(sudo_password)

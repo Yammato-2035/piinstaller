@@ -13,6 +13,7 @@ if str(_backend) not in sys.path:
 
 HANDLER_FILES = [
     _backend / "core/system_handlers.py",
+    _backend / "core/security_handlers.py",
     _backend / "core/backup_readonly_handlers.py",
     _backend / "core/backup_execute_handlers.py",
 ]

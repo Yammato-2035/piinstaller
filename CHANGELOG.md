@@ -9,6 +9,34 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.8.12.0] — 2026-06-16
+
+### Changed
+
+- **APP Router Slice E.13:** run-update-in-terminal, run-mixer, install-mixer-packages POST aus `app.py` extrahiert (20 system routes gesamt; kein `@app.post("/api/system/…")` mehr in app.py).
+- **APP Router Slice E.14:** 8 Security-Routen (scan, status, firewall, configure) aus `app.py` extrahiert.
+
+### Added
+
+- `api/routes/security.py`, `core/security_handlers.py`, `core/security_runtime.py`
+- Runtime-Adapter: `run_apt_update`, `run_apt_install_mixer` (E.13)
+- Tests: `test_app_router_slice_e13.py`, `test_app_router_slice_e14.py`
+- Doku: `APP_ROUTER_SLICE_E13.md`, `APP_ROUTER_SLICE_E14.md`
+
+---
+
+## [1.8.11.0] — 2026-06-16
+
+### Changed
+
+- _(In 1.8.12.0 zusammengeführt — siehe E.13 dort.)_
+
+### Added
+
+- _(In 1.8.12.0 zusammengeführt.)_
+
+---
+
 ## [1.8.10.0] — 2026-06-16
 
 ### Changed
