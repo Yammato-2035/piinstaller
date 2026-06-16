@@ -1,0 +1,69 @@
+openapi: 3.0.3
+info:
+  title: MSI Windows Precheck Contract (public-safe stub)
+  version: 1.0.0
+  description: |
+    Plan-only contract. No server implementation in public repository.
+    Future operator runtime may implement these endpoints in controlled hardware runs.
+paths:
+  /api/hardware/msi/precheck:
+    post:
+      summary: Start read-only MSI Windows precheck (plan-only)
+      operationId: msiWindowsPrecheck
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrecheckRequest'
+      responses:
+        '200':
+          description: Precheck plan or read-only result envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrecheckResponse'
+components:
+  schemas:
+    PrecheckRequest:
+      type: object
+      properties:
+        operator_label:
+          type: string
+        device_hint:
+          type: string
+          description: Optional operator label, not auto-selected disk
+      required:
+        - operator_label
+    PrecheckResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [planned, ok, blocked, review_required]
+        allowed_actions:
+          type: object
+          properties:
+            scan: { type: boolean }
+            backup_plan: { type: boolean }
+            image_backup: { type: boolean }
+            restore: { type: boolean }
+            wipe: { type: boolean }
+            linux_install: { type: boolean }
+        msi_device:
+          type: object
+          properties:
+            bitlocker_status:
+              type: string
+              enum:
+                - unknown
+                - not_detected
+                - detected
+                - detected_key_available
+                - detected_key_missing
+        risk_level:
+          type: string
+          enum: [green, yellow, red, blocked]
+        evidence_schema:
+          type: string
+          example: docs/evidence/msi/MSI_WINDOWS_EVIDENCE_SCHEMA.json

@@ -9,6 +9,23 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.9.0.0] — 2026-06-16
+
+### Added
+
+- **Commercial/Public Boundary:** `COMMERCIAL_MODULE_BOUNDARY.md`, `PUBLIC_PRIVATE_PRODUCT_SPLIT.md`, `PRIVATE_REPOSITORY_STRATEGY.md`, Handoff `COMMERCIAL_MODULES_PRIVATE_HANDOFF.md`
+- **Boundary Gate:** `check-public-private-boundary.sh` erweitert (Cloud Backup, Cloud Free/Pro, Diagnostics, Exit 17–19, Doc-Allowlist)
+- **MSI Teststrang (Plan only):** Hardware-Testpläne, Runbooks, Precheck-Contract, Evidence-Schema
+- **Blueprints:** Naming/Scope, `linux-development-workstation`, Roadmap
+- **Legal:** Windows Passwort/BitLocker, Commercial Publication, Beta/Hardware-Grenzen
+- **Evidence:** Monolith-Audit, Public/Private/MSI/Blueprint Abschlussberichte
+
+### Changed
+
+- `STATUS_MATRIX.md`, `NEXT_STEPS_AFTER_1_8_12_0.md` — neue Bereiche Commercial Boundary + MSI
+
+---
+
 ## [1.8.12.0] — 2026-06-16
 
 ### Changed

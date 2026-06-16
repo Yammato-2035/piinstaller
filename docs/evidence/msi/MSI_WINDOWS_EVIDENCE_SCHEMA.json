@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "test_id": "",
+  "operator": "",
+  "started_at": "",
+  "completed_at": "",
+  "msi_device": {
+    "label": "",
+    "disk": "",
+    "model": "",
+    "serial_redacted": true,
+    "boot_mode": "",
+    "windows_detected": false,
+    "efi_detected": false,
+    "ntfs_detected": false,
+    "bitlocker_status": "unknown"
+  },
+  "source_state": {
+    "lsblk": "",
+    "blkid": "",
+    "findmnt": "",
+    "partition_table": "",
+    "smart_summary": ""
+  },
+  "backup_target": {
+    "path": "",
+    "device": "",
+    "external_confirmed": false,
+    "free_bytes": null,
+    "write_allowed": false
+  },
+  "backup": {
+    "started": false,
+    "completed": false,
+    "image_path": "",
+    "manifest_path": "",
+    "sha256": "",
+    "bytes_written": null,
+    "tool": "",
+    "exit_code": null
+  },
+  "verify": {
+    "started": false,
+    "completed": false,
+    "status": "not_started",
+    "errors": [],
+    "warnings": []
+  },
+  "restore_test": {
+    "started": false,
+    "completed": false,
+    "target_device": "",
+    "target_external_or_freigegeben": false,
+    "boot_structure_plausible": false,
+    "windows_boot_plausible": false,
+    "login_required_expected": true,
+    "status": "not_started"
+  },
+  "wipe_release": {
+    "allowed": false,
+    "operator_confirmed": false,
+    "reason": ""
+  },
+  "linux_install": {
+    "allowed": false,
+    "profile": "",
+    "started": false,
+    "completed": false
+  },
+  "evidence_paths": [],
+  "final_status": "planned"
+}

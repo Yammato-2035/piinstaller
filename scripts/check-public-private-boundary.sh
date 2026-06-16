@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Public/Private boundary gate — read-only. Prevents proprietary cloudserver,
-# internal telemetry server, operator dashboard, and secrets from public context.
+# Public/Private boundary gate — read-only.
+# Blocks proprietary cloud, telemetry server, operator dashboard, billing, and secrets
+# from public or unknown repository context.
 set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "$0")/.." && pwd)}"
@@ -14,6 +15,9 @@ EXIT_SECRET=13
 EXIT_OPERATOR=14
 EXIT_PUBLIC_DB=15
 EXIT_PRIVATE_DOMAIN=16
+EXIT_CLOUD_BACKUP=17
+EXIT_CLOUD_FREE_PRO=18
+EXIT_DIAGNOSTICS_SERVER=19
 EXIT_REVIEW=20
 EXIT_UNKNOWN=99
 
@@ -38,17 +42,65 @@ _add() {
   fi
 }
 
+_set_exit() {
+  local new="$1"
+  if [[ "${exit_code}" -eq "${EXIT_OK}" || "${exit_code}" -eq "${EXIT_REVIEW}" ]]; then
+    exit_code="${new}"
+  fi
+}
+
+# Paths where forbidden terms may appear when documenting boundaries (not implementing them).
+DOC_TERM_ALLOWLIST=(
+  "docs/architecture/COMMERCIAL_MODULE_BOUNDARY.md"
+  "docs/architecture/PUBLIC_PRIVATE_PRODUCT_SPLIT.md"
+  "docs/architecture/PRIVATE_REPOSITORY_STRATEGY.md"
+  "docs/private-handoff/"
+  "docs/evidence/public-private/"
+  "docs/evidence/msi/"
+  "docs/evidence/monolith/"
+  "docs/evidence/blueprints/"
+  "docs/evidence/release-gates/"
+  "docs/hardware-tests/"
+  "docs/runbooks/MSI_"
+  "docs/blueprints/"
+  "docs/roadmap/STATUS_MATRIX.md"
+  "docs/roadmap/NEXT_STEPS_AFTER_"
+  "docs/legal/"
+  "scripts/check-public-private-boundary.sh"
+)
+
+_is_doc_allowlisted() {
+  local f="$1"
+  for prefix in "${DOC_TERM_ALLOWLIST[@]}"; do
+    if [[ "${f}" == "${prefix}"* ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 # --- 1. Forbidden paths ---
 FORBIDDEN_PATHS=(
+  "backend/cloud_backup"
+  "backend/cloudbackup"
+  "backend/cloud_edition"
   "backend/cloudserver_private"
   "backend/cloudserver_edition"
+  "backend/cloud_free"
+  "backend/cloud_pro"
   "backend/telemetry_server"
   "backend/internal_telemetry"
   "backend/diagnostics_server"
   "backend/internal_diagnostics"
   "backend/operator_dashboard"
-  "frontend/src/pages/CloudOperatorDashboard.tsx"
+  "backend/licensing"
+  "backend/billing"
+  "backend/subscriptions"
+  "backend/commercial"
   "frontend/src/operator"
+  "frontend/src/cloud-pro"
+  "frontend/src/cloud-backup"
+  "frontend/src/pages/CloudOperatorDashboard.tsx"
   "commercial"
   "licensing"
   "billing"
@@ -56,46 +108,62 @@ FORBIDDEN_PATHS=(
   "private"
   "internal"
   "secrets"
-  "deploy/production"
   "infra/production"
+  "deploy/production"
 )
 
 for p in "${FORBIDDEN_PATHS[@]}"; do
   if [[ -e "${ROOT}/${p}" ]]; then
-  case "${p}" in
-    *telemetry*|*internal_telemetry*)
-      _add blocked "forbidden_path:${p}"
-      exit_code="${EXIT_TELEMETRY}"
-      ;;
-    *operator*)
-      _add blocked "forbidden_path:${p}"
-      exit_code="${EXIT_OPERATOR}"
-      ;;
-    *cloudserver*|commercial|licensing|billing|subscriptions)
-      _add blocked "forbidden_path:${p}"
-      exit_code="${EXIT_COMMERCIAL}"
-      ;;
-    *)
-      _add blocked "forbidden_path:${p}"
-      if [[ "${exit_code}" -eq "${EXIT_OK}" ]]; then
-        exit_code="${EXIT_PRIVATE_CODE}"
-      fi
-      ;;
-  esac
+    case "${p}" in
+      *cloud_backup*|*cloudbackup*|*cloud-backup*)
+        _add blocked "forbidden_path:${p}"
+        _set_exit "${EXIT_CLOUD_BACKUP}"
+        ;;
+      *cloud_edition*|*cloud_free*|*cloud_pro*|*cloud-pro*)
+        _add blocked "forbidden_path:${p}"
+        _set_exit "${EXIT_CLOUD_FREE_PRO}"
+        ;;
+      *telemetry*|*internal_telemetry*)
+        _add blocked "forbidden_path:${p}"
+        _set_exit "${EXIT_TELEMETRY}"
+        ;;
+      *diagnostics_server*|*internal_diagnostics*)
+        _add blocked "forbidden_path:${p}"
+        _set_exit "${EXIT_DIAGNOSTICS_SERVER}"
+        ;;
+      *operator*)
+        _add blocked "forbidden_path:${p}"
+        _set_exit "${EXIT_OPERATOR}"
+        ;;
+      *licensing*|*billing*|*subscriptions*|*commercial*|*cloudserver*)
+        _add blocked "forbidden_path:${p}"
+        _set_exit "${EXIT_COMMERCIAL}"
+        ;;
+      *)
+        _add blocked "forbidden_path:${p}"
+        _set_exit "${EXIT_PRIVATE_CODE}"
+        ;;
+    esac
   fi
 done
 
 # --- 2. Forbidden terms in changed/staged files ---
 FORBIDDEN_TERMS=(
+  "CLOUD_BACKUP_PRO"
+  "CLOUD_BACKUP_COMMERCIAL"
+  "CLOUD_EDITION_FREE"
+  "CLOUD_EDITION_PRO"
   "CLOUDSERVER_PRO_LICENSE"
   "CLOUDSERVER_COMMERCIAL"
   "TELEMETRY_SERVER_SECRET"
   "INTERNAL_TELEMETRY_INGEST"
+  "DIAGNOSTICS_SERVER_PRIVATE"
   "OPERATOR_DASHBOARD"
   "INTERNAL_DIAGNOSTIC_RULE"
   "HARDWARE_FINGERPRINT_PRIVATE"
   "CUSTOMER_BILLING"
   "LICENSE_ENFORCEMENT"
+  "SUBSCRIPTION_ENFORCEMENT"
   "PRIVATE_INGEST"
   "PLESK_CATALOG_SUBMISSION_SECRET"
   "IONOS_PRODUCTION_TOKEN"
@@ -113,20 +181,40 @@ done < <(git -C "${ROOT}" diff --name-only 2>/dev/null; git -C "${ROOT}" diff --
 
 for f in "${CHANGED_FILES[@]}"; do
   [[ -f "${ROOT}/${f}" ]] || continue
+  if _is_doc_allowlisted "${f}"; then
+    continue
+  fi
   for term in "${FORBIDDEN_TERMS[@]}"; do
     if grep -q "${term}" "${ROOT}/${f}" 2>/dev/null; then
       _add blocked "forbidden_term:${term}:in:${f}"
       case "${term}" in
-        *TELEMETRY*|*INGEST*) exit_code="${EXIT_TELEMETRY}" ;;
-        *OPERATOR*) exit_code="${EXIT_OPERATOR}" ;;
-        *CLOUDSERVER*|*BILLING*|*LICENSE*|*PLESK*) exit_code="${EXIT_COMMERCIAL}" ;;
-        *SECRET*|*TOKEN*|*PASSWORD*|*KEY*) exit_code="${EXIT_SECRET}" ;;
+        CLOUD_BACKUP_*)
+          _set_exit "${EXIT_CLOUD_BACKUP}"
+          ;;
+        CLOUD_EDITION_*|CLOUDSERVER_*)
+          _set_exit "${EXIT_CLOUD_FREE_PRO}"
+          ;;
+        *TELEMETRY*|*INGEST*)
+          _set_exit "${EXIT_TELEMETRY}"
+          ;;
+        DIAGNOSTICS_SERVER_PRIVATE|INTERNAL_DIAGNOSTIC_RULE)
+          _set_exit "${EXIT_DIAGNOSTICS_SERVER}"
+          ;;
+        OPERATOR_DASHBOARD)
+          _set_exit "${EXIT_OPERATOR}"
+          ;;
+        *BILLING*|*LICENSE*|*SUBSCRIPTION*|*PLESK*|CUSTOMER_BILLING)
+          _set_exit "${EXIT_COMMERCIAL}"
+          ;;
+        *SECRET*|*TOKEN*|*PASSWORD*|*KEY*)
+          _set_exit "${EXIT_SECRET}"
+          ;;
       esac
     fi
   done
 done
 
-# --- 3. Secret patterns in changed/staged files ---
+# --- 3. Secret patterns in changed/staged files (or tracked sample if clean tree) ---
 SECRET_SCAN_FILES=("${CHANGED_FILES[@]}")
 if [[ ${#SECRET_SCAN_FILES[@]} -eq 0 ]]; then
   SECRET_SCAN_FILES=()
@@ -138,19 +226,33 @@ fi
 for f in "${SECRET_SCAN_FILES[@]}"; do
   [[ -f "${ROOT}/${f}" ]] || continue
   case "${f}" in
-    *.pem|*.key|*.p12|*.pfx|.env) _add blocked "secret_file:${f}"; exit_code="${EXIT_SECRET}" ;;
+    *.pem|*.key|*.p12|*.pfx|.env)
+      if [[ "${f}" != ".env" ]] || git -C "${ROOT}" ls-files --error-unmatch "${f}" &>/dev/null; then
+        _add blocked "secret_file:${f}"
+        _set_exit "${EXIT_SECRET}"
+      fi
+      ;;
   esac
   if grep -qE '-----BEGIN (RSA |EC |OPENSSH |)PRIVATE KEY-----' "${ROOT}/${f}" 2>/dev/null; then
     _add blocked "private_key_block:in:${f}"
-    exit_code="${EXIT_SECRET}"
+    _set_exit "${EXIT_SECRET}"
+  fi
+  if grep -qE '-----BEGIN WIREGUARD PRIVATE KEY-----' "${ROOT}/${f}" 2>/dev/null; then
+    _add blocked "wireguard_private_key:in:${f}"
+    _set_exit "${EXIT_SECRET}"
   fi
   if grep -qE 'AKIA[0-9A-Z]{16}' "${ROOT}/${f}" 2>/dev/null; then
     _add blocked "aws_key_pattern:in:${f}"
-    exit_code="${EXIT_SECRET}"
+    _set_exit "${EXIT_SECRET}"
   fi
   if grep -qE 'ghp_[A-Za-z0-9]{20,}' "${ROOT}/${f}" 2>/dev/null; then
     _add blocked "github_token_pattern:in:${f}"
-    exit_code="${EXIT_SECRET}"
+    _set_exit "${EXIT_SECRET}"
+  fi
+  if grep -qE '(?i)(jwt[_-]?secret|api[_-]?key)\s*=\s*["'"'"'][^"'"'"']{8,}' "${ROOT}/${f}" 2>/dev/null; then
+    if ! grep -qE 'changeme|example|placeholder|REPLACE_ME|your[_-]?' "${ROOT}/${f}" 2>/dev/null; then
+      _add review "jwt_or_api_secret_literal:in:${f}"
+    fi
   fi
 done
 
@@ -176,6 +278,9 @@ SUSPICIOUS_DOMAIN_PATTERNS=(
 
 for f in "${CHANGED_FILES[@]}"; do
   [[ -f "${ROOT}/${f}" ]] || continue
+  if _is_doc_allowlisted "${f}"; then
+    continue
+  fi
   for pat in "${SUSPICIOUS_DOMAIN_PATTERNS[@]}"; do
     if grep -qE "${pat}" "${ROOT}/${f}" 2>/dev/null; then
       allowed=false
@@ -187,7 +292,7 @@ for f in "${CHANGED_FILES[@]}"; do
       done
       if [[ "${allowed}" == "false" ]]; then
         _add blocked "private_domain_pattern:${pat}:in:${f}"
-        exit_code="${EXIT_PRIVATE_DOMAIN}"
+        _set_exit "${EXIT_PRIVATE_DOMAIN}"
       fi
     fi
   done
@@ -198,20 +303,20 @@ while IFS= read -r compose; do
   [[ -n "${compose}" ]] || continue
   if grep -qE '0\.0\.0\.0:[0-9]+:5432|0\.0\.0\.0:[0-9]+:3306' "${compose}" 2>/dev/null; then
     _add blocked "public_db_port:in:${compose}"
-    exit_code="${EXIT_PUBLIC_DB}"
+    _set_exit "${EXIT_PUBLIC_DB}"
   fi
   if grep -qE '0\.0\.0\.0:[0-9]+:6379' "${compose}" 2>/dev/null; then
     _add blocked "public_redis_port:in:${compose}"
-    exit_code="${EXIT_PUBLIC_DB}"
+    _set_exit "${EXIT_PUBLIC_DB}"
   fi
   if grep -qE '(POSTGRES_PASSWORD|MYSQL_ROOT_PASSWORD|REDIS_PASSWORD)=\$\{[^}]+\}' "${compose}" 2>/dev/null; then
     : # env var reference ok
   elif grep -qE '(POSTGRES_PASSWORD|MYSQL_ROOT_PASSWORD|REDIS_PASSWORD)=[^$\{][^[:space:]]+' "${compose}" 2>/dev/null; then
-  if ! grep -qE 'changeme|example|placeholder|REPLACE_ME' "${compose}" 2>/dev/null; then
-    _add review "production_secret_literal:in:${compose}"
+    if ! grep -qE 'changeme|example|placeholder|REPLACE_ME' "${compose}" 2>/dev/null; then
+      _add review "production_secret_literal:in:${compose}"
+    fi
   fi
-  fi
-done < <(find "${ROOT}" -maxdepth 4 -name 'docker-compose*.yml' -o -name 'docker-compose*.yaml' 2>/dev/null)
+done < <(find "${ROOT}" -maxdepth 4 \( -name 'docker-compose*.yml' -o -name 'docker-compose*.yaml' \) 2>/dev/null)
 
 # --- JSON output ---
 FINDINGS_JSON="[]"

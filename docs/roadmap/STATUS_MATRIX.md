@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-06-16 — Facade B.5, Router E.8, Backup B.3, Telemetry Set C. **BR-001-Pivot:** **BR-001-LIVE** experimentell/rot (kein Release-Gate, keine Live-Desktop-Gate-Retries). **BR-001-OFFLINE** (Rettungsstick) = **Release-Gate** (rot bis HW-E2E). **PKG-001**, **DEV-001**, **BR-011–BR-019** wie zuvor. **BR-004/005:** blocked an **BR-001-OFFLINE**-Archiv. Siehe `docs/architecture/BR-001_GATE_STRATEGY_DE.md`.
+**Stand:** 2026-06-16 — Boundary 1.9.0.0, Router E.14, MSI-Plan, Facade B.5. **BR-001-Pivot:** **BR-001-LIVE** experimentell/rot (kein Release-Gate, keine Live-Desktop-Gate-Retries). **BR-001-OFFLINE** (Rettungsstick) = **Release-Gate** (rot bis HW-E2E). **PKG-001**, **DEV-001**, **BR-011–BR-019** wie zuvor. **BR-004/005:** blocked an **BR-001-OFFLINE**-Archiv. Siehe `docs/architecture/BR-001_GATE_STRATEGY_DE.md`.
 
 ## Ampeldefinition
 
@@ -41,7 +41,22 @@
 | Backend-Version-Gate | Grün | Regel+Skript+`/api/version`-Diagnose im Repo; produktiver Runtime-Gate-Lauf auf `/opt/setuphelfer` liefert Exit `0` | `docs/evidence/release-gates/backend_version_update_gate.json`, `scripts/check-backend-version-gate.sh`, `docs/evidence/dev-dashboard/DEPLOY_HELPER_INTEGRATION_RESULT.md` |
 | **PKG-001** Runtime-Paket-Deploy-Gate | Gelb | Packaging-Readiness ist read-only produktiv sichtbar (`deb`/`rpm`/`AppImage` vorhanden), aber Installationsabnahme bleibt pending; kein fake install green | `docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md`, `PACKAGE_DEPLOYMENT_GATE_EN.md`, `scripts/check-runtime-deploy-gate.sh`, `scripts/runtime_deploy_gate_eval.py`, `docs/evidence/release-gates/apt_update_delivery_gap.json`, `docs/evidence/dev-dashboard/PROJECT_OVERVIEW_DASHBOARD_INTEGRATION_RESULT.md` |
 | Cloudserver Edition | Schwarz | nach Modularisierung; **Handoff 2026-06-16** — proprietär, nur privates Repo | `docs/private-handoff/CLOUDSERVER_PRIVATE_REPO_HANDOFF.md` |
-| **Public/Private Boundary Gate** | **Grün** | Skript Exit 0; keine privaten Pfade im Tree | `docs/evidence/public-private/PUBLIC_PRIVATE_BOUNDARY_FINAL_RESULT.md` |
+| **Public/Private Commercial Boundary** | **Grün** | Gate verschärft (Cloud Backup, Cloud Free/Pro, Telemetry/Diagnostics Server, Operator); PUBLIC Repo | `COMMERCIAL_MODULE_BOUNDARY.md`, `PUBLIC_PRIVATE_BOUNDARY_HARDENING_RESULT.md` |
+| **Cloud Backup private-only** | **private_only** | Keine Implementierung im Public Repo | `COMMERCIAL_MODULES_PRIVATE_HANDOFF.md` |
+| **Cloud Edition Free private-only** | **private_only** | Strategisch geschützt trotz Name | `COMMERCIAL_MODULE_BOUNDARY.md` |
+| **Cloud Edition Pro private-only** | **private_only** | Kommerziell | `COMMERCIAL_MODULE_BOUNDARY.md` |
+| **Telemetry Server internal** | **private_only** | Nur Client-Contract public | `TELEMETRY_INTERNAL_SERVER_HANDOFF.md` |
+| **Diagnostics Server private-only** | **private_only** | Handoff only | `DIAGNOSTICS_INTERNAL_SERVER_HANDOFF.md` |
+| **Operator Dashboard private-only** | **private_only** | ≠ lokales Dev-Cockpit | `OPERATOR_DASHBOARD_PRIVATE_HANDOFF.md` |
+| **MSI Windows Backup Plan** | **planned** | Runbook + Evidence-Schema; kein Lauf | `MSI_WINDOWS_BACKUP_RESTORE_RUNBOOK_DE.md` |
+| **MSI Windows Verify Plan** | **planned** | Plan only | `MSI_WINDOWS_VERIFY_PLAN_DE.md` |
+| **MSI Windows Restore Test** | **planned** | Passwort/BitLocker-Policy dokumentiert | `MSI_WINDOWS_RESTORE_TEST_PLAN_DE.md` |
+| **MSI Wipe Release** | **blocked** | Erst nach B+V+R Evidence | `MSI_WINDOWS_EVIDENCE_SCHEMA.json` |
+| **MSI Linux Development Blueprint** | **planned** | `linux-development-workstation` public-safe | `LINUX_DEVELOPMENT_WORKSTATION_BLUEPRINT_DE.md` |
+| **MSI Linux Backup/Verify/Restore** | **planned** | Nach Linux-Install, separater Lauf | `MSI_LINUX_BLUEPRINT_TEST_PLAN_DE.md` |
+| **Raspberry Pi Hardware E2E** | **Rot** | Matrix vorbereitet, HW offen | `HARDWARE_TEST_MATRIX.md` |
+| **Service Blueprint Roadmap** | **Gelb** | Begriffe + public/private Split | `BLUEPRINT_ROADMAP_DE.md` |
+| **Public/Private Boundary Gate** | **Grün** | Skript Exit 0; erweiterte Pfade/Terms | `docs/evidence/public-private/PUBLIC_PRIVATE_BOUNDARY_HARDENING_RESULT.md` |
 | **Monolith Audit (Pre-Cloud)** | **Gelb** | Inventar + Duplikat-Audit; app.py 15k Zeilen | `docs/evidence/monolith/MONOLITH_PRE_CLOUD_FINAL_RESULT.md` |
 | **Core Facade Freeze** | **Grün** | Rescue B.2–**B.5** inkl. `app.py` Storage/Safety-Delegation | `CORE_FACADE_RESCUE_MIGRATION_B5.md` |
 | **App Router Slices (DCC)** | **Grün** | E.1–**E.8** readonly (9 GET in `dev_dashboard_readonly`) | `APP_ROUTER_SLICE_E8.md` |

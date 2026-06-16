@@ -32,9 +32,14 @@ class PublicPrivateBoundariesV1Tests(unittest.TestCase):
 
     def test_no_private_only_paths_exist(self) -> None:
         forbidden = [
+            "backend/cloud_backup",
+            "backend/cloud_edition",
             "backend/cloudserver_private",
             "backend/telemetry_server",
+            "backend/diagnostics_server",
             "backend/operator_dashboard",
+            "backend/licensing",
+            "backend/billing",
         ]
         for p in forbidden:
             self.assertFalse((REPO_ROOT / p).exists(), msg=p)
