@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "status": "blocked_preflight",
+  "setuphelfer_version": "1.9.2.0",
+  "git_commit": "0e6493e",
+  "created_at": "2026-06-16T21:05:07+00:00",
+  "source_device": "/dev/nvme0n1",
+  "source_size_bytes": 2000398934016,
+  "source_roles": ["windows_system_disk"],
+  "source_partitions_redacted": [
+    {"device": "/dev/nvme0n1p1", "fstype": "ntfs", "role": "recovery"},
+    {"device": "/dev/nvme0n1p2", "fstype": "vfat", "role": "efi"},
+    {"device": "/dev/nvme0n1p4", "fstype": "ntfs", "role": "windows_os"},
+    {"device": "/dev/nvme0n1p5", "fstype": "ntfs", "role": "windows_reserved"},
+    {"device": "/dev/nvme0n1p6", "fstype": "ntfs", "role": "windows_data"}
+  ],
+  "bitlocker_status": "not_detected",
+  "target_mount": "/media/gabriel/Backup",
+  "target_device": "/dev/sda1",
+  "image_file": null,
+  "image_size_bytes": 0,
+  "sha256": null,
+  "operator_confirmations": {
+    "confirmation_1": true,
+    "confirmation_2": true
+  },
+  "no_restore": true,
+  "no_wipe": true,
+  "no_format": true,
+  "no_partition_write": true,
+  "ntfs_mounted": false,
+  "blocked_reason": "blocked_insufficient_target_capacity",
+  "capacity": {
+    "free_bytes": 791741046784,
+    "required_bytes_raw_plus_5pct": 2100418880716
+  },
+  "public_safe": true
+}

@@ -51,8 +51,8 @@
 | **F.1 MSI Windows Read-only Precheck** | **Grün** | nvme0n1 identifiziert; Evidence redacted; kein Write | `F1_MSI_WINDOWS_READONLY_PRECHECK_FINAL_RESULT.md` |
 | **NTFS/Windows Detection Contract** | **Grün** | `windows_ntfs_detection_contract.py` + Tests | `F1_NTFS_RESCUE_CAPABILITY_RESULT.md` |
 | **Rescue Stick NTFS Capability** | **Gelb** | Matrix/Doku; ISO-Pakete F.2+ | `RESCUE_STICK_NTFS_WINDOWS_CAPABILITY.md` |
-| **MSI F2 Image Backup** | **blocked** | Freigegeben als Plan; Execute wartet F.2 Prompt | `MSI_F2_IMAGE_BACKUP_EXECUTION_PROMPT_DRAFT_DE.md` |
-| **MSI F3 Verify** | **blocked** | Nach F.2 | `MSI_F3_IMAGE_VERIFY_PROMPT_DRAFT_DE.md` |
+| **MSI F2 Image Backup** | **blocked** | Preflight-Gate implementiert; Kapazität USB ~737 GiB frei vs. ~2,1 TiB raw+5 % nötig; kein Image/dd | `F2_MSI_WINDOWS_IMAGE_BACKUP_RESULT.md` |
+| **MSI F3 Verify** | **blocked** | Nach erfolgreichem F.2 Image | `MSI_F3_IMAGE_VERIFY_PROMPT_DRAFT_DE.md` |
 | **MSI F4 Restore Test** | **blocked** | Nach F.3 | `MSI_F4_RESTORE_TEST_PROMPT_DRAFT_DE.md` |
 | **MSI Wipe Release** | **blocked** | Erst nach B+V+R Evidence | `MSI_WINDOWS_EVIDENCE_SCHEMA.json` |
 | **MSI Linux Development Blueprint** | **planned** | `linux-development-workstation` public-safe | `LINUX_DEVELOPMENT_WORKSTATION_BLUEPRINT_DE.md` |
