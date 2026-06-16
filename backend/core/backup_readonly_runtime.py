@@ -143,3 +143,27 @@ def get_backup_job_cancel() -> dict[str, Any]:
 
 def run_backup_evidence_collect(job_id: str):
     return _app()._run_backup_evidence_collect(job_id)
+
+
+def default_backup_settings() -> dict[str, Any]:
+    return _app()._default_backup_settings()
+
+
+def ensure_schedule_migration(settings: dict[str, Any]) -> dict[str, Any]:
+    return _app()._ensure_schedule_migration(settings)
+
+
+def write_backup_settings(settings: dict[str, Any], *, sudo_password: str) -> None:
+    _app()._write_backup_settings(settings, sudo_password=sudo_password)
+
+
+def apply_backup_schedule(settings: dict[str, Any], *, sudo_password: str) -> None:
+    _app()._apply_backup_schedule(settings, sudo_password=sudo_password)
+
+
+async def run_command_async(cmd, sudo: bool = False, sudo_password: str | None = None, timeout: int = 10) -> dict[str, Any]:
+    return await _app().run_command_async(cmd, sudo=sudo, sudo_password=sudo_password, timeout=timeout)
+
+
+def sudo_store():
+    return _app().sudo_store

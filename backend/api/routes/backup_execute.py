@@ -31,3 +31,23 @@ async def backup_profiles_list_post_route():
 @router.post("/api/backup/profile-preview")
 async def backup_profile_preview_route(request: Request):
     return await handlers.backup_profile_preview(request)
+
+@router.post("/api/backup/settings")
+async def backup_set_settings_route(request: Request):
+    return await handlers.backup_set_settings(request)
+
+@router.post("/api/backup/schedule/run-now")
+async def backup_run_now_route(request: Request):
+    return await handlers.backup_run_now(request)
+
+@router.post("/api/backup/cloud/test")
+async def backup_cloud_test_route(request: Request):
+    return await handlers.backup_cloud_test(request)
+
+@router.post("/api/backup/cloud/delete")
+async def backup_cloud_delete_route(request: Request):
+    return await handlers.backup_cloud_delete(request)
+
+@router.post("/api/backup/cloud/verify")
+async def backup_cloud_verify_route(request: Request):
+    return await handlers.backup_cloud_verify(request)

@@ -9,6 +9,20 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.8.7.0] — 2026-06-16
+
+### Changed
+
+- **Backup Execute B.5:** settings, schedule/run-now und cloud test/delete/verify POST aus `app.py` extrahiert (9 POST gesamt).
+- **APP Router Slice E.10:** system paths/devices/terminal + reboot/packagekit in `system` Router.
+
+### Added
+
+- `backend/api/routes/system.py`, `core/system_handlers.py`, `core/system_runtime.py`
+- Tests: `test_backup_execute_router_b5_v1.py`, `test_app_router_slice_e10.py`
+
+---
+
 ## [1.8.6.0] — 2026-06-16
 
 ### Changed
